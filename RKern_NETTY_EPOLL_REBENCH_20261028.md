@@ -60,6 +60,8 @@ response seq expected=9505 actual=9508
 
 `cio.readFrameBudget=0`은 프레임 예산뿐 아니라 CIOServer의 executor/channel-group 구성도 기존 방식으로 바꾼다. 따라서 단순히 숫자 32만의 문제라고 확정할 수 없다. READ continuation과 그룹 변경 경계가 추가 조사 대상이며 정확한 race 원인은 아직 특정하지 않았다. 설정을 끈 대조 시험 통과는 버그 수정이나 운영 안전성 입증이 아니다. 소스 수정은 수행하지 않았다.
 
+**후속 진단:** READ 중첩이 0인 실행에서도 앞선 staged SEND를 owner가 direct 등록으로 우회하는 경로를 관측했고, 모든 SEND를 티켓화한 대조군은 3회 통과했다. 추가 계측과 수정 지침은 [Netty epoll 구현 지침](RKern_NETTY_EPOLL_IMPLEMENTATION_PLAN_20261028.md)에 있다. 진단 실행의 속도는 위 성능 표에 합치지 않았다.
+
 ## 보완 비교: READ 설정과 batch API
 
 기본 시험과 별도 시간대에 새로 교차 실행한 보완 결과다. 아래 표 내부의 대조군끼리 비교하며 기본 표 수치와 섞지 않는다. 각 3회 중앙값이다.
