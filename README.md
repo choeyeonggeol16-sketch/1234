@@ -1,4 +1,14 @@
-# RKern 최신 수정본 v4 — 네트워크 경로 정리
+# RKern 최신 수정본 v5 — NPC AI 최신 소스 + 네트워크 개선
+
+**[전체 소스 v5 ZIP 다운로드](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/RKern_full_src_NPC_AI_network_v5_20261027.zip)**
+
+[수정·검증 보고서](RKern_NPC_AI_NETWORK_v5_REPORT.md)
+
+새로 업로드한 NPC AI 소스 기준입니다. 짧은 액션의 임시 SEND 버퍼 대여·반환을 줄이고 v4 수신 정리를 병합했습니다. NPC AI 본체를 보존했으며, 원본의 구·신 desire 타입 충돌 11개는 호환 위임으로 해결했습니다. 전체 Java 1,670개 컴파일과 네트워크 회귀·실제 로컬 TCP 검사를 통과했습니다. DB 추가 변경은 없습니다.
+
+이하 이전 v4/v3 기록입니다.
+
+# RKern v4 기록 — 네트워크 경로 정리
 
 **[전체 소스 v4 ZIP 다운로드](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/RKern_full_source_v4_network.zip)**
 
