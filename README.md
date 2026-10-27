@@ -1,4 +1,14 @@
-# RKern 최신 수정본 v3
+# RKern 최신 수정본 v4 — 네트워크 경로 정리
+
+**[전체 소스 v4 ZIP 다운로드](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/RKern_full_source_v4_network.zip)**
+
+[네트워크 수정·검증 보고서](RKern_v4_NETWORK_REPORT.md)
+
+v3 기준 네트워크 수신 파일 1개를 49줄 줄였습니다. 전체 컴파일, 제어 I/O 회귀 238개, 실제 로컬 TCP 검증을 통과했습니다. 합성 측정에서 처리량 향상은 확인되지 않았습니다. v3의 경제/로그인 수정과 기존 SQL 3개를 포함하며 추가 DB 변경은 없습니다.
+
+이하 v3의 DB 적용 안내와 기존 검증 기록입니다.
+
+# RKern v3 기록
 
 **[전체 소스 v3 ZIP 다운로드](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/RKern_full_source_v3.zip)**
 
