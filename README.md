@@ -1,3 +1,15 @@
+## 2026-11-03 — NPC 액션 방어 검증 패치 (호환성 제한 있음)
+
+- [UTF-8 전체 소스](https://raw.githubusercontent.com/choeyeonggeol16-sketch/1234/main/downloads/NPC_HTML_Action_Guard_20261103_UTF8_FULL_SRC.zip)
+- [UTF-8 패치](https://raw.githubusercontent.com/choeyeonggeol16-sketch/1234/main/downloads/NPC_HTML_Action_Guard_20261103_UTF8_PATCH.zip)
+- [검증·적용 제한 상세](NPC_HTML_ACTION_GUARD_20261103.md)
+
+이번 사용자 src.zip 기준 NPC 대화·대상·맵·거리·만료 검사, 일회성 서버 발급 변신 메뉴, 귀걸이/목걸이 보유 중 재지급 방어를 추가했습니다. 실제 helper/XML dispatch 25건과 실제 지급 메서드 추출 회귀를 통과했습니다. 게임 의존성은 테스트 대체 클래스를 사용했고 전체 게임/DB 기동은 미검증입니다.
+
+**호환성 제한:** NpcId가 없는 첨부 XML 액션 254개는 담당 NPC를 지정하기 전까지 차단됩니다. 유료 NPC 변신은 허용 NPC 번호를 설정하기 전까지 잠깁니다. 정상 기능 제한을 확인한 뒤 검증 서버에서 적용하세요. 전체 HTML 명령 정책이나 창고 이동 후 재지급까지 완전히 해결한 패치가 아닙니다. 상세 문서와 ZIP 안의 CSV를 먼저 확인하세요. 모든 Java 소스는 UTF-8입니다.
+
+---
+
 ## V3 UTF-8 — 한글 소스 인코딩 통일본
 
 - [UTF-8 전체 소스 ZIP](https://raw.githubusercontent.com/choeyeonggeol16-sketch/1234/main/downloads/Netty42_Monster_Burst_Fix_V3_UTF8_FULL_SRC.zip)
