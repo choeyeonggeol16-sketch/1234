@@ -1,3 +1,11 @@
+## 2026-11-04 — class_id를 DB에서 직접 읽는 전체 SRC
+
+[DB 직접 로딩 전체 SRC](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_ClassId_DB_Only_20261104_FULL_SRC.zip) · [Java 4개 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_ClassId_DB_Only_20261104_PATCH.zip) · [적용 안내](NPC_CLASSID_DB_ONLY_SRC_20261104.md)
+
+**설정 파일 없이 npc.class_id를 직접 읽는 소스입니다.** 전체 Java 1,691개 컴파일, 실제 NpcTable의 DB 로딩/옛 설정 무시 및 송신기·팩토리 3경로·15개 ID 조합 검사 통과. 소스 적용 후 전체 Clean/Rebuild·재시작하세요. DB 적용·복구 SQL과 대조표도 ZIP의 database 폴더에 포함했습니다. 실제 DB 적용·MySQL/Windows 게임 화면 통합은 미실행입니다.
+
+---
+
 ## 2026-11-04 — 몬스터북 대상 NPC class_id 일괄 대조
 
 [적용 SQL·대조표 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Monsterbook_NPC_ClassId_Mapping_20261104.zip) · [상세 내역](NPC_BOOK_CLASSID_MAPPING_20261104.md)
