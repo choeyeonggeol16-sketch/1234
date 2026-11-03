@@ -1,3 +1,13 @@
+## 2026-11-03 — 자동사냥 타깃 안정화·NPC 예약 길막 대기 수정
+
+[전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Target_Stability_Chase_Pause_Fix_20261103_FULL_SRC.zip) · [Java 4개 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Target_Stability_Chase_Pause_Fix_20261103_PATCH.zip) · [적용·검증 안내](TARGET_STABILITY_CHASE_PAUSE_FIX_20261103.md)
+
+진행 중인 자동사냥 타깃을 유지하고, 실제 길막의 전환 대상을 좁혀 빈번한 교체를 억제했습니다. NPC는 예약 길막이 우회 탐색을 건너뛰던 문제와, 막힌 예약 경로에 300ms씩 기다리던 문제를 수정했습니다. 열린 다른 경로는 같은 틱에 재탐색하며 평상시 랜덤워크 주기는 유지합니다.
+
+자동사냥 30건·NPC 경로 11건 및 관련 검사 스크립트 6개, 전체 Java 1,702개 컴파일 통과. 실제 클라이언트·운영 부하는 미검증입니다. **패치 4개 파일 모두 적용 후 JDK 21 / UTF-8 / `--enable-preview`로 Clean/Rebuild·재시작하세요.** 직전 8개 파일 추적 복구 패치 미적용 시 FULL_SRC를 기준으로 병합하세요.
+
+---
+
 ## 2026-11-03 — 자동사냥 타깃 왕복·정지 / NPC 길막 추적 복구
 
 - [전체 수정 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Chase_Recovery_Fix_20261103_FULL_SRC.zip)
