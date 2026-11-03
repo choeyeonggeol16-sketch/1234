@@ -1,3 +1,13 @@
+## 2026-11-04 — 서버 버전 핸드셰이크 중복·거절 종료 정리
+
+[전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Server_Version_Handshake_Cleanup_20261104_FULL_SRC.zip) · [Java 3개 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Server_Version_Handshake_Cleanup_20261104_PATCH.zip) · [변경·검증·적용 안내](SERVER_VERSION_HANDSHAKE_CLEANUP_20261104.md)
+
+`SC_ServerVersionInfo`의 중복 직렬화·전달 래퍼를 제거했습니다. 거절마다 만들던 스레드풀 타이머를 없애고 기존 소켓 데드라인 작업을 재사용합니다. 신규 요청은 차단하고, 3초 최소 유예와 기존 송신 완료를 기다린 뒤 닫습니다. 느린 송신의 30초 제한과 일반 graceful close도 유지합니다.
+
+핸드셰이크 128건 바이트 비교, 종료 계약 16개 그룹·100회 경쟁 검사, 실제 localhost TCP 응답→3초 유예→EOF, 다른 62종 프로토콜 회귀와 전체 Java 1,723개 컴파일 통과. 실제 게임 클라이언트·운영 DB·Windows IOCP 통합은 미검증입니다. **PATCH는 9e633d7 기준이며 Java 3개 모두 적용 후 JDK 21 / UTF-8 / `--enable-preview`로 전체 Clean/Rebuild·재시작하세요.**
+
+---
+
 ## 2026-11-04 — 프로토콜 직접 송신·임시 패킷 객체 절감
 
 [전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Protocol_Direct_Send_Refactor_20261104_FULL_SRC.zip) · [Java 115개 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Protocol_Direct_Send_Refactor_20261104_PATCH.zip) · [변경·검증·적용 안내](PROTOCOL_DIRECT_SEND_REFACTOR_20261104.md)
