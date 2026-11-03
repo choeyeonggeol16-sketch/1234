@@ -1,3 +1,15 @@
+## 2026-11-03 — NPC 공격 중 새 공격자로 타깃 전환 수정
+
+- [수정된 전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_Attack_Retarget_Fix_20261103_FULL_SRC.zip)
+- [한 파일 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_Attack_Retarget_Fix_20261103_PATCH.zip)
+- [원인·검증·적용 안내](NPC_ATTACK_RETARGET_FIX_20261103.md)
+
+A를 공격하는 NPC를 B가 때려 B의 공격 우선순위가 더 높아져도 A만 계속 공격하는 누락을 수정했습니다. 새 타깃의 예약·적용 처리가 추적 3종에만 있고 `ATTACK`에 빠져 있었습니다. `AiRuntime.java` 한 파일에서 공통 판정을 사용하도록 수정해 정상 CIO 공격 간격이 끝나는 시점에 새 대상을 적용합니다. 기존 어그로 계산과 시전/도주/대상 유효성 검사는 유지합니다.
+
+실제 욕구 큐·피격 처리·CIO 사전 검사·공격 메서드를 연결한 새 회귀 15건, 기존 NPC·AI 검사 스크립트 11개, 전체 Java 1,701개 타입 컴파일을 통과했습니다. 게임·월드·스케줄러 경계는 테스트 대체 객체를 사용했으며 실제 클라이언트 통합은 미검증입니다. **패치의 AiRuntime.java를 교체하고 JDK 21 / UTF-8 / `--enable-preview`로 Clean/Rebuild하세요.** 전체 소스는 직전 공개 main 기준이며, 미게시 아이템 리팩토링 V2 전체는 포함하지 않습니다.
+
+---
+
 ## 2026-11-03 — CacheD 전송 대기 중 장비 슬롯 교체 오류 수정
 
 - [수정된 전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/CacheD_EquipSwap_Fix_20261103_FULL_SRC.zip)
