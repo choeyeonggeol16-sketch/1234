@@ -1,3 +1,15 @@
+## 2026-11-03 — 변신/스프라이트 액션 배열 메모리 절감
+
+- [한 파일 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Sprite_Action_Memory_Fix_20261103_PATCH.zip)
+- [기존 NPC 수정 포함 전체 소스](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Sprite_Action_Memory_Fix_20261103_FULL_SRC.zip)
+- [실측·검증·적용 안내](SPRITE_ACTION_MEMORY_FIX_20261103.md)
+
+`SpriteInformation.java`의 스프라이트별 256칸 고정 배열을 실제 최고 액션 번호까지만 할당하도록 수정했습니다. 비어 있는 테이블은 공유하고, 조회는 직접 인덱싱 O(1)·추가 할당 없이 유지합니다. 프레임 계산과 변신별 액션/레벨별 속도 코드는 유지합니다.
+
+실제 Java 배열 크기 측정에서 0/1/8 액션을 가진 스프라이트 1만 개의 배열 점유는 10.4MB → 0.56MB, 최고 ID 99인 경우 4.16MB였습니다. 서버 전체 힙 절감률이 아니며 실제 DB 분포에 따라 달라집니다. 회귀 8개 그룹·조회 100만 회 추가 할당 0바이트·전체 Java 1,701개 타입 컴파일을 확인했습니다. 실제 서버 데이터/클라이언트 검증은 미실행입니다. **패치의 SpriteInformation.java를 교체하고 JDK 21 / UTF-8 / `--enable-preview`로 재빌드·재시작하세요.**
+
+---
+
 ## 2026-11-03 — NPC 추적 중 800ms 강제 멈춤 제거
 
 - [한 파일 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_Chase_Cadence_Fix_20261103_PATCH.zip)
