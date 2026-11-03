@@ -1,3 +1,15 @@
+## 2026-11-03 — CacheD 전송 대기 중 장비 슬롯 교체 오류 수정
+
+- [수정된 전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/CacheD_EquipSwap_Fix_20261103_FULL_SRC.zip)
+- [변경 파일 4개 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/CacheD_EquipSwap_Fix_20261103_PATCH.zip)
+- [적용·검증 안내](CacheD_EQUIP_SWAP_FIX_20261103.md)
+
+사용자가 첨부한 V6 AlternateEntrance 전체 소스 기준입니다. CacheD 전송 대기 중 슬롯 교체가 장비·능력치를 먼저 변경한 뒤 `Item mutation refused while CacheD transfer pending` 예외를 던지는 문제를 재현했습니다. 기존 전송 게이트를 교체 시작 전에 예약하고, 대기 중에는 변경 없이 재시도 안내를 보내며 성공 슬롯 패킷은 교체 완료 후 보냅니다. NPC AI 소스와 DB 스키마는 변경하지 않았습니다.
+
+실제 수정 메서드와 전체 SlotChangeManager를 사용하는 회귀 14개, 기존 NPC·AI 대표 검사, Java 1,701개 구문 분석을 통과했습니다. 게임 의존성은 테스트 대체 객체를 사용했으며, 전체 서버 타입 컴파일·DB·클라이언트 통합은 미검증입니다. **패치의 Java 파일 4개를 모두 교체하고 JDK 21 / UTF-8로 Clean/Rebuild하세요.**
+
+---
+
 ## 2026-11-03 — NPC 액션 방어 검증 패치 (호환성 제한 있음)
 
 - [UTF-8 전체 소스](https://raw.githubusercontent.com/choeyeonggeol16-sketch/1234/main/downloads/NPC_HTML_Action_Guard_20261103_UTF8_FULL_SRC.zip)
