@@ -1,3 +1,12 @@
+## V3 UTF-8 — 한글 소스 인코딩 통일본
+
+- [UTF-8 전체 소스 ZIP](https://raw.githubusercontent.com/choeyeonggeol16-sketch/1234/main/downloads/Netty42_Monster_Burst_Fix_V3_UTF8_FULL_SRC.zip)
+- [GameServer.java UTF-8 파일](https://raw.githubusercontent.com/choeyeonggeol16-sketch/1234/main/downloads/GameServer_UTF8/GameServer.java)
+
+기존 V3의 한글 Java 파일 533개는 MS949(CP949)였습니다. 한글 내용을 바꾸지 않고 UTF-8로 무손실 변환했습니다. 나머지 ASCII 파일은 그대로이며 전체 Java 970개 구문 분석을 통과했습니다. 전체 소스를 사용하면 프로젝트와 빌드 인코딩을 UTF-8로 설정하고 Clean/Rebuild하세요. GameServer.java만 교체하면 해당 파일의 인코딩만 UTF-8로 설정하고 다른 MS949 파일의 프로젝트 설정은 유지하세요. 전체 게임 타입 컴파일·기동 검증은 아닙니다. 콘솔 출력 인코딩이나 DB의 이미 손상된 문자 문제를 고친다는 의미는 아닙니다.
+
+---
+
 ## 2026-11-03 — V3: 사용하지 않는 광고 서버 비활성화
 
 - [V3 전체 소스 다운로드](https://raw.githubusercontent.com/choeyeonggeol16-sketch/1234/main/downloads/Netty42_Monster_Burst_Fix_V3_20261103_FULL_SRC.zip)
