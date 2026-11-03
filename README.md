@@ -1,3 +1,11 @@
+## 2026-11-04 — LC 클라이언트 초기 실행 진단 도구
+
+[진단 ZIP 다운로드](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/LC_First_Check_20261104.zip) · [사용법](LC_FIRST_CHECK_20261104.md)
+
+Windows에서 도구를 실행한 뒤 120초 안에 퍼플로 게임을 실행하세요. LC.exe 버전·해시, 로딩 DLL 메타데이터, TCP 접속 주소/포트와 클라이언트 폴더의 파일 이름·크기를 바탕화면 ZIP으로 수집합니다. 접속 호환성 분석의 첫 단계이며 Windows 실행 검증은 아직 하지 않았습니다.
+
+---
+
 ## 2026-11-04 — 아이템 사용 처리 리팩토링 V3
 
 [전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Item_Use_Refactor_V3_20261104_FULL_SRC.zip) · [누적 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Item_Use_Refactor_V3_20261104_PATCH.zip) · [구조·검증·적용 안내](ITEM_USE_REFACTOR_V3_20261104.md)
