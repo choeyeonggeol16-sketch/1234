@@ -1,3 +1,13 @@
+## 2026-11-04 — 첨부 DB의 테이블 기준 소스 정리
+
+[전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/DB_Table_Cleanup_20261104_FULL_SRC.zip) · [수정·삭제 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/DB_Table_Cleanup_20261104_PATCH.zip) · [변경·검증·적용 안내](DB_TABLE_CLEANUP_20261104.md)
+
+첨부 DB의 테이블 252개와 비교해 없는 테이블 32종의 SQL·로더·관련 호출을 정리했습니다. 운영 Java 39개 수정·32개 삭제, 전체 1,691개 컴파일과 아이템 사용 12개·거래 27개 회귀검사 통과. 정적 SQL과 동적 테이블 계열 검사에서 없는 참조 0건입니다. DB 덤프와 플레이어 데이터는 포함하지 않았습니다.
+
+**FULL_SRC는 기존 src를 백업 후 교체하세요. PATCH는 63aca89 기준이며 deleted_files.txt의 32개 파일 삭제도 필수입니다.** JDK 21 / UTF-8 / `--enable-preview`로 전체 Clean/Rebuild 후 재시작하세요. 실제 게임 클라이언트·운영 DB 기동 검사는 미실행입니다.
+
+---
+
 ## 2026-11-04 — 서버 버전 핸드셰이크 중복·거절 종료 정리
 
 [전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Server_Version_Handshake_Cleanup_20261104_FULL_SRC.zip) · [Java 3개 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Server_Version_Handshake_Cleanup_20261104_PATCH.zip) · [변경·검증·적용 안내](SERVER_VERSION_HANDSHAKE_CLEANUP_20261104.md)
