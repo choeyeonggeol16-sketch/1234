@@ -1,3 +1,13 @@
+## 2026-11-04 — 프로토콜 직접 송신·임시 패킷 객체 절감
+
+[전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Protocol_Direct_Send_Refactor_20261104_FULL_SRC.zip) · [Java 115개 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Protocol_Direct_Send_Refactor_20261104_PATCH.zip) · [변경·검증·적용 안내](PROTOCOL_DIRECT_SEND_REFACTOR_20261104.md)
+
+프로토콜 63종에 필드 직접쓰기 API를 추가하고 실제 버프·스탯·슬롯·펫·월드·파티·제작·도감 송신을 연결했습니다. 인벤토리/창고의 패킷·아이템 정보·청크 리스트 래퍼와 매번 만드는 Raw 전송 래퍼를 줄였습니다. 프로토콜 ID·선택 필드·0/false·MS949·중첩 길이는 유지하며, 보관 중인 출석/랭킹 데이터와 호환 빌더는 남겼습니다.
+
+바이트 비교 7,043건, 프레임 계약 44개 단언, 아이템 사용 12건·거래 27건·장비 14건, 전체 Java 1,723개 컴파일 통과. 버프 격리 측정은 72→0 B/회이며 운영 서버 전체 절감률은 아닙니다. 실제 클라이언트·운영 DB/Windows IOCP 통합은 미검증입니다. **PATCH는 공개 아이템 V3 기준이며 Java 115개 모두 적용 후 JDK 21 / UTF-8 / `--enable-preview`로 Clean/Rebuild·재시작하세요.**
+
+---
+
 ## 2026-11-04 — LC 클라이언트 초기 실행 진단 도구
 
 [진단 ZIP 다운로드](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/LC_First_Check_20261104.zip) · [사용법](LC_FIRST_CHECK_20261104.md)
