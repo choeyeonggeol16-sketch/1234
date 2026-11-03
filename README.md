@@ -1,3 +1,11 @@
+## 2026-11-04 — 몬스터북 대상 NPC class_id 일괄 대조
+
+[적용 SQL·대조표 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Monsterbook_NPC_ClassId_Mapping_20261104.zip) · [상세 내역](NPC_BOOK_CLASSID_MAPPING_20261104.md)
+
+첨부 net.sql의 몬스터북 고유 NPC 612종만 대조했습니다. 현재 이미지 기준 385종 확정, 227종은 다중 후보/누락으로 검토표에 분리했습니다. 실제 이미지가 새 팩과 같은 경우도 포함해 검증된 706개 번호·이미지 조합을 적용 SQL에 넣었습니다. NPC 번호·이미지·능력치는 유지하고 class_id만 갱신하며, 어둠의 흑기사 16853→14606을 반영합니다. DB 값 사용용 설정 파일과 적용 전 값 백업/되돌리기 SQL을 제공합니다. **실행 DB 적용은 아직 하지 않았으며, MySQL 통합은 미실행입니다.**
+
+---
+
 ## 2026-11-04 — 어둠의 흑기사 class_id 표시 테스트
 
 [테스트 전체 소스](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_ClassId_Outline_Test_20261104_FULL_SRC.zip) · [Java 5개·설정 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_ClassId_Outline_Test_20261104_PATCH.zip) · [적용·검증 안내](NPC_CLASSID_OUTLINE_TEST_20261104.md)
