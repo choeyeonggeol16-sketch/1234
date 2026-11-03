@@ -1,3 +1,11 @@
+## 2026-11-04 — 어둠의 흑기사 class_id 표시 테스트
+
+[테스트 전체 소스](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_ClassId_Outline_Test_20261104_FULL_SRC.zip) · [Java 5개·설정 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_ClassId_Outline_Test_20261104_PATCH.zip) · [적용·검증 안내](NPC_CLASSID_OUTLINE_TEST_20261104.md)
+
+이번 첨부 src.zip을 기준으로 몬스터 종류 ID를 기존 등장 패킷 39번 필드에 연결했습니다. **7310054 → 10030은 사용자 제시 후보값이며 실제 19205 화면 표시는 미검증입니다.** DB 변경 없이 실행 폴더의 `config/npc_class_id.properties`로 테스트합니다. 전체 Java 1,692개 컴파일과 실제 송신기/팩토리 세 경로·15개 ID 조합 검사를 통과했습니다. 적용 후 전체 Clean/Rebuild·재시작하고 진행 중인 주간 카드 대상으로 확인하세요. 설정 0으로 끄고 재시작하면 비교할 수 있습니다.
+
+---
+
 ## 2026-11-04 — 첨부 DB의 테이블 기준 소스 정리
 
 [전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/DB_Table_Cleanup_20261104_FULL_SRC.zip) · [수정·삭제 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/DB_Table_Cleanup_20261104_PATCH.zip) · [변경·검증·적용 안내](DB_TABLE_CLEANUP_20261104.md)
