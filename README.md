@@ -1,3 +1,13 @@
+## 2026-11-04 — 아이템 사용 처리 리팩토링 V3
+
+[전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Item_Use_Refactor_V3_20261104_FULL_SRC.zip) · [누적 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Item_Use_Refactor_V3_20261104_PATCH.zip) · [구조·검증·적용 안내](ITEM_USE_REFACTOR_V3_20261104.md)
+
+4,768줄에 몰린 아이템 사용 흐름을 대상 해석·조건 검사·선행 처리·효과 분기·정상 후처리로 분리했습니다. 진행 순서는 35줄 서비스에서 읽을 수 있고, 효과 코드는 종류별 10개 모듈과 기존 함수에 남겼습니다. 확장 시스템 우선순위, 204개 분기의 실행 코드·게임 문자열·조기 종료 차이를 보존했습니다. 소모/예약 공통부 V2와 기존 NPC·자동사냥 수정도 포함합니다.
+
+대상 해석 51,240개 입력 비교, 사용 흐름 12건·트랜잭션 27건·장비 14건, 전체 Java 1,723개 컴파일 통과. 실제 클라이언트·운영 DB의 전체 아이템 사용 및 운영 성능은 미검증입니다. **PATCH는 Java 45개(신규 21개 포함)를 모두 적용하고 JDK 21 / UTF-8 / `--enable-preview`로 Clean/Rebuild·재시작하세요.**
+
+---
+
 ## 2026-11-03 — 자동사냥 타깃 안정화·NPC 예약 길막 대기 수정
 
 [전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Target_Stability_Chase_Pause_Fix_20261103_FULL_SRC.zip) · [Java 4개 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Target_Stability_Chase_Pause_Fix_20261103_PATCH.zip) · [적용·검증 안내](TARGET_STABILITY_CHASE_PAUSE_FIX_20261103.md)
