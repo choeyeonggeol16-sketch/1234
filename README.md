@@ -1,3 +1,15 @@
+## 2026-11-03 — 자동사냥 타깃 왕복·정지 / NPC 길막 추적 복구
+
+- [전체 수정 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Chase_Recovery_Fix_20261103_FULL_SRC.zip)
+- [변경 Java 8개 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Chase_Recovery_Fix_20261103_PATCH.zip)
+- [원인·검증·적용 안내](CHASE_RECOVERY_FIX_20261103.md)
+
+자동사냥 시작 때 이미 보이는 몬스터를 후보에 넣고, 뒤 몹 추적 중 공격 가능한 앞 몹을 우선하도록 수정했습니다. 막힌 대상의 즉시 재선택을 보류하고 실제 좌표의 정지·짧은 왕복을 감지해 THINK로 복구합니다. NPC는 근접/원거리의 몸체 충돌과 경로 실패에도 기존 우회 탐색을 연결해 앞 몹이 살아 있는 동안 열린 옆길로 접근합니다. 우회할 공간이 없는 한 칸 통로에서는 기존 충돌을 지킵니다.
+
+자동사냥 새 회귀 24건·NPC 새 회귀 10건, 기존 검사를 포함한 17개 테스트 스크립트와 전체 Java 1,702개 파일 컴파일을 통과했습니다. 실제 DB·클라이언트 장면과 운영 부하는 미검증입니다. **패치의 신규 클래스 포함 Java 8개를 모두 적용하고 JDK 21 / UTF-8 / `--enable-preview`로 Clean/Rebuild·재시작하세요.** 전체 소스는 이전 NPC·스프라이트 수정도 포함하는 공개 main 기준입니다.
+
+---
+
 ## 2026-11-03 — 변신/스프라이트 액션 배열 메모리 절감
 
 - [한 파일 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Sprite_Action_Memory_Fix_20261103_PATCH.zip)
