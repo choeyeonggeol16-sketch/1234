@@ -1,3 +1,15 @@
+## 2026-11-03 — NPC 추적 중 800ms 강제 멈춤 제거
+
+- [한 파일 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_Chase_Cadence_Fix_20261103_PATCH.zip)
+- [직전 타깃 전환 수정 포함 전체 소스](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_Chase_Cadence_Fix_20261103_FULL_SRC.zip)
+- [원인·검증·적용 안내](NPC_CHASE_CADENCE_FIX_20261103.md)
+
+`SetMoving.java`에서 한 칸 이동 성공 후 정상 보행 간격을 최소 800ms로 덮어쓰던 처리를 제거했습니다. ThreadLocal 경로 탐색기나 NPC ID 캐시 슬롯이 바뀌면 최초 표시가 다시 설정되어 같은 타깃 추적 중에도 멈칫할 수 있었습니다. 이제 표시는 소진하되 정상 보행 간격을 유지합니다. 길막/경로 실패의 대기와 타깃·어그로 판정은 유지하며, 실제 관찰된 모든 멈춤의 유일한 원인으로 확정한 것은 아닙니다.
+
+전체 Java 1,701개 타입 컴파일을 통과했습니다. 실제 서버/클라이언트 장면은 미검증입니다. **기존 소스에 패치의 SetMoving.java를 교체하고 JDK 21 / UTF-8 / `--enable-preview`로 Clean/Rebuild하세요.**
+
+---
+
 ## 2026-11-03 — NPC 공격 중 새 공격자로 타깃 전환 수정
 
 - [수정된 전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_Attack_Retarget_Fix_20261103_FULL_SRC.zip)
