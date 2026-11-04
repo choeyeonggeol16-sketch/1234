@@ -1,3 +1,11 @@
+## 2026-11-04 — PC 스킬 효과 분리 V6
+
+[전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Pc_Skill_Effects_Refactor_V6_20261104_FULL_SRC.zip) · [V5 기준 Java 5개 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Pc_Skill_Effects_Refactor_V6_20261104_PATCH.zip) · [구조·검증·적용 안내](PC_SKILL_EFFECTS_REFACTOR_V6_20261104.md)
+
+L1PcInstance의 스킬·버프 64개를 패시브·잠재력·혈맹·수배의 정적 모듈 4개로 분리했습니다. PC에는 기존 공개 API의 한 줄 연결을 남겼고 잠재력 31종의 패킷 조립을 공통화했습니다. PC 코드는 9,922줄에서 8,825줄로 줄었습니다.
+
+전체 Java 1,707개 컴파일, 31,744개 효과 비교(잠재력 패킷 바이트 15,004개 상황 포함), PC 공개 API·필드·기타 멤버 보존 검사 통과. **PATCH는 V5 `95d0548` 기준이며 Java 5개를 모두 적용해야 합니다.** 캐릭터당 필드 구조와 기존 적용 순서는 유지합니다. 실게임 통합과 운영 성능은 별도 검증이 필요합니다.
+
 ## 2026-11-04 — 아이템 사용 리팩토링 V5
 
 [전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Item_Use_Refactor_V5_20261104_FULL_SRC.zip) · [V4 기준 Java 58개 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Item_Use_Refactor_V5_20261104_PATCH.zip) · [변경·검증·적용 안내](ITEM_USE_REFACTOR_V5_20261104.md)
