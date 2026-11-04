@@ -1,3 +1,11 @@
+## 2026-11-04 — PSS 금지 텔만 거절 V10
+
+[전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_V10_Teleport_Reject_Only_20261104_FULL_SRC.zip) · [V9 기준 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_V10_Teleport_Reject_Only_20261104_PATCH.zip) · [설명](PSS_V10_TELEPORT_REJECT_ONLY_20261104.md)
+
+금지된 텔레포트 때문에 PSS 전체를 중지하던 V9 처리를 제거했습니다. 텔만 거절하고 PSS 세션·mode·마감 시각을 유지하며 중지 통지를 보내지 않습니다. GM 맵 우회와 늦은 텔 완료 응답의 재이동 차단은 유지합니다. 사용자가 올린 인터서버 변경 3개 파일도 그대로입니다.
+
+매니페스트 포함. 전체 Java 1,709개 컴파일, PSS 13개 그룹·1,040개 단언 및 텔레포트 48개 단언 통과. 클라이언트 내부의 반복 시도 판단 자체를 수정한 패치는 아닙니다.
+
 ## 2026-11-04 — 최신 첨부 팩 PSS 텔레포트 수정 V9
 
 [전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_V9_LatestPack_Teleport_Fix_20261104_FULL_SRC.zip) · [첨부 팩 기준 Java 7개 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_V9_LatestPack_Teleport_Fix_20261104_PATCH.zip) · [변경·검증·적용 안내](PSS_V9_LATESTPACK_TELEPORT_FIX_20261104.md)
