@@ -1,0 +1,14 @@
+{
+  "csharp_compile": "PASS (Mono mcs)",
+  "syntax": "PASS (C# and PowerShell)",
+  "synthetic_tree_contract_checks": 17,
+  "read_only_api_audit": "PASS",
+  "live_game_verified": false,
+  "source": "instantiated Battle graph; not original client JSON",
+  "raw_uploaded_memory_included": false,
+  "max_graph_bytes_read": 262144,
+  "max_exported_graph_nodes": 256,
+  "max_depth": 24,
+  "max_children": 64,
+  "max_clients": 3
+}
