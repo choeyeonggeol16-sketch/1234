@@ -1,0 +1,25 @@
+{
+  "version": 3,
+  "csharp_compile": "PASS (Mono mcs)",
+  "syntax": "PASS (C# and PowerShell tree-sitter)",
+  "relative_call_bounds_contract": {
+    "result": "PASS",
+    "checks": 7
+  },
+  "v2_runtime_upload": {
+    "analyzed_code_pages": 56,
+    "static_data_pages": 2,
+    "phase": 3,
+    "running": 1,
+    "current_task": "Battle",
+    "primary_queue_count": 0,
+    "auxiliary_queue_count": 2
+  },
+  "read_only_api_audit": "PASS",
+  "v3_live_game_collection": "not yet verified",
+  "game_behavior_changes": false,
+  "max_code_bytes_per_client": 393216,
+  "max_static_data_bytes_per_client": 65536,
+  "max_clients": 3,
+  "uploaded_runtime_dump_published": false
+}
