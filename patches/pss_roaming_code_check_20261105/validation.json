@@ -1,0 +1,9 @@
+{
+  "csharp_compilation": "PASS",
+  "powershell_syntax": "PASS",
+  "address_bounds_checks": 7,
+  "read_only_apis": "PASS",
+  "pages_per_client_cap": 96,
+  "maximum_clients": 3,
+  "actual_windows_collection_verified": false
+}
