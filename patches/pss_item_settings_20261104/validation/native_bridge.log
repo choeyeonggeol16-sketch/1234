@@ -1,0 +1,9 @@
+ERROR: ld.so: object '/work/native/wine_mmap32.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+ERROR: ld.so: object '/work/native/wine_mmap32.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+fixture memory direct=558b ReadProcessMemory=1 count=10 error=126
+fixture signatures 0 0 0 0
+PSS item capability queued on the native game connection
+PSS item companion BOUND to the authenticated game session
+PSS item OPEN queued to the game UI thread
+RESULT nativeCtor=1 nativeDtor=1 frames=18 uiOpen=1 errors=0
+PASS actual PE32 native ABI + 18 bootstrap frames + token-bound OPEN; memory/TCP-owner/UI test adapters

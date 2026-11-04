@@ -1,0 +1,764 @@
+--- a/src/l1j/server/server/GMCommands.java
++++ b/src/l1j/server/server/GMCommands.java
+@@ -321,6 +321,12 @@
+ 		_gm = gm;
+ 
+ 		switch (cmd) {
++		case "psswindow":
++			l1j.server.server.model.character.pss.window.PlaySupportWindow.open(gm);
++			break;
++		case "pss2111":
++			l1j.server.server.model.character.pss.PlaySupport2019.gmProbe2111(gm, param);
++			break;
+ 		case "dd":
+ 			   String[] args = cmd.split(" ", 3);
+ 		        int sec = args.length > 1 ? Integer.parseInt(args[1]) : 60;
+--- a/src/l1j/server/server/model/character/pss/PlaySupport2019.java
++++ b/src/l1j/server/server/model/character/pss/PlaySupport2019.java
+@@ -21,8 +21,89 @@
+     private static final int LEGACY_EMPTY_MODE = 2; // LOCAL
+     private static final int VALID = 0, INVALID_MAP = 1, UNKNOWN_ERROR = 99;
+     private static final int TIME_EXPIRE = 3, USER_DEAD = 4;
++    private static final String[] SETTING_FIELDS = {
++        "mode", "off_condition_death", "off_condition_peace", "off_condition_comeback",
++        "tel_condition_hp", "tel_condition_peace", "tel_condition_surrounded",
++        "tel_condition_pvp", "exp_recovery"
++    };
+ 
+     private PlaySupport2019() {}
++
++    /** Explicit GM experiment: send the C->S settings ID in the opposite direction. */
++    public static void gmProbe2111(L1PcInstance gm, String param) {
++        if (gm == null || !gm.isGm()) return;
++        CIOClient client = gm.getNetConnection();
++        if (player(client) != gm) return;
++        int mode = 0;
++        String argument = param == null ? "" : param.trim();
++        if (!argument.isEmpty()) {
++            try {
++                mode = Integer.parseInt(argument);
++                if (mode < 1 || mode > 3) throw new NumberFormatException();
++            } catch (NumberFormatException invalid) {
++                SC_SystemMessage.send(gm, "사용법: .pss2111 또는 .pss2111 <1~3>");
++                return;
++            }
++        }
++        ProtoWriter out = Proto.begin(client, ProtoMsg.CS_CHANGE_PLAY_SUPPORT_SETTING_REQ, 32);
++        if (out == null) {
++            SC_SystemMessage.send(gm, "2111 테스트 패킷 생성 실패");
++            return;
++        }
++        final boolean admitted;
++        try {
++            if (mode != 0) out.msg(1).enumV(1, mode).end();
++            admitted = Proto.commit(out);
++        } finally {
++            Proto.abort(out);
++        }
++        LOG.info("[PSS-2111-TEST] S->C id=2111 body=" + (mode == 0 ? "empty" : "setting_info.mode=" + mode)
++                + " admitted=" + admitted + " player=" + gm.getId()
++                + " (experimental direction; not a verified UI-open packet)");
++        SC_SystemMessage.send(gm, "2111 테스트 전송큐 접수=" + admitted
++                + " / " + (mode == 0 ? "빈 본문" : "mode=" + mode));
++    }
++
++    /** Receive the one-way client setting request; observe it without starting either AI. */
++    public static void settings(CIOClient client, byte[] data, int offset, int length) {
++        L1PcInstance pc = player(client);
++        if (pc == null || !pc.isGm()) return;
++        final String fields;
++        try {
++            fields = parseSettings(reader(data, offset, length));
++        } catch (RuntimeException invalid) {
++            malformed(pc, 2111, data, offset, length, invalid);
++            return;
++        }
++        LOG.info("[PSS-2019] recv 2111 player=" + pc.getId() + " bytes=" + length
++                + " settings={" + fields + "} body64="
++                + HexFormat.of().formatHex(data, offset, offset + Math.min(length, 64)));
++        SC_SystemMessage.send(pc, "PSS 2111 설정 수신 확인. 서버 로그를 확인해 주세요.");
++    }
++
++    static String parseSettings(ProtoReader in) {
++        StringBuilder fields = new StringBuilder(192);
++        boolean found = false;
++        for (int tag; (tag = next(in)) != 0;) {
++            if (tag != 10) {
++                in.skip(tag & 7);
++                continue;
++            }
++            found = true;
++            ProtoReader settings = in.subReader();
++            for (int field; (field = next(settings)) != 0;) {
++                int number = field >>> 3;
++                if ((field & 7) == 0 && number >= 1 && number <= SETTING_FIELDS.length) {
++                    int value = settings.varint32();
++                    // These are observed values, not validated controls for the server AI.
++                    if (fields.length() != 0) fields.append(' ');
++                    fields.append(SETTING_FIELDS[number - 1]).append('=').append(value);
++                } else settings.skip(field & 7);
++            }
++        }
++        if (!found) throw new IllegalArgumentException("missing PSS setting_info");
++        return fields.length() == 0 ? "no known fields" : fields.toString();
++    }
+ 
+     public static void start(CIOClient client, byte[] data, int offset, int length) {
+         start(client, data, offset, length, System.nanoTime());
+--- /dev/null
++++ b/src/l1j/server/server/model/character/pss/window/PlaySupportWindow.java
+@@ -0,0 +1,212 @@
++package l1j.server.server.model.character.pss.window;
++
++import java.io.IOException;
++import java.net.InetSocketAddress;
++import java.util.Arrays;
++import java.util.concurrent.TimeUnit;
++import java.util.logging.Logger;
++import l1j.server.Config;
++import l1j.server.server.model.Instance.L1PcInstance;
++import l1j.server.server.model.network.core.CIOClient;
++import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
++import l1j.server.server.model.network.utill.ConnectionState;
++
++/** Item opens the existing native settings window; starting/stopping remains native PSS. */
++public final class PlaySupportWindow {
++    public static final int ITEM_ID = 900000901;
++    public static final String ITEM_NAME = "PSS 설정서";
++    public static final int REGISTER_START = 0x7DF0, REGISTER_COMMIT = 0x7DF1, REGISTER_BYTE = 0x7E00;
++    private static final Logger LOG = Logger.getLogger(PlaySupportWindow.class.getName());
++    private static volatile PssWindowTransport transport;
++    private static long retryAt;
++    private static boolean shutdownHookInstalled;
++
++    private PlaySupportWindow() { }
++
++    private static L1PcInstance player(CIOClient client) {
++        if (client == null || !client.isConnected() || !client.isGameSessionReady()
++                || client.getConnectionState() != ConnectionState.IN_GAME) return null;
++        L1PcInstance pc = client.getActiveChar();
++        return pc != null && pc.getNetConnection() == client && !pc.isLogoutStarted() ? pc : null;
++    }
++
++    private static boolean empty(byte[] data, int offset, int length) {
++        if (data == null || offset < 0 || length < 0 || length > 2 || offset > data.length - length) return false;
++        for (int i = 0; i < length; i++) if (data[offset + i] != 0) return false;
++        return true;
++    }
++
++    public static void registerStart(CIOClient client, byte[] data, int offset, int length) {
++        L1PcInstance pc = player(client);
++        if (pc != null && empty(data, offset, length)) client.pssWindowSession().begin(pc);
++    }
++
++    public static void registerByte(CIOClient client, int value, byte[] data, int offset, int length) {
++        Session session = client == null ? null : client.peekPssWindowSession();
++        if (session != null && empty(data, offset, length)) session.append(value);
++    }
++
++    public static void registerCommit(CIOClient client, byte[] data, int offset, int length) {
++        Session session = client == null ? null : client.peekPssWindowSession();
++        if (session != null && empty(data, offset, length)) session.commit();
++    }
++
++    /** Source-only companion fallback. Consume before any chat broadcast or command logging. */
++    public static boolean handleLinkCommand(L1PcInstance pc, String message) {
++        String prefix = ".psslink";
++        if (message == null || !message.regionMatches(true, 0, prefix, 0, prefix.length())
++                || message.length() > prefix.length() && !Character.isWhitespace(message.charAt(prefix.length()))) return false;
++        CIOClient client = pc == null ? null : pc.getNetConnection();
++        if (pc == null || player(client) != pc) return true;
++        String hex = message.substring(prefix.length()).trim();
++        byte[] token = new byte[16];
++        boolean valid = hex.length() == token.length * 2;
++        for (int i = 0; valid && i < token.length; i++) {
++            int high = Character.digit(hex.charAt(i * 2), 16), low = Character.digit(hex.charAt(i * 2 + 1), 16);
++            valid = high >= 0 && low >= 0;
++            token[i] = (byte) (high << 4 | low);
++        }
++        if (!valid) SC_SystemMessage.send(pc, "연결 도구에 표시된 .psslink 명령을 그대로 입력해 주세요.");
++        else if (client.pssWindowSession().link(pc, token))
++            SC_SystemMessage.send(pc, "PSS 창 연결 등록 완료. 연결 도구의 READY 확인 후 설정서를 사용하세요.");
++        else SC_SystemMessage.send(pc, "PSS 창 연결 등록 실패. 잠시 후 다시 입력해 주세요.");
++        Arrays.fill(token, (byte) 0);
++        return true;
++    }
++
++    public static boolean open(L1PcInstance pc) {
++        CIOClient client = pc == null ? null : pc.getNetConnection();
++        if (player(client) != pc || pc == null) return false;
++        Session session = client.peekPssWindowSession();
++        PssWindowTransport.Peer peer = session == null ? null : session.peer;
++        boolean queued = peer != null && peer.requestOpen();
++        if (!queued) SC_SystemMessage.send(pc, "PSS 연결을 확인한 뒤 다시 사용해 주세요.");
++        else LOG.info("[PSS-WINDOW] item/window request queued player=" + pc.getId());
++        return queued;
++    }
++
++    private static synchronized PssWindowTransport transport() {
++        if (transport != null && transport.isOpen()) return transport;
++        long now = System.nanoTime();
++        if (retryAt != 0 && now - retryAt < 0) return null;
++        int port = Integer.getInteger("pss.uiBridge.port", Config.GAME_SERVER_PORT + 1);
++        PssWindowTransport created = null;
++        try {
++            if (port < 1 || port > 65535) throw new IOException("invalid companion port");
++            created = new PssWindowTransport(new InetSocketAddress(port), 4096);
++            if (!shutdownHookInstalled) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
++                    PssWindowTransport current = transport;
++                    if (current != null) current.close();
++                }, "RKern-PSS-UI-shutdown"));
++                shutdownHookInstalled = true;
++            }
++            transport = created;
++            retryAt = 0;
++            LOG.info("[PSS-WINDOW] companion listening port=" + created.port());
++        } catch (IOException | RuntimeException failure) {
++            if (created != null) created.close();
++            retryAt = now + TimeUnit.SECONDS.toNanos(10);
++            LOG.warning("[PSS-WINDOW] companion unavailable: " + failure.getMessage());
++        }
++        return transport;
++    }
++
++    /** Allocated only for clients advertising the native helper capability. */
++    public static final class Session implements PssWindowTransport.Owner, AutoCloseable {
++        private final CIOClient client;
++        private final byte[] bytes = new byte[16];
++        private int count = -1;
++        private long deadline, lastBegin;
++        private volatile int stamp, characterId;
++        private volatile boolean closed;
++        private PssWindowTransport.Token pending;
++        private volatile PssWindowTransport.Peer peer;
++
++        public Session(CIOClient client) { this.client = client; }
++
++        private synchronized void begin(L1PcInstance pc) {
++            long now = System.nanoTime();
++            count = -1;
++            if (closed || player(client) != pc || lastBegin != 0 && now - lastBegin < TimeUnit.SECONDS.toNanos(1)) return;
++            cancelPending();
++            lastBegin = now;
++            stamp = pc.getSessionStamp();
++            characterId = pc.getId();
++            deadline = now + TimeUnit.SECONDS.toNanos(5);
++            count = 0;
++            Arrays.fill(bytes, (byte) 0);
++        }
++
++        private synchronized void append(int value) {
++            if (count < 0 || count >= bytes.length || value < 0 || value > 255 || !valid() || System.nanoTime() - deadline >= 0) {
++                count = -1;
++                return;
++            }
++            bytes[count++] = (byte) value;
++        }
++
++        private synchronized boolean commit() {
++            if (count != bytes.length || !valid() || System.nanoTime() - deadline >= 0) { count = -1; return false; }
++            count = -1;
++            PssWindowTransport server = transport();
++            if (server == null) return false;
++            PssWindowTransport.Token token = PssWindowTransport.Token.from(bytes);
++            pending = token;
++            if (!server.register(token, this)) { pending = null; return false; }
++            return true;
++        }
++
++        private synchronized boolean link(L1PcInstance pc, byte[] token) {
++            begin(pc);
++            if (count != 0) return false;
++            System.arraycopy(token, 0, bytes, 0, bytes.length);
++            count = bytes.length;
++            return commit();
++        }
++
++        @Override public boolean valid() {
++            L1PcInstance pc = player(client);
++            return !closed && pc != null && pc.getId() == characterId && pc.getSessionStamp() == stamp;
++        }
++
++        @Override public String remoteIp() { return client.getIp(); }
++
++        @Override public boolean attach(PssWindowTransport.Token token, PssWindowTransport.Peer attached) {
++            PssWindowTransport.Peer old;
++            synchronized (this) {
++                if (!valid() || pending == null || !pending.equals(token)) return false;
++                pending = null;
++                old = peer;
++                peer = attached;
++            }
++            if (old != null && old != attached) old.close();
++            LOG.info("[PSS-WINDOW] companion bound player=" + characterId);
++            return true;
++        }
++
++        @Override public synchronized void detach(PssWindowTransport.Peer detached) {
++            if (peer == detached) peer = null;
++        }
++
++        private void cancelPending() {
++            PssWindowTransport server = transport;
++            if (server != null && pending != null) server.cancel(pending, this);
++            pending = null;
++        }
++
++        @Override public void close() {
++            PssWindowTransport.Peer old;
++            synchronized (this) {
++                if (closed) return;
++                closed = true;
++                count = -1;
++                cancelPending();
++                old = peer;
++                peer = null;
++                Arrays.fill(bytes, (byte) 0);
++            }
++            if (old != null) old.close();
++        }
++    }
++}
+--- /dev/null
++++ b/src/l1j/server/server/model/character/pss/window/PssWindowTransport.java
+@@ -0,0 +1,311 @@
++package l1j.server.server.model.character.pss.window;
++
++import java.io.IOException;
++import java.net.InetSocketAddress;
++import java.net.StandardSocketOptions;
++import java.nio.ByteBuffer;
++import java.nio.channels.AsynchronousChannelGroup;
++import java.nio.channels.AsynchronousServerSocketChannel;
++import java.nio.channels.AsynchronousSocketChannel;
++import java.nio.channels.CompletionHandler;
++import java.util.Set;
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.concurrent.Executors;
++import java.util.concurrent.ScheduledExecutorService;
++import java.util.concurrent.TimeUnit;
++import java.util.concurrent.atomic.AtomicBoolean;
++import java.util.concurrent.atomic.AtomicInteger;
++import java.util.function.LongSupplier;
++
++/** Authenticated, window-only companion channel; never accepts gameplay commands. */
++public final class PssWindowTransport implements AutoCloseable {
++    public static final byte OPEN = 1, PING = 2, BOUND = 16;
++    private static final byte[] HELLO = {'P', 'S', 'S', 'U', 'I', 1, 0, 0};
++    private static final long REGISTER_TTL = TimeUnit.SECONDS.toNanos(15);
++    private static final long HELLO_TTL = TimeUnit.SECONDS.toNanos(5);
++    private static final long IDLE_TTL = TimeUnit.SECONDS.toNanos(45);
++
++    public record Token(long high, long low) {
++        public static Token from(byte[] bytes) {
++            if (bytes.length != 16) throw new IllegalArgumentException("token length");
++            long high = 0, low = 0;
++            for (int i = 0; i < 8; i++) high = high << 8 | bytes[i] & 255L;
++            for (int i = 8; i < 16; i++) low = low << 8 | bytes[i] & 255L;
++            return new Token(high, low);
++        }
++    }
++
++    public interface Owner {
++        boolean valid();
++        String remoteIp();
++        boolean attach(Token token, Peer peer);
++        void detach(Peer peer);
++    }
++
++    private record Registration(Owner owner, long expires) {}
++    private final ConcurrentHashMap<Token, Registration> pending = new ConcurrentHashMap<>();
++    private final ConcurrentHashMap<Token, Peer> waiting = new ConcurrentHashMap<>();
++    private final Set<Peer> peers = ConcurrentHashMap.newKeySet();
++    private final AtomicInteger connections = new AtomicInteger();
++    private final AtomicBoolean closed = new AtomicBoolean();
++    private final AsynchronousChannelGroup group;
++    private final AsynchronousServerSocketChannel listener;
++    private final ScheduledExecutorService sweeper;
++    private final LongSupplier clock;
++    private final int capacity;
++
++    public PssWindowTransport(InetSocketAddress address, int capacity) throws IOException {
++        this(address, capacity, System::nanoTime);
++    }
++
++    PssWindowTransport(InetSocketAddress address, int capacity, LongSupplier clock) throws IOException {
++        if (capacity < 1) throw new IllegalArgumentException("capacity");
++        this.capacity = capacity;
++        this.clock = clock;
++        group = AsynchronousChannelGroup.withFixedThreadPool(2, task -> {
++            Thread thread = new Thread(task, "RKern-PSS-UI");
++            thread.setDaemon(true);
++            return thread;
++        });
++        try {
++            listener = AsynchronousServerSocketChannel.open(group).bind(address);
++        } catch (IOException failure) {
++            group.shutdownNow();
++            throw failure;
++        }
++        sweeper = Executors.newSingleThreadScheduledExecutor(task -> {
++            Thread thread = new Thread(task, "RKern-PSS-UI-expiry");
++            thread.setDaemon(true);
++            return thread;
++        });
++        sweeper.scheduleWithFixedDelay(this::sweep, 1, 1, TimeUnit.SECONDS);
++        accept();
++    }
++
++    public int port() throws IOException {
++        return ((InetSocketAddress) listener.getLocalAddress()).getPort();
++    }
++
++    public boolean isOpen() { return !closed.get(); }
++
++    public boolean register(Token token, Owner owner) {
++        if (closed.get() || !owner.valid() || pending.size() >= capacity) return false;
++        Registration entry = new Registration(owner, clock.getAsLong() + REGISTER_TTL);
++        if (pending.putIfAbsent(token, entry) != null) return false;
++        if (closed.get() || !owner.valid()) {
++            pending.remove(token, entry);
++            return false;
++        }
++        Peer peer = waiting.remove(token);
++        if (peer != null) {
++            Registration claimed = pending.remove(token);
++            if (claimed != null) bind(peer, token, claimed);
++        }
++        return true;
++    }
++
++    public void cancel(Token token, Owner owner) {
++        if (token == null) return;
++        Registration entry = pending.get(token);
++        if (entry != null && entry.owner() == owner) pending.remove(token, entry);
++        Peer peer = waiting.remove(token);
++        if (peer != null) peer.close();
++    }
++
++    private void accept() {
++        if (closed.get()) return;
++        try {
++        listener.accept(null, new CompletionHandler<AsynchronousSocketChannel, Void>() {
++            @Override public void completed(AsynchronousSocketChannel channel, Void ignored) {
++                if (closed.get()) { closeChannel(channel); return; }
++                accept();
++                if (connections.incrementAndGet() > capacity) {
++                    connections.decrementAndGet();
++                    closeChannel(channel);
++                    return;
++                }
++                Peer peer = new Peer(channel);
++                peers.add(peer);
++                if (closed.get()) peer.close();
++                else {
++                    try {
++                        channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
++                        channel.setOption(StandardSocketOptions.SO_SNDBUF, 4096);
++                        channel.setOption(StandardSocketOptions.SO_RCVBUF, 4096);
++                        peer.readHello();
++                    } catch (IOException | RuntimeException failure) { peer.close(); }
++                }
++            }
++            @Override public void failed(Throwable failure, Void ignored) {
++                if (!closed.get()) close();
++            }
++        });
++        } catch (RuntimeException failure) {
++            if (!closed.get()) close();
++        }
++    }
++
++    private static void closeChannel(AsynchronousSocketChannel channel) {
++        try { channel.close(); } catch (IOException ignored) { }
++    }
++
++    private void bind(Peer peer, Token token, Registration registration) {
++        try {
++            Owner owner = registration.owner();
++            String ip = ((InetSocketAddress) peer.channel.getRemoteAddress()).getAddress().getHostAddress();
++            if (closed.get() || clock.getAsLong() >= registration.expires()
++                    || !owner.valid() || !owner.remoteIp().equals(ip) || peer.stopped.get()) {
++                peer.close();
++                return;
++            }
++            peer.owner = owner;
++            peer.ackPending.set(true);
++            if (!peer.bound.compareAndSet(false, true) || !owner.attach(token, peer)) {
++                peer.close();
++                return;
++            }
++            peer.drain();
++        } catch (RuntimeException | IOException failure) {
++            peer.close();
++        }
++    }
++
++    void sweep() {
++        long now = clock.getAsLong();
++        pending.forEach((token, registration) -> {
++            if (now >= registration.expires() || !registration.owner().valid())
++                pending.remove(token, registration);
++        });
++        for (Peer peer : peers) {
++            if (!peer.bound.get() ? now - peer.created >= HELLO_TTL
++                    : now - peer.lastSeen >= IDLE_TTL || !peer.owner.valid()) peer.close();
++        }
++    }
++
++    int pendingCount() { return pending.size(); }
++    int waitingCount() { return waiting.size(); }
++    int connectionCount() { return connections.get(); }
++
++    @Override public void close() {
++        if (!closed.compareAndSet(false, true)) return;
++        try { listener.close(); } catch (IOException ignored) { }
++        for (Peer peer : peers) peer.close();
++        pending.clear();
++        waiting.clear();
++        sweeper.shutdownNow();
++        try { group.shutdownNow(); } catch (IOException ignored) { }
++    }
++
++    public final class Peer implements AutoCloseable {
++        private final AsynchronousSocketChannel channel;
++        private final ByteBuffer input = ByteBuffer.allocate(24);
++        private final ByteBuffer output = ByteBuffer.allocate(1);
++        private final AtomicBoolean stopped = new AtomicBoolean();
++        private final AtomicBoolean bound = new AtomicBoolean();
++        private final AtomicBoolean ackPending = new AtomicBoolean();
++        private final AtomicBoolean openPending = new AtomicBoolean();
++        private final AtomicBoolean writing = new AtomicBoolean();
++        private final long created = clock.getAsLong();
++        private volatile long lastSeen = created;
++        private volatile Owner owner;
++        private volatile Token token;
++
++        private Peer(AsynchronousSocketChannel channel) { this.channel = channel; }
++
++        private void readHello() {
++            if (stopped.get()) return;
++            try {
++            channel.read(input, null, new CompletionHandler<Integer, Void>() {
++                @Override public void completed(Integer count, Void ignored) {
++                    if (count < 0 || stopped.get()) { close(); return; }
++                    if (input.hasRemaining()) { readHello(); return; }
++                    input.flip();
++                    for (byte expected : HELLO) if (input.get() != expected) { close(); return; }
++                    token = new Token(input.getLong(), input.getLong());
++                    if (waiting.putIfAbsent(token, Peer.this) != null) { close(); return; }
++                    if (stopped.get() || closed.get()) {
++                        waiting.remove(token, Peer.this);
++                        close();
++                        return;
++                    }
++                    Registration registration = pending.remove(token);
++                    if (registration != null) {
++                        waiting.remove(token, Peer.this);
++                        bind(Peer.this, token, registration);
++                    }
++                    input.clear().limit(1);
++                    readPing();
++                }
++                @Override public void failed(Throwable failure, Void ignored) { close(); }
++            });
++            } catch (RuntimeException failure) { close(); }
++        }
++
++        private void readPing() {
++            if (stopped.get()) return;
++            try {
++            channel.read(input, null, new CompletionHandler<Integer, Void>() {
++                @Override public void completed(Integer count, Void ignored) {
++                    if (count < 0 || stopped.get()) { close(); return; }
++                    if (count > 0) {
++                        if (input.get(0) != PING) { close(); return; }
++                        lastSeen = clock.getAsLong();
++                    }
++                    input.clear().limit(1);
++                    readPing();
++                }
++                @Override public void failed(Throwable failure, Void ignored) { close(); }
++            });
++            } catch (RuntimeException failure) { close(); }
++        }
++
++        /** Coalesce repeated clicks; never block a game I/O completion thread. */
++        public boolean requestOpen() {
++            Owner current = owner;
++            if (closed.get() || stopped.get() || !bound.get() || current == null || !current.valid()) return false;
++            openPending.set(true);
++            drain();
++            return !stopped.get();
++        }
++
++        private void drain() {
++            if (stopped.get() || !writing.compareAndSet(false, true)) return;
++            byte command = ackPending.getAndSet(false) ? BOUND : openPending.getAndSet(false) ? OPEN : 0;
++            if (command == 0) {
++                writing.set(false);
++                if (ackPending.get() || openPending.get()) drain();
++                return;
++            }
++            output.clear().put(command).flip();
++            write();
++        }
++
++        private void write() {
++            if (stopped.get()) return;
++            try {
++            channel.write(output, null, new CompletionHandler<Integer, Void>() {
++                @Override public void completed(Integer count, Void ignored) {
++                    if (count < 0 || stopped.get()) { close(); return; }
++                    if (output.hasRemaining()) { write(); return; }
++                    writing.set(false);
++                    drain();
++                }
++                @Override public void failed(Throwable failure, Void ignored) { close(); }
++            });
++            } catch (RuntimeException failure) { close(); }
++        }
++
++        @Override public void close() {
++            if (!stopped.compareAndSet(false, true)) return;
++            closeChannel(channel);
++            peers.remove(this);
++            connections.decrementAndGet();
++            Token key = token;
++            if (key != null) waiting.remove(key, this);
++            Owner current = owner;
++            if (current != null) {
++                try { current.detach(this); } catch (RuntimeException ignored) { }
++            }
++        }
++    }
++}
+--- a/src/l1j/server/server/model/item/function/ItemUseExtensions.java
++++ b/src/l1j/server/server/model/item/function/ItemUseExtensions.java
+@@ -25,6 +25,13 @@
+     public static void use(CIOClient client, L1PcInstance pc, L1ItemInstance item,
+             int itemObjectId, int targetId, int x, int y, String name, int skillId) {
+         int itemId = item.getItem().getItemId();
++        if (itemId == l1j.server.server.model.character.pss.window.PlaySupportWindow.ITEM_ID
++                && l1j.server.server.model.character.pss.window.PlaySupportWindow.ITEM_NAME.equals(item.getItem().getName())) {
++            if (pc == null || client == null || pc.getNetConnection() != client
++                    || client.getActiveChar() != pc || pc.getInventory().getItem(item.getId()) != item) return;
++            l1j.server.server.model.character.pss.window.PlaySupportWindow.open(pc);
++            return;
++        }
+ 
+         if (CIOThreadCallback.isWorldTickWand(itemId)) {
+             CIOThreadCallback.getInstance().markWandActive(pc, item, targetId, x, y);
+--- a/src/l1j/server/server/model/network/core/CIOClient.java
++++ b/src/l1j/server/server/model/network/core/CIOClient.java
+@@ -254,11 +254,29 @@
+         if (_activeChar != pc || pc == null) {
+             _gameSessionReady = false;
+             automationSession = null;
++            clearPssWindowSession();
+         }
+ 		_activeChar = pc;
+ 	}
+ 
+     private volatile ClientAutomationSession automationSession;
++    private volatile l1j.server.server.model.character.pss.window.PlaySupportWindow.Session pssWindowSession;
++
++    public l1j.server.server.model.character.pss.window.PlaySupportWindow.Session peekPssWindowSession() {
++        return pssWindowSession;
++    }
++
++    public synchronized l1j.server.server.model.character.pss.window.PlaySupportWindow.Session pssWindowSession() {
++        if (pssWindowSession == null)
++            pssWindowSession = new l1j.server.server.model.character.pss.window.PlaySupportWindow.Session(this);
++        return pssWindowSession;
++    }
++
++    private void clearPssWindowSession() {
++        final var current = pssWindowSession;
++        pssWindowSession = null;
++        if (current != null) current.close();
++    }
+     private volatile boolean clientPssMapRules;
+     private static final AtomicReferenceFieldUpdater<CIOClient, ClientAutomationSession> AUTOMATION =
+             AtomicReferenceFieldUpdater.newUpdater(CIOClient.class, ClientAutomationSession.class, "automationSession");
+@@ -297,6 +315,7 @@
+     public void clearGameSessionReady() {
+         _gameSessionReady = false;
+         automationSession = null;
++        clearPssWindowSession();
+     }
+ 
+ 	public L1PcInstance getActiveChar() {
+@@ -552,7 +571,10 @@
+ 	}
+ 
+ 	public void setConnectionState(ConnectionState connectionState) {
+-        if (connectionState != ConnectionState.IN_GAME) _gameSessionReady = false;
++        if (connectionState != ConnectionState.IN_GAME) {
++            _gameSessionReady = false;
++            clearPssWindowSession();
++        }
+ 		_connectionState = connectionState;
+ 	}
+ 
+--- a/src/l1j/server/server/model/network/core/cs/packet/CS_Chat.java
++++ b/src/l1j/server/server/model/network/core/cs/packet/CS_Chat.java
+@@ -25,6 +25,8 @@
+         if (pc == null) {
+             return;
+         }
++
++        if (l1j.server.server.model.character.pss.window.PlaySupportWindow.handleLinkCommand(pc, chatText)) return;
+ 
+         handleWorldChat(pc, chatText);
+     }
+@@ -83,4 +85,4 @@
+             }
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java
++++ b/src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java
+@@ -415,6 +415,8 @@
+ 				return;
+ 			}
+ 
++			if (l1j.server.server.model.character.pss.window.PlaySupportWindow.handleLinkCommand(pc, message)) return;
++
+ 			if (!pc.isGm() && (pc.isGhost() || StadiumManager.getInstance().is_on_stadium(pc.getMapId()))) {
+ 				SC_SystemMessage.send(pc, "현재 채팅을 하실 수 없는 상태입니다.");
+ 				return;
+--- a/src/l1j/server/server/packets/Protocol/CSProto.java
++++ b/src/l1j/server/server/packets/Protocol/CSProto.java
+@@ -138,6 +138,18 @@
+                 l1j.server.server.model.character.pss.PlaySupport2019::finish);
+         t.putRaw(ProtoMsg.CS_PSS_TIME_CHECK_REQ,
+                 l1j.server.server.model.character.pss.PlaySupport2019::time);
++        t.putRaw(ProtoMsg.CS_CHANGE_PLAY_SUPPORT_SETTING_REQ,
++                l1j.server.server.model.character.pss.PlaySupport2019::settings);
++        t.putRaw(l1j.server.server.model.character.pss.window.PlaySupportWindow.REGISTER_START,
++                l1j.server.server.model.character.pss.window.PlaySupportWindow::registerStart);
++        t.putRaw(l1j.server.server.model.character.pss.window.PlaySupportWindow.REGISTER_COMMIT,
++                l1j.server.server.model.character.pss.window.PlaySupportWindow::registerCommit);
++        for (int value = 0; value < 256; value++) {
++            final int octet = value;
++            t.putRaw(l1j.server.server.model.character.pss.window.PlaySupportWindow.REGISTER_BYTE | octet,
++                    (client, data, offset, length) ->
++                        l1j.server.server.model.character.pss.window.PlaySupportWindow.registerByte(client, octet, data, offset, length));
++        }
+ 
+         t.putReader(ProtoMsg.CS_HIBREED_AUTH_REQ, (c, in) -> {
+             long reserved = -1L;
+--- a/src/l1j/server/server/packets/Protocol/ProtoMsg.java
++++ b/src/l1j/server/server/packets/Protocol/ProtoMsg.java
+@@ -18,6 +18,7 @@
+     public static final int SC_FORCE_FINISH_PLAY_SUPPORT_NOTI = 0x0839;
+     public static final int CS_PSS_TIME_CHECK_REQ           = 0x083A;
+     public static final int SC_PSS_TIME_CHECK_ACK           = 0x083B;
++    public static final int CS_CHANGE_PLAY_SUPPORT_SETTING_REQ = 0x083F;
+ 
+     // ═══════════ SC — 서버 → 클라 ═══════════
+ 

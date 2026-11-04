@@ -1,0 +1,2 @@
+PASS actual C# companion wire code + Java transport + window-only callback
+PASS native sender bootstrap + bound control + window-only command frames=18

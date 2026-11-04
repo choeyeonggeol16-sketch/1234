@@ -1,0 +1,76 @@
+{
+  "created_utc": "2026-11-04T10:19:49.043076+00:00",
+  "baseline_upload_sha256": "a7fc9fbeb927bf3a2c5c45a36e4415c3dc1fd4286d14837b3746fc1f84110b7d",
+  "unified_patch_applies_to_exact_upload": true,
+  "full_java_source_count": 1711,
+  "full_java_compile": "PASS (existing deprecation/removal warnings)",
+  "pss_contract": {
+    "groups": 18,
+    "assertions": 1116,
+    "automation_claim_races": 300,
+    "result": "PASS"
+  },
+  "transport_contract": {
+    "groups": 9,
+    "assertions": 44,
+    "result": "PASS"
+  },
+  "native_compile": "PASS PE32 / -Wall -Wextra -Werror",
+  "native_bridge_test": {
+    "result": "PASS",
+    "ctor": 1,
+    "dtor": 1,
+    "frames": 18,
+    "ui_requests": 1,
+    "test_doubles": [
+      "self memory read (QEMU guest mapping)",
+      "TCP owner table",
+      "UI PostMessage receiver"
+    ],
+    "real_tested": [
+      "Win32 PE32 thiscall/cdecl ABI",
+      "CNG nonce generation",
+      "WinSock companion worker",
+      "bootstrap ordering",
+      "BOUND before OPEN"
+    ]
+  },
+  "source_companion_csharp_compile_and_java_transport": "PASS",
+  "user_previously_confirmed_native_window_and_start": true,
+  "new_item_in_real_windows_game_verified": false,
+  "protected_upload_files": {
+    "src/l1j/server/server/model/network/core/DominationHybrid.java": "0c8a915e4b9e90254b51697a93ba40e1fe52b3a90f42eac5eb445ed8343fd822",
+    "src/l1j/server/MJActionListener/ActionListenerLoader.java": "5b05ea45d5d062d59fe7ea1845e862bf2964876695e00801bc17e28b55c8f120",
+    "src/l1j/server/server/model/network/core/CIOUserSocket.java": "82dc48263e16389d0fcd0419f0b23ddc90fa821cbfc2e6a17331f93e170f8d48",
+    "src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java": "d6f20d3314df416049ffb4a9bed05119b7a712c382cbde3ff2ea514460706b9a"
+  },
+  "changed_upload_paths": [
+    "src/l1j/server/server/GMCommands.java",
+    "src/l1j/server/server/model/character/pss/PlaySupport2019.java",
+    "src/l1j/server/server/model/character/pss/window/PlaySupportWindow.java",
+    "src/l1j/server/server/model/character/pss/window/PssWindowTransport.java",
+    "src/l1j/server/server/model/item/function/ItemUseExtensions.java",
+    "src/l1j/server/server/model/network/core/CIOClient.java",
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Chat.java",
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    "src/l1j/server/server/packets/Protocol/CSProto.java",
+    "src/l1j/server/server/packets/Protocol/ProtoMsg.java"
+  ],
+  "client_sha256": {
+    "Pss2019.dll": "c927807987870bc876f4eaf5d75185a7ce901d8f64ef3c8e7bff3a55be6b6363",
+    "Pss2019.ini": "894b4badc8b51a0eb0101f2d000e5d42a114ad6edb6d72605b4de11601d11913",
+    "PssButton.exe": "4ea38841ffbdaeb9f79c55fd0bf39c2473183742ffab34993d294526aefd8839",
+    "source-link/PSS_Item_Link.ps1": "2907d4bb5330410292090b36ad8864681089fefb60bd87aa19d54659dc887c9a",
+    "source-link/PSS_Open_Now.cmd": "fc1b8953f317aaf8664f37a7a2ba293bbaf668956889811633a71166c3b37eab",
+    "source-link/PSS_Item_Link.cmd": "2d5db1b346e26de3dfac17845d3626251cddcfcac15df464393854a146b25897",
+    "source-link/PSS_Open_Now.ps1": "052c0cc82ac0b80e37df2106eadffea260ea40ea79e2511bf48f3a2487db4885",
+    "source-link/PSS_Item_Link.cs": "6e379590943add653960aad0932ee95c3150e8a6928d7d84894a3b4356692b9d",
+    "source/PssBridge.h": "4cbe27422cf3bb5a70907aaea0b482a3180d45a4d69b9a51f6bb08b87da11625",
+    "source/PssBridge.c": "96d703822cc6147f7294cc525c60f9f1a74a232ceb946f1a6912afcd4c122380",
+    "source/build_launcher.cmd": "619ab35e6d9b82538b6bb5f07af1dcc1e6d4b6ba27e906641c4c58427b92deb8",
+    "source/build_dll.cmd": "43cf58f9cf333d0844e916f28132b056dae3cd4e92e54438ad29f5f642dc4b1f",
+    "source/PssButton.cs": "a6a38542e2f946b4653d0d0729c37a8bc07d614492475b20ce1529a293d0f583",
+    "source/Pss2019.c": "59f2e4501579aa23a81563d9a214f95b0dd4d2376f2235b9b1ce2615f75574d7"
+  },
+  "existing_gm_only_600_second_trial_preserved": true
+}

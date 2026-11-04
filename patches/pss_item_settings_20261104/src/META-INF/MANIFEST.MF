@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: l1j.server.swing.chocco
+Class-Path: .
+
