@@ -1,3 +1,9 @@
+## 2026-11-04 — V7 MANIFEST 누락 보충
+
+[누락 파일만 받기](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_2019_Manifest_Fix_20261104.zip)
+
+Ant의 `src/META-INF/MANIFEST.MF does not exist` 오류를 보충합니다. 프로젝트 루트에 압축을 풀고 Ant를 다시 실행하세요. V7 전체 소스/패치 ZIP에도 파일을 추가했습니다. 현재 실제 실행 진입점인 `l1j.server.swing.chocco`를 사용하며, 기존 Java 1,709개 컴파일 결과로 JAR 생성과 main 메서드 존재를 확인했습니다. Java 소스·build.xml·lib 수정은 없습니다.
+
 ## 2026-11-04 — 2019 PSS 서버 연결 시험판 V7
 
 [전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_2019_Server_Bridge_V7_20261104_FULL_SRC.zip) · [V6 기준 Java 6개 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_2019_Server_Bridge_V7_20261104_PATCH.zip) · [적용 순서·로그 확인](PSS_2019_SERVER_BRIDGE_V7_20261104.md)
