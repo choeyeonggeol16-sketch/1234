@@ -1,3 +1,11 @@
+## 2026-11-04 — 최신 첨부 팩 PSS 텔레포트 수정 V9
+
+[전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_V9_LatestPack_Teleport_Fix_20261104_FULL_SRC.zip) · [첨부 팩 기준 Java 7개 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_V9_LatestPack_Teleport_Fix_20261104_PATCH.zip) · [변경·검증·적용 안내](PSS_V9_LATESTPACK_TELEPORT_FIX_20261104.md)
+
+기준은 RKern_PSS_V8_InterServer_Kind0to6_GM_AB_FULL_SRC_20261104.zip입니다. 새 인터서버 변경 3개 파일을 그대로 유지했습니다. PSS 접속의 GM 텔레포트 맵 우회와 늦은 완료 응답의 재이동을 차단하고, 금지 텔레포트 시 PSS 중지 통지를 한 번 보냅니다. 정상 사냥을 계속하는 클라이언트 AI를 구현한 변경은 아닙니다.
+
+전체 Java 1,709개 컴파일, PSS 13개 그룹·994개 단언 및 텔레포트 48개 단언 통과. 매니페스트 포함. 실클라이언트 검증은 별도입니다.
+
 ## 2026-11-04 — PSS 빈 시작 요청 호환 V8
 
 [전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_2019_Bodyless_Start_V8_20261104_FULL_SRC.zip) · [V7용 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_2019_Bodyless_Start_V8_20261104_PATCH.zip) · [수정·검증 내역](PSS_2019_BODYLESS_START_V8_20261104.md)
