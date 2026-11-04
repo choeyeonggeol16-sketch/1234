@@ -1,3 +1,11 @@
+## 2026-11-04 — 2019 PSS 서버 연결 시험판 V7
+
+[전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_2019_Server_Bridge_V7_20261104_FULL_SRC.zip) · [V6 기준 Java 6개 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_2019_Server_Bridge_V7_20261104_PATCH.zip) · [적용 순서·로그 확인](PSS_2019_SERVER_BRIDGE_V7_20261104.md)
+
+**GM 전용, 시작당 600초 시험 응답입니다.** 첨부 PSS버튼.exe/Pss2019.dll의 네이티브 클라이언트 요청에 2101→2102 시작, 2103→2104 중지, 2106→2107 시간 응답을 연결했습니다. 서버 자동사냥과 실행권을 원자적으로 구분하고, 접속/캐릭터 변경에서 정리합니다. PC 클래스는 변경하지 않았습니다.
+
+전체 Java 1,709개 컴파일, PSS 11개 그룹·979개 단언, 실제 CIOClient로 300회 동시 실행권 경쟁 검증 통과. **실제 2019 게임 클라이언트의 설정창·전투 흐름·사냥은 미검증이며, 서버 자동사냥 엔진을 켜는 패치가 아닙니다.** PATCH는 V6 `a266fa0` 기준 Java 6개를 모두 적용합니다.
+
 ## 2026-11-04 — PC 스킬 효과 분리 V6
 
 [전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Pc_Skill_Effects_Refactor_V6_20261104_FULL_SRC.zip) · [V5 기준 Java 5개 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Pc_Skill_Effects_Refactor_V6_20261104_PATCH.zip) · [구조·검증·적용 안내](PC_SKILL_EFFECTS_REFACTOR_V6_20261104.md)
