@@ -1,0 +1,54 @@
+{
+  "original_sha256": "9c82129efed1d93981782069e82de79869920769aa0f67bc1183ca75cf621823",
+  "patched_sha256": "c2e643673406fdca03288211f204f812ed0eb7a3419c16662b1cb2dcd7d0135f",
+  "original_imports": [
+    [
+      "kernel32.dll",
+      [
+        "lstrcpy"
+      ],
+      21458995
+    ],
+    [
+      "comctl32.dll",
+      [
+        "InitCommonControls"
+      ],
+      21459003
+    ]
+  ],
+  "patched_imports": [
+    [
+      "kernel32.dll",
+      [
+        "lstrcpy"
+      ],
+      21458995
+    ],
+    [
+      "comctl32.dll",
+      [
+        "InitCommonControls"
+      ],
+      21459003
+    ],
+    [
+      "Pss2019.dll",
+      [
+        "PssClientInit@0"
+      ],
+      21459576
+    ]
+  ],
+  "original_entry_point_preserved": true,
+  "all_original_section_bytes_preserved": true,
+  "all_original_rvas_and_image_size_preserved": true,
+  "certificate_bytes_preserved": true,
+  "original_authenticode_signature_valid_for_modified_file": false,
+  "independent_checksum_verification": true,
+  "pe_loader_dependency_test": "PASS (controlled PE32 harness)",
+  "patch_install_restore_checks": 13,
+  "protected_game_startup_live_verified": false,
+  "external_panel_created_in_auto_mode": false,
+  "user_previously_confirmed_manual_helper_item_window_flow": true
+}

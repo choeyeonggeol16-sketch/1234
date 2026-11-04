@@ -1,0 +1,8 @@
+Applied: /workspace/work/pss-client-autoload-v2/validation/install-contract/game.bin
+Original backup: /workspace/work/pss-client-autoload-v2/validation/install-contract/game.bin.pss-original.bak
+SHA256: c2e643673406fdca03288211f204f812ed0eb7a3419c16662b1cb2dcd7d0135f
+Launch the game normally. No PssButton.exe or connect button is needed.
+Already applied: /workspace/work/pss-client-autoload-v2/validation/install-contract/game.bin
+Original restored: /workspace/work/pss-client-autoload-v2/validation/install-contract/game.bin
+Original restored: /workspace/work/pss-client-autoload-v2/validation/install-contract/game.bin
+PASS actual C# patch/install/restore contract checks=13
