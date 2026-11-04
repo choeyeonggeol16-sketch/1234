@@ -1,0 +1,125 @@
+--- a/src/l1j/server/server/GMCommands.java
++++ b/src/l1j/server/server/GMCommands.java
+@@ -321,6 +321,9 @@
+ 		_gm = gm;
+ 
+ 		switch (cmd) {
++		case "pss2111":
++			l1j.server.server.model.character.pss.PlaySupport2019.gmProbe2111(gm, param);
++			break;
+ 		case "dd":
+ 			   String[] args = cmd.split(" ", 3);
+ 		        int sec = args.length > 1 ? Integer.parseInt(args[1]) : 60;
+--- a/src/l1j/server/server/model/character/pss/PlaySupport2019.java
++++ b/src/l1j/server/server/model/character/pss/PlaySupport2019.java
+@@ -21,8 +21,89 @@
+     private static final int LEGACY_EMPTY_MODE = 2; // LOCAL
+     private static final int VALID = 0, INVALID_MAP = 1, UNKNOWN_ERROR = 99;
+     private static final int TIME_EXPIRE = 3, USER_DEAD = 4;
++    private static final String[] SETTING_FIELDS = {
++        "mode", "off_condition_death", "off_condition_peace", "off_condition_comeback",
++        "tel_condition_hp", "tel_condition_peace", "tel_condition_surrounded",
++        "tel_condition_pvp", "exp_recovery"
++    };
+ 
+     private PlaySupport2019() {}
++
++    /** Explicit GM experiment: send the C->S settings ID in the opposite direction. */
++    public static void gmProbe2111(L1PcInstance gm, String param) {
++        if (gm == null || !gm.isGm()) return;
++        CIOClient client = gm.getNetConnection();
++        if (player(client) != gm) return;
++        int mode = 0;
++        String argument = param == null ? "" : param.trim();
++        if (!argument.isEmpty()) {
++            try {
++                mode = Integer.parseInt(argument);
++                if (mode < 1 || mode > 3) throw new NumberFormatException();
++            } catch (NumberFormatException invalid) {
++                SC_SystemMessage.send(gm, "사용법: .pss2111 또는 .pss2111 <1~3>");
++                return;
++            }
++        }
++        ProtoWriter out = Proto.begin(client, ProtoMsg.CS_CHANGE_PLAY_SUPPORT_SETTING_REQ, 32);
++        if (out == null) {
++            SC_SystemMessage.send(gm, "2111 테스트 패킷 생성 실패");
++            return;
++        }
++        final boolean admitted;
++        try {
++            if (mode != 0) out.msg(1).enumV(1, mode).end();
++            admitted = Proto.commit(out);
++        } finally {
++            Proto.abort(out);
++        }
++        LOG.info("[PSS-2111-TEST] S->C id=2111 body=" + (mode == 0 ? "empty" : "setting_info.mode=" + mode)
++                + " admitted=" + admitted + " player=" + gm.getId()
++                + " (experimental direction; not a verified UI-open packet)");
++        SC_SystemMessage.send(gm, "2111 테스트 전송큐 접수=" + admitted
++                + " / " + (mode == 0 ? "빈 본문" : "mode=" + mode));
++    }
++
++    /** Receive the one-way client setting request; observe it without starting either AI. */
++    public static void settings(CIOClient client, byte[] data, int offset, int length) {
++        L1PcInstance pc = player(client);
++        if (pc == null || !pc.isGm()) return;
++        final String fields;
++        try {
++            fields = parseSettings(reader(data, offset, length));
++        } catch (RuntimeException invalid) {
++            malformed(pc, 2111, data, offset, length, invalid);
++            return;
++        }
++        LOG.info("[PSS-2019] recv 2111 player=" + pc.getId() + " bytes=" + length
++                + " settings={" + fields + "} body64="
++                + HexFormat.of().formatHex(data, offset, offset + Math.min(length, 64)));
++        SC_SystemMessage.send(pc, "PSS 2111 설정 수신 확인. 서버 로그를 확인해 주세요.");
++    }
++
++    static String parseSettings(ProtoReader in) {
++        StringBuilder fields = new StringBuilder(192);
++        boolean found = false;
++        for (int tag; (tag = next(in)) != 0;) {
++            if (tag != 10) {
++                in.skip(tag & 7);
++                continue;
++            }
++            found = true;
++            ProtoReader settings = in.subReader();
++            for (int field; (field = next(settings)) != 0;) {
++                int number = field >>> 3;
++                if ((field & 7) == 0 && number >= 1 && number <= SETTING_FIELDS.length) {
++                    int value = settings.varint32();
++                    // These are observed values, not validated controls for the server AI.
++                    if (fields.length() != 0) fields.append(' ');
++                    fields.append(SETTING_FIELDS[number - 1]).append('=').append(value);
++                } else settings.skip(field & 7);
++            }
++        }
++        if (!found) throw new IllegalArgumentException("missing PSS setting_info");
++        return fields.length() == 0 ? "no known fields" : fields.toString();
++    }
+ 
+     public static void start(CIOClient client, byte[] data, int offset, int length) {
+         start(client, data, offset, length, System.nanoTime());
+--- a/src/l1j/server/server/packets/Protocol/CSProto.java
++++ b/src/l1j/server/server/packets/Protocol/CSProto.java
+@@ -138,6 +138,8 @@
+                 l1j.server.server.model.character.pss.PlaySupport2019::finish);
+         t.putRaw(ProtoMsg.CS_PSS_TIME_CHECK_REQ,
+                 l1j.server.server.model.character.pss.PlaySupport2019::time);
++        t.putRaw(ProtoMsg.CS_CHANGE_PLAY_SUPPORT_SETTING_REQ,
++                l1j.server.server.model.character.pss.PlaySupport2019::settings);
+ 
+         t.putReader(ProtoMsg.CS_HIBREED_AUTH_REQ, (c, in) -> {
+             long reserved = -1L;
+--- a/src/l1j/server/server/packets/Protocol/ProtoMsg.java
++++ b/src/l1j/server/server/packets/Protocol/ProtoMsg.java
+@@ -18,6 +18,7 @@
+     public static final int SC_FORCE_FINISH_PLAY_SUPPORT_NOTI = 0x0839;
+     public static final int CS_PSS_TIME_CHECK_REQ           = 0x083A;
+     public static final int SC_PSS_TIME_CHECK_ACK           = 0x083B;
++    public static final int CS_CHANGE_PLAY_SUPPORT_SETTING_REQ = 0x083F;
+ 
+     // ═══════════ SC — 서버 → 클라 ═══════════
+ 
