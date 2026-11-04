@@ -1,3 +1,11 @@
+## 2026-11-04 — 아이템 사용 리팩토링 V5
+
+[전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Item_Use_Refactor_V5_20261104_FULL_SRC.zip) · [V4 기준 Java 58개 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Item_Use_Refactor_V5_20261104_PATCH.zip) · [변경·검증·적용 안내](ITEM_USE_REFACTOR_V5_20261104.md)
+
+학습 아이템 43종의 직업·레벨·선행 조건·중복 안내·소모 연결을 공통 규칙으로 합쳤습니다. 아이템별 검사 우선순위와 저장 후 효과 순서를 유지하고, 동일한 활성화/효과음을 공통화했습니다. 불필요한 import 875개도 정리했습니다.
+
+전체 Java 1,703개 컴파일, V4와 44,032개 상황 실행 비교, 43개 저장 후 효과의 독립 구문 검사, 사용 단계 12개·트랜잭션 27개 검증 통과. **PATCH는 V4 `532c1ee` 기준입니다. V4 미적용 상태는 FULL_SRC를 사용하세요.** 실게임 통합과 운영 메모리 절감률은 별도 확인이 필요합니다.
+
 ## 2026-11-04 — 아이템 사용 리팩토링 V4
 
 [전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Item_Use_Refactor_V4_20261104_FULL_SRC.zip) · [Java 16개 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Item_Use_Refactor_V4_20261104_PATCH.zip) · [변경·검증·적용 안내](ITEM_USE_REFACTOR_V4_20261104.md)
