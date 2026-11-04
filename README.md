@@ -1,3 +1,9 @@
+## 2026-11-04 — PSS 빈 시작 요청 호환 V8
+
+[전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_2019_Bodyless_Start_V8_20261104_FULL_SRC.zip) · [V7용 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_2019_Bodyless_Start_V8_20261104_PATCH.zip) · [수정·검증 내역](PSS_2019_BODYLESS_START_V8_20261104.md)
+
+실제 2019 클라이언트의 0바이트 2101 요청을 GM 시험 모드로 처리하도록 수정했습니다. 반복 요청은 기존 mode와 마감 시각을 유지합니다. 매니페스트 포함, 전체 Java 1,709개 컴파일과 12개 그룹·987개 단언 통과. 실제 승인 이후 클라이언트 사냥은 미검증입니다.
+
 ## 2026-11-04 — V7 MANIFEST 누락 보충
 
 [누락 파일만 받기](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_2019_Manifest_Fix_20261104.zip)
