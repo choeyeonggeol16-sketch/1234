@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "csharp_compile": "PASS (Mono mcs; Windows Add-Type compatible source)",
+  "syntax": "PASS (C# and PowerShell tree-sitter)",
+  "relative_call_bounds_contract": {
+    "result": "PASS",
+    "checks": 7
+  },
+  "first_runtime_upload": {
+    "result": "analyzed",
+    "code_pages": 23,
+    "client_phase": 3,
+    "running": 1
+  },
+  "v2_live_game_collection": "not yet verified",
+  "game_behavior_changes": false,
+  "code_capture_limit_per_client_bytes": 393216,
+  "static_data_capture_limit_per_client_bytes": 8192,
+  "max_clients": 3,
+  "raw_uploaded_code_published": false
+}
