@@ -1,0 +1,65 @@
+[
+  {
+    "file": "trove4j-3.0.3.jar",
+    "url": "https://repo.maven.apache.org/maven2/net/sf/trove4j/trove4j/3.0.3/trove4j-3.0.3.jar",
+    "verified_algorithm": "sha1",
+    "verified_digest": "42ccaf4761f0dfdfa805c9e340d99a755907e2dd",
+    "sha256": "3c8616203d61a12a7e3487e8b34f3c198c2b5ba9e90da0c7ea32d99cd4958012"
+  },
+  {
+    "file": "fastutil-8.5.15.jar",
+    "url": "https://repo.maven.apache.org/maven2/it/unimi/dsi/fastutil/8.5.15/fastutil-8.5.15.jar",
+    "verified_algorithm": "sha1",
+    "verified_digest": "1e885b40c9563ab0d3899b871fd0b30e958705dc",
+    "sha256": "cffeb6673bdf1e6e4377d684df2f55ac359cf5cf6df613e05e62deeea500936a"
+  },
+  {
+    "file": "javolution-5.5.1.jar",
+    "url": "https://repo.maven.apache.org/maven2/javolution/javolution/5.5.1/javolution-5.5.1.jar",
+    "verified_algorithm": "sha1",
+    "verified_digest": "3fcba819cdb7861728405963ddc4b2755ab182e5",
+    "sha256": "6de167427fb5ad34fe533cb36a8b3427fa6052a2b99781874396ed5cca9f8ed1"
+  },
+  {
+    "file": "jctools-core-4.0.5.jar",
+    "url": "https://repo.maven.apache.org/maven2/org/jctools/jctools-core/4.0.5/jctools-core-4.0.5.jar",
+    "verified_algorithm": "sha1",
+    "verified_digest": "9ab38ca19877236986db4894ef1400a7ca23db80",
+    "sha256": "d65e5f38bcd0984e26f87187687f1f70dd52740c4d5e046f8d104e01ab5db95f"
+  },
+  {
+    "file": "caffeine-3.1.8.jar",
+    "url": "https://repo.maven.apache.org/maven2/com/github/ben-manes/caffeine/caffeine/3.1.8/caffeine-3.1.8.jar",
+    "verified_algorithm": "sha256",
+    "verified_digest": "7dd15f9df1be238ffaa367ce6f556737a88031de4294dad18eef57c474ddf1d3",
+    "sha256": "7dd15f9df1be238ffaa367ce6f556737a88031de4294dad18eef57c474ddf1d3"
+  },
+  {
+    "file": "HikariCP-5.1.0.jar",
+    "url": "https://repo.maven.apache.org/maven2/com/zaxxer/HikariCP/5.1.0/HikariCP-5.1.0.jar",
+    "verified_algorithm": "sha1",
+    "verified_digest": "8c96e36c14461fc436bb02b264b96ef3ca5dca8c",
+    "sha256": "a47a6ee62379694ee52c30036f0931b72f9aee2a801d590341ed82bd839e2134"
+  },
+  {
+    "file": "agrona-1.22.0.jar",
+    "url": "https://repo.maven.apache.org/maven2/org/agrona/agrona/1.22.0/agrona-1.22.0.jar",
+    "verified_algorithm": "sha1",
+    "verified_digest": "fef53f93f14d74fecb2a7cdbce9a62c7608c214c",
+    "sha256": "d422a57e89ccb6ae0f9482efa16f5dd0b993dac0db3860f54b033f21f45206cf"
+  },
+  {
+    "file": "jaxb-api-2.3.1.jar",
+    "url": "https://repo.maven.apache.org/maven2/javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar",
+    "verified_algorithm": "sha1",
+    "verified_digest": "8531ad5ac454cc2deb9d4d32c40c4d7451939b5d",
+    "sha256": "88b955a0df57880a26a74708bc34f74dcaf8ebf4e78843a28b50eae945732b06"
+  },
+  {
+    "file": "slf4j-api-2.0.9.jar",
+    "url": "https://repo.maven.apache.org/maven2/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar",
+    "verified_algorithm": "sha1",
+    "verified_digest": "7cf2726fdcfbc8610f9a71fb3ed639871f315340",
+    "sha256": "0818930dc8d7debb403204611691da58e49d42c50b6ffcfdce02dadb7c3c2b6c"
+  }
+]

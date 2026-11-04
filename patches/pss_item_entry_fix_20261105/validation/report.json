@@ -1,0 +1,25 @@
+{
+  "user_verified_client_autoload_and_direct_window": true,
+  "changed_java_paths": [
+    "src/l1j/server/server/model/network/core/cs/packet/User.java",
+    "src/l1j/server/server/model/item/function/ItemUseExtensions.java",
+    "src/l1j/server/server/model/character/pss/window/PlaySupportWindow.java"
+  ],
+  "java_source_count": 1711,
+  "full_compile": "PASS",
+  "pss_contract": {
+    "groups": 18,
+    "assertions": 1118,
+    "automation_races": 300,
+    "result": "PASS"
+  },
+  "tested_actual_item_packet_entry": true,
+  "renamed_item_works_by_id": true,
+  "settings_ui_non_consuming": true,
+  "canonical_owned_item_and_positive_count_required": true,
+  "ordinary_validation_body_unchanged": true,
+  "user_verified_item_after_this_server_fix": false,
+  "client_binary_or_dll_changed": false,
+  "item_id": 900000901,
+  "item_name": "Play Supporter"
+}
