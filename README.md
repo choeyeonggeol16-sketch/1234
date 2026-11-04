@@ -1,3 +1,11 @@
+## 2026-11-04 — 아이템 사용 리팩토링 V4
+
+[전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Item_Use_Refactor_V4_20261104_FULL_SRC.zip) · [Java 16개 패치 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/Item_Use_Refactor_V4_20261104_PATCH.zip) · [변경·검증·적용 안내](ITEM_USE_REFACTOR_V4_20261104.md)
+
+최근 첨부한 인터서버 PacketTrace 소스 기준입니다. 마법서 학습 6개 중복 구현을 통합하고 전투·학습 효과를 분리했습니다. 스턴 지속시간의 전역 변수 경합, 반복 CSV 분리·난수 객체 생성, 물약 데이터 구조와 XML 재로딩 실패 처리를 수정했습니다.
+
+전체 Java 1,702개 컴파일, 마법서 사용 3,000개 비교, 지속시간 5,000개 비교·동시 접근 12,000회, 효과 본문·경로 검사와 사용 단계 12개·트랜잭션 27개 검증을 통과했습니다. **PATCH는 최근 첨부한 인터서버 ZIP 기준이며 Java 16개를 모두 적용하세요.** 실게임 검증과 운영 메모리 절감률 측정은 별도로 필요합니다.
+
 ## 2026-11-04 — class_id를 DB에서 직접 읽는 전체 SRC
 
 [DB 직접 로딩 전체 SRC](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_ClassId_DB_Only_20261104_FULL_SRC.zip) · [Java 4개 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/NPC_ClassId_DB_Only_20261104_PATCH.zip) · [적용 안내](NPC_CLASSID_DB_ONLY_SRC_20261104.md)
