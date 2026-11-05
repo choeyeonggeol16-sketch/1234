@@ -104,7 +104,8 @@ static BOOL from_config(const wchar_t *ini) {
     if(!n)return FALSE;
     if(wcsncmp(wide,L"http://",7)!=0 && wcsncmp(wide,L"https://",8)!=0)
         return FALSE;
-    if(!wide[7])return FALSE;
+    const wchar_t *host=wide+(wcsncmp(wide,L"https://",8)==0?8:7);
+    if(!*host||*host==L'/'||*host==L'?')return FALSE;
     for(const wchar_t *p=wide;*p;++p)
         if(*p<32||*p==127)return FALSE;
     return to_utf8(wide,destination,sizeof(destination));
