@@ -25,7 +25,7 @@ enum {
 static char destination[2048];
 static BOOL installed;
 static DWORD last_attempt;
-static BOOL warned_missing,warned_mismatch,warned_server;
+static BOOL warned_mismatch,warned_server;
 static BYTE game_tcp_rows[262144];
 static const BYTE expected_code[] = {
     0x90,0x90,0x68,0x34,0x58,0x25,0x01,
@@ -76,30 +76,6 @@ static BOOL to_utf8(const wchar_t *source,char *out,size_t capacity) {
     int len=WideCharToMultiByte(CP_UTF8,WC_ERR_INVALID_CHARS,source,-1,
                                out,(int)capacity,0,0);
     return len>0&&(size_t)len<=capacity;
-}
-static BOOL build_file_url(const wchar_t *path) {
-    char path_utf8[MAX_PATH*4];
-    static const char hex[]="0123456789ABCDEF";
-    if(!to_utf8(path,path_utf8,sizeof(path_utf8)))return FALSE;
-    const char *prefix="file:///";
-    size_t used=8;
-    memcpy(destination,prefix,used);
-    for(const unsigned char *p=(const unsigned char *)path_utf8;*p;++p) {
-        unsigned char ch=*p;
-        if(ch=='\\')ch='/';
-        BOOL normal=(ch>='A'&&ch<='Z')||(ch>='a'&&ch<='z')||
-                    (ch>='0'&&ch<='9')||ch=='/'||ch==':'||ch=='.'||
-                    ch=='-'||ch=='_'||ch=='~';
-        if(used+(normal?1U:3U)+1U>sizeof(destination))return FALSE;
-        if(normal)destination[used++]=(char)ch;
-        else {
-            destination[used++]='%';
-            destination[used++]=hex[ch>>4];
-            destination[used++]=hex[ch&15];
-        }
-    }
-    destination[used]=0;
-    return TRUE;
 }
 static BOOL from_config(const wchar_t *ini) {
     wchar_t wide[1024];
