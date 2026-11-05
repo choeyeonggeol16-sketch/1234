@@ -45,10 +45,18 @@ jobs:
           assert "PssVitalsHudDetach" not in game
           assert "PssVitals" not in (root/"client/pss2019/build-linux.sh").read_text()
           assert "PssVitals" not in (root/"client/pss2019/build.cmd").read_text()
+          assert "PssGamePacketInitialize(game,CONTROL)" in game
+          assert "PssBridgeInitialize(game,CONTROL,module)" not in game
+          assert "PssBridgeTick()" not in game
           names=[
              ("client/Pss2019.dll","Pss2019.dll"),
+             ("client/Pss2019.dll.sha256","Pss2019.dll.sha256"),
              ("client/Pss2019AppCenter.html","Pss2019AppCenter.html"),
-             ("client/pss2019/APP_CENTER_TEST_README.txt","README_FIRST.txt")]
+             ("client/Pss2019ClassicHud.dat","Pss2019ClassicHud.dat"),
+             ("patches/pss_client_autoload_20261105/PSS_Client_Apply.cmd","PSS_Client_Apply.cmd"),
+             ("patches/pss_client_autoload_20261105/PSS_Client_Apply.ps1","PSS_Client_Apply.ps1"),
+             ("patches/pss_client_autoload_20261105/PSS_Client_Patch.cs","PSS_Client_Patch.cs"),
+             ("client/pss2019/INBAND_README.txt","README_FIRST.txt")]
           path=root/"downloads/PSS_AppCenter_PSSOnly_2019_Win32.zip"
           with zipfile.ZipFile(path,"w",zipfile.ZIP_DEFLATED,compresslevel=9) as z:
              for p,arc in names:z.write(root/p,arc)
