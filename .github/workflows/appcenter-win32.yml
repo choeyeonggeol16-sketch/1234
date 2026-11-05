@@ -2,7 +2,7 @@ name: 2019 Ctrl+Z AppCenter test DLL
 on:
   push:
     branches:
-      - pss/appcenter-reconnect-20261106
+      - pss/companion-v1-reasoned-retry-20261106
   workflow_dispatch:
 
 permissions:
