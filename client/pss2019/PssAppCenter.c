@@ -1,7 +1,9 @@
 #define UNICODE
 #define _UNICODE
 #define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
 #include <windows.h>
+#include <iphlpapi.h>
 #include <stdint.h>
 #include <string.h>
 #include <wchar.h>
@@ -23,7 +25,8 @@ enum {
 static char destination[2048];
 static BOOL installed;
 static DWORD last_attempt;
-static BOOL warned_missing,warned_mismatch;
+static BOOL warned_missing,warned_mismatch,warned_server;
+static BYTE game_tcp_rows[262144];
 static const BYTE expected_code[] = {
     0x90,0x90,0x68,0x34,0x58,0x25,0x01,
     0x8D,0x4D,0xD8,0xE8,0x45,0xC5,0x83,0xFF
@@ -110,6 +113,36 @@ static BOOL from_config(const wchar_t *ini) {
         if(*p<32||*p==127)return FALSE;
     return to_utf8(wide,destination,sizeof(destination));
 }
+
+/* Route AppCenter to the SAME remote host as this game's actual TCP session.
+ * No GamePort, WindowPort, launcher PID, or client INI network values.
+ * If several unrelated endpoints exist, refuse to guess the game's server.
+ * AppCenter HTTP remains an independent service on the server (TCP 18085). */
+static BOOL from_live_game_connection(void) {
+    DWORD size=(DWORD)sizeof(game_tcp_rows);
+    DWORD result=GetExtendedTcpTable(game_tcp_rows,&size,FALSE,AF_INET,TCP_TABLE_OWNER_PID_ALL,0);
+    if(result!=NO_ERROR)return FALSE;
+    const MIB_TCPTABLE_OWNER_PID *tcp=(const MIB_TCPTABLE_OWNER_PID*)game_tcp_rows;
+    const DWORD pid=GetCurrentProcessId();
+    DWORD remote=0;
+    BOOL found=FALSE;
+    for(DWORD i=0;i<tcp->dwNumEntries;++i) {
+        const MIB_TCPROW_OWNER_PID *row=&tcp->table[i];
+        if(row->dwOwningPid!=pid||row->dwState!=MIB_TCP_STATE_ESTAB)continue;
+        const USHORT port=ntohs((USHORT)row->dwRemotePort);
+        if(port==0||port==80||port==443||port==18085)continue;
+        if(row->dwRemoteAddr==0||row->dwRemoteAddr==0xffffffffUL)continue;
+        if(found&&remote!=row->dwRemoteAddr)return FALSE;
+        remote=row->dwRemoteAddr;
+        found=TRUE;
+    }
+    if(!found)return FALSE;
+    const BYTE *ip=(const BYTE*)&remote;
+    wsprintfA(destination,"http://%u.%u.%u.%u:18085/",
+              (unsigned)ip[0],(unsigned)ip[1],(unsigned)ip[2],(unsigned)ip[3]);
+    return TRUE;
+}
+
 BOOL PssAppCenterInitialize(HWND game, HMODULE module) {
     if(installed)return TRUE;
     DWORD now=GetTickCount();
@@ -124,13 +157,17 @@ BOOL PssAppCenterInitialize(HWND game, HMODULE module) {
         return FALSE;
     }
     BOOL configured=from_config(ini);
+    BOOL discovered=FALSE;
     if(!configured) {
-        DWORD attributes=GetFileAttributesW(page);
-        if(attributes==INVALID_FILE_ATTRIBUTES||(attributes&FILE_ATTRIBUTE_DIRECTORY)) {
-            if(!warned_missing){PssBridgeLog(L"AppCenter test HTML missing: original URL unchanged");warned_missing=TRUE;}
+        discovered=from_live_game_connection();
+        if(!discovered) {
+            if(!warned_server) {
+                PssBridgeLog(L"AppCenter game server endpoint unavailable/ambiguous; retrying without changing original page");
+                warned_server=TRUE;
+            }
             return FALSE;
         }
-        if(!build_file_url(page))return FALSE;
+        warned_server=FALSE;
     }
     if(!verified_site()) {
         if(!warned_mismatch){PssBridgeLog(L"AppCenter home-navigation signature unavailable; retrying after client code loads");warned_mismatch=TRUE;}
@@ -148,7 +185,7 @@ BOOL PssAppCenterInitialize(HWND game, HMODULE module) {
     installed=TRUE;
     PssBridgeLog(configured?
         L"AppCenter exact home URL redirected to configured HTTP(S) page":
-        L"AppCenter exact home URL redirected to local success-test HTML");
+        L"AppCenter exact home URL redirected to auto-detected game server HTTP port 18085");
     return TRUE;
 }
 void PssAppCenterDetach(void) {
