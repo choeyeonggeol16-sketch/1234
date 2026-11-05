@@ -1,0 +1,63 @@
+{
+  "files": [
+    {
+      "file": "Lineage_Test_KR/data - 복사본 (2)_playSupport.json.plain.json",
+      "sha256": "b790d8f81761d78fbf9ada1bf5662fc30dfe3eab5677e2d3a593dafb9c7e863d",
+      "nodes": 104,
+      "battle_nodes": 63,
+      "walkaround_nodes": 1,
+      "move_next_children": [
+        [
+          "Sequence",
+          "BotWalkAroundNode"
+        ]
+      ]
+    },
+    {
+      "file": "Lineage_Test_KR/data_playSupport.json.plain.json",
+      "sha256": "847ddea78ee8e9d31465ca71911046474c5134ec66c15bc88b2f63a7f3162d7b",
+      "nodes": 105,
+      "battle_nodes": 64,
+      "walkaround_nodes": 1,
+      "move_next_children": [
+        [
+          "Sequence",
+          "BotWalkAroundNode"
+        ]
+      ]
+    },
+    {
+      "file": "어제_진단폴더/data__playSupport.json.plain.json",
+      "sha256": "139a17c97d37db3de4e5ee43c715bf03f1a1e2f46a30f28f2abb7f00529b3ef6",
+      "nodes": 100,
+      "battle_nodes": 59,
+      "walkaround_nodes": 0,
+      "move_next_children": [
+        [
+          "Sequence",
+          "BotTeleportNode"
+        ]
+      ]
+    },
+    {
+      "file": "어제_진단폴더/data_playSupport.json.plain.json",
+      "sha256": "b790d8f81761d78fbf9ada1bf5662fc30dfe3eab5677e2d3a593dafb9c7e863d",
+      "nodes": 104,
+      "battle_nodes": 63,
+      "walkaround_nodes": 1,
+      "move_next_children": [
+        [
+          "Sequence",
+          "BotWalkAroundNode"
+        ]
+      ]
+    }
+  ],
+  "prior_runtime_battle_type_order_matches_old_teleport_tree": true,
+  "matched_battle_nodes": 59,
+  "walkaround_handler_in_captured_2019_factory": false,
+  "captured_factory_unrecognized_type_returns_null_at": "0x0067E000",
+  "walkaround_native_function_body_supplied": false,
+  "cipher_roundtrip_claim": "Included report only; no original encrypted inputs in this ZIP for independent verification",
+  "implementation_work": "V2 paused and not published; GitHub main still has V1"
+}

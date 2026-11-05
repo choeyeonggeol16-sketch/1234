@@ -20,6 +20,9 @@ typedef PssPoint* (__attribute__((thiscall)) *NativePosition)(void*,PssPoint*);
 typedef NativeShared* (__cdecl *NativeFactory)(NativeShared*,const PssPoint*);
 typedef void (__attribute__((thiscall)) *NativeGoal)(void*,int,int);
 typedef void (__attribute__((thiscall)) *NativeVoid)(void*);
+typedef struct { void* head; unsigned count; } NativePathList;
+typedef void* (__attribute__((thiscall)) *NativePathHead)(void*,void*,void*);
+typedef void (__cdecl *NativeFindPath)(const PssPoint*,const PssPoint*,NativePathList*,int);
 typedef struct {
     void *manager,*task,*context,*actor,*config,*path;
     int map,monster,item;
@@ -36,7 +39,7 @@ static int owner_map;
 static uintptr_t shadow[4]; /* MSVC RTTI locator at [-1], then exactly 3 slots. */
 static NativeShared point;
 static PssRoamCore brain;
-static PssRoamConfig config={2,300,750,1500};
+static PssRoamConfig config={8,300,500,1000};
 static DWORD last_observe,last_log;
 static unsigned depth;
 
@@ -67,10 +70,15 @@ static BOOL native_ready(void) {
     const BYTE tick[]={0x55,0x8B,0xEC,0x6A,0xFF,0x68,0x68,0x36,0x02,0x01};
     const BYTE set_goal[]={0xE8,0xD6,0x22,0xFC,0xFF}; /* 68DB05 -> 64FDE0 */
     const BYTE move[]={0xE8,0x5E,0x23,0xFC,0xFF}; /* 68DB0D -> 64FE70 */
+    const BYTE head[]={0x55,0x8B,0xEC,0x6A,0xFF,0x68,0x70,0xAA,0x01,0x01};
+    const BYTE clear[]={0x55,0x8B,0xEC,0x6A,0xFF,0x68,0xA0,0xA9,0x01,0x01};
+    const BYTE query[]={0xE8,0x11,0x83,0x84,0x00}; /* 6868FA -> ECEC10 */
     return bytes(0x75E9D0,factory,sizeof(factory))&&bytes(NODE_TICK,tick,sizeof(tick))&&
            bytes(0x68DB05,set_goal,sizeof(set_goal))&&bytes(0x68DB0D,move,sizeof(move))&&
            executable(0x64FDA0)&&executable(0x64FDE0)&&executable(0x64FE70)&&
-           executable(0xB9DF20);
+           executable(0xB9DF20)&&bytes(0x65B750,head,sizeof(head))&&
+           bytes(0x65B420,clear,sizeof(clear))&&bytes(0x6868FA,query,sizeof(query))&&
+           executable(0xECEC10);
 }
 static BOOL snapshot(Frame* f) {
     DWORD phase=0,table=0;BYTE running=0;
@@ -135,6 +143,45 @@ static BOOL position(void* actor,PssPoint* p) {
     ((NativePosition)0xB9DF20)(actor,p);
     return p->x>=-1048576&&p->x<=1048576&&p->y>=-1048576&&p->y<=1048576;
 }
+static int query_path(void* ignored,PssPoint from,PssPoint to,PssRoamPath* out) {
+    (void)ignored;
+    NativePathList list={0};out->count=0;
+    list.head=((NativePathHead)0x65B750)(&list,0,0);
+    if(!list.head)return -1;
+    ((NativeFindPath)0xECEC10)(&from,&to,&list,50);
+    int valid=0;
+    if(list.count&&list.count<PSS_ROAM_PATH_MAX) {
+        void* link=0;
+        if(ptr(list.head,0,&link)) {
+            unsigned n=0;
+            while(n<list.count&&link!=list.head) {
+                PssPoint p;
+                if(!read_at((BYTE*)link+8,&p,sizeof(p))||
+                   p.x < -1048576||p.x>1048576||p.y < -1048576||p.y>1048576)break;
+                out->points[n++]=p;
+                if(!ptr(link,0,&link))break;
+            }
+            if(n==list.count&&link==list.head) {
+                if(out->points[0].x==to.x&&out->points[0].y==to.y) {
+                    for(unsigned i=0;i<n/2;++i) {
+                        PssPoint p=out->points[i];out->points[i]=out->points[n-1-i];out->points[n-1-i]=p;
+                    }
+                }
+                PssPoint previous=from;
+                valid=out->points[n-1].x==to.x&&out->points[n-1].y==to.y;
+                for(unsigned i=0;i<n&&valid;++i) {
+                    int x=out->points[i].x-previous.x,y=out->points[i].y-previous.y;
+                    if(x < -4||x>4||y < -4||y>4)valid=0;
+                    previous=out->points[i];
+                }
+                if(valid)out->count=n;
+            }
+        }
+    }
+    /* Matches the native SearchMonster caller's std::list<Point> lifecycle. */
+    ((NativeVoid)0x65B420)(&list);
+    return valid;
+}
 static void release_point(void) {
     if(!point.control){point.object=0;return;}
     uintptr_t table=0,functions[2];
@@ -154,6 +201,9 @@ static void release_point(void) {
 }
 static BOOL same_owner(const Frame* f) {
     return owner_actor==f->actor&&owner_task==f->task&&owner_manager==f->manager&&owner_map==f->map;
+}
+static void pause_walking(void) {
+    PssRoamCorePause(&brain,GetTickCount());release_point();
 }
 void PssRoamingReset(BOOL cancel_owned_move) {
     if(GetCurrentThreadId()!=ui_thread)return;
@@ -190,7 +240,7 @@ static int __attribute__((fastcall)) idle_tick(void* self,void* unused,float ela
     DWORD path_count=0;
     if(f.fixed||f.monster>=0||f.item>=0||f.action_begin!=f.action_end||
        (f.path&&(!read_at((BYTE*)f.path+0x14,&path_count,4)||path_count))) {
-        PssRoamingReset(FALSE);return original(self,elapsed);
+        pause_walking();return original(self,elapsed);
     }
     ++depth;
     if(!same_owner(&f)) {
@@ -200,7 +250,7 @@ static int __attribute__((fastcall)) idle_tick(void* self,void* unused,float ela
     PssPoint here,goal;
     if(!position(f.actor,&here)) {--depth;return original(self,elapsed);}
     DWORD now=GetTickCount();
-    if(PssRoamCorePlan(&brain,&config,now,here,(uint32_t)(uintptr_t)f.actor^(uint32_t)f.map,&goal)) {
+    if(PssRoamCorePlan(&brain,&config,now,here,(uint32_t)(uintptr_t)f.actor^(uint32_t)f.map,&goal,query_path,0)) {
         if(!point.object) {
             ((NativeFactory)0x75E9D0)(&point,&goal);
             if(!point.control||(uintptr_t)point.object!=(uintptr_t)point.control+0xC) {
@@ -212,11 +262,17 @@ static int __attribute__((fastcall)) idle_tick(void* self,void* unused,float ela
         ((NativeGoal)0x64FDE0)(point.object,goal.x,goal.y);
         ((NativeVoid)0x64FE70)(point.object);
         if(now-last_log>=10000U) {
-            wchar_t message[180];
-            wsprintfW(message,L"PSS idle walking map=%d position=%d,%d goal=%d,%d blocked=%u",
-                      f.map,here.x,here.y,goal.x,goal.y,brain.blocked_count);
+            wchar_t message[240];
+            wsprintfW(message,L"PSS idle walking V2 map=%d position=%d,%d waypoint=%d,%d destination=%d,%d blocked=%u rejected=%u",
+                      f.map,here.x,here.y,goal.x,goal.y,brain.destination.x,brain.destination.y,
+                      brain.blocked_count,brain.rejected_paths);
             PssBridgeLog(message);last_log=now;
         }
+    } else if(brain.initialized&&!brain.moving&&brain.path_queries&&now-last_log>=10000U) {
+        wchar_t message[200];
+        wsprintfW(message,L"PSS idle walking V2 waiting for reachable path map=%d position=%d,%d queries=%u rejected=%u",
+                  f.map,here.x,here.y,brain.path_queries,brain.rejected_paths);
+        PssBridgeLog(message);last_log=now;
     }
     --depth;
     /* RUNNING blocks only the idle Teleport fallback. Native selectors start
@@ -237,10 +293,10 @@ void PssRoamingInitialize(HWND game,HMODULE module) {
     if((SIZE_T)(last-file)+12>=MAX_PATH)return;
     lstrcpyW(last,L"Pss2019.ini");
     enabled=GetPrivateProfileIntW(L"PssRoaming",L"Enabled",1,file)!=0;
-    config.step_tiles=setting(file,L"StepTiles",2,1,4);
+    config.step_tiles=setting(file,L"StepTiles",8,1,16);
     config.command_ms=setting(file,L"CommandIntervalMs",300,200,1000);
-    config.idle_ms=setting(file,L"IdleDelayMs",750,300,3000);
-    config.stuck_ms=setting(file,L"StuckTimeoutMs",1500,1000,5000);
+    config.idle_ms=setting(file,L"IdleDelayMs",500,300,3000);
+    config.stuck_ms=setting(file,L"StuckTimeoutMs",1000,600,5000);
     warned=FALSE;last_observe=0;
     if(!enabled)PssBridgeLog(L"PSS idle walking disabled by PssRoaming.Enabled=0");
 }
@@ -256,7 +312,7 @@ void PssRoamingObserve(void) {
         }
         if(!read_at((void*)(NODE_VTABLE-4),shadow,sizeof(shadow))||shadow[2]!=NODE_TICK)return;
         shadow[2]=(uintptr_t)idle_tick;ready=TRUE;
-        PssBridgeLog(L"PSS idle walking ready: native Battle idle branch only");
+        PssBridgeLog(L"PSS idle walking V2 ready: native path query and corner waypoints");
     }
     Frame f;
     if(!snapshot(&f)) {
@@ -267,8 +323,10 @@ void PssRoamingObserve(void) {
                      read_at((BYTE*)manager+0x58,&running,1)&&!running;
         PssRoamingReset(stopped);idle_node=0;node_task=0;return;
     }
-    if(brain.initialized && (!same_owner(&f)||f.monster>=0||f.item>=0||
-                            f.action_begin!=f.action_end||f.fixed))PssRoamingReset(FALSE);
+    if(brain.initialized) {
+        if(!same_owner(&f))PssRoamingReset(FALSE);
+        else if(f.monster>=0||f.item>=0||f.action_begin!=f.action_end||f.fixed)pause_walking();
+    }
     void* leaf=find_idle(&f);
     if(!leaf) {
         PssRoamingReset(FALSE);idle_node=0;node_task=0;

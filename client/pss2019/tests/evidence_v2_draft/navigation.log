@@ -1,0 +1,6 @@
+PASS wall with a distant doorway: follows the opening/corners, never issues a wall-crossing segment (22 commands)
+PASS U-shaped dead end: follows the opening/corners, never issues a wall-crossing segment (14 commands)
+PASS lateral wall jitter is a stall, not forward progress
+PASS combat pauses preserve visited and blocked-location memory
+PASS missing native navigation never produces blind movement
+PASS unreachable destinations are cached and path queries stay bounded

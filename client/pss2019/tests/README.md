@@ -1,11 +1,11 @@
-# Development checks
+# Development validation
 
-`roam_core_test.c` runs on a host C11 compiler with `PssRoamCore.c`. The completed run used AddressSanitizer and UndefinedBehaviorSanitizer. LeakSanitizer was disabled because the managed executor uses tracing; the core contains no dynamic allocations.
+The core tests run on a host C11 compiler with AddressSanitizer and UndefinedBehaviorSanitizer. LeakSanitizer is disabled because the managed executor traces processes. Core state uses fixed-size arrays.
 
-`native_adapter_test.c` is a controlled PE32 fixture, not the game. Build with `-DPSS_ROAM_TEST`, `PssRoaming.c`, `PssRoamCore.c`, and the Windows user32/kernel32 libraries. Its PE SizeOfImage was increased to 28504064 before execution so it owns the native client's fixed address range. It supplies fake native entry points with the real x86 calling conventions and fake Battle objects. The `mismatch` argument verifies that an unsupported code signature is refused.
+`roam_navigation_test.c` supplies an independent grid BFS route oracle. It checks a wall with a remote doorway, a U-shaped dead end, straight segments that must not cut corners, lateral jitter, history across combat pauses, missing navigation and bounded unsuccessful queries. These maps validate the roaming controller; they are not the game's map implementation.
 
-The fixture uses a simulated clock and checked guest-memory reads because Wine under QEMU cannot read the guest's private image pages through the host process-memory API. The production DLL does not define PSS_ROAM_TEST and uses GetTickCount and ReadProcessMemory. These tests verify adapter dispatch, state transitions and ownership; they do not execute the real game movement/pathfinder or establish live collision/camera behavior.
+`native_adapter_test.c` is a controlled PE32 fixture. Build with PSS_ROAM_TEST, PssRoaming.c and PssRoamCore.c. Its PE SizeOfImage is set to 28504064 to reserve the native game's address range. It provides fake native functions with the x86 calling conventions observed in the captured native callers, including the eight-byte std::list header and its sixteen-byte nodes. It tests full, reversed, empty and partial paths, cleanup, combat/loot priority, fixed hunting, recorded routes, pending actions, Stop, map changes, detach and unsupported signatures. The fixture substitutes its clock and checked guest reads because Wine/QEMU cannot use the host memory API for private guest image pages. Production uses GetTickCount and ReadProcessMemory and is compiled without PSS_ROAM_TEST.
 
-`ImportHarness.c` imports the final production Pss2019.dll and verifies the existing PssClientInit export and refusal to auto-attach to the wrong executable.
+`ImportHarness.c` imports the final production DLL and checks the existing PssClientInit export and refusal to attach to an unsupported executable.
 
-Validation logs and the exact production DLL hash are included in the release.
+None of these tests execute the protected game binary or the actual native pathfinder. Actual client movement, map boundaries, dynamic collision and camera behavior need a live trial. V1 walking was user-confirmed; that does not establish V2 path-query behavior.

@@ -1,0 +1,25 @@
+{
+  "native_client_bin_or_memory_supplied": false,
+  "independent_roaming_core_source_supplied": true,
+  "core_dll_machine": "PE32 x86",
+  "core_entry_names": {
+    "sr_create": true,
+    "sr_tick": true,
+    "sr_reset": true,
+    "sr_destroy": true
+  },
+  "core_requires_host_callbacks": [
+    "can_step",
+    "request_step"
+  ],
+  "original_nc_walkaround_implementation_supplied": false,
+  "editor_is_managed_x64_application": true,
+  "large_editor_dll_is_capstone_disassembler": true,
+  "new_native_movement_evidence": [
+    "0064FDE0.asm.txt",
+    "0064FE70.asm.txt"
+  ],
+  "coordinate_conversion_in_supplied_asm": "internal_x = (input_x * 2 - 0x8000) & ~1; internal_y = input_y",
+  "pending_v2_correction": "query_path currently passes logical mover coordinates to a path query whose captured caller uses actor+0x10 internal coordinates; conversion must be reconciled before live use",
+  "implementation_and_publication": "paused; no new source edits or upload during review"
+}

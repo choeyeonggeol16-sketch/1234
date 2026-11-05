@@ -1,0 +1,6 @@
+PASS idle delay, native coordinate range/parity, throttling and blocked-goal replacement
+PASS surrounded character keeps trying at a bounded rate
+PASS arrival continues walking instead of stopping at the first destination
+PASS combat/idle gap and same-map teleport discard stale goals
+PASS tick counter wraparound
+PASS one-hour simulated roaming uses fixed-size history without allocations
