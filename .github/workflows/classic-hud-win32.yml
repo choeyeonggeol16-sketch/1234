@@ -33,7 +33,7 @@ jobs:
           file client/Pss2019.dll | grep -q 'PE32'
           (cd client && sha256sum -c Pss2019.dll.sha256)
       - name: Update compiled DLL on the isolated HUD branch
-        if: github.event.head_commit.message != 'Built classic HUD DLL'
+        if: github.event_name == 'push' && github.event.head_commit.message != 'Built classic HUD DLL'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
