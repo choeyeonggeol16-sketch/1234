@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - pss/classic-hud-hp-dragon-20261105
+  pull_request:
+    branches:
+      - pss/classic-hud-hp-dragon-20261105
   workflow_dispatch:
 
 permissions:
