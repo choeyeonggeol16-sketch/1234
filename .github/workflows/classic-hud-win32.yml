@@ -1,0 +1,34 @@
+name: Pss2019 classic-inspired HUD DLL
+on:
+  push:
+    branches:
+      - pss/classic-hud-hp-dragon-20261105
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  win32-dll:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install x86 MinGW
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gcc-mingw-w64-i686 g++-mingw-w64-i686
+      - name: Build Pss2019.dll
+        run: bash client/pss2019/build-linux.sh
+      - name: Inspect PE32 and checksum
+        run: |
+          file client/Pss2019.dll
+          test -s client/Pss2019.dll
+          file client/Pss2019.dll | grep -q 'PE32'
+          (cd client && sha256sum -c Pss2019.dll.sha256)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Pss2019-classic-HUD-Win32
+          path: |
+            client/Pss2019.dll
+            client/Pss2019.dll.sha256
+          retention-days: 7
