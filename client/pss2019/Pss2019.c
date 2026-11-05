@@ -7,6 +7,7 @@
 #include "PssActivity.h"
 #include "PssVitalsHud.h"
 #include "PssNativeDraw.h"
+#include "PssAppCenter.h"
 
 #define CONTROL (WM_APP+0x5A1)
 static HMODULE module;
@@ -201,7 +202,7 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
   if(wp==3){if(enabled)command(101);return 1;}
   if(wp==4){if(enabled)PssRoamingBlockedShot((int)lp);return 1;}
   if(wp==2) {
-   PssNativeDrawDetach();PssVitalsHudDetach();PssActivityDetach();activity_initialized=FALSE;
+   PssAppCenterDetach();PssNativeDrawDetach();PssVitalsHudDetach();PssActivityDetach();activity_initialized=FALSE;
    PssRoamingDetach();
    PssBridgeDetach();
    enabled=FALSE;KillTimer(game,0x505353);unpatch();if(panel){DestroyWindow(panel);panel=0;}status=0;
@@ -224,6 +225,7 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
    if(!item_only){make_panel();logline(L"PSS button panel created");}
    else logline(L"PSS item-only mode ready; no external button panel");
   }
+  if(patched)PssAppCenterInitialize(game,module);
   if(patched&&world_ready())PssBridgeTick();
   if(patched)PssRoamingObserve();
   PssVitalsHudUpdate(world_ready());
@@ -244,7 +246,7 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
   place_panel();return 0;
  }
  if(msg==WM_MOVE||msg==WM_SIZE)place_panel();
- if(msg==WM_NCDESTROY){PssNativeDrawDetach();PssVitalsHudDetach();PssActivityDetach();activity_initialized=FALSE;PssRoamingDetach();PssBridgeDetach();unpatch();if(panel)DestroyWindow(panel);panel=0;installed=FALSE;}
+ if(msg==WM_NCDESTROY){PssAppCenterDetach();PssNativeDrawDetach();PssVitalsHudDetach();PssActivityDetach();activity_initialized=FALSE;PssRoamingDetach();PssBridgeDetach();unpatch();if(panel)DestroyWindow(panel);panel=0;installed=FALSE;}
  return CallWindowProcW(previous,hwnd,msg,wp,lp);
 }
 __declspec(dllexport) DWORD WINAPI PssAttach(LPVOID arg) {
