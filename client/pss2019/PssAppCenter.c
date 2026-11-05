@@ -102,12 +102,15 @@ static BOOL from_config(const wchar_t *ini) {
     wchar_t wide[1024];
     DWORD n=GetPrivateProfileStringW(L"AppCenter",L"Url",L"",wide,1024,ini);
     if(!n)return FALSE;
-    if(wcsncmp(wide,L"http://",7)!=0 && wcsncmp(wide,L"https://",8)!=0)
-        return FALSE;
-    const wchar_t *host=wide+(wcsncmp(wide,L"https://",8)==0?8:7);
+    /* Production app center pages must not be downgraded to plaintext HTTP. */
+    if(wcsncmp(wide,L"https://",8)!=0)return FALSE;
+    const wchar_t *host=wide+8;
     if(!*host||*host==L'/'||*host==L'?')return FALSE;
     for(const wchar_t *p=wide;*p;++p)
-        if(*p<32||*p==127)return FALSE;
+        if(*p<32||*p==127||*p==L'@'||*p==L'#'||*p==L'\\')return FALSE;
+    /* No characters may be embedded before the hostname is terminated. */
+    for(const wchar_t *p=host;*p&&*p!=L'/';++p)
+        if(*p==L' '||*p==L'?')return FALSE;
     return to_utf8(wide,destination,sizeof(destination));
 }
 BOOL PssAppCenterInitialize(HWND game, HMODULE module) {
