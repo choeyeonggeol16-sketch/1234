@@ -1,0 +1,3 @@
+ERROR: ld.so: object '/work/native/wine_mmap32.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+ERROR: ld.so: object '/work/native/wine_mmap32.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+PASS 48-frame ring animation: premultiplied alpha, fixed play triangle and text, transparent corner, moving highlight and seamless cycle; font rasterization is not simulated

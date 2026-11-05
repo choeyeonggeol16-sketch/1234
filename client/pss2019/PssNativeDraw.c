@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "PssNativeDraw.h"
 #include "PssActivity.h"
+#include "PssVitalsHud.h"
 #include "PssBridge.h"
 /* Public DirectDraw COM presentation methods, not client code addresses.
  * Capture all compatible surface interface tables from an offscreen object.
@@ -20,6 +21,7 @@ typedef HRESULT (WINAPI *DescFn)(void*,void*);
 typedef struct {void** table;BltFn blt;FlipFn flip;} Entry;
 static Entry entries[8];
 static volatile LONG count,active,drawing,painted,last_paint;
+static volatile LONG hud_painted,last_hud_paint;
 static HRESULT WINAPI frame_blt(void*,RECT*,void*,RECT*,DWORD,DDBLTFX*);
 static HRESULT WINAPI frame_flip(void*,void*,DWORD);
 static Entry* entry(void* surface){
@@ -76,11 +78,16 @@ static void paint(void* surface,const RECT* source,const RECT* destination){
     void** table=*(void***)surface;HDC dc=0;
     if(FAILED(((DcFn)table[17])(surface,&dc))||!dc)return;
     BOOL ok=PssActivityPaintSurface(dc,source,destination);
+    BOOL hud_ok=PssVitalsHudPaintSurface(dc,source,destination);
     ((ReleaseDcFn)table[26])(surface,dc);
     if(ok){
         InterlockedExchange(&last_paint,(LONG)GetTickCount());
         if(InterlockedCompareExchange(&painted,1,0)==0)
             PssBridgeLog(L"PSS native DirectDraw activity painted into the game frame");
+    }
+    if(hud_ok){
+        InterlockedExchange(&last_hud_paint,(LONG)GetTickCount());
+        if(InterlockedCompareExchange(&hud_painted,1,0)==0)PssBridgeLog(L"HUD HP/MP painted into native game frame");
     }
 }
 static HRESULT WINAPI frame_blt(void* self,RECT* destination,void* source,RECT* source_rect,DWORD flags,DDBLTFX* effects){
@@ -149,10 +156,15 @@ BOOL PssNativeDrawHasPainted(void){
     return InterlockedCompareExchange(&active,0,0)&&InterlockedCompareExchange(&painted,0,0)&&
         (DWORD)(GetTickCount()-(DWORD)InterlockedCompareExchange(&last_paint,0,0))<500U;
 }
+BOOL PssNativeDrawHudHasPainted(void){
+    return InterlockedCompareExchange(&active,0,0)&&InterlockedCompareExchange(&hud_painted,0,0)&&
+        (DWORD)(GetTickCount()-(DWORD)InterlockedCompareExchange(&last_hud_paint,0,0))<500U;
+}
 void PssNativeDrawSetActive(BOOL value){InterlockedExchange(&active,value!=0);}
 void PssNativeDrawDetach(void){
     InterlockedExchange(&active,0);
     InterlockedExchange(&painted,0);
+    InterlockedExchange(&hud_painted,0);
     LONG size=InterlockedCompareExchange(&count,0,0);
     for(LONG n=0;n<size;++n){
         replace(&entries[n].table[5],(void*)frame_blt,(void*)entries[n].blt);

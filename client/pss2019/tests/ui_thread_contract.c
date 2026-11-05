@@ -9,6 +9,8 @@
 static volatile BYTE image_reservation[0x1C00000];
 static DWORD owner_thread,initializer_thread;
 static int initializations;
+static int hud_initializations,draw_initializations;
+static BOOL hud_world,native_active;
 static BOOL WINAPI fixture_read(HANDLE process,LPCVOID address,LPVOID out,SIZE_T size,SIZE_T* got){
     (void)process;memcpy(out,address,size);if(got)*got=size;return TRUE;
 }
@@ -20,6 +22,14 @@ void PssActivityInitialize(HWND hwnd,HMODULE dll){
 }
 void PssActivityUpdate(BOOL active){(void)active;}
 void PssActivityDetach(void){}
+BOOL PssActivityActive(void){return FALSE;}
+void PssVitalsHudInitialize(HWND hwnd,HMODULE dll){(void)hwnd;(void)dll;assert(GetCurrentThreadId()==owner_thread);++hud_initializations;}
+void PssVitalsHudDetach(void){hud_world=FALSE;}
+void PssVitalsHudUpdate(BOOL world){hud_world=world;}
+BOOL PssVitalsHudActive(void){return hud_world;}
+BOOL PssNativeDrawInitialize(void){assert(GetCurrentThreadId()==owner_thread);++draw_initializations;return TRUE;}
+void PssNativeDrawDetach(void){native_active=FALSE;}
+void PssNativeDrawSetActive(BOOL active){native_active=active;}
 void PssRoamingInitialize(HWND hwnd,HMODULE dll){(void)hwnd;(void)dll;}
 void PssRoamingObserve(void){}
 void PssRoamingReset(BOOL cancel){(void)cancel;}
@@ -38,14 +48,17 @@ int main(void){
     DWORD ignore;VirtualProtect(base,4096,protect,&ignore);
     HWND hwnd=CreateWindowExW(0,L"STATIC",L"PSS thread fixture",0,0,0,1,1,HWND_MESSAGE,0,module,0);assert(hwnd);
     for(int round=0;round<2;++round){
+        *(DWORD*)0x15D8E44=3;
         HANDLE thread=CreateThread(0,0,attach_worker,hwnd,0,0);assert(thread);
         assert(WaitForSingleObject(thread,5000)==WAIT_OBJECT_0);DWORD result=0;GetExitCodeThread(thread,&result);CloseHandle(thread);assert(result==1);
         assert(initializations==round);
         SendMessageW(hwnd,WM_TIMER,0x505353,0);
         assert(initializations==round+1&&initializer_thread==owner_thread);
+        assert(hud_initializations==round+1&&draw_initializations==round+1&&native_active&&hud_world&&!patched);
         SendMessageW(hwnd,WM_TIMER,0x505353,0);assert(initializations==round+1);
+        *(DWORD*)0x15D8E44=0;SendMessageW(hwnd,WM_TIMER,0x505353,0);assert(!native_active&&!hud_world);
         SendMessageW(hwnd,CONTROL,2,0);
     }
     DestroyWindow(hwnd);
-    puts("PASS actual worker-thread PssAttach defers activity initialization to owner WM_TIMER, once per attach, including detach/re-attach");
+    puts("PASS actual worker-thread PssAttach defers activity/HUD/draw initialization to owner WM_TIMER, once per attach; HUD runs without PSS patch/start and hides outside world; detach/re-attach");
 }

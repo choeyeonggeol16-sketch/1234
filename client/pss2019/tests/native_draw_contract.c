@@ -12,12 +12,15 @@ typedef HRESULT(WINAPI *Flip)(void*,void*,DWORD);
 static int paints;
 static RECT last_source,last_destination;
 static BOOL has_source,has_destination;
+static BOOL hud_enabled;
+static BOOL activity_enabled=TRUE;
 void PssBridgeLog(const wchar_t* text){(void)text;}
+BOOL PssVitalsHudPaintSurface(HDC dc,const RECT* source,const RECT* destination){(void)dc;(void)source;(void)destination;return hud_enabled;}
 BOOL PssActivityPaintSurface(HDC dc,const RECT* source,const RECT* destination){
  assert(dc==(HDC)3);has_source=source!=0;has_destination=destination!=0;
  if(source)last_source=*source;
  if(destination)last_destination=*destination;
- ++paints;return TRUE;
+ ++paints;return activity_enabled;
 }
 static HRESULT WINAPI blt(void* self,RECT* a,void* b,RECT* c,DWORD d,DDBLTFX* e){(void)a;(void)b;(void)c;(void)d;(void)e;++((Surface*)self)->blts;return S_OK;}
 static HRESULT WINAPI flip(void* self,void* a,DWORD b){(void)a;(void)b;++((Surface*)self)->flips;return S_OK;}
@@ -59,7 +62,13 @@ int main(void){
  assert(has_source&&has_destination&&!memcmp(&source,&last_source,sizeof(source))&&!memcmp(&destination,&last_destination,sizeof(destination)));
  front.legacy=TRUE;assert(((Blt)vt[5])(&front,0,&back,0,0,0)==S_OK&&paints==6);
  assert(has_destination&&last_destination.right==1920&&last_destination.bottom==1080);
+ assert(!PssNativeDrawHudHasPainted());hud_enabled=TRUE;
+ assert(((Blt)vt[5])(&front,0,&back,0,0,0)==S_OK&&paints==7&&PssNativeDrawHudHasPainted());
  PssNativeDrawDetach();assert(back.refs==1&&back.dc_release==paints);
+ assert(!PssNativeDrawHudHasPainted());
+ assert(PssNativeDrawTestInstall(&front));PssNativeDrawSetActive(TRUE);activity_enabled=FALSE;
+ assert(((Blt)vt[5])(&front,0,&back,0,0,0)==S_OK&&PssNativeDrawHudHasPainted()&&!PssNativeDrawHasPainted());
+ PssNativeDrawDetach();assert(back.dc_release==paints);
  puts("PASS shared COM-table capture, primary full-frame filtering, explicit crop/destination forwarding, legacy surface bounds, Flip backbuffer ownership, DC cleanup/failure, inactive bypass and detach/in-flight/re-attach");
  puts("Controlled COM test doubles; actual game DirectDraw interface matching and fullscreen visibility remain unverified.");
 }

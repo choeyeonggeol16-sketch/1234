@@ -5,6 +5,8 @@
 #include "PssBridge.h"
 #include "PssRoaming.h"
 #include "PssActivity.h"
+#include "PssVitalsHud.h"
+#include "PssNativeDraw.h"
 
 #define CONTROL (WM_APP+0x5A1)
 static HMODULE module;
@@ -199,7 +201,7 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
   if(wp==3){if(enabled)command(101);return 1;}
   if(wp==4){if(enabled)PssRoamingBlockedShot((int)lp);return 1;}
   if(wp==2) {
-   PssActivityDetach();activity_initialized=FALSE;
+   PssNativeDrawDetach();PssVitalsHudDetach();PssActivityDetach();activity_initialized=FALSE;
    PssRoamingDetach();
    PssBridgeDetach();
    enabled=FALSE;KillTimer(game,0x505353);unpatch();if(panel){DestroyWindow(panel);panel=0;}status=0;
@@ -215,6 +217,8 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
   if(!activity_initialized){
    activity_initialized=TRUE;
    PssActivityInitialize(game,module);
+   PssVitalsHudInitialize(game,module);
+   PssNativeDrawInitialize();
   }
   if(!patched&&apply_patch()) {
    if(!item_only){make_panel();logline(L"PSS button panel created");}
@@ -222,6 +226,7 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
   }
   if(patched&&world_ready())PssBridgeTick();
   if(patched)PssRoamingObserve();
+  PssVitalsHudUpdate(world_ready());
   if(patched){
    void* manager=0;BYTE active=0,dead=1;
    BOOL running=world_ready()&&pointer_at(0x15B3D14,&manager)&&
@@ -229,6 +234,8 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
        readmem((void*)0x15D8E6E,&dead,1)&&!dead;
    PssActivityUpdate(running);
   }
+  else PssActivityUpdate(FALSE);
+  PssNativeDrawSetActive(PssActivityActive()||PssVitalsHudActive());
   if(status&&!world_ready())SetWindowTextW(status,L"캐릭터 접속 후 사용");
   else if(status) {
    void* manager=0;BYTE active=0;
@@ -237,7 +244,7 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
   place_panel();return 0;
  }
  if(msg==WM_MOVE||msg==WM_SIZE)place_panel();
- if(msg==WM_NCDESTROY){PssActivityDetach();activity_initialized=FALSE;PssRoamingDetach();PssBridgeDetach();unpatch();if(panel)DestroyWindow(panel);panel=0;installed=FALSE;}
+ if(msg==WM_NCDESTROY){PssNativeDrawDetach();PssVitalsHudDetach();PssActivityDetach();activity_initialized=FALSE;PssRoamingDetach();PssBridgeDetach();unpatch();if(panel)DestroyWindow(panel);panel=0;installed=FALSE;}
  return CallWindowProcW(previous,hwnd,msg,wp,lp);
 }
 __declspec(dllexport) DWORD WINAPI PssAttach(LPVOID arg) {
@@ -276,7 +283,7 @@ static BOOL CALLBACK find_game(HWND hwnd,LPARAM parameter) {
  LONG area=width*height;if(area>best->area){best->window=hwnd;best->area=area;}return TRUE;
 }
 static DWORD WINAPI auto_initialize(LPVOID ignored) {
- (void)ignored;logline(L"PSS V7 presentation rectangle alignment fix loaded");logline(L"PSS loaded by client import; waiting for the game world");
+ (void)ignored;logline(L"PSS V8 HP/MP read-only HUD trial loaded");logline(L"PSS loaded by client import; waiting for the game world");
  for(;;) {
   BYTE branch;
   if(world_ready()&&code_ready()&&ui_signature(&branch)) {

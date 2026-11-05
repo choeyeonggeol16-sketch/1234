@@ -1,0 +1,37 @@
+{
+  "version": "V8 read-only native HP/MP HUD trial",
+  "dll_sha256": "21de2d0cdd7d1627bf55f1c992380f7f0f3f3cc1fdc6a5bea8eed62064e37bd3",
+  "build": "PE32 -Wall -Wextra -Werror PASS",
+  "imports": [
+    "bcrypt.dll",
+    "GDI32.dll",
+    "IPHLPAPI.DLL",
+    "KERNEL32.dll",
+    "MSIMG32.DLL",
+    "msvcrt.dll",
+    "USER32.dll",
+    "WS2_32.dll"
+  ],
+  "tests": {
+    "vitals_contract": "PASS",
+    "vitals_art_contract": "PASS",
+    "ui_thread_contract": "PASS",
+    "native_draw_contract": "PASS",
+    "activity_layout_contract": "PASS",
+    "activity_art_contract": "PASS",
+    "ImportHarness": "PASS"
+  },
+  "native_data_access": "read-only; exact condition signatures + live simple-getter decode; no native getter execution",
+  "live_client_max_getter_shapes": "runtime checked, NOT YET game-verified",
+  "live_client_hp_mp_agreement": "NOT YET game-verified",
+  "HUD": "520x50 at client top 44, retained original HUD, click-through, independent of PSS start",
+  "HUD_cache_bytes": 104000,
+  "poll_ms": 100,
+  "per_frame_application_GDI_allocations": 0,
+  "server_src": "all 1689 files hash-identical to V7 latest-source merge; 1688 Java",
+  "new_server_socket_or_protocol": false,
+  "original_hud_hidden": false,
+  "NC_original_artwork": false,
+  "new_db_items_or_tables": false,
+  "real_windows_game_trial": "pending user test"
+}

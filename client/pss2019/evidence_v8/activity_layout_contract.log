@@ -1,0 +1,3 @@
+ERROR: ld.so: object '/work/native/wine_mmap32.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+ERROR: ld.so: object '/work/native/wine_mmap32.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+PASS shared placement: 1024x768 buffer / 800x600 crop, nonzero source origin, window movement, stretched presentation, negative screen origin and rejecting unrelated HUD copies

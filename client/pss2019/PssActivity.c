@@ -19,7 +19,7 @@ static uint32_t* pixels;
 static BOOL enabled;
 static int offset_x,offset_y;
 static DWORD ui_thread;
-static BOOL native_ready;
+static LONG active;
 static RECT game_area;
 static SRWLOCK paint_guard=SRWLOCK_INIT;
 static void render(void);
@@ -30,7 +30,7 @@ static LRESULT CALLBACK procedure(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
 }
 void PssActivityDetach(void){
     if(ui_thread&&GetCurrentThreadId()!=ui_thread)return;
-    PssNativeDrawDetach();native_ready=FALSE;
+    InterlockedExchange(&active,0);
     AcquireSRWLockExclusive(&paint_guard);
     if(window)DestroyWindow(window);
     if(canvas&&old_bitmap)SelectObject(canvas,old_bitmap);
@@ -77,8 +77,8 @@ void PssActivityInitialize(HWND game,HMODULE module){
     // Pre-render the animation strip once; no GDI objects per frame.
     render();
     PssBridgeLog(L"PSS activity initialized on the game UI thread");
-    native_ready=PssNativeDrawInitialize();
 }
+BOOL PssActivityActive(void){return InterlockedCompareExchange(&active,0,0)!=0;}
 static void render(void){
     memset(pixels,0,WIDTH*HEIGHT*PSS_ART_FRAMES*sizeof(*pixels));
     HFONT old_font=font?SelectObject(canvas,font):0;
@@ -97,7 +97,7 @@ static void render(void){
 BOOL PssActivityPaintSurface(HDC dc,const RECT* source,const RECT* destination){
     if(!dc||!TryAcquireSRWLockExclusive(&paint_guard))return FALSE;
     BOOL ok=FALSE;RECT clip;
-    if(enabled&&canvas&&pixels&&GetClipBox(dc,&clip)!=ERROR&&clip.right-clip.left>=320&&clip.bottom-clip.top>=200){
+    if(PssActivityActive()&&enabled&&canvas&&pixels&&GetClipBox(dc,&clip)!=ERROR&&clip.right-clip.left>=320&&clip.bottom-clip.top>=200){
         RECT target,mapped,view=source?*source:clip,display;
         if(destination)display=*destination;
         else display=game_area; // Flip: the complete backbuffer is the client image.
@@ -115,7 +115,8 @@ BOOL PssActivityPaintSurface(HDC dc,const RECT* source,const RECT* destination){
     ReleaseSRWLockExclusive(&paint_guard);return ok;
 }
 void PssActivityUpdate(BOOL running){
-    if(GetCurrentThreadId()!=ui_thread||!canvas||!enabled)return;
+    if(GetCurrentThreadId()!=ui_thread)return;
+    if(!canvas||!enabled){InterlockedExchange(&active,0);return;}
     HWND foreground=GetForegroundWindow();
     BOOL show=running&&IsWindow(owner)&&IsWindowVisible(owner)&&!IsIconic(owner)&&
         (foreground==owner||IsChild(owner,foreground));
@@ -130,8 +131,8 @@ void PssActivityUpdate(BOOL running){
     located=located&&PssActivityTarget(&game_area,WIDTH,HEIGHT,offset_x,offset_y,&target);
     ReleaseSRWLockExclusive(&paint_guard);
     show=show&&located;
-    PssNativeDrawSetActive(show);
-    if(!show||(native_ready&&PssNativeDrawHasPainted())){if(window)ShowWindow(window,SW_HIDE);return;}
+    InterlockedExchange(&active,show);
+    if(!show||PssNativeDrawHasPainted()){if(window)ShowWindow(window,SW_HIDE);return;}
     if(!window)return;
     unsigned frame=(GetTickCount()/PSS_ART_FRAME_MS)%PSS_ART_FRAMES;
     POINT destination={target.left,target.top},source={0,(LONG)frame*HEIGHT};SIZE size={WIDTH,HEIGHT};

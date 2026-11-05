@@ -1,0 +1,46 @@
+00679120 push     esi
+00679121 mov      esi, ecx
+00679123 mov      ecx, dword ptr [0x15b3d94]
+00679129 test     ecx, ecx
+0067912B jne      0x679138
+0067912D call     0x63fcd0
+00679132 mov      ecx, dword ptr [0x15b3d94]
+00679138 call     0xeb19e0
+0067913D mov      ecx, eax
+0067913F call     0xeb1a00
+00679144 mov      ecx, dword ptr [0x16e2fb0]
+0067914A movsx    edx, ax
+0067914D xor      ecx, 0xc0017921
+00679153 mov      eax, dword ptr [0x16e2fb4]
+00679158 movd     xmm0, edx
+0067915C mov      eax, dword ptr [eax + ecx*4]
+0067915F xor      eax, dword ptr [0x16e2fb8]
+00679165 cvtdq2ps xmm0, xmm0
+00679168 mov      ecx, dword ptr [esi + 4]
+0067916B pop      esi
+0067916C cmp      byte ptr [ecx + 0x10], 0
+00679170 movd     xmm1, eax
+00679174 cvtdq2ps xmm1, xmm1
+00679177 divss    xmm1, xmm0
+0067917B mulss    xmm1, dword ptr [0x117febc]
+00679183 cvttss2si edx, xmm1
+00679187 jne      0x67918c
+00679189 xor      al, al
+0067918B ret      
+0067918C mov      eax, dword ptr [ecx + 0x14]
+0067918F sub      eax, 0
+00679192 je       0x6791ac
+00679194 sub      eax, 1
+00679197 je       0x6791a5
+00679199 sub      eax, 1
+0067919C jne      0x679189
+0067919E cmp      dword ptr [ecx + 0xc], edx
+006791A1 setae    al
+006791A4 ret      
+006791A5 cmp      dword ptr [ecx + 0xc], edx
+006791A8 sete     al
+006791AB ret      
+006791AC cmp      dword ptr [ecx + 0xc], edx
+006791AF setbe    al
+006791B2 ret      
+006791B3 int3     

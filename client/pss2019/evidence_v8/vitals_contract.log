@@ -1,0 +1,4 @@
+ERROR: ld.so: object '/work/native/wine_mmap32.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+ERROR: ld.so: object '/work/native/wine_mmap32.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+PASS read-only native HP/MP adapter: exact signatures, indirect/XOR values, word/zero-extended getters, death, changes, max MP zero, world exit, invalid/null pointers, descriptor races, overflow and refusing complex native code
+Getter instruction shapes are checked live; actual client values still require comparison in game.
