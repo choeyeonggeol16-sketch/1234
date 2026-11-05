@@ -139,17 +139,6 @@ static SOCKET connect_target(const Target* selected,BYTE version) {
     if(!send_all(socket_handle,hello,sizeof(hello),selected->serial)) {closesocket(socket_handle);return INVALID_SOCKET;}
     return socket_handle;
 }
-static BOOL receive_exact(SOCKET socket,BYTE* bytes,int length,LONG serial) {
-    DWORD started=GetTickCount();int used=0;
-    while(used<length&&current(serial)&&GetTickCount()-started<2000U) {
-        int got=recv(socket,(char*)bytes+used,length-used,0);
-        if(got>0){used+=got;continue;}
-        if(got==0||WSAGetLastError()!=WSAEWOULDBLOCK)return FALSE;
-        fd_set read;FD_ZERO(&read);FD_SET(socket,&read);struct timeval wait={0,200000};
-        if(select(0,&read,0,0,&wait)==SOCKET_ERROR)return FALSE;
-    }
-    return used==length;
-}
 static BOOL connection_loop(SOCKET socket,const Target* selected) {
     DWORD started=GetTickCount(),last_ping=started;
     BOOL bound=FALSE;
