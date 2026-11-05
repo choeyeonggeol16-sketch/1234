@@ -1,0 +1,28 @@
+name: Win32 DLL build with preinstalled cross compiler
+on:
+  push:
+    branches:
+      - pss/inband-appcenter-quota-stalezero-20261106
+    paths:
+      - .github/workflows/pss-fast-win32.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mingw:
+    runs-on: ubuntu-24.04
+    container: dockcross/windows-static-x86:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build final PE32 without downloading apt toolchains
+        run: |
+          bash client/pss2019/build-linux.sh
+          (cd client && sha256sum -c Pss2019.dll.sha256)
+          file client/Pss2019.dll || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PSS-InBand-LiveAppCenter-Win32
+          path: |
+            client/Pss2019.dll
+            client/Pss2019.dll.sha256
+          retention-days: 7
