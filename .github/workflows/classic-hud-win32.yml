@@ -6,7 +6,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: pss-classic-hud-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   win32-dll:
@@ -25,6 +29,16 @@ jobs:
           test -s client/Pss2019.dll
           file client/Pss2019.dll | grep -q 'PE32'
           (cd client && sha256sum -c Pss2019.dll.sha256)
+      - name: Update compiled DLL on the isolated HUD branch
+        if: github.event.head_commit.message != 'Built classic HUD DLL'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add client/Pss2019.dll client/Pss2019.dll.sha256
+          if ! git diff --cached --quiet; then
+            git commit -m 'Built classic HUD DLL'
+            git push origin HEAD:pss/classic-hud-hp-dragon-20261105
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: Pss2019-classic-HUD-Win32
