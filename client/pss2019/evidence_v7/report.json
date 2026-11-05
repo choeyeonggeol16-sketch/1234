@@ -1,0 +1,33 @@
+{
+  "version": "V7 crop-aware presentation alignment and rotating ring",
+  "dll_sha256": "b5b9979cd277a1216d891b8a85791cd17142f22bdd9a1cb809918446aad0c990",
+  "build": "PE32 -Wall -Wextra -Werror PASS",
+  "imports": [
+    "bcrypt.dll",
+    "GDI32.dll",
+    "IPHLPAPI.DLL",
+    "KERNEL32.dll",
+    "MSIMG32.DLL",
+    "msvcrt.dll",
+    "USER32.dll",
+    "WS2_32.dll"
+  ],
+  "tests": {
+    "UI owner initialization": "PASS",
+    "actual DirectDraw adapter with controlled COM tables": "PASS",
+    "crop/window/source-origin/stretch/signed-screen placement": "PASS",
+    "48-frame premultiplied artwork, fixed play/text, cycle": "PASS",
+    "final production DLL import": "PASS"
+  },
+  "cache_bytes": 1658880,
+  "animation_frames": 48,
+  "animation_frame_ms": 40,
+  "reference_video": "14.133-second supplied bandicam reference; not redistributed",
+  "native_or_extracted_NC_artwork": false,
+  "actual_windows_game_visual_trial": "NOT VERIFIED",
+  "server_java_sources": 1688,
+  "server_tree": "unchanged from V6 latest-source merge; all 1689 file hashes verified",
+  "camera_or_hunting_AI_changes": false,
+  "new_db_items_or_tables": false,
+  "item_confirmation": "No additional change; unresolved separately"
+}

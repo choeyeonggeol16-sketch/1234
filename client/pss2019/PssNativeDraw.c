@@ -16,6 +16,7 @@ typedef HRESULT (WINAPI *AttachedFn)(void*,DDSCAPS2*,void**);
 typedef HRESULT (WINAPI *DcFn)(void*,HDC*);
 typedef HRESULT (WINAPI *ReleaseDcFn)(void*,HDC);
 typedef ULONG (WINAPI *ReleaseFn)(void*);
+typedef HRESULT (WINAPI *DescFn)(void*,void*);
 typedef struct {void** table;BltFn blt;FlipFn flip;} Entry;
 static Entry entries[8];
 static volatile LONG count,active,drawing,painted,last_paint;
@@ -58,11 +59,23 @@ static BOOL primary(void* surface){
     DDSCAPS2 caps={0};void** table=*(void***)surface;
     return SUCCEEDED(((CapsFn)table[14])(surface,&caps))&&(caps.dwCaps&DDSCAPS_PRIMARYSURFACE);
 }
-static void paint(void* surface){
+static BOOL bounds(void* surface,RECT* out){
+    void** table=*(void***)surface;if(!table[22])return FALSE;
+    DDSURFACEDESC2 desc={0};desc.dwSize=sizeof(desc);
+    HRESULT hr=((DescFn)table[22])(surface,&desc);
+    DWORD width=desc.dwWidth,height=desc.dwHeight;
+    if(FAILED(hr)){
+        DDSURFACEDESC old={0};old.dwSize=sizeof(old);
+        hr=((DescFn)table[22])(surface,&old);width=old.dwWidth;height=old.dwHeight;
+    }
+    if(FAILED(hr)||!width||!height||width>65536||height>65536)return FALSE;
+    *out=(RECT){0,0,(LONG)width,(LONG)height};return TRUE;
+}
+static void paint(void* surface,const RECT* source,const RECT* destination){
     if(!surface)return;
     void** table=*(void***)surface;HDC dc=0;
     if(FAILED(((DcFn)table[17])(surface,&dc))||!dc)return;
-    BOOL ok=PssActivityPaintSurface(dc);
+    BOOL ok=PssActivityPaintSurface(dc,source,destination);
     ((ReleaseDcFn)table[26])(surface,dc);
     if(ok){
         InterlockedExchange(&last_paint,(LONG)GetTickCount());
@@ -77,7 +90,11 @@ static HRESULT WINAPI frame_blt(void* self,RECT* destination,void* source,RECT* 
     BOOL whole_source=!source_rect||(source_rect->right-source_rect->left>=320&&source_rect->bottom-source_rect->top>=200);
     if(InterlockedCompareExchange(&active,0,0)&&source&&source!=self&&whole_destination&&whole_source&&
        InterlockedCompareExchange(&drawing,1,0)==0){
-        if(primary(self))paint(source);
+        if(primary(self)){
+            RECT display;
+            if(destination)paint(source,source_rect,destination);
+            else if(bounds(self,&display))paint(source,source_rect,&display);
+        }
         InterlockedExchange(&drawing,0);
     }
     return e->blt(self,destination,source,source_rect,flags,effects);
@@ -91,7 +108,7 @@ static HRESULT WINAPI frame_flip(void* self,void* override,DWORD flags){
                 void** table=*(void***)self;
                 if(SUCCEEDED(((AttachedFn)table[12])(self,&caps,&back)))owned=back!=0;
             }
-            if(back)paint(back);
+            if(back)paint(back,0,0);
             if(owned){void** table=*(void***)back;((ReleaseFn)table[2])(back);}
         }
         InterlockedExchange(&drawing,0);

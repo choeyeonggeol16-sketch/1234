@@ -276,7 +276,7 @@ static BOOL CALLBACK find_game(HWND hwnd,LPARAM parameter) {
  LONG area=width*height;if(area>best->area){best->window=hwnd;best->area=area;}return TRUE;
 }
 static DWORD WINAPI auto_initialize(LPVOID ignored) {
- (void)ignored;logline(L"PSS V6 UI-thread initialization fix loaded");logline(L"PSS loaded by client import; waiting for the game world");
+ (void)ignored;logline(L"PSS V7 presentation rectangle alignment fix loaded");logline(L"PSS loaded by client import; waiting for the game world");
  for(;;) {
   BYTE branch;
   if(world_ready()&&code_ready()&&ui_signature(&branch)) {

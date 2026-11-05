@@ -3,12 +3,14 @@
 #include "PssActivity.h"
 #include "PssBridge.h"
 #include "PssNativeDraw.h"
+#include "PssActivityLayout.h"
+#include "PssActivityArt.h"
 #include <stdint.h>
 #include <string.h>
 /* Cached activity artwork, drawn at DirectDraw presentation when available.
  * A click-through window remains as a windowed fallback. No native UI calls
  * or changes to the PSS start/stop/movement state are required. */
-enum {WIDTH=230,HEIGHT=64};
+enum {WIDTH=PSS_ART_WIDTH,HEIGHT=PSS_ART_HEIGHT};
 static HWND owner,window;
 static HDC canvas;
 static HBITMAP bitmap,old_bitmap;
@@ -18,6 +20,7 @@ static BOOL enabled;
 static int offset_x,offset_y;
 static DWORD ui_thread;
 static BOOL native_ready;
+static RECT game_area;
 static SRWLOCK paint_guard=SRWLOCK_INIT;
 static void render(void);
 static LRESULT CALLBACK procedure(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
@@ -35,6 +38,7 @@ void PssActivityDetach(void){
     if(font)DeleteObject(font);
     if(canvas)DeleteDC(canvas);
     window=0;owner=0;canvas=0;bitmap=old_bitmap=0;font=0;pixels=0;enabled=FALSE;
+    SetRectEmpty(&game_area);
     ReleaseSRWLockExclusive(&paint_guard);
 }
 void PssActivityInitialize(HWND game,HMODULE module){
@@ -62,52 +66,51 @@ void PssActivityInitialize(HWND game,HMODULE module){
         wc.lpszClassName,L"PSS activity",WS_POPUP,0,0,WIDTH,HEIGHT,game,0,module,0);
     if(!window)PssBridgeLog(L"PSS activity overlay window unavailable; trying native frame rendering");
     BITMAPINFO info;memset(&info,0,sizeof(info));info.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
-    info.bmiHeader.biWidth=WIDTH;info.bmiHeader.biHeight=-HEIGHT;info.bmiHeader.biPlanes=1;
+    info.bmiHeader.biWidth=WIDTH;info.bmiHeader.biHeight=-HEIGHT*PSS_ART_FRAMES;info.bmiHeader.biPlanes=1;
     info.bmiHeader.biBitCount=32;info.bmiHeader.biCompression=BI_RGB;
     canvas=CreateCompatibleDC(0);
     if(canvas)bitmap=CreateDIBSection(canvas,&info,DIB_RGB_COLORS,(void**)&pixels,0,0);
     if(!bitmap){PssBridgeLog(L"PSS activity bitmap creation failed");PssActivityDetach();return;}
     old_bitmap=SelectObject(canvas,bitmap);
-    font=CreateFontW(-14,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,
-        OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,NONANTIALIASED_QUALITY,DEFAULT_PITCH,L"Malgun Gothic");
-    // The artwork is static: allocate/draw GDI objects once, not per frame.
+    font=CreateFontW(-10,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,
+        OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,ANTIALIASED_QUALITY,DEFAULT_PITCH,L"Malgun Gothic");
+    // Pre-render the animation strip once; no GDI objects per frame.
     render();
     PssBridgeLog(L"PSS activity initialized on the game UI thread");
     native_ready=PssNativeDrawInitialize();
 }
 static void render(void){
-    memset(pixels,0,WIDTH*HEIGHT*sizeof(*pixels));
-    HBRUSH background=CreateSolidBrush(RGB(164,61,9));
-    RECT bar={20,41,WIDTH-20,62};FillRect(canvas,&bar,background);
-    HBRUSH old_brush=SelectObject(canvas,background);
-    HPEN pen=CreatePen(PS_SOLID,2,RGB(255,151,51)),old_pen=SelectObject(canvas,pen);
-    Ellipse(canvas,WIDTH/2-13,7,WIDTH/2+13,33);
-    SelectObject(canvas,old_pen);DeleteObject(pen);
-    // Reference UI: a play triangle inside a circle, not a loading spinner.
-    HBRUSH arrow=CreateSolidBrush(RGB(255,249,234));
-    SelectObject(canvas,arrow);
-    POINT points[3]={{WIDTH/2-4,12},{WIDTH/2+7,20},{WIDTH/2-4,28}};
-    Polygon(canvas,points,3);SelectObject(canvas,old_brush);DeleteObject(arrow);DeleteObject(background);
+    memset(pixels,0,WIDTH*HEIGHT*PSS_ART_FRAMES*sizeof(*pixels));
     HFONT old_font=font?SelectObject(canvas,font):0;
-    SetBkMode(canvas,TRANSPARENT);SetTextColor(canvas,RGB(255,242,219));
+    RECT bar={2,40,WIDTH-2,56};
+    SetBkMode(canvas,TRANSPARENT);SetTextColor(canvas,RGB(255,255,255));
     DrawTextW(canvas,L"플레이 서포트 동작 중",-1,&bar,DT_CENTER|DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
     if(old_font)SelectObject(canvas,old_font);
     GdiFlush();
+    uint8_t mask[WIDTH*HEIGHT];
     for(unsigned i=0;i<WIDTH*HEIGHT;++i){
-        uint32_t c=pixels[i]&0xFFFFFFU;
-        if(c){uint32_t b=(c&255U)*235U/255U,g=((c>>8)&255U)*235U/255U,r=((c>>16)&255U)*235U/255U;
-            pixels[i]=0xEB000000U|(r<<16)|(g<<8)|b;}
+        uint32_t c=pixels[i];unsigned r=(c>>16)&255,g=(c>>8)&255,b=c&255;
+        mask[i]=(uint8_t)((r+g+b)/3);
     }
+    for(unsigned n=0;n<PSS_ART_FRAMES;++n)PssActivityArtFrame(pixels+n*WIDTH*HEIGHT,mask,n);
 }
-BOOL PssActivityPaintSurface(HDC dc){
+BOOL PssActivityPaintSurface(HDC dc,const RECT* source,const RECT* destination){
     if(!dc||!TryAcquireSRWLockExclusive(&paint_guard))return FALSE;
     BOOL ok=FALSE;RECT clip;
     if(enabled&&canvas&&pixels&&GetClipBox(dc,&clip)!=ERROR&&clip.right-clip.left>=320&&clip.bottom-clip.top>=200){
-        int x=clip.left+(clip.right-clip.left-WIDTH)/2+offset_x;
-        int y=clip.top+(clip.bottom-clip.top)/2+offset_y;
+        RECT target,mapped,view=source?*source:clip,display;
+        if(destination)display=*destination;
+        else display=game_area; // Flip: the complete backbuffer is the client image.
+        if(!PssActivityTarget(&game_area,WIDTH,HEIGHT,offset_x,offset_y,&target)||
+           !PssActivityMap(&target,&view,&display,&mapped)||
+           mapped.left<clip.left||mapped.top<clip.top||mapped.right>clip.right||mapped.bottom>clip.bottom){
+            ReleaseSRWLockExclusive(&paint_guard);return FALSE;
+        }
+        int x=mapped.left,y=mapped.top,w=mapped.right-mapped.left,h=mapped.bottom-mapped.top;
         BLENDFUNCTION blend={AC_SRC_OVER,0,255,AC_SRC_ALPHA};
-        ok=AlphaBlend(dc,x,y,WIDTH,HEIGHT,canvas,0,0,WIDTH,HEIGHT,blend);
-        if(!ok)ok=TransparentBlt(dc,x,y,WIDTH,HEIGHT,canvas,0,0,WIDTH,HEIGHT,RGB(0,0,0));
+        unsigned frame=(GetTickCount()/PSS_ART_FRAME_MS)%PSS_ART_FRAMES;
+        ok=AlphaBlend(dc,x,y,w,h,canvas,0,(int)frame*HEIGHT,WIDTH,HEIGHT,blend);
+        if(!ok)ok=TransparentBlt(dc,x,y,w,h,canvas,0,(int)frame*HEIGHT,WIDTH,HEIGHT,RGB(0,0,0));
     }
     ReleaseSRWLockExclusive(&paint_guard);return ok;
 }
@@ -116,14 +119,22 @@ void PssActivityUpdate(BOOL running){
     HWND foreground=GetForegroundWindow();
     BOOL show=running&&IsWindow(owner)&&IsWindowVisible(owner)&&!IsIconic(owner)&&
         (foreground==owner||IsChild(owner,foreground));
+    RECT area={0},target;
+    POINT first={0,0},last;
+    BOOL located=GetClientRect(owner,&area);
+    last=(POINT){area.right,area.bottom};
+    located=located&&ClientToScreen(owner,&first)&&ClientToScreen(owner,&last);
+    AcquireSRWLockExclusive(&paint_guard);
+    if(located)game_area=(RECT){first.x,first.y,last.x,last.y};
+    else SetRectEmpty(&game_area);
+    located=located&&PssActivityTarget(&game_area,WIDTH,HEIGHT,offset_x,offset_y,&target);
+    ReleaseSRWLockExclusive(&paint_guard);
+    show=show&&located;
     PssNativeDrawSetActive(show);
     if(!show||(native_ready&&PssNativeDrawHasPainted())){if(window)ShowWindow(window,SW_HIDE);return;}
     if(!window)return;
-    RECT area;
-    if(!GetClientRect(owner,&area)){ShowWindow(window,SW_HIDE);return;}
-    POINT center={(area.right-area.left)/2+offset_x,(area.bottom-area.top)/2+offset_y};
-    if(!ClientToScreen(owner,&center)){ShowWindow(window,SW_HIDE);return;}
-    POINT destination={center.x-WIDTH/2,center.y},source={0,0};SIZE size={WIDTH,HEIGHT};
+    unsigned frame=(GetTickCount()/PSS_ART_FRAME_MS)%PSS_ART_FRAMES;
+    POINT destination={target.left,target.top},source={0,(LONG)frame*HEIGHT};SIZE size={WIDTH,HEIGHT};
     AcquireSRWLockExclusive(&paint_guard);
     BLENDFUNCTION blend={AC_SRC_OVER,0,255,AC_SRC_ALPHA};
     if(UpdateLayeredWindow(window,0,&destination,&size,canvas,&source,0,&blend,ULW_ALPHA))

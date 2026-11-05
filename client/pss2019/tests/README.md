@@ -28,3 +28,12 @@ Build the headless tests from this directory's parent with 32-bit MinGW:
     i686-w64-mingw32-gcc -std=c11 -Wall -Wextra -Werror -O2 -static -I. -DPSS_NATIVE_DRAW_TEST tests/native_draw_contract.c PssNativeDraw.c -o ../NativeDrawTest.exe -ldxguid -luser32 -lkernel32
 
 The separate windowed activity_indicator_test.c now supplies native-draw boundary doubles. Link it with PssActivity.c, -lmsimg32 -lgdi32 -luser32 -lkernel32 on a working Windows desktop. It is not part of the passing headless tests.
+
+
+V7 presentation alignment and animation
+
+- ActivityLayoutTest compiles the exact shared production PssActivityLayout.h. It covers an 800x600 crop from a larger 1024x768 allocation, nonzero source origin, translated windows, 2:1 stretch and its inverse mapping, negative screen coordinates and excluding separate HUD rectangles. NativeDrawTest now verifies actual Blt source/destination forwarding and legacy surface-description fallback. The layered window and source-buffer artwork use the same screen-space target.
+- ActivityArtTest calls actual PssActivityArtFrame for all 48 cached frames. It verifies premultiplied ARGB channel bounds, stable text and play triangle, moving light, transparent corners and exact cyclic closure. Font rasterization uses the real Windows GDI path only at initialization and is not simulated in this test.
+- UiThreadTest and ImportHarness were rerun against V7. Final build uses -Wall -Wextra -Werror and only system DLL imports. There are no new server changes.
+- The supplied 14.133-second 30fps reference video shows a stationary play triangle, rotating bright ring segment and small glowing text. The helper artwork is a local reconstruction; it is not extracted NC artwork. Actual game positioning and visual quality remain subject to a Windows trial. The cached animation occupies 1,658,880 bytes and the presentation path selects a sprite row without allocating application GDI objects.
+- Build ActivityLayoutTest with tests/activity_layout_contract.c -I. -luser32 -lkernel32. Build ActivityArtTest with tests/activity_art_contract.c PssActivityArt.c -I. using the same PE32 C compiler. The separate windowed fixture additionally links PssActivityArt.c.

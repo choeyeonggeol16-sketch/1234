@@ -4,5 +4,5 @@
 void PssActivityInitialize(HWND game,HMODULE module);
 void PssActivityUpdate(BOOL running);
 void PssActivityDetach(void);
-BOOL PssActivityPaintSurface(HDC dc);
+BOOL PssActivityPaintSurface(HDC dc,const RECT* source,const RECT* destination);
 #endif
