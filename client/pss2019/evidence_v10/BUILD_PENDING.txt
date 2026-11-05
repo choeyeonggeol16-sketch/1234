@@ -1,0 +1,1 @@
+Classic HUD Win32 DLL verification branch only. No game or server logic changed.
