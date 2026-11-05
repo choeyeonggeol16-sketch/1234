@@ -1,4 +1,4 @@
-name: Pss2019 classic-inspired HUD DLL
+name: Pss2019 classic HUD Win32 build and V11 package
 on:
   push:
     branches:
@@ -10,35 +10,64 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
-  group: pss-classic-hud-${{ github.ref }}
+  group: classic-hud-v11-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   win32-dll:
+    if: github.event_name != 'push' || github.event.head_commit.message != 'Publish verified V11 HUD package'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Install x86 MinGW
-        run: |
-          sudo apt-get install -y --no-install-recommends gcc-mingw-w64-i686 g++-mingw-w64-i686
-      - name: Build Pss2019.dll
+        run: sudo apt-get install -y --no-install-recommends gcc-mingw-w64-i686 g++-mingw-w64-i686
+      - name: Compile original V11 source
         run: bash client/pss2019/build-linux.sh
-      - name: Inspect PE32 and checksum
+      - name: Verify newly built PE32
         run: |
           file client/Pss2019.dll
-          test -s client/Pss2019.dll
           file client/Pss2019.dll | grep -q 'PE32'
           (cd client && sha256sum -c Pss2019.dll.sha256)
-      - name: Update compiled DLL on the isolated HUD branch
-        if: github.event_name == 'push' && github.event.head_commit.message != 'Built classic HUD DLL'
+      - name: Assemble exact user-delivered V11 files
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
+          mkdir -p /tmp/pss-v11-artifact downloads
+          gh run download 42027387603 -R choeyeonggeol16-sketch/1234 -n Pss2019-classic-HUD-Win32 -D /tmp/pss-v11-artifact
+          cp /tmp/pss-v11-artifact/Pss2019.dll client/Pss2019.dll
+          cp /tmp/pss-v11-artifact/Pss2019.dll.sha256 client/Pss2019.dll.sha256
+          echo "13c973c1d5e75119eefd374a1b9b7c432a7325edcfaa0c436f4a17469ffdecfb  client/Pss2019.dll" | sha256sum -c -
+          (cd client && sha256sum -c Pss2019.dll.sha256)
+          python3 - <<'PY'
+          import base64, hashlib, lzma, pathlib, zipfile
+          root=pathlib.Path(".")
+          encoded=(root/"client/pss2019/assets/Pss2019ClassicHud.dat.xz.b64").read_text().strip()
+          art=lzma.decompress(base64.b64decode(encoded,validate=True))
+          assert hashlib.sha256(art).hexdigest()=="dc730ab0ebba7e569a52c2326ef66abeb768cb28dc34f128fdb4f2745a3e5356", "art hash mismatch"
+          assert len(art)==14562, "art size mismatch"
+          (root/"client/Pss2019ClassicHud.dat").write_bytes(art)
+          files=[("client/Pss2019.dll","Pss2019.dll"),("client/Pss2019ClassicHud.dat","Pss2019ClassicHud.dat"),("client/pss2019/README_FIRST.txt","README_FIRST.txt")]
+          with zipfile.ZipFile(root/"downloads/PSS_V11_Classic_HUD_DLL_20261105.zip","w",compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for src,arc in files:z.write(root/src,arc)
+          with zipfile.ZipFile(root/"downloads/PSS_V11_Classic_HUD_DLL_20261105.zip") as z:
+              assert z.testzip() is None
+              assert hashlib.sha256(z.read("Pss2019.dll")).hexdigest()=="13c973c1d5e75119eefd374a1b9b7c432a7325edcfaa0c436f4a17469ffdecfb"
+              assert hashlib.sha256(z.read("Pss2019ClassicHud.dat")).hexdigest()=="dc730ab0ebba7e569a52c2326ef66abeb768cb28dc34f128fdb4f2745a3e5356"
+          PY
+      - name: Commit complete V11 release to HUD branch
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add client/Pss2019.dll client/Pss2019.dll.sha256
+          git add client/Pss2019.dll client/Pss2019.dll.sha256 client/Pss2019ClassicHud.dat downloads/PSS_V11_Classic_HUD_DLL_20261105.zip
           if ! git diff --cached --quiet; then
-            git commit -m 'Built classic HUD DLL'
+            git commit -m 'Publish verified V11 HUD package'
             git push origin HEAD:pss/classic-hud-hp-dragon-20261105
           fi
       - uses: actions/upload-artifact@v4
@@ -47,4 +76,7 @@ jobs:
           path: |
             client/Pss2019.dll
             client/Pss2019.dll.sha256
+            client/Pss2019ClassicHud.dat
+            downloads/PSS_V11_Classic_HUD_DLL_20261105.zip
+          if-no-files-found: ignore
           retention-days: 7
