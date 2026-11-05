@@ -32,6 +32,8 @@ static HWND game_window;
 static UINT game_message;
 static BOOL installed;
 static volatile LONG observed_ack;
+static volatile LONG observed_marker_failure;
+static BOOL warned_signature;
 
 static BOOL bytes_at(DWORD address,const BYTE *expected,SIZE_T length) {
     BYTE actual[32];
@@ -43,11 +45,11 @@ static BOOL bytes_at(DWORD address,const BYTE *expected,SIZE_T length) {
 }
 
 static BOOL marker_matches(const BYTE* payload,int length) {
-    if(!payload||(length!=20&&length!=22))return FALSE;
+    if(!payload||length<20||length>24)return FALSE;
     if(payload[0]!=0x08||payload[1]!=0x04||
        payload[2]!=0x7a||payload[3]!=sizeof(open_marker))return FALSE;
     if(memcmp(payload+4,open_marker,sizeof(open_marker))!=0)return FALSE;
-    if(length==22&&(payload[20]!=0||payload[21]!=0))return FALSE;
+    for(int i=20;i<length;i++)if(payload[i]!=0)return FALSE;
     return TRUE;
 }
 
@@ -60,6 +62,12 @@ static void __cdecl ack_dispatch(const BYTE *payload,int length) {
             PssBridgeLog(L"[PSS-INBAND] native marker received; no game UI receiver");
         }
         return; // A control marker is NEVER passed to native PSS ack logic.
+    }
+    if(payload&&length>=2&&payload[0]==0x08&&payload[1]==0x04 &&
+       InterlockedCompareExchange(&observed_marker_failure,1,0)==0) {
+        wchar_t text[130];
+        wsprintfW(text,L"[PSS-INBAND] result=4 arrived but marker mismatch; body bytes=%d",length);
+        PssBridgeLog(text);
     }
     if(InterlockedCompareExchange(&observed_ack,1,0)==0) {
         wchar_t message[128];
@@ -80,7 +88,10 @@ BOOL PssGamePacketInitialize(HWND game,UINT message) {
     if(!game||!message||!IsWindow(game))return FALSE;
     if(!bytes_at(ACK_ENTRY,native_head,sizeof(native_head)) ||
        !bytes_at(ACK_CALL_SITE,ack_caller,sizeof(ack_caller))) {
-        PssBridgeLog(L"[PSS-INBAND] native 2102 decoder signature differs; hook refused");
+        if(!warned_signature) {
+            warned_signature=TRUE;
+            PssBridgeLog(L"[PSS-INBAND] native 2102 decoder signature differs; hook refused");
+        }
         return FALSE;
     }
     BYTE *fresh=(BYTE*)VirtualAlloc(NULL,16,MEM_COMMIT|MEM_RESERVE,PAGE_EXECUTE_READWRITE);
