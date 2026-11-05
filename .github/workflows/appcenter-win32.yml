@@ -2,7 +2,7 @@ name: 2019 Ctrl+Z AppCenter test DLL
 on:
   push:
     branches:
-      - pss/appcenter-secure-sidecar-20261105
+      - pss/appcenter-reconnect-20261106
   workflow_dispatch:
 
 permissions:
@@ -61,7 +61,7 @@ jobs:
              print(f"{p}: {len(data)} bytes SHA256={hashlib.sha256(data).hexdigest()}")
           PY
       - name: Upload built DLL and ready-to-test app center ZIP to this branch
-        if: github.event_name == 'push'
+        if: false # keep production branch and binary untouched; only use CI artifact
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
