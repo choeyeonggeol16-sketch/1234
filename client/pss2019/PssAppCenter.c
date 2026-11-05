@@ -20,10 +20,15 @@
 enum {
     APP_ROUTE_PUSH = 0x00BEBBBE,
     APP_ROUTE_VALUE = 0x00BEBBBF,
-    ORIGINAL_HOME_URL = 0x01255834
+    ORIGINAL_HOME_URL = 0x01255834,
+    MARKET_URL_PUSH = 0x00BF2575,
+    MARKET_URL_VALUE = 0x00BF2576,
+    ORIGINAL_MARKET_URL = 0x01257090
 };
 static char destination[2048];
 static BOOL installed;
+static BOOL market_installed;
+static BOOL warned_market;
 static DWORD last_attempt;
 static BOOL warned_mismatch,warned_server;
 static BYTE game_tcp_rows[262144];
@@ -32,6 +37,15 @@ static const BYTE expected_code[] = {
     0x8D,0x4D,0xD8,0xE8,0x45,0xC5,0x83,0xFF
 };
 static const char original_home[] = "http://g.lineage.plaync.com/ingame/index";
+static const char original_market[] = "http://g.lineage.plaync.com/ingame/item/search";
+/* 2019 client's native item-search URL builder at BF2570, identified in the
+ * loaded 19.02.15.1002 image. Do not patch the comparison at BEB811.
+ * This builder copies the URL to the same embedded AppCenter navigator. */
+static const BYTE expected_market_code[] = {
+    0x68,0xff,0x03,0x00,0x00,0x68,0x90,0x70,0x25,0x01,
+    0x8d,0x41,0x2c,0x68,0x00,0x04,0x00,0x00,0x50,0x90,
+    0xe8,0x07,0xb8,0x2a,0x76
+};
 
 static BOOL read_exact(DWORD address, void *result, SIZE_T size) {
     SIZE_T done=0;
@@ -47,17 +61,49 @@ static BOOL verified_site(void) {
        memcmp(home,original_home,sizeof(home))!=0)return FALSE;
     return TRUE;
 }
-static BOOL write_value(DWORD value) {
+static BOOL write_word(DWORD address,DWORD value) {
     DWORD previous=0,ignored=0;
-    if(!VirtualProtect((LPVOID)(uintptr_t)APP_ROUTE_VALUE,sizeof(value),
+    if(!VirtualProtect((LPVOID)(uintptr_t)address,sizeof(value),
                        PAGE_EXECUTE_READWRITE,&previous))return FALSE;
-    CopyMemory((LPVOID)(uintptr_t)APP_ROUTE_VALUE,&value,sizeof(value));
+    CopyMemory((LPVOID)(uintptr_t)address,&value,sizeof(value));
     BOOL flushed=FlushInstructionCache(GetCurrentProcess(),
-                         (LPCVOID)(uintptr_t)APP_ROUTE_VALUE,sizeof(value));
-    BOOL protected_ok=VirtualProtect((LPVOID)(uintptr_t)APP_ROUTE_VALUE,
+                         (LPCVOID)(uintptr_t)address,sizeof(value));
+    BOOL protected_ok=VirtualProtect((LPVOID)(uintptr_t)address,
                                      sizeof(value),previous,&ignored);
     return flushed&&protected_ok;
 }
+static BOOL write_value(DWORD value) {
+    return write_word(APP_ROUTE_VALUE,value);
+}
+static BOOL verified_market_site(void) {
+    BYTE code[sizeof(expected_market_code)],market[sizeof(original_market)];
+    if(GetModuleHandleW(0)!=(HMODULE)(uintptr_t)0x400000)return FALSE;
+    if(!read_exact(MARKET_URL_PUSH-5,code,sizeof(code)) ||
+       memcmp(code,expected_market_code,sizeof(code))!=0)return FALSE;
+    if(!read_exact(ORIGINAL_MARKET_URL,market,sizeof(market)) ||
+       memcmp(market,original_market,sizeof(market))!=0)return FALSE;
+    return TRUE;
+}
+static void route_native_market(DWORD new_url) {
+    if(market_installed)return;
+    if(!verified_market_site()) {
+        if(!warned_market) {
+            warned_market=TRUE;
+            PssBridgeLog(L"AppCenter native item-search code differs; market routing unchanged");
+        }
+        return;
+    }
+    if(!write_word(MARKET_URL_VALUE,new_url)) {
+        DWORD actual=0;
+        if(read_exact(MARKET_URL_VALUE,&actual,4) && actual==new_url)
+            write_word(MARKET_URL_VALUE,(DWORD)ORIGINAL_MARKET_URL);
+        PssBridgeLog(L"AppCenter native item-search route patch failed");
+        return;
+    }
+    market_installed=TRUE;
+    PssBridgeLog(L"AppCenter native /시세 item-search URL redirected to RKern market page");
+}
+
 static BOOL build_paths(HMODULE module,wchar_t *ini,wchar_t *page) {
     wchar_t file[MAX_PATH];
     DWORD n=GetModuleFileNameW(module,file,MAX_PATH);
@@ -159,12 +205,23 @@ BOOL PssAppCenterInitialize(HWND game, HMODULE module) {
         return FALSE;
     }
     installed=TRUE;
+    route_native_market(candidate);
     PssBridgeLog(configured?
         L"AppCenter exact home URL redirected to configured HTTP(S) page":
         L"AppCenter exact home URL redirected to auto-detected game server HTTP port 18085");
     return TRUE;
 }
 void PssAppCenterDetach(void) {
+    if(market_installed) {
+        DWORD actual=0;
+        if(read_exact(MARKET_URL_VALUE,&actual,4) &&
+           actual==(DWORD)(uintptr_t)destination &&
+           write_word(MARKET_URL_VALUE,(DWORD)ORIGINAL_MARKET_URL)) {
+            market_installed=FALSE;
+        } else {
+            PssBridgeLog(L"AppCenter market route ownership changed; restore skipped");
+        }
+    }
     if(!installed)return;
     DWORD actual=0;
     if(read_exact(APP_ROUTE_VALUE,&actual,4) &&
