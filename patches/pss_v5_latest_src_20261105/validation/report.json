@@ -1,0 +1,23 @@
+{
+  "build": "PSS_V5_Latest_SRC_DLL_ALL_IN_ONE_20261105",
+  "uploaded_file": "src.zip",
+  "uploaded_sha256": "b5024922872c3c26c2e910ad94d0fa58a20d2e7f920ff1ded1595c964ccf1d27",
+  "java_sources": 1688,
+  "uploaded_source_files": 1689,
+  "unchanged_uploaded_files": 1685,
+  "changed_java_files": [
+    "l1j/server/server/datatables/ItemTable.java",
+    "l1j/server/server/model/character/action/CAttackAction.java",
+    "l1j/server/server/model/character/pss/window/PlaySupportWindow.java",
+    "l1j/server/server/model/character/pss/window/PssWindowTransport.java"
+  ],
+  "added_removed_src_paths": [],
+  "full_java_compile": "PASS Java 21 preview",
+  "nio2_contract": "PASS 11 groups",
+  "latest_window_contract": "PASS 10 assertions: direct item, owner/count, no consumption, v2, PSS-only LOS and throttle",
+  "daily_quota_config_lifecycle": "unchanged bytes; not simulated against a real DB",
+  "dll_sha256": "42d6d0223b05f14a06d435fecfd8861e5940eeaff30c95b9e93d28711c8ff73e",
+  "dll": "identical to tested V5 commit 7f5b6251a83ee214d8e6505d3256371494295a4f",
+  "client_windows_ui_test": "not live-game verified; windowed trial indicator",
+  "ON_button_added": false
+}

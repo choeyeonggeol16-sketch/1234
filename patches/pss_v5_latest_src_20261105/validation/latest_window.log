@@ -1,0 +1,2 @@
+PASS latest direct item dispatch, ownership/quantity, no consumption, v2 binding, native-only LOS observation and throttling; assertions=10
+Unmodified daily quota/start lifecycle is covered by full source compilation and byte-preservation checks, not simulated here.

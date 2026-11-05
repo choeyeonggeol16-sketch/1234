@@ -1,0 +1,150 @@
+--- a/src/l1j/server/server/datatables/ItemTable.java
++++ b/src/l1j/server/server/datatables/ItemTable.java
+@@ -82,6 +82,8 @@
+ 				item.setNameId(rs.getString("name_id"));
+ 				item.setType(parseEtcType(rs.getString("item_type")));
+ 				item.setUseType(parseUseType(rs.getString("use_type")));
++				// PSS settings item uses the existing immediate self-use interaction.
++				if (item.getItemId() == 900000901) item.setUseType(30);
+ 				item.setType2(0);
+ 				item.setMaterial(parseMaterial(rs.getString("material")));
+ 				item.setWeight(rs.getInt("weight"));
+--- a/src/l1j/server/server/model/character/action/CAttackAction.java
++++ b/src/l1j/server/server/model/character/action/CAttackAction.java
+@@ -193,6 +193,16 @@
+             return false;
+         }
+ 
++        // Only client-driven PSS uses the companion observation. Keep normal
++        // manual/server-AH behavior and check sight before any hit/effect.
++        var connection = owner.getNetConnection();
++        var automation = connection == null ? null : connection.getAutomationSession();
++        if (automation != null && automation.clientDriven() && owner.getAttackRang() > 1
++                && obj instanceof L1Character target && !owner.glanceCheck(target.getX(), target.getY())) {
++            l1j.server.server.model.character.pss.window.PlaySupportWindow.blockedShot(owner, tId);
++            return false;
++        }
++
+         executeAttackAction(owner, obj, tId, x, y);
+         return true;
+     }
+--- a/src/l1j/server/server/model/character/pss/window/PlaySupportWindow.java
++++ b/src/l1j/server/server/model/character/pss/window/PlaySupportWindow.java
+@@ -83,6 +83,16 @@
+         boolean queued = peer != null && peer.requestOpen();
+         if (!queued) SC_SystemMessage.send(pc, "PSS 연결을 확인한 뒤 다시 사용해 주세요.");
+         return queued;
++    }
++
++    /** Emit a sight rejection only for the authenticated native PSS owner. */
++    public static void blockedShot(L1PcInstance pc, int targetId) {
++        CIOClient client = pc == null ? null : pc.getNetConnection();
++        if (pc == null || player(client) != pc || targetId <= 0) return;
++        var automation = client.getAutomationSession();
++        if (automation == null || !automation.clientDriven()) return;
++        Session session = client.peekPssWindowSession();
++        if (session != null) session.blockedShot(targetId);
+     }
+ 
+     /** Read-only settings UI: use the same admission as the working GM window command. */
+@@ -128,10 +138,23 @@
+         private long deadline, lastBegin;
+         private volatile int stamp, characterId;
+         private volatile boolean closed;
++        private int lastBlockedTarget;
++        private long lastBlockedAt;
+         private PssWindowTransport.Token pending;
+         private volatile PssWindowTransport.Peer peer;
+ 
+         public Session(CIOClient client) { this.client = client; }
++
++        private synchronized void blockedShot(int targetId) {
++            long now = System.nanoTime();
++            if (!valid() || peer == null) return;
++            if (lastBlockedTarget == targetId && lastBlockedAt != 0
++                    && now - lastBlockedAt < TimeUnit.MILLISECONDS.toNanos(250)) return;
++            if (peer.requestBlockedShot(targetId)) {
++                lastBlockedTarget = targetId;
++                lastBlockedAt = now;
++            }
++        }
+ 
+         private synchronized void begin(L1PcInstance pc) {
+             long now = System.nanoTime();
+--- a/src/l1j/server/server/model/character/pss/window/PssWindowTransport.java
++++ b/src/l1j/server/server/model/character/pss/window/PssWindowTransport.java
+@@ -19,7 +19,7 @@
+ 
+ /** Authenticated, window-only companion channel; never accepts gameplay commands. */
+ public final class PssWindowTransport implements AutoCloseable {
+-    public static final byte OPEN = 1, PING = 2, BOUND = 16;
++    public static final byte OPEN = 1, PING = 2, BLOCKED_SHOT = 3, BOUND = 16;
+     private static final byte[] HELLO = {'P', 'S', 'S', 'U', 'I', 1, 0, 0};
+     private static final long REGISTER_TTL = TimeUnit.SECONDS.toNanos(15);
+     private static final long HELLO_TTL = TimeUnit.SECONDS.toNanos(5);
+@@ -199,12 +199,14 @@
+     public final class Peer implements AutoCloseable {
+         private final AsynchronousSocketChannel channel;
+         private final ByteBuffer input = ByteBuffer.allocate(24);
+-        private final ByteBuffer output = ByteBuffer.allocate(1);
++        private final ByteBuffer output = ByteBuffer.allocate(5);
+         private final AtomicBoolean stopped = new AtomicBoolean();
+         private final AtomicBoolean bound = new AtomicBoolean();
+         private final AtomicBoolean ackPending = new AtomicBoolean();
+         private final AtomicBoolean openPending = new AtomicBoolean();
+         private final AtomicBoolean writing = new AtomicBoolean();
++        private final AtomicInteger blockedShot = new AtomicInteger();
++        private volatile boolean combatNotifications;
+         private final long created = clock.getAsLong();
+         private volatile long lastSeen = created;
+         private volatile Owner owner;
+@@ -220,7 +222,13 @@
+                     if (count < 0 || stopped.get()) { close(); return; }
+                     if (input.hasRemaining()) { readHello(); return; }
+                     input.flip();
+-                    for (byte expected : HELLO) if (input.get() != expected) { close(); return; }
++                    for (int i = 0; i < HELLO.length; i++) {
++                        int value = input.get() & 0xFF;
++                        if (i == 5) {
++                            if (value != 1 && value != 2) { close(); return; }
++                            combatNotifications = value == 2;
++                        } else if (value != (HELLO[i] & 0xFF)) { close(); return; }
++                    }
+                     token = new Token(input.getLong(), input.getLong());
+                     if (waiting.putIfAbsent(token, Peer.this) != null) { close(); return; }
+                     if (stopped.get() || closed.get()) {
+@@ -268,15 +276,32 @@
+             return !stopped.get();
+         }
+ 
++        /** Coalesced, server-to-client observation for negotiated v2 peers. */
++        public boolean requestBlockedShot(int targetId) {
++            Owner current = owner;
++            if (targetId <= 0 || !combatNotifications || closed.get() || stopped.get()
++                    || !bound.get() || current == null || !current.valid()) return false;
++            blockedShot.set(targetId);
++            drain();
++            return !stopped.get();
++        }
++
+         private void drain() {
+             if (stopped.get() || !writing.compareAndSet(false, true)) return;
+             byte command = ackPending.getAndSet(false) ? BOUND : openPending.getAndSet(false) ? OPEN : 0;
++            int targetId = command == 0 ? blockedShot.getAndSet(0) : 0;
++            if (targetId > 0) command = BLOCKED_SHOT;
+             if (command == 0) {
+                 writing.set(false);
+-                if (ackPending.get() || openPending.get()) drain();
++                if (ackPending.get() || openPending.get() || blockedShot.get() != 0) drain();
+                 return;
+             }
+-            output.clear().put(command).flip();
++            output.clear().put(command);
++            if (command == BLOCKED_SHOT) {
++                output.put((byte)targetId).put((byte)(targetId >>> 8))
++                      .put((byte)(targetId >>> 16)).put((byte)(targetId >>> 24));
++            }
++            output.flip();
+             write();
+         }
+ 
