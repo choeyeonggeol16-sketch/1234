@@ -13,9 +13,9 @@
  * Nothing here opens TCP sockets or uses the launcher PID or Pss2019.ini.
  *
  * Wire (protobuf payload after native extended-opcode dispatch):
- * 08 03 7A 10 "RKERNPSSOPEN2026" [00 00]
- * result=3 is an existing NON-START error code. The DLL consumes this
- * distinguished payload before the original native decoder sees it.
+ * 08 04 7A 10 "RKERNPSSOPEN2026" [00 00]
+ * result=4 is outside native result values 0..3, so an absent/late DLL
+ * receives a safely ignored ACK. DLL consumes only the full marker.
  * Every ordinary 2102 result is forwarded byte-for-byte to native code.
  */
 enum { ACK_ENTRY=0x006429B0, ACK_CALL_SITE=0x00642A61 };
@@ -44,7 +44,7 @@ static BOOL bytes_at(DWORD address,const BYTE *expected,SIZE_T length) {
 
 static BOOL marker_matches(const BYTE* payload,int length) {
     if(!payload||(length!=20&&length!=22))return FALSE;
-    if(payload[0]!=0x08||payload[1]!=0x03||
+    if(payload[0]!=0x08||payload[1]!=0x04||
        payload[2]!=0x7a||payload[3]!=sizeof(open_marker))return FALSE;
     if(memcmp(payload+4,open_marker,sizeof(open_marker))!=0)return FALSE;
     if(length==22&&(payload[20]!=0||payload[21]!=0))return FALSE;
