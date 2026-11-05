@@ -1,0 +1,12 @@
+{
+  "csharp_compile": "PASS (Mono mcs)",
+  "syntax": "PASS (C# and PowerShell tree-sitter)",
+  "native_path_gate_instruction_checks": 8,
+  "read_only_api_audit": "PASS",
+  "live_windows_collection_verified": false,
+  "code_pages_per_client": 2,
+  "max_metadata_candidate_pages_per_client": 4,
+  "max_clients": 3,
+  "raw_uploaded_memory_included": false,
+  "game_behavior_changed": false
+}
