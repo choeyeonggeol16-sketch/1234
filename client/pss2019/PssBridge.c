@@ -150,36 +150,45 @@ static BOOL receive_exact(SOCKET socket,BYTE* bytes,int length,LONG serial) {
     }
     return used==length;
 }
-static BOOL connection_loop(SOCKET socket,const Target* selected,BYTE version) {
-    DWORD started=GetTickCount(),last_ping=started;BOOL bound=FALSE;
+static BOOL connection_loop(SOCKET socket,const Target* selected) {
+    DWORD started=GetTickCount(),last_ping=started;
+    BOOL bound=FALSE;
+    DWORD reason=0,detail=0;
     while(current(selected->serial)) {
         fd_set read;FD_ZERO(&read);FD_SET(socket,&read);struct timeval wait={0,250000};
         int result=select(0,&read,0,0,&wait);
-        if(result==SOCKET_ERROR)break;
+        if(result==SOCKET_ERROR){reason=1;detail=WSAGetLastError();break;}
         if(result>0) {
             BYTE command=0;int got=recv(socket,(char*)&command,1,0);
-            if(got!=1)break;
+            if(got!=1){
+                reason=got==0?2:3;
+                detail=got<0?(DWORD)WSAGetLastError():0;
+                break;
+            }
             if(command==16&&!bound) {
                 bound=TRUE;EnterCriticalSection(&guard);retry_delay=1000;LeaveCriticalSection(&guard);
                 PssBridgeLog(L"PSS item companion BOUND to the authenticated game session");
             } else if(command==1&&bound) {
                 HWND hwnd;UINT message;EnterCriticalSection(&guard);hwnd=game_window;message=game_message;LeaveCriticalSection(&guard);
-                PostMessageW(hwnd,message,3,0);
+                if(!PostMessageW(hwnd,message,3,0)){reason=4;detail=GetLastError();break;}
                 PssBridgeLog(L"PSS item OPEN queued to the game UI thread");
-            } else if(command==3&&bound&&version==2) {
-                BYTE data[4];if(!receive_exact(socket,data,4,selected->serial))break;
-                uint32_t id=(uint32_t)data[0]|((uint32_t)data[1]<<8)|((uint32_t)data[2]<<16)|((uint32_t)data[3]<<24);
-                if(!id||id>INT32_MAX)break;
-                HWND hwnd;UINT message;EnterCriticalSection(&guard);hwnd=game_window;message=game_message;LeaveCriticalSection(&guard);
-                if(!PostMessageW(hwnd,message,4,(LPARAM)id))break;
-            } else break;
+            } else {
+                reason=5;detail=command;break;
+            }
         }
         DWORD now=GetTickCount();
-        if(!bound&&now-started>=5000)break;
+        if(!bound&&now-started>=5000){reason=6;break;}
         if(bound&&now-last_ping>=10000) {
-            BYTE ping=2;if(!send_all(socket,&ping,1,selected->serial))break;last_ping=now;
+            BYTE ping=2;
+            if(!send_all(socket,&ping,1,selected->serial)){reason=7;detail=WSAGetLastError();break;}
+            last_ping=now;
         }
     }
+    if(reason==0)reason=8; // bridge target was replaced or explicitly detached
+    wchar_t message[192];
+    wsprintfW(message,L"PSS companion ended: bound=%d reason=%lu detail=%lu uptimeMs=%lu",
+             bound,(unsigned long)reason,(unsigned long)detail,(unsigned long)(GetTickCount()-started));
+    PssBridgeLog(message);
     return bound;
 }
 static DWORD WINAPI worker(LPVOID unused) {
@@ -190,18 +199,21 @@ static DWORD WINAPI worker(LPVOID unused) {
         Target selected;BOOL ready;EnterCriticalSection(&guard);
         ready=active&&target_ready&&!needs_registration;selected=target;LeaveCriticalSection(&guard);
         if(!ready)continue;
-        SOCKET socket=connect_target(&selected,2);BOOL bound=FALSE;
-        if(socket!=INVALID_SOCKET) {bound=connection_loop(socket,&selected,2);closesocket(socket);}
-        // Old servers reject v2 before claiming the single-use token. Retry v1
-        // immediately so existing item/window support remains compatible.
-        if(!bound&&current(selected.serial)) {
-            socket=connect_target(&selected,1);
-            if(socket!=INVALID_SOCKET) {connection_loop(socket,&selected,1);closesocket(socket);}
+        // RKern's PssWindowTransport uses protocol v1. Do not open an
+        // unnecessary v2 socket that the server must immediately reject.
+        SOCKET socket=connect_target(&selected,1);
+        if(socket!=INVALID_SOCKET) {
+            connection_loop(socket,&selected);
+            closesocket(socket);
+        } else {
+            wchar_t message[120];
+            wsprintfW(message,L"PSS companion connect failed: WSA=%lu",(unsigned long)WSAGetLastError());
+            PssBridgeLog(message);
         }
         EnterCriticalSection(&guard);
         if(active&&target.serial==selected.serial) {
             needs_registration=TRUE;next_registration=GetTickCount()+retry_delay;
-            if(retry_delay<30000)retry_delay=retry_delay*2>30000?30000:retry_delay*2;
+            if(retry_delay<5000)retry_delay=retry_delay*2>5000?5000:retry_delay*2;
             PssBridgeLog(L"PSS item companion unavailable/disconnected; bounded retry scheduled");
         }
         LeaveCriticalSection(&guard);
