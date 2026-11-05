@@ -15,11 +15,15 @@
   "original_header": "RoamCore.original.h",
   "modified_header_sha256": "d931ee080e8c6423d44a46f5052ce71fafee484436f6d1964c1187ccd7d08db3",
   "original_cpp": "RoamCore.original.cpp",
-  "integration_version": "V4 continuous segments",
+  "integration_version": "V5 sector coverage, continuous movement, server LOS pursuit and activity indicator",
   "cpp_changes": [
     "opt-in 1..4 tile collinear segments",
     "retain pending destination through intermediate tile progress",
-    "exclude next adjacent edge on segment rejection/stall"
+    "exclude next adjacent edge on segment rejection/stall",
+    "prefer farther reachable frontiers and recent-sector novelty",
+    "remember visited 16-tile sectors and movement direction",
+    "roll search anchor forward instead of returning to a fixed start box"
   ],
-  "modified_cpp_sha256": "e82bc972559b68891edf358bdb25fbae0aa79f5c29337e5242de9edf6ad9dc95"
+  "modified_cpp_sha256": "313a5c4ff0922f87e92cb77644240403c5f63d4541dcb0dfbb031e9b2c8660c1",
+  "coverage_reference": "Existing server AHProcessor: 16-tile sectors, recent 8 visited sectors, forward direction scores (420/300/140/-100/-400)"
 }

@@ -1,0 +1,60 @@
+{
+  "build": "PSS_V5_Coverage_LOS_UI_20261105",
+  "target": "19.02.15.1002 PE32 i386",
+  "compiler": "MinGW-w64 GCC/G++ 12-posix -O2 -Wall -Wextra -Werror, static C++ runtime",
+  "dll_sha256": "42d6d0223b05f14a06d435fecfd8861e5940eeaff30c95b9e93d28711c8ff73e",
+  "system_imports": [
+    "bcrypt.dll",
+    "GDI32.dll",
+    "IPHLPAPI.DLL",
+    "KERNEL32.dll",
+    "msvcrt.dll",
+    "USER32.dll",
+    "WS2_32.dll"
+  ],
+  "production_test_macros": false,
+  "server_java_sources_compiled": 1711,
+  "java_runtime": "Java 21 preview, existing server requirement",
+  "transport_groups": 11,
+  "transport_assertions": 58,
+  "server_contract_groups": 19,
+  "server_contract_assertions": 1123,
+  "native_point_allocated_destroyed_released": [
+    10,
+    10,
+    10
+  ],
+  "native_path_allocated_released_queries": [
+    3047,
+    3047,
+    255
+  ],
+  "max_native_path_queries_per_tick": 2,
+  "coverage_model": {
+    "map": "128x128 open synthetic map",
+    "ticks": 2000,
+    "V4_sectors": 16,
+    "V4_immediate_reversals": 89,
+    "V5_sectors": 64,
+    "V5_immediate_reversals": 0,
+    "note": "Includes rolling horizon; not a real-world benchmark"
+  },
+  "visual_ui_test": "BLOCKED creating fixture window in Wine; no visual pass claimed",
+  "actual_windows_game_tested": false,
+  "ui_implementation": "owned click-through layered window for windowed mode; no ON button; not extracted NC UI",
+  "ranged_limit": "server authoritative blocked damage; initial client-predicted motion can precede notification",
+  "source_sha256": {
+    "patches/pss_v5_coverage_los_ui_20261105/src/l1j/server/server/datatables/ItemTable.java": "8344fb61a2d42bbca49781a77d4313cfeeb1fb21dbe31864a952cde428c20630",
+    "patches/pss_v5_coverage_los_ui_20261105/src/l1j/server/server/model/character/action/CAttackAction.java": "6a8208186f4391c2623247b3f68ee705c134ad9277f1293af4efd1b444bc2728",
+    "patches/pss_v5_coverage_los_ui_20261105/src/l1j/server/server/model/character/pss/window/PssWindowTransport.java": "a29d6caa832c54bdae7e4f91f55fecc282a9a74cf52d9f492b992886efbc4d0a",
+    "patches/pss_v5_coverage_los_ui_20261105/src/l1j/server/server/model/character/pss/window/PlaySupportWindow.java": "968b013449cec5f5626d1b773980db49822eedc1ec1ff17dd27daf7273690366",
+    "patches/pss_v5_coverage_los_ui_20261105/src/l1j/server/server/model/item/function/ItemUseExtensions.java": "524eaba47ced2471c6dc15d306dad0f343754959114aa3cd615232019ec69688",
+    "patches/pss_v5_coverage_los_ui_20261105/src/l1j/server/server/model/network/core/cs/packet/User.java": "0ae7a8d593ac5c8cd493e94d9ff2452d9f154cda559fa7cb14c95998094ccd97",
+    "client/pss2019/Pss2019.c": "c57940e4b83d29efd06842470113bd4170290e85b7d402c373da5285dfd1909f",
+    "client/pss2019/PssBridge.c": "2af5a6cf287aa983ef7f8dd5105d61eef7d788e944ecfd995130a78d4f80234b",
+    "client/pss2019/PssRoaming.c": "d259f978347c3d29a918fa543fa6b080f7bd16dd39debec72255da769a0c7e54",
+    "client/pss2019/PssNavigation.c": "16fea402450efc37b6d79b495bfcfc6170c39a751f5a9bb68911cdb5d6b33dac",
+    "client/pss2019/PssActivity.c": "ff2811536e0c50f2343001d726497b35412b761bdad68e487bd5b4b60a2a4445",
+    "client/pss2019/vendor/roam/RoamCore.cpp": "313a5c4ff0922f87e92cb77644240403c5f63d4541dcb0dfbb031e9b2c8660c1"
+  }
+}

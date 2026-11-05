@@ -1,48 +1,37 @@
-PSS 2019 배회 V4 — 연속 이동 교체 테스트 DLL
+PSS V5 — 실행 표시 / 구역 배회 / 활 벽 판정 / 설정창 바로 열기
 
-게임을 완전히 종료한 뒤 기존 Pss2019.dll을 백업하고 ZIP의 Pss2019.dll로 교체하세요.
-기존 Pss2019.ini를 유지하세요. 이미 자동 로딩을 적용했다면 PSS_Client_Apply 재실행은 필요 없습니다.
-서버 소스·DB 변경 없이 기존 Play Supporter 아이템(900000901)으로 설정창을 열고 시작합니다.
-C++ 런타임도 DLL 안에 정적으로 포함하므로 다른 DLL을 추가할 필요 없습니다.
+게임을 종료하고 기존 DLL을 백업한 뒤 이 DLL로 교체하세요. 기존 INI는 유지합니다.
+이미 자동 로딩을 적용했으면 Apply 재실행은 필요 없습니다.
+서버 수정 파일 6개도 적용해 빌드·재시작해야 활 판정과 아이템 사용 형식 변경이 반영됩니다.
+기존 아이템 900000901로 설정창을 열고 시작합니다. ON 버튼은 추가하지 않았습니다.
 
-바뀐 부분:
-- 업로드한 RoamCore.cpp의 sr_tick을 실제 연결했습니다. 별도의 RoamCore32.dll은 쓰지 않습니다.
-- 배회 길은 기존 클라이언트 길찾기가 반환한 경로에서 수집합니다.
-- 내부 좌표와 논리 좌표를 변환하고, 출발점은 캐릭터의 실제 내부 좌표를 사용합니다.
-- 확인된 직선 경로를 기본 최대 3칸씩 네이티브 이동 함수에 전달합니다. 회전 지점은 합치지 않습니다.
-- 구간을 보내기 직전에 전체 경로를 다시 조회합니다. 우회·누락·끊긴 경로이면 이동 명령을 내리지 않습니다.
-- 중간 칸을 통과하는 동안에는 같은 목적지를 유지하고 재명령하지 않습니다.
-- 도착 여부를 실제 위치로 확인하고, 진행 없이 2초가 지나면 다음 인접 간선을 잠시 제외합니다.
-- V3의 기본 300ms 명령 간격을 0으로 바꿨습니다. 원래 네이티브 이동 속도 검사는 그대로 적용합니다.
-- 몬스터·아이템·고정 사냥·기록 경로·기존 귀환 동작은 기존 PSS 판단을 우선합니다.
-- 기본 탐색 반경은 시작 위치 기준 20칸입니다. 한 틱의 네이티브 길찾기 호출은 최대 2회입니다.
+배회는 16칸 구역의 최근 방문 기록과 진행 방향을 유지하며 앞으로 탐색하도록 바꿨습니다.
+Radius=20은 현재 위치 근처의 계획 범위입니다. 시작점 주변으로 배회 영역을 제한하지 않습니다.
+기존 최대 3칸 연속 이동과 원래 이동 속도 검사를 유지합니다.
 
-선택 설정: 기존 Pss2019.ini 끝에 추가할 수 있습니다. 추가하지 않아도 아래 기본값으로 동작합니다.
+서버는 실제 PSS 세션의 원거리 일반 공격 전에 glanceCheck로 벽을 확인합니다.
+막히면 공격을 거절하고 DLL에 알려, 타겟을 유지한 상태로 기존 접근 동작을 사용하게 합니다.
+서버 알림 전 최초 로컬 활 모션이 보일 수 있습니다. 실제 사냥터의 자연스러움은 시험이 필요합니다.
+
+실행 중 회전 표시·문구는 DLL이 만든 창모드 표시입니다. 원본 리마스터 UI를 복사한 것이 아닙니다.
+마우스 입력과 포커스를 가로채지 않으며 중지·사망·월드 이탈·비활성화 시 숨깁니다.
+화면 중앙 기준 위치이며 캐릭터 렌더 좌표를 직접 추적하지 않습니다. 전체화면은 미검증입니다.
+이 환경의 Windows 화면 드라이버 초기화 실패로 실제 표시 시험은 완료하지 못했습니다.
+
+선택 설정: 기존 INI의 같은 섹션 값을 수정하거나 없는 섹션만 추가하세요.
 [PssRoaming]
-Enabled=1
 Radius=20
-SearchBudget=1024
-RetryMs=300
-StuckTimeoutMs=2000
-CommandIntervalMs=0
 StrideTiles=3
-IdleDelayMs=500
+CommandIntervalMs=0
+BlockedShotRetryMs=650
 
-기존 INI에 CommandIntervalMs=300이 있으면 0으로 바꿔야 새 기본값과 같습니다.
-StrideTiles는 1~4 범위이며 기본값은 3입니다.
-Radius는 4~32 범위입니다. 고정 시작점 주변을 탐색하는 코어이며 맵 전체를 순회하는 코어는 아닙니다.
-CommandIntervalMs는 추가 제한이며 캐릭터의 원래 이동 속도 검사를 대체하지 않습니다.
+[PssIndicator]
+Enabled=1
+OffsetX=0
+OffsetY=20
 
-확인 로그(PSS2019_trace.txt):
-PSS V4 continuous roaming ready: native straight segments and arrival-based pacing
-PSS idle walking attached; new targets retain native priority
-PSS imported core map=... position=... result=... radius=20 stride=3 interval=0 queries=... rejected=...
+OffsetY를 줄이면 표시가 위로 이동합니다. Enabled=0은 표시만 끕니다. 재실행 후 적용됩니다.
+기존 INI에 CommandIntervalMs=300이 있으면 0으로 수정해야 불필요한 간격을 제거할 수 있습니다.
 
-검증: MinGW 32비트 경고 없는 빌드, 원래 코어 ASan/UBSan 검사, 좌표/경로 캐시 검사,
-연속 이동·중간 위치·모서리 처리 검사, 32비트 네이티브 호출 모형, 최종 DLL import 검사를 통과했습니다. validation에 기록이 있습니다.
-실제 게임의 길찾기 함수·벽·동적 충돌과 카메라는 아직 이 버전으로 검증하지 않았습니다.
-이번 파일은 실제 클라이언트에서 시험할 수 있는 빌드이며, 벽 비빔이 완전히 해결됐다고 확정한 버전은 아닙니다.
-문제가 생기면 게임을 종료하고 백업 DLL로 교체하면 됩니다.
-
-빌드: 32비트 MinGW-w64 GCC와 G++가 PATH에 있는 Windows에서 source\build.cmd 실행.
-코어 출처 및 헤더 변경 사항은 source\vendor\roam\PROVENANCE.json 참조.
+서버 패치 및 검증 범위는 ZIP README.md와 validation을 참고하세요.
+클라이언트 빌드는 32비트 MinGW GCC/G++로 source/build.cmd 또는 build-linux.sh를 사용합니다.

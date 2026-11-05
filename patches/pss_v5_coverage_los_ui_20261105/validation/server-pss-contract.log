@@ -1,0 +1,37 @@
+PASS root/nested modes and exact 2102 success framing
+PASS same-mode retry preserves deadline; mode change rejected
+PASS 600-second time and finish response fields
+PASS expiry/death/map-change force stop and zero time
+PASS observed empty 2019 start body is GM-only and idempotent
+PASS malformed/unknown modes and oversized body cannot start
+PASS GM/world/state guards
+PASS failed send rolls back native claim
+PASS real CIO character/ready lifecycle clears native state
+PASS session stamp mismatch clears stale native session
+PASS actual server-AH start/stop admission excludes native PSS
+PASS denied teleport policy preserves running PSS and sends no stop
+PASS registry routes 2101/2103/2106 through real CSProto
+PASS 2111 settings schema preserves explicit zeros and signed values
+PASS real 2111 dispatch logs settings without changing hunting ownership
+PASS GM 2111 probe uses exact outbound framing and preserves automation
+Nov 05, 2026 7:45:13 AM l1j.server.server.model.character.pss.window.PlaySupportWindow$Session attach
+INFO: [PSS-WINDOW] companion bound player=77
+Nov 05, 2026 7:45:13 AM l1j.server.server.model.character.pss.window.PlaySupportWindow tryOpenItem
+INFO: [PSS-WINDOW] item use player=77 object=88 item=900000901
+Nov 05, 2026 7:45:13 AM l1j.server.server.model.character.pss.window.PlaySupportWindow open
+INFO: [PSS-WINDOW] item/window request queued player=77
+PASS actual bootstrap routes, authenticated companion, owned reusable item, logout cleanup
+Nov 05, 2026 7:45:13 AM l1j.server.server.model.character.pss.window.PlaySupportWindow$Session attach
+INFO: [PSS-WINDOW] companion bound player=77
+Nov 05, 2026 7:45:13 AM l1j.server.server.model.character.pss.window.PlaySupportWindow open
+INFO: [PSS-WINDOW] item/window request queued player=77
+PASS source-only pairing fallback consumes private commands; validates input and game session
+Nov 05, 2026 7:45:13 AM l1j.server.server.model.character.pss.window.PlaySupportWindow$Session attach
+INFO: [PSS-WINDOW] companion bound player=77
+Nov 05, 2026 7:45:13 AM l1j.server.server.model.character.pss.window.PlaySupportWindow open
+INFO: [PSS-WINDOW] item/window request queued player=77
+Nov 05, 2026 7:45:13 AM l1j.server.server.model.character.pss.window.PlaySupportWindow open
+INFO: [PSS-WINDOW] item/window request queued player=77
+PASS server LOS notifications require native PSS ownership and throttle repeated target reports
+PASS 300 concurrent server/native claim races using the actual CIOClient CAS
+RESULT groups=19 assertions=1123; native game client execution not tested

@@ -128,6 +128,13 @@ static void __cdecl find_path(const PssPoint* from,const PssPoint* to,PathList* 
 static int __attribute__((fastcall)) original_tick(void* self,void* unused,float elapsed) {
     (void)unused;assert(self==leaf);assert(elapsed>0.09f&&elapsed<0.11f);++original_calls;return 2;
 }
+static unsigned attack_calls;
+static int __attribute__((fastcall)) original_attack(void* self,void* unused,float elapsed){
+    (void)unused;(void)elapsed;assert(self==dummy);++attack_calls;return 2;
+}
+static int attack_tick(void){
+    Tick fn=(Tick)(uintptr_t)get32((void*)(uintptr_t)get32(dummy,0),4);return fn(dummy,0.1f);
+}
 static void tag(BYTE* node,const char* value) {
     SIZE_T n=strlen(value);
     memset(node+0xC,0,24);
@@ -158,6 +165,11 @@ static void world(void) {
     const BYTE head[]={0x55,0x8B,0xEC,0x6A,0xFF,0x68,0x70,0xAA,0x01,0x01};
     const BYTE clear[]={0x55,0x8B,0xEC,0x6A,0xFF,0x68,0xA0,0xA9,0x01,0x01};
     const BYTE query[]={0xE8,0x11,0x83,0x84,0x00};
+    const BYTE attack[]={0x55,0x8B,0xEC,0x6A,0xFF,0x68,0x00,0x9C,0x01,0x01};
+    prefixed(0x657460,attack,original_attack);
+    put32((void*)0x1184874,0,0x13704D8);put32((void*)0x1184878,0,0x657350);
+    put32((void*)0x1184878,4,0x657460);put32((void*)0x1184878,8,0x653DB0);
+    put32(dummy,0,0x1184878);
     prefixed(0x75E9D0,factory,create_point);prefixed(0x67F000,tick,original_tick);
     jump(0x64FDA0,set_goal);jump(0x64FDE0,set_goal);jump(0x64FE70,move);jump(0xB9DF20,get_position);
     memcpy((void*)0x68DB05,goal_call,5);memcpy((void*)0x68DB0D,move_call,5);
@@ -228,6 +240,19 @@ int main(int argc,char** argv) {
     PssRoamingReset(FALSE);advance(1000);
     puts("PASS native multi-tile travel keeps its destination through intermediate tile updates");
 
+    // Native Battle trees may be rebuilt at the same allocation addresses.
+    put32(leaf,0,0x118CA64);put32(dummy,0,0x1184878);now+=100;PssRoamingObserve();
+    assert(get32(dummy,0)!=0x1184878);
+    puts("PASS rebuilt native tree at reused addresses reattaches the attack guard");
+    put32(context,0xA8,123);PssRoamingObserve();
+    assert(attack_tick()==2);unsigned attacks_before=attack_calls;
+    PssRoamingBlockedShot(123);assert(attack_tick()==0&&attack_calls==attacks_before);
+    assert(get32(context,0xA8)==123); // native pursuit keeps the selected target
+    PssRoamingBlockedShot(456);assert(attack_tick()==0);
+    now+=700;assert(attack_tick()==2&&attack_calls==attacks_before+1);
+    put32(context,0xA8,0xFFFFFFFF);
+    puts("PASS server blocked-shot observation suppresses only native attacks, retains pursuit target and expires");
+
     before=commands;put32(context,0xA8,123);now+=100;PssRoamingObserve();
     assert(tick()==2&&commands==before&&releases==allocations);
     put32(context,0xA8,0xFFFFFFFF);now+=100;PssRoamingObserve();advance(1000);
@@ -285,7 +310,7 @@ int main(int argc,char** argv) {
     PssRoamingReset(FALSE);path_mode=3;advance(1500);
     assert(commands>before&&path_allocations==path_releases);
     puts("PASS raw/logical coordinate conversion including odd actor X, reversed routes, empty/partial/corrupt paths, dynamic blockers and list cleanup");
-    PssRoamingDetach();assert(get32(leaf,0)==0x118CA64&&allocations==releases);
+    PssRoamingDetach();assert(get32(leaf,0)==0x118CA64&&get32(dummy,0)==0x1184878&&allocations==releases);
     printf("PASS tree mismatch and detach; allocations=%u destroys=%u releases=%u original_calls=%u\n",
            allocations,destroys,releases,original_calls);
     printf("PASS native path allocations=%u releases=%u queries=%u (max 2 per tick)\n",path_allocations,path_releases,path_queries);

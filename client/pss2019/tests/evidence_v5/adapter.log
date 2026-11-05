@@ -1,0 +1,24 @@
+TRACE PSS server LOS pursuit guard ready
+TRACE PSS V5 coverage roaming ready: native straight segments and arrival-based pacing
+TRACE PSS idle walking attached; new targets retain native priority
+TRACE PSS imported core map=4 position=33000,32750 result=2 radius=20 stride=3 interval=0 queries=1 rejected=0
+PASS multi-tile native movement goals and no mandatory 300ms gap after observed arrival
+PASS real x86 shadow-vtable dispatch, native point/goal/move ABI and point reuse
+PASS native multi-tile travel keeps its destination through intermediate tile updates
+PASS rebuilt native tree at reused addresses reattaches the attack guard
+PASS server blocked-shot observation suppresses only native attacks, retains pursuit target and expires
+PASS monster preemption and resuming idle walking after combat
+PASS loot, fixed hunting, recorded path and pending escape/return actions delegate unchanged
+TRACE PSS imported core map=4 position=33034,32684 result=2 radius=20 stride=3 interval=0 queries=96 rejected=0
+TRACE PSS idle walking skipped: native tick thread differs from game UI thread
+PASS background-thread callbacks never issue roaming movement
+PASS accepted but frozen movement is not spammed; stuck steps are retried at a bounded rate
+TRACE PSS imported core map=4 position=33019,32684 result=0 radius=20 stride=3 interval=0 queries=154 rejected=0
+PASS movement-block and death flags prevent idle movement without stopping native PSS
+PASS Stop cancels the owned goal once and releases native shared ownership
+PASS map changes and world exit discard stale destinations without cross-map movement
+TRACE PSS idle walking unavailable: Battle idle tree layout differs
+TRACE PSS imported core map=5 position=35027,39973 result=4 radius=20 stride=3 interval=0 queries=221 rejected=5
+PASS raw/logical coordinate conversion including odd actor X, reversed routes, empty/partial/corrupt paths, dynamic blockers and list cleanup
+PASS tree mismatch and detach; allocations=10 destroys=10 releases=10 original_calls=7
+PASS native path allocations=3047 releases=3047 queries=255 (max 2 per tick)

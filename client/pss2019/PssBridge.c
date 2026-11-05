@@ -110,7 +110,7 @@ static BOOL send_all(SOCKET socket,const BYTE* bytes,int length,LONG serial) {
     }
     return sent==length;
 }
-static SOCKET connect_target(const Target* selected) {
+static SOCKET connect_target(const Target* selected,BYTE version) {
     SOCKET socket_handle=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
     if(socket_handle==INVALID_SOCKET)return INVALID_SOCKET;
     int nodelay=1;setsockopt(socket_handle,IPPROTO_TCP,TCP_NODELAY,(const char*)&nodelay,sizeof(nodelay));
@@ -122,11 +122,22 @@ static SOCKET connect_target(const Target* selected) {
     if(result!=0&&(WSAGetLastError()!=WSAEWOULDBLOCK||!writable(socket_handle,selected->serial,2000))) {
         closesocket(socket_handle);return INVALID_SOCKET;
     }
-    BYTE hello[24]={'P','S','S','U','I',1,0,0};memcpy(hello+8,selected->token,16);
+    BYTE hello[24]={'P','S','S','U','I',1,0,0};hello[5]=version;memcpy(hello+8,selected->token,16);
     if(!send_all(socket_handle,hello,sizeof(hello),selected->serial)) {closesocket(socket_handle);return INVALID_SOCKET;}
     return socket_handle;
 }
-static void connection_loop(SOCKET socket,const Target* selected) {
+static BOOL receive_exact(SOCKET socket,BYTE* bytes,int length,LONG serial) {
+    DWORD started=GetTickCount();int used=0;
+    while(used<length&&current(serial)&&GetTickCount()-started<2000U) {
+        int got=recv(socket,(char*)bytes+used,length-used,0);
+        if(got>0){used+=got;continue;}
+        if(got==0||WSAGetLastError()!=WSAEWOULDBLOCK)return FALSE;
+        fd_set read;FD_ZERO(&read);FD_SET(socket,&read);struct timeval wait={0,200000};
+        if(select(0,&read,0,0,&wait)==SOCKET_ERROR)return FALSE;
+    }
+    return used==length;
+}
+static BOOL connection_loop(SOCKET socket,const Target* selected,BYTE version) {
     DWORD started=GetTickCount(),last_ping=started;BOOL bound=FALSE;
     while(current(selected->serial)) {
         fd_set read;FD_ZERO(&read);FD_SET(socket,&read);struct timeval wait={0,250000};
@@ -142,6 +153,12 @@ static void connection_loop(SOCKET socket,const Target* selected) {
                 HWND hwnd;UINT message;EnterCriticalSection(&guard);hwnd=game_window;message=game_message;LeaveCriticalSection(&guard);
                 PostMessageW(hwnd,message,3,0);
                 PssBridgeLog(L"PSS item OPEN queued to the game UI thread");
+            } else if(command==3&&bound&&version==2) {
+                BYTE data[4];if(!receive_exact(socket,data,4,selected->serial))break;
+                uint32_t id=(uint32_t)data[0]|((uint32_t)data[1]<<8)|((uint32_t)data[2]<<16)|((uint32_t)data[3]<<24);
+                if(!id||id>INT32_MAX)break;
+                HWND hwnd;UINT message;EnterCriticalSection(&guard);hwnd=game_window;message=game_message;LeaveCriticalSection(&guard);
+                if(!PostMessageW(hwnd,message,4,(LPARAM)id))break;
             } else break;
         }
         DWORD now=GetTickCount();
@@ -150,6 +167,7 @@ static void connection_loop(SOCKET socket,const Target* selected) {
             BYTE ping=2;if(!send_all(socket,&ping,1,selected->serial))break;last_ping=now;
         }
     }
+    return bound;
 }
 static DWORD WINAPI worker(LPVOID unused) {
     (void)unused;WSADATA data;
@@ -159,8 +177,14 @@ static DWORD WINAPI worker(LPVOID unused) {
         Target selected;BOOL ready;EnterCriticalSection(&guard);
         ready=active&&target_ready&&!needs_registration;selected=target;LeaveCriticalSection(&guard);
         if(!ready)continue;
-        SOCKET socket=connect_target(&selected);
-        if(socket!=INVALID_SOCKET) {connection_loop(socket,&selected);closesocket(socket);}
+        SOCKET socket=connect_target(&selected,2);BOOL bound=FALSE;
+        if(socket!=INVALID_SOCKET) {bound=connection_loop(socket,&selected,2);closesocket(socket);}
+        // Old servers reject v2 before claiming the single-use token. Retry v1
+        // immediately so existing item/window support remains compatible.
+        if(!bound&&current(selected.serial)) {
+            socket=connect_target(&selected,1);
+            if(socket!=INVALID_SOCKET) {connection_loop(socket,&selected,1);closesocket(socket);}
+        }
         EnterCriticalSection(&guard);
         if(active&&target.serial==selected.serial) {
             needs_registration=TRUE;next_registration=GetTickCount()+retry_delay;

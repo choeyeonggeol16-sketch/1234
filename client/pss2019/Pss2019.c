@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "PssBridge.h"
 #include "PssRoaming.h"
+#include "PssActivity.h"
 
 #define CONTROL (WM_APP+0x5A1)
 static HMODULE module;
@@ -195,7 +196,9 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
  if(msg==CONTROL) {
   if(wp==1){user_hidden=FALSE;ShowWindow(panel,SW_SHOWNOACTIVATE);place_panel();return 1;}
   if(wp==3){if(enabled)command(101);return 1;}
+  if(wp==4){if(enabled)PssRoamingBlockedShot((int)lp);return 1;}
   if(wp==2) {
+   PssActivityDetach();
    PssRoamingDetach();
    PssBridgeDetach();
    enabled=FALSE;KillTimer(game,0x505353);unpatch();if(panel){DestroyWindow(panel);panel=0;}status=0;
@@ -212,6 +215,13 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
   }
   if(patched&&world_ready())PssBridgeTick();
   if(patched)PssRoamingObserve();
+  if(patched){
+   void* manager=0;BYTE active=0,dead=1;
+   BOOL running=world_ready()&&pointer_at(0x15B3D14,&manager)&&
+       readmem((BYTE*)manager+0x58,&active,1)&&active&&
+       readmem((void*)0x15D8E6E,&dead,1)&&!dead;
+   PssActivityUpdate(running);
+  }
   if(status&&!world_ready())SetWindowTextW(status,L"캐릭터 접속 후 사용");
   else if(status) {
    void* manager=0;BYTE active=0;
@@ -220,14 +230,14 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
   place_panel();return 0;
  }
  if(msg==WM_MOVE||msg==WM_SIZE)place_panel();
- if(msg==WM_NCDESTROY){PssRoamingDetach();PssBridgeDetach();unpatch();if(panel)DestroyWindow(panel);panel=0;installed=FALSE;}
+ if(msg==WM_NCDESTROY){PssActivityDetach();PssRoamingDetach();PssBridgeDetach();unpatch();if(panel)DestroyWindow(panel);panel=0;installed=FALSE;}
  return CallWindowProcW(previous,hwnd,msg,wp,lp);
 }
 __declspec(dllexport) DWORD WINAPI PssAttach(LPVOID arg) {
  HWND hwnd=(HWND)arg;DWORD pid=0;
  GetWindowThreadProcessId(hwnd,&pid);
  if(pid!=GetCurrentProcessId()||!IsWindow(hwnd)||!version_ok())return 0;
- if(installed){if(game!=hwnd)return 0;enabled=TRUE;user_hidden=FALSE;PssRoamingInitialize(game,module);PssBridgeInitialize(game,CONTROL,module);SetTimer(game,0x505353,100,0);return 1;}
+ if(installed){if(game!=hwnd)return 0;enabled=TRUE;user_hidden=FALSE;PssRoamingInitialize(game,module);PssActivityInitialize(game,module);PssBridgeInitialize(game,CONTROL,module);SetTimer(game,0x505353,100,0);return 1;}
  game=hwnd;
  HMODULE pin;GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_PIN,(LPCWSTR)PssAttach,&pin);
  previous=(WNDPROC)GetWindowLongPtrW(game,GWLP_WNDPROC);
@@ -235,7 +245,7 @@ __declspec(dllexport) DWORD WINAPI PssAttach(LPVOID arg) {
  SetLastError(0);
  if(!SetWindowLongPtrW(game,GWLP_WNDPROC,(LONG_PTR)game_proc)&&GetLastError())return 0;
  installed=TRUE;enabled=TRUE;user_hidden=FALSE;SetTimer(game,0x505353,100,0);
- PssRoamingInitialize(game,module);
+ PssRoamingInitialize(game,module);PssActivityInitialize(game,module);
  if(!PssBridgeInitialize(game,CONTROL,module))logline(L"PSS item bridge initialization failed");
  logline(L"UI thread attached; waiting for unpacked code");return 1;
 }

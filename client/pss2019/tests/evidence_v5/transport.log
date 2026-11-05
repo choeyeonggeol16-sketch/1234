@@ -1,0 +1,12 @@
+PASS game registration first; fragmented hello; exact bound/open bytes
+PASS helper registration first binds when game registration arrives
+PASS malformed hello does not consume game registration
+PASS wrong source IP cannot take another game session
+PASS expiry removes waiting peers, pending game references and idle channels
+PASS logout invalidates bound peer and releases owner reference
+PASS nonce replay needs a new authenticated game registration
+PASS bounded connection and pending-registration capacity
+PASS concurrent repeated item clicks keep writer serialization and bounded state
+PASS v2 negotiated blocked-shot frame, fragmented hello and subsequent OPEN
+PASS legacy peers never receive combat frames
+RESULT groups=11 assertions=58; native game UI is tested separately

@@ -1,0 +1,221 @@
+--- a/src/l1j/server/server/datatables/ItemTable.java
++++ b/src/l1j/server/server/datatables/ItemTable.java
+@@ -82,6 +82,8 @@
+ 				item.setNameId(rs.getString("name_id"));
+ 				item.setType(parseEtcType(rs.getString("item_type")));
+ 				item.setUseType(parseUseType(rs.getString("use_type")));
++				// Read-only PSS settings tool: send the immediate self-use interaction.
++				if (item.getItemId() == 900000901) item.setUseType(30);
+ 				item.setType2(0);
+ 				item.setMaterial(parseMaterial(rs.getString("material")));
+ 				item.setWeight(rs.getInt("weight"));
+--- a/src/l1j/server/server/model/network/core/cs/packet/User.java
++++ b/src/l1j/server/server/model/network/core/cs/packet/User.java
+@@ -44,14 +44,19 @@
+ 			int skillId) {
+ 
+ 		final L1PcInstance pc = client.getActiveChar();
+-		if (pc == null|| pc.isDead() || pc.isGhost() || pc.getMapId() == 5166) {
++		if (pc == null) return;
++		final L1ItemInstance l1iteminstance = pc.getInventory().getItem(itemObjid);
++
++        // This item only opens an owned settings window. It has no item effects,
++        // consumption, transfer or PSS start, so it must not enter effect gates.
++        if (l1j.server.server.model.character.pss.window.PlaySupportWindow.tryOpenItem(client, pc, l1iteminstance)) return;
++		if (pc.isDead() || pc.isGhost() || pc.getMapId() == 5166) {
+ 			return;
+ 		}
+ 
+         // Reject before effects, charges, materials or direct item setters.
+         if (pc.isItemTransferBusy() || pc.isTradeResolving() || pc.getTradeID() != 0) return;
+ 
+-		final L1ItemInstance l1iteminstance = pc.getInventory().getItem(itemObjid);
+ 		if (!CanUseItem(client, pc, l1iteminstance)) return;
+ 		UseItem(client, pc, l1iteminstance, itemObjid, targetId, x, y, name, skillId);
+ 	}
+--- a/src/l1j/server/server/model/item/function/ItemUseExtensions.java
++++ b/src/l1j/server/server/model/item/function/ItemUseExtensions.java
+@@ -25,11 +25,9 @@
+     public static void use(CIOClient client, L1PcInstance pc, L1ItemInstance item,
+             int itemObjectId, int targetId, int x, int y, String name, int skillId) {
+         int itemId = item.getItem().getItemId();
+-        if (itemId == l1j.server.server.model.character.pss.window.PlaySupportWindow.ITEM_ID
+-                && l1j.server.server.model.character.pss.window.PlaySupportWindow.ITEM_NAME.equals(item.getItem().getName())) {
+-            if (pc == null || client == null || pc.getNetConnection() != client
+-                    || client.getActiveChar() != pc || pc.getInventory().getItem(item.getId()) != item) return;
+-            l1j.server.server.model.character.pss.window.PlaySupportWindow.open(pc);
++        if (itemId == l1j.server.server.model.character.pss.window.PlaySupportWindow.ITEM_ID) {
++            if (item.getId() != itemObjectId) return;
++            l1j.server.server.model.character.pss.window.PlaySupportWindow.tryOpenItem(client, pc, item);
+             return;
+         }
+ 
+--- a/src/l1j/server/server/model/character/pss/window/PlaySupportWindow.java
++++ b/src/l1j/server/server/model/character/pss/window/PlaySupportWindow.java
+@@ -7,6 +7,7 @@
+ import java.util.logging.Logger;
+ import l1j.server.Config;
+ import l1j.server.server.model.Instance.L1PcInstance;
++import l1j.server.server.model.Instance.L1ItemInstance;
+ import l1j.server.server.model.network.core.CIOClient;
+ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+ import l1j.server.server.model.network.utill.ConnectionState;
+@@ -14,7 +15,7 @@
+ /** Item opens the existing native settings window; starting/stopping remains native PSS. */
+ public final class PlaySupportWindow {
+     public static final int ITEM_ID = 900000901;
+-    public static final String ITEM_NAME = "PSS 설정서";
++    public static final String ITEM_NAME = "Play Supporter";
+     public static final int REGISTER_START = 0x7DF0, REGISTER_COMMIT = 0x7DF1, REGISTER_BYTE = 0x7E00;
+     private static final Logger LOG = Logger.getLogger(PlaySupportWindow.class.getName());
+     private static volatile PssWindowTransport transport;
+@@ -83,6 +84,27 @@
+         if (!queued) SC_SystemMessage.send(pc, "PSS 연결을 확인한 뒤 다시 사용해 주세요.");
+         else LOG.info("[PSS-WINDOW] item/window request queued player=" + pc.getId());
+         return queued;
++    }
++
++    /** Report blocked shots only for an authenticated client-driven PSS session. */
++    public static void blockedShot(L1PcInstance pc, int targetId) {
++        CIOClient client = pc == null ? null : pc.getNetConnection();
++        if (pc == null || player(client) != pc || targetId <= 0) return;
++        var automation = client.getAutomationSession();
++        if (automation == null || !automation.clientDriven()) return;
++        Session session = client.peekPssWindowSession();
++        if (session != null) session.blockedShot(targetId);
++    }
++
++    /** Read-only settings UI: use the same admission as the working GM window command. */
++    public static boolean tryOpenItem(CIOClient client, L1PcInstance pc, L1ItemInstance item) {
++        if (item == null || item.getItem() == null || item.getItem().getItemId() != ITEM_ID) return false;
++        if (client == null || pc == null || client.getActiveChar() != pc || pc.getNetConnection() != client
++                || pc.getInventory().getItem(item.getId()) != item || item.getCount() <= 0) return true;
++        int itemObjectId = item.getId();
++        LOG.info("[PSS-WINDOW] item use player=" + pc.getId() + " object=" + itemObjectId + " item=" + ITEM_ID);
++        open(pc);
++        return true;
+     }
+ 
+     private static synchronized PssWindowTransport transport() {
+@@ -120,10 +142,23 @@
+         private long deadline, lastBegin;
+         private volatile int stamp, characterId;
+         private volatile boolean closed;
++        private int lastBlockedTarget;
++        private long lastBlockedAt;
+         private PssWindowTransport.Token pending;
+         private volatile PssWindowTransport.Peer peer;
+ 
+         public Session(CIOClient client) { this.client = client; }
++
++        private synchronized void blockedShot(int targetId) {
++            long now = System.nanoTime();
++            if (!valid() || peer == null) return;
++            if (lastBlockedTarget == targetId && lastBlockedAt != 0
++                    && now - lastBlockedAt < TimeUnit.MILLISECONDS.toNanos(250)) return;
++            if (peer.requestBlockedShot(targetId)) {
++                lastBlockedTarget = targetId;
++                lastBlockedAt = now;
++            }
++        }
+ 
+         private synchronized void begin(L1PcInstance pc) {
+             long now = System.nanoTime();
+--- a/src/l1j/server/server/model/character/pss/window/PssWindowTransport.java
++++ b/src/l1j/server/server/model/character/pss/window/PssWindowTransport.java
+@@ -19,7 +19,7 @@
+ 
+ /** Authenticated, window-only companion channel; never accepts gameplay commands. */
+ public final class PssWindowTransport implements AutoCloseable {
+-    public static final byte OPEN = 1, PING = 2, BOUND = 16;
++    public static final byte OPEN = 1, PING = 2, BLOCKED_SHOT = 3, BOUND = 16;
+     private static final byte[] HELLO = {'P', 'S', 'S', 'U', 'I', 1, 0, 0};
+     private static final long REGISTER_TTL = TimeUnit.SECONDS.toNanos(15);
+     private static final long HELLO_TTL = TimeUnit.SECONDS.toNanos(5);
+@@ -199,12 +199,14 @@
+     public final class Peer implements AutoCloseable {
+         private final AsynchronousSocketChannel channel;
+         private final ByteBuffer input = ByteBuffer.allocate(24);
+-        private final ByteBuffer output = ByteBuffer.allocate(1);
++        private final ByteBuffer output = ByteBuffer.allocate(5);
+         private final AtomicBoolean stopped = new AtomicBoolean();
+         private final AtomicBoolean bound = new AtomicBoolean();
+         private final AtomicBoolean ackPending = new AtomicBoolean();
+         private final AtomicBoolean openPending = new AtomicBoolean();
+         private final AtomicBoolean writing = new AtomicBoolean();
++        private final AtomicInteger blockedShot = new AtomicInteger();
++        private volatile boolean combatNotifications;
+         private final long created = clock.getAsLong();
+         private volatile long lastSeen = created;
+         private volatile Owner owner;
+@@ -220,7 +222,13 @@
+                     if (count < 0 || stopped.get()) { close(); return; }
+                     if (input.hasRemaining()) { readHello(); return; }
+                     input.flip();
+-                    for (byte expected : HELLO) if (input.get() != expected) { close(); return; }
++                    for (int i = 0; i < HELLO.length; i++) {
++                        int value = input.get() & 0xFF;
++                        if (i == 5) {
++                            if (value != 1 && value != 2) { close(); return; }
++                            combatNotifications = value == 2;
++                        } else if (value != (HELLO[i] & 0xFF)) { close(); return; }
++                    }
+                     token = new Token(input.getLong(), input.getLong());
+                     if (waiting.putIfAbsent(token, Peer.this) != null) { close(); return; }
+                     if (stopped.get() || closed.get()) {
+@@ -268,15 +276,33 @@
+             return !stopped.get();
+         }
+ 
++        /** Only negotiated v2 peers receive server-authoritative combat observations. */
++        public boolean requestBlockedShot(int targetId) {
++            Owner current = owner;
++            if (targetId <= 0 || !combatNotifications || closed.get() || stopped.get()
++                    || !bound.get() || current == null || !current.valid()) return false;
++            blockedShot.set(targetId);
++            drain();
++            return !stopped.get();
++        }
++
+         private void drain() {
+             if (stopped.get() || !writing.compareAndSet(false, true)) return;
+             byte command = ackPending.getAndSet(false) ? BOUND : openPending.getAndSet(false) ? OPEN : 0;
++            int targetId = command == 0 ? blockedShot.getAndSet(0) : 0;
++            if (targetId > 0) command = BLOCKED_SHOT;
+             if (command == 0) {
+                 writing.set(false);
+-                if (ackPending.get() || openPending.get()) drain();
++                if (ackPending.get() || openPending.get() || blockedShot.get() != 0) drain();
+                 return;
+             }
+-            output.clear().put(command).flip();
++            output.clear().put(command);
++            if (command == BLOCKED_SHOT) {
++                // Fixed-width little-endian object ID, no arbitrary payload allocation.
++                output.put((byte)targetId).put((byte)(targetId >>> 8))
++                      .put((byte)(targetId >>> 16)).put((byte)(targetId >>> 24));
++            }
++            output.flip();
+             write();
+         }
+ 
+--- a/src/l1j/server/server/model/character/action/CAttackAction.java
++++ b/src/l1j/server/server/model/character/action/CAttackAction.java
+@@ -193,6 +193,17 @@
+             return false;
+         }
+ 
++        // Client PSS may select an in-range bow target behind a wall. Validate
++        // actual server sight before animations/effects/damage, then let the
++        // companion ask the native PSS tree to approach the retained target.
++        var connection = owner.getNetConnection();
++        var automation = connection == null ? null : connection.getAutomationSession();
++        if (automation != null && automation.clientDriven() && owner.getAttackRang() > 1
++                && obj instanceof L1Character target && !owner.glanceCheck(target.getX(), target.getY())) {
++            l1j.server.server.model.character.pss.window.PlaySupportWindow.blockedShot(owner, tId);
++            return false;
++        }
++
+         executeAttackAction(owner, obj, tId, x, y);
+         return true;
+     }

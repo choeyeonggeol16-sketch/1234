@@ -1,0 +1,2 @@
+coverage sectors=64 commands=2000 reversals=0
+PASS sector coverage and direction continuity across a rolling search horizon

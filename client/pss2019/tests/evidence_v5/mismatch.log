@@ -1,0 +1,2 @@
+TRACE PSS idle walking waiting: native code signatures not ready
+PASS unsupported native signature leaves the PSS node unchanged

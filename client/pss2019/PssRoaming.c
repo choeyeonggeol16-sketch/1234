@@ -51,6 +51,13 @@ static DWORD last_probe;
 static BOOL pending_move,core_fault;
 static DWORD last_observe,last_log;
 static unsigned depth;
+static BOOL attack_ready;
+static uintptr_t attack_shadow[4];
+static void *attack_root,*attack_task;
+static struct {int id;DWORD until;} blocked_shots[8];
+static unsigned blocked_cursor;
+static DWORD blocked_retry_ms=650;
+static int __attribute__((fastcall)) guarded_attack(void*,void*,float);
 
 static BOOL read_at(const void* address,void* out,SIZE_T length) {
 #ifdef PSS_ROAM_TEST
@@ -148,6 +155,46 @@ static void* find_idle(const Frame* f) {
        (table!=NODE_VTABLE&&table!=(uintptr_t)&shadow[1]))return 0;
     return node;
 }
+// Shadow only verified BotAttackNode instances. A server LOS rejection
+// fails this attack leaf briefly, preserving the target for native pursuit.
+static void visit_attacks(void* node,unsigned depth_left,unsigned* budget,BOOL restore) {
+    if(!node||!depth_left||!*budget)return;
+    --*budget;DWORD table=0;
+    if(!read_at(node,&table,4))return;
+    if(table==0x1184878||table==(uintptr_t)&attack_shadow[1]) {
+        if(restore)InterlockedCompareExchange((LONG*)node,0x1184878,(LONG)(uintptr_t)&attack_shadow[1]);
+        else InterlockedCompareExchange((LONG*)node,(LONG)(uintptr_t)&attack_shadow[1],0x1184878);
+        return;
+    }
+    if(table!=0x11B4084&&table!=0x11B4094)return;
+    DWORD count=0;if(!read_at((BYTE*)node+0x28,&count,4)||count>64)return;
+    for(unsigned n=0;n<count&&*budget;++n)visit_attacks(child(node,n),depth_left-1,budget,restore);
+}
+static void attach_attacks(const Frame* f) {
+    if(!attack_ready)return;
+    void* root=0;if(!ptr(f->task,0x38,&root))return;
+    if(root==attack_root&&f->task==attack_task)return;
+    unsigned budget=96;visit_attacks(root,12,&budget,FALSE);
+    attack_root=root;attack_task=f->task;
+}
+void PssRoamingBlockedShot(int target_id) {
+    if(GetCurrentThreadId()!=ui_thread||target_id<=0||!enabled||!ready||!attack_ready)return;
+    Frame f;if(!snapshot(&f)||f.monster!=target_id)return;
+    unsigned slot=blocked_cursor++&7;
+    for(unsigned n=0;n<8;++n)if(blocked_shots[n].id==target_id){slot=n;break;}
+    blocked_shots[slot].id=target_id;blocked_shots[slot].until=GetTickCount()+blocked_retry_ms;
+}
+static int __attribute__((fastcall)) guarded_attack(void* self,void* unused,float elapsed) {
+    (void)unused;NativeTick original=(NativeTick)0x657460;
+    if(GetCurrentThreadId()==ui_thread&&enabled&&ready&&attack_ready) {
+        Frame f;if(snapshot(&f)&&f.task==attack_task&&f.monster>0) {
+            DWORD now=GetTickCount();
+            for(unsigned n=0;n<8;++n)
+                if(blocked_shots[n].id==f.monster&&(LONG)(now-blocked_shots[n].until)<0)return 0;
+        }
+    }
+    return original(self,elapsed);
+}
 static BOOL position(void* actor,PssPoint* p) {
     ((NativePosition)0xB9DF20)(actor,p);
     return p->x>=0&&p->x<=65535&&p->y>=0&&p->y<=65535;
@@ -243,6 +290,7 @@ void PssRoamingReset(BOOL cancel_owned_move) {
         }
     }
     if(core){sr_destroy(core);core=0;}
+    memset(blocked_shots,0,sizeof(blocked_shots));blocked_cursor=0;attack_root=attack_task=0;
     memset(&last_input,0,sizeof(last_input));PssNavClear(&navigation,-1);
     pending_move=FALSE;idle_since=last_request=0;last_probe=0;probe_index=0;core_fault=FALSE;
     release_point();owner_task=owner_actor=owner_manager=0;owner_map=0;last_observe=0;
@@ -359,6 +407,7 @@ void PssRoamingInitialize(HWND game,HMODULE module) {
     command_ms=setting(file,L"CommandIntervalMs",0,0,1000);
     stride_tiles=setting(file,L"StrideTiles",3,1,4);
     idle_ms=setting(file,L"IdleDelayMs",500,300,3000);
+    blocked_retry_ms=setting(file,L"BlockedShotRetryMs",650,250,2000);
     warned=FALSE;last_observe=0;
     if(!enabled)PssBridgeLog(L"PSS idle walking disabled by PssRoaming.Enabled=0");
 }
@@ -374,7 +423,12 @@ void PssRoamingObserve(void) {
         }
         if(!read_at((void*)(NODE_VTABLE-4),shadow,sizeof(shadow))||shadow[2]!=NODE_TICK)return;
         shadow[2]=(uintptr_t)idle_tick;ready=TRUE;
-        PssBridgeLog(L"PSS V4 continuous roaming ready: native straight segments and arrival-based pacing");
+        const BYTE attack[]={0x55,0x8B,0xEC,0x6A,0xFF,0x68,0x00,0x9C,0x01,0x01};
+        attack_ready=bytes(0x657460,attack,sizeof(attack))&&
+            read_at((void*)0x1184874,attack_shadow,sizeof(attack_shadow))&&attack_shadow[2]==0x657460;
+        if(attack_ready){attack_shadow[2]=(uintptr_t)guarded_attack;PssBridgeLog(L"PSS server LOS pursuit guard ready");}
+        else PssBridgeLog(L"PSS server LOS pursuit guard skipped: attack node signature differs");
+        PssBridgeLog(L"PSS V5 coverage roaming ready: native straight segments and arrival-based pacing");
     }
     Frame f;
     if(!snapshot(&f)) {
@@ -395,8 +449,10 @@ void PssRoamingObserve(void) {
         if(!warned){warned=TRUE;PssBridgeLog(L"PSS idle walking unavailable: Battle idle tree layout differs");}
         return;
     }
-    if(leaf!=idle_node)PssRoamingReset(FALSE);
-    idle_node=leaf;node_task=f.task;
+    DWORD leaf_table=0;
+    if(!read_at(leaf,&leaf_table,4))return;
+    if(leaf!=idle_node||leaf_table==NODE_VTABLE)PssRoamingReset(FALSE);
+    idle_node=leaf;node_task=f.task;attach_attacks(&f);
     if(!owner_task) {
         owner_task=f.task;owner_actor=f.actor;owner_manager=f.manager;owner_map=f.map;
     }
@@ -411,6 +467,7 @@ void PssRoamingDetach(void) {
     PssRoamingReset(TRUE);
     Frame f;
     if(snapshot(&f)) {
+        if(attack_ready){void* root=0;unsigned budget=96;if(ptr(f.task,0x38,&root))visit_attacks(root,12,&budget,TRUE);}
         void* leaf=find_idle(&f);
         if(leaf)InterlockedCompareExchange((LONG*)leaf,NODE_VTABLE,(LONG)(uintptr_t)&shadow[1]);
     }
