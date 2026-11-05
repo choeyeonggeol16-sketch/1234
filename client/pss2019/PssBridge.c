@@ -20,6 +20,7 @@ static CRITICAL_SECTION guard;
 static HANDLE wake_event,worker_handle;
 static BOOL initialized,active,target_ready,needs_registration;
 static BOOL endpoint_warning,sender_warning;
+static DWORD endpoint_missing_since;
 static HWND game_window;
 static UINT game_message;
 static Target target;
@@ -70,16 +71,28 @@ static BOOL register_on_game_connection(const BYTE token[16]) {
     return TRUE;
 }
 static BOOL endpoint(Target* output) {
-    DWORD size=sizeof(tcp_table),pid=GetCurrentProcessId();int found=0;
+    DWORD size=sizeof(tcp_table),pid=GetCurrentProcessId();int found=0,prior_matches=0;
+    Target preferred,only={0},matched={0};
+    BOOL have_prior;
+    EnterCriticalSection(&guard);
+    preferred=target;have_prior=active&&target_ready;
+    LeaveCriticalSection(&guard);
     if(GetExtendedTcpTable(tcp_table,&size,FALSE,AF_INET,TCP_TABLE_OWNER_PID_ALL,0)!=NO_ERROR)return FALSE;
     MIB_TCPTABLE_OWNER_PID* rows=(MIB_TCPTABLE_OWNER_PID*)tcp_table;
     for(DWORD i=0;i<rows->dwNumEntries;i++) {
         MIB_TCPROW_OWNER_PID* row=&rows->table[i];
         if(row->dwOwningPid!=pid||row->dwState!=MIB_TCP_STATE_ESTAB||ntohs((USHORT)row->dwRemotePort)!=game_port)continue;
-        output->remote=row->dwRemoteAddr;output->local_port=(USHORT)row->dwLocalPort;
-        output->game_port=game_port;output->control_port=control_port;found++;
+        Target candidate={0};
+        candidate.remote=row->dwRemoteAddr;candidate.local_port=(USHORT)row->dwLocalPort;
+        candidate.game_port=game_port;candidate.control_port=control_port;
+        only=candidate;found++;
+        if(have_prior&&candidate.remote==preferred.remote&&candidate.local_port==preferred.local_port) {
+            matched=candidate;prior_matches++;
+        }
     }
-    return found==1;
+    if(have_prior&&prior_matches==1){*output=matched;return TRUE;}
+    if(found==1){*output=only;return TRUE;}
+    return FALSE;
 }
 static BOOL current(LONG serial) {
     BOOL same;EnterCriticalSection(&guard);
@@ -216,9 +229,15 @@ BOOL PssBridgeInitialize(HWND hwnd,UINT message,HMODULE module) {
         CloseHandle(worker_handle);worker_handle=0;
     }
     EnterCriticalSection(&guard);
-    game_window=hwnd;game_message=message;active=TRUE;target_ready=FALSE;needs_registration=TRUE;
-    target.serial++;next_registration=0;retry_delay=1000;
-    LeaveCriticalSection(&guard);SetEvent(wake_event);return TRUE;
+    BOOL newly_active=!active;
+    game_window=hwnd;game_message=message;active=TRUE;
+    if(newly_active) {
+        target_ready=FALSE;needs_registration=TRUE;
+        target.serial++;next_registration=0;retry_delay=1000;endpoint_missing_since=0;
+    }
+    LeaveCriticalSection(&guard);
+    if(newly_active)SetEvent(wake_event);
+    return TRUE;
 }
 void PssBridgeTick(void) {
     if(!initialized)return;
@@ -227,12 +246,21 @@ void PssBridgeTick(void) {
     next_tick=now+1000;
     Target next;memset(&next,0,sizeof(next));
     if(!endpoint(&next)) {
-        if(!endpoint_warning)PssBridgeLog(L"PSS item bridge: game TCP endpoint not found or not unique; check configured game port");
+        if(!endpoint_warning)PssBridgeLog(L"PSS item bridge: game TCP endpoint missing/ambiguous; retaining session during short transient");
         endpoint_warning=TRUE;
-        EnterCriticalSection(&guard);
-        if(target_ready) {target_ready=FALSE;needs_registration=TRUE;target.serial++;}
-        LeaveCriticalSection(&guard);SetEvent(wake_event);return;
+        if(endpoint_missing_since==0)endpoint_missing_since=now;
+        // A brief TCP-table ambiguity (e.g. launcher restart) must not tear down
+        // a still-authenticated PSS peer. The server independently validates logout.
+        if((DWORD)(now-endpoint_missing_since)>=5000U) {
+            BOOL invalidated=FALSE;
+            EnterCriticalSection(&guard);
+            if(target_ready) {target_ready=FALSE;needs_registration=TRUE;target.serial++;invalidated=TRUE;}
+            LeaveCriticalSection(&guard);
+            if(invalidated)SetEvent(wake_event);
+        }
+        return;
     }
+    endpoint_missing_since=0;
     endpoint_warning=FALSE;
     BOOL needed;EnterCriticalSection(&guard);
     BOOL changed=!target_ready||target.remote!=next.remote||target.local_port!=next.local_port||target.game_port!=next.game_port;
