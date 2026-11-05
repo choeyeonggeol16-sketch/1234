@@ -100,6 +100,10 @@ BOOL PssGamePacketInitialize(HWND game,UINT message) {
      * concurrent third-party patch. */
     BOOL ownership=bytes_at(ACK_ENTRY,native_head,sizeof(native_head));
     if(ownership) {
+        /* Publish immutable target before exposing the entry-point jump. */
+        native_ack=(AckDecoder)(void*)fresh;
+        game_window=game;
+        game_message=message;
         CopyMemory((LPVOID)(uintptr_t)ACK_ENTRY,jump,sizeof(jump));
         FlushInstructionCache(GetCurrentProcess(),(LPCVOID)(uintptr_t)ACK_ENTRY,5);
     }
@@ -109,10 +113,7 @@ BOOL PssGamePacketInitialize(HWND game,UINT message) {
         return FALSE;
     }
     trampoline=fresh;
-    native_ack=(AckDecoder)(void*)fresh;
     CopyMemory(patched,jump,sizeof(patched));
-    game_window=game;
-    game_message=message;
     installed=TRUE;
     PssBridgeLog(L"[PSS-INBAND] native game packet 2102 decoder hook installed; no companion TCP port");
     return TRUE;
