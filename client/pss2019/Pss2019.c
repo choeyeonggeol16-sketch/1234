@@ -283,7 +283,7 @@ static BOOL CALLBACK find_game(HWND hwnd,LPARAM parameter) {
  LONG area=width*height;if(area>best->area){best->window=hwnd;best->area=area;}return TRUE;
 }
 static DWORD WINAPI auto_initialize(LPVOID ignored) {
- (void)ignored;logline(L"PSS V8 HP/MP read-only HUD trial loaded");logline(L"PSS loaded by client import; waiting for the game world");
+ (void)ignored;logline(L"PSS V9 bottom-docked HP/MP HUD trial loaded");logline(L"PSS loaded by client import; waiting for the game world");
  for(;;) {
   BYTE branch;
   if(world_ready()&&code_ready()&&ui_signature(&branch)) {

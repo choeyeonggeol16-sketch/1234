@@ -47,3 +47,8 @@ V8 read-only HP/MP HUD trial
 - All seven PE32 test programs passed with the final production DLL import check. V7 crop geometry and rotating artwork were rerun. There are no server Java or wire-protocol changes. The original HUD remains for direct comparison. Server source hashes are unchanged from V7.
 - Native evidence in evidence_v8/hp.asm.txt and mp.asm.txt comes from the provided 2019 code pages at 0x679120 and 0x679940. The database RTTI maps these to BotHitPointCondition and BotMagicPointCondition. Their call graph uses 0xEB19E0 and maximum getters 0xEB1A00/0xEB1A20; current descriptors are 0x16E2FB0 and 0x16E2FBC. The original condition sign-extends AX for maxima, which the adapter preserves. Condition signatures are checked before reading data.
 - Build vitals_contract.c with -I. -luser32 -lkernel32; it includes production PssVitals.c behind its test read boundary. Build vitals_art_contract.c with PssVitalsArt.c. Main build scripts include all three new PssVitals*.c modules.
+
+
+V9 bottom anchoring
+
+Only PssVitalsHud.c placement/configuration and the version log in Pss2019.c changed. Native HP/MP reads, artwork, renderer, input and server sources are unchanged from V8. The default uses client.bottom - Bottom - widget_height (Bottom=128). Legacy Top is used only with explicit Anchor=top. Existing V8 numeric synchronization is user-reported; the supplied later video is used as a lower-HUD placement reference. V9 was type-compiled with warnings as errors and its final production DLL was imported by ImportHarness; new game positioning is not yet verified. No mirror test was added for this reversible placement-only change. V8 evidence describes the earlier revision, not a new V9 live-game test.

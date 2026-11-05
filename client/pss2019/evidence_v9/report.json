@@ -1,0 +1,23 @@
+{
+  "version": "V9 bottom-docked HP MP trial",
+  "dll_sha256": "9d13025030c3f0b687ffc96de03ac1e79e542e6d908a04ad22bed037b8bb9548",
+  "build": "PE32 -Wall -Wextra -Werror PASS",
+  "final_dll_import": "PASS",
+  "imports": [
+    "bcrypt.dll",
+    "GDI32.dll",
+    "IPHLPAPI.DLL",
+    "KERNEL32.dll",
+    "MSIMG32.DLL",
+    "msvcrt.dll",
+    "USER32.dll",
+    "WS2_32.dll"
+  ],
+  "change_scope": "HUD anchoring/configuration and version log only; actual values/artwork/PSS/renderer/server unchanged",
+  "default": "horizontal center; bar bottom is client.bottom minus 128 pixels",
+  "legacy_Top": "ignored unless explicit Anchor=top",
+  "native_HP_MP_sync": "user reported changing values with V8",
+  "V9_in_game_placement": "NOT YET VERIFIED",
+  "original_HUD_hidden": false,
+  "new_server_or_DB_change": false
+}

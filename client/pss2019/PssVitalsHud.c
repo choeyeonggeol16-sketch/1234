@@ -15,7 +15,8 @@ static uint32_t* pixels;
 static DWORD ui_thread;
 static BOOL enabled,have_values;
 static LONG active;
-static int offset_x,top;
+static int offset_x,top,bottom;
+static BOOL top_anchor;
 static RECT game_area,target;
 static PssVitals previous;
 static SRWLOCK guard=SRWLOCK_INIT;
@@ -48,8 +49,12 @@ void PssVitalsHudInitialize(HWND game,HMODULE module){
     enabled=GetPrivateProfileIntW(L"VitalsHud",L"Enabled",1,path)!=0;
     offset_x=(int)GetPrivateProfileIntW(L"VitalsHud",L"OffsetX",0,path);
     top=(int)GetPrivateProfileIntW(L"VitalsHud",L"Top",44,path);
+    bottom=(int)GetPrivateProfileIntW(L"VitalsHud",L"Bottom",128,path);
+    wchar_t anchor[16];GetPrivateProfileStringW(L"VitalsHud",L"Anchor",L"bottom",anchor,16,path);
+    top_anchor=lstrcmpiW(anchor,L"top")==0;
     if(offset_x< -8192||offset_x>8192)offset_x=0;
     if(top<0||top>4096)top=44;
+    if(bottom<0||bottom>4096)bottom=128;
     if(!enabled)return;
     WNDCLASSW wc={0};wc.lpfnWndProc=procedure;wc.hInstance=module;wc.lpszClassName=L"Pss2019VitalsHud";
     if(RegisterClassW(&wc)||GetLastError()==ERROR_CLASS_ALREADY_EXISTS)
@@ -65,6 +70,8 @@ void PssVitalsHudInitialize(HWND game,HMODULE module){
     font=CreateFontW(-12,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,
         CLIP_DEFAULT_PRECIS,ANTIALIASED_QUALITY,DEFAULT_PITCH,L"Tahoma");
     PssBridgeLog(L"HUD HP/MP read-only trial ready; independent of PSS start; original HUD retained");
+    wchar_t position[96];wsprintfW(position,L"HUD HP/MP anchor=%s offset=%d",top_anchor?L"top":L"bottom",top_anchor?top:bottom);
+    PssBridgeLog(position);
 }
 static void render(PssVitals value){
     PssVitalsArt(pixels,value.hp,value.max_hp,value.mp,value.max_mp);
@@ -90,7 +97,8 @@ void PssVitalsHudUpdate(BOOL in_world){
     AcquireSRWLockExclusive(&guard);
     game_area=(RECT){first.x,first.y,last.x,last.y};
     target.left=first.x+(last.x-first.x-PSS_VITALS_WIDTH)/2+offset_x;
-    target.top=first.y+top;target.right=target.left+PSS_VITALS_WIDTH;target.bottom=target.top+PSS_VITALS_HEIGHT;
+    target.top=top_anchor?first.y+top:last.y-bottom-PSS_VITALS_HEIGHT;
+    target.right=target.left+PSS_VITALS_WIDTH;target.bottom=target.top+PSS_VITALS_HEIGHT;
     show=show&&target.left>=game_area.left&&target.right<=game_area.right&&target.top>=game_area.top&&target.bottom<=game_area.bottom;
     if(show&&(!have_values||memcmp(&previous,&value,sizeof(value)))){render(value);previous=value;have_values=TRUE;}
     if(!show)have_values=FALSE;
