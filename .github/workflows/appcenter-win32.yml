@@ -2,7 +2,7 @@ name: 2019 Ctrl+Z AppCenter test DLL
 on:
   push:
     branches:
-      - pss/inband-cio-native-window-test-20261106
+      - pss/inband-safe-ack4-20261106
   workflow_dispatch:
 
 permissions:
