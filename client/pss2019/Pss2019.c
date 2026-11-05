@@ -162,7 +162,7 @@ static BOOL world_ready(void) {
  DWORD phase=0;return readmem((void*)0x15D8E44,&phase,4)&&phase==3;
 }
 static void command(int id) {
- if(!patched||!world_ready()) { SetWindowTextW(status,L"캐릭터 접속 후 사용");return; }
+ if(!world_ready() || (id!=101 && !patched)) { if(status)SetWindowTextW(status,L"캐릭터 접속 후 사용");return; }
  void* ui=0;
  if(id==101) {
   if(!ensure_ui_patch()){SetWindowTextW(status,L"PSS UI 코드 불일치");return;}
@@ -234,8 +234,11 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
    if(!item_only){make_panel();logline(L"PSS button panel created");}
    else logline(L"PSS item-only mode ready; no external button panel");
   }
-  if(patched)PssAppCenterInitialize(game,module);
-  if(patched&&world_ready())PssGamePacketInitialize(game,CONTROL);
+  /* AppCenter has its own exact client signature checks. Do not block it
+    * just because the unrelated PSS start stub could not be patched. */
+   PssAppCenterInitialize(game,module);
+  /* In-band 2102 decoder independently validates the native ACK entry. */
+   if(world_ready())PssGamePacketInitialize(game,CONTROL);
   if(patched)PssRoamingObserve();
   if(patched){
    void* manager=0;BYTE active=0,dead=1;
@@ -304,7 +307,7 @@ static DWORD WINAPI auto_initialize(LPVOID ignored) {
  }
  for(;;) {
   BYTE branch;
-  if(world_ready()&&code_ready()&&ui_signature(&branch)) {
+  if(world_ready()&&ui_signature(&branch)) {
    MainWindow found={0,0};EnumWindows(find_game,(LPARAM)&found);
    if(found.window&&PssAttach(found.window)==1) {
     logline(L"PSS automatically attached in item-only mode");return 0;
