@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: pss-classic-hud-${{ github.ref }}
+  group: pss-classic-hud-${{ github.sha }}
   cancel-in-progress: true
 
 jobs:
