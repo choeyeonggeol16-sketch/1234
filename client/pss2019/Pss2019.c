@@ -313,15 +313,11 @@ static DWORD WINAPI auto_initialize(LPVOID ignored) {
   Sleep(1000);
  }
 }
-static BOOL client_auto_marker(void) {
- const BYTE marker[16]={'P','S','S','U','I','-','A','U','T','O','-','V','1',0,0,0};
- return version_ok()&&bytes_are(0x400000+0x1477F00,marker,sizeof(marker));
-}
 BOOL WINAPI DllMain(HINSTANCE h,DWORD reason,LPVOID reserved) {
  (void)reserved;
  if(reason==DLL_PROCESS_ATTACH) {
   module=h;DisableThreadLibraryCalls(h);
-  if(client_auto_marker()) {
+  if(version_ok()) {
    item_only=TRUE;
    /* No waits and no game calls under the loader lock. */
    HANDLE thread=CreateThread(0,0,auto_initialize,0,0,0);
