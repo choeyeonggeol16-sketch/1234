@@ -1,0 +1,40 @@
+{
+  "build": "PSS_2019_Roam_Core_V3_TEST_20261105",
+  "target": "19.02.15.1002 PE32 i386",
+  "compiler": "MinGW-w64 GCC/G++ 12-posix",
+  "flags": "-O2 -Wall -Wextra -Werror; C11/C++11; -shared -static -static-libstdc++ -static-libgcc -Wl,--add-stdcall-alias",
+  "dll_sha256": "82a552e436c5713a983ad5d3dfe223dd10fbfdbd0088b087a8e1a072341c4271",
+  "imported_core_cpp_sha256": "51d2ead64f5f9ade8fe48df50c9a1f3d88f014849616015ccc8f9ec794579d8c",
+  "production_test_macro": false,
+  "system_imports": [
+    "bcrypt.dll",
+    "IPHLPAPI.DLL",
+    "KERNEL32.dll",
+    "msvcrt.dll",
+    "USER32.dll",
+    "WS2_32.dll"
+  ],
+  "exports": [
+    "PssAttach",
+    "PssClientInit",
+    "PssOpenSettings",
+    "sr_create",
+    "sr_destroy",
+    "sr_reset",
+    "sr_tick"
+  ],
+  "live_game_tested": false,
+  "fixture_native_points": {
+    "allocated": 8,
+    "destroyed": 8,
+    "released": 8
+  },
+  "fixture_native_path_nodes": {
+    "allocated": 2303,
+    "released": 2303
+  },
+  "fixture_path_queries": 177,
+  "max_native_queries_per_tick": 2,
+  "core_test": "original supplied RoamTests.cpp, host ASan/UBSan (LeakSanitizer disabled for traced executor)",
+  "runtime_fixture": "controlled PE32 test doubles under Wine/QEMU; does not execute actual game pathfinder"
+}

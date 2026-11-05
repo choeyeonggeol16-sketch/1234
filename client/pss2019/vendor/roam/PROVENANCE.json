@@ -1,12 +1,17 @@
 {
   "upload": "mjlin_배회기능_이식준비자료.zip",
-  "source_copied_verbatim": true,
+  "source_copied_verbatim": false,
   "original_nc_provenance": "not established by the supplied evidence",
-  "integrated_into_pss2019_dll": false,
+  "integrated_into_pss2019_dll": true,
   "files": {
     "RoamCore.cpp": "51d2ead64f5f9ade8fe48df50c9a1f3d88f014849616015ccc8f9ec794579d8c",
     "RoamCore.h": "eec2ab095bd2174531fa6d785c427237b24f915a0d53b3d71b20be5302907f44",
     "RoamTests.cpp": "0a046a7dda14b83af4a19da5dfdc945c7c46eb3b8ffd1d146a5b414c9d245f14",
     "build-roam.cmd": "5183608b8f1a5ab39d4fd173314468664cdca16ae65ecd2b25e1355a951ca811"
-  }
+  },
+  "algorithm_cpp_copied_verbatim": true,
+  "integration": "PssRoaming.c calls sr_tick; source statically linked in Pss2019.dll",
+  "header_changes": "C-compatible typedef/linkage and non-Windows test declarations; no field/order/calling-convention changes",
+  "original_header": "RoamCore.original.h",
+  "modified_header_sha256": "de2d76968927a526073e132518f3734f286deb2419cafb557663dedae647bc95"
 }

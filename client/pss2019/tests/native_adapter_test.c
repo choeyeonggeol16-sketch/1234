@@ -9,20 +9,22 @@
 #include <string.h>
 #include <assert.h>
 #include "PssRoaming.h"
-#include "PssRoamCore.h"
+#include "PssNavigation.h"
 
 typedef struct {void* object;void* control;} Shared;
 typedef struct {void* head;unsigned count;} PathList;
 typedef int (__attribute__((thiscall)) *Tick)(void*,float);
 static BYTE manager[0x80],task[0x80],context[0x140],settings[0x50],group[0x80],actor[0x100];
 static BYTE leaf[0x40],path_object[0x40],containers[6][0x40],dummy[0x40];
-static PssPoint here={65590,32750},last_goal;
+static PssPoint here={33000,32750},last_goal;
 static DWORD now=10000;
 static unsigned commands,allocations,releases,destroys,original_calls;
-static unsigned path_allocations,path_releases;
+static unsigned path_allocations,path_releases,path_queries;
+static int raw_parity=1;
 static int path_mode;
 static BOOL blocked;
 DWORD PssRoamingTestNow(void){return now;}
+ULONGLONG PssRoamingTestNow64(void){return now;}
 /* Wine under QEMU cannot read the guest's private image pages using the
  * host process-memory API. Only this fixture substitutes a checked guest
  * read; the shipping DLL always uses ReadProcessMemory. */
@@ -57,7 +59,9 @@ static void prefixed(uintptr_t address,const BYTE* prefix,const void* function) 
     memcpy((void*)(address+10),unwind,sizeof(unwind));jump(address+14,function);
 }
 static PssPoint* __attribute__((fastcall)) get_position(void* self,void* unused,PssPoint* out) {
-    (void)unused;assert(self==actor);*out=here;return out;
+    (void)unused;assert(self==actor);*out=here;
+    PssPoint raw={here.x*2-32768+raw_parity,here.y};
+    memcpy(actor+0x10,&raw,8);return out;
 }
 static void __attribute__((fastcall)) set_goal(void* self,void* unused,int x,int y) {
     (void)unused;((PssPoint*)self)->x=x;((PssPoint*)self)->y=y;
@@ -88,15 +92,23 @@ static void __attribute__((fastcall)) path_clear(void* self,void* unused) {
     HeapFree(GetProcessHeap(),0,list->head);++path_releases;
 }
 static void __cdecl find_path(const PssPoint* from,const PssPoint* to,PathList* list,int limit) {
-    assert(from->x==here.x&&from->y==here.y&&limit==50);
+    ++path_queries;
+    assert(from->x==here.x*2-32768+raw_parity&&from->y==here.y&&limit==50);
+    assert(!(to->x&1));
     if(path_mode==1)return;
-    PssPoint points[60],p=*from;unsigned count=0;
-    points[count++]=p;
-    while((p.x!=to->x||p.y!=to->y)&&count<50){
-        int x=to->x>p.x?1:to->x<p.x?-1:0,y=to->y>p.y?1:to->y<p.y?-1:0;
-        p.x+=x*(y?1:2);p.y+=y*(x?1:2);points[count++]=p;
+    PssPoint destination,p=here,points[60];unsigned count=0;
+    assert(PssNavToLogical(*to,&destination));
+    assert(PssNavToInternal(p,&points[count++]));
+    /* Include an odd raw X, as returned by native B9DF20's rounding. */
+    points[0].x+=raw_parity;
+    while((p.x!=destination.x||p.y!=destination.y)&&count<50){
+        p.x+=destination.x>p.x?1:destination.x<p.x?-1:0;
+        p.y+=destination.y>p.y?1:destination.y<p.y?-1:0;
+        assert(PssNavToInternal(p,&points[count++]));
     }
     if(path_mode==2&&count>1)--count;
+    if(path_mode==4&&count==2)return; /* Dynamic blocker after cache seeding. */
+    if(path_mode==5&&count>1)points[1].x+=200; /* Broken/nonadjacent route. */
     for(unsigned i=0;i<count;++i){
         BYTE* node=HeapAlloc(GetProcessHeap(),HEAP_ZERO_MEMORY,16);assert(node);++path_allocations;
         void* previous=(void*)(uintptr_t)get32(list->head,4);
@@ -168,7 +180,7 @@ static int tick(void) {
     return fn(leaf,0.1f);
 }
 static void advance(unsigned milliseconds) {
-    for(unsigned n=0;n<milliseconds;n+=100){now+=100;PssRoamingObserve();tick();}
+    for(unsigned n=0;n<milliseconds;n+=100){unsigned prior=path_queries;now+=100;PssRoamingObserve();tick();assert(path_queries-prior<=2);}
 }
 static DWORD WINAPI other_thread(void* unused){(void)unused;tick();return 0;}
 int main(int argc,char** argv) {
@@ -210,7 +222,13 @@ int main(int argc,char** argv) {
 
     blocked=TRUE;advance(9000);blocked=FALSE;
     assert(commands>before);
-    puts("PASS blocked native movement retries different goals at a bounded rate");
+    assert(commands-before<=5);
+    puts("PASS accepted but frozen movement is not spammed; stuck steps are retried at a bounded rate");
+
+    before=commands;*((BYTE*)0x16E385F)=1;advance(1000);assert(commands==before);
+    *((BYTE*)0x16E385F)=0;*((BYTE*)0x15D8E6E)=1;advance(1000);assert(commands==before);
+    *((BYTE*)0x15D8E6E)=0;advance(1000);assert(commands>before);
+    puts("PASS movement-block and death flags prevent idle movement without stopping native PSS");
 
     before=commands;manager[0x58]=0;now+=100;PssRoamingObserve();
     assert(commands==before+1&&last_goal.x==here.x&&last_goal.y==here.y);
@@ -219,7 +237,7 @@ int main(int argc,char** argv) {
     puts("PASS Stop cancels the owned goal once and releases native shared ownership");
 
     manager[0x58]=1;advance(1100);before=commands;
-    put32((void*)0x156A34C,0,5);here=(PssPoint){90000,40000};now+=100;PssRoamingObserve();
+    put32((void*)0x156A34C,0,5);here=(PssPoint){35000,40000};now+=100;PssRoamingObserve();
     assert(commands==before);assert(tick()==1&&commands==before);advance(800);assert(commands>before);
     before=commands;put32((void*)0x15D8E44,0,0);now+=100;PssRoamingObserve();
     assert(commands==before&&allocations==releases);
@@ -233,12 +251,16 @@ int main(int argc,char** argv) {
     assert(commands==before&&path_allocations==path_releases);
     PssRoamingReset(FALSE);path_mode=2;advance(1500);
     assert(commands==before&&path_allocations==path_releases);
+    PssRoamingReset(FALSE);path_mode=4;advance(1500);
+    assert(commands==before&&path_allocations==path_releases);
+    PssRoamingReset(FALSE);path_mode=5;advance(1500);
+    assert(commands==before&&path_allocations==path_releases);
     PssRoamingReset(FALSE);path_mode=3;advance(1500);
     assert(commands>before&&path_allocations==path_releases);
-    puts("PASS native path-list ABI, empty/partial path rejection, reverse path ordering and temporary list cleanup");
+    puts("PASS raw/logical coordinate conversion including odd actor X, reversed routes, empty/partial/corrupt paths, dynamic blockers and list cleanup");
     PssRoamingDetach();assert(get32(leaf,0)==0x118CA64&&allocations==releases);
     printf("PASS tree mismatch and detach; allocations=%u destroys=%u releases=%u original_calls=%u\n",
            allocations,destroys,releases,original_calls);
-    printf("PASS native path allocations=%u releases=%u\n",path_allocations,path_releases);
+    printf("PASS native path allocations=%u releases=%u queries=%u (max 2 per tick)\n",path_allocations,path_releases,path_queries);
     return 0;
 }

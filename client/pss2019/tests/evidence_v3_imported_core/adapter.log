@@ -1,0 +1,20 @@
+ERROR: ld.so: object '/work/native/wine_mmap32.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+ERROR: ld.so: object '/work/native/wine_mmap32.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+TRACE PSS imported RoamCore ready: normalized coordinates and native route cache
+TRACE PSS idle walking attached; new targets retain native priority
+TRACE PSS imported core map=4 position=33000,32750 result=2 radius=20 queries=1 rejected=0
+PASS real x86 shadow-vtable dispatch, native point/goal/move ABI and point reuse
+PASS monster preemption and resuming idle walking after combat
+PASS loot, fixed hunting, recorded path and pending escape/return actions delegate unchanged
+TRACE PSS idle walking skipped: native tick thread differs from game UI thread
+PASS background-thread callbacks never issue roaming movement
+TRACE PSS imported core map=4 position=33000,32738 result=2 radius=20 queries=68 rejected=0
+PASS accepted but frozen movement is not spammed; stuck steps are retried at a bounded rate
+PASS movement-block and death flags prevent idle movement without stopping native PSS
+PASS Stop cancels the owned goal once and releases native shared ownership
+TRACE PSS imported core map=5 position=35001,39999 result=2 radius=20 queries=116 rejected=0
+PASS map changes and world exit discard stale destinations without cross-map movement
+TRACE PSS idle walking unavailable: Battle idle tree layout differs
+PASS raw/logical coordinate conversion including odd actor X, reversed routes, empty/partial/corrupt paths, dynamic blockers and list cleanup
+PASS tree mismatch and detach; allocations=8 destroys=8 releases=8 original_calls=7
+PASS native path allocations=2303 releases=2303 queries=177 (max 2 per tick)
