@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <stdint.h>
 #include "PssBridge.h"
+#include "PssGamePacket.h"
 #include "PssRoaming.h"
 #include "PssActivity.h"
 #include "PssNativeDraw.h"
@@ -213,7 +214,7 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
   if(wp==2) {
    PssAppCenterDetach();PssNativeDrawDetach();PssActivityDetach();activity_initialized=FALSE;
    PssRoamingDetach();
-   PssBridgeDetach();
+   PssGamePacketDetach();
    enabled=FALSE;KillTimer(game,0x505353);unpatch();if(panel){DestroyWindow(panel);panel=0;}status=0;
    WNDPROC old=previous;
    if((WNDPROC)GetWindowLongPtrW(game,GWLP_WNDPROC)==game_proc){SetWindowLongPtrW(game,GWLP_WNDPROC,(LONG_PTR)old);installed=FALSE;}
@@ -234,7 +235,7 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
    else logline(L"PSS item-only mode ready; no external button panel");
   }
   if(patched)PssAppCenterInitialize(game,module);
-  if(patched&&world_ready())PssBridgeTick();
+  if(patched&&world_ready())PssGamePacketInitialize(game,CONTROL);
   if(patched)PssRoamingObserve();
   if(patched){
    void* manager=0;BYTE active=0,dead=1;
@@ -253,14 +254,14 @@ static LRESULT CALLBACK game_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
   place_panel();return 0;
  }
  if(msg==WM_MOVE||msg==WM_SIZE)place_panel();
- if(msg==WM_NCDESTROY){PssAppCenterDetach();PssNativeDrawDetach();PssActivityDetach();activity_initialized=FALSE;PssRoamingDetach();PssBridgeDetach();unpatch();if(panel)DestroyWindow(panel);panel=0;installed=FALSE;}
+ if(msg==WM_NCDESTROY){PssAppCenterDetach();PssNativeDrawDetach();PssActivityDetach();activity_initialized=FALSE;PssRoamingDetach();PssGamePacketDetach();unpatch();if(panel)DestroyWindow(panel);panel=0;installed=FALSE;}
  return CallWindowProcW(previous,hwnd,msg,wp,lp);
 }
 __declspec(dllexport) DWORD WINAPI PssAttach(LPVOID arg) {
  HWND hwnd=(HWND)arg;DWORD pid=0;
  GetWindowThreadProcessId(hwnd,&pid);
  if(pid!=GetCurrentProcessId()||!IsWindow(hwnd)||!version_ok())return 0;
- if(installed){if(game!=hwnd)return 0;enabled=TRUE;user_hidden=FALSE;PssRoamingInitialize(game,module);PssBridgeInitialize(game,CONTROL,module);SetTimer(game,0x505353,100,0);return 1;}
+ if(installed){if(game!=hwnd)return 0;enabled=TRUE;user_hidden=FALSE;PssRoamingInitialize(game,module);/* No companion; native server packet receiver will be enabled by the UI timer. */SetTimer(game,0x505353,100,0);return 1;}
  game=hwnd;
  HMODULE pin;GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_PIN,(LPCWSTR)PssAttach,&pin);
  previous=(WNDPROC)GetWindowLongPtrW(game,GWLP_WNDPROC);
@@ -269,7 +270,7 @@ __declspec(dllexport) DWORD WINAPI PssAttach(LPVOID arg) {
  if(!SetWindowLongPtrW(game,GWLP_WNDPROC,(LONG_PTR)game_proc)&&GetLastError())return 0;
  installed=TRUE;enabled=TRUE;user_hidden=FALSE;SetTimer(game,0x505353,100,0);
  PssRoamingInitialize(game,module);
- if(!PssBridgeInitialize(game,CONTROL,module))logline(L"PSS item bridge initialization failed");
+ logline(L"[PSS-INBAND] game session transport selected; no companion TCP socket");
  logline(L"UI thread attached; waiting for unpacked code");return 1;
 }
 /* Queue on the game UI thread. The item-message bridge can reuse this entry. */
