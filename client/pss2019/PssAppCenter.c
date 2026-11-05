@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <stdint.h>
 #include <string.h>
+#include <wchar.h>
 #include "PssAppCenter.h"
 #include "PssBridge.h"
 
@@ -21,6 +22,8 @@ enum {
 };
 static char destination[2048];
 static BOOL installed;
+static DWORD last_attempt;
+static BOOL warned_missing,warned_mismatch;
 static const BYTE expected_code[] = {
     0x90,0x90,0x68,0x34,0x58,0x25,0x01,
     0x8D,0x4D,0xD8,0xE8,0x45,0xC5,0x83,0xFF
@@ -108,6 +111,9 @@ static BOOL from_config(const wchar_t *ini) {
 }
 BOOL PssAppCenterInitialize(HWND game, HMODULE module) {
     if(installed)return TRUE;
+    DWORD now=GetTickCount();
+    if(last_attempt&&(DWORD)(now-last_attempt)<1000U)return FALSE;
+    last_attempt=now;
     if(!game||!module||GetWindowThreadProcessId(game,0)!=GetCurrentThreadId())
         return FALSE;
     wchar_t ini[MAX_PATH],page[MAX_PATH];
@@ -120,13 +126,13 @@ BOOL PssAppCenterInitialize(HWND game, HMODULE module) {
     if(!configured) {
         DWORD attributes=GetFileAttributesW(page);
         if(attributes==INVALID_FILE_ATTRIBUTES||(attributes&FILE_ATTRIBUTE_DIRECTORY)) {
-            PssBridgeLog(L"AppCenter test HTML missing: original URL unchanged");
+            if(!warned_missing){PssBridgeLog(L"AppCenter test HTML missing: original URL unchanged");warned_missing=TRUE;}
             return FALSE;
         }
         if(!build_file_url(page))return FALSE;
     }
     if(!verified_site()) {
-        PssBridgeLog(L"AppCenter exact home-navigation bytes mismatch; original URL unchanged");
+        if(!warned_mismatch){PssBridgeLog(L"AppCenter home-navigation signature unavailable; retrying after client code loads");warned_mismatch=TRUE;}
         return FALSE;
     }
     DWORD candidate=(DWORD)(uintptr_t)destination;
