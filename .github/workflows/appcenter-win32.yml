@@ -2,7 +2,7 @@ name: 2019 Ctrl+Z AppCenter test DLL
 on:
   push:
     branches:
-      - pss/temp-trace-20261106
+      - pss/preserve-bound-connection-20261106
   workflow_dispatch:
 
 permissions:
