@@ -38,8 +38,17 @@ static void logline(const wchar_t* s) {
  }
  HANDLE f=CreateFileW(logfile,FILE_APPEND_DATA,FILE_SHARE_READ|FILE_SHARE_WRITE,0,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,0);
  if(f!=INVALID_HANDLE_VALUE) {
-  wchar_t line[512];SIZE_T size=lstrlenW(s);if(size>509)size=509;
-  CopyMemory(line,s,size*sizeof(wchar_t));line[size++]=L'\r';line[size++]=L'\n';
+  SYSTEMTIME timestamp;GetLocalTime(&timestamp);
+  wchar_t line[640];
+  int prefix=wsprintfW(line,L"[%02u:%02u:%02u.%03u pid=%lu] ",
+                        (unsigned)timestamp.wHour,(unsigned)timestamp.wMinute,
+                        (unsigned)timestamp.wSecond,(unsigned)timestamp.wMilliseconds,
+                        (unsigned long)GetCurrentProcessId());
+  SIZE_T size=lstrlenW(s);
+  if(size>(sizeof(line)/sizeof(line[0]))-(SIZE_T)prefix-3)
+    size=(sizeof(line)/sizeof(line[0]))-(SIZE_T)prefix-3;
+  CopyMemory(line+prefix,s,size*sizeof(wchar_t));
+  size+=(SIZE_T)prefix;line[size++]=L'\r';line[size++]=L'\n';
   DWORD n;WriteFile(f,line,(DWORD)(size*sizeof(wchar_t)),&n,0);CloseHandle(f);
  }
  ReleaseSRWLockExclusive(&log_guard);
