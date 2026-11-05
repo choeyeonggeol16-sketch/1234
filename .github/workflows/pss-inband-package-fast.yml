@@ -1,0 +1,49 @@
+name: PSS in-band package from verified Win32 CI binary
+on:
+  push:
+    branches:
+      - pss/inband-package-fast-20261106
+permissions:
+  contents: read
+  actions: read
+jobs:
+  assemble:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: PSS-AppCenter-PSSOnly-Win32
+          run-id: 42099195825
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: buildbin
+      - name: Package versioned DLL and original client autoload helper
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile,hashlib
+          base=Path("buildbin/client")
+          if not base.exists(): base=Path("buildbin")
+          dll=(base/"Pss2019.dll").read_bytes()
+          expected=(base/"Pss2019.dll.sha256").read_text().split()[0]
+          assert hashlib.sha256(dll).hexdigest()==expected
+          names=[
+              ("Pss2019.dll",dll),
+              ("Pss2019.dll.sha256",(base/"Pss2019.dll.sha256").read_bytes()),
+              ("Pss2019AppCenter.html",(base/"Pss2019AppCenter.html").read_bytes()),
+              ("Pss2019ClassicHud.dat",Path("client/Pss2019ClassicHud.dat").read_bytes()),
+              ("PSS_Client_Apply.cmd",Path("patches/pss_client_autoload_20261105/PSS_Client_Apply.cmd").read_bytes()),
+              ("PSS_Client_Apply.ps1",Path("patches/pss_client_autoload_20261105/PSS_Client_Apply.ps1").read_bytes()),
+              ("PSS_Client_Patch.cs",Path("patches/pss_client_autoload_20261105/PSS_Client_Patch.cs").read_bytes()),
+              ("README_FIRST.txt",Path("client/pss2019/INBAND_README.txt").read_bytes()),
+          ]
+          out=Path("PSS_InBand_Bundled_Client_20261106.zip")
+          with zipfile.ZipFile(out,"w",compression=zipfile.ZIP_DEFLATED) as z:
+              for name,data in names:z.writestr(name,data)
+          with zipfile.ZipFile(out) as z:assert z.testzip() is None
+          print("DLL SHA",expected)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PSS-InBand-Bundled-Client-20261106
+          path: PSS_InBand_Bundled_Client_20261106.zip
