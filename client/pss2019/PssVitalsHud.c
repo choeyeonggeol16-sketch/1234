@@ -59,7 +59,7 @@ void PssVitalsHudInitialize(HWND game,HMODULE module){
     WNDCLASSW wc={0};wc.lpfnWndProc=procedure;wc.hInstance=module;wc.lpszClassName=L"Pss2019VitalsHud";
     if(RegisterClassW(&wc)||GetLastError()==ERROR_CLASS_ALREADY_EXISTS)
         window=CreateWindowExW(WS_EX_LAYERED|WS_EX_TRANSPARENT|WS_EX_NOACTIVATE|WS_EX_TOOLWINDOW,
-            wc.lpszClassName,L"Classic HP MP HUD",WS_POPUP,0,0,PSS_VITALS_WIDTH,PSS_VITALS_HEIGHT,game,0,module,0);
+            wc.lpszClassName,L"PSS Classic HUD V11",WS_POPUP,0,0,PSS_VITALS_WIDTH,PSS_VITALS_HEIGHT,game,0,module,0);
     BITMAPINFO info={0};info.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
     info.bmiHeader.biWidth=PSS_VITALS_WIDTH;info.bmiHeader.biHeight=-PSS_VITALS_HEIGHT;
     info.bmiHeader.biPlanes=1;info.bmiHeader.biBitCount=32;info.bmiHeader.biCompression=BI_RGB;
@@ -67,16 +67,16 @@ void PssVitalsHudInitialize(HWND game,HMODULE module){
     if(canvas)bitmap=CreateDIBSection(canvas,&info,DIB_RGB_COLORS,(void**)&pixels,0,0);
     if(!bitmap){PssBridgeLog(L"HUD HP/MP bitmap creation failed");PssVitalsHudDetach();return;}
     old_bitmap=SelectObject(canvas,bitmap);
-    font=CreateFontW(-12,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,
+    font=CreateFontW(-13,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,
         CLIP_DEFAULT_PRECIS,ANTIALIASED_QUALITY,DEFAULT_PITCH,L"Tahoma");
-    PssBridgeLog(L"HUD classic-inspired frame ready; read-only HP/MP; original HUD retained");
+    PssBridgeLog(L"HUD V11 video-referenced art; HP/MP read-only; original HUD retained");
     wchar_t position[96];wsprintfW(position,L"HUD HP/MP anchor=%s offset=%d",top_anchor?L"top":L"bottom",top_anchor?top:bottom);
     PssBridgeLog(position);
 }
 static void render(PssVitals value){
     PssVitalsArt(pixels,value.hp,value.max_hp,value.mp,value.max_mp);
-    HFONT old=font?SelectObject(canvas,font):0;SetBkMode(canvas,TRANSPARENT);SetTextColor(canvas,RGB(255,244,221));
-    wchar_t text[80];RECT hp={69,42,283,64},mp={333,42,547,64};
+    HFONT old=font?SelectObject(canvas,font):0;SetBkMode(canvas,TRANSPARENT);SetTextColor(canvas,RGB(237,231,230));
+    wchar_t text[80];RECT hp={56,43,345,68},mp={439,43,728,68};
     wsprintfW(text,L"HP:%ld/%ld",(long)value.hp,(long)value.max_hp);
     DrawTextW(canvas,text,-1,&hp,DT_CENTER|DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
     wsprintfW(text,L"MP:%ld/%ld",(long)value.mp,(long)value.max_mp);
