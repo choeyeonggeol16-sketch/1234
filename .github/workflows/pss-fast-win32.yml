@@ -2,7 +2,7 @@ name: Win32 DLL build with preinstalled cross compiler
 on:
   push:
     branches:
-      - pss/inband-appcenter-quota-stalezero-20261106
+      - pss/inband-independent-ui-init-20261106
     paths:
       - .github/workflows/pss-fast-win32.yml
   workflow_dispatch:
