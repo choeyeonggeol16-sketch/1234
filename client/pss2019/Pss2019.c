@@ -306,8 +306,9 @@ static DWORD WINAPI auto_initialize(LPVOID ignored) {
   }
  }
  for(;;) {
-  BYTE branch;
-  if(world_ready()&&ui_signature(&branch)) {
+  /* Attach the window independently. Each PSS/AppCenter hook validates
+   * its own exact 2019 native code signature before making any changes. */
+  if(world_ready()) {
    MainWindow found={0,0};EnumWindows(find_game,(LPARAM)&found);
    if(found.window&&PssAttach(found.window)==1) {
     logline(L"PSS automatically attached in item-only mode");return 0;
