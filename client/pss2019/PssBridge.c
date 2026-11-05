@@ -20,7 +20,7 @@ static CRITICAL_SECTION guard;
 static HANDLE wake_event,worker_handle;
 static BOOL initialized,active,target_ready,needs_registration;
 static BOOL endpoint_warning,sender_warning;
-static DWORD endpoint_missing_since;
+static BOOL reroute_warning;
 static HWND game_window;
 static UINT game_message;
 static Target target;
@@ -75,7 +75,7 @@ static BOOL endpoint(Target* output) {
     Target preferred,only={0},matched={0};
     BOOL have_prior;
     EnterCriticalSection(&guard);
-    preferred=target;have_prior=active&&target_ready;
+    preferred=target;have_prior=active&&target_ready&&!needs_registration;
     LeaveCriticalSection(&guard);
     if(GetExtendedTcpTable(tcp_table,&size,FALSE,AF_INET,TCP_TABLE_OWNER_PID_ALL,0)!=NO_ERROR)return FALSE;
     MIB_TCPTABLE_OWNER_PID* rows=(MIB_TCPTABLE_OWNER_PID*)tcp_table;
@@ -234,7 +234,7 @@ BOOL PssBridgeInitialize(HWND hwnd,UINT message,HMODULE module) {
     game_window=hwnd;game_message=message;active=TRUE;
     if(newly_active) {
         target_ready=FALSE;needs_registration=TRUE;
-        target.serial++;next_registration=0;retry_delay=1000;endpoint_missing_since=0;
+        target.serial++;next_registration=0;retry_delay=1000;reroute_warning=FALSE;
     }
     LeaveCriticalSection(&guard);
     if(newly_active)SetEvent(wake_event);
@@ -247,26 +247,29 @@ void PssBridgeTick(void) {
     next_tick=now+1000;
     Target next;memset(&next,0,sizeof(next));
     if(!endpoint(&next)) {
-        if(!endpoint_warning)PssBridgeLog(L"PSS item bridge: game TCP endpoint missing/ambiguous; retaining session during short transient");
+        if(!endpoint_warning)PssBridgeLog(L"PSS item bridge: game TCP endpoint missing/ambiguous; preserving authenticated companion");
         endpoint_warning=TRUE;
-        if(endpoint_missing_since==0)endpoint_missing_since=now;
-        // A brief TCP-table ambiguity (e.g. launcher restart) must not tear down
-        // a still-authenticated PSS peer. The server independently validates logout.
-        if((DWORD)(now-endpoint_missing_since)>=5000U) {
-            BOOL invalidated=FALSE;
-            EnterCriticalSection(&guard);
-            if(target_ready) {target_ready=FALSE;needs_registration=TRUE;target.serial++;invalidated=TRUE;}
-            LeaveCriticalSection(&guard);
-            if(invalidated)SetEvent(wake_event);
-        }
+        // A TCP-table query can fail during a launcher restart or contain more
+        // than one game-port connection. Never revoke a live PSS peer here.
+        // The game session owns its lifetime; server logout/revocation closes
+        // the peer, and the worker then schedules authenticated re-registration.
         return;
     }
-    endpoint_missing_since=0;
     endpoint_warning=FALSE;
-    BOOL needed;EnterCriticalSection(&guard);
-    BOOL changed=!target_ready||target.remote!=next.remote||target.local_port!=next.local_port||target.game_port!=next.game_port;
-    needed=active&&(changed||needs_registration)&&(changed||next_registration==0||(LONG)(now-next_registration)>=0);
+    BOOL needed,retained,log_retained=FALSE;
+    EnterCriticalSection(&guard);
+    BOOL changed=target_ready&&(target.remote!=next.remote
+            ||target.local_port!=next.local_port||target.game_port!=next.game_port);
+    retained=active&&target_ready&&!needs_registration&&changed;
+    if(retained&&!reroute_warning)log_retained=TRUE;
+    reroute_warning=retained;
+    // The peer is authoritative while its authenticated socket is live.
+    // Do not rotate the single-use token merely because an additional TCP
+    // endpoint appears. Only worker-detected disconnect permits a new token.
+    needed=active&&(!target_ready||needs_registration)
+            &&(next_registration==0||(LONG)(now-next_registration)>=0);
     LeaveCriticalSection(&guard);
+    if(log_retained)PssBridgeLog(L"PSS item bridge: alternative game endpoint ignored while companion is bound");
     if(!needed)return;
     if(BCryptGenRandom(0,next.token,sizeof(next.token),BCRYPT_USE_SYSTEM_PREFERRED_RNG)!=0||!register_on_game_connection(next.token))return;
     EnterCriticalSection(&guard);
