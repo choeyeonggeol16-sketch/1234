@@ -39,7 +39,7 @@ unrecognized binaries rather than patching unknown client code. In that case
 first resolve launcher/client compatibility; no DLL can auto-load into an
 executable that no longer imports it.
 
-PROTOCOL: 2019 native response 2102, result 3 (not a start approval), plus
+PROTOCOL: 2019 native response 2102, result 4 (ignored by original 2019 result 0..3 handler), plus
 field-15 marker RKERNPSSOPEN2026. It is intercepted and consumed by the
 native client hook before default ACK dispatch. All normal 2102 ACKs remain
 native and are forwarded unchanged.
