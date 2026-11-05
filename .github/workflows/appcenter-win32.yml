@@ -1,0 +1,77 @@
+name: 2019 Ctrl+Z AppCenter test DLL
+on:
+  push:
+    branches:
+      - pss/appcenter-ctrlz-test-20261105
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pss-appcenter-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  appcenter-win32:
+    if: github.event_name != 'push' || github.event.head_commit.message != 'Publish AppCenter test DLL'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install 32-bit Windows C/C++ compiler
+        run: sudo apt-get install -y --no-install-recommends gcc-mingw-w64-i686 g++-mingw-w64-i686
+      - name: Compile PSS DLL with isolated AppCenter URL router
+        run: bash client/pss2019/build-linux.sh
+      - name: Validate PE32 and assemble page + one ZIP
+        run: |
+          set -euo pipefail
+          file client/Pss2019.dll
+          file client/Pss2019.dll | grep -q 'PE32'
+          (cd client && sha256sum -c Pss2019.dll.sha256)
+          cp client/pss2019/appcenter/index.html client/Pss2019AppCenter.html
+          mkdir -p downloads
+          python3 - <<'PY'
+          import pathlib, zipfile, hashlib
+          root=pathlib.Path(".")
+          source=(root/"client/pss2019/PssAppCenter.c").read_text()
+          game=(root/"client/pss2019/Pss2019.c").read_text()
+          html=(root/"client/Pss2019AppCenter.html").read_text()
+          assert "0x00BEBBBE" in source and "0x01255834" in source
+          assert "PssAppCenterInitialize(game,module)" in game
+          assert "PssAppCenterDetach()" in game
+          assert "앱센터 연결 성공" in html
+          names=[
+             ("client/Pss2019.dll","Pss2019.dll"),
+             ("client/Pss2019AppCenter.html","Pss2019AppCenter.html"),
+             ("client/pss2019/APP_CENTER_TEST_README.txt","README_FIRST.txt")]
+          path=root/"downloads/PSS_AppCenter_CtrlZ_Test_2019_Win32.zip"
+          with zipfile.ZipFile(path,"w",zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+             for p,arc in names:z.write(root/p,arc)
+          with zipfile.ZipFile(path) as z:
+             assert z.testzip() is None
+             assert z.read("Pss2019.dll")==(root/"client/Pss2019.dll").read_bytes()
+             assert z.read("Pss2019AppCenter.html")==(root/"client/Pss2019AppCenter.html").read_bytes()
+          for p in ["client/Pss2019.dll","client/Pss2019AppCenter.html",str(path)]:
+             data=(root/p).read_bytes()
+             print(f"{p}: {len(data)} bytes SHA256={hashlib.sha256(data).hexdigest()}")
+          PY
+      - name: Upload built DLL and ready-to-test app center ZIP to this branch
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add client/Pss2019.dll client/Pss2019.dll.sha256 client/Pss2019AppCenter.html downloads/PSS_AppCenter_CtrlZ_Test_2019_Win32.zip
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish AppCenter test DLL'
+            git push origin HEAD:pss/appcenter-ctrlz-test-20261105
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PSS-AppCenter-CtrlZ-Win32
+          path: |
+            client/Pss2019.dll
+            client/Pss2019.dll.sha256
+            client/Pss2019AppCenter.html
+            downloads/PSS_AppCenter_CtrlZ_Test_2019_Win32.zip
+          retention-days: 7
