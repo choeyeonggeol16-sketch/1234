@@ -1,0 +1,26 @@
+{
+  "version": "V6 activity UI initialization / DirectDraw presentation trial",
+  "dll_sha256": "a8e1cbfc81478c1b961dee38b10aa0b7ed29e50684beed8b0c795b159d9a1028",
+  "imports": [
+    "bcrypt.dll",
+    "GDI32.dll",
+    "IPHLPAPI.DLL",
+    "KERNEL32.dll",
+    "MSIMG32.DLL",
+    "msvcrt.dll",
+    "USER32.dll",
+    "WS2_32.dll"
+  ],
+  "build": "32-bit MinGW C11/C++11 -Wall -Wextra -Werror; static GCC/C++ runtime; PASS",
+  "ui_thread": "actual PssAttach worker vs owner WM_TIMER, once per attach and re-attach: PASS",
+  "drawing_path": "actual adapter with fake public COM tables, no driver: PASS",
+  "loader": "final production DLL imported before main; unsupported client refused: PASS",
+  "real_windows_game_fullscreen": "NOT VERIFIED; COM table sharing, GetDC/AlphaBlend support and visible output require a game trial",
+  "artwork": "locally drawn orange play triangle and Korean activity label; not extracted NC resources",
+  "anchor": "presentation-surface center plus INI offsets; not native character coordinates",
+  "server_src": "identical to V5 latest-source commit 45a3277b991a95ea296ebd31b52de6c75f9bb524; 1688 Java, 1689 files; all hashes verified",
+  "item_confirmation": "NOT RESOLVED; prior useType 30 and direct dispatch retained without new DB changes",
+  "new_db_items_or_tables": false,
+  "on_button_added": false,
+  "render_assets": "cached once at initialization; no application-created GDI objects per frame"
+}

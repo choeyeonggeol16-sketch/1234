@@ -1,10 +1,13 @@
 #define UNICODE
 #define _UNICODE
 #include "PssActivity.h"
+#include "PssBridge.h"
+#include "PssNativeDraw.h"
 #include <stdint.h>
 #include <string.h>
-/* A separate click-through activity indicator. It does not call undocumented
- * native UI functions or alter the PSS start/stop/movement state. */
+/* Cached activity artwork, drawn at DirectDraw presentation when available.
+ * A click-through window remains as a windowed fallback. No native UI calls
+ * or changes to the PSS start/stop/movement state are required. */
 enum {WIDTH=230,HEIGHT=64};
 static HWND owner,window;
 static HDC canvas;
@@ -14,6 +17,9 @@ static uint32_t* pixels;
 static BOOL enabled;
 static int offset_x,offset_y;
 static DWORD ui_thread;
+static BOOL native_ready;
+static SRWLOCK paint_guard=SRWLOCK_INIT;
+static void render(void);
 static LRESULT CALLBACK procedure(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
     if(msg==WM_NCHITTEST)return HTTRANSPARENT;
     if(msg==WM_MOUSEACTIVATE)return MA_NOACTIVATE;
@@ -21,17 +27,20 @@ static LRESULT CALLBACK procedure(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
 }
 void PssActivityDetach(void){
     if(ui_thread&&GetCurrentThreadId()!=ui_thread)return;
+    PssNativeDrawDetach();native_ready=FALSE;
+    AcquireSRWLockExclusive(&paint_guard);
     if(window)DestroyWindow(window);
     if(canvas&&old_bitmap)SelectObject(canvas,old_bitmap);
     if(bitmap)DeleteObject(bitmap);
     if(font)DeleteObject(font);
     if(canvas)DeleteDC(canvas);
     window=0;owner=0;canvas=0;bitmap=old_bitmap=0;font=0;pixels=0;enabled=FALSE;
+    ReleaseSRWLockExclusive(&paint_guard);
 }
 void PssActivityInitialize(HWND game,HMODULE module){
     if(!IsWindow(game))return;
     DWORD thread=GetWindowThreadProcessId(game,0);
-    if(thread!=GetCurrentThreadId())return;
+    if(thread!=GetCurrentThreadId()){PssBridgeLog(L"PSS activity init rejected: caller is not the game UI thread");return;}
     if(window&&owner==game)return;
     PssActivityDetach();ui_thread=thread;owner=game;
     wchar_t path[MAX_PATH];DWORD n=GetModuleFileNameW(module,path,MAX_PATH);
@@ -45,40 +54,42 @@ void PssActivityInitialize(HWND game,HMODULE module){
     offset_y=(int)GetPrivateProfileIntW(L"PssIndicator",L"OffsetY",20,path);
     if(offset_x < -8192||offset_x>8192)offset_x=0;
     if(offset_y < -8192||offset_y>8192)offset_y=20;
-    if(!enabled)return;
+    if(!enabled){PssBridgeLog(L"PSS activity disabled by INI");return;}
     WNDCLASSW wc={0};wc.lpfnWndProc=procedure;wc.hInstance=module;wc.lpszClassName=L"Pss2019Activity";
-    if(!RegisterClassW(&wc)&&GetLastError()!=ERROR_CLASS_ALREADY_EXISTS){enabled=FALSE;return;}
-    window=CreateWindowExW(WS_EX_LAYERED|WS_EX_TRANSPARENT|WS_EX_NOACTIVATE|WS_EX_TOOLWINDOW,
+    BOOL class_ready=RegisterClassW(&wc)||GetLastError()==ERROR_CLASS_ALREADY_EXISTS;
+    if(!class_ready)PssBridgeLog(L"PSS activity overlay class unavailable; trying native frame rendering");
+    if(class_ready)window=CreateWindowExW(WS_EX_LAYERED|WS_EX_TRANSPARENT|WS_EX_NOACTIVATE|WS_EX_TOOLWINDOW,
         wc.lpszClassName,L"PSS activity",WS_POPUP,0,0,WIDTH,HEIGHT,game,0,module,0);
-    if(!window){enabled=FALSE;return;}
+    if(!window)PssBridgeLog(L"PSS activity overlay window unavailable; trying native frame rendering");
     BITMAPINFO info;memset(&info,0,sizeof(info));info.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
     info.bmiHeader.biWidth=WIDTH;info.bmiHeader.biHeight=-HEIGHT;info.bmiHeader.biPlanes=1;
     info.bmiHeader.biBitCount=32;info.bmiHeader.biCompression=BI_RGB;
     canvas=CreateCompatibleDC(0);
     if(canvas)bitmap=CreateDIBSection(canvas,&info,DIB_RGB_COLORS,(void**)&pixels,0,0);
-    if(!bitmap){PssActivityDetach();return;}
+    if(!bitmap){PssBridgeLog(L"PSS activity bitmap creation failed");PssActivityDetach();return;}
     old_bitmap=SelectObject(canvas,bitmap);
     font=CreateFontW(-14,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,
         OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,NONANTIALIASED_QUALITY,DEFAULT_PITCH,L"Malgun Gothic");
+    // The artwork is static: allocate/draw GDI objects once, not per frame.
+    render();
+    PssBridgeLog(L"PSS activity initialized on the game UI thread");
+    native_ready=PssNativeDrawInitialize();
 }
 static void render(void){
     memset(pixels,0,WIDTH*HEIGHT*sizeof(*pixels));
-    HBRUSH background=CreateSolidBrush(RGB(80,40,8));
-    RECT bar={20,41,WIDTH-20,62};FillRect(canvas,&bar,background);DeleteObject(background);
-    HBRUSH old_brush=SelectObject(canvas,GetStockObject(NULL_BRUSH));
-    HPEN pen=CreatePen(PS_SOLID,2,RGB(185,126,45)),old_pen=SelectObject(canvas,pen);
+    HBRUSH background=CreateSolidBrush(RGB(164,61,9));
+    RECT bar={20,41,WIDTH-20,62};FillRect(canvas,&bar,background);
+    HBRUSH old_brush=SelectObject(canvas,background);
+    HPEN pen=CreatePen(PS_SOLID,2,RGB(255,151,51)),old_pen=SelectObject(canvas,pen);
     Ellipse(canvas,WIDTH/2-13,7,WIDTH/2+13,33);
     SelectObject(canvas,old_pen);DeleteObject(pen);
-    /* Activity animation, not a countdown or progress percentage. */
-    static const int x[8]={0,9,13,9,0,-9,-13,-9};
-    static const int y[8]={-13,-9,0,9,13,9,0,-9};
-    unsigned phase=(GetTickCount()/125U)&7U;
-    pen=CreatePen(PS_SOLID,3,RGB(255,230,160));old_pen=SelectObject(canvas,pen);
-    MoveToEx(canvas,WIDTH/2+x[phase],20+y[phase],0);
-    LineTo(canvas,WIDTH/2+x[(phase+1)&7],20+y[(phase+1)&7]);
-    SelectObject(canvas,old_pen);DeleteObject(pen);SelectObject(canvas,old_brush);
+    // Reference UI: a play triangle inside a circle, not a loading spinner.
+    HBRUSH arrow=CreateSolidBrush(RGB(255,249,234));
+    SelectObject(canvas,arrow);
+    POINT points[3]={{WIDTH/2-4,12},{WIDTH/2+7,20},{WIDTH/2-4,28}};
+    Polygon(canvas,points,3);SelectObject(canvas,old_brush);DeleteObject(arrow);DeleteObject(background);
     HFONT old_font=font?SelectObject(canvas,font):0;
-    SetBkMode(canvas,TRANSPARENT);SetTextColor(canvas,RGB(255,224,150));
+    SetBkMode(canvas,TRANSPARENT);SetTextColor(canvas,RGB(255,242,219));
     DrawTextW(canvas,L"플레이 서포트 동작 중",-1,&bar,DT_CENTER|DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
     if(old_font)SelectObject(canvas,old_font);
     GdiFlush();
@@ -88,17 +99,34 @@ static void render(void){
             pixels[i]=0xEB000000U|(r<<16)|(g<<8)|b;}
     }
 }
+BOOL PssActivityPaintSurface(HDC dc){
+    if(!dc||!TryAcquireSRWLockExclusive(&paint_guard))return FALSE;
+    BOOL ok=FALSE;RECT clip;
+    if(enabled&&canvas&&pixels&&GetClipBox(dc,&clip)!=ERROR&&clip.right-clip.left>=320&&clip.bottom-clip.top>=200){
+        int x=clip.left+(clip.right-clip.left-WIDTH)/2+offset_x;
+        int y=clip.top+(clip.bottom-clip.top)/2+offset_y;
+        BLENDFUNCTION blend={AC_SRC_OVER,0,255,AC_SRC_ALPHA};
+        ok=AlphaBlend(dc,x,y,WIDTH,HEIGHT,canvas,0,0,WIDTH,HEIGHT,blend);
+        if(!ok)ok=TransparentBlt(dc,x,y,WIDTH,HEIGHT,canvas,0,0,WIDTH,HEIGHT,RGB(0,0,0));
+    }
+    ReleaseSRWLockExclusive(&paint_guard);return ok;
+}
 void PssActivityUpdate(BOOL running){
-    if(GetCurrentThreadId()!=ui_thread||!window||!enabled)return;
+    if(GetCurrentThreadId()!=ui_thread||!canvas||!enabled)return;
     HWND foreground=GetForegroundWindow();
-    if(!running||!IsWindow(owner)||!IsWindowVisible(owner)||IsIconic(owner)||
-       (foreground!=owner&&!IsChild(owner,foreground))){ShowWindow(window,SW_HIDE);return;}
+    BOOL show=running&&IsWindow(owner)&&IsWindowVisible(owner)&&!IsIconic(owner)&&
+        (foreground==owner||IsChild(owner,foreground));
+    PssNativeDrawSetActive(show);
+    if(!show||(native_ready&&PssNativeDrawHasPainted())){if(window)ShowWindow(window,SW_HIDE);return;}
+    if(!window)return;
     RECT area;
     if(!GetClientRect(owner,&area)){ShowWindow(window,SW_HIDE);return;}
     POINT center={(area.right-area.left)/2+offset_x,(area.bottom-area.top)/2+offset_y};
     if(!ClientToScreen(owner,&center)){ShowWindow(window,SW_HIDE);return;}
     POINT destination={center.x-WIDTH/2,center.y},source={0,0};SIZE size={WIDTH,HEIGHT};
-    render();BLENDFUNCTION blend={AC_SRC_OVER,0,255,AC_SRC_ALPHA};
+    AcquireSRWLockExclusive(&paint_guard);
+    BLENDFUNCTION blend={AC_SRC_OVER,0,255,AC_SRC_ALPHA};
     if(UpdateLayeredWindow(window,0,&destination,&size,canvas,&source,0,&blend,ULW_ALPHA))
         ShowWindow(window,SW_SHOWNOACTIVATE);
+    ReleaseSRWLockExclusive(&paint_guard);
 }

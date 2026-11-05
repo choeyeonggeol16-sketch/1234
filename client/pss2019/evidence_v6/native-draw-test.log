@@ -1,0 +1,4 @@
+ERROR: ld.so: object '/work/native/wine_mmap32.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+ERROR: ld.so: object '/work/native/wine_mmap32.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+PASS shared COM-table capture, primary full-frame filtering, Flip backbuffer ownership, DC cleanup/failure, inactive bypass and detach/in-flight/re-attach
+Controlled COM test doubles; actual game DirectDraw interface matching and fullscreen visibility remain unverified.

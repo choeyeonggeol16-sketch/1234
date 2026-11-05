@@ -4,6 +4,12 @@
 #include <assert.h>
 #include <stdio.h>
 #include "PssActivity.h"
+// Windowed visual fixture: isolate the optional DirectDraw hook.
+void PssBridgeLog(const wchar_t* text){(void)text;}
+BOOL PssNativeDrawInitialize(void){return FALSE;}
+BOOL PssNativeDrawHasPainted(void){return FALSE;}
+void PssNativeDrawSetActive(BOOL active){(void)active;}
+void PssNativeDrawDetach(void){}
 static void focus(HWND game){
     ShowWindow(game,SW_SHOWNORMAL);SetForegroundWindow(game);SetActiveWindow(game);
     MSG m;while(PeekMessageW(&m,0,0,0,PM_REMOVE)){TranslateMessage(&m);DispatchMessageW(&m);}

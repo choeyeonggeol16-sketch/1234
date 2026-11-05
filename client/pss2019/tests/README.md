@@ -1,4 +1,4 @@
-# V5 validation
+# PSS validation
 
 Current evidence is in evidence_v5. Earlier evidence directories record prior versions.
 
@@ -11,3 +11,20 @@ Current evidence is in evidence_v5. Earlier evidence directories record prior ve
 - ImportHarness imports the final production DLL and checks the init export and refusal to create helper/status windows in an unsupported executable. Only system DLL imports are allowed.
 
 activity_indicator_test.c attempts actual Win32 show/hide/position/input-pass-through and resource lifecycle checks. It was BLOCKED before creating the fixture window because Wine could not start its explorer/graphics backend. It is NOT a passing visual test. Font/position, native PSS traversal and first predicted arrow behavior still need a Windows game trial. The indicator is a separate owned layered window for windowed mode, not an extracted NC UI resource or an in-game renderer hook.
+
+
+V6 UI initialization and full-screen presentation trial
+
+- ui_thread_contract.c includes actual Pss2019.c and calls PssAttach from a worker thread. It asserts zero activity initialization there, one initialization from the owner window WM_TIMER, and the same behavior after detach/re-attach. The activity component is a boundary double; this tests the real startup path, not graphics.
+- native_draw_contract.c links actual PssNativeDraw.c with controlled DirectDraw surface COM tables. It verifies inactive bypass, filtering of primary full-frame copies, skipping small rectangles/scroll copies/offscreen copies, Flip backbuffer reference ownership, GetDC/ReleaseDC cleanup including failure, and restoration with in-flight callbacks and re-attachment. This does not verify the real client's COM tables or driver.
+- ImportHarness loads the final V6 production PE32 DLL and checks refusal to attach to an unsupported executable. The DLL imports only Windows system libraries; MSIMG32 is used for AlphaBlend/TransparentBlt. DirectDrawCreateEx is resolved only from the already loaded ddraw.dll.
+- Actual imported client renderer evidence: supplied pe-directories-imports.json lists ddraw.dll!DirectDrawCreateEx. PssNativeDraw uses public COM presentation slots on surface interfaces captured from a temporary system-memory offscreen surface; it does not change display mode or create a primary surface. Matching the game's actual tables and exclusive full-screen visibility still require a game trial.
+- The layered window remains a windowed fallback. The V5 visual test was blocked by the Wine graphics backend; the full-screen V6 drawing is NOT live-game verified. The orange play artwork is locally drawn, not extracted NC artwork, and uses the center of the presented surface plus INI offsets, not a native character anchor.
+- There are no new server-source changes in V6. Latest uploaded 1,688 Java files with the four prior V5 edits are preserved, including the uploaded daily quota/config lifecycle. See the full archive's server validation. The older 1,711-source trial tests above describe V5 history, not the latest daily quota implementation.
+
+Build the headless tests from this directory's parent with 32-bit MinGW:
+
+    i686-w64-mingw32-gcc -std=c11 -Wall -Wextra -Werror -O2 -static -I. tests/ui_thread_contract.c -o ../UiThreadTest.exe -luser32 -lkernel32
+    i686-w64-mingw32-gcc -std=c11 -Wall -Wextra -Werror -O2 -static -I. -DPSS_NATIVE_DRAW_TEST tests/native_draw_contract.c PssNativeDraw.c -o ../NativeDrawTest.exe -ldxguid -luser32 -lkernel32
+
+The separate windowed activity_indicator_test.c now supplies native-draw boundary doubles. Link it with PssActivity.c, -lmsimg32 -lgdi32 -luser32 -lkernel32 on a working Windows desktop. It is not part of the passing headless tests.
