@@ -4,7 +4,6 @@
 BOOL PssNativeDrawInitialize(void);
 void PssNativeDrawSetActive(BOOL active);
 BOOL PssNativeDrawHasPainted(void);
-BOOL PssNativeDrawHudHasPainted(void);
 void PssNativeDrawDetach(void);
 #ifdef PSS_NATIVE_DRAW_TEST
 BOOL PssNativeDrawTestInstall(void* surface);
