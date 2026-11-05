@@ -29,12 +29,13 @@ typedef void (__cdecl *Plain)(void);
 static void logline(const wchar_t* s) {
  AcquireSRWLockExclusive(&log_guard);
  if(!logfile[0]) {
-  DWORD size=GetModuleFileNameW(module,logfile,MAX_PATH);
-  if(size==0||size>=MAX_PATH){logfile[0]=0;ReleaseSRWLockExclusive(&log_guard);return;}
-  wchar_t* p=logfile; wchar_t* last=p;
-  while(*p) { if(*p==L'\\') last=p+1; ++p; }
-  if((SIZE_T)(last-logfile)+lstrlenW(L"PSS2019_trace.txt")>=MAX_PATH){logfile[0]=0;ReleaseSRWLockExclusive(&log_guard);return;}
-  lstrcpyW(last,L"PSS2019_trace.txt");
+  // Program Files/game folder may be read-only. Record each game process
+  // in the user's writable TEMP folder using its PID for disambiguation.
+  DWORD length=GetTempPathW(MAX_PATH,logfile);
+  if(length==0||length>=MAX_PATH-48) {
+    logfile[0]=0;ReleaseSRWLockExclusive(&log_guard);return;
+  }
+  wsprintfW(logfile+length,L"RKern_PSS2019_%lu.log",(unsigned long)GetCurrentProcessId());
  }
  HANDLE f=CreateFileW(logfile,FILE_APPEND_DATA,FILE_SHARE_READ|FILE_SHARE_WRITE,0,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,0);
  if(f!=INVALID_HANDLE_VALUE) {
@@ -292,6 +293,14 @@ static BOOL CALLBACK find_game(HWND hwnd,LPARAM parameter) {
 }
 static DWORD WINAPI auto_initialize(LPVOID ignored) {
  (void)ignored;logline(L"PSS V9 bottom-docked HP/MP HUD trial loaded");logline(L"PSS loaded by client import; waiting for the game world");
+ {
+  wchar_t dllpath[MAX_PATH],message[512];
+  DWORD count=GetModuleFileNameW(module,dllpath,MAX_PATH);
+  if(count>0&&count<MAX_PATH) {
+   wsprintfW(message,L"RKern PSS TEMP trace active; loaded DLL: %ls",dllpath);
+   logline(message);
+  }
+ }
  for(;;) {
   BYTE branch;
   if(world_ready()&&code_ready()&&ui_signature(&branch)) {
