@@ -18,11 +18,14 @@ static BYTE manager[0x80],task[0x80],context[0x140],settings[0x50],group[0x80],a
 static BYTE leaf[0x40],path_object[0x40],containers[6][0x40],dummy[0x40];
 static PssPoint here={33000,32750},last_goal;
 static DWORD now=10000;
+static DWORD first_command,second_command;
+static unsigned longest_command;
 static unsigned commands,allocations,releases,destroys,original_calls;
 static unsigned path_allocations,path_releases,path_queries;
 static int raw_parity=1;
 static int path_mode;
-static BOOL blocked;
+static BOOL blocked,simulate_steps,native_pending;
+static unsigned intermediate_ticks;
 DWORD PssRoamingTestNow(void){return now;}
 ULONGLONG PssRoamingTestNow64(void){return now;}
 /* Wine under QEMU cannot read the guest's private image pages using the
@@ -67,8 +70,13 @@ static void __attribute__((fastcall)) set_goal(void* self,void* unused,int x,int
     (void)unused;((PssPoint*)self)->x=x;((PssPoint*)self)->y=y;
 }
 static void __attribute__((fastcall)) move(void* self,void* unused) {
-    (void)unused;last_goal=*(PssPoint*)self;++commands;
-    if(!blocked)here=last_goal;
+    (void)unused;last_goal=*(PssPoint*)self;
+    unsigned dx=(unsigned)abs(last_goal.x-here.x),dy=(unsigned)abs(last_goal.y-here.y);
+    unsigned length=dx>dy?dx:dy;assert(length<=3);
+    if(length>longest_command)longest_command=length;
+    if(!commands)first_command=now;else if(commands==1)second_command=now;
+    ++commands;
+    if(!blocked){if(simulate_steps)native_pending=here.x!=last_goal.x||here.y!=last_goal.y;else here=last_goal;}
 }
 static void __attribute__((fastcall)) destroy(void* self,void* unused) {
     (void)unused;assert(get32(self,4)==0);++destroys;
@@ -107,7 +115,7 @@ static void __cdecl find_path(const PssPoint* from,const PssPoint* to,PathList* 
         assert(PssNavToInternal(p,&points[count++]));
     }
     if(path_mode==2&&count>1)--count;
-    if(path_mode==4&&count==2)return; /* Dynamic blocker after cache seeding. */
+    if(path_mode==4&&count<=5)return; /* Dynamic blocker after cache seeding. */
     if(path_mode==5&&count>1)points[1].x+=200; /* Broken/nonadjacent route. */
     for(unsigned i=0;i<count;++i){
         BYTE* node=HeapAlloc(GetProcessHeap(),HEAP_ZERO_MEMORY,16);assert(node);++path_allocations;
@@ -180,7 +188,17 @@ static int tick(void) {
     return fn(leaf,0.1f);
 }
 static void advance(unsigned milliseconds) {
-    for(unsigned n=0;n<milliseconds;n+=100){unsigned prior=path_queries;now+=100;PssRoamingObserve();tick();assert(path_queries-prior<=2);}
+    for(unsigned n=0;n<milliseconds;n+=100){
+        unsigned prior=path_queries,before=commands;BOOL intermediate=FALSE;
+        if(simulate_steps&&native_pending&&!blocked){
+            here.x+=last_goal.x>here.x?1:last_goal.x<here.x?-1:0;
+            here.y+=last_goal.y>here.y?1:last_goal.y<here.y?-1:0;
+            native_pending=here.x!=last_goal.x||here.y!=last_goal.y;
+            intermediate=native_pending;if(intermediate)++intermediate_ticks;
+        }
+        now+=100;PssRoamingObserve();tick();assert(path_queries-prior<=2);
+        if(intermediate)assert(commands==before);
+    }
 }
 static DWORD WINAPI other_thread(void* unused){(void)unused;tick();return 0;}
 int main(int argc,char** argv) {
@@ -199,7 +217,16 @@ int main(int argc,char** argv) {
     assert(commands>=1&&allocations==1&&path_allocations==path_releases);
     unsigned before=commands;advance(3000);
     assert(commands>before&&allocations==1);
+    assert(longest_command==3&&second_command-first_command<300);
+    puts("PASS multi-tile native movement goals and no mandatory 300ms gap after observed arrival");
     puts("PASS real x86 shadow-vtable dispatch, native point/goal/move ABI and point reuse");
+
+    PssRoamingReset(FALSE);last_goal=here;native_pending=FALSE;simulate_steps=TRUE;
+    before=commands;advance(3000);
+    assert(commands>before&&intermediate_ticks>0);
+    simulate_steps=FALSE;native_pending=FALSE;
+    PssRoamingReset(FALSE);advance(1000);
+    puts("PASS native multi-tile travel keeps its destination through intermediate tile updates");
 
     before=commands;put32(context,0xA8,123);now+=100;PssRoamingObserve();
     assert(tick()==2&&commands==before&&releases==allocations);

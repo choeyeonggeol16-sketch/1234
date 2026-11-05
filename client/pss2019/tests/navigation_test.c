@@ -28,5 +28,13 @@ int main(void){
     assert(PssNavHas(&cache,100,4,33000,32750,33001,32750));
     assert(!PssNavHas(&cache,3000,4,33000,32750,33001,32750));
     PssNavClear(&cache,5);assert(!PssNavHas(&cache,100,5,33000,32750,33001,32750));
+    PssNavPath segment={{{100,100},{101,100},{102,100},{103,100}},4};
+    assert(PssNavSegmentMatches(&segment,(PssPoint){100,100},(PssPoint){103,100},3));
+    assert(!PssNavSegmentMatches(&segment,(PssPoint){100,100},(PssPoint){103,100},2));
+    segment.points[2].y=101;
+    assert(!PssNavSegmentMatches(&segment,(PssPoint){100,100},(PssPoint){103,100},3));
+    segment.points[2].y=100;segment.count=3;
+    assert(!PssNavSegmentMatches(&segment,(PssPoint){100,100},(PssPoint){103,100},3));
+    puts("PASS native segment validation rejects turns, detours, partial routes and excessive stride");
     puts("PASS normalized/raw coordinates, odd X rounding, bounds, directed/map-scoped edges, invalidation, expiry and clock rollover");
 }

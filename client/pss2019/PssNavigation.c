@@ -51,3 +51,16 @@ void PssNavRemove(PssNavCache* c,int x,int y,int nx,int ny){
         if(e->used&&e->from==from&&e->to==to)e->used=0;
     }
 }
+
+int PssNavSegmentMatches(const PssNavPath* p,PssPoint from,PssPoint to,unsigned limit){
+    PssPoint raw;
+    if(!p||!PssNavToInternal(from,&raw)||!PssNavToInternal(to,&raw))return 0;
+    int x=to.x-from.x,y=to.y-from.y,ax=x<0?-x:x,ay=y<0?-y:y;
+    unsigned steps=(unsigned)(ax>ay?ax:ay);
+    if(!steps||steps>limit||steps>=PSS_NAV_PATH_MAX||p->count!=steps+1||
+       (ax&&ay&&ax!=ay))return 0;
+    int dx=x>0?1:x<0?-1:0,dy=y>0?1:y<0?-1:0;
+    for(unsigned n=0;n<=steps;++n)
+        if(p->points[n].x!=from.x+dx*(int)n||p->points[n].y!=from.y+dy*(int)n)return 0;
+    return 1;
+}

@@ -9,9 +9,17 @@
     "RoamTests.cpp": "0a046a7dda14b83af4a19da5dfdc945c7c46eb3b8ffd1d146a5b414c9d245f14",
     "build-roam.cmd": "5183608b8f1a5ab39d4fd173314468664cdca16ae65ecd2b25e1355a951ca811"
   },
-  "algorithm_cpp_copied_verbatim": true,
+  "algorithm_cpp_copied_verbatim": false,
   "integration": "PssRoaming.c calls sr_tick; source statically linked in Pss2019.dll",
   "header_changes": "C-compatible typedef/linkage and non-Windows test declarations; no field/order/calling-convention changes",
   "original_header": "RoamCore.original.h",
-  "modified_header_sha256": "de2d76968927a526073e132518f3734f286deb2419cafb557663dedae647bc95"
+  "modified_header_sha256": "d931ee080e8c6423d44a46f5052ce71fafee484436f6d1964c1187ccd7d08db3",
+  "original_cpp": "RoamCore.original.cpp",
+  "integration_version": "V4 continuous segments",
+  "cpp_changes": [
+    "opt-in 1..4 tile collinear segments",
+    "retain pending destination through intermediate tile progress",
+    "exclude next adjacent edge on segment rejection/stall"
+  ],
+  "modified_cpp_sha256": "e82bc972559b68891edf358bdb25fbae0aa79f5c29337e5242de9edf6ad9dc95"
 }

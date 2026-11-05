@@ -45,7 +45,7 @@ static SRState* core;
 static SRConfig core_config={20,1024,300,2000,0};
 static SRInput last_input;
 static PssNavCache navigation;
-static unsigned command_ms=300,idle_ms=500,probe_index,query_total,rejected_steps;
+static unsigned command_ms=0,stride_tiles=3,idle_ms=500,probe_index,query_total,rejected_steps;
 static uint64_t idle_since,last_request;
 static DWORD last_probe;
 static BOOL pending_move,core_fault;
@@ -258,9 +258,10 @@ static int __cdecl host_request_step(void* opaque,int map,int nx,int ny) {
        actual.x!=h->here.x||actual.y!=h->here.y)return 0;
     --h->budget;
     PssNavPath path;
-    if(!query_path(h->frame->actor,actual,target,&path)||path.count!=2||
-       path.points[1].x!=nx||path.points[1].y!=ny) {
-        PssNavRemove(&navigation,actual.x,actual.y,nx,ny);++rejected_steps;return 0;
+    if(!query_path(h->frame->actor,actual,target,&path)||
+       !PssNavSegmentMatches(&path,actual,target,stride_tiles)) {
+        int dx=nx>actual.x?1:nx<actual.x?-1:0,dy=ny>actual.y?1:ny<actual.y?-1:0;
+        PssNavRemove(&navigation,actual.x,actual.y,actual.x+dx,actual.y+dy);++rejected_steps;return 0;
     }
     PssNavAdd(&navigation,(uint32_t)h->now,&path);
     if(!point.object) {
@@ -310,7 +311,7 @@ static int __attribute__((fastcall)) idle_tick(void* self,void* unused,float ela
     uint64_t now=GetTickCount64();
     if(!core&&!core_fault) {
         SRConfig cfg=core_config;cfg.seed^=(uint32_t)(uintptr_t)f.actor^(uint32_t)now;
-        core=sr_create(&cfg);PssNavClear(&navigation,f.map);
+        core=sr_create(&cfg);sr_set_lookahead(core,(int)stride_tiles);PssNavClear(&navigation,f.map);
         if(!core){core_fault=TRUE;PssBridgeLog(L"PSS imported core allocation failed");}
     }
     if(core_fault){--depth;return 1;}
@@ -331,8 +332,8 @@ static int __attribute__((fastcall)) idle_tick(void* self,void* unused,float ela
     DWORD clock=(DWORD)now;
     if(clock-last_log>=10000U) {
         wchar_t message[220];
-        wsprintfW(message,L"PSS imported core map=%d position=%d,%d result=%d radius=%d queries=%u rejected=%u",
-                  f.map,here.x,here.y,result,core_config.radius,query_total,rejected_steps);
+        wsprintfW(message,L"PSS imported core map=%d position=%d,%d result=%d radius=%d stride=%u interval=%u queries=%u rejected=%u",
+                  f.map,here.x,here.y,result,core_config.radius,stride_tiles,command_ms,query_total,rejected_steps);
         PssBridgeLog(message);last_log=clock;
     }
     --depth;return 1;
@@ -355,7 +356,8 @@ void PssRoamingInitialize(HWND game,HMODULE module) {
     core_config.search_budget=(int)setting(file,L"SearchBudget",1024,64,2048);
     core_config.retry_ms=(int)setting(file,L"RetryMs",300,100,2000);
     core_config.stuck_ms=(int)setting(file,L"StuckTimeoutMs",2000,1000,5000);
-    command_ms=setting(file,L"CommandIntervalMs",300,200,1000);
+    command_ms=setting(file,L"CommandIntervalMs",0,0,1000);
+    stride_tiles=setting(file,L"StrideTiles",3,1,4);
     idle_ms=setting(file,L"IdleDelayMs",500,300,3000);
     warned=FALSE;last_observe=0;
     if(!enabled)PssBridgeLog(L"PSS idle walking disabled by PssRoaming.Enabled=0");
@@ -372,7 +374,7 @@ void PssRoamingObserve(void) {
         }
         if(!read_at((void*)(NODE_VTABLE-4),shadow,sizeof(shadow))||shadow[2]!=NODE_TICK)return;
         shadow[2]=(uintptr_t)idle_tick;ready=TRUE;
-        PssBridgeLog(L"PSS imported RoamCore ready: normalized coordinates and native route cache");
+        PssBridgeLog(L"PSS V4 continuous roaming ready: native straight segments and arrival-based pacing");
     }
     Frame f;
     if(!snapshot(&f)) {

@@ -1,0 +1,43 @@
+{
+  "build": "PSS_2019_Roam_V4_Continuous_TEST_20261105",
+  "target": "19.02.15.1002 PE32 i386",
+  "compiler": "MinGW-w64 GCC/G++ 12-posix",
+  "build_script": "source/build-linux.sh with PSS_CXX pointing at relocated MinGW G++ wrapper",
+  "flags": "-O2 -Wall -Wextra -Werror; C11/C++11; -shared -static -static-libstdc++ -static-libgcc -Wl,--add-stdcall-alias",
+  "dll_sha256": "30c678dc2cf1afd205267df0abbb8f8f6afbd9ab262b31b9bce2a31236c4d232",
+  "original_supplied_cpp_sha256": "51d2ead64f5f9ade8fe48df50c9a1f3d88f014849616015ccc8f9ec794579d8c",
+  "modified_cpp_sha256": "e82bc972559b68891edf358bdb25fbae0aa79f5c29337e5242de9edf6ad9dc95",
+  "production_test_macro": false,
+  "system_imports": [
+    "bcrypt.dll",
+    "IPHLPAPI.DLL",
+    "KERNEL32.dll",
+    "msvcrt.dll",
+    "USER32.dll",
+    "WS2_32.dll"
+  ],
+  "live_game_tested": false,
+  "default_stride_tiles": 3,
+  "default_command_interval_ms": 0,
+  "native_speed_checks": "unchanged",
+  "fixture_native_points": {
+    "allocated": 10,
+    "destroyed": 10,
+    "released": 10
+  },
+  "fixture_native_path_nodes": {
+    "allocated": 2976,
+    "released": 2976
+  },
+  "fixture_native_queries": 256,
+  "max_native_queries_per_tick": 2,
+  "new_tests": [
+    "asynchronous multi-tile progress without repeated command",
+    "L corridor, no merge through turns",
+    "stalled segment excludes adjacent first edge",
+    "native full straight segment check, malformed/partial/dynamic blocked routes",
+    "mandatory 300ms pacing removed"
+  ],
+  "regression_tests": "original supplied core tests, navigation ASan/UBSan, PE32 adapter and final production import; LeakSanitizer disabled for traced executor",
+  "runtime_fixture": "controlled PE32 test doubles under Wine/QEMU; actual game pathfinder/animation not executed"
+}

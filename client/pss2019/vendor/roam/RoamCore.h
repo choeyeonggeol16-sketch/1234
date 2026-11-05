@@ -23,3 +23,7 @@ SRAPI SRState* __cdecl sr_create(const SRConfig* config);
 SRAPI void __cdecl sr_destroy(SRState* state);
 SRAPI void __cdecl sr_reset(SRState* state);
 SRAPI int __cdecl sr_tick(SRState* state,const SRInput* input,const SRHost* host);
+
+// Opt-in: request_step endpoints may span up to 4 validated collinear tiles.
+// Hosts must validate the entire segment before submitting native movement.
+SRAPI void __cdecl sr_set_lookahead(SRState* state,int max_tiles);

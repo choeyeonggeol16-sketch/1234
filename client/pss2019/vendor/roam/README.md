@@ -1,9 +1,11 @@
-# 업로드에서 가져온 배회 코어
+# 업로드 배회 코어와 V4 연속 이동 확장
 
-`mjlin_배회기능_이식준비자료.zip`의 `RoamCore.cpp`와 `RoamTests.cpp`는 원본 그대로다. CPP SHA256은 `51d2ead64f5f9ade8fe48df50c9a1f3d88f014849616015ccc8f9ec794579d8c`이다. 원본 헤더는 `RoamCore.original.h`에 보존했다.
+원본 `mjlin_배회기능_이식준비자료.zip`의 CPP는 `RoamCore.original.cpp`에 보존한다. SHA256은 `51d2ead64f5f9ade8fe48df50c9a1f3d88f014849616015ccc8f9ec794579d8c`이다. 원래 테스트와 원래 헤더(`RoamCore.original.h`)도 보존한다.
 
-상위 DLL이 C로 작성되어 `RoamCore.h`에 C 호환 typedef와 extern 선언을 추가했다. 구조체 필드·순서와 함수 호출 규약은 유지한다. 비 Windows 테스트용 `__cdecl` 정의와 조건부 export 선언도 추가했다. 배회 알고리즘 CPP는 변경하지 않았다.
+V3는 원본 CPP를 그대로 링크했다. V4의 `RoamCore.cpp`에는 연속 이동을 위한 `sr_set_lookahead`와 짧은 직선 구간 병합을 추가했다. 모든 구간의 인접 간선을 호스트가 승인해야 하고, 방향이 바뀌면 구간을 끊는다. 중간 위치 도착 시 남은 경로를 유지하고 추가 이동 요청을 하지 않는다. 막히면 현재 위치의 다음 인접 간선을 제외한다. 기본 API 동작은 여전히 1칸이며, 네이티브 어댑터가 기본 3칸을 명시적으로 선택한다.
 
-상위 `build.cmd`는 코어를 C++로 컴파일하고 `Pss2019.dll`에 정적 링크한다. `PssRoaming.c`가 `sr_create/sr_tick/sr_destroy`를 실제 호출하며 `PssNavigation.c`의 경로 간선 캐시와 네이티브 이동 함수를 호스트로 제공한다. 독립 `RoamCore32.dll`은 필요 없다. 여기의 `build-roam.cmd`는 원래 제공된 독립 빌드용이다.
+기존 SRConfig/SRInput/SRHost의 필드와 ABI는 유지한다. RoamCore.h의 C 호환 선언, 비 Windows 테스트 선언과 새로운 opt-in 함수만 추가했다. 수정된 파일 해시는 PROVENANCE.json에 있다.
 
-제공 자료만으로 이 코어가 NC 원본 배회 본체라는 출처는 확립되지 않았다. 이를 현재 클라이언트에 연결한 테스트 빌드다.
+상위 빌드는 코어를 C++로 컴파일하고 Pss2019.dll에 정적 링크한다. PssRoaming.c가 코어를 호출하고, PssNavigation.c와 네이티브 길찾기·이동 함수를 연결한다. 독립 RoamCore32.dll은 필요 없다. build-roam.cmd는 제공 자료의 원래 독립 빌드 스크립트다.
+
+이 코드가 NC 리마스터 원본 배회 본체라는 출처는 제공 자료만으로 확립되지 않았다. V4는 제공 코어를 수정해 현재 클라이언트에 연결한 테스트 빌드다.

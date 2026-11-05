@@ -1,0 +1,2 @@
+PASS native segment validation rejects turns, detours, partial routes and excessive stride
+PASS normalized/raw coordinates, odd X rounding, bounds, directed/map-scoped edges, invalidation, expiry and clock rollover

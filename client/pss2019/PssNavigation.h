@@ -8,6 +8,7 @@ typedef struct {uint32_t from,to,when;int used;} PssNavEdge;
 typedef struct {PssNavEdge edges[PSS_NAV_EDGES];int map;} PssNavCache;
 int PssNavToInternal(PssPoint logical,PssPoint* internal);
 int PssNavToLogical(PssPoint internal,PssPoint* logical);
+int PssNavSegmentMatches(const PssNavPath* path,PssPoint from,PssPoint to,unsigned max_tiles);
 void PssNavClear(PssNavCache* cache,int map);
 void PssNavAdd(PssNavCache* cache,uint32_t now,const PssNavPath* path);
 int PssNavHas(const PssNavCache* cache,uint32_t now,int map,int x,int y,int nx,int ny);
