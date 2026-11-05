@@ -1,0 +1,1 @@
+V11 video-referenced ornament + wide dynamic HP/MP renderer. Build-only branch for Win32 validation.
