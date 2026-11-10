@@ -1,8 +1,9 @@
 {
-  "version": "screen-heading-v2-20261111",
-  "dll_sha256": "bd00b067f28dec27eec48817d29e8ad5f03643ad004b0a4f92dfb671316d7d55",
-  "windows_pe32_cross_build": "PASS",
-  "directinput_ordinals_1_to_7": "PASS",
+  "version": "centered-anchor-v3-20261111",
+  "dll_sha256": "a3f01e8f87f95766c8236daa34f410d6c811c917ef43af3138d6d7d365e6fe93",
+  "core_tests": "NativeStep core tests: PASS (10,000 cycles, confirmed press, staged cancel/expiry, screen layout, virtual desktop, centered-anchor-v3 regression)",
+  "pe32_cross_build": "PASS",
+  "directinput_exports_and_ordinals": "PASS",
   "dll_imports": [
     "IPHLPAPI.DLL",
     "KERNEL32.dll",
@@ -10,16 +11,34 @@
     "USER32.dll",
     "WS2_32.dll"
   ],
-  "core_tests": "NativeStep core tests: PASS (10,000 cycles, confirmed press, staged cancel/expiry, calibrated anchor, screen-heading-v2, virtual desktop)",
-  "windows_runtime_executed": false,
-  "live_game_camera_follow_verified": false,
-  "all_eight_headings_live_verified": false,
-  "user_observed_failures": [
-    "server offer 7 returned C_MoveChar heading 6 with the old leftward projection",
-    "latest V1 DLL calibrated successfully, then several clicks stopped at cursor changed before click"
-  ],
-  "default_layout": "screen_compass (inferred from the reported heading 7/6 mismatch)",
-  "cursor_commit": "absolute virtual-desktop MOVE followed by LEFTDOWN in one SendInput batch",
+  "saved_anchor_regression": {
+    "client": [
+      960,
+      720
+    ],
+    "saved_anchor": [
+      289,
+      333
+    ],
+    "effective_anchor": [
+      480,
+      333
+    ],
+    "heading": 5,
+    "old_click": [
+      253,
+      356
+    ],
+    "new_click": [
+      444,
+      356
+    ]
+  },
+  "heading_layout": "unchanged from V2",
+  "existing_configuration_preserved": true,
   "server_heading_validation": "unchanged",
+  "windows_runtime_executed": false,
+  "camera_follow_live_verified": false,
+  "residual_movement_live_verified": false,
   "unchanged_server_java_files": 967
 }

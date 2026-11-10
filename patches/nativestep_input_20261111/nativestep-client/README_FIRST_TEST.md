@@ -1,14 +1,15 @@
 # NativeStep - Mega.bin automatic load test (32-bit)
 
-**2026-11-11 screen-heading V2 revision:** Follow
+**2026-11-11 centered-anchor V3 revision:** Follow
 `../APPLY_FIX_KO.md` first. A prebuilt PE32 DLL is in `../client-ready`.
-With hunting OFF, point at the player's ground/feet and press Ctrl+Alt+F9.
-This calibration is now required before input; recalibrate after resizing.
-V2 defaults to screen-compass headings (7=upper-left) and commits the final
-absolute cursor move plus button-down in one SendInput batch. Existing anchor
-settings can be retained. Look for `screen-heading-v2-20261111` in client_io.log.
-Live user logs showed the old due-left h7 click arriving as server h6; the
-remaining headings and camera tracking still require actual game validation.
+Existing ground-Y calibration can be retained. With no calibration or after
+resizing, turn hunting OFF, point at the player's feet and press Ctrl+Alt+F9.
+V3 retains screen-compass headings and the final absolute move/down batch.
+V3 keeps the V2 heading layout and defaults to a horizontally centered player
+anchor. The reported 960x720/saved-X=289 setting now uses X=480 while keeping
+measured ground Y. `CenterAnchorX=0` preserves manual X for a different viewport.
+The new marker is `centered-anchor-v3-20261111`. These are input-coordinate
+changes; live camera tracking and single-step movement still need validation.
 The sections below describe earlier revisions and do not override that guide.
 
 This package fixes a confirmed loader mismatch. The provided import scan shows

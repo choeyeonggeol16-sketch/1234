@@ -1,3 +1,13 @@
+## 2026-11-11 — 49027 입력 V3: 캐릭터 가로 중앙 기준점
+
+[**V3 전체 소스·빌드된 DLL**](downloads/L1J_49027_CenteredAnchor_V3_FULL_SRC_20261111.zip) · [**V3 DLL만 받기**](downloads/L1J_49027_CenteredAnchor_V3_Client_DLL_20261111.zip) · [적용·검증 안내](patches/nativestep_input_20261111/README.md)
+
+스크린샷의 가로 중앙 캐릭터와 저장된 발 기준 X=289가 맞지 않는 문제를 수정했습니다. 960×720 창에서는 X=480을 사용하고 보정한 발 Y=333을 유지합니다. 기존 INI를 보존하며 V2 방향표와 서버 Java·검사는 그대로입니다. 새 DLL 표시는 `centered-anchor-v3-20261111`입니다.
+
+기준점 재현·입력 상태·10,000회 반복 ASan/UBSan 검사와 PE32 빌드를 통과했습니다. **실제 게임의 V3 이동·잔여 입력·카메라 추적은 아직 미검증입니다.**
+
+---
+
 ## 2026-11-11 — 49027 입력 V2: 방향표·클릭 직전 커서 재정렬
 
 [**V2 전체 소스·빌드된 DLL**](downloads/L1J_49027_ScreenHeading_V2_FULL_SRC_20261111.zip) · [**V2 DLL만 받기**](downloads/L1J_49027_ScreenHeading_V2_Client_DLL_20261111.zip) · [적용·검증 안내](patches/nativestep_input_20261111/README.md)

@@ -169,5 +169,19 @@ int main() {
     assert(absolute_mouse_point({1920,0},{0,0},1920,1080).x<0);
     assert(absolute_mouse_point({0,0},{0,0},1,1).x<0);
     assert(direction_point(7,800,600,ground,24,12,static_cast<DirectionLayout>(2)).x<0);
-    std::puts("NativeStep core tests: PASS (10,000 cycles, confirmed press, staged cancel/expiry, calibrated anchor, screen-heading-v2, virtual desktop)");
+    // Screenshot/log regression: a 960x720 window had saved feet X=289,
+    // although the player is horizontally centered. The old h5 clicked
+    // client X=253; with the centered anchor it must click X=444.
+    const auto centered=player_anchor({289,333},960,720);
+    assert(centered.x==480 && centered.y==333);
+    const auto click5=direction_point(5,960,720,centered,36,23);
+    assert(click5.x==444 && click5.y==356);
+    const auto manual=player_anchor({289,333},960,720,false);
+    assert(direction_point(5,960,720,manual,36,23).x==253);
+    assert(player_anchor({289,333},1280,720).x==640);
+    assert(player_anchor({289,-1},960,720).x<0);
+    assert(player_anchor({289,720},960,720).x<0);
+    assert(player_anchor({960,333},960,720,false).x<0);
+    assert(player_anchor({289,333},0,720).x<0);
+    std::puts("NativeStep core tests: PASS (10,000 cycles, confirmed press, staged cancel/expiry, screen layout, virtual desktop, centered-anchor-v3 regression)");
 }

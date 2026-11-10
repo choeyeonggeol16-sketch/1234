@@ -40,6 +40,13 @@ int parse_control(const char* text, size_t length) noexcept {
     return -3;
 }
 
+Point player_anchor(Point saved, int width, int height, bool center_x) noexcept {
+    if (width < 24 || height < 24 || saved.y < 0 || saved.y >= height) return {-1, -1};
+    const int x = center_x ? width / 2 : saved.x;
+    if (x < 0 || x >= width) return {-1, -1};
+    return {x, saved.y};
+}
+
 Point direction_point(int heading, int width, int height) noexcept {
     return direction_point(heading, width, height, {width / 2, height * 42 / 100}, 36, 23);
 }

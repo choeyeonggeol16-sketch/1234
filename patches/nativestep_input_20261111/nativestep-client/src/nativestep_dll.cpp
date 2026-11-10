@@ -55,6 +55,7 @@ struct Calibration {
     nativestep::Point anchor{-1, -1};
     int width = 0, height = 0;
     int tile_width = 36, tile_height = 23;
+    bool center_x = true;
     nativestep::DirectionLayout layout = nativestep::DirectionLayout::screen_compass;
 } calibration;
 bool game_is_foreground(HWND hwnd) noexcept;
@@ -76,13 +77,16 @@ void load_calibration() noexcept {
     calibration.tile_width = read(L"HalfTileWidth", 36);
     calibration.tile_height = read(L"HalfTileHeight", 23);
     calibration.layout = static_cast<nativestep::DirectionLayout>(read(L"HeadingLayout", 0));
+    calibration.center_x = read(L"CenterAnchorX", 1) != 0;
 }
 
 void log_geometry() noexcept {
-    char text[192]{};
-    std::snprintf(text, sizeof(text), "input geometry client=%dx%d anchor=(%d,%d) tile=%dx%d layout=%d",
-        calibration.width, calibration.height, calibration.anchor.x, calibration.anchor.y,
-        calibration.tile_width, calibration.tile_height, static_cast<int>(calibration.layout));
+    const auto used = nativestep::player_anchor(calibration.anchor, calibration.width,
+                                               calibration.height, calibration.center_x);
+    char text[240]{};
+    std::snprintf(text, sizeof(text), "input geometry client=%dx%d anchor=(%d,%d) saved=(%d,%d) center-x=%d tile=%dx%d layout=%d",
+        calibration.width, calibration.height, used.x, used.y, calibration.anchor.x, calibration.anchor.y,
+        calibration.center_x ? 1 : 0, calibration.tile_width, calibration.tile_height, static_cast<int>(calibration.layout));
     NativeStep_LogInput(text, 0);
 }
 
@@ -91,11 +95,12 @@ bool calibrate_anchor(HWND hwnd) noexcept {
     POINT p{};
     RECT r{};
     if (!GetCursorPos(&p) || !ScreenToClient(hwnd, &p) || !GetClientRect(hwnd, &r)) return false;
+    const auto anchor = nativestep::player_anchor({p.x, p.y}, r.right, r.bottom, calibration.center_x);
     // All eight next tiles must remain in the client area.
     for (int h = 0; h < 8; ++h)
-        if (nativestep::direction_point(h, r.right, r.bottom, {p.x, p.y},
+        if (nativestep::direction_point(h, r.right, r.bottom, anchor,
             calibration.tile_width, calibration.tile_height, calibration.layout).x < 0) return false;
-    calibration.anchor = {p.x, p.y};
+    calibration.anchor = anchor;
     calibration.width = r.right;
     calibration.height = r.bottom;
     const auto write = [](const wchar_t* key, int value) {
@@ -104,11 +109,12 @@ bool calibrate_anchor(HWND hwnd) noexcept {
         return WritePrivateProfileStringW(L"Viewport", key, text, settings_path) != FALSE;
     };
     const bool saved = settings_path[0] &&
-        write(L"AnchorX", p.x) && write(L"AnchorY", p.y) &&
+        write(L"AnchorX", anchor.x) && write(L"AnchorY", anchor.y) &&
         write(L"ClientWidth", r.right) && write(L"ClientHeight", r.bottom) &&
         write(L"HalfTileWidth", calibration.tile_width) &&
         write(L"HalfTileHeight", calibration.tile_height) &&
-        write(L"HeadingLayout", static_cast<int>(calibration.layout));
+        write(L"HeadingLayout", static_cast<int>(calibration.layout)) &&
+        write(L"CenterAnchorX", calibration.center_x ? 1 : 0);
     NativeStep_LogInput(saved ? "player ground anchor calibrated and saved" :
                                    "player ground anchor calibrated for this session only", 0);
     log_geometry();
@@ -175,8 +181,10 @@ bool stage_mouse(HWND hwnd, int heading) noexcept {
         NativeStep_LogInput("movement blocked: calibrate feet with Ctrl+Alt+F9 while hunt is OFF", heading);
         return false;
     }
+    const auto anchor = nativestep::player_anchor(calibration.anchor, r.right-r.left,
+                                                r.bottom-r.top, calibration.center_x);
     const auto point = nativestep::direction_point(heading, r.right-r.left, r.bottom-r.top,
-        calibration.anchor, calibration.tile_width, calibration.tile_height, calibration.layout);
+        anchor, calibration.tile_width, calibration.tile_height, calibration.layout);
     if (point.x < 0 || point.y < 0) {
         NativeStep_LogInput("movement blocked: anchor or tile geometry outside viewport", heading);
         return false;
@@ -389,7 +397,7 @@ __declspec(dllexport) int __cdecl NativeStep_Start(HWND hwnd) {
     game_thread = tid;
     timer_id = timer;
     signal_named_event(L"Ready");
-    NativeStep_LogInput("physical SendInput screen-heading-v2-20261111 control initialized", 0);
+    NativeStep_LogInput("physical SendInput centered-anchor-v3-20261111 control initialized", 0);
     log_geometry();
     NativeStep_NetworkStart(nullptr);
     return 1;

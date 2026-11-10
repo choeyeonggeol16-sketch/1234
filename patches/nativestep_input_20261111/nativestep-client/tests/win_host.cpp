@@ -33,7 +33,8 @@ struct TestCalibration {
         };
         ready=set(L"AnchorX",r.right/2) && set(L"AnchorY",r.bottom/2) &&
               set(L"ClientWidth",r.right) && set(L"ClientHeight",r.bottom) &&
-              set(L"HalfTileWidth",36) && set(L"HalfTileHeight",23) && set(L"HeadingLayout",0);
+              set(L"HalfTileWidth",36) && set(L"HalfTileHeight",23) && set(L"HeadingLayout",0) &&
+              set(L"CenterAnchorX",1);
     }
     ~TestCalibration() {
         if (!backup[0]) return;

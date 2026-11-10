@@ -14,6 +14,10 @@ int parse_control(const char* text, size_t length) noexcept;
 
 struct Point { int x, y; };
 enum class DirectionLayout { screen_compass = 0, world_isometric = 1 };
+// This client's player is horizontally centered in the viewport. Preserve
+// measured ground Y while correcting stale/off-center pointer calibration X.
+// A manual-X override remains available for a different viewport layout.
+Point player_anchor(Point saved, int width, int height, bool center_x = true) noexcept;
 Point direction_point(int heading, int width, int height) noexcept;
 // Anchor is the character's ground position, measured in CLIENT coordinates.
 // Tile dimensions may be changed for a differently scaled client.
