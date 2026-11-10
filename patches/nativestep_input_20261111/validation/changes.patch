@@ -1,43 +1,186 @@
+--- a/nativestep-client/BUILD_WIN32_TASK.cmd
++++ b/nativestep-client/BUILD_WIN32_TASK.cmd
+@@ -108,7 +108,7 @@
+ if errorlevel 1 exit /b 20
+ 
+ echo [STEP 4/6] Build 32-bit dinput.dll (Mega.bin native DirectInput import)
+-cl %FLAGS% /LD ..\..\src\nativestep_dll.cpp ..\..\src\client_bootstrap.cpp ..\..\src\dinput_proxy.cpp ..\..\src\step_network.cpp step_core.obj /link /OUT:dinput.dll /IMPLIB:dinput_stub.lib /DEF:..\..\dinput.def user32.lib ws2_32.lib iphlpapi.lib
++cl %FLAGS% /LD ..\..\src\mega_client.cpp ..\..\src\nativestep_dll.cpp ..\..\src\client_bootstrap.cpp ..\..\src\dinput_proxy.cpp ..\..\src\step_network.cpp step_core.obj /link /OUT:dinput.dll /IMPLIB:dinput_stub.lib /DEF:..\..\dinput.def user32.lib ws2_32.lib iphlpapi.lib advapi32.lib
+ if errorlevel 1 exit /b 21
+ 
+ echo [STEP 5/6] Build and run StepEngine unit test
+@@ -117,12 +117,12 @@
+ step_core_test.exe
+ if errorlevel 1 exit /b 24
+ 
+-echo [STEP 6/6] Build Windows physical-input test (interactive, compile only)
++echo [STEP 6/6] Build and run unsupported-executable guard test
+ cl %FLAGS% ..\..\tests\win_host.cpp /link /OUT:nativestep_win_host.exe user32.lib
+ if errorlevel 1 exit /b 25
+-rem NativeStep now uses real SendInput. This harness moves the OS cursor and
+-rem clicks its own test window. NEVER run it automatically during a build.
+-echo [CHECK] Physical input test compiled. Run nativestep_win_host.exe manually if desired.
++nativestep_win_host.exe
++if errorlevel 1 exit /b 26
++echo [CHECK] Unsupported executable refused. No OS mouse injection is used.
+ 
+ if not exist "dinput.dll" exit /b 27
+ 
 --- a/nativestep-client/CMakeLists.txt
 +++ b/nativestep-client/CMakeLists.txt
-@@ -8,12 +8,16 @@
+@@ -8,12 +8,17 @@
  enable_testing()
  add_test(NAME step_core COMMAND step_core_test)
  if(WIN32)
+-  add_library(dinput SHARED src/nativestep_dll.cpp src/client_bootstrap.cpp
+-      src/dinput_proxy.cpp src/step_network.cpp dinput.def)
 +  set(DINPUT_EXPORTS dinput.def)
 +  if(MINGW)
 +    set(DINPUT_EXPORTS dinput.mingw.def)
 +  endif()
-   add_library(dinput SHARED src/nativestep_dll.cpp src/client_bootstrap.cpp
--      src/dinput_proxy.cpp src/step_network.cpp dinput.def)
++  add_library(dinput SHARED src/nativestep_dll.cpp src/mega_client.cpp src/client_bootstrap.cpp
 +      src/dinput_proxy.cpp src/step_network.cpp ${DINPUT_EXPORTS})
    target_include_directories(dinput PRIVATE include)
-   target_link_libraries(dinput PRIVATE step_core user32 ws2_32 iphlpapi)
+-  target_link_libraries(dinput PRIVATE step_core user32 ws2_32 iphlpapi)
++  target_link_libraries(dinput PRIVATE step_core user32 ws2_32 iphlpapi advapi32)
    target_compile_definitions(dinput PRIVATE UNICODE _UNICODE)
    add_executable(win_host tests/win_host.cpp)
    target_link_libraries(win_host PRIVATE user32)
 -  add_test(NAME win_host COMMAND win_host)
-+  # This test clicks the OS mouse. Run it explicitly on an interactive desktop.
++  add_test(NAME unsupported_host COMMAND win_host)
++  set_tests_properties(unsupported_host PROPERTIES WORKING_DIRECTORY "$<TARGET_FILE_DIR:dinput>")
  endif()
 --- a/nativestep-client/README_FIRST_TEST.md
 +++ b/nativestep-client/README_FIRST_TEST.md
-@@ -1,4 +1,16 @@
- # NativeStep - Mega.bin automatic load test (32-bit)
-+
-+**2026-11-11 centered-anchor V3 revision:** Follow
-+`../APPLY_FIX_KO.md` first. A prebuilt PE32 DLL is in `../client-ready`.
-+Existing ground-Y calibration can be retained. With no calibration or after
-+resizing, turn hunting OFF, point at the player's feet and press Ctrl+Alt+F9.
-+V3 retains screen-compass headings and the final absolute move/down batch.
-+V3 keeps the V2 heading layout and defaults to a horizontally centered player
-+anchor. The reported 960x720/saved-X=289 setting now uses X=480 while keeping
-+measured ground Y. `CenterAnchorX=0` preserves manual X for a different viewport.
-+The new marker is `centered-anchor-v3-20261111`. These are input-coordinate
-+changes; live camera tracking and single-step movement still need validation.
-+The sections below describe earlier revisions and do not override that guide.
+@@ -1,121 +1,11 @@
+-# NativeStep - Mega.bin automatic load test (32-bit)
++# Mega.bin native tile input V4 (x86)
  
- This package fixes a confirmed loader mismatch. The provided import scan shows
- `Mega.bin` loads **dinput.dll**, NOT dinput8.dll. The former dinput8.dll could
+-This package fixes a confirmed loader mismatch. The provided import scan shows
+-`Mega.bin` loads **dinput.dll**, NOT dinput8.dll. The former dinput8.dll could
+-never be expected to load automatically for that client.
++Use the current Korean guide in the package root (`APPLY_FIX_KO.md`) or the repository patch README.
++A prebuilt `dinput.dll` is in `client-ready`. Back up the existing client DLL and copy the new one beside Mega.bin.
++Start/stop with item 49027. No cursor/feet calibration, INI changes or server rebuild is required.
+ 
+-## Installation
++This adapter is pinned to the uploaded Mega.bin SHA-256 and native code signatures. It computes the next actual world tile using the client's own routines, checks both coordinate roundtrips, and sends game window messages on the UI thread. OS mouse position/buttons are untouched. The existing DirectInput exports still forward to Windows normally.
+ 
+-1. Build this archive's `nativestep-client/BUILD_WIN32.bat` on Windows with
+-   Visual Studio 2022 C++ Build Tools. CMake and an external attach EXE are NOT needed.
+-2. In `nativestep-client/build-win32/Release`, find **dinput.dll**.
+-3. In the directory containing **Mega.bin**, back up any existing `dinput.dll`
+-   before copying ours. Do **not** replace `C:\Windows\System32` or `SysWOW64` files.
+-4. Remove the old `dinput8.dll` **only if it is the one previously installed
+-   for this NativeStep test**. Do not delete third-party client dependencies.
+-5. Restart the client completely. DLL initialization occurs automatically;
+-   the movement engine remains **OFF until item 49027 is used**.
+-6. First confirm `client_io.log` next to `Mega.bin` contains `module loaded`,
+-   `ui hook installed`, and later `network thread started` / `paired to server`.
+-   The log intentionally contains no server IP address.
+-7. Press item **49027** once to enable auto hunting and again to disable it.
+-   It should generate `item START received` then `first direction received`
+-   after the server-DLL control channel is paired.
++Offline replay of actual x86 coordinate/goal routines passed 192 fixture cases. This does not establish live Windows message delivery, gameplay or camera tracking. See validation/mega-native-replay-v4.json for scope. Windows unsupported-host guard is compiled, but was not run on Linux.
+ 
+-## How it works
+-
+-The replacement `dinput.dll` exports the 7 legacy DirectInput functions with
+-matching calling conventions and Windows ordinals (1-7). It delegates all
+-functions to the genuine Windows system `dinput.dll` loaded through the full
+-system directory path. Normal mouse/keyboard input behavior is preserved by
+-forwarding instead of replacing the DirectInput APIs.
+-
+-Current movement synchronization differs from the earlier hold-click test:
+-**one server move authorization produces one bounded left-button hold** (up to
+-300ms or until the server's `CANCEL`, whichever happens first), then waits for
+-the ordered `CANCEL` before allowing another press.
+-The server no longer retransmits directions at 75ms intervals. The click targets a nearby tile around the **estimated feet position**.
+-The previous HUD heuristic placed clicks about 27 pixels too high in the
+-provided 507x380 client screenshot; this version uses 42% client height.
+-That remains a version/layout-specific approximation, not a verified camera
+-coordinate for all resolutions.
+-This reduces client-ahead-of-server
+-movement and incorrect ranged attack effect positions. Server-side screen
+-sector calibration is applied only after a move is actually applied, and
+-failed click attempts never trigger a random sweep of screen sectors.
+-
+-If the client is already ahead by repeated wrong-origin packets, the server
+-stops automatic hunting and requests an ordinary authoritative teleport
+-handshake back to the server position. This is a safety recovery, NOT normal
+-walking behavior. Physical manual clicks are sent as a tiny `U` control
+-command so the server stops 49027 auto-hunting, instead of guessing from
+-late extra C_MoveChar packets.
+-
+-**Rebuild both the server Java sources and the Windows DLL for this revision.**
+-The earlier dinput.dll will not contain the one-click-per-step fix.
+-
+- The game **must actually load the DLL from the client
+-folder**; some anti-cheat/launchers may alter the search order. If the game
+-stops launching, restore the backed up DLL or remove this test DLL.
+-
+-## Known limitations
+-
+-- Actual x86 Windows build and in-game run have NOT been verified in this
+-  environment. The previously completed F8 input probe is not a substitute
+-  for this automatic loading test.
+-- TCP control is a separate connection on port 18841 to the existing game
+-  server on game port 5000; no IP in the DLL settings is required.
+-- This test channel still uses IP/port association, not secure authentication.
+-  Restrict control port 18841 at the firewall; don't deploy it publicly.
+-- The program is not cryptographically able to hide its network destination
+-  from the owner of the computer; it simply avoids exposing it in the UI/log.
+-- If `module loaded` appears but the UI doesn't attach, analyze the hook
+-  logs before modifying pathfinding or server movement code.
+-- If no `module loaded` appears, check DLL location, client process bitness,
+-  and whether the launcher loads `Mega.bin` from the expected directory.
+-
+-## This revision: input-only regression recovery
+-
+-This build changes only the C++ input anchor, click hold cap, and its tests.
+-The Java route reservation, one-step ACK gating, and heading/origin validation
+-are deliberately unchanged. Rebuild and replace only the client `dinput.dll`;
+-**do not need to rebuild the server** if the latest 2026-11-11 SRC is running.
+-
+-It is verified by native C++ model tests, **not** by live Mega.bin movement.
+-If headings still differ, do not relax server heading checks or add arbitrary
+-calibration learning; the true client viewport/player ground anchor is the
+-missing evidence. Keep the old DLL backed up for immediate rollback.
+-
+-
+-## Physical mouse input correction (2026-11-11)
+-
+-Previous versions used `PostMessage(WM_MOUSEMOVE / WM_LBUTTONDOWN / WM_LBUTTONUP)` with synthetic client-area coordinates. That does not relocate the Windows cursor or set the OS button state. A game client that reads `GetCursorPos`, `GetAsyncKeyState`, or DirectInput could interpret a different direction from the server command.
+-
+-The DLL now moves the real Windows cursor to the computed destination with `SetCursorPos`, sends button press/release through `SendInput`, and never injects a press unless the game window is foreground. **Keep Mega.bin in the foreground during auto-hunt.** The OS cursor will visibly move. The physical button state generated by the DLL is excluded from manual-click detection, and a manual pointer move of more than 24px while held stops automation. Stop/CANCEL or losing focus releases the button.
+-
+-The client writes `physical SendInput control initialized` and `physical click down direction=... screen=(...)` to `client_io.log`; these diagnostics prove the new DLL is actually loaded. The Windows host input test is compiled but **not run automatically**, as it deliberately clicks the OS mouse. It may be launched manually from `build-win32/Release/nativestep_win_host.exe` when the desktop is available and no other important work is in progress. The server Java route reservation and one-step ACK policy are unchanged.
+-
+-**Limitation:** Exact game-client interpretation of the input coordinates still requires an in-game Windows test. No simulated test can prove the game client's C_MoveChar heading.
+-
+-## 2026-11-11: World-tile to isometric-screen direction correction
+-
+-The server sends world-tile directions using X={0,1,1,1,0,-1,-1,-1},
+-Y={-1,-1,0,1,1,1,0,-1}. The prior DLL mistakenly treated the
+-world-direction integer as the same-numbered screen compass sector. That
+-was inconsistent with the game's isometric tile grid, e.g. world heading 1
+-(+1,-1) is projected vertically upward, not diagonally upper-right.
+-
+-`direction_point()` now projects the *one next world tile* to screen space:
+-`screenX = centerX + 36*(tileDX+tileDY)` and
+-`screenY = feetY + 23*(tileDY-tileDX)`. Existing input timing,
+-SendInput, window focus guard, CANCEL ordering, and server-side strict
+-heading/origin checking are unchanged. `client_io.log` prints the
+-new revision string `physical SendInput iso-step-20261111 control initialized`
+-when the DLL actually initializes; the server-side `step-v4` message is
+-not a DLL version marker.
+-
+-The geometry and deterministic input-state tests passed in this workspace,
+-but Mega.bin's internal cursor-to-tile mapping has **not** been executed
+-here; true in-game correctness is not established. Keep the previous DLL
+-backed up. Rebuilding the server is unnecessary if the latest server is
+-already installed.
++Windows/MSVC: BUILD_WIN32.bat. MinGW: BUILD_MINGW.sh. The supplied executable is not redistributed.
 --- a/nativestep-client/include/step_core.h
 +++ b/nativestep-client/include/step_core.h
 @@ -13,7 +13,20 @@
@@ -99,160 +242,258 @@
  #include <cstdio>
  #include <cstring>
  
+--- a/nativestep-client/src/dinput_proxy.cpp
++++ b/nativestep-client/src/dinput_proxy.cpp
+@@ -7,8 +7,8 @@
+ #ifndef NOMINMAX
+ #define NOMINMAX
+ #endif
+-#include <Windows.h>
+-#include <Unknwn.h>
++#include <windows.h>
++#include <unknwn.h>
+ #include <cwchar>
+ 
+ namespace {
 --- a/nativestep-client/src/nativestep_dll.cpp
 +++ b/nativestep-client/src/nativestep_dll.cpp
-@@ -2,13 +2,18 @@
- // Movement is sent as actual Win32 mouse input, not a forged window message.
- // Some clients use GetCursorPos/GetAsyncKeyState/DirectInput when interpreting a
- // click. PostMessage(WM_LBUTTONDOWN) does not update any of those states.
+@@ -1,366 +1,167 @@
+-// User-enabled client input bridge. Mega.bin imports dinput.dll; the game loads this DLL via DirectInput.
+-// Movement is sent as actual Win32 mouse input, not a forged window message.
+-// Some clients use GetCursorPos/GetAsyncKeyState/DirectInput when interpreting a
+-// click. PostMessage(WM_LBUTTONDOWN) does not update any of those states.
++// Mega.bin-specific native message adapter. OS cursor/button state is untouched.
 +#ifndef WIN32_LEAN_AND_MEAN
  #define WIN32_LEAN_AND_MEAN
 +#endif
 +#ifndef NOMINMAX
  #define NOMINMAX
 -#include <Windows.h>
+-#include <cstdint>
 +#endif
 +#include <windows.h>
- #include <cstdint>
  #include <atomic>
  #include <cstdio>
- #include <cstring>
-+#include <cwchar>
+-#include <cstring>
  #include "step_core.h"
  #include "step_network.h"
++#include "mega_client.h"
  
-@@ -40,8 +45,81 @@
- bool staged_press = false;
- int staged_heading = -1;
- ULONGLONG staged_at = 0;
-+RECT staged_client_rect{};
-+POINT staged_client_origin{};
- ULONGLONG button_state_settle_until = 0;
- unsigned input_logs = 0;
-+HMODULE self_module = nullptr;
-+wchar_t settings_path[MAX_PATH]{};
-+struct Calibration {
-+    nativestep::Point anchor{-1, -1};
-+    int width = 0, height = 0;
-+    int tile_width = 36, tile_height = 23;
-+    bool center_x = true;
-+    nativestep::DirectionLayout layout = nativestep::DirectionLayout::screen_compass;
-+} calibration;
-+bool game_is_foreground(HWND hwnd) noexcept;
-+
-+void load_calibration() noexcept {
-+    if (!GetModuleFileNameW(self_module, settings_path, MAX_PATH)) return;
-+    wchar_t* slash = std::wcsrchr(settings_path, L'\\');
-+    if (!slash || wcscpy_s(slash + 1, MAX_PATH - (slash + 1 - settings_path),
-+                           L"NativeStep.ini") != 0) {
-+        settings_path[0] = 0;
-+        return;
-+    }
-+    const auto read = [](const wchar_t* key, int fallback) {
-+        return static_cast<int>(GetPrivateProfileIntW(L"Viewport", key, fallback, settings_path));
-+    };
-+    calibration.anchor = {read(L"AnchorX", -1), read(L"AnchorY", -1)};
-+    calibration.width = read(L"ClientWidth", 0);
-+    calibration.height = read(L"ClientHeight", 0);
-+    calibration.tile_width = read(L"HalfTileWidth", 36);
-+    calibration.tile_height = read(L"HalfTileHeight", 23);
-+    calibration.layout = static_cast<nativestep::DirectionLayout>(read(L"HeadingLayout", 0));
-+    calibration.center_x = read(L"CenterAnchorX", 1) != 0;
+ namespace {
+-constexpr wchar_t kControlName[] = L"ClientInput.WalkControl.1";
+-constexpr UINT_PTR kTimerId = 0x54A17301;
+-constexpr UINT kTimerPeriodMs = 15;
+-constexpr unsigned kCancelCommand = 8;
+-constexpr unsigned kStartCommand = 9;
+-constexpr unsigned kStopCommand = 10;
+-constexpr unsigned kManualStopCommand = 11;
+-constexpr unsigned kInitializeCommand = 12;
+-constexpr ULONG_PTR kInputTag = static_cast<ULONG_PTR>(0x4E535450u); // 'NSTP'
+-constexpr ULONGLONG kButtonStateSettleMs = 100;
+-// A SetCursorPos warp must reach the game's WM_MOUSEMOVE handler BEFORE the
+-// next mouse-down. The old same-stack warp+down could use the previous cached
+-// mouse coordinates to calculate a different C_MoveChar heading.
+-constexpr ULONGLONG kCursorMoveSettleMs = 32;
++constexpr wchar_t kControlName[]=L"ClientInput.WalkControl.1";
++constexpr UINT_PTR kTimerId=0x54A17301;
++HWND game_window=nullptr;
++std::atomic<HWND> network_window{nullptr};
++DWORD game_thread=0;
++UINT_PTR timer_id=0;
++nativestep::StepEngine engine;
++bool staged=false, pressed=false;
++int staged_heading=-1;
++MegaClick active_click{};
++unsigned input_logs=0;
+ 
+-HWND game_window = nullptr; // Only the game's UI thread may touch these fields.
+-std::atomic<HWND> network_window{nullptr};
+-DWORD game_thread = 0;
+-UINT_PTR timer_id = 0;
+-nativestep::StepEngine engine;
+-bool synthetic_left_down = false;
+-int synthetic_heading = -1;
+-bool release_retry_needed = false;
+-POINT synthetic_cursor{};
+-bool staged_press = false;
+-int staged_heading = -1;
+-ULONGLONG staged_at = 0;
+-ULONGLONG button_state_settle_until = 0;
+-unsigned input_logs = 0;
+-
+-void signal_named_event(const wchar_t* label) noexcept {
+-    wchar_t name[120]{};
+-    wsprintfW(name, L"Local\\NativeStep.%s.%lu", label, GetCurrentProcessId());
+-    HANDLE h = OpenEventW(EVENT_MODIFY_STATE, FALSE, name);
+-    if (h) { SetEvent(h); CloseHandle(h); }
++bool on_client_thread() noexcept {return game_thread && game_thread==GetCurrentThreadId();}
++bool foreground(HWND hwnd) noexcept {
++    HWND f=GetForegroundWindow();
++    return IsWindow(hwnd) && f && GetAncestor(f,GA_ROOT)==GetAncestor(hwnd,GA_ROOT);
 +}
-+
-+void log_geometry() noexcept {
-+    const auto used = nativestep::player_anchor(calibration.anchor, calibration.width,
-+                                               calibration.height, calibration.center_x);
-+    char text[240]{};
-+    std::snprintf(text, sizeof(text), "input geometry client=%dx%d anchor=(%d,%d) saved=(%d,%d) center-x=%d tile=%dx%d layout=%d",
-+        calibration.width, calibration.height, used.x, used.y, calibration.anchor.x, calibration.anchor.y,
-+        calibration.center_x ? 1 : 0, calibration.tile_width, calibration.tile_height, static_cast<int>(calibration.layout));
-+    NativeStep_LogInput(text, 0);
++bool physical_click() noexcept {return (GetAsyncKeyState(VK_LBUTTON)&0x8000)!=0;}
++void log_click(const char* stage,const MegaClick& click) noexcept {
++    if(input_logs++>=128) return;
++    char text[180]{};
++    std::snprintf(text,sizeof(text),"%s direction=%d client=(%d,%d) logical=(%d,%d) mode=%d",
++        stage,click.heading,click.client.x,click.client.y,click.logical.x,click.logical.y,click.mode);
++    NativeStep_LogInput(text,0);
 +}
-+
-+bool calibrate_anchor(HWND hwnd) noexcept {
-+    if (engine.is_enabled() || !game_is_foreground(hwnd)) return false;
-+    POINT p{};
-+    RECT r{};
-+    if (!GetCursorPos(&p) || !ScreenToClient(hwnd, &p) || !GetClientRect(hwnd, &r)) return false;
-+    const auto anchor = nativestep::player_anchor({p.x, p.y}, r.right, r.bottom, calibration.center_x);
-+    // All eight next tiles must remain in the client area.
-+    for (int h = 0; h < 8; ++h)
-+        if (nativestep::direction_point(h, r.right, r.bottom, anchor,
-+            calibration.tile_width, calibration.tile_height, calibration.layout).x < 0) return false;
-+    calibration.anchor = anchor;
-+    calibration.width = r.right;
-+    calibration.height = r.bottom;
-+    const auto write = [](const wchar_t* key, int value) {
-+        wchar_t text[24]{};
-+        swprintf_s(text, 24, L"%d", value);
-+        return WritePrivateProfileStringW(L"Viewport", key, text, settings_path) != FALSE;
-+    };
-+    const bool saved = settings_path[0] &&
-+        write(L"AnchorX", anchor.x) && write(L"AnchorY", anchor.y) &&
-+        write(L"ClientWidth", r.right) && write(L"ClientHeight", r.bottom) &&
-+        write(L"HalfTileWidth", calibration.tile_width) &&
-+        write(L"HalfTileHeight", calibration.tile_height) &&
-+        write(L"HeadingLayout", static_cast<int>(calibration.layout)) &&
-+        write(L"CenterAnchorX", calibration.center_x ? 1 : 0);
-+    NativeStep_LogInput(saved ? "player ground anchor calibrated and saved" :
-+                                   "player ground anchor calibrated for this session only", 0);
-+    log_geometry();
++void release_input() noexcept {
++    staged=false;staged_heading=-1;
++    if(!pressed) return;
++    pressed=false;
++    if(IsWindow(game_window)) SendMessageW(game_window,WM_LBUTTONUP,0,
++        MAKELPARAM(active_click.client.x,active_click.client.y));
++    // Button-up alone does not clear a client's already selected walk target.
++    // Use this exact client's own stop-target routine for the step we own.
++    if(MegaGoalMatches(active_click)) MegaCancelOwnedMovement();
++    log_click("native input released and target cancelled",active_click);
++}
++void stop_failed() noexcept {
++    const auto now=GetTickCount64();
++    engine.submit(-4,now);(void)engine.tick(now,false);
++    release_input();NativeStep_RequestManualStop();
++    NativeStep_LogInput("native input stopped: unsupported state or target validation failed",0);
++}
++bool apply(const nativestep::Action& action) noexcept {
++    if(action.type==nativestep::Action::none) return true;
++    if(action.type==nativestep::Action::release) {release_input();return true;}
++    if(action.type!=nativestep::Action::move_and_press || staged || pressed) return false;
++    MegaClick check{};
++    if(!foreground(game_window) || !MegaPlanClick(game_window,action.heading,check)) return false;
++    staged=true;staged_heading=action.heading;
++    log_click("native next-tile plan verified",check);
 +    return true;
 +}
++void finish_staged() noexcept {
++    if(!staged || !MegaMouseDownReady()) return;
++    MegaClick click{};
++    // Re-read player and camera immediately before the native window events.
++    if(!foreground(game_window) || !MegaPlanClick(game_window,staged_heading,click)) {stop_failed();return;}
++    staged=false;staged_heading=-1;active_click=click;
++    SendMessageW(game_window,WM_MOUSEMOVE,0,MAKELPARAM(click.client.x,click.client.y));
++    pressed=true;
++    SendMessageW(game_window,WM_LBUTTONDOWN,MK_LBUTTON,MAKELPARAM(click.client.x,click.client.y));
++    if(!engine.confirm_press(GetTickCount64()) ||
++       (!MegaGoalMatches(click) && !MegaStepApplied(click))) {
++        NativeStep_LogInput("native click did not select the verified next tile",click.heading);
++        stop_failed();return;
++    }
++    log_click("native next-tile input committed",click);
++    if(MegaStepApplied(active_click)) release_input();
++}
++void tick() noexcept {
++    if(!on_client_thread()) return;
++    if(engine.is_enabled() && !foreground(game_window)) {stop_failed();return;}
++    const bool was_manual=engine.has_manual_override();
++    const auto action=engine.tick(GetTickCount64(),physical_click());
++    if(!was_manual && engine.has_manual_override()) NativeStep_RequestManualStop();
++    if(!apply(action)) {stop_failed();return;}
++    if(staged) finish_staged();
++    // End the local hold as soon as this one tile was applied. The logical
++    // StepEngine still waits for server CANCEL before accepting another offer.
++    if(pressed && MegaStepApplied(active_click)) release_input();
++}
++void submit(int command) noexcept {
++    if(!on_client_thread()) return;
++    engine.submit(command,GetTickCount64());tick();
++}
++void shutdown_on_client_thread() noexcept {
++    if(!on_client_thread()) return;
++    NativeStep_NetworkStop();engine.shutdown();
++    (void)engine.tick(GetTickCount64(),false);release_input();
++    if(timer_id && IsWindow(game_window)) KillTimer(game_window,timer_id);
++    timer_id=0;network_window.store(nullptr,std::memory_order_release);
++    game_window=nullptr;game_thread=0;
++}
+ }
  
- void signal_named_event(const wchar_t* label) noexcept {
-     wchar_t name[120]{};
-@@ -97,8 +175,20 @@
-     if (!game_is_foreground(hwnd) || synthetic_left_down || staged_press) return false;
-     RECT r{};
-     if (!GetClientRect(hwnd, &r)) return false;
+-bool game_is_foreground(HWND hwnd) noexcept {
+-    if (!IsWindow(hwnd)) return false;
+-    HWND foreground = GetForegroundWindow();
+-    return foreground != nullptr &&
+-           GetAncestor(foreground, GA_ROOT) == GetAncestor(hwnd, GA_ROOT);
+-}
+-
+-void log_click(const char* stage, int heading, const POINT& screen) noexcept {
+-    if (input_logs++ >= 32) return;
+-    char message[116]{};
+-    std::snprintf(message, sizeof(message), "%s direction=%d screen=(%ld,%ld)",
+-                  stage, heading, static_cast<long>(screen.x), static_cast<long>(screen.y));
+-    NativeStep_LogInput(message, 0);
+-}
+-
+-// Must release a *real* synthetic button with SendInput too. Posting WM_LBUTTONUP
+-// leaves the OS button state down and can cause dragging/extra walking.
+-bool release_mouse() noexcept {
+-    if (!synthetic_left_down) return true;
+-    INPUT input{};
+-    input.type = INPUT_MOUSE;
+-    input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+-    input.mi.dwExtraInfo = kInputTag;
+-    if (SendInput(1, &input, sizeof(input)) != 1) {
+-        NativeStep_LogInput("SendInput left-up failed", static_cast<int>(GetLastError()));
+-        release_retry_needed = true;
+-        return false;
+-    }
+-    synthetic_left_down = false;
+-    release_retry_needed = false;
+-    button_state_settle_until = GetTickCount64() + kButtonStateSettleMs;
+-    log_click("physical click up", synthetic_heading, synthetic_cursor);
+-    synthetic_heading = -1;
+-    return true;
+-}
+-
+-// The Windows cursor MUST be moved as well as the mouse button. The old code
+-// posted a desired lParam to Mega.bin while the OS cursor remained elsewhere:
+-// a client using GetCursorPos/DirectInput could always walk toward the old
+-// pointer, producing heading=2 regardless of a server direction=1 or 5.
+-// Stage the cursor warp on the UI thread, then allow the game to process a
+-// posted WM_MOUSEMOVE BEFORE injecting the mouse-down from a later timer tick.
+-// This is an input-ordering fix; it does not guess or relearn headings.
+-bool stage_mouse(HWND hwnd, int heading) noexcept {
+-    if (!game_is_foreground(hwnd) || synthetic_left_down || staged_press) return false;
+-    RECT r{};
+-    if (!GetClientRect(hwnd, &r)) return false;
 -    const auto point = nativestep::direction_point(heading, r.right-r.left, r.bottom-r.top);
 -    if (point.x < 0 || point.y < 0) return false;
-+    POINT origin{};
-+    if (!ClientToScreen(hwnd, &origin)) return false;
-+    if (calibration.width != r.right-r.left || calibration.height != r.bottom-r.top) {
-+        NativeStep_LogInput("movement blocked: calibrate feet with Ctrl+Alt+F9 while hunt is OFF", heading);
-+        return false;
-+    }
-+    const auto anchor = nativestep::player_anchor(calibration.anchor, r.right-r.left,
-+                                                r.bottom-r.top, calibration.center_x);
-+    const auto point = nativestep::direction_point(heading, r.right-r.left, r.bottom-r.top,
-+        anchor, calibration.tile_width, calibration.tile_height, calibration.layout);
-+    if (point.x < 0 || point.y < 0) {
-+        NativeStep_LogInput("movement blocked: anchor or tile geometry outside viewport", heading);
-+        return false;
-+    }
-     POINT screen{point.x, point.y};
-     if (!ClientToScreen(hwnd, &screen)) return false;
-     if (!SetCursorPos(screen.x, screen.y)) {
-@@ -123,6 +213,8 @@
-     synthetic_cursor = screen;
-     staged_heading = heading;
-     staged_at = GetTickCount64();
-+    staged_client_rect = r;
-+    staged_client_origin = origin;
-     staged_press = true;
-     log_click("cursor staged", heading, screen);
-     return true;
-@@ -131,19 +223,46 @@
- bool finish_staged_mouse(HWND hwnd, ULONGLONG now) noexcept {
-     if (!staged_press || now - staged_at < kCursorMoveSettleMs) return true;
-     if (!game_is_foreground(hwnd) || synthetic_left_down) return false;
-+    RECT rect{};
-+    POINT origin{};
-+    if (!GetClientRect(hwnd, &rect) || !ClientToScreen(hwnd, &origin) ||
-+        !EqualRect(&rect, &staged_client_rect) ||
-+        origin.x != staged_client_origin.x || origin.y != staged_client_origin.y) {
-+        NativeStep_LogInput("game viewport changed before click", staged_heading);
-+        return false;
-+    }
-     POINT actual{};
+-    POINT screen{point.x, point.y};
+-    if (!ClientToScreen(hwnd, &screen)) return false;
+-    if (!SetCursorPos(screen.x, screen.y)) {
+-        NativeStep_LogInput("SetCursorPos failed", static_cast<int>(GetLastError()));
+-        return false;
+-    }
+-    POINT actual{};
+-    if (!GetCursorPos(&actual) ||
+-        actual.x < screen.x - 3 || actual.x > screen.x + 3 ||
+-        actual.y < screen.y - 3 || actual.y > screen.y + 3 ||
+-        !game_is_foreground(hwnd)) {
+-        NativeStep_LogInput("cursor did not reach game target", heading);
+-        return false;
+-    }
+-    // The game may calculate walk heading from the cursor position cached in
+-    // its WndProc. Post the move now; emit the button only on a later UI tick.
+-    // Actual physical cursor is already at exactly this location.
+-    if (!PostMessageW(hwnd, WM_MOUSEMOVE, 0, MAKELPARAM(point.x, point.y))) {
+-        NativeStep_LogInput("mouse move message failed", static_cast<int>(GetLastError()));
+-        return false;
+-    }
+-    synthetic_cursor = screen;
+-    staged_heading = heading;
+-    staged_at = GetTickCount64();
+-    staged_press = true;
+-    log_click("cursor staged", heading, screen);
+-    return true;
+-}
+-
+-bool finish_staged_mouse(HWND hwnd, ULONGLONG now) noexcept {
+-    if (!staged_press || now - staged_at < kCursorMoveSettleMs) return true;
+-    if (!game_is_foreground(hwnd) || synthetic_left_down) return false;
+-    POINT actual{};
 -    if (!GetCursorPos(&actual) ||
 -        actual.x < synthetic_cursor.x - 3 || actual.x > synthetic_cursor.x + 3 ||
-+    if (!GetCursorPos(&actual)) return false;
-+    if (actual.x < synthetic_cursor.x - 3 || actual.x > synthetic_cursor.x + 3 ||
-         actual.y < synthetic_cursor.y - 3 || actual.y > synthetic_cursor.y + 3) {
+-        actual.y < synthetic_cursor.y - 3 || actual.y > synthetic_cursor.y + 3) {
 -        NativeStep_LogInput("cursor changed before click", staged_heading);
 -        return false;
 -    }
@@ -262,95 +503,267 @@
 -    input.mi.dwExtraInfo = kInputTag;
 -    if (SendInput(1, &input, sizeof(input)) != 1) {
 -        NativeStep_LogInput("SendInput left-down failed", static_cast<int>(GetLastError()));
-+        char text[160]{};
-+        std::snprintf(text, sizeof(text), "cursor restaged before click direction=%d actual=(%ld,%ld) target=(%ld,%ld)",
-+            staged_heading, actual.x, actual.y, synthetic_cursor.x, synthetic_cursor.y);
-+        NativeStep_LogInput(text, 0);
-+    }
-+    const auto absolute = nativestep::absolute_mouse_point(
-+        {synthetic_cursor.x, synthetic_cursor.y},
-+        {GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN)},
-+        GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN));
-+    if (absolute.x < 0) {
-+        NativeStep_LogInput("click target outside virtual desktop", staged_heading);
-+        return false;
-+    }
-+    // Windows inserts a SendInput batch serially, without interleaving other
-+    // input events. Reassert the target immediately before DOWN, preserving
-+    // the earlier UI staging for clients with a cached WM_MOUSEMOVE position.
-+    // A partial batch of one contains only MOVE, never a stuck button.
-+    INPUT input[2]{};
-+    input[0].type = INPUT_MOUSE;
-+    input[0].mi.dx = absolute.x;
-+    input[0].mi.dy = absolute.y;
-+    input[0].mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK;
-+    input[0].mi.dwExtraInfo = kInputTag;
-+    input[1].type = INPUT_MOUSE;
-+    input[1].mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
-+    input[1].mi.dwExtraInfo = kInputTag;
-+    if (SendInput(2, input, sizeof(INPUT)) != 2) {
-+        NativeStep_LogInput("SendInput move/down batch failed", static_cast<int>(GetLastError()));
-         return false;
+-        return false;
+-    }
+-    const int heading = staged_heading;
+-    staged_press = false;
+-    staged_heading = -1;
+-    synthetic_left_down = true;
+-    synthetic_heading = heading;
+-    log_click("physical click down", heading, synthetic_cursor);
+-    return true;
+-}
+-
+-// Do NOT read a SendInput-generated left-button-down as a human override.
+-// A real manual pointer movement away from the synthetic target still stops
+-// automation while the injected button is held.
+-bool physical_override(ULONGLONG now) noexcept {
+-    if (synthetic_left_down) {
+-        POINT actual{};
+-        if (!GetCursorPos(&actual)) return true;
+-        return actual.x < synthetic_cursor.x - 24 ||
+-               actual.x > synthetic_cursor.x + 24 ||
+-               actual.y < synthetic_cursor.y - 24 ||
+-               actual.y > synthetic_cursor.y + 24;
+-    }
+-    if (now < button_state_settle_until) return false;
+-    return (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+-}
+-
+-bool apply_action(HWND hwnd, const nativestep::Action& action) noexcept {
+-    if (action.type == nativestep::Action::none) return true;
+-    if (action.type == nativestep::Action::release) {
+-        staged_press = false;
+-        staged_heading = -1;
+-        return release_mouse();
+-    }
+-    if (action.type == nativestep::Action::move_and_press)
+-        return stage_mouse(hwnd, action.heading);
+-    // This mode is unused in the single-ACK movement protocol. Never drag
+-    // the OS cursor to a new heading during one authorized step.
+-    return false;
+-}
+-
+-// The physical OS button can be up while StepEngine still believes it is held.
+-// A failed click/foreground-loss MUST drain that logical state before START
+-// can arm a fresh offer. Otherwise the next move is silently swallowed.
+-void stop_failed_input(HWND hwnd, ULONGLONG now) noexcept {
+-    staged_press = false;
+-    staged_heading = -1;
+-    engine.submit(-4, now);
+-    (void)apply_action(hwnd, engine.tick(now, false));
+-    (void)release_mouse();
+-    NativeStep_RequestManualStop();
+-}
+-
+-void on_timer(HWND hwnd) noexcept {
+-    if (hwnd != game_window || GetCurrentThreadId() != game_thread) return;
+-    if (release_retry_needed) (void)release_mouse();
+-    if ((synthetic_left_down || staged_press) && !game_is_foreground(hwnd)) {
+-        stop_failed_input(hwnd, GetTickCount64());
+-        NativeStep_LogInput("automation stopped: game lost focus", 0);
+-        return;
+-    }
+-    const ULONGLONG now = GetTickCount64();
+-    const bool manual = physical_override(now);
+-    const bool previously_manual = engine.has_manual_override();
+-    const auto action = engine.tick(now, manual);
+-    if (!previously_manual && engine.has_manual_override()) NativeStep_RequestManualStop();
+-    if (!apply_action(hwnd, action) ||
+-            (action.type == nativestep::Action::none &&
+-             !finish_staged_mouse(hwnd, now))) {
+-        stop_failed_input(hwnd, now);
+-    }
+-    // If a prior release was blocked, never leave the OS left button held.
+-    if (synthetic_left_down && action.type == nativestep::Action::release)
+-        (void)release_mouse();
+-}
+-
+-bool on_client_thread() noexcept {
+-    return game_thread != 0 && game_thread == GetCurrentThreadId();
+-}
+-
+-void shutdown_on_client_thread() noexcept {
+-    if (!on_client_thread()) return;
+-    NativeStep_NetworkStop();
+-    staged_press = false;
+-    staged_heading = -1;
+-    engine.shutdown();
+-    (void)engine.tick(GetTickCount64(), false);
+-    for (int attempt = 0; attempt < 3 && synthetic_left_down; ++attempt)
+-        (void)release_mouse();
+-    if (timer_id && IsWindow(game_window)) KillTimer(game_window, timer_id);
+-    timer_id = 0;
+-    network_window.store(nullptr, std::memory_order_release);
+-    game_window = nullptr;
+-    game_thread = 0;
+-    signal_named_event(L"Stopped");
+-}
+-} // namespace
+-
+ void NativeStep_PostNetworkCommand(int command) {
+-    HWND hwnd = network_window.load(std::memory_order_acquire);
+-    if (IsWindow(hwnd) && command >= 0 && command <= 10) {
+-        const UINT message = RegisterWindowMessageW(kControlName);
+-        if (message) PostMessageW(hwnd, message, static_cast<WPARAM>(command), 0);
++    HWND hwnd=network_window.load(std::memory_order_acquire);
++    if(IsWindow(hwnd) && command>=0 && command<=10) {
++        UINT message=RegisterWindowMessageW(kControlName);
++        if(message) PostMessageW(hwnd,message,static_cast<WPARAM>(command),0);
      }
-     const int heading = staged_heading;
-@@ -151,6 +270,10 @@
-     staged_heading = -1;
-     synthetic_left_down = true;
-     synthetic_heading = heading;
-+    if (!engine.confirm_press(now)) {
-+        (void)release_mouse();
-+        return false;
-+    }
-     log_click("physical click down", heading, synthetic_cursor);
-     return true;
  }
-@@ -189,6 +312,7 @@
- // A failed click/foreground-loss MUST drain that logical state before START
- // can arm a fresh offer. Otherwise the next move is silently swallowed.
- void stop_failed_input(HWND hwnd, ULONGLONG now) noexcept {
-+    NativeStep_LogInput("automation stopped: input failed or viewport changed", 0);
-     staged_press = false;
-     staged_heading = -1;
-     engine.submit(-4, now);
-@@ -267,12 +391,14 @@
-     staged_heading = -1;
-     button_state_settle_until = 0;
-     input_logs = 0;
-+    load_calibration();
-     game_window = hwnd;
-     network_window.store(hwnd, std::memory_order_release);
-     game_thread = tid;
-     timer_id = timer;
-     signal_named_event(L"Ready");
+-
+ extern "C" {
+ __declspec(dllexport) int __cdecl NativeStep_Start(HWND hwnd) {
+-    if (!IsWindow(hwnd)) return 0;
+-    DWORD pid = 0;
+-    DWORD tid = GetWindowThreadProcessId(hwnd, &pid);
+-    if (pid != GetCurrentProcessId() || tid != GetCurrentThreadId()) return 0;
+-    if (game_window != nullptr) return game_window == hwnd ? 1 : 0;
+-    const UINT_PTR timer = SetTimer(hwnd, kTimerId, kTimerPeriodMs, nullptr);
+-    if (!timer) return 0;
+-    engine = nativestep::StepEngine{};
+-    synthetic_left_down = false;
+-    synthetic_heading = -1;
+-    release_retry_needed = false;
+-    staged_press = false;
+-    staged_heading = -1;
+-    button_state_settle_until = 0;
+-    input_logs = 0;
+-    game_window = hwnd;
+-    network_window.store(hwnd, std::memory_order_release);
+-    game_thread = tid;
+-    timer_id = timer;
+-    signal_named_event(L"Ready");
 -    NativeStep_LogInput("physical SendInput staged-cursor-20261111 control initialized", 0);
-+    NativeStep_LogInput("physical SendInput centered-anchor-v3-20261111 control initialized", 0);
-+    log_geometry();
-     NativeStep_NetworkStart(nullptr);
-     return 1;
+-    NativeStep_NetworkStart(nullptr);
+-    return 1;
++    if(!IsWindow(hwnd)) return 0;
++    DWORD pid=0,thread=GetWindowThreadProcessId(hwnd,&pid);
++    if(pid!=GetCurrentProcessId() || thread!=GetCurrentThreadId()) return 0;
++    if(game_window) return game_window==hwnd ? 1:0;
++    if(!MegaInitialize()) return 0;
++    UINT_PTR timer=SetTimer(hwnd,kTimerId,15,nullptr);
++    if(!timer) return 0;
++    engine=nativestep::StepEngine{};staged=pressed=false;input_logs=0;
++    game_window=hwnd;game_thread=thread;timer_id=timer;
++    network_window.store(hwnd,std::memory_order_release);
++    NativeStep_LogInput("Mega native-tile-input-v4-20261111 initialized; OS cursor untouched",0);
++    NativeStep_NetworkStart(nullptr);return 1;
  }
-@@ -346,6 +472,14 @@
-                     }
-                 }
+-
+-// This must be called on the client window thread, after client packet decoding.
+-__declspec(dllexport) int __cdecl NativeStep_TryConsumeNotice(
+-        int noticeType, const void* bytes, int length) {
+-    if (!on_client_thread() || noticeType != 9 || !bytes || length < 0 || length > 65536) return 0;
+-    const int command = nativestep::parse_control(static_cast<const char*>(bytes),
+-                                                   static_cast<size_t>(length));
+-    if (command == -3) return 0;
+-    if (command == -4 || command == -2 || command == -1 || (command >= 0 && command <= 7)) {
+-        engine.submit(command, GetTickCount64());
+-        if (!apply_action(game_window, engine.tick(GetTickCount64(),
+-                physical_override(GetTickCount64())))) {
+-            stop_failed_input(game_window, GetTickCount64());
+-        }
+-        return 1;
+-    }
+-    return 0;
++__declspec(dllexport) int __cdecl NativeStep_TryConsumeNotice(int type,const void* bytes,int length) {
++    if(!on_client_thread() || type!=9 || !bytes || length<0 || length>65536) return 0;
++    int command=nativestep::parse_control(static_cast<const char*>(bytes),static_cast<size_t>(length));
++    if(command==-3) return 0;
++    submit(command);return 1;
+ }
+-
+ __declspec(dllexport) int __cdecl NativeStep_HasManualOverride() {
+-    return on_client_thread() && engine.has_manual_override() ? 1 : 0;
++    return on_client_thread() && engine.has_manual_override() ? 1:0;
+ }
+-
+-__declspec(dllexport) void __cdecl NativeStep_Stop() {
+-    shutdown_on_client_thread();
+-}
+-
+-// WH_GETMESSAGE callback loaded by Windows in the target GUI process.
+-// It only passes control commands, never forges game mouse messages.
+-__declspec(dllexport) LRESULT CALLBACK NativeStep_HookProc(int code, WPARAM wp, LPARAM lp) {
+-    if (code >= 0 && wp == PM_REMOVE && lp != 0) {
+-        MSG* msg = reinterpret_cast<MSG*>(lp);
+-        static const UINT control = RegisterWindowMessageW(kControlName);
+-        if (control != 0 && msg->message == control) {
+-            const unsigned command = static_cast<unsigned>(msg->wParam);
+-            HWND hwnd = msg->hwnd;
+-            msg->message = WM_NULL;
+-            if (command == kInitializeCommand) {
+-                if (game_window == nullptr) (void)NativeStep_Start(hwnd);
+-            } else if (command == kStopCommand) {
+-                if (game_window == hwnd && on_client_thread()) {
+-                    engine.submit(-4, GetTickCount64());
+-                    staged_press = false;
+-                    staged_heading = -1;
+-                    (void)engine.tick(GetTickCount64(), false);
+-                    (void)release_mouse();
+-                }
+-            } else if (command == kManualStopCommand) {
+-                if (game_window == hwnd && on_client_thread()) {
+-                    const bool previously_manual = engine.has_manual_override();
+-                    staged_press = false;
+-                    staged_heading = -1;
+-                    (void)engine.tick(GetTickCount64(), true);
+-                    if (!previously_manual && engine.has_manual_override()) NativeStep_RequestManualStop();
+-                    (void)release_mouse();
+-                }
+-            } else if (command <= 7 || command == kCancelCommand || command == kStartCommand) {
+-                if (game_window == nullptr) (void)NativeStep_Start(hwnd);
+-                if (game_window == hwnd && on_client_thread()) {
+-                    const ULONGLONG now = GetTickCount64();
+-                    engine.submit(command == kStartCommand ? -2 :
+-                                  command == kCancelCommand ? -1 : static_cast<int>(command), now);
+-                    const bool previously_manual = engine.has_manual_override();
+-                    const auto action = engine.tick(now, physical_override(now));
+-                    if (!previously_manual && engine.has_manual_override()) NativeStep_RequestManualStop();
+-                    if (!apply_action(game_window, action)) {
+-                        stop_failed_input(game_window, now);
+-                    }
+-                }
++__declspec(dllexport) void __cdecl NativeStep_Stop() {shutdown_on_client_thread();}
++__declspec(dllexport) LRESULT CALLBACK NativeStep_HookProc(int code,WPARAM wp,LPARAM lp) {
++    if(code>=0 && wp==PM_REMOVE && lp) {
++        MSG* msg=reinterpret_cast<MSG*>(lp);
++        static const UINT control=RegisterWindowMessageW(kControlName);
++        if(control && msg->message==control) {
++            const unsigned command=static_cast<unsigned>(msg->wParam);
++            HWND hwnd=msg->hwnd;msg->message=WM_NULL;
++            if(command==12) {if(!game_window) (void)NativeStep_Start(hwnd);}
++            else if(command<=10) {
++                if(!game_window) (void)NativeStep_Start(hwnd);
++                if(game_window==hwnd && on_client_thread())
++                    submit(command==8 ? -1:command==9 ? -2:command==10 ? -4:static_cast<int>(command));
              }
-+        } else if ((msg->message == WM_KEYDOWN || msg->message == WM_SYSKEYDOWN) &&
-+                   msg->wParam == VK_F9 &&
-+                   msg->hwnd == game_window && !(msg->lParam & (1L << 30)) &&
-+                   (GetAsyncKeyState(VK_CONTROL) & 0x8000) &&
-+                   (GetAsyncKeyState(VK_MENU) & 0x8000)) {
-+            if (!calibrate_anchor(game_window))
-+                NativeStep_LogInput("anchor calibration rejected: stop hunt and point at player feet", 0);
-+            msg->message = WM_NULL;
-         } else if (msg->message == WM_TIMER && timer_id != 0 &&
-                    msg->hwnd == game_window && msg->wParam == timer_id) {
-             on_timer(game_window);
-@@ -358,6 +492,7 @@
- void NativeStep_Bootstrap(HMODULE dll);
- BOOL WINAPI DllMain(HINSTANCE dll, DWORD reason, LPVOID) {
-     if (reason == DLL_PROCESS_ATTACH) {
-+        self_module = dll;
-         DisableThreadLibraryCalls(dll);
-         NativeStep_Bootstrap(dll);
+-        } else if (msg->message == WM_TIMER && timer_id != 0 &&
+-                   msg->hwnd == game_window && msg->wParam == timer_id) {
+-            on_timer(game_window);
+-            msg->message = WM_NULL;
++        } else if(msg->message==WM_TIMER && timer_id && msg->hwnd==game_window && msg->wParam==timer_id) {
++            tick();msg->message=WM_NULL;
+         }
      }
+-    return CallNextHookEx(nullptr, code, wp, lp);
++    return CallNextHookEx(nullptr,code,wp,lp);
+ }
+-
+ void NativeStep_Bootstrap(HMODULE dll);
+-BOOL WINAPI DllMain(HINSTANCE dll, DWORD reason, LPVOID) {
+-    if (reason == DLL_PROCESS_ATTACH) {
+-        DisableThreadLibraryCalls(dll);
+-        NativeStep_Bootstrap(dll);
+-    }
++BOOL WINAPI DllMain(HINSTANCE dll,DWORD reason,LPVOID) {
++    if(reason==DLL_PROCESS_ATTACH) {DisableThreadLibraryCalls(dll);NativeStep_Bootstrap(dll);}
+     return TRUE;
+ }
+-} // extern C
++}
 --- a/nativestep-client/src/step_core.cpp
 +++ b/nativestep-client/src/step_core.cpp
 @@ -40,25 +40,50 @@
@@ -753,70 +1166,555 @@
  }
 --- a/nativestep-client/tests/win_host.cpp
 +++ b/nativestep-client/tests/win_host.cpp
-@@ -3,7 +3,7 @@
- // part of the DLL build. It moves the OS cursor and clicks the test window.
+@@ -1,97 +1,26 @@
+-// Interactive Win32 test: this version uses actual SendInput mouse events.
+-// Run this executable deliberately on a real desktop, never as an unattended
+-// part of the DLL build. It moves the OS cursor and clicks the test window.
++// Boundary test: this executable is not the supported Mega.bin. It must never
++// produce synthetic mouse input. Native behavior is exercised by x86 replay.
  #define WIN32_LEAN_AND_MEAN
  #define NOMINMAX
 -#include <Windows.h>
+-#include <windowsx.h>
 +#include <windows.h>
- #include <windowsx.h>
  #include <cstdio>
- #include <cstring>
-@@ -14,6 +14,35 @@
- using StopFn = void (__cdecl *)();
- 
- std::atomic<int> downCount{0}, upCount{0}, moveCount{0}, correctCursorCount{0};
-+// This harness uses a fake player anchor, preserving any existing settings.
-+struct TestCalibration {
-+    bool ready = false, existed = false;
-+    wchar_t backup[MAX_PATH]{};
-+    TestCalibration(HWND hwnd) {
-+        wchar_t temp[MAX_PATH]{};
-+        if (!GetTempPathW(MAX_PATH, temp) || !GetTempFileNameW(temp, L"NST", 0, backup)) return;
-+        existed = GetFileAttributesW(L".\\NativeStep.ini") != INVALID_FILE_ATTRIBUTES;
-+        if (existed && !CopyFileW(L".\\NativeStep.ini", backup, FALSE)) {
-+            DeleteFileW(backup); backup[0]=0; return;
-+        }
-+        RECT r{};
-+        if (!GetClientRect(hwnd, &r)) return;
-+        const auto set=[](const wchar_t* key, int value) {
-+            wchar_t text[24]{}; swprintf_s(text, 24, L"%d", value);
-+            return WritePrivateProfileStringW(L"Viewport",key,text,L".\\NativeStep.ini")!=FALSE;
-+        };
-+        ready=set(L"AnchorX",r.right/2) && set(L"AnchorY",r.bottom/2) &&
-+              set(L"ClientWidth",r.right) && set(L"ClientHeight",r.bottom) &&
-+              set(L"HalfTileWidth",36) && set(L"HalfTileHeight",23) && set(L"HeadingLayout",0) &&
-+              set(L"CenterAnchorX",1);
-+    }
-+    ~TestCalibration() {
-+        if (!backup[0]) return;
-+        if (existed) CopyFileW(backup,L".\\NativeStep.ini",FALSE);
-+        else DeleteFileW(L".\\NativeStep.ini");
-+        DeleteFileW(backup);
-+    }
-+};
- LRESULT CALLBACK TestWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
-     if (message == WM_MOUSEMOVE || message == WM_LBUTTONDOWN || message == WM_LBUTTONUP) {
-         if (message == WM_MOUSEMOVE) ++moveCount;
-@@ -70,6 +99,8 @@
-         DestroyWindow(hwnd);
-         return 6;
-     }
-+    TestCalibration config(hwnd);
-+    if (!config.ready) return 12;
-     HMODULE dll = LoadLibraryW(L".\\dinput.dll");
-     if (!dll) { std::printf("LoadLibrary error=%lu\n", GetLastError()); return 3; }
-     auto start = reinterpret_cast<StartFn>(GetProcAddress(dll, "NativeStep_Start"));
---- a/nativestep-client/src/dinput_proxy.cpp
-+++ b/nativestep-client/src/dinput_proxy.cpp
-@@ -7,8 +7,8 @@
- #ifndef NOMINMAX
- #define NOMINMAX
- #endif
--#include <Windows.h>
--#include <Unknwn.h>
+-#include <cstring>
+-#include <atomic>
+-
+-using StartFn = int (__cdecl *)(HWND);
+-using FeedFn = int (__cdecl *)(int, const void*, int);
+-using StopFn = void (__cdecl *)();
+-
+-std::atomic<int> downCount{0}, upCount{0}, moveCount{0}, correctCursorCount{0};
+-LRESULT CALLBACK TestWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+-    if (message == WM_MOUSEMOVE || message == WM_LBUTTONDOWN || message == WM_LBUTTONUP) {
+-        if (message == WM_MOUSEMOVE) ++moveCount;
+-        if (message == WM_LBUTTONDOWN) {
+-            ++downCount;
+-            POINT actual{};
+-            if (GetCursorPos(&actual) && ScreenToClient(hwnd, &actual) &&
+-                actual.x >= GET_X_LPARAM(lParam)-3 &&
+-                actual.x <= GET_X_LPARAM(lParam)+3 &&
+-                actual.y >= GET_Y_LPARAM(lParam)-3 &&
+-                actual.y <= GET_Y_LPARAM(lParam)+3) ++correctCursorCount;
+-        }
+-        if (message == WM_LBUTTONUP) ++upCount;
+-        std::printf("[host] WM=%04x x=%d y=%d\n", unsigned(message),
+-                    GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+-        return 0;
+-    }
+-    if (message == WM_DESTROY) { PostQuitMessage(0); return 0; }
+-    return DefWindowProcW(hwnd, message, wParam, lParam);
++using StartFn=int (__cdecl *)(HWND);
++using StopFn=void (__cdecl *)();
++int main() {
++    WNDCLASSW wc{};wc.lpfnWndProc=DefWindowProcW;wc.hInstance=GetModuleHandleW(nullptr);
++    wc.lpszClassName=L"NativeStepUnsupportedHost";
++    if(!RegisterClassW(&wc)) return 1;
++    HWND hwnd=CreateWindowW(wc.lpszClassName,L"NativeStep guard test",WS_OVERLAPPEDWINDOW,
++        0,0,640,480,nullptr,nullptr,wc.hInstance,nullptr);
++    if(!hwnd) return 2;
++    HMODULE dll=LoadLibraryW(L".\\dinput.dll");
++    if(!dll) return 3;
++    auto start=reinterpret_cast<StartFn>(GetProcAddress(dll,"NativeStep_Start"));
++    auto stop=reinterpret_cast<StopFn>(GetProcAddress(dll,"NativeStep_Stop"));
++    if(!start || !stop) return 4;
++    const int allowed=start(hwnd);
++    // The bootstrap pins its module for the process lifetime.
++    stop();DestroyWindow(hwnd);
++    if(allowed) {std::puts("FAIL unsupported executable accepted");return 5;}
++    std::puts("PASS unsupported executable refused; no mouse input generated");return 0;
+ }
+-
+-void pump(unsigned ms) {
+-    const ULONGLONG end = GetTickCount64() + ms;
+-    while (GetTickCount64() < end) {
+-        MSG msg{};
+-        while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+-            TranslateMessage(&msg);
+-            DispatchMessageW(&msg);
+-        }
+-        Sleep(2);
+-    }
+-}
+-
+-int feed(FeedFn fn, const char* msg) {
+-    return fn(9, msg, static_cast<int>(std::strlen(msg)));
+-}
+-
+-int main() {
+-    HINSTANCE inst = GetModuleHandleW(nullptr);
+-    WNDCLASSW wc{};
+-    wc.lpfnWndProc = TestWndProc;
+-    wc.hInstance = inst;
+-    wc.lpszClassName = L"NativeStepPhysicalInputHost";
+-    if (!RegisterClassW(&wc)) return 1;
+-    HWND hwnd = CreateWindowExW(0, wc.lpszClassName, L"NativeStep physical input test (intentional clicks)",
+-        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 820, 640,
+-        nullptr, nullptr, inst, nullptr);
+-    if (!hwnd) return 2;
+-    ShowWindow(hwnd, SW_SHOW);
+-    SetForegroundWindow(hwnd);
+-    pump(200);
+-    if (GetForegroundWindow() != hwnd) {
+-        std::puts("[host] ERROR: test window must be foreground. No input injected.");
+-        DestroyWindow(hwnd);
+-        return 6;
+-    }
+-    HMODULE dll = LoadLibraryW(L".\\dinput.dll");
+-    if (!dll) { std::printf("LoadLibrary error=%lu\n", GetLastError()); return 3; }
+-    auto start = reinterpret_cast<StartFn>(GetProcAddress(dll, "NativeStep_Start"));
+-    auto fn = reinterpret_cast<FeedFn>(GetProcAddress(dll, "NativeStep_TryConsumeNotice"));
+-    auto stop = reinterpret_cast<StopFn>(GetProcAddress(dll, "NativeStep_Stop"));
+-    if (!start || !fn || !stop || !start(hwnd)) return 4;
+-    if (!feed(fn, "@@NATIVESTEP:START@@")) return 7;
+-    for (int i = 0; i < 2; ++i) {
+-        if (GetForegroundWindow() != hwnd) return 8;
+-        const char* direction = i == 0 ? "@@NATIVESTEP:2@@" : "@@NATIVESTEP:3@@";
+-        if (!feed(fn, direction)) return 9;
+-        pump(90);
+-        if (!feed(fn, "@@NATIVESTEP:CANCEL@@")) return 10;
+-        pump(150);
+-    }
+-    if (!feed(fn, "@@NATIVESTEP:STOP@@")) return 11;
+-    stop();
+-    FreeLibrary(dll);
+-    DestroyWindow(hwnd);
+-    std::printf("RESULT down=%d up=%d cursorMatches=%d move=%d\n",
+-                downCount.load(), upCount.load(), correctCursorCount.load(), moveCount.load());
+-    if (downCount.load() != 2 || upCount.load() < 2 || correctCursorCount.load() != 2) return 5;
+-    std::puts("NativeStep physical SendInput test: PASS");
+-    return 0;
+-}
+--- /dev/null
++++ b/nativestep-client/.gitignore
+@@ -0,0 +1,9 @@
++build-win32/
++build/
++BUILD_WIN32.log
++NativeStep.ini
++client_io.log
++__pycache__/
++native-replay-output/
++Mega.bin
++stage1-*.bin
+--- /dev/null
++++ b/nativestep-client/BUILD_MINGW.sh
+@@ -0,0 +1,12 @@
++#!/usr/bin/env bash
++set -euo pipefail
++cd -- "$(dirname -- "$0")"
++compiler=${CXX:-i686-w64-mingw32-g++}
++mkdir -p build-win32/Release
++flags=(-std=c++17 -Wall -Wextra -Werror -Wno-cast-function-type -O2 -static -static-libgcc -static-libstdc++ -I include)
++"$compiler" "${flags[@]}" -shared src/step_core.cpp src/mega_client.cpp src/nativestep_dll.cpp src/client_bootstrap.cpp \
++  src/dinput_proxy.cpp src/step_network.cpp dinput.mingw.def -o build-win32/Release/dinput.dll \
++  -luser32 -lws2_32 -liphlpapi -ladvapi32
++"$compiler" "${flags[@]}" src/step_core.cpp tests/step_core_test.cpp -o build-win32/Release/step_core_test.exe
++"$compiler" "${flags[@]}" tests/win_host.cpp -o build-win32/Release/nativestep_win_host.exe -luser32
++echo 'Built PE32 DLL and test executables. Windows runtime tests must be run separately.'
+--- /dev/null
++++ b/nativestep-client/dinput.mingw.def
+@@ -0,0 +1,9 @@
++LIBRARY dinput
++EXPORTS
++    DirectInputCreateA=DirectInputCreateA@16 @1
++    DirectInputCreateEx=DirectInputCreateEx@20 @2
++    DirectInputCreateW=DirectInputCreateW@16 @3
++    DllCanUnloadNow=DllCanUnloadNow@0 @4
++    DllGetClassObject=DllGetClassObject@12 @5
++    DllRegisterServer=DllRegisterServer@0 @6
++    DllUnregisterServer=DllUnregisterServer@0 @7
+--- /dev/null
++++ b/nativestep-client/include/mega_client.h
+@@ -0,0 +1,15 @@
++#pragma once
 +#include <windows.h>
-+#include <unknwn.h>
- #include <cwchar>
- 
- namespace {
++#include "step_core.h"
++
++struct MegaClick {
++    nativestep::Point client{}, logical{}, world{};
++    int heading = -1, mode = -1;
++};
++// Supports only the uploaded Mega.bin SHA-256 and matching unpacked code.
++bool MegaInitialize() noexcept;
++bool MegaPlanClick(HWND hwnd, int heading, MegaClick& click) noexcept;
++bool MegaMouseDownReady() noexcept;
++bool MegaGoalMatches(const MegaClick& click) noexcept;
++bool MegaStepApplied(const MegaClick& click) noexcept;
++void MegaCancelOwnedMovement() noexcept;
+--- /dev/null
++++ b/nativestep-client/src/mega_client.cpp
+@@ -0,0 +1,152 @@
++#ifndef WIN32_LEAN_AND_MEAN
++#define WIN32_LEAN_AND_MEAN
++#endif
++#ifndef NOMINMAX
++#define NOMINMAX
++#endif
++#include <windows.h>
++#include <wincrypt.h>
++#include <cstdint>
++#include <cstring>
++#include "mega_client.h"
++#include "step_network.h"
++
++namespace {
++static_assert(sizeof(void*) == 4, "Mega.bin is an x86 client");
++using Point = nativestep::Point;
++constexpr uintptr_t kBase=0x400000;
++bool supported=false;
++bool fail(const char* reason) noexcept {NativeStep_LogInput(reason,0);return false;}
++template<class T> bool read(uintptr_t address,T& value) noexcept {
++    SIZE_T got=0;
++    return ReadProcessMemory(GetCurrentProcess(),reinterpret_cast<const void*>(address),
++                             &value,sizeof(value),&got) && got==sizeof(value);
++}
++bool signature(uintptr_t address,const unsigned char* bytes,size_t length) noexcept {
++    unsigned char actual[32]{}; SIZE_T got=0;
++    return length<=sizeof(actual) && ReadProcessMemory(GetCurrentProcess(),
++        reinterpret_cast<const void*>(address),actual,length,&got) && got==length &&
++        std::memcmp(actual,bytes,length)==0;
++}
++bool file_matches() noexcept {
++    static constexpr unsigned char expected[32]={
++        0x09,0x80,0x4d,0x95,0x79,0x44,0x6f,0xb9,0xa6,0x30,0xc3,0x9c,0x1f,0x1b,0x2d,0x08,
++        0x08,0x37,0x18,0x26,0x1d,0x2f,0x3e,0x57,0xb2,0xe3,0x6f,0x80,0xba,0x86,0x54,0x90};
++    wchar_t path[MAX_PATH]{};
++    if (!GetModuleFileNameW(nullptr,path,MAX_PATH)) return false;
++    HANDLE file=CreateFileW(path,GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_DELETE,nullptr,OPEN_EXISTING,0,nullptr);
++    if (file==INVALID_HANDLE_VALUE) return false;
++    HCRYPTPROV provider=0; HCRYPTHASH hash=0; bool ok=false;
++    if (CryptAcquireContextW(&provider,nullptr,nullptr,PROV_RSA_AES,CRYPT_VERIFYCONTEXT) &&
++        CryptCreateHash(provider,CALG_SHA_256,0,0,&hash)) {
++        unsigned char block[32768]{}; DWORD got=0; bool complete=true;
++        while (true) {
++            if (!ReadFile(file,block,sizeof(block),&got,nullptr)) {complete=false;break;}
++            if (!got) break;
++            if (!CryptHashData(hash,block,got,0)) {complete=false;break;}
++        }
++        unsigned char digest[32]{}; DWORD size=sizeof(digest);
++        ok=complete && CryptGetHashParam(hash,HP_HASHVAL,digest,&size,0) && size==32 &&
++            std::memcmp(digest,expected,32)==0;
++    }
++    if(hash) CryptDestroyHash(hash);
++    if(provider) CryptReleaseContext(provider,0);
++    CloseHandle(file); return ok;
++}
++bool code_matches() noexcept {
++    static constexpr unsigned char scale[]={0x55,0x8b,0xec,0xa1,0x88,0x64,0x79,0x00,0x56,0x83,0xf8,0x07,0x77,0x7b,0xff,0x24};
++    static constexpr unsigned char project[]={0x55,0x8b,0xec,0x83,0xec,0x08,0x56,0x8b,0x75,0x08,0x8d,0x45,0xf8,0x56,0x50,0xe8};
++    static constexpr unsigned char step[]={0x55,0x8b,0xec,0x8b,0x45,0x0c,0x56,0x8b,0x71,0x04,0x8b,0x14,0xc5,0x3c,0x39,0x8e};
++    static constexpr unsigned char cancel[]={0x55,0x8b,0xec,0x83,0xec,0x10,0x53,0x8d,0x45,0xf0,0x33,0xdb,0x50,0x8d,0x4d,0xf8};
++    static constexpr unsigned char clock[]={0x55,0x8b,0xec,0x83,0xec,0x08,0xa1,0x10,0x3f,0x9b,0x00,0x85,0xc0,0x74,0x37,0x8d};
++    static constexpr unsigned char dispatch[]={0x55,0x8b,0xec,0x83,0xec,0x40,0x8b,0x45,0x0c,0x53,0x56,0x8b,0xf1,0x8b,0x4d,0x08};
++    return reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))==kBase &&
++        signature(0x45e2b0,scale,sizeof(scale)) && signature(0x49f4c0,project,sizeof(project)) &&
++        signature(0x49f590,project,sizeof(project)) && signature(0x49f810,step,sizeof(step)) &&
++        signature(0x4cc830,cancel,sizeof(cancel)) && signature(0x4bf790,clock,sizeof(clock)) &&
++        signature(0x45e370,dispatch,sizeof(dispatch));
++}
++using Project = Point* (__thiscall *)(const Point*,Point*);
++using Step = Point* (__thiscall *)(const Point*,Point*,int);
++bool world_active(HWND hwnd) noexcept {
++    uintptr_t game=0,dispatcher=0,player=0;
++    return supported && read(0x7c290c,game) && game==reinterpret_cast<uintptr_t>(hwnd) &&
++        read(0x796244,dispatcher) && dispatcher==0x45e370 && read(0x9b4214,player) && player;
++}
++}
++
++bool MegaInitialize() noexcept {
++    supported=false;
++    if(!file_matches()) return fail("Mega executable SHA256 mismatch: input disabled");
++    if(!code_matches()) return fail("Mega native code signature mismatch: input disabled");
++    supported=true;
++    NativeStep_LogInput(supported ? "Mega SHA256 and native input signatures verified" :
++        "unsupported Mega executable or native code: input disabled",0);
++    return supported;
++}
++
++bool MegaPlanClick(HWND hwnd,int heading,MegaClick& click) noexcept {
++    if (heading<0 || heading>7 || !world_active(hwnd)) return fail("native plan rejected: game world or dispatcher inactive");
++    DWORD owner=GetWindowThreadProcessId(hwnd,nullptr);
++    if (owner!=GetCurrentThreadId()) return fail("native plan rejected: wrong UI thread");
++    uintptr_t player=0; Point source{}; int mode=-1; RECT rect{};
++    if (!read(0x9b4214,player) || !read(player+0x34,source) || !read(0x796488,mode) ||
++        mode<0 || mode>7 || !GetClientRect(hwnd,&rect)) return fail("native plan rejected: player or resolution state unavailable");
++    static constexpr Point expected[8]={{0,-1},{2,-1},{2,0},{2,1},{0,1},{-2,1},{-2,0},{-2,-1}};
++    Point delta{};
++    if (!read(0x8e3938+heading*sizeof(Point),delta) || delta.x!=expected[heading].x ||
++        delta.y!=expected[heading].y) return fail("native plan rejected: heading table mismatch");
++    Point next{},logical{},roundtrip{};
++    reinterpret_cast<Step>(0x49f810)(&source,&next,heading);
++    reinterpret_cast<Project>(0x49f4c0)(&next,&logical);
++    // Native projection returns the diamond's left vertex. Click its 48x24
++    // cell interior; the original inverse routine below verifies the tile.
++    logical.x+=24;logical.y+=12;
++    if(logical.x<0 || logical.x>=640 || logical.y<0 || logical.y>=380) return fail("native plan rejected: next tile outside game viewport");
++    reinterpret_cast<Project>(0x49f590)(&logical,&roundtrip);
++    if ((roundtrip.x&~1)!=next.x || roundtrip.y!=next.y) return fail("native plan rejected: world-screen roundtrip mismatch");
++    static constexpr Point corners[]={{-2,-2},{2,-2},{-2,2},{2,2}};
++    for (const Point d : corners) {
++        Point inside{logical.x+d.x,logical.y+d.y},check{};
++        reinterpret_cast<Project>(0x49f590)(&inside,&check);
++        if((check.x&~1)!=next.x || check.y!=next.y) return fail("native plan rejected: click is on tile boundary");
++    }
++    Point raw=logical;
++    switch(mode&3) {
++    case 0: if((raw.x&1)||(raw.y&1)) return false; raw.x/=2;raw.y/=2;break;
++    case 1: break;
++    case 2: raw.x=(raw.x*3+1)/2;raw.y=(raw.y*3+1)/2;break;
++    case 3: raw.x*=2;raw.y*=2;break;
++    }
++    if(raw.x<0 || raw.y<0 || raw.x>=rect.right || raw.y>=rect.bottom) return fail("native plan rejected: click outside client window");
++    // Verify the actual native resolution conversion too, not only our inverse.
++    Point mapped{};
++    using Scale=Point* (__thiscall *)(Point*,int,int);
++    reinterpret_cast<Scale>(0x45e2b0)(&mapped,raw.x,raw.y);
++    if(mapped.x!=logical.x || mapped.y!=logical.y) return fail("native plan rejected: resolution roundtrip mismatch");
++    click={raw,logical,next,heading,mode}; return true;
++}
++
++bool MegaMouseDownReady() noexcept {
++    uint32_t last=0;
++    if(!supported || !read(0x7c1f44,last)) return false;
++    const uint32_t now=reinterpret_cast<uint32_t (__cdecl *)()>(0x4bf790)();
++    return static_cast<int32_t>(now-(last+102))>=0;
++}
++
++bool MegaGoalMatches(const MegaClick& click) noexcept {
++    Point goal{};
++    return read(0x7c28e8,goal) && goal.x==click.world.x && goal.y==click.world.y;
++}
++
++bool MegaStepApplied(const MegaClick& click) noexcept {
++    uintptr_t player=0; Point actual{};
++    return read(0x9b4214,player) && player && read(player+0x34,actual) &&
++        actual.x==click.world.x && actual.y==click.world.y;
++}
++
++void MegaCancelOwnedMovement() noexcept {
++    uintptr_t player=0;
++    if(supported && read(0x9b4214,player) && player)
++        reinterpret_cast<void (__cdecl *)()>(0x4cc830)();
++}
+--- /dev/null
++++ b/nativestep-client/tests/mega_native_replay.py
+@@ -0,0 +1,88 @@
++"""Execute the uploaded client's actual x86 coordinate/heading routines offline.
++
++Requires unicorn==2.1.4. The memory image is produced by the companion unpack
++script; no Windows APIs, network, game assets or real mouse input are executed.
++Only collision and busy-state boundaries are fixture stubs. This is not a live
++game movement/camera test, nor a test of SendMessage delivery on Windows.
++"""
++from pathlib import Path
++import argparse,hashlib,json,struct
++from unicorn import Uc,UC_ARCH_X86,UC_MODE_32,UC_HOOK_CODE
++from unicorn.x86_const import *
++
++p=argparse.ArgumentParser();p.add_argument('--client',type=Path,required=True)
++p.add_argument('--image',type=Path,required=True);a=p.parse_args()
++assert hashlib.sha256(a.client.read_bytes()).hexdigest()=='09804d9579446fb9a630c39c1f1b2d08083718261d2f3e57b2e36f80ba865490'
++image=a.image.read_bytes();u=Uc(UC_ARCH_X86,UC_MODE_32)
++u.mem_map(0x400000,(len(image)+4095)&~4095);u.mem_write(0x400000,image)
++u.mem_map(0x10000000,0x10000);u.mem_map(0x70000000,0x10000)
++STOP=0x60000000;u.mem_map(STOP,0x1000)
++def w(p,v):u.mem_write(p,struct.pack('<I',v&0xffffffff))
++def r(p):return struct.unpack('<I',u.mem_read(p,4))[0]
++def point(p,value=None):
++    if value is not None:u.mem_write(p,struct.pack('<ii',*value))
++    return struct.unpack('<ii',u.mem_read(p,8))
++def hook(u,pc,size,_):
++    if pc==0x45cbd0: # Busy-state query: fixture is an idle character.
++        sp=u.reg_read(UC_X86_REG_ESP);u.reg_write(UC_X86_REG_EAX,0)
++        u.reg_write(UC_X86_REG_EIP,r(sp));u.reg_write(UC_X86_REG_ESP,sp+4)
++    elif pc==0x471700: # Fixture has no blocked neighboring cells.
++        sp=u.reg_read(UC_X86_REG_ESP);u.reg_write(UC_X86_REG_EAX,0)
++        u.reg_write(UC_X86_REG_EIP,r(sp));u.reg_write(UC_X86_REG_ESP,sp+12)
++    elif pc==0x4cc528: # All eight actual candidate/distance calculations done.
++        selected.append(r(u.reg_read(UC_X86_REG_EBP)-8));u.emu_stop()
++for pc in [0x45cbd0,0x471700,0x4cc528]:u.hook_add(UC_HOOK_CODE,hook,begin=pc,end=pc)
++def call(pc,this=0,args=()):
++    sp=0x7000ff00
++    for reg in [UC_X86_REG_EAX,UC_X86_REG_EBX,UC_X86_REG_EDX,UC_X86_REG_ESI,UC_X86_REG_EDI,UC_X86_REG_EBP]:u.reg_write(reg,0)
++    u.reg_write(UC_X86_REG_ECX,this);u.reg_write(UC_X86_REG_ESP,sp);u.reg_write(UC_X86_REG_EFLAGS,0x202)
++    u.mem_write(sp,struct.pack('<'+'I'*(len(args)+1),STOP,*args))
++    u.emu_start(pc,STOP,count=100000)
++    return u.reg_read(UC_X86_REG_EAX)
++
++call(0x49f3f0) # Actual native heading delta initializer.
++delta=[point(0x8e3938+i*8) for i in range(8)]
++assert delta==[(0,-1),(2,-1),(2,0),(2,1),(0,1),(-2,1),(-2,0),(-2,-1)]
++actor=0x10001000;source=0x10002000;target=0x10002010
++screen=0x10002020;world=0x10002030;raw_result=0x10002040
++w(0x9b4214,actor);w(0x8d6354,0);w(0x8d6228,0)
++cases=0;selected=[];samples=[]
++for camera_dx,camera_dy in [(-6,18),(10,16),(6,21)]:
++    current=(65536,32768)
++    point(actor+0x34,current);point(source,current)
++    point(0x8d6420,(current[0]-camera_dx,current[1]-camera_dy))
++    for mode in range(8):
++        w(0x796488,mode)
++        for heading in range(8):
++            call(0x49f810,source,(target,heading));next_tile=point(target)
++            call(0x49f4c0,target,(screen,));logical=point(screen)
++            x,y=logical
++            logical=(x+24,y+12);x,y=logical;point(screen,logical)
++            if mode%4==0:
++                assert not(x&1 or y&1);raw=(x//2,y//2)
++            elif mode%4==1:raw=logical
++            elif mode%4==2:raw=((x*3+1)//2,(y*3+1)//2)
++            else:raw=(x*2,y*2)
++            call(0x45e2b0,raw_result,raw)
++            assert point(raw_result)==logical,(mode,heading,raw,point(raw_result),logical)
++            call(0x49f590,screen,(world,));roundtrip=point(world)
++            assert (roundtrip[0]&~1,roundtrip[1])==next_tile,(mode,heading,logical,roundtrip,next_tile)
++            for dx,dy in [(-2,-2),(2,-2),(-2,2),(2,2)]:
++                point(screen,(logical[0]+dx,logical[1]+dy));call(0x49f590,screen,(world,));edge=point(world)
++                assert (edge[0]&~1,edge[1])==next_tile
++            point(screen,logical)
++            call(0x471a70,args=logical)
++            assert point(0x7c28e8)==next_tile,(heading,point(0x7c28e8),next_tile)
++            assert u.mem_read(0x7c28e3,1)==b'\x01'
++            selected.clear();call(0x4cc490,0x10002080)
++            assert selected==[heading],(mode,heading,selected)
++            call(0x4cc830)
++            assert u.mem_read(0x7c28e3,1)==b'\x00' and r(0x7c2610)==0
++            assert point(actor+0x34)==current
++            if camera_dx==-6:assert point(0x7c28e8)==current
++            if camera_dx==-6 and mode==2:samples.append({'heading':heading,'logical':logical,'window_960x720':raw})
++            cases+=1
++print(json.dumps({'result':'PASS','actual_x86_cases':cases,'camera_fixtures':3,'resolution_modes':8,
++ 'headings':8,'native_960x720_samples':samples,'fixture_boundaries':['idle-state query','all eight neighboring cells passable'],
++ 'verified':['native world step','native world/screen roundtrip','native resolution scaling','native goal selection','native eight-candidate heading choice','native stop-target clears pending'],
++ 'windows_message_delivery_tested':False,'live_game_movement_or_camera_tested':False},indent=2))
+--- /dev/null
++++ b/nativestep-client/tests/requirements-native.txt
+@@ -0,0 +1,2 @@
++pefile==2024.8.26
++unicorn==2.1.4
+--- /dev/null
++++ b/nativestep-client/tools/unpack_for_native_tests.py
+@@ -0,0 +1,121 @@
++from pathlib import Path
++import struct,json,collections,argparse,hashlib
++import pefile
++from unicorn import Uc, UC_ARCH_X86, UC_MODE_32, UC_HOOK_CODE, UC_HOOK_MEM_INVALID, UC_HOOK_BLOCK, UcError
++from unicorn.x86_const import *
++
++p=argparse.ArgumentParser(description='Offline, API-stubbed unpacking for this exact Mega.bin native replay')
++p.add_argument('--client',type=Path,required=True);p.add_argument('--output-directory',type=Path,required=True)
++a=p.parse_args();root=a.output_directory;root.mkdir(parents=True,exist_ok=True)
++assert hashlib.sha256(a.client.read_bytes()).hexdigest()=='09804d9579446fb9a630c39c1f1b2d08083718261d2f3e57b2e36f80ba865490'
++pe=pefile.PE(str(a.client))
++base=pe.OPTIONAL_HEADER.ImageBase
++uc=Uc(UC_ARCH_X86,UC_MODE_32)
++uc.mem_map(base,0xe50000)
++uc.mem_write(base,pe.get_memory_mapped_image())
++uc.mem_map(0x70000000,0x200000)
++uc.reg_write(UC_X86_REG_ESP,0x701ff000)
++uc.mem_write(0x701ff000,struct.pack('<I',0x600ff000))
++uc.mem_map(0x60000000,0x100000)
++uc.mem_map(0,0x10000)
++uc.mem_map(0x7ff00000,0x100000)
++uc.mem_write(0x30,struct.pack('<I',0x7ff01000))
++uc.mem_write(0x7ff01008,struct.pack('<I',base))
++uc.mem_write(0x7ff01018,struct.pack('<I',0x7ff10000))
++uc.reg_write(UC_X86_REG_EFLAGS,0x202)
++apis={};api_addresses={};modules={};module_names={};calls=[];heap=0x20000000
++blocks=collections.deque(maxlen=25)
++
++def read32(p):return struct.unpack('<I',uc.mem_read(p,4))[0]
++def w32(p,x):uc.mem_write(p,struct.pack('<I',x&0xffffffff))
++def cstr(p):
++    if not p:return ''
++    b=bytearray()
++    for i in range(1024):
++        c=uc.mem_read(p+i,1)[0]
++        if not c:break
++        b.append(c)
++    return b.decode('latin1')
++
++def module(name):
++    name=name.lower()
++    if name not in modules:
++        addr=0x50000000+len(modules)*0x10000
++        modules[name]=addr;module_names[addr]=name
++        uc.mem_map(addr,0x10000);uc.mem_write(addr,b'MZ');w32(addr+0x3c,0x100)
++    return modules[name]
++
++def stub(mod,name):
++    key=(mod.lower(),name)
++    if key not in api_addresses:
++        addr=0x60000000+len(api_addresses)*16
++        api_addresses[key]=addr;apis[addr]=key
++        uc.mem_write(addr,b'\xc3')
++    return api_addresses[key]
++
++for entry in pe.DIRECTORY_ENTRY_IMPORT:
++    mod=entry.dll.decode().lower();module(mod)
++    for imp in entry.imports:
++        name=imp.name.decode() if imp.name else '#'+str(imp.ordinal)
++        w32(imp.address,stub(mod,name))
++
++def api_hook(u,address,size,data):
++    global heap
++    if address not in apis:
++        print('STOP unknown stub',hex(address),flush=True);u.emu_stop();return
++    mod,name=apis[address];esp=u.reg_read(UC_X86_REG_ESP);ret=read32(esp)
++    args=[read32(esp+4+i*4) for i in range(8)]
++    calls.append({'module':mod,'name':name,'return':hex(ret),'args':[hex(x) for x in args[:4]]})
++    n=0;result=0
++    if name=='GetProcAddress':
++        n=2;symbol=cstr(args[1]) if args[1]>0xffff else '#'+str(args[1])
++        result=stub(module_names.get(args[0],'unknown'),symbol)
++    elif name in ('GetModuleHandleA','LoadLibraryA','LoadLibraryExA'):
++        n=3 if name=='LoadLibraryExA' else 1
++        result=module(cstr(args[0])) if args[0] else base
++    elif name=='VirtualAlloc':
++        n=4;size=(args[1]+0xfff)&~0xfff
++        if size>0x8000000:raise RuntimeError('Implausible allocation '+hex(size))
++        result=args[0] or heap
++        if not args[0]:
++            heap+=(size+0xffff)&~0xffff
++            u.mem_map(result,size)
++        else:
++            try:u.mem_map(result&~0xfff,size)
++            except UcError:pass
++    elif name in ('VirtualProtect','VirtualProtectEx'):
++        n=5 if name.endswith('Ex') else 4
++        if args[n-1]:w32(args[n-1],0x40)
++        result=1
++    elif name=='VirtualFree':n=3;result=1
++    elif name=='FlushInstructionCache':n=3;result=1
++    elif name=='GetCurrentProcess':result=0xffffffff
++    elif name=='GetCurrentThread':result=0xfffffffe
++    elif name in ('ExitProcess','ExitThread','TerminateProcess'):
++        print('STOP termination',name,args[:2],flush=True);u.emu_stop();return
++    else:
++        print('STOP unsupported API',mod,name,'caller',hex(ret),'args',[hex(x) for x in args[:4]],flush=True)
++        u.emu_stop();return
++    if len(calls)<12:print('API',name,'=>',hex(result),flush=True)
++    u.reg_write(UC_X86_REG_EAX,result);u.reg_write(UC_X86_REG_ESP,esp+4+4*n);u.reg_write(UC_X86_REG_EIP,ret)
++
++def invalid(u,access,address,size,value,data):
++    print('UNMAPPED',access,hex(address),size,'eip',hex(u.reg_read(UC_X86_REG_EIP)),flush=True)
++    return False
++
++def block(u,address,size,data):blocks.append((hex(address),size))
++def pause(u,address,size,data):
++    print('STAGE ENTRY reached',hex(address),flush=True);u.emu_stop()
++
++uc.hook_add(UC_HOOK_CODE,api_hook,begin=0x60000000,end=0x600fffff)
++uc.hook_add(UC_HOOK_MEM_INVALID,invalid)
++# Block tracing disabled during bulk decompression.
++uc.hook_add(UC_HOOK_CODE,pause,begin=0x1231600,end=0x1231600)
++try:uc.emu_start(base+pe.OPTIONAL_HEADER.AddressOfEntryPoint,0,count=0,timeout=45_000_000)
++except Exception as e:print(type(e).__name__,str(e),flush=True)
++assert uc.reg_read(UC_X86_REG_EIP)==0x1231600, 'Unpacking did not reach the validated stage boundary'
++print('Final EIP',hex(uc.reg_read(UC_X86_REG_EIP)),'calls',len(calls),'heap',hex(heap),'blocks',list(blocks),flush=True)
++(root/'stage1-image.bin').write_bytes(uc.mem_read(base,0xe46000))
++(root/'stage1-api-map.json').write_text(json.dumps({hex(k):list(v) for k,v in apis.items()},indent=2))
++(root/'stage1-calls.json').write_text(json.dumps(calls,indent=2))
++for reg,name in [(UC_X86_REG_EAX,'eax'),(UC_X86_REG_EBX,'ebx'),(UC_X86_REG_ECX,'ecx'),(UC_X86_REG_EDX,'edx'),(UC_X86_REG_ESI,'esi'),(UC_X86_REG_EDI,'edi'),(UC_X86_REG_EBP,'ebp'),(UC_X86_REG_ESP,'esp')]:print(name,hex(uc.reg_read(reg)))

@@ -1,42 +1,55 @@
-> **현재 상태: V3 적용 후에도 사용자가 `5번 요청 → 실제 1번` 방향 불일치를 보고했습니다. 배포 DLL의 실게임 정상 동작은 확인되지 않았습니다.**
-> 좌표·방향 추정만으로 만든 변경으로 문제가 해결되지 않았으므로, 실제 실행 중인 Mega.bin의 입력·좌표 변환 경로를 확인하기 전에는 추가 방향표 변경을 진행하지 않습니다. 아래 다운로드는 검증 중인 이전 작업 기록입니다.
+# Mega.bin 전용 네이티브 한 칸 입력 V4
 
-# 49027 입력 V3 — 캐릭터 가로 중앙 기준점
-
-사용자 스크린샷에서 캐릭터는 게임 창의 가로 중앙 부근에 보이는데, 실행 로그에는 960×720 창의 발 기준점이 `(289,333)`으로 저장되어 있었습니다. 창 중앙 X는 480입니다. V2에서 5번 요청은 `(253,356)`을 클릭했으므로, 중앙에 있는 캐릭터를 기준으로 의도보다 191픽셀 왼쪽을 누르는 상태였습니다.
-
-V3는 **발 기준점 X를 현재 창 너비의 절반으로 계산**하고 **보정한 발 기준점 Y는 유지**합니다. 현재 로그의 설정은 실제 입력에 `(480,333)`을 사용하게 됩니다. 5번 클릭은 `(444,356)`으로 바뀝니다. 방향표는 V2 그대로이며, 임의의 추가 방향 회전이나 서버 검사 완화는 하지 않았습니다.
+이전 V1~V3는 사용자가 보고한 방향 불일치를 해결하지 못했습니다. 이번 V4는 추가로 제공된 **실제 Mega.bin**을 분석해 입력 경로를 바꾼 버전입니다. Windows 실게임 최종 검증은 아직 필요합니다.
 
 ## 적용
 
 1. 게임을 완전히 종료하고 기존 `dinput.dll`을 백업합니다.
-2. V3 DLL ZIP의 `dinput.dll` 또는 V3 전체 소스 ZIP의 `client-ready/dinput.dll`을 **Mega.bin 옆에 교체**합니다.
-3. 기존 `NativeStep.ini`를 유지하고 게임을 다시 시작합니다. 기존 X=289가 파일에 남아 있어도 V3 기본 동작은 X=480을 사용합니다. 설정 파일을 자동으로 덮어쓰지 않습니다.
-4. 로그에 **`centered-anchor-v3-20261111 control initialized`**와 **`input geometry client=960x720 anchor=(480,333)`**이 나오는지 확인하고 49027로 시작합니다.
+2. V4 DLL ZIP의 `dinput.dll` 또는 전체 소스 ZIP의 `client-ready/dinput.dll`을 **Mega.bin과 같은 폴더**에 넣습니다.
+3. 게임을 다시 실행하고 캐릭터로 접속한 뒤 **49027 아이템**으로 시작합니다. 다시 사용하면 종료합니다.
 
-기존 발 세로 위치가 맞지 않거나 해상도를 바꿨다면, 자동사냥 OFF 상태에서 **자기 캐릭터 발밑에 커서를 놓고 Ctrl+Alt+F9**를 눌러 다시 보정합니다. V3에서는 가로는 창 중앙으로 정하고 세로만 커서의 발 위치를 사용합니다.
+**Ctrl+Alt+F9 보정은 사용하지 않습니다.** 기존 NativeStep.ini는 남겨 두어도 이번 입력 계산에 사용되지 않습니다. 서버는 첨부본 그대로 사용하며 재빌드하지 않아도 됩니다.
 
-서버 Java는 원본과 동일합니다. **서버 재빌드는 필요 없습니다.** 로그의 `step-v4`는 기존 서버 표시이며, DLL 버전은 위의 V3 문자열로 확인합니다.
+로그에서 `Mega SHA256 and native input signatures verified`와 **`Mega native-tile-input-v4-20261111 initialized`**를 확인합니다. 이어 `native next-tile plan verified`, `native next-tile input committed`, `native input released and target cancelled`가 기록됩니다.
 
-## 설정과 검증 범위
+## 실제 실행 파일에서 확인한 점과 변경
 
-`[Viewport]`의 새 설정 `CenterAnchorX=1`이 기본값이며, 키가 없어도 가로 중앙을 사용합니다. 가로 중앙에 캐릭터가 오지 않는 다른 게임 화면 배치에서는 `CenterAnchorX=0`으로 기존 수동 X를 사용할 수 있습니다. 발 Y·해상도·기존 타일 치수·방향표 설정은 유지합니다.
+- 제공된 실행 파일의 DirectInput 생성 대상 GUID는 **키보드**입니다. 마우스 경로는 Win32 창 메시지의 좌표를 받아 `0x45E2B0`에서 해상도 모드에 맞게 변환합니다. 960×720 모드는 2/3 변환입니다.
+- 플레이어의 현재 내부 타일과 실제 네이티브 이웃 타일 표를 읽고, `0x49F810`으로 승인 방향의 바로 다음 타일을 구합니다. 서버 좌표와 화면 좌표의 방향표를 추측해 회전시키는 방식을 사용하지 않습니다.
+- 원본 `0x49F4C0` 투영과 `0x49F590` 역변환을 실행해 **클릭 지점이 정확히 그 다음 타일로 되돌아오는지 확인**합니다. 타일 경계의 ±2px도 검사합니다. 타일은 내부적으로 48×24px 마름모이며 투영의 왼쪽 꼭짓점에서 (24,12) 안쪽을 사용합니다.
+- 원본 해상도 변환도 다시 실행해 창 좌표와 내부 좌표가 일치하는지 검사한 뒤 같은 게임 UI 스레드에서 `WM_MOUSEMOVE → WM_LBUTTONDOWN`을 처리합니다. **실제 OS 커서 이동이나 SendInput 버튼 주입을 사용하지 않습니다.**
+- 로컬 플레이어가 승인된 한 칸에 도달하면 버튼 메시지를 해제하고, 자신이 설정한 이동 목표가 유지 중인 경우 원본 `0x4CC830` 목표 해제 함수를 호출합니다. 서버 CANCEL을 기다리는 논리 상태는 유지해 새 승인 없이 다음 걸음을 만들지 않습니다.
+- 게임의 기존 걷기·애니메이션·카메라 경로를 사용합니다. 서버 C_MoveChar 패킷을 직접 만들거나 카메라 메모리 주소를 추측해서 수정하지 않습니다.
 
-이 변경은 실제 보정 X와 게임 화면 배치의 불일치를 수정한 것입니다. 카메라 내부를 직접 패치하는 코드는 아닙니다. 게임의 정상 걷기 입력을 사용해 카메라가 따라오도록 하는 기존 경로를 유지합니다.
+클릭이 UI에 소비되거나 원본 목표가 예상과 다르면 입력을 중단하고 이유를 기록합니다. 서버의 방향·출발 좌표 검사와 한 걸음 승인 정책은 유지합니다.
 
-스크린샷의 서버 로그에는 이동 승인·적용 후 추가 `no-offer` 패킷으로 중단된 기록도 보입니다. 잘못된 기준점이 만드는 멀리 떨어진 클릭을 먼저 바로잡았으며, 수정 후에도 잔여 이동이 생기는지는 실게임에서 확인해야 합니다. 서버의 방향·출발 좌표·1회 승인 검사를 그대로 유지합니다.
+## 지원 파일과 검증 범위
 
-- C++ ASan/UBSan 테스트: 기존 10,000회 반복, 클릭 준비·확인·만료·취소, 화면 방향표, 가상 데스크톱 좌표, 이번 960×720/저장 X=289 재현 사례 통과.
-- Windows 32비트 DLL 및 테스트 EXE 교차 빌드. DirectInput export/ordinal 1~7과 추가 MinGW 런타임 DLL 의존성 여부 검사.
-- 첨부 원본 서버 Java 967개가 바이트 단위로 동일함을 확인.
-- 실제 Windows 게임에서 V3의 이동 방향·추가 이동·카메라 추적은 아직 검증하지 못했습니다. 테스트 통과는 실제 게임 동작 성공을 뜻하지 않습니다.
+지원하는 원본 Mega.bin SHA-256:
 
-## 직접 빌드
+`09804d9579446fb9a630c39c1f1b2d08083718261d2f3e57b2e36f80ba865490`
 
-Windows/MSVC: `nativestep-client/BUILD_WIN32.bat`.
+원본 파일 해시와 메모리 코드 서명을 확인하며, 일치하지 않으면 입력을 시작하지 않습니다. **Mega.bin 자체는 수정하지 않았고 배포 ZIP/GitHub에도 포함하지 않습니다.**
 
-MinGW: `nativestep-client/BUILD_MINGW.sh` (`CXX`로 32비트 g++ 지정 가능).
+- 실제 실행 파일에서 압축 해제한 x86 함수를 Unicorn에서 실행했습니다. 8방향 × 8모드값(4종 배율) × 3카메라 위치, **192개 경우**의 원본 이웃 타일·투영·역변환·목표 선택·방향 후보 선택·목표 해제 검사를 통과했습니다.
+- 이 검사의 경계는 **대기 중인 캐릭터, 인접 8칸 통과 가능** 조건입니다. 충돌/대기 질의만 테스트 대체 함수를 사용합니다. 게임의 전체 지도·오브젝트·네트워크·애니메이션을 실행한 검사가 아닙니다.
+- 기존 StepEngine 10,000회 승인/취소 및 ASan/UBSan 검사 통과. Windows PE32 DLL과 테스트 EXE 교차 빌드, DirectInput 7개 export/ordinal, 시스템 DLL 의존성 검사 통과.
+- 지원하지 않는 실행 파일을 거절하는 Windows 호스트 검사는 빌드했습니다. 이 Linux 환경에서 Windows 호스트 EXE는 실행하지 않았습니다.
+- **Windows 창 메시지 전달, 실제 게임의 C_MoveChar 송신·연속 사냥·카메라 추적은 아직 실게임 검증하지 못했습니다.** 테스트 성공을 실게임 완료로 보고하지 않습니다.
 
-호스트 테스트: `g++ -std=c++17 -I nativestep-client/include nativestep-client/src/step_core.cpp nativestep-client/tests/step_core_test.cpp -o step_core_test` 후 실행합니다.
+클라이언트 로그에 `SHA256 mismatch`, `native code signature mismatch`, `native plan rejected`, `did not select the verified next tile`이 나오면 해당 실행의 최신 로그로 막힌 지점을 구분할 수 있습니다.
 
-이전 버전 ZIP은 기록용으로 남아 있습니다. 이번 적용에는 V3를 사용합니다. 게임이 정상 실행되지 않으면 종료 후 백업한 DLL로 되돌립니다.
+## 개발 검증 재현
+
+Windows 빌드: `nativestep-client/BUILD_WIN32.bat`. MinGW 빌드: `nativestep-client/BUILD_MINGW.sh`.
+
+네이티브 코드 재현에는 사용자가 제공한 원본 Mega.bin이 필요합니다. 해당 실행 파일과 생성 메모리 이미지는 저장소에 넣지 않습니다.
+
+```sh
+python3 -m venv .venv-native
+.venv-native/bin/pip install -r nativestep-client/tests/requirements-native.txt
+.venv-native/bin/python nativestep-client/tools/unpack_for_native_tests.py --client /path/to/Mega.bin --output-directory native-replay-output
+.venv-native/bin/python nativestep-client/tests/mega_native_replay.py --client /path/to/Mega.bin --image native-replay-output/stage1-image.bin
+```
+
+압축 해제 도구는 해당 해시의 파일만 처리하고, 가상 메모리와 API 대체 함수로 분석 단계까지만 실행합니다. 실제 Windows 실행이나 외부 네트워크 요청은 하지 않습니다.

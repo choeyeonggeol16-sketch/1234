@@ -12,12 +12,13 @@ if(WIN32)
   if(MINGW)
     set(DINPUT_EXPORTS dinput.mingw.def)
   endif()
-  add_library(dinput SHARED src/nativestep_dll.cpp src/client_bootstrap.cpp
+  add_library(dinput SHARED src/nativestep_dll.cpp src/mega_client.cpp src/client_bootstrap.cpp
       src/dinput_proxy.cpp src/step_network.cpp ${DINPUT_EXPORTS})
   target_include_directories(dinput PRIVATE include)
-  target_link_libraries(dinput PRIVATE step_core user32 ws2_32 iphlpapi)
+  target_link_libraries(dinput PRIVATE step_core user32 ws2_32 iphlpapi advapi32)
   target_compile_definitions(dinput PRIVATE UNICODE _UNICODE)
   add_executable(win_host tests/win_host.cpp)
   target_link_libraries(win_host PRIVATE user32)
-  # This test clicks the OS mouse. Run it explicitly on an interactive desktop.
+  add_test(NAME unsupported_host COMMAND win_host)
+  set_tests_properties(unsupported_host PROPERTIES WORKING_DIRECTORY "$<TARGET_FILE_DIR:dinput>")
 endif()

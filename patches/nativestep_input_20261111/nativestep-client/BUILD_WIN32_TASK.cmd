@@ -108,7 +108,7 @@ cl %FLAGS% /c ..\..\src\step_core.cpp /Fostep_core.obj
 if errorlevel 1 exit /b 20
 
 echo [STEP 4/6] Build 32-bit dinput.dll (Mega.bin native DirectInput import)
-cl %FLAGS% /LD ..\..\src\nativestep_dll.cpp ..\..\src\client_bootstrap.cpp ..\..\src\dinput_proxy.cpp ..\..\src\step_network.cpp step_core.obj /link /OUT:dinput.dll /IMPLIB:dinput_stub.lib /DEF:..\..\dinput.def user32.lib ws2_32.lib iphlpapi.lib
+cl %FLAGS% /LD ..\..\src\mega_client.cpp ..\..\src\nativestep_dll.cpp ..\..\src\client_bootstrap.cpp ..\..\src\dinput_proxy.cpp ..\..\src\step_network.cpp step_core.obj /link /OUT:dinput.dll /IMPLIB:dinput_stub.lib /DEF:..\..\dinput.def user32.lib ws2_32.lib iphlpapi.lib advapi32.lib
 if errorlevel 1 exit /b 21
 
 echo [STEP 5/6] Build and run StepEngine unit test
@@ -117,12 +117,12 @@ if errorlevel 1 exit /b 23
 step_core_test.exe
 if errorlevel 1 exit /b 24
 
-echo [STEP 6/6] Build Windows physical-input test (interactive, compile only)
+echo [STEP 6/6] Build and run unsupported-executable guard test
 cl %FLAGS% ..\..\tests\win_host.cpp /link /OUT:nativestep_win_host.exe user32.lib
 if errorlevel 1 exit /b 25
-rem NativeStep now uses real SendInput. This harness moves the OS cursor and
-rem clicks its own test window. NEVER run it automatically during a build.
-echo [CHECK] Physical input test compiled. Run nativestep_win_host.exe manually if desired.
+nativestep_win_host.exe
+if errorlevel 1 exit /b 26
+echo [CHECK] Unsupported executable refused. No OS mouse injection is used.
 
 if not exist "dinput.dll" exit /b 27
 
