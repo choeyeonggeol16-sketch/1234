@@ -1,0 +1,445 @@
+diff --git a/nativestep-client/README_FIRST_TEST.md b/nativestep-client/README_FIRST_TEST.md
+index 0a0e83b..91c1d81 100644
+--- a/nativestep-client/README_FIRST_TEST.md
++++ b/nativestep-client/README_FIRST_TEST.md
+@@ -1,11 +1,11 @@
+-# Mega.bin native tile input V5 (x86)
++# Mega.bin native tile input V6 (x86)
+ 
+ Use the current Korean guide in the package root (`APPLY_FIX_KO.md`) or the repository patch README.
+ A prebuilt `dinput.dll` is in `client-ready`. Back up the existing client DLL and copy the new one beside Mega.bin.
+-Apply the three accompanying server Java files and rebuild/restart the server, then replace the DLL beside Mega.bin. Start/stop with item 49027. No cursor/feet calibration or INI changes are required.
++With the V5 sprite-cadence server already applied, replace only the DLL beside Mega.bin and restart the game. Start/stop with item 49027. No cursor/feet calibration or INI changes are required. Full source packages retain V5 server Java; older servers still require the V5 three-file server update.
+ 
+ This adapter is pinned to the uploaded Mega.bin SHA-256 and native code signatures. It computes the next actual world tile using the client's own routines, checks both coordinate roundtrips, and sends game window messages on the UI thread. OS mouse position/buttons are untouched. The existing DirectInput exports still forward to Windows normally.
+ 
+-V5 waits for the original walk-goal function's three readiness conditions before sending a click. Successful server steps use the WALK handler's sprite interval; failure recovery spacing remains 600ms. Offline replay passed 192 coordinate/goal cases and 7 readiness cases. Server cadence tests cover 7 sprite intervals and strict approval/recovery. These tests do not establish live Windows movement smoothness or camera tracking. See validation/mega-native-replay-v5.json for scope. Windows unsupported-host guard is compiled, but was not run on Linux.
++V6 checks 10 points in the same authorized tile to avoid other hover targets and item labels. It confirms authorization immediately before DOWN and logs distinct stop reasons, state and millisecond ticks. Offline replay covers 1,920 candidate roundtrips and 8 reproduced native label-conflict cases avoided with another point in the same tile. Object/rendering/actuator boundaries are fixture stubs; these results do not establish live Windows gameplay or camera tracking. See validation/mega-click-replay-v6.json and the Korean guide for limits. Windows unsupported-host guard is compiled, but was not run on Linux.
+ 
+ Windows/MSVC: BUILD_WIN32.bat. MinGW: BUILD_MINGW.sh. The supplied executable is not redistributed.
+diff --git a/nativestep-client/include/click_points.h b/nativestep-client/include/click_points.h
+new file mode 100644
+index 0000000..06f3cc5
+--- /dev/null
++++ b/nativestep-client/include/click_points.h
+@@ -0,0 +1,20 @@
++#pragma once
++#include "step_core.h"
++
++namespace nativestep {
++// All alternatives stay inside the same 48x24 logical tile. Native inverse
++// and resolution roundtrips still validate each individual click at runtime.
++constexpr Point kClickOffsets[] = {
++    {0,0}, {0,6}, {0,-6}, {12,0}, {-12,0}, {-8,4},
++    {8,-4}, {-8,-4}, {-16,0}, {0,-8}
++};
++constexpr unsigned kClickPointCount=sizeof(kClickOffsets)/sizeof(kClickOffsets[0]);
++struct LabelRect { int left,top,right,bottom; };
++inline bool label_contains(LabelRect box,int name_length,Point scroll,Point pixel) noexcept {
++    // Same signed division and half-open bounds as native 0x472428..0x472493.
++    const int offset=(box.right-box.left-name_length*6)/2;
++    box.left+=offset-scroll.x;box.right+=offset-scroll.x;
++    box.top-=3+scroll.y;box.bottom-=3+scroll.y;
++    return pixel.x>=box.left && pixel.x<box.right && pixel.y>=box.top && pixel.y<box.bottom;
++}
++}
+diff --git a/nativestep-client/include/mega_client.h b/nativestep-client/include/mega_client.h
+index f8e8102..90ca089 100644
+--- a/nativestep-client/include/mega_client.h
++++ b/nativestep-client/include/mega_client.h
+@@ -4,12 +4,14 @@
+ 
+ struct MegaClick {
+     nativestep::Point client{}, logical{}, world{};
+-    int heading = -1, mode = -1;
++    int heading = -1, mode = -1, candidate = 0;
+ };
+ // Supports only the uploaded Mega.bin SHA-256 and matching unpacked code.
+ bool MegaInitialize() noexcept;
+-bool MegaPlanClick(HWND hwnd, int heading, MegaClick& click) noexcept;
++bool MegaPlanClick(HWND hwnd, int heading, MegaClick& click, unsigned candidate = 0) noexcept;
+ bool MegaMouseDownReady() noexcept;
++bool MegaClickClear(const MegaClick& click) noexcept;
++void MegaLogState(const MegaClick& click) noexcept;
+ bool MegaGoalMatches(const MegaClick& click) noexcept;
+ bool MegaStepApplied(const MegaClick& click) noexcept;
+ void MegaCancelOwnedMovement() noexcept;
+diff --git a/nativestep-client/src/mega_client.cpp b/nativestep-client/src/mega_client.cpp
+index 9fbf178..530b779 100644
+--- a/nativestep-client/src/mega_client.cpp
++++ b/nativestep-client/src/mega_client.cpp
+@@ -8,6 +8,8 @@
+ #include <wincrypt.h>
+ #include <cstdint>
+ #include <cstring>
++#include <cstdio>
++#include "click_points.h"
+ #include "mega_client.h"
+ #include "step_network.h"
+ 
+@@ -60,12 +62,15 @@ bool code_matches() noexcept {
+     static constexpr unsigned char cancel[]={0x55,0x8b,0xec,0x83,0xec,0x10,0x53,0x8d,0x45,0xf0,0x33,0xdb,0x50,0x8d,0x4d,0xf8};
+     static constexpr unsigned char clock[]={0x55,0x8b,0xec,0x83,0xec,0x08,0xa1,0x10,0x3f,0x9b,0x00,0x85,0xc0,0x74,0x37,0x8d};
+     static constexpr unsigned char busy[]={0xa1,0x90,0x09,0x9b,0x00,0x8b,0x15,0x94,0x09,0x9b,0x00,0x35,0x21,0x79,0x01,0xc0};
++    static constexpr unsigned char kind[]={0x53,0x56,0x8b,0xf1,0x8b,0x0d,0xbc,0x09,0x7c,0x00,0x0f,0xbf,0x46,0x18,0x8a,0x1c};
++    static constexpr unsigned char label[]={0x55,0x8b,0xec,0x83,0xec,0x14,0xa1,0x54,0x63,0x8d,0x00,0x53,0x8b,0xd9,0x56,0x3b};
+     static constexpr unsigned char dispatch[]={0x55,0x8b,0xec,0x83,0xec,0x40,0x8b,0x45,0x0c,0x53,0x56,0x8b,0xf1,0x8b,0x4d,0x08};
+     return reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))==kBase &&
+         signature(0x45e2b0,scale,sizeof(scale)) && signature(0x49f4c0,project,sizeof(project)) &&
+         signature(0x49f590,project,sizeof(project)) && signature(0x49f810,step,sizeof(step)) &&
+         signature(0x4cc830,cancel,sizeof(cancel)) && signature(0x4bf790,clock,sizeof(clock)) &&
+-        signature(0x45e370,dispatch,sizeof(dispatch)) && signature(0x45cbd0,busy,sizeof(busy));
++        signature(0x45e370,dispatch,sizeof(dispatch)) && signature(0x45cbd0,busy,sizeof(busy)) &&
++        signature(0x4d31a0,kind,sizeof(kind)) && signature(0x4d13a0,label,sizeof(label));
+ }
+ using Project = Point* (__thiscall *)(const Point*,Point*);
+ using Step = Point* (__thiscall *)(const Point*,Point*,int);
+@@ -86,7 +91,8 @@ bool MegaInitialize() noexcept {
+     return supported;
+ }
+ 
+-bool MegaPlanClick(HWND hwnd,int heading,MegaClick& click) noexcept {
++bool MegaPlanClick(HWND hwnd,int heading,MegaClick& click,unsigned candidate) noexcept {
++    if(candidate>=nativestep::kClickPointCount) return false;
+     if (heading<0 || heading>7 || !world_active(hwnd)) return fail("native plan rejected: game world or dispatcher inactive");
+     DWORD owner=GetWindowThreadProcessId(hwnd,nullptr);
+     if (owner!=GetCurrentThreadId()) return fail("native plan rejected: wrong UI thread");
+@@ -102,7 +108,8 @@ bool MegaPlanClick(HWND hwnd,int heading,MegaClick& click) noexcept {
+     reinterpret_cast<Project>(0x49f4c0)(&next,&logical);
+     // Native projection returns the diamond's left vertex. Click its 48x24
+     // cell interior; the original inverse routine below verifies the tile.
+-    logical.x+=24;logical.y+=12;
++    logical.x+=24+nativestep::kClickOffsets[candidate].x;
++    logical.y+=12+nativestep::kClickOffsets[candidate].y;
+     if(logical.x<0 || logical.x>=640 || logical.y<0 || logical.y>=380) return fail("native plan rejected: next tile outside game viewport");
+     reinterpret_cast<Project>(0x49f590)(&logical,&roundtrip);
+     if ((roundtrip.x&~1)!=next.x || roundtrip.y!=next.y) return fail("native plan rejected: world-screen roundtrip mismatch");
+@@ -125,14 +132,15 @@ bool MegaPlanClick(HWND hwnd,int heading,MegaClick& click) noexcept {
+     using Scale=Point* (__thiscall *)(Point*,int,int);
+     reinterpret_cast<Scale>(0x45e2b0)(&mapped,raw.x,raw.y);
+     if(mapped.x!=logical.x || mapped.y!=logical.y) return fail("native plan rejected: resolution roundtrip mismatch");
+-    click={raw,logical,next,heading,mode}; return true;
++    click={raw,logical,next,heading,mode,static_cast<int>(candidate)}; return true;
+ }
+ 
+ bool MegaMouseDownReady() noexcept {
+-    uint32_t last=0,interaction=0;
+-    unsigned char input_blocked=0;
++    uint32_t last=0,interaction=0,callback=0;
++    unsigned char input_blocked=0,forced_action=0;
+     if(!supported || !read(0x7c1f44,last) || !read(0x7c260c,input_blocked) ||
+-       !read(0x8d6228,interaction) || input_blocked || interaction) return false;
++       !read(0x8d6228,interaction) || !read(0x8d621c,callback) ||
++       !read(0x7c2616,forced_action) || input_blocked || interaction || callback || forced_action) return false;
+     // These are the original walk-goal function's early-return conditions.
+     // Wait for the client to accept a walk click instead of clicking while busy.
+     using BusyQuery=bool (__thiscall *)(const void*);
+@@ -157,3 +165,54 @@ void MegaCancelOwnedMovement() noexcept {
+     if(supported && read(0x9b4214,player) && player)
+         reinterpret_cast<void (__cdecl *)()>(0x4cc830)();
+ }
++
++// Called after a non-button MOVE, before committing a DOWN. It never chooses
++// another world tile, presses a button, or changes the client's selected goal.
++bool MegaClickClear(const MegaClick& click) noexcept {
++    uintptr_t player=0,hover=0,objects=0;
++    unsigned char labels=0,names=0,randomized=0,special=0;
++    int count=0; Point scroll{};
++    if(!supported || !read(0x9b4214,player) || !read(0x8d6354,hover) ||
++       (hover && hover!=player) || !read(0x7c295b,randomized) || randomized ||
++       !read(0x7c2945,special) || (special && hover) || !read(0x7c2979,labels) ||
++       !read(0x79a3b0,names)) return false;
++    if(!labels && !names) return true;
++    if(!read(0x9b4280,count) || count<0 || count>4096 ||
++       !read(0x9b4288,objects) || !read(0x8d6368,scroll)) return false;
++    using Kind=unsigned char (__thiscall *)(const void*);
++    using Bounds=nativestep::LabelRect* (__thiscall *)(const void*,nativestep::LabelRect*,int);
++    for(int i=0;i<count;++i) {
++        uintptr_t object=0,name=0;unsigned char hidden=0;
++        if(!read(objects+i*sizeof(uintptr_t),object) || !object) return false;
++        if(!read(object+0x60,name) || !name) continue;
++        if(reinterpret_cast<Kind>(0x4d31a0)(reinterpret_cast<const void*>(object))!=9) continue;
++        if(!read(object+0x26,hidden)) return false;
++        if(hidden) continue;
++        int length=0;
++        for(;length<256;++length) {char c=0;if(!read(name+length,c)) return false;if(!c) break;}
++        if(length==256) return false;
++        nativestep::LabelRect box{};
++        // The native label scanner itself installs each object as the hover
++        // context for this bounds call, then restores it (0x4723cb..0x4724c5).
++        // Bounds is synchronous and does not dispatch UI messages.
++        auto* slot=reinterpret_cast<uintptr_t*>(0x8d6354);
++        *slot=object;
++        reinterpret_cast<Bounds>(0x4d13a0)(reinterpret_cast<const void*>(object),&box,1);
++        *slot=hover;
++        if(nativestep::label_contains(box,length,scroll,click.logical)) return false;
++    }
++    return true;
++}
++
++void MegaLogState(const MegaClick& click) noexcept {
++    uintptr_t player=0,hover=0,callback=0,interaction=0;
++    Point actual{},goal{},hover_world{};unsigned char blocked=0,pending=0;
++    read(0x9b4214,player);if(player) read(player+0x34,actual);
++    read(0x7c28e8,goal);read(0x8d6354,hover);if(hover) read(hover+0x34,hover_world);
++    read(0x8d621c,callback);read(0x8d6228,interaction);read(0x7c260c,blocked);read(0x7c28e3,pending);
++    char line[320]{};
++    std::snprintf(line,sizeof(line),"native state direction=%d candidate=%d expected=(%d,%d) goal=(%d,%d) player=(%d,%d) hover=%d hover-world=(%d,%d) callback=%d interaction=%d blocked=%u pending=%u",
++        click.heading,click.candidate,click.world.x,click.world.y,goal.x,goal.y,actual.x,actual.y,
++        hover!=0,hover_world.x,hover_world.y,callback!=0,interaction!=0,blocked,pending);
++    NativeStep_LogInput(line,0);
++}
+diff --git a/nativestep-client/src/nativestep_dll.cpp b/nativestep-client/src/nativestep_dll.cpp
+index f2e9a13..ac183af 100644
+--- a/nativestep-client/src/nativestep_dll.cpp
++++ b/nativestep-client/src/nativestep_dll.cpp
+@@ -11,6 +11,7 @@
+ #include "step_core.h"
+ #include "step_network.h"
+ #include "mega_client.h"
++#include "click_points.h"
+ 
+ namespace {
+ constexpr wchar_t kControlName[]=L"ClientInput.WalkControl.1";
+@@ -22,6 +23,7 @@ UINT_PTR timer_id=0;
+ nativestep::StepEngine engine;
+ bool staged=false, pressed=false;
+ int staged_heading=-1;
++bool waiting_logged=false;
+ MegaClick active_click{};
+ unsigned input_logs=0;
+ 
+@@ -34,8 +36,8 @@ bool physical_click() noexcept {return (GetAsyncKeyState(VK_LBUTTON)&0x8000)!=0;
+ void log_click(const char* stage,const MegaClick& click) noexcept {
+     if(input_logs++>=128) return;
+     char text[180]{};
+-    std::snprintf(text,sizeof(text),"%s direction=%d client=(%d,%d) logical=(%d,%d) mode=%d",
+-        stage,click.heading,click.client.x,click.client.y,click.logical.x,click.logical.y,click.mode);
++    std::snprintf(text,sizeof(text),"%s direction=%d client=(%d,%d) logical=(%d,%d) mode=%d candidate=%d",
++        stage,click.heading,click.client.x,click.client.y,click.logical.x,click.logical.y,click.mode,click.candidate);
+     NativeStep_LogInput(text,0);
+ }
+ void release_input() noexcept {
+@@ -49,7 +51,9 @@ void release_input() noexcept {
+     if(MegaGoalMatches(active_click)) MegaCancelOwnedMovement();
+     log_click("native input released and target cancelled",active_click);
+ }
+-void stop_failed() noexcept {
++void stop_failed(const char* reason) noexcept {
++    NativeStep_LogInput(reason,0);
++    MegaLogState(active_click);
+     const auto now=GetTickCount64();
+     engine.submit(-4,now);(void)engine.tick(now,false);
+     release_input();NativeStep_RequestManualStop();
+@@ -61,34 +65,50 @@ bool apply(const nativestep::Action& action) noexcept {
+     if(action.type!=nativestep::Action::move_and_press || staged || pressed) return false;
+     MegaClick check{};
+     if(!foreground(game_window) || !MegaPlanClick(game_window,action.heading,check)) return false;
+-    staged=true;staged_heading=action.heading;
++    staged=true;staged_heading=action.heading;waiting_logged=false;
+     log_click("native next-tile plan verified",check);
+     return true;
+ }
+ void finish_staged() noexcept {
+     if(!staged || !MegaMouseDownReady()) return;
+-    MegaClick click{};
+-    // Re-read player and camera immediately before the native window events.
+-    if(!foreground(game_window) || !MegaPlanClick(game_window,staged_heading,click)) {stop_failed();return;}
+-    staged=false;staged_heading=-1;active_click=click;
+-    SendMessageW(game_window,WM_MOUSEMOVE,0,MAKELPARAM(click.client.x,click.client.y));
+-    pressed=true;
++    MegaClick click{};bool clear=false;
++    if(!foreground(game_window)) {stop_failed("native stop: game lost foreground before click");return;}
++    // Try points inside the SAME authorized tile, checking each native inverse.
++    // MOVE updates the client's hover context; no DOWN is sent during the search.
++    for(unsigned i=0;i<nativestep::kClickPointCount;++i) {
++        if(!MegaPlanClick(game_window,staged_heading,click,i)) continue;
++        SendMessageW(game_window,WM_MOUSEMOVE,0,MAKELPARAM(click.client.x,click.client.y));
++        if(MegaClickClear(click)) {clear=true;break;}
++    }
++    if(!clear || !MegaMouseDownReady()) {
++        if(!waiting_logged) {
++            NativeStep_LogInput("native click deferred: tile points obstructed or client action busy",0);
++            MegaLogState(click);waiting_logged=true;
++        }
++        return;
++    }
++    if(physical_click()) {stop_failed("native stop: physical mouse button pressed before click");return;}
++    // Validate the authorization BEFORE delivering a DOWN. V5 checked it
++    // afterward and merged lease expiry with a different-target error.
++    if(!engine.confirm_press(GetTickCount64())) {
++        NativeStep_LogInput("native click skipped: authorization expired or cancelled before press",0);
++        return;
++    }
++    staged=false;staged_heading=-1;active_click=click;pressed=true;
+     SendMessageW(game_window,WM_LBUTTONDOWN,MK_LBUTTON,MAKELPARAM(click.client.x,click.client.y));
+-    if(!engine.confirm_press(GetTickCount64()) ||
+-       (!MegaGoalMatches(click) && !MegaStepApplied(click))) {
+-        NativeStep_LogInput("native click did not select the verified next tile",click.heading);
+-        stop_failed();return;
++    if(!MegaGoalMatches(click) && !MegaStepApplied(click)) {
++        stop_failed("native stop: click selected a different goal");return;
+     }
+     log_click("native next-tile input committed",click);
+     if(MegaStepApplied(active_click)) release_input();
+ }
+ void tick() noexcept {
+     if(!on_client_thread()) return;
+-    if(engine.is_enabled() && !foreground(game_window)) {stop_failed();return;}
++    if(engine.is_enabled() && !foreground(game_window)) {stop_failed("native stop: game lost foreground");return;}
+     const bool was_manual=engine.has_manual_override();
+     const auto action=engine.tick(GetTickCount64(),physical_click());
+     if(!was_manual && engine.has_manual_override()) NativeStep_RequestManualStop();
+-    if(!apply(action)) {stop_failed();return;}
++    if(!apply(action)) {stop_failed("native stop: action could not be staged");return;}
+     if(staged) finish_staged();
+     // End the local hold as soon as this one tile was applied. The logical
+     // StepEngine still waits for server CANCEL before accepting another offer.
+@@ -127,7 +147,7 @@ __declspec(dllexport) int __cdecl NativeStep_Start(HWND hwnd) {
+     engine=nativestep::StepEngine{};staged=pressed=false;input_logs=0;
+     game_window=hwnd;game_thread=thread;timer_id=timer;
+     network_window.store(hwnd,std::memory_order_release);
+-    NativeStep_LogInput("Mega native-tile-input-v5-20261111 initialized; OS cursor untouched",0);
++    NativeStep_LogInput("Mega native-tile-input-v6-20261111 initialized; OS cursor untouched",0);
+     NativeStep_NetworkStart(nullptr);return 1;
+ }
+ __declspec(dllexport) int __cdecl NativeStep_TryConsumeNotice(int type,const void* bytes,int length) {
+diff --git a/nativestep-client/src/step_network.cpp b/nativestep-client/src/step_network.cpp
+index bace101..548b320 100644
+--- a/nativestep-client/src/step_network.cpp
++++ b/nativestep-client/src/step_network.cpp
+@@ -36,7 +36,8 @@ void log_status(const char* what, int code = 0) {
+     strcpy_s(slash + 1, MAX_PATH - (slash + 1 - path), "client_io.log");
+     FILE* f = nullptr;
+     if (fopen_s(&f, path, "a") == 0 && f) {
+-        fprintf(f, "pid=%lu %s code=%d\n", GetCurrentProcessId(), what, code);
++        fprintf(f, "pid=%lu tick=%llu %s code=%d\n", GetCurrentProcessId(),
++                static_cast<unsigned long long>(GetTickCount64()), what, code);
+         fclose(f);
+     }
+ }
+diff --git a/nativestep-client/tests/mega_click_replay.py b/nativestep-client/tests/mega_click_replay.py
+new file mode 100644
+index 0000000..0faad67
+--- /dev/null
++++ b/nativestep-client/tests/mega_click_replay.py
+@@ -0,0 +1,88 @@
++"""Replay real native DOWN routing, including a label stealing a ground click.
++
++This is a controlled CPU fixture, not Windows message delivery or live gameplay.
++Object classification, rendered bounds and the final movement actuator are
++fixture boundaries. The actual native goal selector and DOWN router execute.
++"""
++from pathlib import Path
++import contextlib,io,json,re,runpy,struct
++from unicorn import UC_HOOK_CODE
++from unicorn.x86_const import *
++
++capture=io.StringIO()
++with contextlib.redirect_stdout(capture):
++    state=runpy.run_path(str(Path(__file__).with_name('mega_native_replay.py')))
++result=json.loads(capture.getvalue())
++u=state['u'];call=state['call'];w=state['w'];point=state['point'];r=state['r']
++offset_text=Path(__file__).parents[1].joinpath('include/click_points.h').read_text().split('kClickOffsets[] = {',1)[1].split('};',1)[0]
++offsets=[tuple(map(int,p)) for p in re.findall(r'\{(-?\d+),(-?\d+)\}',offset_text)]
++assert len(offsets)==10
++actor=state['actor'];source=state['source'];target=state['target'];screen=state['screen'];world=state['world']
++current=(65536,32768)
++roundtrips=0
++for camera_dx,camera_dy in [(-6,18),(10,16),(6,21)]:
++    point(source,current);point(actor+0x34,current)
++    point(0x8d6420,(current[0]-camera_dx,current[1]-camera_dy))
++    for mode in range(8):
++        w(0x796488,mode)
++        for heading in range(8):
++            call(0x49f810,source,(target,heading));expected=point(target)
++            call(0x49f4c0,target,(screen,));left=point(screen)
++            for dx,dy in offsets:
++                pixel=(left[0]+24+dx,left[1]+12+dy)
++                for cx,cy in [(0,0),(-2,-2),(2,-2),(-2,2),(2,2)]:
++                    point(screen,(pixel[0]+cx,pixel[1]+cy));call(0x49f590,screen,(world,));actual=point(world)
++                    assert (actual[0]&~1,actual[1])==expected,(camera_dx,mode,heading,dx,dy)
++                x,y=pixel
++                raw=[(x//2,y//2),(x,y),((x*3+1)//2,(y*3+1)//2),(x*2,y*2)][mode%4]
++                call(0x45e2b0,state['raw_result'],raw)
++                assert point(state['raw_result'])==pixel
++                roundtrips+=1
++
++def ret(eax=0,nargs=0):
++    sp=u.reg_read(UC_X86_REG_ESP)
++    u.reg_write(UC_X86_REG_EAX,eax)
++    u.reg_write(UC_X86_REG_EIP,r(sp));u.reg_write(UC_X86_REG_ESP,sp+4+nargs*4)
++label_box=(0,0,0,0)
++def fixture(u,pc,size,_):
++    if pc==0x4d31a0:ret(9) # Item classification boundary.
++    elif pc==0x4d13a0:
++        sp=u.reg_read(UC_X86_REG_ESP);out=r(sp+4)
++        u.mem_write(out,struct.pack('<iiii',*label_box));ret(out,2)
++    else:ret() # Non-action state, interaction predicate, final movement actuator.
++for pc in (0x4d31a0,0x4d13a0,0x4d0a60,0x4d3440,0x4cc8a0):
++    u.hook_add(UC_HOOK_CODE,fixture,begin=pc,end=pc)
++
++point(actor+0x34,current);point(source,current)
++point(0x8d6420,(current[0]+6,current[1]-18));w(0x796488,2)
++for address in (0x8d621c,0x8d6228,0x8d6354,0x8d634c,0x8d6368,0x8d636c):w(address,0)
++for address in (0x7c260c,0x7c2616,0x7c2945,0x7c295b,0x9b41e9):u.mem_write(address,b'\x00')
++w(0x10003000,0x12345678) # Actual native busy query returns ready.
++objects=0x10004000;item=0x10005000;name=0x10005800
++w(objects,item);w(item+0x60,name);u.mem_write(name,b'item\x00')
++point(item+0x34,(current[0]+8,current[1]+4))
++w(0x9b4280,1);w(0x9b4288,objects)
++u.mem_write(0x7c2979,b'\x01');u.mem_write(0x79a3b0,b'\x00')
++reproduced=0;avoided=0
++for heading in range(8):
++    call(0x49f810,source,(target,heading));expected=point(target)
++    call(0x49f4c0,target,(screen,));left=point(screen);center=(left[0]+24,left[1]+12)
++    # Native item-name hit box covers the old fixed center point.
++    label_box=(center[0]-24,center[1]+1,center[0]+24,center[1]+5)
++    w(0x8d6354,0);call(0x472070,0,center)
++    assert point(0x7c28e8)!=expected,(heading,'expected old center to select label')
++    reproduced+=1
++    shift=(label_box[2]-label_box[0]-4*6)//2
++    bounds=(label_box[0]+shift,label_box[1]-3,label_box[2]+shift,label_box[3]-3)
++    clear=[(center[0]+dx,center[1]+dy) for dx,dy in offsets
++           if not(bounds[0]<=center[0]+dx<bounds[2] and bounds[1]<=center[1]+dy<bounds[3])]
++    assert clear
++    w(0x8d6354,0);call(0x472070,0,clear[0])
++    assert point(0x7c28e8)==expected,(heading,clear[0],point(0x7c28e8),expected)
++    assert r(0x8d6354)==0,'native label hover restoration'
++    avoided+=1
++result.update(candidate_roundtrips=roundtrips,old_center_label_failures_reproduced=reproduced,
++              same_tile_label_conflicts_avoided=avoided,
++              extra_fixture_boundaries=['object kind','rendered label bounds','non-action query','interaction predicate','final movement actuator'],
++              windows_message_delivery_tested=False,live_game_movement_or_camera_tested=False)
++print(json.dumps(result,indent=2))
+diff --git a/nativestep-client/tests/step_core_test.cpp b/nativestep-client/tests/step_core_test.cpp
+index de70161..d9935cb 100644
+--- a/nativestep-client/tests/step_core_test.cpp
++++ b/nativestep-client/tests/step_core_test.cpp
+@@ -1,4 +1,5 @@
+ #include "step_core.h"
++#include "click_points.h"
+ #ifdef NDEBUG
+ #undef NDEBUG
+ #endif
+@@ -12,6 +13,20 @@ Action drive(StepEngine& e, uint64_t now, bool manual) {
+     return result;
+ }
+ int main() {
++    for(unsigned i=0;i<kClickPointCount;++i) {
++        const Point p=kClickOffsets[i];
++        // Include the +/-2px verification corners, strictly inside the tile.
++        const int ax=p.x<0 ? -p.x:p.x, ay=p.y<0 ? -p.y:p.y;
++        assert(ax+2*(ay+2)+2<24);
++        assert((p.x&1)==0 && (p.y&1)==0);
++        for(unsigned j=0;j<i;++j)
++            assert(p.x!=kClickOffsets[j].x || p.y!=kClickOffsets[j].y);
++    }
++    const LabelRect label{0,0,20,10}; // Negative centering offset rounds toward zero.
++    assert(label_contains(label,4,{0,0},{-2,-3}));
++    assert(!label_contains(label,4,{0,0},{18,0}));
++    assert(!label_contains(label,4,{0,0},{0,7}));
++    assert(label_contains(label,4,{10,20},{-12,-23}));
+     // Explicit expected screen sectors. These geometry tests are not live
+     // validation of all Mega.bin headings. User evidence: old due-left h7
+     // generated server h6, so h7 must no longer default to due left.

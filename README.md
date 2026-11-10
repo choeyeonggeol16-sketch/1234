@@ -1,3 +1,15 @@
+## 2026-11-11 — 같은 타일의 클릭 대상 확인 V6 (V5 서버 유지)
+
+[**V6 DLL 다운로드**](downloads/L1J_49027_ClickTarget_V6_Client_DLL_20261111.zip) · [**전체 소스·DLL**](downloads/L1J_49027_ClickTarget_V6_FULL_SRC_20261111.zip) · [적용·검증 안내](patches/nativestep_hover_20261111/README.md)
+
+사용자 V5 로그의 중단 문구는 승인 확인 실패와 다른 목표 선택을 함께 표시했습니다. 원본 DOWN 함수에서 아이템 이름이 바닥 클릭을 가져가는 경우를 재현했습니다. V6는 승인된 같은 타일 안의 10개 지점에서 물체/이름 영역을 확인하고, DOWN 직전에 승인 유효성을 검사합니다. 종료 이유·목표 상태·밀리초 로그도 추가했습니다.
+
+**현재 V5 서버는 유지하고 게임 종료 후 dinput.dll만 교체합니다.** DLL 표시는 `native-tile-input-v6-20261111`이며 서버 표시는 `step-v5 sprite-cadence`가 맞습니다. F9 보정은 필요 없습니다.
+
+원본 후보 좌표 1,920개, 원본 이름 충돌 8개 재현/회피, 기존 상태 검사와 PE32 빌드를 통과했습니다. **이 검사는 통제된 원본 함수 재현이며, 사용자 중단의 모든 원인이나 Windows 실게임에서 V6의 해결 여부를 확정하지 않습니다.** 원본 실행 파일은 배포하지 않습니다.
+
+---
+
 ## 2026-11-11 — 49027 걷기 간격·입력 대기 V5
 
 [**V5 서버 패치·DLL**](downloads/L1J_49027_SpriteCadence_V5_PATCH_DLL_20261111.zip) · [**V5 전체 소스·DLL**](downloads/L1J_49027_SpriteCadence_V5_FULL_SRC_20261111.zip) · [적용·검증 안내](patches/nativestep_cadence_20261111/README.md)
