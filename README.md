@@ -1,3 +1,13 @@
+## 2026-11-11 — 49027 입력 V2: 방향표·클릭 직전 커서 재정렬
+
+[**V2 전체 소스·빌드된 DLL**](downloads/L1J_49027_ScreenHeading_V2_FULL_SRC_20261111.zip) · [**V2 DLL만 받기**](downloads/L1J_49027_ScreenHeading_V2_Client_DLL_20261111.zip) · [적용·검증 안내](patches/nativestep_input_20261111/README.md)
+
+사용자 로그의 `7번 요청 → 실제 6번`과 `cursor changed before click` 중단을 바탕으로 수정했습니다. 기본 7번 클릭을 왼쪽 위로 바꾸고, 마지막 좌표 이동과 누름을 한 Windows 입력 묶음으로 보냅니다. 기존 발 위치 보정 파일은 재사용하며, 서버 Java와 방향 검사는 유지합니다. 새 DLL 로그 표시는 `screen-heading-v2-20261111`입니다.
+
+C++ 코어 회귀(10,000회 반복·ASan/UBSan), 화면 방향표 및 가상 데스크톱 좌표 변환, PE32 빌드·export 검사를 통과했습니다. **전체 8방향과 실제 게임 이동·카메라 추적은 아직 미검증입니다.**
+
+---
+
 ## 2026-11-11 — 49027 자동사냥 입력 준비·취소 및 발 위치 보정
 
 [전체 소스·빌드된 DLL ZIP](downloads/L1J_49027_ConfirmedInput_AnchorCalibration_FULL_SRC_20261111.zip) · [DLL만 받기](downloads/L1J_49027_Client_DLL_20261111.zip) · [적용·검증 안내](patches/nativestep_input_20261111/README.md)

@@ -1,9 +1,14 @@
 # NativeStep - Mega.bin automatic load test (32-bit)
 
-**2026-11-11 confirmed-press/viewport-calibration revision:** Follow
+**2026-11-11 screen-heading V2 revision:** Follow
 `../APPLY_FIX_KO.md` first. A prebuilt PE32 DLL is in `../client-ready`.
 With hunting OFF, point at the player's ground/feet and press Ctrl+Alt+F9.
 This calibration is now required before input; recalibrate after resizing.
+V2 defaults to screen-compass headings (7=upper-left) and commits the final
+absolute cursor move plus button-down in one SendInput batch. Existing anchor
+settings can be retained. Look for `screen-heading-v2-20261111` in client_io.log.
+Live user logs showed the old due-left h7 click arriving as server h6; the
+remaining headings and camera tracking still require actual game validation.
 The sections below describe earlier revisions and do not override that guide.
 
 This package fixes a confirmed loader mismatch. The provided import scan shows

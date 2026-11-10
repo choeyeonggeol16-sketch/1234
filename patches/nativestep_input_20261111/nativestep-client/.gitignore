@@ -1,0 +1,5 @@
+build-win32/
+build/
+BUILD_WIN32.log
+NativeStep.ini
+client_io.log

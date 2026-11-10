@@ -21,31 +21,42 @@
  endif()
 --- a/nativestep-client/README_FIRST_TEST.md
 +++ b/nativestep-client/README_FIRST_TEST.md
-@@ -1,4 +1,10 @@
+@@ -1,4 +1,15 @@
  # NativeStep - Mega.bin automatic load test (32-bit)
 +
-+**2026-11-11 confirmed-press/viewport-calibration revision:** Follow
++**2026-11-11 screen-heading V2 revision:** Follow
 +`../APPLY_FIX_KO.md` first. A prebuilt PE32 DLL is in `../client-ready`.
 +With hunting OFF, point at the player's ground/feet and press Ctrl+Alt+F9.
 +This calibration is now required before input; recalibrate after resizing.
++V2 defaults to screen-compass headings (7=upper-left) and commits the final
++absolute cursor move plus button-down in one SendInput batch. Existing anchor
++settings can be retained. Look for `screen-heading-v2-20261111` in client_io.log.
++Live user logs showed the old due-left h7 click arriving as server h6; the
++remaining headings and camera tracking still require actual game validation.
 +The sections below describe earlier revisions and do not override that guide.
  
  This package fixes a confirmed loader mismatch. The provided import scan shows
  `Mega.bin` loads **dinput.dll**, NOT dinput8.dll. The former dinput8.dll could
 --- a/nativestep-client/include/step_core.h
 +++ b/nativestep-client/include/step_core.h
-@@ -14,6 +14,10 @@
+@@ -13,7 +13,16 @@
+ int parse_control(const char* text, size_t length) noexcept;
  
  struct Point { int x, y; };
++enum class DirectionLayout { screen_compass = 0, world_isometric = 1 };
  Point direction_point(int heading, int width, int height) noexcept;
 +// Anchor is the character's ground position, measured in CLIENT coordinates.
 +// Tile dimensions may be changed for a differently scaled client.
 +Point direction_point(int heading, int width, int height, Point anchor,
-+                      int half_tile_width, int half_tile_height) noexcept;
++                      int half_tile_width, int half_tile_height,
++                      DirectionLayout layout = DirectionLayout::screen_compass) noexcept;
++// Convert a virtual-desktop pixel to SendInput's 0..65535 absolute coordinates.
++// Invalid/off-desktop targets return {-1,-1}; negative monitor origins are valid.
++Point absolute_mouse_point(Point pixel, Point desktop_origin, int width, int height) noexcept;
  
  struct Action {
      enum Type : uint8_t { none, move_and_press, move_held, release } type = none;
-@@ -27,6 +31,9 @@
+@@ -27,6 +36,9 @@
  public:
      void submit(int command, uint64_t now_ms) noexcept;
      Action tick(uint64_t now_ms, bool user_left_button_down) noexcept;
@@ -55,7 +66,7 @@
      void shutdown() noexcept;
      bool has_manual_override() const noexcept { return manual_override_; }
      bool is_enabled() const noexcept { return enabled_; }
-@@ -38,6 +45,7 @@
+@@ -38,6 +50,7 @@
      uint64_t revision_ = 0;
      uint64_t applied_revision_ = 0;
      bool held_ = false;
@@ -105,7 +116,7 @@
  #include "step_core.h"
  #include "step_network.h"
  
-@@ -40,8 +45,63 @@
+@@ -40,8 +45,75 @@
  bool staged_press = false;
  int staged_heading = -1;
  ULONGLONG staged_at = 0;
@@ -119,6 +130,7 @@
 +    nativestep::Point anchor{-1, -1};
 +    int width = 0, height = 0;
 +    int tile_width = 36, tile_height = 23;
++    nativestep::DirectionLayout layout = nativestep::DirectionLayout::screen_compass;
 +} calibration;
 +bool game_is_foreground(HWND hwnd) noexcept;
 +
@@ -138,6 +150,15 @@
 +    calibration.height = read(L"ClientHeight", 0);
 +    calibration.tile_width = read(L"HalfTileWidth", 36);
 +    calibration.tile_height = read(L"HalfTileHeight", 23);
++    calibration.layout = static_cast<nativestep::DirectionLayout>(read(L"HeadingLayout", 0));
++}
++
++void log_geometry() noexcept {
++    char text[192]{};
++    std::snprintf(text, sizeof(text), "input geometry client=%dx%d anchor=(%d,%d) tile=%dx%d layout=%d",
++        calibration.width, calibration.height, calibration.anchor.x, calibration.anchor.y,
++        calibration.tile_width, calibration.tile_height, static_cast<int>(calibration.layout));
++    NativeStep_LogInput(text, 0);
 +}
 +
 +bool calibrate_anchor(HWND hwnd) noexcept {
@@ -148,7 +169,7 @@
 +    // All eight next tiles must remain in the client area.
 +    for (int h = 0; h < 8; ++h)
 +        if (nativestep::direction_point(h, r.right, r.bottom, {p.x, p.y},
-+            calibration.tile_width, calibration.tile_height).x < 0) return false;
++            calibration.tile_width, calibration.tile_height, calibration.layout).x < 0) return false;
 +    calibration.anchor = {p.x, p.y};
 +    calibration.width = r.right;
 +    calibration.height = r.bottom;
@@ -161,15 +182,17 @@
 +        write(L"AnchorX", p.x) && write(L"AnchorY", p.y) &&
 +        write(L"ClientWidth", r.right) && write(L"ClientHeight", r.bottom) &&
 +        write(L"HalfTileWidth", calibration.tile_width) &&
-+        write(L"HalfTileHeight", calibration.tile_height);
++        write(L"HalfTileHeight", calibration.tile_height) &&
++        write(L"HeadingLayout", static_cast<int>(calibration.layout));
 +    NativeStep_LogInput(saved ? "player ground anchor calibrated and saved" :
 +                                   "player ground anchor calibrated for this session only", 0);
++    log_geometry();
 +    return true;
 +}
  
  void signal_named_event(const wchar_t* label) noexcept {
      wchar_t name[120]{};
-@@ -97,8 +157,18 @@
+@@ -97,8 +169,18 @@
      if (!game_is_foreground(hwnd) || synthetic_left_down || staged_press) return false;
      RECT r{};
      if (!GetClientRect(hwnd, &r)) return false;
@@ -182,7 +205,7 @@
 +        return false;
 +    }
 +    const auto point = nativestep::direction_point(heading, r.right-r.left, r.bottom-r.top,
-+        calibration.anchor, calibration.tile_width, calibration.tile_height);
++        calibration.anchor, calibration.tile_width, calibration.tile_height, calibration.layout);
 +    if (point.x < 0 || point.y < 0) {
 +        NativeStep_LogInput("movement blocked: anchor or tile geometry outside viewport", heading);
 +        return false;
@@ -190,7 +213,7 @@
      POINT screen{point.x, point.y};
      if (!ClientToScreen(hwnd, &screen)) return false;
      if (!SetCursorPos(screen.x, screen.y)) {
-@@ -123,6 +193,8 @@
+@@ -123,6 +205,8 @@
      synthetic_cursor = screen;
      staged_heading = heading;
      staged_at = GetTickCount64();
@@ -199,7 +222,7 @@
      staged_press = true;
      log_click("cursor staged", heading, screen);
      return true;
-@@ -131,6 +203,14 @@
+@@ -131,19 +215,46 @@
  bool finish_staged_mouse(HWND hwnd, ULONGLONG now) noexcept {
      if (!staged_press || now - staged_at < kCursorMoveSettleMs) return true;
      if (!game_is_foreground(hwnd) || synthetic_left_down) return false;
@@ -212,9 +235,52 @@
 +        return false;
 +    }
      POINT actual{};
-     if (!GetCursorPos(&actual) ||
-         actual.x < synthetic_cursor.x - 3 || actual.x > synthetic_cursor.x + 3 ||
-@@ -151,6 +231,10 @@
+-    if (!GetCursorPos(&actual) ||
+-        actual.x < synthetic_cursor.x - 3 || actual.x > synthetic_cursor.x + 3 ||
++    if (!GetCursorPos(&actual)) return false;
++    if (actual.x < synthetic_cursor.x - 3 || actual.x > synthetic_cursor.x + 3 ||
+         actual.y < synthetic_cursor.y - 3 || actual.y > synthetic_cursor.y + 3) {
+-        NativeStep_LogInput("cursor changed before click", staged_heading);
+-        return false;
+-    }
+-    INPUT input{};
+-    input.type = INPUT_MOUSE;
+-    input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+-    input.mi.dwExtraInfo = kInputTag;
+-    if (SendInput(1, &input, sizeof(input)) != 1) {
+-        NativeStep_LogInput("SendInput left-down failed", static_cast<int>(GetLastError()));
++        char text[160]{};
++        std::snprintf(text, sizeof(text), "cursor restaged before click direction=%d actual=(%ld,%ld) target=(%ld,%ld)",
++            staged_heading, actual.x, actual.y, synthetic_cursor.x, synthetic_cursor.y);
++        NativeStep_LogInput(text, 0);
++    }
++    const auto absolute = nativestep::absolute_mouse_point(
++        {synthetic_cursor.x, synthetic_cursor.y},
++        {GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN)},
++        GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN));
++    if (absolute.x < 0) {
++        NativeStep_LogInput("click target outside virtual desktop", staged_heading);
++        return false;
++    }
++    // Windows inserts a SendInput batch serially, without interleaving other
++    // input events. Reassert the target immediately before DOWN, preserving
++    // the earlier UI staging for clients with a cached WM_MOUSEMOVE position.
++    // A partial batch of one contains only MOVE, never a stuck button.
++    INPUT input[2]{};
++    input[0].type = INPUT_MOUSE;
++    input[0].mi.dx = absolute.x;
++    input[0].mi.dy = absolute.y;
++    input[0].mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK;
++    input[0].mi.dwExtraInfo = kInputTag;
++    input[1].type = INPUT_MOUSE;
++    input[1].mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
++    input[1].mi.dwExtraInfo = kInputTag;
++    if (SendInput(2, input, sizeof(INPUT)) != 2) {
++        NativeStep_LogInput("SendInput move/down batch failed", static_cast<int>(GetLastError()));
+         return false;
+     }
+     const int heading = staged_heading;
+@@ -151,6 +262,10 @@
      staged_heading = -1;
      synthetic_left_down = true;
      synthetic_heading = heading;
@@ -225,7 +291,7 @@
      log_click("physical click down", heading, synthetic_cursor);
      return true;
  }
-@@ -189,6 +273,7 @@
+@@ -189,6 +304,7 @@
  // A failed click/foreground-loss MUST drain that logical state before START
  // can arm a fresh offer. Otherwise the next move is silently swallowed.
  void stop_failed_input(HWND hwnd, ULONGLONG now) noexcept {
@@ -233,7 +299,7 @@
      staged_press = false;
      staged_heading = -1;
      engine.submit(-4, now);
-@@ -267,12 +352,13 @@
+@@ -267,12 +383,14 @@
      staged_heading = -1;
      button_state_settle_until = 0;
      input_logs = 0;
@@ -244,11 +310,12 @@
      timer_id = timer;
      signal_named_event(L"Ready");
 -    NativeStep_LogInput("physical SendInput staged-cursor-20261111 control initialized", 0);
-+    NativeStep_LogInput("physical SendInput confirmed-press-20261111 control initialized", 0);
++    NativeStep_LogInput("physical SendInput screen-heading-v2-20261111 control initialized", 0);
++    log_geometry();
      NativeStep_NetworkStart(nullptr);
      return 1;
  }
-@@ -346,6 +432,14 @@
+@@ -346,6 +464,14 @@
                      }
                  }
              }
@@ -263,7 +330,7 @@
          } else if (msg->message == WM_TIMER && timer_id != 0 &&
                     msg->hwnd == game_window && msg->wParam == timer_id) {
              on_timer(game_window);
-@@ -358,6 +452,7 @@
+@@ -358,6 +484,7 @@
  void NativeStep_Bootstrap(HMODULE dll);
  BOOL WINAPI DllMain(HINSTANCE dll, DWORD reason, LPVOID) {
      if (reason == DLL_PROCESS_ATTACH) {
@@ -273,7 +340,7 @@
      }
 --- a/nativestep-client/src/step_core.cpp
 +++ b/nativestep-client/src/step_core.cpp
-@@ -41,7 +41,15 @@
+@@ -41,24 +41,42 @@
  }
  
  Point direction_point(int heading, int width, int height) noexcept {
@@ -281,25 +348,37 @@
 +}
 +
 +Point direction_point(int heading, int width, int height, Point anchor,
-+                      int half_tile_width, int half_tile_height) noexcept {
++                      int half_tile_width, int half_tile_height, DirectionLayout layout) noexcept {
      if (heading < 0 || heading > 7 || width < 24 || height < 24) return {-1, -1};
 +    if (anchor.x < 0 || anchor.x >= width || anchor.y < 0 || anchor.y >= height ||
 +        half_tile_width < 1 || half_tile_width > 256 ||
 +        half_tile_height < 1 || half_tile_height > 256) return {-1, -1};
  
-     // Server headings are WORLD tile offsets, not compass sectors on screen.
-     // Lineage 1 draws this grid as a diamond: +world-X points up/right,
-@@ -51,14 +59,13 @@
-     // unprojected heading 1 clicked upper-right and was received as heading 2.
-     static constexpr int worldX[8] = { 0, 1, 1, 1, 0,-1,-1,-1};
-     static constexpr int worldY[8] = {-1,-1, 0, 1, 1, 1, 0,-1};
+-    // Server headings are WORLD tile offsets, not compass sectors on screen.
+-    // Lineage 1 draws this grid as a diamond: +world-X points up/right,
+-    // +world-Y points down/right. Project the ACTUAL next world tile into
+-    // client coordinates instead of clicking the same-numbered screen sector.
+-    // For example, heading 1 (+1,-1) is straight UP on screen; the old
+-    // unprojected heading 1 clicked upper-right and was received as heading 2.
+-    static constexpr int worldX[8] = { 0, 1, 1, 1, 0,-1,-1,-1};
+-    static constexpr int worldY[8] = {-1,-1, 0, 1, 1, 1, 0,-1};
 -    constexpr int halfTileWidth = 36;
 -    constexpr int halfTileHeight = 23;
 -    const int playerAnchorY = height * 42 / 100;
 -    const int x = width / 2 + (worldX[heading] + worldY[heading]) * halfTileWidth;
 -    const int y = playerAnchorY + (worldY[heading] - worldX[heading]) * halfTileHeight;
-+    const int x = anchor.x + (worldX[heading] + worldY[heading]) * half_tile_width;
-+    const int y = anchor.y + (worldY[heading] - worldX[heading]) * half_tile_height;
++    // The old default projected heading 7 to due LEFT. In the user's game
++    // that offer produced C_MoveChar heading 6, consistent with a screen
++    // compass (6=left, 7=upper-left). Use explicit screen sectors by default.
++    // One live observation supports this correction; other headings still
++    // require game validation. Keep the old layout as an explicit override.
++    static constexpr int screenX[8] = { 0, 1, 2, 1, 0,-1,-2,-1};
++    static constexpr int screenY[8] = {-2,-1, 0, 1, 2, 1, 0,-1};
++    int sector = heading;
++    if (layout == DirectionLayout::world_isometric) sector = (heading + 7) % 8;
++    else if (layout != DirectionLayout::screen_compass) return {-1, -1};
++    const int x = anchor.x + screenX[sector] * half_tile_width;
++    const int y = anchor.y + screenY[sector] * half_tile_height;
      constexpr int margin = 10;
 -    return {x < margin ? margin : x >= width-margin ? width-margin-1 : x,
 -            y < margin ? margin : y >= height-margin ? height-margin-1 : y};
@@ -307,10 +386,19 @@
 +    if (x < margin || x >= width-margin || y < margin || y >= height-margin)
 +        return {-1, -1};
 +    return {x, y};
++}
++
++Point absolute_mouse_point(Point pixel, Point origin, int width, int height) noexcept {
++    const int64_t x = static_cast<int64_t>(pixel.x) - origin.x;
++    const int64_t y = static_cast<int64_t>(pixel.y) - origin.y;
++    if (width < 2 || height < 2 || x < 0 || x >= width || y < 0 || y >= height)
++        return {-1, -1};
++    return {static_cast<int>((x * 65535 + (width-1)/2) / (width-1)),
++            static_cast<int>((y * 65535 + (height-1)/2) / (height-1))};
  }
  
  void StepEngine::submit(int command, uint64_t now_ms) noexcept {
-@@ -69,7 +76,7 @@
+@@ -69,7 +87,7 @@
          desired_ = -1;
          expires_ms_ = 0;
          pulse_complete_ = false;
@@ -319,7 +407,7 @@
          ++revision_;
      } else if (command == -4) {
          enabled_ = false;
-@@ -88,7 +95,7 @@
+@@ -88,7 +106,7 @@
          rearm_after_release_ = held_;
          ++revision_;
      } else if (command >= 0 && command < 8 && enabled_ && !manual_override_) {
@@ -328,7 +416,7 @@
              desired_ = command;
              expires_ms_ = now_ms + kStepExpiryMs;
              ++revision_;
-@@ -104,7 +111,9 @@
+@@ -104,7 +122,9 @@
          if (user_left_button_down) {
              if (held_) {
                  held_ = false;
@@ -339,7 +427,7 @@
                  applied_ = -1;
                  return {Action::release, -1};
              }
-@@ -117,9 +126,11 @@
+@@ -117,9 +137,11 @@
          pulse_complete_ = true;
          ++revision_;
      }
@@ -353,7 +441,7 @@
          // If CANCEL arrived while the mouse was pressed, the next server
          // authorization MUST be able to produce a new click. The old code
          // always set pulse_complete_ = true here, permanently swallowing
-@@ -129,13 +140,14 @@
+@@ -129,13 +151,14 @@
          applied_ = -1;
          return {Action::release, -1};
      }
@@ -369,7 +457,7 @@
              applied_ = -1;
              pulse_complete_ = !rearm_after_release_;
              rearm_after_release_ = false;
-@@ -146,12 +158,21 @@
+@@ -146,12 +169,21 @@
      if (pulse_complete_) return {};
      if (!held_) {
          held_ = true;
@@ -405,7 +493,7 @@
  #include <tcpmib.h>
 --- a/nativestep-client/tests/step_core_test.cpp
 +++ b/nativestep-client/tests/step_core_test.cpp
-@@ -1,8 +1,16 @@
+@@ -1,71 +1,71 @@
  #include "step_core.h"
 +#ifdef NDEBUG
 +#undef NDEBUG
@@ -420,9 +508,44 @@
 +    return result;
 +}
  int main() {
-     // Check that each server tile step is projected into the correct
-     // isometric screen direction. This does NOT substitute for the game test.
-@@ -35,37 +43,37 @@
+-    // Check that each server tile step is projected into the correct
+-    // isometric screen direction. This does NOT substitute for the game test.
+-    const int worldX[8] = { 0, 1, 1, 1, 0,-1,-1,-1};
+-    const int worldY[8] = {-1,-1, 0, 1, 1, 1, 0,-1};
++    // Explicit expected screen sectors. These geometry tests are not live
++    // validation of all Mega.bin headings. User evidence: old due-left h7
++    // generated server h6, so h7 must no longer default to due left.
+     constexpr int clientW = 507, clientH = 380;
++    const Point expected[8] = {{253,113},{289,136},{325,159},{289,182},
++                               {253,205},{217,182},{181,159},{217,136}};
+     for (int h = 0; h < 8; ++h) {
+         char cmd[] = "@@NATIVESTEP:0@@";
+         cmd[13] = char('0' + h);
+         assert(parse_control(cmd, sizeof(cmd)-1) == h);
+         const Point p = direction_point(h, clientW, clientH);
+-        const int dx = p.x - clientW/2;
+-        const int dy = p.y - clientH*42/100;
+-        assert(dx == (worldX[h] + worldY[h]) * 36);
+-        assert(dy == (worldY[h] - worldX[h]) * 23);
+-        assert(p.x >= 10 && p.x < clientW-10);
+-        assert(p.y >= 10 && p.y < clientH-10);
++        assert(p.x==expected[h].x && p.y==expected[h].y);
+     }
+-    assert(direction_point(1,clientW,clientH).x == clientW/2);
+-    assert(direction_point(1,clientW,clientH).y < clientH*42/100);
+-    assert(direction_point(3,clientW,clientH).x > clientW/2);
+-    assert(direction_point(3,clientW,clientH).y == clientH*42/100);
+-    assert(direction_point(5,clientW,clientH).x == clientW/2);
+-    assert(direction_point(5,clientW,clientH).y > clientH*42/100);
+-    assert(direction_point(7,clientW,clientH).x < clientW/2);
+-    assert(direction_point(7,clientW,clientH).y == clientH*42/100);
++    const auto legacy=direction_point(7,clientW,clientH,{253,159},36,23,
++                                      DirectionLayout::world_isometric);
++    assert(legacy.x==181 && legacy.y==159);
++    assert(direction_point(7,clientW,clientH).y < legacy.y);
+     assert(direction_point(-1,clientW,clientH).x < 0);
+     assert(parse_control("@@NATIVESTEP:CANCEL@@", 21) == -1);
+     assert(parse_control("@@NATIVESTEP:START@@", 20) == -2);
      assert(parse_control("@@NATIVESTEP:STOP@@", 19) == -4);
      StepEngine e;
      e.submit(2, 999);
@@ -472,7 +595,7 @@
      // Item click may still be down when START is received.
      // Regression: server CANCEL can arrive while mouse press is held.
      // Before this fix, the timed-release branch latched pulse_complete_ and
-@@ -73,29 +81,29 @@
+@@ -73,29 +73,29 @@
      StepEngine r;
      r.submit(-2, 3000);
      r.submit(2, 3000);
@@ -513,7 +636,7 @@
      f.shutdown();
      assert(!f.is_enabled());
      // 10,000 adversarial offer/CANCEL cycles: one click per offer and
-@@ -104,19 +112,61 @@
+@@ -104,19 +104,70 @@
          StepEngine stress;
          const uint64_t start = static_cast<uint64_t>(n) * 1000;
          stress.submit(-2, start);
@@ -574,14 +697,23 @@
 +    assert(!cancelled.confirm_press(30005));
 +    // Calibration is independent of the old 42%-of-window heuristic.
 +    const Point ground{400, 276};
-+    assert(direction_point(1,800,600,ground,24,12).x==400);
-+    assert(direction_point(1,800,600,ground,24,12).y==252);
-+    assert(direction_point(3,800,600,ground,24,12).x==448);
-+    assert(direction_point(3,800,600,ground,24,12).y==276);
++    assert(direction_point(0,800,600,ground,24,12).x==400);
++    assert(direction_point(0,800,600,ground,24,12).y==252);
++    assert(direction_point(2,800,600,ground,24,12).x==448);
++    assert(direction_point(2,800,600,ground,24,12).y==276);
 +    assert(direction_point(0,800,600,{-1,200},24,12).x<0);
 +    assert(direction_point(0,800,600,ground,0,12).x<0);
 +    assert(direction_point(1,800,600,{400,15},24,12).x<0);
-+    std::puts("NativeStep core tests: PASS (10,000 cycles, confirmed press, staged cancel/expiry, calibrated anchor)");
++    const auto middle=absolute_mouse_point({-1,-2},{-2,-4},3,5);
++    assert(middle.x==32768 && middle.y==32768);
++    const auto first=absolute_mouse_point({-1920,-200},{-1920,-200},3840,1280);
++    const auto last=absolute_mouse_point({1919,1079},{-1920,-200},3840,1280);
++    assert(first.x==0 && first.y==0 && last.x==65535 && last.y==65535);
++    assert(absolute_mouse_point({-1921,0},{-1920,0},1920,1080).x<0);
++    assert(absolute_mouse_point({1920,0},{0,0},1920,1080).x<0);
++    assert(absolute_mouse_point({0,0},{0,0},1,1).x<0);
++    assert(direction_point(7,800,600,ground,24,12,static_cast<DirectionLayout>(2)).x<0);
++    std::puts("NativeStep core tests: PASS (10,000 cycles, confirmed press, staged cancel/expiry, calibrated anchor, screen-heading-v2, virtual desktop)");
  }
 --- a/nativestep-client/tests/win_host.cpp
 +++ b/nativestep-client/tests/win_host.cpp
@@ -617,7 +749,7 @@
 +        };
 +        ready=set(L"AnchorX",r.right/2) && set(L"AnchorY",r.bottom/2) &&
 +              set(L"ClientWidth",r.right) && set(L"ClientHeight",r.bottom) &&
-+              set(L"HalfTileWidth",36) && set(L"HalfTileHeight",23);
++              set(L"HalfTileWidth",36) && set(L"HalfTileHeight",23) && set(L"HeadingLayout",0);
 +    }
 +    ~TestCalibration() {
 +        if (!backup[0]) return;

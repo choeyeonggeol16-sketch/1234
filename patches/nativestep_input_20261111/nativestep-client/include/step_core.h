@@ -13,11 +13,16 @@ enum class Command : int { invalid = -3, start = -2, cancel = -1, north = 0 };
 int parse_control(const char* text, size_t length) noexcept;
 
 struct Point { int x, y; };
+enum class DirectionLayout { screen_compass = 0, world_isometric = 1 };
 Point direction_point(int heading, int width, int height) noexcept;
 // Anchor is the character's ground position, measured in CLIENT coordinates.
 // Tile dimensions may be changed for a differently scaled client.
 Point direction_point(int heading, int width, int height, Point anchor,
-                      int half_tile_width, int half_tile_height) noexcept;
+                      int half_tile_width, int half_tile_height,
+                      DirectionLayout layout = DirectionLayout::screen_compass) noexcept;
+// Convert a virtual-desktop pixel to SendInput's 0..65535 absolute coordinates.
+// Invalid/off-desktop targets return {-1,-1}; negative monitor origins are valid.
+Point absolute_mouse_point(Point pixel, Point desktop_origin, int width, int height) noexcept;
 
 struct Action {
     enum Type : uint8_t { none, move_and_press, move_held, release } type = none;

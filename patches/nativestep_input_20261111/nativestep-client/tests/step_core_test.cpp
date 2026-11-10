@@ -12,31 +12,23 @@ Action drive(StepEngine& e, uint64_t now, bool manual) {
     return result;
 }
 int main() {
-    // Check that each server tile step is projected into the correct
-    // isometric screen direction. This does NOT substitute for the game test.
-    const int worldX[8] = { 0, 1, 1, 1, 0,-1,-1,-1};
-    const int worldY[8] = {-1,-1, 0, 1, 1, 1, 0,-1};
+    // Explicit expected screen sectors. These geometry tests are not live
+    // validation of all Mega.bin headings. User evidence: old due-left h7
+    // generated server h6, so h7 must no longer default to due left.
     constexpr int clientW = 507, clientH = 380;
+    const Point expected[8] = {{253,113},{289,136},{325,159},{289,182},
+                               {253,205},{217,182},{181,159},{217,136}};
     for (int h = 0; h < 8; ++h) {
         char cmd[] = "@@NATIVESTEP:0@@";
         cmd[13] = char('0' + h);
         assert(parse_control(cmd, sizeof(cmd)-1) == h);
         const Point p = direction_point(h, clientW, clientH);
-        const int dx = p.x - clientW/2;
-        const int dy = p.y - clientH*42/100;
-        assert(dx == (worldX[h] + worldY[h]) * 36);
-        assert(dy == (worldY[h] - worldX[h]) * 23);
-        assert(p.x >= 10 && p.x < clientW-10);
-        assert(p.y >= 10 && p.y < clientH-10);
+        assert(p.x==expected[h].x && p.y==expected[h].y);
     }
-    assert(direction_point(1,clientW,clientH).x == clientW/2);
-    assert(direction_point(1,clientW,clientH).y < clientH*42/100);
-    assert(direction_point(3,clientW,clientH).x > clientW/2);
-    assert(direction_point(3,clientW,clientH).y == clientH*42/100);
-    assert(direction_point(5,clientW,clientH).x == clientW/2);
-    assert(direction_point(5,clientW,clientH).y > clientH*42/100);
-    assert(direction_point(7,clientW,clientH).x < clientW/2);
-    assert(direction_point(7,clientW,clientH).y == clientH*42/100);
+    const auto legacy=direction_point(7,clientW,clientH,{253,159},36,23,
+                                      DirectionLayout::world_isometric);
+    assert(legacy.x==181 && legacy.y==159);
+    assert(direction_point(7,clientW,clientH).y < legacy.y);
     assert(direction_point(-1,clientW,clientH).x < 0);
     assert(parse_control("@@NATIVESTEP:CANCEL@@", 21) == -1);
     assert(parse_control("@@NATIVESTEP:START@@", 20) == -2);
@@ -161,12 +153,21 @@ int main() {
     assert(!cancelled.confirm_press(30005));
     // Calibration is independent of the old 42%-of-window heuristic.
     const Point ground{400, 276};
-    assert(direction_point(1,800,600,ground,24,12).x==400);
-    assert(direction_point(1,800,600,ground,24,12).y==252);
-    assert(direction_point(3,800,600,ground,24,12).x==448);
-    assert(direction_point(3,800,600,ground,24,12).y==276);
+    assert(direction_point(0,800,600,ground,24,12).x==400);
+    assert(direction_point(0,800,600,ground,24,12).y==252);
+    assert(direction_point(2,800,600,ground,24,12).x==448);
+    assert(direction_point(2,800,600,ground,24,12).y==276);
     assert(direction_point(0,800,600,{-1,200},24,12).x<0);
     assert(direction_point(0,800,600,ground,0,12).x<0);
     assert(direction_point(1,800,600,{400,15},24,12).x<0);
-    std::puts("NativeStep core tests: PASS (10,000 cycles, confirmed press, staged cancel/expiry, calibrated anchor)");
+    const auto middle=absolute_mouse_point({-1,-2},{-2,-4},3,5);
+    assert(middle.x==32768 && middle.y==32768);
+    const auto first=absolute_mouse_point({-1920,-200},{-1920,-200},3840,1280);
+    const auto last=absolute_mouse_point({1919,1079},{-1920,-200},3840,1280);
+    assert(first.x==0 && first.y==0 && last.x==65535 && last.y==65535);
+    assert(absolute_mouse_point({-1921,0},{-1920,0},1920,1080).x<0);
+    assert(absolute_mouse_point({1920,0},{0,0},1920,1080).x<0);
+    assert(absolute_mouse_point({0,0},{0,0},1,1).x<0);
+    assert(direction_point(7,800,600,ground,24,12,static_cast<DirectionLayout>(2)).x<0);
+    std::puts("NativeStep core tests: PASS (10,000 cycles, confirmed press, staged cancel/expiry, calibrated anchor, screen-heading-v2, virtual desktop)");
 }

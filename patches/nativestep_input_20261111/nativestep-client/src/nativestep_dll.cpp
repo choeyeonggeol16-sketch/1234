@@ -55,6 +55,7 @@ struct Calibration {
     nativestep::Point anchor{-1, -1};
     int width = 0, height = 0;
     int tile_width = 36, tile_height = 23;
+    nativestep::DirectionLayout layout = nativestep::DirectionLayout::screen_compass;
 } calibration;
 bool game_is_foreground(HWND hwnd) noexcept;
 
@@ -74,6 +75,15 @@ void load_calibration() noexcept {
     calibration.height = read(L"ClientHeight", 0);
     calibration.tile_width = read(L"HalfTileWidth", 36);
     calibration.tile_height = read(L"HalfTileHeight", 23);
+    calibration.layout = static_cast<nativestep::DirectionLayout>(read(L"HeadingLayout", 0));
+}
+
+void log_geometry() noexcept {
+    char text[192]{};
+    std::snprintf(text, sizeof(text), "input geometry client=%dx%d anchor=(%d,%d) tile=%dx%d layout=%d",
+        calibration.width, calibration.height, calibration.anchor.x, calibration.anchor.y,
+        calibration.tile_width, calibration.tile_height, static_cast<int>(calibration.layout));
+    NativeStep_LogInput(text, 0);
 }
 
 bool calibrate_anchor(HWND hwnd) noexcept {
@@ -84,7 +94,7 @@ bool calibrate_anchor(HWND hwnd) noexcept {
     // All eight next tiles must remain in the client area.
     for (int h = 0; h < 8; ++h)
         if (nativestep::direction_point(h, r.right, r.bottom, {p.x, p.y},
-            calibration.tile_width, calibration.tile_height).x < 0) return false;
+            calibration.tile_width, calibration.tile_height, calibration.layout).x < 0) return false;
     calibration.anchor = {p.x, p.y};
     calibration.width = r.right;
     calibration.height = r.bottom;
@@ -97,9 +107,11 @@ bool calibrate_anchor(HWND hwnd) noexcept {
         write(L"AnchorX", p.x) && write(L"AnchorY", p.y) &&
         write(L"ClientWidth", r.right) && write(L"ClientHeight", r.bottom) &&
         write(L"HalfTileWidth", calibration.tile_width) &&
-        write(L"HalfTileHeight", calibration.tile_height);
+        write(L"HalfTileHeight", calibration.tile_height) &&
+        write(L"HeadingLayout", static_cast<int>(calibration.layout));
     NativeStep_LogInput(saved ? "player ground anchor calibrated and saved" :
                                    "player ground anchor calibrated for this session only", 0);
+    log_geometry();
     return true;
 }
 
@@ -164,7 +176,7 @@ bool stage_mouse(HWND hwnd, int heading) noexcept {
         return false;
     }
     const auto point = nativestep::direction_point(heading, r.right-r.left, r.bottom-r.top,
-        calibration.anchor, calibration.tile_width, calibration.tile_height);
+        calibration.anchor, calibration.tile_width, calibration.tile_height, calibration.layout);
     if (point.x < 0 || point.y < 0) {
         NativeStep_LogInput("movement blocked: anchor or tile geometry outside viewport", heading);
         return false;
@@ -212,18 +224,37 @@ bool finish_staged_mouse(HWND hwnd, ULONGLONG now) noexcept {
         return false;
     }
     POINT actual{};
-    if (!GetCursorPos(&actual) ||
-        actual.x < synthetic_cursor.x - 3 || actual.x > synthetic_cursor.x + 3 ||
+    if (!GetCursorPos(&actual)) return false;
+    if (actual.x < synthetic_cursor.x - 3 || actual.x > synthetic_cursor.x + 3 ||
         actual.y < synthetic_cursor.y - 3 || actual.y > synthetic_cursor.y + 3) {
-        NativeStep_LogInput("cursor changed before click", staged_heading);
+        char text[160]{};
+        std::snprintf(text, sizeof(text), "cursor restaged before click direction=%d actual=(%ld,%ld) target=(%ld,%ld)",
+            staged_heading, actual.x, actual.y, synthetic_cursor.x, synthetic_cursor.y);
+        NativeStep_LogInput(text, 0);
+    }
+    const auto absolute = nativestep::absolute_mouse_point(
+        {synthetic_cursor.x, synthetic_cursor.y},
+        {GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN)},
+        GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN));
+    if (absolute.x < 0) {
+        NativeStep_LogInput("click target outside virtual desktop", staged_heading);
         return false;
     }
-    INPUT input{};
-    input.type = INPUT_MOUSE;
-    input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
-    input.mi.dwExtraInfo = kInputTag;
-    if (SendInput(1, &input, sizeof(input)) != 1) {
-        NativeStep_LogInput("SendInput left-down failed", static_cast<int>(GetLastError()));
+    // Windows inserts a SendInput batch serially, without interleaving other
+    // input events. Reassert the target immediately before DOWN, preserving
+    // the earlier UI staging for clients with a cached WM_MOUSEMOVE position.
+    // A partial batch of one contains only MOVE, never a stuck button.
+    INPUT input[2]{};
+    input[0].type = INPUT_MOUSE;
+    input[0].mi.dx = absolute.x;
+    input[0].mi.dy = absolute.y;
+    input[0].mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK;
+    input[0].mi.dwExtraInfo = kInputTag;
+    input[1].type = INPUT_MOUSE;
+    input[1].mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+    input[1].mi.dwExtraInfo = kInputTag;
+    if (SendInput(2, input, sizeof(INPUT)) != 2) {
+        NativeStep_LogInput("SendInput move/down batch failed", static_cast<int>(GetLastError()));
         return false;
     }
     const int heading = staged_heading;
@@ -358,7 +389,8 @@ __declspec(dllexport) int __cdecl NativeStep_Start(HWND hwnd) {
     game_thread = tid;
     timer_id = timer;
     signal_named_event(L"Ready");
-    NativeStep_LogInput("physical SendInput confirmed-press-20261111 control initialized", 0);
+    NativeStep_LogInput("physical SendInput screen-heading-v2-20261111 control initialized", 0);
+    log_geometry();
     NativeStep_NetworkStart(nullptr);
     return 1;
 }

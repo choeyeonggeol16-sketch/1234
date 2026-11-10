@@ -45,27 +45,38 @@ Point direction_point(int heading, int width, int height) noexcept {
 }
 
 Point direction_point(int heading, int width, int height, Point anchor,
-                      int half_tile_width, int half_tile_height) noexcept {
+                      int half_tile_width, int half_tile_height, DirectionLayout layout) noexcept {
     if (heading < 0 || heading > 7 || width < 24 || height < 24) return {-1, -1};
     if (anchor.x < 0 || anchor.x >= width || anchor.y < 0 || anchor.y >= height ||
         half_tile_width < 1 || half_tile_width > 256 ||
         half_tile_height < 1 || half_tile_height > 256) return {-1, -1};
 
-    // Server headings are WORLD tile offsets, not compass sectors on screen.
-    // Lineage 1 draws this grid as a diamond: +world-X points up/right,
-    // +world-Y points down/right. Project the ACTUAL next world tile into
-    // client coordinates instead of clicking the same-numbered screen sector.
-    // For example, heading 1 (+1,-1) is straight UP on screen; the old
-    // unprojected heading 1 clicked upper-right and was received as heading 2.
-    static constexpr int worldX[8] = { 0, 1, 1, 1, 0,-1,-1,-1};
-    static constexpr int worldY[8] = {-1,-1, 0, 1, 1, 1, 0,-1};
-    const int x = anchor.x + (worldX[heading] + worldY[heading]) * half_tile_width;
-    const int y = anchor.y + (worldY[heading] - worldX[heading]) * half_tile_height;
+    // The old default projected heading 7 to due LEFT. In the user's game
+    // that offer produced C_MoveChar heading 6, consistent with a screen
+    // compass (6=left, 7=upper-left). Use explicit screen sectors by default.
+    // One live observation supports this correction; other headings still
+    // require game validation. Keep the old layout as an explicit override.
+    static constexpr int screenX[8] = { 0, 1, 2, 1, 0,-1,-2,-1};
+    static constexpr int screenY[8] = {-2,-1, 0, 1, 2, 1, 0,-1};
+    int sector = heading;
+    if (layout == DirectionLayout::world_isometric) sector = (heading + 7) % 8;
+    else if (layout != DirectionLayout::screen_compass) return {-1, -1};
+    const int x = anchor.x + screenX[sector] * half_tile_width;
+    const int y = anchor.y + screenY[sector] * half_tile_height;
     constexpr int margin = 10;
     // Clamping changes the requested direction. Refuse an off-viewport click.
     if (x < margin || x >= width-margin || y < margin || y >= height-margin)
         return {-1, -1};
     return {x, y};
+}
+
+Point absolute_mouse_point(Point pixel, Point origin, int width, int height) noexcept {
+    const int64_t x = static_cast<int64_t>(pixel.x) - origin.x;
+    const int64_t y = static_cast<int64_t>(pixel.y) - origin.y;
+    if (width < 2 || height < 2 || x < 0 || x >= width || y < 0 || y >= height)
+        return {-1, -1};
+    return {static_cast<int>((x * 65535 + (width-1)/2) / (width-1)),
+            static_cast<int>((y * 65535 + (height-1)/2) / (height-1))};
 }
 
 void StepEngine::submit(int command, uint64_t now_ms) noexcept {

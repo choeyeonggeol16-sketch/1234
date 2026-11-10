@@ -1,19 +1,8 @@
 {
-  "windows_runtime_executed": false,
-  "live_game_camera_follow_verified": false,
-  "server_java_changed": false,
-  "regressions": {
-    "original": {
-      "delay": 2,
-      "coalesced": 4
-    },
-    "fixed": {
-      "delay": 0,
-      "coalesced": 0
-    }
-  },
-  "core_tests": "NativeStep core tests: PASS (10,000 cycles, confirmed press, staged cancel/expiry, calibrated anchor)",
-  "dll_sha256": "1216f9c3acad29e063c9059a9a34abdc45a46f8913675cffbe68895b451f59a7",
+  "version": "screen-heading-v2-20261111",
+  "dll_sha256": "bd00b067f28dec27eec48817d29e8ad5f03643ad004b0a4f92dfb671316d7d55",
+  "windows_pe32_cross_build": "PASS",
+  "directinput_ordinals_1_to_7": "PASS",
   "dll_imports": [
     "IPHLPAPI.DLL",
     "KERNEL32.dll",
@@ -21,19 +10,16 @@
     "USER32.dll",
     "WS2_32.dll"
   ],
-  "directinput_ordinals_1_to_7": "PASS",
-  "unchanged_server_java_files": 967,
-  "changed_original_files": [
-    "nativestep-client/CMakeLists.txt",
-    "nativestep-client/README_FIRST_TEST.md",
-    "nativestep-client/include/step_core.h",
-    "nativestep-client/include/step_network.h",
-    "nativestep-client/src/client_bootstrap.cpp",
-    "nativestep-client/src/nativestep_dll.cpp",
-    "nativestep-client/src/step_core.cpp",
-    "nativestep-client/src/step_network.cpp",
-    "nativestep-client/tests/step_core_test.cpp",
-    "nativestep-client/tests/win_host.cpp",
-    "nativestep-client/src/dinput_proxy.cpp"
-  ]
+  "core_tests": "NativeStep core tests: PASS (10,000 cycles, confirmed press, staged cancel/expiry, calibrated anchor, screen-heading-v2, virtual desktop)",
+  "windows_runtime_executed": false,
+  "live_game_camera_follow_verified": false,
+  "all_eight_headings_live_verified": false,
+  "user_observed_failures": [
+    "server offer 7 returned C_MoveChar heading 6 with the old leftward projection",
+    "latest V1 DLL calibrated successfully, then several clicks stopped at cursor changed before click"
+  ],
+  "default_layout": "screen_compass (inferred from the reported heading 7/6 mismatch)",
+  "cursor_commit": "absolute virtual-desktop MOVE followed by LEFTDOWN in one SendInput batch",
+  "server_heading_validation": "unchanged",
+  "unchanged_server_java_files": 967
 }
