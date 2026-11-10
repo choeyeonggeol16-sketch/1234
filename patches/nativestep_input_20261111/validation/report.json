@@ -40,5 +40,8 @@
   "windows_runtime_executed": false,
   "camera_follow_live_verified": false,
   "residual_movement_live_verified": false,
-  "unchanged_server_java_files": 967
+  "unchanged_server_java_files": 967,
+  "reported_v3_runtime_result": "User reported server offer heading 5 followed by C_MoveChar heading 1 and automatic stop",
+  "runtime_status": "Reported failure; root cause unconfirmed",
+  "investigation_requires": "Actual Mega.bin from the running client, absent from the uploaded source archive and repository archives"
 }
