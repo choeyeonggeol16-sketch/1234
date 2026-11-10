@@ -1,3 +1,17 @@
+## 2026-11-11 — 49027 걷기 간격·입력 대기 V5
+
+[**V5 서버 패치·DLL**](downloads/L1J_49027_SpriteCadence_V5_PATCH_DLL_20261111.zip) · [**V5 전체 소스·DLL**](downloads/L1J_49027_SpriteCadence_V5_FULL_SRC_20261111.zip) · [적용·검증 안내](patches/nativestep_cadence_20261111/README.md)
+
+V4의 기본 이동은 사용자 로그와 보고로 확인됐지만 걷기가 부자연스러웠습니다. 성공한 걸음의 고정 600ms 대기를 캐릭터의 원래 WALK 간격으로 바꾸고, AI의 중복 걷기 타이머를 제거했습니다. DLL은 원본 목표 선택 함수가 클릭을 받는 상태인지 확인한 뒤 입력합니다.
+
+**서버 Java 3개를 함께 반영해 재빌드·재시작하고 V5 dinput.dll도 교체해야 합니다.** 서버 표시는 `step-v5 sprite-cadence`, DLL 표시는 `native-tile-input-v5-20261111`입니다. F9 보정은 필요 없습니다.
+
+7종 서버 걷기 간격·승인/복구 회귀, Java 3개 구문 파싱, 원본 x86 좌표 192개·입력 대기 7개 사례와 PE32 빌드를 통과했습니다. **전체 서버 의존성 빌드와 Windows 실게임에서 V5의 이동·카메라 자연스러움은 미검증입니다.** 원본 Mega.bin은 배포하지 않습니다.
+
+---
+
+아래는 이전 버전의 작업 기록입니다.
+
 ## 2026-11-11 — Mega.bin 원본 함수 기반 입력 V4 (실게임 검증 대기)
 
 [**V4 DLL 다운로드**](downloads/L1J_49027_MegaNative_V4_Client_DLL_20261111.zip) · [**V4 전체 소스**](downloads/L1J_49027_MegaNative_V4_FULL_SRC_20261111.zip) · [적용 안내](patches/nativestep_input_20261111/README.md) · [실행 파일 분석 근거](patches/nativestep_input_20261111/validation/mega-native-findings-v4.md)

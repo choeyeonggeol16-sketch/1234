@@ -1,0 +1,1 @@
+PASS: restoring the original fixed 600ms success delay makes the cadence test fail at the 100ms sprite deadline.
