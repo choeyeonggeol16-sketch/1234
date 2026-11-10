@@ -1,0 +1,653 @@
+--- a/nativestep-client/CMakeLists.txt
++++ b/nativestep-client/CMakeLists.txt
+@@ -8,12 +8,16 @@
+ enable_testing()
+ add_test(NAME step_core COMMAND step_core_test)
+ if(WIN32)
++  set(DINPUT_EXPORTS dinput.def)
++  if(MINGW)
++    set(DINPUT_EXPORTS dinput.mingw.def)
++  endif()
+   add_library(dinput SHARED src/nativestep_dll.cpp src/client_bootstrap.cpp
+-      src/dinput_proxy.cpp src/step_network.cpp dinput.def)
++      src/dinput_proxy.cpp src/step_network.cpp ${DINPUT_EXPORTS})
+   target_include_directories(dinput PRIVATE include)
+   target_link_libraries(dinput PRIVATE step_core user32 ws2_32 iphlpapi)
+   target_compile_definitions(dinput PRIVATE UNICODE _UNICODE)
+   add_executable(win_host tests/win_host.cpp)
+   target_link_libraries(win_host PRIVATE user32)
+-  add_test(NAME win_host COMMAND win_host)
++  # This test clicks the OS mouse. Run it explicitly on an interactive desktop.
+ endif()
+--- a/nativestep-client/README_FIRST_TEST.md
++++ b/nativestep-client/README_FIRST_TEST.md
+@@ -1,4 +1,10 @@
+ # NativeStep - Mega.bin automatic load test (32-bit)
++
++**2026-11-11 confirmed-press/viewport-calibration revision:** Follow
++`../APPLY_FIX_KO.md` first. A prebuilt PE32 DLL is in `../client-ready`.
++With hunting OFF, point at the player's ground/feet and press Ctrl+Alt+F9.
++This calibration is now required before input; recalibrate after resizing.
++The sections below describe earlier revisions and do not override that guide.
+ 
+ This package fixes a confirmed loader mismatch. The provided import scan shows
+ `Mega.bin` loads **dinput.dll**, NOT dinput8.dll. The former dinput8.dll could
+--- a/nativestep-client/include/step_core.h
++++ b/nativestep-client/include/step_core.h
+@@ -14,6 +14,10 @@
+ 
+ struct Point { int x, y; };
+ Point direction_point(int heading, int width, int height) noexcept;
++// Anchor is the character's ground position, measured in CLIENT coordinates.
++// Tile dimensions may be changed for a differently scaled client.
++Point direction_point(int heading, int width, int height, Point anchor,
++                      int half_tile_width, int half_tile_height) noexcept;
+ 
+ struct Action {
+     enum Type : uint8_t { none, move_and_press, move_held, release } type = none;
+@@ -27,6 +31,9 @@
+ public:
+     void submit(int command, uint64_t now_ms) noexcept;
+     Action tick(uint64_t now_ms, bool user_left_button_down) noexcept;
++    // move_and_press reserves a step; the adapter may need several UI ticks
++    // to stage the cursor. Start the hold budget only after SendInput succeeds.
++    bool confirm_press(uint64_t now_ms) noexcept;
+     void shutdown() noexcept;
+     bool has_manual_override() const noexcept { return manual_override_; }
+     bool is_enabled() const noexcept { return enabled_; }
+@@ -38,6 +45,7 @@
+     uint64_t revision_ = 0;
+     uint64_t applied_revision_ = 0;
+     bool held_ = false;
++    bool pressed_ = false;
+     bool pulse_complete_ = false;
+     bool rearm_after_release_ = false;
+     uint64_t pressed_at_ms_ = 0;
+--- a/nativestep-client/include/step_network.h
++++ b/nativestep-client/include/step_network.h
+@@ -1,5 +1,5 @@
+ #pragma once
+-#include <Windows.h>
++#include <windows.h>
+ void NativeStep_NetworkStart(HMODULE module);
+ void NativeStep_NetworkStop();
+ // Implemented in nativestep_dll.cpp; only posts to the game's UI message queue.
+--- a/nativestep-client/src/client_bootstrap.cpp
++++ b/nativestep-client/src/client_bootstrap.cpp
+@@ -6,7 +6,7 @@
+ #ifndef NOMINMAX
+ #define NOMINMAX
+ #endif
+-#include <Windows.h>
++#include <windows.h>
+ #include <cstdio>
+ #include <cstring>
+ 
+--- a/nativestep-client/src/nativestep_dll.cpp
++++ b/nativestep-client/src/nativestep_dll.cpp
+@@ -2,13 +2,18 @@
+ // Movement is sent as actual Win32 mouse input, not a forged window message.
+ // Some clients use GetCursorPos/GetAsyncKeyState/DirectInput when interpreting a
+ // click. PostMessage(WM_LBUTTONDOWN) does not update any of those states.
++#ifndef WIN32_LEAN_AND_MEAN
+ #define WIN32_LEAN_AND_MEAN
++#endif
++#ifndef NOMINMAX
+ #define NOMINMAX
+-#include <Windows.h>
++#endif
++#include <windows.h>
+ #include <cstdint>
+ #include <atomic>
+ #include <cstdio>
+ #include <cstring>
++#include <cwchar>
+ #include "step_core.h"
+ #include "step_network.h"
+ 
+@@ -40,8 +45,63 @@
+ bool staged_press = false;
+ int staged_heading = -1;
+ ULONGLONG staged_at = 0;
++RECT staged_client_rect{};
++POINT staged_client_origin{};
+ ULONGLONG button_state_settle_until = 0;
+ unsigned input_logs = 0;
++HMODULE self_module = nullptr;
++wchar_t settings_path[MAX_PATH]{};
++struct Calibration {
++    nativestep::Point anchor{-1, -1};
++    int width = 0, height = 0;
++    int tile_width = 36, tile_height = 23;
++} calibration;
++bool game_is_foreground(HWND hwnd) noexcept;
++
++void load_calibration() noexcept {
++    if (!GetModuleFileNameW(self_module, settings_path, MAX_PATH)) return;
++    wchar_t* slash = std::wcsrchr(settings_path, L'\\');
++    if (!slash || wcscpy_s(slash + 1, MAX_PATH - (slash + 1 - settings_path),
++                           L"NativeStep.ini") != 0) {
++        settings_path[0] = 0;
++        return;
++    }
++    const auto read = [](const wchar_t* key, int fallback) {
++        return static_cast<int>(GetPrivateProfileIntW(L"Viewport", key, fallback, settings_path));
++    };
++    calibration.anchor = {read(L"AnchorX", -1), read(L"AnchorY", -1)};
++    calibration.width = read(L"ClientWidth", 0);
++    calibration.height = read(L"ClientHeight", 0);
++    calibration.tile_width = read(L"HalfTileWidth", 36);
++    calibration.tile_height = read(L"HalfTileHeight", 23);
++}
++
++bool calibrate_anchor(HWND hwnd) noexcept {
++    if (engine.is_enabled() || !game_is_foreground(hwnd)) return false;
++    POINT p{};
++    RECT r{};
++    if (!GetCursorPos(&p) || !ScreenToClient(hwnd, &p) || !GetClientRect(hwnd, &r)) return false;
++    // All eight next tiles must remain in the client area.
++    for (int h = 0; h < 8; ++h)
++        if (nativestep::direction_point(h, r.right, r.bottom, {p.x, p.y},
++            calibration.tile_width, calibration.tile_height).x < 0) return false;
++    calibration.anchor = {p.x, p.y};
++    calibration.width = r.right;
++    calibration.height = r.bottom;
++    const auto write = [](const wchar_t* key, int value) {
++        wchar_t text[24]{};
++        swprintf_s(text, 24, L"%d", value);
++        return WritePrivateProfileStringW(L"Viewport", key, text, settings_path) != FALSE;
++    };
++    const bool saved = settings_path[0] &&
++        write(L"AnchorX", p.x) && write(L"AnchorY", p.y) &&
++        write(L"ClientWidth", r.right) && write(L"ClientHeight", r.bottom) &&
++        write(L"HalfTileWidth", calibration.tile_width) &&
++        write(L"HalfTileHeight", calibration.tile_height);
++    NativeStep_LogInput(saved ? "player ground anchor calibrated and saved" :
++                                   "player ground anchor calibrated for this session only", 0);
++    return true;
++}
+ 
+ void signal_named_event(const wchar_t* label) noexcept {
+     wchar_t name[120]{};
+@@ -97,8 +157,18 @@
+     if (!game_is_foreground(hwnd) || synthetic_left_down || staged_press) return false;
+     RECT r{};
+     if (!GetClientRect(hwnd, &r)) return false;
+-    const auto point = nativestep::direction_point(heading, r.right-r.left, r.bottom-r.top);
+-    if (point.x < 0 || point.y < 0) return false;
++    POINT origin{};
++    if (!ClientToScreen(hwnd, &origin)) return false;
++    if (calibration.width != r.right-r.left || calibration.height != r.bottom-r.top) {
++        NativeStep_LogInput("movement blocked: calibrate feet with Ctrl+Alt+F9 while hunt is OFF", heading);
++        return false;
++    }
++    const auto point = nativestep::direction_point(heading, r.right-r.left, r.bottom-r.top,
++        calibration.anchor, calibration.tile_width, calibration.tile_height);
++    if (point.x < 0 || point.y < 0) {
++        NativeStep_LogInput("movement blocked: anchor or tile geometry outside viewport", heading);
++        return false;
++    }
+     POINT screen{point.x, point.y};
+     if (!ClientToScreen(hwnd, &screen)) return false;
+     if (!SetCursorPos(screen.x, screen.y)) {
+@@ -123,6 +193,8 @@
+     synthetic_cursor = screen;
+     staged_heading = heading;
+     staged_at = GetTickCount64();
++    staged_client_rect = r;
++    staged_client_origin = origin;
+     staged_press = true;
+     log_click("cursor staged", heading, screen);
+     return true;
+@@ -131,6 +203,14 @@
+ bool finish_staged_mouse(HWND hwnd, ULONGLONG now) noexcept {
+     if (!staged_press || now - staged_at < kCursorMoveSettleMs) return true;
+     if (!game_is_foreground(hwnd) || synthetic_left_down) return false;
++    RECT rect{};
++    POINT origin{};
++    if (!GetClientRect(hwnd, &rect) || !ClientToScreen(hwnd, &origin) ||
++        !EqualRect(&rect, &staged_client_rect) ||
++        origin.x != staged_client_origin.x || origin.y != staged_client_origin.y) {
++        NativeStep_LogInput("game viewport changed before click", staged_heading);
++        return false;
++    }
+     POINT actual{};
+     if (!GetCursorPos(&actual) ||
+         actual.x < synthetic_cursor.x - 3 || actual.x > synthetic_cursor.x + 3 ||
+@@ -151,6 +231,10 @@
+     staged_heading = -1;
+     synthetic_left_down = true;
+     synthetic_heading = heading;
++    if (!engine.confirm_press(now)) {
++        (void)release_mouse();
++        return false;
++    }
+     log_click("physical click down", heading, synthetic_cursor);
+     return true;
+ }
+@@ -189,6 +273,7 @@
+ // A failed click/foreground-loss MUST drain that logical state before START
+ // can arm a fresh offer. Otherwise the next move is silently swallowed.
+ void stop_failed_input(HWND hwnd, ULONGLONG now) noexcept {
++    NativeStep_LogInput("automation stopped: input failed or viewport changed", 0);
+     staged_press = false;
+     staged_heading = -1;
+     engine.submit(-4, now);
+@@ -267,12 +352,13 @@
+     staged_heading = -1;
+     button_state_settle_until = 0;
+     input_logs = 0;
++    load_calibration();
+     game_window = hwnd;
+     network_window.store(hwnd, std::memory_order_release);
+     game_thread = tid;
+     timer_id = timer;
+     signal_named_event(L"Ready");
+-    NativeStep_LogInput("physical SendInput staged-cursor-20261111 control initialized", 0);
++    NativeStep_LogInput("physical SendInput confirmed-press-20261111 control initialized", 0);
+     NativeStep_NetworkStart(nullptr);
+     return 1;
+ }
+@@ -346,6 +432,14 @@
+                     }
+                 }
+             }
++        } else if ((msg->message == WM_KEYDOWN || msg->message == WM_SYSKEYDOWN) &&
++                   msg->wParam == VK_F9 &&
++                   msg->hwnd == game_window && !(msg->lParam & (1L << 30)) &&
++                   (GetAsyncKeyState(VK_CONTROL) & 0x8000) &&
++                   (GetAsyncKeyState(VK_MENU) & 0x8000)) {
++            if (!calibrate_anchor(game_window))
++                NativeStep_LogInput("anchor calibration rejected: stop hunt and point at player feet", 0);
++            msg->message = WM_NULL;
+         } else if (msg->message == WM_TIMER && timer_id != 0 &&
+                    msg->hwnd == game_window && msg->wParam == timer_id) {
+             on_timer(game_window);
+@@ -358,6 +452,7 @@
+ void NativeStep_Bootstrap(HMODULE dll);
+ BOOL WINAPI DllMain(HINSTANCE dll, DWORD reason, LPVOID) {
+     if (reason == DLL_PROCESS_ATTACH) {
++        self_module = dll;
+         DisableThreadLibraryCalls(dll);
+         NativeStep_Bootstrap(dll);
+     }
+--- a/nativestep-client/src/step_core.cpp
++++ b/nativestep-client/src/step_core.cpp
+@@ -41,7 +41,15 @@
+ }
+ 
+ Point direction_point(int heading, int width, int height) noexcept {
++    return direction_point(heading, width, height, {width / 2, height * 42 / 100}, 36, 23);
++}
++
++Point direction_point(int heading, int width, int height, Point anchor,
++                      int half_tile_width, int half_tile_height) noexcept {
+     if (heading < 0 || heading > 7 || width < 24 || height < 24) return {-1, -1};
++    if (anchor.x < 0 || anchor.x >= width || anchor.y < 0 || anchor.y >= height ||
++        half_tile_width < 1 || half_tile_width > 256 ||
++        half_tile_height < 1 || half_tile_height > 256) return {-1, -1};
+ 
+     // Server headings are WORLD tile offsets, not compass sectors on screen.
+     // Lineage 1 draws this grid as a diamond: +world-X points up/right,
+@@ -51,14 +59,13 @@
+     // unprojected heading 1 clicked upper-right and was received as heading 2.
+     static constexpr int worldX[8] = { 0, 1, 1, 1, 0,-1,-1,-1};
+     static constexpr int worldY[8] = {-1,-1, 0, 1, 1, 1, 0,-1};
+-    constexpr int halfTileWidth = 36;
+-    constexpr int halfTileHeight = 23;
+-    const int playerAnchorY = height * 42 / 100;
+-    const int x = width / 2 + (worldX[heading] + worldY[heading]) * halfTileWidth;
+-    const int y = playerAnchorY + (worldY[heading] - worldX[heading]) * halfTileHeight;
++    const int x = anchor.x + (worldX[heading] + worldY[heading]) * half_tile_width;
++    const int y = anchor.y + (worldY[heading] - worldX[heading]) * half_tile_height;
+     constexpr int margin = 10;
+-    return {x < margin ? margin : x >= width-margin ? width-margin-1 : x,
+-            y < margin ? margin : y >= height-margin ? height-margin-1 : y};
++    // Clamping changes the requested direction. Refuse an off-viewport click.
++    if (x < margin || x >= width-margin || y < margin || y >= height-margin)
++        return {-1, -1};
++    return {x, y};
+ }
+ 
+ void StepEngine::submit(int command, uint64_t now_ms) noexcept {
+@@ -69,7 +76,7 @@
+         desired_ = -1;
+         expires_ms_ = 0;
+         pulse_complete_ = false;
+-        rearm_after_release_ = false;
++        rearm_after_release_ = held_;
+         ++revision_;
+     } else if (command == -4) {
+         enabled_ = false;
+@@ -88,7 +95,7 @@
+         rearm_after_release_ = held_;
+         ++revision_;
+     } else if (command >= 0 && command < 8 && enabled_ && !manual_override_) {
+-        if (!pulse_complete_ && !held_) {
++        if ((!pulse_complete_ && !held_) || rearm_after_release_) {
+             desired_ = command;
+             expires_ms_ = now_ms + kStepExpiryMs;
+             ++revision_;
+@@ -104,7 +111,9 @@
+         if (user_left_button_down) {
+             if (held_) {
+                 held_ = false;
+-                pulse_complete_ = true;
++                pressed_ = false;
++                pulse_complete_ = false;
++                rearm_after_release_ = false;
+                 applied_ = -1;
+                 return {Action::release, -1};
+             }
+@@ -117,9 +126,11 @@
+         pulse_complete_ = true;
+         ++revision_;
+     }
+-    if (held_ && now_ms - pressed_at_ms_ >= kSinglePressMs) {
++    if (held_ && (rearm_after_release_ ||
++                 (pressed_ && now_ms - pressed_at_ms_ >= kSinglePressMs))) {
+         held_ = false;
+-        desired_ = -1;
++        pressed_ = false;
++        if (!rearm_after_release_) desired_ = -1;
+         // If CANCEL arrived while the mouse was pressed, the next server
+         // authorization MUST be able to produce a new click. The old code
+         // always set pulse_complete_ = true here, permanently swallowing
+@@ -129,13 +140,14 @@
+         applied_ = -1;
+         return {Action::release, -1};
+     }
+-    if (desired_ >= 0 && now_ms >= expires_ms_) {
++    if (desired_ >= 0 && !pressed_ && now_ms >= expires_ms_) {
+         desired_ = -1;
+         pulse_complete_ = true;
+     }
+     if (!enabled_ || desired_ < 0 || manual_override_) {
+         if (held_) {
+             held_ = false;
++            pressed_ = false;
+             applied_ = -1;
+             pulse_complete_ = !rearm_after_release_;
+             rearm_after_release_ = false;
+@@ -146,12 +158,21 @@
+     if (pulse_complete_) return {};
+     if (!held_) {
+         held_ = true;
++        pressed_ = false;
+         applied_ = desired_;
+-        pressed_at_ms_ = now_ms;
+         applied_revision_ = revision_;
+         return {Action::move_and_press, desired_};
+     }
+     return {};
++}
++
++bool StepEngine::confirm_press(uint64_t now_ms) noexcept {
++    if (!held_ || pressed_ || !enabled_ || manual_override_ ||
++            desired_ < 0 || rearm_after_release_ || now_ms >= expires_ms_)
++        return false;
++    pressed_ = true;
++    pressed_at_ms_ = now_ms;
++    return true;
+ }
+ 
+ void StepEngine::shutdown() noexcept {
+--- a/nativestep-client/src/step_network.cpp
++++ b/nativestep-client/src/step_network.cpp
+@@ -4,7 +4,7 @@
+ #define WIN32_LEAN_AND_MEAN
+ #define NOMINMAX
+ #include <winsock2.h>
+-#include <Windows.h>
++#include <windows.h>
+ #include <ws2tcpip.h>
+ #include <iphlpapi.h>
+ #include <tcpmib.h>
+--- a/nativestep-client/tests/step_core_test.cpp
++++ b/nativestep-client/tests/step_core_test.cpp
+@@ -1,8 +1,16 @@
+ #include "step_core.h"
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
+ #include <cassert>
+ #include <cstdio>
+ #include <cstring>
+ using namespace nativestep;
++Action drive(StepEngine& e, uint64_t now, bool manual) {
++    const Action result=e.tick(now, manual);
++    if (result.type==Action::move_and_press) assert(e.confirm_press(now));
++    return result;
++}
+ int main() {
+     // Check that each server tile step is projected into the correct
+     // isometric screen direction. This does NOT substitute for the game test.
+@@ -35,37 +43,37 @@
+     assert(parse_control("@@NATIVESTEP:STOP@@", 19) == -4);
+     StepEngine e;
+     e.submit(2, 999);
+-    assert(e.tick(1000, false).type == Action::none);
++    assert(drive(e, 1000, false).type == Action::none);
+     e.submit(-2, 1000);
+     assert(e.is_enabled());
+     e.submit(2, 1000);
+-    assert(e.tick(1000, false).type == Action::move_and_press);
++    assert(drive(e, 1000, false).type == Action::move_and_press);
+     // Preserve F8's held input long enough for the client to generate its
+     // first C_MoveChar. But never repeat a press for a refreshed offer.
+     e.submit(2, 1025);
+-    assert(e.tick(1025, false).type == Action::none);
+-    assert(e.tick(1299, false).type == Action::none);
+-    assert(e.tick(1300, false).type == Action::release);
++    assert(drive(e, 1025, false).type == Action::none);
++    assert(drive(e, 1299, false).type == Action::none);
++    assert(drive(e, 1300, false).type == Action::release);
+     for (unsigned n = 0; n < 10; ++n) {
+         e.submit(2, 1400 + n*25);
+-        assert(e.tick(1400 + n*25, false).type == Action::none);
++        assert(drive(e, 1400 + n*25, false).type == Action::none);
+     }
+     // Server C_MoveChar accepted: ordered CANCEL permits another step.
+     e.submit(-1, 1900);
+     e.submit(3, 1901);
+-    assert(e.tick(1901, false).type == Action::move_and_press);
++    assert(drive(e, 1901, false).type == Action::move_and_press);
+     e.submit(-1, 1902);
+-    assert(e.tick(1902, false).type == Action::release);
++    assert(drive(e, 1902, false).type == Action::release);
+     e.submit(4, 1920);
+-    assert(e.tick(1920, false).type == Action::move_and_press);
+-    assert(e.tick(1921, true).type == Action::release);
++    assert(drive(e, 1920, false).type == Action::move_and_press);
++    assert(drive(e, 1921, true).type == Action::release);
+     assert(e.has_manual_override());
+     e.submit(4, 1950);
+-    assert(e.tick(1950, false).type == Action::none);
++    assert(drive(e, 1950, false).type == Action::none);
+     e.submit(-4, 1960);
+     assert(!e.is_enabled());
+     e.submit(3, 1970);
+-    assert(e.tick(1970, false).type == Action::none);
++    assert(drive(e, 1970, false).type == Action::none);
+     // Item click may still be down when START is received.
+     // Regression: server CANCEL can arrive while mouse press is held.
+     // Before this fix, the timed-release branch latched pulse_complete_ and
+@@ -73,29 +81,29 @@
+     StepEngine r;
+     r.submit(-2, 3000);
+     r.submit(2, 3000);
+-    assert(r.tick(3000, false).type == Action::move_and_press);
++    assert(drive(r, 3000, false).type == Action::move_and_press);
+     r.submit(-1, 3015); // CANCEL before the scheduled 75ms release
+-    assert(r.tick(3310, false).type == Action::release);
++    assert(drive(r, 3310, false).type == Action::release);
+     r.submit(3, 3320);
+-    assert(r.tick(3320, false).type == Action::move_and_press);
+-    assert(r.tick(3621, false).type == Action::release);
++    assert(drive(r, 3320, false).type == Action::move_and_press);
++    assert(drive(r, 3621, false).type == Action::release);
+     // The other release branch (CANCEL immediately ticked) must rearm too.
+     StepEngine t;
+     t.submit(-2, 4000);
+     t.submit(2, 4000);
+-    assert(t.tick(4000, false).type == Action::move_and_press);
++    assert(drive(t, 4000, false).type == Action::move_and_press);
+     t.submit(-1, 4005);
+-    assert(t.tick(4006, false).type == Action::release);
++    assert(drive(t, 4006, false).type == Action::release);
+     t.submit(7, 4100);
+-    assert(t.tick(4100, false).type == Action::move_and_press);
++    assert(drive(t, 4100, false).type == Action::move_and_press);
+ 
+     StepEngine f;
+     f.submit(-2, 2000);
+-    assert(f.tick(2000, true).type == Action::none);
++    assert(drive(f, 2000, true).type == Action::none);
+     f.submit(1, 2001);
+-    assert(f.tick(2002, true).type == Action::none);
+-    assert(f.tick(2003, false).type == Action::move_and_press);
+-    assert(f.tick(2303, false).type == Action::release);
++    assert(drive(f, 2002, true).type == Action::none);
++    assert(drive(f, 2003, false).type == Action::move_and_press);
++    assert(drive(f, 2303, false).type == Action::release);
+     f.shutdown();
+     assert(!f.is_enabled());
+     // 10,000 adversarial offer/CANCEL cycles: one click per offer and
+@@ -104,19 +112,61 @@
+         StepEngine stress;
+         const uint64_t start = static_cast<uint64_t>(n) * 1000;
+         stress.submit(-2, start);
+-        assert(stress.tick(start, false).type == Action::none);
++        assert(drive(stress, start, false).type == Action::none);
+         stress.submit(n & 7, start + 1);
+-        assert(stress.tick(start + 1, false).type == Action::move_and_press);
++        assert(drive(stress, start + 1, false).type == Action::move_and_press);
+         stress.submit((n+1) & 7, start + 2);
+-        assert(stress.tick(start + 2, false).type == Action::none);
++        assert(drive(stress, start + 2, false).type == Action::none);
+         stress.submit(-1, start + 3);
+-        assert(stress.tick(start + 3, false).type == Action::release);
++        assert(drive(stress, start + 3, false).type == Action::release);
+         stress.submit((n+1) & 7, start + 4);
+-        assert(stress.tick(start + 4, false).type == Action::move_and_press);
++        assert(drive(stress, start + 4, false).type == Action::move_and_press);
+         stress.submit(-4, start + 5);
+-        assert(stress.tick(start + 5, false).type == Action::release);
++        assert(drive(stress, start + 5, false).type == Action::release);
+         stress.submit((n+2) & 7, start + 6);
+-        assert(stress.tick(start + 6, false).type == Action::none);
++        assert(drive(stress, start + 6, false).type == Action::none);
+     }
+-    std::puts("NativeStep core tests: PASS (one click per authorized step)");
++    // Cursor staging may be delayed by a busy UI. It must not consume the
++    // physical hold budget or allow a cancelled/expired reservation to click.
++    StepEngine staged;
++    staged.submit(-2, 10000);
++    staged.submit(2, 10000);
++    assert(staged.tick(10000, false).type == Action::move_and_press);
++    assert(staged.tick(10310, false).type == Action::none);
++    assert(staged.confirm_press(10310));
++    assert(!staged.confirm_press(10311));
++    assert(staged.tick(10609, false).type == Action::none);
++    assert(staged.tick(10610, false).type == Action::release);
++    StepEngine expired;
++    expired.submit(-2, 20000);
++    expired.submit(2, 20000);
++    assert(expired.tick(20000, false).type == Action::move_and_press);
++    assert(!expired.confirm_press(20450));
++    assert(expired.tick(20450, false).type == Action::release);
++    StepEngine cancelled;
++    cancelled.submit(-2, 30000);
++    cancelled.submit(2, 30000);
++    assert(cancelled.tick(30000, false).type == Action::move_and_press);
++    cancelled.submit(-1, 30001);
++    assert(!cancelled.confirm_press(30002));
++    // An ordered CANCEL followed by an offer before the next UI tick must
++    // release the old step AND retain the next step.
++    cancelled.submit(5, 30003);
++    assert(cancelled.tick(30003, false).type == Action::release);
++    const auto next=cancelled.tick(30004, false);
++    assert(next.type==Action::move_and_press && next.heading==5);
++    assert(cancelled.confirm_press(30004));
++    cancelled.submit(-4, 30005);
++    assert(cancelled.tick(30005, false).type==Action::release);
++    assert(!cancelled.confirm_press(30005));
++    // Calibration is independent of the old 42%-of-window heuristic.
++    const Point ground{400, 276};
++    assert(direction_point(1,800,600,ground,24,12).x==400);
++    assert(direction_point(1,800,600,ground,24,12).y==252);
++    assert(direction_point(3,800,600,ground,24,12).x==448);
++    assert(direction_point(3,800,600,ground,24,12).y==276);
++    assert(direction_point(0,800,600,{-1,200},24,12).x<0);
++    assert(direction_point(0,800,600,ground,0,12).x<0);
++    assert(direction_point(1,800,600,{400,15},24,12).x<0);
++    std::puts("NativeStep core tests: PASS (10,000 cycles, confirmed press, staged cancel/expiry, calibrated anchor)");
+ }
+--- a/nativestep-client/tests/win_host.cpp
++++ b/nativestep-client/tests/win_host.cpp
+@@ -3,7 +3,7 @@
+ // part of the DLL build. It moves the OS cursor and clicks the test window.
+ #define WIN32_LEAN_AND_MEAN
+ #define NOMINMAX
+-#include <Windows.h>
++#include <windows.h>
+ #include <windowsx.h>
+ #include <cstdio>
+ #include <cstring>
+@@ -14,6 +14,34 @@
+ using StopFn = void (__cdecl *)();
+ 
+ std::atomic<int> downCount{0}, upCount{0}, moveCount{0}, correctCursorCount{0};
++// This harness uses a fake player anchor, preserving any existing settings.
++struct TestCalibration {
++    bool ready = false, existed = false;
++    wchar_t backup[MAX_PATH]{};
++    TestCalibration(HWND hwnd) {
++        wchar_t temp[MAX_PATH]{};
++        if (!GetTempPathW(MAX_PATH, temp) || !GetTempFileNameW(temp, L"NST", 0, backup)) return;
++        existed = GetFileAttributesW(L".\\NativeStep.ini") != INVALID_FILE_ATTRIBUTES;
++        if (existed && !CopyFileW(L".\\NativeStep.ini", backup, FALSE)) {
++            DeleteFileW(backup); backup[0]=0; return;
++        }
++        RECT r{};
++        if (!GetClientRect(hwnd, &r)) return;
++        const auto set=[](const wchar_t* key, int value) {
++            wchar_t text[24]{}; swprintf_s(text, 24, L"%d", value);
++            return WritePrivateProfileStringW(L"Viewport",key,text,L".\\NativeStep.ini")!=FALSE;
++        };
++        ready=set(L"AnchorX",r.right/2) && set(L"AnchorY",r.bottom/2) &&
++              set(L"ClientWidth",r.right) && set(L"ClientHeight",r.bottom) &&
++              set(L"HalfTileWidth",36) && set(L"HalfTileHeight",23);
++    }
++    ~TestCalibration() {
++        if (!backup[0]) return;
++        if (existed) CopyFileW(backup,L".\\NativeStep.ini",FALSE);
++        else DeleteFileW(L".\\NativeStep.ini");
++        DeleteFileW(backup);
++    }
++};
+ LRESULT CALLBACK TestWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+     if (message == WM_MOUSEMOVE || message == WM_LBUTTONDOWN || message == WM_LBUTTONUP) {
+         if (message == WM_MOUSEMOVE) ++moveCount;
+@@ -70,6 +98,8 @@
+         DestroyWindow(hwnd);
+         return 6;
+     }
++    TestCalibration config(hwnd);
++    if (!config.ready) return 12;
+     HMODULE dll = LoadLibraryW(L".\\dinput.dll");
+     if (!dll) { std::printf("LoadLibrary error=%lu\n", GetLastError()); return 3; }
+     auto start = reinterpret_cast<StartFn>(GetProcAddress(dll, "NativeStep_Start"));
+--- a/nativestep-client/src/dinput_proxy.cpp
++++ b/nativestep-client/src/dinput_proxy.cpp
+@@ -7,8 +7,8 @@
+ #ifndef NOMINMAX
+ #define NOMINMAX
+ #endif
+-#include <Windows.h>
+-#include <Unknwn.h>
++#include <windows.h>
++#include <unknwn.h>
+ #include <cwchar>
+ 
+ namespace {

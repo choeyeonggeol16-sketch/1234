@@ -1,3 +1,13 @@
+## 2026-11-11 — 49027 자동사냥 입력 준비·취소 및 발 위치 보정
+
+[전체 소스·빌드된 DLL ZIP](downloads/L1J_49027_ConfirmedInput_AnchorCalibration_FULL_SRC_20261111.zip) · [DLL만 받기](downloads/L1J_49027_Client_DLL_20261111.zip) · [적용·검증 안내](patches/nativestep_input_20261111/README.md)
+
+실제 마우스 누름 성공 시점부터 유지 시간을 계산하고, `CANCEL → 다음 방향` 처리 중 이동 명령이 유실되는 경로를 수정했습니다. 게임 내 정상 걷기 입력을 사용하며, 자동사냥을 끈 상태에서 캐릭터 발밑에 커서를 놓고 **Ctrl+Alt+F9로 기준점을 먼저 보정**해야 합니다. 해상도 변경 시 재보정합니다. 첨부 원본의 서버 Java 967개는 변경하지 않았습니다.
+
+C++ 코어 10,000회 반복 및 지연·만료·취소 회귀검사(ASan/UBSan), Windows PE32 교차 빌드와 DirectInput 7개 export/ordinal 검사를 통과했습니다. **실제 Windows 게임 이동과 카메라 추적은 미검증입니다.** 이전 `dinput.dll`을 백업하고 적용하세요.
+
+---
+
 ## 2026-11-04 — PSS 금지 텔만 거절 V10
 
 [전체 소스 ZIP](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_V10_Teleport_Reject_Only_20261104_FULL_SRC.zip) · [V9 기준 패치](https://github.com/choeyeonggeol16-sketch/1234/raw/refs/heads/main/downloads/PSS_V10_Teleport_Reject_Only_20261104_PATCH.zip) · [설명](PSS_V10_TELEPORT_REJECT_ONLY_20261104.md)

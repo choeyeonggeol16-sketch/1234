@@ -1,0 +1,39 @@
+{
+  "windows_runtime_executed": false,
+  "live_game_camera_follow_verified": false,
+  "server_java_changed": false,
+  "regressions": {
+    "original": {
+      "delay": 2,
+      "coalesced": 4
+    },
+    "fixed": {
+      "delay": 0,
+      "coalesced": 0
+    }
+  },
+  "core_tests": "NativeStep core tests: PASS (10,000 cycles, confirmed press, staged cancel/expiry, calibrated anchor)",
+  "dll_sha256": "1216f9c3acad29e063c9059a9a34abdc45a46f8913675cffbe68895b451f59a7",
+  "dll_imports": [
+    "IPHLPAPI.DLL",
+    "KERNEL32.dll",
+    "msvcrt.dll",
+    "USER32.dll",
+    "WS2_32.dll"
+  ],
+  "directinput_ordinals_1_to_7": "PASS",
+  "unchanged_server_java_files": 967,
+  "changed_original_files": [
+    "nativestep-client/CMakeLists.txt",
+    "nativestep-client/README_FIRST_TEST.md",
+    "nativestep-client/include/step_core.h",
+    "nativestep-client/include/step_network.h",
+    "nativestep-client/src/client_bootstrap.cpp",
+    "nativestep-client/src/nativestep_dll.cpp",
+    "nativestep-client/src/step_core.cpp",
+    "nativestep-client/src/step_network.cpp",
+    "nativestep-client/tests/step_core_test.cpp",
+    "nativestep-client/tests/win_host.cpp",
+    "nativestep-client/src/dinput_proxy.cpp"
+  ]
+}
