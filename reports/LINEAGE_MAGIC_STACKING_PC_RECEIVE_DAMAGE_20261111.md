@@ -2,7 +2,7 @@
 
 - 작성일: 2026-11-11
 - **채택할 구현 기준: Kiyoshi L1J의 2초 고정 윈도우, 두 번째 마법부터 2/3 연속 감쇄**
-- **사용자 필수 요구: 마법 중첩 적용 여부는 반드시 피격자의 \`L1PcInstance.receiveDamage(..., boolean applyMagicStack)\`에서 판정한다.**
+- **사용자 필수 요구: 마법 중첩 적용 여부는 반드시 피격자의 `L1PcInstance.receiveDamage(..., boolean applyMagicStack)`에서 판정한다.**
 - 이 문서는 **구현 명세·공개소스 조사·테스트 계획**이다. RKern 서버 소스 자체를 수정한 것은 아니다.
 - 일본 공개 소스는 NC 서버 원본이 아니며, 실제 게임 시기·버전별 상세 규칙은 독립 실측 대상이다.
 - 별도 문서: [2016년 일본 단일 마법 데미지 공식 및 클래스·속성저항 설계](./LINEAGE_JP_MAGIC_DAMAGE_2016_FORMULA_IMPLEMENTATION_20261111.md) / [실측표 2,719개 데미지 재현 검증](./LINEAGE_JP_MAGIC_DAMAGE_VALIDATION_20261111.md).
@@ -24,7 +24,7 @@ Kiyoshi 방식이 **이번 RKern 작업의 선택된 복원 후보**라는 뜻�
 
 ## 2. Kiyoshi 공식
 
-적격 마법 타격 횟수를 현재 고정 2초 윈도우의 1부터 시작하는 정수 \`k\`라고 정의한다.
+적격 마법 타격 횟수를 현재 고정 2초 윈도우의 1부터 시작하는 정수 `k`라고 정의한다.
 
 ~~~text
 WINDOW_MS = 2,000
@@ -45,12 +45,12 @@ appliedDamage = damageComponent * multiplier
 | 다섯 번째 | 5 | 0.197531 | 59.259 |
 | 여섯 번째 | 6 | 0.131687 | 39.506 |
 
-**경계**: \`elapsed < 2000\`이면 같은 윈도우, \`elapsed >= 2000\`이면 신규 윈도우다.
+**경계**: `elapsed < 2000`이면 같은 윈도우, `elapsed >= 2000`이면 신규 윈도우다.
 
 **Kiyoshi 실코드의 상태 변화**:
 - oldTime=0일 때 최초 피격 시 oldTime=now, count=0, 감쇄 100%.
-- 그다음 \`now-oldTime < 2000\`이면 count를 먼저 증가시켜 \`pow(2/3, count)\`를 곱한다.
-- \`now-oldTime >= 2000\`이면 oldTime=now, count=0, 감쇄 100%.
+- 그다음 `now-oldTime < 2000`이면 count를 먼저 증가시켜 `pow(2/3, count)`를 곱한다.
+- `now-oldTime >= 2000`이면 oldTime=now, count=0, 감쇄 100%.
 - Kiyoshi 해당 코드에는 일본 원본의 **4초 부분 회복/지수 8 상한을 임의로 가져오지 않는다**.
 
 ## 3. 공개 소스 대조: 사실 확인
@@ -62,7 +62,7 @@ appliedDamage = damageComponent * multiplier
 | [일본 l1j/jp 키링크](https://github.com/l1j/jp/blob/master/src/jp/l1j/server/model/L1WeaponSkill.java) | 피격자 count, 2초 | 100% | 2~4초 | 키링크 피해에도 유사한 중첩 처리 |
 | [대만 l1j-tw](https://github.com/jiansoft/l1j-tw/blob/master/src/l1j/server/server/model/Instance/L1PcInstance.java) | 직전 피격 간격 | 시간에 따라 가변 | 매 적격 피격 시 시각 갱신 | receiveDamage의 boolean isMagicDamage 사용 |
 | [중국 l1jcn-zwb](https://github.com/a2323987/l1jcn-zwb/blob/master/L1J/src/com/lineage/server/model/Instance/L1PcInstance.java) | 직전 피격 간격 | 시간에 따라 가변 | 매 적격 피격 시 시각 갱신 | 대만 계열과 유사한 계산 |
-| [Lineage 880 Custom](https://github.com/sunsune331-ai/lineage-880-custom/blob/main/src/com/lineage/server/model/Instance/L1PcInstance.java) | 밀리초 단위 시간표 | 시간에 따라 가변 | 매 적격 피격 시 시각 갱신 | 1~2000ms에 대한 \`Map<Long,Double>\` 조회 |
+| [Lineage 880 Custom](https://github.com/sunsune331-ai/lineage-880-custom/blob/main/src/com/lineage/server/model/Instance/L1PcInstance.java) | 밀리초 단위 시간표 | 시간에 따라 가변 | 매 적격 피격 시 시각 갱신 | 1~2000ms에 대한 `Map<Long,Double>` 조회 |
 
 **중요**: 저장소 간 코드 복사·포크가 있으므로 "저장소 수 = 독립적인 증거 수"가 아니다. 위 사례는 **구현 형태**를 보여주고, 특정 연도의 NC 서버 내부 구현을 입증하지 않는다.
 
@@ -79,7 +79,7 @@ if (interval > 0) {
 }
 ~~~
 
-\`0 < Δt < 2000ms\`에서 대략 다음과 같이 단순화된다.
+`0 < Δt < 2000ms`에서 대략 다음과 같이 단순화된다.
 
 ~~~text
 R_time(Δt) = 1/3 + Δt/3000
@@ -130,19 +130,19 @@ public void receiveDamage(L1Character attacker,
 
 | 입력/사건 | 피해 감쇄 | 중첩 상태 변경 |
 |---|---|---|
-| \`applyMagicStack=false\` | 없음 | **절대 변경하지 않음** |
-| \`applyMagicStack=true\`, 첫 유효 타격 | 없음(100%) | 새로운 2초 윈도우 시작 |
-| \`true\`, 같은 윈도우의 2타 이상 | \`(2/3)^(k-1)\` | 같은 윈도우 카운트 증가 |
-| \`true\`, 정확히 2,000ms 이후 | 없음(100%) | 새로운 2초 윈도우 시작 |
-| \`true\`, 0/무효 피해 | 없음 | **변경하지 않음** (RKern 안전 구현 정책; 본섭 확정 실측 아님) |
-| \`false\` 피격을 적격 피격 사이에 삽입 | 없음 | 해당 이벤트는 중첩 시계와 횟수에 영향 없음 |
+| `applyMagicStack=false` | 없음 | **절대 변경하지 않음** |
+| `applyMagicStack=true`, 첫 유효 타격 | 없음(100%) | 새로운 2초 윈도우 시작 |
+| `true`, 같은 윈도우의 2타 이상 | `(2/3)^(k-1)` | 같은 윈도우 카운트 증가 |
+| `true`, 정확히 2,000ms 이후 | 없음(100%) | 새로운 2초 윈도우 시작 |
+| `true`, 0/무효 피해 | 없음 | **변경하지 않음** (RKern 안전 구현 정책; 본섭 확정 실측 아님) |
+| `false` 피격을 적격 피격 사이에 삽입 | 없음 | 해당 이벤트는 중첩 시계와 횟수에 영향 없음 |
 
-- 기존 receiveDamage의 세 번째 boolean이 이미 다른 뜻으로 쓰이는지 **최신 RKern 소스에서 확인한 뒤에만** 사용해야 한다. 기존 플래그 의미를 조용히 바꾸거나 기존 호출부의 \`false\`를 전체 변경하면 안 된다.
-- \`receiveDamage(attacker, damage)\`처럼 boolean 없는 오버로드도 기존 정책을 유지한다. 인자 기본값을 임의로 true로 바꾸지 않는다.
-- 중첩 제외 후보: Kiyoshi 소스는 \`MIND_BREAK\` 및 \`isKiringku\`를 제외한다. **호출부가 false를 전달**하도록 하고, 마법 자체가 아니어도 주어진 boolean 계약을 우선한다.
+- 기존 receiveDamage의 세 번째 boolean이 이미 다른 뜻으로 쓰이는지 **최신 RKern 소스에서 확인한 뒤에만** 사용해야 한다. 기존 플래그 의미를 조용히 바꾸거나 기존 호출부의 `false`를 전체 변경하면 안 된다.
+- `receiveDamage(attacker, damage)`처럼 boolean 없는 오버로드도 기존 정책을 유지한다. 인자 기본값을 임의로 true로 바꾸지 않는다.
+- 중첩 제외 후보: Kiyoshi 소스는 `MIND_BREAK` 및 `isKiringku`를 제외한다. **호출부가 false를 전달**하도록 하고, 마법 자체가 아니어도 주어진 boolean 계약을 우선한다.
 - 땡땡이/도트/범위형 스킬/마법봉/스킬 발동 무기/키링크/반사/흡혈/MP감소/NPC마법/힐을 데미지로 변환하는 경우 각각 분류표를 작성하여 명시적으로 true/false를 전달한다. **초기 일괄 true 강제 금지**.
 - 피격 PC 한 명에 복수의 공격자가 들어와도 한 상태를 공유한다. 동일 캐릭터에 대해 중첩 상태 변경과 HP 처리가 **순서대로 실행**되어야 한다. CIO 소유 샤드가 순서를 보장하는지 호출 경로를 확인하고 기존 소유 구조에서 처리한다.
-- 새 객체/Map/Timer/Thread/Queue는 이 로직을 위해 도입할 필요 없다. \`long\` 시각과 \`int\` 카운터면 충분하다.
+- 새 객체/Map/Timer/Thread/Queue는 이 로직을 위해 도입할 필요 없다. `long` 시각과 `int` 카운터면 충분하다.
 
 ## 6. Java 21용 Kiyoshi 상태 로직 참고 구현 (미적용)
 
@@ -179,13 +179,13 @@ private void resetMagicStackState() {
 }
 ~~~
 
-**주의 1 — 기존 Kiyoshi와 동일한 부분:** 최초 이벤트가 100%, 2초 고정 윈도우, 다음부터 2/3 지수, 중첩 이벤트 간 기준 시각 유지. \`System.nanoTime()\`은 경과 측정에 적합한 단조 시간이며 원본의 \`currentTimeMillis()\`와 실제 시스템 시계 변경 상황에서만 동작이 다를 수 있다.
+**주의 1 — 기존 Kiyoshi와 동일한 부분:** 최초 이벤트가 100%, 2초 고정 윈도우, 다음부터 2/3 지수, 중첩 이벤트 간 기준 시각 유지. `System.nanoTime()`은 경과 측정에 적합한 단조 시간이며 원본의 `currentTimeMillis()`와 실제 시스템 시계 변경 상황에서만 동작이 다를 수 있다.
 
-**주의 2 — 원본과 정확한 정수 데미지를 맞추려면 적용 위치가 중요하다.** 공개 Kiyoshi \`L1Magic\`은 **INT·속성 계수 이후, 크리티컬 1.5배와 OriginalMagicDamage 추가 이전**에 중첩을 곱한다. 반면 위 \`receiveDamage(attacker, damage, true)\` 스케치는 **최종 피해**를 감쇄한다. 둘은 특히 크리티컬·고정 추가 피해·중간 내림에서 같은 결과를 보장하지 않는다.
+**주의 2 — 원본과 정확한 정수 데미지를 맞추려면 적용 위치가 중요하다.** 공개 Kiyoshi `L1Magic`은 **INT·속성 계수 이후, 크리티컬 1.5배와 OriginalMagicDamage 추가 이전**에 중첩을 곱한다. 반면 위 `receiveDamage(attacker, damage, true)` 스케치는 **최종 피해**를 감쇄한다. 둘은 특히 크리티컬·고정 추가 피해·중간 내림에서 같은 결과를 보장하지 않는다.
 
 따라서 **최종 RKern 연결에서 강제할 계약**은 다음과 같다.
 1. **중첩 적용 여부와 상태 갱신은 receiveDamage의 boolean이 결정**한다 (반드시 지킴).
-2. **수치의 적용 단계**는 현재 복원된 마법 공식 및 Kiyoshi의 단계 순서를 함께 대조한 후 확정한다. Kiyoshi와 동등한 산술을 구현하려면 receiveDamage에서 중첩 대상 기초 피해만 감쇄한 다음 크리티컬/추가 데미지 항목을 처리할 수 있도록 **기존 로직의 원시 분해값 또는 추가 primitive 인자**를 전달할 수 있다. 이때 단순 \`damage * R\`로 최종피해를 일괄 곱해 Kiyoshi와 정확히 같다고 주장하지 않는다.
+2. **수치의 적용 단계**는 현재 복원된 마법 공식 및 Kiyoshi의 단계 순서를 함께 대조한 후 확정한다. Kiyoshi와 동등한 산술을 구현하려면 receiveDamage에서 중첩 대상 기초 피해만 감쇄한 다음 크리티컬/추가 데미지 항목을 처리할 수 있도록 **기존 로직의 원시 분해값 또는 추가 primitive 인자**를 전달할 수 있다. 이때 단순 `damage * R`로 최종피해를 일괄 곱해 Kiyoshi와 정확히 같다고 주장하지 않는다.
 3. 플래그는 연산 여부만 결정하며, false일 경우 **그 어떤 중첩 상태도 갱신하지 않는다**. 전체 데미지/HP 감소는 정상 진행한다.
 4. 실제 receiveDamage API 오버로드와 호출부는 **최신 전체 SRC 확인 후** 최소 변경으로 통합하고, 기존 HP 처리 경로를 지우거나 새 큐/워커를 추가하지 않는다.
 
@@ -214,4 +214,4 @@ private void resetMagicStackState() {
 
 **미완료:** 실제 RKern Java 코드 반영, 전체 호출부의 boolean 매핑, Kiyoshi 중첩 적용 위치와 복원된 2016 마법 공식의 정수 데미지 일치 검증, 실제 본서버 2초/타격별 실측, JVM 통합/인게임 테스트.
 
-**운영 채택 판단**: 첫 두 타격의 실제 감쇄 여부와 2초 경계는 독립 실측으로 확인하고, \`receiveDamage\` 내부에서만 중첩 상태를 변경하도록 보장할 것.
+**운영 채택 판단**: 첫 두 타격의 실제 감쇄 여부와 2초 경계는 독립 실측으로 확인하고, `receiveDamage` 내부에서만 중첩 상태를 변경하도록 보장할 것.
