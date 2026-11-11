@@ -1,0 +1,36 @@
+{
+  "bundle": "RKern_Aden_ALL_FIXES_HPMP_FULL_SRC_20261112.zip",
+  "sha256": "5dfeb37277d733dc53daafc475013942b260eaa3d4a2e99a4808f059dbd3f08f",
+  "base_revision": "86a344aa41bfbe967dffb101ad108b6248c3fd4a",
+  "report_revision": "0a49600c6964898fbf65df24e796591f412d82bd",
+  "source_files": 1697,
+  "java_files": 1696,
+  "changed_or_added_java_files": [
+    "src/l1j/server/server/model/HpMpGrowthHistory.java",
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "src/l1j/server/server/model/L1Character.java",
+    "src/l1j/server/server/model/L1ReturnStatTemp.java",
+    "src/l1j/server/server/model/character/scheduler/CRegenController.java",
+    "src/l1j/server/server/model/network/core/cs/packet/CS_CreateChar.java",
+    "src/l1j/server/server/model/network/core/cs/packet/CS_ReturnStatus.java",
+    "src/l1j/server/server/packets/Protocol/Packet/SC_CharStat.java",
+    "src/l1j/server/server/storage/mysql/MySqlCharacterStorage.java",
+    "src/l1j/server/server/utils/CalcStat.java"
+  ],
+  "required_migration": "database/RKern_HPMP_GROWTH_20261112.sql",
+  "legacy_policy": "Retain unknown earned growth below first-recorded baseline; no subtraction or duplicate growth reward when revisiting those levels. Known deltas replay exactly until a validated stat reset replaces history.",
+  "baseline_policy": "Existing creation HP/MP rules retained and shared with stat reset. Sheet comparison uses sheet initial values; not a claim that game creation MP equals the sheet fixed baseline.",
+  "full_compile": "1696 production Java files, Java 21 preview, zero errors, five pre-existing removal warnings",
+  "validation": [
+    "7200 cached research-sheet growth means exactly matched for the sheet stat-allocation profile",
+    "360 MP range combinations and 360000 actual rolls",
+    "actual PC max getters, allocation UI, permanent/temporary stats and regen controller",
+    "earned-delta roundtrips, restart decode, legacy floor, cap32767 and reset staging",
+    "actual JDBC snapshot binding, H2 transactional rollback/commit/reopen, history-aware equality; old MySQL IF expression adapted only in the H2 fixture",
+    "concurrent snapshots/level changes and actual addExp lock-order contention",
+    "prior magic formula/stacking/physical regressions; full ZIP byte/CRC/diff validation"
+  ],
+  "native_changes": false,
+  "production_db_accessed": false,
+  "limitations": "No live Windows IOCP/client/production MySQL/CacheD daemon or operational load test; research-model match is not NC production accuracy."
+}

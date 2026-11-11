@@ -1,0 +1,5 @@
+PASS armed-core minimum 1, unarmed 0, additive separation, dual/Double Break order, final multiplier arithmetic
+PASS 10609 crow probability combinations, fractional percentages, SOF buff and melee-only scope
+PASS actual fixed-DR -> multiplier -> immune sequence, magic/legacy exclusion and full blocks
+PASS actual AttackTargetData pipeline: baseline 90, Burning 135, Crash 130, Fury 260, combined 390
+Production classes compiled/executed; test PCs control effects, procs and world side effects; no live Windows/client/DB.

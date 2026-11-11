@@ -1,3 +1,11 @@
+## 2026-11-12 — Aden HP·MP 및 전체 수정 통합 소스
+
+[**최신 전체 src 다운로드**](downloads/RKern_Aden_ALL_FIXES_HPMP_FULL_SRC_20261112.zip) · [**적용 전 필수 SQL**](database/RKern_HPMP_GROWTH_20261112.sql) · [구현·검증 안내](patches/rkern_hpmp_20261112/README.md)
+
+순수 CON/WIS 보너스, HP/MP 실제 성장·표시, MP 자연회복, 순수45 무게 예외, 저장 가능한 성장 이력/레벨다운을 반영했습니다. 이전 물리·마법·IOCP·스레드풀 수정 포함. SQL 컬럼 추가 후 재빌드가 필요합니다. Java1,696개 전체 컴파일·7,200개 시트 평균 대조·관련 회귀 통과. Windows 실게임·운영 MySQL은 미검증입니다.
+
+---
+
 ## 2026-11-11 — Aden 물리 피해·마법·네트워크 최신 통합 소스
 
 [**최신 전체 src 다운로드**](downloads/RKern_Aden_IOCP_PHYSICAL_MAGIC_FULL_SRC_20261111.zip) · [수정·검증 내역](patches/rkern_physical_20261111/README.md) · [SHA-256](downloads/RKern_Aden_IOCP_PHYSICAL_MAGIC_FULL_SRC_20261111.zip.sha256)

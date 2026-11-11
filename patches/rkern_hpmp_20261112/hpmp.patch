@@ -1,0 +1,857 @@
+diff --git a/src/l1j/server/server/model/HpMpGrowthHistory.java b/src/l1j/server/server/model/HpMpGrowthHistory.java
+new file mode 100644
+index 0000000..0e90d64
+--- /dev/null
++++ b/src/l1j/server/server/model/HpMpGrowthHistory.java
+@@ -0,0 +1,59 @@
++package l1j.server.server.model;
++
++/** Per-character earned deltas. Save together with level/HP/MP in one characters row.
++ * The legacy floor is historical data we do not possess, never a guessed reroll. */
++public final class HpMpGrowthHistory {
++    public static final int MAX_LEVEL = 127;
++    private final int floorLevel;
++    private final int[] hp = new int[MAX_LEVEL + 1];
++    private final int[] mp = new int[MAX_LEVEL + 1];
++    private final boolean[] known = new boolean[MAX_LEVEL + 1];
++
++    public HpMpGrowthHistory(int baselineLevel) {
++        if (baselineLevel < 1 || baselineLevel > MAX_LEVEL)
++            throw new IllegalArgumentException("Invalid growth baseline level");
++        floorLevel = baselineLevel;
++    }
++    public int floorLevel() { return floorLevel; }
++    public boolean known(int level) { checkLevel(level); return known[level]; }
++    public int hp(int level) { checkKnown(level); return hp[level]; }
++    public int mp(int level) { checkKnown(level); return mp[level]; }
++    public void record(int level, int hpDelta, int mpDelta) {
++        checkLevel(level);
++        if (level <= floorLevel || hpDelta < 0 || hpDelta > 32767 || mpDelta < 0 || mpDelta > 32767)
++            throw new IllegalArgumentException("Invalid earned growth delta");
++        if (known[level]) throw new IllegalStateException("Growth already recorded");
++        hp[level] = hpDelta; mp[level] = mpDelta; known[level] = true;
++    }
++    private static void checkLevel(int level) {
++        if (level < 1 || level > MAX_LEVEL) throw new IllegalArgumentException("Invalid growth level");
++    }
++    private void checkKnown(int level) {
++        checkLevel(level);
++        if (!known[level]) throw new IllegalStateException("No historical growth for level " + level);
++    }
++    public String encode() {
++        StringBuilder out = new StringBuilder("1:").append(floorLevel);
++        for (int i = floorLevel + 1; i <= MAX_LEVEL; i++) {
++            if (known[i]) out.append(';').append(i).append(',').append(hp[i]).append(',').append(mp[i]);
++        }
++        return out.toString();
++    }
++    public static HpMpGrowthHistory decode(String text) {
++        if (text == null || text.isEmpty()) return null;
++        if (text.length() > 8192) throw new IllegalArgumentException("Growth history too long");
++        String[] entries = text.split(";", -1);
++        String[] header = entries[0].split(":", -1);
++        if (header.length != 2 || !"1".equals(header[0])) throw new IllegalArgumentException("Unknown growth history version");
++        HpMpGrowthHistory history = new HpMpGrowthHistory(Integer.parseInt(header[1]));
++        int expected = history.floorLevel + 1;
++        for (int i = 1; i < entries.length; i++) {
++            String[] parts = entries[i].split(",", -1);
++            if (parts.length != 3) throw new IllegalArgumentException("Malformed growth history");
++            int level = Integer.parseInt(parts[0]);
++            if (level != expected++) throw new IllegalArgumentException("Nonconsecutive growth history");
++            history.record(level, Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
++        }
++        return history;
++    }
++}
+diff --git a/src/l1j/server/server/model/Instance/L1PcInstance.java b/src/l1j/server/server/model/Instance/L1PcInstance.java
+index 664ea42..2ef4b0a 100644
+--- a/src/l1j/server/server/model/Instance/L1PcInstance.java
++++ b/src/l1j/server/server/model/Instance/L1PcInstance.java
+@@ -4186,15 +4186,10 @@ public class L1PcInstance extends L1Character {
+ 	}
+ 
+ 	public void addBaseMaxHp(short i) {
+-		i += _baseMaxHp;
+-		if (i >= 32767) {
+-			i = 32767;
+-		} else if (i < 1) {
+-			i = 1;
+-		}
+-		addMaxHp(i - _baseMaxHp);
+-		_baseMaxHp = i;
+-	}
++        final int next = Math.max(1, Math.min(32767, (int) _baseMaxHp + i));
++        addMaxHp(next - _baseMaxHp);
++        _baseMaxHp = (short) next;
++    }
+ 
+ 	public int getBaseMaxMp() {
+ 		return _baseMaxMp;
+@@ -4497,6 +4492,9 @@ public class L1PcInstance extends L1Character {
+ 	}
+ 
+ 	public void save() {
++        // A reset stages new growth over several client messages. Save only
++        // after final validation publishes the staged ledger and clears ReturnStat.
++        if (rst != null && getReturnStat() != 0) return;
+ 		try {
+ 			if (isGhost()) {
+ 				return;
+@@ -4603,7 +4601,12 @@ public class L1PcInstance extends L1Character {
+ 	}
+ 
+ 
+-	public synchronized void addExp(int exp) {
++    public void addExp(int exp) {
++        // Same lock/order as character snapshots: EXP, level, earned growth and
++        // totals form one captured state. Do not hold this monitor while waiting
++        // for the user lock (snapshot getters also use this monitor).
++        lockUserState();
++        try {
+ 	    if (Config.STANDBY_SERVER) {
+ 	        return;
+ 	    }
+@@ -4619,7 +4622,9 @@ public class L1PcInstance extends L1Character {
+ 	    if (_exp != oldExp) {
+ 	        onChangeExp();
+ 	    }
+-	}
++
++        } finally { unlockUserState(); }
++    }
+ 
+ 	public void onChangeLawful() {
+ 	    final int lawful = getLawful();
+@@ -4835,8 +4840,71 @@ public class L1PcInstance extends L1Character {
+     }
+ 
+ 	/** 해당레벨 이상시 조건을 출력한다 **/
++    private l1j.server.server.model.HpMpGrowthHistory hpMpGrowth;
++    private boolean warnedLegacyGrowth;
++
++    public String encodeHpMpGrowth() {
++        lockUserState();
++        try { return hpMpGrowth == null ? null : hpMpGrowth.encode(); }
++        finally { unlockUserState(); }
++    }
++    public void restoreHpMpGrowth(String encoded) {
++        lockUserState();
++        try { hpMpGrowth = l1j.server.server.model.HpMpGrowthHistory.decode(encoded); }
++        finally { unlockUserState(); }
++    }
++    public void completeStatResetGrowth(l1j.server.server.model.HpMpGrowthHistory history) {
++        lockUserState();
++        try { hpMpGrowth = history; warnedLegacyGrowth = false; }
++        finally { unlockUserState(); }
++    }
++    /** Called on the character owner; same snapshot/SQL stores deltas and totals. */
++    public void applyHpMpLevelTransition(int from, int to) {
++        lockUserState();
++        try { applyHpMpLevelTransitionOwned(from, to); }
++        finally { unlockUserState(); }
++    }
++    private void applyHpMpLevelTransitionOwned(int from, int to) {
++        if (from < 1 || to < 1 || from > 127 || to > 127)
++            throw new IllegalArgumentException("Invalid HP/MP level transition");
++        if (hpMpGrowth == null) hpMpGrowth = new l1j.server.server.model.HpMpGrowthHistory(from);
++        final int step = to > from ? 1 : -1;
++        for (int level = from; level != to;) {
++            int target = level + step;
++            int earnedLevel = step > 0 ? target : level;
++            if (earnedLevel <= hpMpGrowth.floorLevel()) {
++                // Unknown legacy levels are preserved, not randomly subtracted.
++                // Regaining these same levels grants no second HP/MP reward.
++                if (!warnedLegacyGrowth) {
++                    _log.warning("HP/MP legacy growth retained below history baseline: char=" + getId());
++                    warnedLegacyGrowth = true;
++                }
++            } else if (step < 0) {
++                addBaseMaxHp((short) -hpMpGrowth.hp(earnedLevel));
++                addBaseMaxMp(-hpMpGrowth.mp(earnedLevel));
++            } else if (hpMpGrowth.known(earnedLevel)) {
++                addBaseMaxHp((short) hpMpGrowth.hp(earnedLevel));
++                addBaseMaxMp(hpMpGrowth.mp(earnedLevel));
++            } else {
++                int oldHp = getBaseMaxHp(), oldMp = getBaseMaxMp();
++                addBaseMaxHp(CalcStat.increaseHp(getType(), getAbility().getCon()));
++                addBaseMaxMp(CalcStat.increaseMp(getType(), getAbility().getWis()));
++                hpMpGrowth.record(earnedLevel, getBaseMaxHp() - oldHp, getBaseMaxMp() - oldMp);
++            }
++            level = target;
++        }
++    }
++
++    private void updateLevelAndGrowth(int gap) {
++        lockUserState();
++        try {
++            resetLevel();
++            applyHpMpLevelTransitionOwned(getLevel() - gap, getLevel());
++        } finally { unlockUserState(); }
++    }
++
+ 	private void levelUp(int gap) {
+-		resetLevel();
++        updateLevelAndGrowth(gap);
+ 
+ 		SC_RestExpInfo.send(this);
+ 		RankUserLoader.getInstance().onUser(this);
+@@ -4919,12 +4987,6 @@ public class L1PcInstance extends L1Character {
+ 			SC_CharTitle.broadcast(this, getId(), "");
+ 		}
+ 
+-		for (int i = 0; i < gap; i++) {
+-			short randomHp = CalcStat.increaseHp(getType(), getAbility().getCon());
+-			int randomMp = CalcStat.increaseMp(getType(), getAbility().getWis());
+-			addBaseMaxHp(randomHp);
+-			addBaseMaxMp(randomMp);
+-		}
+ 
+ 		this.setCurrentHp(getMaxHp());
+ 		this.setCurrentMp(getMaxMp());
+@@ -5007,16 +5069,10 @@ public class L1PcInstance extends L1Character {
+ 	}
+ 
+ 	private void levelDown(int gap) {
+-		resetLevel();
++        updateLevelAndGrowth(gap);
+ 
+ 		SC_RestExpInfo.send(this);
+ 
+-		for (int i = 0; i > gap; i--) {
+-			short randomHp = CalcStat.increaseHp(getType(), getAbility().getCon());
+-			int randomMp = CalcStat.increaseMp(getType(), getAbility().getWis());
+-			addBaseMaxHp((short) -randomHp);
+-			addBaseMaxMp((short) -randomMp);
+-		}
+ 		resetBaseAll();
+ 		resetBaseAc();
+ 		resetBaseMr();
+diff --git a/src/l1j/server/server/model/L1Character.java b/src/l1j/server/server/model/L1Character.java
+index bd50c14..0add2bd 100644
+--- a/src/l1j/server/server/model/L1Character.java
++++ b/src/l1j/server/server/model/L1Character.java
+@@ -750,14 +750,8 @@ public class L1Character extends L1Object {
+ 			return _maxHp;
+ 
+ 		int maxhp = _maxHp;
+-		if(this instanceof L1PcInstance){
+-			if (getAbility().getTotalCon() >= 25)
+-				maxhp += 50;
+-			if (getAbility().getTotalCon() >= 35)
+-				maxhp += 100;
+-			if (getAbility().getTotalCon() >= 45)
+-				maxhp += 150;
+-		}
++        if (this instanceof L1PcInstance)
++            maxhp += CalcStat.pureHpMpBonus(getAbility().getCon());
+ 		return maxhp;
+ 	}
+ 
+@@ -770,7 +764,7 @@ public class L1Character extends L1Object {
+ 		_maxHp = (int) IntRange.ensure(_trueMaxHp, 1, 10000000);
+         for (;;) {
+             final int oldHp = CURRENT_HP.get(this);
+-            final int next = Math.min(oldHp, _maxHp);
++            final int next = Math.min(oldHp, getMaxHp());
+             if (next == oldHp || CURRENT_HP.compareAndSet(this, oldHp, next)) break;
+         }
+ 	}
+@@ -780,20 +774,15 @@ public class L1Character extends L1Object {
+ 			return _maxMp;
+ 
+ 		int maxmp = _maxMp;
+-		int wis = getAbility().getTotalWis();
+-		if (wis >= 25)
+-			maxmp += 50;
+-		if (wis >= 35)
+-			maxmp += 100;
+-		if (wis >= 45)
+-			maxmp += 150;
++        int wis = this instanceof L1PcInstance ? getAbility().getWis() : getAbility().getTotalWis();
++        maxmp += CalcStat.pureHpMpBonus(wis);
+ 		return maxmp;
+ 	}
+ 
+ 	public void setMaxMp(int mp) {
+ 		_trueMaxMp = mp;
+ 		_maxMp = (int) IntRange.ensure(_trueMaxMp, 0, 10000000);
+-		_currentMp = Math.min(_currentMp, _maxMp);
++		_currentMp = Math.min(_currentMp, getMaxMp());
+ 	}
+ 
+ 	public void addMaxMp(int i) {
+diff --git a/src/l1j/server/server/model/L1ReturnStatTemp.java b/src/l1j/server/server/model/L1ReturnStatTemp.java
+index 3768a04..a1a97f2 100644
+--- a/src/l1j/server/server/model/L1ReturnStatTemp.java
++++ b/src/l1j/server/server/model/L1ReturnStatTemp.java
+@@ -1,6 +1,7 @@
+ package l1j.server.server.model;
+ 
+ public  class L1ReturnStatTemp {
++    public HpMpGrowthHistory hpMpGrowth = new HpMpGrowthHistory(1);
+ 	public int basestr;
+ 	public int baseint;
+ 	public int basewis;
+diff --git a/src/l1j/server/server/model/character/scheduler/CRegenController.java b/src/l1j/server/server/model/character/scheduler/CRegenController.java
+index 556f13f..cff0c54 100644
+--- a/src/l1j/server/server/model/character/scheduler/CRegenController.java
++++ b/src/l1j/server/server/model/character/scheduler/CRegenController.java
+@@ -219,13 +219,8 @@ public final class CRegenController {
+         if (pc.getCurrentMp() >= pc.getMaxMp()) return;
+         if (pc.hasSkillEffect(L1SkillId.ABSOLUTE_BARRIER)) return;
+ 
+-        int baseMpr = 1;
+-        int wis = pc.getAbility().getTotalWis();
+-        if (wis == 15 || wis == 16) baseMpr = 2;
+-        else if (wis == 17) baseMpr = 3;
+-        else if (wis >= 18) baseMpr += (wis - 14);
+-
+-        int baseStatMpr = CalcStat.엠회복틱(pc.getAbility().getBaseWis());
++        int baseMpr = CalcStat.naturalMpRegen(pc.getLevel(),
++                pc.getAbility().getTotalWis(), pc.getAbility().getWis());
+ 
+         if (pc.hasSkillEffect(L1SkillId.STATUS_BLUE_POTION2)) baseMpr += 1;
+         else if (pc.hasSkillEffect(L1SkillId.STATUS_BLUE_POTION)) baseMpr += 2;
+@@ -258,9 +253,10 @@ public final class CRegenController {
+ 
+         int itemMpr = pc.getMpr();
+ 
+-        if (pc.get_food() < 40 || isOverWeight(pc)) return;
++        if (pc.get_food() < 40) return;
+ 
+-        int mpr = baseMpr + itemMpr + baseStatMpr;
++        int mpr = CalcStat.naturalRegenAfterWeight(baseMpr + itemMpr,
++                isOverWeight(pc), pc.getAbility().getWis());
+         int newMp = pc.getCurrentMp() + mpr;
+         if (newMp > pc.getMaxMp()) newMp = pc.getMaxMp();
+         pc.setCurrentMp(newMp);
+@@ -278,7 +274,7 @@ public final class CRegenController {
+             if (pc.getAbility().getTotalCon() > 25) maxBonus = 14;
+         }
+ 
+-        int basebonus = CalcStat.피회복틱(pc.getAbility().getBaseCon());
++        int basebonus = CalcStat.피회복틱(pc.getAbility().getCon());
+         int equipHpr = pc.getHpr();
+ 
+         int bonus = ThreadLocalRandom.current().nextInt(maxBonus) + 1;
+@@ -301,13 +297,16 @@ public final class CRegenController {
+             bonus += 3;
+         }
+ 
+-        if (pc.get_food() < 40 || isOverWeight(pc) || pc.hasSkillEffect(L1SkillId.BERSERKERS)) {
++        if (pc.get_food() < 40 || pc.hasSkillEffect(L1SkillId.BERSERKERS)) {
+             bonus = 0;
+             basebonus = 0;
+             equipHpr = 0;
+         }
+ 
+-        int newHp = pc.getCurrentHp() + bonus + equipHpr + basebonus;
++        int normalHpr = bonus + equipHpr + basebonus;
++        int recovered = CalcStat.naturalRegenAfterWeight(normalHpr,
++                isOverWeight(pc), pc.getAbility().getCon());
++        int newHp = pc.getCurrentHp() + recovered;
+         if (newHp < 1) newHp = 1;
+ 
+         if (isUnderwater(pc)) {
+diff --git a/src/l1j/server/server/model/network/core/cs/packet/CS_CreateChar.java b/src/l1j/server/server/model/network/core/cs/packet/CS_CreateChar.java
+index b1f0019..098d2ef 100644
+--- a/src/l1j/server/server/model/network/core/cs/packet/CS_CreateChar.java
++++ b/src/l1j/server/server/model/network/core/cs/packet/CS_CreateChar.java
+@@ -238,31 +238,8 @@ public final class CS_CreateChar {
+ 			pc.setClassId(FEMALE_LIST[pc.getType()]);
+ 		}
+ 
+-		if (pc.isCrown()) {
+-			init_hp = 14;
+-			init_mp = (pc.getAbility().getBaseWis() >= 16) ? (byte)4 : (pc.getAbility().getBaseWis() >= 12) ? (byte)3 : (byte)2;
+-		} else if (pc.isKnight()) {
+-			init_hp = 16;
+-			init_mp = (pc.getAbility().getBaseWis() >= 12) ? (byte)2 : (byte)1;
+-		} else if (pc.isElf()) {
+-			init_hp = 15;
+-			init_mp = (pc.getAbility().getBaseWis() >= 16) ? (byte)6 : (byte)4;
+-		} else if (pc.isWizard()) {
+-			init_hp = 12;
+-			init_mp = (pc.getAbility().getBaseWis() >= 16) ? (byte)8 : (byte)6;
+-		} else if (pc.isDarkelf()) {
+-			init_hp = 12;
+-			init_mp = (pc.getAbility().getBaseWis() >= 16) ? (byte)6 : (pc.getAbility().getBaseWis() >= 12) ? (byte)4 : (byte)3;
+-		} else if (pc.isDragonknight()) {
+-			init_hp = 16;
+-			init_mp = 2;
+-		} else if (pc.isBlackwizard()) {
+-			init_hp = 14;
+-			init_mp = (pc.getAbility().getBaseWis() >= 16) ? (byte)6 : (byte)5;
+-		} else if (pc.isWarrior()) {
+-			init_hp = 16;
+-			init_mp = (pc.getAbility().getBaseWis() >= 12) ? (byte)2 : (byte)1;
+-		}
++        init_hp = l1j.server.server.utils.CalcStat.initialHp(pc.getType());
++        init_mp = l1j.server.server.utils.CalcStat.initialMp(pc.getType(), pc.getAbility().getBaseWis());
+ 
+ 		if (Config.캐릭터시작점) {
+ 			pc.setX(START_LOC_X[startPosType][startPos]);
+@@ -299,6 +276,7 @@ public final class CS_CreateChar {
+ 		pc.setMonitor(false);
+ 		pc.setGmInvis(false);
+ 		pc.setExp(0);
++        pc.setLevel(1);
+ 		pc.setHighLevel(1);
+ 		pc.setStatus(0);
+ 		pc.setClanname("");
+diff --git a/src/l1j/server/server/model/network/core/cs/packet/CS_ReturnStatus.java b/src/l1j/server/server/model/network/core/cs/packet/CS_ReturnStatus.java
+index 8100c78..a0b01b6 100644
+--- a/src/l1j/server/server/model/network/core/cs/packet/CS_ReturnStatus.java
++++ b/src/l1j/server/server/model/network/core/cs/packet/CS_ReturnStatus.java
+@@ -325,6 +325,7 @@ public final class CS_ReturnStatus {
+ 			return;
+ 		}
+ 
++		pc.completeStatResetGrowth(pc.rst.hpMpGrowth);
+ 		pc.setReturnStat(0);
+ 		saveAsync(pc);
+ 		pc.rst = null;
+@@ -392,6 +393,7 @@ public final class CS_ReturnStatus {
+ 				return;
+ 			}
+ 
++			pc.completeStatResetGrowth(pc.rst.hpMpGrowth);
+ 			pc.setReturnStat(0);
+ 			saveAsync(pc);
+ 			pc.rst = null;
+@@ -453,8 +455,12 @@ public final class CS_ReturnStatus {
+ 		final int hp = CalcStat.increaseHp(pc.getType(), (byte) (pc.rst.con + pc.rst.basecon));
+ 		final int mp = CalcStat.increaseMp(pc.getType(), (byte) (pc.rst.wis + pc.rst.basewis));
+ 
+-		pc.rst.upHp += hp;
+-		pc.rst.upMp += mp;
++        int oldHp = Math.min(32767, pc.rst.baseHp + pc.rst.upHp);
++        int oldMp = Math.min(32767, pc.rst.baseMp + pc.rst.upMp);
++        int nextHp = Math.min(32767, oldHp + hp), nextMp = Math.min(32767, oldMp + mp);
++        pc.rst.hpMpGrowth.record(pc.rst.level, nextHp - oldHp, nextMp - oldMp);
++        pc.rst.upHp = nextHp - pc.rst.baseHp;
++        pc.rst.upMp = nextMp - pc.rst.baseMp;
+ 	}
+ 
+ 	// =========================================================
+@@ -490,158 +496,12 @@ public final class CS_ReturnStatus {
+ 	// =========================================================
+ 
+ 	private static short getInitHp(L1PcInstance pc) {
+-
+-		if (pc.isCrown()) {
+-			return 14;
+-		}
+-		if (pc.isKnight()) {
+-			return 16;
+-		}
+-		if (pc.isElf()) {
+-			return 15;
+-		}
+-		if (pc.isWizard()) {
+-			return 12;
+-		}
+-		if (pc.isDarkelf()) {
+-			return 12;
+-		}
+-		if (pc.isDragonknight()) {
+-			return 16;
+-		}
+-		if (pc.isBlackwizard()) {
+-			return 14;
+-		}
+-		if (pc.isWarrior()) {
+-			return 16;
+-		}
+-
+-		return 12;
+-	}
++        return CalcStat.initialHp(pc.getType());
++    }
+ 
+ 	private static short getInitMp(L1PcInstance pc, int baseWis) {
+-
+-		if (pc.isDragonknight()) {
+-			return 2;
+-		}
+-
+-		if (pc.isCrown()) {
+-			switch (baseWis) {
+-			case 11:
+-				return 2;
+-			case 12:
+-			case 13:
+-			case 14:
+-			case 15:
+-				return 3;
+-			case 16:
+-			case 17:
+-			case 18:
+-				return 4;
+-			default:
+-				return 2;
+-			}
+-		}
+-
+-		if (pc.isKnight()) {
+-			switch (baseWis) {
+-			case 9:
+-			case 10:
+-			case 11:
+-				return 1;
+-			case 12:
+-			case 13:
+-				return 2;
+-			default:
+-				return 1;
+-			}
+-		}
+-
+-		if (pc.isElf()) {
+-			switch (baseWis) {
+-			case 12:
+-			case 13:
+-			case 14:
+-			case 15:
+-				return 4;
+-			case 16:
+-			case 17:
+-			case 18:
+-				return 6;
+-			default:
+-				return 4;
+-			}
+-		}
+-
+-		if (pc.isWizard()) {
+-			switch (baseWis) {
+-			case 12:
+-			case 13:
+-			case 14:
+-			case 15:
+-				return 6;
+-			case 16:
+-			case 17:
+-			case 18:
+-				return 8;
+-			default:
+-				return 6;
+-			}
+-		}
+-
+-		if (pc.isDarkelf()) {
+-			switch (baseWis) {
+-			case 10:
+-			case 11:
+-				return 3;
+-			case 12:
+-			case 13:
+-			case 14:
+-			case 15:
+-				return 4;
+-			case 16:
+-			case 17:
+-			case 18:
+-				return 6;
+-			default:
+-				return 3;
+-			}
+-		}
+-
+-		if (pc.isBlackwizard()) {
+-			switch (baseWis) {
+-			case 10:
+-			case 11:
+-			case 12:
+-			case 13:
+-			case 14:
+-			case 15:
+-				return 5;
+-			case 16:
+-			case 17:
+-			case 18:
+-				return 6;
+-			default:
+-				return 5;
+-			}
+-		}
+-
+-		if (pc.isWarrior()) {
+-			switch (baseWis) {
+-			case 9:
+-			case 10:
+-			case 11:
+-				return 1;
+-			case 12:
+-			case 13:
+-				return 2;
+-			default:
+-				return 1;
+-			}
+-		}
+-
+-		return 2;
+-	}
++        return CalcStat.initialMp(pc.getType(), baseWis);
++    }
+ 
+ 	// =========================================================
+ 	// 유틸리티 (MISC)
+diff --git a/src/l1j/server/server/packets/Protocol/Packet/SC_CharStat.java b/src/l1j/server/server/packets/Protocol/Packet/SC_CharStat.java
+index dce2b76..131ea9e 100644
+--- a/src/l1j/server/server/packets/Protocol/Packet/SC_CharStat.java
++++ b/src/l1j/server/server/packets/Protocol/Packet/SC_CharStat.java
+@@ -139,11 +139,11 @@ public final class SC_CharStat extends ProtoPacket {
+ 				break;
+ 
+ 			case Stat_Wis:
+-				v1 = CalcStat.엠회복틱(wis);
++				v1 = CalcStat.naturalMpRegen(0, wis, pc.getAbility().getWis());
+ 				v2 = CalcStat.엠피물약회복(wis);
+ 				v3 = CalcStat.마법방어(type, wis);
+-				v4 = CalcStat.MinincreaseMp(type, wis);
+-				v5 = CalcStat.MaxincreaseMp(type, wis);
++				v4 = CalcStat.MinincreaseMp(type, pc.getAbility().getWis());
++				v5 = CalcStat.MaxincreaseMp(type, pc.getAbility().getWis());
+ 				v6 = getHpMpValue(pc, false);
+ 				break;
+ 
+@@ -159,7 +159,7 @@ public final class SC_CharStat extends ProtoPacket {
+ 				v1 = CalcStat.피회복틱(con);
+ 				v2 = (int) CalcStat.물약회복증가(con);
+ 				v3 = CalcStat.최대소지무게(str, con);
+-				v4 = CalcStat.PureHp(type, con);
++				v4 = CalcStat.PureHp(type, pc.getAbility().getCon());
+ 				v6 = getHpMpValue(pc, true);
+ 				break;
+ 
+@@ -731,11 +731,11 @@ public final class SC_CharStat extends ProtoPacket {
+                         break;
+ 
+                     case Stat_Wis:
+-                        v1 = CalcStat.엠회복틱(wis);
++                        v1 = CalcStat.naturalMpRegen(0, wis, pc.getAbility().getWis());
+                         v2 = CalcStat.엠피물약회복(wis);
+                         v3 = CalcStat.마법방어(type, wis);
+-                        v4 = CalcStat.MinincreaseMp(type, wis);
+-                        v5 = CalcStat.MaxincreaseMp(type, wis);
++                        v4 = CalcStat.MinincreaseMp(type, pc.getAbility().getWis());
++                        v5 = CalcStat.MaxincreaseMp(type, pc.getAbility().getWis());
+                         v6 = getHpMpValue(pc, false);
+                         break;
+ 
+@@ -751,7 +751,7 @@ public final class SC_CharStat extends ProtoPacket {
+                         v1 = CalcStat.피회복틱(con);
+                         v2 = (int) CalcStat.물약회복증가(con);
+                         v3 = CalcStat.최대소지무게(str, con);
+-                        v4 = CalcStat.PureHp(type, con);
++                        v4 = CalcStat.PureHp(type, pc.getAbility().getCon());
+                         v6 = getHpMpValue(pc, true);
+                         break;
+ 
+diff --git a/src/l1j/server/server/storage/mysql/MySqlCharacterStorage.java b/src/l1j/server/server/storage/mysql/MySqlCharacterStorage.java
+index dc91fc9..3302ec4 100644
+--- a/src/l1j/server/server/storage/mysql/MySqlCharacterStorage.java
++++ b/src/l1j/server/server/storage/mysql/MySqlCharacterStorage.java
+@@ -45,16 +45,14 @@ public class MySqlCharacterStorage implements CharacterStorage {
+ 				pc.setHighLevel(rs.getInt("HighLevel"));
+ 				pc.setExp(rs.getInt("Exp"));
+ 				pc.addBaseMaxHp(rs.getShort("MaxHp"));
+-				short currentHp = rs.getShort("CurHp");
++				int currentHp = rs.getInt("CurHp");
+ 				if (currentHp < 1) {
+ 					currentHp = 1;
+ 				}
+-				pc.setCurrentHp(currentHp);
+ 				pc.setDead(false);
+ 				pc.setStatus(0);
+ 				pc.addBaseMaxMp(rs.getShort("MaxMp"));
+-				int currentMp = rs.getShort("CurMp");
+-				pc.setCurrentMp(currentMp);
++				int currentMp = rs.getInt("CurMp");
+ 				pc.getAbility().setBaseStr(rs.getByte("BaseStr"));
+ 				pc.getAbility().setStr(rs.getByte("Str"));
+ 				pc.getAbility().setBaseCon(rs.getByte("BaseCon"));
+@@ -146,6 +144,11 @@ public class MySqlCharacterStorage implements CharacterStorage {
+ 				pc.setSlotNumber(rs.getInt("slot_number"));
+ 				pc.setElfAttrInitCount(rs.getInt("elf_attrinit_count"));
+ 				pc.setLastTopBless(rs.getTimestamp("last_topBless"));
++                pc.restoreHpMpGrowth(rs.getString("hp_mp_growth"));
++                // Permanent CON/WIS and type are restored before clamping
++                // saved current vitals against their effective maxima.
++                pc.setCurrentHp(currentHp);
++                pc.setCurrentMp(currentMp);
+ 			
+ 				try {
+ 					pc.setFishingShopBuyTime_1(rs.getTimestamp("FishingShopBuyTime_1").getTime());
+@@ -186,7 +189,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
+ 				+ ", PKcount=?, ExpRes=?, PartnerID=?, AccessLevel=?, OnlineStatus=?, HomeTownID=?, Contribution=?"
+ 				+ ", Pay=?, Banned=?, Karma=?, LastPk=?, DeleteTime=?, ReturnStat=?, lastLoginTime=now(), AinState=?, SurvivalGauge=?, BirthDay=?"
+ 				+ ", Mark_Count=?, Age=?, AddDamage=?, AddDamageRate=?, AddReduction=?, AddReductionRate=?, bug_check=?, kir_time=?, col_y=?, col_m=?, col_l=?, col_h=?, level_q=?"
+-				+ ", TamEndTime=?, SpecialSize=?, FishingShopBuyTime_1=?, slot_number=?, elf_attrinit_count=?";
++				+ ", TamEndTime=?, SpecialSize=?, FishingShopBuyTime_1=?, slot_number=?, elf_attrinit_count=?, hp_mp_growth=?";
+ 
+ 		try (PreparedStatement pstm = con.prepareStatement(sql)) {
+ 			int i = 0;
+@@ -273,6 +276,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
+ 					: new Timestamp(pc.getFishingShopBuyTime_1()).toString());
+ 			pstm.setInt(++i, pc.getSlotNumber());
+ 			pstm.setInt(++i, pc.getElfAttrInitCount());
++            pstm.setString(++i, pc.encodeHpMpGrowth());
+ 			
+ 			pstm.execute();
+ 			_log.config("created char data: " + pc.getName());
+@@ -375,10 +379,12 @@ public class MySqlCharacterStorage implements CharacterStorage {
+         public final long sessionEpoch;
+         private final int onlineStatus;
+         private final int[] values = new int[65];
+-        private final String[] strings = new String[4];
++        private final String[] strings = new String[5];
+         private final Timestamp[] times = new Timestamp[4];
+ 
+         public CharacterSnapshot(L1PcInstance pc) {
++            pc.lockUserState();
++            try {
+             this.name = pc.getName();
+             this.objectId = pc.getId();
+             this.sessionEpoch = pc.getCacheDSessionEpoch();
+@@ -457,6 +463,8 @@ public class MySqlCharacterStorage implements CharacterStorage {
+             values[ni++] = pc.getSlotNumber();
+             values[ni++] = pc.getElfAttrInitCount();
+             times[ti++] = copyStamp(pc.getLastTopBless());
++            strings[si++] = pc.encodeHpMpGrowth();
++            } finally { pc.unlockUserState(); }
+         }
+ 
+         /** Compare the exact SQL-bound values, including session ownership. */
+@@ -552,6 +560,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
+                 ps.setInt(++index, values[ni++]);
+                 ps.setInt(++index, values[ni++]);
+                 ps.setTimestamp(++index, times[ti++]);
++                ps.setString(++index, strings[si++]);
+                 ps.setInt(++index, objectId);
+                 if (ps.executeUpdate() == 0) {
+                     try (PreparedStatement exists = con.prepareStatement(
+@@ -577,7 +586,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
+ 				+ ", DeleteTime=?, ReturnStat=?, sealScrollTime=?, sealScrollCount=?, lastLogoutTime = IF(? = 0, NOW(), lastLogoutTime)"
+ 				+ ", AinState=?, SurvivalGauge=?"
+ 				+ ", Mark_Count=?, Age=?, AddDamage=?, AddDamageRate=?, AddReduction=?, AddReductionRate=?, bug_check=?, kir_time=?, col_y=?, col_m=?, col_l=?, col_h=?, level_q=?,"
+-				+ " TamEndTime=?, SpecialSize=?, FishingShopBuyTime_1=?, slot_number=?, elf_attrinit_count=?, last_topBless=? WHERE objid=?";
++				+ " TamEndTime=?, SpecialSize=?, FishingShopBuyTime_1=?, slot_number=?, elf_attrinit_count=?, last_topBless=?, hp_mp_growth=? WHERE objid=?";
+ 
+     @Override
+     public void storeCharacter(L1PcInstance pc) {
+diff --git a/src/l1j/server/server/utils/CalcStat.java b/src/l1j/server/server/utils/CalcStat.java
+index 20e60a2..1648ad0 100644
+--- a/src/l1j/server/server/utils/CalcStat.java
++++ b/src/l1j/server/server/utils/CalcStat.java
+@@ -387,55 +387,21 @@ public class CalcStat {
+     // Public APIs
+     // =========================================================
+     public static int increaseMp(int type, byte Wis) {
+-        final int t = clampType(type);
+-        final int wis = clampWis(Wis & 0xFF);
+-
+-        // 기사/전사:
+-        if (t == 1 || t == 7) {
+-            if (wis >= 45) return 4 + nextInt(5);
+-
+-            // 10~44는 테이블
+-            if (wis >= 10) {
+-                final int min = MP_MIN[t][wis] & 0xFF;
+-                final int range = MP_RANGE[t][wis] & 0xFF;
+-                return (range > 0) ? (min + nextInt(range)) : min;
+-            }
+-
+-            // 0~9
+-            return (next100() <= 70) ? 1 : 0;
+-        }
+-
+-        final int min = MP_MIN[t][wis] & 0xFF;
+-        final int range = MP_RANGE[t][wis] & 0xFF;
+-        return (range > 0) ? (min + nextInt(range)) : min;
++        final int min = MinincreaseMp(type, Wis & 0xFF);
++        final int max = MaxincreaseMp(type, Wis & 0xFF);
++        return min + nextInt(max - min + 1);
+     }
+ 
+     public static int MinincreaseMp(int type, int Wis) {
+-        final int t = clampType(type);
+-        final int wis = clampWis(Wis);
+-        return MP_MIN_LU[t][wis] & 0xFF;
++        return mpGrowthBound(type, Wis, 5);
+     }
+ 
+     public static int MaxincreaseMp(int type, int Wis) {
+-        final int t = clampType(type);
+-        final int wis = clampWis(Wis);
+-        return MP_MAX_LU[t][wis] & 0xFF;
++        return mpGrowthBound(type, Wis, 3);
+     }
+ 
+     public static short increaseHp(int type, byte Con) {
+-        final int t = clampType(type);
+-        final int con = clampCon(Con & 0xFF);
+-
+-        int hp = (HP_BASE[con] & 0xFFFF) + nextInt(2);
+-
+-        if (t == 1 || t == 7) hp += 5;
+-        else if (t == 0) hp += 3;
+-        else if (t == 2) hp += 1;
+-        else if (t == 3) hp -= 5;
+-        else if (t == 4) hp += 2;
+-        else if (t == 5) hp += 4;
+-
+-        return (short) hp;
++        return (short) (PureHp(type, Con & 0xFF) + nextInt(2));
+     }
+ 
+     public static short PureHp(int type, int Con) {
+@@ -454,6 +420,47 @@ public class CalcStat {
+         return (short) hp;
+     }
+ 
++    // Phil workbook Data!P6:W7: rational class factors + fixed class bonus.
++    private static final int[] MP_NUMERATOR = {1, 2, 3, 2, 3, 7, 17, 2};
++    private static final int[] MP_DENOMINATOR = {1, 3, 2, 1, 2, 10, 10, 3};
++    private static final int[] MP_CLASS_ADD = {1, 0, 1, 2, 1, 1, 1, 0};
++    private static int mpGrowthBound(int type, int wis, int divisor) {
++        int t = clampType(type);
++        int pureWis = Math.max(0, Math.min(127, wis));
++        return ((pureWis / divisor) * MP_NUMERATOR[t]) / MP_DENOMINATOR[t] + MP_CLASS_ADD[t];
++    }
++    // Preserve this server's existing creation baselines; reset and creation
++    // must share them. Research-sheet fixed initial MP is not a migration rule.
++    private static final short[] INITIAL_HP = {14, 16, 15, 12, 12, 16, 14, 16};
++    public static short initialHp(int type) { return INITIAL_HP[clampType(type)]; }
++    public static short initialMp(int type, int pureWis) {
++        return (short) switch (clampType(type)) {
++        case 0 -> pureWis >= 16 ? 4 : pureWis >= 12 ? 3 : 2;
++        case 1, 7 -> pureWis >= 12 ? 2 : 1;
++        case 2 -> pureWis >= 16 ? 6 : 4;
++        case 3 -> pureWis >= 16 ? 8 : 6;
++        case 4 -> pureWis >= 16 ? 6 : pureWis >= 12 ? 4 : 3;
++        case 5 -> 2;
++        case 6 -> pureWis >= 16 ? 6 : 5;
++        default -> throw new AssertionError();
++        };
++    }
++
++    public static int pureHpMpBonus(int pureStat) {
++        return (pureStat >= 25 ? 50 : 0) + (pureStat >= 35 ? 100 : 0) + (pureStat >= 45 ? 150 : 0);
++    }
++    public static int pureWisRegenBonus(int pureWis) {
++        return pureWis >= 45 ? 5 : pureWis >= 35 ? 2 : pureWis >= 25 ? 1 : 0;
++    }
++    public static int naturalMpRegen(int level, int totalWis, int pureWis) {
++        return Math.max(1, Math.max(0, totalWis) / 5 + Math.max(0, level) / 40 + pureWisRegenBonus(pureWis));
++    }
++    /** Adopt integer floor for odd half-ticks; independently gated for HP/MP. */
++    public static int naturalRegenAfterWeight(int normal, boolean overweight, int pureStat) {
++        if (normal <= 0) return 0;
++        return !overweight ? normal : pureStat >= 45 ? normal / 2 : 0;
++    }
++
+     // =========================================================
+     // Build: increaseMp (룰 리스트 -> 테이블)
+     // =========================================================

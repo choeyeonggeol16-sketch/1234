@@ -1,0 +1,10 @@
+src/l1j/server/server/model/HpMpGrowthHistory.java
+src/l1j/server/server/model/Instance/L1PcInstance.java
+src/l1j/server/server/model/L1Character.java
+src/l1j/server/server/model/L1ReturnStatTemp.java
+src/l1j/server/server/model/character/scheduler/CRegenController.java
+src/l1j/server/server/model/network/core/cs/packet/CS_CreateChar.java
+src/l1j/server/server/model/network/core/cs/packet/CS_ReturnStatus.java
+src/l1j/server/server/packets/Protocol/Packet/SC_CharStat.java
+src/l1j/server/server/storage/mysql/MySqlCharacterStorage.java
+src/l1j/server/server/utils/CalcStat.java

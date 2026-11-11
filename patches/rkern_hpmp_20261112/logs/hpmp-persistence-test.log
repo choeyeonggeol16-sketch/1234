@@ -1,0 +1,29 @@
+Nov 11, 2026 9:35:37 PM l1j.server.server.model.character.action.CAttackAction <clinit>
+WARNING: KeylinkBalance.properties not loaded; using previous/default class factors
+java.nio.file.NoSuchFileException: ./config/KeylinkBalance.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.action.CAttackAction.reloadKeylinkBalance(CAttackAction.java:113)
+	at l1j.server.server.model.character.action.CAttackAction.<clinit>(CAttackAction.java:103)
+	at l1j.server.server.model.character.action.CCreatureController.<init>(CCreatureController.java:647)
+	at l1j.server.server.model.Instance.L1PcInstance.<init>(L1PcInstance.java:1201)
+	at MagicStackRuntimeTest$Pc.<init>(MagicStackRuntimeTest.java:18)
+	at HpMpTest$Pc.<init>(HpMpTest.java:17)
+	at HpMpTest.pc(HpMpTest.java:22)
+	at HpMpPersistenceTest.main(HpMpPersistenceTest.java:75)
+
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+PASS actual createCharacter JDBC binding: 76 placeholders, final history value included
+PASS H2 MySQL-mode migration, actual CharacterSnapshot SQL, atomic rollback/commit, reopened connection and exact delevel, history-aware snapshot equality
+PASS concurrent level transitions and 200 actual snapshot captures preserve level/HP consistency with existing user lock
+PASS actual addExp and snapshot contention: existing user lock has consistent order; no PC-monitor/user-lock deadlock
+Production JDBC snapshot binding/SQL executed against local H2 fixture; not production MySQL/CacheD daemon/Windows integration.
