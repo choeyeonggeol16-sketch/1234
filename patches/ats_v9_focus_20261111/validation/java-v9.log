@@ -1,0 +1,46 @@
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] silent click retry=1 direction=2
+[ClientInput] step-v5 sprite-cadence strict-heading control armed
+[ClientInput] move offered direction=2 screen=2
+[ClientInput] silent click retry=1 direction=2
+[ClientInput] silent click retry=2 direction=2
+[ClientInput] silent input route discarded; auto remains active; replanning
+[ClientInput] move offered direction=3 screen=3
+PASS: 7 sprite intervals, exact deadlines, one-step approval, stale session, stop, strict origin/heading, failure and silent-retry delays
+PASS: Java syntax parsed (3 files; dependency/type linking not performed)
+PASS ATS: active/offline/restart/expiry/refund/failure/level/map boundaries
+PASS: Java syntax parsed (7 files; dependency/type linking not performed)

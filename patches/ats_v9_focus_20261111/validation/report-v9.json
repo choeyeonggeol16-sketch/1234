@@ -1,0 +1,36 @@
+{
+  "version": "ATS V9 focus/silent input/UI 2026-11-11",
+  "dll_sha256": "815d0714c68f3e39cc4fb6deafb3f9f94cc09a2b6e3fa668cfdebcb1d8f64517",
+  "server_rebuild_required_from_v7_or_v8": true,
+  "changed_server_sources_from_v8": [
+    "src/l1j/server/AutoHuntSystem/AutoHuntController.java",
+    "src/l1j/server/AutoHuntSystem/NativeStepSession.java"
+  ],
+  "database_and_server_config_unchanged_from_v8": true,
+  "actual_balance_and_charge_rules_unchanged": true,
+  "checks": {
+    "shipping_x86_PE32_dll_and_preview_build": "PASS (MinGW, warnings treated as errors)",
+    "input_origin_scope_asan_ubsan": "PASS (outside/background/drag/activation/title bar/in-client override/start-release)",
+    "step_core_10000_cycles_asan_ubsan": "PASS",
+    "hud_countdown_parser_asan_ubsan": "PASS",
+    "java_native_step_session_runtime_regressions": "PASS (quiet gap, silent route discard, authoritative origin, queued action, exact heading)",
+    "java_ats_budget_rules_runtime": "PASS",
+    "java_controller_syntax": "PASS (parse only, full dependency/type linking not performed)",
+    "real_win32_message_adapter_on_wine64": "PASS with mocked Mega/native game, network and HUD functions; real StepEngine and nativestep_dll.cpp",
+    "same_hud_source_preview_wine64_xvfb": "PASS screenshot + four-second animation (preview font Noto Serif CJK KR)"
+  },
+  "not_verified": [
+    "V9 x86 DLL inside real Windows Mega.bin, including real background movement",
+    "full Java server dependency build and live MySQL",
+    "exclusive fullscreen, Windows DPI/font combinations"
+  ],
+  "background_test_scope": "Two real Win32 windows: game behind other app, real hook/timer/control messages; synthetic game memory functions. No OS cursor movement, no focus theft, other app received no synthetic button messages. Physical click routing covered separately by input_scope unit test.",
+  "ui": {
+    "ring": "hollow center with rotating arrows",
+    "ATS": "fixed caption below ring",
+    "time": "separate dynamic text below caption",
+    "ShowSeconds": 0,
+    "TextScalePercent": 90
+  },
+  "native_coordinate_hash_and_goal_checks": "unchanged; wrong goal and actual movement mismatch still stop"
+}

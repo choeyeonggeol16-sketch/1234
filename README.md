@@ -1,3 +1,19 @@
+## 2026-11-11 — ATS V9 창 밖 클릭·포커스 중단 수정 / 작은 시간 표시
+
+[**V9 서버 패치·DLL 다운로드**](downloads/L1J_49027_ATS_V9_PATCH_DLL_20261111.zip) · [전체 소스·DLL](downloads/L1J_49027_ATS_V9_FULL_SRC_20261111.zip) · [적용 안내](patches/ats_v9_focus_20261111/ATS_V9_APPLY_KO.md) · [검증 기록](patches/ats_v9_focus_20261111/validation/report-v9.json)
+
+게임 밖 클릭과 포커스 상실을 수동 중단으로 처리하던 DLL 경로를 수정했습니다. 게임 안에서 직접 누르는 수동 중단은 유지합니다. 서버는 이동 패킷이 전혀 없고 원점이 같은 경로가 재시도 한도를 소진하면, 자사 상태를 유지하고 경로를 다시 계획합니다.
+
+**DLL 교체와 서버 Java 2개 반영·재빌드가 함께 필요합니다.** V7 ATS DB와 잔액은 그대로 사용합니다. V6 이하에서 처음 설치한다면 전체 소스의 V7 서버/DB 안내부터 적용하세요.
+
+참고 이미지처럼 링 아래에 ATS를 놓고, 그 아래 남은 시간을 별도 글자로 표시합니다. 기본 시간·분 표시, 시간 글씨 90%입니다. 실제 이용시간 잔액·차감 규칙은 바꾸지 않았습니다.
+
+![V9 HUD 미리보기](patches/ats_v9_focus_20261111/preview/hud-v9.gif)
+
+미리보기는 같은 HUD 소스를 Wine64에서 실행한 화면이며 한국어는 대체 글꼴입니다. PE32 빌드·이동/시간/클릭 분류 검사·Java 세션 회귀와 가짜 게임 함수를 연결한 실제 Win32 메시지 어댑터의 백그라운드 창 검사를 통과했습니다. **V9를 넣은 Windows Mega.bin 실게임과 전체 Java 서버 연결 빌드는 미검증입니다.**
+
+---
+
 ## 2026-11-11 — ATS HUD 외형 개선 V8 (V7 서버 유지)
 
 [**V8 클라이언트 UI 다운로드**](downloads/L1J_49027_ATS_V8_CLIENT_UI_20261111.zip) · [전체 소스·DLL](downloads/L1J_49027_ATS_V8_FULL_SRC_20261111.zip) · [적용 안내](patches/ats_v8_visual_20261111/ATS_V8_APPLY_KO.md)

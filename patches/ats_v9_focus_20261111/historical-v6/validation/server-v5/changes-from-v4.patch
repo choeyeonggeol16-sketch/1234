@@ -1,0 +1,238 @@
+diff --git a/src/l1j/server/AutoHuntSystem/AutoHuntController.java b/src/l1j/server/AutoHuntSystem/AutoHuntController.java
+index 2290489..1f01844 100644
+--- a/src/l1j/server/AutoHuntSystem/AutoHuntController.java
++++ b/src/l1j/server/AutoHuntSystem/AutoHuntController.java
+@@ -399,8 +399,8 @@ public class AutoHuntController extends L1PcMonitor {
+ 	}
+ 
+ 	private void toRandomWalk() {
+-		if (!isAutoMoveTime())
+-			return;
++        // NativeStepSession owns walk cadence. Consuming another sprite gate
++        // before offerMove could miss its deadline and skip an entire cycle.
+ 		
+         // Old direct-movement code incremented AutoMoveCount immediately.
+         // Now the count changes only after an approved C_MoveChar is applied.
+@@ -625,10 +625,9 @@ public class AutoHuntController extends L1PcMonitor {
+ 	private void onTargetItem() {
+         if (owner.getNativeStepSession().hasOutstandingMove(System.nanoTime())) return;
+ 		try {
+-			if (!isAutoMoveTime())
+-				return;
+-
+ 			if (owner.getLocation().getTileLineDistance(_targetItem.getLocation()) <= 1) {
++                // Keep item pickup paced; walking to it uses the session clock.
++                if (!isAutoMoveTime()) return;
+ 				L1Inventory inv = L1World.getInstance().getInventory(_targetItem.getX(), _targetItem.getY(),
+ 						_targetItem.getMapId());
+ 				ItemInstance item = inv.getItem(_targetItem.getId());
+diff --git a/src/l1j/server/AutoHuntSystem/NativeStepSession.java b/src/l1j/server/AutoHuntSystem/NativeStepSession.java
+index fcabdb4..51e78ca 100644
+--- a/src/l1j/server/AutoHuntSystem/NativeStepSession.java
++++ b/src/l1j/server/AutoHuntSystem/NativeStepSession.java
+@@ -16,9 +16,10 @@ public final class NativeStepSession {
+     private static final int MAX_SILENT_RETRIES = 2;
+     private static final long POST_MOVE_SETTLE_NANOS = 1_500_000_000L;
+     private static final long RESIDUAL_QUIET_NANOS = 600_000_000L;
+-    // Allow the client's movement animation and CANCEL to settle before the
+-    // next press; rapid offers race with the executor's single WALK slot.
+-    private static final long NEXT_OFFER_GAP_NANOS = 600_000_000L;
++    // Keep recovery spacing after failed or silent input. Successful WALKs
++    // use their actual sprite interval in completeMove instead.
++    private static final long RETRY_GAP_NANOS = 600_000_000L;
++    private static final long LEGACY_WALK_INTERVAL_MILLIS = 600L;
+     public static final int MOVE_APPROVED = 0;
+     public static final int MOVE_INACTIVE = 1;
+     public static final int MOVE_NO_OFFER = 2;
+@@ -33,6 +34,7 @@ public final class NativeStepSession {
+     private static final java.util.concurrent.atomic.AtomicInteger TRACE =
+             new java.util.concurrent.atomic.AtomicInteger();
+     private final CommandWriter writer;
++    private final java.util.function.LongSupplier clock;
+     // Increments only after the WALK handler applies the authoritative tile.
+     // A receive-side approval by itself does NOT advance a reserved route.
+     private long appliedStepSequence;
+@@ -58,8 +60,13 @@ public final class NativeStepSession {
+     private long deadline;
+ 
+     public NativeStepSession(CommandWriter writer) {
+-        if (writer == null) throw new IllegalArgumentException("writer");
++        this(writer, System::nanoTime);
++    }
++
++    NativeStepSession(CommandWriter writer, java.util.function.LongSupplier clock) {
++        if (writer == null || clock == null) throw new IllegalArgumentException("writer/clock");
+         this.writer = writer;
++        this.clock = clock;
+     }
+ 
+     public synchronized void begin() {
+@@ -74,7 +81,7 @@ public final class NativeStepSession {
+         timedOutWithoutPacket = false;
+         needsResync = false;
+         unsolicitedMoves = 0;
+-        System.out.println("[ClientInput] step-v4 strict-heading cancel-rearm control armed");
++        System.out.println("[ClientInput] step-v5 sprite-cadence strict-heading control armed");
+         active = true;
+         try { writer.send("@@NATIVESTEP:START@@"); }
+         catch (RuntimeException ex) { active = false; throw ex; }
+@@ -131,7 +138,7 @@ public final class NativeStepSession {
+         if (now - firstDispatch < MAX_UNANSWERED_MOVE_NANOS) return;
+         pending = moving = false;
+         timedOutWithoutPacket = !packetSeenForOffer;
+-        nextOfferAt = now + NEXT_OFFER_GAP_NANOS;
++        nextOfferAt = now + RETRY_GAP_NANOS;
+         if (!timedOutWithoutPacket) {
+             // A move packet reached the server but never produced a valid step.
+             // Retrying would risk a second local step from a stale origin.
+@@ -312,14 +319,23 @@ public final class NativeStepSession {
+ 
+     /** Completes only its own accepted move; never a later or restarted move. */
+     public synchronized void completeMove(boolean applied, long acceptedSerial) {
++        completeMove(applied, acceptedSerial, LEGACY_WALK_INTERVAL_MILLIS);
++    }
++
++    /** Pace successful steps using the same sprite interval as the WALK handler. */
++    public synchronized void completeMove(boolean applied, long acceptedSerial, long walkIntervalMillis) {
+         if (!isCurrentApprovedSerial(acceptedSerial)) return;
+         if (applied) ++appliedStepSequence;
+         timedOutWithoutPacket = false;
+         inFlight = false;
+         inFlightSerial = 0L;
+         moving = false;
+-        long now = System.nanoTime();
+-        nextOfferAt = now + NEXT_OFFER_GAP_NANOS;
++        long now = clock.getAsLong();
++        // A successful step needs its normal animation interval, not a fixed
++        // extra 600ms recovery pause. Failed/silent input keeps the retry gap.
++        long interval = walkIntervalMillis > 0L && walkIntervalMillis <= Long.MAX_VALUE / 1_000_000L
++                ? walkIntervalMillis * 1_000_000L : RETRY_GAP_NANOS;
++        nextOfferAt = now + (applied ? interval : RETRY_GAP_NANOS);
+         if (!applied) {
+             needsResync = true;
+             try { writer.send("@@NATIVESTEP:CANCEL@@"); }
+diff --git a/src/l1j/server/CharacterAction/Walk/WalkActionHandler.java b/src/l1j/server/CharacterAction/Walk/WalkActionHandler.java
+index 8fe8ffb..f4ce569 100644
+--- a/src/l1j/server/CharacterAction/Walk/WalkActionHandler.java
++++ b/src/l1j/server/CharacterAction/Walk/WalkActionHandler.java
+@@ -157,7 +157,7 @@ public class WalkActionHandler extends AbstractActionHandler implements PacketPa
+ 		}
+         } finally {
+             if (nativeStepMove && owner != null) {
+-                owner.getNativeStepSession().completeMove(nativeStepApplied, nativeStepAcceptedSerial);
++                owner.getNativeStepSession().completeMove(nativeStepApplied, nativeStepAcceptedSerial, getInterval());
+                 if (!nativeStepApplied) owner.getNativeStepSession().markMoveNotApplied(nativeStepAcceptedSerial);
+             }
+         }
+diff --git a/nativestep-client/README_FIRST_TEST.md b/nativestep-client/README_FIRST_TEST.md
+index 4eff7d0..0a0e83b 100644
+--- a/nativestep-client/README_FIRST_TEST.md
++++ b/nativestep-client/README_FIRST_TEST.md
+@@ -1,11 +1,11 @@
+-# Mega.bin native tile input V4 (x86)
++# Mega.bin native tile input V5 (x86)
+ 
+ Use the current Korean guide in the package root (`APPLY_FIX_KO.md`) or the repository patch README.
+ A prebuilt `dinput.dll` is in `client-ready`. Back up the existing client DLL and copy the new one beside Mega.bin.
+-Start/stop with item 49027. No cursor/feet calibration, INI changes or server rebuild is required.
++Apply the three accompanying server Java files and rebuild/restart the server, then replace the DLL beside Mega.bin. Start/stop with item 49027. No cursor/feet calibration or INI changes are required.
+ 
+ This adapter is pinned to the uploaded Mega.bin SHA-256 and native code signatures. It computes the next actual world tile using the client's own routines, checks both coordinate roundtrips, and sends game window messages on the UI thread. OS mouse position/buttons are untouched. The existing DirectInput exports still forward to Windows normally.
+ 
+-Offline replay of actual x86 coordinate/goal routines passed 192 fixture cases. This does not establish live Windows message delivery, gameplay or camera tracking. See validation/mega-native-replay-v4.json for scope. Windows unsupported-host guard is compiled, but was not run on Linux.
++V5 waits for the original walk-goal function's three readiness conditions before sending a click. Successful server steps use the WALK handler's sprite interval; failure recovery spacing remains 600ms. Offline replay passed 192 coordinate/goal cases and 7 readiness cases. Server cadence tests cover 7 sprite intervals and strict approval/recovery. These tests do not establish live Windows movement smoothness or camera tracking. See validation/mega-native-replay-v5.json for scope. Windows unsupported-host guard is compiled, but was not run on Linux.
+ 
+ Windows/MSVC: BUILD_WIN32.bat. MinGW: BUILD_MINGW.sh. The supplied executable is not redistributed.
+diff --git a/nativestep-client/src/mega_client.cpp b/nativestep-client/src/mega_client.cpp
+index 6cb8969..9fbf178 100644
+--- a/nativestep-client/src/mega_client.cpp
++++ b/nativestep-client/src/mega_client.cpp
+@@ -59,12 +59,13 @@ bool code_matches() noexcept {
+     static constexpr unsigned char step[]={0x55,0x8b,0xec,0x8b,0x45,0x0c,0x56,0x8b,0x71,0x04,0x8b,0x14,0xc5,0x3c,0x39,0x8e};
+     static constexpr unsigned char cancel[]={0x55,0x8b,0xec,0x83,0xec,0x10,0x53,0x8d,0x45,0xf0,0x33,0xdb,0x50,0x8d,0x4d,0xf8};
+     static constexpr unsigned char clock[]={0x55,0x8b,0xec,0x83,0xec,0x08,0xa1,0x10,0x3f,0x9b,0x00,0x85,0xc0,0x74,0x37,0x8d};
++    static constexpr unsigned char busy[]={0xa1,0x90,0x09,0x9b,0x00,0x8b,0x15,0x94,0x09,0x9b,0x00,0x35,0x21,0x79,0x01,0xc0};
+     static constexpr unsigned char dispatch[]={0x55,0x8b,0xec,0x83,0xec,0x40,0x8b,0x45,0x0c,0x53,0x56,0x8b,0xf1,0x8b,0x4d,0x08};
+     return reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))==kBase &&
+         signature(0x45e2b0,scale,sizeof(scale)) && signature(0x49f4c0,project,sizeof(project)) &&
+         signature(0x49f590,project,sizeof(project)) && signature(0x49f810,step,sizeof(step)) &&
+         signature(0x4cc830,cancel,sizeof(cancel)) && signature(0x4bf790,clock,sizeof(clock)) &&
+-        signature(0x45e370,dispatch,sizeof(dispatch));
++        signature(0x45e370,dispatch,sizeof(dispatch)) && signature(0x45cbd0,busy,sizeof(busy));
+ }
+ using Project = Point* (__thiscall *)(const Point*,Point*);
+ using Step = Point* (__thiscall *)(const Point*,Point*,int);
+@@ -128,8 +129,14 @@ bool MegaPlanClick(HWND hwnd,int heading,MegaClick& click) noexcept {
+ }
+ 
+ bool MegaMouseDownReady() noexcept {
+-    uint32_t last=0;
+-    if(!supported || !read(0x7c1f44,last)) return false;
++    uint32_t last=0,interaction=0;
++    unsigned char input_blocked=0;
++    if(!supported || !read(0x7c1f44,last) || !read(0x7c260c,input_blocked) ||
++       !read(0x8d6228,interaction) || input_blocked || interaction) return false;
++    // These are the original walk-goal function's early-return conditions.
++    // Wait for the client to accept a walk click instead of clicking while busy.
++    using BusyQuery=bool (__thiscall *)(const void*);
++    if(reinterpret_cast<BusyQuery>(0x45cbd0)(reinterpret_cast<const void*>(0x18))) return false;
+     const uint32_t now=reinterpret_cast<uint32_t (__cdecl *)()>(0x4bf790)();
+     return static_cast<int32_t>(now-(last+102))>=0;
+ }
+diff --git a/nativestep-client/src/nativestep_dll.cpp b/nativestep-client/src/nativestep_dll.cpp
+index 3af25e4..f2e9a13 100644
+--- a/nativestep-client/src/nativestep_dll.cpp
++++ b/nativestep-client/src/nativestep_dll.cpp
+@@ -127,7 +127,7 @@ __declspec(dllexport) int __cdecl NativeStep_Start(HWND hwnd) {
+     engine=nativestep::StepEngine{};staged=pressed=false;input_logs=0;
+     game_window=hwnd;game_thread=thread;timer_id=timer;
+     network_window.store(hwnd,std::memory_order_release);
+-    NativeStep_LogInput("Mega native-tile-input-v4-20261111 initialized; OS cursor untouched",0);
++    NativeStep_LogInput("Mega native-tile-input-v5-20261111 initialized; OS cursor untouched",0);
+     NativeStep_NetworkStart(nullptr);return 1;
+ }
+ __declspec(dllexport) int __cdecl NativeStep_TryConsumeNotice(int type,const void* bytes,int length) {
+diff --git a/nativestep-client/tests/mega_native_replay.py b/nativestep-client/tests/mega_native_replay.py
+index 22763ec..a940d57 100644
+--- a/nativestep-client/tests/mega_native_replay.py
++++ b/nativestep-client/tests/mega_native_replay.py
+@@ -22,8 +22,9 @@ def r(p):return struct.unpack('<I',u.mem_read(p,4))[0]
+ def point(p,value=None):
+     if value is not None:u.mem_write(p,struct.pack('<ii',*value))
+     return struct.unpack('<ii',u.mem_read(p,8))
++stub_busy=True
+ def hook(u,pc,size,_):
+-    if pc==0x45cbd0: # Busy-state query: fixture is an idle character.
++    if pc==0x45cbd0 and stub_busy: # Busy-state query: fixture is an idle character.
+         sp=u.reg_read(UC_X86_REG_ESP);u.reg_write(UC_X86_REG_EAX,0)
+         u.reg_write(UC_X86_REG_EIP,r(sp));u.reg_write(UC_X86_REG_ESP,sp+4)
+     elif pc==0x471700: # Fixture has no blocked neighboring cells.
+@@ -82,7 +83,26 @@ for camera_dx,camera_dy in [(-6,18),(10,16),(6,21)]:
+             if camera_dx==-6:assert point(0x7c28e8)==current
+             if camera_dx==-6 and mode==2:samples.append({'heading':heading,'logical':logical,'window_960x720':raw})
+             cases+=1
++# Exercise the actual busy-state query used by the V5 readiness gate too.
++# Encoded game-state storage is a controlled fixture; the query instructions
++# and all early-return instructions below remain the original binary's code.
++stub_busy=False
++w(0x9b0990,0xc0017921);w(0x9b0994,0x10003000);w(0x9b0998,0x12345678)
++readiness_cases=0
++for state,blocked in [(0,False),(0x1000,False),(1,True),(0x1001,True)]:
++    w(0x10003000,state^0x12345678)
++    assert bool(call(0x45cbd0,0x18)&0xff)==blocked
++    readiness_cases+=1
++w(0x10003000,0x12345678)
++for gate in ('input-blocked','busy','interaction'):
++    u.mem_write(0x7c260c,b'\x01' if gate=='input-blocked' else b'\x00')
++    w(0x10003000,0x12345679 if gate=='busy' else 0x12345678)
++    w(0x8d6228,actor if gate=='interaction' else 0)
++    sentinel=(12340,5678);point(0x7c28e8,sentinel)
++    call(0x471a70,args=(312,240))
++    assert point(0x7c28e8)==sentinel,gate
++    readiness_cases+=1
+ print(json.dumps({'result':'PASS','actual_x86_cases':cases,'camera_fixtures':3,'resolution_modes':8,
+- 'headings':8,'native_960x720_samples':samples,'fixture_boundaries':['idle-state query','all eight neighboring cells passable'],
+- 'verified':['native world step','native world/screen roundtrip','native resolution scaling','native goal selection','native eight-candidate heading choice','native stop-target clears pending'],
++ 'headings':8,'native_readiness_cases':readiness_cases,'native_960x720_samples':samples,'fixture_boundaries':['idle-state query','all eight neighboring cells passable'],
++ 'verified':['native world step','native world/screen roundtrip','native resolution scaling','native goal selection','native eight-candidate heading choice','native stop-target clears pending','native busy query and three goal-selection early returns'],
+  'windows_message_delivery_tested':False,'live_game_movement_or_camera_tested':False},indent=2))

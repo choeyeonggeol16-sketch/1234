@@ -1,0 +1,492 @@
+--- a/src/l1j/server/AutoHuntSystem/AutoHuntController.java
++++ b/src/l1j/server/AutoHuntSystem/AutoHuntController.java
+@@ -458,6 +458,11 @@
+                 // and never retry after any movement packet was observed.
+                 if (session.retrySilentMove(owner.getX(), owner.getY(), map, now))
+                     return;
++                if (session.abandonSilentMove(owner.getX(), owner.getY(), map, now)) {
++                    clearReservedRoute();
++                    if (mode == AUTO_STATUS_WALK) randomWalkPlanned = false;
++                    return;
++                }
+                 clearReservedRoute();
+                 session.markMoveNotApplied();
+                 return;
+--- a/src/l1j/server/AutoHuntSystem/NativeStepSession.java
++++ b/src/l1j/server/AutoHuntSystem/NativeStepSession.java
+@@ -276,6 +276,25 @@
+         return active && status != MOVE_APPROVED;
+     }
+ 
++    /**
++     * Exhausted SILENT offers have never produced a movement packet. With the
++     * same authoritative origin and no queued action, discard that route and
++     * replan after a quiet interval without treating silence as coordinate drift.
++     */
++    public synchronized boolean abandonSilentMove(int actualX, int actualY, int actualMap, long now) {
++        if (!active || needsResync || pending || inFlight || packetSeenForOffer ||
++                !timedOutWithoutPacket || silentRetries < MAX_SILENT_RETRIES || now - nextOfferAt < 0 ||
++                actualX != x || actualY != y || actualMap != mapId) return false;
++        timedOutWithoutPacket = false;
++        moving = false;
++        nextOfferAt = now + RESIDUAL_QUIET_NANOS;
++        try { writer.send("@@NATIVESTEP:CANCEL@@"); }
++        catch (RuntimeException ignored) {}
++        if (TRACE.getAndIncrement() < 80)
++            System.out.println("[ClientInput] silent input route discarded; auto remains active; replanning");
++        return true;
++    }
++
+     /** The action executor dropped or invalidated the packet after admission. */
+     /** A queued packet may finish after OFF/ON; ignore that obsolete failure. */
+     public synchronized void markMoveNotApplied(long acceptedSerial) {
+--- a/nativestep-client/include/step_core.h
++++ b/nativestep-client/include/step_core.h
+@@ -39,7 +39,10 @@
+ class StepEngine final {
+ public:
+     void submit(int command, uint64_t now_ms) noexcept;
+-    Action tick(uint64_t now_ms, bool user_left_button_down) noexcept;
++    // raw button state still gates the initial START-click release. Only a press
++    // owned by the already-active game client may cause a manual override.
++    Action tick(uint64_t now_ms, bool user_left_button_down,
++                bool allow_manual_override = true) noexcept;
+     // move_and_press reserves a step; the adapter may need several UI ticks
+     // to stage the cursor. Start the hold budget only after SendInput succeeds.
+     bool confirm_press(uint64_t now_ms) noexcept;
+--- a/nativestep-client/include/input_scope.h
++++ b/nativestep-client/include/input_scope.h
+@@ -0,0 +1,17 @@
++#pragma once
++namespace nativestep {
++// Track where a physical press BEGAN, not where the pointer later moves.
++// Activation-only clicks do not interrupt a hunt that continued in the background.
++class ManualPressScope {
++public:
++    bool sample(bool down, bool game_foreground, bool inside_game_client) noexcept {
++        if (!sampled_) owns_press_ = down && game_foreground && inside_game_client;
++        else if (!down) owns_press_ = false;
++        else if (!was_down_) owns_press_ = game_foreground && was_foreground_ && inside_game_client;
++        sampled_ = true; was_down_ = down; was_foreground_ = game_foreground;
++        return down && owns_press_;
++    }
++private:
++    bool sampled_=false, was_down_=false, was_foreground_=false, owns_press_=false;
++};
++}
+--- a/nativestep-client/src/step_core.cpp
++++ b/nativestep-client/src/step_core.cpp
+@@ -124,7 +124,7 @@
+     }
+ }
+ 
+-Action StepEngine::tick(uint64_t now_ms, bool user_left_button_down) noexcept {
++Action StepEngine::tick(uint64_t now_ms, bool user_left_button_down, bool allow_manual_override) noexcept {
+     if (awaiting_start_click_release_) {
+         if (user_left_button_down) {
+             if (held_) {
+@@ -138,7 +138,7 @@
+             return {};
+         }
+         awaiting_start_click_release_ = false;
+-    } else if (enabled_ && user_left_button_down) {
++    } else if (enabled_ && user_left_button_down && allow_manual_override) {
+         manual_override_ = true;
+         desired_ = -1;
+         pulse_complete_ = true;
+--- a/nativestep-client/src/nativestep_dll.cpp
++++ b/nativestep-client/src/nativestep_dll.cpp
+@@ -13,6 +13,7 @@
+ #include "mega_client.h"
+ #include "click_points.h"
+ #include "ats_hud.h"
++#include "input_scope.h"
+ 
+ namespace {
+ constexpr wchar_t kControlName[]=L"ClientInput.WalkControl.1";
+@@ -27,13 +28,27 @@
+ bool waiting_logged=false;
+ MegaClick active_click{};
+ unsigned input_logs=0;
++nativestep::ManualPressScope click_scope;
++bool focus_known=false,last_focus=false;
+ 
+ bool on_client_thread() noexcept {return game_thread && game_thread==GetCurrentThreadId();}
+ bool foreground(HWND hwnd) noexcept {
+     HWND f=GetForegroundWindow();
+-    return IsWindow(hwnd) && f && GetAncestor(f,GA_ROOT)==GetAncestor(hwnd,GA_ROOT);
+-}
+-bool physical_click() noexcept {return (GetAsyncKeyState(VK_LBUTTON)&0x8000)!=0;}
++    return IsWindow(hwnd) && f && GetAncestor(f,GA_ROOTOWNER)==GetAncestor(hwnd,GA_ROOTOWNER);
++}
++struct MouseSample { bool down, manual; };
++MouseSample poll_mouse() noexcept {
++    const bool down=(GetAsyncKeyState(VK_LBUTTON)&0x8000)!=0;
++    POINT screen{}; RECT client{}; bool inside=false;
++    if(IsWindow(game_window) && GetCursorPos(&screen) && GetClientRect(game_window,&client)) {
++        POINT local=screen;
++        HWND at=WindowFromPoint(screen);
++        const bool ours=at && (at==game_window || IsChild(game_window,at) ||
++            GetAncestor(at,GA_ROOTOWNER)==GetAncestor(game_window,GA_ROOTOWNER));
++        inside=ours && ScreenToClient(game_window,&local) && PtInRect(&client,local);
++    }
++    return {down,click_scope.sample(down,foreground(game_window),inside)};
++}
+ void log_click(const char* stage,const MegaClick& click) noexcept {
+     if(input_logs++>=128) return;
+     char text[180]{};
+@@ -65,16 +80,15 @@
+     if(action.type==nativestep::Action::none) return true;
+     if(action.type==nativestep::Action::release) {release_input();return true;}
+     if(action.type!=nativestep::Action::move_and_press || staged || pressed) return false;
+-    MegaClick check{};
+-    if(!foreground(game_window) || !MegaPlanClick(game_window,action.heading,check)) return false;
++    // Stage only the server's direction. finish_staged verifies every candidate
++    // immediately before any DOWN, including when this window is not foreground.
+     staged=true;staged_heading=action.heading;waiting_logged=false;
+-    log_click("native next-tile plan verified",check);
++    if(input_logs++<128) NativeStep_LogInput("native direction staged awaiting validated tile",action.heading);
+     return true;
+ }
+ void finish_staged() noexcept {
+     if(!staged || !MegaMouseDownReady()) return;
+     MegaClick click{};bool clear=false;
+-    if(!foreground(game_window)) {stop_failed("native stop: game lost foreground before click");return;}
+     // Try points inside the SAME authorized tile, checking each native inverse.
+     // MOVE updates the client's hover context; no DOWN is sent during the search.
+     for(unsigned i=0;i<nativestep::kClickPointCount;++i) {
+@@ -89,7 +103,7 @@
+         }
+         return;
+     }
+-    if(physical_click()) {stop_failed("native stop: physical mouse button pressed before click");return;}
++    if(poll_mouse().manual) {stop_failed("native manual stop: physical press began inside active game client");return;}
+     // Validate the authorization BEFORE delivering a DOWN. V5 checked it
+     // afterward and merged lease expiry with a different-target error.
+     if(!engine.confirm_press(GetTickCount64())) {
+@@ -107,10 +121,18 @@
+ void tick() noexcept {
+     if(!on_client_thread()) return;
+     AtsHud_Tick();
+-    if(engine.is_enabled() && !foreground(game_window)) {stop_failed("native stop: game lost foreground");return;}
++    const MouseSample mouse=poll_mouse();
++    const bool focused=foreground(game_window);
++    if(engine.is_enabled() && (!focus_known || focused!=last_focus)) {
++        NativeStep_LogInput(focused ? "native focus: foreground; auto mode retained" :
++            "native focus: background; auto mode retained",0);
++        focus_known=true;last_focus=focused;
++    }
+     const bool was_manual=engine.has_manual_override();
+-    const auto action=engine.tick(GetTickCount64(),physical_click());
+-    if(!was_manual && engine.has_manual_override()) {AtsHud_Hide();NativeStep_RequestManualStop();}
++    const auto action=engine.tick(GetTickCount64(),mouse.down,mouse.manual);
++    if(!was_manual && engine.has_manual_override()) {
++        AtsHud_Hide();NativeStep_LogInput("native manual stop: in-client physical click",0);NativeStep_RequestManualStop();
++    }
+     if(!apply(action)) {stop_failed("native stop: action could not be staged");return;}
+     if(staged) finish_staged();
+     // End the local hold as soon as this one tile was applied. The logical
+@@ -156,8 +178,9 @@
+     if(!timer) return 0;
+     engine=nativestep::StepEngine{};staged=pressed=false;input_logs=0;
+     game_window=hwnd;game_thread=thread;timer_id=timer;
++    click_scope=nativestep::ManualPressScope{};focus_known=false;
+     network_window.store(hwnd,std::memory_order_release);
+-    NativeStep_LogInput("Mega native-tile-input-v8-ats-visual-20261111 initialized; OS cursor untouched",0);
++    NativeStep_LogInput("Mega native-tile-input-v9-focus-silent-20261111 initialized; OS cursor untouched",0);
+     AtsHud_Start(hwnd);
+     NativeStep_NetworkStart(nullptr);return 1;
+ }
+--- a/nativestep-client/src/ats_hud.cpp
++++ b/nativestep-client/src/ats_hud.cpp
+@@ -16,7 +16,8 @@
+ HWND owner=nullptr,overlay=nullptr; HINSTANCE instance=nullptr;
+ ULONG_PTR gdip=0; ats::State state; uint64_t lastTick=0;
+ int lastSecond=-1,lastWidth=0,lastHeight=0; bool lastStale=false;
+-int bottom=124,offsetX=0,scalePercent=100; bool enabled=true,showSeconds=true;
++int bottom=124,offsetX=0,scalePercent=100; bool enabled=true,showSeconds=false;
++int textScalePercent=90;
+ Gdiplus::Image* icon=nullptr;
+ wchar_t fontFace[64]=L"Batang";
+ constexpr wchar_t kClass[]=L"ClientInput.ATS.Overlay.1";
+@@ -40,8 +41,8 @@
+         Graphics g(&bitmap);g.Clear(Color(0,0,0,0));g.SetSmoothingMode(SmoothingModeAntiAlias);
+         g.SetInterpolationMode(InterpolationModeHighQualityBicubic);g.SetPixelOffsetMode(PixelOffsetModeHighQuality);
+         g.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);g.ScaleTransform(scale,scale);
+-        constexpr float center=115.f, cy=17.f, radius=12.5f;
+-        if(icon) g.DrawImage(icon,center-16.f,cy-16.f,32.f,32.f);
++        constexpr float center=115.f, cy=16.5f, radius=11.5f;
++        if(icon) g.DrawImage(icon,center-14.75f,cy-14.75f,29.5f,29.5f);
+         else {
+             // The background has no baked text/rim: both stay crisp at every window scale.
+             for(int i=4;i>0;--i) {
+@@ -60,7 +61,7 @@
+         for(int half=0;half<2;++half) {
+             const float begin=angle+half*180.f+10.f, sweep=155.f;
+             Pen glow(Color(stale?8:26,239,91,59),stroke+2.4f);
+-            Pen arc(Color(stale?90:240,255,198,171),stroke);
++            Pen arc(Color(stale?90:245,255,216,195),stroke);
+             arc.SetStartCap(LineCapRound);arc.SetEndCap(LineCapRound);
+             g.DrawArc(&glow,center-radius,cy-radius,radius*2,radius*2,begin,sweep);
+             g.DrawArc(&arc,center-radius,cy-radius,radius*2,radius*2,begin,sweep);
+@@ -68,8 +69,8 @@
+             const float nx=std::cos(a),ny=std::sin(a),tx=-ny,ty=nx;
+             const PointF tip(center+radius*nx,cy+radius*ny);
+             PointF arrow[3]={tip,
+-                PointF(tip.X-tx*3.5f+nx*1.45f,tip.Y-ty*3.5f+ny*1.45f),
+-                PointF(tip.X-tx*3.5f-nx*1.45f,tip.Y-ty*3.5f-ny*1.45f)};
++                PointF(tip.X-tx*3.1f+nx*1.3f,tip.Y-ty*3.1f+ny*1.3f),
++                PointF(tip.X-tx*3.1f-nx*1.3f,tip.Y-ty*3.1f-ny*1.3f)};
+             SolidBrush arrowColor(Color(stale?100:255,255,207,184));
+             g.FillPolygon(&arrowColor,arrow,3);
+         }
+@@ -78,8 +79,10 @@
+         StringFormat badgeFormat(StringFormat::GenericTypographic());
+         badgeFormat.SetAlignment(StringAlignmentCenter);badgeFormat.SetLineAlignment(StringAlignmentCenter);
+         GraphicsPath lettering;
+-        lettering.AddString(L"ATS",-1,badgeFamily,FontStyleBold,9.8f,RectF(center-13.f,cy-7.f,26.f,14.f),&badgeFormat);
+-        Pen letterEdge(Color(180,68,18,12),0.55f);SolidBrush letterFill(Color(255,248,208,184));
++        lettering.AddString(L"ATS",-1,badgeFamily,FontStyleBold,9.2f,RectF(center-13.f,28.f,26.f,13.f),&badgeFormat);
++        Pen labelGlow(Color(115,238,83,26),2.8f);labelGlow.SetLineJoin(LineJoinRound);
++        g.DrawPath(&labelGlow,&lettering);
++        Pen letterEdge(Color(200,104,35,10),0.8f);SolidBrush letterFill(Color(255,255,232,210));
+         g.DrawPath(&letterEdge,&lettering);g.FillPath(&letterFill,&lettering);
+         wchar_t text[96]{};
+         if(stale) std::swprintf(text,96,L"\uc2dc\uac04 \ub3d9\uae30\ud654 \uc911");
+@@ -92,7 +95,7 @@
+         fmt.SetAlignment(StringAlignmentCenter);fmt.SetLineAlignment(StringAlignmentCenter);
+         fmt.SetFormatFlags(fmt.GetFormatFlags()|StringFormatFlagsNoWrap);
+         GraphicsPath path;
+-        path.AddString(text,-1,family,FontStyleBold,11.5f,RectF(0.f,27.f,230.f,19.f),&fmt);
++        path.AddString(text,-1,family,FontStyleBold,11.5f*textScalePercent/100.f,RectF(0.f,39.f,230.f,17.f),&fmt);
+         Pen textGlow(Color(40,210,74,53),2.8f);textGlow.SetLineJoin(LineJoinRound);
+         Pen shadow(Color(205,52,12,9),0.9f);shadow.SetLineJoin(LineJoinRound);
+         SolidBrush color(Color(255,243,195,178));
+@@ -115,8 +118,9 @@
+     bottom=std::clamp(static_cast<int>(GetPrivateProfileIntW(L"ATS",L"Bottom",124,ini)),0,480);
+     offsetX=std::clamp(static_cast<int>(GetPrivateProfileIntW(L"ATS",L"OffsetX",0,ini)),-640,640);
+     scalePercent=std::clamp(static_cast<int>(GetPrivateProfileIntW(L"ATS",L"ScalePercent",100,ini)),50,200);
+-    showSeconds=GetPrivateProfileIntW(L"ATS",L"ShowSeconds",1,ini)!=0;
++    showSeconds=GetPrivateProfileIntW(L"ATS",L"ShowSeconds",0,ini)!=0;
+     GetPrivateProfileStringW(L"ATS",L"FontFace",L"Batang",fontFace,64,ini);
++    textScalePercent=std::clamp(static_cast<int>(GetPrivateProfileIntW(L"ATS",L"TextScalePercent",90,ini)),70,120);
+     if(!enabled)return;
+     Gdiplus::GdiplusStartupInput input;if(Gdiplus::GdiplusStartup(&gdip,&input,nullptr)!=Gdiplus::Ok){gdip=0;return;}
+     wchar_t png[MAX_PATH]{};std::swprintf(png,MAX_PATH,L"%lsats_bg.png",path);
+@@ -143,7 +147,7 @@
+     int cw=client.right,ch=client.bottom;if(cw<=0||ch<=0)return;
+     const float base=std::min(cw/640.f,ch/480.f);
+     const float scale=std::clamp(base*scalePercent/100.f,0.25f,8.f);
+-    const int width=static_cast<int>(std::ceil(230.f*scale)),height=static_cast<int>(std::ceil(48.f*scale));
++    const int width=static_cast<int>(std::ceil(230.f*scale)),height=static_cast<int>(std::ceil(60.f*scale));
+     POINT origin{std::max(0,std::min(cw-width,(cw-width)/2+static_cast<int>(offsetX*base))),
+         std::max(0,std::min(ch-height,ch-static_cast<int>(bottom*base)-height))};
+     if(!ClientToScreen(owner,&origin))return;
+--- a/nativestep-client/ats_hud.ini
++++ b/nativestep-client/ats_hud.ini
+@@ -5,6 +5,8 @@
+ OffsetX=0
+ ScalePercent=100
+ ; 0 matches the video hour/minute format; 1 shows the ticking seconds too.
+-ShowSeconds=1
++ShowSeconds=0
+ ; Classic serif typeface. Falls back to Malgun Gothic if unavailable.
+ FontFace=Batang
++; Timer lettering only. The actual remaining balance is unchanged.
++TextScalePercent=90
+--- a/nativestep-client/tests/input_scope_test.cpp
++++ b/nativestep-client/tests/input_scope_test.cpp
+@@ -0,0 +1,36 @@
++#include "input_scope.h"
++#include "step_core.h"
++#include <cstdio>
++#include <cstdlib>
++using namespace nativestep;
++void check(bool b,const char* reason){if(!b){std::fprintf(stderr,"FAIL %s\n",reason);std::abort();}}
++int main(){
++    ManualPressScope s;
++    check(!s.sample(false,true,true),"idle game");
++    check(!s.sample(true,false,false),"outside/background down ignored");
++    check(!s.sample(true,true,true),"outside press dragged into client is still outside-owned");
++    check(!s.sample(false,true,true),"release outside-owned press");
++    check(s.sample(true,true,true),"intentional already-foreground in-client click");
++    check(s.sample(true,false,false),"press ownership follows origin, not later cursor movement");
++    check(!s.sample(false,false,false),"release clears origin");
++    check(!s.sample(true,true,true),"activation-only click does not stop hunt");
++    check(!s.sample(false,true,true),"activation release");
++    check(s.sample(true,true,true),"next in-client press can stop hunt");
++    s.sample(false,true,true);
++    check(!s.sample(true,true,false),"title bar/covered client/outside is not a game press");
++    StepEngine legacy;legacy.submit(-2,0);legacy.tick(0,false);legacy.submit(2,1);
++    legacy.tick(1,true);check(legacy.has_manual_override(),"reproduce V8 global-button misclassification");
++    StepEngine fixed;fixed.submit(-2,0);fixed.tick(0,false,false);fixed.submit(2,1);
++    check(fixed.tick(1,true,false).type==Action::move_and_press,"outside press does not block authorized background step");
++    check(fixed.confirm_press(1),"background step can confirm");
++    check(!fixed.has_manual_override(),"outside button never sets manual flag");
++    fixed.submit(-1,2);check(fixed.tick(2,true,false).type==Action::release,"background CANCEL still releases");
++    fixed.submit(3,3);check(fixed.tick(3,true,false).type==Action::move_and_press,"new offer while outside press is held");
++    check(fixed.confirm_press(3),"second background confirm");
++    check(fixed.tick(4,true,true).type==Action::release,"actual in-client manual input releases automation");
++    check(fixed.has_manual_override(),"intentional manual override retained");
++    StepEngine start;start.submit(-2,0);start.submit(1,1);
++    check(start.tick(1,true,false).type==Action::none,"initial item/start press must release, even if outside-owned");
++    check(start.tick(2,false,false).type==Action::move_and_press,"initial press release permits one step");
++    std::puts("PASS input scope: outside click/drag/activation/title-bar/in-client override/background steps/start-release/CANCEL");
++}
+--- a/nativestep-client/tests/background_adapter_test.cpp
++++ b/nativestep-client/tests/background_adapter_test.cpp
+@@ -0,0 +1,75 @@
++// Runs the REAL message adapter + StepEngine with native-game and network fixtures.
++// This does not emulate Mega.bin, a real game server, or native game memory.
++#ifndef WIN32_LEAN_AND_MEAN
++#define WIN32_LEAN_AND_MEAN
++#endif
++#ifndef NOMINMAX
++#define NOMINMAX
++#endif
++#include <windows.h>
++#include <cstdio>
++#include "mega_client.h"
++#include "step_network.h"
++#include "ats_hud.h"
++extern "C" int __cdecl NativeStep_Start(HWND);
++extern "C" void __cdecl NativeStep_Stop();
++extern "C" int __cdecl NativeStep_HasManualOverride();
++extern "C" LRESULT CALLBACK NativeStep_HookProc(int,WPARAM,LPARAM);
++namespace {
++HWND game=nullptr,other=nullptr;int downs=0,ups=0,otherDowns=0,stops=0;
++bool applied=false,goal=false,ready=true;
++LRESULT CALLBACK proc(HWND w,UINT m,WPARAM a,LPARAM b){
++    if(m==WM_LBUTTONDOWN){if(w==game){++downs;applied=goal=true;}else ++otherDowns;return 0;}
++    if(m==WM_LBUTTONUP){if(w==game)++ups;return 0;}
++    return DefWindowProcW(w,m,a,b);
++}
++void pump(unsigned duration){const auto until=GetTickCount64()+duration;MSG msg{};
++    while(GetTickCount64()<until){while(PeekMessageW(&msg,nullptr,0,0,PM_REMOVE)){TranslateMessage(&msg);DispatchMessageW(&msg);}Sleep(1);}}
++bool check(bool b,const char* s){if(!b)std::printf("FAIL %s\n",s);return b;}
++}
++bool MegaInitialize() noexcept{return true;}
++bool MegaPlanClick(HWND h,int heading,MegaClick& c,unsigned candidate) noexcept {
++    if(h!=game||heading<0||heading>7||candidate>=10)return false;
++    applied=goal=false;c={{120,120},{120,120},{100+heading,100},heading,1,static_cast<int>(candidate)};return true;
++}
++bool MegaMouseDownReady() noexcept{return ready;}
++bool MegaClickClear(const MegaClick&) noexcept{return true;}
++void MegaLogState(const MegaClick&) noexcept{}
++bool MegaGoalMatches(const MegaClick&) noexcept{return goal;}
++bool MegaStepApplied(const MegaClick&) noexcept{return applied;}
++void MegaCancelOwnedMovement() noexcept{goal=false;}
++void NativeStep_NetworkStart(HMODULE){}
++void NativeStep_NetworkStop(){}
++void NativeStep_LogInput(const char*,int){}
++void NativeStep_RequestManualStop(){++stops;}
++extern "C" void NativeStep_Bootstrap(HMODULE){}
++void AtsHud_Start(HWND) noexcept{}
++void AtsHud_Status(ats::Status) noexcept{}
++void AtsHud_Tick() noexcept{}
++void AtsHud_Hide() noexcept{}
++void AtsHud_Stop() noexcept{}
++int main(){
++    WNDCLASSW wc{};wc.hInstance=GetModuleHandleW(nullptr);wc.lpfnWndProc=proc;wc.lpszClassName=L"V9AdapterFixture";
++    if(!RegisterClassW(&wc))return 1;
++    game=CreateWindowW(wc.lpszClassName,L"V9 game fixture",WS_OVERLAPPEDWINDOW|WS_VISIBLE,10,10,320,240,nullptr,nullptr,wc.hInstance,nullptr);
++    other=CreateWindowW(wc.lpszClassName,L"V9 other application fixture",WS_OVERLAPPEDWINDOW|WS_VISIBLE,500,10,320,240,nullptr,nullptr,wc.hInstance,nullptr);
++    if(!game||!other)return 2;
++    HHOOK hook=SetWindowsHookExW(WH_GETMESSAGE,NativeStep_HookProc,nullptr,GetCurrentThreadId());
++    if(!hook||!NativeStep_Start(game))return 3;
++    SetForegroundWindow(other);pump(80);POINT before{},after{};GetCursorPos(&before);
++    if(!check(GetForegroundWindow()==other,"fixture has background game"))return 4;
++    NativeStep_PostNetworkCommand(9);pump(25);NativeStep_PostNetworkCommand(2);pump(80);
++    if(!check(downs==1&&ups==1&&stops==0,"one background step without stopping"))return 5;
++    if(!check(GetForegroundWindow()==other&&otherDowns==0,"no focus theft or messages delivered to other app"))return 6;
++    GetCursorPos(&after);if(!check(before.x==after.x&&before.y==after.y,"OS cursor untouched"))return 7;
++    NativeStep_PostNetworkCommand(8);pump(20);ready=false;
++    NativeStep_PostNetworkCommand(3);pump(500);
++    if(!check(downs==1&&stops==0,"busy UI expires silently instead of disabling mode"))return 8;
++    NativeStep_PostNetworkCommand(8);pump(20);ready=true;
++    NativeStep_PostNetworkCommand(4);pump(80);
++    if(!check(downs==2&&ups==2&&stops==0,"fresh authorization resumes after busy interval"))return 9;
++    if(!check(!NativeStep_HasManualOverride(),"no manual stop in background"))return 10;
++    NativeStep_Stop();UnhookWindowsHookEx(hook);DestroyWindow(game);DestroyWindow(other);
++    std::puts("PASS real Win32 message adapter under Wine64: background step/no focus theft/no OS cursor change/busy expiry/fresh resume");
++    return 0;
++}
+--- a/tests/NativeStepCadenceTest.java
++++ b/tests/NativeStepCadenceTest.java
+@@ -80,6 +80,31 @@
+         check(!s.hasOutstandingMove(c.now + 1499 * MS), "silent retry was too early");
+         check(s.retrySilentMove(100, 100, 4, c.now + 1500 * MS), "silent retry at original deadline");
+         check(s.hasOutstandingMove(c.now + 1500 * MS), "silent retry not dispatched");
++        Clock recovery = new Clock();
++        NativeStepSession quiet = new NativeStepSession(command -> {}, recovery);
++        quiet.begin();
++        check(quiet.offerMove(100, 100, 4, 2, recovery.now), "silent recovery initial offer");
++        check(!quiet.abandonSilentMove(100,100,4,recovery.now), "cannot abandon a live pending offer");
++        for (int attempt=0;attempt<2;attempt++) {
++            recovery.now += 900 * MS; quiet.refreshPending(recovery.now);
++            recovery.now += 600 * MS;
++            check(quiet.retrySilentMove(100,100,4,recovery.now), "bounded silent retry");
++        }
++        recovery.now += 900 * MS; quiet.refreshPending(recovery.now);
++        check(!quiet.abandonSilentMove(100,100,4,recovery.now), "quiet drain interval retained");
++        recovery.now += 600 * MS;
++        check(!quiet.retrySilentMove(100,100,4,recovery.now), "per-route retry count remains bounded");
++        check(!quiet.abandonSilentMove(101,100,4,recovery.now), "changed origin cannot silently recover");
++        check(quiet.abandonSilentMove(100,100,4,recovery.now), "pure silence replans without disabling");
++        check(quiet.isActive() && !quiet.takeResyncRequest(), "silence alone is not coordinate mismatch");
++        check(!quiet.offerMove(100,100,4,3,recovery.now + 599 * MS), "fresh route waits for quiet deadline");
++        recovery.now += 600 * MS;
++        check(quiet.offerMove(100,100,4,3,recovery.now), "fresh route authorization after silence");
++        check(quiet.consumeMoveStatus(100,100,4,100,100,3,recovery.now+MS)==NativeStepSession.MOVE_APPROVED,
++                "fresh matching move still needs authoritative approval");
++        check(!quiet.abandonSilentMove(100,100,4,recovery.now+MS), "queued approved action cannot be abandoned");
++        quiet.completeMove(false,quiet.currentApprovedSerial(),180);
++        check(quiet.takeResyncRequest(), "real unapplied packet still requests resync");
+         System.out.println("PASS: 7 sprite intervals, exact deadlines, one-step approval, stale session, stop, strict origin/heading, failure and silent-retry delays");
+     }
+ }
+--- a/nativestep-client/CMakeLists.txt
++++ b/nativestep-client/CMakeLists.txt
+@@ -29,3 +29,12 @@
+ add_executable(ats_state_test src/ats_state.cpp tests/ats_state_test.cpp)
+ target_include_directories(ats_state_test PRIVATE include)
+ add_test(NAME ats_state COMMAND ats_state_test)
++
++add_executable(input_scope_test tests/input_scope_test.cpp)
++target_link_libraries(input_scope_test PRIVATE step_core)
++add_test(NAME input_scope COMMAND input_scope_test)
++if(WIN32)
++  add_executable(background_adapter_test src/nativestep_dll.cpp tests/background_adapter_test.cpp)
++  target_link_libraries(background_adapter_test PRIVATE step_core user32)
++  add_test(NAME background_adapter COMMAND background_adapter_test)
++endif()
+--- a/nativestep-client/BUILD_MINGW.sh
++++ b/nativestep-client/BUILD_MINGW.sh
+@@ -9,7 +9,11 @@
+   -lgdiplus -lgdi32 -luser32 -lws2_32 -liphlpapi -ladvapi32
+ "$compiler" "${flags[@]}" src/step_core.cpp tests/step_core_test.cpp -o build-win32/Release/step_core_test.exe
+ "$compiler" "${flags[@]}" tests/win_host.cpp -o build-win32/Release/nativestep_win_host.exe -luser32
+-echo 'Built PE32 DLL and test executables. Windows runtime tests must be run separately.'
+ 
+ "$compiler" "${flags[@]}" -mwindows src/ats_state.cpp src/ats_hud.cpp tests/ats_preview.cpp -o build-win32/Release/ATS_Preview.exe -lgdiplus -lgdi32 -luser32
+ "$compiler" "${flags[@]}" src/ats_state.cpp tests/ats_state_test.cpp -o build-win32/Release/ats_state_test.exe
++
++"$compiler" "${flags[@]}" src/step_core.cpp tests/input_scope_test.cpp -o build-win32/Release/input_scope_test.exe
++"$compiler" "${flags[@]}" src/step_core.cpp src/nativestep_dll.cpp tests/background_adapter_test.cpp -o build-win32/Release/background_adapter_test.exe -luser32
++
++echo 'Built PE32 DLL, HUD preview and test executables. Windows runtime tests must be run separately.'
+--- a/nativestep-client/BUILD_WIN32_TASK.cmd
++++ b/nativestep-client/BUILD_WIN32_TASK.cmd
+@@ -111,6 +111,12 @@
+ cl %FLAGS% /LD ..\..\src\ats_state.cpp ..\..\src\ats_hud.cpp ..\..\src\mega_client.cpp ..\..\src\nativestep_dll.cpp ..\..\src\client_bootstrap.cpp ..\..\src\dinput_proxy.cpp ..\..\src\step_network.cpp step_core.obj /link /OUT:dinput.dll /IMPLIB:dinput_stub.lib /DEF:..\..\dinput.def gdiplus.lib gdi32.lib user32.lib ws2_32.lib iphlpapi.lib advapi32.lib
+ if errorlevel 1 exit /b 21
+ 
++echo [STEP 5/6] Build input scope regressions
++cl %FLAGS% ..\..\tests\input_scope_test.cpp step_core.obj /link /OUT:input_scope_test.exe
++if errorlevel 1 exit /b 34
++input_scope_test.exe
++if errorlevel 1 exit /b 35
++
+ echo [STEP 5/6] Build and run StepEngine unit test
+ cl %FLAGS% ..\..\tests\step_core_test.cpp step_core.obj /link /OUT:step_core_test.exe
+ if errorlevel 1 exit /b 23

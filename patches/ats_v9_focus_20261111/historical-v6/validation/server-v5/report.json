@@ -1,0 +1,161 @@
+{
+  "version": "Sprite cadence server V5 / native-tile-input-v5-20261111",
+  "changes": [
+    "successful WALK uses actual sprite interval",
+    "walking AI duplicate timer removed",
+    "native input checks original goal-selection readiness"
+  ],
+  "dll_sha256": "739cdd38301f828508d539d8506dbd4c1bdd9c2054cd932bceab7ca0c914c61b",
+  "supported_mega_sha256": "09804d9579446fb9a630c39c1f1b2d08083718261d2f3e57b2e36f80ba865490",
+  "cadence_test": {
+    "result": "PASS",
+    "intervals_ms": [
+      100,
+      180,
+      200,
+      333,
+      600,
+      1000,
+      1500
+    ],
+    "covers": [
+      "deadline before/at",
+      "single outstanding approval",
+      "stale serial after restart",
+      "STOP",
+      "strict heading/origin",
+      "failed and silent input recovery"
+    ],
+    "fixed_delay_mutation_detected": true,
+    "java_bytecode_target": 8,
+    "test_runtime_java": 21
+  },
+  "changed_java_syntax_parse": "PASS (3 files)",
+  "full_server_type_dependency_build": false,
+  "native_replay": {
+    "result": "PASS",
+    "actual_x86_cases": 192,
+    "camera_fixtures": 3,
+    "resolution_modes": 8,
+    "headings": 8,
+    "native_readiness_cases": 7,
+    "native_960x720_samples": [
+      {
+        "heading": 0,
+        "logical": [
+          288,
+          204
+        ],
+        "window_960x720": [
+          432,
+          306
+        ]
+      },
+      {
+        "heading": 1,
+        "logical": [
+          312,
+          192
+        ],
+        "window_960x720": [
+          468,
+          288
+        ]
+      },
+      {
+        "heading": 2,
+        "logical": [
+          336,
+          204
+        ],
+        "window_960x720": [
+          504,
+          306
+        ]
+      },
+      {
+        "heading": 3,
+        "logical": [
+          360,
+          216
+        ],
+        "window_960x720": [
+          540,
+          324
+        ]
+      },
+      {
+        "heading": 4,
+        "logical": [
+          336,
+          228
+        ],
+        "window_960x720": [
+          504,
+          342
+        ]
+      },
+      {
+        "heading": 5,
+        "logical": [
+          312,
+          240
+        ],
+        "window_960x720": [
+          468,
+          360
+        ]
+      },
+      {
+        "heading": 6,
+        "logical": [
+          288,
+          228
+        ],
+        "window_960x720": [
+          432,
+          342
+        ]
+      },
+      {
+        "heading": 7,
+        "logical": [
+          264,
+          216
+        ],
+        "window_960x720": [
+          396,
+          324
+        ]
+      }
+    ],
+    "fixture_boundaries": [
+      "idle-state query",
+      "all eight neighboring cells passable"
+    ],
+    "verified": [
+      "native world step",
+      "native world/screen roundtrip",
+      "native resolution scaling",
+      "native goal selection",
+      "native eight-candidate heading choice",
+      "native stop-target clears pending",
+      "native busy query and three goal-selection early returns"
+    ],
+    "windows_message_delivery_tested": false,
+    "live_game_movement_or_camera_tested": false
+  },
+  "pe32_build": "PASS",
+  "windows_guard_host_executed": false,
+  "native_v5_windows_game_tested": false,
+  "live_movement_smoothness_camera_verified": false,
+  "user_v4_log_evidence": {
+    "version_confirmed": true,
+    "committed_input_messages": 42,
+    "goal_validation_failures": 5,
+    "timestamps_for_per_step_measurement": false
+  },
+  "unchanged_java_files": 964,
+  "changed_java_files": 3,
+  "original_mega_redistributed": false
+}
