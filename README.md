@@ -1,3 +1,19 @@
+## 2026-11-11 — ATS HUD 외형 개선 V8 (V7 서버 유지)
+
+[**V8 클라이언트 UI 다운로드**](downloads/L1J_49027_ATS_V8_CLIENT_UI_20261111.zip) · [전체 소스·DLL](downloads/L1J_49027_ATS_V8_FULL_SRC_20261111.zip) · [적용 안내](patches/ats_v8_visual_20261111/ATS_V8_APPLY_KO.md)
+
+참고 영상과 사용자 V7 영상을 비교해 겹친 테두리를 얇은 한 겹 링으로 정렬했습니다. ATS 문자는 고정한 채 작은 화살표 두 개가 돌고, 시간 문구는 밝은 살구색·굵은 서체로 바꿨습니다. 배경·문자·회전선을 분리해 작은 창에서의 표시를 다듬었습니다.
+
+![V8 HUD 미리보기](patches/ats_v8_visual_20261111/preview/hud-v8.gif)
+
+미리보기는 동일 렌더러를 Wine64에서 실행한 화면이며 한국어 글꼴은 대체 서체입니다. 실제 Windows 게임 V8 화면은 아직 확인하지 않았습니다.
+
+**V7 서버 적용자는 서버 재빌드나 DB 수정 없이**, 게임 종료 후 클라이언트 ZIP의 `dinput.dll`과 `ats_bg.png`를 Mega.bin 옆에 복사하면 됩니다. 기존 `ats_hud.ini` 위치·크기 설정은 보존할 수 있습니다. 새 배경 파일에는 글자가 없으며 ATS 문자와 회전 화살표는 DLL이 그립니다.
+
+32비트 빌드, 시간 상태 검사, 기존 이동 코어 10,000회 회귀 검사를 통과했습니다. 서버 Java·DB·제어 프로토콜·이동 코어는 V7과 동일합니다.
+
+---
+
 ## 2026-11-11 — ATS 상태 HUD·이용시간·레벨·맵 제한 V7
 
 [**V7 전체 소스·DLL 다운로드**](downloads/L1J_49027_ATS_V7_FULL_SRC_20261111.zip) · [**적용 안내**](patches/ats_v7_20261111/ATS_V7_APPLY_KO.md) · [소스 보기](patches/ats_v7_20261111) · [검증 결과](patches/ats_v7_20261111/validation/report-v7.json)

@@ -1,0 +1,33 @@
+{
+  "version": "ATS UI V8 2026-11-11",
+  "server_baseline": "ATS V7 unchanged",
+  "server_files_compared": 975,
+  "all_server_files_byte_identical": true,
+  "step_core_network_mega_and_ats_state_byte_identical": true,
+  "dll_sha256": "822fea52bd57e0bf3643308ccbfcb04c0b55bc285751576f10c20e19a6714043",
+  "checks": {
+    "pe32_x86_build": "PASS",
+    "ats_state_asan_ubsan": "PASS",
+    "step_core_10000_asan_ubsan": "PASS",
+    "same_renderer_wine64_xvfb_preview": "PASS: screenshot + 4-second animation"
+  },
+  "runtime_preview_font": "Noto Serif CJK KR (Batang substitution for Wine preview only)",
+  "default_windows_font": "Batang -> Malgun Gothic -> generic fallback",
+  "not_verified": [
+    "new x86 DLL in live Windows Mega.bin",
+    "real game click passthrough after V8",
+    "exclusive fullscreen",
+    "Windows font and DPI combinations"
+  ],
+  "assets": {
+    "ats_bg.png": "background only; letters and ring drawn by DLL"
+  },
+  "behavior_changes": [
+    "single aligned ring with two arrow tips",
+    "stationary vector ATS text",
+    "lighter bold timer text with thin outline",
+    "font fallback"
+  ],
+  "server_rebuild_required_from_v7": false,
+  "database_changes_from_v7": false
+}
