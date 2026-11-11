@@ -1,0 +1,488 @@
+diff --git a/src/l1j/server/server/model/Instance/L1EffectInstance.java b/src/l1j/server/server/model/Instance/L1EffectInstance.java
+index 3a9ec5e..8008240 100644
+--- a/src/l1j/server/server/model/Instance/L1EffectInstance.java
++++ b/src/l1j/server/server/model/Instance/L1EffectInstance.java
+@@ -77,7 +77,7 @@ public class L1EffectInstance extends L1NpcInstance {
+                     }
+                 }
+ 
+-                int damage = new L1Magic(this, pc).calcNpcFireWallDamage();
++                int damage = new L1Magic(this, pc).calcPcFireWallDamage();
+                 if (damage == 0) {
+                     continue;
+                 }
+@@ -85,7 +85,7 @@ public class L1EffectInstance extends L1NpcInstance {
+                 SC_DoActionGFX.send(
+                         pc.getNetConnection(), pc.getId(), ActionCodes.ACTION_Damage);
+                 SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);
+-                pc.receiveDamage(this, damage);
++                pc.receiveDamage(this, damage, true);
+ 
+             } else if (obj instanceof L1MonsterInstance) {
+                 L1MonsterInstance mob = (L1MonsterInstance) obj;
+diff --git a/src/l1j/server/server/model/Instance/L1PcInstance.java b/src/l1j/server/server/model/Instance/L1PcInstance.java
+index 8450f05..664ea42 100644
+--- a/src/l1j/server/server/model/Instance/L1PcInstance.java
++++ b/src/l1j/server/server/model/Instance/L1PcInstance.java
+@@ -3288,18 +3288,52 @@ public class L1PcInstance extends L1Character {
+ 		return 0;
+ 	}
+ 
++    private static final long MAGIC_STACK_WINDOW_NS = 2_000_000_000L;
++    private long magicStackStartNs;
++    private int magicStackCount = -1;
++    private int magicStackSession;
++    private int magicStackLife;
++
++    /** The boolean means stacking permission, not the controller's counter flag.
++     * Only delivery on the victim controller may update the state below. */
++    public void receiveDamage(L1Character attacker, int damage, boolean applyMagicStack) {
++        if (applyMagicStack && damage <= 0) return;
++        _creatureController.OnDamaged(attacker, damage, false, applyMagicStack && damage > 0);
++    }
++
+ 	public void receiveDamage(L1Character attacker, int damage) {
+-		// Drop only events rejected for a detached/rebound controller identity.
+-		// Admitted damage is never discarded when the normal ring is saturated.
+-		_creatureController.OnDamaged(attacker, damage, false);
+-	}
++        receiveDamage(attacker, damage, false);
++    }
++
++    private int applyMagicStackToDamage(int damage, long now) {
++        if (damage <= 0 || getCurrentHp() <= 0 || isDead()) return damage;
++        final long elapsed = now - magicStackStartNs;
++        if (magicStackCount < 0 || magicStackSession != getSessionStamp()
++                || magicStackLife != _deathTaskGeneration || elapsed < 0L
++                || elapsed >= MAGIC_STACK_WINDOW_NS) {
++            magicStackStartNs = now;
++            magicStackCount = 0;
++            magicStackSession = getSessionStamp();
++            magicStackLife = _deathTaskGeneration;
++            return damage;
++        }
++        if (magicStackCount < Integer.MAX_VALUE) ++magicStackCount;
++        return (int) Math.floor(damage * Math.pow(2.0 / 3.0, magicStackCount));
++    }
++
+ 
+ 	/**
+ 	 * CCreature::GotDamage-inspired victim-side application. All legacy armor, barrier,
+ 	 * combat-status, atomic HP, resurrection item and death side effects remain
+ 	 * here, executed by the target controller rather than the attacker thread.
+ 	 */
+-	public void GotDamage(L1Character attacker, int damage) {
++    public void GotDamage(L1Character attacker, int damage) {
++        GotDamage(attacker, damage, false);
++    }
++
++	public void GotDamage(L1Character attacker, int damage, boolean applyMagicStack) {
++        if (applyMagicStack && (hasSkillEffect(L1SkillId.ABSOLUTE_BARRIER)
++                || MJCommons.isUnbeatable(this))) return;
+ 		if(get_teleport()) {
+ 			return;
+ 		}
+@@ -3370,8 +3404,10 @@ public class L1PcInstance extends L1Character {
+ //						damage -= model.get(attacker, this, item, damage);
+ //				}
+ 
+-				if (damage <= 0)
+-					damage = 10;
++                if (damage <= 0) {
++                    damage = 10; // Preserve the existing armor-proc minimum.
++                    applyMagicStack = false; // A blocked hit must not advance the window.
++                }
+ //				if (getAI() != null && getAI().getBotType() == MJBotType.REDKNIGHT) {
+ //					damage += (getMaxHp() / Config.RedKnight_dieCount);
+ //				}
+@@ -3386,6 +3422,15 @@ public class L1PcInstance extends L1Character {
+ 					L1PinkName.onHelp(this, attacker);
+ 				}
+ 			}
++            if (applyMagicStack && damage > 0) {
++                damage = applyMagicStackToDamage(damage, System.nanoTime());
++                // Attacker-side capping would reduce an overkill spell before
++                // stacking. Cap after attenuation on the victim owner instead.
++                int limit = getCurrentHp();
++                if (isElf() && hasSkillEffect(L1SkillId.SOUL_BARRIER))
++                    limit += getCurrentMp();
++                damage = Math.min(damage, Math.max(0, limit));
++            }
+ 			// The attacker's controller is serialized, but two attackers can
+ 			// damage the same target on different completion threads. Reuse
+ 			// L1Character's existing primitive HP CAS instead of a volatile
+diff --git a/src/l1j/server/server/model/L1Magic.java b/src/l1j/server/server/model/L1Magic.java
+index b05822d..c29c002 100644
+--- a/src/l1j/server/server/model/L1Magic.java
++++ b/src/l1j/server/server/model/L1Magic.java
+@@ -34,6 +34,12 @@ import l1j.server.server.utils.eKind;
+ import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
+ public class L1Magic { 
+ 
++    private final boolean ordinarySpell;
++    private boolean applyMagicStack;
++    private boolean formula2016;
++    private int formulaDefenderType, formulaDefenderWis;
++    private long formulaEffectiveMr;
++
+ 	private int _calcType;
+ 
+ 	private final int PC_PC = 1;
+@@ -84,7 +90,13 @@ public class L1Magic {
+ 		return _simsimLeverage;
+ 	}
+ 	
+-	public L1Magic(L1Character attacker, L1Character target) {
++    /** Legacy/direct/weapon effects retain their existing damage rules. */
++    public L1Magic(L1Character attacker, L1Character target) {
++        this(attacker, target, false);
++    }
++
++    public L1Magic(L1Character attacker, L1Character target, boolean ordinarySpell) {
++        this.ordinarySpell = ordinarySpell;
+ 		if (attacker instanceof L1PcInstance) {
+ 			if (target instanceof L1PcInstance) {
+ 				_calcType = PC_PC;
+@@ -1487,6 +1499,10 @@ public class L1Magic {
+ 	}
+ 
+ 	public int calcMagicDamage(int skillId) {
++        _CriticalDamage = false;
++        applyMagicStack = ordinarySpell && skillId != MIND_BREAK
++                && (_calcType == PC_PC || _calcType == NPC_PC);
++        formula2016 = uses2016Formula(skillId);
+ 		int damage = 0;
+ 		if (_calcType == PC_PC || _calcType == NPC_PC) {
+ 			damage = calcPcMagicDamage(skillId);
+@@ -1494,29 +1510,14 @@ public class L1Magic {
+ 			damage = calcNpcMagicDamage(skillId);
+ 		}
+ 
+-		if (skillId != CONFUSION && skillId != MIND_BREAK && skillId != MAGMA_BREATH) {
++		if (!formula2016 && skillId != CONFUSION && skillId != MIND_BREAK && skillId != MAGMA_BREATH) {
+ 			damage = calcMrDefense(damage);
+ 		}
+ 
+ 		if (_calcType == PC_PC || _calcType == NPC_PC) {
+ 
+ 			if (skillId == ENERGY_BOLT || skillId == CALL_LIGHTNING || skillId == DISINTEGRATE) {
+-				if(_calcType == PC_PC && skillId == DISINTEGRATE && damage > 0){
+-					if(_targetPc.hasSkillEffect(L1SkillId.NO_DIS)){//디스 중첩 방지 Neige
+-						int num = _targetPc.getDisNum();
+-						_targetPc.setDisNum(num+1);
+-						if(_targetPc.getDisNum() == 1){
+-							damage /= 2;
+-						}else if(_targetPc.getDisNum() > 1){
+-							damage /= 4;
+-						}
+-					}else{
+-						_targetPc.setSkillEffect(L1SkillId.NO_DIS, 2 * 1000);
+-					}
+-					if(_targetPc.isGm()){
+-						_targetPc.sendPackets("디스 대미지 :"+damage);
+-					}
+-				}
++
+ 				for (L1ItemInstance armor : _targetPc.getEquipSlot().getArmors()) {
+ 					// 붉은 기사의 방패
+ 					if (armor.getItemId() == 20230) {
+@@ -1538,7 +1539,7 @@ public class L1Magic {
+ 					}
+ 				}
+ 			}
+-			if (damage > _targetPc.getCurrentHp()) {
++			if (!applyMagicStack && damage > _targetPc.getCurrentHp()) {
+ 				if (_targetPc.isElf() && _targetPc.hasSkillEffect(L1SkillId.SOUL_BARRIER)) {
+ 					if (damage > _targetPc.getCurrentHp() + _targetPc.getCurrentMp()) {
+ 						damage = _targetPc.getCurrentHp() + _targetPc.getCurrentMp();
+@@ -2433,6 +2434,42 @@ public class L1Magic {
+ 		return dmg;
+ 	}
+ 
++    private long effectiveMagicMr() {
++        final long hit = _pc != null
++                ? (long) _pc.getTotalMagicHitup() + _pc.getMagicHit() : _npc.getMagicHit();
++        return (long) getTargetMr() - hit;
++    }
++
++    private boolean uses2016Formula(int skillId) {
++        if (!ordinarySpell || _targetPc == null || skillId == CONFUSION
++                || skillId == MIND_BREAK || skillId == MAGMA_BREATH) return false;
++        // Snapshot once: a concurrent defender buff/class change cannot turn a
++        // validated MR branch into an invalid Math.pow call later in this hit.
++        formulaDefenderType = _targetPc.getType();
++        formulaDefenderWis = _targetPc.getAbility().getTotalWis();
++        formulaEffectiveMr = effectiveMagicMr();
++        return SpellDamageFormula.supports(formulaDefenderType,
++                formulaDefenderWis, formulaEffectiveMr);
++    }
++
++    private int targetElementResist(int attr) {
++        return switch (attr) {
++        case L1Skills.ATTR_EARTH -> _targetPc.getResistance().getEarth();
++        case L1Skills.ATTR_FIRE -> _targetPc.getResistance().getFire();
++        case L1Skills.ATTR_WATER -> _targetPc.getResistance().getWater();
++        case L1Skills.ATTR_WIND -> _targetPc.getResistance().getWind();
++        default -> 0;
++        };
++    }
++
++    private int disintegrateLawfulBonus(int skillId) {
++        if (skillId != DISINTEGRATE) return 0;
++        final int lawful = getLawful();
++        if (lawful > 0) return lawful / Config.DISINT_LAWFUL_WEIGHT;
++        if (lawful < 0) return lawful / Config.DISINT_CHAOTIC_WEIGHT;
++        return 0;
++    }
++
+ 	/** 플레이어->플레이어 에게 마법 대미지 산출 **/
+ 	private int calcMagicDiceDamage(int skillId) {
+ 		L1Skills l1skills = SkillsTable.getInstance().getTemplate(skillId);
+@@ -2442,8 +2479,6 @@ public class L1Magic {
+ 		int magicDamage = 0;
+ 		double PowerMr = 0; // 마방
+ 
+-		Random random = new Random();
+-
+ 		dice += getSpellPower() / 2;
+ 
+ 		for (int i = 0; i < diceCount; i++) {
+@@ -2455,7 +2490,8 @@ public class L1Magic {
+ 
+ 		/** 치명타 발생 부분 */
+ 		double criticalCoefficient = 1.4;
+-		int rnd = random.nextInt(100) + 1;
++		int rnd = java.util.concurrent.ThreadLocalRandom.current().nextInt(100) + 1;
++        boolean critical = false;
+ 
+ 		if (_calcType == PC_PC || _calcType == PC_NPC) {
+ 			int propCritical = CalcStat.마법치명타(_pc.ability.getTotalInt());
+@@ -2483,13 +2519,32 @@ public class L1Magic {
+ 			}
+ 			propCritical += (_pc.getBaseMagicCritical() * Config.CHARACTER_MAGICCRI_RATE);
+ 			if (criticalOccur(propCritical)) {
+-				magicDamage *= 1.5;
++                critical = true;
++                if (!formula2016) magicDamage *= 1.5;
+ 			}
+ 		} else if (_calcType == NPC_PC || _calcType == NPC_NPC) {
+ 			if (rnd <= 15) {
+-				magicDamage *= criticalCoefficient;
+-			}
+-		}
++                critical = true;
++                if (formula2016) _CriticalDamage = true;
++				if (!formula2016) magicDamage *= criticalCoefficient;
++			}
++		}
++
++        if (formula2016) {
++            final L1Character caster = _pc != null ? _pc : _npc;
++            final Ability stats = caster.getAbility();
++            final int a100 = SpellDamageFormula.coefficientA100(stats.getTotalInt(),
++                    stats.getSp(), stats.getTrueSp(), targetElementResist(l1skills.getAttr()));
++            final int b100 = SpellDamageFormula.coefficientB100(formulaDefenderType,
++                    formulaDefenderWis, formulaEffectiveMr);
++            int md = _pc == null ? 0 : _pc.getBaseMagicDmg();
++            if (_pc != null && _pc.getWeapon() != null)
++                md += _pc.getWeapon().getItem().getMagicDmgModifier();
++            // Existing armor/skill/PvP DR remains in calcPcMagicDamage, once,
++            // after this MR calculation. It must not go through calcMrDefense again.
++            return SpellDamageFormula.calculate(magicDamage, a100, b100, md, 0,
++                    disintegrateLawfulBonus(skillId), critical);
++        }
+ 
+ 		// 디스마법은 라우풀에 따라 데미지 상향처리.
+ 		// : 카오틱수치가 높을수록 데미지 하향
+@@ -2503,14 +2558,6 @@ public class L1Magic {
+ 				magicDamage += (lawful / Config.DISINT_CHAOTIC_WEIGHT);
+ 			}
+ 
+-			if (_calcType == PC_PC) {
+-				if (skillId == DISINTEGRATE && _targetPc instanceof L1PcInstance) {
+-					if (_targetPc.hasSkillEffect(ANTI_DISINTEGRATE)) {
+-						return 0;
+-					}
+-					_targetPc.setSkillEffect(ANTI_DISINTEGRATE, 3000);
+-				}
+-			}
+ 		}
+ 
+ 		if (getTargetMr() < 101) {
+@@ -2930,9 +2977,9 @@ public void Start1() {
+ 				_pc.setCurrentMp(newMp);
+ 			}
+ 			_targetPc.receiveManaDamage(_pc, drainMana);
+-			_targetPc.receiveDamage(_pc, damage);
++			_targetPc.receiveDamage(_pc, damage, applyMagicStack);
+ 		} else if (_calcType == NPC_PC) {
+-			_targetPc.receiveDamage(_npc, damage);
++			_targetPc.receiveDamage(_npc, damage, applyMagicStack);
+ 		}
+ 	}
+ 	
+diff --git a/src/l1j/server/server/model/SpellDamageFormula.java b/src/l1j/server/server/model/SpellDamageFormula.java
+new file mode 100644
+index 0000000..d61e5cd
+--- /dev/null
++++ b/src/l1j/server/server/model/SpellDamageFormula.java
+@@ -0,0 +1,89 @@
++package l1j.server.server.model;
++
++/** 2016 MR/WIS research curve with the 2015 elemental A-coefficient candidate.
++ * Stateless primitive arithmetic; ordinary spells against a known PC class only. */
++public final class SpellDamageFormula {
++    private SpellDamageFormula() {}
++
++    // x^10 <= 240^10 < 2^80. Initialized once; no BigInteger/per-hit allocation.
++    private static final long[] POW10_LOW = new long[241];
++    private static final long[] POW10_HIGH = new long[241];
++    static {
++        for (int x = 0; x < POW10_LOW.length; x++) {
++            long low = 1L, high = 0L;
++            for (int i = 0; i < 10; i++) {
++                high = high * x + Math.unsignedMultiplyHigh(low, x);
++                low *= x;
++            }
++            POW10_LOW[x] = low;
++            POW10_HIGH[x] = high;
++        }
++    }
++
++    public static int classCoefficient100(int defenderType) {
++        return switch (defenderType) {
++        case 0 -> 230; // prince
++        case 1, 5, 7 -> 240; // knight, dragon knight, warrior
++        case 2, 4, 6 -> 220; // elf, dark elf, illusionist
++        case 3 -> 200; // wizard
++        default -> 0;
++        };
++    }
++
++    public static boolean supports(int defenderType, int defenderWis, long mrMinusHit) {
++        return classCoefficient100(defenderType) != 0 && defenderWis >= 0
++                && classCoefficient100(defenderType) - (long) (defenderWis / 2) * 2L > 0
++                && mrMinusHit >= 10L;
++    }
++
++    public static int coefficientA100(int totalInt, int totalSp, int trueSp, int elementResist) {
++        final int er = Math.max(-100, Math.min(100, elementResist));
++        // SP includes MB+ML. Remove them exactly once, as confirmed by Ability.
++        // A*100 = 100 + floor(75*(INT+bonusSP-12)/8) - ER.
++        final long stat = (long) totalInt + totalSp - trueSp - 12L;
++        final long hundredths = 100L + Math.floorDiv(75L * stat, 8L) - er;
++        return (int) Math.max(0L, Math.min(Integer.MAX_VALUE, hundredths));
++    }
++
++    public static int coefficientB100(int defenderType, int defenderWis, long mrMinusHit) {
++        if (!supports(defenderType, defenderWis, mrMinusHit))
++            throw new IllegalArgumentException("Unverified class/WIS or MR-MH below 10");
++        final long c100 = classCoefficient100(defenderType) - 2L * (defenderWis / 2);
++        // Approximate only to seed the integer candidate. Correct exact decimal
++        // boundaries without epsilon: k <= c100 / mr^(3/10) iff
++        // k^10 * mr^3 <= c100^10. For instance, 59049=3^10 is exact.
++        int b = (int) Math.floor(c100 * StrictMath.pow((double) mrMinusHit, -0.3));
++        while (b > 0 && !atLeast(b, (int) c100, mrMinusHit)) --b;
++        while (b < 120 && atLeast(b + 1, (int) c100, mrMinusHit)) ++b;
++        return b;
++    }
++
++    private static boolean atLeast(int k, int c100, long mr) {
++        long low = POW10_LOW[k], high = POW10_HIGH[k];
++        for (int i = 0; i < 3; i++) {
++            final long carry = Math.unsignedMultiplyHigh(low, mr);
++            final long highProduct = high * mr;
++            final long nextHigh = highProduct + carry;
++            if (Math.unsignedMultiplyHigh(high, mr) != 0L
++                    || Long.compareUnsigned(nextHigh, highProduct) < 0) return false;
++            low *= mr;
++            high = nextHigh;
++        }
++        final int order = Long.compareUnsigned(high, POW10_HIGH[c100]);
++        return order < 0 || (order == 0
++                && Long.compareUnsigned(low, POW10_LOW[c100]) <= 0);
++    }
++
++    public static int calculate(int rolledDice, int a100, int b100,
++            int addedMagicDamage, int damageReduction, int beforeMrBonus, boolean critical) {
++        if (a100 < 0 || b100 < 0 || b100 > 120)
++            throw new IllegalArgumentException("Invalid formula coefficients");
++        long base = ((long) Math.max(0, rolledDice) * a100) / 100L;
++        if (critical) base = (base * 3L) / 2L;
++        // Existing DIS lawful adjustment is a separate pre-MR skill modifier.
++        base = Math.max(0L, base + beforeMrBonus);
++        final long resisted = (base * b100) / 100L;
++        final long result = resisted + (long) addedMagicDamage - damageReduction;
++        return (int) Math.max(0L, Math.min(Integer.MAX_VALUE, result));
++    }
++}
+diff --git a/src/l1j/server/server/model/character/action/CCreatureController.java b/src/l1j/server/server/model/character/action/CCreatureController.java
+index 0024cbb..4a01836 100644
+--- a/src/l1j/server/server/model/character/action/CCreatureController.java
++++ b/src/l1j/server/server/model/character/action/CCreatureController.java
+@@ -65,6 +65,7 @@ public final class CCreatureController {
+     private static final int EXEC_STOP_PSS_AUTO = 12;
+     private static final int EXEC_DAMAGE = 13;
+     private static final int EXEC_COUNTER_DAMAGE = 14;
++    private static final int EXEC_MAGIC_DAMAGE = 15;
+     private static final int EXEC_CANCELLED = 0;
+ 
+     private static final VarHandle EXEC_TAIL;
+@@ -147,10 +148,16 @@ public final class CCreatureController {
+      * A session/actor epoch snapshot prevents queued hits reaching a relogged PC.
+      */
+     public boolean OnDamaged(L1Character attacker, int damage, boolean counter) {
++        return OnDamaged(attacker, damage, counter, false);
++    }
++
++    public boolean OnDamaged(L1Character attacker, int damage, boolean counter,
++                             boolean applyMagicStack) {
+         final int epoch = actorEpoch;
+         final L1PcInstance pc = actor;
+         if (pc == null || (epoch & 1) != 0 || actorEpoch != epoch) return false;
+-        return executeOrPublish(counter ? EXEC_COUNTER_DAMAGE : EXEC_DAMAGE,
++        return executeOrPublish(counter ? EXEC_COUNTER_DAMAGE
++                : applyMagicStack ? EXEC_MAGIC_DAMAGE : EXEC_DAMAGE,
+                 0, damage, 0, 0, 0, 0L, 0L, 0, attacker, null,
+                 pc.getSessionStamp(), epoch);
+     }
+@@ -312,7 +319,7 @@ public final class CCreatureController {
+                 if (kind == EXEC_SIGHT) {
+                     return requestSightRefresh(expectedSession, expectedEpoch);
+                 }
+-                if (kind == EXEC_DAMAGE || kind == EXEC_COUNTER_DAMAGE) {
++                if (kind == EXEC_DAMAGE || kind == EXEC_COUNTER_DAMAGE || kind == EXEC_MAGIC_DAMAGE) {
+                     // Do not block another PC controller while its victim's
+                     // ring is full: two PCs hitting each other could deadlock.
+                     // Reserve a guaranteed overflow event instead of dropping HP.
+@@ -483,7 +490,7 @@ public final class CCreatureController {
+         if (kind == EXEC_COUNTER_DAMAGE) {
+             victim.GotCounterBarrierDamage(attacker, damage);
+         } else {
+-            victim.GotDamage(attacker, damage);
++            victim.GotDamage(attacker, damage, kind == EXEC_MAGIC_DAMAGE);
+         }
+     }
+ 
+@@ -496,6 +503,7 @@ public final class CCreatureController {
+                     Double.longBitsToDouble(d0Bits), o0, s0, flags);
+             break;
+         case EXEC_DAMAGE:
++        case EXEC_MAGIC_DAMAGE:
+         case EXEC_COUNTER_DAMAGE: {
+             final L1PcInstance victim = actor;
+             if (victim != null) {
+diff --git a/src/l1j/server/server/model/character/skill/core/TargetSkillProcessor.java b/src/l1j/server/server/model/character/skill/core/TargetSkillProcessor.java
+index 4088b8c..777ab76 100644
+--- a/src/l1j/server/server/model/character/skill/core/TargetSkillProcessor.java
++++ b/src/l1j/server/server/model/character/skill/core/TargetSkillProcessor.java
+@@ -76,7 +76,8 @@ public enum TargetSkillProcessor {
+         // =====================================================
+         // Magic
+         // =====================================================
+-        final L1Magic magic = new L1Magic(user, target);
++        final L1Magic magic = new L1Magic(user, target,
++                su.hdSkillUseType() != L1SkillUse.TYPE_GMBUFF);
+         magic.setLeverage(su.getLeverage());
+ 
+         // =====================================================

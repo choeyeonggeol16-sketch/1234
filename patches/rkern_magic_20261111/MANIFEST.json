@@ -1,0 +1,38 @@
+{
+  "bundle": "RKern_Aden_IOCP_THREADPOOL_MAGIC_FULL_SRC_20261111.zip",
+  "sha256": "f004fe5fbd3e8b9b995620bd78df91d1ad91a21a92d6d7ed6698cc17513d3757",
+  "base_revision": "1b8cb0920b099f0a3ec3cb2db0f8aba9b5155b67",
+  "report_revision": "ae8a7d6355378c9ed7f8087cdad365a7d035e29b",
+  "base_bundle_sha256": "852a3a8da28eb1de583669eda82a53241dc79d13c414f1b368ba6b6fc76e64e8",
+  "source_files": 1696,
+  "java_files": 1695,
+  "changed_or_added_java_files": [
+    "src/l1j/server/server/model/Instance/L1EffectInstance.java",
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "src/l1j/server/server/model/L1Magic.java",
+    "src/l1j/server/server/model/SpellDamageFormula.java",
+    "src/l1j/server/server/model/character/action/CCreatureController.java",
+    "src/l1j/server/server/model/character/skill/core/TargetSkillProcessor.java"
+  ],
+  "magic_stack_targets": [
+    "PC -> PC",
+    "NPC -> PC"
+  ],
+  "magic_stack_exclusions": [
+    "weapon procs",
+    "keylink",
+    "physical",
+    "counter/reflection",
+    "MIND_BREAK",
+    "converted healing without spell damage calculation"
+  ],
+  "magic_stack_window_ms": 2000,
+  "magic_stack_first_hit_multiplier": 1,
+  "magic_stack_following_multiplier": "(2/3)^(k-1)",
+  "magic_stack_stage": "victim-owned final positive damage before atomic HP / after existing reductions; not Kiyoshi pre-critical placement",
+  "formula_scope": "Ordinary spells against known PC classes, MR-MH >=10, positive C; legacy otherwise; FIRE_WALL keeps legacy fixed damage",
+  "database_changes": false,
+  "native_dll_changes": false,
+  "full_type_compilation": "Java 21 preview, all 1695 Java files; zero errors, five existing removal warnings",
+  "tests": "Report golden vectors; A BigDecimal oracle 123904 cases; B BigInteger oracle 24000 matrix +10000 random; real PC/controller/HP, FIFO overflow, 400 concurrent spell deliveries, stale sessions. World/zone/buff/death side effects controlled by test PCs; no live IOCP/DB/client."
+}

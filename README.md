@@ -1,3 +1,11 @@
+## 2026-11-11 — Aden 마법중첩·마법데미지 최신 전체 소스
+
+[**최신 전체 src 다운로드**](downloads/RKern_Aden_IOCP_THREADPOOL_MAGIC_FULL_SRC_20261111.zip) · [적용·구현·검증 내역](patches/rkern_magic_20261111/README.md) · [SHA-256](downloads/RKern_Aden_IOCP_THREADPOOL_MAGIC_FULL_SRC_20261111.zip.sha256)
+
+기존 IOCP·스레드풀 수정 포함. PC→PC/NPC→PC 마법중첩을 피격자 기준 2초 고정 윈도우로 구현했고, 무기 발동 마법·키링크·반사는 제외합니다. 일반 마법의 검증 범위에 2016 MR/WIS·속성저항 후보식을 연결했습니다. 전체 Java 1,695개 타입 컴파일 및 수치·실제 PC 컨트롤러 회귀 통과. Windows 실게임·실DB는 미검증입니다.
+
+---
+
 ## 2026-11-11 — Aden IOCP + 스레드풀 최신 전체 소스
 
 [**최신 전체 src 다운로드**](downloads/RKern_Aden_IOCP_THREADPOOL_FIXED_FULL_SRC_20261111.zip) · [수정·적용·검증 안내](patches/rkern_threadpool_20261111/README.md) · [SHA-256](downloads/RKern_Aden_IOCP_THREADPOOL_FIXED_FULL_SRC_20261111.zip.sha256)

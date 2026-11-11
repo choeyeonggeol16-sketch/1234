@@ -1,0 +1,6 @@
+src/l1j/server/server/model/Instance/L1EffectInstance.java
+src/l1j/server/server/model/Instance/L1PcInstance.java
+src/l1j/server/server/model/L1Magic.java
+src/l1j/server/server/model/SpellDamageFormula.java
+src/l1j/server/server/model/character/action/CCreatureController.java
+src/l1j/server/server/model/character/skill/core/TargetSkillProcessor.java

@@ -1,0 +1,3 @@
+PASS ZIP CRC and all 1696 source files compared byte for byte.
+PASS patch applies to 1b8cb09 full source and reproduces every new bundle byte.
+PASS exactly five existing Java files changed and one Java helper added; all other network/threadpool/source bytes retained.

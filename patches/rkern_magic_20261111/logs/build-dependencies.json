@@ -1,0 +1,42 @@
+[
+  {
+    "name": "HikariCP-6.3.0.jar",
+    "sha256": "07c6344059af30a135144209c7c8bd666b8823124422ec859864d209d4ab7ca1"
+  },
+  {
+    "name": "agrona-2.2.4.jar",
+    "sha256": "a326b350e3430cef06ab2a76c37651a6274af10df53346473a48178cae002091"
+  },
+  {
+    "name": "caffeine-3.2.2.jar",
+    "sha256": "c74a6c72221dfb76eb92f2bb40108ea561a7da2f315dc3b1e64afa8f077f210c"
+  },
+  {
+    "name": "fastutil-8.5.15.jar",
+    "sha256": "cffeb6673bdf1e6e4377d684df2f55ac359cf5cf6df613e05e62deeea500936a"
+  },
+  {
+    "name": "javax.activation-api-1.2.0.jar",
+    "sha256": "43fdef0b5b6ceb31b0424b208b930c74ab58fac2ceeb7b3f6fd3aeb8b5ca4393"
+  },
+  {
+    "name": "javolution-5.5.1.jar",
+    "sha256": "6de167427fb5ad34fe533cb36a8b3427fa6052a2b99781874396ed5cca9f8ed1"
+  },
+  {
+    "name": "jaxb-api-2.3.1.jar",
+    "sha256": "88b955a0df57880a26a74708bc34f74dcaf8ebf4e78843a28b50eae945732b06"
+  },
+  {
+    "name": "jctools-core-4.0.5.jar",
+    "sha256": "d65e5f38bcd0984e26f87187687f1f70dd52740c4d5e046f8d104e01ab5db95f"
+  },
+  {
+    "name": "slf4j-api-2.0.17.jar",
+    "sha256": "7b751d952061954d5abfed7181c1f645d336091b679891591d63329c622eb832"
+  },
+  {
+    "name": "trove4j-3.0.3.jar",
+    "sha256": "3c8616203d61a12a7e3487e8b34f3c198c2b5ba9e90da0c7ea32d99cd4958012"
+  }
+]

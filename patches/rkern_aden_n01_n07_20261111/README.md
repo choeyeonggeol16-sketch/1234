@@ -1,3 +1,5 @@
+**마법중첩·마법데미지 포함 최신 통합본:** [전체 src](../../downloads/RKern_Aden_IOCP_THREADPOOL_MAGIC_FULL_SRC_20261111.zip) · [구현·검증](../rkern_magic_20261111/README.md)
+
 **후속 스레드풀 수정 포함 최신본:** [전체 src ZIP](../../downloads/RKern_Aden_IOCP_THREADPOOL_FIXED_FULL_SRC_20261111.zip) · [적용·검증 안내](../rkern_threadpool_20261111/README.md)
 
 ## Aden 네트워크 최신 통합 소스 — 2026-11-11
