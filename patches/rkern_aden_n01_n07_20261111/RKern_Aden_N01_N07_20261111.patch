@@ -1,3 +1,82 @@
+--- a/src/l1j/server/Server.java
++++ b/src/l1j/server/Server.java
+@@ -90,42 +90,47 @@
+         }
+     }
+ 
++    private static volatile long networkShutdownDeadlineNs;
++
++    /** One deadline across accept stop, native worker join, and Java await. */
+     public static void stopNewConnections() {
+         final CIOServer listener = gameListener;
+         if (listener == null) return;
++        final long deadline = System.nanoTime() + 30_000_000_000L;
++        networkShutdownDeadlineNs = deadline;
+         listener.stopAccepting();
+-        if (listener.isAdmissionThread()) {
++        if (listener.isAdmissionThread())
+             throw new IllegalStateException("shutdown from admission owner");
+-        }
+-        // Do not hold Server.class while the admission owner may still run.
+-        // We must finish the last in-flight CreateSocket before saving characters.
+-        boolean interrupted = false;
+-        for (;;) {
+-            try {
+-                if (listener.awaitAcceptStopped(1L, java.util.concurrent.TimeUnit.SECONDS)) break;
+-            } catch (InterruptedException e) {
+-                interrupted = true;
+-            }
+-        }
+-        if (interrupted) Thread.currentThread().interrupt();
+-    }
+-
+-    public static void stopLoginServer() {
+-        final CIOServer listener;
+-        synchronized (Server.class) {
+-            listener = gameListener;
+-            gameListener = null;
+-        }
+-        if (listener == null) return;
+-        listener.close();
+-        // A completion callback must not join its own IOCP worker pool.
+-        if (listener.isCompletionThread() || listener.isAdmissionThread()) return;
+-        try {
+-            if (!listener.awaitTermination(30L, java.util.concurrent.TimeUnit.SECONDS)) {
+-                System.err.println("[CIO] shutdown: native IOCP workers still terminating");
+-            }
++        try {
++            final long remaining = Math.max(0L, deadline - System.nanoTime());
++            if (!listener.awaitAcceptStopped(remaining, java.util.concurrent.TimeUnit.NANOSECONDS))
++                throw new IllegalStateException("CIO accept shutdown exceeded 30 seconds");
+         } catch (InterruptedException e) {
+             Thread.currentThread().interrupt();
++            throw new IllegalStateException("CIO accept shutdown interrupted", e);
++        }
++    }
++
++    public static void stopLoginServer() {
++        final CIOServer listener = gameListener;
++        if (listener == null) return;
++        final long deadline = networkShutdownDeadlineNs != 0L
++                ? networkShutdownDeadlineNs : System.nanoTime() + 30_000_000_000L;
++        final long remaining = Math.max(0L, deadline - System.nanoTime());
++        if (remaining == 0L)
++            throw new IllegalStateException("CIO shutdown deadline expired before native Stop");
++        listener.close(remaining, java.util.concurrent.TimeUnit.NANOSECONDS);
++        try {
++            if (!listener.awaitTermination(Math.max(0L, deadline - System.nanoTime()),
++                    java.util.concurrent.TimeUnit.NANOSECONDS))
++                throw new IllegalStateException("CIO shutdown: native workers still active");
++        } catch (InterruptedException e) {
++            Thread.currentThread().interrupt();
++            throw new IllegalStateException("CIO shutdown interrupted", e);
++        }
++        synchronized (Server.class) {
++            if (gameListener == listener) gameListener = null;
++            networkShutdownDeadlineNs = 0L;
+         }
+     }
+ 
 --- a/src/l1j/server/server/GameServer.java
 +++ b/src/l1j/server/server/GameServer.java
 @@ -393,25 +393,53 @@
@@ -138,7 +217,27 @@
  	
  
  	private int _packetCount = 0;
-@@ -165,15 +170,30 @@
+@@ -122,7 +127,18 @@
+ 		close();
+ 	}
+ 
+-	public void close() {
++    /** Public close/kick/disconnect only request transport shutdown. The socket
++     * callback starts logout after every accepted packet releases its lease. */
++    public void close() {
++        _gameSessionReady = false;
++        _connection.close();
++    }
++
++    /** Called by the transport's terminal callback, independently of the
++     * disconnect-request CAS (which may already have been set by disconnect()). */
++    void onTransportClosed() {
++        if (!_connection.isCloseComplete())
++            throw new IllegalStateException("logout before transport/packet drain");
+         _gameSessionReady = false;
+ 		if (!isClosed.compareAndSet(false, true)) {
+ 			// 종료 과정에서는 여러 경로에서 close()가 재진입할 수 있으므로 로그 도배 방지
+@@ -165,15 +181,30 @@
  			// general instant executor can no longer execute on its caller.
  			// This rare mandatory-cleanup fallback preserves the prior contract.
  			if (pc != null) {
@@ -178,7 +277,7 @@
  		}
  
  		cleanupAfterLogout(pc);
-@@ -219,7 +239,8 @@
+@@ -219,7 +250,8 @@
  			_log.log(Level.WARNING, "disconnect 처리 중 예외 발생", e);
  		} finally {
              // Hybrid handoff is allowed only after full logout/session removal.
@@ -229,7 +328,29 @@
          static final MethodHandle DESTROY = bind("CIOPC_Destroy",
 --- a/src/l1j/server/server/model/network/core/CIOServer.java
 +++ b/src/l1j/server/server/model/network/core/CIOServer.java
-@@ -108,6 +108,9 @@
+@@ -26,6 +26,21 @@
+     private final AtomicBoolean closed = new AtomicBoolean();
+     private final AtomicInteger admitted = new AtomicInteger();
+     private final int maxConnections;
++    private volatile ShutdownAttempt shutdownAttempt;
++
++    /** One coordinator per attempt, never an IO/packet worker. A blocked
++     * connection close cannot hold the caller past its deadline. */
++    private static final class ShutdownAttempt {
++        final long startedNs, budgetNs;
++        volatile boolean done;
++        volatile Throwable failure;
++        ShutdownAttempt(long startedNs, long budgetNs) {
++            this.startedNs = startedNs;
++            this.budgetNs = budgetNs;
++        }
++        long remaining() { return budgetNs - (System.nanoTime() - startedNs); }
++    }
++
+ 
+     public CIOServer(InetSocketAddress address, int maxConnections, int ioThreads, int backlog,
+             CIOBufferPool pool, SocketFactory factory) throws IOException {
+@@ -108,6 +123,9 @@
          if (timeout == 0) return false;
          long deadline = System.nanoTime() + unit.toNanos(timeout);
          while (!nativeServer.isAcceptStopped()) {
@@ -239,16 +360,16 @@
              long remaining = deadline - System.nanoTime();
              if (remaining <= 0) return false;
              LockSupport.parkNanos(this, Math.min(remaining, 500_000L));
-@@ -116,23 +119,42 @@
-         return true;
+@@ -117,22 +135,91 @@
      }
  
--    @Override public void close() {
-+    @Override public synchronized void close() {
+     @Override public void close() {
 +        close(30L, TimeUnit.SECONDS);
 +    }
-+    /** Bounded shutdown including native Stop and worker join, not just await(). */
-+    public synchronized void close(long timeout, TimeUnit unit) {
++
++    /** The caller's budget includes coordinator admission, connection close,
++     * and native shutdown. A timed-out attempt retains native memory. */
++    public void close(long timeout, TimeUnit unit) {
 +        if (unit == null || timeout < 0L) throw new IllegalArgumentException("invalid shutdown timeout");
          if (CIOWinServer.isCompletionThread())
              throw new IllegalStateException("cannot destroy server on IOCP completion thread");
@@ -258,23 +379,74 @@
 -        for (CIOUserSocket connection : connections) {
 -            try { connection.close(); }
 -            catch (RuntimeException failure) { LOG.log(Level.WARNING, "CIO session close failed", failure); }
-+        if (nativeServer.isTerminated()) return;
-+        if (closed.compareAndSet(false, true)) {
-+            try { stopAccepting(); }
-+            catch (RuntimeException failure) { LOG.log(Level.SEVERE, "CIO accept shutdown failed", failure); }
-+            for (CIOUserSocket connection : connections) {
-+                try { connection.close(); }
-+                catch (RuntimeException failure) { LOG.log(Level.WARNING, "CIO session close failed", failure); }
-+            }
-         }
+-        }
 -        try { nativeServer.close(); }
-+        // Do not swallow a timeout and proceed to CacheD/world teardown while
-+        // native workers or FFM downcalls can still access server objects.
-+        try { nativeServer.closeWithBudget(unit.toNanos(timeout)); }
-         catch (IOException failure) {
+-        catch (IOException failure) {
 -            LOG.log(Level.SEVERE, "CIO native transport shutdown failed", failure);
-+            throw new IllegalStateException("CIO native transport shutdown incomplete", failure);
-         }
+-        }
++        final long started = System.nanoTime();
++        final long budget = unit.toNanos(timeout);
++        if (nativeServer.isTerminated()) return;
++        if (budget <= 0L) throw new IllegalStateException("CIO shutdown deadline expired; native memory retained");
++        final ShutdownAttempt attempt;
++        synchronized (closed) {
++            if (nativeServer.isTerminated()) return;
++            ShutdownAttempt current = shutdownAttempt;
++            if (current == null || current.done) {
++                current = new ShutdownAttempt(started, budget);
++                shutdownAttempt = current;
++                closed.set(true); // deny new admissions before starting the coordinator
++                final ShutdownAttempt task = current;
++                final Thread worker = new Thread(() -> finishShutdown(task), "CIO-close-coordinator");
++                worker.setDaemon(true);
++                try { worker.start(); }
++                catch (RuntimeException | Error failure) {
++                    current.failure = failure;
++                    current.done = true;
++                    throw failure;
++                }
++            }
++            attempt = current;
++        }
++        // No monitor is held while waiting or executing connection/native close.
++        // A concurrent caller has its own deadline and never extends this attempt.
++        while (!attempt.done) {
++            final long remaining = budget - (System.nanoTime() - started);
++            if (remaining <= 0L)
++                throw new IllegalStateException("CIO shutdown timed out; coordinator/native memory retained");
++            LockSupport.parkNanos(this, Math.min(remaining, 500_000L));
++            if (Thread.interrupted()) {
++                Thread.currentThread().interrupt();
++                throw new IllegalStateException("CIO shutdown interrupted; coordinator/native memory retained");
++            }
++        }
++        if (attempt.failure != null)
++            throw new IllegalStateException("CIO shutdown incomplete; native memory retained", attempt.failure);
++    }
++
++    private void finishShutdown(ShutdownAttempt attempt) {
++        try {
++            requireShutdownTime(attempt);
++            stopAccepting();
++            for (CIOUserSocket connection : connections) {
++                requireShutdownTime(attempt);
++                // This may block in a native socket/codec lock. Only the single
++                // coordinator waits; the close caller still observes its budget.
++                connection.close();
++            }
++            nativeServer.closeWithBudget(requireShutdownTime(attempt));
++        } catch (Throwable failure) {
++            attempt.failure = failure;
++        } finally {
++            attempt.done = true;
++        }
++    }
++
++    private static long requireShutdownTime(ShutdownAttempt attempt) throws IOException {
++        final long remaining = attempt.remaining();
++        if (remaining <= 0L)
++            throw new IOException("CIO shutdown deadline expired before next phase; native memory retained");
++        return remaining;
      }
      public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
 +        if (unit == null) throw new NullPointerException("unit");
@@ -292,6 +464,17 @@
 +        return closed.get();
      }
  }
+--- a/src/l1j/server/server/model/network/core/CIOSocketFactory.java
++++ b/src/l1j/server/server/model/network/core/CIOSocketFactory.java
+@@ -149,7 +149,7 @@
+                     nio -> {
+                         try {
+                             final CIOClient client = nio.client();
+-                            if (client != null) client.disconnect();
++                            if (client != null) client.onTransportClosed();
+                         } finally {
+                             liveByShard.decrementAndGet(ownerShard);
+                             serverClosed.onClosed(nio);
 --- a/src/l1j/server/server/model/network/core/CIOUserSocket.java
 +++ b/src/l1j/server/server/model/network/core/CIOUserSocket.java
 @@ -30,7 +30,7 @@
@@ -790,82 +973,3 @@
                      }
                  } finally {
                      CIOShardContext.exitShard();
---- a/src/l1j/server/Server.java
-+++ b/src/l1j/server/Server.java
-@@ -90,42 +90,47 @@
-         }
-     }
- 
-+    private static volatile long networkShutdownDeadlineNs;
-+
-+    /** One deadline across accept stop, native worker join, and Java await. */
-     public static void stopNewConnections() {
-         final CIOServer listener = gameListener;
-         if (listener == null) return;
-+        final long deadline = System.nanoTime() + 30_000_000_000L;
-+        networkShutdownDeadlineNs = deadline;
-         listener.stopAccepting();
--        if (listener.isAdmissionThread()) {
-+        if (listener.isAdmissionThread())
-             throw new IllegalStateException("shutdown from admission owner");
--        }
--        // Do not hold Server.class while the admission owner may still run.
--        // We must finish the last in-flight CreateSocket before saving characters.
--        boolean interrupted = false;
--        for (;;) {
--            try {
--                if (listener.awaitAcceptStopped(1L, java.util.concurrent.TimeUnit.SECONDS)) break;
--            } catch (InterruptedException e) {
--                interrupted = true;
--            }
--        }
--        if (interrupted) Thread.currentThread().interrupt();
--    }
--
--    public static void stopLoginServer() {
--        final CIOServer listener;
--        synchronized (Server.class) {
--            listener = gameListener;
--            gameListener = null;
--        }
--        if (listener == null) return;
--        listener.close();
--        // A completion callback must not join its own IOCP worker pool.
--        if (listener.isCompletionThread() || listener.isAdmissionThread()) return;
--        try {
--            if (!listener.awaitTermination(30L, java.util.concurrent.TimeUnit.SECONDS)) {
--                System.err.println("[CIO] shutdown: native IOCP workers still terminating");
--            }
-+        try {
-+            final long remaining = Math.max(0L, deadline - System.nanoTime());
-+            if (!listener.awaitAcceptStopped(remaining, java.util.concurrent.TimeUnit.NANOSECONDS))
-+                throw new IllegalStateException("CIO accept shutdown exceeded 30 seconds");
-         } catch (InterruptedException e) {
-             Thread.currentThread().interrupt();
-+            throw new IllegalStateException("CIO accept shutdown interrupted", e);
-+        }
-+    }
-+
-+    public static void stopLoginServer() {
-+        final CIOServer listener = gameListener;
-+        if (listener == null) return;
-+        final long deadline = networkShutdownDeadlineNs != 0L
-+                ? networkShutdownDeadlineNs : System.nanoTime() + 30_000_000_000L;
-+        final long remaining = Math.max(0L, deadline - System.nanoTime());
-+        if (remaining == 0L)
-+            throw new IllegalStateException("CIO shutdown deadline expired before native Stop");
-+        listener.close(remaining, java.util.concurrent.TimeUnit.NANOSECONDS);
-+        try {
-+            if (!listener.awaitTermination(Math.max(0L, deadline - System.nanoTime()),
-+                    java.util.concurrent.TimeUnit.NANOSECONDS))
-+                throw new IllegalStateException("CIO shutdown: native workers still active");
-+        } catch (InterruptedException e) {
-+            Thread.currentThread().interrupt();
-+            throw new IllegalStateException("CIO shutdown interrupted", e);
-+        }
-+        synchronized (Server.class) {
-+            if (gameListener == listener) gameListener = null;
-+            networkShutdownDeadlineNs = 0L;
-         }
-     }
- 

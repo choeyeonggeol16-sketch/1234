@@ -1,0 +1,5 @@
+PASS blocked Java connection close: caller returned timeout in 50ms; no native phase after expiry; retry succeeds.
+PASS concurrent callers: independent short deadline; one coordinator and one native shutdown.
+PASS blocked native phase: caller deadline honored; coordinator/resources retained until native completion.
+PASS remaining budget: native phase received 439ms from a 500ms total after delayed connection close.
+Actual CIOServer tested; native server/socket dependencies are fixtures; no Windows IOCP runtime.

@@ -127,7 +127,18 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 		close();
 	}
 
-	public void close() {
+    /** Public close/kick/disconnect only request transport shutdown. The socket
+     * callback starts logout after every accepted packet releases its lease. */
+    public void close() {
+        _gameSessionReady = false;
+        _connection.close();
+    }
+
+    /** Called by the transport's terminal callback, independently of the
+     * disconnect-request CAS (which may already have been set by disconnect()). */
+    void onTransportClosed() {
+        if (!_connection.isCloseComplete())
+            throw new IllegalStateException("logout before transport/packet drain");
         _gameSessionReady = false;
 		if (!isClosed.compareAndSet(false, true)) {
 			// 종료 과정에서는 여러 경로에서 close()가 재진입할 수 있으므로 로그 도배 방지

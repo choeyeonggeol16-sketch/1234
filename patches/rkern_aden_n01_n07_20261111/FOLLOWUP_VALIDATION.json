@@ -1,0 +1,15 @@
+{
+  "base_commit": "e622a6e60f95cf67d4ca1e30c906e4ba4a6ef6b1",
+  "changed_java": [
+    "CIOClient.java",
+    "CIOSocketFactory.java",
+    "CIOServer.java"
+  ],
+  "lifecycle": "PASS actual client/factory with fixture game/transport/thread pool",
+  "shutdown": "PASS actual server with fixture native/socket; blocked close/native, concurrent caller deadlines, remaining budget, retry",
+  "not_verified": [
+    "Windows IOCP/live game",
+    "full server dependency/type linking"
+  ],
+  "native_dlls_changed": false
+}

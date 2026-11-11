@@ -1,0 +1,2 @@
+PASS actual CIOClient + CIOSocketFactory: kick/direct close/disconnect/remote close wait for packet drain; repeated requests clean up exactly once; rejected executor fallback waits too.
+Native transport, game objects and thread pool are fixtures; Windows integration not exercised.

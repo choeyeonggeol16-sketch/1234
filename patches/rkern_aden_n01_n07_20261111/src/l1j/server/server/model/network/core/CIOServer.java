@@ -26,6 +26,21 @@ public final class CIOServer implements AutoCloseable, CIOUserSocket.Closed {
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicInteger admitted = new AtomicInteger();
     private final int maxConnections;
+    private volatile ShutdownAttempt shutdownAttempt;
+
+    /** One coordinator per attempt, never an IO/packet worker. A blocked
+     * connection close cannot hold the caller past its deadline. */
+    private static final class ShutdownAttempt {
+        final long startedNs, budgetNs;
+        volatile boolean done;
+        volatile Throwable failure;
+        ShutdownAttempt(long startedNs, long budgetNs) {
+            this.startedNs = startedNs;
+            this.budgetNs = budgetNs;
+        }
+        long remaining() { return budgetNs - (System.nanoTime() - startedNs); }
+    }
+
 
     public CIOServer(InetSocketAddress address, int maxConnections, int ioThreads, int backlog,
             CIOBufferPool pool, SocketFactory factory) throws IOException {
@@ -119,29 +134,79 @@ public final class CIOServer implements AutoCloseable, CIOUserSocket.Closed {
         return true;
     }
 
-    @Override public synchronized void close() {
+    @Override public void close() {
         close(30L, TimeUnit.SECONDS);
     }
-    /** Bounded shutdown including native Stop and worker join, not just await(). */
-    public synchronized void close(long timeout, TimeUnit unit) {
+
+    /** The caller's budget includes coordinator admission, connection close,
+     * and native shutdown. A timed-out attempt retains native memory. */
+    public void close(long timeout, TimeUnit unit) {
         if (unit == null || timeout < 0L) throw new IllegalArgumentException("invalid shutdown timeout");
         if (CIOWinServer.isCompletionThread())
             throw new IllegalStateException("cannot destroy server on IOCP completion thread");
+        final long started = System.nanoTime();
+        final long budget = unit.toNanos(timeout);
         if (nativeServer.isTerminated()) return;
-        if (closed.compareAndSet(false, true)) {
-            try { stopAccepting(); }
-            catch (RuntimeException failure) { LOG.log(Level.SEVERE, "CIO accept shutdown failed", failure); }
-            for (CIOUserSocket connection : connections) {
-                try { connection.close(); }
-                catch (RuntimeException failure) { LOG.log(Level.WARNING, "CIO session close failed", failure); }
+        if (budget <= 0L) throw new IllegalStateException("CIO shutdown deadline expired; native memory retained");
+        final ShutdownAttempt attempt;
+        synchronized (closed) {
+            if (nativeServer.isTerminated()) return;
+            ShutdownAttempt current = shutdownAttempt;
+            if (current == null || current.done) {
+                current = new ShutdownAttempt(started, budget);
+                shutdownAttempt = current;
+                closed.set(true); // deny new admissions before starting the coordinator
+                final ShutdownAttempt task = current;
+                final Thread worker = new Thread(() -> finishShutdown(task), "CIO-close-coordinator");
+                worker.setDaemon(true);
+                try { worker.start(); }
+                catch (RuntimeException | Error failure) {
+                    current.failure = failure;
+                    current.done = true;
+                    throw failure;
+                }
+            }
+            attempt = current;
+        }
+        // No monitor is held while waiting or executing connection/native close.
+        // A concurrent caller has its own deadline and never extends this attempt.
+        while (!attempt.done) {
+            final long remaining = budget - (System.nanoTime() - started);
+            if (remaining <= 0L)
+                throw new IllegalStateException("CIO shutdown timed out; coordinator/native memory retained");
+            LockSupport.parkNanos(this, Math.min(remaining, 500_000L));
+            if (Thread.interrupted()) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("CIO shutdown interrupted; coordinator/native memory retained");
             }
         }
-        // Do not swallow a timeout and proceed to CacheD/world teardown while
-        // native workers or FFM downcalls can still access server objects.
-        try { nativeServer.closeWithBudget(unit.toNanos(timeout)); }
-        catch (IOException failure) {
-            throw new IllegalStateException("CIO native transport shutdown incomplete", failure);
+        if (attempt.failure != null)
+            throw new IllegalStateException("CIO shutdown incomplete; native memory retained", attempt.failure);
+    }
+
+    private void finishShutdown(ShutdownAttempt attempt) {
+        try {
+            requireShutdownTime(attempt);
+            stopAccepting();
+            for (CIOUserSocket connection : connections) {
+                requireShutdownTime(attempt);
+                // This may block in a native socket/codec lock. Only the single
+                // coordinator waits; the close caller still observes its budget.
+                connection.close();
+            }
+            nativeServer.closeWithBudget(requireShutdownTime(attempt));
+        } catch (Throwable failure) {
+            attempt.failure = failure;
+        } finally {
+            attempt.done = true;
         }
+    }
+
+    private static long requireShutdownTime(ShutdownAttempt attempt) throws IOException {
+        final long remaining = attempt.remaining();
+        if (remaining <= 0L)
+            throw new IOException("CIO shutdown deadline expired before next phase; native memory retained");
+        return remaining;
     }
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
         if (unit == null) throw new NullPointerException("unit");
