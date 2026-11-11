@@ -1,0 +1,871 @@
+--- a/src/l1j/server/server/GameServer.java
++++ b/src/l1j/server/server/GameServer.java
+@@ -393,25 +393,53 @@
+ 		AppCenterService.start();
+ 	}
+ 
+-	public void disconnectAllCharacters() {
+-		Collection<L1PcInstance> pcList = L1World.getInstance().getAllPlayers();
+-		for (L1PcInstance pc : pcList) {
+-			if (pc == null || pc.noPlayerck2)
+-				continue;
+-			try {
+-				if (pc.getNetConnection() != null) {
+-					pc.save();
+-					pc.saveInventory();
+-					pc.getNetConnection().setActiveChar(null);
+-					pc.getNetConnection().kick();
+-					L1World.getInstance().removeObject(pc);
+-				}
+-				pc.logout();
+-			} catch (Exception e) {
+-				e.printStackTrace();
+-			}
+-		}
+-	}
++    public void disconnectAllCharacters() {
++        // Two phases: request close for every remaining session, then await all
++        // completed PC logouts. This does NOT invoke pc.logout concurrently
++        // with an in-progress packet or a previously submitted logout job.
++        final L1PcInstance[] pcs = L1World.getInstance().getAllPlayers()
++                .toArray(new L1PcInstance[0]);
++        final l1j.server.server.model.network.core.CIOClient[] clients =
++                new l1j.server.server.model.network.core.CIOClient[pcs.length];
++        final long started = System.nanoTime();
++        for (int i = 0; i < pcs.length; i++) {
++            final L1PcInstance pc = pcs[i];
++            if (pc == null || pc.noPlayerck2) continue;
++            final l1j.server.server.model.network.core.CIOClient client = pc.getNetConnection();
++            clients[i] = client;
++            if (client != null && client.getConnection() != null)
++                client.getConnection().close();
++        }
++        for (int i = 0; i < pcs.length; i++) {
++            final L1PcInstance pc = pcs[i];
++            if (pc == null || pc.noPlayerck2) continue;
++            final l1j.server.server.model.network.core.CIOClient client = clients[i];
++            if (client != null) {
++                while (!client.isLogoutComplete()) {
++                    if (System.nanoTime() - started >= 30_000_000_000L)
++                        throw new IllegalStateException("CIO logout drain incomplete after 30s; PC=" + pc.getId());
++                    java.util.concurrent.locks.LockSupport.parkNanos(1_000_000L);
++                    if (Thread.interrupted()) {
++                        Thread.currentThread().interrupt();
++                        throw new IllegalStateException("CIO logout drain interrupted");
++                    }
++                }
++            }
++            // Private-shop/auto-clan connections intentionally skip ordinary
++            // disconnect logout; a complete server shutdown must still close
++            // them after all packet owners have been released.
++            if (!pc.isLogoutStarted()) pc.logout();
++            while (!pc.isLogoutComplete()) {
++                if (System.nanoTime() - started >= 30_000_000_000L)
++                    throw new IllegalStateException("PC logout teardown incomplete after 30s; PC=" + pc.getId());
++                java.util.concurrent.locks.LockSupport.parkNanos(1_000_000L);
++                if (Thread.interrupted()) {
++                    Thread.currentThread().interrupt();
++                    throw new IllegalStateException("PC logout teardown interrupted");
++                }
++            }
++        }
++    }
+ 
+ 	/**
+ 	 * 온라인중의 플레이어에 대해서 kick , 캐릭터 정보의 보존을 한다.
+@@ -491,8 +519,11 @@
+ 	        NpcChatTimeController.getInstance().stop();
+ 	        L1CompanionInstance.do_store_companions();
+ 
+-	        disconnectAllCharacters();
+-	        Server.stopLoginServer();
++            // The native transport is joined while CIO shard owners are still
++            // alive. Never save or dispose a character while its RECV handler
++            // can be executing on one of those owners.
++            Server.stopLoginServer();
++            disconnectAllCharacters();
+ 	        MJRaidLoadManager.getInstance().release();
+ 
+ 	        MJInstanceLoadManager.getInstance().release();
+@@ -531,6 +562,11 @@
+ 	        l1j.server.Server.printShutdownStatus("엔피시 서버가 종료되었습니다.");
+ 
+ 	        CIOThreadCallback.getInstance().shutdown();
++            // No game owner may still be running a packet or actor timer when
++            // the shared executor and CacheD are torn down.
++            if (!CIOThreadCallback.getInstance().awaitTermination(
++                    30L, java.util.concurrent.TimeUnit.SECONDS))
++                throw new IllegalStateException("CIO game shard termination exceeded 30 seconds");
+ 
+ 	        // Cancel clock futures before destroying the shared scheduler;
+ 	        // stale periodic callbacks must not retain listeners/game objects.
+--- a/src/l1j/server/server/model/Instance/L1PcInstance.java
++++ b/src/l1j/server/server/model/Instance/L1PcInstance.java
+@@ -2522,10 +2522,14 @@
+ 	}
+ 
+ 	private final AtomicBoolean _destroyed = new AtomicBoolean(false);
++    private volatile boolean _logoutComplete;
+ 
+ 	public boolean isLogoutStarted() {
+ 		return _destroyed.get();
+ 	}
++
++    /** True only after all PC logout finally/teardown steps have finished. */
++    public boolean isLogoutComplete() { return _logoutComplete; }
+ 
+ 	public void logout() {
+         if (!_destroyed.compareAndSet(false, true)) return;
+@@ -2608,6 +2612,7 @@
+             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout AC cleanup failed: " + getId(), e); }
+             try { dispose(); }
+             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout dispose failed: " + getId(), e); }
++            _logoutComplete = true;
+         }
+ 	}
+ 
+--- a/src/l1j/server/server/model/network/core/CIOClient.java
++++ b/src/l1j/server/server/model/network/core/CIOClient.java
+@@ -64,6 +64,11 @@
+ 	private String _inetAddress;
+ 
+ 	private final AtomicBoolean isClosed = new AtomicBoolean(false);
++    // Shutdown must not dispose a PC until its network packet has finished and
++    // the asynchronous logout cleanup has also completed.
++    private volatile boolean logoutComplete;
++
++    public boolean isLogoutComplete() { return logoutComplete; }
+ 	
+ 
+ 	private int _packetCount = 0;
+@@ -165,15 +170,30 @@
+ 			// general instant executor can no longer execute on its caller.
+ 			// This rare mandatory-cleanup fallback preserves the prior contract.
+ 			if (pc != null) {
+-				try {
+-					if (!pc.isPrivateShop() && !pc.isAutoClanjoin()) pc.logout();
+-				} catch (Throwable failure) {
+-					_log.log(Level.SEVERE, "[GameClient Close] fallback logout failed", failure);
+-				} finally {
+-					cleanupAfterLogout(pc);
+-				}
+-				return;
+-			}
++                final Runnable rescue = () -> {
++                    try {
++                        if (!pc.isPrivateShop() && !pc.isAutoClanjoin()) pc.logout();
++                    } catch (Throwable failure) {
++                        _log.log(Level.SEVERE, "[GameClient Close] fallback logout failed", failure);
++                    } finally {
++                        cleanupAfterLogout(pc);
++                    }
++                };
++                // IOCP callbacks must never synchronously perform DB/world
++                // teardown when the general executor rejects its task.
++                // Only this emergency path creates a one-shot virtual thread.
++                if (CIOWinServer.isCompletionThread()) {
++                    try {
++                        Thread.ofVirtual().name("CIO-logout-recovery").start(rescue);
++                        return;
++                    } catch (Throwable startFailure) {
++                        _log.log(Level.SEVERE,
++                                "[GameClient Close] emergency logout thread unavailable", startFailure);
++                    }
++                }
++                rescue.run();
++                return;
++            }
+ 		}
+ 
+ 		cleanupAfterLogout(pc);
+@@ -219,7 +239,8 @@
+ 			_log.log(Level.WARNING, "disconnect 처리 중 예외 발생", e);
+ 		} finally {
+             // Hybrid handoff is allowed only after full logout/session removal.
+-            DominationHybrid.onClientClosed(this);
++            try { DominationHybrid.onClientClosed(this); }
++            finally { logoutComplete = true; }
+ 		}
+ 	}
+ 
+--- a/src/l1j/server/server/model/network/core/CIOPacketCodec.java
++++ b/src/l1j/server/server/model/network/core/CIOPacketCodec.java
+@@ -25,8 +25,34 @@
+ 
+     private static final class API {
+         static final Linker LINKER = Linker.nativeLinker();
+-        static final SymbolLookup SYMBOLS = SymbolLookup.libraryLookup(
+-                Path.of("CIOPacketCodec.dll").toAbsolutePath(), Arena.global());
++        static final SymbolLookup SYMBOLS = openKnownCodec();
++        static SymbolLookup openKnownCodec() {
++            final Path path = Path.of("CIOPacketCodec.dll").toAbsolutePath();
++            try {
++                CIOWinServer.requireKnownDll(path,
++                        "60bde93c2ba20057e7e307594edef69ced273b69f923535ab658769e09f0cea9");
++                return SymbolLookup.libraryLookup(path, Arena.global());
++            } catch (java.io.IOException failure) {
++                throw new ExceptionInInitializerError(failure);
++            }
++        }
++        static final MethodHandle VERSION = bind("CIOPC_Version",
++                FunctionDescriptor.of(ValueLayout.JAVA_INT));
++        // This checks presence and a valid unsigned version. Pinning an exact
++        // ABI/feature set also requires the matching C++ sources and DLL build.
++        static final long ABI_VERSION = verifyVersion();
++        private static long verifyVersion() {
++            try {
++                final long version = Integer.toUnsignedLong((int) VERSION.invokeExact());
++                // x64 Aden DLL supplied with this release returns 0x00010000.
++                if (version != 0x00010000L)
++                    throw new UnsatisfiedLinkError("Unsupported CIOPC ABI version: 0x"
++                            + Long.toHexString(version) + ", expected 0x10000");
++                return version;
++            } catch (Throwable e) {
++                throw new ExceptionInInitializerError(e);
++            }
++        }
+         static final MethodHandle CREATE = bind("CIOPC_Create",
+                 FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.JAVA_INT));
+         static final MethodHandle DESTROY = bind("CIOPC_Destroy",
+--- a/src/l1j/server/server/model/network/core/CIOServer.java
++++ b/src/l1j/server/server/model/network/core/CIOServer.java
+@@ -108,6 +108,9 @@
+         if (timeout == 0) return false;
+         long deadline = System.nanoTime() + unit.toNanos(timeout);
+         while (!nativeServer.isAcceptStopped()) {
++            final IOException failure = nativeServer.shutdownFailure();
++            if (failure != null)
++                throw new IllegalStateException("CIO native accept stop failed", failure);
+             long remaining = deadline - System.nanoTime();
+             if (remaining <= 0) return false;
+             LockSupport.parkNanos(this, Math.min(remaining, 500_000L));
+@@ -116,23 +119,42 @@
+         return true;
+     }
+ 
+-    @Override public void close() {
++    @Override public synchronized void close() {
++        close(30L, TimeUnit.SECONDS);
++    }
++    /** Bounded shutdown including native Stop and worker join, not just await(). */
++    public synchronized void close(long timeout, TimeUnit unit) {
++        if (unit == null || timeout < 0L) throw new IllegalArgumentException("invalid shutdown timeout");
+         if (CIOWinServer.isCompletionThread())
+             throw new IllegalStateException("cannot destroy server on IOCP completion thread");
+-        if (!closed.compareAndSet(false, true)) return;
+-        try { stopAccepting(); }
+-        catch (RuntimeException failure) { LOG.log(Level.SEVERE, "CIO accept shutdown failed", failure); }
+-        for (CIOUserSocket connection : connections) {
+-            try { connection.close(); }
+-            catch (RuntimeException failure) { LOG.log(Level.WARNING, "CIO session close failed", failure); }
++        if (nativeServer.isTerminated()) return;
++        if (closed.compareAndSet(false, true)) {
++            try { stopAccepting(); }
++            catch (RuntimeException failure) { LOG.log(Level.SEVERE, "CIO accept shutdown failed", failure); }
++            for (CIOUserSocket connection : connections) {
++                try { connection.close(); }
++                catch (RuntimeException failure) { LOG.log(Level.WARNING, "CIO session close failed", failure); }
++            }
+         }
+-        try { nativeServer.close(); }
++        // Do not swallow a timeout and proceed to CacheD/world teardown while
++        // native workers or FFM downcalls can still access server objects.
++        try { nativeServer.closeWithBudget(unit.toNanos(timeout)); }
+         catch (IOException failure) {
+-            LOG.log(Level.SEVERE, "CIO native transport shutdown failed", failure);
++            throw new IllegalStateException("CIO native transport shutdown incomplete", failure);
+         }
+     }
+     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
++        if (unit == null) throw new NullPointerException("unit");
+         if (timeout < 0) throw new IllegalArgumentException("negative timeout");
+-        return closed.get() && nativeServer.isTerminated();
++        if (CIOWinServer.isCompletionThread()) return false;
++        final long budget = unit.toNanos(timeout);
++        final long started = System.nanoTime();
++        while (!nativeServer.isTerminated()) {
++            if (System.nanoTime() - started >= budget) return false;
++            LockSupport.parkNanos(this, Math.min(500_000L,
++                    budget - (System.nanoTime() - started)));
++            if (Thread.interrupted()) throw new InterruptedException();
++        }
++        return closed.get();
+     }
+ }
+--- a/src/l1j/server/server/model/network/core/CIOUserSocket.java
++++ b/src/l1j/server/server/model/network/core/CIOUserSocket.java
+@@ -30,7 +30,7 @@
+  * creature actions execute on completion workers through their own
+  * controller serializer; session/wheel ownership is still isolated.
+  */
+-public final class CIOUserSocket implements AutoCloseable {
++public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.PacketTask {
+     @FunctionalInterface
+     public interface Closed {
+         void onClosed(CIOUserSocket connection);
+@@ -95,7 +95,7 @@
+     // the codec's direct scratch buffer cannot be overwritten. No per-packet
+     // heap byte[] copy or per-packet Runnable allocation is necessary.
+     private volatile boolean _nativeGamePending;
+-    private Runnable _nativePacketTask;
++
+     private ByteBuffer _nativePacketBuffer;
+     private int _nativePacketLength;
+     private volatile boolean _handshakePlainPending;
+@@ -107,7 +107,7 @@
+         // silently mixing Java and C++ cryptographic states.
+         final CIOPacketCodec nativeCodec = new CIOPacketCodec(seed);
+         _cryptor = cryptor;
+-        _nativePacketTask = this::executeNativePacket;
++
+         _nativeCodec = nativeCodec;
+         _handshakePlainPending = true;
+     }
+@@ -115,7 +115,7 @@
+         _handshakePlainPending = false;
+         final CIOPacketCodec nativeCodec = _nativeCodec;
+         _nativeCodec = null;
+-        _nativePacketTask = null;
++
+         _cryptor = null;
+         if (nativeCodec != null) nativeCodec.close();
+     }
+@@ -2741,7 +2741,7 @@
+         _nativePacketLength = bytes;
+         _nativeGamePending = true;
+         if (!CIOThreadCallback.getInstance().enqueuePacketImmediate(
+-                _affinityShard, _nativePacketTask)) {
++                _affinityShard, this)) {
+             _nativeGamePending = false;
+             _nativePacketBuffer = null;
+             _nativePacketLength = 0;
+@@ -2751,6 +2751,14 @@
+     }
+ 
+     /** Executed by CIOThreadCallback's immediate, bounded shard FIFO. */
++    @Override public void run() { executeNativePacket(); }
++
++    /** Only called for an accepted packet left unexecuted at shard shutdown. */
++    @Override public void cancel() {
++        close();
++        executeNativePacket(); // closed sockets skip the handler; release pending lease
++    }
++
+     private void executeNativePacket() {
+         try {
+             if (_closed == 0 && _client.isConnected()
+@@ -2766,6 +2774,9 @@
+             _nativePacketLength = 0;
+             _nativeGamePending = false;
+             if (_closed == 0) kickRead();
++            // Close cannot start client/PC teardown while the shard still
++            // owns a decoded packet (or the packet is queued for cancellation).
++            notifyClosedWhenReleased();
+         }
+     }
+ 
+@@ -3570,7 +3581,8 @@
+     }
+ 
+     private void notifyClosedWhenReleased() {
+-        if (_closed == 0 || !_readReleased || _socketDraining != 0 || _socketPending != 0
++        if (_closed == 0 || !_readReleased || _nativeGamePending
++                || _socketDraining != 0 || _socketPending != 0
+                 || _writeEvent != 0L) return;
+         _stateLock.lock(); try {
+             if (_writing != null || _queued != 0 || _reservedDirect != 0 || _stagedSends != 0) return;
+--- a/src/l1j/server/server/model/network/core/CIOWinServer.java
++++ b/src/l1j/server/server/model/network/core/CIOWinServer.java
+@@ -15,6 +15,9 @@
+ import java.nio.ByteBuffer;
+ import java.nio.file.Files;
+ import java.nio.file.Path;
++import java.security.MessageDigest;
++import java.security.NoSuchAlgorithmException;
++import java.io.InputStream;
+ import java.util.concurrent.atomic.AtomicReferenceArray;
+ import java.util.concurrent.atomic.AtomicInteger;
+ import java.util.concurrent.locks.LockSupport;
+@@ -53,9 +56,13 @@
+     private final Admitter admitter;
+     @SuppressWarnings("unused")
+ 	private final InetSocketAddress listenAddress;
+-    private final AtomicReferenceArray<CIOWinSocket> connections;
++    private volatile AtomicReferenceArray<CIOWinSocket> connections;
+     private final int mask;
+     private final CIOWinSocket tombstone;
++    // Only accept/close writers take this lock; IOCP lookups remain lock-free.
++    // Periodic rehash prevents long-lived tombstone-saturated miss scans.
++    private int registryLive, registryTombstones;
++    private final Object registryLock = new Object();
+     @SuppressWarnings("preview")
+ 	private final MemorySegment listener;
+     @SuppressWarnings("preview")
+@@ -73,6 +80,42 @@
+     private final AtomicInteger nativeCalls = new AtomicInteger();
+     private volatile boolean shuttingDown;
+     private volatile boolean nativeAcceptStopped;
++    // One daemon thread only during shutdown; game IOCP and CIO worker layout is unchanged.
++    // Never release FFM upcall arenas while a native Stop/StopAccepting call is hung.
++    private volatile Thread nativeShutdownThread;
++    private volatile boolean nativeStopRequested;
++    private volatile boolean nativeStopCompleted;
++    private volatile IOException nativeShutdownFailure;
++    private static final long SHUTDOWN_BUDGET_NS = 30_000_000_000L;
++    private static final String EXPECTED_TRANSPORT_SHA256 =
++            "9d8106886be0e26d14bd8eb7093714ae3b44d655ccae869ffc98148db8807ecc";
++
++    /** Fail closed on an unknown native ABI, rather than guessing callback/WSABUF lifetimes. */
++    static void requireKnownDll(Path path, String expected) throws IOException {
++        if (!Files.isRegularFile(path)) throw new IOException("native DLL missing: " + path);
++        try {
++            final MessageDigest digest = MessageDigest.getInstance("SHA-256");
++            try (InputStream input = Files.newInputStream(path)) {
++                byte[] chunk = new byte[8192];
++                for (int n; (n = input.read(chunk)) >= 0;) {
++                    if (n != 0) digest.update(chunk, 0, n);
++                }
++            }
++            final byte[] hash = digest.digest();
++            final char[] actual = new char[64];
++            final char[] hex = "0123456789abcdef".toCharArray();
++            for (int i = 0; i < hash.length; i++) {
++                int value = hash[i] & 0xff;
++                actual[i * 2] = hex[value >>> 4];
++                actual[i * 2 + 1] = hex[value & 15];
++            }
++            if (!expected.contentEquals(new String(actual)))
++                throw new IOException("Unrecognized native ABI: " + path
++                        + ", sha256=" + new String(actual));
++        } catch (NoSuchAlgorithmException e) {
++            throw new IOException("SHA-256 unavailable", e);
++        }
++    }
+ 
+     @SuppressWarnings("preview")
+ 	CIOWinServer(InetSocketAddress address, int maxConnections, int ioThreads,
+@@ -88,8 +131,7 @@
+         MemorySegment createdServer = MemorySegment.NULL;
+         try {
+             Path dll = Path.of("CIOWinTransport.dll").toAbsolutePath();
+-            if (!Files.isRegularFile(dll))
+-                throw new IOException("Batch-patched CIOWinTransport.dll missing: " + dll);
++            requireKnownDll(dll, EXPECTED_TRANSPORT_SHA256);
+             symbols = SymbolLookup.libraryLookup(dll, arena);
+             // Require our patched export, not an unmodified third-party binary.
+             stopAccept = fn("CIO_StopAccepting", FunctionDescriptor.of(I, P));
+@@ -172,31 +214,76 @@
+     }
+     private int slot(long id) { long x = id * 0x9E3779B97F4A7C15L; return (int)(x ^ (x >>> 32)) & mask; }
+     private CIOWinSocket find(long id) {
+-        int start = slot(id);
+-        for (int n = 0; n < connections.length(); n++) {
+-            CIOWinSocket item = connections.get((start + n) & mask);
+-            if (item == null) return null;
+-            if (item != tombstone && item.id() == id) return item;
+-        }
+-        return null;
++        for (;;) {
++            final AtomicReferenceArray<CIOWinSocket> table = connections;
++            final int start = slot(id);
++            for (int n = 0; n < table.length(); n++) {
++                final CIOWinSocket item = table.get((start + n) & mask);
++                if (item == null) break;
++                if (item != tombstone && item.id() == id) return item;
++            }
++            // A table rebuild concurrent with this miss may have moved the
++            // entry. Retry on the newly published table, never on a stale one.
++            if (table == connections) return null;
++        }
+     }
+     private boolean register(CIOWinSocket channel) {
+-        int start = slot(channel.id());
+-        for (int n = 0; n < connections.length(); n++) {
+-            int p = (start + n) & mask;
+-            CIOWinSocket cur = connections.get(p);
+-            if ((cur == null || cur == tombstone) && connections.compareAndSet(p,cur,channel)) return true;
++        synchronized (registryLock) {
++        final AtomicReferenceArray<CIOWinSocket> table = connections;
++        final int start = slot(channel.id());
++        for (int n = 0; n < table.length(); n++) {
++            final int p = (start + n) & mask;
++            final CIOWinSocket cur = table.get(p);
++            if (cur == null || cur == tombstone) {
++                table.set(p, channel); // protected against all registry writers
++                registryLive++;
++                if (cur == tombstone) registryTombstones--;
++                return true;
++            }
+         }
+         return false;
++        }
+     }
+     private void forget(CIOWinSocket channel) {
+-        int start = slot(channel.id());
+-        for (int n = 0; n < connections.length(); n++) {
+-            int p = (start + n) & mask;
+-            CIOWinSocket cur = connections.get(p);
+-            if (cur == channel) { connections.compareAndSet(p, channel, tombstone); return; }
++        synchronized (registryLock) {
++        final AtomicReferenceArray<CIOWinSocket> table = connections;
++        final int start = slot(channel.id());
++        for (int n = 0; n < table.length(); n++) {
++            final int p = (start + n) & mask;
++            final CIOWinSocket cur = table.get(p);
++            if (cur == channel) {
++                table.set(p, tombstone);
++                registryLive--;
++                registryTombstones++;
++                // Rare O(table) compaction is confined to connection churn;
++                // ordinary RECV/SEND callback lookup stays allocation-free.
++                if (registryTombstones >= Math.max(128, table.length() >>> 2)
++                        && registryTombstones > registryLive) compactRegistry(table);
++                return;
++            }
+             if (cur == null) return;
+         }
++        }
++    }
++    private void compactRegistry(AtomicReferenceArray<CIOWinSocket> old) {
++        final AtomicReferenceArray<CIOWinSocket> fresh =
++                new AtomicReferenceArray<>(old.length());
++        for (int i = 0; i < old.length(); i++) {
++            final CIOWinSocket item = old.get(i);
++            if (item == null || item == tombstone) continue;
++            final int start = slot(item.id());
++            for (int n = 0; n < fresh.length(); n++) {
++                final int at = (start + n) & mask;
++                if (fresh.get(at) == null) {
++                    fresh.set(at, item);
++                    break;
++                }
++            }
++        }
++        // Volatile publication gives readers a complete, immutable snapshot
++        // until a subsequent registration/deletion. Writers are synchronized.
++        connections = fresh;
++        registryTombstones = 0;
+     }
+ 
+     @SuppressWarnings({ "preview", "unused" })
+@@ -358,43 +445,95 @@
+             return false;
+         } finally { nativeCalls.decrementAndGet(); }
+     }
++    /** Starts native accept-stop without blocking the Java shutdown owner.
++     * This never runs on a completion callback; no extra packet worker is added.
++     */
+     synchronized void stopAccepting() throws IOException {
+-        if (nativeAcceptStopped) return;
+-        if (isCompletionThread()) throw new IOException("cannot stop native listener inside completion callback");
++        if (destroyed || nativeAcceptStopped) return;
++        if (isCompletionThread())
++            throw new IOException("cannot stop native listener inside completion callback");
+         accepting = false;
+-        try {
+-            if ((int)stopAccept.invokeExact(server) == 0)
++        if (nativeShutdownThread != null) return;
++        final Thread t = new Thread(this::nativeShutdownRoutine, "CIO-native-shutdown");
++        t.setDaemon(true);
++        nativeShutdownThread = t;
++        t.start();
++    }
++
++    private void nativeShutdownRoutine() {
++        try {
++            if ((int) stopAccept.invokeExact(server) == 0)
+                 throw new IOException("native StopAccepting returned false");
+             nativeAcceptStopped = true;
+-        } catch (IOException e) { throw e; }
+-        catch (Throwable e) { throw new IOException("native StopAccepting failed", e); }
+-    }
+-    @SuppressWarnings("preview")
+-	@Override public synchronized void close() throws IOException {
++            // Stop must not run before the last Java SEND/PAUSE downcall ends.
++            // The owning shutdown thread requests the second phase explicitly.
++            while (!nativeStopRequested) LockSupport.park(this);
++            if (started && (int) stop.invokeExact(server) == 0)
++                throw new IOException("native CIO_Server_Stop returned false");
++            nativeStopCompleted = true;
++        } catch (Throwable error) {
++            nativeShutdownFailure = error instanceof IOException io ? io :
++                    new IOException("CIO native shutdown downcall failed", error);
++        }
++    }
++
++    IOException shutdownFailure() { return nativeShutdownFailure; }
++
++    @SuppressWarnings("preview")
++    @Override public synchronized void close() throws IOException {
++        closeWithBudget(SHUTDOWN_BUDGET_NS);
++    }
++
++    @SuppressWarnings("preview")
++    synchronized void closeWithBudget(long budgetNs) throws IOException {
+         if (destroyed) return;
+-        if (isCompletionThread()) throw new IOException("CIO native Stop cannot join its own IOCP worker");
++        if (isCompletionThread())
++            throw new IOException("CIO native Stop cannot join its own IOCP worker");
++        if (budgetNs <= 0L) throw new IOException("CIO shutdown deadline expired; native memory preserved");
++        final long startedAt = System.nanoTime();
++        // Starting stopAccepting is asynchronous: even an unresponsive native
++        // listener cannot trap the caller in an unbounded downcall.
++        stopAccepting();
+         shuttingDown = true;
+-        // A Java thread may still be inside native SendPackets while another
+-        // thread begins shutdown. Freeing the DLL's server object first would
+-        // create use-after-free. Wait for all downcalls before destroying it.
+-        while (nativeCalls.get() != 0) {
++        while (!nativeAcceptStopped || nativeCalls.get() != 0) {
++            final IOException failed = nativeShutdownFailure;
++            if (failed != null) throw failed;
++            if (System.nanoTime() - startedAt >= budgetNs)
++                throw new IOException("CIO shutdown timed out waiting accept/downcalls; outstanding="
++                        + nativeCalls.get() + "; native memory preserved");
+             LockSupport.parkNanos(this, 100_000L);
+-        }
+-        try {
+-            accepting = false;
+-            if (started) {
+-                int result = (int)stop.invokeExact(server);
+-                if (result == 0) throw new IOException("native Stop failed");
+-                // Stop synchronously joins all native completion workers.
+-                started = false;
+-                nativeAcceptStopped = true;
+-            }
+-            fn("CIO_Destroy_TcpServer",FunctionDescriptor.ofVoid(P)).invokeExact(server);
+-            fn("CIO_Destroy_TcpServerListener",FunctionDescriptor.ofVoid(P)).invokeExact(listener);
++            if (Thread.interrupted()) {
++                Thread.currentThread().interrupt();
++                throw new IOException("CIO native shutdown interrupted; native memory preserved");
++            }
++        }
++        nativeStopRequested = true;
++        final Thread t = nativeShutdownThread;
++        if (t != null) LockSupport.unpark(t);
++        // A hung C++ Stop/worker join cannot exceed the Java-side deadline.
++        // Never force-close the shared arena while its upcalls may still run.
++        while (!nativeStopCompleted) {
++            final IOException failed = nativeShutdownFailure;
++            if (failed != null) throw failed;
++            if (System.nanoTime() - startedAt >= budgetNs)
++                throw new IOException("CIO native Stop timed out; native arena retained and shutdown aborted");
++            LockSupport.parkNanos(this, 100_000L);
++            if (Thread.interrupted()) {
++                Thread.currentThread().interrupt();
++                throw new IOException("CIO native Stop interrupted; native arena retained");
++            }
++        }
++        // Stop returned successfully; native workers and their callbacks have
++        // joined. Only now is it safe to destroy the server and FFM upcall stubs.
++        try {
++            started = false;
++            fn("CIO_Destroy_TcpServer", FunctionDescriptor.ofVoid(P)).invokeExact(server);
++            fn("CIO_Destroy_TcpServerListener", FunctionDescriptor.ofVoid(P)).invokeExact(listener);
+             destroyed = true;
+             arena.close();
+-        } catch (IOException e) { throw e; }
+-        catch (Throwable e) { throw new IOException("CIO native shutdown failed", e); }
++        } catch (Throwable error) {
++            throw new IOException("CIO native destruction failed", error);
++        }
+     }
+     boolean isAcceptStopped() { return nativeAcceptStopped || destroyed; }
+     @SuppressWarnings("preview")
+--- a/src/l1j/server/server/model/network/core/CIOWinSocket.java
++++ b/src/l1j/server/server/model/network/core/CIOWinSocket.java
+@@ -84,7 +84,7 @@
+                         byte[] expanded = new byte[Math.min(MAX_STASH, Math.max(required, stash.length << 1))];
+                         System.arraycopy(stash, stashStart, expanded, 0, pending);
+                         stash = expanded;
+-                    } else if (stashStart > 0 && stash.length - stashEnd < length - at) {
++                    } else if (stashStart > 0) {
+                         System.arraycopy(stash, stashStart, stash, 0, pending);
+                     }
+                     stashStart = 0;
+--- a/src/l1j/server/server/model/network/thread/CIOThreadCallback.java
++++ b/src/l1j/server/server/model/network/thread/CIOThreadCallback.java
+@@ -362,12 +362,21 @@
+      * owner processes it. A bounded FIFO avoids unbounded ingress memory.
+      * A rejection is terminal to that connection (the READ pump closes it).
+      */
+-    public boolean enqueuePacketImmediate(int shardIndex, Runnable packetTask) {
++    /** A packet is either executed on its owner or cancelled during shutdown. */
++    public interface PacketTask extends Runnable {
++        void cancel();
++    }
++
++    public boolean enqueuePacketImmediate(int shardIndex, PacketTask packetTask) {
+         if (packetTask == null || shardIndex < 0 || shardIndex >= shardCount)
+             return false;
+         final CIOThread owner = shards[shardIndex];
+-        if (owner == null || !owner.running) return false;
+-        if (!owner.packetIngress.offer(packetTask)) return false;
++        if (owner == null) return false;
++        // Admission and stop share the same short boundary. The owner never
++        // executes packet handlers while this monitor is held.
++        synchronized (owner) {
++            if (!owner.running || !owner.packetIngress.offer(packetTask)) return false;
++        }
+         owner.signalWork(true);
+         return true;
+     }
+@@ -1176,7 +1185,8 @@
+         // is bounded; it never grows with unbounded client traffic.
+         static final int PACKET_INGRESS_CAPACITY = 8192;
+         static final int MAX_PACKET_BURST = 64;
+-        final ArrayBlockingQueue<Runnable> packetIngress =
++        // Replaced at network bind, before the first accepted connection.
++        volatile ArrayBlockingQueue<PacketTask> packetIngress =
+                 new ArrayBlockingQueue<>(PACKET_INGRESS_CAPACITY);
+ 
+ 		final int idx;
+@@ -1254,11 +1264,17 @@
+ 		}
+ 
+ 
+-        void bindInbound(int capacity) {
++        synchronized void bindInbound(int capacity) {
+             if (capacity <= 0)
+                 throw new IllegalArgumentException("invalid network ingress capacity: " + capacity);
+-            if (inboundLimit != 0 && inboundLimit != capacity)
+-                throw new IllegalStateException("ingress already bound with different capacity");
++            if (inboundLimit != 0) {
++                if (inboundLimit != capacity)
++                    throw new IllegalStateException("ingress already bound with different capacity");
++                return;
++            }
++            if (!packetIngress.isEmpty())
++                throw new IllegalStateException("cannot resize active packet ingress");
++            packetIngress = new ArrayBlockingQueue<>(capacity);
+             inboundLimit = capacity;
+         }
+ 
+@@ -1943,9 +1959,9 @@
+                         // assigned shard. Never attach RECV to the timer wheel.
+                         // A bounded burst lets overdue timers run next pass.
+                         int packetDrained = 0;
+-                        Runnable packet;
++                        PacketTask packet;
+                         while (packetDrained < MAX_PACKET_BURST
+-                                && (packet = packetIngress.poll()) != null) {
++                                && running && (packet = packetIngress.poll()) != null) {
+                             try {
+                                 packet.run();
+                             } catch (Throwable packetFailure) {
+@@ -1956,8 +1972,10 @@
+                             packetDrained++;
+                         }
+                         sleepMs = lastWheelAtMs + WHEEL_TICK_MS - nowMs();
+-                        lastBacklogMask = 0;
+                         backlog = !packetIngress.isEmpty();
++                        // Snapshot on the owner only; accepting sockets never
++                        // lock/inspect packetIngress merely to choose a shard.
++                        lastBacklogMask = backlog ? 1 : 0;
+                     } catch (Throwable t) {
+                         LOGGER.log(Level.SEVERE,
+                                 "[CIOThread] owner loop failure; shard survives idx=" + idx, t);
+@@ -1988,12 +2006,22 @@
+             } finally {
+                 try {
+                     if (!running) {
+-                        // Registrations are stopped before cleanup under the
+-                        // shard monitor. No foreign producer can race cleanup.
++                        // The stop monitor prevents any further successful
++                        // admissions. Cancel every accepted, unexecuted frame;
++                        // cancellation releases its codec/READ lifetime barrier.
++                        PacketTask pending;
++                        while ((pending = packetIngress.poll()) != null) {
++                            try { pending.cancel(); }
++                            catch (Throwable failure) {
++                                LOGGER.log(Level.SEVERE,
++                                        "[CIO-PACKET] shutdown cancellation failed idx=" + idx, failure);
++                            }
++                        }
+                         synchronized (this) {
+                             threadLocalTimer.discardOnShutdown();
+                             states.discardOnShutdown();
+                         }
++                        lastBacklogMask = 0;
+                     }
+                 } finally {
+                     CIOShardContext.exitShard();
+--- a/src/l1j/server/Server.java
++++ b/src/l1j/server/Server.java
+@@ -90,42 +90,47 @@
+         }
+     }
+ 
++    private static volatile long networkShutdownDeadlineNs;
++
++    /** One deadline across accept stop, native worker join, and Java await. */
+     public static void stopNewConnections() {
+         final CIOServer listener = gameListener;
+         if (listener == null) return;
++        final long deadline = System.nanoTime() + 30_000_000_000L;
++        networkShutdownDeadlineNs = deadline;
+         listener.stopAccepting();
+-        if (listener.isAdmissionThread()) {
++        if (listener.isAdmissionThread())
+             throw new IllegalStateException("shutdown from admission owner");
+-        }
+-        // Do not hold Server.class while the admission owner may still run.
+-        // We must finish the last in-flight CreateSocket before saving characters.
+-        boolean interrupted = false;
+-        for (;;) {
+-            try {
+-                if (listener.awaitAcceptStopped(1L, java.util.concurrent.TimeUnit.SECONDS)) break;
+-            } catch (InterruptedException e) {
+-                interrupted = true;
+-            }
+-        }
+-        if (interrupted) Thread.currentThread().interrupt();
+-    }
+-
+-    public static void stopLoginServer() {
+-        final CIOServer listener;
+-        synchronized (Server.class) {
+-            listener = gameListener;
+-            gameListener = null;
+-        }
+-        if (listener == null) return;
+-        listener.close();
+-        // A completion callback must not join its own IOCP worker pool.
+-        if (listener.isCompletionThread() || listener.isAdmissionThread()) return;
+-        try {
+-            if (!listener.awaitTermination(30L, java.util.concurrent.TimeUnit.SECONDS)) {
+-                System.err.println("[CIO] shutdown: native IOCP workers still terminating");
+-            }
++        try {
++            final long remaining = Math.max(0L, deadline - System.nanoTime());
++            if (!listener.awaitAcceptStopped(remaining, java.util.concurrent.TimeUnit.NANOSECONDS))
++                throw new IllegalStateException("CIO accept shutdown exceeded 30 seconds");
+         } catch (InterruptedException e) {
+             Thread.currentThread().interrupt();
++            throw new IllegalStateException("CIO accept shutdown interrupted", e);
++        }
++    }
++
++    public static void stopLoginServer() {
++        final CIOServer listener = gameListener;
++        if (listener == null) return;
++        final long deadline = networkShutdownDeadlineNs != 0L
++                ? networkShutdownDeadlineNs : System.nanoTime() + 30_000_000_000L;
++        final long remaining = Math.max(0L, deadline - System.nanoTime());
++        if (remaining == 0L)
++            throw new IllegalStateException("CIO shutdown deadline expired before native Stop");
++        listener.close(remaining, java.util.concurrent.TimeUnit.NANOSECONDS);
++        try {
++            if (!listener.awaitTermination(Math.max(0L, deadline - System.nanoTime()),
++                    java.util.concurrent.TimeUnit.NANOSECONDS))
++                throw new IllegalStateException("CIO shutdown: native workers still active");
++        } catch (InterruptedException e) {
++            Thread.currentThread().interrupt();
++            throw new IllegalStateException("CIO shutdown interrupted", e);
++        }
++        synchronized (Server.class) {
++            if (gameListener == listener) gameListener = null;
++            networkShutdownDeadlineNs = 0L;
+         }
+     }
+ 
