@@ -1,3 +1,13 @@
+## 2026-11-11 — aden.zip 네트워크 코어 검토 보고서
+
+[**상세 보고서 읽기**](reports/aden_network_review_20261111/REPORT_KO.md) · [보고서·재현 로그 다운로드](downloads/aden_network_review_20261111.zip) · [개선 목록 CSV](reports/aden_network_review_20261111/findings.csv)
+
+Windows IOCP·Java 21 FFM·native codec·샤드 실행·버퍼 풀 구조를 검토하고 개선 우선순위 7개를 정리했습니다. 실행 중 패킷과 로그아웃 정리의 직렬화, 종료 전체 deadline을 우선 권고합니다. 수신 stash 데이터 손상 조건·await 즉시 반환·registry tombstone 누적은 선택한 실제 Java 클래스로 로컬 재현했습니다. DLL과 게임은 가짜 구현으로 대체한 검사이며 Windows 실게임·전체 서버 빌드·부하 성능은 미검증입니다.
+
+보고서에는 코드 위치·영향·수정 방법·검증 계획이 있습니다. 원본 소스와 DLL은 보고서 묶음에 포함하지 않았습니다.
+
+---
+
 ## 2026-11-11 — 기존 MS949 프로젝트용 src만 복구
 
 [**MS949 src 폴더만 다운로드**](downloads/L1J_49027_ATS_V10_MS949_SRC_ONLY_20261111.zip)

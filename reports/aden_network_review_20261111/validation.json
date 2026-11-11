@@ -1,0 +1,50 @@
+{
+  "review_date": "2026-11-11",
+  "input_archive_sha256": "9c966670af5ae7f624d7b612dd185600d12d6b214ef88ac2dbbcab6438b69b33",
+  "source_files": 1695,
+  "java_files": 1694,
+  "network_java_files": 317,
+  "network_java_lines": 72732,
+  "input_source_integrity": "All extracted source files byte-identical to uploaded src.zip after review",
+  "runtime": "OpenJDK 21.0.13 on Linux; selected Java classes only; no Windows DLL loaded",
+  "checks": {
+    "stash_original": "REPRODUCED using actual CIOWinSocket and fake native/game dependencies",
+    "stash_temporary_suggested_fix": "PASS full remaining 2904-byte comparison",
+    "registry": "REPRODUCED actual methods, constructor bypassed, 1024 slots/57589 churn/live=0/null=0",
+    "await_termination": "REPRODUCED actual method, fake native lifecycle; 1000ms request returned false before ~150ms termination"
+  },
+  "not_executed": [
+    "full server dependency/type linking",
+    "Windows IOCP/native codec runtime",
+    "real MySQL",
+    "game client login/play",
+    "live load or throughput/p99 benchmark",
+    "runtime reproduction of packet/logout and packet/shutdown concurrency risks"
+  ],
+  "dlls": {
+    "CIOWinTransport.dll": {
+      "sha256": "9d8106886be0e26d14bd8eb7093714ae3b44d655ccae869ffc98148db8807ecc",
+      "bytes": 4573184,
+      "format": "Windows x64 PE32+",
+      "inspection": "PE metadata and export table only; not executed"
+    },
+    "CIOPacketCodec.dll": {
+      "sha256": "60bde93c2ba20057e7e307594edef69ced273b69f923535ab658769e09f0cea9",
+      "bytes": 119808,
+      "format": "Windows x64 PE32+",
+      "inspection": "PE metadata and export table only; not executed"
+    }
+  },
+  "source_fingerprints": {
+    "src/l1j/server/Server.java": "24ae5b653e6de61bda93a338f0e5ce843f7d95ad8aedc7555d52c96dc0960ad1",
+    "src/l1j/server/server/model/Instance/L1PcInstance.java": "71e0e710051265ff009981c52d4474c7835a63a3e419aab9c6a6b2823b4af7c5",
+    "src/l1j/server/server/model/network/core/CIOClient.java": "f409b6b60ad0c41cfade93f5bffd9f498494bb5af806f7b30ec7e86e1bfd75d2",
+    "src/l1j/server/server/model/network/core/CIOPacketCodec.java": "59f4eb53be95ecf167e000f8c12599c0548c78911fac6ca75fc1fba302516201",
+    "src/l1j/server/server/model/network/core/CIOServer.java": "041d8d7688c542210f7456e8c8288a685f1bbef7fe25a81c070b0289487e15e4",
+    "src/l1j/server/server/model/network/core/CIOUserSocket.java": "1704d801f1737b1ea5d42a5ef3a4620b134cc210cbd8f852fd6f3d31d8a2de01",
+    "src/l1j/server/server/model/network/core/CIOWinServer.java": "caf73b4d35b34e6095127bf8098f13ae7b9431d9b84a770d37568cd9495f7514",
+    "src/l1j/server/server/model/network/core/CIOWinSocket.java": "1b2a139d13f46821f7bd7dae35fffb2d9f6f202c90a3f294e170e90db1c699de",
+    "src/l1j/server/server/model/network/thread/CIOThreadCallback.java": "d37bea63dae54378a1ec25110f4df3ee49799b227072a219240a9d7449719ceb",
+    "src/l1j/server/server/model/network/utill/ConnectionConfig.java": "8491607cd55269851a86601093b0481f4d76d527f7f827af4fcb17016e821a1a"
+  }
+}

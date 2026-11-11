@@ -1,0 +1,8 @@
+﻿ID,우선순위,개선 대상,증거 수준,주요 위치
+N01,P1,패킷 실행과 로그아웃 최종 정리의 종료 장벽,STATIC_CONCURRENCY_RISK,src/l1j/server/server/model/network/core/CIOUserSocket.java:2754; src/l1j/server/server/model/network/core/CIOUserSocket.java:3572; src/l1j/server/server/model/network/core/CIOClient.java:125; src/l1j/server/server/model/Instance/L1PcInstance.java:2530
+N02,P1,전체 종료 deadline과 실제 await 동작,SOURCE_PROBE_AND_STATIC,src/l1j/server/Server.java:119; src/l1j/server/server/model/network/core/CIOServer.java:134; src/l1j/server/server/model/network/core/CIOWinServer.java:373
+N03,P2,부분 소비한 stash의 추가 수신 데이터 손상,REPRODUCED_JAVA_ADAPTER_FAKE_NATIVE,src/l1j/server/server/model/network/core/CIOWinSocket.java:79; src/l1j/server/server/model/network/core/CIOWinSocket.java:112
+N04,P2,ingress 용량 설정과 backlog pressure 미반영,STATIC_CONFIRMED,src/l1j/server/server/model/network/utill/ConnectionConfig.java:108; src/l1j/server/server/model/network/thread/CIOThreadCallback.java:1177; src/l1j/server/server/model/network/thread/CIOThreadCallback.java:1257; src/l1j/server/server/model/network/thread/CIOThreadCallback.java:1959
+N05,P2,연결 레지스트리 tombstone 누적,REPRODUCED_REGISTRY_NO_NATIVE,src/l1j/server/server/model/network/core/CIOWinServer.java:173
+N06,P2,packet admission과 shutdown의 경쟁 및 취소 계약,STATIC_CONCURRENCY_RISK,src/l1j/server/server/model/network/thread/CIOThreadCallback.java:365; src/l1j/server/server/model/network/thread/CIOThreadCallback.java:1988; src/l1j/server/server/model/network/thread/CIOThreadCallback.java:3055
+N07,P2,네이티브 ABI 확인과 원본 빌드 자료,SOURCE_AND_PE_EXPORT_INSPECTION,src/l1j/server/server/model/network/core/CIOPacketCodec.java:26; src/l1j/server/server/model/network/core/CIOWinServer.java:90

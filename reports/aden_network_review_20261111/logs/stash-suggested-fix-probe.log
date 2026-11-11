@@ -1,0 +1,5 @@
+Note: /tmp/aden-probe-awtpvhp8/l1j/server/server/model/network/core/SocketStashProbe.java uses preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.
+PASS suggested fix on temporary copy: same 4KiB-read case preserves all remaining 2904 bytes.
+expected first 8=[110, 99, 116, 73, 90, 47, 32, 53] actual=[110, 99, 116, 73, 90, 47, 32, 53]
+Scope: temporary copy with one-condition compaction fix, fake native pause/send and fake CIOUserSocket; in-flight callback interleaving, not a live DLL trace.

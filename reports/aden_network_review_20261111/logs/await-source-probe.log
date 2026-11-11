@@ -1,0 +1,2 @@
+REPRODUCED original CIOServer.awaitTermination: requested 1000ms, native terminates after ~150ms; returned false in 0ms.
+Scope: original public method with a fake native-server lifecycle, constructor bypassed; no Windows IOCP runtime.
