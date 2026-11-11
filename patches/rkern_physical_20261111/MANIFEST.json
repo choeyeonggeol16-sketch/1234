@@ -1,0 +1,31 @@
+{
+  "bundle": "RKern_Aden_IOCP_PHYSICAL_MAGIC_FULL_SRC_20261111.zip",
+  "sha256": "2e09a3dd34b96229bd23e9f90b4b1851d375d2f3a05d3574a2f7ee506b1e0761",
+  "source_files": 1696,
+  "java_files": 1695,
+  "base_revision": "f1f4bbe9b57e13606c3514d90e89eb12db149d9f",
+  "report_revision": "0d14755daf60fe8098a45da8cf3d7fc4a75dbca4",
+  "changed_java_files": [
+    "src/l1j/server/server/model/character/Attack/Helper/DamageReductionHelper.java",
+    "src/l1j/server/server/model/character/Attack/Helper/L1DamageCalcHelper.java",
+    "src/l1j/server/server/model/character/Attack/Helper/L1SkillProcHelper.java",
+    "src/l1j/server/server/model/character/action/CAttackAction.java"
+  ],
+  "probability_settings_changed": false,
+  "preserved_methods": [
+    "isProcDoubleBreak (both overloads)",
+    "rollWeaponProcMode",
+    "rollCrashFuryFlags"
+  ],
+  "database_changes": false,
+  "native_dll_changes": false,
+  "validation": [
+    "full Java 21 type compile 1695 sources, zero errors, five pre-existing removal warnings",
+    "actual production physical helpers and AttackTargetData PC pipeline",
+    "10609 critical probability combinations",
+    "existing magic formula and actual victim/controller/HP regressions",
+    "source equality for excluded proc methods and entire probability settings source",
+    "ZIP CRC, byte comparison, patch reproduction"
+  ],
+  "limits": "2015 research model; no live Windows IOCP/game/DB or operational performance measurements"
+}

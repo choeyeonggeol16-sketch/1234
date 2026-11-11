@@ -1,0 +1,3 @@
+PASS full ZIP CRC and byte comparison of all 1696 source files.
+PASS diff applies to f1f4bbe full source and reproduces every new source byte.
+PASS exactly four existing Java files changed; magic/stacking/network/threadpool source retained.

@@ -1,0 +1,4 @@
+src/l1j/server/server/model/character/Attack/Helper/DamageReductionHelper.java
+src/l1j/server/server/model/character/Attack/Helper/L1DamageCalcHelper.java
+src/l1j/server/server/model/character/Attack/Helper/L1SkillProcHelper.java
+src/l1j/server/server/model/character/action/CAttackAction.java

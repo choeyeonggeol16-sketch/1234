@@ -1,0 +1,4 @@
+PASS unchanged production method(s): isProcDoubleBreak (2)
+PASS unchanged production method(s): rollWeaponProcMode (1)
+PASS unchanged production method(s): rollCrashFuryFlags (1)
+PASS entire AttackSkillChanceConfig source unchanged; no production probability/config edits.

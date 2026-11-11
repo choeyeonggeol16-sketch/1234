@@ -1,0 +1,187 @@
+diff --git a/src/l1j/server/server/model/character/Attack/Helper/DamageReductionHelper.java b/src/l1j/server/server/model/character/Attack/Helper/DamageReductionHelper.java
+index f89912f..6356863 100644
+--- a/src/l1j/server/server/model/character/Attack/Helper/DamageReductionHelper.java
++++ b/src/l1j/server/server/model/character/Attack/Helper/DamageReductionHelper.java
+@@ -22,6 +22,15 @@ public final class DamageReductionHelper {
+                                                     boolean ranged,
+                                                     boolean magic,
+                                                     int dmg) {
++        return applyAllDamageReductions(targetPc, attacker, ranged, magic, dmg, false, false);
++    }
++
++    /** Physical multiplier insertion point: fixed skill/AC/armor DR precedes
++     * Burning/Fury, while percentage defense retains its later stage.
++     * Legacy magic/NPC callers pass no deferred multiplier flags. */
++    public static int applyAllDamageReductions(L1PcInstance targetPc,
++            L1Character attacker, boolean ranged, boolean magic, int dmg,
++            boolean burning, boolean fury) {
+         if (targetPc == null || dmg <= 0) return dmg;
+ 
+         int out = dmg;
+@@ -95,6 +104,10 @@ public final class DamageReductionHelper {
+             }
+         }
+ 
++        if (!magic) {
++            out = L1DamageCalcHelper.applyFinalPhysicalMultipliers(out, burning, fury);
++        }
++
+         // =========================================================
+         // 5) IMMUNE_TO_HARM (퍼센트 감쇠)
+         // LUCIFER is applied once by the PC victim's GotDamage(), including
+diff --git a/src/l1j/server/server/model/character/Attack/Helper/L1DamageCalcHelper.java b/src/l1j/server/server/model/character/Attack/Helper/L1DamageCalcHelper.java
+index c7ddb4c..eb50f3e 100644
+--- a/src/l1j/server/server/model/character/Attack/Helper/L1DamageCalcHelper.java
++++ b/src/l1j/server/server/model/character/Attack/Helper/L1DamageCalcHelper.java
+@@ -37,6 +37,16 @@ public final class L1DamageCalcHelper {
+             final boolean procBurning,
+             final boolean normalCriticalMax
+     ) {
++        // Legacy callers retain their original unarmed/zero-core contract.
++        return calcDamage(randMin, randMax, weaponBonus, enchant, charMagic,
++                statBonus, classBonus, undeadBonus, weaponLoss, attrPart,
++                critMode, procDoubleBreak, procBurning, normalCriticalMax, false);
++    }
++
++    public static int calcDamage(int randMin, int randMax, int weaponBonus, int enchant,
++            int charMagic, int statBonus, int classBonus, int undeadBonus, int weaponLoss,
++            int attrPart, WeaponCritMode critMode, boolean procDoubleBreak,
++            boolean procBurning, boolean normalCriticalMax, boolean hasWeapon) {
+         // ---- sanitize
+         randMin = nz(randMin);
+         randMax = clampMax(nz(randMax), randMin);
+@@ -58,7 +68,7 @@ public final class L1DamageCalcHelper {
+ 
+         // ---- weaponCore (속뎀 제외)
+         int weaponCore = aRandom + weaponBonus + enchant + undeadBonus - weaponLoss;
+-        if (weaponCore < 0) weaponCore = 0;
++        weaponCore = Math.max(hasWeapon ? 1 : 0, weaponCore);
+ 
+         // ---- 이도 더블: weaponCore만 2배
+         if (critMode == WeaponCritMode.DUAL_DOUBLE) weaponCore <<= 1;
+@@ -71,8 +81,17 @@ public final class L1DamageCalcHelper {
+         if (dmg <= 0) return 0;
+ 
+         // ---- 버닝/엘파: 최종 1.5배
+-        if (procBurning) dmg += (dmg >> 1);
++        if (procBurning) dmg = applyFinalPhysicalMultipliers(dmg, true, false);
+ 
+         return dmg;
+     }
++    /** Once per confirmed physical attack, after fixed DR and before percent defense. */
++    public static int applyFinalPhysicalMultipliers(int damage, boolean burning, boolean fury) {
++        if (damage <= 0) return 0;
++        long out = damage;
++        if (burning) out = (out * 3L) / 2L;
++        if (fury) out *= 2L;
++        return (int) Math.min(Integer.MAX_VALUE, out);
++    }
++
+ }
+diff --git a/src/l1j/server/server/model/character/Attack/Helper/L1SkillProcHelper.java b/src/l1j/server/server/model/character/Attack/Helper/L1SkillProcHelper.java
+index a801f53..2e7d3d0 100644
+--- a/src/l1j/server/server/model/character/Attack/Helper/L1SkillProcHelper.java
++++ b/src/l1j/server/server/model/character/Attack/Helper/L1SkillProcHelper.java
+@@ -69,7 +69,7 @@ public final class L1SkillProcHelper {
+ 		}
+ 
+ 		// 4) 일반 치명타
+-		// - 크로우: (근치명 + 무기 더블찬스) 합산 후 FLAG_NORMAL_CRIT만 굴림
++		// - 크로우: 캐릭터/무기 독립 사건의 합집합 확률로 FLAG_NORMAL_CRIT 판정
+ 		// - 이도류: 근치명은 별도(독립)로 굴림 (mode와 동시에 켜질 수 있음)
+ 		if (isProcCritical(pc, ranged, weaponType, weaponDoubleDmgChance)) {
+ 			flags |= FLAG_NORMAL_CRIT;
+@@ -214,7 +214,7 @@ public final class L1SkillProcHelper {
+ 
+ 	/**
+ 	 * 치명타(근/원) 판정
+-	 * - 크로우(58): 근치명 확률에 weaponDoubleDmgChance(무기 자체 확률)를 합산하여 판정(스샷 정책)
++	 * - 크로우(58): 캐릭터/무기 치명타 독립 합집합 확률을 한 번 추첨
+ 	 * - 이도류(54): 근치명은 별도 판정(weaponDoubleDmgChance 합산 X)
+ 	 */
+ 	public static boolean isProcCritical(
+@@ -238,9 +238,11 @@ public final class L1SkillProcHelper {
+ 			final int miscCri = pc.get_melee_critical_rate();
+ 			chance = baseCri + statCri + miscCri;
+ 
+-			if (weaponType == 58) {
+-				chance += weaponDoubleDmgChance;
+-			}
++            if (weaponType == 58) {
++                final int basisPoints = criticalChanceBasisPoints(chance, weaponDoubleDmgChance);
++                return basisPoints > 0
++                        && ThreadLocalRandom.current().nextInt(1, 10001) <= basisPoints;
++            }
+ 		}
+ 
+ 		if (chance <= 0) return false;
+@@ -278,10 +280,17 @@ public final class L1SkillProcHelper {
+                 rates.cycloneStartLevel(), rates.cycloneBaseChance(), rates.cyclonePerLevel());
+ 	}
+ 	
++    /** Exact 0.01 percentage points; one roll for the independent union. */
++    public static int criticalChanceBasisPoints(int characterChance, int weaponChance) {
++        final int pc = Math.max(0, Math.min(100, characterChance));
++        final int pw = Math.max(0, Math.min(100, weaponChance));
++        return 10000 - (100 - pc) * (100 - pw);
++    }
++
+ 	public static boolean isSoulOfFlameMax(final L1PcInstance pc, final boolean ranged) {
+ 	    if (pc == null) return false;
+-	    if (!ranged) return false;
+-	    return pc.hasSkillEffect(L1SkillId.SOUL_OF_FLAME);
++	    if (ranged) return false;
++	    return pc.getWeapon() != null && pc.hasSkillEffect(L1SkillId.SOUL_OF_FLAME);
+ 	}
+ 	
+ 	public static boolean hasCrash(int flags) { return (flags & FLAG_CRASH) != 0; }
+diff --git a/src/l1j/server/server/model/character/action/CAttackAction.java b/src/l1j/server/server/model/character/action/CAttackAction.java
+index db89450..149d1b3 100644
+--- a/src/l1j/server/server/model/character/action/CAttackAction.java
++++ b/src/l1j/server/server/model/character/action/CAttackAction.java
+@@ -1471,7 +1471,7 @@ public final class CAttackAction extends CNewAction {
+ 	            _targetPc, _pc,
+ 	           false,
+ 	           false,
+-	            dmg
++	            dmg, _burning, _fury
+ 	    );
+ 	    if (dmg <= 0) { _isHit = false; return 0; }
+ 	    return dmg;
+@@ -1489,6 +1489,8 @@ public final class CAttackAction extends CNewAction {
+ 		
+ 		// 몬스터 데미지 감소
+ 		dmg -= calcNpcDamageReduction();
++        if (_weaponType2 != 17)
++            dmg = L1DamageCalcHelper.applyFinalPhysicalMultipliers(dmg, _burning, _fury);
+ 		
+ 
+ 	    if (dmg <= 0) {
+@@ -1825,7 +1827,7 @@ public final class CAttackAction extends CNewAction {
+         final boolean forceMaxRandom = critProc || soulFlameMax;
+ 
+         int dmg = L1DamageCalcHelper.calcDamage(A_min, A_max, B, C, E, F, G, H,
+-        		loss, weaponAttr, critMode, _doubleBreak, _burning, forceMaxRandom
++                loss, weaponAttr, critMode, _doubleBreak, false, forceMaxRandom, weapon != null
+         		);   
+ 
+         // 일루션 아바타, 큐브아바타 데미지 +10처리
+@@ -1834,6 +1836,7 @@ public final class CAttackAction extends CNewAction {
+         // 타겟 PC 배율 후처리
+         dmg = L1AttackHelper.applyTargetPcDamageMultipliers(_pc, _targetPc, ranged, dmg);
+         
++        _crash = _fury = false;
+         final int cfFlags = L1SkillProcHelper.rollCrashFuryFlags(_pc, ranged);
+ 
+         if (L1SkillProcHelper.hasCrash(cfFlags)) {
+@@ -1841,8 +1844,8 @@ public final class CAttackAction extends CNewAction {
+         	dmg += crashDmg;             
+         	_crash = true;
+         	if (L1SkillProcHelper.hasFury(cfFlags)) {
+-        		final int furyDmg = crashDmg * 2;
+-        		dmg += furyDmg;                   
++                // Fury doubles the whole physical result after fixed DR,
++                // rather than adding another two Crash bonuses here.
+         		_fury = true;
+         	}
+         }

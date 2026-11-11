@@ -1,3 +1,11 @@
+## 2026-11-11 — Aden 물리 피해·마법·네트워크 최신 통합 소스
+
+[**최신 전체 src 다운로드**](downloads/RKern_Aden_IOCP_PHYSICAL_MAGIC_FULL_SRC_20261111.zip) · [수정·검증 내역](patches/rkern_physical_20261111/README.md) · [SHA-256](downloads/RKern_Aden_IOCP_PHYSICAL_MAGIC_FULL_SRC_20261111.zip.sha256)
+
+물리 피해 검토 5항목(SOF, 고정 DR/버닝 순서, 퓨리 피해 방식, 크로우 확률 결합, 손상 무기 하한)을 반영했습니다. 더블브레이크·크래시·퓨리 발동 확률과 운영 설정은 유지합니다. 이전 마법중첩·마법데미지·IOCP·스레드풀 수정 포함. Java 1,695개 전체 타입 컴파일 및 관련 회귀 통과, Windows 실게임·실DB 미검증입니다.
+
+---
+
 ## 2026-11-11 — Aden 마법중첩·마법데미지 최신 전체 소스
 
 [**최신 전체 src 다운로드**](downloads/RKern_Aden_IOCP_THREADPOOL_MAGIC_FULL_SRC_20261111.zip) · [적용·구현·검증 내역](patches/rkern_magic_20261111/README.md) · [SHA-256](downloads/RKern_Aden_IOCP_THREADPOOL_MAGIC_FULL_SRC_20261111.zip.sha256)
