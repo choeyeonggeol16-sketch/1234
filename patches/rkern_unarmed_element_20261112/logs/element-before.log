@@ -1,0 +1,4 @@
+Baseline: 67d82d02492cc747b955652df6f44adc5c2e7506; unchanged previous production classes; current tests; visuals fixture only.
+bare: EXPECTED FAIL; Exception in thread "main" java.lang.AssertionError: bare-hand damage entered stat/gear/buff/DR path: 0
+recast: EXPECTED FAIL; Exception in thread "main" java.lang.AssertionError: NPC same debuff applied twice: -100
+legacy: EXPECTED FAIL; Exception in thread "main" java.lang.AssertionError: legacy spell integer division lost fraction

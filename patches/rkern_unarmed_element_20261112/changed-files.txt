@@ -1,0 +1,10 @@
+src/l1j/server/server/model/Instance/L1PcInstance.java
+src/l1j/server/server/model/L1Magic.java
+src/l1j/server/server/model/L1PolyMorph.java
+src/l1j/server/server/model/L1WeaponSkill.java
+src/l1j/server/server/model/SpellDamageFormula.java
+src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java
+src/l1j/server/server/model/character/action/CAttackAction.java
+src/l1j/server/server/model/character/action/CCreatureController.java
+src/l1j/server/server/model/character/skill/SkillHandlers.java
+src/l1j/server/server/utils/MJCommons.java

@@ -1,0 +1,475 @@
+diff --git a/src/l1j/server/server/model/Instance/L1PcInstance.java b/src/l1j/server/server/model/Instance/L1PcInstance.java
+index 4733cd2..fa10303 100644
+--- a/src/l1j/server/server/model/Instance/L1PcInstance.java
++++ b/src/l1j/server/server/model/Instance/L1PcInstance.java
+@@ -3305,6 +3305,12 @@ public class L1PcInstance extends L1Character {
+         receiveDamage(attacker, damage, false);
+     }
+ 
++    /** Bare-hand provenance is captured at the attack, never inferred from a
++     * later weapon swap or from an ordinary spell's caster equipment. */
++    public void receiveUnarmedPhysicalDamage(L1Character attacker, int damage) {
++        _creatureController.OnDamaged(attacker, damage, false, false, true);
++    }
++
+     private int applyMagicStackToDamage(int damage, long now) {
+         if (damage <= 0 || getCurrentHp() <= 0 || isDead()) return damage;
+         final long elapsed = now - magicStackStartNs;
+@@ -3332,13 +3338,22 @@ public class L1PcInstance extends L1Character {
+     }
+ 
+ 	public void GotDamage(L1Character attacker, int damage, boolean applyMagicStack) {
+-        if (applyMagicStack && (hasSkillEffect(L1SkillId.ABSOLUTE_BARRIER)
++        applyReceivedDamage(attacker, damage, applyMagicStack, false);
++    }
++
++    public void GotUnarmedPhysicalDamage(L1Character attacker, int damage) {
++        applyReceivedDamage(attacker, damage, false, true);
++    }
++
++    private void applyReceivedDamage(L1Character attacker, int damage,
++                                     boolean applyMagicStack, boolean unarmedPhysical) {
++        if ((applyMagicStack || unarmedPhysical) && (hasSkillEffect(L1SkillId.ABSOLUTE_BARRIER)
+                 || MJCommons.isUnbeatable(this))) return;
+ 		if(get_teleport()) {
+ 			return;
+ 		}
+ 	
+-		if (hasSkillEffect(L1SkillId.LUCIFER) && damage > 0) {
++		if (!unarmedPhysical && hasSkillEffect(L1SkillId.LUCIFER) && damage > 0) {
+ 			damage -= (damage * 0.10);
+ 		}
+ 
+@@ -3347,7 +3362,8 @@ public class L1PcInstance extends L1Character {
+ 		}
+ 
+ 		if (attacker instanceof L1PcInstance) {
+-			damage += calculate_sprite_pvp_damage(attacker.getCurrentSpriteId());
++            if (!unarmedPhysical)
++                damage += calculate_sprite_pvp_damage(attacker.getCurrentSpriteId());
+ 			if (is_combat_field()) {
+ 				L1PcInstance attacker_pc = (L1PcInstance) attacker;
+ 				if (get_current_combat_id() == attacker_pc.get_current_combat_id()
+@@ -3356,7 +3372,7 @@ public class L1PcInstance extends L1Character {
+ 				}
+ 			}
+             // Victim-owned PVP base reduction, exactly once for physical and magic hits.
+-            if (damage > 0) {
++            if (!unarmedPhysical && damage > 0) {
+                 damage = Math.max(0, damage - getBaseAbility().getPVP대미지리덕션());
+             }
+ 		}
+@@ -3394,8 +3410,12 @@ public class L1PcInstance extends L1Character {
+ 
+ 				for (L1ItemInstance item : _equipSlot.getArmors()) {
+ 					MJItemSkillModel model = MJItemSkillModelLoader.getInstance().getDef(item.getItemId());
+-					if (model != null)
+-						damage -= model.get(attacker, this, item, damage);
++                    if (model != null) {
++                        final double reduction = model.get(attacker, this, item, damage);
++                        // Keep defense proc side effects; its DR cannot change
++                        // the confirmed bare-hand 1/2 damage component.
++                        if (!unarmedPhysical) damage -= reduction;
++                    }
+ 				}
+ 
+ //				for (L1ItemInstance item : getInventory().getItems()) {
+diff --git a/src/l1j/server/server/model/L1Magic.java b/src/l1j/server/server/model/L1Magic.java
+index c29c002..bf90e2b 100644
+--- a/src/l1j/server/server/model/L1Magic.java
++++ b/src/l1j/server/server/model/L1Magic.java
+@@ -2771,72 +2771,23 @@ public class L1Magic {
+ 		return _CriticalDamage;
+ 	}
+ 
+-	private double calcAttrResistance(int attr) {
+-		int resist = 0;
+-		int resistFloor = 0;
+-		if (_calcType == PC_PC || _calcType == NPC_PC) {
+-			switch (attr) {
+-			case L1Skills.ATTR_EARTH:
+-				resist = _targetPc.getResistance().getEarth();
+-				break;
+-			case L1Skills.ATTR_FIRE:
+-				resist = _targetPc.getResistance().getFire();
+-				break;
+-			case L1Skills.ATTR_WATER:
+-				resist = _targetPc.getResistance().getWater();
+-				break;
+-			case L1Skills.ATTR_WIND:
+-				resist = _targetPc.getResistance().getWind();
+-				break;
+-			}
+-		} else if (_calcType == PC_NPC || _calcType == NPC_NPC) {
+-		}
+-		if (resist < 0) {
+-			resistFloor = (int) (-0.45 * Math.abs(resist));
+-		} else if (resist < 101) {
+-			resistFloor = (int) (0.45 * Math.abs(resist));
+-		} else {
+-			resistFloor = (int) (45 + 0.09 * Math.abs(resist));
+-			// 속성100초과분에 대해0.45의 1/5정도 감소되게 변경
+-		}
+-		double attrDeffence = resistFloor / 100;
+-		return attrDeffence;
+-	}
+-
+-	private int calcAttrDefence(int dmg, int attr) {
+-		if (dmg < 1) {
+-			return dmg;
+-		}
+-
+-		int resist = 0;
+-
+-		if (_calcType == PC_PC || _calcType == NPC_PC) {
+-			switch (attr) {
+-			case L1Skills.ATTR_EARTH:
+-				resist = _targetPc.getResistance().getEarth();
+-				break;
+-			case L1Skills.ATTR_FIRE:
+-				resist = _targetPc.getResistance().getFire();
+-				break;
+-			case L1Skills.ATTR_WATER:
+-				resist = _targetPc.getResistance().getWater();
+-				break;
+-			case L1Skills.ATTR_WIND:
+-				resist = _targetPc.getResistance().getWind();
+-				break;
+-			}
+-		} else if (_calcType == PC_NPC || _calcType == NPC_NPC) {
+-		}
+-
+-		dmg -= resist / 2;
++    private double calcAttrResistance(int attr) {
++        // This is the legacy spell fallback, not physical enchant damage and
++        // not the INT-amplified 2016 branch above. Keep its 45% curve, but do
++        // not lose the fraction through integer /100 or scale past ER100.
++        final int resist = _targetPc == null ? 0 : Math.min(100, targetElementResist(attr));
++        final long hundredths = (45L * resist) / 100L;
++        return hundredths / 100.0;
++    }
+ 
+-		if (dmg < 1) {
+-			dmg = 1;
+-		}
++    private int calcAttrDefence(int dmg, int attr) {
++        if (dmg < 1) return dmg;
++        // Firewall retains its own fixed-defense rule. Share channel lookup,
++        // cap resistance only; do not turn it into weapon-percent arithmetic.
++        final int resist = _targetPc == null ? 0 : Math.min(100, targetElementResist(attr));
++        return Math.max(1, dmg - resist / 2);
++    }
+ 
+-		return dmg;
+-	}
+-	
+ 	public void Start() {
+ 		
+ 		
+diff --git a/src/l1j/server/server/model/L1PolyMorph.java b/src/l1j/server/server/model/L1PolyMorph.java
+index 0e96e6c..d00fa47 100644
+--- a/src/l1j/server/server/model/L1PolyMorph.java
++++ b/src/l1j/server/server/model/L1PolyMorph.java
+@@ -471,6 +471,14 @@ public class L1PolyMorph {
+ 		return true;
+ 	}
+ 
++    /** Existing polymorph weapon mask identifies bow-only forms without an ID list. */
++    public static boolean canAttackWithoutWeapon(int polyId) {
++        final L1PolyMorph poly = PolyTable.getInstance().getTemplate(polyId);
++        if (poly == null) return true;
++        final int mask = poly.getWeaponEquipFlg();
++        return (mask & BOW_EQUIP) == 0 || (mask & ~BOW_EQUIP) != 0;
++    }
++
+ 	public static boolean isEquipableArmor(int polyId, int armorType) {
+ 		L1PolyMorph poly = PolyTable.getInstance().getTemplate(polyId);
+ 		if (poly == null) {
+diff --git a/src/l1j/server/server/model/L1WeaponSkill.java b/src/l1j/server/server/model/L1WeaponSkill.java
+index aeffda0..b75f283 100644
+--- a/src/l1j/server/server/model/L1WeaponSkill.java
++++ b/src/l1j/server/server/model/L1WeaponSkill.java
+@@ -1451,6 +1451,7 @@ public class L1WeaponSkill {
+ 		} else if (attr == L1Skills.ATTR_WIND) {
+ 			resist = cha.getResistance().getWind();
+ 		}
++        resist = Math.min(100, resist);
+ 		int resistFloor = (int) (0.32 * Math.abs(resist));
+ 		if (resist >= 0) {
+ 			resistFloor *= 1;
+diff --git a/src/l1j/server/server/model/SpellDamageFormula.java b/src/l1j/server/server/model/SpellDamageFormula.java
+index d61e5cd..acef66d 100644
+--- a/src/l1j/server/server/model/SpellDamageFormula.java
++++ b/src/l1j/server/server/model/SpellDamageFormula.java
+@@ -37,7 +37,7 @@ public final class SpellDamageFormula {
+     }
+ 
+     public static int coefficientA100(int totalInt, int totalSp, int trueSp, int elementResist) {
+-        final int er = Math.max(-100, Math.min(100, elementResist));
++        final int er = Math.min(100, elementResist);
+         // SP includes MB+ML. Remove them exactly once, as confirmed by Ability.
+         // A*100 = 100 + floor(75*(INT+bonusSP-12)/8) - ER.
+         final long stat = (long) totalInt + totalSp - trueSp - 12L;
+diff --git a/src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java b/src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java
+index 7eb9ef4..3fe7dd7 100644
+--- a/src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java
++++ b/src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java
+@@ -23,7 +23,7 @@ public final class L1WeaponAttrEnchantHelper {
+ 		final AttrType type = AttrType.fromAttrLevel(attrLevel);
+ 		if (type == AttrType.NONE) return 0;
+ 
+-		double dmg = 1 + (type.offsetInBand(attrLevel) << 1); // 1, 3, 5, 7, 9
++		int dmg = 1 + (type.offsetInBand(attrLevel) << 1); // 1, 3, 5, 7, 9
+ 
+ 		// 2) 특수 화살 3000516 보너스 +3 (PC/NPC 공통)
+ 		if (arrowItemId == 3000516) {
+@@ -33,8 +33,7 @@ public final class L1WeaponAttrEnchantHelper {
+ 		// 3) 타겟이 PC인 경우: 해당 속성 저항 %로 감산 
+ 		if (targetPc != null) {
+ 			final int resist = type.getPcResist(targetPc);
+-			dmg -= (dmg * resist) / 100.0;
+-			return (dmg > 0) ? dmg : 0;
++			return resistedBonus(dmg, resist);
+ 		}
+ 
+ 		// 4) NPC: 약점이 아니어도 속성 추타는 적용. 약점 비트는 해당 속성 저항 -50으로 처리.
+@@ -42,13 +41,19 @@ public final class L1WeaponAttrEnchantHelper {
+ 			final int weak = targetNpc.getNpcTemplate().get_weakAttr();
+ 			final int npcResist = type.getNpcResist(targetNpc)
+ 					- (type.isEffectiveToNpcWeak(weak) ? 50 : 0);
+-			dmg -= (dmg * npcResist) / 100.0;
+-			return (dmg > 0) ? dmg : 0;
++			return resistedBonus(dmg, npcResist);
+ 		}
+ 
+ 		return 0;
+ 	}
+ 
++    private static int resistedBonus(int bonus, int resistance) {
++        // The only owner of physical enchant resistance and its FLOOR.
++        // Signed weakness is preserved; only the positive side is capped.
++        final long scale = 100L - Math.min(100, resistance);
++        return (int) (((long) bonus * scale) / 100L);
++    }
++
+ 	// =========================
+ 	// internal
+ 	// =========================
+diff --git a/src/l1j/server/server/model/character/action/CAttackAction.java b/src/l1j/server/server/model/character/action/CAttackAction.java
+index 149d1b3..2a7228f 100644
+--- a/src/l1j/server/server/model/character/action/CAttackAction.java
++++ b/src/l1j/server/server/model/character/action/CAttackAction.java
+@@ -10,6 +10,7 @@ import l1j.server.MJTemplate.MJRnd;
+ import l1j.server.server.model.L1Character;
+ import l1j.server.server.model.L1Object;
+ import l1j.server.server.model.L1World;
++import l1j.server.server.model.L1PolyMorph;
+ import l1j.server.server.model.Instance.L1ClanJoinInstance;
+ import l1j.server.server.model.Instance.L1ItemInstance;
+ import l1j.server.server.model.Instance.L1NpcInstance;
+@@ -355,6 +356,9 @@ public final class CAttackAction extends CNewAction {
+             int tId,
+             boolean isAuto) {
+ 
++        if (owner.getWeapon() == null
++                && !L1PolyMorph.canAttackWithoutWeapon(owner.getCurrentSpriteId())) return false;
++
+         if (!owner.hasSkillEffect(L1SkillId.비욘드)) {
+             owner.killSkillEffectTimer(L1SkillId.MEDITATION);
+         }
+@@ -1169,6 +1173,8 @@ public final class CAttackAction extends CNewAction {
+     /** PC가 공격하는 케이스 (PC->PC, PC->NPC) */
+     private boolean calcHitPcAttack() {
+         if (_pc == null) return false;
++        if (isUnarmedPcAttack()
++                && !L1PolyMorph.canAttackWithoutWeapon(_pc.getCurrentSpriteId())) return false;
+         
+         // 1) 탄/무기 조건
+         final int type1 = _weaponType;
+@@ -1390,6 +1396,12 @@ public final class CAttackAction extends CNewAction {
+ 
+ 	
+ 	public int calcDamage() {
++
++        if (isUnarmedPcAttack()
++                && !L1PolyMorph.canAttackWithoutWeapon(_pc.getCurrentSpriteId())) {
++            _isHit = false;
++            return (_damage = 0);
++        }
+ 		final int calcType = _calcType;
+ 		int dmg = 0;
+ 		try {
+@@ -1421,7 +1433,8 @@ public final class CAttackAction extends CNewAction {
+             dmg = 0;
+         }
+         // src22 doll proc: roll once, only after a valid successful PC physical hit.
+-        if (dmg > 0 && _isHit && (calcType == PC_PC || calcType == PC_NPC)) {
++        if (dmg > 0 && _isHit && !isUnarmedPcAttack()
++                && (calcType == PC_PC || calcType == PC_NPC)) {
+             final boolean melee = _weaponType2 != 17
+                     && !L1AttackHelper.isRangedByType1(_weaponType);
+             dmg = MagicDollCombatProcs.applyOnHit(_pc, _target, dmg, melee);
+@@ -1435,6 +1448,7 @@ public final class CAttackAction extends CNewAction {
+ 	/** 플레이어 -> 플레이어 대미지 판정 **/
+ 	public int calcPcPcDamage() {	
+ 		if (_pc == null || _targetPc == null) return 0;
++        if (isUnarmedPcAttack()) return rollUnarmedDamage();
+ 
+         // The keylink's attack damage is magic, not the normal weapon table.
+         // Apply the magic PvP reduction once; do not add physical PvP bonuses.
+@@ -1481,6 +1495,7 @@ public final class CAttackAction extends CNewAction {
+ 	/** 플레이어 -> 엔피시 대미지 판정 **/
+ 	private int calcPcNpcDamage() {
+ 		if (_pc == null || _targetNpc == null) return 0;
++        if (isUnarmedPcAttack()) return rollUnarmedDamage();
+ 		
+         // Keylink bypasses the STR/DEX physical damage table and its procs.
+         int dmg = _weaponType2 == 17
+@@ -1499,6 +1514,18 @@ public final class CAttackAction extends CNewAction {
+ 		return dmg;
+ 	}
+ 
++    private boolean isUnarmedPcAttack() {
++        return _pc != null && weapon == null;
++    }
++
++    private int rollUnarmedDamage() {
++        // Hit probability is still owned by calcHit. Confirmed bare-hand hits
++        // do not enter weapon/stat/DR/proc arithmetic.
++        _isCritical = _edoryuDouble = _doubleBreak = _burning = false;
++        _cycloneProc = _crash = _fury = _burningSlashProc = false;
++        return ThreadLocalRandom.current().nextInt(1, 3);
++    }
++
+ 	/** 엔피시 -> 플레이어 대미지 판정 **/
+ 	private int calcNpcPcDamage() {
+ 		if (_npc == null || _targetPc == null) return 0;
+@@ -1956,6 +1983,12 @@ public final class CAttackAction extends CNewAction {
+ 
+     // ●●●● 플레이어의 공격 모션 송신 ●●●●
+     private void actionPc() {
++        // A rejected bow-only morph must not emit even a missed fist swing.
++        if (isUnarmedPcAttack()
++                && !L1PolyMorph.canAttackWithoutWeapon(_pc.getCurrentSpriteId())) {
++            _isHit = false;
++            return;
++        }
+         final int spriteId = _pc.getCurrentSpriteId();
+         _pc.setHeading(_pc.targetDirection(_targetX, _targetY));
+ 
+@@ -2204,7 +2237,8 @@ public final class CAttackAction extends CNewAction {
+ 		if (_calcType == PC_PC) {
+ 			if (MJCommons.isUnbeatable(_targetPc))
+ 				_damage = 0;
+-			_targetPc.receiveDamage(_pc, _damage + dmg);
++            if (isUnarmedPcAttack()) _targetPc.receiveUnarmedPhysicalDamage(_pc, _damage + dmg);
++            else _targetPc.receiveDamage(_pc, _damage + dmg);
+ 		} else if (_calcType == NPC_PC) {
+ 			if (MJCommons.isUnbeatable(_targetPc))
+ 				_damage = 0;
+diff --git a/src/l1j/server/server/model/character/action/CCreatureController.java b/src/l1j/server/server/model/character/action/CCreatureController.java
+index 4a01836..bc79de9 100644
+--- a/src/l1j/server/server/model/character/action/CCreatureController.java
++++ b/src/l1j/server/server/model/character/action/CCreatureController.java
+@@ -66,6 +66,7 @@ public final class CCreatureController {
+     private static final int EXEC_DAMAGE = 13;
+     private static final int EXEC_COUNTER_DAMAGE = 14;
+     private static final int EXEC_MAGIC_DAMAGE = 15;
++    private static final int EXEC_UNARMED_DAMAGE = 16;
+     private static final int EXEC_CANCELLED = 0;
+ 
+     private static final VarHandle EXEC_TAIL;
+@@ -153,11 +154,17 @@ public final class CCreatureController {
+ 
+     public boolean OnDamaged(L1Character attacker, int damage, boolean counter,
+                              boolean applyMagicStack) {
++        return OnDamaged(attacker, damage, counter, applyMagicStack, false);
++    }
++
++    public boolean OnDamaged(L1Character attacker, int damage, boolean counter,
++                             boolean applyMagicStack, boolean unarmedPhysical) {
+         final int epoch = actorEpoch;
+         final L1PcInstance pc = actor;
+         if (pc == null || (epoch & 1) != 0 || actorEpoch != epoch) return false;
+         return executeOrPublish(counter ? EXEC_COUNTER_DAMAGE
+-                : applyMagicStack ? EXEC_MAGIC_DAMAGE : EXEC_DAMAGE,
++                : applyMagicStack ? EXEC_MAGIC_DAMAGE
++                : unarmedPhysical ? EXEC_UNARMED_DAMAGE : EXEC_DAMAGE,
+                 0, damage, 0, 0, 0, 0L, 0L, 0, attacker, null,
+                 pc.getSessionStamp(), epoch);
+     }
+@@ -319,7 +326,8 @@ public final class CCreatureController {
+                 if (kind == EXEC_SIGHT) {
+                     return requestSightRefresh(expectedSession, expectedEpoch);
+                 }
+-                if (kind == EXEC_DAMAGE || kind == EXEC_COUNTER_DAMAGE || kind == EXEC_MAGIC_DAMAGE) {
++                if (kind == EXEC_DAMAGE || kind == EXEC_COUNTER_DAMAGE
++                        || kind == EXEC_MAGIC_DAMAGE || kind == EXEC_UNARMED_DAMAGE) {
+                     // Do not block another PC controller while its victim's
+                     // ring is full: two PCs hitting each other could deadlock.
+                     // Reserve a guaranteed overflow event instead of dropping HP.
+@@ -489,6 +497,8 @@ public final class CCreatureController {
+                                                L1Character attacker, int damage) {
+         if (kind == EXEC_COUNTER_DAMAGE) {
+             victim.GotCounterBarrierDamage(attacker, damage);
++        } else if (kind == EXEC_UNARMED_DAMAGE) {
++            victim.GotUnarmedPhysicalDamage(attacker, damage);
+         } else {
+             victim.GotDamage(attacker, damage, kind == EXEC_MAGIC_DAMAGE);
+         }
+@@ -504,6 +514,7 @@ public final class CCreatureController {
+             break;
+         case EXEC_DAMAGE:
+         case EXEC_MAGIC_DAMAGE:
++        case EXEC_UNARMED_DAMAGE:
+         case EXEC_COUNTER_DAMAGE: {
+             final L1PcInstance victim = actor;
+             if (victim != null) {
+diff --git a/src/l1j/server/server/model/character/skill/SkillHandlers.java b/src/l1j/server/server/model/character/skill/SkillHandlers.java
+index 591d925..f5f2222 100644
+--- a/src/l1j/server/server/model/character/skill/SkillHandlers.java
++++ b/src/l1j/server/server/model/character/skill/SkillHandlers.java
+@@ -985,6 +985,11 @@ public final class SkillHandlers {
+ 		if (cha instanceof L1MonsterInstance) {
+ 			final L1MonsterInstance mob = (L1MonsterInstance) cha;
+ 
++            // ELEMENTAL_FALL_DOWN deliberately bypasses generic recast refresh.
++            // Undo its previous channel before applying -50 again, as for PCs.
++            if (mob.hasSkillEffect(L1SkillId.ELEMENTAL_FALL_DOWN))
++                mob.removeSkillEffect(L1SkillId.ELEMENTAL_FALL_DOWN);
++
+ 			switch (playerAttr) {
+ 			case 0:
+ 				SC_ServerMessage.send(player, 79);
+@@ -6943,4 +6948,4 @@ public final class SkillHandlers {
+ 
+         ThreadPool.getInstance().execute(task);
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/l1j/server/server/utils/MJCommons.java b/src/l1j/server/server/utils/MJCommons.java
+index 5ba1915..3deb73a 100644
+--- a/src/l1j/server/server/utils/MJCommons.java
++++ b/src/l1j/server/server/utils/MJCommons.java
+@@ -433,16 +433,16 @@ public class MJCommons {
+ 		if (attrDefense == 0)
+ 			return attrDamage;
+ 
+-		double defense = attrDefense * MCS_DEFENCE_ATTR_WEIGHT;
+-		return (attrDamage - (defense * attrDamage));
++        double defense = Math.min(100, attrDefense) * MCS_DEFENCE_ATTR_WEIGHT;
++        return Math.max(0.0, attrDamage - defense * attrDamage);
+ 	}
+ 	
+ 	public static int getAttrDamage(int attrDamage, int attrDefense) {
+ 		if (attrDefense == 0)
+ 			return attrDamage;
+ 
+-		double defense = attrDefense * MCS_DEFENCE_ATTR_WEIGHT;
+-		return (int) (attrDamage - (defense * attrDamage));
++        double defense = Math.min(100, attrDefense) * MCS_DEFENCE_ATTR_WEIGHT;
++        return (int) Math.max(0.0, attrDamage - defense * attrDamage);
+ 	}
+ 
+ 	public static int getMagicDamage(double mdmg, int mdefen) {

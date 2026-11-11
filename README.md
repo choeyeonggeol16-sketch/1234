@@ -1,3 +1,11 @@
+## 2026-11-12 — 맨손·속성 저항 수정 통합본
+
+[**최신 전체 src 다운로드**](downloads/RKern_Aden_ALL_FIXES_UNARMED_ELEMENT_FULL_SRC_20261112.zip) · [구현·중복 감사 보고서](reports/RKERN_UNARMED_ELEMENT_IMPLEMENTED_20261112.md) · [적용 안내](patches/rkern_unarmed_element_20261112/README.md)
+
+맨손 피해/모션, NPC 폴다운 중복 저항 차감, 속성 상한·음수·구식 산술 보완. 이전 전체 수정 포함. 추가 SQL 없음(기존 HP/MP SQL 필수). Java1,696개 전체 컴파일·기존 회귀·추가 재현 검사 통과. Windows 실게임·운영 DB 미검증.
+
+---
+
 ## 2026-11-12 — HP/MP 재점검 보완 통합본
 
 [**최신 전체 src 다운로드**](downloads/RKern_Aden_ALL_FIXES_HPMP_RECHECK_FULL_SRC_20261112.zip) · [재점검 보고서](reports/RKERN_HPMP_RECHECK_20261112.md) · [적용 안내](patches/rkern_hpmp_recheck_20261112/README.md)

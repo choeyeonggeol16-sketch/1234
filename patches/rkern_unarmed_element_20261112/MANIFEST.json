@@ -1,0 +1,41 @@
+{
+  "bundle": "RKern_Aden_ALL_FIXES_UNARMED_ELEMENT_FULL_SRC_20261112.zip",
+  "sha256": "09cc247550f868b2df97664946da5d4a33f738840f6da7cf1d1df99130fe6551",
+  "base_revision": "67d82d02492cc747b955652df6f44adc5c2e7506",
+  "report_revision": "a35ee43f5a73e97c5bdc841dd8767dbc5071ec5d",
+  "source_files": 1697,
+  "java_files": 1696,
+  "changed_java_files": [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "src/l1j/server/server/model/L1Magic.java",
+    "src/l1j/server/server/model/L1PolyMorph.java",
+    "src/l1j/server/server/model/L1WeaponSkill.java",
+    "src/l1j/server/server/model/SpellDamageFormula.java",
+    "src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java",
+    "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "src/l1j/server/server/model/character/action/CCreatureController.java",
+    "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+    "src/l1j/server/server/utils/MJCommons.java"
+  ],
+  "new_sql": false,
+  "existing_required_sql": "database/RKern_HPMP_GROWTH_20261112.sql",
+  "actual_duplicate_fixed": "NPC ELEMENTAL_FALL_DOWN recast bypasses generic refresh and previously subtracted resistance repeatedly without undoing old channel.",
+  "damage_resistance_duplicate": "No second elemental reduction found in inspected ordinary physical/spell/item proc delivery chains; runtime physical fixture counts one resistance read through final PC HP.",
+  "validation": [
+    "full 1696 Java type compilation; five existing warnings",
+    "baseline failures reproduced for bare hand, NPC recast and legacy integer division",
+    "PC/PC and PC/NPC unarmed rolls and real victim controller HP; missed attacks; caster spell exclusion",
+    "81-event unarmed saturated ring/overflow and bow-only morph attack rejection",
+    "360 element vectors with PC/NPC mapping, four channels and single-application physical HP pipeline",
+    "actual NPC buff handler and stop callback recast/channel switch/expiry",
+    "legacy spell/weapon/item proc bounds and NPC physical type paths",
+    "all prior HP/MP/H2/save-lock/magic/physical regressions and source package byte/diff validation"
+  ],
+  "limitations": [
+    "no Windows game/production DB/native load test",
+    "U07 special Japanese one-damage NPC IDs cannot be mapped from source-only bundle; no invented ID rule",
+    "NPC world/HP callbacks and visual packets are fixtures; actual map-dependent special NPC behavior not tested",
+    "all PC/NPC spell combinations reviewed statically; full live Skills DB/client integration not claimed",
+    "2015 Japanese model match does not prove 2019 Korean production behavior"
+  ]
+}

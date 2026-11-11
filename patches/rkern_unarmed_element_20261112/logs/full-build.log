@@ -1,0 +1,19 @@
+/workspace/work/aden-unarmed-element-fix/src/l1j/server/MJCombatSystem/MJCombatObserver.java:154: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal
+            _team_q.add(new Integer(i));
+                        ^
+/workspace/work/aden-unarmed-element-fix/src/l1j/server/server/datatables/IncreaseEinhasadMap.java:51: warning: [removal] Double(double) in Double has been deprecated and marked for removal
+					m_increaseInfo.put(rs.getInt("target_map_id"), new Double(ratio * 0.01));
+					                                               ^
+/workspace/work/aden-unarmed-element-fix/src/l1j/server/server/datatables/RaceTable.java:63: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal
+		return (L1Racer) _namelist.get(new Integer(name));
+		                               ^
+/workspace/work/aden-unarmed-element-fix/src/l1j/server/server/utils/SystemUtil.java:56: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal
+			list.add(new Integer(value));
+			         ^
+/workspace/work/aden-unarmed-element-fix/src/l1j/server/server/utils/TYUtil.java:28: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal
+      list.add(new Integer(value));
+               ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+5 warnings
+PASS full Java 21 type compilation: 1696 production Java files; no game/DB/native startup.
