@@ -1,3 +1,17 @@
+## 2026-11-11 — ATS 상태 HUD·이용시간·레벨·맵 제한 V7
+
+[**V7 전체 소스·DLL 다운로드**](downloads/L1J_49027_ATS_V7_FULL_SRC_20261111.zip) · [**적용 안내**](patches/ats_v7_20261111/ATS_V7_APPLY_KO.md) · [소스 보기](patches/ats_v7_20261111) · [검증 결과](patches/ats_v7_20261111/validation/report-v7.json)
+
+붉은 ATS 아이콘, 글자는 고정한 둘레 회전 효과, 초 단위 남은 시간 HUD를 추가했습니다. 자동사냥을 켠 동안만 차감하고 정지·사망·접속 종료 시 숨깁니다. 잔여 시간은 캐릭터별 DB에 저장하며, 레벨·허용 맵 조건은 시작할 때와 실행 중에 검사합니다.
+
+**V7은 DLL만 교체하는 버전이 아닙니다.** 게임 DB에 `ATS_V7.sql`을 적용하고 서버 Java를 재빌드한 뒤, `dinput.dll`·`ats.png`·`ats_hud.ini`를 함께 복사하세요. 게임 없이 확인할 수 있는 `ATS_Preview.exe`도 포함했습니다.
+
+기본값은 캐릭터 첫 이용 시 24시간 한 번 지급, 최소 1레벨, 레벨 상한·맵 제한 미지정입니다. 서버의 `config/autohunt_ats.properties`에서 지급량·레벨·맵을 설정합니다. 일일 자동 지급은 포함하지 않았습니다. 정상 정지 시 잔여 시간을 보존하며, 강제 종료·환급 실패 시 미사용 예약분 최대 약 10초가 추가 차감될 수 있습니다.
+
+32비트 PE32 빌드, 기존 이동 코어 회귀, 시간·레벨·맵 경계, 실제 Netty 채널 메시지 및 H2 MySQL 모드의 JDBC 저장 검사를 통과했습니다. **전체 서버 의존성 링크·실제 MySQL·Windows 실게임 HUD와 플레이는 아직 검증하지 않았습니다.** 기존 V6 이동 코어와 네이티브 좌표/입력 어댑터는 유지했습니다.
+
+---
+
 ## 2026-11-11 — 같은 타일의 클릭 대상 확인 V6 (V5 서버 유지)
 
 [**V6 DLL 다운로드**](downloads/L1J_49027_ClickTarget_V6_Client_DLL_20261111.zip) · [**전체 소스·DLL**](downloads/L1J_49027_ClickTarget_V6_FULL_SRC_20261111.zip) · [적용·검증 안내](patches/nativestep_hover_20261111/README.md)
