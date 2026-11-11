@@ -1,3 +1,11 @@
+## 2026-11-11 — Aden IOCP 네트워크 최신 통합 소스
+
+[**전체 src 다운로드**](downloads/RKern_Aden_IOCP_FIXED_FULL_SRC_20261111.zip) · [적용·구성 안내](patches/rkern_aden_n01_n07_20261111/README.md)
+
+원본 전체 소스에 N01–N07 및 후속 두 수정까지 반영한 통합본입니다. 소스 1,695개(Java 1,694개), 수정 파일 11개를 포함하며 ZIP에는 src 폴더만 있습니다. 기존 native DLL·설정·라이브러리·DB와 함께 사용합니다. 회귀 검사 통과, Windows 실게임·전체 서버 연결 빌드 미검증입니다.
+
+---
+
 ## 2026-11-11 — aden.zip 네트워크 코어 검토 보고서
 
 [**상세 보고서 읽기**](reports/aden_network_review_20261111/REPORT_KO.md) · [보고서·재현 로그 다운로드](downloads/aden_network_review_20261111.zip) · [개선 목록 CSV](reports/aden_network_review_20261111/findings.csv)

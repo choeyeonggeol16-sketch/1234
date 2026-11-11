@@ -1,3 +1,17 @@
+## Aden 네트워크 최신 통합 소스 — 2026-11-11
+
+[**전체 src 통합본 다운로드**](../../downloads/RKern_Aden_IOCP_FIXED_FULL_SRC_20261111.zip) · [SHA256](../../downloads/RKern_Aden_IOCP_FIXED_FULL_SRC_20261111.zip.sha256) · [구성 기록](FULL_SOURCE_MANIFEST.json)
+
+원본 aden.zip의 전체 src에 N01–N07 수정과 후속 두 가지 수정을 모두 반영했습니다. 소스 파일 1,695개(Java 1,694개) 중 최신 수정 11개를 합친 통합본입니다. 기존 패치를 차례로 적용할 필요 없이 이 ZIP의 전체 src를 사용하면 됩니다. 기존 커스텀 수정이 있으면 백업 후 비교해 반영하세요.
+
+최신 수정에는 kick/close/disconnect의 transport 종료 장벽 통일, Java 연결 종료부터 적용하는 전체 시간 제한이 포함됩니다. 기존 native DLL 두 개·설정·의존 라이브러리·DB는 원래 구성으로 사용합니다. ZIP에는 src 폴더만 들어 있습니다. 소스 인코딩은 각 원본 파일 그대로 유지했습니다.
+
+Java 21 FFM preview 실행 구성을 유지하세요. 실제 Java 클래스 기반 회귀 검사는 통과했으며 전체 서버 의존성 연결 빌드와 Windows 실게임 검증은 아직 하지 않았습니다.
+
+나중에 찾을 파일 이름: `RKern_Aden_IOCP_FIXED_FULL_SRC_20261111.zip`
+
+---
+
 ## N01/N02 follow-up fix
 
 - Public kick/close/disconnect now request transport shutdown. The terminal callback starts logout exactly once after pending packets finish, independently of the disconnect-request CAS.

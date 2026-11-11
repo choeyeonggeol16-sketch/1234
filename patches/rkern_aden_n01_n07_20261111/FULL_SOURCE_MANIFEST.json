@@ -1,0 +1,24 @@
+{
+  "bundle": "RKern_Aden_IOCP_FIXED_FULL_SRC_20261111.zip",
+  "source_files": 1695,
+  "java_files": 1694,
+  "original_aden_sha256": "9c966670af5ae7f624d7b612dd185600d12d6b214ef88ac2dbbcab6438b69b33",
+  "n01_n07_revision": "e622a6e60f95cf67d4ca1e30c906e4ba4a6ef6b1",
+  "followup_revision": "c47f9b18ef28ba6384f1232b1cc06a3dfc28cf89",
+  "changed_java_files": [
+    "l1j/server/Server.java",
+    "l1j/server/server/GameServer.java",
+    "l1j/server/server/model/Instance/L1PcInstance.java",
+    "l1j/server/server/model/network/core/CIOClient.java",
+    "l1j/server/server/model/network/core/CIOPacketCodec.java",
+    "l1j/server/server/model/network/core/CIOServer.java",
+    "l1j/server/server/model/network/core/CIOSocketFactory.java",
+    "l1j/server/server/model/network/core/CIOUserSocket.java",
+    "l1j/server/server/model/network/core/CIOWinServer.java",
+    "l1j/server/server/model/network/core/CIOWinSocket.java",
+    "l1j/server/server/model/network/thread/CIOThreadCallback.java"
+  ],
+  "sha256": "5ce4af3c6e49aedaeb23b669bff331d8e5a192a6509d235507bc432531c70c9c",
+  "scope": "Complete source tree with all eleven fixed files; original source bytes preserved for every other file. Existing native DLL/config/lib/DB remain required.",
+  "verification": "ZIP CRC and every archived file compared with selected source; actual-class lifecycle and shutdown fixture regressions already passed; Windows integration/full dependency build not performed."
+}
