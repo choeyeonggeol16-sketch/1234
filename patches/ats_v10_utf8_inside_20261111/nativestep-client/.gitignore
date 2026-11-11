@@ -1,0 +1,9 @@
+build-win32/
+build/
+BUILD_WIN32.log
+NativeStep.ini
+client_io.log
+__pycache__/
+native-replay-output/
+Mega.bin
+stage1-*.bin

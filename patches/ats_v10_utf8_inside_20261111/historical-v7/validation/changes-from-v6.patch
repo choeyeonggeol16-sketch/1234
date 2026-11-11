@@ -1,0 +1,1130 @@
+--- /dev/null
++++ b/client-ready/ats_hud.ini
+@@ -0,0 +1,8 @@
++[ATS]
++Enabled=1
++; Logical pixels at 640x480; scaled with the game client area.
++Bottom=124
++OffsetX=0
++ScalePercent=100
++; 0 matches the video hour/minute format; 1 shows the ticking seconds too.
++ShowSeconds=1
+--- /dev/null
++++ b/config/autohunt_ats.properties
+@@ -0,0 +1,9 @@
++# ATS usage is per character. It decreases only while auto hunt is enabled.
++# InitialSeconds is granted ONCE to a character on its first ATS use, not per login/day.
++Enabled=true
++InitialSeconds=86400
++MinLevel=1
++# 0 means no upper level limit. Example: MaxLevel=60
++MaxLevel=0
++# Empty means all maps. Example: AllowedMaps=0,4
++AllowedMaps=
+--- /dev/null
++++ b/db/ATS_V7.sql
+@@ -0,0 +1,12 @@
++-- Import into the GAME database before starting the V7 server.
++CREATE TABLE IF NOT EXISTS character_ats_time (
++    char_id INT NOT NULL,
++    remaining_millis BIGINT NOT NULL DEFAULT 0,
++    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
++    PRIMARY KEY (char_id)
++) ENGINE=InnoDB DEFAULT CHARSET=utf8;
++
++-- Example: set a character's balance to 24 hours while that character's ATS is OFF.
++-- INSERT INTO character_ats_time (char_id, remaining_millis) VALUES (12345, 86400000)
++-- ON DUPLICATE KEY UPDATE remaining_millis=VALUES(remaining_millis);
++-- Replace 12345 with the actual character object ID. No daily reset is scheduled.
+--- a/nativestep-client/BUILD_MINGW.sh
++++ b/nativestep-client/BUILD_MINGW.sh
+@@ -4,9 +4,12 @@
+ compiler=${CXX:-i686-w64-mingw32-g++}
+ mkdir -p build-win32/Release
+ flags=(-std=c++17 -Wall -Wextra -Werror -Wno-cast-function-type -O2 -static -static-libgcc -static-libstdc++ -I include)
+-"$compiler" "${flags[@]}" -shared src/step_core.cpp src/mega_client.cpp src/nativestep_dll.cpp src/client_bootstrap.cpp \
++"$compiler" "${flags[@]}" -shared src/ats_state.cpp src/ats_hud.cpp src/step_core.cpp src/mega_client.cpp src/nativestep_dll.cpp src/client_bootstrap.cpp \
+   src/dinput_proxy.cpp src/step_network.cpp dinput.mingw.def -o build-win32/Release/dinput.dll \
+-  -luser32 -lws2_32 -liphlpapi -ladvapi32
++  -lgdiplus -lgdi32 -luser32 -lws2_32 -liphlpapi -ladvapi32
+ "$compiler" "${flags[@]}" src/step_core.cpp tests/step_core_test.cpp -o build-win32/Release/step_core_test.exe
+ "$compiler" "${flags[@]}" tests/win_host.cpp -o build-win32/Release/nativestep_win_host.exe -luser32
+ echo 'Built PE32 DLL and test executables. Windows runtime tests must be run separately.'
++
++"$compiler" "${flags[@]}" -mwindows src/ats_state.cpp src/ats_hud.cpp tests/ats_preview.cpp -o build-win32/Release/ATS_Preview.exe -lgdiplus -lgdi32 -luser32
++"$compiler" "${flags[@]}" src/ats_state.cpp tests/ats_state_test.cpp -o build-win32/Release/ats_state_test.exe
+--- a/nativestep-client/BUILD_WIN32_TASK.cmd
++++ b/nativestep-client/BUILD_WIN32_TASK.cmd
+@@ -108,7 +108,7 @@
+ if errorlevel 1 exit /b 20
+ 
+ echo [STEP 4/6] Build 32-bit dinput.dll (Mega.bin native DirectInput import)
+-cl %FLAGS% /LD ..\..\src\mega_client.cpp ..\..\src\nativestep_dll.cpp ..\..\src\client_bootstrap.cpp ..\..\src\dinput_proxy.cpp ..\..\src\step_network.cpp step_core.obj /link /OUT:dinput.dll /IMPLIB:dinput_stub.lib /DEF:..\..\dinput.def user32.lib ws2_32.lib iphlpapi.lib advapi32.lib
++cl %FLAGS% /LD ..\..\src\ats_state.cpp ..\..\src\ats_hud.cpp ..\..\src\mega_client.cpp ..\..\src\nativestep_dll.cpp ..\..\src\client_bootstrap.cpp ..\..\src\dinput_proxy.cpp ..\..\src\step_network.cpp step_core.obj /link /OUT:dinput.dll /IMPLIB:dinput_stub.lib /DEF:..\..\dinput.def gdiplus.lib gdi32.lib user32.lib ws2_32.lib iphlpapi.lib advapi32.lib
+ if errorlevel 1 exit /b 21
+ 
+ echo [STEP 5/6] Build and run StepEngine unit test
+@@ -116,6 +116,14 @@
+ if errorlevel 1 exit /b 23
+ step_core_test.exe
+ if errorlevel 1 exit /b 24
++
++echo [STEP 6/6] Build ATS preview and HUD state tests
++cl %FLAGS% ..\..\src\ats_state.cpp ..\..\src\ats_hud.cpp ..\..\tests\ats_preview.cpp /link /SUBSYSTEM:WINDOWS /OUT:ATS_Preview.exe gdiplus.lib gdi32.lib user32.lib
++if errorlevel 1 exit /b 31
++cl %FLAGS% ..\..\src\ats_state.cpp ..\..\tests\ats_state_test.cpp /link /OUT:ats_state_test.exe
++if errorlevel 1 exit /b 32
++ats_state_test.exe
++if errorlevel 1 exit /b 33
+ 
+ echo [STEP 6/6] Build and run unsupported-executable guard test
+ cl %FLAGS% ..\..\tests\win_host.cpp /link /OUT:nativestep_win_host.exe user32.lib
+--- a/nativestep-client/CMakeLists.txt
++++ b/nativestep-client/CMakeLists.txt
+@@ -12,13 +12,20 @@
+   if(MINGW)
+     set(DINPUT_EXPORTS dinput.mingw.def)
+   endif()
+-  add_library(dinput SHARED src/nativestep_dll.cpp src/mega_client.cpp src/client_bootstrap.cpp
++  add_library(dinput SHARED src/ats_state.cpp src/ats_hud.cpp src/nativestep_dll.cpp src/mega_client.cpp src/client_bootstrap.cpp
+       src/dinput_proxy.cpp src/step_network.cpp ${DINPUT_EXPORTS})
+   target_include_directories(dinput PRIVATE include)
+-  target_link_libraries(dinput PRIVATE step_core user32 ws2_32 iphlpapi advapi32)
++  target_link_libraries(dinput PRIVATE step_core gdiplus gdi32 user32 ws2_32 iphlpapi advapi32)
+   target_compile_definitions(dinput PRIVATE UNICODE _UNICODE)
++  add_executable(ATS_Preview WIN32 src/ats_state.cpp src/ats_hud.cpp tests/ats_preview.cpp)
++  target_include_directories(ATS_Preview PRIVATE include)
++  target_link_libraries(ATS_Preview PRIVATE gdiplus gdi32 user32)
+   add_executable(win_host tests/win_host.cpp)
+   target_link_libraries(win_host PRIVATE user32)
+   add_test(NAME unsupported_host COMMAND win_host)
+   set_tests_properties(unsupported_host PROPERTIES WORKING_DIRECTORY "$<TARGET_FILE_DIR:dinput>")
+ endif()
++
++add_executable(ats_state_test src/ats_state.cpp tests/ats_state_test.cpp)
++target_include_directories(ats_state_test PRIVATE include)
++add_test(NAME ats_state COMMAND ats_state_test)
+--- /dev/null
++++ b/nativestep-client/ats_hud.ini
+@@ -0,0 +1,8 @@
++[ATS]
++Enabled=1
++; Logical pixels at 640x480; scaled with the game client area.
++Bottom=124
++OffsetX=0
++ScalePercent=100
++; 0 matches the video hour/minute format; 1 shows the ticking seconds too.
++ShowSeconds=1
+--- /dev/null
++++ b/nativestep-client/include/ats_hud.h
+@@ -0,0 +1,8 @@
++#pragma once
++#include <windows.h>
++#include "ats_state.h"
++void AtsHud_Start(HWND game) noexcept;
++void AtsHud_Status(ats::Status status) noexcept;
++void AtsHud_Tick() noexcept;
++void AtsHud_Hide() noexcept;
++void AtsHud_Stop() noexcept;
+--- /dev/null
++++ b/nativestep-client/include/ats_state.h
+@@ -0,0 +1,21 @@
++#pragma once
++#include <cstddef>
++#include <cstdint>
++namespace ats {
++constexpr uint32_t kMaxSeconds=31536000;
++struct Status { uint32_t seconds=0; bool active=false; };
++bool parse_status(const char* line,size_t length,Status& out) noexcept;
++class State {
++public:
++    void update(Status status,uint64_t now) noexcept {status_=status;received_=now;valid_=true;}
++    void hide() noexcept {status_.active=false;valid_=false;}
++    bool visible() const noexcept {return valid_ && status_.active;}
++    bool stale(uint64_t now) const noexcept {return valid_ && now>=received_ && now-received_>5000;}
++    uint32_t remaining(uint64_t now) const noexcept {
++        const uint64_t elapsed=now>=received_ && status_.active ? (now-received_)/1000:0;
++        return elapsed>=status_.seconds ? 0:status_.seconds-static_cast<uint32_t>(elapsed);
++    }
++private:
++    Status status_{}; uint64_t received_=0; bool valid_=false;
++};
++}
+--- a/nativestep-client/include/step_network.h
++++ b/nativestep-client/include/step_network.h
+@@ -9,3 +9,5 @@
+ void NativeStep_LogInput(const char* event, int code);
+ 
+ void NativeStep_RequestManualStop();
++
++void NativeStep_PostAtsStatus(unsigned seconds, bool active);
+--- /dev/null
++++ b/nativestep-client/src/ats_hud.cpp
+@@ -0,0 +1,126 @@
++#ifndef WIN32_LEAN_AND_MEAN
++#define WIN32_LEAN_AND_MEAN
++#endif
++#ifndef NOMINMAX
++#define NOMINMAX
++#endif
++#include <windows.h>
++#include <objidl.h>
++#include <gdiplus.h>
++#include <algorithm>
++#include <cmath>
++#include <cwchar>
++#include "ats_hud.h"
++#include "step_network.h"
++namespace {
++HWND owner=nullptr,overlay=nullptr; HINSTANCE instance=nullptr;
++ULONG_PTR gdip=0; ats::State state; uint64_t lastTick=0;
++int lastSecond=-1,lastWidth=0,lastHeight=0; bool lastStale=false;
++int bottom=124,offsetX=0,scalePercent=100; bool enabled=true,showSeconds=true;
++Gdiplus::Image* icon=nullptr;
++constexpr wchar_t kClass[]=L"ClientInput.ATS.Overlay.1";
++LRESULT CALLBACK windowProc(HWND h,UINT m,WPARAM w,LPARAM l) {
++    if(m==WM_NCHITTEST) return HTTRANSPARENT;
++    if(m==WM_MOUSEACTIVATE) return MA_NOACTIVATE;
++    if(m==WM_ERASEBKGND) return 1;
++    return DefWindowProcW(h,m,w,l);
++}
++void render(int width,int height,float scale,uint32_t remaining,bool stale,uint64_t now) noexcept {
++    using namespace Gdiplus;
++    HDC screen=GetDC(nullptr),dc=CreateCompatibleDC(screen);
++    BITMAPINFO info{};info.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
++    info.bmiHeader.biWidth=width;info.bmiHeader.biHeight=-height;
++    info.bmiHeader.biPlanes=1;info.bmiHeader.biBitCount=32;info.bmiHeader.biCompression=BI_RGB;
++    void* bits=nullptr;HBITMAP dib=CreateDIBSection(screen,&info,DIB_RGB_COLORS,&bits,nullptr,0);
++    if(!dc || !dib || !bits) {if(dib)DeleteObject(dib);if(dc)DeleteDC(dc);ReleaseDC(nullptr,screen);return;}
++    HGDIOBJ old=SelectObject(dc,dib);
++    {
++        Bitmap bitmap(width,height,width*4,PixelFormat32bppPARGB,static_cast<BYTE*>(bits));
++        Graphics g(&bitmap);g.Clear(Color(0,0,0,0));g.SetSmoothingMode(SmoothingModeAntiAlias);
++        g.SetInterpolationMode(InterpolationModeHighQualityBicubic);g.SetPixelOffsetMode(PixelOffsetModeHighQuality);
++        g.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);g.ScaleTransform(scale,scale);
++        constexpr float center=115.f;
++        if(icon) g.DrawImage(icon,center-18.f,0.f,36.f,36.f);
++        else {
++            // Replace with ats.png (straight-alpha PNG) beside dinput.dll when available.
++            for(int i=5;i>0;--i) {Pen glow(Color(12,255,45,25),static_cast<REAL>(i*2));g.DrawEllipse(&glow,center-14.f,3.f,28.f,28.f);}
++            SolidBrush fill(Color(170,95,15,12));Pen edge(Color(240,255,154,128),1.2f);
++            g.FillEllipse(&fill,center-14.f,3.f,28.f,28.f);g.DrawEllipse(&edge,center-14.f,3.f,28.f,28.f);
++            Font font(L"Georgia",10.f,FontStyleBold,UnitPixel);SolidBrush letters(Color(255,255,210,188));
++            StringFormat fmt;fmt.SetAlignment(StringAlignmentCenter);fmt.SetLineAlignment(StringAlignmentCenter);
++            g.DrawString(L"ATS",-1,&font,RectF(center-14.f,3.f,28.f,28.f),&fmt,&letters);
++        }
++        // Keep ATS lettering stationary; only the surrounding light sweeps around it.
++        const float angle=static_cast<float>(now%2000)*0.18f-90.f;
++        Pen arc(Color(stale?80:220,255,122,95),1.5f);arc.SetStartCap(LineCapRound);arc.SetEndCap(LineCapRound);
++        g.DrawArc(&arc,center-17.f,1.f,34.f,34.f,angle,72.f);
++        wchar_t text[96]{};
++        if(stale) std::swprintf(text,96,L"\uc2dc\uac04 \ub3d9\uae30\ud654 \uc911");
++        else if(showSeconds) std::swprintf(text,96,L"\ub0a8\uc740\uc2dc\uac04: %u\uc2dc\uac04 %u\ubd84 %u\ucd08",remaining/3600,(remaining/60)%60,remaining%60);
++        else std::swprintf(text,96,L"\ub0a8\uc740\uc2dc\uac04: %u\uc2dc\uac04 %u\ubd84",remaining/3600,(remaining/60)%60);
++        FontFamily family(L"Malgun Gothic");StringFormat fmt;
++        fmt.SetAlignment(StringAlignmentCenter);fmt.SetLineAlignment(StringAlignmentCenter);
++        GraphicsPath path;path.AddString(text,-1,&family,FontStyleRegular,12.f,RectF(0.f,26.25f,230.f,20.f),&fmt);
++        Pen shadow(Color(210,25,0,0),2.6f);shadow.SetLineJoin(LineJoinRound);
++        SolidBrush color(Color(255,255,151,142));g.DrawPath(&shadow,&path);g.FillPath(&color,&path);
++        g.Flush(FlushIntentionSync);
++    }
++    POINT source{};SIZE size{width,height};BLENDFUNCTION blend{AC_SRC_OVER,0,255,AC_SRC_ALPHA};
++    UpdateLayeredWindow(overlay,screen,nullptr,&size,dc,&source,0,&blend,ULW_ALPHA);
++    SelectObject(dc,old);DeleteObject(dib);DeleteDC(dc);ReleaseDC(nullptr,screen);
++}
++}
++void AtsHud_Start(HWND game) noexcept {
++    AtsHud_Stop();owner=game;
++    if(!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
++            reinterpret_cast<LPCWSTR>(&AtsHud_Start),&instance)) return;
++    wchar_t path[MAX_PATH]{};GetModuleFileNameW(instance,path,MAX_PATH);
++    wchar_t* slash=std::wcsrchr(path,L'\\');if(!slash)return;*(slash+1)=0;
++    wchar_t ini[MAX_PATH]{};std::swprintf(ini,MAX_PATH,L"%lsats_hud.ini",path);
++    enabled=GetPrivateProfileIntW(L"ATS",L"Enabled",1,ini)!=0;
++    bottom=std::clamp(static_cast<int>(GetPrivateProfileIntW(L"ATS",L"Bottom",124,ini)),0,480);
++    offsetX=std::clamp(static_cast<int>(GetPrivateProfileIntW(L"ATS",L"OffsetX",0,ini)),-640,640);
++    scalePercent=std::clamp(static_cast<int>(GetPrivateProfileIntW(L"ATS",L"ScalePercent",100,ini)),50,200);
++    showSeconds=GetPrivateProfileIntW(L"ATS",L"ShowSeconds",1,ini)!=0;
++    if(!enabled)return;
++    Gdiplus::GdiplusStartupInput input;if(Gdiplus::GdiplusStartup(&gdip,&input,nullptr)!=Gdiplus::Ok){gdip=0;return;}
++    wchar_t png[MAX_PATH]{};std::swprintf(png,MAX_PATH,L"%lsats.png",path);
++    if(GetFileAttributesW(png)!=INVALID_FILE_ATTRIBUTES) {
++        icon=Gdiplus::Image::FromFile(png);
++        if(icon && (icon->GetLastStatus()!=Gdiplus::Ok || icon->GetWidth()==0 || icon->GetHeight()==0)) {delete icon;icon=nullptr;}
++    }
++    WNDCLASSW cls{};cls.lpfnWndProc=windowProc;cls.hInstance=instance;cls.lpszClassName=kClass;
++    RegisterClassW(&cls);
++    overlay=CreateWindowExW(WS_EX_LAYERED|WS_EX_TRANSPARENT|WS_EX_NOACTIVATE|WS_EX_TOOLWINDOW,
++        kClass,L"ATS",WS_POPUP,0,0,1,1,game,nullptr,instance,nullptr);
++    if(!overlay) NativeStep_LogInput("ATS overlay creation failed",static_cast<int>(GetLastError()));
++    state.hide();lastTick=0;lastSecond=-1;lastWidth=lastHeight=0;
++}
++void AtsHud_Status(ats::Status status) noexcept {state.update(status,GetTickCount64());lastSecond=-1;}
++void AtsHud_Tick() noexcept {
++    if(!overlay || !IsWindow(owner))return;
++    const uint64_t now=GetTickCount64();if(now-lastTick<33)return;lastTick=now;
++    HWND fg=GetForegroundWindow();
++    if(!state.visible() || IsIconic(owner) || !IsWindowVisible(owner) || !fg || GetAncestor(fg,GA_ROOT)!=GetAncestor(owner,GA_ROOT)) {
++        ShowWindow(overlay,SW_HIDE);return;
++    }
++    RECT client{};if(!GetClientRect(owner,&client))return;
++    int cw=client.right,ch=client.bottom;if(cw<=0||ch<=0)return;
++    const float base=std::min(cw/640.f,ch/480.f);
++    const float scale=std::clamp(base*scalePercent/100.f,0.25f,8.f);
++    const int width=static_cast<int>(std::ceil(230.f*scale)),height=static_cast<int>(std::ceil(48.f*scale));
++    POINT origin{std::max(0,std::min(cw-width,(cw-width)/2+static_cast<int>(offsetX*base))),
++        std::max(0,std::min(ch-height,ch-static_cast<int>(bottom*base)-height))};
++    if(!ClientToScreen(owner,&origin))return;
++    const uint32_t sec=state.remaining(now);const bool stale=state.stale(now);
++    SetWindowPos(overlay,HWND_TOP,origin.x,origin.y,width,height,SWP_NOACTIVATE);
++    if(state.visible() || lastSecond!=static_cast<int>(sec)||lastWidth!=width||lastHeight!=height||lastStale!=stale) {
++        render(width,height,scale,sec,stale,now);lastSecond=static_cast<int>(sec);lastWidth=width;lastHeight=height;lastStale=stale;
++    }
++    ShowWindow(overlay,SW_SHOWNOACTIVATE);
++}
++void AtsHud_Hide() noexcept {state.hide();if(overlay)ShowWindow(overlay,SW_HIDE);}
++void AtsHud_Stop() noexcept {
++    AtsHud_Hide();if(overlay)DestroyWindow(overlay);overlay=nullptr;
++    delete icon;icon=nullptr;if(gdip)Gdiplus::GdiplusShutdown(gdip);gdip=0;owner=nullptr;
++}
+--- /dev/null
++++ b/nativestep-client/src/ats_state.cpp
+@@ -0,0 +1,14 @@
++#include "ats_state.h"
++namespace ats {
++bool parse_status(const char* line,size_t length,Status& out) noexcept {
++    if(!line || length<4 || length>13 || line[0]!='H') return false;
++    uint32_t seconds=0;size_t i=1;
++    for(;i<length && line[i]>='0' && line[i]<='9';++i) {
++        const uint32_t digit=static_cast<uint32_t>(line[i]-'0');
++        if(seconds>(kMaxSeconds-digit)/10) return false;
++        seconds=seconds*10+digit;
++    }
++    if(i==1 || i+2!=length || line[i]!=',' || (line[i+1]!='0' && line[i+1]!='1')) return false;
++    out={seconds,line[i+1]=='1'};return true;
++}
++}
+--- a/nativestep-client/src/nativestep_dll.cpp
++++ b/nativestep-client/src/nativestep_dll.cpp
+@@ -12,6 +12,7 @@
+ #include "step_network.h"
+ #include "mega_client.h"
+ #include "click_points.h"
++#include "ats_hud.h"
+ 
+ namespace {
+ constexpr wchar_t kControlName[]=L"ClientInput.WalkControl.1";
+@@ -52,6 +53,7 @@
+     log_click("native input released and target cancelled",active_click);
+ }
+ void stop_failed(const char* reason) noexcept {
++    AtsHud_Hide();
+     NativeStep_LogInput(reason,0);
+     MegaLogState(active_click);
+     const auto now=GetTickCount64();
+@@ -104,10 +106,11 @@
+ }
+ void tick() noexcept {
+     if(!on_client_thread()) return;
++    AtsHud_Tick();
+     if(engine.is_enabled() && !foreground(game_window)) {stop_failed("native stop: game lost foreground");return;}
+     const bool was_manual=engine.has_manual_override();
+     const auto action=engine.tick(GetTickCount64(),physical_click());
+-    if(!was_manual && engine.has_manual_override()) NativeStep_RequestManualStop();
++    if(!was_manual && engine.has_manual_override()) {AtsHud_Hide();NativeStep_RequestManualStop();}
+     if(!apply(action)) {stop_failed("native stop: action could not be staged");return;}
+     if(staged) finish_staged();
+     // End the local hold as soon as this one tile was applied. The logical
+@@ -116,11 +119,12 @@
+ }
+ void submit(int command) noexcept {
+     if(!on_client_thread()) return;
++    if(command==-4) AtsHud_Hide();
+     engine.submit(command,GetTickCount64());tick();
+ }
+ void shutdown_on_client_thread() noexcept {
+     if(!on_client_thread()) return;
+-    NativeStep_NetworkStop();engine.shutdown();
++    NativeStep_NetworkStop();AtsHud_Stop();engine.shutdown();
+     (void)engine.tick(GetTickCount64(),false);release_input();
+     if(timer_id && IsWindow(game_window)) KillTimer(game_window,timer_id);
+     timer_id=0;network_window.store(nullptr,std::memory_order_release);
+@@ -134,6 +138,12 @@
+         UINT message=RegisterWindowMessageW(kControlName);
+         if(message) PostMessageW(hwnd,message,static_cast<WPARAM>(command),0);
+     }
++}
++void NativeStep_PostAtsStatus(unsigned seconds,bool active) {
++    HWND hwnd=network_window.load(std::memory_order_acquire);
++    UINT msg=RegisterWindowMessageW(L"ClientInput.AtsHud.1");
++    if(IsWindow(hwnd) && msg && seconds<=ats::kMaxSeconds)
++        PostMessageW(hwnd,msg,static_cast<WPARAM>(seconds),active?1:0);
+ }
+ extern "C" {
+ __declspec(dllexport) int __cdecl NativeStep_Start(HWND hwnd) {
+@@ -147,7 +157,8 @@
+     engine=nativestep::StepEngine{};staged=pressed=false;input_logs=0;
+     game_window=hwnd;game_thread=thread;timer_id=timer;
+     network_window.store(hwnd,std::memory_order_release);
+-    NativeStep_LogInput("Mega native-tile-input-v6-20261111 initialized; OS cursor untouched",0);
++    NativeStep_LogInput("Mega native-tile-input-v7-ats-20261111 initialized; OS cursor untouched",0);
++    AtsHud_Start(hwnd);
+     NativeStep_NetworkStart(nullptr);return 1;
+ }
+ __declspec(dllexport) int __cdecl NativeStep_TryConsumeNotice(int type,const void* bytes,int length) {
+@@ -164,7 +175,12 @@
+     if(code>=0 && wp==PM_REMOVE && lp) {
+         MSG* msg=reinterpret_cast<MSG*>(lp);
+         static const UINT control=RegisterWindowMessageW(kControlName);
+-        if(control && msg->message==control) {
++        static const UINT hud=RegisterWindowMessageW(L"ClientInput.AtsHud.1");
++        if(hud && msg->message==hud && msg->hwnd==game_window && on_client_thread()) {
++            if(msg->wParam<=ats::kMaxSeconds && (msg->lParam==0 || msg->lParam==1))
++                AtsHud_Status({static_cast<uint32_t>(msg->wParam),msg->lParam==1});
++            msg->message=WM_NULL;
++        } else if(control && msg->message==control) {
+             const unsigned command=static_cast<unsigned>(msg->wParam);
+             HWND hwnd=msg->hwnd;msg->message=WM_NULL;
+             if(command==12) {if(!game_window) (void)NativeStep_Start(hwnd);}
+--- a/nativestep-client/src/step_network.cpp
++++ b/nativestep-client/src/step_network.cpp
+@@ -13,6 +13,7 @@
+ #include <cstring>
+ #include <cwchar>
+ #include "step_network.h"
++#include "ats_state.h"
+ 
+ namespace {
+ std::atomic<bool> running{false};
+@@ -77,6 +78,10 @@
+ 
+ // The packet is tiny, so enforce a line maximum and never forward arbitrary text to UI.
+ bool accept_command(const char* line, int length) {
++    ats::Status hud{};
++    if(ats::parse_status(line,static_cast<size_t>(length),hud)) {
++        NativeStep_PostAtsStatus(hud.seconds,hud.active);return true;
++    }
+     if (length == 1 && line[0] == 'S') {
+         log_status("item START received");
+         NativeStep_PostNetworkCommand(9);
+@@ -134,7 +139,7 @@
+             log_status("connect control port failed", WSAGetLastError());
+         } else {
+             char hello[32]{};
+-            int len = sprintf_s(hello, "HELLO %hu\n", game.sourcePort);
++            int len = sprintf_s(hello, "HELLO %hu ATS1\n", game.sourcePort);
+             int sent = 0;
+             while (running.load() && sent < len) {
+                 int written = send(sock, hello + sent, len - sent, 0);
+@@ -173,7 +178,7 @@
+                             if (c == '\n') {
+                                 if (!accept_command(buf, count)) { paired = false; break; }
+                                 count = 0;
+-                            } else if (c >= 32 && c <= 126 && count < 5) {
++                            } else if (c >= 32 && c <= 126 && count < static_cast<int>(sizeof(buf))-1) {
+                                 buf[count++] = c;
+                             } else { paired = false; break; }
+                         }
+--- /dev/null
++++ b/nativestep-client/tests/ats_preview.cpp
+@@ -0,0 +1,38 @@
++#define WIN32_LEAN_AND_MEAN
++#define NOMINMAX
++#include <windows.h>
++#include "ats_hud.h"
++void NativeStep_LogInput(const char*,int) {}
++namespace {
++bool active=true; unsigned left=70380; ULONGLONG started=0;
++unsigned current() {const auto elapsed=active?(GetTickCount64()-started)/1000:0;return elapsed>=left?0:left-static_cast<unsigned>(elapsed);}
++LRESULT CALLBACK proc(HWND h,UINT m,WPARAM w,LPARAM l) {
++    if(m==WM_PAINT) {
++        PAINTSTRUCT p{};HDC dc=BeginPaint(h,&p);RECT r{};GetClientRect(h,&r);
++        HBRUSH b=CreateSolidBrush(RGB(25,29,31));FillRect(dc,&r,b);DeleteObject(b);
++        SetBkMode(dc,TRANSPARENT);SetTextColor(dc,RGB(220,220,220));
++        const wchar_t* text=L"ATS HUD Preview\nSpace: pause/resume (remaining time is retained)\nEsc: close\nMove / resize / minimize this window to check HUD tracking.";
++        r.left+=20;r.top+=20;DrawTextW(dc,text,-1,&r,DT_LEFT);EndPaint(h,&p);return 0;
++    }
++    if(m==WM_TIMER) {
++        AtsHud_Status({current(),active});AtsHud_Tick();return 0;
++    }
++    if(m==WM_KEYDOWN && w==VK_SPACE) {
++        left=current();active=!active;started=GetTickCount64();
++        if(!active) AtsHud_Hide();
++        return 0;
++    }
++    if(m==WM_KEYDOWN && w==VK_ESCAPE){DestroyWindow(h);return 0;}
++    if(m==WM_DESTROY){AtsHud_Stop();PostQuitMessage(0);return 0;}
++    return DefWindowProcW(h,m,w,l);
++}
++}
++int WINAPI WinMain(HINSTANCE instance,HINSTANCE,LPSTR,int) {
++    WNDCLASSW c{};c.lpfnWndProc=proc;c.hInstance=instance;c.lpszClassName=L"ATSStandalonePreview";
++    if(!RegisterClassW(&c))return 1;
++    HWND h=CreateWindowW(c.lpszClassName,L"ATS HUD Preview - no game connection",WS_OVERLAPPEDWINDOW|WS_VISIBLE,
++        CW_USEDEFAULT,CW_USEDEFAULT,976,759,nullptr,nullptr,instance,nullptr);
++    if(!h)return 2;
++    AtsHud_Start(h);started=GetTickCount64();SetTimer(h,1,33,nullptr);
++    MSG msg{};while(GetMessageW(&msg,nullptr,0,0)>0){TranslateMessage(&msg);DispatchMessageW(&msg);}return 0;
++}
+--- /dev/null
++++ b/nativestep-client/tests/ats_state_test.cpp
+@@ -0,0 +1,18 @@
++#include "ats_state.h"
++#include <cstdio>
++#include <cstdlib>
++#include <cstring>
++void check(bool b) {if(!b)std::abort();}
++int main(){
++    ats::Status s{};
++    const char* valid[]={"H0,0","H0,1","H70380,1","H31536000,1"};
++    for(auto p:valid)check(ats::parse_status(p,std::strlen(p),s));
++    const char* invalid[]={"H31536001,1","H99999999999999999999999999,1","H-1,1","H1,2","H,1","H10,1x","H10,1\n","H1,","M0","H1,1,1","H 1,1","H1,1\r"};
++    for(auto p:invalid)check(!ats::parse_status(p,std::strlen(p),s));
++    check(!ats::parse_status(nullptr,4,s));
++    ats::State t;t.update({70380,true},1000);check(t.visible());check(t.remaining(2000)==70379);
++    check(t.remaining(0)==70380);check(!t.stale(6000));check(t.stale(6001));
++    t.update({1,true},1000);check(t.remaining(2000)==0);check(t.remaining(UINT64_MAX)==0);
++    t.hide();check(!t.visible());t.update({77,false},1000);check(!t.visible());check(t.remaining(99999)==77);
++    std::puts("PASS ATS HUD: strict framing/overflow/countdown/expiry/stale/hide/pause");
++}
+--- /dev/null
++++ b/src/l1j/server/AutoHuntSystem/AtsBudget.java
+@@ -0,0 +1,57 @@
++package l1j.server.AutoHuntSystem;
++
++/** Active time only, measured with a monotonic clock. No game/network dependencies. */
++public final class AtsBudget {
++    public interface Store {
++        Reservation reserve(long requested) throws Exception;
++        void refund(long unused) throws Exception;
++    }
++    public static final class Reservation {
++        public final long credit, balance;
++        public Reservation(long credit, long balance) { this.credit = credit; this.balance = balance; }
++    }
++    // Reserve before use so a crash cannot restore already consumed time.
++    public static final long CHUNK_MILLIS = 10_000;
++    private final Store store;
++    private long credit, balance, lastNanos;
++    private boolean open;
++    public AtsBudget(Store store) { this.store = store; }
++    public boolean start(long nowNanos) throws Exception { return start(() -> nowNanos); }
++    public boolean start(java.util.function.LongSupplier clock) throws Exception {
++        if (open) throw new IllegalStateException("ATS budget already open");
++        take(CHUNK_MILLIS); open = credit > 0;
++        // Loading the durable balance is not active hunting time.
++        lastNanos = clock.getAsLong(); return open;
++    }
++    private void take(long requested) throws Exception {
++        Reservation r = store.reserve(requested);
++        if (r.credit < 0 || r.credit > requested || r.balance < 0 || r.credit + r.balance > AtsRules.MAX_MILLIS)
++            throw new IllegalStateException("ATS persisted balance invalid");
++        credit = r.credit; balance = r.balance;
++    }
++    public long remaining(long nowNanos) throws Exception {
++        if (!open) return 0;
++        // nanoTime can have either sign. Subtraction handles wrap for intervals < 292 years.
++        long delta = nowNanos - lastNanos;
++        if (delta < 0) delta = 0;
++        long elapsed = delta / 1_000_000;
++        lastNanos += elapsed * 1_000_000;
++        while (elapsed > 0) {
++            if (credit == 0) {
++                if (balance == 0) break;
++                // Catch up a long scheduler pause in one transaction, not thousands of tiny reservations.
++                take(Math.min(AtsRules.MAX_MILLIS, Math.max(CHUNK_MILLIS, elapsed + CHUNK_MILLIS)));
++                if (credit == 0) break;
++            }
++            long used = Math.min(credit, elapsed); credit -= used; elapsed -= used;
++        }
++        return credit + balance;
++    }
++    public void stop(long nowNanos) throws Exception {
++        if (!open) return;
++        try {
++            remaining(nowNanos);
++            if (credit > 0) store.refund(credit);
++        } finally { open = false; credit = balance = 0; }
++    }
++}
+--- /dev/null
++++ b/src/l1j/server/AutoHuntSystem/AtsRules.java
+@@ -0,0 +1,50 @@
++package l1j.server.AutoHuntSystem;
++
++import java.io.InputStream;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.nio.file.Paths;
++import java.util.HashSet;
++import java.util.Properties;
++import java.util.Set;
++
++/** Read on each start. Running sessions retain their start-time rule snapshot. */
++public final class AtsRules {
++    public static final long MAX_MILLIS = 31_536_000_000L;
++    public final long initialMillis;
++    public final int minLevel, maxLevel;
++    public final boolean enabled;
++    private final Set<Integer> allowedMaps = new HashSet<>();
++    public static AtsRules load() throws Exception {
++        Path path = Paths.get("config", "autohunt_ats.properties");
++        Properties p = new Properties();
++        // Missing configuration must not silently grant time or ignore map limits.
++        try (InputStream in = Files.newInputStream(path)) { p.load(in); }
++        return new AtsRules(p);
++    }
++    public AtsRules(Properties p) {
++        String flag = p.getProperty("Enabled", "true").trim();
++        if (!flag.equals("true") && !flag.equals("false")) throw new IllegalArgumentException("Enabled must be true/false");
++        enabled = Boolean.parseBoolean(flag);
++        long seconds = Long.parseLong(p.getProperty("InitialSeconds", "86400").trim());
++        if (seconds < 0 || seconds > MAX_MILLIS / 1000) throw new IllegalArgumentException("InitialSeconds range");
++        initialMillis = seconds * 1000;
++        minLevel = Integer.parseInt(p.getProperty("MinLevel", "1").trim());
++        maxLevel = Integer.parseInt(p.getProperty("MaxLevel", "0").trim());
++        if (minLevel < 1 || maxLevel < 0 || (maxLevel != 0 && maxLevel < minLevel))
++            throw new IllegalArgumentException("ATS level range");
++        String maps = p.getProperty("AllowedMaps", "").trim();
++        if (!maps.isEmpty()) for (String token : maps.split(",", -1)) {
++            int map = Integer.parseInt(token.trim());
++            if (map < 0 || map > 32767) throw new IllegalArgumentException("ATS map range");
++            allowedMaps.add(map);
++        }
++    }
++    public String rejection(int level, int map) {
++        if (!enabled) return "\ud604\uc7ac \uc790\ub3d9\uc0ac\ub0e5\uc744 \uc774\uc6a9\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.";
++        if (level < minLevel) return "\uc790\ub3d9\uc0ac\ub0e5\uc740 " + minLevel + "\ub808\ubca8\ubd80\ud130 \uc774\uc6a9\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4.";
++        if (maxLevel != 0 && level > maxLevel) return "\uc790\ub3d9\uc0ac\ub0e5\uc740 " + maxLevel + "\ub808\ubca8\uae4c\uc9c0 \uc774\uc6a9\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4.";
++        if (!allowedMaps.isEmpty() && !allowedMaps.contains(map)) return "\uc790\ub3d9\uc0ac\ub0e5\uc774 \ud5c8\uc6a9\ub418\uc9c0 \uc54a\uc740 \ub9f5\uc785\ub2c8\ub2e4.";
++        return null;
++    }
++}
+--- /dev/null
++++ b/src/l1j/server/AutoHuntSystem/AtsTimeStore.java
+@@ -0,0 +1,51 @@
++package l1j.server.AutoHuntSystem;
++
++import java.sql.Connection;
++import java.sql.PreparedStatement;
++import java.sql.ResultSet;
++import l1j.server.L1DatabaseFactory;
++
++/** MySQL/InnoDB. The migration must be applied before enabling the new build. */
++final class AtsTimeStore implements AtsBudget.Store {
++    private final int characterId;
++    private final long initialMillis;
++    AtsTimeStore(int characterId, long initialMillis) { this.characterId = characterId; this.initialMillis = initialMillis; }
++    @Override public AtsBudget.Reservation reserve(long requested) throws Exception {
++        try (Connection con = L1DatabaseFactory.getInstance().getAtsConnection()) {
++            con.setAutoCommit(false);
++            try {
++                try (PreparedStatement q = con.prepareStatement(
++                        "INSERT IGNORE INTO character_ats_time (char_id, remaining_millis) VALUES (?, ?)")) {
++                    q.setQueryTimeout(3); q.setInt(1, characterId); q.setLong(2, initialMillis); q.executeUpdate();
++                }
++                long remaining;
++                try (PreparedStatement q = con.prepareStatement(
++                        "SELECT remaining_millis FROM character_ats_time WHERE char_id=? FOR UPDATE")) {
++                    q.setQueryTimeout(3); q.setInt(1, characterId);
++                    try (ResultSet rows = q.executeQuery()) {
++                        if (!rows.next()) throw new IllegalStateException("Missing ATS row");
++                        remaining = rows.getLong(1);
++                    }
++                }
++                if (remaining < 0 || remaining > AtsRules.MAX_MILLIS) throw new IllegalStateException("ATS balance out of range");
++                long credit = Math.min(requested, remaining);
++                if (credit > 0) try (PreparedStatement q = con.prepareStatement(
++                        "UPDATE character_ats_time SET remaining_millis=? WHERE char_id=?")) {
++                    q.setQueryTimeout(3); q.setLong(1, remaining - credit); q.setInt(2, characterId);
++                    if (q.executeUpdate() != 1) throw new IllegalStateException("ATS reserve update failed");
++                }
++                con.commit(); return new AtsBudget.Reservation(credit, remaining - credit);
++            } catch (Exception failure) { con.rollback(); throw failure; }
++            finally { con.setAutoCommit(true); }
++        }
++    }
++    @Override public void refund(long unused) throws Exception {
++        if (unused <= 0) return;
++        try (Connection con = L1DatabaseFactory.getInstance().getAtsConnection();
++                PreparedStatement q = con.prepareStatement(
++                    "UPDATE character_ats_time SET remaining_millis=LEAST(?,remaining_millis+?) WHERE char_id=?")) {
++            q.setQueryTimeout(3); q.setLong(1, AtsRules.MAX_MILLIS); q.setLong(2, unused); q.setInt(3, characterId);
++            if (q.executeUpdate() != 1) throw new IllegalStateException("ATS refund failed");
++        }
++    }
++}
+--- /dev/null
++++ b/src/l1j/server/AutoHuntSystem/AtsUsageTimer.java
+@@ -0,0 +1,73 @@
++package l1j.server.AutoHuntSystem;
++
++import java.util.logging.Level;
++import java.util.logging.Logger;
++import l1j.server.server.model.Instance.L1PcInstance;
++import l1j.server.server.network.NativeStepControl;
++import l1j.server.server.serverpackets.S_SystemMessage;
++
++/** All calls acquire the player's monitor, also used by Start/EndAutoController. */
++public final class AtsUsageTimer implements Runnable {
++    public static final class StartDenied extends Exception {
++        private static final long serialVersionUID = 1L;
++        StartDenied(String message) { super(message); }
++    }
++    private static final Logger LOG = Logger.getLogger(AtsUsageTimer.class.getName());
++    private final L1PcInstance pc;
++    private final AtsRules rules;
++    private final AtsBudget budget;
++    private boolean closed;
++    private volatile long expiresNanos;
++    private AtsUsageTimer(L1PcInstance pc, AtsRules rules, AtsBudget budget) {
++        this.pc = pc; this.rules = rules; this.budget = budget;
++    }
++    public static AtsUsageTimer start(L1PcInstance pc) throws Exception {
++        AtsRules rules = AtsRules.load();
++        String reason = rules.rejection(pc.getLevel(), pc.getMapId());
++        if (reason != null) throw new StartDenied(reason);
++        AtsBudget budget = new AtsBudget(new AtsTimeStore(pc.getId(), rules.initialMillis));
++        if (!budget.start(System::nanoTime)) throw new StartDenied("\uc790\ub3d9\uc0ac\ub0e5 \uc794\uc5ec \uc2dc\uac04\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.");
++        AtsUsageTimer timer = new AtsUsageTimer(pc, rules, budget);
++        long now = System.nanoTime();
++        try { timer.expiresNanos = now + budget.remaining(now) * 1_000_000L; }
++        catch (Exception failure) { budget.stop(System.nanoTime()); throw failure; }
++        return timer;
++    }
++    public String blockReason() {
++        String reason = rules.rejection(pc.getLevel(), pc.getMapId());
++        if (reason == null && System.nanoTime() - expiresNanos >= 0) reason = "\uc790\ub3d9\uc0ac\ub0e5 \uc2dc\uac04\uc774 \ubaa8\ub450 \uc18c\uc9c4\ub418\uc5c8\uc2b5\ub2c8\ub2e4.";
++        if (reason == null && !NativeStepControl.isBound(pc)) reason = "\uc790\ub3d9\uc0ac\ub0e5 \uc5f0\uacb0\uc774 \uc885\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4.";
++        return reason;
++    }
++    @Override public void run() {
++        synchronized (pc) {
++            if (closed || !pc.getAutoHunt()) return;
++            try {
++                String reason = rules.rejection(pc.getLevel(), pc.getMapId());
++                if (reason == null && !NativeStepControl.isBound(pc)) reason = "\uc790\ub3d9\uc0ac\ub0e5 \uc5f0\uacb0\uc774 \uc885\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4.";
++                if (reason == null && pc.isDead()) reason = "\uce90\ub9ad\ud130\uac00 \uc0ac\ub9dd\ud558\uc5ec \uc790\ub3d9\uc0ac\ub0e5\uc744 \uc885\ub8cc\ud569\ub2c8\ub2e4.";
++                long sampleNanos = System.nanoTime();
++                long millis = budget.remaining(sampleNanos);
++                if (reason == null && millis <= 0) reason = "\uc790\ub3d9\uc0ac\ub0e5 \uc2dc\uac04\uc774 \ubaa8\ub450 \uc18c\uc9c4\ub418\uc5c8\uc2b5\ub2c8\ub2e4.";
++                if (reason != null) {
++                    pc.sendPackets(new S_SystemMessage(reason)); pc.EndAutoController(); return;
++                }
++                expiresNanos = sampleNanos + millis * 1_000_000L;
++                NativeStepControl.sendAts(pc, (millis + 999) / 1000, true);
++            } catch (Exception failure) {
++                LOG.log(Level.WARNING, "ATS timer failed; stopping auto hunt", failure);
++                pc.sendPackets(new S_SystemMessage("\uc2dc\uac04 \uc815\ubcf4\ub97c \uc800\uc7a5\ud560 \uc218 \uc5c6\uc5b4 \uc790\ub3d9\uc0ac\ub0e5\uc744 \uc885\ub8cc\ud569\ub2c8\ub2e4."));
++                pc.EndAutoController();
++            }
++        }
++    }
++    public void stop() {
++        synchronized (pc) {
++            if (closed) return; closed = true;
++            try { budget.stop(System.nanoTime()); }
++            catch (Exception failure) { LOG.log(Level.WARNING, "ATS unused reservation refund failed", failure); }
++            try { NativeStepControl.sendAts(pc, 0, false); }
++            catch (RuntimeException ignored) { /* HUD I/O must not interrupt movement/timer cleanup. */ }
++        }
++    }
++}
+--- a/src/l1j/server/AutoHuntSystem/AutoHuntController.java
++++ b/src/l1j/server/AutoHuntSystem/AutoHuntController.java
+@@ -65,6 +65,14 @@
+ 			return;
+ 		}
+ 		
++        if (!owner.getAutoHunt()) return;
++        String atsBlocked = owner.getAtsBlockReason();
++        if (atsBlocked != null) {
++            owner.sendPackets(new l1j.server.server.serverpackets.S_SystemMessage(atsBlocked));
++            owner.EndAutoController();
++            return;
++        }
++
+         // Refresh the already authorized heading independently of pathfinding.
+         // toMoving() is sprite-gated and cannot provide a steady 75ms hold.
+         if (owner.getAutoHunt() && owner.getNativeStepSession().takeResyncRequest()) {
+--- a/src/l1j/server/L1DatabaseFactory.java
++++ b/src/l1j/server/L1DatabaseFactory.java
+@@ -145,6 +145,16 @@
+ 	 * @return Connection connection 오브젝트
+ 	 * @throws SQLException
+ 	 */
++    /** ATS uses bounded, independent MySQL connections rather than the legacy infinite retry loop. */
++    public Connection getAtsConnection() throws SQLException {
++        java.util.Properties properties = new java.util.Properties();
++        if (_user != null) properties.setProperty("user", _user);
++        if (_password != null) properties.setProperty("password", _password);
++        properties.setProperty("connectTimeout", "3000");
++        properties.setProperty("socketTimeout", "3000");
++        return java.sql.DriverManager.getConnection(_url, properties);
++    }
++
+ 	public Connection getConnection() {
+ 		Connection con = null;
+ 
+--- a/src/l1j/server/server/model/Instance/L1PcInstance.java
++++ b/src/l1j/server/server/model/Instance/L1PcInstance.java
+@@ -3445,6 +3445,11 @@
+ 
+ 	private volatile boolean isAutoHunt = false;
+ 
++    public String getAtsBlockReason() {
++        l1j.server.AutoHuntSystem.AtsUsageTimer timer = atsUsageTimer;
++        return timer == null ? "ATS is not running." : timer.blockReason();
++    }
++
+ 	public boolean getAutoHunt() {
+ 		return isAutoHunt;
+ 	}
+@@ -3454,8 +3459,10 @@
+ 	}
+ 
+ 	public ScheduledFuture<?> _AutoController;
+-
+-	public void StartAutoController() {
++    private volatile l1j.server.AutoHuntSystem.AtsUsageTimer atsUsageTimer;
++    private ScheduledFuture<?> atsUsageFuture;
++
++	public synchronized void StartAutoController() {
+ 		if (getAutoHunt()) return;
+         if (!l1j.server.server.network.NativeStepControl.isBound(this)) {
+             sendPackets(new S_SystemMessage("Client input module not ready. Restart the game client."));
+@@ -3465,13 +3472,18 @@
+ 		setAutoPotion(40022);
+ 		setAutoPolyID(getCurrentSpriteId());
+ 		try {
++            atsUsageTimer = l1j.server.AutoHuntSystem.AtsUsageTimer.start(this);
+ 			nativeStepSession.begin();
+ 			setAutoHunt(true);
+ 			_AutoController = GeneralThreadPool.getInstance().scheduleAtFixedRate(new AutoHuntController(getId()), 0L, 10L);
+-		} catch (RuntimeException failure) {
+-			setAutoHunt(false);
+-			nativeStepSession.end();
+-			sendPackets(new S_SystemMessage("NativeStep start failed: check the DLL control connection."));
++            atsUsageFuture = GeneralThreadPool.getInstance().scheduleAtFixedRate(atsUsageTimer, 0L, 1000L);
++		} catch (Exception failure) {
++            EndAutoController();
++            String message = failure instanceof l1j.server.AutoHuntSystem.AtsUsageTimer.StartDenied
++                    ? failure.getMessage() : "\uc790\ub3d9\uc0ac\ub0e5\uc744 \uc2dc\uc791\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uad00\ub9ac\uc790\uc5d0\uac8c \ubb38\uc758\ud574 \uc8fc\uc138\uc694.";
++            if (!(failure instanceof l1j.server.AutoHuntSystem.AtsUsageTimer.StartDenied))
++                java.util.logging.Logger.getLogger("ATS").log(java.util.logging.Level.WARNING, "ATS start failed", failure);
++            sendPackets(new S_SystemMessage(message));
+             return;
+ 		}
+ 
+@@ -3481,9 +3493,11 @@
+ 		this.setAlarmWeight(true);
+ 	}
+ 
+-	public void EndAutoController() {
++	public synchronized void EndAutoController() {
+ 		setAutoHunt(false);
+-		nativeStepSession.end();
++		nativeStepSession.end(); // Release input and hide HUD before any DB refund I/O.
++        if (atsUsageFuture != null) { atsUsageFuture.cancel(false); atsUsageFuture = null; }
++        if (atsUsageTimer != null) { atsUsageTimer.stop(); atsUsageTimer = null; }
+ 		if (_AutoController != null) {
+ 			_AutoController.cancel(true);
+ 			_AutoController = null;
+--- a/src/l1j/server/server/network/NativeStepControl.java
++++ b/src/l1j/server/server/network/NativeStepControl.java
+@@ -25,6 +25,7 @@
+ public final class NativeStepControl {
+     public static final int PORT = 18841;
+     private static final ConcurrentHashMap<L1PcInstance, Channel> CHANNELS = new ConcurrentHashMap<>();
++    private static final ConcurrentHashMap<L1PcInstance, Channel> HUD_CHANNELS = new ConcurrentHashMap<>();
+     private static final AtomicInteger INCOMING = new AtomicInteger();
+     private static final int MAX_CONNECTIONS = 2048;
+ 
+@@ -50,9 +51,18 @@
+         ch.writeAndFlush(io.netty.buffer.Unpooled.copiedBuffer(line, StandardCharsets.US_ASCII));
+     }
+ 
++    /** Version-negotiated: legacy V6 DLLs never receive unknown HUD lines. */
++    public static void sendAts(L1PcInstance pc, long seconds, boolean active) {
++        if (seconds < 0 || seconds > 31_536_000L) throw new IllegalArgumentException("ATS seconds range");
++        Channel ch = CHANNELS.get(pc);
++        if (ch == null || HUD_CHANNELS.get(pc) != ch || !ch.isActive()) return;
++        String line = "H" + seconds + "," + (active ? "1" : "0") + "\n";
++        ch.writeAndFlush(io.netty.buffer.Unpooled.copiedBuffer(line, StandardCharsets.US_ASCII));
++    }
++
+     public static void detach(L1PcInstance pc) {
+         Channel ch = CHANNELS.remove(pc);
+-        if (ch != null) ch.close();
++        if (ch != null) { HUD_CHANNELS.remove(pc, ch); ch.close(); }
+     }
+ 
+     public static final class Handler extends ChannelInboundHandlerAdapter {
+@@ -63,6 +73,7 @@
+         private L1PcInstance pc;
+         private ScheduledFuture<?> deadline;
+         private boolean counted;
++        private volatile boolean stopQueued;
+ 
+         @Override public void channelActive(ChannelHandlerContext ctx) {
+             if (INCOMING.incrementAndGet() > MAX_CONNECTIONS) { INCOMING.decrementAndGet(); ctx.close(); return; }
+@@ -82,7 +93,14 @@
+                         if (manualPending == 0 && v == 'U') manualPending = 1;
+                         else if (manualPending == 1 && v == '\n') {
+                             manualPending = 0;
+-                            if (pc != null && pc.getAutoHunt()) pc.EndAutoController();
++                            if (pc != null && pc.getAutoHunt() && !stopQueued) {
++                                stopQueued = true;
++                                final L1PcInstance target = pc;
++                                l1j.server.server.GeneralThreadPool.getInstance().execute(() -> {
++                                    try { target.EndAutoController(); }
++                                    finally { stopQueued = false; }
++                                });
++                            }
+                         } else { ctx.close(); return; }
+                     }
+                     return;
+@@ -92,9 +110,12 @@
+                     if (v == '\n') {
+                         String line = new String(hello, 0, received, StandardCharsets.US_ASCII).trim();
+                         received = 0;
+-                        if (!line.startsWith("HELLO ") || line.length() > 20) { ctx.close(); return; }
++                        String[] fields = line.split(" ", -1);
++                        if ((fields.length != 2 && fields.length != 3) || !fields[0].equals("HELLO") ||
++                                (fields.length == 3 && !fields[2].equals("ATS1"))) { ctx.close(); return; }
++                        boolean wantsHud = fields.length == 3;
+                         int port;
+-                        try { port = Integer.parseInt(line.substring(6)); }
++                        try { port = Integer.parseInt(fields[1]); }
+                         catch (NumberFormatException error) { ctx.close(); return; }
+                         if (port < 1 || port > 65535) { ctx.close(); return; }
+                         String ip = ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress().getHostAddress();
+@@ -120,6 +141,7 @@
+                             ctx.close(); return;
+                         }
+                         pc = selected;
++                        if (wantsHud) HUD_CHANNELS.put(pc, ctx.channel());
+                         paired = true;
+                         System.out.println("[ClientInput] control session ready.");
+                         if (deadline != null) deadline.cancel(false);
+@@ -135,7 +157,10 @@
+ 
+         @Override public void channelInactive(ChannelHandlerContext ctx) {
+             if (deadline != null) deadline.cancel(false);
+-            if (pc != null) CHANNELS.remove(pc, ctx.channel());
++            if (pc != null) {
++                HUD_CHANNELS.remove(pc, ctx.channel());
++                CHANNELS.remove(pc, ctx.channel()); // Next auto-hunt tick stops outside the Netty I/O loop.
++            }
+             if (counted) { counted = false; INCOMING.decrementAndGet(); }
+         }
+ 
+--- /dev/null
++++ b/tests/AtsBudgetTest.java
+@@ -0,0 +1,48 @@
++package l1j.server.AutoHuntSystem;
++import java.util.Properties;
++public final class AtsBudgetTest {
++    static void check(boolean v,String m) { if(!v)throw new AssertionError(m); }
++    static final class MemoryStore implements AtsBudget.Store {
++        long value; int reserves,refunds; boolean fail;
++        MemoryStore(long value) {this.value=value;}
++        public AtsBudget.Reservation reserve(long n) throws Exception {
++            if(fail)throw new Exception("DB failure");
++            reserves++;long credit=Math.min(n,value);value-=credit;return new AtsBudget.Reservation(credit,value);
++        }
++        public void refund(long n) throws Exception {if(fail)throw new Exception("DB failure");refunds++;value+=n;}
++    }
++    public static void main(String[] args) throws Exception {
++        MemoryStore db=new MemoryStore(86400000);AtsBudget b=new AtsBudget(db);
++        check(b.start(1_000_000),"start");check(db.value==86390000,"durable pre-debit");
++        check(b.remaining(2_501_000_000L)==86397500,"active consumption");
++        b.stop(3_251_000_000L);check(db.value==86396750,"refund only unused; retain exact milliseconds");
++        int refunds=db.refunds;b.stop(9_000_000_000L);check(db.refunds==refunds,"stop idempotent");
++        b=new AtsBudget(db);check(b.start(100_000_000_000L),"restart");
++        check(b.remaining(100_000_000_000L)==86396750,"offline time not billed; no new grant");
++        b.stop(100_000_000_000L);
++        MemoryStore small=new MemoryStore(1500);b=new AtsBudget(small);check(b.start(0),"last partial chunk");
++        check(b.remaining(1_499_999_999L)==1,"subsecond boundary");
++        check(b.remaining(1_500_000_000L)==0,"expiry");b.stop(2_000_000_000L);
++        check(small.value==0,"no refund used time");check(!new AtsBudget(small).start(0),"exhausted refuses restart");
++        MemoryStore delayed=new MemoryStore(25000);b=new AtsBudget(delayed);b.start(0);
++        check(b.remaining(24_001_000_000L)==999,"delayed tick consumes all elapsed chunks");
++        b.stop(24_001_000_000L);check(delayed.value==999,"delayed tick refund");
++        MemoryStore longPause=new MemoryStore(86400000);b=new AtsBudget(longPause);b.start(0);
++        check(b.remaining(3_600_000_000_000L)==82800000,"one-hour pause charged");
++        check(longPause.reserves<=2,"long pause uses bounded transaction count");
++        b.stop(3_600_000_000_000L);
++        MemoryStore failure=new MemoryStore(20000);b=new AtsBudget(failure);b.start(0);failure.fail=true;
++        boolean threw=false;try{b.remaining(11_000_000_000L);}catch(Exception e){threw=true;}
++        check(threw,"DB failure does not grant free credit");
++        Properties p=new Properties();p.setProperty("MinLevel","10");p.setProperty("MaxLevel","60");p.setProperty("AllowedMaps","0,4");
++        AtsRules rules=new AtsRules(p);
++        check(rules.rejection(9,0)!=null,"min level");check(rules.rejection(10,0)==null,"min inclusive");
++        check(rules.rejection(60,4)==null,"max inclusive");check(rules.rejection(61,4)!=null,"max level");
++        check(rules.rejection(30,99)!=null,"forbidden map");
++        p.setProperty("AllowedMaps","");p.setProperty("MaxLevel","0");rules=new AtsRules(p);
++        check(rules.rejection(120,99)==null,"explicit unrestricted settings");
++        p.setProperty("AllowedMaps","0,,4");threw=false;try{new AtsRules(p);}catch(IllegalArgumentException e){threw=true;}
++        check(threw,"malformed restriction cannot silently allow all maps");
++        System.out.println("PASS ATS: active/offline/restart/expiry/refund/failure/level/map boundaries");
++    }
++}
+--- /dev/null
++++ b/tests/AtsTimeStoreTest.java
+@@ -0,0 +1,31 @@
++package l1j.server.AutoHuntSystem;
++import java.sql.*;import java.util.concurrent.*;import java.util.concurrent.atomic.*;
++import l1j.server.L1DatabaseFactory;
++public class AtsTimeStoreTest {
++    static void check(boolean v,String m){if(!v)throw new AssertionError(m);}
++    static long balance(int id)throws Exception{
++        try(Connection c=L1DatabaseFactory.getInstance().getConnection();PreparedStatement q=c.prepareStatement("SELECT remaining_millis FROM character_ats_time WHERE char_id=?")){
++            q.setInt(1,id);try(ResultSet r=q.executeQuery()){check(r.next(),"row exists");return r.getLong(1);}
++        }
++    }
++    public static void main(String[] args)throws Exception{
++        try(Connection c=L1DatabaseFactory.getInstance().getConnection();Statement s=c.createStatement()){
++            s.execute("CREATE TABLE character_ats_time (char_id INT PRIMARY KEY, remaining_millis BIGINT NOT NULL)");
++        }
++        AtsTimeStore db=new AtsTimeStore(1,25000);
++        AtsBudget.Reservation r=db.reserve(10000);check(r.credit==10000&&r.balance==15000,"first grant/pre-debit");
++        db.refund(7500);check(balance(1)==22500,"unused refund durable");
++        AtsTimeStore relog=new AtsTimeStore(1,86400000);r=relog.reserve(10000);
++        check(r.balance==12500,"relogin/config change cannot regrant time");
++        AtsTimeStore zero=new AtsTimeStore(2,0);check(zero.reserve(10000).credit==0,"zero account refused");
++        ExecutorService pool=Executors.newFixedThreadPool(4);AtomicLong total=new AtomicLong();
++        java.util.List<Future<?>> jobs=new java.util.ArrayList<>();
++        for(int i=0;i<4;i++)jobs.add(pool.submit(()->{try{
++            AtsTimeStore concurrent=new AtsTimeStore(3,100000);
++            for(int k=0;k<5;k++)total.addAndGet(concurrent.reserve(10000).credit);
++        }catch(Exception e){throw new RuntimeException(e);}}));
++        for(Future<?> job:jobs)job.get();pool.shutdown();
++        check(total.get()==100000&&balance(3)==0,"concurrent reservations conserve time");
++        System.out.println("PASS JDBC store (H2 MySQL mode): grant once/relogin/refund/zero/concurrent reserve conservation");
++    }
++}
+--- /dev/null
++++ b/tests/NativeStepHudChannelTest.java
+@@ -0,0 +1,32 @@
++package l1j.server.server.network;
++import io.netty.channel.embedded.EmbeddedChannel;
++import io.netty.buffer.ByteBuf;import io.netty.buffer.Unpooled;
++import java.net.SocketAddress;import java.net.InetSocketAddress;import java.nio.charset.StandardCharsets;
++import l1j.server.server.GameClient;import l1j.server.server.model.L1World;
++import l1j.server.server.model.Instance.L1PcInstance;
++public class NativeStepHudChannelTest {
++    static final class Peer extends EmbeddedChannel {
++        Peer(){super(new NativeStepControl.Handler());}
++        @Override protected SocketAddress remoteAddress0(){return new InetSocketAddress("127.0.0.1",45000);}
++    }
++    static void check(boolean v,String msg){if(!v)throw new AssertionError(msg);}
++    static void input(Peer c,String s){c.writeInbound(Unpooled.copiedBuffer(s,StandardCharsets.US_ASCII));}
++    static String output(Peer c){ByteBuf b=c.readOutbound();if(b==null)return null;try{return b.toString(StandardCharsets.US_ASCII);}finally{b.release();}}
++    public static void main(String[] a){
++        L1PcInstance p=new L1PcInstance(new GameClient("127.0.0.1",12345));L1World.getInstance().players.add(p);
++        Peer c=new Peer();input(c,"HELLO 123");check(output(c)==null,"partial greeting not paired");
++        input(c,"45 AT");input(c,"S1\n");check("OK\n".equals(output(c)),"ATS1 negotiated");
++        NativeStepControl.send(p,"@@NATIVESTEP:START@@");NativeStepControl.sendAts(p,70380,true);
++        check("S\n".equals(output(c)),"start order");check("H70380,1\n".equals(output(c)),"remaining frame");
++        NativeStepControl.sendAts(p,0,false);check("H0,0\n".equals(output(c)),"hide frame");
++        input(c,"U");check(p.stops==0,"split manual stop");input(c,"\n");check(p.stops==1,"manual stop once");
++        c.finishAndReleaseAll();check(!NativeStepControl.isBound(p),"disconnect removes binding");
++        Peer legacy=new Peer();input(legacy,"HELLO 12345\n");check("OK\n".equals(output(legacy)),"legacy paired");
++        NativeStepControl.sendAts(p,100,true);check(output(legacy)==null,"legacy never gets unknown HUD frames");
++        NativeStepControl.send(p,"@@NATIVESTEP:2@@");check("M2\n".equals(output(legacy)),"legacy move preserved");legacy.finishAndReleaseAll();
++        Peer invalid=new Peer();input(invalid,"HELLO 12345 ATS2\n");check(!invalid.isActive(),"unknown version rejected");invalid.finishAndReleaseAll();
++        L1World.getInstance().players.add(new L1PcInstance(new GameClient("127.0.0.1",23456)));
++        Peer ambiguous=new Peer();input(ambiguous,"HELLO 9999 ATS1\n");check(!ambiguous.isActive(),"ambiguous NAT pairing rejected");ambiguous.finishAndReleaseAll();
++        System.out.println("PASS Netty HUD: fragmented negotiation/framing/order/manual stop/legacy/disconnect/NAT ambiguity");
++    }
++}
+--- a/tests/ParseJava.java
++++ b/tests/ParseJava.java
+@@ -16,6 +16,6 @@
+                 if (d.getKind() == Diagnostic.Kind.ERROR) throw new AssertionError(d.toString());
+             }
+         }
+-        System.out.println("PASS: Java syntax parsed (3 changed files; dependency/type linking not performed)");
++        System.out.println("PASS: Java syntax parsed (" + args.length + " files; dependency/type linking not performed)");
+     }
+ }
+--- /dev/null
++++ b/tests/fixtures/l1j/server/L1DatabaseFactory.java
+@@ -0,0 +1,11 @@
++package l1j.server;
++import java.sql.*;
++public class L1DatabaseFactory {
++    private static final L1DatabaseFactory INSTANCE=new L1DatabaseFactory();
++    public static L1DatabaseFactory getInstance(){return INSTANCE;}
++    public Connection getAtsConnection(){return getConnection();}
++    public Connection getConnection(){
++        try{return DriverManager.getConnection("jdbc:h2:mem:ats;MODE=MySQL;DB_CLOSE_DELAY=-1");}
++        catch(SQLException e){throw new IllegalStateException(e);}
++    }
++}
+--- /dev/null
++++ b/tests/fixtures/l1j/server/server/GameClient.java
+@@ -0,0 +1,6 @@
++package l1j.server.server;
++public class GameClient {
++    private final String ip; private final int port;
++    public GameClient(String ip,int port){this.ip=ip;this.port=port;}
++    public String getIp(){return ip;} public int getRemotePort(){return port;}
++}
+--- /dev/null
++++ b/tests/fixtures/l1j/server/server/GeneralThreadPool.java
+@@ -0,0 +1,7 @@
++package l1j.server.server;
++// Synchronous test boundary only; the real server executes outside the Netty owner loop.
++public class GeneralThreadPool {
++    private static final GeneralThreadPool INSTANCE=new GeneralThreadPool();
++    public static GeneralThreadPool getInstance(){return INSTANCE;}
++    public void execute(Runnable r){r.run();}
++}
+--- /dev/null
++++ b/tests/fixtures/l1j/server/server/model/Instance/L1PcInstance.java
+@@ -0,0 +1,12 @@
++package l1j.server.server.model.Instance;
++import l1j.server.server.GameClient;
++public class L1PcInstance {
++    public final GameClient client; public boolean active=true; public int stops;
++    public L1PcInstance(GameClient c){client=c;}
++    public GameClient getNetConnection(){return client;}
++    public boolean getAutoHunt(){return active;}
++    public synchronized void EndAutoController(){active=false;stops++;}
++    public int getLevel(){return 30;} public int getMapId(){return 4;}
++    public int getId(){return 123;} public boolean isDead(){return false;}
++    public void sendPackets(Object p){}
++}
+--- /dev/null
++++ b/tests/fixtures/l1j/server/server/model/L1World.java
+@@ -0,0 +1,9 @@
++package l1j.server.server.model;
++import java.util.ArrayList;import java.util.List;
++import l1j.server.server.model.Instance.L1PcInstance;
++public class L1World {
++    private static final L1World INSTANCE=new L1World();
++    public final List<L1PcInstance> players=new ArrayList<>();
++    public static L1World getInstance(){return INSTANCE;}
++    public List<L1PcInstance> getAllPlayers(){return players;}
++}
+--- /dev/null
++++ b/tests/fixtures/l1j/server/server/serverpackets/S_SystemMessage.java
+@@ -0,0 +1,2 @@
++package l1j.server.server.serverpackets;
++public class S_SystemMessage {public S_SystemMessage(String s){}}
+--- a/tests/run.sh
++++ b/tests/run.sh
+@@ -9,3 +9,11 @@
+ java tests/ParseJava.java src/l1j/server/AutoHuntSystem/NativeStepSession.java \
+     src/l1j/server/AutoHuntSystem/AutoHuntController.java \
+     src/l1j/server/CharacterAction/Walk/WalkActionHandler.java
++
++java -m jdk.compiler/com.sun.tools.javac.Main -source 8 -target 8 -Xlint:-options -d "$cadence_build" \
++    src/l1j/server/AutoHuntSystem/AtsRules.java src/l1j/server/AutoHuntSystem/AtsBudget.java tests/AtsBudgetTest.java
++java -cp "$cadence_build" l1j.server.AutoHuntSystem.AtsBudgetTest
++java tests/ParseJava.java src/l1j/server/server/model/Instance/L1PcInstance.java \
++    src/l1j/server/server/network/NativeStepControl.java src/l1j/server/L1DatabaseFactory.java \
++    src/l1j/server/AutoHuntSystem/AtsRules.java src/l1j/server/AutoHuntSystem/AtsBudget.java \
++    src/l1j/server/AutoHuntSystem/AtsTimeStore.java src/l1j/server/AutoHuntSystem/AtsUsageTimer.java

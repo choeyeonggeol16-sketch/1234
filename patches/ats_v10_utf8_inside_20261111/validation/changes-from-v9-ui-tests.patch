@@ -1,0 +1,62 @@
+--- a/nativestep-client/src/ats_hud.cpp
++++ b/nativestep-client/src/ats_hud.cpp
+@@ -79,7 +79,7 @@
+         StringFormat badgeFormat(StringFormat::GenericTypographic());
+         badgeFormat.SetAlignment(StringAlignmentCenter);badgeFormat.SetLineAlignment(StringAlignmentCenter);
+         GraphicsPath lettering;
+-        lettering.AddString(L"ATS",-1,badgeFamily,FontStyleBold,9.2f,RectF(center-13.f,28.f,26.f,13.f),&badgeFormat);
++        lettering.AddString(L"ATS",-1,badgeFamily,FontStyleBold,9.2f,RectF(center-13.f,cy-6.5f,26.f,13.f),&badgeFormat);
+         Pen labelGlow(Color(115,238,83,26),2.8f);labelGlow.SetLineJoin(LineJoinRound);
+         g.DrawPath(&labelGlow,&lettering);
+         Pen letterEdge(Color(200,104,35,10),0.8f);SolidBrush letterFill(Color(255,255,232,210));
+@@ -95,7 +95,7 @@
+         fmt.SetAlignment(StringAlignmentCenter);fmt.SetLineAlignment(StringAlignmentCenter);
+         fmt.SetFormatFlags(fmt.GetFormatFlags()|StringFormatFlagsNoWrap);
+         GraphicsPath path;
+-        path.AddString(text,-1,family,FontStyleBold,11.5f*textScalePercent/100.f,RectF(0.f,39.f,230.f,17.f),&fmt);
++        path.AddString(text,-1,family,FontStyleBold,11.5f*textScalePercent/100.f,RectF(0.f,27.f,230.f,17.f),&fmt);
+         Pen textGlow(Color(40,210,74,53),2.8f);textGlow.SetLineJoin(LineJoinRound);
+         Pen shadow(Color(205,52,12,9),0.9f);shadow.SetLineJoin(LineJoinRound);
+         SolidBrush color(Color(255,243,195,178));
+@@ -147,7 +147,7 @@
+     int cw=client.right,ch=client.bottom;if(cw<=0||ch<=0)return;
+     const float base=std::min(cw/640.f,ch/480.f);
+     const float scale=std::clamp(base*scalePercent/100.f,0.25f,8.f);
+-    const int width=static_cast<int>(std::ceil(230.f*scale)),height=static_cast<int>(std::ceil(60.f*scale));
++    const int width=static_cast<int>(std::ceil(230.f*scale)),height=static_cast<int>(std::ceil(48.f*scale));
+     POINT origin{std::max(0,std::min(cw-width,(cw-width)/2+static_cast<int>(offsetX*base))),
+         std::max(0,std::min(ch-height,ch-static_cast<int>(bottom*base)-height))};
+     if(!ClientToScreen(owner,&origin))return;
+--- a/nativestep-client/src/nativestep_dll.cpp
++++ b/nativestep-client/src/nativestep_dll.cpp
+@@ -180,7 +180,7 @@
+     game_window=hwnd;game_thread=thread;timer_id=timer;
+     click_scope=nativestep::ManualPressScope{};focus_known=false;
+     network_window.store(hwnd,std::memory_order_release);
+-    NativeStep_LogInput("Mega native-tile-input-v9-focus-silent-20261111 initialized; OS cursor untouched",0);
++    NativeStep_LogInput("Mega native-tile-input-v10-ats-inside-20261111 initialized; OS cursor untouched",0);
+     AtsHud_Start(hwnd);
+     NativeStep_NetworkStart(nullptr);return 1;
+ }
+--- a/tests/ParseJava.java
++++ b/tests/ParseJava.java
+@@ -8,7 +8,7 @@
+     public static void main(String[] args) throws Exception {
+         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+-        try (StandardJavaFileManager files = compiler.getStandardFileManager(diagnostics, null, Charset.forName("MS949"))) {
++        try (StandardJavaFileManager files = compiler.getStandardFileManager(diagnostics, null, Charset.forName("UTF-8"))) {
+             JavacTask task = (JavacTask) compiler.getTask(null, files, diagnostics,
+                 Arrays.asList("-proc:none"), null, files.getJavaFileObjects(args));
+             task.parse();
+--- a/tests/run.sh
++++ b/tests/run.sh
+@@ -3,7 +3,7 @@
+ cd "$(dirname "$0")/.."
+ cadence_build=$(mktemp -d)
+ trap 'rm -rf "$cadence_build"' EXIT
+-java -m jdk.compiler/com.sun.tools.javac.Main -source 8 -target 8 -Xlint:-options -encoding MS949 -d "$cadence_build" \
++java -m jdk.compiler/com.sun.tools.javac.Main -source 8 -target 8 -Xlint:-options -encoding UTF-8 -d "$cadence_build" \
+     src/l1j/server/AutoHuntSystem/NativeStepSession.java tests/NativeStepCadenceTest.java
+ java -cp "$cadence_build" l1j.server.AutoHuntSystem.NativeStepCadenceTest
+ java tests/ParseJava.java src/l1j/server/AutoHuntSystem/NativeStepSession.java \

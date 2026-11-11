@@ -1,0 +1,26 @@
+{
+  "version": "ATS V10 ATS inside ring + Java UTF-8 2026-11-11",
+  "dll_sha256": "1eb9a74b4f2ba48c205e7380b9b106886374c1f4b0f1e75ff3a2917720a42778",
+  "java_source_files_unicode_identical_to_v9": 971,
+  "all_java_files_utf8": 982,
+  "cp949_converted": 533,
+  "source_encoding": "UTF-8 without BOM",
+  "source_compiler_encoding_required": "UTF-8",
+  "server_logic_changed_from_v9": false,
+  "database_and_server_config_byte_identical_to_v9": true,
+  "native_movement_logic_unchanged_from_v9": true,
+  "checks": {
+    "shipping_x86_dll_and_preview_build": "PASS",
+    "same_hud_source_wine64_xvfb_preview": "PASS ATS inside ring; 4-second animation",
+    "all_production_java_utf8_syntax_parse": "PASS 971 files; no dependency/type linking",
+    "native_step_session_regressions_with_utf8_compiler": "PASS",
+    "ats_budget_and_rules_with_utf8_compiler": "PASS"
+  },
+  "not_verified": [
+    "V10 x86 DLL in live Windows Mega.bin",
+    "full Java server dependency/type linking build",
+    "real MySQL, exclusive fullscreen"
+  ],
+  "external_build_config": "Original project build.xml/pom.xml not supplied. Eclipse UTF-8 settings, .editorconfig and javac option file included; external Ant/Maven source encoding must be set to UTF-8.",
+  "ui": "fixed ATS inside ring; rotating arrows; separate timer below; ShowSeconds=0 TextScalePercent=90 unchanged"
+}

@@ -1,3 +1,19 @@
+## 2026-11-11 — ATS V10 원 안의 ATS 표시 / Java 한글 UTF-8 통일
+
+[**V10 전체 소스·DLL 다운로드**](downloads/L1J_49027_ATS_V10_FULL_SRC_20261111.zip) · [클라이언트 UI만](downloads/L1J_49027_ATS_V10_CLIENT_UI_20261111.zip) · [적용·인코딩 안내](patches/ats_v10_utf8_inside_20261111/ATS_V10_APPLY_KO.md) · [오토헌트 컨트롤러](patches/ats_v10_utf8_inside_20261111/src/l1j/server/AutoHuntSystem/AutoHuntController.java)
+
+참고 영상처럼 ATS 글자를 원 안에 고정하고 회전 화살표와 원 아래 남은 시간을 표시합니다. V9의 창 밖 클릭·포커스 상실 중단 수정은 유지합니다.
+
+CP949였던 컨트롤러를 포함해 전체 Java 소스를 UTF-8로 맞췄습니다. **서버 Java 971개의 유니코드 내용은 V9와 동일**하며 한글 식별자·메시지·서버 로직을 유지합니다. Eclipse UTF-8 설정·`.editorconfig`·javac 옵션을 포함했습니다. 소스를 갱신할 때 전체 `src/`를 반영하고 **외부 Ant/Maven 빌드의 소스 인코딩도 UTF-8로 맞추세요.** 기존 프로젝트의 build.xml/pom.xml은 제공되지 않아 외부 빌드 파일은 직접 변경하지 못했습니다.
+
+V9 서버 적용자는 HUD 수정에 DLL/배경만 교체하면 됩니다. V7/V8 서버는 V9 서버 수정도 반영하도록 소스 재빌드가 필요합니다. DB 변경은 없습니다.
+
+![V10 HUD 미리보기](patches/ats_v10_utf8_inside_20261111/preview/hud-v10.gif)
+
+동일 HUD의 Wine64 미리보기이며 한국어는 대체 글꼴입니다. PE32 빌드·971개 서버 Java UTF-8 구문 파싱·세션/ATS 회귀 검사를 통과했습니다. **전체 Java 서버 의존성 연결 빌드와 Windows Mega.bin 실게임은 미검증입니다.**
+
+---
+
 ## 2026-11-11 — ATS V9 창 밖 클릭·포커스 중단 수정 / 작은 시간 표시
 
 [**V9 서버 패치·DLL 다운로드**](downloads/L1J_49027_ATS_V9_PATCH_DLL_20261111.zip) · [전체 소스·DLL](downloads/L1J_49027_ATS_V9_FULL_SRC_20261111.zip) · [적용 안내](patches/ats_v9_focus_20261111/ATS_V9_APPLY_KO.md) · [검증 기록](patches/ats_v9_focus_20261111/validation/report-v9.json)

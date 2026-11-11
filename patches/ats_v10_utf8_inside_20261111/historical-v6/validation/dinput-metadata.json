@@ -1,0 +1,28 @@
+{
+  "machine": "PE32 x86",
+  "sha256": "e8d671bbd9442029b528c3ce447772684f5b5d88dd77b378101dd5f9d482611c",
+  "exports": {
+    "DirectInputCreateA": 1,
+    "DirectInputCreateEx": 2,
+    "DirectInputCreateW": 3,
+    "DllCanUnloadNow": 4,
+    "DllGetClassObject": 5,
+    "DllRegisterServer": 6,
+    "DllUnregisterServer": 7,
+    "NativeStep_HasManualOverride": 8,
+    "NativeStep_HookProc@12": 9,
+    "NativeStep_Start": 10,
+    "NativeStep_Stop": 11,
+    "NativeStep_TryConsumeNotice": 12
+  },
+  "imported_modules": [
+    "ADVAPI32.dll",
+    "IPHLPAPI.DLL",
+    "KERNEL32.dll",
+    "msvcrt.dll",
+    "USER32.dll",
+    "WS2_32.dll"
+  ],
+  "required_export_ordinals": "PASS",
+  "os_mouse_injection_imports": false
+}

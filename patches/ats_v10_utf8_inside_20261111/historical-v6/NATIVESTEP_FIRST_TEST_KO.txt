@@ -1,0 +1,1 @@
+V6: see APPLY_FIX_KO.md. Keep V5 server, replace client-ready/dinput.dll beside Mega.bin, restart the game. Older servers: SERVER_V5_APPLY.md.
