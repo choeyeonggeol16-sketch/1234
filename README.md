@@ -1,3 +1,13 @@
+## 2026-11-11 — 기존 MS949 프로젝트용 src만 복구
+
+[**MS949 src 폴더만 다운로드**](downloads/L1J_49027_ATS_V10_MS949_SRC_ONLY_20261111.zip)
+
+UTF-8 소스를 MS949로 읽을 때 발생한 `SkillId` 한글 식별자 깨짐을 정상 원본으로 복구할 수 있는 ZIP입니다. ZIP에는 `src/`만 있으며 Java 971개와 기존 부속 파일 2개를 포함합니다. 기존 V9 서버 소스와 바이트 단위로 동일한 MS949/CP949 소스이며, V9 중단 수정과 ATS 서버 기능을 유지합니다. DLL·DB·프로젝트 설정은 ZIP에 포함하지 않았습니다.
+
+기존 소스를 백업하고 `src/`를 반영한 뒤 IDE의 프로젝트·파일 인코딩을 **MS949/CP949**로 맞추고 Clean/Build하세요. V10에서 컨트롤러만 UTF-8로 지정했다면 그 파일 지정도 MS949로 맞춥니다. 외부 빌드는 소스 인코딩 `MS949`를 사용합니다. 서버 Java 971개 MS949 구문 파싱과 이동/ATS 회귀 검사를 통과했으며 전체 서버 의존성 연결 빌드는 미검증입니다.
+
+---
+
 ## 2026-11-11 — ATS V10 원 안의 ATS 표시 / Java 한글 UTF-8 통일
 
 [**V10 전체 소스·DLL 다운로드**](downloads/L1J_49027_ATS_V10_FULL_SRC_20261111.zip) · [클라이언트 UI만](downloads/L1J_49027_ATS_V10_CLIENT_UI_20261111.zip) · [적용·인코딩 안내](patches/ats_v10_utf8_inside_20261111/ATS_V10_APPLY_KO.md) · [오토헌트 컨트롤러](patches/ats_v10_utf8_inside_20261111/src/l1j/server/AutoHuntSystem/AutoHuntController.java)
