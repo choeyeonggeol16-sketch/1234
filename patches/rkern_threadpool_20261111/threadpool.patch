@@ -1,0 +1,2801 @@
+diff --git a/src/l1j/server/DogFight/Game/MJDogFightGameManager.java b/src/l1j/server/DogFight/Game/MJDogFightGameManager.java
+index e4fcde2..124013a 100644
+--- a/src/l1j/server/DogFight/Game/MJDogFightGameManager.java
++++ b/src/l1j/server/DogFight/Game/MJDogFightGameManager.java
+@@ -59,7 +59,7 @@ public class MJDogFightGameManager implements MJIFighterGameEndedHandler{
+ 	}
+ 	
+ 	public void execute(){
+-		ThreadPool.getInstance().schedule(new Runnable(){
++		ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 			@Override
+ 			public void run(){
+ 				if(!is_next_match()) return;
+@@ -86,7 +86,7 @@ public class MJDogFightGameManager implements MJIFighterGameEndedHandler{
+ 			MJDogFightHistory.getInstance().update_game();			
+ 		}
+ 		m_current_game.set_fight(false);
+-		ThreadPool.getInstance().schedule(new Runnable(){
++		ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 			@Override
+ 			public void run(){
+ 				m_current_game.send_caster_message(String.format(MJDogFightSettings.NEXT_GAME_MESSAGE, MJDogFightSettings.NEXT_MATCH_READY_SECONDS));
+diff --git a/src/l1j/server/DogFight/Instance/MJDogFightInstance.java b/src/l1j/server/DogFight/Instance/MJDogFightInstance.java
+index 23e9271..7a9b65d 100644
+--- a/src/l1j/server/DogFight/Instance/MJDogFightInstance.java
++++ b/src/l1j/server/DogFight/Instance/MJDogFightInstance.java
+@@ -329,7 +329,7 @@ public class MJDogFightInstance extends L1NpcInstance{
+ 		
+ 		if(trigger.get_is_move_ended_send()){
+ 			if(sleeps > 0){
+-				ThreadPool.getInstance().schedule(new Runnable(){
++				ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 					@Override
+ 					public void run(){
+ 						on_trigger_sended(trigger);
+diff --git a/src/l1j/server/DogFight/MJDogFightLoader.java b/src/l1j/server/DogFight/MJDogFightLoader.java
+index aa59e9d..e62a6e4 100644
+--- a/src/l1j/server/DogFight/MJDogFightLoader.java
++++ b/src/l1j/server/DogFight/MJDogFightLoader.java
+@@ -28,7 +28,7 @@ public class MJDogFightLoader {
+ 		MJDogFightHistory.getInstance();
+ 		MJDogFightTicketIdManager.getInstance();
+ 		if(MJDogFightSettings.IS_ON_RUN){
+-			ThreadPool.getInstance().schedule(new Runnable(){
++			ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 				@Override
+ 				public void run(){
+ 					if(!is_reservation_game())
+diff --git a/src/l1j/server/IndunSystem/BossRaid/BossRaid.java b/src/l1j/server/IndunSystem/BossRaid/BossRaid.java
+index 94ba399..a942f20 100644
+--- a/src/l1j/server/IndunSystem/BossRaid/BossRaid.java
++++ b/src/l1j/server/IndunSystem/BossRaid/BossRaid.java
+@@ -107,7 +107,7 @@ public class BossRaid implements Runnable {
+ 		if (cal.get(Calendar.AM_PM) == 0) {
+ 			오전오후 = "오전";
+ 		}
+-		ThreadPool.getInstance().schedule(this, 2000);
++		ThreadPool.getInstance().scheduleRequired(this, 2000);
+ 	  System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■■■■■■ 보스 레이드 시작 " +  _map+" ■■■■■■");
+ 	}
+ 
+diff --git a/src/l1j/server/IndunSystem/BossRaid2/Queen1.java b/src/l1j/server/IndunSystem/BossRaid2/Queen1.java
+index 4f962a0..79c7f43 100644
+--- a/src/l1j/server/IndunSystem/BossRaid2/Queen1.java
++++ b/src/l1j/server/IndunSystem/BossRaid2/Queen1.java
+@@ -122,7 +122,7 @@ public class Queen1 implements Runnable {
+ 		if (cal.get(Calendar.AM_PM) == 0) {
+ 			오전오후 = "오전";
+ 		}
+-		ThreadPool.getInstance().schedule(this, 2000);
++		ThreadPool.getInstance().scheduleRequired(this, 2000);
+ 		// System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) +
+ 		// "분" + " ■■■■■■ 얼음의여왕 시작 " + _map+" ■■■■■■");
+ 		System.out.println("" + 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■얼음의여왕 시작■맵:" + _map + "■");
+diff --git a/src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java b/src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java
+index 61d8a2f..d796024 100644
+--- a/src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java
++++ b/src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java
+@@ -79,7 +79,7 @@ public class Azmodan implements Runnable {
+ 	}
+ 
+ 	public void Start() {
+-		ThreadPool.getInstance().schedule(this, 2000);
++		ThreadPool.getInstance().scheduleRequired(this, 2000);
+ 	}
+ 	
+ 	private void Check() {
+diff --git a/src/l1j/server/IndunSystem/FanstasyIsland/FantasyIsland.java b/src/l1j/server/IndunSystem/FanstasyIsland/FantasyIsland.java
+index c5170e1..ad27979 100644
+--- a/src/l1j/server/IndunSystem/FanstasyIsland/FantasyIsland.java
++++ b/src/l1j/server/IndunSystem/FanstasyIsland/FantasyIsland.java
+@@ -441,7 +441,7 @@ public class FantasyIsland implements Runnable {
+ 		if (cal.get(Calendar.AM_PM) == 0) {
+ 			오전오후 = "오전";
+ 		}
+-		ThreadPool.getInstance().schedule(this, 2000);
++		ThreadPool.getInstance().scheduleRequired(this, 2000);
+ 		System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■중앙사원 시작■캐릭터:"+pc.getName()+"■맵:"+_map+"■");
+ 	}
+ 	private void endRaid(){
+diff --git a/src/l1j/server/IndunSystem/Hadin/HadinTrap.java b/src/l1j/server/IndunSystem/Hadin/HadinTrap.java
+index 5d1efdd..f6f05e1 100644
+--- a/src/l1j/server/IndunSystem/Hadin/HadinTrap.java
++++ b/src/l1j/server/IndunSystem/Hadin/HadinTrap.java
+@@ -57,7 +57,7 @@ public class HadinTrap implements Runnable {
+ 	public HadinTrap(short id){
+ 		_map = (short)id;
+ 		doorList = new HashMap<String, L1DoorInstance>();
+-		ThreadPool.getInstance().schedule(this, 5000);
++		ThreadPool.getInstance().scheduleRequired(this, 5000);
+ 	}
+ 
+ 	@Override
+diff --git a/src/l1j/server/IndunSystem/Ice/Demon/Demon.java b/src/l1j/server/IndunSystem/Ice/Demon/Demon.java
+index 4f240c2..73bb303 100644
+--- a/src/l1j/server/IndunSystem/Ice/Demon/Demon.java
++++ b/src/l1j/server/IndunSystem/Ice/Demon/Demon.java
+@@ -99,7 +99,7 @@ public class Demon implements Runnable {
+ 		if (cal.get(Calendar.AM_PM) == 0) {
+ 			오전오후 = "오전";
+ 		}
+-		ThreadPool.getInstance().schedule(this, 2000);
++		ThreadPool.getInstance().scheduleRequired(this, 2000);
+ //	  System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■■■■■■ 아이스데몬 시작 " +  _map+" ■■■■■■");
+ 	System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■아이스데몬 시작■맵:"+_map+"■");
+ 	}
+diff --git a/src/l1j/server/IndunSystem/Ice/Queen/Queen.java b/src/l1j/server/IndunSystem/Ice/Queen/Queen.java
+index 60c46c2..d47a952 100644
+--- a/src/l1j/server/IndunSystem/Ice/Queen/Queen.java
++++ b/src/l1j/server/IndunSystem/Ice/Queen/Queen.java
+@@ -100,7 +100,7 @@ public class Queen implements Runnable {
+ 		if (cal.get(Calendar.AM_PM) == 0) {
+ 			오전오후 = "오전";
+ 		}
+-		ThreadPool.getInstance().schedule(this, 2000);
++		ThreadPool.getInstance().scheduleRequired(this, 2000);
+ 		// System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) +
+ 		// "분" + " ■■■■■■ 얼음의여왕 시작 " + _map+" ■■■■■■");
+ 		System.out.println("" + 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■얼음의여왕 시작■맵:" + _map + "■");
+diff --git a/src/l1j/server/IndunSystem/ValakasRoom/ValakasStart.java b/src/l1j/server/IndunSystem/ValakasRoom/ValakasStart.java
+index 0fbfffe..c5762bc 100644
+--- a/src/l1j/server/IndunSystem/ValakasRoom/ValakasStart.java
++++ b/src/l1j/server/IndunSystem/ValakasRoom/ValakasStart.java
+@@ -197,7 +197,7 @@ public class ValakasStart implements Runnable {
+ 		if (cal.get(Calendar.AM_PM) == 0) {
+ 			오전오후 = "오전";
+ 		}
+-		ThreadPool.getInstance().schedule(this,2000);
++		ThreadPool.getInstance().scheduleRequired(this,2000);
+ //	        System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■■■■■■ 화룡안식처 시작 " +  _map+" ■■■■■■");
+ 	        System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■화룡안식처 시작■캐릭터:"+pc.getName()+"■맵:"+_map+"■");
+ 	}
+diff --git a/src/l1j/server/MJCaptchaSystem/MJCaptcha.java b/src/l1j/server/MJCaptchaSystem/MJCaptcha.java
+index 7ff19b6..67f9362 100644
+--- a/src/l1j/server/MJCaptchaSystem/MJCaptcha.java
++++ b/src/l1j/server/MJCaptchaSystem/MJCaptcha.java
+@@ -148,7 +148,7 @@ public class MJCaptcha {
+         set_is_answer(false);
+         set_relay_count(0);
+         l1j.server.server.packets.Protocol.Proto.sendRaw(pc, c_data.get_bytes());
+-        ThreadPool.getInstance().schedule(new Runnable(){
++        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+             @Override
+             public void run(){
+                 if(is_answer()){
+diff --git a/src/l1j/server/MJCombatSystem/Games/MJBattleTournamentObserver.java b/src/l1j/server/MJCombatSystem/Games/MJBattleTournamentObserver.java
+index 99e6921..fab36d5 100644
+--- a/src/l1j/server/MJCombatSystem/Games/MJBattleTournamentObserver.java
++++ b/src/l1j/server/MJCombatSystem/Games/MJBattleTournamentObserver.java
+@@ -82,7 +82,7 @@ public class MJBattleTournamentObserver extends MJCombatObserver{
+ 			long ready_seconds = _combat_info.get_ready_seconds();
+ 			
+ 			_start_sec = (System.currentTimeMillis() / 1000L) + ready_seconds;
+-			ThreadPool.getInstance().schedule(this, ready_seconds * 1000L);
++			ThreadPool.getInstance().scheduleRequired(this, ready_seconds * 1000L);
+ 		}
+ 		return this;
+ 	}
+@@ -254,7 +254,7 @@ public class MJBattleTournamentObserver extends MJCombatObserver{
+ 							}else{
+ 								set_is_last_level(true);
+ 								_areas[team_id][round_id + 1].do_complete();
+-								ThreadPool.getInstance().schedule(new Runnable(){
++								ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 									@Override
+ 									public void run(){
+ 										_areas[team_id][round_id + 1].do_boss_spawn();										
+@@ -272,7 +272,7 @@ public class MJBattleTournamentObserver extends MJCombatObserver{
+ 							.setMaxCount(1)
+ 							.setDice(-1)
+ 							.build(rt.x, rt.y, _copyMapId, -1);
+-							ThreadPool.getInstance().schedule(new Runnable(){
++							ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 								@Override
+ 								public void run(){
+ 									set_status(MJEStatus.DISPOSING);
+diff --git a/src/l1j/server/MJCombatSystem/MJCombatObserver.java b/src/l1j/server/MJCombatSystem/MJCombatObserver.java
+index fa8ec5e..6fc2bce 100644
+--- a/src/l1j/server/MJCombatSystem/MJCombatObserver.java
++++ b/src/l1j/server/MJCombatSystem/MJCombatObserver.java
+@@ -179,7 +179,7 @@ public abstract class MJCombatObserver extends MJAbstractCopyMapObserver impleme
+         final int copy_map_id = _copyMapId;
+         final TeamKda[] team_kda = _team_kda;
+         final L1Party[] parties	= _parties;
+-        ThreadPool.getInstance().schedule(new Runnable(){
++        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+             @Override
+             public void run(){
+                 try{
+@@ -261,7 +261,7 @@ public abstract class MJCombatObserver extends MJAbstractCopyMapObserver impleme
+             long ready_seconds = _combat_info.get_ready_seconds();
+             
+             _start_sec = (System.currentTimeMillis() / 1000L) + ready_seconds;
+-            ThreadPool.getInstance().schedule(this, ready_seconds * 1000L);
++            ThreadPool.getInstance().scheduleRequired(this, ready_seconds * 1000L);
+         }
+         return this;
+     }
+@@ -296,7 +296,7 @@ public abstract class MJCombatObserver extends MJAbstractCopyMapObserver impleme
+         pc.start_teleport(rt.x, rt.y, _copyMapId, pc.getHeading(), 169, true, false);
+         
+         final int enter_team_id = next_id;
+-        ThreadPool.getInstance().schedule(new Runnable(){
++        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+             @Override
+             public void run(){
+                 MJPacketFactory.sendTime(pc, _start_sec - (System.currentTimeMillis() / 1000L));
+@@ -381,7 +381,7 @@ public abstract class MJCombatObserver extends MJAbstractCopyMapObserver impleme
+             
+             ++index;
+         }
+-        ThreadPool.getInstance().schedule(new Runnable(){
++        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+             @Override
+             public void run(){
+                 for(L1PcInstance pc : L1World.getInstance().getVisiblePlayers(_copyMapId)){
+@@ -680,7 +680,7 @@ public abstract class MJCombatObserver extends MJAbstractCopyMapObserver impleme
+         dispose_users();
+         _box_attr = null;
+         _team_box_attr = null;
+-        ThreadPool.getInstance().schedule(new Runnable(){
++        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+             @Override
+             public void run(){
+                 MJCombatObserver.super.dispose();				
+diff --git a/src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java b/src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java
+index 31113ae..00ddf14 100644
+--- a/src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java
++++ b/src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java
+@@ -108,7 +108,7 @@ public class MJRaidAntaras extends MJRaidObject{
+ 				_boss = _bossSpawn.spawnBoss(getCopyMapId());
+ 			
+ 			_state = RS_START;
+-			ThreadPool.getInstance().schedule(this, MJRaidLoadManager.MRS_MESSAGE_DELAY);
++			ThreadPool.getInstance().scheduleRequired(this, MJRaidLoadManager.MRS_MESSAGE_DELAY);
+ 		}catch(Exception e){
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java b/src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java
+index 1711dc6..b9c3795 100644
+--- a/src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java
++++ b/src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java
+@@ -112,7 +112,7 @@ public class MJRaidFafurion extends MJRaidObject{
+ 				_boss = _bossSpawn.spawnBoss(getCopyMapId());
+ 			
+ 			_state = RS_START;
+-			ThreadPool.getInstance().schedule(this, MJRaidLoadManager.MRS_MESSAGE_DELAY);
++			ThreadPool.getInstance().scheduleRequired(this, MJRaidLoadManager.MRS_MESSAGE_DELAY);
+ 		}catch(Exception e){
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java b/src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java
+index b75acbf..cfd0e6b 100644
+--- a/src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java
++++ b/src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java
+@@ -108,7 +108,7 @@ public class MJRaidRindvior extends MJRaidObject{
+ 				_boss = _bossSpawn.spawnBoss(getCopyMapId());
+ 			
+ 			_state = RS_START;
+-			ThreadPool.getInstance().schedule(this, MJRaidLoadManager.MRS_MESSAGE_DELAY);
++			ThreadPool.getInstance().scheduleRequired(this, MJRaidLoadManager.MRS_MESSAGE_DELAY);
+ 		}catch(Exception e){
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java b/src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java
+index 6428ce5..acf9b23 100644
+--- a/src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java
++++ b/src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java
+@@ -239,7 +239,7 @@ public class MJRaidValakas extends MJRaidObject{
+ 				createStartMeteor();
+ 				deleteFires(_fires);
+ 				_state = RS_START;
+-				ThreadPool.getInstance().schedule(this, MJRaidLoadManager.MRS_MESSAGE_DELAY);
++				ThreadPool.getInstance().scheduleRequired(this, MJRaidLoadManager.MRS_MESSAGE_DELAY);
+ 			}
+ 		}catch(Exception e){
+ 			e.printStackTrace();
+diff --git a/src/l1j/server/MJRaidSystem/Util/L1MJRaidPoisonInstance.java b/src/l1j/server/MJRaidSystem/Util/L1MJRaidPoisonInstance.java
+index a018296..134f02d 100644
+--- a/src/l1j/server/MJRaidSystem/Util/L1MJRaidPoisonInstance.java
++++ b/src/l1j/server/MJRaidSystem/Util/L1MJRaidPoisonInstance.java
+@@ -68,7 +68,7 @@ public class L1MJRaidPoisonInstance extends L1NpcInstance{
+ 					int dmg = ThreadLocalRandom.current().nextInt(150) + 50;
+ 					L1DamagePoison.doInfection(getOwner() == null ? _poison : getOwner(), pc, 3000, dmg, false,30000);
+ 				}
+-				ThreadPool.getInstance().schedule(this, INTERVAL);
++				ThreadPool.getInstance().scheduleRequired(this, INTERVAL);
+ 			}catch(Exception e){
+ 				e.printStackTrace();
+ 			}
+diff --git a/src/l1j/server/MJSurveySystem/MJSurveyFactory.java b/src/l1j/server/MJSurveySystem/MJSurveyFactory.java
+index 6cef590..ffff842 100644
+--- a/src/l1j/server/MJSurveySystem/MJSurveyFactory.java
++++ b/src/l1j/server/MJSurveySystem/MJSurveyFactory.java
+@@ -107,7 +107,7 @@ public class MJSurveyFactory {
+ 					SC_NotificationMessage.send(t, SC_NotificationMessage.DISPLAY_POSITION_BOTTOM,
+ 							message, notificationRgb, duration_second);
+ 				});
+-				ThreadPool.getInstance().schedule(new Runnable(){
++				ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 					@Override
+ 					public void run(){
+ 						isMegaphoneSpeaking = false;
+diff --git a/src/l1j/server/MJSurveySystem/MJSurveySystemLoader.java b/src/l1j/server/MJSurveySystem/MJSurveySystemLoader.java
+index 4ca1846..6cd6414 100644
+--- a/src/l1j/server/MJSurveySystem/MJSurveySystemLoader.java
++++ b/src/l1j/server/MJSurveySystem/MJSurveySystemLoader.java
+@@ -39,7 +39,7 @@ public class MJSurveySystemLoader {
+ 			return false;
+ 		
+ 		_surveys.put(num, survey);
+-		ThreadPool.getInstance().schedule(new Runnable(){
++		ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 			@Override
+ 			public void run(){
+ 				_surveys.remove(num);
+diff --git a/src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java b/src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java
+index 94cf8f6..e4c998e 100644
+--- a/src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java
++++ b/src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java
+@@ -222,7 +222,7 @@ public class MJL1LiftGateInstance extends L1Object{
+ 
+ 	public void takeClose(long l){
+ 		down();
+-		ThreadPool.getInstance().schedule(new Runnable(){
++		ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 			@Override
+ 			public void run(){
+ 				up();
+diff --git a/src/l1j/server/MJTemplate/Trap/DisplayEffectTrap.java b/src/l1j/server/MJTemplate/Trap/DisplayEffectTrap.java
+index e078d79..8941e16 100644
+--- a/src/l1j/server/MJTemplate/Trap/DisplayEffectTrap.java
++++ b/src/l1j/server/MJTemplate/Trap/DisplayEffectTrap.java
+@@ -32,7 +32,7 @@ public class DisplayEffectTrap extends AbstractTrap{
+ 		}
+ 		
+ 		if(asset_id == SC_DisplayEffect.QUAKE_DISPLAY){
+-			ThreadPool.getInstance().schedule(new Runnable(){
++			ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 				@Override
+ 				public void run(){
+ 					for(L1PcInstance pc : pc_array){
+diff --git a/src/l1j/server/MJWarSystem/MJCastleWar.java b/src/l1j/server/MJWarSystem/MJCastleWar.java
+index eea72b3..e910c34 100644
+--- a/src/l1j/server/MJWarSystem/MJCastleWar.java
++++ b/src/l1j/server/MJWarSystem/MJCastleWar.java
+@@ -196,7 +196,7 @@ public class MJCastleWar extends MJWar {
+                 MJCastleWarBusiness.move(pc);
+                 SC_CastleMaster.send(pc, _castleId, nextDefense.getLeaderId());
+             }
+-            ThreadPool.getInstance().schedule(new Runnable(){
++            ThreadPool.getInstance().scheduleRequired(new Runnable(){
+                 @Override
+                 public void run(){
+                     try{
+diff --git a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java
+index e75f6ea..42b540b 100644
+--- a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java
++++ b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java
+@@ -37,7 +37,10 @@ public class DominanceFloorLv1 implements Runnable {
+ 	private static final int EVENT = 1;
+ 	private static final int END = 2;
+ 
+-	private boolean Running = false;
++	private volatile boolean Running = false;
++    private java.util.concurrent.Future<?> eventTask;
++    private boolean eventRunning;
++    private long eventGeneration;
+ 
+ 	private int Time = 3600;
+ 
+@@ -53,9 +56,13 @@ public class DominanceFloorLv1 implements Runnable {
+ 		_effid = effectid;
+ 	}
+ 
+-	public void setReady(boolean flag) {
+-		Running = flag;
+-	}
++	public synchronized void setReady(boolean flag) {
++        Running = flag;
++        if (!flag) {
++            eventGeneration++;
++            if (eventTask != null) eventTask.cancel(true);
++        }
++    }
+ 
+ 	public boolean isReady() {
+ 		return Running;
+@@ -63,7 +70,18 @@ public class DominanceFloorLv1 implements Runnable {
+ 
+ 	@Override
+ 	public void run() {
+-		while (Running) {
++        final long generation;
++        synchronized (this) { generation = eventGeneration; }
++        runEvent(generation);
++    }
++
++    private void runEvent(long generation) {
++        synchronized (this) {
++            if (generation != eventGeneration || !Running || eventRunning) return;
++            eventRunning = true;
++        }
++        try {
++		while (Running && !Thread.currentThread().isInterrupted()) {
+ 			try {
+ 				TimeCheck();
+ 				switch (stage) {
+@@ -91,23 +109,35 @@ public class DominanceFloorLv1 implements Runnable {
+ 				default:
+ 					break;
+ 				}
+-			} catch (Exception e) {
++			} catch (InterruptedException interrupted) {
++                Thread.currentThread().interrupt();
++                Running = false;
++            } catch (Exception e) {
+ 				e.printStackTrace();
+ 			} finally {
+ 				try {
+ 					Thread.sleep(1000);
+-				} catch (Exception e) {
+-					e.printStackTrace();
+-				}
++                } catch (InterruptedException interrupted) {
++                    Thread.currentThread().interrupt();
++                    Running = false;
++                }
+ 			}
+ 		}
+-		reset();
++        } finally {
++            try { reset(); }
++            finally {
++                synchronized (this) { Running = false; eventRunning = false; }
++            }
++        }
+ 	}
+ 
+-	public void Start() {
+-		ThreadPool.getInstance().schedule(this, 5000);
+-		reset();
+-		setReady(true);
++	public synchronized void Start() {
++        if (Running || eventRunning) return;
++        reset();
++        Running = true;
++        final long generation = ++eventGeneration;
++        try { eventTask = ThreadPool.getInstance().scheduleBlocking(() -> runEvent(generation), 5000); }
++        catch (RuntimeException failure) { Running = false; throw failure; }
+ 		if (!Config.STANDBY_SERVER) {
+ 			if (_isment) {
+ 				SC_SystemMessage.broadcast(_ment);
+@@ -210,6 +240,8 @@ public class DominanceFloorLv1 implements Runnable {
+ 			npc.getLight().turnOnOffLight();
+ 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
+ 
++		} catch (InterruptedException interrupted) {
++            Thread.currentThread().interrupt();
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java
+index c836034..be5c66a 100644
+--- a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java
++++ b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java
+@@ -37,7 +37,10 @@ public class DominanceFloorLv10 implements Runnable {
+ 	private static final int EVENT = 1;
+ 	private static final int END = 2;
+ 
+-	private boolean Running = false;
++	private volatile boolean Running = false;
++    private java.util.concurrent.Future<?> eventTask;
++    private boolean eventRunning;
++    private long eventGeneration;
+ 
+ 	private int Time = 3600;
+ 
+@@ -53,9 +56,13 @@ public class DominanceFloorLv10 implements Runnable {
+ 		_effid = effectid;
+ 	}
+ 
+-	public void setReady(boolean flag) {
+-		Running = flag;
+-	}
++	public synchronized void setReady(boolean flag) {
++        Running = flag;
++        if (!flag) {
++            eventGeneration++;
++            if (eventTask != null) eventTask.cancel(true);
++        }
++    }
+ 
+ 	public boolean isReady() {
+ 		return Running;
+@@ -63,7 +70,18 @@ public class DominanceFloorLv10 implements Runnable {
+ 
+ 	@Override
+ 	public void run() {
+-		while (Running) {
++        final long generation;
++        synchronized (this) { generation = eventGeneration; }
++        runEvent(generation);
++    }
++
++    private void runEvent(long generation) {
++        synchronized (this) {
++            if (generation != eventGeneration || !Running || eventRunning) return;
++            eventRunning = true;
++        }
++        try {
++		while (Running && !Thread.currentThread().isInterrupted()) {
+ 			try {
+ 				TimeCheck();
+ 				switch (stage) {
+@@ -91,22 +109,34 @@ public class DominanceFloorLv10 implements Runnable {
+ 				default:
+ 					break;
+ 				}
+-			} catch (Exception e) {
++			} catch (InterruptedException interrupted) {
++                Thread.currentThread().interrupt();
++                Running = false;
++            } catch (Exception e) {
+ 			} finally {
+ 				try {
+ 					Thread.sleep(1000);
+-				} catch (Exception e) {
+-					e.printStackTrace();
+-				}
++                } catch (InterruptedException interrupted) {
++                    Thread.currentThread().interrupt();
++                    Running = false;
++                }
+ 			}
+ 		}
+-		reset();
++        } finally {
++            try { reset(); }
++            finally {
++                synchronized (this) { Running = false; eventRunning = false; }
++            }
++        }
+ 	}
+ 
+-	public void Start() {
+-		ThreadPool.getInstance().schedule(this, 5000);
+-		reset();
+-		setReady(true);
++	public synchronized void Start() {
++        if (Running || eventRunning) return;
++        reset();
++        Running = true;
++        final long generation = ++eventGeneration;
++        try { eventTask = ThreadPool.getInstance().scheduleBlocking(() -> runEvent(generation), 5000); }
++        catch (RuntimeException failure) { Running = false; throw failure; }
+ 		if (!Config.STANDBY_SERVER) {
+ 			if (_isment) {
+ 				SC_SystemMessage.broadcast(_ment);
+@@ -213,6 +243,8 @@ public class DominanceFloorLv10 implements Runnable {
+ 			npc.getLight().turnOnOffLight();
+ 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
+ 
++		} catch (InterruptedException interrupted) {
++            Thread.currentThread().interrupt();
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java
+index 7fbae28..34ca0a3 100644
+--- a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java
++++ b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java
+@@ -41,7 +41,10 @@ public class DominanceFloorLv11 implements Runnable {
+ 	private static final int EVENT2 = 2;
+ 	private static final int END = 3;
+ 
+-	private boolean Running = false;
++	private volatile boolean Running = false;
++    private java.util.concurrent.Future<?> eventTask;
++    private boolean eventRunning;
++    private long eventGeneration;
+ 
+ 	private int Time = 3600;
+ 
+@@ -57,9 +60,13 @@ public class DominanceFloorLv11 implements Runnable {
+ 		_effid = effectid;
+ 	}
+ 
+-	public void setReady(boolean flag) {
+-		Running = flag;
+-	}
++	public synchronized void setReady(boolean flag) {
++        Running = flag;
++        if (!flag) {
++            eventGeneration++;
++            if (eventTask != null) eventTask.cancel(true);
++        }
++    }
+ 
+ 	public boolean isReady() {
+ 		return Running;
+@@ -67,7 +74,18 @@ public class DominanceFloorLv11 implements Runnable {
+ 
+ 	@Override
+ 	public void run() {
+-		while (Running) {
++        final long generation;
++        synchronized (this) { generation = eventGeneration; }
++        runEvent(generation);
++    }
++
++    private void runEvent(long generation) {
++        synchronized (this) {
++            if (generation != eventGeneration || !Running || eventRunning) return;
++            eventRunning = true;
++        }
++        try {
++		while (Running && !Thread.currentThread().isInterrupted()) {
+ 			try {
+ 				TimeCheck();
+ 				switch (stage) {
+@@ -129,23 +147,35 @@ public class DominanceFloorLv11 implements Runnable {
+ 				default:
+ 					break;
+ 				}
+-			} catch (Exception e) {
++			} catch (InterruptedException interrupted) {
++                Thread.currentThread().interrupt();
++                Running = false;
++            } catch (Exception e) {
+ 				e.printStackTrace();
+ 			} finally {
+ 				try {
+ 					Thread.sleep(1000);
+-				} catch (Exception e) {
+-					e.printStackTrace();
+-				}
++                } catch (InterruptedException interrupted) {
++                    Thread.currentThread().interrupt();
++                    Running = false;
++                }
+ 			}
+ 		}
+-		reset();
++        } finally {
++            try { reset(); }
++            finally {
++                synchronized (this) { Running = false; eventRunning = false; }
++            }
++        }
+ 	}
+ 
+-	public void Start() {
+-		ThreadPool.getInstance().schedule(this, 5000);
+-		reset();
+-		setReady(true);
++	public synchronized void Start() {
++        if (Running || eventRunning) return;
++        reset();
++        Running = true;
++        final long generation = ++eventGeneration;
++        try { eventTask = ThreadPool.getInstance().scheduleBlocking(() -> runEvent(generation), 5000); }
++        catch (RuntimeException failure) { Running = false; throw failure; }
+ 		if (!Config.STANDBY_SERVER) {
+ 			if (_isment) {
+ 				SC_SystemMessage.broadcast(_ment);
+@@ -337,6 +367,8 @@ public class DominanceFloorLv11 implements Runnable {
+ 			npc.getLight().turnOnOffLight();
+ 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
+ 
++		} catch (InterruptedException interrupted) {
++            Thread.currentThread().interrupt();
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java
+index cdd9533..de9bb3b 100644
+--- a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java
++++ b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java
+@@ -37,7 +37,10 @@ public class DominanceFloorLv2 implements Runnable {
+ 	private static final int EVENT = 1;
+ 	private static final int END = 2;
+ 
+-	private boolean Running = false;
++	private volatile boolean Running = false;
++    private java.util.concurrent.Future<?> eventTask;
++    private boolean eventRunning;
++    private long eventGeneration;
+ 
+ 	private int Time = 3600;
+ 
+@@ -53,9 +56,13 @@ public class DominanceFloorLv2 implements Runnable {
+ 		_effid = effectid;
+ 	}
+ 
+-	public void setReady(boolean flag) {
+-		Running = flag;
+-	}
++	public synchronized void setReady(boolean flag) {
++        Running = flag;
++        if (!flag) {
++            eventGeneration++;
++            if (eventTask != null) eventTask.cancel(true);
++        }
++    }
+ 
+ 	public boolean isReady() {
+ 		return Running;
+@@ -63,7 +70,18 @@ public class DominanceFloorLv2 implements Runnable {
+ 
+ 	@Override
+ 	public void run() {
+-		while (Running) {
++        final long generation;
++        synchronized (this) { generation = eventGeneration; }
++        runEvent(generation);
++    }
++
++    private void runEvent(long generation) {
++        synchronized (this) {
++            if (generation != eventGeneration || !Running || eventRunning) return;
++            eventRunning = true;
++        }
++        try {
++		while (Running && !Thread.currentThread().isInterrupted()) {
+ 			try {
+ 				TimeCheck();
+ 				switch (stage) {
+@@ -91,22 +109,34 @@ public class DominanceFloorLv2 implements Runnable {
+ 				default:
+ 					break;
+ 				}
+-			} catch (Exception e) {
++			} catch (InterruptedException interrupted) {
++                Thread.currentThread().interrupt();
++                Running = false;
++            } catch (Exception e) {
+ 			} finally {
+ 				try {
+ 					Thread.sleep(1000);
+-				} catch (Exception e) {
+-					e.printStackTrace();
+-				}
++                } catch (InterruptedException interrupted) {
++                    Thread.currentThread().interrupt();
++                    Running = false;
++                }
+ 			}
+ 		}
+-		reset();
++        } finally {
++            try { reset(); }
++            finally {
++                synchronized (this) { Running = false; eventRunning = false; }
++            }
++        }
+ 	}
+ 
+-	public void Start() {
+-		ThreadPool.getInstance().schedule(this, 5000);
+-		reset();
+-		setReady(true);
++	public synchronized void Start() {
++        if (Running || eventRunning) return;
++        reset();
++        Running = true;
++        final long generation = ++eventGeneration;
++        try { eventTask = ThreadPool.getInstance().scheduleBlocking(() -> runEvent(generation), 5000); }
++        catch (RuntimeException failure) { Running = false; throw failure; }
+ 		if (!Config.STANDBY_SERVER) {
+ 			if (_isment) {
+ 				SC_SystemMessage.broadcast(_ment);
+@@ -212,6 +242,8 @@ public class DominanceFloorLv2 implements Runnable {
+ 			npc.getLight().turnOnOffLight();
+ 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
+ 
++		} catch (InterruptedException interrupted) {
++            Thread.currentThread().interrupt();
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java
+index 702cf94..3543567 100644
+--- a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java
++++ b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java
+@@ -37,7 +37,10 @@ public class DominanceFloorLv3 implements Runnable {
+ 	private static final int EVENT = 1;
+ 	private static final int END = 2;
+ 
+-	private boolean Running = false;
++	private volatile boolean Running = false;
++    private java.util.concurrent.Future<?> eventTask;
++    private boolean eventRunning;
++    private long eventGeneration;
+ 
+ 	private int Time = 3600;
+ 
+@@ -53,9 +56,13 @@ public class DominanceFloorLv3 implements Runnable {
+ 		_effid = effectid;
+ 	}
+ 
+-	public void setReady(boolean flag) {
+-		Running = flag;
+-	}
++	public synchronized void setReady(boolean flag) {
++        Running = flag;
++        if (!flag) {
++            eventGeneration++;
++            if (eventTask != null) eventTask.cancel(true);
++        }
++    }
+ 
+ 	public boolean isReady() {
+ 		return Running;
+@@ -63,7 +70,18 @@ public class DominanceFloorLv3 implements Runnable {
+ 
+ 	@Override
+ 	public void run() {
+-		while (Running) {
++        final long generation;
++        synchronized (this) { generation = eventGeneration; }
++        runEvent(generation);
++    }
++
++    private void runEvent(long generation) {
++        synchronized (this) {
++            if (generation != eventGeneration || !Running || eventRunning) return;
++            eventRunning = true;
++        }
++        try {
++		while (Running && !Thread.currentThread().isInterrupted()) {
+ 			try {
+ 				TimeCheck();
+ 				switch (stage) {
+@@ -91,22 +109,34 @@ public class DominanceFloorLv3 implements Runnable {
+ 				default:
+ 					break;
+ 				}
+-			} catch (Exception e) {
++			} catch (InterruptedException interrupted) {
++                Thread.currentThread().interrupt();
++                Running = false;
++            } catch (Exception e) {
+ 			} finally {
+ 				try {
+ 					Thread.sleep(1000);
+-				} catch (Exception e) {
+-					e.printStackTrace();
+-				}
++                } catch (InterruptedException interrupted) {
++                    Thread.currentThread().interrupt();
++                    Running = false;
++                }
+ 			}
+ 		}
+-		reset();
++        } finally {
++            try { reset(); }
++            finally {
++                synchronized (this) { Running = false; eventRunning = false; }
++            }
++        }
+ 	}
+ 
+-	public void Start() {
+-		ThreadPool.getInstance().schedule(this, 5000);
+-		reset();
+-		setReady(true);
++	public synchronized void Start() {
++        if (Running || eventRunning) return;
++        reset();
++        Running = true;
++        final long generation = ++eventGeneration;
++        try { eventTask = ThreadPool.getInstance().scheduleBlocking(() -> runEvent(generation), 5000); }
++        catch (RuntimeException failure) { Running = false; throw failure; }
+ 		if (!Config.STANDBY_SERVER) {
+ 			if (_isment) {
+ 				SC_SystemMessage.broadcast(_ment);
+@@ -212,6 +242,8 @@ public class DominanceFloorLv3 implements Runnable {
+ 			npc.getLight().turnOnOffLight();
+ 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
+ 
++		} catch (InterruptedException interrupted) {
++            Thread.currentThread().interrupt();
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java
+index 222fa6f..437a389 100644
+--- a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java
++++ b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java
+@@ -37,7 +37,10 @@ public class DominanceFloorLv4 implements Runnable {
+ 	private static final int EVENT = 1;
+ 	private static final int END = 2;
+ 
+-	private boolean Running = false;
++	private volatile boolean Running = false;
++    private java.util.concurrent.Future<?> eventTask;
++    private boolean eventRunning;
++    private long eventGeneration;
+ 
+ 	private int Time = 3600;
+ 
+@@ -53,9 +56,13 @@ public class DominanceFloorLv4 implements Runnable {
+ 		_effid = effectid;
+ 	}
+ 
+-	public void setReady(boolean flag) {
+-		Running = flag;
+-	}
++	public synchronized void setReady(boolean flag) {
++        Running = flag;
++        if (!flag) {
++            eventGeneration++;
++            if (eventTask != null) eventTask.cancel(true);
++        }
++    }
+ 
+ 	public boolean isReady() {
+ 		return Running;
+@@ -63,7 +70,18 @@ public class DominanceFloorLv4 implements Runnable {
+ 
+ 	@Override
+ 	public void run() {
+-		while (Running) {
++        final long generation;
++        synchronized (this) { generation = eventGeneration; }
++        runEvent(generation);
++    }
++
++    private void runEvent(long generation) {
++        synchronized (this) {
++            if (generation != eventGeneration || !Running || eventRunning) return;
++            eventRunning = true;
++        }
++        try {
++		while (Running && !Thread.currentThread().isInterrupted()) {
+ 			try {
+ 				TimeCheck();
+ 				switch (stage) {
+@@ -91,22 +109,34 @@ public class DominanceFloorLv4 implements Runnable {
+ 				default:
+ 					break;
+ 				}
+-			} catch (Exception e) {
++			} catch (InterruptedException interrupted) {
++                Thread.currentThread().interrupt();
++                Running = false;
++            } catch (Exception e) {
+ 			} finally {
+ 				try {
+ 					Thread.sleep(1000);
+-				} catch (Exception e) {
+-					e.printStackTrace();
+-				}
++                } catch (InterruptedException interrupted) {
++                    Thread.currentThread().interrupt();
++                    Running = false;
++                }
+ 			}
+ 		}
+-		reset();
++        } finally {
++            try { reset(); }
++            finally {
++                synchronized (this) { Running = false; eventRunning = false; }
++            }
++        }
+ 	}
+ 
+-	public void Start() {
+-		ThreadPool.getInstance().schedule(this, 5000);
+-		reset();
+-		setReady(true);
++	public synchronized void Start() {
++        if (Running || eventRunning) return;
++        reset();
++        Running = true;
++        final long generation = ++eventGeneration;
++        try { eventTask = ThreadPool.getInstance().scheduleBlocking(() -> runEvent(generation), 5000); }
++        catch (RuntimeException failure) { Running = false; throw failure; }
+ 		if (!Config.STANDBY_SERVER) {
+ 			if (_isment) {
+ 				SC_SystemMessage.broadcast(_ment);
+@@ -212,6 +242,8 @@ public class DominanceFloorLv4 implements Runnable {
+ 			npc.getLight().turnOnOffLight();
+ 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
+ 
++		} catch (InterruptedException interrupted) {
++            Thread.currentThread().interrupt();
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java
+index e89d7b9..8e120c8 100644
+--- a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java
++++ b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java
+@@ -37,7 +37,10 @@ public class DominanceFloorLv5 implements Runnable {
+ 	private static final int EVENT = 1;
+ 	private static final int END = 2;
+ 
+-	private boolean Running = false;
++	private volatile boolean Running = false;
++    private java.util.concurrent.Future<?> eventTask;
++    private boolean eventRunning;
++    private long eventGeneration;
+ 
+ 	private int Time = 3600;
+ 
+@@ -53,9 +56,13 @@ public class DominanceFloorLv5 implements Runnable {
+ 		_effid = effectid;
+ 	}
+ 
+-	public void setReady(boolean flag) {
+-		Running = flag;
+-	}
++	public synchronized void setReady(boolean flag) {
++        Running = flag;
++        if (!flag) {
++            eventGeneration++;
++            if (eventTask != null) eventTask.cancel(true);
++        }
++    }
+ 
+ 	public boolean isReady() {
+ 		return Running;
+@@ -63,7 +70,18 @@ public class DominanceFloorLv5 implements Runnable {
+ 
+ 	@Override
+ 	public void run() {
+-		while (Running) {
++        final long generation;
++        synchronized (this) { generation = eventGeneration; }
++        runEvent(generation);
++    }
++
++    private void runEvent(long generation) {
++        synchronized (this) {
++            if (generation != eventGeneration || !Running || eventRunning) return;
++            eventRunning = true;
++        }
++        try {
++		while (Running && !Thread.currentThread().isInterrupted()) {
+ 			try {
+ 				TimeCheck();
+ 				switch (stage) {
+@@ -91,22 +109,34 @@ public class DominanceFloorLv5 implements Runnable {
+ 				default:
+ 					break;
+ 				}
+-			} catch (Exception e) {
++			} catch (InterruptedException interrupted) {
++                Thread.currentThread().interrupt();
++                Running = false;
++            } catch (Exception e) {
+ 			} finally {
+ 				try {
+ 					Thread.sleep(1000);
+-				} catch (Exception e) {
+-					e.printStackTrace();
+-				}
++                } catch (InterruptedException interrupted) {
++                    Thread.currentThread().interrupt();
++                    Running = false;
++                }
+ 			}
+ 		}
+-		reset();
++        } finally {
++            try { reset(); }
++            finally {
++                synchronized (this) { Running = false; eventRunning = false; }
++            }
++        }
+ 	}
+ 
+-	public void Start() {
+-		ThreadPool.getInstance().schedule(this, 5000);
+-		reset();
+-		setReady(true);
++	public synchronized void Start() {
++        if (Running || eventRunning) return;
++        reset();
++        Running = true;
++        final long generation = ++eventGeneration;
++        try { eventTask = ThreadPool.getInstance().scheduleBlocking(() -> runEvent(generation), 5000); }
++        catch (RuntimeException failure) { Running = false; throw failure; }
+ 		if (!Config.STANDBY_SERVER) {
+ 			if (_isment) {
+ 				SC_SystemMessage.broadcast(_ment);
+@@ -212,6 +242,8 @@ public class DominanceFloorLv5 implements Runnable {
+ 			npc.getLight().turnOnOffLight();
+ 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
+ 
++		} catch (InterruptedException interrupted) {
++            Thread.currentThread().interrupt();
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java
+index ae3d9b3..031e9b2 100644
+--- a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java
++++ b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java
+@@ -37,7 +37,10 @@ public class DominanceFloorLv6 implements Runnable {
+ 	private static final int EVENT = 1;
+ 	private static final int END = 2;
+ 
+-	private boolean Running = false;
++	private volatile boolean Running = false;
++    private java.util.concurrent.Future<?> eventTask;
++    private boolean eventRunning;
++    private long eventGeneration;
+ 
+ 	private int Time = 3600;
+ 
+@@ -53,9 +56,13 @@ public class DominanceFloorLv6 implements Runnable {
+ 		_effid = effectid;
+ 	}
+ 
+-	public void setReady(boolean flag) {
+-		Running = flag;
+-	}
++	public synchronized void setReady(boolean flag) {
++        Running = flag;
++        if (!flag) {
++            eventGeneration++;
++            if (eventTask != null) eventTask.cancel(true);
++        }
++    }
+ 
+ 	public boolean isReady() {
+ 		return Running;
+@@ -63,7 +70,18 @@ public class DominanceFloorLv6 implements Runnable {
+ 
+ 	@Override
+ 	public void run() {
+-		while (Running) {
++        final long generation;
++        synchronized (this) { generation = eventGeneration; }
++        runEvent(generation);
++    }
++
++    private void runEvent(long generation) {
++        synchronized (this) {
++            if (generation != eventGeneration || !Running || eventRunning) return;
++            eventRunning = true;
++        }
++        try {
++		while (Running && !Thread.currentThread().isInterrupted()) {
+ 			try {
+ 				TimeCheck();
+ 				switch (stage) {
+@@ -91,22 +109,34 @@ public class DominanceFloorLv6 implements Runnable {
+ 				default:
+ 					break;
+ 				}
+-			} catch (Exception e) {
++			} catch (InterruptedException interrupted) {
++                Thread.currentThread().interrupt();
++                Running = false;
++            } catch (Exception e) {
+ 			} finally {
+ 				try {
+ 					Thread.sleep(1000);
+-				} catch (Exception e) {
+-					e.printStackTrace();
+-				}
++                } catch (InterruptedException interrupted) {
++                    Thread.currentThread().interrupt();
++                    Running = false;
++                }
+ 			}
+ 		}
+-		reset();
++        } finally {
++            try { reset(); }
++            finally {
++                synchronized (this) { Running = false; eventRunning = false; }
++            }
++        }
+ 	}
+ 
+-	public void Start() {
+-		ThreadPool.getInstance().schedule(this, 5000);
+-		reset();
+-		setReady(true);
++	public synchronized void Start() {
++        if (Running || eventRunning) return;
++        reset();
++        Running = true;
++        final long generation = ++eventGeneration;
++        try { eventTask = ThreadPool.getInstance().scheduleBlocking(() -> runEvent(generation), 5000); }
++        catch (RuntimeException failure) { Running = false; throw failure; }
+ 		if (!Config.STANDBY_SERVER) {
+ 			if (_isment) {
+ 				SC_SystemMessage.broadcast(_ment);
+@@ -212,6 +242,8 @@ public class DominanceFloorLv6 implements Runnable {
+ 			npc.getLight().turnOnOffLight();
+ 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
+ 
++		} catch (InterruptedException interrupted) {
++            Thread.currentThread().interrupt();
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java
+index e5cbfb3..3667ab0 100644
+--- a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java
++++ b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java
+@@ -37,7 +37,10 @@ public class DominanceFloorLv7 implements Runnable {
+ 	private static final int EVENT = 1;
+ 	private static final int END = 2;
+ 
+-	private boolean Running = false;
++	private volatile boolean Running = false;
++    private java.util.concurrent.Future<?> eventTask;
++    private boolean eventRunning;
++    private long eventGeneration;
+ 
+ 	private int Time = 3600;
+ 
+@@ -53,9 +56,13 @@ public class DominanceFloorLv7 implements Runnable {
+ 		_effid = effectid;
+ 	}
+ 
+-	public void setReady(boolean flag) {
+-		Running = flag;
+-	}
++	public synchronized void setReady(boolean flag) {
++        Running = flag;
++        if (!flag) {
++            eventGeneration++;
++            if (eventTask != null) eventTask.cancel(true);
++        }
++    }
+ 
+ 	public boolean isReady() {
+ 		return Running;
+@@ -63,7 +70,18 @@ public class DominanceFloorLv7 implements Runnable {
+ 
+ 	@Override
+ 	public void run() {
+-		while (Running) {
++        final long generation;
++        synchronized (this) { generation = eventGeneration; }
++        runEvent(generation);
++    }
++
++    private void runEvent(long generation) {
++        synchronized (this) {
++            if (generation != eventGeneration || !Running || eventRunning) return;
++            eventRunning = true;
++        }
++        try {
++		while (Running && !Thread.currentThread().isInterrupted()) {
+ 			try {
+ 				TimeCheck();
+ 				switch (stage) {
+@@ -91,22 +109,34 @@ public class DominanceFloorLv7 implements Runnable {
+ 				default:
+ 					break;
+ 				}
+-			} catch (Exception e) {
++			} catch (InterruptedException interrupted) {
++                Thread.currentThread().interrupt();
++                Running = false;
++            } catch (Exception e) {
+ 			} finally {
+ 				try {
+ 					Thread.sleep(1000);
+-				} catch (Exception e) {
+-					e.printStackTrace();
+-				}
++                } catch (InterruptedException interrupted) {
++                    Thread.currentThread().interrupt();
++                    Running = false;
++                }
+ 			}
+ 		}
+-		reset();
++        } finally {
++            try { reset(); }
++            finally {
++                synchronized (this) { Running = false; eventRunning = false; }
++            }
++        }
+ 	}
+ 
+-	public void Start() {
+-		ThreadPool.getInstance().schedule(this, 5000);
+-		reset();
+-		setReady(true);
++	public synchronized void Start() {
++        if (Running || eventRunning) return;
++        reset();
++        Running = true;
++        final long generation = ++eventGeneration;
++        try { eventTask = ThreadPool.getInstance().scheduleBlocking(() -> runEvent(generation), 5000); }
++        catch (RuntimeException failure) { Running = false; throw failure; }
+ 		if (!Config.STANDBY_SERVER) {
+ 			if (_isment) {
+ 				SC_SystemMessage.broadcast(_ment);
+@@ -212,6 +242,8 @@ public class DominanceFloorLv7 implements Runnable {
+ 			npc.getLight().turnOnOffLight();
+ 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
+ 
++		} catch (InterruptedException interrupted) {
++            Thread.currentThread().interrupt();
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java
+index 83f4de2..f40fb19 100644
+--- a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java
++++ b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java
+@@ -37,7 +37,10 @@ public class DominanceFloorLv8 implements Runnable {
+ 	private static final int EVENT = 1;
+ 	private static final int END = 2;
+ 
+-	private boolean Running = false;
++	private volatile boolean Running = false;
++    private java.util.concurrent.Future<?> eventTask;
++    private boolean eventRunning;
++    private long eventGeneration;
+ 
+ 	private int Time = 3600;
+ 
+@@ -53,9 +56,13 @@ public class DominanceFloorLv8 implements Runnable {
+ 		_effid = effectid;
+ 	}
+ 
+-	public void setReady(boolean flag) {
+-		Running = flag;
+-	}
++	public synchronized void setReady(boolean flag) {
++        Running = flag;
++        if (!flag) {
++            eventGeneration++;
++            if (eventTask != null) eventTask.cancel(true);
++        }
++    }
+ 
+ 	public boolean isReady() {
+ 		return Running;
+@@ -63,7 +70,18 @@ public class DominanceFloorLv8 implements Runnable {
+ 
+ 	@Override
+ 	public void run() {
+-		while (Running) {
++        final long generation;
++        synchronized (this) { generation = eventGeneration; }
++        runEvent(generation);
++    }
++
++    private void runEvent(long generation) {
++        synchronized (this) {
++            if (generation != eventGeneration || !Running || eventRunning) return;
++            eventRunning = true;
++        }
++        try {
++		while (Running && !Thread.currentThread().isInterrupted()) {
+ 			try {
+ 				TimeCheck();
+ 				switch (stage) {
+@@ -91,22 +109,34 @@ public class DominanceFloorLv8 implements Runnable {
+ 				default:
+ 					break;
+ 				}
+-			} catch (Exception e) {
++			} catch (InterruptedException interrupted) {
++                Thread.currentThread().interrupt();
++                Running = false;
++            } catch (Exception e) {
+ 			} finally {
+ 				try {
+ 					Thread.sleep(1000);
+-				} catch (Exception e) {
+-					e.printStackTrace();
+-				}
++                } catch (InterruptedException interrupted) {
++                    Thread.currentThread().interrupt();
++                    Running = false;
++                }
+ 			}
+ 		}
+-		reset();
++        } finally {
++            try { reset(); }
++            finally {
++                synchronized (this) { Running = false; eventRunning = false; }
++            }
++        }
+ 	}
+ 
+-	public void Start() {
+-		ThreadPool.getInstance().schedule(this, 5000);
+-		reset();
+-		setReady(true);
++	public synchronized void Start() {
++        if (Running || eventRunning) return;
++        reset();
++        Running = true;
++        final long generation = ++eventGeneration;
++        try { eventTask = ThreadPool.getInstance().scheduleBlocking(() -> runEvent(generation), 5000); }
++        catch (RuntimeException failure) { Running = false; throw failure; }
+ 		if (!Config.STANDBY_SERVER) {
+ 			if (_isment) {
+ 				SC_SystemMessage.broadcast(_ment);
+@@ -211,6 +241,8 @@ public class DominanceFloorLv8 implements Runnable {
+ 			npc.getLight().turnOnOffLight();
+ 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
+ 
++		} catch (InterruptedException interrupted) {
++            Thread.currentThread().interrupt();
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java
+index de589f6..18205c6 100644
+--- a/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java
++++ b/src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java
+@@ -37,7 +37,10 @@ public class DominanceFloorLv9 implements Runnable {
+ 	private static final int EVENT = 1;
+ 	private static final int END = 2;
+ 
+-	private boolean Running = false;
++	private volatile boolean Running = false;
++    private java.util.concurrent.Future<?> eventTask;
++    private boolean eventRunning;
++    private long eventGeneration;
+ 
+ 	private int Time = 3600;
+ 
+@@ -53,9 +56,13 @@ public class DominanceFloorLv9 implements Runnable {
+ 		_effid = effectid;
+ 	}
+ 
+-	public void setReady(boolean flag) {
+-		Running = flag;
+-	}
++	public synchronized void setReady(boolean flag) {
++        Running = flag;
++        if (!flag) {
++            eventGeneration++;
++            if (eventTask != null) eventTask.cancel(true);
++        }
++    }
+ 
+ 	public boolean isReady() {
+ 		return Running;
+@@ -63,7 +70,18 @@ public class DominanceFloorLv9 implements Runnable {
+ 
+ 	@Override
+ 	public void run() {
+-		while (Running) {
++        final long generation;
++        synchronized (this) { generation = eventGeneration; }
++        runEvent(generation);
++    }
++
++    private void runEvent(long generation) {
++        synchronized (this) {
++            if (generation != eventGeneration || !Running || eventRunning) return;
++            eventRunning = true;
++        }
++        try {
++		while (Running && !Thread.currentThread().isInterrupted()) {
+ 			try {
+ 				TimeCheck();
+ 				switch (stage) {
+@@ -91,22 +109,34 @@ public class DominanceFloorLv9 implements Runnable {
+ 				default:
+ 					break;
+ 				}
+-			} catch (Exception e) {
++			} catch (InterruptedException interrupted) {
++                Thread.currentThread().interrupt();
++                Running = false;
++            } catch (Exception e) {
+ 			} finally {
+ 				try {
+ 					Thread.sleep(1000);
+-				} catch (Exception e) {
+-					e.printStackTrace();
+-				}
++                } catch (InterruptedException interrupted) {
++                    Thread.currentThread().interrupt();
++                    Running = false;
++                }
+ 			}
+ 		}
+-		reset();
++        } finally {
++            try { reset(); }
++            finally {
++                synchronized (this) { Running = false; eventRunning = false; }
++            }
++        }
+ 	}
+ 
+-	public void Start() {
+-		ThreadPool.getInstance().schedule(this, 5000);
+-		reset();
+-		setReady(true);
++	public synchronized void Start() {
++        if (Running || eventRunning) return;
++        reset();
++        Running = true;
++        final long generation = ++eventGeneration;
++        try { eventTask = ThreadPool.getInstance().scheduleBlocking(() -> runEvent(generation), 5000); }
++        catch (RuntimeException failure) { Running = false; throw failure; }
+ 		if (!Config.STANDBY_SERVER) {
+ 			if (_isment) {
+ 				SC_SystemMessage.broadcast(_ment);
+@@ -211,6 +241,8 @@ public class DominanceFloorLv9 implements Runnable {
+ 			npc.getLight().turnOnOffLight();
+ 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
+ 
++		} catch (InterruptedException interrupted) {
++            Thread.currentThread().interrupt();
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+diff --git a/src/l1j/server/server/Announcecycle.java b/src/l1j/server/server/Announcecycle.java
+index ded8454..90fd34a 100644
+--- a/src/l1j/server/server/Announcecycle.java
++++ b/src/l1j/server/server/Announcecycle.java
+@@ -115,7 +115,7 @@ public class Announcecycle {
+ 
+ 	public void doAnnouncecycle() {
+ 		AnnouncTask rs = new AnnouncTask();
+-		ThreadPool.getInstance().scheduleAtFixedRate(rs, 180000,	60000 * Config.Show_Announcecycle_Time);
++		ThreadPool.getInstance().scheduleAtFixedRateRequired(rs, 180000,	60000 * Config.Show_Announcecycle_Time);
+ 
+ 	}
+ 
+diff --git a/src/l1j/server/server/Controller/BossController.java b/src/l1j/server/server/Controller/BossController.java
+index a390107..072e488 100644
+--- a/src/l1j/server/server/Controller/BossController.java
++++ b/src/l1j/server/server/Controller/BossController.java
+@@ -107,7 +107,7 @@ public final class BossController {
+         //    _log.warning(String.format("[BossController] 스폰 시각 계산 실패 npcId=%d name=%s version=%d — 10분 후 재시도",
+       //              boss.getNpcId(), boss.getMonName(), version));
+ //
+-            ThreadPool.getInstance().schedule(new Runnable() {
++            ThreadPool.getInstance().scheduleRequired(new Runnable() {
+                 @Override
+                 public void run() {
+                     if (version != SCHEDULE_VERSION.get()) {
+@@ -129,7 +129,7 @@ public final class BossController {
+ 
+         final long finalDelay = delayMs + jitterMs;
+ 
+-        ThreadPool.getInstance().schedule(new Runnable() {
++        ThreadPool.getInstance().scheduleRequired(new Runnable() {
+             @Override
+             public void run() {
+                 /*
+@@ -253,7 +253,7 @@ public final class BossController {
+                 _log.warning(String.format("[BossController] 스폰 실패 npcId=%d name=%s — 10분 후 재시도",
+                         boss.getNpcId(), boss.getMonName()));
+ 
+-                ThreadPool.getInstance().schedule(new Runnable() {
++                ThreadPool.getInstance().scheduleRequired(new Runnable() {
+                     @Override
+                     public void run() {
+                         if (version != SCHEDULE_VERSION.get()) {
+@@ -499,7 +499,7 @@ public final class BossController {
+                 }
+ 
+                 final int spawnedNpcId = npc.getNpcId();
+-                ThreadPool.getInstance().schedule(new Runnable() {
++                ThreadPool.getInstance().scheduleRequired(new Runnable() {
+                     @Override
+                     public void run() {
+                         for (final L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+diff --git a/src/l1j/server/server/Controller/BugRaceController.java b/src/l1j/server/server/Controller/BugRaceController.java
+index 84e0869..bc765f3 100644
+--- a/src/l1j/server/server/Controller/BugRaceController.java
++++ b/src/l1j/server/server/Controller/BugRaceController.java
+@@ -643,7 +643,7 @@ public class BugRaceController implements Runnable, TimeListener {
+ 
+ 	private void scheduleTicketCloseCountdown() {
+ 		final int epoch = clockEpoch;
+-		ThreadPool.getInstance().schedule(new Runnable() {
++		ThreadPool.getInstance().scheduleRequired(new Runnable() {
+ 			private int remain = 30;
+ 
+ 			@Override
+@@ -657,7 +657,7 @@ public class BugRaceController implements Runnable, TimeListener {
+ 					if (remain > 0) {
+ 						broadcastBox(String.format("판매 마감 : %d 초 전", remain));
+ 						--remain;
+-						ThreadPool.getInstance().schedule(this, 1000L);
++						ThreadPool.getInstance().scheduleRequired(this, 1000L);
+ 						return;
+ 					}
+ 
+@@ -1009,7 +1009,7 @@ public class BugRaceController implements Runnable, TimeListener {
+ 				_first = _littleBugBear[i].getName();
+ 				SetWinRaceTicketPrice(_ticket[i], _ration[i]);
+ 				AddWinCount(i);
+-				ThreadPool.getInstance().schedule(new Runnable(){
++				ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 					@Override
+ 					public void run(){
+ 						우승자멘트(String.format("제 %d회 우승자는 '%s' 입니다.", _round, _littleBugBear[i].getNameId()));						
+diff --git a/src/l1j/server/server/GMCommands.java b/src/l1j/server/server/GMCommands.java
+index bb49569..04f42f6 100644
+--- a/src/l1j/server/server/GMCommands.java
++++ b/src/l1j/server/server/GMCommands.java
+@@ -5442,7 +5442,7 @@ private void 퀘스트멘트(L1PcInstance gm, String param) {
+ 			SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "당신의 계정내 현재 캐릭터가 압류 되었습니다.");
+ 			SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "\\f3-------------------------------------------------------------------");
+ 			pc.sendPackets("\\f1당신의 계정내 현재 캐릭터가 압류 되었습니다.");
+-			ThreadPool.getInstance().schedule(new DelayRestart(pc), 3000);
++			ThreadPool.getInstance().scheduleRequired(new DelayRestart(pc), 3000);
+ 		} catch (Exception e) {
+ 			gm.sendPackets(".캐릭압류 [압류 캐릭터이름]");
+ 		} finally {
+diff --git a/src/l1j/server/server/GameServer.java b/src/l1j/server/server/GameServer.java
+index 8f38554..b9c5326 100644
+--- a/src/l1j/server/server/GameServer.java
++++ b/src/l1j/server/server/GameServer.java
+@@ -510,7 +510,31 @@ public class GameServer {
+ 		}
+ 	}
+ 
+-	public void shutdown() {
++    private final Object resourceShutdownLock = new Object();
++    private boolean resourcesShutdown;
++    private int resourceShutdownStatus;
++
++    public void shutdown() {
++        final int status = shutdownResources();
++        System.exit(status);
++    }
++
++    /** The JVM hook must return instead of calling System.exit recursively. */
++    public void shutdownFromHook() {
++        shutdownResources();
++    }
++
++    private int shutdownResources() {
++        synchronized (resourceShutdownLock) {
++            if (!resourcesShutdown) {
++                resourceShutdownStatus = shutdownResourcesOnce();
++                resourcesShutdown = true;
++            }
++            return resourceShutdownStatus;
++        }
++    }
++
++    private int shutdownResourcesOnce() {
+ 	    Throwable fatal = null;
+ 	    try {
+ 	        Server.stopNewConnections();
+@@ -572,7 +596,13 @@ public class GameServer {
+ 	        // stale periodic callbacks must not retain listeners/game objects.
+ 	        L1GameTimeClock.stop();
+ 	        RealTimeClock.stop();
+-	        ThreadPool.getInstance().shutdown();
++            // Keep storage alive until every accepted instant job has finished.
++            ThreadPool pool = ThreadPool.getInstance();
++            while (!pool.shutdown(30L, java.util.concurrent.TimeUnit.SECONDS)) {
++                System.err.println("[ThreadPool] Waiting for accepted tasks to finish before storage shutdown");
++                if (Thread.currentThread().isInterrupted())
++                    throw new IllegalStateException("Interrupted while waiting for ThreadPool shutdown");
++            }
+ 
+ 	        CacheD cache = CacheD.getInstance();
+ 	        while (!cache.shutdown(30_000L)) {
+@@ -608,8 +638,8 @@ public class GameServer {
+ 	                Thread.currentThread().interrupt();
+ 	            }
+ 	        }
+-	        System.exit(fatal != null ? 1 : 0);
+ 	    }
++        return fatal != null ? 1 : 0;
+ 	}
+ 
+ 
+diff --git a/src/l1j/server/server/Shutdown.java b/src/l1j/server/server/Shutdown.java
+index 0fdc34f..0e31d44 100644
+--- a/src/l1j/server/server/Shutdown.java
++++ b/src/l1j/server/server/Shutdown.java
+@@ -121,10 +121,12 @@ public class Shutdown extends Thread {
+ 			switch (shutdownMode) {
+ 			case GM_SHUTDOWN:
+ 				_instance.setMode(GM_SHUTDOWN);
++				ThreadPool.getInstance().detachCurrentDedicatedThreadForJvmExit();
+ 				System.exit(0);
+ 				break;
+ 			case GM_RESTART:
+ 				_instance.setMode(GM_RESTART);
++				ThreadPool.getInstance().detachCurrentDedicatedThreadForJvmExit();
+ 				System.exit(1);
+ 				break;
+ 			}
+@@ -157,7 +159,7 @@ public class Shutdown extends Thread {
+ 		// the main instance should only run for shutdown hook, so we start a
+ 		// new instance
+ 		_counterInstance = new Shutdown(seconds, restart);
+-		ThreadPool.getInstance().execute(_counterInstance);
++		ThreadPool.getInstance().startDedicatedThread(_counterInstance);
+ 	}
+ 
+ 	/**
+@@ -286,15 +288,9 @@ public class Shutdown extends Thread {
+ 		}
+ 		_an.announceToAll("Server is is " + _modeText[shutdownMode] + " NOW! bye bye");
+ 
+-		// we cannt abort shutdown anymore, so i removed the "if"
+-		Server.stopNewConnections();
+-		GameServer.getInstance().disconnectAllCharacters();
+-		try {
+-			int delay = 500;
+-			Thread.sleep(delay);
+-		} catch (InterruptedException e) {
+-			// never happens :p
+-		}
++        // GM/SIGTERM must use the same transport/owner/pool/storage drain as
++        // direct shutdown. This hook returns; GameServer must not re-enter exit.
++        GameServer.getInstance().shutdownFromHook();
+ 	}
+ 
+ 	public void startTelnetShutdown(String IP, int seconds, boolean restart) {
+@@ -309,7 +305,7 @@ public class Shutdown extends Thread {
+ 			_counterInstance._abort();
+ 		}
+ 		_counterInstance = new Shutdown(seconds, restart);
+-		ThreadPool.getInstance().execute(_counterInstance);
++		ThreadPool.getInstance().startDedicatedThread(_counterInstance);
+ 	}
+ 
+ 	/**
+diff --git a/src/l1j/server/server/ThreadPool.java b/src/l1j/server/server/ThreadPool.java
+index 96b8ac4..650bfa5 100644
+--- a/src/l1j/server/server/ThreadPool.java
++++ b/src/l1j/server/server/ThreadPool.java
+@@ -1,6 +1,11 @@
+ package l1j.server.server;
+ 
+ import java.util.concurrent.LinkedBlockingQueue;
++import java.util.concurrent.Future;
++import java.util.concurrent.FutureTask;
++import java.util.concurrent.Semaphore;
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.Set;
+ import java.util.concurrent.Callable;
+ import java.util.concurrent.RejectedExecutionException;
+ import java.util.concurrent.RejectedExecutionHandler;
+@@ -32,6 +37,27 @@ public class ThreadPool {
+ 	private ScheduledThreadPoolExecutor _scheduler;
+ 	private ThreadPoolExecutor _instantPool;
+ 	private ScheduledThreadPoolExecutor _highPriorityScheduler;
++    private final Object lifecycle = new Object();
++    private volatile boolean stopping;
++    private final Semaphore blockingSlots = new Semaphore(256);
++    private final Set<BlockingTask> blockingTasks = ConcurrentHashMap.newKeySet();
++    private final Set<Thread> dedicatedThreads = ConcurrentHashMap.newKeySet();
++    private static final int MAX_DEDICATED_THREADS = 64;
++    private static final ThreadLocal<Boolean> WORKER = new ThreadLocal<>();
++
++    private static java.util.concurrent.ThreadFactory workerFactory(String name, int priority) {
++        final PacketThreadFactory factory = new PacketThreadFactory(name, priority);
++        return work -> factory.newThread(() -> {
++            WORKER.set(Boolean.TRUE);
++            try { work.run(); } finally { WORKER.remove(); }
++        });
++    }
++
++    public boolean isShutdown() { return stopping; }
++    private void requireOpen() {
++        if (stopping) throw new RejectedExecutionException("ThreadPool is stopping");
++    }
++
+ 
+ 	public static ThreadPool getInstance() {
+ 		if (_instance == null) {
+@@ -56,21 +82,25 @@ public class ThreadPool {
+ 		// 고우선순위 스케줄러 풀
+ 		_highPriorityScheduler = new BoundedScheduledExecutor(
+ 			highPrioritySize, HIGH_PRIORITY_PENDING_CAPACITY,
+-			new PacketThreadFactory("HighPriority Thread", Thread.MAX_PRIORITY),
++			workerFactory("HighPriority Thread", Thread.MAX_PRIORITY),
+ 			// A rejected deadline must never run on the caller (CIO/owner).
+ 			// Fail admission instead of returning a Future that never executes.
+ 			new ThreadPoolExecutor.AbortPolicy()
+ 		);
+ 		// Cancelled long-delay tasks must not retain their captured game objects.
+-		_highPriorityScheduler.setRemoveOnCancelPolicy(true);
++        _highPriorityScheduler.setRemoveOnCancelPolicy(true);
++        _highPriorityScheduler.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
++        _highPriorityScheduler.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+ 
+ 		// 메인 스케줄러 풀 (취소된 작업 자동 정리 및 거부 정책 적용)
+ 		_scheduler = new BoundedScheduledExecutor(
+ 			scheduledSize, SCHEDULED_PENDING_CAPACITY,
+-			new PacketThreadFactory("ScheduledThread", Thread.NORM_PRIORITY),
++			workerFactory("ScheduledThread", Thread.NORM_PRIORITY),
+ 			new ThreadPoolExecutor.AbortPolicy()
+ 		);
+-		_scheduler.setRemoveOnCancelPolicy(true);
++        _scheduler.setRemoveOnCancelPolicy(true);
++        _scheduler.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
++        _scheduler.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+ 		_scheduler.prestartAllCoreThreads();
+ 
+ 		// General instant work only. CIO shards, scheduler wheels and CacheD
+@@ -79,7 +109,7 @@ public class ThreadPool {
+ 			instantSize, Math.max(1, instantSize),
+ 			INSTANT_POOL_KEEP_ALIVE_MINUTES, TimeUnit.MINUTES,
+ 			new LinkedBlockingQueue<>(INSTANT_QUEUE_CAPACITY),
+-			new PacketThreadFactory("InstantThread", Thread.NORM_PRIORITY),
++			workerFactory("InstantThread", Thread.NORM_PRIORITY),
+ 			new ThreadPoolExecutor.AbortPolicy()
+ 		);
+ 		_instantPool.prestartAllCoreThreads();
+@@ -157,18 +187,122 @@ public class ThreadPool {
+ 		// No per-submission wrapper allocation. On task failure the existing
+ 		// PacketThreadFactory uncaught handler logs it; the JDK pool replaces
+ 		// a failed worker. Saturation/shutdown still throws to the submitter.
++        requireOpen();
+ 		_instantPool.execute(r);
+ 	}
+ 
+-	public void execute(Thread t) {
+-		if (t != null) {
+-			t.start();
+-		}
+-	}
++    /** Compatibility alias for legacy Thread subclasses; explicitly bounded and
++     * rejected after shutdown. New callers use startDedicatedThread(). */
++    @Deprecated
++    public void execute(Thread t) { if (t != null) startDedicatedThread(t); }
++
++    public void startDedicatedThread(Thread thread) {
++        if (thread == null) throw new NullPointerException("thread");
++        synchronized (lifecycle) {
++            requireOpen();
++            dedicatedThreads.removeIf(t -> !t.isAlive());
++            if (dedicatedThreads.size() >= MAX_DEDICATED_THREADS)
++                throw new RejectedExecutionException("Dedicated thread limit reached");
++            thread.start();
++            dedicatedThreads.add(thread);
++        }
++    }
++
++    /** A countdown calling System.exit waits for the JVM hook. Detach it just
++     * before exit so that hook can drain this pool without waiting on itself. */
++    public void detachCurrentDedicatedThreadForJvmExit() {
++        synchronized (lifecycle) { dedicatedThreads.remove(Thread.currentThread()); }
++    }
++
++    /** A bounded number of blocking jobs, each on its own virtual thread.
++     * Cancellation releases a reservation only after a running job really exits. */
++    public Future<?> scheduleBlocking(Runnable task, long delayMs) {
++        if (task == null) throw new NullPointerException("task");
++        synchronized (lifecycle) {
++            requireOpen();
++            if (!blockingSlots.tryAcquire())
++                throw new RejectedExecutionException("Blocking task limit reached");
++            final BlockingTask work = new BlockingTask(task);
++            blockingTasks.add(work);
++            try {
++                work.launch = _scheduler.schedule(() -> {
++                    if (stopping) { work.cancel(false); return; }
++                    try { Thread.ofVirtual().name("ManagedBlocking").start(work); }
++                    catch (Throwable failure) { work.cancel(false); throw failure; }
++                }, validateDelay(delayMs), TimeUnit.MILLISECONDS);
++                if (work.isCancelled()) work.launch.cancel(false);
++                return work;
++            } catch (RuntimeException | Error failure) {
++                work.cancel(false);
++                throw failure;
++            }
++        }
++    }
++
++    private final class BlockingTask extends FutureTask<Void> {
++        // 0=reserved, 1=running, 2=physically retired (not merely Future-cancelled).
++        private final java.util.concurrent.atomic.AtomicInteger state =
++                new java.util.concurrent.atomic.AtomicInteger();
++        volatile ScheduledFuture<?> launch;
++        BlockingTask(Runnable task) { super(task, null); }
++        @Override public void run() {
++            if (!state.compareAndSet(0, 1)) return;
++            WORKER.set(Boolean.TRUE);
++            try { super.run(); }
++            finally {
++                WORKER.remove();
++                if (state.compareAndSet(1, 2)) retire();
++            }
++        }
++        @Override protected void done() {
++            if (state.compareAndSet(0, 2)) retire();
++            if (!isCancelled()) {
++                try { get(); }
++                catch (java.util.concurrent.ExecutionException failed) {
++                    _log.log(Level.SEVERE, "Managed blocking task failed", failed.getCause());
++                } catch (InterruptedException interrupted) {
++                    Thread.currentThread().interrupt();
++                }
++            }
++        }
++        @Override public boolean cancel(boolean interrupt) {
++            final boolean result = super.cancel(interrupt);
++            final ScheduledFuture<?> timer = launch;
++            if (timer != null) timer.cancel(false);
++            return result;
++        }
++        private void retire() {
++            blockingTasks.remove(this);
++            blockingSlots.release();
++        }
++    }
++
++    /** Required scheduling exposes refusal to legacy fire-and-forget callers.
++     * Nullable schedule APIs remain available to callers that already check. */
++    public ScheduledFuture<?> scheduleRequired(Runnable r, long delay) {
++        return requireScheduled(schedule(r, delay));
++    }
++    public ScheduledFuture<?> scheduleAtFixedRateRequired(Runnable r, long delay, long period) {
++        return requireScheduled(scheduleAtFixedRate(r, delay, period));
++    }
++    public ScheduledFuture<?> scheduleAtFixedRateLongRequired(Runnable r, long delay, long period) {
++        return requireScheduled(scheduleAtFixedRateLong(r, delay, period));
++    }
++    public ScheduledFuture<?> scheduleWithFixedDelayRequired(Runnable r, long delay, long period) {
++        return requireScheduled(scheduleWithFixedDelay(r, delay, period));
++    }
++    public ScheduledFuture<?> schedulePriorityTaskAtFixedRateRequired(Runnable r, long delay, long period) {
++        return requireScheduled(schedulePriorityTaskAtFixedRate(r, delay, period));
++    }
++    private static ScheduledFuture<?> requireScheduled(ScheduledFuture<?> future) {
++        if (future == null) throw new RejectedExecutionException("Required scheduled task was not admitted");
++        return future;
++    }
+ 
+ 	public ScheduledFuture<?> schedule(Runnable r, long delay) {
+ 		if (r == null) return null;
+ 		try {
++			requireOpen();
+ 			return _scheduler.schedule(new RunnableWrapper(r), validateDelay(delay), TimeUnit.MILLISECONDS);
+ 		} catch (Exception e) {
+ 			_log.warning("ThreadPool: Failed to schedule task " + r.getClass().getSimpleName() + ": " + e.getMessage());
+@@ -179,6 +313,7 @@ public class ThreadPool {
+ 	public ScheduledFuture<?> scheduleAtFixedRate(Runnable r, long initialDelay, long period) {
+ 		if (r == null) return null;
+ 		try {
++			requireOpen();
+ 			return _scheduler.scheduleAtFixedRate(new RunnableWrapper(r), validateDelay(initialDelay), validateDelay(period), TimeUnit.MILLISECONDS);
+ 		} catch (Exception e) {
+ 			_log.warning("ThreadPool: Failed to schedule recurring task " + r.getClass().getSimpleName() + ": " + e.getMessage());
+@@ -190,6 +325,7 @@ public class ThreadPool {
+ 	public ScheduledFuture<?> scheduleWithFixedDelay(Runnable r, long initialDelay, long delay) {
+ 		if (r == null) return null;
+ 		try {
++			requireOpen();
+ 			return _scheduler.scheduleWithFixedDelay(new RunnableWrapper(r),
+ 					validateDelay(initialDelay), Math.max(1L, validateDelay(delay)), TimeUnit.MILLISECONDS);
+ 		} catch (Exception e) {
+@@ -208,6 +344,7 @@ public class ThreadPool {
+ 			return scheduleAtFixedRate(r, initialDelay, period);
+ 		}
+ 		try {
++			requireOpen();
+ 			return _highPriorityScheduler.scheduleAtFixedRate(new RunnableWrapper(r), validateDelay(initialDelay), validateDelay(period), TimeUnit.MILLISECONDS);
+ 		} catch (Exception e) {
+ 			_log.warning("ThreadPool: Failed to schedule high priority task " + r.getClass().getSimpleName() + ": " + e.getMessage());
+@@ -255,23 +392,53 @@ public class ThreadPool {
+ 	/**
+ 	 * 서버 종료 시 모든 스레드 풀을 안전하게 종료합니다.
+ 	 */
+-	public void shutdown() {
+-		if (_instance != null) {
+-			try {
+-			//	_log.info("ThreadPool: Shutting down all thread pools.");
+-				if (_instance._scheduler != null) {
+-					_instance._scheduler.shutdownNow();
+-				}
+-				if (_instance._instantPool != null) {
+-					_instance._instantPool.shutdownNow();
+-				}
+-				if (_instance._highPriorityScheduler != null) {
+-					_instance._highPriorityScheduler.shutdownNow();
+-				}
+-			} catch (Throwable t) {
+-				_log.log(Level.WARNING, "ThreadPool: Exception occurred during shutdown", t);
+-			}
+-		}
+-	}
+-
+-}
+\ No newline at end of file
++    public void shutdown() {
++        if (!shutdown(30L, TimeUnit.SECONDS))
++            throw new IllegalStateException("ThreadPool shutdown incomplete; accepted instant work retained");
++    }
++
++    /** Cancels background timers/managed blocking jobs, but drains every accepted
++     * instant job. Timeout reports failure and retains the queue for a later wait. */
++    public boolean shutdown(long timeout, TimeUnit unit) {
++        if (unit == null || timeout < 0L) throw new IllegalArgumentException("invalid shutdown budget");
++        if (Boolean.TRUE.equals(WORKER.get()))
++            throw new IllegalStateException("Pool worker cannot await its own pool shutdown");
++        final long started = System.nanoTime(), budget = unit.toNanos(timeout);
++        synchronized (lifecycle) {
++            if (!stopping) {
++                stopping = true;
++                for (BlockingTask task : blockingTasks) task.cancel(true);
++                for (Thread thread : dedicatedThreads)
++                    if (thread != Thread.currentThread()) thread.interrupt();
++                _scheduler.shutdown();
++                _highPriorityScheduler.shutdown();
++                _instantPool.shutdown();
++            }
++        }
++        try {
++            if (!awaitPool(_instantPool, started, budget)
++                    || !awaitPool(_scheduler, started, budget)
++                    || !awaitPool(_highPriorityScheduler, started, budget)) return false;
++            for (;;) {
++                dedicatedThreads.removeIf(t -> !t.isAlive());
++                boolean otherDedicated = false;
++                for (Thread t : dedicatedThreads)
++                    if (t != Thread.currentThread()) { otherDedicated = true; break; }
++                if (blockingTasks.isEmpty() && !otherDedicated) return true;
++                final long left = budget - (System.nanoTime() - started);
++                if (left <= 0L) return false;
++                TimeUnit.NANOSECONDS.sleep(Math.min(left, 1_000_000L));
++            }
++        } catch (InterruptedException interrupted) {
++            Thread.currentThread().interrupt();
++            return false;
++        }
++    }
++
++    private static boolean awaitPool(java.util.concurrent.ExecutorService pool,
++            long started, long budget) throws InterruptedException {
++        if (pool.isTerminated()) return true;
++        final long left = budget - (System.nanoTime() - started);
++        return left > 0L && pool.awaitTermination(left, TimeUnit.NANOSECONDS);
++    }
++}
+diff --git a/src/l1j/server/server/command/executor/L1AccountBanKick.java b/src/l1j/server/server/command/executor/L1AccountBanKick.java
+index b143a60..c3fa5ed 100644
+--- a/src/l1j/server/server/command/executor/L1AccountBanKick.java
++++ b/src/l1j/server/server/command/executor/L1AccountBanKick.java
+@@ -45,7 +45,7 @@ public class L1AccountBanKick implements L1CommandExecutor {
+ 				if (target.getOnlineStatus() == 1) {
+ 					SC_Disconnect.send(target);
+ 				}
+-				ThreadPool.getInstance().schedule(new Runnable(){
++				ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 					@Override
+ 					public void run(){
+ 						if(clnt != null && clnt.isConnected()){
+diff --git a/src/l1j/server/server/command/executor/L1ImPactGfxid.java b/src/l1j/server/server/command/executor/L1ImPactGfxid.java
+index 251e889..0d6aecb 100644
+--- a/src/l1j/server/server/command/executor/L1ImPactGfxid.java
++++ b/src/l1j/server/server/command/executor/L1ImPactGfxid.java
+@@ -86,7 +86,7 @@ public class L1ImPactGfxid implements L1CommandExecutor {
+ 				npc.setHomeY(npc.getY());
+ 				npc.setHeading(4);
+ 				L1World.getInstance().storeAndEnterWorld(npc);
+-				ThreadPool.getInstance().schedule(new Pact(npc, Pact), 1000);
++				ThreadPool.getInstance().scheduleRequired(new Pact(npc, Pact), 1000);
+ 
+ 				/** 1시간만 유지되도록 따로 처리 */
+ 				npc.startTimedDelete(60 * 60 * 1000);	
+@@ -121,7 +121,7 @@ public class L1ImPactGfxid implements L1CommandExecutor {
+ 			try{
+ 				if(_NpcInstance == null || _NpcInstance._destroyed) return;
+ 				SC_DoActionGFX.broadcast(_NpcInstance, _PactId);
+-				ThreadPool.getInstance().schedule(this, 3000);
++				ThreadPool.getInstance().scheduleRequired(this, 3000);
+ 			} catch (Exception e) {
+ 				e.printStackTrace();
+ 			}
+diff --git a/src/l1j/server/server/command/executor/L1ImPactGfxid1.java b/src/l1j/server/server/command/executor/L1ImPactGfxid1.java
+index 042f416..e7ade38 100644
+--- a/src/l1j/server/server/command/executor/L1ImPactGfxid1.java
++++ b/src/l1j/server/server/command/executor/L1ImPactGfxid1.java
+@@ -90,7 +90,7 @@ public class L1ImPactGfxid1 implements L1CommandExecutor {
+ 				npc.setHomeY(npc.getY());
+ 				npc.setHeading(4);
+ 				L1World.getInstance().storeAndEnterWorld(npc);
+-				ThreadPool.getInstance().schedule(new Pact(npc, Pact), 1000);
++				ThreadPool.getInstance().scheduleRequired(new Pact(npc, Pact), 1000);
+ 				npc.startTimedDelete(60 * 60 * 1000);	
+ 			}
+ 		} catch (Exception exception) {
+@@ -115,7 +115,7 @@ public class L1ImPactGfxid1 implements L1CommandExecutor {
+ 			try{
+ 				if(_NpcInstance == null || _NpcInstance._destroyed) return;
+ 				SC_DoActionGFX.broadcast(_NpcInstance, _PactId);
+-				ThreadPool.getInstance().schedule(this, 3000);
++				ThreadPool.getInstance().scheduleRequired(this, 3000);
+ 			} catch (Exception e) {
+ 				e.printStackTrace();
+ 			}
+diff --git a/src/l1j/server/server/command/executor/change.java b/src/l1j/server/server/command/executor/change.java
+index d211ded..9c7a291 100644
+--- a/src/l1j/server/server/command/executor/change.java
++++ b/src/l1j/server/server/command/executor/change.java
+@@ -87,7 +87,7 @@ public class change implements L1CommandExecutor {
+ 			pc.getInventory().removeItem(123124, 1);
+ 			pc.save();
+ 
+-			ThreadPool.getInstance().schedule(new Runnable() {
++			ThreadPool.getInstance().scheduleRequired(new Runnable() {
+ 				@Override
+ 				public void run() {
+ 					CIOClient clnt = pc.getNetConnection();
+diff --git a/src/l1j/server/server/model/Attendance/AttendanceLoadManager.java b/src/l1j/server/server/model/Attendance/AttendanceLoadManager.java
+index 6e4f59d..f01a71b 100644
+--- a/src/l1j/server/server/model/Attendance/AttendanceLoadManager.java
++++ b/src/l1j/server/server/model/Attendance/AttendanceLoadManager.java
+@@ -209,7 +209,7 @@ public class AttendanceLoadManager implements MJCommand{
+ 			case 3:{
+ 				args.notify("2초 후 모든 출석체크 정보가 초기화됩니다.");
+ 				AttendanceScheduler.getInstance().dispose();
+-				ThreadPool.getInstance().schedule(new Runnable(){
++				ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 					@Override
+ 					public void run(){
+ 						L1World.getInstance().getAllPlayerStream()
+diff --git a/src/l1j/server/server/model/ElementalStoneGenerator.java b/src/l1j/server/server/model/ElementalStoneGenerator.java
+index 835c988..9217c14 100644
+--- a/src/l1j/server/server/model/ElementalStoneGenerator.java
++++ b/src/l1j/server/server/model/ElementalStoneGenerator.java
+@@ -119,7 +119,7 @@ public class ElementalStoneGenerator implements Runnable {
+ 				}
+ 
+ 				// thread 최적화 관련. sleep 난무는 좀 없애자. -- Mazik
+-				ThreadPool.getInstance().schedule(this, INTERVAL * 1000); // 일정시간마다 설치
++				ThreadPool.getInstance().scheduleRequired(this, INTERVAL * 1000); // 일정시간마다 설치
+ 			}
+ 		} catch (Throwable e) {
+ 			e.printStackTrace();
+diff --git a/src/l1j/server/server/model/Instance/L1CompanionInstance.java b/src/l1j/server/server/model/Instance/L1CompanionInstance.java
+index 953785c..679029a 100644
+--- a/src/l1j/server/server/model/Instance/L1CompanionInstance.java
++++ b/src/l1j/server/server/model/Instance/L1CompanionInstance.java
+@@ -867,7 +867,7 @@ public class L1CompanionInstance extends L1NpcInstance{
+         set_friend_ship_guage(0);
+         add_friend_ship_marble(CompanionSettings.FRIEND_SHIP_TO_MARBLE);
+         update_friend_ship_marble();
+-        ThreadPool.getInstance().schedule(new Runnable(){
++        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+             @Override
+             public void run(){
+                 if(!get_is_combo_time())
+@@ -1096,7 +1096,7 @@ public class L1CompanionInstance extends L1NpcInstance{
+         if(m_master != null)
+             SC_CompanionStatusNoti.send(m_master, this, MJCompanionUpdateFlag.UPDATE_ALL);
+ 
+-        ThreadPool.getInstance().schedule(() -> {
++        ThreadPool.getInstance().scheduleRequired(() -> {
+             if(isDead() && getCurrentHp() <= 0 && L1World.getInstance().contains_companion(getId())){
+                 if(m_master != null)
+                     m_master.remove_companion();
+diff --git a/src/l1j/server/server/model/Instance/L1DoorInstance.java b/src/l1j/server/server/model/Instance/L1DoorInstance.java
+index 3c579ae..9491dfc 100644
+--- a/src/l1j/server/server/model/Instance/L1DoorInstance.java
++++ b/src/l1j/server/server/model/Instance/L1DoorInstance.java
+@@ -276,14 +276,14 @@ public class L1DoorInstance extends L1NpcInstance {
+ 		if (getOpenStatus() == ActionCodes.ACTION_Close) {
+ 			isPassibleDoor(true);//하딘 시스템
+ 			if (this.getDoorId() == 113 || this.getDoorId() == 125){					
+-				ThreadPool.getInstance().schedule(new DoorTimer(), 5000);
++				ThreadPool.getInstance().scheduleRequired(new DoorTimer(), 5000);
+ 			}
+ 			// 말하는 섬 던전 2층 보스문 시간 5분
+ 			if (this.getDoorId() >= 4100 && this.getDoorId() <= 4111){
+-				ThreadPool.getInstance().schedule(new DoorTimer(), 300000);
++				ThreadPool.getInstance().scheduleRequired(new DoorTimer(), 300000);
+ 			}
+ 			if (this.getDoorId() >= 8001 && this.getDoorId() <= 8010) {
+-				ThreadPool.getInstance().schedule(new DoorTimer(), 1800000);
++				ThreadPool.getInstance().scheduleRequired(new DoorTimer(), 1800000);
+ 			}
+ 			SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Open);
+ 			setOpenStatus(ActionCodes.ACTION_Open);
+diff --git a/src/l1j/server/server/model/Instance/L1GuardianInstance.java b/src/l1j/server/server/model/Instance/L1GuardianInstance.java
+index b8da43a..0643b70 100644
+--- a/src/l1j/server/server/model/Instance/L1GuardianInstance.java
++++ b/src/l1j/server/server/model/Instance/L1GuardianInstance.java
+@@ -208,7 +208,7 @@ public class L1GuardianInstance extends L1NpcInstance {
+ 				setRest(true);
+ 			}
+ 
+-			ThreadPool.getInstance().schedule(new RestMonitor(), REST_MILLISEC);
++			ThreadPool.getInstance().scheduleRequired(new RestMonitor(), REST_MILLISEC);
+ 		}
+ 	}
+ 
+diff --git a/src/l1j/server/server/model/Instance/L1ItemInstance.java b/src/l1j/server/server/model/Instance/L1ItemInstance.java
+index 4bfde8f..14b90d5 100644
+--- a/src/l1j/server/server/model/Instance/L1ItemInstance.java
++++ b/src/l1j/server/server/model/Instance/L1ItemInstance.java
+@@ -9340,7 +9340,7 @@ public class L1ItemInstance extends L1Object {
+ 	public void startEquipmentTimer(L1PcInstance pc) {
+ 		if (getRemainingTime() > 0) {
+ 			_equipmentTimer = new L1EquipmentTimer(pc, this, 1000);
+-			ThreadPool.getInstance().schedule(_equipmentTimer, 1000);
++			ThreadPool.getInstance().scheduleRequired(_equipmentTimer, 1000);
+ 		}
+ 	}
+ 
+diff --git a/src/l1j/server/server/model/Instance/L1MerchantInstance.java b/src/l1j/server/server/model/Instance/L1MerchantInstance.java
+index 4373849..a7925cd 100644
+--- a/src/l1j/server/server/model/Instance/L1MerchantInstance.java
++++ b/src/l1j/server/server/model/Instance/L1MerchantInstance.java
+@@ -139,7 +139,7 @@ public class L1MerchantInstance extends L1NpcInstance {
+ 				setRest(true);
+ 			}
+ 
+-			ThreadPool.getInstance().schedule(new RestMonitor(), REST_MILLISEC);
++			ThreadPool.getInstance().scheduleRequired(new RestMonitor(), REST_MILLISEC);
+ 		}
+ 
+ 
+diff --git a/src/l1j/server/server/model/Instance/L1MonsterInstance.java b/src/l1j/server/server/model/Instance/L1MonsterInstance.java
+index 1365ee8..65d1912 100644
+--- a/src/l1j/server/server/model/Instance/L1MonsterInstance.java
++++ b/src/l1j/server/server/model/Instance/L1MonsterInstance.java
+@@ -1120,7 +1120,7 @@ public class L1MonsterInstance extends L1NpcInstance {
+ 		}
+ 
+ 		public void begin() {
+-			ThreadPool.getInstance().schedule(this, 3000);
++			ThreadPool.getInstance().scheduleRequired(this, 3000);
+ 		}
+ 
+ 		@Override
+diff --git a/src/l1j/server/server/model/Instance/L1NpcInstance.java b/src/l1j/server/server/model/Instance/L1NpcInstance.java
+index 492af8d..bf53655 100644
+--- a/src/l1j/server/server/model/Instance/L1NpcInstance.java
++++ b/src/l1j/server/server/model/Instance/L1NpcInstance.java
+@@ -2274,7 +2274,7 @@ public class L1NpcInstance extends L1Character {
+ 
+     public void startExplosionTime(long l) {
+         setExplosionTime(l);
+-        ThreadPool.getInstance().schedule(new ExplosionCounter(this), 1000);
++        ThreadPool.getInstance().scheduleRequired(new ExplosionCounter(this), 1000);
+     }
+ 
+     public class ExplosionCounter implements Runnable {
+@@ -2300,7 +2300,7 @@ public class L1NpcInstance extends L1Character {
+                 if (_explosion_remain_time <= 0 || isDead())
+                     _explosion_remain_time = 0;
+                 else
+-                    ThreadPool.getInstance().schedule(this, 1000);
++                    ThreadPool.getInstance().scheduleRequired(this, 1000);
+             }
+         }
+     }
+diff --git a/src/l1j/server/server/model/Instance/L1PeopleInstance.java b/src/l1j/server/server/model/Instance/L1PeopleInstance.java
+index 3a5595b..fccf5f2 100644
+--- a/src/l1j/server/server/model/Instance/L1PeopleInstance.java
++++ b/src/l1j/server/server/model/Instance/L1PeopleInstance.java
+@@ -92,7 +92,7 @@ public class L1PeopleInstance extends L1NpcInstance {
+ 				setRest(true);
+ 			}
+ 
+-			ThreadPool.getInstance().schedule(new RestMonitor(), REST_MILLISEC);
++			ThreadPool.getInstance().scheduleRequired(new RestMonitor(), REST_MILLISEC);
+ 		}
+ 
+ 		L1Object obj = L1World.getInstance().findObject(objid);
+diff --git a/src/l1j/server/server/model/Instance/L1QuestInstance.java b/src/l1j/server/server/model/Instance/L1QuestInstance.java
+index 84ff716..63ab896 100644
+--- a/src/l1j/server/server/model/Instance/L1QuestInstance.java
++++ b/src/l1j/server/server/model/Instance/L1QuestInstance.java
+@@ -123,7 +123,7 @@ public class L1QuestInstance extends L1NpcInstance {
+ 			setRest(true);
+ 		}
+ 
+-		ThreadPool.getInstance().schedule(new RestMonitor(), REST_MILLISEC);
++		ThreadPool.getInstance().scheduleRequired(new RestMonitor(), REST_MILLISEC);
+ 	}
+ 
+ 	@Override
+diff --git a/src/l1j/server/server/model/L1BossSpawn.java b/src/l1j/server/server/model/L1BossSpawn.java
+index 376cfbc..dbfac09 100644
+--- a/src/l1j/server/server/model/L1BossSpawn.java
++++ b/src/l1j/server/server/model/L1BossSpawn.java
+@@ -128,7 +128,7 @@ public class L1BossSpawn extends L1Spawn {
+ 		_spawnCount = getAmount();
+ 		while (cnt < getAmount()) {
+ 			cnt++;
+-			ThreadPool.getInstance().schedule(new SpawnTask(0, objectId), delay);
++			ThreadPool.getInstance().scheduleRequired(new SpawnTask(0, objectId), delay);
+ 		}
+ 		_log.log(Level.FINE, toString());
+ 	}
+diff --git a/src/l1j/server/server/model/L1DeathMatch.java b/src/l1j/server/server/model/L1DeathMatch.java
+index d47cd1b..9fa8e57 100644
+--- a/src/l1j/server/server/model/L1DeathMatch.java
++++ b/src/l1j/server/server/model/L1DeathMatch.java
+@@ -51,7 +51,7 @@ public class L1DeathMatch implements Runnable {
+ 				setDeathMatchStatus(STATUS_READY);
+ 
+ 				_executeStatus = EXECUTE_STATUS_PREPARE;
+-				ThreadPool.getInstance().schedule(this, 120000L);
++				ThreadPool.getInstance().scheduleRequired(this, 120000L);
+ 			}
+ 				break;
+ 
+@@ -60,7 +60,7 @@ public class L1DeathMatch implements Runnable {
+ 				readyDeathMatch();
+ 
+ 				_executeStatus = EXECUTE_STATUS_READY;
+-				ThreadPool.getInstance().schedule(this, 30000L);
++				ThreadPool.getInstance().scheduleRequired(this, 30000L);
+ 			}
+ 				break;
+ 
+@@ -72,7 +72,7 @@ public class L1DeathMatch implements Runnable {
+ 				removeRetiredMembers();
+ 
+ 				_executeStatus = EXECUTE_STATUS_PROGRESS;
+-				ThreadPool.getInstance().schedule(this, 3000L);
++				ThreadPool.getInstance().scheduleRequired(this, 3000L);
+ 			}
+ 				break;
+ 
+@@ -87,7 +87,7 @@ public class L1DeathMatch implements Runnable {
+ 						}
+ 
+ 						_executeStatus = EXECUTE_STATUS_FINALIZE;
+-						ThreadPool.getInstance().schedule(this, 30000L);
++						ThreadPool.getInstance().scheduleRequired(this, 30000L);
+ 
+ 						break;
+ 					} else {
+@@ -101,7 +101,7 @@ public class L1DeathMatch implements Runnable {
+ 					우승자종료();
+ 				}
+ 				++executeCount2;
+-				ThreadPool.getInstance().schedule(this, 3000L);
++				ThreadPool.getInstance().scheduleRequired(this, 3000L);
+ 			}
+ 				break;
+ 
+diff --git a/src/l1j/server/server/model/L1EquipmentTimer.java b/src/l1j/server/server/model/L1EquipmentTimer.java
+index c6eeda7..798f193 100644
+--- a/src/l1j/server/server/model/L1EquipmentTimer.java
++++ b/src/l1j/server/server/model/L1EquipmentTimer.java
+@@ -58,13 +58,13 @@ public class L1EquipmentTimer implements Runnable {
+             if (_pc.isItemTransferBusy()) {
+                 // Pause this same timer, preserving the remaining time and
+                 // registration instead of throwing after changing the item.
+-                ThreadPool.getInstance().schedule(this, _scheduleTime);
++                ThreadPool.getInstance().scheduleRequired(this, _scheduleTime);
+                 return;
+             }
+             if (_item.getRemainingTime() > 1) {
+                 _item.setRemainingTime(_item.getRemainingTime() - 1);
+                 _pc.getInventory().updateItem(_item, L1PcInventory.COL_REMAINING_TIME);
+-                ThreadPool.getInstance().schedule(this, _scheduleTime);
++                ThreadPool.getInstance().scheduleRequired(this, _scheduleTime);
+             } else {
+                 _pc.getInventory().removeItem(_item, 1);
+                 cancel();
+diff --git a/src/l1j/server/server/model/L1HauntedHouse.java b/src/l1j/server/server/model/L1HauntedHouse.java
+index cba1700..61b3eae 100644
+--- a/src/l1j/server/server/model/L1HauntedHouse.java
++++ b/src/l1j/server/server/model/L1HauntedHouse.java
+@@ -58,9 +58,9 @@ public class L1HauntedHouse implements Runnable {
+ 			case EXECUTE_STATUS_NONE: {
+ 				if (getHauntedHouseStatus() == STATUS_READY) {
+ 					_executeStatus = EXECUTE_STATUS_PREPARE;
+-					ThreadPool.getInstance().schedule(this, 60000L);
++					ThreadPool.getInstance().scheduleRequired(this, 60000L);
+ 				} else {
+-					ThreadPool.getInstance().schedule(this, 1000L);
++					ThreadPool.getInstance().scheduleRequired(this, 1000L);
+ 				}
+ 			}
+ 				break;
+@@ -76,7 +76,7 @@ public class L1HauntedHouse implements Runnable {
+ 					_executeStatus = EXECUTE_STATUS_NONE;
+ 				}
+ 
+-				ThreadPool.getInstance().schedule(this, 1000L);
++				ThreadPool.getInstance().scheduleRequired(this, 1000L);
+ 			}
+ 				break;
+ 
+@@ -90,7 +90,7 @@ public class L1HauntedHouse implements Runnable {
+ 					_executeStatus = EXECUTE_STATUS_PROGRESS;
+ 				}
+ 
+-				ThreadPool.getInstance().schedule(this, 1000L);
++				ThreadPool.getInstance().scheduleRequired(this, 1000L);
+ 			}
+ 				break;
+ 
+@@ -99,9 +99,9 @@ public class L1HauntedHouse implements Runnable {
+ 				if (getHauntedHouseStatus() == STATUS_CLEANUP) {
+ 					if (endCountDown()) {
+ 						_executeStatus = EXECUTE_STATUS_FINALIZE;
+-						ThreadPool.getInstance().schedule(this, 5 * 60 * 000L);
++						ThreadPool.getInstance().scheduleRequired(this, 5 * 60 * 000L);
+ 					} else {
+-						ThreadPool.getInstance().schedule(this, 1000L);
++						ThreadPool.getInstance().scheduleRequired(this, 1000L);
+ 					}
+ 				} else {
+ 					if (--_count == 0) {
+@@ -113,7 +113,7 @@ public class L1HauntedHouse implements Runnable {
+ 						endHauntedHouse();
+ 
+ 					}
+-					ThreadPool.getInstance().schedule(this, 1000L);
++					ThreadPool.getInstance().scheduleRequired(this, 1000L);
+ 				}
+ 			}
+ 				break;
+@@ -122,7 +122,7 @@ public class L1HauntedHouse implements Runnable {
+ 				_executeStatus = EXECUTE_STATUS_NONE;
+ 				setHauntedHouseStatus(STATUS_NONE);
+ 
+-				ThreadPool.getInstance().schedule(this, 1000L);
++				ThreadPool.getInstance().scheduleRequired(this, 1000L);
+ 			}
+ 				break;
+ 			}
+diff --git a/src/l1j/server/server/model/L1Magic.java b/src/l1j/server/server/model/L1Magic.java
+index 733fdb3..b05822d 100644
+--- a/src/l1j/server/server/model/L1Magic.java
++++ b/src/l1j/server/server/model/L1Magic.java
+@@ -2793,7 +2793,7 @@ public class L1Magic {
+ 	public void Start() {
+ 		
+ 		
+-		ThreadPool.getInstance().schedule(new Runnable(){
++		ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 			@Override
+ 			public void run(){
+ 				if (!_targetPc.hasSkillEffect(L1SkillId.COUNTER_MAGIC)) {
+@@ -2815,7 +2815,7 @@ public class L1Magic {
+ public void Start1() {
+ 		
+ 		
+-		ThreadPool.getInstance().schedule(new Runnable(){
++		ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 			@Override
+ 			public void run(){
+ 				if (!_targetNpc.hasSkillEffect(L1SkillId.COUNTER_MAGIC)) {
+diff --git a/src/l1j/server/server/model/L1NpcChatTimer.java b/src/l1j/server/server/model/L1NpcChatTimer.java
+index f1c8aec..2dce7b1 100644
+--- a/src/l1j/server/server/model/L1NpcChatTimer.java
++++ b/src/l1j/server/server/model/L1NpcChatTimer.java
+@@ -51,7 +51,7 @@ public class L1NpcChatTimer implements Runnable {
+                 || _npc._destroyed) {
+             return;
+         }
+-        ThreadPool.getInstance().schedule(this, delay);
++        ThreadPool.getInstance().scheduleRequired(this, delay);
+     }
+ 
+     @Override
+@@ -73,7 +73,7 @@ public class L1NpcChatTimer implements Runnable {
+ 
+                     if (_currentChat < _chatIds.length && hasMoreChat()) {
+                         final long delay = Math.max(_chatInterval, 100); 
+-                        ThreadPool.getInstance().schedule(this, delay);
++                        ThreadPool.getInstance().scheduleRequired(this, delay);
+                         return;
+                     }
+                     break;
+@@ -82,7 +82,7 @@ public class L1NpcChatTimer implements Runnable {
+             
+             if (_repeat > 0) {
+                 _currentChat = 0;
+-                ThreadPool.getInstance().schedule(this, _repeat);
++                ThreadPool.getInstance().scheduleRequired(this, _repeat);
+             }
+         } catch (Throwable e) {
+             _log.log(Level.WARNING, e.getLocalizedMessage(), e);
+diff --git a/src/l1j/server/server/model/L1PetMatch.java b/src/l1j/server/server/model/L1PetMatch.java
+index 8f4b9a6..b47e947 100644
+--- a/src/l1j/server/server/model/L1PetMatch.java
++++ b/src/l1j/server/server/model/L1PetMatch.java
+@@ -193,7 +193,7 @@ public class L1PetMatch {
+ 		SC_SkillSound.broadcast(_pet1[petMatchNo], _pet1[petMatchNo].getId(), a);
+ 		SC_SkillSound.broadcast(_pet2[petMatchNo], _pet2[petMatchNo].getId(), b);
+ 		
+-		ThreadPool.getInstance().schedule(new Runnable()
++		ThreadPool.getInstance().scheduleRequired(new Runnable()
+ 		{
+ 			@Override
+ 			public void run()
+@@ -206,7 +206,7 @@ public class L1PetMatch {
+ 			}
+ 		}, 4000 );
+ 
+-		ThreadPool.getInstance().schedule(new Runnable()
++		ThreadPool.getInstance().scheduleRequired(new Runnable()
+ 		{
+ 			@Override
+ 			public void run()
+@@ -234,7 +234,7 @@ public class L1PetMatch {
+ 
+ 	public void endPetMatch(final int petMatchNo, final int winNo) {
+ 	
+-		ThreadPool.getInstance().schedule(new Runnable()
++		ThreadPool.getInstance().scheduleRequired(new Runnable()
+ 		{
+ 			@Override
+ 			public void run()
+@@ -365,7 +365,7 @@ public class L1PetMatchReadyTimer extends RepeatTask {
+ 	}
+ 
+ 	public void begin() {
+-		ThreadPool.getInstance().schedule(this, 3000);
++		ThreadPool.getInstance().scheduleRequired(this, 3000);
+ 	}
+ 
+ 	@Override
+@@ -412,7 +412,7 @@ public class L1PetMatchTimer extends RepeatTask {
+ 	}
+ 
+ 	public void begin() {
+-		ThreadPool.getInstance().schedule(this, 0);
++		ThreadPool.getInstance().scheduleRequired(this, 0);
+ 	}
+ 
+ 	@Override
+diff --git a/src/l1j/server/server/model/L1Racing.java b/src/l1j/server/server/model/L1Racing.java
+index 2e6d92c..48c58a2 100644
+--- a/src/l1j/server/server/model/L1Racing.java
++++ b/src/l1j/server/server/model/L1Racing.java
+@@ -101,11 +101,11 @@ public class L1Racing implements Runnable
+ 
+ 						npcBroadcast("잠시후 펫 레이싱을 진행하겠습니다.");
+ 
+-						ThreadPool.getInstance().schedule(this, 60000L);
++						ThreadPool.getInstance().scheduleRequired(this, 60000L);
+ 					}
+ 					else
+ 					{
+-						ThreadPool.getInstance().schedule(this, 1000L);
++						ThreadPool.getInstance().scheduleRequired(this, 1000L);
+ 					}
+ 				}
+ 				break;
+@@ -125,7 +125,7 @@ public class L1Racing implements Runnable
+ 						_executeStatus = EXECUTE_STATUS_NONE;					
+ 					}
+ 
+-					ThreadPool.getInstance().schedule(this, 1000L);
++					ThreadPool.getInstance().scheduleRequired(this, 1000L);
+ 				}
+ 				break;
+ 
+@@ -141,7 +141,7 @@ public class L1Racing implements Runnable
+ 						_executeStatus = EXECUTE_STATUS_PROGRESS;
+ 					}
+ 
+-					ThreadPool.getInstance().schedule(this, 1000L);
++					ThreadPool.getInstance().scheduleRequired(this, 1000L);
+ 				}
+ 				break;
+ 
+@@ -153,11 +153,11 @@ public class L1Racing implements Runnable
+ 						if( endCountDown() )
+ 						{
+ 							_executeStatus = EXECUTE_STATUS_FINALIZE;
+-							ThreadPool.getInstance().schedule(this, 5 * 60 * 000L);
++							ThreadPool.getInstance().scheduleRequired(this, 5 * 60 * 000L);
+ 						}
+ 						else
+ 						{
+-							ThreadPool.getInstance().schedule(this, 1000L);
++							ThreadPool.getInstance().scheduleRequired(this, 1000L);
+ 						}
+ 					}
+ 					else
+@@ -172,7 +172,7 @@ public class L1Racing implements Runnable
+ 							endGame();
+ 
+ 						}
+-						ThreadPool.getInstance().schedule(this, 1000L);
++						ThreadPool.getInstance().scheduleRequired(this, 1000L);
+ 					}
+ 				}
+ 				break;
+@@ -182,7 +182,7 @@ public class L1Racing implements Runnable
+ 					_executeStatus = EXECUTE_STATUS_NONE;
+ 					setGameStatus(STATUS_NONE);
+ 
+-					ThreadPool.getInstance().schedule(this, 1000L);
++					ThreadPool.getInstance().scheduleRequired(this, 1000L);
+ 				}
+ 				break;
+ 			}
+diff --git a/src/l1j/server/server/model/character/skill/L1BuffUtil.java b/src/l1j/server/server/model/character/skill/L1BuffUtil.java
+index 6c9b35a..9360588 100644
+--- a/src/l1j/server/server/model/character/skill/L1BuffUtil.java
++++ b/src/l1j/server/server/model/character/skill/L1BuffUtil.java
+@@ -176,7 +176,7 @@ public class L1BuffUtil {
+ 				_index++;
+ 
+ 				if (_index < _buffList.length) {
+-					ThreadPool.getInstance().schedule(this, ALL_BUFF_INTERVAL_MS);
++					ThreadPool.getInstance().scheduleRequired(this, ALL_BUFF_INTERVAL_MS);
+ 				}
+ 
+ 			} catch (Throwable t) {
+diff --git a/src/l1j/server/server/model/character/skill/SkillHandlers.java b/src/l1j/server/server/model/character/skill/SkillHandlers.java
+index 87166bc..591d925 100644
+--- a/src/l1j/server/server/model/character/skill/SkillHandlers.java
++++ b/src/l1j/server/server/model/character/skill/SkillHandlers.java
+@@ -6936,7 +6936,7 @@ public final class SkillHandlers {
+                 if (nextDelayMs <= 0L) {
+                     ThreadPool.getInstance().execute(this);
+                 } else {
+-                    ThreadPool.getInstance().schedule(this, nextDelayMs);
++                    ThreadPool.getInstance().scheduleRequired(this, nextDelayMs);
+                 }
+             }
+         };
+diff --git a/src/l1j/server/server/model/item/Card/L1CardAlchemy3.java b/src/l1j/server/server/model/item/Card/L1CardAlchemy3.java
+index 9e3f54a..2fa0845 100644
+--- a/src/l1j/server/server/model/item/Card/L1CardAlchemy3.java
++++ b/src/l1j/server/server/model/item/Card/L1CardAlchemy3.java
+@@ -220,7 +220,7 @@ public class L1CardAlchemy3 {
+ 	}
+ 
+ 	private static void broadcastUniqueSuccess(L1PcInstance pc) {
+-		ThreadPool.getInstance().schedule(() -> {
++		ThreadPool.getInstance().scheduleRequired(() -> {
+ 			String msg = "어느 아덴 용사 님께서 [유일]지배자 기르타스 카드 합성에 성공하였습니다.";
+ 			MessageUtil.toAllPlayers(msg);
+ 			MessageUtil.greenMessageToAllPlayers(msg);
+diff --git a/src/l1j/server/server/model/item/classchange/ClassChange.java b/src/l1j/server/server/model/item/classchange/ClassChange.java
+index 843c479..cae4893 100644
+--- a/src/l1j/server/server/model/item/classchange/ClassChange.java
++++ b/src/l1j/server/server/model/item/classchange/ClassChange.java
+@@ -135,7 +135,7 @@ public class ClassChange {
+     }
+ 
+     private static void handleRestart(final L1PcInstance pc) {
+-        ThreadPool.getInstance().schedule(new Runnable() {
++        ThreadPool.getInstance().scheduleRequired(new Runnable() {
+             @Override
+             public void run() {
+                 CIOClient clnt = pc.getNetConnection();
+diff --git a/src/l1j/server/server/model/item/function/ItemUseCombatSupport.java b/src/l1j/server/server/model/item/function/ItemUseCombatSupport.java
+index bdc4adb..86edf28 100644
+--- a/src/l1j/server/server/model/item/function/ItemUseCombatSupport.java
++++ b/src/l1j/server/server/model/item/function/ItemUseCombatSupport.java
+@@ -49,7 +49,7 @@ final class ItemUseCombatSupport {
+     }
+     
+     public static void Start(L1PcInstance pc, L1Character cha) {
+-        ThreadPool.getInstance().schedule(new Runnable(){
++        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+             
+             @Override
+             public void run() {
+@@ -69,7 +69,7 @@ final class ItemUseCombatSupport {
+     }
+     
+     public static void Start1(L1PcInstance pc, L1NpcInstance member1) {
+-        ThreadPool.getInstance().schedule(new Runnable(){
++        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+             
+             @Override
+             public void run() {
+@@ -82,7 +82,7 @@ final class ItemUseCombatSupport {
+     }
+     
+     public static void 액션(L1PcInstance pc, L1Character cha) {
+-        ThreadPool.getInstance().schedule(new Runnable(){
++        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+             
+             @Override
+             public void run() {
+@@ -96,7 +96,7 @@ final class ItemUseCombatSupport {
+     }
+     
+     public static void 액션1(L1PcInstance pc, L1NpcInstance member1) {
+-        ThreadPool.getInstance().schedule(new Runnable(){
++        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+             
+             @Override
+             public void run() {
+diff --git a/src/l1j/server/server/model/item/function/ItemUseUtilityCases.java b/src/l1j/server/server/model/item/function/ItemUseUtilityCases.java
+index 03a5c5c..e42cb93 100644
+--- a/src/l1j/server/server/model/item/function/ItemUseUtilityCases.java
++++ b/src/l1j/server/server/model/item/function/ItemUseUtilityCases.java
+@@ -211,7 +211,7 @@ final class ItemUseUtilityCases {
+         SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "잠시후 캐릭터 이름 변경이 진행됩니다.");
+         pc.sendPackets("잠시후 캐릭터 이름 변경이 진행됩니다.");
+ 
+-        ThreadPool.getInstance().schedule(new Runnable() {
++        ThreadPool.getInstance().scheduleRequired(new Runnable() {
+             @Override
+             public void run() {
+                 SC_ChangeCharName.sendStart(pc);
+diff --git a/src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java b/src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java
+index 541b3ce..3b5ef21 100644
+--- a/src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java
++++ b/src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java
+@@ -272,7 +272,7 @@ public final class CS_Attr {
+ 						pc.sendShape(pc.getClassId());
+ 						pc.getInventory().removeItem(item, 1);
+ 					}
+-					ThreadPool.getInstance().schedule(new Runnable(){
++					ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 						@Override
+ 						public void run(){
+ 							CIOClient clnt = pc.getNetConnection();
+diff --git a/src/l1j/server/server/model/network/core/sc/packet/SC_Ping.java b/src/l1j/server/server/model/network/core/sc/packet/SC_Ping.java
+index 2a04721..efc3403 100644
+--- a/src/l1j/server/server/model/network/core/sc/packet/SC_Ping.java
++++ b/src/l1j/server/server/model/network/core/sc/packet/SC_Ping.java
+@@ -55,7 +55,7 @@ public final class SC_Ping {
+         System.out.println(message);
+         SC_SystemMessage.send(pc, message);
+ 
+-        ThreadPool.getInstance().schedule(
++        ThreadPool.getInstance().scheduleRequired(
+             () -> sendForGM(pc),
+             Math.max(0L, 1000L - del)
+         );
+diff --git a/src/l1j/server/server/model/npc/ai/action/AiRuntime.java b/src/l1j/server/server/model/npc/ai/action/AiRuntime.java
+index 45d4013..f6b274e 100644
+--- a/src/l1j/server/server/model/npc/ai/action/AiRuntime.java
++++ b/src/l1j/server/server/model/npc/ai/action/AiRuntime.java
+@@ -617,7 +617,7 @@ public final class AiRuntime {
+         CIOThreadCallback.getInstance().cancelNpcAction(npc);
+         npc.setAiRunning(false);
+ 
+-        ThreadPool.getInstance().schedule(
++        ThreadPool.getInstance().scheduleRequired(
+                 new DeathSyncTimer(npc),
+                 0);
+ 
+@@ -959,7 +959,7 @@ public final class AiRuntime {
+         }
+ 
+         private void schedule(final long delay) {
+-            ThreadPool.getInstance().schedule(this, delay);
++            ThreadPool.getInstance().scheduleRequired(this, delay);
+         }
+ 
+         @Override
+diff --git a/src/l1j/server/server/packets/Protocol/Packet/SC_AlchemyDesignAck.java b/src/l1j/server/server/packets/Protocol/Packet/SC_AlchemyDesignAck.java
+index 27cd8d6..065a212 100644
+--- a/src/l1j/server/server/packets/Protocol/Packet/SC_AlchemyDesignAck.java
++++ b/src/l1j/server/server/packets/Protocol/Packet/SC_AlchemyDesignAck.java
+@@ -79,7 +79,7 @@ public class SC_AlchemyDesignAck extends ProtoPacket {
+ 	public static void load(){
+ 		final SC_AlchemyDesignAck message = new SC_AlchemyDesignAck();
+ 		_instance = message;
+-		ThreadPool.getInstance().schedule(new Runnable(){
++		ThreadPool.getInstance().scheduleRequired(new Runnable(){
+ 			@Override
+ 			public void run(){
+ 				try {
+diff --git a/src/l1j/server/server/utils/DelaySender.java b/src/l1j/server/server/utils/DelaySender.java
+index 87409ef..cf48f22 100644
+--- a/src/l1j/server/server/utils/DelaySender.java
++++ b/src/l1j/server/server/utils/DelaySender.java
+@@ -13,7 +13,7 @@ public final class DelaySender implements Runnable {
+         if (delay <= 0L) {
+             SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, message);
+         } else {
+-            ThreadPool.getInstance().schedule(new DelaySender(pc, message), delay);
++            ThreadPool.getInstance().scheduleRequired(new DelaySender(pc, message), delay);
+         }
+     }
+ 

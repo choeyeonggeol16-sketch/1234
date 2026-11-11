@@ -1,0 +1,3 @@
+PASS actual GameServer shutdown method bodies: direct exit drains accepted work, closes storage afterward, repeated hook is idempotent
+PASS actual GameServer shutdown method bodies: gm-hook exit drains accepted work, closes storage afterward, repeated hook is idempotent
+Actual ThreadPool and exact GameServer shutdown method bodies tested; service/native/storage dependencies are fixtures. Full GameServer dependency linking and Windows runtime not tested.

@@ -1,3 +1,11 @@
+## 2026-11-11 — Aden IOCP + 스레드풀 최신 전체 소스
+
+[**최신 전체 src 다운로드**](downloads/RKern_Aden_IOCP_THREADPOOL_FIXED_FULL_SRC_20261111.zip) · [수정·적용·검증 안내](patches/rkern_threadpool_20261111/README.md) · [SHA-256](downloads/RKern_Aden_IOCP_THREADPOOL_FIXED_FULL_SRC_20261111.zip.sha256)
+
+기존 네트워크 수정까지 포함한 통합본입니다. 종료 시 일반 작업 대기열 보존·완료 대기, GM 종료 훅 통합, 보스 11개 장시간 루프 분리, 전용 스레드 시작 제한, 확인하지 않던 예약 실패 전파를 반영했습니다. ZIP에는 src/만 있으며 Java 1,694개입니다. Java 21 회귀·전체 구문 파싱 통과; Windows 실게임·전체 서버 연결 빌드는 미검증입니다.
+
+---
+
 ## 2026-11-11 — Aden IOCP 네트워크 최신 통합 소스
 
 [**전체 src 다운로드**](downloads/RKern_Aden_IOCP_FIXED_FULL_SRC_20261111.zip) · [적용·구성 안내](patches/rkern_aden_n01_n07_20261111/README.md)

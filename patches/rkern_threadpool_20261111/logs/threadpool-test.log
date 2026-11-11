@@ -1,0 +1,12 @@
+Note: /workspace/work/aden-two-fixes/repo/patches/rkern_threadpool_20261111/tests/ThreadPoolRegression.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+PASS bounded scheduler admission and immediate cancel removal
+PASS shutdown timeout retains accepted work; retry drains; timers and post-stop admission handled
+PASS sleeping event does not block scheduler; cancelled work tracked until actual exit
+PASS blocking admission capped at 256; cancelling pending jobs returns capacity
+PASS pool and virtual workers reject self-await before stopping admission
+PASS dedicated shutdown caller can coordinate; other dedicated threads interrupted and joined
+PASS concurrent submission, launch, cancellation and shutdown leave no reservations
+PASS concurrent instant admission/shutdown executes every accepted job (227)
+Actual ThreadPool, ThreadConfig, ConfigReader, TimeUtil, PacketThreadFactory compiled and executed on Java 21.
+PASS actual System.exit countdown and JVM shutdown hook complete without circular wait

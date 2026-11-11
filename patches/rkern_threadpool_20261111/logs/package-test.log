@@ -1,0 +1,4 @@
+PASS patch applies cleanly to previous full source.
+PASS every patched source byte equals the new full bundle (1695 files, 1694 Java).
+PASS full ZIP CRC, file set and every archived file compared with selected source.
+PASS previous network source files retained exactly, except GameServer with preserved network cleanup plus new shutdown integration.

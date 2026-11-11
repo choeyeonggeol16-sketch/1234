@@ -1,0 +1,5 @@
+PASS all eleven actual boss controllers compile and launch through actual ThreadPool
+PASS five-second admission delay, duplicate suppression and stale generation rejection
+PASS eleven simultaneous sleeping events leave the single scheduler responsive
+PASS scripted stage wait preserved; stop interrupts all events and joins their cleanup
+World/NPC/packet/config dependencies are fixtures; no real game/DB integration.
