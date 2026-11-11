@@ -1,0 +1,4 @@
+src/l1j/server/server/datatables/CharacterTable.java
+src/l1j/server/server/model/Instance/L1PcInstance.java
+src/l1j/server/server/model/network/core/cs/packet/CS_ReturnStatus.java
+src/l1j/server/server/storage/mysql/MySqlCharacterStorage.java

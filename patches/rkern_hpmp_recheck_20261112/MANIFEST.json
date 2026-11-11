@@ -1,0 +1,27 @@
+{
+  "bundle": "RKern_Aden_ALL_FIXES_HPMP_RECHECK_FULL_SRC_20261112.zip",
+  "sha256": "60e0c677cc29a854905eb48ccacdbdd8353b2c99779368b3bf83fe5490aa1cbe",
+  "base_revision": "aab3d06844bfe767502b6f817cfe9b3d69acf376",
+  "source_files": 1697,
+  "java_files": 1696,
+  "changed_java_files": [
+    "src/l1j/server/server/datatables/CharacterTable.java",
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "src/l1j/server/server/model/network/core/cs/packet/CS_ReturnStatus.java",
+    "src/l1j/server/server/storage/mysql/MySqlCharacterStorage.java"
+  ],
+  "required_migration": "database/RKern_HPMP_GROWTH_20261112.sql",
+  "additional_migration": false,
+  "production_db_accessed": false,
+  "validation": [
+    "four failing baseline regressions reproduced",
+    "real CharacterTable save facade and snapshot lock contention",
+    "reset snapshot rejection, guarded normal save and durable START marker",
+    "early type2/type3 finish rejection before vitals/history mutation",
+    "actual final reset HP/MP refill order (stops before later world/async effects)",
+    "actual reset handler lock ownership and 79 packet-driven growth steps",
+    "1696 production Java full compilation, prior HP/MP, JDBC/H2, magic and physical regressions",
+    "full ZIP CRC/hash/bytes, previous-bundle diff reconstruction"
+  ],
+  "limitations": "No Windows game, production MySQL/CacheD daemon or operational load test; complete reset UI/save integration not claimed."
+}

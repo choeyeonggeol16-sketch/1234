@@ -1,0 +1,4 @@
+snapshot: exit 1; ['Exception in thread "main" java.lang.AssertionError: snapshot accepted staged reset stats with old growth history']
+finish: exit 1; ['Exception in thread "main" java.lang.AssertionError: incomplete reset finalized through packet type 2']
+vitals: exit 1; ['Exception in thread "main" java.lang.AssertionError: reset fills vitals before permanent bonus restored']
+locks: exit 1; ['Exception in thread "main" java.lang.AssertionError: CharacterTable.storeCharacter PC-monitor/user-state-lock deadlock']

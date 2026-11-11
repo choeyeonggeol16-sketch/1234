@@ -1,0 +1,191 @@
+diff --git a/src/l1j/server/server/datatables/CharacterTable.java b/src/l1j/server/server/datatables/CharacterTable.java
+index 3d4d11b..7f50a76 100644
+--- a/src/l1j/server/server/datatables/CharacterTable.java
++++ b/src/l1j/server/server/datatables/CharacterTable.java
+@@ -54,7 +54,8 @@ public class CharacterTable {
+ 	}
+ 
+ 	public void storeNewCharacter(L1PcInstance pc) throws Exception {
+-		synchronized (pc) {
++        pc.lockUserState();
++        try {
+ 			_charStorage.createCharacter(pc);
+ 			if (!_charNameList.containsKey(pc.getName())) {
+ 				L1CharName cn = new L1CharName();
+@@ -66,7 +67,7 @@ public class CharacterTable {
+ 				}
+ 			}
+ 			_log.finest("storeNewCharacter");
+-		}
++        } finally { pc.unlockUserState(); }
+ 	}
+ 
+     /** Publish identity indexes only after the complete creation receipt commits. */
+@@ -84,7 +85,11 @@ public class CharacterTable {
+ 	}
+ 
+ 	public void storeCharacter(L1PcInstance pc) throws Exception {
+-		synchronized (pc) {
++        // Snapshot capture takes this same lock and later reads synchronized
++        // getters. Never hold the PC monitor before waiting for this lock.
++        pc.lockUserState();
++        try {
++            if (pc.rst != null && pc.getReturnStat() != 0) return;
+ 			_charStorage.storeCharacter(pc);
+ 			String name = pc.getName();
+ 			if (!_charNameList.containsKey(name)) {
+@@ -97,7 +102,7 @@ public class CharacterTable {
+ 				}
+ 			}
+ 			_log.finest("storeCharacter: " + pc.getName());
+-		}
++        } finally { pc.unlockUserState(); }
+ 	}
+ 
+ 	public void deleteCharacter(String accountName, String charName) throws Exception {
+@@ -385,4 +390,4 @@ public class CharacterTable {
+ 			_log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+ 		}
+ 	}
+-}
+\ No newline at end of file
++}
+diff --git a/src/l1j/server/server/model/Instance/L1PcInstance.java b/src/l1j/server/server/model/Instance/L1PcInstance.java
+index 2ef4b0a..4733cd2 100644
+--- a/src/l1j/server/server/model/Instance/L1PcInstance.java
++++ b/src/l1j/server/server/model/Instance/L1PcInstance.java
+@@ -4492,9 +4492,6 @@ public class L1PcInstance extends L1Character {
+ 	}
+ 
+ 	public void save() {
+-        // A reset stages new growth over several client messages. Save only
+-        // after final validation publishes the staged ledger and clears ReturnStat.
+-        if (rst != null && getReturnStat() != 0) return;
+ 		try {
+ 			if (isGhost()) {
+ 				return;
+diff --git a/src/l1j/server/server/model/network/core/cs/packet/CS_ReturnStatus.java b/src/l1j/server/server/model/network/core/cs/packet/CS_ReturnStatus.java
+index a0b01b6..cd87ca3 100644
+--- a/src/l1j/server/server/model/network/core/cs/packet/CS_ReturnStatus.java
++++ b/src/l1j/server/server/model/network/core/cs/packet/CS_ReturnStatus.java
+@@ -46,11 +46,13 @@ public final class CS_ReturnStatus {
+ 
+ 		final L1PcInstance pc = client.getActiveChar();
+ 
+-		if (pc == null || pc.getReturnStat() == 0) {
++		if (pc == null) {
+ 			return;
+ 		}
+ 
++		pc.lockUserState();
+ 		try {
++			if (pc.getReturnStat() == 0) return;
+ 			switch (type) {
+ 			case 1:
+ 				handleType1Start(client, pc, packedStats);
+@@ -72,6 +74,8 @@ public final class CS_ReturnStatus {
+ 			/*
+ 			 * 기존 C_ReturnStatus의 예외 무시(semantics) 기조를 그대로 유지합니다.
+ 			 */
++		} finally {
++			pc.unlockUserState();
+ 		}
+ 	}
+ 
+@@ -223,6 +227,10 @@ public final class CS_ReturnStatus {
+ 		if (pc.rst == null) {
+ 			return;
+ 		}
++        if (!hasCompleteResetGrowth(pc)) {
++            kick(client);
++            return;
++        }
+ 
+ 		if (pc.rst.level > BONUS_LEVEL_BASE) {
+ 			switch (statusup) {
+@@ -261,6 +269,10 @@ public final class CS_ReturnStatus {
+ 		if (pc.rst == null) {
+ 			return;
+ 		}
++        if (!hasCompleteResetGrowth(pc)) {
++            kick(client);
++            return;
++        }
+ 
+ 		final int str = statStr(packedStats);
+ 		final int intel = statInt(packedStats);
+@@ -352,12 +364,6 @@ public final class CS_ReturnStatus {
+ 			pc.addBaseMaxHp((short) pc.rst.upHp);
+ 			pc.addBaseMaxMp((short) pc.rst.upMp);
+ 
+-			pc.setCurrentHp(pc.getMaxHp());
+-			pc.setCurrentMp(pc.getMaxMp());
+-
+-			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
+-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
+-
+ 			pc.start_teleport(33430, 32810, 4, pc.getHeading(), 169, true, false);
+ 
+ 			pc.getAbility().init();
+@@ -375,6 +381,13 @@ public final class CS_ReturnStatus {
+ 			pc.getAbility().addCon((byte) pc.rst.con);
+ 			pc.getAbility().addCha((byte) pc.rst.cha);
+ 
++            // Permanent allocations can open the 25/35/45 max-HP/MP bonus.
++            // Fill and notify only after those final maxima are available.
++            pc.setCurrentHp(pc.getMaxHp());
++            pc.setCurrentMp(pc.getMaxMp());
++            SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
++            SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
++
+ 			pc.resetBaseAc();
+ 			pc.getAC().setAc(pc.getBaseAc());
+ 
+@@ -407,6 +420,17 @@ public final class CS_ReturnStatus {
+ 	// STAT 로직
+ 	// =========================================================
+ 
++    private static boolean hasCompleteResetGrowth(L1PcInstance pc) {
++        final L1ReturnStatTemp stage = pc.rst;
++        if (stage == null || stage.hpMpGrowth == null
++                || stage.level != pc.getHighLevel() || stage.level != pc.getLevel()
++                || stage.level < 1 || stage.level > l1j.server.server.model.HpMpGrowthHistory.MAX_LEVEL
++                || stage.hpMpGrowth.floorLevel() != 1) return false;
++        for (int level = 2; level <= stage.level; level++)
++            if (!stage.hpMpGrowth.known(level)) return false;
++        return true;
++    }
++
+ 	private static boolean incStatOrKick(CIOClient client, L1PcInstance pc, int type) {
+ 
+ 		final int value;
+@@ -564,4 +588,4 @@ public final class CS_ReturnStatus {
+ 			return "unknown";
+ 		}
+ 	}
+-}
+\ No newline at end of file
++}
+diff --git a/src/l1j/server/server/storage/mysql/MySqlCharacterStorage.java b/src/l1j/server/server/storage/mysql/MySqlCharacterStorage.java
+index 3302ec4..c1a76e0 100644
+--- a/src/l1j/server/server/storage/mysql/MySqlCharacterStorage.java
++++ b/src/l1j/server/server/storage/mysql/MySqlCharacterStorage.java
+@@ -385,6 +385,11 @@ public class MySqlCharacterStorage implements CharacterStorage {
+         public CharacterSnapshot(L1PcInstance pc) {
+             pc.lockUserState();
+             try {
++            // A direct CacheD caller must not persist staged stats together
++            // with the previous committed HP/MP ledger. Normal autosave skips
++            // this state in CharacterTable under the same lock.
++            if (pc.rst != null && pc.getReturnStat() != 0)
++                throw new IllegalStateException("Character stat reset is not committed: " + pc.getId());
+             this.name = pc.getName();
+             this.objectId = pc.getId();
+             this.sessionEpoch = pc.getCacheDSessionEpoch();
+@@ -611,4 +616,4 @@ public class MySqlCharacterStorage implements CharacterStorage {
+ 		});
+ 		return wrapper.value;
+ 	}
+-}
+\ No newline at end of file
++}

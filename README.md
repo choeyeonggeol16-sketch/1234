@@ -1,3 +1,11 @@
+## 2026-11-12 — HP/MP 재점검 보완 통합본
+
+[**최신 전체 src 다운로드**](downloads/RKern_Aden_ALL_FIXES_HPMP_RECHECK_FULL_SRC_20261112.zip) · [재점검 보고서](reports/RKERN_HPMP_RECHECK_20261112.md) · [적용 안내](patches/rkern_hpmp_recheck_20261112/README.md)
+
+저장 잠금과 스탯 초기화 경로의 추가 문제 4건을 재현·보완했습니다. 이전 전체 수정 포함. 기존 HP/MP SQL은 필수이며 이미 적용했다면 추가 SQL은 없습니다. Java1,696개 전체 컴파일·기존 회귀·추가 재현 검사 통과. Windows 실게임·운영 MySQL은 미검증입니다.
+
+---
+
 ## 2026-11-12 — Aden HP·MP 및 전체 수정 통합 소스
 
 [**최신 전체 src 다운로드**](downloads/RKern_Aden_ALL_FIXES_HPMP_FULL_SRC_20261112.zip) · [**적용 전 필수 SQL**](database/RKern_HPMP_GROWTH_20261112.sql) · [구현·검증 안내](patches/rkern_hpmp_20261112/README.md)
