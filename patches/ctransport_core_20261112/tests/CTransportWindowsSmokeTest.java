@@ -90,6 +90,6 @@ public final class CTransportWindowsSmokeTest {
                 catch(SocketException expectedReset) { }
             }
         }
-        System.out.println("PASS PSS UI channel on same native engine: fragmented HELLO, PING, BOUND/OPEN, detach, invalid greeting, native expiry timer shutdown");
+        System.out.println("PASS independent PSS NIO2 channel: fragmented HELLO, PING, BOUND/OPEN, detach, invalid greeting, dedicated expiry executor shutdown");
     }
 }

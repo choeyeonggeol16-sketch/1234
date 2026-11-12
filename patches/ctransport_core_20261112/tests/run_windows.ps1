@@ -14,3 +14,12 @@ try {
     & java --enable-preview --enable-native-access=ALL-UNNAMED -cp $classes l1j.server.server.model.network.core.CTransportWindowsSmokeTest
     if ($LASTEXITCODE -ne 0) { throw 'FFM/PSS Windows smoke failed' }
 } finally { Pop-Location }
+
+& javac --release 21 -encoding UTF-8 -d windows-classes $pss tests/pss_window/TransportContract.java
+if ($LASTEXITCODE -ne 0) { throw 'Independent PSS transport contract compilation failed' }
+& java -cp windows-classes l1j.server.server.model.character.pss.window.TransportContract
+if ($LASTEXITCODE -ne 0) { throw 'Independent PSS transport contract failed' }
+& python tests/test_pss_independent.py
+if ($LASTEXITCODE -ne 0) { throw 'Production PSS activation/pairing failed' }
+& .\build\pss-client\PssClientLoadTest.exe
+if ($LASTEXITCODE -ne 0) { throw 'Original standalone PSS client load failed' }

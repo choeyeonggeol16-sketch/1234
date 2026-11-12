@@ -1,27 +1,8 @@
 {
-  "conclusion": "success",
+  "conclusion": "pending",
   "abi": "0x30000",
-  "dll": "CTransport.dll",
+  "scope": "game CTransport unchanged, independent PSS restored",
   "dll_sha256": "d149b3bd1835eb966ff590eecdb34890ca8798e033c43a58c498b0bee586e827",
-  "source_archive_sha256": "580f9202133739e768644c7a54cbc640545d5e0bcdff5b7331d07df258a604f0",
-  "run_id": 43246944182,
-  "job_id": 131282033180,
-  "tested_commit": "501e04d579082424e549b3f73d9ef5f76fb68231",
-  "url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43246944182",
-  "os": "Microsoft Windows Server2025",
-  "java": "Temurin JDK21",
-  "checks": [
-    "actual Windows DLL:20 connections/4MB fragmented echo and close counts",
-    "production Java FFM:20 connections/4MB echo,512 posted tasks,expiry/cancel/shutdown",
-    "1000 scheduled timers:original inline/repost diagnostics and zero pool fault counters",
-    "production game socket adapter:16KB native into4KB Java reads,stash,pause,resume,ordered send",
-    "production PSS:fragmented HELLO,PING,BOUND,OPEN,detach,invalid HELLO,native expiry shutdown"
-  ],
-  "test_double": "Java game-owner dependency only; production FFM/server/socket/endpoint/PSS and real Windows kernel",
-  "not_tested": [
-    "actual game-client login/hunt",
-    "operating database",
-    "long-duration concurrency/performance"
-  ],
-  "code_and_dll_unchanged_by_evidence_commit": true
+  "pss_client_dll_sha256": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
+  "note": "new independent PSS Windows run pending"
 }

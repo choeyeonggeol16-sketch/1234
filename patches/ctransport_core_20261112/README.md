@@ -1,35 +1,24 @@
-# CTransport.dll ABI3 — 원본 구조 후속 복원
+# 게임 CTransport ABI3 / PSS 독립 연결 재활성화
 
-게임 접속/PSS UI 연결의 유일한 전송 엔진입니다. 기존 엔진 선택·fallback·PSS NIO2는 없습니다. DLL과 전체 src를 함께 적용합니다.
+게임 접속은 기존 CTransport.dll ABI3(8 native workers)를 유지합니다. PSS 설정창 제어는 전용 포트와 독립 NIO2 그룹2개 스레드·만료 스레드1개를 사용합니다. 게임 전송 엔진/풀/타이머에 합치지 않습니다.
 
 ## 적용
 
-1. 기존 src를 전체 src ZIP의 src로 교체하고 clean build합니다. 옛 CIOWinServer/CIOWinSocket/CIOTransportConfig 소스·class를 남기지 않습니다.
-2. 서버 실행 폴더에 build/CTransport.dll을 넣습니다. ABI는0x30000,37개 export입니다. 구버전 Java/DLL 혼용은 해시/ABI 검사에서 거절됩니다.
-3. CIOWinTransport.dll/CIONcTransport.dll/RKernCIOTransport.dll과 옛 엔진 선택 옵션은 제거합니다.
-4. L1 프레이밍·암복호화용 CIOPacketCodec.dll은 유지합니다. Java21 --enable-preview와 --enable-native-access=ALL-UNNAMED 유지. 추가 SQL 없음.
+- 기존 src를 전체 src ZIP의 src로 교체하고 clean build합니다. Java21 preview/native-access와 기존 CIOPacketCodec.dll을 유지합니다. 추가 SQL 없음.
+- 게임용 CTransport.dll은 수정하지 않았습니다. SHA256 d149b3bd1835eb966ff590eecdb34890ca8798e033c43a58c498b0bee586e827.
+- 서버 시작 시 PSS listener를 별도로 활성화합니다. 기본 포트는 GAME_SERVER_PORT+1(게임5000이면PSS5001). JVM -Dpss.uiBridge.port=5001로 지정할 수 있으며 게임 포트와 같으면 거절합니다.
+- 게임 listener 종료는 PSS listener를 종료하지 않습니다. PSS bind 실패도 게임 기동을 막지 않습니다. 프로세스 종료 시 PSS 전용 shutdown hook이 정리합니다.
+- PSS는 기존16-byte 토큰 등록/HELLO/BOUND/PING/OPEN을 사용합니다. 설정서 OPEN은 게임 연결의 SC_PssNativeWindow를 사용하지 않습니다. 사냥 시작·종료·설정 게임 프로토콜/로직은 수정하지 않았습니다.
 
-## 이번 구현
+## 클라이언트
 
-- 종료 시작 훅 → 활성 연결 조회 제거 → linger0/socket close → I/O·콜백 종료 → 최종 자원 정리로 분리했습니다. 훅은 socket mutex 밖에서 실행하고 재진입을 허용합니다.
-- 원본0x2038/0x4038 stride의 연속 버퍼 slab와 포인터 원형 큐를 사전 할당합니다. 고갈 후 개별 buffer new/다른 풀 차용은 하지 않습니다. 외부 FFM 스레드는 등록 시 고정 ring을 초기화합니다.
-- timer 등록은 토큰 hash 대신 현재 worker/등록된 외부 생산자 소유권을 따릅니다. owner17은 재게시, 다른 owner는100개 직접 실행 후101번째 IOCP 재게시 분기를 반영했습니다.
-- 1,000개 객체/메시지/인자 배열과 count/next를 가진0x4e30 timer block,32-byte 장기 heap record와 공유 CAS block ring을 구현했습니다. 휠50ms/200칸, block 선두 확장/반납, 취소 슬롯 회수와 부분 초기화 rollback을 포함합니다.
-- 풀 할당/고갈/초기화 실패/손상, timer 직접 실행·재게시, 종료 시작·최종 통지를 CTransport_Server_GetDiagnostics의8개 uint64로 확인합니다.
-- 이전8K/16K, 공유 RX/COW, 송신 FIFO/부분 완료,128배치·NTSTATUS·종료 신호 처리는 유지합니다.
+기존 독립 연결용 Pss2019.dll과 소스를 byte-for-byte 재사용합니다. 소스/설정창/사냥 코드는 변경하지 않았습니다. 기존 DLL이 이미 독립 연결용이면 그대로 사용합니다. 게임 연결 전용(in-band) DLL을 쓰고 있다면 함께 제공한 독립 연결용 기존 DLL이 필요합니다.
 
-원본의 풀 고갈 함수는 고의 null write입니다. 현재 팩에서는 진단 후 요청/연결을 종료하며 프로세스 전체를 강제 크래시시키지 않습니다. 풀 용량과 외부 Java 스레드 번호,64비트 clock/취소 인덱스는 팩에 맞춘 설정입니다. 원본 게임 코드/패킷 ID/암호화는 이식 대상이 아닙니다. 세부 차이·메모리 정책·원본 주소는 GitHub 보고서에 기록했습니다.
+원본 companion DLL SHA256:35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa.
+기존 Pss2019.ini를 유지하고 [PssBridge] GamePort/WindowPort를 서버와 맞춥니다. 포트5001은 별도 TCP 연결입니다. 클라이언트 프로토콜 등록만 인증된 게임 세션에서 수행하며 창 제어는 전용 연결입니다.
 
 ## 검사
 
-python native/build_native.py --zig /path/to/zig --write-java-hash
-python tests/run_native_tests.py
-python tests/run_native_tests.py --tsan
-python tests/verify_native_binary.py
+생산 PssWindowTransport의 실제 TCP9개 계약 그룹, 생산 PlaySupportWindow의 시작/토큰 등록/설정서 OPEN/로그아웃/재시작/포트 충돌 격리를 검사합니다. 게임 세계 객체만 검사 대역입니다. 전체 Java1,698개 컴파일과 Windows에서 기존 CTransport/새 독립 PSS/원본 PE32 client loader 검사를 수행합니다.
 
-Windows/JDK21: tests/run_windows.ps1. 배포 DLL C++ loopback, 생산 Java FFM/소켓 어댑터와 PSS를 검사합니다. 게임 owner 의존성만 대역입니다. 실제 게임 클라이언트/운영 DB/장시간 부하와 구분합니다. ABI3의 Windows 결과는 WINDOWS_VERIFICATION.json을 확인합니다. 이전 ABI2 성공 이력을 새 ABI3 검증으로 사용하지 않습니다.
-
-종료 시작/최종 callback에서 자기 server의 Stop/StopAccept/Wait를 호출하면 대기하지 않고 거절합니다. IOCP worker가 아닌 호출자 thread의 close-post 실패 대체 통지에서도 같은 가드를 적용하고 검사했습니다.
-
-최종 ABI3 Windows 실행 검사 통과: https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43246944182
-배포 DLL, 생산 Java FFM/소켓/PSS와1,000개 timer burst를 확인했습니다. 실제 게임 클라이언트·운영 DB·장시간 부하와 구분합니다. 검증된 최종 파일/소스는 WINDOWS_VERIFICATION.json을 확인합니다.
+실제 게임 클라이언트의 창 렌더링·자동사냥·운영 DB·장시간 부하는 이 검사에 포함되지 않습니다. 최신 Windows 결과는 WINDOWS_VERIFICATION.json과 GitHub 실행 기록을 확인합니다.

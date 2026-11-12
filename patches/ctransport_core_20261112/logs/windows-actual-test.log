@@ -1,6 +1,1 @@
-2026-11-12T15:21:48.3586057Z ##[group]Operating System
-2026-11-12T15:21:48.3586913Z Microsoft Windows Server 2025
-2026-11-12T15:21:57.0489397Z PASS actual Windows DLL: 20 loopback connections, 4MB fragmented echo, order and close counts.
-2026-11-12T15:22:02.0943413Z PASS actual Windows shipped DLL + production Java21 FFM: 20 connections/4MB echo, work, timers/cancel, shutdown
-2026-11-12T15:22:02.1388438Z PASS production gameplay socket adapter: native 16K receives into 4K Java reads, stash/pause/resume and ordered writes
-2026-11-12T15:22:02.1854835Z PASS PSS UI channel on same native engine: fragmented HELLO, PING, BOUND/OPEN, detach, invalid greeting, native expiry timer shutdown
+PENDING independent PSS activation Windows verification.

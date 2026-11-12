@@ -1,3 +1,11 @@
+## 2026-11-12 — PSS 독립 연결 재활성화 / 게임 CTransport 유지
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [PSS 복구·적용 안내](reports/PSS_INDEPENDENT_RESTORE_20261112.md)
+
+PSS 전용 포트·NIO2 그룹2개 스레드·만료 스레드1개를 복구하고 서버 시작 시 별도로 활성화합니다. 토큰 등록과 전용 채널 OPEN을 복구했으며 게임 연결의 설정창 명령을 사용하지 않습니다. 게임은 기존 CTransport.dll ABI3를 유지하고 PSS 기동/종료 실패와 분리합니다. 실제 게임 클라이언트·운영 DB 부하는 별도 검증 대상입니다.
+
+---
+
 ## 2026-11-12 — CTransport ABI3: 종료 훅·사전 할당·원본 작업 분배
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [구현·근거·적용 안내](reports/CTRANSPORT_CORE_20261112.md)

@@ -1,3 +1,3 @@
 PASS source CRC/every byte; previous archive + changes/deletions reproduces all files.
-PASS three obsolete backend source files deleted; no selector, fallback or NIO2 socket path.
-{"source_archive_sha256": "580f9202133739e768644c7a54cbc640545d5e0bcdff5b7331d07df258a604f0", "dll_sha256": "d149b3bd1835eb966ff590eecdb34890ca8798e033c43a58c498b0bee586e827"}
+PASS game backend has no selector/fallback; independent PSS NIO2 listener enabled with authenticated OPEN; no game in-band window command.
+{"source_archive_sha256": "e7abd02679f3422b5748aa0a06df4f108653e6f5148c57d708a1775a6fb11576", "dll_sha256": "d149b3bd1835eb966ff590eecdb34890ca8798e033c43a58c498b0bee586e827"}

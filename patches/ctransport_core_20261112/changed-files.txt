@@ -1,3 +1,5 @@
+src/l1j/server/Server.java
+src/l1j/server/server/model/character/pss/window/PlaySupportWindow.java
 src/l1j/server/server/model/character/pss/window/PssWindowTransport.java
 src/l1j/server/server/model/network/core/CIOClient.java
 src/l1j/server/server/model/network/core/CIOPacketCodec.java
