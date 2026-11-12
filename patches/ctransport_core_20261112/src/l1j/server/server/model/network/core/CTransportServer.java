@@ -58,9 +58,10 @@ final class CTransportServer implements AutoCloseable {
     private final Admitter admitter;
     private final CTransportEndpoint.Events rawEvents;
     private final ConcurrentHashMap<Long, Runnable> nativeTasks = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, CTransportSocket> closingConnections = new ConcurrentHashMap<>();
     private final AtomicLong nextTask = new AtomicLong();
-    private final MethodHandle scheduleTask, cancelTask;
-    private final MemorySegment taskStub;
+    private final MethodHandle scheduleTask, cancelTask, getDiagnostics;
+    private final MemorySegment taskStub, closingStub;
     @SuppressWarnings("unused")
 	private final InetSocketAddress listenAddress;
     private volatile AtomicReferenceArray<CTransportSocket> connections;
@@ -169,6 +170,8 @@ final class CTransportServer implements AutoCloseable {
             scheduleTask = fn("CTransport_Server_Schedule", FunctionDescriptor.of(I, P, L, I));
             cancelTask = fn("CTransport_Server_Cancel", FunctionDescriptor.of(I, P, L));
             MethodHandle setTask = fn("CTransport_SetTaskCallback", FunctionDescriptor.ofVoid(P, P));
+            MethodHandle setClosing = fn("CTransport_SetClosingCallback", FunctionDescriptor.ofVoid(P, P));
+            getDiagnostics = fn("CTransport_Server_GetDiagnostics", FunctionDescriptor.of(I, P, P, I));
             MethodHandles.Lookup lookup = MethodHandles.lookup();
             taskStub = LINKER.upcallStub(lookup.findVirtual(CTransportServer.class, "onTask",
                     MethodType.methodType(void.class, MemorySegment.class, long.class, int.class)).bindTo(this),
@@ -182,6 +185,9 @@ final class CTransportServer implements AutoCloseable {
             sendStub = LINKER.upcallStub(lookup.findVirtual(CTransportServer.class, "onSend",
                     MethodType.methodType(int.class, MemorySegment.class, long.class, MemorySegment.class, int.class)).bindTo(this),
                     FunctionDescriptor.of(I, P, L, P, I), arena);
+            closingStub = LINKER.upcallStub(lookup.findVirtual(CTransportServer.class, "onClosing",
+                    MethodType.methodType(int.class, MemorySegment.class, long.class, int.class, int.class)).bindTo(this),
+                    FunctionDescriptor.of(I, P, L, I, I), arena);
             closeStub = LINKER.upcallStub(lookup.findVirtual(CTransportServer.class, "onClose",
                     MethodType.methodType(int.class, MemorySegment.class, long.class, int.class, int.class)).bindTo(this),
                     FunctionDescriptor.of(I, P, L, I, I), arena);
@@ -192,6 +198,7 @@ final class CTransportServer implements AutoCloseable {
             setReceive.invokeExact(listener, receiveStub);
             setSend.invokeExact(listener, sendStub);
             setClose.invokeExact(listener, closeStub);
+            setClosing.invokeExact(listener, closingStub);
             setTask.invokeExact(listener, taskStub);
             server = (MemorySegment) createServer.invokeExact(listener);
             createdServer = server;
@@ -207,7 +214,11 @@ final class CTransportServer implements AutoCloseable {
             try (Arena a = Arena.ofConfined()) {
                 String bind = address.getAddress() == null ? "0.0.0.0" : address.getAddress().getHostAddress();
                 int result = (int) start.invokeExact(server, a.allocateUtf8String(bind), (short)address.getPort());
-                if (result == 0) throw new IOException("native listener start failed for " + address);
+                if (result == 0) {
+                    long[] stats = diagnostics();
+                    throw new IOException("CTransport listener start failed for " + address
+                            + "; allocatedBlocks=" + stats[0] + "; poolInitFailures=" + stats[2]);
+                }
             }
             started = true;
         } catch (Throwable failure) {
@@ -340,8 +351,9 @@ final class CTransportServer implements AutoCloseable {
         } catch (Throwable failure) {
             LOG.log(Level.WARNING, "CIO native ACCEPT rejected", failure);
             if (rawEvents != null) { rawEvents.closed(id); return 0; }
-            CTransportSocket channel = find(id);
-            if (channel != null) { forget(channel); channel.nativeClosed(); }
+            CTransportSocket channel = closingConnections.remove(id);
+            if (channel == null) { channel = find(id); if (channel != null) forget(channel); }
+            if (channel != null) channel.nativeClosed();
             return 2;
         } finally { leaveCallback(); }
     }
@@ -382,8 +394,9 @@ final class CTransportServer implements AutoCloseable {
         enterCallback();
         try {
             if (rawEvents != null) { rawEvents.closed(id); return 0; }
-            CTransportSocket channel = find(id);
-            if (channel != null) { forget(channel); channel.nativeClosed(); }
+            CTransportSocket channel = closingConnections.remove(id);
+            if (channel == null) { channel = find(id); if (channel != null) forget(channel); }
+            if (channel != null) channel.nativeClosed();
             return 0;
         } catch (Throwable failure) {
             LOG.log(Level.WARNING, "CIO native CLOSE callback failed conn=" + id, failure);
@@ -422,6 +435,39 @@ final class CTransportServer implements AutoCloseable {
             if ((int) cancelTask.invokeExact(server, token) == 0) return false;
             nativeTasks.remove(token); return true;
         } catch (Throwable failure) { throw new IllegalStateException("CTransport cancellation failed", failure); }
+        finally { nativeCalls.decrementAndGet(); }
+    }
+
+    @SuppressWarnings({"preview", "unused"})
+    private int onClosing(MemorySegment sender, long id, int operation, int error) {
+        enterCallback();
+        try {
+            if (rawEvents != null) rawEvents.closing(id);
+            else {
+                CTransportSocket channel = find(id);
+                if (channel != null) {
+                    channel.nativeClosing();
+                    closingConnections.put(id, channel);
+                    forget(channel); // admission lookup ends before physical socket close
+                }
+            }
+            if (error == 10055) LOG.warning("CTransport buffer capacity exhausted: conn=" + id);
+            return 0;
+        } catch (Throwable failure) { LOG.log(Level.WARNING, "CTransport closing hook failed", failure); return 0; }
+        finally { leaveCallback(); }
+    }
+
+    @SuppressWarnings("preview")
+    long[] diagnostics() {
+        if (!enterNative()) throw new IllegalStateException("CTransport is stopping");
+        try (Arena memory = Arena.ofConfined()) {
+            MemorySegment values = memory.allocate(8 * Long.BYTES, Long.BYTES);
+            if ((int) getDiagnostics.invokeExact(server, values, 8) == 0) throw new IllegalStateException("native diagnostics rejected");
+            long[] result = new long[8];
+            for (int i = 0; i < result.length; i++) result[i] = values.get(L, i * Long.BYTES);
+            return result;
+        } catch (RuntimeException failure) { throw failure; }
+        catch (Throwable failure) { throw new IllegalStateException("native diagnostics failed", failure); }
         finally { nativeCalls.decrementAndGet(); }
     }
 
@@ -597,6 +643,7 @@ final class CTransportServer implements AutoCloseable {
             fn("CIO_Destroy_TcpServerListener", FunctionDescriptor.ofVoid(P)).invokeExact(listener);
             destroyed = true;
             nativeTasks.clear();
+            closingConnections.clear();
             arena.close();
         } catch (Throwable error) {
             throw new IOException("CIO native destruction failed", error);

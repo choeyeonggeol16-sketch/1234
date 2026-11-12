@@ -1,0 +1,68 @@
+# Tentative role: timer_bucket_execute; VA 0x925374..0x925459
+0000000000925374: push     rbx
+0000000000925376: push     rbp
+0000000000925377: push     rsi
+0000000000925378: push     rdi
+0000000000925379: push     r12
+000000000092537b: push     r13
+000000000092537d: push     r14
+000000000092537f: sub      rsp, 0x20
+0000000000925383: mov      rax, qword ptr gs:[0x58]
+000000000092538c: mov      edx, dword ptr [rip + 0x2ec99e46]
+0000000000925392: xor      edi, edi
+0000000000925394: mov      rbp, qword ptr [rax + rdx*8]
+0000000000925398: mov      eax, 0x7d58
+000000000092539d: mov      rbx, rcx
+00000000009253a0: cmp      dword ptr [rax + rbp], 0x11
+00000000009253a4: jne      0x9253e0
+00000000009253a6: lea      rsi, [rcx + 0x4e20]
+00000000009253ad: cmp      dword ptr [rsi], edi
+00000000009253af: jle      0x92544a
+00000000009253b5: lea      rbp, [rcx + 0x1f40]
+00000000009253bc: mov      rcx, qword ptr [rbx]
+00000000009253bf: mov      r8, qword ptr [rbx + 0x2ee0]
+00000000009253c6: mov      edx, dword ptr [rbp]
+00000000009253c9: mov      rax, qword ptr [rcx]
+00000000009253cc: call     qword ptr [rax + 0x40]
+00000000009253cf: add      edi, 1
+00000000009253d2: add      rbp, 4
+00000000009253d6: add      rbx, 8
+00000000009253da: cmp      edi, dword ptr [rsi]
+00000000009253dc: jl       0x9253bc
+00000000009253de: jmp      0x92544a
+00000000009253e0: lea      r12, [rcx + 0x4e20]
+00000000009253e7: mov      esi, edi
+00000000009253e9: cmp      dword ptr [r12], edi
+00000000009253ed: jle      0x92544a
+00000000009253ef: mov      r14d, 0x7d70
+00000000009253f5: lea      r13, [rcx + 0x1f40]
+00000000009253fc: mov      ecx, dword ptr [r14 + rbp]
+0000000000925400: cmp      ecx, 0x64
+0000000000925403: lea      eax, [rcx + 1]
+0000000000925406: mov      rcx, qword ptr [rbx]
+0000000000925409: mov      dword ptr [r14 + rbp], eax
+000000000092540d: mov      rax, qword ptr [rcx]
+0000000000925410: jne      0x925426
+0000000000925412: mov      r8, qword ptr [rbx + 0x2ee0]
+0000000000925419: mov      edx, dword ptr [r13]
+000000000092541d: call     qword ptr [rax + 0x40]
+0000000000925420: mov      dword ptr [r14 + rbp], edi
+0000000000925424: jmp      0x925439
+0000000000925426: mov      r9, qword ptr [rbx + 0x2ee0]
+000000000092542d: mov      r8d, dword ptr [r13]
+0000000000925431: mov      edx, 1
+0000000000925436: call     qword ptr [rax + 0x50]
+0000000000925439: add      esi, 1
+000000000092543c: add      r13, 4
+0000000000925440: add      rbx, 8
+0000000000925444: cmp      esi, dword ptr [r12]
+0000000000925448: jl       0x9253fc
+000000000092544a: add      rsp, 0x20
+000000000092544e: pop      r14
+0000000000925450: pop      r13
+0000000000925452: pop      r12
+0000000000925454: pop      rdi
+0000000000925455: pop      rsi
+0000000000925456: pop      rbp
+0000000000925457: pop      rbx
+0000000000925458: ret      

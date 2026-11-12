@@ -9,6 +9,7 @@
 #include <new>
 #include <thread>
 #include <utility>
+#include <vector>
 namespace ctransport {
 constexpr std::size_t BufferBytes=8192, LargeBufferBytes=16384, MaxQueuedBytes=4u*1024u*1024u;
 class CIOObject {
@@ -33,56 +34,112 @@ public:
  void unlock()noexcept{held_.clear(std::memory_order_release);}
 };
 class SpinGuard {SpinLock& lock_;public:explicit SpinGuard(SpinLock& l)noexcept:lock_(l){lock_.lock();}~SpinGuard(){lock_.unlock();}};
-struct CIOBuffer {
- struct Payload{std::unique_ptr<unsigned char[]> bytes;unsigned char* data()noexcept{return bytes.get();}const unsigned char* data()const noexcept{return bytes.get();}}data;
+struct CIOBuffer;
+template<std::size_t Bytes> struct NativeBufferStorage {
+ std::array<unsigned char,16> prefix{};
+ std::array<unsigned char,Bytes> payload{};
+ std::uint32_t used=0,padding=0;
+ CIOBuffer* next=nullptr;
  std::atomic<unsigned> references{0};
- std::size_t used=0,offset=0;CIOBuffer* next=nullptr;
- unsigned owner=0,bucket=0;std::size_t capacity=BufferBytes;
+ std::array<unsigned char,16> reserved{};
+ unsigned owner=0;
 };
-// Original TLS owner selection, circular free slots, owner-stamped buffers and
-// CAS-serialized return. External FFM threads register in a separate set of
-// slots; shared external slots serialize allocation as well as return.
+static_assert(offsetof(NativeBufferStorage<8192>,used)==0x2010);
+static_assert(offsetof(NativeBufferStorage<8192>,next)==0x2018);
+static_assert(offsetof(NativeBufferStorage<8192>,references)==0x2020);
+static_assert(offsetof(NativeBufferStorage<8192>,owner)==0x2034);
+static_assert(sizeof(NativeBufferStorage<8192>)==0x2038);
+static_assert(sizeof(NativeBufferStorage<16384>)==0x4038);
+// Views add the adapter's partial-send offset without changing the recovered
+// slab stride or payload/length/next/ref/owner field positions.
+struct CIOBuffer {
+ struct Payload{unsigned char* bytes;unsigned char* data()noexcept{return bytes;}const unsigned char* data()const noexcept{return bytes;}}data;
+ std::atomic<unsigned>& references;
+ std::uint32_t& used;std::size_t offset=0;CIOBuffer*& next;
+ unsigned& owner;unsigned bucket;const std::size_t capacity;
+ template<std::size_t Bytes> CIOBuffer(NativeBufferStorage<Bytes>& raw,unsigned id,unsigned family)
+ :data{raw.payload.data()},references(raw.references),used(raw.used),next(raw.next),owner(raw.owner),bucket(family),capacity(Bytes){owner=id;}
+};
+// 0x6b5094/0x6b4fb8 allocate zeroed contiguous slabs plus pointer rings.
+// Pop never grows the pool. CAS-serialized returns go to the stamped owner.
 class CIOBufferPool {
- static constexpr unsigned NativeOwners=64,OwnerCount=128,RingCapacity=1024;
- struct Ring{SpinLock gate;std::array<CIOBuffer*,RingCapacity>slots{};std::uint64_t read=0,write=0;unsigned allocated=0;};
+ static constexpr unsigned NativeOwners=64,OwnerCount=128;
+ struct Ring{
+  SpinLock gate;std::unique_ptr<CIOBuffer*[]> slots;
+  std::unique_ptr<NativeBufferStorage<8192>[]>small;
+  std::unique_ptr<NativeBufferStorage<16384>[]>large;
+  std::vector<CIOBuffer> views;
+  std::uint64_t read=0,write=0;std::size_t capacity=0;
+ };
  std::unique_ptr<Ring[]>rings_{new Ring[OwnerCount*2]};
  std::atomic<std::size_t>allocated_{0};const std::size_t limit_;const std::uint64_t generation_;
  std::atomic<unsigned>external_{0};inline static std::atomic<std::uint64_t>nextGeneration_{1};
  struct Binding{std::uint64_t generation;unsigned owner;};
  inline static thread_local Binding binding_{0,0};
- inline static thread_local std::array<Binding,8> externalBindings_{};
+ inline static thread_local std::array<Binding,8>externalBindings_{};
  inline static thread_local unsigned externalCacheCursor_=0;
+ std::size_t foreign8_=32,foreign16_=32;
+ std::atomic<std::uint64_t>exhaustions_{0},initializationFailures_{0},corruptions_{0};
  unsigned owner()noexcept{
   if(binding_.generation==generation_)return binding_.owner;
   for(const auto& cached:externalBindings_)if(cached.generation==generation_)return cached.owner;
   Binding registered{generation_,NativeOwners+external_.fetch_add(1)%NativeOwners};
-  externalBindings_[externalCacheCursor_++%externalBindings_.size()]=registered;
-  return registered.owner;
+  externalBindings_[externalCacheCursor_++%externalBindings_.size()]=registered;return registered.owner;
+ }
+ bool initializeRing(Ring& ring,unsigned id,unsigned family,std::size_t count)noexcept{
+  if(ring.capacity)return true;
+  if(!count||count>limit_){++initializationFailures_;return false;}
+  auto total=allocated_.load();
+  do{if(count>limit_-total){++initializationFailures_;return false;}}while(!allocated_.compare_exchange_weak(total,total+count));
+  try{
+   ring.slots.reset(new CIOBuffer*[count]{});ring.views.reserve(count);
+   if(family){ring.large.reset(new NativeBufferStorage<16384>[count]);for(std::size_t i=0;i<count;++i)ring.views.emplace_back(ring.large[i],id,family);}
+   else{ring.small.reset(new NativeBufferStorage<8192>[count]);for(std::size_t i=0;i<count;++i)ring.views.emplace_back(ring.small[i],id,family);}
+   for(std::size_t i=0;i<count;++i)ring.slots[i]=&ring.views[i];
+   ring.capacity=count;return true;
+  }catch(...){ring.views.clear();ring.slots.reset();ring.small.reset();ring.large.reset();allocated_.fetch_sub(count);++initializationFailures_;return false;}
  }
 public:
  class OwnerScope{Binding saved_;public:OwnerScope(CIOBufferPool& p,unsigned o)noexcept:saved_(binding_){binding_={p.generation_,o%NativeOwners};}~OwnerScope(){binding_=saved_;}};
  explicit CIOBufferPool(std::size_t limit):limit_(limit),generation_(nextGeneration_.fetch_add(1)){}
- ~CIOBufferPool(){for(unsigned i=0;i<OwnerCount*2;++i){auto& r=rings_[i];for(auto at=r.read;at<r.write;++at)delete r.slots[at%RingCapacity];}}
+ bool initialize(unsigned workers,std::size_t total16)noexcept{
+  if(!workers||workers>NativeOwners)return false;
+  // Original native 8K pools:300/owner. Configured total16 / worker count.
+  // Original owner17 setup:8K=300,16K=200; use it for external producers.
+  foreign8_=300;foreign16_=200;
+  for(unsigned id=0;id<workers;++id)for(unsigned family=0;family<2;++family){
+   auto& ring=rings_[id*2+family];SpinGuard lock(ring.gate);
+   if(!initializeRing(ring,id,family,family?std::max<std::size_t>(1,total16/workers):300))return false;
+  }
+  return true;
+ }
  CIOBuffer* acquire(std::size_t bytes=BufferBytes)noexcept{
   if(bytes!=BufferBytes&&bytes!=LargeBufferBytes)return nullptr;
-  unsigned id=owner(),bucket=bytes==LargeBufferBytes?1:0;auto& r=rings_[id*2+bucket];SpinGuard hold(r.gate);CIOBuffer* p=nullptr;
-  if(r.read!=r.write){auto& slot=r.slots[r.read++%RingCapacity];p=slot;slot=nullptr;}
-  else{
-   if(r.allocated>=RingCapacity)return nullptr;
-   auto count=allocated_.load();do{if(count>=limit_)return nullptr;}while(!allocated_.compare_exchange_weak(count,count+1));
-   p=new(std::nothrow)CIOBuffer;if(p)p->data.bytes.reset(new(std::nothrow)unsigned char[bytes]);
-   if(!p||!p->data.bytes){delete p;--allocated_;return nullptr;}
-   p->owner=id;p->bucket=bucket;p->capacity=bytes;++r.allocated;
-  }
-  p->used=p->offset=0;p->next=nullptr;p->references.store(1,std::memory_order_release);return p;
+  unsigned id=owner(),family=bytes==LargeBufferBytes?1:0;auto& r=rings_[id*2+family];SpinGuard hold(r.gate);
+  // External thread registration initializes a complete fixed-size ring once.
+  if(!r.capacity&&!initializeRing(r,id,family,std::min(limit_,family?foreign16_:foreign8_)))return nullptr;
+  if(r.read-r.write>=r.capacity){++exhaustions_;return nullptr;}
+  auto& slot=r.slots[r.read%r.capacity];auto* p=slot;
+  if(!p||p->references.load()!=0||p->used||p->next){++corruptions_;return nullptr;}
+  slot=nullptr;++r.read;p->owner=id;p->offset=0;p->references.store(1,std::memory_order_release);return p;
  }
  static void retain(CIOBuffer* p)noexcept{if(p)p->references.fetch_add(1,std::memory_order_relaxed);}
  void recycle(CIOBuffer* p)noexcept{
-  if(!p||p->references.fetch_sub(1,std::memory_order_acq_rel)!=1)return;
-  p->used=p->offset=0;p->next=nullptr;auto& r=rings_[p->owner*2+p->bucket];SpinGuard hold(r.gate);
-  r.slots[r.write++%RingCapacity]=p;
+  if(!p)return;auto previous=p->references.fetch_sub(1,std::memory_order_acq_rel);
+  if(previous==0){p->references.fetch_add(1);++corruptions_;return;}if(previous!=1)return;
+  p->used=0;p->offset=0;p->next=nullptr;
+  if(p->owner>=OwnerCount||p->bucket>1){++corruptions_;return;}
+  auto& r=rings_[p->owner*2+p->bucket];SpinGuard hold(r.gate);
+  if(!r.capacity){++corruptions_;return;}
+  auto& slot=r.slots[r.write%r.capacity];
+  if(r.write>=r.read||slot){++corruptions_;return;}
+  slot=p;++r.write;
  }
+ unsigned currentOwner()noexcept{return owner();}
  std::size_t allocated()const noexcept{return allocated_.load();}
+ std::uint64_t exhaustions()const noexcept{return exhaustions_.load();}
+ std::uint64_t initializationFailures()const noexcept{return initializationFailures_.load();}
+ std::uint64_t corruptions()const noexcept{return corruptions_.load();}
 };
 // Observed read path: shared -> copy remaining bytes, unique -> compact in place.
 class ReceiveWindow {
@@ -90,7 +147,7 @@ class ReceiveWindow {
 public:
  ReceiveWindow(CIOBufferPool& p,std::size_t c)noexcept:pool_(p),capacity_(c){}
  ~ReceiveWindow(){clear();}
- void clear()noexcept{pool_.recycle(block_);block_=nullptr;}CIOBuffer* block()const noexcept{return block_;}
+ void clear()noexcept{if(block_)pool_.recycle(block_);block_=nullptr;}CIOBuffer* block()const noexcept{return block_;}
  bool prepare()noexcept{
   if(!block_){block_=pool_.acquire(capacity_);return block_!=nullptr;}
   auto remaining=block_->used-block_->offset;
@@ -134,9 +191,9 @@ public:
  void clear(CIOBufferPool& pool)noexcept{while(head_){auto* next=head_->next;pool.recycle(head_);head_=next;}tail_=nullptr;bytes_=0;}
 };
 struct IoState {
- bool closing=false,readPosted=false,writePosted=false,readDelivering=false,writeDelivering=false,acceptDelivering=true,closeQueued=false,paused=true;
+ bool closeRetiring=false,closing=false,readPosted=false,writePosted=false,readDelivering=false,writeDelivering=false,acceptDelivering=true,closeQueued=false,paused=true;
  bool canRead()const noexcept{return !closing&&!paused&&!readPosted&&!readDelivering&&!acceptDelivering;}
  bool canWrite()const noexcept{return !closing&&!writePosted&&!writeDelivering&&!acceptDelivering;}
- bool canClose()const noexcept{return closing&&!readPosted&&!writePosted&&!readDelivering&&!writeDelivering&&!acceptDelivering&&!closeQueued;}
+ bool canClose()const noexcept{return closing&&!closeRetiring&&!readPosted&&!writePosted&&!readDelivering&&!writeDelivering&&!acceptDelivering&&!closeQueued;}
 };
 } // namespace ctransport

@@ -17,7 +17,8 @@ struct Probe {
  std::atomic<void*> retained{nullptr};
  std::atomic<bool> retainRead{false},blockTask{false},taskEntered{false},releaseTask{false};
  std::vector<unsigned char> received;
- std::atomic<int> closed{0}, sent{0};
+ std::atomic<int> closed{0}, sent{0},closing{0};
+ std::atomic<bool> reenterClose{false},blockClosing{false},closingEntered{false},releaseClosing{false};
  std::atomic<bool> echo{false}, pauseInCallback{false}, reject{false}, attemptStop{false};
  std::atomic<bool> blockReceive{false}, readEntered{false}, releaseRead{false};
 };
@@ -39,6 +40,12 @@ static int receiveCallback(void* server, std::uint64_t id, const void* data, int
  return 0;
 }
 static int sendCallback(void*, std::uint64_t, const void*, int length) { probe->sent.fetch_add(length); return 0; }
+static int closingCallback(void* server,std::uint64_t id,int,int) {
+ ++probe->closing;
+ if(probe->reenterClose)check(CIO_Server_Disconnect(server,id,1),"reentrant pre-close rejected");
+ if(probe->blockClosing){probe->closingEntered=true;while(!probe->releaseClosing)std::this_thread::yield();}
+ return 0;
+}
 static int closeCallback(void*, std::uint64_t, int, int) { ++probe->closed; return 0; }
 
 static void taskCallback(void* server, std::uint64_t token, int status) {
@@ -117,7 +124,8 @@ struct Fixture {
   CIO_Set_FN_Server_OnAccept(listener, acceptCallback); CIO_Set_FN_Server_OnReceive(listener, receiveCallback);
   CIO_Set_FN_Server_OnSend(listener, sendCallback); CIO_Set_FN_Server_OnClose(listener, closeCallback);
   CTransport_SetTaskCallback(listener, taskCallback);
-  server = static_cast<Server*>(CIO_Create_TcpServer(listener)); CIO_Server_SetWorkerThreadCount(server, 4);
+  CTransport_SetClosingCallback(listener, closingCallback);
+  server = static_cast<Server*>(CIO_Create_TcpServer(listener)); CIO_Server_SetWorkerThreadCount(server, 4); CIO_Server_SetMaxConnectionCount(server, 128);
   check(CIO_Server_Start(server, "127.0.0.1", 0), "start failed");
  }
  std::pair<SOCKET,std::uint64_t> connect() {
@@ -129,6 +137,7 @@ struct Fixture {
  ~Fixture() {
   fakewin::holdSend = false;
   check(CIO_Server_Stop(server), "stop failed"); check(CIO_Server_Wait(server, 0), "wait confused with running");
+  check(state.closing==state.closed,"pre-close and terminal callback count differ");
   CIO_Destroy_TcpServer(server); CIO_Destroy_TcpServerListener(listener);
  }
 };
@@ -229,7 +238,7 @@ static void engineTests() {
  std::cout<<"PASS 120 connections/600 concurrent repeated closes; pending accepts cancelled and all workers drained over ten server lifetimes\n";
 }
 static std::atomic<unsigned> taskPostFailures{0};
-static void failedTaskCallback(void* server,std::uint64_t token,int status){check(currentWorker==server&&token==55&&status==5,"scheduled post error lost");++taskPostFailures;}
+static void failedTaskCallback(void* server,std::uint64_t token,int status){check(currentWorker==server&&token==56&&status==5,"scheduled post error lost");++taskPostFailures;}
 static void recoveredStructureTests(){
  {
   CIOBufferPool pool(4096);
@@ -238,8 +247,8 @@ static void recoveredStructureTests(){
   std::thread returner([&]{pool.recycle(block);});returner.join();
   {CIOBufferPool other(4);CIOBufferPool::OwnerScope nativeOwner(pool,7);auto* foreign=other.acquire();other.recycle(foreign);
    auto* local=pool.acquire();check(local->owner==7,"nested server call overwrote worker TLS owner");pool.recycle(local);}
-  {CIOBufferPool::OwnerScope owner(pool,3);auto* again=pool.acquire();check(again==block,"buffer returned to foreign pool");pool.recycle(again);
-   for(int i=0;i<5000;++i){again=pool.acquire();check(again==block,"ring wrap corrupted owner slots");pool.recycle(again);}}
+  {CIOBufferPool::OwnerScope owner(pool,3);auto* again=pool.acquire();check(again&&again->owner==3,"buffer returned to foreign pool");pool.recycle(again);
+   for(int i=0;i<5000;++i){again=pool.acquire();check(again&&again->owner==3,"ring wrap corrupted owner slots");pool.recycle(again);}}
   {CIOBufferPool::OwnerScope owner(pool,4);auto* big=pool.acquire(16384);check(big&&big->capacity==16384&&big->owner==4,"16K family missing");pool.recycle(big);}
   std::vector<std::thread> producers;
   for(unsigned i=0;i<12;++i)producers.emplace_back([&,i]{CIOBufferPool::OwnerScope owner(pool,i);for(unsigned j=0;j<2000;++j){auto* p=pool.acquire(j%2?8192:16384);check(p,"cross-owner stress allocation");CIOBufferPool::retain(p);pool.recycle(p);pool.recycle(p);}});
@@ -307,10 +316,94 @@ static void recoveredStructureTests(){
   Fixture f;fakewin::failPost=true;
   check(!CTransport_Server_PostTask(f.server,54)&&f.server->taskCount==0,"immediate task post failure leaked registration");
   CTransport_SetTaskCallback(f.listener,failedTaskCallback);
-  check(CTransport_Server_Schedule(f.server,55,100),"scheduled failure setup");fakewin::failPost=true;
+  CTransport_SetTaskCallback(f.listener,taskCallback);
+  for(unsigned i=1;i<=100;++i)check(CTransport_Server_Schedule(f.server,40000+i*4,1),"dispatch warmup");
+  until([&]{std::lock_guard<std::mutex> lock(f.state.mutex);return f.state.taskTokens.size()==100;});
+  CTransport_SetTaskCallback(f.listener,failedTaskCallback);
+  check(CTransport_Server_Schedule(f.server,55+1,100),"scheduled failure setup");fakewin::failPost=true;
   until([&]{return taskPostFailures.load()==1;});until([&]{return f.server->taskCount==0;});
  }
  std::cout<<"PASS immediate/scheduled PostQueuedCompletionStatus failure balances references and reports scheduled error on worker\n";
  std::cout<<"PASS 512 native work callbacks, scheduled expiry, duplicate rejection, 1000 cancels, shutdown cancellation and callback fence\n";
 }
-int main(){coreTests();batchTests();engineTests();recoveredStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}
+struct TimerOwner final : CIOObject {
+ unsigned token;std::atomic<unsigned>& destroyed;
+ TimerOwner(unsigned t,std::atomic<unsigned>& d):token(t),destroyed(d){}
+ ~TimerOwner()override{++destroyed;}
+ void completed(void*,bool,unsigned,unsigned)noexcept override{}
+};
+static void ownershipCallback(void* raw,std::uint64_t token,int status){
+ auto* server=static_cast<Server*>(raw);check(token==7000&&status==0,"ownership callback");
+ check(CTransport_Server_Schedule(server,7001,100000),"callback timer registration");
+ {std::lock_guard<std::mutex> lock(server->taskGate);check(server->tasks.at(7001)->owner==currentWorkerIndex,"callback timer left registering worker");}
+ check(CTransport_Server_Cancel(server,7001),"callback timer cancellation");++probe->sent;
+}
+static void exactStructureTests(){
+ {
+  CIOBufferPool pool(4);CIOBufferPool::OwnerScope owner(pool,1);
+  std::vector<CIOBuffer*> blocks;
+  for(unsigned i=0;i<4;++i){blocks.push_back(pool.acquire());check(blocks.back(),"preallocated block missing");}
+  check(blocks[1]->data.data()-blocks[0]->data.data()==0x2038,"pool slab is not contiguous at recovered stride");
+  check(pool.allocated()==4&&!pool.acquire()&&pool.exhaustions()==1,"pool grew after exhaustion");
+  for(auto* p:blocks)pool.recycle(p);
+  check(pool.acquire()==blocks[0],"original FIFO ring return order changed");pool.recycle(blocks[0]);
+  pool.recycle(blocks[0]);check(pool.corruptions()==1,"double return was not diagnosed");
+ }
+ {
+  CIOBufferPool pool(10);check(!pool.initialize(1,200)&&pool.initializationFailures()>0,"startup accepted insufficient preallocation budget");
+ }
+ {
+  std::atomic<unsigned> destroyed{0};TimerWheel wheel(0);
+  for(unsigned i=1;i<=1001;++i){auto* owner=new TimerOwner(i,destroyed);check(wheel.schedule(i,owner,50),"1000-node block schedule failed");owner->release();}
+  check(wheel.blocksInUse()==201,"1001st timer did not extend block chain");
+  auto* first=static_cast<TimerOwner*>(wheel.takeDue(50));check(first&&first->token==1001,"original prepended overflow block order changed");first->release();
+  for(unsigned i=1;i<=1000;++i){auto* due=static_cast<TimerOwner*>(wheel.takeDue(50));check(due&&due->token==i,"block array dispatch order changed");due->release();}
+  check(wheel.size()==0&&wheel.blocksInUse()==200&&destroyed==1001,"timer blocks/references not returned");
+ }
+ {
+  std::atomic<unsigned> destroyed{0};TimerBlockPool pool(200);
+  {
+   TimerWheel wheel(0,&pool);
+   for(unsigned i=1;i<=1000;++i){auto* owner=new TimerOwner(i,destroyed);check(wheel.schedule(i,owner,50),"bounded block schedule");owner->release();}
+   auto* rejected=new TimerOwner(1001,destroyed);check(!wheel.schedule(1001,rejected,50),"block pool grew on exhaustion");rejected->release();
+   for(unsigned i=1;i<=1000;i+=2){auto* cancelled=wheel.cancel(i);check(cancelled,"block cancellation missing");cancelled->release();}
+   for(unsigned i=1002;i<1502;++i){auto* owner=new TimerOwner(i,destroyed);check(wheel.schedule(i,owner,50),"cancelled slot compaction failed");owner->release();}
+   check(wheel.blocksInUse()==200&&wheel.size()==1000,"cancelled holes leaked blocks");
+   while(auto* due=wheel.takeDue(50))due->release();
+   check(wheel.size()==0,"compacted bucket retained timer");
+  }
+  check(pool.inUse()==0&&destroyed==1501,"bounded block pool/references leaked");
+  TimerBlockPool tooSmall(199);try{TimerWheel failed(0,&tooSmall);check(false,"incomplete initial wheel admitted");}catch(const std::bad_alloc&){}
+  check(tooSmall.inUse()==0,"partial wheel initialization leaked blocks");
+ }
+ {
+  TimerDispatchPolicy policy;
+  for(unsigned i=0;i<100;++i)check(!policy.post(0),"first100 timers not inline");
+  check(policy.post(0),"101st timer not reposted");
+  for(unsigned i=0;i<202;++i)check(policy.post(17),"owner17 did not post");
+  check(!policy.post(0),"special-owner path changed ordinary counter");
+ }
+ {
+  Fixture f;auto [socket,id]=f.connect();f.state.reenterClose=true;f.state.blockClosing=true;
+  check(CIO_Server_PauseReceive(f.server,id,0),"closing test resume");
+  std::thread closer([&]{CIO_Server_Disconnect(f.server,id,1);});until([&]{return f.state.closingEntered.load();});
+  {std::lock_guard<std::mutex> lock(fakewin::mutex);check(fakewin::sockets.at(socket)->open&&!fakewin::sockets.at(socket)->resetClose,"socket closed before pre-close hook returned");}
+  check(f.state.closed==0&&!CIO_Server_PauseReceive(f.server,id,0),"terminal/admission bypassed pre-close");
+  fakewin::feed(socket,{9,8,7});
+  {std::lock_guard<std::mutex> lock(f.state.mutex);check(f.state.received.empty(),"closed parser delivered new data");}
+  f.state.releaseClosing=true;closer.join();until([&]{return f.state.closed==1;});
+  check(f.state.closing==1,"closing hook repeated");
+  std::uint64_t stats[8]{};check(CTransport_Server_GetDiagnostics(f.server,stats,8)&&stats[6]==1&&stats[7]==1,"close diagnostics changed");
+ }
+ {
+  Fixture f;for(unsigned i=1;i<=8;++i)check(CTransport_Server_Schedule(f.server,6000+i,100000),"producer timer registration");
+  unsigned owner;
+  {std::lock_guard<std::mutex> lock(f.server->taskGate);owner=f.server->tasks.at(6001)->owner;for(unsigned i=2;i<=8;++i)check(f.server->tasks.at(6000+i)->owner==owner,"token value changed timer owner");}
+  std::thread producer([&]{check(CTransport_Server_Schedule(f.server,6100,100000),"second producer registration");});producer.join();
+  {std::lock_guard<std::mutex> lock(f.server->taskGate);check(f.server->tasks.at(6100)->owner!=owner,"external producers did not register separate owners");}
+  CTransport_SetTaskCallback(f.listener,ownershipCallback);check(CTransport_Server_PostTask(f.server,7000),"owner callback post");until([&]{return f.state.sent==1;});
+ }
+ std::cout<<"PASS registering-worker/foreign-producer timer ownership; token values do not choose wheels\n";
+ std::cout<<"PASS contiguous preallocated slab/FIFO exhaustion/corruption diagnostics, exact1000-slot blocks/overflow/compaction/rollback, owner17+101st policy and pre-close-before-OS-close fence\n";
+}
+int main(){std::cout.setf(std::ios::unitbuf);coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}

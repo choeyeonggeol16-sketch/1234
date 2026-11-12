@@ -19,3 +19,16 @@ user_socket_parser 0xa0372c 1635 bytes
 user_socket_io_dispatch 0x54655c 242 bytes
 atomic_timer_entry 0x43f5b8 177 bytes
 atomic_timer_apply 0x43f758 169 bytes
+user_close_hook 0xa12dec 257 bytes
+fatal_diagnostic 0x66db28 768 bytes
+pool_unlock 0x45d3b4 101 bytes
+timer_block_release 0x925630 162 bytes
+timer_bucket_execute 0x925374 229 bytes
+pool_setup_worker 0x7045dc 285 bytes
+pool_setup_candidate 0x730300 198 bytes
+timer_register 0x926bf4 532 bytes
+pool8_constructor 0x6b5094 218 bytes
+pool16_constructor 0x6b4fb8 218 bytes
+deferred_user_close 0xa12674 619 bytes
+owner17_loop_a 0x73029c 68 bytes
+owner17_loop_b 0x72f874 2152 bytes

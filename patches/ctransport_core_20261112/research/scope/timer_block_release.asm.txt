@@ -1,0 +1,46 @@
+# Tentative role: timer_block_release; VA 0x925630..0x9256d2
+0000000000925630: push     rbx
+0000000000925632: push     rbp
+0000000000925633: push     rsi
+0000000000925634: push     rdi
+0000000000925635: sub      rsp, 0x28
+0000000000925639: xor      edi, edi
+000000000092563b: mov      rsi, rdx
+000000000092563e: mov      rbx, rcx
+0000000000925641: lea      ebp, [rdi + 1]
+0000000000925644: xor      eax, eax
+0000000000925646: lock cmpxchg dword ptr [rcx + 0x4c8eaf8], ebp
+000000000092564e: je       0x925684
+0000000000925650: add      edi, ebp
+0000000000925652: mov      eax, 0x66666667
+0000000000925657: imul     edi
+0000000000925659: sar      edx, 3
+000000000092565c: mov      eax, edx
+000000000092565e: shr      eax, 0x1f
+0000000000925661: add      edx, eax
+0000000000925663: lea      ecx, [rdx + rdx*4]
+0000000000925666: shl      ecx, 2
+0000000000925669: cmp      edi, ecx
+000000000092566b: jne      0x925678
+000000000092566d: mov      ecx, 0xa
+0000000000925672: call     qword ptr [rip + 0x1f6af8] ; Sleep
+0000000000925678: xor      eax, eax
+000000000092567a: lock cmpxchg dword ptr [rbx + 0x4c8eaf8], ebp
+0000000000925682: jne      0x925650
+0000000000925684: mov      rcx, qword ptr [rbx + 0x4c8eb08]
+000000000092568b: movabs   rax, 0x82c71aa0ca4bfd31
+0000000000925695: add      rcx, rbp
+0000000000925698: mov      qword ptr [rbx + 0x4c8eb08], rcx
+000000000092569f: mul      rcx
+00000000009256a2: shr      rdx, 0xb
+00000000009256a6: imul     rdx, rdx, 0xfa9
+00000000009256ad: sub      rcx, rdx
+00000000009256b0: mov      qword ptr [rbx + rcx*8 + 0x4c86db0], rsi
+00000000009256b8: mov      dword ptr [rbx + 0x4c8eaf8], 0
+00000000009256c2: lock add dword ptr [rbx + 0x4c8eb10], ebp
+00000000009256c9: add      rsp, 0x28
+00000000009256cd: pop      rdi
+00000000009256ce: pop      rsi
+00000000009256cf: pop      rbp
+00000000009256d0: pop      rbx
+00000000009256d1: ret      

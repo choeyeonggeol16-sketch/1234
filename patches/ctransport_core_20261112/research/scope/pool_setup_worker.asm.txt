@@ -1,0 +1,73 @@
+# Tentative role: pool_setup_worker; VA 0x7045dc..0x7046f9
+00000000007045dc: push     rbx
+00000000007045de: push     rbp
+00000000007045df: push     rsi
+00000000007045e0: push     rdi
+00000000007045e1: push     r12
+00000000007045e3: push     r14
+00000000007045e5: sub      rsp, 0x38
+00000000007045e9: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000007045f2: mov      ecx, dword ptr [rip + 0x2eebabe0]
+00000000007045f8: mov      rax, qword ptr gs:[0x58]
+0000000000704601: mov      r14d, 0x7d58
+0000000000704607: mov      rdi, qword ptr [rax + rcx*8]
+000000000070460b: movsxd   rdx, dword ptr [rdi + r14]
+000000000070460f: lea      r12, [rip - 0x304616]
+0000000000704616: movsxd   rcx, dword ptr [r12 + rdx*4 + 0x47e2a40]
+000000000070461e: lea      eax, [rcx + 1]
+0000000000704621: mov      dword ptr [r12 + rdx*4 + 0x47e2a40], eax
+0000000000704629: imul     rdx, rdx, 0x3e8
+0000000000704630: add      rdx, rcx
+0000000000704633: lea      rax, [rip + 0x56d736]
+000000000070463a: mov      qword ptr [r12 + rdx*8 + 0x47bf7c0], rax
+0000000000704642: lea      r9, [rip + 0x47ea4f]
+0000000000704649: mov      r8d, 0x13880
+000000000070464f: lea      rdx, [rip + 0x56d6fa]
+0000000000704656: lea      rcx, [rip + 0x4be83b]
+000000000070465d: call     qword ptr [rip + 0x417c55] ; GetPrivateProfileIntW
+0000000000704663: mov      ebx, eax
+0000000000704665: call     0x7044c4
+000000000070466a: movsxd   r11, eax
+000000000070466d: mov      eax, ebx
+000000000070466f: cdq      
+0000000000704670: idiv     r11d
+0000000000704673: mov      ebp, eax
+0000000000704675: xor      ebx, ebx
+0000000000704677: mov      rsi, r11
+000000000070467a: test     r11d, r11d
+000000000070467d: jle      0x7046df
+000000000070467f: mov      ecx, 0x28
+0000000000704684: call     0xab8ea0
+0000000000704689: mov      qword ptr [rsp + 0x70], rax
+000000000070468e: test     rax, rax
+0000000000704691: je       0x70469f
+0000000000704693: mov      edx, ebp
+0000000000704695: mov      rcx, rax
+0000000000704698: call     0x6b4fb8
+000000000070469d: jmp      0x7046a1
+000000000070469f: xor      eax, eax
+00000000007046a1: mov      qword ptr [r12 + rbx*8 + 0x4850f80], rax
+00000000007046a9: mov      ecx, 0x28
+00000000007046ae: call     0xab8ea0
+00000000007046b3: mov      qword ptr [rsp + 0x70], rax
+00000000007046b8: test     rax, rax
+00000000007046bb: je       0x7046cc
+00000000007046bd: mov      edx, 0x12c
+00000000007046c2: mov      rcx, rax
+00000000007046c5: call     0x6b5094
+00000000007046ca: jmp      0x7046ce
+00000000007046cc: xor      eax, eax
+00000000007046ce: mov      qword ptr [r12 + rbx*8 + 0x4851020], rax
+00000000007046d6: add      rbx, 1
+00000000007046da: cmp      rbx, rsi
+00000000007046dd: jl       0x70467f
+00000000007046df: movsxd   rax, dword ptr [rdi + r14]
+00000000007046e3: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+00000000007046ec: add      rsp, 0x38
+00000000007046f0: pop      r14
+00000000007046f2: pop      r12
+00000000007046f4: pop      rdi
+00000000007046f5: pop      rsi
+00000000007046f6: pop      rbp
+00000000007046f7: pop      rbx
+00000000007046f8: ret      

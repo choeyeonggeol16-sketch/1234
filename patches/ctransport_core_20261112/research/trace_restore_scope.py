@@ -29,7 +29,12 @@ targets={'buffer_allocate_8k':0x45d7f8,'buffer_recycle_8k':0x45d67c,'socket_clos
  'worker_main':0x7057c9, 'timer_bucket_dispatch':0x9256d4,'timer_bucket_append':0x92533c,
  'timer_overflow_heap_pop':0x92611c,'timer_block_allocate':0x925498,
  'user_socket_parser':0xa0372c,'user_socket_io_dispatch':0x54655c,
- 'atomic_timer_entry':0x43f5b8,'atomic_timer_apply':0x43f758}
+ 'atomic_timer_entry':0x43f5b8,'atomic_timer_apply':0x43f758,
+ 'user_close_hook':0xa12dec,'fatal_diagnostic':0x66db28,'pool_unlock':0x45d3b4,
+ 'timer_block_release':0x925630,'timer_bucket_execute':0x925374,
+ 'pool_setup_worker':0x7046d2,'pool_setup_candidate':0x7303a0,'timer_register':0x926d36,
+ 'pool8_constructor':0x6b5094,'pool16_constructor':0x6b4fb8,'deferred_user_close':0xa12674,
+ 'owner17_loop_a':0x73029c,'owner17_loop_b':0x72f874}
 summary={}
 for label,va in targets.items():
  begin,end=bounds(va);lines=[f'# Tentative role: {label}; VA {hex(base+begin)}..{hex(base+end)}'];calls=[]

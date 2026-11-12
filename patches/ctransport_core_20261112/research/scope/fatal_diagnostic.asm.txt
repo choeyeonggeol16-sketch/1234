@@ -1,0 +1,135 @@
+# Tentative role: fatal_diagnostic; VA 0x66db28..0x66de28
+000000000066db28: xor      eax, eax
+000000000066db2a: mov      byte ptr [rax], 1
+000000000066db2d: ret      
+000000000066db2e: int3     
+000000000066db2f: int3     
+000000000066db30: sub      rsp, 0x108
+000000000066db37: lea      rax, [rip + 0x51555a]
+000000000066db3e: lea      r9, [rsp + 0x30]
+000000000066db43: lea      r8, [rip + 0x5c9f0e]
+000000000066db4a: mov      qword ptr [rsp + 0x28], rax
+000000000066db4f: lea      rdx, [rip + 0x5c9eda]
+000000000066db56: lea      rcx, [rip + 0x55533b]
+000000000066db5d: mov      dword ptr [rsp + 0x20], 0x63
+000000000066db65: call     qword ptr [rip + 0x4ae68d] ; GetPrivateProfileStringW
+000000000066db6b: lea      rdx, [rip + 0x5c9ee6]
+000000000066db72: lea      rcx, [rsp + 0x30]
+000000000066db77: call     0xaba000
+000000000066db7c: test     eax, eax
+000000000066db7e: sete     byte ptr [rip + 0x98b7ac]
+000000000066db85: add      rsp, 0x108
+000000000066db8c: ret      
+000000000066db8d: int3     
+000000000066db8e: int3     
+000000000066db8f: int3     
+000000000066db90: mov      r11, rsp
+000000000066db93: sub      rsp, 0x188
+000000000066db9a: mov      dword ptr [rsp], 0x40010005
+000000000066dba1: mov      dword ptr [rsp + 0x10], 0x40010008
+000000000066dba9: mov      dword ptr [rsp + 0x20], 0x80000002
+000000000066dbb1: mov      dword ptr [rsp + 0x30], 0x80000003
+000000000066dbb9: mov      dword ptr [rsp + 0x40], 0xc0000005
+000000000066dbc1: mov      dword ptr [rsp + 0x50], 0xc0000006
+000000000066dbc9: mov      dword ptr [rsp + 0x60], 0xc0000017
+000000000066dbd1: mov      dword ptr [rsp + 0x70], 0xc000001d
+000000000066dbd9: mov      dword ptr [rsp + 0x80], 0xc0000025
+000000000066dbe4: lea      rax, [rip + 0x5ca0dd]
+000000000066dbeb: mov      edx, ecx
+000000000066dbed: lea      rcx, [rsp]
+000000000066dbf1: mov      qword ptr [rsp + 8], rax
+000000000066dbf6: lea      rax, [rip + 0x5ca0bb]
+000000000066dbfd: mov      qword ptr [rsp + 0x18], rax
+000000000066dc02: lea      rax, [rip + 0x5ca097]
+000000000066dc09: mov      qword ptr [rsp + 0x28], rax
+000000000066dc0e: lea      rax, [rip + 0x5ca07b]
+000000000066dc15: mov      qword ptr [rsp + 0x38], rax
+000000000066dc1a: lea      rax, [rip + 0x5ca057]
+000000000066dc21: mov      qword ptr [rsp + 0x48], rax
+000000000066dc26: lea      rax, [rip + 0x5ca033]
+000000000066dc2d: mov      qword ptr [rsp + 0x58], rax
+000000000066dc32: lea      rax, [rip + 0x5ca017]
+000000000066dc39: mov      qword ptr [rsp + 0x68], rax
+000000000066dc3e: lea      rax, [rip + 0x5c9ff3]
+000000000066dc45: mov      qword ptr [rsp + 0x78], rax
+000000000066dc4a: lea      rax, [rip + 0x5c9fc7]
+000000000066dc51: mov      qword ptr [r11 - 0x100], rax
+000000000066dc58: mov      dword ptr [rsp + 0x90], 0xc0000026
+000000000066dc63: lea      rax, [rip + 0x5c9f96]
+000000000066dc6a: mov      qword ptr [r11 - 0xf0], rax
+000000000066dc71: mov      dword ptr [rsp + 0xa0], 0xc000008c
+000000000066dc7c: lea      rax, [rip + 0x5c9f65]
+000000000066dc83: mov      qword ptr [r11 - 0xe0], rax
+000000000066dc8a: mov      dword ptr [rsp + 0xb0], 0xc000008d
+000000000066dc95: lea      rax, [rip + 0x5c9f2c]
+000000000066dc9c: mov      qword ptr [r11 - 0xd0], rax
+000000000066dca3: mov      dword ptr [rsp + 0xc0], 0xc000008e
+000000000066dcae: lea      rax, [rip + 0x5c9efb]
+000000000066dcb5: mov      qword ptr [r11 - 0xc0], rax
+000000000066dcbc: mov      dword ptr [rsp + 0xd0], 0xc000008f
+000000000066dcc7: lea      rax, [rip + 0x5c9eca]
+000000000066dcce: mov      qword ptr [r11 - 0xb0], rax
+000000000066dcd5: mov      dword ptr [rsp + 0xe0], 0xc0000090
+000000000066dce0: lea      rax, [rip + 0x5c9e91]
+000000000066dce7: mov      qword ptr [r11 - 0xa0], rax
+000000000066dcee: mov      dword ptr [rsp + 0xf0], 0xc0000091
+000000000066dcf9: lea      rax, [rip + 0x5c9e60]
+000000000066dd00: mov      qword ptr [r11 - 0x90], rax
+000000000066dd07: mov      dword ptr [rsp + 0x100], 0xc0000092
+000000000066dd12: lea      rax, [rip + 0x5c9e2f]
+000000000066dd19: mov      qword ptr [r11 - 0x80], rax
+000000000066dd1d: lea      rax, [rip + 0x5c9e0c]
+000000000066dd24: mov      dword ptr [r11 - 0x78], 0xc0000093
+000000000066dd2c: mov      qword ptr [r11 - 0x70], rax
+000000000066dd30: lea      rax, [rip + 0x5c9dd9]
+000000000066dd37: mov      dword ptr [r11 - 0x68], 0xc0000094
+000000000066dd3f: mov      qword ptr [r11 - 0x60], rax
+000000000066dd43: lea      rax, [rip + 0x5c9dae]
+000000000066dd4a: mov      dword ptr [r11 - 0x58], 0xc0000095
+000000000066dd52: mov      qword ptr [r11 - 0x50], rax
+000000000066dd56: lea      rax, [rip + 0x5c9d7b]
+000000000066dd5d: mov      dword ptr [r11 - 0x48], 0xc0000096
+000000000066dd65: mov      qword ptr [r11 - 0x40], rax
+000000000066dd69: lea      rax, [rip + 0x5c9d50]
+000000000066dd70: mov      dword ptr [r11 - 0x38], 0xc00000fd
+000000000066dd78: mov      qword ptr [r11 - 0x30], rax
+000000000066dd7c: lea      rax, [rip + 0x5c9d1d]
+000000000066dd83: mov      dword ptr [r11 - 0x28], 0xc0000142
+000000000066dd8b: mov      qword ptr [r11 - 0x20], rax
+000000000066dd8f: lea      rax, [rip + 0x5c9cea]
+000000000066dd96: mov      dword ptr [r11 - 0x18], 0xe06d7363
+000000000066dd9e: mov      qword ptr [r11 - 0x10], rax
+000000000066dda2: xor      eax, eax
+000000000066dda4: cmp      edx, dword ptr [rcx]
+000000000066dda6: je       0x66ddbf
+000000000066dda8: add      rax, 1
+000000000066ddac: add      rcx, 0x10
+000000000066ddb0: cmp      rax, 0x18
+000000000066ddb4: jb       0x66dda4
+000000000066ddb6: lea      rax, [rip + 0x5c9cab]
+000000000066ddbd: jmp      0x66ddc7
+000000000066ddbf: add      rax, rax
+000000000066ddc2: mov      rax, qword ptr [rsp + rax*8 + 8]
+000000000066ddc7: add      rsp, 0x188
+000000000066ddce: ret      
+000000000066ddcf: int3     
+000000000066ddd0: push     rbx
+000000000066ddd2: push     rdi
+000000000066ddd3: mov      eax, 0x4048
+000000000066ddd8: call     0xafcbc0
+000000000066dddd: sub      rsp, rax
+000000000066dde0: mov      rax, rdx
+000000000066dde3: mov      rdi, rcx
+000000000066dde6: mov      qword ptr [rsp + 0x30], 0
+000000000066ddef: xor      r9d, r9d
+000000000066ddf2: xor      r8d, r8d
+000000000066ddf5: mov      edx, 0x80000000
+000000000066ddfa: mov      rcx, rax
+000000000066ddfd: mov      dword ptr [rsp + 0x28], 0
+000000000066de05: mov      dword ptr [rsp + 0x20], 3
+000000000066de0d: call     qword ptr [rip + 0x4ae33d] ; CreateFileW
+000000000066de13: cmp      rax, -1
+000000000066de17: mov      rbx, rax
+000000000066de1a: je       0x66de75
+000000000066de1c: mov      rcx, rax
+000000000066de1f: jmp      0x66de46

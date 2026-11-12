@@ -10,7 +10,7 @@ final class CTransportSocket implements AutoCloseable {
     private final CTransportServer parent;
     private final long id;
     private final InetSocketAddress remote;
-    private volatile boolean open = true;
+    private volatile boolean open = true, closing;
     private ByteBuffer readBuffer;
     private CIOUserSocket readOwner;
     private final ByteBuffer[] singleWrite = new ByteBuffer[1];
@@ -29,7 +29,8 @@ final class CTransportSocket implements AutoCloseable {
     }
     long id() { return id; }
     public InetSocketAddress remoteAddress() { return remote; }
-    public boolean isOpen() { return open; }
+    public boolean isOpen() { return open && !closing; }
+    void nativeClosing() { closing = true; }
     @Override public void close() {
         if (!open) return;
         nativeClosed();
@@ -44,7 +45,7 @@ final class CTransportSocket implements AutoCloseable {
         boolean armed = false;
         synchronized (this) {
             if (readOwner != null) throw new IllegalStateException("READ already pending");
-            rejected = !open;
+            rejected = !isOpen();
             if (!rejected && dst.hasRemaining()) {
                 bytes = drainStash(dst);
                 if (bytes == 0) {
@@ -125,7 +126,7 @@ final class CTransportSocket implements AutoCloseable {
         boolean rejected;
         synchronized (this) {
             if (writeOwner != null || writeSubmitting) throw new IllegalStateException("WRITE already pending");
-            rejected = !open;
+            rejected = !isOpen();
             if (!rejected && bytes != 0) {
                 singleWrite[0] = src;
                 reserveWrite(singleWrite, 0, 1, bytes, owner, false);
@@ -149,7 +150,7 @@ final class CTransportSocket implements AutoCloseable {
         boolean rejected;
         synchronized (this) {
             if (writeOwner != null || writeSubmitting) throw new IllegalStateException("WRITE already pending");
-            rejected = !open;
+            rejected = !isOpen();
             if (!rejected && bytes != 0) reserveWrite(srcs, offset, count, bytes, owner, true);
         }
         if (rejected) { owner.transportGatherCompleted(-1); return; }

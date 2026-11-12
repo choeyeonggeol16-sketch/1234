@@ -1,0 +1,16 @@
+# Tentative role: owner17_loop_a; VA 0x73029c..0x7302e0
+000000000073029c: sub      rsp, 0x28
+00000000007302a0: call     0x72f874
+00000000007302a5: jmp      0x7302db
+00000000007302a7: lea      r9, [rip + 0x555e7a]
+00000000007302ae: mov      r8d, 0xd5a
+00000000007302b4: lea      rdx, [rip + 0x555e5d]
+00000000007302bb: lea      rcx, [rip + 0x522c56]
+00000000007302c2: call     0x66fda0
+00000000007302c7: lea      rcx, [rip + 0xd7f15d2]
+00000000007302ce: call     0x732ab0
+00000000007302d3: mov      cl, 1
+00000000007302d5: call     0x66ffe0
+00000000007302da: nop      
+00000000007302db: add      rsp, 0x28
+00000000007302df: ret      

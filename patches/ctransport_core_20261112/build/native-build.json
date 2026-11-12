@@ -35,14 +35,14 @@
     ]
   ],
   "files": {
-    "CTransport.cpp": "9b9b7d78c7682638e3470093485ea87713d8704a91a0a0a546f62e976abeabba",
-    "CTransport.h": "b0567e177cef032731a584817b88fcf1c241fcd75779877ad1abbbe0d2eca90f",
+    "CTransport.cpp": "38b498819a954b1fd68b258c1758e185a37e9cfa3d01fe8ca88eb4e78ba202ca",
+    "CTransport.h": "717181443504be171ea8cbb359fa4e0b337fcabd64aad6be16eb62fb5087edb5",
     "build_native.py": "42e8613d8bfd53b7f5571c86d38d4e958f10a1b4b62815787601d482815af7d9",
-    "cio_core.hpp": "e2918398749801dd4b126403b4b3e9ac5e1887c1b7c65699e1b1c52350ef1562",
-    "timer_wheel.hpp": "827610fed0ed9e9ae63732e92e39d9382a7bb60e3fc8a64dca5bf2c59adc454d",
-    "windows_loopback_test.cpp": "a4d013cd107d0036f6f306c9ec1be107d2447f24d9cf27f7388bd1f37d0f007b"
+    "cio_core.hpp": "aef37c5652ed7349ef06c115695cf5bb90e67b00356c0923f380b776ecb3f13d",
+    "timer_wheel.hpp": "428d34e08d8fd7f5b3e931fd1249b5b94f8affabb18e193e2305702f64937b6a",
+    "windows_loopback_test.cpp": "c3f079541c4d20239017d66b4bb06a95e55b47e2f398ad6d7697d11eafe494b5"
   },
-  "dll_sha256": "5bf718c9df9e3dbce2eee824bbb3928430a2e142ee06abb45f14ae4156e33fa6",
-  "selftest_sha256": "c33220617aac15e6c7202dacc49497050a99d9b2eaae99a8fd85f8af8aeec393",
+  "dll_sha256": "2e172e07dee35c94272718e01903b057f131dbbd30b22bbf04ef76f47c37f95b",
+  "selftest_sha256": "21ae84812f7663a867f4a28bbc8221fcb14c5a1ef8219e92ac6a6214b23c786f",
   "windows_execution_tested": false
 }

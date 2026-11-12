@@ -18,7 +18,7 @@ for name in ['native_engine_test.cpp','fake_windows.hpp','run_native_tests.py','
  dest=PATCH/'tests'/name;dest.parent.mkdir(exist_ok=True)
  if (ROOT/'tests'/name).is_dir():shutil.copytree(ROOT/'tests'/name,dest)
  else:shutil.copy2(ROOT/'tests'/name,dest)
-for name in ['scope','trace_restore_scope.py','recover_server_core.py','server-rtti.json','L2Server.exe.rtti-disasm.txt','L2Server(10).exe.rtti-disasm.txt','hp-batch-worker-excerpt.txt']:
+for name in ['scope','trace_restore_scope.py','find_core_initializers.py','recover_server_core.py','server-rtti.json','L2Server.exe.rtti-disasm.txt','L2Server(10).exe.rtti-disasm.txt','hp-batch-worker-excerpt.txt']:
  dest=PATCH/'research'/name;dest.parent.mkdir(exist_ok=True)
  if (ROOT/'research'/name).is_dir():shutil.copytree(ROOT/'research'/name,dest)
  else:shutil.copy2(ROOT/'research'/name,dest)
@@ -33,7 +33,7 @@ shutil.copy2(ROOT/'package_ctransport.py',PATCH/'package_ctransport.py')
 (PATCH/'deleted-files.txt').write_text('\n'.join(deleted)+'\n')
 shutil.copy2(ROOT/'REPORT_CTRANSPORT.md',REPO/'reports/CTRANSPORT_CORE_20261112.md')
 dllsha=SHA((ROOT/'build/CTransport.dll').read_bytes())
-manifest={'base_revision':'c76e7b2753876fc8bb1aac4075e78a5d31bf522f','branch':'ctransport-core-20261112','dll':'CTransport.dll','dll_sha256':dllsha,'abi':'0x20000','mandatory':True,'fallback':False,'completion_batch':128,'source_files':len(current),'java_files':sum(n.endswith('.java') for n in current),'changed_files':changed,'deleted_files':deleted,'additional_sql':False,'recovered_structures':['owner-index CAS buffer rings','8K/16K families','shared receive COW/unique compaction','send FIFO','linger0 close','completion task objects','50ms/200-slot timer wheel and overflow heap'],'adaptations':['external FFM producer registration','bounded exhaustion rejection','indexed cancellation','64-bit monotonic clock','terminal callback after I/O drain','existing L1 codec/game-owner contract'],'windows_evidence':json.loads((ROOT/'WINDOWS_VERIFICATION.json').read_text())}
+manifest={'base_revision':'c76e7b2753876fc8bb1aac4075e78a5d31bf522f','branch':'ctransport-core-20261112','dll':'CTransport.dll','dll_sha256':dllsha,'abi':'0x30000','implementation_parent':'749a305e3b662852733fee766825e645870c33fc','mandatory':True,'fallback':False,'completion_batch':128,'source_files':len(current),'java_files':sum(n.endswith('.java') for n in current),'changed_files':changed,'deleted_files':deleted,'additional_sql':False,'recovered_structures':['pre-close/unregister/terminal phases','preallocated contiguous slab/pointer rings','registered-producer wheel ownership','100 inline+101st post / owner17 dispatch','1000-entry timer blocks and32-byte heap records','owner-index CAS buffer rings','8K/16K families','shared receive COW/unique compaction','send FIFO','linger0 close','completion task objects','50ms/200-slot timer wheel and overflow heap'],'adaptations':['external FFM producer registration','diagnosed exhaustion instead of intentional process crash','indexed cancellation','64-bit monotonic clock','terminal callback after I/O drain','existing L1 codec/game-owner contract'],'windows_evidence':json.loads((ROOT/'WINDOWS_VERIFICATION.json').read_text())}
 (PATCH/'MANIFEST.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
 checks=[]
 for p in sorted(PATCH.rglob('*')):
@@ -72,6 +72,6 @@ with zipfile.ZipFile(dest,'w',zipfile.ZIP_DEFLATED,compresslevel=6)as z:
   if p.is_file():z.write(p,str(p.relative_to(PATCH.parent)))
 with zipfile.ZipFile(dest)as z:assert z.testzip() is None
 archives[dest.name]=SHA(dest.read_bytes());Path(str(dest)+'.sha256').write_text(archives[dest.name]+'  '+dest.name+'\n')
-readme=REPO/'README.md';text=readme.read_text();heading='## 2026-11-12 — CTransport.dll 필수 코어 / 기존 전송 엔진 제거\n\n[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [구현·근거·적용 안내](reports/CTRANSPORT_CORE_20261112.md)\n\n스레드별8K/16K 원형 풀, 공유 RX/COW,128배치, 작업 큐와50ms/200칸 타이머 휠을 구현했습니다. 게임 접속과 PSS UI 연결 모두 같은 DLL을 필수 사용합니다. 기존 전송 엔진 선택/NIO2 경로는 제거했습니다. 실제 게임 클라이언트·운영 DB 부하는 별도 검증 대상입니다.\n\n---\n\n'
+readme=REPO/'README.md';text=readme.read_text();heading='## 2026-11-12 — CTransport ABI3: 종료 훅·사전 할당·원본 작업 분배\n\n[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [구현·근거·적용 안내](reports/CTRANSPORT_CORE_20261112.md)\n\n종료 전 훅/활성 등록 해제, 연속 slab 사전 할당, 등록 스레드 소유권,100개 직접 실행+101번째 재게시,1,000개 단위 timer block과32-byte heap을 반영했습니다. 공유 RX/COW·128배치·50ms/200칸 휠도 유지합니다. 게임 접속과 PSS UI 연결 모두 같은 DLL을 필수 사용합니다. 기존 전송 엔진 선택/NIO2 경로는 제거했습니다. 실제 게임 클라이언트·운영 DB 부하는 별도 검증 대상입니다.\n\n---\n\n'
 if not text.startswith(heading.split('\n',1)[0]):readme.write_text(heading+text)
 print(json.dumps({'archives':archives,'dll_sha256':dllsha,'source_files':len(current),'java_files':manifest['java_files'],'changed':len(changed),'deleted':deleted},indent=2))

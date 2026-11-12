@@ -1,0 +1,65 @@
+# Tentative role: pool8_constructor; VA 0x6b5094..0x6b516e
+00000000006b5094: push     rbx
+00000000006b5096: push     rbp
+00000000006b5097: push     rsi
+00000000006b5098: push     rdi
+00000000006b5099: sub      rsp, 0x28
+00000000006b509d: mov      dword ptr [rcx + 4], edx
+00000000006b50a0: mov      eax, dword ptr [rcx + 4]
+00000000006b50a3: xor      edi, edi
+00000000006b50a5: mov      dword ptr [rcx], edi
+00000000006b50a7: mov      qword ptr [rcx + 0x18], rdi
+00000000006b50ab: mov      edx, eax
+00000000006b50ad: mov      rbx, rcx
+00000000006b50b0: mov      qword ptr [rcx + 0x20], rdi
+00000000006b50b4: mov      esi, eax
+00000000006b50b6: imul     edx, edx, 0x2038
+00000000006b50bc: movsxd   rbp, edx
+00000000006b50bf: shl      esi, 3
+00000000006b50c2: mov      rcx, rbp
+00000000006b50c5: call     0xabd840
+00000000006b50ca: cmp      rax, rdi
+00000000006b50cd: mov      qword ptr [rbx + 8], rax
+00000000006b50d1: jne      0x6b50ed
+00000000006b50d3: lea      r8, [rip + 0x59d936]
+00000000006b50da: lea      rcx, [rip + 0xd86c7bf]
+00000000006b50e1: mov      edx, 2
+00000000006b50e6: call     0x734514
+00000000006b50eb: jmp      0x6b5162
+00000000006b50ed: movsxd   rsi, esi
+00000000006b50f0: mov      rcx, rsi
+00000000006b50f3: call     0xabd840
+00000000006b50f8: cmp      rax, rdi
+00000000006b50fb: mov      qword ptr [rbx + 0x10], rax
+00000000006b50ff: jne      0x6b510a
+00000000006b5101: lea      r8, [rip + 0x59d8d8]
+00000000006b5108: jmp      0x6b50da
+00000000006b510a: mov      rcx, qword ptr [rbx + 8]
+00000000006b510e: mov      r8, rbp
+00000000006b5111: xor      edx, edx
+00000000006b5113: call     0xab9430
+00000000006b5118: mov      rcx, qword ptr [rbx + 0x10]
+00000000006b511c: mov      r8, rsi
+00000000006b511f: xor      edx, edx
+00000000006b5121: call     0xab9430
+00000000006b5126: lock xadd qword ptr [rip + 0xd86de29], rbp
+00000000006b512f: lock xadd qword ptr [rip + 0xd86de20], rsi
+00000000006b5138: cmp      dword ptr [rbx + 4], edi
+00000000006b513b: jle      0x6b5162
+00000000006b513d: mov      rdx, rdi
+00000000006b5140: mov      rax, qword ptr [rbx + 0x10]
+00000000006b5144: movsxd   rcx, edi
+00000000006b5147: add      edi, 1
+00000000006b514a: imul     rcx, rcx, 0x2038
+00000000006b5151: add      rcx, qword ptr [rbx + 8]
+00000000006b5155: mov      qword ptr [rdx + rax], rcx
+00000000006b5159: add      rdx, 8
+00000000006b515d: cmp      edi, dword ptr [rbx + 4]
+00000000006b5160: jl       0x6b5140
+00000000006b5162: mov      rax, rbx
+00000000006b5165: add      rsp, 0x28
+00000000006b5169: pop      rdi
+00000000006b516a: pop      rsi
+00000000006b516b: pop      rbp
+00000000006b516c: pop      rbx
+00000000006b516d: ret      

@@ -2,8 +2,9 @@
   "base_revision": "c76e7b2753876fc8bb1aac4075e78a5d31bf522f",
   "branch": "ctransport-core-20261112",
   "dll": "CTransport.dll",
-  "dll_sha256": "5bf718c9df9e3dbce2eee824bbb3928430a2e142ee06abb45f14ae4156e33fa6",
-  "abi": "0x20000",
+  "dll_sha256": "2e172e07dee35c94272718e01903b057f131dbbd30b22bbf04ef76f47c37f95b",
+  "abi": "0x30000",
+  "implementation_parent": "749a305e3b662852733fee766825e645870c33fc",
   "mandatory": true,
   "fallback": false,
   "completion_batch": 128,
@@ -28,6 +29,11 @@
   ],
   "additional_sql": false,
   "recovered_structures": [
+    "pre-close/unregister/terminal phases",
+    "preallocated contiguous slab/pointer rings",
+    "registered-producer wheel ownership",
+    "100 inline+101st post / owner17 dispatch",
+    "1000-entry timer blocks and32-byte heap records",
     "owner-index CAS buffer rings",
     "8K/16K families",
     "shared receive COW/unique compaction",
@@ -38,34 +44,18 @@
   ],
   "adaptations": [
     "external FFM producer registration",
-    "bounded exhaustion rejection",
+    "diagnosed exhaustion instead of intentional process crash",
     "indexed cancellation",
     "64-bit monotonic clock",
     "terminal callback after I/O drain",
     "existing L1 codec/game-owner contract"
   ],
   "windows_evidence": {
-    "run_id": 43234341462,
-    "job_id": 131237594019,
-    "tested_commit": "ef2e4fd0d0d9394dff248bf9dc19ed5c7fda6d65",
-    "url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43234341462",
-    "conclusion": "success",
-    "os": "Microsoft Windows Server 2025",
-    "java": "Temurin JDK21",
+    "conclusion": "pending",
+    "abi": "0x30000",
     "dll": "CTransport.dll",
-    "dll_sha256": "5bf718c9df9e3dbce2eee824bbb3928430a2e142ee06abb45f14ae4156e33fa6",
-    "checks": [
-      "actual Windows DLL C++ loopback:20 connections/4MB",
-      "production Java FFM:20 connections/4MB,work,timers,cancel,shutdown",
-      "production gameplay socket adapter:3 connections/300KB,16KB native RX into4KB Java reads,stash,pause,resume,ordered sends",
-      "production PSS native transport:fragmented HELLO,PING,BOUND,OPEN,detach,invalid greeting,native expiry timer shutdown"
-    ],
-    "test_double": "only CIOUserSocket game-owner dependency in Java smoke; production FFM/server/socket/endpoint/PSS and real Windows kernel",
-    "not_tested": [
-      "actual game-client login/hunt",
-      "operating database",
-      "long-duration/performance comparison"
-    ],
-    "tested_source_and_dll_unchanged_by_evidence_commit": true
+    "dll_sha256": "2e172e07dee35c94272718e01903b057f131dbbd30b22bbf04ef76f47c37f95b",
+    "previous_abi2_run": 43234341462,
+    "note": "ABI2 success is not evidence for ABI3; new Windows run required"
   }
 }

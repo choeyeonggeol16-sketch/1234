@@ -34,7 +34,7 @@ constexpr ULONG CompletionBatchSize = 128;
 struct Listener {
     std::atomic<AcceptFn> accept{nullptr};
     std::atomic<DataFn> receive{nullptr}, send{nullptr};
-    std::atomic<CloseFn> close{nullptr};
+    std::atomic<CloseFn> close{nullptr}, closing{nullptr};
     std::atomic<void (*)(void*, std::uint64_t, int)> task{nullptr};
 };
 class Server;
@@ -42,6 +42,7 @@ class Connection;
 class NativeTask;
 using TaskFn = void (*)(void*, std::uint64_t, int);
 thread_local Server* currentWorker = nullptr;
+thread_local unsigned currentWorkerIndex = 0;
 enum class OpKind { Accept, Read, Write, Close, Task };
 struct Operation {
     OVERLAPPED overlapped{}; // Must remain first: the OS returns this address.
@@ -72,7 +73,9 @@ public:
     std::vector<std::unique_ptr<AcceptOperation>> accepts;
     std::vector<std::thread> workers;
     std::array<RegistryBucket, 64> registry;
+    std::unique_ptr<TimerBlockPool> timerBlocks;
     std::vector<std::unique_ptr<TimerWheel>> timers;
+    std::atomic<std::uint64_t> timerInline{0}, timerPosted{0}, closeStarts{0}, closeTerminals{0};
     std::mutex taskGate;
     std::unordered_map<std::uint64_t, NativeTask*> tasks;
     std::atomic<unsigned> taskCount{0};
@@ -126,6 +129,7 @@ public:
     Server* const server;
     const std::uint64_t id;
     SOCKET socket;
+    SOCKET retiredSocket = INVALID_SOCKET;
     std::mutex gate;
     IoState state;
     SendChain writes;
@@ -153,18 +157,30 @@ public:
         if (state.closing) return;
         state.closing = true; state.paused = true;
         closeOperation = operation; closeError = error;
-        if (socket != INVALID_SOCKET) {
-            auto previous = socket; socket = INVALID_SOCKET;
-            linger reset{1, 0};
-            setsockopt(previous, SOL_SOCKET, SO_LINGER, reinterpret_cast<const char*>(&reset), sizeof(reset));
-            closesocket(previous);
-        }
+        if (socket != INVALID_SOCKET) { retiredSocket = socket; socket = INVALID_SOCKET; state.closeRetiring = true; }
     }
+    void retireSocket() noexcept {
+        SOCKET previous;
+        {
+            std::lock_guard<std::mutex> lock(gate);
+            previous = retiredSocket; retiredSocket = INVALID_SOCKET;
+        }
+        if (previous == INVALID_SOCKET) return;
+        // The original hook changes parser state/unregisters the socket before
+        // linger/close. Java's final resource cleanup stays after I/O drains.
+        ++server->closeStarts;
+        if (auto fn = server->callbacks->closing.load()) fn(server, id, closeOperation, closeError);
+        linger reset{1, 0};
+        setsockopt(previous, SOL_SOCKET, SO_LINGER, reinterpret_cast<const char*>(&reset), sizeof(reset));
+        closesocket(previous);
+        { std::lock_guard<std::mutex> lock(gate); state.closeRetiring = false; }
+    }
+
     // The posting thread owns an API/I/O reference. Failed submissions balance
     // their speculative reference because they will not produce a completion.
     void readLocked() noexcept {
         if (!state.canRead()) return;
-        if (!reads.prepare()) { failLocked(2, 8); return; }
+        if (!reads.prepare()) { failLocked(2, 10055); return; }
         readOp.reset(); state.readPosted = true; retain();
         WSABUF buffer{static_cast<ULONG>(server->recvBytes), reinterpret_cast<char*>(reads.block()->data.data() + reads.block()->used)};
         DWORD bytes = 0, flags = 0;
@@ -187,6 +203,7 @@ public:
         }
     }
     void finishIfReady() noexcept {
+        retireSocket();
         bool ready;
         {
             std::lock_guard<std::mutex> lock(gate);
@@ -197,6 +214,7 @@ public:
     }
     void closeCallback() noexcept {
         // No remaining kernel I/O/delivery can refer to a reused byte buffer.
+        ++server->closeTerminals;
         if (auto fn = server->callbacks->close.load()) fn(server, id, closeOperation, closeError);
         server->remove(this);
     }
@@ -215,6 +233,7 @@ public:
             std::lock_guard<std::mutex> lock(gate);
             ok = !state.closing && writes.append(server->buffers, spans, count);
             if (ok) { writeLocked(); ok = !state.closing; }
+            else if (!state.closing) failLocked(3, 10055);
         }
         finishIfReady(); return ok;
     }
@@ -274,7 +293,12 @@ public:
     const unsigned owner;
     Operation op{OpKind::Task, this};
     std::atomic<TaskState> state{TaskState::Pending};
-    NativeTask(Server* s, std::uint64_t t) : server(s), token(t), owner(static_cast<unsigned>(t % s->workerCount)) { server->retain(); }
+    static unsigned registeringOwner(Server* s) noexcept {
+        if (currentWorker == s) return currentWorkerIndex;
+        const auto registered = s->buffers.currentOwner();
+        return (registered >= 64 ? registered - 64 : registered) % static_cast<unsigned>(s->workerCount);
+    }
+    NativeTask(Server* s, std::uint64_t t) : server(s), token(t), owner(registeringOwner(s)) { server->retain(); }
     ~NativeTask() override { server->release(); }
     bool submit() noexcept {
         auto expected = TaskState::Pending;
@@ -287,6 +311,14 @@ public:
             state.store(TaskState::Done);
         }
         server->finishTask(this); return false;
+    }
+    void runInline() noexcept {
+        auto expected = TaskState::Pending;
+        if (state.compare_exchange_strong(expected, TaskState::Running)) {
+            if (auto fn = server->callbacks->task.load()) fn(server, token, 0);
+            state.store(TaskState::Done);
+        }
+        server->finishTask(this);
     }
     void completed(void*, bool, unsigned, unsigned) noexcept override {
         auto expected = TaskState::Queued;
@@ -386,16 +418,20 @@ void Server::remove(Connection* c) noexcept {
 }
 void Server::worker(unsigned owner) noexcept {
     currentWorker = this;
+    currentWorkerIndex = owner;
     CIOBufferPool::OwnerScope bufferOwner(buffers, owner);
+    TimerDispatchPolicy timerDispatch;
     // One stack batch per worker. Entry.Internal is the status snapshot from
     // this dequeue; a callback may immediately resubmit/reuse its OVERLAPPED.
     std::array<OVERLAPPED_ENTRY, CompletionBatchSize> entries{};
     for (;;) {
         if (owner < timers.size()) {
-            for (unsigned work = 0; work < 1024; ++work) {
-                auto* due = timers[owner]->takeDue(monotonicMs());
+            const auto dueSnapshot = monotonicMs();
+            for (;;) {
+                auto* due = timers[owner]->takeDue(dueSnapshot);
                 if (!due) break;
-                static_cast<NativeTask*>(due)->submit();
+                if (timerDispatch.post(owner)) { ++timerPosted; static_cast<NativeTask*>(due)->submit(); }
+                else { ++timerInline; static_cast<NativeTask*>(due)->runInline(); }
                 due->release();
             }
         }
@@ -488,6 +524,7 @@ bool Server::start(const char* address, unsigned short number) noexcept {
     ntStatusToError = reinterpret_cast<NtStatusToErrorFn>(
         GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "RtlNtStatusToDosError"));
     if (!ntStatusToError) return false;
+    if (!buffers.initialize(static_cast<unsigned>(workerCount), std::max<std::size_t>(static_cast<std::size_t>(maxConnections) * 2, workerCount * 200))) return false;
     addrinfo hints{}; hints.ai_family = AF_UNSPEC; hints.ai_socktype = SOCK_STREAM; hints.ai_protocol = IPPROTO_TCP; hints.ai_flags = AI_PASSIVE;
     char service[8]{}; std::snprintf(service, sizeof(service), "%u", static_cast<unsigned>(number));
     addrinfo* result = nullptr;
@@ -512,13 +549,14 @@ bool Server::start(const char* address, unsigned short number) noexcept {
     }
     running.store(true); stopping.store(false); accepting.store(true);
     try {
-        for (int i = 0; i < workerCount; ++i) timers.emplace_back(new TimerWheel);
+        timerBlocks.reset(new TimerBlockPool(static_cast<std::size_t>(workerCount) * 200 + 409));
+        for (int i = 0; i < workerCount; ++i) timers.emplace_back(new TimerWheel(monotonicMs(), timerBlocks.get()));
         for (int i = 0; i < workerCount; ++i) workers.emplace_back([this, i]{worker(static_cast<unsigned>(i));});
         for (int i = 0; i < std::min(workerCount * 2, 32); ++i) accepts.emplace_back(new AcceptOperation(this));
     } catch (...) {
         accepting.store(false); closesocket(listening); listening = INVALID_SOCKET;
         for (std::size_t i = 0; i < workers.size(); ++i) PostQueuedCompletionStatus(port, 0, 0, nullptr);
-        for (auto& thread : workers) thread.join(); workers.clear(); accepts.clear(); timers.clear(); CloseHandle(port); port = nullptr; running.store(false); notifyChange(); return false;
+        for (auto& thread : workers) thread.join(); workers.clear(); accepts.clear(); timers.clear(); timerBlocks.reset(); CloseHandle(port); port = nullptr; running.store(false); notifyChange(); return false;
     }
     unsigned posted = 0; for (auto& op : accepts) if (postAccept(*op)) ++posted;
     // No accept can be posted: terminate the workers rather than advertising a
@@ -526,7 +564,7 @@ bool Server::start(const char* address, unsigned short number) noexcept {
     if (!posted) {
         accepting.store(false); closesocket(listening); listening = INVALID_SOCKET;
         for (std::size_t i = 0; i < workers.size(); ++i) PostQueuedCompletionStatus(port, 0, 0, nullptr);
-        for (auto& thread : workers) thread.join(); workers.clear(); accepts.clear(); timers.clear(); CloseHandle(port); port = nullptr; running.store(false); notifyChange(); return false;
+        for (auto& thread : workers) thread.join(); workers.clear(); accepts.clear(); timers.clear(); timerBlocks.reset(); CloseHandle(port); port = nullptr; running.store(false); notifyChange(); return false;
     }
     return true;
 }
@@ -566,7 +604,7 @@ bool Server::stop() noexcept {
     { std::unique_lock<std::mutex> guard(waitMutex); changed.wait(guard, [&]{return connections.load() == 0;}); }
     for (std::size_t i = 0; i < workers.size(); ++i) PostQueuedCompletionStatus(port, 0, 0, nullptr);
     for (auto& thread : workers) thread.join();
-    workers.clear(); accepts.clear(); timers.clear(); CloseHandle(port); port = nullptr;
+    workers.clear(); accepts.clear(); timers.clear(); timerBlocks.reset(); CloseHandle(port); port = nullptr;
     running.store(false); notifyChange(); return true;
 }
 
@@ -591,7 +629,7 @@ template<class F> static void configure(void* p, F apply) {
     // Configuration is a startup contract, not unsynchronized live tuning.
     if (!server->running.load()) apply(*server);
 }
-CIO_API unsigned CTransport_Version() { return 0x00020000; }
+CIO_API unsigned CTransport_Version() { return 0x00030000; }
 CIO_API void* CIO_Create_TcpServerListener() { return new(std::nothrow) Listener; }
 CIO_API void CIO_Destroy_TcpServerListener(void* p) { delete static_cast<Listener*>(p); }
 CIO_API void* CIO_Create_TcpServer(void* p) { if (!p) return nullptr; try { return new Server(static_cast<Listener*>(p)); } catch (...) { return nullptr; } }
@@ -663,3 +701,14 @@ CIO_API void* CTransport_Server_RetainReceiveBuffer(void* p, std::uint64_t id) {
 CIO_API const void* CTransport_Buffer_Data(void* p) { auto* lease = static_cast<BufferLease*>(p); return lease ? lease->block->data.data() + lease->offset : nullptr; }
 CIO_API unsigned CTransport_Buffer_Size(void* p) { return p ? static_cast<unsigned>(static_cast<BufferLease*>(p)->length) : 0; }
 CIO_API void CTransport_Buffer_Release(void* p) { delete static_cast<BufferLease*>(p); }
+
+CIO_API void CTransport_SetClosingCallback(void* p, CloseFn fn) { if (p) static_cast<Listener*>(p)->closing.store(fn); }
+CIO_API int CTransport_Server_GetDiagnostics(void* p, std::uint64_t* values, unsigned count) {
+    if (!p || !values || count < 8) return 0;
+    auto* s = static_cast<Server*>(p);
+    values[0] = s->buffers.allocated(); values[1] = s->buffers.exhaustions();
+    values[2] = s->buffers.initializationFailures(); values[3] = s->buffers.corruptions();
+    values[4] = s->timerInline.load(); values[5] = s->timerPosted.load();
+    values[6] = s->closeStarts.load(); values[7] = s->closeTerminals.load();
+    return 1;
+}

@@ -32,6 +32,12 @@ public final class CTransportWindowsSmokeTest {
             long cancelled=endpoint.schedule(() -> failed.set(new AssertionError("cancelled task executed")),200000);
             check(cancelled!=0 && endpoint.cancel(cancelled),"native timer cancellation");
             check(tasks.await(10,TimeUnit.SECONDS) && unique.size()==512,"FFM tasks missing");
+            CountDownLatch timerBurst = new CountDownLatch(1000);
+            for (int i=0;i<1000;i++) check(endpoint.schedule(timerBurst::countDown,100)!=0,"timer burst registration");
+            check(timerBurst.await(10,TimeUnit.SECONDS),"timer burst missing");
+            long[] diagnostic = endpoint.diagnostics();
+            check(diagnostic[0]>0 && diagnostic[1]==0 && diagnostic[2]==0 && diagnostic[3]==0,"pool diagnostics indicate failure");
+            check(diagnostic[4]>900 && diagnostic[5]>0,"original inline/repost timer policy not exercised");
             byte[] source=new byte[200000];new Random(42).nextBytes(source);
             for (int round=0;round<20;round++) try(Socket socket=connect(endpoint.port())) {
                 OutputStream output=socket.getOutputStream();

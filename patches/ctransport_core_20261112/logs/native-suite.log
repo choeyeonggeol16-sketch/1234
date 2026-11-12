@@ -12,5 +12,7 @@ PASS deterministic 50ms/200-slot wheel, long-deadline heap promotion, cancellati
 PASS native receive leases survive subsequent reads/disconnect/server destroy; SO_LINGER(1,0) applied
 PASS immediate/scheduled PostQueuedCompletionStatus failure balances references and reports scheduled error on worker
 PASS 512 native work callbacks, scheduled expiry, duplicate rejection, 1000 cancels, shutdown cancellation and callback fence
+PASS registering-worker/foreign-producer timer ownership; token values do not choose wheels
+PASS contiguous preallocated slab/FIFO exhaustion/corruption diagnostics, exact1000-slot blocks/overflow/compaction/rollback, owner17+101st policy and pre-close-before-OS-close fence
 PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.
 

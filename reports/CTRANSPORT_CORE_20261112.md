@@ -1,62 +1,47 @@
-# CTransport 네트워크 코어 재구현·팩 통합
+# CTransport ABI3: 종료·작업 분배·풀·타이머 후속 복원
 
-기준 c76e7b2753876fc8bb1aac4075e78a5d31bf522f. 사용자의 요청에 따라 CTransport.dll을 유일한 전송 엔진으로 연결했습니다. 기존 선택형 엔진은 제거했고, PSS 보조 통신의 NIO2도 같은 DLL로 교체했습니다. 게임 로직/게임 owner와 L1 프로토콜은 팩의 규칙을 유지합니다.
+구현 기준749a305e3b662852733fee766825e645870c33fc(ABI2). 사용자 요청의4개 후속 범위를 바이너리에서 더 추적하고 현재 팩에 구현했습니다. 새 DLL은 CTransport.dll, ABI0x30000/37개 export이며 유일한 전송 엔진입니다.
 
-## 이번 실제 구현
+## 실제 확인한 원본과 이번 변경
 
-| 부분 | 바이너리 근거 | 현재 구현 |
+| 대상 | 원본 근거 | 현재 구현 |
 |---|---|---|
-| 객체 수명·completion dispatch | x64 retain0x7d6d50, socket0x45f028, worker0x7058d8 및 x86 대조 | CIOObject retain/release와 가상 completed, I/O 요청당 정확히1개 참조 |
-| 소유자 버퍼 풀 | x640x45d7f8 TLS/pool/owner 기록,0x45d67c CAS ring 반납 | worker 고정 소유자, 외부 FFM 등록 슬롯, 원형 슬롯과 소유 풀 반납. 전역 mutex free-list 제거 |
-| 8KB/16KB | vtable0xb54c18/0xbbe878 및 user socket16KB 길이+0x4010 | 두 크기의 실제 저장 공간/별도 bucket. Java receive 설정16KB,4KB 읽기 어댑터 호환 |
-| 공유 수신 수명 |0x45e138 ref>1 복사, ref1 압축 | ReceiveWindow/참조 수, 남은 바이트 COW 또는 in-place compact; 보유 lease API |
-| 송신 큐 |0x45e480/0x45e8a0 | 활성 head 고정, 대기 tail 합치기, FIFO, 부분 송신 재제출 |
-| 배치 | 기존 CIOWinTransport.dll0x180049659 | 최대128개, ENTRY.Internal 상태 snapshot, 종료 신호 재전달. 제공 EXE는 단일 GQCS이며 배치는 확장 |
-| 연결 종료 |0x45d534 socket retire, hook, SO_LINGER(1,0), close | gate로1회 retire, linger0/reset, 취소 I/O/콜백 이후 Java terminal 통지 |
-| 일반 작업 |0x704248 PostQueuedCompletionStatus + 실패 시 release,0x705d54 가상 dispatch/release | 별도 작업 객체를 completion key로 게시, 실행·취소·종료 참조 계약 |
-| 타이머 |0x926844의0x32 간격/0xc8 slot/32-byte overflow heap,0x92533c bucket append,0x9256d4 dispatch,0x92611c heap pop | worker별50ms/200칸 휠+장기 heap, 등록·만료·취소·종료 정리. 만료 작업은 IOCP에 게시 |
-| 파서 확인·L1 호환 | CUserSocket vtable0xdc1c18 slot20→0xa0372c, 2-byte LE length-2, payload1..0x3ffe, 상태0/1 | 해당 L2 opcode/crypto를 옮기지 않고 L1 native codec로 기존 프레이밍/암복호화 유지 |
+| 종료 시작 |0x45d534 socket retire→vslot+0x98 hook→linger(1,0)→closesocket. CUserSocket hook0xa12dec는 parser 상태2, 등록값 xchg0, 등록 해제와 후속 객체 생성 | 종료 시작 callback을 socket gate 밖에서1회 실행. Java 활성 조회에서 먼저 제거하고 closing registry에 보관. 커널 I/O/콜백 종료 뒤 terminal callback으로 최종 정리 |
+| 후속 정리 |0xa12674는 socket 참조를 잡고 게임 상태에 따른 후속 작업/예약을 구성 | L2 필드/게임 상태를 복제하지 않고 현재 CIOUserSocket owner/세션 정리 경로에 연결. 최종 통지 전 버퍼·codec/arena 해제 금지 |
+| 버퍼 생성 |0x6b5094는N*0x2038 연속 영역+N*8 pointer ring을 만들고0초기화.0x6b4fb8은0x4038.0x7045dc는 worker별8K300개/설정된16K총량 분배.0x730300의 owner17은8K300/16K200 | 관찰된 payload/length/next/ref/owner offset과 stride를 가진 slab/포인터 ring. native worker는 시작 시 고정 pool 생성, 외부 FFM 생산자는 등록 시 고정 pool 생성. acquire 중 개별 new/동적 증가 제거 |
+| 고갈/손상 |0x45d7f8 할당 검사,0x45d67c 반환 검사.0x66db28은 실제로 null 주소에 byte1을 써서 접근 위반 | 고갈·초기화 실패·중복 반납/손상 진단. 부족한 시작 설정 거절. 송신/수신 자원 실패는10055로 해당 연결 종료. 프로세스 강제 접근 위반은 이식하지 않음 |
+| 소유권·분배 |0x926bf4 등록은 TLS owner의 wheel 선택.0x925374는 owner17 전체 재게시, 일반 owner는 counter 이전값100일 때 재게시/초기화, 나머지 직접 실행 | timer owner를 토큰 modulo에서 등록 worker/외부 생산자 TLS로 변경. 원본100 inline+1 repost 분기. 일반 PostTask는 IOCP 객체 게시 유지 |
+| 타이머 block |0x92533c: 객체1000개(+0),message1000개(+0x1f40),argument1000개(+0x2ee0),count+0x4e20,next+0x4e28.0x926bf4/0x926844는 가득 차면 block을 선두에 연결.0x9256d4는 chain 순서 처리 후 초과 block 반납 | sizeof0x4e30/static_assert로 배치 확인. 선두 확장/배열 순서/블록 회수. 취소를 지원하기 위한 인덱스와 빈 슬롯 압축 추가 |
+| timer block 풀/장기 heap |0x925498/0x925630의 CAS 공유 ring, 나머지 연산4009.0x92611c의32-byte heap record | 공유 사전 할당 block slab+CAS ring.18 worker 구성에서4009개가 되는workers*200+409 capacity.32-byte deadline/object/message/argument record와 min heap |
 
-research/scope에 각 함수 전체 추적과 직접 호출 목록을 저장했습니다. unwind 항목이 없는 함수의 덤프는 다음 함수까지 포함할 수 있으므로 실제 ret/분기를 기준으로 판단합니다. AtomicAddTimer라는 RTTI 이름만으로 타이머 구현을 단정하지 않았습니다. 실제 휠 근거는0x926844 경로입니다.
+원본C++ 텍스트·EXE의 명령 바이트를 가져온 것이 아니라, 실제 명령/RTTI/필드 접근으로 확인한 동작을 새 C++로 재구현한 결과입니다. 정적 분석은 입력 SHA256을 검사하며 실행 파일을 실행하지 않습니다. research/scope, trace_restore_scope.py, find_core_initializers.py에 재현 근거를 포함했습니다.
 
-## 교체 파일과 필수 경로
+## 현재 팩과의 연결·유지 사항
 
-- CIOWinServer/CIOWinSocket/CIOTransportConfig 제거 → CTransportServer/CTransportSocket/CTransportConfig.
-- CTransportEndpoint는 같은 FFM 브리지를 원시 보조 연결에 제공합니다.
-- PssWindowTransport의 AsynchronousChannelGroup/AsynchronousSocketChannel/ScheduledExecutor 제거. 동일 HELLO/token/IP/BOUND/OPEN/PING 프로토콜을 IOCP+native expiry timer로 처리합니다.
-- DLL 파일/해시/ABI0x20000를 항상 확인합니다. 선택 옵션/legacy alias/fallback 없음.
-- 이전 DLL은 새 배포물에 포함하지 않습니다. 기존 src 위에 overlay하면 삭제 파일이 남을 수 있으므로 전체 src 교체/clean build 필요.
-- CIOPacketCodec.dll은 기존 L1 규칙을 위한 독립 codec로 유지합니다. 추가 SQL 없음.
+CTransport_SetClosingCallback을 Java FFM에 연결했습니다. 활성 lookup에서 제외된 socket도 최종 callback까지 closing registry가 참조합니다. 수신 중 보유 데이터/진행 중 송신의 자원은 terminal까지 보호합니다. PSS도 동일한 early closing/terminal 경계를 사용합니다.
 
-## 원본과 다른 적용 설계
+CTransport_Server_GetDiagnostics는 uint64[8]: allocatedBlocks,exhaustions,initializationFailures,corruptions,timerInlineDecisions,timerPostDecisions,closeStarts,closeTerminals입니다. Java 시작 실패에는 할당 수/풀 초기화 실패를 포함합니다.
 
-원본 C++ 텍스트/전체 게임 서버를 복구한 결과가 아닙니다. 원본 instruction byte나 함수 주소를 실행에 사용하지 않습니다. 현재 자료에서 확인한 네트워크 구조를 새 C++로 작성했습니다.
+최대128개 배치는 사용자가 요청한 기존 전송 DLL 참고 확장입니다. 제공 EXE의 worker는 단일 GQCS였습니다. 기존 fallback/엔진 선택/PSS NIO2는 복원하지 않습니다. 현재 L1 프레이밍/암복호화는 기존 CIOPacketCodec.dll, 게임·세션 실행은 기존 Java owner를 사용합니다. 추가 SQL 없음.
 
-외부 Java 스레드 등록은 원본 TLS 환경에 없는 적용 설계입니다.64개 native worker 슬롯과64개 외부 슬롯을 사용하며 외부 슬롯은 등록 수가 많으면 공유 잠금으로 보호합니다. 여러 server에 중첩 호출해도 worker의 소유자 TLS를 덮어쓰지 않습니다. 풀 용량/전체 block 상한과 고갈 시 요청 거절은 적용 정책이며 원본의 fatal 진단 동작을 복제하지 않습니다.
+## 원본과 다른 정책·설정
 
-타이머는 원본의50ms/200-slot/overflow heap 구조를 사용하되,1,000개 단위 블록 메모리 배치와 특수 thread17/매101건 dispatch 최적화까지 같은 구현은 아닙니다. 취소 인덱스와64비트 단조 시계는 새 적용 설계입니다. game Java 타이머를 native에서 중복 실행하지 않습니다.
-
-원본의 종료 hook은 close 이전이며, 현재 Java terminal 통지는 메모리를 참조하는 모든 I/O/콜백이 끝난 뒤입니다. 이는 현재 FFM arena/codec 수명 계약을 지키기 위한 차이입니다. 원본과 동일한 성능/장시간 안정성은 별도 실측 대상입니다.
+- 원본의 고의 접근 위반 대신 연결/시작 실패와 진단으로 대응합니다. 풀을 다른 engine으로 바꾸거나 고갈 후 늘리는 경로는 없습니다.
+- 원본16K총량 INI 기본값80000은 확인했지만 그대로 강제하지 않습니다. native pool은 현재 maxConnections와 workerCount로 총량 max(2*maxConnections,200*workers)를 정하고 worker 수로 나눕니다.8K는 worker별300. 외부 생산자 profile은8K300/16K200. 전체 block 상한65536. 서로 다른 owner의 남은 buffer를 빌려오지 않으므로 편중/대규모 동접에서 용량 측정이 필요합니다.
+- 사전 할당으로 대기 시 메모리 사용량이 늘어납니다. maxConnections5000/workers8이면16K slab 약164MB,8K slab 약20MB, timer block slab 약40MB에 view/외부 pool/JVM 메모리가 추가됩니다. PSS 별도 endpoint도 자신의 pool을 가집니다.
+- 외부 JVM 스레드에는 원본의 TLS 번호 체계가 없어서64개 native 슬롯과64개 외부 등록 슬롯을 사용합니다. 외부 producer는 등록 슬롯을 native wheel에 매핑합니다. owner17의 분기는 보존하되 그 숫자만 보고 별도 업무 역할의 스레드를 만들지 않습니다.
+- 취소 인덱스/압축과64비트 단조 clock은 현재 API의 즉시 취소·수명 계약을 위한 추가 구현입니다. 원본의 모든 게임 객체/allocator/등록 관리자를 복구한 결과는 아닙니다.
 
 ## 검사
 
-- 생산 C++를 Windows API fixture에 연결한 ASan/UBSan 및 TSan 통과.
-- 기존128배치/혼합 NTSTATUS/종료 신호/다중 WSABUF/부분 송신/재진입/반복 종료 검사 유지.
-- 원형 ring5,000회 wrap, 다른 스레드 반납,12개 생산자 반복, 여러 server 중첩 TLS 보존.
-- 두 크기의 풀/FIFO, 공유 버퍼의 남은 데이터 COW/단독 압축, lease가 후속 수신·연결 종료·서버 파괴 후 유지되는지 확인.
-- 가상 시계에서50ms 경계와 장기 예약 heap 이동/취소, native512작업/1,000취소, 실행 중 작업과 Stop의 수명 fence.
-- Java1,698개 전체 타입 컴파일 및 고정 DLL/ABI/hash 검사. 전송 engine selector와 NIO2 accept/socket 경로 제거를 확인.
-- 실제 PE64/35개 export/IOCP·Winsock import/자바 hash pin 검사.
-- Windows 실제 DLL/FFM 검사는 .github/workflows/ctransport-windows.yml 결과와 추가 기록으로 구분합니다. 검사 소스는 생산 FFM/소켓/PSS를 사용하며 게임 owner 의존성만 대역입니다.
-- 실제 게임 클라이언트 로그인·사냥·운영 DB·장시간 부하는 이 검사에 포함되지 않습니다.
+ASan/UBSan 및 TSan으로 생산 C++ 검사 통과:
 
-## 실제 Windows 실행 결과
+- 기존128배치/혼합 NTSTATUS/다중 WSABUF/부분 송신/종료/lease/COW 검사 유지.
+- 실제 slab stride/원형 FIFO/고갈 후 미증가, 중복 반납과 불충분한 사전 할당 거절.
+- 1,001개 timer의 추가 block과 원본 선두 chain 처리 순서, 취소 슬롯 압축, block pool 고갈,199개만 확보되는 휠 초기화 rollback.
+- owner17 및101번째 재게시, 같은 생산자의 token 값과 무관한 owner, 다른 생산자 등록, callback에서 등록하는 timer의 worker 소유권.
+- 종료 훅 재진입/차단 중 OS socket 유지, 신규 수신 금지, 훅 후 linger/close, 마지막 I/O 후1회 terminal.
 
-[Windows 검사 run43234341462](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43234341462), job131237594019: **success**. Microsoft Windows Server2025/Temurin JDK21에서 배포 DLL을 직접 로드했습니다. 검사 commit은 ef2e4fd0d0d9394dff248bf9dc19ed5c7fda6d65이며, 이후 기록 추가에서는 검사한 C++/Java/DLL을 바꾸지 않았습니다.
+Java1,698개 전체 타입 컴파일/새 해시·ABI, PE64/37개 export/import 검사와 Windows smoke 컴파일도 통과했습니다. 실제 Windows의 배포 DLL/FFM/게임 소켓 어댑터/PSS 및1,000개 timer burst 결과는 WINDOWS_VERIFICATION.json과 실행 기록을 기준으로 합니다. 이전 ABI2 검증을 ABI3 검증으로 취급하지 않습니다.
 
-- C++ 실제 DLL:20개 접속/4MB 분할 echo와 순서·종료 통지.
-- 생산 Java FFM 브리지:20개 접속/4MB echo,512개 작업, 타이머 만료·취소·종료.
-- 생산 게임 소켓 어댑터:3개 접속/300KB, native16KB→Java4KB 읽기, stash/pause/resume/순서 송신.
-- 생산 PSS UI 연결:분할 HELLO/PING/BOUND/OPEN, 원격 종료 detach, 잘못된 HELLO 거절, native 만료 timer 종료.
-
-Windows 검사에서 게임 owner 의존성만 대역을 사용합니다. 실제 게임 클라이언트·운영 DB·장시간 성능 검사는 포함하지 않습니다. 검증한 DLL SHA256은 `5bf718c9df9e3dbce2eee824bbb3928430a2e142ee06abb45f14ae4156e33fa6`입니다. 로그 발췌와 WINDOWS_VERIFICATION.json을 배포 묶음에 포함했습니다. build/native-build.json은 cross-build 시점 기록이며, 이후 실제 실행 결과는 별도 검증 기록이 기준입니다.
+실제 게임 클라이언트 로그인/사냥, 운영 DB, 장시간 동접·성능 비교는 이 검사 범위 밖입니다.

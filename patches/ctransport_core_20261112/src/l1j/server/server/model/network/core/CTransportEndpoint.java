@@ -11,12 +11,14 @@ public final class CTransportEndpoint implements AutoCloseable {
         boolean accept(Peer peer);
         boolean receive(Peer peer, ByteBuffer bytes);
         default void sent(Peer peer, int bytes) {}
+        default void closing(Peer peer) {}
         void closed(Peer peer);
     }
     interface Events {
         boolean accept(Peer peer);
         boolean receive(long id, ByteBuffer bytes);
         void sent(long id, int bytes);
+        void closing(long id);
         void closed(long id);
     }
     private final CTransportServer server;
@@ -36,6 +38,10 @@ public final class CTransportEndpoint implements AutoCloseable {
                 Peer peer = peers.get(id);
                 if (peer != null && peer.open) handler.sent(peer, bytes);
             }
+            public void closing(long id) {
+                Peer peer = peers.get(id);
+                if (peer != null) { peer.open = false; handler.closing(peer); }
+            }
             public void closed(long id) {
                 Peer peer = peers.remove(id);
                 if (peer != null) { peer.open = false; handler.closed(peer); }
@@ -44,6 +50,7 @@ public final class CTransportEndpoint implements AutoCloseable {
     }
     public int port() throws IOException { return server.localAddress().getPort(); }
     public long schedule(Runnable task, long delayMillis) { return server.schedule(task, delayMillis); }
+    public long[] diagnostics() { return server.diagnostics(); }
     public boolean cancel(long token) { return server.cancel(token); }
     @Override public void close() throws IOException {
         if (CTransportServer.isCompletionThread())

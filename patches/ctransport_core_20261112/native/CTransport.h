@@ -37,4 +37,6 @@ __declspec(dllimport) void* CTransport_Server_RetainReceiveBuffer(void*,std::uin
 __declspec(dllimport) const void* CTransport_Buffer_Data(void*);
 __declspec(dllimport) unsigned CTransport_Buffer_Size(void*);
 __declspec(dllimport) void CTransport_Buffer_Release(void*);
+__declspec(dllimport) void CTransport_SetClosingCallback(void*,int (*)(void*,std::uint64_t,int,int));
+__declspec(dllimport) int CTransport_Server_GetDiagnostics(void*,std::uint64_t*,unsigned);
 }

@@ -1,0 +1,57 @@
+# Tentative role: user_close_hook; VA 0xa12dec..0xa12eed
+0000000000a12dec: push     rbx
+0000000000a12dee: push     rbp
+0000000000a12def: push     rsi
+0000000000a12df0: push     rdi
+0000000000a12df1: sub      rsp, 0x38
+0000000000a12df5: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000a12dfe: mov      rdi, rcx
+0000000000a12e01: mov      edx, dword ptr [rip + 0x2ebac3d1]
+0000000000a12e07: mov      rax, qword ptr gs:[0x58]
+0000000000a12e10: mov      ebp, 0x7d58
+0000000000a12e15: mov      rbx, qword ptr [rax + rdx*8]
+0000000000a12e19: movsxd   r8, dword ptr [rbx + rbp]
+0000000000a12e1d: lea      rsi, [rip - 0x612e24]
+0000000000a12e24: movsxd   rdx, dword ptr [rsi + r8*4 + 0x47e2a40]
+0000000000a12e2c: lea      eax, [rdx + 1]
+0000000000a12e2f: mov      dword ptr [rsi + r8*4 + 0x47e2a40], eax
+0000000000a12e37: imul     r8, r8, 0x3e8
+0000000000a12e3e: add      r8, rdx
+0000000000a12e41: lea      rax, [rip + 0x3b30f8]
+0000000000a12e48: mov      qword ptr [rsi + r8*8 + 0x47bf7c0], rax
+0000000000a12e50: mov      dword ptr [rcx + 0xcc], 2
+0000000000a12e5a: xor      eax, eax
+0000000000a12e5c: xchg     dword ptr [rcx + 0xb0], eax
+0000000000a12e62: movsxd   rdx, eax
+0000000000a12e65: lea      rcx, [rip + 0x26350b4]
+0000000000a12e6c: call     0x8b04fc
+0000000000a12e71: mov      rcx, rdi
+0000000000a12e74: call     0x90e140
+0000000000a12e79: mov      edx, eax
+0000000000a12e7b: lea      rcx, [rip + 0x1762db5e]
+0000000000a12e82: call     0xa0dc04
+0000000000a12e87: mov      rdx, qword ptr [rdi + 0xc88]
+0000000000a12e8e: lea      rcx, [rip + 0x1762db4b]
+0000000000a12e95: call     0xa0ded4
+0000000000a12e9a: mov      ecx, 0x28
+0000000000a12e9f: call     0x4173e4
+0000000000a12ea4: mov      qword ptr [rsp + 0x60], rax
+0000000000a12ea9: test     rax, rax
+0000000000a12eac: je       0xa12ed8
+0000000000a12eae: movsxd   rcx, dword ptr [rbx + rbp]
+0000000000a12eb2: movsxd   r8, dword ptr [rsi + rcx*4 + 0x47e2a40]
+0000000000a12eba: imul     rcx, rcx, 0x3e8
+0000000000a12ec1: add      r8, rcx
+0000000000a12ec4: mov      r8, qword ptr [rsi + r8*8 + 0x47bf7b0]
+0000000000a12ecc: mov      rdx, rdi
+0000000000a12ecf: mov      rcx, rax
+0000000000a12ed2: call     0xa12674
+0000000000a12ed7: nop      
+0000000000a12ed8: movsxd   rax, dword ptr [rbx + rbp]
+0000000000a12edc: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+0000000000a12ee4: add      rsp, 0x38
+0000000000a12ee8: pop      rdi
+0000000000a12ee9: pop      rsi
+0000000000a12eea: pop      rbp
+0000000000a12eeb: pop      rbx
+0000000000a12eec: ret      
