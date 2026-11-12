@@ -2,7 +2,7 @@
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**같은 버전 DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**분석·구현 보고서**](reports/CTRANSPORT_REMAINING_NETWORK_ABI7_20261112.md)
 
-원본의 Playing27(소켓 번호), EnterChar28(계정 ID), CPerfMon thread15 역할을 확인하고 L1에 연결했습니다. MAC 공급자 API·설정·인증 강제 검사를 추가했습니다. 실제 클라이언트 식별자 전송 코드는 자료에 없어 기본 MAC 제한은 꺼져 있습니다. PSS 독립 동작·클라이언트 DLL은 유지했습니다. ABI0x70000/62 exports의 src와 DLL을 함께 적용하고 clean build합니다. [Windows 검증 기록](patches/ctransport_core_20261112/WINDOWS_VERIFICATION.json)을 확인하세요. 실게임·운영 DB·장시간 운영 부하는 미검증입니다.
+원본의 Playing27(소켓 번호), EnterChar28(계정 ID), CPerfMon thread15 역할을 확인하고 L1에 연결했습니다. MAC 공급자 API·설정·인증 강제 검사를 추가했습니다. 실제 클라이언트 식별자 전송 코드는 자료에 없어 기본 MAC 제한은 꺼져 있습니다. PSS 독립 동작·클라이언트 DLL은 유지했습니다. ABI0x70000/62 exports의 src와 DLL을 함께 적용하고 clean build합니다. Windows Server2022/Java21 검사 통과([실행43331551485](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43331551485)). 동시32개·30초 반복으로 누적53,376접속,6,832,128 L1 frames 처리 후 색인 잔여0을 확인했습니다. [검증 기록](patches/ctransport_core_20261112/WINDOWS_VERIFICATION.json)에 커밋과 파일 해시를 고정했습니다. 실게임·운영 DB·장시간 운영 부하는 미검증입니다.
 
 이하 ABI6 이전 설명은 당시 구현의 이력입니다. 최신 역할·미검증 범위는 위 ABI7 보고서 기준입니다.
 

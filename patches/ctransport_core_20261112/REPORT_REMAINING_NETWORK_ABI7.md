@@ -63,3 +63,5 @@ TSan이 기존 CExecutionSerializerFast의 producer 슬롯 쓰기와 consumer �
 ## 적용
 
 ABI `0x70000`, exports62개. **전체 src와 같은 묶음의 CTransport.dll을 함께 적용하고 clean build**한다. 추가 SQL 없음. 기존 `CIOPacketCodec.dll`, PSS 클라이언트·설정, Java21 preview/native-access 옵션을 유지한다. 부분 적용은 changed-files/deleted-files를 모두 반영한다. 원본 클래스의 메모리/vtable ABI 전체 일치, L2의 모든 서비스/게임 로직 복원을 의미하지 않는다.
+
+실제 ABI7 Windows Server2022/Temurin21 검사 통과: [실행43331551485](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43331551485), 검사 소스 `b538267b0447fe1bd0b06b133cac78c518cb404a`. 동시32개로 30,122ms 동안 **누적53,376접속, 6,832,128 L1 frames, 3,498,049,536 C2S wire bytes**를 처리하고 매 round의 active/retiring/Playing/EnterChar 잔여0을 확인했다. 실제 계정 암호·DB·사냥을 포함한 검사는 아니다. 최종 배포의 소스·DLL·테스트는 이 검사 커밋과 동일하고 후속 커밋은 검증 기록을 추가한다.

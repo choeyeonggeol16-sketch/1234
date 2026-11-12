@@ -9,3 +9,5 @@
 5. 성능 샘플 기본1초: `-Dctransport.perf.intervalMs=1000`. root Server.networkPerformance()/networkAccountRegistryDiagnostics()로 조회합니다.
 
 원본 주소·구현 차이·미검증 범위는 REPORT_REMAINING_NETWORK_ABI7.md, 실제 Windows 실행 결과는 WINDOWS_VERIFICATION.json을 따릅니다. 운영 DB·실게임·장시간 운영 부하는 미검증입니다. 이전 보고서는 당시 구현의 이력입니다.
+
+실제 ABI7 Windows Server2022/Temurin21 검사 통과: [실행43331551485](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43331551485), 검사 소스 `b538267b0447fe1bd0b06b133cac78c518cb404a`. 동시32개로 30,122ms 동안 **누적53,376접속, 6,832,128 L1 frames, 3,498,049,536 C2S wire bytes**를 처리하고 매 round의 active/retiring/Playing/EnterChar 잔여0을 확인했다. 실제 계정 암호·DB·사냥을 포함한 검사는 아니다. 최종 배포의 소스·DLL·테스트는 이 검사 커밋과 동일하고 후속 커밋은 검증 기록을 추가한다.
