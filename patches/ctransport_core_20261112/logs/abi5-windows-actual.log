@@ -1,0 +1,30 @@
+Actual Windows verification: run 43309668114 / job 131502116672 / commit 9c79d8a9507606d451adc11c33366c90a2e76035
+https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43309668114
+The injected session-capture exception below is the intentional error-path fixture.
+2026-11-12T21:22:49.7606131Z Microsoft Windows Server 2022
+2026-11-12T21:22:57.4833925Z   Distribution: temurin
+2026-11-12T21:22:57.4834504Z   Path: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+2026-11-12T21:22:57.5624139Z   JAVA_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+2026-11-12T21:22:57.5624648Z   JAVA_HOME_21_X64: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+2026-11-12T21:22:58.0984968Z PASS actual Windows DLL: 20 loopback connections, 4MB fragmented echo, order and close counts.
+2026-11-12T21:23:03.5664663Z PASS actual Windows shipped DLL + production Java21 FFM: 20 connections/4MB echo, work, timers/cancel, shutdown
+2026-11-12T21:23:03.6247921Z PASS production gameplay socket adapter: native 16K receives into 4K Java reads, stash/pause/resume and ordered writes
+2026-11-12T21:23:03.6890999Z PASS independent PSS NIO2 channel: fragmented HELLO, PING, BOUND/OPEN, detach, invalid greeting, dedicated expiry executor shutdown
+2026-11-12T21:23:04.2217164Z PASS Windows direct C++ codec/FFM: partial/empty/65535/coalesced frames, 67 exact C2S plaintext/rolling-key matches, 8 S2C matches, stable plaintext lease, foreign/duplicate release and invalid-length terminal
+2026-11-12T21:23:04.6029723Z PASS Windows native registry/timers: retired plaintext survives I/O terminal, release removes context, stale handles rejected, login timeout/auth cancellation/earlier callback deadline
+2026-11-12T21:23:04.6642715Z PASS actual Windows native packet completions: IOCP worker TLS identity, 64 pending packet leases cancel once on shutdown, no post after stop
+2026-11-12T21:23:07.8309990Z java.lang.IllegalStateException: injected session capture failure
+2026-11-12T21:23:07.8572231Z PASS actual production CIOUserSocket + Windows DLL: running handler retains plaintext through I/O terminal; queued session/SEND-pressure leases cancel; shutdown and session-capture exception release once; no pooled leases retained (game/account/scheduler/filter fixtures)
+2026-11-12T21:23:09.0413764Z PASS production L1 opcode/state matrix, loading barrier, multiplexed protocol compatibility, native game/session-owner execution roles
+2026-11-12T21:23:09.0678491Z PASS production registry/deferred close: early retirement, I/O+logout fence, replacement identity, 400 concurrent close races, once-only stale-safe cleanup
+2026-11-12T21:23:10.5322951Z PASS game registration first; fragmented hello; exact bound/open bytes
+2026-11-12T21:23:10.5348363Z PASS helper registration first binds when game registration arrives
+2026-11-12T21:23:10.5378774Z PASS malformed hello does not consume game registration
+2026-11-12T21:23:10.5398979Z PASS wrong source IP cannot take another game session
+2026-11-12T21:23:10.5481271Z PASS expiry removes waiting peers, pending game references and idle channels
+2026-11-12T21:23:10.5510512Z PASS logout invalidates bound peer and releases owner reference
+2026-11-12T21:23:10.5543574Z PASS nonce replay needs a new authenticated game registration
+2026-11-12T21:23:10.5570486Z PASS bounded connection and pending-registration capacity
+2026-11-12T21:23:10.5636239Z PASS concurrent repeated item clicks keep writer serialization and bounded state
+2026-11-12T21:23:12.8701740Z PASS production PSS startup/pairing/item OPEN/logout/restart; PSS shutdown/bind failure isolated from game session; no CTransport/FFM dependency
+2026-11-12T21:23:13.0014637Z PASS unchanged PE32 companion Pss2019.dll loaded; PssClientInit resolved; wrong-client attach refused

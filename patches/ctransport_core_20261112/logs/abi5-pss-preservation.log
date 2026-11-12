@@ -10,3 +10,5 @@ PASS 9 PSS source/client files byte-identical to pre-ABI5 baseline.
   "build/pss-client/Pss2019.dll": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
   "build/pss-client/PssClientLoadTest.exe": "945a09c964eb714434c47f1cc320335207b1c57637d98a41ccec699775523ea1"
 }
+PASS 9 PSS/startup/protocol source files byte-identical to 2dfce4f93bfc7a28d3493867dbfe76efadec45be
+PASS CIOClient PSS attach/token/lifecycle region byte-identical to baseline.

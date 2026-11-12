@@ -75,6 +75,9 @@
     "50ms/200-slot timer wheel and overflow heap"
   ],
   "adaptations": [
+    "slot+generation handles",
+    "unchanged L1 codec function table",
+    "network grace predicates upcalled to Java",
     "external FFM producer registration",
     "diagnosed exhaustion instead of intentional process crash",
     "indexed cancellation",
@@ -96,10 +99,10 @@
     "execution": "native READ direct or IOCP repost; L1 session owner for transitions",
     "lifetime": "close-start/native IO terminal/packet lease/L1 cleanup",
     "thread_identity": "native TLS owner query and L1 owner assertion",
-    "pss_unchanged_from": "4c6fa2b"
+    "pss_unchanged_from": "2dfce4f"
   },
   "windows_evidence": {
-    "conclusion": "pending",
+    "conclusion": "success",
     "abi": "0x50000",
     "scope": "native connection registry, direct unchanged L1 codec, native network deadlines and production CIOUserSocket packet lease",
     "dll_sha256": "c5160c9e6d93924e6b0ec9bc52d40af93c1e03df9183a3629dd71ba9bba839f2",
@@ -137,6 +140,25 @@
         "Real game client login/hunting, live DB, sustained load and comparative performance are not tested"
       ],
       "historical_abi4_only": true
-    }
+    },
+    "tested_source_commit": "9c79d8a9507606d451adc11c33366c90a2e76035",
+    "implementation_commit": "872b0d4d8c6c513311d991100417332a09e8f362",
+    "run_id": 43309668114,
+    "job_id": 131502116672,
+    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43309668114",
+    "os": "Microsoft Windows Server 2022",
+    "jdk": "Temurin 21.0.13+9.0",
+    "source_archive_sha256": "8492da4473b92bf9c8f310e8c6e37d1e4e2a72a8ff414a67f7d69acf2491466a",
+    "tests": [
+      "Actual ABI5 DLL: 20 native and 20 Java FFM connections; 4MB fragmented echo/order/close; work/timers/cancel/shutdown",
+      "Native C++ direct unchanged L1 codec: partial/empty/65535/coalesced frames; 67 exact C2S plaintext/rolling-key matches; 8 S2C rolling-key matches; lease stability, foreign/wrong/duplicate release; invalid-length real I/O terminal",
+      "Native registry: retired plaintext survives I/O terminal; final lease removes context; stale handles rejected",
+      "Native timers: login expiry, authenticated cancellation, earlier application callback",
+      "Actual production CIOUserSocket and pool/buffer/cryptor/FFM: inline handler, running owner retains plaintext through terminal, queued session/SEND-pressure/owner-yield cancellation, shutdown, injected session-capture exception; zero pooled leases retained",
+      "64 queued native packet completions cancel once; worker TLS identity; no post after stop",
+      "Production L1 state/dispatch/registry/deferred-close: multiplexed compatibility, replacement identity, 400 close races, once-only cleanup",
+      "Unchanged PSS NIO2: TCP contract groups, activation/pairing/OPEN/logout/restart/isolation, original PE32 client load"
+    ],
+    "runner_note": "windows-latest stayed queued without a runner; the same production DLL/sources passed on windows-2022. Superseded queued runs were cancelled."
   }
 }

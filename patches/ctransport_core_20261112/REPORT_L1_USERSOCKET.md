@@ -57,10 +57,20 @@ Java에만 있는 송신 예약·정상 종료 유예·거절 응답 grace 조�
 - 별도 Windows 검사에서 실제 생산 CIOUserSocket·buffer pool·ReadBuffer·Cryptor·FFM을 소스에서 컴파일합니다. 게임/계정/actor/scheduler/handler/filter만 fixture로 교체해 실행 중·owner queue·SEND pressure·세션 캡처 예외·종료 lease를 검사합니다. 전체 CIOUserSocket을 대역으로 바꾼 기존 smoke 검사와 구분합니다.
 - PSS source/client9개 파일을 직전 배포와 SHA 비교했고 동일합니다. PSS 활성화/pairing/OPEN/logout/restart·격리 계약도 유지됩니다.
 
-실제 Windows 결과는 WINDOWS_VERIFICATION.json과 연결된 새 실행 기록을 기준으로 합니다. 현재 ABI5 결과가 기록되기 전에는 이전 ABI4 success를 새 DLL 통과 근거로 사용하지 않습니다. 실제 게임 클라이언트 로그인/사냥·운영 DB·실제 전체 게임 handler·장시간 동접·성능 우열은 여기서 검증하지 않았습니다.
+실제 Windows ABI5 검사도 통과했습니다. WINDOWS_VERIFICATION.json과 아래 새 실행 기록을 기준으로 합니다. 실제 게임 클라이언트 로그인/사냥·운영 DB·실제 전체 게임 handler·장시간 동접·성능 우열은 여기서 검증하지 않았습니다.
 
 ## 적용
 
 전체 src와 새 build/CTransport.dll을 함께 적용하고 clean build합니다. ABI5 src와 ABI4 DLL을 섞으면 시작을 거절합니다. 기존 CIOPacketCodec.dll과 Java21 preview/native-access 옵션은 유지합니다. 추가 SQL 없음. PSS 클라이언트·INI·포트는 유지합니다.
 
 진단: UserSocket_GetState uint64[10] = parserState, expectedWire, filled, frames, invalidLengths, partialAgeMs, borrowed, sequence, codecPendingBytes, L1sessionState. Server_GetRegistryDiagnostics uint64[6] = active, retiring, capacity, registered, removed, staleLookup. ThreadOwner는 현재 서버 worker 번호이며 외부 스레드는-1입니다.
+
+## 실제 Windows ABI5 결과
+
+[실행43309668114](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43309668114), job131502116672: **success**. Windows Server2022 / Temurin21.0.13+9.0에서 검사 커밋9c79d8a9507606d451adc11c33366c90a2e76035를 사용했습니다. 이 커밋의 생산 소스·DLL은 구현 커밋872b0d4와 동일하며 CI 이미지 선택만 다릅니다.
+
+20개 native·20개 FFM 접속/4MB echo, 67개 C2S 복호화 및8회 S2C 키 진행, native registry/lease/login/auth/earlier deadline,64개 대기 완료 작업 취소가 통과했습니다. 별도 소스 컴파일한 실제 CIOUserSocket도 직접 IOCP handler와 실행 중 세션 handler의 종료 후 buffer 유지, owner queue/SEND pressure/owner yield 취소, 세션 캡처 예외 반환을 통과했습니다. 의도적으로 주입한 예외 로그는 오류 경로 검사이며 실패 결과가 아닙니다. L1 정책·400경합 정리와 변경하지 않은 PSS 계약·클라이언트 로드도 통과했습니다.
+
+검사한 전체 src SHA256:8492da4473b92bf9c8f310e8c6e37d1e4e2a72a8ff414a67f7d69acf2491466a.
+게임 DLL SHA256:c5160c9e6d93924e6b0ec9bc52d40af93c1e03df9183a3629dd71ba9bba839f2.
+이후 결과 기록은 문서·로그·패키지 메타데이터만 갱신합니다. 실제 게임·DB·전체 handler·장시간 부하 검증의 한계는 위와 같습니다.

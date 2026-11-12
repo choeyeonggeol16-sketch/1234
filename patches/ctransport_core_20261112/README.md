@@ -10,3 +10,5 @@ native 접속 관리자·기존 L1 코덱 직접 호출·네트워크 timer whee
 native가 접속 등록/조회/retire와 packet lease를 소유합니다. wire는 C++에서 바로 기존 codec Feed/Next로 들어가며 Java에는 plaintext만 전달합니다. 로그인60초·부분 수신/송신 정체30초·정상 종료 유예는 native 네트워크 timer에서 검사합니다. 게임 handler/계정/월드와 일반 L1 게임 timer는 기존 역할을 유지합니다.
 
 원본 주소·L1 적용 차이·변경 파일·검사 범위는 REPORT_L1_USERSOCKET.md를 확인하세요. 새 실제 Windows 결과는 WINDOWS_VERIFICATION.json을 기준으로 합니다. 실게임·운영 DB·장시간 동접·비교 성능은 미검증입니다.
+
+실제 ABI5 Windows Server2022/Java21 검사 통과: [실행43309668114](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43309668114). 기존 L1 codec과 실제 생산 CIOUserSocket의 lease/종료를 포함합니다. 게임·계정·actor·scheduler·handler·filter는 fixture이므로 실게임 실행 검증과는 구분합니다.
