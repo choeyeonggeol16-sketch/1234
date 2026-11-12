@@ -72,6 +72,12 @@ public final class CUserSocketOwnerWindowsTest {
    setPause(session.owner.get(),true);session.peer.getOutputStream().write(gameWire);until(()->phase(session.owner.get())==1);
    session.owner.get().close();check(session.closed.await(5,TimeUnit.SECONDS)&&phase(session.owner.get())==0,"SEND-pressure waiting lease stranded");
   }
+  try(Session session=new Session(false,false)){
+   session.peer.getOutputStream().write(loginWire);until(()->CIOThreadCallback.INSTANCE.queued.get()!=null);
+   var queued=CIOThreadCallback.INSTANCE.queued.getAndSet(null);setPause(session.owner.get(),true);queued.run();
+   check(phase(session.owner.get())==1,"queued owner did not yield to SEND pressure");
+   session.owner.get().close();check(session.closed.await(5,TimeUnit.SECONDS)&&phase(session.owner.get())==0,"owner yield/close stranded lease");
+  }
   try(Session session=new Session(true,true)){
    session.peer.getOutputStream().write(gameWire);check(session.closed.await(5,TimeUnit.SECONDS)&&phase(session.owner.get())==0,"session capture exception stranded reserved native lease");
   }

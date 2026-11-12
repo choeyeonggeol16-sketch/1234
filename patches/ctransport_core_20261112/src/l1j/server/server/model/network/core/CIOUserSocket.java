@@ -2575,7 +2575,7 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
      */
     private void kickRead() {
         if(nativeDirect){
-            if(_closed!=0){finishReadIfClosed();notifyClosedWhenReleased();return;}
+            if(_closed!=0){cancelQueuedNativePacket();finishReadIfClosed();notifyClosedWhenReleased();return;}
             if(!_channel.isOpen())return;
             boolean pause=_sendReadPaused||_closing!=0;
             if(!_channel.pauseNativeUser(pause)){close();return;}
