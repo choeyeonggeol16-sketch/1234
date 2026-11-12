@@ -1,0 +1,4 @@
+PASS report normal/critical golden vectors and ER100 MD/DR cases
+PASS 123904 A-coefficient vectors against independent BigDecimal floor, SP subtraction, ER clamps
+PASS 24000 B boundary/class/WIS vectors and 10000 random vectors against BigInteger oracle
+PASS low-MR/unknown-class exclusion, WIS floor, critical order and overflow bounds

@@ -1,0 +1,45 @@
+{
+  "base_revision": "e29cae4f67e07ad40d3c38afff4d00775bec88ea",
+  "branch": "rkern-nc-iocp-port-20261112",
+  "source_bundle": "RKern_Aden_NC_IOCP_PORT_FULL_SRC_20261112.zip",
+  "source_sha256": "1754231736748be1d5f81097c480c2ff39d2062dbf33b59d35d09da2a30c2578",
+  "native_bundle": "RKern_NC_IOCP_NATIVE_CORE_20261112.zip",
+  "native_dll_sha256": "1c9f3e24f5f2e0506c0c0637e5d6e36f850aa8ce06a7bde45aec6d6133d17dfc",
+  "source_files": 1698,
+  "java_files": 1697,
+  "changed_java_files": [
+    "src/l1j/server/server/model/network/core/CIOTransportConfig.java",
+    "src/l1j/server/server/model/network/core/CIOWinServer.java"
+  ],
+  "native_source_lines": 651,
+  "input_executables": {
+    "L2Server.exe": "8eecd317fb152b76f32a0a6a65fbf916e39d20511e203b4a0ea602fe041a22f5",
+    "L2Server(10).exe": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588"
+  },
+  "default_transport": "hpsocket",
+  "explicit_nc_option": "-Drkern.cio.transport=nc",
+  "description": "New behavioural reconstruction of selected NC IOCP/lifetime/buffer/FIFO contracts; not original NC source or extracted instruction bytes.",
+  "new_sql": false,
+  "existing_required_sql": "database/RKern_HPMP_GROWTH_20261112.sql",
+  "validation": [
+    "Windows x64 DLL/self-test cross-compile, all 27 exports and IOCP/Winsock imports",
+    "ASan/UBSan and TSan execute actual C++ engine with Windows completion fixtures; no reported errors",
+    "8-WSABUF copied send, 56000 bytes; 17000-byte echo with 37-byte completions; paused receive and caller-buffer reuse",
+    "callback-lifetime fencing, immediate errors, reject cleanup, stale IDs, 120 connections/600 repeated concurrent closes",
+    "1697 Java full type compile and all previous game/HPMP/persistence/magic/physical/element/hit regressions",
+    "selector property/default/hash validation; full source CRC/every-byte and patch reconstruction"
+  ],
+  "not_tested": [
+    "Real Windows DLL execution or kernel IOCP test",
+    "Actual Java FFM+DLL callbacks",
+    "Game client/operating MySQL/load/soak performance"
+  ],
+  "differences": [
+    "NC single GQCS worker rather than previous HP128-batch worker",
+    "8KiB family implemented; x64 16KiB variant not separately ported",
+    "Receive buffer lifetime adapted to existing Java/codec ownership; raw NC shared COW layout not copied",
+    "Original strict send-length mismatch replaced with safe partial-send resubmission",
+    "AcceptEx/opaque IDs/registry bounds/queue limits/explicit profile are new adapter decisions",
+    "Existing Java game timers, packet codec and database retained; original game code and binary offsets not executed"
+  ]
+}

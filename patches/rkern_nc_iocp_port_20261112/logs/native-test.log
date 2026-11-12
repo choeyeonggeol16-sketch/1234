@@ -1,0 +1,8 @@
+PASS production 8192-byte pool/FIFO: gathering, randomized partial completion, invalid lengths, atomic allocation failure, lifetime gates
+PASS actual native adapter: AcceptEx admission paused, 17000-byte receive/echo, synchronous success plus 37-byte completions, address lookup, stale ID rejection
+PASS actual eight-WSABUF API, 56000-byte ordered send and immediate caller buffer reuse after native copy
+PASS remote disconnect while receive callback is active preserves its buffer and delays terminal delivery
+PASS callback-reentrant pause/resume; close with both a posted read and held write drains cancellations before one terminal callback
+PASS immediate submission failures balance I/O holds; rejected accept cleanup; completion worker cannot self-join
+PASS 120 connections/600 concurrent repeated closes; pending accepts cancelled and all workers drained over ten server lifetimes
+PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.

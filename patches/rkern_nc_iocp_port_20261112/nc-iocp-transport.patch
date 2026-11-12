@@ -1,0 +1,78 @@
+diff --git a/src/l1j/server/server/model/network/core/CIOTransportConfig.java b/src/l1j/server/server/model/network/core/CIOTransportConfig.java
+new file mode 100644
+index 0000000..941bf31
+--- /dev/null
++++ b/src/l1j/server/server/model/network/core/CIOTransportConfig.java
+@@ -0,0 +1,29 @@
++package l1j.server.server.model.network.core;
++
++import java.io.IOException;
++import java.nio.file.Path;
++
++/** Explicit native transport choice. The existing transport remains default. */
++final class CIOTransportConfig {
++    static final String PROPERTY = "rkern.cio.transport";
++    static final String NC_SHA256 = "1c9f3e24f5f2e0506c0c0637e5d6e36f850aa8ce06a7bde45aec6d6133d17dfc";
++    record Choice(Path path, String sha256, boolean reconstructedNc) {}
++
++    private CIOTransportConfig() {}
++
++    static Choice selected() throws IOException {
++        return select(System.getProperty(PROPERTY, "hpsocket"));
++    }
++
++    static Choice select(String configured) throws IOException {
++        if ("hpsocket".equals(configured)) {
++            return new Choice(Path.of("CIOWinTransport.dll"),
++                    "9d8106886be0e26d14bd8eb7093714ae3b44d655ccae869ffc98148db8807ecc", false);
++        }
++        if ("nc".equals(configured)) {
++            return new Choice(Path.of("CIONcTransport.dll"), NC_SHA256, true);
++        }
++        throw new IOException("Unknown " + PROPERTY + ": " + configured
++                + "; expected hpsocket or nc");
++    }
++}
+diff --git a/src/l1j/server/server/model/network/core/CIOWinServer.java b/src/l1j/server/server/model/network/core/CIOWinServer.java
+index 2ca4b38..ae7f604 100644
+--- a/src/l1j/server/server/model/network/core/CIOWinServer.java
++++ b/src/l1j/server/server/model/network/core/CIOWinServer.java
+@@ -24,9 +24,9 @@ import java.util.concurrent.locks.LockSupport;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
+-/** Windows native C API bridge; requires the batch-IOCP-patched CIOWinTransport.dll.
++/** Windows native C API bridge; pinned HP transport by default, explicit NC reconstruction option.
+  * Java 21 FFM preview: --enable-preview --enable-native-access=ALL-UNNAMED.
+- * All callbacks occur on existing IOCP workers; no Java completion pool is added.
++ * Normal native completions run on transport IOCP workers; no Java completion pool is added.
+  */
+ final class CIOWinServer implements AutoCloseable {
+     private static final Logger LOG = Logger.getLogger(CIOWinServer.class.getName());
+@@ -87,8 +87,6 @@ final class CIOWinServer implements AutoCloseable {
+     private volatile boolean nativeStopCompleted;
+     private volatile IOException nativeShutdownFailure;
+     private static final long SHUTDOWN_BUDGET_NS = 30_000_000_000L;
+-    private static final String EXPECTED_TRANSPORT_SHA256 =
+-            "9d8106886be0e26d14bd8eb7093714ae3b44d655ccae869ffc98148db8807ecc";
+ 
+     /** Fail closed on an unknown native ABI, rather than guessing callback/WSABUF lifetimes. */
+     static void requireKnownDll(Path path, String expected) throws IOException {
+@@ -130,9 +128,15 @@ final class CIOWinServer implements AutoCloseable {
+         MemorySegment createdListener = MemorySegment.NULL;
+         MemorySegment createdServer = MemorySegment.NULL;
+         try {
+-            Path dll = Path.of("CIOWinTransport.dll").toAbsolutePath();
+-            requireKnownDll(dll, EXPECTED_TRANSPORT_SHA256);
++            final CIOTransportConfig.Choice transport = CIOTransportConfig.selected();
++            Path dll = transport.path().toAbsolutePath();
++            requireKnownDll(dll, transport.sha256());
+             symbols = SymbolLookup.libraryLookup(dll, arena);
++            if (transport.reconstructedNc()) {
++                MethodHandle version = fn("CIONC_Version", FunctionDescriptor.of(I));
++                if ((int) version.invokeExact() != 0x00010000)
++                    throw new IOException("Unsupported reconstructed CIO transport ABI");
++            }
+             // Require our patched export, not an unmodified third-party binary.
+             stopAccept = fn("CIO_StopAccepting", FunctionDescriptor.of(I, P));
+             start = fn("CIO_Server_Start", FunctionDescriptor.of(I, P, P, ValueLayout.JAVA_SHORT));

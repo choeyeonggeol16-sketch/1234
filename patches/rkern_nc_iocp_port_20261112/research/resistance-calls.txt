@@ -1,0 +1,194 @@
+src/l1j/server/server/command/executor/L1Describe.java:113:			SC_ChatPacket.sendDirect(pc, pc, "* 불: " + target.getResistance().getFire() + "  물: " + target.getResistance().getWater() + "  바람: " + target.getResistance().getWind() + "  땅: " + target.getResistance().getEarth());		
+src/l1j/server/server/datatables/NpcTable.java:153:				npc.set_weakAttr(rs.getInt("weakAttr"));
+src/l1j/server/server/packets/Protocol/Packet/SC_WorldPutObjectNoti.java:276:        noti.set_weakelemental(npc.getNpcTemplate().get_weakAttr());
+src/l1j/server/server/packets/Protocol/Packet/SC_WorldPutObjectNoti.java:1115:                { notiWire_bit |= 268435456L; notiWire_weakelemental = (npc.getNpcTemplate().get_weakAttr()); }
+src/l1j/server/MJCompanion/Instance/MJCompanionAttackHandler.java:127:			double elemental_reduction = ((double)target.getResistance().getFire() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
+src/l1j/server/MJCompanion/Instance/MJCompanionAttackHandler.java:131:			double elemental_reduction = ((double)target.getResistance().getWater() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
+src/l1j/server/MJCompanion/Instance/MJCompanionAttackHandler.java:135:			double elemental_reduction = ((double)target.getResistance().getWind() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
+src/l1j/server/MJCompanion/Instance/MJCompanionAttackHandler.java:139:			double elemental_reduction = ((double)target.getResistance().getEarth() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
+src/l1j/server/MJCompanion/Instance/MJCompanionAttackHandler.java:143:			double elemental_reduction = ((double)target.getResistance().getWind() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
+src/l1j/server/server/templates/L1Npc.java:231:	private int _weakAttr;
+src/l1j/server/server/templates/L1Npc.java:233:	public int get_weakAttr() {
+src/l1j/server/server/templates/L1Npc.java:234:		return _weakAttr;
+src/l1j/server/server/templates/L1Npc.java:237:	public void set_weakAttr(int i) {
+src/l1j/server/server/templates/L1Npc.java:238:		_weakAttr= i;
+src/l1j/server/MJItemSkillSystem/Model/Defence/Def_ProbReduction.java:43:			reduc		= calcAttr(defender, reduc);
+src/l1j/server/MJItemSkillSystem/Model/Defence/Def_HpRegen.java:22:			heal		= calcAttr(defender, heal);
+src/l1j/server/MJItemSkillSystem/Model/Defence/Def_MpRegen.java:35:		mp		= calcAttr(defender, mp);
+src/l1j/server/MJItemSkillSystem/Model/MJItemSkillModel.java:168:	protected double calcAttr(L1Character defender, double pure_dmg){
+src/l1j/server/MJItemSkillSystem/Model/MJItemSkillModel.java:173:				dmg = MJCommons.getAttrDamage(dmg, defender.getResistance().getEarth());
+src/l1j/server/MJItemSkillSystem/Model/MJItemSkillModel.java:176:				dmg = MJCommons.getAttrDamage(dmg, defender.getResistance().getFire());
+src/l1j/server/MJItemSkillSystem/Model/MJItemSkillModel.java:179:				dmg = MJCommons.getAttrDamage(dmg, defender.getResistance().getWater());
+src/l1j/server/MJItemSkillSystem/Model/MJItemSkillModel.java:182:				dmg = MJCommons.getAttrDamage(dmg, defender.getResistance().getWind());
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_MPDrainAndDisease.java:47:		time		= calcAttr(defender, time);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_MPDrainAndGet.java:25:		dmg = calcAttr(defender, dmg);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_HPDrainAndGet.java:24:		dmg = calcAttr(defender, dmg);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_Chaotic.java:19:		dmg 		= calcAttr(defender, dmg);
+src/l1j/server/server/model/L1WeaponSkill.java:1446:			resist = cha.getResistance().getEarth();
+src/l1j/server/server/model/L1WeaponSkill.java:1448:			resist = cha.getResistance().getFire();
+src/l1j/server/server/model/L1WeaponSkill.java:1450:			resist = cha.getResistance().getWater();
+src/l1j/server/server/model/L1WeaponSkill.java:1452:			resist = cha.getResistance().getWind();
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_HPDrain.java:22:		dmg = calcAttr(defender, dmg);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_NormalRangeAttack.java:25:		dmg = calcAttr(defender, dmg);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_PumpkinCurse.java:29:		dmg = calcAttr(defender, dmg);
+src/l1j/server/server/model/Resistance.java:123:    public int getFire() 	{ return increase_elemental_resist(fire); 	}
+src/l1j/server/server/model/Resistance.java:124:    public int getWater()	{ return increase_elemental_resist(water); }
+src/l1j/server/server/model/Resistance.java:125:    public int getWind() 	{ return increase_elemental_resist(wind); 	}
+src/l1j/server/server/model/Resistance.java:126:    public int getEarth()	{ return increase_elemental_resist(earth); }
+src/l1j/server/server/model/Resistance.java:133:    public void addFire(int i) 	{ fire  = checkRange(fire + i);  }
+src/l1j/server/server/model/Resistance.java:134:    public void addWater(int i) { water = checkRange(water + i); }
+src/l1j/server/server/model/Resistance.java:135:    public void addWind(int i) 	{ wind  = checkRange(wind + i);  }
+src/l1j/server/server/model/Resistance.java:136:    public void addEarth(int i) { earth = checkRange(earth + i); }
+src/l1j/server/server/model/Resistance.java:141:    public void addAllNaturalResistance(int i) {
+src/l1j/server/server/model/Resistance.java:142:        addFire(i);
+src/l1j/server/server/model/Resistance.java:143:        addWater(i);
+src/l1j/server/server/model/Resistance.java:144:        addWind(i);
+src/l1j/server/server/model/Resistance.java:145:        addEarth(i);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_NormalAttack.java:29:		dmg = calcAttr(defender, dmg);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_Hold.java:34:		time		= calcAttr(defender, time);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_Disease.java:38:		time		= calcAttr(defender, time);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_ChaoticAndNormal.java:28:		dmg = calcAttr(defender, dmg);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_DamagePoison.java:32:		time		= calcAttr(defender, time);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_CriticalAttack2.java:20:			dmg = calcAttr(defender, dmg);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_DiceDagger.java:31:		dmg = calcAttr(defender, dmg);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_WideAttack.java:41:			dmg = calcAttr(c, dmg);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_CriticalAttack.java:21:			dmg = calcAttr(defender, dmg);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_Silence.java:34:		time		= calcAttr(defender, time);
+src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_TargetWideAttack.java:40:			dmg = calcAttr(c, dmg);
+src/l1j/server/swing/chocco.java:113:        addWindowListener(new WindowAdapter() {
+src/l1j/server/server/model/network/core/sc/packet/SC_OwnCharAttrDef.java:18:                fire = pc.getResistance().getFire(); water = pc.getResistance().getWater();
+src/l1j/server/server/model/network/core/sc/packet/SC_OwnCharAttrDef.java:19:                wind = pc.getResistance().getWind(); earth = pc.getResistance().getEarth();
+src/l1j/server/server/model/network/core/sc/packet/SC_OwnCharStatus.java:39:        final int fire = pc.getResistance() != null ? pc.getResistance().getFire() : 0;
+src/l1j/server/server/model/network/core/sc/packet/SC_OwnCharStatus.java:40:        final int water = pc.getResistance() != null ? pc.getResistance().getWater() : 0;
+src/l1j/server/server/model/network/core/sc/packet/SC_OwnCharStatus.java:41:        final int wind = pc.getResistance() != null ? pc.getResistance().getWind() : 0;
+src/l1j/server/server/model/network/core/sc/packet/SC_OwnCharStatus.java:42:        final int earth = pc.getResistance() != null ? pc.getResistance().getEarth() : 0;
+src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java:439:                npc.getNpcTemplate().get_weakAttr();
+src/l1j/server/server/model/L1Magic.java:1861:		dmg = calcAttrDefence(l1skills.getDamageValue(), L1Skills.ATTR_FIRE);
+src/l1j/server/server/model/L1Magic.java:1889:		dmg = calcAttrDefence(l1skills.getDamageValue(), L1Skills.ATTR_FIRE);
+src/l1j/server/server/model/L1Magic.java:2457:        case L1Skills.ATTR_EARTH -> _targetPc.getResistance().getEarth();
+src/l1j/server/server/model/L1Magic.java:2458:        case L1Skills.ATTR_FIRE -> _targetPc.getResistance().getFire();
+src/l1j/server/server/model/L1Magic.java:2459:        case L1Skills.ATTR_WATER -> _targetPc.getResistance().getWater();
+src/l1j/server/server/model/L1Magic.java:2460:        case L1Skills.ATTR_WIND -> _targetPc.getResistance().getWind();
+src/l1j/server/server/model/L1Magic.java:2580:		double attrDeffence = calcAttrResistance(l1skills.getAttr());
+src/l1j/server/server/model/L1Magic.java:2774:	private double calcAttrResistance(int attr) {
+src/l1j/server/server/model/L1Magic.java:2780:				resist = _targetPc.getResistance().getEarth();
+src/l1j/server/server/model/L1Magic.java:2783:				resist = _targetPc.getResistance().getFire();
+src/l1j/server/server/model/L1Magic.java:2786:				resist = _targetPc.getResistance().getWater();
+src/l1j/server/server/model/L1Magic.java:2789:				resist = _targetPc.getResistance().getWind();
+src/l1j/server/server/model/L1Magic.java:2806:	private int calcAttrDefence(int dmg, int attr) {
+src/l1j/server/server/model/L1Magic.java:2816:				resist = _targetPc.getResistance().getEarth();
+src/l1j/server/server/model/L1Magic.java:2819:				resist = _targetPc.getResistance().getFire();
+src/l1j/server/server/model/L1Magic.java:2822:				resist = _targetPc.getResistance().getWater();
+src/l1j/server/server/model/L1Magic.java:2825:				resist = _targetPc.getResistance().getWind();
+src/l1j/server/server/model/item/function/ItemUseDollEffects.java:159:			pc.getResistance().addEarth(-20);
+src/l1j/server/server/model/item/function/ItemUseDollEffects.java:160:			pc.getResistance().addWind(-20);
+src/l1j/server/server/model/item/function/ItemUseDollEffects.java:161:			pc.getResistance().addWater(-20);
+src/l1j/server/server/model/item/function/ItemUseDollEffects.java:162:			pc.getResistance().addFire(-20);	
+src/l1j/server/server/model/Instance/L1DollInstance.java:272:			case 15: pc.getResistance().addFire(10 * f); break;
+src/l1j/server/server/model/Instance/L1DollInstance.java:273:			case 16: pc.getResistance().addEarth(10 * f); break;
+src/l1j/server/server/model/Instance/L1DollInstance.java:274:			case 17: pc.getResistance().addWater(10 * f); break;
+src/l1j/server/server/model/Instance/L1DollInstance.java:275:			case 18: pc.getResistance().addWind(10 * f); break;
+src/l1j/server/server/model/Instance/L1DollInstance.java:300:			case 43: pc.getResistance().addFire(20 * f); break;
+src/l1j/server/server/model/Instance/L1DollInstance.java:301:			case 44: pc.getResistance().addEarth(20 * f); break;
+src/l1j/server/server/model/Instance/L1DollInstance.java:302:			case 45: pc.getResistance().addWater(20 * f); break;
+src/l1j/server/server/model/Instance/L1DollInstance.java:303:			case 46: pc.getResistance().addWind(20 * f); break;
+src/l1j/server/server/model/Instance/L1DollInstance.java:342:			case 82: pc.getResistance().addFire(30 * f); break;
+src/l1j/server/server/model/Instance/L1DollInstance.java:343:			case 83: pc.getResistance().addEarth(30 * f); break;
+src/l1j/server/server/model/Instance/L1DollInstance.java:344:			case 84: pc.getResistance().addWater(30 * f); break;
+src/l1j/server/server/model/Instance/L1DollInstance.java:345:			case 85: pc.getResistance().addWind(30 * f); break;
+src/l1j/server/server/model/Instance/L1DollInstance.java:346:			case 86: pc.getResistance().addAllNaturalResistance(10 * f); break;
+src/l1j/server/server/model/Instance/L1DollInstance.java:380:			case 122: pc.getResistance().addAllNaturalResistance(30 * f); break;
+src/l1j/server/server/model/L1ArmorSet.java:258:        pc.getResistance().addWater(_defense_water);
+src/l1j/server/server/model/L1ArmorSet.java:259:        pc.getResistance().addEarth(_defense_earth);
+src/l1j/server/server/model/L1ArmorSet.java:260:        pc.getResistance().addWind(_defense_wind);
+src/l1j/server/server/model/L1ArmorSet.java:261:        pc.getResistance().addFire(_defense_fire);
+src/l1j/server/server/model/L1ArmorSet.java:265:        pc.getResistance().addWater(-_defense_water);
+src/l1j/server/server/model/L1ArmorSet.java:266:        pc.getResistance().addEarth(-_defense_earth);
+src/l1j/server/server/model/L1ArmorSet.java:267:        pc.getResistance().addWind(-_defense_wind);
+src/l1j/server/server/model/L1ArmorSet.java:268:        pc.getResistance().addFire(-_defense_fire);
+src/l1j/server/server/model/item/cooking/CookingRegistry.java:109:            @Override void apply(L1PcInstance pc, int v) { pc.getResistance().addAllNaturalResistance(v); }
+src/l1j/server/server/model/L1EquipmentSlot.java:1275:		_owner.getResistance().addEarth(item.get_defense_earth());
+src/l1j/server/server/model/L1EquipmentSlot.java:1276:		_owner.getResistance().addWind(item.get_defense_wind());
+src/l1j/server/server/model/L1EquipmentSlot.java:1277:		_owner.getResistance().addWater(item.get_defense_water());
+src/l1j/server/server/model/L1EquipmentSlot.java:1278:		_owner.getResistance().addFire(item.get_defense_fire());		
+src/l1j/server/server/model/L1EquipmentSlot.java:7366:		_owner.getResistance().addEarth(-item.get_defense_earth());
+src/l1j/server/server/model/L1EquipmentSlot.java:7367:		_owner.getResistance().addWind(-item.get_defense_wind());
+src/l1j/server/server/model/L1EquipmentSlot.java:7368:		_owner.getResistance().addWater(-item.get_defense_water());
+src/l1j/server/server/model/L1EquipmentSlot.java:7369:		_owner.getResistance().addFire(-item.get_defense_fire());
+src/l1j/server/server/model/character/skill/SkillHandlers.java:962:				pc.getResistance().addEarth(i);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:966:				pc.getResistance().addFire(i);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:970:				pc.getResistance().addWater(i);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:974:				pc.getResistance().addWind(i);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:993:				mob.getResistance().addEarth(i);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:997:				mob.getResistance().addFire(i);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:1001:				mob.getResistance().addWater(i);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:1005:				mob.getResistance().addWind(i);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:1658:		pc.getResistance().addWater(5);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:1675:		pc.getResistance().addWind(5);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:1692:		pc.getResistance().addEarth(5);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:1709:		pc.getResistance().addFire(5);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:1726:		pc.getResistance().addFire(5);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:1727:		pc.getResistance().addEarth(5);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:1728:		pc.getResistance().addWater(5);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:1729:		pc.getResistance().addWind(5);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:2678:		final int weakAttr = npcTemp.get_weakAttr();
+src/l1j/server/server/model/character/skill/SkillHandlers.java:3400:		pc.getResistance().addAllNaturalResistance(10);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:3426:		if (attr == 1) pc.getResistance().addEarth(50);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:3427:		else if (attr == 2) pc.getResistance().addFire(50);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:3428:		else if (attr == 4) pc.getResistance().addWater(50);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:3429:		else if (attr == 8) pc.getResistance().addWind(50);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:4068:			pc.getResistance().addWater(30);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:4325:			pc.getResistance().addWater(50);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:4334:			pc.getResistance().addWind(50);
+src/l1j/server/server/model/character/skill/SkillHandlers.java:4343:			pc.getResistance().addFire(50);
+src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java:14:	public static double calcAttrEnchantDamage(
+src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java:42:			final int weak = targetNpc.getNpcTemplate().get_weakAttr();
+src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java:86:			case FIRE:  return pc.getResistance().getFire();
+src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java:87:			case WATER: return pc.getResistance().getWater();
+src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java:88:			case WIND:  return pc.getResistance().getWind();
+src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java:89:			case EARTH: return pc.getResistance().getEarth();
+src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java:106:			case FIRE:  return npc.getResistance().getFire();
+src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java:107:			case WATER: return npc.getResistance().getWater();
+src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java:108:			case WIND:  return npc.getResistance().getWind();
+src/l1j/server/server/model/character/Attack/Helper/L1WeaponAttrEnchantHelper.java:109:			case EARTH: return npc.getResistance().getEarth();
+src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java:398:            pc.getResistance().addAllNaturalResistance(10);
+src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java:403:            if (attr == 1)      pc.getResistance().addEarth(50);
+src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java:404:            else if (attr == 2) pc.getResistance().addFire(50);
+src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java:405:            else if (attr == 4) pc.getResistance().addWater(50);
+src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java:406:            else if (attr == 8) pc.getResistance().addWind(50);
+src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java:493:            pc.getResistance().addWater(50);
+src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java:500:            pc.getResistance().addWind(50);
+src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java:507:            pc.getResistance().addFire(50);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:759:		pc.getResistance().addWater(-5);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:769:		pc.getResistance().addWind(-5);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:779:		pc.getResistance().addEarth(-5);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:789:		pc.getResistance().addFire(-5);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:799:		pc.getResistance().addFire(-5);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:800:		pc.getResistance().addEarth(-5);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:801:		pc.getResistance().addWater(-5);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:802:		pc.getResistance().addWind(-5);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1164:		pc.getResistance().addWater(-30);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1261:		cha.getResistance().addAllNaturalResistance(-10);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1275:			cha.getResistance().addEarth(-50);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1277:			cha.getResistance().addFire(-50);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1279:			cha.getResistance().addWater(-50);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1281:			cha.getResistance().addWind(-50);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1296:			case 1: pc.getResistance().addEarth(i); break;
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1297:			case 2: pc.getResistance().addFire(i); break;
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1298:			case 4: pc.getResistance().addWater(i); break;
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1299:			case 8: pc.getResistance().addWind(i); break;
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1315:			case 1: npc.getResistance().addEarth(i); break;
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1316:			case 2: npc.getResistance().addFire(i); break;
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1317:			case 4: npc.getResistance().addWater(i); break;
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1318:			case 8: npc.getResistance().addWind(i); break;
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1717:			pc.getResistance().addFire(-30);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1726:			pc.getResistance().addEarth(-30);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:1735:			pc.getResistance().addWind(-30);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:2057:	        pc.getResistance().addWater(-50);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:2069:	        pc.getResistance().addWind(-50);
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:2081:	        pc.getResistance().addFire(-50);
+src/l1j/server/server/model/character/effect/PcPotentialEffects.java:82:            pc.getResistance().addEarth(20);
+src/l1j/server/server/model/character/effect/PcPotentialEffects.java:83:            pc.getResistance().addWind(20);
+src/l1j/server/server/model/character/effect/PcPotentialEffects.java:84:            pc.getResistance().addWater(20);
+src/l1j/server/server/model/character/effect/PcPotentialEffects.java:85:            pc.getResistance().addFire(20);
+src/l1j/server/server/model/character/action/CAttackAction.java:1588:	    final double v = L1WeaponAttrEnchantHelper.calcAttrEnchantDamage(

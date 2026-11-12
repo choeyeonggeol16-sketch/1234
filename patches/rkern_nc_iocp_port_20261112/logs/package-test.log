@@ -1,0 +1,4 @@
+PASS full ZIP CRC: 1698 files /1697 Java, src only.
+PASS old Java changed only CIOWinServer; CIOTransportConfig added; every other file retained.
+PASS patch applies to e29cae4 full source and reproduces new bundle exactly.
+PASS native DLL hash equals Java pin; original NC EXE and user supplied DLLs excluded.

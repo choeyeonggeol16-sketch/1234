@@ -1,0 +1,11 @@
+PASS exhaustive weaker-armor oracle at 4096 points; H0/AC0 ~60.38%, H30/AC120 and AC150 ~6.3901%
+PASS 717056 AC/H grid points, finite probability and signed AC extremes; 100000 endpoint rolls, basis-point rounding and 50% distribution
+PASS unchanged DG/ER routing, one Maan adjustment, evasion can reach 0%
+METRIC before H=134 bias=-0.006920 pp RMSE=2.044083 pp slope=-0.736098 pp/AC
+METRIC after H=134 bias=-0.013272 pp RMSE=2.046606 pp slope=-0.734977 pp/AC
+METRIC before H=147 bias=6.907284 pp RMSE=7.181726 pp slope=-0.789376 pp/AC
+METRIC after H=147 bias=6.890580 pp RMSE=7.163606 pp slope=-0.786428 pp/AC
+No H=-13 correction or JP2016 observed counts are present in production; displayed JP hit != verified RKern internal H.
+PASS 400000 concurrent reads/30 reloads; one immutable table publication; rejected reload leaves active table intact
+MEASURE warmed local calculation: 10.79 ns/call, 0 allocated bytes/1000000 calls; no live server load claim
+PASS production HitEvasionModel; low-AC boundary clamp and monotone envelope are conservative repairs, not a recovered official formula.

@@ -1,0 +1,2 @@
+L2Server.exe {'CIOObject': 1, 'CIOSocket': 1}
+L2Server(10).exe {'CIOObject': 1, 'CIOSocketEx8192': 1, 'CIOSocketEx16384': 1}

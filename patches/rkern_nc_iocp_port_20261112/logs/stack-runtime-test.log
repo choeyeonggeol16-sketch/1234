@@ -1,0 +1,7 @@
+PASS actual PC state: hits 1..5, 1999/2000ms, fixed window, zero/dead hits, relog/new life, overflow
+PASS real receiveDamage -> real controller -> real GotDamage -> atomic HP: PC/NPC spells share state; weapons/false/invalid/blocked hits do not
+PASS overkill attenuation precedes HP cap; single lethal transition; direct weapon effects and NPC targets stay excluded
+PASS existing controller FIFO and overflow: 161 mixed events, no lost damage or stacking flag
+PASS eight concurrent attackers: 400 spell events counted/applied exactly once on victim owner
+PASS stale session events rejected before stack/HP delivery
+Actual production classes executed; test PCs override world visibility/zone/buffs/death side effects, NPC attacker is uninitialized test identity; no live IOCP/DB/game.

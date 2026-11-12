@@ -1,3 +1,11 @@
+## 2026-11-12 — NC I/O 동작 재구현 코어 (선택형 실험본)
+
+[**전체 src**](downloads/RKern_Aden_NC_IOCP_PORT_FULL_SRC_20261112.zip) · [**새 코어/DLL/self-test/소스**](downloads/RKern_NC_IOCP_NATIVE_CORE_20261112.zip) · [복원·구현·검증 보고서](reports/RKERN_NC_IOCP_PORT_20261112.md)
+
+두 EXE의 객체 수명·8KB 버퍼·FIFO·완료 디스패치를 분석하고 독립 C++ IOCP 전송으로 재구현했습니다. 원본 NC 소스 추출본은 아닙니다. 기존 HP-Socket 기본값 유지, `-Drkern.cio.transport=nc`로 선택. x64 DLL 빌드·ASan/UBSan/TSan fixture·Java1697개 전체/기존 회귀 통과. **실제 Windows DLL/FFM/게임·부하는 미검증**.이전 모든 수정 포함,새 SQL 없음.
+
+---
+
 ## 2026-11-12 — 물리 명중·AC 결함 수정 통합본
 
 [**최신 전체 src 다운로드**](downloads/RKern_Aden_ALL_FIXES_HIT_AC_FULL_SRC_20261112.zip) · [수정·검증 보고서](reports/RKERN_HIT_AC_FIXED_20261112.md) · [적용 안내](patches/rkern_hit_ac_20261112/README.md)
