@@ -1,0 +1,60 @@
+# Tentative role: timer_bucket_dispatch; VA 0x9256d4..0x9257c8
+00000000009256d4: push     rbx
+00000000009256d6: push     rbp
+00000000009256d7: push     rsi
+00000000009256d8: push     rdi
+00000000009256d9: push     r12
+00000000009256db: push     r13
+00000000009256dd: push     r14
+00000000009256df: push     r15
+00000000009256e1: sub      rsp, 0x38
+00000000009256e5: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000009256ee: mov      r13, r8
+00000000009256f1: mov      rdi, rdx
+00000000009256f4: mov      rsi, rcx
+00000000009256f7: mov      edx, dword ptr [rip + 0x2ec99adb]
+00000000009256fd: mov      rax, qword ptr gs:[0x58]
+0000000000925706: mov      r15d, 0x7d58
+000000000092570c: mov      rbp, qword ptr [rax + rdx*8]
+0000000000925710: movsxd   r12, dword ptr [r15 + rbp]
+0000000000925714: mov      r9, r12
+0000000000925717: lea      r14, [rip - 0x52571e]
+000000000092571e: movsxd   rdx, dword ptr [r14 + r12*4 + 0x47e2a40]
+0000000000925726: lea      eax, [rdx + 1]
+0000000000925729: mov      dword ptr [r14 + r12*4 + 0x47e2a40], eax
+0000000000925731: imul     r9, r9, 0x3e8
+0000000000925738: add      r9, rdx
+000000000092573b: lea      rax, [rip + 0x44fcde]
+0000000000925742: mov      qword ptr [r14 + r9*8 + 0x47bf7c0], rax
+000000000092574a: mov      rcx, rdi
+000000000092574d: call     0x925374
+0000000000925752: mov      rbx, qword ptr [rdi + 0x4e28]
+0000000000925759: test     rbx, rbx
+000000000092575c: je       0x925780
+000000000092575e: mov      rdx, rdi
+0000000000925761: mov      rcx, rsi
+0000000000925764: call     0x925630
+0000000000925769: mov      rdi, rbx
+000000000092576c: mov      rcx, rbx
+000000000092576f: call     0x925374
+0000000000925774: mov      rbx, qword ptr [rbx + 0x4e28]
+000000000092577b: test     rbx, rbx
+000000000092577e: jne      0x92575e
+0000000000925780: mov      dword ptr [rdi + 0x4e20], 0
+000000000092578a: mov      qword ptr [rdi + 0x4e28], 0
+0000000000925795: mov      rax, r12
+0000000000925798: imul     rax, rax, 0xc8
+000000000092579f: add      rax, r13
+00000000009257a2: mov      qword ptr [rsi + rax*8 + 0x4c8eb18], rdi
+00000000009257aa: movsxd   rax, dword ptr [r15 + rbp]
+00000000009257ae: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+00000000009257b7: add      rsp, 0x38
+00000000009257bb: pop      r15
+00000000009257bd: pop      r14
+00000000009257bf: pop      r13
+00000000009257c1: pop      r12
+00000000009257c3: pop      rdi
+00000000009257c4: pop      rsi
+00000000009257c5: pop      rbp
+00000000009257c6: pop      rbx
+00000000009257c7: ret      

@@ -1,0 +1,45 @@
+# Tentative role: buffer_recycle_8k; VA 0x45d67c..0x45d72a
+000000000045d67c: push     rbx
+000000000045d67e: push     rdi
+000000000045d67f: sub      rsp, 0x28
+000000000045d683: mov      r8, rdx
+000000000045d686: mov      rbx, rcx
+000000000045d689: mov      edi, 1
+000000000045d68e: mov      eax, dword ptr [rcx]
+000000000045d690: test     eax, eax
+000000000045d692: jne      0x45d68e
+000000000045d694: lock cmpxchg dword ptr [rcx], edi
+000000000045d698: cmp      eax, edi
+000000000045d69a: je       0x45d68e
+000000000045d69c: mov      rax, qword ptr [rbx + 0x18]
+000000000045d6a0: movsxd   rcx, dword ptr [rcx + 4]
+000000000045d6a4: cqo      
+000000000045d6a6: idiv     rcx
+000000000045d6a9: mov      rcx, qword ptr [rbx + 0x20]
+000000000045d6ad: mov      rax, qword ptr [rbx + 0x18]
+000000000045d6b1: cmp      rax, rcx
+000000000045d6b4: jge      0x45d6ce
+000000000045d6b6: mov      rcx, qword ptr [rbx + 0x10]
+000000000045d6ba: movsxd   rax, edx
+000000000045d6bd: cmp      qword ptr [rcx + rax*8], 0
+000000000045d6c2: jne      0x45d6ce
+000000000045d6c4: mov      qword ptr [rcx + rax*8], r8
+000000000045d6c8: add      qword ptr [rbx + 0x18], rdi
+000000000045d6cc: jmp      0x45d71c
+000000000045d6ce: lea      rdx, [rip + 0x6f72bb]
+000000000045d6d5: lea      rcx, [rip + 0x4785764]
+000000000045d6dc: call     qword ptr [rip + 0x6bef46] ; wsprintfW
+000000000045d6e2: lea      rdx, [rip + 0x6d3d07]
+000000000045d6e9: lea      rcx, [rip + 0x4785f50]
+000000000045d6f0: call     qword ptr [rip + 0x6bef32] ; wsprintfW
+000000000045d6f6: lea      rdx, [rip + 0x6c925b]
+000000000045d6fd: lea      rcx, [rip + 0x478673c]
+000000000045d704: mov      r8d, 0x33a
+000000000045d70a: call     qword ptr [rip + 0x6bef18] ; wsprintfW
+000000000045d710: mov      byte ptr [rip + 0x4785716], dil
+000000000045d717: call     0x66db28
+000000000045d71c: mov      rcx, rbx
+000000000045d71f: add      rsp, 0x28
+000000000045d723: pop      rdi
+000000000045d724: pop      rbx
+000000000045d725: jmp      0x45d3b4

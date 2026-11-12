@@ -1,0 +1,10 @@
+src/l1j/server/server/model/character/pss/window/PssWindowTransport.java
+src/l1j/server/server/model/network/core/CIOClient.java
+src/l1j/server/server/model/network/core/CIOPacketCodec.java
+src/l1j/server/server/model/network/core/CIOServer.java
+src/l1j/server/server/model/network/core/CIOSocketFactory.java
+src/l1j/server/server/model/network/core/CIOUserSocket.java
+src/l1j/server/server/model/network/core/CTransportConfig.java
+src/l1j/server/server/model/network/core/CTransportEndpoint.java
+src/l1j/server/server/model/network/core/CTransportServer.java
+src/l1j/server/server/model/network/core/CTransportSocket.java

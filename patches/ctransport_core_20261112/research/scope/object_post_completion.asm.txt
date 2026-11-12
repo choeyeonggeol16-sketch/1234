@@ -1,0 +1,23 @@
+# Tentative role: object_post_completion; VA 0x704248..0x70429c
+0000000000704248: push     rbx
+000000000070424a: sub      rsp, 0x30
+000000000070424e: xor      r9d, r9d
+0000000000704251: test     r8, r8
+0000000000704254: mov      rbx, rcx
+0000000000704257: cmovns   r9, r8
+000000000070425b: mov      r8, rcx
+000000000070425e: mov      rcx, qword ptr [rip + 0x454cccb]
+0000000000704265: call     qword ptr [rip + 0x417ebd] ; PostQueuedCompletionStatus
+000000000070426b: test     eax, eax
+000000000070426d: jne      0x704296
+000000000070426f: call     0x6708d0
+0000000000704274: mov      r11, qword ptr [rbx]
+0000000000704277: lea      rdx, [rip + 0x56d9fa]
+000000000070427e: mov      r9d, 2
+0000000000704284: mov      r8d, 0x2a8
+000000000070428a: mov      rcx, rbx
+000000000070428d: mov      byte ptr [rsp + 0x20], 0
+0000000000704292: call     qword ptr [r11 + 0x10]
+0000000000704296: add      rsp, 0x30
+000000000070429a: pop      rbx
+000000000070429b: ret      

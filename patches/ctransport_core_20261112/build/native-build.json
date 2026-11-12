@@ -1,0 +1,48 @@
+{
+  "compiler": "zig 0.14.1",
+  "target": "x86_64-windows-gnu",
+  "commands": [
+    [
+      "/workspace/work/aden-nc-port-20261112/toolchain/zig-x86_64-linux-0.14.1/zig",
+      "c++",
+      "-target",
+      "x86_64-windows-gnu",
+      "-std=c++17",
+      "-O2",
+      "-g0",
+      "-static",
+      "-shared",
+      "-fno-sanitize=undefined",
+      "/workspace/work/aden-rkern-cio-20261112/native/CTransport.cpp",
+      "-lws2_32",
+      "-o",
+      "/workspace/work/aden-rkern-cio-20261112/build/CTransport.dll"
+    ],
+    [
+      "/workspace/work/aden-nc-port-20261112/toolchain/zig-x86_64-linux-0.14.1/zig",
+      "c++",
+      "-target",
+      "x86_64-windows-gnu",
+      "-std=c++17",
+      "-O2",
+      "-g0",
+      "-static",
+      "/workspace/work/aden-rkern-cio-20261112/native/windows_loopback_test.cpp",
+      "/workspace/work/aden-rkern-cio-20261112/build/CTransport.lib",
+      "-lws2_32",
+      "-o",
+      "/workspace/work/aden-rkern-cio-20261112/build/CTransport_SelfTest.exe"
+    ]
+  ],
+  "files": {
+    "CTransport.cpp": "9b9b7d78c7682638e3470093485ea87713d8704a91a0a0a546f62e976abeabba",
+    "CTransport.h": "b0567e177cef032731a584817b88fcf1c241fcd75779877ad1abbbe0d2eca90f",
+    "build_native.py": "42e8613d8bfd53b7f5571c86d38d4e958f10a1b4b62815787601d482815af7d9",
+    "cio_core.hpp": "e2918398749801dd4b126403b4b3e9ac5e1887c1b7c65699e1b1c52350ef1562",
+    "timer_wheel.hpp": "827610fed0ed9e9ae63732e92e39d9382a7bb60e3fc8a64dca5bf2c59adc454d",
+    "windows_loopback_test.cpp": "a4d013cd107d0036f6f306c9ec1be107d2447f24d9cf27f7388bd1f37d0f007b"
+  },
+  "dll_sha256": "5bf718c9df9e3dbce2eee824bbb3928430a2e142ee06abb45f14ae4156e33fa6",
+  "selftest_sha256": "c33220617aac15e6c7202dacc49497050a99d9b2eaae99a8fd85f8af8aeec393",
+  "windows_execution_tested": false
+}

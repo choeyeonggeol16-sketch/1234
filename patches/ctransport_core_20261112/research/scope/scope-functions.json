@@ -1,0 +1,222 @@
+{
+  "buffer_allocate_8k": {
+    "start": "0x45d7f8",
+    "end": "0x45d9fe",
+    "bytes": 518,
+    "direct_calls": [
+      "0x734514",
+      "0x66db28"
+    ]
+  },
+  "buffer_recycle_8k": {
+    "start": "0x45d67c",
+    "end": "0x45d72a",
+    "bytes": 174,
+    "direct_calls": [
+      "0x66db28"
+    ]
+  },
+  "socket_close": {
+    "start": "0x45d534",
+    "end": "0x45d627",
+    "bytes": 243,
+    "direct_calls": []
+  },
+  "read_completion_8k": {
+    "start": "0x45de2c",
+    "end": "0x45dec9",
+    "bytes": 157,
+    "direct_calls": [
+      "0x45d534",
+      "0x734514"
+    ]
+  },
+  "object_post_completion": {
+    "start": "0x704248",
+    "end": "0x70429c",
+    "bytes": 84,
+    "direct_calls": [
+      "0x6708d0"
+    ]
+  },
+  "timer_worker_tick": {
+    "start": "0x705330",
+    "end": "0x7053d0",
+    "bytes": 160,
+    "direct_calls": [
+      "0x926e2c",
+      "0x70482c",
+      "0x926e54"
+    ]
+  },
+  "timed_work_queue_candidate": {
+    "start": "0x70482c",
+    "end": "0x7048ac",
+    "bytes": 128,
+    "direct_calls": [
+      "0x926844"
+    ]
+  },
+  "generic_object_completion": {
+    "start": "0x705d54",
+    "end": "0x705e2b",
+    "bytes": 215,
+    "direct_calls": [
+      "0x925138",
+      "0x4205e0",
+      "0xa71b3c"
+    ]
+  },
+  "serialized_write_callback": {
+    "start": "0x45c7ac",
+    "end": "0x45c9cd",
+    "bytes": 545,
+    "direct_calls": [
+      "0x734514",
+      "0x6704e0",
+      "0x734514",
+      "0x6704e0"
+    ]
+  },
+  "timer_queue_tick": {
+    "start": "0x926844",
+    "end": "0x926b62",
+    "bytes": 798,
+    "direct_calls": [
+      "0x9256d4",
+      "0x92533c",
+      "0x925498",
+      "0x92533c",
+      "0x734514",
+      "0x92611c",
+      "0xa58428",
+      "0xa58428",
+      "0x705c88",
+      "0xa58428"
+    ]
+  },
+  "timer_guard_enter": {
+    "start": "0x926e2c",
+    "end": "0x926e52",
+    "bytes": 38,
+    "direct_calls": [
+      "0x925138"
+    ]
+  },
+  "timer_guard_leave": {
+    "start": "0x926e54",
+    "end": "0x926e82",
+    "bytes": 46,
+    "direct_calls": [
+      "0x925138"
+    ]
+  },
+  "worker_main": {
+    "start": "0x7056ac",
+    "end": "0x7059a1",
+    "bytes": 757,
+    "direct_calls": [
+      "0xa22ae8",
+      "0x705330",
+      "0x926e2c",
+      "0x66db28",
+      "0x926e54",
+      "0x66db28"
+    ]
+  },
+  "timer_bucket_dispatch": {
+    "start": "0x9256d4",
+    "end": "0x9257c8",
+    "bytes": 244,
+    "direct_calls": [
+      "0x925374",
+      "0x925630",
+      "0x925374"
+    ]
+  },
+  "timer_bucket_append": {
+    "start": "0x92533c",
+    "end": "0x92563c",
+    "bytes": 768,
+    "direct_calls": [
+      "0x74e3bc",
+      "0x66db28",
+      "0x401044"
+    ]
+  },
+  "timer_overflow_heap_pop": {
+    "start": "0x92611c",
+    "end": "0x926193",
+    "bytes": 119,
+    "direct_calls": [
+      "0xabcd50",
+      "0xabcd50",
+      "0xabcd50",
+      "0x925874"
+    ]
+  },
+  "timer_block_allocate": {
+    "start": "0x925498",
+    "end": "0x92560e",
+    "bytes": 374,
+    "direct_calls": [
+      "0x66db28"
+    ]
+  },
+  "user_socket_parser": {
+    "start": "0xa0372c",
+    "end": "0xa03d8f",
+    "bytes": 1635,
+    "direct_calls": [
+      "0x45d41c",
+      "0x9ef384",
+      "0x925138",
+      "0xa0340c",
+      "0xab9970",
+      "0x9f7f3c",
+      "0x9ba4f8",
+      "0x926eac",
+      "0xab9970",
+      "0x926eac",
+      "0x4205e0",
+      "0x734514",
+      "0x5456d0",
+      "0x4205e0",
+      "0xab9970",
+      "0x4205e0",
+      "0x73446c",
+      "0x4205e0",
+      "0xa71b3c",
+      "0x5456d0",
+      "0x45d41c",
+      "0x5456d0"
+    ]
+  },
+  "user_socket_io_dispatch": {
+    "start": "0x54655c",
+    "end": "0x54664e",
+    "bytes": 242,
+    "direct_calls": [
+      "0x45d41c",
+      "0x545430",
+      "0x45c7ac",
+      "0x734514"
+    ]
+  },
+  "atomic_timer_entry": {
+    "start": "0x43f5b8",
+    "end": "0x43f669",
+    "bytes": 177,
+    "direct_calls": [
+      "0x704e4c"
+    ]
+  },
+  "atomic_timer_apply": {
+    "start": "0x43f758",
+    "end": "0x43f801",
+    "bytes": 169,
+    "direct_calls": [
+      "0x7acf7c"
+    ]
+  }
+}

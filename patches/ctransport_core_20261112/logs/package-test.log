@@ -1,0 +1,3 @@
+PASS source CRC/every byte; previous archive + changes/deletions reproduces all files.
+PASS three obsolete backend source files deleted; no selector, fallback or NIO2 socket path.
+{"source_archive_sha256": "069b97e63767af375e4baa1db81be9b4440fcc33ab66458409c851be2e740447", "dll_sha256": "5bf718c9df9e3dbce2eee824bbb3928430a2e142ee06abb45f14ae4156e33fa6"}

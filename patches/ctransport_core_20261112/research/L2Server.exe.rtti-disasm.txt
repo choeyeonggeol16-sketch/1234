@@ -1,0 +1,1231 @@
+
+### CSocket vtable 0x5fb624 slot 0 VA 0x4df710
+00000000004df710: push     ebx
+00000000004df711: mov      ebx, dword ptr [0x5b5084] ; InterlockedDecrement
+00000000004df717: push     esi
+00000000004df718: mov      esi, ecx
+00000000004df71a: push     edi
+00000000004df71b: lea      eax, [esi + 4]
+00000000004df71e: push     eax
+00000000004df71f: call     ebx
+00000000004df721: mov      edi, eax
+00000000004df723: test     edi, edi
+00000000004df725: jg       0x4df828
+00000000004df72b: jne      0x4df7dd
+00000000004df731: mov      eax, dword ptr [esi + 0xc]
+00000000004df734: test     eax, eax
+00000000004df736: je       0x4df7b2
+00000000004df738: mov      eax, dword ptr [esp + 0x10]
+00000000004df73c: test     eax, eax
+00000000004df73e: je       0x4df77c
+00000000004df740: mov      ecx, dword ptr [esp + 0x14]
+00000000004df744: push     ecx
+00000000004df745: push     eax
+00000000004df746: push     0x5fb78c
+00000000004df74b: push     2
+00000000004df74d: push     0x18aa81d8
+00000000004df752: call     0x53ee60
+00000000004df757: add      esp, 0x14
+00000000004df75a: push     0
+00000000004df75c: push     0
+00000000004df75e: mov      ecx, esi
+00000000004df760: call     0x40edf0
+00000000004df765: mov      eax, dword ptr [0x168a02b0]
+00000000004df76a: lea      ecx, [eax*4 + 0x3495488]
+00000000004df771: push     ecx
+00000000004df772: call     ebx
+00000000004df774: mov      eax, edi
+00000000004df776: pop      edi
+00000000004df777: pop      esi
+00000000004df778: pop      ebx
+00000000004df779: ret      0x10
+
+### CSocket vtable 0x5fb624 slot 1 VA 0x5188e0
+00000000005188e0: push     esi
+00000000005188e1: mov      esi, ecx
+00000000005188e3: lea      eax, [esi + 4]
+00000000005188e6: push     eax
+00000000005188e7: call     dword ptr [0x5b5080] ; InterlockedIncrement
+00000000005188ed: mov      eax, esi
+00000000005188ef: pop      esi
+00000000005188f0: ret      0xc
+
+### CSocket vtable 0x5fb624 slot 2 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CSocket vtable 0x5fb624 slot 3 VA 0x4df830
+00000000004df830: push     esi
+00000000004df831: mov      esi, ecx
+00000000004df833: call     0x4df550
+00000000004df838: test     byte ptr [esp + 8], 1
+00000000004df83d: je       0x4df85a
+00000000004df83f: push     0x17
+00000000004df841: push     0x5fb840
+00000000004df846: push     0x5fb7c8
+00000000004df84b: push     2
+00000000004df84d: push     0x18aa81d8
+00000000004df852: call     0x53eee0
+00000000004df857: add      esp, 0x14
+00000000004df85a: mov      eax, esi
+00000000004df85c: pop      esi
+00000000004df85d: ret      4
+
+### CSocket vtable 0x5fb624 slot 4 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CSocket vtable 0x5fb624 slot 5 VA 0x402f60
+0000000000402f60: xor      eax, eax
+0000000000402f62: ret      
+
+### CSocket vtable 0x5fb624 slot 6 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CSocket vtable 0x5fb624 slot 7 VA 0x402f80
+0000000000402f80: mov      eax, dword ptr [ecx + 4]
+0000000000402f83: ret      
+
+### CSocket vtable 0x5fb624 slot 8 VA 0x49aa30
+000000000049aa30: ret      4
+
+### CSocket vtable 0x5fb624 slot 9 VA 0x402f90
+0000000000402f90: mov      eax, dword ptr [ecx]
+0000000000402f92: mov      dword ptr [ecx + 0xc], 0
+0000000000402f99: jmp      dword ptr [eax + 0x20]
+0000000000402f9c: nop      
+0000000000402f9d: nop      
+0000000000402f9e: nop      
+0000000000402f9f: nop      
+0000000000402fa0: mov      eax, dword ptr [esp + 4]
+0000000000402fa4: push     0
+0000000000402fa6: push     ecx
+0000000000402fa7: mov      ecx, dword ptr [0x174d0dc8]
+0000000000402fad: push     eax
+0000000000402fae: push     ecx
+0000000000402faf: call     dword ptr [0x5b508c] ; PostQueuedCompletionStatus
+0000000000402fb5: ret      4
+
+### CSocket vtable 0x5fb624 slot 10 VA 0x539430
+0000000000539430: push     ebp
+0000000000539431: mov      ebp, esp
+0000000000539433: push     -1
+0000000000539435: push     0x5afa50
+000000000053943a: mov      eax, dword ptr fs:[0]
+0000000000539440: push     eax
+0000000000539441: mov      dword ptr fs:[0], esp
+0000000000539448: sub      esp, 0xc
+000000000053944b: mov      eax, dword ptr [ebp + 8]
+000000000053944e: push     ebx
+000000000053944f: push     esi
+0000000000539450: push     edi
+0000000000539451: mov      dword ptr [ebp - 0x10], esp
+0000000000539454: push     0
+0000000000539456: mov      esi, ecx
+0000000000539458: mov      ecx, dword ptr [0x174d0dc8]
+000000000053945e: push     esi
+000000000053945f: push     eax
+0000000000539460: push     ecx
+0000000000539461: mov      dword ptr [ebp - 4], 0
+0000000000539468: call     dword ptr [0x5b508c] ; PostQueuedCompletionStatus
+000000000053946e: test     eax, eax
+0000000000539470: jne      0x53948b
+0000000000539472: call     0x479210
+0000000000539477: mov      edx, dword ptr [esi]
+0000000000539479: push     0
+000000000053947b: push     2
+000000000053947d: push     0x167
+0000000000539482: push     0x61d030
+0000000000539487: mov      ecx, esi
+0000000000539489: call     dword ptr [edx]
+000000000053948b: mov      ecx, dword ptr [ebp - 0xc]
+000000000053948e: pop      edi
+000000000053948f: pop      esi
+0000000000539490: mov      dword ptr fs:[0], ecx
+0000000000539497: pop      ebx
+0000000000539498: mov      esp, ebp
+000000000053949a: pop      ebp
+000000000053949b: ret      4
+
+### CSocket vtable 0x5fb624 slot 11 VA 0x4016b0
+00000000004016b0: ret      
+
+### CSocket vtable 0x5fb624 slot 12 VA 0x53bdb0
+000000000053bdb0: mov      eax, dword ptr [esp + 4]
+000000000053bdb4: test     eax, eax
+000000000053bdb6: push     esi
+000000000053bdb7: mov      esi, ecx
+000000000053bdb9: jne      0x53bde8
+000000000053bdbb: mov      ecx, dword ptr [esp + 0x10]
+000000000053bdbf: lea      eax, [esi + 0x12f0]
+000000000053bdc5: cmp      ecx, eax
+000000000053bdc7: jne      0x53bdd0
+000000000053bdc9: mov      ecx, esi
+000000000053bdcb: call     0x539610
+000000000053bdd0: mov      edx, dword ptr [esi]
+000000000053bdd2: push     0
+000000000053bdd4: push     3
+000000000053bdd6: push     0x39c
+000000000053bddb: push     0x61d030
+000000000053bde0: mov      ecx, esi
+000000000053bde2: call     dword ptr [edx]
+000000000053bde4: pop      esi
+000000000053bde5: ret      0xc
+
+### CSocket vtable 0x5fb624 slot 13 VA 0x402fa0
+0000000000402fa0: mov      eax, dword ptr [esp + 4]
+0000000000402fa4: push     0
+0000000000402fa6: push     ecx
+0000000000402fa7: mov      ecx, dword ptr [0x174d0dc8]
+0000000000402fad: push     eax
+0000000000402fae: push     ecx
+0000000000402faf: call     dword ptr [0x5b508c] ; PostQueuedCompletionStatus
+0000000000402fb5: ret      4
+
+### CSocket vtable 0x5fb624 slot 14 VA 0x539770
+0000000000539770: push     ebp
+0000000000539771: mov      ebp, esp
+0000000000539773: push     -1
+0000000000539775: push     0x5afa90
+000000000053977a: mov      eax, dword ptr fs:[0]
+0000000000539780: push     eax
+0000000000539781: mov      dword ptr fs:[0], esp
+0000000000539788: sub      esp, 0xc
+000000000053978b: mov      eax, dword ptr [ecx]
+000000000053978d: push     ebx
+000000000053978e: push     esi
+000000000053978f: push     edi
+0000000000539790: mov      dword ptr [ebp - 0x10], esp
+0000000000539793: mov      dword ptr [ebp - 4], 0
+000000000053979a: call     dword ptr [eax + 0x44]
+000000000053979d: mov      ecx, dword ptr [ebp - 0xc]
+00000000005397a0: pop      edi
+00000000005397a1: pop      esi
+00000000005397a2: mov      dword ptr fs:[0], ecx
+00000000005397a9: pop      ebx
+00000000005397aa: mov      esp, ebp
+00000000005397ac: pop      ebp
+00000000005397ad: ret      
+
+### CSocket vtable 0x5fb624 slot 15 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CSocket vtable 0x5fb624 slot 16 VA 0x4016b0
+00000000004016b0: ret      
+
+### CSocket vtable 0x5fb624 slot 17 VA 0x58c93f
+000000000058c93f: push     0x19
+000000000058c941: call     0x590174
+000000000058c946: pop      ecx
+000000000058c947: ret      
+
+### CSocket vtable 0x5fb624 slot 18 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CSocket vtable 0x5fb624 slot 19 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CSocket vtable 0x5fb624 slot 20 VA 0x4df5a0
+00000000004df5a0: mov      eax, dword ptr [esp + 4]
+00000000004df5a4: mov      dword ptr [ecx + 0x132c], eax
+00000000004df5aa: ret      4
+
+### CSocket vtable 0x5fb624 slot 21 VA 0x4df5b0
+00000000004df5b0: mov      ecx, dword ptr [ecx + 0x132c]
+00000000004df5b6: mov      eax, dword ptr [esp + 4]
+00000000004df5ba: mov      dword ptr [eax], ecx
+00000000004df5bc: ret      4
+
+### CUserSocket vtable 0x60639c slot 0 VA 0x5062e0
+00000000005062e0: push     ebx
+00000000005062e1: mov      ebx, dword ptr [0x5b5084] ; InterlockedDecrement
+00000000005062e7: push     esi
+00000000005062e8: mov      esi, ecx
+00000000005062ea: push     edi
+00000000005062eb: lea      eax, [esi + 4]
+00000000005062ee: push     eax
+00000000005062ef: call     ebx
+00000000005062f1: mov      edi, eax
+00000000005062f3: test     edi, edi
+00000000005062f5: jg       0x5063f8
+00000000005062fb: jne      0x5063ad
+0000000000506301: mov      eax, dword ptr [esi + 0xc]
+0000000000506304: test     eax, eax
+0000000000506306: je       0x506382
+0000000000506308: mov      eax, dword ptr [esp + 0x10]
+000000000050630c: test     eax, eax
+000000000050630e: je       0x50634c
+0000000000506310: mov      ecx, dword ptr [esp + 0x14]
+0000000000506314: push     ecx
+0000000000506315: push     eax
+0000000000506316: push     0x6062d4
+000000000050631b: push     2
+000000000050631d: push     0x18aa81d8
+0000000000506322: call     0x53ee60
+0000000000506327: add      esp, 0x14
+000000000050632a: push     0
+000000000050632c: push     0
+000000000050632e: mov      ecx, esi
+0000000000506330: call     0x40edf0
+0000000000506335: mov      eax, dword ptr [0x16a2a584]
+000000000050633a: lea      ecx, [eax*4 + 0x3495488]
+0000000000506341: push     ecx
+0000000000506342: call     ebx
+0000000000506344: mov      eax, edi
+0000000000506346: pop      edi
+0000000000506347: pop      esi
+0000000000506348: pop      ebx
+0000000000506349: ret      0x10
+
+### CUserSocket vtable 0x60639c slot 1 VA 0x5188e0
+00000000005188e0: push     esi
+00000000005188e1: mov      esi, ecx
+00000000005188e3: lea      eax, [esi + 4]
+00000000005188e6: push     eax
+00000000005188e7: call     dword ptr [0x5b5080] ; InterlockedIncrement
+00000000005188ed: mov      eax, esi
+00000000005188ef: pop      esi
+00000000005188f0: ret      0xc
+
+### CUserSocket vtable 0x60639c slot 2 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CUserSocket vtable 0x60639c slot 3 VA 0x508a60
+0000000000508a60: push     esi
+0000000000508a61: mov      esi, ecx
+0000000000508a63: call     0x506400
+0000000000508a68: test     byte ptr [esp + 8], 1
+0000000000508a6d: je       0x508a8a
+0000000000508a6f: push     0x4d
+0000000000508a71: push     0x603ac8
+0000000000508a76: push     0x603a48
+0000000000508a7b: push     2
+0000000000508a7d: push     0x18aa81d8
+0000000000508a82: call     0x53eee0
+0000000000508a87: add      esp, 0x14
+0000000000508a8a: mov      eax, esi
+0000000000508a8c: pop      esi
+0000000000508a8d: ret      4
+
+### CUserSocket vtable 0x60639c slot 4 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CUserSocket vtable 0x60639c slot 5 VA 0x402f60
+0000000000402f60: xor      eax, eax
+0000000000402f62: ret      
+
+### CUserSocket vtable 0x60639c slot 6 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CUserSocket vtable 0x60639c slot 7 VA 0x402f80
+0000000000402f80: mov      eax, dword ptr [ecx + 4]
+0000000000402f83: ret      
+
+### CUserSocket vtable 0x60639c slot 8 VA 0x508a90
+0000000000508a90: sub      esp, 0x10
+0000000000508a93: push     esi
+0000000000508a94: mov      esi, ecx
+0000000000508a96: mov      eax, dword ptr [esi]
+0000000000508a98: call     dword ptr [eax + 0x48]
+0000000000508a9b: test     al, al
+0000000000508a9d: jne      0x508eb8
+0000000000508aa3: mov      ecx, dword ptr [esi + 0x138c]
+0000000000508aa9: push     ebx
+0000000000508aaa: push     edi
+0000000000508aab: lea      ebx, [esi + 0x138c]
+0000000000508ab1: push     0xea60
+0000000000508ab6: push     ecx
+0000000000508ab7: call     0x5395e0
+0000000000508abc: add      esp, 8
+0000000000508abf: test     al, al
+0000000000508ac1: jne      0x508b02
+0000000000508ac3: push     0
+0000000000508ac5: call     0x58c684
+0000000000508aca: mov      edi, eax
+0000000000508acc: mov      eax, dword ptr [esi + 0x13d0]
+0000000000508ad2: add      esp, 4
+0000000000508ad5: test     eax, eax
+0000000000508ad7: jle      0x508ae0
+0000000000508ad9: sub      eax, edi
+0000000000508adb: cmp      eax, 0x3c
+0000000000508ade: jg       0x508b4e
+0000000000508ae0: push     0
+0000000000508ae2: push     ebx
+0000000000508ae3: call     0x5395c0
+0000000000508ae8: push     edi
+0000000000508ae9: push     0xec
+0000000000508aee: push     0x5bd5dc
+0000000000508af3: push     esi
+0000000000508af4: mov      dword ptr [esi + 0x13d0], edi
+0000000000508afa: call     0x4dfc70
+0000000000508aff: add      esp, 0x18
+0000000000508b02: push     0
+0000000000508b04: call     0x58c684
+0000000000508b09: mov      edx, dword ptr [esi + 0x15dc]
+0000000000508b0f: mov      ecx, dword ptr [esi + 0x15e4]
+0000000000508b15: add      esp, 4
+0000000000508b18: sub      eax, edx
+0000000000508b1a: cmp      ecx, 8
+0000000000508b1d: jne      0x508b5e
+0000000000508b1f: cmp      eax, dword ptr [0x1720c624]
+0000000000508b25: jle      0x508b5e
+0000000000508b27: push     eax
+0000000000508b28: push     0x606e18
+0000000000508b2d: push     3
+0000000000508b2f: push     0x18aa81d8
+0000000000508b34: call     0x53eee0
+0000000000508b39: push     0
+0000000000508b3b: push     0xc8
+0000000000508b40: push     0x5bd5dc
+0000000000508b45: push     esi
+0000000000508b46: call     0x4dfc70
+0000000000508b4b: add      esp, 0x20
+0000000000508b4e: mov      ecx, esi
+0000000000508b50: call     0x539610
+0000000000508b55: pop      edi
+0000000000508b56: pop      ebx
+0000000000508b57: pop      esi
+0000000000508b58: add      esp, 0x10
+0000000000508b5b: ret      4
+
+### CUserSocket vtable 0x60639c slot 9 VA 0x402f90
+0000000000402f90: mov      eax, dword ptr [ecx]
+0000000000402f92: mov      dword ptr [ecx + 0xc], 0
+0000000000402f99: jmp      dword ptr [eax + 0x20]
+0000000000402f9c: nop      
+0000000000402f9d: nop      
+0000000000402f9e: nop      
+0000000000402f9f: nop      
+0000000000402fa0: mov      eax, dword ptr [esp + 4]
+0000000000402fa4: push     0
+0000000000402fa6: push     ecx
+0000000000402fa7: mov      ecx, dword ptr [0x174d0dc8]
+0000000000402fad: push     eax
+0000000000402fae: push     ecx
+0000000000402faf: call     dword ptr [0x5b508c] ; PostQueuedCompletionStatus
+0000000000402fb5: ret      4
+
+### CUserSocket vtable 0x60639c slot 10 VA 0x539430
+0000000000539430: push     ebp
+0000000000539431: mov      ebp, esp
+0000000000539433: push     -1
+0000000000539435: push     0x5afa50
+000000000053943a: mov      eax, dword ptr fs:[0]
+0000000000539440: push     eax
+0000000000539441: mov      dword ptr fs:[0], esp
+0000000000539448: sub      esp, 0xc
+000000000053944b: mov      eax, dword ptr [ebp + 8]
+000000000053944e: push     ebx
+000000000053944f: push     esi
+0000000000539450: push     edi
+0000000000539451: mov      dword ptr [ebp - 0x10], esp
+0000000000539454: push     0
+0000000000539456: mov      esi, ecx
+0000000000539458: mov      ecx, dword ptr [0x174d0dc8]
+000000000053945e: push     esi
+000000000053945f: push     eax
+0000000000539460: push     ecx
+0000000000539461: mov      dword ptr [ebp - 4], 0
+0000000000539468: call     dword ptr [0x5b508c] ; PostQueuedCompletionStatus
+000000000053946e: test     eax, eax
+0000000000539470: jne      0x53948b
+0000000000539472: call     0x479210
+0000000000539477: mov      edx, dword ptr [esi]
+0000000000539479: push     0
+000000000053947b: push     2
+000000000053947d: push     0x167
+0000000000539482: push     0x61d030
+0000000000539487: mov      ecx, esi
+0000000000539489: call     dword ptr [edx]
+000000000053948b: mov      ecx, dword ptr [ebp - 0xc]
+000000000053948e: pop      edi
+000000000053948f: pop      esi
+0000000000539490: mov      dword ptr fs:[0], ecx
+0000000000539497: pop      ebx
+0000000000539498: mov      esp, ebp
+000000000053949a: pop      ebp
+000000000053949b: ret      4
+
+### CUserSocket vtable 0x60639c slot 11 VA 0x4016b0
+00000000004016b0: ret      
+
+### CUserSocket vtable 0x60639c slot 12 VA 0x53bdb0
+000000000053bdb0: mov      eax, dword ptr [esp + 4]
+000000000053bdb4: test     eax, eax
+000000000053bdb6: push     esi
+000000000053bdb7: mov      esi, ecx
+000000000053bdb9: jne      0x53bde8
+000000000053bdbb: mov      ecx, dword ptr [esp + 0x10]
+000000000053bdbf: lea      eax, [esi + 0x12f0]
+000000000053bdc5: cmp      ecx, eax
+000000000053bdc7: jne      0x53bdd0
+000000000053bdc9: mov      ecx, esi
+000000000053bdcb: call     0x539610
+000000000053bdd0: mov      edx, dword ptr [esi]
+000000000053bdd2: push     0
+000000000053bdd4: push     3
+000000000053bdd6: push     0x39c
+000000000053bddb: push     0x61d030
+000000000053bde0: mov      ecx, esi
+000000000053bde2: call     dword ptr [edx]
+000000000053bde4: pop      esi
+000000000053bde5: ret      0xc
+
+### CUserSocket vtable 0x60639c slot 13 VA 0x402fa0
+0000000000402fa0: mov      eax, dword ptr [esp + 4]
+0000000000402fa4: push     0
+0000000000402fa6: push     ecx
+0000000000402fa7: mov      ecx, dword ptr [0x174d0dc8]
+0000000000402fad: push     eax
+0000000000402fae: push     ecx
+0000000000402faf: call     dword ptr [0x5b508c] ; PostQueuedCompletionStatus
+0000000000402fb5: ret      4
+
+### CUserSocket vtable 0x60639c slot 14 VA 0x539770
+0000000000539770: push     ebp
+0000000000539771: mov      ebp, esp
+0000000000539773: push     -1
+0000000000539775: push     0x5afa90
+000000000053977a: mov      eax, dword ptr fs:[0]
+0000000000539780: push     eax
+0000000000539781: mov      dword ptr fs:[0], esp
+0000000000539788: sub      esp, 0xc
+000000000053978b: mov      eax, dword ptr [ecx]
+000000000053978d: push     ebx
+000000000053978e: push     esi
+000000000053978f: push     edi
+0000000000539790: mov      dword ptr [ebp - 0x10], esp
+0000000000539793: mov      dword ptr [ebp - 4], 0
+000000000053979a: call     dword ptr [eax + 0x44]
+000000000053979d: mov      ecx, dword ptr [ebp - 0xc]
+00000000005397a0: pop      edi
+00000000005397a1: pop      esi
+00000000005397a2: mov      dword ptr fs:[0], ecx
+00000000005397a9: pop      ebx
+00000000005397aa: mov      esp, ebp
+00000000005397ac: pop      ebp
+00000000005397ad: ret      
+
+### CUserSocket vtable 0x60639c slot 15 VA 0x49aa10
+000000000049aa10: mov      al, 1
+000000000049aa12: ret      
+
+### CUserSocket vtable 0x60639c slot 16 VA 0x514910
+0000000000514910: push     ebp
+0000000000514911: mov      ebp, esp
+0000000000514913: push     -1
+0000000000514915: push     0x5adb9b
+000000000051491a: mov      eax, dword ptr fs:[0]
+0000000000514920: push     eax
+0000000000514921: mov      dword ptr fs:[0], esp
+0000000000514928: sub      esp, 0x10
+000000000051492b: push     ebx
+000000000051492c: push     esi
+000000000051492d: push     edi
+000000000051492e: mov      dword ptr [ebp - 0x10], esp
+0000000000514931: push     0x5c9128
+0000000000514936: mov      edi, ecx
+0000000000514938: push     1
+000000000051493a: push     0x14
+000000000051493c: mov      ecx, 0x174d0c9c
+0000000000514941: mov      dword ptr [ebp - 4], 0
+0000000000514948: mov      dword ptr [edi + 0x1364], 2
+0000000000514952: call     0x492ab0
+0000000000514957: mov      esi, eax
+0000000000514959: mov      eax, dword ptr [0x174d0e50]
+000000000051495e: lea      ecx, [eax*4 + 0x3495488]
+0000000000514965: push     ecx
+0000000000514966: call     dword ptr [0x5b5080] ; InterlockedIncrement
+000000000051496c: mov      eax, dword ptr [0x174d0e50]
+0000000000514971: mov      ecx, esi
+0000000000514973: mov      dword ptr [eax*4 + 0x34d5488], 0x5c911c
+000000000051497e: mov      dword ptr [eax*4 + 0x3515488], 0x10
+0000000000514989: mov      dword ptr [ebp - 0x18], ecx
+000000000051498c: test     ecx, ecx
+000000000051498e: mov      byte ptr [ebp - 4], 1
+0000000000514992: je       0x51499a
+0000000000514994: push     edi
+0000000000514995: call     0x514770
+000000000051499a: mov      ecx, dword ptr [ebp - 0xc]
+000000000051499d: pop      edi
+000000000051499e: pop      esi
+000000000051499f: mov      dword ptr fs:[0], ecx
+00000000005149a6: pop      ebx
+00000000005149a7: mov      esp, ebp
+00000000005149a9: pop      ebp
+00000000005149aa: ret      
+
+### CUserSocket vtable 0x60639c slot 17 VA 0x50f7a0
+000000000050f7a0: push     ebp
+000000000050f7a1: mov      ebp, esp
+000000000050f7a3: push     -1
+000000000050f7a5: push     0x5ad778
+000000000050f7aa: mov      eax, dword ptr fs:[0]
+000000000050f7b0: push     eax
+000000000050f7b1: mov      dword ptr fs:[0], esp
+000000000050f7b8: sub      esp, 0x44
+000000000050f7bb: push     ebx
+000000000050f7bc: push     esi
+000000000050f7bd: push     edi
+000000000050f7be: mov      edi, ecx
+000000000050f7c0: mov      ebx, dword ptr [edi + 0x1318]
+000000000050f7c6: mov      eax, dword ptr [edi + 0x1364]
+000000000050f7cc: mov      ecx, dword ptr [ebx + 0x2010]
+000000000050f7d2: xor      esi, esi
+000000000050f7d4: cmp      eax, 2
+000000000050f7d7: mov      dword ptr [ebp - 0x10], esp
+000000000050f7da: mov      dword ptr [ebp - 4], esi
+000000000050f7dd: mov      dword ptr [ebp - 0x14], ebx
+000000000050f7e0: mov      dword ptr [ebp - 0x20], ecx
+000000000050f7e3: je       0x50f87f
+000000000050f7e9: cmp      dword ptr [edi + 0x14], 0x400000
+000000000050f7f0: jg       0x50f87f
+000000000050f7f6: cmp      esi, ecx
+000000000050f7f8: jl       0x50f814
+000000000050f7fa: push     0
+000000000050f7fc: mov      ecx, edi
+000000000050f7fe: call     0x53b380
+000000000050f803: mov      ecx, dword ptr [ebp - 0xc]
+000000000050f806: mov      dword ptr fs:[0], ecx
+000000000050f80d: pop      edi
+000000000050f80e: pop      esi
+000000000050f80f: pop      ebx
+000000000050f810: mov      esp, ebp
+000000000050f812: pop      ebp
+000000000050f813: ret      
+
+### CUserSocket vtable 0x60639c slot 18 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CUserSocket vtable 0x60639c slot 19 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CUserSocket vtable 0x60639c slot 20 VA 0x4df5a0
+00000000004df5a0: mov      eax, dword ptr [esp + 4]
+00000000004df5a4: mov      dword ptr [ecx + 0x132c], eax
+00000000004df5aa: ret      4
+
+### CUserSocket vtable 0x60639c slot 21 VA 0x4df5b0
+00000000004df5b0: mov      ecx, dword ptr [ecx + 0x132c]
+00000000004df5b6: mov      eax, dword ptr [esp + 4]
+00000000004df5ba: mov      dword ptr [eax], ecx
+00000000004df5bc: ret      4
+
+### CIOObject vtable 0x5ccf0c slot 0 VA 0x53a770
+000000000053a770: push     ebx
+000000000053a771: mov      ebx, dword ptr [0x5b5084] ; InterlockedDecrement
+000000000053a777: push     esi
+000000000053a778: mov      esi, ecx
+000000000053a77a: push     edi
+000000000053a77b: lea      eax, [esi + 4]
+000000000053a77e: push     eax
+000000000053a77f: call     ebx
+000000000053a781: mov      edi, eax
+000000000053a783: test     edi, edi
+000000000053a785: jg       0x53a888
+000000000053a78b: jne      0x53a83d
+000000000053a791: mov      eax, dword ptr [esi + 0xc]
+000000000053a794: test     eax, eax
+000000000053a796: je       0x53a812
+000000000053a798: mov      eax, dword ptr [esp + 0x10]
+000000000053a79c: test     eax, eax
+000000000053a79e: je       0x53a7dc
+000000000053a7a0: mov      ecx, dword ptr [esp + 0x14]
+000000000053a7a4: push     ecx
+000000000053a7a5: push     eax
+000000000053a7a6: push     0x61d57c
+000000000053a7ab: push     2
+000000000053a7ad: push     0x18aa81d8
+000000000053a7b2: call     0x53ee60
+000000000053a7b7: add      esp, 0x14
+000000000053a7ba: push     0
+000000000053a7bc: push     0
+000000000053a7be: mov      ecx, esi
+000000000053a7c0: call     0x40edf0
+000000000053a7c5: mov      eax, dword ptr [0x174d0e50]
+000000000053a7ca: lea      ecx, [eax*4 + 0x3495488]
+000000000053a7d1: push     ecx
+000000000053a7d2: call     ebx
+000000000053a7d4: mov      eax, edi
+000000000053a7d6: pop      edi
+000000000053a7d7: pop      esi
+000000000053a7d8: pop      ebx
+000000000053a7d9: ret      0x10
+
+### CIOObject vtable 0x5ccf0c slot 1 VA 0x5188e0
+00000000005188e0: push     esi
+00000000005188e1: mov      esi, ecx
+00000000005188e3: lea      eax, [esi + 4]
+00000000005188e6: push     eax
+00000000005188e7: call     dword ptr [0x5b5080] ; InterlockedIncrement
+00000000005188ed: mov      eax, esi
+00000000005188ef: pop      esi
+00000000005188f0: ret      0xc
+
+### CIOObject vtable 0x5ccf0c slot 2 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CIOObject vtable 0x5ccf0c slot 3 VA 0x4552c0
+00000000004552c0: push     esi
+00000000004552c1: mov      esi, ecx
+00000000004552c3: call     0x552f70
+00000000004552c8: test     byte ptr [esp + 8], 1
+00000000004552cd: je       0x4552ed
+00000000004552cf: push     0x9c
+00000000004552d4: push     0x5c91c0
+00000000004552d9: push     0x5c9140
+00000000004552de: push     2
+00000000004552e0: push     0x18aa81d8
+00000000004552e5: call     0x53eee0
+00000000004552ea: add      esp, 0x14
+00000000004552ed: mov      eax, esi
+00000000004552ef: pop      esi
+00000000004552f0: ret      4
+
+### CIOObject vtable 0x5ccf0c slot 4 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CIOObject vtable 0x5ccf0c slot 5 VA 0x402f60
+0000000000402f60: xor      eax, eax
+0000000000402f62: ret      
+
+### CIOObject vtable 0x5ccf0c slot 6 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CIOObject vtable 0x5ccf0c slot 7 VA 0x402f80
+0000000000402f80: mov      eax, dword ptr [ecx + 4]
+0000000000402f83: ret      
+
+### CIOObject vtable 0x5ccf0c slot 8 VA 0x49aa30
+000000000049aa30: ret      4
+
+### CIOObject vtable 0x5ccf0c slot 9 VA 0x402f90
+0000000000402f90: mov      eax, dword ptr [ecx]
+0000000000402f92: mov      dword ptr [ecx + 0xc], 0
+0000000000402f99: jmp      dword ptr [eax + 0x20]
+0000000000402f9c: nop      
+0000000000402f9d: nop      
+0000000000402f9e: nop      
+0000000000402f9f: nop      
+0000000000402fa0: mov      eax, dword ptr [esp + 4]
+0000000000402fa4: push     0
+0000000000402fa6: push     ecx
+0000000000402fa7: mov      ecx, dword ptr [0x174d0dc8]
+0000000000402fad: push     eax
+0000000000402fae: push     ecx
+0000000000402faf: call     dword ptr [0x5b508c] ; PostQueuedCompletionStatus
+0000000000402fb5: ret      4
+
+### CIOObject vtable 0x5ccf0c slot 10 VA 0x539430
+0000000000539430: push     ebp
+0000000000539431: mov      ebp, esp
+0000000000539433: push     -1
+0000000000539435: push     0x5afa50
+000000000053943a: mov      eax, dword ptr fs:[0]
+0000000000539440: push     eax
+0000000000539441: mov      dword ptr fs:[0], esp
+0000000000539448: sub      esp, 0xc
+000000000053944b: mov      eax, dword ptr [ebp + 8]
+000000000053944e: push     ebx
+000000000053944f: push     esi
+0000000000539450: push     edi
+0000000000539451: mov      dword ptr [ebp - 0x10], esp
+0000000000539454: push     0
+0000000000539456: mov      esi, ecx
+0000000000539458: mov      ecx, dword ptr [0x174d0dc8]
+000000000053945e: push     esi
+000000000053945f: push     eax
+0000000000539460: push     ecx
+0000000000539461: mov      dword ptr [ebp - 4], 0
+0000000000539468: call     dword ptr [0x5b508c] ; PostQueuedCompletionStatus
+000000000053946e: test     eax, eax
+0000000000539470: jne      0x53948b
+0000000000539472: call     0x479210
+0000000000539477: mov      edx, dword ptr [esi]
+0000000000539479: push     0
+000000000053947b: push     2
+000000000053947d: push     0x167
+0000000000539482: push     0x61d030
+0000000000539487: mov      ecx, esi
+0000000000539489: call     dword ptr [edx]
+000000000053948b: mov      ecx, dword ptr [ebp - 0xc]
+000000000053948e: pop      edi
+000000000053948f: pop      esi
+0000000000539490: mov      dword ptr fs:[0], ecx
+0000000000539497: pop      ebx
+0000000000539498: mov      esp, ebp
+000000000053949a: pop      ebp
+000000000053949b: ret      4
+
+### CIOObject vtable 0x5ccf0c slot 11 VA 0x4016b0
+00000000004016b0: ret      
+
+### CIOObject vtable 0x5ccf0c slot 12 VA 0x5394d0
+00000000005394d0: push     ebp
+00000000005394d1: mov      ebp, esp
+00000000005394d3: push     -1
+00000000005394d5: push     0x5afa60
+00000000005394da: mov      eax, dword ptr fs:[0]
+00000000005394e0: push     eax
+00000000005394e1: mov      dword ptr fs:[0], esp
+00000000005394e8: sub      esp, 0xc
+00000000005394eb: push     ebx
+00000000005394ec: push     esi
+00000000005394ed: mov      esi, ecx
+00000000005394ef: mov      ecx, dword ptr [ebp + 0xc]
+00000000005394f2: mov      eax, dword ptr [esi]
+00000000005394f4: push     edi
+00000000005394f5: mov      dword ptr [ebp - 0x10], esp
+00000000005394f8: push     ecx
+00000000005394f9: mov      ecx, esi
+00000000005394fb: mov      dword ptr [ebp - 4], 0
+0000000000539502: call     dword ptr [eax + 0x24]
+0000000000539505: mov      edx, dword ptr [esi]
+0000000000539507: push     0
+0000000000539509: push     2
+000000000053950b: push     0x171
+0000000000539510: push     0x61d030
+0000000000539515: mov      ecx, esi
+0000000000539517: call     dword ptr [edx]
+0000000000539519: mov      ecx, dword ptr [ebp - 0xc]
+000000000053951c: pop      edi
+000000000053951d: pop      esi
+000000000053951e: mov      dword ptr fs:[0], ecx
+0000000000539525: pop      ebx
+0000000000539526: mov      esp, ebp
+0000000000539528: pop      ebp
+0000000000539529: ret      0xc
+
+### CIOObject vtable 0x5ccf0c slot 13 VA 0x402fa0
+0000000000402fa0: mov      eax, dword ptr [esp + 4]
+0000000000402fa4: push     0
+0000000000402fa6: push     ecx
+0000000000402fa7: mov      ecx, dword ptr [0x174d0dc8]
+0000000000402fad: push     eax
+0000000000402fae: push     ecx
+0000000000402faf: call     dword ptr [0x5b508c] ; PostQueuedCompletionStatus
+0000000000402fb5: ret      4
+
+### CIOObject vtable 0x5ccf0c slot 16 VA 0x500043
+0000000000500043: or       byte ptr [ecx - 0x2a8b4383], cl
+0000000000500049: push     esi
+000000000050004a: call     0x4011f0
+000000000050004f: add      esp, 4
+0000000000500052: test     eax, eax
+0000000000500054: je       0x50008e
+0000000000500056: cmp      esi, ebx
+0000000000500058: je       0x50008e
+000000000050005a: lea      edi, [ebx + 0x1a18]
+0000000000500060: push     edi
+0000000000500061: call     0x58c8b6
+0000000000500066: add      esp, 4
+0000000000500069: test     eax, eax
+000000000050006b: jbe      0x50008b
+000000000050006d: mov      edx, dword ptr [ebx + 0x18]
+0000000000500070: mov      esi, dword ptr [esi + 0x19b8]
+0000000000500076: push     edi
+0000000000500077: push     edx
+0000000000500078: push     0xd2
+000000000050007d: push     0x5b6c54
+0000000000500082: push     esi
+0000000000500083: call     0x4dfc70
+0000000000500088: add      esp, 0x14
+000000000050008b: mov      edi, dword ptr [ebp - 0x44]
+000000000050008e: mov      eax, dword ptr [edi + 8]
+0000000000500091: jmp      0x4ffff7
+0000000000500096: inc      dword ptr [ebp + 8]
+0000000000500099: jmp      0x4fff70
+000000000050009e: mov      byte ptr [ebp - 4], 0xa
+00000000005000a2: jmp      0x5002b2
+00000000005000a7: mov      edx, dword ptr [ebp - 0x70]
+00000000005000aa: push     0x67333c
+00000000005000af: lea      eax, [ebp - 0x104]
+00000000005000b5: push     eax
+00000000005000b6: mov      dword ptr [ebp - 0x104], edx
+00000000005000bc: call     0x58c2da
+00000000005000c1: push     0x5ca9d0
+00000000005000c6: call     0x4792b0
+00000000005000cb: add      esp, 4
+00000000005000ce: push     0
+00000000005000d0: push     0
+00000000005000d2: call     0x58c2da
+00000000005000d7: cmp      eax, 1
+00000000005000da: jne      0x5002e5
+00000000005000e0: lea      ecx, [ebx + 0x19dc]
+00000000005000e6: push     ecx
+00000000005000e7: call     0x58c8b6
+00000000005000ec: add      esp, 4
+00000000005000ef: test     eax, eax
+00000000005000f1: jbe      0x5002e5
+00000000005000f7: mov      byte ptr [ebp - 4], 0xd
+00000000005000fb: mov      dword ptr [ebp - 0x2c], 0x6c0904
+0000000000500102: call     0x4e25b0
+0000000000500107: mov      esi, dword ptr [0x6c0904]
+000000000050010d: shl      eax, 4
+0000000000500110: mov      edi, dword ptr [eax + 0x168ca468]
+0000000000500116: call     dword ptr [0x5b5088] ; GetTickCount
+000000000050011c: mov      dword ptr [edi + esi*4], eax
+000000000050011f: fld      qword ptr [ebp - 0xe4]
+0000000000500125: mov      byte ptr [ebp - 4], 0xe
+0000000000500129: call     0x58c3ac
+000000000050012e: fld      qword ptr [ebp - 0xdc]
+0000000000500134: add      eax, 0x50000
+0000000000500139: cdq      
+000000000050013a: and      edx, 0x3ff
+0000000000500140: add      eax, edx
+0000000000500142: mov      edi, eax
+0000000000500144: sar      edi, 0xa
+0000000000500147: mov      dword ptr [ebp - 0x38], edi
+000000000050014a: call     0x58c3ac
+000000000050014f: mov      ecx, dword ptr [0x168ad244]
+0000000000500155: add      eax, 0x40000
+000000000050015a: cdq      
+000000000050015b: and      edx, 0x3ff
+0000000000500161: add      eax, edx
+0000000000500163: mov      esi, eax
+0000000000500165: sar      esi, 0xa
+
+### CIOSocket vtable 0x61d72c slot 0 VA 0x53aa90
+000000000053aa90: push     ebx
+000000000053aa91: mov      ebx, dword ptr [0x5b5084] ; InterlockedDecrement
+000000000053aa97: push     esi
+000000000053aa98: mov      esi, ecx
+000000000053aa9a: push     edi
+000000000053aa9b: lea      eax, [esi + 4]
+000000000053aa9e: push     eax
+000000000053aa9f: call     ebx
+000000000053aaa1: mov      edi, eax
+000000000053aaa3: test     edi, edi
+000000000053aaa5: jg       0x53aba8
+000000000053aaab: jne      0x53ab5d
+000000000053aab1: mov      eax, dword ptr [esi + 0xc]
+000000000053aab4: test     eax, eax
+000000000053aab6: je       0x53ab32
+000000000053aab8: mov      eax, dword ptr [esp + 0x10]
+000000000053aabc: test     eax, eax
+000000000053aabe: je       0x53aafc
+000000000053aac0: mov      ecx, dword ptr [esp + 0x14]
+000000000053aac4: push     ecx
+000000000053aac5: push     eax
+000000000053aac6: push     0x61d6ac
+000000000053aacb: push     2
+000000000053aacd: push     0x18aa81d8
+000000000053aad2: call     0x53ee60
+000000000053aad7: add      esp, 0x14
+000000000053aada: push     0
+000000000053aadc: push     0
+000000000053aade: mov      ecx, esi
+000000000053aae0: call     0x40edf0
+000000000053aae5: mov      eax, dword ptr [0x174d0e30]
+000000000053aaea: lea      ecx, [eax*4 + 0x3495488]
+000000000053aaf1: push     ecx
+000000000053aaf2: call     ebx
+000000000053aaf4: mov      eax, edi
+000000000053aaf6: pop      edi
+000000000053aaf7: pop      esi
+000000000053aaf8: pop      ebx
+000000000053aaf9: ret      0x10
+
+### CIOSocket vtable 0x61d72c slot 1 VA 0x5188e0
+00000000005188e0: push     esi
+00000000005188e1: mov      esi, ecx
+00000000005188e3: lea      eax, [esi + 4]
+00000000005188e6: push     eax
+00000000005188e7: call     dword ptr [0x5b5080] ; InterlockedIncrement
+00000000005188ed: mov      eax, esi
+00000000005188ef: pop      esi
+00000000005188f0: ret      0xc
+
+### CIOSocket vtable 0x61d72c slot 2 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CIOSocket vtable 0x61d72c slot 3 VA 0x53bd70
+000000000053bd70: push     esi
+000000000053bd71: mov      esi, ecx
+000000000053bd73: call     0x53b2a0
+000000000053bd78: test     byte ptr [esp + 8], 1
+000000000053bd7d: je       0x53bd9d
+000000000053bd7f: push     0x167
+000000000053bd84: push     0x5c91c0
+000000000053bd89: push     0x61dde8
+000000000053bd8e: push     2
+000000000053bd90: push     0x18aa81d8
+000000000053bd95: call     0x53eee0
+000000000053bd9a: add      esp, 0x14
+000000000053bd9d: mov      eax, esi
+000000000053bd9f: pop      esi
+000000000053bda0: ret      4
+
+### CIOSocket vtable 0x61d72c slot 4 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CIOSocket vtable 0x61d72c slot 5 VA 0x402f60
+0000000000402f60: xor      eax, eax
+0000000000402f62: ret      
+
+### CIOSocket vtable 0x61d72c slot 6 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CIOSocket vtable 0x61d72c slot 7 VA 0x402f80
+0000000000402f80: mov      eax, dword ptr [ecx + 4]
+0000000000402f83: ret      
+
+### CIOSocket vtable 0x61d72c slot 8 VA 0x49aa30
+000000000049aa30: ret      4
+
+### CIOSocket vtable 0x61d72c slot 9 VA 0x402f90
+0000000000402f90: mov      eax, dword ptr [ecx]
+0000000000402f92: mov      dword ptr [ecx + 0xc], 0
+0000000000402f99: jmp      dword ptr [eax + 0x20]
+0000000000402f9c: nop      
+0000000000402f9d: nop      
+0000000000402f9e: nop      
+0000000000402f9f: nop      
+0000000000402fa0: mov      eax, dword ptr [esp + 4]
+0000000000402fa4: push     0
+0000000000402fa6: push     ecx
+0000000000402fa7: mov      ecx, dword ptr [0x174d0dc8]
+0000000000402fad: push     eax
+0000000000402fae: push     ecx
+0000000000402faf: call     dword ptr [0x5b508c] ; PostQueuedCompletionStatus
+0000000000402fb5: ret      4
+
+### CIOSocket vtable 0x61d72c slot 10 VA 0x539430
+0000000000539430: push     ebp
+0000000000539431: mov      ebp, esp
+0000000000539433: push     -1
+0000000000539435: push     0x5afa50
+000000000053943a: mov      eax, dword ptr fs:[0]
+0000000000539440: push     eax
+0000000000539441: mov      dword ptr fs:[0], esp
+0000000000539448: sub      esp, 0xc
+000000000053944b: mov      eax, dword ptr [ebp + 8]
+000000000053944e: push     ebx
+000000000053944f: push     esi
+0000000000539450: push     edi
+0000000000539451: mov      dword ptr [ebp - 0x10], esp
+0000000000539454: push     0
+0000000000539456: mov      esi, ecx
+0000000000539458: mov      ecx, dword ptr [0x174d0dc8]
+000000000053945e: push     esi
+000000000053945f: push     eax
+0000000000539460: push     ecx
+0000000000539461: mov      dword ptr [ebp - 4], 0
+0000000000539468: call     dword ptr [0x5b508c] ; PostQueuedCompletionStatus
+000000000053946e: test     eax, eax
+0000000000539470: jne      0x53948b
+0000000000539472: call     0x479210
+0000000000539477: mov      edx, dword ptr [esi]
+0000000000539479: push     0
+000000000053947b: push     2
+000000000053947d: push     0x167
+0000000000539482: push     0x61d030
+0000000000539487: mov      ecx, esi
+0000000000539489: call     dword ptr [edx]
+000000000053948b: mov      ecx, dword ptr [ebp - 0xc]
+000000000053948e: pop      edi
+000000000053948f: pop      esi
+0000000000539490: mov      dword ptr fs:[0], ecx
+0000000000539497: pop      ebx
+0000000000539498: mov      esp, ebp
+000000000053949a: pop      ebp
+000000000053949b: ret      4
+
+### CIOSocket vtable 0x61d72c slot 11 VA 0x4016b0
+00000000004016b0: ret      
+
+### CIOSocket vtable 0x61d72c slot 12 VA 0x53bdb0
+000000000053bdb0: mov      eax, dword ptr [esp + 4]
+000000000053bdb4: test     eax, eax
+000000000053bdb6: push     esi
+000000000053bdb7: mov      esi, ecx
+000000000053bdb9: jne      0x53bde8
+000000000053bdbb: mov      ecx, dword ptr [esp + 0x10]
+000000000053bdbf: lea      eax, [esi + 0x12f0]
+000000000053bdc5: cmp      ecx, eax
+000000000053bdc7: jne      0x53bdd0
+000000000053bdc9: mov      ecx, esi
+000000000053bdcb: call     0x539610
+000000000053bdd0: mov      edx, dword ptr [esi]
+000000000053bdd2: push     0
+000000000053bdd4: push     3
+000000000053bdd6: push     0x39c
+000000000053bddb: push     0x61d030
+000000000053bde0: mov      ecx, esi
+000000000053bde2: call     dword ptr [edx]
+000000000053bde4: pop      esi
+000000000053bde5: ret      0xc
+
+### CIOSocket vtable 0x61d72c slot 13 VA 0x402fa0
+0000000000402fa0: mov      eax, dword ptr [esp + 4]
+0000000000402fa4: push     0
+0000000000402fa6: push     ecx
+0000000000402fa7: mov      ecx, dword ptr [0x174d0dc8]
+0000000000402fad: push     eax
+0000000000402fae: push     ecx
+0000000000402faf: call     dword ptr [0x5b508c] ; PostQueuedCompletionStatus
+0000000000402fb5: ret      4
+
+### CIOSocket vtable 0x61d72c slot 14 VA 0x539770
+0000000000539770: push     ebp
+0000000000539771: mov      ebp, esp
+0000000000539773: push     -1
+0000000000539775: push     0x5afa90
+000000000053977a: mov      eax, dword ptr fs:[0]
+0000000000539780: push     eax
+0000000000539781: mov      dword ptr fs:[0], esp
+0000000000539788: sub      esp, 0xc
+000000000053978b: mov      eax, dword ptr [ecx]
+000000000053978d: push     ebx
+000000000053978e: push     esi
+000000000053978f: push     edi
+0000000000539790: mov      dword ptr [ebp - 0x10], esp
+0000000000539793: mov      dword ptr [ebp - 4], 0
+000000000053979a: call     dword ptr [eax + 0x44]
+000000000053979d: mov      ecx, dword ptr [ebp - 0xc]
+00000000005397a0: pop      edi
+00000000005397a1: pop      esi
+00000000005397a2: mov      dword ptr fs:[0], ecx
+00000000005397a9: pop      ebx
+00000000005397aa: mov      esp, ebp
+00000000005397ac: pop      ebp
+00000000005397ad: ret      
+
+### CIOSocket vtable 0x61d72c slot 15 VA 0x49aae0
+000000000049aae0: xor      al, al
+000000000049aae2: ret      
+
+### CIOSocket vtable 0x61d72c slot 16 VA 0x4016b0
+00000000004016b0: ret      
+
+### CIOSocket vtable 0x61d72c slot 17 VA 0x58c93f
+000000000058c93f: push     0x19
+000000000058c941: call     0x590174
+000000000058c946: pop      ecx
+000000000058c947: ret      
+
+### CIOSocket vtable 0x61d72c slot 18 VA 0x490043
+0000000000490043: pop      ebp
+0000000000490044: add      byte ptr [edx], ch
+0000000000490047: push     0x18aa81d8
+000000000049004c: call     0x53eee0
+0000000000490051: push     0x400437ea
+0000000000490056: push     0
+0000000000490058: push     0x5dee18
+000000000049005d: push     0
+000000000049005f: push     0x18aa81d8
+0000000000490064: call     0x53eee0
+0000000000490069: push     0x3fa9e980
+000000000049006e: push     0
+0000000000490070: push     0x5dedc8
+0000000000490075: push     0
+0000000000490077: push     0x18aa81d8
+000000000049007c: call     0x53eee0
+0000000000490081: add      esp, 0x50
+0000000000490084: push     0x3fe02d28
+0000000000490089: push     0
+000000000049008b: push     0x5ded84
+0000000000490090: push     0
+0000000000490092: push     0x18aa81d8
+0000000000490097: call     0x53eee0
+000000000049009c: push     0x3fe02d28
+00000000004900a1: push     0
+00000000004900a3: push     0x5ded48
+00000000004900a8: push     0
+00000000004900aa: push     0x18aa81d8
+00000000004900af: call     0x53eee0
+00000000004900b4: push     0x28e62d4
+00000000004900b9: call     0x43c530
+00000000004900be: add      esp, 0x2c
+00000000004900c1: test     eax, eax
+00000000004900c3: je       0x4900ce
+00000000004900c5: mov      ecx, eax
+00000000004900c7: call     0x48f050
+00000000004900cc: jmp      0x4900d0
+00000000004900ce: xor      eax, eax
+00000000004900d0: push     0x5ded08
+00000000004900d5: mov      ecx, eax
+00000000004900d7: mov      dword ptr [0x168ad240], eax
+00000000004900dc: call     0x48db80
+00000000004900e1: push     0x15100d4
+00000000004900e6: call     0x43c530
+00000000004900eb: add      esp, 4
+00000000004900ee: test     eax, eax
+00000000004900f0: je       0x4900fb
+00000000004900f2: mov      ecx, eax
+00000000004900f4: call     0x48f350
+00000000004900f9: jmp      0x4900fd
+00000000004900fb: xor      eax, eax
+00000000004900fd: push     0x5deccc
+0000000000490102: mov      ecx, eax
+0000000000490104: mov      dword ptr [0x168ad244], eax
+0000000000490109: call     0x48dc00
+000000000049010e: push     0x5aca344
+0000000000490113: call     0x57b8e0
+0000000000490118: add      esp, 4
+000000000049011b: test     eax, eax
+000000000049011d: je       0x490128
+000000000049011f: mov      ecx, eax
+0000000000490121: call     0x48f700
+0000000000490126: jmp      0x49012a
+0000000000490128: xor      eax, eax
+000000000049012a: push     0x5deca4
+000000000049012f: push     0
+0000000000490131: push     0x18aa81d8
+0000000000490136: mov      dword ptr [0x168ca538], eax
+000000000049013b: call     0x53eee0
+0000000000490140: add      esp, 0xc
+0000000000490143: mov      ecx, 0x1720cae4
+0000000000490148: call     0x52bc00
+000000000049014d: mov      esi, dword ptr [ebp + 8]
+0000000000490150: mov      edi, dword ptr [0x5b52bc] ; LoadStringW
+0000000000490156: push     0x64
+0000000000490158: push     0x348ff58
+000000000049015d: push     0x67
+
+### CIOSocket vtable 0x61d72c slot 19 VA 0x53004f
+000000000053004f: add      dword ptr [eax - 0x39], ebp
+0000000000530052: or       dword ptr [eax], eax
+0000000000530054: add      byte ptr [eax + 0x38], ch
+0000000000530057: cmp      eax, 0x45c70061
+000000000053005c: cld      
+000000000053005d: add      byte ptr [eax], al
+000000000053005f: add      byte ptr [eax], al
+0000000000530061: call     dword ptr [eax + 4]
+0000000000530064: mov      ecx, dword ptr [esi + 0x1394]
+000000000053006a: mov      edx, dword ptr [ecx]
+000000000053006c: call     dword ptr [edx + 0x344]
+0000000000530072: mov      edx, dword ptr [ebp + 0x10]
+0000000000530075: mov      ecx, dword ptr [edi]
+0000000000530077: push     edx
+0000000000530078: mov      edx, dword ptr [ebp + 0xc]
+000000000053007b: push     edx
+000000000053007c: push     eax
+000000000053007d: push     0xd1
+0000000000530082: push     0x5c4660
+0000000000530087: push     edi
+0000000000530088: call     dword ptr [ecx + 0x20]
+000000000053008b: mov      ecx, dword ptr [ebp - 0xc]
+000000000053008e: add      esp, 0x18
+0000000000530091: pop      edi
+0000000000530092: pop      esi
+0000000000530093: mov      dword ptr fs:[0], ecx
+000000000053009a: pop      ebx
+000000000053009b: mov      esp, ebp
+000000000053009d: pop      ebp
+000000000053009e: ret      0xc

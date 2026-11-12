@@ -1,0 +1,2 @@
+L2Server.exe {'CSocket': 1, 'CUserSocket': 1, 'CIOObject': 1, 'CIOSocket': 1}
+L2Server(10).exe {'CSocket': 1, 'CUserSocket': 1, 'AtomicAddTimer': 1, 'CIOObject': 1, 'CIOSocketEx8192': 1, 'CIOSocketEx16384': 1}

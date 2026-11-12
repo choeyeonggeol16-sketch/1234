@@ -1,0 +1,15 @@
+# Tentative role: timer_guard_leave; VA 0x926e54..0x926e82
+0000000000926e54: push     rbx
+0000000000926e56: push     rdi
+0000000000926e57: sub      rsp, 0x28
+0000000000926e5b: mov      rdi, rcx
+0000000000926e5e: call     0x925138
+0000000000926e63: movsxd   rbx, eax
+0000000000926e66: call     qword ptr [rip + 0x1f52b4] ; GetTickCount
+0000000000926e6c: mov      r11d, eax
+0000000000926e6f: sub      r11, qword ptr [rdi + rbx*8]
+0000000000926e73: add      qword ptr [rdi + rbx*8 + 0x90], r11
+0000000000926e7b: add      rsp, 0x28
+0000000000926e7f: pop      rdi
+0000000000926e80: pop      rbx
+0000000000926e81: ret      

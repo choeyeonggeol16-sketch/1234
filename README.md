@@ -1,3 +1,11 @@
+## 2026-11-12 — CTransport.dll 필수 코어 / 기존 전송 엔진 제거
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [구현·근거·적용 안내](reports/CTRANSPORT_CORE_20261112.md)
+
+스레드별8K/16K 원형 풀, 공유 RX/COW,128배치, 작업 큐와50ms/200칸 타이머 휠을 구현했습니다. 게임 접속과 PSS UI 연결 모두 같은 DLL을 필수 사용합니다. 기존 전송 엔진 선택/NIO2 경로는 제거했습니다. 실제 게임 클라이언트·운영 DB 부하는 별도 검증 대상입니다.
+
+---
+
 ## 2026-11-12 — RKern CIO 명칭 정리 / 추가 복원 범위
 
 [**전체 src**](downloads/RKern_Aden_CIO_CORE_FULL_SRC_20261112.zip) · [**RKern CIO DLL·C++·검사 자료**](downloads/RKern_CIO_CORE_20261112.zip) · [추가 복원 범위·원본 근거](reports/RKERN_CIO_CORE_RESTORE_SCOPE_20261112.md)

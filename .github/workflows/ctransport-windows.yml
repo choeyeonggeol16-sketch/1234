@@ -1,0 +1,28 @@
+name: CTransport Windows native and Java FFM
+on:
+  push:
+    branches: [ctransport-core-20261112]
+    paths:
+      - '.github/workflows/ctransport-windows.yml'
+      - 'patches/ctransport_core_20261112/native/**'
+      - 'patches/ctransport_core_20261112/src/**'
+      - 'patches/ctransport_core_20261112/tests/**'
+      - 'patches/ctransport_core_20261112/build/**'
+permissions:
+  contents: read
+jobs:
+  actual-windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: patches/ctransport_core_20261112
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Run shipped DLL and production FFM/PSS adapters
+        shell: pwsh
+        working-directory: patches/ctransport_core_20261112
+        run: ./tests/run_windows.ps1

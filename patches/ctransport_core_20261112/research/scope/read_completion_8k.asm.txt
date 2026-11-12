@@ -1,0 +1,33 @@
+# Tentative role: read_completion_8k; VA 0x45de2c..0x45dec9
+000000000045de2c: sub      rsp, 0x28
+000000000045de30: test     edx, edx
+000000000045de32: mov      r8, rcx
+000000000045de35: jne      0x45de41
+000000000045de37: call     0x45d534
+000000000045de3c: jmp      0x45dec4
+000000000045de41: mov      eax, dword ptr [rcx + 8]
+000000000045de44: test     eax, eax
+000000000045de46: jg       0x45de62
+000000000045de48: lea      r8, [rip + 0x6f70a9]
+000000000045de4f: lea      rcx, [rip + 0xdac3a4a]
+000000000045de56: mov      edx, 2
+000000000045de5b: call     0x734514
+000000000045de60: jmp      0x45dec4
+000000000045de62: mov      rax, qword ptr [rcx + 0x98]
+000000000045de69: add      dword ptr [rax + 0x2010], edx
+000000000045de6f: mov      rax, qword ptr [rcx + 0x98]
+000000000045de76: mov      ecx, dword ptr [rax + 0x2010]
+000000000045de7c: lock xadd qword ptr [rip + 0x47f30bb], rcx
+000000000045de85: lock add qword ptr [rip + 0x47f30c2], 1
+000000000045de8e: mov      rax, qword ptr [r8 + 0x98]
+000000000045de95: mov      ecx, dword ptr [rax + 0x2010]
+000000000045de9b: cmp      ecx, 0x1b58
+000000000045dea1: jbe      0x45deb8
+000000000045dea3: mov      rax, rcx
+000000000045dea6: lock xadd qword ptr [rip + 0x47f30b1], rax
+000000000045deaf: lock add qword ptr [rip + 0x47f30b8], 1
+000000000045deb8: mov      rax, qword ptr [r8]
+000000000045debb: mov      rcx, r8
+000000000045debe: call     qword ptr [rax + 0xa0]
+000000000045dec4: add      rsp, 0x28
+000000000045dec8: ret      

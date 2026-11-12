@@ -1,0 +1,60 @@
+# Tentative role: user_socket_io_dispatch; VA 0x54655c..0x54664e
+000000000054655c: push     rbx
+000000000054655e: sub      rsp, 0x30
+0000000000546562: test     edx, edx
+0000000000546564: mov      rbx, rcx
+0000000000546567: jne      0x54659d
+0000000000546569: lea      rax, [rcx + 0x58]
+000000000054656d: cmp      r9, rax
+0000000000546570: jne      0x546577
+0000000000546572: call     0x45d41c
+0000000000546577: mov      rax, qword ptr [rbx]
+000000000054657a: lea      rdx, [rip + 0x60e21f]
+0000000000546581: mov      r9d, 3
+0000000000546587: mov      r8d, 0x2da
+000000000054658d: mov      rcx, rbx
+0000000000546590: mov      byte ptr [rsp + 0x20], 0
+0000000000546595: call     qword ptr [rax + 0x10]
+0000000000546598: jmp      0x546648
+000000000054659d: test     r9, r9
+00000000005465a0: jne      0x5465b9
+00000000005465a2: mov      rax, qword ptr [rcx]
+00000000005465a5: mov      edx, r8d
+00000000005465a8: call     qword ptr [rax + 0x28]
+00000000005465ab: mov      r9d, 2
+00000000005465b1: mov      r8d, 0x2df
+00000000005465b7: jmp      0x546609
+00000000005465b9: lea      rax, [rcx + 0x58]
+00000000005465bd: cmp      r9, rax
+00000000005465c0: jne      0x5465d2
+00000000005465c2: mov      edx, r8d
+00000000005465c5: call     0x545430
+00000000005465ca: mov      r8d, 0x2e4
+00000000005465d0: jmp      0x546603
+00000000005465d2: lea      rax, [rcx + 0x78]
+00000000005465d6: cmp      r9, rax
+00000000005465d9: jne      0x546621
+00000000005465db: mov      r9d, r8d
+00000000005465de: lea      rax, [rip + 0x60f013]
+00000000005465e5: lea      r8, [rip - 0x7b4]
+00000000005465ec: add      rcx, 0x28
+00000000005465f0: mov      rdx, rbx
+00000000005465f3: mov      qword ptr [rsp + 0x20], rax
+00000000005465f8: call     0x45c7ac
+00000000005465fd: mov      r8d, 0x2e9
+0000000000546603: mov      r9d, 3
+0000000000546609: mov      r11, qword ptr [rbx]
+000000000054660c: lea      rdx, [rip + 0x60e18d]
+0000000000546613: mov      rcx, rbx
+0000000000546616: mov      byte ptr [rsp + 0x20], 0
+000000000054661b: call     qword ptr [r11 + 0x10]
+000000000054661f: jmp      0x546648
+0000000000546621: lea      r9, [rip + 0x5ee6f8]
+0000000000546628: lea      r8, [rip + 0x60efe9]
+000000000054662f: lea      rcx, [rip + 0xd9db26a]
+0000000000546636: mov      edx, 2
+000000000054663b: mov      dword ptr [rsp + 0x20], 0x2ed
+0000000000546643: call     0x734514
+0000000000546648: add      rsp, 0x30
+000000000054664c: pop      rbx
+000000000054664d: ret      

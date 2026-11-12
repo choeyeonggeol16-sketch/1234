@@ -1,0 +1,48 @@
+{
+  "base_revision": "c76e7b2753876fc8bb1aac4075e78a5d31bf522f",
+  "branch": "ctransport-core-20261112",
+  "dll": "CTransport.dll",
+  "dll_sha256": "5bf718c9df9e3dbce2eee824bbb3928430a2e142ee06abb45f14ae4156e33fa6",
+  "abi": "0x20000",
+  "mandatory": true,
+  "fallback": false,
+  "completion_batch": 128,
+  "source_files": 1699,
+  "java_files": 1698,
+  "changed_files": [
+    "src/l1j/server/server/model/character/pss/window/PssWindowTransport.java",
+    "src/l1j/server/server/model/network/core/CIOClient.java",
+    "src/l1j/server/server/model/network/core/CIOPacketCodec.java",
+    "src/l1j/server/server/model/network/core/CIOServer.java",
+    "src/l1j/server/server/model/network/core/CIOSocketFactory.java",
+    "src/l1j/server/server/model/network/core/CIOUserSocket.java",
+    "src/l1j/server/server/model/network/core/CTransportConfig.java",
+    "src/l1j/server/server/model/network/core/CTransportEndpoint.java",
+    "src/l1j/server/server/model/network/core/CTransportServer.java",
+    "src/l1j/server/server/model/network/core/CTransportSocket.java"
+  ],
+  "deleted_files": [
+    "src/l1j/server/server/model/network/core/CIOTransportConfig.java",
+    "src/l1j/server/server/model/network/core/CIOWinServer.java",
+    "src/l1j/server/server/model/network/core/CIOWinSocket.java"
+  ],
+  "additional_sql": false,
+  "recovered_structures": [
+    "owner-index CAS buffer rings",
+    "8K/16K families",
+    "shared receive COW/unique compaction",
+    "send FIFO",
+    "linger0 close",
+    "completion task objects",
+    "50ms/200-slot timer wheel and overflow heap"
+  ],
+  "adaptations": [
+    "external FFM producer registration",
+    "bounded exhaustion rejection",
+    "indexed cancellation",
+    "64-bit monotonic clock",
+    "terminal callback after I/O drain",
+    "existing L1 codec/game-owner contract"
+  ],
+  "windows_evidence": "GitHub Windows workflow; recorded separately after execution"
+}
