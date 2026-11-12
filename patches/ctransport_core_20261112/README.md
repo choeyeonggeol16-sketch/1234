@@ -22,3 +22,5 @@
 생산 PssWindowTransport의 실제 TCP9개 계약 그룹, 생산 PlaySupportWindow의 시작/토큰 등록/설정서 OPEN/로그아웃/재시작/포트 충돌 격리를 검사합니다. 게임 세계 객체만 검사 대역입니다. 전체 Java1,698개 컴파일과 Windows에서 기존 CTransport/새 독립 PSS/원본 PE32 client loader 검사를 수행합니다.
 
 실제 게임 클라이언트의 창 렌더링·자동사냥·운영 DB·장시간 부하는 이 검사에 포함되지 않습니다. 최신 Windows 결과는 WINDOWS_VERIFICATION.json과 GitHub 실행 기록을 확인합니다.
+
+실제 Windows Server2025/Temurin21에서 게임 DLL·생산 FFM·독립 PSS9개 TCP 그룹·생산 PSS 활성화/등록/종료/재시작·원본 PE32 클라이언트 로딩까지 모두 통과했습니다: [실행43283920839](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43283920839). 검사 소스d3073f5, 전체 src SHA256:e7abd02679f3422b5748aa0a06df4f108653e6f5148c57d708a1775a6fb11576.

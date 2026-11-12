@@ -65,11 +65,29 @@
     "existing L1 codec/game-owner contract"
   ],
   "windows_evidence": {
-    "conclusion": "pending",
+    "conclusion": "success",
     "abi": "0x30000",
     "scope": "game CTransport unchanged, independent PSS restored",
     "dll_sha256": "d149b3bd1835eb966ff590eecdb34890ca8798e033c43a58c498b0bee586e827",
     "pss_client_dll_sha256": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
-    "note": "new independent PSS Windows run pending"
+    "tested_source_commit": "d3073f5f77f18851e98d400116de0ada1570f064",
+    "run_id": 43283920839,
+    "job_id": 131412152014,
+    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43283920839",
+    "os": "Microsoft Windows Server 2025",
+    "jdk": "Temurin 21.0.13+9.0",
+    "source_archive_sha256": "e7abd02679f3422b5748aa0a06df4f108653e6f5148c57d708a1775a6fb11576",
+    "tests": [
+      "Unchanged game DLL: 20 native loopback connections, 4MB fragmented echo, close counts",
+      "Production Java21 FFM, ordered gameplay socket reads/writes, timers/cancel/shutdown",
+      "Independent NIO2 PSS: fragmented HELLO/PING/BOUND/OPEN and expiry executor shutdown",
+      "Nine real TCP PSS contracts: registration order, IP/token/replay, expiry/logout/capacity, concurrent OPEN",
+      "Production PlaySupportWindow: startup, registration, owned item OPEN, logout, restart, bind/stop isolation from game session",
+      "Unmodified original PE32 Pss2019.dll: load, PssClientInit, wrong executable attach refusal"
+    ],
+    "limitations": [
+      "Game-world objects in pairing test are stubs; production PlaySupportWindow and PssWindowTransport use real TCP",
+      "Real 2019 game UI rendering, auto hunting, live DB and sustained load are not tested"
+    ]
   }
 }

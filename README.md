@@ -6,6 +6,8 @@ PSS 전용 포트·NIO2 그룹2개 스레드·만료 스레드1개를 복구하�
 
 [기존 독립 연결용 PSS 클라이언트](downloads/PSS_Independent_Original_Client_20261112.zip)는 원본 DLL·소스를 그대로 담았습니다. 이미 해당 클라이언트를 사용한다면 유지합니다. 기존 Pss2019.ini 설정을 보존합니다.
 
+Windows Server2025/Java21에서 게임 DLL·FFM·독립 PSS 인증/OPEN/종료/재시작·원본 PE32 클라이언트 로딩 검사 통과: [실행 기록](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43283920839).
+
 ---
 
 ## 2026-11-12 — CTransport ABI3: 종료 훅·사전 할당·원본 작업 분배

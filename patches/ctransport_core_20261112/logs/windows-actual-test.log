@@ -1,1 +1,21 @@
-PENDING independent PSS activation Windows verification.
+Source commit: d3073f5f77f18851e98d400116de0ada1570f064
+Run: https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43283920839
+Job: 131412152014
+2026-11-12T18:50:46.3288807Z Microsoft Windows Server 2025
+2026-11-12T18:50:54.7846836Z   Version: 21.0.13+9.0
+2026-11-12T18:50:55.5284606Z PASS actual Windows DLL: 20 loopback connections, 4MB fragmented echo, order and close counts.
+2026-11-12T18:51:01.2788088Z PASS actual Windows shipped DLL + production Java21 FFM: 20 connections/4MB echo, work, timers/cancel, shutdown
+2026-11-12T18:51:01.3922362Z PASS production gameplay socket adapter: native 16K receives into 4K Java reads, stash/pause/resume and ordered writes
+2026-11-12T18:51:01.4528539Z PASS independent PSS NIO2 channel: fragmented HELLO, PING, BOUND/OPEN, detach, invalid greeting, dedicated expiry executor shutdown
+2026-11-12T18:51:03.0783240Z PASS game registration first; fragmented hello; exact bound/open bytes
+2026-11-12T18:51:03.0813918Z PASS helper registration first binds when game registration arrives
+2026-11-12T18:51:03.0844040Z PASS malformed hello does not consume game registration
+2026-11-12T18:51:03.0866934Z PASS wrong source IP cannot take another game session
+2026-11-12T18:51:03.0979095Z PASS expiry removes waiting peers, pending game references and idle channels
+2026-11-12T18:51:03.1005872Z PASS logout invalidates bound peer and releases owner reference
+2026-11-12T18:51:03.1042051Z PASS nonce replay needs a new authenticated game registration
+2026-11-12T18:51:03.1066464Z PASS bounded connection and pending-registration capacity
+2026-11-12T18:51:03.1129277Z PASS concurrent repeated item clicks keep writer serialization and bounded state
+2026-11-12T18:51:03.1728321Z RESULT groups=9 assertions=37; native game UI is tested separately
+2026-11-12T18:51:05.7342514Z PASS production PSS startup/pairing/item OPEN/logout/restart; PSS shutdown/bind failure isolated from game session; no CTransport/FFM dependency
+2026-11-12T18:51:05.8903749Z PASS unchanged PE32 companion Pss2019.dll loaded; PssClientInit resolved; wrong-client attach refused

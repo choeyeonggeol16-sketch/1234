@@ -27,3 +27,9 @@ DLL SHA256:35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa. 게
 - 실제 Windows의 게임 FFM/독립 PSS 및 원본 PE32 client loader 결과는 최신 Windows 실행 기록으로 별도 보관합니다. 원본 DLL의 PssClientInit export와 잘못된 실행 파일 자동 attach 거절을 확인합니다.
 
 실제2019 게임 창의 렌더링/자동사냥/운영 DB·장시간 부하는 별도 검증 대상입니다. 추가 SQL 없음.
+
+## 실제 Windows 결과
+
+[실행43283920839](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43283920839), job131412152014, 소스d3073f5f77f18851e98d400116de0ada1570f064: Windows Server2025/Temurin21.0.13에서 모든 단계 성공. 기존 게임 DLL·생산 FFM, 독립 PSS의 TCP9개 그룹과 생산 등록/설정서/로그아웃/재시작·격리, 변경 없는 PE32 PSS 클라이언트 로딩까지 통과했습니다. Windows에서 종료가 EOF 또는 TCP reset으로 전달될 수 있으므로 검사만 두 종료 형태를 허용합니다. 원본 PSS 전송·클라이언트 코드에는 변경이 없습니다.
+
+전체 src SHA256:e7abd02679f3422b5748aa0a06df4f108653e6f5148c57d708a1775a6fb11576. 이 결과를 추가한 최종 커밋은 문서·로그·패키지 메타데이터만 갱신합니다.
