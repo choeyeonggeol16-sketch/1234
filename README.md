@@ -4,6 +4,8 @@
 
 종료 전 훅/활성 등록 해제, 연속 slab 사전 할당, 등록 스레드 소유권,100개 직접 실행+101번째 재게시,1,000개 단위 timer block과32-byte heap을 반영했습니다. 공유 RX/COW·128배치·50ms/200칸 휠도 유지합니다. 게임 접속과 PSS UI 연결 모두 같은 DLL을 필수 사용합니다. 기존 전송 엔진 선택/NIO2 경로는 제거했습니다. 실제 게임 클라이언트·운영 DB 부하는 별도 검증 대상입니다.
 
+최종 ABI3 실제 Windows DLL·생산 FFM/게임 소켓·PSS·1,000개 timer 검사 통과: [실행 기록](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43246944182).
+
 ---
 
 ## 2026-11-12 — CTransport.dll 필수 코어 / 기존 전송 엔진 제거

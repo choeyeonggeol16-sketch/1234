@@ -47,3 +47,15 @@ Java1,698개 전체 타입 컴파일/새 해시·ABI, PE64/37개 export/import �
 실제 게임 클라이언트 로그인/사냥, 운영 DB, 장시간 동접·성능 비교는 이 검사 범위 밖입니다.
 
 종료 시작/최종 callback에서 자기 server의 Stop/StopAccept/Wait를 호출하면 대기하지 않고 거절합니다. IOCP worker가 아닌 호출자 thread의 close-post 실패 대체 통지에서도 같은 가드를 적용하고 검사했습니다.
+
+## 최종 실제 Windows 검증
+
+[run43246944182](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43246944182), job131282033180: **success**. Microsoft Windows Server2025/Temurin JDK21에서 최종 배포 DLL을 직접 로드했습니다. 검사 commit501e04d579082424e549b3f73d9ef5f76fb68231의 C++/Java/DLL은 이 기록 추가에서 변경하지 않았습니다.
+
+- 실제 DLL C++ loopback20개/4MB 및 종료 개수.
+- 생산 Java FFM20개/4MB,512개 일반 작업, 만료/취소/종료.
+- 1,000개 예약 작업 완료와 직접 실행/재게시 진단, pool fault counter0 확인.
+- 생산 게임 소켓 어댑터16KB→4KB/stash/pause/resume/순서 송신.
+- 생산 PSS의 분할 HELLO/PING/BOUND/OPEN/detach/잘못된 HELLO 거절과 native expiry 종료.
+
+검증한 DLL SHA256: `d149b3bd1835eb966ff590eecdb34890ca8798e033c43a58c498b0bee586e827`. 로그 발췌와 WINDOWS_VERIFICATION.json을 배포 묶음에 포함했습니다. build/native-build.json은 cross-build 시점 기록이며 이후 실제 실행 결과는 별도 검증 기록이 기준입니다. 실제 게임 클라이언트/DB/장시간 부하는 별도 대상입니다.
