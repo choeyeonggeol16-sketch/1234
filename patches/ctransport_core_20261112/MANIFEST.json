@@ -87,12 +87,31 @@
     "pss_unchanged_from": "4c6fa2b"
   },
   "windows_evidence": {
-    "conclusion": "pending",
+    "conclusion": "success",
     "abi": "0x40000",
     "scope": "L1-adapted CUserSocket parser, dispatch, registry/deferred close and execution roles; PSS unchanged",
     "dll_sha256": "3a7cca0ab0eb0a4c521ccefd9252247af96342888de72e8625ee200501cff1ae",
     "codec_dll_sha256": "60bde93c2ba20057e7e307594edef69ced273b69f923535ab658769e09f0cea9",
     "pss_client_dll_sha256": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
-    "note": "New ABI4 native/user-socket/codec/packet-cancellation Windows run pending; earlier ABI3 success is not evidence for this DLL."
+    "tested_source_commit": "6c03b4dc64e9588b09109b3ca929857168dc9784",
+    "run_id": 43295597820,
+    "job_id": 131452962516,
+    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43295597820",
+    "os": "Microsoft Windows Server 2025",
+    "jdk": "Temurin 21.0.13+9.0",
+    "source_archive_sha256": "01d7a542546df700924c8004a02c75de132d9183e78d8f07aa85df91fa9ff807",
+    "tests": [
+      "Actual ABI4 DLL native loopback: 20 connections, 4MB fragmented echo, ordering and close counts",
+      "Production Java21 FFM, ordered game socket adapter, work/timers/cancel/shutdown",
+      "Production native CUserSocket + FFM/socket + unchanged actual L1 codec: partial header, frame-boundary backpressure/resume, empty/max65535/coalesced frames, 67 exact plaintext and rolling-key matches, invalid length close and real native I/O terminal flag",
+      "Actual IOCP worker TLS identity and once-only cancellation of 64 pending native packet completions during shutdown",
+      "Production L1 policy/registry/deferred-close contracts: login/loading/game state, multiplexed compatibility, replacement identity, 400 close races, once-only cleanup",
+      "Unchanged independent PSS: native-free NIO2 protocol, 9 TCP contract groups, production activation/pairing/logout/restart/isolation, original PE32 client load"
+    ],
+    "limitations": [
+      "FFM/socket tests stub the game-world CIOUserSocket; they do not execute the full production game packet handler/login/logout pipeline",
+      "Policy, registry and deferred-close classes are production implementations; game-world predicates are fixtures",
+      "Real game client login/hunting, live DB, sustained load and comparative performance are not tested"
+    ]
   }
 }

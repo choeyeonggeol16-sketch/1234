@@ -63,3 +63,11 @@ PSS 소스·SC_PssNativeWindow·PSS 시작 경로·CSProto 등록·클라이언�
 
 게임 DLL SHA256: 3a7cca0ab0eb0a4c521ccefd9252247af96342888de72e8625ee200501cff1ae
 기존 codec DLL SHA256:60bde93c2ba20057e7e307594edef69ced273b69f923535ab658769e09f0cea9.
+
+## 실제 Windows 결과
+
+[실행43295597820](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43295597820), job131452962516: **success**. Windows Server2025/Temurin21.0.13에서 검사 소스6c03b4dc64e9588b09109b3ca929857168dc9784와 배포 ABI4 DLL을 사용했습니다.
+
+20개 native/FFM 접속·4MB echo, 기존 게임 socket adapter, 새 L1 native parser+실제 기존 codec의67개 plaintext/rolling-key 일치, 최대/empty/합친 프레임, 프레임 경계 backpressure·재개, invalid length 종료·실제 native I/O terminal flag, IOCP TLS 및64개 대기 패킷의 종료 취소, L1 상태·등록/정리400경합 검사가 모두 통과했습니다. 변경하지 않은 독립 PSS의 프로토콜·생산 활성화·기존 PE32 client loader 검사도 통과했습니다.
+
+검사한 전체 src ZIP SHA256:01d7a542546df700924c8004a02c75de132d9183e78d8f07aa85df91fa9ff807. 이후 결과 기록 커밋은 문서·로그·패키지 메타데이터만 갱신합니다. 위에 명시한 실게임/DB/전체 핸들러 실행 검증의 한계는 유지합니다.

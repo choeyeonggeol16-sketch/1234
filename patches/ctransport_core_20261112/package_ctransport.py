@@ -37,6 +37,7 @@ for name in ['native-test.log','native-test-build.log','native-suite.log','tsan-
  out=PATCH/'logs'/name;out.parent.mkdir(exist_ok=True);shutil.copy2(ROOT/'logs'/name,out)
 shutil.copy2(ROOT/'WINDOWS_VERIFICATION.json',PATCH/'WINDOWS_VERIFICATION.json')
 shutil.copy2(ROOT/'README_CTRANSPORT.md',PATCH/'README.md')
+shutil.copy2(ROOT/'REPORT_L1_USERSOCKET.md',PATCH/'REPORT_L1_USERSOCKET.md')
 shutil.copy2(ROOT/'package_ctransport.py',PATCH/'package_ctransport.py')
 (PATCH/'changed-files.txt').write_text('\n'.join(changed)+'\n')
 (PATCH/'deleted-files.txt').write_text('\n'.join(deleted)+'\n')

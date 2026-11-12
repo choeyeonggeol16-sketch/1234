@@ -17,4 +17,6 @@ L2 CUserSocket에서 확인한 프레임 상태·패킷 분배·등록/후속 �
 - 연결당1개 plaintext lease. close-start에서 활성 조회를 끝내고 패킷/I/O drain·L1 deferred logout 완료 뒤 참조 해제. 종료 시 취소된 native packet task도 lease 해제.
 - CTransport_UserSocket_GetState: uint64[6] = parserState,expectedWire,filled,frames,invalidLengths,partialAgeMs. CTransport_Server_ThreadOwner: 해당 server의 native worker 번호, 외부 thread는-1.
 
-자세한 원본 주소·L1 적용 차이·변경 파일·검사 범위는 reports/CTRANSPORT_L1_USERSOCKET_20261112.md를 확인하세요. 실제 Windows 결과는 WINDOWS_VERIFICATION.json을 기준으로 합니다. 실게임 로그인/사냥·운영 DB·장시간 부하는 별도 검증 대상입니다.
+자세한 원본 주소·L1 적용 차이·변경 파일·검사 범위는 이 묶음의 REPORT_L1_USERSOCKET.md를 확인하세요. 실제 Windows 결과는 WINDOWS_VERIFICATION.json을 기준으로 합니다. 실게임 로그인/사냥·운영 DB·장시간 부하는 별도 검증 대상입니다.
+
+Windows Server2025/Java21의 새 ABI4 DLL·생산 FFM/socket·실제 기존 L1 codec·대기 패킷 취소·L1 정책/등록/정리·독립 PSS 검사 통과: [실행43295597820](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43295597820). FFM 검사에서 게임 세계 CIOUserSocket은 대역입니다. 전체 게임 핸들러의 실제 로그인/전투 실행을 검증한 결과는 아닙니다.

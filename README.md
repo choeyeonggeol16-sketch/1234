@@ -2,7 +2,9 @@
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**새 게임 DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [원본 근거·역할·L1 적용 안내](reports/CTRANSPORT_L1_USERSOCKET_20261112.md)
 
-L2 유저소켓에서 확인한 수신 상태·패킷 분배·등록/후속 정리·스레드 역할을 L1에 맞춰 반영했습니다. L1 packet/cipher/게임 handler를 유지하고 Header/Body/Stopped 파서, native 직접 실행 및 L1 session owner 구분, I/O·packet·logout 수명 경계를 추가했습니다. src와 CTransport.dll ABI0x40000을 함께 적용합니다. PSS 연결·UI·사냥·클라이언트는 그대로입니다. 추가 SQL 없음. 실제 Windows 결과는 새 실행 기록으로 별도 확인하며 실게임/DB/장시간 부하는 미검증입니다.
+L2 유저소켓에서 확인한 수신 상태·패킷 분배·등록/후속 정리·스레드 역할을 L1에 맞춰 반영했습니다. L1 packet/cipher/게임 handler를 유지하고 Header/Body/Stopped 파서, native 직접 실행 및 L1 session owner 구분, I/O·packet·logout 수명 경계를 추가했습니다. src와 CTransport.dll ABI0x40000을 함께 적용합니다. PSS 연결·UI·사냥·클라이언트는 그대로입니다. 추가 SQL 없음. 실게임/DB/장시간 부하는 미검증입니다.
+
+Windows Server2025/Java21에서 새 DLL·생산 FFM/socket·실제 기존 L1 codec의67개 복호화 결과 일치·대기 패킷 취소·L1 정책/정리·독립 PSS 검사 통과: [실행 기록](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43295597820). FFM 검사에서 게임 세계 CIOUserSocket은 대역이며 실제 전체 게임 핸들러 실행 검사는 아닙니다.
 
 ---
 
