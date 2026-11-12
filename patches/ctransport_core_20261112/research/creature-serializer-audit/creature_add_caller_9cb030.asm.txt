@@ -1,0 +1,90 @@
+# creature_add_caller_9cb030; PE pdata/unwind; entry 0x9cb030
+# chunk 0x9cb030..0x9cb1b9
+00000000009cb030: push     rbx
+00000000009cb032: push     rbp
+00000000009cb033: push     rsi
+00000000009cb034: push     rdi
+00000000009cb035: push     r12
+00000000009cb037: sub      rsp, 0x60
+00000000009cb03b: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000009cb044: mov      rdi, rdx
+00000000009cb047: mov      ecx, dword ptr [rip + 0x2ebf418b]
+00000000009cb04d: mov      rax, qword ptr gs:[0x58]
+00000000009cb056: mov      r12d, 0x7d58
+00000000009cb05c: mov      rsi, qword ptr [rax + rcx*8]
+00000000009cb060: movsxd   r8, dword ptr [rsi + r12]
+00000000009cb064: lea      rbp, [rip - 0x5cb06b]
+00000000009cb06b: movsxd   rcx, dword ptr [rbp + r8*4 + 0x47e2a40]
+00000000009cb073: lea      eax, [rcx + 1]
+00000000009cb076: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+00000000009cb07e: imul     r8, r8, 0x3e8
+00000000009cb085: add      r8, rcx
+00000000009cb088: lea      rax, [rip + 0x3e0f41] ; UTF16 'bool __cdecl CBasicActionHandler_SIT_STAND::HandleInternal(class User *,int,bool,bool,int)'
+00000000009cb08f: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+00000000009cb097: mov      rax, qword ptr [rdx]
+00000000009cb09a: mov      rcx, rdx
+00000000009cb09d: call     qword ptr [rax + 0x468]
+00000000009cb0a3: test     al, al
+00000000009cb0a5: je       0x9cb0ba
+00000000009cb0a7: movsxd   rax, dword ptr [rsi + r12]
+00000000009cb0ab: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009cb0b3: xor      al, al
+00000000009cb0b5: jmp      0x9cb1ae
+00000000009cb0ba: mov      rcx, rdi
+00000000009cb0bd: call     0x94fa8c
+00000000009cb0c2: test     al, al
+00000000009cb0c4: je       0x9cb0eb
+00000000009cb0c6: mov      rax, qword ptr [rdi]
+00000000009cb0c9: mov      edx, 0xab4
+00000000009cb0ce: mov      rcx, rdi
+00000000009cb0d1: call     qword ptr [rax + 0x860]
+00000000009cb0d7: nop
+00000000009cb0d8: movsxd   rax, dword ptr [rsi + r12]
+00000000009cb0dc: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009cb0e4: xor      al, al
+00000000009cb0e6: jmp      0x9cb1ae
+00000000009cb0eb: mov      rax, qword ptr [rdi + 0xa88]
+00000000009cb0f2: cmp      dword ptr [rax + 0x1a0], 1
+00000000009cb0f9: jne      0x9cb158
+00000000009cb0fb: lea      rcx, [rdi + 0x15d0]
+00000000009cb102: call     0x9259b4
+00000000009cb107: mov      rbx, rax
+00000000009cb10a: mov      rdx, qword ptr [rdi]
+00000000009cb10d: mov      rcx, rdi
+00000000009cb110: call     qword ptr [rdx + 0xac8]
+00000000009cb116: lea      rcx, [rip + 0x2ed05b]
+00000000009cb11d: mov      qword ptr [rsp + 0x38], rcx
+00000000009cb122: mov      dword ptr [rsp + 0x40], 0x9f6
+00000000009cb12a: mov      qword ptr [rsp + 0x48], rbx
+00000000009cb12f: lea      rcx, [rax + 0x10d8]
+00000000009cb136: lea      rdx, [rip + 0x2efad3]
+00000000009cb13d: mov      qword ptr [rsp + 0x20], rdx
+00000000009cb142: lea      r9, [rsp + 0x38]
+00000000009cb147: lea      r8, [rip - 0x41e58a]
+00000000009cb14e: mov      rdx, rax
+00000000009cb151: call     0x466d44
+00000000009cb156: jmp      0x9cb1a0
+00000000009cb158: mov      rax, qword ptr [rdi]
+00000000009cb15b: mov      rcx, rdi
+00000000009cb15e: call     qword ptr [rax + 0xac8]
+00000000009cb164: lea      rcx, [rip + 0x18c955]
+00000000009cb16b: mov      qword ptr [rsp + 0x38], rcx
+00000000009cb170: mov      dword ptr [rsp + 0x40], 0x9f6
+00000000009cb178: lea      rcx, [rax + 0x10d8]
+00000000009cb17f: lea      rdx, [rip + 0x18db8a] ; UTF16 'Stand'
+00000000009cb186: mov      qword ptr [rsp + 0x20], rdx
+00000000009cb18b: lea      r9, [rsp + 0x38]
+00000000009cb190: lea      r8, [rip - 0x41e74b]
+00000000009cb197: mov      rdx, rax
+00000000009cb19a: call     0x466d44
+00000000009cb19f: nop
+00000000009cb1a0: movsxd   rcx, dword ptr [rsi + r12]
+00000000009cb1a4: add      dword ptr [rbp + rcx*4 + 0x47e2a40], -1
+00000000009cb1ac: mov      al, 1
+00000000009cb1ae: add      rsp, 0x60
+00000000009cb1b2: pop      r12
+00000000009cb1b4: pop      rdi
+00000000009cb1b5: pop      rsi
+00000000009cb1b6: pop      rbp
+00000000009cb1b7: pop      rbx
+00000000009cb1b8: ret

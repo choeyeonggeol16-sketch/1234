@@ -1,0 +1,392 @@
+# creature_add_caller_96dda4; PE pdata/unwind; entry 0x96dda4
+# chunk 0x96dda4..0x96e4d5
+000000000096dda4: push     rbx
+000000000096dda6: push     rbp
+000000000096dda7: push     rsi
+000000000096dda8: push     rdi
+000000000096dda9: push     r12
+000000000096ddab: push     r13
+000000000096ddad: push     r14
+000000000096ddaf: push     r15
+000000000096ddb1: mov      eax, 0x8118
+000000000096ddb6: call     0xafcbc0
+000000000096ddbb: sub      rsp, rax
+000000000096ddbe: mov      qword ptr [rsp + 0x88], 0xfffffffffffffffe
+000000000096ddca: mov      rbp, rcx
+000000000096ddcd: mov      edx, dword ptr [rip + 0x2ec51405]
+000000000096ddd3: mov      rax, qword ptr gs:[0x58]
+000000000096dddc: mov      ecx, 0x7d58
+000000000096dde1: mov      rax, qword ptr [rax + rdx*8]
+000000000096dde5: mov      qword ptr [rsp + 0x8170], rax
+000000000096dded: movsxd   r8, dword ptr [rax + rcx]
+000000000096ddf1: lea      rcx, [rip - 0x56ddf8]
+000000000096ddf8: movsxd   rdx, dword ptr [rcx + r8*4 + 0x47e2a40]
+000000000096de00: lea      eax, [rdx + 1]
+000000000096de03: mov      dword ptr [rcx + r8*4 + 0x47e2a40], eax
+000000000096de0b: imul     r8, r8, 0x3e8
+000000000096de12: add      r8, rdx
+000000000096de15: lea      rax, [rip + 0x423884] ; UTF16 'int __cdecl User::SendPrivateStoreBuyManageList(class CUserSocket *)'
+000000000096de1c: mov      qword ptr [rcx + r8*8 + 0x47bf7c0], rax
+000000000096de24: xor      r14d, r14d
+000000000096de27: mov      r13d, r14d
+000000000096de2a: mov      dword ptr [rsp + 0x8160], r14d
+000000000096de32: mov      r15d, r14d
+000000000096de35: mov      r12d, r14d
+000000000096de38: lea      rdi, [rip + 0x1b97e1]
+000000000096de3f: mov      qword ptr [rsp + 0x40f0], rdi
+000000000096de47: mov      dword ptr [rsp + 0x80f8], r14d
+000000000096de4f: mov      dword ptr [rsp + 0x80fc], r14d
+000000000096de57: mov      ebx, 0x4000
+000000000096de5c: mov      r8, rbx
+000000000096de5f: xor      edx, edx
+000000000096de61: lea      rcx, [rsp + 0x40f8]
+000000000096de69: call     0xab9430
+000000000096de6e: nop
+000000000096de6f: mov      qword ptr [rsp + 0xe0], rdi
+000000000096de77: mov      dword ptr [rsp + 0x40e8], r14d
+000000000096de7f: mov      dword ptr [rsp + 0x40ec], r14d
+000000000096de87: mov      r8, rbx
+000000000096de8a: xor      edx, edx
+000000000096de8c: lea      rcx, [rsp + 0xe8]
+000000000096de94: call     0xab9430
+000000000096de99: nop
+000000000096de9a: mov      rcx, rbp
+000000000096de9d: call     0x95f480
+000000000096dea2: mov      r8d, 0x2e78
+000000000096dea8: lea      rbx, [rip + 0x415be9] ; UTF16 '.\\User.cpp'
+000000000096deaf: mov      rdx, rbx
+000000000096deb2: mov      rcx, qword ptr [rbp + 0xaa8]
+000000000096deb9: call     0x8be59c
+000000000096debe: lea      rcx, [rbp + 0xaa0]
+000000000096dec5: call     0x6fa154
+000000000096deca: mov      rdi, rax
+000000000096decd: cmp      rax, r14
+000000000096ded0: je       0x96e1b7
+000000000096ded6: mov      eax, dword ptr [rip + 0x99bee4]
+000000000096dedc: test     al, 1
+000000000096dede: jne      0x96df02
+000000000096dee0: or       eax, 1
+000000000096dee3: mov      dword ptr [rip + 0x99bed7], eax
+000000000096dee9: lea      rcx, [rip + 0x96be70]
+000000000096def0: call     0x481f88
+000000000096def5: lea      rcx, [rip + 0x1a9a38]
+000000000096defc: call     0xab91d0
+000000000096df01: nop
+000000000096df02: mov      r8d, dword ptr [rdi + 0x28]
+000000000096df06: lea      rdx, [rsp + 0x60]
+000000000096df0b: lea      rcx, [rip + 0x96be4e]
+000000000096df12: call     0x482430
+000000000096df17: nop
+000000000096df18: mov      rcx, qword ptr [rsp + 0x60]
+000000000096df1d: cmp      rcx, r14
+000000000096df20: jne      0x96df85
+000000000096df22: mov      dword ptr [rsp + 0x20], 0x2e80
+000000000096df2a: mov      r9, rbx
+000000000096df2d: lea      r8, [rip + 0x383d44] ; UTF16 '[%s][%d] FindObject Failed'
+000000000096df34: mov      edx, 2
+000000000096df39: lea      rcx, [rip + 0xd5b3960]
+000000000096df40: call     0x734514
+000000000096df45: mov      rcx, rdi
+000000000096df48: call     0x8bc700
+000000000096df4d: mov      rdi, rax
+000000000096df50: mov      rcx, qword ptr [rsp + 0x60]
+000000000096df55: cmp      rcx, r14
+000000000096df58: je       0x96e14a
+000000000096df5e: mov      rax, qword ptr [rcx]
+000000000096df61: mov      byte ptr [rsp + 0x20], r14b
+000000000096df66: mov      r9d, dword ptr [rsp + 0x68]
+000000000096df6b: mov      r8d, 0x83
+000000000096df71: lea      rdx, [rip + 0x1ba8e8]
+000000000096df78: call     qword ptr [rax + 0x10]
+000000000096df7b: mov      qword ptr [rsp + 0x60], r14
+000000000096df80: jmp      0x96e14a
+000000000096df85: mov      rax, qword ptr [rcx]
+000000000096df88: mov      r8b, 1
+000000000096df8b: mov      rdx, rbp
+000000000096df8e: call     qword ptr [rax + 0x518]
+000000000096df94: cmp      al, r14b
+000000000096df97: jne      0x96dfd9
+000000000096df99: mov      rcx, rdi
+000000000096df9c: call     0x8bc700
+000000000096dfa1: mov      rdi, rax
+000000000096dfa4: mov      rcx, qword ptr [rsp + 0x60]
+000000000096dfa9: cmp      rcx, r14
+000000000096dfac: je       0x96e14a
+000000000096dfb2: mov      rax, qword ptr [rcx]
+000000000096dfb5: mov      byte ptr [rsp + 0x20], r14b
+000000000096dfba: mov      r9d, dword ptr [rsp + 0x68]
+000000000096dfbf: mov      r8d, 0x83
+000000000096dfc5: lea      rdx, [rip + 0x1ba894]
+000000000096dfcc: call     qword ptr [rax + 0x10]
+000000000096dfcf: mov      qword ptr [rsp + 0x60], r14
+000000000096dfd4: jmp      0x96e14a
+000000000096dfd9: mov      rcx, rbp
+000000000096dfdc: call     0x95aef4
+000000000096dfe1: cmp      rax, r14
+000000000096dfe4: je       0x96e026
+000000000096dfe6: mov      rcx, rdi
+000000000096dfe9: call     0x8bc700
+000000000096dfee: mov      rdi, rax
+000000000096dff1: mov      rcx, qword ptr [rsp + 0x60]
+000000000096dff6: cmp      rcx, r14
+000000000096dff9: je       0x96e14a
+000000000096dfff: mov      rax, qword ptr [rcx]
+000000000096e002: mov      byte ptr [rsp + 0x20], r14b
+000000000096e007: mov      r9d, dword ptr [rsp + 0x68]
+000000000096e00c: mov      r8d, 0x83
+000000000096e012: lea      rdx, [rip + 0x1ba847]
+000000000096e019: call     qword ptr [rax + 0x10]
+000000000096e01c: mov      qword ptr [rsp + 0x60], r14
+000000000096e021: jmp      0x96e14a
+000000000096e026: xor      r9d, r9d
+000000000096e029: mov      r8, qword ptr [rsp + 0x60]
+000000000096e02e: mov      rdx, rbp
+000000000096e031: lea      rcx, [rsp + 0x90]
+000000000096e039: call     0x71ba74
+000000000096e03e: nop
+000000000096e03f: lea      rdx, [rsp + 0x40f0]
+000000000096e047: lea      rcx, [rsp + 0x90]
+000000000096e04f: mov      rax, qword ptr [rsp + 0x90]
+000000000096e057: call     qword ptr [rax + 8]
+000000000096e05a: mov      esi, eax
+000000000096e05c: lea      rax, [rsp + 0x70]
+000000000096e061: mov      qword ptr [rsp + 0x8178], rax
+000000000096e069: lea      rdx, [rsp + 0x60]
+000000000096e06e: lea      rcx, [rsp + 0x70]
+000000000096e073: call     0x482288
+000000000096e078: mov      rbx, rax
+000000000096e07b: call     0x74ae94
+000000000096e080: mov      rcx, rax
+000000000096e083: mov      rdx, rbx
+000000000096e086: call     0x74aa88
+000000000096e08b: mov      r8, rax
+000000000096e08e: lea      rdx, [rip + 0x296a23]
+000000000096e095: lea      rcx, [rsp + 0x40f0]
+000000000096e09d: call     0x403d6c
+000000000096e0a2: add      esi, eax
+000000000096e0a4: cmp      esi, r14d
+000000000096e0a7: jle      0x96e0be
+000000000096e0a9: add      r13d, 1
+000000000096e0ad: mov      dword ptr [rsp + 0x8160], r13d
+000000000096e0b5: lea      rbx, [rip + 0x4159dc] ; UTF16 '.\\User.cpp'
+000000000096e0bc: jmp      0x96e0f7
+000000000096e0be: mov      eax, dword ptr [rsp + 0x80f8]
+000000000096e0c5: mov      dword ptr [rsp + 0x30], eax
+000000000096e0c9: mov      dword ptr [rsp + 0x28], esi
+000000000096e0cd: mov      dword ptr [rsp + 0x20], 0x2eb9
+000000000096e0d5: lea      rbx, [rip + 0x4159bc] ; UTF16 '.\\User.cpp'
+000000000096e0dc: mov      r9, rbx
+000000000096e0df: lea      r8, [rip + 0x29a02a] ; UTF16 'Assembe Error at file[%s], line[%d], assemble result = [%d], total length = [%d]'
+000000000096e0e6: mov      edx, 2
+000000000096e0eb: lea      rcx, [rip + 0xd5b37ae]
+000000000096e0f2: call     0x734514
+000000000096e0f7: mov      rcx, rdi
+000000000096e0fa: call     0x8bc700
+000000000096e0ff: mov      rdi, rax
+000000000096e102: add      r12d, 1
+000000000096e106: cmp      r12d, 0xc8
+000000000096e10d: jg       0x96e155
+000000000096e10f: lea      rax, [rip + 0x1df61a]
+000000000096e116: mov      qword ptr [rsp + 0x90], rax
+000000000096e11e: mov      rcx, qword ptr [rsp + 0x60]
+000000000096e123: cmp      rcx, r14
+000000000096e126: je       0x96e14a
+000000000096e128: mov      rax, qword ptr [rcx]
+000000000096e12b: mov      byte ptr [rsp + 0x20], r14b
+000000000096e130: mov      r9d, dword ptr [rsp + 0x68]
+000000000096e135: mov      r8d, 0x83
+000000000096e13b: lea      rdx, [rip + 0x1ba71e]
+000000000096e142: call     qword ptr [rax + 0x10]
+000000000096e145: mov      qword ptr [rsp + 0x60], r14
+000000000096e14a: cmp      rdi, r14
+000000000096e14d: jne      0x96ded6
+000000000096e153: jmp      0x96e1b7
+000000000096e155: mov      dword ptr [rsp + 0x28], 0x2ec1
+000000000096e15d: mov      qword ptr [rsp + 0x20], rbx
+000000000096e162: mov      r9d, 0xc8
+000000000096e168: lea      r8, [rip + 0x4234e1] ; UTF16 'depth > %d  at file[%s], line[%d]'
+000000000096e16f: mov      edx, 2
+000000000096e174: lea      rcx, [rip + 0xd5b3725]
+000000000096e17b: call     0x734514
+000000000096e180: nop
+000000000096e181: lea      rax, [rip + 0x1df5a8]
+000000000096e188: mov      qword ptr [rsp + 0x90], rax
+000000000096e190: mov      rcx, qword ptr [rsp + 0x60]
+000000000096e195: cmp      rcx, r14
+000000000096e198: je       0x96e1b7
+000000000096e19a: mov      rax, qword ptr [rcx]
+000000000096e19d: mov      byte ptr [rsp + 0x20], r14b
+000000000096e1a2: mov      r9d, dword ptr [rsp + 0x68]
+000000000096e1a7: mov      r8d, 0x83
+000000000096e1ad: lea      rdx, [rip + 0x1ba6ac]
+000000000096e1b4: call     qword ptr [rax + 0x10]
+000000000096e1b7: mov      rax, qword ptr [rbp + 0x37d0]
+000000000096e1be: mov      rdx, qword ptr [rax]
+000000000096e1c1: mov      qword ptr [rsp + 0x68], rdx
+000000000096e1c6: lea      rcx, [rbp + 0x37c8]
+000000000096e1cd: mov      qword ptr [rsp + 0x60], rcx
+000000000096e1d2: lea      rax, [rbp + 0x37c8]
+000000000096e1d9: mov      r8, qword ptr [rbp + 0x37d0]
+000000000096e1e0: cmp      rcx, r14
+000000000096e1e3: je       0x96e4bb
+000000000096e1e9: cmp      rcx, rax
+000000000096e1ec: jne      0x96e4bb
+000000000096e1f2: cmp      rdx, r8
+000000000096e1f5: sete     al
+000000000096e1f8: cmp      al, r14b
+000000000096e1fb: sete     al
+000000000096e1fe: cmp      al, r14b
+000000000096e201: je       0x96e3bb
+000000000096e207: cmp      rdx, qword ptr [rcx + 8]
+000000000096e20b: je       0x96e3b5
+000000000096e211: mov      r13, qword ptr [rdx + 0x20]
+000000000096e215: mov      edx, dword ptr [r13]
+000000000096e219: lea      rcx, [rip + 0xa34f5e0]
+000000000096e220: call     0x4821d8
+000000000096e225: mov      rdi, rax
+000000000096e228: cmp      rax, r14
+000000000096e22b: jne      0x96e255
+000000000096e22d: mov      dword ptr [rsp + 0x20], 0x2ecf
+000000000096e235: mov      r9, rbx
+000000000096e238: lea      r8, [rip + 0x4233c1] ; UTF16 '[%s][%d] CItem::FindObjectSP Failed'
+000000000096e23f: mov      edx, 2
+000000000096e244: lea      rcx, [rip + 0xd5b3655]
+000000000096e24b: call     0x734514
+000000000096e250: jmp      0x96e35c
+000000000096e255: mov      rax, qword ptr [rax]
+000000000096e258: mov      r8b, 1
+000000000096e25b: mov      rdx, rbp
+000000000096e25e: mov      rcx, rdi
+000000000096e261: call     qword ptr [rax + 0x518]
+000000000096e267: cmp      al, r14b
+000000000096e26a: je       0x96e35c
+000000000096e270: mov      rcx, rbp
+000000000096e273: call     0x95aef4
+000000000096e278: cmp      rax, r14
+000000000096e27b: jne      0x96e35c
+000000000096e281: mov      rbx, qword ptr [r13 + 0x18]
+000000000096e285: lea      rdx, [rsp + 0x70]
+000000000096e28a: mov      rcx, rdi
+000000000096e28d: call     0x70a6a8
+000000000096e292: mov      qword ptr [rsp + 0x20], rax
+000000000096e297: mov      r9d, ebx
+000000000096e29a: mov      r8, r13
+000000000096e29d: mov      rdx, rdi
+000000000096e2a0: lea      rcx, [rsp + 0x90]
+000000000096e2a8: call     0x71b678
+000000000096e2ad: nop
+000000000096e2ae: lea      rdx, [rsp + 0xe0]
+000000000096e2b6: lea      rcx, [rsp + 0x90]
+000000000096e2be: mov      rax, qword ptr [rsp + 0x90]
+000000000096e2c6: call     qword ptr [rax + 8]
+000000000096e2c9: mov      r14d, eax
+000000000096e2cc: call     0x74ae94
+000000000096e2d1: mov      rcx, rax
+000000000096e2d4: mov      rdx, rdi
+000000000096e2d7: call     0x74a7ec
+000000000096e2dc: mov      r9, rax
+000000000096e2df: mov      qword ptr [rsp + 0x20], rbx
+000000000096e2e4: mov      r8, qword ptr [r13 + 0x28]
+000000000096e2e8: lea      rdx, [rip + 0x423301]
+000000000096e2ef: lea      rcx, [rsp + 0xe0]
+000000000096e2f7: call     0x403d6c
+000000000096e2fc: add      r14d, eax
+000000000096e2ff: test     r14d, r14d
+000000000096e302: jle      0x96e311
+000000000096e304: add      r15d, 1
+000000000096e308: lea      rbx, [rip + 0x415789] ; UTF16 '.\\User.cpp'
+000000000096e30f: jmp      0x96e34b
+000000000096e311: mov      eax, dword ptr [rsp + 0x40e8]
+000000000096e318: mov      dword ptr [rsp + 0x30], eax
+000000000096e31c: mov      dword ptr [rsp + 0x28], r14d
+000000000096e321: mov      dword ptr [rsp + 0x20], 0x2f0b
+000000000096e329: lea      rbx, [rip + 0x415768] ; UTF16 '.\\User.cpp'
+000000000096e330: mov      r9, rbx
+000000000096e333: lea      r8, [rip + 0x299dd6] ; UTF16 'Assembe Error at file[%s], line[%d], assemble result = [%d], total length = [%d]'
+000000000096e33a: mov      edx, 2
+000000000096e33f: lea      rcx, [rip + 0xd5b355a]
+000000000096e346: call     0x734514
+000000000096e34b: add      r12d, 1
+000000000096e34f: mov      eax, 0xc8
+000000000096e354: cmp      r12d, eax
+000000000096e357: jg       0x96e38a
+000000000096e359: xor      r14d, r14d
+000000000096e35c: lea      rcx, [rsp + 0x60]
+000000000096e361: call     0x6616e0
+000000000096e366: lea      rax, [rbp + 0x37c8]
+000000000096e36d: mov      r8, qword ptr [rbp + 0x37d0]
+000000000096e374: mov      rdx, qword ptr [rsp + 0x68]
+000000000096e379: mov      rcx, qword ptr [rsp + 0x60]
+000000000096e37e: lea      rbx, [rip + 0x415713] ; UTF16 '.\\User.cpp'
+000000000096e385: jmp      0x96e1e0
+000000000096e38a: mov      dword ptr [rsp + 0x28], 0x2f12
+000000000096e392: mov      qword ptr [rsp + 0x20], rbx
+000000000096e397: mov      r9d, eax
+000000000096e39a: lea      r8, [rip + 0x1f54df] ; UTF16 'depth > %d at file[%s], line[%d]'
+000000000096e3a1: mov      edx, 2
+000000000096e3a6: lea      rcx, [rip + 0xd5b34f3]
+000000000096e3ad: call     0x734514
+000000000096e3b2: nop
+000000000096e3b3: jmp      0x96e3bb
+000000000096e3b5: call     0x866f68
+000000000096e3ba: int3
+000000000096e3bb: lea      rcx, [rbp + 0xaa0]
+000000000096e3c2: call     0x6fc5d4
+000000000096e3c7: mov      rbx, rax
+000000000096e3ca: xor      r8d, r8d
+000000000096e3cd: xor      edx, edx
+000000000096e3cf: mov      rcx, qword ptr [rbp + 0xaa8]
+000000000096e3d6: call     0x8be6d4
+000000000096e3db: mov      r11, qword ptr [rbp]
+000000000096e3df: mov      rcx, rbp
+000000000096e3e2: call     qword ptr [r11 + 0xb28]
+000000000096e3e9: mov      r10, qword ptr [rax]
+000000000096e3ec: lea      rcx, [rsp + 0xe8]
+000000000096e3f4: mov      qword ptr [rsp + 0x50], rcx
+000000000096e3f9: mov      ecx, dword ptr [rsp + 0x40e8]
+000000000096e400: mov      dword ptr [rsp + 0x48], ecx
+000000000096e404: mov      dword ptr [rsp + 0x40], r15d
+000000000096e409: lea      rcx, [rsp + 0x40f8]
+000000000096e411: mov      qword ptr [rsp + 0x38], rcx
+000000000096e416: mov      ecx, dword ptr [rsp + 0x80f8]
+000000000096e41d: mov      dword ptr [rsp + 0x30], ecx
+000000000096e421: mov      edi, dword ptr [rsp + 0x8160]
+000000000096e428: mov      dword ptr [rsp + 0x28], edi
+000000000096e42c: mov      qword ptr [rsp + 0x20], rbx
+000000000096e431: mov      r9d, dword ptr [rbp + 0x18]
+000000000096e435: mov      r8d, 0xbd
+000000000096e43b: lea      rdx, [rip + 0x4231a6]
+000000000096e442: mov      rcx, rax
+000000000096e445: call     qword ptr [r10 + 0x80]
+000000000096e44c: mov      r11, qword ptr [rbp]
+000000000096e450: mov      rcx, rbp
+000000000096e453: call     qword ptr [r11 + 0xac8]
+000000000096e45a: lea      rcx, [rip + 0x41c27f]
+000000000096e461: mov      qword ptr [rsp + 0x60], rcx
+000000000096e466: mov      dword ptr [rsp + 0x68], 4
+000000000096e46e: lea      rcx, [rax + 0x10d8]
+000000000096e475: lea      rdx, [rip + 0x41e694] ; UTF16 'PrivateStore'
+000000000096e47c: mov      qword ptr [rsp + 0x20], rdx
+000000000096e481: lea      r9, [rsp + 0x60]
+000000000096e486: lea      r8, [rip - 0x3c1111]
+000000000096e48d: mov      rdx, rax
+000000000096e490: call     0x466d44
+000000000096e495: lea      eax, [r15 + rdi]
+000000000096e499: mov      rcx, qword ptr [rsp + 0x8170]
+000000000096e4a1: mov      edx, 0x7d58
+000000000096e4a6: movsxd   rcx, dword ptr [rcx + rdx]
+000000000096e4aa: lea      rdx, [rip - 0x56e4b1]
+000000000096e4b1: add      dword ptr [rdx + rcx*4 + 0x47e2a40], -1
+000000000096e4b9: jmp      0x96e4c1
+000000000096e4bb: call     0x480214
+000000000096e4c0: nop
+000000000096e4c1: add      rsp, 0x8118
+000000000096e4c8: pop      r15
+000000000096e4ca: pop      r14
+000000000096e4cc: pop      r13
+000000000096e4ce: pop      r12
+000000000096e4d0: pop      rdi
+000000000096e4d1: pop      rsi
+000000000096e4d2: pop      rbp
+000000000096e4d3: pop      rbx
+000000000096e4d4: ret

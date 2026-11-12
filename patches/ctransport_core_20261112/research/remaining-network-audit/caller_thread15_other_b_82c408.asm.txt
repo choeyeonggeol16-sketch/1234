@@ -1,0 +1,30 @@
+# caller_thread15_other_b_82c408; PE pdata/unwind; entry 0x82c408
+# chunk 0x82c408..0x82c45e
+000000000082c408: push     rbx
+000000000082c40a: sub      rsp, 0x20
+000000000082c40e: cmp      dword ptr [rcx + 0x28], 0
+000000000082c412: mov      rbx, rcx
+000000000082c415: jne      0x82c41b
+000000000082c417: xor      al, al
+000000000082c419: jmp      0x82c458
+000000000082c41b: cmp      dword ptr [rcx + 0x2c], 1
+000000000082c41f: jne      0x82c426
+000000000082c421: call     0x82b04c
+000000000082c426: cmp      dword ptr [rbx + 0x34], 0
+000000000082c42a: jle      0x82c43e
+000000000082c42c: cmp      byte ptr [rbx + 0x38], 1
+000000000082c430: jne      0x82c43e
+000000000082c432: mov      rcx, rbx
+000000000082c435: call     0x82b0dc
+000000000082c43a: test     al, al
+000000000082c43c: je       0x82c417
+000000000082c43e: mov      rcx, rbx
+000000000082c441: call     0x82b87c
+000000000082c446: mov      rcx, rbx
+000000000082c449: call     0x82b424
+000000000082c44e: mov      rcx, rbx
+000000000082c451: call     0x82c0c0
+000000000082c456: mov      al, 1
+000000000082c458: add      rsp, 0x20
+000000000082c45c: pop      rbx
+000000000082c45d: ret

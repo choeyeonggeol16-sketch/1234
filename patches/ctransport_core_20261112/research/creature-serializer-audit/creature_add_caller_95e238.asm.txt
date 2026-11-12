@@ -1,0 +1,137 @@
+# creature_add_caller_95e238; PE pdata/unwind; entry 0x95e238
+# chunk 0x95e238..0x95e4a1
+000000000095e238: push     rbx
+000000000095e23a: push     rbp
+000000000095e23b: push     rsi
+000000000095e23c: push     rdi
+000000000095e23d: push     r12
+000000000095e23f: push     r13
+000000000095e241: push     r15
+000000000095e243: sub      rsp, 0x60
+000000000095e247: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+000000000095e250: movdqa   xmmword ptr [rsp + 0x50], xmm6
+000000000095e256: movsd    xmm6, xmm2
+000000000095e25a: mov      r9, rdx
+000000000095e25d: mov      rdi, rcx
+000000000095e260: mov      r8d, dword ptr [rip + 0x2ec60f71]
+000000000095e267: mov      rax, qword ptr gs:[0x58]
+000000000095e270: mov      r12d, 0x7d58
+000000000095e276: mov      rbp, qword ptr [rax + r8*8]
+000000000095e27a: movsxd   r8, dword ptr [r12 + rbp]
+000000000095e27e: lea      r15, [rip - 0x55e285]
+000000000095e285: movsxd   rdx, dword ptr [r15 + r8*4 + 0x47e2a40]
+000000000095e28d: lea      eax, [rdx + 1]
+000000000095e290: mov      dword ptr [r15 + r8*4 + 0x47e2a40], eax
+000000000095e298: imul     r8, r8, 0x3e8
+000000000095e29f: add      r8, rdx
+000000000095e2a2: lea      rax, [rip + 0x42ff77] ; UTF16 'void __cdecl User::OnGotDamage(class CCreature *,double)'
+000000000095e2a9: mov      qword ptr [r15 + r8*8 + 0x47bf7c0], rax
+000000000095e2b1: xorpd    xmm0, xmm0
+000000000095e2b5: comisd   xmm0, xmm2
+000000000095e2b9: jb       0x95e2cd
+000000000095e2bb: movsxd   rax, dword ptr [r12 + rbp]
+000000000095e2bf: add      dword ptr [r15 + rax*4 + 0x47e2a40], -1
+000000000095e2c8: jmp      0x95e48c
+000000000095e2cd: mov      rdx, r9
+000000000095e2d0: call     0x59a970
+000000000095e2d5: xor      bl, bl
+000000000095e2d7: mov      r8d, 0x59aa
+000000000095e2dd: lea      rdx, [rip + 0x4257b4] ; UTF16 '.\\User.cpp'
+000000000095e2e4: lea      rcx, [rdi + 0x1688]
+000000000095e2eb: call     0xa4ccec
+000000000095e2f0: cmp      byte ptr [rdi + 0xf54], bl
+000000000095e2f6: jne      0x95e352
+000000000095e2f8: mov      r12d, 9
+000000000095e2fe: mov      dword ptr [rsp + 0x28], r12d
+000000000095e303: lea      r13d, [r12 - 8]
+000000000095e308: mov      byte ptr [rsp + 0x20], r13b
+000000000095e30d: xor      r9d, r9d
+000000000095e310: xor      r8d, r8d
+000000000095e313: lea      edx, [r12 + 0x75]
+000000000095e318: mov      rcx, rdi
+000000000095e31b: call     0x5a05b0
+000000000095e320: test     al, al
+000000000095e322: cmovne   ebx, r13d
+000000000095e326: mov      dword ptr [rsp + 0x28], r12d
+000000000095e32b: mov      byte ptr [rsp + 0x20], r13b
+000000000095e330: xor      r9d, r9d
+000000000095e333: xor      r8d, r8d
+000000000095e336: mov      edx, 0xb7
+000000000095e33b: mov      rcx, rdi
+000000000095e33e: call     0x5a05b0
+000000000095e343: movzx    ebx, bl
+000000000095e346: test     al, al
+000000000095e348: cmovne   ebx, r13d
+000000000095e34c: mov      r12d, 0x7d58
+000000000095e352: mov      r8d, 0x59b6
+000000000095e358: lea      rdx, [rip + 0x425739] ; UTF16 '.\\User.cpp'
+000000000095e35f: lea      rcx, [rdi + 0x1688]
+000000000095e366: call     0xa4cd8c
+000000000095e36b: test     bl, bl
+000000000095e36d: je       0x95e3a1
+000000000095e36f: mov      r8d, 0x59ba
+000000000095e375: lea      rdx, [rip + 0x42571c] ; UTF16 '.\\User.cpp'
+000000000095e37c: mov      rcx, qword ptr [rdi + 0xa98]
+000000000095e383: call     0xa4ccec
+000000000095e388: mov      rcx, rdi
+000000000095e38b: call     0x572a38
+000000000095e390: xor      r8d, r8d
+000000000095e393: xor      edx, edx
+000000000095e395: mov      rcx, qword ptr [rdi + 0xa98]
+000000000095e39c: call     0xa4cd8c
+000000000095e3a1: lea      rcx, [rdi + 0x34f8]
+000000000095e3a8: call     0x7ea0bc
+000000000095e3ad: test     al, al
+000000000095e3af: je       0x95e3bb
+000000000095e3b1: cvttsd2si eax, xmm6
+000000000095e3b5: add      dword ptr [rdi + 0x3540], eax
+000000000095e3bb: mov      rax, qword ptr [rdi + 0xa88]
+000000000095e3c2: cmp      dword ptr [rax + 0x1a0], 0
+000000000095e3c9: jne      0x95e47f
+000000000095e3cf: cmp      byte ptr [rax + 0x197c], 0
+000000000095e3d6: jne      0x95e421
+000000000095e3d8: mov      rax, qword ptr [rdi]
+000000000095e3db: mov      rcx, rdi
+000000000095e3de: call     qword ptr [rax + 0xac8]
+000000000095e3e4: lea      rcx, [rip + 0x1f96d5]
+000000000095e3eb: mov      qword ptr [rsp + 0x38], rcx
+000000000095e3f0: mov      dword ptr [rsp + 0x40], 0x9f6
+000000000095e3f8: lea      rcx, [rax + 0x10d8]
+000000000095e3ff: lea      rdx, [rip + 0x1fa90a] ; UTF16 'Stand'
+000000000095e406: mov      qword ptr [rsp + 0x20], rdx
+000000000095e40b: lea      r9, [rsp + 0x38]
+000000000095e410: lea      r8, [rip - 0x3b19cb]
+000000000095e417: mov      rdx, rax
+000000000095e41a: call     0x466d44
+000000000095e41f: jmp      0x95e47f
+000000000095e421: call     qword ptr [rip + 0x1bdcf9] ; IAT GetTickCount
+000000000095e427: mov      ecx, dword ptr [rdi + 0x14cc]
+000000000095e42d: add      ecx, 0xbb8
+000000000095e433: cmp      ecx, eax
+000000000095e435: jae      0x95e47f
+000000000095e437: mov      rax, qword ptr [rdi]
+000000000095e43a: mov      rcx, rdi
+000000000095e43d: call     qword ptr [rax + 0xac8]
+000000000095e443: lea      rcx, [rip + 0x1f9676]
+000000000095e44a: mov      qword ptr [rsp + 0x38], rcx
+000000000095e44f: mov      dword ptr [rsp + 0x40], 0x9f6
+000000000095e457: lea      rcx, [rax + 0x10d8]
+000000000095e45e: lea      rdx, [rip + 0x1fa8ab] ; UTF16 'Stand'
+000000000095e465: mov      qword ptr [rsp + 0x20], rdx
+000000000095e46a: lea      r9, [rsp + 0x38]
+000000000095e46f: lea      r8, [rip - 0x3b1a2a]
+000000000095e476: mov      rdx, rax
+000000000095e479: call     0x466d44
+000000000095e47e: nop
+000000000095e47f: movsxd   rax, dword ptr [r12 + rbp]
+000000000095e483: add      dword ptr [r15 + rax*4 + 0x47e2a40], -1
+000000000095e48c: movdqa   xmm6, xmmword ptr [rsp + 0x50]
+000000000095e492: add      rsp, 0x60
+000000000095e496: pop      r15
+000000000095e498: pop      r13
+000000000095e49a: pop      r12
+000000000095e49c: pop      rdi
+000000000095e49d: pop      rsi
+000000000095e49e: pop      rbp
+000000000095e49f: pop      rbx
+000000000095e4a0: ret

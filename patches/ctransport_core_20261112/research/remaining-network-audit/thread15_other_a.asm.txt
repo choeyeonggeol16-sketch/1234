@@ -1,0 +1,39 @@
+# thread15_other_a; PE pdata/unwind; entry 0x82b04c
+# chunk 0x82b04c..0x82b0dc
+000000000082b04c: push     rbx
+000000000082b04e: push     rdi
+000000000082b04f: sub      rsp, 0xb8
+000000000082b056: mov      rdi, rcx
+000000000082b059: lea      rcx, [rsp + 0x20]
+000000000082b05e: mov      dword ptr [rsp + 0x20], 0x40
+000000000082b066: call     qword ptr [rip + 0x2f12b4] ; IAT GlobalMemoryStatusEx
+000000000082b06c: mov      rax, qword ptr [rsp + 0x30]
+000000000082b071: mov      r11d, dword ptr [rsp + 0x24]
+000000000082b076: mov      r8d, dword ptr [rdi + 0x44]
+000000000082b07a: shr      rax, 0xa
+000000000082b07e: xor      edx, edx
+000000000082b080: mov      dword ptr [rdi + 0x4c], eax
+000000000082b083: mov      rax, qword ptr [rsp + 0x28]
+000000000082b088: mov      ecx, 0x410
+000000000082b08d: shr      rax, 0xa
+000000000082b091: mov      dword ptr [rdi + 0x48], r11d
+000000000082b095: mov      dword ptr [rdi + 0x50], eax
+000000000082b098: call     qword ptr [rip + 0x2f127a] ; IAT OpenProcess
+000000000082b09e: test     rax, rax
+000000000082b0a1: mov      rbx, rax
+000000000082b0a4: je       0x82b0d2
+000000000082b0a6: lea      rdx, [rsp + 0x60]
+000000000082b0ab: mov      r8d, 0x48
+000000000082b0b1: mov      rcx, rax
+000000000082b0b4: call     0xaad34c
+000000000082b0b9: test     eax, eax
+000000000082b0bb: je       0x82b0c9
+000000000082b0bd: mov      rcx, qword ptr [rsp + 0x70]
+000000000082b0c2: shr      rcx, 0xa
+000000000082b0c6: mov      dword ptr [rdi + 0x54], ecx
+000000000082b0c9: mov      rcx, rbx
+000000000082b0cc: call     qword ptr [rip + 0x2f105e] ; IAT CloseHandle
+000000000082b0d2: add      rsp, 0xb8
+000000000082b0d9: pop      rdi
+000000000082b0da: pop      rbx
+000000000082b0db: ret

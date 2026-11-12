@@ -59,4 +59,10 @@ __declspec(dllimport) int CTransport_Server_GetThreadDiagnostics(void*,std::uint
 __declspec(dllimport) std::uint64_t CTransport_UserSocket_FindByNumber(void*,unsigned);
 __declspec(dllimport) int CTransport_UserSocket_SetMacIdentity(void*,std::uint64_t,std::uint64_t);
 __declspec(dllimport) int CTransport_Server_ReportSockets(void*,std::uint64_t*,int,int);
+__declspec(dllimport) int CTransport_UserSocket_SetAccountIdentity(void*,std::uint64_t,unsigned);
+__declspec(dllimport) int CTransport_UserSocket_SetCharacterEntered(void*,std::uint64_t,int);
+__declspec(dllimport) std::uint64_t CTransport_UserSocket_FindEnteringAccount(void*,unsigned);
+__declspec(dllimport) int CTransport_Server_GetAccountRegistryDiagnostics(void*,std::uint64_t*,int);
+__declspec(dllimport) int CTransport_Server_ConfigurePerf(void*,unsigned);
+__declspec(dllimport) int CTransport_Server_GetPerfDiagnostics(void*,std::uint64_t*,int);
 }

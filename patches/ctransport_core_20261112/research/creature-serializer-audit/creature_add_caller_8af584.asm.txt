@@ -1,0 +1,55 @@
+# creature_add_caller_8af584; PE pdata/unwind; entry 0x8af584
+# chunk 0x8af584..0x8af665
+00000000008af584: push     rbx
+00000000008af586: push     rbp
+00000000008af587: push     rsi
+00000000008af588: push     rdi
+00000000008af589: push     r12
+00000000008af58b: push     r13
+00000000008af58d: sub      rsp, 0x58
+00000000008af591: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000008af59a: mov      rbp, rcx
+00000000008af59d: mov      edx, dword ptr [rip + 0x2ed0fc35]
+00000000008af5a3: mov      rax, qword ptr gs:[0x58]
+00000000008af5ac: mov      r12d, 0x7d58
+00000000008af5b2: mov      rsi, qword ptr [rax + rdx*8]
+00000000008af5b6: movsxd   r8, dword ptr [rsi + r12]
+00000000008af5ba: lea      r13, [rip - 0x4af5c1]
+00000000008af5c1: movsxd   rdx, dword ptr [r13 + r8*4 + 0x47e2a40]
+00000000008af5c9: lea      eax, [rdx + 1]
+00000000008af5cc: mov      dword ptr [r13 + r8*4 + 0x47e2a40], eax
+00000000008af5d4: imul     r8, r8, 0x3e8
+00000000008af5db: add      r8, rdx
+00000000008af5de: lea      rax, [rip + 0x47a6cb] ; UTF16 'void __cdecl CSerializedDamageMessage::OnHandle(class CCreature *)'
+00000000008af5e5: mov      qword ptr [r13 + r8*8 + 0x47bf7c0], rax
+00000000008af5ed: mov      rax, qword ptr [rcx + 0x18]
+00000000008af5f1: mov      ebx, dword ptr [rax + 0x18]
+00000000008af5f4: mov      edi, dword ptr [rcx + 0x28]
+00000000008af5f7: mov      rcx, qword ptr [rcx + 0x20]
+00000000008af5fb: mov      rax, qword ptr [rcx]
+00000000008af5fe: call     qword ptr [rax + 0xac8]
+00000000008af604: lea      rcx, [rip + 0x478a9d]
+00000000008af60b: mov      qword ptr [rsp + 0x38], rcx
+00000000008af610: mov      dword ptr [rsp + 0x40], ebx
+00000000008af614: mov      dword ptr [rsp + 0x44], edi
+00000000008af618: lea      rcx, [rax + 0x10d8]
+00000000008af61f: lea      rdx, [rip + 0x47a57a] ; UTF16 'OnDamagedMessage'
+00000000008af626: mov      qword ptr [rsp + 0x20], rdx
+00000000008af62b: lea      r9, [rsp + 0x38]
+00000000008af630: lea      r8, [rip - 0x303513]
+00000000008af637: mov      rdx, rax
+00000000008af63a: call     0x466d44
+00000000008af63f: mov      r11, qword ptr [rbp]
+00000000008af643: mov      rcx, rbp
+00000000008af646: call     qword ptr [r11 + 0x68]
+00000000008af64a: nop
+00000000008af64b: movsxd   rax, dword ptr [rsi + r12]
+00000000008af64f: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000008af658: add      rsp, 0x58
+00000000008af65c: pop      r13
+00000000008af65e: pop      r12
+00000000008af660: pop      rdi
+00000000008af661: pop      rsi
+00000000008af662: pop      rbp
+00000000008af663: pop      rbx
+00000000008af664: ret

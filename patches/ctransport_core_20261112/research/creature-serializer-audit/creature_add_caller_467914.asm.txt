@@ -1,0 +1,72 @@
+# creature_add_caller_467914; PE pdata/unwind; entry 0x467914
+# chunk 0x467914..0x467a48
+0000000000467914: push     rbx
+0000000000467916: push     rbp
+0000000000467917: push     rsi
+0000000000467918: push     rdi
+0000000000467919: push     r13
+000000000046791b: push     r14
+000000000046791d: sub      rsp, 0x58
+0000000000467921: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+000000000046792a: mov      rbx, r8
+000000000046792d: movsxd   rsi, edx
+0000000000467930: mov      rdi, rcx
+0000000000467933: mov      r9d, dword ptr [rip + 0x2f15789e]
+000000000046793a: mov      rax, qword ptr gs:[0x58]
+0000000000467943: mov      r14d, 0x7d58
+0000000000467949: mov      rbp, qword ptr [rax + r9*8]
+000000000046794d: movsxd   r9, dword ptr [r14 + rbp]
+0000000000467951: lea      r13, [rip - 0x67958]
+0000000000467958: movsxd   r8, dword ptr [r13 + r9*4 + 0x47e2a40]
+0000000000467960: lea      eax, [r8 + 1]
+0000000000467964: mov      dword ptr [r13 + r9*4 + 0x47e2a40], eax
+000000000046796c: imul     r9, r9, 0x3e8
+0000000000467973: add      r9, r8
+0000000000467976: lea      rax, [rip + 0x6f17e3] ; UTF16 'void __cdecl CBlockUpsetManager::ReadyPlayerToStart(enum BlueRedTeam::Enum,class User &)'
+000000000046797d: mov      qword ptr [r13 + r9*8 + 0x47bf7c0], rax
+0000000000467985: mov      edx, 2
+000000000046798a: mov      rcx, rbx
+000000000046798d: call     0x59f3b0
+0000000000467992: mov      r11, qword ptr [rbx + 0xa88]
+0000000000467999: cmp      dword ptr [r11 + 0x1a0], 0
+00000000004679a1: jne      0x4679ea
+00000000004679a3: mov      rax, qword ptr [rbx]
+00000000004679a6: mov      rcx, rbx
+00000000004679a9: call     qword ptr [rax + 0xac8]
+00000000004679af: lea      rcx, [rip + 0x6f010a]
+00000000004679b6: mov      qword ptr [rsp + 0x38], rcx
+00000000004679bb: mov      dword ptr [rsp + 0x40], 0x9f6
+00000000004679c3: lea      rcx, [rax + 0x10d8]
+00000000004679ca: lea      rdx, [rip + 0x6f133f] ; UTF16 'Stand'
+00000000004679d1: mov      qword ptr [rsp + 0x20], rdx
+00000000004679d6: lea      r9, [rsp + 0x38]
+00000000004679db: lea      r8, [rip + 0x14506a]
+00000000004679e2: mov      rdx, rax
+00000000004679e5: call     0x466d44
+00000000004679ea: mov      r8, qword ptr [rdi + rsi*8 + 0xbf8]
+00000000004679f2: test     r8, r8
+00000000004679f5: je       0x467a0c
+00000000004679f7: mov      dword ptr [rsp + 0x20], 0
+00000000004679ff: xor      r9d, r9d
+0000000000467a02: xor      edx, edx
+0000000000467a04: mov      rcx, rbx
+0000000000467a07: call     0x5a5b8c
+0000000000467a0c: mov      r8, qword ptr [rdi + 0xc08]
+0000000000467a13: test     r8, r8
+0000000000467a16: je       0x467a2e
+0000000000467a18: mov      dword ptr [rsp + 0x20], 0
+0000000000467a20: xor      r9d, r9d
+0000000000467a23: xor      edx, edx
+0000000000467a25: mov      rcx, rbx
+0000000000467a28: call     0x5a5b8c
+0000000000467a2d: nop
+0000000000467a2e: movsxd   rax, dword ptr [r14 + rbp]
+0000000000467a32: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+0000000000467a3b: add      rsp, 0x58
+0000000000467a3f: pop      r14
+0000000000467a41: pop      r13
+0000000000467a43: pop      rdi
+0000000000467a44: pop      rsi
+0000000000467a45: pop      rbp
+0000000000467a46: pop      rbx
+0000000000467a47: ret

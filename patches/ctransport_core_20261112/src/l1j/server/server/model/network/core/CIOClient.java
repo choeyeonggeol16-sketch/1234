@@ -228,6 +228,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 	}
 
 	public void setActiveChar(L1PcInstance pc) {
+        _connection.onCharacterChanged(pc);
         if (_activeChar != pc || pc == null) {
             _gameSessionReady = false;
             PlaySupport2019.onClientDetached(this);
@@ -332,8 +333,12 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 	}
 
 	public void setAccount(Account account) {
+        _connection.onAccountChanged(account);
 		this.account = account;
 	}
+
+    /** Called by a verified server-side identity provider before authentication. */
+    public boolean bindVerifiedMacIdentity(long identity){return _connection.bindVerifiedMacIdentity(identity);}
 
 	public Account getAccount() {
 		return account;

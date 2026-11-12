@@ -1,0 +1,12 @@
+# controller_vtable_ref_5a844c_call_704148; PE pdata/unwind; entry 0x704148
+# chunk 0x704148..0x704169
+0000000000704148: push     rbx
+000000000070414a: sub      rsp, 0x20
+000000000070414e: mov      rbx, rcx
+0000000000704151: call     0x7d6d5c
+0000000000704156: lea      r11, [rip + 0x56dabb]
+000000000070415d: mov      qword ptr [rbx], r11
+0000000000704160: mov      rax, rbx
+0000000000704163: add      rsp, 0x20
+0000000000704167: pop      rbx
+0000000000704168: ret

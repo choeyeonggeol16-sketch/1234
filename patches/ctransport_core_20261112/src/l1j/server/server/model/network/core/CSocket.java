@@ -53,6 +53,8 @@ final class CSocket implements AutoCloseable {
     }
     @SuppressWarnings("preview")
     long socketNumber(){long[] state=userSocketState();return state==null?0:state[10];}
+    boolean setAccountIdentity(int account){return parent.setAccountIdentity(id,account);}
+    boolean setCharacterEntered(boolean entered){return parent.setCharacterEntered(id,entered);}
     boolean setMacIdentity(long value){return parent.setMacIdentity(id,value);}
     boolean initializeUserSocket(MemorySegment api,int seed){return parent.initializeUserSocket(id,api,seed);}
     boolean releaseUserPacket(long sequence){return parent.releaseUserPacket(id,sequence);}

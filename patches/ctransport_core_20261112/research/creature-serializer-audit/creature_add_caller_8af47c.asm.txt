@@ -1,0 +1,56 @@
+# creature_add_caller_8af47c; PE pdata/unwind; entry 0x8af47c
+# chunk 0x8af47c..0x8af562
+00000000008af47c: push     rbx
+00000000008af47e: push     rbp
+00000000008af47f: push     rsi
+00000000008af480: push     rdi
+00000000008af481: push     r12
+00000000008af483: sub      rsp, 0x50
+00000000008af487: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000008af490: mov      rbx, rcx
+00000000008af493: mov      edx, dword ptr [rip + 0x2ed0fd3f]
+00000000008af499: mov      rax, qword ptr gs:[0x58]
+00000000008af4a2: mov      r12d, 0x7d58
+00000000008af4a8: mov      rdi, qword ptr [rax + rdx*8]
+00000000008af4ac: movsxd   r8, dword ptr [rdi + r12]
+00000000008af4b0: lea      rbp, [rip - 0x4af4b7]
+00000000008af4b7: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+00000000008af4bf: lea      eax, [rdx + 1]
+00000000008af4c2: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+00000000008af4ca: imul     r8, r8, 0x3e8
+00000000008af4d1: add      r8, rdx
+00000000008af4d4: lea      rax, [rip + 0x47a715] ; UTF16 'void __cdecl CSerializedLostTargetMessage::OnHandle(class CCreature *)'
+00000000008af4db: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+00000000008af4e3: mov      rax, qword ptr [rcx + 0x18]
+00000000008af4e7: mov      ecx, dword ptr [rax + 0x15d0]
+00000000008af4ed: mov      rax, qword ptr [rbx + 0x20]
+00000000008af4f1: mov      esi, dword ptr [rax + 0x18]
+00000000008af4f4: cmp      ecx, esi
+00000000008af4f6: jne      0x8af541
+00000000008af4f8: mov      rcx, qword ptr [rbx + 0x18]
+00000000008af4fc: mov      rax, qword ptr [rcx]
+00000000008af4ff: call     qword ptr [rax + 0xac8]
+00000000008af505: lea      rcx, [rip + 0x31ea4c]
+00000000008af50c: mov      qword ptr [rsp + 0x38], rcx
+00000000008af511: mov      dword ptr [rsp + 0x40], esi
+00000000008af515: mov      byte ptr [rsp + 0x44], 0
+00000000008af51a: lea      rcx, [rax + 0x10d8]
+00000000008af521: lea      rdx, [rip + 0x321090] ; UTF16 'LostTarget'
+00000000008af528: mov      qword ptr [rsp + 0x20], rdx
+00000000008af52d: lea      r9, [rsp + 0x38]
+00000000008af532: lea      r8, [rip - 0x3031a5]
+00000000008af539: mov      rdx, rax
+00000000008af53c: call     0x466d44
+00000000008af541: mov      rax, qword ptr [rbx]
+00000000008af544: mov      rcx, rbx
+00000000008af547: call     qword ptr [rax + 0x68]
+00000000008af54a: nop
+00000000008af54b: movsxd   rax, dword ptr [rdi + r12]
+00000000008af54f: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000008af557: add      rsp, 0x50
+00000000008af55b: pop      r12
+00000000008af55d: pop      rdi
+00000000008af55e: pop      rsi
+00000000008af55f: pop      rbp
+00000000008af560: pop      rbx
+00000000008af561: ret

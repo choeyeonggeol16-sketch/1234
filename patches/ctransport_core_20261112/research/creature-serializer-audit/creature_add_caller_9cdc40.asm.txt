@@ -1,0 +1,127 @@
+# creature_add_caller_9cdc40; PE pdata/unwind; entry 0x9cdc40
+# chunk 0x9cdc40..0x9cde8a
+00000000009cdc40: push     rbx
+00000000009cdc42: push     rbp
+00000000009cdc43: push     rsi
+00000000009cdc44: push     rdi
+00000000009cdc45: push     r12
+00000000009cdc47: push     r15
+00000000009cdc49: sub      rsp, 0x78
+00000000009cdc4d: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000009cdc56: movdqa   xmmword ptr [rsp + 0x60], xmm6
+00000000009cdc5c: mov      rsi, rdx
+00000000009cdc5f: mov      rdi, rcx
+00000000009cdc62: mov      r8d, dword ptr [rip + 0x2ebf156f]
+00000000009cdc69: mov      rax, qword ptr gs:[0x58]
+00000000009cdc72: mov      r15d, 0x7d58
+00000000009cdc78: mov      rbp, qword ptr [rax + r8*8]
+00000000009cdc7c: movsxd   r9, dword ptr [r15 + rbp]
+00000000009cdc80: lea      r12, [rip - 0x5cdc87]
+00000000009cdc87: movsxd   r8, dword ptr [r12 + r9*4 + 0x47e2a40]
+00000000009cdc8f: lea      eax, [r8 + 1]
+00000000009cdc93: mov      dword ptr [r12 + r9*4 + 0x47e2a40], eax
+00000000009cdc9b: imul     r9, r9, 0x3e8
+00000000009cdca2: add      r9, r8
+00000000009cdca5: lea      rax, [rip + 0x3dfc34] ; UTF16 'bool __cdecl CUserBookmark::TeleportTo(class User *)'
+00000000009cdcac: mov      qword ptr [r12 + r9*8 + 0x47bf7c0], rax
+00000000009cdcb4: xorpd    xmm6, xmm6
+00000000009cdcb8: movsd    qword ptr [rsp + 0x48], xmm6
+00000000009cdcbe: movsd    qword ptr [rsp + 0x40], xmm6
+00000000009cdcc4: movsd    qword ptr [rsp + 0x38], xmm6
+00000000009cdcca: lea      rbx, [rcx + 0x1c]
+00000000009cdcce: mov      qword ptr [rsp + 0xb0], rbx
+00000000009cdcd6: mov      r8d, 0x15e
+00000000009cdcdc: lea      rdx, [rip + 0x3dedc5] ; UTF16 '.\\UserBookmark.cpp'
+00000000009cdce3: mov      rcx, rbx
+00000000009cdce6: call     0xa4ccec
+00000000009cdceb: nop
+00000000009cdcec: lea      rdx, [rdi + 0x28]
+00000000009cdcf0: lea      rcx, [rsp + 0x38]
+00000000009cdcf5: call     0x462064
+00000000009cdcfa: mov      qword ptr [rdi + 0x28], 0
+00000000009cdd02: mov      qword ptr [rdi + 0x30], 0
+00000000009cdd0a: mov      qword ptr [rdi + 0x38], 0
+00000000009cdd12: mov      r8d, 0x65
+00000000009cdd18: lea      rdx, [rip + 0x163c61] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\TemplateHelper.h'
+00000000009cdd1f: mov      rcx, rbx
+00000000009cdd22: call     0xa4cd8c
+00000000009cdd27: movsd    xmm5, qword ptr [rsp + 0x38]
+00000000009cdd2d: ucomisd  xmm5, xmm6
+00000000009cdd31: jp       0x9cdd55
+00000000009cdd33: jne      0x9cdd55
+00000000009cdd35: movsd    xmm0, qword ptr [rsp + 0x40]
+00000000009cdd3b: ucomisd  xmm0, xmm6
+00000000009cdd3f: jp       0x9cdd55
+00000000009cdd41: jne      0x9cdd55
+00000000009cdd43: movsd    xmm0, qword ptr [rsp + 0x48]
+00000000009cdd49: ucomisd  xmm0, xmm6
+00000000009cdd4d: jp       0x9cdd55
+00000000009cdd4f: je       0x9cde68
+00000000009cdd55: mov      rcx, rsi
+00000000009cdd58: call     0x9cc26c
+00000000009cdd5d: test     al, al
+00000000009cdd5f: je       0x9cde68
+00000000009cdd65: lea      rbx, [rsi + 0xaa0]
+00000000009cdd6c: mov      qword ptr [rsp + 0xb0], rbx
+00000000009cdd74: mov      r8d, 0x16a
+00000000009cdd7a: lea      rdx, [rip + 0x3ded27] ; UTF16 '.\\UserBookmark.cpp'
+00000000009cdd81: mov      rcx, qword ptr [rbx + 8]
+00000000009cdd85: call     0x8be59c
+00000000009cdd8a: nop
+00000000009cdd8b: mov      rdx, rsi
+00000000009cdd8e: lea      rcx, [rip + 0x17491d3b]
+00000000009cdd95: call     0x9ccf7c
+00000000009cdd9a: mov      edi, eax
+00000000009cdd9c: xor      r8d, r8d
+00000000009cdd9f: xor      edx, edx
+00000000009cdda1: mov      rcx, qword ptr [rbx + 8]
+00000000009cdda5: call     0x8be6d4
+00000000009cddaa: test     edi, edi
+00000000009cddac: jle      0x9cde40
+00000000009cddb2: mov      rdx, qword ptr [rsi]
+00000000009cddb5: mov      rcx, rsi
+00000000009cddb8: call     qword ptr [rdx + 0xac8]
+00000000009cddbe: lea      rcx, [rip + 0x3dea83]
+00000000009cddc5: mov      qword ptr [rsp + 0xb0], rcx
+00000000009cddcd: lea      rcx, [rax + 0x10d8]
+00000000009cddd4: lea      rdx, [rip + 0x3df1d5] ; UTF16 'CancelReservedAction'
+00000000009cdddb: mov      qword ptr [rsp + 0x20], rdx
+00000000009cdde0: lea      r9, [rsp + 0xb0]
+00000000009cdde8: lea      r8, [rip - 0x426363]
+00000000009cddef: mov      rdx, rax
+00000000009cddf2: call     0x466d44
+00000000009cddf7: mov      r11, qword ptr [rsi]
+00000000009cddfa: lea      rdx, [rsp + 0xb0]
+00000000009cde02: mov      rcx, rsi
+00000000009cde05: call     qword ptr [r11 + 0xf8]
+00000000009cde0c: mov      word ptr [rax + 2], 0
+00000000009cde12: mov      qword ptr [rsp + 0x20], 1
+00000000009cde1b: mov      r9d, edi
+00000000009cde1e: mov      r8d, dword ptr [rax]
+00000000009cde21: lea      rdx, [rsp + 0x38]
+00000000009cde26: mov      rcx, rsi
+00000000009cde29: call     0x975470
+00000000009cde2e: nop
+00000000009cde2f: movsxd   rcx, dword ptr [r15 + rbp]
+00000000009cde33: add      dword ptr [r12 + rcx*4 + 0x47e2a40], -1
+00000000009cde3c: mov      al, 1
+00000000009cde3e: jmp      0x9cde77
+00000000009cde40: mov      dword ptr [rsp + 0x20], 0x177
+00000000009cde48: lea      r9, [rip + 0x3dec59] ; UTF16 '.\\UserBookmark.cpp'
+00000000009cde4f: lea      r8, [rip + 0x3dfa1a] ; UTF16 '[%s][%d] Cannot find bookmark teleport item [%d]'
+00000000009cde56: mov      edx, 2
+00000000009cde5b: lea      rcx, [rip + 0xd553a3e]
+00000000009cde62: call     0x734514
+00000000009cde67: nop
+00000000009cde68: movsxd   rax, dword ptr [r15 + rbp]
+00000000009cde6c: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+00000000009cde75: xor      al, al
+00000000009cde77: movdqa   xmm6, xmmword ptr [rsp + 0x60]
+00000000009cde7d: add      rsp, 0x78
+00000000009cde81: pop      r15
+00000000009cde83: pop      r12
+00000000009cde85: pop      rdi
+00000000009cde86: pop      rsi
+00000000009cde87: pop      rbp
+00000000009cde88: pop      rbx
+00000000009cde89: ret

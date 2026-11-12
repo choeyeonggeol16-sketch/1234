@@ -1,0 +1,22 @@
+# controller_vtable_ref_5a844c_call_5a7328; PE pdata/unwind; entry 0x5a7328
+# chunk 0x5a7328..0x5a7378
+00000000005a7328: push     rbx
+00000000005a732a: push     rdi
+00000000005a732b: sub      rsp, 0x28
+00000000005a732f: movsxd   rbx, edx
+00000000005a7332: mov      rdi, rcx
+00000000005a7335: lea      rdx, [rsp + 0x48]
+00000000005a733a: mov      r8, rbx
+00000000005a733d: imul     r8, r8, 0x858
+00000000005a7344: mov      dword ptr [r8 + rcx + 0x878], 0
+00000000005a7350: mov      eax, dword ptr [rcx + 0x24]
+00000000005a7353: lea      rcx, [r8 + rcx + 0x28]
+00000000005a7358: mov      dword ptr [rsp + 0x48], eax
+00000000005a735c: call     0x777588
+00000000005a7361: lea      r8, [rip + 0x638c10] ; UTF16 'ACT_NOTHING'
+00000000005a7368: mov      edx, ebx
+00000000005a736a: mov      rcx, rdi
+00000000005a736d: add      rsp, 0x28
+00000000005a7371: pop      rdi
+00000000005a7372: pop      rbx
+00000000005a7373: jmp      0x5a71cc

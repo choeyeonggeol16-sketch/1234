@@ -1,0 +1,54 @@
+# inc_user_count; PE pdata/unwind; entry 0xa08940
+# chunk 0xa08940..0xa08a26
+0000000000a08940: push     rbx
+0000000000a08942: push     rbp
+0000000000a08943: push     rsi
+0000000000a08944: push     rdi
+0000000000a08945: push     r12
+0000000000a08947: sub      rsp, 0x40
+0000000000a0894b: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000a08954: mov      dil, dl
+0000000000a08957: mov      rbx, rcx
+0000000000a0895a: mov      r8d, dword ptr [rip + 0x2ebb6877]
+0000000000a08961: mov      rax, qword ptr gs:[0x58]
+0000000000a0896a: mov      r12d, 0x7d58
+0000000000a08970: mov      rsi, qword ptr [rax + r8*8]
+0000000000a08974: movsxd   r9, dword ptr [rsi + r12]
+0000000000a08978: lea      rbp, [rip - 0x60897f]
+0000000000a0897f: movsxd   r8, dword ptr [rbp + r9*4 + 0x47e2a40]
+0000000000a08987: lea      eax, [r8 + 1]
+0000000000a0898b: mov      dword ptr [rbp + r9*4 + 0x47e2a40], eax
+0000000000a08993: imul     r9, r9, 0x3e8
+0000000000a0899a: add      r9, r8
+0000000000a0899d: lea      rax, [rip + 0x3baa8c] ; UTF16 'void __cdecl CUserSocket::IncUserCount(bool)'
+0000000000a089a4: mov      qword ptr [rbp + r9*8 + 0x47bf7c0], rax
+0000000000a089ac: lock add dword ptr [rip + 0x263f404], 1
+0000000000a089b4: mov      ecx, dword ptr [rip + 0x263f40a]
+0000000000a089ba: mov      eax, dword ptr [rip + 0x263f3f8]
+0000000000a089c0: cmp      eax, ecx
+0000000000a089c2: jle      0xa089dd
+0000000000a089c4: mov      eax, dword ptr [rip + 0x263f3ee]
+0000000000a089ca: mov      dword ptr [rip + 0x263f3f4], eax
+0000000000a089d0: lea      rcx, [rip + 0x263f3c9]
+0000000000a089d7: call     qword ptr [rip + 0x1137bb] ; IAT GetLocalTime
+0000000000a089dd: test     dil, dil
+0000000000a089e0: je       0xa08a0f
+0000000000a089e2: mov      rax, qword ptr [rbx]
+0000000000a089e5: mov      rcx, rbx
+0000000000a089e8: call     qword ptr [rax + 0xc8]
+0000000000a089ee: mov      edx, eax
+0000000000a089f0: mov      dword ptr [rsp + 0x20], 0x520
+0000000000a089f8: lea      r9, [rip + 0x3b1951]
+0000000000a089ff: mov      r8, rbx
+0000000000a08a02: lea      rcx, [rip + 0x174f7fb7]
+0000000000a08a09: call     0xa08498
+0000000000a08a0e: nop
+0000000000a08a0f: movsxd   rax, dword ptr [rsi + r12]
+0000000000a08a13: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+0000000000a08a1b: add      rsp, 0x40
+0000000000a08a1f: pop      r12
+0000000000a08a21: pop      rdi
+0000000000a08a22: pop      rsi
+0000000000a08a23: pop      rbp
+0000000000a08a24: pop      rbx
+0000000000a08a25: ret

@@ -9,7 +9,7 @@
 namespace ctransport {
 // Original CObjectMap<CUserSocket,8192,...>: hash to a bucket, RW locking,
 // ordered key/object entries and one reference for every registered object.
-template<class T,std::size_t Count=8192> class CObjectMap {
+template<class T,std::size_t Count=8192,unsigned Tag=26> class CObjectMap {
     struct Bucket{mutable std::shared_mutex gate;std::map<std::uint32_t,T*> entries;};
     std::unique_ptr<Bucket[]> buckets_{new Bucket[Count]};
     std::atomic<std::uint64_t> size_{0};

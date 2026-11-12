@@ -1,0 +1,98 @@
+# creature_add_caller_572bd0; PE pdata/unwind; entry 0x572bd0
+# chunk 0x572bd0..0x572d75
+0000000000572bd0: push     rbx
+0000000000572bd2: push     rbp
+0000000000572bd3: push     rsi
+0000000000572bd4: push     rdi
+0000000000572bd5: push     r12
+0000000000572bd7: push     r13
+0000000000572bd9: push     r15
+0000000000572bdb: sub      rsp, 0x70
+0000000000572bdf: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000572be8: mov      r12d, edx
+0000000000572beb: mov      rsi, rcx
+0000000000572bee: mov      r8d, dword ptr [rip + 0x2f04c5e3]
+0000000000572bf5: mov      rax, qword ptr gs:[0x58]
+0000000000572bfe: mov      ecx, 0x7d58
+0000000000572c03: mov      rbp, qword ptr [rax + r8*8]
+0000000000572c07: movsxd   r9, dword ptr [rcx + rbp]
+0000000000572c0b: lea      r15, [rip - 0x172c12]
+0000000000572c12: movsxd   r8, dword ptr [r15 + r9*4 + 0x47e2a40]
+0000000000572c1a: lea      eax, [r8 + 1]
+0000000000572c1e: mov      dword ptr [r15 + r9*4 + 0x47e2a40], eax
+0000000000572c26: imul     r9, r9, 0x3e8
+0000000000572c2d: add      r9, r8
+0000000000572c30: lea      rax, [rip + 0x65dcf9] ; UTF16 'bool __cdecl CCreature::CoupleAction(int,bool,bool,int)'
+0000000000572c37: mov      qword ptr [r15 + r9*8 + 0x47bf7c0], rax
+0000000000572c3f: mov      r13d, dword ptr [rsp + 0xd0]
+0000000000572c47: mov      edx, r13d
+0000000000572c4a: lea      rcx, [rip + 0xdae32f]
+0000000000572c51: call     0x41be00
+0000000000572c56: mov      rbx, rax
+0000000000572c59: test     rax, rax
+0000000000572c5c: je       0x572c7f
+0000000000572c5e: mov      rdx, qword ptr [rax]
+0000000000572c61: mov      rcx, rax
+0000000000572c64: call     qword ptr [rdx + 0x168]
+0000000000572c6a: test     al, al
+0000000000572c6c: je       0x572c7f
+0000000000572c6e: mov      rdx, qword ptr [rbx]
+0000000000572c71: mov      rcx, rbx
+0000000000572c74: call     qword ptr [rdx + 0x208]
+0000000000572c7a: mov      rdi, rax
+0000000000572c7d: jmp      0x572c81
+0000000000572c7f: xor      edi, edi
+0000000000572c81: mov      rax, qword ptr [rsi]
+0000000000572c84: mov      rcx, rsi
+0000000000572c87: call     qword ptr [rax + 0x208]
+0000000000572c8d: mov      rbx, rax
+0000000000572c90: test     rdi, rdi
+0000000000572c93: je       0x572d52
+0000000000572c99: test     rax, rax
+0000000000572c9c: je       0x572d52
+0000000000572ca2: mov      dword ptr [rax + 0x38fc], r13d
+0000000000572ca9: mov      rdx, qword ptr [rax]
+0000000000572cac: mov      rcx, rax
+0000000000572caf: call     qword ptr [rdx + 0xb60]
+0000000000572cb5: mov      dword ptr [rdi + 0x38fc], eax
+0000000000572cbb: mov      dword ptr [rbx + 0x3900], r12d
+0000000000572cc2: mov      dword ptr [rdi + 0x3900], r12d
+0000000000572cc9: mov      rcx, rbx
+0000000000572ccc: call     0x968b98
+0000000000572cd1: mov      rcx, rdi
+0000000000572cd4: call     0x968b98
+0000000000572cd9: lea      rcx, [rdi + 0x15d0]
+0000000000572ce0: call     0x9259b4
+0000000000572ce5: mov      rbx, rax
+0000000000572ce8: mov      rdx, qword ptr [rdi]
+0000000000572ceb: mov      rcx, rdi
+0000000000572cee: call     qword ptr [rdx + 0xac8]
+0000000000572cf4: lea      rcx, [rip + 0x65b1c5]
+0000000000572cfb: mov      qword ptr [rsp + 0x38], rcx
+0000000000572d00: mov      qword ptr [rsp + 0x40], rbx
+0000000000572d05: mov      byte ptr [rsp + 0x48], 0
+0000000000572d0a: mov      dword ptr [rsp + 0x4c], 0
+0000000000572d12: mov      dword ptr [rsp + 0x50], 0
+0000000000572d1a: mov      dword ptr [rsp + 0x54], 0
+0000000000572d22: mov      dword ptr [rsp + 0x58], 0
+0000000000572d2a: lea      rcx, [rax + 0x10d8]
+0000000000572d31: lea      rdx, [rip + 0x65d7d8] ; UTF16 'MoveToTarget'
+0000000000572d38: mov      qword ptr [rsp + 0x20], rdx
+0000000000572d3d: lea      r9, [rsp + 0x38]
+0000000000572d42: lea      r8, [rip + 0x20dbeb]
+0000000000572d49: mov      rdx, rax
+0000000000572d4c: call     0x466d44
+0000000000572d51: nop
+0000000000572d52: mov      eax, 0x7d58
+0000000000572d57: movsxd   rax, dword ptr [rax + rbp]
+0000000000572d5b: add      dword ptr [r15 + rax*4 + 0x47e2a40], -1
+0000000000572d64: mov      al, 1
+0000000000572d66: add      rsp, 0x70
+0000000000572d6a: pop      r15
+0000000000572d6c: pop      r13
+0000000000572d6e: pop      r12
+0000000000572d70: pop      rdi
+0000000000572d71: pop      rsi
+0000000000572d72: pop      rbp
+0000000000572d73: pop      rbx
+0000000000572d74: ret

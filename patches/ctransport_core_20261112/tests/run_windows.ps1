@@ -6,7 +6,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Native Windows loopback failed' }
 $core = 'src/l1j/server/server/model/network/core'
 $pss = 'src/l1j/server/server/model/character/pss/window/PssWindowTransport.java'
 New-Item -ItemType Directory -Force windows-classes | Out-Null
-& javac --enable-preview --release 21 -encoding UTF-8 -d windows-classes "$core/CIOObject.java" "$core/CIOConfig.java" "$core/CIOServer.java" "$core/CSocket.java" "$core/CIOServerEndpoint.java" "$core/CIOPacketCodec.java" $pss tests/windows-stubs/CUserSocket.java tests/CTransportWindowsSmokeTest.java tests/CUserSocketWindowsTest.java tests/CIOPacketCodecReference.java
+& javac --enable-preview --release 21 -encoding UTF-8 -d windows-classes "$core/CIOObject.java" "$core/CIOConfig.java" "$core/CIOServer.java" "$core/CSocket.java" "$core/CIOServerEndpoint.java" "$core/CIOPacketCodec.java" "$core/CPerfMon.java" $pss tests/windows-stubs/CUserSocket.java tests/CTransportWindowsSmokeTest.java tests/CUserSocketWindowsTest.java tests/CIOPacketCodecReference.java tests/CTransportSessionWindowsTest.java
 if ($LASTEXITCODE -ne 0) { throw 'FFM Windows smoke compilation failed' }
 $classes = Join-Path $root 'windows-classes'
 Push-Location build
@@ -15,6 +15,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'FFM/PSS Windows smoke failed' }
     & java --enable-preview --enable-native-access=ALL-UNNAMED -cp $classes l1j.server.server.model.network.core.CUserSocketWindowsTest
     if ($LASTEXITCODE -ne 0) { throw 'L1 user-socket/codec/completion Windows test failed' }
+    & java --enable-preview --enable-native-access=ALL-UNNAMED -cp $classes l1j.server.server.model.network.core.CTransportSessionWindowsTest
+    if ($LASTEXITCODE -ne 0) { throw 'Account/MAC/performance/concurrent session Windows test failed' }
 } finally { Pop-Location }
 
 # Compile the actual production CUserSocket separately from the FFM smoke

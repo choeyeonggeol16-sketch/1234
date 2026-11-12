@@ -1,0 +1,21 @@
+# caller_thread15_condition_705b38; PE pdata/unwind; entry 0x705b38
+# chunk 0x705b38..0x705b6f
+0000000000705b38: push     rbx
+0000000000705b3a: sub      rsp, 0x20
+0000000000705b3e: test     rcx, rcx
+0000000000705b41: mov      rbx, rcx
+0000000000705b44: jne      0x705b4e
+0000000000705b46: xor      eax, eax
+0000000000705b48: add      rsp, 0x20
+0000000000705b4c: pop      rbx
+0000000000705b4d: ret
+0000000000705b4e: mov      ecx, dword ptr [rcx + 8]
+0000000000705b51: call     0x9250f8
+0000000000705b56: call     0x53a8fc
+0000000000705b5b: mov      rcx, rbx
+0000000000705b5e: test     al, al
+0000000000705b60: je       0x705b69
+0000000000705b62: call     0x705a4c
+0000000000705b67: jmp      0x705b46
+0000000000705b69: call     0x705ab0
+0000000000705b6e: int3

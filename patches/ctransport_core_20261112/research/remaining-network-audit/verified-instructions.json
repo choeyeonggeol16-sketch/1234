@@ -1,0 +1,103 @@
+{
+  "input_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "image_base": "0x400000",
+  "original_executable_run": false,
+  "checks": [
+    {
+      "address": "0xa01798",
+      "bytes": "8b81e8040000",
+      "mnemonic": "mov",
+      "operands": "eax, dword ptr [rcx + 0x4e8]"
+    },
+    {
+      "address": "0xa089e8",
+      "bytes": "ff90c8000000",
+      "mnemonic": "call",
+      "operands": "qword ptr [rax + 0xc8]"
+    },
+    {
+      "address": "0xa08a09",
+      "bytes": "e88afaffff",
+      "mnemonic": "call",
+      "operands": "0xa08498"
+    },
+    {
+      "address": "0xa08b11",
+      "bytes": "e84afbffff",
+      "mnemonic": "call",
+      "operands": "0xa08660"
+    },
+    {
+      "address": "0x982e7e",
+      "bytes": "418b9c24e4070000",
+      "mnemonic": "mov",
+      "operands": "ebx, dword ptr [r12 + 0x7e4]"
+    },
+    {
+      "address": "0x982f6f",
+      "bytes": "e89cbcffff",
+      "mnemonic": "call",
+      "operands": "0x97ec10"
+    },
+    {
+      "address": "0xa12503",
+      "bytes": "e8b42ce8ff",
+      "mnemonic": "call",
+      "operands": "0x8951bc"
+    },
+    {
+      "address": "0x82b066",
+      "bytes": "ff15b4122f00",
+      "mnemonic": "call",
+      "operands": "qword ptr [rip + 0x2f12b4]"
+    },
+    {
+      "address": "0x725ea0",
+      "bytes": "e8e3f5ffff",
+      "mnemonic": "call",
+      "operands": "0x725488"
+    },
+    {
+      "address": "0x722ac7",
+      "bytes": "e83c991000",
+      "mnemonic": "call",
+      "operands": "0x82c408"
+    },
+    {
+      "address": "0x53a8fc",
+      "bytes": "b001",
+      "mnemonic": "mov",
+      "operands": "al, 1"
+    },
+    {
+      "address": "0xa10c0a",
+      "bytes": "4c899e880c0000",
+      "mnemonic": "mov",
+      "operands": "qword ptr [rsi + 0xc88], r11"
+    },
+    {
+      "address": "0xa10519",
+      "bytes": "498b9424880c0000",
+      "mnemonic": "mov",
+      "operands": "rdx, qword ptr [r12 + 0xc88]"
+    },
+    {
+      "address": "0xa10528",
+      "bytes": "e80f47ffff",
+      "mnemonic": "call",
+      "operands": "0xa04c3c"
+    },
+    {
+      "address": "0xa12e87",
+      "bytes": "488b97880c0000",
+      "mnemonic": "mov",
+      "operands": "rdx, qword ptr [rdi + 0xc88]"
+    },
+    {
+      "address": "0xa12e95",
+      "bytes": "e83ab0ffff",
+      "mnemonic": "call",
+      "operands": "0xa0ded4"
+    }
+  ]
+}

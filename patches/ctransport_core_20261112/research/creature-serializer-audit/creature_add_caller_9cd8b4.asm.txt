@@ -1,0 +1,188 @@
+# creature_add_caller_9cd8b4; PE pdata/unwind; entry 0x9cd8b4
+# chunk 0x9cd8b4..0x9cdbdf
+00000000009cd8b4: mov      dword ptr [rsp + 0x18], r8d
+00000000009cd8b9: push     rbx
+00000000009cd8ba: push     rbp
+00000000009cd8bb: push     rsi
+00000000009cd8bc: push     rdi
+00000000009cd8bd: push     r12
+00000000009cd8bf: push     r13
+00000000009cd8c1: push     r15
+00000000009cd8c3: sub      rsp, 0x70
+00000000009cd8c7: mov      qword ptr [rsp + 0x40], 0xfffffffffffffffe
+00000000009cd8d0: mov      esi, r8d
+00000000009cd8d3: mov      rbp, rdx
+00000000009cd8d6: mov      rdi, rcx
+00000000009cd8d9: mov      r9d, dword ptr [rip + 0x2ebf18f8]
+00000000009cd8e0: mov      rax, qword ptr gs:[0x58]
+00000000009cd8e9: mov      r15d, 0x7d58
+00000000009cd8ef: mov      r12, qword ptr [rax + r9*8]
+00000000009cd8f3: movsxd   r9, dword ptr [r12 + r15]
+00000000009cd8f7: lea      r13, [rip - 0x5cd8fe]
+00000000009cd8fe: movsxd   r8, dword ptr [r13 + r9*4 + 0x47e2a40]
+00000000009cd906: lea      eax, [r8 + 1]
+00000000009cd90a: mov      dword ptr [r13 + r9*4 + 0x47e2a40], eax
+00000000009cd912: imul     r9, r9, 0x3e8
+00000000009cd919: add      r9, r8
+00000000009cd91c: lea      rax, [rip + 0x3dfead] ; UTF16 'bool __cdecl CUserBookmark::Teleport(class User *,int)'
+00000000009cd923: mov      qword ptr [r13 + r9*8 + 0x47bf7c0], rax
+00000000009cd92b: mov      rcx, rdx
+00000000009cd92e: call     0x9cc26c
+00000000009cd933: test     al, al
+00000000009cd935: jne      0x9cd94b
+00000000009cd937: movsxd   rax, dword ptr [r12 + r15]
+00000000009cd93b: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009cd944: xor      al, al
+00000000009cd946: jmp      0x9cdbd0
+00000000009cd94b: mov      rax, qword ptr [rbp]
+00000000009cd94f: mov      rcx, rbp
+00000000009cd952: call     qword ptr [rax + 0xac8]
+00000000009cd958: mov      rcx, rax
+00000000009cd95b: call     0x5a696c
+00000000009cd960: test     eax, eax
+00000000009cd962: je       0x9cd978
+00000000009cd964: movsxd   rax, dword ptr [r12 + r15]
+00000000009cd968: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009cd971: xor      al, al
+00000000009cd973: jmp      0x9cdbd0
+00000000009cd978: lea      rbx, [rbp + 0xaa0]
+00000000009cd97f: mov      qword ptr [rsp + 0xc8], rbx
+00000000009cd987: mov      r8d, 0x12c
+00000000009cd98d: lea      rdx, [rip + 0x3df114] ; UTF16 '.\\UserBookmark.cpp'
+00000000009cd994: mov      rcx, qword ptr [rbx + 8]
+00000000009cd998: call     0x8be59c
+00000000009cd99d: nop
+00000000009cd99e: mov      rdx, rbp
+00000000009cd9a1: lea      rcx, [rip + 0x17492128]
+00000000009cd9a8: call     0x9ccf7c
+00000000009cd9ad: test     eax, eax
+00000000009cd9af: jg       0x9cd9e7
+00000000009cd9b1: mov      rax, qword ptr [rbp]
+00000000009cd9b5: mov      edx, 0x937
+00000000009cd9ba: mov      rcx, rbp
+00000000009cd9bd: call     qword ptr [rax + 0x860]
+00000000009cd9c3: nop
+00000000009cd9c4: xor      r8d, r8d
+00000000009cd9c7: xor      edx, edx
+00000000009cd9c9: mov      rcx, qword ptr [rbx + 8]
+00000000009cd9cd: call     0x8be6d4
+00000000009cd9d2: nop
+00000000009cd9d3: movsxd   rax, dword ptr [r12 + r15]
+00000000009cd9d7: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009cd9e0: xor      al, al
+00000000009cd9e2: jmp      0x9cdbd0
+00000000009cd9e7: xor      r8d, r8d
+00000000009cd9ea: xor      edx, edx
+00000000009cd9ec: mov      rcx, qword ptr [rbx + 8]
+00000000009cd9f0: call     0x8be6d4
+00000000009cd9f5: lea      rbx, [rdi + 0x1c]
+00000000009cd9f9: mov      qword ptr [rsp + 0xc8], rbx
+00000000009cda01: mov      r8d, 0x136
+00000000009cda07: lea      rdx, [rip + 0x3df09a] ; UTF16 '.\\UserBookmark.cpp'
+00000000009cda0e: mov      rcx, rbx
+00000000009cda11: call     0xa4ccec
+00000000009cda16: nop
+00000000009cda17: lea      r8, [rsp + 0xc0]
+00000000009cda1f: lea      rdx, [rsp + 0x48]
+00000000009cda24: mov      rcx, rdi
+00000000009cda27: call     0x52eb8c
+00000000009cda2c: mov      rdx, qword ptr [rsp + 0x48]
+00000000009cda31: test     rdx, rdx
+00000000009cda34: je       0x9cdbca
+00000000009cda3a: cmp      rdx, rdi
+00000000009cda3d: jne      0x9cdbca
+00000000009cda43: mov      rcx, qword ptr [rsp + 0x50]
+00000000009cda48: cmp      rcx, qword ptr [rdi + 8]
+00000000009cda4c: sete     al
+00000000009cda4f: test     al, al
+00000000009cda51: sete     al
+00000000009cda54: test     al, al
+00000000009cda56: je       0x9cdb67
+00000000009cda5c: cmp      rcx, qword ptr [rdx + 8]
+00000000009cda60: jne      0x9cda68
+00000000009cda62: call     0x866f68
+00000000009cda67: int3
+00000000009cda68: mov      rsi, qword ptr [rcx + 0x20]
+00000000009cda6c: mov      rcx, rsi
+00000000009cda6f: call     0x9cbaec
+00000000009cda74: test     al, al
+00000000009cda76: je       0x9cdb53
+00000000009cda7c: lea      rcx, [rdi + 0x28]
+00000000009cda80: mov      rdx, rsi
+00000000009cda83: call     0x462064
+00000000009cda88: movzx    r11d, word ptr [rip + 0x17492040]
+00000000009cda90: test     r11w, r11w
+00000000009cda94: je       0x9cdb2a
+00000000009cda9a: movzx    esi, word ptr [rip + 0x17492031]
+00000000009cdaa1: movzx    edi, r11w
+00000000009cdaa5: mov      rax, qword ptr [rbp]
+00000000009cdaa9: mov      rcx, rbp
+00000000009cdaac: call     qword ptr [rax + 0xac8]
+00000000009cdab2: lea      rcx, [rip + 0x19da9f]
+00000000009cdab9: mov      qword ptr [rsp + 0x48], rcx
+00000000009cdabe: mov      dword ptr [rsp + 0x50], edi
+00000000009cdac2: mov      dword ptr [rsp + 0x54], esi
+00000000009cdac6: mov      byte ptr [rsp + 0x58], 0
+00000000009cdacb: mov      byte ptr [rsp + 0x59], 1
+00000000009cdad0: mov      dword ptr [rsp + 0x5c], 0
+00000000009cdad8: lea      rcx, [rax + 0x10d8]
+00000000009cdadf: lea      rdx, [rip + 0x1c5cfa] ; UTF16 'Skill'
+00000000009cdae6: mov      qword ptr [rsp + 0x20], rdx
+00000000009cdaeb: lea      r9, [rsp + 0x48]
+00000000009cdaf0: lea      r8, [rip - 0x238967]
+00000000009cdaf7: mov      rdx, rax
+00000000009cdafa: call     0x466d44
+00000000009cdaff: nop
+00000000009cdb00: mov      r8d, 0x65
+00000000009cdb06: lea      rdx, [rip + 0x163e73] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\TemplateHelper.h'
+00000000009cdb0d: mov      rcx, rbx
+00000000009cdb10: call     0xa4cd8c
+00000000009cdb15: nop
+00000000009cdb16: movsxd   rcx, dword ptr [r12 + r15]
+00000000009cdb1a: add      dword ptr [r13 + rcx*4 + 0x47e2a40], -1
+00000000009cdb23: mov      al, 1
+00000000009cdb25: jmp      0x9cdbd0
+00000000009cdb2a: mov      dword ptr [rsp + 0x20], 0x147
+00000000009cdb32: lea      r9, [rip + 0x3def6f] ; UTF16 '.\\UserBookmark.cpp'
+00000000009cdb39: lea      r8, [rip + 0x3dfc30] ; UTF16 '[%s][%d] Bookmark Teleport Skill is not set'
+00000000009cdb40: mov      edx, 2
+00000000009cdb45: lea      rcx, [rip + 0xd553d54]
+00000000009cdb4c: call     0x734514
+00000000009cdb51: jmp      0x9cdba3
+00000000009cdb53: mov      rax, qword ptr [rbp]
+00000000009cdb57: mov      edx, 0x96a
+00000000009cdb5c: mov      rcx, rbp
+00000000009cdb5f: call     qword ptr [rax + 0x860]
+00000000009cdb65: jmp      0x9cdba3
+00000000009cdb67: mov      rcx, qword ptr [rdi + 0x10]
+00000000009cdb6b: mov      eax, dword ptr [rdi + 0x18]
+00000000009cdb6e: mov      dword ptr [rsp + 0x38], eax
+00000000009cdb72: mov      qword ptr [rsp + 0x30], rcx
+00000000009cdb77: mov      dword ptr [rsp + 0x28], esi
+00000000009cdb7b: mov      dword ptr [rsp + 0x20], 0x150
+00000000009cdb83: lea      r9, [rip + 0x3def1e] ; UTF16 '.\\UserBookmark.cpp'
+00000000009cdb8a: lea      r8, [rip + 0x3dfa7f] ; UTF16 '[%s][%d] Try hack? This User doesnot have slot(%d). now(%d), max(%d)'
+00000000009cdb91: mov      edx, 2
+00000000009cdb96: lea      rcx, [rip + 0xd553d03]
+00000000009cdb9d: call     0x734514
+00000000009cdba2: nop
+00000000009cdba3: mov      r8d, 0x65
+00000000009cdba9: lea      rdx, [rip + 0x163dd0] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\TemplateHelper.h'
+00000000009cdbb0: mov      rcx, rbx
+00000000009cdbb3: call     0xa4cd8c
+00000000009cdbb8: nop
+00000000009cdbb9: movsxd   rax, dword ptr [r12 + r15]
+00000000009cdbbd: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009cdbc6: xor      al, al
+00000000009cdbc8: jmp      0x9cdbd0
+00000000009cdbca: call     0x480214
+00000000009cdbcf: nop
+00000000009cdbd0: add      rsp, 0x70
+00000000009cdbd4: pop      r15
+00000000009cdbd6: pop      r13
+00000000009cdbd8: pop      r12
+00000000009cdbda: pop      rdi
+00000000009cdbdb: pop      rsi
+00000000009cdbdc: pop      rbp
+00000000009cdbdd: pop      rbx
+00000000009cdbde: ret

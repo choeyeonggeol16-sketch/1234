@@ -1,0 +1,349 @@
+# creature_add_caller_9a4114; PE pdata/unwind; entry 0x9a4114
+# chunk 0x9a4114..0x9a476f
+00000000009a4114: push     rbx
+00000000009a4116: push     rbp
+00000000009a4117: push     rsi
+00000000009a4118: push     rdi
+00000000009a4119: push     r12
+00000000009a411b: push     r14
+00000000009a411d: push     r15
+00000000009a411f: mov      r11, rsp
+00000000009a4122: sub      rsp, 0x290
+00000000009a4129: mov      qword ptr [rsp + 0x58], 0xfffffffffffffffe
+00000000009a4132: mov      r10, rdx
+00000000009a4135: mov      rdi, rcx
+00000000009a4138: mov      r8d, dword ptr [rip + 0x2ec1b099]
+00000000009a413f: mov      rax, qword ptr gs:[0x58]
+00000000009a4148: mov      esi, 0x7d58
+00000000009a414d: mov      r14, qword ptr [rax + r8*8]
+00000000009a4151: movsxd   r9, dword ptr [r14 + rsi]
+00000000009a4155: lea      rbx, [rip - 0x5a415c]
+00000000009a415c: movsxd   r8, dword ptr [rbx + r9*4 + 0x47e2a40]
+00000000009a4164: lea      eax, [r8 + 1]
+00000000009a4168: mov      dword ptr [rbx + r9*4 + 0x47e2a40], eax
+00000000009a4170: imul     r9, r9, 0x3e8
+00000000009a4177: add      r9, r8
+00000000009a417a: lea      rax, [rip + 0x3fbbcf] ; UTF16 'int __cdecl User::SetRecipeStoreList(const unsigned char *)'
+00000000009a4181: mov      qword ptr [rbx + r9*8 + 0x47bf7c0], rax
+00000000009a4189: xor      r12d, r12d
+00000000009a418c: mov      dword ptr [r11 + 0x58], r12d
+00000000009a4190: lea      r8, [r11 + 0x58]
+00000000009a4194: lea      rdx, [rip + 0x185ad9]
+00000000009a419b: mov      rcx, r10
+00000000009a419e: call     0x705278
+00000000009a41a3: mov      r15, rax
+00000000009a41a6: mov      ecx, dword ptr [rsp + 0x2e8]
+00000000009a41ad: cmp      ecx, 0x14
+00000000009a41b0: ja       0x9a4727
+00000000009a41b6: cmp      ecx, r12d
+00000000009a41b9: jne      0x9a41e8
+00000000009a41bb: mov      rax, qword ptr [rdi]
+00000000009a41be: mov      edx, 0x37f
+00000000009a41c3: mov      rcx, rdi
+00000000009a41c6: call     qword ptr [rax + 0x860]
+00000000009a41cc: mov      rcx, rdi
+00000000009a41cf: call     0x9a3ab8
+00000000009a41d4: nop
+00000000009a41d5: movsxd   rax, dword ptr [r14 + rsi]
+00000000009a41d9: add      dword ptr [rbx + rax*4 + 0x47e2a40], -1
+00000000009a41e1: xor      eax, eax
+00000000009a41e3: jmp      0x9a475d
+00000000009a41e8: mov      sil, 1
+00000000009a41eb: mov      rbp, rax
+00000000009a41ee: mov      ebx, r12d
+00000000009a41f1: cmp      ecx, r12d
+00000000009a41f4: jle      0x9a437b
+00000000009a41fa: mov      dword ptr [rsp + 0x2e0], r12d
+00000000009a4202: mov      qword ptr [rsp + 0x30], r12
+00000000009a4207: lea      r9, [rsp + 0x30]
+00000000009a420c: lea      r8, [rsp + 0x2e0]
+00000000009a4214: lea      rdx, [rip + 0x185a55]
+00000000009a421b: mov      rcx, rbp
+00000000009a421e: call     0x705278
+00000000009a4223: mov      rbp, rax
+00000000009a4226: mov      eax, dword ptr [rsp + 0x2e0]
+00000000009a422d: cmp      eax, r12d
+00000000009a4230: jle      0x9a430e
+00000000009a4236: cmp      qword ptr [rsp + 0x30], r12
+00000000009a423b: jle      0x9a42c2
+00000000009a4241: cmp      eax, 0x13a
+00000000009a4246: jl       0x9a42b0
+00000000009a4248: cmp      eax, 0x13c
+00000000009a424d: jle      0x9a4256
+00000000009a424f: cmp      eax, 0x142
+00000000009a4254: jne      0x9a42b0
+00000000009a4256: mov      rax, qword ptr [rdi]
+00000000009a4259: mov      edx, 0x380
+00000000009a425e: mov      rcx, rdi
+00000000009a4261: call     qword ptr [rax + 0x860]
+00000000009a4267: mov      r11, qword ptr [rdi]
+00000000009a426a: mov      edx, 0x15b
+00000000009a426f: mov      rcx, rdi
+00000000009a4272: call     qword ptr [r11 + 0x860]
+00000000009a4279: mov      r11d, dword ptr [rsp + 0x2e0]
+00000000009a4281: mov      dword ptr [rsp + 0x28], r11d
+00000000009a4286: mov      dword ptr [rsp + 0x20], 0xd10
+00000000009a428e: lea      r9, [rip + 0x3f7e73]
+00000000009a4295: lea      r8, [rip + 0x3fba24] ; UTF16 '[%S][%d]SetPrivateStoreList request error. invalid nRecipeId[%d], '
+00000000009a429c: mov      edx, 2
+00000000009a42a1: lea      rcx, [rip + 0xd57d5f8]
+00000000009a42a8: call     0x734514
+00000000009a42ad: mov      sil, r12b
+00000000009a42b0: add      ebx, 1
+00000000009a42b3: cmp      ebx, dword ptr [rsp + 0x2e8]
+00000000009a42ba: jl       0x9a41fa
+00000000009a42c0: jmp      0x9a4307
+00000000009a42c2: mov      rax, qword ptr [rdi]
+00000000009a42c5: mov      edx, 0x354
+00000000009a42ca: mov      rcx, rdi
+00000000009a42cd: call     qword ptr [rax + 0x860]
+00000000009a42d3: mov      r11, qword ptr [rsp + 0x30]
+00000000009a42d8: mov      qword ptr [rsp + 0x28], r11
+00000000009a42dd: mov      dword ptr [rsp + 0x20], 0xd01
+00000000009a42e5: lea      r9, [rip + 0x3f7e1c]
+00000000009a42ec: lea      r8, [rip + 0x3fb93d] ; UTF16 '[%S][%d]SetPrivateStoreList request error. invalid nMakingFee[%I64d], '
+00000000009a42f3: mov      edx, 2
+00000000009a42f8: lea      rcx, [rip + 0xd57d5a1]
+00000000009a42ff: call     0x734514
+00000000009a4304: mov      sil, r12b
+00000000009a4307: cmp      sil, r12b
+00000000009a430a: jne      0x9a437b
+00000000009a430c: jmp      0x9a4353
+00000000009a430e: mov      rax, qword ptr [rdi]
+00000000009a4311: mov      edx, 0x354
+00000000009a4316: mov      rcx, rdi
+00000000009a4319: call     qword ptr [rax + 0x860]
+00000000009a431f: mov      r11d, dword ptr [rsp + 0x2e0]
+00000000009a4327: mov      dword ptr [rsp + 0x28], r11d
+00000000009a432c: mov      dword ptr [rsp + 0x20], 0xcf8
+00000000009a4334: lea      r9, [rip + 0x3f7dcd]
+00000000009a433b: lea      r8, [rip + 0x3fb97e] ; UTF16 '[%S][%d]SetPrivateStoreList request error. invalid nRecipeId[%d], '
+00000000009a4342: mov      edx, 2
+00000000009a4347: lea      rcx, [rip + 0xd57d552]
+00000000009a434e: call     0x734514
+00000000009a4353: mov      rcx, rdi
+00000000009a4356: call     0x9a3ab8
+00000000009a435b: nop
+00000000009a435c: mov      eax, 0x7d58
+00000000009a4361: movsxd   rax, dword ptr [r14 + rax]
+00000000009a4365: lea      rcx, [rip - 0x5a436c]
+00000000009a436c: add      dword ptr [rcx + rax*4 + 0x47e2a40], -1
+00000000009a4374: xor      eax, eax
+00000000009a4376: jmp      0x9a475d
+00000000009a437b: lea      rbx, [rdi + 0x3720]
+00000000009a4382: mov      qword ptr [rsp + 0x2e0], rbx
+00000000009a438a: mov      r8d, 0xd23
+00000000009a4390: lea      rdx, [rip + 0x3f8261] ; UTF16 '.\\user_item.cpp'
+00000000009a4397: mov      rcx, rbx
+00000000009a439a: call     0x8aacec
+00000000009a439f: nop
+00000000009a43a0: cmp      qword ptr [rdi + 0x3768], r12
+00000000009a43a7: je       0x9a443e
+00000000009a43ad: mov      rax, qword ptr [rdi + 0x3760]
+00000000009a43b4: mov      rcx, qword ptr [rax]
+00000000009a43b7: mov      qword ptr [rsp + 0x40], rcx
+00000000009a43bc: lea      rdx, [rdi + 0x3758]
+00000000009a43c3: mov      qword ptr [rsp + 0x38], rdx
+00000000009a43c8: lea      rax, [rdi + 0x3758]
+00000000009a43cf: mov      r8, qword ptr [rdi + 0x3760]
+00000000009a43d6: cmp      rdx, r12
+00000000009a43d9: je       0x9a4438
+00000000009a43db: cmp      rdx, rax
+00000000009a43de: jne      0x9a4438
+00000000009a43e0: cmp      rcx, r8
+00000000009a43e3: sete     al
+00000000009a43e6: cmp      al, r12b
+00000000009a43e9: sete     al
+00000000009a43ec: cmp      al, r12b
+00000000009a43ef: je       0x9a442a
+00000000009a43f1: cmp      rcx, qword ptr [rdx + 8]
+00000000009a43f5: je       0x9a4424
+00000000009a43f7: mov      rcx, qword ptr [rcx + 0x20]
+00000000009a43fb: call     0xab8610
+00000000009a4400: lea      rcx, [rsp + 0x38]
+00000000009a4405: call     0x9cb1d8
+00000000009a440a: lea      rax, [rdi + 0x3758]
+00000000009a4411: mov      r8, qword ptr [rdi + 0x3760]
+00000000009a4418: mov      rcx, qword ptr [rsp + 0x40]
+00000000009a441d: mov      rdx, qword ptr [rsp + 0x38]
+00000000009a4422: jmp      0x9a43d6
+00000000009a4424: call     0x79ed88
+00000000009a4429: int3
+00000000009a442a: lea      rcx, [rdi + 0x3758]
+00000000009a4431: call     0x521ae8
+00000000009a4436: jmp      0x9a443e
+00000000009a4438: call     0x57bb8c
+00000000009a443d: nop
+00000000009a443e: mov      rcx, rbx
+00000000009a4441: call     0x8aad88
+00000000009a4446: cmp      dword ptr [rsp + 0x2e8], 0
+00000000009a444e: jle      0x9a46c3
+00000000009a4454: mov      dword ptr [rsp + 0x2e0], 0
+00000000009a445f: mov      qword ptr [rsp + 0x30], 0
+00000000009a4468: lea      r9, [rsp + 0x30]
+00000000009a446d: lea      r8, [rsp + 0x2e0]
+00000000009a4475: lea      rdx, [rip + 0x1857f4]
+00000000009a447c: mov      rcx, r15
+00000000009a447f: call     0x705278
+00000000009a4484: mov      r15, rax
+00000000009a4487: mov      edx, dword ptr [rsp + 0x2e0]
+00000000009a448e: test     edx, edx
+00000000009a4490: jg       0x9a44ee
+00000000009a4492: mov      rax, qword ptr [rdi]
+00000000009a4495: mov      edx, 0x354
+00000000009a449a: mov      rcx, rdi
+00000000009a449d: call     qword ptr [rax + 0x860]
+00000000009a44a3: mov      r11, qword ptr [rdi]
+00000000009a44a6: mov      edx, 0x15b
+00000000009a44ab: mov      rcx, rdi
+00000000009a44ae: call     qword ptr [r11 + 0x860]
+00000000009a44b5: mov      r11d, dword ptr [rsp + 0x2e0]
+00000000009a44bd: mov      dword ptr [rsp + 0x28], r11d
+00000000009a44c2: mov      dword ptr [rsp + 0x20], 0xd3e
+00000000009a44ca: lea      r9, [rip + 0x3f7c37]
+00000000009a44d1: lea      r8, [rip + 0x3fb7e8] ; UTF16 '[%S][%d]SetPrivateStoreList request error. invalid nRecipeId[%d], '
+00000000009a44d8: mov      edx, 2
+00000000009a44dd: lea      rcx, [rip + 0xd57d3bc]
+00000000009a44e4: call     0x734514
+00000000009a44e9: jmp      0x9a466a
+00000000009a44ee: cmp      qword ptr [rsp + 0x30], 0
+00000000009a44f4: jg       0x9a453d
+00000000009a44f6: mov      rax, qword ptr [rdi]
+00000000009a44f9: mov      edx, 0x381
+00000000009a44fe: mov      rcx, rdi
+00000000009a4501: call     qword ptr [rax + 0x860]
+00000000009a4507: mov      r11, qword ptr [rsp + 0x30]
+00000000009a450c: mov      qword ptr [rsp + 0x28], r11
+00000000009a4511: mov      dword ptr [rsp + 0x20], 0xd46
+00000000009a4519: lea      r9, [rip + 0x3f7be8]
+00000000009a4520: lea      r8, [rip + 0x3fb709] ; UTF16 '[%S][%d]SetPrivateStoreList request error. invalid nMakingFee[%I64d], '
+00000000009a4527: mov      edx, 2
+00000000009a452c: lea      rcx, [rip + 0xd57d36d]
+00000000009a4533: call     0x734514
+00000000009a4538: jmp      0x9a466a
+00000000009a453d: cmp      edx, 0x13a
+00000000009a4543: jl       0x9a45b1
+00000000009a4545: cmp      edx, 0x13c
+00000000009a454b: jle      0x9a4555
+00000000009a454d: cmp      edx, 0x142
+00000000009a4553: jne      0x9a45b1
+00000000009a4555: mov      rax, qword ptr [rdi]
+00000000009a4558: mov      edx, 0x354
+00000000009a455d: mov      rcx, rdi
+00000000009a4560: call     qword ptr [rax + 0x860]
+00000000009a4566: mov      r11, qword ptr [rdi]
+00000000009a4569: mov      edx, 0x15b
+00000000009a456e: mov      rcx, rdi
+00000000009a4571: call     qword ptr [r11 + 0x860]
+00000000009a4578: mov      r11d, dword ptr [rsp + 0x2e0]
+00000000009a4580: mov      dword ptr [rsp + 0x28], r11d
+00000000009a4585: mov      dword ptr [rsp + 0x20], 0xd53
+00000000009a458d: lea      r9, [rip + 0x3f7b74]
+00000000009a4594: lea      r8, [rip + 0x3fb725] ; UTF16 '[%S][%d]SetPrivateStoreList request error. invalid nRecipeId[%d], '
+00000000009a459b: mov      edx, 2
+00000000009a45a0: lea      rcx, [rip + 0xd57d2f9]
+00000000009a45a7: call     0x734514
+00000000009a45ac: jmp      0x9a466a
+00000000009a45b1: lea      rcx, [rip + 0x12e76f40]
+00000000009a45b8: call     0x89d37c
+00000000009a45bd: mov      rbp, rax
+00000000009a45c0: test     rax, rax
+00000000009a45c3: je       0x9a467e
+00000000009a45c9: mov      eax, dword ptr [rax + 0x14]
+00000000009a45cc: mov      rcx, qword ptr [rdi + 0xa88]
+00000000009a45d3: cmp      eax, dword ptr [rcx + 0x1900]
+00000000009a45d9: jne      0x9a466a
+00000000009a45df: test     eax, eax
+00000000009a45e1: jne      0x9a45ee
+00000000009a45e3: mov      ecx, dword ptr [rdi + 0x24a8]
+00000000009a45e9: cmp      dword ptr [rbp + 4], ecx
+00000000009a45ec: jg       0x9a466a
+00000000009a45ee: cmp      eax, 1
+00000000009a45f1: jne      0x9a45fe
+00000000009a45f3: mov      eax, dword ptr [rdi + 0x24ac]
+00000000009a45f9: cmp      dword ptr [rbp + 4], eax
+00000000009a45fc: jg       0x9a466a
+00000000009a45fe: mov      ecx, 0x10
+00000000009a4603: call     0xab8ea0
+00000000009a4608: mov      rsi, rax
+00000000009a460b: test     rax, rax
+00000000009a460e: je       0x9a461e
+00000000009a4610: mov      rcx, qword ptr [rsp + 0x30]
+00000000009a4615: mov      qword ptr [rax + 8], rcx
+00000000009a4619: mov      qword ptr [rax], rbp
+00000000009a461c: jmp      0x9a4620
+00000000009a461e: xor      esi, esi
+00000000009a4620: mov      qword ptr [rsp + 0x38], rbx
+00000000009a4625: mov      r8d, 0xd6b
+00000000009a462b: lea      rdx, [rip + 0x3f7fc6] ; UTF16 '.\\user_item.cpp'
+00000000009a4632: mov      rcx, rbx
+00000000009a4635: call     0x8aacec
+00000000009a463a: nop
+00000000009a463b: mov      eax, dword ptr [rsp + 0x2e0]
+00000000009a4642: mov      dword ptr [rsp + 0x48], eax
+00000000009a4646: mov      qword ptr [rsp + 0x50], rsi
+00000000009a464b: lea      rcx, [rdi + 0x3758]
+00000000009a4652: lea      r8, [rsp + 0x48]
+00000000009a4657: lea      rdx, [rsp + 0x60]
+00000000009a465c: call     0x5821f4
+00000000009a4661: nop
+00000000009a4662: mov      rcx, rbx
+00000000009a4665: call     0x8aad88
+00000000009a466a: add      r12d, 1
+00000000009a466e: cmp      r12d, dword ptr [rsp + 0x2e8]
+00000000009a4676: jl       0x9a4454
+00000000009a467c: jmp      0x9a46c3
+00000000009a467e: mov      rax, qword ptr [rdi]
+00000000009a4681: mov      rcx, rdi
+00000000009a4684: call     qword ptr [rax + 0x490]
+00000000009a468a: mov      r8d, eax
+00000000009a468d: mov      r9d, dword ptr [rsp + 0x2e0]
+00000000009a4695: lea      rdx, [rip + 0x3fb074] ; UTF16 '[%d], [%d]can not find recipe..'
+00000000009a469c: lea      rcx, [rsp + 0x80]
+00000000009a46a4: call     qword ptr [rip + 0x177f7e] ; IAT wsprintfW
+00000000009a46aa: lea      r8, [rsp + 0x80]
+00000000009a46b2: mov      edx, 2
+00000000009a46b7: lea      rcx, [rip + 0xd57d1e2]
+00000000009a46be: call     0x734514
+00000000009a46c3: mov      rax, qword ptr [rdi]
+00000000009a46c6: mov      rcx, rdi
+00000000009a46c9: call     qword ptr [rax + 0xac8]
+00000000009a46cf: lea      rcx, [rip + 0x3e600a]
+00000000009a46d6: mov      qword ptr [rsp + 0x48], rcx
+00000000009a46db: mov      dword ptr [rsp + 0x50], 5
+00000000009a46e3: lea      rcx, [rax + 0x10d8]
+00000000009a46ea: lea      rdx, [rip + 0x3e841f] ; UTF16 'PrivateStore'
+00000000009a46f1: mov      qword ptr [rsp + 0x20], rdx
+00000000009a46f6: lea      r9, [rsp + 0x48]
+00000000009a46fb: lea      r8, [rip - 0x3f7386]
+00000000009a4702: mov      rdx, rax
+00000000009a4705: call     0x466d44
+00000000009a470a: nop
+00000000009a470b: mov      eax, 0x7d58
+00000000009a4710: movsxd   rax, dword ptr [r14 + rax]
+00000000009a4714: lea      rcx, [rip - 0x5a471b]
+00000000009a471b: add      dword ptr [rcx + rax*4 + 0x47e2a40], -1
+00000000009a4723: xor      eax, eax
+00000000009a4725: jmp      0x9a475d
+00000000009a4727: mov      rax, qword ptr [rdi]
+00000000009a472a: mov      rcx, rdi
+00000000009a472d: call     qword ptr [rax + 0xb28]
+00000000009a4733: mov      rcx, rax
+00000000009a4736: mov      edx, 0x37e
+00000000009a473b: mov      r8d, 0x14
+00000000009a4741: call     0x9f884c
+00000000009a4746: mov      rcx, rdi
+00000000009a4749: call     0x9a3ab8
+00000000009a474e: nop
+00000000009a474f: movsxd   rax, dword ptr [r14 + rsi]
+00000000009a4753: add      dword ptr [rbx + rax*4 + 0x47e2a40], -1
+00000000009a475b: xor      eax, eax
+00000000009a475d: add      rsp, 0x290
+00000000009a4764: pop      r15
+00000000009a4766: pop      r14
+00000000009a4768: pop      r12
+00000000009a476a: pop      rdi
+00000000009a476b: pop      rsi
+00000000009a476c: pop      rbp
+00000000009a476d: pop      rbx
+00000000009a476e: ret

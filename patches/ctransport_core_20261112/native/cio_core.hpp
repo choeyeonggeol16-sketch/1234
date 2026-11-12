@@ -103,8 +103,8 @@ public:
  class OwnerScope{Binding saved_;public:OwnerScope(CIOBufferPool& p,unsigned o)noexcept:saved_(binding_){binding_={p.generation_,o%NativeOwners};}~OwnerScope(){binding_=saved_;}};
  explicit CIOBufferPool(std::size_t limit):limit_(limit),generation_(nextGeneration_.fetch_add(1)){}
  bool initializeOwner(unsigned id,std::size_t small,std::size_t large)noexcept{
-  if(id>=NativeOwners)return false;
-  for(unsigned family=0;family<2;++family){auto& ring=rings_[id*2+family];SpinGuard lock(ring.gate);
+  if(id>=NativeOwners||(!small&&!large))return false;
+  for(unsigned family=0;family<2;++family){if(!(family?large:small))continue;auto& ring=rings_[id*2+family];SpinGuard lock(ring.gate);
    if(!initializeRing(ring,id,family,family?large:small))return false;}
   return true;
  }

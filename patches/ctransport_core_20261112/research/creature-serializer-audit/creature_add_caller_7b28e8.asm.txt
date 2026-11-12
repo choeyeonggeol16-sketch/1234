@@ -1,0 +1,108 @@
+# creature_add_caller_7b28e8; PE pdata/unwind; entry 0x7b28e8
+# chunk 0x7b28e8..0x7b2ae5
+00000000007b28e8: push     rbx
+00000000007b28ea: push     rbp
+00000000007b28eb: push     rsi
+00000000007b28ec: push     rdi
+00000000007b28ed: mov      r11, rsp
+00000000007b28f0: sub      rsp, 0x68
+00000000007b28f4: mov      qword ptr [rsp + 0x38], 0xfffffffffffffffe
+00000000007b28fd: mov      r10, rdx
+00000000007b2900: mov      ecx, dword ptr [rip + 0x2ee0c8d2]
+00000000007b2906: mov      rax, qword ptr gs:[0x58]
+00000000007b290f: mov      ebp, 0x7d58
+00000000007b2914: mov      rdi, qword ptr [rax + rcx*8]
+00000000007b2918: movsxd   r8, dword ptr [rdi + rbp]
+00000000007b291c: lea      rsi, [rip - 0x3b2923]
+00000000007b2923: movsxd   rcx, dword ptr [rsi + r8*4 + 0x47e2a40]
+00000000007b292b: lea      eax, [rcx + 1]
+00000000007b292e: mov      dword ptr [rsi + r8*4 + 0x47e2a40], eax
+00000000007b2936: imul     r8, r8, 0x3e8
+00000000007b293d: add      r8, rcx
+00000000007b2940: lea      rax, [rip + 0x509039] ; UTF16 'bool __cdecl NpcChangeStopType(class NpcSocket *,const unsigned char *)'
+00000000007b2947: mov      qword ptr [rsi + r8*8 + 0x47bf7c0], rax
+00000000007b294f: mov      dword ptr [r11 + 0x38], 0
+00000000007b2957: mov      dword ptr [r11 + 0x40], 0
+00000000007b295f: lea      rax, [r11 + 0x40]
+00000000007b2963: mov      qword ptr [r11 - 0x48], rax
+00000000007b2967: lea      r9, [r11 - 0x38]
+00000000007b296b: lea      r8, [r11 + 0x38]
+00000000007b296f: lea      rdx, [rip + 0x3885be]
+00000000007b2976: mov      rcx, r10
+00000000007b2979: call     0x705278
+00000000007b297e: mov      edx, dword ptr [rsp + 0xa0]
+00000000007b2985: lea      rcx, [rip + 0xb6e5f4]
+00000000007b298c: call     0x41be00
+00000000007b2991: mov      r11, rax
+00000000007b2994: test     rax, rax
+00000000007b2997: jne      0x7b29de
+00000000007b2999: mov      eax, dword ptr [rsp + 0xa0]
+00000000007b29a0: mov      dword ptr [rsp + 0x28], eax
+00000000007b29a4: mov      dword ptr [rsp + 0x20], 0xf91
+00000000007b29ac: lea      r9, [rip + 0x5059cd] ; UTF16 '.\\NpcSocket.cpp'
+00000000007b29b3: lea      r8, [rip + 0x508f86] ; UTF16 '[%s][%d] invalid sid[%x]'
+00000000007b29ba: lea      edx, [r11 + 2]
+00000000007b29be: lea      rcx, [rip + 0xd76eedb]
+00000000007b29c5: call     0x734514
+00000000007b29ca: nop
+00000000007b29cb: movsxd   rax, dword ptr [rdi + rbp]
+00000000007b29cf: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000007b29d7: xor      al, al
+00000000007b29d9: jmp      0x7b2adc
+00000000007b29de: mov      edx, dword ptr [rsp + 0x30]
+00000000007b29e2: test     edx, edx
+00000000007b29e4: je       0x7b2a7a
+00000000007b29ea: cmp      edx, 1
+00000000007b29ed: je       0x7b2a2e
+00000000007b29ef: mov      dword ptr [rsp + 0x28], edx
+00000000007b29f3: mov      dword ptr [rsp + 0x20], 0xf9e
+00000000007b29fb: lea      r9, [rip + 0x50597e] ; UTF16 '.\\NpcSocket.cpp'
+00000000007b2a02: lea      r8, [rip + 0x508ef7] ; UTF16 '[%s][%d] invalid stoptype[%d]'
+00000000007b2a09: mov      edx, 2
+00000000007b2a0e: lea      rcx, [rip + 0xd76ee8b]
+00000000007b2a15: call     0x734514
+00000000007b2a1a: nop
+00000000007b2a1b: movsxd   rax, dword ptr [rdi + rbp]
+00000000007b2a1f: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000007b2a27: xor      al, al
+00000000007b2a29: jmp      0x7b2adc
+00000000007b2a2e: mov      ebx, dword ptr [rsp + 0xa8]
+00000000007b2a35: mov      rax, qword ptr [rax]
+00000000007b2a38: mov      rcx, r11
+00000000007b2a3b: call     qword ptr [rax + 0xac8]
+00000000007b2a41: lea      rcx, [rip + 0x3a5078]
+00000000007b2a48: mov      qword ptr [rsp + 0x40], rcx
+00000000007b2a4d: mov      dword ptr [rsp + 0x48], ebx
+00000000007b2a51: lea      rcx, [rax + 0x10d8]
+00000000007b2a58: lea      rdx, [rip + 0x3a62b1] ; UTF16 'Stand'
+00000000007b2a5f: mov      qword ptr [rsp + 0x20], rdx
+00000000007b2a64: lea      r9, [rsp + 0x40]
+00000000007b2a69: lea      r8, [rip - 0x206024]
+00000000007b2a70: mov      rdx, rax
+00000000007b2a73: call     0x466d44
+00000000007b2a78: jmp      0x7b2ace
+00000000007b2a7a: mov      ebx, dword ptr [rsp + 0xa8]
+00000000007b2a81: mov      rax, qword ptr [rax]
+00000000007b2a84: mov      rcx, r11
+00000000007b2a87: call     qword ptr [rax + 0xac8]
+00000000007b2a8d: lea      rcx, [rip + 0x5056e4]
+00000000007b2a94: mov      qword ptr [rsp + 0x40], rcx
+00000000007b2a99: mov      dword ptr [rsp + 0x48], ebx
+00000000007b2a9d: mov      qword ptr [rsp + 0x50], 0
+00000000007b2aa6: lea      rcx, [rax + 0x10d8]
+00000000007b2aad: lea      rdx, [rip + 0x50815c]
+00000000007b2ab4: mov      qword ptr [rsp + 0x20], rdx
+00000000007b2ab9: lea      r9, [rsp + 0x40]
+00000000007b2abe: lea      r8, [rip - 0x205f01]
+00000000007b2ac5: mov      rdx, rax
+00000000007b2ac8: call     0x466d44
+00000000007b2acd: nop
+00000000007b2ace: movsxd   rax, dword ptr [rdi + rbp]
+00000000007b2ad2: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000007b2ada: xor      al, al
+00000000007b2adc: add      rsp, 0x68
+00000000007b2ae0: pop      rdi
+00000000007b2ae1: pop      rsi
+00000000007b2ae2: pop      rbp
+00000000007b2ae3: pop      rbx
+00000000007b2ae4: ret

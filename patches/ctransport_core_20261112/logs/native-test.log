@@ -1,3 +1,4 @@
+PASS remaining network: original Playing(socket number)/EnterChar(account ID); authentication/enter/restart/logout/close;16-way duplicate entry;held plaintext/stale close;MAC-required auth/cap/reuse;actual CPerfMon owner15/restart/concurrent read-stop;128 account reconnects
 PASS original structure: serializer 8000 concurrent+reentry+504 capacity; RegisterWait64; 48 event accepts; owner17; raw/secondary/generation maps; native IP/MAC rejection and release; ReportSocket
 PASS L1 CUserSocketParser: bytewise/coalesced/65535-byte framing, empty envelope, invalid lengths, header/body deadlines with backpressure, concurrent close, production connection integration
 PASS native manager: generation/retired lookup/exact erase/restart/3200 concurrent registrations; stale handles cannot affect replacements

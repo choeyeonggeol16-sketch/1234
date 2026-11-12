@@ -1,0 +1,59 @@
+# creature_add_caller_5728c0; PE pdata/unwind; entry 0x5728c0
+# chunk 0x5728c0..0x5729cf
+00000000005728c0: push     rbx
+00000000005728c2: push     rbp
+00000000005728c3: push     rsi
+00000000005728c4: push     rdi
+00000000005728c5: push     r12
+00000000005728c7: sub      rsp, 0xa0
+00000000005728ce: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000005728d7: mov      r11d, r8d
+00000000005728da: mov      rdi, rdx
+00000000005728dd: mov      r10d, dword ptr [rip + 0x2f04c8f4]
+00000000005728e4: mov      rax, qword ptr gs:[0x58]
+00000000005728ed: mov      ebp, 0x7d58
+00000000005728f2: mov      rsi, qword ptr [rax + r10*8]
+00000000005728f6: movsxd   r10, dword ptr [rsi + rbp]
+00000000005728fa: lea      r12, [rip - 0x172901]
+0000000000572901: movsxd   r8, dword ptr [r12 + r10*4 + 0x47e2a40]
+0000000000572909: lea      eax, [r8 + 1]
+000000000057290d: mov      dword ptr [r12 + r10*4 + 0x47e2a40], eax
+0000000000572915: imul     r10, r10, 0x3e8
+000000000057291c: add      r10, r8
+000000000057291f: lea      rax, [rip + 0x65de9a] ; UTF16 'void __cdecl CCreature::MoveToLocationRelative(class CAbstractCarrier *,int,int,int)'
+0000000000572926: mov      qword ptr [r12 + r10*8 + 0x47bf7c0], rax
+000000000057292e: cvtsi2sd xmm0, r11d
+0000000000572933: movsd    qword ptr [rsp + 0x38], xmm0
+0000000000572939: cvtsi2sd xmm1, r9d
+000000000057293e: movsd    qword ptr [rsp + 0x40], xmm1
+0000000000572944: cvtsi2sd xmm0, dword ptr [rsp + 0xf0]
+000000000057294d: movsd    qword ptr [rsp + 0x48], xmm0
+0000000000572953: mov      rax, qword ptr [rcx]
+0000000000572956: call     qword ptr [rax + 0xac8]
+000000000057295c: mov      rbx, rax
+000000000057295f: lea      rdx, [rsp + 0x38]
+0000000000572964: lea      rcx, [rsp + 0x50]
+0000000000572969: call     0x462140
+000000000057296e: lea      rcx, [rip + 0x65b58b]
+0000000000572975: mov      qword ptr [rsp + 0x68], rcx
+000000000057297a: mov      qword ptr [rsp + 0x70], rdi
+000000000057297f: mov      rdx, rax
+0000000000572982: lea      rcx, [rsp + 0x78]
+0000000000572987: call     0x462140
+000000000057298c: lea      rcx, [rbx + 0x10d8]
+0000000000572993: lea      rax, [rip + 0x65dbe6] ; UTF16 'MoveRelatively'
+000000000057299a: mov      qword ptr [rsp + 0x20], rax
+000000000057299f: lea      r9, [rsp + 0x68]
+00000000005729a4: lea      r8, [rip + 0x3a761]
+00000000005729ab: mov      rdx, rbx
+00000000005729ae: call     0x466d44
+00000000005729b3: nop
+00000000005729b4: movsxd   rax, dword ptr [rsi + rbp]
+00000000005729b8: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+00000000005729c1: add      rsp, 0xa0
+00000000005729c8: pop      r12
+00000000005729ca: pop      rdi
+00000000005729cb: pop      rsi
+00000000005729cc: pop      rbp
+00000000005729cd: pop      rbx
+00000000005729ce: ret

@@ -1,0 +1,75 @@
+# thread15_other_b; PE pdata/unwind; entry 0x82b0dc
+# chunk 0x82b0dc..0x82b1e7
+000000000082b0dc: push     rbx
+000000000082b0de: push     rbp
+000000000082b0df: push     rsi
+000000000082b0e0: push     rdi
+000000000082b0e1: push     r12
+000000000082b0e3: push     r13
+000000000082b0e5: sub      rsp, 0x48
+000000000082b0e9: mov      rbx, rcx
+000000000082b0ec: mov      rcx, qword ptr [rcx + 0x10]
+000000000082b0f0: call     0xaad32e
+000000000082b0f5: test     eax, eax
+000000000082b0f7: je       0x82b11b
+000000000082b0f9: lea      r8, [rip + 0x4c04d0] ; UTF16 'PdhCollectQueryData failed %08x'
+000000000082b100: lea      rcx, [rip + 0xd6f6799]
+000000000082b107: mov      r9d, eax
+000000000082b10a: mov      edx, 2
+000000000082b10f: call     0x734514
+000000000082b114: xor      al, al
+000000000082b116: jmp      0x82b1da
+000000000082b11b: xor      edi, edi
+000000000082b11d: cmp      dword ptr [rbx + 0x34], edi
+000000000082b120: jle      0x82b1d8
+000000000082b126: xor      esi, esi
+000000000082b128: xor      ebp, ebp
+000000000082b12a: mov      rcx, qword ptr [rbx + 8]
+000000000082b12e: lea      r9, [rbx + 0x18]
+000000000082b132: xor      r8d, r8d
+000000000082b135: mov      rcx, qword ptr [rcx + rbp]
+000000000082b139: mov      edx, 0x8200
+000000000082b13e: call     0xaad328
+000000000082b143: test     eax, eax
+000000000082b145: mov      r12d, eax
+000000000082b148: je       0x82b1b2
+000000000082b14a: call     qword ptr [rip + 0x2f0fd0] ; IAT GetTickCount
+000000000082b150: sub      eax, dword ptr [rbx + 0x58]
+000000000082b153: cmp      eax, 0xea60
+000000000082b158: jbe      0x82b1c1
+000000000082b15a: mov      rcx, qword ptr [rbx]
+000000000082b15d: test     rcx, rcx
+000000000082b160: je       0x82b1a7
+000000000082b162: movsxd   rdx, edi
+000000000082b165: lea      r8, [rip + 0x4c03b4] ; UTF16 'PdhGetFormattedCounterValue failed %08x ObjectName[%s] InstanceName[%s] CounterName[%s]'
+000000000082b16c: mov      r9d, r12d
+000000000082b16f: imul     rdx, rdx, 0x608
+000000000082b176: add      rdx, rcx
+000000000082b179: lea      rcx, [rdx + 0x1fe]
+000000000082b180: lea      rax, [rdx + 0x3fc]
+000000000082b187: mov      qword ptr [rsp + 0x30], rax
+000000000082b18c: mov      qword ptr [rsp + 0x28], rcx
+000000000082b191: mov      qword ptr [rsp + 0x20], rdx
+000000000082b196: lea      rcx, [rip + 0xd6f6703]
+000000000082b19d: mov      edx, 2
+000000000082b1a2: call     0x734514
+000000000082b1a7: call     qword ptr [rip + 0x2f0f73] ; IAT GetTickCount
+000000000082b1ad: mov      dword ptr [rbx + 0x58], eax
+000000000082b1b0: jmp      0x82b1c1
+000000000082b1b2: mov      rdx, qword ptr [rbx]
+000000000082b1b5: mov      rcx, qword ptr [rbx + 0x20]
+000000000082b1b9: mov      qword ptr [rsi + rdx + 0x600], rcx
+000000000082b1c1: add      edi, 1
+000000000082b1c4: add      rbp, 8
+000000000082b1c8: add      rsi, 0x608
+000000000082b1cf: cmp      edi, dword ptr [rbx + 0x34]
+000000000082b1d2: jl       0x82b12a
+000000000082b1d8: mov      al, 1
+000000000082b1da: add      rsp, 0x48
+000000000082b1de: pop      r13
+000000000082b1e0: pop      r12
+000000000082b1e2: pop      rdi
+000000000082b1e3: pop      rsi
+000000000082b1e4: pop      rbp
+000000000082b1e5: pop      rbx
+000000000082b1e6: ret

@@ -1,0 +1,34 @@
+# caller_thread15_condition_7253e0; PE pdata/unwind; entry 0x7253e0
+# chunk 0x7253e0..0x725464
+00000000007253e0: sub      rsp, 0x38
+00000000007253e4: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000007253ed: mov      ecx, 0xc
+00000000007253f2: call     0x9250f8
+00000000007253f7: mov      ecx, 0x28
+00000000007253fc: call     0xab8ea0
+0000000000725401: mov      qword ptr [rsp + 0x48], rax
+0000000000725406: test     rax, rax
+0000000000725409: je       0x72541d
+000000000072540b: mov      edx, 0x64
+0000000000725410: mov      rcx, rax
+0000000000725413: call     0x6b4fb8
+0000000000725418: mov      r11, rax
+000000000072541b: jmp      0x725420
+000000000072541d: xor      r11d, r11d
+0000000000725420: mov      ecx, dword ptr [rip + 0x2ee99db2]
+0000000000725426: mov      rax, qword ptr gs:[0x58]
+000000000072542f: mov      edx, 0x7d58
+0000000000725434: mov      rax, qword ptr [rax + rcx*8]
+0000000000725438: movsxd   rcx, dword ptr [rax + rdx]
+000000000072543c: lea      rax, [rip + 0x452bb3d]
+0000000000725443: mov      qword ptr [rax + rcx*8], r11
+0000000000725447: call     0x53a8fc
+000000000072544c: test     al, al
+000000000072544e: je       0x725459
+0000000000725450: call     0x722a48
+0000000000725455: xor      eax, eax
+0000000000725457: jmp      0x72545f
+0000000000725459: call     0x7228a0
+000000000072545e: int3
+000000000072545f: add      rsp, 0x38
+0000000000725463: ret

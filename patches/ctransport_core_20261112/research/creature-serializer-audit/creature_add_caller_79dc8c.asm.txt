@@ -1,0 +1,44 @@
+# creature_add_caller_79dc8c; PE pdata/unwind; entry 0x79dc8c
+# chunk 0x79dc8c..0x79dd4a
+000000000079dc8c: push     rbx
+000000000079dc8e: push     rbp
+000000000079dc8f: push     rsi
+000000000079dc90: push     rdi
+000000000079dc91: sub      rsp, 0x48
+000000000079dc95: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+000000000079dc9e: mov      rdi, rcx
+000000000079dca1: mov      edx, dword ptr [rip + 0x2ee21531]
+000000000079dca7: mov      rax, qword ptr gs:[0x58]
+000000000079dcb0: mov      esi, 0x7d58
+000000000079dcb5: mov      rbx, qword ptr [rax + rdx*8]
+000000000079dcb9: movsxd   r8, dword ptr [rbx + rsi]
+000000000079dcbd: lea      rbp, [rip - 0x39dcc4]
+000000000079dcc4: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+000000000079dccc: lea      eax, [rdx + 1]
+000000000079dccf: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+000000000079dcd7: imul     r8, r8, 0x3e8
+000000000079dcde: add      r8, rdx
+000000000079dce1: lea      rax, [rip + 0x515ff8] ; UTF16 'void __cdecl CNPC::OnTeleport(void)'
+000000000079dce8: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+000000000079dcf0: mov      rax, qword ptr [rcx]
+000000000079dcf3: call     qword ptr [rax + 0xac8]
+000000000079dcf9: lea      rcx, [rip + 0x430168]
+000000000079dd00: mov      qword ptr [rsp + 0x70], rcx
+000000000079dd05: lea      rcx, [rax + 0x10d8]
+000000000079dd0c: lea      rdx, [rip + 0x395db5] ; UTF16 'DoNothing'
+000000000079dd13: mov      qword ptr [rsp + 0x20], rdx
+000000000079dd18: lea      r9, [rsp + 0x70]
+000000000079dd1d: lea      r8, [rip - 0x1f1410]
+000000000079dd24: mov      rdx, rax
+000000000079dd27: call     0x466d44
+000000000079dd2c: mov      rcx, rdi
+000000000079dd2f: call     0x59ce14
+000000000079dd34: nop
+000000000079dd35: movsxd   rax, dword ptr [rbx + rsi]
+000000000079dd39: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+000000000079dd41: add      rsp, 0x48
+000000000079dd45: pop      rdi
+000000000079dd46: pop      rsi
+000000000079dd47: pop      rbp
+000000000079dd48: pop      rbx
+000000000079dd49: ret

@@ -1,0 +1,124 @@
+# creature_add_caller_4da27c; PE pdata/unwind; entry 0x4da27c
+# chunk 0x4da27c..0x4da4ad
+00000000004da27c: push     rbx
+00000000004da27e: push     rbp
+00000000004da27f: push     rsi
+00000000004da280: push     rdi
+00000000004da281: push     r12
+00000000004da283: push     r13
+00000000004da285: push     r14
+00000000004da287: push     r15
+00000000004da289: sub      rsp, 0xc8
+00000000004da290: mov      qword ptr [rsp + 0x60], 0xfffffffffffffffe
+00000000004da299: mov      r13, rdx
+00000000004da29c: mov      ecx, dword ptr [rip + 0x2f0e4f36]
+00000000004da2a2: mov      rax, qword ptr gs:[0x58]
+00000000004da2ab: mov      edx, 0x7d58
+00000000004da2b0: mov      r14, qword ptr [rax + rcx*8]
+00000000004da2b4: movsxd   r8, dword ptr [r14 + rdx]
+00000000004da2b8: lea      r15, [rip - 0xda2bf]
+00000000004da2bf: movsxd   rcx, dword ptr [r15 + r8*4 + 0x47e2a40]
+00000000004da2c7: lea      eax, [rcx + 1]
+00000000004da2ca: mov      dword ptr [r15 + r8*4 + 0x47e2a40], eax
+00000000004da2d2: imul     r8, r8, 0x3e8
+00000000004da2d9: add      r8, rcx
+00000000004da2dc: lea      rax, [rip + 0x6ba8ed] ; UTF16 'bool __cdecl BuilderCmd_escape(class CUserSocket *,class User *,wchar_t *)'
+00000000004da2e3: mov      qword ptr [r15 + r8*8 + 0x47bf7c0], rax
+00000000004da2eb: lea      rcx, [rip + 0x132a41fe]
+00000000004da2f2: call     0x83bbd4
+00000000004da2f7: xor      ebx, ebx
+00000000004da2f9: cmp      al, bl
+00000000004da2fb: jne      0x4da35c
+00000000004da2fd: mov      rax, qword ptr [r13]
+00000000004da301: mov      rcx, r13
+00000000004da304: call     qword ptr [rax + 0xac8]
+00000000004da30a: lea      rcx, [rip + 0x691247]
+00000000004da311: mov      qword ptr [rsp + 0x68], rcx
+00000000004da316: mov      dword ptr [rsp + 0x70], 0x833
+00000000004da31e: mov      dword ptr [rsp + 0x74], 1
+00000000004da326: mov      byte ptr [rsp + 0x78], bl
+00000000004da32a: mov      byte ptr [rsp + 0x79], 1
+00000000004da32f: mov      dword ptr [rsp + 0x7c], ebx
+00000000004da333: lea      rcx, [rax + 0x10d8]
+00000000004da33a: lea      rdx, [rip + 0x6b949f] ; UTF16 'Skill'
+00000000004da341: mov      qword ptr [rsp + 0x20], rdx
+00000000004da346: lea      r9, [rsp + 0x68]
+00000000004da34b: lea      r8, [rip + 0x2bae3e]
+00000000004da352: mov      rdx, rax
+00000000004da355: call     0x466d44
+00000000004da35a: jmp      0x4da3b9
+00000000004da35c: mov      rax, qword ptr [r13]
+00000000004da360: mov      rcx, r13
+00000000004da363: call     qword ptr [rax + 0xac8]
+00000000004da369: lea      rcx, [rip + 0x6911e8]
+00000000004da370: mov      qword ptr [rsp + 0x68], rcx
+00000000004da375: mov      dword ptr [rsp + 0x70], 0x834
+00000000004da37d: mov      dword ptr [rsp + 0x74], 1
+00000000004da385: mov      byte ptr [rsp + 0x78], bl
+00000000004da389: mov      byte ptr [rsp + 0x79], 1
+00000000004da38e: mov      dword ptr [rsp + 0x7c], ebx
+00000000004da392: lea      rcx, [rax + 0x10d8]
+00000000004da399: lea      rdx, [rip + 0x6b9440] ; UTF16 'Skill'
+00000000004da3a0: mov      qword ptr [rsp + 0x20], rdx
+00000000004da3a5: lea      r9, [rsp + 0x68]
+00000000004da3aa: lea      r8, [rip + 0x2baddf]
+00000000004da3b1: mov      rdx, rax
+00000000004da3b4: call     0x466d44
+00000000004da3b9: mov      rax, qword ptr [r13]
+00000000004da3bd: lea      rdx, [rsp + 0x68]
+00000000004da3c2: mov      rcx, r13
+00000000004da3c5: call     qword ptr [rax + 0xf0]
+00000000004da3cb: cvttsd2si r12d, qword ptr [rax + 0x10]
+00000000004da3d1: mov      rax, qword ptr [r13]
+00000000004da3d5: lea      rdx, [rsp + 0x80]
+00000000004da3dd: mov      rcx, r13
+00000000004da3e0: call     qword ptr [rax + 0xf0]
+00000000004da3e6: cvttsd2si ebp, qword ptr [rax + 8]
+00000000004da3eb: mov      rax, qword ptr [r13]
+00000000004da3ef: lea      rdx, [rsp + 0x98]
+00000000004da3f7: mov      rcx, r13
+00000000004da3fa: call     qword ptr [rax + 0xf0]
+00000000004da400: cvttsd2si edi, qword ptr [rax]
+00000000004da404: mov      rax, qword ptr [r13]
+00000000004da408: mov      rcx, r13
+00000000004da40b: call     qword ptr [rax + 0x488]
+00000000004da411: mov      rsi, rax
+00000000004da414: mov      rdx, qword ptr [r13]
+00000000004da418: mov      rcx, r13
+00000000004da41b: call     qword ptr [rdx + 0xb58]
+00000000004da421: mov      ebx, eax
+00000000004da423: mov      rdx, qword ptr [r13]
+00000000004da427: mov      rcx, r13
+00000000004da42a: call     qword ptr [rdx + 0x490]
+00000000004da430: lea      rcx, [r13 + 0x3858]
+00000000004da437: movsxd   rdx, r12d
+00000000004da43a: movsxd   r8, ebp
+00000000004da43d: movsxd   r9, edi
+00000000004da440: mov      r11d, eax
+00000000004da443: mov      qword ptr [rsp + 0x50], rcx
+00000000004da448: mov      qword ptr [rsp + 0x48], rsi
+00000000004da44d: mov      qword ptr [rsp + 0x40], rdx
+00000000004da452: mov      qword ptr [rsp + 0x38], r8
+00000000004da457: mov      qword ptr [rsp + 0x30], r9
+00000000004da45c: mov      qword ptr [rsp + 0x28], rbx
+00000000004da461: mov      qword ptr [rsp + 0x20], r11
+00000000004da466: mov      r9d, 0x21d
+00000000004da46c: lea      r8, [rip + 0x6a199d] ; UTF16 '%I64d,%I64d,%I64d,,,%I64d,%I64d,%I64d,,,,,,,,,,,,,,%s,%s,,,'
+00000000004da473: mov      edx, 6
+00000000004da478: lea      rcx, [rip + 0xda47421]
+00000000004da47f: call     0x734514
+00000000004da484: nop
+00000000004da485: mov      eax, 0x7d58
+00000000004da48a: movsxd   rax, dword ptr [r14 + rax]
+00000000004da48e: add      dword ptr [r15 + rax*4 + 0x47e2a40], -1
+00000000004da497: xor      al, al
+00000000004da499: add      rsp, 0xc8
+00000000004da4a0: pop      r15
+00000000004da4a2: pop      r14
+00000000004da4a4: pop      r13
+00000000004da4a6: pop      r12
+00000000004da4a8: pop      rdi
+00000000004da4a9: pop      rsi
+00000000004da4aa: pop      rbp
+00000000004da4ab: pop      rbx
+00000000004da4ac: ret

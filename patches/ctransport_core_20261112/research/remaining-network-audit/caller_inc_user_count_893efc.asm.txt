@@ -1,0 +1,113 @@
+# caller_inc_user_count_893efc; PE pdata/unwind; entry 0x893efc
+# chunk 0x893efc..0x894103
+0000000000893efc: push     rbx
+0000000000893efe: push     rbp
+0000000000893eff: push     rsi
+0000000000893f00: push     rdi
+0000000000893f01: push     r12
+0000000000893f03: push     r13
+0000000000893f05: push     r14
+0000000000893f07: sub      rsp, 0x60
+0000000000893f0b: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000893f14: mov      rsi, rdx
+0000000000893f17: mov      rbp, rcx
+0000000000893f1a: mov      r8d, dword ptr [rip + 0x2ed2b2b7]
+0000000000893f21: mov      rax, qword ptr gs:[0x58]
+0000000000893f2a: mov      r14d, 0x7d58
+0000000000893f30: mov      r12, qword ptr [rax + r8*8]
+0000000000893f34: movsxd   r9, dword ptr [r12 + r14]
+0000000000893f38: lea      r13, [rip - 0x493f3f]
+0000000000893f3f: movsxd   r8, dword ptr [r13 + r9*4 + 0x47e2a40]
+0000000000893f47: lea      eax, [r8 + 1]
+0000000000893f4b: mov      dword ptr [r13 + r9*4 + 0x47e2a40], eax
+0000000000893f53: imul     r9, r9, 0x3e8
+0000000000893f5a: add      r9, r8
+0000000000893f5d: lea      rax, [rip + 0x488bec] ; UTF16 'void __cdecl CRaidServerManager::ConfirmRaidUser(class User &)'
+0000000000893f64: mov      qword ptr [r13 + r9*8 + 0x47bf7c0], rax
+0000000000893f6c: mov      rax, qword ptr [rdx + 0xa88]
+0000000000893f73: mov      edx, dword ptr [rax + 0x2168]
+0000000000893f79: call     0x8911bc
+0000000000893f7e: mov      rdi, rax
+0000000000893f81: test     rax, rax
+0000000000893f84: je       0x893fc5
+0000000000893f86: mov      rbx, qword ptr [rax]
+0000000000893f89: mov      rdx, qword ptr [rsi]
+0000000000893f8c: mov      rcx, rsi
+0000000000893f8f: call     qword ptr [rdx + 0x490]
+0000000000893f95: mov      r9d, eax
+0000000000893f98: mov      r8d, 2
+0000000000893f9e: lea      rdx, [rip + 0x295813]
+0000000000893fa5: mov      rcx, rdi
+0000000000893fa8: call     qword ptr [rbx + 0x80]
+0000000000893fae: mov      r11, qword ptr [rsi]
+0000000000893fb1: mov      rcx, rsi
+0000000000893fb4: call     qword ptr [r11 + 0xb28]
+0000000000893fbb: mov      rcx, rax
+0000000000893fbe: xor      edx, edx
+0000000000893fc0: call     0xa08940
+0000000000893fc5: lea      rbx, [rbp + 0xa0]
+0000000000893fcc: mov      qword ptr [rsp + 0xa8], rbx
+0000000000893fd4: mov      r8d, 0x1d9
+0000000000893fda: lea      rdx, [rip + 0x485aaf] ; UTF16 '.\\Raid.cpp'
+0000000000893fe1: mov      rcx, rbx
+0000000000893fe4: call     0xa4ccec
+0000000000893fe9: nop
+0000000000893fea: mov      rax, qword ptr [rsi + 0xa88]
+0000000000893ff1: mov      edi, dword ptr [rax + 0x2168]
+0000000000893ff7: mov      rax, qword ptr [rsi]
+0000000000893ffa: mov      rcx, rsi
+0000000000893ffd: call     qword ptr [rax + 0x490]
+0000000000894003: mov      dword ptr [rsp + 0xa0], edi
+000000000089400a: mov      dword ptr [rsp + 0xa4], eax
+0000000000894011: mov      rdx, qword ptr [rsp + 0xa0]
+0000000000894019: mov      rcx, rbp
+000000000089401c: call     0x8914f0
+0000000000894021: test     rax, rax
+0000000000894024: je       0x894045
+0000000000894026: lea      rdx, [rax + 0x60]
+000000000089402a: lea      rcx, [rsp + 0x28]
+000000000089402f: call     0x462140
+0000000000894034: lea      rcx, [rsi + 0x3d60]
+000000000089403b: lea      rdx, [rsp + 0x28]
+0000000000894040: call     0x462064
+0000000000894045: mov      rax, qword ptr [rsi + 0xa88]
+000000000089404c: mov      edi, dword ptr [rax + 0x2168]
+0000000000894052: mov      rax, qword ptr [rsi]
+0000000000894055: mov      rcx, rsi
+0000000000894058: call     qword ptr [rax + 0x490]
+000000000089405e: mov      dword ptr [rsp + 0xa0], edi
+0000000000894065: mov      dword ptr [rsp + 0xa4], eax
+000000000089406c: mov      rax, qword ptr [rsp + 0xa0]
+0000000000894074: mov      qword ptr [rsp + 0x28], rax
+0000000000894079: mov      qword ptr [rsp + 0x30], rsi
+000000000089407e: lea      rcx, [rbp + 0xf8]
+0000000000894085: lea      r8, [rsp + 0x28]
+000000000089408a: lea      rdx, [rsp + 0x40]
+000000000089408f: call     0x890e38
+0000000000894094: mov      r11, qword ptr [rsi + 0xa88]
+000000000089409b: mov      edi, dword ptr [r11 + 0x2168]
+00000000008940a2: mov      rax, qword ptr [rsi]
+00000000008940a5: mov      rcx, rsi
+00000000008940a8: call     qword ptr [rax + 0x490]
+00000000008940ae: mov      dword ptr [rsp + 0xa0], edi
+00000000008940b5: mov      dword ptr [rsp + 0xa4], eax
+00000000008940bc: lea      rcx, [rbp + 0xe0]
+00000000008940c3: lea      rdx, [rsp + 0xa0]
+00000000008940cb: call     0x8939cc
+00000000008940d0: nop
+00000000008940d1: mov      r8d, 0x65
+00000000008940d7: lea      rdx, [rip + 0x29d8a2] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\TemplateHelper.h'
+00000000008940de: mov      rcx, rbx
+00000000008940e1: call     0xa4cd8c
+00000000008940e6: nop
+00000000008940e7: movsxd   rax, dword ptr [r12 + r14]
+00000000008940eb: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000008940f4: add      rsp, 0x60
+00000000008940f8: pop      r14
+00000000008940fa: pop      r13
+00000000008940fc: pop      r12
+00000000008940fe: pop      rdi
+00000000008940ff: pop      rsi
+0000000000894100: pop      rbp
+0000000000894101: pop      rbx
+0000000000894102: ret

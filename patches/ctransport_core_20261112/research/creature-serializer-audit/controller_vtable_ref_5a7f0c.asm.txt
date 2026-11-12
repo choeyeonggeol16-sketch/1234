@@ -1,0 +1,23 @@
+# controller_vtable_ref_5a7f0c; PE pdata/unwind; entry 0x5a7f0c
+# chunk 0x5a7f0c..0x5a7f61
+00000000005a7f0c: mov      qword ptr [rsp + 8], rcx
+00000000005a7f11: push     rbx
+00000000005a7f12: sub      rsp, 0x30
+00000000005a7f16: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000005a7f1f: mov      rbx, rcx
+00000000005a7f22: lea      rax, [rip + 0x63846f]
+00000000005a7f29: mov      qword ptr [rcx], rax
+00000000005a7f2c: add      rcx, 0x24
+00000000005a7f30: xor      edx, edx
+00000000005a7f32: call     0x925294
+00000000005a7f37: nop
+00000000005a7f38: lea      rcx, [rbx + 0x28]
+00000000005a7f3c: lea      r9, [rip - 0x1e7]
+00000000005a7f43: mov      edx, 0x858
+00000000005a7f48: mov      r8d, 2
+00000000005a7f4e: call     0xab9360
+00000000005a7f53: nop
+00000000005a7f54: mov      rcx, rbx
+00000000005a7f57: add      rsp, 0x30
+00000000005a7f5b: pop      rbx
+00000000005a7f5c: jmp      0x7d6d44

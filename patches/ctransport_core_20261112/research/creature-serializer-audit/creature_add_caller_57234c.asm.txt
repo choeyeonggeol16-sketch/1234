@@ -1,0 +1,30 @@
+# creature_add_caller_57234c; PE pdata/unwind; entry 0x57234c
+# chunk 0x57234c..0x5723be
+000000000057234c: push     rbx
+000000000057234e: push     rsi
+000000000057234f: push     rdi
+0000000000572350: sub      rsp, 0x80
+0000000000572357: mov      rsi, rcx
+000000000057235a: lea      rcx, [rsp + 0x30]
+000000000057235f: mov      rdi, r9
+0000000000572362: mov      bl, r8b
+0000000000572365: call     0x462140
+000000000057236a: lea      rcx, [rip + 0x65bb0f]
+0000000000572371: mov      qword ptr [rsp + 0x48], rcx
+0000000000572376: lea      rcx, [rsp + 0x50]
+000000000057237b: mov      rdx, rax
+000000000057237e: call     0x462140
+0000000000572383: lea      rax, [rip + 0x5c170e] ; UTF16 'Move'
+000000000057238a: lea      rcx, [rsi + 0x10d8]
+0000000000572391: lea      r9, [rsp + 0x48]
+0000000000572396: lea      r8, [rip + 0x20cfef]
+000000000057239d: mov      rdx, rsi
+00000000005723a0: mov      qword ptr [rsp + 0x20], rax
+00000000005723a5: mov      byte ptr [rsp + 0x68], bl
+00000000005723a9: mov      qword ptr [rsp + 0x70], rdi
+00000000005723ae: call     0x466d44
+00000000005723b3: add      rsp, 0x80
+00000000005723ba: pop      rdi
+00000000005723bb: pop      rsi
+00000000005723bc: pop      rbx
+00000000005723bd: ret

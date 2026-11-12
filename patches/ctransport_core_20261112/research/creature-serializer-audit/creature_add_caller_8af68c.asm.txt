@@ -1,0 +1,46 @@
+# creature_add_caller_8af68c; PE pdata/unwind; entry 0x8af68c
+# chunk 0x8af68c..0x8af750
+00000000008af68c: push     rbx
+00000000008af68e: push     rbp
+00000000008af68f: push     rsi
+00000000008af690: push     rdi
+00000000008af691: sub      rsp, 0x48
+00000000008af695: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000008af69e: mov      rdi, rcx
+00000000008af6a1: mov      edx, dword ptr [rip + 0x2ed0fb31]
+00000000008af6a7: mov      rax, qword ptr gs:[0x58]
+00000000008af6b0: mov      esi, 0x7d58
+00000000008af6b5: mov      rbx, qword ptr [rax + rdx*8]
+00000000008af6b9: movsxd   r8, dword ptr [rbx + rsi]
+00000000008af6bd: lea      rbp, [rip - 0x4af6c4]
+00000000008af6c4: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+00000000008af6cc: lea      eax, [rdx + 1]
+00000000008af6cf: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+00000000008af6d7: imul     r8, r8, 0x3e8
+00000000008af6de: add      r8, rdx
+00000000008af6e1: lea      rax, [rip + 0x47a678] ; UTF16 'void __cdecl CSerializedDisappearMessage::OnHandle(class CCreature *)'
+00000000008af6e8: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+00000000008af6f0: mov      rcx, qword ptr [rcx + 0x18]
+00000000008af6f4: mov      rax, qword ptr [rcx]
+00000000008af6f7: call     qword ptr [rax + 0xac8]
+00000000008af6fd: lea      rcx, [rip + 0x47898c]
+00000000008af704: mov      qword ptr [rsp + 0x70], rcx
+00000000008af709: lea      rcx, [rax + 0x10d8]
+00000000008af710: lea      rdx, [rip + 0x47a471] ; UTF16 'Disappear'
+00000000008af717: mov      qword ptr [rsp + 0x20], rdx
+00000000008af71c: lea      r9, [rsp + 0x70]
+00000000008af721: lea      r8, [rip - 0x30329c]
+00000000008af728: mov      rdx, rax
+00000000008af72b: call     0x466d44
+00000000008af730: mov      r11, qword ptr [rdi]
+00000000008af733: mov      rcx, rdi
+00000000008af736: call     qword ptr [r11 + 0x68]
+00000000008af73a: nop
+00000000008af73b: movsxd   rax, dword ptr [rbx + rsi]
+00000000008af73f: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000008af747: add      rsp, 0x48
+00000000008af74b: pop      rdi
+00000000008af74c: pop      rsi
+00000000008af74d: pop      rbp
+00000000008af74e: pop      rbx
+00000000008af74f: ret

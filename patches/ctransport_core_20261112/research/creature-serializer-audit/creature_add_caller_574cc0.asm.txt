@@ -1,0 +1,16 @@
+# creature_add_caller_574cc0; PE pdata/unwind; entry 0x574cc0
+# chunk 0x574cc0..0x574d05
+0000000000574cc0: sub      rsp, 0x38
+0000000000574cc4: mov      rax, qword ptr [rcx]
+0000000000574cc7: call     qword ptr [rax + 0xac8]
+0000000000574ccd: lea      rcx, [rip + 0x659194]
+0000000000574cd4: lea      rdx, [rip + 0x5beded] ; UTF16 'DoNothing'
+0000000000574cdb: mov      qword ptr [rsp + 0x40], rcx
+0000000000574ce0: mov      qword ptr [rsp + 0x20], rdx
+0000000000574ce5: lea      r9, [rsp + 0x40]
+0000000000574cea: lea      rcx, [rax + 0x10d8]
+0000000000574cf1: lea      r8, [rip + 0x37c1c]
+0000000000574cf8: mov      rdx, rax
+0000000000574cfb: call     0x466d44
+0000000000574d00: add      rsp, 0x38
+0000000000574d04: ret

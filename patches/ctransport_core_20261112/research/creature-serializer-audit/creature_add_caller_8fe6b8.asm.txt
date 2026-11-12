@@ -1,0 +1,47 @@
+# creature_add_caller_8fe6b8; PE pdata/unwind; entry 0x8fe6b8
+# chunk 0x8fe6b8..0x8fe78e
+00000000008fe6b8: push     rbx
+00000000008fe6ba: push     rbp
+00000000008fe6bb: push     rsi
+00000000008fe6bc: push     rdi
+00000000008fe6bd: sub      rsp, 0x48
+00000000008fe6c1: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000008fe6ca: mov      rdi, rdx
+00000000008fe6cd: mov      ecx, dword ptr [rip + 0x2ecc0b05]
+00000000008fe6d3: mov      rax, qword ptr gs:[0x58]
+00000000008fe6dc: mov      esi, 0x7d58
+00000000008fe6e1: mov      rbx, qword ptr [rax + rcx*8]
+00000000008fe6e5: movsxd   r8, dword ptr [rbx + rsi]
+00000000008fe6e9: lea      rbp, [rip - 0x4fe6f0]
+00000000008fe6f0: movsxd   rcx, dword ptr [rbp + r8*4 + 0x47e2a40]
+00000000008fe6f8: lea      eax, [rcx + 1]
+00000000008fe6fb: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+00000000008fe703: imul     r8, r8, 0x3e8
+00000000008fe70a: add      r8, rcx
+00000000008fe70d: lea      rax, [rip + 0x465edc] ; UTF16 'bool __cdecl CSkillEffect_p_block_act::Pump(class CCreature *,const class CSkillInfo *,int)'
+00000000008fe714: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+00000000008fe71c: mov      byte ptr [rdx + 0xf54], 0
+00000000008fe723: mov      rax, qword ptr [rdx + 0xa88]
+00000000008fe72a: mov      byte ptr [rax + 0x1d76], 0
+00000000008fe731: mov      rax, qword ptr [rdx]
+00000000008fe734: mov      rcx, rdx
+00000000008fe737: call     qword ptr [rax + 0xac8]
+00000000008fe73d: lea      rcx, [rip + 0x2cf724]
+00000000008fe744: mov      qword ptr [rsp + 0x78], rcx
+00000000008fe749: lea      rcx, [rax + 0x10d8]
+00000000008fe750: lea      rdx, [rip + 0x235371] ; UTF16 'DoNothing'
+00000000008fe757: mov      qword ptr [rsp + 0x20], rdx
+00000000008fe75c: lea      r9, [rsp + 0x78]
+00000000008fe761: lea      r8, [rip - 0x351e54]
+00000000008fe768: mov      rdx, rax
+00000000008fe76b: call     0x466d44
+00000000008fe770: mov      byte ptr [rdi + 0x15a4], 1
+00000000008fe777: movsxd   rcx, dword ptr [rbx + rsi]
+00000000008fe77b: add      dword ptr [rbp + rcx*4 + 0x47e2a40], -1
+00000000008fe783: mov      al, 1
+00000000008fe785: add      rsp, 0x48
+00000000008fe789: pop      rdi
+00000000008fe78a: pop      rsi
+00000000008fe78b: pop      rbp
+00000000008fe78c: pop      rbx
+00000000008fe78d: ret

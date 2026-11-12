@@ -1,0 +1,115 @@
+{
+  "input": {
+    "file": "L2Server(10).exe",
+    "sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+    "image_base": "0x400000",
+    "analysis": "static PE unwind/instruction-boundary validation; original executable not run"
+  },
+  "checks": [
+    {
+      "address": "0x466efa",
+      "bytes": "83f818",
+      "mnemonic": "cmp",
+      "operands": "eax, 0x18"
+    },
+    {
+      "address": "0x466fc6",
+      "bytes": "83e31f",
+      "mnemonic": "and",
+      "operands": "ebx, 0x1f"
+    },
+    {
+      "address": "0x4671cc",
+      "bytes": "83e31f",
+      "mnemonic": "and",
+      "operands": "ebx, 0x1f"
+    },
+    {
+      "address": "0x466dc9",
+      "bytes": "433b042e",
+      "mnemonic": "cmp",
+      "operands": "eax, dword ptr [r14 + r13]"
+    },
+    {
+      "address": "0x466dcd",
+      "bytes": "0f8524010000",
+      "mnemonic": "jne",
+      "operands": "0x466ef7"
+    },
+    {
+      "address": "0x466edb",
+      "bytes": "ffd5",
+      "mnemonic": "call",
+      "operands": "rbp"
+    },
+    {
+      "address": "0x466fbd",
+      "bytes": "f0480fc15908",
+      "mnemonic": "lock xadd",
+      "operands": "qword ptr [rcx + 8], rbx"
+    },
+    {
+      "address": "0x466fe9",
+      "bytes": "f0410fc1442410",
+      "mnemonic": "lock xadd",
+      "operands": "dword ptr [r12 + 0x10], eax"
+    },
+    {
+      "address": "0x46721a",
+      "bytes": "ffd0",
+      "mnemonic": "call",
+      "operands": "rax"
+    },
+    {
+      "address": "0x5a84b0",
+      "bytes": "e84be9ffff",
+      "mnemonic": "call",
+      "operands": "0x5a6e00"
+    },
+    {
+      "address": "0x5a6e2b",
+      "bytes": "41b8000a0000",
+      "mnemonic": "mov",
+      "operands": "r8d, 0xa00"
+    },
+    {
+      "address": "0x5a6e3f",
+      "bytes": "41b800010000",
+      "mnemonic": "mov",
+      "operands": "r8d, 0x100"
+    },
+    {
+      "address": "0x5723ae",
+      "bytes": "e89149efff",
+      "mnemonic": "call",
+      "operands": "0x466d44"
+    },
+    {
+      "address": "0x5ad62f",
+      "bytes": "e81097ebff",
+      "mnemonic": "call",
+      "operands": "0x466d44"
+    },
+    {
+      "address": "0x8af63a",
+      "bytes": "e80577bbff",
+      "mnemonic": "call",
+      "operands": "0x466d44"
+    },
+    {
+      "address": "0x466f96",
+      "bytes": "e879d52c00",
+      "mnemonic": "call",
+      "operands": "0x734514"
+    },
+    {
+      "address": "0x466faf",
+      "bytes": "e9a4020000",
+      "mnemonic": "jmp",
+      "operands": "0x467258"
+    }
+  ],
+  "java_source_sha256": "2b5081a936c7b0f3265f651b2999fb1ef8ffbe3dea19ab54fcd513c1e9dbbf27",
+  "source_modified": false,
+  "original_executable_run": false
+}

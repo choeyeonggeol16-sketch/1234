@@ -1,0 +1,10 @@
+# controller_vtable_ref_5a7f0c_call_925294; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x925294
+# chunk 0x925294..0x9252a6
+0000000000925294: test     rdx, rdx
+0000000000925297: jne      0x92529d
+0000000000925299: mov      dword ptr [rcx], edx
+000000000092529b: jmp      0x9252a2
+000000000092529d: mov      eax, dword ptr [rdx + 0x18]
+00000000009252a0: mov      dword ptr [rcx], eax
+00000000009252a2: mov      rax, rcx
+00000000009252a5: ret

@@ -1,0 +1,54 @@
+# caller_map27_delete_a08a48; PE pdata/unwind; entry 0xa08a48
+# chunk 0xa08a48..0xa08b2e
+0000000000a08a48: push     rbx
+0000000000a08a4a: push     rbp
+0000000000a08a4b: push     rsi
+0000000000a08a4c: push     rdi
+0000000000a08a4d: push     r12
+0000000000a08a4f: sub      rsp, 0x30
+0000000000a08a53: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000a08a5c: mov      dil, dl
+0000000000a08a5f: mov      rbx, rcx
+0000000000a08a62: mov      r8d, dword ptr [rip + 0x2ebb676f]
+0000000000a08a69: mov      rax, qword ptr gs:[0x58]
+0000000000a08a72: mov      r12d, 0x7d58
+0000000000a08a78: mov      rsi, qword ptr [rax + r8*8]
+0000000000a08a7c: movsxd   r9, dword ptr [rsi + r12]
+0000000000a08a80: lea      rbp, [rip - 0x608a87]
+0000000000a08a87: movsxd   r8, dword ptr [rbp + r9*4 + 0x47e2a40]
+0000000000a08a8f: lea      eax, [r8 + 1]
+0000000000a08a93: mov      dword ptr [rbp + r9*4 + 0x47e2a40], eax
+0000000000a08a9b: imul     r9, r9, 0x3e8
+0000000000a08aa2: add      r9, r8
+0000000000a08aa5: lea      rax, [rip + 0x3baa74] ; UTF16 'void __cdecl CUserSocket::DecUserCount(bool)'
+0000000000a08aac: mov      qword ptr [rbp + r9*8 + 0x47bf7c0], rax
+0000000000a08ab4: test     byte ptr [rcx + 0xc98], 8
+0000000000a08abb: jne      0xa08ac5
+0000000000a08abd: lock add dword ptr [rip + 0x263f2f3], -1
+0000000000a08ac5: cmp      byte ptr [rip + 0x909648], 0
+0000000000a08acc: je       0xa08aea
+0000000000a08ace: mov      r9d, dword ptr [rip + 0x263f2e3]
+0000000000a08ad5: lea      r8, [rip + 0x3ba9e4] ; UTF16 'Decrease user count. g_nServerUserCount(%d)'
+0000000000a08adc: xor      edx, edx
+0000000000a08ade: lea      rcx, [rip + 0xd518dbb]
+0000000000a08ae5: call     0x734514
+0000000000a08aea: test     dil, dil
+0000000000a08aed: je       0xa08b17
+0000000000a08aef: mov      rax, qword ptr [rbx]
+0000000000a08af2: mov      rcx, rbx
+0000000000a08af5: call     qword ptr [rax + 0xc8]
+0000000000a08afb: mov      edx, eax
+0000000000a08afd: mov      r9d, 0x537
+0000000000a08b03: lea      r8, [rip + 0x3b1846]
+0000000000a08b0a: lea      rcx, [rip + 0x174f7eaf]
+0000000000a08b11: call     0xa08660
+0000000000a08b16: nop
+0000000000a08b17: movsxd   rax, dword ptr [rsi + r12]
+0000000000a08b1b: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+0000000000a08b23: add      rsp, 0x30
+0000000000a08b27: pop      r12
+0000000000a08b29: pop      rdi
+0000000000a08b2a: pop      rsi
+0000000000a08b2b: pop      rbp
+0000000000a08b2c: pop      rbx
+0000000000a08b2d: ret

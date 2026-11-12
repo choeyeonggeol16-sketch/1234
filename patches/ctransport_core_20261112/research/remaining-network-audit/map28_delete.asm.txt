@@ -1,0 +1,99 @@
+# map28_delete; PE pdata/unwind; entry 0x8951bc
+# chunk 0x8951bc..0x89533b
+00000000008951bc: mov      dword ptr [rsp + 0x10], edx
+00000000008951c0: push     rbx
+00000000008951c1: push     rbp
+00000000008951c2: push     rsi
+00000000008951c3: push     rdi
+00000000008951c4: push     r12
+00000000008951c6: push     r13
+00000000008951c8: push     r14
+00000000008951ca: push     r15
+00000000008951cc: sub      rsp, 0x58
+00000000008951d0: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000008951d9: mov      r12d, r9d
+00000000008951dc: mov      rbp, r8
+00000000008951df: mov      r11d, edx
+00000000008951e2: mov      rdi, rcx
+00000000008951e5: mov      r10d, dword ptr [rip + 0x2ed29fec]
+00000000008951ec: mov      rax, qword ptr gs:[0x58]
+00000000008951f5: mov      ecx, 0x7d58
+00000000008951fa: mov      r13, qword ptr [rax + r10*8]
+00000000008951fe: movsxd   r10, dword ptr [r13 + rcx]
+0000000000895203: lea      r15, [rip - 0x49520a]
+000000000089520a: movsxd   rdx, dword ptr [r15 + r10*4 + 0x47e2a40]
+0000000000895212: lea      eax, [rdx + 1]
+0000000000895215: mov      dword ptr [r15 + r10*4 + 0x47e2a40], eax
+000000000089521d: imul     r10, r10, 0x3e8
+0000000000895224: add      r10, rdx
+0000000000895227: lea      rax, [rip + 0x487f62] ; UTF16 'bool __cdecl CObjectMap<class CUserSocket,8192,28,class RWLock,int>::DeleteObject(int,char *,int)'
+000000000089522e: mov      qword ptr [r15 + r10*8 + 0x47bf7c0], rax
+0000000000895236: xor      esi, esi
+0000000000895238: mov      ecx, r11d
+000000000089523b: call     0xabddb0
+0000000000895240: and      eax, 0x1fff
+0000000000895245: movsxd   rbx, eax
+0000000000895248: lea      r14, [rbx + 0xdb7]
+000000000089524f: imul     r14, r14, 0x38
+0000000000895253: add      r14, rdi
+0000000000895256: mov      r8d, 0x1be
+000000000089525c: lea      rdx, [rip + 0x29db0d] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\ThreadSafeLibrary.h'
+0000000000895263: mov      rcx, r14
+0000000000895266: call     0x8aacec
+000000000089526b: lea      r11, [rbx + rbx*2]
+000000000089526f: lea      rbx, [rdi + r11*8 + 8]
+0000000000895274: lea      r8, [rsp + 0xa8]
+000000000089527c: lea      rdx, [rsp + 0x38]
+0000000000895281: mov      rcx, rbx
+0000000000895284: call     0x52eb8c
+0000000000895289: mov      rdx, qword ptr [rsp + 0x38]
+000000000089528e: cmp      rdx, rsi
+0000000000895291: je       0x895324
+0000000000895297: cmp      rdx, rbx
+000000000089529a: jne      0x895324
+00000000008952a0: mov      rcx, qword ptr [rsp + 0x40]
+00000000008952a5: cmp      rcx, qword ptr [rbx + 8]
+00000000008952a9: sete     al
+00000000008952ac: cmp      al, sil
+00000000008952af: sete     al
+00000000008952b2: cmp      al, sil
+00000000008952b5: je       0x895303
+00000000008952b7: cmp      rbp, rsi
+00000000008952ba: jne      0x8952c9
+00000000008952bc: lea      rbp, [rip + 0x29359d]
+00000000008952c3: mov      r12d, 0x1c7
+00000000008952c9: cmp      rcx, qword ptr [rdx + 8]
+00000000008952cd: jne      0x8952d5
+00000000008952cf: call     0x866f68
+00000000008952d4: int3
+00000000008952d5: mov      rcx, qword ptr [rcx + 0x20]
+00000000008952d9: mov      rax, qword ptr [rcx]
+00000000008952dc: mov      byte ptr [rsp + 0x20], sil
+00000000008952e1: mov      r9d, 0x1c
+00000000008952e7: mov      r8d, r12d
+00000000008952ea: mov      rdx, rbp
+00000000008952ed: call     qword ptr [rax + 0x10]
+00000000008952f0: lea      rdx, [rsp + 0xa8]
+00000000008952f8: mov      rcx, rbx
+00000000008952fb: call     0x92f358
+0000000000895300: mov      sil, 1
+0000000000895303: mov      rcx, r14
+0000000000895306: call     0x8aad88
+000000000089530b: nop
+000000000089530c: mov      eax, 0x7d58
+0000000000895311: movsxd   rcx, dword ptr [r13 + rax]
+0000000000895316: add      dword ptr [r15 + rcx*4 + 0x47e2a40], -1
+000000000089531f: mov      al, sil
+0000000000895322: jmp      0x89532a
+0000000000895324: call     0x480214
+0000000000895329: nop
+000000000089532a: add      rsp, 0x58
+000000000089532e: pop      r15
+0000000000895330: pop      r14
+0000000000895332: pop      r13
+0000000000895334: pop      r12
+0000000000895336: pop      rdi
+0000000000895337: pop      rsi
+0000000000895338: pop      rbp
+0000000000895339: pop      rbx
+000000000089533a: ret

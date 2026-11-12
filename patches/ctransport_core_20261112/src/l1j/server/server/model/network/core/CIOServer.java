@@ -64,6 +64,7 @@ final class CIOServer implements AutoCloseable {
     private final MethodHandle scheduleTask, cancelTask, getDiagnostics;
     private final MethodHandle setCodecApi,initializeUserSocket,releaseUserPacket,encryptUserData,getUserSocketState,threadOwner;
     private final MethodHandle setUserState,configureDeadlines,requestDeadline,getRegistryDiagnostics;
+    private final MethodHandle setAccountIdentity,setCharacterEntered,findEnteringAccount,getAccountRegistryDiagnostics,configurePerf,getPerfDiagnostics;
     private final MethodHandle configureLimits,getLimiterDiagnostics,getListenerDiagnostics,getThreadDiagnostics,findByNumber,setMacIdentity,reportSockets;
     private final MemorySegment userPacketStub,networkDeadlineStub;
     private volatile boolean drainClosed;
@@ -136,14 +137,17 @@ final class CIOServer implements AutoCloseable {
     }
 
     CIOServer(InetSocketAddress address,int maxConnections,int ioThreads,int backlog,Admitter admitter,int ipLimit)throws IOException{
-        this(address,maxConnections,ioThreads,backlog,admitter,null,ipLimit);
+        this(address,maxConnections,ioThreads,backlog,admitter,null,ipLimit,CIOConfig.MAC_LIMIT);
     }
     CIOServer(InetSocketAddress address,int maxConnections,int ioThreads,int backlog,Admitter admitter,CIOServerEndpoint.Events rawEvents)throws IOException{
-        this(address,maxConnections,ioThreads,backlog,admitter,rawEvents,0);
+        this(address,maxConnections,ioThreads,backlog,admitter,rawEvents,0,CIOConfig.MAC_LIMIT);
+    }
+    CIOServer(InetSocketAddress address,int maxConnections,int ioThreads,int backlog,Admitter admitter,int ipLimit,int macLimit)throws IOException{
+        this(address,maxConnections,ioThreads,backlog,admitter,null,ipLimit,macLimit);
     }
     @SuppressWarnings("preview")
     private CIOServer(InetSocketAddress address, int maxConnections, int ioThreads,
-                     int backlog, Admitter admitter, CIOServerEndpoint.Events rawEvents,int ipLimit) throws IOException {
+                     int backlog, Admitter admitter, CIOServerEndpoint.Events rawEvents,int ipLimit,int macLimit) throws IOException {
         this.admitter = admitter;
         this.rawEvents = rawEvents;
         this.listenAddress = address;
@@ -192,6 +196,12 @@ final class CIOServer implements AutoCloseable {
             configureLimits=fn("CTransport_Server_ConfigureLimits",FunctionDescriptor.of(I,P,I,I));
             getLimiterDiagnostics=fn("CTransport_Server_GetLimiterDiagnostics",FunctionDescriptor.of(I,P,P,I));
             getListenerDiagnostics=fn("CTransport_Server_GetListenerDiagnostics",FunctionDescriptor.of(I,P,P,I));
+            setAccountIdentity=fn("CTransport_UserSocket_SetAccountIdentity",FunctionDescriptor.of(I,P,L,I));
+            setCharacterEntered=fn("CTransport_UserSocket_SetCharacterEntered",FunctionDescriptor.of(I,P,L,I));
+            findEnteringAccount=fn("CTransport_UserSocket_FindEnteringAccount",FunctionDescriptor.of(L,P,I));
+            getAccountRegistryDiagnostics=fn("CTransport_Server_GetAccountRegistryDiagnostics",FunctionDescriptor.of(I,P,P,I));
+            configurePerf=fn("CTransport_Server_ConfigurePerf",FunctionDescriptor.of(I,P,I));
+            getPerfDiagnostics=fn("CTransport_Server_GetPerfDiagnostics",FunctionDescriptor.of(I,P,P,I));
             getThreadDiagnostics=fn("CTransport_Server_GetThreadDiagnostics",FunctionDescriptor.of(I,P,P,I));
             findByNumber=fn("CTransport_UserSocket_FindByNumber",FunctionDescriptor.of(L,P,I));
             setMacIdentity=fn("CTransport_UserSocket_SetMacIdentity",FunctionDescriptor.of(I,P,L,L));
@@ -246,7 +256,8 @@ final class CIOServer implements AutoCloseable {
             // Native SP_PACK=0; CIO socket serializer already owns send ordering.
             fn("CIO_Server_SetSendPolicy", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, 0);
             fn("CIO_Server_SetOnSendSyncPolicy", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, 0);
-            if((int)configureLimits.invokeExact(server,ipLimit,0)==0)throw new IOException("Native CSocketLimiter configuration rejected");
+            if((int)configurePerf.invokeExact(server,CIOConfig.PERF_INTERVAL_MS)==0)throw new IOException("Native CPerfMon configuration rejected");
+            if((int)configureLimits.invokeExact(server,ipLimit,macLimit)==0)throw new IOException("Native CSocketLimiter configuration rejected");
             try (Arena a = Arena.ofConfined()) {
                 String bind = address.getAddress() == null ? "0.0.0.0" : address.getAddress().getHostAddress();
                 int result = (int) start.invokeExact(server, a.allocateUtf8String(bind), (short)address.getPort());
@@ -596,8 +607,8 @@ final class CIOServer implements AutoCloseable {
     long[] userSocketState(long id) {
         if (!enterNative()) return null;
         try (Arena a = Arena.ofConfined()) {
-            MemorySegment data = a.allocate(11L * Long.BYTES, Long.BYTES);
-            if ((int) getUserSocketState.invokeExact(server, id, data, 11) == 0) return null;
+            MemorySegment data = a.allocate(14L * Long.BYTES, Long.BYTES);
+            if ((int) getUserSocketState.invokeExact(server, id, data, 14) == 0) return null;
             return data.toArray(L);
         } catch (Throwable failure) { throw new IllegalStateException("L1 parser snapshot failed", failure); }
         finally { nativeCalls.decrementAndGet(); }
@@ -617,6 +628,16 @@ final class CIOServer implements AutoCloseable {
             MemorySegment out=a.allocate((long)count*Long.BYTES,Long.BYTES);
             return (int)method.invokeExact(server,out,count)==0?null:out.toArray(L);
         }catch(Throwable failure){throw new IllegalStateException("Native diagnostic read failed",failure);}
+        finally{nativeCalls.decrementAndGet();}
+    }
+    boolean setAccountIdentity(long id,int account){return userControl(setAccountIdentity,id,account);}
+    boolean setCharacterEntered(long id,boolean entered){return userControl(setCharacterEntered,id,entered?1:0);}
+    long[] accountRegistryDiagnostics(){return readDiagnostics(getAccountRegistryDiagnostics,4);}
+    long[] performanceDiagnostics(){return readDiagnostics(getPerfDiagnostics,16);}
+    long findEnteringAccount(int account){
+        if(!enterNative())return 0;
+        try{return (long)findEnteringAccount.invokeExact(server,account);}
+        catch(Throwable failure){throw new IllegalStateException("Native entering account lookup failed",failure);}
         finally{nativeCalls.decrementAndGet();}
     }
     long[] listenerDiagnostics(){return readDiagnostics(getListenerDiagnostics,9);}

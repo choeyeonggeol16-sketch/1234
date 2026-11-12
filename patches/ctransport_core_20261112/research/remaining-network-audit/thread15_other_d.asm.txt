@@ -1,0 +1,25 @@
+# thread15_other_d; PE pdata/unwind; entry 0x82b424
+# chunk 0x82b424..0x82b49a
+000000000082b424: sub      rsp, 0x48
+000000000082b428: lea      rcx, [rsp + 0x30]
+000000000082b42d: call     qword ptr [rip + 0x2f0d65] ; IAT GetLocalTime
+000000000082b433: movzx    r11d, word ptr [rsp + 0x38]
+000000000082b439: cmp      r11d, dword ptr [rip + 0x12f528b0]
+000000000082b440: je       0x82b495
+000000000082b442: movsxd   rax, dword ptr [rip + 0x17635547]
+000000000082b449: movsxd   rcx, dword ptr [rip + 0x1763553c]
+000000000082b450: lea      r8, [rip + 0x4c03f9] ; UTF16 '%I64d,,,,,,,,,,,%I64d,%I64d,,,,,,,,,,,,,'
+000000000082b457: mov      qword ptr [rsp + 0x28], rax
+000000000082b45c: mov      qword ptr [rsp + 0x20], rcx
+000000000082b461: lea      rcx, [rip + 0xd6f6438]
+000000000082b468: mov      r9d, 0x340
+000000000082b46e: mov      edx, 6
+000000000082b473: call     0x734514
+000000000082b478: movzx    r11d, word ptr [rsp + 0x38]
+000000000082b47e: xor      ecx, ecx
+000000000082b480: mov      eax, ecx
+000000000082b482: mov      dword ptr [rip + 0x12f52867], r11d
+000000000082b489: xchg     dword ptr [rip + 0x176354fd], eax
+000000000082b48f: xchg     dword ptr [rip + 0x176354fb], ecx
+000000000082b495: add      rsp, 0x48
+000000000082b499: ret

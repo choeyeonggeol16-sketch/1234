@@ -1,0 +1,93 @@
+# creature_add_caller_8fe7b0; PE pdata/unwind; entry 0x8fe7b0
+# chunk 0x8fe7b0..0x8fe93d
+00000000008fe7b0: push     rbx
+00000000008fe7b2: push     rbp
+00000000008fe7b3: push     rsi
+00000000008fe7b4: push     rdi
+00000000008fe7b5: push     r12
+00000000008fe7b7: sub      rsp, 0x60
+00000000008fe7bb: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000008fe7c4: movdqa   xmmword ptr [rsp + 0x50], xmm6
+00000000008fe7ca: movsd    xmm6, xmm2
+00000000008fe7ce: mov      rbx, rdx
+00000000008fe7d1: mov      rsi, rcx
+00000000008fe7d4: mov      r8d, dword ptr [rip + 0x2ecc09fd]
+00000000008fe7db: mov      rax, qword ptr gs:[0x58]
+00000000008fe7e4: mov      r12d, 0x7d58
+00000000008fe7ea: mov      rdi, qword ptr [rax + r8*8]
+00000000008fe7ee: movsxd   r9, dword ptr [rdi + r12]
+00000000008fe7f2: lea      rbp, [rip - 0x4fe7f9]
+00000000008fe7f9: movsxd   r8, dword ptr [rbp + r9*4 + 0x47e2a40]
+00000000008fe801: lea      eax, [r8 + 1]
+00000000008fe805: mov      dword ptr [rbp + r9*4 + 0x47e2a40], eax
+00000000008fe80d: imul     r9, r9, 0x3e8
+00000000008fe814: add      r9, r8
+00000000008fe817: lea      rax, [rip + 0x465ec2] ; UTF16 'bool __cdecl CSkillEffect_c_fake_death::Consume(class CObject *,double)'
+00000000008fe81e: mov      qword ptr [rbp + r9*8 + 0x47bf7c0], rax
+00000000008fe826: mov      rcx, rdx
+00000000008fe829: call     0x7d8074
+00000000008fe82e: test     al, al
+00000000008fe830: jne      0x8fe845
+00000000008fe832: movsxd   rax, dword ptr [rdi + r12]
+00000000008fe836: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000008fe83e: xor      al, al
+00000000008fe840: jmp      0x8fe92c
+00000000008fe845: call     qword ptr [rip + 0x21d8d5] ; IAT GetTickCount
+00000000008fe84b: mov      ecx, dword ptr [rbx + 0x14cc]
+00000000008fe851: add      ecx, 0x5dc
+00000000008fe857: cmp      ecx, eax
+00000000008fe859: jae      0x8fe887
+00000000008fe85b: mov      rax, qword ptr [rbx + 0xa88]
+00000000008fe862: cmp      byte ptr [rax + 0x197c], 0
+00000000008fe869: je       0x8fe874
+00000000008fe86b: cmp      dword ptr [rax + 0x1a0], 0
+00000000008fe872: je       0x8fe887
+00000000008fe874: movsxd   rax, dword ptr [rdi + r12]
+00000000008fe878: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000008fe880: xor      al, al
+00000000008fe882: jmp      0x8fe92c
+00000000008fe887: mulsd    xmm6, qword ptr [rsi + 0x10]
+00000000008fe88c: movsd    xmm1, qword ptr [rip + 0x2a3dbc]
+00000000008fe894: subsd    xmm1, xmm6
+00000000008fe898: mov      rcx, rbx
+00000000008fe89b: call     0x56e684
+00000000008fe8a0: test     al, al
+00000000008fe8a2: jne      0x8fe91e
+00000000008fe8a4: mov      rax, qword ptr [rbx]
+00000000008fe8a7: mov      rcx, rbx
+00000000008fe8aa: call     qword ptr [rax + 0x168]
+00000000008fe8b0: test     al, al
+00000000008fe8b2: je       0x8fe90e
+00000000008fe8b4: mov      rax, qword ptr [rbx]
+00000000008fe8b7: mov      edx, 0x8c
+00000000008fe8bc: mov      rcx, rbx
+00000000008fe8bf: call     qword ptr [rax + 0x860]
+00000000008fe8c5: mov      r11, qword ptr [rbx]
+00000000008fe8c8: mov      rcx, rbx
+00000000008fe8cb: call     qword ptr [r11 + 0xac8]
+00000000008fe8d2: lea      rcx, [rip + 0x2591e7]
+00000000008fe8d9: mov      qword ptr [rsp + 0x38], rcx
+00000000008fe8de: mov      dword ptr [rsp + 0x40], 0x9f6
+00000000008fe8e6: lea      rcx, [rax + 0x10d8]
+00000000008fe8ed: lea      rdx, [rip + 0x25a41c] ; UTF16 'Stand'
+00000000008fe8f4: mov      qword ptr [rsp + 0x20], rdx
+00000000008fe8f9: lea      r9, [rsp + 0x38]
+00000000008fe8fe: lea      r8, [rip - 0x351eb9]
+00000000008fe905: mov      rdx, rax
+00000000008fe908: call     0x466d44
+00000000008fe90d: nop
+00000000008fe90e: movsxd   rax, dword ptr [rdi + r12]
+00000000008fe912: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000008fe91a: xor      al, al
+00000000008fe91c: jmp      0x8fe92c
+00000000008fe91e: movsxd   rax, dword ptr [rdi + r12]
+00000000008fe922: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000008fe92a: mov      al, 1
+00000000008fe92c: movdqa   xmm6, xmmword ptr [rsp + 0x50]
+00000000008fe932: add      rsp, 0x60
+00000000008fe936: pop      r12
+00000000008fe938: pop      rdi
+00000000008fe939: pop      rsi
+00000000008fe93a: pop      rbp
+00000000008fe93b: pop      rbx
+00000000008fe93c: ret

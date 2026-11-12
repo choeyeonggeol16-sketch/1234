@@ -1,0 +1,150 @@
+# caller_dec_user_count_a123e8; PE pdata/unwind; entry 0xa123e8
+# chunk 0xa123e8..0xa12672
+0000000000a123e8: push     rbx
+0000000000a123ea: push     rsi
+0000000000a123eb: push     rdi
+0000000000a123ec: push     r12
+0000000000a123ee: sub      rsp, 0x58
+0000000000a123f2: cmp      byte ptr [rcx + 0x548], 0
+0000000000a123f9: mov      rdi, rcx
+0000000000a123fc: je       0xa12668
+0000000000a12402: mov      rax, qword ptr [rcx]
+0000000000a12405: call     qword ptr [rax + 0xc0]
+0000000000a1240b: cmp      byte ptr [rip + 0x8ffd02], 0
+0000000000a12412: mov      rbx, rax
+0000000000a12415: je       0xa12460
+0000000000a12417: test     rax, rax
+0000000000a1241a: je       0xa12421
+0000000000a1241c: mov      esi, dword ptr [rax + 0x18]
+0000000000a1241f: jmp      0xa12423
+0000000000a12421: xor      esi, esi
+0000000000a12423: test     rax, rax
+0000000000a12426: je       0xa12439
+0000000000a12428: mov      rax, qword ptr [rax]
+0000000000a1242b: mov      rcx, rbx
+0000000000a1242e: call     qword ptr [rax + 0x488]
+0000000000a12434: mov      r9, rax
+0000000000a12437: jmp      0xa12440
+0000000000a12439: lea      r9, [rip + 0x114ad4]
+0000000000a12440: mov      eax, dword ptr [rdi + 8]
+0000000000a12443: lea      r8, [rip + 0x3b36d6] ; UTF16 'User [%s](%d) Disconnected[%d]'
+0000000000a1244a: lea      rcx, [rip + 0xd50f44f]
+0000000000a12451: mov      dword ptr [rsp + 0x28], eax
+0000000000a12455: xor      edx, edx
+0000000000a12457: mov      dword ptr [rsp + 0x20], esi
+0000000000a1245b: call     0x734514
+0000000000a12460: test     rbx, rbx
+0000000000a12463: je       0xa1246d
+0000000000a12465: mov      rcx, rbx
+0000000000a12468: call     0x95a474
+0000000000a1246d: mov      esi, dword ptr [rdi + 0x7e4]
+0000000000a12473: lea      r12, [rip + 0x3a6d26] ; UTF16 '.\\UserSocket.cpp'
+0000000000a1247a: test     esi, esi
+0000000000a1247c: je       0xa1259d
+0000000000a12482: lea      rcx, [rip + 0x1762e597]
+0000000000a12489: mov      r8d, 0x2a71
+0000000000a1248f: mov      rdx, r12
+0000000000a12492: call     0xa4ccec
+0000000000a12497: mov      r11, qword ptr [rdi]
+0000000000a1249a: lea      rdx, [rip + 0x3a7eaf]
+0000000000a124a1: mov      r9d, 0x19
+0000000000a124a7: mov      r8d, 0x2a72
+0000000000a124ad: mov      rcx, rdi
+0000000000a124b0: mov      byte ptr [rsp + 0x20], 0
+0000000000a124b5: call     qword ptr [r11 + 0x10]
+0000000000a124b9: lea      rdx, [rsp + 0x80]
+0000000000a124c1: lea      rcx, [rip + 0x1744e4d0]
+0000000000a124c8: mov      dword ptr [rsp + 0x80], esi
+0000000000a124cf: call     0x64e88c
+0000000000a124d4: lea      rcx, [rip + 0x1762e545]
+0000000000a124db: mov      r8d, 0x2a74
+0000000000a124e1: mov      rdx, r12
+0000000000a124e4: call     0xa4cd8c
+0000000000a124e9: test     esi, esi
+0000000000a124eb: jle      0xa1250a
+0000000000a124ed: lea      r8, [rip + 0x3a7e5c]
+0000000000a124f4: lea      rcx, [rip + 0x1758e4d5]
+0000000000a124fb: mov      r9d, 0x2a78
+0000000000a12501: mov      edx, esi
+0000000000a12503: call     0x8951bc
+0000000000a12508: jmp      0xa12531
+0000000000a1250a: lea      r8, [rip + 0x3b355f] ; UTF16 '[%s][%d], cannot remove socket from g_UserSocketMapEnterChar because nAccountId is [%d]'
+0000000000a12511: lea      rcx, [rip + 0xd50f388]
+0000000000a12518: mov      r9, r12
+0000000000a1251b: mov      edx, 2
+0000000000a12520: mov      dword ptr [rsp + 0x28], esi
+0000000000a12524: mov      dword ptr [rsp + 0x20], 0x2a7d
+0000000000a1252c: call     0x734514
+0000000000a12531: cmp      dword ptr [rdi + 0x53c], 8
+0000000000a12538: je       0xa1258e
+0000000000a1253a: cmp      byte ptr [rip + 0x9009b0], 0
+0000000000a12541: mov      rcx, rdi
+0000000000a12544: je       0xa1256b
+0000000000a12546: call     0x9f7ce0
+0000000000a1254b: mov      rcx, rdi
+0000000000a1254e: mov      ebx, eax
+0000000000a12550: call     0x9f8210
+0000000000a12555: lea      rcx, [rip + 0x728aa4]
+0000000000a1255c: mov      r9d, ebx
+0000000000a1255f: mov      edx, esi
+0000000000a12561: mov      r8d, eax
+0000000000a12564: call     0x45c00c
+0000000000a12569: jmp      0xa1258e
+0000000000a1256b: call     0x9f7ce0
+0000000000a12570: mov      rcx, rdi
+0000000000a12573: mov      ebx, eax
+0000000000a12575: call     0x9f8210
+0000000000a1257a: lea      rcx, [rip + 0x728a7f]
+0000000000a12581: mov      r9d, ebx
+0000000000a12584: mov      edx, esi
+0000000000a12586: mov      r8d, eax
+0000000000a12589: call     0x45be50
+0000000000a1258e: mov      dl, 1
+0000000000a12590: mov      rcx, rdi
+0000000000a12593: call     0xa08a48
+0000000000a12598: jmp      0xa1262f
+0000000000a1259d: cmp      byte ptr [rdi + 0x7e8], 0
+0000000000a125a4: je       0xa125d5
+0000000000a125a6: lea      r8, [rip + 0x3b3453] ; UTF16 '[%s][%d], socket disconnect but cannot find account_'
+0000000000a125ad: lea      rcx, [rip + 0xd50f2ec]
+0000000000a125b4: mov      r9, r12
+0000000000a125b7: mov      edx, 2
+0000000000a125bc: mov      dword ptr [rsp + 0x20], 0x2a94
+0000000000a125c4: call     0x734514
+0000000000a125c9: xor      edx, edx
+0000000000a125cb: lea      ecx, [rdx + 2]
+0000000000a125ce: call     0x6704e0
+0000000000a125d3: jmp      0xa1262f
+0000000000a125d5: cmp      dword ptr [rdi + 0x790], 0
+0000000000a125dc: jle      0xa1262f
+0000000000a125de: movzx    ecx, byte ptr [rdi + 0xba]
+0000000000a125e5: movzx    edx, byte ptr [rdi + 0xb9]
+0000000000a125ec: movzx    r8d, byte ptr [rdi + 0xb8]
+0000000000a125f4: movzx    eax, byte ptr [rdi + 0xbb]
+0000000000a125fb: mov      r9, r12
+0000000000a125fe: mov      dword ptr [rsp + 0x40], eax
+0000000000a12602: mov      dword ptr [rsp + 0x38], ecx
+0000000000a12606: mov      dword ptr [rsp + 0x30], edx
+0000000000a1260a: mov      dword ptr [rsp + 0x28], r8d
+0000000000a1260f: lea      rcx, [rip + 0xd50f28a]
+0000000000a12616: lea      r8, [rip + 0x3b3343] ; UTF16 'file[%s], line[%d], socket disconnect without login(ip address %d.%d.%d.%d)'
+0000000000a1261d: mov      edx, 2
+0000000000a12622: mov      dword ptr [rsp + 0x20], 0x2a9b
+0000000000a1262a: call     0x734514
+0000000000a1262f: lea      rcx, [rdi + 0x54c]
+0000000000a12636: mov      r8d, 0x2aa4
+0000000000a1263c: mov      rdx, r12
+0000000000a1263f: call     0xa4ccec
+0000000000a12644: mov      rcx, rdi
+0000000000a12647: call     0xa121a0
+0000000000a1264c: lea      rcx, [rdi + 0x54c]
+0000000000a12653: mov      r8d, 0x2aa7
+0000000000a12659: mov      rdx, r12
+0000000000a1265c: mov      byte ptr [rdi + 0x548], 0
+0000000000a12663: call     0xa4cd8c
+0000000000a12668: add      rsp, 0x58
+0000000000a1266c: pop      r12
+0000000000a1266e: pop      rdi
+0000000000a1266f: pop      rsi
+0000000000a12670: pop      rbx
+0000000000a12671: ret

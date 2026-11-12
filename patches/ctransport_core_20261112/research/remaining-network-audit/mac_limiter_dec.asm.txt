@@ -1,0 +1,102 @@
+# mac_limiter_dec; PE pdata/unwind; entry 0xa0ded4
+# chunk 0xa0ded4..0xa0e072
+0000000000a0ded4: mov      qword ptr [rsp + 0x10], rdx
+0000000000a0ded9: push     rbx
+0000000000a0deda: push     rbp
+0000000000a0dedb: push     rsi
+0000000000a0dedc: push     rdi
+0000000000a0dedd: push     r12
+0000000000a0dedf: sub      rsp, 0x40
+0000000000a0dee3: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000a0deec: mov      rdi, rcx
+0000000000a0deef: mov      edx, dword ptr [rip + 0x2ebb12e3]
+0000000000a0def5: mov      rax, qword ptr gs:[0x58]
+0000000000a0defe: mov      r12d, 0x7d58
+0000000000a0df04: mov      rsi, qword ptr [rax + rdx*8]
+0000000000a0df08: movsxd   r8, dword ptr [rsi + r12]
+0000000000a0df0c: lea      rbp, [rip - 0x60df13]
+0000000000a0df13: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+0000000000a0df1b: lea      eax, [rdx + 1]
+0000000000a0df1e: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+0000000000a0df26: imul     r8, r8, 0x3e8
+0000000000a0df2d: add      r8, rdx
+0000000000a0df30: lea      rax, [rip + 0x3b6319] ; UTF16 'int __cdecl CSocketLimiter::DecUserSocketPerMAC(__int64)'
+0000000000a0df37: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+0000000000a0df3f: mov      qword ptr [rsp + 0x70], rcx
+0000000000a0df44: mov      r8d, 0x2c5d
+0000000000a0df4a: lea      rdx, [rip + 0x3ab24f] ; UTF16 '.\\UserSocket.cpp'
+0000000000a0df51: call     0xa4ccec
+0000000000a0df56: nop
+0000000000a0df57: cmp      dword ptr [rip + 0x904f0e], 0
+0000000000a0df5e: jle      0xa0e043
+0000000000a0df64: lea      rbx, [rdi + 0x28]
+0000000000a0df68: lea      r8, [rsp + 0x78]
+0000000000a0df6d: lea      rdx, [rsp + 0x28]
+0000000000a0df72: mov      rcx, rbx
+0000000000a0df75: call     0xa03dd8
+0000000000a0df7a: mov      rdx, qword ptr [rsp + 0x28]
+0000000000a0df7f: test     rdx, rdx
+0000000000a0df82: je       0xa0e03d
+0000000000a0df88: cmp      rdx, rbx
+0000000000a0df8b: jne      0xa0e03d
+0000000000a0df91: mov      rcx, qword ptr [rsp + 0x30]
+0000000000a0df96: cmp      rcx, qword ptr [rbx + 8]
+0000000000a0df9a: sete     al
+0000000000a0df9d: test     al, al
+0000000000a0df9f: je       0xa0dfca
+0000000000a0dfa1: mov      r8d, 0x65
+0000000000a0dfa7: lea      rdx, [rip + 0x1239d2] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\TemplateHelper.h'
+0000000000a0dfae: mov      rcx, rdi
+0000000000a0dfb1: call     0xa4cd8c
+0000000000a0dfb6: nop
+0000000000a0dfb7: movsxd   rax, dword ptr [rsi + r12]
+0000000000a0dfbb: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+0000000000a0dfc3: xor      eax, eax
+0000000000a0dfc5: jmp      0xa0e067
+0000000000a0dfca: cmp      rcx, qword ptr [rdx + 8]
+0000000000a0dfce: jne      0xa0dfd6
+0000000000a0dfd0: call     0x866f68
+0000000000a0dfd5: int3
+0000000000a0dfd6: cmp      dword ptr [rcx + 0x20], 1
+0000000000a0dfda: jne      0xa0e010
+0000000000a0dfdc: lea      rdx, [rsp + 0x78]
+0000000000a0dfe1: mov      rcx, rbx
+0000000000a0dfe4: call     0xa0889c
+0000000000a0dfe9: nop
+0000000000a0dfea: mov      r8d, 0x65
+0000000000a0dff0: lea      rdx, [rip + 0x123989] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\TemplateHelper.h'
+0000000000a0dff7: mov      rcx, rdi
+0000000000a0dffa: call     0xa4cd8c
+0000000000a0dfff: nop
+0000000000a0e000: movsxd   rax, dword ptr [rsi + r12]
+0000000000a0e004: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+0000000000a0e00c: xor      eax, eax
+0000000000a0e00e: jmp      0xa0e067
+0000000000a0e010: add      dword ptr [rcx + 0x20], -1
+0000000000a0e014: mov      ebx, dword ptr [rcx + 0x20]
+0000000000a0e017: mov      r8d, 0x65
+0000000000a0e01d: lea      rdx, [rip + 0x12395c] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\TemplateHelper.h'
+0000000000a0e024: mov      rcx, rdi
+0000000000a0e027: call     0xa4cd8c
+0000000000a0e02c: nop
+0000000000a0e02d: movsxd   rcx, dword ptr [rsi + r12]
+0000000000a0e031: add      dword ptr [rbp + rcx*4 + 0x47e2a40], -1
+0000000000a0e039: mov      eax, ebx
+0000000000a0e03b: jmp      0xa0e067
+0000000000a0e03d: call     0x480214
+0000000000a0e042: nop
+0000000000a0e043: mov      r8d, 0x65
+0000000000a0e049: lea      rdx, [rip + 0x123930] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\TemplateHelper.h'
+0000000000a0e050: mov      rcx, rdi
+0000000000a0e053: call     0xa4cd8c
+0000000000a0e058: nop
+0000000000a0e059: movsxd   rax, dword ptr [rsi + r12]
+0000000000a0e05d: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+0000000000a0e065: xor      eax, eax
+0000000000a0e067: add      rsp, 0x40
+0000000000a0e06b: pop      r12
+0000000000a0e06d: pop      rdi
+0000000000a0e06e: pop      rsi
+0000000000a0e06f: pop      rbp
+0000000000a0e070: pop      rbx
+0000000000a0e071: ret

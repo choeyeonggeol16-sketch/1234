@@ -1,0 +1,390 @@
+# creature_add_caller_572d98; PE pdata/unwind; entry 0x572d98
+# chunk 0x572d98..0x57341b
+0000000000572d98: mov      byte ptr [rsp + 0x18], r8b
+0000000000572d9d: push     rbx
+0000000000572d9e: push     rbp
+0000000000572d9f: push     rsi
+0000000000572da0: push     rdi
+0000000000572da1: push     r12
+0000000000572da3: push     r13
+0000000000572da5: push     r14
+0000000000572da7: push     r15
+0000000000572da9: mov      r11, rsp
+0000000000572dac: sub      rsp, 0x88
+0000000000572db3: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000572dbc: movdqa   xmmword ptr [rsp + 0x70], xmm6
+0000000000572dc2: mov      rbx, rdx
+0000000000572dc5: mov      rdi, rcx
+0000000000572dc8: mov      r8d, dword ptr [rip + 0x2f04c409]
+0000000000572dcf: mov      rax, qword ptr gs:[0x58]
+0000000000572dd8: mov      esi, 0x7d58
+0000000000572ddd: mov      rbp, qword ptr [rax + r8*8]
+0000000000572de1: movsxd   r10, dword ptr [rsi + rbp]
+0000000000572de5: lea      r15, [rip - 0x172dec]
+0000000000572dec: movsxd   r8, dword ptr [r15 + r10*4 + 0x47e2a40]
+0000000000572df4: lea      eax, [r8 + 1]
+0000000000572df8: mov      dword ptr [r15 + r10*4 + 0x47e2a40], eax
+0000000000572e00: imul     r10, r10, 0x3e8
+0000000000572e07: add      r10, r8
+0000000000572e0a: lea      rax, [rip + 0x65dbbf] ; UTF16 'void __cdecl CCreature::Action(class CObject *,bool,bool)'
+0000000000572e11: mov      qword ptr [r15 + r10*8 + 0x47bf7c0], rax
+0000000000572e19: xor      r14d, r14d
+0000000000572e1c: cmp      r9b, r14b
+0000000000572e1f: sete     r13b
+0000000000572e23: mov      byte ptr [r11 + 0x60], r13b
+0000000000572e27: add      rcx, 0x15d0
+0000000000572e2e: call     0x9259b4
+0000000000572e33: mov      rdx, rax
+0000000000572e36: lea      r8, [rsp + 0xe0]
+0000000000572e3e: mov      rcx, rdi
+0000000000572e41: call     0x568720
+0000000000572e46: mov      rdx, rbx
+0000000000572e49: mov      rcx, rdi
+0000000000572e4c: call     0x568a30
+0000000000572e51: cmp      al, r14b
+0000000000572e54: jne      0x572e68
+0000000000572e56: movsxd   rax, dword ptr [rsi + rbp]
+0000000000572e5a: add      dword ptr [r15 + rax*4 + 0x47e2a40], -1
+0000000000572e63: jmp      0x573401
+0000000000572e68: mov      rax, qword ptr [rbx]
+0000000000572e6b: mov      rcx, rbx
+0000000000572e6e: call     qword ptr [rax + 0x168]
+0000000000572e74: cmp      al, r14b
+0000000000572e77: je       0x572edb
+0000000000572e79: mov      rax, qword ptr [rbx]
+0000000000572e7c: mov      rcx, rbx
+0000000000572e7f: call     qword ptr [rax + 0x208]
+0000000000572e85: mov      rcx, rax
+0000000000572e88: call     0x7567f4
+0000000000572e8d: cmp      al, r14b
+0000000000572e90: je       0x572edb
+0000000000572e92: mov      rax, qword ptr [rdi]
+0000000000572e95: mov      rcx, rdi
+0000000000572e98: call     qword ptr [rax + 0x168]
+0000000000572e9e: cmp      al, r14b
+0000000000572ea1: je       0x572edb
+0000000000572ea3: mov      rax, qword ptr [rdi]
+0000000000572ea6: mov      rcx, rdi
+0000000000572ea9: call     qword ptr [rax + 0x208]
+0000000000572eaf: mov      rcx, rax
+0000000000572eb2: call     0x7567f4
+0000000000572eb7: cmp      al, r14b
+0000000000572eba: jne      0x572edb
+0000000000572ebc: mov      rax, qword ptr [rdi]
+0000000000572ebf: mov      rcx, rdi
+0000000000572ec2: call     qword ptr [rax + 0x978]
+0000000000572ec8: nop
+0000000000572ec9: movsxd   rax, dword ptr [rsi + rbp]
+0000000000572ecd: add      dword ptr [r15 + rax*4 + 0x47e2a40], -1
+0000000000572ed6: jmp      0x573401
+0000000000572edb: cmp      rbx, rdi
+0000000000572ede: je       0x572f12
+0000000000572ee0: mov      rax, qword ptr [rbx]
+0000000000572ee3: mov      rcx, rbx
+0000000000572ee6: call     qword ptr [rax + 0x78]
+0000000000572ee9: cmp      al, r14b
+0000000000572eec: jne      0x572f12
+0000000000572eee: mov      rax, qword ptr [rdi]
+0000000000572ef1: xor      r8d, r8d
+0000000000572ef4: xor      edx, edx
+0000000000572ef6: mov      rcx, rdi
+0000000000572ef9: call     qword ptr [rax + 0x980]
+0000000000572eff: nop
+0000000000572f00: movsxd   rax, dword ptr [rsi + rbp]
+0000000000572f04: add      dword ptr [r15 + rax*4 + 0x47e2a40], -1
+0000000000572f0d: jmp      0x573401
+0000000000572f12: lea      rcx, [rdi + 0x15d0]
+0000000000572f19: call     0x9259b4
+0000000000572f1e: mov      rsi, rax
+0000000000572f21: mov      rdx, qword ptr [rdi]
+0000000000572f24: mov      rcx, rdi
+0000000000572f27: call     qword ptr [rdx + 0x168]
+0000000000572f2d: cmp      al, r14b
+0000000000572f30: je       0x572f81
+0000000000572f32: mov      rdx, qword ptr [rdi]
+0000000000572f35: mov      rcx, rdi
+0000000000572f38: call     qword ptr [rdx + 0x208]
+0000000000572f3e: mov      rcx, rax
+0000000000572f41: call     0x94fa8c
+0000000000572f46: cmp      al, r14b
+0000000000572f49: je       0x572f81
+0000000000572f4b: mov      rax, qword ptr [rdi]
+0000000000572f4e: mov      rcx, rdi
+0000000000572f51: call     qword ptr [rax + 0x208]
+0000000000572f57: mov      r8, qword ptr [rax]
+0000000000572f5a: mov      edx, 0xab4
+0000000000572f5f: mov      rcx, rax
+0000000000572f62: call     qword ptr [r8 + 0x860]
+0000000000572f69: nop
+0000000000572f6a: mov      eax, 0x7d58
+0000000000572f6f: movsxd   rax, dword ptr [rax + rbp]
+0000000000572f73: add      dword ptr [r15 + rax*4 + 0x47e2a40], -1
+0000000000572f7c: jmp      0x573401
+0000000000572f81: mov      rax, qword ptr [rbx]
+0000000000572f84: mov      rcx, rbx
+0000000000572f87: call     qword ptr [rax + 0x120]
+0000000000572f8d: cmp      al, r14b
+0000000000572f90: je       0x572fc1
+0000000000572f92: cmp      rbx, rsi
+0000000000572f95: je       0x572faa
+0000000000572f97: mov      rax, qword ptr [rdi]
+0000000000572f9a: xor      r8d, r8d
+0000000000572f9d: mov      rdx, rbx
+0000000000572fa0: mov      rcx, rdi
+0000000000572fa3: call     qword ptr [rax + 0x980]
+0000000000572fa9: nop
+0000000000572faa: mov      eax, 0x7d58
+0000000000572faf: movsxd   rax, dword ptr [rax + rbp]
+0000000000572fb3: add      dword ptr [r15 + rax*4 + 0x47e2a40], -1
+0000000000572fbc: jmp      0x573401
+0000000000572fc1: mov      rax, qword ptr [rdi]
+0000000000572fc4: mov      dl, 1
+0000000000572fc6: mov      rcx, rdi
+0000000000572fc9: call     qword ptr [rax + 0xa50]
+0000000000572fcf: cmp      al, r14b
+0000000000572fd2: jne      0x5733b2
+0000000000572fd8: mov      rax, qword ptr [rbx]
+0000000000572fdb: mov      rcx, rbx
+0000000000572fde: call     qword ptr [rax + 0x260]
+0000000000572fe4: cmp      al, r14b
+0000000000572fe7: je       0x57301b
+0000000000572fe9: mov      rax, qword ptr [rdi]
+0000000000572fec: mov      rcx, rdi
+0000000000572fef: call     qword ptr [rax + 0x168]
+0000000000572ff5: cmp      al, r14b
+0000000000572ff8: je       0x573036
+0000000000572ffa: mov      rax, qword ptr [rdi]
+0000000000572ffd: mov      rcx, rdi
+0000000000573000: call     qword ptr [rax + 0x208]
+0000000000573006: mov      rcx, qword ptr [rax + 0xa88]
+000000000057300d: mov      eax, dword ptr [rcx + 0x2168]
+0000000000573013: cmp      eax, dword ptr [rip + 0xd9fec3]
+0000000000573019: je       0x573036
+000000000057301b: cmp      rsi, r14
+000000000057301e: je       0x5733b2
+0000000000573024: cmp      rsi, rbx
+0000000000573027: jne      0x5733b2
+000000000057302d: cmp      rbx, rdi
+0000000000573030: je       0x5733b2
+0000000000573036: mov      rax, qword ptr [rdi]
+0000000000573039: mov      rcx, rdi
+000000000057303c: call     qword ptr [rax + 0x168]
+0000000000573042: cmp      al, r14b
+0000000000573045: je       0x57306d
+0000000000573047: cmp      dword ptr [rdi + 0xf50], r14d
+000000000057304e: jne      0x573060
+0000000000573050: mov      rax, qword ptr [rdi + 0xa88]
+0000000000573057: cmp      byte ptr [rax + 0x2164], r14b
+000000000057305e: jne      0x57306d
+0000000000573060: mov      byte ptr [rsp + 0xe8], r14b
+0000000000573068: jmp      0x573155
+000000000057306d: mov      rax, qword ptr [rdi]
+0000000000573070: mov      rcx, rdi
+0000000000573073: call     qword ptr [rax + 0x170]
+0000000000573079: cmp      al, r14b
+000000000057307c: je       0x573155
+0000000000573082: mov      rax, qword ptr [rbx]
+0000000000573085: mov      rcx, rbx
+0000000000573088: call     qword ptr [rax + 0x160]
+000000000057308e: cmp      al, r14b
+0000000000573091: je       0x5730b0
+0000000000573093: mov      rax, qword ptr [rbx]
+0000000000573096: mov      rcx, rbx
+0000000000573099: call     qword ptr [rax + 0x1f0]
+000000000057309f: mov      rcx, qword ptr [rax + 0xa88]
+00000000005730a6: movsd    xmm6, qword ptr [rcx + 0x88]
+00000000005730ae: jmp      0x5730b8
+00000000005730b0: movsd    xmm6, qword ptr [rip + 0x62ac90]
+00000000005730b8: mov      rax, qword ptr [rbx]
+00000000005730bb: lea      rdx, [rsp + 0x38]
+00000000005730c0: mov      rcx, rbx
+00000000005730c3: call     qword ptr [rax + 0xf0]
+00000000005730c9: mov      rcx, qword ptr [rdi + 0xa88]
+00000000005730d0: add      rcx, 8
+00000000005730d4: movsd    xmm2, qword ptr [rcx + 8]
+00000000005730d9: subsd    xmm2, qword ptr [rax + 8]
+00000000005730de: movsd    xmm0, qword ptr [rcx]
+00000000005730e2: subsd    xmm0, qword ptr [rax]
+00000000005730e6: movsd    xmm1, qword ptr [rcx + 0x10]
+00000000005730eb: subsd    xmm1, qword ptr [rax + 0x10]
+00000000005730f0: mulsd    xmm0, xmm0
+00000000005730f4: mulsd    xmm2, xmm2
+00000000005730f8: addsd    xmm0, xmm2
+00000000005730fc: mulsd    xmm1, xmm1
+0000000000573100: addsd    xmm0, xmm1
+0000000000573104: call     0xabb910
+0000000000573109: mov      rax, qword ptr [rdi + 0xa88]
+0000000000573110: cvtsi2sd xmm1, dword ptr [rax + 0x1aa8]
+0000000000573118: addsd    xmm1, qword ptr [rax + 0x88]
+0000000000573120: addsd    xmm1, xmm6
+0000000000573124: comisd   xmm1, xmm0
+0000000000573128: jbe      0x57312e
+000000000057312a: mov      cl, 1
+000000000057312c: jmp      0x573131
+000000000057312e: mov      cl, r14b
+0000000000573131: cmp      dword ptr [rdi + 0xf50], r14d
+0000000000573138: jne      0x573143
+000000000057313a: cmp      byte ptr [rax + 0x2164], r14b
+0000000000573141: jne      0x573155
+0000000000573143: movzx    eax, r13b
+0000000000573147: cmp      cl, r14b
+000000000057314a: cmovne   eax, r14d
+000000000057314e: mov      byte ptr [rsp + 0xe8], al
+0000000000573155: lea      r8, [rsp + 0xe8]
+000000000057315d: mov      rdx, rbx
+0000000000573160: mov      rcx, rdi
+0000000000573163: call     0x5688d8
+0000000000573168: mov      sil, al
+000000000057316b: cmp      byte ptr [rsp + 0xe8], r14b
+0000000000573173: je       0x5732b2
+0000000000573179: mov      rdx, qword ptr [rdi]
+000000000057317c: mov      rcx, rdi
+000000000057317f: call     qword ptr [rdx + 0x168]
+0000000000573185: cmp      al, r14b
+0000000000573188: je       0x5731dd
+000000000057318a: mov      r8, qword ptr [rbx]
+000000000057318d: lea      rdx, [rsp + 0x38]
+0000000000573192: mov      rcx, rbx
+0000000000573195: call     qword ptr [r8 + 0xf0]
+000000000057319c: mov      rcx, qword ptr [rdi + 0xa88]
+00000000005731a3: movsd    xmm1, qword ptr [rcx + 0x10]
+00000000005731a8: subsd    xmm1, qword ptr [rax + 8]
+00000000005731ad: movsd    xmm0, qword ptr [rcx + 8]
+00000000005731b2: subsd    xmm0, qword ptr [rax]
+00000000005731b6: mulsd    xmm0, xmm0
+00000000005731ba: mulsd    xmm1, xmm1
+00000000005731be: addsd    xmm0, xmm1
+00000000005731c2: comisd   xmm0, xmmword ptr [rip + 0x65d7fe]
+00000000005731ca: jbe      0x5731dd
+00000000005731cc: mov      rax, qword ptr [rdi]
+00000000005731cf: mov      rcx, rdi
+00000000005731d2: call     qword ptr [rax + 0x978]
+00000000005731d8: jmp      0x5733ef
+00000000005731dd: cmp      sil, r14b
+00000000005731e0: je       0x57324a
+00000000005731e2: mov      rax, qword ptr [rdi]
+00000000005731e5: mov      rcx, rdi
+00000000005731e8: call     qword ptr [rax + 0xac8]
+00000000005731ee: lea      rcx, [rip + 0x65acdb]
+00000000005731f5: mov      qword ptr [rsp + 0x38], rcx
+00000000005731fa: mov      qword ptr [rsp + 0x40], rbx
+00000000005731ff: mov      cl, byte ptr [rsp + 0xe0]
+0000000000573206: mov      byte ptr [rsp + 0x48], cl
+000000000057320a: mov      dword ptr [rsp + 0x4c], r14d
+000000000057320f: mov      dword ptr [rsp + 0x50], r14d
+0000000000573214: mov      dword ptr [rsp + 0x54], r14d
+0000000000573219: mov      dword ptr [rsp + 0x58], r14d
+000000000057321e: lea      rcx, [rax + 0x10d8]
+0000000000573225: lea      rdx, [rip + 0x65d304] ; UTF16 'MoveToTargetRelative'
+000000000057322c: mov      qword ptr [rsp + 0x20], rdx
+0000000000573231: lea      r9, [rsp + 0x38]
+0000000000573236: lea      r8, [rip + 0x20cd37]
+000000000057323d: mov      rdx, rax
+0000000000573240: call     0x466d44
+0000000000573245: jmp      0x5733ef
+000000000057324a: mov      rax, qword ptr [rdi]
+000000000057324d: mov      rcx, rdi
+0000000000573250: call     qword ptr [rax + 0xac8]
+0000000000573256: lea      rcx, [rip + 0x65ac63]
+000000000057325d: mov      qword ptr [rsp + 0x38], rcx
+0000000000573262: mov      qword ptr [rsp + 0x40], rbx
+0000000000573267: mov      cl, byte ptr [rsp + 0xe0]
+000000000057326e: mov      byte ptr [rsp + 0x48], cl
+0000000000573272: mov      dword ptr [rsp + 0x4c], r14d
+0000000000573277: mov      dword ptr [rsp + 0x50], r14d
+000000000057327c: mov      dword ptr [rsp + 0x54], r14d
+0000000000573281: mov      dword ptr [rsp + 0x58], r14d
+0000000000573286: lea      rcx, [rax + 0x10d8]
+000000000057328d: lea      rdx, [rip + 0x65d27c] ; UTF16 'MoveToTarget'
+0000000000573294: mov      qword ptr [rsp + 0x20], rdx
+0000000000573299: lea      r9, [rsp + 0x38]
+000000000057329e: lea      r8, [rip + 0x20d68f]
+00000000005732a5: mov      rdx, rax
+00000000005732a8: call     0x466d44
+00000000005732ad: jmp      0x5733ef
+00000000005732b2: cmp      byte ptr [rsp + 0xe0], r14b
+00000000005732ba: jne      0x573367
+00000000005732c0: mov      rax, qword ptr [rbx]
+00000000005732c3: mov      rdx, rdi
+00000000005732c6: mov      rcx, rbx
+00000000005732c9: call     qword ptr [rax + 0x410]
+00000000005732cf: cmp      al, r14b
+00000000005732d2: jne      0x573367
+00000000005732d8: mov      rax, qword ptr [rdi]
+00000000005732db: mov      rcx, rdi
+00000000005732de: call     qword ptr [rax + 0x168]
+00000000005732e4: cmp      al, r14b
+00000000005732e7: je       0x5733ef
+00000000005732ed: mov      rax, qword ptr [rbx]
+00000000005732f0: mov      rcx, rbx
+00000000005732f3: call     qword ptr [rax + 0x170]
+00000000005732f9: cmp      al, r14b
+00000000005732fc: je       0x573356
+00000000005732fe: mov      rax, qword ptr [rbx]
+0000000000573301: mov      rcx, rbx
+0000000000573304: call     qword ptr [rax + 0x1f0]
+000000000057330a: mov      rbx, rax
+000000000057330d: mov      rdx, qword ptr [rdi]
+0000000000573310: mov      rcx, rdi
+0000000000573313: call     qword ptr [rdx + 0xac8]
+0000000000573319: lea      rcx, [rip + 0x65abd0]
+0000000000573320: mov      qword ptr [rsp + 0x38], rcx
+0000000000573325: mov      qword ptr [rsp + 0x40], rbx
+000000000057332a: lea      rcx, [rax + 0x10d8]
+0000000000573331: lea      rdx, [rip + 0x65d238] ; UTF16 'Talk'
+0000000000573338: mov      qword ptr [rsp + 0x20], rdx
+000000000057333d: lea      r9, [rsp + 0x38]
+0000000000573342: lea      r8, [rip + 0x39c1b]
+0000000000573349: mov      rdx, rax
+000000000057334c: call     0x466d44
+0000000000573351: jmp      0x5733ef
+0000000000573356: mov      rax, qword ptr [rdi]
+0000000000573359: mov      rcx, rdi
+000000000057335c: call     qword ptr [rax + 0x978]
+0000000000573362: jmp      0x5733ef
+0000000000573367: mov      rax, qword ptr [rdi]
+000000000057336a: mov      rcx, rdi
+000000000057336d: call     qword ptr [rax + 0xac8]
+0000000000573373: lea      rcx, [rip + 0x65ab66]
+000000000057337a: mov      qword ptr [rsp + 0x38], rcx
+000000000057337f: mov      qword ptr [rsp + 0x40], rbx
+0000000000573384: mov      byte ptr [rsp + 0x48], 1
+0000000000573389: lea      rcx, [rax + 0x10d8]
+0000000000573390: lea      rdx, [rip + 0x65d1c9] ; UTF16 'Attack'
+0000000000573397: mov      qword ptr [rsp + 0x20], rdx
+000000000057339c: lea      r9, [rsp + 0x38]
+00000000005733a1: lea      r8, [rip + 0x399f4]
+00000000005733a8: mov      rdx, rax
+00000000005733ab: call     0x466d44
+00000000005733b0: jmp      0x5733ef
+00000000005733b2: lea      rcx, [rdi + 0x15d0]
+00000000005733b9: call     0x925d04
+00000000005733be: cmp      al, r14b
+00000000005733c1: je       0x5733dc
+00000000005733c3: mov      eax, dword ptr [rdi + 0x15d0]
+00000000005733c9: cmp      eax, dword ptr [rbx + 0x18]
+00000000005733cc: jne      0x5733dc
+00000000005733ce: mov      rax, qword ptr [rdi]
+00000000005733d1: mov      rcx, rdi
+00000000005733d4: call     qword ptr [rax + 0x978]
+00000000005733da: jmp      0x5733ef
+00000000005733dc: mov      rax, qword ptr [rdi]
+00000000005733df: xor      r8d, r8d
+00000000005733e2: mov      rdx, rbx
+00000000005733e5: mov      rcx, rdi
+00000000005733e8: call     qword ptr [rax + 0x980]
+00000000005733ee: nop
+00000000005733ef: mov      eax, 0x7d58
+00000000005733f4: movsxd   rax, dword ptr [rax + rbp]
+00000000005733f8: add      dword ptr [r15 + rax*4 + 0x47e2a40], -1
+0000000000573401: movdqa   xmm6, xmmword ptr [rsp + 0x70]
+0000000000573407: add      rsp, 0x88
+000000000057340e: pop      r15
+0000000000573410: pop      r14
+0000000000573412: pop      r13
+0000000000573414: pop      r12
+0000000000573416: pop      rdi
+0000000000573417: pop      rsi
+0000000000573418: pop      rbp
+0000000000573419: pop      rbx
+000000000057341a: ret

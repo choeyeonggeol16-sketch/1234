@@ -50,6 +50,19 @@ public class Server {
 
     private static volatile l1j.server.server.model.network.core.Server gameListener;
 
+    /** Sampled native thread15 process and transport health; null before startup. */
+    public static l1j.server.server.model.network.core.CPerfMon.Snapshot networkPerformance(){
+        final var listener=gameListener;return listener==null?null:listener.performance();
+    }
+    /** Counts: all retained sockets, authenticated sockets, entering accounts, duplicate denials. */
+    public static long[] networkAccountRegistryDiagnostics(){
+        final var listener=gameListener;return listener==null?new long[4]:listener.accountRegistryDiagnostics();
+    }
+    public static long findEnteringAccount(int accountId){
+        final var listener=gameListener;return listener==null?0:listener.findEnteringAccount(accountId);
+    }
+
+
     public static synchronized boolean startLoginServer() {
         // PSS has a dedicated listener/group. Failure and shutdown stay separate.
         l1j.server.server.model.character.pss.window.PlaySupportWindow.startIndependent();

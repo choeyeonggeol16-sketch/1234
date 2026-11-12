@@ -150,6 +150,7 @@ struct Fixture {
   CTransport_SetUserPacketCallback(listener,packetCallback);CTransport_SetNetworkDeadlineCallback(listener,deadlineCallback);
   server = static_cast<Server*>(CIO_Create_TcpServer(listener));auto codec=fixturecodec::functions();check(CTransport_Server_SetCodecApi(server,codec.data(),7),"fixture codec API install"); CIO_Server_SetWorkerThreadCount(server, 4); CIO_Server_SetMaxConnectionCount(server, 128);
   check(CTransport_Server_ConfigureLimits(server,ipLimit,macLimit),"configure native limits");
+  check(CTransport_Server_ConfigurePerf(server,100),"configure native performance sampling");
   check(CIO_Server_Start(server, "127.0.0.1", 0), "start failed");
  }
  std::pair<SOCKET,std::uint64_t> connect() {
@@ -630,4 +631,62 @@ static void originalStructureTests(){
  std::cout<<"PASS original structure: serializer 8000 concurrent+reentry+504 capacity; RegisterWait64; 48 event accepts; owner17; raw/secondary/generation maps; native IP/MAC rejection and release; ReportSocket\n";
 }
 
-int main(){std::cout.setf(std::ios::unitbuf);originalStructureTests();userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}
+
+static void remainingNetworkTests(){
+ {
+  Fixture f;f.state.userProfile=true;auto [a,idA]=f.connect();auto [b,idB]=f.connect();
+  check(!CTransport_UserSocket_SetCharacterEntered(f.server,idA,1),"character entered without authenticated account");
+  check(CTransport_UserSocket_SetAccountIdentity(f.server,idA,77),"bind account A");
+  check(CTransport_UserSocket_SetAccountIdentity(f.server,idA,77)&&!CTransport_UserSocket_SetAccountIdentity(f.server,idA,78),"account rebinding was not fenced");
+  check(CTransport_UserSocket_SetAccountIdentity(f.server,idB,77),"bind account B");
+  check(CTransport_UserSocket_SetCharacterEntered(f.server,idA,1),"claim account enter map");
+  check(!CTransport_UserSocket_SetCharacterEntered(f.server,idB,1)&&CTransport_UserSocket_FindEnteringAccount(f.server,77)==idA,"duplicate account enter displaced live owner");
+  std::uint64_t counts[4]{},state[14]{};check(CTransport_Server_GetAccountRegistryDiagnostics(f.server,counts,4)&&counts[0]==2&&counts[1]==2&&counts[2]==1&&counts[3]==1,"26/27/28 counts or keys");
+  check(CTransport_UserSocket_GetState(f.server,idA,state,14)&&state[11]==77&&state[12]==1,"account state snapshot");
+  check(CTransport_UserSocket_SetSessionState(f.server,idA,1)&&!CTransport_UserSocket_FindEnteringAccount(f.server,77),"restart did not release enter map");
+  check(CTransport_UserSocket_SetCharacterEntered(f.server,idB,1),"restart account slot not reusable");
+  check(CIO_Server_Disconnect(f.server,idA,1),"old account close");until([&]{return f.state.closed==1;});
+  check(CTransport_UserSocket_FindEnteringAccount(f.server,77)==idB,"old close removed replacement account entry");
+  f.state.holdPacket=true;CIO_Server_PauseReceive(f.server,idB,0);fakewin::feed(b,l1Frame(128));until([&]{return f.state.heldSequence.load()!=0;});
+  check(CIO_Server_Disconnect(f.server,idB,1),"held account close");until([&]{return f.state.closed==2;});
+  check(CTransport_Server_GetAccountRegistryDiagnostics(f.server,counts,4)&&counts[0]==1&&counts[1]==0&&counts[2]==0,"close-start kept game identities or prematurely dropped packet owner");
+  check(CTransport_UserSocket_ReleasePacket(f.server,idB,f.state.heldSequence),"retired account packet release");until([&]{return f.server->connections==0;});
+ }
+ {
+  Fixture f;std::vector<std::uint64_t> ids;
+  for(unsigned i=0;i<16;++i){auto [socket,id]=f.connect();ids.push_back(id);check(CTransport_UserSocket_SetAccountIdentity(f.server,id,900),"contender account bind");}
+  std::atomic<unsigned> winners{0};std::vector<std::thread> contenders;
+  for(auto id:ids)contenders.emplace_back([&,id]{if(CTransport_UserSocket_SetCharacterEntered(f.server,id,1))++winners;});
+  for(auto& t:contenders)t.join();check(winners==1,"parallel duplicate character entries both won");
+  for(auto id:ids)CIO_Server_Disconnect(f.server,id,1);until([&]{return f.server->connections==0;});
+  std::uint64_t counts[4]{};CTransport_Server_GetAccountRegistryDiagnostics(f.server,counts,4);check(counts[0]==0&&counts[1]==0&&counts[2]==0,"contending account maps leaked");
+ }
+ {
+  Fixture f(0,1);auto [a,idA]=f.connect();auto [b,idB]=f.connect();
+  check(!CTransport_UserSocket_SetAccountIdentity(f.server,idA,1),"MAC-enabled authentication admitted unidentified client");
+  check(CTransport_UserSocket_SetMacIdentity(f.server,idA,0xaabbccddeeffull)&&CTransport_UserSocket_SetAccountIdentity(f.server,idA,1),"verified MAC authentication failed");
+  check(!CTransport_UserSocket_SetMacIdentity(f.server,idB,0xaabbccddeeffull),"MAC cap ignored");
+  CIO_Server_Disconnect(f.server,idA,1);until([&]{return f.state.closed==1;});
+  check(CTransport_UserSocket_SetMacIdentity(f.server,idB,0xaabbccddeeffull)&&CTransport_UserSocket_SetAccountIdentity(f.server,idB,2),"closed MAC capacity not returned");
+ }
+ {
+  Fixture f;std::uint64_t sample[16]{};
+  until([&]{return CTransport_Server_GetPerfDiagnostics(f.server,sample,16)&&sample[0]>=2;});
+  check(sample[2]==15&&sample[1]>0&&sample[15]==0,"native CPerfMon TLS identity or fixture OS availability");
+  auto old=sample[0];std::atomic<bool> done{false};std::thread reader([&]{std::uint64_t values[16];while(!done)CTransport_Server_GetPerfDiagnostics(f.server,values,16);});
+  check(CIO_Server_Stop(f.server),"stop with concurrent performance read");done=true;reader.join();
+  check(!CTransport_Server_GetPerfDiagnostics(f.server,sample,16),"stopped monitor remained published");
+  check(CIO_Server_Start(f.server,"127.0.0.1",0),"restart after performance stop");until([&]{return CTransport_Server_GetPerfDiagnostics(f.server,sample,16)&&sample[0]>0;});
+ }
+ {
+  Fixture f;f.state.userProfile=true;
+  for(unsigned cycle=0;cycle<128;++cycle){auto [socket,id]=f.connect();check(CTransport_UserSocket_SetAccountIdentity(f.server,id,123)&&CTransport_UserSocket_SetCharacterEntered(f.server,id,1),"repeat account reuse admission");
+   check(CTransport_UserSocket_SetSessionState(f.server,id,0),"logout identity clear");
+   check(!CTransport_UserSocket_FindEnteringAccount(f.server,123),"logout retained entering account");
+   CIO_Server_Disconnect(f.server,id,1);until([&]{return f.server->connections==0;});
+  }
+ }
+ std::cout<<"PASS remaining network: original Playing(socket number)/EnterChar(account ID); authentication/enter/restart/logout/close;16-way duplicate entry;held plaintext/stale close;MAC-required auth/cap/reuse;actual CPerfMon owner15/restart/concurrent read-stop;128 account reconnects\n";
+}
+
+int main(){std::cout.setf(std::ios::unitbuf);remainingNetworkTests();originalStructureTests();userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}

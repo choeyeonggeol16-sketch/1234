@@ -1,0 +1,21 @@
+# caller_perfmon_mail_loop_725488; PE pdata/unwind; entry 0x725488
+# chunk 0x725488..0x7254e0
+0000000000725488: sub      rsp, 0x28
+000000000072548c: lea      r8, [rip + 0x562215] ; UTF16 'Perfmon in mailing mode'
+0000000000725493: xor      edx, edx
+0000000000725495: lea      rcx, [rip + 0xd7fc404]
+000000000072549c: call     0x734514
+00000000007254a1: call     0x722abc
+00000000007254a6: nop
+00000000007254a7: lea      r9, [rip + 0x560c7a]
+00000000007254ae: mov      r8d, 0xe8
+00000000007254b4: lea      rdx, [rip + 0x560c5d]
+00000000007254bb: lea      rcx, [rip + 0x52da56]
+00000000007254c2: call     0x66fda0
+00000000007254c7: lea      rcx, [rip + 0xd7fc3d2]
+00000000007254ce: call     0x732ab0
+00000000007254d3: mov      cl, 1
+00000000007254d5: call     0x66ffe0
+00000000007254da: nop
+00000000007254db: add      rsp, 0x28
+00000000007254df: ret

@@ -1,0 +1,33 @@
+# controller_vtable_ref_5a7f0c_call_ab9360; PE pdata/unwind; entry 0xab9360
+# chunk 0xab9360..0xab93e1
+0000000000ab9360: mov      qword ptr [rsp + 0x20], r9
+0000000000ab9365: mov      dword ptr [rsp + 0x18], r8d
+0000000000ab936a: mov      qword ptr [rsp + 0x10], rdx
+0000000000ab936f: sub      rsp, 0x58
+0000000000ab9373: mov      qword ptr [rsp + 0x50], rbx
+0000000000ab9378: mov      qword ptr [rsp + 0x48], rsi
+0000000000ab937d: mov      qword ptr [rsp + 0x40], rdi
+0000000000ab9382: mov      qword ptr [rsp + 0x38], r12
+0000000000ab9387: mov      r12, r9
+0000000000ab938a: movsxd   rdi, r8d
+0000000000ab938d: mov      rsi, rdx
+0000000000ab9390: mov      dword ptr [rsp + 0x20], 0
+0000000000ab9398: mov      rbx, rdi
+0000000000ab939b: imul     rbx, rdx
+0000000000ab939f: add      rbx, rcx
+0000000000ab93a2: mov      qword ptr [rsp + 0x60], rbx
+0000000000ab93a7: sub      edi, 1
+0000000000ab93aa: mov      dword ptr [rsp + 0x70], edi
+0000000000ab93ae: js       0xab93c0
+0000000000ab93b0: sub      rbx, rsi
+0000000000ab93b3: mov      qword ptr [rsp + 0x60], rbx
+0000000000ab93b8: mov      rcx, rbx
+0000000000ab93bb: call     r12
+0000000000ab93be: jmp      0xab93a7
+0000000000ab93c0: mov      dword ptr [rsp + 0x20], 1
+0000000000ab93c8: mov      rbx, qword ptr [rsp + 0x50]
+0000000000ab93cd: mov      rsi, qword ptr [rsp + 0x48]
+0000000000ab93d2: mov      rdi, qword ptr [rsp + 0x40]
+0000000000ab93d7: mov      r12, qword ptr [rsp + 0x38]
+0000000000ab93dc: add      rsp, 0x58
+0000000000ab93e0: ret

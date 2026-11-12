@@ -1,0 +1,84 @@
+# caller_inc_user_count_895354; PE pdata/unwind; entry 0x895354
+# chunk 0x895354..0x8954c3
+0000000000895354: push     rbx
+0000000000895356: push     rbp
+0000000000895357: push     rsi
+0000000000895358: push     rdi
+0000000000895359: push     r12
+000000000089535b: push     r13
+000000000089535d: push     r14
+000000000089535f: sub      rsp, 0x90
+0000000000895366: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+000000000089536f: mov      r12, rdx
+0000000000895372: mov      rdi, rcx
+0000000000895375: mov      r8d, dword ptr [rip + 0x2ed29e5c]
+000000000089537c: mov      rax, qword ptr gs:[0x58]
+0000000000895385: mov      r14d, 0x7d58
+000000000089538b: mov      rbp, qword ptr [rax + r8*8]
+000000000089538f: movsxd   r9, dword ptr [r14 + rbp]
+0000000000895393: lea      r13, [rip - 0x49539a]
+000000000089539a: movsxd   r8, dword ptr [r13 + r9*4 + 0x47e2a40]
+00000000008953a2: lea      eax, [r8 + 1]
+00000000008953a6: mov      dword ptr [r13 + r9*4 + 0x47e2a40], eax
+00000000008953ae: imul     r9, r9, 0x3e8
+00000000008953b5: add      r9, r8
+00000000008953b8: lea      rax, [rip + 0x487ec1] ; UTF16 'void __cdecl CRaidClientManager::ReloadUserIfReturnedCompletely(class User &)'
+00000000008953bf: mov      qword ptr [r13 + r9*8 + 0x47bf7c0], rax
+00000000008953c7: mov      rax, qword ptr [rdx]
+00000000008953ca: mov      rcx, rdx
+00000000008953cd: call     qword ptr [rax + 0xb28]
+00000000008953d3: mov      r11, rax
+00000000008953d6: test     rax, rax
+00000000008953d9: je       0x8954a4
+00000000008953df: mov      ecx, dword ptr [rax + 0xc98]
+00000000008953e5: and      ecx, 0x30
+00000000008953e8: cmp      cl, 0x30
+00000000008953eb: jne      0x8954a4
+00000000008953f1: mov      ecx, 1
+00000000008953f6: xor      eax, eax
+00000000008953f8: lock cmpxchg dword ptr [r11 + 0xc94], ecx
+0000000000895401: jne      0x8954a4
+0000000000895407: mov      ebx, dword ptr [r12 + 0x3d58]
+000000000089540f: mov      rax, qword ptr [r12]
+0000000000895413: mov      rcx, r12
+0000000000895416: call     qword ptr [rax + 0x490]
+000000000089541c: mov      r8d, eax
+000000000089541f: xor      r9d, r9d
+0000000000895422: mov      edx, ebx
+0000000000895424: mov      rcx, rdi
+0000000000895427: call     0x894d2c
+000000000089542c: mov      r11, qword ptr [r12]
+0000000000895430: mov      rcx, r12
+0000000000895433: call     qword ptr [r11 + 0xb28]
+000000000089543a: mov      rcx, rax
+000000000089543d: xor      edx, edx
+000000000089543f: call     0xa08940
+0000000000895444: lea      rdx, [r12 + 0x3d78]
+000000000089544c: lea      rcx, [rsp + 0x38]
+0000000000895451: call     0x462140
+0000000000895456: cvttsd2si esi, qword ptr [rsp + 0x48]
+000000000089545c: lea      rdx, [r12 + 0x3d78]
+0000000000895464: lea      rcx, [rsp + 0x50]
+0000000000895469: call     0x462140
+000000000089546e: cvttsd2si ebx, qword ptr [rsp + 0x58]
+0000000000895474: lea      rdx, [r12 + 0x3d78]
+000000000089547c: lea      rcx, [rsp + 0x68]
+0000000000895481: call     0x462140
+0000000000895486: cvttsd2si r8d, qword ptr [rsp + 0x68]
+000000000089548d: mov      dword ptr [rsp + 0x20], esi
+0000000000895491: mov      r9d, ebx
+0000000000895494: mov      rdx, r12
+0000000000895497: lea      rcx, [rip + 0x27b190a]
+000000000089549e: call     0x5c1314
+00000000008954a3: nop
+00000000008954a4: movsxd   rax, dword ptr [r14 + rbp]
+00000000008954a8: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000008954b1: add      rsp, 0x90
+00000000008954b8: pop      r14
+00000000008954ba: pop      r13
+00000000008954bc: pop      r12
+00000000008954be: pop      rdi
+00000000008954bf: pop      rsi
+00000000008954c0: pop      rbp
+00000000008954c1: pop      rbx
+00000000008954c2: ret

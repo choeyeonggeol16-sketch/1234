@@ -1,0 +1,98 @@
+# caller_map28_delete_8954e0; PE pdata/unwind; entry 0x8954e0
+# chunk 0x8954e0..0x895695
+00000000008954e0: push     rbx
+00000000008954e2: push     rbp
+00000000008954e3: push     rsi
+00000000008954e4: push     rdi
+00000000008954e5: push     r12
+00000000008954e7: push     r13
+00000000008954e9: push     r14
+00000000008954eb: sub      rsp, 0x40
+00000000008954ef: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000008954f8: mov      rsi, rdx
+00000000008954fb: mov      r12, rcx
+00000000008954fe: mov      r8d, dword ptr [rip + 0x2ed29cd3]
+0000000000895505: mov      rax, qword ptr gs:[0x58]
+000000000089550e: mov      r14d, 0x7d58
+0000000000895514: mov      rbp, qword ptr [rax + r8*8]
+0000000000895518: movsxd   r9, dword ptr [r14 + rbp]
+000000000089551c: lea      r13, [rip - 0x495523]
+0000000000895523: movsxd   r8, dword ptr [r13 + r9*4 + 0x47e2a40]
+000000000089552b: lea      eax, [r8 + 1]
+000000000089552f: mov      dword ptr [r13 + r9*4 + 0x47e2a40], eax
+0000000000895537: imul     r9, r9, 0x3e8
+000000000089553e: add      r9, r8
+0000000000895541: lea      rax, [rip + 0x487e08] ; UTF16 'void __cdecl CRaidClientManager::RestartUserIfCompletely(class User &)'
+0000000000895548: mov      qword ptr [r13 + r9*8 + 0x47bf7c0], rax
+0000000000895550: mov      rax, qword ptr [rdx]
+0000000000895553: mov      rcx, rdx
+0000000000895556: call     qword ptr [rax + 0xb28]
+000000000089555c: mov      rdi, rax
+000000000089555f: test     rax, rax
+0000000000895562: je       0x895679
+0000000000895568: mov      ecx, dword ptr [rax + 0xc98]
+000000000089556e: and      cx, 0xc0
+0000000000895573: cmp      cl, 0xc0
+0000000000895576: jne      0x895679
+000000000089557c: mov      qword ptr [rsp + 0x90], 0
+0000000000895588: mov      dword ptr [rsp + 0x88], 0
+0000000000895593: lea      r8, [rsp + 0x90]
+000000000089559b: lea      rdx, [rsp + 0x88]
+00000000008955a3: mov      rcx, rax
+00000000008955a6: call     0xa0dbb0
+00000000008955ab: mov      r11, qword ptr [rdi]
+00000000008955ae: mov      eax, dword ptr [rsp + 0x88]
+00000000008955b5: mov      dword ptr [rsp + 0x28], eax
+00000000008955b9: mov      rax, qword ptr [rsp + 0x90]
+00000000008955c1: mov      qword ptr [rsp + 0x20], rax
+00000000008955c6: mov      r9d, 0xc8
+00000000008955cc: lea      r8d, [r9 + 0x36]
+00000000008955d0: lea      rdx, [rip + 0x487d71]
+00000000008955d7: mov      rcx, rdi
+00000000008955da: call     qword ptr [r11 + 0x80]
+00000000008955e1: mov      rdx, qword ptr [rsp + 0x90]
+00000000008955e9: mov      rcx, rdi
+00000000008955ec: call     0x90e04c
+00000000008955f1: mov      edx, dword ptr [rdi + 0x7e4]
+00000000008955f7: test     edx, edx
+00000000008955f9: jle      0x895614
+00000000008955fb: mov      r9d, 0x4c4
+0000000000895601: lea      r8, [rip + 0x4842a8]
+0000000000895608: lea      rcx, [rip + 0x1770b3c1]
+000000000089560f: call     0x8951bc
+0000000000895614: mov      ebx, dword ptr [rsi + 0x3d58]
+000000000089561a: mov      rax, qword ptr [rsi]
+000000000089561d: mov      rcx, rsi
+0000000000895620: call     qword ptr [rax + 0x490]
+0000000000895626: mov      r8d, eax
+0000000000895629: xor      r9d, r9d
+000000000089562c: mov      edx, ebx
+000000000089562e: mov      rcx, r12
+0000000000895631: call     0x894d2c
+0000000000895636: mov      rcx, rsi
+0000000000895639: call     0x95a474
+000000000089563e: mov      dword ptr [rdi + 0x53c], 7
+0000000000895648: mov      rcx, rdi
+000000000089564b: call     0xa121a0
+0000000000895650: xor      edx, edx
+0000000000895652: mov      rcx, rdi
+0000000000895655: call     0xa08940
+000000000089565a: mov      r11, qword ptr [rsi]
+000000000089565d: mov      rcx, rsi
+0000000000895660: call     qword ptr [r11 + 0xb58]
+0000000000895667: mov      edx, eax
+0000000000895669: mov      r8, rdi
+000000000089566c: lea      rcx, [rip + 0x27b1735]
+0000000000895673: call     0x5b97b8
+0000000000895678: nop
+0000000000895679: movsxd   rax, dword ptr [r14 + rbp]
+000000000089567d: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+0000000000895686: add      rsp, 0x40
+000000000089568a: pop      r14
+000000000089568c: pop      r13
+000000000089568e: pop      r12
+0000000000895690: pop      rdi
+0000000000895691: pop      rsi
+0000000000895692: pop      rbp
+0000000000895693: pop      rbx
+0000000000895694: ret

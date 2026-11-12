@@ -26,6 +26,7 @@ public:
     void DecUserSocketPerIP(std::uint32_t key)noexcept{std::lock_guard<std::mutex> lock(gate_);Dec(ip_,key);}
     bool IncUserSocketPerMAC(std::uint64_t key)noexcept{std::lock_guard<std::mutex> lock(gate_);return key&&Inc(mac_,key,macLimit_);}
     void DecUserSocketPerMAC(std::uint64_t key)noexcept{std::lock_guard<std::mutex> lock(gate_);Dec(mac_,key);}
+    bool RequiresMacIdentity()noexcept{std::lock_guard<std::mutex> lock(gate_);return macLimit_!=0;}
     void Diagnostics(std::uint64_t* out)noexcept{std::lock_guard<std::mutex> lock(gate_);out[0]=ip_.size();out[1]=mac_.size();out[2]=ipLimit_;out[3]=macLimit_;}
 };
 }

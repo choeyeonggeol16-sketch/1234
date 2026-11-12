@@ -1,0 +1,65 @@
+# creature_add_caller_5ad66c; PE pdata/unwind; entry 0x5ad66c
+# chunk 0x5ad66c..0x5ad779
+00000000005ad66c: push     rbx
+00000000005ad66e: push     rbp
+00000000005ad66f: push     rsi
+00000000005ad670: push     rdi
+00000000005ad671: push     r12
+00000000005ad673: push     r13
+00000000005ad675: sub      rsp, 0x68
+00000000005ad679: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000005ad682: mov      rbx, r8
+00000000005ad685: mov      ebp, edx
+00000000005ad687: mov      rsi, rcx
+00000000005ad68a: mov      r9d, dword ptr [rip + 0x2f011b47]
+00000000005ad691: mov      rax, qword ptr gs:[0x58]
+00000000005ad69a: mov      r13d, 0x7d58
+00000000005ad6a0: mov      rdi, qword ptr [rax + r9*8]
+00000000005ad6a4: movsxd   r9, dword ptr [rdi + r13]
+00000000005ad6a8: lea      r12, [rip - 0x1ad6af]
+00000000005ad6af: movsxd   r8, dword ptr [r12 + r9*4 + 0x47e2a40]
+00000000005ad6b7: lea      eax, [r8 + 1]
+00000000005ad6bb: mov      dword ptr [r12 + r9*4 + 0x47e2a40], eax
+00000000005ad6c3: imul     r9, r9, 0x3e8
+00000000005ad6ca: add      r9, r8
+00000000005ad6cd: lea      rax, [rip + 0x634cbc] ; UTF16 'void __cdecl CCreatureController::TimerExpired2(const int,const __int64)'
+00000000005ad6d4: mov      qword ptr [r12 + r9*8 + 0x47bf7c0], rax
+00000000005ad6dc: add      rcx, 0x24
+00000000005ad6e0: call     0x925adc
+00000000005ad6e5: mov      rcx, rax
+00000000005ad6e8: test     rax, rax
+00000000005ad6eb: jne      0x5ad6fc
+00000000005ad6ed: movsxd   rax, dword ptr [rdi + r13]
+00000000005ad6f1: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+00000000005ad6fa: jmp      0x5ad76c
+00000000005ad6fc: mov      rax, qword ptr [rax]
+00000000005ad6ff: call     qword ptr [rax + 0x168]
+00000000005ad705: test     al, al
+00000000005ad707: je       0x5ad713
+00000000005ad709: lock add dword ptr [rip + 0x13918357], 1
+00000000005ad711: jmp      0x5ad71b
+00000000005ad713: lock add dword ptr [rip + 0x13918355], 1
+00000000005ad71b: lea      rax, [rip + 0x631c36]
+00000000005ad722: mov      qword ptr [rsp + 0x38], rax
+00000000005ad727: mov      dword ptr [rsp + 0x40], ebp
+00000000005ad72b: mov      dword ptr [rsp + 0x44], ebx
+00000000005ad72f: sar      rbx, 0x20
+00000000005ad733: mov      dword ptr [rsp + 0x48], ebx
+00000000005ad737: lea      rcx, [rsi + 0x10d8]
+00000000005ad73e: lea      rax, [rip + 0x58ef1b] ; UTF16 'AsyncTimerExpired'
+00000000005ad745: mov      qword ptr [rsp + 0x20], rax
+00000000005ad74a: lea      r9, [rsp + 0x38]
+00000000005ad74f: lea      r8, [rip - 0x482]
+00000000005ad756: mov      rdx, rsi
+00000000005ad759: call     0x466d44
+00000000005ad75e: nop
+00000000005ad75f: movsxd   rax, dword ptr [rdi + r13]
+00000000005ad763: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+00000000005ad76c: add      rsp, 0x68
+00000000005ad770: pop      r13
+00000000005ad772: pop      r12
+00000000005ad774: pop      rdi
+00000000005ad775: pop      rsi
+00000000005ad776: pop      rbp
+00000000005ad777: pop      rbx
+00000000005ad778: ret

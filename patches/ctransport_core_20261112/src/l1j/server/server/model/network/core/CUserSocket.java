@@ -226,8 +226,27 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         _networkDeadline=_channel::requestDeadline;
         if(!_channel.configureDeadlines(loginTimeout?60000:0))throw new IllegalStateException("Native network deadline admission failed");
     }
+    void onAccountChanged(l1j.server.server.Account account){
+        if(!nativeDirect||_closed!=0||!_channel.isOpen())return;
+        final int accountId=account==null?0:account.getAccountId();
+        if((account!=null&&accountId<=0)||!_channel.setAccountIdentity(accountId)){
+            close();throw new IllegalStateException("Native account identity rejected (missing MAC, invalid account or closed socket)");
+        }
+    }
+    void onCharacterChanged(l1j.server.server.model.Instance.L1PcInstance pc){
+        if(nativeDirect&&_closed==0&&_channel.isOpen()&&!_channel.setCharacterEntered(pc!=null)){
+            close();throw new IllegalStateException("Native entering-character account registration rejected");
+        }
+    }
+    /** Only a server-side provider that verified the identity may call this.
+     * This method does not add a client packet or change independent PSS. */
+    public boolean bindVerifiedMacIdentity(long identity){
+        return identity!=0&&nativeDirect&&_closed==0&&_channel.isOpen()&&_channel.setMacIdentity(identity);
+    }
     void onSessionStateChanged(l1j.server.server.model.network.utill.ConnectionState state) {
-        if(nativeDirect&&_closed==0&&_channel.isOpen())_channel.setUserState(state.ordinal());
+        if(nativeDirect&&_closed==0&&_channel.isOpen()&&!_channel.setUserState(state.ordinal())){
+            close();throw new IllegalStateException("Native session registry transition rejected");
+        }
     }
     int transportNetworkDeadline() {
         // An earlier request can overlap the currently running wheel callback.

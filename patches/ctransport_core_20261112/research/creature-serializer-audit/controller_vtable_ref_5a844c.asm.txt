@@ -1,0 +1,85 @@
+# controller_vtable_ref_5a844c; PE pdata/unwind; entry 0x5a844c
+# chunk 0x5a844c..0x5a85ef
+00000000005a844c: mov      qword ptr [rsp + 8], rcx
+00000000005a8451: push     rbx
+00000000005a8452: push     rsi
+00000000005a8453: push     rdi
+00000000005a8454: push     r13
+00000000005a8456: push     r15
+00000000005a8458: sub      rsp, 0x40
+00000000005a845c: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000005a8465: mov      rbx, rcx
+00000000005a8468: call     0x704148
+00000000005a846d: nop
+00000000005a846e: lea      rax, [rip + 0x637f23]
+00000000005a8475: mov      qword ptr [rbx], rax
+00000000005a8478: mov      dword ptr [rbx + 0x24], 0
+00000000005a847f: lea      rcx, [rbx + 0x28]
+00000000005a8483: lea      rax, [rip - 0x72e]
+00000000005a848a: mov      qword ptr [rsp + 0x20], rax
+00000000005a848f: lea      r9, [rip - 0x4da]
+00000000005a8496: mov      edi, 2
+00000000005a849b: mov      r8d, edi
+00000000005a849e: mov      edx, 0x858
+00000000005a84a3: call     0xab91f0
+00000000005a84a8: nop
+00000000005a84a9: lea      rcx, [rbx + 0x10d8]
+00000000005a84b0: call     0x5a6e00
+00000000005a84b5: mov      r11d, dword ptr [rip + 0x2f016d1c]
+00000000005a84bc: mov      rax, qword ptr gs:[0x58]
+00000000005a84c5: mov      r15d, 0x7d58
+00000000005a84cb: mov      rsi, qword ptr [rax + r11*8]
+00000000005a84cf: movsxd   rdx, dword ptr [rsi + r15]
+00000000005a84d3: lea      r13, [rip - 0x1a84da]
+00000000005a84da: movsxd   rcx, dword ptr [r13 + rdx*4 + 0x47e2a40]
+00000000005a84e2: lea      eax, [rcx + 1]
+00000000005a84e5: mov      dword ptr [r13 + rdx*4 + 0x47e2a40], eax
+00000000005a84ed: imul     rdx, rdx, 0x3e8
+00000000005a84f4: add      rdx, rcx
+00000000005a84f7: lea      rax, [rip + 0x637f82] ; UTF16 '__cdecl CCreatureController::CCreatureController(void)'
+00000000005a84fe: mov      qword ptr [r13 + rdx*8 + 0x47bf7c0], rax
+00000000005a8506: mov      dword ptr [rbx + 0x18], 0
+00000000005a850d: mov      dword ptr [rbx + 0x1c], 0
+00000000005a8514: mov      dword ptr [rbx + 0x428], 0
+00000000005a851e: mov      dword ptr [rbx + 0x4d0], 1
+00000000005a8528: mov      dword ptr [rbx + 0xc80], 0
+00000000005a8532: mov      dword ptr [rbx + 0xd28], 1
+00000000005a853c: lea      rax, [rbx + 0x58]
+00000000005a8540: mov      qword ptr [rax - 0x20], rbx
+00000000005a8544: mov      qword ptr [rax], rbx
+00000000005a8547: mov      qword ptr [rax + 0x28], rbx
+00000000005a854b: mov      qword ptr [rax + 0x58], rbx
+00000000005a854f: mov      qword ptr [rax + 0xf8], rbx
+00000000005a8556: mov      qword ptr [rax + 0x360], rbx
+00000000005a855d: mov      qword ptr [rax + 0x408], rbx
+00000000005a8564: mov      qword ptr [rax + 0x4b0], rbx
+00000000005a856b: mov      qword ptr [rax + 0x4d8], rbx
+00000000005a8572: mov      qword ptr [rax + 0x500], rbx
+00000000005a8579: mov      qword ptr [rax + 0x528], rbx
+00000000005a8580: mov      qword ptr [rax + 0x550], rbx
+00000000005a8587: mov      qword ptr [rax + 0x608], rbx
+00000000005a858e: mov      qword ptr [rax + 0x720], rbx
+00000000005a8595: mov      qword ptr [rax + 0x6a8], rbx
+00000000005a859c: mov      qword ptr [rax + 0x7b0], rbx
+00000000005a85a3: mov      qword ptr [rax + 0x7e0], rbx
+00000000005a85aa: mov      qword ptr [rax + 0x808], rbx
+00000000005a85b1: add      rax, 0x858
+00000000005a85b7: sub      rdi, 1
+00000000005a85bb: jne      0x5a8540
+00000000005a85bd: xor      edx, edx
+00000000005a85bf: mov      rcx, rbx
+00000000005a85c2: call     0x5a7328
+00000000005a85c7: lea      edx, [rdi + 1]
+00000000005a85ca: mov      rcx, rbx
+00000000005a85cd: call     0x5a7328
+00000000005a85d2: nop
+00000000005a85d3: movsxd   rax, dword ptr [rsi + r15]
+00000000005a85d7: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000005a85e0: mov      rax, rbx
+00000000005a85e3: add      rsp, 0x40
+00000000005a85e7: pop      r15
+00000000005a85e9: pop      r13
+00000000005a85eb: pop      rdi
+00000000005a85ec: pop      rsi
+00000000005a85ed: pop      rbx
+00000000005a85ee: ret

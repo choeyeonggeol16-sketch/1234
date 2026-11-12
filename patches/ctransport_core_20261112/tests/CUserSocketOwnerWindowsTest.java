@@ -41,6 +41,18 @@ public final class CUserSocketOwnerWindowsTest {
   public void close()throws Exception{peer.close();server.close();check(closed.await(5,TimeUnit.SECONDS),"production close observer stranded");check(pool.usedRecvSlots()==0&&pool.usedSendSlots()==0,"production pooled lease leak");}
  }
  public static void main(String[] args)throws Exception{
+  try(Session session=new Session(true,false)){
+   CUserSocket owner=session.owner.get();
+   check(owner.bindVerifiedMacIdentity(0x8122334455667788L),"production identity-provider hook");
+   owner.onAccountChanged(new l1j.server.server.Account());
+   owner.onCharacterChanged(new l1j.server.server.model.Instance.L1PcInstance());
+   long[] state=session.channel.get().userSocketState();
+   check(state.length==14&&state[11]==1&&state[12]==1&&state[13]==1,"production account/character/MAC hook not native");
+   owner.onSessionStateChanged(l1j.server.server.model.network.utill.ConnectionState.AUTHENTICATED);
+   check(session.server.accountRegistryDiagnostics()[1]==1&&session.server.accountRegistryDiagnostics()[2]==0,"production character select transition");
+   owner.onAccountChanged(null);check(session.server.accountRegistryDiagnostics()[1]==0,"production account clear");
+  }
+  System.out.println("PASS production CUserSocket account/character/MAC provider hooks and restart/account-clear identities through real Windows FFM");
   int game=Opcodes.C_ALIVE&255,login=Opcodes.C_LOGIN&255;byte[] gameWire=wire(game),loginWire=wire(login);
   AtomicInteger calls=new AtomicInteger();CountDownLatch entered=new CountDownLatch(1),release=new CountDownLatch(1);
   AtomicReference<Throwable> failure=new AtomicReference<>();

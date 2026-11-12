@@ -1,0 +1,153 @@
+# caller_map28_delete_a12b14; PE pdata/unwind; entry 0xa12b14
+# chunk 0xa12b14..0xa12dd0
+0000000000a12b14: push     rbx
+0000000000a12b16: push     rbp
+0000000000a12b17: push     rsi
+0000000000a12b18: push     rdi
+0000000000a12b19: push     r12
+0000000000a12b1b: push     r13
+0000000000a12b1d: sub      rsp, 0x48
+0000000000a12b21: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000a12b2a: mov      rbx, rcx
+0000000000a12b2d: mov      edx, dword ptr [rip + 0x2ebac6a5]
+0000000000a12b33: mov      rax, qword ptr gs:[0x58]
+0000000000a12b3c: mov      r13d, 0x7d58
+0000000000a12b42: mov      rsi, qword ptr [rax + rdx*8]
+0000000000a12b46: movsxd   r8, dword ptr [rsi + r13]
+0000000000a12b4a: lea      r12, [rip - 0x612b51]
+0000000000a12b51: movsxd   rdx, dword ptr [r12 + r8*4 + 0x47e2a40]
+0000000000a12b59: lea      eax, [rdx + 1]
+0000000000a12b5c: mov      dword ptr [r12 + r8*4 + 0x47e2a40], eax
+0000000000a12b64: imul     r8, r8, 0x3e8
+0000000000a12b6b: add      r8, rdx
+0000000000a12b6e: lea      rax, [rip + 0x3b331b] ; UTF16 'bool __cdecl RestartPacket(class CSocket *,const unsigned char *)'
+0000000000a12b75: mov      qword ptr [r12 + r8*8 + 0x47bf7c0], rax
+0000000000a12b7d: mov      r8d, 0xec2
+0000000000a12b83: lea      rdx, [rip + 0x3a6616] ; UTF16 '.\\UserSocket.cpp'
+0000000000a12b8a: add      rcx, 0x54c
+0000000000a12b91: call     0xa4ccec
+0000000000a12b96: mov      r11, qword ptr [rbx]
+0000000000a12b99: mov      rcx, rbx
+0000000000a12b9c: call     qword ptr [r11 + 0xc0]
+0000000000a12ba3: test     rax, rax
+0000000000a12ba6: jne      0xa12bb0
+0000000000a12ba8: mov      eax, dword ptr [rbx + 0x7a0]
+0000000000a12bae: jmp      0xa12bc8
+0000000000a12bb0: mov      eax, 0x57
+0000000000a12bb5: xchg     dword ptr [rbx + 0x7a0], eax
+0000000000a12bbb: xor      ecx, ecx
+0000000000a12bbd: call     0xab9970
+0000000000a12bc2: mov      dword ptr [rbx + 0x798], eax
+0000000000a12bc8: mov      rax, qword ptr [rbx]
+0000000000a12bcb: mov      rcx, rbx
+0000000000a12bce: call     qword ptr [rax + 0xc0]
+0000000000a12bd4: mov      rdi, rax
+0000000000a12bd7: test     rax, rax
+0000000000a12bda: jne      0xa12c0a
+0000000000a12bdc: mov      r8d, 0xec8
+0000000000a12be2: lea      rdx, [rip + 0x3a65b7] ; UTF16 '.\\UserSocket.cpp'
+0000000000a12be9: lea      rcx, [rbx + 0x54c]
+0000000000a12bf0: call     0xa4cd8c
+0000000000a12bf5: nop
+0000000000a12bf6: movsxd   rax, dword ptr [rsi + r13]
+0000000000a12bfa: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+0000000000a12c03: xor      al, al
+0000000000a12c05: jmp      0xa12dc3
+0000000000a12c0a: mov      rax, qword ptr [rax + 0xa88]
+0000000000a12c11: cmp      byte ptr [rax + 0x34], 0
+0000000000a12c15: jne      0xa12c5f
+0000000000a12c17: mov      rax, qword ptr [rbx]
+0000000000a12c1a: xor      r9d, r9d
+0000000000a12c1d: lea      r8d, [r9 + 0x71]
+0000000000a12c21: lea      rdx, [rip + 0x116b90]
+0000000000a12c28: mov      rcx, rbx
+0000000000a12c2b: call     qword ptr [rax + 0x80]
+0000000000a12c31: mov      r8d, 0xed3
+0000000000a12c37: lea      rdx, [rip + 0x3a6562] ; UTF16 '.\\UserSocket.cpp'
+0000000000a12c3e: lea      rcx, [rbx + 0x54c]
+0000000000a12c45: call     0xa4cd8c
+0000000000a12c4a: nop
+0000000000a12c4b: movsxd   rax, dword ptr [rsi + r13]
+0000000000a12c4f: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+0000000000a12c58: xor      al, al
+0000000000a12c5a: jmp      0xa12dc3
+0000000000a12c5f: cmp      byte ptr [rax + 0x1bac], 0
+0000000000a12c66: jne      0xa12d73
+0000000000a12c6c: mov      byte ptr [rdi + 0x39f8], 1
+0000000000a12c73: mov      rax, qword ptr [rdi]
+0000000000a12c76: mov      rcx, rdi
+0000000000a12c79: call     qword ptr [rax + 0xac8]
+0000000000a12c7f: lea      rcx, [rip + 0x1bb1e2]
+0000000000a12c86: mov      qword ptr [rsp + 0x80], rcx
+0000000000a12c8e: lea      rcx, [rax + 0x10d8]
+0000000000a12c95: lea      rdx, [rip + 0x120e2c] ; UTF16 'DoNothing'
+0000000000a12c9c: mov      qword ptr [rsp + 0x20], rdx
+0000000000a12ca1: lea      r9, [rsp + 0x80]
+0000000000a12ca9: lea      r8, [rip - 0x46639c]
+0000000000a12cb0: mov      rdx, rax
+0000000000a12cb3: call     0x466d44
+0000000000a12cb8: mov      rcx, rdi
+0000000000a12cbb: call     0x573440
+0000000000a12cc0: mov      edx, dword ptr [rbx + 0x7e4]
+0000000000a12cc6: test     edx, edx
+0000000000a12cc8: jle      0xa12ce3
+0000000000a12cca: mov      r9d, 0xee2
+0000000000a12cd0: lea      r8, [rip + 0x3a7679]
+0000000000a12cd7: lea      rcx, [rip + 0x1758dcf2]
+0000000000a12cde: call     0x8951bc
+0000000000a12ce3: mov      rax, qword ptr [rdi + 0xa88]
+0000000000a12cea: mov      ecx, dword ptr [rax + 0x2168]
+0000000000a12cf0: cmp      ecx, dword ptr [rip + 0x9001e6]
+0000000000a12cf6: je       0xa12d1c
+0000000000a12cf8: mov      dword ptr [rbx + 0x53c], 8
+0000000000a12d02: mov      rcx, rbx
+0000000000a12d05: call     0xa121a0
+0000000000a12d0a: call     0x5213d0
+0000000000a12d0f: mov      rcx, rax
+0000000000a12d12: mov      rdx, rdi
+0000000000a12d15: call     0x8943e4
+0000000000a12d1a: jmp      0xa12d9a
+0000000000a12d1c: mov      rcx, rdi
+0000000000a12d1f: call     0x95a474
+0000000000a12d24: mov      rcx, rbx
+0000000000a12d27: call     0xa121a0
+0000000000a12d2c: mov      r11, qword ptr [rbx]
+0000000000a12d2f: mov      r9d, 1
+0000000000a12d35: lea      r8d, [r9 + 0x70]
+0000000000a12d39: lea      rdx, [rip + 0x116a78]
+0000000000a12d40: mov      rcx, rbx
+0000000000a12d43: call     qword ptr [r11 + 0x80]
+0000000000a12d4a: mov      dword ptr [rbx + 0x53c], 3
+0000000000a12d54: mov      rax, qword ptr [rdi]
+0000000000a12d57: mov      rcx, rdi
+0000000000a12d5a: call     qword ptr [rax + 0xb58]
+0000000000a12d60: mov      edx, eax
+0000000000a12d62: mov      r8, rbx
+0000000000a12d65: lea      rcx, [rip + 0x263403c]
+0000000000a12d6c: call     0x5b97b8
+0000000000a12d71: jmp      0xa12d9a
+0000000000a12d73: mov      rax, qword ptr [rbx]
+0000000000a12d76: xor      r9d, r9d
+0000000000a12d79: lea      r8d, [r9 + 0x71]
+0000000000a12d7d: lea      rdx, [rip + 0x116a34]
+0000000000a12d84: mov      rcx, rbx
+0000000000a12d87: call     qword ptr [rax + 0x80]
+0000000000a12d8d: mov      edx, 0x66
+0000000000a12d92: mov      rcx, rbx
+0000000000a12d95: call     0x9f8604
+0000000000a12d9a: mov      r8d, 0xefe
+0000000000a12da0: lea      rdx, [rip + 0x3a63f9] ; UTF16 '.\\UserSocket.cpp'
+0000000000a12da7: lea      rcx, [rbx + 0x54c]
+0000000000a12dae: call     0xa4cd8c
+0000000000a12db3: nop
+0000000000a12db4: movsxd   rax, dword ptr [rsi + r13]
+0000000000a12db8: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+0000000000a12dc1: xor      al, al
+0000000000a12dc3: add      rsp, 0x48
+0000000000a12dc7: pop      r13
+0000000000a12dc9: pop      r12
+0000000000a12dcb: pop      rdi
+0000000000a12dcc: pop      rsi
+0000000000a12dcd: pop      rbp
+0000000000a12dce: pop      rbx
+0000000000a12dcf: ret

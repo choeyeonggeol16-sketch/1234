@@ -1,0 +1,79 @@
+# mac_login_packet; PE pdata/unwind; entry 0xa10ad0
+# chunk 0xa10ad0..0xa10c71
+0000000000a10ad0: push     rbx
+0000000000a10ad2: push     rsi
+0000000000a10ad3: push     rdi
+0000000000a10ad4: push     r12
+0000000000a10ad6: push     r13
+0000000000a10ad8: sub      rsp, 0x120
+0000000000a10adf: mov      qword ptr [rsp + 0x78], 0xfffffffffffffffe
+0000000000a10ae8: mov      rbx, rdx
+0000000000a10aeb: mov      rsi, rcx
+0000000000a10aee: mov      r8d, dword ptr [rip + 0x2ebae6e3]
+0000000000a10af5: mov      rax, qword ptr gs:[0x58]
+0000000000a10afe: mov      r12d, 0x7d58
+0000000000a10b04: mov      rdi, qword ptr [rax + r8*8]
+0000000000a10b08: movsxd   r9, dword ptr [rdi + r12]
+0000000000a10b0c: lea      r13, [rip - 0x610b13]
+0000000000a10b13: movsxd   r8, dword ptr [r13 + r9*4 + 0x47e2a40]
+0000000000a10b1b: lea      eax, [r8 + 1]
+0000000000a10b1f: mov      dword ptr [r13 + r9*4 + 0x47e2a40], eax
+0000000000a10b27: imul     r9, r9, 0x3e8
+0000000000a10b2e: add      r9, r8
+0000000000a10b31: lea      rax, [rip + 0x3b4af8] ; UTF16 'bool __cdecl CUserSocket::LoginPacket(class CSocket *,const unsigned char *)'
+0000000000a10b38: mov      qword ptr [r13 + r9*8 + 0x47bf7c0], rax
+0000000000a10b40: mov      word ptr [rsp + 0x80], 0
+0000000000a10b4a: xor      edx, edx
+0000000000a10b4c: mov      r8d, 0x80
+0000000000a10b52: lea      rcx, [rsp + 0x82]
+0000000000a10b5a: call     0xab9430
+0000000000a10b5f: mov      dword ptr [rsp + 0x64], 0
+0000000000a10b67: mov      dword ptr [rsp + 0x60], 0
+0000000000a10b6f: mov      dword ptr [rsp + 0x168], 0
+0000000000a10b7a: mov      dword ptr [rsp + 0x160], 0
+0000000000a10b85: mov      qword ptr [rsp + 0x70], 0
+0000000000a10b8e: mov      dword ptr [rsp + 0x150], 0
+0000000000a10b99: lea      rax, [rsp + 0x150]
+0000000000a10ba1: mov      qword ptr [rsp + 0x50], rax
+0000000000a10ba6: lea      rax, [rsp + 0x70]
+0000000000a10bab: mov      qword ptr [rsp + 0x48], rax
+0000000000a10bb0: lea      rax, [rsp + 0x68]
+0000000000a10bb5: mov      qword ptr [rsp + 0x40], rax
+0000000000a10bba: lea      rax, [rsp + 0x168]
+0000000000a10bc2: mov      qword ptr [rsp + 0x38], rax
+0000000000a10bc7: lea      rax, [rsp + 0x60]
+0000000000a10bcc: mov      qword ptr [rsp + 0x30], rax
+0000000000a10bd1: lea      rax, [rsp + 0x160]
+0000000000a10bd9: mov      qword ptr [rsp + 0x28], rax
+0000000000a10bde: lea      rax, [rsp + 0x64]
+0000000000a10be3: mov      qword ptr [rsp + 0x20], rax
+0000000000a10be8: lea      r9, [rsp + 0x80]
+0000000000a10bf0: mov      r8d, 0x82
+0000000000a10bf6: lea      rdx, [rip + 0x3b4a23]
+0000000000a10bfd: mov      rcx, rbx
+0000000000a10c00: call     0x705278
+0000000000a10c05: mov      r11, qword ptr [rsp + 0x70]
+0000000000a10c0a: mov      qword ptr [rsi + 0xc88], r11
+0000000000a10c11: mov      eax, dword ptr [rsp + 0x150]
+0000000000a10c18: mov      dword ptr [rsp + 0x38], eax
+0000000000a10c1c: mov      eax, dword ptr [rsp + 0x68]
+0000000000a10c20: mov      dword ptr [rsp + 0x30], eax
+0000000000a10c24: mov      eax, dword ptr [rsp + 0x160]
+0000000000a10c2b: mov      dword ptr [rsp + 0x28], eax
+0000000000a10c2f: mov      eax, dword ptr [rsp + 0x168]
+0000000000a10c36: mov      dword ptr [rsp + 0x20], eax
+0000000000a10c3a: mov      r9d, dword ptr [rsp + 0x60]
+0000000000a10c3f: mov      r8d, dword ptr [rsp + 0x64]
+0000000000a10c44: lea      rdx, [rsp + 0x80]
+0000000000a10c4c: mov      rcx, rsi
+0000000000a10c4f: call     0xa0fe54
+0000000000a10c54: nop
+0000000000a10c55: movsxd   rcx, dword ptr [rdi + r12]
+0000000000a10c59: add      dword ptr [r13 + rcx*4 + 0x47e2a40], -1
+0000000000a10c62: add      rsp, 0x120
+0000000000a10c69: pop      r13
+0000000000a10c6b: pop      r12
+0000000000a10c6d: pop      rdi
+0000000000a10c6e: pop      rsi
+0000000000a10c6f: pop      rbx
+0000000000a10c70: ret

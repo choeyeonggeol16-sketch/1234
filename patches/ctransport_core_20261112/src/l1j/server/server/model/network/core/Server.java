@@ -56,6 +56,9 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
         nativeServer = new CIOServer(address, maxConnections, ioThreads, backlog, this::activateAccepted, l1j.server.server.model.network.utill.ConnectionConfig.NETWORK_CLIENT_PERMISSION);
     }
 
+    public CPerfMon.Snapshot performance(){return CPerfMon.Read(nativeServer);}
+    public long[] accountRegistryDiagnostics(){return nativeServer.accountRegistryDiagnostics();}
+    public long findEnteringAccount(int accountId){return nativeServer.findEnteringAccount(accountId);}
     public long[][] ReportSocket(){return nativeServer.ReportSocket();}
     public long[] threadDiagnostics(){return nativeServer.threadDiagnostics();}
     public long[] listenerDiagnostics(){return nativeServer.listenerDiagnostics();}

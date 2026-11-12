@@ -1,0 +1,8 @@
+# perfmon_mail_loop; PE pdata/unwind; entry 0x722abc
+# chunk 0x722abc..0x722ada
+0000000000722abc: sub      rsp, 0x28
+0000000000722ac0: lea      rcx, [rip + 0x1305b239]
+0000000000722ac7: call     0x82c408
+0000000000722acc: mov      ecx, dword ptr [rip + 0x1305b25e]
+0000000000722ad2: call     qword ptr [rip + 0x3f9698] ; IAT Sleep
+0000000000722ad8: jmp      0x722ac0

@@ -1,0 +1,26 @@
+# controller_vtable_ref_5a844c_call_5a6e00; PE pdata/unwind; entry 0x5a6e00
+# chunk 0x5a6e00..0x5a6e61
+00000000005a6e00: push     rbx
+00000000005a6e02: sub      rsp, 0x20
+00000000005a6e06: xor      eax, eax
+00000000005a6e08: mov      rbx, rcx
+00000000005a6e0b: xor      edx, edx
+00000000005a6e0d: mov      qword ptr [rcx], rax
+00000000005a6e10: mov      qword ptr [rcx + 8], rax
+00000000005a6e14: mov      dword ptr [rcx + 0x10], eax
+00000000005a6e17: mov      dword ptr [rcx + 0x14], 0xffffffff
+00000000005a6e1e: mov      dword ptr [rcx + 0xb30], eax
+00000000005a6e24: mov      dword ptr [rcx + 0x18], eax
+00000000005a6e27: add      rcx, 0x1c
+00000000005a6e2b: mov      r8d, 0xa00
+00000000005a6e31: call     0xab9430
+00000000005a6e36: lea      rcx, [rbx + 0xa20]
+00000000005a6e3d: xor      edx, edx
+00000000005a6e3f: mov      r8d, 0x100
+00000000005a6e45: call     0xab9430
+00000000005a6e4a: lea      r11, [rip + 0x5954bf] ; UTF16 'NoName'
+00000000005a6e51: mov      rax, rbx
+00000000005a6e54: mov      qword ptr [rbx + 0xb28], r11
+00000000005a6e5b: add      rsp, 0x20
+00000000005a6e5f: pop      rbx
+00000000005a6e60: ret

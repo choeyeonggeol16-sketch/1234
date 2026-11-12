@@ -1,0 +1,139 @@
+# creature_add_caller_5818f4; PE pdata/unwind; entry 0x5818f4
+# chunk 0x5818f4..0x581b5e
+00000000005818f4: push     rbx
+00000000005818f6: push     rbp
+00000000005818f7: push     rsi
+00000000005818f8: push     rdi
+00000000005818f9: push     r12
+00000000005818fb: push     r14
+00000000005818fd: push     r15
+00000000005818ff: sub      rsp, 0x90
+0000000000581906: mov      qword ptr [rsp + 0x60], 0xfffffffffffffffe
+000000000058190f: mov      r12, r8
+0000000000581912: mov      ebx, edx
+0000000000581914: mov      rdi, rcx
+0000000000581917: mov      r9d, dword ptr [rip + 0x2f03d8ba]
+000000000058191e: mov      rax, qword ptr gs:[0x58]
+0000000000581927: mov      r15d, 0x7d58
+000000000058192d: mov      rbp, qword ptr [rax + r9*8]
+0000000000581931: movsxd   r9, dword ptr [r15 + rbp]
+0000000000581935: lea      r14, [rip - 0x18193c]
+000000000058193c: movsxd   r8, dword ptr [r14 + r9*4 + 0x47e2a40]
+0000000000581944: lea      eax, [r8 + 1]
+0000000000581948: mov      dword ptr [r14 + r9*4 + 0x47e2a40], eax
+0000000000581950: imul     r9, r9, 0x3e8
+0000000000581957: add      r9, r8
+000000000058195a: lea      rax, [rip + 0x653adf] ; UTF16 'void __cdecl CCreature::CancelCastingSkill(int,class CWorldObject *)'
+0000000000581961: mov      qword ptr [r14 + r9*8 + 0x47bf7c0], rax
+0000000000581969: mov      rax, qword ptr [rcx]
+000000000058196c: call     qword ptr [rax + 0xac8]
+0000000000581972: mov      rcx, rax
+0000000000581975: call     0x5a696c
+000000000058197a: cmp      eax, 5
+000000000058197d: jne      0x581b3f
+0000000000581983: mov      rax, qword ptr [rdi]
+0000000000581986: mov      rcx, rdi
+0000000000581989: call     qword ptr [rax + 0xac8]
+000000000058198f: mov      rcx, rax
+0000000000581992: call     0x5a6998
+0000000000581997: cmp      eax, ebx
+0000000000581999: jne      0x581b3f
+000000000058199f: mov      rax, qword ptr [rdi]
+00000000005819a2: mov      rcx, rdi
+00000000005819a5: call     qword ptr [rax + 0xac8]
+00000000005819ab: mov      rcx, rax
+00000000005819ae: call     0x5a6974
+00000000005819b3: movsxd   rsi, eax
+00000000005819b6: mov      rdx, qword ptr [rdi]
+00000000005819b9: mov      rcx, rdi
+00000000005819bc: call     qword ptr [rdx + 0xac8]
+00000000005819c2: lea      rcx, [rip + 0x64c49f]
+00000000005819c9: mov      qword ptr [rsp + 0xd0], rcx
+00000000005819d1: lea      rcx, [rax + 0x10d8]
+00000000005819d8: lea      rdx, [rip + 0x5b20e9] ; UTF16 'DoNothing'
+00000000005819df: mov      qword ptr [rsp + 0x20], rdx
+00000000005819e4: lea      r9, [rsp + 0xd0]
+00000000005819ec: lea      r8, [rip + 0x2af21]
+00000000005819f3: mov      rdx, rax
+00000000005819f6: call     0x466d44
+00000000005819fb: mov      r11, qword ptr [rdi]
+00000000005819fe: mov      rcx, rdi
+0000000000581a01: call     qword ptr [r11 + 0x790]
+0000000000581a08: test     al, al
+0000000000581a0a: je       0x581a58
+0000000000581a0c: mov      rax, qword ptr [rdi]
+0000000000581a0f: mov      rcx, rdi
+0000000000581a12: call     qword ptr [rax + 0x168]
+0000000000581a18: test     al, al
+0000000000581a1a: je       0x581ab4
+0000000000581a20: mov      rax, qword ptr [rdi]
+0000000000581a23: mov      rcx, rdi
+0000000000581a26: call     qword ptr [rax + 0x208]
+0000000000581a2c: mov      rdx, qword ptr [rax]
+0000000000581a2f: mov      rcx, rax
+0000000000581a32: call     qword ptr [rdx + 0xb28]
+0000000000581a38: mov      r10, qword ptr [rax]
+0000000000581a3b: mov      r9d, dword ptr [rdi + 0x18]
+0000000000581a3f: mov      r8d, 0x49
+0000000000581a45: lea      rdx, [rip + 0x5a7d6c]
+0000000000581a4c: mov      rcx, rax
+0000000000581a4f: call     qword ptr [r10 + 0x80]
+0000000000581a56: jmp      0x581ab4
+0000000000581a58: mov      rax, qword ptr [rdi]
+0000000000581a5b: mov      edx, 0xc00
+0000000000581a60: mov      rcx, rdi
+0000000000581a63: call     qword ptr [rax + 0x9a0]
+0000000000581a69: mov      ebx, eax
+0000000000581a6b: mov      r8, qword ptr [rdi]
+0000000000581a6e: lea      rdx, [rsp + 0x68]
+0000000000581a73: mov      rcx, rdi
+0000000000581a76: call     qword ptr [r8 + 0xf0]
+0000000000581a7d: mov      r9, rax
+0000000000581a80: mov      ecx, dword ptr [rdi + 0x18]
+0000000000581a83: mov      dword ptr [rsp + 0x38], ecx
+0000000000581a87: mov      dword ptr [rsp + 0x30], 0x49
+0000000000581a8f: lea      rcx, [rip + 0x5a7d22]
+0000000000581a96: mov      qword ptr [rsp + 0x28], rcx
+0000000000581a9b: mov      dword ptr [rsp + 0x20], ebx
+0000000000581a9f: mov      r8d, 0xf000
+0000000000581aa5: mov      rdx, rdi
+0000000000581aa8: mov      rcx, qword ptr [rip + 0x13940fb9]
+0000000000581aaf: call     0x421f40
+0000000000581ab4: mov      rax, qword ptr [rdi]
+0000000000581ab7: mov      edx, 0x1b
+0000000000581abc: mov      rcx, rdi
+0000000000581abf: call     qword ptr [rax + 0x860]
+0000000000581ac5: mov      r11, qword ptr [rdi]
+0000000000581ac8: mov      rcx, rdi
+0000000000581acb: call     qword ptr [r11 + 0x168]
+0000000000581ad2: test     al, al
+0000000000581ad4: je       0x581b3f
+0000000000581ad6: xor      eax, eax
+0000000000581ad8: mov      byte ptr [rsp + 0xd0], al
+0000000000581adf: mov      rax, qword ptr [rdi]
+0000000000581ae2: mov      rcx, rdi
+0000000000581ae5: call     qword ptr [rax + 0x208]
+0000000000581aeb: mov      r8, rax
+0000000000581aee: mov      qword ptr [rsp + 0x50], 0
+0000000000581af7: mov      qword ptr [rsp + 0x48], 0
+0000000000581b00: mov      qword ptr [rsp + 0x40], 0
+0000000000581b09: mov      qword ptr [rsp + 0x38], 0
+0000000000581b12: mov      qword ptr [rsp + 0x30], 0
+0000000000581b1b: mov      qword ptr [rsp + 0x28], 0
+0000000000581b24: mov      qword ptr [rsp + 0x20], rsi
+0000000000581b29: mov      r9, r12
+0000000000581b2c: mov      edx, 0x195
+0000000000581b31: lea      rcx, [rsp + 0xd0]
+0000000000581b39: call     0x735ab4
+0000000000581b3e: nop
+0000000000581b3f: movsxd   rax, dword ptr [r15 + rbp]
+0000000000581b43: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000581b4c: add      rsp, 0x90
+0000000000581b53: pop      r15
+0000000000581b55: pop      r14
+0000000000581b57: pop      r12
+0000000000581b59: pop      rdi
+0000000000581b5a: pop      rsi
+0000000000581b5b: pop      rbp
+0000000000581b5c: pop      rbx
+0000000000581b5d: ret

@@ -1,12 +1,11 @@
-# CTransport ABI6
+# CTransport ABI7
 
-L2 바이너리에서 확인한 이벤트 기반 접속 수락과 native 클래스 역할을 L1에 반영했습니다. `ListenThread17 -> RegisterWait64 -> FD_ACCEPT -> IOCP -> accept/factory/Add/Initialize`, 실제 Server/소켓 계층, 유저번호 보조 색인·IP/MAC 제한·직렬 실행·운영 진단을 연결했습니다. Java 클래스명과 호출부도 정리했습니다.
+원본의 Playing27(소켓 번호), EnterChar28(계정 ID), CPerfMon thread15 역할을 확인하고 L1 인증·캐릭터 진입·재시작·종료에 연결했습니다. 별도 native 성능 샘플러와 MAC 공급자 API·설정·인증 강제 검사를 추가했습니다.
 
-1. 전체 src를 교체하고 clean build합니다. 부분 적용이면 deleted-files.txt도 반영합니다.
-2. 같은 묶음의 CTransport.dll ABI0x60000/56 exports를 적용합니다. SHA256/ABI가 맞지 않으면 서버 시작을 거절합니다.
-3. 기존 CIOPacketCodec.dll과 Java21 preview/native-access 옵션을 유지합니다.
-4. PSS 독립 연결·활성화·클라이언트를 유지합니다. 추가 SQL은 없습니다.
+1. 전체 src를 교체하고 clean build합니다. 부분 적용이면 deleted-files도 반영합니다.
+2. 같은 묶음의 CTransport.dll ABI0x70000/62 exports를 적용합니다. ABI/SHA256이 다르면 서버가 시작을 거절합니다.
+3. 기존 CIOPacketCodec.dll·PSS 독립 연결·클라이언트·설정과 Java21 옵션을 유지합니다. 추가 SQL 없음.
+4. MAC 제한은 기본 꺼짐입니다. 실제 클라이언트 식별자 전송 코드는 자료에 없으며 확인된 서버 측 공급자 연동이 있어야 활성화할 수 있습니다. `-Dctransport.macLimit=N`을 켜면 식별자 없는 인증을 거절합니다.
+5. 성능 샘플 기본1초: `-Dctransport.perf.intervalMs=1000`. root Server.networkPerformance()/networkAccountRegistryDiagnostics()로 조회합니다.
 
-원본 근거·클래스 역할·L1 이식 차이는 REPORT_ORIGINAL_NETWORK_ABI6.md, 최신 Windows 실행 결과는 WINDOWS_VERIFICATION.json에 있습니다. MAC은 신뢰할 식별자를 전달하는 연결이 필요합니다. 실게임·운영 DB·장시간 동접·비교 성능은 미검증입니다. ABI5 보고서는 당시 구현의 감사 이력입니다.
-
-실제 ABI6 Windows Server2022/Temurin21 검사가 통과했다: [실행43323490468](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43323490468), 검사 소스 `52294c65e76e4cb9b44dcbea574c575a1dbf6977`. 최종 묶음은 이 소스·DLL과 동일하며 이후 커밋은 검증 기록을 추가한다.
+원본 주소·구현 차이·미검증 범위는 REPORT_REMAINING_NETWORK_ABI7.md, 실제 Windows 실행 결과는 WINDOWS_VERIFICATION.json을 따릅니다. 운영 DB·실게임·장시간 운영 부하는 미검증입니다. 이전 보고서는 당시 구현의 이력입니다.

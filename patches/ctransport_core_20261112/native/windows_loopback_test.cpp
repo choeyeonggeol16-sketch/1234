@@ -15,7 +15,7 @@ static int sendEvent(void*,std::uint64_t,const void*,int){return 0;}
 static int closeEvent(void*,std::uint64_t,int,int){++closed;return 0;}
 int main(){
  try{
-  check(CTransport_Version()==0x60000,"native version");
+  check(CTransport_Version()==0x70000,"native version");
   WSADATA data{};check(WSAStartup(MAKEWORD(2,2),&data)==0,"WSAStartup");
   void* listener=CIO_Create_TcpServerListener();check(listener,"listener allocation");
   CIO_Set_FN_Server_OnAccept(listener,acceptEvent);CIO_Set_FN_Server_OnReceive(listener,receiveEvent);

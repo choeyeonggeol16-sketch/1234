@@ -1,0 +1,52 @@
+# caller_thread15_condition_730300; PE pdata/unwind; entry 0x730300
+# chunk 0x730300..0x7303c6
+0000000000730300: push     rbx
+0000000000730302: push     rbp
+0000000000730303: push     rsi
+0000000000730304: sub      rsp, 0x30
+0000000000730308: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000730311: mov      ecx, 0x11
+0000000000730316: call     0x9250f8
+000000000073031b: mov      ecx, 0x28
+0000000000730320: call     0xab8ea0
+0000000000730325: mov      qword ptr [rsp + 0x58], rax
+000000000073032a: test     rax, rax
+000000000073032d: je       0x730341
+000000000073032f: mov      edx, 0xc8
+0000000000730334: mov      rcx, rax
+0000000000730337: call     0x6b4fb8
+000000000073033c: mov      r11, rax
+000000000073033f: jmp      0x730344
+0000000000730341: xor      r11d, r11d
+0000000000730344: mov      edx, dword ptr [rip + 0x2ee8ee8e]
+000000000073034a: mov      rax, qword ptr gs:[0x58]
+0000000000730353: mov      esi, 0x7d58
+0000000000730358: mov      rbx, qword ptr [rax + rdx*8]
+000000000073035c: movsxd   rax, dword ptr [rbx + rsi]
+0000000000730360: lea      rbp, [rip - 0x330367]
+0000000000730367: mov      qword ptr [rbp + rax*8 + 0x4850f80], r11
+000000000073036f: mov      ecx, 0x28
+0000000000730374: call     0xab8ea0
+0000000000730379: mov      qword ptr [rsp + 0x58], rax
+000000000073037e: test     rax, rax
+0000000000730381: je       0x730395
+0000000000730383: mov      edx, 0x12c
+0000000000730388: mov      rcx, rax
+000000000073038b: call     0x6b5094
+0000000000730390: mov      r11, rax
+0000000000730393: jmp      0x730398
+0000000000730395: xor      r11d, r11d
+0000000000730398: movsxd   rax, dword ptr [rbx + rsi]
+000000000073039c: mov      qword ptr [rbp + rax*8 + 0x4851020], r11
+00000000007303a4: call     0x53a8fc
+00000000007303a9: test     al, al
+00000000007303ab: je       0x7303b4
+00000000007303ad: call     0x73029c
+00000000007303b2: jmp      0x7303b9
+00000000007303b4: call     0x72f874
+00000000007303b9: mov      eax, 0xffffffff
+00000000007303be: add      rsp, 0x30
+00000000007303c2: pop      rsi
+00000000007303c3: pop      rbp
+00000000007303c4: pop      rbx
+00000000007303c5: ret

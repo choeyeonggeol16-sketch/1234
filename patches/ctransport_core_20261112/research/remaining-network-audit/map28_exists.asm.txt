@@ -1,0 +1,70 @@
+# map28_exists; PE pdata/unwind; entry 0x4f9bc0
+# chunk 0x4f9bc0..0x4f9cce
+00000000004f9bc0: mov      dword ptr [rsp + 0x10], edx
+00000000004f9bc4: push     rbx
+00000000004f9bc5: push     rbp
+00000000004f9bc6: push     rsi
+00000000004f9bc7: push     rdi
+00000000004f9bc8: push     r12
+00000000004f9bca: push     r13
+00000000004f9bcc: sub      rsp, 0x48
+00000000004f9bd0: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000004f9bd9: mov      r9d, edx
+00000000004f9bdc: mov      rdi, rcx
+00000000004f9bdf: mov      r8d, dword ptr [rip + 0x2f0c55f2]
+00000000004f9be6: mov      rax, qword ptr gs:[0x58]
+00000000004f9bef: mov      r13d, 0x7d58
+00000000004f9bf5: mov      rsi, qword ptr [rax + r8*8]
+00000000004f9bf9: movsxd   r8, dword ptr [rsi + r13]
+00000000004f9bfd: lea      r12, [rip - 0xf9c04]
+00000000004f9c04: movsxd   rdx, dword ptr [r12 + r8*4 + 0x47e2a40]
+00000000004f9c0c: lea      eax, [rdx + 1]
+00000000004f9c0f: mov      dword ptr [r12 + r8*4 + 0x47e2a40], eax
+00000000004f9c17: imul     r8, r8, 0x3e8
+00000000004f9c1e: add      r8, rdx
+00000000004f9c21: lea      rax, [rip + 0x6a7868] ; UTF16 'bool __cdecl CObjectMap<class CUserSocket,8192,28,class RWLock,int>::ExistKey(int)'
+00000000004f9c28: mov      qword ptr [r12 + r8*8 + 0x47bf7c0], rax
+00000000004f9c30: mov      ecx, r9d
+00000000004f9c33: call     0xabddb0
+00000000004f9c38: and      eax, 0x1fff
+00000000004f9c3d: movsxd   rbx, eax
+00000000004f9c40: lea      rbp, [rbx + 0xdb7]
+00000000004f9c47: imul     rbp, rbp, 0x38
+00000000004f9c4b: add      rbp, rdi
+00000000004f9c4e: mov      r8d, 0x177
+00000000004f9c54: lea      rdx, [rip + 0x639115] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\ThreadSafeLibrary.h'
+00000000004f9c5b: mov      rcx, rbp
+00000000004f9c5e: call     0x8aaa4c
+00000000004f9c63: lea      r11, [rbx + rbx*2]
+00000000004f9c67: lea      rbx, [rdi + r11*8 + 8]
+00000000004f9c6c: lea      r8, [rsp + 0x88]
+00000000004f9c74: lea      rdx, [rsp + 0x28]
+00000000004f9c79: mov      rcx, rbx
+00000000004f9c7c: call     0x52eb8c
+00000000004f9c81: mov      rcx, qword ptr [rbx + 8]
+00000000004f9c85: mov      rax, qword ptr [rsp + 0x28]
+00000000004f9c8a: test     rax, rax
+00000000004f9c8d: je       0x4f9cbb
+00000000004f9c8f: cmp      rax, rbx
+00000000004f9c92: jne      0x4f9cbb
+00000000004f9c94: cmp      qword ptr [rsp + 0x30], rcx
+00000000004f9c99: sete     al
+00000000004f9c9c: test     al, al
+00000000004f9c9e: sete     bl
+00000000004f9ca1: mov      rcx, rbp
+00000000004f9ca4: call     0x8aabdc
+00000000004f9ca9: nop
+00000000004f9caa: movsxd   rcx, dword ptr [rsi + r13]
+00000000004f9cae: add      dword ptr [r12 + rcx*4 + 0x47e2a40], -1
+00000000004f9cb7: mov      al, bl
+00000000004f9cb9: jmp      0x4f9cc1
+00000000004f9cbb: call     0x480214
+00000000004f9cc0: nop
+00000000004f9cc1: add      rsp, 0x48
+00000000004f9cc5: pop      r13
+00000000004f9cc7: pop      r12
+00000000004f9cc9: pop      rdi
+00000000004f9cca: pop      rsi
+00000000004f9ccb: pop      rbp
+00000000004f9ccc: pop      rbx
+00000000004f9ccd: ret

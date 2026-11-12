@@ -1,0 +1,86 @@
+# creature_add_caller_663770; PE pdata/unwind; entry 0x663770
+# chunk 0x663770..0x6638e3
+0000000000663770: push     rbx
+0000000000663772: push     rbp
+0000000000663773: push     rsi
+0000000000663774: push     rdi
+0000000000663775: push     r12
+0000000000663777: push     r13
+0000000000663779: sub      rsp, 0x48
+000000000066377d: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000663786: mov      dil, r8b
+0000000000663789: mov      rbx, rdx
+000000000066378c: mov      rsi, rcx
+000000000066378f: mov      r9d, dword ptr [rip + 0x2ef5ba42]
+0000000000663796: mov      rax, qword ptr gs:[0x58]
+000000000066379f: mov      r13d, 0x7d58
+00000000006637a5: mov      rbp, qword ptr [rax + r9*8]
+00000000006637a9: movsxd   r9, dword ptr [r13 + rbp]
+00000000006637ae: lea      r12, [rip - 0x2637b5]
+00000000006637b5: movsxd   r8, dword ptr [r12 + r9*4 + 0x47e2a40]
+00000000006637bd: lea      eax, [r8 + 1]
+00000000006637c1: mov      dword ptr [r12 + r9*4 + 0x47e2a40], eax
+00000000006637c9: imul     r9, r9, 0x3e8
+00000000006637d0: add      r9, r8
+00000000006637d3: lea      rax, [rip + 0x5cf5e6] ; UTF16 'void __cdecl CEventMatchUser::Pause(class User *,bool)'
+00000000006637da: mov      qword ptr [r12 + r9*8 + 0x47bf7c0], rax
+00000000006637e2: cmp      byte ptr [rcx + 5], 0
+00000000006637e6: jne      0x663816
+00000000006637e8: mov      rcx, rdx
+00000000006637eb: call     0x573440
+00000000006637f0: mov      r11, qword ptr [rbx]
+00000000006637f3: mov      rcx, rbx
+00000000006637f6: call     qword ptr [r11 + 0xb98]
+00000000006637fd: test     rax, rax
+0000000000663800: je       0x663816
+0000000000663802: mov      rax, qword ptr [rbx]
+0000000000663805: mov      rcx, rbx
+0000000000663808: call     qword ptr [rax + 0xb98]
+000000000066380e: mov      rcx, rax
+0000000000663811: call     0x573440
+0000000000663816: cmp      byte ptr [rsi + 5], dil
+000000000066381a: je       0x6638c8
+0000000000663820: mov      byte ptr [rsi + 5], dil
+0000000000663824: test     dil, dil
+0000000000663827: jne      0x6638c8
+000000000066382d: mov      rax, qword ptr [rbx]
+0000000000663830: mov      rcx, rbx
+0000000000663833: call     qword ptr [rax + 0xac8]
+0000000000663839: lea      rdi, [rip + 0x56a628]
+0000000000663840: mov      qword ptr [rsp + 0x80], rdi
+0000000000663848: lea      rcx, [rax + 0x10d8]
+000000000066384f: lea      rsi, [rip + 0x4d0272] ; UTF16 'DoNothing'
+0000000000663856: mov      qword ptr [rsp + 0x20], rsi
+000000000066385b: lea      r9, [rsp + 0x80]
+0000000000663863: lea      r8, [rip - 0xb6f56]
+000000000066386a: mov      rdx, rax
+000000000066386d: call     0x466d44
+0000000000663872: mov      r11, qword ptr [rbx]
+0000000000663875: mov      rcx, rbx
+0000000000663878: call     qword ptr [r11 + 0xb98]
+000000000066387f: test     rax, rax
+0000000000663882: je       0x6638c8
+0000000000663884: mov      rax, qword ptr [rbx]
+0000000000663887: mov      rcx, rbx
+000000000066388a: call     qword ptr [rax + 0xb98]
+0000000000663890: mov      rdx, qword ptr [rax]
+0000000000663893: mov      rcx, rax
+0000000000663896: call     qword ptr [rdx + 0xac8]
+000000000066389c: mov      qword ptr [rsp + 0x80], rdi
+00000000006638a4: lea      rcx, [rax + 0x10d8]
+00000000006638ab: mov      qword ptr [rsp + 0x20], rsi
+00000000006638b0: lea      r9, [rsp + 0x80]
+00000000006638b8: lea      r8, [rip - 0xb6fab]
+00000000006638bf: mov      rdx, rax
+00000000006638c2: call     0x466d44
+00000000006638c7: nop
+00000000006638c8: movsxd   rax, dword ptr [r13 + rbp]
+00000000006638cd: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+00000000006638d6: add      rsp, 0x48
+00000000006638da: pop      r13
+00000000006638dc: pop      r12
+00000000006638de: pop      rdi
+00000000006638df: pop      rsi
+00000000006638e0: pop      rbp
+00000000006638e1: pop      rbx
+00000000006638e2: ret

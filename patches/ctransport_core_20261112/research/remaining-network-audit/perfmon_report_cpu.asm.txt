@@ -1,0 +1,103 @@
+# perfmon_report_cpu; PE pdata/unwind; entry 0x82b288
+# chunk 0x82b288..0x82b421
+000000000082b288: push     rbx
+000000000082b28a: push     rbp
+000000000082b28b: push     rdi
+000000000082b28c: push     r12
+000000000082b28e: push     r13
+000000000082b290: push     r14
+000000000082b292: sub      rsp, 0x68
+000000000082b296: mov      rbx, rcx
+000000000082b299: lea      rcx, [rsp + 0x30]
+000000000082b29e: call     qword ptr [rip + 0x2f0f9c] ; IAT GetSystemInfo
+000000000082b2a4: mov      rcx, qword ptr [rbx + 8]
+000000000082b2a8: mov      r13d, dword ptr [rsp + 0x50]
+000000000082b2ad: call     0xaad32e
+000000000082b2b2: xor      edi, edi
+000000000082b2b4: cmp      eax, edi
+000000000082b2b6: je       0x82b2e0
+000000000082b2b8: lea      r8, [rip + 0x4c0311] ; UTF16 'PdhCollectQueryData failed %08x'
+000000000082b2bf: lea      edx, [rdi + 2]
+000000000082b2c2: lea      rcx, [rip + 0xd6f65d7]
+000000000082b2c9: mov      r9d, eax
+000000000082b2cc: call     0x734514
+000000000082b2d1: mov      rcx, rbx
+000000000082b2d4: call     0x82b224
+000000000082b2d9: xor      al, al
+000000000082b2db: jmp      0x82b413
+000000000082b2e0: mov      ecx, 0x1f4
+000000000082b2e5: call     qword ptr [rip + 0x2f0e85] ; IAT Sleep
+000000000082b2eb: mov      rcx, qword ptr [rbx + 8]
+000000000082b2ef: call     0xaad32e
+000000000082b2f4: mov      edx, 2
+000000000082b2f9: lea      rcx, [rip + 0xd6f65a0]
+000000000082b300: cmp      eax, edi
+000000000082b302: je       0x82b318
+000000000082b304: lea      r8, [rip + 0x4c02c5] ; UTF16 'PdhCollectQueryData failed %08x'
+000000000082b30b: mov      r9d, eax
+000000000082b30e: call     0x734514
+000000000082b313: jmp      0x82b408
+000000000082b318: mov      r9d, dword ptr [rbx + 0x28]
+000000000082b31c: lea      r8, [rip + 0x4c049d] ; UTF16 '[PERF] All Process CPU Usage List : %d Processes Begin ==========='
+000000000082b323: call     0x734514
+000000000082b328: cmp      dword ptr [rbx + 0x28], edi
+000000000082b32b: mov      ebp, edi
+000000000082b32d: jle      0x82b3e9
+000000000082b333: mov      r12, rdi
+000000000082b336: mov      rcx, qword ptr [rbx + 0x10]
+000000000082b33a: lea      r9, [rbx + 0x18]
+000000000082b33e: xor      r8d, r8d
+000000000082b341: mov      rcx, qword ptr [rcx + r12]
+000000000082b345: mov      edx, 0x8200
+000000000082b34a: call     0xaad328
+000000000082b34f: cmp      eax, edi
+000000000082b351: je       0x82b38a
+000000000082b353: mov      rcx, qword ptr [rbx]
+000000000082b356: movsxd   rdx, ebp
+000000000082b359: lea      r8, [rip + 0x4c03e0] ; UTF16 '[PERF] PdhGetFormattedCounterValue failed %08x InstanceName[%s]'
+000000000082b360: imul     rdx, rdx, 0x608
+000000000082b367: lea      rdx, [rdx + rcx + 0x1fe]
+000000000082b36f: lea      rcx, [rip + 0xd6f652a]
+000000000082b376: mov      qword ptr [rsp + 0x20], rdx
+000000000082b37b: mov      edx, 2
+000000000082b380: mov      r9d, eax
+000000000082b383: call     0x734514
+000000000082b388: jmp      0x82b3d9
+000000000082b38a: movsd    xmm1, qword ptr [rbx + 0x20]
+000000000082b38f: cvtsi2sd xmm0, r13d
+000000000082b394: divsd    xmm1, xmm0
+000000000082b398: cvttsd2si edx, xmm1
+000000000082b39c: cmp      edx, edi
+000000000082b39e: jle      0x82b3d9
+000000000082b3a0: mov      rax, qword ptr [rbx]
+000000000082b3a3: mov      dword ptr [rsp + 0x28], edx
+000000000082b3a7: movsxd   rcx, ebp
+000000000082b3aa: imul     rcx, rcx, 0x608
+000000000082b3b1: lea      rcx, [rcx + rax + 0x1fe]
+000000000082b3b9: lea      r8, [rip + 0x4c0320] ; UTF16 '[PERF] [%02d] Instance[%s] CPU Usage[%d]'
+000000000082b3c0: mov      qword ptr [rsp + 0x20], rcx
+000000000082b3c5: lea      rcx, [rip + 0xd6f64d4]
+000000000082b3cc: mov      r9d, ebp
+000000000082b3cf: mov      edx, 2
+000000000082b3d4: call     0x734514
+000000000082b3d9: add      ebp, 1
+000000000082b3dc: add      r12, 8
+000000000082b3e0: cmp      ebp, dword ptr [rbx + 0x28]
+000000000082b3e3: jl       0x82b336
+000000000082b3e9: mov      r9d, dword ptr [rbx + 0x28]
+000000000082b3ed: lea      r8, [rip + 0x4c025c] ; UTF16 '[PERF] All Process CPU Usage List : %d Processes End ==========='
+000000000082b3f4: lea      rcx, [rip + 0xd6f64a5]
+000000000082b3fb: mov      edx, 2
+000000000082b400: call     0x734514
+000000000082b405: mov      dil, 1
+000000000082b408: mov      rcx, rbx
+000000000082b40b: call     0x82b224
+000000000082b410: mov      al, dil
+000000000082b413: add      rsp, 0x68
+000000000082b417: pop      r14
+000000000082b419: pop      r13
+000000000082b41b: pop      r12
+000000000082b41d: pop      rdi
+000000000082b41e: pop      rbp
+000000000082b41f: pop      rbx
+000000000082b420: ret

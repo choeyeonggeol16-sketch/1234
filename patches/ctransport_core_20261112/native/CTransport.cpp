@@ -11,6 +11,7 @@
 #include <winsock2.h>
 #include <windows.h>
 #include <ws2tcpip.h>
+#include <psapi.h>
 #define CIO_API extern "C" __declspec(dllexport)
 #endif
 #include "cio_core.hpp"
@@ -21,6 +22,7 @@
 #include "object_map.hpp"
 #include "socket_limiter.hpp"
 #include "execution_serializer.hpp"
+#include "perfmon.hpp"
 #include <condition_variable>
 #include <climits>
 #include <cstdio>
@@ -89,6 +91,11 @@ public:
         for(;;){auto number=nextSocketNumber.fetch_add(1);if(number&&!socketNumbers.ExistKey(number))return number;}
     }
     CObjectMap<CUserSocket> socketNumbers;
+    CObjectMap<CUserSocket,8192,27> userSocketMapPlaying;
+    CObjectMap<CUserSocket,8192,28> userSocketMapEnterChar;
+    std::atomic<std::uint64_t> duplicateEnterDenied{0};
+    std::shared_ptr<CPerfMon> perfmon;
+    unsigned perfIntervalMs=1000;
     CSocketLimiter socketLimiter;
     void RemoveSocketNumber(CIOSocket* socket) noexcept;
     std::unique_ptr<TimerBlockPool> timerBlocks;
@@ -165,6 +172,10 @@ public:
     virtual const sockaddr_storage& RemoteAddress() const noexcept=0;
     int closeOperation = 5, closeError = 0;
     virtual std::uint32_t SocketNumber() const noexcept{return 0;}
+    virtual std::uint32_t AccountId()const noexcept{return 0;}
+    virtual bool HasMacIdentity()const noexcept{return false;}
+    virtual bool CharacterEntered()const noexcept{return false;}
+    virtual bool SetSessionStateLocked(int phase)noexcept{sessionState=phase;return true;}
     virtual void OnSocketRetired() noexcept{}
     virtual CUserSocketParser* UserProtocol() noexcept {return nullptr;}
     virtual bool ConfigureUserProtocol(std::shared_ptr<const L1CodecApi>,unsigned) noexcept{return false;}
@@ -405,6 +416,7 @@ public:
         std::lock_guard<std::mutex> lock(gate);if(state.closing||!identity||macIdentity_.load())return false;
         if(!server->socketLimiter.IncUserSocketPerMAC(identity))return false;macIdentity_=identity;return true;
     }
+    bool HasMacIdentity()const noexcept override{return macIdentity_.load()!=0;}
     void OnSocketRetired()noexcept override{
         if(ipReserved_.exchange(false))server->socketLimiter.DecUserSocketPerIP(reinterpret_cast<const sockaddr_in*>(&remote_)->sin_addr.s_addr);
         if(auto mac=macIdentity_.exchange(0))server->socketLimiter.DecUserSocketPerMAC(mac);
@@ -415,10 +427,44 @@ public:
 class CUserSocket final : public CSocket {
     std::unique_ptr<CUserSocketParser> protocol_;
     const std::uint32_t number_;
+    std::uint32_t accountId_=0;
+    bool playingRegistered_=false,characterEntered_=false;
+    void ClearAccountLocked()noexcept{
+        if(characterEntered_){server->userSocketMapEnterChar.DeleteObject(accountId_,this);characterEntered_=false;}
+        if(playingRegistered_){server->userSocketMapPlaying.DeleteObject(number_,this);playingRegistered_=false;}
+        accountId_=0;
+    }
 public:
     static CIOSocket* Allocate(Server* server,SOCKET socket)noexcept{return new(std::nothrow) CUserSocket(server,socket,server->nextId.fetch_add(1));}
     CUserSocket(Server* server,SOCKET socket,std::uint64_t id):CSocket(server,socket,id),number_(server->AllocateSocketNumber()){}
+    ~CUserSocket()override{ClearAccountLocked();}
     std::uint32_t SocketNumber()const noexcept override{return number_;}
+    std::uint32_t AccountId()const noexcept override{return accountId_;}
+    bool CharacterEntered()const noexcept override{return characterEntered_;}
+    bool SetAccountIdentityLocked(std::uint32_t account)noexcept{
+        if(!account){ClearAccountLocked();return true;}
+        if(server->socketLimiter.RequiresMacIdentity()&&!HasMacIdentity())return false;
+        if(accountId_)return accountId_==account;
+        if(!server->userSocketMapPlaying.Insert(number_,this))return false;
+        accountId_=account;playingRegistered_=true;return true;
+    }
+    bool SetCharacterEnteredLocked(bool entered)noexcept{
+        if(entered==characterEntered_)return true;
+        if(!entered){server->userSocketMapEnterChar.DeleteObject(accountId_,this);characterEntered_=false;return true;}
+        if(!accountId_||!playingRegistered_)return false;
+        if(!server->userSocketMapEnterChar.Insert(accountId_,this)){++server->duplicateEnterDenied;return false;}
+        characterEntered_=true;return true;
+    }
+    bool SetSessionStateLocked(int phase)noexcept override{
+        if(phase==0||phase==4)ClearAccountLocked();
+        else if(phase==1||phase==3)SetCharacterEnteredLocked(false);
+        else if(phase==2&&accountId_&&!SetCharacterEnteredLocked(true))return false;
+        sessionState=phase;return true;
+    }
+    void OnSocketRetired()noexcept override{
+        {std::lock_guard<std::mutex> lock(gate);ClearAccountLocked();}
+        CSocket::OnSocketRetired();
+    }
     CUserSocketParser* UserProtocol()noexcept override{return protocol_.get();}
     bool ConfigureUserProtocol(std::shared_ptr<const L1CodecApi> api,unsigned seed)noexcept override {
         if(protocol_)return false;
@@ -801,6 +847,43 @@ void Server::OnAcceptedSocket(SOCKET socket)noexcept {
         }else closesocket(socket);
     }
 }
+void CPerfMon::Sample()noexcept {
+    std::array<std::uint64_t,16> values{};
+    values[1]=monotonicMs();values[2]=currentWorker==server_?currentWorkerIndex:~0u;
+#ifndef CTRANSPORT_TEST
+    MEMORYSTATUSEX memory{};memory.dwLength=sizeof(memory);
+    if(GlobalMemoryStatusEx(&memory)){values[6]=memory.dwMemoryLoad;values[7]=memory.ullTotalPhys;values[8]=memory.ullAvailPhys;values[15]|=1;}
+    using MemoryFn=BOOL(WINAPI*)(HANDLE,PPROCESS_MEMORY_COUNTERS,DWORD);
+    const auto memoryFn=reinterpret_cast<MemoryFn>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"),"K32GetProcessMemoryInfo"));
+    PROCESS_MEMORY_COUNTERS process{};process.cb=sizeof(process);
+    if(memoryFn&&memoryFn(GetCurrentProcess(),&process,sizeof(process))){values[4]=process.WorkingSetSize;values[5]=process.PagefileUsage;values[15]|=2;}
+    FILETIME create{},exit{},kernel{},user{};
+    if(GetProcessTimes(GetCurrentProcess(),&create,&exit,&kernel,&user)){
+        const auto ticks=(static_cast<std::uint64_t>(kernel.dwHighDateTime)<<32)+kernel.dwLowDateTime
+            +(static_cast<std::uint64_t>(user.dwHighDateTime)<<32)+user.dwLowDateTime;
+        if(previousTime_&&values[1]>previousTime_&&ticks>=previousCpu_){
+            SYSTEM_INFO info{};GetSystemInfo(&info);const auto elapsed=(values[1]-previousTime_)*10000;
+            const auto cpus=std::max<DWORD>(info.dwNumberOfProcessors,1);
+            values[3]=std::min<std::uint64_t>(1000,(ticks-previousCpu_)*1000/elapsed/cpus);values[15]|=4;
+        }
+        previousCpu_=ticks;previousTime_=values[1];
+    }
+#endif
+    values[9]=server_->connections.load();values[10]=server_->taskCount.load();
+    values[11]=server_->socketNumbers.size();values[12]=server_->userSocketMapPlaying.size();values[13]=server_->userSocketMapEnterChar.size();
+    for(auto& count:server_->callbackCounts)values[14]+=count.load();
+    std::lock_guard<std::mutex> lock(gate_);values[0]=latest_[0]+1;latest_=values;
+}
+bool CPerfMon::Start(unsigned interval)noexcept {
+    try{thread_=std::thread([this,interval]{
+        currentWorker=server_;currentWorkerIndex=15;CIOBufferPool::OwnerScope owner(server_->buffers,15);
+        while(!stopping_.load()){
+            Sample();std::unique_lock<std::mutex> lock(gate_);
+            changed_.wait_for(lock,std::chrono::milliseconds(interval),[this]{return stopping_.load();});
+        }
+        currentWorker=nullptr;
+    });return true;}catch(...){return false;}
+}
 bool Server::start(const char* address, unsigned short number) noexcept {
     std::lock_guard<std::mutex> lock(lifecycle);
     if (running.load() || !wsaReady || !validSettings || !address || workerCount < 1 || workerCount > 64 || maxConnections < 1) return false;
@@ -810,7 +893,7 @@ bool Server::start(const char* address, unsigned short number) noexcept {
     SYSTEM_INFO information{};GetSystemInfo(&information);
     workerCount=std::min(workerCount,static_cast<int>(std::min<DWORD>(information.dwNumberOfProcessors,8)));
     if(workerCount<1||!buffers.initialize(static_cast<unsigned>(workerCount),std::max<std::size_t>(static_cast<std::size_t>(maxConnections)*2,workerCount*200)))return false;
-    if(!buffers.initializeOwner(17,300,200)||!Create(address,number,backlog))return false;
+    if(!buffers.initializeOwner(15,0,100)||!buffers.initializeOwner(17,300,200)||!Create(address,number,backlog))return false;
     port=CreateIoCompletionPort(INVALID_HANDLE_VALUE,nullptr,0,workerCount);
     if(!port){Close();return false;}
     if(!registry.initialize(static_cast<unsigned>(maxConnections))){Close();CloseHandle(port);port=nullptr;return false;}
@@ -822,9 +905,12 @@ bool Server::start(const char* address, unsigned short number) noexcept {
         listenTimer.reset(new TimerWheel(monotonicMs(),timerBlocks.get()));
         listenThread=std::make_unique<ListenThread>(this);
         for(int i=0;i<workerCount;++i){workers.emplace_back(new IOThreadCallback(this,static_cast<unsigned>(i)));workers.back()->Start();}
+        auto monitor=std::make_shared<CPerfMon>(this);if(!monitor->Start(perfIntervalMs))throw std::bad_alloc();std::atomic_store(&perfmon,monitor);
+        // Publish accept callbacks last: a monitor/thread startup failure must
+        // never strand an already admitted socket in partial startup cleanup.
         if(!listenThread->RegisterWait(this,acceptEvent)||!listenThread->Start())throw std::bad_alloc();
     }catch(...){
-        accepting=false;if(listenThread)listenThread->Stop();Close();
+        accepting=false;if(auto monitor=std::atomic_load(&perfmon))monitor->Stop();std::atomic_store(&perfmon,std::shared_ptr<CPerfMon>{});if(listenThread)listenThread->Stop();Close();
         for(std::size_t i=0;i<workers.size();++i)PostQueuedCompletionStatus(port,0,0,nullptr);
         for(auto& worker:workers)worker->Join();workers.clear();listenThread.reset();listenTimer.reset();timers.clear();timerBlocks.reset();CloseHandle(port);port=nullptr;running=false;notifyChange();return false;
     }
@@ -847,7 +933,7 @@ bool Server::stop() noexcept {
     if (currentWorker == this || currentCallbackServer == this) return false;
     std::lock_guard<std::mutex> lock(lifecycle);
     if (!running.load()) return true;
-    stopping.store(true); stopAcceptingImpl();
+    stopping.store(true);if(auto monitor=std::atomic_load(&perfmon))monitor->Stop(); stopAcceptingImpl();
     if(listenThread)listenThread->Stop();
     if (!cancelTasks()) return false;
     { std::unique_lock<std::mutex> guard(waitMutex); changed.wait(guard, [&]{return taskCount.load() == 0;}); }
@@ -855,7 +941,7 @@ bool Server::stop() noexcept {
     { std::unique_lock<std::mutex> guard(waitMutex); changed.wait(guard, [&]{return connections.load() == 0;}); }
     for (std::size_t i = 0; i < workers.size(); ++i) PostQueuedCompletionStatus(port, 0, 0, nullptr);
     for (auto& thread : workers) thread->Join();
-    workers.clear();listenThread.reset();listenTimer.reset();timers.clear();timerBlocks.reset(); CloseHandle(port); port = nullptr;
+    workers.clear();std::atomic_store(&perfmon,std::shared_ptr<CPerfMon>{});listenThread.reset();listenTimer.reset();timers.clear();timerBlocks.reset(); CloseHandle(port); port = nullptr;
     running.store(false); notifyChange(); return true;
 }
 
@@ -880,7 +966,7 @@ template<class F> static void configure(void* p, F apply) {
     // Configuration is a startup contract, not unsynchronized live tuning.
     if (!server->running.load()) apply(*server);
 }
-CIO_API unsigned CTransport_Version() { return 0x00060000; }
+CIO_API unsigned CTransport_Version() { return 0x00070000; }
 CIO_API void* CIO_Create_TcpServerListener() { return new(std::nothrow) Listener; }
 CIO_API void CIO_Destroy_TcpServerListener(void* p) { delete static_cast<Listener*>(p); }
 CIO_API void* CIO_Create_TcpServer(void* p) { if (!p) return nullptr; try { return new Server(static_cast<Listener*>(p)); } catch (...) { return nullptr; } }
@@ -963,7 +1049,7 @@ CIO_API int CTransport_UserSocket_Encrypt(void* p,std::uint64_t id,void* bytes,i
 }
 CIO_API int CTransport_UserSocket_SetSessionState(void* p,std::uint64_t id,int phase) {
     if(!p||phase<0||phase>4)return 0;auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);
-    std::lock_guard<std::mutex> lock(c->gate);if(c->state.closing||!c->UserProtocol())return 0;c->sessionState=phase;if(phase!=0)c->loginDue=0;return 1;
+    std::lock_guard<std::mutex> lock(c->gate);if(c->state.closing||!c->UserProtocol())return 0;if(!c->SetSessionStateLocked(phase))return 0;if(phase!=0)c->loginDue=0;return 1;
 }
 CIO_API int CTransport_UserSocket_ConfigureDeadlines(void* p,std::uint64_t id,unsigned loginMs) {
     if(!p||loginMs>0x7fffffffu)return 0;auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);
@@ -976,7 +1062,7 @@ CIO_API int CTransport_UserSocket_RequestDeadline(void* p,std::uint64_t id,unsig
 CIO_API int CTransport_UserSocket_GetState(void* p,std::uint64_t id,std::uint64_t* out,int count) {
     if(!p||!out||count<6)return 0;auto* c=static_cast<Server*>(p)->find(id,true);if(!c)return 0;ObjectRef hold(c,false);
     std::lock_guard<std::mutex> lock(c->gate);if(!c->UserProtocol())return 0;c->UserProtocol()->snapshot(out,monotonicMs());
-    if(count>=10){out[6]=c->packetBorrowed;out[7]=c->packetSequence;out[8]=c->UserProtocol()->codec->pending();out[9]=c->sessionState;}if(count>=11)out[10]=c->SocketNumber();return 1;
+    if(count>=10){out[6]=c->packetBorrowed;out[7]=c->packetSequence;out[8]=c->UserProtocol()->codec->pending();out[9]=c->sessionState;}if(count>=11)out[10]=c->SocketNumber();if(count>=14){out[11]=c->AccountId();out[12]=c->CharacterEntered();out[13]=c->HasMacIdentity();}return 1;
 }
 CIO_API int CTransport_Server_GetRegistryDiagnostics(void* p,std::uint64_t* out,int count){if(!p||!out||count<6)return 0;static_cast<Server*>(p)->registry.diagnostics(out);return 1;}
 CIO_API int CTransport_Server_ThreadOwner(void* p) {
@@ -1044,4 +1130,33 @@ CIO_API int CTransport_Server_ReportSockets(void* p,std::uint64_t* out,int capac
         }c->release();
     }
     return out?written:static_cast<int>(snapshot.size());
+}
+
+CIO_API int CTransport_UserSocket_SetAccountIdentity(void* p,std::uint64_t id,unsigned account){
+    if(!p)return 0;auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);
+    auto* user=dynamic_cast<CUserSocket*>(c);if(!user)return 0;
+    std::lock_guard<std::mutex> lock(c->gate);return !c->state.closing&&user->SetAccountIdentityLocked(account);
+}
+CIO_API int CTransport_UserSocket_SetCharacterEntered(void* p,std::uint64_t id,int entered){
+    if(!p||(entered!=0&&entered!=1))return 0;auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);
+    auto* user=dynamic_cast<CUserSocket*>(c);if(!user)return 0;
+    std::lock_guard<std::mutex> lock(c->gate);return !c->state.closing&&user->SetCharacterEnteredLocked(entered!=0);
+}
+CIO_API std::uint64_t CTransport_UserSocket_FindEnteringAccount(void* p,unsigned account){
+    if(!p||!account)return 0;auto* server=static_cast<Server*>(p);auto* user=server->userSocketMapEnterChar.FindObject(account);
+    if(!user)return 0;ObjectRef hold(user,false);std::uint64_t id;
+    {std::lock_guard<std::mutex> lock(user->gate);if(user->state.closing||user->AccountId()!=account||!user->CharacterEntered())return 0;id=user->id;}
+    auto* active=server->find(id);if(!active)return 0;ObjectRef activeHold(active,false);return active==user?id:0;
+}
+CIO_API int CTransport_Server_GetAccountRegistryDiagnostics(void* p,std::uint64_t* out,int count){
+    if(!p||!out||count<4)return 0;auto* s=static_cast<Server*>(p);
+    out[0]=s->socketNumbers.size();out[1]=s->userSocketMapPlaying.size();out[2]=s->userSocketMapEnterChar.size();out[3]=s->duplicateEnterDenied.load();return 1;
+}
+CIO_API int CTransport_Server_ConfigurePerf(void* p,unsigned interval){
+    if(!p||interval<100||interval>60000)return 0;auto* s=static_cast<Server*>(p);
+    std::lock_guard<std::mutex> lock(s->lifecycle);if(s->running.load())return 0;s->perfIntervalMs=interval;return 1;
+}
+CIO_API int CTransport_Server_GetPerfDiagnostics(void* p,std::uint64_t* out,int count){
+    if(!p||!out||count<16)return 0;auto* s=static_cast<Server*>(p);
+    auto monitor=std::atomic_load(&s->perfmon);if(!monitor)return 0;monitor->Read(out);return 1;
 }
