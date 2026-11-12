@@ -1,0 +1,56 @@
+# Tentative role: packet_session_gate; VA 0x9f7f3c..0x9f802f
+00000000009f7f3c: push     rbx
+00000000009f7f3e: push     rbp
+00000000009f7f3f: push     rsi
+00000000009f7f40: push     rdi
+00000000009f7f41: sub      rsp, 0x28
+00000000009f7f45: mov      rax, qword ptr gs:[0x58]
+00000000009f7f4e: mov      r8d, dword ptr [rip + 0x2ebc7283]
+00000000009f7f55: lea      rsi, [rip - 0x5f7f5c]
+00000000009f7f5c: mov      rdi, qword ptr [rax + r8*8]
+00000000009f7f60: movsxd   r9, edx
+00000000009f7f63: mov      ebp, 0x7d58
+00000000009f7f68: movsxd   r8, dword ptr [rdi + rbp]
+00000000009f7f6c: mov      rbx, rcx
+00000000009f7f6f: movsxd   rdx, dword ptr [rsi + r8*4 + 0x47e2a40]
+00000000009f7f77: lea      eax, [rdx + 1]
+00000000009f7f7a: mov      dword ptr [rsi + r8*4 + 0x47e2a40], eax
+00000000009f7f82: lea      rax, [rip + 0x3c6577]
+00000000009f7f89: imul     r8, r8, 0x3e8
+00000000009f7f90: add      r8, rdx
+00000000009f7f93: cmp      byte ptr [r9 + rsi + 0x17a60440], 0
+00000000009f7f9c: mov      qword ptr [rsi + r8*8 + 0x47bf7c0], rax
+00000000009f7fa4: je       0x9f8018
+00000000009f7fa6: call     qword ptr [rip + 0x124174] ; GetTickCount
+00000000009f7fac: mov      edx, eax
+00000000009f7fae: mov      r11d, eax
+00000000009f7fb1: sub      edx, dword ptr [rbx + 0xc78]
+00000000009f7fb7: cmp      edx, 0x3e8
+00000000009f7fbd: jb       0x9f8011
+00000000009f7fbf: mov      ecx, dword ptr [rbx + 0xc70]
+00000000009f7fc5: mov      eax, dword ptr [rbx + 0xc68]
+00000000009f7fcb: mov      dword ptr [rbx + 0xc78], r11d
+00000000009f7fd2: imul     ecx, ecx, 0x3e8
+00000000009f7fd8: mov      dword ptr [rbx + 0xc70], 0
+00000000009f7fe2: cvtsi2sd xmm1, ecx
+00000000009f7fe6: mov      ecx, edx
+00000000009f7fe8: cvtsi2sd xmm0, rcx
+00000000009f7fed: divsd    xmm1, xmm0
+00000000009f7ff1: cvttsd2si edx, xmm1
+00000000009f7ff5: cmp      eax, edx
+00000000009f7ff7: mov      ecx, edx
+00000000009f7ff9: cmovg    ecx, eax
+00000000009f7ffc: add      dword ptr [rbx + 0xc74], edx
+00000000009f8002: add      dword ptr [rbx + 0xc6c], 1
+00000000009f8009: mov      dword ptr [rbx + 0xc68], ecx
+00000000009f800f: jmp      0x9f8018
+00000000009f8011: add      dword ptr [rbx + 0xc70], 1
+00000000009f8018: movsxd   rax, dword ptr [rdi + rbp]
+00000000009f801c: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000009f8024: mov      al, 1
+00000000009f8026: add      rsp, 0x28
+00000000009f802a: pop      rdi
+00000000009f802b: pop      rsi
+00000000009f802c: pop      rbp
+00000000009f802d: pop      rbx
+00000000009f802e: ret

@@ -134,8 +134,9 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
         _connection.close();
     }
 
-    /** Called by the transport's terminal callback, independently of the
-     * disconnect-request CAS (which may already have been set by disconnect()). */
+    void onTransportClosing() { _gameSessionReady = false; }
+
+    /** Terminal packet/I/O drain starts one deferred L1 logout operation. */
     void onTransportClosed() {
         if (!_connection.isCloseComplete())
             throw new IllegalStateException("logout before transport/packet drain");
@@ -151,64 +152,32 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
         automationSession = null;
 		final L1PcInstance pc = _activeChar;
 
-		try {
-			if (pc != null) {
-				ThreadPool.getInstance().execute(() -> {
-					try {
-						if (!pc.isPrivateShop() && !pc.isAutoClanjoin()) {
-							pc.logout();
-						}
-					} catch (Exception e) {
-						_log.log(Level.SEVERE,
-								String.format(
-										"[GameClient Logout Err] 캐릭터 로그아웃 도중 에러 발생 - Char: %s",
-										pc.getName()),
-								e);
-					} finally {
-						cleanupAfterLogout(pc);
-					}
-				});
-
-				return;
-			}
-		} catch (Exception e) {
-			_log.log(Level.SEVERE,
-					String.format(
-							"[GameClient Close Err] 스레드풀 로그아웃 요청 실패 - IP: %s",
-							getIp()),
-					e);
-			// Shutdown or saturation must not skip PC logout, even though the
-			// general instant executor can no longer execute on its caller.
-			// This rare mandatory-cleanup fallback preserves the prior contract.
-			if (pc != null) {
-                final Runnable rescue = () -> {
-                    try {
-                        if (!pc.isPrivateShop() && !pc.isAutoClanjoin()) pc.logout();
-                    } catch (Throwable failure) {
-                        _log.log(Level.SEVERE, "[GameClient Close] fallback logout failed", failure);
-                    } finally {
-                        cleanupAfterLogout(pc);
-                    }
-                };
-                // IOCP callbacks must never synchronously perform DB/world
-                // teardown when the general executor rejects its task.
-                // Only this emergency path creates a one-shot virtual thread.
-                if (CTransportServer.isCompletionThread()) {
-                    try {
-                        Thread.ofVirtual().name("CIO-logout-recovery").start(rescue);
-                        return;
-                    } catch (Throwable startFailure) {
-                        _log.log(Level.SEVERE,
-                                "[GameClient Close] emergency logout thread unavailable", startFailure);
-                    }
+        // The original deferred close owns the socket until its state-dependent
+        // work finishes. L1 uses its own private-shop/auto-clan rules and DB pool;
+        // L2's state numbers and fixed 5/15 second delays are not copied.
+        final int stamp = pc == null ? 0 : pc.getSessionStamp();
+        final CUserSocketCloseTask task = new CUserSocketCloseTask(
+                () -> pc != null && pc.getNetConnection() == this && pc.getSessionStamp() == stamp
+                        && !pc.isPrivateShop() && !pc.isAutoClanjoin(),
+                () -> {
+                    try { pc.logout(); }
+                    catch (Throwable failure) { _log.log(Level.SEVERE, "[GameClient Close] deferred player logout failed", failure); }
+                }, () -> cleanupAfterLogout(pc));
+        if (pc == null) { task.run(); return; }
+        try {
+            ThreadPool.getInstance().execute(task);
+        } catch (Exception failure) {
+            _log.log(Level.SEVERE, "[GameClient Close] deferred logout admission failed", failure);
+            if (CTransportServer.isCompletionThread()) {
+                try { Thread.ofVirtual().name("CIO-logout-recovery").start(task); return; }
+                catch (Throwable startFailure) {
+                    _log.log(Level.SEVERE, "[GameClient Close] emergency logout thread unavailable", startFailure);
                 }
-                rescue.run();
-                return;
             }
-		}
+            task.run();
+        }
+    }
 
-		cleanupAfterLogout(pc);
-	}
 
 	private void cleanupAfterLogout(L1PcInstance pc) {
 		try {
@@ -251,7 +220,10 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 		} finally {
             // Hybrid handoff is allowed only after full logout/session removal.
             try { DominationHybrid.onClientClosed(this); }
-            finally { logoutComplete = true; }
+            finally {
+                logoutComplete = true;
+                _connection.onClientCleanupComplete();
+            }
 		}
 	}
 

@@ -1,5 +1,7 @@
 > PSS 실행 방식은 이후 수정했습니다. 현재 PSS는 별도 포트·전용 NIO2로 독립 실행합니다. [최신 PSS 복구 보고서](PSS_INDEPENDENT_RESTORE_20261112.md)를 확인하세요. 아래 PSS 통합 설명/검사는 당시 ABI3 코어 버전의 기록입니다. 게임 CTransport.dll은 변경하지 않았습니다.
 
+> 최신 게임 코어는 ABI4 L1 유저소켓 반영본입니다. [현재 구조·원본 근거·적용 안내](CTRANSPORT_L1_USERSOCKET_20261112.md)를 확인하세요. 아래 ABI3 기록은 이전 버전의 검증 이력입니다.
+
 # CTransport ABI3: 종료·작업 분배·풀·타이머 후속 복원
 
 구현 기준749a305e3b662852733fee766825e645870c33fc(ABI2). 사용자 요청의4개 후속 범위를 바이너리에서 더 추적하고 현재 팩에 구현했습니다. 새 DLL은 CTransport.dll, ABI0x30000/37개 export이며 유일한 전송 엔진입니다.

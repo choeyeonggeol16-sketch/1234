@@ -1,0 +1,2 @@
+PASS production L1 opcode/state matrix, loading barrier, multiplexed protocol compatibility, native game/session-owner execution roles
+PASS production registry/deferred close: early retirement, I/O+logout fence, replacement identity, 400 concurrent close races, once-only stale-safe cleanup

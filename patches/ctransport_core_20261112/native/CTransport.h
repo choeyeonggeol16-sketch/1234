@@ -39,4 +39,9 @@ __declspec(dllimport) unsigned CTransport_Buffer_Size(void*);
 __declspec(dllimport) void CTransport_Buffer_Release(void*);
 __declspec(dllimport) void CTransport_SetClosingCallback(void*,int (*)(void*,std::uint64_t,int,int));
 __declspec(dllimport) int CTransport_Server_GetDiagnostics(void*,std::uint64_t*,unsigned);
+// Optional per-connection L1 user-socket profile. Raw endpoints remain byte streams.
+__declspec(dllimport) int CTransport_UserSocket_Enable(void*,std::uint64_t);
+__declspec(dllimport) int CTransport_UserSocket_Expired(void*,std::uint64_t);
+__declspec(dllimport) int CTransport_UserSocket_GetState(void*,std::uint64_t,std::uint64_t*,int);
+__declspec(dllimport) int CTransport_Server_ThreadOwner(void*);
 }

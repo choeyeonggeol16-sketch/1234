@@ -1,0 +1,65 @@
+# Tentative role: worker_start; VA 0x705b70..0x705c6f
+0000000000705b70: push     rbx
+0000000000705b72: push     rbp
+0000000000705b73: push     rsi
+0000000000705b74: push     rdi
+0000000000705b75: push     r12
+0000000000705b77: push     r13
+0000000000705b79: sub      rsp, 0x78
+0000000000705b7d: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000705b86: mov      rsi, rcx
+0000000000705b89: mov      edx, dword ptr [rip + 0x2eeb9649]
+0000000000705b8f: mov      rax, qword ptr gs:[0x58]
+0000000000705b98: mov      r13d, 0x7d58
+0000000000705b9e: mov      rbp, qword ptr [rax + rdx*8]
+0000000000705ba2: movsxd   r8, dword ptr [r13 + rbp]
+0000000000705ba7: lea      r12, [rip - 0x305bae]
+0000000000705bae: movsxd   rdx, dword ptr [r12 + r8*4 + 0x47e2a40]
+0000000000705bb6: lea      eax, [rdx + 1]
+0000000000705bb9: mov      dword ptr [r12 + r8*4 + 0x47e2a40], eax
+0000000000705bc1: imul     r8, r8, 0x3e8
+0000000000705bc8: add      r8, rdx
+0000000000705bcb: lea      rax, [rip + 0x56d01e]
+0000000000705bd2: mov      qword ptr [r12 + r8*8 + 0x47bf7c0], rax
+0000000000705bda: test     rcx, rcx
+0000000000705bdd: jne      0x705bf1
+0000000000705bdf: movsxd   rax, dword ptr [r13 + rbp]
+0000000000705be4: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+0000000000705bed: xor      al, al
+0000000000705bef: jmp      0x705c62
+0000000000705bf1: lea      rcx, [rsp + 0x38]
+0000000000705bf6: call     qword ptr [rip + 0x416644] ; GetSystemInfo
+0000000000705bfc: mov      edi, dword ptr [rsp + 0x58]
+0000000000705c00: lea      rax, [rsp + 0xb0]
+0000000000705c08: mov      qword ptr [rsp + 0x28], rax
+0000000000705c0d: mov      dword ptr [rsp + 0x20], 0
+0000000000705c15: mov      r9, rsi
+0000000000705c18: lea      r8, [rip - 0xe7]
+0000000000705c1f: xor      edx, edx
+0000000000705c21: xor      ecx, ecx
+0000000000705c23: call     0xabf890
+0000000000705c28: mov      rbx, rax
+0000000000705c2b: mov      rdx, rax
+0000000000705c2e: mov      ecx, dword ptr [rsi + 8]
+0000000000705c31: call     0x925118
+0000000000705c36: mov      eax, dword ptr [rsi + 8]
+0000000000705c39: cdq
+0000000000705c3a: idiv     edi
+0000000000705c3c: mov      ecx, edx
+0000000000705c3e: mov      edx, 1
+0000000000705c43: shl      edx, cl
+0000000000705c45: movsxd   rdx, edx
+0000000000705c48: mov      rcx, rbx
+0000000000705c4b: call     qword ptr [rip + 0x416677] ; SetThreadAffinityMask
+0000000000705c51: nop
+0000000000705c52: movsxd   rcx, dword ptr [r13 + rbp]
+0000000000705c57: add      dword ptr [r12 + rcx*4 + 0x47e2a40], -1
+0000000000705c60: mov      al, 1
+0000000000705c62: add      rsp, 0x78
+0000000000705c66: pop      r13
+0000000000705c68: pop      r12
+0000000000705c6a: pop      rdi
+0000000000705c6b: pop      rsi
+0000000000705c6c: pop      rbp
+0000000000705c6d: pop      rbx
+0000000000705c6e: ret

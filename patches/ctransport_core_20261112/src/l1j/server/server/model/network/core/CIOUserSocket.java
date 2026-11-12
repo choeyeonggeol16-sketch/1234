@@ -34,6 +34,8 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
     @FunctionalInterface
     public interface Closed {
         void onClosed(CIOUserSocket connection);
+        default void onClosing(CIOUserSocket connection) {}
+        default void onCleanupComplete(CIOUserSocket connection) {}
     }
 
     private final CTransportSocket _channel;
@@ -90,7 +92,7 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
     }
     private volatile Cryptor _cryptor;
     private volatile CIOPacketCodec _nativeCodec;
-    // A single native plaintext packet is leased to its shard at a time.
+    // A single native plaintext packet is leased to its execution role at a time.
     // Until the task finishes, onReadNative() cannot call codec.next(), so
     // the codec's direct scratch buffer cannot be overwritten. No per-packet
     // heap byte[] copy or per-packet Runnable allocation is necessary.
@@ -98,6 +100,9 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
 
     private ByteBuffer _nativePacketBuffer;
     private int _nativePacketLength;
+    private l1j.server.server.model.Instance.L1PcInstance _nativePacketActor;
+    private int _nativePacketStamp;
+    private boolean _nativePacketOnIo;
     private volatile boolean _handshakePlainPending;
     void initializeCipher(long seed) {
         final Cryptor cryptor = new Cryptor();
@@ -106,6 +111,10 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
         // If its DLL is unavailable, reject the connection rather than
         // silently mixing Java and C++ cryptographic states.
         final CIOPacketCodec nativeCodec = new CIOPacketCodec(seed);
+        if (!_channel.enableUserSocket()) {
+            nativeCodec.close();
+            throw new IllegalStateException("Native L1 user-socket parser not enabled");
+        }
         _cryptor = cryptor;
 
         _nativeCodec = nativeCodec;
@@ -203,6 +212,7 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
         finally { _stateLock.unlock(); }
     }
     boolean networkDeadlineExpired(long now) {
+        if (_nativeCodec != null && _channel.userSocketExpired()) return true;
         final long closeAt = _gracefulCloseStartedNs;
         if (closeAt != 0L && now - closeAt >= NETWORK_GRACEFUL_CLOSE_NANOS) return true;
         // SEND resume shifts the partial-frame start and then publishes
@@ -909,15 +919,41 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
         _affinityShard = affinityShard;
         _closedCallback = closedCallback;
         _maxQueuedFrames = maxQueuedFrames;
+        _channel.bindUserSocketOwner(this);
     }
 
-    /** Bind the existing NIO.2 worker executor before the first READ is posted. */
+    /** Bind the L1 session before the first native READ is posted. */
 
 
     void bindClient(CIOClient client) {
         if (client == null || client.getConnection() != this || _client != null || _closed != 0)
             throw new IllegalStateException("socket client already bound or closed");
         _client = client;
+    }
+
+    private final java.util.concurrent.atomic.AtomicBoolean closeStarted = new java.util.concurrent.atomic.AtomicBoolean();
+    private volatile boolean clientCleanupComplete;
+    void onTransportClosing() {
+        if (!closeStarted.compareAndSet(false, true)) return;
+        CIOClient client = _client;
+        if (client != null) client.onTransportClosing();
+        if (_closedCallback != null) {
+            try { _closedCallback.onClosing(this); }
+            catch (Throwable failure) { LOG.log(Level.WARNING, "User-socket closing observer failed", failure); }
+        }
+    }
+    boolean isCloseStarted() { return closeStarted.get(); }
+    void onTransportTerminated() {
+        close();
+        notifyClosedWhenReleased();
+    }
+    boolean isClientCleanupComplete() { return clientCleanupComplete; }
+    void onClientCleanupComplete() {
+        clientCleanupComplete = true;
+        if (_closedCallback != null) {
+            try { _closedCallback.onCleanupComplete(this); }
+            catch (Throwable failure) { LOG.log(Level.WARNING, "User-socket cleanup observer failed", failure); }
+        }
     }
 
     CIOClient client() { return _client; }
@@ -2688,7 +2724,7 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
     }
 
     /**
-     * Optional native stream parser + decryptor. The existing CIO READ pump
+     * Native L1 stream parser + decryptor. The existing CIO READ pump
      * still serializes each session; C++ owns partial-frame reassembly and the
      * cipher state, while Java only dispatches plaintext game opcodes.
      */
@@ -2735,22 +2771,40 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
     private boolean enqueueNativeGamePacket(ByteBuffer decoded, int bytes) {
         if (_nativeGamePending || _closed != 0) return false;
         // The native codec retains this direct buffer until the next next().
-        // No next() is possible while _nativeGamePending is true. The shard
+        // No next() is possible while _nativeGamePending is true. The packet execution role
         // is the only consumer and clears the lease BEFORE READ is resumed.
         _nativePacketBuffer = decoded;
         _nativePacketLength = bytes;
+        _nativePacketActor = _client.getActiveChar();
+        _nativePacketStamp = _nativePacketActor == null ? 0 : _nativePacketActor.getSessionStamp();
+        final int opcode = decoded.get(0) & 255;
+        _nativePacketOnIo = !CUserSocketDispatch.sessionOwner(opcode, _client.isGameSessionReady());
         _nativeGamePending = true;
-        if (!CIOThreadCallback.getInstance().enqueuePacketImmediate(
-                _affinityShard, this)) {
-            _nativeGamePending = false;
-            _nativePacketBuffer = null;
-            _nativePacketLength = 0;
-            return false;
+        // The original CUserSocket calls its opcode table on the READ worker.
+        // Keep that direct path; a READ resumed by an L1 session owner posts
+        // back to IOCP. Session/CacheD transitions retain their L1 owner.
+        boolean accepted = false;
+        try {
+            if (_nativePacketOnIo && _channel.currentNativeOwner() >= 0) {
+                executeNativePacket();
+                accepted = true;
+            } else {
+                accepted = _nativePacketOnIo ? _channel.postCompletion(this)
+                        : CIOThreadCallback.getInstance().enqueuePacketImmediate(_affinityShard, this);
+            }
+            if (!accepted) return false;
+        } finally {
+            if (!accepted) {
+                _nativePacketBuffer = null;
+                _nativePacketLength = 0;
+                _nativePacketActor = null;
+                _nativeGamePending = false;
+            }
         }
         return true;
     }
 
-    /** Executed by CIOThreadCallback's immediate, bounded shard FIFO. */
+    /** Executed on native completion workers, or the L1 owner for session work. */
     @Override public void run() { executeNativePacket(); }
 
     /** Only called for an accepted packet left unexecuted at shard shutdown. */
@@ -2761,9 +2815,15 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
 
     private void executeNativePacket() {
         try {
-            if (_closed == 0 && _client.isConnected()
-                    && !onNativePlaintext(_nativePacketBuffer, _nativePacketLength))
-                close();
+            final var actor = _nativePacketActor;
+            final boolean currentSession = actor == null || (actor == _client.getActiveChar()
+                    && actor.getNetConnection() == _client && actor.getSessionStamp() == _nativePacketStamp);
+            if (_closed == 0 && _client.isConnected() && currentSession) {
+                if (_nativePacketOnIo ? _channel.currentNativeOwner() < 0
+                        : CIOThreadCallback.currentShardIndex() != _affinityShard)
+                    throw new IllegalStateException("Packet executed outside its native/session owner role");
+                if (!onNativePlaintext(_nativePacketBuffer, _nativePacketLength)) close();
+            }
         } catch (Throwable failure) {
             LOG.log(Level.WARNING, "[CIO NATIVE] packet owner failed", failure);
             close();
@@ -2772,6 +2832,7 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
             // the per-session lease before allowing the next native decode.
             _nativePacketBuffer = null;
             _nativePacketLength = 0;
+            _nativePacketActor = null;
             _nativeGamePending = false;
             if (_closed == 0) kickRead();
             // Close cannot start client/PC teardown while the shard still
@@ -2790,6 +2851,9 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
             final int opcode = decoded.readUnsignedByte();
             // Native decrypt already advanced the rolling key before filtering.
             if (_client.checkPacketRateLimit(System.currentTimeMillis())) return false;
+            if (!CUserSocketDispatch.allowed(opcode, _client.getConnectionState(),
+                    _client.getAccount() != null, _client.getActiveChar() != null,
+                    _client.isGameSessionReady())) return inboundHandlerConnected();
             if (!CPacketHandler.isFastOpcode(opcode)) {
                 NetworkSafeLoadManager.isFilter(_client, opcode);
                 return inboundHandlerConnected();
@@ -3581,7 +3645,7 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
     }
 
     private void notifyClosedWhenReleased() {
-        if (_closed == 0 || !_readReleased || _nativeGamePending
+        if (_closed == 0 || !_channel.isNativeIoDrained() || !_readReleased || _nativeGamePending
                 || _socketDraining != 0 || _socketPending != 0
                 || _writeEvent != 0L) return;
         _stateLock.lock(); try {
@@ -3601,6 +3665,7 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
     @Override
     public void close() {
         if (!CLOSED.compareAndSet(this, 0, 1)) return;
+        onTransportClosing();
         _networkDeadline = null;
         // Failure-only report, outside state-lock/serializer ownership. A
         // rejected frame can be the cause of this disconnect, but is not

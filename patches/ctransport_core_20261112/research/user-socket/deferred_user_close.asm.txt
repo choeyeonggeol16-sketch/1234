@@ -1,0 +1,139 @@
+# Tentative role: deferred_user_close; VA 0xa12674..0xa128df
+0000000000a12674: mov      qword ptr [rsp + 8], rcx
+0000000000a12679: push     rbx
+0000000000a1267a: push     rbp
+0000000000a1267b: push     rsi
+0000000000a1267c: push     rdi
+0000000000a1267d: push     r12
+0000000000a1267f: push     r13
+0000000000a12681: push     r14
+0000000000a12683: sub      rsp, 0x70
+0000000000a12687: mov      qword ptr [rsp + 0x60], 0xfffffffffffffffe
+0000000000a12690: mov      rbx, r8
+0000000000a12693: mov      rdi, rdx
+0000000000a12696: mov      rbp, rcx
+0000000000a12699: call     0x704148
+0000000000a1269e: nop
+0000000000a1269f: lea      rax, [rip + 0x3b3612]
+0000000000a126a6: mov      qword ptr [rbp], rax
+0000000000a126aa: mov      qword ptr [rbp + 0x18], rdi
+0000000000a126ae: mov      qword ptr [rbp + 0x20], rbx
+0000000000a126b2: mov      r8d, dword ptr [rip + 0x2ebacb1f]
+0000000000a126b9: mov      rax, qword ptr gs:[0x58]
+0000000000a126c2: mov      r14d, 0x7d58
+0000000000a126c8: mov      r12, qword ptr [rax + r8*8]
+0000000000a126cc: movsxd   rdx, dword ptr [r12 + r14]
+0000000000a126d0: lea      r13, [rip - 0x6126d7]
+0000000000a126d7: movsxd   rcx, dword ptr [r13 + rdx*4 + 0x47e2a40]
+0000000000a126df: lea      eax, [rcx + 1]
+0000000000a126e2: mov      dword ptr [r13 + rdx*4 + 0x47e2a40], eax
+0000000000a126ea: imul     rdx, rdx, 0x3e8
+0000000000a126f1: add      rdx, rcx
+0000000000a126f4: lea      rax, [rip + 0x3b34e5]
+0000000000a126fb: mov      qword ptr [r13 + rdx*8 + 0x47bf7c0], rax
+0000000000a12703: mov      rax, qword ptr [rdi]
+0000000000a12706: mov      r9d, 0x16
+0000000000a1270c: mov      r8d, 0x2b98
+0000000000a12712: lea      rdx, [rip + 0x3a7c37]
+0000000000a12719: mov      rcx, rdi
+0000000000a1271c: call     qword ptr [rax + 8]
+0000000000a1271f: mov      eax, dword ptr [rdi + 0x53c]
+0000000000a12725: cmp      eax, 1
+0000000000a12728: jne      0xa127f2
+0000000000a1272e: mov      rax, qword ptr [rdi]
+0000000000a12731: mov      rcx, rdi
+0000000000a12734: call     qword ptr [rax + 0xc0]
+0000000000a1273a: mov      rsi, rax
+0000000000a1273d: xor      ebx, ebx
+0000000000a1273f: cmp      rax, rbx
+0000000000a12742: je       0xa127e5
+0000000000a12748: xor      eax, eax
+0000000000a1274a: mov      byte ptr [rsp + 0xb8], al
+0000000000a12751: mov      rcx, qword ptr [rsi + 0xa88]
+0000000000a12758: movsxd   rdx, dword ptr [rdi + 0x20]
+0000000000a1275c: movzx    r8d, byte ptr [rcx + 0x1bac]
+0000000000a12764: mov      qword ptr [rsp + 0x50], rbx
+0000000000a12769: mov      qword ptr [rsp + 0x48], rbx
+0000000000a1276e: mov      qword ptr [rsp + 0x40], rbx
+0000000000a12773: mov      qword ptr [rsp + 0x38], rbx
+0000000000a12778: mov      qword ptr [rsp + 0x30], rdx
+0000000000a1277d: mov      qword ptr [rsp + 0x28], rbx
+0000000000a12782: mov      qword ptr [rsp + 0x20], r8
+0000000000a12787: xor      r9d, r9d
+0000000000a1278a: mov      r8, rsi
+0000000000a1278d: mov      edx, 0x34d
+0000000000a12792: lea      rcx, [rsp + 0xb8]
+0000000000a1279a: call     0x735ab4
+0000000000a1279f: mov      r11, qword ptr [rsi + 0xa88]
+0000000000a127a6: cmp      byte ptr [r11 + 0x1bac], bl
+0000000000a127ad: je       0xa127e5
+0000000000a127af: cmp      byte ptr [rsi + 0x25b8], bl
+0000000000a127b5: jne      0xa127e5
+0000000000a127b7: mov      dword ptr [rdi + 0x53c], 4
+0000000000a127c1: mov      edx, 0x3a98
+0000000000a127c6: lea      r8d, [rbx + 3]
+0000000000a127ca: mov      rcx, rbp
+0000000000a127cd: call     0x7048c4
+0000000000a127d2: nop
+0000000000a127d3: movsxd   rax, dword ptr [r12 + r14]
+0000000000a127d7: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+0000000000a127e0: jmp      0xa128cd
+0000000000a127e5: mov      rcx, rdi
+0000000000a127e8: call     0xa123e8
+0000000000a127ed: jmp      0xa128ac
+0000000000a127f2: cmp      eax, 5
+0000000000a127f5: jne      0xa128a4
+0000000000a127fb: mov      rax, qword ptr [rdi]
+0000000000a127fe: mov      rcx, rdi
+0000000000a12801: call     qword ptr [rax + 0xc0]
+0000000000a12807: xor      ebx, ebx
+0000000000a12809: cmp      rax, rbx
+0000000000a1280c: je       0xa12869
+0000000000a1280e: xor      ecx, ecx
+0000000000a12810: mov      byte ptr [rsp + 0xb8], cl
+0000000000a12817: mov      rcx, qword ptr [rax + 0xa88]
+0000000000a1281e: movsxd   rdx, dword ptr [rdi + 0x20]
+0000000000a12822: movzx    r8d, byte ptr [rcx + 0x1bac]
+0000000000a1282a: mov      qword ptr [rsp + 0x50], rbx
+0000000000a1282f: mov      qword ptr [rsp + 0x48], rbx
+0000000000a12834: mov      qword ptr [rsp + 0x40], rbx
+0000000000a12839: mov      qword ptr [rsp + 0x38], rbx
+0000000000a1283e: mov      qword ptr [rsp + 0x30], rdx
+0000000000a12843: mov      qword ptr [rsp + 0x28], 1
+0000000000a1284c: mov      qword ptr [rsp + 0x20], r8
+0000000000a12851: xor      r9d, r9d
+0000000000a12854: mov      r8, rax
+0000000000a12857: mov      edx, 0x34d
+0000000000a1285c: lea      rcx, [rsp + 0xb8]
+0000000000a12864: call     0x735ab4
+0000000000a12869: lea      r8, [rip + 0x3b3320]
+0000000000a12870: mov      edx, 2
+0000000000a12875: lea      rcx, [rip + 0xd50f024]
+0000000000a1287c: call     0x734514
+0000000000a12881: mov      edx, 0x1388
+0000000000a12886: mov      r8d, 4
+0000000000a1288c: mov      rcx, rbp
+0000000000a1288f: call     0x7048c4
+0000000000a12894: nop
+0000000000a12895: movsxd   rax, dword ptr [r12 + r14]
+0000000000a12899: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+0000000000a128a2: jmp      0xa128cd
+0000000000a128a4: mov      rcx, rdi
+0000000000a128a7: call     0xa123e8
+0000000000a128ac: mov      edx, 0x1388
+0000000000a128b1: mov      r8d, 1
+0000000000a128b7: mov      rcx, rbp
+0000000000a128ba: call     0x7048c4
+0000000000a128bf: nop
+0000000000a128c0: movsxd   rax, dword ptr [r12 + r14]
+0000000000a128c4: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+0000000000a128cd: mov      rax, rbp
+0000000000a128d0: add      rsp, 0x70
+0000000000a128d4: pop      r14
+0000000000a128d6: pop      r13
+0000000000a128d8: pop      r12
+0000000000a128da: pop      rdi
+0000000000a128db: pop      rsi
+0000000000a128dc: pop      rbp
+0000000000a128dd: pop      rbx
+0000000000a128de: ret

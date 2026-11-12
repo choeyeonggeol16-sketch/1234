@@ -21,7 +21,7 @@ public final class CIOServer implements AutoCloseable, CIOUserSocket.Closed {
     private final CIOBufferPool pool;
     private final SocketFactory factory;
     private final CTransportServer nativeServer;
-    private final Set<CIOUserSocket> connections = ConcurrentHashMap.newKeySet();
+    private final CUserSocketRegistry<CIOUserSocket> connections = new CUserSocketRegistry<>();
     private final AtomicBoolean acceptingStopped = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicInteger admitted = new AtomicInteger();
@@ -74,7 +74,9 @@ public final class CIOServer implements AutoCloseable, CIOUserSocket.Closed {
                 socket.close();
                 return;
             }
-            connections.add(connection);
+            connections.register(connection);
+            if (connection.isCloseStarted()) connections.retire(connection);
+            if (connection.isClientCleanupComplete()) connections.cleanupComplete(connection);
             if (connection.isCloseComplete()) {
                 onClosed(connection);
                 return;
@@ -97,8 +99,11 @@ public final class CIOServer implements AutoCloseable, CIOUserSocket.Closed {
         }
     }
     @Override public void onClosed(CIOUserSocket socket) {
-        if (connections.remove(socket)) admitted.decrementAndGet();
+        if (connections.transportDrained(socket)) admitted.decrementAndGet();
     }
+    @Override public void onClosing(CIOUserSocket socket) { connections.retire(socket); }
+    @Override public void onCleanupComplete(CIOUserSocket socket) { connections.cleanupComplete(socket); }
+    public int pendingSessionCleanup() { return connections.pendingCleanup(); }
     public int liveConnections() { return admitted.get(); }
     public InetSocketAddress localAddress() throws IOException { return nativeServer.localAddress(); }
     public boolean isOpen() { return !acceptingStopped.get() && !closed.get(); }
@@ -188,7 +193,7 @@ public final class CIOServer implements AutoCloseable, CIOUserSocket.Closed {
         try {
             requireShutdownTime(attempt);
             stopAccepting();
-            for (CIOUserSocket connection : connections) {
+            for (CIOUserSocket connection : connections.retained()) {
                 requireShutdownTime(attempt);
                 // This may block in a native socket/codec lock. Only the single
                 // coordinator waits; the close caller still observes its budget.

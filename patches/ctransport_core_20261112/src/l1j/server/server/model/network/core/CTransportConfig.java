@@ -3,7 +3,7 @@ import java.nio.file.Path;
 /** Mandatory native transport. There is no alternate backend or selector. */
 final class CTransportConfig {
     static final Path DLL = Path.of("CTransport.dll");
-    static final int ABI = 0x00030000;
-    static final String DLL_SHA256 = "d149b3bd1835eb966ff590eecdb34890ca8798e033c43a58c498b0bee586e827";
+    static final int ABI = 0x00040000;
+    static final String DLL_SHA256 = "3a7cca0ab0eb0a4c521ccefd9252247af96342888de72e8625ee200501cff1ae";
     private CTransportConfig() {}
 }

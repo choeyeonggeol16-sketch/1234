@@ -16,6 +16,7 @@
 #endif
 #include "cio_core.hpp"
 #include "timer_wheel.hpp"
+#include "user_socket.hpp"
 #include <condition_variable>
 #include <climits>
 #include <cstdio>
@@ -145,6 +146,7 @@ public:
     sockaddr_storage local{}, remote{};
     int localLength = sizeof(local), remoteLength = sizeof(remote);
     int closeOperation = 5, closeError = 0;
+    std::unique_ptr<CUserSocket> userSocket;
 
     Connection(Server* s, SOCKET value, std::uint64_t valueId) : server(s), id(valueId), socket(value),
         writes(s->recvBytes > static_cast<int>(BufferBytes) ? LargeBufferBytes : BufferBytes),
@@ -163,6 +165,7 @@ public:
     void failLocked(int operation, int error) noexcept {
         if (state.closing) return;
         state.closing = true; state.paused = true;
+        if (userSocket) userSocket->stop();
         closeOperation = operation; closeError = error;
         if (socket != INVALID_SOCKET) { retiredSocket = socket; socket = INVALID_SOCKET; state.closeRetiring = true; }
     }
@@ -233,8 +236,15 @@ public:
     }
     bool pause(bool paused) noexcept {
         bool open;
-        { std::lock_guard<std::mutex> lock(gate); open = !state.closing; if (open) { state.paused = paused; readLocked(); open = !state.closing; } }
+        { std::lock_guard<std::mutex> lock(gate); open = !state.closing; if (open) { state.paused = paused; if (userSocket) userSocket->pause(paused, monotonicMs()); readLocked(); open = !state.closing; } }
         finishIfReady(); return open;
+    }
+    bool enableUserSocket() noexcept {
+        std::lock_guard<std::mutex> lock(gate);
+        if (state.closing || state.readPosted || state.readDelivering || !state.paused) return false;
+        if (userSocket) return true;
+        try { userSocket = std::make_unique<CUserSocket>(); return true; }
+        catch (...) { return false; }
     }
     bool send(const Span* spans, unsigned count) noexcept {
         bool ok;
@@ -281,7 +291,11 @@ public:
         int result = 0;
         if (deliver) {
             const auto fn = (op.kind == OpKind::Read ? server->callbacks->receive.load() : server->callbacks->send.load());
-            if (fn) result = fn(server, id, data, static_cast<int>(bytes));
+            if (fn && op.kind == OpKind::Read && userSocket) {
+                if (!userSocket->feed(data, bytes, monotonicMs(), [&](const unsigned char* frame, unsigned size) {
+                    return fn(server, id, frame, static_cast<int>(size)) == 0;
+                })) result = 2;
+            } else if (fn) result = fn(server, id, data, static_cast<int>(bytes));
         }
         {
             std::lock_guard<std::mutex> lock(gate);
@@ -638,7 +652,7 @@ template<class F> static void configure(void* p, F apply) {
     // Configuration is a startup contract, not unsynchronized live tuning.
     if (!server->running.load()) apply(*server);
 }
-CIO_API unsigned CTransport_Version() { return 0x00030000; }
+CIO_API unsigned CTransport_Version() { return 0x00040000; }
 CIO_API void* CIO_Create_TcpServerListener() { return new(std::nothrow) Listener; }
 CIO_API void CIO_Destroy_TcpServerListener(void* p) { delete static_cast<Listener*>(p); }
 CIO_API void* CIO_Create_TcpServer(void* p) { if (!p) return nullptr; try { return new Server(static_cast<Listener*>(p)); } catch (...) { return nullptr; } }
@@ -701,10 +715,27 @@ CIO_API void CTransport_SetTaskCallback(void* p, TaskFn fn) { if (p) static_cast
 CIO_API int CTransport_Server_PostTask(void* p, std::uint64_t token) { return p && static_cast<Server*>(p)->scheduleTask(token, 0); }
 CIO_API int CTransport_Server_Schedule(void* p, std::uint64_t token, unsigned delay) { return p && static_cast<Server*>(p)->scheduleTask(token, delay); }
 CIO_API int CTransport_Server_Cancel(void* p, std::uint64_t token) { return p && static_cast<Server*>(p)->cancelTask(token); }
+CIO_API int CTransport_UserSocket_Enable(void* p, std::uint64_t id) {
+    if (!p) return 0; auto* c = static_cast<Server*>(p)->find(id); if (!c) return 0;
+    ObjectRef hold(c, false); return c->enableUserSocket();
+}
+CIO_API int CTransport_UserSocket_Expired(void* p, std::uint64_t id) {
+    if (!p) return 0; auto* c = static_cast<Server*>(p)->find(id); if (!c) return 0;
+    ObjectRef hold(c, false); std::lock_guard<std::mutex> lock(c->gate);
+    return c->userSocket && c->userSocket->expired(monotonicMs());
+}
+CIO_API int CTransport_UserSocket_GetState(void* p, std::uint64_t id, std::uint64_t* out, int count) {
+    if (!p || !out || count < 6) return 0; auto* c = static_cast<Server*>(p)->find(id); if (!c) return 0;
+    ObjectRef hold(c, false); std::lock_guard<std::mutex> lock(c->gate);
+    if (!c->userSocket) return 0; c->userSocket->snapshot(out, monotonicMs()); return 1;
+}
+CIO_API int CTransport_Server_ThreadOwner(void* p) {
+    return p && currentWorker == p ? static_cast<int>(currentWorkerIndex) : -1;
+}
 CIO_API void* CTransport_Server_RetainReceiveBuffer(void* p, std::uint64_t id) {
     if (!p) return nullptr; auto* c = static_cast<Server*>(p)->find(id); if (!c) return nullptr;
     ObjectRef hold(c, false); std::lock_guard<std::mutex> lock(c->gate);
-    if (!c->state.readDelivering || !c->reads.block()) return nullptr;
+    if (!c->state.readDelivering || !c->reads.block() || c->userSocket) return nullptr;
     return new(std::nothrow) BufferLease(c->server, c->reads.block());
 }
 CIO_API const void* CTransport_Buffer_Data(void* p) { auto* lease = static_cast<BufferLease*>(p); return lease ? lease->block->data.data() + lease->offset : nullptr; }

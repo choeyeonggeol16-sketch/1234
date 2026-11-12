@@ -1,0 +1,2 @@
+Note: src/l1j/server/server/model/network/core/CTransportServer.java uses preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.

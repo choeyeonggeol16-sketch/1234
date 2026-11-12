@@ -1,0 +1,5 @@
+# Tentative role: thread_handle_register; VA 0x925118..0x925127
+0000000000925118: movsxd   rax, ecx
+000000000092511b: lea      rcx, [rip + 0x1359d95e]
+0000000000925122: mov      qword ptr [rcx + rax*8], rdx
+0000000000925126: ret

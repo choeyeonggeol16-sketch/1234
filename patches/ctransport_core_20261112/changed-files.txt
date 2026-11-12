@@ -1,4 +1,5 @@
 src/l1j/server/Server.java
+src/l1j/server/server/Opcodes.java
 src/l1j/server/server/model/character/pss/window/PlaySupportWindow.java
 src/l1j/server/server/model/character/pss/window/PssWindowTransport.java
 src/l1j/server/server/model/network/core/CIOClient.java
@@ -10,3 +11,10 @@ src/l1j/server/server/model/network/core/CTransportConfig.java
 src/l1j/server/server/model/network/core/CTransportEndpoint.java
 src/l1j/server/server/model/network/core/CTransportServer.java
 src/l1j/server/server/model/network/core/CTransportSocket.java
+src/l1j/server/server/model/network/core/CTransportTask.java
+src/l1j/server/server/model/network/core/CUserSocketCloseTask.java
+src/l1j/server/server/model/network/core/CUserSocketDispatch.java
+src/l1j/server/server/model/network/core/CUserSocketRegistry.java
+src/l1j/server/server/model/network/packet/CPacketHandler.java
+src/l1j/server/server/model/network/thread/CIOThreadCallback.java
+src/l1j/server/server/model/network/utill/ConnectionState.java

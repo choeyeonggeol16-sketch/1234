@@ -1,0 +1,359 @@
+{
+  "user_socket_parser": {
+    "start": "0xa0372c",
+    "end": "0xa03d8f",
+    "bytes": 1635,
+    "direct_calls": [
+      "0x45d41c",
+      "0x9ef384",
+      "0x925138",
+      "0xa0340c",
+      "0xab9970",
+      "0x9f7f3c",
+      "0x9ba4f8",
+      "0x926eac",
+      "0xab9970",
+      "0x926eac",
+      "0x4205e0",
+      "0x734514",
+      "0x5456d0",
+      "0x4205e0",
+      "0xab9970",
+      "0x4205e0",
+      "0x73446c",
+      "0x4205e0",
+      "0xa71b3c",
+      "0x5456d0",
+      "0x45d41c",
+      "0x5456d0"
+    ]
+  },
+  "user_close_hook": {
+    "start": "0xa12dec",
+    "end": "0xa12eed",
+    "bytes": 257,
+    "direct_calls": [
+      "0x8b04fc",
+      "0x90e140",
+      "0xa0dc04",
+      "0xa0ded4",
+      "0x4173e4",
+      "0xa12674"
+    ]
+  },
+  "deferred_user_close": {
+    "start": "0xa12674",
+    "end": "0xa128df",
+    "bytes": 619,
+    "direct_calls": [
+      "0x704148",
+      "0x735ab4",
+      "0x7048c4",
+      "0xa123e8",
+      "0x735ab4",
+      "0x734514",
+      "0x7048c4",
+      "0xa123e8",
+      "0x7048c4"
+    ]
+  },
+  "user_cleanup": {
+    "start": "0xa123e8",
+    "end": "0xa12672",
+    "bytes": 650,
+    "direct_calls": [
+      "0x734514",
+      "0x95a474",
+      "0xa4ccec",
+      "0x64e88c",
+      "0xa4cd8c",
+      "0x8951bc",
+      "0x734514",
+      "0x9f7ce0",
+      "0x9f8210",
+      "0x45c00c",
+      "0x9f7ce0",
+      "0x9f8210",
+      "0x45be50",
+      "0xa08a48",
+      "0x734514",
+      "0x6704e0",
+      "0x734514",
+      "0xa4ccec",
+      "0xa121a0",
+      "0xa4cd8c"
+    ]
+  },
+  "socket_unregister": {
+    "start": "0x8b04fc",
+    "end": "0x8b0653",
+    "bytes": 343,
+    "direct_calls": [
+      "0x96986c",
+      "0x866f68",
+      "0x91ffd8",
+      "0x734514",
+      "0x480214"
+    ]
+  },
+  "opcode_map": {
+    "start": "0xa0340c",
+    "end": "0xa0346f",
+    "bytes": 99,
+    "direct_calls": [
+      "0xa71b3c"
+    ]
+  },
+  "packet_session_gate": {
+    "start": "0x9f7f3c",
+    "end": "0x9f802f",
+    "bytes": 243,
+    "direct_calls": []
+  },
+  "packet_actor_gate": {
+    "start": "0x9ba4f8",
+    "end": "0x9ba68e",
+    "bytes": 406,
+    "direct_calls": [
+      "0x7ea0d0"
+    ]
+  },
+  "login_registry_unregister": {
+    "start": "0xa0dc04",
+    "end": "0xa0dda1",
+    "bytes": 413,
+    "direct_calls": [
+      "0xa4ccec",
+      "0x7c8fc4",
+      "0xa4cd8c",
+      "0x866f68",
+      "0xa087f8",
+      "0xa4cd8c",
+      "0xa4cd8c",
+      "0x480214",
+      "0xa4cd8c"
+    ]
+  },
+  "account_registry_unregister": {
+    "start": "0xa0ded4",
+    "end": "0xa0e072",
+    "bytes": 414,
+    "direct_calls": [
+      "0xa4ccec",
+      "0xa03dd8",
+      "0xa4cd8c",
+      "0x866f68",
+      "0xa0889c",
+      "0xa4cd8c",
+      "0xa4cd8c",
+      "0x480214",
+      "0xa4cd8c"
+    ]
+  },
+  "tls_set_worker": {
+    "start": "0x9250f8",
+    "end": "0x925116",
+    "bytes": 30,
+    "direct_calls": []
+  },
+  "thread_handle_register": {
+    "start": "0x925118",
+    "end": "0x925127",
+    "bytes": 15,
+    "direct_calls": []
+  },
+  "worker_start_helper": {
+    "start": "0xa22ae8",
+    "end": "0xa22b13",
+    "bytes": 43,
+    "direct_calls": [
+      "0xab9520",
+      "0xa22898"
+    ]
+  },
+  "worker_count": {
+    "start": "0x7044c4",
+    "end": "0x7044f8",
+    "bytes": 52,
+    "direct_calls": []
+  },
+  "worker_start": {
+    "start": "0x705b70",
+    "end": "0x705c6f",
+    "bytes": 255,
+    "direct_calls": [
+      "0xabf890",
+      "0x925118"
+    ]
+  },
+  "worker_entry": {
+    "start": "0x705b38",
+    "end": "0x705b6f",
+    "bytes": 55,
+    "direct_calls": [
+      "0x9250f8",
+      "0x53a8fc",
+      "0x705a4c",
+      "0x705ab0"
+    ]
+  },
+  "worker_main": {
+    "start": "0x7056ac",
+    "end": "0x7059a1",
+    "bytes": 757,
+    "direct_calls": [
+      "0xa22ae8",
+      "0x705330",
+      "0x926e2c",
+      "0x66db28",
+      "0x926e54",
+      "0x66db28"
+    ]
+  },
+  "service_main": {
+    "start": "0x72f874",
+    "end": "0x7300dc",
+    "bytes": 2152,
+    "direct_calls": [
+      "0xa22ae8",
+      "0x7258b4",
+      "0x73446c",
+      "0x88a2c0",
+      "0xab91d0",
+      "0x888bac",
+      "0x848b0c",
+      "0x72caa8",
+      "0x73446c",
+      "0x9250f8",
+      "0x9ef300",
+      "0x82ba28",
+      "0xabf890",
+      "0x925118",
+      "0x7044c4",
+      "0x704754",
+      "0xab8ea0",
+      "0x705b70",
+      "0x5386e8",
+      "0xab91d0",
+      "0x7048c4",
+      "0x46ee78",
+      "0xab91d0",
+      "0x7048c4",
+      "0x5b9554",
+      "0x5b967c",
+      "0xabf6b0",
+      "0x73446c",
+      "0x708b00",
+      "0xab91d0",
+      "0x7089d0",
+      "0x53d9d0",
+      "0x53d920",
+      "0x731424",
+      "0x4d7aec",
+      "0x435a9c",
+      "0x47de28",
+      "0x6a806c",
+      "0x6eb81c",
+      "0x77c138",
+      "0x5e12b0",
+      "0x90f9ec",
+      "0x914dac",
+      "0x738b0c",
+      "0x736f10",
+      "0x47218c",
+      "0x471758",
+      "0x4739a0",
+      "0x471694",
+      "0x871874",
+      "0x74aefc",
+      "0x432450",
+      "0x5225c8",
+      "0x404dd4",
+      "0x67bbb8",
+      "0x63821c",
+      "0x795ed0",
+      "0x8c0b1c",
+      "0x7f0f58",
+      "0x6c2d34",
+      "0x671ef8",
+      "0x6e74c4",
+      "0x5c8d4c",
+      "0x765148",
+      "0x73fe14",
+      "0x43b7dc",
+      "0x438748",
+      "0x5b86c8",
+      "0x5b26a0",
+      "0x4527e0",
+      "0xab91d0",
+      "0x44e500",
+      "0x7048c4",
+      "0x7048c4",
+      "0x42ac4c",
+      "0xab91d0",
+      "0x418ee4",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x6d9f40",
+      "0x4173e4",
+      "0x704148",
+      "0x72262c",
+      "0x706894",
+      "0x8a55d4",
+      "0x67b934",
+      "0x8aa7e8",
+      "0x8aa470",
+      "0x9f7b80",
+      "0x5d3c24",
+      "0x722154",
+      "0x7a71dc",
+      "0x5213d0",
+      "0x896450",
+      "0x435580",
+      "0x895af8",
+      "0x8af9cc",
+      "0x8af9cc",
+      "0x5213d0",
+      "0x8af9cc",
+      "0x4571d0",
+      "0x457428",
+      "0x488088",
+      "0x776de0",
+      "0x732a24",
+      "0x83c270",
+      "0x83aca0",
+      "0x6b52e0",
+      "0x87d4b4",
+      "0x87b99c",
+      "0x6ba774",
+      "0x6b76c0",
+      "0x478640",
+      "0xab91d0",
+      "0x477d0c",
+      "0x87a4e4",
+      "0xab91d0",
+      "0x873ac0",
+      "0x66ea78",
+      "0x435580",
+      "0x897240",
+      "0x435580",
+      "0x88f7ec",
+      "0x705e4c"
+    ]
+  },
+  "service_entry": {
+    "start": "0x73029c",
+    "end": "0x7302e0",
+    "bytes": 68,
+    "direct_calls": [
+      "0x72f874",
+      "0x66fda0",
+      "0x732ab0",
+      "0x66ffe0"
+    ]
+  }
+}

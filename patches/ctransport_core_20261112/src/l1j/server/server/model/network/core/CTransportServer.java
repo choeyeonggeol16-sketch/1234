@@ -58,9 +58,11 @@ final class CTransportServer implements AutoCloseable {
     private final Admitter admitter;
     private final CTransportEndpoint.Events rawEvents;
     private final ConcurrentHashMap<Long, Runnable> nativeTasks = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, CTransportTask> completionTasks = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, CTransportSocket> closingConnections = new ConcurrentHashMap<>();
     private final AtomicLong nextTask = new AtomicLong();
     private final MethodHandle scheduleTask, cancelTask, getDiagnostics;
+    private final MethodHandle enableUserSocket, userSocketExpired, getUserSocketState, threadOwner;
     private final MemorySegment taskStub, closingStub;
     @SuppressWarnings("unused")
 	private final InetSocketAddress listenAddress;
@@ -168,6 +170,10 @@ final class CTransportServer implements AutoCloseable {
             MethodHandle setSend = fn("CIO_Set_FN_Server_OnSend", FunctionDescriptor.ofVoid(P, P));
             MethodHandle setClose = fn("CIO_Set_FN_Server_OnClose", FunctionDescriptor.ofVoid(P, P));
             scheduleTask = fn("CTransport_Server_Schedule", FunctionDescriptor.of(I, P, L, I));
+            enableUserSocket = fn("CTransport_UserSocket_Enable", FunctionDescriptor.of(I, P, L));
+            userSocketExpired = fn("CTransport_UserSocket_Expired", FunctionDescriptor.of(I, P, L));
+            getUserSocketState = fn("CTransport_UserSocket_GetState", FunctionDescriptor.of(I, P, L, P, I));
+            threadOwner = fn("CTransport_Server_ThreadOwner", FunctionDescriptor.of(I, P));
             cancelTask = fn("CTransport_Server_Cancel", FunctionDescriptor.of(I, P, L));
             MethodHandle setTask = fn("CTransport_SetTaskCallback", FunctionDescriptor.ofVoid(P, P));
             MethodHandle setClosing = fn("CTransport_SetClosingCallback", FunctionDescriptor.ofVoid(P, P));
@@ -396,7 +402,7 @@ final class CTransportServer implements AutoCloseable {
             if (rawEvents != null) { rawEvents.closed(id); return 0; }
             CTransportSocket channel = closingConnections.remove(id);
             if (channel == null) { channel = find(id); if (channel != null) forget(channel); }
-            if (channel != null) channel.nativeClosed();
+            if (channel != null) channel.nativeTerminated();
             return 0;
         } catch (Throwable failure) {
             LOG.log(Level.WARNING, "CIO native CLOSE callback failed conn=" + id, failure);
@@ -408,23 +414,33 @@ final class CTransportServer implements AutoCloseable {
         enterCallback();
         try {
             Runnable callback = nativeTasks.remove(token);
+            CTransportTask completion = completionTasks.remove(token);
             if (status == 0 && callback != null && !shuttingDown) callback.run();
+            else if (completion != null) completion.cancel();
         } catch (Throwable failure) { LOG.log(Level.WARNING, "CTransport task failed", failure); }
         finally { leaveCallback(); }
     }
 
     @SuppressWarnings("preview")
     long schedule(Runnable callback, long delayMillis) {
+        return schedule(callback, null, delayMillis);
+    }
+
+    boolean postCompletion(CTransportTask task) { return schedule(task, task, 0) != 0; }
+
+    @SuppressWarnings("preview")
+    private long schedule(Runnable callback, CTransportTask completion, long delayMillis) {
         if (callback == null) throw new NullPointerException("callback");
         if (delayMillis < 0 || delayMillis > Integer.MAX_VALUE) throw new IllegalArgumentException("delayMillis");
         if (!enterNative()) return 0;
         long token = nextTask.incrementAndGet();
         if (token == 0) token = nextTask.incrementAndGet();
-        nativeTasks.put(token, callback); // publish before a native completion can run
         try {
+            if (completion != null) completionTasks.put(token, completion);
+            nativeTasks.put(token, callback); // publish both before a native completion can run
             if ((int) scheduleTask.invokeExact(server, token, (int) delayMillis) != 0) return token;
-            nativeTasks.remove(token); return 0;
-        } catch (Throwable failure) { nativeTasks.remove(token); throw new IllegalStateException("CTransport schedule failed", failure); }
+            nativeTasks.remove(token); completionTasks.remove(token); return 0;
+        } catch (Throwable failure) { nativeTasks.remove(token); completionTasks.remove(token); throw new IllegalStateException("CTransport schedule failed", failure); }
         finally { nativeCalls.decrementAndGet(); }
     }
 
@@ -433,7 +449,10 @@ final class CTransportServer implements AutoCloseable {
         if (!enterNative()) return false;
         try {
             if ((int) cancelTask.invokeExact(server, token) == 0) return false;
-            nativeTasks.remove(token); return true;
+            nativeTasks.remove(token);
+            CTransportTask completion = completionTasks.remove(token);
+            if (completion != null) completion.cancel();
+            return true;
         } catch (Throwable failure) { throw new IllegalStateException("CTransport cancellation failed", failure); }
         finally { nativeCalls.decrementAndGet(); }
     }
@@ -488,6 +507,35 @@ final class CTransportServer implements AutoCloseable {
             return new InetSocketAddress(buf.getUtf8String(0), p);
         }
     }
+    boolean enableUserSocket(long id) {
+        if (!enterNative()) return false;
+        try { return (int) enableUserSocket.invokeExact(server, id) != 0; }
+        catch (Throwable failure) { throw new IllegalStateException("L1 user-socket profile failed", failure); }
+        finally { nativeCalls.decrementAndGet(); }
+    }
+    boolean userSocketExpired(long id) {
+        if (!enterNative()) return false;
+        try { return (int) userSocketExpired.invokeExact(server, id) != 0; }
+        catch (Throwable failure) { throw new IllegalStateException("L1 parser deadline query failed", failure); }
+        finally { nativeCalls.decrementAndGet(); }
+    }
+    int currentNativeOwner() {
+        if (!enterNative()) return -1;
+        try { return (int) threadOwner.invokeExact(server); }
+        catch (Throwable failure) { throw new IllegalStateException("Native worker identity query failed", failure); }
+        finally { nativeCalls.decrementAndGet(); }
+    }
+    @SuppressWarnings("preview")
+    long[] userSocketState(long id) {
+        if (!enterNative()) return null;
+        try (Arena a = Arena.ofConfined()) {
+            MemorySegment data = a.allocate(6L * Long.BYTES, Long.BYTES);
+            if ((int) getUserSocketState.invokeExact(server, id, data, 6) == 0) return null;
+            return data.toArray(L);
+        } catch (Throwable failure) { throw new IllegalStateException("L1 parser snapshot failed", failure); }
+        finally { nativeCalls.decrementAndGet(); }
+    }
+
     private boolean enterNative() {
         if (shuttingDown) return false;
         nativeCalls.incrementAndGet();
@@ -642,6 +690,10 @@ final class CTransportServer implements AutoCloseable {
             fn("CIO_Destroy_TcpServer", FunctionDescriptor.ofVoid(P)).invokeExact(server);
             fn("CIO_Destroy_TcpServerListener", FunctionDescriptor.ofVoid(P)).invokeExact(listener);
             destroyed = true;
+            // Native Stop has joined every callback. Resolve accepted packet
+            // leases cancelled by native shutdown before discarding their map.
+            for (CTransportTask task : completionTasks.values()) task.cancel();
+            completionTasks.clear();
             nativeTasks.clear();
             closingConnections.clear();
             arena.close();
@@ -649,6 +701,7 @@ final class CTransportServer implements AutoCloseable {
             throw new IOException("CIO native destruction failed", error);
         }
     }
+    boolean isStopping() { return shuttingDown; }
     boolean isAcceptStopped() { return nativeAcceptStopped || destroyed; }
     @SuppressWarnings("preview")
 	InetSocketAddress localAddress() throws IOException {

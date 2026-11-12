@@ -1,3 +1,4 @@
+PASS L1 CUserSocket: bytewise/coalesced/65535-byte framing, empty envelope, invalid lengths, header/body deadlines with backpressure, concurrent close, production connection integration
 PASS production 8192-byte pool/FIFO: gathering, randomized partial completion, invalid lengths, atomic allocation failure, lifetime gates
 PASS real worker: 273 completions drain 128/128/18; 124 mixed-status entries plus four front-loaded exit tokens; exact ref release and all workers exit
 PASS per-entry NTSTATUS snapshots, cancel/access-denied/informational/unknown statuses; missing resolver fails startup

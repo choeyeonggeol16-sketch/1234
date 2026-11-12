@@ -12,7 +12,7 @@ import l1j.server.server.model.network.client.manager.NetworkClientCounter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.ConnectionConfig;
 
-/** Java async I/O game-session factory; no owner-thread admission handoff. */
+/** Native IOCP admission factory with an L1 session/timer owner. */
 public final class CIOSocketFactory implements CIOServer.SocketFactory {
     private final CIOThreadCallback scheduler;
     private final ConnectionConfig config;
@@ -146,13 +146,18 @@ public final class CIOSocketFactory implements CIOServer.SocketFactory {
             final int ownerShard = shard;
             transport = new CIOUserSocket(socket, pool, scheduler, ip, shard,
                     256,
-                    nio -> {
-                        try {
-                            final CIOClient client = nio.client();
-                            if (client != null) client.onTransportClosed();
-                        } finally {
-                            liveByShard.decrementAndGet(ownerShard);
-                            serverClosed.onClosed(nio);
+                    new CIOUserSocket.Closed() {
+                        @Override public void onClosing(CIOUserSocket nio) { serverClosed.onClosing(nio); }
+                        @Override public void onCleanupComplete(CIOUserSocket nio) { serverClosed.onCleanupComplete(nio); }
+                        @Override public void onClosed(CIOUserSocket nio) {
+                            try {
+                                final CIOClient client = nio.client();
+                                if (client != null) client.onTransportClosed();
+                                else nio.onClientCleanupComplete();
+                            } finally {
+                                liveByShard.decrementAndGet(ownerShard);
+                                serverClosed.onClosed(nio);
+                            }
                         }
                     });
             user = new CIOClient(transport, counted);

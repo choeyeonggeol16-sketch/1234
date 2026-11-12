@@ -1,0 +1,7 @@
+# Tentative role: tls_set_worker; VA 0x9250f8..0x925116
+00000000009250f8: mov      edx, dword ptr [rip + 0x2ec9a0da]
+00000000009250fe: mov      rax, qword ptr gs:[0x58]
+0000000000925107: mov      r8d, 0x7d58
+000000000092510d: mov      rax, qword ptr [rax + rdx*8]
+0000000000925111: mov      dword ptr [r8 + rax], ecx
+0000000000925115: ret

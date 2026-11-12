@@ -1,0 +1,30 @@
+# Tentative role: opcode_map; VA 0xa0340c..0xa0346f
+0000000000a0340c: sub      rsp, 0x28
+0000000000a03410: mov      rax, qword ptr [rcx + 0xc28]
+0000000000a03417: test     rax, rax
+0000000000a0341a: jne      0xa03421
+0000000000a0341c: xor      r8d, r8d
+0000000000a0341f: jmp      0xa0342f
+0000000000a03421: mov      r8, qword ptr [rcx + 0xc30]
+0000000000a03428: sub      r8, rax
+0000000000a0342b: sar      r8, 2
+0000000000a0342f: movsxd   rax, edx
+0000000000a03432: cmp      r8, rax
+0000000000a03435: jbe      0xa03465
+0000000000a03437: test     edx, edx
+0000000000a03439: js       0xa03465
+0000000000a0343b: mov      rdx, qword ptr [rcx + 0xc28]
+0000000000a03442: test     rdx, rdx
+0000000000a03445: je       0xa0345f
+0000000000a03447: mov      rcx, qword ptr [rcx + 0xc30]
+0000000000a0344e: sub      rcx, rdx
+0000000000a03451: sar      rcx, 2
+0000000000a03455: cmp      rax, rcx
+0000000000a03458: jae      0xa0345f
+0000000000a0345a: mov      eax, dword ptr [rdx + rax*4]
+0000000000a0345d: jmp      0xa0346a
+0000000000a0345f: call     0xa71b3c
+0000000000a03464: int3
+0000000000a03465: mov      eax, 0xd1
+0000000000a0346a: add      rsp, 0x28
+0000000000a0346e: ret

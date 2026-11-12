@@ -1,0 +1,11 @@
+# Tentative role: worker_start_helper; VA 0xa22ae8..0xa22b13
+0000000000a22ae8: sub      rsp, 0x28
+0000000000a22aec: call     qword ptr [rip + 0xf962e] ; GetTickCount
+0000000000a22af2: mov      ecx, eax
+0000000000a22af4: call     0xab9520
+0000000000a22af9: lea      rcx, [rsp + 0x30]
+0000000000a22afe: call     qword ptr [rip + 0xf983c] ; QueryPerformanceCounter
+0000000000a22b04: mov      rcx, qword ptr [rsp + 0x30]
+0000000000a22b09: call     0xa22898
+0000000000a22b0e: add      rsp, 0x28
+0000000000a22b12: ret

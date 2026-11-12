@@ -17,6 +17,8 @@ struct Probe {
  std::atomic<void*> retained{nullptr};
  std::atomic<bool> retainRead{false},blockTask{false},taskEntered{false},releaseTask{false};
  std::vector<unsigned char> received;
+ std::vector<int> receiveLengths;
+ std::atomic<bool> userProfile{false};
  std::atomic<int> closed{0}, sent{0},closing{0};
  std::atomic<bool> terminalStopCheck{false}, reenterClose{false},blockClosing{false},closingEntered{false},releaseClosing{false};
  std::atomic<bool> echo{false}, pauseInCallback{false}, reject{false}, attemptStop{false};
@@ -24,6 +26,7 @@ struct Probe {
 };
 static Probe* probe;
 static int acceptCallback(void* server, std::uint64_t id, std::uint64_t) {
+ if (probe->userProfile) check(CTransport_UserSocket_Enable(server,id), "user-socket profile enable");
  { std::lock_guard<std::mutex> lock(probe->mutex); probe->ids.push_back(id); }
  if (probe->attemptStop.load()) check(!CIO_Server_Stop(server), "worker joined itself");
  return probe->reject ? 2 : 0;
@@ -31,6 +34,7 @@ static int acceptCallback(void* server, std::uint64_t id, std::uint64_t) {
 static int receiveCallback(void* server, std::uint64_t id, const void* data, int length) {
  {
   std::lock_guard<std::mutex> lock(probe->mutex);
+  probe->receiveLengths.push_back(length);
   const auto* p = static_cast<const unsigned char*>(data); probe->received.insert(probe->received.end(), p, p + length);
  }
  if (probe->retainRead.exchange(false)) probe->retained=CTransport_Server_RetainReceiveBuffer(server,id);
@@ -419,4 +423,50 @@ static void exactStructureTests(){
  std::cout<<"PASS registering-worker/foreign-producer timer ownership; token values do not choose wheels\n";
  std::cout<<"PASS contiguous preallocated slab/FIFO exhaustion/corruption diagnostics, exact1000-slot blocks/overflow/compaction/rollback, owner17+101st policy and pre-close-before-OS-close fence\n";
 }
-int main(){std::cout.setf(std::ios::unitbuf);coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}
+
+static std::vector<unsigned char> l1Frame(unsigned size,unsigned seed=1) {
+ std::vector<unsigned char> frame(size);frame[0]=size&255;frame[1]=(size>>8)&255;
+ for(unsigned i=2;i<size;++i)frame[i]=static_cast<unsigned char>(i*seed+17);return frame;
+}
+static void userSocketTests() {
+ for(unsigned chunk : {1u,2u,3u,7u,4096u,8192u,65535u}) {
+  CUserSocket parser;std::vector<unsigned char> wire;std::vector<std::vector<unsigned char>> expected{l1Frame(2),l1Frame(10),l1Frame(65535,3),l1Frame(112,7)},seen;
+  for(const auto& frame:expected)wire.insert(wire.end(),frame.begin(),frame.end());
+  for(std::size_t at=0;at<wire.size();at+=chunk)check(parser.feed(wire.data()+at,std::min<std::size_t>(chunk,wire.size()-at),10,[&](auto* p,unsigned n){seen.emplace_back(p,p+n);return true;}),"fragmented L1 parser rejected valid bytes");
+  check(seen==expected,"fragmented/coalesced/max-size L1 frames changed bytes/order");
+  std::uint64_t stats[6]{};parser.snapshot(stats,100);check(stats[0]==CUserSocket::Header&&stats[3]==4&&stats[5]==0,"parser did not return to header state");
+ }
+ for(unsigned size : {0u,1u,3u,4u,5u,6u,7u,8u,9u}) {
+  CUserSocket parser;unsigned callbacks=0;unsigned char bytes[]{static_cast<unsigned char>(size),0};
+  check(!parser.feed(bytes,2,0,[&](auto*,unsigned){++callbacks;return true;})&&callbacks==0,"invalid L1 wire length reached callback");
+  std::uint64_t stats[6]{};parser.snapshot(stats,100);check(stats[0]==2&&stats[4]==1,"invalid length did not stop parser");
+ }
+ {
+  CUserSocket parser;auto frame=l1Frame(10);
+  check(parser.feed(frame.data(),1,10,[](auto*,unsigned){return true;}),"partial header");
+  check(!parser.expired(30009)&&parser.expired(30010),"partial header deadline");
+  parser.pause(true,110);check(!parser.expired(100000),"backpressure pause expired partial packet");
+  parser.pause(false,100110);check(!parser.expired(130009)&&parser.expired(130010),"pause did not shift partial deadline");
+  check(parser.feed(frame.data()+1,9,130010,[](auto*,unsigned){return true;})&&!parser.expired(200000),"complete frame retained deadline");
+ }
+ {
+  CUserSocket parser;auto frame=l1Frame(10);std::atomic<bool>entered{false},release{false};
+  auto owner=std::async(std::launch::async,[&]{return parser.feed(frame.data(),frame.size(),1,[&](auto* p,unsigned n){entered=true;while(!release)std::this_thread::yield();check(n==10&&std::equal(p,p+n,frame.data()),"close freed callback frame");return true;});});
+  until([&]{return entered.load();});parser.stop();release=true;check(!owner.get(),"close did not stop parser after callback");
+ }
+ {
+  Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();
+  check(CTransport_Server_ThreadOwner(f.server)==-1,"external caller impersonated native worker");
+  check(CIO_Server_PauseReceive(f.server,id,0),"user profile unpause");auto frame=l1Frame(10000,9);
+  fakewin::feed(socket,{frame[0]});
+  until([&]{std::uint64_t st[6]{};return CTransport_UserSocket_GetState(f.server,id,st,6)&&st[0]==0&&st[2]==1;});
+  {std::lock_guard<std::mutex>lock(f.state.mutex);check(f.state.received.empty(),"partial header leaked into raw gameplay callback");}
+  fakewin::feed(socket,std::vector<unsigned char>(frame.begin()+1,frame.end()));
+  until([&]{std::lock_guard<std::mutex>lock(f.state.mutex);return f.state.received.size()==frame.size();});
+  {std::lock_guard<std::mutex>lock(f.state.mutex);check(f.state.received==frame&&f.state.receiveLengths==std::vector<int>{10000},"production user socket did not emit one complete frame");}
+  fakewin::feed(socket,{3,0});until([&]{return f.state.closed==1;});
+ }
+ std::cout<<"PASS L1 CUserSocket: bytewise/coalesced/65535-byte framing, empty envelope, invalid lengths, header/body deadlines with backpressure, concurrent close, production connection integration\n";
+}
+
+int main(){std::cout.setf(std::ios::unitbuf);userSocketTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}

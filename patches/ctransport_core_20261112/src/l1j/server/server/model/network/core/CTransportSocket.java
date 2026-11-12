@@ -30,7 +30,32 @@ final class CTransportSocket implements AutoCloseable {
     long id() { return id; }
     public InetSocketAddress remoteAddress() { return remote; }
     public boolean isOpen() { return open && !closing; }
-    void nativeClosing() { closing = true; }
+    private volatile CIOUserSocket userSocketOwner;
+    private volatile boolean nativeIoDrained;
+    void bindUserSocketOwner(CIOUserSocket owner) {
+        userSocketOwner = owner;
+        if (closing || !open) owner.onTransportClosing();
+        if (nativeIoDrained) owner.onTransportTerminated();
+    }
+    boolean isNativeIoDrained() { return nativeIoDrained; }
+    // Only the real native terminal callback sets this flag. Local aborting
+    // of Java READ/WRITE requests must not start game-session destruction.
+    void nativeTerminated() {
+        nativeIoDrained = true;
+        nativeClosed();
+        CIOUserSocket owner = userSocketOwner;
+        if (owner != null) owner.onTransportTerminated();
+    }
+    void nativeClosing() {
+        closing = true;
+        CIOUserSocket owner = userSocketOwner;
+        if (owner != null) owner.onTransportClosing();
+    }
+    boolean enableUserSocket() { return parent.enableUserSocket(id); }
+    boolean userSocketExpired() { return parent.userSocketExpired(id); }
+    boolean postCompletion(CTransportTask task) { return parent.postCompletion(task); }
+    int currentNativeOwner() { return parent.currentNativeOwner(); }
+    long[] userSocketState() { return parent.userSocketState(id); }
     @Override public void close() {
         if (!open) return;
         nativeClosed();
@@ -108,6 +133,14 @@ final class CTransportSocket implements AutoCloseable {
                 }
             }
             if (callback != null) callback.transportReadCompleted(n);
+        }
+        // A complete native user frame can end exactly at the consumer's
+        // buffer boundary. Pause now if its packet lease kept READ unarmed;
+        // otherwise the assembler could read a whole next frame ahead before
+        // the old byte-stream "stash on next upcall" pause takes effect.
+        synchronized (this) {
+            if (isOpen() && readOwner == null && !parent.pause(id, true))
+                throw new IllegalStateException("CIO frame-boundary receive pause failed");
         }
     }
     private int drainStash(ByteBuffer dst) {
