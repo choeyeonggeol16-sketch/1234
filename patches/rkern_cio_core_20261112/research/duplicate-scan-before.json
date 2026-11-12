@@ -1,0 +1,728 @@
+[
+  {
+    "chars": 3294,
+    "locations": [
+      [
+        "src/l1j/server/server/appcenter/AppCenterAssets.java",
+        802
+      ],
+      [
+        "src/l1j/server/server/appcenter/AppCenterAssets.java",
+        904
+      ]
+    ],
+    "preview": "\"bwnt3R0IDgeNet3ezWwqS96S17qGU5ZthWnVzwGvD0nNsnrXNmrpi7z0w4cZnSgwkSuxc+fthLq7+dFDD0LAR71SIdzeYh+iQU+AzoE+Xn/dTZQLRX76/e/jwIknYLWQwvi9ARtEoLcD4cRP95v9g4PMzsQ59Oi3eeTAMS4V0jhEqypoNgwc\",\n\"osSa9ev59//6Hi6vh0ujE9SrNVuOqKpiD2HymSzFfBHTopzLZR96gVAQb3me9W/Yh6HUeejv305yOkumIjEweBUdg6uZnp1mPpVClyUmpyYJuv220b3tXQRDIXZv28HBx5/G1AxMj0g4GrHvCXh8RPxhcloN4cyjB8xARztKocynP34vF+Mz\",\n\"yJIbw1zsLJhWE82ktaOTL3/jawRawnQv60d2udAUxTa2Xq4hOh2omtWVE1BqdeIT06SmE3jmXuKqu3bx1Ld+zg3v+yDx3zzMMz98jsDaffQMbuSBh7+J4PXg8LkoJnMo1mSoVOXGa65Dll1MTUyil+uIDQPBEHBEvchOJ12RMK3hKHO1MsJL\",\n\"//u0uX7bFsxqg8/e82EOvvISXocLQdKQBYmqoWIaDrqWLOE9f/MBom2t6PUGnlAAh2Hi8HkYP34Ew+nFF4nYqiSVTJOdS6HUG3TWTzO0sZWzIxfZd/frSB8+ymOPnGfzGz7CNx75b1A1skoZUxLwii58Lg9mw+DqVWuoaCoTIxdwNExUdLwV\",\n\"gaJbJRqN0hYK0xr0MzQwiPDbB35ixmIRvN3tnDw9wuc/8UkCLifW1GjLzmvYvGc3q9ettRtgLe1tuL0eTN0KcKiUKyTGE1y6OMbs1Bz1egPDFPF4fHZ2S6eTNMafJ+qXyJTTRLwSubKTtTvvJJUv8MBjP2Df9TfxyplTuFwuSsUCG1dvJBII\","
+  },
+  {
+    "chars": 1584,
+    "locations": [
+      [
+        "src/l1j/server/server/GMCommands.java",
+        6974
+      ],
+      [
+        "src/l1j/server/server/GMCommands.java",
+        6980
+      ]
+    ],
+    "preview": "L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);\nL1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);\nL1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);\nL1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);\nL1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);"
+  },
+  {
+    "chars": 1101,
+    "locations": [
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        567
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        953
+      ]
+    ],
+    "preview": "for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {\nif (object == null || !(object instanceof L1Character)) continue;\nif (object.getId() == pc.getId() || object.getId() == cha.getId()) continue;\nif (object instanceof L1PcInstance) {\ntargetPc = (L1PcInstance) object;"
+  },
+  {
+    "chars": 1090,
+    "locations": [
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        153
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        208
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        502
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        800
+      ]
+    ],
+    "preview": "for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {\nif (object == null || !(object instanceof L1Character)) continue;\nif (object.getId() == pc.getId() || object.getId() == cha.getId()) continue;\nif (object instanceof L1PcInstance) {\ntargetPc = (L1PcInstance) object;"
+  },
+  {
+    "chars": 986,
+    "locations": [
+      [
+        "src/l1j/server/server/model/L1CurseParalysis.java",
+        63
+      ],
+      [
+        "src/l1j/server/server/model/poison/L1ParalysisPoison.java",
+        61
+      ]
+    ],
+    "preview": "int notiWire_endStrId = 0;\nboolean notiWire_isGood = false;\nint notiWire_bit = 0;\n{ notiWire_bit |= 1; notiWire_notiType = eNotiType.RESTAT; }\n{ notiWire_bit |= 2; notiWire_spellId = L1SkillId.CURSE_PARALYZE; }"
+  },
+  {
+    "chars": 970,
+    "locations": [
+      [
+        "src/l1j/server/server/command/executor/change.java",
+        21
+      ],
+      [
+        "src/l1j/server/server/model/item/classchange/ClassChange.java",
+        3
+      ]
+    ],
+    "preview": "import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;\nimport l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;\nimport java.sql.Connection;\nimport java.sql.PreparedStatement;\nimport l1j.server.DatabaseFactory;"
+  },
+  {
+    "chars": 936,
+    "locations": [
+      [
+        "src/l1j/server/server/model/Instance/L1PcInstance.java",
+        3146
+      ],
+      [
+        "src/l1j/server/server/model/Instance/L1PcInstance.java",
+        3478
+      ]
+    ],
+    "preview": "if ((getInventory().checkEquipped(123111) || getInventory().checkEquipped(123112)\n|| getInventory().checkEquipped(123113))) {\nif (!hasSkillEffect(L1SkillId.할파스의신의)) {\nfor (L1ItemInstance item : getInventory().getItems()) {\nif (item.isEquipped()) {"
+  },
+  {
+    "chars": 895,
+    "locations": [
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        657
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        745
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        891
+      ]
+    ],
+    "preview": "if (cha instanceof L1MonsterInstance) {\nif (!(object instanceof L1MonsterInstance)) continue;\n}\nif (cha instanceof L1PcInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance) {\nif (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance)) {"
+  },
+  {
+    "chars": 894,
+    "locations": [
+      [
+        "src/l1j/server/server/GMCommands.java",
+        6034
+      ],
+      [
+        "src/l1j/server/server/UserCommands.java",
+        1522
+      ]
+    ],
+    "preview": "private static void LetterList(L1PcInstance pc, int type, int count) {\nSC_LetterList.sendListAsync(pc, type, count);\n}\npublic static void WriteCancle(String buyer, String seller) {\nint nu1 = 949;"
+  },
+  {
+    "chars": 893,
+    "locations": [
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        160
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        215
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        509
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        574
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        808
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        960
+      ]
+    ],
+    "preview": "if (cha instanceof L1MonsterInstance && !(object instanceof L1MonsterInstance)) continue;\nif (cha instanceof L1PcInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance) {\nif (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance)) continue;\n}\nif (dmg <= 0) continue;"
+  },
+  {
+    "chars": 884,
+    "locations": [
+      [
+        "src/l1j/server/server/command/executor/L1DeleteGroundItem.java",
+        36
+      ],
+      [
+        "src/l1j/server/server/command/executor/L1DeleteGroundItem.java",
+        70
+      ]
+    ],
+    "preview": "if (l1object instanceof L1ItemInstance) {\nl1iteminstance = (L1ItemInstance) l1object;\nif (l1iteminstance.getX() == 0 && l1iteminstance.getY() == 0) { // 지면상의 아이템은 아니고, 누군가의 소유물\ncontinue;\n}"
+  },
+  {
+    "chars": 883,
+    "locations": [
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+        249
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+        293
+      ]
+    ],
+    "preview": "L1Object passlock = L1World.getInstance().findNpc(8500132);\nif (passlock != null && passlock instanceof L1NpcInstance && !(passlock instanceof L1DollInstance)) {\nL1NpcInstance npc = (L1NpcInstance) passlock;\ndeleteNpc(npc);\n}"
+  },
+  {
+    "chars": 861,
+    "locations": [
+      [
+        "src/l1j/server/server/model/item/function/ItemUseMagicCombat.java",
+        102
+      ],
+      [
+        "src/l1j/server/server/model/item/function/ItemUseMagicCombat.java",
+        141
+      ]
+    ],
+    "preview": "L1EffectSpawn.getInstance().spawnEffect(991162, Config.이터제약, member.getX(), member.getY(), member.getMapId());\n}\nSC_SkillSound.send(member, member.getId(), 13136);\nSC_SkillSound.broadcast(member, member.getId(), 13136);\nSC_Paralysis.send(member, SC_Paralysis.TYPE_BIND, true);"
+  },
+  {
+    "chars": 854,
+    "locations": [
+      [
+        "src/l1j/server/server/model/item/function/additemnew.java",
+        60
+      ],
+      [
+        "src/l1j/server/server/model/item/function/additemnew.java",
+        264
+      ]
+    ],
+    "preview": "봉인템(pc, 222327, 1, 7, 130, 0, true); // 강철 각반\n봉인템(pc, 22254, 1, 3, 130, 0, true); // 수호의 가더\n봉인템(pc, 222307, 1, 7, 130, 0, true); // 완력의 부츠\n봉인템(pc, 900020, 1, 3, 130, 0, true); // 성장의 문장\n봉인템(pc, 900021, 1, 3, 130, 0, true); // 회복의 문장"
+  },
+  {
+    "chars": 835,
+    "locations": [
+      [
+        "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+        1722
+      ],
+      [
+        "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+        2506
+      ]
+    ],
+    "preview": "} else if (s.equalsIgnoreCase(\"pandora6\") || s.equalsIgnoreCase(\"cold6\") || s.equalsIgnoreCase(\"balsim3\")\n|| s.equalsIgnoreCase(\"mellin3\") || s.equalsIgnoreCase(\"glen3\")) {\nhtmlid = s;\nint npcid = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();\nint taxRatesCastle = L1CastleLocation.getCastleTaxRateByNpcId(npcid);"
+  },
+  {
+    "chars": 816,
+    "locations": [
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_Dexup.java",
+        40
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_Strup.java",
+        42
+      ]
+    ],
+    "preview": "public static boolean send(L1Character target, L1PcInstance actor, int type, int time) {\nreturn target instanceof L1PcInstance && send(((L1PcInstance) target).getNetConnection(), actor, type, time);\n}\npublic static void broadcast(L1Character anchor, L1PcInstance actor, int type, int time) {\nif (anchor == null) return;"
+  },
+  {
+    "chars": 815,
+    "locations": [
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        161
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        216
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        510
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        575
+      ],
+      [
+        "src/l1j/server/server/model/L1WeaponSkill.java",
+        809
+      ]
+    ],
+    "preview": "if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance) {\nif (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance)) continue;\n}\nif (dmg <= 0) continue;\nif (object instanceof L1PcInstance) {"
+  },
+  {
+    "chars": 807,
+    "locations": [
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_SkillBrave.java",
+        37
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_SkillHaste.java",
+        37
+      ]
+    ],
+    "preview": "public static boolean send(L1Character target, int objectId, int mode, int time) {\nreturn target instanceof L1PcInstance && send(((L1PcInstance) target).getNetConnection(), objectId, mode, time);\n}\npublic static void broadcast(L1Character anchor, int objectId, int mode, int time) {\nif (anchor == null) return;"
+  },
+  {
+    "chars": 805,
+    "locations": [
+      [
+        "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+        561
+      ],
+      [
+        "src/l1j/server/IndunSystem/Ice/Queen/Queen.java",
+        469
+      ],
+      [
+        "src/l1j/server/server/model/item/function/ItemUseMiscActions.java",
+        383
+      ]
+    ],
+    "preview": "((L1DoorInstance) npc).setLeftEdgeLocation(32816);\n((L1DoorInstance) npc).setRightEdgeLocation(32821);\n((L1DoorInstance) npc).setDirection(1);\n} else if (npc.getNpcId() == 5148) {\n((L1DoorInstance) npc).setLeftEdgeLocation(32804);"
+  },
+  {
+    "chars": 792,
+    "locations": [
+      [
+        "src/l1j/server/server/model/L1NewUltimateBattle.java",
+        177
+      ],
+      [
+        "src/l1j/server/server/model/L1UltimateBattle.java",
+        195
+      ]
+    ],
+    "preview": "sendMessage(\"콜롯세움 관리인: 1분 후에 제 2 군의 투입이 시작됩니다.\");\n} else if (curRound == 2) {\nspawnGroundItem(L1ItemId.ADENA, 3000, 50);\nspawnGroundItem(L1ItemId.POTION_OF_CURE_POISON, 5, 20);\nspawnGroundItem(L1ItemId.POTION_OF_EXTRA_HEALING, 10, 20);"
+  },
+  {
+    "chars": 791,
+    "locations": [
+      [
+        "src/l1j/server/server/model/L1NewUltimateBattle.java",
+        141
+      ],
+      [
+        "src/l1j/server/server/model/L1NewUltimateBattle.java",
+        231
+      ],
+      [
+        "src/l1j/server/server/model/L1UltimateBattle.java",
+        159
+      ],
+      [
+        "src/l1j/server/server/model/L1UltimateBattle.java",
+        250
+      ]
+    ],
+    "preview": "sendMessage(\"콜롯세움 관리인: 제 1 군의 투입이 완료되었습니다.\");\nsendMessage(\"콜롯세움 관리인: 1분 후에 제 2 군의 투입이 시작됩니다.\");\n} else if (curRound == 2) {\nspawnGroundItem(L1ItemId.ADENA, 5000, 50);\nspawnGroundItem(L1ItemId.POTION_OF_CURE_POISON, 7, 20);"
+  },
+  {
+    "chars": 774,
+    "locations": [
+      [
+        "src/l1j/server/IndunSystem/Ice/Demon/Demon.java",
+        260
+      ],
+      [
+        "src/l1j/server/IndunSystem/Ice/Queen/Queen.java",
+        267
+      ]
+    ],
+    "preview": "}\nprivate void End() {\nfor (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {\nif (obj instanceof L1PcInstance) {\nL1PcInstance pc = (L1PcInstance) obj;"
+  },
+  {
+    "chars": 772,
+    "locations": [
+      [
+        "src/l1j/server/server/utils/L1SpawnUtil.java",
+        239
+      ],
+      [
+        "src/l1j/server/server/utils/L1SpawnUtil.java",
+        344
+      ]
+    ],
+    "preview": "if (npc.getNpcId() == 900007 || npc.getNpcId() == 900015 || npc.getNpcId() == 900036 || npc.getNpcId() == 900219) {\nfor (L1PcInstance _pc : L1World.getInstance().getVisiblePlayer(npc)) {\nnpc.onPerceive(_pc);\nSC_DoActionGFX.send(_pc.getNetConnection(), npc.getId(), ActionCodes.ACTION_AxeWalk);\n}"
+  },
+  {
+    "chars": 759,
+    "locations": [
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_PinkName.java",
+        36
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconBlessOfEva.java",
+        36
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconWindShackle.java",
+        39
+      ]
+    ],
+    "preview": "public static boolean send(L1Character target, int objectId, int time) {\nreturn target instanceof L1PcInstance && send(((L1PcInstance) target).getNetConnection(), objectId, time);\n}\npublic static void broadcast(L1Character anchor, int objectId, int time) {\nif (anchor == null) return;"
+  },
+  {
+    "chars": 759,
+    "locations": [
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_Liquor.java",
+        36
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_Poison.java",
+        38
+      ]
+    ],
+    "preview": "public static boolean send(L1Character target, int objectId, int type) {\nreturn target instanceof L1PcInstance && send(((L1PcInstance) target).getNetConnection(), objectId, type);\n}\npublic static void broadcast(L1Character anchor, int objectId, int type) {\nif (anchor == null) return;"
+  },
+  {
+    "chars": 759,
+    "locations": [
+      [
+        "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+        4732
+      ],
+      [
+        "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+        4830
+      ]
+    ],
+    "preview": ") {\nif (pc == null) return;\nl1j.server.server.packets.Protocol.Packet.SC_SpellBuffNoti.eNotiType notiWire_notiType = null;\nint notiWire_spellId = 0;\nint notiWire_duration = 0;"
+  },
+  {
+    "chars": 747,
+    "locations": [
+      [
+        "src/l1j/server/server/Controller/BugRaceController.java",
+        919
+      ],
+      [
+        "src/l1j/server/server/Controller/BugRaceController.java",
+        955
+      ]
+    ],
+    "preview": "BugTicketInfo tInfo = create_ticket(i, 20000, default_itemid, \"\\\\aS\");\nsellingList.add(create_ticket_shop_item(tInfo));\n}\nfor(int i=0; i<5; ++i){\nint default_itemid = _ticket[i];"
+  },
+  {
+    "chars": 740,
+    "locations": [
+      [
+        "src/l1j/server/server/model/map/L1V1Map.java",
+        327
+      ],
+      [
+        "src/l1j/server/server/model/map/L1V1Map.java",
+        375
+      ]
+    ],
+    "preview": "case 1:{\nint tile3 = accessTile(x, y - 1);\nint tile4 = accessTile(x + 1, y);\nreturn (tile1 & 0x02) == 0x02 && (tile3 & 0x01) == 0x01 || (tile1 & 0x01) == 0x01 && (tile4 & 0x02) == 0x02; }\ncase 2:{ return (tile1 & 0x01) == 0x01; }"
+  },
+  {
+    "chars": 735,
+    "locations": [
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_Board.java",
+        268
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_Boarditem.java",
+        313
+      ]
+    ],
+    "preview": "private static final Charset MS949 = Charset.forName(\"MS949\");\nprivate static int bytesOf(String value) {\nreturn value == null ? 1 : value.getBytes(MS949).length + 1;\n}\npublic boolean send(CIOClient client) {"
+  },
+  {
+    "chars": 720,
+    "locations": [
+      [
+        "src/l1j/server/server/model/item/function/ItemUseStunCombat.java",
+        44
+      ],
+      [
+        "src/l1j/server/server/model/item/function/ItemUseStunCombat.java",
+        189
+      ]
+    ],
+    "preview": "if (target instanceof L1PcInstance) {\nL1PcInstance member = (L1PcInstance)target;\nint diffLocX = Math.abs(pc.getX() - member.getX());\nint diffLocY = Math.abs(pc.getY() - member.getY());\nif (diffLocX > 7 || diffLocY > 7) {"
+  },
+  {
+    "chars": 717,
+    "locations": [
+      [
+        "src/l1j/server/server/model/item/function/ItemUseSpecialEnchant.java",
+        200
+      ],
+      [
+        "src/l1j/server/server/model/item/function/ItemUseSpecialEnchant.java",
+        240
+      ]
+    ],
+    "preview": "try (l1j.server.server.model.L1InventoryTransaction tx =\nUser.CheckAndSetPendingUseETCItem(pc,\nl1j.server.server.storage.CacheD.accountOrderKey(\"item-use:\", pc.getId()))) {\nif (!tx.debit(scroll, 1)) return;\nif (nextLevel != 0) tx.change(target, image -> {"
+  },
+  {
+    "chars": 706,
+    "locations": [
+      [
+        "src/l1j/server/server/model/shop/L1Shop.java",
+        1125
+      ],
+      [
+        "src/l1j/server/server/model/shop/L1Shop.java",
+        1184
+      ]
+    ],
+    "preview": "int sellings_price = orderList.getTotalPrice();\nif(inv.countItems(L1ItemId.ADENA) < sellings_price){\nthrow new IllegalStateException(\"구입에 필요한 아데나를 소비 할 수 없습니다.\");\n}\nL1NpcInstance npc = L1World.getInstance().findNpc(getNpcId());"
+  },
+  {
+    "chars": 706,
+    "locations": [
+      [
+        "src/l1j/server/server/model/Instance/L1CompanionInstance.java",
+        1633
+      ],
+      [
+        "src/l1j/server/server/model/Instance/L1CompanionInstance.java",
+        1653
+      ]
+    ],
+    "preview": "pstm.setInt(++idx, get_friend_ship_guage());\npstm.setInt(++idx, get_friend_ship_marble());\npstm.setInt(++idx, getLevel());\npstm.setInt(++idx, getExp());\npstm.setInt(++idx, get_keep_exp());"
+  },
+  {
+    "chars": 704,
+    "locations": [
+      [
+        "src/l1j/server/MJKDASystem/MJKDA.java",
+        239
+      ],
+      [
+        "src/l1j/server/MJKDASystem/MJKDA.java",
+        273
+      ]
+    ],
+    "preview": "if (victim.hasSkillEffect(L1SkillId.USER_WANTED)) {\nif (killer.hasSkillEffect(L1SkillId.USER_WANTED)) {\nif (aa <= Config.수배2단확률) {\nkiller.removeSkillEffect(L1SkillId.USER_WANTED);\nkiller.setSkillEffect(L1SkillId.USER_WANTED1, -1);"
+  },
+  {
+    "chars": 696,
+    "locations": [
+      [
+        "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+        535
+      ],
+      [
+        "src/l1j/server/IndunSystem/Ice/Queen/Queen.java",
+        443
+      ]
+    ],
+    "preview": "public static void spawn(int x, int y, short MapId, int Heading, int npcId, int randomRange, int type,\nint roomnumber) {\ntry {// 타입이란부분에 월래2였는데 얼음여왕은 1을 죠 타입을따라가보면\nL1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);\nnpc.setId(IdFactory.getInstance().nextId());"
+  },
+  {
+    "chars": 691,
+    "locations": [
+      [
+        "src/l1j/server/server/packets/Protocol/Packet/SC_WorldPutObjectNoti.java",
+        359
+      ],
+      [
+        "src/l1j/server/server/packets/Protocol/Packet/SC_WorldPutObjectNoti.java",
+        1325
+      ]
+    ],
+    "preview": "int id = 0, spriteId = 0, status = 0, heading = 0, lightSize = 0, moveSpeed = 0, level = 1;\nint hpPercent = -1, mpPercent = -1;\nString nameId = \"\", title = \"\", masterName = \"\";\ntry {\nid = summon.getId();"
+  },
+  {
+    "chars": 688,
+    "locations": [
+      [
+        "src/l1j/server/server/model/L1Inventory.java",
+        1182
+      ],
+      [
+        "src/l1j/server/server/model/L1Inventory.java",
+        1233
+      ]
+    ],
+    "preview": "count = item.getCount();\n}\nif (item.getCount() == count) {\nint itemId = item.getItem().getItemId();\nif (itemId == 40314 || itemId == 40316) {"
+  },
+  {
+    "chars": 687,
+    "locations": [
+      [
+        "src/l1j/server/server/model/item/function/additemnew.java",
+        295
+      ],
+      [
+        "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java",
+        2713
+      ]
+    ],
+    "preview": "private static boolean 봉인템(L1PcInstance pc, int item_id, int count, int EnchantLevel, int Bless, int attr,\nboolean identi) {\nL1ItemInstance item = ItemTable.getInstance().createItem(item_id);\nif (item != null) {\nitem.setCount(count);"
+  },
+  {
+    "chars": 684,
+    "locations": [
+      [
+        "src/l1j/server/server/command/executor/L1ImPactGfxid.java",
+        19
+      ],
+      [
+        "src/l1j/server/server/command/executor/L1ImPactGfxid1.java",
+        19
+      ]
+    ],
+    "preview": "package l1j.server.server.command.executor;\nimport java.lang.reflect.Constructor;\nimport java.sql.Connection;\nimport java.sql.PreparedStatement;\nimport java.sql.ResultSet;"
+  },
+  {
+    "chars": 669,
+    "locations": [
+      [
+        "src/l1j/server/MJInstanceSystem/MJInstanceSpace.java",
+        112
+      ],
+      [
+        "src/l1j/server/MJRaidSystem/MJRaidSpace.java",
+        117
+      ]
+    ],
+    "preview": "int copyMapId = obj.getCopyMapId();\nIterator<L1Object> it = L1World.getInstance().getVisibleObjects(copyMapId).values().iterator();\nwhile(it.hasNext()){\nL1Object l1obj = it.next();\nif((l1obj instanceof L1DollInstance) || (l1obj instanceof L1SummonInstance))"
+  },
+  {
+    "chars": 651,
+    "locations": [
+      [
+        "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+        268
+      ],
+      [
+        "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+        205
+      ]
+    ],
+    "preview": "if (clan.getRankTime() > clantime || clan.getRankTime() == 0) {\nclan.setRankTime(clantime);\nClanTable.getInstance().updateRankTime(clan.getClanId(), clantime);\nlong now = System.currentTimeMillis();\nTimestamp time = new Timestamp(now);"
+  },
+  {
+    "chars": 634,
+    "locations": [
+      [
+        "src/l1j/server/server/model/item/function/ItemUseDurable.java",
+        823
+      ],
+      [
+        "src/l1j/server/server/model/item/function/additemnew.java",
+        296
+      ],
+      [
+        "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java",
+        2714
+      ]
+    ],
+    "preview": "boolean identi) {\nL1ItemInstance item = ItemTable.getInstance().createItem(item_id);\nif (item != null) {\nitem.setCount(count);\nitem.setIdentified(identi);"
+  },
+  {
+    "chars": 628,
+    "locations": [
+      [
+        "src/l1j/server/MJCombatSystem/Games/MJBattleTowerObserver.java",
+        62
+      ],
+      [
+        "src/l1j/server/MJCombatSystem/MJCombatObserver.java",
+        520
+      ]
+    ],
+    "preview": "}\n}\npublic void on_kill(L1PcInstance attacker, L1PcInstance receiver){\nif(attacker == null || !attacker.is_combat_field() || receiver == null || !receiver.is_combat_field())\nreturn;"
+  },
+  {
+    "chars": 624,
+    "locations": [
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+        188
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+        191
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+        313
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+        190
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+        190
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+        190
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+        190
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+        190
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+        190
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+        189
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+        189
+      ]
+    ],
+    "preview": "L1Object boss = L1World.getInstance().findNpc(_npcid);\nif (boss != null && boss instanceof L1NpcInstance && !(boss instanceof L1DollInstance)) {\nL1NpcInstance npc = (L1NpcInstance) boss;\ndeleteNpc(npc);\n}"
+  },
+  {
+    "chars": 619,
+    "locations": [
+      [
+        "src/l1j/server/MJRaidSystem/BossSkill/MJRaidBossSkill.java",
+        138
+      ],
+      [
+        "src/l1j/server/MJRaidSystem/BossSkill/MJRaidBossSkill.java",
+        217
+      ]
+    ],
+    "preview": "int dmg = 0;\nif(_isMagic){\ndmg = MJCommons.getMagicDamage(attacker, pc, min, max);\nif(pc.hasSkillEffect(L1SkillId.FAFU_MAAN) || pc.hasSkillEffect(L1SkillId.LIFE_MAAN) ||\npc.hasSkillEffect(L1SkillId.SHAPE_MAAN) || pc.hasSkillEffect(L1SkillId.BIRTH_MAAN)){"
+  }
+]

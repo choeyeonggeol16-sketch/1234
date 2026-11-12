@@ -1,0 +1,5 @@
+PASS source ZIP CRC:1698 files/1697 Java,every byte.
+PASS two Java files changed; all game sources unchanged.
+PASS native implementation/header/core/self-test equal prior source after name-only token replacement.
+PASS Java patch reproduces new full source.
+PASS current DLL hash and product names verified.

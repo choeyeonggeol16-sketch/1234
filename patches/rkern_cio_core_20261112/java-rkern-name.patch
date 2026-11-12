@@ -1,0 +1,53 @@
+diff --git a/src/l1j/server/server/model/network/core/CIOTransportConfig.java b/src/l1j/server/server/model/network/core/CIOTransportConfig.java
+index 9bb986f..0db5358 100644
+--- a/src/l1j/server/server/model/network/core/CIOTransportConfig.java
++++ b/src/l1j/server/server/model/network/core/CIOTransportConfig.java
+@@ -6,8 +6,8 @@ import java.nio.file.Path;
+ /** Explicit native transport choice. The existing transport remains default. */
+ final class CIOTransportConfig {
+     static final String PROPERTY = "rkern.cio.transport";
+-    static final String NC_SHA256 = "143620e8b7ae0c1cc3842c170b318ec5b99d69ab38f50e177a36f6a23ec2f706";
+-    record Choice(Path path, String sha256, boolean reconstructedNc) {}
++    static final String RKERN_SHA256 = "85ee85466fd838379a7256f894db8f670d932cf936af1f8413d71da0ae7cc64d";
++    record Choice(Path path, String sha256, boolean rkernNative) {}
+ 
+     private CIOTransportConfig() {}
+ 
+@@ -20,10 +20,10 @@ final class CIOTransportConfig {
+             return new Choice(Path.of("CIOWinTransport.dll"),
+                     "9d8106886be0e26d14bd8eb7093714ae3b44d655ccae869ffc98148db8807ecc", false);
+         }
+-        if ("nc".equals(configured)) {
+-            return new Choice(Path.of("CIONcTransport.dll"), NC_SHA256, true);
++        if ("rkern".equals(configured) || "nc".equals(configured)) {
++            return new Choice(Path.of("RKernCIOTransport.dll"), RKERN_SHA256, true);
+         }
+         throw new IOException("Unknown " + PROPERTY + ": " + configured
+-                + "; expected hpsocket or nc");
++                + "; expected hpsocket or rkern");
+     }
+ }
+diff --git a/src/l1j/server/server/model/network/core/CIOWinServer.java b/src/l1j/server/server/model/network/core/CIOWinServer.java
+index ae7f604..78b4ad7 100644
+--- a/src/l1j/server/server/model/network/core/CIOWinServer.java
++++ b/src/l1j/server/server/model/network/core/CIOWinServer.java
+@@ -24,7 +24,7 @@ import java.util.concurrent.locks.LockSupport;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
+-/** Windows native C API bridge; pinned HP transport by default, explicit NC reconstruction option.
++/** Windows native C API bridge; pinned HP transport by default, explicit RKern core option.
+  * Java 21 FFM preview: --enable-preview --enable-native-access=ALL-UNNAMED.
+  * Normal native completions run on transport IOCP workers; no Java completion pool is added.
+  */
+@@ -132,8 +132,8 @@ final class CIOWinServer implements AutoCloseable {
+             Path dll = transport.path().toAbsolutePath();
+             requireKnownDll(dll, transport.sha256());
+             symbols = SymbolLookup.libraryLookup(dll, arena);
+-            if (transport.reconstructedNc()) {
+-                MethodHandle version = fn("CIONC_Version", FunctionDescriptor.of(I));
++            if (transport.rkernNative()) {
++                MethodHandle version = fn("RKernCIO_Version", FunctionDescriptor.of(I));
+                 if ((int) version.invokeExact() != 0x00010000)
+                     throw new IOException("Unsupported reconstructed CIO transport ABI");
+             }

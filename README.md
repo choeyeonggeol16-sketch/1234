@@ -1,3 +1,11 @@
+## 2026-11-12 — RKern CIO 명칭 정리 / 추가 복원 범위
+
+[**전체 src**](downloads/RKern_Aden_CIO_CORE_FULL_SRC_20261112.zip) · [**RKern CIO DLL·C++·검사 자료**](downloads/RKern_CIO_CORE_20261112.zip) · [추가 복원 범위·원본 근거](reports/RKERN_CIO_CORE_RESTORE_SCOPE_20261112.md)
+
+현재 DLL·source·version export·실행 옵션을 RKern으로 통일했습니다. `-Drkern.cio.transport=rkern`으로 선택,기존 옵션은 호환 별칭 유지.128배치와 I/O 동작 동일. 추가 pool/16KB/종료/타이머 후보는 원본 명령을 더 읽어 구분했고 아직 구현하지 않았습니다.실제 Windows/FFM/게임·부하는 미검증인 실험본입니다.
+
+---
+
 ## 2026-11-12 — 새 NC 재구현 DLL: 최대128개 배치 완료 처리
 
 [**최신 전체 src**](downloads/RKern_Aden_NC_IOCP_BATCH128_FULL_SRC_20261112.zip) · [**새 DLL/C++/테스트**](downloads/RKern_NC_IOCP_BATCH128_CORE_20261112.zip) · [구현·원본 근거·검증](reports/RKERN_NC_IOCP_BATCH128_20261112.md)

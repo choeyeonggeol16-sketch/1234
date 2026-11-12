@@ -1,0 +1,47 @@
+{
+  "compiler": "zig 0.14.1",
+  "target": "x86_64-windows-gnu",
+  "commands": [
+    [
+      "/workspace/work/aden-nc-port-20261112/toolchain/zig-x86_64-linux-0.14.1/zig",
+      "c++",
+      "-target",
+      "x86_64-windows-gnu",
+      "-std=c++17",
+      "-O2",
+      "-g0",
+      "-static",
+      "-shared",
+      "-fno-sanitize=undefined",
+      "/workspace/work/aden-rkern-cio-20261112/native/RKernCIOTransport.cpp",
+      "-lws2_32",
+      "-o",
+      "/workspace/work/aden-rkern-cio-20261112/build/RKernCIOTransport.dll"
+    ],
+    [
+      "/workspace/work/aden-nc-port-20261112/toolchain/zig-x86_64-linux-0.14.1/zig",
+      "c++",
+      "-target",
+      "x86_64-windows-gnu",
+      "-std=c++17",
+      "-O2",
+      "-g0",
+      "-static",
+      "/workspace/work/aden-rkern-cio-20261112/native/windows_loopback_test.cpp",
+      "/workspace/work/aden-rkern-cio-20261112/build/RKernCIOTransport.lib",
+      "-lws2_32",
+      "-o",
+      "/workspace/work/aden-rkern-cio-20261112/build/RKernCIOTransport_SelfTest.exe"
+    ]
+  ],
+  "files": {
+    "RKernCIOTransport.cpp": "a585328d3cb2dd8ec7ffa5b14f24d4a9a94327708757f284328e7e8952d7e4a0",
+    "RKernCIOTransport.h": "8f112431855da6a19550dffe0fb789d062639823395968cd2be8dfd0818cb8b2",
+    "build_native.py": "d4518b6061c2b112035876b8ccdd2750cf5c4a0fcbd21255adcea982ed6d4dee",
+    "cio_core.hpp": "19dd56628434ae5cfc3c1ee870075ca7665f603c43a78dec7fad7c958c244544",
+    "windows_loopback_test.cpp": "447018cd8ad8a3445288f66c170792d8c77c3b119948c95a61eb651f16eacb98"
+  },
+  "dll_sha256": "85ee85466fd838379a7256f894db8f670d932cf936af1f8413d71da0ae7cc64d",
+  "selftest_sha256": "05bec0ecbfc7a83a78968f2427adc3f70266e6dd92e95ff3ae6b7a2da1b2b9d0",
+  "windows_execution_tested": false
+}

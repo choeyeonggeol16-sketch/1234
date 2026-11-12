@@ -1,0 +1,39 @@
+{
+  "base_revision": "a4b3435dba7dc21725821d4415b3150bd2d3d913",
+  "branch": "rkern-cio-core-20261112",
+  "dll": "RKernCIOTransport.dll",
+  "dll_sha256": "85ee85466fd838379a7256f894db8f670d932cf936af1f8413d71da0ae7cc64d",
+  "version_export": "RKernCIO_Version",
+  "option": "-Drkern.cio.transport=rkern",
+  "legacy_option_alias": "nc",
+  "default_transport": "hpsocket",
+  "completion_batch": 128,
+  "source_files": 1698,
+  "java_files": 1697,
+  "changed_java": [
+    "src/l1j/server/server/model/network/core/CIOTransportConfig.java",
+    "src/l1j/server/server/model/network/core/CIOWinServer.java"
+  ],
+  "native_logic_unchanged_after_token_rename": true,
+  "additional_core_features_implemented": false,
+  "new_sql": false,
+  "scope_candidates": [
+    "owner-index buffer ring and recycle",
+    "16KiB family",
+    "shared receive lifetime",
+    "socket close policy",
+    "completion work posting",
+    "periodic work/timers after more dependency tracing"
+  ],
+  "validation": [
+    "native PE64/27 exports/hash/imports",
+    "production C++ ASan/UBSan with Windows API fixtures",
+    "1697 Java compile and canonical/legacy/default/hash selection",
+    "native token-rename equivalence to previous implementation",
+    "source CRC/every byte/hash and patch reproduction"
+  ],
+  "not_tested": [
+    "real Windows DLL/FFM/game/load",
+    "TSan/game regressions not rerun for rename-only change"
+  ]
+}
