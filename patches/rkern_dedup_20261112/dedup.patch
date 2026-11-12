@@ -1,0 +1,442 @@
+diff --git a/src/l1j/server/server/Account.java b/src/l1j/server/server/Account.java
+index 0af6084..850ea8c 100644
+--- a/src/l1j/server/server/Account.java
++++ b/src/l1j/server/server/Account.java
+@@ -66,7 +66,7 @@ public class Account {
+ 	private int _tam = 0;
+ 	private int _tamStep = 0;
+ 
+-	private int _blessOfAin;
++    private volatile int _blessOfAin;
+ 	private int _grangKinAngerTime;
+ 	
+ 	/** 변카 */
+@@ -913,28 +913,34 @@ public class Account {
+ 	public void setDragonRaid(Timestamp ts) { _raidBuff = ts; }
+ 
+ 	public int getBlessOfAin() { return this._blessOfAin; }
+-	public void setBlessOfAin(int i) {
+-		int oldBless = this._blessOfAin;
+-		this._blessOfAin = IntRange.ensure(i, 0, 50000000);
+-		if (oldBless != this._blessOfAin) {
+-			updateBlessOfAin();
+-		}
+-	}
++    public synchronized void setBlessOfAin(int i) {
++        replaceBlessOfAin(i);
++    }
+ 
+-	public void addBlessOfAin(int i, L1PcInstance pc) {
+-		int oldBless = this._blessOfAin;
+-		final long sum = (long) oldBless + i;
+-		final int newBless = sum < 0L ? 0 : sum > 50000000L ? 50000000 : (int) sum;
++    private void replaceBlessOfAin(long value) {
++        final int next = (int) Math.max(0L, Math.min(50000000L, value));
++        if (next != _blessOfAin) {
++            _blessOfAin = next;
++            updateBlessOfAin();
++        }
++    }
+ 
+-		this._blessOfAin = newBless;
++    /** Existing internal units, not a new historical XP-per-percent constant. */
++    public synchronized int recoverBlessOfAin(long units, int ceiling) {
++        final int limit = Math.max(0, Math.min(50000000, ceiling));
++        if (units > 0 && _blessOfAin < limit) {
++            final long room = (long) limit - _blessOfAin;
++            replaceBlessOfAin(units >= room ? limit : (long) _blessOfAin + units);
++        }
++        return _blessOfAin;
++    }
+ 
+-		if (oldBless != this._blessOfAin) {
+-			updateBlessOfAin();
+-		}
++    public synchronized void addBlessOfAin(int i, L1PcInstance pc) {
++        replaceBlessOfAin((long) _blessOfAin + i);
++        // One authoritative gauge notification, including the transition to 0.
++        SC_RestExpInfo.send(pc);
+ 
+-		if (_blessOfAin >= 10000) {
+-			SC_RestExpInfo.send(pc);
+-		}
++        if (pc == null) return;
+ 		
+ 		if (pc.hasSkillEffect(L1SkillId.EXP_BUFF)) {
+ 			int skillTime = pc.getSkillEffectTimeSec(L1SkillId.EXP_BUFF);
+@@ -947,7 +953,7 @@ public class Account {
+ 		}
+ 	}
+ 
+-	public void updateBlessOfAin() {
++    public synchronized void updateBlessOfAin() {
+ 		if (_blessOfAin < 0) _blessOfAin = 0;
+ 		CacheD.getInstance().saveBlessOfAin(_name, _blessOfAin);
+ 	}
+@@ -1052,4 +1058,4 @@ public class Account {
+ 		});
+ 		return wrapper.value;
+ 	}
+-}
+\ No newline at end of file
++}
+diff --git a/src/l1j/server/server/model/Instance/L1PcInstance.java b/src/l1j/server/server/model/Instance/L1PcInstance.java
+index fa10303..153ff4f 100644
+--- a/src/l1j/server/server/model/Instance/L1PcInstance.java
++++ b/src/l1j/server/server/model/Instance/L1PcInstance.java
+@@ -6506,12 +6506,9 @@ public class L1PcInstance extends L1Character {
+ 
+ 		@Override
+ 		public void execute() {
+-			int einhasad = getAccount().getBlessOfAin();
+-			if (einhasad >= 2000000) {
+-				return;
+-			}
+-			++einhasad;
+-			getAccount().setBlessOfAin(einhasad);
++            // Preserve the existing increment and cap, with one atomic update
++            // so a concurrent recharge cannot be overwritten by a stale read.
++            getAccount().recoverBlessOfAin(1L, 2000000);
+ 
+ 			if (getAccount().getBlessOfAin() > 10000) {
+ 				SC_RestExpInfo.send(L1PcInstance.this);
+diff --git a/src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java b/src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java
+index 3d72d09..f18bfce 100644
+--- a/src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java
++++ b/src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java
+@@ -246,12 +246,24 @@ public final class L1AttackHelper {
+ 		if (attacker == null || targetPc == null) return dmg;
+ 		if (dmg <= 0) return dmg;
+ 
+-		// 아머 브레이크: 근접만
+-		if (!ranged && targetPc.hasSkillEffect(L1SkillId.ARMOR_BRAKE)) {
+-			final boolean caster = attacker instanceof L1PcInstance
+-                    && attacker.hasSkillEffect(L1SkillId.ARMOR_BRAKE_ATTACKER);
+-			dmg = (int) (dmg * (caster ? 1.58 : 1.20));
+-		}
++        dmg = applyArmorBreak(attacker, targetPc, ranged, dmg);
++        return applyTargetPcStatusMultipliers(targetPc, dmg);
++    }
++
++    /** The single Armor Break owner. Existing caster/other and ranged policies
++     * remain intact; the PC physical caller supplies the complete pre-DR hit. */
++    public static int applyArmorBreak(L1Character attacker, L1PcInstance targetPc,
++                                      boolean ranged, int damage) {
++        if (attacker == null || targetPc == null || ranged || damage <= 0
++                || !targetPc.hasSkillEffect(L1SkillId.ARMOR_BRAKE)) return damage;
++        final boolean caster = attacker instanceof L1PcInstance
++                && attacker.hasSkillEffect(L1SkillId.ARMOR_BRAKE_ATTACKER);
++        final long scaled = (long) damage * (caster ? 158L : 120L) / 100L;
++        return (int) Math.min(Integer.MAX_VALUE, scaled);
++    }
++
++    public static int applyTargetPcStatusMultipliers(L1PcInstance targetPc, int dmg) {
++        if (targetPc == null || dmg <= 0) return dmg;
+ 
+ 		// 트루타겟: tt가 %라고 가정 (예: 10이면 10%)
+ 		final int tt = targetPc.getTrueTarget();
+diff --git a/src/l1j/server/server/model/character/action/CAttackAction.java b/src/l1j/server/server/model/character/action/CAttackAction.java
+index 2a7228f..ef681dc 100644
+--- a/src/l1j/server/server/model/character/action/CAttackAction.java
++++ b/src/l1j/server/server/model/character/action/CAttackAction.java
+@@ -1471,6 +1471,11 @@ public final class CAttackAction extends CNewAction {
+ 	    final int pvpWpn = _pc.getResistance().getPVPweaponTotalDamage();
+ 	    if (pvpWpn != 0) dmg += pvpWpn;
+ 
++        // All attack additions have been assembled. Armor Break owns one
++        // integer floor here, before fixed target DR and deferred Burning.
++        dmg = L1AttackHelper.applyArmorBreak(_pc, _targetPc,
++                L1AttackHelper.isRangedByType1(_weaponType), dmg);
++
+ 	    // PVP defense reduction
+ 	    final int pvpDef = _targetPc.getResistance().getcalcPcDefense();
+ 	    if (pvpDef != 0) dmg -= pvpDef;
+@@ -1861,7 +1866,7 @@ public final class CAttackAction extends CNewAction {
+         dmg = L1AttackHelper.applyAvatarPhysicalAtkPlus10(_pc, dmg);
+ 
+         // 타겟 PC 배율 후처리
+-        dmg = L1AttackHelper.applyTargetPcDamageMultipliers(_pc, _targetPc, ranged, dmg);
++        dmg = L1AttackHelper.applyTargetPcStatusMultipliers(_targetPc, dmg);
+         
+         _crash = _fury = false;
+         final int cfFlags = L1SkillProcHelper.rollCrashFuryFlags(_pc, ranged);
+diff --git a/src/l1j/server/server/model/item/Exp/CalcExp.java b/src/l1j/server/server/model/item/Exp/CalcExp.java
+index 371056c..f65e2f9 100644
+--- a/src/l1j/server/server/model/item/Exp/CalcExp.java
++++ b/src/l1j/server/server/model/item/Exp/CalcExp.java
+@@ -119,9 +119,13 @@ public class CalcExp {
+ 
+ 		final int add_exp = exp;
+ 		final int max = ExpTable.getExpByLevel(GameServerSetting.getInstance().get_maxLevel() + 1);
+-		if (max <= pc.getExp() + add_exp) pc.setExp(max - 1);
+-		else pc.addExp(add_exp);
+-		pc.onChangeExp();
++        if ((long) max <= (long) pc.getExp() + add_exp) {
++            pc.setExp(max - 1);
++            pc.onChangeExp();
++        } else {
++            // addExp already publishes the level/stat transition.
++            pc.addExp(add_exp);
++        }
+ 	}
+ 
+ 	// =========================================================
+diff --git a/src/l1j/server/server/model/item/Exp/ExpGainCalculator.java b/src/l1j/server/server/model/item/Exp/ExpGainCalculator.java
+index d8d1f2d..92ad781 100644
+--- a/src/l1j/server/server/model/item/Exp/ExpGainCalculator.java
++++ b/src/l1j/server/server/model/item/Exp/ExpGainCalculator.java
+@@ -3,6 +3,7 @@ package l1j.server.server.model.item.Exp;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ import l1j.server.Config;
++import l1j.server.server.Account;
+ import l1j.server.MJCompanion.Basic.HuntingGround.MJCompanionHuntingGround;
+ import l1j.server.server.GameServerSetting;
+ import l1j.server.server.datatables.ExpTable;
+@@ -54,7 +55,9 @@ public final class ExpGainCalculator {
+             if (exp <= 0) return 0;
+ 
+             final boolean pcRoom = pc.PC방_버프;
+-            final boolean hasAccount = (pc.getAccount() != null);
++            final Account account = pc.getAccount();
++            final boolean hasAccount = account != null;
++            final int ainBefore = hasAccount ? account.getBlessOfAin() : 0;
+             final double exppenalty = ExpTable.getPenaltyRate(level);
+ 
+             // ---- 보너스들 ----
+@@ -172,84 +175,29 @@ public final class ExpGainCalculator {
+             double einhasadBonus = 1.0;
+             double emeraldBonus = 1.0;
+ 
++            // One immutable input for this award. Bonus branches never debit
++            // blessing; the accepted award has one settlement point below.
++            final boolean hasAin = ainBefore > 10000;
++            final boolean emerald = pc.hasSkillEffect(L1SkillId.EMERALD_YES);
++            final boolean purple = pc.hasSkillEffect(L1SkillId.DRAGON_PUPLE);
++            final boolean topaz = pc.hasSkillEffect(L1SkillId.DRAGON_TOPAZ);
+             if (hasAccount) {
+-                final int ain0 = pc.getAccount().getBlessOfAin();
+-
+-                // 콤보
+-                if (ain0 > 0 && sk_combo) {
++                if (ainBefore > 0 && sk_combo) {
+                     final int cc = pc.getComboCount();
+-                    if (cc <= 20) comboBonus += (cc * 0.1);
+-
+-                    if (comboBonus > 1.0D) {
+-                        final long comboExpBase = (long) Math.max(0, (int) (exp * comboBonus));
+-                        pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, (double) comboExpBase), pc);
+-                        if (clan != null) clan.addBlessCount((int) comboExpBase);
+-                    }
++                    if (cc <= 20) comboBonus += cc * 0.1;
+                 }
+-
+-                // 기본 아인
+-                int ain = pc.getAccount().getBlessOfAin();
+-                if (ain > 10000) {
+-                    final int dec = (int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, exp);
+-
+-                    if (ain <= 2000000) einhasadBonus += 1.0D;
+-                    else if (ain <= 18000000) einhasadBonus += 1.0D;
+-                    else if (ain <= 34000000) einhasadBonus += 1.3D;
+-                    else einhasadBonus += 1.6D;
+-
+-                    pc.getAccount().addBlessOfAin(-dec, pc);
+-                    if (clan != null) clan.addBlessCount(exp);
+-
+-                    if (pcRoom) {
+-                        einhasadBonus += 0.40;
+-                        pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, exp), pc);
+-                        if (clan != null) clan.addBlessCount(exp);
+-                        SC_PacketBox.send(pc, 82, pc);
+-                    }
+-                }
+-
+-                // 에메랄드 / 퍼플 / 토파즈 
+-                if (pc.hasSkillEffect(L1SkillId.EMERALD_YES) && pc.getAccount().getBlessOfAin() > 10000) {
+-                    emeraldBonus += 0.80;
+-                    pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, exp), pc);
+-                    if (clan != null) clan.addBlessCount(exp);
+-
+-                    if (pcRoom) {
+-                        einhasadBonus += 0.40;
+-                        pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, exp), pc);
+-                        if (clan != null) clan.addBlessCount(exp);
+-                        if (sk_combo && comboBonus > 0.0D) {
+-                            final long comboExpBase = (long) Math.max(0, (int) (exp * comboBonus));
+-                            pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, (double) comboExpBase), pc);
+-                            if (clan != null) clan.addBlessCount((int) comboExpBase);
+-                        }
+-                        SC_PacketBox.send(pc, 82, pc);
+-                    }
+-                } else if (pc.hasSkillEffect(L1SkillId.DRAGON_PUPLE) && pc.getAccount().getBlessOfAin() > 10000) {
+-                    if (level >= 49 && level <= 54) einhasadBonus += 0.53;
+-                    else if (level <= 59) einhasadBonus += 0.43;
+-                    else if (level <= 64) einhasadBonus += 0.33;
+-                    else if (level >= 65) einhasadBonus += 0.23;
+-
+-                    pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, exp), pc);
+-                    if (clan != null) clan.addBlessCount(exp);
+-
+-                    if (pc.getAccount().getBlessOfAin() <= 10000) pc.removeSkillEffect(L1SkillId.DRAGON_PUPLE);
+-                } else if (pc.hasSkillEffect(L1SkillId.DRAGON_TOPAZ) && pc.getAccount().getBlessOfAin() > 10000) {
+-                    einhasadBonus += 0.8;
+-                    pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, exp), pc);
+-                    if (clan != null) clan.addBlessCount(exp);
+-
+-                    if (sk_combo && comboBonus > 0.0D) {
+-                        final long comboExpBase = (long) Math.max(0, (int) (exp * comboBonus));
+-                        pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, (double) comboExpBase), pc);
+-                        if (clan != null) clan.addBlessCount((int) comboExpBase);
+-                    }
+-                    if (pc.getAccount().getBlessOfAin() <= 10000) pc.removeSkillEffect(L1SkillId.DRAGON_TOPAZ);
+-                }
+-
+-                if (pc.getAccount().getBlessOfAin() > 10000 || einhasadBonus != 0) {
+-                	SC_RestExpInfo.send(pc);
++                if (hasAin) {
++                    if (ainBefore <= 18000000) einhasadBonus += 1.0;
++                    else if (ainBefore <= 34000000) einhasadBonus += 1.3;
++                    else einhasadBonus += 1.6;
++                    if (pcRoom) einhasadBonus += 0.40;
++                    if (emerald) emeraldBonus += 0.80;
++                    else if (purple) {
++                        if (level >= 49 && level <= 54) einhasadBonus += 0.53;
++                        else if (level <= 59) einhasadBonus += 0.43;
++                        else if (level <= 64) einhasadBonus += 0.33;
++                        else einhasadBonus += 0.23;
++                    } else if (topaz) einhasadBonus += 0.8;
+                 }
+             }
+ 
+@@ -266,7 +214,7 @@ public final class ExpGainCalculator {
+             double rankRate = 1.0;
+             final int rankLevel = pc.getRankLevel();
+             if (rankLevel >= 1 && rankLevel <= 5) {
+-                if (hasAccount && pc.getAccount().getBlessOfAin() > 2000000) {
++                if (hasAccount && ainBefore > 2000000) {
+                     rankRate += 0.10;
+                 }
+             }
+@@ -327,6 +275,22 @@ public final class ExpGainCalculator {
+             }
+ 
+             if (add_exp <= 0) return 0;
++
++            // A single eligible hunting award consumes once. Combo belongs in
++            // its base once; PC-room and dragon bonuses do not execute another
++            // copy of the identical base debit or clan credit.
++            if (hasAin || (ainBefore > 0 && comboBonus > 1.0)) {
++                final double eligible = Math.max(0.0, exp * comboBonus);
++                final double calculated = SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, eligible, ainBefore);
++                final int debit = (int) Math.max(0.0, Math.min(Integer.MAX_VALUE, calculated));
++                if (debit > 0) account.addBlessOfAin(-debit, pc);
++                if (clan != null) clan.addBlessCount((int) Math.min(Integer.MAX_VALUE, eligible));
++                if (hasAin && pcRoom) SC_PacketBox.send(pc, 82, pc);
++                if (hasAin && account.getBlessOfAin() <= 10000) {
++                    if (purple && !emerald) pc.removeSkillEffect(L1SkillId.DRAGON_PUPLE);
++                    else if (topaz && !emerald) pc.removeSkillEffect(L1SkillId.DRAGON_TOPAZ);
++                }
++            }
+             return add_exp;
+ 
+         } catch (Throwable t) {
+@@ -398,4 +362,4 @@ public final class ExpGainCalculator {
+         }
+         return true;
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java b/src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java
+index c9bc8fe..8f8dd84 100644
+--- a/src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java
++++ b/src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java
+@@ -796,16 +796,13 @@ public final class CS_EnterWorld {
+     private static void applyEinhasad(L1PcInstance pc) {
+         if (pc.getLevel() <= 5) return;
+ 
+-        int einhasad = pc.getAccount().getBlessOfAin()
+-                + (pc.getLastLoginTime() == null ? 0
+-                : (int) ((System.currentTimeMillis() - pc.getLastLoginTime().getTime()) / (15 * 60 * 1000L)));
+-        if (einhasad > 50000000) {
+-            einhasad = 50000000;
+-        }
+-        if (einhasad < 0) {
+-            einhasad = 0;
+-        }
+-        pc.getAccount().setBlessOfAin(einhasad);
++        // Only time after the last logout is offline recovery. Using the old
++        // login time also counted the online interval already handled by the
++        // character timer. Keep existing internal-unit increment/cap policies.
++        final java.sql.Timestamp loggedOut = pc.getAccount().getLastLogOut();
++        final long elapsed = loggedOut == null ? 0L
++                : Math.max(0L, System.currentTimeMillis() - loggedOut.getTime());
++        int einhasad = pc.getAccount().recoverBlessOfAin(elapsed / (15 * 60 * 1000L), 50000000);
+ 
+         if (pc.getZoneType() == 1) {
+             pc.startEinhasadTimer();
+diff --git a/src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java b/src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java
+index b8867c5..80abe7c 100644
+--- a/src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java
++++ b/src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java
+@@ -21,19 +21,23 @@ public final class SC_RestExpInfo extends ProtoPacket {
+     };
+ 
+     public static double calcDecreaseCharacterEinhasad(L1PcInstance pc, double descrease) {
+-        double dec = descrease;
+-        double effect = calcEinhasadEffectToDouble(pc);
++        return calcDecreaseCharacterEinhasad(pc, descrease, pc.getAccount().getBlessOfAin());
++    }
++
++    public static double calcDecreaseCharacterEinhasad(L1PcInstance pc, double descrease, int blessingBefore) {
++        double dec = Math.max(0.0, descrease);
++        double effect = Math.max(0.0, Math.min(1.0, calcEinhasadEffectToDouble(pc)));
+         if (effect > 0D) {
+             dec -= (dec * effect);
+         }
+         dec = IncreaseEinhasadMap.getInstance().increaseEinhasadValue(pc.getMapId(), dec);
+ 
+-        if (pc.getAccount().getBlessOfAin() >= 2000001 && pc.getAccount().getBlessOfAin() <= 18000000) {
++        if (blessingBefore >= 2000001 && blessingBefore <= 18000000) {
+             dec *= 0.6;
+-        } else if (pc.getAccount().getBlessOfAin() >= 1800001 && pc.getAccount().getBlessOfAin() >= 34000000) {
++        } else if (blessingBefore >= 34000000) {
+             dec *= 0.8;
+         }
+-        return dec;
++        return Math.max(0.0, dec);
+     }
+ 
+     public static double calcEinhasadEffectToDouble(L1PcInstance pc) {
+@@ -45,7 +49,7 @@ public final class SC_RestExpInfo extends ProtoPacket {
+         int effect = 0;
+         int level = pc.getLevel();
+         if (level >= 80) {
+-            effect = LEVEL_TO_BONUS_EFFECT[level - 80];
++            effect = LEVEL_TO_BONUS_EFFECT[Math.min(level - 80, LEVEL_TO_BONUS_EFFECT.length - 1)];
+         }
+         if (pc.getEinhasadBlessper() >= 0) {
+             effect += pc.getEinhasadBlessper();
+@@ -64,6 +68,10 @@ public final class SC_RestExpInfo extends ProtoPacket {
+         return 0;
+     }
+ 
++    public static int displayedGauge(int internalUnits) {
++        return internalUnits <= 0 ? 0 : (int) (((long) internalUnits + 9999L) / 10000L);
++    }
++
+     // ── 패킷 본체 ──
+ 
+     private final int _restGauge;
+@@ -101,9 +109,7 @@ public final class SC_RestExpInfo extends ProtoPacket {
+         if (pc.getAccount().getGrangKinAngerTime() != 0)
+             return;
+ 
+-        int hasad = pc.getAccount().getBlessOfAin();
+-        if (hasad > 0)
+-            hasad /= 10000;
++        int hasad = displayedGauge(pc.getAccount().getBlessOfAin());
+ 
+         int ration = 0;
+         if (pc.hasSkillEffect(L1SkillId.DRAGON_TOPAZ))

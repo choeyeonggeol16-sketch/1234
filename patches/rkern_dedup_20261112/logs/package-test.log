@@ -1,0 +1,3 @@
+PASS full ZIP CRC and all 1697 source files byte-for-byte.
+PASS eight changed Java files; all other source retained from 7bf315d.
+PASS dedup.patch applies to previous full source and reproduces new bundle.

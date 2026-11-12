@@ -1,0 +1,76 @@
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+Nov 12, 2026 9:14:12 AM l1j.server.server.model.character.action.CAttackAction <clinit>
+WARNING: KeylinkBalance.properties not loaded; using previous/default class factors
+java.nio.file.NoSuchFileException: ./config/KeylinkBalance.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.action.CAttackAction.reloadKeylinkBalance(CAttackAction.java:114)
+	at l1j.server.server.model.character.action.CAttackAction.<clinit>(CAttackAction.java:104)
+	at l1j.server.server.model.character.action.CCreatureController.<init>(CCreatureController.java:658)
+	at l1j.server.server.model.Instance.L1PcInstance.<init>(L1PcInstance.java:1201)
+	at MagicStackRuntimeTest$Pc.<init>(MagicStackRuntimeTest.java:18)
+	at PhysicalDamageTest$Pc.<init>(PhysicalDamageTest.java:11)
+	at UnarmedElementTest$Pc.<init>(UnarmedElementTest.java:25)
+	at UnarmedElementTest.pc(UnarmedElementTest.java:44)
+	at UnarmedElementTest.bareHands(UnarmedElementTest.java:67)
+	at UnarmedElementTest.main(UnarmedElementTest.java:209)
+
+PASS U01-U06/U09: actual PC/PC and PC/NPC bare-hand damage 1/2 despite STR127, large bonuses/buffs/DR; existing hit roll still misses
+PASS real attack -> commit -> victim controller -> atomic HP: fist provenance survives final PVP modifiers; misses and NPC delivery preserved
+PASS existing controller ring/overflow preserves 81 bare-hand events and exact HP without a new queue
+PASS U08: bow-only polymorph rejects attack before hit/empty swing, actionPc emits no animation; mixed/unknown masks retained
+PASS E01-E06/E09/E11: 360 weapon element/channel vectors and matching NPC mapping; signed spell weakness and ER100 nonzero INT damage
+Nov 12, 2026 9:14:12 AM l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig <clinit>
+WARNING: SkillChance.properties not loaded; keeping defaults
+java.nio.file.NoSuchFileException: ./config/SkillChance.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig.reload(AttackSkillChanceConfig.java:64)
+	at l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig.<clinit>(AttackSkillChanceConfig.java:47)
+	at l1j.server.server.model.character.Attack.Helper.L1SkillProcHelper.rollAllFlags(L1SkillProcHelper.java:50)
+	at l1j.server.server.model.character.action.CAttackAction$AttackTargetData.calcPcDamageByTable(CAttackAction.java:1837)
+	at l1j.server.server.model.character.action.CAttackAction$AttackTargetData.calcPcPcDamage(CAttackAction.java:1465)
+	at l1j.server.server.model.character.action.CAttackAction$AttackTargetData.calcDamage(CAttackAction.java:1410)
+	at UnarmedElementTest.singleApplication(UnarmedElementTest.java:151)
+	at UnarmedElementTest.main(UnarmedElementTest.java:209)
+
+Nov 12, 2026 9:14:12 AM l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig <clinit>
+WARNING: MagicDollProc.properties not loaded; keeping defaults
+java.nio.file.NoSuchFileException: ./config/MagicDollProc.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig.reload(MagicDollCombatConfig.java:58)
+	at l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig.<clinit>(MagicDollCombatConfig.java:45)
+	at l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatProcs.applyOnHit(MagicDollCombatProcs.java:63)
+	at l1j.server.server.model.character.action.CAttackAction$AttackTargetData.calcDamage(CAttackAction.java:1440)
+	at UnarmedElementTest.singleApplication(UnarmedElementTest.java:151)
+	at UnarmedElementTest.main(UnarmedElementTest.java:209)
+
+PASS E07/E13-E16: physical base100 + resisted bonus5 stays105 through final HP, exactly one element read; four independent channels and additive effect roundtrip
+PASS E14 actual NPC handler/recast exception/stop handler: repeated -50 remains -50; channel switch restores old channel; expiry restores baseline
+PASS distinct legacy spell 45% curve retains fractions/caps; configured item proc cap/weakness; no physical-percent formula substituted into INT spells
+PASS E10/E17: actual NPC/PC and NPC/NPC ordinary physical paths do not apply player weapon enchant resistance
+Production combat classes executed with disconnected PCs, local H2 polymorph table and NPC world/HP fixture; not Windows/client/production DB. U07 special NPC ID unverified.

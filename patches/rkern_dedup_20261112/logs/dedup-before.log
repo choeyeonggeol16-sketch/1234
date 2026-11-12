@@ -1,0 +1,5 @@
+Baseline: 7bf315d3a743bca8a00d8f51dfcf9928493a870d; unchanged old production classes, current tests.
+xp: EXPECTED FAIL; Exception in thread "main" java.lang.AssertionError: one hunting award submitted blessing consumption 2 times (room=false, item=0, combo=20)
+quest: EXPECTED FAIL; Exception in thread "main" java.lang.AssertionError: non-hunting EXP publishes level change twice: 2
+offline: EXPECTED FAIL; Exception in thread "main" java.lang.AssertionError: offline recovery counted already-recovered online session: 100004
+armor: EXPECTED FAIL; Exception in thread "main" java.lang.AssertionError: full pre-DR Armor Break omitted additions or applied twice: 306

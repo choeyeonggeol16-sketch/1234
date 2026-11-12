@@ -1,0 +1,8 @@
+src/l1j/server/server/Account.java
+src/l1j/server/server/model/Instance/L1PcInstance.java
+src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java
+src/l1j/server/server/model/character/action/CAttackAction.java
+src/l1j/server/server/model/item/Exp/CalcExp.java
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java
+src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java

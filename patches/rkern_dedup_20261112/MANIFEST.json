@@ -1,0 +1,43 @@
+{
+  "bundle": "RKern_Aden_ALL_FIXES_DEDUP_FULL_SRC_20261112.zip",
+  "sha256": "178b1ef2b0e7d10ac7d84a67b1188be26aa87beaf24e78baab53cda7360c4fea",
+  "base_revision": "7bf315d3a743bca8a00d8f51dfcf9928493a870d",
+  "report_revision": "c54c44ff7b3ac1b500e39e260b702b1086c478ac",
+  "source_files": 1697,
+  "java_files": 1696,
+  "changed_java_files": [
+    "src/l1j/server/server/Account.java",
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java",
+    "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "src/l1j/server/server/model/item/Exp/CalcExp.java",
+    "src/l1j/server/server/model/item/Exp/ExpGainCalculator.java",
+    "src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java",
+    "src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java"
+  ],
+  "new_sql": false,
+  "existing_required_sql": "database/RKern_HPMP_GROWTH_20261112.sql",
+  "scope": "Confirmed event duplication in hunting blessing debit/room bonus/level callback/recovery interval; single Armor Break owner and complete pre-DR ordering. Not all textual clone candidates are removed.",
+  "baseline_failures": [
+    "combo award debited twice",
+    "non-hunting award notified level twice",
+    "offline recovery included online interval",
+    "Armor Break omitted pre-DR additions: 306 instead of 372"
+  ],
+  "validation": [
+    "1696 Java full type compile, zero errors, five existing warnings",
+    "16 room/dragon/combo replay combinations; accepted/rejected/large awards and UI replay",
+    "ordinary/capped quest EXP callback counts; offline interval and concurrent account recovery/debit",
+    "actual physical vectors 6/23/12/29/372/378 and final HP1000->628",
+    "actual CAccount snapshot SQL H2 rollback, absolute retry, reopen",
+    "all prior HP/MP/magic/physical/unarmed/element/save-lock regressions",
+    "source archive CRC/hash/every-byte/patch reconstruction"
+  ],
+  "performance": "Existing workers/queues/CacheD retained; primitive locals/helpers, no new per-hit/per-kill collections or model objects. Account mutation uses its existing object monitor.",
+  "limitations": [
+    "No Windows/live MySQL/CacheD daemon/load/party-world integration test",
+    "2015 6059 XP/% and warm-gaze policy not adopted as 2019 defaults; existing internal units, tiers, map factors and recovery increments retained",
+    "Character EXP and account blessing remain separately saved existing rows; cross-row hard-crash atomicity is not newly guaranteed",
+    "Local account persistence SQL retry tested; full server restart and operational recovery failure injection not tested"
+  ]
+}
