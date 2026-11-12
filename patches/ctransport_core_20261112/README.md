@@ -37,3 +37,6 @@ python tests/verify_native_binary.py
 Windows: JDK21을 설치하고 tests/run_windows.ps1을 실행합니다. 배포 DLL을 직접 로드하여 C++ loopback, 생산 Java FFM/소켓 어댑터, native 작업/타이머 취소와 PSS UI 프로토콜을 검사합니다. 게임 owner 의존성만 검사 대역을 사용하므로 실제 게임 클라이언트/운영 DB 부하 검증과는 구분합니다.
 
 실제 검사 결과와 원본 함수 근거는 reports/CTRANSPORT_CORE_20261112.md 및 GitHub Windows 검사 결과를 확인합니다.
+
+실제 Windows Server2025/JDK21 검사도 통과했습니다: https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43234341462
+C++ DLL loopback, 생산 Java FFM/게임 소켓 어댑터, PSS UI 프로토콜/타이머를 확인했습니다. 상세 결과는 WINDOWS_VERIFICATION.json과 logs/windows-actual-test.log입니다. 실제 게임 클라이언트/DB 부하 검사는 별도입니다.

@@ -49,3 +49,14 @@ research/scope에 각 함수 전체 추적과 직접 호출 목록을 저장했�
 - 실제 PE64/35개 export/IOCP·Winsock import/자바 hash pin 검사.
 - Windows 실제 DLL/FFM 검사는 .github/workflows/ctransport-windows.yml 결과와 추가 기록으로 구분합니다. 검사 소스는 생산 FFM/소켓/PSS를 사용하며 게임 owner 의존성만 대역입니다.
 - 실제 게임 클라이언트 로그인·사냥·운영 DB·장시간 부하는 이 검사에 포함되지 않습니다.
+
+## 실제 Windows 실행 결과
+
+[Windows 검사 run43234341462](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43234341462), job131237594019: **success**. Microsoft Windows Server2025/Temurin JDK21에서 배포 DLL을 직접 로드했습니다. 검사 commit은 ef2e4fd0d0d9394dff248bf9dc19ed5c7fda6d65이며, 이후 기록 추가에서는 검사한 C++/Java/DLL을 바꾸지 않았습니다.
+
+- C++ 실제 DLL:20개 접속/4MB 분할 echo와 순서·종료 통지.
+- 생산 Java FFM 브리지:20개 접속/4MB echo,512개 작업, 타이머 만료·취소·종료.
+- 생산 게임 소켓 어댑터:3개 접속/300KB, native16KB→Java4KB 읽기, stash/pause/resume/순서 송신.
+- 생산 PSS UI 연결:분할 HELLO/PING/BOUND/OPEN, 원격 종료 detach, 잘못된 HELLO 거절, native 만료 timer 종료.
+
+Windows 검사에서 게임 owner 의존성만 대역을 사용합니다. 실제 게임 클라이언트·운영 DB·장시간 성능 검사는 포함하지 않습니다. 검증한 DLL SHA256은 `5bf718c9df9e3dbce2eee824bbb3928430a2e142ee06abb45f14ae4156e33fa6`입니다. 로그 발췌와 WINDOWS_VERIFICATION.json을 배포 묶음에 포함했습니다. build/native-build.json은 cross-build 시점 기록이며, 이후 실제 실행 결과는 별도 검증 기록이 기준입니다.

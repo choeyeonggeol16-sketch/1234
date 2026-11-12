@@ -44,5 +44,28 @@
     "terminal callback after I/O drain",
     "existing L1 codec/game-owner contract"
   ],
-  "windows_evidence": "GitHub Windows workflow; recorded separately after execution"
+  "windows_evidence": {
+    "run_id": 43234341462,
+    "job_id": 131237594019,
+    "tested_commit": "ef2e4fd0d0d9394dff248bf9dc19ed5c7fda6d65",
+    "url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43234341462",
+    "conclusion": "success",
+    "os": "Microsoft Windows Server 2025",
+    "java": "Temurin JDK21",
+    "dll": "CTransport.dll",
+    "dll_sha256": "5bf718c9df9e3dbce2eee824bbb3928430a2e142ee06abb45f14ae4156e33fa6",
+    "checks": [
+      "actual Windows DLL C++ loopback:20 connections/4MB",
+      "production Java FFM:20 connections/4MB,work,timers,cancel,shutdown",
+      "production gameplay socket adapter:3 connections/300KB,16KB native RX into4KB Java reads,stash,pause,resume,ordered sends",
+      "production PSS native transport:fragmented HELLO,PING,BOUND,OPEN,detach,invalid greeting,native expiry timer shutdown"
+    ],
+    "test_double": "only CIOUserSocket game-owner dependency in Java smoke; production FFM/server/socket/endpoint/PSS and real Windows kernel",
+    "not_tested": [
+      "actual game-client login/hunt",
+      "operating database",
+      "long-duration/performance comparison"
+    ],
+    "tested_source_and_dll_unchanged_by_evidence_commit": true
+  }
 }

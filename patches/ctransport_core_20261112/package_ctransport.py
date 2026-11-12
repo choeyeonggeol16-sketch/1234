@@ -24,15 +24,16 @@ for name in ['scope','trace_restore_scope.py','recover_server_core.py','server-r
  else:shutil.copy2(ROOT/'research'/name,dest)
 for name in ['CTransport.dll','CTransport.lib','CTransport_SelfTest.exe','native-build.json']:
  out=PATCH/'build'/name;out.parent.mkdir(exist_ok=True);shutil.copy2(ROOT/'build'/name,out)
-for name in ['native-test.log','native-test-build.log','native-suite.log','tsan-test.log','tsan-test-build.log','tsan-suite.log','full-build.log','java-suite.log','transport-config-test.log','native-binary-test.log','windows-build.log','windows-selftest-build.log','build-manifest.log','scope-analysis.log','rtti-analysis.log','windows-smoke-compile.log']:
+for name in ['native-test.log','native-test-build.log','native-suite.log','tsan-test.log','tsan-test-build.log','tsan-suite.log','full-build.log','java-suite.log','transport-config-test.log','native-binary-test.log','windows-build.log','windows-selftest-build.log','build-manifest.log','scope-analysis.log','rtti-analysis.log','windows-smoke-compile.log','windows-actual-test.log']:
  out=PATCH/'logs'/name;out.parent.mkdir(exist_ok=True);shutil.copy2(ROOT/'logs'/name,out)
+shutil.copy2(ROOT/'WINDOWS_VERIFICATION.json',PATCH/'WINDOWS_VERIFICATION.json')
 shutil.copy2(ROOT/'README_CTRANSPORT.md',PATCH/'README.md')
 shutil.copy2(ROOT/'package_ctransport.py',PATCH/'package_ctransport.py')
 (PATCH/'changed-files.txt').write_text('\n'.join(changed)+'\n')
 (PATCH/'deleted-files.txt').write_text('\n'.join(deleted)+'\n')
 shutil.copy2(ROOT/'REPORT_CTRANSPORT.md',REPO/'reports/CTRANSPORT_CORE_20261112.md')
 dllsha=SHA((ROOT/'build/CTransport.dll').read_bytes())
-manifest={'base_revision':'c76e7b2753876fc8bb1aac4075e78a5d31bf522f','branch':'ctransport-core-20261112','dll':'CTransport.dll','dll_sha256':dllsha,'abi':'0x20000','mandatory':True,'fallback':False,'completion_batch':128,'source_files':len(current),'java_files':sum(n.endswith('.java') for n in current),'changed_files':changed,'deleted_files':deleted,'additional_sql':False,'recovered_structures':['owner-index CAS buffer rings','8K/16K families','shared receive COW/unique compaction','send FIFO','linger0 close','completion task objects','50ms/200-slot timer wheel and overflow heap'],'adaptations':['external FFM producer registration','bounded exhaustion rejection','indexed cancellation','64-bit monotonic clock','terminal callback after I/O drain','existing L1 codec/game-owner contract'],'windows_evidence':'GitHub Windows workflow; recorded separately after execution'}
+manifest={'base_revision':'c76e7b2753876fc8bb1aac4075e78a5d31bf522f','branch':'ctransport-core-20261112','dll':'CTransport.dll','dll_sha256':dllsha,'abi':'0x20000','mandatory':True,'fallback':False,'completion_batch':128,'source_files':len(current),'java_files':sum(n.endswith('.java') for n in current),'changed_files':changed,'deleted_files':deleted,'additional_sql':False,'recovered_structures':['owner-index CAS buffer rings','8K/16K families','shared receive COW/unique compaction','send FIFO','linger0 close','completion task objects','50ms/200-slot timer wheel and overflow heap'],'adaptations':['external FFM producer registration','bounded exhaustion rejection','indexed cancellation','64-bit monotonic clock','terminal callback after I/O drain','existing L1 codec/game-owner contract'],'windows_evidence':json.loads((ROOT/'WINDOWS_VERIFICATION.json').read_text())}
 (PATCH/'MANIFEST.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
 checks=[]
 for p in sorted(PATCH.rglob('*')):
@@ -41,8 +42,12 @@ for p in sorted(PATCH.rglob('*')):
 archives={}
 for name,items in [('CTransport_Aden_FULL_SRC_20261112.zip',[(p,b) for p,b in current.items()]),('CTransport_CORE_20261112.zip',[(str(p.relative_to(PATCH.parent)),p.read_bytes()) for p in sorted(PATCH.rglob('*')) if p.is_file()])]:
  dest=REPO/'downloads'/name
- with zipfile.ZipFile(dest,'w',zipfile.ZIP_DEFLATED,compresslevel=6)as z:
-  for n,b in items:z.writestr(n,b)
+ same=False
+ if dest.exists() and name.startswith('CTransport_Aden'):
+  with zipfile.ZipFile(dest)as z:same=len(z.namelist())==len(items) and all(z.read(n)==b for n,b in items)
+ if not same:
+  with zipfile.ZipFile(dest,'w',zipfile.ZIP_DEFLATED,compresslevel=6)as z:
+   for n,b in items:z.writestr(n,b)
  with zipfile.ZipFile(dest)as z:
   assert z.testzip() is None
   for n,b in items:assert z.read(n)==b
@@ -68,5 +73,5 @@ with zipfile.ZipFile(dest,'w',zipfile.ZIP_DEFLATED,compresslevel=6)as z:
 with zipfile.ZipFile(dest)as z:assert z.testzip() is None
 archives[dest.name]=SHA(dest.read_bytes());Path(str(dest)+'.sha256').write_text(archives[dest.name]+'  '+dest.name+'\n')
 readme=REPO/'README.md';text=readme.read_text();heading='## 2026-11-12 — CTransport.dll 필수 코어 / 기존 전송 엔진 제거\n\n[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [구현·근거·적용 안내](reports/CTRANSPORT_CORE_20261112.md)\n\n스레드별8K/16K 원형 풀, 공유 RX/COW,128배치, 작업 큐와50ms/200칸 타이머 휠을 구현했습니다. 게임 접속과 PSS UI 연결 모두 같은 DLL을 필수 사용합니다. 기존 전송 엔진 선택/NIO2 경로는 제거했습니다. 실제 게임 클라이언트·운영 DB 부하는 별도 검증 대상입니다.\n\n---\n\n'
-if not text.startswith(heading):readme.write_text(heading+text)
+if not text.startswith(heading.split('\n',1)[0]):readme.write_text(heading+text)
 print(json.dumps({'archives':archives,'dll_sha256':dllsha,'source_files':len(current),'java_files':manifest['java_files'],'changed':len(changed),'deleted':deleted},indent=2))

@@ -4,6 +4,8 @@
 
 스레드별8K/16K 원형 풀, 공유 RX/COW,128배치, 작업 큐와50ms/200칸 타이머 휠을 구현했습니다. 게임 접속과 PSS UI 연결 모두 같은 DLL을 필수 사용합니다. 기존 전송 엔진 선택/NIO2 경로는 제거했습니다. 실제 게임 클라이언트·운영 DB 부하는 별도 검증 대상입니다.
 
+실제 Windows Server2025/JDK21에서 배포 DLL·생산 FFM/게임 소켓·PSS 검사 통과: [실행 기록](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43234341462).
+
 ---
 
 ## 2026-11-12 — RKern CIO 명칭 정리 / 추가 복원 범위
