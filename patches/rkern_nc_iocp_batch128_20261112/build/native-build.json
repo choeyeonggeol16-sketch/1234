@@ -1,0 +1,47 @@
+{
+  "compiler": "zig 0.14.1",
+  "target": "x86_64-windows-gnu",
+  "commands": [
+    [
+      "/workspace/work/aden-nc-port-20261112/toolchain/zig-x86_64-linux-0.14.1/zig",
+      "c++",
+      "-target",
+      "x86_64-windows-gnu",
+      "-std=c++17",
+      "-O2",
+      "-g0",
+      "-static",
+      "-shared",
+      "-fno-sanitize=undefined",
+      "/workspace/work/aden-nc-batch128-20261112/native/CIONcTransport.cpp",
+      "-lws2_32",
+      "-o",
+      "/workspace/work/aden-nc-batch128-20261112/build/CIONcTransport.dll"
+    ],
+    [
+      "/workspace/work/aden-nc-port-20261112/toolchain/zig-x86_64-linux-0.14.1/zig",
+      "c++",
+      "-target",
+      "x86_64-windows-gnu",
+      "-std=c++17",
+      "-O2",
+      "-g0",
+      "-static",
+      "/workspace/work/aden-nc-batch128-20261112/native/windows_loopback_test.cpp",
+      "/workspace/work/aden-nc-batch128-20261112/build/CIONcTransport.lib",
+      "-lws2_32",
+      "-o",
+      "/workspace/work/aden-nc-batch128-20261112/build/CIONcTransport_SelfTest.exe"
+    ]
+  ],
+  "files": {
+    "CIONcTransport.cpp": "b7f0569615f695576d19b990945f4937ee2cbafcb4e6def5f253630d597cbed2",
+    "CIONcTransport.h": "7162b63cfc88a94a0761fd726818a2a9c383465e052d054d68bec066813cfad2",
+    "build_native.py": "28ec59316c0bd233d530d28433920b35989d3238901c124f77eba68783f9354e",
+    "nc_core.hpp": "291f60bfe3f8907d7c632b700555e6d56281c9209ab7dbac5b88c02ada1531c5",
+    "windows_loopback_test.cpp": "626154e74b8e98714271f2a278777e8fd795c45bf2226f605d626546d80befa7"
+  },
+  "dll_sha256": "143620e8b7ae0c1cc3842c170b318ec5b99d69ab38f50e177a36f6a23ec2f706",
+  "selftest_sha256": "c0ffd2696742a3664132914ca684d685466fb6b58779b9b31dfd57778ecad19e",
+  "windows_execution_tested": false
+}

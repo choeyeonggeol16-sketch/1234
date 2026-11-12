@@ -1,0 +1,4 @@
+PASS source ZIP CRC,1698 files/1697 Java,every byte.
+PASS only production Java change is current DLL hash; every gameplay and bridge source retained.
+PASS Java pin patch reproduces complete new source bundle.
+PASS original EXE and supplied old DLLs excluded.

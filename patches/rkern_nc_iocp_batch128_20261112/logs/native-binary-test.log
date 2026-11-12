@@ -1,0 +1,46 @@
+PASS PE64 DLL, all 27 required CIO exports, native ABI 0x10000, exact Java SHA256 pin
+PASS batch IOCP/Winsock imports, per-entry NTSTATUS resolver, independent of HP-Socket DLL; self-test EXE imports this DLL
+{
+  "dll_sha256": "143620e8b7ae0c1cc3842c170b318ec5b99d69ab38f50e177a36f6a23ec2f706",
+  "imports": [
+    "WS2_32.dll",
+    "api-ms-win-crt-runtime-l1-1-0.dll",
+    "api-ms-win-crt-string-l1-1-0.dll",
+    "KERNEL32.dll",
+    "api-ms-win-crt-stdio-l1-1-0.dll",
+    "api-ms-win-crt-heap-l1-1-0.dll",
+    "api-ms-win-crt-private-l1-1-0.dll",
+    "api-ms-win-crt-convert-l1-1-0.dll",
+    "api-ms-win-crt-locale-l1-1-0.dll"
+  ],
+  "exports": [
+    "CIONC_Version",
+    "CIO_Create_TcpServer",
+    "CIO_Create_TcpServerListener",
+    "CIO_Destroy_TcpServer",
+    "CIO_Destroy_TcpServerListener",
+    "CIO_Server_Disconnect",
+    "CIO_Server_GetListenAddress",
+    "CIO_Server_GetLocalAddress",
+    "CIO_Server_GetRemoteAddress",
+    "CIO_Server_PauseReceive",
+    "CIO_Server_Send",
+    "CIO_Server_SendPackets",
+    "CIO_Server_SetMaxConnectionCount",
+    "CIO_Server_SetOnSendSyncPolicy",
+    "CIO_Server_SetSendPolicy",
+    "CIO_Server_SetWorkerThreadCount",
+    "CIO_Server_Start",
+    "CIO_Server_Stop",
+    "CIO_Server_Wait",
+    "CIO_Set_FN_Server_OnAccept",
+    "CIO_Set_FN_Server_OnClose",
+    "CIO_Set_FN_Server_OnReceive",
+    "CIO_Set_FN_Server_OnSend",
+    "CIO_StopAccepting",
+    "CIO_TcpServer_SetNoDelay",
+    "CIO_TcpServer_SetSocketBufferSize",
+    "CIO_TcpServer_SetSocketListenQueue"
+  ],
+  "pe_timestamp": 2448097387
+}

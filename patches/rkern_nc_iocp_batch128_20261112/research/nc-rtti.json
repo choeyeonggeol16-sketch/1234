@@ -1,0 +1,139 @@
+{
+  "L2Server.exe": {
+    "sha256": "8eecd317fb152b76f32a0a6a65fbf916e39d20511e203b4a0ea602fe041a22f5",
+    "pointer_bytes": 4,
+    "rtti": {
+      "CIOObject": [
+        {
+          "vtable": "0x5ccf0c",
+          "col": "0x66cc9c",
+          "offset": 0,
+          "slots": [
+            "0x53a770",
+            "0x5188e0",
+            "0x49aae0",
+            "0x4552c0",
+            "0x49aae0",
+            "0x402f60",
+            "0x49aae0",
+            "0x402f80",
+            "0x49aa30",
+            "0x402f90",
+            "0x539430",
+            "0x4016b0",
+            "0x5394d0",
+            "0x402fa0",
+            "0x63615043",
+            "0x74656b"
+          ]
+        }
+      ],
+      "CIOSocket": [
+        {
+          "vtable": "0x61d72c",
+          "col": "0x66ee1c",
+          "offset": 0,
+          "slots": [
+            "0x53aa90",
+            "0x5188e0",
+            "0x49aae0",
+            "0x53bd70",
+            "0x49aae0",
+            "0x402f60",
+            "0x49aae0",
+            "0x402f80",
+            "0x49aa30",
+            "0x402f90",
+            "0x539430",
+            "0x4016b0",
+            "0x53bdb0",
+            "0x402fa0",
+            "0x539770",
+            "0x49aae0"
+          ]
+        }
+      ]
+    }
+  },
+  "L2Server(10).exe": {
+    "sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+    "pointer_bytes": 8,
+    "rtti": {
+      "CIOObject": [
+        {
+          "vtable": "0xc71c18",
+          "col": "0xeb75f8",
+          "offset": 0,
+          "slots": [
+            "0x44c0c8",
+            "0x7d6d50",
+            "0x7d6eb4",
+            "0x56daa8",
+            "0x56daa8",
+            "0x404c88",
+            "0x56daa8",
+            "0x404c94",
+            "0x704248",
+            "0x56daa8",
+            "0x705d54",
+            "0x404ca0",
+            "0x70632e636f695c2e",
+            "0x70",
+            "0x69005400770064",
+            "0x25005b0065006d"
+          ]
+        }
+      ],
+      "CIOSocketEx8192": [
+        {
+          "vtable": "0xb54c18",
+          "col": "0xead2e8",
+          "offset": 0,
+          "slots": [
+            "0x45e878",
+            "0x7d6d50",
+            "0x7d6eb4",
+            "0x56daa8",
+            "0x56daa8",
+            "0x404c88",
+            "0x56daa8",
+            "0x404c94",
+            "0x704248",
+            "0x56daa8",
+            "0x45f028",
+            "0x404ca0",
+            "0x45dc5c",
+            "0x45dd94",
+            "0x53a8fc",
+            "0x53a8fc"
+          ]
+        }
+      ],
+      "CIOSocketEx16384": [
+        {
+          "vtable": "0xbbe878",
+          "col": "0xeb0370",
+          "offset": 0,
+          "slots": [
+            "0x545e10",
+            "0x7d6d50",
+            "0x7d6eb4",
+            "0x56daa8",
+            "0x56daa8",
+            "0x404c88",
+            "0x56daa8",
+            "0x404c94",
+            "0x704248",
+            "0x56daa8",
+            "0x54655c",
+            "0x404ca0",
+            "0x545260",
+            "0x545398",
+            "0x53a8fc",
+            "0x53a8fc"
+          ]
+        }
+      ]
+    }
+  }
+}

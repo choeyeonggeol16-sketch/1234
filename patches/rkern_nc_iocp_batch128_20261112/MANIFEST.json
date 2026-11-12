@@ -1,0 +1,31 @@
+{
+  "base_revision": "d43e5a6ee397a0861247a0972178353d51eb0037",
+  "source_bundle": "RKern_Aden_NC_IOCP_BATCH128_FULL_SRC_20261112.zip",
+  "native_bundle": "RKern_NC_IOCP_BATCH128_CORE_20261112.zip",
+  "native_dll_sha256": "143620e8b7ae0c1cc3842c170b318ec5b99d69ab38f50e177a36f6a23ec2f706",
+  "source_files": 1698,
+  "java_files": 1697,
+  "changed_java": [
+    "src/l1j/server/server/model/network/core/CIOTransportConfig.java"
+  ],
+  "completion_api": "GetQueuedCompletionStatusEx",
+  "maximum_completion_batch": 128,
+  "per_entry_status": "ENTRY.Internal NTSTATUS snapshot via RtlNtStatusToDosError",
+  "default_transport": "hpsocket",
+  "nc_option": "-Drkern.cio.transport=nc",
+  "new_sql": false,
+  "binary_reference": "HP-based CIOWinTransport.dll SHA256 9d8106886be0e26d14bd8eb7093714ae3b44d655ccae869ffc98148db8807ecc, worker0x1800495c0",
+  "verification": [
+    "ASan/UBSan/TSan production C++ with Windows API fixtures",
+    "273 I/O entries drain128/128/18 including one exit token",
+    "124 mixed-status completions plus4 exit tokens all drained,4 workers exit and ref holds balanced",
+    "new PE exports/imports and Java DLL hash pin",
+    "1697 Java full type compile and current transport selector/hash test",
+    "source CRC/every-byte/hash and previous bundle patch reconstruction"
+  ],
+  "not_executed": [
+    "Real Windows DLL/kernel/Java FFM/game/load/soak",
+    "Full game regression rerun in this batch-only change"
+  ],
+  "scope": "Selected NC contracts reimplemented in new C++; batch128 extends with observed prior HP DLL flow. Not original C++ recovery or NC binary instruction transplant."
+}

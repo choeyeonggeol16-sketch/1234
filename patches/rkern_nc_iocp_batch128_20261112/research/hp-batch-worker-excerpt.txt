@@ -1,0 +1,126 @@
+### Batch IOCP worker 0x1800495c0..0x1800497b0
+00000001800495c0: mov      qword ptr [rsp + 0x10], rbx
+00000001800495c5: mov      qword ptr [rsp + 0x18], rbp
+00000001800495ca: mov      qword ptr [rsp + 0x20], rsi
+00000001800495cf: push     rdi
+00000001800495d0: push     r14
+00000001800495d2: push     r15
+00000001800495d4: mov      eax, 0x1050
+00000001800495d9: call     0x180282b80
+00000001800495de: sub      rsp, rax
+00000001800495e1: mov      rax, qword ptr [rip + 0x3ddc18]
+00000001800495e8: xor      rax, rsp
+00000001800495eb: mov      qword ptr [rsp + 0x1040], rax
+00000001800495f3: mov      r14, rcx
+00000001800495f6: lea      r8, [rip + 0x3deeab]
+00000001800495fd: xor      ecx, ecx
+00000001800495ff: lea      rdx, [rip + 0x3a3c6a]
+0000000180049606: call     0x180003200
+000000018004960b: mov      rax, qword ptr [r14]
+000000018004960e: mov      rbx, qword ptr [rax + 0x310]
+0000000180049615: call     qword ptr [rip + 0x267db5] ; GetCurrentThreadId
+000000018004961b: mov      edx, eax
+000000018004961d: mov      rcx, r14
+0000000180049620: call     rbx
+0000000180049622: xor      r15d, r15d
+0000000180049625: nop      word ptr [rax + rax]
+0000000180049630: mov      rcx, qword ptr [r14 + 0x88]
+0000000180049637: lea      r9, [rsp + 0x34]
+000000018004963c: mov      dword ptr [rsp + 0x28], r15d
+0000000180049641: lea      rdx, [rsp + 0x40]
+0000000180049646: mov      r8d, 0x80
+000000018004964c: mov      dword ptr [rsp + 0x20], 0xffffffff
+0000000180049654: mov      dword ptr [rsp + 0x34], r15d
+0000000180049659: call     qword ptr [rip + 0x267b91] ; GetQueuedCompletionStatusEx
+000000018004965f: test     eax, eax
+0000000180049661: jne      0x180049675
+0000000180049663: call     qword ptr [rip + 0x267d77] ; GetLastError
+0000000180049669: cmp      eax, 0x102
+000000018004966e: je       0x180049630
+0000000180049670: jmp      0x18004976a
+0000000180049675: mov      esi, r15d
+0000000180049678: mov      edi, r15d
+000000018004967b: cmp      dword ptr [rsp + 0x34], r15d
+0000000180049680: jbe      0x180049630
+0000000180049682: nop      dword ptr [rax]
+0000000180049686: nop      word ptr [rax + rax]
+0000000180049690: mov      eax, edi
+0000000180049692: shl      rax, 5
+0000000180049696: mov      rbx, qword ptr [rsp + rax + 0x48]
+000000018004969b: mov      ecx, dword ptr [rsp + rax + 0x58]
+000000018004969f: mov      rbp, qword ptr [rsp + rax + 0x40]
+00000001800496a4: mov      dword ptr [rsp + 0x30], ecx
+00000001800496a8: test     rbx, rbx
+00000001800496ab: jne      0x1800496c4
+00000001800496ad: mov      r8d, ecx
+00000001800496b0: mov      r9, rbp
+00000001800496b3: mov      rcx, r14
+00000001800496b6: call     0x1800497b0
+00000001800496bb: cmp      eax, 2
+00000001800496be: jne      0x18004972c
+00000001800496c0: inc      esi
+00000001800496c2: jmp      0x18004972c
+00000001800496c4: mov      edx, r15d
+00000001800496c7: cmp      qword ptr [rsp + rax + 0x50], rdx
+00000001800496cc: je       0x180049716
+00000001800496ce: cmp      dword ptr [rbx + 0x28], 1
+00000001800496d2: mov      dword ptr [rsp + 0x38], r15d
+00000001800496d7: je       0x1800496df
+00000001800496d9: mov      rcx, qword ptr [rbx + 0x58]
+00000001800496dd: jmp      0x1800496e2
+00000001800496df: mov      rcx, rbp
+00000001800496e2: lea      rax, [rsp + 0x38]
+00000001800496e7: xor      r9d, r9d
+00000001800496ea: lea      r8, [rsp + 0x30]
+00000001800496ef: mov      qword ptr [rsp + 0x20], rax
+00000001800496f4: mov      rdx, rbx
+00000001800496f7: call     qword ptr [rip + 0x26803b] ; WSAGetOverlappedResult
+00000001800496fd: test     eax, eax
+00000001800496ff: jne      0x18004970d
+0000000180049701: call     qword ptr [rip + 0x268021] ; WSAGetLastError
+0000000180049707: mov      edx, eax
+0000000180049709: test     eax, eax
+000000018004970b: jne      0x180049712
+000000018004970d: mov      edx, 0x1f
+0000000180049712: mov      ecx, dword ptr [rsp + 0x30]
+0000000180049716: mov      dword ptr [rsp + 0x28], edx
+000000018004971a: mov      r9, rbx
+000000018004971d: mov      dword ptr [rsp + 0x20], ecx
+0000000180049721: mov      r8, rbp
+0000000180049724: mov      rcx, r14
+0000000180049727: call     0x180049aa0
+000000018004972c: inc      edi
+000000018004972e: cmp      edi, dword ptr [rsp + 0x34]
+0000000180049732: jb       0x180049690
+0000000180049738: test     esi, esi
+000000018004973a: je       0x180049630
+0000000180049740: add      esi, -1
+0000000180049743: je       0x18004976a
+0000000180049745: nop      word ptr [rax + rax]
+0000000180049750: mov      rcx, qword ptr [r14 + 0x88]
+0000000180049757: xor      r9d, r9d
+000000018004975a: xor      r8d, r8d
+000000018004975d: xor      edx, edx
+000000018004975f: call     qword ptr [rip + 0x2679e3] ; PostQueuedCompletionStatus
+0000000180049765: add      esi, -1
+0000000180049768: jne      0x180049750
+000000018004976a: mov      rax, qword ptr [r14]
+000000018004976d: mov      rbx, qword ptr [rax + 0x318]
+0000000180049774: call     qword ptr [rip + 0x267c56] ; GetCurrentThreadId
+000000018004977a: mov      edx, eax
+000000018004977c: mov      rcx, r14
+000000018004977f: call     rbx
+0000000180049781: xor      eax, eax
+0000000180049783: mov      rcx, qword ptr [rsp + 0x1040]
+000000018004978b: xor      rcx, rsp
+000000018004978e: call     0x180282160
+0000000180049793: lea      r11, [rsp + 0x1050]
+000000018004979b: mov      rbx, qword ptr [r11 + 0x28]
+000000018004979f: mov      rbp, qword ptr [r11 + 0x30]
+00000001800497a3: mov      rsi, qword ptr [r11 + 0x38]
+00000001800497a7: mov      rsp, r11
+00000001800497aa: pop      r15
+00000001800497ac: pop      r14
+00000001800497ae: pop      rdi
+00000001800497af: ret      
+

@@ -1,0 +1,78 @@
+--- a/native/CIONcTransport.cpp
++++ b/native/CIONcTransport.cpp
+@@ -28,6 +28,8 @@
+ using AcceptFn = int (*)(void*, std::uint64_t, std::uint64_t);
+ using DataFn = int (*)(void*, std::uint64_t, const void*, int);
+ using CloseFn = int (*)(void*, std::uint64_t, int, int);
++using NtStatusToErrorFn = ULONG (WINAPI *)(LONG);
++constexpr ULONG CompletionBatchSize = 128;
+ struct Listener {
+     std::atomic<AcceptFn> accept{nullptr};
+     std::atomic<DataFn> receive{nullptr}, send{nullptr};
+@@ -62,6 +64,7 @@
+     HANDLE port = nullptr;
+     SOCKET listening = INVALID_SOCKET;
+     LPFN_ACCEPTEX acceptEx = nullptr;
++    NtStatusToErrorFn ntStatusToError = nullptr;
+     std::vector<std::unique_ptr<AcceptOperation>> accepts;
+     std::vector<std::thread> workers;
+     std::array<RegistryBucket, 64> registry;
+@@ -268,16 +271,39 @@
+ }
+ void Server::worker() noexcept {
+     currentWorker = this;
++    // One stack batch per worker. Entry.Internal is the status snapshot from
++    // this dequeue; a callback may immediately resubmit/reuse its OVERLAPPED.
++    std::array<OVERLAPPED_ENTRY, CompletionBatchSize> entries{};
+     for (;;) {
+-        DWORD bytes = 0; ULONG_PTR key = 0; OVERLAPPED* overlapped = nullptr;
+-        const BOOL ok = GetQueuedCompletionStatus(port, &bytes, &key, &overlapped, INFINITE);
+-        const DWORD error = ok ? 0 : GetLastError();
+-        if (!overlapped) { if (key == 0) break; else continue; }
+-        auto* operation = reinterpret_cast<Operation*>(overlapped);
+-        auto* owner = reinterpret_cast<CIOObject*>(key);
+-        // Each accepted kernel/synthetic request acquired exactly this hold.
+-        owner->completed(operation, ok != FALSE, bytes, error);
+-        owner->release();
++        ULONG removed = 0;
++        if (!GetQueuedCompletionStatusEx(port, entries.data(), CompletionBatchSize,
++                &removed, INFINITE, FALSE)) {
++            if (GetLastError() == WAIT_TIMEOUT) continue;
++            break;
++        }
++        ULONG exitTokens = 0;
++        for (ULONG i = 0; i < removed; ++i) {
++            const auto& entry = entries[i];
++            if (!entry.lpOverlapped) {
++                if (entry.lpCompletionKey == 0) ++exitTokens;
++                continue;
++            }
++            const LONG status = static_cast<LONG>(static_cast<ULONG>(entry.Internal));
++            const bool ok = status >= 0; // NT_SUCCESS, independent of the batch BOOL.
++            const DWORD error = ok ? 0 : ntStatusToError(status);
++            auto* operation = reinterpret_cast<Operation*>(entry.lpOverlapped);
++            auto* owner = reinterpret_cast<CIOObject*>(entry.lpCompletionKey);
++            owner->completed(operation, ok, entry.dwNumberOfBytesTransferred, error);
++            owner->release();
++        }
++        if (exitTokens) {
++            // A single worker can dequeue several workers' exit tokens. Finish
++            // every real completion, consume one token, and return the others.
++            // Breaking at the first token would strand I/O holds and workers.
++            for (ULONG i = 1; i < exitTokens; ++i)
++                PostQueuedCompletionStatus(port, 0, 0, nullptr);
++            break;
++        }
+     }
+     currentWorker = nullptr;
+ }
+@@ -335,6 +361,9 @@
+ bool Server::start(const char* address, unsigned short number) noexcept {
+     std::lock_guard<std::mutex> lock(lifecycle);
+     if (running.load() || !wsaReady || !validSettings || !address || workerCount < 1 || workerCount > 64 || maxConnections < 1) return false;
++    ntStatusToError = reinterpret_cast<NtStatusToErrorFn>(
++        GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "RtlNtStatusToDosError"));
++    if (!ntStatusToError) return false;
+     addrinfo hints{}; hints.ai_family = AF_UNSPEC; hints.ai_socktype = SOCK_STREAM; hints.ai_protocol = IPPROTO_TCP; hints.ai_flags = AI_PASSIVE;
+     char service[8]{}; std::snprintf(service, sizeof(service), "%u", static_cast<unsigned>(number));
+     addrinfo* result = nullptr;

@@ -1,0 +1,42 @@
+[
+  {
+    "file": "src/l1j/server/server/Account.java",
+    "added": 29,
+    "removed": 23
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "added": 3,
+    "removed": 6
+  },
+  {
+    "file": "src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java",
+    "added": 18,
+    "removed": 6
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "added": 6,
+    "removed": 1
+  },
+  {
+    "file": "src/l1j/server/server/model/item/Exp/CalcExp.java",
+    "added": 7,
+    "removed": 3
+  },
+  {
+    "file": "src/l1j/server/server/model/item/Exp/ExpGainCalculator.java",
+    "added": 42,
+    "removed": 78
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java",
+    "added": 7,
+    "removed": 10
+  },
+  {
+    "file": "src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java",
+    "added": 15,
+    "removed": 9
+  }
+]

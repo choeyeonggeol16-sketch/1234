@@ -1,3 +1,11 @@
+## 2026-11-12 — 새 NC 재구현 DLL: 최대128개 배치 완료 처리
+
+[**최신 전체 src**](downloads/RKern_Aden_NC_IOCP_BATCH128_FULL_SRC_20261112.zip) · [**새 DLL/C++/테스트**](downloads/RKern_NC_IOCP_BATCH128_CORE_20261112.zip) · [구현·원본 근거·검증](reports/RKERN_NC_IOCP_BATCH128_20261112.md)
+
+선택형 재구현의 worker를 GetQueuedCompletionStatusEx/최대128개로 확장했습니다.항목별 NTSTATUS,종료 토큰 재전달,참조 해제를 검사했습니다. ASan/UBSan/TSan fixture 및 Java1697개 컴파일·새DLL 해시 확인 통과.기존 HP-Socket 기본값과 `-Drkern.cio.transport=nc` 선택은 유지. **실제 Windows/FFM/게임·부하는 미검증**.DLL과src를 함께 적용합니다.
+
+---
+
 ## 2026-11-12 — NC I/O 동작 재구현 코어 (선택형 실험본)
 
 [**전체 src**](downloads/RKern_Aden_NC_IOCP_PORT_FULL_SRC_20261112.zip) · [**새 코어/DLL/self-test/소스**](downloads/RKern_NC_IOCP_NATIVE_CORE_20261112.zip) · [복원·구현·검증 보고서](reports/RKERN_NC_IOCP_PORT_20261112.md)
