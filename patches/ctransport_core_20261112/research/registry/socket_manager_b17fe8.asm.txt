@@ -1,0 +1,182 @@
+# Tentative role: socket_manager_b17fe8; VA 0xb17fe8..0xb182e8
+0000000000b17fe8: lea      rcx, [rip + 0x252ff31]
+0000000000b17fef: jmp      0x8b0e54
+0000000000b17ff4: lea      rcx, [rip + 0x252fe45]
+0000000000b17ffb: jmp      0x7acbe8
+0000000000b18000: sub      rsp, 0x38
+0000000000b18004: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000b1800d: mov      rdx, qword ptr [rip + 0x40a7494]
+0000000000b18014: test     rdx, rdx
+0000000000b18017: je       0xb1802b
+0000000000b18019: mov      r8d, 1
+0000000000b1801f: lea      rcx, [rip + 0x252fd8a]
+0000000000b18026: call     0x74e3bc
+0000000000b1802b: mov      qword ptr [rip + 0x40a7472], 0
+0000000000b18036: mov      qword ptr [rip + 0x40a746f], 0
+0000000000b18041: mov      qword ptr [rip + 0x40a746c], 0
+0000000000b1804c: lea      rcx, [rip + 0x40a7435]
+0000000000b18053: call     0x86bb84
+0000000000b18058: nop
+0000000000b18059: lea      rcx, [rip + 0x40a73f0]
+0000000000b18060: add      rsp, 0x38
+0000000000b18064: jmp      0x8aa9c8
+0000000000b18069: int3
+0000000000b1806a: int3
+0000000000b1806b: int3
+0000000000b1806c: int3
+0000000000b1806d: int3
+0000000000b1806e: int3
+0000000000b1806f: int3
+0000000000b18070: push     rbp
+0000000000b18072: sub      rsp, 0x20
+0000000000b18076: mov      rbp, rdx
+0000000000b18079: lea      rcx, [rip + 0x40a73d0]
+0000000000b18080: call     0x8aa9c8
+0000000000b18085: add      rsp, 0x20
+0000000000b18089: pop      rbp
+0000000000b1808a: ret
+0000000000b1808b: int3
+0000000000b1808c: int3
+0000000000b1808d: int3
+0000000000b1808e: int3
+0000000000b1808f: int3
+0000000000b18090: push     rbp
+0000000000b18092: sub      rsp, 0x20
+0000000000b18096: mov      rbp, rdx
+0000000000b18099: lea      rcx, [rip + 0x40a73b0]
+0000000000b180a0: add      rcx, 0x38
+0000000000b180a4: call     0x86c0f0
+0000000000b180a9: add      rsp, 0x20
+0000000000b180ad: pop      rbp
+0000000000b180ae: ret
+0000000000b180af: int3
+0000000000b180b0: sub      rsp, 0x38
+0000000000b180b4: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000b180bd: mov      rdx, qword ptr [rip + 0x40a7454]
+0000000000b180c4: test     rdx, rdx
+0000000000b180c7: je       0xb180db
+0000000000b180c9: mov      r8d, 1
+0000000000b180cf: lea      rcx, [rip + 0x252fcda]
+0000000000b180d6: call     0x74e3bc
+0000000000b180db: mov      qword ptr [rip + 0x40a7432], 0
+0000000000b180e6: mov      qword ptr [rip + 0x40a742f], 0
+0000000000b180f1: mov      qword ptr [rip + 0x40a742c], 0
+0000000000b180fc: lea      rcx, [rip + 0x40a73f5]
+0000000000b18103: call     0x6c0014
+0000000000b18108: nop
+0000000000b18109: lea      rcx, [rip + 0x40a73d0]
+0000000000b18110: add      rsp, 0x38
+0000000000b18114: jmp      0xa856a8
+0000000000b18119: int3
+0000000000b1811a: int3
+0000000000b1811b: int3
+0000000000b1811c: int3
+0000000000b1811d: int3
+0000000000b1811e: int3
+0000000000b1811f: int3
+0000000000b18120: push     rbp
+0000000000b18122: sub      rsp, 0x20
+0000000000b18126: mov      rbp, rdx
+0000000000b18129: lea      rcx, [rip + 0x40a73b0]
+0000000000b18130: call     0x511bdc
+0000000000b18135: add      rsp, 0x20
+0000000000b18139: pop      rbp
+0000000000b1813a: ret
+0000000000b1813b: int3
+0000000000b1813c: int3
+0000000000b1813d: int3
+0000000000b1813e: int3
+0000000000b1813f: int3
+0000000000b18140: push     rbp
+0000000000b18142: sub      rsp, 0x20
+0000000000b18146: mov      rbp, rdx
+0000000000b18149: lea      rcx, [rip + 0x40a7390]
+0000000000b18150: add      rcx, 0x18
+0000000000b18154: call     0x6c0198
+0000000000b18159: add      rsp, 0x20
+0000000000b1815d: pop      rbp
+0000000000b1815e: ret
+0000000000b1815f: int3
+0000000000b18160: sub      rsp, 0x28
+0000000000b18164: cmp      qword ptr [rip + 0x40a75ec], 8
+0000000000b1816c: jb       0xb1817a
+0000000000b1816e: mov      rcx, qword ptr [rip + 0x40a75cb]
+0000000000b18175: call     0xab8610
+0000000000b1817a: mov      qword ptr [rip + 0x40a75d3], 7
+0000000000b18185: mov      qword ptr [rip + 0x40a75c0], 0
+0000000000b18190: mov      word ptr [rip + 0x40a75a7], 0
+0000000000b18199: add      rsp, 0x28
+0000000000b1819d: ret
+0000000000b1819e: int3
+0000000000b1819f: int3
+0000000000b181a0: sub      rsp, 0x38
+0000000000b181a4: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000b181ad: lea      rcx, [rip + 0x4e104c]
+0000000000b181b4: call     0x9205b0
+0000000000b181b9: nop
+0000000000b181ba: lea      rax, [rip + 0x11aa67]
+0000000000b181c1: mov      qword ptr [rip + 0x4e1020], rax
+0000000000b181c8: add      rsp, 0x38
+0000000000b181cc: ret
+0000000000b181cd: int3
+0000000000b181ce: int3
+0000000000b181cf: int3
+0000000000b181d0: push     rbp
+0000000000b181d2: sub      rsp, 0x20
+0000000000b181d6: mov      rbp, rdx
+0000000000b181d9: lea      rcx, [rip + 0x4e1008]
+0000000000b181e0: call     0x663270
+0000000000b181e5: add      rsp, 0x20
+0000000000b181e9: pop      rbp
+0000000000b181ea: ret
+0000000000b181eb: int3
+0000000000b181ec: lea      rcx, [rip + 0x40d5925]
+0000000000b181f3: jmp      0x707e00
+0000000000b181f8: lea      rcx, [rip + 0x40d5915]
+0000000000b181ff: jmp      0x66dfe0
+0000000000b18204: sub      rsp, 0x38
+0000000000b18208: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000b18211: mov      rdx, qword ptr [rip + 0x40dfd60]
+0000000000b18218: test     rdx, rdx
+0000000000b1821b: je       0xb1822f
+0000000000b1821d: mov      r8d, 1
+0000000000b18223: lea      rcx, [rip + 0x252fb86]
+0000000000b1822a: call     0x74e3bc
+0000000000b1822f: mov      qword ptr [rip + 0x40dfd3e], 0
+0000000000b1823a: mov      qword ptr [rip + 0x40dfd3b], 0
+0000000000b18245: mov      qword ptr [rip + 0x40dfd38], 0
+0000000000b18250: lea      rcx, [rip + 0x40dfd01]
+0000000000b18257: add      rsp, 0x38
+0000000000b1825b: jmp      0x7d6d44
+0000000000b18260: int3
+0000000000b18261: int3
+0000000000b18262: int3
+0000000000b18263: int3
+0000000000b18264: push     rbp
+0000000000b18266: sub      rsp, 0x20
+0000000000b1826a: mov      rbp, rdx
+0000000000b1826d: lea      rcx, [rip + 0x40dfce4]
+0000000000b18274: call     0x7d6d44
+0000000000b18279: add      rsp, 0x20
+0000000000b1827d: pop      rbp
+0000000000b1827e: ret
+0000000000b1827f: int3
+0000000000b18280: lea      rcx, [rip + 0x40dfd29]
+0000000000b18287: jmp      0x679ee4
+0000000000b1828c: mov      qword ptr [rip + 0x40dfdc9], 0
+0000000000b18297: ret
+0000000000b18298: lea      rcx, [rip + 0x40dfe51]
+0000000000b1829f: jmp      0x6b51c8
+0000000000b182a4: sub      rsp, 0x28
+0000000000b182a8: cmp      qword ptr [rip + 0x40e0120], 8
+0000000000b182b0: jb       0xb182be
+0000000000b182b2: mov      rcx, qword ptr [rip + 0x40e00ff]
+0000000000b182b9: call     0xab8610
+0000000000b182be: mov      qword ptr [rip + 0x40e0107], 7
+0000000000b182c9: mov      qword ptr [rip + 0x40e00f4], 0
+0000000000b182d4: mov      word ptr [rip + 0x40e00db], 0
+0000000000b182dd: add      rsp, 0x28
+0000000000b182e1: ret
+0000000000b182e2: int3
+0000000000b182e3: int3
+0000000000b182e4: sub      rsp, 0x28

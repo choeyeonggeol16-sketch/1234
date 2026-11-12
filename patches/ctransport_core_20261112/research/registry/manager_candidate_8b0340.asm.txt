@@ -1,0 +1,63 @@
+# Tentative role: manager_candidate_8b0340; VA 0x8b0340..0x8b0404
+00000000008b0340: push     rbx
+00000000008b0342: push     rbp
+00000000008b0343: push     rsi
+00000000008b0344: push     rdi
+00000000008b0345: push     r12
+00000000008b0347: sub      rsp, 0x40
+00000000008b034b: mov      rdi, qword ptr [rcx + 8]
+00000000008b034f: mov      rbp, r8
+00000000008b0352: mov      rbx, rdx
+00000000008b0355: mov      rax, qword ptr [rdi + 8]
+00000000008b0359: mov      r12, rcx
+00000000008b035c: mov      sil, 1
+00000000008b035f: cmp      byte ptr [rax + 0x29], 0
+00000000008b0363: jne      0x8b0387
+00000000008b0365: mov      rdx, qword ptr [r8]
+00000000008b0368: cmp      rdx, qword ptr [rax + 0x18]
+00000000008b036c: mov      rdi, rax
+00000000008b036f: setb     sil
+00000000008b0373: test     sil, sil
+00000000008b0376: je       0x8b037d
+00000000008b0378: mov      rax, qword ptr [rax]
+00000000008b037b: jmp      0x8b0381
+00000000008b037d: mov      rax, qword ptr [rax + 0x10]
+00000000008b0381: cmp      byte ptr [rax + 0x29], 0
+00000000008b0385: je       0x8b0368
+00000000008b0387: test     sil, sil
+00000000008b038a: mov      rcx, rdi
+00000000008b038d: mov      qword ptr [rsp + 0x38], rdi
+00000000008b0392: mov      qword ptr [rsp + 0x30], r12
+00000000008b0397: je       0x8b03d4
+00000000008b0399: mov      rax, qword ptr [r12 + 8]
+00000000008b039e: cmp      rdi, qword ptr [rax]
+00000000008b03a1: jne      0x8b03c5
+00000000008b03a3: mov      qword ptr [rsp + 0x20], r8
+00000000008b03a8: mov      r8b, 1
+00000000008b03ab: lea      rdx, [rsp + 0x30]
+00000000008b03b0: mov      r9, rdi
+00000000008b03b3: mov      rcx, r12
+00000000008b03b6: call     0x8afcd0
+00000000008b03bb: mov      byte ptr [rbx + 0x10], 1
+00000000008b03bf: movdqu   xmm0, xmmword ptr [rax]
+00000000008b03c3: jmp      0x8b03f2
+00000000008b03c5: lea      rcx, [rsp + 0x30]
+00000000008b03ca: call     0x74a480
+00000000008b03cf: mov      rcx, qword ptr [rsp + 0x38]
+00000000008b03d4: mov      rax, qword ptr [rbp]
+00000000008b03d8: cmp      qword ptr [rcx + 0x18], rax
+00000000008b03dc: jae      0x8b03e8
+00000000008b03de: mov      qword ptr [rsp + 0x20], rbp
+00000000008b03e3: mov      r8b, sil
+00000000008b03e6: jmp      0x8b03ab
+00000000008b03e8: movdqu   xmm0, xmmword ptr [rsp + 0x30]
+00000000008b03ee: mov      byte ptr [rbx + 0x10], 0
+00000000008b03f2: movdqu   xmmword ptr [rbx], xmm0
+00000000008b03f6: mov      rax, rbx
+00000000008b03f9: add      rsp, 0x40
+00000000008b03fd: pop      r12
+00000000008b03ff: pop      rdi
+00000000008b0400: pop      rsi
+00000000008b0401: pop      rbp
+00000000008b0402: pop      rbx
+00000000008b0403: ret

@@ -1,0 +1,224 @@
+# Tentative role: manager_candidate_8b0008; VA 0x8b0008..0x8b0323
+00000000008b0008: push     rbx
+00000000008b000a: push     rbp
+00000000008b000b: push     rsi
+00000000008b000c: push     rdi
+00000000008b000d: push     r12
+00000000008b000f: sub      rsp, 0xa0
+00000000008b0016: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000008b001f: mov      rbx, r9
+00000000008b0022: mov      bpl, r8b
+00000000008b0025: mov      r12, rdx
+00000000008b0028: mov      rdi, rcx
+00000000008b002b: movabs   rax, 0x3ffffffffffffffe
+00000000008b0035: cmp      qword ptr [rcx + 0x10], rax
+00000000008b0039: jb       0x8b0092
+00000000008b003b: mov      qword ptr [rsp + 0x58], 0xf
+00000000008b0044: xor      esi, esi
+00000000008b0046: mov      qword ptr [rsp + 0x50], rsi
+00000000008b004b: mov      byte ptr [rsp + 0x40], sil
+00000000008b0050: lea      rcx, [rip + 0x276569]
+00000000008b0057: call     0xab7d70
+00000000008b005c: mov      r8, rax
+00000000008b005f: lea      rdx, [rip + 0x27655a]
+00000000008b0066: lea      rcx, [rsp + 0x38]
+00000000008b006b: call     0x401740
+00000000008b0070: nop
+00000000008b0071: lea      rdx, [rsp + 0x38]
+00000000008b0076: lea      rcx, [rsp + 0x60]
+00000000008b007b: call     0x4018ec
+00000000008b0080: lea      rdx, [rip + 0x739b21]
+00000000008b0087: lea      rcx, [rsp + 0x60]
+00000000008b008c: call     0xab8f40
+00000000008b0091: nop
+00000000008b0092: mov      rdx, qword ptr [rcx + 8]
+00000000008b0096: xor      esi, esi
+00000000008b0098: mov      byte ptr [rsp + 0x28], sil
+00000000008b009d: mov      rax, qword ptr [rsp + 0xf0]
+00000000008b00a5: mov      qword ptr [rsp + 0x20], rax
+00000000008b00aa: mov      r9, rdx
+00000000008b00ad: mov      r8, rbx
+00000000008b00b0: call     0x8afac4
+00000000008b00b5: mov      r11, rax
+00000000008b00b8: add      qword ptr [rdi + 0x10], 1
+00000000008b00bd: mov      rax, qword ptr [rdi + 8]
+00000000008b00c1: cmp      rbx, rax
+00000000008b00c4: jne      0x8b00db
+00000000008b00c6: mov      qword ptr [rax + 8], r11
+00000000008b00ca: mov      rcx, qword ptr [rdi + 8]
+00000000008b00ce: mov      qword ptr [rcx], r11
+00000000008b00d1: mov      rcx, qword ptr [rdi + 8]
+00000000008b00d5: mov      qword ptr [rcx + 0x10], r11
+00000000008b00d9: jmp      0x8b0103
+00000000008b00db: cmp      bpl, sil
+00000000008b00de: je       0x8b00f1
+00000000008b00e0: mov      qword ptr [rbx], r11
+00000000008b00e3: mov      rax, qword ptr [rdi + 8]
+00000000008b00e7: cmp      rbx, qword ptr [rax]
+00000000008b00ea: jne      0x8b0103
+00000000008b00ec: mov      qword ptr [rax], r11
+00000000008b00ef: jmp      0x8b0103
+00000000008b00f1: mov      qword ptr [rbx + 0x10], r11
+00000000008b00f5: mov      rax, qword ptr [rdi + 8]
+00000000008b00f9: cmp      rbx, qword ptr [rax + 0x10]
+00000000008b00fd: jne      0x8b0103
+00000000008b00ff: mov      qword ptr [rax + 0x10], r11
+00000000008b0103: mov      r8, r11
+00000000008b0106: lea      rdx, [r11 + 8]
+00000000008b010a: mov      rax, qword ptr [rdx]
+00000000008b010d: cmp      byte ptr [rax + 0x1c], sil
+00000000008b0111: jne      0x8b02fd
+00000000008b0117: mov      rax, qword ptr [rdx]
+00000000008b011a: mov      rcx, qword ptr [rax + 8]
+00000000008b011e: cmp      rax, qword ptr [rcx]
+00000000008b0121: jne      0x8b020d
+00000000008b0127: mov      r9, qword ptr [rcx + 0x10]
+00000000008b012b: cmp      byte ptr [r9 + 0x1c], sil
+00000000008b012f: jne      0x8b0151
+00000000008b0131: mov      byte ptr [rax + 0x1c], 1
+00000000008b0135: mov      byte ptr [r9 + 0x1c], 1
+00000000008b013a: mov      rax, qword ptr [rdx]
+00000000008b013d: mov      rcx, qword ptr [rax + 8]
+00000000008b0141: mov      byte ptr [rcx + 0x1c], sil
+00000000008b0145: mov      rax, qword ptr [rdx]
+00000000008b0148: mov      r8, qword ptr [rax + 8]
+00000000008b014c: jmp      0x8b02ec
+00000000008b0151: cmp      r8, qword ptr [rax + 0x10]
+00000000008b0155: jne      0x8b01a4
+00000000008b0157: mov      r8, rax
+00000000008b015a: mov      rcx, qword ptr [rax + 0x10]
+00000000008b015e: mov      rax, qword ptr [rcx]
+00000000008b0161: mov      qword ptr [r8 + 0x10], rax
+00000000008b0165: mov      rax, qword ptr [rcx]
+00000000008b0168: cmp      byte ptr [rax + 0x1d], sil
+00000000008b016c: jne      0x8b0172
+00000000008b016e: mov      qword ptr [rax + 8], r8
+00000000008b0172: lea      rdx, [r8 + 8]
+00000000008b0176: mov      rax, qword ptr [rdx]
+00000000008b0179: mov      qword ptr [rcx + 8], rax
+00000000008b017d: mov      rax, qword ptr [rdi + 8]
+00000000008b0181: cmp      r8, qword ptr [rax + 8]
+00000000008b0185: jne      0x8b018d
+00000000008b0187: mov      qword ptr [rax + 8], rcx
+00000000008b018b: jmp      0x8b019e
+00000000008b018d: mov      rax, qword ptr [rdx]
+00000000008b0190: cmp      r8, qword ptr [rax]
+00000000008b0193: jne      0x8b019a
+00000000008b0195: mov      qword ptr [rax], rcx
+00000000008b0198: jmp      0x8b019e
+00000000008b019a: mov      qword ptr [rax + 0x10], rcx
+00000000008b019e: mov      qword ptr [rcx], r8
+00000000008b01a1: mov      qword ptr [rdx], rcx
+00000000008b01a4: mov      rax, qword ptr [rdx]
+00000000008b01a7: mov      byte ptr [rax + 0x1c], 1
+00000000008b01ab: mov      rax, qword ptr [rdx]
+00000000008b01ae: mov      rcx, qword ptr [rax + 8]
+00000000008b01b2: mov      byte ptr [rcx + 0x1c], sil
+00000000008b01b6: mov      rax, qword ptr [rdx]
+00000000008b01b9: mov      rcx, qword ptr [rax + 8]
+00000000008b01bd: mov      rdx, qword ptr [rcx]
+00000000008b01c0: mov      rax, qword ptr [rdx + 0x10]
+00000000008b01c4: mov      qword ptr [rcx], rax
+00000000008b01c7: mov      rax, qword ptr [rdx + 0x10]
+00000000008b01cb: cmp      byte ptr [rax + 0x1d], sil
+00000000008b01cf: jne      0x8b01d5
+00000000008b01d1: mov      qword ptr [rax + 8], rcx
+00000000008b01d5: mov      rax, qword ptr [rcx + 8]
+00000000008b01d9: mov      qword ptr [rdx + 8], rax
+00000000008b01dd: mov      rax, qword ptr [rdi + 8]
+00000000008b01e1: cmp      rcx, qword ptr [rax + 8]
+00000000008b01e5: jne      0x8b01ed
+00000000008b01e7: mov      qword ptr [rax + 8], rdx
+00000000008b01eb: jmp      0x8b0200
+00000000008b01ed: mov      rax, qword ptr [rcx + 8]
+00000000008b01f1: cmp      rcx, qword ptr [rax + 0x10]
+00000000008b01f5: jne      0x8b01fd
+00000000008b01f7: mov      qword ptr [rax + 0x10], rdx
+00000000008b01fb: jmp      0x8b0200
+00000000008b01fd: mov      qword ptr [rax], rdx
+00000000008b0200: mov      qword ptr [rdx + 0x10], rcx
+00000000008b0204: mov      qword ptr [rcx + 8], rdx
+00000000008b0208: jmp      0x8b02ec
+00000000008b020d: mov      r9, qword ptr [rcx]
+00000000008b0210: cmp      byte ptr [r9 + 0x1c], sil
+00000000008b0214: jne      0x8b0236
+00000000008b0216: mov      byte ptr [rax + 0x1c], 1
+00000000008b021a: mov      byte ptr [r9 + 0x1c], 1
+00000000008b021f: mov      rax, qword ptr [rdx]
+00000000008b0222: mov      rcx, qword ptr [rax + 8]
+00000000008b0226: mov      byte ptr [rcx + 0x1c], sil
+00000000008b022a: mov      rax, qword ptr [rdx]
+00000000008b022d: mov      r8, qword ptr [rax + 8]
+00000000008b0231: jmp      0x8b02ec
+00000000008b0236: cmp      r8, qword ptr [rax]
+00000000008b0239: jne      0x8b028a
+00000000008b023b: mov      r8, rax
+00000000008b023e: mov      rcx, qword ptr [rax]
+00000000008b0241: mov      rax, qword ptr [rcx + 0x10]
+00000000008b0245: mov      qword ptr [r8], rax
+00000000008b0248: mov      rax, qword ptr [rcx + 0x10]
+00000000008b024c: cmp      byte ptr [rax + 0x1d], sil
+00000000008b0250: jne      0x8b0256
+00000000008b0252: mov      qword ptr [rax + 8], r8
+00000000008b0256: lea      rdx, [r8 + 8]
+00000000008b025a: mov      rax, qword ptr [rdx]
+00000000008b025d: mov      qword ptr [rcx + 8], rax
+00000000008b0261: mov      rax, qword ptr [rdi + 8]
+00000000008b0265: cmp      r8, qword ptr [rax + 8]
+00000000008b0269: jne      0x8b0271
+00000000008b026b: mov      qword ptr [rax + 8], rcx
+00000000008b026f: jmp      0x8b0283
+00000000008b0271: mov      rax, qword ptr [rdx]
+00000000008b0274: cmp      r8, qword ptr [rax + 0x10]
+00000000008b0278: jne      0x8b0280
+00000000008b027a: mov      qword ptr [rax + 0x10], rcx
+00000000008b027e: jmp      0x8b0283
+00000000008b0280: mov      qword ptr [rax], rcx
+00000000008b0283: mov      qword ptr [rcx + 0x10], r8
+00000000008b0287: mov      qword ptr [rdx], rcx
+00000000008b028a: mov      rax, qword ptr [rdx]
+00000000008b028d: mov      byte ptr [rax + 0x1c], 1
+00000000008b0291: mov      rax, qword ptr [rdx]
+00000000008b0294: mov      rcx, qword ptr [rax + 8]
+00000000008b0298: mov      byte ptr [rcx + 0x1c], sil
+00000000008b029c: mov      rax, qword ptr [rdx]
+00000000008b029f: mov      rcx, qword ptr [rax + 8]
+00000000008b02a3: mov      rdx, qword ptr [rcx + 0x10]
+00000000008b02a7: mov      rax, qword ptr [rdx]
+00000000008b02aa: mov      qword ptr [rcx + 0x10], rax
+00000000008b02ae: mov      rax, qword ptr [rdx]
+00000000008b02b1: cmp      byte ptr [rax + 0x1d], sil
+00000000008b02b5: jne      0x8b02bb
+00000000008b02b7: mov      qword ptr [rax + 8], rcx
+00000000008b02bb: mov      rax, qword ptr [rcx + 8]
+00000000008b02bf: mov      qword ptr [rdx + 8], rax
+00000000008b02c3: mov      rax, qword ptr [rdi + 8]
+00000000008b02c7: cmp      rcx, qword ptr [rax + 8]
+00000000008b02cb: jne      0x8b02d3
+00000000008b02cd: mov      qword ptr [rax + 8], rdx
+00000000008b02d1: jmp      0x8b02e5
+00000000008b02d3: mov      rax, qword ptr [rcx + 8]
+00000000008b02d7: cmp      rcx, qword ptr [rax]
+00000000008b02da: jne      0x8b02e1
+00000000008b02dc: mov      qword ptr [rax], rdx
+00000000008b02df: jmp      0x8b02e5
+00000000008b02e1: mov      qword ptr [rax + 0x10], rdx
+00000000008b02e5: mov      qword ptr [rdx], rcx
+00000000008b02e8: mov      qword ptr [rcx + 8], rdx
+00000000008b02ec: lea      rdx, [r8 + 8]
+00000000008b02f0: mov      rax, qword ptr [rdx]
+00000000008b02f3: cmp      byte ptr [rax + 0x1c], sil
+00000000008b02f7: je       0x8b0117
+00000000008b02fd: mov      rax, qword ptr [rdi + 8]
+00000000008b0301: mov      rcx, qword ptr [rax + 8]
+00000000008b0305: mov      byte ptr [rcx + 0x1c], 1
+00000000008b0309: mov      qword ptr [r12 + 8], r11
+00000000008b030e: mov      qword ptr [r12], rdi
+00000000008b0312: mov      rax, r12
+00000000008b0315: add      rsp, 0xa0
+00000000008b031c: pop      r12
+00000000008b031e: pop      rdi
+00000000008b031f: pop      rsi
+00000000008b0320: pop      rbp
+00000000008b0321: pop      rbx
+00000000008b0322: ret

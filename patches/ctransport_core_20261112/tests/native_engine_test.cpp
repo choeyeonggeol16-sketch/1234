@@ -4,6 +4,7 @@
 #include <iostream>
 #include <random>
 #include <future>
+#include "fake_l1_codec.hpp"
 
 static void check(bool ok, const char* message) { if (!ok) throw std::runtime_error(message); }
 template<class Predicate> static void until(Predicate p) {
@@ -18,7 +19,10 @@ struct Probe {
  std::atomic<bool> retainRead{false},blockTask{false},taskEntered{false},releaseTask{false};
  std::vector<unsigned char> received;
  std::vector<int> receiveLengths;
- std::atomic<bool> userProfile{false};
+ std::atomic<bool> userProfile{false},holdPacket{false};
+ std::atomic<std::uint64_t> heldSequence{0};
+ std::atomic<const unsigned char*> heldPlaintext{nullptr};
+ std::atomic<int> packetCalls{0},deadlineCalls{0};
  std::atomic<int> closed{0}, sent{0},closing{0};
  std::atomic<bool> terminalStopCheck{false}, reenterClose{false},blockClosing{false},closingEntered{false},releaseClosing{false};
  std::atomic<bool> echo{false}, pauseInCallback{false}, reject{false}, attemptStop{false};
@@ -26,7 +30,7 @@ struct Probe {
 };
 static Probe* probe;
 static int acceptCallback(void* server, std::uint64_t id, std::uint64_t) {
- if (probe->userProfile) check(CTransport_UserSocket_Enable(server,id), "user-socket profile enable");
+ if (probe->userProfile) check(CTransport_UserSocket_Initialize(server,id,73461), "user-socket profile enable");
  { std::lock_guard<std::mutex> lock(probe->mutex); probe->ids.push_back(id); }
  if (probe->attemptStop.load()) check(!CIO_Server_Stop(server), "worker joined itself");
  return probe->reject ? 2 : 0;
@@ -43,6 +47,14 @@ static int receiveCallback(void* server, std::uint64_t id, const void* data, int
  if (probe->echo) check(CIO_Server_Send(server, id, data, length), "reentrant receive/send failed");
  return 0;
 }
+static int packetCallback(void* server,std::uint64_t id,std::uint64_t sequence,const void* data,int length) {
+ if(!length)return 0;
+ {std::lock_guard<std::mutex> lock(probe->mutex);auto* bytes=static_cast<const unsigned char*>(data);probe->received.insert(probe->received.end(),bytes,bytes+length);probe->receiveLengths.push_back(length);}
+ ++probe->packetCalls;
+ if(probe->holdPacket.exchange(false)){probe->heldPlaintext=static_cast<const unsigned char*>(data);probe->heldSequence=sequence;return 0;}
+ check(CTransport_UserSocket_ReleasePacket(server,id,sequence),"native packet release rejected");return 0;
+}
+static int deadlineCallback(void*,std::uint64_t){++probe->deadlineCalls;return 5000;}
 static int sendCallback(void*, std::uint64_t, const void*, int length) { probe->sent.fetch_add(length); return 0; }
 static int closingCallback(void* server,std::uint64_t id,int,int) {
  ++probe->closing;
@@ -135,7 +147,8 @@ struct Fixture {
   CIO_Set_FN_Server_OnSend(listener, sendCallback); CIO_Set_FN_Server_OnClose(listener, closeCallback);
   CTransport_SetTaskCallback(listener, taskCallback);
   CTransport_SetClosingCallback(listener, closingCallback);
-  server = static_cast<Server*>(CIO_Create_TcpServer(listener)); CIO_Server_SetWorkerThreadCount(server, 4); CIO_Server_SetMaxConnectionCount(server, 128);
+  CTransport_SetUserPacketCallback(listener,packetCallback);CTransport_SetNetworkDeadlineCallback(listener,deadlineCallback);
+  server = static_cast<Server*>(CIO_Create_TcpServer(listener));auto codec=fixturecodec::functions();check(CTransport_Server_SetCodecApi(server,codec.data(),7),"fixture codec API install"); CIO_Server_SetWorkerThreadCount(server, 4); CIO_Server_SetMaxConnectionCount(server, 128);
   check(CIO_Server_Start(server, "127.0.0.1", 0), "start failed");
  }
  std::pair<SOCKET,std::uint64_t> connect() {
@@ -212,7 +225,7 @@ static void engineTests() {
   Fixture f;auto [socket,id]=f.connect();f.state.pauseInCallback=true;
   fakewin::feed(socket,std::vector<unsigned char>(9000,7));CIO_Server_PauseReceive(f.server,id,0);
   until([&]{std::lock_guard<std::mutex> lock(f.state.mutex);return f.state.received.size()==4096;});
-  {auto* c=f.server->find(id);ObjectRef hold(c,false);std::lock_guard<std::mutex> lock(c->gate);check(!c->state.readPosted&&c->state.paused,"reentrant pause did not stop next receive");}
+  until([&]{auto* c=f.server->find(id);ObjectRef hold(c,false);std::lock_guard<std::mutex> lock(c->gate);return !c->state.readPosted&&c->state.paused&&!c->state.readDelivering;});
   f.state.pauseInCallback=false;CIO_Server_PauseReceive(f.server,id,0);
   until([&]{std::lock_guard<std::mutex> lock(f.state.mutex);return f.state.received.size()==9000;});
   fakewin::holdSend=true;const unsigned char data[]={1,2,3,4};check(CIO_Server_Send(f.server,id,data,4),"held send failed");
@@ -462,11 +475,76 @@ static void userSocketTests() {
   until([&]{std::uint64_t st[6]{};return CTransport_UserSocket_GetState(f.server,id,st,6)&&st[0]==0&&st[2]==1;});
   {std::lock_guard<std::mutex>lock(f.state.mutex);check(f.state.received.empty(),"partial header leaked into raw gameplay callback");}
   fakewin::feed(socket,std::vector<unsigned char>(frame.begin()+1,frame.end()));
-  until([&]{std::lock_guard<std::mutex>lock(f.state.mutex);return f.state.received.size()==frame.size();});
-  {std::lock_guard<std::mutex>lock(f.state.mutex);check(f.state.received==frame&&f.state.receiveLengths==std::vector<int>{10000},"production user socket did not emit one complete frame");}
+  until([&]{std::lock_guard<std::mutex>lock(f.state.mutex);return f.state.received.size()==frame.size()-6;});
+  {std::lock_guard<std::mutex>lock(f.state.mutex);check(f.state.received==std::vector<unsigned char>(frame.begin()+6,frame.end())&&f.state.receiveLengths==std::vector<int>{9994},"production user socket did not emit complete plaintext");}
   fakewin::feed(socket,{3,0});until([&]{return f.state.closed==1;});
  }
  std::cout<<"PASS L1 CUserSocket: bytewise/coalesced/65535-byte framing, empty envelope, invalid lengths, header/body deadlines with backpressure, concurrent close, production connection integration\n";
 }
 
-int main(){std::cout.setf(std::ios::unitbuf);userSocketTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}
+struct RegistryObject {
+ std::uint64_t id=0;std::atomic<int> refs{1};
+ void retain(){++refs;}void release(){check(refs.fetch_sub(1)>0,"registry double release");}
+};
+static void managerAndNativeLeaseTests() {
+ {
+  CUserSocketManager<RegistryObject> registry;check(registry.initialize(1),"registry init");
+  RegistryObject a,b;auto old=registry.insert(&a);check(old&&a.refs==2,"registry insertion hold");
+  auto* found=registry.find(old);check(found==&a,"registry lookup");found->release();
+  registry.retire(old,&a);check(!registry.find(old),"retired handle admitted new work");
+  found=registry.find(old,true);check(found==&a,"retired release lookup lost");found->release();
+  check(!registry.remove(old,&b)&&registry.remove(old,&a)&&a.refs==1,"registry exact erase");
+  auto current=registry.insert(&b);check(current!=old&&std::uint32_t(current)==std::uint32_t(old)&&!registry.find(old,true),"slot generation ABA");
+  check(registry.remove(current,&b)&&registry.initialize(1),"registry restart");
+  auto restarted=registry.insert(&a);check(restarted!=current&&restarted!=old,"restart reused generation");check(registry.remove(restarted,&a),"restart erase");
+  check(registry.initialize(64),"concurrent registry init");
+  std::vector<std::thread> threads;
+  for(int worker=0;worker<8;++worker)threads.emplace_back([&]{for(int n=0;n<400;++n){RegistryObject object;auto id=registry.insert(&object);check(id!=0,"concurrent insert");auto* copy=registry.find(id);check(copy==&object,"concurrent lookup");copy->release();registry.retire(id,&object);check(registry.remove(id,&object)&&object.refs==1,"concurrent retire release");}});
+  for(auto& t:threads)t.join();std::uint64_t diag[6]{};registry.diagnostics(diag);check(diag[0]==0&&diag[1]==0&&diag[3]==diag[4],"registry totals leaked");
+ }
+ {
+  Fixture f;f.state.userProfile=true;f.state.holdPacket=true;auto [socket,id]=f.connect();check(CIO_Server_PauseReceive(f.server,id,0),"lease read resume");
+  auto first=l1Frame(4096,3),second=l1Frame(8192,7);std::vector<unsigned char> wire=first;wire.insert(wire.end(),second.begin(),second.end());fakewin::feed(socket,wire);
+  until([&]{return f.state.heldSequence.load()!=0;});const auto seq=f.state.heldSequence.load();auto* view=f.state.heldPlaintext.load();
+  check(std::equal(view,view+first.size()-6,first.data()+6),"leased plaintext changed");
+  unsigned char outbound[]{1,2,3,4};check(CTransport_UserSocket_Encrypt(f.server,id,outbound,4)&&outbound[0]==(1^0xa7),"native outbound codec");
+  check(std::equal(view,view+first.size()-6,first.data()+6)&&f.state.packetCalls==1,"send/next overwrote borrowed plaintext");
+  check(!CTransport_UserSocket_ReleasePacket(f.server,id,seq+1),"wrong sequence released packet");
+  check(CTransport_UserSocket_ReleasePacket(f.server,id,seq),"foreign caller lease release");until([&]{return f.state.packetCalls==2;});
+  check(!CTransport_UserSocket_ReleasePacket(f.server,id,seq),"duplicate packet release");
+ }
+ {
+  Fixture f;f.state.userProfile=true;f.state.holdPacket=true;auto [socket,id]=f.connect();CIO_Server_PauseReceive(f.server,id,0);auto frame=l1Frame(128,5);fakewin::feed(socket,frame);until([&]{return f.state.heldSequence.load()!=0;});
+  const auto seq=f.state.heldSequence.load();auto* view=f.state.heldPlaintext.load();check(CIO_Server_Disconnect(f.server,id,1),"close held lease");until([&]{return f.state.closed==1;});
+  std::uint64_t diag[6]{};CTransport_Server_GetRegistryDiagnostics(f.server,diag,6);check(diag[0]==0&&diag[1]==1,"terminal dropped borrowed native context");
+  check(std::equal(view,view+frame.size()-6,frame.data()+6),"terminal invalidated outstanding plaintext");
+  check(CTransport_UserSocket_ReleasePacket(f.server,id,seq),"retired native lease release");until([&]{return f.server->connections.load()==0;});
+  auto [newSocket,newId]=f.connect();check(newId!=id&&std::uint32_t(newId)==std::uint32_t(id),"production registry did not rotate generation");
+  check(!CTransport_UserSocket_ReleasePacket(f.server,id,seq)&&!CIO_Server_Send(f.server,id,frame.data(),frame.size()),"stale generation affected new socket");
+ }
+ {
+  Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();check(CTransport_UserSocket_ConfigureDeadlines(f.server,id,60),"short login timer");until([&]{return f.state.closed==1;});until([&]{return f.server->taskCount==0;});
+ }
+ {
+  Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();check(CTransport_UserSocket_ConfigureDeadlines(f.server,id,80)&&CTransport_UserSocket_SetSessionState(f.server,id,1),"authenticated login timer");
+  until([&]{return f.state.deadlineCalls.load()>0;});check(f.state.closed==0,"authenticated connection expired login timer");
+  auto calls=f.state.deadlineCalls.load();check(CTransport_UserSocket_RequestDeadline(f.server,id,1),"earlier application deadline");until([&]{return f.state.deadlineCalls.load()>calls;});
+  CIO_Server_Disconnect(f.server,id,1);until([&]{return f.state.closed==1&&f.server->taskCount==0;});
+ }
+ {
+  Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();auto* c=f.server->find(id);check(c!=nullptr,"partial deadline lookup");
+  {std::lock_guard<std::mutex> lock(c->gate);unsigned char partial=10;check(c->userSocket->feed(&partial,1,monotonicMs()-30001,[](auto*,unsigned){return true;}),"old partial header");}
+  c->release();check(CTransport_UserSocket_RequestDeadline(f.server,id,1),"partial native deadline");until([&]{return f.state.closed==1;});
+ }
+ {
+  Fixture f;f.state.userProfile=true;f.state.holdPacket=true;auto [socket,id]=f.connect();CIO_Server_PauseReceive(f.server,id,0);fakewin::feed(socket,l1Frame(128));until([&]{return f.state.heldSequence.load()!=0;});
+  auto stop=std::async(std::launch::async,[&]{return CIO_Server_Stop(f.server);});until([&]{return f.state.closed==1;});check(stop.wait_for(std::chrono::milliseconds(20))==std::future_status::timeout,"stop bypassed native packet lease");
+  check(CTransport_UserSocket_ReleasePacket(f.server,id,f.state.heldSequence),"shutdown drain release rejected");check(stop.get(),"stop after lease release");
+ }
+ check(fixturecodec::created==fixturecodec::destroyed,"native codec instances leaked");
+ std::cout<<"PASS native manager: generation/retired lookup/exact erase/restart/3200 concurrent registrations; stale handles cannot affect replacements\n";
+ std::cout<<"PASS direct native codec: stable plaintext lease across send/queued packets/IO terminal; foreign release, wrong/duplicate sequence, shutdown drain and exact codec destruction\n";
+ std::cout<<"PASS native network timers: login expiry, authenticated cancellation, earlier coalesced application deadline, partial header expiry and close cancellation\n";
+}
+
+int main(){std::cout.setf(std::ios::unitbuf);userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}

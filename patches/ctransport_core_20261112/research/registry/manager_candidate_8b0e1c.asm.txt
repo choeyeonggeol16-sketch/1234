@@ -1,0 +1,9 @@
+# Tentative role: manager_candidate_8b0e1c; VA 0x8b0e1c..0x8b0e34
+00000000008b0e1c: push     rbp
+00000000008b0e1e: sub      rsp, 0x20
+00000000008b0e22: mov      rbp, rdx
+00000000008b0e25: lea      rcx, [rbp + 0x68]
+00000000008b0e29: call     0x401044
+00000000008b0e2e: add      rsp, 0x20
+00000000008b0e32: pop      rbp
+00000000008b0e33: ret

@@ -7,74 +7,105 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import java.util.function.BooleanSupplier;
 
-/** Real shipped DLL/FFM/socket/codec; only the game-world CIOUserSocket is stubbed. */
+/** Real Windows DLL/FFM/socket/codec; the game-world owner is a test fixture. */
 public final class CUserSocketWindowsTest {
-    static void check(boolean value, String why) { if(!value)throw new AssertionError(why); }
-    static void until(BooleanSupplier test) throws Exception {
+    static void check(boolean value,String why){if(!value)throw new AssertionError(why);}
+    static void until(BooleanSupplier test)throws Exception{
         long end=System.nanoTime()+TimeUnit.SECONDS.toNanos(5);
         while(!test.getAsBoolean()&&System.nanoTime()<end)Thread.sleep(1);
         check(test.getAsBoolean(),"Windows user-socket deadline");
     }
-    static byte[] frame(int n,int seed) {
-        byte[] frame=new byte[n];frame[0]=(byte)n;frame[1]=(byte)(n>>>8);
-        for(int i=2;i<n;i++)frame[i]=(byte)(i*seed+17);return frame;
+    static byte[] frame(int n,int seed){byte[] b=new byte[n];b[0]=(byte)n;b[1]=(byte)(n>>>8);for(int i=2;i<n;i++)b[i]=(byte)(i*seed+17);return b;}
+    static void decode(CIOPacketCodecReference codec,List<byte[]> out){
+        for(;;){int n=codec.next();if(n==CIOPacketCodecReference.INCOMPLETE)return;
+            if(n!=CIOPacketCodecReference.EMPTY){byte[] bytes=new byte[n];codec.plaintext().duplicate().get(bytes);out.add(bytes);}}
     }
-    static int decode(CIOPacketCodec codec,List<byte[]> out) {
-        int count=0;
-        for(;;){int n=codec.next();if(n==CIOPacketCodec.INCOMPLETE)return count;
-            if(n!=CIOPacketCodec.EMPTY){byte[] bytes=new byte[n];codec.plaintext().duplicate().get(bytes);out.add(bytes);}count++;}
+    static final class UserOwner extends CIOUserSocket {
+        final CTransportSocket channel;final CIOPacketCodec codec;
+        final AtomicInteger frames=new AtomicInteger(),deadlines=new AtomicInteger();
+        final List<byte[]> actual=Collections.synchronizedList(new ArrayList<>());
+        final CountDownLatch terminal=new CountDownLatch(1);
+        volatile boolean hold=true;volatile long sequence;volatile ByteBuffer view;
+        UserOwner(CTransportSocket channel){this.channel=channel;codec=new CIOPacketCodec(channel,73461);channel.bindUserSocketOwner(this);}
+        @Override boolean transportNativePacket(long sequence,ByteBuffer packet,int length){
+            check(channel.currentNativeOwner()>=0,"plaintext escaped IOCP worker");
+            if(length==0){frames.incrementAndGet();return true;}
+            byte[] bytes=new byte[length];packet.duplicate().get(bytes);actual.add(bytes);
+            if(hold){hold=false;view=packet;this.sequence=sequence;frames.incrementAndGet();return true;}
+            check(channel.releaseUserPacket(sequence),"native plaintext release");frames.incrementAndGet();return true;
+        }
+        @Override int transportNetworkDeadline(){deadlines.incrementAndGet();return 5000;}
+        @Override void onTransportTerminated(){terminal.countDown();}
+        @Override void close(){channel.close();}
     }
-    public static void main(String[] args) throws Exception {
+    static byte[] copy(ByteBuffer source){byte[] out=new byte[source.remaining()];source.duplicate().get(out);return out;}
+    public static void main(String[] args)throws Exception{
         List<byte[]> input=new ArrayList<>();input.add(frame(2,1));input.add(frame(10,3));input.add(frame(65535,7));input.add(frame(211,9));
         for(int n=0;n<64;n++)input.add(frame(10,n+1));
         int size=input.stream().mapToInt(b->b.length).sum();byte[] wire=new byte[size];int at=0;
         for(byte[] frame:input){System.arraycopy(frame,0,wire,at,frame.length);at+=frame.length;}
         List<byte[]> expected=new ArrayList<>();
-        try(CIOPacketCodec codec=new CIOPacketCodec(73461)) {
+        try(CIOPacketCodecReference codec=new CIOPacketCodecReference(73461)){
             ByteBuffer bytes=ByteBuffer.allocateDirect(1024);
             for(at=0;at<wire.length;){int n=Math.min(bytes.capacity(),wire.length-at);bytes.clear();bytes.put(wire,at,n).flip();codec.feed(bytes);decode(codec,expected);at+=n;}
             check(codec.pending()==0,"reference codec retained complete frames");
         }
-        AtomicReference<Throwable> failure=new AtomicReference<>();
-        List<byte[]> actual=Collections.synchronizedList(new ArrayList<>());
-        AtomicInteger frames=new AtomicInteger(),reads=new AtomicInteger();
-        AtomicReference<CTransportSocket> accepted=new AtomicReference<>();
-        AtomicReference<Runnable> resume=new AtomicReference<>();
-        CountDownLatch closed=new CountDownLatch(1);
-        AtomicBoolean held=new AtomicBoolean();
-        final class UserOwner extends CIOUserSocket {
-            final CTransportSocket channel; final CIOPacketCodec codec=new CIOPacketCodec(73461);
-            final ByteBuffer bytes=ByteBuffer.allocateDirect(4096);boolean done;
-            UserOwner(CTransportSocket channel){this.channel=channel;check(channel.enableUserSocket(),"native L1 user profile denied");channel.bindUserSocketOwner(this);}
-            void read(){bytes.clear();channel.read(bytes,this);}
-            @Override void transportReadCompleted(int n){
-                if(n<0){if(!done){done=true;codec.close();closed.countDown();}return;}
-                try{reads.incrementAndGet();check(channel.currentNativeOwner()>=0,"wire decode escaped IOCP worker");bytes.flip();codec.feed(bytes);frames.addAndGet(decode(codec,actual));
-                    if(frames.get()==2&&held.compareAndSet(false,true))return;
-                    read();}
-                catch(Throwable problem){failure.compareAndSet(null,problem);channel.close();}
+        AtomicReference<UserOwner> accepted=new AtomicReference<>();
+        try(CTransportServer server=new CTransportServer(new InetSocketAddress("127.0.0.1",0),8,2,32,channel->{UserOwner owner=new UserOwner(channel);accepted.set(owner);channel.pauseNativeUser(false);});
+            Socket client=new Socket("127.0.0.1",server.localAddress().getPort())){
+            until(()->accepted.get()!=null);UserOwner owner=accepted.get();
+            client.getOutputStream().write(wire,0,1);
+            until(()->{long[] state=owner.channel.userSocketState();return state!=null&&state[0]==0&&state[2]==1;});
+            check(owner.frames.get()==0,"partial wire reached plaintext handler");
+            client.getOutputStream().write(wire,1,wire.length-1);until(()->owner.sequence!=0);long seq=owner.sequence;
+            byte[] held=copy(owner.view);check(Arrays.equals(held,expected.get(0)),"native first decode");
+            ByteBuffer out=ByteBuffer.allocateDirect(256),ref=ByteBuffer.allocateDirect(256);
+            try(CIOPacketCodecReference codec=new CIOPacketCodecReference(73461)){
+                for(int round=0;round<8;round++){
+                    out.clear();ref.clear();for(int n=0;n<256;n++){out.put((byte)(n+round));ref.put((byte)(n+round));}
+                    owner.codec.encrypt(out,0,256);codec.encrypt(ref,0,256);out.flip();ref.flip();
+                    check(Arrays.equals(copy(out),copy(ref)),"native S2C rolling encryption changed");
+                }
+            }
+            check(Arrays.equals(held,copy(owner.view))&&owner.frames.get()==2,"send or next overwrote borrowed plaintext");
+            check(!owner.channel.releaseUserPacket(seq+1),"wrong sequence released packet");
+            check(owner.channel.releaseUserPacket(seq),"foreign-thread native release rejected");
+            until(()->owner.frames.get()==input.size());
+            check(!owner.channel.releaseUserPacket(seq),"duplicate release accepted");
+            check(owner.actual.size()==expected.size(),"L1 plaintext count");
+            for(int n=0;n<expected.size();n++)check(Arrays.equals(expected.get(n),owner.actual.get(n)),"C2S plaintext/rolling key changed at "+n);
+            client.getOutputStream().write(new byte[]{3,0});check(owner.terminal.await(5,TimeUnit.SECONDS),"invalid length did not close");
+            check(owner.channel.isNativeIoDrained(),"terminal flag is not real I/O completion");
+            until(()->server.registryDiagnostics()[0]==0&&server.registryDiagnostics()[1]==0);
+        }
+        System.out.println("PASS Windows direct C++ codec/FFM: partial/empty/65535/coalesced frames, 67 exact C2S plaintext/rolling-key matches, 8 S2C matches, stable plaintext lease, foreign/duplicate release and invalid-length terminal");
+
+        AtomicReference<UserOwner> heldOwner=new AtomicReference<>();
+        try(CTransportServer server=new CTransportServer(new InetSocketAddress("127.0.0.1",0),8,2,32,channel->{UserOwner owner=new UserOwner(channel);heldOwner.set(owner);channel.pauseNativeUser(false);})){
+            UserOwner old;
+            try(Socket client=new Socket("127.0.0.1",server.localAddress().getPort())){
+                until(()->heldOwner.get()!=null);old=heldOwner.get();client.getOutputStream().write(frame(128,5));until(()->old.sequence!=0);
+                byte[] before=copy(old.view);old.close();check(old.terminal.await(5,TimeUnit.SECONDS),"held terminal");
+                check(server.registryDiagnostics()[0]==0&&server.registryDiagnostics()[1]==1,"retired context lost outstanding lease");
+                check(Arrays.equals(before,copy(old.view)),"terminal freed borrowed plaintext");check(old.channel.releaseUserPacket(old.sequence),"retired native release");
+                until(()->server.registryDiagnostics()[1]==0);
+            }
+            heldOwner.set(null);
+            try(Socket client=new Socket("127.0.0.1",server.localAddress().getPort())){
+                until(()->heldOwner.get()!=null);UserOwner replacement=heldOwner.get();
+                check(!old.channel.releaseUserPacket(old.sequence)&&replacement.channel.isOpen(),"stale handle affected replacement");
+                check(replacement.channel.configureDeadlines(80)&&replacement.channel.setUserState(1),"native login/auth configuration");
+                until(()->replacement.deadlines.get()>0);check(replacement.channel.isOpen(),"authenticated connection hit login deadline");
+                int calls=replacement.deadlines.get();check(replacement.channel.requestDeadline(1),"earlier native deadline");until(()->replacement.deadlines.get()>calls);
+                replacement.close();check(replacement.terminal.await(5,TimeUnit.SECONDS),"auth close");
+            }
+            heldOwner.set(null);
+            try(Socket client=new Socket("127.0.0.1",server.localAddress().getPort())){
+                until(()->heldOwner.get()!=null);UserOwner login=heldOwner.get();check(login.channel.configureDeadlines(60),"native login timer");
+                check(login.terminal.await(5,TimeUnit.SECONDS),"native login timeout failed");
             }
         }
-        try(CTransportServer server=new CTransportServer(new InetSocketAddress("127.0.0.1",0),8,2,32,channel->{UserOwner owner=new UserOwner(channel);accepted.set(channel);resume.set(owner::read);owner.read();});
-            Socket client=new Socket("127.0.0.1",server.localAddress().getPort())) {
-            client.setSoTimeout(5000);until(()->accepted.get()!=null);
-            client.getOutputStream().write(wire,0,1);
-            until(()->{long[] state=accepted.get().userSocketState();return state!=null&&state[0]==0&&state[2]==1;});
-            check(reads.get()==0,"partial wire header reached codec/handler");
-            client.getOutputStream().write(wire,1,wire.length-1);
-            until(held::get);Thread.sleep(20);
-            check(accepted.get().userSocketState()[3]==2,"assembler ignored frame-boundary backpressure");
-            check(server.postCompletion(new CTransportTask(){public void run(){resume.get().run();}public void cancel(){failure.set(new AssertionError("resume cancelled"));}}),"READ resume completion denied");
-            until(()->frames.get()==input.size()||failure.get()!=null);
-            if(failure.get()!=null)throw new AssertionError(failure.get());
-            check(actual.size()==expected.size(),"L1 plaintext frame count");
-            for(int n=0;n<expected.size();n++)check(Arrays.equals(expected.get(n),actual.get(n)),"C2S rolling key or plaintext changed");
-            until(()->{long[] state=accepted.get().userSocketState();return state!=null&&state[0]==0&&state[3]==input.size();});
-            client.getOutputStream().write(new byte[]{3,0});
-            check(closed.await(5,TimeUnit.SECONDS),"invalid L1 length did not close game socket");
-            check(accepted.get().isNativeIoDrained(),"Java abort was mistaken for native I/O terminal");
-        }
-        System.out.println("PASS actual Windows CUserSocket/FFM/socket + unchanged L1 codec: partial header held, frame-boundary backpressure/resume, empty/65535/coalesced frames, 67 exact plaintext/rolling-key matches, invalid-length close, native worker identity");
+        System.out.println("PASS Windows native registry/timers: retired plaintext survives I/O terminal, release removes context, stale handles rejected, login timeout/auth cancellation/earlier callback deadline");
 
         AtomicInteger ran=new AtomicInteger(),cancelled=new AtomicInteger();
         CountDownLatch blockers=new CountDownLatch(2),release=new CountDownLatch(1);

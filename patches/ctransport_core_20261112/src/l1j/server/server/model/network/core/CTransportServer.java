@@ -62,7 +62,10 @@ final class CTransportServer implements AutoCloseable {
     private final ConcurrentHashMap<Long, CTransportSocket> closingConnections = new ConcurrentHashMap<>();
     private final AtomicLong nextTask = new AtomicLong();
     private final MethodHandle scheduleTask, cancelTask, getDiagnostics;
-    private final MethodHandle enableUserSocket, userSocketExpired, getUserSocketState, threadOwner;
+    private final MethodHandle setCodecApi,initializeUserSocket,releaseUserPacket,encryptUserData,getUserSocketState,threadOwner;
+    private final MethodHandle setUserState,configureDeadlines,requestDeadline,getRegistryDiagnostics;
+    private final MemorySegment userPacketStub,networkDeadlineStub;
+    private volatile boolean drainClosed;
     private final MemorySegment taskStub, closingStub;
     @SuppressWarnings("unused")
 	private final InetSocketAddress listenAddress;
@@ -170,15 +173,25 @@ final class CTransportServer implements AutoCloseable {
             MethodHandle setSend = fn("CIO_Set_FN_Server_OnSend", FunctionDescriptor.ofVoid(P, P));
             MethodHandle setClose = fn("CIO_Set_FN_Server_OnClose", FunctionDescriptor.ofVoid(P, P));
             scheduleTask = fn("CTransport_Server_Schedule", FunctionDescriptor.of(I, P, L, I));
-            enableUserSocket = fn("CTransport_UserSocket_Enable", FunctionDescriptor.of(I, P, L));
-            userSocketExpired = fn("CTransport_UserSocket_Expired", FunctionDescriptor.of(I, P, L));
-            getUserSocketState = fn("CTransport_UserSocket_GetState", FunctionDescriptor.of(I, P, L, P, I));
+            setCodecApi=fn("CTransport_Server_SetCodecApi",FunctionDescriptor.of(I,P,P,I));
+            initializeUserSocket=fn("CTransport_UserSocket_Initialize",FunctionDescriptor.of(I,P,L,I));
+            releaseUserPacket=fn("CTransport_UserSocket_ReleasePacket",FunctionDescriptor.of(I,P,L,L));
+            encryptUserData=fn("CTransport_UserSocket_Encrypt",FunctionDescriptor.of(I,P,L,P,I));
+            getUserSocketState=fn("CTransport_UserSocket_GetState",FunctionDescriptor.of(I,P,L,P,I));
+            setUserState=fn("CTransport_UserSocket_SetSessionState",FunctionDescriptor.of(I,P,L,I));
+            configureDeadlines=fn("CTransport_UserSocket_ConfigureDeadlines",FunctionDescriptor.of(I,P,L,I));
+            requestDeadline=fn("CTransport_UserSocket_RequestDeadline",FunctionDescriptor.of(I,P,L,I));
+            getRegistryDiagnostics=fn("CTransport_Server_GetRegistryDiagnostics",FunctionDescriptor.of(I,P,P,I));
             threadOwner = fn("CTransport_Server_ThreadOwner", FunctionDescriptor.of(I, P));
             cancelTask = fn("CTransport_Server_Cancel", FunctionDescriptor.of(I, P, L));
             MethodHandle setTask = fn("CTransport_SetTaskCallback", FunctionDescriptor.ofVoid(P, P));
             MethodHandle setClosing = fn("CTransport_SetClosingCallback", FunctionDescriptor.ofVoid(P, P));
             getDiagnostics = fn("CTransport_Server_GetDiagnostics", FunctionDescriptor.of(I, P, P, I));
             MethodHandles.Lookup lookup = MethodHandles.lookup();
+            userPacketStub=LINKER.upcallStub(lookup.findVirtual(CTransportServer.class,"onUserPacket",
+                    MethodType.methodType(int.class,MemorySegment.class,long.class,long.class,MemorySegment.class,int.class)).bindTo(this),FunctionDescriptor.of(I,P,L,L,P,I),arena);
+            networkDeadlineStub=LINKER.upcallStub(lookup.findVirtual(CTransportServer.class,"onNetworkDeadline",
+                    MethodType.methodType(int.class,MemorySegment.class,long.class)).bindTo(this),FunctionDescriptor.of(I,P,L),arena);
             taskStub = LINKER.upcallStub(lookup.findVirtual(CTransportServer.class, "onTask",
                     MethodType.methodType(void.class, MemorySegment.class, long.class, int.class)).bindTo(this),
                     FunctionDescriptor.ofVoid(P, L, I), arena);
@@ -204,6 +217,8 @@ final class CTransportServer implements AutoCloseable {
             setReceive.invokeExact(listener, receiveStub);
             setSend.invokeExact(listener, sendStub);
             setClose.invokeExact(listener, closeStub);
+            fn("CTransport_SetUserPacketCallback",FunctionDescriptor.ofVoid(P,P)).invokeExact(listener,userPacketStub);
+            fn("CTransport_SetNetworkDeadlineCallback",FunctionDescriptor.ofVoid(P,P)).invokeExact(listener,networkDeadlineStub);
             setClosing.invokeExact(listener, closingStub);
             setTask.invokeExact(listener, taskStub);
             server = (MemorySegment) createServer.invokeExact(listener);
@@ -381,6 +396,20 @@ final class CTransportServer implements AutoCloseable {
             return 2;
         } finally { leaveCallback(); }
     }
+    @SuppressWarnings({"preview","unused"})
+    private int onUserPacket(MemorySegment sender,long id,long sequence,MemorySegment bytes,int length) {
+        enterCallback();
+        try {CTransportSocket channel=find(id);return channel!=null&&channel.nativePacket(sequence,length==0?null:bytes.reinterpret(length).asByteBuffer().order(java.nio.ByteOrder.LITTLE_ENDIAN),length)?0:2;}
+        catch(Throwable failure){LOG.log(Level.WARNING,"Native L1 packet callback failed conn="+id,failure);return 2;}
+        finally{leaveCallback();}
+    }
+    @SuppressWarnings({"preview","unused"})
+    private int onNetworkDeadline(MemorySegment sender,long id) {
+        enterCallback();
+        try{CTransportSocket channel=find(id);return channel==null?0:channel.nativeNetworkDeadline();}
+        catch(Throwable failure){LOG.log(Level.WARNING,"Native network deadline failed conn="+id,failure);return -1;}
+        finally{leaveCallback();}
+    }
     @SuppressWarnings("unused")
 	private int onSend(@SuppressWarnings("preview") MemorySegment sender, long id, @SuppressWarnings("preview") MemorySegment data, int len) {
         enterCallback();
@@ -507,17 +536,40 @@ final class CTransportServer implements AutoCloseable {
             return new InetSocketAddress(buf.getUtf8String(0), p);
         }
     }
-    boolean enableUserSocket(long id) {
-        if (!enterNative()) return false;
-        try { return (int) enableUserSocket.invokeExact(server, id) != 0; }
-        catch (Throwable failure) { throw new IllegalStateException("L1 user-socket profile failed", failure); }
-        finally { nativeCalls.decrementAndGet(); }
+    @SuppressWarnings("preview")
+    boolean initializeUserSocket(long id,MemorySegment functions,int seed) {
+        if(!enterNative())return false;
+        try {return (int)setCodecApi.invokeExact(server,functions,7)!=0&&(int)initializeUserSocket.invokeExact(server,id,seed)!=0;}
+        catch(Throwable failure){throw new IllegalStateException("Native codec setup failed",failure);}
+        finally{nativeCalls.decrementAndGet();}
     }
-    boolean userSocketExpired(long id) {
-        if (!enterNative()) return false;
-        try { return (int) userSocketExpired.invokeExact(server, id) != 0; }
-        catch (Throwable failure) { throw new IllegalStateException("L1 parser deadline query failed", failure); }
-        finally { nativeCalls.decrementAndGet(); }
+    private boolean enterDrain() {
+        if(drainClosed)return false;
+        nativeCalls.incrementAndGet();
+        if(!drainClosed)return true;
+        nativeCalls.decrementAndGet();return false;
+    }
+    boolean releaseUserPacket(long id,long sequence) {
+        if(!enterDrain())return false;
+        try{return (int)releaseUserPacket.invokeExact(server,id,sequence)!=0;}
+        catch(Throwable failure){throw new IllegalStateException("Native packet release failed",failure);}
+        finally{nativeCalls.decrementAndGet();}
+    }
+    @SuppressWarnings("preview")
+    boolean encryptUserData(long id,ByteBuffer bytes) {
+        if(!enterNative())return false;
+        try{return (int)encryptUserData.invokeExact(server,id,MemorySegment.ofBuffer(bytes),bytes.remaining())!=0;}
+        catch(Throwable failure){throw new IllegalStateException("Native encryption failed",failure);}
+        finally{nativeCalls.decrementAndGet();}
+    }
+    boolean setUserState(long id,int state) {return userControl(setUserState,id,state);}
+    boolean configureDeadlines(long id,int loginMs){return userControl(configureDeadlines,id,loginMs);}
+    boolean requestDeadline(long id,int delayMs){return userControl(requestDeadline,id,delayMs);}
+    private boolean userControl(MethodHandle method,long id,int value) {
+        if(!enterNative())return false;
+        try{return (int)method.invokeExact(server,id,value)!=0;}
+        catch(Throwable failure){throw new IllegalStateException("Native user control failed",failure);}
+        finally{nativeCalls.decrementAndGet();}
     }
     int currentNativeOwner() {
         if (!enterNative()) return -1;
@@ -529,13 +581,20 @@ final class CTransportServer implements AutoCloseable {
     long[] userSocketState(long id) {
         if (!enterNative()) return null;
         try (Arena a = Arena.ofConfined()) {
-            MemorySegment data = a.allocate(6L * Long.BYTES, Long.BYTES);
-            if ((int) getUserSocketState.invokeExact(server, id, data, 6) == 0) return null;
+            MemorySegment data = a.allocate(10L * Long.BYTES, Long.BYTES);
+            if ((int) getUserSocketState.invokeExact(server, id, data, 10) == 0) return null;
             return data.toArray(L);
         } catch (Throwable failure) { throw new IllegalStateException("L1 parser snapshot failed", failure); }
         finally { nativeCalls.decrementAndGet(); }
     }
 
+    @SuppressWarnings("preview")
+    long[] registryDiagnostics() {
+        if(!enterNative())return null;
+        try(Arena a=Arena.ofConfined()){MemorySegment data=a.allocate(48,8);if((int)getRegistryDiagnostics.invokeExact(server,data,6)==0)return null;return data.toArray(L);}
+        catch(Throwable failure){throw new IllegalStateException("Native registry query failed",failure);}
+        finally{nativeCalls.decrementAndGet();}
+    }
     private boolean enterNative() {
         if (shuttingDown) return false;
         nativeCalls.incrementAndGet();
@@ -655,6 +714,9 @@ final class CTransportServer implements AutoCloseable {
         // listener cannot trap the caller in an unbounded downcall.
         stopAccepting();
         shuttingDown = true;
+        for(var entry:completionTasks.entrySet()) {
+            if(completionTasks.remove(entry.getKey(),entry.getValue())){nativeTasks.remove(entry.getKey());entry.getValue().cancel();}
+        }
         while (!nativeAcceptStopped || nativeCalls.get() != 0) {
             final IOException failed = nativeShutdownFailure;
             if (failed != null) throw failed;
@@ -682,6 +744,11 @@ final class CTransportServer implements AutoCloseable {
                 Thread.currentThread().interrupt();
                 throw new IOException("CIO native Stop interrupted; native arena retained");
             }
+        }
+        drainClosed=true;
+        while(nativeCalls.get()!=0){
+            if(System.nanoTime()-startedAt>=budgetNs)throw new IOException("Packet release downcall still active; native memory retained");
+            LockSupport.parkNanos(this,100_000L);
         }
         // Stop returned successfully; native workers and their callbacks have
         // joined. Only now is it safe to destroy the server and FFM upcall stubs.

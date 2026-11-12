@@ -1,3 +1,11 @@
+## 2026-11-12 — CTransport ABI5 / native 접속·코덱·네트워크 타이머
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**새 게임 DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [원본 근거·변경 보고서](reports/CTRANSPORT_L1_USERSOCKET_20261112.md)
+
+native 접속 관리자와 generation 핸들, 기존 L1 codec의 C++ 직접 호출, native 네트워크 timer를 연결했습니다. 실제 생산 CIOUserSocket의 packet lease/종료 검사도 추가했습니다. src와 CTransport.dll ABI0x50000을 함께 적용합니다. PSS 독립 연결·활성화·클라이언트는 그대로입니다. 추가 SQL 없음. Windows 결과는 묶음의 WINDOWS_VERIFICATION.json 기준이며 실게임/DB/장시간 부하는 미검증입니다.
+
+---
+
 ## 2026-11-12 — CTransport ABI4 / L1 유저소켓 구조 반영
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**새 게임 DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [원본 근거·역할·L1 적용 안내](reports/CTRANSPORT_L1_USERSOCKET_20261112.md)

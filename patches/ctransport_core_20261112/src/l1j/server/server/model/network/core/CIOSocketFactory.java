@@ -34,76 +34,6 @@ public final class CIOSocketFactory implements CIOServer.SocketFactory {
         LoginController.getInstance().setMaxAllowedOnlinePlayers(maxOnline);
     }
 
-    // Timer payloads never retain a disconnected socket/client for their TTL.
-    // The live server's connection set owns active sockets until close.
-    private static final class LoginTimeout extends WeakReference<CIOClient>
-            implements CIOThreadCallback.WheelTask {
-        LoginTimeout(CIOClient client) { super(client); }
-        @Override public boolean isCancelled() {
-            final CIOClient client = get();
-            return client == null || client.isCancelled();
-        }
-        @Override public void run() {
-            final CIOClient client = get();
-            if (client != null && !client.isCancelled() && client.checkPreLoginTimeout())
-                client.disconnect();
-        }
-    }
-
-    private static final class SocketDeadline extends WeakReference<CIOUserSocket>
-            implements CIOThreadCallback.WheelTask, CIOUserSocket.NetworkDeadline {
-        private static final long TICK_MS = 5000L;
-        private final CIOThreadCallback scheduler;
-        private final int shard;
-        private long priorProgress;
-        private long stalledSinceNs;
-        private long nextCheckAtMs;
-        SocketDeadline(CIOUserSocket socket, CIOThreadCallback scheduler, int shard) {
-            super(socket);
-            this.scheduler = scheduler;
-            this.shard = shard;
-        }
-        @Override public boolean isCancelled() {
-            final CIOUserSocket socket = get();
-            return socket == null || !socket.isOpen();
-        }
-        @Override public synchronized boolean scheduleEarlier(long delayMs) {
-            final CIOUserSocket socket = get();
-            if (socket == null || !socket.isOpen()) return false;
-            // Match the wheel's monotonic millisecond clock. Coalesce a stale
-            // periodic entry after bringing the same task forward for close.
-            final long due = System.nanoTime() / 1_000_000L + delayMs;
-            if (nextCheckAtMs != 0L && nextCheckAtMs <= due) return true;
-            nextCheckAtMs = due;
-            return scheduler.scheduleNetworkTimeout(shard, this, delayMs);
-        }
-        @Override public synchronized void run() {
-            final CIOUserSocket socket = get();
-            if (socket == null || !socket.isOpen()) return;
-            final long now = System.nanoTime();
-            if (now / 1_000_000L < nextCheckAtMs) return;
-            nextCheckAtMs = 0L;
-            final long progress = socket.networkWriteProgress();
-            if (socket.hasPendingNetworkSend()) {
-                if (stalledSinceNs == 0L || priorProgress != progress)
-                    stalledSinceNs = now;
-                if (now - stalledSinceNs >= CIOUserSocket.NETWORK_WRITE_STALL_NANOS) {
-                    socket.close();
-                    return;
-                }
-            } else {
-                stalledSinceNs = 0L;
-            }
-            priorProgress = progress;
-            if (socket.networkDeadlineExpired(now)) {
-                socket.close();
-                return;
-            }
-            if (!scheduleEarlier(socket.nextNetworkDeadlineDelayMs(now, TICK_MS))) socket.close();
-        }
-    }
-
-
     @Override
     public CIOUserSocket CreateSocket(CTransportSocket socket,
                                   CIOBufferPool pool,
@@ -163,15 +93,9 @@ public final class CIOSocketFactory implements CIOServer.SocketFactory {
             user = new CIOClient(transport, counted);
             transport.bindClient(user);
             final CIOClient client = user;
-            if (config.usePreLoginTimeout
-                    && !scheduler.scheduleLoginTimeout(shard, new LoginTimeout(client)))
-                throw new IllegalStateException("CIO login timeout scheduling failed");
             if (!client.onConnected() || !client.isConnected())
                 throw new IllegalStateException("handshake not admitted");
-            final SocketDeadline deadline = new SocketDeadline(transport, scheduler, shard);
-            transport.bindNetworkDeadline(deadline);
-            if (!deadline.scheduleEarlier(SocketDeadline.TICK_MS))
-                throw new IllegalStateException("socket deadline scheduling failed");
+            transport.configureNativeDeadlines(config.usePreLoginTimeout);
             return transport;
         } catch (Exception | Error failure) {
             if (transport != null) transport.close();

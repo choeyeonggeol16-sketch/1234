@@ -39,9 +39,17 @@ __declspec(dllimport) unsigned CTransport_Buffer_Size(void*);
 __declspec(dllimport) void CTransport_Buffer_Release(void*);
 __declspec(dllimport) void CTransport_SetClosingCallback(void*,int (*)(void*,std::uint64_t,int,int));
 __declspec(dllimport) int CTransport_Server_GetDiagnostics(void*,std::uint64_t*,unsigned);
-// Optional per-connection L1 user-socket profile. Raw endpoints remain byte streams.
-__declspec(dllimport) int CTransport_UserSocket_Enable(void*,std::uint64_t);
-__declspec(dllimport) int CTransport_UserSocket_Expired(void*,std::uint64_t);
+// L1 connection profile: native frame/cipher ownership and leased plaintext.
+__declspec(dllimport) int CTransport_Server_SetCodecApi(void*,const std::uintptr_t*,int);
+__declspec(dllimport) void CTransport_SetUserPacketCallback(void*,int (*)(void*,std::uint64_t,std::uint64_t,const void*,int));
+__declspec(dllimport) void CTransport_SetNetworkDeadlineCallback(void*,int (*)(void*,std::uint64_t));
+__declspec(dllimport) int CTransport_UserSocket_Initialize(void*,std::uint64_t,unsigned);
+__declspec(dllimport) int CTransport_UserSocket_ReleasePacket(void*,std::uint64_t,std::uint64_t);
+__declspec(dllimport) int CTransport_UserSocket_Encrypt(void*,std::uint64_t,void*,int);
+__declspec(dllimport) int CTransport_UserSocket_SetSessionState(void*,std::uint64_t,int);
+__declspec(dllimport) int CTransport_UserSocket_ConfigureDeadlines(void*,std::uint64_t,unsigned);
+__declspec(dllimport) int CTransport_UserSocket_RequestDeadline(void*,std::uint64_t,unsigned);
 __declspec(dllimport) int CTransport_UserSocket_GetState(void*,std::uint64_t,std::uint64_t*,int);
+__declspec(dllimport) int CTransport_Server_GetRegistryDiagnostics(void*,std::uint64_t*,int);
 __declspec(dllimport) int CTransport_Server_ThreadOwner(void*);
 }

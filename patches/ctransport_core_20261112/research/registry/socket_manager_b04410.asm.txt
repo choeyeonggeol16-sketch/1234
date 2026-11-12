@@ -1,0 +1,7 @@
+# Tentative role: socket_manager_b04410; VA 0xb04410..0xb04430
+0000000000b04410: sub      rsp, 0x28
+0000000000b04414: lea      rcx, [rip + 0x2543b05]
+0000000000b0441b: call     0x8b0f1c
+0000000000b04420: lea      rcx, [rip + 0x13bc1]
+0000000000b04427: add      rsp, 0x28
+0000000000b0442b: jmp      0xab91d0

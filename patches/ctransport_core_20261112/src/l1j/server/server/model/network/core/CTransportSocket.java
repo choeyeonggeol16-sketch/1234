@@ -51,8 +51,21 @@ final class CTransportSocket implements AutoCloseable {
         CIOUserSocket owner = userSocketOwner;
         if (owner != null) owner.onTransportClosing();
     }
-    boolean enableUserSocket() { return parent.enableUserSocket(id); }
-    boolean userSocketExpired() { return parent.userSocketExpired(id); }
+    @SuppressWarnings("preview")
+    boolean initializeUserSocket(MemorySegment api,int seed){return parent.initializeUserSocket(id,api,seed);}
+    boolean releaseUserPacket(long sequence){return parent.releaseUserPacket(id,sequence);}
+    boolean encryptUserData(ByteBuffer bytes){return parent.encryptUserData(id,bytes);}
+    boolean setUserState(int state){return parent.setUserState(id,state);}
+    boolean pauseNativeUser(boolean pause){return parent.pause(id,pause);}
+    boolean configureDeadlines(int loginMs){return parent.configureDeadlines(id,loginMs);}
+    boolean requestDeadline(long delayMs){return delayMs>=0&&delayMs<=Integer.MAX_VALUE&&parent.requestDeadline(id,(int)delayMs);}
+    boolean nativePacket(long sequence,ByteBuffer bytes,int length){
+        CIOUserSocket owner=userSocketOwner;
+        if(owner==null)return false;
+        try{return owner.transportNativePacket(sequence,bytes,length);}
+        catch(Throwable failure){owner.close();throw failure;}
+    }
+    int nativeNetworkDeadline(){CIOUserSocket owner=userSocketOwner;return owner==null?0:owner.transportNetworkDeadline();}
     boolean postCompletion(CTransportTask task) { return parent.postCompletion(task); }
     int currentNativeOwner() { return parent.currentNativeOwner(); }
     long[] userSocketState() { return parent.userSocketState(id); }

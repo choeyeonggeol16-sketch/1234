@@ -1,0 +1,40 @@
+{
+  "manager": "0x3047f20",
+  "xrefs": [
+    {
+      "reference": "0x72e256",
+      "target": "0x3047f20",
+      "function": "0x72d880"
+    },
+    {
+      "reference": "0x72fefa",
+      "target": "0x3047f20",
+      "function": "0x72f874"
+    },
+    {
+      "reference": "0xa016af",
+      "target": "0xdc1c18",
+      "function": "0xa0169c"
+    },
+    {
+      "reference": "0xa0cceb",
+      "target": "0xdc1c18",
+      "function": "0xa0ccc4"
+    },
+    {
+      "reference": "0xa12e65",
+      "target": "0x3047f20",
+      "function": "0xa12dec"
+    },
+    {
+      "reference": "0xb04414",
+      "target": "0x3047f20",
+      "function": "0xb04410"
+    },
+    {
+      "reference": "0xb17fe8",
+      "target": "0x3047f20",
+      "function": "0xb17fe8"
+    }
+  ]
+}

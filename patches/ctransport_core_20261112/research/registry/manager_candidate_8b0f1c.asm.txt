@@ -1,0 +1,52 @@
+# Tentative role: manager_candidate_8b0f1c; VA 0x8b0f1c..0x8b0ff3
+00000000008b0f1c: mov      qword ptr [rsp + 8], rcx
+00000000008b0f21: push     rbx
+00000000008b0f22: push     rbp
+00000000008b0f23: push     rsi
+00000000008b0f24: push     rdi
+00000000008b0f25: sub      rsp, 0x38
+00000000008b0f29: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000008b0f32: mov      rdi, rcx
+00000000008b0f35: call     0x704bec
+00000000008b0f3a: nop
+00000000008b0f3b: lea      rax, [rip + 0x4796b6]
+00000000008b0f42: mov      qword ptr [rdi], rax
+00000000008b0f45: xor      esi, esi
+00000000008b0f47: mov      byte ptr [rdi + 0x30], sil
+00000000008b0f4b: lea      rcx, [rdi + 0x40]
+00000000008b0f4f: call     0x84f1bc
+00000000008b0f54: mov      qword ptr [rdi + 0x48], rax
+00000000008b0f58: mov      byte ptr [rax + 0x29], 1
+00000000008b0f5c: mov      rax, qword ptr [rdi + 0x48]
+00000000008b0f60: mov      qword ptr [rax + 8], rax
+00000000008b0f64: mov      rax, qword ptr [rdi + 0x48]
+00000000008b0f68: mov      qword ptr [rax], rax
+00000000008b0f6b: mov      rax, qword ptr [rdi + 0x48]
+00000000008b0f6f: mov      qword ptr [rax + 0x10], rax
+00000000008b0f73: mov      qword ptr [rdi + 0x50], rsi
+00000000008b0f77: mov      qword ptr [rdi + 0x90], rsi
+00000000008b0f7e: mov      ecx, dword ptr [rip + 0x2ed0e254]
+00000000008b0f84: mov      rax, qword ptr gs:[0x58]
+00000000008b0f8d: mov      esi, 0x7d58
+00000000008b0f92: mov      rbx, qword ptr [rax + rcx*8]
+00000000008b0f96: movsxd   rdx, dword ptr [rbx + rsi]
+00000000008b0f9a: lea      rbp, [rip - 0x4b0fa1]
+00000000008b0fa1: movsxd   rcx, dword ptr [rbp + rdx*4 + 0x47e2a40]
+00000000008b0fa9: lea      eax, [rcx + 1]
+00000000008b0fac: mov      dword ptr [rbp + rdx*4 + 0x47e2a40], eax
+00000000008b0fb3: imul     rdx, rdx, 0x3e8
+00000000008b0fba: add      rdx, rcx
+00000000008b0fbd: lea      rax, [rip + 0x4796dc]
+00000000008b0fc4: mov      qword ptr [rbp + rdx*8 + 0x47bf7c0], rax
+00000000008b0fcc: lea      rcx, [rdi + 0x60]
+00000000008b0fd0: mov      edx, 0xfa0
+00000000008b0fd5: call     qword ptr [rip + 0x26b2fd] ; InitializeCriticalSectionAndSpinCount
+00000000008b0fdb: movsxd   rax, dword ptr [rbx + rsi]
+00000000008b0fdf: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000008b0fe7: mov      rax, rdi
+00000000008b0fea: add      rsp, 0x38
+00000000008b0fee: pop      rdi
+00000000008b0fef: pop      rsi
+00000000008b0ff0: pop      rbp
+00000000008b0ff1: pop      rbx
+00000000008b0ff2: ret

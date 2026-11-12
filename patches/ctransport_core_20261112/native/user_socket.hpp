@@ -5,6 +5,7 @@
 #include <cstring>
 #include <mutex>
 #include <vector>
+#include "l1_codec.hpp"
 
 namespace ctransport {
 // CUserSocket 0xa0372c: header(0), body(1), stopped(2), then opcode dispatch.
@@ -14,6 +15,9 @@ namespace ctransport {
 class CUserSocket {
 public:
     enum State : unsigned { Header = 0, Body = 1, Stopped = 2 };
+    std::unique_ptr<L1CodecState> codec;
+    CUserSocket()=default;
+    CUserSocket(std::shared_ptr<const L1CodecApi> api,unsigned seed):codec(std::make_unique<L1CodecState>(std::move(api),seed)){}
 private:
     mutable std::mutex gate_;
     std::array<unsigned char, 2> header_{};

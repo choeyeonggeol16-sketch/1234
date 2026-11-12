@@ -562,6 +562,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
             clearPssWindowSession();
         }
 		_connectionState = connectionState;
+        _connection.onSessionStateChanged(connectionState);
 	}
 
 	public boolean checkPreLoginTimeout() {

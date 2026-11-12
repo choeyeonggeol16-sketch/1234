@@ -1,0 +1,41 @@
+# Tentative role: user_vtable_a0169c; VA 0xa0169c..0xa01790
+0000000000a0169c: push     rbx
+0000000000a0169e: sub      rsp, 0x20
+0000000000a016a2: mov      edx, dword ptr [rip + 0x2ebbdb30]
+0000000000a016a8: lea      r10, [rip - 0x6016af]
+0000000000a016af: lea      rax, [rip + 0x3c0562]
+0000000000a016b6: mov      qword ptr [rcx], rax
+0000000000a016b9: mov      rax, qword ptr gs:[0x58]
+0000000000a016c2: mov      r9d, 0x7d58
+0000000000a016c8: mov      r8, qword ptr [rax + rdx*8]
+0000000000a016cc: mov      rbx, rcx
+0000000000a016cf: movsxd   rdx, dword ptr [r8 + r9]
+0000000000a016d3: movsxd   rcx, dword ptr [r10 + rdx*4 + 0x47e2a40]
+0000000000a016db: lea      eax, [rcx + 1]
+0000000000a016de: mov      dword ptr [r10 + rdx*4 + 0x47e2a40], eax
+0000000000a016e6: lea      rax, [rip + 0x3c04d3]
+0000000000a016ed: imul     rdx, rdx, 0x3e8
+0000000000a016f4: add      rdx, rcx
+0000000000a016f7: mov      qword ptr [r10 + rdx*8 + 0x47bf7c0], rax
+0000000000a016ff: lock add dword ptr [rip + 0x41ec3c5], -1
+0000000000a01707: mov      qword ptr [rbx + 0x4f0], 0
+0000000000a01712: movsxd   rax, dword ptr [r8 + r9]
+0000000000a01716: add      dword ptr [r10 + rax*4 + 0x47e2a40], -1
+0000000000a0171f: mov      rcx, qword ptr [rbx + 0xc48]
+0000000000a01726: test     rcx, rcx
+0000000000a01729: je       0xa01730
+0000000000a0172b: call     0xab8610
+0000000000a01730: mov      qword ptr [rbx + 0xc48], 0
+0000000000a0173b: mov      qword ptr [rbx + 0xc50], 0
+0000000000a01746: mov      qword ptr [rbx + 0xc58], 0
+0000000000a01751: mov      rcx, qword ptr [rbx + 0xc28]
+0000000000a01758: test     rcx, rcx
+0000000000a0175b: je       0xa01762
+0000000000a0175d: call     0xab8610
+0000000000a01762: mov      rcx, rbx
+0000000000a01765: mov      qword ptr [rbx + 0xc28], 0
+0000000000a01770: mov      qword ptr [rbx + 0xc30], 0
+0000000000a0177b: mov      qword ptr [rbx + 0xc38], 0
+0000000000a01786: add      rsp, 0x20
+0000000000a0178a: pop      rbx
+0000000000a0178b: jmp      0x90e644

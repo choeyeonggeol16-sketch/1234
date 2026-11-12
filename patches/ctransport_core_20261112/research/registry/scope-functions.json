@@ -1,0 +1,572 @@
+{
+  "base_socket_ctor_90e548": {
+    "start": "0x90e548",
+    "end": "0x90e642",
+    "bytes": 250,
+    "direct_calls": [
+      "0x545030",
+      "0xab9430",
+      "0xab9430"
+    ]
+  },
+  "manager_ctor_8b0f1c": {
+    "start": "0x8b0f1c",
+    "end": "0x8b0ff3",
+    "bytes": 215,
+    "direct_calls": [
+      "0x704bec",
+      "0x84f1bc"
+    ]
+  },
+  "socket_manager_72d880": {
+    "start": "0x72d880",
+    "end": "0x72f59c",
+    "bytes": 7452,
+    "direct_calls": [
+      "0x926e84",
+      "0x9277d0",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x6d91ec",
+      "0x83ad24",
+      "0x441d88",
+      "0xab91d0",
+      "0x441d88",
+      "0xab91d0",
+      "0x441d88",
+      "0xab91d0",
+      "0x441d88",
+      "0xab91d0",
+      "0x734514",
+      "0x481f88",
+      "0xab91d0",
+      "0x481f88",
+      "0xab91d0",
+      "0x481f88",
+      "0xab91d0",
+      "0x481f88",
+      "0xab91d0",
+      "0x734514",
+      "0x401f2c",
+      "0x66db28",
+      "0x734514",
+      "0x53d920",
+      "0x53daa8",
+      "0x83c02c",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x828494",
+      "0x926fe4",
+      "0x926ed8",
+      "0xa34540",
+      "0xa3c0e4",
+      "0x8b0bac",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x74e5ec",
+      "0x74ec0c",
+      "0xa34540",
+      "0xa3c0e4",
+      "0xa34540",
+      "0xa3c0e4",
+      "0xa34540",
+      "0xa3c0e4",
+      "0xa34540",
+      "0xa440b8",
+      "0x732a24",
+      "0x401f2c",
+      "0x66db28",
+      "0x401f2c",
+      "0x66db28",
+      "0x725a34",
+      "0x927a3c",
+      "0x9278f4",
+      "0x8c0458",
+      "0x7221f4",
+      "0x722268",
+      "0xabe350",
+      "0x734514",
+      "0xab9970",
+      "0xabe350",
+      "0x734514",
+      "0xabe320",
+      "0x734514",
+      "0x731c60",
+      "0x734514",
+      "0x731d10",
+      "0x73446c",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x47de28",
+      "0x6aa254",
+      "0x734514",
+      "0xab0b20",
+      "0xab9430",
+      "0xab9e10",
+      "0x40a9c4",
+      "0xab9e10",
+      "0x462184",
+      "0x46237c",
+      "0x734514",
+      "0xab9e10",
+      "0x462184",
+      "0x74e3bc",
+      "0x74e3bc",
+      "0x73446c",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x401f2c",
+      "0x66db28",
+      "0x917ef8",
+      "0x734300",
+      "0x401f2c",
+      "0x66db28"
+    ]
+  },
+  "socket_manager_72f874": {
+    "start": "0x72f874",
+    "end": "0x7300dc",
+    "bytes": 2152,
+    "direct_calls": [
+      "0xa22ae8",
+      "0x7258b4",
+      "0x73446c",
+      "0x88a2c0",
+      "0xab91d0",
+      "0x888bac",
+      "0x848b0c",
+      "0x72caa8",
+      "0x73446c",
+      "0x9250f8",
+      "0x9ef300",
+      "0x82ba28",
+      "0xabf890",
+      "0x925118",
+      "0x7044c4",
+      "0x704754",
+      "0xab8ea0",
+      "0x705b70",
+      "0x5386e8",
+      "0xab91d0",
+      "0x7048c4",
+      "0x46ee78",
+      "0xab91d0",
+      "0x7048c4",
+      "0x5b9554",
+      "0x5b967c",
+      "0xabf6b0",
+      "0x73446c",
+      "0x708b00",
+      "0xab91d0",
+      "0x7089d0",
+      "0x53d9d0",
+      "0x53d920",
+      "0x731424",
+      "0x4d7aec",
+      "0x435a9c",
+      "0x47de28",
+      "0x6a806c",
+      "0x6eb81c",
+      "0x77c138",
+      "0x5e12b0",
+      "0x90f9ec",
+      "0x914dac",
+      "0x738b0c",
+      "0x736f10",
+      "0x47218c",
+      "0x471758",
+      "0x4739a0",
+      "0x471694",
+      "0x871874",
+      "0x74aefc",
+      "0x432450",
+      "0x5225c8",
+      "0x404dd4",
+      "0x67bbb8",
+      "0x63821c",
+      "0x795ed0",
+      "0x8c0b1c",
+      "0x7f0f58",
+      "0x6c2d34",
+      "0x671ef8",
+      "0x6e74c4",
+      "0x5c8d4c",
+      "0x765148",
+      "0x73fe14",
+      "0x43b7dc",
+      "0x438748",
+      "0x5b86c8",
+      "0x5b26a0",
+      "0x4527e0",
+      "0xab91d0",
+      "0x44e500",
+      "0x7048c4",
+      "0x7048c4",
+      "0x42ac4c",
+      "0xab91d0",
+      "0x418ee4",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x6d9f40",
+      "0x4173e4",
+      "0x704148",
+      "0x72262c",
+      "0x706894",
+      "0x8a55d4",
+      "0x67b934",
+      "0x8aa7e8",
+      "0x8aa470",
+      "0x9f7b80",
+      "0x5d3c24",
+      "0x722154",
+      "0x7a71dc",
+      "0x5213d0",
+      "0x896450",
+      "0x435580",
+      "0x895af8",
+      "0x8af9cc",
+      "0x8af9cc",
+      "0x5213d0",
+      "0x8af9cc",
+      "0x4571d0",
+      "0x457428",
+      "0x488088",
+      "0x776de0",
+      "0x732a24",
+      "0x83c270",
+      "0x83aca0",
+      "0x6b52e0",
+      "0x87d4b4",
+      "0x87b99c",
+      "0x6ba774",
+      "0x6b76c0",
+      "0x478640",
+      "0xab91d0",
+      "0x477d0c",
+      "0x87a4e4",
+      "0xab91d0",
+      "0x873ac0",
+      "0x66ea78",
+      "0x435580",
+      "0x897240",
+      "0x435580",
+      "0x88f7ec",
+      "0x705e4c"
+    ]
+  },
+  "user_vtable_a0169c": {
+    "start": "0xa0169c",
+    "end": "0xa01790",
+    "bytes": 244,
+    "direct_calls": [
+      "0xab8610",
+      "0xab8610"
+    ]
+  },
+  "user_vtable_a0ccc4": {
+    "start": "0xa0ccc4",
+    "end": "0xa0cff8",
+    "bytes": 820,
+    "direct_calls": [
+      "0x90e548",
+      "0xa4ccd4",
+      "0xab9430",
+      "0xab9430",
+      "0xa08138",
+      "0xab9430",
+      "0x9f7f04",
+      "0xa07ee8",
+      "0xab9430",
+      "0xab9430",
+      "0xab9430"
+    ]
+  },
+  "socket_manager_a12dec": {
+    "start": "0xa12dec",
+    "end": "0xa12eed",
+    "bytes": 257,
+    "direct_calls": [
+      "0x8b04fc",
+      "0x90e140",
+      "0xa0dc04",
+      "0xa0ded4",
+      "0x4173e4",
+      "0xa12674"
+    ]
+  },
+  "socket_manager_b04410": {
+    "start": "0xb04410",
+    "end": "0xb04430",
+    "bytes": 32,
+    "direct_calls": [
+      "0x8b0f1c"
+    ]
+  },
+  "socket_manager_b17fe8": {
+    "start": "0xb17fe8",
+    "end": "0xb182e8",
+    "bytes": 768,
+    "direct_calls": [
+      "0x74e3bc",
+      "0x86bb84",
+      "0x8aa9c8",
+      "0x86c0f0",
+      "0x74e3bc",
+      "0x6c0014",
+      "0x511bdc",
+      "0x6c0198",
+      "0xab8610",
+      "0x9205b0",
+      "0x663270",
+      "0x74e3bc",
+      "0x7d6d44",
+      "0xab8610"
+    ]
+  },
+  "register_caller_7ad220": {
+    "start": "0x7ad220",
+    "end": "0x7ad430",
+    "bytes": 528,
+    "direct_calls": [
+      "0xa4ccec",
+      "0xab9970",
+      "0xab9e10",
+      "0xabeb30",
+      "0xabe350",
+      "0xabeb30",
+      "0xa4ccec",
+      "0xa4cd8c",
+      "0xa4cd8c",
+      "0x8b0404"
+    ]
+  },
+  "manager_candidate_8afff0": {
+    "start": "0x8afff0",
+    "end": "0x8b0008",
+    "bytes": 24,
+    "direct_calls": [
+      "0x401604"
+    ]
+  },
+  "manager_candidate_8b0008": {
+    "start": "0x8b0008",
+    "end": "0x8b0323",
+    "bytes": 795,
+    "direct_calls": [
+      "0xab7d70",
+      "0x401740",
+      "0x4018ec",
+      "0xab8f40",
+      "0x8afac4"
+    ]
+  },
+  "manager_candidate_8b0328": {
+    "start": "0x8b0328",
+    "end": "0x8b0340",
+    "bytes": 24,
+    "direct_calls": [
+      "0x401604"
+    ]
+  },
+  "manager_candidate_8b0340": {
+    "start": "0x8b0340",
+    "end": "0x8b0404",
+    "bytes": 196,
+    "direct_calls": [
+      "0x8afcd0",
+      "0x74a480"
+    ]
+  },
+  "manager_candidate_8b0404": {
+    "start": "0x8b0404",
+    "end": "0x8b04e3",
+    "bytes": 223,
+    "direct_calls": [
+      "0x8b0340"
+    ]
+  },
+  "manager_candidate_8b04e4": {
+    "start": "0x8b04e4",
+    "end": "0x8b04fc",
+    "bytes": 24,
+    "direct_calls": [
+      "0x401044"
+    ]
+  },
+  "manager_candidate_8b04fc": {
+    "start": "0x8b04fc",
+    "end": "0x8b0653",
+    "bytes": 343,
+    "direct_calls": [
+      "0x96986c",
+      "0x866f68",
+      "0x91ffd8",
+      "0x734514",
+      "0x480214"
+    ]
+  },
+  "manager_candidate_8b065c": {
+    "start": "0x8b065c",
+    "end": "0x8b0674",
+    "bytes": 24,
+    "direct_calls": [
+      "0x401044"
+    ]
+  },
+  "manager_candidate_8b0674": {
+    "start": "0x8b0674",
+    "end": "0x8b0735",
+    "bytes": 193,
+    "direct_calls": [
+      "0x8b0008",
+      "0x8afc4c"
+    ]
+  },
+  "manager_candidate_8b0738": {
+    "start": "0x8b0738",
+    "end": "0x8b0929",
+    "bytes": 497,
+    "direct_calls": [
+      "0x73446c",
+      "0x73446c",
+      "0x707fbc",
+      "0x8b0674",
+      "0x70801c"
+    ]
+  },
+  "manager_candidate_8b0938": {
+    "start": "0x8b0938",
+    "end": "0x8b0953",
+    "bytes": 27,
+    "direct_calls": [
+      "0x401044"
+    ]
+  },
+  "manager_candidate_8b0954": {
+    "start": "0x8b0954",
+    "end": "0x8b0b6b",
+    "bytes": 535,
+    "direct_calls": [
+      "0x559050",
+      "0x6616e0",
+      "0x866f68",
+      "0x866f68",
+      "0x45d41c",
+      "0x705c88",
+      "0x705c88",
+      "0x705c88",
+      "0x74e3bc",
+      "0xa58428",
+      "0xa58428",
+      "0x480214"
+    ]
+  },
+  "manager_candidate_8b0b74": {
+    "start": "0x8b0b74",
+    "end": "0x8b0b8c",
+    "bytes": 24,
+    "direct_calls": [
+      "0x401044"
+    ]
+  },
+  "manager_candidate_8b0b94": {
+    "start": "0x8b0b94",
+    "end": "0x8b0bac",
+    "bytes": 24,
+    "direct_calls": [
+      "0x705d10"
+    ]
+  },
+  "manager_candidate_8b0bac": {
+    "start": "0x8b0bac",
+    "end": "0x8b0e1b",
+    "bytes": 623,
+    "direct_calls": [
+      "0x559050",
+      "0x6616e0",
+      "0x866f68",
+      "0x866f68",
+      "0x73446c",
+      "0x73446c",
+      "0x705c88",
+      "0x705c88",
+      "0x705c88",
+      "0x74e3bc",
+      "0xa58428",
+      "0xa58428",
+      "0x480214"
+    ]
+  },
+  "manager_candidate_8b0e1c": {
+    "start": "0x8b0e1c",
+    "end": "0x8b0e34",
+    "bytes": 24,
+    "direct_calls": [
+      "0x401044"
+    ]
+  },
+  "manager_candidate_8b0e3c": {
+    "start": "0x8b0e3c",
+    "end": "0x8b0e54",
+    "bytes": 24,
+    "direct_calls": [
+      "0x705d10"
+    ]
+  },
+  "manager_candidate_8b0e54": {
+    "start": "0x8b0e54",
+    "end": "0x8b0eff",
+    "bytes": 171,
+    "direct_calls": [
+      "0x9205b0"
+    ]
+  },
+  "manager_candidate_8b0f04": {
+    "start": "0x8b0f04",
+    "end": "0x8b0f1c",
+    "bytes": 24,
+    "direct_calls": [
+      "0x705480"
+    ]
+  },
+  "manager_candidate_8b0f1c": {
+    "start": "0x8b0f1c",
+    "end": "0x8b0ff3",
+    "bytes": 215,
+    "direct_calls": [
+      "0x704bec",
+      "0x84f1bc"
+    ]
+  },
+  "manager_candidate_8b0ffc": {
+    "start": "0x8b0ffc",
+    "end": "0x8b1014",
+    "bytes": 24,
+    "direct_calls": [
+      "0x705480"
+    ]
+  }
+}
