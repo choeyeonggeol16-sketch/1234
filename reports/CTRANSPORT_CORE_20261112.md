@@ -45,3 +45,5 @@ ASan/UBSan 및 TSan으로 생산 C++ 검사 통과:
 Java1,698개 전체 타입 컴파일/새 해시·ABI, PE64/37개 export/import 검사와 Windows smoke 컴파일도 통과했습니다. 실제 Windows의 배포 DLL/FFM/게임 소켓 어댑터/PSS 및1,000개 timer burst 결과는 WINDOWS_VERIFICATION.json과 실행 기록을 기준으로 합니다. 이전 ABI2 검증을 ABI3 검증으로 취급하지 않습니다.
 
 실제 게임 클라이언트 로그인/사냥, 운영 DB, 장시간 동접·성능 비교는 이 검사 범위 밖입니다.
+
+종료 시작/최종 callback에서 자기 server의 Stop/StopAccept/Wait를 호출하면 대기하지 않고 거절합니다. IOCP worker가 아닌 호출자 thread의 close-post 실패 대체 통지에서도 같은 가드를 적용하고 검사했습니다.

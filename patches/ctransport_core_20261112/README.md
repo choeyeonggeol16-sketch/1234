@@ -28,3 +28,5 @@ python tests/run_native_tests.py --tsan
 python tests/verify_native_binary.py
 
 Windows/JDK21: tests/run_windows.ps1. 배포 DLL C++ loopback, 생산 Java FFM/소켓 어댑터와 PSS를 검사합니다. 게임 owner 의존성만 대역입니다. 실제 게임 클라이언트/운영 DB/장시간 부하와 구분합니다. ABI3의 Windows 결과는 WINDOWS_VERIFICATION.json을 확인합니다. 이전 ABI2 성공 이력을 새 ABI3 검증으로 사용하지 않습니다.
+
+종료 시작/최종 callback에서 자기 server의 Stop/StopAccept/Wait를 호출하면 대기하지 않고 거절합니다. IOCP worker가 아닌 호출자 thread의 close-post 실패 대체 통지에서도 같은 가드를 적용하고 검사했습니다.

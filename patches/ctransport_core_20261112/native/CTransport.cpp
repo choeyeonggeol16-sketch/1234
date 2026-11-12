@@ -43,6 +43,12 @@ class NativeTask;
 using TaskFn = void (*)(void*, std::uint64_t, int);
 thread_local Server* currentWorker = nullptr;
 thread_local unsigned currentWorkerIndex = 0;
+thread_local Server* currentCallbackServer = nullptr;
+struct CallbackScope {
+    Server* previous;
+    explicit CallbackScope(Server* server) noexcept : previous(currentCallbackServer) { currentCallbackServer = server; }
+    ~CallbackScope() { currentCallbackServer = previous; }
+};
 enum class OpKind { Accept, Read, Write, Close, Task };
 struct Operation {
     OVERLAPPED overlapped{}; // Must remain first: the OS returns this address.
@@ -103,6 +109,7 @@ public:
     bool stopAccepting() noexcept;
     bool stopAcceptingImpl() noexcept;
     bool wait(unsigned timeout) noexcept {
+        if (currentWorker == this || currentCallbackServer == this) return !running.load();
         std::unique_lock<std::mutex> lock(waitMutex);
         if (timeout == INFINITE) { changed.wait(lock, [&]{return !running.load();}); return true; }
         return changed.wait_for(lock, std::chrono::milliseconds(timeout), [&]{return !running.load();});
@@ -169,6 +176,7 @@ public:
         // The original hook changes parser state/unregisters the socket before
         // linger/close. Java's final resource cleanup stays after I/O drains.
         ++server->closeStarts;
+        CallbackScope callback(server);
         if (auto fn = server->callbacks->closing.load()) fn(server, id, closeOperation, closeError);
         linger reset{1, 0};
         setsockopt(previous, SOL_SOCKET, SO_LINGER, reinterpret_cast<const char*>(&reset), sizeof(reset));
@@ -215,6 +223,7 @@ public:
     void closeCallback() noexcept {
         // No remaining kernel I/O/delivery can refer to a reused byte buffer.
         ++server->closeTerminals;
+        CallbackScope callback(server);
         if (auto fn = server->callbacks->close.load()) fn(server, id, closeOperation, closeError);
         server->remove(this);
     }
@@ -579,12 +588,12 @@ bool Server::stopAcceptingImpl() noexcept {
     return true;
 }
 bool Server::stopAccepting() noexcept {
-    if (currentWorker == this) return false;
+    if (currentWorker == this || currentCallbackServer == this) return false;
     std::lock_guard<std::mutex> lock(lifecycle);
     return stopAcceptingImpl();
 }
 bool Server::stop() noexcept {
-    if (currentWorker == this) return false;
+    if (currentWorker == this || currentCallbackServer == this) return false;
     std::lock_guard<std::mutex> lock(lifecycle);
     if (!running.load()) return true;
     stopping.store(true); stopAcceptingImpl();

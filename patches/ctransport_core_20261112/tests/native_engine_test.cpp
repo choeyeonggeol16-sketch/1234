@@ -18,7 +18,7 @@ struct Probe {
  std::atomic<bool> retainRead{false},blockTask{false},taskEntered{false},releaseTask{false};
  std::vector<unsigned char> received;
  std::atomic<int> closed{0}, sent{0},closing{0};
- std::atomic<bool> reenterClose{false},blockClosing{false},closingEntered{false},releaseClosing{false};
+ std::atomic<bool> terminalStopCheck{false}, reenterClose{false},blockClosing{false},closingEntered{false},releaseClosing{false};
  std::atomic<bool> echo{false}, pauseInCallback{false}, reject{false}, attemptStop{false};
  std::atomic<bool> blockReceive{false}, readEntered{false}, releaseRead{false};
 };
@@ -42,11 +42,17 @@ static int receiveCallback(void* server, std::uint64_t id, const void* data, int
 static int sendCallback(void*, std::uint64_t, const void*, int length) { probe->sent.fetch_add(length); return 0; }
 static int closingCallback(void* server,std::uint64_t id,int,int) {
  ++probe->closing;
- if(probe->reenterClose)check(CIO_Server_Disconnect(server,id,1),"reentrant pre-close rejected");
+ if(probe->reenterClose){
+  check(!CIO_Server_Stop(server)&&!CIO_StopAccepting(server)&&!CIO_Server_Wait(server,INFINITE),"callback blocked in self stop/wait");
+  check(CIO_Server_Disconnect(server,id,1),"reentrant pre-close rejected");
+ }
  if(probe->blockClosing){probe->closingEntered=true;while(!probe->releaseClosing)std::this_thread::yield();}
  return 0;
 }
-static int closeCallback(void*, std::uint64_t, int, int) { ++probe->closed; return 0; }
+static int closeCallback(void* server, std::uint64_t, int, int) {
+ if(probe->terminalStopCheck)check(!CIO_Server_Stop(server)&&!CIO_StopAccepting(server)&&!CIO_Server_Wait(server,INFINITE),"terminal callback self-wait");
+ ++probe->closed;return 0;
+}
 
 static void taskCallback(void* server, std::uint64_t token, int status) {
  check(status==0 && currentWorker==server,"task not dispatched on native worker");
@@ -403,6 +409,13 @@ static void exactStructureTests(){
   {std::lock_guard<std::mutex> lock(f.server->taskGate);check(f.server->tasks.at(6100)->owner!=owner,"external producers did not register separate owners");}
   CTransport_SetTaskCallback(f.listener,ownershipCallback);check(CTransport_Server_PostTask(f.server,7000),"owner callback post");until([&]{return f.state.sent==1;});
  }
+ {
+  Fixture f;auto [socket,id]=f.connect();
+  until([&]{auto* c=f.server->find(id);ObjectRef hold(c,false);std::lock_guard<std::mutex> lock(c->gate);return !c->state.acceptDelivering;});
+  f.state.terminalStopCheck=true;fakewin::failPost=true;
+  check(CIO_Server_Disconnect(f.server,id,1)&&f.state.closed==1,"caller-thread terminal fallback failed");
+ }
+ std::cout<<"PASS closing/terminal callback self-stop/wait guards, including failed close-post on a foreign caller\n";
  std::cout<<"PASS registering-worker/foreign-producer timer ownership; token values do not choose wheels\n";
  std::cout<<"PASS contiguous preallocated slab/FIFO exhaustion/corruption diagnostics, exact1000-slot blocks/overflow/compaction/rollback, owner17+101st policy and pre-close-before-OS-close fence\n";
 }
