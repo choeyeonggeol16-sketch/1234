@@ -883,13 +883,13 @@
       "id": "N29",
       "status": "UNVERIFIED",
       "status_ko": "대조/검증 미완료",
-      "name": "전체 프로세스의 모든 정상/오류 종료 경로",
+      "name": "조건부 서비스 스레드와 전체 시작·종료 경로",
       "original": [
         "0x72f874",
         "0x73029c",
         "0x72d880"
       ],
-      "binary_facts": "서비스 시작, WaitThread 무한 루프, CacheD/AuthD 실패 ExitProcess, 관리자 Shutdown/Report 경로 일부 확인.",
+      "binary_facts": "서비스 시작, 조건부 thread15 생성/등록, WaitThread 무한 루프, CacheD/AuthD 실패 ExitProcess, 관리자 Shutdown/Report 경로 일부 확인.",
       "current_sources": [
         {
           "path": "native/CTransport.cpp",
@@ -908,7 +908,7 @@
         }
       ],
       "current_facts": "현재 서버 종료 coordinator→accept stop→connection close→native drain/join 및 예산 제한.",
-      "difference": "현재 stop은 구현/검사됐다. 원본 프로세스의 모든 UI·watchdog·서비스 실패 exit edge를 소진한 것은 아니다.",
+      "difference": "현재 stop은 구현/검사됐다. 조건부 thread15의 업무 역할 및 모든 UI·watchdog·서비스 시작/실패 exit edge는 미확인이다.",
       "next_action": "미확인으로 유지. shutdown이 없다고 다시 분류하지 않음.",
       "evidence": [
         "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/service_main.asm.txt",
