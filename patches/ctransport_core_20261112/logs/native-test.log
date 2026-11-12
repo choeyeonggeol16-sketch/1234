@@ -1,11 +1,12 @@
-PASS L1 CUserSocket: bytewise/coalesced/65535-byte framing, empty envelope, invalid lengths, header/body deadlines with backpressure, concurrent close, production connection integration
+PASS original structure: serializer 8000 concurrent+reentry+504 capacity; RegisterWait64; 48 event accepts; owner17; raw/secondary/generation maps; native IP/MAC rejection and release; ReportSocket
+PASS L1 CUserSocketParser: bytewise/coalesced/65535-byte framing, empty envelope, invalid lengths, header/body deadlines with backpressure, concurrent close, production connection integration
 PASS native manager: generation/retired lookup/exact erase/restart/3200 concurrent registrations; stale handles cannot affect replacements
 PASS direct native codec: stable plaintext lease across send/queued packets/IO terminal; foreign release, wrong/duplicate sequence, shutdown drain and exact codec destruction
 PASS native network timers: login expiry, authenticated cancellation, earlier coalesced application deadline, partial header expiry and close cancellation
 PASS production 8192-byte pool/FIFO: gathering, randomized partial completion, invalid lengths, atomic allocation failure, lifetime gates
 PASS real worker: 273 completions drain 128/128/18; 124 mixed-status entries plus four front-loaded exit tokens; exact ref release and all workers exit
 PASS per-entry NTSTATUS snapshots, cancel/access-denied/informational/unknown statuses; missing resolver fails startup
-PASS actual native adapter: AcceptEx admission paused, 17000-byte receive/echo, synchronous success plus 37-byte completions, address lookup, stale ID rejection
+PASS actual native adapter: event/IOCP accept admission paused, 17000-byte receive/echo, synchronous success plus 37-byte completions, address lookup, stale ID rejection
 PASS actual eight-WSABUF API, 56000-byte ordered send and immediate caller buffer reuse after native copy
 PASS remote disconnect while receive callback is active preserves its buffer and delays terminal delivery
 PASS callback-reentrant pause/resume; close with both a posted read and held write drains cancellations before one terminal callback

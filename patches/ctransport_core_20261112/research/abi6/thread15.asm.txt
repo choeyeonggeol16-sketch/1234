@@ -1,0 +1,35 @@
+0000000000725e30: sub      rsp, 0x38
+0000000000725e34: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000725e3d: mov      ecx, 0xf
+0000000000725e42: call     0x9250f8
+0000000000725e47: mov      ecx, 0x28
+0000000000725e4c: call     0xab8ea0
+0000000000725e51: mov      qword ptr [rsp + 0x48], rax
+0000000000725e56: test     rax, rax
+0000000000725e59: je       0x725e6d
+0000000000725e5b: mov      edx, 0x64
+0000000000725e60: mov      rcx, rax
+0000000000725e63: call     0x6b4fb8
+0000000000725e68: mov      r11, rax
+0000000000725e6b: jmp      0x725e70
+0000000000725e6d: xor      r11d, r11d
+0000000000725e70: mov      ecx, dword ptr [rip + 0x2ee99362]
+0000000000725e76: mov      rax, qword ptr gs:[0x58]
+0000000000725e7f: mov      edx, 0x7d58
+0000000000725e84: mov      rax, qword ptr [rax + rcx*8]
+0000000000725e88: movsxd   rcx, dword ptr [rax + rdx]
+0000000000725e8c: lea      rax, [rip + 0x452b0ed]
+0000000000725e93: mov      qword ptr [rax + rcx*8], r11
+0000000000725e97: call     0x53a8fc
+0000000000725e9c: test     al, al
+0000000000725e9e: je       0x725ea9
+0000000000725ea0: call     0x725488
+0000000000725ea5: xor      eax, eax
+0000000000725ea7: jmp      0x725ec3
+0000000000725ea9: lea      rcx, [rip + 0x13057e50]
+0000000000725eb0: call     0x82c408
+0000000000725eb5: mov      ecx, dword ptr [rip + 0x13057e75]
+0000000000725ebb: call     qword ptr [rip + 0x3f62af] ; Sleep
+0000000000725ec1: jmp      0x725ea9
+0000000000725ec3: add      rsp, 0x38
+0000000000725ec7: ret      

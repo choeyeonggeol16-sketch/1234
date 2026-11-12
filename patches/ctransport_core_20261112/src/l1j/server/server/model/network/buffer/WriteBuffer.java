@@ -188,7 +188,7 @@ public class WriteBuffer {
     private Class<?> _sizeCacheClass1;
     private PacketSizeState _sizeCacheState1;
 
-    /* State selected by Client before CIOUserSocket slot routing. */
+    /* State selected by Client before CUserSocket slot routing. */
     private Class<?> _preparedPacketClass;
     private PacketSizeState _preparedPacketSizeState;
     
@@ -210,7 +210,7 @@ public class WriteBuffer {
     private boolean _external;
 
     /*
-     * One-shot registered backing prepared by CIOUserSocket before
+     * One-shot registered backing prepared by CUserSocket before
      * WritablePacket.writeData() consumes this arm through beginPrepared().
      */
     private ByteBuffer _armedBuf;
@@ -250,7 +250,7 @@ public class WriteBuffer {
     // -------------------------------------------------------------------------
 
     /**
-     * Client owner가 packet class를 한 번만 해석해서 CIOUserSocket routing과
+     * Client owner가 packet class를 한 번만 해석해서 CUserSocket routing과
      * reset()이 같은 PacketSizeState를 공유하게 한다.
      *
      * @return 현재 pooled-capacity hint, 0이면 미학습
@@ -272,7 +272,7 @@ public class WriteBuffer {
     /**
      * Compatibility alias.
      *
-     * 일부 Client/CIOUserSocket 버전은 preparePacket() 이름을 사용한다.
+     * 일부 Client/CUserSocket 버전은 preparePacket() 이름을 사용한다.
      * 실제 동작은 preparePacketClass()와 완전히 동일하게 유지한다.
      */
     public int preparePacket(Class<?> packetClass) {
@@ -391,7 +391,7 @@ public class WriteBuffer {
 
         /*
          * Pooled transport: reset() must always consume an armed direct-buffer region
-         * armed by CIOUserSocket. There is no heap/direct fallback backing.
+         * armed by CUserSocket. There is no heap/direct fallback backing.
          */
         final ByteBuffer armed =
                 _armedBuf;
@@ -429,7 +429,7 @@ public class WriteBuffer {
     /**
      * Prepare a transport-owned external region for the next reset().
      *
-     * No slice/duplicate is created here; CIOUserSocket passes its one
+     * No slice/duplicate is created here; CUserSocket passes its one
      * per-connection registered SEND view.
      */
     public void armExternal(

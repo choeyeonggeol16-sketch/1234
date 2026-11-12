@@ -129,7 +129,7 @@ public final class CIOBufferPool {
         public int wireLength() {
             return _wireLength;
         }
-        CIOFrame beginDirectFrame(CIOUserSocket connection) {
+        CIOFrame beginDirectFrame(CUserSocket connection) {
             if (_active != 1 || _writer == null)
                 throw new IllegalStateException("not a reserved SEND slot");
             if (_directFrame == null) _directFrame = new CIOFrame();

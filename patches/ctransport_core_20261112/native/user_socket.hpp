@@ -8,16 +8,16 @@
 #include "l1_codec.hpp"
 
 namespace ctransport {
-// CUserSocket 0xa0372c: header(0), body(1), stopped(2), then opcode dispatch.
+// Parser helper for CUserSocket 0xa0372c: header(0), body(1), stopped(2), then opcode dispatch.
 // L1 adaptation: unsigned LE16 total size, legal empty frame(2), otherwise
 // four envelope bytes + >=4 encrypted plaintext bytes (wire >=10). L2's
 // 0x4000 ceiling, cipher, opcode IDs and handler-return convention do not apply.
-class CUserSocket {
+class CUserSocketParser {
 public:
     enum State : unsigned { Header = 0, Body = 1, Stopped = 2 };
     std::unique_ptr<L1CodecState> codec;
-    CUserSocket()=default;
-    CUserSocket(std::shared_ptr<const L1CodecApi> api,unsigned seed):codec(std::make_unique<L1CodecState>(std::move(api),seed)){}
+    CUserSocketParser()=default;
+    CUserSocketParser(std::shared_ptr<const L1CodecApi> api,unsigned seed):codec(std::make_unique<L1CodecState>(std::move(api),seed)){}
 private:
     mutable std::mutex gate_;
     std::array<unsigned char, 2> header_{};

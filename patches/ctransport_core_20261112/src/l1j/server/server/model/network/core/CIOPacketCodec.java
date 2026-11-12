@@ -15,7 +15,7 @@ final class CIOPacketCodec implements AutoCloseable {
         static final MemorySegment FUNCTIONS = entries();
         static SymbolLookup open() {
             Path path=Path.of("CIOPacketCodec.dll").toAbsolutePath();
-            try { CTransportServer.requireKnownDll(path,SHA256);return SymbolLookup.libraryLookup(path,Arena.global()); }
+            try { CIOServer.requireKnownDll(path,SHA256);return SymbolLookup.libraryLookup(path,Arena.global()); }
             catch(java.io.IOException failure){throw new ExceptionInInitializerError(failure);}
         }
         static MemorySegment entries() {
@@ -25,9 +25,9 @@ final class CIOPacketCodec implements AutoCloseable {
             return table;
         }
     }
-    private final CTransportSocket channel;
+    private final CSocket channel;
     private boolean closed;
-    CIOPacketCodec(CTransportSocket channel,long seed) {
+    CIOPacketCodec(CSocket channel,long seed) {
         this.channel=channel;
         if(!channel.initializeUserSocket(API.FUNCTIONS,(int)seed))throw new IllegalStateException("Native L1 user socket/codec initialization failed");
     }

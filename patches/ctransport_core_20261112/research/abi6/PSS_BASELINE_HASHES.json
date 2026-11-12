@@ -1,0 +1,11 @@
+{
+  "src/l1j/server/server/model/character/pss/PssDailyQuota.java": "2b31c5e5b24030e11423e287d3bb2dbc4a3f56da417f6dc672b22e63e1b8fc0d",
+  "src/l1j/server/server/model/character/pss/ClientAutomationSession.java": "e8ed83d0d0344924281821afe9617593f033e4b67f5b8543c0e02004c8e3c32c",
+  "src/l1j/server/server/model/character/pss/PlaySupport2019.java": "99ecf9ea610ab3621150981a7377be0651669ea6881b1e8faea380c8e866d190",
+  "src/l1j/server/server/model/character/pss/PssConfig.java": "2314c8d70e174e711522cffe38e837493c46d07a0e9b5d0feb693a745276ea4d",
+  "src/l1j/server/server/model/character/pss/window/PlaySupportWindow.java": "ca3030dc9e5fce6d6da9017e662d572fc603ae2ca80d3a3f25625b7cff9615f0",
+  "src/l1j/server/server/model/character/pss/window/PssWindowTransport.java": "e8e3f1a1959eeff6a3e0a6d913aa7c8cd4b1ee0f7056ffeecc5f56f33874cca3",
+  "src/l1j/server/server/model/network/core/sc/packet/SC_PssNativeWindow.java": "9dd81cd92b1154c4cb90e02fd6d14f90879d58a0c868b5f81eff10cb534dfe3b",
+  "build/pss-client/Pss2019.dll": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
+  "build/pss-client/PssClientLoadTest.exe": "945a09c964eb714434c47f1cc320335207b1c57637d98a41ccec699775523ea1"
+}

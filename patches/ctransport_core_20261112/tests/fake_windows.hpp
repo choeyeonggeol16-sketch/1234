@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <vector>
+#include <thread>
 using SOCKET = std::uintptr_t;
 using ULONG_PTR = std::uintptr_t;
 using HANDLE = void*;
@@ -47,10 +48,10 @@ inline thread_local unsigned error = 0;
 struct Event { DWORD bytes; ULONG_PTR key; OVERLAPPED* operation; unsigned failure; ULONG_PTR status = 0; };
 struct Port { std::mutex mutex; std::condition_variable changed; std::deque<Event> queue; };
 struct Read { char* data{}; unsigned capacity{}; OVERLAPPED* operation{}; };
-struct Accept { SOCKET socket; OVERLAPPED* operation; };
+struct WaitEvent { std::atomic<bool> signalled{false}; };
 struct Socket {
  bool open = true; bool resetClose=false; Port* port{}; ULONG_PTR key{};
- Read read; std::deque<Accept> accepts; std::deque<unsigned char> inbound;
+ Read read; WaitEvent* acceptEvent=nullptr; std::deque<SOCKET> pendingClients; std::deque<unsigned char> inbound;
  std::vector<unsigned char> wire; std::vector<Event> delayed;
  sockaddr_storage local{}; int localLength = sizeof(sockaddr_in);
 };
@@ -60,6 +61,7 @@ inline SOCKET nextSocket = 1000;
 inline std::atomic<unsigned> sendChunk{8192};
 inline std::atomic<bool> holdSend{false}, failSend{false}, failRead{false}, failAccept{false};
 inline std::atomic<bool> failStatusResolver{false}, failPost{false};
+inline std::atomic<unsigned> acceptCalls{0},eventWaitCalls{0},eventResetCalls{0},affinityCalls{0};
 inline std::atomic<unsigned> singleCalls{0}, exCalls{0}, maximumBatch{0}, requestedCapacity{0}, translatedStatuses{0};
 inline std::array<std::atomic<unsigned>,129> batchSizes{};
 inline ULONG statusError(LONG status) {
@@ -84,10 +86,9 @@ inline void completeRead(Socket& s) {
 inline SOCKET connect(SOCKET listener) {
  std::lock_guard<std::mutex> lock(mutex);
  auto& s = *sockets.at(listener);
- if (s.accepts.empty()) throw std::runtime_error("no posted AcceptEx");
- auto accept = s.accepts.front(); s.accepts.pop_front();
- sockets.at(accept.socket)->local = s.local;
- post(s.port, {0, s.key, accept.operation, 0}); return accept.socket;
+ if(!s.open||!s.acceptEvent)throw std::runtime_error("listener is not registered for FD_ACCEPT");
+ auto id=nextSocket++;auto client=std::make_shared<Socket>();client->local=s.local;
+ sockets[id]=client;s.pendingClients.push_back(id);s.acceptEvent->signalled=true;return id;
 }
 inline void feed(SOCKET socket, const std::vector<unsigned char>& data) {
  std::lock_guard<std::mutex> lock(mutex); auto& s = *sockets.at(socket);
@@ -99,11 +100,6 @@ inline std::vector<unsigned char> wire(SOCKET socket) {
 inline void flush(SOCKET socket) {
  std::lock_guard<std::mutex> lock(mutex); auto& s = *sockets.at(socket);
  for (auto event : s.delayed) post(s.port, event); s.delayed.clear();
-}
-inline BOOL acceptEx(SOCKET listener, SOCKET accepted, void*, DWORD, DWORD, DWORD, DWORD*, OVERLAPPED* ov) {
- std::lock_guard<std::mutex> lock(mutex);
- if (failAccept.exchange(false)) { error = 10022; return FALSE; }
- auto& s = *sockets.at(listener); s.accepts.push_back({accepted, ov}); error = WSA_IO_PENDING; return FALSE;
 }
 } // namespace fakewin
 inline int WSAStartup(int, WSADATA*) { return 0; }
@@ -156,7 +152,7 @@ inline int closesocket(SOCKET socket) {
  if (!s.open) return 0; s.open = false;
  if (s.read.operation) { fakewin::post(s.port, {0, s.key, s.read.operation, 995}); s.read = {}; }
  for (auto e : s.delayed) { e.failure = 995; e.bytes = 0; fakewin::post(s.port, e); } s.delayed.clear();
- for (auto a : s.accepts) fakewin::post(s.port, {0, s.key, a.operation, 995}); s.accepts.clear(); return 0;
+ for(auto client:s.pendingClients)fakewin::sockets.at(client)->open=false;s.pendingClients.clear();s.acceptEvent=nullptr;return 0;
 }
 inline int WSARecv(SOCKET socket, WSABUF* buffers, unsigned, DWORD*, DWORD*, OVERLAPPED* ov, void*) {
  std::lock_guard<std::mutex> lock(fakewin::mutex);
@@ -175,9 +171,41 @@ inline int WSASend(SOCKET socket, WSABUF* buffers, unsigned, DWORD*, DWORD, OVER
  // Synchronous success still queues an IOCP completion (no skip-success mode).
  return 0;
 }
-inline int WSAIoctl(SOCKET, unsigned, void*, unsigned, void* out, unsigned, DWORD*, void*, void*) {
- *static_cast<LPFN_ACCEPTEX*>(out) = fakewin::acceptEx; return 0;
+constexpr long FD_ACCEPT=8;
+constexpr int WSAEWOULDBLOCK=10035;
+struct SYSTEM_INFO{DWORD dwNumberOfProcessors=8;};
+inline void GetSystemInfo(SYSTEM_INFO* info){info->dwNumberOfProcessors=8;}
+inline HANDLE GetCurrentThread(){return reinterpret_cast<HANDLE>(1);}
+inline ULONG_PTR SetThreadAffinityMask(HANDLE,ULONG_PTR mask){if(mask)++fakewin::affinityCalls;return 1;}
+inline HANDLE WSACreateEvent(){return new fakewin::WaitEvent;}
+inline BOOL WSACloseEvent(HANDLE p){delete static_cast<fakewin::WaitEvent*>(p);return TRUE;}
+inline BOOL WSAResetEvent(HANDLE p){++fakewin::eventResetCalls;static_cast<fakewin::WaitEvent*>(p)->signalled=false;return TRUE;}
+inline BOOL WSASetEvent(HANDLE p){static_cast<fakewin::WaitEvent*>(p)->signalled=true;return TRUE;}
+inline int WSAEventSelect(SOCKET socket,HANDLE event,long events){
+ std::lock_guard<std::mutex> lock(fakewin::mutex);
+ if(fakewin::failAccept.exchange(false)){fakewin::error=10022;return SOCKET_ERROR;}
+ if(events!=FD_ACCEPT)throw std::runtime_error("wrong listener event mask");
+ auto& s=*fakewin::sockets.at(socket);s.acceptEvent=static_cast<fakewin::WaitEvent*>(event);
+ if(!s.pendingClients.empty())s.acceptEvent->signalled=true;return 0;
 }
+inline DWORD WaitForMultipleObjects(DWORD count,const HANDLE* handles,BOOL waitAll,DWORD timeout){
+ ++fakewin::eventWaitCalls;if(!count||count>64||waitAll)throw std::runtime_error("wrong wait registry contract");
+ const auto end=std::chrono::steady_clock::now()+std::chrono::milliseconds(timeout);
+ do{for(DWORD n=0;n<count;++n)if(static_cast<fakewin::WaitEvent*>(handles[n])->signalled.load())return n;
+ std::this_thread::sleep_for(std::chrono::milliseconds(1));}while(std::chrono::steady_clock::now()<end);
+ return WAIT_TIMEOUT;
+}
+inline SOCKET fw_accept(SOCKET listener,sockaddr* address,int* length){
+ ++fakewin::acceptCalls;std::lock_guard<std::mutex> lock(fakewin::mutex);auto& s=*fakewin::sockets.at(listener);
+ if(!s.open||s.pendingClients.empty()){fakewin::error=WSAEWOULDBLOCK;return INVALID_SOCKET;}
+ auto id=s.pendingClients.front();s.pendingClients.pop_front();
+ if(s.acceptEvent&&!s.pendingClients.empty())s.acceptEvent->signalled=true;
+ if(address&&length&&*length>=static_cast<int>(sizeof(sockaddr_in))){
+  sockaddr_in peer{};peer.sin_family=AF_INET;peer.sin_port=htons(23456);peer.sin_addr.s_addr=htonl(0x7f000001);
+  std::memcpy(address,&peer,sizeof(peer));*length=sizeof(peer);
+ }return id;
+}
+#define accept fw_accept
 inline int fw_bind(SOCKET socket, const sockaddr* addr, int size) {
  std::lock_guard<std::mutex> lock(fakewin::mutex); auto& s = *fakewin::sockets.at(socket);
  std::memcpy(&s.local, addr, size); s.localLength = size; return 0;

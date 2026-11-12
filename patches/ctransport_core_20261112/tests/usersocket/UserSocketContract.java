@@ -9,7 +9,7 @@ import l1j.server.server.model.network.utill.ConnectionState;
 public final class UserSocketContract {
     static void check(boolean value, String reason) { if (!value) throw new AssertionError(reason); }
     static boolean allow(int op, ConnectionState state, boolean account, boolean pc, boolean ready) {
-        return CUserSocketDispatch.allowed(op & 255, state, account, pc, ready);
+        return CUserSocket.allowed(op & 255, state, account, pc, ready);
     }
     public static void main(String[] args) throws Exception {
         check(allow(Opcodes.C_LOGIN, ConnectionState.CONNECTED, false, false, false), "initial L1 login denied");
@@ -26,10 +26,10 @@ public final class UserSocketContract {
             check(allow(op, ConnectionState.CONNECTED, false, false, false), "prelogin multiplexed protocol denied");
             check(allow(op, ConnectionState.IN_GAME, true, true, true), "in-game multiplexed protocol denied");
         }
-        for (int op=0;op<256;op++) check(!CUserSocketDispatch.allowed(op,ConnectionState.DISCONNECTED,true,true,true), "closed session admitted");
-        check(CUserSocketDispatch.sessionOwner(Opcodes.C_LOGIN & 255,false), "login escaped session owner");
-        check(CUserSocketDispatch.sessionOwner(Opcodes.C_EXTENDED_PROTOBUF & 255,true), "multiplexed session escaped owner");
-        check(!CUserSocketDispatch.sessionOwner(Opcodes.C_ATTACK & 255,true), "gameplay packet sent to timer owner");
+        for (int op=0;op<256;op++) check(!CUserSocket.allowed(op,ConnectionState.DISCONNECTED,true,true,true), "closed session admitted");
+        check(CUserSocket.sessionOwner(Opcodes.C_LOGIN & 255,false), "login escaped session owner");
+        check(CUserSocket.sessionOwner(Opcodes.C_EXTENDED_PROTOBUF & 255,true), "multiplexed session escaped owner");
+        check(!CUserSocket.sessionOwner(Opcodes.C_ATTACK & 255,true), "gameplay packet sent to timer owner");
         System.out.println("PASS production L1 opcode/state matrix, loading barrier, multiplexed protocol compatibility, native game/session-owner execution roles");
 
         CUserSocketRegistry<Object> registry = new CUserSocketRegistry<>();

@@ -1,14 +1,10 @@
-# CTransport ABI5
+# CTransport ABI6
 
-native 접속 관리자·기존 L1 코덱 직접 호출·네트워크 timer wheel을 현재 L1 팩에 연결했습니다. L2 원본에서 관찰한 동작을 L1에 맞게 새로 구현했으며, 원본 소스 추출·서버 전체 완전 복원을 뜻하지 않습니다.
+L2 바이너리에서 확인한 이벤트 기반 접속 수락과 native 클래스 역할을 L1에 반영했습니다. `ListenThread17 -> RegisterWait64 -> FD_ACCEPT -> IOCP -> accept/factory/Add/Initialize`, 실제 Server/소켓 계층, 유저번호 보조 색인·IP/MAC 제한·직렬 실행·운영 진단을 연결했습니다. Java 클래스명과 호출부도 정리했습니다.
 
-1. 전체 src를 교체하고 clean build합니다.
-2. build/CTransport.dll ABI0x50000/49 exports를 같은 실행 폴더에 적용합니다. 이전 DLL과 섞으면 시작을 거절합니다.
-3. 기존 CIOPacketCodec.dll·Java21 preview/native-access 옵션을 유지합니다.
-4. PSS source·클라이언트·INI·전용 연결과 활성화를 유지합니다. 추가 SQL 없음.
+1. 전체 src를 교체하고 clean build합니다. 부분 적용이면 deleted-files.txt도 반영합니다.
+2. 같은 묶음의 CTransport.dll ABI0x60000/56 exports를 적용합니다. SHA256/ABI가 맞지 않으면 서버 시작을 거절합니다.
+3. 기존 CIOPacketCodec.dll과 Java21 preview/native-access 옵션을 유지합니다.
+4. PSS 독립 연결·활성화·클라이언트를 유지합니다. 추가 SQL은 없습니다.
 
-native가 접속 등록/조회/retire와 packet lease를 소유합니다. wire는 C++에서 바로 기존 codec Feed/Next로 들어가며 Java에는 plaintext만 전달합니다. 로그인60초·부분 수신/송신 정체30초·정상 종료 유예는 native 네트워크 timer에서 검사합니다. 게임 handler/계정/월드와 일반 L1 게임 timer는 기존 역할을 유지합니다.
-
-원본 주소·L1 적용 차이·변경 파일·검사 범위는 REPORT_L1_USERSOCKET.md를 확인하세요. 새 실제 Windows 결과는 WINDOWS_VERIFICATION.json을 기준으로 합니다. 실게임·운영 DB·장시간 동접·비교 성능은 미검증입니다.
-
-실제 ABI5 Windows Server2022/Java21 검사 통과: [실행43309668114](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43309668114). 기존 L1 codec과 실제 생산 CIOUserSocket의 lease/종료를 포함합니다. 게임·계정·actor·scheduler·handler·filter는 fixture이므로 실게임 실행 검증과는 구분합니다.
+원본 근거·클래스 역할·L1 이식 차이는 REPORT_ORIGINAL_NETWORK_ABI6.md, 최신 Windows 실행 결과는 WINDOWS_VERIFICATION.json에 있습니다. MAC은 신뢰할 식별자를 전달하는 연결이 필요합니다. 실게임·운영 DB·장시간 동접·비교 성능은 미검증입니다. ABI5 보고서는 당시 구현의 감사 이력입니다.

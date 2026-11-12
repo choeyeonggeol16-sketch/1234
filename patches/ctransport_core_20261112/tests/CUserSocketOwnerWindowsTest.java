@@ -9,7 +9,7 @@ import java.util.function.BooleanSupplier;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.packet.CPacketHandler;
-/** Production CIOUserSocket/codec/buffer pool/FFM/DLL; six game dependency fixtures. */
+/** Production CUserSocket/codec/buffer pool/FFM/DLL; six game dependency fixtures. */
 public final class CUserSocketOwnerWindowsTest {
  static void check(boolean value,String why){if(!value)throw new AssertionError(why);}
  static void until(BooleanSupplier test)throws Exception{long end=System.nanoTime()+TimeUnit.SECONDS.toNanos(5);while(!test.getAsBoolean()&&System.nanoTime()<end)Thread.sleep(1);check(test.getAsBoolean(),"production owner deadline");}
@@ -23,17 +23,17 @@ public final class CUserSocketOwnerWindowsTest {
    }
   }throw new AssertionError("no reference ciphertext candidate");
  }
- static Object field(CIOUserSocket owner,String name)throws Exception{Field f=CIOUserSocket.class.getDeclaredField(name);f.setAccessible(true);return f.get(owner);}
- static void setPause(CIOUserSocket owner,boolean value)throws Exception{Field f=CIOUserSocket.class.getDeclaredField("_sendReadPaused");f.setAccessible(true);f.setBoolean(owner,value);}
- static int phase(CIOUserSocket owner){try{return ((AtomicInteger)field(owner,"nativePacketPhase")).get();}catch(Exception e){throw new AssertionError(e);}}
+ static Object field(CUserSocket owner,String name)throws Exception{Field f=CUserSocket.class.getDeclaredField(name);f.setAccessible(true);return f.get(owner);}
+ static void setPause(CUserSocket owner,boolean value)throws Exception{Field f=CUserSocket.class.getDeclaredField("_sendReadPaused");f.setAccessible(true);f.setBoolean(owner,value);}
+ static int phase(CUserSocket owner){try{return ((AtomicInteger)field(owner,"nativePacketPhase")).get();}catch(Exception e){throw new AssertionError(e);}}
  static final class Session implements AutoCloseable {
-  final AtomicReference<CIOUserSocket> owner=new AtomicReference<>();final AtomicReference<CIOClient> client=new AtomicReference<>();
-  final AtomicReference<CTransportSocket> channel=new AtomicReference<>();final CountDownLatch closed=new CountDownLatch(1);
-  final CIOBufferPool pool=new CIOBufferPool(8,64,4,4);final CTransportServer server;final Socket peer;
+  final AtomicReference<CUserSocket> owner=new AtomicReference<>();final AtomicReference<CIOClient> client=new AtomicReference<>();
+  final AtomicReference<CSocket> channel=new AtomicReference<>();final CountDownLatch closed=new CountDownLatch(1);
+  final CIOBufferPool pool=new CIOBufferPool(8,64,4,4);final CIOServer server;final Socket peer;
   Session(boolean ready,boolean failCapture)throws Exception{
    CIOThreadCallback.INSTANCE.queued.set(null);
-   server=new CTransportServer(new InetSocketAddress("127.0.0.1",0),8,2,32,c->{
-    CIOUserSocket socket=new CIOUserSocket(c,pool,CIOThreadCallback.INSTANCE,"127.0.0.1",0,256,x->closed.countDown());
+   server=new CIOServer(new InetSocketAddress("127.0.0.1",0),8,2,32,c->{
+    CUserSocket socket=new CUserSocket(c,pool,CIOThreadCallback.INSTANCE,"127.0.0.1",0,256,x->closed.countDown());
     CIOClient user=new CIOClient(socket);user.ready=ready;user.failCapture=failCapture;socket.bindClient(user);socket.initializeCipher(73461);socket.configureNativeDeadlines(false);
     client.set(user);channel.set(c);socket.startRead();owner.set(socket);
    });peer=new Socket("127.0.0.1",server.localAddress().getPort());until(()->owner.get()!=null);
@@ -82,6 +82,6 @@ public final class CUserSocketOwnerWindowsTest {
    session.peer.getOutputStream().write(gameWire);check(session.closed.await(5,TimeUnit.SECONDS)&&phase(session.owner.get())==0,"session capture exception stranded reserved native lease");
   }
   check(calls.get()==2,"cancelled or failed packet reached handler");
-  System.out.println("PASS actual production CIOUserSocket + Windows DLL: running handler retains plaintext through I/O terminal; queued session/SEND-pressure leases cancel; shutdown and session-capture exception release once; no pooled leases retained (game/account/scheduler/filter fixtures)");
+  System.out.println("PASS actual production CUserSocket + Windows DLL: running handler retains plaintext through I/O terminal; queued session/SEND-pressure leases cancel; shutdown and session-capture exception release once; no pooled leases retained (game/account/scheduler/filter fixtures)");
  }
 }

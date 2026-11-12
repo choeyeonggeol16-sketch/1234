@@ -35,17 +35,21 @@
     ]
   ],
   "files": {
-    "CTransport.cpp": "c79845f6d927037c9d66eff6fe8aa2228490f2410ba4afb89cbe381bd79b1d80",
-    "CTransport.h": "259b6deca489cc7610617ec07e47d6b27ceaf28c3733969b20ac83c3d6619c3e",
-    "build_native.py": "42e8613d8bfd53b7f5571c86d38d4e958f10a1b4b62815787601d482815af7d9",
-    "cio_core.hpp": "aef37c5652ed7349ef06c115695cf5bb90e67b00356c0923f380b776ecb3f13d",
+    "CTransport.cpp": "5c05baa74f0672dfce1ea43fa69e57e40f77ab5c0d41dab7f6fe4ee44f57e86d",
+    "CTransport.h": "1c94182f98d4026c2168378229537077e3a14d9ed54f0082f96359b6cba59f6a",
+    "build_native.py": "6280d7308dbc5609106780ccefd185f15b32e46483e1b9da772363ceca4c9e9e",
+    "cio_core.hpp": "636eb77f4a123779fbfa387aed77229ae779c375863efdba3051d9ca179bea80",
+    "execution_serializer.hpp": "5203da60cd82ccd462e63759be6dda2758f44a85c1227286dda7c625f992f71e",
+    "io_server.hpp": "1054f1d71887d3301f7ff5067c6b67ec7037744369f4d0a3e7410e570dd52111",
     "l1_codec.hpp": "e6789f904b268c34cf1aa30b5408811c30498232dc471b31fcfedc34c1d50791",
+    "object_map.hpp": "63a2fef8d3e3caa7536e0710598cc636fc0f8bc4cbb60d4095bbb9a5b0cfa2d2",
+    "socket_limiter.hpp": "af76e9d68fdfcfefd45970a6e8f3c1fceddb2cd86ba89a7223be588134ca7b01",
     "timer_wheel.hpp": "428d34e08d8fd7f5b3e931fd1249b5b94f8affabb18e193e2305702f64937b6a",
     "user_registry.hpp": "f6719d8e8337101ecafdf2acac31f2af6121bb1e0bfa3929561ee8cc57e31cef",
-    "user_socket.hpp": "a48d78422f1e3c64d6b172d169537ab09cad66756c9d791bac78240e0d533c02",
-    "windows_loopback_test.cpp": "dd7bd0488058da5aa781b882b658d00992d08284479aef238f7064dc0841dd62"
+    "user_socket.hpp": "83ad1db380fd8f3423c30d564b082bc34d48d4a3915da49d782262e27e18d958",
+    "windows_loopback_test.cpp": "783dddef3b65722ed6c32bf2cd8bfcbe6533024ea0dccc307f3db6765d3cc0d7"
   },
-  "dll_sha256": "c5160c9e6d93924e6b0ec9bc52d40af93c1e03df9183a3629dd71ba9bba839f2",
-  "selftest_sha256": "b97e5af379bf6e3d752c2c0add1fb22caca4ef5f7f23e70705d4197b0df34a4e",
+  "dll_sha256": "fbbd2fcd014153457552f57177b796ced5cdeb973579a78ef68341ebc8e6a6c7",
+  "selftest_sha256": "a0ae8f2d2986e098231dcc88bdaaacf5ab1ee9f66c2152002fa518b172509a49",
   "windows_execution_tested": false
 }

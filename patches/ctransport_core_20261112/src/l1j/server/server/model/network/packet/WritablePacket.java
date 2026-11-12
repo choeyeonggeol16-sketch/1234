@@ -12,7 +12,7 @@ public abstract class WritablePacket<T extends CIOClient> {
     /**
      * 재사용 WriteBuffer용.
      *
-     * CIOUserSocket.prepareWriteBuffer()가 packet class metadata를 선택하고
+     * CUserSocket.prepareWriteBuffer()가 packet class metadata를 선택하고
      * registered SEND region까지 arm한 뒤 이 메서드가 호출된다.
      *
      * WriteBuffer.reset(getClass())는 이미 preparePacket()으로 캐시된

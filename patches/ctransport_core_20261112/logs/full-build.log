@@ -15,7 +15,7 @@
                ^
 Note: Some input files use or override a deprecated API.
 Note: Recompile with -Xlint:deprecation for details.
-Note: /workspace/work/aden-rkern-cio-20261112/src/l1j/server/server/model/network/core/CTransportServer.java uses preview features of Java SE 21.
+Note: Some input files use preview features of Java SE 21.
 Note: Recompile with -Xlint:preview for details.
 5 warnings
-PASS full Java21 type compilation: 1702 production sources; zero errors.
+PASS full Java21 type compilation: 1701 production sources; zero errors.

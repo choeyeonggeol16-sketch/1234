@@ -13,7 +13,7 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.ConnectionConfig;
 
 /** Native IOCP admission factory with an L1 session/timer owner. */
-public final class CIOSocketFactory implements CIOServer.SocketFactory {
+public final class CIOSocketFactory implements Server.SocketFactory {
     private final CIOThreadCallback scheduler;
     private final ConnectionConfig config;
     private final int shardCount;
@@ -35,15 +35,15 @@ public final class CIOSocketFactory implements CIOServer.SocketFactory {
     }
 
     @Override
-    public CIOUserSocket CreateSocket(CTransportSocket socket,
+    public CUserSocket CreateSocket(CSocket socket,
                                   CIOBufferPool pool,
-                                  CIOUserSocket.Closed serverClosed) throws Exception {
+                                  CUserSocket.Closed serverClosed) throws Exception {
         final InetSocketAddress peer = (InetSocketAddress) socket.remoteAddress();
         final InetAddress address = peer.getAddress();
         final String ip = address.getHostAddress();
         boolean counted = false;
         CIOClient user = null;
-        CIOUserSocket transport = null;
+        CUserSocket transport = null;
         int assignedShard = -1;
         try {
             // Preserve the existing IPv4 game-client admission contract.
@@ -74,12 +74,12 @@ public final class CIOSocketFactory implements CIOServer.SocketFactory {
             liveByShard.incrementAndGet(shard);
             assignedShard = shard;
             final int ownerShard = shard;
-            transport = new CIOUserSocket(socket, pool, scheduler, ip, shard,
+            transport = new CUserSocket(socket, pool, scheduler, ip, shard,
                     256,
-                    new CIOUserSocket.Closed() {
-                        @Override public void onClosing(CIOUserSocket nio) { serverClosed.onClosing(nio); }
-                        @Override public void onCleanupComplete(CIOUserSocket nio) { serverClosed.onCleanupComplete(nio); }
-                        @Override public void onClosed(CIOUserSocket nio) {
+                    new CUserSocket.Closed() {
+                        @Override public void onClosing(CUserSocket nio) { serverClosed.onClosing(nio); }
+                        @Override public void onCleanupComplete(CUserSocket nio) { serverClosed.onCleanupComplete(nio); }
+                        @Override public void onClosed(CUserSocket nio) {
                             try {
                                 final CIOClient client = nio.client();
                                 if (client != null) client.onTransportClosed();

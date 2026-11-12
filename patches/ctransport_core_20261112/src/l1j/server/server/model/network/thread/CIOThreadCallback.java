@@ -110,7 +110,7 @@ public final class CIOThreadCallback {
 	private volatile boolean watchdogRunning = true;
 
 	/*
-	 * CIOUserSocket.affinityShard()와 동일한 network shard layout.
+	 * CUserSocket.affinityShard()와 동일한 network shard layout.
 	 * 0이면 아직 RServer가 ingress를 bind하지 않은 상태.
 	 */
 	private volatile int networkShardCount;
@@ -363,7 +363,7 @@ public final class CIOThreadCallback {
      * A rejection is terminal to that connection (the READ pump closes it).
      */
     /** A packet is either executed on its owner or cancelled during shutdown. */
-    public interface PacketTask extends l1j.server.server.model.network.core.CTransportTask {
+    public interface PacketTask extends l1j.server.server.model.network.core.CIOObject {
     }
 
     public boolean enqueuePacketImmediate(int shardIndex, PacketTask packetTask) {

@@ -36,7 +36,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 
 	private static final Logger _log = Logger.getLogger(CIOClient.class.getName());
 
-	private final CIOUserSocket _connection;
+	private final CUserSocket _connection;
 	private final boolean _ipReservationCounted;
 
 	private volatile int _packetShard = -1;
@@ -74,7 +74,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 	private int _packetCount = 0;
 	private long _lastCheckTime = System.currentTimeMillis();
 
-	public CIOClient(CIOUserSocket connection, boolean ipReservationCounted) {
+	public CIOClient(CUserSocket connection, boolean ipReservationCounted) {
 		if (connection == null || !connection.isOpen()) {
 			throw new IllegalArgumentException("The connection is null or closed.");
 		}
@@ -85,7 +85,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 
     /** An admitted session must have its initial key packet staged for SEND. */
     public boolean onConnected() {
-        final CIOUserSocket socket = _connection;
+        final CUserSocket socket = _connection;
         try {
             if (socket == null || !socket.isOpen()) return false;
             socket.initializeCipher(Opcodes.getSeed());
@@ -109,12 +109,12 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 	}
 
     public boolean encrypt(WriteBuffer data, int offset, int size) {
-        final CIOUserSocket socket = _connection;
+        final CUserSocket socket = _connection;
         return socket != null && socket.encrypt(data, offset, size);
     }
 
     public boolean decrypt(ReadBuffer data, int offset, int size) {
-        final CIOUserSocket socket = _connection;
+        final CUserSocket socket = _connection;
         return socket != null && socket.decrypt(data, offset, size);
     }
 
@@ -168,7 +168,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
             ThreadPool.getInstance().execute(task);
         } catch (Exception failure) {
             _log.log(Level.SEVERE, "[GameClient Close] deferred logout admission failed", failure);
-            if (CTransportServer.isCompletionThread()) {
+            if (CIOServer.isCompletionThread()) {
                 try { Thread.ofVirtual().name("CIO-logout-recovery").start(task); return; }
                 catch (Throwable startFailure) {
                     _log.log(Level.SEVERE, "[GameClient Close] emergency logout thread unavailable", startFailure);
@@ -208,7 +208,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 		try {
 			// 메모리 제거
 			SC_CraftListAllAck.onDisconnect(this);
-            final CIOUserSocket socket = _connection;
+            final CUserSocket socket = _connection;
             if (socket != null) socket.clearCipher();
 			setAccount(null);
 
@@ -501,7 +501,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 		}
 	}
 
-	public CIOUserSocket getConnection() {
+	public CUserSocket getConnection() {
 		return _connection;
 	}
 

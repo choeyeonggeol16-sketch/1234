@@ -29,7 +29,7 @@ final class CIOPacketCodecReference implements AutoCloseable {
         static SymbolLookup openKnownCodec() {
             final Path path = Path.of("CIOPacketCodec.dll").toAbsolutePath();
             try {
-                CTransportServer.requireKnownDll(path,
+                CIOServer.requireKnownDll(path,
                         "60bde93c2ba20057e7e307594edef69ced273b69f923535ab658769e09f0cea9");
                 return SymbolLookup.libraryLookup(path, Arena.global());
             } catch (java.io.IOException failure) {

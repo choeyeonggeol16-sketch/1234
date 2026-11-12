@@ -1,1 +1,1 @@
-PASS mandatory CTransport.dll ABI 0x50000/hash; no old backend selector
+PASS mandatory CTransport.dll ABI 0x60000/hash; no old backend selector

@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 namespace ctransport {
-constexpr std::size_t BufferBytes=8192, LargeBufferBytes=16384, MaxQueuedBytes=4u*1024u*1024u;
+constexpr std::size_t BufferBytes=8192, LargeBufferBytes=16384, MaxQueuedBytes=2u*1024u*1024u;
 class CIOObject {
  std::atomic<unsigned> references_{1};
 protected: virtual ~CIOObject()=default;
@@ -35,7 +35,7 @@ public:
 };
 class SpinGuard {SpinLock& lock_;public:explicit SpinGuard(SpinLock& l)noexcept:lock_(l){lock_.lock();}~SpinGuard(){lock_.unlock();}};
 struct CIOBuffer;
-template<std::size_t Bytes> struct NativeBufferStorage {
+template<std::size_t Bytes> struct CIOBufferEx {
  std::array<unsigned char,16> prefix{};
  std::array<unsigned char,Bytes> payload{};
  std::uint32_t used=0,padding=0;
@@ -44,12 +44,12 @@ template<std::size_t Bytes> struct NativeBufferStorage {
  std::array<unsigned char,16> reserved{};
  unsigned owner=0;
 };
-static_assert(offsetof(NativeBufferStorage<8192>,used)==0x2010);
-static_assert(offsetof(NativeBufferStorage<8192>,next)==0x2018);
-static_assert(offsetof(NativeBufferStorage<8192>,references)==0x2020);
-static_assert(offsetof(NativeBufferStorage<8192>,owner)==0x2034);
-static_assert(sizeof(NativeBufferStorage<8192>)==0x2038);
-static_assert(sizeof(NativeBufferStorage<16384>)==0x4038);
+static_assert(offsetof(CIOBufferEx<8192>,used)==0x2010);
+static_assert(offsetof(CIOBufferEx<8192>,next)==0x2018);
+static_assert(offsetof(CIOBufferEx<8192>,references)==0x2020);
+static_assert(offsetof(CIOBufferEx<8192>,owner)==0x2034);
+static_assert(sizeof(CIOBufferEx<8192>)==0x2038);
+static_assert(sizeof(CIOBufferEx<16384>)==0x4038);
 // Views add the adapter's partial-send offset without changing the recovered
 // slab stride or payload/length/next/ref/owner field positions.
 struct CIOBuffer {
@@ -57,7 +57,7 @@ struct CIOBuffer {
  std::atomic<unsigned>& references;
  std::uint32_t& used;std::size_t offset=0;CIOBuffer*& next;
  unsigned& owner;unsigned bucket;const std::size_t capacity;
- template<std::size_t Bytes> CIOBuffer(NativeBufferStorage<Bytes>& raw,unsigned id,unsigned family)
+ template<std::size_t Bytes> CIOBuffer(CIOBufferEx<Bytes>& raw,unsigned id,unsigned family)
  :data{raw.payload.data()},references(raw.references),used(raw.used),next(raw.next),owner(raw.owner),bucket(family),capacity(Bytes){owner=id;}
 };
 // 0x6b5094/0x6b4fb8 allocate zeroed contiguous slabs plus pointer rings.
@@ -66,8 +66,8 @@ class CIOBufferPool {
  static constexpr unsigned NativeOwners=64,OwnerCount=128;
  struct Ring{
   SpinLock gate;std::unique_ptr<CIOBuffer*[]> slots;
-  std::unique_ptr<NativeBufferStorage<8192>[]>small;
-  std::unique_ptr<NativeBufferStorage<16384>[]>large;
+  std::unique_ptr<CIOBufferEx<8192>[]>small;
+  std::unique_ptr<CIOBufferEx<16384>[]>large;
   std::vector<CIOBuffer> views;
   std::uint64_t read=0,write=0;std::size_t capacity=0;
  };
@@ -93,8 +93,8 @@ class CIOBufferPool {
   do{if(count>limit_-total){++initializationFailures_;return false;}}while(!allocated_.compare_exchange_weak(total,total+count));
   try{
    ring.slots.reset(new CIOBuffer*[count]{});ring.views.reserve(count);
-   if(family){ring.large.reset(new NativeBufferStorage<16384>[count]);for(std::size_t i=0;i<count;++i)ring.views.emplace_back(ring.large[i],id,family);}
-   else{ring.small.reset(new NativeBufferStorage<8192>[count]);for(std::size_t i=0;i<count;++i)ring.views.emplace_back(ring.small[i],id,family);}
+   if(family){ring.large.reset(new CIOBufferEx<16384>[count]);for(std::size_t i=0;i<count;++i)ring.views.emplace_back(ring.large[i],id,family);}
+   else{ring.small.reset(new CIOBufferEx<8192>[count]);for(std::size_t i=0;i<count;++i)ring.views.emplace_back(ring.small[i],id,family);}
    for(std::size_t i=0;i<count;++i)ring.slots[i]=&ring.views[i];
    ring.capacity=count;return true;
   }catch(...){ring.views.clear();ring.slots.reset();ring.small.reset();ring.large.reset();allocated_.fetch_sub(count);++initializationFailures_;return false;}
@@ -102,6 +102,12 @@ class CIOBufferPool {
 public:
  class OwnerScope{Binding saved_;public:OwnerScope(CIOBufferPool& p,unsigned o)noexcept:saved_(binding_){binding_={p.generation_,o%NativeOwners};}~OwnerScope(){binding_=saved_;}};
  explicit CIOBufferPool(std::size_t limit):limit_(limit),generation_(nextGeneration_.fetch_add(1)){}
+ bool initializeOwner(unsigned id,std::size_t small,std::size_t large)noexcept{
+  if(id>=NativeOwners)return false;
+  for(unsigned family=0;family<2;++family){auto& ring=rings_[id*2+family];SpinGuard lock(ring.gate);
+   if(!initializeRing(ring,id,family,family?large:small))return false;}
+  return true;
+ }
  bool initialize(unsigned workers,std::size_t total16)noexcept{
   if(!workers||workers>NativeOwners)return false;
   // Original native 8K pools:300/owner. Configured total16 / worker count.

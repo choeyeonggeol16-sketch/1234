@@ -141,7 +141,7 @@ static void batchTests(){
 
 struct Fixture {
  Probe state; void* listener; Server* server;
- Fixture() {
+ Fixture(unsigned ipLimit=0,unsigned macLimit=0) {
   probe = &state; listener = CIO_Create_TcpServerListener();
   CIO_Set_FN_Server_OnAccept(listener, acceptCallback); CIO_Set_FN_Server_OnReceive(listener, receiveCallback);
   CIO_Set_FN_Server_OnSend(listener, sendCallback); CIO_Set_FN_Server_OnClose(listener, closeCallback);
@@ -149,6 +149,7 @@ struct Fixture {
   CTransport_SetClosingCallback(listener, closingCallback);
   CTransport_SetUserPacketCallback(listener,packetCallback);CTransport_SetNetworkDeadlineCallback(listener,deadlineCallback);
   server = static_cast<Server*>(CIO_Create_TcpServer(listener));auto codec=fixturecodec::functions();check(CTransport_Server_SetCodecApi(server,codec.data(),7),"fixture codec API install"); CIO_Server_SetWorkerThreadCount(server, 4); CIO_Server_SetMaxConnectionCount(server, 128);
+  check(CTransport_Server_ConfigureLimits(server,ipLimit,macLimit),"configure native limits");
   check(CIO_Server_Start(server, "127.0.0.1", 0), "start failed");
  }
  std::pair<SOCKET,std::uint64_t> connect() {
@@ -203,7 +204,7 @@ static void engineTests() {
   until([&]{return !f.server->connections.load();});
   check(!CIO_Server_PauseReceive(f.server,id,0),"stale ID resolved after close");
  }
- std::cout<<"PASS actual native adapter: AcceptEx admission paused, 17000-byte receive/echo, synchronous success plus 37-byte completions, address lookup, stale ID rejection\n";
+ std::cout<<"PASS actual native adapter: event/IOCP accept admission paused, 17000-byte receive/echo, synchronous success plus 37-byte completions, address lookup, stale ID rejection\n";
  {
   Fixture f;auto [socket,id]=f.connect();fakewin::holdSend=true;fakewin::sendChunk=8192;
   std::array<std::vector<unsigned char>,8> data;std::array<WSABUF,8> buffers;std::vector<unsigned char> expected;
@@ -443,19 +444,19 @@ static std::vector<unsigned char> l1Frame(unsigned size,unsigned seed=1) {
 }
 static void userSocketTests() {
  for(unsigned chunk : {1u,2u,3u,7u,4096u,8192u,65535u}) {
-  CUserSocket parser;std::vector<unsigned char> wire;std::vector<std::vector<unsigned char>> expected{l1Frame(2),l1Frame(10),l1Frame(65535,3),l1Frame(112,7)},seen;
+  CUserSocketParser parser;std::vector<unsigned char> wire;std::vector<std::vector<unsigned char>> expected{l1Frame(2),l1Frame(10),l1Frame(65535,3),l1Frame(112,7)},seen;
   for(const auto& frame:expected)wire.insert(wire.end(),frame.begin(),frame.end());
   for(std::size_t at=0;at<wire.size();at+=chunk)check(parser.feed(wire.data()+at,std::min<std::size_t>(chunk,wire.size()-at),10,[&](auto* p,unsigned n){seen.emplace_back(p,p+n);return true;}),"fragmented L1 parser rejected valid bytes");
   check(seen==expected,"fragmented/coalesced/max-size L1 frames changed bytes/order");
-  std::uint64_t stats[6]{};parser.snapshot(stats,100);check(stats[0]==CUserSocket::Header&&stats[3]==4&&stats[5]==0,"parser did not return to header state");
+  std::uint64_t stats[6]{};parser.snapshot(stats,100);check(stats[0]==CUserSocketParser::Header&&stats[3]==4&&stats[5]==0,"parser did not return to header state");
  }
  for(unsigned size : {0u,1u,3u,4u,5u,6u,7u,8u,9u}) {
-  CUserSocket parser;unsigned callbacks=0;unsigned char bytes[]{static_cast<unsigned char>(size),0};
+  CUserSocketParser parser;unsigned callbacks=0;unsigned char bytes[]{static_cast<unsigned char>(size),0};
   check(!parser.feed(bytes,2,0,[&](auto*,unsigned){++callbacks;return true;})&&callbacks==0,"invalid L1 wire length reached callback");
   std::uint64_t stats[6]{};parser.snapshot(stats,100);check(stats[0]==2&&stats[4]==1,"invalid length did not stop parser");
  }
  {
-  CUserSocket parser;auto frame=l1Frame(10);
+  CUserSocketParser parser;auto frame=l1Frame(10);
   check(parser.feed(frame.data(),1,10,[](auto*,unsigned){return true;}),"partial header");
   check(!parser.expired(30009)&&parser.expired(30010),"partial header deadline");
   parser.pause(true,110);check(!parser.expired(100000),"backpressure pause expired partial packet");
@@ -463,7 +464,7 @@ static void userSocketTests() {
   check(parser.feed(frame.data()+1,9,130010,[](auto*,unsigned){return true;})&&!parser.expired(200000),"complete frame retained deadline");
  }
  {
-  CUserSocket parser;auto frame=l1Frame(10);std::atomic<bool>entered{false},release{false};
+  CUserSocketParser parser;auto frame=l1Frame(10);std::atomic<bool>entered{false},release{false};
   auto owner=std::async(std::launch::async,[&]{return parser.feed(frame.data(),frame.size(),1,[&](auto* p,unsigned n){entered=true;while(!release)std::this_thread::yield();check(n==10&&std::equal(p,p+n,frame.data()),"close freed callback frame");return true;});});
   until([&]{return entered.load();});parser.stop();release=true;check(!owner.get(),"close did not stop parser after callback");
  }
@@ -479,7 +480,7 @@ static void userSocketTests() {
   {std::lock_guard<std::mutex>lock(f.state.mutex);check(f.state.received==std::vector<unsigned char>(frame.begin()+6,frame.end())&&f.state.receiveLengths==std::vector<int>{9994},"production user socket did not emit complete plaintext");}
   fakewin::feed(socket,{3,0});until([&]{return f.state.closed==1;});
  }
- std::cout<<"PASS L1 CUserSocket: bytewise/coalesced/65535-byte framing, empty envelope, invalid lengths, header/body deadlines with backpressure, concurrent close, production connection integration\n";
+ std::cout<<"PASS L1 CUserSocketParser: bytewise/coalesced/65535-byte framing, empty envelope, invalid lengths, header/body deadlines with backpressure, concurrent close, production connection integration\n";
 }
 
 struct RegistryObject {
@@ -533,7 +534,7 @@ static void managerAndNativeLeaseTests() {
  }
  {
   Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();auto* c=f.server->find(id);check(c!=nullptr,"partial deadline lookup");
-  {std::lock_guard<std::mutex> lock(c->gate);unsigned char partial=10;check(c->userSocket->feed(&partial,1,monotonicMs()-30001,[](auto*,unsigned){return true;}),"old partial header");}
+  {std::lock_guard<std::mutex> lock(c->gate);unsigned char partial=10;check(c->UserProtocol()->feed(&partial,1,monotonicMs()-30001,[](auto*,unsigned){return true;}),"old partial header");}
   c->release();check(CTransport_UserSocket_RequestDeadline(f.server,id,1),"partial native deadline");until([&]{return f.state.closed==1;});
  }
  {
@@ -547,4 +548,86 @@ static void managerAndNativeLeaseTests() {
  std::cout<<"PASS native network timers: login expiry, authenticated cancellation, earlier coalesced application deadline, partial header expiry and close cancellation\n";
 }
 
-int main(){std::cout.setf(std::ios::unitbuf);userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}
+
+struct SerialProbe final : CIOObject {
+ CExecutionSerializerFast queue;
+ std::atomic<unsigned> calls{0},inside{0},maximum{0};
+ std::atomic<bool> entered{false},releaseBlocked{false};
+ static void Work(CIOObject* object,void*)noexcept{
+  auto& p=*static_cast<SerialProbe*>(object);const auto active=p.inside.fetch_add(1)+1;
+  auto old=p.maximum.load();while(old<active&&!p.maximum.compare_exchange_weak(old,active)){}
+  ++p.calls;--p.inside;
+ }
+ static void Reenter(CIOObject* object,void*)noexcept{
+  auto& p=*static_cast<SerialProbe*>(object);++p.calls;
+  check(p.queue.AddExecutable(object,Work,nullptr),"same-owner serializer reentry");
+ }
+ static void Block(CIOObject* object,void*)noexcept{
+  auto& p=*static_cast<SerialProbe*>(object);p.entered=true;
+  while(!p.releaseBlocked.load())std::this_thread::yield();++p.calls;
+ }
+ void completed(void*,bool,unsigned,unsigned)noexcept override{}
+};
+static void originalStructureTests(){
+ {
+  auto* p=new SerialProbe;
+  std::vector<std::thread> producers;
+  for(unsigned i=0;i<8;++i)producers.emplace_back([&]{for(unsigned n=0;n<1000;++n){
+   while(!p->queue.AddExecutable(p,SerialProbe::Work,nullptr))std::this_thread::yield();
+  }});
+  for(auto& t:producers)t.join();
+  check(p->calls==8000&&p->maximum==1&&p->queue.Pending()==0,"serializer lost/doubled/concurrent callback");
+  check(p->queue.AddExecutable(p,SerialProbe::Reenter,nullptr)&&p->calls==8002,"serializer reentry did not execute");
+  std::thread blocked([&]{check(p->queue.AddExecutable(p,SerialProbe::Block,nullptr),"serializer blocked owner");});
+  until([&]{return p->entered.load();});
+  for(unsigned n=0;n<503;++n)check(p->queue.AddExecutable(p,SerialProbe::Work,nullptr),"serializer rejected within original margin");
+  check(!p->queue.AddExecutable(p,SerialProbe::Work,nullptr)&&p->queue.Pending()==504,"serializer overflow did not preserve eight spare slots");
+  p->releaseBlocked=true;blocked.join();check(p->queue.Pending()==0&&p->calls==8506,"serializer overflow rollback/drain");p->release();
+ }
+ {
+  struct WaitObject final:CIOServer {
+   bool* destroyed;explicit WaitObject(bool* value):destroyed(value){}
+   ~WaitObject()override{*destroyed=true;}
+   void NotifyPendingChanged()noexcept override{}void OnAcceptedSocket(SOCKET)noexcept override{}
+   void OnWaitFailure(unsigned)noexcept override{}
+  };
+  WaitThread wait;std::array<bool,65> destroyed{};std::array<WaitObject*,65> objects{};std::array<HANDLE,65> events{};
+  for(unsigned n=0;n<65;++n){objects[n]=new WaitObject(&destroyed[n]);events[n]=WSACreateEvent();
+   check(wait.RegisterWait(objects[n],events[n])==(n<64),"RegisterWait bounded64 admission");objects[n]->release();}
+  check(destroyed[64],"failed RegisterWait retained object");
+  for(unsigned n=0;n<64;++n){check(!destroyed[n]&&wait.UnregisterWait(objects[n])&&destroyed[n],"UnregisterWait reference balance");}
+  for(auto event:events)WSACloseEvent(event);
+ }
+ {
+  Fixture f;std::vector<SOCKET> clients;
+  for(unsigned n=0;n<48;++n)clients.push_back(fakewin::connect(f.server->listening));
+  until([&]{std::lock_guard<std::mutex> lock(f.state.mutex);return f.state.ids.size()==48;});
+  std::uint64_t listener[9]{},threads[54]{};
+  check(CTransport_Server_GetListenerDiagnostics(f.server,listener,9)&&listener[1]>=48&&listener[2]>=48&&listener[6]==48&&listener[8]==48,"burst rearm/listener/raw registry");
+  check(CTransport_Server_GetThreadDiagnostics(f.server,threads,54)&&threads[51]>0,"ListenThread owner17 did not run");
+  std::uint64_t rows[48*12]{};check(CTransport_Server_ReportSockets(f.server,rows,48,12)==48,"ReportSocket snapshot size");
+  for(unsigned n=0;n<48;++n)check(rows[n*12+1]&&CTransport_UserSocket_FindByNumber(f.server,rows[n*12+1])==rows[n*12],"user-number secondary lookup");
+  check(CIO_StopAccepting(f.server),"stop accepting burst");
+  check(CIO_Server_Stop(f.server),"shutdown raw SOCKET snapshot");
+  check(CTransport_Server_GetListenerDiagnostics(f.server,listener,9)&&listener[5]==0&&listener[6]==0&&listener[8]==0,"listener/secondary/raw registration leaked");
+ }
+ {
+  Fixture f(2,1);auto [a,idA]=f.connect();auto [b,idB]=f.connect();
+  check(CTransport_UserSocket_SetMacIdentity(f.server,idA,0x123456789abcull),"MAC identity reservation");
+  check(!CTransport_UserSocket_SetMacIdentity(f.server,idA,0x123456789abcull)&&!CTransport_UserSocket_SetMacIdentity(f.server,idB,0x123456789abcull),"duplicate/overlimit MAC identity accepted");
+  const auto callbacks=f.server->acceptCallbacks.load();fakewin::connect(f.server->listening);
+  until([&]{return f.server->acceptCallbacks.load()>callbacks&&f.server->pendingAccepts==0;});
+  {std::lock_guard<std::mutex> lock(f.state.mutex);check(f.state.ids.size()==2,"native IP limiter admitted third socket");}
+  auto* socket=f.server->find(idA);auto number=socket->SocketNumber();socket->release();
+  check(CIO_Server_Disconnect(f.server,idA,1),"limited socket close");until([&]{return f.state.closed==1;});
+  check(!CTransport_UserSocket_FindByNumber(f.server,number),"retired number still active");
+  check(CTransport_UserSocket_SetMacIdentity(f.server,idB,0x123456789abcull),"MAC reservation not returned on close");
+  auto [c,idC]=f.connect();check(idC!=idA,"replacement generation reused");
+  check(!CTransport_UserSocket_SetMacIdentity(f.server,idA,7),"stale handle changed limiter");
+  check(CIO_Server_Stop(f.server),"limited shutdown");std::uint64_t counts[4]{};
+  check(CTransport_Server_GetLimiterDiagnostics(f.server,counts,4)&&counts[0]==0&&counts[1]==0,"IP/MAC close accounting leaked");
+ }
+ std::cout<<"PASS original structure: serializer 8000 concurrent+reentry+504 capacity; RegisterWait64; 48 event accepts; owner17; raw/secondary/generation maps; native IP/MAC rejection and release; ReportSocket\n";
+}
+
+int main(){std::cout.setf(std::ios::unitbuf);originalStructureTests();userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}

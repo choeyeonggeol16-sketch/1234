@@ -10,7 +10,7 @@ commands=[common+['-shared','-fno-sanitize=undefined',str(root/'native/CTranspor
 for command,name in zip(commands,['windows-build.log','windows-selftest-build.log']):
  with (logs/name).open('w') as log:subprocess.run(command,cwd=root,stdout=log,stderr=subprocess.STDOUT,check=True,timeout=180)
 sha=hashlib.sha256((out/'CTransport.dll').read_bytes()).hexdigest()
-java=root/'src/l1j/server/server/model/network/core/CTransportConfig.java'
+java=root/'src/l1j/server/server/model/network/core/CIOConfig.java'
 if args.write_java_hash:
  text=java.read_text();text,count=re.subn(r'(DLL_SHA256 = ")[0-9a-f]{64}(";)',lambda m:m[1]+sha+m[2],text)
  assert count==1;java.write_text(text)

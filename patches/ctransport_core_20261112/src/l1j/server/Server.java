@@ -12,7 +12,6 @@ import java.net.InetSocketAddress;
 import java.sql.SQLException;
 import java.util.logging.LogManager;
 import l1j.server.server.GameServer;
-import l1j.server.server.model.network.core.CIOServer;
 import l1j.server.server.model.network.core.CIOBufferPool;
 import l1j.server.server.model.network.core.CIOSocketFactory;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -31,7 +30,7 @@ public class Server {
 
     // Native Windows IOCP transport settings.
     private static final int IOCP_COMPLETION_WORKERS = 8;
-    private static final int IOCP_ACCEPT_BACKLOG = 1024;
+    private static final int IOCP_ACCEPT_BACKLOG = 5;
     private static final int IOCP_SEND_LEASES_PER_CONNECTION = 4;
 
     private static volatile Server uniqueInstance;
@@ -49,7 +48,7 @@ public class Server {
         return uniqueInstance;
     }
 
-    private static volatile CIOServer gameListener;
+    private static volatile l1j.server.server.model.network.core.Server gameListener;
 
     public static synchronized boolean startLoginServer() {
         // PSS has a dedicated listener/group. Failure and shutdown stay separate.
@@ -82,7 +81,7 @@ public class Server {
                     sendSlots, largeRecvSlots, largeSlots);
             final CIOSocketFactory factory = new CIOSocketFactory(
                     CIOThreadCallback.getInstance(), config);
-            gameListener = new CIOServer(address, connectionCapacity,
+            gameListener = new l1j.server.server.model.network.core.Server(address, connectionCapacity,
                     ioThreads, backlog, pool, factory);
             System.out.println("네트워크 서버 연결이 완료되었습니다.");
             return true;
@@ -96,7 +95,7 @@ public class Server {
 
     /** One deadline across accept stop, native worker join, and Java await. */
     public static void stopNewConnections() {
-        final CIOServer listener = gameListener;
+        final l1j.server.server.model.network.core.Server listener = gameListener;
         if (listener == null) return;
         final long deadline = System.nanoTime() + 30_000_000_000L;
         networkShutdownDeadlineNs = deadline;
@@ -114,7 +113,7 @@ public class Server {
     }
 
     public static void stopLoginServer() {
-        final CIOServer listener = gameListener;
+        final l1j.server.server.model.network.core.Server listener = gameListener;
         if (listener == null) return;
         final long deadline = networkShutdownDeadlineNs != 0L
                 ? networkShutdownDeadlineNs : System.nanoTime() + 30_000_000_000L;

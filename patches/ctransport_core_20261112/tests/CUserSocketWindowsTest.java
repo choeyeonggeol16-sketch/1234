@@ -20,13 +20,13 @@ public final class CUserSocketWindowsTest {
         for(;;){int n=codec.next();if(n==CIOPacketCodecReference.INCOMPLETE)return;
             if(n!=CIOPacketCodecReference.EMPTY){byte[] bytes=new byte[n];codec.plaintext().duplicate().get(bytes);out.add(bytes);}}
     }
-    static final class UserOwner extends CIOUserSocket {
-        final CTransportSocket channel;final CIOPacketCodec codec;
+    static final class UserOwner extends CUserSocket {
+        final CSocket channel;final CIOPacketCodec codec;
         final AtomicInteger frames=new AtomicInteger(),deadlines=new AtomicInteger();
         final List<byte[]> actual=Collections.synchronizedList(new ArrayList<>());
         final CountDownLatch terminal=new CountDownLatch(1);
         volatile boolean hold=true;volatile long sequence;volatile ByteBuffer view;
-        UserOwner(CTransportSocket channel){this.channel=channel;codec=new CIOPacketCodec(channel,73461);channel.bindUserSocketOwner(this);}
+        UserOwner(CSocket channel){this.channel=channel;codec=new CIOPacketCodec(channel,73461);channel.bindUserSocketOwner(this);}
         @Override boolean transportNativePacket(long sequence,ByteBuffer packet,int length){
             check(channel.currentNativeOwner()>=0,"plaintext escaped IOCP worker");
             if(length==0){frames.incrementAndGet();return true;}
@@ -51,9 +51,17 @@ public final class CUserSocketWindowsTest {
             check(codec.pending()==0,"reference codec retained complete frames");
         }
         AtomicReference<UserOwner> accepted=new AtomicReference<>();
-        try(CTransportServer server=new CTransportServer(new InetSocketAddress("127.0.0.1",0),8,2,32,channel->{UserOwner owner=new UserOwner(channel);accepted.set(owner);channel.pauseNativeUser(false);});
+        try(CIOServer server=new CIOServer(new InetSocketAddress("127.0.0.1",0),8,2,32,channel->{UserOwner owner=new UserOwner(channel);accepted.set(owner);channel.pauseNativeUser(false);});
             Socket client=new Socket("127.0.0.1",server.localAddress().getPort())){
             until(()->accepted.get()!=null);UserOwner owner=accepted.get();
+            int number=(int)owner.channel.socketNumber();
+            check(number!=0&&server.findByNumber(number)!=0,"native user number lookup");
+            until(()->server.threadDiagnostics()[51]>0);
+            long[] listener=server.listenerDiagnostics(),timing=server.threadDiagnostics();
+            check(listener.length==9&&listener[0]==1&&listener[1]>0&&listener[2]>0&&listener[6]==1&&listener[8]==1,"Windows event accept/map diagnostics");
+            check(timing.length==54&&timing[51]>0,"Windows ListenThread owner17 timing");
+            long[][] rows=server.ReportSocket();check(rows.length==1&&rows[0][1]==Integer.toUnsignedLong(number)&&rows[0][10]==0x7f000001L,"Windows ReportSocket peer/number");
+            check(owner.channel.setMacIdentity(0x123456789abcL)&&!owner.channel.setMacIdentity(7),"Windows trusted MAC one-time binding");
             client.getOutputStream().write(wire,0,1);
             until(()->{long[] state=owner.channel.userSocketState();return state!=null&&state[0]==0&&state[2]==1;});
             check(owner.frames.get()==0,"partial wire reached plaintext handler");
@@ -81,7 +89,7 @@ public final class CUserSocketWindowsTest {
         System.out.println("PASS Windows direct C++ codec/FFM: partial/empty/65535/coalesced frames, 67 exact C2S plaintext/rolling-key matches, 8 S2C matches, stable plaintext lease, foreign/duplicate release and invalid-length terminal");
 
         AtomicReference<UserOwner> heldOwner=new AtomicReference<>();
-        try(CTransportServer server=new CTransportServer(new InetSocketAddress("127.0.0.1",0),8,2,32,channel->{UserOwner owner=new UserOwner(channel);heldOwner.set(owner);channel.pauseNativeUser(false);})){
+        try(CIOServer server=new CIOServer(new InetSocketAddress("127.0.0.1",0),8,2,32,channel->{UserOwner owner=new UserOwner(channel);heldOwner.set(owner);channel.pauseNativeUser(false);})){
             UserOwner old;
             try(Socket client=new Socket("127.0.0.1",server.localAddress().getPort())){
                 until(()->heldOwner.get()!=null);old=heldOwner.get();client.getOutputStream().write(frame(128,5));until(()->old.sequence!=0);
@@ -109,15 +117,15 @@ public final class CUserSocketWindowsTest {
 
         AtomicInteger ran=new AtomicInteger(),cancelled=new AtomicInteger();
         CountDownLatch blockers=new CountDownLatch(2),release=new CountDownLatch(1);
-        CTransportServer server=new CTransportServer(new InetSocketAddress("127.0.0.1",0),8,2,32,channel->channel.close());
+        CIOServer server=new CIOServer(new InetSocketAddress("127.0.0.1",0),8,2,32,channel->channel.close());
         check(server.currentNativeOwner()==-1,"external Java thread reported native worker identity");
-        CTransportTask blocker=new CTransportTask(){
+        CIOObject blocker=new CIOObject(){
             public void run(){check(server.currentNativeOwner()>=0,"completion task escaped IOCP");blockers.countDown();try{check(release.await(5,TimeUnit.SECONDS),"blocker release");}catch(InterruptedException e){throw new AssertionError(e);}}
             public void cancel(){throw new AssertionError("running task cancelled");}
         };
         check(server.postCompletion(blocker)&&server.postCompletion(blocker),"blocker posts denied");
         check(blockers.await(5,TimeUnit.SECONDS),"workers did not enter blockers");
-        for(int n=0;n<64;n++)check(server.postCompletion(new CTransportTask(){public void run(){ran.incrementAndGet();}public void cancel(){cancelled.incrementAndGet();}}),"packet completion admission");
+        for(int n=0;n<64;n++)check(server.postCompletion(new CIOObject(){public void run(){ran.incrementAndGet();}public void cancel(){cancelled.incrementAndGet();}}),"packet completion admission");
         AtomicReference<Throwable> closeFailure=new AtomicReference<>();
         Thread stop=new Thread(()->{try{server.close();}catch(Throwable e){closeFailure.set(e);}});stop.start();
         until(server::isStopping);release.countDown();stop.join(5000);

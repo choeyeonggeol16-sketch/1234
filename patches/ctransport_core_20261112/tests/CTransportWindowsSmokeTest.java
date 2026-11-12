@@ -18,10 +18,10 @@ public final class CTransportWindowsSmokeTest {
         check(System.getProperty("os.name").startsWith("Windows"), "real Windows required");
         AtomicReference<Throwable> failed = new AtomicReference<>();
         AtomicInteger closed = new AtomicInteger();
-        try (CTransportEndpoint endpoint = new CTransportEndpoint(new InetSocketAddress("127.0.0.1",0),64,new CTransportEndpoint.Handler() {
-            public boolean accept(CTransportEndpoint.Peer peer) { return true; }
-            public boolean receive(CTransportEndpoint.Peer peer, ByteBuffer bytes) { return peer.send(bytes); }
-            public void closed(CTransportEndpoint.Peer peer) { closed.incrementAndGet(); }
+        try (CIOServerEndpoint endpoint = new CIOServerEndpoint(new InetSocketAddress("127.0.0.1",0),64,new CIOServerEndpoint.Handler() {
+            public boolean accept(CIOServerEndpoint.Peer peer) { return true; }
+            public boolean receive(CIOServerEndpoint.Peer peer, ByteBuffer bytes) { return peer.send(bytes); }
+            public void closed(CIOServerEndpoint.Peer peer) { closed.incrementAndGet(); }
         })) {
             CountDownLatch tasks = new CountDownLatch(513);
             Set<Integer> unique = ConcurrentHashMap.newKeySet();
@@ -49,15 +49,15 @@ public final class CTransportWindowsSmokeTest {
         if(failed.get()!=null)throw new AssertionError(failed.get());
         System.out.println("PASS actual Windows shipped DLL + production Java21 FFM: 20 connections/4MB echo, work, timers/cancel, shutdown");
 
-        final class EchoOwner extends CIOUserSocket {
-            final CTransportSocket channel;
+        final class EchoOwner extends CUserSocket {
+            final CSocket channel;
             final ByteBuffer bytes=ByteBuffer.allocateDirect(4096);
-            EchoOwner(CTransportSocket channel){this.channel=channel;}
+            EchoOwner(CSocket channel){this.channel=channel;}
             void start(){bytes.clear();channel.read(bytes,this);}
             @Override void transportReadCompleted(int count){if(count<0)return;bytes.flip();channel.write(bytes,this);}
             @Override void transportWriteCompleted(int count){if(count<0)return;start();}
         }
-        try(CTransportServer gameplay=new CTransportServer(new InetSocketAddress("127.0.0.1",0),32,4,256,channel -> new EchoOwner(channel).start())) {
+        try(CIOServer gameplay=new CIOServer(new InetSocketAddress("127.0.0.1",0),32,4,256,channel -> new EchoOwner(channel).start())) {
             byte[] source=new byte[100000];new Random(99).nextBytes(source);
             for(int round=0;round<3;round++)try(Socket socket=connect(gameplay.localAddress().getPort())){
                 socket.getOutputStream().write(source);

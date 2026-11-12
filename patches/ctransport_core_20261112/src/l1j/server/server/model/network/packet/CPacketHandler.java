@@ -402,7 +402,7 @@ public final class CPacketHandler {
      * These remain synchronized with state-changing CacheD completions.
      */
     public static boolean isSessionOpcode(int opcode) {
-        return l1j.server.server.model.network.core.CUserSocketDispatch.isSessionOpcode(opcode);
+        return l1j.server.server.model.network.core.CUserSocket.isSessionOpcode(opcode);
     }
 
     // ------------------------------------------------------------------
