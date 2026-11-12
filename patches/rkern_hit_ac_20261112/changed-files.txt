@@ -1,0 +1,3 @@
+src/l1j/server/server/model/character/Attack/Helper/HitEvasionModel.java
+src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java
+src/l1j/server/server/model/character/action/CAttackAction.java

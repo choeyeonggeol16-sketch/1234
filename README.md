@@ -1,3 +1,11 @@
+## 2026-11-12 — 물리 명중·AC 결함 수정 통합본
+
+[**최신 전체 src 다운로드**](downloads/RKern_Aden_ALL_FIXES_HIT_AC_FULL_SRC_20261112.zip) · [수정·검증 보고서](reports/RKERN_HIT_AC_FIXED_20261112.md) · [적용 안내](patches/rkern_hit_ac_20261112/README.md)
+
+새 명중 보고서와 대조하여 기본5~95% 제한, AC 역전, 저AC 외삽, signed AC, PC H 합산 오버플로를 보완했습니다. 이전 전체 수정 포함, 새 SQL 없음(기존 HPMP SQL 필수). Java1696개 전체 컴파일·기존/신규 회귀 통과. 저AC는 보수적 경계 제한이며 일본/한국 본섭 명중 공식 전체 복원·실게임 검증은 미완료입니다.
+
+---
+
 ## 2026-11-12 — 중복 실행 정리 통합본
 
 [**최신 전체 src 다운로드**](downloads/RKern_Aden_ALL_FIXES_DEDUP_FULL_SRC_20261112.zip) · [중복 수정·검증 보고서](reports/RKERN_DUPLICATE_LOGIC_FIXED_20261112.md) · [적용 안내](patches/rkern_dedup_20261112/README.md)

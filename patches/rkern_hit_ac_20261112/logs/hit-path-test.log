@@ -1,0 +1,24 @@
+Nov 12, 2026 10:16:06 AM l1j.server.server.model.character.action.CAttackAction <clinit>
+WARNING: KeylinkBalance.properties not loaded; using previous/default class factors
+java.nio.file.NoSuchFileException: ./config/KeylinkBalance.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.action.CAttackAction.reloadKeylinkBalance(CAttackAction.java:114)
+	at l1j.server.server.model.character.action.CAttackAction.<clinit>(CAttackAction.java:104)
+	at l1j.server.server.model.character.action.CCreatureController.<init>(CCreatureController.java:658)
+	at l1j.server.server.model.Instance.L1PcInstance.<init>(L1PcInstance.java:1201)
+	at MagicStackRuntimeTest$Pc.<init>(MagicStackRuntimeTest.java:18)
+	at PhysicalDamageTest$Pc.<init>(PhysicalDamageTest.java:11)
+	at HitPathTest$Pc.<init>(HitPathTest.java:14)
+	at HitPathTest.fourPaths(HitPathTest.java:33)
+	at HitPathTest.main(HitPathTest.java:73)
+
+PASS real AttackTargetData four ordinary branches x melee/ranged x HIT/MISS: one model evaluation/roll; signed positive AC across four paths
+PASS actual melee/ranged H aggregation: 48 weight/durability combinations, STR/DEX and weapon bonus once, 0..300 long saturation

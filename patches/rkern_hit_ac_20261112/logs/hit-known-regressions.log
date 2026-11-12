@@ -1,0 +1,20 @@
+before floor: exit 1
+Exception in thread "main" java.lang.AssertionError: forced 5% floor: 0.05
+before ceiling: exit 1
+Exception in thread "main" java.lang.AssertionError: forced 95% ceiling: 0.95
+before low-ac: exit 1
+Exception in thread "main" java.lang.AssertionError: unbounded first-knot extrapolation: 0.95
+before monotonic: exit 1
+Exception in thread "main" java.lang.AssertionError: stronger armor increased hit: 0.06390116582990885 -> 0.08591835184513866
+before overflow: exit 1
+Exception in thread "main" java.lang.AssertionError: positive aggregate overflow changed H to 0
+after floor: exit 0
+PASS floor
+after ceiling: exit 0
+PASS ceiling
+after low-ac: exit 0
+PASS low-ac
+after monotonic: exit 0
+PASS monotonic
+after overflow: exit 0
+PASS overflow

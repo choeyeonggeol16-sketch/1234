@@ -1,0 +1,9 @@
+PASS shared creation/stat-reset HP/MP baselines across eight classes and WIS boundaries
+PASS actual maximum getters: 24/25,34/35,44/45; gear/buff exclusion; permanent allocation; unrelated HP/MP effects and caps
+PASS 7200 public-sheet cached means (8 classes, HP/MP, levels50/51..88, gradual stat allocation), max error=0.0
+PASS all 360 MP ranges / 360000 actual rolls; HP growth, display, class/CON boundaries
+PASS actual CRegenController MP6 at WIS20/lvl80; independent pure45 overweight gates; temporary stats/hunger/barrier/logout; odd half policy
+Nov 12, 2026 10:16:03 AM l1j.server.server.model.Instance.L1PcInstance applyHpMpLevelTransitionOwned
+WARNING: HP/MP legacy growth retained below history baseline: char=0
+PASS actual level/growth transition: 100 roundtrips, restart, legacy floor/no double reward, cap32767, reset stage, malformed history rejection
+Actual production classes tested; disconnected test clients/PC world effects, public research oracle; no Windows game or production DB.

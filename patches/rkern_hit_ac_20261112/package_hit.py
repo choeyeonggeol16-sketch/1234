@@ -1,0 +1,183 @@
+from pathlib import Path
+import hashlib,json,shutil,subprocess,tempfile,zipfile
+
+work=Path(__file__).resolve().parent
+repo=Path('/workspace/work/aden-two-fixes/repo')
+patch=repo/'patches/rkern_hit_ac_20261112';patch.mkdir(parents=True,exist_ok=True)
+base=repo/'downloads/RKern_Aden_ALL_FIXES_DEDUP_FULL_SRC_20261112.zip'
+name='RKern_Aden_ALL_FIXES_HIT_AC_FULL_SRC_20261112.zip'
+bundle=repo/'downloads'/name
+files=sorted(p for p in (work/'src').rglob('*') if p.is_file())
+with zipfile.ZipFile(base) as z:
+    assert set(z.namelist())=={p.relative_to(work).as_posix() for p in files}
+    changed=[p.relative_to(work).as_posix() for p in files if p.read_bytes()!=z.read(p.relative_to(work).as_posix())]
+assert len(changed)==3,changed
+for n in changed:
+    dest=patch/n;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(work/n,dest)
+for folder in ['tests','database','research','logs']:
+    shutil.copytree(work/folder,patch/folder,dirs_exist_ok=True)
+original='RKern_JP2016_PhysicalHit_AC_33000_Verification_20261112.md'
+shutil.copyfile(work/'research'/original,repo/'reports'/original)
+with zipfile.ZipFile(bundle,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=6) as z:
+    for source in files:
+        info=zipfile.ZipInfo(source.relative_to(work).as_posix(),(2026,11,12,0,0,0))
+        info.compress_type=zipfile.ZIP_DEFLATED;info.external_attr=0o100644<<16
+        z.writestr(info,source.read_bytes())
+with zipfile.ZipFile(bundle) as z:
+    assert z.testzip() is None and len(z.namelist())==1697
+    assert sum(n.endswith('.java') for n in z.namelist())==1696
+    assert all(z.read(p.relative_to(work).as_posix())==p.read_bytes() for p in files)
+sha=hashlib.sha256(bundle.read_bytes()).hexdigest()
+bundle.with_suffix('.zip.sha256').write_text(sha+'  '+name+'\n')
+(patch/'changed-files.txt').write_text('\n'.join(changed)+'\n')
+with tempfile.TemporaryDirectory(prefix='aden-hit-diff-') as tmp:
+    tmp=Path(tmp)
+    with zipfile.ZipFile(base) as z:
+        for n in changed:
+            dest=tmp/n;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(z.read(n))
+    subprocess.run(['git','init','-q'],cwd=tmp,check=True)
+    subprocess.run(['git','add','src'],cwd=tmp,check=True)
+    for n in changed:(tmp/n).write_bytes((work/n).read_bytes())
+    (patch/'hit-ac.patch').write_bytes(subprocess.check_output(['git','diff','--no-ext-diff','--no-color','--binary','--','src'],cwd=tmp))
+with tempfile.TemporaryDirectory(prefix='aden-hit-apply-') as tmp:
+    with zipfile.ZipFile(base) as z:z.extractall(tmp)
+    subprocess.run(['git','apply','--check',str(patch/'hit-ac.patch')],cwd=tmp,check=True)
+    subprocess.run(['git','apply',str(patch/'hit-ac.patch')],cwd=tmp,check=True)
+    with zipfile.ZipFile(bundle) as z:
+        assert all((Path(tmp)/n).read_bytes()==z.read(n) for n in z.namelist())
+(patch/'logs/package-test.log').write_text('PASS ZIP CRC, 1697 source files, 1696 Java, every file byte-for-byte.\nPASS exactly three production Java files changed from 3ca9000; all previous fixes retained.\nPASS hit-ac.patch applies to previous full source and reproduces new bundle.\n')
+manifest={
+    'bundle':name,'sha256':sha,'base_revision':'3ca90009e26f80adc983b25e2857f885eb7b133b',
+    'report_revision':'f98238816ab01db944b2b208de992416378547d9',
+    'source_files':1697,'java_files':1696,'changed_java_files':changed,
+    'new_sql':False,'existing_required_sql':'database/RKern_HPMP_GROWTH_20261112.sql',
+    'validation':['1696 production Java full type compile, zero errors, five existing removal warnings',
+        'five known regressions fail on previous production classes and pass after repair',
+        '717056 AC/H grid points; 4096 independent exhaustive lower-envelope oracle points',
+        '100000 endpoint rolls and probability quantization; DG/ER and Maan arithmetic',
+        '400000 concurrent reads and 30 reloads; atomic table publication',
+        'actual four ordinary AttackTargetData branches with counting model fixture: one evaluation and roll',
+        '48 actual melee/ranged H input combinations, signed AC and int overflow',
+        'all prior magic/physical/HPMP/persistence/locking/unarmed/element/blessing regressions',
+        'source ZIP CRC/hash/every-byte and diff reconstruction'],
+    'limitations':['Conservative model repair, not recovery of the official 2016/2019 formula',
+        'Unmeasured defense AC 0..63 uses nearest calibration boundary AC64; positive game AC maps to defense0',
+        'Low-H plateau where original curves cross is a monotonic envelope, not a new measured curve',
+        'JP displayed hit147 is not mapped to RKern internal H; no -13 adjustment installed',
+        'JP LV86/LV14 and LV6/LV82 equipment/stat endpoint scenarios not reproduced; original model may still disagree',
+        'No Windows live game, operating MySQL, high-concurrency server load, or full-world event tracing'],
+}
+(patch/'MANIFEST.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
+report='''# 물리 명중·AC 보고서 대조 및 확인된 결함 수정
+
+GitHub main의 새 보고서 `f98238816ab01db944b2b208de992416378547d9`를 직전 전체 통합본 `3ca90009e26f80adc983b25e2857f885eb7b133b`와 비교했습니다. 새 main 변경은 보고서 1개이며 서버 소스 패치는 없었습니다. 통합본에도 지적한 문제가 남아 있어 실제 생산 클래스로 재현한 뒤 Java 3개를 수정했습니다. 나머지 소스와 기존 IOCP/스레드풀/마법중첩/물리피해/HPMP/아인 수정은 바이트 단위로 유지했습니다.
+
+## 수정 내역
+
+| 위치 | 기존 상태 | 이번 수정 |
+|---|---|---|
+| HitEvasionModel | 기본 HIT_MIN/MAX가 5%/95%로 고정 | 기본 경계 0%/100%. 실제 roll의 10,000단계 반올림과 0/100%를 검증. NaN/범위 밖 확률을 안전하게 제한 |
+| HitEvasionModel | AC64의 첫 1칸 기울기를 AC0까지 외삽하여 H0에서도 95% | 미측정 AC0~63은 가장 가까운 기준 AC64 값으로 제한. H0/AC0은 약 60.3767%. 낮은 AC의 실제 공식이 복원됐다는 뜻은 아님 |
+| HitEvasionModel | AC별 sigmoid의 중심·폭이 따로 보간되어 서로 교차. H30/AC120 6.3901% → AC150 8.5918% | 기존 곡선의 logit 직선에서 현재 AC 및 더 약한 방어까지의 최솟값을 사용. 강한 방어가 명중률을 올릴 수 없도록 보장. 같은 사례 6.3901% → 6.3901%. 근거 없는 새로운 보정 상수 없음 |
+| HitEvasionModel | 두 volatile LUT를 따로 교체하여 reload와 공격이 겹치면 중심·폭 세대 혼합 가능 | 불변 곡선 테이블을 한 번에 공개. 잘못된 spread reload는 기존 테이블 유지 후 예외 전달 |
+| CAttackAction | 네 일반 경로에서 Math.abs(AC), AC+7도 AC-7처럼 처리. int 최솟값 위험 | 한 defenseAc helper로 signed AC 변환. 양수 AC는 방어0, 음수는 방어 절댓값, long 변환 후 0~255 제한 |
+| L1AttackHelper | PC 명중 합산을 int로 하여 큰 양수 보너스가 넘치면 H0 가능 | 합산 중간값만 long으로 변경하고 기존 0~300 범위를 유지. 통상 레벨/STR/DEX/장비/강화/무게/손상 공식 유지 |
+
+### 곡선 처리와 성능
+
+기존 기준 데이터, MU spline, S 보간은 유지합니다. 각 AC의 기존 logit은 `H / S - MU / S` 직선입니다. 더 약한 방어에서의 직선까지 포함하여 최솟값을 취하면 AC 증가 시 명중률이 증가하지 않으며, 각 직선의 기울기가 양수이므로 H 증가 시 명중률도 감소하지 않습니다. 이 하한 외피를 시작/reload 때만 계산하여 구간별 직선으로 저장합니다. 전투 중에는 작은 구간 검색과 기존 sigmoid만 수행합니다. 워커·큐·락·히트별 객체를 추가하지 않았습니다.
+
+`logs/hit-test.log`에는 실제 테스트 VM의 warm-up 후 100만 회 계산 시간과 할당 바이트가 있습니다. 100만 회의 힙 할당은 0바이트였습니다. 이는 로컬 계산 측정이며 동접/Windows IOCP 실부하 결과가 아닙니다.
+
+## 호출·중복 점검
+
+`research/hit-call-audit.txt`: 일반 PC→PC/PC→NPC/NPC→PC/NPC→NPC는 각각 모델 계산1회, 판정1회입니다. 상위 공격 진입점 7개도 해당 일반 이벤트의 calcHit을 각각1회 호출합니다. 이번 범위에서는 동일 이벤트 명중 판정의 실제 중복을 발견하지 못했습니다.
+
+`HitPathTest`는 실제 AttackTargetData의 네 일반 private 분기에 테스트용 카운터 모델을 연결하여 근접/원거리·HIT/MISS를 검사했습니다. 본서버 월드에서 모든 스킬 이벤트를 계측한 것은 아닙니다. 키링크의 별도 명중, 탄약·거리·시야·세이프티·뫼비우스·특수 NPC·펫/투견의 예외와 공격/반격/commit 순서는 기존 그대로입니다. CAttackAction의 변경은 AC 변환4곳뿐임을 별도 바이트 비교로 확인했습니다.
+
+내부 PC H는 클래스/레벨 캐시 + CalcStat STR/DEX + hitup/bowhitup + 장비 hitRate/bowHitRate + 무기 템플릿/WeaponAddDamage 보정 + 강화/2 - 무게 - 손상입니다. 클래스 캐시는 STR/DEX를 포함하지 않습니다. 이번 점검에서 동일 STR/DEX 항목의 이중 합산은 발견하지 못했습니다. 일본 표시 명중147의 집계 정의·전체 장비/버프/무게와의 일치는 확인할 자료가 부족하므로 13을 빼는 보정은 넣지 않았습니다.
+
+## 검증
+
+- Java21 preview 전체 Java1,696개 타입 컴파일 성공, 오류0개. 기존 removal 경고5개.
+- `logs/hit-known-regressions.log`: 이전 실제 클래스에서 5% 하한, 95% 상한, AC0 외삽, H30 역전, PC 합산 오버플로 5건 모두 실패. 변경 클래스에서는 모두 통과.
+- `logs/hit-before.log`/`hit-after.log`: H0~300, AC0~255의 인접 AC 역전2,802개 → 0개.
+- `logs/hit-test.log`: H -300~400, 0.25 간격 × AC0~255 총717,056개 점의 AC/H 방향성·0~1 범위 검사. 별도4096개 점은 기존 모든 약한 AC 직선을 직접 순회하는 독립 오라클과 비교.
+- 0/100% 판정 각100,000회, 10,000단계 반올림 경계, 50% 분포, DG/ER 선택·마안 보정1회, signed AC 정수 경계 검사.
+- 4개 독자 스레드400,000회 읽기와30회 reload에서 혼합 테이블 없음. 잘못된 reload 후 기존 값 유지.
+- 실제 PC H 합산48개 무게/손상/근원거리 조합과 양/음 int 극단 검사. 실제 네 일반 공격 분기 모델/roll 횟수 검사.
+- 기존 마법 공식/마법중첩 컨트롤러·오버플로/물리피해/HPMP 성장7200평균·360000회 샘플/H2 저장·잠금/맨손·속성/아인 중복 회귀 모두 통과.
+- 전체 ZIP CRC·파일별 바이트·SHA256 및 직전 src에 diff 적용 후 새 src 전체 일치 확인.
+
+테스트는 실제 Java 클래스에 연결한 가짜 PC/NPC·카운터 모델·로컬 H2를 사용합니다. 부팅하지 않은 운영 설정 파일의 기본값 경고/SLF4J provider 안내는 일부 로그에 남습니다. 운영 설정·DB·네이티브 DLL을 변경하거나 서버를 기동하지 않았습니다.
+
+## 일본33,000회 데이터 재비교
+
+보고서의 AC120~152/각1000회 값을 `research/jp2016-hit-33000.csv`에 복사했습니다. 원문 사이트를 새로 재계측한 값은 아닙니다. 방어 DG/ER·추가회피0으로 비교했습니다.
+
+| 가정한 내부 H | 이전 평균 오차 | 수정 후 평균 오차 | 이전 RMSE | 수정 후 RMSE | 수정 후 기울기 |
+|---|---:|---:|---:|---:|---:|
+| 147 | +6.907284%p | +6.890580%p | 7.181726%p | 7.163606%p | -0.786428%p/AC |
+| 134(감도 분석) | -0.006920%p | -0.013272%p | 2.044083%p | 2.046606%p | -0.734977%p/AC |
+
+실측 회귀 기울기는 원 보고서 기준 약 -0.744%p/AC입니다. H134는 수동 분석 입력이며 실제 서버가 H에서13을 빼지 않습니다. 수치 적합만으로 H134가 옳다고 단정하지 않습니다.
+
+## 미확정·미검증 범위
+
+**이번 결과는 명백한 코드 결함의 수정이며 본섭 명중 공식 전체 복원 완료가 아닙니다.** 원 보고서의 LV86→LV14 전부 HIT, LV6→LV82 전부 MISS 조건을 실제 장비 DB·버프·스탯 캐릭터로 재현하지 않았습니다. 해당 조건의 원래 sigmoid 모델 불일치는 남아 있을 수 있습니다. 극단 H의 모델0/100% 및 난수 경계 통과를 이 두 캐릭터 실험의 재현 성공으로 표현하지 않습니다.
+
+AC0~63의 세부 변화는 미측정이므로 AC64 경계값으로 제한했습니다. 따라서 이 구간은 평평합니다. 낮은 H에서 기존 곡선이 교차하는 일부 AC 구간도 하한 외피에 의해 평평해집니다. 이는 임의의 기울기를 발명하지 않는 보수적 처리이며 실제 본섭 데이터로 대체할 과제입니다. AC+7과0 사이 차이도 이번 방어0 매핑에서는 별도 복원하지 않았습니다.
+
+원 보고서 H01/H02 캐릭터 실험, H09의 표시명중↔내부H 동일 정의, H13 실제 고동접, H14 인게임 반복은 미완료입니다. Windows 클라이언트/전체 운영 월드/실MySQL/장애 재시작 통합 검증도 미실시입니다. 앞선 답변에서 제안한 경험치·아인 교차 행 저장 정합성은 이번 새 명중 보고서 범위에 포함하지 않았고 기존 한계가 유지됩니다.
+
+## 적용
+
+최신 전체 src ZIP에는 src/만 있으며 이전 수정이 모두 포함됩니다. UTF-8/Java21 preview로 기존 라이브러리·DLL·설정과 함께 재빌드합니다. 새 SQL 없음. 기존 HPMP 컬럼 SQL `database/RKern_HPMP_GROWTH_20261112.sql`을 아직 적용하지 않았다면1회 필요하며 이미 적용했다면 재실행하지 않습니다. 상세 절차·재실행 명령은 패치 README를 참고하세요.
+'''
+(repo/'reports/RKERN_HIT_AC_FIXED_20261112.md').write_text(report)
+(patch/'README.md').write_text('''# 물리 명중·AC 통합 수정
+
+기준 `3ca9000`, 보고서 main `f982388`. Java3개 수정. 기존 전체 수정 유지, 새 SQL 없음.
+
+- [전체 src ZIP](../../downloads/RKern_Aden_ALL_FIXES_HIT_AC_FULL_SRC_20261112.zip)
+- [상세 수정·검증·남은 한계](../../reports/RKERN_HIT_AC_FIXED_20261112.md)
+- [기준 보고서](../../reports/RKern_JP2016_PhysicalHit_AC_33000_Verification_20261112.md)
+
+## 적용
+
+1. 기존 프로젝트 src와 DB를 백업합니다.
+2. ZIP의 src/ 전체를 반영하고 기존 프로젝트 라이브러리·DLL·운영 설정으로 다시 빌드합니다. Java21 preview, 소스 UTF-8.
+3. 기존 HPMP SQL을 적용하지 않았다면 `../../database/RKern_HPMP_GROWTH_20261112.sql`의 hp_mp_growth 컬럼을1회 추가합니다. 이미 있다면 추가 SQL 없음.
+4. 운영 투입 전 테스트 서버에서 근/원거리 PC/NPC 명중, 저AC, 키링크·펫/투견·회피 스킬을 확인합니다.
+
+기본 명중 범위0~100%, AC 역전 제거, 저AC 무제한 외삽 차단, signed AC 및 PC H 오버플로를 고쳤습니다. 저AC0~63은 AC64 경계값으로 제한되어 평평하며, 본섭 공식 전체 복원을 의미하지 않습니다. 일본 표시H147의 의미를 확인하지 못해 H-13 보정은 넣지 않았습니다. 원 보고서 두 캐릭터의0/100% 실험은 인게임 재현하지 않았습니다.
+
+## 로컬 검증 재실행
+
+이 폴더에서 압축을 푼 src와 라이브러리를 지정합니다.
+
+```bash
+python tests/test_hpmp.py --src /path/to/src --libs /path/to/test-libs --build-dir /tmp/rkern-hit-classes
+```
+
+Java21의 jdk.compiler 모듈 필요. libs 생략 시 Maven Central에서 기존 검사와 같은 의존성을 가져옵니다. 전체1696Java 컴파일 후 기존 회귀와 HitEvasionTest/HitPathTest를 실행합니다. 테스트용 카운터 HitEvasionModel은 임시 fixture 클래스 경로에서만 사용하며 생산 src에 포함되지 않습니다. 운영 서버·DB·DLL을 기동하지 않습니다.
+
+`hit-ac.patch`는 직전 DEDUP 전체 src 기준입니다. 전체 ZIP 반영과 패치 적용 중 한 방법만 사용합니다. 모든 파일의 해시는 SHA256SUMS에 있습니다.
+''')
+readme=repo/'README.md';old=readme.read_text()
+header='''## 2026-11-12 — 물리 명중·AC 결함 수정 통합본
+
+[**최신 전체 src 다운로드**](downloads/RKern_Aden_ALL_FIXES_HIT_AC_FULL_SRC_20261112.zip) · [수정·검증 보고서](reports/RKERN_HIT_AC_FIXED_20261112.md) · [적용 안내](patches/rkern_hit_ac_20261112/README.md)
+
+새 명중 보고서와 대조하여 기본5~95% 제한, AC 역전, 저AC 외삽, signed AC, PC H 합산 오버플로를 보완했습니다. 이전 전체 수정 포함, 새 SQL 없음(기존 HPMP SQL 필수). Java1696개 전체 컴파일·기존/신규 회귀 통과. 저AC는 보수적 경계 제한이며 일본/한국 본섭 명중 공식 전체 복원·실게임 검증은 미완료입니다.
+
+---
+
+'''
+if not old.startswith('## 2026-11-12 — 물리 명중·AC 결함 수정 통합본'):readme.write_text(header+old)
+shutil.copyfile(Path(__file__),patch/'package_hit.py')
+checks=[]
+for p in sorted(patch.rglob('*')):
+    if p.is_file() and p.name!='SHA256SUMS':checks.append(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+p.relative_to(patch).as_posix())
+(patch/'SHA256SUMS').write_text('\n'.join(checks)+'\n')
+print(json.dumps({'bundle':str(bundle),'sha256':sha,'changed':changed,'patch_files':len(checks)},ensure_ascii=False,indent=2))

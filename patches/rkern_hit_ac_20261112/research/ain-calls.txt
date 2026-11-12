@@ -1,0 +1,196 @@
+src/l1j/server/server/command/executor/L1Reload.java:49:import l1j.server.server.datatables.IncreaseEinhasadMap;
+src/l1j/server/server/command/executor/L1Reload.java:192:			IncreaseEinhasadMap.reload();
+src/l1j/server/server/datatables/ClanTable.java:131:					clan.setEinhasadBlessBuff(rs.getInt("EinhasadBlessBuff"));
+src/l1j/server/server/datatables/ClanTable.java:214:		String sql = "INSERT INTO clan_data SET clan_id=?, clan_name=?, leader_id=?, leader_name=?, hascastle=?, hashouse=?, alliance=?, clan_birthday=?, max_online_user=?, announcement=?, emblem_id=?, emblem_status=?,clan_exp=?,bless=?,bless_count=?,attack=?,defence=?,pvpattack=?,pvpdefence=?,join_setting=?,join_type=?,EinhasadBlessBuff=?,Buff_List1=?,Buff_List2=?,Buff_List3=?";
+src/l1j/server/server/datatables/ClanTable.java:240:			pstm.setInt(22, clan.getEinhasadBlessBuff());
+src/l1j/server/server/datatables/ClanTable.java:348:                + "EinhasadBlessBuff=?, Buff_List1=?, Buff_List2=?, Buff_List3=?")) {
+src/l1j/server/server/datatables/ClanTable.java:371:            ps.setInt(23, clan.getEinhasadBlessBuff());
+src/l1j/server/server/datatables/ClanTable.java:405:		String sql = "INSERT INTO clan_data SET clan_id=?, clan_name=?, leader_id=?, leader_name=?, hascastle=?, hashouse=?, alliance=?, clan_birthday=?, max_online_user=?, announcement=?, emblem_id=?, emblem_status=?,clan_exp=?,bless=?,bless_count=?,attack=?,defence=?,pvpattack=?,pvpdefence=?,join_setting=?,join_type=?,bot=?,EinhasadBlessBuff=?,Buff_List1=?,Buff_List2=?,Buff_List3=?";
+src/l1j/server/server/datatables/ClanTable.java:432:			pstm.setInt(23, clan.getEinhasadBlessBuff());
+src/l1j/server/server/datatables/ClanTable.java:583:                    +"AND EinhasadBlessBuff=0 AND Buff_List1=0 AND Buff_List2=0 AND Buff_List3=0")) {
+src/l1j/server/server/datatables/IncreaseEinhasadMap.java:10:public class IncreaseEinhasadMap{
+src/l1j/server/server/datatables/IncreaseEinhasadMap.java:11:	private static IncreaseEinhasadMap _instance;
+src/l1j/server/server/datatables/IncreaseEinhasadMap.java:12:	public static IncreaseEinhasadMap getInstance(){
+src/l1j/server/server/datatables/IncreaseEinhasadMap.java:14:			_instance = new IncreaseEinhasadMap();
+src/l1j/server/server/datatables/IncreaseEinhasadMap.java:26:		IncreaseEinhasadMap old = _instance;
+src/l1j/server/server/datatables/IncreaseEinhasadMap.java:27:		_instance = new IncreaseEinhasadMap();
+src/l1j/server/server/datatables/IncreaseEinhasadMap.java:35:	private IncreaseEinhasadMap(){
+src/l1j/server/server/datatables/IncreaseEinhasadMap.java:64:	public double increaseEinhasadValue(int mapId, double val){
+src/l1j/server/server/storage/cached/CAccount.java:21:    public int blessOfAin;
+src/l1j/server/server/storage/cached/CAccount.java:63:        public final int blessOfAin;
+src/l1j/server/server/storage/cached/CAccount.java:73:            this.blessOfAin = owner.blessOfAin;
+src/l1j/server/server/storage/cached/CAccount.java:110:                ps.setInt(idx++, snapshot.blessOfAin);
+src/l1j/server/server/storage/CacheD.java:1310:    public void saveBlessOfAin(String login, int value) {
+src/l1j/server/server/storage/CacheD.java:1313:            state.blessOfAin = value;
+src/l1j/server/server/packets/Protocol/Packet/SC_FatigueNoti.java:35:    /** MJ offEinhasad 이관 — 아인하사드 해제 2단 전송 (penalty=1 → penalty=0) */
+src/l1j/server/server/packets/Protocol/Packet/SC_FatigueNoti.java:36:    public static void offEinhasad(L1PcInstance pc){
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:4:import l1j.server.server.datatables.IncreaseEinhasadMap;
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:23:    public static double calcDecreaseCharacterEinhasad(L1PcInstance pc, double descrease) {
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:25:        double effect = calcEinhasadEffectToDouble(pc);
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:29:        dec = IncreaseEinhasadMap.getInstance().increaseEinhasadValue(pc.getMapId(), dec);
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:31:        if (pc.getAccount().getBlessOfAin() >= 2000001 && pc.getAccount().getBlessOfAin() <= 18000000) {
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:33:        } else if (pc.getAccount().getBlessOfAin() >= 1800001 && pc.getAccount().getBlessOfAin() >= 34000000) {
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:39:    public static double calcEinhasadEffectToDouble(L1PcInstance pc) {
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:40:        double effect = calcEinhasadEffect(pc);
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:44:    public static int calcEinhasadEffect(L1PcInstance pc) {
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:50:        if (pc.getEinhasadBlessper() >= 0) {
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:51:            effect += pc.getEinhasadBlessper();
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:104:        int hasad = pc.getAccount().getBlessOfAin();
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:123:        boolean bless = pc.getClanBuffMap() != 0 && c != null && c.getEinhasadBlessBuff() != 0;
+src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java:125:        SC_RestExpInfo.sendConstructed(pc, hasad, ration * 100, extra, calcEinhasadEffect(pc), bless);
+src/l1j/server/server/GameServer.java:64:import l1j.server.server.datatables.IncreaseEinhasadMap;
+src/l1j/server/server/GameServer.java:328:		IncreaseEinhasadMap.getInstance();
+src/l1j/server/server/Account.java:69:	private int _blessOfAin;
+src/l1j/server/server/Account.java:301:				account._blessOfAin = rs.getInt("bless_of_ain");
+src/l1j/server/server/Account.java:915:	public int getBlessOfAin() { return this._blessOfAin; }
+src/l1j/server/server/Account.java:916:	public void setBlessOfAin(int i) {
+src/l1j/server/server/Account.java:917:		int oldBless = this._blessOfAin;
+src/l1j/server/server/Account.java:918:		this._blessOfAin = IntRange.ensure(i, 0, 50000000);
+src/l1j/server/server/Account.java:919:		if (oldBless != this._blessOfAin) {
+src/l1j/server/server/Account.java:920:			updateBlessOfAin();
+src/l1j/server/server/Account.java:924:	public void addBlessOfAin(int i, L1PcInstance pc) {
+src/l1j/server/server/Account.java:925:		int oldBless = this._blessOfAin;
+src/l1j/server/server/Account.java:929:		this._blessOfAin = newBless;
+src/l1j/server/server/Account.java:931:		if (oldBless != this._blessOfAin) {
+src/l1j/server/server/Account.java:932:			updateBlessOfAin();
+src/l1j/server/server/Account.java:935:		if (_blessOfAin >= 10000) {
+src/l1j/server/server/Account.java:941:			if (_blessOfAin < 10000) {
+src/l1j/server/server/Account.java:950:	public void updateBlessOfAin() {
+src/l1j/server/server/Account.java:951:		if (_blessOfAin < 0) _blessOfAin = 0;
+src/l1j/server/server/Account.java:952:		CacheD.getInstance().saveBlessOfAin(_name, _blessOfAin);
+src/l1j/server/server/Controller/FishingTimeController.java:673:            final int ain = pc.getAccount().getBlessOfAin();
+src/l1j/server/server/Controller/FishingTimeController.java:688:                pc.getAccount().addBlessOfAin(
+src/l1j/server/server/Controller/FishingTimeController.java:689:                        -(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(
+src/l1j/server/server/model/item/function/ItemUseAreaDamage.java:62:            final int effect = itemId == 30055 ? 762 : itemId == 3000425 ? 5789 : 16060;
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:41:		if (account.getBlessOfAin() > maximumBefore) return;
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:71:				account.addBlessOfAin(delta, pc);
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:94:			//						if (pc.getAccount().getBlessOfAin() <= 12000000) {
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:95:			if (pc.getAccount().getBlessOfAin() <= 34000000) {
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:96:				ItemUseAinBlessing.consume(pc, l1iteminstance, 16000000, 34000000, () -> {
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:109:			if (pc.getAccount().getBlessOfAin() <= 45000000) {
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:110:				ItemUseAinBlessing.consume(pc, l1iteminstance,
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:128:			if (pc.getAccount().getBlessOfAin() <= 47000000) {
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:129:				ItemUseAinBlessing.consume(pc, l1iteminstance, 500000, 47000000, () -> {
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:142:			if (pc.getAccount().getBlessOfAin() <= 47000000) {
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:143:				ItemUseAinBlessing.consume(pc, l1iteminstance, 300000, 47000000, () -> {
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:163:			ItemUseAinBlessing.consume(pc, l1iteminstance, 1000000, 50000000, () -> {
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:173:			if (pc.getAccount().getBlessOfAin() <= 10000) {
+src/l1j/server/server/model/item/function/ItemUseAinBlessing.java:192:			if (pc.getAccount().getBlessOfAin() <= 10000) {
+src/l1j/server/server/model/item/function/ItemUsePotions.java:400:		long hasad = pc.getAccount().getBlessOfAin();
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:153:            if (sk_exp_buff && hasAccount && pc.getAccount().getBlessOfAin() >= 10000) {
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:176:                final int ain0 = pc.getAccount().getBlessOfAin();
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:185:                        pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, (double) comboExpBase), pc);
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:191:                int ain = pc.getAccount().getBlessOfAin();
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:193:                    final int dec = (int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, exp);
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:200:                    pc.getAccount().addBlessOfAin(-dec, pc);
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:205:                        pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, exp), pc);
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:212:                if (pc.hasSkillEffect(L1SkillId.EMERALD_YES) && pc.getAccount().getBlessOfAin() > 10000) {
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:214:                    pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, exp), pc);
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:219:                        pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, exp), pc);
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:223:                            pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, (double) comboExpBase), pc);
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:228:                } else if (pc.hasSkillEffect(L1SkillId.DRAGON_PUPLE) && pc.getAccount().getBlessOfAin() > 10000) {
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:234:                    pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, exp), pc);
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:237:                    if (pc.getAccount().getBlessOfAin() <= 10000) pc.removeSkillEffect(L1SkillId.DRAGON_PUPLE);
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:238:                } else if (pc.hasSkillEffect(L1SkillId.DRAGON_TOPAZ) && pc.getAccount().getBlessOfAin() > 10000) {
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:240:                    pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, exp), pc);
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:245:                        pc.getAccount().addBlessOfAin(-(int) SC_RestExpInfo.calcDecreaseCharacterEinhasad(pc, (double) comboExpBase), pc);
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:248:                    if (pc.getAccount().getBlessOfAin() <= 10000) pc.removeSkillEffect(L1SkillId.DRAGON_TOPAZ);
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:251:                if (pc.getAccount().getBlessOfAin() > 10000 || einhasadBonus != 0) {
+src/l1j/server/server/model/item/Exp/ExpGainCalculator.java:269:                if (hasAccount && pc.getAccount().getBlessOfAin() > 2000000) {
+src/l1j/server/server/model/item/ItemStat.java:38:	BLESS_CONSUMO(116, WType.H)     { @Override public void apply(L1PcInstance p, int v) { p.addEinhasadBlessper(v); } },	
+src/l1j/server/server/model/network/core/cs/packet/CS_WhoPledge.java:118:            l1j.server.server.model.network.core.sc.packet.SC_EinhasadClanBuff.send(pc, pc);
+src/l1j/server/server/model/network/core/cs/packet/CS_CreatePledge.java:108:            clan.setEinhasadBlessBuff(0);
+src/l1j/server/server/model/network/core/cs/packet/CS_CreatePledge.java:113:            l1j.server.server.model.network.core.sc.packet.SC_EinhasadClanBuff.send(pc, pc);
+src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java:682:        applyEinhasad(pc);
+src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java:796:    private static void applyEinhasad(L1PcInstance pc) {
+src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java:799:        int einhasad = pc.getAccount().getBlessOfAin()
+src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java:808:        pc.getAccount().setBlessOfAin(einhasad);
+src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java:811:            pc.startEinhasadTimer();
+src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java:150:                l1j.server.server.model.network.core.sc.packet.SC_EinhasadClanBuff.send(pc, pc);
+src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java:184:                } else l1j.server.server.model.network.core.sc.packet.SC_EinhasadClanBuff.send(pc, pc);
+src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java:260:            selection = clan.getEinhasadBlessBuff(); first = clan.getBuffFirst();
+src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java:265:            clan.setEinhasadBlessBuff(selection); clan.setBuffFirst(first);
+src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java:278:                    "SELECT EinhasadBlessBuff,Buff_List1,Buff_List2,Buff_List3,bless,bless_count "
+src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java:288:            try (PreparedStatement ps = con.prepareStatement("UPDATE clan_data SET EinhasadBlessBuff=?,"
+src/l1j/server/server/model/character/skill/SkillStopHandlers.java:951:		long hasad = pc.getAccount().getBlessOfAin();
+src/l1j/server/server/model/character/action/CMoveAction.java:244:                pc.stopEinhasadTimer();
+src/l1j/server/server/model/character/action/CMoveAction.java:247:                    pc.startEinhasadTimer();
+src/l1j/server/server/model/character/action/CMoveAction.java:249:                    pc.stopEinhasadTimer();
+src/l1j/server/server/model/network/core/sc/packet/SC_EinhasadClanBuff.java:12:public final class SC_EinhasadClanBuff {
+src/l1j/server/server/model/network/core/sc/packet/SC_EinhasadClanBuff.java:13:    private SC_EinhasadClanBuff() {}
+src/l1j/server/server/model/network/core/sc/packet/SC_EinhasadClanBuff.java:28:        final int einhasadBlessBuff = hasClan ? clan.getEinhasadBlessBuff() : 0;
+src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java:292:            long hasad = pc.getAccount().getBlessOfAin();
+src/l1j/server/server/model/Instance/L1OrimQuestInstance.java:198://			46059, // 라버 본 나이프
+src/l1j/server/server/model/Instance/L1PcInstance.java:2545:                try { getAccount().updateBlessOfAin(); }
+src/l1j/server/server/model/Instance/L1PcInstance.java:2605:            try { stopEinhasadTimer(); }
+src/l1j/server/server/model/Instance/L1PcInstance.java:2606:            catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout Einhasad timer failed: " + getId(), e); }
+src/l1j/server/server/model/Instance/L1PcInstance.java:6463:	public void startEinhasadTimer() {
+src/l1j/server/server/model/Instance/L1PcInstance.java:6468:            final EinhasadTimer next = new EinhasadTimer();
+src/l1j/server/server/model/Instance/L1PcInstance.java:6470:            if (ThreadPool.getInstance().schedule(next, EinhasadTimer.INTERVAL) != null) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:6478:	public void stopEinhasadTimer() {
+src/l1j/server/server/model/Instance/L1PcInstance.java:6488:	EinhasadTimer _einhasadTimer;
+src/l1j/server/server/model/Instance/L1PcInstance.java:6490:	class EinhasadTimer extends RepeatTask {
+src/l1j/server/server/model/Instance/L1PcInstance.java:6494:		public EinhasadTimer() {
+src/l1j/server/server/model/Instance/L1PcInstance.java:6509:			int einhasad = getAccount().getBlessOfAin();
+src/l1j/server/server/model/Instance/L1PcInstance.java:6514:			getAccount().setBlessOfAin(einhasad);
+src/l1j/server/server/model/Instance/L1PcInstance.java:6516:			if (getAccount().getBlessOfAin() > 10000) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:7515:	private int _EinhasadBlessper = 0;
+src/l1j/server/server/model/Instance/L1PcInstance.java:7517:	public int getEinhasadBlessper() {
+src/l1j/server/server/model/Instance/L1PcInstance.java:7518:		return _EinhasadBlessper;
+src/l1j/server/server/model/Instance/L1PcInstance.java:7521:	public void setEinhasadBlessper(int einhasadblessper) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:7522:		_EinhasadBlessper = einhasadblessper;
+src/l1j/server/server/model/Instance/L1PcInstance.java:7526:	public void addEinhasadBlessper(int i) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:7527:		_EinhasadBlessper += i;
+src/l1j/server/server/model/Instance/L1PcInstance.java:7613:			updateClanEinhasadBuff(mapId);
+src/l1j/server/server/model/Instance/L1PcInstance.java:7649:	private void updateClanEinhasadBuff(int targetMapId) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:7650:		if (getClan() == null || getClan().getEinhasadBlessBuff() == 0) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:7653:		ClanBuff buff = ClanBuffTable.getBuffList(getClan().getEinhasadBlessBuff());
+src/l1j/server/server/model/Instance/L1PcInstance.java:7670:			addEinhasadBlessper(5);
+src/l1j/server/server/model/Instance/L1PcInstance.java:7676:			addEinhasadBlessper(-5);
+src/l1j/server/server/model/L1EquipmentSlot.java:3486:				_owner.addEinhasadBlessper(5);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3496:				_owner.addEinhasadBlessper(10);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3508:				_owner.addEinhasadBlessper(15);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3519:				_owner.addEinhasadBlessper(20);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3530:				_owner.addEinhasadBlessper(25);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3562:				_owner.addEinhasadBlessper(5);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3572:				_owner.addEinhasadBlessper(10);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3583:				_owner.addEinhasadBlessper(15);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3594:				_owner.addEinhasadBlessper(20);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3605:				_owner.addEinhasadBlessper(25);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3637:				_owner.addEinhasadBlessper(5);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3647:				_owner.addEinhasadBlessper(10);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3657:				_owner.addEinhasadBlessper(15);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3667:				_owner.addEinhasadBlessper(20);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:3677:				_owner.addEinhasadBlessper(25);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9558:				_owner.addEinhasadBlessper(-5);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9568:				_owner.addEinhasadBlessper(-10);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9579:				_owner.addEinhasadBlessper(-15);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9591:				_owner.addEinhasadBlessper(-20);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9601:				_owner.addEinhasadBlessper(-25);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9633:				_owner.addEinhasadBlessper(-5);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9643:				_owner.addEinhasadBlessper(-10);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9654:				_owner.addEinhasadBlessper(-15);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9666:				_owner.addEinhasadBlessper(-20);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9677:				_owner.addEinhasadBlessper(-25);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9709:				_owner.addEinhasadBlessper(-5);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9719:				_owner.addEinhasadBlessper(-10);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9729:				_owner.addEinhasadBlessper(-15);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9739:				_owner.addEinhasadBlessper(-20);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:9749:				_owner.addEinhasadBlessper(-25);// 축복 소모 효율
+src/l1j/server/server/model/L1EquipmentSlot.java:12297:		_owner.addEinhasadBlessper(item.get_addeinhasadper());
+src/l1j/server/server/model/L1EquipmentSlot.java:12375:		_owner.addEinhasadBlessper(-item.get_addeinhasadper());
+src/l1j/server/server/model/L1Clan.java:648://	private int _EinhasadBlessBuff = 0;
+src/l1j/server/server/model/L1Clan.java:674://	public int getEinhasadBlessBuff() {
+src/l1j/server/server/model/L1Clan.java:675://		return _EinhasadBlessBuff;
+src/l1j/server/server/model/L1Clan.java:678://	public void setEinhasadBlessBuff(int i) {
+src/l1j/server/server/model/L1Clan.java:679://		_EinhasadBlessBuff = i;
+src/l1j/server/server/model/L1Clan.java:1375:	private int _EinhasadBlessBuff = 0;
+src/l1j/server/server/model/L1Clan.java:1401:	public int getEinhasadBlessBuff() {
+src/l1j/server/server/model/L1Clan.java:1402:		return _EinhasadBlessBuff;
+src/l1j/server/server/model/L1Clan.java:1405:	public void setEinhasadBlessBuff(int i) {
+src/l1j/server/server/model/L1Clan.java:1406:		_EinhasadBlessBuff = i;
+src/l1j/server/server/appcenter/AppCenterAssets.java:184:        6036,6037,6038,6039,6040,6041,6042,6043,6044,6045,6046,6047,6048,6049,6052,6053,6058,6059,6062,6063,6064,6067,6072,6076,
+src/l1j/server/server/appcenter/AppCenterPackedAssets03.java:1950:        b.append("iNoNjoiMNiZSWkupldJaxyKd04pqNY5mTXoGIe6+Om2GvdT8IyJgGin2esHaBRkVGCLSYIwkbaSWPCnkL2/57g+PHj6059pLbrqkt7V3to50+NzhZ3Y/cNcv7lRlLCulQxNRwCMhH//VA48zw7VQQqlAaxOhpgiMkbXkT59c+DNLqqc0RmkA");
+src/l1j/server/server/appcenter/AppCenterPackedAssets03.java:9042:        b.append("nelMmnd1dTPXdeVibBdhuk4YY1QIoVzHkalUipTLZREEjUzfV9ol7Ho+F0J9v6059ZuTs3Pff8G1mgAaoTB0i2hMIxrTlKQgrlsZi8cS+3LFic26bvDm5haWyWYhpEJffz+isThGT5/G+o0bsXL1ajz88KM4feoU+vt6ceFFF6OjsxN79+zF");
+src/l1j/server/server/appcenter/AppCenterPackedAssets09.java:8467:        b.append("1be0RR2n7CdBbOGX1OZHftO7aNUZbYYVoT/73jfvjyTrvWQyFR0ez02eYA7W9Fh0SgihWmsWj8dT8+fPX7Rt27Ye27ajo6OjE//xH//xq2uvvfayWbNmdc6ZM6fy7ne/Oz5//nzcddddePDBB9HW1oZSqQTOObLZLH76059i7dq1iMfj6hvf");
+src/l1j/server/server/appcenter/AppCenterPackedAssets08.java:6607:        b.append("q7+6f//+R376059+5qWXXnpHxu9Mgd90h6Hp7Iiqqlha5fts/74jlRO9vZkhU/U10JjK3Qpa6+rwVSFhb++g4SnyaXuz6h0DafZqLhaftC1TnA1oJWQacAGAwzn4adYz4PVTj6aQoNclFwd93pLioqKQ5qttKAltaCwL/YtLhtbRM4rRiZjl");

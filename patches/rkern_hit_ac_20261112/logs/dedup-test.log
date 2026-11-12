@@ -1,0 +1,46 @@
+PASS 16 room/dragon/combo combinations: one accepted hunting debit, one persistence submission, preserved bonus math; 20 UI replays, rejected award, large depletion and independent recipients
+PASS actual CalcExp.AddExp ordinary/capped path calls level transition exactly once; non-hunting rewards do not consume blessing
+PASS actual offline path excludes online time, partial internal units retained, gauge ceil/bounds, level127/efficiency cap and concurrent recovery/debit
+Nov 12, 2026 10:16:04 AM l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig <clinit>
+WARNING: SkillChance.properties not loaded; keeping defaults
+java.nio.file.NoSuchFileException: ./config/SkillChance.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig.reload(AttackSkillChanceConfig.java:64)
+	at l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig.<clinit>(AttackSkillChanceConfig.java:47)
+	at PhysicalDamageTest.rates100(PhysicalDamageTest.java:32)
+	at DedupRuntimeTest.armor(DedupRuntimeTest.java:116)
+	at DedupRuntimeTest.main(DedupRuntimeTest.java:152)
+
+Nov 12, 2026 10:16:04 AM l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig <clinit>
+WARNING: MagicDollProc.properties not loaded; keeping defaults
+java.nio.file.NoSuchFileException: ./config/MagicDollProc.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig.reload(MagicDollCombatConfig.java:58)
+	at l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig.<clinit>(MagicDollCombatConfig.java:45)
+	at l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatProcs.applyOnHit(MagicDollCombatProcs.java:63)
+	at l1j.server.server.model.character.action.CAttackAction$AttackTargetData.calcDamage(CAttackAction.java:1440)
+	at DedupRuntimeTest.armor(DedupRuntimeTest.java:130)
+	at DedupRuntimeTest.main(DedupRuntimeTest.java:152)
+
+PASS actual physical chain: 6/23/12/29/372/378; AB/fixed DR/Burning once, final HP1000->628; ranged/keylink and legacy1.20 policies, overflow/zero
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+PASS actual CAccount.persist SQL rollback/retry/reopened connection is an absolute balance write, not a second consumption; no claim of cross-row XP/blessing crash atomicity
+Actual production math/Account/EXP/attack paths with disconnected PCs, empty map fixtures and local H2; no Windows/live DB. 2015 6059 model not installed as 2019 policy.

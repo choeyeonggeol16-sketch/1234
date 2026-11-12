@@ -1,0 +1,231 @@
+PASS shared creation/stat-reset HP/MP baselines across eight classes and WIS boundaries
+PASS actual maximum getters: 24/25,34/35,44/45; gear/buff exclusion; permanent allocation; unrelated HP/MP effects and caps
+PASS 7200 public-sheet cached means (8 classes, HP/MP, levels50/51..88, gradual stat allocation), max error=0.0
+PASS all 360 MP ranges / 360000 actual rolls; HP growth, display, class/CON boundaries
+PASS actual CRegenController MP6 at WIS20/lvl80; independent pure45 overweight gates; temporary stats/hunger/barrier/logout; odd half policy
+Nov 12, 2026 10:16:03 AM l1j.server.server.model.Instance.L1PcInstance applyHpMpLevelTransitionOwned
+WARNING: HP/MP legacy growth retained below history baseline: char=0
+PASS actual level/growth transition: 100 roundtrips, restart, legacy floor/no double reward, cap32767, reset stage, malformed history rejection
+Actual production classes tested; disconnected test clients/PC world effects, public research oracle; no Windows game or production DB.
+
+Nov 12, 2026 10:16:03 AM l1j.server.server.model.character.action.CAttackAction <clinit>
+WARNING: KeylinkBalance.properties not loaded; using previous/default class factors
+java.nio.file.NoSuchFileException: ./config/KeylinkBalance.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.action.CAttackAction.reloadKeylinkBalance(CAttackAction.java:114)
+	at l1j.server.server.model.character.action.CAttackAction.<clinit>(CAttackAction.java:104)
+	at l1j.server.server.model.character.action.CCreatureController.<init>(CCreatureController.java:658)
+	at l1j.server.server.model.Instance.L1PcInstance.<init>(L1PcInstance.java:1201)
+	at MagicStackRuntimeTest$Pc.<init>(MagicStackRuntimeTest.java:18)
+	at HpMpTest$Pc.<init>(HpMpTest.java:17)
+	at HpMpTest.pc(HpMpTest.java:22)
+	at HpMpPersistenceTest.main(HpMpPersistenceTest.java:75)
+
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+PASS actual createCharacter JDBC binding: 76 placeholders, final history value included
+PASS H2 MySQL-mode migration, actual CharacterSnapshot SQL, atomic rollback/commit, reopened connection and exact delevel, history-aware snapshot equality
+PASS concurrent level transitions and 200 actual snapshot captures preserve level/HP consistency with existing user lock
+PASS actual addExp and snapshot contention: existing user lock has consistent order; no PC-monitor/user-lock deadlock
+Production JDBC snapshot binding/SQL executed against local H2 fixture; not production MySQL/CacheD daemon/Windows integration.
+
+Nov 12, 2026 10:16:03 AM l1j.server.server.model.character.action.CAttackAction <clinit>
+WARNING: KeylinkBalance.properties not loaded; using previous/default class factors
+java.nio.file.NoSuchFileException: ./config/KeylinkBalance.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.action.CAttackAction.reloadKeylinkBalance(CAttackAction.java:114)
+	at l1j.server.server.model.character.action.CAttackAction.<clinit>(CAttackAction.java:104)
+	at l1j.server.server.model.character.action.CCreatureController.<init>(CCreatureController.java:658)
+	at l1j.server.server.model.Instance.L1PcInstance.<init>(L1PcInstance.java:1201)
+	at MagicStackRuntimeTest$Pc.<init>(MagicStackRuntimeTest.java:18)
+	at HpMpTest$Pc.<init>(HpMpTest.java:17)
+	at HpMpReviewTest$ResetPc.<init>(HpMpReviewTest.java:16)
+	at HpMpReviewTest.resetPc(HpMpReviewTest.java:39)
+	at HpMpReviewTest.resetSnapshot(HpMpReviewTest.java:47)
+	at HpMpReviewTest.main(HpMpReviewTest.java:116)
+
+PASS direct snapshot rejects staged reset; real save facade skips it under lock; START marker remains saveable
+PASS early type2/type3 finish rejected before HP/MP/history mutation
+PASS real final reset path fills HP/MP after permanent WIS45 bonus (stopped before later world/async effects)
+PASS public reset handler uses snapshot lock; 79 actual level messages build complete history accepted by finish guard
+PASS actual CharacterTable.storeCharacter / CharacterSnapshot contention completes without inverted PC-monitor/state-lock order
+
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+Nov 12, 2026 10:16:04 AM l1j.server.server.model.character.action.CAttackAction <clinit>
+WARNING: KeylinkBalance.properties not loaded; using previous/default class factors
+java.nio.file.NoSuchFileException: ./config/KeylinkBalance.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.action.CAttackAction.reloadKeylinkBalance(CAttackAction.java:114)
+	at l1j.server.server.model.character.action.CAttackAction.<clinit>(CAttackAction.java:104)
+	at l1j.server.server.model.character.action.CCreatureController.<init>(CCreatureController.java:658)
+	at l1j.server.server.model.Instance.L1PcInstance.<init>(L1PcInstance.java:1201)
+	at MagicStackRuntimeTest$Pc.<init>(MagicStackRuntimeTest.java:18)
+	at PhysicalDamageTest$Pc.<init>(PhysicalDamageTest.java:11)
+	at UnarmedElementTest$Pc.<init>(UnarmedElementTest.java:25)
+	at UnarmedElementTest.pc(UnarmedElementTest.java:44)
+	at UnarmedElementTest.bareHands(UnarmedElementTest.java:67)
+	at UnarmedElementTest.main(UnarmedElementTest.java:209)
+
+PASS U01-U06/U09: actual PC/PC and PC/NPC bare-hand damage 1/2 despite STR127, large bonuses/buffs/DR; existing hit roll still misses
+PASS real attack -> commit -> victim controller -> atomic HP: fist provenance survives final PVP modifiers; misses and NPC delivery preserved
+PASS existing controller ring/overflow preserves 81 bare-hand events and exact HP without a new queue
+PASS U08: bow-only polymorph rejects attack before hit/empty swing, actionPc emits no animation; mixed/unknown masks retained
+PASS E01-E06/E09/E11: 360 weapon element/channel vectors and matching NPC mapping; signed spell weakness and ER100 nonzero INT damage
+Nov 12, 2026 10:16:04 AM l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig <clinit>
+WARNING: SkillChance.properties not loaded; keeping defaults
+java.nio.file.NoSuchFileException: ./config/SkillChance.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig.reload(AttackSkillChanceConfig.java:64)
+	at l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig.<clinit>(AttackSkillChanceConfig.java:47)
+	at l1j.server.server.model.character.Attack.Helper.L1SkillProcHelper.rollAllFlags(L1SkillProcHelper.java:50)
+	at l1j.server.server.model.character.action.CAttackAction$AttackTargetData.calcPcDamageByTable(CAttackAction.java:1837)
+	at l1j.server.server.model.character.action.CAttackAction$AttackTargetData.calcPcPcDamage(CAttackAction.java:1465)
+	at l1j.server.server.model.character.action.CAttackAction$AttackTargetData.calcDamage(CAttackAction.java:1410)
+	at UnarmedElementTest.singleApplication(UnarmedElementTest.java:151)
+	at UnarmedElementTest.main(UnarmedElementTest.java:209)
+
+Nov 12, 2026 10:16:04 AM l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig <clinit>
+WARNING: MagicDollProc.properties not loaded; keeping defaults
+java.nio.file.NoSuchFileException: ./config/MagicDollProc.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig.reload(MagicDollCombatConfig.java:58)
+	at l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig.<clinit>(MagicDollCombatConfig.java:45)
+	at l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatProcs.applyOnHit(MagicDollCombatProcs.java:63)
+	at l1j.server.server.model.character.action.CAttackAction$AttackTargetData.calcDamage(CAttackAction.java:1440)
+	at UnarmedElementTest.singleApplication(UnarmedElementTest.java:151)
+	at UnarmedElementTest.main(UnarmedElementTest.java:209)
+
+PASS E07/E13-E16: physical base100 + resisted bonus5 stays105 through final HP, exactly one element read; four independent channels and additive effect roundtrip
+PASS E14 actual NPC handler/recast exception/stop handler: repeated -50 remains -50; channel switch restores old channel; expiry restores baseline
+PASS distinct legacy spell 45% curve retains fractions/caps; configured item proc cap/weakness; no physical-percent formula substituted into INT spells
+PASS E10/E17: actual NPC/PC and NPC/NPC ordinary physical paths do not apply player weapon enchant resistance
+Production combat classes executed with disconnected PCs, local H2 polymorph table and NPC world/HP fixture; not Windows/client/production DB. U07 special NPC ID unverified.
+
+PASS 16 room/dragon/combo combinations: one accepted hunting debit, one persistence submission, preserved bonus math; 20 UI replays, rejected award, large depletion and independent recipients
+PASS actual CalcExp.AddExp ordinary/capped path calls level transition exactly once; non-hunting rewards do not consume blessing
+PASS actual offline path excludes online time, partial internal units retained, gauge ceil/bounds, level127/efficiency cap and concurrent recovery/debit
+Nov 12, 2026 10:16:04 AM l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig <clinit>
+WARNING: SkillChance.properties not loaded; keeping defaults
+java.nio.file.NoSuchFileException: ./config/SkillChance.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig.reload(AttackSkillChanceConfig.java:64)
+	at l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig.<clinit>(AttackSkillChanceConfig.java:47)
+	at PhysicalDamageTest.rates100(PhysicalDamageTest.java:32)
+	at DedupRuntimeTest.armor(DedupRuntimeTest.java:116)
+	at DedupRuntimeTest.main(DedupRuntimeTest.java:152)
+
+Nov 12, 2026 10:16:04 AM l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig <clinit>
+WARNING: MagicDollProc.properties not loaded; keeping defaults
+java.nio.file.NoSuchFileException: ./config/MagicDollProc.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig.reload(MagicDollCombatConfig.java:58)
+	at l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig.<clinit>(MagicDollCombatConfig.java:45)
+	at l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatProcs.applyOnHit(MagicDollCombatProcs.java:63)
+	at l1j.server.server.model.character.action.CAttackAction$AttackTargetData.calcDamage(CAttackAction.java:1440)
+	at DedupRuntimeTest.armor(DedupRuntimeTest.java:130)
+	at DedupRuntimeTest.main(DedupRuntimeTest.java:152)
+
+PASS actual physical chain: 6/23/12/29/372/378; AB/fixed DR/Burning once, final HP1000->628; ranged/keylink and legacy1.20 policies, overflow/zero
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+PASS actual CAccount.persist SQL rollback/retry/reopened connection is an absolute balance write, not a second consumption; no claim of cross-row XP/blessing crash atomicity
+Actual production math/Account/EXP/attack paths with disconnected PCs, empty map fixtures and local H2; no Windows/live DB. 2015 6059 model not installed as 2019 policy.
+
+PASS exhaustive weaker-armor oracle at 4096 points; H0/AC0 ~60.38%, H30/AC120 and AC150 ~6.3901%
+PASS 717056 AC/H grid points, finite probability and signed AC extremes; 100000 endpoint rolls, basis-point rounding and 50% distribution
+PASS unchanged DG/ER routing, one Maan adjustment, evasion can reach 0%
+METRIC before H=134 bias=-0.006920 pp RMSE=2.044083 pp slope=-0.736098 pp/AC
+METRIC after H=134 bias=-0.013272 pp RMSE=2.046606 pp slope=-0.734977 pp/AC
+METRIC before H=147 bias=6.907284 pp RMSE=7.181726 pp slope=-0.789376 pp/AC
+METRIC after H=147 bias=6.890580 pp RMSE=7.163606 pp slope=-0.786428 pp/AC
+No H=-13 correction or JP2016 observed counts are present in production; displayed JP hit != verified RKern internal H.
+PASS 400000 concurrent reads/30 reloads; one immutable table publication; rejected reload leaves active table intact
+MEASURE warmed local calculation: 10.59 ns/call, 0 allocated bytes/1000000 calls; no live server load claim
+PASS production HitEvasionModel; low-AC boundary clamp and monotone envelope are conservative repairs, not a recovered official formula.
+
+Nov 12, 2026 10:16:06 AM l1j.server.server.model.character.action.CAttackAction <clinit>
+WARNING: KeylinkBalance.properties not loaded; using previous/default class factors
+java.nio.file.NoSuchFileException: ./config/KeylinkBalance.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160)
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910)
+	at l1j.server.server.model.character.action.CAttackAction.reloadKeylinkBalance(CAttackAction.java:114)
+	at l1j.server.server.model.character.action.CAttackAction.<clinit>(CAttackAction.java:104)
+	at l1j.server.server.model.character.action.CCreatureController.<init>(CCreatureController.java:658)
+	at l1j.server.server.model.Instance.L1PcInstance.<init>(L1PcInstance.java:1201)
+	at MagicStackRuntimeTest$Pc.<init>(MagicStackRuntimeTest.java:18)
+	at PhysicalDamageTest$Pc.<init>(PhysicalDamageTest.java:11)
+	at HitPathTest$Pc.<init>(HitPathTest.java:14)
+	at HitPathTest.fourPaths(HitPathTest.java:33)
+	at HitPathTest.main(HitPathTest.java:73)
+
+PASS real AttackTargetData four ordinary branches x melee/ranged x HIT/MISS: one model evaluation/roll; signed positive AC across four paths
+PASS actual melee/ranged H aggregation: 48 weight/durability combinations, STR/DEX and weapon bonus once, 0..300 long saturation
+
+PASS full type compilation of 1696 production Java files (5 pre-existing removal warnings).

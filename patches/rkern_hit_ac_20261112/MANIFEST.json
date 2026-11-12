@@ -1,0 +1,34 @@
+{
+  "bundle": "RKern_Aden_ALL_FIXES_HIT_AC_FULL_SRC_20261112.zip",
+  "sha256": "39229c1a95394792aca66008aa269a7ebdc82ce6ee90f47b8bc2bdd0eb87400f",
+  "base_revision": "3ca90009e26f80adc983b25e2857f885eb7b133b",
+  "report_revision": "f98238816ab01db944b2b208de992416378547d9",
+  "source_files": 1697,
+  "java_files": 1696,
+  "changed_java_files": [
+    "src/l1j/server/server/model/character/Attack/Helper/HitEvasionModel.java",
+    "src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java",
+    "src/l1j/server/server/model/character/action/CAttackAction.java"
+  ],
+  "new_sql": false,
+  "existing_required_sql": "database/RKern_HPMP_GROWTH_20261112.sql",
+  "validation": [
+    "1696 production Java full type compile, zero errors, five existing removal warnings",
+    "five known regressions fail on previous production classes and pass after repair",
+    "717056 AC/H grid points; 4096 independent exhaustive lower-envelope oracle points",
+    "100000 endpoint rolls and probability quantization; DG/ER and Maan arithmetic",
+    "400000 concurrent reads and 30 reloads; atomic table publication",
+    "actual four ordinary AttackTargetData branches with counting model fixture: one evaluation and roll",
+    "48 actual melee/ranged H input combinations, signed AC and int overflow",
+    "all prior magic/physical/HPMP/persistence/locking/unarmed/element/blessing regressions",
+    "source ZIP CRC/hash/every-byte and diff reconstruction"
+  ],
+  "limitations": [
+    "Conservative model repair, not recovery of the official 2016/2019 formula",
+    "Unmeasured defense AC 0..63 uses nearest calibration boundary AC64; positive game AC maps to defense0",
+    "Low-H plateau where original curves cross is a monotonic envelope, not a new measured curve",
+    "JP displayed hit147 is not mapped to RKern internal H; no -13 adjustment installed",
+    "JP LV86/LV14 and LV6/LV82 equipment/stat endpoint scenarios not reproduced; original model may still disagree",
+    "No Windows live game, operating MySQL, high-concurrency server load, or full-world event tracing"
+  ]
+}

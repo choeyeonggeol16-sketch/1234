@@ -1,0 +1,13 @@
+{
+  "base_revision": "3ca90009e26f80adc983b25e2857f885eb7b133b",
+  "report_revision": "f98238816ab01db944b2b208de992416378547d9",
+  "base_bundle_sha256": "178b1ef2b0e7d10ac7d84a67b1188be26aa87beaf24e78baab53cda7360c4fea",
+  "java_files": 1696,
+  "changed_java_files": [
+    "src/l1j/server/server/model/character/Attack/Helper/HitEvasionModel.java",
+    "src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java",
+    "src/l1j/server/server/model/character/action/CAttackAction.java"
+  ],
+  "all_other_source_unchanged": true,
+  "attack_action_only_four_signed_ac_conversions": true
+}

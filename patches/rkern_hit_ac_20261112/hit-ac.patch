@@ -1,0 +1,264 @@
+diff --git a/src/l1j/server/server/model/character/Attack/Helper/HitEvasionModel.java b/src/l1j/server/server/model/character/Attack/Helper/HitEvasionModel.java
+index 434f276..d1196a3 100644
+--- a/src/l1j/server/server/model/character/Attack/Helper/HitEvasionModel.java
++++ b/src/l1j/server/server/model/character/Attack/Helper/HitEvasionModel.java
+@@ -1,11 +1,12 @@
+ package l1j.server.server.model.character.Attack.Helper;
+ 
+ import java.util.concurrent.ThreadLocalRandom;
++import java.util.Arrays;
+ 
+ public final class HitEvasionModel {
+ 
+-    public static volatile double HIT_MIN = 0.05;
+-    public static volatile double HIT_MAX = 0.95;
++    public static volatile double HIT_MIN = 0.0;
++    public static volatile double HIT_MAX = 1.0;
+ 
+     private static final int AC_MAX = 255;
+ 
+@@ -51,8 +52,11 @@ public final class HitEvasionModel {
+     private static final PiecewiseLinear S_LERP =
+             new PiecewiseLinear(AC_KNOT, S_KNOT);
+ 
+-    private static volatile double[] MU_LUT = new double[AC_MAX + 1];
+-    private static volatile double[] INV_S_LUT = new double[AC_MAX + 1];
++    // A single publication prevents a reload from mixing old centers and new
++    // spreads. Each immutable curve is the lower envelope of the existing
++    // calibrated logits at this and weaker armor values. This removes curve
++    // crossings without fitting a new hit-stat offset or changing valid points.
++    private static volatile HitCurve[] HIT_LUT;
+ 
+     static {
+         rebuildLut(); 
+@@ -71,9 +75,16 @@ public final class HitEvasionModel {
+         final double sMin = S_MIN;
+         final double sMax = S_MAX;
+         final double tail = S_TAIL_SLOPE_PER_AC;
++        if (!Double.isFinite(sMin) || !Double.isFinite(sMax)
++                || sMin <= 0.0 || sMax < sMin || !Double.isFinite(tail)) {
++            throw new IllegalArgumentException("Invalid hit spread bounds/tail");
++        }
+ 
+         for (int ac = 0; ac <= AC_MAX; ac++) {
+-            muLut[ac] = MU_SPLINE.value(ac);
++            // There is no calibration below AC 64. Extrapolating the first
++            // one-point tangent made H=0 vs AC 0 almost certain to hit. Use the
++            // nearest observed boundary until low-AC measurements exist.
++            muLut[ac] = MU_SPLINE.value(Math.max(AC_KNOT[0], ac));
+ 
+             double s = S_LERP.value(ac);
+             if (ac >= lastKnot && tail != 0.0) {
+@@ -85,8 +96,23 @@ public final class HitEvasionModel {
+             invLut[ac] = 1.0 / s;
+         }
+ 
+-        MU_LUT = muLut;
+-        INV_S_LUT = invLut;
++        final Integer[] order = new Integer[AC_MAX + 1];
++        for (int ac = 0; ac <= AC_MAX; ac++) order[ac] = ac;
++        Arrays.sort(order, (a, b) -> {
++            int compared = Double.compare(invLut[b], invLut[a]);
++            if (compared != 0) return compared;
++            return Double.compare(-muLut[a] * invLut[a], -muLut[b] * invLut[b]);
++        });
++        final HitCurve[] next = new HitCurve[AC_MAX + 1];
++        for (int ac = 0; ac <= AC_MAX; ac++) {
++            next[ac] = new HitCurve(ac, order, muLut, invLut);
++        }
++        HIT_LUT = next;
++    }
++
++    /** Convert signed game AC to model defense strength; positive AC is weak. */
++    public static int defenseAc(int armorClass) {
++        return (int) Math.max(0L, Math.min(AC_MAX, -(long) armorClass));
+     }
+ 
+     public static double calcHitChance(double H,
+@@ -96,18 +122,10 @@ public final class HitEvasionModel {
+                                        boolean isRanged,
+                                        double evadeBonusRate) {
+ 
+-        int ac = acDef;
+-        if (ac < 0) ac = -ac;
+-        if (ac > AC_MAX) ac = AC_MAX;
+-
+-        // snapshot volatile references
+-        final double[] muLut   = MU_LUT;
+-        final double[] invSLut = INV_S_LUT;
+-
+-        final double mu = muLut[ac];
+-        final double invS = invSLut[ac];
+-
+-        double hit = sigmoid((H - mu) * invS);
++        if (Double.isNaN(H)) return 0.0;
++        final int ac = (int) Math.min(AC_MAX, Math.abs((long) acDef));
++        final HitCurve[] lut = HIT_LUT;
++        double hit = sigmoid(lut[ac].logOdds(H));
+ 
+         int stat = isRanged ? er : dg;
+         if (stat > 0) {
+@@ -118,19 +136,68 @@ public final class HitEvasionModel {
+ 
+         if (evadeBonusRate != 0.0) hit -= evadeBonusRate;
+ 
+-        final double min = HIT_MIN;
++        final double min = probability(HIT_MIN);
+         if (hit < min) return min;
+-        final double max = HIT_MAX;
++        final double max = Math.max(min, probability(HIT_MAX));
+         if (hit > max) return max;
+-        return hit;
++        return probability(hit);
+     }
+ 
+     public static boolean rollHit(double hitChance) {
+         int r = ThreadLocalRandom.current().nextInt(10000);
+-        int p = (int) (hitChance * 10000.0 + 0.5);
++        int p = (int) (probability(hitChance) * 10000.0 + 0.5);
+         return r < p;
+     }
+ 
++    private static double probability(double value) {
++        if (!(value > 0.0)) return 0.0; // Includes NaN.
++        return Math.min(1.0, value);
++    }
++
++    /** Built only at startup/reload; no allocation or lock in a combat roll. */
++    private static final class HitCurve {
++        private final double[] slope;
++        private final double[] intercept;
++        private final double[] start;
++
++        HitCurve(int ac, Integer[] order, double[] mu, double[] inverseSpread) {
++            final double[] a = new double[ac + 1];
++            final double[] b = new double[ac + 1];
++            final double[] from = new double[ac + 1];
++            int count = 0;
++            for (int index : order) {
++                if (index > ac) continue;
++                final double nextA = inverseSpread[index];
++                final double nextB = -mu[index] * nextA;
++                // Slopes descend, equal slopes have the lowest intercept first.
++                if (count > 0 && nextA == a[count - 1]) continue;
++                double crossing = Double.NEGATIVE_INFINITY;
++                while (count > 0) {
++                    crossing = (nextB - b[count - 1]) / (a[count - 1] - nextA);
++                    if (crossing > from[count - 1]) break;
++                    count--;
++                }
++                a[count] = nextA;
++                b[count] = nextB;
++                from[count] = count == 0 ? Double.NEGATIVE_INFINITY : crossing;
++                count++;
++            }
++            slope = Arrays.copyOf(a, count);
++            intercept = Arrays.copyOf(b, count);
++            start = Arrays.copyOf(from, count);
++        }
++
++        double logOdds(double hit) {
++            int low = 0, high = start.length - 1;
++            while (low < high) {
++                final int middle = (low + high + 1) >>> 1;
++                if (hit >= start[middle]) low = middle;
++                else high = middle - 1;
++            }
++            return hit * slope[low] + intercept[low];
++        }
++    }
++
+     private static double[] buildMuKnots() {
+         final double[] hitSpreadAtHighReferenceKnots = new double[REFERENCE_AC_HIGH.length];
+ 
+@@ -331,4 +398,4 @@ public final class HitEvasionModel {
+             return h00 * y[i] + h10 * h * m[i] + h01 * y[i + 1] + h11 * h * m[i + 1];
+         }
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java b/src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java
+index f18bfce..5e837cc 100644
+--- a/src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java
++++ b/src/l1j/server/server/model/character/Attack/Helper/L1AttackHelper.java
+@@ -86,7 +86,7 @@ public final class L1AttackHelper {
+ 		if (pc == null) return 0;
+ 
+ 		// 공통: 무기 명중 + 인챈/2
+-		final int wpnPart = weaponAddHit + (weaponEnchant >> 1);
++		final long wpnPart = (long) weaponAddHit + (weaponEnchant >> 1);
+ 
+ 		// 중량(Weight%) 명중 패널티
+ 		final int weightPct = pc.getInventory().getWeight100();
+@@ -97,25 +97,25 @@ public final class L1AttackHelper {
+ 
+ 		int baseHit;
+ 		int statHit;
+-		int miscHit;
++		long miscHit;
+ 
+ 		if (isRanged) {
+ 			baseHit = pc.getBaseBowHitByLevelClass();
+ 			statHit = CalcStat.원거리명중(pc.getAbility().getTotalDex());
+-			miscHit = pc.getBowHitup() + pc.getBowHitRate();
++			miscHit = (long) pc.getBowHitup() + pc.getBowHitRate();
+ 		} else {
+ 			baseHit = pc.getBaseMeleeHitByLevelClass();
+ 			statHit = CalcStat.근거리명중(pc.getAbility().getTotalStr());
+-			miscHit = pc.getHitup() + pc.getHitRate();
++			miscHit = (long) pc.getHitup() + pc.getHitRate();
+ 		}
+ 
+ 		// 최종 H
+-		int H = baseHit + statHit + miscHit + wpnPart - weightPenalty - lossPenalty;
++		long H = (long) baseHit + statHit + miscHit + wpnPart - weightPenalty - lossPenalty;
+ 
+ 		if (H < 0) H = 0;
+ 		if (H > 300) H = 300;
+ 
+-		return H;
++		return (int) H;
+ 	}
+ 
+ 	public static int calcNpcHitH(final L1NpcInstance npc, final boolean isRanged) {
+diff --git a/src/l1j/server/server/model/character/action/CAttackAction.java b/src/l1j/server/server/model/character/action/CAttackAction.java
+index ef681dc..b73b4e9 100644
+--- a/src/l1j/server/server/model/character/action/CAttackAction.java
++++ b/src/l1j/server/server/model/character/action/CAttackAction.java
+@@ -1292,7 +1292,7 @@ public final class CAttackAction extends CNewAction {
+         _hitRate = L1AttackHelper.calcPcHitH(_pc, isRanged, wpnHit, wpnEnchant, loss);
+         
+         // ===== AC / DG / ER  =====
+-        final int acDef = Math.abs(_targetPc.getAC().getAc());
++        final int acDef = HitEvasionModel.defenseAc(_targetPc.getAC().getAc());
+         final int dg = _targetPc.getDg();
+         final int er = _targetPc.getTotalER();
+ 
+@@ -1329,7 +1329,7 @@ public final class CAttackAction extends CNewAction {
+ 		_hitRate = L1AttackHelper.calcPcHitH(_pc, isRanged, wpnHit, wpnEnchant, loss);
+ 		
+ 		// ===== AC =====
+-        final int acDef = Math.abs(_targetNpc.getAC().getAc());
++        final int acDef = HitEvasionModel.defenseAc(_targetNpc.getAC().getAc());
+ 	    
+ 		// ===== 최종 명중률 =====
+ 		final double hitChance = HitEvasionModel.calcHitChance(
+@@ -1355,7 +1355,7 @@ public final class CAttackAction extends CNewAction {
+ 		_hitRate = L1AttackHelper.calcNpcHitH(_npc, isRanged);
+ 		
+ 		  // ===== AC / DG / ER  =====
+-        final int acDef = Math.abs(_targetPc.getAC().getAc());
++        final int acDef = HitEvasionModel.defenseAc(_targetPc.getAC().getAc());
+         final int dg = _targetPc.getDg();
+         final int er = _targetPc.getTotalER();
+ 
+@@ -1385,7 +1385,7 @@ public final class CAttackAction extends CNewAction {
+ 		_hitRate = L1AttackHelper.calcNpcHitH(_npc, isRanged);
+ 		
+ 		  // ===== AC  =====
+-        final int acDef = Math.abs(_targetNpc.getAC().getAc());
++        final int acDef = HitEvasionModel.defenseAc(_targetNpc.getAC().getAc());
+ 
+         // ===== 최종 명중률 =====
+         final double hitChance = HitEvasionModel.calcHitChance(

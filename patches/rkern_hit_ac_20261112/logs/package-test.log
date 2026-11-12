@@ -1,0 +1,3 @@
+PASS ZIP CRC, 1697 source files, 1696 Java, every file byte-for-byte.
+PASS exactly three production Java files changed from 3ca9000; all previous fixes retained.
+PASS hit-ac.patch applies to previous full source and reproduces new bundle.
