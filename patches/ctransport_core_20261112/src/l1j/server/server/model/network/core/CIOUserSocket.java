@@ -105,7 +105,7 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
     private boolean _nativePacketOnIo;
     private long _nativePacketSequence;
     private final java.util.concurrent.atomic.AtomicInteger nativePacketPhase=new java.util.concurrent.atomic.AtomicInteger();
-    private boolean nativeDirect;
+    private volatile boolean nativeDirect;
     private long deadlinePriorProgress,deadlineStalledSince;
     private volatile boolean _handshakePlainPending;
     void initializeCipher(long seed) {
@@ -189,14 +189,19 @@ public final class CIOUserSocket implements AutoCloseable, CIOThreadCallback.Pac
         if(nativeDirect&&_closed==0&&_channel.isOpen())_channel.setUserState(state.ordinal());
     }
     int transportNetworkDeadline() {
-        if(!isOpen())return 0;
-        long now=System.nanoTime(),progress=networkWriteProgress();
-        if(hasPendingNetworkSend()) {
-            if(deadlineStalledSince==0||deadlinePriorProgress!=progress)deadlineStalledSince=now;
-            if(now-deadlineStalledSince>=NETWORK_WRITE_STALL_NANOS)return -1;
-        }else deadlineStalledSince=0;
-        deadlinePriorProgress=progress;
-        return networkDeadlineExpired(now)?-1:(int)nextNetworkDeadlineDelayMs(now,5000);
+        // An earlier request can overlap the currently running wheel callback.
+        // Share the existing socket state lock with SEND/grace transitions.
+        _stateLock.lock();
+        try {
+            if(!isOpen())return 0;
+            long now=System.nanoTime(),progress=networkWriteProgress();
+            if(hasPendingNetworkSend()) {
+                if(deadlineStalledSince==0||deadlinePriorProgress!=progress)deadlineStalledSince=now;
+                if(now-deadlineStalledSince>=NETWORK_WRITE_STALL_NANOS)return -1;
+            }else deadlineStalledSince=0;
+            deadlinePriorProgress=progress;
+            return networkDeadlineExpired(now)?-1:(int)nextNetworkDeadlineDelayMs(now,5000);
+        }finally{_stateLock.unlock();}
     }
 
     long nextNetworkDeadlineDelayMs(long now, long normalDelayMs) {
