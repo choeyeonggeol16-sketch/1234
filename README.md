@@ -4,6 +4,10 @@
 
 native 접속 관리자와 generation 핸들, 기존 L1 codec의 C++ 직접 호출, native 네트워크 timer를 연결했습니다. 실제 생산 CIOUserSocket의 packet lease/종료 검사도 추가했습니다. src와 CTransport.dll ABI0x50000을 함께 적용합니다. PSS 독립 연결·활성화·클라이언트는 그대로입니다. 추가 SQL 없음. Windows Server2022/Java21 실제 검사 통과([실행43309668114](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43309668114)). 실게임/DB/장시간 부하는 미검증입니다.
 
+[**원본 바이너리·현재 구현 대조 보고서**](reports/CTRANSPORT_BINARY_AUDIT_20261112.md) · [**33개 항목 JSON**](patches/ctransport_core_20261112/research/network-audit/RESTORATION_MATRIX.json) · [**명령·소스 대조 자료 ZIP**](downloads/CTransport_BINARY_AUDIT_20261112.zip)
+
+접속 수락부터 등록·스레드 시작까지 실제 바이너리로 대조했습니다. 구현 완료, L1 적용, 원본 미이식, 미확인을 고정 분류했습니다. 이번 감사에서 서버 코드·DLL·PSS는 변경하지 않았습니다.
+
 ---
 
 ## 2026-11-12 — CTransport ABI4 / L1 유저소켓 구조 반영

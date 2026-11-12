@@ -1,0 +1,10 @@
+# thread_seed_crt; PE pdata/unwind; entry 0xab9520
+# chunk 0xab9520..0xab9536
+0000000000ab9520: push     rbx
+0000000000ab9522: sub      rsp, 0x20
+0000000000ab9526: mov      ebx, ecx
+0000000000ab9528: call     0xacbb80
+0000000000ab952d: mov      dword ptr [rax + 0x1c], ebx
+0000000000ab9530: add      rsp, 0x20
+0000000000ab9534: pop      rbx
+0000000000ab9535: ret

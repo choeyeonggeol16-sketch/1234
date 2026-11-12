@@ -1,0 +1,152 @@
+[
+  {
+    "signature": "bool __cdecl CObjectMap<class CUserSocket,8192,26,class RWLock,int>::ExistKey(int)",
+    "address": "0xba12d0",
+    "references": [
+      {
+        "at": "0x4f99d1",
+        "function": "0x4f9970"
+      }
+    ]
+  },
+  {
+    "signature": "bool __cdecl CObjectMap<class CUserSocket,8192,27,class RWLock,int>::ExistKey(int)",
+    "address": "0xba13b0",
+    "references": [
+      {
+        "at": "0x4f9af9",
+        "function": "0x4f9a98"
+      }
+    ]
+  },
+  {
+    "signature": "bool __cdecl CObjectMap<class CUserSocket,8192,28,class RWLock,int>::ExistKey(int)",
+    "address": "0xba1490",
+    "references": [
+      {
+        "at": "0x4f9c21",
+        "function": "0x4f9bc0"
+      }
+    ]
+  },
+  {
+    "signature": "bool __cdecl CObjectMap<class CUserSocket,8192,28,class RWLock,int>::DeleteObject(int,char *,int)",
+    "address": "0xd1d190",
+    "references": [
+      {
+        "at": "0x895227",
+        "function": "0x8951bc"
+      }
+    ]
+  },
+  {
+    "signature": "bool __cdecl CObjectMap<class CUserSocket,8192,28,class RWLock,int>::Insert(int,class CUserSocket *,char *,int)",
+    "address": "0xd954b0",
+    "references": [
+      {
+        "at": "0x97ec78",
+        "function": "0x97ec10"
+      }
+    ]
+  },
+  {
+    "signature": "bool __cdecl CObjectMap<class CUserSocket,8192,26,class RWLock,int>::Insert(int,class CUserSocket *,char *,int)",
+    "address": "0xdc3030",
+    "references": [
+      {
+        "at": "0xa081a0",
+        "function": "0xa08138"
+      }
+    ]
+  },
+  {
+    "signature": "bool __cdecl CObjectMap<class CUserSocket,8192,26,class RWLock,int>::DeleteObject(int,char *,int)",
+    "address": "0xdc3140",
+    "references": [
+      {
+        "at": "0xa0836b",
+        "function": "0xa08300"
+      }
+    ]
+  },
+  {
+    "signature": "bool __cdecl CObjectMap<class CUserSocket,8192,27,class RWLock,int>::Insert(int,class CUserSocket *,char *,int)",
+    "address": "0xdc3230",
+    "references": [
+      {
+        "at": "0xa08500",
+        "function": "0xa08498"
+      }
+    ]
+  },
+  {
+    "signature": "bool __cdecl CObjectMap<class CUserSocket,8192,27,class RWLock,int>::DeleteObject(int,char *,int)",
+    "address": "0xdc3340",
+    "references": [
+      {
+        "at": "0xa086cb",
+        "function": "0xa08660"
+      }
+    ]
+  },
+  {
+    "signature": "__cdecl CObjectMap<class CUserSocket,8192,26,class RWLock,int>::CObjectMap(void)",
+    "address": "0xdc4820",
+    "references": [
+      {
+        "at": "0xa0ec8c",
+        "function": "0xa0ebe0"
+      }
+    ]
+  },
+  {
+    "signature": "__cdecl CObjectMap<class CUserSocket,8192,26,class RWLock,int>::~CObjectMap(void)",
+    "address": "0xdc48f0",
+    "references": [
+      {
+        "at": "0xa0ed3f",
+        "function": "0xa0ece0"
+      }
+    ]
+  },
+  {
+    "signature": "__cdecl CObjectMap<class CUserSocket,8192,27,class RWLock,int>::CObjectMap(void)",
+    "address": "0xdc49c0",
+    "references": [
+      {
+        "at": "0xa0efc4",
+        "function": "0xa0ef18"
+      }
+    ]
+  },
+  {
+    "signature": "__cdecl CObjectMap<class CUserSocket,8192,27,class RWLock,int>::~CObjectMap(void)",
+    "address": "0xdc4a90",
+    "references": [
+      {
+        "at": "0xa0f077",
+        "function": "0xa0f018"
+      }
+    ]
+  },
+  {
+    "signature": "__cdecl CObjectMap<class CUserSocket,8192,28,class RWLock,int>::CObjectMap(void)",
+    "address": "0xdc4b60",
+    "references": [
+      {
+        "at": "0xa0f2fc",
+        "function": "0xa0f250"
+      }
+    ]
+  },
+  {
+    "signature": "__cdecl CObjectMap<class CUserSocket,8192,28,class RWLock,int>::~CObjectMap(void)",
+    "address": "0xdc4c30",
+    "references": [
+      {
+        "at": "0xa0f3af",
+        "function": "0xa0f350"
+      }
+    ]
+  }
+]

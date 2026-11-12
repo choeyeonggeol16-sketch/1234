@@ -1,0 +1,229 @@
+# api_bind_66e36c; PE pdata/unwind; entry 0x66e36c
+# chunk 0x66e36c..0x66e730
+000000000066e36c: push     rbx
+000000000066e36e: push     rbp
+000000000066e36f: push     rsi
+000000000066e370: push     rdi
+000000000066e371: push     r12
+000000000066e373: push     r13
+000000000066e375: push     r14
+000000000066e377: sub      rsp, 0xae0
+000000000066e37e: xor      ebx, ebx
+000000000066e380: mov      r13, r9
+000000000066e383: mov      rbp, r8
+000000000066e386: cmp      rcx, rbx
+000000000066e389: mov      r12, rdx
+000000000066e38c: mov      rsi, rcx
+000000000066e38f: jne      0x66e398
+000000000066e391: xor      eax, eax
+000000000066e393: jmp      0x66e71e
+000000000066e398: lea      rdx, [rsp + 0x940]
+000000000066e3a0: mov      cx, 0x202
+000000000066e3a4: call     qword ptr [rip + 0x4ae30e] ; IAT WSAStartup
+000000000066e3aa: cmp      eax, ebx
+000000000066e3ac: jne      0x66e391
+000000000066e3ae: xor      r8d, r8d
+000000000066e3b1: lea      edx, [r8 + 1]
+000000000066e3b5: lea      ecx, [rdx + 1]
+000000000066e3b8: call     qword ptr [rip + 0x4ae2a2] ; IAT socket
+000000000066e3be: cmp      rax, -1
+000000000066e3c2: mov      rdi, rax
+000000000066e3c5: je       0x66e716
+000000000066e3cb: lea      r9, [rsp + 0xb20]
+000000000066e3d3: mov      r14d, 0x1388
+000000000066e3d9: mov      edx, 0xffff
+000000000066e3de: mov      r8d, 0x1006
+000000000066e3e4: mov      rcx, rax
+000000000066e3e7: mov      dword ptr [rsp + 0x20], 4
+000000000066e3ef: mov      dword ptr [rsp + 0xb20], r14d
+000000000066e3f7: call     qword ptr [rip + 0x4ae273] ; IAT setsockopt
+000000000066e3fd: cmp      eax, -1
+000000000066e400: je       0x66e70d
+000000000066e406: lea      r9, [rsp + 0xb20]
+000000000066e40e: mov      edx, 0xffff
+000000000066e413: mov      r8d, 0x1005
+000000000066e419: mov      rcx, rdi
+000000000066e41c: mov      dword ptr [rsp + 0xb20], r14d
+000000000066e424: mov      dword ptr [rsp + 0x20], 4
+000000000066e42c: call     qword ptr [rip + 0x4ae23e] ; IAT setsockopt
+000000000066e432: cmp      eax, -1
+000000000066e435: je       0x66e70d
+000000000066e43b: mov      r14d, 0x10
+000000000066e441: lea      rdx, [rsp + 0x30]
+000000000066e446: mov      rcx, rdi
+000000000066e449: mov      r8d, r14d
+000000000066e44c: mov      word ptr [rsp + 0x30], 2
+000000000066e453: mov      dword ptr [rsp + 0x34], ebx
+000000000066e457: mov      word ptr [rsp + 0x32], bx
+000000000066e45c: call     qword ptr [rip + 0x4ae1f6] ; IAT bind
+000000000066e462: cmp      eax, -1
+000000000066e465: je       0x66e70d
+000000000066e46b: cmp      byte ptr [rsi], 0x30
+000000000066e46e: mov      word ptr [rsp + 0x30], 2
+000000000066e475: jl       0x66e48b
+000000000066e477: cmp      byte ptr [rsi], 0x39
+000000000066e47a: jg       0x66e48b
+000000000066e47c: mov      rcx, rsi
+000000000066e47f: call     qword ptr [rip + 0x4ae203] ; IAT inet_addr
+000000000066e485: mov      dword ptr [rsp + 0x34], eax
+000000000066e489: jmp      0x66e4b3
+000000000066e48b: mov      rcx, rsi
+000000000066e48e: call     qword ptr [rip + 0x4ae21c] ; IAT gethostbyname
+000000000066e494: cmp      rax, rbx
+000000000066e497: je       0x66e70d
+000000000066e49d: mov      rdx, qword ptr [rax + 0x18]
+000000000066e4a1: movsx    r8, word ptr [rax + 0x12]
+000000000066e4a6: lea      rcx, [rsp + 0x34]
+000000000066e4ab: mov      rdx, qword ptr [rdx]
+000000000066e4ae: call     0xabcd50
+000000000066e4b3: mov      cx, 0x19
+000000000066e4b7: call     qword ptr [rip + 0x4ae193] ; IAT htons
+000000000066e4bd: lea      rdx, [rsp + 0x30]
+000000000066e4c2: mov      r8d, r14d
+000000000066e4c5: mov      rcx, rdi
+000000000066e4c8: mov      word ptr [rsp + 0x32], ax
+000000000066e4cd: call     qword ptr [rip + 0x4ae235] ; IAT connect
+000000000066e4d3: cmp      eax, -1
+000000000066e4d6: je       0x66e70d
+000000000066e4dc: mov      r14d, 0x800
+000000000066e4e2: lea      rdx, [rsp + 0x140]
+000000000066e4ea: xor      r9d, r9d
+000000000066e4ed: mov      r8d, r14d
+000000000066e4f0: mov      rcx, rdi
+000000000066e4f3: call     qword ptr [rip + 0x4ae1af] ; IAT recv
+000000000066e4f9: lea      rdx, [rip + 0x5c9b78]
+000000000066e500: lea      rcx, [rsp + 0x40]
+000000000066e505: mov      r8, rsi
+000000000066e508: call     0x66e008
+000000000066e50d: lea      rcx, [rsp + 0x40]
+000000000066e512: call     0xab7d70
+000000000066e517: lea      rdx, [rsp + 0x40]
+000000000066e51c: xor      r9d, r9d
+000000000066e51f: mov      r8, rax
+000000000066e522: mov      rcx, rdi
+000000000066e525: call     qword ptr [rip + 0x4ae165] ; IAT send
+000000000066e52b: cmp      eax, ebx
+000000000066e52d: jle      0x66e70d
+000000000066e533: lea      rdx, [rsp + 0x140]
+000000000066e53b: xor      r9d, r9d
+000000000066e53e: mov      r8d, r14d
+000000000066e541: mov      rcx, rdi
+000000000066e544: call     qword ptr [rip + 0x4ae15e] ; IAT recv
+000000000066e54a: lea      rsi, [rip + 0x98af1f]
+000000000066e551: lea      rdx, [rip + 0x5c9b08]
+000000000066e558: mov      rcx, rsi
+000000000066e55b: mov      r8, r12
+000000000066e55e: call     0x66e008
+000000000066e563: mov      rcx, rsi
+000000000066e566: call     0xab7d70
+000000000066e56b: xor      r9d, r9d
+000000000066e56e: mov      rdx, rsi
+000000000066e571: mov      r8, rax
+000000000066e574: mov      rcx, rdi
+000000000066e577: call     qword ptr [rip + 0x4ae113] ; IAT send
+000000000066e57d: cmp      eax, ebx
+000000000066e57f: jle      0x66e70d
+000000000066e585: lea      rdx, [rsp + 0x140]
+000000000066e58d: xor      r9d, r9d
+000000000066e590: mov      r8d, r14d
+000000000066e593: mov      rcx, rdi
+000000000066e596: call     qword ptr [rip + 0x4ae10c] ; IAT recv
+000000000066e59c: cmp      byte ptr [rbp], bl
+000000000066e59f: je       0x66e605
+000000000066e5a1: lea      rsi, [rip + 0x98afc8]
+000000000066e5a8: lea      rdx, [rip + 0x5c9aa1]
+000000000066e5af: mov      r8, rbp
+000000000066e5b2: mov      rcx, rsi
+000000000066e5b5: call     0x66e008
+000000000066e5ba: mov      rcx, rsi
+000000000066e5bd: call     0xab7d70
+000000000066e5c2: xor      r9d, r9d
+000000000066e5c5: mov      rdx, rsi
+000000000066e5c8: mov      r8, rax
+000000000066e5cb: mov      rcx, rdi
+000000000066e5ce: call     qword ptr [rip + 0x4ae0bc] ; IAT send
+000000000066e5d4: cmp      eax, ebx
+000000000066e5d6: jle      0x66e70d
+000000000066e5dc: lea      rdx, [rsp + 0x140]
+000000000066e5e4: xor      r9d, r9d
+000000000066e5e7: mov      r8d, r14d
+000000000066e5ea: mov      rcx, rdi
+000000000066e5ed: call     qword ptr [rip + 0x4ae0b5] ; IAT recv
+000000000066e5f3: mov      rcx, rbp
+000000000066e5f6: call     0xab7d70
+000000000066e5fb: lea      rbp, [rax + rbp + 1]
+000000000066e600: cmp      byte ptr [rbp], bl
+000000000066e603: jne      0x66e5a8
+000000000066e605: lea      rcx, [rip + 0x98ad58]
+000000000066e60c: call     0xab7d70
+000000000066e611: lea      rdx, [rip + 0x98ad4c]
+000000000066e618: xor      r9d, r9d
+000000000066e61b: mov      r8, rax
+000000000066e61e: mov      rcx, rdi
+000000000066e621: call     qword ptr [rip + 0x4ae069] ; IAT send
+000000000066e627: cmp      eax, ebx
+000000000066e629: jle      0x66e70d
+000000000066e62f: lea      rdx, [rsp + 0x140]
+000000000066e637: xor      r9d, r9d
+000000000066e63a: mov      r8d, r14d
+000000000066e63d: mov      rcx, rdi
+000000000066e640: call     qword ptr [rip + 0x4ae062] ; IAT recv
+000000000066e646: mov      edx, dword ptr [rsp + 0xb40]
+000000000066e64d: mov      rcx, rdi
+000000000066e650: call     0x66e108
+000000000066e655: lea      rcx, [rip + 0x4574434]
+000000000066e65c: call     0xab7d70
+000000000066e661: lea      rdx, [rip + 0x4574428]
+000000000066e668: xor      r9d, r9d
+000000000066e66b: mov      r8, rax
+000000000066e66e: mov      rcx, rdi
+000000000066e671: call     qword ptr [rip + 0x4ae019] ; IAT send
+000000000066e677: cmp      eax, ebx
+000000000066e679: jle      0x66e70d
+000000000066e67f: mov      rdx, r13
+000000000066e682: mov      rcx, rdi
+000000000066e685: call     0x66ddd0
+000000000066e68a: cmp      al, bl
+000000000066e68c: je       0x66e70d
+000000000066e68e: lea      rcx, [rip + 0x98afdb]
+000000000066e695: call     0xab7d70
+000000000066e69a: lea      rdx, [rip + 0x98afcf]
+000000000066e6a1: xor      r9d, r9d
+000000000066e6a4: mov      r8, rax
+000000000066e6a7: mov      rcx, rdi
+000000000066e6aa: call     qword ptr [rip + 0x4adfe0] ; IAT send
+000000000066e6b0: cmp      eax, ebx
+000000000066e6b2: jle      0x66e70d
+000000000066e6b4: lea      rdx, [rsp + 0x140]
+000000000066e6bc: xor      r9d, r9d
+000000000066e6bf: mov      r8d, r14d
+000000000066e6c2: mov      rcx, rdi
+000000000066e6c5: call     qword ptr [rip + 0x4adfdd] ; IAT recv
+000000000066e6cb: lea      rcx, [rip + 0x98afa6]
+000000000066e6d2: call     0xab7d70
+000000000066e6d7: lea      rdx, [rip + 0x98af9a]
+000000000066e6de: xor      r9d, r9d
+000000000066e6e1: mov      r8, rax
+000000000066e6e4: mov      rcx, rdi
+000000000066e6e7: call     qword ptr [rip + 0x4adfa3] ; IAT send
+000000000066e6ed: cmp      eax, ebx
+000000000066e6ef: jle      0x66e70d
+000000000066e6f1: lea      rdx, [rsp + 0x140]
+000000000066e6f9: xor      r9d, r9d
+000000000066e6fc: mov      r8d, r14d
+000000000066e6ff: mov      rcx, rdi
+000000000066e702: call     qword ptr [rip + 0x4adfa0] ; IAT recv
+000000000066e708: mov      ebx, 1
+000000000066e70d: mov      rcx, rdi
+000000000066e710: call     qword ptr [rip + 0x4adf52] ; IAT closesocket
+000000000066e716: call     qword ptr [rip + 0x4adf84] ; IAT WSACleanup
+000000000066e71c: mov      eax, ebx
+000000000066e71e: add      rsp, 0xae0
+000000000066e725: pop      r14
+000000000066e727: pop      r13
+000000000066e729: pop      r12
+000000000066e72b: pop      rdi
+000000000066e72c: pop      rsi
+000000000066e72d: pop      rbp
+000000000066e72e: pop      rbx
+000000000066e72f: ret

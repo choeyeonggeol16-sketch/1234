@@ -1,0 +1,111 @@
+# user_map_a08138; PE pdata/unwind; entry 0xa08138
+# chunk 0xa08138..0xa082de
+0000000000a08138: push     rbx
+0000000000a0813a: push     rbp
+0000000000a0813b: push     rsi
+0000000000a0813c: push     rdi
+0000000000a0813d: push     r12
+0000000000a0813f: push     r13
+0000000000a08141: push     r14
+0000000000a08143: push     r15
+0000000000a08145: sub      rsp, 0x78
+0000000000a08149: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000a08152: mov      rbp, r9
+0000000000a08155: mov      r13, r8
+0000000000a08158: mov      r12d, edx
+0000000000a0815b: mov      rdi, rcx
+0000000000a0815e: mov      r10d, dword ptr [rip + 0x2ebb7073]
+0000000000a08165: mov      rax, qword ptr gs:[0x58]
+0000000000a0816e: mov      ecx, 0x7d58
+0000000000a08173: mov      r14, qword ptr [rax + r10*8]
+0000000000a08177: movsxd   r10, dword ptr [r14 + rcx]
+0000000000a0817b: lea      rcx, [rip - 0x608182]
+0000000000a08182: movsxd   r8, dword ptr [rcx + r10*4 + 0x47e2a40]
+0000000000a0818a: lea      eax, [r8 + 1]
+0000000000a0818e: mov      dword ptr [rcx + r10*4 + 0x47e2a40], eax
+0000000000a08196: imul     r10, r10, 0x3e8
+0000000000a0819d: add      r10, r8
+0000000000a081a0: lea      rax, [rip + 0x3bae89] ; UTF16 'bool __cdecl CObjectMap<class CUserSocket,8192,26,class RWLock,int>::Insert(int,class CUserSocket *,char *,int)'
+0000000000a081a7: mov      qword ptr [rcx + r10*8 + 0x47bf7c0], rax
+0000000000a081af: xor      esi, esi
+0000000000a081b1: mov      ecx, edx
+0000000000a081b3: call     0xabddb0
+0000000000a081b8: and      eax, 0x1fff
+0000000000a081bd: movsxd   rbx, eax
+0000000000a081c0: lea      r15, [rbx + 0xdb7]
+0000000000a081c7: imul     r15, r15, 0x38
+0000000000a081cb: add      r15, rdi
+0000000000a081ce: mov      r8d, 0x18d
+0000000000a081d4: lea      rdx, [rip + 0x12ab95] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\ThreadSafeLibrary.h'
+0000000000a081db: mov      rcx, r15
+0000000000a081de: call     0x8aacec
+0000000000a081e3: lea      r11, [rbx + rbx*2]
+0000000000a081e7: lea      rbx, [rdi + r11*8 + 8]
+0000000000a081ec: mov      rcx, qword ptr [rbx + 8]
+0000000000a081f0: mov      rax, qword ptr [rcx + 8]
+0000000000a081f4: cmp      byte ptr [rax + 0x29], sil
+0000000000a081f8: jne      0xa08212
+0000000000a081fa: cmp      dword ptr [rax + 0x18], r12d
+0000000000a081fe: jge      0xa08206
+0000000000a08200: mov      rax, qword ptr [rax + 0x10]
+0000000000a08204: jmp      0xa0820c
+0000000000a08206: mov      rcx, rax
+0000000000a08209: mov      rax, qword ptr [rax]
+0000000000a0820c: cmp      byte ptr [rax + 0x29], sil
+0000000000a08210: je       0xa081fa
+0000000000a08212: mov      qword ptr [rsp + 0x38], rcx
+0000000000a08217: mov      qword ptr [rsp + 0x30], rbx
+0000000000a0821c: cmp      rbx, rbx
+0000000000a0821f: jne      0xa082c7
+0000000000a08225: cmp      rcx, qword ptr [rbx + 8]
+0000000000a08229: sete     al
+0000000000a0822c: cmp      al, sil
+0000000000a0822f: jne      0xa08243
+0000000000a08231: cmp      rcx, qword ptr [rbx + 8]
+0000000000a08235: jne      0xa0823d
+0000000000a08237: call     0x866f68
+0000000000a0823c: int3
+0000000000a0823d: cmp      r12d, dword ptr [rcx + 0x18]
+0000000000a08241: jge      0xa082a1
+0000000000a08243: cmp      rbp, rsi
+0000000000a08246: jne      0xa08257
+0000000000a08248: lea      rbp, [rip + 0x120611]
+0000000000a0824f: mov      r8d, 0x197
+0000000000a08255: jmp      0xa0825f
+0000000000a08257: mov      r8d, dword ptr [rsp + 0xe0]
+0000000000a0825f: mov      rax, qword ptr [r13]
+0000000000a08263: mov      r9d, 0x1a
+0000000000a08269: mov      rdx, rbp
+0000000000a0826c: mov      rcx, r13
+0000000000a0826f: call     qword ptr [rax + 8]
+0000000000a08272: movaps   xmm5, xmmword ptr [rsp + 0x30]
+0000000000a08277: movdqa   xmmword ptr [rsp + 0x40], xmm5
+0000000000a0827d: mov      dword ptr [rsp + 0x30], r12d
+0000000000a08282: mov      qword ptr [rsp + 0x38], r13
+0000000000a08287: lea      r9, [rsp + 0x30]
+0000000000a0828c: lea      r8, [rsp + 0x40]
+0000000000a08291: lea      rdx, [rsp + 0x50]
+0000000000a08296: mov      rcx, rbx
+0000000000a08299: call     0x976170
+0000000000a0829e: mov      sil, 1
+0000000000a082a1: mov      rcx, r15
+0000000000a082a4: call     0x8aad88
+0000000000a082a9: nop
+0000000000a082aa: mov      eax, 0x7d58
+0000000000a082af: movsxd   rcx, dword ptr [r14 + rax]
+0000000000a082b3: lea      rax, [rip - 0x6082ba]
+0000000000a082ba: add      dword ptr [rax + rcx*4 + 0x47e2a40], -1
+0000000000a082c2: mov      al, sil
+0000000000a082c5: jmp      0xa082cd
+0000000000a082c7: call     0x480214
+0000000000a082cc: nop
+0000000000a082cd: add      rsp, 0x78
+0000000000a082d1: pop      r15
+0000000000a082d3: pop      r14
+0000000000a082d5: pop      r13
+0000000000a082d7: pop      r12
+0000000000a082d9: pop      rdi
+0000000000a082da: pop      rsi
+0000000000a082db: pop      rbp
+0000000000a082dc: pop      rbx
+0000000000a082dd: ret

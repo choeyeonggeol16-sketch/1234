@@ -1,0 +1,56 @@
+# vtable_Server_14; PE pdata/unwind; entry 0x8b0404
+# chunk 0x8b0404..0x8b04e3
+00000000008b0404: push     rbx
+00000000008b0406: push     rbp
+00000000008b0407: push     rsi
+00000000008b0408: push     rdi
+00000000008b0409: push     r12
+00000000008b040b: push     r13
+00000000008b040d: push     r14
+00000000008b040f: sub      rsp, 0x60
+00000000008b0413: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000008b041c: mov      rbp, r8
+00000000008b041f: mov      rdi, rdx
+00000000008b0422: mov      rsi, rcx
+00000000008b0425: mov      r9d, dword ptr [rip + 0x2ed0edac]
+00000000008b042c: mov      rax, qword ptr gs:[0x58]
+00000000008b0435: mov      r13d, 0x7d58
+00000000008b043b: mov      r12, qword ptr [rax + r9*8]
+00000000008b043f: movsxd   r9, dword ptr [r12 + r13]
+00000000008b0443: lea      r14, [rip - 0x4b044a]
+00000000008b044a: movsxd   r8, dword ptr [r14 + r9*4 + 0x47e2a40]
+00000000008b0452: lea      eax, [r8 + 1]
+00000000008b0456: mov      dword ptr [r14 + r9*4 + 0x47e2a40], eax
+00000000008b045e: imul     r9, r9, 0x3e8
+00000000008b0465: add      r9, r8
+00000000008b0468: lea      rax, [rip + 0x479ce1] ; UTF16 'bool __cdecl Server::Add(unsigned __int64,class CSocket *)'
+00000000008b046f: mov      qword ptr [r14 + r9*8 + 0x47bf7c0], rax
+00000000008b0477: add      rcx, 0x60
+00000000008b047b: call     qword ptr [rip + 0x26bd4f] ; IAT EnterCriticalSection
+00000000008b0481: mov      r11, qword ptr [rbp]
+00000000008b0485: mov      r9d, 0x18
+00000000008b048b: lea      r8d, [r9 + 0x73]
+00000000008b048f: lea      rdx, [rip + 0x479caa]
+00000000008b0496: mov      rcx, rbp
+00000000008b0499: call     qword ptr [r11 + 8]
+00000000008b049d: mov      qword ptr [rsp + 0x28], rdi
+00000000008b04a2: mov      qword ptr [rsp + 0x30], rbp
+00000000008b04a7: lea      rcx, [rsi + 0x40]
+00000000008b04ab: lea      r8, [rsp + 0x28]
+00000000008b04b0: lea      rdx, [rsp + 0x38]
+00000000008b04b5: call     0x8b0340
+00000000008b04ba: lea      rcx, [rsi + 0x60]
+00000000008b04be: call     qword ptr [rip + 0x26bd14] ; IAT LeaveCriticalSection
+00000000008b04c4: nop
+00000000008b04c5: movsxd   rax, dword ptr [r12 + r13]
+00000000008b04c9: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+00000000008b04d2: mov      al, 1
+00000000008b04d4: add      rsp, 0x60
+00000000008b04d8: pop      r14
+00000000008b04da: pop      r13
+00000000008b04dc: pop      r12
+00000000008b04de: pop      rdi
+00000000008b04df: pop      rsi
+00000000008b04e0: pop      rbp
+00000000008b04e1: pop      rbx
+00000000008b04e2: ret

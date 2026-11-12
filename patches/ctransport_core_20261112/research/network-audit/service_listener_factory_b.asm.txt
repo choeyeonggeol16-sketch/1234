@@ -1,0 +1,42 @@
+# service_listener_factory_b; PE pdata/unwind; entry 0xa0d07c
+# chunk 0xa0d07c..0xa0d124
+0000000000a0d07c: push     rbx
+0000000000a0d07e: push     rbp
+0000000000a0d07f: push     rsi
+0000000000a0d080: push     rdi
+0000000000a0d081: sub      rsp, 0x38
+0000000000a0d085: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000a0d08e: mov      rbx, rcx
+0000000000a0d091: mov      edx, dword ptr [rip + 0x2ebb2141]
+0000000000a0d097: mov      rax, qword ptr gs:[0x58]
+0000000000a0d0a0: mov      ebp, 0x7d58
+0000000000a0d0a5: mov      rdi, qword ptr [rax + rdx*8]
+0000000000a0d0a9: movsxd   r8, dword ptr [rdi + rbp]
+0000000000a0d0ad: lea      rsi, [rip - 0x60d0b4]
+0000000000a0d0b4: movsxd   rdx, dword ptr [rsi + r8*4 + 0x47e2a40]
+0000000000a0d0bc: lea      eax, [rdx + 1]
+0000000000a0d0bf: mov      dword ptr [rsi + r8*4 + 0x47e2a40], eax
+0000000000a0d0c7: imul     r8, r8, 0x3e8
+0000000000a0d0ce: add      r8, rdx
+0000000000a0d0d1: lea      rax, [rip + 0x3b6ee8] ; UTF16 'class CSocket *__cdecl CUserSocket::Allocate(unsigned __int64)'
+0000000000a0d0d8: mov      qword ptr [rsi + r8*8 + 0x47bf7c0], rax
+0000000000a0d0e0: lock add dword ptr [rip + 0x41e09e4], 1
+0000000000a0d0e8: mov      ecx, 0xcd8
+0000000000a0d0ed: call     0x9ef21c
+0000000000a0d0f2: mov      qword ptr [rsp + 0x68], rax
+0000000000a0d0f7: xor      ecx, ecx
+0000000000a0d0f9: cmp      rax, rcx
+0000000000a0d0fc: je       0xa0d10c
+0000000000a0d0fe: mov      rdx, rbx
+0000000000a0d101: mov      rcx, rax
+0000000000a0d104: call     0xa0ccc4
+0000000000a0d109: mov      rcx, rax
+0000000000a0d10c: movsxd   rax, dword ptr [rdi + rbp]
+0000000000a0d110: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+0000000000a0d118: mov      rax, rcx
+0000000000a0d11b: add      rsp, 0x38
+0000000000a0d11f: pop      rdi
+0000000000a0d120: pop      rsi
+0000000000a0d121: pop      rbp
+0000000000a0d122: pop      rbx
+0000000000a0d123: ret

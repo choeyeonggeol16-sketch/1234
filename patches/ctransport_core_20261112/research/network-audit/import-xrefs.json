@@ -1,0 +1,1254 @@
+{
+  "x64": {
+    "accept": [
+      {
+        "at": "0x705585",
+        "op": "call",
+        "function": "0x705508",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "WSAEventSelect": [
+      {
+        "at": "0x706819",
+        "op": "call",
+        "function": "0x7066dc",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "WSACreateEvent": [
+      {
+        "at": "0x706802",
+        "op": "call",
+        "function": "0x7066dc",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "listen": [
+      {
+        "at": "0x7067e2",
+        "op": "call",
+        "function": "0x7066dc",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "bind": [
+      {
+        "at": "0x456f58",
+        "op": "call",
+        "function": "0x456eb8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x53e01a",
+        "op": "call",
+        "function": "0x53df58",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x5b94bd",
+        "op": "call",
+        "function": "0x5b947c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x66e45c",
+        "op": "call",
+        "function": "0x66e36c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7067b9",
+        "op": "call",
+        "function": "0x7066dc",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "socket": [
+      {
+        "at": "0x456f2e",
+        "op": "call",
+        "function": "0x456eb8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x53dfee",
+        "op": "call",
+        "function": "0x53df58",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x5b9490",
+        "op": "call",
+        "function": "0x5b947c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x66e3b8",
+        "op": "call",
+        "function": "0x66e36c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6b53d1",
+        "op": "call",
+        "function": "0x6b5360",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6b903f",
+        "op": "call",
+        "function": "0x6b8f98",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x706751",
+        "op": "call",
+        "function": "0x7066dc",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x734b60",
+        "op": "call",
+        "function": "0x734ae8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x83adcc",
+        "op": "call",
+        "function": "0x83ad24",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x87cdfb",
+        "op": "call",
+        "function": "0x87cd58",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8907b1",
+        "op": "call",
+        "function": "0x89070c",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "closesocket": [
+      {
+        "at": "0x45d4cf",
+        "op": "call",
+        "function": "0x45d41c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x45d5e7",
+        "op": "call",
+        "function": "0x45d534",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x45dbf8",
+        "op": "call",
+        "function": "0x45db74",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x5451fc",
+        "op": "call",
+        "function": "0x545178",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x66e710",
+        "op": "call",
+        "function": "0x66e36c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6b5419",
+        "op": "call",
+        "function": "0x6b5360",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x704ce1",
+        "op": "call",
+        "function": "0x704c7c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7055f7",
+        "op": "call",
+        "function": "0x705508",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x734ba5",
+        "op": "call",
+        "function": "0x734ae8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x83ae14",
+        "op": "call",
+        "function": "0x83ad24",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "WSAEnumNetworkEvents": [],
+    "WSAWaitForMultipleEvents": [],
+    "CreateIoCompletionPort": [
+      {
+        "at": "0x45dd28",
+        "op": "call",
+        "function": "0x45dc5c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x54532c",
+        "op": "call",
+        "function": "0x545260",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6d61e6",
+        "op": "call",
+        "function": "0x6d60d8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7047e0",
+        "op": "call",
+        "function": "0x704754",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "GetQueuedCompletionStatus": [
+      {
+        "at": "0x7057c9",
+        "op": "call",
+        "function": "0x7056ac",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "GetQueuedCompletionStatusEx": [],
+    "PostQueuedCompletionStatus": [
+      {
+        "at": "0x404cae",
+        "op": "jmp",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x704265",
+        "op": "call",
+        "function": "0x704248",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x704d90",
+        "op": "call",
+        "function": "0x704d1c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x706907",
+        "op": "call",
+        "function": "0x706894",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "WaitForMultipleObjects": [
+      {
+        "at": "0x705fae",
+        "op": "call",
+        "function": "0x705e4c",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "WaitForSingleObject": [
+      {
+        "at": "0x5ddb2c",
+        "op": "call",
+        "function": "0x5ddaa4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6c0817",
+        "op": "call",
+        "function": "0x6c07cc",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6c2e1e",
+        "op": "call",
+        "function": "0x6c2d34",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8aaaf4",
+        "op": "call",
+        "function": "0x8aaa4c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8aad4c",
+        "op": "call",
+        "function": "0x8aacec",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8be206",
+        "op": "call",
+        "function": "0x8be1b4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8be557",
+        "op": "call",
+        "function": "0x8be444",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8be687",
+        "op": "call",
+        "function": "0x8be59c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x91945e",
+        "op": "call",
+        "function": "0x919380",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "SetThreadAffinityMask": [
+      {
+        "at": "0x705c4b",
+        "op": "call",
+        "function": "0x705b70",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "WSARecv": [
+      {
+        "at": "0x45e35b",
+        "op": "call",
+        "function": "0x45e138",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x5458f3",
+        "op": "call",
+        "function": "0x5456d0",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "WSASend": [
+      {
+        "at": "0x45e6a7",
+        "op": "call",
+        "function": "0x45e480",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x45ea2f",
+        "op": "call",
+        "function": "0x45e8a0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x545c3f",
+        "op": "call",
+        "function": "0x545a18",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x545fc7",
+        "op": "call",
+        "function": "0x545e38",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x90e386",
+        "op": "call",
+        "function": "0x90e1d0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x90e8e6",
+        "op": "call",
+        "function": "0x90e6c4",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "ResetEvent": [],
+    "SetEvent": [
+      {
+        "at": "0x5ddc5f",
+        "op": "call",
+        "function": "0x5ddbfc",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x88b08d",
+        "op": "call",
+        "function": "0x88b058",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x88b0d1",
+        "op": "call",
+        "function": "0x88b09c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8be090",
+        "op": "call",
+        "function": "0x8be04c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x919034",
+        "op": "call",
+        "function": "0x91902c",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "ExitProcess": [
+      {
+        "at": "0x67002c",
+        "op": "call",
+        "function": "0x66ffe0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x72d76d",
+        "op": "call",
+        "function": "0x72caa8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x730098",
+        "op": "call",
+        "function": "0x72f874",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7300c5",
+        "op": "call",
+        "function": "0x72f874",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xac4dd5",
+        "op": "call",
+        "function": "0xac4da0",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "CreateThread": [
+      {
+        "at": "0xabf968",
+        "op": "call",
+        "function": "0xabf890",
+        "validation": "pdata instruction boundary"
+      }
+    ],
+    "CloseHandle": [
+      {
+        "at": "0x41a15b",
+        "op": "call",
+        "function": "0x41a144",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x5dda70",
+        "op": "call",
+        "function": "0x5dda0c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x66de6f",
+        "op": "call",
+        "function": "0x66ddd0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x66ecf0",
+        "op": "call",
+        "function": "0x66ea78",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x66ffbb",
+        "op": "call",
+        "function": "0x66fda0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6701f2",
+        "op": "call",
+        "function": "0x670110",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x670378",
+        "op": "call",
+        "function": "0x67025c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x67049a",
+        "op": "call",
+        "function": "0x6703c0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x67072c",
+        "op": "call",
+        "function": "0x670698",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6aa795",
+        "op": "call",
+        "function": "0x6aa6dc",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6aaa68",
+        "op": "call",
+        "function": "0x6aa6dc",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6aaca5",
+        "op": "call",
+        "function": "0x6aabb0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6aacb4",
+        "op": "call",
+        "function": "0x6aabb0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6b5241",
+        "op": "call",
+        "function": "0x6b51c8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6b5669",
+        "op": "call",
+        "function": "0x6b55bc",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6c0825",
+        "op": "call",
+        "function": "0x6c07cc",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6c2e2c",
+        "op": "call",
+        "function": "0x6c2d34",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6d628a",
+        "op": "call",
+        "function": "0x6d60d8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6d8681",
+        "op": "call",
+        "function": "0x6d805c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6fa012",
+        "op": "call",
+        "function": "0x6f9f6c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7226f9",
+        "op": "call",
+        "function": "0x7226d8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x732663",
+        "op": "call",
+        "function": "0x732638",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x732829",
+        "op": "call",
+        "function": "0x732798",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x732cc6",
+        "op": "call",
+        "function": "0x732b78",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x746d1c",
+        "op": "call",
+        "function": "0x746cec",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x82b0cc",
+        "op": "call",
+        "function": "0x82b04c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8a923b",
+        "op": "call",
+        "function": "0x8a9208",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8aaa27",
+        "op": "call",
+        "function": "0x8aa9c8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8b0ed3",
+        "op": "call",
+        "function": "0x8b0e54",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8be0fb",
+        "op": "call",
+        "function": "0x8be09c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8be114",
+        "op": "call",
+        "function": "0x8be09c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8be11e",
+        "op": "call",
+        "function": "0x8be09c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8be128",
+        "op": "call",
+        "function": "0x8be09c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8be944",
+        "op": "call",
+        "function": "0x8be914",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8be9b5",
+        "op": "call",
+        "function": "0x8be97c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8bea2a",
+        "op": "call",
+        "function": "0x8be9f4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8bf563",
+        "op": "call",
+        "function": "0x8bf4f4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x919060",
+        "op": "call",
+        "function": "0x919048",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xab2417",
+        "op": "call",
+        "function": "0xab22fc",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xac3ead",
+        "op": "call",
+        "function": "0xac3e40",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xac43d4",
+        "op": "call",
+        "function": "0xac4070",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xaf8d54",
+        "op": "call",
+        "function": "0xaf89f0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xafbb97",
+        "op": "call",
+        "function": "0xafbb80",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xafbbb0",
+        "op": "call",
+        "function": "0xafbb80",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "x86": {
+    "accept": [
+      {
+        "at": "0x53bf0d",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "WSAEventSelect": [
+      {
+        "at": "0x53d837",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "WSACreateEvent": [
+      {
+        "at": "0x53d827",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "listen": [
+      {
+        "at": "0x53d7fd",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "bind": [
+      {
+        "at": "0x478313",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x52c669",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x52c73b",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x52c849",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x52c999",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x53d7d0",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "socket": [
+      {
+        "at": "0x478289",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4b834b",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x52c64f",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x52c721",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x52c82f",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x52c97f",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x53d770",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x53f0b0",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "closesocket": [
+      {
+        "at": "0x478628",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4b8388",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x539678",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x539715",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x539a2c",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x53c005",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x53f0ed",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "WSAEnumNetworkEvents": [],
+    "WSAWaitForMultipleEvents": [],
+    "CreateIoCompletionPort": [
+      {
+        "at": "0x538637",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x539aed",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x53d410",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "GetQueuedCompletionStatus": [
+      {
+        "at": "0x53cb6f",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "GetQueuedCompletionStatusEx": [],
+    "PostQueuedCompletionStatus": [
+      {
+        "at": "0x402faf",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x483836",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x539468",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x539a69",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "WaitForMultipleObjects": [
+      {
+        "at": "0x53c918",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "WaitForSingleObject": [
+      {
+        "at": "0x4c4ef5",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4c4fc0",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4d084f",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4d0918",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4d09b5",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x535603",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "SetThreadAffinityMask": [
+      {
+        "at": "0x53d45e",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "WSARecv": [
+      {
+        "at": "0x53b4ec",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "WSASend": [
+      {
+        "at": "0x4df967",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x53b6b5",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x53b83d",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x53ba34",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "ResetEvent": [],
+    "SetEvent": [
+      {
+        "at": "0x4d0908",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4d09a5",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4d0aa2",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x535628",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "ExitProcess": [
+      {
+        "at": "0x479204",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x48fada",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x48fb01",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x5903ff",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x591585",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "CreateThread": [
+      {
+        "at": "0x58ebbf",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ],
+    "CloseHandle": [
+      {
+        "at": "0x478228",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x478d98",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x47912d",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x47b20d",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x47b220",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x47b6ba",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4843b8",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4c4e67",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4cb699",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4cb6b7",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4cb7f0",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4ce5b8",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4ce655",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4ce6d5",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x4df576",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x5386b1",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x53919c",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x53ddb1",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x53e14c",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x54a93b",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x550804",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x58f479",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x58fb89",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x59fdda",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x5b4813",
+        "op": "call",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ]
+  }
+}

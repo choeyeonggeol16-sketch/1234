@@ -1,0 +1,92 @@
+# user_ctor_tail_b; PE pdata/unwind; entry 0xa07ee8
+# chunk 0xa07ee8..0xa08037
+0000000000a07ee8: push     rbx
+0000000000a07eea: push     rsi
+0000000000a07eeb: push     rdi
+0000000000a07eec: sub      rsp, 0x20
+0000000000a07ef0: mov      r8, qword ptr [rcx + 0xc30]
+0000000000a07ef7: mov      rsi, rcx
+0000000000a07efa: mov      rcx, qword ptr [rcx + 0xc28]
+0000000000a07f01: cmp      rcx, r8
+0000000000a07f04: ja       0xa08031
+0000000000a07f0a: je       0xa07f35
+0000000000a07f0c: mov      rax, r8
+0000000000a07f0f: sub      rax, r8
+0000000000a07f12: sar      rax, 2
+0000000000a07f16: mov      rdx, rax
+0000000000a07f19: shl      rdx, 2
+0000000000a07f1d: test     rax, rax
+0000000000a07f20: lea      rdi, [rdx + rcx]
+0000000000a07f24: jle      0xa07f2e
+0000000000a07f26: mov      r9, rdx
+0000000000a07f29: call     0xab7f00
+0000000000a07f2e: mov      qword ptr [rsi + 0xc30], rdi
+0000000000a07f35: mov      edi, 0xd1
+0000000000a07f3a: lea      rcx, [rsi + 0xc20]
+0000000000a07f41: xor      r8d, r8d
+0000000000a07f44: mov      rdx, rdi
+0000000000a07f47: call     0xa03e48
+0000000000a07f4c: xor      r11d, r11d
+0000000000a07f4f: xor      edx, edx
+0000000000a07f51: mov      rcx, qword ptr [rsi + 0xc28]
+0000000000a07f58: test     rcx, rcx
+0000000000a07f5b: je       0xa0802b
+0000000000a07f61: mov      rax, qword ptr [rsi + 0xc30]
+0000000000a07f68: sub      rax, rcx
+0000000000a07f6b: sar      rax, 2
+0000000000a07f6f: cmp      rdx, rax
+0000000000a07f72: jae      0xa0802b
+0000000000a07f78: mov      dword ptr [rcx + rdx*4], r11d
+0000000000a07f7c: add      r11d, 1
+0000000000a07f80: add      rdx, 1
+0000000000a07f84: cmp      r11d, edi
+0000000000a07f87: jl       0xa07f51
+0000000000a07f89: mov      r8, qword ptr [rsi + 0xc50]
+0000000000a07f90: mov      rcx, qword ptr [rsi + 0xc48]
+0000000000a07f97: cmp      rcx, r8
+0000000000a07f9a: ja       0xa08025
+0000000000a07fa0: je       0xa07fcb
+0000000000a07fa2: mov      rax, r8
+0000000000a07fa5: sub      rax, r8
+0000000000a07fa8: sar      rax, 2
+0000000000a07fac: mov      rdx, rax
+0000000000a07faf: shl      rdx, 2
+0000000000a07fb3: test     rax, rax
+0000000000a07fb6: lea      rdi, [rdx + rcx]
+0000000000a07fba: jle      0xa07fc4
+0000000000a07fbc: mov      r9, rdx
+0000000000a07fbf: call     0xab7f00
+0000000000a07fc4: mov      qword ptr [rsi + 0xc50], rdi
+0000000000a07fcb: mov      edi, 0x98
+0000000000a07fd0: lea      rcx, [rsi + 0xc40]
+0000000000a07fd7: xor      r8d, r8d
+0000000000a07fda: mov      rdx, rdi
+0000000000a07fdd: call     0xa03e48
+0000000000a07fe2: xor      r11d, r11d
+0000000000a07fe5: xor      edx, edx
+0000000000a07fe7: mov      rcx, qword ptr [rsi + 0xc48]
+0000000000a07fee: test     rcx, rcx
+0000000000a07ff1: je       0xa0801f
+0000000000a07ff3: mov      rax, qword ptr [rsi + 0xc50]
+0000000000a07ffa: sub      rax, rcx
+0000000000a07ffd: sar      rax, 2
+0000000000a08001: cmp      rdx, rax
+0000000000a08004: jae      0xa0801f
+0000000000a08006: mov      dword ptr [rcx + rdx*4], r11d
+0000000000a0800a: add      r11d, 1
+0000000000a0800e: add      rdx, 1
+0000000000a08012: cmp      r11d, edi
+0000000000a08015: jl       0xa07fe7
+0000000000a08017: add      rsp, 0x20
+0000000000a0801b: pop      rdi
+0000000000a0801c: pop      rsi
+0000000000a0801d: pop      rbx
+0000000000a0801e: ret
+0000000000a0801f: call     0xa71b3c
+0000000000a08024: int3
+0000000000a08025: call     0x672058
+0000000000a0802a: int3
+0000000000a0802b: call     0xa71b3c
+0000000000a08030: int3
+0000000000a08031: call     0x672058
+0000000000a08036: int3

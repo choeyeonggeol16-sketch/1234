@@ -1,0 +1,12 @@
+{
+  "binary_hashes": {
+    "x64": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+    "x86": "8eecd317fb152b76f32a0a6a65fbf916e39d20511e203b4a0ea602fe041a22f5"
+  },
+  "image_bases": {
+    "x64": "0x400000",
+    "x86": "0x400000"
+  },
+  "sources": "CTransport ABI5 at 227c67bcab237c409d9741dcd1b2e091481e10e0",
+  "method": "read-only static disassembly; x64 import/direct xrefs validated at pdata instruction boundaries; x86 entries marked candidate-only"
+}

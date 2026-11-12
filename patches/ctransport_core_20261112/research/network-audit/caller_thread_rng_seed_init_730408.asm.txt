@@ -1,0 +1,357 @@
+# caller_thread_rng_seed_init_730408; PE pdata/unwind; entry 0x730408
+# chunk 0x730408..0x730a7d
+0000000000730408: push     rbx
+000000000073040a: push     rbp
+000000000073040b: push     rsi
+000000000073040c: push     rdi
+000000000073040d: push     r12
+000000000073040f: push     r13
+0000000000730411: push     r14
+0000000000730413: mov      eax, 0x1a00
+0000000000730418: call     0xafcbc0
+000000000073041d: sub      rsp, rax
+0000000000730420: mov      rdi, rcx
+0000000000730423: lea      rdx, [rip + 0x55ca5a]
+000000000073042a: mov      rcx, r8
+000000000073042d: mov      r12d, r9d
+0000000000730430: call     0xac1fb0
+0000000000730435: xor      r13d, r13d
+0000000000730438: cmp      eax, r13d
+000000000073043b: jne      0x7305cc
+0000000000730441: lea      rcx, [rsp + 0x202]
+0000000000730449: xor      edx, edx
+000000000073044b: mov      r8d, 0x7fe
+0000000000730451: mov      word ptr [rsp + 0x200], r13w
+000000000073045a: call     0xab9430
+000000000073045f: lea      r11, [rsp + 0x60]
+0000000000730464: lea      edi, [r13 + 0x50]
+0000000000730468: lea      rbx, [rip + 0x48a5a1]
+000000000073046f: lea      r8, [rsp + 0x70]
+0000000000730474: lea      rcx, [rip + 0x48a585]
+000000000073047b: mov      r9, rdi
+000000000073047e: mov      rdx, rbx
+0000000000730481: mov      qword ptr [rsp + 0x20], r11
+0000000000730486: call     0xabf6b0
+000000000073048b: mov      r13d, dword ptr [rsp + 0x60]
+0000000000730490: lea      rax, [rsp + 0x58]
+0000000000730495: lea      r8, [rsp + 0x110]
+000000000073049d: lea      rcx, [rip + 0x507564]
+00000000007304a4: mov      r9, rdi
+00000000007304a7: mov      rdx, rbx
+00000000007304aa: mov      qword ptr [rsp + 0x20], rax
+00000000007304af: call     0xabf6b0
+00000000007304b4: mov      r12d, dword ptr [rsp + 0x58]
+00000000007304b9: lea      rax, [rsp + 0x50]
+00000000007304be: lea      r8, [rsp + 0x1b0]
+00000000007304c6: lea      rcx, [rip + 0x50754b]
+00000000007304cd: mov      r9, rdi
+00000000007304d0: mov      rdx, rbx
+00000000007304d3: mov      qword ptr [rsp + 0x20], rax
+00000000007304d8: call     0xabf6b0
+00000000007304dd: mov      ebp, dword ptr [rsp + 0x50]
+00000000007304e1: lea      rax, [rsp + 0x54]
+00000000007304e6: lea      r8, [rsp + 0x160]
+00000000007304ee: lea      rcx, [rip + 0x5074fb]
+00000000007304f5: mov      r9, rdi
+00000000007304f8: mov      rdx, rbx
+00000000007304fb: mov      qword ptr [rsp + 0x20], rax
+0000000000730500: call     0xabf6b0
+0000000000730505: mov      esi, dword ptr [rsp + 0x54]
+0000000000730509: lea      rax, [rsp + 0x5c]
+000000000073050e: lea      r8, [rsp + 0xc0]
+0000000000730516: lea      rcx, [rip + 0x4b7bab]
+000000000073051d: mov      r9, rdi
+0000000000730520: mov      rdx, rbx
+0000000000730523: mov      qword ptr [rsp + 0x20], rax
+0000000000730528: call     0xabf6b0
+000000000073052d: mov      edi, dword ptr [rsp + 0x5c]
+0000000000730531: call     0x8be874
+0000000000730536: mov      ebx, eax
+0000000000730538: call     0x9ef63c
+000000000073053d: mov      dword ptr [rsp + 0x40], ebx
+0000000000730541: mov      dword ptr [rsp + 0x38], r13d
+0000000000730546: mov      dword ptr [rsp + 0x30], r12d
+000000000073054b: lea      rdx, [rip + 0x55c88e] ; UTF16 '[l2:%d] [db:%d] [npc:%d] [SharedFactory:%d] [admin:%d] [comm:%d] [SharedInfo:%d]'
+0000000000730552: lea      rcx, [rsp + 0x200]
+000000000073055a: mov      r8d, eax
+000000000073055d: mov      r9d, edi
+0000000000730560: mov      dword ptr [rsp + 0x28], ebp
+0000000000730564: mov      dword ptr [rsp + 0x20], esi
+0000000000730568: call     0x49a240
+000000000073056d: mov      r11d, dword ptr [rip + 0xbdc144]
+0000000000730574: mov      ebx, 1
+0000000000730579: test     bl, r11b
+000000000073057c: jne      0x730594
+000000000073057e: or       r11d, ebx
+0000000000730581: lea      rcx, [rip + 0xbdb918]
+0000000000730588: mov      dword ptr [rip + 0xbdc129], r11d
+000000000073058f: call     0x4623b0
+0000000000730594: mov      rdx, qword ptr [rip + 0xbdb915]
+000000000073059b: lea      r8, [rip + 0x55c81e] ; UTF16 'BuildDate'
+00000000007305a2: xor      r9d, r9d
+00000000007305a5: xor      ecx, ecx
+00000000007305a7: call     qword ptr [rip + 0x3ebfd3] ; IAT MessageBoxW
+00000000007305ad: lea      r8, [rip + 0x55c7e4] ; UTF16 'Protocol Version'
+00000000007305b4: lea      rdx, [rsp + 0x200]
+00000000007305bc: xor      r9d, r9d
+00000000007305bf: xor      ecx, ecx
+00000000007305c1: call     qword ptr [rip + 0x3ebfb9] ; IAT MessageBoxW
+00000000007305c7: jmp      0x730a66
+00000000007305cc: call     0x66db30
+00000000007305d1: mov      ebx, 1
+00000000007305d6: lea      r8, [rip + 0x55c79b] ; UTF16 '_L2SERVER_EXE_'
+00000000007305dd: mov      edx, ebx
+00000000007305df: xor      ecx, ecx
+00000000007305e1: call     qword ptr [rip + 0x3ebcf9] ; IAT CreateMutexW
+00000000007305e7: call     qword ptr [rip + 0x3ebb8b] ; IAT GetLastError
+00000000007305ed: mov      ebp, 0xb7
+00000000007305f2: cmp      eax, ebp
+00000000007305f4: jne      0x730606
+00000000007305f6: lea      r8, [rip + 0x55c16b] ; UTF16 'Error'
+00000000007305fd: lea      rdx, [rip + 0x55c72c] ; UTF16 'L2SERVER.EXE is already running.'
+0000000000730604: jmp      0x7305bc
+0000000000730606: lea      rcx, [rip + 0x44b282b]
+000000000073060d: call     0xabe790
+0000000000730612: mov      r8, qword ptr [rip + 0x8caeef]
+0000000000730619: lea      rdx, [rip + 0x555b68] ; UTF16 'SerialKey'
+0000000000730620: lea      rcx, [rsp + 0x1200]
+0000000000730628: call     0xa22b14
+000000000073062d: cmp      al, r13b
+0000000000730630: jne      0x730668
+0000000000730632: lea      r9, [rip - 0xdb5d]
+0000000000730639: xor      r8d, r8d
+000000000073063c: mov      edx, 0x9f
+0000000000730641: mov      rcx, rdi
+0000000000730644: mov      qword ptr [rsp + 0x20], r13
+0000000000730649: call     qword ptr [rip + 0x3ebf59] ; IAT DialogBoxParamW
+000000000073064f: mov      r9d, 0x30
+0000000000730655: lea      r8, [rip + 0x55c6b4] ; UTF16 'Validation'
+000000000073065c: lea      rdx, [rip + 0x55c67d] ; UTF16 'Execute L2Server Again'
+0000000000730663: jmp      0x7305bf
+0000000000730668: call     0x7044c4
+000000000073066d: mov      ecx, eax
+000000000073066f: call     0x9250f0
+0000000000730674: lea      rcx, [rsp + 0xa02]
+000000000073067c: xor      edx, edx
+000000000073067e: mov      r8d, 0x7fe
+0000000000730684: mov      word ptr [rsp + 0xa00], r13w
+000000000073068d: call     0xab9430
+0000000000730692: lea      r11, [rip + 0x55c627] ; UTF16 '.\\secure.ini'
+0000000000730699: lea      r9, [rsp + 0xa00]
+00000000007306a1: mov      qword ptr [rsp + 0x28], r11
+00000000007306a6: lea      r8, [rip + 0x441d9b] ; UTF16 'true'
+00000000007306ad: lea      rdx, [rip + 0x55c5e4] ; UTF16 'ScriptSecureEnabled'
+00000000007306b4: lea      rcx, [rip + 0x4927dd] ; UTF16 'Setting'
+00000000007306bb: mov      dword ptr [rsp + 0x20], 0x400
+00000000007306c3: call     qword ptr [rip + 0x3ebb2f] ; IAT GetPrivateProfileStringW
+00000000007306c9: lea      rdx, [rip + 0x441d78] ; UTF16 'true'
+00000000007306d0: lea      rcx, [rsp + 0xa00]
+00000000007306d8: call     0xaba000
+00000000007306dd: lea      r14, [rip + 0xd7f11bc]
+00000000007306e4: mov      esi, 2
+00000000007306e9: cmp      eax, r13d
+00000000007306ec: lea      r8, [rip + 0x55c55d] ; UTF16 '[NO_ERROR] L2Server Server Start'
+00000000007306f3: mov      edx, esi
+00000000007306f5: mov      rcx, r14
+00000000007306f8: sete     byte ptr [rip + 0x17910bb9]
+00000000007306ff: call     0x734514
+0000000000730704: mov      r9d, dword ptr [rip + 0xbe2759]
+000000000073070b: lea      r8, [rip + 0x55c4be] ; UTF16 '[NO_ERROR] [EnterWorldSerializer] MaxSpawnNumPerOneTick : %d'
+0000000000730712: mov      edx, esi
+0000000000730714: mov      rcx, r14
+0000000000730717: call     0x734514
+000000000073071c: mov      r11d, dword ptr [rip + 0xbdbf95]
+0000000000730723: test     bl, r11b
+0000000000730726: jne      0x73073e
+0000000000730728: or       r11d, ebx
+000000000073072b: lea      rcx, [rip + 0xbdb76e]
+0000000000730732: mov      dword ptr [rip + 0xbdbf7f], r11d
+0000000000730739: call     0x4623b0
+000000000073073e: mov      r9, qword ptr [rip + 0xbdb76b]
+0000000000730745: lea      r8, [rip + 0x55c444] ; UTF16 '[NO_ERROR] BuildDate : %s'
+000000000073074c: mov      edx, esi
+000000000073074e: mov      rcx, r14
+0000000000730751: call     0x734514
+0000000000730756: lea      rcx, [rip + 0xbe27a5]
+000000000073075d: call     0x552da8
+0000000000730762: call     0x8b92e0
+0000000000730767: xor      ecx, ecx
+0000000000730769: cmp      byte ptr [rip + 0xbe277e], r13b
+0000000000730770: lea      r8, [rip + 0x55c3f1] ; UTF16 '_L2MUTEX_LOADER_'
+0000000000730777: mov      edx, ebx
+0000000000730779: je       0x730805
+000000000073077f: call     qword ptr [rip + 0x3ebb6b] ; IAT OpenMutexW
+0000000000730785: call     qword ptr [rip + 0x3eb9ed] ; IAT GetLastError
+000000000073078b: cmp      eax, esi
+000000000073078d: jne      0x7307a2
+000000000073078f: lea      r8, [rip + 0x55bfd2] ; UTF16 'Error'
+0000000000730796: lea      rdx, [rip + 0x55c383] ; UTF16 'You must start the loader first.'
+000000000073079d: jmp      0x7305bc
+00000000007307a2: lea      r8, [rip + 0x55c347] ; UTF16 '_L2MUTEX_NOW_LOADING_'
+00000000007307a9: mov      edx, ebx
+00000000007307ab: mov      ecx, 0x1f0001
+00000000007307b0: call     qword ptr [rip + 0x3ebb3a] ; IAT OpenMutexW
+00000000007307b6: call     qword ptr [rip + 0x3eb9bc] ; IAT GetLastError
+00000000007307bc: xor      ecx, ecx
+00000000007307be: cmp      eax, 5
+00000000007307c1: jne      0x7307d9
+00000000007307c3: xor      r9d, r9d
+00000000007307c6: lea      r8, [rip + 0x55bf9b] ; UTF16 'Error'
+00000000007307cd: lea      rdx, [rip + 0x55c2bc] ; UTF16 'You must wait for the end of loading data!!!'
+00000000007307d4: jmp      0x7305c1
+00000000007307d9: lea      r8, [rip + 0x55c278] ; UTF16 '_L2MUTEX_USE_LOADER_'
+00000000007307e0: mov      edx, ebx
+00000000007307e2: call     qword ptr [rip + 0x3ebaf8] ; IAT CreateMutexW
+00000000007307e8: call     qword ptr [rip + 0x3eb98a] ; IAT GetLastError
+00000000007307ee: cmp      eax, ebp
+00000000007307f0: jne      0x730859
+00000000007307f2: lea      r8, [rip + 0x55bf6f] ; UTF16 'Error'
+00000000007307f9: lea      rdx, [rip + 0x55c210] ; UTF16 'Duplicated Server?! (with loader)'
+0000000000730800: jmp      0x7305bc
+0000000000730805: call     qword ptr [rip + 0x3ebae5] ; IAT OpenMutexW
+000000000073080b: call     qword ptr [rip + 0x3eb967] ; IAT GetLastError
+0000000000730811: xor      ecx, ecx
+0000000000730813: cmp      eax, esi
+0000000000730815: je       0x73082d
+0000000000730817: xor      r9d, r9d
+000000000073081a: lea      r8, [rip + 0x55bf47] ; UTF16 'Error'
+0000000000730821: lea      rdx, [rip + 0x55c198] ; UTF16 'You must terminate the loader first.'
+0000000000730828: jmp      0x7305c1
+000000000073082d: lea      r8, [rip + 0x55c14c] ; UTF16 '_L2MUTEX_NOT_USE_LOADER_'
+0000000000730834: mov      edx, ebx
+0000000000730836: call     qword ptr [rip + 0x3ebaa4] ; IAT CreateMutexW
+000000000073083c: call     qword ptr [rip + 0x3eb936] ; IAT GetLastError
+0000000000730842: cmp      eax, ebp
+0000000000730844: jne      0x730859
+0000000000730846: lea      r8, [rip + 0x55bf1b] ; UTF16 'Error'
+000000000073084d: lea      rdx, [rip + 0x55c0dc] ; UTF16 'Duplicated Server?! (without loader)'
+0000000000730854: jmp      0x7305bc
+0000000000730859: call     0xa34540
+000000000073085e: mov      rcx, rax
+0000000000730861: call     0xa340fc
+0000000000730866: call     0x925084
+000000000073086b: mov      ecx, 0x28
+0000000000730870: call     0xab8ea0
+0000000000730875: cmp      rax, r13
+0000000000730878: je       0x73088c
+000000000073087a: mov      edx, 0x64
+000000000073087f: mov      rcx, rax
+0000000000730882: call     0x6b4fb8
+0000000000730887: mov      r11, rax
+000000000073088a: jmp      0x73088f
+000000000073088c: mov      r11, r13
+000000000073088f: mov      ecx, dword ptr [rip + 0x2ee8e943]
+0000000000730895: mov      rax, qword ptr gs:[0x58]
+000000000073089e: mov      edx, 0x7d58
+00000000007308a3: mov      rax, qword ptr [rax + rcx*8]
+00000000007308a7: movsxd   rcx, dword ptr [rax + rdx]
+00000000007308ab: lea      rax, [rip + 0x45206ce]
+00000000007308b2: mov      qword ptr [rax + rcx*8], r11
+00000000007308b6: call     0x72bb80
+00000000007308bb: call     0x7228e8
+00000000007308c0: call     0x7254fc
+00000000007308c5: call     0x72c018
+00000000007308ca: call     0x5de638
+00000000007308cf: mov      r9d, dword ptr [rax + 0x36ee90]
+00000000007308d6: lea      r8, [rip + 0x55c013] ; UTF16 'CCacheContextManager::Inst [%d]'
+00000000007308dd: xor      edx, edx
+00000000007308df: mov      rcx, r14
+00000000007308e2: call     0x734514
+00000000007308e7: call     0x8bb458
+00000000007308ec: mov      rcx, rax
+00000000007308ef: call     0x8bb11c
+00000000007308f4: call     0x6fa054
+00000000007308f9: mov      r11d, dword ptr [rip + 0x259b490]
+0000000000730900: test     bl, r11b
+0000000000730903: jne      0x73092e
+0000000000730905: or       r11d, ebx
+0000000000730908: lea      rsi, [rip + 0x116c4a1]
+000000000073090f: mov      ebp, 0x32c7
+0000000000730914: mov      dword ptr [rip + 0x259b475], r11d
+000000000073091b: mov      rcx, rsi
+000000000073091e: call     0x56cfd8
+0000000000730923: add      rsi, 0x65c
+000000000073092a: sub      ebp, ebx
+000000000073092c: jns      0x73091b
+000000000073092e: mov      r9b, byte ptr [rip + 0x116c47b]
+0000000000730935: lea      r8, [rip + 0x55bf74] ; UTF16 'CClanHelpTable::Inst [%d]'
+000000000073093c: xor      edx, edx
+000000000073093e: and      r9d, ebx
+0000000000730941: mov      rcx, r14
+0000000000730944: call     0x734514
+0000000000730949: lea      r8, [rip + 0xd67a730]
+0000000000730950: mov      r9d, 0x64
+0000000000730956: mov      edx, 0x3f1
+000000000073095b: mov      rcx, rdi
+000000000073095e: call     qword ptr [rip + 0x3ebc3c] ; IAT LoadStringW
+0000000000730964: lea      rcx, [rip + 0x17912265]
+000000000073096b: call     0xa33a48
+0000000000730970: cmp      al, r13b
+0000000000730973: je       0x730986
+0000000000730975: lea      r8, [rip + 0x55bf0c] ; UTF16 'watch list loaded'
+000000000073097c: xor      edx, edx
+000000000073097e: mov      rcx, r14
+0000000000730981: call     0x734514
+0000000000730986: mov      r9d, 0x64
+000000000073098c: lea      r8, [rip + 0xd67a61d]
+0000000000730993: mov      rcx, rdi
+0000000000730996: lea      esi, [r9 + 9]
+000000000073099a: mov      edx, esi
+000000000073099c: call     qword ptr [rip + 0x3ebbfe] ; IAT LoadStringW
+00000000007309a2: mov      rcx, rdi
+00000000007309a5: call     0x72f778
+00000000007309aa: mov      edx, r12d
+00000000007309ad: mov      rcx, rdi
+00000000007309b0: call     0x722f2c
+00000000007309b5: cmp      eax, r13d
+00000000007309b8: jne      0x7309c1
+00000000007309ba: xor      eax, eax
+00000000007309bc: jmp      0x730a6b
+00000000007309c1: call     0xa22ae8
+00000000007309c6: mov      rdx, qword ptr [rip + 0xd67a77b]
+00000000007309cd: mov      rcx, r14
+00000000007309d0: call     0x7328d0
+00000000007309d5: mov      dl, bl
+00000000007309d7: mov      rcx, r14
+00000000007309da: call     0x732938
+00000000007309df: lea      r8, [rip + 0x55be72] ; UTF16 'Starting ListenThread'
+00000000007309e6: xor      edx, edx
+00000000007309e8: mov      rcx, r14
+00000000007309eb: call     0x734514
+00000000007309f0: lea      r11, [rsp + 0x64]
+00000000007309f5: lea      r8, [rip - 0x6fc]
+00000000007309fc: mov      qword ptr [rsp + 0x28], r11
+0000000000730a01: xor      r9d, r9d
+0000000000730a04: xor      edx, edx
+0000000000730a06: xor      ecx, ecx
+0000000000730a08: mov      dword ptr [rsp + 0x20], r13d
+0000000000730a0d: call     0xabf890
+0000000000730a12: mov      ecx, 0x11
+0000000000730a17: mov      rdx, rax
+0000000000730a1a: mov      qword ptr [rip + 0x2917527], rax
+0000000000730a21: call     0x925118
+0000000000730a26: lea      rcx, [rip + 0x44b2407]
+0000000000730a2d: call     0xab9970
+0000000000730a32: mov      byte ptr [rip + 0xbe16db], r13b
+0000000000730a39: call     0x727638
+0000000000730a3e: mov      rdx, rsi
+0000000000730a41: mov      rcx, rdi
+0000000000730a44: call     qword ptr [rip + 0x3ebb2e] ; IAT LoadAcceleratorsW
+0000000000730a4a: mov      rbx, rax
+0000000000730a4d: call     0x53a8fc
+0000000000730a52: mov      rcx, rbx
+0000000000730a55: cmp      al, r13b
+0000000000730a58: je       0x730a61
+0000000000730a5a: call     0x722e08
+0000000000730a5f: jmp      0x730a66
+0000000000730a61: call     0x722d6c
+0000000000730a66: mov      eax, 0xffffffff
+0000000000730a6b: add      rsp, 0x1a00
+0000000000730a72: pop      r14
+0000000000730a74: pop      r13
+0000000000730a76: pop      r12
+0000000000730a78: pop      rdi
+0000000000730a79: pop      rsi
+0000000000730a7a: pop      rbp
+0000000000730a7b: pop      rbx
+0000000000730a7c: ret

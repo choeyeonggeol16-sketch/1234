@@ -1,0 +1,138 @@
+# manager_snapshot_a; PE pdata/unwind; entry 0x8b0954
+# chunk 0x8b0954..0x8b0b6b
+00000000008b0954: push     rbx
+00000000008b0956: push     rbp
+00000000008b0957: push     rsi
+00000000008b0958: push     rdi
+00000000008b0959: push     r12
+00000000008b095b: push     r13
+00000000008b095d: push     r15
+00000000008b095f: sub      rsp, 0x70
+00000000008b0963: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000008b096c: mov      r12, rcx
+00000000008b096f: mov      edx, dword ptr [rip + 0x2ed0e863]
+00000000008b0975: mov      rax, qword ptr gs:[0x58]
+00000000008b097e: mov      esi, 0x7d58
+00000000008b0983: mov      r13, qword ptr [rax + rdx*8]
+00000000008b0987: movsxd   r8, dword ptr [r13 + rsi]
+00000000008b098c: lea      r15, [rip - 0x4b0993]
+00000000008b0993: movsxd   rdx, dword ptr [r15 + r8*4 + 0x47e2a40]
+00000000008b099b: lea      eax, [rdx + 1]
+00000000008b099e: mov      dword ptr [r15 + r8*4 + 0x47e2a40], eax
+00000000008b09a6: imul     r8, r8, 0x3e8
+00000000008b09ad: add      r8, rdx
+00000000008b09b0: lea      rax, [rip + 0x479ab9] ; UTF16 'void __cdecl Server::Shutdown(void)'
+00000000008b09b7: mov      qword ptr [r15 + r8*8 + 0x47bf7c0], rax
+00000000008b09bf: mov      qword ptr [rsp + 0x50], 0
+00000000008b09c8: mov      qword ptr [rsp + 0x58], 0
+00000000008b09d1: mov      qword ptr [rsp + 0x60], 0
+00000000008b09da: lea      rbp, [rcx + 0x60]
+00000000008b09de: mov      rcx, rbp
+00000000008b09e1: call     qword ptr [rip + 0x26b7e9] ; IAT EnterCriticalSection
+00000000008b09e7: add      r12, 0x40
+00000000008b09eb: mov      rax, qword ptr [r12 + 8]
+00000000008b09f0: mov      rdi, qword ptr [rax]
+00000000008b09f3: mov      qword ptr [rsp + 0x40], rdi
+00000000008b09f8: mov      rbx, r12
+00000000008b09fb: mov      qword ptr [rsp + 0x38], r12
+00000000008b0a00: mov      rax, r12
+00000000008b0a03: mov      rcx, qword ptr [r12 + 8]
+00000000008b0a08: test     rbx, rbx
+00000000008b0a0b: je       0x8b0b56
+00000000008b0a11: cmp      rbx, rax
+00000000008b0a14: jne      0x8b0b56
+00000000008b0a1a: cmp      rdi, rcx
+00000000008b0a1d: sete     al
+00000000008b0a20: test     al, al
+00000000008b0a22: sete     al
+00000000008b0a25: test     al, al
+00000000008b0a27: je       0x8b0a8a
+00000000008b0a29: cmp      rdi, qword ptr [rbx + 8]
+00000000008b0a2d: je       0x8b0a84
+00000000008b0a2f: lea      rdx, [rdi + 0x20]
+00000000008b0a33: lea      rcx, [rsp + 0x48]
+00000000008b0a38: call     0x559050
+00000000008b0a3d: cmp      rdi, qword ptr [rbx + 8]
+00000000008b0a41: je       0x8b0a7e
+00000000008b0a43: mov      rcx, qword ptr [rdi + 0x20]
+00000000008b0a47: mov      rax, qword ptr [rcx]
+00000000008b0a4a: mov      r9d, 0xe
+00000000008b0a50: mov      r8d, 0xca
+00000000008b0a56: lea      rdx, [rip + 0x4796e3]
+00000000008b0a5d: call     qword ptr [rax + 8]
+00000000008b0a60: lea      rcx, [rsp + 0x38]
+00000000008b0a65: call     0x6616e0
+00000000008b0a6a: mov      rax, r12
+00000000008b0a6d: mov      rcx, qword ptr [r12 + 8]
+00000000008b0a72: mov      rdi, qword ptr [rsp + 0x40]
+00000000008b0a77: mov      rbx, qword ptr [rsp + 0x38]
+00000000008b0a7c: jmp      0x8b0a08
+00000000008b0a7e: call     0x866f68
+00000000008b0a83: int3
+00000000008b0a84: call     0x866f68
+00000000008b0a89: int3
+00000000008b0a8a: mov      rcx, rbp
+00000000008b0a8d: call     qword ptr [rip + 0x26b745] ; IAT LeaveCriticalSection
+00000000008b0a93: mov      rdx, qword ptr [rsp + 0x50]
+00000000008b0a98: mov      rcx, qword ptr [rsp + 0x58]
+00000000008b0a9d: cmp      rdx, rcx
+00000000008b0aa0: ja       0x8b0b50
+00000000008b0aa6: mov      rbx, rdx
+00000000008b0aa9: cmp      rdx, rcx
+00000000008b0aac: ja       0x8b0b4a
+00000000008b0ab2: cmp      rbx, rcx
+00000000008b0ab5: sete     al
+00000000008b0ab8: test     al, al
+00000000008b0aba: sete     al
+00000000008b0abd: test     al, al
+00000000008b0abf: je       0x8b0b1d
+00000000008b0ac1: cmp      rbx, rcx
+00000000008b0ac4: jae      0x8b0b17
+00000000008b0ac6: mov      rcx, qword ptr [rbx]
+00000000008b0ac9: call     0x45d41c
+00000000008b0ace: cmp      rbx, qword ptr [rsp + 0x58]
+00000000008b0ad3: jae      0x8b0b11
+00000000008b0ad5: mov      rcx, qword ptr [rbx]
+00000000008b0ad8: mov      rax, qword ptr [rcx]
+00000000008b0adb: mov      byte ptr [rsp + 0x20], 0
+00000000008b0ae0: mov      r9d, 0xe
+00000000008b0ae6: mov      r8d, 0xd0
+00000000008b0aec: lea      rdx, [rip + 0x47964d]
+00000000008b0af3: call     qword ptr [rax + 0x10]
+00000000008b0af6: mov      rcx, qword ptr [rsp + 0x58]
+00000000008b0afb: cmp      rbx, rcx
+00000000008b0afe: jae      0x8b0b0b
+00000000008b0b00: add      rbx, 8
+00000000008b0b04: mov      rdx, qword ptr [rsp + 0x50]
+00000000008b0b09: jmp      0x8b0aa9
+00000000008b0b0b: call     0x705c88
+00000000008b0b10: int3
+00000000008b0b11: call     0x705c88
+00000000008b0b16: int3
+00000000008b0b17: call     0x705c88
+00000000008b0b1c: nop
+00000000008b0b1d: test     rdx, rdx
+00000000008b0b20: je       0x8b0b35
+00000000008b0b22: mov      r8d, 1
+00000000008b0b28: lea      rcx, [rip + 0x2797281]
+00000000008b0b2f: call     0x74e3bc
+00000000008b0b34: nop
+00000000008b0b35: mov      eax, 0x7d58
+00000000008b0b3a: movsxd   rax, dword ptr [r13 + rax]
+00000000008b0b3f: add      dword ptr [r15 + rax*4 + 0x47e2a40], -1
+00000000008b0b48: jmp      0x8b0b5c
+00000000008b0b4a: call     0xa58428
+00000000008b0b4f: int3
+00000000008b0b50: call     0xa58428
+00000000008b0b55: int3
+00000000008b0b56: call     0x480214
+00000000008b0b5b: nop
+00000000008b0b5c: add      rsp, 0x70
+00000000008b0b60: pop      r15
+00000000008b0b62: pop      r13
+00000000008b0b64: pop      r12
+00000000008b0b66: pop      rdi
+00000000008b0b67: pop      rsi
+00000000008b0b68: pop      rbp
+00000000008b0b69: pop      rbx
+00000000008b0b6a: ret

@@ -1,0 +1,48 @@
+# user_write_validity; PE pdata/unwind; entry 0x9ef544
+# chunk 0x9ef544..0x9ef61f
+00000000009ef544: push     rbx
+00000000009ef546: sub      rsp, 0x40
+00000000009ef54a: cmp      qword ptr [rcx + 0x18], -1
+00000000009ef54f: mov      rbx, rcx
+00000000009ef552: jne      0x9ef5ca
+00000000009ef554: lea      rax, [rcx + 0x7b4]
+00000000009ef55b: lea      rdx, [rip + 0x3c9c66] ; UTF16 'by force close'
+00000000009ef562: lea      rcx, [rip + 0x38854f] ; UTF16 'null'
+00000000009ef569: test     rax, rax
+00000000009ef56c: lea      r9, [rip + 0x3c9c2d] ; UTF16 '.\\UserSocket.cpp'
+00000000009ef573: lea      r8, [rip + 0x3c9bb6] ; UTF16 '[%s][%d] Write to invalid user socket. account[%s] %s'
+00000000009ef57a: cmovne   rcx, rax
+00000000009ef57e: cmp      dword ptr [rbx + 0x53c], 6
+00000000009ef585: lea      rax, [rip + 0x137988]
+00000000009ef58c: cmove    rax, rdx
+00000000009ef590: mov      edx, 2
+00000000009ef595: mov      qword ptr [rsp + 0x30], rax
+00000000009ef59a: mov      qword ptr [rsp + 0x28], rcx
+00000000009ef59f: lea      rcx, [rip + 0xd5322fa]
+00000000009ef5a6: mov      dword ptr [rsp + 0x20], 0xec
+00000000009ef5ae: call     0x734514
+00000000009ef5b3: cmp      dword ptr [rbx + 0x53c], 6
+00000000009ef5ba: je       0x9ef5c6
+00000000009ef5bc: mov      dword ptr [rbx + 0x53c], 5
+00000000009ef5c6: xor      al, al
+00000000009ef5c8: jmp      0x9ef619
+00000000009ef5ca: cmp      dword ptr [rcx + 0x20], 0x200000
+00000000009ef5d1: jle      0x9ef617
+00000000009ef5d3: lea      rax, [rcx + 0x7b4]
+00000000009ef5da: lea      rcx, [rip + 0x3884d7] ; UTF16 'null'
+00000000009ef5e1: lea      r8, [rip + 0x3c9ad8] ; UTF16 'UserSocket pending write > %d KB, Close! account[%s]'
+00000000009ef5e8: test     rax, rax
+00000000009ef5eb: mov      r9d, 0x800
+00000000009ef5f1: mov      edx, 2
+00000000009ef5f6: cmovne   rcx, rax
+00000000009ef5fa: mov      qword ptr [rsp + 0x20], rcx
+00000000009ef5ff: lea      rcx, [rip + 0xd53229a]
+00000000009ef606: call     0x734514
+00000000009ef60b: xor      edx, edx
+00000000009ef60d: lea      ecx, [rdx + 2]
+00000000009ef610: call     0x6704e0
+00000000009ef615: jmp      0x9ef5bc
+00000000009ef617: mov      al, 1
+00000000009ef619: add      rsp, 0x40
+00000000009ef61d: pop      rbx
+00000000009ef61e: ret

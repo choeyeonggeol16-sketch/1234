@@ -1,0 +1,25 @@
+# wait_thread_state; PE pdata/unwind; entry 0x7053e8
+# chunk 0x7053e8..0x70545c
+00000000007053e8: sub      rsp, 0x38
+00000000007053ec: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000007053f5: mov      eax, dword ptr [rip + 0x91e1fb5]
+00000000007053fb: test     al, 1
+00000000007053fd: jne      0x705450
+00000000007053ff: or       eax, 1
+0000000000705402: mov      dword ptr [rip + 0x91e1fa8], eax
+0000000000705408: lea      rcx, [rip + 0x91e1f79]
+000000000070540f: call     0x704148
+0000000000705414: lea      r11, [rip + 0x56d2ed]
+000000000070541b: mov      qword ptr [rip + 0x91e1f66], r11
+0000000000705422: xor      ecx, ecx
+0000000000705424: mov      dword ptr [rip + 0x91e1f76], ecx
+000000000070542a: mov      dword ptr [rip + 0x91e1f74], ecx
+0000000000705430: mov      dword ptr [rip + 0x91e1f72], ecx
+0000000000705436: mov      byte ptr [rip + 0x91e1f6f], 1
+000000000070543d: mov      byte ptr [rip + 0x91e1f6a], cl
+0000000000705443: lea      rcx, [rip + 0x412ff6]
+000000000070544a: call     0xab91d0
+000000000070544f: nop
+0000000000705450: lea      rax, [rip + 0x91e1f31]
+0000000000705457: add      rsp, 0x38
+000000000070545b: ret

@@ -1,0 +1,14 @@
+# vtable_IServerCallbackAdapter_0; PE pdata/unwind; entry 0x8af8c0
+# chunk 0x8af8c0..0x8af8e6
+00000000008af8c0: push     rbx
+00000000008af8c2: sub      rsp, 0x20
+00000000008af8c6: test     dl, 1
+00000000008af8c9: lea      rax, [rip + 0x47a600]
+00000000008af8d0: mov      rbx, rcx
+00000000008af8d3: mov      qword ptr [rcx], rax
+00000000008af8d6: je       0x8af8dd
+00000000008af8d8: call     0xab8610
+00000000008af8dd: mov      rax, rbx
+00000000008af8e0: add      rsp, 0x20
+00000000008af8e4: pop      rbx
+00000000008af8e5: ret

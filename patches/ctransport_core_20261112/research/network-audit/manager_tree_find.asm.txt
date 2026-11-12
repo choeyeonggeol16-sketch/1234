@@ -1,0 +1,35 @@
+# manager_tree_find; PE pdata/unwind; entry 0x96986c
+# chunk 0x96986c..0x9698dc
+000000000096986c: sub      rsp, 0x28
+0000000000969870: mov      r9, qword ptr [rcx + 8]
+0000000000969874: mov      r10, rcx
+0000000000969877: mov      rax, qword ptr [r9 + 8]
+000000000096987b: cmp      byte ptr [rax + 0x29], 0
+000000000096987f: jne      0x96989c
+0000000000969881: mov      rcx, qword ptr [r8]
+0000000000969884: cmp      qword ptr [rax + 0x18], rcx
+0000000000969888: jae      0x969890
+000000000096988a: mov      rax, qword ptr [rax + 0x10]
+000000000096988e: jmp      0x969896
+0000000000969890: mov      r9, rax
+0000000000969893: mov      rax, qword ptr [rax]
+0000000000969896: cmp      byte ptr [rax + 0x29], 0
+000000000096989a: je       0x969884
+000000000096989c: mov      rcx, qword ptr [r10 + 8]
+00000000009698a0: mov      qword ptr [rsp + 8], r9
+00000000009698a5: mov      qword ptr [rsp], r10
+00000000009698a9: cmp      r9, rcx
+00000000009698ac: je       0x9698bd
+00000000009698ae: mov      rax, qword ptr [r9 + 0x18]
+00000000009698b2: cmp      qword ptr [r8], rax
+00000000009698b5: jb       0x9698bd
+00000000009698b7: lea      rax, [rsp]
+00000000009698bb: jmp      0x9698cc
+00000000009698bd: mov      qword ptr [rsp + 0x18], rcx
+00000000009698c2: mov      qword ptr [rsp + 0x10], r10
+00000000009698c7: lea      rax, [rsp + 0x10]
+00000000009698cc: movdqu   xmm0, xmmword ptr [rax]
+00000000009698d0: mov      rax, rdx
+00000000009698d3: movdqu   xmmword ptr [rdx], xmm0
+00000000009698d7: add      rsp, 0x28
+00000000009698db: ret

@@ -1,0 +1,22 @@
+{
+  "accept": {
+    "call": "0x53bf0d",
+    "entry": "0x53bed0",
+    "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary"
+  },
+  "WSAEventSelect": {
+    "call": "0x53d837",
+    "entry": "0x53d740",
+    "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary"
+  },
+  "listen": {
+    "call": "0x53d7fd",
+    "entry": "0x53d740",
+    "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary"
+  },
+  "WaitForMultipleObjects": {
+    "call": "0x53c918",
+    "entry": "0x53c7e0",
+    "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary"
+  }
+}

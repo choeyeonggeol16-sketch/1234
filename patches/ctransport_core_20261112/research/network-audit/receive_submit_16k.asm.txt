@@ -1,0 +1,149 @@
+# receive_submit_16k; PE pdata/unwind; entry 0x5456d0
+# chunk 0x5456d0..0x5459b7
+00000000005456d0: push     rbx
+00000000005456d2: push     rbp
+00000000005456d3: push     rsi
+00000000005456d4: push     rdi
+00000000005456d5: push     r12
+00000000005456d7: push     r15
+00000000005456d9: sub      rsp, 0x68
+00000000005456dd: mov      qword ptr [rsp + 0x40], 0xfffffffffffffffe
+00000000005456e6: mov      ebp, edx
+00000000005456e8: mov      rbx, rcx
+00000000005456eb: mov      r8d, dword ptr [rip + 0x2f079ae6]
+00000000005456f2: mov      rax, qword ptr gs:[0x58]
+00000000005456fb: mov      r15d, 0x7d58
+0000000000545701: mov      rsi, qword ptr [rax + r8*8]
+0000000000545705: movsxd   r9, dword ptr [rsi + r15]
+0000000000545709: lea      r12, [rip - 0x145710]
+0000000000545710: movsxd   r8, dword ptr [r12 + r9*4 + 0x47e2a40]
+0000000000545718: lea      eax, [r8 + 1]
+000000000054571c: mov      dword ptr [r12 + r9*4 + 0x47e2a40], eax
+0000000000545724: imul     r9, r9, 0x3e8
+000000000054572b: add      r9, r8
+000000000054572e: lea      rax, [rip + 0x67951b] ; UTF16 'void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::Read(unsigned long)'
+0000000000545735: mov      qword ptr [r12 + r9*8 + 0x47bf7c0], rax
+000000000054573d: mov      rax, qword ptr [rcx + 0x98]
+0000000000545744: sub      dword ptr [rax + 0x4010], ebp
+000000000054574a: movsxd   rdx, dword ptr [rsi + r15]
+000000000054574e: movsxd   rcx, dword ptr [r12 + rdx*4 + 0x47e2a40]
+0000000000545756: lea      eax, [rcx + 1]
+0000000000545759: mov      dword ptr [r12 + rdx*4 + 0x47e2a40], eax
+0000000000545761: imul     rdx, rdx, 0x3e8
+0000000000545768: add      rdx, rcx
+000000000054576b: lea      rax, [rip + 0x6794be] ; UTF16 'read_copy'
+0000000000545772: mov      qword ptr [r12 + rdx*8 + 0x47bf7c0], rax
+000000000054577a: mov      rax, qword ptr [rbx + 0x98]
+0000000000545781: mov      ecx, dword ptr [rax + 0x4020]
+0000000000545787: cmp      ecx, 1
+000000000054578a: jle      0x545836
+0000000000545790: movsxd   rdx, dword ptr [rsi + r15]
+0000000000545794: movsxd   rcx, dword ptr [r12 + rdx*4 + 0x47e2a40]
+000000000054579c: lea      eax, [rcx + 1]
+000000000054579f: mov      dword ptr [r12 + rdx*4 + 0x47e2a40], eax
+00000000005457a7: imul     rdx, rdx, 0x3e8
+00000000005457ae: add      rdx, rcx
+00000000005457b1: lea      rax, [rip + 0x60f878] ; UTF16 'read_alloc'
+00000000005457b8: mov      qword ptr [r12 + rdx*8 + 0x47bf7c0], rax
+00000000005457c0: call     0x41e6e4
+00000000005457c5: mov      rdi, rax
+00000000005457c8: mov      rdx, qword ptr [rbx + 0x98]
+00000000005457cf: mov      r8, rbp
+00000000005457d2: mov      ecx, dword ptr [rdx + 0x4010]
+00000000005457d8: lea      rdx, [rcx + rdx + 0x10]
+00000000005457dd: lea      rcx, [rax + 0x10]
+00000000005457e1: call     0xabcd50
+00000000005457e6: mov      rdx, qword ptr [rbx + 0x98]
+00000000005457ed: lock add dword ptr [rdx + 0x4020], -1
+00000000005457f5: jne      0x545820
+00000000005457f7: mov      dword ptr [rdx + 0x4010], 0
+0000000000545801: mov      qword ptr [rdx + 0x4018], 0
+000000000054580c: movsxd   rcx, dword ptr [rdx + 0x4034]
+0000000000545813: mov      rcx, qword ptr [r12 + rcx*8 + 0x4850f80]
+000000000054581b: call     0x41c6f8
+0000000000545820: mov      qword ptr [rbx + 0x98], rdi
+0000000000545827: movsxd   rax, dword ptr [rsi + r15]
+000000000054582b: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+0000000000545834: jmp      0x545854
+0000000000545836: mov      rcx, qword ptr [rbx + 0x98]
+000000000054583d: mov      r8, rbp
+0000000000545840: mov      eax, dword ptr [rcx + 0x4010]
+0000000000545846: lea      rdx, [rax + rcx + 0x10]
+000000000054584b: add      rcx, 0x10
+000000000054584f: call     0xabcd50
+0000000000545854: mov      rax, qword ptr [rbx + 0x98]
+000000000054585b: mov      dword ptr [rax + 0x4010], ebp
+0000000000545861: movsxd   rax, dword ptr [rsi + r15]
+0000000000545865: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+000000000054586e: mov      rax, qword ptr [rbx]
+0000000000545871: mov      ebp, 3
+0000000000545876: mov      r9d, ebp
+0000000000545879: mov      r8d, 0x330
+000000000054587f: lea      rdx, [rip + 0x60ef1a]
+0000000000545886: mov      rcx, rbx
+0000000000545889: call     qword ptr [rax + 8]
+000000000054588c: mov      r11, qword ptr [rbx + 0x98]
+0000000000545893: mov      eax, 0x4000
+0000000000545898: sub      eax, dword ptr [r11 + 0x4010]
+000000000054589f: mov      dword ptr [rsp + 0x48], eax
+00000000005458a3: mov      eax, dword ptr [r11 + 0x4010]
+00000000005458aa: lea      rcx, [rax + r11 + 0x10]
+00000000005458af: mov      qword ptr [rsp + 0x50], rcx
+00000000005458b4: mov      dword ptr [rsp + 0xa8], 0
+00000000005458bf: lea      rax, [rbx + 0x58]
+00000000005458c3: mov      qword ptr [rsp + 0x30], 0
+00000000005458cc: mov      qword ptr [rsp + 0x28], rax
+00000000005458d1: lea      rax, [rsp + 0xa8]
+00000000005458d9: mov      qword ptr [rsp + 0x20], rax
+00000000005458de: lea      r9, [rsp + 0xa0]
+00000000005458e6: lea      r8d, [rbp - 2]
+00000000005458ea: lea      rdx, [rsp + 0x48]
+00000000005458ef: mov      rcx, qword ptr [rbx + 0x18]
+00000000005458f3: call     qword ptr [rip + 0x5d6d7f] ; IAT WSARecv
+00000000005458f9: test     eax, eax
+00000000005458fb: je       0x54599d
+0000000000545901: call     qword ptr [rip + 0x5d6871] ; IAT GetLastError
+0000000000545907: cmp      eax, 0x3e5
+000000000054590c: je       0x54599d
+0000000000545912: call     qword ptr [rip + 0x5d6860] ; IAT GetLastError
+0000000000545918: mov      edi, eax
+000000000054591a: cmp      eax, 0x2736
+000000000054591f: je       0x545975
+0000000000545921: cmp      eax, 0x2746
+0000000000545926: je       0x545975
+0000000000545928: cmp      eax, 0x2745
+000000000054592d: je       0x545975
+000000000054592f: mov      dword ptr [rsp + 0x28], eax
+0000000000545933: mov      qword ptr [rsp + 0x20], rbx
+0000000000545938: mov      r9, qword ptr [rbx + 0x18]
+000000000054593c: lea      r8, [rip + 0x60f6ad] ; UTF16 'CIOSocket::Read %x(%x) err = %d'
+0000000000545943: lea      edx, [rbp - 1]
+0000000000545946: lea      rcx, [rip + 0xd9dbf53]
+000000000054594d: call     0x734514
+0000000000545952: mov      dword ptr [rsp + 0x28], edi
+0000000000545956: mov      qword ptr [rsp + 0x20], rbx
+000000000054595b: mov      r9, qword ptr [rbx + 0x18]
+000000000054595f: lea      r8, [rip + 0x60f68a] ; UTF16 'CIOSocket::Read %x(%x) err = %d'
+0000000000545966: lea      edx, [rbp + 7]
+0000000000545969: lea      rcx, [rip + 0xd9dbf30]
+0000000000545970: call     0x734514
+0000000000545975: mov      rcx, rbx
+0000000000545978: call     0x45d41c
+000000000054597d: mov      r11, qword ptr [rbx]
+0000000000545980: mov      byte ptr [rsp + 0x20], 0
+0000000000545985: mov      r9d, ebp
+0000000000545988: mov      r8d, 0x342
+000000000054598e: lea      rdx, [rip + 0x60ee0b]
+0000000000545995: mov      rcx, rbx
+0000000000545998: call     qword ptr [r11 + 0x10]
+000000000054599c: nop
+000000000054599d: movsxd   rax, dword ptr [rsi + r15]
+00000000005459a1: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+00000000005459aa: add      rsp, 0x68
+00000000005459ae: pop      r15
+00000000005459b0: pop      r12
+00000000005459b2: pop      rdi
+00000000005459b3: pop      rsi
+00000000005459b4: pop      rbp
+00000000005459b5: pop      rbx
+00000000005459b6: ret

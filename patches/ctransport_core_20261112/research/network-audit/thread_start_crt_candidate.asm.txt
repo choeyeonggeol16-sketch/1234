@@ -1,0 +1,73 @@
+# thread_start_crt_candidate; PE pdata/unwind; entry 0xabf890
+# chunk 0xabf890..0xabf8e6
+0000000000abf890: sub      rsp, 0x68
+0000000000abf894: mov      qword ptr [rsp + 0x60], rbx
+0000000000abf899: mov      qword ptr [rsp + 0x58], rbp
+0000000000abf89e: mov      qword ptr [rsp + 0x50], rsi
+0000000000abf8a3: mov      qword ptr [rsp + 0x40], r12
+0000000000abf8a8: xor      ebx, ebx
+0000000000abf8aa: test     r8, r8
+0000000000abf8ad: mov      qword ptr [rsp + 0x38], r13
+0000000000abf8b2: mov      rbp, r9
+0000000000abf8b5: mov      rsi, r8
+0000000000abf8b8: mov      r13, rcx
+0000000000abf8bb: mov      r12d, edx
+0000000000abf8be: jne      0xabf8e6
+0000000000abf8c0: call     0xac32e0
+0000000000abf8c5: xor      r9d, r9d
+0000000000abf8c8: xor      r8d, r8d
+0000000000abf8cb: xor      edx, edx
+0000000000abf8cd: xor      ecx, ecx
+0000000000abf8cf: mov      qword ptr [rsp + 0x20], rbx
+0000000000abf8d4: mov      dword ptr [rax], 0x16
+0000000000abf8da: call     0xac07b0
+0000000000abf8df: xor      eax, eax
+0000000000abf8e1: jmp      0xabf995
+# chunk 0xabf8e6..0xabf995
+0000000000abf8e6: mov      qword ptr [rsp + 0x48], rdi
+0000000000abf8eb: call     0xadaf00
+0000000000abf8f0: mov      edx, 0x2d8
+0000000000abf8f5: mov      ecx, 1
+0000000000abf8fa: call     0xac7210
+0000000000abf8ff: test     rax, rax
+0000000000abf902: mov      rdi, rax
+0000000000abf905: je       0xabf97b
+0000000000abf907: call     0xacbb80
+0000000000abf90c: mov      rcx, rdi
+0000000000abf90f: mov      rdx, qword ptr [rax + 0xc0]
+0000000000abf916: call     0xacb9d0
+0000000000abf91b: mov      rcx, qword ptr [rsp + 0x98]
+0000000000abf923: mov      eax, dword ptr [rsp + 0x90]
+0000000000abf92a: test     rcx, rcx
+0000000000abf92d: lea      r8, [rsp + 0x80]
+0000000000abf935: mov      rdx, r12
+0000000000abf938: cmovne   r8, rcx
+0000000000abf93c: mov      r9, rdi
+0000000000abf93f: mov      rcx, r13
+0000000000abf942: mov      qword ptr [rsp + 0x28], r8
+0000000000abf947: lea      r8, [rip - 0x15e]
+0000000000abf94e: mov      qword ptr [rdi + 0x90], rsi
+0000000000abf955: mov      qword ptr [rdi + 0x98], rbp
+0000000000abf95c: mov      qword ptr [rdi + 8], 0xffffffffffffffff
+0000000000abf964: mov      dword ptr [rsp + 0x20], eax
+0000000000abf968: call     qword ptr [rip + 0x5caaa] ; IAT CreateThread
+0000000000abf96e: test     rax, rax
+0000000000abf971: jne      0xabf990
+0000000000abf973: call     qword ptr [rip + 0x5c7ff] ; IAT GetLastError
+0000000000abf979: mov      ebx, eax
+0000000000abf97b: mov      rcx, rdi
+0000000000abf97e: call     0xabd910
+0000000000abf983: test     ebx, ebx
+0000000000abf985: je       0xabf98e
+0000000000abf987: mov      ecx, ebx
+0000000000abf989: call     0xac3340
+0000000000abf98e: xor      eax, eax
+0000000000abf990: mov      rdi, qword ptr [rsp + 0x48]
+# chunk 0xabf995..0xabf9b3
+0000000000abf995: mov      r13, qword ptr [rsp + 0x38]
+0000000000abf99a: mov      r12, qword ptr [rsp + 0x40]
+0000000000abf99f: mov      rsi, qword ptr [rsp + 0x50]
+0000000000abf9a4: mov      rbp, qword ptr [rsp + 0x58]
+0000000000abf9a9: mov      rbx, qword ptr [rsp + 0x60]
+0000000000abf9ae: add      rsp, 0x68
+0000000000abf9b2: ret

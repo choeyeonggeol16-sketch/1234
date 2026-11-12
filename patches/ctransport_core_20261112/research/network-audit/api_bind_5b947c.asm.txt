@@ -1,0 +1,51 @@
+# api_bind_5b947c; PE pdata/unwind; entry 0x5b947c
+# chunk 0x5b947c..0x5b9552
+00000000005b947c: push     rbx
+00000000005b947e: push     rdi
+00000000005b947f: sub      rsp, 0x38
+00000000005b9483: xor      r8d, r8d
+00000000005b9486: mov      rdi, rdx
+00000000005b9489: lea      edx, [r8 + 1]
+00000000005b948d: lea      ecx, [rdx + 1]
+00000000005b9490: call     qword ptr [rip + 0x5631ca] ; IAT socket
+00000000005b9496: lea      rdx, [rsp + 0x20]
+00000000005b949b: mov      r8d, 0x10
+00000000005b94a1: mov      rcx, rax
+00000000005b94a4: mov      word ptr [rsp + 0x20], 2
+00000000005b94ab: mov      dword ptr [rsp + 0x24], 0
+00000000005b94b3: mov      rbx, rax
+00000000005b94b6: mov      word ptr [rsp + 0x22], 0
+00000000005b94bd: call     qword ptr [rip + 0x563195] ; IAT bind
+00000000005b94c3: cmp      eax, -1
+00000000005b94c6: jne      0x5b94e4
+00000000005b94c8: lea      r8, [rip + 0x62ed21] ; UTF16 "Can't bind socket to cache server"
+00000000005b94cf: lea      rcx, [rip + 0xd9683ca]
+00000000005b94d6: mov      edx, 2
+00000000005b94db: call     0x734514
+00000000005b94e0: xor      eax, eax
+00000000005b94e2: jmp      0x5b954b
+00000000005b94e4: mov      eax, dword ptr [rip + 0xd595fa]
+00000000005b94ea: movzx    ecx, word ptr [rip + 0xd595cb]
+00000000005b94f1: mov      word ptr [rsp + 0x20], 2
+00000000005b94f8: mov      dword ptr [rsp + 0x24], eax
+00000000005b94fc: call     qword ptr [rip + 0x56314e] ; IAT htons
+00000000005b9502: lea      rdx, [rsp + 0x20]
+00000000005b9507: mov      r8d, 0x10
+00000000005b950d: mov      rcx, rbx
+00000000005b9510: mov      word ptr [rsp + 0x22], ax
+00000000005b9515: call     qword ptr [rip + 0x5631ed] ; IAT connect
+00000000005b951b: lea      rcx, [rip + 0xd96837e]
+00000000005b9522: cmp      eax, -1
+00000000005b9525: jne      0x5b9537
+00000000005b9527: mov      byte ptr [rip + 0x4629903], 1
+00000000005b952e: lea      r8, [rip + 0x62ec73] ; UTF16 "Can't connect to cache server"
+00000000005b9535: jmp      0x5b94d6
+00000000005b9537: lea      r8, [rip + 0x62ec2a] ; UTF16 'Connected to cache server %d'
+00000000005b953e: mov      r9, rdi
+00000000005b9541: xor      edx, edx
+00000000005b9543: call     0x734514
+00000000005b9548: mov      rax, rbx
+00000000005b954b: add      rsp, 0x38
+00000000005b954f: pop      rdi
+00000000005b9550: pop      rbx
+00000000005b9551: ret

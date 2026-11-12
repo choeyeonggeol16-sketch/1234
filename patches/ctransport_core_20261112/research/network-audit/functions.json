@@ -1,0 +1,3282 @@
+{
+  "wndproc_service_control": {
+    "entry": "0x72d880",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x72d880",
+        "0x72f59c"
+      ]
+    ],
+    "direct_calls": [
+      "0x926e84",
+      "0x9277d0",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x6d91ec",
+      "0x83ad24",
+      "0x441d88",
+      "0xab91d0",
+      "0x441d88",
+      "0xab91d0",
+      "0x441d88",
+      "0xab91d0",
+      "0x441d88",
+      "0xab91d0",
+      "0x734514",
+      "0x481f88",
+      "0xab91d0",
+      "0x481f88",
+      "0xab91d0",
+      "0x481f88",
+      "0xab91d0",
+      "0x481f88",
+      "0xab91d0",
+      "0x734514",
+      "0x401f2c",
+      "0x66db28",
+      "0x734514",
+      "0x53d920",
+      "0x53daa8",
+      "0x83c02c",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x828494",
+      "0x926fe4",
+      "0x926ed8",
+      "0xa34540",
+      "0xa3c0e4",
+      "0x8b0bac",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x74e5ec",
+      "0x74ec0c",
+      "0xa34540",
+      "0xa3c0e4",
+      "0xa34540",
+      "0xa3c0e4",
+      "0xa34540",
+      "0xa3c0e4",
+      "0xa34540",
+      "0xa440b8",
+      "0x732a24",
+      "0x401f2c",
+      "0x66db28",
+      "0x401f2c",
+      "0x66db28",
+      "0x725a34",
+      "0x927a3c",
+      "0x9278f4",
+      "0x8c0458",
+      "0x7221f4",
+      "0x722268",
+      "0xabe350",
+      "0x734514",
+      "0xab9970",
+      "0xabe350",
+      "0x734514",
+      "0xabe320",
+      "0x734514",
+      "0x731c60",
+      "0x734514",
+      "0x731d10",
+      "0x73446c",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x47de28",
+      "0x6aa254",
+      "0x734514",
+      "0xab0b20",
+      "0xab9430",
+      "0xab9e10",
+      "0x40a9c4",
+      "0xab9e10",
+      "0x462184",
+      "0x46237c",
+      "0x734514",
+      "0xab9e10",
+      "0x462184",
+      "0x74e3bc",
+      "0x74e3bc",
+      "0x73446c",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x401f2c",
+      "0x66db28",
+      "0x917ef8",
+      "0x734300",
+      "0x401f2c",
+      "0x66db28"
+    ],
+    "callers": []
+  },
+  "socket_number_map_add": {
+    "entry": "0xa08138",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa08138",
+        "0xa082de"
+      ]
+    ],
+    "direct_calls": [
+      "0xabddb0",
+      "0x8aacec",
+      "0x866f68",
+      "0x976170",
+      "0x8aad88",
+      "0x480214"
+    ],
+    "callers": [
+      {
+        "at": "0xa0ce68",
+        "op": "call",
+        "function": "0xa0ccc4",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "user_ctor_tail_a": {
+    "entry": "0x9f7f04",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x9f7f04",
+        "0x9f7f39"
+      ]
+    ],
+    "direct_calls": [],
+    "callers": [
+      {
+        "at": "0xa0cf57",
+        "op": "call",
+        "function": "0xa0ccc4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa0f8ae",
+        "op": "call",
+        "function": "0xa0f83c",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "user_ctor_tail_b": {
+    "entry": "0xa07ee8",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa07ee8",
+        "0xa08037"
+      ]
+    ],
+    "direct_calls": [
+      "0xab7f00",
+      "0xa03e48",
+      "0xab7f00",
+      "0xa03e48",
+      "0xa71b3c",
+      "0x672058",
+      "0xa71b3c",
+      "0x672058"
+    ],
+    "callers": [
+      {
+        "at": "0xa08044",
+        "op": "call",
+        "function": "0xa08038",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa0cf5f",
+        "op": "call",
+        "function": "0xa0ccc4",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "user_destructor": {
+    "entry": "0xa0169c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa0169c",
+        "0xa01790"
+      ]
+    ],
+    "direct_calls": [
+      "0xab8610",
+      "0xab8610"
+    ],
+    "callers": [
+      {
+        "at": "0xa017ac",
+        "op": "call",
+        "function": "0xa017a0",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "user_timer": {
+    "entry": "0xa0d164",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa0d164",
+        "0xa0db8a"
+      ]
+    ],
+    "direct_calls": [
+      "0x704a2c",
+      "0x734514",
+      "0x45d41c",
+      "0x704990",
+      "0x92f2b0",
+      "0x735ca4",
+      "0xab9970",
+      "0x45d41c",
+      "0xab9970",
+      "0x45d41c",
+      "0x9f8210",
+      "0x9f884c",
+      "0x9f884c",
+      "0x9f884c",
+      "0x9f8604",
+      "0x9f82c8",
+      "0x9f80dc",
+      "0x9f8d58",
+      "0x9fc768",
+      "0x5c97ec",
+      "0x9fc768",
+      "0x9f884c",
+      "0x9f8604",
+      "0x9f82c8",
+      "0x9f884c",
+      "0x9f8604",
+      "0x9f82c8",
+      "0x9f7ce0",
+      "0x9f7ce0",
+      "0x9f7e24",
+      "0x9f8604",
+      "0x9f7ce0",
+      "0x9f7ce0",
+      "0x9f7e24",
+      "0x9f8604",
+      "0x9f7e24",
+      "0x9f884c",
+      "0x7048c4"
+    ],
+    "callers": []
+  },
+  "ip_socket_limiter_decrement": {
+    "entry": "0xa0dc04",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa0dc04",
+        "0xa0dda1"
+      ]
+    ],
+    "direct_calls": [
+      "0xa4ccec",
+      "0x7c8fc4",
+      "0xa4cd8c",
+      "0x866f68",
+      "0xa087f8",
+      "0xa4cd8c",
+      "0xa4cd8c",
+      "0x480214",
+      "0xa4cd8c"
+    ],
+    "callers": [
+      {
+        "at": "0xa12e82",
+        "op": "call",
+        "function": "0xa12dec",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "mac_socket_limiter_decrement": {
+    "entry": "0xa0ded4",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa0ded4",
+        "0xa0e072"
+      ]
+    ],
+    "direct_calls": [
+      "0xa4ccec",
+      "0xa03dd8",
+      "0xa4cd8c",
+      "0x866f68",
+      "0xa0889c",
+      "0xa4cd8c",
+      "0xa4cd8c",
+      "0x480214",
+      "0xa4cd8c"
+    ],
+    "callers": [
+      {
+        "at": "0xa12e95",
+        "op": "call",
+        "function": "0xa12dec",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "callback_adapter_allocate": {
+    "entry": "0x8af8e8",
+    "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+    "chunks": [
+      [
+        "0x8af8e8",
+        "0x8af8f2"
+      ]
+    ],
+    "direct_calls": [],
+    "callers": []
+  },
+  "callback_timing_enter": {
+    "entry": "0x926e2c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x926e2c",
+        "0x926e52"
+      ]
+    ],
+    "direct_calls": [
+      "0x925138"
+    ],
+    "callers": [
+      {
+        "at": "0x70539b",
+        "op": "call",
+        "function": "0x705330",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7057e0",
+        "op": "call",
+        "function": "0x7056ac",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x705f3c",
+        "op": "call",
+        "function": "0x705e4c",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "callback_timing_leave": {
+    "entry": "0x926e54",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x926e54",
+        "0x926e82"
+      ]
+    ],
+    "direct_calls": [
+      "0x925138"
+    ],
+    "callers": [
+      {
+        "at": "0x7053b5",
+        "op": "call",
+        "function": "0x705330",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7058e2",
+        "op": "call",
+        "function": "0x7056ac",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x705f4d",
+        "op": "call",
+        "function": "0x705e4c",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "listener_run": {
+    "entry": "0x8af8f4",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8af8f4",
+        "0x8af9b0"
+      ]
+    ],
+    "direct_calls": [
+      "0x7066dc",
+      "0x73446c"
+    ],
+    "callers": [
+      {
+        "at": "0x8afa84",
+        "op": "call",
+        "function": "0x8af9cc",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "listener_base_ctor": {
+    "entry": "0x704bec",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x704bec",
+        "0x704c7a"
+      ]
+    ],
+    "direct_calls": [
+      "0x704148"
+    ],
+    "callers": [
+      {
+        "at": "0x8b0f35",
+        "op": "call",
+        "function": "0x8b0f1c",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "listener_base_close": {
+    "entry": "0x704c7c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x704c7c",
+        "0x704d1b"
+      ]
+    ],
+    "direct_calls": [],
+    "callers": [
+      {
+        "at": "0x7054e7",
+        "op": "call",
+        "function": "0x705480",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x706840",
+        "op": "call",
+        "function": "0x7066dc",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "manager_tree_find": {
+    "entry": "0x96986c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x96986c",
+        "0x9698dc"
+      ]
+    ],
+    "direct_calls": [],
+    "callers": [
+      {
+        "at": "0x6ed683",
+        "op": "call",
+        "function": "0x6ed5f4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6ed6df",
+        "op": "call",
+        "function": "0x6ed5f4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6ed7fe",
+        "op": "call",
+        "function": "0x6ed77c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6ed930",
+        "op": "call",
+        "function": "0x6ed894",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6edde5",
+        "op": "call",
+        "function": "0x6edd1c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6f5853",
+        "op": "call",
+        "function": "0x6f5568",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7db2fe",
+        "op": "call",
+        "function": "0x7db278",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7db436",
+        "op": "call",
+        "function": "0x7db3b0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8b058e",
+        "op": "call",
+        "function": "0x8b04fc",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x918285",
+        "op": "call",
+        "function": "0x9181f4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x969d7b",
+        "op": "call",
+        "function": "0x969d60",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "manager_destructor": {
+    "entry": "0x8b0e54",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8b0e54",
+        "0x8b0eff"
+      ]
+    ],
+    "direct_calls": [
+      "0x9205b0"
+    ],
+    "callers": [
+      {
+        "at": "0x521189",
+        "op": "call",
+        "function": "0x52117c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x5212cd",
+        "op": "jmp",
+        "function": "0x521248",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x5212e5",
+        "op": "call",
+        "function": "0x5212d8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7acbf2",
+        "op": "jmp",
+        "function": null,
+        "validation": "entry-only candidate"
+      },
+      {
+        "at": "0x7accf5",
+        "op": "call",
+        "function": "0x7acce8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7acd16",
+        "op": "call",
+        "function": "0x7acd00",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8b1020",
+        "op": "call",
+        "function": "0x8b1014",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xb17fef",
+        "op": "jmp",
+        "function": null,
+        "validation": "entry-only candidate"
+      }
+    ]
+  },
+  "listener_base_destructor": {
+    "entry": "0x705480",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x705480",
+        "0x705508"
+      ]
+    ],
+    "direct_calls": [
+      "0x704c7c"
+    ],
+    "callers": [
+      {
+        "at": "0x705a30",
+        "op": "call",
+        "function": "0x705a24",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8b0efa",
+        "op": "jmp",
+        "function": "0x8b0e54",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8b0f11",
+        "op": "call",
+        "function": "0x8b0f04",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8b1009",
+        "op": "call",
+        "function": "0x8b0ffc",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "worker_alt_entry": {
+    "entry": "0x705ab0",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x705ab0",
+        "0x705b13"
+      ]
+    ],
+    "direct_calls": [
+      "0x7056ac"
+    ],
+    "callers": [
+      {
+        "at": "0x705b69",
+        "op": "call",
+        "function": "0x705b38",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "event_register": {
+    "entry": "0x706564",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x706564",
+        "0x7066c2"
+      ]
+    ],
+    "direct_calls": [
+      "0x707fbc",
+      "0x734514",
+      "0x70801c",
+      "0x559050",
+      "0x559050",
+      "0x70801c"
+    ],
+    "callers": [
+      {
+        "at": "0x706826",
+        "op": "call",
+        "function": "0x7066dc",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "candidate_705318": {
+    "entry": "0x705318",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x705318",
+        "0x705330"
+      ]
+    ],
+    "direct_calls": [
+      "0x401044"
+    ],
+    "callers": []
+  },
+  "wait_thread_state": {
+    "entry": "0x7053e8",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x7053e8",
+        "0x70545c"
+      ]
+    ],
+    "direct_calls": [
+      "0x704148",
+      "0xab91d0"
+    ],
+    "callers": [
+      {
+        "at": "0x66f372",
+        "op": "call",
+        "function": "0x66f190",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x66f37d",
+        "op": "call",
+        "function": "0x66f190",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x705e62",
+        "op": "call",
+        "function": "0x705e4c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x705f0e",
+        "op": "call",
+        "function": "0x705e4c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x705f26",
+        "op": "call",
+        "function": "0x705e4c",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "io_worker_entry": {
+    "entry": "0x705a4c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x705a4c",
+        "0x705a8f"
+      ]
+    ],
+    "direct_calls": [
+      "0x7056ac",
+      "0x66fda0",
+      "0x732ab0",
+      "0x66ffe0"
+    ],
+    "callers": [
+      {
+        "at": "0x705b62",
+        "op": "call",
+        "function": "0x705b38",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "io_worker_body": {
+    "entry": "0x7056ac",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x7056ac",
+        "0x7059a1"
+      ]
+    ],
+    "direct_calls": [
+      "0xa22ae8",
+      "0x705330",
+      "0x926e2c",
+      "0x66db28",
+      "0x926e54",
+      "0x66db28"
+    ],
+    "callers": [
+      {
+        "at": "0x705a50",
+        "op": "call",
+        "function": "0x705a4c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x705b0d",
+        "op": "call",
+        "function": "0x705ab0",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "io_bootstrap": {
+    "entry": "0x704754",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x704754",
+        "0x704807"
+      ]
+    ],
+    "direct_calls": [
+      "0x7045dc"
+    ],
+    "callers": [
+      {
+        "at": "0x72f9f6",
+        "op": "call",
+        "function": "0x72f874",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "service_thread_boot": {
+    "entry": "0x730300",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x730300",
+        "0x7303c6"
+      ]
+    ],
+    "direct_calls": [
+      "0x9250f8",
+      "0xab8ea0",
+      "0x6b4fb8",
+      "0xab8ea0",
+      "0x6b5094",
+      "0x53a8fc",
+      "0x73029c",
+      "0x72f874"
+    ],
+    "callers": []
+  },
+  "thread_seed_crt": {
+    "entry": "0xab9520",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xab9520",
+        "0xab9536"
+      ]
+    ],
+    "direct_calls": [
+      "0xacbb80"
+    ],
+    "callers": [
+      {
+        "at": "0xa0804b",
+        "op": "call",
+        "function": "0xa08038",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa22af4",
+        "op": "call",
+        "function": "0xa22ae8",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "thread_seed_custom": {
+    "entry": "0xa22898",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa22898",
+        "0xa22909"
+      ]
+    ],
+    "direct_calls": [],
+    "callers": [
+      {
+        "at": "0xa2294f",
+        "op": "call",
+        "function": "0xa2290c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa22b09",
+        "op": "call",
+        "function": "0xa22ae8",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "socket_init_io": {
+    "entry": "0x545260",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x545260",
+        "0x545371"
+      ]
+    ],
+    "direct_calls": [
+      "0x45d41c"
+    ],
+    "callers": []
+  },
+  "user_write_validity": {
+    "entry": "0x9ef544",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x9ef544",
+        "0x9ef61f"
+      ]
+    ],
+    "direct_calls": [
+      "0x734514",
+      "0x734514",
+      "0x6704e0"
+    ],
+    "callers": []
+  },
+  "user_write_capacity": {
+    "entry": "0x9ef620",
+    "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+    "chunks": [
+      [
+        "0x9ef620",
+        "0x9ef63a"
+      ]
+    ],
+    "direct_calls": [],
+    "callers": []
+  },
+  "receive_submit_16k": {
+    "entry": "0x5456d0",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x5456d0",
+        "0x5459b7"
+      ]
+    ],
+    "direct_calls": [
+      "0x41e6e4",
+      "0xabcd50",
+      "0x41c6f8",
+      "0xabcd50",
+      "0x734514",
+      "0x734514",
+      "0x45d41c"
+    ],
+    "callers": [
+      {
+        "at": "0x54638c",
+        "op": "call",
+        "function": "0x54616c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x5463d3",
+        "op": "call",
+        "function": "0x54616c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x546405",
+        "op": "call",
+        "function": "0x54616c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x61d1d7",
+        "op": "call",
+        "function": "0x61cf88",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x61d22d",
+        "op": "call",
+        "function": "0x61cf88",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x61d269",
+        "op": "call",
+        "function": "0x61cf88",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x73676d",
+        "op": "call",
+        "function": "0x736564",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7367c3",
+        "op": "call",
+        "function": "0x736564",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7367ff",
+        "op": "call",
+        "function": "0x736564",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7c4526",
+        "op": "call",
+        "function": "0x7c44c4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7c47e0",
+        "op": "call",
+        "function": "0x7c455c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7c4837",
+        "op": "call",
+        "function": "0x7c455c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7c4873",
+        "op": "call",
+        "function": "0x7c455c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8444c1",
+        "op": "call",
+        "function": "0x8442b4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x844517",
+        "op": "call",
+        "function": "0x8442b4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x844553",
+        "op": "call",
+        "function": "0x8442b4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x890af6",
+        "op": "call",
+        "function": "0x890a94",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x890d41",
+        "op": "call",
+        "function": "0x890b2c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x890d97",
+        "op": "call",
+        "function": "0x890b2c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x890dd3",
+        "op": "call",
+        "function": "0x890b2c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa03c31",
+        "op": "call",
+        "function": "0xa0372c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa03d24",
+        "op": "call",
+        "function": "0xa0372c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa03d6c",
+        "op": "call",
+        "function": "0xa0372c",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "enqueue_async_write_16k": {
+    "entry": "0x545a18",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x545a18",
+        "0x545dd0"
+      ]
+    ],
+    "direct_calls": [
+      "0x41c6f8",
+      "0x41c6f8",
+      "0x45d41c",
+      "0x73446c",
+      "0x41c6f8",
+      "0xabcd50",
+      "0x41c6f8"
+    ],
+    "callers": []
+  },
+  "write_completion_16k": {
+    "entry": "0x545e38",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x545e38",
+        "0x5460b8"
+      ]
+    ],
+    "direct_calls": [
+      "0x73446c",
+      "0x734514",
+      "0x734514",
+      "0x73446c",
+      "0x734514",
+      "0x41c6f8"
+    ],
+    "callers": []
+  },
+  "socket_write_packet": {
+    "entry": "0x90e1d0",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x90e1d0",
+        "0x90e522"
+      ]
+    ],
+    "direct_calls": [
+      "0x41c6f8",
+      "0x41c6f8",
+      "0x45d41c",
+      "0x73446c",
+      "0x734514",
+      "0x41c6f8",
+      "0xabcd50",
+      "0x41c6f8"
+    ],
+    "callers": [
+      {
+        "at": "0x90ee18",
+        "op": "call",
+        "function": "0x90ed10",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "io_dispatch_16k": {
+    "entry": "0x54655c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x54655c",
+        "0x54664e"
+      ]
+    ],
+    "direct_calls": [
+      "0x45d41c",
+      "0x545430",
+      "0x45c7ac",
+      "0x734514"
+    ],
+    "callers": []
+  },
+  "serialized_callback": {
+    "entry": "0x45c7ac",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x45c7ac",
+        "0x45c9cd"
+      ]
+    ],
+    "direct_calls": [
+      "0x734514",
+      "0x6704e0",
+      "0x734514",
+      "0x6704e0"
+    ],
+    "callers": [
+      {
+        "at": "0x45f0c4",
+        "op": "call",
+        "function": "0x45f028",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x45f23d",
+        "op": "call",
+        "function": "0x45f11c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x5465f8",
+        "op": "call",
+        "function": "0x54655c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x54679b",
+        "op": "call",
+        "function": "0x546650",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x61e570",
+        "op": "call",
+        "function": "0x61e410",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6b6a65",
+        "op": "call",
+        "function": "0x6b6944",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6b8b8d",
+        "op": "call",
+        "function": "0x6b8a6c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7369a3",
+        "op": "call",
+        "function": "0x7368a0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8446fd",
+        "op": "call",
+        "function": "0x8445c0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x87d46d",
+        "op": "call",
+        "function": "0x87d34c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x888616",
+        "op": "call",
+        "function": "0x8884a4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x90f025",
+        "op": "call",
+        "function": "0x90ee9c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x9241e6",
+        "op": "call",
+        "function": "0x924164",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x92427a",
+        "op": "call",
+        "function": "0x9241f8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x924306",
+        "op": "call",
+        "function": "0x92428c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x966e3f",
+        "op": "call",
+        "function": "0x966c6c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x978124",
+        "op": "call",
+        "function": "0x977ef8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x9d8b51",
+        "op": "call",
+        "function": "0x9d8948",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x9d9c0c",
+        "op": "call",
+        "function": "0x9d9a2c",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "user_ctor": {
+    "entry": "0xa0ccc4",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa0ccc4",
+        "0xa0cff8"
+      ]
+    ],
+    "direct_calls": [
+      "0x90e548",
+      "0xa4ccd4",
+      "0xab9430",
+      "0xab9430",
+      "0xa08138",
+      "0xab9430",
+      "0x9f7f04",
+      "0xa07ee8",
+      "0xab9430",
+      "0xab9430",
+      "0xab9430"
+    ],
+    "callers": [
+      {
+        "at": "0xa0d104",
+        "op": "call",
+        "function": "0xa0d07c",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "socket_base_ctor": {
+    "entry": "0x90e548",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x90e548",
+        "0x90e642"
+      ]
+    ],
+    "direct_calls": [
+      "0x545030",
+      "0xab9430",
+      "0xab9430"
+    ],
+    "callers": [
+      {
+        "at": "0x7b0597",
+        "op": "call",
+        "function": "0x7b0588",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x897507",
+        "op": "call",
+        "function": "0x8974f8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x89820b",
+        "op": "call",
+        "function": "0x8981fc",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa0cce5",
+        "op": "call",
+        "function": "0xa0ccc4",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "manager_register": {
+    "entry": "0x8b0404",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8b0404",
+        "0x8b04e3"
+      ]
+    ],
+    "direct_calls": [
+      "0x8b0340"
+    ],
+    "callers": [
+      {
+        "at": "0x7ad3b7",
+        "op": "call",
+        "function": "0x7ad220",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "manager_unregister": {
+    "entry": "0x8b04fc",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8b04fc",
+        "0x8b0653"
+      ]
+    ],
+    "direct_calls": [
+      "0x96986c",
+      "0x866f68",
+      "0x91ffd8",
+      "0x734514",
+      "0x480214"
+    ],
+    "callers": [
+      {
+        "at": "0x7d4874",
+        "op": "call",
+        "function": "0x7d4774",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa12e6c",
+        "op": "call",
+        "function": "0xa12dec",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "manager_snapshot_a": {
+    "entry": "0x8b0954",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8b0954",
+        "0x8b0b6b"
+      ]
+    ],
+    "direct_calls": [
+      "0x559050",
+      "0x6616e0",
+      "0x866f68",
+      "0x866f68",
+      "0x45d41c",
+      "0x705c88",
+      "0x705c88",
+      "0x705c88",
+      "0x74e3bc",
+      "0xa58428",
+      "0xa58428",
+      "0x480214"
+    ],
+    "callers": []
+  },
+  "manager_snapshot_b": {
+    "entry": "0x8b0bac",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8b0bac",
+        "0x8b0e1b"
+      ]
+    ],
+    "direct_calls": [
+      "0x559050",
+      "0x6616e0",
+      "0x866f68",
+      "0x866f68",
+      "0x73446c",
+      "0x73446c",
+      "0x705c88",
+      "0x705c88",
+      "0x705c88",
+      "0x74e3bc",
+      "0xa58428",
+      "0xa58428",
+      "0x480214"
+    ],
+    "callers": [
+      {
+        "at": "0x72e25d",
+        "op": "call",
+        "function": "0x72d880",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "manager_ctor": {
+    "entry": "0x8b0f1c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8b0f1c",
+        "0x8b0ff3"
+      ]
+    ],
+    "direct_calls": [
+      "0x704bec",
+      "0x84f1bc"
+    ],
+    "callers": [
+      {
+        "at": "0x520ff3",
+        "op": "call",
+        "function": "0x520fdc",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7acc8e",
+        "op": "call",
+        "function": "0x7acc78",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xb0441b",
+        "op": "call",
+        "function": "0xb04410",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "npc_add_override": {
+    "entry": "0x7ad220",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x7ad220",
+        "0x7ad430"
+      ]
+    ],
+    "direct_calls": [
+      "0xa4ccec",
+      "0xab9970",
+      "0xab9e10",
+      "0xabeb30",
+      "0xabe350",
+      "0xabeb30",
+      "0xa4ccec",
+      "0xa4cd8c",
+      "0xa4cd8c",
+      "0x8b0404"
+    ],
+    "callers": []
+  },
+  "listener_start": {
+    "entry": "0x8af9cc",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8af9cc",
+        "0x8afaa6"
+      ]
+    ],
+    "direct_calls": [
+      "0xab8ea0",
+      "0x8af8f4"
+    ],
+    "callers": [
+      {
+        "at": "0x72fedd",
+        "op": "call",
+        "function": "0x72f874",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x72ff01",
+        "op": "call",
+        "function": "0x72f874",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x72ff26",
+        "op": "call",
+        "function": "0x72f874",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "service_main": {
+    "entry": "0x72f874",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x72f874",
+        "0x7300dc"
+      ]
+    ],
+    "direct_calls": [
+      "0xa22ae8",
+      "0x7258b4",
+      "0x73446c",
+      "0x88a2c0",
+      "0xab91d0",
+      "0x888bac",
+      "0x848b0c",
+      "0x72caa8",
+      "0x73446c",
+      "0x9250f8",
+      "0x9ef300",
+      "0x82ba28",
+      "0xabf890",
+      "0x925118",
+      "0x7044c4",
+      "0x704754",
+      "0xab8ea0",
+      "0x705b70",
+      "0x5386e8",
+      "0xab91d0",
+      "0x7048c4",
+      "0x46ee78",
+      "0xab91d0",
+      "0x7048c4",
+      "0x5b9554",
+      "0x5b967c",
+      "0xabf6b0",
+      "0x73446c",
+      "0x708b00",
+      "0xab91d0",
+      "0x7089d0",
+      "0x53d9d0",
+      "0x53d920",
+      "0x731424",
+      "0x4d7aec",
+      "0x435a9c",
+      "0x47de28",
+      "0x6a806c",
+      "0x6eb81c",
+      "0x77c138",
+      "0x5e12b0",
+      "0x90f9ec",
+      "0x914dac",
+      "0x738b0c",
+      "0x736f10",
+      "0x47218c",
+      "0x471758",
+      "0x4739a0",
+      "0x471694",
+      "0x871874",
+      "0x74aefc",
+      "0x432450",
+      "0x5225c8",
+      "0x404dd4",
+      "0x67bbb8",
+      "0x63821c",
+      "0x795ed0",
+      "0x8c0b1c",
+      "0x7f0f58",
+      "0x6c2d34",
+      "0x671ef8",
+      "0x6e74c4",
+      "0x5c8d4c",
+      "0x765148",
+      "0x73fe14",
+      "0x43b7dc",
+      "0x438748",
+      "0x5b86c8",
+      "0x5b26a0",
+      "0x4527e0",
+      "0xab91d0",
+      "0x44e500",
+      "0x7048c4",
+      "0x7048c4",
+      "0x42ac4c",
+      "0xab91d0",
+      "0x418ee4",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x6d9f40",
+      "0x4173e4",
+      "0x704148",
+      "0x72262c",
+      "0x706894",
+      "0x8a55d4",
+      "0x67b934",
+      "0x8aa7e8",
+      "0x8aa470",
+      "0x9f7b80",
+      "0x5d3c24",
+      "0x722154",
+      "0x7a71dc",
+      "0x5213d0",
+      "0x896450",
+      "0x435580",
+      "0x895af8",
+      "0x8af9cc",
+      "0x8af9cc",
+      "0x5213d0",
+      "0x8af9cc",
+      "0x4571d0",
+      "0x457428",
+      "0x488088",
+      "0x776de0",
+      "0x732a24",
+      "0x83c270",
+      "0x83aca0",
+      "0x6b52e0",
+      "0x87d4b4",
+      "0x87b99c",
+      "0x6ba774",
+      "0x6b76c0",
+      "0x478640",
+      "0xab91d0",
+      "0x477d0c",
+      "0x87a4e4",
+      "0xab91d0",
+      "0x873ac0",
+      "0x66ea78",
+      "0x435580",
+      "0x897240",
+      "0x435580",
+      "0x88f7ec",
+      "0x705e4c"
+    ],
+    "callers": [
+      {
+        "at": "0x7302a0",
+        "op": "call",
+        "function": "0x73029c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7303b4",
+        "op": "call",
+        "function": "0x730300",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "service_entry": {
+    "entry": "0x73029c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x73029c",
+        "0x7302e0"
+      ]
+    ],
+    "direct_calls": [
+      "0x72f874",
+      "0x66fda0",
+      "0x732ab0",
+      "0x66ffe0"
+    ],
+    "callers": [
+      {
+        "at": "0x7303ad",
+        "op": "call",
+        "function": "0x730300",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "worker_count": {
+    "entry": "0x7044c4",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x7044c4",
+        "0x7044f8"
+      ]
+    ],
+    "direct_calls": [],
+    "callers": [
+      {
+        "at": "0x704665",
+        "op": "call",
+        "function": "0x7045dc",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x72f9eb",
+        "op": "call",
+        "function": "0x72f874",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x730668",
+        "op": "call",
+        "function": "0x730408",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "worker_start": {
+    "entry": "0x705b70",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x705b70",
+        "0x705c6f"
+      ]
+    ],
+    "direct_calls": [
+      "0xabf890",
+      "0x925118"
+    ],
+    "callers": [
+      {
+        "at": "0x72fa29",
+        "op": "call",
+        "function": "0x72f874",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "worker_entry": {
+    "entry": "0x705b38",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x705b38",
+        "0x705b6f"
+      ]
+    ],
+    "direct_calls": [
+      "0x9250f8",
+      "0x53a8fc",
+      "0x705a4c",
+      "0x705ab0"
+    ],
+    "callers": []
+  },
+  "worker_main": {
+    "entry": "0x7056ac",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x7056ac",
+        "0x7059a1"
+      ]
+    ],
+    "direct_calls": [
+      "0xa22ae8",
+      "0x705330",
+      "0x926e2c",
+      "0x66db28",
+      "0x926e54",
+      "0x66db28"
+    ],
+    "callers": [
+      {
+        "at": "0x705a50",
+        "op": "call",
+        "function": "0x705a4c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x705b0d",
+        "op": "call",
+        "function": "0x705ab0",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "thread_start_crt_candidate": {
+    "entry": "0xabf890",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xabf890",
+        "0xabf8e6"
+      ],
+      [
+        "0xabf8e6",
+        "0xabf995"
+      ],
+      [
+        "0xabf995",
+        "0xabf9b3"
+      ]
+    ],
+    "direct_calls": [
+      "0xac32e0",
+      "0xac07b0",
+      "0xadaf00",
+      "0xac7210",
+      "0xacbb80",
+      "0xacb9d0",
+      "0xabd910",
+      "0xac3340"
+    ],
+    "callers": [
+      {
+        "at": "0x53da53",
+        "op": "call",
+        "function": "0x53d9d0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6b5c0b",
+        "op": "call",
+        "function": "0x6b5b50",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6ba7f3",
+        "op": "call",
+        "function": "0x6ba774",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x705c23",
+        "op": "call",
+        "function": "0x705b70",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x72f9d2",
+        "op": "call",
+        "function": "0x72f874",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x730a0d",
+        "op": "call",
+        "function": "0x730408",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x734727",
+        "op": "call",
+        "function": "0x734664",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x83c2f6",
+        "op": "call",
+        "function": "0x83c270",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x87d533",
+        "op": "call",
+        "function": "0x87d4b4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8972c3",
+        "op": "call",
+        "function": "0x897240",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "thread_rng_seed_init": {
+    "entry": "0xa22ae8",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa22ae8",
+        "0xa22b13"
+      ]
+    ],
+    "direct_calls": [
+      "0xab9520",
+      "0xa22898"
+    ],
+    "callers": [
+      {
+        "at": "0x705726",
+        "op": "call",
+        "function": "0x7056ac",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x72f8dd",
+        "op": "call",
+        "function": "0x72f874",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7309c1",
+        "op": "call",
+        "function": "0x730408",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "service_listener_factory_a": {
+    "entry": "0x7b0644",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x7b0644",
+        "0x7b06e4"
+      ]
+    ],
+    "direct_calls": [
+      "0x7ad448",
+      "0x7b0588"
+    ],
+    "callers": []
+  },
+  "service_listener_factory_b": {
+    "entry": "0xa0d07c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa0d07c",
+        "0xa0d124"
+      ]
+    ],
+    "direct_calls": [
+      "0x9ef21c",
+      "0xa0ccc4"
+    ],
+    "callers": []
+  },
+  "service_listener_factory_c": {
+    "entry": "0x722848",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x722848",
+        "0x722882"
+      ]
+    ],
+    "direct_calls": [
+      "0x7227c8",
+      "0x8981fc"
+    ],
+    "callers": []
+  },
+  "api_accept_705508": {
+    "entry": "0x705508",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x705508",
+        "0x705642"
+      ]
+    ],
+    "direct_calls": [
+      "0x704dac",
+      "0x73446c"
+    ],
+    "callers": []
+  },
+  "api_WSAEventSelect_7066dc": {
+    "entry": "0x7066dc",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x7066dc",
+        "0x706872"
+      ]
+    ],
+    "direct_calls": [
+      "0x704dac",
+      "0x704dac",
+      "0x704dac",
+      "0x706564",
+      "0x704dac",
+      "0x704c7c"
+    ],
+    "callers": [
+      {
+        "at": "0x8af970",
+        "op": "call",
+        "function": "0x8af8f4",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "api_WSACreateEvent_7066dc": {
+    "entry": "0x7066dc",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x7066dc",
+        "0x706872"
+      ]
+    ],
+    "direct_calls": [
+      "0x704dac",
+      "0x704dac",
+      "0x704dac",
+      "0x706564",
+      "0x704dac",
+      "0x704c7c"
+    ],
+    "callers": [
+      {
+        "at": "0x8af970",
+        "op": "call",
+        "function": "0x8af8f4",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "api_listen_7066dc": {
+    "entry": "0x7066dc",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x7066dc",
+        "0x706872"
+      ]
+    ],
+    "direct_calls": [
+      "0x704dac",
+      "0x704dac",
+      "0x704dac",
+      "0x706564",
+      "0x704dac",
+      "0x704c7c"
+    ],
+    "callers": [
+      {
+        "at": "0x8af970",
+        "op": "call",
+        "function": "0x8af8f4",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "api_bind_456eb8": {
+    "entry": "0x456eb8",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x456eb8",
+        "0x457154"
+      ]
+    ],
+    "direct_calls": [
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x456dc8",
+      "0x45eb60",
+      "0x959adc",
+      "0x456dc8",
+      "0x45eb60",
+      "0x456e94",
+      "0x73446c",
+      "0x6704e0"
+    ],
+    "callers": [
+      {
+        "at": "0x457230",
+        "op": "call",
+        "function": "0x4571d0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x4572e8",
+        "op": "call",
+        "function": "0x457288",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "api_bind_53df58": {
+    "entry": "0x53df58",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x53df58",
+        "0x53e1f9"
+      ]
+    ],
+    "direct_calls": [
+      "0x734514",
+      "0x734514",
+      "0x734514",
+      "0x53d7b4",
+      "0x5460b8",
+      "0x959adc",
+      "0x53d7b4",
+      "0x5460b8",
+      "0x456e94",
+      "0x73446c",
+      "0x6704e0"
+    ],
+    "callers": [
+      {
+        "at": "0x541034",
+        "op": "call",
+        "function": "0x540fc8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x54106c",
+        "op": "call",
+        "function": "0x540fc8",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "api_bind_5b947c": {
+    "entry": "0x5b947c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x5b947c",
+        "0x5b9552"
+      ]
+    ],
+    "direct_calls": [
+      "0x734514",
+      "0x734514"
+    ],
+    "callers": [
+      {
+        "at": "0x5b95c5",
+        "op": "call",
+        "function": "0x5b9554",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "api_bind_66e36c": {
+    "entry": "0x66e36c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x66e36c",
+        "0x66e730"
+      ]
+    ],
+    "direct_calls": [
+      "0xabcd50",
+      "0x66e008",
+      "0xab7d70",
+      "0x66e008",
+      "0xab7d70",
+      "0x66e008",
+      "0xab7d70",
+      "0xab7d70",
+      "0xab7d70",
+      "0x66e108",
+      "0xab7d70",
+      "0x66ddd0",
+      "0xab7d70",
+      "0xab7d70"
+    ],
+    "callers": [
+      {
+        "at": "0x66e751",
+        "op": "call",
+        "function": "0x66e730",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x66ed1c",
+        "op": "call",
+        "function": "0x66ea78",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x670216",
+        "op": "call",
+        "function": "0x670110",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x67039c",
+        "op": "call",
+        "function": "0x67025c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6704be",
+        "op": "call",
+        "function": "0x6703c0",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "api_bind_7066dc": {
+    "entry": "0x7066dc",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x7066dc",
+        "0x706872"
+      ]
+    ],
+    "direct_calls": [
+      "0x704dac",
+      "0x704dac",
+      "0x704dac",
+      "0x706564",
+      "0x704dac",
+      "0x704c7c"
+    ],
+    "callers": [
+      {
+        "at": "0x8af970",
+        "op": "call",
+        "function": "0x8af8f4",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "api_WaitForMultipleObjects_705e4c": {
+    "entry": "0x705e4c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x705e4c",
+        "0x70607c"
+      ]
+    ],
+    "direct_calls": [
+      "0x7053e8",
+      "0x7053e8",
+      "0x7053e8",
+      "0x704a5c",
+      "0x926e2c",
+      "0x70482c",
+      "0x926e54",
+      "0x66db28",
+      "0x705c88",
+      "0x705c88"
+    ],
+    "callers": [
+      {
+        "at": "0x73005f",
+        "op": "call",
+        "function": "0x72f874",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "caller_user_ctor_a0d07c": {
+    "entry": "0xa0d07c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa0d07c",
+        "0xa0d124"
+      ]
+    ],
+    "direct_calls": [
+      "0x9ef21c",
+      "0xa0ccc4"
+    ],
+    "callers": []
+  },
+  "caller_listener_start_72f874": {
+    "entry": "0x72f874",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x72f874",
+        "0x7300dc"
+      ]
+    ],
+    "direct_calls": [
+      "0xa22ae8",
+      "0x7258b4",
+      "0x73446c",
+      "0x88a2c0",
+      "0xab91d0",
+      "0x888bac",
+      "0x848b0c",
+      "0x72caa8",
+      "0x73446c",
+      "0x9250f8",
+      "0x9ef300",
+      "0x82ba28",
+      "0xabf890",
+      "0x925118",
+      "0x7044c4",
+      "0x704754",
+      "0xab8ea0",
+      "0x705b70",
+      "0x5386e8",
+      "0xab91d0",
+      "0x7048c4",
+      "0x46ee78",
+      "0xab91d0",
+      "0x7048c4",
+      "0x5b9554",
+      "0x5b967c",
+      "0xabf6b0",
+      "0x73446c",
+      "0x708b00",
+      "0xab91d0",
+      "0x7089d0",
+      "0x53d9d0",
+      "0x53d920",
+      "0x731424",
+      "0x4d7aec",
+      "0x435a9c",
+      "0x47de28",
+      "0x6a806c",
+      "0x6eb81c",
+      "0x77c138",
+      "0x5e12b0",
+      "0x90f9ec",
+      "0x914dac",
+      "0x738b0c",
+      "0x736f10",
+      "0x47218c",
+      "0x471758",
+      "0x4739a0",
+      "0x471694",
+      "0x871874",
+      "0x74aefc",
+      "0x432450",
+      "0x5225c8",
+      "0x404dd4",
+      "0x67bbb8",
+      "0x63821c",
+      "0x795ed0",
+      "0x8c0b1c",
+      "0x7f0f58",
+      "0x6c2d34",
+      "0x671ef8",
+      "0x6e74c4",
+      "0x5c8d4c",
+      "0x765148",
+      "0x73fe14",
+      "0x43b7dc",
+      "0x438748",
+      "0x5b86c8",
+      "0x5b26a0",
+      "0x4527e0",
+      "0xab91d0",
+      "0x44e500",
+      "0x7048c4",
+      "0x7048c4",
+      "0x42ac4c",
+      "0xab91d0",
+      "0x418ee4",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x6d9f40",
+      "0x4173e4",
+      "0x704148",
+      "0x72262c",
+      "0x706894",
+      "0x8a55d4",
+      "0x67b934",
+      "0x8aa7e8",
+      "0x8aa470",
+      "0x9f7b80",
+      "0x5d3c24",
+      "0x722154",
+      "0x7a71dc",
+      "0x5213d0",
+      "0x896450",
+      "0x435580",
+      "0x895af8",
+      "0x8af9cc",
+      "0x8af9cc",
+      "0x5213d0",
+      "0x8af9cc",
+      "0x4571d0",
+      "0x457428",
+      "0x488088",
+      "0x776de0",
+      "0x732a24",
+      "0x83c270",
+      "0x83aca0",
+      "0x6b52e0",
+      "0x87d4b4",
+      "0x87b99c",
+      "0x6ba774",
+      "0x6b76c0",
+      "0x478640",
+      "0xab91d0",
+      "0x477d0c",
+      "0x87a4e4",
+      "0xab91d0",
+      "0x873ac0",
+      "0x66ea78",
+      "0x435580",
+      "0x897240",
+      "0x435580",
+      "0x88f7ec",
+      "0x705e4c"
+    ],
+    "callers": [
+      {
+        "at": "0x7302a0",
+        "op": "call",
+        "function": "0x73029c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7303b4",
+        "op": "call",
+        "function": "0x730300",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "caller_service_entry_730300": {
+    "entry": "0x730300",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x730300",
+        "0x7303c6"
+      ]
+    ],
+    "direct_calls": [
+      "0x9250f8",
+      "0xab8ea0",
+      "0x6b4fb8",
+      "0xab8ea0",
+      "0x6b5094",
+      "0x53a8fc",
+      "0x73029c",
+      "0x72f874"
+    ],
+    "callers": []
+  },
+  "caller_thread_rng_seed_init_7056ac": {
+    "entry": "0x7056ac",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x7056ac",
+        "0x7059a1"
+      ]
+    ],
+    "direct_calls": [
+      "0xa22ae8",
+      "0x705330",
+      "0x926e2c",
+      "0x66db28",
+      "0x926e54",
+      "0x66db28"
+    ],
+    "callers": [
+      {
+        "at": "0x705a50",
+        "op": "call",
+        "function": "0x705a4c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x705b0d",
+        "op": "call",
+        "function": "0x705ab0",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "caller_thread_rng_seed_init_72f874": {
+    "entry": "0x72f874",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x72f874",
+        "0x7300dc"
+      ]
+    ],
+    "direct_calls": [
+      "0xa22ae8",
+      "0x7258b4",
+      "0x73446c",
+      "0x88a2c0",
+      "0xab91d0",
+      "0x888bac",
+      "0x848b0c",
+      "0x72caa8",
+      "0x73446c",
+      "0x9250f8",
+      "0x9ef300",
+      "0x82ba28",
+      "0xabf890",
+      "0x925118",
+      "0x7044c4",
+      "0x704754",
+      "0xab8ea0",
+      "0x705b70",
+      "0x5386e8",
+      "0xab91d0",
+      "0x7048c4",
+      "0x46ee78",
+      "0xab91d0",
+      "0x7048c4",
+      "0x5b9554",
+      "0x5b967c",
+      "0xabf6b0",
+      "0x73446c",
+      "0x708b00",
+      "0xab91d0",
+      "0x7089d0",
+      "0x53d9d0",
+      "0x53d920",
+      "0x731424",
+      "0x4d7aec",
+      "0x435a9c",
+      "0x47de28",
+      "0x6a806c",
+      "0x6eb81c",
+      "0x77c138",
+      "0x5e12b0",
+      "0x90f9ec",
+      "0x914dac",
+      "0x738b0c",
+      "0x736f10",
+      "0x47218c",
+      "0x471758",
+      "0x4739a0",
+      "0x471694",
+      "0x871874",
+      "0x74aefc",
+      "0x432450",
+      "0x5225c8",
+      "0x404dd4",
+      "0x67bbb8",
+      "0x63821c",
+      "0x795ed0",
+      "0x8c0b1c",
+      "0x7f0f58",
+      "0x6c2d34",
+      "0x671ef8",
+      "0x6e74c4",
+      "0x5c8d4c",
+      "0x765148",
+      "0x73fe14",
+      "0x43b7dc",
+      "0x438748",
+      "0x5b86c8",
+      "0x5b26a0",
+      "0x4527e0",
+      "0xab91d0",
+      "0x44e500",
+      "0x7048c4",
+      "0x7048c4",
+      "0x42ac4c",
+      "0xab91d0",
+      "0x418ee4",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x4173e4",
+      "0x704148",
+      "0x706894",
+      "0x6d9f40",
+      "0x4173e4",
+      "0x704148",
+      "0x72262c",
+      "0x706894",
+      "0x8a55d4",
+      "0x67b934",
+      "0x8aa7e8",
+      "0x8aa470",
+      "0x9f7b80",
+      "0x5d3c24",
+      "0x722154",
+      "0x7a71dc",
+      "0x5213d0",
+      "0x896450",
+      "0x435580",
+      "0x895af8",
+      "0x8af9cc",
+      "0x8af9cc",
+      "0x5213d0",
+      "0x8af9cc",
+      "0x4571d0",
+      "0x457428",
+      "0x488088",
+      "0x776de0",
+      "0x732a24",
+      "0x83c270",
+      "0x83aca0",
+      "0x6b52e0",
+      "0x87d4b4",
+      "0x87b99c",
+      "0x6ba774",
+      "0x6b76c0",
+      "0x478640",
+      "0xab91d0",
+      "0x477d0c",
+      "0x87a4e4",
+      "0xab91d0",
+      "0x873ac0",
+      "0x66ea78",
+      "0x435580",
+      "0x897240",
+      "0x435580",
+      "0x88f7ec",
+      "0x705e4c"
+    ],
+    "callers": [
+      {
+        "at": "0x7302a0",
+        "op": "call",
+        "function": "0x73029c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7303b4",
+        "op": "call",
+        "function": "0x730300",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "caller_thread_rng_seed_init_730408": {
+    "entry": "0x730408",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x730408",
+        "0x730a7d"
+      ]
+    ],
+    "direct_calls": [
+      "0xafcbc0",
+      "0xac1fb0",
+      "0xab9430",
+      "0xabf6b0",
+      "0xabf6b0",
+      "0xabf6b0",
+      "0xabf6b0",
+      "0xabf6b0",
+      "0x8be874",
+      "0x9ef63c",
+      "0x49a240",
+      "0x4623b0",
+      "0x66db30",
+      "0xabe790",
+      "0xa22b14",
+      "0x7044c4",
+      "0x9250f0",
+      "0xab9430",
+      "0xaba000",
+      "0x734514",
+      "0x734514",
+      "0x4623b0",
+      "0x734514",
+      "0x552da8",
+      "0x8b92e0",
+      "0xa34540",
+      "0xa340fc",
+      "0x925084",
+      "0xab8ea0",
+      "0x6b4fb8",
+      "0x72bb80",
+      "0x7228e8",
+      "0x7254fc",
+      "0x72c018",
+      "0x5de638",
+      "0x734514",
+      "0x8bb458",
+      "0x8bb11c",
+      "0x6fa054",
+      "0x56cfd8",
+      "0x734514",
+      "0xa33a48",
+      "0x734514",
+      "0x72f778",
+      "0x722f2c",
+      "0xa22ae8",
+      "0x7328d0",
+      "0x732938",
+      "0x734514",
+      "0xabf890",
+      "0x925118",
+      "0xab9970",
+      "0x727638",
+      "0x53a8fc",
+      "0x722e08",
+      "0x722d6c"
+    ],
+    "callers": [
+      {
+        "at": "0xac4cb4",
+        "op": "call",
+        "function": "0xac4a60",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "vtable_Server_0": {
+    "entry": "0x8b1014",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8b1014",
+        "0x8b103c"
+      ]
+    ],
+    "direct_calls": [
+      "0x8b0e54",
+      "0x401f3c"
+    ],
+    "callers": []
+  },
+  "vtable_Server_8": {
+    "entry": "0x704248",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x704248",
+        "0x70429c"
+      ]
+    ],
+    "direct_calls": [
+      "0x6708d0"
+    ],
+    "callers": []
+  },
+  "vtable_Server_9": {
+    "entry": "0x704d1c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x704d1c",
+        "0x704dab"
+      ]
+    ],
+    "direct_calls": [],
+    "callers": []
+  },
+  "vtable_Server_10": {
+    "entry": "0x705508",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x705508",
+        "0x705642"
+      ]
+    ],
+    "direct_calls": [
+      "0x704dac",
+      "0x73446c"
+    ],
+    "callers": []
+  },
+  "vtable_Server_11": {
+    "entry": "0x404ca0",
+    "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+    "chunks": [
+      [
+        "0x404ca0",
+        "0x404cb4"
+      ]
+    ],
+    "direct_calls": [],
+    "callers": []
+  },
+  "vtable_Server_12": {
+    "entry": "0x8b0738",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8b0738",
+        "0x8b0929"
+      ]
+    ],
+    "direct_calls": [
+      "0x73446c",
+      "0x73446c",
+      "0x707fbc",
+      "0x8b0674",
+      "0x70801c"
+    ],
+    "callers": []
+  },
+  "vtable_Server_13": {
+    "entry": "0x8b04fc",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8b04fc",
+        "0x8b0653"
+      ]
+    ],
+    "direct_calls": [
+      "0x96986c",
+      "0x866f68",
+      "0x91ffd8",
+      "0x734514",
+      "0x480214"
+    ],
+    "callers": [
+      {
+        "at": "0x7d4874",
+        "op": "call",
+        "function": "0x7d4774",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa12e6c",
+        "op": "call",
+        "function": "0xa12dec",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "vtable_Server_14": {
+    "entry": "0x8b0404",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8b0404",
+        "0x8b04e3"
+      ]
+    ],
+    "direct_calls": [
+      "0x8b0340"
+    ],
+    "callers": [
+      {
+        "at": "0x7ad3b7",
+        "op": "call",
+        "function": "0x7ad220",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "vtable_Server_15": {
+    "entry": "0x8b0954",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8b0954",
+        "0x8b0b6b"
+      ]
+    ],
+    "direct_calls": [
+      "0x559050",
+      "0x6616e0",
+      "0x866f68",
+      "0x866f68",
+      "0x45d41c",
+      "0x705c88",
+      "0x705c88",
+      "0x705c88",
+      "0x74e3bc",
+      "0xa58428",
+      "0xa58428",
+      "0x480214"
+    ],
+    "callers": []
+  },
+  "vtable_IServerCallbackAdapter_0": {
+    "entry": "0x8af8c0",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8af8c0",
+        "0x8af8e6"
+      ]
+    ],
+    "direct_calls": [
+      "0xab8610"
+    ],
+    "callers": []
+  },
+  "game_Server_ref_a12dec": {
+    "entry": "0xa12dec",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa12dec",
+        "0xa12eed"
+      ]
+    ],
+    "direct_calls": [
+      "0x8b04fc",
+      "0x90e140",
+      "0xa0dc04",
+      "0xa0ded4",
+      "0x4173e4",
+      "0xa12674"
+    ],
+    "callers": []
+  },
+  "game_Server_ref_b04410": {
+    "entry": "0xb04410",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xb04410",
+        "0xb04430"
+      ]
+    ],
+    "direct_calls": [
+      "0x8b0f1c"
+    ],
+    "callers": []
+  },
+  "user_map_4f9970": {
+    "entry": "0x4f9970",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x4f9970",
+        "0x4f9a7e"
+      ]
+    ],
+    "direct_calls": [
+      "0xabddb0",
+      "0x8aaa4c",
+      "0x52eb8c",
+      "0x8aabdc",
+      "0x480214"
+    ],
+    "callers": [
+      {
+        "at": "0x50ecd8",
+        "op": "call",
+        "function": "0x50ea98",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "user_map_4f9a98": {
+    "entry": "0x4f9a98",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x4f9a98",
+        "0x4f9ba6"
+      ]
+    ],
+    "direct_calls": [
+      "0xabddb0",
+      "0x8aaa4c",
+      "0x52eb8c",
+      "0x8aabdc",
+      "0x480214"
+    ],
+    "callers": [
+      {
+        "at": "0x50ebdc",
+        "op": "call",
+        "function": "0x50ea98",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "user_map_4f9bc0": {
+    "entry": "0x4f9bc0",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x4f9bc0",
+        "0x4f9cce"
+      ]
+    ],
+    "direct_calls": [
+      "0xabddb0",
+      "0x8aaa4c",
+      "0x52eb8c",
+      "0x8aabdc",
+      "0x480214"
+    ],
+    "callers": [
+      {
+        "at": "0x50ebb3",
+        "op": "call",
+        "function": "0x50ea98",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "user_map_8951bc": {
+    "entry": "0x8951bc",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x8951bc",
+        "0x89533b"
+      ]
+    ],
+    "direct_calls": [
+      "0xabddb0",
+      "0x8aacec",
+      "0x52eb8c",
+      "0x866f68",
+      "0x92f358",
+      "0x8aad88",
+      "0x480214"
+    ],
+    "callers": [
+      {
+        "at": "0x89560f",
+        "op": "call",
+        "function": "0x8954e0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa12503",
+        "op": "call",
+        "function": "0xa123e8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa12cde",
+        "op": "call",
+        "function": "0xa12b14",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "user_map_97ec10": {
+    "entry": "0x97ec10",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x97ec10",
+        "0x97edb6"
+      ]
+    ],
+    "direct_calls": [
+      "0xabddb0",
+      "0x8aacec",
+      "0x866f68",
+      "0x976170",
+      "0x8aad88",
+      "0x480214"
+    ],
+    "callers": [
+      {
+        "at": "0x982f6f",
+        "op": "call",
+        "function": "0x982660",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "user_map_a08138": {
+    "entry": "0xa08138",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa08138",
+        "0xa082de"
+      ]
+    ],
+    "direct_calls": [
+      "0xabddb0",
+      "0x8aacec",
+      "0x866f68",
+      "0x976170",
+      "0x8aad88",
+      "0x480214"
+    ],
+    "callers": [
+      {
+        "at": "0xa0ce68",
+        "op": "call",
+        "function": "0xa0ccc4",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "user_map_a08300": {
+    "entry": "0xa08300",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa08300",
+        "0xa0847f"
+      ]
+    ],
+    "direct_calls": [
+      "0xabddb0",
+      "0x8aacec",
+      "0x52eb8c",
+      "0x866f68",
+      "0x92f358",
+      "0x8aad88",
+      "0x480214"
+    ],
+    "callers": [
+      {
+        "at": "0xa129a7",
+        "op": "call",
+        "function": "0xa1291c",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "user_map_a08498": {
+    "entry": "0xa08498",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa08498",
+        "0xa0863e"
+      ]
+    ],
+    "direct_calls": [
+      "0xabddb0",
+      "0x8aacec",
+      "0x866f68",
+      "0x976170",
+      "0x8aad88",
+      "0x480214"
+    ],
+    "callers": [
+      {
+        "at": "0xa08a09",
+        "op": "call",
+        "function": "0xa08940",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "user_map_a08660": {
+    "entry": "0xa08660",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa08660",
+        "0xa087df"
+      ]
+    ],
+    "direct_calls": [
+      "0xabddb0",
+      "0x8aacec",
+      "0x52eb8c",
+      "0x866f68",
+      "0x92f358",
+      "0x8aad88",
+      "0x480214"
+    ],
+    "callers": [
+      {
+        "at": "0xa08b11",
+        "op": "call",
+        "function": "0xa08a48",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  }
+}

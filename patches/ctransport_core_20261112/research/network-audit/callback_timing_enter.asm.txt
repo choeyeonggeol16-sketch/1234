@@ -1,0 +1,15 @@
+# callback_timing_enter; PE pdata/unwind; entry 0x926e2c
+# chunk 0x926e2c..0x926e52
+0000000000926e2c: push     rbx
+0000000000926e2e: push     rdi
+0000000000926e2f: sub      rsp, 0x28
+0000000000926e33: mov      rdi, rcx
+0000000000926e36: call     0x925138
+0000000000926e3b: movsxd   rbx, eax
+0000000000926e3e: call     qword ptr [rip + 0x1f52dc] ; IAT GetTickCount
+0000000000926e44: mov      r11d, eax
+0000000000926e47: mov      qword ptr [rdi + rbx*8], r11
+0000000000926e4b: add      rsp, 0x28
+0000000000926e4f: pop      rdi
+0000000000926e50: pop      rbx
+0000000000926e51: ret

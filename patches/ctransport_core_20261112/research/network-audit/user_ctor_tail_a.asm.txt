@@ -1,0 +1,15 @@
+# user_ctor_tail_a; PE pdata/unwind; entry 0x9f7f04
+# chunk 0x9f7f04..0x9f7f39
+00000000009f7f04: push     rbx
+00000000009f7f06: sub      rsp, 0x20
+00000000009f7f0a: mov      rbx, rcx
+00000000009f7f0d: call     qword ptr [rip + 0x12420d] ; IAT GetTickCount
+00000000009f7f13: mov      dword ptr [rbx + 0xc78], eax
+00000000009f7f19: xor      eax, eax
+00000000009f7f1b: mov      dword ptr [rbx + 0xc70], eax
+00000000009f7f21: mov      dword ptr [rbx + 0xc6c], eax
+00000000009f7f27: mov      dword ptr [rbx + 0xc74], eax
+00000000009f7f2d: mov      dword ptr [rbx + 0xc68], eax
+00000000009f7f33: add      rsp, 0x20
+00000000009f7f37: pop      rbx
+00000000009f7f38: ret

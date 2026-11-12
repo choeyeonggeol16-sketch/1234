@@ -1,0 +1,105 @@
+# x86_WaitForMultipleObjects_53c7e0; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x53c7e0
+# chunk 0x53c7e0..0x53c8bc
+000000000053c7e0: push     ebp
+000000000053c7e1: mov      ebp, esp
+000000000053c7e3: push     -1
+000000000053c7e5: push     0x5afc90
+000000000053c7ea: mov      eax, dword ptr fs:[0]
+000000000053c7f0: push     eax
+000000000053c7f1: mov      dword ptr fs:[0], esp
+000000000053c7f8: sub      esp, 0x18
+000000000053c7fb: mov      eax, dword ptr [0x18aa8038]
+000000000053c800: push     ebx
+000000000053c801: push     esi
+000000000053c802: push     edi
+000000000053c803: mov      dword ptr [ebp - 0x10], esp
+000000000053c806: push     0
+000000000053c808: mov      ecx, 0x18aa8038
+000000000053c80d: call     dword ptr [eax + 0x20]
+000000000053c810: mov      ecx, dword ptr [0x18aa7fa8]
+000000000053c816: test     ecx, ecx
+000000000053c818: jne      0x53c81e
+000000000053c81a: xor      eax, eax
+000000000053c81c: jmp      0x53c828
+000000000053c81e: mov      eax, dword ptr [0x18aa7fac]
+000000000053c823: sub      eax, ecx
+000000000053c825: sar      eax, 2
+000000000053c828: mov      ebx, dword ptr [0x5b5088] ; IAT GetTickCount
+000000000053c82e: test     eax, eax
+000000000053c830: sete     byte ptr [ebp - 0x11]
+000000000053c834: mov      dword ptr [ebp - 4], 0
+000000000053c83b: call     ebx
+000000000053c83d: mov      esi, eax
+000000000053c83f: call     ebx
+000000000053c841: mov      ecx, dword ptr [0x18aa8048]
+000000000053c847: mov      edi, eax
+000000000053c849: add      ecx, 0xea60
+000000000053c84f: add      edi, 0x2710
+000000000053c855: cmp      esi, ecx
+000000000053c857: jbe      0x53c88b
+000000000053c859: mov      byte ptr [ebp - 4], 1
+000000000053c85d: call     ebx
+000000000053c85f: sub      esi, dword ptr [0x18aa8048]
+000000000053c865: mov      eax, 0x10624dd3
+000000000053c86a: mul      esi
+000000000053c86c: shr      edx, 6
+000000000053c86f: push     edx
+000000000053c870: push     0x61e168
+000000000053c875: push     2
+000000000053c877: push     0x18aa81d8
+000000000053c87c: call     0x53eee0
+000000000053c881: add      esp, 0x10
+000000000053c884: mov      byte ptr [0], 1
+000000000053c88b: mov      ecx, 0x168ca328
+000000000053c890: mov      dword ptr [ebp - 4], 0
+000000000053c897: call     0x4e2a80
+000000000053c89c: call     0x53c770
+000000000053c8a1: mov      ecx, 0x168ca328
+000000000053c8a6: call     0x4e2aa0
+000000000053c8ab: call     ebx
+000000000053c8ad: mov      ecx, edi
+000000000053c8af: sub      ecx, eax
+000000000053c8b1: cmp      ecx, 0x64
+000000000053c8b4: jae      0x53c8e6
+000000000053c8b6: call     ebx
+000000000053c8b8: sub      edi, eax
+000000000053c8ba: jmp      0x53c8eb
+# chunk 0x53c8e6..0x53c960
+000000000053c8e6: mov      edi, 0x64
+000000000053c8eb: mov      al, byte ptr [ebp - 0x11]
+000000000053c8ee: test     al, al
+000000000053c8f0: je       0x53c8fb
+000000000053c8f2: push     edi
+000000000053c8f3: call     dword ptr [0x5b50a8] ; IAT Sleep
+000000000053c8f9: jmp      0x53c947
+000000000053c8fb: mov      ecx, dword ptr [0x18aa7fa8]
+000000000053c901: test     ecx, ecx
+000000000053c903: jne      0x53c909
+000000000053c905: xor      eax, eax
+000000000053c907: jmp      0x53c913
+000000000053c909: mov      eax, dword ptr [0x18aa7fac]
+000000000053c90e: sub      eax, ecx
+000000000053c910: sar      eax, 2
+000000000053c913: push     edi
+000000000053c914: push     0
+000000000053c916: push     ecx
+000000000053c917: push     eax
+000000000053c918: call     dword ptr [0x5b5158] ; IAT WaitForMultipleObjects
+000000000053c91e: mov      edx, dword ptr [0x18aa7fa8]
+000000000053c924: test     edx, edx
+000000000053c926: je       0x53c947
+000000000053c928: mov      ecx, dword ptr [0x18aa7fac]
+000000000053c92e: sub      ecx, edx
+000000000053c930: sar      ecx, 2
+000000000053c933: cmp      eax, ecx
+000000000053c935: jae      0x53c947
+000000000053c937: mov      edx, dword ptr [0x18aa8190]
+000000000053c93d: mov      eax, dword ptr [edx + eax*4]
+000000000053c940: mov      edx, dword ptr [eax]
+000000000053c942: mov      ecx, eax
+000000000053c944: call     dword ptr [edx + 0x2c]
+000000000053c947: mov      eax, dword ptr [0x174d0dd8]
+000000000053c94c: test     eax, eax
+000000000053c94e: je       0x53c834
+000000000053c954: mov      byte ptr [0], 1
+000000000053c95b: jmp      0x53c834

@@ -1,0 +1,149 @@
+# user_ctor; PE pdata/unwind; entry 0xa0ccc4
+# chunk 0xa0ccc4..0xa0cff8
+0000000000a0ccc4: mov      qword ptr [rsp + 8], rcx
+0000000000a0ccc9: push     rbx
+0000000000a0ccca: push     rbp
+0000000000a0cccb: push     rsi
+0000000000a0cccc: push     rdi
+0000000000a0cccd: push     r12
+0000000000a0cccf: sub      rsp, 0x40
+0000000000a0ccd3: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000a0ccdc: mov      rdi, rcx
+0000000000a0ccdf: mov      r8d, 0x200
+0000000000a0cce5: call     0x90e548
+0000000000a0ccea: nop
+0000000000a0cceb: lea      rax, [rip + 0x3b4f26]
+0000000000a0ccf2: mov      qword ptr [rdi], rax
+0000000000a0ccf5: mov      edx, 0x1e
+0000000000a0ccfa: lea      rcx, [rdi + 0x118]
+0000000000a0cd01: xor      r12d, r12d
+0000000000a0cd04: mov      rax, qword ptr [rip + 0x5f0b1d]
+0000000000a0cd0b: mov      qword ptr [rcx - 0x10], rax
+0000000000a0cd0f: mov      dword ptr [rcx], r12d
+0000000000a0cd12: add      rcx, 0x20
+0000000000a0cd16: sub      edx, 1
+0000000000a0cd19: jns      0xa0cd04
+0000000000a0cd1b: lea      rcx, [rdi + 0x54c]
+0000000000a0cd22: call     0xa4ccd4
+0000000000a0cd27: mov      byte ptr [rdi + 0xc1d], r12b
+0000000000a0cd2e: mov      byte ptr [rdi + 0xc1e], r12b
+0000000000a0cd35: mov      qword ptr [rdi + 0xc28], r12
+0000000000a0cd3c: mov      qword ptr [rdi + 0xc30], r12
+0000000000a0cd43: mov      qword ptr [rdi + 0xc38], r12
+0000000000a0cd4a: mov      qword ptr [rdi + 0xc48], r12
+0000000000a0cd51: mov      qword ptr [rdi + 0xc50], r12
+0000000000a0cd58: mov      qword ptr [rdi + 0xc58], r12
+0000000000a0cd5f: mov      dword ptr [rdi + 0xc94], r12d
+0000000000a0cd66: mov      dword ptr [rdi + 0xc98], 1
+0000000000a0cd70: mov      dword ptr [rdi + 0xc9c], r12d
+0000000000a0cd77: mov      dword ptr [rdi + 0xca0], r12d
+0000000000a0cd7e: mov      dword ptr [rdi + 0xca8], r12d
+0000000000a0cd85: lea      rcx, [rdi + 0xcac]
+0000000000a0cd8c: mov      edx, 0xffffffff
+0000000000a0cd91: lea      r8d, [rdx + 0x29]
+0000000000a0cd95: call     0xab9430
+0000000000a0cd9a: mov      r11d, dword ptr [rip + 0x2ebb2437]
+0000000000a0cda1: mov      rax, qword ptr gs:[0x58]
+0000000000a0cdaa: mov      esi, 0x7d58
+0000000000a0cdaf: mov      rbx, qword ptr [rax + r11*8]
+0000000000a0cdb3: movsxd   rdx, dword ptr [rbx + rsi]
+0000000000a0cdb7: lea      rbp, [rip - 0x60cdbe]
+0000000000a0cdbe: movsxd   rcx, dword ptr [rbp + rdx*4 + 0x47e2a40]
+0000000000a0cdc6: lea      eax, [rcx + 1]
+0000000000a0cdc9: mov      dword ptr [rbp + rdx*4 + 0x47e2a40], eax
+0000000000a0cdd0: imul     rdx, rdx, 0x3e8
+0000000000a0cdd7: add      rdx, rcx
+0000000000a0cdda: lea      rax, [rip + 0x3b714f] ; UTF16 '__cdecl CUserSocket::CUserSocket(unsigned __int64)'
+0000000000a0cde1: mov      qword ptr [rbp + rdx*8 + 0x47bf7c0], rax
+0000000000a0cde9: lea      rcx, [rdi + 0x4e0]
+0000000000a0cdf0: xor      edx, edx
+0000000000a0cdf2: lea      r8d, [rdx + 8]
+0000000000a0cdf6: call     0xab9430
+0000000000a0cdfb: mov      word ptr [rdi + 0x7b4], r12w
+0000000000a0ce03: mov      byte ptr [rdi + 0x7d2], r12b
+0000000000a0ce0a: lea      rax, [rip + 0x17633c2f]
+0000000000a0ce11: mov      qword ptr [rdi + 0xc0], rax
+0000000000a0ce18: mov      dword ptr [rdi + 0x7ec], r12d
+0000000000a0ce1f: mov      dword ptr [rdi + 0x7ac], r12d
+0000000000a0ce26: mov      dword ptr [rdi + 0x7a0], r12d
+0000000000a0ce2d: call     qword ptr [rip + 0x10f2ed] ; IAT GetTickCount
+0000000000a0ce33: mov      dword ptr [rdi + 0x7a4], eax
+0000000000a0ce39: mov      edx, 1
+0000000000a0ce3e: lock xadd dword ptr [rip + 0x17453b22], edx
+0000000000a0ce46: add      edx, 1
+0000000000a0ce49: mov      dword ptr [rdi + 0x4e8], edx
+0000000000a0ce4f: mov      dword ptr [rsp + 0x20], 0x24d7
+0000000000a0ce57: lea      r9, [rip + 0x3ad4f2]
+0000000000a0ce5e: mov      r8, rdi
+0000000000a0ce61: lea      rcx, [rip + 0x17453b48]
+0000000000a0ce68: call     0xa08138
+0000000000a0ce6d: mov      dword ptr [rdi + 0x78c], r12d
+0000000000a0ce74: mov      dword ptr [rdi + 0x790], r12d
+0000000000a0ce7b: mov      dword ptr [rdi + 0x798], r12d
+0000000000a0ce82: mov      qword ptr [rdi + 0x4f0], r12
+0000000000a0ce89: mov      dword ptr [rdi + 0x7e4], r12d
+0000000000a0ce90: mov      byte ptr [rdi + 0x7e8], r12b
+0000000000a0ce97: mov      byte ptr [rdi + 0x548], 1
+0000000000a0ce9e: mov      byte ptr [rdi + 0x4f8], 1
+0000000000a0cea5: mov      dword ptr [rdi + 0x4fc], r12d
+0000000000a0ceac: mov      dword ptr [rdi + 0x51c], 5
+0000000000a0ceb6: mov      dword ptr [rdi + 0x520], r12d
+0000000000a0cebd: mov      dword ptr [rdi + 0x524], r12d
+0000000000a0cec4: mov      dword ptr [rdi + 0x530], r12d
+0000000000a0cecb: mov      dword ptr [rdi + 0x52c], r12d
+0000000000a0ced2: mov      dword ptr [rdi + 0x53c], r12d
+0000000000a0ced9: mov      dword ptr [rdi + 0x540], r12d
+0000000000a0cee0: mov      dword ptr [rdi + 0x544], r12d
+0000000000a0cee7: mov      dword ptr [rdi + 0x7f0], r12d
+0000000000a0ceee: mov      byte ptr [rdi + 0x534], r12b
+0000000000a0cef5: mov      byte ptr [rdi + 0x535], r12b
+0000000000a0cefc: mov      dword ptr [rdi + 0x504], r12d
+0000000000a0cf03: mov      dword ptr [rdi + 0x794], r12d
+0000000000a0cf0a: lea      rcx, [rdi + 0x508]
+0000000000a0cf11: xor      edx, edx
+0000000000a0cf13: lea      r8d, [rdx + 0x10]
+0000000000a0cf17: call     0xab9430
+0000000000a0cf1c: mov      byte ptr [rdi + 0x500], 1
+0000000000a0cf23: mov      dword ptr [rdi + 0x518], r12d
+0000000000a0cf2a: mov      dword ptr [rdi + 0x7f4], r12d
+0000000000a0cf31: mov      dword ptr [rdi + 0x7f8], r12d
+0000000000a0cf38: mov      dword ptr [rdi + 0x7fc], r12d
+0000000000a0cf3f: mov      byte ptr [rdi + 0x800], r12b
+0000000000a0cf46: mov      byte ptr [rdi + 0x536], r12b
+0000000000a0cf4d: mov      dword ptr [rdi + 0x538], r12d
+0000000000a0cf54: mov      rcx, rdi
+0000000000a0cf57: call     0x9f7f04
+0000000000a0cf5c: mov      rcx, rdi
+0000000000a0cf5f: call     0xa07ee8
+0000000000a0cf64: mov      dword ptr [rdi + 0xc90], r12d
+0000000000a0cf6b: lea      rcx, [rdi + 0x804]
+0000000000a0cf72: xor      edx, edx
+0000000000a0cf74: mov      r8d, 0x200
+0000000000a0cf7a: call     0xab9430
+0000000000a0cf7f: lea      rcx, [rdi + 0xa04]
+0000000000a0cf86: xor      edx, edx
+0000000000a0cf88: mov      r8d, 0x200
+0000000000a0cf8e: call     0xab9430
+0000000000a0cf93: mov      qword ptr [rdi + 0xc08], r12
+0000000000a0cf9a: mov      dword ptr [rdi + 0xc10], r12d
+0000000000a0cfa1: mov      qword ptr [rdi + 0xc88], r12
+0000000000a0cfa8: mov      byte ptr [rsp + 0x70], r12b
+0000000000a0cfad: mov      byte ptr [rsp + 0x71], r12b
+0000000000a0cfb2: movzx    eax, word ptr [rsp + 0x70]
+0000000000a0cfb7: mov      word ptr [rdi + 0xc1d], ax
+0000000000a0cfbe: lea      rcx, [rdi + 0xc14]
+0000000000a0cfc5: xor      edx, edx
+0000000000a0cfc7: lea      r8d, [rdx + 9]
+0000000000a0cfcb: call     0xab9430
+0000000000a0cfd0: mov      dword ptr [rdi + 0xc7c], r12d
+0000000000a0cfd7: mov      dword ptr [rdi + 0xc80], r12d
+0000000000a0cfde: movsxd   rax, dword ptr [rbx + rsi]
+0000000000a0cfe2: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+0000000000a0cfea: mov      rax, rdi
+0000000000a0cfed: add      rsp, 0x40
+0000000000a0cff1: pop      r12
+0000000000a0cff3: pop      rdi
+0000000000a0cff4: pop      rsi
+0000000000a0cff5: pop      rbp
+0000000000a0cff6: pop      rbx
+0000000000a0cff7: ret

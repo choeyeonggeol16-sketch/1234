@@ -1,0 +1,10 @@
+# candidate_705318; PE pdata/unwind; entry 0x705318
+# chunk 0x705318..0x705330
+0000000000705318: push     rbp
+000000000070531a: sub      rsp, 0x20
+000000000070531e: mov      rbp, rdx
+0000000000705321: lea      rcx, [rbp + 0x28]
+0000000000705325: call     0x401044
+000000000070532a: add      rsp, 0x20
+000000000070532e: pop      rbp
+000000000070532f: ret

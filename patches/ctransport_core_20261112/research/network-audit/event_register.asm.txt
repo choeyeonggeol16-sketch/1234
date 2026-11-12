@@ -1,0 +1,72 @@
+# event_register; PE pdata/unwind; entry 0x706564
+# chunk 0x706564..0x7066c2
+0000000000706564: mov      qword ptr [rsp + 0x10], rdx
+0000000000706569: push     rbx
+000000000070656a: push     rsi
+000000000070656b: push     rdi
+000000000070656c: push     r12
+000000000070656e: sub      rsp, 0x48
+0000000000706572: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+000000000070657b: mov      rdi, rcx
+000000000070657e: mov      edx, dword ptr [rip + 0x2eeb8c54]
+0000000000706584: mov      rax, qword ptr gs:[0x58]
+000000000070658d: mov      r12d, 0x7d58
+0000000000706593: mov      rbx, qword ptr [rax + rdx*8]
+0000000000706597: movsxd   r8, dword ptr [rbx + r12]
+000000000070659b: lea      rsi, [rip - 0x3065a2]
+00000000007065a2: movsxd   rdx, dword ptr [rsi + r8*4 + 0x47e2a40]
+00000000007065aa: lea      eax, [rdx + 1]
+00000000007065ad: mov      dword ptr [rsi + r8*4 + 0x47e2a40], eax
+00000000007065b5: imul     r8, r8, 0x3e8
+00000000007065bc: add      r8, rdx
+00000000007065bf: lea      rax, [rip + 0x56c98a] ; UTF16 'int __cdecl CIOObject::RegisterWait(void *)'
+00000000007065c6: mov      qword ptr [rsi + r8*8 + 0x47bf7c0], rax
+00000000007065ce: mov      r8d, 0x1f4
+00000000007065d4: lea      rdx, [rip + 0x56c955] ; UTF16 '.\\ioc.cpp'
+00000000007065db: lea      rcx, [rip + 0x454aace]
+00000000007065e2: call     0x707fbc
+00000000007065e7: mov      r11, qword ptr [rip + 0x454adca]
+00000000007065ee: test     r11, r11
+00000000007065f1: je       0x706660
+00000000007065f3: mov      rax, qword ptr [rip + 0x454adc6]
+00000000007065fa: sub      rax, r11
+00000000007065fd: sar      rax, 3
+0000000000706601: cmp      rax, 0x40
+0000000000706605: jb       0x706660
+0000000000706607: mov      dword ptr [rsp + 0x28], 0x40
+000000000070660f: mov      dword ptr [rsp + 0x20], 0x1f8
+0000000000706617: lea      r9, [rip + 0x56c912] ; UTF16 '.\\ioc.cpp'
+000000000070661e: lea      r8, [rip + 0x56c88b] ; UTF16 '[%s][%d] CIOObject::RegisterWait failed. count of handle >= %d'
+0000000000706625: mov      edx, 2
+000000000070662a: lea      rcx, [rip + 0xd81b26f]
+0000000000706631: call     0x734514
+0000000000706636: mov      r8d, 0x1f9
+000000000070663c: lea      rdx, [rip + 0x56c8ed] ; UTF16 '.\\ioc.cpp'
+0000000000706643: lea      rcx, [rip + 0x454aa66]
+000000000070664a: call     0x70801c
+000000000070664f: nop
+0000000000706650: movsxd   rax, dword ptr [rbx + r12]
+0000000000706654: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+000000000070665c: xor      eax, eax
+000000000070665e: jmp      0x7066b8
+0000000000706660: lea      rdx, [rsp + 0x78]
+0000000000706665: lea      rcx, [rip + 0x454ad44]
+000000000070666c: call     0x559050
+0000000000706671: mov      qword ptr [rsp + 0x80], rdi
+0000000000706679: lea      rdx, [rsp + 0x80]
+0000000000706681: lea      rcx, [rip + 0x454ad48]
+0000000000706688: call     0x559050
+000000000070668d: mov      r8d, 0x1ff
+0000000000706693: lea      rdx, [rip + 0x56c896] ; UTF16 '.\\ioc.cpp'
+000000000070669a: lea      rcx, [rip + 0x454aa0f]
+00000000007066a1: call     0x70801c
+00000000007066a6: nop
+00000000007066a7: movsxd   rax, dword ptr [rbx + r12]
+00000000007066ab: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000007066b3: mov      eax, 1
+00000000007066b8: add      rsp, 0x48
+00000000007066bc: pop      r12
+00000000007066be: pop      rdi
+00000000007066bf: pop      rsi
+00000000007066c0: pop      rbx
+00000000007066c1: ret

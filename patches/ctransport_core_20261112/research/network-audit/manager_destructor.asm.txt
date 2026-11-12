@@ -1,0 +1,41 @@
+# manager_destructor; PE pdata/unwind; entry 0x8b0e54
+# chunk 0x8b0e54..0x8b0eff
+00000000008b0e54: mov      qword ptr [rsp + 8], rcx
+00000000008b0e59: push     rbx
+00000000008b0e5a: push     rbp
+00000000008b0e5b: push     rsi
+00000000008b0e5c: push     rdi
+00000000008b0e5d: sub      rsp, 0x38
+00000000008b0e61: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000008b0e6a: mov      rdi, rcx
+00000000008b0e6d: lea      rax, [rip + 0x479784]
+00000000008b0e74: mov      qword ptr [rcx], rax
+00000000008b0e77: mov      edx, dword ptr [rip + 0x2ed0e35b]
+00000000008b0e7d: mov      rax, qword ptr gs:[0x58]
+00000000008b0e86: mov      esi, 0x7d58
+00000000008b0e8b: mov      rbx, qword ptr [rax + rdx*8]
+00000000008b0e8f: movsxd   rdx, dword ptr [rbx + rsi]
+00000000008b0e93: lea      rbp, [rip - 0x4b0e9a]
+00000000008b0e9a: movsxd   rcx, dword ptr [rbp + rdx*4 + 0x47e2a40]
+00000000008b0ea2: lea      eax, [rcx + 1]
+00000000008b0ea5: mov      dword ptr [rbp + rdx*4 + 0x47e2a40], eax
+00000000008b0eac: imul     rdx, rdx, 0x3e8
+00000000008b0eb3: add      rdx, rcx
+00000000008b0eb6: lea      rax, [rip + 0x4796eb] ; UTF16 '__cdecl Server::~Server(void)'
+00000000008b0ebd: mov      qword ptr [rbp + rdx*8 + 0x47bf7c0], rax
+00000000008b0ec5: lea      rcx, [rdi + 0x60]
+00000000008b0ec9: call     qword ptr [rip + 0x26b319] ; IAT DeleteCriticalSection
+00000000008b0ecf: mov      rcx, qword ptr [rdi + 0x58]
+00000000008b0ed3: call     qword ptr [rip + 0x26b257] ; IAT CloseHandle
+00000000008b0ed9: movsxd   rax, dword ptr [rbx + rsi]
+00000000008b0edd: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000008b0ee5: lea      rcx, [rdi + 0x40]
+00000000008b0ee9: call     0x9205b0
+00000000008b0eee: nop
+00000000008b0eef: mov      rcx, rdi
+00000000008b0ef2: add      rsp, 0x38
+00000000008b0ef6: pop      rdi
+00000000008b0ef7: pop      rsi
+00000000008b0ef8: pop      rbp
+00000000008b0ef9: pop      rbx
+00000000008b0efa: jmp      0x705480

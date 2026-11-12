@@ -1,0 +1,19 @@
+# worker_alt_entry; PE pdata/unwind; entry 0x705ab0
+# chunk 0x705ab0..0x705b13
+0000000000705ab0: sub      rsp, 0x38
+0000000000705ab4: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000705abd: mov      edx, dword ptr [rip + 0x2eeb9715]
+0000000000705ac3: mov      rax, qword ptr gs:[0x58]
+0000000000705acc: mov      r8d, 0x7d58
+0000000000705ad2: mov      rax, qword ptr [rax + rdx*8]
+0000000000705ad6: movsxd   r8, dword ptr [r8 + rax]
+0000000000705ada: lea      r9, [rip - 0x305ae1]
+0000000000705ae1: movsxd   rdx, dword ptr [r9 + r8*4 + 0x47e2a40]
+0000000000705ae9: lea      eax, [rdx + 1]
+0000000000705aec: mov      dword ptr [r9 + r8*4 + 0x47e2a40], eax
+0000000000705af4: imul     r8, r8, 0x3e8
+0000000000705afb: add      r8, rdx
+0000000000705afe: lea      rax, [rip + 0x56d05b] ; UTF16 'void __cdecl IOThreadCallback::IOThread_debug(void)'
+0000000000705b05: mov      qword ptr [r9 + r8*8 + 0x47bf7c0], rax
+0000000000705b0d: call     0x7056ac
+0000000000705b12: int3

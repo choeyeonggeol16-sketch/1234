@@ -1,0 +1,42 @@
+# io_bootstrap; PE pdata/unwind; entry 0x704754
+# chunk 0x704754..0x704807
+0000000000704754: push     rbx
+0000000000704756: push     rsi
+0000000000704757: push     rdi
+0000000000704758: sub      rsp, 0x30
+000000000070475c: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000704765: mov      ecx, dword ptr [rip + 0x2eebaa6d]
+000000000070476b: mov      rax, qword ptr gs:[0x58]
+0000000000704774: mov      edi, 0x7d58
+0000000000704779: mov      rbx, qword ptr [rax + rcx*8]
+000000000070477d: movsxd   rdx, dword ptr [rbx + rdi]
+0000000000704781: lea      rsi, [rip - 0x304788]
+0000000000704788: movsxd   rcx, dword ptr [rsi + rdx*4 + 0x47e2a40]
+0000000000704790: lea      eax, [rcx + 1]
+0000000000704793: mov      dword ptr [rsi + rdx*4 + 0x47e2a40], eax
+000000000070479a: imul     rdx, rdx, 0x3e8
+00000000007047a1: add      rdx, rcx
+00000000007047a4: lea      rax, [rip + 0x56d645] ; UTF16 'void __cdecl InitIOThread(void)'
+00000000007047ab: mov      qword ptr [rsi + rdx*8 + 0x47bf7c0], rax
+00000000007047b3: mov      dword ptr [rip + 0x454c753], 0
+00000000007047bd: xor      r9d, r9d
+00000000007047c0: xor      r8d, r8d
+00000000007047c3: xor      edx, edx
+00000000007047c5: xor      ecx, ecx
+00000000007047c7: call     qword ptr [rip + 0x4179eb] ; IAT CreateEventW
+00000000007047cd: mov      qword ptr [rip + 0x454c734], rax
+00000000007047d4: xor      r9d, r9d
+00000000007047d7: xor      r8d, r8d
+00000000007047da: xor      edx, edx
+00000000007047dc: lea      rcx, [rdx - 1]
+00000000007047e0: call     qword ptr [rip + 0x41799a] ; IAT CreateIoCompletionPort
+00000000007047e6: mov      qword ptr [rip + 0x454c743], rax
+00000000007047ed: call     0x7045dc
+00000000007047f2: nop
+00000000007047f3: movsxd   rax, dword ptr [rbx + rdi]
+00000000007047f7: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000007047ff: add      rsp, 0x30
+0000000000704803: pop      rdi
+0000000000704804: pop      rsi
+0000000000704805: pop      rbx
+0000000000704806: ret

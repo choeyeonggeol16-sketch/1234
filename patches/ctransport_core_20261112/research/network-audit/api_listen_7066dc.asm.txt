@@ -1,0 +1,99 @@
+# api_listen_7066dc; PE pdata/unwind; entry 0x7066dc
+# chunk 0x7066dc..0x706872
+00000000007066dc: push     rbx
+00000000007066de: push     rbp
+00000000007066df: push     rsi
+00000000007066e0: push     rdi
+00000000007066e1: push     r12
+00000000007066e3: sub      rsp, 0x40
+00000000007066e7: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000007066f0: mov      esi, edx
+00000000007066f2: mov      rbx, rcx
+00000000007066f5: mov      r8d, dword ptr [rip + 0x2eeb8adc]
+00000000007066fc: mov      rax, qword ptr gs:[0x58]
+0000000000706705: mov      r12d, 0x7d58
+000000000070670b: mov      rdi, qword ptr [rax + r8*8]
+000000000070670f: movsxd   r9, dword ptr [rdi + r12]
+0000000000706713: lea      rbp, [rip - 0x30671a]
+000000000070671a: movsxd   r8, dword ptr [rbp + r9*4 + 0x47e2a40]
+0000000000706722: lea      eax, [r8 + 1]
+0000000000706726: mov      dword ptr [rbp + r9*4 + 0x47e2a40], eax
+000000000070672e: imul     r9, r9, 0x3e8
+0000000000706735: add      r9, r8
+0000000000706738: lea      rax, [rip + 0x56c8e1] ; UTF16 'int __cdecl CIOServer::Create(int)'
+000000000070673f: mov      qword ptr [rbp + r9*8 + 0x47bf7c0], rax
+0000000000706747: xor      r8d, r8d
+000000000070674a: lea      edx, [r8 + 1]
+000000000070674e: lea      ecx, [rdx + 1]
+0000000000706751: call     qword ptr [rip + 0x415f09] ; IAT socket
+0000000000706757: mov      qword ptr [rbx + 0x18], rax
+000000000070675b: cmp      rax, -1
+000000000070675f: jne      0x706789
+0000000000706761: call     qword ptr [rip + 0x415f69] ; IAT WSAGetLastError
+0000000000706767: mov      edx, eax
+0000000000706769: lea      rcx, [rip + 0x56c8a0]
+0000000000706770: call     0x704dac
+0000000000706775: nop
+0000000000706776: movsxd   rax, dword ptr [rdi + r12]
+000000000070677a: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+0000000000706782: xor      eax, eax
+0000000000706784: jmp      0x706867
+0000000000706789: mov      word ptr [rsp + 0x28], 2
+0000000000706790: xor      ecx, ecx
+0000000000706792: call     qword ptr [rip + 0x415f60] ; IAT htonl
+0000000000706798: mov      dword ptr [rsp + 0x2c], eax
+000000000070679c: movzx    ecx, si
+000000000070679f: call     qword ptr [rip + 0x415eab] ; IAT htons
+00000000007067a5: mov      word ptr [rsp + 0x2a], ax
+00000000007067aa: mov      r8d, 0x10
+00000000007067b0: lea      rdx, [rsp + 0x28]
+00000000007067b5: mov      rcx, qword ptr [rbx + 0x18]
+00000000007067b9: call     qword ptr [rip + 0x415e99] ; IAT bind
+00000000007067bf: test     eax, eax
+00000000007067c1: je       0x7067d9
+00000000007067c3: call     qword ptr [rip + 0x415f07] ; IAT WSAGetLastError
+00000000007067c9: mov      edx, eax
+00000000007067cb: lea      rcx, [rip + 0x56c82e]
+00000000007067d2: call     0x704dac
+00000000007067d7: jmp      0x70683d
+00000000007067d9: mov      edx, 5
+00000000007067de: mov      rcx, qword ptr [rbx + 0x18]
+00000000007067e2: call     qword ptr [rip + 0x415f08] ; IAT listen
+00000000007067e8: test     eax, eax
+00000000007067ea: je       0x706802
+00000000007067ec: call     qword ptr [rip + 0x415ede] ; IAT WSAGetLastError
+00000000007067f2: mov      edx, eax
+00000000007067f4: lea      rcx, [rip + 0x56c7f5]
+00000000007067fb: call     0x704dac
+0000000000706800: jmp      0x70683d
+0000000000706802: call     qword ptr [rip + 0x415ee0] ; IAT WSACreateEvent
+0000000000706808: mov      qword ptr [rbx + 0x20], rax
+000000000070680c: mov      r8d, 8
+0000000000706812: mov      rdx, rax
+0000000000706815: mov      rcx, qword ptr [rbx + 0x18]
+0000000000706819: call     qword ptr [rip + 0x415ec1] ; IAT WSAEventSelect
+000000000070681f: mov      rdx, qword ptr [rbx + 0x20]
+0000000000706823: mov      rcx, rbx
+0000000000706826: call     0x706564
+000000000070682b: test     eax, eax
+000000000070682d: jne      0x706856
+000000000070682f: mov      edx, esi
+0000000000706831: lea      rcx, [rip + 0x56c798]
+0000000000706838: call     0x704dac
+000000000070683d: mov      rcx, rbx
+0000000000706840: call     0x704c7c
+0000000000706845: nop
+0000000000706846: movsxd   rax, dword ptr [rdi + r12]
+000000000070684a: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+0000000000706852: xor      eax, eax
+0000000000706854: jmp      0x706867
+0000000000706856: movsxd   rcx, dword ptr [rdi + r12]
+000000000070685a: add      dword ptr [rbp + rcx*4 + 0x47e2a40], -1
+0000000000706862: mov      eax, 1
+0000000000706867: add      rsp, 0x40
+000000000070686b: pop      r12
+000000000070686d: pop      rdi
+000000000070686e: pop      rsi
+000000000070686f: pop      rbp
+0000000000706870: pop      rbx
+0000000000706871: ret

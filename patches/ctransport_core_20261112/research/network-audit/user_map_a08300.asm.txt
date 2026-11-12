@@ -1,0 +1,99 @@
+# user_map_a08300; PE pdata/unwind; entry 0xa08300
+# chunk 0xa08300..0xa0847f
+0000000000a08300: mov      dword ptr [rsp + 0x10], edx
+0000000000a08304: push     rbx
+0000000000a08305: push     rbp
+0000000000a08306: push     rsi
+0000000000a08307: push     rdi
+0000000000a08308: push     r12
+0000000000a0830a: push     r13
+0000000000a0830c: push     r14
+0000000000a0830e: push     r15
+0000000000a08310: sub      rsp, 0x58
+0000000000a08314: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000a0831d: mov      r12d, r9d
+0000000000a08320: mov      rbp, r8
+0000000000a08323: mov      r11d, edx
+0000000000a08326: mov      rdi, rcx
+0000000000a08329: mov      r10d, dword ptr [rip + 0x2ebb6ea8]
+0000000000a08330: mov      rax, qword ptr gs:[0x58]
+0000000000a08339: mov      ecx, 0x7d58
+0000000000a0833e: mov      r13, qword ptr [rax + r10*8]
+0000000000a08342: movsxd   r10, dword ptr [r13 + rcx]
+0000000000a08347: lea      r15, [rip - 0x60834e]
+0000000000a0834e: movsxd   rdx, dword ptr [r15 + r10*4 + 0x47e2a40]
+0000000000a08356: lea      eax, [rdx + 1]
+0000000000a08359: mov      dword ptr [r15 + r10*4 + 0x47e2a40], eax
+0000000000a08361: imul     r10, r10, 0x3e8
+0000000000a08368: add      r10, rdx
+0000000000a0836b: lea      rax, [rip + 0x3badce] ; UTF16 'bool __cdecl CObjectMap<class CUserSocket,8192,26,class RWLock,int>::DeleteObject(int,char *,int)'
+0000000000a08372: mov      qword ptr [r15 + r10*8 + 0x47bf7c0], rax
+0000000000a0837a: xor      esi, esi
+0000000000a0837c: mov      ecx, r11d
+0000000000a0837f: call     0xabddb0
+0000000000a08384: and      eax, 0x1fff
+0000000000a08389: movsxd   rbx, eax
+0000000000a0838c: lea      r14, [rbx + 0xdb7]
+0000000000a08393: imul     r14, r14, 0x38
+0000000000a08397: add      r14, rdi
+0000000000a0839a: mov      r8d, 0x1be
+0000000000a083a0: lea      rdx, [rip + 0x12a9c9] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\ThreadSafeLibrary.h'
+0000000000a083a7: mov      rcx, r14
+0000000000a083aa: call     0x8aacec
+0000000000a083af: lea      r11, [rbx + rbx*2]
+0000000000a083b3: lea      rbx, [rdi + r11*8 + 8]
+0000000000a083b8: lea      r8, [rsp + 0xa8]
+0000000000a083c0: lea      rdx, [rsp + 0x38]
+0000000000a083c5: mov      rcx, rbx
+0000000000a083c8: call     0x52eb8c
+0000000000a083cd: mov      rdx, qword ptr [rsp + 0x38]
+0000000000a083d2: cmp      rdx, rsi
+0000000000a083d5: je       0xa08468
+0000000000a083db: cmp      rdx, rbx
+0000000000a083de: jne      0xa08468
+0000000000a083e4: mov      rcx, qword ptr [rsp + 0x40]
+0000000000a083e9: cmp      rcx, qword ptr [rbx + 8]
+0000000000a083ed: sete     al
+0000000000a083f0: cmp      al, sil
+0000000000a083f3: sete     al
+0000000000a083f6: cmp      al, sil
+0000000000a083f9: je       0xa08447
+0000000000a083fb: cmp      rbp, rsi
+0000000000a083fe: jne      0xa0840d
+0000000000a08400: lea      rbp, [rip + 0x120459]
+0000000000a08407: mov      r12d, 0x1c7
+0000000000a0840d: cmp      rcx, qword ptr [rdx + 8]
+0000000000a08411: jne      0xa08419
+0000000000a08413: call     0x866f68
+0000000000a08418: int3
+0000000000a08419: mov      rcx, qword ptr [rcx + 0x20]
+0000000000a0841d: mov      rax, qword ptr [rcx]
+0000000000a08420: mov      byte ptr [rsp + 0x20], sil
+0000000000a08425: mov      r9d, 0x1a
+0000000000a0842b: mov      r8d, r12d
+0000000000a0842e: mov      rdx, rbp
+0000000000a08431: call     qword ptr [rax + 0x10]
+0000000000a08434: lea      rdx, [rsp + 0xa8]
+0000000000a0843c: mov      rcx, rbx
+0000000000a0843f: call     0x92f358
+0000000000a08444: mov      sil, 1
+0000000000a08447: mov      rcx, r14
+0000000000a0844a: call     0x8aad88
+0000000000a0844f: nop
+0000000000a08450: mov      eax, 0x7d58
+0000000000a08455: movsxd   rcx, dword ptr [r13 + rax]
+0000000000a0845a: add      dword ptr [r15 + rcx*4 + 0x47e2a40], -1
+0000000000a08463: mov      al, sil
+0000000000a08466: jmp      0xa0846e
+0000000000a08468: call     0x480214
+0000000000a0846d: nop
+0000000000a0846e: add      rsp, 0x58
+0000000000a08472: pop      r15
+0000000000a08474: pop      r14
+0000000000a08476: pop      r13
+0000000000a08478: pop      r12
+0000000000a0847a: pop      rdi
+0000000000a0847b: pop      rsi
+0000000000a0847c: pop      rbp
+0000000000a0847d: pop      rbx
+0000000000a0847e: ret

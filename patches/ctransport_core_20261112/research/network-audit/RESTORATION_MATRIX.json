@@ -1,0 +1,1018 @@
+{
+  "implementation_commit": "227c67bcab237c409d9741dcd1b2e091481e10e0",
+  "dll_abi": "0x50000",
+  "dll_sha256": "c5160c9e6d93924e6b0ec9bc52d40af93c1e03df9183a3629dd71ba9bba839f2",
+  "classification": {
+    "MATCH": "핵심 동작 대응 확인",
+    "ADAPTED": "L1·FFM 적용/정책 차이",
+    "NOT_PORTED": "원본 구조·정책 미이식",
+    "UNVERIFIED": "대조/검증 미완료",
+    "EXCLUDED": "L2 게임/독립 기능 범위 제외"
+  },
+  "counts_of_audit_rows_only": {
+    "ADAPTED": 11,
+    "MATCH": 8,
+    "NOT_PORTED": 9,
+    "UNVERIFIED": 3,
+    "EXCLUDED": 2
+  },
+  "not_a_restoration_percentage": true,
+  "production_code_changes": false,
+  "rows": [
+    {
+      "id": "N01",
+      "status": "ADAPTED",
+      "status_ko": "L1·FFM 적용/정책 차이",
+      "name": "IOCP dequeue와 완료 분배",
+      "original": [
+        "0x7056ac",
+        "0x7057c9",
+        "0x7058d8"
+      ],
+      "binary_facts": "원본은 단건 GQCS 후 completion key 객체의 vslot+0x50을 호출한다.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 559,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L559"
+        }
+      ],
+      "current_facts": "GQCSEx 128배치, 항목별 NTSTATUS, typed Operation 및 owner 참조 반환.",
+      "difference": "128배치와 typed Operation은 추가 설계다. 원본 dequeue 구조와 1:1 동일하지 않다.",
+      "next_action": "완료로 고정. 사용자가 요구한 배치 확장을 미복원으로 재분류하지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/io_worker_body.asm.txt"
+      ]
+    },
+    {
+      "id": "N02",
+      "status": "MATCH",
+      "status_ko": "핵심 동작 대응 확인",
+      "name": "8K/16K slab·소유 풀 반환",
+      "original": [
+        "0x6b5094",
+        "0x6b4fb8",
+        "0x45d7f8",
+        "0x45d67c"
+      ],
+      "binary_facts": "연속 영역, pointer ring, payload/ref/owner 필드 및 소유 풀 반환.",
+      "current_sources": [
+        {
+          "path": "native/cio_core.hpp",
+          "line": 65,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/cio_core.hpp#L65"
+        },
+        {
+          "path": "native/cio_core.hpp",
+          "line": 51,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/cio_core.hpp#L51"
+        }
+      ],
+      "current_facts": "원본에서 읽은 stride/선택 필드 offset을 static_assert하고 고정 slab/ring·다른 worker 반환을 구현.",
+      "difference": "adapter view 객체와 총량·외부 producer 정책은 별도다. 원본 전체 allocator ABI 동일성을 뜻하지 않는다.",
+      "next_action": "완료. 새 결함 근거 없이 재작성하지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/scope/pool8_constructor.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/scope/pool16_constructor.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/scope/buffer_recycle_8k.asm.txt"
+      ]
+    },
+    {
+      "id": "N03",
+      "status": "MATCH",
+      "status_ko": "핵심 동작 대응 확인",
+      "name": "공유 수신 COW·유일 버퍼 compaction",
+      "original": [
+        "0x45de2c"
+      ],
+      "binary_facts": "ref>1은 남은 바이트를 새 버퍼로 복사, ref1은 기존 버퍼에서 이동.",
+      "current_sources": [
+        {
+          "path": "native/cio_core.hpp",
+          "line": 145,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/cio_core.hpp#L145"
+        }
+      ],
+      "current_facts": "ReceiveWindow.prepare에서 COW/compaction 구현.",
+      "difference": "L1의 미완성 프레임 조립 저장소·codec 대기는 별도다.",
+      "next_action": "완료.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/scope/read_completion_8k.asm.txt"
+      ]
+    },
+    {
+      "id": "N04",
+      "status": "ADAPTED",
+      "status_ko": "L1·FFM 적용/정책 차이",
+      "name": "송신 FIFO·완료 길이·버퍼 반환",
+      "original": [
+        "0x545a18",
+        "0x545e38",
+        "0x54655c"
+      ],
+      "binary_facts": "원본은 head/tail FIFO와1개 WSABUF를 사용하고 WriteCallback에서 완료 길이가 head 길이와 같은지 검사한다. 다르면 진단 후 반환한다.",
+      "current_sources": [
+        {
+          "path": "native/cio_core.hpp",
+          "line": 168,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/cio_core.hpp#L168"
+        },
+        {
+          "path": "native/CTransport.cpp",
+          "line": 219,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L219"
+        }
+      ],
+      "current_facts": "C++ SendChain/WSASend와 실제 완료 길이에 따른 offset·참조 반환.",
+      "difference": "FIFO 수명은 대응하지만 부분 완료 offset 진행/재게시를 같은 원본 동작으로 주장할 수 없다. 현재의 추가 처리다.",
+      "next_action": "완료. 송신이 미구현이라고 다시 제시하지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/enqueue_async_write_16k.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/write_completion_16k.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/io_dispatch_16k.asm.txt"
+      ]
+    },
+    {
+      "id": "N05",
+      "status": "ADAPTED",
+      "status_ko": "L1·FFM 적용/정책 차이",
+      "name": "상위 송신 serializer와 암호화 순서",
+      "original": [
+        "0x45c7ac",
+        "0x9ef544",
+        "0x9ef620"
+      ],
+      "binary_facts": "원본은 native ticket/CAS callback 직렬화와 사용자 소켓 송신 허용 검사를 사용한다.",
+      "current_sources": [
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOUserSocket.java",
+          "line": 268,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOUserSocket.java#L268"
+        },
+        {
+          "path": "native/l1_codec.hpp",
+          "line": 70,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/l1_codec.hpp#L70"
+        },
+        {
+          "path": "native/CTransport.cpp",
+          "line": 842,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L842"
+        }
+      ],
+      "current_facts": "Java 512-slot serializer가 L1 packet/암호화/게시 순서를 관리하고 C++가 crypto/FIFO/I/O를 수행한다.",
+      "difference": "혼합 구현이다. encrypt+send를 하나의 새 native API로 합치는 것은 추가 설계 작업이다.",
+      "next_action": "완료된 기능. 통합 최적화를 필수 미복원으로 취급하지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/scope/serialized_write_callback.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/user_write_capacity.asm.txt"
+      ]
+    },
+    {
+      "id": "N06",
+      "status": "MATCH",
+      "status_ko": "핵심 동작 대응 확인",
+      "name": "일반 completion 작업 게시와 참조",
+      "original": [
+        "0x704248"
+      ],
+      "binary_facts": "PQCS에 객체를 넘기고 게시 실패 시 획득 참조를 반환한다.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 133,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L133"
+        },
+        {
+          "path": "native/cio_core.hpp",
+          "line": 15,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/cio_core.hpp#L15"
+        }
+      ],
+      "current_facts": "native post/NativeTask와 완료·실패·취소 참조 경계를 구현.",
+      "difference": "작업 인자 ABI는 FFM에 맞춘 typed Operation/token이다.",
+      "next_action": "완료.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/scope/object_post_completion.asm.txt"
+      ]
+    },
+    {
+      "id": "N07",
+      "status": "MATCH",
+      "status_ko": "핵심 동작 대응 확인",
+      "name": "50ms/200슬롯·1000-entry block·overflow heap",
+      "original": [
+        "0x92533c",
+        "0x9256d4",
+        "0x92611c"
+      ],
+      "binary_facts": "선두 block 확장, 병렬 object/message/argument 배열,32-byte heap record.",
+      "current_sources": [
+        {
+          "path": "native/timer_wheel.hpp",
+          "line": 10,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/timer_wheel.hpp#L10"
+        },
+        {
+          "path": "native/timer_wheel.hpp",
+          "line": 58,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/timer_wheel.hpp#L58"
+        }
+      ],
+      "current_facts": "원본에서 확인한 block 배치와 wheel/heap 기본 동작을 구현.",
+      "difference": "취소 인덱스·clock·메모리 총량은 별도 적용. 원본 모든 message 의미가 이식된 것은 아니다.",
+      "next_action": "기본 엔진 완료. 메시지 의미는 N08로 구분.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/scope/timer_bucket_append.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/scope/timer_overflow_heap_pop.asm.txt"
+      ]
+    },
+    {
+      "id": "N08",
+      "status": "ADAPTED",
+      "status_ko": "L1·FFM 적용/정책 차이",
+      "name": "timer message/argument·취소·clock",
+      "original": [
+        "0x925374",
+        "0x926bf4"
+      ],
+      "binary_facts": "원본은 객체/message/argument를 처리한다.",
+      "current_sources": [
+        {
+          "path": "native/timer_wheel.hpp",
+          "line": 115,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/timer_wheel.hpp#L115"
+        },
+        {
+          "path": "native/CTransport.cpp",
+          "line": 441,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L441"
+        }
+      ],
+      "current_facts": "block.message는 token 하위32비트, argument는 token. NativeTask가 실제 callback을 보관한다. indexed cancel/64-bit steady clock.",
+      "difference": "필드 배치 대응과 원본 message/argument 프로토콜 전체 복원은 다르다.",
+      "next_action": "FFM 적용으로 기록. 임의의 L2 message를 L1에 연결하지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/scope/timer_bucket_execute.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/scope/timer_register.asm.txt"
+      ]
+    },
+    {
+      "id": "N09",
+      "status": "MATCH",
+      "status_ko": "핵심 동작 대응 확인",
+      "name": "종료 시작 hook·활성 해제·linger0",
+      "original": [
+        "0x45d534",
+        "0xa12dec"
+      ],
+      "binary_facts": "handle retire, derived hook, linger(1,0), closesocket 순서.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 183,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L183"
+        },
+        {
+          "path": "native/CTransport.cpp",
+          "line": 175,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L175"
+        }
+      ],
+      "current_facts": "native active→retiring 후 Java closing 통지·linger·OS close.",
+      "difference": "I/O terminal/borrowed plaintext 반환 fence는 L1/FFM의 추가 경계다.",
+      "next_action": "완료.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/scope/socket_close.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/user-socket/user_close_hook.asm.txt"
+      ]
+    },
+    {
+      "id": "N10",
+      "status": "MATCH",
+      "status_ko": "핵심 동작 대응 확인",
+      "name": "Server::Add / Remove의 잠금·참조",
+      "original": [
+        "0x8b0404",
+        "0x8b04fc",
+        "Server vtable +0x70/+0x68"
+      ],
+      "binary_facts": "임계 구역에서 tree key/socket pair 삽입·retain, 제거 시 lookup/release/erase.",
+      "current_sources": [
+        {
+          "path": "native/user_registry.hpp",
+          "line": 28,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/user_registry.hpp#L28"
+        },
+        {
+          "path": "native/user_registry.hpp",
+          "line": 55,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/user_registry.hpp#L55"
+        }
+      ],
+      "current_facts": "native ordered active/retiring map, lookup retain, 정확한 객체 제거.",
+      "difference": "현재 key는 slot+generation이고 원본 key는 SOCKET이다. 원본 STL 내부 배치를 복사하지 않았다.",
+      "next_action": "등록 관리 핵심 완료. 핸들 정책은 N15로 구분.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/vtable_Server_14.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/vtable_Server_13.asm.txt"
+      ]
+    },
+    {
+      "id": "N11",
+      "status": "MATCH",
+      "status_ko": "핵심 동작 대응 확인",
+      "name": "Server::Shutdown snapshot의 참조 수명",
+      "original": [
+        "0x8b0954",
+        "Server vtable +0x78"
+      ],
+      "binary_facts": "잠금 안에서 socket list/retain, 잠금 밖에서 close/release.",
+      "current_sources": [
+        {
+          "path": "native/user_registry.hpp",
+          "line": 68,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/user_registry.hpp#L68"
+        },
+        {
+          "path": "native/CTransport.cpp",
+          "line": 727,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L727"
+        }
+      ],
+      "current_facts": "native retained snapshot을 잠금 밖에서 종료한다.",
+      "difference": "전체 L2 프로세스 종료와 native Server.stop은 다른 범위다.",
+      "next_action": "관리자 snapshot 완료. 전체 프로세스 경로는 N29로 구분.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/vtable_Server_15.asm.txt"
+      ]
+    },
+    {
+      "id": "N12",
+      "status": "ADAPTED",
+      "status_ko": "L1·FFM 적용/정책 차이",
+      "name": "수신 parser·opcode 분배",
+      "original": [
+        "0xa0372c"
+      ],
+      "binary_facts": "Header/Body/Stopped, 길이 검사·복호화 후 opcode handler 호출.",
+      "current_sources": [
+        {
+          "path": "native/user_socket.hpp",
+          "line": 15,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/user_socket.hpp#L15"
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOUserSocket.java",
+          "line": 2821,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOUserSocket.java#L2821"
+        }
+      ],
+      "current_facts": "native L1 프레이밍과 기존 L1 상태/handler 정책.",
+      "difference": "L2 최대0x4000·opcode·handler bool 대신 L1 empty2 또는 wire10..65535 및 기존 handler 의미.",
+      "next_action": "L1 적용 완료. L2 wire를 복사하지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/user-socket/user_socket_parser.asm.txt"
+      ]
+    },
+    {
+      "id": "N13",
+      "status": "ADAPTED",
+      "status_ko": "L1·FFM 적용/정책 차이",
+      "name": "코덱 직접 연결",
+      "original": [
+        "0xa0372c",
+        "0x9ef384"
+      ],
+      "binary_facts": "원본은 L2 파서/복호화 및 키 상태를 사용한다.",
+      "current_sources": [
+        {
+          "path": "native/l1_codec.hpp",
+          "line": 13,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/l1_codec.hpp#L13"
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOPacketCodec.java",
+          "line": 11,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOPacketCodec.java#L11"
+        }
+      ],
+      "current_facts": "검증한 기존 L1 DLL을 C++가 직접 Feed/Next/Encrypt 호출.",
+      "difference": "L2 암호 복원 결과가 아니다. 기존 L1 DLL을 재사용한 호환 연결이다.",
+      "next_action": "완료. 원본 L2 암호를 L1에 이식하지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/user-socket/user_socket_parser.asm.txt"
+      ]
+    },
+    {
+      "id": "N14",
+      "status": "ADAPTED",
+      "status_ko": "L1·FFM 적용/정책 차이",
+      "name": "packet lease·세션 owner·L1 deferred cleanup",
+      "original": [
+        "0xa12674",
+        "0xa123e8"
+      ],
+      "binary_facts": "원본의 후속 객체가 socket을 보유하고 게임 상태별 정리를 수행한다.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 387,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L387"
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOUserSocket.java",
+          "line": 2796,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOUserSocket.java#L2796"
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/CUserSocketCloseTask.java",
+          "line": 8,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CUserSocketCloseTask.java#L8"
+        }
+      ],
+      "current_facts": "native plaintext 단일 lease와 Java L1 session/로그아웃 fence.",
+      "difference": "L2 월드 객체/지연 값 대신 L1 계정·캐릭터·DB 경계를 유지한다.",
+      "next_action": "L1 적용 완료.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/user-socket/deferred_user_close.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/user-socket/user_cleanup.asm.txt"
+      ]
+    },
+    {
+      "id": "N15",
+      "status": "ADAPTED",
+      "status_ko": "L1·FFM 적용/정책 차이",
+      "name": "native 핸들·세대·retiring 조회",
+      "original": [
+        "0x90e548",
+        "0xa12dec"
+      ],
+      "binary_facts": "+0xb0은 전달된 원래 socket 값이며 close hook에서 xchg0 한다.",
+      "current_sources": [
+        {
+          "path": "native/user_registry.hpp",
+          "line": 34,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/user_registry.hpp#L34"
+        },
+        {
+          "path": "native/user_registry.hpp",
+          "line": 43,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/user_registry.hpp#L43"
+        }
+      ],
+      "current_facts": "64-bit slot+generation과 retiring release 조회.",
+      "difference": "generation 핸들은 현재 FFM 수명/ABA 방지를 위해 추가한 설계다.",
+      "next_action": "완료. 원본 필드의 동일 복원이라고 표현하지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/socket_base_ctor.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/user-socket/user_close_hook.asm.txt"
+      ]
+    },
+    {
+      "id": "N16",
+      "status": "NOT_PORTED",
+      "status_ko": "원본 구조·정책 미이식",
+      "name": "8,192-bucket 사용자번호 CObjectMap",
+      "original": [
+        "0xa0ce3e",
+        "0xa0ce49",
+        "0xa08138"
+      ],
+      "binary_facts": "+0x4e8에 atomic 사용자번호를 생성해 CObjectMap<CUserSocket,8192,26,RWLock,int>에 삽입/retain.",
+      "current_sources": [
+        {
+          "path": "native/user_registry.hpp",
+          "line": 10,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/user_registry.hpp#L10"
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/CUserSocketRegistry.java",
+          "line": 11,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CUserSocketRegistry.java#L11"
+        }
+      ],
+      "current_facts": "native 접속 핸들 map과 Java L1 session registry를 사용한다.",
+      "difference": "원본의 별도 8192-bucket 사용자번호 map은 그대로 이식하지 않았다. 원본 Server SOCKET map과 다른 계층이다.",
+      "next_action": "L1의 identity 요구와 역할 대조 후 필요 범위 결정. 접속 등록 전체를 미구현으로 되돌리지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/user_ctor.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/socket_number_map_add.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/user-object-maps.json"
+      ]
+    },
+    {
+      "id": "N17",
+      "status": "NOT_PORTED",
+      "status_ko": "원본 구조·정책 미이식",
+      "name": "FD_ACCEPT→RegisterWait→IOCP 접속 수락",
+      "original": [
+        "0x7066dc",
+        "0x706564",
+        "0x705e4c",
+        "0x704d1c",
+        "0x705508"
+      ],
+      "binary_facts": "WSAEventSelect(FD_ACCEPT=8),최대64 wait handles, WaitForMultipleObjects, ResetEvent/PQCS 후 IOCP에서 accept.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 610,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L610"
+        },
+        {
+          "path": "native/CTransport.cpp",
+          "line": 626,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L626"
+        }
+      ],
+      "current_facts": "미리 만든 accepted socket과 AcceptEx, 완료 후 연결 객체·admit callback.",
+      "difference": "현재는 원본의 event wait registry/OnWaitCallback/accept 구조를 사용하지 않는다.",
+      "next_action": "엄밀한 원본 구조 복원에서 남은 핵심. N22와 하나의 작업으로 묶어야 한다.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/api_WSAEventSelect_7066dc.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/event_register.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/vtable_Server_9.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/api_accept_705508.asm.txt"
+      ]
+    },
+    {
+      "id": "N18",
+      "status": "ADAPTED",
+      "status_ko": "L1·FFM 적용/정책 차이",
+      "name": "factory→생성→등록→I/O 초기화 순서",
+      "original": [
+        "0x8af9cc",
+        "0x8b0738",
+        "0xa0d07c",
+        "0xa0ccc4",
+        "0x545260"
+      ],
+      "binary_facts": "IServerCallback adapter→CUserSocket::Allocate→constructor→Server::Add→peer IP 설정→socket Initialize/IOCP associate.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 645,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L645"
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOServer.java",
+          "line": 71,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOServer.java#L71"
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOUserSocket.java",
+          "line": 111,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOUserSocket.java#L111"
+        }
+      ],
+      "current_facts": "native Connection 생성/IOCP associate/native 등록 후 Java CIOUserSocket·CIOClient·native codec 생성, admit 성공 후 READ.",
+      "difference": "기능은 대응하지만 객체 분할과 초기화 순서는 원본 그대로가 아니다.",
+      "next_action": "원본 accept 구조를 맞출 때 의존 순서를 함께 대조. 별도 중복 복원 과제로 세지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/vtable_Server_12.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/callback_adapter_allocate.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/service_listener_factory_b.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/socket_init_io.asm.txt"
+      ]
+    },
+    {
+      "id": "N19",
+      "status": "NOT_PORTED",
+      "status_ko": "원본 구조·정책 미이식",
+      "name": "SO_RCVBUF/SO_SNDBUF=0 및 listen 정책",
+      "original": [
+        "0x5452eb",
+        "0x545315",
+        "0x7067e2"
+      ],
+      "binary_facts": "Initialize에서 SOL_SOCKET/0x1002,0x1001에0 설정. listen backlog5.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 644,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L644"
+        },
+        {
+          "path": "native/CTransport.cpp",
+          "line": 675,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L675"
+        }
+      ],
+      "current_facts": "TCP_NODELAY와 현재 backlog 설정. 두 OS 버퍼를0으로 만드는 설정은 없다.",
+      "difference": "원본 정책 미이식이다. 수신/송신 엔진 부재를 뜻하지 않는다.",
+      "next_action": "성능·메모리 측정과 L1 호환성을 보고 결정할 정책 차이.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/socket_init_io.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/api_WSAEventSelect_7066dc.asm.txt"
+      ]
+    },
+    {
+      "id": "N20",
+      "status": "MATCH",
+      "status_ko": "핵심 동작 대응 확인",
+      "name": "IO worker 번호/TLS/owner 식별",
+      "original": [
+        "0x705b38",
+        "0x9250f8",
+        "0x925118"
+      ],
+      "binary_facts": "worker 시작 인자 번호로 TLS 설정 및 handle 등록.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 561,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L561"
+        },
+        {
+          "path": "native/CTransport.cpp",
+          "line": 864,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L864"
+        }
+      ],
+      "current_facts": "native currentWorker/index와 pool OwnerScope, FFM worker 조회.",
+      "difference": "원본의 전역 thread handle 표·진단 전체는 별도다.",
+      "next_action": "핵심 역할 식별 완료.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/worker_entry.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/user-socket/thread_handle_register.asm.txt"
+      ]
+    },
+    {
+      "id": "N21",
+      "status": "NOT_PORTED",
+      "status_ko": "원본 구조·정책 미이식",
+      "name": "CPU 수 기반 worker 수·affinity",
+      "original": [
+        "0x7044c4",
+        "0x705c4b"
+      ],
+      "binary_facts": "worker 수는 min(CPU수,8), 각 worker에 SetThreadAffinityMask.",
+      "current_sources": [
+        {
+          "path": "src/l1j/server/Server.java",
+          "line": 33,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/Server.java#L33"
+        },
+        {
+          "path": "native/CTransport.cpp",
+          "line": 695,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L695"
+        }
+      ],
+      "current_facts": "기본8개 std::thread, CPU affinity 호출 없음.",
+      "difference": "원본 정책과 다르다.",
+      "next_action": "스레드 배치 정책 차이로 고정 기록. thread pool 자체를 다시 만드는 작업으로 제시하지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/worker_count.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/worker_start.asm.txt"
+      ]
+    },
+    {
+      "id": "N22",
+      "status": "NOT_PORTED",
+      "status_ko": "원본 구조·정책 미이식",
+      "name": "ListenThread owner17의 실제 실행 구조",
+      "original": [
+        "0x7309df",
+        "0x730300",
+        "0x72f874",
+        "0x705e4c"
+      ],
+      "binary_facts": "WinMain의 Starting ListenThread, TLS17/풀 초기화, 서비스 시작 후 WaitThread에서 이벤트와 timer queue를 처리.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 559,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L559"
+        },
+        {
+          "path": "native/timer_wheel.hpp",
+          "line": 53,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/timer_wheel.hpp#L53"
+        }
+      ],
+      "current_facts": "기본 IO worker0..7과 각 worker timer. 별도 owner17 ListenThread/WaitThread는 없다.",
+      "difference": "17번 timer repost 분기는 있지만 기본 실행에서 owner17 thread를 생성하지 않는다. 분기 테스트 통과는 원본 thread topology 복원 증거가 아니다.",
+      "next_action": "N17과 동일한 핵심 복원 묶음. 번호만 맞춘 빈 thread를 추가하지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/caller_thread_rng_seed_init_730408.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/service_thread_boot.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/api_WaitForMultipleObjects_705e4c.asm.txt"
+      ]
+    },
+    {
+      "id": "N23",
+      "status": "ADAPTED",
+      "status_ko": "L1·FFM 적용/정책 차이",
+      "name": "IP별 접속 제한·반환",
+      "original": [
+        "0xa0dc04"
+      ],
+      "binary_facts": "실제 embedded signature는 CSocketLimiter::DecUserSocketPerIP(unsigned int).",
+      "current_sources": [
+        {
+          "path": "src/l1j/server/server/model/network/client/manager/NetworkClientCounter.java",
+          "line": 45,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/client/manager/NetworkClientCounter.java#L45"
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOSocketFactory.java",
+          "line": 58,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOSocketFactory.java#L58"
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOClient.java",
+          "line": 192,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOClient.java#L192"
+        }
+      ],
+      "current_facts": "L1 NetworkClientCounter의 IPv4 예약·정확한1회 반환을 유지.",
+      "difference": "원본 limiter 구조/정책 전체를 이식한 것은 아니며 이전 login registry unregister라는 이름은 오분류였다.",
+      "next_action": "L1 기능 유지. 이전 분석 이름 정정.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/ip_socket_limiter_decrement.asm.txt"
+      ]
+    },
+    {
+      "id": "N24",
+      "status": "NOT_PORTED",
+      "status_ko": "원본 구조·정책 미이식",
+      "name": "MAC별 소켓 limiter",
+      "original": [
+        "0xa0ded4"
+      ],
+      "binary_facts": "실제 signature는 CSocketLimiter::DecUserSocketPerMAC(__int64).",
+      "current_sources": [
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOSocketFactory.java",
+          "line": 44,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOSocketFactory.java#L44"
+        }
+      ],
+      "current_facts": "현재 admission 경로에서 IP 예약만 확인된다. 이 core에는 원본 MAC limiter가 없다.",
+      "difference": "기존 account registry unregister라는 이름은 잘못됐다. L1 클라이언트의 식별 정보 전달 경로도 따로 확인해야 한다.",
+      "next_action": "서버만 임의로 추가하지 않음. 원본 정책 미이식으로 기록.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/mac_socket_limiter_decrement.asm.txt"
+      ]
+    },
+    {
+      "id": "N25",
+      "status": "NOT_PORTED",
+      "status_ko": "원본 구조·정책 미이식",
+      "name": "원본 2MiB pending write 허용 정책",
+      "original": [
+        "0x9ef5ca",
+        "0x9ef620"
+      ],
+      "binary_facts": "누적 pending write와 신규 길이를0x200000 기준으로 검사한다.",
+      "current_sources": [
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOUserSocket.java",
+          "line": 557,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOUserSocket.java#L557"
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOUserSocket.java",
+          "line": 562,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOUserSocket.java#L562"
+        },
+        {
+          "path": "native/cio_core.hpp",
+          "line": 14,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/cio_core.hpp#L14"
+        }
+      ],
+      "current_facts": "현재4MiB 상한과256KiB 수신 backpressure, 예약/물리 lease 제한.",
+      "difference": "원본 상수를 복사하지 않은 정책 차이. FIFO·부분 송신 구현 완료와 구분한다.",
+      "next_action": "L1 부하 측정 후 정책 선택. 미구현 송신으로 표현하지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/user_write_validity.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/user_write_capacity.asm.txt"
+      ]
+    },
+    {
+      "id": "N26",
+      "status": "NOT_PORTED",
+      "status_ko": "원본 구조·정책 미이식",
+      "name": "Server::ReportSocket 전체 peer 진단",
+      "original": [
+        "0x8b0bac",
+        "0x72e25d"
+      ],
+      "binary_facts": "원본 UI 명령에서 socket list를 retain snapshot하고 IP/socket별 보고 후 release.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 863,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L863"
+        },
+        {
+          "path": "native/CTransport.cpp",
+          "line": 812,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L812"
+        }
+      ],
+      "current_facts": "활성/retiring/누적 횟수 및 ID별 주소 조회. 원본 peer별 dump 함수는 없다.",
+      "difference": "운영 진단 기능 미이식. 네트워크 전송 결함은 아니다.",
+      "next_action": "필요 시 추가할 진단 범위로만 고정.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/manager_snapshot_b.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/wndproc_service_control.asm.txt"
+      ]
+    },
+    {
+      "id": "N27",
+      "status": "NOT_PORTED",
+      "status_ko": "원본 구조·정책 미이식",
+      "name": "원본 thread별 I/O 시간/lock stack 진단",
+      "original": [
+        "0x926e2c",
+        "0x926e54",
+        "0x705850",
+        "0x705924"
+      ],
+      "binary_facts": "callback 전후 시간 및 thread별 누적, lock stack 비정상 시 강제 진단.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 878,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L878"
+        }
+      ],
+      "current_facts": "pool/고갈/손상/close/timer count 진단. 원본 timing/lock stack 체계는 없다.",
+      "difference": "0x926e2c/54는 실제로 시간 측정이다. 이름만으로 전역 mutex라고 해석하면 안 된다.",
+      "next_action": "운영 진단 차이. 강제 접근 위반 정책은 의도적으로 이식하지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/callback_timing_enter.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/callback_timing_leave.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/io_worker_body.asm.txt"
+      ]
+    },
+    {
+      "id": "N28",
+      "status": "ADAPTED",
+      "status_ko": "L1·FFM 적용/정책 차이",
+      "name": "native 네트워크 deadline",
+      "original": [
+        "0xa0d164",
+        "0x925374"
+      ],
+      "binary_facts": "원본 TimerExpired에는 연결·L2 플레이어/과금 등 여러 분기가 섞여 있다.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 418,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L418"
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOUserSocket.java",
+          "line": 191,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOUserSocket.java#L191"
+        }
+      ],
+      "current_facts": "L1 login60초/partial·stall30초/grace만 native timer로 연결.",
+      "difference": "원본 CUserSocket::TimerExpired 전체 복원과 같지 않다. 네트워크 timer 연결은 이미 완료했다.",
+      "next_action": "L1 적용 완료. L2 게임 타이머를 추가 복원 명목으로 옮기지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/user_timer.asm.txt"
+      ]
+    },
+    {
+      "id": "N29",
+      "status": "UNVERIFIED",
+      "status_ko": "대조/검증 미완료",
+      "name": "전체 프로세스의 모든 정상/오류 종료 경로",
+      "original": [
+        "0x72f874",
+        "0x73029c",
+        "0x72d880"
+      ],
+      "binary_facts": "서비스 시작, WaitThread 무한 루프, CacheD/AuthD 실패 ExitProcess, 관리자 Shutdown/Report 경로 일부 확인.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 727,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L727"
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOServer.java",
+          "line": 192,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOServer.java#L192"
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/CTransportServer.java",
+          "line": 707,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CTransportServer.java#L707"
+        }
+      ],
+      "current_facts": "현재 서버 종료 coordinator→accept stop→connection close→native drain/join 및 예산 제한.",
+      "difference": "현재 stop은 구현/검사됐다. 원본 프로세스의 모든 UI·watchdog·서비스 실패 exit edge를 소진한 것은 아니다.",
+      "next_action": "미확인으로 유지. shutdown이 없다고 다시 분류하지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/service_main.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/service_entry.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/wndproc_service_control.asm.txt"
+      ]
+    },
+    {
+      "id": "N30",
+      "status": "UNVERIFIED",
+      "status_ko": "대조/검증 미완료",
+      "name": "CObjectMap variant27/28의 모든 소비자 의미",
+      "original": [
+        "0xa08498",
+        "0x97ec10",
+        "0xa08660",
+        "0x8951bc"
+      ],
+      "binary_facts": "같은 CUserSocket에 대해8192-bucket variant26/27/28이 별도로 존재하고 Insert/Delete/ExistKey 확인.",
+      "current_sources": [
+        {
+          "path": "src/l1j/server/server/model/network/core/CIOClient.java",
+          "line": 39,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CIOClient.java#L39"
+        }
+      ],
+      "current_facts": "L1 Java 계정/월드 연결 경계를 유지한다.",
+      "difference": "variant27/28의 모든 키 의미와 호출자를 이번에 완전히 추적하지 않았다. 이름만으로 로그인/계정 map이라 단정하지 않는다.",
+      "next_action": "의존성 미확인. 필요 경로를 먼저 증명해야 한다.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/user-object-maps.json"
+      ]
+    },
+    {
+      "id": "N31",
+      "status": "EXCLUDED",
+      "status_ko": "L2 게임/독립 기능 범위 제외",
+      "name": "L2 게임 opcode·월드·서비스 초기화",
+      "original": [
+        "0x72f874",
+        "0xa0d164"
+      ],
+      "binary_facts": "NpcSocket/UserSocket/추가 listener 및 CacheD/AuthD와 대량 L2 서비스 초기화.",
+      "current_sources": [
+        {
+          "path": "src/l1j/server/server/model/network/core/CUserSocketDispatch.java",
+          "line": 10,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/server/model/network/core/CUserSocketDispatch.java#L10"
+        },
+        {
+          "path": "src/l1j/server/Server.java",
+          "line": 85,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/Server.java#L85"
+        }
+      ],
+      "current_facts": "현재 L1 opcode·게임/DB·캐릭터·스레드 owner를 유지한다.",
+      "difference": "L2 game engine 및 외부 서버 topology 전체는 이식 대상과 구분해야 한다.",
+      "next_action": "네트워크 복원율 분모에 L2 전체 게임 함수를 섞지 않음.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/service_main.asm.txt",
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/service_listener_factory_a.asm.txt"
+      ]
+    },
+    {
+      "id": "N32",
+      "status": "UNVERIFIED",
+      "status_ko": "대조/검증 미완료",
+      "name": "실게임·운영 DB·장시간 동접 검증",
+      "original": [],
+      "binary_facts": "정적 바이너리 분석만으로 실게임 동작을 증명할 수 없다.",
+      "current_sources": [
+        {
+          "path": "native/CTransport.cpp",
+          "line": 74,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/native/CTransport.cpp#L74"
+        }
+      ],
+      "current_facts": "별도 Windows DLL/FFM/codec와 생산 socket lifetime 검사는 통과했지만 게임 의존성은 fixture.",
+      "difference": "실클라이언트·DB·동접 부하는 미검증. 복원 구조 누락과 다른 검증 항목이다.",
+      "next_action": "운영 환경 또는 동일 구성 시험 환경에서 검증.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/../WINDOWS_VERIFICATION.json"
+      ]
+    },
+    {
+      "id": "N33",
+      "status": "EXCLUDED",
+      "status_ko": "L2 게임/독립 기능 범위 제외",
+      "name": "독립 PSS 보존",
+      "original": [],
+      "binary_facts": "사용자가 독립 활성화를 유지하도록 지시했다.",
+      "current_sources": [
+        {
+          "path": "src/l1j/server/Server.java",
+          "line": 56,
+          "url": "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/network-audit/source/src/l1j/server/Server.java#L56"
+        }
+      ],
+      "current_facts": "PSS NIO2·활성화·클라이언트·설정 유지.",
+      "difference": "원본 L2 네트워크와 합치지 않는다.",
+      "next_action": "변경 없음으로 고정.",
+      "evidence": [
+        "https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/patches/ctransport_core_20261112/research/../logs/abi5-pss-preservation.log"
+      ]
+    }
+  ]
+}

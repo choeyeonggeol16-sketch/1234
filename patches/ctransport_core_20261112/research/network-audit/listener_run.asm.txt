@@ -1,0 +1,46 @@
+# listener_run; PE pdata/unwind; entry 0x8af8f4
+# chunk 0x8af8f4..0x8af9b0
+00000000008af8f4: push     rbx
+00000000008af8f6: push     rbp
+00000000008af8f7: push     rsi
+00000000008af8f8: push     rdi
+00000000008af8f9: push     r12
+00000000008af8fb: sub      rsp, 0x30
+00000000008af8ff: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000008af908: mov      r11, r8
+00000000008af90b: mov      edi, edx
+00000000008af90d: mov      rbx, rcx
+00000000008af910: mov      r10d, dword ptr [rip + 0x2ed0f8c1]
+00000000008af917: mov      rax, qword ptr gs:[0x58]
+00000000008af920: mov      r12d, 0x7d58
+00000000008af926: mov      rsi, qword ptr [rax + r10*8]
+00000000008af92a: movsxd   r10, dword ptr [rsi + r12]
+00000000008af92e: lea      rbp, [rip - 0x4af935]
+00000000008af935: movsxd   r8, dword ptr [rbp + r10*4 + 0x47e2a40]
+00000000008af93d: lea      eax, [r8 + 1]
+00000000008af941: mov      dword ptr [rbp + r10*4 + 0x47e2a40], eax
+00000000008af949: imul     r10, r10, 0x3e8
+00000000008af950: add      r10, r8
+00000000008af953: lea      rax, [rip + 0x47a5e6] ; UTF16 'void __cdecl Server::Run(int,struct IServerCallback *,bool,int,int)'
+00000000008af95a: mov      qword ptr [rbp + r10*8 + 0x47bf7c0], rax
+00000000008af962: mov      qword ptr [rcx + 0x90], r11
+00000000008af969: mov      byte ptr [rcx + 0x88], r9b
+00000000008af970: call     0x7066dc
+00000000008af975: test     eax, eax
+00000000008af977: je       0x8af991
+00000000008af979: mov      r9d, edi
+00000000008af97c: lea      r8, [rip + 0x47a59d]
+00000000008af983: xor      edx, edx
+00000000008af985: lea      rcx, [rip + 0xd671f14]
+00000000008af98c: call     0x73446c
+00000000008af991: mov      rax, qword ptr [rbx + 0x18]
+00000000008af995: mov      qword ptr [rbx + 0x38], rax
+00000000008af999: movsxd   rax, dword ptr [rsi + r12]
+00000000008af99d: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000008af9a5: add      rsp, 0x30
+00000000008af9a9: pop      r12
+00000000008af9ab: pop      rdi
+00000000008af9ac: pop      rsi
+00000000008af9ad: pop      rbp
+00000000008af9ae: pop      rbx
+00000000008af9af: ret

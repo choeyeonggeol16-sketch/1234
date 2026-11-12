@@ -1,0 +1,130 @@
+# x86_accept_53bed0; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x53bed0
+# chunk 0x53bed0..0x53c04c
+000000000053bed0: push     ebp
+000000000053bed1: mov      ebp, esp
+000000000053bed3: push     -1
+000000000053bed5: push     0x5afc40
+000000000053beda: mov      eax, dword ptr fs:[0]
+000000000053bee0: push     eax
+000000000053bee1: mov      dword ptr fs:[0], esp
+000000000053bee8: sub      esp, 0x28
+000000000053beeb: push     ebx
+000000000053beec: push     esi
+000000000053beed: push     edi
+000000000053beee: mov      dword ptr [ebp - 0x10], esp
+000000000053bef1: mov      esi, ecx
+000000000053bef3: mov      edx, dword ptr [esi + 0x10]
+000000000053bef6: lea      eax, [ebp - 0x14]
+000000000053bef9: push     eax
+000000000053befa: lea      ecx, [ebp - 0x34]
+000000000053befd: push     ecx
+000000000053befe: push     edx
+000000000053beff: mov      dword ptr [ebp - 4], 0
+000000000053bf06: mov      dword ptr [ebp - 0x14], 0x10
+000000000053bf0d: call     dword ptr [0x5b52f4] ; IAT accept
+000000000053bf13: cmp      eax, -1
+000000000053bf16: mov      dword ptr [ebp - 0x1c], eax
+000000000053bf19: jne      0x53bf53
+000000000053bf1b: mov      edi, dword ptr [0x5b52f8] ; IAT WSAGetLastError
+000000000053bf21: call     edi
+000000000053bf23: cmp      eax, 0x2733
+000000000053bf28: je       0x53bf40
+000000000053bf2a: cmp      dword ptr [esi + 0x10], -1
+000000000053bf2e: je       0x53bf40
+000000000053bf30: call     edi
+000000000053bf32: push     eax
+000000000053bf33: push     0x61dfcc
+000000000053bf38: call     0x539d50
+000000000053bf3d: add      esp, 8
+000000000053bf40: mov      ecx, dword ptr [ebp - 0xc]
+000000000053bf43: mov      dword ptr fs:[0], ecx
+000000000053bf4a: pop      edi
+000000000053bf4b: pop      esi
+000000000053bf4c: pop      ebx
+000000000053bf4d: mov      esp, ebp
+000000000053bf4f: pop      ebp
+000000000053bf50: ret      0xc
+000000000053bf53: push     0
+000000000053bf55: push     0
+000000000053bf57: mov      ecx, 0x174d0e34
+000000000053bf5c: xor      bl, bl
+000000000053bf5e: call     0x53dcb0
+000000000053bf63: lea      eax, [ebp - 0x30]
+000000000053bf66: push     eax
+000000000053bf67: lea      ecx, [ebp - 0x18]
+000000000053bf6a: push     ecx
+000000000053bf6b: mov      ecx, 0x18aa8180
+000000000053bf70: call     0x487f70
+000000000053bf75: mov      edi, dword ptr [ebp - 0x18]
+000000000053bf78: cmp      edi, dword ptr [0x18aa8184]
+000000000053bf7e: je       0x53bfaa
+000000000053bf80: call     dword ptr [0x5b5088] ; IAT GetTickCount
+000000000053bf86: sub      eax, dword ptr [edi + 0x10]
+000000000053bf89: cdq
+000000000053bf8a: mov      ecx, eax
+000000000053bf8c: xor      ecx, edx
+000000000053bf8e: sub      ecx, edx
+000000000053bf90: mov      eax, 0x10624dd3
+000000000053bf95: imul     ecx
+000000000053bf97: sar      edx, 6
+000000000053bf9a: mov      eax, edx
+000000000053bf9c: shr      eax, 0x1f
+000000000053bf9f: add      edx, eax
+000000000053bfa1: cmp      edx, dword ptr [0x1720c6d4]
+000000000053bfa7: setl     bl
+000000000053bfaa: push     0
+000000000053bfac: push     0
+000000000053bfae: mov      ecx, 0x174d0e34
+000000000053bfb3: call     0x53dd10
+000000000053bfb8: test     bl, bl
+000000000053bfba: je       0x53bff1
+000000000053bfbc: movzx    ecx, byte ptr [ebp - 0x2d]
+000000000053bfc0: movzx    edx, byte ptr [ebp - 0x2e]
+000000000053bfc4: movzx    eax, byte ptr [ebp - 0x2f]
+000000000053bfc8: push     ecx
+000000000053bfc9: movzx    ecx, byte ptr [ebp - 0x30]
+000000000053bfcd: push     edx
+000000000053bfce: push     eax
+000000000053bfcf: push     ecx
+000000000053bfd0: push     0x61df78
+000000000053bfd5: push     2
+000000000053bfd7: push     0x18aa81d8
+000000000053bfdc: call     0x53eee0
+000000000053bfe1: mov      eax, dword ptr [0x1720c6d8]
+000000000053bfe6: add      esp, 0x1c
+000000000053bfe9: test     eax, eax
+000000000053bfeb: jne      0x53bf40
+000000000053bff1: mov      edi, dword ptr [ebp - 0x1c]
+000000000053bff4: mov      edx, dword ptr [esi]
+000000000053bff6: lea      eax, [ebp - 0x34]
+000000000053bff9: push     eax
+000000000053bffa: push     edi
+000000000053bffb: mov      ecx, esi
+000000000053bffd: call     dword ptr [edx + 0x38]
+000000000053c000: test     eax, eax
+000000000053c002: jne      0x53c032
+000000000053c004: push     edi
+000000000053c005: call     dword ptr [0x5b52cc] ; IAT closesocket
+000000000053c00b: push     0x61df60
+000000000053c010: push     2
+000000000053c012: push     0x18aa81d8
+000000000053c017: call     0x53ee60
+000000000053c01c: add      esp, 0xc
+000000000053c01f: mov      ecx, dword ptr [ebp - 0xc]
+000000000053c022: mov      dword ptr fs:[0], ecx
+000000000053c029: pop      edi
+000000000053c02a: pop      esi
+000000000053c02b: pop      ebx
+000000000053c02c: mov      esp, ebp
+000000000053c02e: pop      ebp
+000000000053c02f: ret      0xc
+000000000053c032: mov      ecx, eax
+000000000053c034: call     0x539a80
+000000000053c039: mov      ecx, dword ptr [ebp - 0xc]
+000000000053c03c: pop      edi
+000000000053c03d: pop      esi
+000000000053c03e: mov      dword ptr fs:[0], ecx
+000000000053c045: pop      ebx
+000000000053c046: mov      esp, ebp
+000000000053c048: pop      ebp
+000000000053c049: ret      0xc

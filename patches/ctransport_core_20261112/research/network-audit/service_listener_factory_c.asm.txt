@@ -1,0 +1,19 @@
+# service_listener_factory_c; PE pdata/unwind; entry 0x722848
+# chunk 0x722848..0x722882
+0000000000722848: push     rbx
+000000000072284a: sub      rsp, 0x30
+000000000072284e: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000722857: mov      rbx, rcx
+000000000072285a: mov      ecx, 0x110
+000000000072285f: call     0x7227c8
+0000000000722864: mov      rcx, rax
+0000000000722867: mov      qword ptr [rsp + 0x48], rax
+000000000072286c: xor      eax, eax
+000000000072286e: cmp      rcx, rax
+0000000000722871: je       0x72287c
+0000000000722873: mov      rdx, rbx
+0000000000722876: call     0x8981fc
+000000000072287b: nop
+000000000072287c: add      rsp, 0x30
+0000000000722880: pop      rbx
+0000000000722881: ret

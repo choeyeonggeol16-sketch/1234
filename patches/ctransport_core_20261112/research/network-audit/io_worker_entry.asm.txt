@@ -1,0 +1,17 @@
+# io_worker_entry; PE pdata/unwind; entry 0x705a4c
+# chunk 0x705a4c..0x705a8f
+0000000000705a4c: sub      rsp, 0x28
+0000000000705a50: call     0x7056ac
+0000000000705a55: nop
+0000000000705a56: lea      r9, [rip + 0x56c7c3]
+0000000000705a5d: mov      r8d, 0xce
+0000000000705a63: lea      rdx, [rip + 0x56c20e]
+0000000000705a6a: lea      rcx, [rip + 0x54d4a7]
+0000000000705a71: call     0x66fda0
+0000000000705a76: lea      rcx, [rip + 0xd81be23]
+0000000000705a7d: call     0x732ab0
+0000000000705a82: mov      cl, 1
+0000000000705a84: call     0x66ffe0
+0000000000705a89: nop
+0000000000705a8a: add      rsp, 0x28
+0000000000705a8e: ret

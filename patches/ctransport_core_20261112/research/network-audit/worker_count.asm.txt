@@ -1,0 +1,14 @@
+# worker_count; PE pdata/unwind; entry 0x7044c4
+# chunk 0x7044c4..0x7044f8
+00000000007044c4: sub      rsp, 0x58
+00000000007044c8: lea      rcx, [rsp + 0x20]
+00000000007044cd: call     qword ptr [rip + 0x417d6d] ; IAT GetSystemInfo
+00000000007044d3: mov      r11d, dword ptr [rsp + 0x40]
+00000000007044d8: lea      rcx, [rip + 0x56d729]
+00000000007044df: lea      rax, [rsp + 0x60]
+00000000007044e4: cmp      r11d, 8
+00000000007044e8: mov      dword ptr [rsp + 0x60], r11d
+00000000007044ed: cmovg    rax, rcx
+00000000007044f1: mov      eax, dword ptr [rax]
+00000000007044f3: add      rsp, 0x58
+00000000007044f7: ret

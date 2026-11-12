@@ -1,0 +1,104 @@
+# x86_WSAEventSelect_53d740; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x53d740
+# chunk 0x53d740..0x53d87e
+000000000053d740: push     ebp
+000000000053d741: mov      ebp, esp
+000000000053d743: push     -1
+000000000053d745: push     0x5afcf0
+000000000053d74a: mov      eax, dword ptr fs:[0]
+000000000053d750: push     eax
+000000000053d751: mov      dword ptr fs:[0], esp
+000000000053d758: sub      esp, 0x1c
+000000000053d75b: push     ebx
+000000000053d75c: push     esi
+000000000053d75d: push     edi
+000000000053d75e: mov      dword ptr [ebp - 0x10], esp
+000000000053d761: push     0
+000000000053d763: push     1
+000000000053d765: push     2
+000000000053d767: mov      esi, ecx
+000000000053d769: mov      dword ptr [ebp - 4], 0
+000000000053d770: call     dword ptr [0x5b5300] ; IAT socket
+000000000053d776: cmp      eax, -1
+000000000053d779: mov      dword ptr [esi + 0x10], eax
+000000000053d77c: jne      0x53d7a7
+000000000053d77e: call     dword ptr [0x5b52f8] ; IAT WSAGetLastError
+000000000053d784: push     eax
+000000000053d785: push     0x61e3c4
+000000000053d78a: call     0x539d50
+000000000053d78f: add      esp, 8
+000000000053d792: xor      eax, eax
+000000000053d794: mov      ecx, dword ptr [ebp - 0xc]
+000000000053d797: mov      dword ptr fs:[0], ecx
+000000000053d79e: pop      edi
+000000000053d79f: pop      esi
+000000000053d7a0: pop      ebx
+000000000053d7a1: mov      esp, ebp
+000000000053d7a3: pop      ebp
+000000000053d7a4: ret      4
+000000000053d7a7: push     0
+000000000053d7a9: mov      word ptr [ebp - 0x28], 2
+000000000053d7af: call     dword ptr [0x5b52e4] ; IAT htonl
+000000000053d7b5: mov      edi, dword ptr [ebp + 8]
+000000000053d7b8: push     edi
+000000000053d7b9: mov      dword ptr [ebp - 0x24], eax
+000000000053d7bc: call     dword ptr [0x5b52dc] ; IAT htons
+000000000053d7c2: mov      ecx, dword ptr [esi + 0x10]
+000000000053d7c5: mov      word ptr [ebp - 0x26], ax
+000000000053d7c9: push     0x10
+000000000053d7cb: lea      eax, [ebp - 0x28]
+000000000053d7ce: push     eax
+000000000053d7cf: push     ecx
+000000000053d7d0: call     dword ptr [0x5b5318] ; IAT bind
+000000000053d7d6: test     eax, eax
+000000000053d7d8: je       0x53d7f7
+000000000053d7da: call     dword ptr [0x5b52f8] ; IAT WSAGetLastError
+000000000053d7e0: push     eax
+000000000053d7e1: push     0x61e3b4
+000000000053d7e6: call     0x539d50
+000000000053d7eb: add      esp, 8
+000000000053d7ee: mov      ecx, esi
+000000000053d7f0: call     0x539a20
+000000000053d7f5: jmp      0x53d792
+000000000053d7f7: mov      edx, dword ptr [esi + 0x10]
+000000000053d7fa: push     5
+000000000053d7fc: push     edx
+000000000053d7fd: call     dword ptr [0x5b52e8] ; IAT listen
+000000000053d803: test     eax, eax
+000000000053d805: je       0x53d827
+000000000053d807: call     dword ptr [0x5b52f8] ; IAT WSAGetLastError
+000000000053d80d: push     eax
+000000000053d80e: push     0x61e3a4
+000000000053d813: call     0x539d50
+000000000053d818: add      esp, 8
+000000000053d81b: mov      ecx, esi
+000000000053d81d: call     0x539a20
+000000000053d822: jmp      0x53d792
+000000000053d827: call     dword ptr [0x5b52ec] ; IAT WSACreateEvent
+000000000053d82d: push     8
+000000000053d82f: push     eax
+000000000053d830: mov      dword ptr [esi + 0x14], eax
+000000000053d833: mov      eax, dword ptr [esi + 0x10]
+000000000053d836: push     eax
+000000000053d837: call     dword ptr [0x5b52f0] ; IAT WSAEventSelect
+000000000053d83d: mov      ecx, dword ptr [esi + 0x14]
+000000000053d840: push     ecx
+000000000053d841: mov      ecx, esi
+000000000053d843: call     0x53d650
+000000000053d848: test     eax, eax
+000000000053d84a: jne      0x53d866
+000000000053d84c: push     edi
+000000000053d84d: push     0x61e384
+000000000053d852: call     0x539d50
+000000000053d857: add      esp, 8
+000000000053d85a: mov      ecx, esi
+000000000053d85c: call     0x539a20
+000000000053d861: jmp      0x53d792
+000000000053d866: mov      ecx, dword ptr [ebp - 0xc]
+000000000053d869: pop      edi
+000000000053d86a: pop      esi
+000000000053d86b: mov      eax, 1
+000000000053d870: mov      dword ptr fs:[0], ecx
+000000000053d877: pop      ebx
+000000000053d878: mov      esp, ebp
+000000000053d87a: pop      ebp
+000000000053d87b: ret      4

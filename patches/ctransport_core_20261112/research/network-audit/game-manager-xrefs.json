@@ -1,0 +1,21 @@
+{
+  "game_Server": "0x3047f20",
+  "references": [
+    {
+      "at": "0x72e256",
+      "function": "0x72d880"
+    },
+    {
+      "at": "0x72fefa",
+      "function": "0x72f874"
+    },
+    {
+      "at": "0xa12e65",
+      "function": "0xa12dec"
+    },
+    {
+      "at": "0xb04414",
+      "function": "0xb04410"
+    }
+  ]
+}

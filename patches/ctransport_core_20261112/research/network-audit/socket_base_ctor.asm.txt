@@ -1,0 +1,47 @@
+# socket_base_ctor; PE pdata/unwind; entry 0x90e548
+# chunk 0x90e548..0x90e642
+000000000090e548: push     rbx
+000000000090e54a: push     rdi
+000000000090e54b: sub      rsp, 0x28
+000000000090e54f: mov      rbx, rdx
+000000000090e552: mov      rdi, rcx
+000000000090e555: call     0x545030
+000000000090e55a: xor      edx, edx
+000000000090e55c: lea      r11, [rip + 0x45c625]
+000000000090e563: lea      rcx, [rdi + 0xdd]
+000000000090e56a: mov      qword ptr [rdi], r11
+000000000090e56d: lea      r8d, [rdx + 0x10]
+000000000090e571: mov      byte ptr [rdi + 0xdc], 0
+000000000090e578: call     0xab9430
+000000000090e57d: xor      edx, edx
+000000000090e57f: lea      rcx, [rdi + 0xee]
+000000000090e586: lea      r8d, [rdx + 0x10]
+000000000090e58a: mov      byte ptr [rdi + 0xed], 0
+000000000090e591: call     0xab9430
+000000000090e596: mov      rax, qword ptr gs:[0x58]
+000000000090e59f: mov      r11d, dword ptr [rip + 0x2ecb0c32]
+000000000090e5a6: mov      r8, qword ptr [rax + r11*8]
+000000000090e5aa: lea      r10, [rip - 0x50e5b1]
+000000000090e5b1: mov      r9d, 0x7d58
+000000000090e5b7: movsxd   rdx, dword ptr [r8 + r9]
+000000000090e5bb: movsxd   rcx, dword ptr [r10 + rdx*4 + 0x47e2a40]
+000000000090e5c3: lea      eax, [rcx + 1]
+000000000090e5c6: mov      dword ptr [r10 + rdx*4 + 0x47e2a40], eax
+000000000090e5ce: lea      rax, [rip + 0x45c54b] ; UTF16 '__cdecl CSocket::CSocket(unsigned __int64,int)'
+000000000090e5d5: imul     rdx, rdx, 0x3e8
+000000000090e5dc: add      rdx, rcx
+000000000090e5df: mov      qword ptr [r10 + rdx*8 + 0x47bf7c0], rax
+000000000090e5e7: mov      qword ptr [rdi + 0xb0], rbx
+000000000090e5ee: mov      dword ptr [rdi + 0xb8], 0
+000000000090e5f8: mov      dword ptr [rdi + 0xcc], 0
+000000000090e602: mov      qword ptr [rdi + 0xc0], 0
+000000000090e60d: mov      dword ptr [rdi + 0xd0], 0
+000000000090e617: mov      dword ptr [rdi + 0xd4], 0
+000000000090e621: mov      dword ptr [rdi + 0xd8], 0
+000000000090e62b: movsxd   rax, dword ptr [r8 + r9]
+000000000090e62f: add      dword ptr [r10 + rax*4 + 0x47e2a40], -1
+000000000090e638: mov      rax, rdi
+000000000090e63b: add      rsp, 0x28
+000000000090e63f: pop      rdi
+000000000090e640: pop      rbx
+000000000090e641: ret

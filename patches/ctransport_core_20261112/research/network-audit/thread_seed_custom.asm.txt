@@ -1,0 +1,28 @@
+# thread_seed_custom; PE pdata/unwind; entry 0xa22898
+# chunk 0xa22898..0xa22909
+0000000000a22898: push     rbx
+0000000000a2289a: mov      edx, dword ptr [rip + 0x2eb9c938]
+0000000000a228a0: mov      rax, qword ptr gs:[0x58]
+0000000000a228a9: mov      r11d, 1
+0000000000a228af: mov      r8, qword ptr [rax + rdx*8]
+0000000000a228b3: mov      ebx, 0x7d90
+0000000000a228b8: mov      r10d, 0xd710
+0000000000a228be: mov      qword ptr [r8 + rbx], rcx
+0000000000a228c2: mov      dword ptr [r10 + r8], r11d
+0000000000a228c6: mov      r9d, r11d
+0000000000a228c9: movsxd   rdx, r9d
+0000000000a228cc: add      r9d, r11d
+0000000000a228cf: lea      rax, [r8 + rdx*8]
+0000000000a228d3: mov      rcx, qword ptr [rax + rbx - 8]
+0000000000a228d8: shr      rcx, 0x3e
+0000000000a228dc: xor      rcx, qword ptr [rax + rbx - 8]
+0000000000a228e1: movabs   rax, 0x5851f42d4c957f2d
+0000000000a228eb: imul     rcx, rax
+0000000000a228ef: lea      rax, [r8 + rdx*8]
+0000000000a228f3: add      rcx, rdx
+0000000000a228f6: cmp      r9d, 0x138
+0000000000a228fd: mov      qword ptr [rax + rbx], rcx
+0000000000a22901: jl       0xa228c9
+0000000000a22903: mov      dword ptr [r10 + r8], r9d
+0000000000a22907: pop      rbx
+0000000000a22908: ret

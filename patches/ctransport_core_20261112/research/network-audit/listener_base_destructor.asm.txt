@@ -1,0 +1,34 @@
+# listener_base_destructor; PE pdata/unwind; entry 0x705480
+# chunk 0x705480..0x705508
+0000000000705480: push     rbx
+0000000000705482: push     rbp
+0000000000705483: push     rsi
+0000000000705484: push     rdi
+0000000000705485: sub      rsp, 0x28
+0000000000705489: mov      edx, dword ptr [rip + 0x2eeb9d49]
+000000000070548f: lea      rbp, [rip - 0x305496]
+0000000000705496: mov      rdi, rcx
+0000000000705499: lea      rax, [rip + 0x56cdf8]
+00000000007054a0: mov      esi, 0x7d58
+00000000007054a5: mov      qword ptr [rcx], rax
+00000000007054a8: mov      rax, qword ptr gs:[0x58]
+00000000007054b1: mov      rbx, qword ptr [rax + rdx*8]
+00000000007054b5: movsxd   rdx, dword ptr [rbx + rsi]
+00000000007054b9: movsxd   rcx, dword ptr [rbp + rdx*4 + 0x47e2a40]
+00000000007054c1: lea      eax, [rcx + 1]
+00000000007054c4: mov      dword ptr [rbp + rdx*4 + 0x47e2a40], eax
+00000000007054cb: lea      rax, [rip + 0x56d35e] ; UTF16 '__cdecl CIOServer::~CIOServer(void)'
+00000000007054d2: imul     rdx, rdx, 0x3e8
+00000000007054d9: add      rdx, rcx
+00000000007054dc: mov      rcx, rdi
+00000000007054df: mov      qword ptr [rbp + rdx*8 + 0x47bf7c0], rax
+00000000007054e7: call     0x704c7c
+00000000007054ec: movsxd   rax, dword ptr [rbx + rsi]
+00000000007054f0: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000007054f8: mov      rcx, rdi
+00000000007054fb: add      rsp, 0x28
+00000000007054ff: pop      rdi
+0000000000705500: pop      rsi
+0000000000705501: pop      rbp
+0000000000705502: pop      rbx
+0000000000705503: jmp      0x7d6d44

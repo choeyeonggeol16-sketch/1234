@@ -1,0 +1,155 @@
+# api_bind_456eb8; PE pdata/unwind; entry 0x456eb8
+# chunk 0x456eb8..0x457154
+0000000000456eb8: push     rbx
+0000000000456eba: push     rbp
+0000000000456ebb: push     rsi
+0000000000456ebc: push     rdi
+0000000000456ebd: push     r13
+0000000000456ebf: push     r14
+0000000000456ec1: sub      rsp, 0x68
+0000000000456ec5: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000456ece: mov      rsi, rcx
+0000000000456ed1: mov      edx, dword ptr [rip + 0x2f168301]
+0000000000456ed7: mov      rax, qword ptr gs:[0x58]
+0000000000456ee0: mov      edi, 0x7d58
+0000000000456ee5: mov      rbp, qword ptr [rax + rdx*8]
+0000000000456ee9: movsxd   r8, dword ptr [rdi + rbp]
+0000000000456eed: lea      r13, [rip - 0x56ef4]
+0000000000456ef4: movsxd   rdx, dword ptr [r13 + r8*4 + 0x47e2a40]
+0000000000456efc: lea      eax, [rdx + 1]
+0000000000456eff: mov      dword ptr [r13 + r8*4 + 0x47e2a40], eax
+0000000000456f07: imul     r8, r8, 0x3e8
+0000000000456f0e: add      r8, rdx
+0000000000456f11: lea      rax, [rip + 0x6fb438] ; UTF16 'bool __cdecl CAuthD::ConnectAuthD(void)'
+0000000000456f18: mov      qword ptr [r13 + r8*8 + 0x47bf7c0], rax
+0000000000456f20: xor      r8d, r8d
+0000000000456f23: lea      edx, [r8 + 1]
+0000000000456f27: lea      r14d, [r8 + 2]
+0000000000456f2b: mov      ecx, r14d
+0000000000456f2e: call     qword ptr [rip + 0x6c572c] ; IAT socket
+0000000000456f34: mov      rbx, rax
+0000000000456f37: mov      word ptr [rsp + 0x38], r14w
+0000000000456f3d: mov      dword ptr [rsp + 0x3c], 0
+0000000000456f45: mov      word ptr [rsp + 0x3a], 0
+0000000000456f4c: lea      r8d, [r14 + 0xe]
+0000000000456f50: lea      rdx, [rsp + 0x38]
+0000000000456f55: mov      rcx, rax
+0000000000456f58: call     qword ptr [rip + 0x6c56fa] ; IAT bind
+0000000000456f5e: cmp      eax, -1
+0000000000456f61: jne      0x456f8e
+0000000000456f63: lea      r8, [rip + 0x6fb396] ; UTF16 "Can't bind socket to auth server"
+0000000000456f6a: mov      edx, r14d
+0000000000456f6d: lea      rcx, [rip + 0xdaca92c]
+0000000000456f74: call     0x734514
+0000000000456f79: nop
+0000000000456f7a: movsxd   rax, dword ptr [rdi + rbp]
+0000000000456f7e: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+0000000000456f87: xor      al, al
+0000000000456f89: jmp      0x457147
+0000000000456f8e: mov      word ptr [rsp + 0x38], r14w
+0000000000456f94: mov      eax, dword ptr [rip + 0xebbb9a]
+0000000000456f9a: mov      dword ptr [rsp + 0x3c], eax
+0000000000456f9e: movzx    ecx, word ptr [rip + 0xebbb67]
+0000000000456fa5: call     qword ptr [rip + 0x6c56a5] ; IAT htons
+0000000000456fab: mov      word ptr [rsp + 0x3a], ax
+0000000000456fb0: mov      r8d, 0x10
+0000000000456fb6: lea      rdx, [rsp + 0x38]
+0000000000456fbb: mov      rcx, rbx
+0000000000456fbe: call     qword ptr [rip + 0x6c5744] ; IAT connect
+0000000000456fc4: cmp      eax, -1
+0000000000456fc7: jne      0x456ff4
+0000000000456fc9: lea      r8, [rip + 0x6fb2e8] ; UTF16 "Can't connect to auth server"
+0000000000456fd0: mov      edx, r14d
+0000000000456fd3: lea      rcx, [rip + 0xdaca8c6]
+0000000000456fda: call     0x734514
+0000000000456fdf: nop
+0000000000456fe0: movsxd   rax, dword ptr [rdi + rbp]
+0000000000456fe4: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+0000000000456fed: xor      al, al
+0000000000456fef: jmp      0x457147
+0000000000456ff4: lea      r8, [rip + 0x6fb285] ; UTF16 'Connected to auth server'
+0000000000456ffb: xor      edx, edx
+0000000000456ffd: lea      rcx, [rip + 0xdaca89c]
+0000000000457004: call     0x734514
+0000000000457009: cmp      qword ptr [rsi + 0x190350], 0
+0000000000457011: je       0x45705a
+0000000000457013: mov      ecx, 0xd0
+0000000000457018: call     0x456dc8
+000000000045701d: mov      qword ptr [rsp + 0xa8], rax
+0000000000457025: test     rax, rax
+0000000000457028: je       0x45703e
+000000000045702a: lea      r8, [rip + 0xb9787f]
+0000000000457031: mov      rdx, rbx
+0000000000457034: mov      rcx, rax
+0000000000457037: call     0x45eb60
+000000000045703c: jmp      0x457040
+000000000045703e: xor      eax, eax
+0000000000457040: mov      r8d, 0x11
+0000000000457046: mov      rdx, rax
+0000000000457049: lea      rcx, [rsi + 0x190350]
+0000000000457050: call     0x959adc
+0000000000457055: jmp      0x4570ec
+000000000045705a: mov      ecx, 0xd0
+000000000045705f: call     0x456dc8
+0000000000457064: mov      qword ptr [rsp + 0xa8], rax
+000000000045706c: test     rax, rax
+000000000045706f: je       0x457088
+0000000000457071: lea      r8, [rip + 0xb97838]
+0000000000457078: mov      rdx, rbx
+000000000045707b: mov      rcx, rax
+000000000045707e: call     0x45eb60
+0000000000457083: mov      rbx, rax
+0000000000457086: jmp      0x45708a
+0000000000457088: xor      ebx, ebx
+000000000045708a: mov      qword ptr [rsp + 0x48], rbx
+000000000045708f: mov      edi, 0x11
+0000000000457094: mov      dword ptr [rsp + 0x50], edi
+0000000000457098: test     rbx, rbx
+000000000045709b: je       0x4570b7
+000000000045709d: mov      rax, qword ptr [rbx]
+00000000004570a0: mov      r9d, edi
+00000000004570a3: mov      r8d, 0x94
+00000000004570a9: lea      rdx, [rip + 0x6d17b0]
+00000000004570b0: mov      rcx, rbx
+00000000004570b3: call     qword ptr [rax + 8]
+00000000004570b6: nop
+00000000004570b7: lea      rdx, [rsp + 0x48]
+00000000004570bc: lea      rcx, [rsi + 0x190350]
+00000000004570c3: call     0x456e94
+00000000004570c8: nop
+00000000004570c9: test     rbx, rbx
+00000000004570cc: je       0x4570ec
+00000000004570ce: mov      rax, qword ptr [rbx]
+00000000004570d1: mov      byte ptr [rsp + 0x20], 0
+00000000004570d6: mov      r9d, edi
+00000000004570d9: mov      r8d, 0x83
+00000000004570df: lea      rdx, [rip + 0x6d177a]
+00000000004570e6: mov      rcx, rbx
+00000000004570e9: call     qword ptr [rax + 0x10]
+00000000004570ec: cmp      qword ptr [rsi + 0x190350], 0
+00000000004570f4: jne      0x457125
+00000000004570f6: mov      dword ptr [rsp + 0x20], 0x73
+00000000004570fe: lea      r9, [rip + 0x6d175b]
+0000000000457105: lea      r8, [rip + 0x6d1724]
+000000000045710c: mov      edx, r14d
+000000000045710f: lea      rcx, [rip + 0xdaca78a]
+0000000000457116: call     0x73446c
+000000000045711b: xor      edx, edx
+000000000045711d: mov      ecx, r14d
+0000000000457120: call     0x6704e0
+0000000000457125: mov      rcx, qword ptr [rsi + 0x190350]
+000000000045712c: mov      rdx, qword ptr [rcx]
+000000000045712f: call     qword ptr [rdx + 0x60]
+0000000000457132: nop
+0000000000457133: mov      ecx, 0x7d58
+0000000000457138: movsxd   rcx, dword ptr [rcx + rbp]
+000000000045713c: add      dword ptr [r13 + rcx*4 + 0x47e2a40], -1
+0000000000457145: mov      al, 1
+0000000000457147: add      rsp, 0x68
+000000000045714b: pop      r14
+000000000045714d: pop      r13
+000000000045714f: pop      rdi
+0000000000457150: pop      rsi
+0000000000457151: pop      rbp
+0000000000457152: pop      rbx
+0000000000457153: ret

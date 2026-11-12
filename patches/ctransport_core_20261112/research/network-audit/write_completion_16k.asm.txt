@@ -1,0 +1,133 @@
+# write_completion_16k; PE pdata/unwind; entry 0x545e38
+# chunk 0x545e38..0x5460b8
+0000000000545e38: push     rbx
+0000000000545e3a: push     rbp
+0000000000545e3b: push     rsi
+0000000000545e3c: push     rdi
+0000000000545e3d: sub      rsp, 0x58
+0000000000545e41: mov      rax, qword ptr [rcx + 0xa0]
+0000000000545e48: mov      rbx, rcx
+0000000000545e4b: mov      ecx, dword ptr [rax + 0x4010]
+0000000000545e51: cmp      rdx, rcx
+0000000000545e54: je       0x545eee
+0000000000545e5a: mov      r9, qword ptr [rbx + 0x18]
+0000000000545e5e: mov      dword ptr [rsp + 0x30], ecx
+0000000000545e62: mov      qword ptr [rsp + 0x28], rdx
+0000000000545e67: lea      rcx, [rip + 0xd9dba32]
+0000000000545e6e: lea      r8, [rip + 0x60f40b]
+0000000000545e75: mov      edx, 2
+0000000000545e7a: mov      qword ptr [rsp + 0x20], rbx
+0000000000545e7f: call     0x73446c
+0000000000545e84: xor      edi, edi
+0000000000545e86: mov      rsi, rdi
+0000000000545e89: mov      rax, qword ptr [rbx + 0xa0]
+0000000000545e90: lea      r8, [rip + 0x60f3d9] ; UTF16 '[%x]'
+0000000000545e97: lea      rcx, [rip + 0xd9dba02]
+0000000000545e9e: movsx    r9d, byte ptr [rsi + rax]
+0000000000545ea3: mov      edx, 2
+0000000000545ea8: call     0x734514
+0000000000545ead: add      rsi, 1
+0000000000545eb1: cmp      rsi, 0x10
+0000000000545eb5: jl       0x545e89
+0000000000545eb7: mov      rax, qword ptr [rbx + 0xa0]
+0000000000545ebe: lea      r8, [rip + 0x60f3ab] ; UTF16 '[%x]'
+0000000000545ec5: lea      rcx, [rip + 0xd9db9d4]
+0000000000545ecc: movsx    r9d, byte ptr [rdi + rax + 0x4024]
+0000000000545ed5: mov      edx, 2
+0000000000545eda: call     0x734514
+0000000000545edf: add      rdi, 1
+0000000000545ee3: cmp      rdi, 0x10
+0000000000545ee7: jl       0x545eb7
+0000000000545ee9: jmp      0x5460af
+0000000000545eee: sub      dword ptr [rbx + 0x20], ecx
+0000000000545ef1: mov      ecx, dword ptr [rax + 0x4010]
+0000000000545ef7: neg      ecx
+0000000000545ef9: lock xadd dword ptr [rip + 0x470b077], ecx
+0000000000545f01: mov      rsi, qword ptr [rbx + 0xa0]
+0000000000545f08: xor      edi, edi
+0000000000545f0a: mov      rcx, qword ptr [rsi + 0x4018]
+0000000000545f11: cmp      rcx, rdi
+0000000000545f14: mov      qword ptr [rbx + 0xa0], rcx
+0000000000545f1b: je       0x546077
+0000000000545f21: mov      eax, dword ptr [rcx + 0x4010]
+0000000000545f27: lea      r9d, [rdi + 3]
+0000000000545f2b: lea      rdx, [rip + 0x60e86e]
+0000000000545f32: mov      dword ptr [rsp + 0x40], eax
+0000000000545f36: lea      rax, [rcx + 0x10]
+0000000000545f3a: mov      r8d, 0x36d
+0000000000545f40: mov      qword ptr [rsp + 0x48], rax
+0000000000545f45: mov      rax, qword ptr [rbx]
+0000000000545f48: mov      rcx, rbx
+0000000000545f4b: call     qword ptr [rax + 8]
+0000000000545f4e: mov      rax, qword ptr [rbx + 0xa0]
+0000000000545f55: mov      dword ptr [rsp + 0x80], edi
+0000000000545f5c: mov      ecx, dword ptr [rax + 0x4010]
+0000000000545f62: lock xadd qword ptr [rip + 0x470afcd], rcx
+0000000000545f6b: lock add qword ptr [rip + 0x470afd4], 1
+0000000000545f74: mov      rax, qword ptr [rbx + 0xa0]
+0000000000545f7b: mov      ecx, dword ptr [rax + 0x4010]
+0000000000545f81: cmp      ecx, 0x1b58
+0000000000545f87: jbe      0x545f9e
+0000000000545f89: mov      rax, rcx
+0000000000545f8c: lock xadd qword ptr [rip + 0x470afc3], rax
+0000000000545f95: lock add qword ptr [rip + 0x470afca], 1
+0000000000545f9e: mov      rcx, qword ptr [rbx + 0x18]
+0000000000545fa2: lea      rax, [rbx + 0x78]
+0000000000545fa6: mov      qword ptr [rsp + 0x30], rdi
+0000000000545fab: mov      qword ptr [rsp + 0x28], rax
+0000000000545fb0: lea      r9, [rsp + 0x80]
+0000000000545fb8: lea      rdx, [rsp + 0x40]
+0000000000545fbd: mov      r8d, 1
+0000000000545fc3: mov      dword ptr [rsp + 0x20], edi
+0000000000545fc7: call     qword ptr [rip + 0x5d66b3] ; IAT WSASend
+0000000000545fcd: cmp      eax, edi
+0000000000545fcf: je       0x54607e
+0000000000545fd5: call     qword ptr [rip + 0x5d619d] ; IAT GetLastError
+0000000000545fdb: cmp      eax, 0x3e5
+0000000000545fe0: je       0x54607e
+0000000000545fe6: call     qword ptr [rip + 0x5d618c] ; IAT GetLastError
+0000000000545fec: cmp      eax, 0x2736
+0000000000545ff1: mov      ebp, eax
+0000000000545ff3: je       0x546028
+0000000000545ff5: cmp      eax, 0x2746
+0000000000545ffa: je       0x546028
+0000000000545ffc: cmp      eax, 0x2745
+0000000000546001: je       0x546028
+0000000000546003: mov      r9, qword ptr [rbx + 0x18]
+0000000000546007: mov      dword ptr [rsp + 0x28], eax
+000000000054600b: lea      r8, [rip + 0x60f236]
+0000000000546012: lea      rcx, [rip + 0xd9db887]
+0000000000546019: mov      edx, 2
+000000000054601e: mov      qword ptr [rsp + 0x20], rbx
+0000000000546023: call     0x73446c
+0000000000546028: lea      r9, [rip + 0x5eecf1] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\ioc.h'
+000000000054602f: lea      r8, [rip + 0x60f19a] ; UTF16 '[%s][%d] CIOSocket::WriteCallback - WSASend fail. error(%d)'
+0000000000546036: lea      rcx, [rip + 0xd9db863]
+000000000054603d: mov      edx, 2
+0000000000546042: mov      dword ptr [rsp + 0x28], ebp
+0000000000546046: mov      dword ptr [rsp + 0x20], 0x389
+000000000054604e: call     0x734514
+0000000000546053: mov      r11, qword ptr [rbx]
+0000000000546056: lea      rdx, [rip + 0x60e743]
+000000000054605d: mov      r9d, 3
+0000000000546063: mov      r8d, 0x38a
+0000000000546069: mov      rcx, rbx
+000000000054606c: mov      byte ptr [rsp + 0x20], dil
+0000000000546071: call     qword ptr [r11 + 0x10]
+0000000000546075: jmp      0x54607e
+0000000000546077: mov      qword ptr [rbx + 0xa8], rdi
+000000000054607e: lock add dword ptr [rsi + 0x4020], -1
+0000000000546086: jne      0x5460af
+0000000000546088: movsxd   rcx, dword ptr [rsi + 0x4034]
+000000000054608f: lea      rax, [rip + 0x470aeea]
+0000000000546096: mov      dword ptr [rsi + 0x4010], edi
+000000000054609c: mov      qword ptr [rsi + 0x4018], rdi
+00000000005460a3: mov      rcx, qword ptr [rax + rcx*8]
+00000000005460a7: mov      rdx, rsi
+00000000005460aa: call     0x41c6f8
+00000000005460af: add      rsp, 0x58
+00000000005460b3: pop      rdi
+00000000005460b4: pop      rsi
+00000000005460b5: pop      rbp
+00000000005460b6: pop      rbx
+00000000005460b7: ret

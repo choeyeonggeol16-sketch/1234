@@ -1,0 +1,227 @@
+{
+  "Server": {
+    "address": "0xd2a5f8",
+    "entries": [
+      {
+        "slot": 0,
+        "offset": "0x0",
+        "target": "0x8b1014"
+      },
+      {
+        "slot": 1,
+        "offset": "0x8",
+        "target": "0x7d6d50"
+      },
+      {
+        "slot": 2,
+        "offset": "0x10",
+        "target": "0x7d6eb4"
+      },
+      {
+        "slot": 3,
+        "offset": "0x18",
+        "target": "0x56daa8"
+      },
+      {
+        "slot": 4,
+        "offset": "0x20",
+        "target": "0x56daa8"
+      },
+      {
+        "slot": 5,
+        "offset": "0x28",
+        "target": "0x404c88"
+      },
+      {
+        "slot": 6,
+        "offset": "0x30",
+        "target": "0x56daa8"
+      },
+      {
+        "slot": 7,
+        "offset": "0x38",
+        "target": "0x404c94"
+      },
+      {
+        "slot": 8,
+        "offset": "0x40",
+        "target": "0x704248"
+      },
+      {
+        "slot": 9,
+        "offset": "0x48",
+        "target": "0x704d1c"
+      },
+      {
+        "slot": 10,
+        "offset": "0x50",
+        "target": "0x705508"
+      },
+      {
+        "slot": 11,
+        "offset": "0x58",
+        "target": "0x404ca0"
+      },
+      {
+        "slot": 12,
+        "offset": "0x60",
+        "target": "0x8b0738"
+      },
+      {
+        "slot": 13,
+        "offset": "0x68",
+        "target": "0x8b04fc"
+      },
+      {
+        "slot": 14,
+        "offset": "0x70",
+        "target": "0x8b0404"
+      },
+      {
+        "slot": 15,
+        "offset": "0x78",
+        "target": "0x8b0954"
+      }
+    ]
+  },
+  "CUserSocket": {
+    "address": "0xdc1c18",
+    "entries": [
+      {
+        "slot": 0,
+        "offset": "0x0",
+        "target": "0xa017a0"
+      },
+      {
+        "slot": 1,
+        "offset": "0x8",
+        "target": "0x9f773c"
+      },
+      {
+        "slot": 2,
+        "offset": "0x10",
+        "target": "0x9f7770"
+      },
+      {
+        "slot": 3,
+        "offset": "0x18",
+        "target": "0x9f7998"
+      },
+      {
+        "slot": 4,
+        "offset": "0x20",
+        "target": "0xa0d164"
+      },
+      {
+        "slot": 5,
+        "offset": "0x28",
+        "target": "0x404c88"
+      },
+      {
+        "slot": 6,
+        "offset": "0x30",
+        "target": "0x56daa8"
+      },
+      {
+        "slot": 7,
+        "offset": "0x38",
+        "target": "0x404c94"
+      },
+      {
+        "slot": 8,
+        "offset": "0x40",
+        "target": "0x704248"
+      },
+      {
+        "slot": 9,
+        "offset": "0x48",
+        "target": "0x56daa8"
+      },
+      {
+        "slot": 10,
+        "offset": "0x50",
+        "target": "0x54655c"
+      },
+      {
+        "slot": 11,
+        "offset": "0x58",
+        "target": "0x404ca0"
+      },
+      {
+        "slot": 12,
+        "offset": "0x60",
+        "target": "0x545260"
+      },
+      {
+        "slot": 13,
+        "offset": "0x68",
+        "target": "0x545398"
+      },
+      {
+        "slot": 14,
+        "offset": "0x70",
+        "target": "0x9ef544"
+      },
+      {
+        "slot": 15,
+        "offset": "0x78",
+        "target": "0x9ef620"
+      },
+      {
+        "slot": 16,
+        "offset": "0x80",
+        "target": "0x90df94"
+      },
+      {
+        "slot": 17,
+        "offset": "0x88",
+        "target": "0x90ee9c"
+      },
+      {
+        "slot": 18,
+        "offset": "0x90",
+        "target": "0x545178"
+      },
+      {
+        "slot": 19,
+        "offset": "0x98",
+        "target": "0xa12dec"
+      },
+      {
+        "slot": 20,
+        "offset": "0xa0",
+        "target": "0xa0372c"
+      },
+      {
+        "slot": 21,
+        "offset": "0xa8",
+        "target": "0x90dec0"
+      },
+      {
+        "slot": 22,
+        "offset": "0xb0",
+        "target": "0x90df28"
+      },
+      {
+        "slot": 23,
+        "offset": "0xb8",
+        "target": "0x9f8080"
+      }
+    ]
+  },
+  "IServerCallbackAdapter": {
+    "address": "0xd29ee8",
+    "entries": [
+      {
+        "slot": 0,
+        "offset": "0x0",
+        "target": "0x8af8c0"
+      },
+      {
+        "slot": 1,
+        "offset": "0x8",
+        "target": "0x8af8e8"
+      }
+    ]
+  }
+}

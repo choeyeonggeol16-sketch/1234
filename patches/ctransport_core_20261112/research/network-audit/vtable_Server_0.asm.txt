@@ -1,0 +1,17 @@
+# vtable_Server_0; PE pdata/unwind; entry 0x8b1014
+# chunk 0x8b1014..0x8b103c
+00000000008b1014: push     rbx
+00000000008b1016: push     rdi
+00000000008b1017: sub      rsp, 0x28
+00000000008b101b: mov      ebx, edx
+00000000008b101d: mov      rdi, rcx
+00000000008b1020: call     0x8b0e54
+00000000008b1025: test     bl, 1
+00000000008b1028: je       0x8b1032
+00000000008b102a: mov      rcx, rdi
+00000000008b102d: call     0x401f3c
+00000000008b1032: mov      rax, rdi
+00000000008b1035: add      rsp, 0x28
+00000000008b1039: pop      rdi
+00000000008b103a: pop      rbx
+00000000008b103b: ret
