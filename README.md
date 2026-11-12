@@ -4,13 +4,15 @@
 
 PSS 전용 포트·NIO2 그룹2개 스레드·만료 스레드1개를 복구하고 서버 시작 시 별도로 활성화합니다. 토큰 등록과 전용 채널 OPEN을 복구했으며 게임 연결의 설정창 명령을 사용하지 않습니다. 게임은 기존 CTransport.dll ABI3를 유지하고 PSS 기동/종료 실패와 분리합니다. 실제 게임 클라이언트·운영 DB 부하는 별도 검증 대상입니다.
 
+[기존 독립 연결용 PSS 클라이언트](downloads/PSS_Independent_Original_Client_20261112.zip)는 원본 DLL·소스를 그대로 담았습니다. 이미 해당 클라이언트를 사용한다면 유지합니다. 기존 Pss2019.ini 설정을 보존합니다.
+
 ---
 
 ## 2026-11-12 — CTransport ABI3: 종료 훅·사전 할당·원본 작업 분배
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [구현·근거·적용 안내](reports/CTRANSPORT_CORE_20261112.md)
 
-종료 전 훅/활성 등록 해제, 연속 slab 사전 할당, 등록 스레드 소유권,100개 직접 실행+101번째 재게시,1,000개 단위 timer block과32-byte heap을 반영했습니다. 공유 RX/COW·128배치·50ms/200칸 휠도 유지합니다. 게임 접속과 PSS UI 연결 모두 같은 DLL을 필수 사용합니다. 기존 전송 엔진 선택/NIO2 경로는 제거했습니다. 실제 게임 클라이언트·운영 DB 부하는 별도 검증 대상입니다.
+종료 전 훅/활성 등록 해제, 연속 slab 사전 할당, 등록 스레드 소유권,100개 직접 실행+101번째 재게시,1,000개 단위 timer block과32-byte heap을 반영했습니다. 공유 RX/COW·128배치·50ms/200칸 휠도 유지합니다. 당시 게임과 PSS를 같은 DLL로 통합했던 기록입니다. 현재 PSS는 위 복구본에서 독립 연결로 되돌렸으며 게임만 해당 DLL을 필수 사용합니다. 실제 게임 클라이언트·운영 DB 부하는 별도 검증 대상입니다.
 
 최종 ABI3 실제 Windows DLL·생산 FFM/게임 소켓·PSS·1,000개 timer 검사 통과: [실행 기록](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43246944182).
 
@@ -20,7 +22,7 @@ PSS 전용 포트·NIO2 그룹2개 스레드·만료 스레드1개를 복구하�
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [구현·근거·적용 안내](reports/CTRANSPORT_CORE_20261112.md)
 
-스레드별8K/16K 원형 풀, 공유 RX/COW,128배치, 작업 큐와50ms/200칸 타이머 휠을 구현했습니다. 게임 접속과 PSS UI 연결 모두 같은 DLL을 필수 사용합니다. 기존 전송 엔진 선택/NIO2 경로는 제거했습니다. 실제 게임 클라이언트·운영 DB 부하는 별도 검증 대상입니다.
+스레드별8K/16K 원형 풀, 공유 RX/COW,128배치, 작업 큐와50ms/200칸 타이머 휠을 구현했습니다. 당시 게임과 PSS를 같은 DLL로 통합했던 기록입니다. 현재 PSS는 위 복구본에서 독립 연결로 되돌렸으며 게임만 해당 DLL을 필수 사용합니다. 실제 게임 클라이언트·운영 DB 부하는 별도 검증 대상입니다.
 
 실제 Windows Server2025/JDK21에서 배포 DLL·생산 FFM/게임 소켓·PSS 검사 통과: [실행 기록](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43234341462).
 

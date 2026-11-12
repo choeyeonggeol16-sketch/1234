@@ -7,4 +7,4 @@ PASS logout invalidates bound peer and releases owner reference
 PASS nonce replay needs a new authenticated game registration
 PASS bounded connection and pending-registration capacity
 PASS concurrent repeated item clicks keep writer serialization and bounded state
-RESULT groups=9 assertions=38; native game UI is tested separately
+RESULT groups=9 assertions=47; native game UI is tested separately

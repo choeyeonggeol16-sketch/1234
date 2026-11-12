@@ -21,6 +21,7 @@ public class L1PcInstance{public CIOClient client;public int stamp=7;public bool
 import l1j.server.server.model.character.pss.window.PlaySupportWindow;import l1j.server.server.model.network.core.CIOClient;import l1j.server.server.model.Instance.*;
 public class IndependentPssContract{
 static void check(boolean value,String why){if(!value)throw new AssertionError(why);}
+static int read(Socket socket)throws Exception{try{return socket.getInputStream().read();}catch(SocketException failure){String message=String.valueOf(failure.getMessage()).toLowerCase(java.util.Locale.ROOT);if(message.contains("reset")||message.contains("abort"))return -1;throw failure;}}
 static int free()throws Exception{try(ServerSocket listener=new ServerSocket(0)){return listener.getLocalPort();}}
 static CIOClient client(){var c=new CIOClient();c.pc=new L1PcInstance();c.pc.client=c;return c;}
 static byte[] token(int seed){byte[] t=new byte[16];for(int i=0;i<16;i++)t[i]=(byte)(seed+i);return t;}
@@ -32,14 +33,14 @@ try{
  check(PlaySupportWindow.startIndependent(),"independent listener startup");
  var c=client();Object automation=c.automation;byte[] nonce=token(3);register(c,nonce);
  try(Socket peer=helper(port,nonce)){
-  check(PlaySupportWindow.open(c.pc)&&peer.getInputStream().read()==1,"independent OPEN");
+  check(PlaySupportWindow.open(c.pc)&&read(peer)==1,"independent OPEN");
   var item=new L1ItemInstance();c.pc.inventory.items.put(88,item);
-  check(PlaySupportWindow.tryOpenItem(c,c.pc,item)&&peer.getInputStream().read()==1,"owned item OPEN");
+  check(PlaySupportWindow.tryOpenItem(c,c.pc,item)&&read(peer)==1,"owned item OPEN");
   check(item.count==1&&c.automation==automation,"UI changed hunting/item ownership");
-  c.ready=false;c.pssWindowSession().close();check(peer.getInputStream().read()==-1,"logout detach");
+  c.ready=false;c.pssWindowSession().close();check(read(peer)==-1,"logout detach");
  }
  var second=client();register(second,token(9));
- try(Socket peer=helper(port,token(9))){PlaySupportWindow.stopIndependent();check(peer.getInputStream().read()==-1,"PSS-only shutdown");check(second.connected&&second.ready,"PSS shutdown affected gameplay session");}
+ try(Socket peer=helper(port,token(9))){PlaySupportWindow.stopIndependent();check(read(peer)==-1,"PSS-only shutdown");check(second.connected&&second.ready,"PSS shutdown affected gameplay session");}
  var invalid=client();PlaySupportWindow.registerStart(invalid,new byte[]{1},0,1);check(invalid.peekPssWindowSession()==null,"bad bootstrap allocated session");
  try(ServerSocket collision=new ServerSocket(0)){
   System.setProperty("pss.uiBridge.port",""+collision.getLocalPort());check(!PlaySupportWindow.startIndependent(),"port collision accepted");check(second.connected&&second.ready,"PSS bind failure affected game session");

@@ -10,6 +10,7 @@
 - Server.startLoginServer에서 PSS를 먼저 별도 활성화합니다. 기본 GAME_SERVER_PORT+1, pss.uiBridge.port 지정 가능, 게임 포트 재사용 거절. PSS 포트 bind 실패는 로그로 분리하고 게임 기동은 계속합니다.
 - 게임 listener 종료와 PSS listener 종료는 별개입니다. PSS stopIndependent는 게임을 종료하지 않으며 프로세스 종료 hook에서 독립 자원을 정리합니다.
 - CTransport.dll/C++/게임 FFM 코드는 변경하지 않았습니다. 게임 native IOCP8 workers/풀/타이머 구조 그대로입니다. PSS만 예외로 독립 NIO2를 사용하며 게임 engine fallback은 없습니다.
+- 직전 전체 src와 비교한 변경 파일은 Server.java, PlaySupportWindow.java, PssWindowTransport.java 3개뿐입니다. 삭제 파일은 없습니다.
 
 ## 클라이언트
 
