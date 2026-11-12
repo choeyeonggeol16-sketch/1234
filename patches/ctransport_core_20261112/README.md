@@ -8,3 +8,5 @@ L2 바이너리에서 확인한 이벤트 기반 접속 수락과 native 클래�
 4. PSS 독립 연결·활성화·클라이언트를 유지합니다. 추가 SQL은 없습니다.
 
 원본 근거·클래스 역할·L1 이식 차이는 REPORT_ORIGINAL_NETWORK_ABI6.md, 최신 Windows 실행 결과는 WINDOWS_VERIFICATION.json에 있습니다. MAC은 신뢰할 식별자를 전달하는 연결이 필요합니다. 실게임·운영 DB·장시간 동접·비교 성능은 미검증입니다. ABI5 보고서는 당시 구현의 감사 이력입니다.
+
+실제 ABI6 Windows Server2022/Temurin21 검사가 통과했다: [실행43323490468](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43323490468), 검사 소스 `52294c65e76e4cb9b44dcbea574c575a1dbf6977`. 최종 묶음은 이 소스·DLL과 동일하며 이후 커밋은 검증 기록을 추가한다.

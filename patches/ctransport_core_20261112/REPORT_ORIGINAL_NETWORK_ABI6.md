@@ -77,3 +77,5 @@ DLL 이름은 요청한 `CTransport.dll`을 유지했다. 기존 C ABI/FFM 함�
 - 실제 Windows 실행 결과와 테스트 커밋/해시는 `WINDOWS_VERIFICATION.json`을 따른다. ABI5 이력은 ABI6 성공으로 사용하지 않는다. 실게임 클라이언트·운영 DB·장시간 동접·NIO2 대비 성능은 미검증이다.
 
 전체 src ZIP과 core ZIP의 DLL을 함께 적용하고 clean build한다. 부분 적용은 `changed-files.txt`와 `deleted-files.txt`를 모두 반영해야 한다. 이전 이름의 소스/클래스 파일을 남기지 않는다. 기존 L1 codec DLL, PSS 클라이언트/설정 및 Java21 preview/native-access 실행 옵션을 유지한다.
+
+실제 ABI6 Windows Server2022/Temurin21 검사가 통과했다: [실행43323490468](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43323490468), 검사 소스 `52294c65e76e4cb9b44dcbea574c575a1dbf6977`. 최종 묶음은 이 소스·DLL과 동일하며 이후 커밋은 검증 기록을 추가한다.

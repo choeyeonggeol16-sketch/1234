@@ -2,7 +2,7 @@
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**같은 버전 DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**원본 대조·변경 보고서**](reports/CTRANSPORT_ORIGINAL_STRUCTURE_ABI6_20261112.md)
 
-ListenThread17·FD_ACCEPT·RegisterWait64·IOCP accept/factory/Add/Initialize, 실제 native Server/소켓 계층, 보조 색인·IP/MAC 제한·직렬 실행·운영 진단을 반영했습니다. Java 타입명도 정리했습니다. src와 DLL ABI0x60000을 함께 적용하고 clean build합니다. PSS 독립 연결·활성화·클라이언트는 유지합니다. MAC은 신뢰할 식별자 공급 연결이 필요합니다. Windows 결과는 [검증 기록](patches/ctransport_core_20261112/WINDOWS_VERIFICATION.json)을 확인하세요. 실게임/DB/장시간 부하는 미검증입니다.
+ListenThread17·FD_ACCEPT·RegisterWait64·IOCP accept/factory/Add/Initialize, 실제 native Server/소켓 계층, 보조 색인·IP/MAC 제한·직렬 실행·운영 진단을 반영했습니다. Java 타입명도 정리했습니다. src와 DLL ABI0x60000을 함께 적용하고 clean build합니다. PSS 독립 연결·활성화·클라이언트는 유지합니다. MAC은 신뢰할 식별자 공급 연결이 필요합니다. Windows Server2022/Java21 실제 검사 통과([실행43323490468](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43323490468)). [검증 기록](patches/ctransport_core_20261112/WINDOWS_VERIFICATION.json)에 검사 커밋과 파일 해시를 고정했습니다. 실게임/DB/장시간 부하는 미검증입니다.
 
 이하 ABI5 감사·검사 기록은 당시 구현에 대한 이력입니다. 최신 상태는 위 ABI6 보고서 기준입니다.
 
