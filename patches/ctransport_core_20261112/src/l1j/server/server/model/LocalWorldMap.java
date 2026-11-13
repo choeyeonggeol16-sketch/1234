@@ -991,7 +991,7 @@ public final class LocalWorldMap {
 
         return false;
     }
-    
+
     // Per-completion-thread scratch: same non-owning, non-reentrant return contract
     // as the old owner-local queryNearbyScratch, without a CIO shard binding.
     public List<L1Object> queryNearbyReusable(L1Object origin, int radius) {

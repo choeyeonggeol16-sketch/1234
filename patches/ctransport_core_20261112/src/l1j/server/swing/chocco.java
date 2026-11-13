@@ -373,10 +373,15 @@ public class chocco extends JFrame {
         } catch (NumberFormatException failure) { showSimpleReport("최근 패킷", "숫자 id를 입력하세요."); }
     }
     private String networkProfile() {
-        return "Native 성능 샘플(availabilityFlags로 가용성 확인):\n" + l1j.server.Server.networkPerformance()
-                + "\nNative worker: [owner,callbackCount,totalMs,activeSinceMs]\n"
-                + java.util.Arrays.toString(l1j.server.Server.networkThreadDiagnostics()) + "\n"
-                + l1j.server.server.model.network.core.CNetworkDiagnostics.workers();
+        StringBuilder text = new StringBuilder("Native 성능 샘플(availabilityFlags로 가용성 확인):\n")
+                .append(l1j.server.Server.networkPerformance()).append("\nNative worker 상태:\n");
+        long[] workers = l1j.server.Server.networkThreadDiagnostics();
+        for (int offset = 0; offset + 2 < workers.length; offset += 3) {
+            text.append("owner=").append(offset / 3).append(" callbacks=").append(workers[offset])
+                    .append(" totalMs=").append(workers[offset + 1])
+                    .append(" activeSinceMs=").append(workers[offset + 2]).append('\n');
+        }
+        return text.append(l1j.server.server.model.network.core.CNetworkDiagnostics.workers()).toString();
     }
     private String networkSockets() {
         StringBuilder text = new StringBuilder(l1j.server.server.model.network.core.CNetworkDiagnostics.connections());
@@ -733,7 +738,7 @@ public class chocco extends JFrame {
 	private static final int[] ALL_BUFF_SKILLS = {
 			26, 42, 48, 57, 68, 79, 158, 163, 168
 	};
-	
+
 	private void bufMouseClicked(java.awt.event.MouseEvent evt) {
 		if (serverstart) {
 			Object smallList[] = { "올버프", "버그경주", "무한대전", "전체채금", "채금해제" };
@@ -919,7 +924,7 @@ public class chocco extends JFrame {
 
 		OperatingSystemMXBean osBean =
 				(OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-		
+
 		 LoginController lc = LoginController.getInstance();
 
 		monitorScheduler.scheduleAtFixedRate(() -> {
