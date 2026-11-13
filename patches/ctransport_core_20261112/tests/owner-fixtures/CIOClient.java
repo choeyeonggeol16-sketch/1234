@@ -5,6 +5,7 @@ import l1j.server.server.model.network.utill.ConnectionState;
 // Game/account fixture only; the tested CUserSocket is the production class.
 public final class CIOClient {
  public final CUserSocket connection;public volatile boolean ready=true,failCapture;
+ public volatile StackTraceElement[] closeStack;
  public CIOClient(CUserSocket c){connection=c;}
  public CUserSocket getConnection(){return connection;}
  public boolean isConnected(){return connection.isOpen();}
@@ -15,6 +16,6 @@ public final class CIOClient {
  public int incrementEmptyPacketCount(){return 1;}
  public void resetEmptyPacketCount(){}
  public boolean checkPacketRateLimit(long now){return false;}
- void onTransportClosing(){ready=false;}
+ void onTransportClosing(){closeStack=Thread.currentThread().getStackTrace();ready=false;}
  public void disconnect(){connection.close();}
 }

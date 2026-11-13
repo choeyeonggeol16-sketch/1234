@@ -1,0 +1,180 @@
+﻿2026-11-13T00:22:16.4399878Z Current runner version: '2.338.2'
+2026-11-13T00:22:16.4429193Z ##[group]Runner Image Provisioner
+2026-11-13T00:22:16.4430345Z Hosted Compute Agent
+2026-11-13T00:22:16.4431154Z Version: 20261028.624
+2026-11-13T00:22:16.4432054Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-13T00:22:16.4433076Z Build Date: 2026-10-28T21:51:42Z
+2026-11-13T00:22:16.4434039Z Worker ID: {b3e7bcd9-91c4-4444-beca-de9c1b9cb71e}
+2026-11-13T00:22:16.4435089Z Region: eastus
+2026-11-13T00:22:16.4435756Z Cloud: Azure
+2026-11-13T00:22:16.4436417Z ##[endgroup]
+2026-11-13T00:22:16.4438248Z ##[group]Operating System
+2026-11-13T00:22:16.4439101Z Microsoft Windows Server 2022
+2026-11-13T00:22:16.4439964Z 10.0.20348
+2026-11-13T00:22:16.4440667Z Datacenter
+2026-11-13T00:22:16.4441321Z ##[endgroup]
+2026-11-13T00:22:16.4442027Z ##[group]Runner Image
+2026-11-13T00:22:16.4443236Z Image: windows-2022
+2026-11-13T00:22:16.4444051Z Version: 20261101.353.1
+2026-11-13T00:22:16.4446242Z Included Software: https://github.com/actions/runner-images/blob/win22/20261101.353/images/windows/Windows2022-Readme.md
+2026-11-13T00:22:16.4448621Z Image Release: https://github.com/actions/runner-images/releases/tag/win22%2F20261101.353
+2026-11-13T00:22:16.4450005Z ##[endgroup]
+2026-11-13T00:22:16.4451523Z ##[group]GITHUB_TOKEN Permissions
+2026-11-13T00:22:16.4454264Z Contents: read
+2026-11-13T00:22:16.4454994Z Metadata: read
+2026-11-13T00:22:16.4455737Z ##[endgroup]
+2026-11-13T00:22:16.4458015Z Secret source: Actions
+2026-11-13T00:22:16.4458931Z Cache mode: write
+2026-11-13T00:22:16.4459709Z Prepare workflow directory
+2026-11-13T00:22:16.4877306Z Prepare all required actions
+2026-11-13T00:22:16.4926549Z Getting action download info
+2026-11-13T00:22:16.6542124Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-13T00:22:16.7658476Z Download action repository 'actions/setup-java@v4' (SHA:cf277c60eb25467037889841efdb72551f06f6c3)
+2026-11-13T00:22:17.2018925Z Complete job name: actual-windows
+2026-11-13T00:22:17.5122461Z ##[group]Run actions/checkout@v4
+2026-11-13T00:22:17.5123599Z with:
+2026-11-13T00:22:17.5124128Z   sparse-checkout: patches/ctransport_core_20261112
+2026-11-13T00:22:17.5124865Z   repository: choeyeonggeol16-sketch/1234
+2026-11-13T00:22:17.5129071Z   token: ***
+2026-11-13T00:22:17.5129546Z   ssh-strict: true
+2026-11-13T00:22:17.5130074Z   ssh-user: git
+2026-11-13T00:22:17.5130544Z   persist-credentials: true
+2026-11-13T00:22:17.5131073Z   clean: true
+2026-11-13T00:22:17.5131552Z   sparse-checkout-cone-mode: true
+2026-11-13T00:22:17.5132139Z   fetch-depth: 1
+2026-11-13T00:22:17.5132632Z   fetch-tags: false
+2026-11-13T00:22:17.5133095Z   show-progress: true
+2026-11-13T00:22:17.5133589Z   lfs: false
+2026-11-13T00:22:17.5134056Z   submodules: false
+2026-11-13T00:22:17.5134521Z   set-safe-directory: true
+2026-11-13T00:22:17.5135060Z   allow-unsafe-pr-checkout: false
+2026-11-13T00:22:17.5135815Z ##[endgroup]
+2026-11-13T00:22:17.7380059Z Syncing repository: choeyeonggeol16-sketch/1234
+2026-11-13T00:22:17.7381992Z ##[group]Getting Git version info
+2026-11-13T00:22:17.7382614Z Working directory is 'D:\a\1234\1234'
+2026-11-13T00:22:17.8174191Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-13T00:22:18.1607446Z git version 2.56.0.windows.4
+2026-11-13T00:22:18.1650833Z ##[endgroup]
+2026-11-13T00:22:18.1669370Z Temporarily overriding HOME='D:\a\_temp\b33c9118-9d0d-4282-ac85-e1929e08be8a' before making global git config changes
+2026-11-13T00:22:18.1671411Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-13T00:22:18.1680081Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\1234\1234
+2026-11-13T00:22:18.2239612Z Deleting the contents of 'D:\a\1234\1234'
+2026-11-13T00:22:18.2245244Z ##[group]Initializing the repository
+2026-11-13T00:22:18.2254154Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\1234\1234
+2026-11-13T00:22:18.8757916Z Initialized empty Git repository in D:/a/1234/1234/.git/
+2026-11-13T00:22:18.8802149Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/choeyeonggeol16-sketch/1234
+2026-11-13T00:22:18.9444924Z ##[endgroup]
+2026-11-13T00:22:18.9445806Z ##[group]Disabling automatic garbage collection
+2026-11-13T00:22:18.9454179Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-13T00:22:18.9752841Z ##[endgroup]
+2026-11-13T00:22:18.9753536Z ##[group]Setting up auth
+2026-11-13T00:22:18.9764575Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-13T00:22:19.0067013Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-13T00:22:20.5905028Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-13T00:22:20.6227085Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-13T00:22:21.0916106Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-13T00:22:21.1222589Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-13T00:22:21.6446426Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-13T00:22:21.6816256Z ##[endgroup]
+2026-11-13T00:22:21.6830409Z ##[group]Fetching the repository
+2026-11-13T00:22:21.6833979Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --filter=blob:none --depth=1 origin +78afe0ab5fb57eb3f224c8f58c6c2895dcb5b438:refs/remotes/origin/ctransport-core-20261112
+2026-11-13T00:22:22.6812421Z From https://github.com/choeyeonggeol16-sketch/1234
+2026-11-13T00:22:22.6813809Z  * [new ref]         78afe0ab5fb57eb3f224c8f58c6c2895dcb5b438 -> origin/ctransport-core-20261112
+2026-11-13T00:22:22.6850823Z ##[endgroup]
+2026-11-13T00:22:22.6851500Z ##[group]Determining the checkout info
+2026-11-13T00:22:22.6853177Z ##[endgroup]
+2026-11-13T00:22:22.6854257Z ##[group]Setting up sparse checkout
+2026-11-13T00:22:22.6862680Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout set patches/ctransport_core_20261112
+2026-11-13T00:22:22.7413384Z ##[endgroup]
+2026-11-13T00:22:22.7413950Z ##[group]Checking out the ref
+2026-11-13T00:22:22.7423874Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B ctransport-core-20261112 refs/remotes/origin/ctransport-core-20261112
+2026-11-13T00:22:23.6821985Z Switched to a new branch 'ctransport-core-20261112'
+2026-11-13T00:22:23.6858685Z branch 'ctransport-core-20261112' set up to track 'origin/ctransport-core-20261112'.
+2026-11-13T00:22:23.6912854Z ##[endgroup]
+2026-11-13T00:22:23.7315097Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-13T00:22:23.7608222Z 78afe0ab5fb57eb3f224c8f58c6c2895dcb5b438
+2026-11-13T00:22:23.8146507Z ##[group]Run actions/setup-java@v4
+2026-11-13T00:22:23.8146872Z with:
+2026-11-13T00:22:23.8147086Z   distribution: temurin
+2026-11-13T00:22:23.8147296Z   java-version: 21
+2026-11-13T00:22:23.8147513Z   java-package: jdk
+2026-11-13T00:22:23.8147721Z   check-latest: false
+2026-11-13T00:22:23.8147930Z   server-id: github
+2026-11-13T00:22:23.8148142Z   server-username: GITHUB_ACTOR
+2026-11-13T00:22:23.8148389Z   server-password: GITHUB_TOKEN
+2026-11-13T00:22:23.8148616Z   overwrite-settings: true
+2026-11-13T00:22:23.8148830Z   job-status: success
+2026-11-13T00:22:23.8151397Z   token: ***
+2026-11-13T00:22:23.8151613Z ##[endgroup]
+2026-11-13T00:22:24.0106209Z ##[warning]setup-java v4 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.
+2026-11-13T00:22:24.0118464Z ##[group]Installed distributions
+2026-11-13T00:22:24.0244086Z Resolved Java 21.0.13+9.0 from tool-cache
+2026-11-13T00:22:24.0244616Z Setting Java 21.0.13+9.0 as the default
+2026-11-13T00:22:24.0264545Z (node:5504) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-13T00:22:24.0265229Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-13T00:22:24.0269211Z Creating toolchains.xml for JDK version 21 from temurin
+2026-11-13T00:22:24.0372450Z Writing to C:\Users\runneradmin\.m2\toolchains.xml
+2026-11-13T00:22:24.0379661Z 
+2026-11-13T00:22:24.0380177Z Java configuration:
+2026-11-13T00:22:24.0380745Z   Distribution: temurin
+2026-11-13T00:22:24.0381086Z   Version: 21.0.13+9.0
+2026-11-13T00:22:24.0381609Z   Path: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+2026-11-13T00:22:24.0382239Z 
+2026-11-13T00:22:24.0383015Z ##[endgroup]
+2026-11-13T00:22:24.0404609Z Creating settings.xml with server-id: github
+2026-11-13T00:22:24.0405168Z Writing to C:\Users\runneradmin\.m2\settings.xml
+2026-11-13T00:22:24.0695851Z ##[group]Run ./tests/run_windows.ps1
+2026-11-13T00:22:24.0696323Z [36;1m./tests/run_windows.ps1[0m
+2026-11-13T00:22:24.1295627Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-13T00:22:24.1296055Z env:
+2026-11-13T00:22:24.1296405Z   JAVA_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+2026-11-13T00:22:24.1296948Z   JAVA_HOME_21_X64: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+2026-11-13T00:22:24.1297347Z ##[endgroup]
+2026-11-13T00:22:24.7441487Z PASS actual Windows DLL: 20 loopback connections, 4MB fragmented echo, order and close counts.
+2026-11-13T00:22:29.7300624Z Note: Some input files use preview features of Java SE 21.
+2026-11-13T00:22:29.7301759Z Note: Recompile with -Xlint:preview for details.
+2026-11-13T00:22:31.5154348Z PASS actual Windows shipped DLL + production Java21 FFM: 20 connections/4MB echo, work, timers/cancel, shutdown
+2026-11-13T00:22:31.6719219Z PASS production gameplay socket adapter: native 16K receives into 4K Java reads, stash/pause/resume and ordered writes
+2026-11-13T00:22:31.7432121Z PASS independent PSS NIO2 channel: fragmented HELLO, PING, BOUND/OPEN, detach, invalid greeting, dedicated expiry executor shutdown
+2026-11-13T00:22:32.3374673Z PASS Windows direct C++ codec/FFM: partial/empty/65535/coalesced frames, 67 exact C2S plaintext/rolling-key matches, 8 S2C matches, stable plaintext lease, foreign/duplicate release and invalid-length terminal
+2026-11-13T00:22:32.7907429Z PASS Windows native registry/timers: retired plaintext survives I/O terminal, release removes context, stale handles rejected, login timeout/auth cancellation/earlier callback deadline
+2026-11-13T00:22:32.9163331Z PASS actual Windows native packet completions: IOCP worker TLS identity, 64 pending packet leases cancel once on shutdown, no post after stop
+2026-11-13T00:22:33.4386508Z PASS Windows MAC policy: unidentified authentication denied, verified one-time binding/cap, terminal capacity reuse and stale handle rejection
+2026-11-13T00:23:03.5874319Z PASS Windows concurrent sessions:connections=54464,concurrent=32,L1Frames=6971392,bytes=3569352704,auth/enter/restart/close,zero active/retiring/Playing/EnterChar entries;elapsedMs=30141
+2026-11-13T00:23:03.5876953Z PASS Windows CPerfMon:actual owner15,system/process memory and process CPU availability; sustained production load and live DB are outside this bounded loopback test
+2026-11-13T00:23:06.5069117Z Note: Some input files use preview features of Java SE 21.
+2026-11-13T00:23:06.5070140Z Note: Recompile with -Xlint:preview for details.
+2026-11-13T00:23:07.0544420Z PASS production CUserSocket account/character/MAC provider hooks and restart/account-clear identities through real Windows FFM
+2026-11-13T00:23:07.3035178Z ##[error]Exception in thread "main" java.net.SocketException: Connection reset
+2026-11-13T00:23:07.3066163Z 	at java.base/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318)
+2026-11-13T00:23:07.3067040Z 	at java.base/sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346)
+2026-11-13T00:23:07.3067831Z 	at java.base/sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796)
+2026-11-13T00:23:07.3068640Z 	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:1099)
+2026-11-13T00:23:07.3069427Z 	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:1093)
+2026-11-13T00:23:07.3070587Z 	at l1j.server.server.model.network.core.CUserSocketOwnerWindowsTest.main(CUserSocketOwnerWindowsTest.java:71)
+2026-11-13T00:23:07.5324483Z [31;1mException: [0mD:\a\1234\1234\patches\ctransport_core_20261112\tests\run_windows.ps1:33[0m
+2026-11-13T00:23:07.5325328Z [31;1m[0m[36;1mLine |[0m
+2026-11-13T00:23:07.5326339Z [31;1m[0m[36;1m[36;1m  33 | [0m … ODE -ne 0) { [36;1mthrow 'Production user-socket lease/close test failed'[0m }[0m
+2026-11-13T00:23:07.5327507Z [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+2026-11-13T00:23:07.5332368Z [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mProduction user-socket lease/close test failed[0m
+2026-11-13T00:23:07.5526451Z ##[error]Process completed with exit code 1.
+2026-11-13T00:23:07.5764903Z Post job cleanup.
+2026-11-13T00:23:07.7418913Z (node:6188) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-13T00:23:07.7419645Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-13T00:23:07.7742756Z Post job cleanup.
+2026-11-13T00:23:07.9536705Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-13T00:23:07.9830269Z git version 2.56.0.windows.4
+2026-11-13T00:23:07.9890739Z Temporarily overriding HOME='D:\a\_temp\9760deed-8f53-4da1-9e8e-b48cf85bfb29' before making global git config changes
+2026-11-13T00:23:07.9891641Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-13T00:23:07.9902140Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\1234\1234
+2026-11-13T00:23:08.0235271Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-13T00:23:08.0570185Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-13T00:23:08.6164072Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-13T00:23:08.6493220Z http.https://github.com/.extraheader
+2026-11-13T00:23:08.6541202Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-11-13T00:23:08.6904770Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-13T00:23:09.2388683Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-13T00:23:09.2740456Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-13T00:23:09.8406912Z Cleaning up orphan processes
+2026-11-13T00:23:09.8533841Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-java@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+

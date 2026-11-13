@@ -58,6 +58,14 @@ public final class CUserSocketOwnerWindowsTest {
    owner.onAccountChanged(null);check(session.server.accountRegistryDiagnostics()[1]==0,"production account clear");
   }
   System.out.println("PASS production CUserSocket account/character/MAC provider hooks and restart/account-clear identities through real Windows FFM");
+  try(Session session=new Session(true,false)){
+   session.peer.setSoTimeout(5000);check(session.server.closeGracefully(session.channel.get().id(),5000),"direct graceful admission");
+   try{check(session.peer.getInputStream().read()==-1,"direct graceful EOF");}
+   catch(Exception failure){throw new AssertionError("direct native graceful terminal:send="+Arrays.toString(session.server.sendDiagnostics()),failure);}
+   check(session.closed.await(5,TimeUnit.SECONDS),"direct graceful production owner terminal");
+   long[] send=session.server.sendDiagnostics();check(send[4]==1&&send[5]==0,"direct graceful mode");
+  }
+  System.out.println("PASS real Windows native graceful close without output:normal EOF and production owner cleanup");
   try(Session session=new Session(true,false);CIOPacketCodecReference codec=new CIOPacketCodecReference(73461)){
    session.peer.setSoTimeout(5000);CUserSocket owner=session.owner.get();
    byte[] key={1,2,3,4,5,6,7,8};
@@ -68,7 +76,8 @@ public final class CUserSocketOwnerWindowsTest {
    check(owner.tryWriteActionBatch(objects,actions,0,8),"production packed action admission");
    for(int i=0;i<8;i++){ByteBuffer body=ByteBuffer.allocate(6).order(ByteOrder.LITTLE_ENDIAN);body.put((byte)Opcodes.S_ACTION).putInt(objects[i]).put((byte)actions[i]);checkRead(session,expectedPacket(codec,body.array(),false));}
    byte[] last={9,8,7,6};owner.requestClientClose(new l1j.server.server.model.network.packet.BytesWritablePacket(last));checkRead(session,expectedPacket(codec,last,false));
-   check(session.peer.getInputStream().read()==-1,"graceful close did not deliver EOF after final packet");
+   try{check(session.peer.getInputStream().read()==-1,"graceful close did not deliver EOF after final packet");}
+   catch(Exception failure){throw new AssertionError("graceful terminal:send="+Arrays.toString(session.server.sendDiagnostics())+",close="+Arrays.toString(session.client.get().closeStack),failure);}
    check(session.closed.await(5,TimeUnit.SECONDS),"production graceful terminal");
    long[] send=session.server.sendDiagnostics();check(send[2]==10&&send[3]==1&&send[4]==1&&send[5]==0&&send[7]==0&&send[8]==0,"production cipher/normal-close diagnostics");
   }
