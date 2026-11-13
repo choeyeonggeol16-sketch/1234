@@ -1,0 +1,454 @@
+{
+  "binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "original_executed": false,
+  "labels": [
+    {
+      "index": 0,
+      "address": "0xcc8410",
+      "label": "ORT_ANONYMOUS"
+    },
+    {
+      "index": 1,
+      "address": "0xcc83e8",
+      "label": "ORT_CREATE_DELETE"
+    },
+    {
+      "index": 2,
+      "address": "0xcc83d0",
+      "label": "ORT_TIMER"
+    },
+    {
+      "index": 3,
+      "address": "0xcc83b0",
+      "label": "ORT_IO_RETAIN"
+    },
+    {
+      "index": 4,
+      "address": "0xcc8380",
+      "label": "ORT_IOCP_MESSAGE_RETAIN"
+    },
+    {
+      "index": 5,
+      "address": "0xcc8360",
+      "label": "ORT_OBJECT_MAP"
+    },
+    {
+      "index": 6,
+      "address": "0xcc8338",
+      "label": "ORT_OBJECT_NAME_MAP"
+    },
+    {
+      "index": 7,
+      "address": "0xcc8310",
+      "label": "ORT_OBJECT_INDEX"
+    },
+    {
+      "index": 8,
+      "address": "0xcc82e8",
+      "label": "ORT_OBJECT_STORAGE"
+    },
+    {
+      "index": 9,
+      "address": "0xcc82c8",
+      "label": "ORT_FIND_OBJECT"
+    },
+    {
+      "index": 10,
+      "address": "0xcc82b0",
+      "label": "ORT_TL_MAP"
+    },
+    {
+      "index": 11,
+      "address": "0xcc8280",
+      "label": "ORT_SHARED_CONTAINER"
+    },
+    {
+      "index": 12,
+      "address": "0xcc8260",
+      "label": "ORT_SMART_ID"
+    },
+    {
+      "index": 13,
+      "address": "0xcc8228",
+      "label": "ORT_SERIALIZED_WORLD_THREAD"
+    },
+    {
+      "index": 14,
+      "address": "0xcc8208",
+      "label": "ORT_TEMP_USE"
+    },
+    {
+      "index": 15,
+      "address": "0xcc81f0",
+      "label": "ORT_CACHED"
+    },
+    {
+      "index": 16,
+      "address": "0xcc81c8",
+      "label": "ORT_FUNCTION_LOCAL"
+    },
+    {
+      "index": 17,
+      "address": "0xcc81a0",
+      "label": "ORT_FUNCTION_CHAIN"
+    },
+    {
+      "index": 18,
+      "address": "0xcc8178",
+      "label": "ORT_EVENT_RETAIN"
+    },
+    {
+      "index": 19,
+      "address": "0xcc8140",
+      "label": "ORT_INVENTORY_CHANGE_MAP"
+    },
+    {
+      "index": 20,
+      "address": "0xcc8118",
+      "label": "ORT_IO_SOCKET_WRITE"
+    },
+    {
+      "index": 21,
+      "address": "0xcc80f8",
+      "label": "ORT_NPC_RELATED"
+    },
+    {
+      "index": 22,
+      "address": "0xcc80d0",
+      "label": "ORT_VERIFIER_RETAIN"
+    },
+    {
+      "index": 23,
+      "address": "0xcc80a8",
+      "label": "ORT_CLASS_MEMBER"
+    },
+    {
+      "index": 24,
+      "address": "0xcc8088",
+      "label": "ORT_SOCKET_MAP"
+    },
+    {
+      "index": 25,
+      "address": "0xcc8068",
+      "label": "ORT_ACCOUNT_MAP"
+    },
+    {
+      "index": 26,
+      "address": "0xcc8040",
+      "label": "ORT_USER_SOCKET_MAP"
+    },
+    {
+      "index": 27,
+      "address": "0xcc8008",
+      "label": "ORT_USER_SOCKET_PLAY_MAP"
+    },
+    {
+      "index": 28,
+      "address": "0xcc7fd0",
+      "label": "ORT_USER_SOCKET_CHAR_MAP"
+    },
+    {
+      "index": 29,
+      "address": "0xcc7fa0",
+      "label": "ORT_SERIALIZED_MESSAGE"
+    },
+    {
+      "index": 30,
+      "address": "0xcc7f88",
+      "label": "ORT_TDD_USE"
+    }
+  ],
+  "verified_instructions": [
+    {
+      "address": "0x9f774b",
+      "bytes": "f0418384091001000001",
+      "instruction": "lock add dword ptr [r9 + rcx + 0x110], 1"
+    },
+    {
+      "address": "0xa12a59",
+      "bytes": "85c0",
+      "instruction": "test eax, eax"
+    },
+    {
+      "address": "0x404c8a",
+      "bytes": "87410c",
+      "instruction": "xchg dword ptr [rcx + 0xc], eax"
+    },
+    {
+      "address": "0x7d6ee4",
+      "bytes": "8b410c",
+      "instruction": "mov eax, dword ptr [rcx + 0xc]"
+    }
+  ],
+  "functions": {
+    "retain": {
+      "entry": "0x7d6d50",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x7d6d50",
+          "0x7d6d59"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 4
+    },
+    "release": {
+      "entry": "0x7d6eb4",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x7d6eb4",
+          "0x7d703b"
+        ]
+      ],
+      "direct_calls": [
+        "0xac1090",
+        "0xab8550",
+        "0x734514",
+        "0xac1090",
+        "0xab8550",
+        "0x734514",
+        "0x74e3bc",
+        "0xac1090",
+        "0xab8550",
+        "0x734514",
+        "0x73446c",
+        "0x6704e0"
+      ],
+      "caller_count": 14
+    },
+    "socket_retain": {
+      "entry": "0x9f773c",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x9f773c",
+          "0x9f776d"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0
+    },
+    "socket_release": {
+      "entry": "0x9f7770",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f7770",
+          "0x9f7998"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x734514",
+        "0x6704e0",
+        "0x73446c",
+        "0x73446c",
+        "0x74e3bc",
+        "0x73446c",
+        "0x73446c",
+        "0x6704e0"
+      ],
+      "caller_count": 0
+    },
+    "socket_report": {
+      "entry": "0x9f7998",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f7998",
+          "0x9f7b65"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x73446c",
+        "0x734514",
+        "0x73446c"
+      ],
+      "caller_count": 0
+    },
+    "verifier_ctor": {
+      "entry": "0xa12674",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa12674",
+          "0xa128df"
+        ]
+      ],
+      "direct_calls": [
+        "0x704148",
+        "0x735ab4",
+        "0x7048c4",
+        "0xa123e8",
+        "0x735ab4",
+        "0x734514",
+        "0x7048c4",
+        "0xa123e8",
+        "0x7048c4"
+      ],
+      "caller_count": 1
+    },
+    "verifier_tick": {
+      "entry": "0xa1291c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa1291c",
+          "0xa12af9"
+        ]
+      ],
+      "direct_calls": [
+        "0xa08300",
+        "0x7048c4",
+        "0xa123e8",
+        "0x7048c4",
+        "0xa123e8",
+        "0x7048c4",
+        "0x734514"
+      ],
+      "caller_count": 0
+    },
+    "timer_forward1": {
+      "entry": "0x404c88",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x404c88",
+          "0x404c94"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0
+    },
+    "timer_forward2": {
+      "entry": "0x404c94",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x404c94",
+          "0x404ca0"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0
+    },
+    "verifier_forward_wrapper": {
+      "entry": "0x7048c4",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x7048c4",
+          "0x7048cc"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 169
+    },
+    "verifier_forward_body": {
+      "entry": "0x704190",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x704190",
+          "0x704248"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x6704e0",
+        "0x926bf4"
+      ],
+      "caller_count": 3
+    },
+    "timer_add": {
+      "entry": "0x926bf4",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x926bf4",
+          "0x926e08"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x6704e0",
+        "0x92533c",
+        "0x925498",
+        "0x92533c",
+        "0x734514",
+        "0x926b7c"
+      ],
+      "caller_count": 1
+    },
+    "timer_dispatch": {
+      "entry": "0x926844",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x926844",
+          "0x926b62"
+        ]
+      ],
+      "direct_calls": [
+        "0x9256d4",
+        "0x92533c",
+        "0x925498",
+        "0x92533c",
+        "0x734514",
+        "0x92611c",
+        "0xa58428",
+        "0xa58428",
+        "0x705c88",
+        "0xa58428"
+      ],
+      "caller_count": 1
+    },
+    "allocator_backend": {
+      "entry": "0x74e08c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x74e08c",
+          "0x74e115"
+        ]
+      ],
+      "direct_calls": [
+        "0x74dc0c",
+        "0xabd910"
+      ],
+      "caller_count": 1
+    },
+    "allocator_return": {
+      "entry": "0x74e3bc",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x74e3bc",
+          "0x74e3c8"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 2719
+    },
+    "worker_sync": {
+      "entry": "0x705330",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x705330",
+          "0x7053d0"
+        ]
+      ],
+      "direct_calls": [
+        "0x926e2c",
+        "0x70482c",
+        "0x926e54"
+      ],
+      "caller_count": 1
+    }
+  },
+  "scope": "Original reference slots,verifier,timer flag,and allocator-return/worker-sync boundary;not a full original C++ ABI recreation."
+}

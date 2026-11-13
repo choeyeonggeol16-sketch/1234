@@ -10,47 +10,73 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include <type_traits>
+#include "reference_trace.hpp"
 constexpr std::size_t BufferBytes=8192, LargeBufferBytes=16384, MaxQueuedBytes=2u*1024u*1024u;
 class MemoryObject {
- std::atomic<unsigned> references_{1};
- // Original +0x10 identifier is for reference-error attribution, not a handle.
- // Keep the original ID position without duplicating timer ownership state.
+ std::atomic<unsigned> references_{1},inTimer_{0};
  alignas(8) const std::uint32_t objectId_;
  inline static std::atomic<std::uint32_t> nextObjectId_{0};
- inline static std::atomic<std::uint64_t> referenceErrors_{0},lastReferenceError_{0};
+ inline static std::atomic<std::uint64_t> referenceErrors_{0},lastReferenceError_{0},timerErrors_{0};
  friend struct MemoryObjectTestAccess;
-protected: virtual ~MemoryObject()=default;
+ void error(unsigned previous,bool timer=false)noexcept{
+  lastReferenceError_.store(std::uint64_t(objectId_)<<32|previous,std::memory_order_relaxed);
+  referenceErrors_.fetch_add(1,std::memory_order_release);if(timer)timerErrors_.fetch_add(1,std::memory_order_relaxed);
+ }
+protected:
+ virtual ~MemoryObject()=default;
+ MemoryObject* retainTracked(ReferenceTrace* trace,ObjectReferenceType type,const char* file,unsigned line)noexcept{
+  references_.fetch_add(1,std::memory_order_relaxed);if(trace)trace->add(type,file,line);return this;
+ }
+ unsigned releaseTracked(ReferenceTrace* trace,ObjectReferenceType type,const char* file,unsigned line)noexcept{
+  auto previous=references_.load(std::memory_order_relaxed);
+  if(!previous||(previous==1&&inTimer_.load(std::memory_order_acquire))){error(previous,previous!=0);return previous;}
+  // Update while this caller still owns its physical hold. Updating after the
+  // decrement would allow a concurrent final release to destroy the trace.
+  if(trace)trace->release(type,file,line);
+  for(;;){
+   if(!previous||(previous==1&&inTimer_.load(std::memory_order_acquire))){if(trace)trace->undoRelease(type);error(previous,previous!=0);return previous;}
+   if(references_.compare_exchange_weak(previous,previous-1,std::memory_order_acq_rel,std::memory_order_relaxed))break;
+  }
+  auto remaining=previous-1;if(!remaining)delete this;return remaining;
+ }
 public:
  MemoryObject()noexcept:objectId_(nextObjectId_.fetch_add(1,std::memory_order_relaxed)+1){}
  MemoryObject(const MemoryObject&)noexcept:MemoryObject(){}
  MemoryObject& operator=(const MemoryObject&)=delete;
  std::uint32_t objectId()const noexcept{return objectId_;}
- void retain()noexcept{references_.fetch_add(1,std::memory_order_relaxed);}
- void release()noexcept{
-  auto previous=references_.load(std::memory_order_relaxed);
-  do{
-   if(previous==0){
-    lastReferenceError_.store(std::uint64_t(objectId_)<<32|previous,std::memory_order_relaxed);
-    referenceErrors_.fetch_add(1,std::memory_order_release);return;
-   }
-  }while(!references_.compare_exchange_weak(previous,previous-1,std::memory_order_acq_rel,std::memory_order_relaxed));
-  if(previous==1)delete this;
+ unsigned referenceCount()const noexcept{return references_.load(std::memory_order_acquire);}
+ unsigned timerCount()const noexcept{return inTimer_.load(std::memory_order_acquire);}
+ void linkTimer()noexcept{inTimer_.fetch_add(1,std::memory_order_release);}
+ void unlinkTimer()noexcept{
+  auto n=inTimer_.load(std::memory_order_relaxed);
+  do{if(!n){error(referenceCount(),true);return;}}
+  while(!inTimer_.compare_exchange_weak(n,n-1,std::memory_order_acq_rel,std::memory_order_relaxed));
  }
+ virtual MemoryObject* retain(ObjectReferenceType type=ObjectReferenceType::ORT_ANONYMOUS,const char* file=__builtin_FILE(),unsigned line=__builtin_LINE())noexcept{return retainTracked(nullptr,type,file,line);}
+ virtual unsigned release(ObjectReferenceType type=ObjectReferenceType::ORT_ANONYMOUS,const char* file=__builtin_FILE(),unsigned line=__builtin_LINE())noexcept{return releaseTracked(nullptr,type,file,line);}
  static void referenceDiagnostics(std::uint64_t* out)noexcept{
-  out[0]=referenceErrors_.load(std::memory_order_acquire);auto last=lastReferenceError_.load(std::memory_order_relaxed);
-  out[1]=last>>32;out[2]=last&0xffffffffu;
+  out[0]=referenceErrors_.load(std::memory_order_acquire);auto last=lastReferenceError_.load(std::memory_order_relaxed);out[1]=last>>32;out[2]=last&0xffffffffu;
  }
+ static std::uint64_t timerErrors()noexcept{return timerErrors_.load(std::memory_order_relaxed);}
 };
+template<class T>inline void retainReference(T* p,ObjectReferenceType type,const char* file,unsigned line)noexcept{
+ if constexpr(std::is_base_of_v<MemoryObject,T>)p->retain(type,file,line);else p->retain();
+}
+template<class T>inline void releaseReference(T* p,ObjectReferenceType type,const char* file,unsigned line)noexcept{
+ if constexpr(std::is_base_of_v<MemoryObject,T>)p->release(type,file,line);else p->release();
+}
 class CIOObject : public MemoryObject {
 protected: ~CIOObject()override=default;
 public:
  virtual void OnIOCallback(void*,bool,unsigned,unsigned)noexcept=0;
 };
 class ObjectRef {
- MemoryObject* p_;
+ MemoryObject* p_;ObjectReferenceType type_;const char* file_;unsigned line_;
 public:
- explicit ObjectRef(MemoryObject* p,bool add=true)noexcept:p_(p){if(p_&&add)p_->retain();}
- ~ObjectRef(){if(p_)p_->release();}
+ explicit ObjectRef(MemoryObject* p,bool add=true,ObjectReferenceType type=ObjectReferenceType::Count,const char* file=__builtin_FILE(),unsigned line=__builtin_LINE())noexcept
+ :p_(p),type_(type==ObjectReferenceType::Count?(add?ObjectReferenceType::ORT_FUNCTION_LOCAL:ObjectReferenceType::ORT_FIND_OBJECT):type),file_(file),line_(line){if(p_&&add)p_->retain(type_,file_,line_);}
+ ~ObjectRef(){if(p_)p_->release(type_,file_,line_);}
  ObjectRef(const ObjectRef&)=delete;ObjectRef& operator=(const ObjectRef&)=delete;
 };
 class SpinLock {

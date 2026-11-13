@@ -1,4 +1,5 @@
 #pragma once
+#include "cio_core.hpp"
 #include <cstdint>
 #include <map>
 #include <mutex>
@@ -34,7 +35,7 @@ public:
             try {
                 object->id=id;
                 if(!active_.emplace(id,object).second){object->id=0;return 0;}
-                generations_[slot]=generation;free_.pop_back();object->retain();++added_;return id;
+                generations_[slot]=generation;free_.pop_back();retainReference(object,ObjectReferenceType::ORT_OBJECT_STORAGE,__FILE__,__LINE__);++added_;return id;
             } catch (...) { object->id=0;return 0; }
         }
         return 0;
@@ -42,8 +43,8 @@ public:
     T* find(std::uint64_t id,bool includeRetiring=false) noexcept {
         std::lock_guard<std::mutex> lock(gate_);
         auto at=active_.find(id);
-        if(at!=active_.end()){at->second->retain();return at->second;}
-        if(includeRetiring){auto old=retiring_.find(id);if(old!=retiring_.end()){old->second->retain();return old->second;}}
+        if(at!=active_.end()){retainReference(at->second,ObjectReferenceType::ORT_FIND_OBJECT,__FILE__,__LINE__);return at->second;}
+        if(includeRetiring){auto old=retiring_.find(id);if(old!=retiring_.end()){retainReference(old->second,ObjectReferenceType::ORT_FIND_OBJECT,__FILE__,__LINE__);return old->second;}}
         ++stale_;return nullptr;
     }
     void retire(std::uint64_t id,T* expected) noexcept {
@@ -62,15 +63,15 @@ public:
                 ++removed_;found=true;break;
             }
         }
-        if(found)expected->release();return found;
+        if(found)releaseReference(expected,ObjectReferenceType::ORT_OBJECT_STORAGE,__FILE__,__LINE__);return found;
     }
     bool snapshot(std::vector<T*>& out) noexcept {
         std::lock_guard<std::mutex> lock(gate_);
         try {
             out.reserve(active_.size()+retiring_.size());
-            for(auto* table:{&active_,&retiring_})for(auto& entry:*table){out.push_back(entry.second);entry.second->retain();}
+            for(auto* table:{&active_,&retiring_})for(auto& entry:*table){out.push_back(entry.second);retainReference(entry.second,ObjectReferenceType::ORT_TEMP_USE,__FILE__,__LINE__);}
             return true;
-        }catch(...){for(auto* p:out)p->release();out.clear();return false;}
+        }catch(...){for(auto* p:out)releaseReference(p,ObjectReferenceType::ORT_TEMP_USE,__FILE__,__LINE__);out.clear();return false;}
     }
     void diagnostics(std::uint64_t* out) const noexcept {
         std::lock_guard<std::mutex> lock(gate_);

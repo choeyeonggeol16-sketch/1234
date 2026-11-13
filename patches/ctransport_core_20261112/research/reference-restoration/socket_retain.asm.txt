@@ -1,0 +1,13 @@
+# socket_retain; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x9f773c
+# chunk 0x9f773c..0x9f776d
+00000000009f773c: lock add dword ptr [rcx + 8], 1
+00000000009f7741: movsxd   rax, r9d
+00000000009f7744: mov      r9, rax
+00000000009f7747: shl      r9, 5
+00000000009f774b: lock add dword ptr [r9 + rcx + 0x110], 1
+00000000009f7755: add      rax, 8
+00000000009f7759: mov      dword ptr [r9 + rcx + 0x114], r8d
+00000000009f7761: shl      rax, 5
+00000000009f7765: mov      qword ptr [rax + rcx], rdx
+00000000009f7769: mov      rax, rcx
+00000000009f776c: ret

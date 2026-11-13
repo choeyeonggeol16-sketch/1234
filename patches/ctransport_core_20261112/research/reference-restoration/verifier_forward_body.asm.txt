@@ -1,0 +1,52 @@
+# verifier_forward_body; PE pdata/unwind; entry 0x704190
+# chunk 0x704190..0x704248
+0000000000704190: push     rbx
+0000000000704192: push     rbp
+0000000000704193: push     rsi
+0000000000704194: push     rdi
+0000000000704195: sub      rsp, 0x38
+0000000000704199: cmp      rdx, 0x50
+000000000070419d: mov      rsi, r9
+00000000007041a0: mov      ebp, r8d
+00000000007041a3: mov      rbx, rdx
+00000000007041a6: mov      rdi, rcx
+00000000007041a9: jge      0x7041ed
+00000000007041ab: mov      eax, dword ptr [rip + 0x91e31cf]
+00000000007041b1: mov      r10d, eax
+00000000007041b4: add      eax, 1
+00000000007041b7: cmp      r10d, 0x1e
+00000000007041bb: mov      dword ptr [rip + 0x91e31bf], eax
+00000000007041c1: jge      0x7041e8
+00000000007041c3: mov      r9, rdx
+00000000007041c6: lea      r8, [rip + 0x56dabb] ; UTF16 'dwTime[%d] < 80 !!!!!!!'
+00000000007041cd: lea      rcx, [rip + 0xd81d6cc]
+00000000007041d4: mov      edx, 2
+00000000007041d9: call     0x734514
+00000000007041de: xor      edx, edx
+00000000007041e0: lea      ecx, [rdx + 2]
+00000000007041e3: call     0x6704e0
+00000000007041e8: mov      ebx, 0x50
+00000000007041ed: lock add dword ptr [rip + 0x454ce1b], 1
+00000000007041f5: mov      r10, qword ptr [rdi]
+00000000007041f8: lea      rdx, [rip + 0x56da79]
+00000000007041ff: mov      r9d, 2
+0000000000704205: mov      r8d, 0x292
+000000000070420b: mov      rcx, rdi
+000000000070420e: call     qword ptr [r10 + 8]
+0000000000704212: call     qword ptr [rip + 0x417f08] ; IAT GetTickCount
+0000000000704218: mov      ecx, 1
+000000000070421d: xchg     dword ptr [rdi + 0xc], ecx
+0000000000704220: mov      r8d, eax
+0000000000704223: lea      rcx, [rip + 0x454d1c6]
+000000000070422a: add      r8, rbx
+000000000070422d: mov      r9d, ebp
+0000000000704230: mov      rdx, rdi
+0000000000704233: mov      qword ptr [rsp + 0x20], rsi
+0000000000704238: call     0x926bf4
+000000000070423d: mov      al, 1
+000000000070423f: add      rsp, 0x38
+0000000000704243: pop      rdi
+0000000000704244: pop      rsi
+0000000000704245: pop      rbp
+0000000000704246: pop      rbx
+0000000000704247: ret

@@ -1,0 +1,5 @@
+# retain; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x7d6d50
+# chunk 0x7d6d50..0x7d6d59
+00000000007d6d50: lock add dword ptr [rcx + 8], 1
+00000000007d6d55: mov      rax, rcx
+00000000007d6d58: ret

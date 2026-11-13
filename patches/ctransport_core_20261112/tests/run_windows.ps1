@@ -24,7 +24,7 @@ try {
 New-Item -ItemType Directory -Force owner-classes | Out-Null
 $ownerSources = Get-Content tests/owner-production-sources.txt
 $ownerFixtures = (Get-ChildItem tests/owner-fixtures/*.java).FullName
-& javac --enable-preview --release 21 -encoding UTF-8 -d owner-classes $ownerSources $ownerFixtures tests/CIOPacketCodecReference.java tests/CUserSocketOwnerWindowsTest.java tests/CSharedBroadcastWindowsTest.java tests/CUserSocketSafeSendWindowsTest.java tests/PoolReclamationWindowsTest.java tests/PoolDiagnosticsTest.java
+& javac --enable-preview --release 21 -encoding UTF-8 -d owner-classes $ownerSources $ownerFixtures tests/CIOPacketCodecReference.java tests/CUserSocketOwnerWindowsTest.java tests/CSharedBroadcastWindowsTest.java tests/CUserSocketSafeSendWindowsTest.java tests/PoolReclamationWindowsTest.java tests/PoolDiagnosticsTest.java tests/ReferenceDiagnosticsTest.java tests/ReferenceDiagnosticsWindowsTest.java
 if ($LASTEXITCODE -ne 0) { throw 'Production user-socket owner compilation failed' }
 $ownerClasses = Join-Path $root 'owner-classes'
 Push-Location build
@@ -37,6 +37,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'SafeSend and close reason Windows test failed' }
     & java --enable-preview --enable-native-access=ALL-UNNAMED -cp $ownerClasses l1j.server.server.model.network.core.PoolReclamationWindowsTest
     if ($LASTEXITCODE -ne 0) { throw 'Native/Java pool reclamation test failed' }
+    & java --enable-preview --enable-native-access=ALL-UNNAMED -cp $ownerClasses l1j.server.server.model.network.core.ReferenceDiagnosticsWindowsTest
+    if ($LASTEXITCODE -ne 0) { throw 'Native reference verifier Windows test failed' }
 } finally { Pop-Location }
 
 New-Item -ItemType Directory -Force copy-classes | Out-Null
@@ -79,6 +81,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Extended command diagnostics test failed' }
 if ($LASTEXITCODE -ne 0) { throw 'Disabled extended diagnostics test failed' }
 & java --enable-preview -cp owner-classes l1j.server.server.model.network.core.PoolDiagnosticsTest
 if ($LASTEXITCODE -ne 0) { throw 'Pool diagnostic classification failed' }
+& java --enable-preview -cp owner-classes l1j.server.server.model.network.core.ReferenceDiagnosticsTest
+if ($LASTEXITCODE -ne 0) { throw 'Reference diagnostic rendering failed' }
 
 # Production Swing window and display queue. Only game/DB bindings are fixtures.
 New-Item -ItemType Directory -Force manager-classes | Out-Null

@@ -1,0 +1,39 @@
+# worker_sync; PE pdata/unwind; entry 0x705330
+# chunk 0x705330..0x7053d0
+0000000000705330: push     rbx
+0000000000705332: push     rbp
+0000000000705333: push     rsi
+0000000000705334: push     rdi
+0000000000705335: sub      rsp, 0x38
+0000000000705339: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000705342: mov      rbx, rcx
+0000000000705345: mov      edx, dword ptr [rip + 0x2eeb9e8d]
+000000000070534b: mov      rax, qword ptr gs:[0x58]
+0000000000705354: mov      esi, 0x7d58
+0000000000705359: mov      rdi, qword ptr [rax + rdx*8]
+000000000070535d: movsxd   r8, dword ptr [rdi + rsi]
+0000000000705361: lea      rbp, [rip - 0x305368]
+0000000000705368: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+0000000000705370: lea      eax, [rdx + 1]
+0000000000705373: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+000000000070537b: imul     r8, r8, 0x3e8
+0000000000705382: add      r8, rdx
+0000000000705385: lea      rax, [rip + 0x56d404] ; UTF16 'void __cdecl IOThreadCallback::IOThreadNextSyncTime(void)'
+000000000070538c: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+0000000000705394: lea      rcx, [rip + 0x137c06e5]
+000000000070539b: call     0x926e2c
+00000000007053a0: call     0x70482c
+00000000007053a5: mov      r11, qword ptr [rbx]
+00000000007053a8: mov      rcx, rbx
+00000000007053ab: call     qword ptr [r11]
+00000000007053ae: lea      rcx, [rip + 0x137c06cb]
+00000000007053b5: call     0x926e54
+00000000007053ba: nop
+00000000007053bb: movsxd   rax, dword ptr [rdi + rsi]
+00000000007053bf: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000007053c7: add      rsp, 0x38
+00000000007053cb: pop      rdi
+00000000007053cc: pop      rsi
+00000000007053cd: pop      rbp
+00000000007053ce: pop      rbx
+00000000007053cf: ret

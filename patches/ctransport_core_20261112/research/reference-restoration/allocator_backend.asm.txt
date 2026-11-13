@@ -1,0 +1,36 @@
+# allocator_backend; PE pdata/unwind; entry 0x74e08c
+# chunk 0x74e08c..0x74e115
+000000000074e08c: push     rbx
+000000000074e08e: push     rdi
+000000000074e08f: sub      rsp, 0x28
+000000000074e093: sub      rdx, 4
+000000000074e097: mov      rbx, rcx
+000000000074e09a: movsxd   rcx, dword ptr [rdx]
+000000000074e09d: lock add dword ptr [rbx + 0x2018c], -1
+000000000074e0a5: mov      rdi, rcx
+000000000074e0a8: neg      rdi
+000000000074e0ab: mov      rax, rdi
+000000000074e0ae: lock xadd qword ptr [rbx + 0x201a8], rax
+000000000074e0b7: cmp      r8d, 1
+000000000074e0bb: jne      0x74e0cb
+000000000074e0bd: mov      rax, rdi
+000000000074e0c0: lock xadd qword ptr [rbx + 0x20198], rax
+000000000074e0c9: jmp      0x74e0dd
+000000000074e0cb: cmp      r8d, 2
+000000000074e0cf: jne      0x74e0dd
+000000000074e0d1: mov      rax, rdi
+000000000074e0d4: lock xadd qword ptr [rbx + 0x201a0], rax
+000000000074e0dd: cmp      rcx, 0x8001
+000000000074e0e4: jae      0x74e0fd
+000000000074e0e6: movsxd   rax, dword ptr [rbx + rcx*4 + 0x188]
+000000000074e0ee: mov      rcx, qword ptr [rbx + rax*8]
+000000000074e0f2: mov      rcx, qword ptr [rcx + 8]
+000000000074e0f6: call     0x74dc0c
+000000000074e0fb: jmp      0x74e10e
+000000000074e0fd: mov      rcx, rdx
+000000000074e100: call     0xabd910
+000000000074e105: lock xadd qword ptr [rbx + 0x20190], rdi
+000000000074e10e: add      rsp, 0x28
+000000000074e112: pop      rdi
+000000000074e113: pop      rbx
+000000000074e114: ret

@@ -1,4 +1,5 @@
 #pragma once
+#include "cio_core.hpp"
 #include <array>
 #include <atomic>
 #include <cstdint>
@@ -19,12 +20,12 @@ public:
         if(!key||!object)return false;auto& b=buckets_[hash(key)];
         try{std::unique_lock<std::shared_mutex> lock(b.gate);
             if(!b.entries.emplace(key,object).second)return false;
-            object->retain();++size_;return true;}catch(...){return false;}
+            retainReference(object,static_cast<ObjectReferenceType>(Tag),__FILE__,__LINE__);++size_;return true;}catch(...){return false;}
     }
     T* FindObject(std::uint32_t key)const noexcept{
         auto& b=buckets_[hash(key)];std::shared_lock<std::shared_mutex> lock(b.gate);
         auto at=b.entries.find(key);if(at==b.entries.end())return nullptr;
-        at->second->retain();return at->second;
+        retainReference(at->second,ObjectReferenceType::ORT_FIND_OBJECT,__FILE__,__LINE__);return at->second;
     }
     bool ExistKey(std::uint32_t key)const noexcept{
         auto& b=buckets_[hash(key)];std::shared_lock<std::shared_mutex> lock(b.gate);return b.entries.find(key)!=b.entries.end();
@@ -33,7 +34,7 @@ public:
         auto& b=buckets_[hash(key)];bool found=false;
         {std::unique_lock<std::shared_mutex> lock(b.gate);auto at=b.entries.find(key);
          if(at!=b.entries.end()&&at->second==expected){b.entries.erase(at);--size_;found=true;}}
-        if(found)expected->release();return found;
+        if(found)releaseReference(expected,static_cast<ObjectReferenceType>(Tag),__FILE__,__LINE__);return found;
     }
     std::uint64_t size()const noexcept{return size_.load();}
 };

@@ -555,6 +555,12 @@ final class CIOServer implements AutoCloseable {
         finally { nativeCalls.decrementAndGet(); }
     }
 
+    long[] referenceDiagnostics() {
+        long[] values=readDiagnostics(getDiagnostics,24+16+16*(12+31*3));
+        if(values.length<24+16||values[24]!=0x4354524600010000L)return new long[0];
+        return java.util.Arrays.copyOfRange(values,24,values.length);
+    }
+
     long[] poolDiagnostics() {
         long[] values = readDiagnostics(getDiagnostics,24);
         // Older ABI10 DLLs can return the original prefix only. Never display

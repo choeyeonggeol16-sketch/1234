@@ -1,0 +1,4 @@
+# verifier_forward_wrapper; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x7048c4
+# chunk 0x7048c4..0x7048cc
+00000000007048c4: xor      r9d, r9d
+00000000007048c7: jmp      0x704190

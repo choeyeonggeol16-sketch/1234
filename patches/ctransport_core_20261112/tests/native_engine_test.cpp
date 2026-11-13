@@ -149,6 +149,7 @@ struct Fixture {
   L1Interop_SetOnClosing(listener, closingCallback);
   L1Interop_SetOnPacket(listener,packetCallback);L1Interop_SetOnTimerExpired(listener,deadlineCallback);
   server = static_cast<Server*>(L1Interop_CreateServer(listener));auto codec=fixturecodec::functions();check(L1Interop_SetCodecApi(server,codec.data(),7),"fixture codec API install"); L1Interop_ConfigureWorkers(server, 4); L1Interop_ConfigureCapacity(server, 128);
+  server->referenceCheckDelayMs=50; // deterministic accelerated verifier clock for fixtures
   check(L1Interop_ConfigureSocketLimits(server,ipLimit,macLimit),"configure native limits");
   check(L1Interop_ConfigurePerf(server,100),"configure native performance sampling");
   check(Server_Run(server, "127.0.0.1", 0), "start failed");
@@ -823,4 +824,4 @@ static void sharedBroadcastTests(){
  }
  std::cout<<"PASS shared const broadcast: one frozen16K source/two queued recipients;producer released before execution;close isolation;unchanged plaintext;504-slot overflow rolls back refs/reservations;503 queued cancellations;source outlives server shutdown\n";
 }
-int main(){std::cout.setf(std::ios::unitbuf);sharedBroadcastTests();sendCloseTests();remainingNetworkTests();originalStructureTests();userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}
+int main(){std::cout.setf(std::ios::unitbuf);sharedBroadcastTests();sendCloseTests();remainingNetworkTests();originalStructureTests();userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";return 0;}

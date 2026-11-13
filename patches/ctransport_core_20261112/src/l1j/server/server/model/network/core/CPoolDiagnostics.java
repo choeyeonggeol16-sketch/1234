@@ -9,7 +9,7 @@ public final class CPoolDiagnostics {
     private long quietSince,lastJava=-1,lastNative=-1;
     private boolean quietTracking;
     public synchronized String sample(long now,long[][] javaPool,long[] nativePool,long[] ownership) {
-        if(javaPool.length!=4||ownership.length!=6)throw new IllegalArgumentException("pool diagnostic shape");
+        if(javaPool.length!=4||(ownership.length!=6&&ownership.length!=7))throw new IllegalArgumentException("pool diagnostic shape");
         boolean available=nativePool.length>=18&&nativePool[8]==0x4354504c00010000L;
         boolean faults=available&&nativePool.length>=24&&nativePool[18]==0x4354464100010000L;
         StringBuilder b=new StringBuilder("풀·회수 진단 (강제 회수 없음)\n");
@@ -37,7 +37,7 @@ public final class CPoolDiagnostics {
                 .append(" 마지막 객체ID=").append(nativePool[22]).append(" 감소 전 참조수=").append(nativePool[23]).append('\n');
         }else b.append("Native 풀 상세: DLL 확장 측정 미지원/종료 중 — 0으로 판정하지 않음\n");
         long holders=0;for(long v:ownership)holders+=v;
-        b.append("[Java 보유소켓,Java cleanup대기,native active,native retiring,공유입력생산자,송신요청대기]\n")
+        b.append(ownership.length==7?"[Java 보유소켓,Java cleanup대기,native active,native retiring,공유입력생산자,송신요청대기,참조검사기]\n":"[Java 보유소켓,Java cleanup대기,native active,native retiring,공유입력생산자,송신요청대기]\n")
             .append(java.util.Arrays.toString(ownership)).append('\n');
         boolean quiet=available&&holders==0;
         if(!quiet)quietTracking=false;
@@ -58,4 +58,37 @@ public final class CPoolDiagnostics {
             .append(" / ").append(s.javaUsed).append(" / ").append(s.nativeUsed).append(" / ").append(s.holders).append('\n');}
         return b.toString();
     }
+    private static final long REFERENCE_MARKER=0x4354524600010000L;
+    private static final int REASONS=31,STRIDE=12+REASONS*3;
+    private static final String[] REFERENCE_NAMES={
+      "ORT_ANONYMOUS","ORT_CREATE_DELETE","ORT_TIMER","ORT_IO_RETAIN","ORT_IOCP_MESSAGE_RETAIN",
+      "ORT_OBJECT_MAP","ORT_OBJECT_NAME_MAP","ORT_OBJECT_INDEX","ORT_OBJECT_STORAGE","ORT_FIND_OBJECT",
+      "ORT_TL_MAP","ORT_SHARED_CONTAINER","ORT_SMART_ID","ORT_SERIALIZED_WORLD_THREAD","ORT_TEMP_USE",
+      "ORT_CACHED","ORT_FUNCTION_LOCAL","ORT_FUNCTION_CHAIN","ORT_EVENT_RETAIN","ORT_INVENTORY_CHANGE_MAP",
+      "ORT_IO_SOCKET_WRITE","ORT_NPC_RELATED","ORT_VERIFIER_RETAIN","ORT_CLASS_MEMBER","ORT_SOCKET_MAP",
+      "ORT_ACCOUNT_MAP","ORT_USER_SOCKET_MAP","ORT_USER_SOCKET_PLAY_MAP","ORT_USER_SOCKET_CHAR_MAP",
+      "ORT_SERIALIZED_MESSAGE","ORT_TDD_USE"};
+    private static final String[] REFERENCE_FILES={"unknown","CTransport.cpp","cio_core.hpp","execution_serializer.hpp","user_registry.hpp","object_map.hpp","timer_wheel.hpp","native-test"};
+    private static boolean validReferences(long[] r){return r.length>=16&&r[0]==REFERENCE_MARKER&&r[9]==REASONS&&r[10]==STRIDE&&r[11]==16&&r[8]>=0&&r[8]<=16&&r.length>=16+r[8]*STRIDE;}
+    public static long referenceActive(long[] r){return validReferences(r)?r[2]:0;}
+    private static String referenceSite(long packed){int file=(int)(packed>>>32);long line=packed&0xffffffffL;return(file>=0&&file<REFERENCE_FILES.length?REFERENCE_FILES[file]:"unknown")+":"+line;}
+    public static String referenceReport(long[] r){
+        if(!validReferences(r))return "\n종료 참조 진단: DLL 확장 미지원/종료 중\n";
+        StringBuilder b=new StringBuilder("\n종료 참조 진단 (미회수 의심 관측, 강제 해제 없음)\n");
+        b.append("검사기 시작/진행/검사횟수/잔여참조의심/생략/취소=").append(r[1]).append('/').append(r[2]).append('/').append(r[3]).append('/').append(r[4]).append('/').append(r[5]).append('/').append(r[6])
+         .append(" 진행 상한=").append(r[15]).append("\n프로세스 timer 상태오류=").append(r[12]).append(" 종류별 과반납=").append(r[13]).append('\n');
+        int count=(int)r[8];for(int n=Math.max(0,count-8);n<count;n++){
+            int at=16+n*STRIDE;long state=r[at+8],pending=r[at+9]>>>32;
+            String status=state==0?"추가 참조 없음":state==1?"잔여 참조 의심":state==2?"검사 취소":"I/O·패킷·등록 정리 대기";
+            b.append('#').append(r[at]).append(' ').append(status).append(" objectId=").append(r[at+2]).append(" socketNo=").append(r[at+3]).append(" connectionId=").append(r[at+4]).append(" account=").append(r[at+5])
+             .append(" ref=").append(r[at+6]).append(" 검사기 제외=").append(r[at+7]).append(" timer=").append(r[at+9]&0xffffffffL).append(" pending=0x").append(Long.toHexString(pending)).append('\n');
+            for(int kind=0;kind<REASONS;kind++){
+                int slot=at+12+kind*3;long refs=r[slot],add=r[slot+1],release=r[slot+2];if(refs==0&&add==0&&release==0)continue;
+                b.append("  ").append(REFERENCE_NAMES[kind]).append('=').append(refs).append(" add ").append(referenceSite(add)).append(" release ").append(referenceSite(release)).append('\n');
+            }
+        }
+        return b.append("정상 I/O·패킷 보유와 원인 미확정 잔여 참조를 구분합니다. 검사기 자신의1개 참조는 잔여량에서 제외합니다.\n")
+          .append("최근 기록 최대16개 중8개 표시. 위치는 L1 소스이며 RAII 반납은 소유 scope 위치입니다. 동시에 읽은 카운터는 순간 차이가 날 수 있습니다.\n").toString();
+    }
+
 }

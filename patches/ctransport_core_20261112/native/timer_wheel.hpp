@@ -122,7 +122,7 @@ public:
   catch(...){for(auto* head:buckets_)if(head)pool_->Return(head);throw;}
  }
  ~CThreadLocalTimer(){
-  for(auto& item:entries_)item.second->object->release();
+  for(auto& item:entries_){item.second->object->unlinkTimer();item.second->object->release(ObjectReferenceType::ORT_TIMER);}
   for(auto* head:buckets_)while(head){auto* next=head->next;pool_->Return(head);head=next;}
  }
  // Original AddTimer(object,deadline,message,argument) order. bool admission,
@@ -133,12 +133,12 @@ public:
   try{
    auto entry=std::make_unique<Entry>();entry->token=token;entry->object=object;entry->message=static_cast<std::uint32_t>(message);entry->tick=std::max(cursor_,deadline/Tick+(deadline%Tick!=0));auto* p=entry.get();
    entries_.emplace(token,std::move(entry));try{place(p);}catch(...){entries_.erase(token);return false;}
-   object->retain();return true;
+   object->retain(ObjectReferenceType::ORT_TIMER);object->linkTimer();return true;
   }catch(...){return false;}
  }
  CIOObject* cancel(std::uint64_t token)noexcept{
   std::lock_guard<std::mutex> lock(gate_);auto found=entries_.find(token);if(found==entries_.end())return nullptr;
-  auto* p=found->second.get();auto* object=p->object;if(p->heap)removeHeap(p->index);else removeBucket(p);entries_.erase(found);return object;
+  auto* p=found->second.get();auto* object=p->object;if(p->heap)removeHeap(p->index);else removeBucket(p);entries_.erase(found);object->unlinkTimer();return object;
  }
  CIOObject* takeDue(std::uint64_t now)noexcept{
   std::lock_guard<std::mutex> lock(gate_);auto end=now/Tick;
@@ -154,7 +154,7 @@ public:
    if(position.live){
     while(position.read<head->count&&!head->objects[position.read])++position.read;
     auto token=head->arguments[position.read++];auto found=entries_.find(token);auto* p=found->second.get();auto* object=p->object;
-    removeBucket(p);entries_.erase(found);return object;
+    removeBucket(p);entries_.erase(found);object->unlinkTimer();return object;
    }
    ++cursor_;
   }
@@ -163,7 +163,7 @@ public:
  // Dispatch is confirmed by both original signature overloads. The callback
  // supplies L1 NativeTask execution; removal still precedes external callbacks.
  template<class Execute> void Dispatch(std::uint64_t now,Execute&& execute)noexcept{
-  while(auto* due=takeDue(now)){execute(due);due->release();}
+  while(auto* due=takeDue(now)){execute(due);due->release(ObjectReferenceType::ORT_TIMER);}
  }
  std::size_t size()noexcept{std::lock_guard<std::mutex> lock(gate_);return entries_.size();}
  std::size_t blocksInUse()noexcept{return pool_->inUse();}

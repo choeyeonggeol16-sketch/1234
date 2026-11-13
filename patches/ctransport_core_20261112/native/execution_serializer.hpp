@@ -26,7 +26,7 @@ public:
         if(owner_.load(std::memory_order_acquire)==thread_){function(object,argument);return true;}
         auto count=pending_.load(std::memory_order_acquire);
         do{if(count>=Limit)return false;}while(!pending_.compare_exchange_weak(count,count+1,std::memory_order_acq_rel));
-        object->retain();
+        object->retain(ObjectReferenceType::ORT_SERIALIZED_MESSAGE);
         const auto ticket=tail_.fetch_add(1,std::memory_order_relaxed);auto& entry=entries_[ticket%Slots];
         // pending reservation can precede ticket allocation by many ring turns.
         // Acquire this exact slot generation, not just a global queue count.
@@ -40,7 +40,7 @@ public:
             auto* target=next.object;void* data=next.argument;
             execute(target,data);next.object=nullptr;next.argument=nullptr;
             next.function.store(nullptr,std::memory_order_relaxed);
-            next.available.store(current+Slots,std::memory_order_release);target->release();
+            next.available.store(current+Slots,std::memory_order_release);target->release(ObjectReferenceType::ORT_SERIALIZED_MESSAGE);
             // Clear before the count handoff. A concurrent producer either
             // keeps this owner draining or becomes the next unique owner.
             owner_.store(0,std::memory_order_release);

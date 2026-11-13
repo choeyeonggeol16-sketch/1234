@@ -30,25 +30,24 @@
     ]
   ],
   "files": {
-    "CTransport.cpp": "47d49240e96db8b3bd2ada59ff3af8f8e7e215fb3d85fb6ab204de2e76c34eec",
+    "CTransport.cpp": "9119f51396d1d9b33abc2698d5dcc5bec9f4d21528564e50903a0a6747896d90",
     "CTransport.h": "9d600a11c818fb3ed16bfd5c4f2d813826c510a63f1c8b7ede7b525dafefd81c",
     "build_native.py": "2bf81ff59eae5664c8bff5fd5c928d869070556a9c8705d8551552c2eca4b72a",
-    "cio_core.hpp": "366dceef1b9ade23843f339dbfada184633d737da8b6f23eb7e9decb40d57f31",
-    "execution_serializer.hpp": "655069de16b6168d28d0eba2861e58325cc35e7461268d65d666e48a9e7d0b3d",
+    "cio_core.hpp": "e6ab0ba6f1642770eb1ee765b5223cb9cb88c3fb9c1cd30bb49f694ae7c96023",
+    "execution_serializer.hpp": "1a7e3ce2428ce01285d03ecb16226d69c1500c499809089af589b12be0ffe331",
     "interop_abi.hpp": "ee0cc82dc619f1dc4ac98543a0df2cc17f854fd97d2f0d8c9edd63a4131714a7",
     "io_server.hpp": "fa4bcc39bc88be60af95017422dca2116e0e0fcf43c5b4637815b4db3689cce8",
     "l1_codec.hpp": "10ea703f520d8a6d9107567b3ed0ec60d1e74b58f56f9ff2bda6f2d2f079c77c",
-    "object_map.hpp": "786e2f0116e64b891063410a45866c954b0f2e1a97d2eb1ac716f2a787598724",
+    "object_map.hpp": "04e86cba828aae791156a445f5e22e73496583d306aa17e36af13834974610aa",
     "perfmon.hpp": "f08edf3e1cbe7b01bdce7d77dff2c1d8abb90f838abe66d453aad1e3e10b8f8d",
+    "reference_trace.hpp": "cd8ea284bf3bd05ec0efaeeeadf3321e7a02d2b770ae657e9c1378a5f6de35cd",
     "socket_limiter.hpp": "5414631374597b1356da085dcbbcd615c56784449dc851dc51436357cdc5d7a1",
-    "timer_wheel.hpp": "08c5185cac118ed169c50fb6f0cb66ef7eedf27d32290b287450feca44d26a7a",
-    "user_registry.hpp": "9b2961fcc98b13f1877b55d9ebafe092634f42ea204d5d9b204cf30bc3d89231",
+    "timer_wheel.hpp": "c78c626df47f4c395e0260199fa717e8b4b976c8b618a591088f10a54b976e45",
+    "user_registry.hpp": "6ea66d2b319f28cd10a8deb418b016bbd0bfee956ff252cdeb9c8f555196f30d",
     "user_socket.hpp": "27dc7bbcc0f023d96a87fc18fe6d7f249c86f41dc7c441f619cfa481b2a6bdf0",
     "windows_loopback_test.cpp": "da338b0b4c05f289ccb5044f29aa8acd4fdd7b722113bba774f57f73fa79d724"
   },
-  "dll_sha256": "01d389928506719781cdcbd1b9042f58a3b9d89786f6fdb6f0bf2572a63afb75",
-  "selftest_sha256": "2086fd5d0ce3bdf8b045558141534b562e79c0d73ce04b414b23533932d6ebec",
-  "windows_execution_tested": true,
-  "windows_run_id": 43491457850,
-  "tested_source_commit": "8812c2e6019ad8380d5cef52801b3f6d40979d75"
+  "dll_sha256": "b37e57e850ceb7134ff20c3a6950714973cad046a52a89243dec5dcda5ac4be1",
+  "selftest_sha256": "a7d1d63c3da40edd326bd72b4f9fe60cbec30939e2976e23b05dd0f17606ef0c",
+  "windows_execution_tested": false
 }
