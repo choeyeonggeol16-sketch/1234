@@ -1,9 +1,20 @@
 {
   "binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
   "original_executed": false,
-  "baseline": "1f5ff36",
-  "method": "UTF16 signatures validated by actual RIP references and PE unwind boundaries; additional previously audited structural roots",
+  "baseline": "e870c63",
+  "method": "UTF16 signatures validated by actual RIP references and PE unwind boundaries; supplemental TAB-prefixed references and direct-callee leaf CFG; additional previously audited structural roots",
   "limits": "Census and source-role comparison are not proof of every unnamed function or every exception branch; x86 remains the previous crosscheck,not a new exhaustive audit.",
+  "resolved_previous_signatures": [
+    "0xb26a12",
+    "0xb318f2",
+    "0xb33672",
+    "0xb34b92",
+    "0xb546f2",
+    "0xb54992",
+    "0xb54a92",
+    "0xcc8550",
+    "0xcc85b0"
+  ],
   "functions": [
     {
       "entry": "0x401f3c",
@@ -12,7 +23,7 @@
       ],
       "category": "CORE_ROLE_MAPPED",
       "current_source": "native/cio_core.hpp",
-      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "comparison": "Original forbidden-delete diagnostic,not normal recycle;current heap-based final release uses deletion,an allocator adaptation.",
       "function_scope": "PE pdata/unwind",
       "chunks": [
         [
@@ -99,6 +110,27 @@
       "assembly": "fn_404ca0.asm.txt"
     },
     {
+      "entry": "0x419e8c",
+      "signatures": [
+        "void __cdecl CNewMwsrQueue<class CIOBufferEx<16384> >::UnLock(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Unlock role maps to SpinLock/SpinGuard;original unlocked-state assertion and shared error handler are not identical.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x419e8c",
+          "0x419ef1"
+        ]
+      ],
+      "direct_calls": [
+        "0x66db28"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_419e8c.asm.txt"
+    },
+    {
       "entry": "0x41b994",
       "signatures": [
         "void __cdecl CExecutionSerializer<class CShipController,32>::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(struct CExecutionArgumentPad *),class CExecutionArgument *,const wchar_t *)"
@@ -130,11 +162,12 @@
     {
       "entry": "0x41c6f8",
       "signatures": [
-        "BufferReturn"
+        "BufferReturn",
+        "void __cdecl CNewMwsrQueue<class CIOBufferEx<16384> >::Push(class CIOBufferEx<16384> *)"
       ],
       "category": "CORE_ROLE_MAPPED",
       "current_source": "native/cio_core.hpp",
-      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "comparison": "Final release returns to the stamped owner ring;current gate covers readers and writers for FFM producers,not original single-reader topology.",
       "function_scope": "PE pdata/unwind",
       "chunks": [
         [
@@ -151,11 +184,12 @@
     {
       "entry": "0x41e6e4",
       "signatures": [
-        "BufferAllocate"
+        "BufferAllocate",
+        "class CIOBufferEx<16384> *__cdecl CIOBufferEx<16384>::Alloc(void)"
       ],
       "category": "CORE_ROLE_MAPPED",
       "current_source": "native/cio_core.hpp",
-      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "comparison": "Owner-ring acquire/ref1 role exists;original logs and skips invalid nonnull entries,current diagnoses and rejects without advancing;exhaustion policy also differs.",
       "function_scope": "PE pdata/unwind",
       "chunks": [
         [
@@ -323,6 +357,27 @@
       "assembly": "fn_45c7ac.asm.txt"
     },
     {
+      "entry": "0x45d3b4",
+      "signatures": [
+        "void __cdecl CNewMwsrQueue<class CIOBufferEx<8192> >::UnLock(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Unlock role maps to SpinLock/SpinGuard;original unlocked-state assertion and shared error handler are not identical.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45d3b4",
+          "0x45d419"
+        ]
+      ],
+      "direct_calls": [
+        "0x66db28"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_45d3b4.asm.txt"
+    },
+    {
       "entry": "0x45d41c",
       "signatures": [
         "void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::Close(void)"
@@ -359,6 +414,49 @@
       "direct_calls": [],
       "caller_count": 15,
       "assembly": "fn_45d534.asm.txt"
+    },
+    {
+      "entry": "0x45d67c",
+      "signatures": [
+        "void __cdecl CNewMwsrQueue<class CIOBufferEx<8192> >::Push(class CIOBufferEx<8192> *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Final release returns to the stamped owner ring;current gate covers readers and writers for FFM producers,not original single-reader topology.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45d67c",
+          "0x45d72a"
+        ]
+      ],
+      "direct_calls": [
+        "0x66db28"
+      ],
+      "caller_count": 9,
+      "assembly": "fn_45d67c.asm.txt"
+    },
+    {
+      "entry": "0x45d7f8",
+      "signatures": [
+        "class CIOBufferEx<8192> *__cdecl CIOBufferEx<8192>::Alloc(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Owner-ring acquire/ref1 role exists;original logs and skips invalid nonnull entries,current diagnoses and rejects without advancing;exhaustion policy also differs.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45d7f8",
+          "0x45d9fe"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x66db28"
+      ],
+      "caller_count": 6,
+      "assembly": "fn_45d7f8.asm.txt"
     },
     {
       "entry": "0x45da20",
@@ -1320,6 +1418,44 @@
       "direct_calls": [],
       "caller_count": 4,
       "assembly": "fn_7d6d50.asm.txt"
+    },
+    {
+      "entry": "0x7d6d5c",
+      "signatures": [
+        "__cdecl MemoryObject::MemoryObject(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Original starts ref1 and assigns a fresh global object ID;current ref1 exists,but I/O copies are disabled and original object-ID namespace is not ported.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x7d6d5c",
+          "0x7d6df4"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 182,
+      "assembly": "fn_7d6d5c.asm.txt"
+    },
+    {
+      "entry": "0x7d6e1c",
+      "signatures": [
+        "__cdecl MemoryObject::MemoryObject(const class MemoryObject &)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Original starts ref1 and assigns a fresh global object ID;current ref1 exists,but I/O copies are disabled and original object-ID namespace is not ported.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x7d6e1c",
+          "0x7d6eb4"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 5,
+      "assembly": "fn_7d6e1c.asm.txt"
     },
     {
       "entry": "0x7d6eb4",
@@ -3678,42 +3814,5 @@
       "assembly": "fn_ab9010.asm.txt"
     }
   ],
-  "unlocated_signatures": [
-    {
-      "va": "0xb26a12",
-      "signature": "void __cdecl MemoryObject::operator delete(void *)"
-    },
-    {
-      "va": "0xb318f2",
-      "signature": "void __cdecl CNewMwsrQueue<class CIOBufferEx<16384> >::UnLock(void)"
-    },
-    {
-      "va": "0xb33672",
-      "signature": "void __cdecl CNewMwsrQueue<class CIOBufferEx<16384> >::Push(class CIOBufferEx<16384> *)"
-    },
-    {
-      "va": "0xb34b92",
-      "signature": "class CIOBufferEx<16384> *__cdecl CIOBufferEx<16384>::Alloc(void)"
-    },
-    {
-      "va": "0xb546f2",
-      "signature": "void __cdecl CNewMwsrQueue<class CIOBufferEx<8192> >::UnLock(void)"
-    },
-    {
-      "va": "0xb54992",
-      "signature": "void __cdecl CNewMwsrQueue<class CIOBufferEx<8192> >::Push(class CIOBufferEx<8192> *)"
-    },
-    {
-      "va": "0xb54a92",
-      "signature": "class CIOBufferEx<8192> *__cdecl CIOBufferEx<8192>::Alloc(void)"
-    },
-    {
-      "va": "0xcc8550",
-      "signature": "__cdecl MemoryObject::MemoryObject(void)"
-    },
-    {
-      "va": "0xcc85b0",
-      "signature": "__cdecl MemoryObject::MemoryObject(const class MemoryObject &)"
-    }
-  ]
+  "unlocated_signatures": []
 }

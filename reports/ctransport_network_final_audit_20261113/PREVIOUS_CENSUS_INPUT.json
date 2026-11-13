@@ -1,0 +1,1322 @@
+{
+  "binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "baseline": "e870c63",
+  "functions": [
+    {
+      "entry": "0x401f3c",
+      "chunks": [
+        [
+          "0x401f3c",
+          "0x402045"
+        ]
+      ]
+    },
+    {
+      "entry": "0x404c88",
+      "chunks": [
+        [
+          "0x404c88",
+          "0x404c94"
+        ]
+      ]
+    },
+    {
+      "entry": "0x404c94",
+      "chunks": [
+        [
+          "0x404c94",
+          "0x404ca0"
+        ]
+      ]
+    },
+    {
+      "entry": "0x404ca0",
+      "chunks": [
+        [
+          "0x404ca0",
+          "0x404cb4"
+        ]
+      ]
+    },
+    {
+      "entry": "0x41b994",
+      "chunks": [
+        [
+          "0x41b994",
+          "0x41bdd5"
+        ]
+      ]
+    },
+    {
+      "entry": "0x41c6f8",
+      "chunks": [
+        [
+          "0x41c6f8",
+          "0x41c7a6"
+        ]
+      ]
+    },
+    {
+      "entry": "0x41e6e4",
+      "chunks": [
+        [
+          "0x41e6e4",
+          "0x41e8ea"
+        ]
+      ]
+    },
+    {
+      "entry": "0x43bae0",
+      "chunks": [
+        [
+          "0x43bae0",
+          "0x43bb71"
+        ]
+      ]
+    },
+    {
+      "entry": "0x43bb98",
+      "chunks": [
+        [
+          "0x43bb98",
+          "0x43bbf4"
+        ]
+      ]
+    },
+    {
+      "entry": "0x43f5b8",
+      "chunks": [
+        [
+          "0x43f5b8",
+          "0x43f669"
+        ]
+      ]
+    },
+    {
+      "entry": "0x43f690",
+      "chunks": [
+        [
+          "0x43f690",
+          "0x43f736"
+        ]
+      ]
+    },
+    {
+      "entry": "0x43f758",
+      "chunks": [
+        [
+          "0x43f758",
+          "0x43f801"
+        ]
+      ]
+    },
+    {
+      "entry": "0x44c0c8",
+      "chunks": [
+        [
+          "0x44c0c8",
+          "0x44c0f0"
+        ]
+      ]
+    },
+    {
+      "entry": "0x45c7ac",
+      "chunks": [
+        [
+          "0x45c7ac",
+          "0x45c9cd"
+        ]
+      ]
+    },
+    {
+      "entry": "0x45d41c",
+      "chunks": [
+        [
+          "0x45d41c",
+          "0x45d50f"
+        ]
+      ]
+    },
+    {
+      "entry": "0x45d534",
+      "chunks": [
+        [
+          "0x45d534",
+          "0x45d627"
+        ]
+      ]
+    },
+    {
+      "entry": "0x45da20",
+      "chunks": [
+        [
+          "0x45da20",
+          "0x45db0b"
+        ]
+      ]
+    },
+    {
+      "entry": "0x45db68",
+      "chunks": [
+        [
+          "0x45db68",
+          "0x45db73"
+        ]
+      ]
+    },
+    {
+      "entry": "0x45db74",
+      "chunks": [
+        [
+          "0x45db74",
+          "0x45dc38"
+        ]
+      ]
+    },
+    {
+      "entry": "0x45dc5c",
+      "chunks": [
+        [
+          "0x45dc5c",
+          "0x45dd6d"
+        ]
+      ]
+    },
+    {
+      "entry": "0x45dd94",
+      "chunks": [
+        [
+          "0x45dd94",
+          "0x45de12"
+        ]
+      ]
+    },
+    {
+      "entry": "0x45df80",
+      "chunks": [
+        [
+          "0x45df80",
+          "0x45e0d4"
+        ]
+      ]
+    },
+    {
+      "entry": "0x45e138",
+      "chunks": [
+        [
+          "0x45e138",
+          "0x45e41f"
+        ]
+      ]
+    },
+    {
+      "entry": "0x45e480",
+      "chunks": [
+        [
+          "0x45e480",
+          "0x45e838"
+        ]
+      ]
+    },
+    {
+      "entry": "0x45e878",
+      "chunks": [
+        [
+          "0x45e878",
+          "0x45e8a0"
+        ]
+      ]
+    },
+    {
+      "entry": "0x45f028",
+      "chunks": [
+        [
+          "0x45f028",
+          "0x45f11a"
+        ]
+      ]
+    },
+    {
+      "entry": "0x466d44",
+      "chunks": [
+        [
+          "0x466d44",
+          "0x46726c"
+        ]
+      ]
+    },
+    {
+      "entry": "0x53a8fc",
+      "chunks": [
+        [
+          "0x53a8fc",
+          "0x53a8ff"
+        ]
+      ]
+    },
+    {
+      "entry": "0x545030",
+      "chunks": [
+        [
+          "0x545030",
+          "0x54511b"
+        ]
+      ]
+    },
+    {
+      "entry": "0x545178",
+      "chunks": [
+        [
+          "0x545178",
+          "0x54523c"
+        ]
+      ]
+    },
+    {
+      "entry": "0x545260",
+      "chunks": [
+        [
+          "0x545260",
+          "0x545371"
+        ]
+      ]
+    },
+    {
+      "entry": "0x545398",
+      "chunks": [
+        [
+          "0x545398",
+          "0x545416"
+        ]
+      ]
+    },
+    {
+      "entry": "0x545518",
+      "chunks": [
+        [
+          "0x545518",
+          "0x54566c"
+        ]
+      ]
+    },
+    {
+      "entry": "0x5456d0",
+      "chunks": [
+        [
+          "0x5456d0",
+          "0x5459b7"
+        ]
+      ]
+    },
+    {
+      "entry": "0x545a18",
+      "chunks": [
+        [
+          "0x545a18",
+          "0x545dd0"
+        ]
+      ]
+    },
+    {
+      "entry": "0x545e10",
+      "chunks": [
+        [
+          "0x545e10",
+          "0x545e38"
+        ]
+      ]
+    },
+    {
+      "entry": "0x54655c",
+      "chunks": [
+        [
+          "0x54655c",
+          "0x54664e"
+        ]
+      ]
+    },
+    {
+      "entry": "0x56daa8",
+      "chunks": [
+        [
+          "0x56daa8",
+          "0x56daab"
+        ]
+      ]
+    },
+    {
+      "entry": "0x676bac",
+      "chunks": [
+        [
+          "0x676bac",
+          "0x6770d4"
+        ]
+      ]
+    },
+    {
+      "entry": "0x704248",
+      "chunks": [
+        [
+          "0x704248",
+          "0x70429c"
+        ]
+      ]
+    },
+    {
+      "entry": "0x70482c",
+      "chunks": [
+        [
+          "0x70482c",
+          "0x7048ac"
+        ]
+      ]
+    },
+    {
+      "entry": "0x7048cc",
+      "chunks": [
+        [
+          "0x7048cc",
+          "0x70495b"
+        ]
+      ]
+    },
+    {
+      "entry": "0x704990",
+      "chunks": [
+        [
+          "0x704990",
+          "0x704a29"
+        ]
+      ]
+    },
+    {
+      "entry": "0x704bec",
+      "chunks": [
+        [
+          "0x704bec",
+          "0x704c7a"
+        ]
+      ]
+    },
+    {
+      "entry": "0x704c7c",
+      "chunks": [
+        [
+          "0x704c7c",
+          "0x704d1b"
+        ]
+      ]
+    },
+    {
+      "entry": "0x704d1c",
+      "chunks": [
+        [
+          "0x704d1c",
+          "0x704dab"
+        ]
+      ]
+    },
+    {
+      "entry": "0x705480",
+      "chunks": [
+        [
+          "0x705480",
+          "0x705508"
+        ]
+      ]
+    },
+    {
+      "entry": "0x705508",
+      "chunks": [
+        [
+          "0x705508",
+          "0x705642"
+        ]
+      ]
+    },
+    {
+      "entry": "0x7056ac",
+      "chunks": [
+        [
+          "0x7056ac",
+          "0x7059a1"
+        ]
+      ]
+    },
+    {
+      "entry": "0x705d54",
+      "chunks": [
+        [
+          "0x705d54",
+          "0x705e2b"
+        ]
+      ]
+    },
+    {
+      "entry": "0x705e4c",
+      "chunks": [
+        [
+          "0x705e4c",
+          "0x70607c"
+        ]
+      ]
+    },
+    {
+      "entry": "0x706564",
+      "chunks": [
+        [
+          "0x706564",
+          "0x7066c2"
+        ]
+      ]
+    },
+    {
+      "entry": "0x7066dc",
+      "chunks": [
+        [
+          "0x7066dc",
+          "0x706872"
+        ]
+      ]
+    },
+    {
+      "entry": "0x7b071c",
+      "chunks": [
+        [
+          "0x7b071c",
+          "0x7b0c44"
+        ]
+      ]
+    },
+    {
+      "entry": "0x7d6d50",
+      "chunks": [
+        [
+          "0x7d6d50",
+          "0x7d6d59"
+        ]
+      ]
+    },
+    {
+      "entry": "0x7d6eb4",
+      "chunks": [
+        [
+          "0x7d6eb4",
+          "0x7d703b"
+        ]
+      ]
+    },
+    {
+      "entry": "0x82c0c0",
+      "chunks": [
+        [
+          "0x82c0c0",
+          "0x82c3cb"
+        ]
+      ]
+    },
+    {
+      "entry": "0x8b0738",
+      "chunks": [
+        [
+          "0x8b0738",
+          "0x8b0929"
+        ]
+      ]
+    },
+    {
+      "entry": "0x90dec0",
+      "chunks": [
+        [
+          "0x90dec0",
+          "0x90df28"
+        ]
+      ]
+    },
+    {
+      "entry": "0x90df28",
+      "chunks": [
+        [
+          "0x90df28",
+          "0x90df92"
+        ]
+      ]
+    },
+    {
+      "entry": "0x90df94",
+      "chunks": [
+        [
+          "0x90df94",
+          "0x90e02c"
+        ]
+      ]
+    },
+    {
+      "entry": "0x90e04c",
+      "chunks": [
+        [
+          "0x90e04c",
+          "0x90e13e"
+        ]
+      ]
+    },
+    {
+      "entry": "0x90e140",
+      "chunks": [
+        [
+          "0x90e140",
+          "0x90e1ce"
+        ]
+      ]
+    },
+    {
+      "entry": "0x90e548",
+      "chunks": [
+        [
+          "0x90e548",
+          "0x90e642"
+        ]
+      ]
+    },
+    {
+      "entry": "0x90e644",
+      "chunks": [
+        [
+          "0x90e644",
+          "0x90e6c1"
+        ]
+      ]
+    },
+    {
+      "entry": "0x90e6c4",
+      "chunks": [
+        [
+          "0x90e6c4",
+          "0x90eb99"
+        ]
+      ]
+    },
+    {
+      "entry": "0x90ebbc",
+      "chunks": [
+        [
+          "0x90ebbc",
+          "0x90ebe4"
+        ]
+      ]
+    },
+    {
+      "entry": "0x90ebe4",
+      "chunks": [
+        [
+          "0x90ebe4",
+          "0x90eceb"
+        ]
+      ]
+    },
+    {
+      "entry": "0x90ed10",
+      "chunks": [
+        [
+          "0x90ed10",
+          "0x90ee54"
+        ]
+      ]
+    },
+    {
+      "entry": "0x90ee9c",
+      "chunks": [
+        [
+          "0x90ee9c",
+          "0x90f04a"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9ba4f8",
+      "chunks": [
+        [
+          "0x9ba4f8",
+          "0x9ba68e"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9ba6b0",
+      "chunks": [
+        [
+          "0x9ba6b0",
+          "0x9ba746"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9ef41c",
+      "chunks": [
+        [
+          "0x9ef41c",
+          "0x9ef51d"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9ef544",
+      "chunks": [
+        [
+          "0x9ef544",
+          "0x9ef61f"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9ef620",
+      "chunks": [
+        [
+          "0x9ef620",
+          "0x9ef63a"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9efca4",
+      "chunks": [
+        [
+          "0x9efca4",
+          "0x9efdbb"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9efef4",
+      "chunks": [
+        [
+          "0x9efef4",
+          "0x9effc3"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9effdc",
+      "chunks": [
+        [
+          "0x9effdc",
+          "0x9f00a1"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f00c4",
+      "chunks": [
+        [
+          "0x9f00c4",
+          "0x9f016b"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f018c",
+      "chunks": [
+        [
+          "0x9f018c",
+          "0x9f025b"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f1e0c",
+      "chunks": [
+        [
+          "0x9f1e0c",
+          "0x9f1f49"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f245c",
+      "chunks": [
+        [
+          "0x9f245c",
+          "0x9f2529"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f2544",
+      "chunks": [
+        [
+          "0x9f2544",
+          "0x9f2624"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f3344",
+      "chunks": [
+        [
+          "0x9f3344",
+          "0x9f36bb"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f561c",
+      "chunks": [
+        [
+          "0x9f561c",
+          "0x9f5704"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f7088",
+      "chunks": [
+        [
+          "0x9f7088",
+          "0x9f71d6"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f773c",
+      "chunks": [
+        [
+          "0x9f773c",
+          "0x9f776d"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f7770",
+      "chunks": [
+        [
+          "0x9f7770",
+          "0x9f7998"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f7998",
+      "chunks": [
+        [
+          "0x9f7998",
+          "0x9f7b65"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f7b80",
+      "chunks": [
+        [
+          "0x9f7b80",
+          "0x9f7c97"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f7f3c",
+      "chunks": [
+        [
+          "0x9f7f3c",
+          "0x9f802f"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f8080",
+      "chunks": [
+        [
+          "0x9f8080",
+          "0x9f80dc"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f8330",
+      "chunks": [
+        [
+          "0x9f8330",
+          "0x9f851d"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f853c",
+      "chunks": [
+        [
+          "0x9f853c",
+          "0x9f85eb"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f8604",
+      "chunks": [
+        [
+          "0x9f8604",
+          "0x9f869d"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f86bc",
+      "chunks": [
+        [
+          "0x9f86bc",
+          "0x9f8764"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f8784",
+      "chunks": [
+        [
+          "0x9f8784",
+          "0x9f882d"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f884c",
+      "chunks": [
+        [
+          "0x9f884c",
+          "0x9f88f4"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f8914",
+      "chunks": [
+        [
+          "0x9f8914",
+          "0x9f89bc"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f89dc",
+      "chunks": [
+        [
+          "0x9f89dc",
+          "0x9f8a92"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f8ab4",
+      "chunks": [
+        [
+          "0x9f8ab4",
+          "0x9f8b5c"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f8b7c",
+      "chunks": [
+        [
+          "0x9f8b7c",
+          "0x9f8cf7"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f8d58",
+      "chunks": [
+        [
+          "0x9f8d58",
+          "0x9f8e3f"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f90c8",
+      "chunks": [
+        [
+          "0x9f90c8",
+          "0x9f923f"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f9260",
+      "chunks": [
+        [
+          "0x9f9260",
+          "0x9f9a57"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f9a7c",
+      "chunks": [
+        [
+          "0x9f9a7c",
+          "0x9f9bfc"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9f9c14",
+      "chunks": [
+        [
+          "0x9f9c14",
+          "0x9f9faf"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9fa250",
+      "chunks": [
+        [
+          "0x9fa250",
+          "0x9fa40c"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9fc9b4",
+      "chunks": [
+        [
+          "0x9fc9b4",
+          "0x9fcbcb"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9fcbf0",
+      "chunks": [
+        [
+          "0x9fcbf0",
+          "0x9fcc72"
+        ]
+      ]
+    },
+    {
+      "entry": "0x9fcc98",
+      "chunks": [
+        [
+          "0x9fcc98",
+          "0x9fced6"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa01240",
+      "chunks": [
+        [
+          "0xa01240",
+          "0xa01464"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa014ac",
+      "chunks": [
+        [
+          "0xa014ac",
+          "0xa0155d"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa015a4",
+      "chunks": [
+        [
+          "0xa015a4",
+          "0xa01655"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa0169c",
+      "chunks": [
+        [
+          "0xa0169c",
+          "0xa01790"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa017a0",
+      "chunks": [
+        [
+          "0xa017a0",
+          "0xa017c8"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa017c8",
+      "chunks": [
+        [
+          "0xa017c8",
+          "0xa018f9"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa035e4",
+      "chunks": [
+        [
+          "0xa035e4",
+          "0xa03713"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa0372c",
+      "chunks": [
+        [
+          "0xa0372c",
+          "0xa03d8f"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa04a60",
+      "chunks": [
+        [
+          "0xa04a60",
+          "0xa04bfa"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa04c3c",
+      "chunks": [
+        [
+          "0xa04c3c",
+          "0xa04dd0"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa08940",
+      "chunks": [
+        [
+          "0xa08940",
+          "0xa08a26"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa08a48",
+      "chunks": [
+        [
+          "0xa08a48",
+          "0xa08b2e"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa09028",
+      "chunks": [
+        [
+          "0xa09028",
+          "0xa09db6"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa09e10",
+      "chunks": [
+        [
+          "0xa09e10",
+          "0xa0acde"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa0ccc4",
+      "chunks": [
+        [
+          "0xa0ccc4",
+          "0xa0cff8"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa0d07c",
+      "chunks": [
+        [
+          "0xa0d07c",
+          "0xa0d124"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa0d164",
+      "chunks": [
+        [
+          "0xa0d164",
+          "0xa0db8a"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa0dc04",
+      "chunks": [
+        [
+          "0xa0dc04",
+          "0xa0dda1"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa0dddc",
+      "chunks": [
+        [
+          "0xa0dddc",
+          "0xa0de95"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa0ded4",
+      "chunks": [
+        [
+          "0xa0ded4",
+          "0xa0e072"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa0e0ac",
+      "chunks": [
+        [
+          "0xa0e0ac",
+          "0xa0e166"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa0e1a4",
+      "chunks": [
+        [
+          "0xa0e1a4",
+          "0xa0eb22"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa0f83c",
+      "chunks": [
+        [
+          "0xa0f83c",
+          "0xa0fe2f"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa0fe54",
+      "chunks": [
+        [
+          "0xa0fe54",
+          "0xa109cc"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa10ad0",
+      "chunks": [
+        [
+          "0xa10ad0",
+          "0xa10c71"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa121a0",
+      "chunks": [
+        [
+          "0xa121a0",
+          "0xa123cc"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa12dec",
+      "chunks": [
+        [
+          "0xa12dec",
+          "0xa12eed"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa1c58c",
+      "chunks": [
+        [
+          "0xa1c58c",
+          "0xa1c83f"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa1cb64",
+      "chunks": [
+        [
+          "0xa1cb64",
+          "0xa1ccc7"
+        ]
+      ]
+    },
+    {
+      "entry": "0xa3a490",
+      "chunks": [
+        [
+          "0xa3a490",
+          "0xa3a8ee"
+        ]
+      ]
+    },
+    {
+      "entry": "0xab9010",
+      "chunks": [
+        [
+          "0xab9010",
+          "0xab9046"
+        ]
+      ]
+    }
+  ],
+  "unlocated_signatures": [
+    {
+      "va": "0xb26a12",
+      "signature": "void __cdecl MemoryObject::operator delete(void *)"
+    },
+    {
+      "va": "0xb318f2",
+      "signature": "void __cdecl CNewMwsrQueue<class CIOBufferEx<16384> >::UnLock(void)"
+    },
+    {
+      "va": "0xb33672",
+      "signature": "void __cdecl CNewMwsrQueue<class CIOBufferEx<16384> >::Push(class CIOBufferEx<16384> *)"
+    },
+    {
+      "va": "0xb34b92",
+      "signature": "class CIOBufferEx<16384> *__cdecl CIOBufferEx<16384>::Alloc(void)"
+    },
+    {
+      "va": "0xb546f2",
+      "signature": "void __cdecl CNewMwsrQueue<class CIOBufferEx<8192> >::UnLock(void)"
+    },
+    {
+      "va": "0xb54992",
+      "signature": "void __cdecl CNewMwsrQueue<class CIOBufferEx<8192> >::Push(class CIOBufferEx<8192> *)"
+    },
+    {
+      "va": "0xb54a92",
+      "signature": "class CIOBufferEx<8192> *__cdecl CIOBufferEx<8192>::Alloc(void)"
+    },
+    {
+      "va": "0xcc8550",
+      "signature": "__cdecl MemoryObject::MemoryObject(void)"
+    },
+    {
+      "va": "0xcc85b0",
+      "signature": "__cdecl MemoryObject::MemoryObject(const class MemoryObject &)"
+    }
+  ]
+}

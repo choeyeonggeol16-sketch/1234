@@ -33,5 +33,6 @@
       "path": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
       "sha256": "813c809e572d557f116b035221a59e371168bd0b5c6b3cbe5d97f4bb8414a361"
     }
-  ]
+  ],
+  "audit_baseline_commit": "e870c63e2c7c99f578c1797b7a8edeabf50eac02"
 }

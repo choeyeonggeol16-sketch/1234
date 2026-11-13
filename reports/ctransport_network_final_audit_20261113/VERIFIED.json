@@ -1,0 +1,55 @@
+{
+  "binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "checks": [
+    {
+      "at": "0x419ee6",
+      "bytes": "c70100000000",
+      "instruction": "mov dword ptr [rcx], 0"
+    },
+    {
+      "at": "0x45d40e",
+      "bytes": "c70100000000",
+      "instruction": "mov dword ptr [rcx], 0"
+    },
+    {
+      "at": "0x41c740",
+      "bytes": "4c8904c1",
+      "instruction": "mov qword ptr [rcx + rax*8], r8"
+    },
+    {
+      "at": "0x45d6c4",
+      "bytes": "4c8904c1",
+      "instruction": "mov qword ptr [rcx + rax*8], r8"
+    },
+    {
+      "at": "0x41e833",
+      "bytes": "f04183812040000001",
+      "instruction": "lock add dword ptr [r9 + 0x4020], 1"
+    },
+    {
+      "at": "0x45d947",
+      "bytes": "f04183812020000001",
+      "instruction": "lock add dword ptr [r9 + 0x2020], 1"
+    },
+    {
+      "at": "0x7d6dc1",
+      "bytes": "41c7410800000000",
+      "instruction": "mov dword ptr [r9 + 8], 0"
+    },
+    {
+      "at": "0x7d6ddd",
+      "bytes": "f04183410801",
+      "instruction": "lock add dword ptr [r9 + 8], 1"
+    },
+    {
+      "at": "0x7d6e81",
+      "bytes": "41c7410800000000",
+      "instruction": "mov dword ptr [r9 + 8], 0"
+    },
+    {
+      "at": "0x7d6e9d",
+      "bytes": "f04183410801",
+      "instruction": "lock add dword ptr [r9 + 8], 1"
+    }
+  ]
+}

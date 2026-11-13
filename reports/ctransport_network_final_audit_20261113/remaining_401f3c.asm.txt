@@ -1,0 +1,54 @@
+# remaining_401f3c; PE pdata/unwind; entry 0x401f3c
+# chunk 0x401f3c..0x402045
+0000000000401f3c: push     rbx
+0000000000401f3e: push     rbp
+0000000000401f3f: push     rsi
+0000000000401f40: sub      rsp, 0x40
+0000000000401f44: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000401f4d: mov      ecx, dword ptr [rip + 0x2f1bd285]
+0000000000401f53: mov      rax, qword ptr gs:[0x58]
+0000000000401f5c: mov      esi, 0x7d58
+0000000000401f61: mov      rbx, qword ptr [rax + rcx*8]
+0000000000401f65: movsxd   rdx, dword ptr [rbx + rsi]
+0000000000401f69: lea      rbp, [rip - 0x1f70]
+0000000000401f70: movsxd   rcx, dword ptr [rbp + rdx*4 + 0x47e2a40]
+0000000000401f78: lea      eax, [rcx + 1]
+0000000000401f7b: mov      dword ptr [rbp + rdx*4 + 0x47e2a40], eax
+0000000000401f82: imul     rdx, rdx, 0x3e8
+0000000000401f89: add      rdx, rcx
+0000000000401f8c: lea      rax, [rip + 0x724bed] ; UTF16 'void __cdecl MemoryObject::operator delete(void *)'
+0000000000401f93: mov      qword ptr [rbp + rdx*8 + 0x47bf7c0], rax
+0000000000401f9b: mov      dword ptr [rsp + 0x28], 0x14e
+0000000000401fa3: lea      rax, [rip + 0x724b46] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\obj.h'
+0000000000401faa: mov      qword ptr [rsp + 0x20], rax
+0000000000401faf: mov      r9, qword ptr [rip + 0xbfb86a]
+0000000000401fb6: lea      r8, [rip + 0x724ac3] ; UTF16 'Never Call Operator Delete!!! %s at file[%s], line[%d]'
+0000000000401fbd: mov      edx, 2
+0000000000401fc2: lea      rcx, [rip + 0xdb1f8d7]
+0000000000401fc9: call     0x734514
+0000000000401fce: xor      edx, edx
+0000000000401fd0: lea      ecx, [rdx + 0xa]
+0000000000401fd3: call     0x6704e0
+0000000000401fd8: xor      edx, edx
+0000000000401fda: lea      ecx, [rdx + 2]
+0000000000401fdd: call     0x6704e0
+0000000000401fe2: lea      rdx, [rip + 0x724a27]
+0000000000401fe9: lea      rcx, [rip + 0x47e0e50]
+0000000000401ff0: call     qword ptr [rip + 0x71a632] ; IAT wsprintfW
+0000000000401ff6: lea      rdx, [rip + 0x724983]
+0000000000401ffd: lea      rcx, [rip + 0x47e163c]
+0000000000402004: call     qword ptr [rip + 0x71a61e] ; IAT wsprintfW
+000000000040200a: mov      r8d, 0x152
+0000000000402010: lea      rdx, [rip + 0x724941]
+0000000000402017: lea      rcx, [rip + 0x47e1e22]
+000000000040201e: call     qword ptr [rip + 0x71a604] ; IAT wsprintfW
+0000000000402024: mov      byte ptr [rip + 0x47e0e02], 1
+000000000040202b: call     0x66db28
+0000000000402030: nop
+0000000000402031: movsxd   rax, dword ptr [rbx + rsi]
+0000000000402035: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+000000000040203d: add      rsp, 0x40
+0000000000402041: pop      rsi
+0000000000402042: pop      rbp
+0000000000402043: pop      rbx
+0000000000402044: ret

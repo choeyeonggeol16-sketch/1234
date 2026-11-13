@@ -1,0 +1,29 @@
+# fn_7d6e1c; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x7d6e1c
+# chunk 0x7d6e1c..0x7d6eb4
+00000000007d6e1c: mov      edx, dword ptr [rip + 0x2ede83b6]
+00000000007d6e22: lea      r11, [rip - 0x3d6e29]
+00000000007d6e29: mov      r9, rcx
+00000000007d6e2c: lea      rax, [rip + 0x4f16fd]
+00000000007d6e33: mov      r10d, 0x7d58
+00000000007d6e39: mov      qword ptr [rcx], rax
+00000000007d6e3c: mov      rax, qword ptr gs:[0x58]
+00000000007d6e45: mov      r8, qword ptr [rax + rdx*8]
+00000000007d6e49: movsxd   rdx, dword ptr [r8 + r10]
+00000000007d6e4d: movsxd   rcx, dword ptr [r11 + rdx*4 + 0x47e2a40]
+00000000007d6e55: lea      eax, [rcx + 1]
+00000000007d6e58: mov      dword ptr [r11 + rdx*4 + 0x47e2a40], eax
+00000000007d6e60: lea      rax, [rip + 0x4f1749] ; UTF16 '__cdecl MemoryObject::MemoryObject(const class MemoryObject &)'
+00000000007d6e67: imul     rdx, rdx, 0x3e8
+00000000007d6e6e: add      rdx, rcx
+00000000007d6e71: mov      qword ptr [r11 + rdx*8 + 0x47bf7c0], rax
+00000000007d6e79: mov      dword ptr [r9 + 0xc], 0
+00000000007d6e81: mov      dword ptr [r9 + 8], 0
+00000000007d6e89: mov      eax, 1
+00000000007d6e8e: lock xadd dword ptr [rip + 0xe75977e], eax
+00000000007d6e96: add      eax, 1
+00000000007d6e99: mov      dword ptr [r9 + 0x10], eax
+00000000007d6e9d: lock add dword ptr [r9 + 8], 1
+00000000007d6ea3: movsxd   rax, dword ptr [r8 + r10]
+00000000007d6ea7: add      dword ptr [r11 + rax*4 + 0x47e2a40], -1
+00000000007d6eb0: mov      rax, r9
+00000000007d6eb3: ret

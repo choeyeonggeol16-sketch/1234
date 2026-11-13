@@ -1,0 +1,22 @@
+# fn_45d3b4; PE pdata/unwind; entry 0x45d3b4
+# chunk 0x45d3b4..0x45d419
+000000000045d3b4: sub      rsp, 0x28
+000000000045d3b8: mov      eax, dword ptr [rcx]
+000000000045d3ba: test     eax, eax
+000000000045d3bc: jne      0x45d40e
+000000000045d3be: lea      rdx, [rip + 0x6f732b]
+000000000045d3c5: lea      rcx, [rip + 0x4785a74]
+000000000045d3cc: call     qword ptr [rip + 0x6bf256] ; IAT wsprintfW
+000000000045d3d2: lea      rdx, [rip + 0x6d4017]
+000000000045d3d9: lea      rcx, [rip + 0x4786260]
+000000000045d3e0: call     qword ptr [rip + 0x6bf242] ; IAT wsprintfW
+000000000045d3e6: lea      rdx, [rip + 0x6c956b]
+000000000045d3ed: lea      rcx, [rip + 0x4786a4c]
+000000000045d3f4: mov      r8d, 0x36d
+000000000045d3fa: call     qword ptr [rip + 0x6bf228] ; IAT wsprintfW
+000000000045d400: mov      byte ptr [rip + 0x4785a26], 1
+000000000045d407: call     0x66db28
+000000000045d40c: jmp      0x45d414
+000000000045d40e: mov      dword ptr [rcx], 0
+000000000045d414: add      rsp, 0x28
+000000000045d418: ret

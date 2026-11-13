@@ -1,0 +1,22 @@
+# remaining_419e8c; PE pdata/unwind; entry 0x419e8c
+# chunk 0x419e8c..0x419ef1
+0000000000419e8c: sub      rsp, 0x28
+0000000000419e90: mov      eax, dword ptr [rcx]
+0000000000419e92: test     eax, eax
+0000000000419e94: jne      0x419ee6
+0000000000419e96: lea      rdx, [rip + 0x717a53]
+0000000000419e9d: lea      rcx, [rip + 0x47c8f9c]
+0000000000419ea4: call     qword ptr [rip + 0x70277e] ; IAT wsprintfW
+0000000000419eaa: lea      rdx, [rip + 0x71753f]
+0000000000419eb1: lea      rcx, [rip + 0x47c9788]
+0000000000419eb8: call     qword ptr [rip + 0x70276a] ; IAT wsprintfW
+0000000000419ebe: lea      rdx, [rip + 0x70ca93]
+0000000000419ec5: lea      rcx, [rip + 0x47c9f74]
+0000000000419ecc: mov      r8d, 0x36d
+0000000000419ed2: call     qword ptr [rip + 0x702750] ; IAT wsprintfW
+0000000000419ed8: mov      byte ptr [rip + 0x47c8f4e], 1
+0000000000419edf: call     0x66db28
+0000000000419ee4: jmp      0x419eec
+0000000000419ee6: mov      dword ptr [rcx], 0
+0000000000419eec: add      rsp, 0x28
+0000000000419ef0: ret

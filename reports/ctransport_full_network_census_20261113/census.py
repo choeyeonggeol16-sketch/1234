@@ -54,6 +54,31 @@ for at,original,text in refs:
   info=infos.get(va)or o.dump('fn_%x'%va,va)
   if any(int(b,16)<=at<int(e,16) and any(i.address==at for i in o.instructions(int(b,16),int(e,16)))for b,e in info['chunks']):
    infos[va]=info;found.setdefault(va,set()).add(text);unlocated.discard(original);break
+# Previously unresolved error-path literals include a leading TAB; constructors
+# have no unwind record. Revalidate the supplemental references against this PE.
+resolution=out/'FINAL_REF_RESOLUTION.json'
+resolved=[]
+if resolution.exists():
+ supplement=json.loads(resolution.read_text());assert supplement['binary_sha256']==s['EXPECTED']['x64']
+ for item in supplement['items']:
+  original=int(item['va'],16);assert strings[original]==item['signature']
+  for hit in item['references']:
+   at=int(hit['at'],16);entry=int(hit['entry'],16);ins=o.valid(at)
+   assert ins and ins.mnemonic=='lea' and ins.bytes.hex()==hit['bytes']
+   from capstone.x86 import X86_OP_MEM,X86_REG_RIP
+   targets=[ins.address+ins.size+op.mem.disp for op in ins.operands if op.type==X86_OP_MEM and op.mem.base==X86_REG_RIP]
+   assert len(targets)==1
+   target=targets[0]
+   assert target==original or target==original-2 and o.pe.get_data(target-o.base,2)==b'\x09\x00'
+   chunk=o.chunk(at)
+   if chunk:assert chunk[2]==entry
+   else:
+    assert any(c['validation']=='pdata instruction boundary' for c in o.calls_to(entry))
+    assert any(i.address==at for b,e in o.leaf_chunks(entry) for i in o.instructions(b,e))
+   if entry not in infos:infos[entry]=o.dump('fn_%x'%entry,entry)
+   found.setdefault(entry,set()).add(item['signature']);unlocated.discard(original)
+  assert item['references']
+  resolved.append(hex(original))
 rows=[]
 for va,names in sorted(found.items()):
  label='fn_%x'%va;info=infos[va];joined='; '.join(sorted(names))
@@ -73,7 +98,7 @@ for va,names in sorted(found.items()):
   category='CORE_ROLE_MAPPED';source='native/socket_limiter.hpp';note='IP/MAC reservation role;L1 terminal ownership guards replace unsafe arbitrary deletion.'
  elif 'CPerfMon' in joined:
   category='PARTIAL_OPERATIONS';source='native/perfmon.hpp';note='Process health exists; full original PDH/CSV/mail operations are not ported.'
- elif any(x in joined for x in ['CIOBufferEx','BufferAllocate','BufferReturn','MemoryObject']):
+ elif any(x in joined for x in ['CIOBufferEx','CNewMwsrQueue','BufferAllocate','BufferReturn','MemoryObject']):
   category='CORE_ROLE_MAPPED';source='native/cio_core.hpp';note='Native slab/ring/refcount/COW role; latest snapshot observes final returns.'
  elif any(x in joined for x in ['ExecutionSerializer','FastSerializer']):
   category='CORE_ROLE_MAPPED';source='native/execution_serializer.hpp';note='512-slot serializer/504 admission; safe rollback/generation are explicit L1 corrections.'
@@ -83,8 +108,13 @@ for va,names in sorted(found.items()):
   category='CORE_ROLE_MAPPED';source='native/CTransport.cpp';note='Accept/IOCP/lifecycle role; original single GQCS versus selected GQCSEx128 adaptation.'
  else:
   category='NETWORK_ADAPTER_MAPPED';source='native/CTransport.cpp';note='Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.'
+ if va==0x401f3c:note='Original forbidden-delete diagnostic,not normal recycle;current heap-based final release uses deletion,an allocator adaptation.'
+ elif va in (0x7d6d5c,0x7d6e1c):note='Original starts ref1 and assigns a fresh global object ID;current ref1 exists,but I/O copies are disabled and original object-ID namespace is not ported.'
+ elif va in (0x419e8c,0x45d3b4):note='Unlock role maps to SpinLock/SpinGuard;original unlocked-state assertion and shared error handler are not identical.'
+ elif va in (0x41e6e4,0x45d7f8):note='Owner-ring acquire/ref1 role exists;original logs and skips invalid nonnull entries,current diagnoses and rejects without advancing;exhaustion policy also differs.'
+ elif va in (0x41c6f8,0x45d67c):note='Final release returns to the stamped owner ring;current gate covers readers and writers for FFM producers,not original single-reader topology.'
  rows.append({'entry':hex(va),'signatures':sorted(names),'category':category,'current_source':source,'comparison':note,'function_scope':info['scope'],'chunks':info['chunks'],'direct_calls':info['direct_calls'],'caller_count':len(info['callers']),'assembly':label+'.asm.txt'})
-result={'binary_sha256':s['EXPECTED']['x64'],'original_executed':False,'baseline':'1f5ff36','method':'UTF16 signatures validated by actual RIP references and PE unwind boundaries; additional previously audited structural roots','limits':'Census and source-role comparison are not proof of every unnamed function or every exception branch; x86 remains the previous crosscheck,not a new exhaustive audit.','functions':rows,'unlocated_signatures':[{'va':hex(x),'signature':strings[x]}for x in sorted(unlocated)]}
+result={'binary_sha256':s['EXPECTED']['x64'],'original_executed':False,'baseline':'e870c63','method':'UTF16 signatures validated by actual RIP references and PE unwind boundaries; supplemental TAB-prefixed references and direct-callee leaf CFG; additional previously audited structural roots','limits':'Census and source-role comparison are not proof of every unnamed function or every exception branch; x86 remains the previous crosscheck,not a new exhaustive audit.','resolved_previous_signatures':resolved,'functions':rows,'unlocated_signatures':[{'va':hex(x),'signature':strings[x]}for x in sorted(unlocated)]}
 (out/'FUNCTION_CENSUS.json').write_text(json.dumps(result,indent=2)+'\n')
 keep={row['assembly']for row in rows}
 for path in out.glob('fn_*.asm.txt'):

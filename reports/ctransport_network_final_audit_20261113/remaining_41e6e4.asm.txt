@@ -1,0 +1,105 @@
+# remaining_41e6e4; PE pdata/unwind; entry 0x41e6e4
+# chunk 0x41e6e4..0x41e8ea
+000000000041e6e4: push     rbx
+000000000041e6e6: push     rbp
+000000000041e6e7: push     rsi
+000000000041e6e8: sub      rsp, 0x60
+000000000041e6ec: mov      qword ptr [rsp + 0x50], 0xfffffffffffffffe
+000000000041e6f5: mov      ecx, dword ptr [rip + 0x2f1a0add]
+000000000041e6fb: mov      rax, qword ptr gs:[0x58]
+000000000041e704: mov      esi, 0x7d58
+000000000041e709: mov      rbx, qword ptr [rax + rcx*8]
+000000000041e70d: movsxd   rax, dword ptr [rbx + rsi]
+000000000041e711: lea      rbp, [rip - 0x1e718]
+000000000041e718: mov      r8, qword ptr [rbp + rax*8 + 0x4850f80]
+000000000041e720: movsxd   rcx, dword ptr [r8 + 4]
+000000000041e724: mov      rax, qword ptr [r8 + 0x20]
+000000000041e728: cqo
+000000000041e72a: idiv     rcx
+000000000041e72d: movsxd   rcx, edx
+000000000041e730: mov      rax, qword ptr [r8 + 0x10]
+000000000041e734: mov      r9, qword ptr [rax + rcx*8]
+000000000041e738: mov      qword ptr [rax + rcx*8], 0
+000000000041e740: add      qword ptr [r8 + 0x20], 1
+000000000041e745: test     r9, r9
+000000000041e748: je       0x41e84f
+000000000041e74e: mov      eax, dword ptr [r9 + 0x4020]
+000000000041e755: test     eax, eax
+000000000041e757: jne      0x41e770
+000000000041e759: cmp      dword ptr [r9 + 0x4010], eax
+000000000041e760: jne      0x41e770
+000000000041e762: cmp      qword ptr [r9 + 0x4018], 0
+000000000041e76a: je       0x41e81e
+000000000041e770: movsxd   rax, dword ptr [rbx + rsi]
+000000000041e774: mov      rdx, qword ptr [rbp + rax*8 + 0x4850f80]
+000000000041e77c: mov      rax, qword ptr [rdx + 0x20]
+000000000041e780: movsxd   rcx, dword ptr [rdx + 4]
+000000000041e784: sub      rcx, rax
+000000000041e787: mov      r8, qword ptr [rdx + 0x18]
+000000000041e78b: add      r8, rcx
+000000000041e78e: mov      rax, qword ptr [r9 + 0x4018]
+000000000041e795: mov      qword ptr [rsp + 0x48], rax
+000000000041e79a: mov      eax, dword ptr [r9 + 0x4010]
+000000000041e7a1: mov      dword ptr [rsp + 0x40], eax
+000000000041e7a5: mov      eax, dword ptr [r9 + 0x4020]
+000000000041e7ac: mov      dword ptr [rsp + 0x38], eax
+000000000041e7b0: mov      dword ptr [rsp + 0x30], r8d
+000000000041e7b5: mov      eax, dword ptr [rbx + rsi]
+000000000041e7b8: mov      dword ptr [rsp + 0x28], eax
+000000000041e7bc: mov      dword ptr [rsp + 0x20], 0x1f4
+000000000041e7c4: lea      r9, [rip + 0x716555] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\ioc.h'
+000000000041e7cb: lea      r8, [rip + 0x71644e] ; UTF16 '[%s][%d] S-DEBUG Invalid IO Buffer Allocation threadid[%d], remain iobuffer size[%d] refcount[%d], dwsize[%d], pNext[%p]'
+000000000041e7d2: mov      edx, 2
+000000000041e7d7: lea      rcx, [rip + 0xdb030c2]
+000000000041e7de: call     0x734514
+000000000041e7e3: movsxd   r11, dword ptr [rbx + rsi]
+000000000041e7e7: mov      r8, qword ptr [rbp + r11*8 + 0x4850f80]
+000000000041e7ef: movsxd   rcx, dword ptr [r8 + 4]
+000000000041e7f3: mov      rax, qword ptr [r8 + 0x20]
+000000000041e7f7: cqo
+000000000041e7f9: idiv     rcx
+000000000041e7fc: movsxd   rcx, edx
+000000000041e7ff: mov      rax, qword ptr [r8 + 0x10]
+000000000041e803: mov      r9, qword ptr [rax + rcx*8]
+000000000041e807: mov      qword ptr [rax + rcx*8], 0
+000000000041e80f: add      qword ptr [r8 + 0x20], 1
+000000000041e814: test     r9, r9
+000000000041e817: je       0x41e84f
+000000000041e819: jmp      0x41e74e
+000000000041e81e: mov      ecx, dword ptr [rbx + rsi]
+000000000041e821: mov      dword ptr [r9 + 0x4034], ecx
+000000000041e828: mov      dword ptr [r9 + 0x4010], 0
+000000000041e833: lock add dword ptr [r9 + 0x4020], 1
+000000000041e83c: mov      qword ptr [r9 + 0x4018], 0
+000000000041e847: mov      rax, r9
+000000000041e84a: jmp      0x41e8e2
+000000000041e84f: movsxd   rdx, dword ptr [rbx + rsi]
+000000000041e853: movsxd   rcx, dword ptr [rbp + rdx*4 + 0x47e2a40]
+000000000041e85b: lea      eax, [rcx + 1]
+000000000041e85e: mov      dword ptr [rbp + rdx*4 + 0x47e2a40], eax
+000000000041e865: imul     rdx, rdx, 0x3e8
+000000000041e86c: add      rdx, rcx
+000000000041e86f: lea      rax, [rip + 0x7362a2] ; UTF16 'io_buffer_crash'
+000000000041e876: mov      qword ptr [rbp + rdx*8 + 0x47bf7c0], rax
+000000000041e87e: mov      byte ptr [rip + 0x47c45ab], 1
+000000000041e885: lea      rdx, [rip + 0x716304]
+000000000041e88c: lea      rcx, [rip + 0x47c45ad]
+000000000041e893: call     qword ptr [rip + 0x6fdd8f] ; IAT wsprintfW
+000000000041e899: lea      rdx, [rip + 0x716260]
+000000000041e8a0: lea      rcx, [rip + 0x47c4d99]
+000000000041e8a7: call     qword ptr [rip + 0x6fdd7b] ; IAT wsprintfW
+000000000041e8ad: mov      r8d, 0x1eb
+000000000041e8b3: lea      rdx, [rip + 0x70809e]
+000000000041e8ba: lea      rcx, [rip + 0x47c557f]
+000000000041e8c1: call     qword ptr [rip + 0x6fdd61] ; IAT wsprintfW
+000000000041e8c7: mov      byte ptr [rip + 0x47c455f], 1
+000000000041e8ce: call     0x66db28
+000000000041e8d3: nop
+000000000041e8d4: movsxd   rax, dword ptr [rbx + rsi]
+000000000041e8d8: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+000000000041e8e0: xor      eax, eax
+000000000041e8e2: add      rsp, 0x60
+000000000041e8e6: pop      rsi
+000000000041e8e7: pop      rbp
+000000000041e8e8: pop      rbx
+000000000041e8e9: ret
