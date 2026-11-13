@@ -41,85 +41,26 @@ public final class SC_DoActionGFX {
         return connection != null && connection.sendAction(objectId, actionId);
     }
 
-    /**
-     * Visible-player broadcast.
-     *
-     * Call-site stays fixed:
-     *
-     *   SC_DoActionGFX.broadcast(this, actionId);
-     *
-     * The serializer is thread-agnostic: affinity CIO producers use the SPSC
-     * fast path and all other producers use the pre-created external MPSC path.
-     */
-    public static void broadcast(
-            L1Character cha,
-            int actionId) {
-
-        if (cha == null) {
-            return;
-        }
-
-        final int objectId =
-                cha.getId();
-
-        {
-            final L1World __cioWorld0 = L1World.getInstance();
-            final java.util.List<L1PcInstance> __cioVisible0 = __cioWorld0.borrowVisiblePlayerFast(cha);
-            try {
-                for (L1PcInstance pc : __cioVisible0) {
-        
-                    final CIOClient client =
-                            pc.getNetConnection();
-        
-                    if (client == null
-                            || !client.isConnected()) {
-                        continue;
-                    }
-        
-                    send(
-                            client,
-                            objectId,
-                            actionId);
-                }
-            } finally {
-                __cioWorld0.releaseVisiblePlayerFast(__cioVisible0);
+    public static void broadcast(L1Character cha, int actionId) {
+        if (cha == null) return;
+        final int objectId = cha.getId();
+        final byte[] wire = java.nio.ByteBuffer.allocate(8)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN).putShort((short) 8)
+                .put((byte) l1j.server.server.Opcodes.S_ACTION)
+                .putInt(objectId).put((byte) actionId).array();
+        final L1World world = L1World.getInstance();
+        final java.util.List<L1PcInstance> visible = world.borrowVisiblePlayerFast(cha);
+        try (var broadcast = new l1j.server.server.model.network.core.CAsyncSendConstBufferExceptSelf(
+                wire, objectId, Integer.MAX_VALUE)) {
+            for (L1PcInstance pc : visible) {
+                final CIOClient client = pc.getNetConnection();
+                if (client != null && client.isConnected() && !broadcast.apply(client.getConnection(), pc.getId()))
+                    send(client, objectId, actionId);
             }
-        }
+        } finally { world.releaseVisiblePlayerFast(visible); }
     }
-    
-    public static void broadcast(
-            L1PcInstance cha,
-            int actionId) {
 
-        if (cha == null) {
-            return;
-        }
-
-        final int objectId =
-                cha.getId();
-
-        {
-            final L1World __cioWorld1 = L1World.getInstance();
-            final java.util.List<L1PcInstance> __cioVisible1 = __cioWorld1.borrowVisiblePlayerFast(cha);
-            try {
-                for (L1PcInstance pc : __cioVisible1) {
-        
-                    final CIOClient client =
-                            pc.getNetConnection();
-        
-                    if (client == null
-                            || !client.isConnected()) {
-                        continue;
-                    }
-        
-                    send(
-                            client,
-                            objectId,
-                            actionId);
-                }
-            } finally {
-                __cioWorld1.releaseVisiblePlayerFast(__cioVisible1);
-            }
-        }
+    public static void broadcast(L1PcInstance cha, int actionId) {
+        broadcast((L1Character) cha, actionId);
     }
 }

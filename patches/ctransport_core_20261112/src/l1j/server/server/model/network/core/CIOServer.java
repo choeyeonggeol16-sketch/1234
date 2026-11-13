@@ -85,6 +85,8 @@ final class CIOServer implements AutoCloseable {
     @SuppressWarnings("unused")
 	private final MethodHandle start, stop, wait, stopAccept, disconnect, pause, send, sendPackets;
     private final MethodHandle sendFrames,sendFramePackets,gracefulClose,getSendDiagnostics;
+    private final MethodHandle createConstBuffer,releaseConstBuffer,sendConstBuffer;
+    private final AtomicInteger constBuffers = new AtomicInteger();
     private final MethodHandle getRemote, getLocal, getListen;
     @SuppressWarnings("preview")
 	private final MemorySegment acceptStub, receiveStub, sendStub, closeStub;
@@ -177,6 +179,9 @@ final class CIOServer implements AutoCloseable {
             sendFramePackets=fn("CSocket___async_AsyncSendConstBuffer",FunctionDescriptor.of(I,P,L,P,I,I));
             gracefulClose=fn("CIOSocketEx_GracefulClose",FunctionDescriptor.of(I,P,L,I));
             getSendDiagnostics=fn("L1Interop_GetSendDiagnostics",FunctionDescriptor.of(I,P,P,I));
+            createConstBuffer=fn("L1Interop_CreateConstBuffer",FunctionDescriptor.of(P,P,P,I));
+            releaseConstBuffer=fn("L1Interop_ReleaseConstBuffer",FunctionDescriptor.ofVoid(P));
+            sendConstBuffer=fn("L1Interop_SendConstBuffer",FunctionDescriptor.of(I,P,L,P,I));
             send = fn("CIOSocket__Write", FunctionDescriptor.of(I, P, L, P, I));
             sendPackets = fn("L1Interop_WriteBuffers", FunctionDescriptor.of(I, P, L, P, I));
             getRemote = fn("CSocket_GetIPAddressString", FunctionDescriptor.of(I, P, L, P, P, P));
@@ -683,6 +688,42 @@ final class CIOServer implements AutoCloseable {
         nativeCalls.decrementAndGet();
         return false;
     }
+    @SuppressWarnings("preview")
+    CAsyncSendConstBuffer.Source createConstBuffer(byte[] wire) {
+        if (!enterNative()) return null;
+        MemorySegment handle = MemorySegment.NULL;
+        try (Arena temporary = Arena.ofConfined()) {
+            MemorySegment input = temporary.allocate(wire.length);
+            input.copyFrom(MemorySegment.ofArray(wire));
+            handle = (MemorySegment) createConstBuffer.invokeExact(server, input, wire.length);
+            if (handle.address() == 0) return null;
+            CAsyncSendConstBuffer.Source source = new CAsyncSendConstBuffer.Source(this, handle, wire);
+            constBuffers.incrementAndGet();
+            return source;
+        } catch (Throwable failure) {
+            if (handle.address() != 0) {
+                try { releaseConstBuffer.invokeExact(handle); }
+                catch (Throwable releaseFailure) { failure.addSuppressed(releaseFailure); }
+            }
+            throw new IllegalStateException("CTransport constant buffer creation failed", failure);
+        } finally { nativeCalls.decrementAndGet(); }
+    }
+    @SuppressWarnings("preview")
+    void releaseConstBuffer(MemorySegment handle) {
+        // A live Source is counted until this downcall finishes. Shutdown may
+        // stop sockets first, but cannot destroy the server/arena under it.
+        nativeCalls.incrementAndGet();
+        try { releaseConstBuffer.invokeExact(handle); constBuffers.decrementAndGet(); }
+        catch (Throwable failure) { throw new IllegalStateException("CTransport constant buffer release failed", failure); }
+        finally { nativeCalls.decrementAndGet(); }
+    }
+    @SuppressWarnings("preview")
+    boolean sendConstBuffer(long id, MemorySegment handle, int flags) {
+        if (!enterNative()) return false;
+        try { return (int) sendConstBuffer.invokeExact(server, id, handle, (flags & 2) >>> 1) != 0; }
+        catch (Throwable failure) { return false; }
+        finally { nativeCalls.decrementAndGet(); }
+    }
     boolean pause(long id, boolean paused) {
         if (!enterNative()) return false;
         try { return (int) pause.invokeExact(server, id, paused ? 1 : 0) != 0; }
@@ -836,7 +877,7 @@ final class CIOServer implements AutoCloseable {
             }
         }
         drainClosed=true;
-        while(nativeCalls.get()!=0){
+        while(nativeCalls.get()!=0 || constBuffers.get()!=0){
             if(System.nanoTime()-startedAt>=budgetNs)throw new IOException("Packet release downcall still active; native memory retained");
             LockSupport.parkNanos(this,100_000L);
         }

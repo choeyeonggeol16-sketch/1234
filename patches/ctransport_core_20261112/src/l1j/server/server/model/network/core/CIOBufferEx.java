@@ -19,6 +19,9 @@ public final class CIOBufferEx {
     boolean _actionOnly;
     volatile boolean _ioPending;
     private ByteBuffer _bytes;
+    CAsyncSendConstBuffer.Source _sharedSource;
+    private ByteBuffer _sharedView;
+    boolean shared() { return _sharedView != null; }
     private WriteBuffer _writer;
     private CIOFrame _directFrame;
     int _wireLength;
@@ -32,11 +35,11 @@ public final class CIOBufferEx {
 
     public ByteBuffer buffer() {
         if (_active == 0) throw new IllegalStateException("lease already released");
-        return _bytes;
+        return shared() ? _sharedView : _bytes;
     }
 
     public WriteBuffer writer() {
-        if (_active == 0 || _writer == null)
+        if (_active == 0 || _writer == null || shared())
             throw new IllegalStateException("not an active SEND lease");
         return _writer;
     }
@@ -95,6 +98,23 @@ public final class CIOBufferEx {
             throw failure;
         }
     }
+    void startShared(CAsyncSendConstBuffer.Source source) {
+        if (_active != 0) throw new IllegalStateException("lease acquired twice");
+        _active = 1;
+        try {
+            _generation = _bucket._slots.generation(_slot);
+            _sharedView = source.wire.asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
+            _sharedSource = source.retain();
+            _wireLength = _reservedWireBytes = _sharedView.remaining();
+            _frameCount = 1;
+            _writePrepared = _packedFrames = _actionOnly = _ioPending = false;
+            _nativeSendFlags = 0;
+        } catch (RuntimeException | Error failure) {
+            _sharedView = null;
+            ACTIVE.set(this, 0);
+            throw failure;
+        }
+    }
 
     void publish() {
         if (!ACTIVE.compareAndSet(this, 1, 2))
@@ -117,8 +137,14 @@ public final class CIOBufferEx {
         _packedFrames = false;
         _actionOnly = false;
         _reservedWireBytes = 0;
-        _bytes.clear();
-        // ACTIVE.getAndSet above already guarantees a single lease releaser.
-        _bucket._slots.releaseOwnedLease(_slot, _generation);
+        if (_bytes != null) _bytes.clear();
+        CAsyncSendConstBuffer.Source shared = _sharedSource;
+        _sharedSource = null;
+        _sharedView = null;
+        try { if (shared != null) shared.release(); }
+        finally {
+            // ACTIVE.getAndSet above guarantees a single lease releaser.
+            _bucket._slots.releaseOwnedLease(_slot, _generation);
+        }
     }
 }

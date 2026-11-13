@@ -28,6 +28,7 @@ final class CSocket implements AutoCloseable {
         this.remote = remote;
     }
     long id() { return id; }
+    CIOServer server() { return parent; }
     public InetSocketAddress remoteAddress() { return remote; }
     public boolean isOpen() { return open && !closing; }
     private volatile CUserSocket userSocketOwner;
@@ -194,6 +195,24 @@ final class CSocket implements AutoCloseable {
     }
     public void write(ByteBuffer[] srcs,int offset,int count,CUserSocket owner){write(srcs,offset,count,owner,0);}
     void SendConstBuffer(ByteBuffer[] srcs,int offset,int count,CUserSocket owner,int flags){write(srcs,offset,count,owner,flags);}
+    @SuppressWarnings("preview")
+    void SendConstBuffer(ByteBuffer bytes, MemorySegment source, CUserSocket owner, int flags) {
+        boolean rejected;
+        synchronized (this) {
+            if (writeOwner != null || writeSubmitting) throw new IllegalStateException("WRITE already pending");
+            rejected = !isOpen();
+            if (!rejected) {
+                singleWrite[0] = bytes;
+                reserveWrite(singleWrite, 0, 1, bytes.remaining(), owner, false, flags);
+            }
+        }
+        if (rejected) { owner.transportWriteCompleted(-1); return; }
+        // The source handle is pinned by the active Java lease until this
+        // downcall exits, including a simultaneous close/inline completion.
+        boolean success = false;
+        try { success = parent.sendConstBuffer(id, source, flags); }
+        finally { finishSubmission(success); }
+    }
     private void write(ByteBuffer[] srcs, int offset, int count, CUserSocket owner,int flags) {
         if (srcs == null || owner == null) throw new NullPointerException();
         if (offset < 0 || count < 1 || offset > srcs.length - count)
@@ -232,7 +251,11 @@ final class CSocket implements AutoCloseable {
     private void sendReserved() {
         // Only one WRITE is outstanding. Every native SEND takes ownership of
         // a copy of its bytes; Java source leases stay pinned by the CIO pump.
-        boolean success = parent.send(id, writeBuffers, writeOffset, writeCount,writeFrameFlags);
+        boolean success = false;
+        try { success = parent.send(id, writeBuffers, writeOffset, writeCount,writeFrameFlags); }
+        finally { finishSubmission(success); }
+    }
+    private void finishSubmission(boolean success) {
         CUserSocket callback = null;
         boolean gather = false;
         int bytes = 0;

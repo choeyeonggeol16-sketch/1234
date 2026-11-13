@@ -4,6 +4,9 @@ package l1j.server.server.model.network.core;
 class CUserSocket {
  boolean transportNativePacket(long sequence, java.nio.ByteBuffer packet, int length) { throw new AssertionError("unexpected native packet"); }
  int transportNetworkDeadline() { return 5000; }
+ boolean isClientConnected(){return false;} boolean supportsConstBuffer(){return false;}
+ int pendingSendBytes(){return 0;} CAsyncSendConstBuffer.Source createConstBuffer(byte[] wire){return null;}
+ boolean ownsConstBuffer(CAsyncSendConstBuffer.Source source){return false;} void enqueueConstBuffer(CAsyncSendConstBuffer.Source source,int limit){}
  void close() {}
  void onTransportClosing() {}
  void onTransportTerminated() {}

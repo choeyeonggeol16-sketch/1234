@@ -782,4 +782,45 @@ static void sendCloseTests(){
  }
  std::cout<<"PASS native SEND/close:shared execution owner;copied queued source;plain first/max65535 frame;cross-descriptor frames;37-byte completions without re-encryption;invalid/cipher failure;graceful pending-send/WRITE drain,SD_SEND and peer FIN without RST;WRITE/peer-FIN deadlines and forced override\n";
 }
-int main(){std::cout.setf(std::ios::unitbuf);sendCloseTests();remainingNetworkTests();originalStructureTests();userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}
+static void sharedBroadcastTests(){
+ {
+  Fixture f;f.state.userProfile=true;auto a=f.connect(),b=f.connect();
+  auto input=outboundFrame(16384,11),expected=input;for(unsigned i=2;i<expected.size();++i)expected[i]^=0xa7;
+  auto* source=static_cast<L1ConstBuffer*>(L1Interop_CreateConstBuffer(f.server,input.data(),input.size()));check(source,"create shared source");
+  auto* block=source->block;CIOBufferPool::retain(block);
+  auto* ca=f.server->find(a.second);ObjectRef ah(ca,false);auto* cb=f.server->find(b.second);ObjectRef bh(cb,false);
+  auto* x=new SerialProbe;auto* y=new SerialProbe;
+  std::thread first([&]{check(ca->execution_.AddExecutable(x,SerialProbe::Block,nullptr),"shared first owner");});
+  std::thread second([&]{check(cb->execution_.AddExecutable(y,SerialProbe::Block,nullptr),"shared second owner");});
+  until([&]{return x->entered&&y->entered;});
+  check(L1Interop_SendConstBuffer(f.server,a.second,source,0)&&L1Interop_SendConstBuffer(f.server,b.second,source,0),"shared queued sends");
+  check(block->references==4,"shared buffer lacks producer/inspection/two recipient references");
+  L1Interop_ReleaseConstBuffer(source);check(block->references==3,"producer release lost recipient ownership");
+  std::fill(input.begin(),input.end(),0);check(CIOSocketEx_Close(f.server,b.second),"shared recipient close");
+  x->releaseBlocked=true;y->releaseBlocked=true;first.join();second.join();x->release();y->release();
+  until([&]{return f.state.sent==static_cast<int>(expected.size())&&f.state.closed==1&&block->references==1;});
+  check(fakewin::wire(a.first)==expected&&fakewin::wire(b.first).empty(),"shared partial/cancel changed another recipient");
+  for(unsigned i=0;i<expected.size();++i)check(block->data.data()[i]==(i<2?expected[i]:static_cast<unsigned char>(expected[i]^0xa7)),"shared plaintext was mutated");
+  check(f.server->pendingSends==0&&f.server->sendOwnerErrors==0,"shared send accounting stranded");f.server->buffers.recycle(block);
+ }
+ {
+  Fixture f;f.state.userProfile=true;auto pair=f.connect();auto input=outboundFrame(10);
+  check(!L1Interop_CreateConstBuffer(f.server,input.data(),9),"bad shared frame accepted");
+  auto* source=static_cast<L1ConstBuffer*>(L1Interop_CreateConstBuffer(f.server,input.data(),input.size()));check(source,"bounded source");
+  auto* c=f.server->find(pair.second);ObjectRef hold(c,false);auto* blocker=new SerialProbe;
+  std::thread owner([&]{check(c->execution_.AddExecutable(blocker,SerialProbe::Block,nullptr),"shared saturation owner");});until([&]{return blocker->entered.load();});
+  for(unsigned i=0;i<503;++i)check(L1Interop_SendConstBuffer(f.server,pair.second,source,0),"shared queued capacity");
+  auto references=source->block->references.load();auto pending=f.server->pendingSends.load();
+  check(!L1Interop_SendConstBuffer(f.server,pair.second,source,0)&&source->block->references==references&&f.server->pendingSends==pending,"shared overflow leaked reference/reservation");
+  check(CIOSocketEx_Close(f.server,pair.second),"shared saturated close");blocker->releaseBlocked=true;owner.join();blocker->release();
+  until([&]{return f.state.closed==1&&source->block->references==1;});check(f.server->pendingSends==0,"cancelled shared queue leaked count");
+  L1Interop_ReleaseConstBuffer(source);
+ }
+ {
+  void* held=nullptr;
+  {Fixture f;auto input=outboundFrame(15);held=L1Interop_CreateConstBuffer(f.server,input.data(),input.size());check(held,"shutdown producer handle");}
+  L1Interop_ReleaseConstBuffer(held); // block and server remain alive after Stop/ReleaseServer
+ }
+ std::cout<<"PASS shared const broadcast: one frozen16K source/two queued recipients;producer released before execution;close isolation;unchanged plaintext;504-slot overflow rolls back refs/reservations;503 queued cancellations;source outlives server shutdown\n";
+}
+int main(){std::cout.setf(std::ios::unitbuf);sharedBroadcastTests();sendCloseTests();remainingNetworkTests();originalStructureTests();userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}

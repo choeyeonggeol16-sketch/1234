@@ -54,6 +54,7 @@ class CSocket;
 class CUserSocket;
 class NativeTask;
 class NativeSendRequest;
+struct L1ConstBuffer;
 using TaskFn = void (*)(void*, std::uint64_t, int);
 thread_local Server* currentWorker = nullptr;
 thread_local unsigned currentWorkerIndex = 0;
@@ -171,6 +172,7 @@ public:
     Operation readOp, writeOp, closeOp, resumeOp;
     CExecutionSerializerFast execution_;
     std::size_t reservedSendBytes=0;unsigned pendingSendRequests=0;
+    bool sendConstBuffer(L1ConstBuffer*,bool)noexcept;
     bool gracefulRequested=false,gracefulSendShutdown=false,gracefulPeerEof=false,closeAbortive=true;
     std::uint64_t gracefulDue=0;
     bool send(const Span*,unsigned,bool framed=false,bool plainFirst=false,bool constant=false)noexcept;
@@ -413,27 +415,41 @@ public:
 
 // A request owns a copy before the C API returns. It can outlive Java buffers
 // and the submitting thread, while sharing the WRITE-completion serializer.
+// The FFM handle owns the producer reference. Requests retain the original
+// CIOBufferEx block directly; a queued request never borrows a Java pointer.
+struct L1ConstBuffer {
+    Server* const server;CIOBuffer* const block;
+    L1ConstBuffer(Server* s,CIOBuffer* b)noexcept:server(s),block(b){server->retain();}
+    ~L1ConstBuffer(){server->buffers.recycle(block);server->release();}
+};
 class NativeSendRequest final:public CIOObject {
 public:
     CIOSocket* const socket;std::vector<unsigned char> bytes;
+    CIOBuffer* const sharedBlock=nullptr;
     const bool framed,plainFirst,constant;std::atomic<int> result{0};
     NativeSendRequest(CIOSocket* owner,const Span* spans,unsigned count,std::size_t total,bool frames,bool plain,bool immutable)
         :socket(owner),bytes(total),framed(frames),plainFirst(plain),constant(immutable){
         socket->retain();std::size_t at=0;
         for(unsigned i=0;i<count;++i){if(spans[i].size)std::memcpy(bytes.data()+at,spans[i].data,spans[i].size);at+=spans[i].size;}
     }
-    ~NativeSendRequest()override{socket->release();}
+    NativeSendRequest(CIOSocket* owner,L1ConstBuffer& source,bool plain)noexcept
+        :socket(owner),sharedBlock(source.block),framed(true),plainFirst(plain),constant(true){
+        socket->retain();CIOBufferPool::retain(sharedBlock);
+    }
+    const unsigned char* data()const noexcept{return sharedBlock?sharedBlock->data.data():bytes.data();}
+    std::size_t size()const noexcept{return sharedBlock?sharedBlock->used:bytes.size();}
+    ~NativeSendRequest()override{if(sharedBlock)socket->server->buffers.recycle(sharedBlock);socket->release();}
     static void Execute(MemoryObject* object,void*)noexcept{
         auto& request=*static_cast<NativeSendRequest*>(object);
         if(request.constant)request.socket->__async_AsyncSendConstBuffer(request);else request.socket->__async_AsyncSend(request);
     }
     void OnIOCallback(void*,bool,unsigned,unsigned)noexcept override{}
     bool ValidFrames()const noexcept{
-        std::size_t at=0;while(at<bytes.size()){
-            if(bytes.size()-at<2)return false;
-            const auto n=static_cast<unsigned>(bytes[at])|(static_cast<unsigned>(bytes[at+1])<<8);
-            if(n<2||n>bytes.size()-at)return false;at+=n;
-        }return at==bytes.size();
+        const auto* input=data();const auto length=size();std::size_t at=0;while(at<length){
+            if(length-at<2)return false;
+            const auto n=static_cast<unsigned>(input[at])|(static_cast<unsigned>(input[at+1])<<8);
+            if(n<2||n>length-at)return false;at+=n;
+        }return at==length;
     }
 };
 bool CIOSocket::send(const Span* spans,unsigned count,bool framed,bool plainFirst,bool constant)noexcept {
@@ -459,11 +475,28 @@ bool CIOSocket::send(const Span* spans,unsigned count,bool framed,bool plainFirs
     }
     ++server->sendsAccepted;return request->result.load(std::memory_order_acquire)>=0;
 }
+bool CIOSocket::sendConstBuffer(L1ConstBuffer* source,bool plainFirst)noexcept {
+    ObjectRef lifetime(this);
+    if(!source||source->server!=server)return false;
+    const auto total=source->block->used;
+    {
+        std::lock_guard<std::mutex> lock(gate);
+        if(state.closing||gracefulRequested||!UserProtocol()||!total||total>MaxQueuedBytes-writes.size()-reservedSendBytes){++server->sendsRejected;return false;}
+        reservedSendBytes+=total;++pendingSendRequests;++server->pendingSends;
+    }
+    auto* request=new(std::nothrow) NativeSendRequest(this,*source,plainFirst);
+    ObjectRef requestHold(request,false);
+    if(!request||!execution_.AddExecutable(request,NativeSendRequest::Execute,nullptr)){
+        {std::lock_guard<std::mutex> lock(gate);reservedSendBytes-=total;--pendingSendRequests;--server->pendingSends;}
+        ++server->sendsRejected;finishIfReady();return false;
+    }
+    ++server->sendsAccepted;return request->result.load(std::memory_order_acquire)>=0;
+}
 void CIOSocket::ExecuteSend(NativeSendRequest& request)noexcept {
     bool ok=false;
     {
         std::lock_guard<std::mutex> lock(gate);
-        reservedSendBytes-=request.bytes.size();--pendingSendRequests;--server->pendingSends;++server->sendsExecuted;
+        reservedSendBytes-=request.size();--pendingSendRequests;--server->pendingSends;++server->sendsExecuted;
         if(!execution_.IsOwner()){++server->sendOwnerErrors;failLocked(3,31);}
         if(!state.closing){
             ok=true;
@@ -472,13 +505,13 @@ void CIOSocket::ExecuteSend(NativeSendRequest& request)noexcept {
                 // Original __async_AsyncSendConstBuffer copies/encrypts into
                 // socket-owned output, leaving its reference-counted source
                 // untouched. L1 frames can span several 16K pool blocks.
-                SendChain prepared(LargeBufferBytes);Span source{request.bytes.data(),request.bytes.size()};
+                SendChain prepared(LargeBufferBytes);Span source{request.data(),request.size()};
                 ok=prepared.append(server->buffers,&source,1);
                 if(ok){
                     SendChain::Cursor cursor(prepared);std::vector<unsigned char> scratch;
                     std::size_t at=0;bool plain=request.plainFirst;
-                    while(at<request.bytes.size()){
-                        const unsigned size=request.bytes[at]|(static_cast<unsigned>(request.bytes[at+1])<<8);
+                    while(at<request.size()){
+                        const unsigned size=request.data()[at]|(static_cast<unsigned>(request.data()[at+1])<<8);
                         const auto body=size-2;cursor.advance(2);
                         if(plain){++server->framesPlain;plain=false;cursor.advance(body);}
                         else {
@@ -487,7 +520,7 @@ void CIOSocket::ExecuteSend(NativeSendRequest& request)noexcept {
                                 if(!UserProtocol()->codec->encrypt(contiguous,static_cast<int>(body))){ok=false;break;}
                                 cursor.advance(body);
                             }else{
-                                try{scratch.assign(request.bytes.data()+at+2,request.bytes.data()+at+size);}catch(...){ok=false;break;}
+                                try{scratch.assign(request.data()+at+2,request.data()+at+size);}catch(...){ok=false;break;}
                                 if(!UserProtocol()->codec->encrypt(scratch.data(),static_cast<int>(body))){ok=false;break;}
                                 cursor.copy(scratch.data(),body);
                             }
@@ -1305,6 +1338,22 @@ CIO_API int L1Interop_ReadPerf(void* p,std::uint64_t* out,int count){
     auto monitor=std::atomic_load(&s->perfmon);if(!monitor)return 0;monitor->Read(out);return 1;
 }
 
+CIO_API void* L1Interop_CreateConstBuffer(void* p,const void* bytes,int count){
+    if(!p||!bytes||count<3||count>static_cast<int>(LargeBufferBytes))return nullptr;
+    const auto* input=static_cast<const unsigned char*>(bytes);
+    if((static_cast<unsigned>(input[0])|(static_cast<unsigned>(input[1])<<8))!=static_cast<unsigned>(count))return nullptr;
+    auto* server=static_cast<Server*>(p);ObjectRef hold(server);
+    if(!server->running.load()||server->stopping.load())return nullptr;
+    auto* block=server->buffers.acquire(LargeBufferBytes);if(!block)return nullptr;
+    std::memcpy(block->data.data(),bytes,count);block->used=count;
+    auto* source=new(std::nothrow) L1ConstBuffer(server,block);
+    if(!source)server->buffers.recycle(block);return source;
+}
+CIO_API void L1Interop_ReleaseConstBuffer(void* p){delete static_cast<L1ConstBuffer*>(p);}
+CIO_API int L1Interop_SendConstBuffer(void* p,std::uint64_t id,void* source,int plainFirst){
+    if(!p||!source)return 0;auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;
+    ObjectRef hold(c,false);return c->sendConstBuffer(static_cast<L1ConstBuffer*>(source),plainFirst!=0);
+}
 CIO_API int CSocket_SendV(void* p,std::uint64_t id,const void* bytes,int count,int plainFirst){
     if(!p||count<0||(!bytes&&count)||(plainFirst!=0&&plainFirst!=1))return 0;
     auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);

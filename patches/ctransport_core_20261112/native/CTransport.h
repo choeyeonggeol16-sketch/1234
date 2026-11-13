@@ -67,4 +67,7 @@ __declspec(dllimport) int CSocket_SendV(void*,std::uint64_t,const void*,int,int)
 __declspec(dllimport) int CSocket___async_AsyncSendConstBuffer(void*,std::uint64_t,const WSABUF*,int,int);
 __declspec(dllimport) int CIOSocketEx_GracefulClose(void*,std::uint64_t,unsigned);
 __declspec(dllimport) int L1Interop_GetSendDiagnostics(void*,std::uint64_t*,int);
+__declspec(dllimport) void* L1Interop_CreateConstBuffer(void*,const void*,int);
+__declspec(dllimport) void L1Interop_ReleaseConstBuffer(void*);
+__declspec(dllimport) int L1Interop_SendConstBuffer(void*,std::uint64_t,void*,int);
 }

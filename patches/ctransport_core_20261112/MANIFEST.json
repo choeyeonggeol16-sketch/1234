@@ -3,7 +3,7 @@
   "branch": "ctransport-core-20261112",
   "dll": "CTransport.dll",
   "dll_sha256": "ffd5620b4aab7e6fe2a735a25814a37a5dc9f68f1d169bd290b16733f4a3c145",
-  "abi": "0x90000",
+  "abi": "0xa0000",
   "implementation_parent": "fbf430517a1adf2a2dfbcdb713707768fb1d23a0",
   "transport_scope": "game",
   "mandatory": true,
@@ -20,8 +20,8 @@
   },
   "fallback": false,
   "completion_batch": 128,
-  "source_files": 1705,
-  "java_files": 1704,
+  "source_files": 1707,
+  "java_files": 1706,
   "changed_files": [
     "src/l1j/server/MJINNSystem/MJINNHelper.java",
     "src/l1j/server/MJTemplate/PacketHelper/MJPacketFactory.java",
@@ -274,7 +274,7 @@
     "src/l1j/server/server/model/network/core/CUserSocketDispatch.java"
   ],
   "additional_sql": false,
-  "exports": 64,
+  "exports": 67,
   "new_abi9_structures": [
     "original RTTI CDummyServerCallback/IServerCallback names wired in C++ and Java",
     "global MemoryObject -> CIOObject and MemoryObject fast-serializer arguments",
@@ -408,5 +408,6 @@
       "Game/account/actor/scheduler/filter dependencies in owner tests are fixtures;password login/live DB/gameplay/hunting/full handler integration not executed",
       "Bounded30-second loopback does not establish sustained production stability,max concurrent players,or comparative NIO2 performance"
     ]
-  }
+  },
+  "abi10_windows_status": "pending; existing windows_evidence describes previous ABI9 build"
 }

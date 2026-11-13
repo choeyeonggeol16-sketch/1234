@@ -1,7 +1,7 @@
 name: CTransport Windows native and Java FFM
 on:
   push:
-    branches: [ctransport-core-20261112]
+    branches: [ctransport-core-20261112, ctransport-shared-abi10-20261113]
     paths:
       - '.github/workflows/ctransport-windows.yml'
       - 'patches/ctransport_core_20261112/native/**'
