@@ -123,7 +123,12 @@ public final class CUserSocketWindowsTest {
             public void run(){check(server.currentNativeOwner()>=0,"completion task escaped IOCP");blockers.countDown();try{check(release.await(5,TimeUnit.SECONDS),"blocker release");}catch(InterruptedException e){throw new AssertionError(e);}}
             public void cancel(){throw new AssertionError("running task cancelled");}
         };
-        check(server.postCompletion(blocker)&&server.postCompletion(blocker),"blocker posts denied");
+        // A batched IOCP dequeue may take both posts onto the same worker.
+        // Enter the first blocker before posting the second, so two distinct
+        // workers are occupied rather than blocking an unexecuted batch entry.
+        check(server.postCompletion(blocker),"first blocker post denied");
+        until(()->blockers.getCount()==1);
+        check(server.postCompletion(blocker),"second blocker post denied");
         check(blockers.await(5,TimeUnit.SECONDS),"workers did not enter blockers");
         for(int n=0;n<64;n++)check(server.postCompletion(new CIOObject(){public void run(){ran.incrementAndGet();}public void cancel(){cancelled.incrementAndGet();}}),"packet completion admission");
         AtomicReference<Throwable> closeFailure=new AtomicReference<>();

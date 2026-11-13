@@ -42,3 +42,5 @@
 Windows 초기 두 실행에서 모든 S2C 암호문과 최종 패킷은 일치했지만, linger0만 생략한 closesocket은 RST를 만들었다. 두 번째 실행의 직접 native 정상 종료도 `graceful=1, abortive=0`인데 RST여서 Java의 강제 종료 호출 문제가 아님을 확인했다. 따라서 명시적 SD_SEND와 상대 FIN 대기를 추가했다. 이 절차도 원본 함수에서 그대로 확인한 내용으로 주장하지 않는다. 실패 기록은 `logs/abi8-windows-attempt1-failed.log`, `logs/abi8-windows-attempt2-failed.log`에 보존한다.
 
 실제 게임 클라이언트·운영 DB·사냥 통합은 제공 자료에 없어 검증하지 못했다. Windows 계정/게임 소유자 의존성 일부는 fixture이며, 반복 loopback 결과로 운영 최대 동접·NIO2 대비 성능을 보장하지 않는다. MAC 식별자 공급자는 기존대로 자료에 없어 기본 제한을 끈다. 원본 소스 전체를 복원했다는 의미가 아니다.
+
+세 번째 Windows 실행은 기존 종료 검사에서 blocking task 2개가 같은 IOCP batch에 함께 들어와 멈추는 검사 장치의 순서 문제를 드러냈다. 첫 task 진입을 확인한 뒤 두 번째를 게시하여 실제로 서로 다른 worker 둘을 점유하게 수정했다. 64개 대기 작업의 shutdown 시 cancel-once 검증 조건은 유지했다. 기록: logs/abi8-windows-attempt3-failed.log.
