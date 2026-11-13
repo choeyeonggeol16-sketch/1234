@@ -1,0 +1,130 @@
+# report_packet_log; PE pdata/unwind; entry 0x9fcc98
+# chunk 0x9fcc98..0x9fced6
+00000000009fcc98: push     rbx
+00000000009fcc9a: push     rbp
+00000000009fcc9b: push     rsi
+00000000009fcc9c: push     rdi
+00000000009fcc9d: push     r12
+00000000009fcc9f: push     r13
+00000000009fcca1: push     r14
+00000000009fcca3: push     r15
+00000000009fcca5: sub      rsp, 0x4c8
+00000000009fccac: mov      qword ptr [rsp + 0x70], 0xfffffffffffffffe
+00000000009fccb5: mov      rdi, rcx
+00000000009fccb8: mov      r8d, dword ptr [rip + 0x2ebc2519]
+00000000009fccbf: mov      rax, qword ptr gs:[0x58]
+00000000009fccc8: mov      r15d, 0x7d58
+00000000009fccce: mov      r13, qword ptr [rax + r8*8]
+00000000009fccd2: movsxd   r9, dword ptr [r13 + r15]
+00000000009fccd7: lea      r14, [rip - 0x5fccde]
+00000000009fccde: movsxd   r8, dword ptr [r14 + r9*4 + 0x47e2a40]
+00000000009fcce6: lea      eax, [r8 + 1]
+00000000009fccea: mov      dword ptr [r14 + r9*4 + 0x47e2a40], eax
+00000000009fccf2: imul     r9, r9, 0x3e8
+00000000009fccf9: add      r9, r8
+00000000009fccfc: lea      rax, [rip + 0x3c3b2d] ; UTF16 'void __cdecl CUserSocket::ReportPacketLog(bool)'
+00000000009fcd03: mov      qword ptr [r14 + r9*8 + 0x47bf7c0], rax
+00000000009fcd0b: xor      esi, esi
+00000000009fcd0d: cmp      dl, sil
+00000000009fcd10: jne      0x9fcd36
+00000000009fcd12: cmp      byte ptr [rip + 0x916132], sil
+00000000009fcd19: je       0x9fceb4
+00000000009fcd1f: call     qword ptr [rip + 0x11f3fb] ; IAT GetTickCount
+00000000009fcd25: add      eax, 0xfff6d840
+00000000009fcd2a: cmp      dword ptr [rdi + 0xc10], eax
+00000000009fcd30: jae      0x9fceb4
+00000000009fcd36: mov      rbp, qword ptr [rdi + 0xc08]
+00000000009fcd3d: sub      rbp, 1
+00000000009fcd41: lea      rdx, [rdi + 0x804]
+00000000009fcd48: mov      ebx, 0x200
+00000000009fcd4d: mov      r8, rbx
+00000000009fcd50: lea      rcx, [rsp + 0x2b0]
+00000000009fcd58: call     0xabcd50
+00000000009fcd5d: lea      rdx, [rdi + 0xa04]
+00000000009fcd64: mov      r8, rbx
+00000000009fcd67: lea      rcx, [rsp + 0xb0]
+00000000009fcd6f: call     0xabcd50
+00000000009fcd74: mov      r12d, esi
+00000000009fcd77: mov      word ptr [rsp + 0x78], si
+00000000009fcd7c: xor      edx, edx
+00000000009fcd7e: lea      r8d, [rdx + 0x2e]
+00000000009fcd82: lea      rcx, [rsp + 0x7a]
+00000000009fcd87: call     0xab9430
+00000000009fcd8c: mov      r11, qword ptr [rdi]
+00000000009fcd8f: mov      rcx, rdi
+00000000009fcd92: call     qword ptr [r11 + 0xc0]
+00000000009fcd99: mov      rbx, rax
+00000000009fcd9c: cmp      rax, rsi
+00000000009fcd9f: je       0x9fcdce
+00000000009fcda1: mov      rdx, qword ptr [rax]
+00000000009fcda4: mov      rcx, rax
+00000000009fcda7: call     qword ptr [rdx + 0x490]
+00000000009fcdad: mov      r12d, eax
+00000000009fcdb0: mov      rdx, qword ptr [rbx]
+00000000009fcdb3: mov      rcx, rbx
+00000000009fcdb6: call     qword ptr [rdx + 0x488]
+00000000009fcdbc: mov      r8, rax
+00000000009fcdbf: mov      edx, 0x18
+00000000009fcdc4: lea      rcx, [rsp + 0x78]
+00000000009fcdc9: call     0xab9d60
+00000000009fcdce: lea      rcx, [rdi + 0x7b4]
+00000000009fcdd5: mov      qword ptr [rsp + 0x38], rbp
+00000000009fcdda: lea      rax, [rsp + 0x78]
+00000000009fcddf: mov      qword ptr [rsp + 0x30], rax
+00000000009fcde4: mov      dword ptr [rsp + 0x28], r12d
+00000000009fcde9: mov      qword ptr [rsp + 0x20], rcx
+00000000009fcdee: mov      r9d, dword ptr [rdi + 0x7e4]
+00000000009fcdf5: lea      r8, [rip + 0x3c39b4] ; UTF16 '[PLog] Account[%d:%s] Char[%d:%s] Total Packet Count[%I64d]'
+00000000009fcdfc: mov      r12d, 2
+00000000009fce02: mov      edx, r12d
+00000000009fce05: lea      rcx, [rip + 0xd524a94]
+00000000009fce0c: call     0x734514
+00000000009fce11: mov      eax, ebp
+00000000009fce13: and      eax, 0x7f
+00000000009fce16: movsxd   rbx, eax
+00000000009fce19: lea      rcx, [rsp + rbx*4 + 0xb0]
+00000000009fce21: call     0xab9910
+00000000009fce26: mov      r11, rax
+00000000009fce29: mov      edx, dword ptr [rsp + rbx*4 + 0x2b0]
+00000000009fce30: movzx    ecx, dx
+00000000009fce33: sar      edx, 0x10
+00000000009fce36: mov      r9d, dword ptr [rax + 0x10]
+00000000009fce3a: add      r9d, 1
+00000000009fce3e: mov      r8d, dword ptr [rax + 0x14]
+00000000009fce42: add      r8d, 0x76c
+00000000009fce49: mov      dword ptr [rsp + 0x60], ecx
+00000000009fce4d: mov      dword ptr [rsp + 0x58], edx
+00000000009fce51: mov      ecx, dword ptr [rax]
+00000000009fce53: mov      dword ptr [rsp + 0x50], ecx
+00000000009fce57: mov      ecx, dword ptr [rax + 4]
+00000000009fce5a: mov      dword ptr [rsp + 0x48], ecx
+00000000009fce5e: mov      eax, dword ptr [rax + 8]
+00000000009fce61: mov      dword ptr [rsp + 0x40], eax
+00000000009fce65: mov      eax, dword ptr [r11 + 0xc]
+00000000009fce69: mov      dword ptr [rsp + 0x38], eax
+00000000009fce6d: mov      dword ptr [rsp + 0x30], r9d
+00000000009fce72: mov      dword ptr [rsp + 0x28], r8d
+00000000009fce77: mov      dword ptr [rsp + 0x20], esi
+00000000009fce7b: lea      r9, [rsp + 0x78]
+00000000009fce80: lea      r8, [rip + 0x3c38b9] ; UTF16 '[PLog]_%s_%3d. %4d-%2d-%2d %2d:%2d:%2d C[%3d] C_EX[%5d]'
+00000000009fce87: mov      edx, r12d
+00000000009fce8a: lea      rcx, [rip + 0xd524a0f]
+00000000009fce91: call     0x734514
+00000000009fce96: add      esi, 1
+00000000009fce99: sub      ebp, 1
+00000000009fce9c: cmp      esi, 0x80
+00000000009fcea2: jl       0x9fce11
+00000000009fcea8: call     qword ptr [rip + 0x11f272] ; IAT GetTickCount
+00000000009fceae: mov      dword ptr [rdi + 0xc10], eax
+00000000009fceb4: movsxd   rax, dword ptr [r13 + r15]
+00000000009fceb9: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+00000000009fcec2: add      rsp, 0x4c8
+00000000009fcec9: pop      r15
+00000000009fcecb: pop      r14
+00000000009fcecd: pop      r13
+00000000009fcecf: pop      r12
+00000000009fced1: pop      rdi
+00000000009fced2: pop      rsi
+00000000009fced3: pop      rbp
+00000000009fced4: pop      rbx
+00000000009fced5: ret

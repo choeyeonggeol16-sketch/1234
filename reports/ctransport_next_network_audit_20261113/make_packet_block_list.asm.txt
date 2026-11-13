@@ -1,0 +1,71 @@
+# make_packet_block_list; PE pdata/unwind; entry 0x9f7b80
+# chunk 0x9f7b80..0x9f7c97
+00000000009f7b80: push     rbx
+00000000009f7b82: push     rbp
+00000000009f7b83: push     rsi
+00000000009f7b84: push     rdi
+00000000009f7b85: push     r12
+00000000009f7b87: sub      rsp, 0x20
+00000000009f7b8b: mov      ecx, dword ptr [rip + 0x2ebc7647]
+00000000009f7b91: mov      rax, qword ptr gs:[0x58]
+00000000009f7b9a: lea      rsi, [rip - 0x5f7ba1]
+00000000009f7ba1: mov      rax, qword ptr [rax + rcx*8]
+00000000009f7ba5: mov      edx, 0x7d58
+00000000009f7baa: lea      r12, [rip + 0x1746862f]
+00000000009f7bb1: movsxd   rbx, dword ptr [rdx + rax]
+00000000009f7bb5: mov      edi, 0xd1
+00000000009f7bba: movsxd   rcx, dword ptr [rsi + rbx*4 + 0x47e2a40]
+00000000009f7bc2: mov      rdx, rbx
+00000000009f7bc5: mov      r8, rdi
+00000000009f7bc8: lea      eax, [rcx + 1]
+00000000009f7bcb: imul     rdx, rdx, 0x3e8
+00000000009f7bd2: add      rdx, rcx
+00000000009f7bd5: mov      dword ptr [rsi + rbx*4 + 0x47e2a40], eax
+00000000009f7bdc: lea      rax, [rip + 0x3c68ad] ; UTF16 'void __cdecl CUserSocket::MakePacketBlockList(void)'
+00000000009f7be3: mov      qword ptr [rsi + rdx*8 + 0x47bf7c0], rax
+00000000009f7beb: xor      edx, edx
+00000000009f7bed: mov      rcx, r12
+00000000009f7bf0: call     0xab9430
+00000000009f7bf5: lea      rbp, [rip + 0x17468764]
+00000000009f7bfc: mov      r8, rdi
+00000000009f7bff: mov      rcx, rbp
+00000000009f7c02: xor      edx, edx
+00000000009f7c04: call     0xab9430
+00000000009f7c09: mov      r8, rdi
+00000000009f7c0c: lea      rdi, [rip + 0x1746882d]
+00000000009f7c13: mov      rcx, rdi
+00000000009f7c16: xor      edx, edx
+00000000009f7c18: call     0xab9430
+00000000009f7c1d: xor      ecx, ecx
+00000000009f7c1f: movsxd   rax, dword ptr [rcx + rsi + 0xc062c0]
+00000000009f7c27: test     eax, eax
+00000000009f7c29: jle      0x9f7c2f
+00000000009f7c2b: mov      byte ptr [rax + rdi], 1
+00000000009f7c2f: movsxd   rax, dword ptr [rcx + rsi + 0xc06610]
+00000000009f7c37: test     eax, eax
+00000000009f7c39: js       0x9f7c3f
+00000000009f7c3b: mov      byte ptr [rax + rbp], 1
+00000000009f7c3f: movsxd   rax, dword ptr [rcx + rsi + 0xc06bc0]
+00000000009f7c47: test     eax, eax
+00000000009f7c49: jle      0x9f7c50
+00000000009f7c4b: mov      byte ptr [rax + r12], 1
+00000000009f7c50: add      rcx, 4
+00000000009f7c54: cmp      rcx, 0x344
+00000000009f7c5b: jl       0x9f7c1f
+00000000009f7c5d: lea      rcx, [rip + 0x60ecfc]
+00000000009f7c64: cmp      dword ptr [rcx], 0
+00000000009f7c67: jl       0x9f7c74
+00000000009f7c69: movsxd   rax, dword ptr [rcx]
+00000000009f7c6c: mov      byte ptr [rax + rsi + 0x17a602c0], 1
+00000000009f7c74: lea      rax, [rip + 0x60ef45]
+00000000009f7c7b: add      rcx, 4
+00000000009f7c7f: cmp      rcx, rax
+00000000009f7c82: jl       0x9f7c64
+00000000009f7c84: add      dword ptr [rsi + rbx*4 + 0x47e2a40], -1
+00000000009f7c8c: add      rsp, 0x20
+00000000009f7c90: pop      r12
+00000000009f7c92: pop      rdi
+00000000009f7c93: pop      rsi
+00000000009f7c94: pop      rbp
+00000000009f7c95: pop      rbx
+00000000009f7c96: ret

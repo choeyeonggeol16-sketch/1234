@@ -1,0 +1,34 @@
+# read16_dispatch; PE pdata/unwind; entry 0x545430
+# chunk 0x545430..0x5454cd
+0000000000545430: sub      rsp, 0x28
+0000000000545434: test     edx, edx
+0000000000545436: mov      r8, rcx
+0000000000545439: jne      0x545445
+000000000054543b: call     0x45d41c
+0000000000545440: jmp      0x5454c8
+0000000000545445: mov      eax, dword ptr [rcx + 8]
+0000000000545448: test     eax, eax
+000000000054544a: jg       0x545466
+000000000054544c: lea      r8, [rip + 0x60faa5] ; UTF16 'invalid socket!'
+0000000000545453: lea      rcx, [rip + 0xd9dc446]
+000000000054545a: mov      edx, 2
+000000000054545f: call     0x734514
+0000000000545464: jmp      0x5454c8
+0000000000545466: mov      rax, qword ptr [rcx + 0x98]
+000000000054546d: add      dword ptr [rax + 0x4010], edx
+0000000000545473: mov      rax, qword ptr [rcx + 0x98]
+000000000054547a: mov      ecx, dword ptr [rax + 0x4010]
+0000000000545480: lock xadd qword ptr [rip + 0x470bab7], rcx
+0000000000545489: lock add qword ptr [rip + 0x470babe], 1
+0000000000545492: mov      rax, qword ptr [r8 + 0x98]
+0000000000545499: mov      ecx, dword ptr [rax + 0x4010]
+000000000054549f: cmp      ecx, 0x1b58
+00000000005454a5: jbe      0x5454bc
+00000000005454a7: mov      rax, rcx
+00000000005454aa: lock xadd qword ptr [rip + 0x470baad], rax
+00000000005454b3: lock add qword ptr [rip + 0x470bab4], 1
+00000000005454bc: mov      rax, qword ptr [r8]
+00000000005454bf: mov      rcx, r8
+00000000005454c2: call     qword ptr [rax + 0xa0]
+00000000005454c8: add      rsp, 0x28
+00000000005454cc: ret

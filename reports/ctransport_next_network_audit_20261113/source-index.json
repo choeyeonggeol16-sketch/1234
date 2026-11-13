@@ -1,0 +1,18 @@
+{
+  "reviewed_commit": "833ddfdc6f1a47c953347692addbc3d4e4bdd097",
+  "windows_tested_commit": "292ef5bf3e21eb3851dce113a8a64c459dca3cea",
+  "original_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "files": {
+    "native/CTransport.cpp": "e7148522f2f2d4f7f379ba64385d22dbdcd4c50ba8043e2661ea261c98c20b46",
+    "native/cio_core.hpp": "8008bccb639d12623fb617a2d64fa9d786ac5a96cf217c79a179a0e666464c8a",
+    "native/execution_serializer.hpp": "384c5d8c55360bdbcb2e99a828cd356df6781d793607dd94aa50804b0696f4c0",
+    "native/perfmon.hpp": "60f265300c691c084a1c77f39c5f8239fc433387e1179f73d048bc8f5b75279a",
+    "native/user_socket.hpp": "83ad1db380fd8f3423c30d564b082bc34d48d4a3915da49d782262e27e18d958",
+    "src/l1j/server/server/model/network/core/CUserSocket.java": "580bb91783246b6d4330961b66ef8ad7baaaaa0fdcd0774b1a8ff47bb7e3ef8a",
+    "src/l1j/server/server/model/network/core/CIOClient.java": "9d4a1c9b722199202f0fa5ded3e5eef8f8fd90ab8685a656fb3ca068fe3696c6",
+    "src/l1j/server/server/model/network/core/CPerfMon.java": "81a69effbe181e33620242c45dcf1e881f2f803291ea2f6a2d85dc6f6b40796c",
+    "src/l1j/server/server/model/network/safe/NetworkSafeLoadManager.java": "9b662bd689c3f6bf0954eada9ab95dcac3259562223a404685359189b6808a4d",
+    "src/l1j/server/server/model/network/utill/ConnectionConfig.java": "8491607cd55269851a86601093b0481f4d76d527f7f827af4fcb17016e821a1a",
+    "build/CTransport.dll": "00b03b8af47c50aed8bc3c896cfa008713269bde9170f986c760e127b232a848"
+  }
+}

@@ -1,0 +1,1 @@
+CONFIRMED ABI8 report gap:per-socket reportedWriteBytes=0,actualReservedBytes=256,actualPendingRequests=1,globalPendingRequests=1. SEND still completes correctly.

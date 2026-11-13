@@ -1,0 +1,392 @@
+{
+  "signature_refs": {
+    "check_max_packet_accept": [
+      {
+        "at": "0x9f7f82",
+        "entry": "0x9f7f3c"
+      }
+    ],
+    "report_packet_log": [
+      {
+        "at": "0x9fccfc",
+        "entry": "0x9fcc98"
+      }
+    ],
+    "on_sending": [],
+    "make_packet_block_list": [
+      {
+        "at": "0x9f7bdc",
+        "entry": "0x9f7b80"
+      }
+    ],
+    "async_send_const": [
+      {
+        "at": "0x90e726",
+        "entry": "0x90e6c4"
+      }
+    ],
+    "safe_send": [
+      {
+        "at": "0x9ef481",
+        "entry": "0x9ef41c"
+      }
+    ],
+    "on_read": [
+      {
+        "at": "0xa03789",
+        "entry": "0xa0372c"
+      }
+    ],
+    "perf_report_user_count": [
+      {
+        "at": "0x82c174",
+        "entry": "0x82c0c0"
+      }
+    ]
+  },
+  "functions": {
+    "check_max_packet_accept": {
+      "entry": "0x9f7f3c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f7f3c",
+          "0x9f802f"
+        ]
+      ],
+      "direct_calls": [],
+      "callers": [
+        {
+          "at": "0xa0398d",
+          "op": "call",
+          "function": "0xa0372c",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "report_packet_log": {
+      "entry": "0x9fcc98",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9fcc98",
+          "0x9fced6"
+        ]
+      ],
+      "direct_calls": [
+        "0xabcd50",
+        "0xabcd50",
+        "0xab9430",
+        "0xab9d60",
+        "0x734514",
+        "0xab9910",
+        "0x734514"
+      ],
+      "callers": [
+        {
+          "at": "0x4c7069",
+          "op": "call",
+          "function": "0x4c6f18",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x62b35a",
+          "op": "call",
+          "function": "0x62b210",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x95ab2d",
+          "op": "call",
+          "function": "0x95a9e4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x9d3183",
+          "op": "call",
+          "function": "0x9d2fcc",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "make_packet_block_list": {
+      "entry": "0x9f7b80",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f7b80",
+          "0x9f7c97"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9430",
+        "0xab9430",
+        "0xab9430"
+      ],
+      "callers": [
+        {
+          "at": "0x72fe54",
+          "op": "call",
+          "function": "0x72f874",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "async_send_const": {
+      "entry": "0x90e6c4",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90e6c4",
+          "0x90eb99"
+        ]
+      ],
+      "direct_calls": [
+        "0x41c6f8",
+        "0x45d41c",
+        "0x41e6e4",
+        "0x90de2c",
+        "0x41e6e4",
+        "0xabcd50",
+        "0x73446c",
+        "0x734514",
+        "0x41c6f8",
+        "0x90de2c",
+        "0xabcd50",
+        "0x41e6e4",
+        "0x90de2c",
+        "0x41e6e4",
+        "0xabcd50",
+        "0x41c6f8",
+        "0x41c6f8"
+      ],
+      "callers": []
+    },
+    "safe_send": {
+      "entry": "0x9ef41c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9ef41c",
+          "0x9ef51d"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514"
+      ],
+      "callers": [
+        {
+          "at": "0x97e62b",
+          "op": "call",
+          "function": "0x97e518",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x97e7af",
+          "op": "call",
+          "function": "0x97e6d0",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xa06d8d",
+          "op": "call",
+          "function": "0xa06c68",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "on_read": {
+      "entry": "0xa0372c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0372c",
+          "0xa03d8f"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d41c",
+        "0x9ef384",
+        "0x925138",
+        "0xa0340c",
+        "0xab9970",
+        "0x9f7f3c",
+        "0x9ba4f8",
+        "0x926eac",
+        "0xab9970",
+        "0x926eac",
+        "0x4205e0",
+        "0x734514",
+        "0x5456d0",
+        "0x4205e0",
+        "0xab9970",
+        "0x4205e0",
+        "0x73446c",
+        "0x4205e0",
+        "0xa71b3c",
+        "0x5456d0",
+        "0x45d41c",
+        "0x5456d0"
+      ],
+      "callers": []
+    },
+    "perf_report_user_count": {
+      "entry": "0x82c0c0",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x82c0c0",
+          "0x82c3cb"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9970",
+        "0xab9970",
+        "0xab9430",
+        "0xab9430",
+        "0x8aaa4c",
+        "0x6616e0",
+        "0x8aabdc",
+        "0x866f68",
+        "0x734514",
+        "0x80e1d4",
+        "0xab91d0",
+        "0x822948",
+        "0x734514",
+        "0x734514",
+        "0x480214"
+      ],
+      "callers": [
+        {
+          "at": "0x82c451",
+          "op": "call",
+          "function": "0x82c408",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "read8": {
+      "entry": "0x45de2c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45de2c",
+          "0x45dec9"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d534",
+        "0x734514"
+      ],
+      "callers": [
+        {
+          "at": "0x45f091",
+          "op": "call",
+          "function": "0x45f028",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "read16_dispatch": {
+      "entry": "0x545430",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x545430",
+          "0x5454cd"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d41c",
+        "0x734514"
+      ],
+      "callers": [
+        {
+          "at": "0x5465c5",
+          "op": "call",
+          "function": "0x54655c",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "write16": {
+      "entry": "0x545e38",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x545e38",
+          "0x5460b8"
+        ]
+      ],
+      "direct_calls": [
+        "0x73446c",
+        "0x734514",
+        "0x734514",
+        "0x73446c",
+        "0x734514",
+        "0x41c6f8"
+      ],
+      "callers": []
+    },
+    "write_enqueue": {
+      "entry": "0x90e1d0",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90e1d0",
+          "0x90e522"
+        ]
+      ],
+      "direct_calls": [
+        "0x41c6f8",
+        "0x41c6f8",
+        "0x45d41c",
+        "0x73446c",
+        "0x734514",
+        "0x41c6f8",
+        "0xabcd50",
+        "0x41c6f8"
+      ],
+      "callers": [
+        {
+          "at": "0x90ee18",
+          "op": "call",
+          "function": "0x90ed10",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "io_worker": {
+      "entry": "0x7056ac",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x7056ac",
+          "0x7059a1"
+        ]
+      ],
+      "direct_calls": [
+        "0xa22ae8",
+        "0x705330",
+        "0x926e2c",
+        "0x66db28",
+        "0x926e54",
+        "0x66db28"
+      ],
+      "callers": [
+        {
+          "at": "0x705a50",
+          "op": "call",
+          "function": "0x705a4c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x705b0d",
+          "op": "call",
+          "function": "0x705ab0",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    }
+  }
+}
