@@ -301,8 +301,8 @@ static void recoveredStructureTests(){
  {
   std::atomic<bool> destroyed{false};auto* owner=new BatchOwner(&destroyed);
   {
-   TimerWheel wheel(0);check(wheel.schedule(1,owner,49)&&wheel.schedule(2,owner,10050)&&wheel.schedule(3,owner,100000),"wheel schedule");
-   check(!wheel.schedule(1,owner,100),"duplicate timer admitted");check(!wheel.takeDue(49),"timer fired early");
+   CThreadLocalTimer wheel(0);check(wheel.AddTimer(owner,49,static_cast<int>(1),1)&&wheel.AddTimer(owner,10050,static_cast<int>(2),2)&&wheel.AddTimer(owner,100000,static_cast<int>(3),3),"wheel schedule");
+   check(!wheel.AddTimer(owner,100,static_cast<int>(1),1),"duplicate timer admitted");check(!wheel.takeDue(49),"timer fired early");
    auto* due=wheel.takeDue(50);check(due==owner,"50ms timer not due");due->release();
    check(!wheel.takeDue(10049),"overflow timer fired early");due=wheel.takeDue(10050);check(due==owner,"overflow timer lost");due->release();
    auto* cancelled=wheel.cancel(3);check(cancelled==owner,"heap cancellation missing");cancelled->release();
@@ -384,27 +384,27 @@ static void exactStructureTests(){
   CIOBufferPool pool(10);check(!pool.initialize(1,200)&&pool.initializationFailures()>0,"startup accepted insufficient preallocation budget");
  }
  {
-  std::atomic<unsigned> destroyed{0};TimerWheel wheel(0);
-  for(unsigned i=1;i<=1001;++i){auto* owner=new TimerOwner(i,destroyed);check(wheel.schedule(i,owner,50),"1000-node block schedule failed");owner->release();}
+  std::atomic<unsigned> destroyed{0};CThreadLocalTimer wheel(0);
+  for(unsigned i=1;i<=1001;++i){auto* owner=new TimerOwner(i,destroyed);check(wheel.AddTimer(owner,50,static_cast<int>(i),i),"1000-node block schedule failed");owner->release();}
   check(wheel.blocksInUse()==201,"1001st timer did not extend block chain");
   auto* first=static_cast<TimerOwner*>(wheel.takeDue(50));check(first&&first->token==1001,"original prepended overflow block order changed");first->release();
   for(unsigned i=1;i<=1000;++i){auto* due=static_cast<TimerOwner*>(wheel.takeDue(50));check(due&&due->token==i,"block array dispatch order changed");due->release();}
   check(wheel.size()==0&&wheel.blocksInUse()==200&&destroyed==1001,"timer blocks/references not returned");
  }
  {
-  std::atomic<unsigned> destroyed{0};TimerBlockPool pool(200);
+  std::atomic<unsigned> destroyed{0};CThreadLocalTimer::SlotPool pool(200);
   {
-   TimerWheel wheel(0,&pool);
-   for(unsigned i=1;i<=1000;++i){auto* owner=new TimerOwner(i,destroyed);check(wheel.schedule(i,owner,50),"bounded block schedule");owner->release();}
-   auto* rejected=new TimerOwner(1001,destroyed);check(!wheel.schedule(1001,rejected,50),"block pool grew on exhaustion");rejected->release();
+   CThreadLocalTimer wheel(0,&pool);
+   for(unsigned i=1;i<=1000;++i){auto* owner=new TimerOwner(i,destroyed);check(wheel.AddTimer(owner,50,static_cast<int>(i),i),"bounded block schedule");owner->release();}
+   auto* rejected=new TimerOwner(1001,destroyed);check(!wheel.AddTimer(rejected,50,static_cast<int>(1001),1001),"block pool grew on exhaustion");rejected->release();
    for(unsigned i=1;i<=1000;i+=2){auto* cancelled=wheel.cancel(i);check(cancelled,"block cancellation missing");cancelled->release();}
-   for(unsigned i=1002;i<1502;++i){auto* owner=new TimerOwner(i,destroyed);check(wheel.schedule(i,owner,50),"cancelled slot compaction failed");owner->release();}
+   for(unsigned i=1002;i<1502;++i){auto* owner=new TimerOwner(i,destroyed);check(wheel.AddTimer(owner,50,static_cast<int>(i),i),"cancelled slot compaction failed");owner->release();}
    check(wheel.blocksInUse()==200&&wheel.size()==1000,"cancelled holes leaked blocks");
    while(auto* due=wheel.takeDue(50))due->release();
    check(wheel.size()==0,"compacted bucket retained timer");
   }
   check(pool.inUse()==0&&destroyed==1501,"bounded block pool/references leaked");
-  TimerBlockPool tooSmall(199);try{TimerWheel failed(0,&tooSmall);check(false,"incomplete initial wheel admitted");}catch(const std::bad_alloc&){}
+  CThreadLocalTimer::SlotPool tooSmall(199);try{CThreadLocalTimer failed(0,&tooSmall);check(false,"incomplete initial wheel admitted");}catch(const std::bad_alloc&){}
   check(tooSmall.inUse()==0,"partial wheel initialization leaked blocks");
  }
  {

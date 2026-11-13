@@ -132,6 +132,8 @@ public:
     bool Start() noexcept;
     void Stop() noexcept{RequestStop();if(thread_.joinable())thread_.join();Clear();}
 };
+// L1 worker host; the original CIOThreadCallback performs World_Sync/GC.
+// This adapter is deliberately not renamed to that unrelated callback type.
 class IOThreadCallback {
     Server* const server_;const unsigned owner_;std::thread thread_;
 public:

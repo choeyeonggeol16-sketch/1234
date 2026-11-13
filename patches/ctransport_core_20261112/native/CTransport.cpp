@@ -80,7 +80,7 @@ public:
     NtStatusToErrorFn ntStatusToError = nullptr;
     std::vector<std::unique_ptr<IOThreadCallback>> workers;
     std::unique_ptr<ListenThread> listenThread;
-    std::unique_ptr<TimerWheel> listenTimer;
+    std::unique_ptr<CThreadLocalTimer> listenTimer;
     CUserSocketManager<CIOSocket> registry;
     std::mutex socketMapGate;
     std::map<SOCKET,CIOSocket*> socketMap;
@@ -100,8 +100,8 @@ public:
     unsigned perfIntervalMs=1000;
     CSocketLimiter socketLimiter;
     void RemoveSocketNumber(CIOSocket* socket) noexcept;
-    std::unique_ptr<TimerBlockPool> timerBlocks;
-    std::vector<std::unique_ptr<TimerWheel>> timers;
+    std::unique_ptr<CThreadLocalTimer::SlotPool> timerBlocks;
+    std::vector<std::unique_ptr<CThreadLocalTimer>> timers;
     std::atomic<std::uint64_t> sendsAccepted{0},sendsExecuted{0},framesEncrypted{0},framesPlain{0},gracefulCloses{0},abortiveCloses{0},sendsRejected{0},pendingSends{0},sendOwnerErrors{0};
     std::atomic<std::uint64_t> timerInline{0}, timerPosted{0}, closeStarts{0}, closeTerminals{0};
     std::mutex taskGate;
@@ -139,7 +139,7 @@ public:
     void NotifyPendingChanged()noexcept override{notifyChange();}
     void OnAcceptedSocket(SOCKET socket)noexcept override;
     void OnWaitFailure(unsigned error) noexcept override;
-    TimerWheel* timerFor(unsigned owner) noexcept {return owner==17?listenTimer.get():owner<timers.size()?timers[owner].get():nullptr;}
+    CThreadLocalTimer* timerFor(unsigned owner) noexcept {return owner==17?listenTimer.get():owner<timers.size()?timers[owner].get():nullptr;}
     CIOSocket* CreateSocket(SOCKET socket) noexcept;
 
     void worker(unsigned owner = 0) noexcept;
@@ -805,7 +805,7 @@ bool Server::scheduleTask(std::uint64_t token,unsigned delay,CIOSocket* deadline
     } catch (...) { if (task) task->release(); return false; }
     ++taskCount;
     bool queued;
-    if (delay) queued = timerFor(task->owner)->schedule(token, task, monotonicMs() + delay);
+    if (delay) queued = timerFor(task->owner)->AddTimer(task, monotonicMs() + delay, static_cast<int>(token), token);
     else {
         task->state.store(TaskState::Queued);
         queued = post(task->op);
@@ -896,13 +896,10 @@ void IOThreadCallback::IOThread_common() noexcept {
     for (;;) {
         if (owner < server->timers.size()) {
             const auto dueSnapshot = monotonicMs();
-            for (;;) {
-                auto* due = server->timers[owner]->takeDue(dueSnapshot);
-                if (!due) break;
+            server->timers[owner]->Dispatch(dueSnapshot,[&](CIOObject* due)noexcept{
                 if (timerDispatch.post(owner)) { ++server->timerPosted; static_cast<NativeTask*>(due)->submit(); }
                 else { ++server->timerInline; static_cast<NativeTask*>(due)->runInline(); }
-                due->release();
-            }
+            });
         }
         ULONG removed = 0;
         if (!GetQueuedCompletionStatusEx(server->port, entries.data(), CompletionBatchSize,
@@ -949,9 +946,9 @@ void IOThreadCallback::Start(){thread_=std::thread([this]{IOThread_common();});}
 void Server::worker(unsigned owner) noexcept {IOThreadCallback callback(this,owner);callback.IOThread_common();}
 void ListenThread::Tick() noexcept {
     if(!server_->listenTimer)return;
-    while(auto* due=server_->listenTimer->takeDue(monotonicMs())){
-        ++server_->timerPosted;static_cast<NativeTask*>(due)->submit();due->release();
-    }
+    server_->listenTimer->Dispatch(monotonicMs(),[&](CIOObject* due)noexcept{
+        ++server_->timerPosted;static_cast<NativeTask*>(due)->submit();
+    });
 }
 bool ListenThread::Start() noexcept {
     try{thread_=std::thread([this]{currentWorker=server_;currentWorkerIndex=17;
@@ -1081,9 +1078,9 @@ bool Server::Run(const char* address, unsigned short number) noexcept {
     running.store(true); stopping.store(false); accepting.store(true);
     try {
         socketFactory=std::make_unique<CDummyServerCallback>(CUserSocket::Allocate);
-        timerBlocks.reset(new TimerBlockPool(static_cast<std::size_t>(workerCount+1)*200+409));
-        for(int i=0;i<workerCount;++i)timers.emplace_back(new TimerWheel(monotonicMs(),timerBlocks.get()));
-        listenTimer.reset(new TimerWheel(monotonicMs(),timerBlocks.get()));
+        timerBlocks.reset(new CThreadLocalTimer::SlotPool(static_cast<std::size_t>(workerCount+1)*200+409));
+        for(int i=0;i<workerCount;++i)timers.emplace_back(new CThreadLocalTimer(monotonicMs(),timerBlocks.get()));
+        listenTimer.reset(new CThreadLocalTimer(monotonicMs(),timerBlocks.get()));
         listenThread=std::make_unique<ListenThread>(this);
         for(int i=0;i<workerCount;++i){workers.emplace_back(new IOThreadCallback(this,static_cast<unsigned>(i)));workers.back()->Start();}
         auto monitor=std::make_shared<CPerfMon>(this);if(!monitor->Start(perfIntervalMs))throw std::bad_alloc();std::atomic_store(&perfmon,monitor);

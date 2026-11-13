@@ -2,7 +2,7 @@
   "base_revision": "c76e7b2753876fc8bb1aac4075e78a5d31bf522f",
   "branch": "ctransport-core-20261112",
   "dll": "CTransport.dll",
-  "dll_sha256": "7ea2195879cd1a414796ffbd17477e3c842bc419c475acf8345e36d861538afc",
+  "dll_sha256": "01d389928506719781cdcbd1b9042f58a3b9d89786f6fdb6f0bf2572a63afb75",
   "abi": "0xa0000",
   "implementation_parent": "1a16f1cde8cde4d6e2c7618f4d74e5d05ded764b",
   "transport_scope": "game",
@@ -365,37 +365,31 @@
     "pss_unchanged_from": "2dfce4f; one unused experimental packet only has CIOUserSocket type references renamed"
   },
   "windows_evidence": {
-    "status": "passed",
+    "status": "pending",
     "abi": "0xa0000",
     "exports": 67,
-    "implementation_parent": "581cfc4",
-    "dll_sha256": "7ea2195879cd1a414796ffbd17477e3c842bc419c475acf8345e36d861538afc",
+    "implementation_parent": "a1d8d5d",
+    "dll_sha256": "01d389928506719781cdcbd1b9042f58a3b9d89786f6fdb6f0bf2572a63afb75",
     "codec_dll_sha256": "60bde93c2ba20057e7e307594edef69ced273b69f923535ab658769e09f0cea9",
     "pss_client_dll_sha256": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
     "previous_verified_run": {
-      "run_id": 43412834686,
-      "source_commit": "cf696369047f30d0eff8b67d42a2d642369a7f2d",
-      "dll_sha256": "cb2c9bf662e7be42636aaf77edbb34ba7773af20a3d435b4f1030df2c62e0a43"
+      "run_id": 43479323594,
+      "source_commit": "1a16f1cde8cde4d6e2c7618f4d74e5d05ded764b",
+      "dll_sha256": "7ea2195879cd1a414796ffbd17477e3c842bc419c475acf8345e36d861538afc"
     },
     "source_scope": {
-      "baseline": "581cfc4",
+      "baseline": "a1d8d5d",
       "edited_java_files": [
-        "src/l1j/server/server/model/network/core/CIOConfig.java",
-        "src/l1j/server/server/model/network/core/CIOServer.java",
-        "src/l1j/server/server/model/network/core/CPoolDiagnostics.java"
+        "src/l1j/server/server/model/network/core/CIOConfig.java"
       ],
-      "unchanged_source_files": 1709,
-      "unchanged_java_files": 1708
-    },
-    "implementation_commit": "1a16f1cde8cde4d6e2c7618f4d74e5d05ded764b",
-    "tested_source_commit": "1a16f1cde8cde4d6e2c7618f4d74e5d05ded764b",
-    "run_id": 43479323594,
-    "job_id": 132071365275,
-    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43479323594",
-    "os": "Windows Server 2022 GitHub-hosted runner",
-    "jdk": "Temurin21",
-    "scope": "Existing Windows kernel/FFM regression including new count24 pool/fault marker and zero normal faults;corruption injection separately ASan/UBSan/TSan on Linux",
-    "source_archive_sha256": "46ca8c477715693ef6e181c7122d908f624847d8758c362a70f6dc5f7c3d2e7b"
+      "edited_native_files": [
+        "native/timer_wheel.hpp",
+        "native/io_server.hpp",
+        "native/CTransport.cpp"
+      ],
+      "unchanged_source_files": 1711,
+      "unchanged_java_files": 1710
+    }
   },
   "followup_structures": [
     "common L1 map/screen/radius/rectangle predicate",
