@@ -69,6 +69,12 @@ ctransport.diagnostics.maxConnections=100
 if ($LASTEXITCODE -ne 0) { throw 'Diagnostics test compilation failed' }
 & java --enable-preview '-Dctransport.config=diagnostic-test.properties' '-Dctransport.diagnostics.maxConnections=2' -cp owner-classes l1j.server.server.model.network.core.NetworkDiagnosticsTest
 if ($LASTEXITCODE -ne 0) { throw 'Diagnostics/config test failed' }
+& javac --enable-preview --release 21 -encoding UTF-8 -cp owner-classes -d owner-classes tests/ExtendedPacketDiagnosticsTest.java
+if ($LASTEXITCODE -ne 0) { throw 'Extended diagnostics test compilation failed' }
+& java --enable-preview '-Dctransport.diagnostics.enabled=true' -cp owner-classes l1j.server.server.model.network.core.ExtendedPacketDiagnosticsTest
+if ($LASTEXITCODE -ne 0) { throw 'Extended command diagnostics test failed' }
+& java --enable-preview '-Dctransport.diagnostics.enabled=false' -cp owner-classes l1j.server.server.model.network.core.ExtendedPacketDiagnosticsTest disabled
+if ($LASTEXITCODE -ne 0) { throw 'Disabled extended diagnostics test failed' }
 New-Item -ItemType Directory -Force broadcast-classes | Out-Null
 $broadcastFixtures = (Get-ChildItem tests/broadcast-followup/*.java).FullName
 & javac --enable-preview --release 21 -encoding UTF-8 -d broadcast-classes "$core/CTLMFilter.java" "$core/CSharedBroadcast.java" src/l1j/server/server/Opcodes.java "$core/sc/packet/SC_MoveChar.java" "$core/sc/packet/SC_ChangeHeading.java" "$core/sc/packet/SC_RemoveObject.java" "$core/sc/packet/SC_DoActionGFX.java" "$core/sc/packet/SC_SkillSound.java" $broadcastFixtures

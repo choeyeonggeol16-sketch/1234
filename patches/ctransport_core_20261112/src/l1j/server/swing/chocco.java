@@ -365,11 +365,11 @@ public class chocco extends JFrame {
         }.execute();
     }
     private void showRecentPackets() {
-        String text = JOptionPane.showInputDialog(this, "소켓 보고서의 진단 id를 입력하세요.");
+        String text = JOptionPane.showInputDialog(this, "소켓 보고서의 진단 id를 입력하세요. 확장 요청은 종류·명령 번호도 표시합니다.");
         if (text == null) return;
         try {
             long id = Long.parseLong(text.trim());
-            showNetworkReport("종료 사유·최근 패킷 128개", () -> l1j.server.server.model.network.core.CNetworkDiagnostics.recent(id));
+            showNetworkReport("종료 사유·최근 패킷 128개(확장 명령 포함)", () -> l1j.server.server.model.network.core.CNetworkDiagnostics.recent(id));
         } catch (NumberFormatException failure) { showSimpleReport("최근 패킷", "숫자 id를 입력하세요."); }
     }
     private String networkProfile() {
@@ -381,7 +381,8 @@ public class chocco extends JFrame {
                     .append(" totalMs=").append(workers[offset + 1])
                     .append(" activeSinceMs=").append(workers[offset + 2]).append('\n');
         }
-        return text.append(l1j.server.server.model.network.core.CNetworkDiagnostics.workers()).toString();
+        return text.append("\n확장 요청은 종류·명령 번호를 함께 표시합니다.\n")
+                .append(l1j.server.server.model.network.core.CNetworkDiagnostics.workers()).toString();
     }
     private String networkSockets() {
         StringBuilder text = new StringBuilder(l1j.server.server.model.network.core.CNetworkDiagnostics.connections());

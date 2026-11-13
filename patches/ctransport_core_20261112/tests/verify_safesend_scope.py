@@ -3,6 +3,7 @@ import hashlib,json
 CORE='src/l1j/server/server/model/network/core/'
 EDITED={CORE+n+'.java' for n in ['CUserSocket','CIOServer','CSocket','CIOFrame','CNetworkDiagnostics']}
 EDITED|={CORE+'sc/packet/SC_Emblem.java','src/l1j/server/swing/chocco.java'}
+EDITED.add('src/l1j/server/server/model/network/packet/CPacketHandler.java')
 def verify(sources,baseline_path):
     baseline=json.loads(Path(baseline_path).read_text())['files']
     assert sources.keys()==baseline.keys(),'unexpected source additions/deletions'

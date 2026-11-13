@@ -6,6 +6,7 @@ EDITED|={CORE+'sc/packet/'+n+'.java' for n in ['SC_DoActionGFX','SC_SkillSound',
 # The subsequent SafeSend/close feature retains a separate tighter baseline.
 EDITED|={CORE+n+'.java' for n in ['CIOServer','CSocket','CIOFrame']}
 EDITED.add(CORE+'sc/packet/SC_Emblem.java')
+EDITED.add('src/l1j/server/server/model/network/packet/CPacketHandler.java')
 ADDED={CORE+n+'.java' for n in ['CTLMFilter','CSharedBroadcast','CNetworkDiagnostics']}
 def verify(sources,baseline_path):
  baseline=json.loads(Path(baseline_path).read_text())['files']

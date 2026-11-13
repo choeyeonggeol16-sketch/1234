@@ -1,5 +1,7 @@
 package l1j.server.server.model.network.packet;
 
+import l1j.server.server.model.network.core.CNetworkDiagnostics;
+
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
@@ -2387,6 +2389,8 @@ public final class CPacketHandler {
 
         if (payloadSize >= 2) {
             type = buffer.readShort(1) & 0xFFFF;
+            CNetworkDiagnostics.subcommand(Opcodes.C_EXTENDED & 255,
+                    CNetworkDiagnostics.PacketKind.EXTENDED, type);
         }
 
         int size = 0, firstId = 0, firstCount = 0;
@@ -2942,15 +2946,21 @@ public final class CPacketHandler {
         final int msgId = buffer.readShort(1) & 0xFFFF;
 
         if (CSProto.isRoutable(msgId)) {
+            CNetworkDiagnostics.subcommand(Opcodes.C_EXTENDED_PROTOBUF & 255,
+                    CNetworkDiagnostics.PacketKind.PROTOBUF, msgId);
             return dispatchExtendedProto(buffer, client,  payloadSize);
         }
 
         final int craftType = buffer.readByte(1) & 0xFF;
 
         if (isCraftType(craftType)) {
+            CNetworkDiagnostics.subcommand(Opcodes.C_EXTENDED_PROTOBUF & 255,
+                    CNetworkDiagnostics.PacketKind.CRAFT, craftType);
             return decodeCraft(buffer, client,  craftType, payloadSize);
         }
 
+        CNetworkDiagnostics.subcommand(Opcodes.C_EXTENDED_PROTOBUF & 255,
+                CNetworkDiagnostics.PacketKind.ACTION_UI, msgId);
         return decodeActionUi(buffer, client,  msgId, payloadSize);
     }
     
