@@ -171,7 +171,7 @@ public:
     Operation readOp, writeOp, closeOp, resumeOp;
     CExecutionSerializerFast execution_;
     std::size_t reservedSendBytes=0;unsigned pendingSendRequests=0;
-    bool gracefulRequested=false,closeAbortive=true;
+    bool gracefulRequested=false,gracefulSendShutdown=false,gracefulPeerEof=false,closeAbortive=true;
     std::uint64_t gracefulDue=0;
     bool send(const Span*,unsigned,bool framed=false,bool plainFirst=false)noexcept;
     void __async_AsyncSend(NativeSendRequest&)noexcept;
@@ -247,7 +247,9 @@ public:
     // The posting thread owns an API/I/O reference. Failed submissions balance
     // their speculative reference because they will not produce a completion.
     void readLocked() noexcept {
-        if (!state.canRead() || (UserProtocol() && (packetBorrowed||packetDelivering||resumePosted||userPumpActive))) return;
+        const bool graceRead=gracefulRequested&&gracefulSendShutdown&&!gracefulPeerEof&&!state.closing
+                &&!state.readPosted&&!state.readDelivering&&!state.acceptDelivering;
+        if ((!state.canRead()&&!graceRead) || (!graceRead&&UserProtocol() && (packetBorrowed||packetDelivering||resumePosted||userPumpActive))) return;
         if (!reads.prepare()) { failLocked(2, 10055); return; }
         readOp.reset(); state.readPosted = true; retain();
         WSABUF buffer{static_cast<ULONG>(std::min<std::size_t>(server->recvBytes,reads.block()->capacity)), reinterpret_cast<char*>(reads.block()->data.data() + reads.block()->used)};
@@ -273,7 +275,16 @@ public:
     void finishIfReady() noexcept {
         {std::lock_guard<std::mutex> lock(gate);
          if(gracefulRequested&&!state.closing&&!pendingSendRequests&&!writes.head()
-                &&!state.writePosted&&!state.writeDelivering&&!state.acceptDelivering)failLocked(5,0,false);}
+                &&!state.writePosted&&!state.writeDelivering&&!state.acceptDelivering){
+             // Windows can reset a zero-buffer overlapped socket on bare
+             // closesocket. Explicit half-close sends FIN; consume the peer's
+             // FIN before releasing the handle, bounded by gracefulDue.
+             if(!gracefulSendShutdown){
+                 if(shutdown(socket,SD_SEND)==SOCKET_ERROR)failLocked(5,WSAGetLastError());
+                 else gracefulSendShutdown=true;
+             }
+             if(!state.closing){if(gracefulPeerEof)failLocked(5,0,false);else readLocked();}
+         }}
         retireSocket();
         bool ready;
         {
@@ -366,7 +377,7 @@ public:
             const bool reading = op.kind == OpKind::Read;
             if (reading) state.readPosted = false; else state.writePosted = false;
             if (!state.closing) {
-                if(reading&&gracefulRequested&&ok){} // pause input while accepted output drains; peer FIN is allowed
+                if(reading&&gracefulRequested&&ok){if(!bytes)gracefulPeerEof=true;} // discard input while draining; consume peer FIN
                 else if (!ok || bytes == 0) failLocked(reading ? 2 : 3, static_cast<int>(error));
                 else if (reading && bytes <= static_cast<unsigned>(server->recvBytes)) {
                     if (reads.append(bytes)) {

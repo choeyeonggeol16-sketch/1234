@@ -62,6 +62,7 @@ public final class CUserSocketOwnerWindowsTest {
    session.peer.setSoTimeout(5000);check(session.server.closeGracefully(session.channel.get().id(),5000),"direct graceful admission");
    try{check(session.peer.getInputStream().read()==-1,"direct graceful EOF");}
    catch(Exception failure){throw new AssertionError("direct native graceful terminal:send="+Arrays.toString(session.server.sendDiagnostics()),failure);}
+   session.peer.shutdownOutput();
    check(session.closed.await(5,TimeUnit.SECONDS),"direct graceful production owner terminal");
    long[] send=session.server.sendDiagnostics();check(send[4]==1&&send[5]==0,"direct graceful mode");
   }
@@ -78,6 +79,7 @@ public final class CUserSocketOwnerWindowsTest {
    byte[] last={9,8,7,6};owner.requestClientClose(new l1j.server.server.model.network.packet.BytesWritablePacket(last));checkRead(session,expectedPacket(codec,last,false));
    try{check(session.peer.getInputStream().read()==-1,"graceful close did not deliver EOF after final packet");}
    catch(Exception failure){throw new AssertionError("graceful terminal:send="+Arrays.toString(session.server.sendDiagnostics())+",close="+Arrays.toString(session.client.get().closeStack),failure);}
+   session.peer.shutdownOutput();
    check(session.closed.await(5,TimeUnit.SECONDS),"production graceful terminal");
    long[] send=session.server.sendDiagnostics();check(send[2]==10&&send[3]==1&&send[4]==1&&send[5]==0&&send[7]==0&&send[8]==0,"production cipher/normal-close diagnostics");
   }

@@ -25,7 +25,7 @@
 - 요청은 C API가 반환하기 전에 원본 바이트를 복사하고 소켓 참조를 가진다. 대기 중 요청도 2MiB 상한과 종료 시 수명 검사에 포함된다. inline 실패는 false, 지연 실행에 접수된 뒤 실패하면 종료 통지로 전달한다.
 - 전체 LE16 프레임 경계를 먼저 검증한다. descriptor 경계를 가로지르는 프레임도 처리한다. 첫 평문 프레임 뒤에는 각 프레임의 2바이트 헤더를 제외한 본문만 한 번 암호화한다. 부분 WSASend 완료는 이미 만든 암호문만 이어 보내므로 키가 다시 진행되지 않는다.
 - 잘못된 프레임은 암호 키를 진행시키지 않고 거절한다. 암호화·버퍼 확보·WSASend가 실패한 연결은 강제 종료하여 바뀐 키로 계속 보내지 않는다.
-- 정상 종료는 새 송신을 막고 접수된 요청·실제 WRITE를 기다린 뒤 linger0 없이 닫는다. 게임의 마지막 패킷 전송 완료 뒤 정상 종료를 연결했다. native 최대30초, 명시된 짧은 기한 초과나 강제 종료는 abortive 경로로 전환한다.
+- 정상 종료는 새 송신을 막고 접수된 요청·실제 WRITE를 기다린 뒤 `shutdown(SD_SEND)`으로 FIN을 보낸다. 입력은 게임으로 전달하지 않고 상대 FIN을 소비한 뒤 linger0 없이 닫는다. 게임의 마지막 패킷 전송 완료 뒤 이 경로를 연결했다. native 최대30초, WRITE 또는 상대 FIN의 대기 기한 초과나 강제 종료는 abortive 경로로 전환한다.
 - 종료 시작, OS I/O 완료, Java 패킷 lease 해제의 기존 단계를 유지한다. SEND downcall이 원본을 복사하는 중 Java가 닫히면 writer 완료 통지를 복사가 끝날 때까지 미룬다. 이전 방식은 원본 lease가 먼저 재사용될 수 있었다.
 
 `Server.networkSendDiagnostics()`의 배열은 `[accepted, executed, encryptedFrames, plainFrames, gracefulCloses, abortiveCloses, rejected, pendingRequests, ownerErrors]`다. encrypted/plain은 처리 프레임 수이며 상대가 수신 확인한 횟수는 아니다.
@@ -38,5 +38,7 @@
 - 전체 Java21 production 1,702파일 컴파일, PE64 ABI/66 exports/Java SHA pin 확인.
 - 실제 Windows DLL을 쓰는 production CUserSocket 검사에 최초 평문, 최대 S2C 프레임, 8개 packed action 각각 암호화, 마지막 패킷과 정상 EOF 비교를 추가했다. 최종 실제 실행 상태·검사 커밋·해시는 `WINDOWS_VERIFICATION.json` 기준이다. 이전 ABI7 성공은 `research/send-close-audit/ABI7_WINDOWS_HISTORY.json`에 별도 보존한다.
 - 독립 PSS 소스·클라이언트 DLL 보존 및 activation/pairing/OPEN 계약 통과. 기존 L1 codec DLL과 PSS DLL 바이트 변경 없음.
+
+Windows 초기 두 실행에서 모든 S2C 암호문과 최종 패킷은 일치했지만, linger0만 생략한 closesocket은 RST를 만들었다. 두 번째 실행의 직접 native 정상 종료도 `graceful=1, abortive=0`인데 RST여서 Java의 강제 종료 호출 문제가 아님을 확인했다. 따라서 명시적 SD_SEND와 상대 FIN 대기를 추가했다. 이 절차도 원본 함수에서 그대로 확인한 내용으로 주장하지 않는다. 실패 기록은 `logs/abi8-windows-attempt1-failed.log`, `logs/abi8-windows-attempt2-failed.log`에 보존한다.
 
 실제 게임 클라이언트·운영 DB·사냥 통합은 제공 자료에 없어 검증하지 못했다. Windows 계정/게임 소유자 의존성 일부는 fixture이며, 반복 loopback 결과로 운영 최대 동접·NIO2 대비 성능을 보장하지 않는다. MAC 식별자 공급자는 기존대로 자료에 없어 기본 제한을 끈다. 원본 소스 전체를 복원했다는 의미가 아니다.

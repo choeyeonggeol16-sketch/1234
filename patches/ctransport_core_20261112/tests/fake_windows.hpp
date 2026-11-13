@@ -37,6 +37,7 @@ constexpr BOOL FALSE = 0, TRUE = 1;
 constexpr DWORD INFINITE = 0xffffffffu;
 constexpr DWORD WAIT_TIMEOUT = 258;
 constexpr int SOCKET_ERROR = -1, WSA_IO_PENDING = 997, WSA_FLAG_OVERLAPPED = 1;
+constexpr int SD_SEND = 1;
 constexpr int ERROR_ACCESS_DENIED = 5, ERROR_INVALID_DATA = 13, SO_UPDATE_ACCEPT_CONTEXT = 0x700b;
 constexpr int TCP_NODELAY = 1;
 constexpr unsigned SIO_GET_EXTENSION_FUNCTION_POINTER = 1;
@@ -50,7 +51,7 @@ struct Port { std::mutex mutex; std::condition_variable changed; std::deque<Even
 struct Read { char* data{}; unsigned capacity{}; OVERLAPPED* operation{}; };
 struct WaitEvent { std::atomic<bool> signalled{false}; };
 struct Socket {
- bool open = true; bool resetClose=false; Port* port{}; ULONG_PTR key{};
+ bool open = true; bool resetClose=false,sendShutdown=false,peerEof=false; Port* port{}; ULONG_PTR key{};
  Read read; WaitEvent* acceptEvent=nullptr; std::deque<SOCKET> pendingClients; std::deque<unsigned char> inbound;
  std::vector<unsigned char> wire; std::vector<Event> delayed;
  sockaddr_storage local{}; int localLength = sizeof(sockaddr_in);
@@ -78,7 +79,7 @@ inline void post(Port* p, Event event) {
  p->changed.notify_one();
 }
 inline void completeRead(Socket& s) {
- if (!s.read.operation || s.inbound.empty()) return;
+ if (!s.read.operation || (s.inbound.empty()&&!s.peerEof)) return;
  unsigned n = std::min<std::size_t>(s.read.capacity, s.inbound.size());
  for (unsigned i = 0; i < n; ++i) { s.read.data[i] = s.inbound.front(); s.inbound.pop_front(); }
  post(s.port, {n, s.key, s.read.operation, 0}); s.read = {};
@@ -94,6 +95,8 @@ inline void feed(SOCKET socket, const std::vector<unsigned char>& data) {
  std::lock_guard<std::mutex> lock(mutex); auto& s = *sockets.at(socket);
  s.inbound.insert(s.inbound.end(), data.begin(), data.end()); completeRead(s);
 }
+inline void peerFin(SOCKET socket){std::lock_guard<std::mutex> lock(mutex);auto& s=*sockets.at(socket);s.peerEof=true;completeRead(s);}
+inline bool sendShutdown(SOCKET socket){std::lock_guard<std::mutex> lock(mutex);return sockets.at(socket)->sendShutdown;}
 inline std::vector<unsigned char> wire(SOCKET socket) {
  std::lock_guard<std::mutex> lock(mutex); return sockets.at(socket)->wire;
 }
@@ -206,6 +209,11 @@ inline SOCKET fw_accept(SOCKET listener,sockaddr* address,int* length){
  }return id;
 }
 #define accept fw_accept
+inline int fw_shutdown(SOCKET socket,int how){
+ if(how!=SD_SEND)throw std::runtime_error("wrong shutdown direction");
+ std::lock_guard<std::mutex> lock(fakewin::mutex);fakewin::sockets.at(socket)->sendShutdown=true;return 0;
+}
+#define shutdown fw_shutdown
 inline int fw_bind(SOCKET socket, const sockaddr* addr, int size) {
  std::lock_guard<std::mutex> lock(fakewin::mutex); auto& s = *fakewin::sockets.at(socket);
  std::memcpy(&s.local, addr, size); s.localLength = size; return 0;

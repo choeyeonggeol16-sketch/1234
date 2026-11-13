@@ -1,7 +1,7 @@
 PASS PE64 DLL, all 66 required exports, native ABI 0x80000, exact Java SHA256 pin
 PASS batch IOCP/Winsock imports, per-entry NTSTATUS resolver, independent of HP-Socket DLL; self-test EXE imports this DLL
 {
-  "dll_sha256": "75b79e8b6cebaeb97f7cd21904057e30e86ccef23f42e98115c661517465d951",
+  "dll_sha256": "00b03b8af47c50aed8bc3c896cfa008713269bde9170f986c760e127b232a848",
   "imports": [
     "WS2_32.dll",
     "api-ms-win-crt-runtime-l1-1-0.dll",
@@ -81,5 +81,5 @@ PASS batch IOCP/Winsock imports, per-entry NTSTATUS resolver, independent of HP-
     "CTransport_UserSocket_SetSessionState",
     "CTransport_Version"
   ],
-  "pe_timestamp": 4058138101
+  "pe_timestamp": 4016426853
 }

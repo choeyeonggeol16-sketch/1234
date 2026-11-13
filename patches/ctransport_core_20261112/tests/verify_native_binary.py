@@ -20,7 +20,7 @@ for ins in md.disasm(pe.get_data(version.address,48),pe.OPTIONAL_HEADER.ImageBas
  if ins.mnemonic=='ret':break
 assert ('mov','eax, 0x80000') in instructions and instructions[-1][0]=='ret',instructions
 imports={v.name.decode() for m in pe.DIRECTORY_ENTRY_IMPORT for v in m.imports if v.name}
-assert {'GetQueuedCompletionStatusEx','PostQueuedCompletionStatus','CreateIoCompletionPort','WSARecv','WSASend','GetModuleHandleW','GetProcAddress'}<=imports
+assert {'GetQueuedCompletionStatusEx','PostQueuedCompletionStatus','CreateIoCompletionPort','WSARecv','WSASend','shutdown','GetModuleHandleW','GetProcAddress'}<=imports
 assert 'GetQueuedCompletionStatus' not in imports
 assert {'WSAEventSelect','WSACreateEvent','WSAResetEvent','WSACloseEvent','WaitForMultipleObjects','accept','SetThreadAffinityMask'} <= imports
 assert 'AcceptEx' not in (root/'native/CTransport.cpp').read_text()

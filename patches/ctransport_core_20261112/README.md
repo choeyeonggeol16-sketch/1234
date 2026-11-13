@@ -1,6 +1,6 @@
 # CTransport ABI8
 
-원본 SEND/WRITE serializer와 Close/GracefulClose 경로를 대조하여 게임 송신의 암호화·큐·부분 완료를 native 실행기에 연결했습니다. 정상 종료는 마지막 송신을 기다린 뒤 linger0 없이 닫고, 오류·시간 초과는 강제 종료합니다. 복사 중 종료 때 Java source lease를 먼저 반환하는 경합도 수정했습니다.
+원본 SEND/WRITE serializer와 Close/GracefulClose 경로를 대조하여 게임 송신의 암호화·큐·부분 완료를 native 실행기에 연결했습니다. 정상 종료는 마지막 송신 뒤 SD_SEND와 상대 FIN을 거쳐 linger0 없이 닫고, 오류·시간 초과는 강제 종료합니다. 복사 중 종료 때 Java source lease를 먼저 반환하는 경합도 수정했습니다.
 
 1. 전체 src를 교체하고 clean build합니다. 부분 적용이면 deleted-files도 반영합니다.
 2. 같은 묶음의 CTransport.dll ABI0x80000/66 exports를 적용합니다. ABI/SHA256 불일치는 시작을 거절합니다.
