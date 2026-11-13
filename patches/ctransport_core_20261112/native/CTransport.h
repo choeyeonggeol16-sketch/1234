@@ -65,4 +65,8 @@ __declspec(dllimport) std::uint64_t CTransport_UserSocket_FindEnteringAccount(vo
 __declspec(dllimport) int CTransport_Server_GetAccountRegistryDiagnostics(void*,std::uint64_t*,int);
 __declspec(dllimport) int CTransport_Server_ConfigurePerf(void*,unsigned);
 __declspec(dllimport) int CTransport_Server_GetPerfDiagnostics(void*,std::uint64_t*,int);
+__declspec(dllimport) int CTransport_UserSocket_SendFrames(void*,std::uint64_t,const void*,int,int);
+__declspec(dllimport) int CTransport_UserSocket_SendFramePackets(void*,std::uint64_t,const WSABUF*,int,int);
+__declspec(dllimport) int CTransport_Server_GracefulClose(void*,std::uint64_t,unsigned);
+__declspec(dllimport) int CTransport_Server_GetSendDiagnostics(void*,std::uint64_t*,int);
 }

@@ -1,0 +1,102 @@
+# send_v; PE pdata/unwind; entry 0x90ee9c
+# chunk 0x90ee9c..0x90f04a
+000000000090ee9c: push     rbx
+000000000090ee9e: push     rbp
+000000000090ee9f: push     rsi
+000000000090eea0: push     rdi
+000000000090eea1: push     r12
+000000000090eea3: push     r13
+000000000090eea5: push     r14
+000000000090eea7: push     r15
+000000000090eea9: sub      rsp, 0x48
+000000000090eead: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+000000000090eeb6: mov      rdi, r8
+000000000090eeb9: mov      r12, rdx
+000000000090eebc: mov      rsi, rcx
+000000000090eebf: mov      r9d, dword ptr [rip + 0x2ecb0312]
+000000000090eec6: mov      rax, qword ptr gs:[0x58]
+000000000090eecf: mov      r15d, 0x7d58
+000000000090eed5: mov      r13, qword ptr [rax + r9*8]
+000000000090eed9: movsxd   r9, dword ptr [r13 + r15]
+000000000090eede: lea      r14, [rip - 0x50eee5]
+000000000090eee5: movsxd   rdx, dword ptr [r14 + r9*4 + 0x47e2a40]
+000000000090eeed: lea      eax, [rdx + 1]
+000000000090eef0: mov      dword ptr [r14 + r9*4 + 0x47e2a40], eax
+000000000090eef8: imul     r9, r9, 0x3e8
+000000000090eeff: add      r9, rdx
+000000000090ef02: lea      rax, [rip + 0x45c0d7] ; UTF16 'void __cdecl CSocket::SendV(const char *,char *)'
+000000000090ef09: mov      qword ptr [r14 + r9*8 + 0x47bf7c0], rax
+000000000090ef11: cmp      dword ptr [rcx + 0xcc], 2
+000000000090ef18: jne      0x90ef2d
+000000000090ef1a: movsxd   rax, dword ptr [r13 + r15]
+000000000090ef1f: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+000000000090ef28: jmp      0x90f039
+000000000090ef2d: call     0x41e6e4
+000000000090ef32: mov      rbx, rax
+000000000090ef35: lock add dword ptr [rip + 0x1352868f], 1
+000000000090ef3d: mov      r9, rdi
+000000000090ef40: mov      r8, r12
+000000000090ef43: mov      edx, 0x3ffe
+000000000090ef48: lea      rcx, [rax + 0x12]
+000000000090ef4c: call     0x70429c
+000000000090ef51: mov      edi, eax
+000000000090ef53: xor      ecx, ecx
+000000000090ef55: cmp      eax, ecx
+000000000090ef57: jne      0x90ef90
+000000000090ef59: lock add dword ptr [rbx + 0x4020], -1
+000000000090ef61: jne      0x90f02b
+000000000090ef67: mov      dword ptr [rbx + 0x4010], ecx
+000000000090ef6d: mov      qword ptr [rbx + 0x4018], rcx
+000000000090ef74: movsxd   rcx, dword ptr [rbx + 0x4034]
+000000000090ef7b: mov      rdx, rbx
+000000000090ef7e: mov      rcx, qword ptr [r14 + rcx*8 + 0x4850f80]
+000000000090ef86: call     0x41c6f8
+000000000090ef8b: jmp      0x90f02b
+000000000090ef90: cmp      eax, 0x4000
+000000000090ef95: jle      0x90efcb
+000000000090ef97: lock add dword ptr [rbx + 0x4020], -1
+000000000090ef9f: jne      0x90f02b
+000000000090efa5: mov      dword ptr [rbx + 0x4010], ecx
+000000000090efab: mov      qword ptr [rbx + 0x4018], rcx
+000000000090efb2: movsxd   rcx, dword ptr [rbx + 0x4034]
+000000000090efb9: mov      rdx, rbx
+000000000090efbc: mov      rcx, qword ptr [r14 + rcx*8 + 0x4850f80]
+000000000090efc4: call     0x41c6f8
+000000000090efc9: jmp      0x90f02b
+000000000090efcb: add      edi, 2
+000000000090efce: mov      byte ptr [rbx + 0x10], dil
+000000000090efd2: mov      eax, edi
+000000000090efd4: sar      eax, 8
+000000000090efd7: mov      byte ptr [rbx + 0x11], al
+000000000090efda: cmp      byte ptr [rbx + 0x12], 0xfe
+000000000090efde: jne      0x90efef
+000000000090efe0: movsx    ecx, byte ptr [rbx + 0x14]
+000000000090efe4: shl      cx, 8
+000000000090efe8: movsx    eax, byte ptr [rbx + 0x13]
+000000000090efec: add      cx, ax
+000000000090efef: mov      rax, qword ptr [rsi]
+000000000090eff2: movzx    r8d, cx
+000000000090eff6: mov      dl, byte ptr [rbx + 0x12]
+000000000090eff9: mov      rcx, rsi
+000000000090effc: call     qword ptr [rax + 0xb8]
+000000000090f002: mov      dword ptr [rbx + 0x4010], edi
+000000000090f008: lea      rcx, [rsi + 0x28]
+000000000090f00c: lea      rax, [rip + 0x45bf8d] ; UTF16 'AsyncSend'
+000000000090f013: mov      qword ptr [rsp + 0x20], rax
+000000000090f018: mov      r9, rbx
+000000000090f01b: lea      r8, [rip - 0x312]
+000000000090f022: mov      rdx, rsi
+000000000090f025: call     0x45c7ac
+000000000090f02a: nop
+000000000090f02b: movsxd   rax, dword ptr [r13 + r15]
+000000000090f030: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+000000000090f039: add      rsp, 0x48
+000000000090f03d: pop      r15
+000000000090f03f: pop      r14
+000000000090f041: pop      r13
+000000000090f043: pop      r12
+000000000090f045: pop      rdi
+000000000090f046: pop      rsi
+000000000090f047: pop      rbp
+000000000090f048: pop      rbx
+000000000090f049: ret

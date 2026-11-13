@@ -221,6 +221,7 @@ src/l1j/server/server/model/network/core/sc/packet/SC_Weather.java
 src/l1j/server/server/model/network/core/sc/packet/SC_Weight.java
 src/l1j/server/server/model/network/core/sc/packet/SC_WhoAmount.java
 src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java
+src/l1j/server/server/model/network/packet/BytesWritablePacket.java
 src/l1j/server/server/model/network/packet/CPacketHandler.java
 src/l1j/server/server/model/network/packet/WritablePacket.java
 src/l1j/server/server/model/network/thread/CIOThreadCallback.java

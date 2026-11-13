@@ -99,6 +99,7 @@ public final class CIOBufferPool {
         private volatile int _active;
         private int _generation;
         boolean _writePrepared;
+        int _nativeSendFlags;
         boolean _packedFrames;
         // Only the internal fixed 8-byte action encoder sets this metadata.
         boolean _actionOnly;
@@ -164,6 +165,7 @@ public final class CIOBufferPool {
                 _frameCount = 0;
                 _reservedWireBytes = send ? capacity : 0;
                 _writePrepared = false;
+                _nativeSendFlags = 0;
                 _packedFrames = false;
                 _actionOnly = false;
                 _ioPending = false;

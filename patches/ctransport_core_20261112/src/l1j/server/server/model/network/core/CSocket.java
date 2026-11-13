@@ -15,7 +15,7 @@ final class CSocket implements AutoCloseable {
     private CUserSocket readOwner;
     private final ByteBuffer[] singleWrite = new ByteBuffer[1];
     private ByteBuffer[] writeBuffers;
-    private int writeOffset, writeCount, writeExpected, writeAcknowledged;
+    private int writeOffset, writeCount, writeExpected, writeAcknowledged,writeFrameFlags;
     private boolean writeSubmitting;
     private CUserSocket writeOwner;
     private boolean gathering;
@@ -73,6 +73,10 @@ final class CSocket implements AutoCloseable {
     boolean postCompletion(CIOObject task) { return parent.postCompletion(task); }
     int currentNativeOwner() { return parent.currentNativeOwner(); }
     long[] userSocketState() { return parent.userSocketState(id); }
+    void closeGracefully(){
+        if(!open)return;closing=true;
+        if(!parent.closeGracefully(id,30000)){nativeClosed();parent.disconnect(id);}
+    }
     @Override public void close() {
         if (!open) return;
         nativeClosed();
@@ -170,7 +174,9 @@ final class CSocket implements AutoCloseable {
         return n;
     }
 
-    public void write(ByteBuffer src, CUserSocket owner) {
+    public void write(ByteBuffer src,CUserSocket owner){write(src,owner,0);}
+    void writeFrames(ByteBuffer src,CUserSocket owner,int flags){write(src,owner,flags);}
+    private void write(ByteBuffer src, CUserSocket owner,int flags) {
         if (src == null || owner == null) throw new NullPointerException();
         int bytes = src.remaining();
         boolean rejected;
@@ -179,14 +185,16 @@ final class CSocket implements AutoCloseable {
             rejected = !isOpen();
             if (!rejected && bytes != 0) {
                 singleWrite[0] = src;
-                reserveWrite(singleWrite, 0, 1, bytes, owner, false);
+                reserveWrite(singleWrite, 0, 1, bytes, owner, false,flags);
             }
         }
         if (rejected) { owner.transportWriteCompleted(-1); return; }
         if (bytes == 0) { owner.transportWriteCompleted(0); return; }
         sendReserved();
     }
-    public void write(ByteBuffer[] srcs, int offset, int count, CUserSocket owner) {
+    public void write(ByteBuffer[] srcs,int offset,int count,CUserSocket owner){write(srcs,offset,count,owner,0);}
+    void writeFrames(ByteBuffer[] srcs,int offset,int count,CUserSocket owner,int flags){write(srcs,offset,count,owner,flags);}
+    private void write(ByteBuffer[] srcs, int offset, int count, CUserSocket owner,int flags) {
         if (srcs == null || owner == null) throw new NullPointerException();
         if (offset < 0 || count < 1 || offset > srcs.length - count)
             throw new IndexOutOfBoundsException();
@@ -201,14 +209,15 @@ final class CSocket implements AutoCloseable {
         synchronized (this) {
             if (writeOwner != null || writeSubmitting) throw new IllegalStateException("WRITE already pending");
             rejected = !isOpen();
-            if (!rejected && bytes != 0) reserveWrite(srcs, offset, count, bytes, owner, true);
+            if (!rejected && bytes != 0) reserveWrite(srcs, offset, count, bytes, owner, true,flags);
         }
         if (rejected) { owner.transportGatherCompleted(-1); return; }
         if (bytes == 0) { owner.transportGatherCompleted(0); return; }
         sendReserved();
     }
     private void reserveWrite(ByteBuffer[] buffers, int offset, int count,
-                              int expected, CUserSocket owner, boolean gather) {
+                              int expected, CUserSocket owner, boolean gather,int flags) {
+        writeFrameFlags=flags;
         writeBuffers = buffers;
         writeOffset = offset;
         writeCount = count;
@@ -223,13 +232,14 @@ final class CSocket implements AutoCloseable {
     private void sendReserved() {
         // Only one WRITE is outstanding. Every native SEND takes ownership of
         // a copy of its bytes; Java source leases stay pinned by the CIO pump.
-        boolean success = parent.send(id, writeBuffers, writeOffset, writeCount);
+        boolean success = parent.send(id, writeBuffers, writeOffset, writeCount,writeFrameFlags);
         CUserSocket callback = null;
         boolean gather = false;
         int bytes = 0;
         synchronized (this) {
             writeSubmitting = false;
             if (!open) {
+                callback=writeOwner;gather=gathering;bytes=-1;
                 clearWrite();
             } else if (success && writeAcknowledged == writeExpected && writeExpected > 0) {
                 callback = writeOwner;
@@ -240,7 +250,6 @@ final class CSocket implements AutoCloseable {
         if (!success) {
             nativeClosed();
             parent.disconnect(id);
-            return;
         }
         if (callback != null) deliver(callback, gather, bytes);
     }
@@ -278,6 +287,7 @@ final class CSocket implements AutoCloseable {
         singleWrite[0] = null;
         writeOwner = null;
         gathering = false;
+        writeFrameFlags=0;
         writeCount = writeOffset = writeExpected = writeAcknowledged = 0;
     }
     void nativeClosed() {
@@ -294,7 +304,10 @@ final class CSocket implements AutoCloseable {
             gather = gathering;
             if (writeSubmitting) {
                 // Keep descriptors live until the in-progress FFM downcall exits.
-                writeOwner = null;
+                // Defer the writer failure too: releasing its Java lease here
+                // would let another producer overwrite bytes still being copied
+                // by the in-progress native downcall.
+                writer = null;
             } else {
                 clearWrite();
             }

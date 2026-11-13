@@ -1,0 +1,426 @@
+{
+  "send_v": {
+    "entry": "0x90ee9c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x90ee9c",
+        "0x90f04a"
+      ]
+    ],
+    "direct_calls": [
+      "0x41e6e4",
+      "0x70429c",
+      "0x41c6f8",
+      "0x41c6f8",
+      "0x45c7ac"
+    ],
+    "callers": []
+  },
+  "async_send": {
+    "entry": "0x90ed10",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x90ed10",
+        "0x90ee54"
+      ]
+    ],
+    "direct_calls": [
+      "0x925138",
+      "0x90dda4",
+      "0x90e1d0",
+      "0x4205e0",
+      "0xa71b3c"
+    ],
+    "callers": []
+  },
+  "close": {
+    "entry": "0x45d41c",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x45d41c",
+        "0x45d50f"
+      ]
+    ],
+    "direct_calls": [],
+    "callers": [
+      {
+        "at": "0x460d55",
+        "op": "call",
+        "function": "0x460984",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x460f75",
+        "op": "call",
+        "function": "0x460984",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x504c6b",
+        "op": "call",
+        "function": "0x504868",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x54533a",
+        "op": "call",
+        "function": "0x545260",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x54543b",
+        "op": "call",
+        "function": "0x545430",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x545978",
+        "op": "call",
+        "function": "0x5456d0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x545b55",
+        "op": "call",
+        "function": "0x545a18",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x5461f2",
+        "op": "call",
+        "function": "0x54616c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x5463eb",
+        "op": "call",
+        "function": "0x54616c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x54648c",
+        "op": "call",
+        "function": "0x546468",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x546572",
+        "op": "call",
+        "function": "0x54655c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x61d00d",
+        "op": "call",
+        "function": "0x61cf88",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x61d24a",
+        "op": "call",
+        "function": "0x61cf88",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7365e9",
+        "op": "call",
+        "function": "0x736564",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7367e0",
+        "op": "call",
+        "function": "0x736564",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7c45e2",
+        "op": "call",
+        "function": "0x7c455c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7c4854",
+        "op": "call",
+        "function": "0x7c455c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x83c09c",
+        "op": "call",
+        "function": "0x83c02c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x844339",
+        "op": "call",
+        "function": "0x8442b4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x844534",
+        "op": "call",
+        "function": "0x8442b4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x890bb1",
+        "op": "call",
+        "function": "0x890b2c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x890db4",
+        "op": "call",
+        "function": "0x890b2c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8b0ac9",
+        "op": "call",
+        "function": "0x8b0954",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x90e2ab",
+        "op": "call",
+        "function": "0x90e1d0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x90e79e",
+        "op": "call",
+        "function": "0x90e6c4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x9fcc58",
+        "op": "call",
+        "function": "0x9fcbf0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa037bd",
+        "op": "call",
+        "function": "0xa0372c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa03d47",
+        "op": "call",
+        "function": "0xa0372c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa0d335",
+        "op": "call",
+        "function": "0xa0d164",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa0d4a1",
+        "op": "call",
+        "function": "0xa0d164",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa0d4db",
+        "op": "call",
+        "function": "0xa0d164",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0xa10f12",
+        "op": "call",
+        "function": "0xa10dc4",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  },
+  "graceful_close": {
+    "entry": "0x545178",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x545178",
+        "0x54523c"
+      ]
+    ],
+    "direct_calls": [],
+    "callers": []
+  },
+  "write_callback": {
+    "entry": "0x545e38",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x545e38",
+        "0x5460b8"
+      ]
+    ],
+    "direct_calls": [
+      "0x73446c",
+      "0x734514",
+      "0x734514",
+      "0x73446c",
+      "0x734514",
+      "0x41c6f8"
+    ],
+    "callers": []
+  },
+  "write_enqueue": {
+    "entry": "0x545a18",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x545a18",
+        "0x545dd0"
+      ]
+    ],
+    "direct_calls": [
+      "0x41c6f8",
+      "0x41c6f8",
+      "0x45d41c",
+      "0x73446c",
+      "0x41c6f8",
+      "0xabcd50",
+      "0x41c6f8"
+    ],
+    "callers": []
+  },
+  "serializer": {
+    "entry": "0x45c7ac",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x45c7ac",
+        "0x45c9cd"
+      ]
+    ],
+    "direct_calls": [
+      "0x734514",
+      "0x6704e0",
+      "0x734514",
+      "0x6704e0"
+    ],
+    "callers": [
+      {
+        "at": "0x45f0c4",
+        "op": "call",
+        "function": "0x45f028",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x45f23d",
+        "op": "call",
+        "function": "0x45f11c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x5465f8",
+        "op": "call",
+        "function": "0x54655c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x54679b",
+        "op": "call",
+        "function": "0x546650",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x61e570",
+        "op": "call",
+        "function": "0x61e410",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6b6a65",
+        "op": "call",
+        "function": "0x6b6944",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x6b8b8d",
+        "op": "call",
+        "function": "0x6b8a6c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x7369a3",
+        "op": "call",
+        "function": "0x7368a0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x8446fd",
+        "op": "call",
+        "function": "0x8445c0",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x87d46d",
+        "op": "call",
+        "function": "0x87d34c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x888616",
+        "op": "call",
+        "function": "0x8884a4",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x90f025",
+        "op": "call",
+        "function": "0x90ee9c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x9241e6",
+        "op": "call",
+        "function": "0x924164",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x92427a",
+        "op": "call",
+        "function": "0x9241f8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x924306",
+        "op": "call",
+        "function": "0x92428c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x966e3f",
+        "op": "call",
+        "function": "0x966c6c",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x978124",
+        "op": "call",
+        "function": "0x977ef8",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x9d8b51",
+        "op": "call",
+        "function": "0x9d8948",
+        "validation": "pdata instruction boundary"
+      },
+      {
+        "at": "0x9d9c0c",
+        "op": "call",
+        "function": "0x9d9a2c",
+        "validation": "pdata instruction boundary"
+      }
+    ]
+  }
+}

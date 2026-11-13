@@ -33,6 +33,13 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Production user-socket lease/close test failed' }
 } finally { Pop-Location }
 
+New-Item -ItemType Directory -Force copy-classes | Out-Null
+$copyFixtures = (Get-ChildItem tests/send-copy-contract/*.java).FullName
+& javac --enable-preview --release 21 -encoding UTF-8 -d copy-classes "$core/CSocket.java" "$core/CIOObject.java" $copyFixtures
+if ($LASTEXITCODE -ne 0) { throw 'SEND copy/close contract compilation failed' }
+& java --enable-preview -cp copy-classes l1j.server.server.model.network.core.SendCopyContract
+if ($LASTEXITCODE -ne 0) { throw 'SEND copy/close lease contract failed' }
+
 New-Item -ItemType Directory -Force policy-classes | Out-Null
 & javac --enable-preview --release 21 -encoding UTF-8 -cp owner-classes -d policy-classes "$core/CUserSocketRegistry.java" "$core/CUserSocketCloseTask.java" tests/usersocket/UserSocketContract.java
 if ($LASTEXITCODE -ne 0) { throw 'L1 user-socket policy/registry compile failed' }

@@ -1203,7 +1203,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                                 || System.nanoTime() - _closeNotBeforeNs >= 0L);
             }
             finally { _stateLock.unlock(); }
-            if (closeNow) close();
+            if (closeNow) closeGracefully();
         }
     }
 
@@ -2568,6 +2568,15 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
      * The client cipher advances per game packet, not per transport write.
      * Each packed frame is encrypted individually in wire order.
      */
+    /** Java owns packet construction/lease order; native owns cipher+SEND execution. */
+    private void prepareNativeFrames(CIOBufferPool.Lease lease){
+        if(!lease._writePrepared){
+            lease._nativeSendFlags=_handshakePlainPending?3:1;
+            _handshakePlainPending=false;
+            lease.buffer().limit(lease.wireLength());lease.buffer().position(0);
+            lease._writePrepared=true;
+        }
+    }
     private boolean preparePackedEncryption(CIOBufferPool.Lease lease) {
         final WriteBuffer writer = lease.writer();
         final ByteBuffer bytes = lease.buffer();
@@ -3460,7 +3469,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         }
     }
 
-    /** Ordered packet encryption + async I/O scatter/gather WRITE, no coalescing copy. */
+    /** Ordered packet leases; native owns per-frame cipher and serialized SEND/WRITE. */
     private void postGather() {
         if (_closed != 0) {
             completeGather(false);
@@ -3471,7 +3480,8 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             for (int i = 0; i < _gatherCount; i++) {
                 final CIOBufferPool.Lease lease = _gatherFrames[i];
                 final ByteBuffer bytes = lease.buffer();
-                if (!lease._writePrepared) {
+                if(nativeDirect)prepareNativeFrames(lease);
+                else if (!lease._writePrepared) {
                     preparedAny = true;
                     if (lease._packedFrames ? !preparePackedEncryption(lease)
                             : !encrypt(lease.writer(),
@@ -3491,7 +3501,8 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
             _socketPosting = true;
             try {
-                _channel.write(_gatherBuffers, 0, _gatherCount, this);
+                if(nativeDirect)_channel.writeFrames(_gatherBuffers,0,_gatherCount,this,_gatherFrames[0]._nativeSendFlags);
+                else _channel.write(_gatherBuffers, 0, _gatherCount, this);
             } finally {
                 _socketPosting = false;
 
@@ -3566,7 +3577,8 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         try {
             final ByteBuffer bytes = lease.buffer();
             final boolean preparing = !lease._writePrepared;
-            if (preparing) {
+            if(nativeDirect)prepareNativeFrames(lease);
+            else if (preparing) {
                 final WriteBuffer writer = lease.writer();
                 if (lease._packedFrames ? !preparePackedEncryption(lease)
                         : !encrypt(writer,
@@ -3585,7 +3597,8 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
             _socketPosting = true;
             try {
-                _channel.write(bytes, this);
+                if(nativeDirect)_channel.writeFrames(bytes,this,lease._nativeSendFlags);
+                else _channel.write(bytes, this);
             } finally {
                 _socketPosting = false;
 
@@ -3699,8 +3712,9 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         }
     }
 
-    @Override
-    public void close() {
+    private void closeGracefully(){close(true);}
+    @Override public void close(){close(false);}
+    private void close(boolean graceful) {
         if (!CLOSED.compareAndSet(this, 0, 1)) return;
         onTransportClosing();
         cancelQueuedNativePacket();
@@ -3747,7 +3761,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                     + "/" + _pool.largeSendSlots());
         }
         ON_DRAINED.setVolatile(this, null);
-        _channel.close();
+        if(graceful)_channel.closeGracefully();else _channel.close();
         boolean drainProducer;
         _stateLock.lock(); try {
             _deferredClosePacket = null;

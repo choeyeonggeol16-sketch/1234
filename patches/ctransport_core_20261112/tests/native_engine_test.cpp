@@ -236,8 +236,14 @@ static void engineTests() {
  std::cout<<"PASS callback-reentrant pause/resume; close with both a posted read and held write drains cancellations before one terminal callback\n";
  {
   Fixture f;auto [socket,id]=f.connect();fakewin::holdSend=false;fakewin::failSend=true;
-  const unsigned char data[]={9,8,7};check(!CIO_Server_Send(f.server,id,data,3),"immediate WSASend failure accepted");
+  const unsigned char data[]={9,8,7};const bool admitted=CIO_Server_Send(f.server,id,data,3);
+  // Admission can run behind the accept/write owner. An inline failure returns
+  // false; a deferred failure must close once without reporting sent bytes.
   until([&]{return f.state.closed==1;});
+  check(f.state.sent==0&&fakewin::wire(socket).empty(),"failed WSASend delivered bytes");
+  std::uint64_t stats[9]{};check(CTransport_Server_GetSendDiagnostics(f.server,stats,9),"failed send diagnostics");
+  check(stats[0]==1&&stats[1]==1&&stats[5]==1&&stats[7]==0&&stats[8]==0,"failed send lifetime/owner");
+  (void)admitted;
  }
  {
   Fixture f;auto [socket,id]=f.connect();fakewin::failRead=true;CIO_Server_PauseReceive(f.server,id,0);
@@ -689,4 +695,59 @@ static void remainingNetworkTests(){
  std::cout<<"PASS remaining network: original Playing(socket number)/EnterChar(account ID); authentication/enter/restart/logout/close;16-way duplicate entry;held plaintext/stale close;MAC-required auth/cap/reuse;actual CPerfMon owner15/restart/concurrent read-stop;128 account reconnects\n";
 }
 
-int main(){std::cout.setf(std::ios::unitbuf);remainingNetworkTests();originalStructureTests();userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}
+
+static std::vector<unsigned char> outboundFrame(unsigned n,unsigned seed=3){
+ std::vector<unsigned char> out(n);out[0]=static_cast<unsigned char>(n);out[1]=static_cast<unsigned char>(n>>8);
+ for(unsigned i=2;i<n;++i)out[i]=static_cast<unsigned char>(i*seed+7);return out;
+}
+static void sendCloseTests(){
+ {
+  Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();
+  auto plain=outboundFrame(11),encrypted=outboundFrame(65535,9);std::vector<unsigned char> wire=plain;wire.insert(wire.end(),encrypted.begin(),encrypted.end());auto expected=wire;
+  for(std::size_t i=plain.size()+2;i<expected.size();++i)expected[i]^=0xa7;
+  auto* c=f.server->find(id);auto* blocker=new SerialProbe;
+  std::thread owner([&]{check(c->execution_.AddExecutable(blocker,SerialProbe::Block,nullptr),"block native send owner");});until([&]{return blocker->entered.load();});
+  check(CTransport_UserSocket_SendFrames(f.server,id,wire.data(),wire.size(),1),"queued native frame send");std::fill(wire.begin(),wire.end(),0);
+  check(CTransport_Server_GracefulClose(f.server,id,5000),"queued graceful close");unsigned char late=9;check(!CIO_Server_Send(f.server,id,&late,1),"send admitted after graceful fence");
+  check(f.state.closed==0,"graceful close bypassed unpublished send request");blocker->releaseBlocked=true;owner.join();blocker->release();c->release();
+  until([&]{return f.state.closed==1;});check(fakewin::wire(socket)==expected,"copy/handshake/frame cipher or graceful prefix lost");
+  {std::lock_guard<std::mutex> lock(fakewin::mutex);check(!fakewin::sockets.at(socket)->resetClose,"GracefulClose applied RST linger");}
+  std::uint64_t diag[9]{};check(CTransport_Server_GetSendDiagnostics(f.server,diag,9)&&diag[0]==1&&diag[1]==1&&diag[2]==1&&diag[3]==1&&diag[4]==1&&diag[5]==0&&diag[7]==0&&diag[8]==0,"native send owner/normal close diagnostics");
+ }
+ {
+  Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();
+  unsigned char bad[]{12,0,1,2};const auto before=fixturecodec::encrypted.load();
+  check(!CTransport_UserSocket_SendFrames(f.server,id,bad,sizeof(bad),0)&&fixturecodec::encrypted==before,"invalid frame advanced cipher");
+  auto bytes=outboundFrame(32769);auto expected=bytes;for(std::size_t i=2;i<bytes.size();++i)expected[i]^=0xa7;
+  WSABUF parts[]={{1,reinterpret_cast<char*>(bytes.data())},{4,reinterpret_cast<char*>(bytes.data()+1)},{static_cast<ULONG>(bytes.size()-5),reinterpret_cast<char*>(bytes.data()+5)}};
+  fakewin::sendChunk=37;check(CTransport_UserSocket_SendFramePackets(f.server,id,parts,3,0),"cross-descriptor frame admission");
+  until([&]{return f.state.sent==static_cast<int>(bytes.size());});check(fakewin::wire(socket)==expected&&fixturecodec::encrypted==before+1,"partial completion re-encrypted or split frame lost");fakewin::sendChunk=8192;
+ }
+ {
+  Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();auto bytes=outboundFrame(10);
+  fixturecodec::failEncrypt=true;check(!CTransport_UserSocket_SendFrames(f.server,id,bytes.data(),bytes.size(),0),"cipher failure reported synchronous success");
+  until([&]{return f.state.closed==1;});check(fakewin::wire(socket).empty(),"failed cipher data reached wire");
+ }
+ {
+  Fixture f;auto [socket,id]=f.connect();fakewin::holdSend=true;
+  std::vector<unsigned char> data(20000,19);check(CIO_Server_Send(f.server,id,data.data(),data.size()),"held raw send");
+  check(CTransport_Server_GracefulClose(f.server,id,5000)&&f.state.closed==0,"graceful close did not await pending WRITE");
+  until([&]{fakewin::flush(socket);return f.state.closed==1;});check(fakewin::wire(socket)==data&&f.state.sent==20000,"graceful pending WRITE lost prefix");
+  {std::lock_guard<std::mutex> lock(fakewin::mutex);check(!fakewin::sockets.at(socket)->resetClose,"raw graceful used abortive close");}
+  fakewin::holdSend=false;
+ }
+ {
+  Fixture f;auto [socket,id]=f.connect();fakewin::holdSend=true;unsigned char data[100]{};
+  check(CIO_Server_Send(f.server,id,data,100)&&CTransport_Server_GracefulClose(f.server,id,60),"short graceful deadline");
+  until([&]{return f.state.closed==1;});
+  {std::lock_guard<std::mutex> lock(fakewin::mutex);check(fakewin::sockets.at(socket)->resetClose,"expired graceful close did not force cancellation");}
+  fakewin::holdSend=false;std::uint64_t d[9]{};CTransport_Server_GetSendDiagnostics(f.server,d,9);check(d[4]==0&&d[5]==1,"grace deadline close mode");
+ }
+ {
+  Fixture f;auto [socket,id]=f.connect();fakewin::holdSend=true;unsigned char data[100]{};check(CIO_Server_Send(f.server,id,data,100),"force override send");
+  check(CIO_Server_Disconnect(f.server,id,0)&&CIO_Server_Disconnect(f.server,id,1),"grace/force compatibility API");until([&]{return f.state.closed==1;});fakewin::holdSend=false;
+  std::uint64_t d[9]{};CTransport_Server_GetSendDiagnostics(f.server,d,9);check(d[5]==1&&d[4]==0,"force did not override draining graceful close");
+ }
+ std::cout<<"PASS native SEND/close:shared execution owner;copied queued source;plain first/max65535 frame;cross-descriptor frames;37-byte completions without re-encryption;invalid/cipher failure;graceful pending-send/WRITE drain without RST;deadline and forced override\n";
+}
+int main(){std::cout.setf(std::ios::unitbuf);sendCloseTests();remainingNetworkTests();originalStructureTests();userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}

@@ -18,3 +18,4 @@ src/l1j/server/server/model/network/utill/ConnectionConfig.java
 src/l1j/server/server/model/network/utill/ConnectionState.java
 src/l1j/server/server/model/network/core/CIOFrame.java
 src/l1j/server/server/utils/TimeUtil.java
+src/l1j/server/server/model/network/packet/BytesWritablePacket.java

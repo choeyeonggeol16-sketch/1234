@@ -1,3 +1,13 @@
+## 2026-11-13 — CTransport ABI8 / native SEND·암호화·정상 종료
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**같은 버전 DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**분석·구현 보고서**](reports/CTRANSPORT_SEND_CLOSE_ABI8_20261113.md)
+
+원본 SEND/WRITE 실행 순서와 Close/GracefulClose 차이를 확인해 반영했습니다. native 직렬 실행기에서 L1 프레임별 암호화·송신을 처리하고, 마지막 패킷 전송 후 정상 종료합니다. 복사 중 종료 때 Java 버퍼가 먼저 재사용되는 경합도 수정했습니다. ABI0x80000/66 exports의 src와 DLL을 함께 적용하고 clean build합니다. PSS 독립 연결·L1 codec DLL 유지, 추가 SQL 없음. [Windows 검증 기록](patches/ctransport_core_20261112/WINDOWS_VERIFICATION.json)을 확인하세요. 실게임·운영 DB·장시간 부하는 미검증입니다.
+
+이하 ABI7 이전 설명은 당시 구현의 이력입니다. 최신 역할·미검증 범위는 위 ABI8 보고서 기준입니다.
+
+---
+
 ## 2026-11-12 — CTransport ABI7 / 로그인·캐릭터 색인·CPerfMon·MAC 정책
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**같은 버전 DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**분석·구현 보고서**](reports/CTRANSPORT_REMAINING_NETWORK_ABI7_20261112.md)

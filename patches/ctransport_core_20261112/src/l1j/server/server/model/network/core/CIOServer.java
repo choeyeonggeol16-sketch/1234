@@ -84,6 +84,7 @@ final class CIOServer implements AutoCloseable {
 	private final MemorySegment server;
     @SuppressWarnings("unused")
 	private final MethodHandle start, stop, wait, stopAccept, disconnect, pause, send, sendPackets;
+    private final MethodHandle sendFrames,sendFramePackets,gracefulClose,getSendDiagnostics;
     private final MethodHandle getRemote, getLocal, getListen;
     @SuppressWarnings("preview")
 	private final MemorySegment acceptStub, receiveStub, sendStub, closeStub;
@@ -172,6 +173,10 @@ final class CIOServer implements AutoCloseable {
             wait = fn("CIO_Server_Wait", FunctionDescriptor.of(I, P, I));
             disconnect = fn("CIO_Server_Disconnect", FunctionDescriptor.of(I, P, L, I));
             pause = fn("CIO_Server_PauseReceive", FunctionDescriptor.of(I, P, L, I));
+            sendFrames=fn("CTransport_UserSocket_SendFrames",FunctionDescriptor.of(I,P,L,P,I,I));
+            sendFramePackets=fn("CTransport_UserSocket_SendFramePackets",FunctionDescriptor.of(I,P,L,P,I,I));
+            gracefulClose=fn("CTransport_Server_GracefulClose",FunctionDescriptor.of(I,P,L,I));
+            getSendDiagnostics=fn("CTransport_Server_GetSendDiagnostics",FunctionDescriptor.of(I,P,P,I));
             send = fn("CIO_Server_Send", FunctionDescriptor.of(I, P, L, P, I));
             sendPackets = fn("CIO_Server_SendPackets", FunctionDescriptor.of(I, P, L, P, I));
             getRemote = fn("CIO_Server_GetRemoteAddress", FunctionDescriptor.of(I, P, L, P, P, P));
@@ -684,6 +689,13 @@ final class CIOServer implements AutoCloseable {
         catch (Throwable failure) { throw new IllegalStateException("CIO pause failed", failure); }
         finally { nativeCalls.decrementAndGet(); }
     }
+    long[] sendDiagnostics(){return readDiagnostics(getSendDiagnostics,9);}
+    boolean closeGracefully(long id,int timeoutMs){
+        if(!enterNative())return false;
+        try{return (int)gracefulClose.invokeExact(server,id,timeoutMs)!=0;}
+        catch(Throwable failure){return false;}
+        finally{nativeCalls.decrementAndGet();}
+    }
     boolean disconnect(long id) {
         if (!enterNative()) return false;
         try { return (int) disconnect.invokeExact(server, id, 1) != 0; }
@@ -691,7 +703,9 @@ final class CIOServer implements AutoCloseable {
         finally { nativeCalls.decrementAndGet(); }
     }
     @SuppressWarnings("preview")
-	boolean send(long id, ByteBuffer[] bufs, int offset, int count) {
+	boolean send(long id, ByteBuffer[] bufs, int offset, int count) {return send(id,bufs,offset,count,0);}
+    @SuppressWarnings("preview")
+    boolean send(long id, ByteBuffer[] bufs, int offset, int count,int flags) {
         if (!enterNative()) return false;
         try {
             if (count == 1) {
@@ -700,7 +714,7 @@ final class CIOServer implements AutoCloseable {
                 if (b.isDirect()) {
                   
 					MemorySegment data = MemorySegment.ofBuffer(b);
-                    return (int)send.invokeExact(server, id, data, n) != 0;
+                    return flags==0?(int)send.invokeExact(server,id,data,n)!=0:(int)sendFrames.invokeExact(server,id,data,n,(flags&2)>>>1)!=0;
                 }
                 // FFM cannot pass a heap ByteBuffer address to native code.
                 // The normal pooled SEND path is direct and avoids this copy.
@@ -708,7 +722,7 @@ final class CIOServer implements AutoCloseable {
 				Arena a = Arena.ofConfined()) {
 					MemorySegment data = a.allocate(n);
                     data.copyFrom(MemorySegment.ofBuffer(b));
-                    return (int)send.invokeExact(server, id, data, n) != 0;
+                    return flags==0?(int)send.invokeExact(server,id,data,n)!=0:(int)sendFrames.invokeExact(server,id,data,n,(flags&2)>>>1)!=0;
                 }
             }
             // WSABUF descriptors and any heap-data copies live until the
@@ -733,7 +747,7 @@ final class CIOServer implements AutoCloseable {
                     wsabufs.set(I, o, n);
                     wsabufs.set(P, o + 8, data);
                 }
-                return (int)sendPackets.invokeExact(server, id, wsabufs, count) != 0;
+                return flags==0?(int)sendPackets.invokeExact(server,id,wsabufs,count)!=0:(int)sendFramePackets.invokeExact(server,id,wsabufs,count,(flags&2)>>>1)!=0;
             }
         } catch (Throwable failure) {
             LOG.log(Level.WARNING, "CIO native SEND call failed conn=" + id, failure);

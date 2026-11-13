@@ -57,6 +57,7 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
     }
 
     public CPerfMon.Snapshot performance(){return CPerfMon.Read(nativeServer);}
+    public long[] sendDiagnostics(){return nativeServer.sendDiagnostics();}
     public long[] accountRegistryDiagnostics(){return nativeServer.accountRegistryDiagnostics();}
     public long findEnteringAccount(int accountId){return nativeServer.findEnteringAccount(accountId);}
     public long[][] ReportSocket(){return nativeServer.ReportSocket();}

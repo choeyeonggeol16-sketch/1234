@@ -40,6 +40,11 @@ public final class CUserSocketOwnerWindowsTest {
   }
   public void close()throws Exception{peer.close();server.close();check(closed.await(5,TimeUnit.SECONDS),"production close observer stranded");check(pool.usedRecvSlots()==0&&pool.usedSendSlots()==0,"production pooled lease leak");}
  }
+ static byte[] expectedPacket(CIOPacketCodecReference codec,byte[] payload,boolean plain){
+  ByteBuffer data=ByteBuffer.allocateDirect(payload.length+2).order(ByteOrder.LITTLE_ENDIAN);data.putShort((short)(payload.length+2)).put(payload);
+  if(!plain)codec.encrypt(data,2,payload.length);byte[] wire=new byte[data.capacity()];data.clear();data.get(wire);return wire;
+ }
+ static void checkRead(Session session,byte[] expected)throws Exception{byte[] actual=session.peer.getInputStream().readNBytes(expected.length);check(Arrays.equals(actual,expected),"production native S2C cipher/frame order mismatch");}
  public static void main(String[] args)throws Exception{
   try(Session session=new Session(true,false)){
    CUserSocket owner=session.owner.get();
@@ -53,6 +58,21 @@ public final class CUserSocketOwnerWindowsTest {
    owner.onAccountChanged(null);check(session.server.accountRegistryDiagnostics()[1]==0,"production account clear");
   }
   System.out.println("PASS production CUserSocket account/character/MAC provider hooks and restart/account-clear identities through real Windows FFM");
+  try(Session session=new Session(true,false);CIOPacketCodecReference codec=new CIOPacketCodecReference(73461)){
+   session.peer.setSoTimeout(5000);CUserSocket owner=session.owner.get();
+   byte[] key={1,2,3,4,5,6,7,8};
+   check(owner.tryWritePacket(session.client.get(),new l1j.server.server.model.network.packet.BytesWritablePacket(key)),"production first plain packet admission");checkRead(session,expectedPacket(codec,key,true));
+   byte[] data=new byte[65533];new Random(518).nextBytes(data);
+   check(owner.tryWritePacket(session.client.get(),new l1j.server.server.model.network.packet.BytesWritablePacket(data)),"production max S2C frame admission");checkRead(session,expectedPacket(codec,data,false));
+   int[] objects={100,101,102,103,104,105,106,107};int[] actions={1,2,3,4,5,6,7,8};
+   check(owner.tryWriteActionBatch(objects,actions,0,8),"production packed action admission");
+   for(int i=0;i<8;i++){ByteBuffer body=ByteBuffer.allocate(6).order(ByteOrder.LITTLE_ENDIAN);body.put((byte)Opcodes.S_ACTION).putInt(objects[i]).put((byte)actions[i]);checkRead(session,expectedPacket(codec,body.array(),false));}
+   byte[] last={9,8,7,6};owner.requestClientClose(new l1j.server.server.model.network.packet.BytesWritablePacket(last));checkRead(session,expectedPacket(codec,last,false));
+   check(session.peer.getInputStream().read()==-1,"graceful close did not deliver EOF after final packet");
+   check(session.closed.await(5,TimeUnit.SECONDS),"production graceful terminal");
+   long[] send=session.server.sendDiagnostics();check(send[2]==10&&send[3]==1&&send[4]==1&&send[5]==0&&send[7]==0&&send[8]==0,"production cipher/normal-close diagnostics");
+  }
+  System.out.println("PASS production native SEND:plain first packet,max65535 S2C frame,8 packed action frames and final packet match unchanged codec;graceful final-byte delivery+EOF without RST;zero pending and owner violations");
   int game=Opcodes.C_ALIVE&255,login=Opcodes.C_LOGIN&255;byte[] gameWire=wire(game),loginWire=wire(login);
   AtomicInteger calls=new AtomicInteger();CountDownLatch entered=new CountDownLatch(1),release=new CountDownLatch(1);
   AtomicReference<Throwable> failure=new AtomicReference<>();

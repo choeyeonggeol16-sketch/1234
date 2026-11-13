@@ -49,6 +49,7 @@ public:
             owner_.store(thread_,std::memory_order_release);
         }
     }
+    bool IsOwner()const noexcept{return owner_.load(std::memory_order_acquire)==thread_;}
     unsigned Pending()const noexcept{return pending_.load(std::memory_order_acquire);}
 };
 }

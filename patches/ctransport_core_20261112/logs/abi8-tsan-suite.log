@@ -1,0 +1,26 @@
+PASS native SEND/close:shared execution owner;copied queued source;plain first/max65535 frame;cross-descriptor frames;37-byte completions without re-encryption;invalid/cipher failure;graceful pending-send/WRITE drain without RST;deadline and forced override
+PASS remaining network: original Playing(socket number)/EnterChar(account ID); authentication/enter/restart/logout/close;16-way duplicate entry;held plaintext/stale close;MAC-required auth/cap/reuse;actual CPerfMon owner15/restart/concurrent read-stop;128 account reconnects
+PASS original structure: serializer 8000 concurrent+reentry+504 capacity; RegisterWait64; 48 event accepts; owner17; raw/secondary/generation maps; native IP/MAC rejection and release; ReportSocket
+PASS L1 CUserSocketParser: bytewise/coalesced/65535-byte framing, empty envelope, invalid lengths, header/body deadlines with backpressure, concurrent close, production connection integration
+PASS native manager: generation/retired lookup/exact erase/restart/3200 concurrent registrations; stale handles cannot affect replacements
+PASS direct native codec: stable plaintext lease across send/queued packets/IO terminal; foreign release, wrong/duplicate sequence, shutdown drain and exact codec destruction
+PASS native network timers: login expiry, authenticated cancellation, earlier coalesced application deadline, partial header expiry and close cancellation
+PASS production 8192-byte pool/FIFO: gathering, randomized partial completion, invalid lengths, atomic allocation failure, lifetime gates
+PASS real worker: 273 completions drain 128/128/18; 124 mixed-status entries plus four front-loaded exit tokens; exact ref release and all workers exit
+PASS per-entry NTSTATUS snapshots, cancel/access-denied/informational/unknown statuses; missing resolver fails startup
+PASS actual native adapter: event/IOCP accept admission paused, 17000-byte receive/echo, synchronous success plus 37-byte completions, address lookup, stale ID rejection
+PASS actual eight-WSABUF API, 56000-byte ordered send and immediate caller buffer reuse after native copy
+PASS remote disconnect while receive callback is active preserves its buffer and delays terminal delivery
+PASS callback-reentrant pause/resume; close with both a posted read and held write drains cancellations before one terminal callback
+PASS immediate submission failures balance I/O holds; rejected accept cleanup; completion worker cannot self-join
+PASS 120 connections/600 concurrent repeated closes; pending accepts cancelled and all workers drained over ten server lifetimes
+PASS recovered owner-index rings/cross-thread returns/wraparound, 8K+16K families, shared RX COW and unique compaction
+PASS deterministic 50ms/200-slot wheel, long-deadline heap promotion, cancellation and reference release
+PASS native receive leases survive subsequent reads/disconnect/server destroy; SO_LINGER(1,0) applied
+PASS immediate/scheduled PostQueuedCompletionStatus failure balances references and reports scheduled error on worker
+PASS 512 native work callbacks, scheduled expiry, duplicate rejection, 1000 cancels, shutdown cancellation and callback fence
+PASS closing/terminal callback self-stop/wait guards, including failed close-post on a foreign caller
+PASS registering-worker/foreign-producer timer ownership; token values do not choose wheels
+PASS contiguous preallocated slab/FIFO exhaustion/corruption diagnostics, exact1000-slot blocks/overflow/compaction/rollback, owner17+101st policy and pre-close-before-OS-close fence
+PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.
+

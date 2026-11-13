@@ -53,6 +53,7 @@ class CIOSocket;
 class CSocket;
 class CUserSocket;
 class NativeTask;
+class NativeSendRequest;
 using TaskFn = void (*)(void*, std::uint64_t, int);
 thread_local Server* currentWorker = nullptr;
 thread_local unsigned currentWorkerIndex = 0;
@@ -100,6 +101,7 @@ public:
     void RemoveSocketNumber(CIOSocket* socket) noexcept;
     std::unique_ptr<TimerBlockPool> timerBlocks;
     std::vector<std::unique_ptr<TimerWheel>> timers;
+    std::atomic<std::uint64_t> sendsAccepted{0},sendsExecuted{0},framesEncrypted{0},framesPlain{0},gracefulCloses{0},abortiveCloses{0},sendsRejected{0},pendingSends{0},sendOwnerErrors{0};
     std::atomic<std::uint64_t> timerInline{0}, timerPosted{0}, closeStarts{0}, closeTerminals{0};
     std::mutex taskGate;
     std::unordered_map<std::uint64_t, NativeTask*> tasks;
@@ -168,6 +170,17 @@ public:
     ReceiveWindow reads;
     Operation readOp, writeOp, closeOp, resumeOp;
     CExecutionSerializerFast execution_;
+    std::size_t reservedSendBytes=0;unsigned pendingSendRequests=0;
+    bool gracefulRequested=false,closeAbortive=true;
+    std::uint64_t gracefulDue=0;
+    bool send(const Span*,unsigned,bool framed=false,bool plainFirst=false)noexcept;
+    void __async_AsyncSend(NativeSendRequest&)noexcept;
+    bool GracefulClose(unsigned timeoutMs)noexcept;
+    static void KickWriteCallback(CIOObject* object,void*)noexcept{
+        auto* c=static_cast<CIOSocket*>(object);
+        {std::lock_guard<std::mutex> lock(c->gate);c->writeLocked();}
+        c->finishIfReady();
+    }
     virtual const sockaddr_storage& LocalAddress() const noexcept=0;
     virtual const sockaddr_storage& RemoteAddress() const noexcept=0;
     int closeOperation = 5, closeError = 0;
@@ -197,19 +210,19 @@ public:
         if (socket != INVALID_SOCKET) closesocket(socket);
         server->release();
     }
-    void failLocked(int operation, int error) noexcept {
+    void failLocked(int operation, int error,bool abortive=true) noexcept {
         if (state.closing) return;
-        state.closing = true; state.paused = true;
+        state.closing = true; state.paused = true;closeAbortive=abortive;
         cancelDeadlineToken=deadlineToken;deadlineToken=deadlineDue=0;
         if (UserProtocol()) UserProtocol()->stop();
         closeOperation = operation; closeError = error;
         if (socket != INVALID_SOCKET) { retiredSocket = socket; socket = INVALID_SOCKET; state.closeRetiring = true; }
     }
     void retireSocket() noexcept {
-        SOCKET previous;
+        SOCKET previous;bool abortive;
         {
             std::lock_guard<std::mutex> lock(gate);
-            previous = retiredSocket; retiredSocket = INVALID_SOCKET;
+            previous = retiredSocket; retiredSocket = INVALID_SOCKET;abortive=closeAbortive;
         }
         std::uint64_t cancel;
         {std::lock_guard<std::mutex> lock(gate);cancel=cancelDeadlineToken;cancelDeadlineToken=0;}
@@ -223,8 +236,10 @@ public:
         ++server->closeStarts;
         CallbackScope callback(server);
         if (auto fn = server->callbacks->closing.load()) fn(server, id, closeOperation, closeError);
-        linger reset{1, 0};
-        setsockopt(previous, SOL_SOCKET, SO_LINGER, reinterpret_cast<const char*>(&reset), sizeof(reset));
+        if(abortive){
+            ++server->abortiveCloses;linger reset{1,0};
+            setsockopt(previous,SOL_SOCKET,SO_LINGER,reinterpret_cast<const char*>(&reset),sizeof(reset));
+        }else ++server->gracefulCloses;
         closesocket(previous);
         { std::lock_guard<std::mutex> lock(gate); state.closeRetiring = false; }
     }
@@ -244,7 +259,7 @@ public:
         }
     }
     void writeLocked() noexcept {
-        if (!state.canWrite() || !writes.head()) return;
+        if (!execution_.IsOwner() || !state.canWrite() || !writes.head()) return;
         auto* p = writes.head();
         writeOp.reset(); state.writePosted = true; retain();
         WSABUF buffer{static_cast<ULONG>(p->used - p->offset), reinterpret_cast<char*>(p->data.data() + p->offset)};
@@ -256,11 +271,14 @@ public:
         }
     }
     void finishIfReady() noexcept {
+        {std::lock_guard<std::mutex> lock(gate);
+         if(gracefulRequested&&!state.closing&&!pendingSendRequests&&!writes.head()
+                &&!state.writePosted&&!state.writeDelivering&&!state.acceptDelivering)failLocked(5,0,false);}
         retireSocket();
         bool ready;
         {
             std::lock_guard<std::mutex> lock(gate);
-            ready = state.canClose() && !resumePosted && !userPumpActive && !packetDelivering;
+            ready = state.canClose() && !pendingSendRequests && !resumePosted && !userPumpActive && !packetDelivering;
             if (ready) { state.closeQueued = true; closeOp.reset(); }
         }
         if (ready && !server->post(closeOp)) closeCallback();
@@ -303,25 +321,14 @@ public:
         if(open&&profile&&!paused)open=queueResume();
         finishIfReady();return open;
     }
-    bool send(const Span* spans, unsigned count) noexcept {
-        bool ok;
-        {
-            std::lock_guard<std::mutex> lock(gate);
-            const bool wasEmpty=!writes.head();
-            ok = !state.closing && writes.append(server->buffers, spans, count);
-            if(ok&&wasEmpty&&writes.head())writeProgressAt=monotonicMs();
-            if (ok) { writeLocked(); ok = !state.closing; }
-            else if (!state.closing) failLocked(3, 10055);
-        }
-        finishIfReady(); return ok;
-    }
     void accepted(int result) noexcept {
         {
             std::lock_guard<std::mutex> lock(gate);
             state.acceptDelivering = false;
             if (result != 0) failLocked(1, ERROR_ACCESS_DENIED);
-            readLocked(); writeLocked();
+            readLocked();
         }
+        if(!execution_.AddExecutable(this,KickWriteCallback,nullptr))disconnect(3,10055);
         finishIfReady();
     }
     static void WriteCallback(CIOObject* owner,void* argument) noexcept {
@@ -359,7 +366,8 @@ public:
             const bool reading = op.kind == OpKind::Read;
             if (reading) state.readPosted = false; else state.writePosted = false;
             if (!state.closing) {
-                if (!ok || bytes == 0) failLocked(reading ? 2 : 3, static_cast<int>(error));
+                if(reading&&gracefulRequested&&ok){} // pause input while accepted output drains; peer FIN is allowed
+                else if (!ok || bytes == 0) failLocked(reading ? 2 : 3, static_cast<int>(error));
                 else if (reading && bytes <= static_cast<unsigned>(server->recvBytes)) {
                     if (reads.append(bytes)) {
                         state.readDelivering = true; data = reads.block()->data.data() + reads.block()->offset; deliver = true;
@@ -389,6 +397,94 @@ public:
         finishIfReady();
     }
 };
+
+// A request owns a copy before the C API returns. It can outlive Java buffers
+// and the submitting thread, while sharing the WRITE-completion serializer.
+class NativeSendRequest final:public CIOObject {
+public:
+    CIOSocket* const socket;std::vector<unsigned char> bytes;
+    const bool framed,plainFirst;std::atomic<int> result{0};
+    NativeSendRequest(CIOSocket* owner,const Span* spans,unsigned count,std::size_t total,bool frames,bool plain)
+        :socket(owner),bytes(total),framed(frames),plainFirst(plain){
+        socket->retain();std::size_t at=0;
+        for(unsigned i=0;i<count;++i){if(spans[i].size)std::memcpy(bytes.data()+at,spans[i].data,spans[i].size);at+=spans[i].size;}
+    }
+    ~NativeSendRequest()override{socket->release();}
+    static void Execute(CIOObject* object,void*)noexcept{auto& request=*static_cast<NativeSendRequest*>(object);request.socket->__async_AsyncSend(request);}
+    void completed(void*,bool,unsigned,unsigned)noexcept override{}
+    bool ValidFrames()const noexcept{
+        std::size_t at=0;while(at<bytes.size()){
+            if(bytes.size()-at<2)return false;
+            const auto n=static_cast<unsigned>(bytes[at])|(static_cast<unsigned>(bytes[at+1])<<8);
+            if(n<2||n>bytes.size()-at)return false;at+=n;
+        }return at==bytes.size();
+    }
+};
+bool CIOSocket::send(const Span* spans,unsigned count,bool framed,bool plainFirst)noexcept {
+    ObjectRef lifetime(this);std::size_t total=0;
+    for(unsigned i=0;i<count;++i){if((!spans[i].data&&spans[i].size)||spans[i].size>MaxQueuedBytes-total){++server->sendsRejected;return false;}total+=spans[i].size;}
+    if(!total)return true;
+    {
+        std::lock_guard<std::mutex> lock(gate);
+        if(state.closing||gracefulRequested||(framed&&!UserProtocol())||total>MaxQueuedBytes-writes.size()-reservedSendBytes){++server->sendsRejected;return false;}
+        reservedSendBytes+=total;++pendingSendRequests;++server->pendingSends;
+    }
+    NativeSendRequest* request=nullptr;
+    try{request=new NativeSendRequest(this,spans,count,total,framed,plainFirst);}catch(...){}
+    if(!request||(framed&&!request->ValidFrames())){
+        if(request)request->release();
+        {std::lock_guard<std::mutex> lock(gate);reservedSendBytes-=total;--pendingSendRequests;--server->pendingSends;}
+        ++server->sendsRejected;finishIfReady();return false;
+    }
+    ObjectRef requestHold(request,false);
+    if(!execution_.AddExecutable(request,NativeSendRequest::Execute,nullptr)){
+        {std::lock_guard<std::mutex> lock(gate);reservedSendBytes-=total;--pendingSendRequests;--server->pendingSends;}
+        ++server->sendsRejected;finishIfReady();return false;
+    }
+    ++server->sendsAccepted;return request->result.load(std::memory_order_acquire)>=0;
+}
+void CIOSocket::__async_AsyncSend(NativeSendRequest& request)noexcept {
+    bool ok=false;
+    {
+        std::lock_guard<std::mutex> lock(gate);
+        reservedSendBytes-=request.bytes.size();--pendingSendRequests;--server->pendingSends;++server->sendsExecuted;
+        if(!execution_.IsOwner()){++server->sendOwnerErrors;failLocked(3,31);}
+        if(!state.closing){
+            ok=true;
+            if(request.framed){
+                std::size_t at=0;bool plain=request.plainFirst;
+                while(at<request.bytes.size()){
+                    const unsigned size=request.bytes[at]|(static_cast<unsigned>(request.bytes[at+1])<<8);
+                    if(plain){++server->framesPlain;plain=false;}
+                    else if(!UserProtocol()->codec->encrypt(request.bytes.data()+at+2,static_cast<int>(size-2))){ok=false;break;}
+                    else ++server->framesEncrypted;
+                    at+=size;
+                }
+            }
+            const bool wasEmpty=!writes.head();Span bytes{request.bytes.data(),request.bytes.size()};
+            if(ok)ok=writes.append(server->buffers,&bytes,1);
+            if(ok){if(wasEmpty)writeProgressAt=monotonicMs();writeLocked();ok=!state.closing;}
+            else failLocked(3,10055); // a failed cipher/post cannot leave a usable key stream
+        }
+        request.result.store(ok?1:-1,std::memory_order_release);
+    }
+    finishIfReady();
+}
+bool CIOSocket::GracefulClose(unsigned timeoutMs)noexcept {
+    ObjectRef lifetime(this);
+    {
+        std::lock_guard<std::mutex> lock(gate);if(state.closing)return true;if(gracefulRequested)return true;
+        gracefulRequested=true;gracefulDue=monotonicMs()+timeoutMs;state.paused=true;
+        if(UserProtocol())UserProtocol()->pause(true,monotonicMs());
+    }
+    if(!execution_.AddExecutable(this,KickWriteCallback,nullptr)){disconnect(5,10055);return false;}
+    {std::lock_guard<std::mutex> lock(gate);if(state.closing)return true;}
+    if(!requestDeadline(std::min(timeoutMs,5000u))){
+        {std::lock_guard<std::mutex> lock(gate);if(state.closing)return true;}
+        disconnect(5,10055);return false;
+    }
+    return true;
+}
 
 // Actual transport hierarchy: CIOSocket owns overlapped I/O and buffer life;
 // CSocket adds peer addresses; CUserSocket owns L1 parsing/cipher state.
@@ -525,7 +621,7 @@ bool CIOSocket::requestDeadline(unsigned delay) noexcept {
     std::uint64_t previous,token;
     {
         std::lock_guard<std::mutex> lock(gate);
-        if(state.closing||!UserProtocol())return false;
+        if(state.closing||(!UserProtocol()&&!gracefulRequested))return false;
         if(deadlineToken&&deadlineDue<=due)return true;
         previous=deadlineToken;
         token=0x8000000000000000ull|server->nextInternalTask.fetch_add(1);
@@ -548,8 +644,9 @@ void CIOSocket::deadlineTick(std::uint64_t token,int status) noexcept {
         std::lock_guard<std::mutex> lock(gate);
         if(state.closing||token!=deadlineToken)return;
         deadlineToken=deadlineDue=0;const auto now=monotonicMs();
-        expired=status!=0||(loginDue&&now>=loginDue)||UserProtocol()->expired(now)
+        expired=status!=0||(gracefulRequested&&now>=gracefulDue)||(loginDue&&now>=loginDue)||(UserProtocol()&&UserProtocol()->expired(now))
                 ||(writes.head()&&now-writeProgressAt>=30000);
+        if(gracefulRequested&&gracefulDue>now)next=static_cast<unsigned>(std::min<std::uint64_t>(next,gracefulDue-now));
         if(loginDue&&loginDue>now)next=static_cast<unsigned>(std::min<std::uint64_t>(next,loginDue-now));
     }
     if(expired){disconnect(2,status?status:10060);return;}
@@ -966,7 +1063,7 @@ template<class F> static void configure(void* p, F apply) {
     // Configuration is a startup contract, not unsynchronized live tuning.
     if (!server->running.load()) apply(*server);
 }
-CIO_API unsigned CTransport_Version() { return 0x00070000; }
+CIO_API unsigned CTransport_Version() { return 0x00080000; }
 CIO_API void* CIO_Create_TcpServerListener() { return new(std::nothrow) Listener; }
 CIO_API void CIO_Destroy_TcpServerListener(void* p) { delete static_cast<Listener*>(p); }
 CIO_API void* CIO_Create_TcpServer(void* p) { if (!p) return nullptr; try { return new Server(static_cast<Listener*>(p)); } catch (...) { return nullptr; } }
@@ -979,9 +1076,9 @@ CIO_API int CIO_Server_Start(void* p, const char* address, unsigned short port) 
 CIO_API int CIO_StopAccepting(void* p) { return p && static_cast<Server*>(p)->stopAccepting(); }
 CIO_API int CIO_Server_Stop(void* p) { return p && static_cast<Server*>(p)->stop(); }
 CIO_API int CIO_Server_Wait(void* p, unsigned timeout) { return p && static_cast<Server*>(p)->wait(timeout); }
-CIO_API int CIO_Server_Disconnect(void* p, std::uint64_t id, int) {
+CIO_API int CIO_Server_Disconnect(void* p, std::uint64_t id, int force) {
     if (!p) return 0; auto* c = static_cast<Server*>(p)->find(id,true); if (!c) return 0;
-    ObjectRef hold(c, false); c->disconnect(); return 1;
+    ObjectRef hold(c, false);if(!force)return c->GracefulClose(30000);c->disconnect(); return 1;
 }
 CIO_API int CIO_Server_PauseReceive(void* p, std::uint64_t id, int paused) {
     if (!p) return 0; auto* c = static_cast<Server*>(p)->find(id); if (!c) return 0;
@@ -1159,4 +1256,24 @@ CIO_API int CTransport_Server_ConfigurePerf(void* p,unsigned interval){
 CIO_API int CTransport_Server_GetPerfDiagnostics(void* p,std::uint64_t* out,int count){
     if(!p||!out||count<16)return 0;auto* s=static_cast<Server*>(p);
     auto monitor=std::atomic_load(&s->perfmon);if(!monitor)return 0;monitor->Read(out);return 1;
+}
+
+CIO_API int CTransport_UserSocket_SendFrames(void* p,std::uint64_t id,const void* bytes,int count,int plainFirst){
+    if(!p||count<0||(!bytes&&count)||(plainFirst!=0&&plainFirst!=1))return 0;
+    auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);
+    Span span{static_cast<const unsigned char*>(bytes),static_cast<std::size_t>(count)};return c->send(&span,1,true,plainFirst!=0);
+}
+CIO_API int CTransport_UserSocket_SendFramePackets(void* p,std::uint64_t id,const WSABUF* buffers,int count,int plainFirst){
+    if(!p||!buffers||count<1||count>8||(plainFirst!=0&&plainFirst!=1))return 0;
+    auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);
+    std::array<Span,8> spans{};for(int i=0;i<count;++i)spans[i]={reinterpret_cast<const unsigned char*>(buffers[i].buf),buffers[i].len};
+    return c->send(spans.data(),count,true,plainFirst!=0);
+}
+CIO_API int CTransport_Server_GracefulClose(void* p,std::uint64_t id,unsigned timeout){
+    if(!p||timeout<1||timeout>30000)return 0;auto* c=static_cast<Server*>(p)->find(id,true);if(!c)return 0;ObjectRef hold(c,false);return c->GracefulClose(timeout);
+}
+CIO_API int CTransport_Server_GetSendDiagnostics(void* p,std::uint64_t* out,int count){
+    if(!p||!out||count<9)return 0;auto* s=static_cast<Server*>(p);
+    out[0]=s->sendsAccepted;out[1]=s->sendsExecuted;out[2]=s->framesEncrypted;out[3]=s->framesPlain;
+    out[4]=s->gracefulCloses;out[5]=s->abortiveCloses;out[6]=s->sendsRejected;out[7]=s->pendingSends;out[8]=s->sendOwnerErrors;return 1;
 }

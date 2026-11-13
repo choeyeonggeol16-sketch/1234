@@ -1,0 +1,38 @@
+{
+  "binary": "L2Server(10).exe",
+  "sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "image_base": "0x400000",
+  "scope": "x64 PE pdata/unwind instruction boundaries",
+  "send_to_serializer": {
+    "call": "0x90f025",
+    "target": "0x45c7ac"
+  },
+  "async_send_encrypt": {
+    "call": "0x90edf1",
+    "target": "0x90dda4"
+  },
+  "async_send_enqueue": {
+    "call": "0x90ee18",
+    "target": "0x90e1d0"
+  },
+  "close": {
+    "entry": "0x45d41c",
+    "on_close": "virtual +0x98",
+    "linger": [
+      1,
+      0
+    ],
+    "setsockopt_call": "0x45d4c6",
+    "closesocket_call": "0x45d4cf"
+  },
+  "graceful_close": {
+    "entry": "0x545178",
+    "on_close": "virtual +0x98",
+    "closesocket_call": "0x5451fc",
+    "linger0_in_this_function": false
+  },
+  "limits": [
+    "Drain-before-close and bounded grace timeout are L1/FFM adaptations; this function alone does not prove the original drained its queue.",
+    "L1 codec/framing and Java game owner differ from L2; this is a behavioral reconstruction, not recovered original source."
+  ]
+}
