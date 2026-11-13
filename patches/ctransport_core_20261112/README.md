@@ -10,3 +10,5 @@
 6. MAC 공급자 자료가 없어 제한 기본 꺼짐은 유지합니다. PSS 및 L1 codec DLL 바이트는 변경하지 않았습니다.
 
 실제 Windows 실행의 최종 상태·커밋·해시는 WINDOWS_VERIFICATION.json 기준입니다. 운영 DB·실게임·장시간 부하는 미검증입니다.
+
+실제 ABI8 Windows Server2022/Temurin21 검사 통과: [실행43338213554](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43338213554), 검사 소스 `292ef5bf3e21eb3851dce113a8a64c459dca3cea`. production CUserSocket의 최초 평문·최대65535 S2C·8 packed action·최종 패킷을 기존 codec과 비교하고, 실제 정상 EOF/상대 FIN/terminal과 graceful=1·abortive=0·pending=0·ownerErrors=0을 확인했다. 별도 동시32개 loopback은 30,128ms·누적55,456접속·7,098,368 L1 frames·3,634,364,416 C2S wire bytes를 처리하고 round별 색인 잔여0을 확인했다. 실계정·DB·사냥 검사가 아니며 운영 성능 수치로 해석하지 않는다. 최종 src·DLL·테스트는 이 검사 커밋과 동일하고 후속 커밋은 검증 기록을 추가한다.

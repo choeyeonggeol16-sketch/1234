@@ -44,3 +44,5 @@ Windows 초기 두 실행에서 모든 S2C 암호문과 최종 패킷은 일치�
 실제 게임 클라이언트·운영 DB·사냥 통합은 제공 자료에 없어 검증하지 못했다. Windows 계정/게임 소유자 의존성 일부는 fixture이며, 반복 loopback 결과로 운영 최대 동접·NIO2 대비 성능을 보장하지 않는다. MAC 식별자 공급자는 기존대로 자료에 없어 기본 제한을 끈다. 원본 소스 전체를 복원했다는 의미가 아니다.
 
 세 번째 Windows 실행은 기존 종료 검사에서 blocking task 2개가 같은 IOCP batch에 함께 들어와 멈추는 검사 장치의 순서 문제를 드러냈다. 첫 task 진입을 확인한 뒤 두 번째를 게시하여 실제로 서로 다른 worker 둘을 점유하게 수정했다. 64개 대기 작업의 shutdown 시 cancel-once 검증 조건은 유지했다. 기록: logs/abi8-windows-attempt3-failed.log.
+
+실제 ABI8 Windows Server2022/Temurin21 검사 통과: [실행43338213554](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43338213554), 검사 소스 `292ef5bf3e21eb3851dce113a8a64c459dca3cea`. production CUserSocket의 최초 평문·최대65535 S2C·8 packed action·최종 패킷을 기존 codec과 비교하고, 실제 정상 EOF/상대 FIN/terminal과 graceful=1·abortive=0·pending=0·ownerErrors=0을 확인했다. 별도 동시32개 loopback은 30,128ms·누적55,456접속·7,098,368 L1 frames·3,634,364,416 C2S wire bytes를 처리하고 round별 색인 잔여0을 확인했다. 실계정·DB·사냥 검사가 아니며 운영 성능 수치로 해석하지 않는다. 최종 src·DLL·테스트는 이 검사 커밋과 동일하고 후속 커밋은 검증 기록을 추가한다.
