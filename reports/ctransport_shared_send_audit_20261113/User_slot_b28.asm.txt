@@ -1,0 +1,4 @@
+# User_slot_b28; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x941f94
+# chunk 0x941f94..0x941f9c
+0000000000941f94: mov      rax, qword ptr [rcx + 0x35c8]
+0000000000941f9b: ret

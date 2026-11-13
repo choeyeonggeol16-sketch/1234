@@ -1,0 +1,98 @@
+# caller_70736c; PE pdata/unwind; entry 0x70736c
+# chunk 0x70736c..0x70750b
+000000000070736c: push     rbx
+000000000070736e: push     rbp
+000000000070736f: push     rsi
+0000000000707370: push     rdi
+0000000000707371: push     r12
+0000000000707373: push     r13
+0000000000707375: push     r14
+0000000000707377: sub      rsp, 0x90
+000000000070737e: mov      qword ptr [rsp + 0x60], 0xfffffffffffffffe
+0000000000707387: mov      rbp, rcx
+000000000070738a: mov      edx, dword ptr [rip + 0x2eeb7e48]
+0000000000707390: mov      rax, qword ptr gs:[0x58]
+0000000000707399: mov      ecx, 0x7d58
+000000000070739e: mov      r13, qword ptr [rax + rdx*8]
+00000000007073a2: movsxd   r8, dword ptr [r13 + rcx]
+00000000007073a7: lea      r14, [rip - 0x3073ae]
+00000000007073ae: movsxd   rdx, dword ptr [r14 + r8*4 + 0x47e2a40]
+00000000007073b6: lea      eax, [rdx + 1]
+00000000007073b9: mov      dword ptr [r14 + r8*4 + 0x47e2a40], eax
+00000000007073c1: imul     r8, r8, 0x3e8
+00000000007073c8: add      r8, rdx
+00000000007073cb: lea      rax, [rip + 0x56c52e] ; UTF16 'void __cdecl CGetOffVehicleIOCPMessage::OnReceive(int)'
+00000000007073d2: mov      qword ptr [r14 + r8*8 + 0x47bf7c0], rax
+00000000007073da: mov      r12, qword ptr [rbp + 0x18]
+00000000007073de: mov      rax, qword ptr [r12]
+00000000007073e2: mov      rcx, r12
+00000000007073e5: call     qword ptr [rax + 0x168]
+00000000007073eb: lea      rbx, [rip + 0x442186]
+00000000007073f2: test     al, al
+00000000007073f4: je       0x70744e
+00000000007073f6: mov      rax, qword ptr [r12]
+00000000007073fa: mov      rcx, r12
+00000000007073fd: call     qword ptr [rax + 0x208]
+0000000000707403: mov      rdx, qword ptr [rax]
+0000000000707406: mov      rcx, rax
+0000000000707409: call     qword ptr [rdx + 0xb28]
+000000000070740f: mov      r10, qword ptr [rax]
+0000000000707412: cvttsd2si ecx, qword ptr [rbp + 0x38]
+0000000000707417: cvttsd2si edx, qword ptr [rbp + 0x30]
+000000000070741c: cvttsd2si r8d, qword ptr [rbp + 0x28]
+0000000000707422: mov      dword ptr [rsp + 0x38], ecx
+0000000000707426: mov      dword ptr [rsp + 0x30], edx
+000000000070742a: mov      dword ptr [rsp + 0x28], r8d
+000000000070742f: mov      ecx, dword ptr [rbp + 0x20]
+0000000000707432: mov      dword ptr [rsp + 0x20], ecx
+0000000000707436: mov      r9d, dword ptr [r12 + 0x18]
+000000000070743b: mov      r8d, 0x6f
+0000000000707441: mov      rdx, rbx
+0000000000707444: mov      rcx, rax
+0000000000707447: call     qword ptr [r10 + 0x80]
+000000000070744e: mov      rax, qword ptr [r12]
+0000000000707452: mov      rcx, r12
+0000000000707455: call     qword ptr [rax + 0x790]
+000000000070745b: test     al, al
+000000000070745d: jne      0x7074c3
+000000000070745f: cvttsd2si edi, qword ptr [rbp + 0x38]
+0000000000707464: cvttsd2si esi, qword ptr [rbp + 0x30]
+0000000000707469: lea      rdx, [rbp + 0x28]
+000000000070746d: cvttsd2si ebx, qword ptr [rdx]
+0000000000707471: lea      rcx, [rsp + 0x68]
+0000000000707476: call     0x462140
+000000000070747b: mov      r9, rax
+000000000070747e: mov      dword ptr [rsp + 0x50], edi
+0000000000707482: mov      dword ptr [rsp + 0x48], esi
+0000000000707486: mov      dword ptr [rsp + 0x40], ebx
+000000000070748a: mov      eax, dword ptr [rbp + 0x20]
+000000000070748d: mov      dword ptr [rsp + 0x38], eax
+0000000000707491: mov      eax, dword ptr [r12 + 0x18]
+0000000000707496: mov      dword ptr [rsp + 0x30], eax
+000000000070749a: mov      dword ptr [rsp + 0x28], 0x6f
+00000000007074a2: lea      rax, [rip + 0x4420cf]
+00000000007074a9: mov      qword ptr [rsp + 0x20], rax
+00000000007074ae: mov      r8d, 0x80000
+00000000007074b4: mov      rdx, r12
+00000000007074b7: mov      rcx, qword ptr [rip + 0x137bb5aa]
+00000000007074be: call     0x57e1d8
+00000000007074c3: mov      rcx, qword ptr [rbp + 0x18]
+00000000007074c7: mov      rax, qword ptr [rcx]
+00000000007074ca: mov      byte ptr [rsp + 0x20], 0
+00000000007074cf: mov      r9d, 4
+00000000007074d5: mov      r8d, 0x84
+00000000007074db: lea      rdx, [rip + 0x56c35e]
+00000000007074e2: call     qword ptr [rax + 0x10]
+00000000007074e5: nop
+00000000007074e6: mov      eax, 0x7d58
+00000000007074eb: movsxd   rax, dword ptr [r13 + rax]
+00000000007074f0: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+00000000007074f9: add      rsp, 0x90
+0000000000707500: pop      r14
+0000000000707502: pop      r13
+0000000000707504: pop      r12
+0000000000707506: pop      rdi
+0000000000707507: pop      rsi
+0000000000707508: pop      rbp
+0000000000707509: pop      rbx
+000000000070750a: ret

@@ -1,0 +1,4 @@
+# CObject_slot_208; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x409054
+# chunk 0x409054..0x409057
+0000000000409054: xor      eax, eax
+0000000000409056: ret

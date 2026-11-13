@@ -1,0 +1,4 @@
+# CObject_slot_168; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x471c8c
+# chunk 0x471c8c..0x471c8f
+0000000000471c8c: xor      al, al
+0000000000471c8e: ret

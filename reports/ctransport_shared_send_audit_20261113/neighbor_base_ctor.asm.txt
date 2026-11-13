@@ -1,0 +1,18 @@
+# neighbor_base_ctor; PE pdata/unwind; entry 0x922fc0
+# chunk 0x922fc0..0x922ff9
+0000000000922fc0: mov      qword ptr [rsp + 8], rcx
+0000000000922fc5: push     rbx
+0000000000922fc6: sub      rsp, 0x30
+0000000000922fca: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000922fd3: mov      rbx, rcx
+0000000000922fd6: mov      dword ptr [rcx + 8], edx
+0000000000922fd9: lea      rax, [rip + 0x451bc8]
+0000000000922fe0: mov      qword ptr [rcx], rax
+0000000000922fe3: add      rcx, 0x18
+0000000000922fe7: mov      rdx, r8
+0000000000922fea: call     0x462140
+0000000000922fef: nop
+0000000000922ff0: mov      rax, rbx
+0000000000922ff3: add      rsp, 0x30
+0000000000922ff7: pop      rbx
+0000000000922ff8: ret

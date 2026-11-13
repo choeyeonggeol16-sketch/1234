@@ -1,0 +1,45 @@
+# CAsyncSendConstBuffer_slot_8; PE pdata/unwind; entry 0x924164
+# chunk 0x924164..0x9241f5
+0000000000924164: push     rbx
+0000000000924166: push     rsi
+0000000000924167: push     rdi
+0000000000924168: sub      rsp, 0x30
+000000000092416c: mov      rax, qword ptr [rdx]
+000000000092416f: mov      rsi, rcx
+0000000000924172: mov      rcx, rdx
+0000000000924175: mov      rbx, rdx
+0000000000924178: call     qword ptr [rax + 0x168]
+000000000092417e: test     al, al
+0000000000924180: je       0x9241eb
+0000000000924182: mov      rax, qword ptr [rbx]
+0000000000924185: mov      rcx, rbx
+0000000000924188: call     qword ptr [rax + 0x208]
+000000000092418e: mov      ecx, dword ptr [rsi + 8]
+0000000000924191: cmp      dword ptr [rax + 0x18], ecx
+0000000000924194: mov      rdi, rax
+0000000000924197: je       0x9241ad
+0000000000924199: mov      rdx, qword ptr [rax]
+000000000092419c: mov      rcx, rax
+000000000092419f: call     qword ptr [rdx + 0xb28]
+00000000009241a5: mov      ecx, dword ptr [rax + 0x20]
+00000000009241a8: cmp      dword ptr [rsi + 0x18], ecx
+00000000009241ab: jle      0x9241eb
+00000000009241ad: mov      rax, qword ptr [rsi + 0x10]
+00000000009241b1: lock add dword ptr [rax + 0x4020], 1
+00000000009241b9: mov      rax, qword ptr [rdi]
+00000000009241bc: mov      rbx, qword ptr [rsi + 0x10]
+00000000009241c0: mov      rcx, rdi
+00000000009241c3: call     qword ptr [rax + 0xb28]
+00000000009241c9: lea      rdx, [rip + 0x3efd80] ; UTF16 'AsyncSendConstBuffer'
+00000000009241d0: lea      r8, [rip - 0x15b13]
+00000000009241d7: mov      qword ptr [rsp + 0x20], rdx
+00000000009241dc: lea      rcx, [rax + 0x28]
+00000000009241e0: mov      r9, rbx
+00000000009241e3: mov      rdx, rax
+00000000009241e6: call     0x45c7ac
+00000000009241eb: mov      al, 1
+00000000009241ed: add      rsp, 0x30
+00000000009241f1: pop      rdi
+00000000009241f2: pop      rsi
+00000000009241f3: pop      rbx
+00000000009241f4: ret

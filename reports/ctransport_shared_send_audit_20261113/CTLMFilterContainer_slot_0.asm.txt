@@ -1,0 +1,14 @@
+# CTLMFilterContainer_slot_0; PE pdata/unwind; entry 0x79dd64
+# chunk 0x79dd64..0x79dd8a
+000000000079dd64: push     rbx
+000000000079dd66: sub      rsp, 0x20
+000000000079dd6a: test     dl, 1
+000000000079dd6d: lea      rax, [rip + 0x38a34c]
+000000000079dd74: mov      rbx, rcx
+000000000079dd77: mov      qword ptr [rcx], rax
+000000000079dd7a: je       0x79dd81
+000000000079dd7c: call     0xab8610
+000000000079dd81: mov      rax, rbx
+000000000079dd84: add      rsp, 0x20
+000000000079dd88: pop      rbx
+000000000079dd89: ret

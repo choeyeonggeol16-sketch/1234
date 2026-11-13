@@ -1,0 +1,26 @@
+# neighbor_ctor; PE pdata/unwind; entry 0x923468
+# chunk 0x923468..0x9234aa
+0000000000923468: push     rbx
+000000000092346a: push     rdi
+000000000092346b: sub      rsp, 0x28
+000000000092346f: mov      rdi, r9
+0000000000923472: mov      rbx, rcx
+0000000000923475: call     0x922fc0
+000000000092347a: lea      r11, [rip + 0x45194f]
+0000000000923481: xor      eax, eax
+0000000000923483: cmp      rdi, rax
+0000000000923486: mov      qword ptr [rbx], r11
+0000000000923489: je       0x923490
+000000000092348b: mov      ecx, dword ptr [rdi + 0x38]
+000000000092348e: jmp      0x923492
+0000000000923490: mov      ecx, eax
+0000000000923492: cmp      rdi, rax
+0000000000923495: mov      dword ptr [rbx + 0x30], ecx
+0000000000923498: je       0x92349d
+000000000092349a: mov      eax, dword ptr [rdi + 0x3c]
+000000000092349d: mov      dword ptr [rbx + 0x34], eax
+00000000009234a0: mov      rax, rbx
+00000000009234a3: add      rsp, 0x28
+00000000009234a7: pop      rdi
+00000000009234a8: pop      rbx
+00000000009234a9: ret

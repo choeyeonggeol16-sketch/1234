@@ -1,0 +1,16 @@
+{
+  "baseline_git_commit": "fcec7bd7d6a443a09743d53d899d186796934c99",
+  "reproduction_json_identical": true,
+  "instruction_assertions": 28,
+  "named_asm_dumps": 32,
+  "checked_production_files": {
+    "src": 1705,
+    "native": 15
+  },
+  "source_index_sha256": "b2c0ddcad6d924bb038d5999e7794f98df8c10fe63c1ecf230f4fe15229fec67",
+  "full_source_zip_sha256": "eb3f06004970e70ab015d6b319fdb27127c79ea5139ef1d1a5a3385a6dddabab",
+  "production_changed": false,
+  "original_binary_executed": false,
+  "new_runtime_tests_run": false,
+  "reason": "Analysis-only; production sources and distributed artifacts unchanged."
+}

@@ -1,0 +1,3 @@
+# CAsyncSendConstBuffer_slot_10; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x56daa8
+# chunk 0x56daa8..0x56daab
+000000000056daa8: ret      0

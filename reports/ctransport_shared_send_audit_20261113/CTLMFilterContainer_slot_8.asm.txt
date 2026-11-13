@@ -1,0 +1,19 @@
+# CTLMFilterContainer_slot_8; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x9234ac
+# chunk 0x9234ac..0x92350a
+00000000009234ac: mov      ecx, dword ptr [rip + 0x2ec9bd26]
+00000000009234b2: mov      rax, qword ptr gs:[0x58]
+00000000009234bb: lea      r9, [rip - 0x5234c2]
+00000000009234c2: mov      rax, qword ptr [rax + rcx*8]
+00000000009234c6: mov      edx, 0x7d58
+00000000009234cb: movsxd   r8, dword ptr [rdx + rax]
+00000000009234cf: mov      rdx, r8
+00000000009234d2: movsxd   rcx, dword ptr [r9 + r8*4 + 0x47e2a40]
+00000000009234da: imul     rdx, rdx, 0x3e8
+00000000009234e1: lea      eax, [rcx + 1]
+00000000009234e4: add      rdx, rcx
+00000000009234e7: mov      dword ptr [r9 + r8*4 + 0x47e2a40], eax
+00000000009234ef: add      dword ptr [r9 + r8*4 + 0x47e2a40], -1
+00000000009234f8: lea      rax, [rip + 0x4518e1] ; UTF16 'bool __cdecl CTLMFilterContainer::CanDo(class CObject *)'
+00000000009234ff: mov      qword ptr [r9 + rdx*8 + 0x47bf7c0], rax
+0000000000923507: mov      al, 1
+0000000000923509: ret

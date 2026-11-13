@@ -1,0 +1,14 @@
+# functor_slot_0_0; PE pdata/unwind; entry 0x9454fc
+# chunk 0x9454fc..0x945522
+00000000009454fc: push     rbx
+00000000009454fe: sub      rsp, 0x20
+0000000000945502: test     dl, 1
+0000000000945505: lea      rax, [rip + 0x1e2b94]
+000000000094550c: mov      rbx, rcx
+000000000094550f: mov      qword ptr [rcx], rax
+0000000000945512: je       0x945519
+0000000000945514: call     0xab8610
+0000000000945519: mov      rax, rbx
+000000000094551c: add      rsp, 0x20
+0000000000945520: pop      rbx
+0000000000945521: ret
