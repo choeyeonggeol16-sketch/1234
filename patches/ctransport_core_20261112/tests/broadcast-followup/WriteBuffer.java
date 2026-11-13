@@ -1,0 +1,1 @@
+package l1j.server.server.model.network.buffer;import java.nio.*;public class WriteBuffer {public final ByteBuffer data;public WriteBuffer(int n){data=ByteBuffer.allocate(n).order(ByteOrder.LITTLE_ENDIAN);data.position(2);}public void writeC(int n){data.put((byte)n);}public void writeH(int n){data.putShort((short)n);}public void writeD(int n){data.putInt(n);}}

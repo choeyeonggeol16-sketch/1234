@@ -59,6 +59,8 @@ public class Server {
         final var listener=gameListener;return listener==null?new long[4]:listener.accountRegistryDiagnostics();
     }
     public static long[] networkSendDiagnostics(){final var listener=gameListener;return listener==null?new long[9]:listener.sendDiagnostics();}
+    public static long[][] networkSocketDiagnostics(){final var listener=gameListener;return listener==null?new long[0][]:listener.ReportSocket();}
+    public static long[] networkThreadDiagnostics(){final var listener=gameListener;return listener==null?new long[0]:listener.threadDiagnostics();}
     public static long findEnteringAccount(int accountId){
         final var listener=gameListener;return listener==null?0:listener.findEnteringAccount(accountId);
     }

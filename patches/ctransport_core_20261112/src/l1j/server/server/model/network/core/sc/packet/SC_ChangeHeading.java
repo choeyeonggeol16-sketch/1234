@@ -37,25 +37,15 @@ public final class SC_ChangeHeading {
         return target instanceof L1PcInstance && send(((L1PcInstance) target).getNetConnection(), objectId, heading);
     }
 
-    public static void broadcast(L1Character anchor, int objectId, int heading) {
+    private static void broadcast0(L1Character anchor, int objectId, int heading, boolean fast) {
         if (anchor == null) return;
-        for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(anchor))
-            send(pc, objectId, heading);
+        byte[] wire = java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+                .putShort((short) WIRE_SIZE).put((byte) Opcodes.S_CHANGE_DIRECTION).putInt(objectId).put((byte) heading).array();
+        l1j.server.server.model.network.core.CSharedBroadcast.send(anchor, wire, fast, -1, null,
+                client -> send(client, objectId, heading));
     }
-
-    public static void broadcastFast(L1Character anchor, int objectId, int heading) {
-        if (anchor == null) return;
-        {
-            final L1World __cioWorld0 = L1World.getInstance();
-            final java.util.List<L1PcInstance> __cioVisible0 = __cioWorld0.borrowVisiblePlayerFast(anchor);
-            try {
-                for (L1PcInstance pc : __cioVisible0) send(pc, objectId, heading);
-            } finally {
-                __cioWorld0.releaseVisiblePlayerFast(__cioVisible0);
-            }
-        }
-    }
-
+    public static void broadcast(L1Character anchor, int objectId, int heading) { broadcast0(anchor, objectId, heading, false); }
+    public static void broadcastFast(L1Character anchor, int objectId, int heading) { broadcast0(anchor, objectId, heading, true); }
 
     public static void broadcast(L1Character object) {
         if (object != null) broadcast(object, object.getId(), object.getHeading());

@@ -56,39 +56,14 @@ public final class SC_SkillSound {
         broadcast0(anchor, objectId, gfxId, true);
     }
 
-    private static l1j.server.server.model.network.core.CAsyncSendConstBufferExceptSelf shared(
-            L1Character anchor, int objectId, int gfxId) {
-        byte[] wire = java.nio.ByteBuffer.allocate(WIRE_SIZE)
-                .order(java.nio.ByteOrder.LITTLE_ENDIAN).putShort((short) WIRE_SIZE)
-                .put((byte) Opcodes.S_EFFECT).putInt(objectId).putShort((short) gfxId)
-                .putShort((short) 0).putInt(0).array();
-        // Keep existing L1 admission/drop policy. The original per-broadcast
-        // pending limit is supported, without importing L2's 20/512 KiB values.
-        return new l1j.server.server.model.network.core.CAsyncSendConstBufferExceptSelf(
-                wire, anchor.getId(), Integer.MAX_VALUE);
+    private static byte[] sharedWire(int objectId, int gfxId) {
+        return java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+                .putShort((short) WIRE_SIZE).put((byte) Opcodes.S_EFFECT).putInt(objectId)
+                .putShort((short) gfxId).putShort((short) 0).putInt(0).array();
     }
-
-    private static void sendShared(l1j.server.server.model.network.core.CAsyncSendConstBuffer broadcast,
-            L1PcInstance pc, int objectId, int gfxId) {
-        CIOClient client = pc.getNetConnection();
-        if (client != null && client.isConnected() && !broadcast.apply(client.getConnection(), pc.getId()))
-            send(client, objectId, gfxId);
-    }
-
     private static void broadcast0(L1Character anchor, int objectId, int gfxId, boolean fast) {
-        if (anchor == null) return;
-        final L1World world = L1World.getInstance();
-        if (fast) {
-            final java.util.List<L1PcInstance> visible = world.borrowVisiblePlayerFast(anchor);
-            try (var broadcast = shared(anchor, objectId, gfxId)) {
-                for (L1PcInstance pc : visible) sendShared(broadcast, pc, objectId, gfxId);
-            } finally { world.releaseVisiblePlayerFast(visible); }
-        } else {
-            try (var broadcast = shared(anchor, objectId, gfxId)) {
-                for (L1PcInstance pc : world.getVisiblePlayer(anchor))
-                    sendShared(broadcast, pc, objectId, gfxId);
-            }
-        }
+        if (anchor != null) l1j.server.server.model.network.core.CSharedBroadcast.send(
+                anchor, sharedWire(objectId, gfxId), fast, -1, null, client -> send(client, objectId, gfxId));
     }
 
     public static boolean send(l1j.server.server.model.L1Character target, int objectId, int gfxId) {
@@ -130,11 +105,8 @@ public final class SC_SkillSound {
 
     public static void broadcastM(l1j.server.server.model.L1Character c, int objectId, int gfxId) {
         if (c == null) return;
-        try (var broadcast = shared(c, objectId, gfxId)) {
-            for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(c)) {
-                if (pc.getLinMeff() != 2) sendShared(broadcast, pc, objectId, gfxId);
-            }
-        }
+        l1j.server.server.model.network.core.CSharedBroadcast.send(c, sharedWire(objectId, gfxId),
+                false, -1, pc -> pc.getLinMeff() != 2, client -> send(client, objectId, gfxId));
     }
 
     public static void broadcastMPacked(l1j.server.server.model.L1Character c, long p) {
@@ -143,10 +115,8 @@ public final class SC_SkillSound {
 
     public static void broadcastWide(l1j.server.server.model.L1Character c, int objectId, int gfxId) {
         if (c == null) return;
-        try (var broadcast = shared(c, objectId, gfxId)) {
-            for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(c, 50))
-                sendShared(broadcast, pc, objectId, gfxId);
-        }
+        l1j.server.server.model.network.core.CSharedBroadcast.send(c, sharedWire(objectId, gfxId),
+                false, 50, null, client -> send(client, objectId, gfxId));
     }
 
     public static void broadcastWidePacked(l1j.server.server.model.L1Character c, long p) {

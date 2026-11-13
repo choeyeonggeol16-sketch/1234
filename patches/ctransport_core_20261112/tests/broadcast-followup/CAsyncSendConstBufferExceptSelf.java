@@ -1,0 +1,1 @@
+package l1j.server.server.model.network.core;public class CAsyncSendConstBufferExceptSelf extends CAsyncSendConstBuffer {public CAsyncSendConstBufferExceptSelf(byte[] wire,int id,int limit){super(wire,id,limit);}}

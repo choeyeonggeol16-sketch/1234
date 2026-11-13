@@ -90,31 +90,9 @@ public final class SC_RemoveObject {
 			return;
 		}
 
-		{
-		    final L1World __cioWorld0 = L1World.getInstance();
-		    final java.util.List<L1PcInstance> __cioVisible0 = __cioWorld0.borrowVisiblePlayerFast(anchor);
-		    try {
-		        for (L1PcInstance pc : __cioVisible0) {
-        
-        			if (pc == null) {
-        				continue;
-        			}
-        
-        			final CIOClient client =
-        					pc.getNetConnection();
-        
-        			if (client == null
-        					|| !client.isConnected()) {
-        				continue;
-        			}
-        
-        			send(
-        					client,
-        					objectId);
-        		}
-		    } finally {
-		        __cioWorld0.releaseVisiblePlayerFast(__cioVisible0);
-		    }
-		}
-	}
+        byte[] wire = java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+                .putShort((short) WIRE_SIZE).put((byte) Opcodes.S_REMOVE_OBJECT).putInt(objectId).putShort((short) 0).array();
+        l1j.server.server.model.network.core.CSharedBroadcast.send(anchor, wire, true, -1, null,
+                client -> send(client, objectId));
+    }
 }

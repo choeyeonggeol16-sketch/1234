@@ -1,0 +1,465 @@
+{
+  "binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "original_executed": false,
+  "functions": {
+    "SetTimeStamp": {
+      "entry": "0x7048cc",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x7048cc",
+          "0x70495b"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9970"
+      ],
+      "callers": [
+        {
+          "at": "0x44c39a",
+          "op": "call",
+          "function": "0x44c260",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x490625",
+          "op": "call",
+          "function": "0x4905ac",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x584240",
+          "op": "call",
+          "function": "0x584194",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x5847ac",
+          "op": "call",
+          "function": "0x584708",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x586872",
+          "op": "call",
+          "function": "0x586754",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x593910",
+          "op": "call",
+          "function": "0x593870",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x59bdc0",
+          "op": "call",
+          "function": "0x59bc8c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x59ec49",
+          "op": "call",
+          "function": "0x59eae4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x5a434b",
+          "op": "call",
+          "function": "0x5a3bac",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x5a43e1",
+          "op": "call",
+          "function": "0x5a3bac",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x5a5405",
+          "op": "call",
+          "function": "0x5a5384",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x5a68be",
+          "op": "call",
+          "function": "0x5a6524",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x5ae4a8",
+          "op": "call",
+          "function": "0x5ae1a4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x5aedec",
+          "op": "call",
+          "function": "0x5aeca0",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x5aee28",
+          "op": "call",
+          "function": "0x5aeca0",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x791570",
+          "op": "call",
+          "function": "0x7909e4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x7a9e0c",
+          "op": "call",
+          "function": "0x7a9d88",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x82d728",
+          "op": "call",
+          "function": "0x82d684",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x8c9bf6",
+          "op": "call",
+          "function": "0x8c9b58",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x8c9c62",
+          "op": "call",
+          "function": "0x8c9b58",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x9011fa",
+          "op": "call",
+          "function": "0x900f08",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x901434",
+          "op": "call",
+          "function": "0x900f08",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x903645",
+          "op": "call",
+          "function": "0x9034c8",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x943269",
+          "op": "call",
+          "function": "0x9431d0",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x944217",
+          "op": "call",
+          "function": "0x9440d0",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x9442ea",
+          "op": "call",
+          "function": "0x9440d0",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x94599c",
+          "op": "call",
+          "function": "0x9458f8",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x94a803",
+          "op": "call",
+          "function": "0x94a090",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x94c5d8",
+          "op": "call",
+          "function": "0x94c52c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x95f0bc",
+          "op": "call",
+          "function": "0x95efa8",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x95fd01",
+          "op": "call",
+          "function": "0x95f9e4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x994a58",
+          "op": "call",
+          "function": "0x994864",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x995fb5",
+          "op": "call",
+          "function": "0x995514",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x997112",
+          "op": "call",
+          "function": "0x996cbc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x9c5c4f",
+          "op": "call",
+          "function": "0x9c5b94",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x9c90c9",
+          "op": "call",
+          "function": "0x9c8cb4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x9c93bb",
+          "op": "call",
+          "function": "0x9c9220",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x9f81f8",
+          "op": "call",
+          "function": "0x9f81e8",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x9f8deb",
+          "op": "call",
+          "function": "0x9f8d58",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xa00a7e",
+          "op": "call",
+          "function": "0xa00a60",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "SetShortTimeStamp": {
+      "entry": "0x704990",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x704990",
+          "0x704a29"
+        ]
+      ],
+      "direct_calls": [],
+      "callers": [
+        {
+          "at": "0x583d30",
+          "op": "call",
+          "function": "0x583c44",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x583f06",
+          "op": "call",
+          "function": "0x583e5c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x583f40",
+          "op": "call",
+          "function": "0x583e5c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x58a010",
+          "op": "call",
+          "function": "0x589e50",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x596429",
+          "op": "call",
+          "function": "0x595f3c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x70566f",
+          "op": "call",
+          "function": "0x705660",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x944590",
+          "op": "call",
+          "function": "0x944368",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x98c2f2",
+          "op": "call",
+          "function": "0x98c1f8",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x996084",
+          "op": "call",
+          "function": "0x995514",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xa0d355",
+          "op": "call",
+          "function": "0xa0d164",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xa0e5ee",
+          "op": "call",
+          "function": "0xa0e1a4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xa0e942",
+          "op": "call",
+          "function": "0xa0e1a4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xa0eab7",
+          "op": "call",
+          "function": "0xa0e1a4",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "CUserSocket_TimerExpired": {
+      "entry": "0xa0d164",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0d164",
+          "0xa0db8a"
+        ]
+      ],
+      "direct_calls": [
+        "0x704a2c",
+        "0x734514",
+        "0x45d41c",
+        "0x704990",
+        "0x92f2b0",
+        "0x735ca4",
+        "0xab9970",
+        "0x45d41c",
+        "0xab9970",
+        "0x45d41c",
+        "0x9f8210",
+        "0x9f884c",
+        "0x9f884c",
+        "0x9f884c",
+        "0x9f8604",
+        "0x9f82c8",
+        "0x9f80dc",
+        "0x9f8d58",
+        "0x9fc768",
+        "0x5c97ec",
+        "0x9fc768",
+        "0x9f884c",
+        "0x9f8604",
+        "0x9f82c8",
+        "0x9f884c",
+        "0x9f8604",
+        "0x9f82c8",
+        "0x9f7ce0",
+        "0x9f7ce0",
+        "0x9f7e24",
+        "0x9f8604",
+        "0x9f7ce0",
+        "0x9f7ce0",
+        "0x9f7e24",
+        "0x9f8604",
+        "0x9f7e24",
+        "0x9f884c",
+        "0x7048c4"
+      ],
+      "callers": []
+    },
+    "CUserSocket_VersionPacket": {
+      "entry": "0xa0e1a4",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0e1a4",
+          "0xa0eb22"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278",
+        "0xab9430",
+        "0x74e3c8",
+        "0x8c0390",
+        "0x8c0390",
+        "0x9ef63c",
+        "0x4623b0",
+        "0x4623b0",
+        "0x4623b0",
+        "0x4623b0",
+        "0xab9430",
+        "0x951fdc",
+        "0x704990",
+        "0x7048c4",
+        "0x734514",
+        "0x705278",
+        "0xa01c74",
+        "0x734514",
+        "0x734514",
+        "0x4173e4",
+        "0x704148",
+        "0x706894",
+        "0x734514",
+        "0x705278",
+        "0xac28c0",
+        "0xab9430",
+        "0x951fdc",
+        "0x734514",
+        "0x705278",
+        "0x9ef63c",
+        "0xa0dbb0",
+        "0x90e04c",
+        "0x704990",
+        "0x7048c4",
+        "0xab9430",
+        "0x951fdc",
+        "0x734514",
+        "0xab9430",
+        "0x951fdc",
+        "0x704990",
+        "0x7048c4",
+        "0x734514"
+      ],
+      "callers": []
+    }
+  },
+  "verified_socket_timestamp_calls": [
+    "0xa0d355",
+    "0xa0e5ee",
+    "0xa0e942",
+    "0xa0eab7"
+  ],
+  "decision": "Keep L1 monotonic64/native login,partial-read,write-stall,grace deadlines; do not import L2 version packet/3D-world/32-bit rollover policies. Login timeout default remains60000ms and is configurable."
+}

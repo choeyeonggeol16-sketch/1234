@@ -56,3 +56,20 @@ if ($LASTEXITCODE -ne 0) { throw 'Independent PSS transport contract failed' }
 if ($LASTEXITCODE -ne 0) { throw 'Production PSS activation/pairing failed' }
 & .\build\pss-client\PssClientLoadTest.exe
 if ($LASTEXITCODE -ne 0) { throw 'Original standalone PSS client load failed' }
+
+# Followup diagnostics and broadcast differential contracts.
+@'
+ctransport.macLimit=3
+ctransport.loginTimeoutMs=1234
+ctransport.diagnostics.maxConnections=100
+'@ | Set-Content -Encoding UTF8 diagnostic-test.properties
+& javac --enable-preview --release 21 -encoding UTF-8 -cp owner-classes -d owner-classes tests/NetworkDiagnosticsTest.java
+if ($LASTEXITCODE -ne 0) { throw 'Diagnostics test compilation failed' }
+& java --enable-preview '-Dctransport.config=diagnostic-test.properties' '-Dctransport.diagnostics.maxConnections=2' -cp owner-classes l1j.server.server.model.network.core.NetworkDiagnosticsTest
+if ($LASTEXITCODE -ne 0) { throw 'Diagnostics/config test failed' }
+New-Item -ItemType Directory -Force broadcast-classes | Out-Null
+$broadcastFixtures = (Get-ChildItem tests/broadcast-followup/*.java).FullName
+& javac --enable-preview --release 21 -encoding UTF-8 -d broadcast-classes "$core/CTLMFilter.java" "$core/CSharedBroadcast.java" src/l1j/server/server/Opcodes.java "$core/sc/packet/SC_MoveChar.java" "$core/sc/packet/SC_ChangeHeading.java" "$core/sc/packet/SC_RemoveObject.java" "$core/sc/packet/SC_DoActionGFX.java" "$core/sc/packet/SC_SkillSound.java" $broadcastFixtures
+if ($LASTEXITCODE -ne 0) { throw 'Broadcast test compilation failed' }
+& java --enable-preview -cp broadcast-classes l1j.server.server.model.network.core.BroadcastFollowupTest
+if ($LASTEXITCODE -ne 0) { throw 'Broadcast filters/bytes/cleanup failed' }

@@ -221,10 +221,11 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         boolean scheduleEarlier(long delayMs);
     }
     private volatile NetworkDeadline _networkDeadline;
+    private final CNetworkDiagnostics.Trace networkTrace;
 
     void configureNativeDeadlines(boolean loginTimeout) {
         _networkDeadline=_channel::requestDeadline;
-        if(!_channel.configureDeadlines(loginTimeout?60000:0))throw new IllegalStateException("Native network deadline admission failed");
+        if(!_channel.configureDeadlines(loginTimeout?CIOConfig.LOGIN_TIMEOUT_MS:0))throw new IllegalStateException("Native network deadline admission failed");
     }
     void onAccountChanged(l1j.server.server.Account account){
         if(!nativeDirect||_closed!=0||!_channel.isOpen())return;
@@ -657,6 +658,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
     /** Caller holds _stateLock. A validated batch publishes one watermark change. */
     private void bytesAdmittedBatch(int wireBytes, int frames) {
+        CNetworkDiagnostics.admitted(wireBytes);
         _outstandingWireBytes += wireBytes;
         _outstandingFrames += frames;
         updateSendReadPauseLocked();
@@ -997,6 +999,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         _channel = channel;
         _pool = pool;
         _remoteAddress = remoteAddress == null ? "Unknown" : remoteAddress;
+        networkTrace = CNetworkDiagnostics.open(_remoteAddress, _channel.id());
         _affinityShard = affinityShard;
         _closedCallback = closedCallback;
         _maxQueuedFrames = maxQueuedFrames;
@@ -1016,6 +1019,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     private volatile boolean clientCleanupComplete;
     void onTransportClosing() {
         if (!closeStarted.compareAndSet(false, true)) return;
+        CNetworkDiagnostics.close(networkTrace);
         CIOClient client = _client;
         if (client != null) client.onTransportClosing();
         cancelQueuedNativePacket();
@@ -2907,7 +2911,10 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             if(_closed==0&&_client.isConnected()&&current){
                 if(_nativePacketOnIo?_channel.currentNativeOwner()<0:CIOThreadCallback.currentShardIndex()!=_affinityShard)
                     throw new IllegalStateException("Packet executed outside its native/session role");
-                if(!onNativePlaintext(_nativePacketBuffer,_nativePacketLength))close();
+                CNetworkDiagnostics.Work work = CNetworkDiagnostics.begin(networkTrace,
+                        _nativePacketBuffer.get(0) & 255, _nativePacketLength);
+                try { if(!onNativePlaintext(_nativePacketBuffer,_nativePacketLength))close(); }
+                finally { CNetworkDiagnostics.end(work); }
             }
         }catch(Throwable failure){LOG.log(Level.WARNING,"[CIO NATIVE] packet execution failed",failure);close();}
         finally{finishNativePacket();}

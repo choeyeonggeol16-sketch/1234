@@ -48,16 +48,8 @@ public final class SC_DoActionGFX {
                 .order(java.nio.ByteOrder.LITTLE_ENDIAN).putShort((short) 8)
                 .put((byte) l1j.server.server.Opcodes.S_ACTION)
                 .putInt(objectId).put((byte) actionId).array();
-        final L1World world = L1World.getInstance();
-        final java.util.List<L1PcInstance> visible = world.borrowVisiblePlayerFast(cha);
-        try (var broadcast = new l1j.server.server.model.network.core.CAsyncSendConstBufferExceptSelf(
-                wire, objectId, Integer.MAX_VALUE)) {
-            for (L1PcInstance pc : visible) {
-                final CIOClient client = pc.getNetConnection();
-                if (client != null && client.isConnected() && !broadcast.apply(client.getConnection(), pc.getId()))
-                    send(client, objectId, actionId);
-            }
-        } finally { world.releaseVisiblePlayerFast(visible); }
+        l1j.server.server.model.network.core.CSharedBroadcast.send(cha, wire, true, -1, null,
+                client -> send(client, objectId, actionId));
     }
 
     public static void broadcast(L1PcInstance cha, int actionId) {

@@ -87,76 +87,18 @@ public final class SC_MoveChar {
 				heading);
 	}
 
-	/**
-	 * 명시 좌표 이동 broadcast.
-	 */
-	public static void broadcast(
-			L1Character cha,
-			int x,
-			int y,
-			int heading) {
-
-		if (cha == null) {
-			return;
-		}
-
-		final int objectId = cha.getId();
-
-		{
-		    final L1World __cioWorld0 = L1World.getInstance();
-		    final java.util.List<L1PcInstance> __cioVisible0 = __cioWorld0.borrowVisiblePlayerFast(cha);
-		    try {
-		        for (L1PcInstance pc : __cioVisible0) {
-        
-        			if (pc == null) {
-        				continue;
-        			}
-        
-        			final CIOClient client = pc.getNetConnection();
-        			if (client == null || !client.isConnected()) {
-        				continue;
-        			}
-        
-        			send(client, objectId, x, y, heading);
-        		}
-		    } finally {
-		        __cioWorld0.releaseVisiblePlayerFast(__cioVisible0);
-		    }
-		}
-	}
-
-	/**
-	 * 현재 좌표 + heading 기준 한 칸 이동 broadcast.
-	 */
-	public static void broadcast(L1Character cha) {
-		if (cha == null) {
-			return;
-		}
-
-		final int heading = cha.getHeading();
-		final int x =
-				cha.getX() + HEADING_TABLE_X[heading];
-		final int y =
-				cha.getY() + HEADING_TABLE_Y[heading];
-		final int objectId = cha.getId();
-
-		{
-		    final L1World __cioWorld1 = L1World.getInstance();
-		    final java.util.List<L1PcInstance> __cioVisible1 = __cioWorld1.borrowVisiblePlayerFast(cha);
-		    try {
-		        for (L1PcInstance pc : __cioVisible1) {
-        			if (pc == null) {
-        				continue;
-        			}
-        			final CIOClient client = pc.getNetConnection();
-        			if (client == null || !client.isConnected()) {
-        				continue;
-        			}
-        			send(client, objectId, x, y, heading);
-        		}
-		    } finally {
-		        __cioWorld1.releaseVisiblePlayerFast(__cioVisible1);
-		    }
-		}
-	}
+    public static void broadcast(L1Character cha, int x, int y, int heading) {
+        if (cha == null) return;
+        int objectId = cha.getId();
+        byte[] wire = java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+                .putShort((short) WIRE_SIZE).put((byte) Opcodes.S_MOVE_OBJECT).putInt(objectId)
+                .putShort((short) x).putShort((short) y).put((byte) heading).put((byte) 129).putInt(0).array();
+        l1j.server.server.model.network.core.CSharedBroadcast.send(cha, wire, true, -1, null,
+                client -> send(client, objectId, x, y, heading));
+    }
+    public static void broadcast(L1Character cha) {
+        if (cha == null) return;
+        int heading = cha.getHeading();
+        broadcast(cha, cha.getX() + HEADING_TABLE_X[heading], cha.getY() + HEADING_TABLE_Y[heading], heading);
+    }
 }
