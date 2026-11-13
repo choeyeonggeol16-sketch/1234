@@ -2,7 +2,7 @@
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**같은 버전 DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**분석·구현 보고서**](reports/CTRANSPORT_ORIGINAL_NAMES_CONST_ABI9_20261113.md)
 
-원본 RTTI의 CDummyServerCallback/IServerCallback과 MemoryObject 기반을 확인해 실제 C++·Java 호출을 맞췄습니다. CIOBufferEx를 독립 클래스로 사용하고 상수 입력을 보존하는 native gather 송신을 연결했습니다. HP 방식의 예전 export 이름과 무효 정책 entry 두 개를 제거했습니다. ABI0x90000/64 exports의 src·DLL을 함께 적용하고 clean build합니다. PSS 독립 동작·기존 codec 유지, 추가 SQL 없음. [Windows 검증 기록](patches/ctransport_core_20261112/WINDOWS_VERIFICATION.json)을 확인하세요. 실게임·운영 DB·장시간 부하는 미검증입니다.
+원본 RTTI의 CDummyServerCallback/IServerCallback과 MemoryObject 기반을 확인해 실제 C++·Java 호출을 맞췄습니다. CIOBufferEx를 독립 클래스로 사용하고 상수 입력을 보존하는 native gather 송신을 연결했습니다. HP 방식의 예전 export 이름과 무효 정책 entry 두 개를 제거했습니다. ABI0x90000/64 exports의 src·DLL을 함께 적용하고 clean build합니다. PSS 독립 동작·기존 codec 유지, 추가 SQL 없음. Windows Server2022/Java21 검사 통과([실행43365489001](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43365489001)). production gather 상수 송신·암호화·FIN·버퍼 수명을 확인했습니다. [검증 기록](patches/ctransport_core_20261112/WINDOWS_VERIFICATION.json)에 소스 커밋과 해시를 고정했습니다. 실게임·운영 DB·장시간 부하는 미검증입니다.
 
 이하 ABI8 이전 설명은 당시 이력입니다. 최신 구현·명칭·적용 범위는 위 ABI9 보고서 기준입니다.
 

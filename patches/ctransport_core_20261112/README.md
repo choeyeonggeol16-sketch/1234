@@ -9,3 +9,5 @@
 5. 분석·호출 경로·검사·추가 미반영 항목은 REPORT_ORIGINAL_NAMES_CONST_ABI9.md, 실제 Windows 실행 상태·소스 커밋·해시는 WINDOWS_VERIFICATION.json을 따릅니다.
 
 운영 DB·실게임·장시간 부하와 원본 서버 전체의 동일성은 미검증입니다. 이전 보고서는 당시 구현의 이력입니다.
+
+실제 ABI9 Windows Server2022/Temurin21 검사 통과: [실행43365489001](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43365489001), 검사 소스 `0ca18a8d10a84ede5db6d34ddbbd24cb29d0f811`. 새64개 entry의 DLL과 production Java FFM, 실제 gather 상수 송신/20K frame의16K 경계/기존 codec 일치/최종 packet·FIN/lease 해제를 확인했다. 동시32개 loopback은 30,134ms·누적54,304접속·6,950,912 L1 frames·3,558,866,944 C2S wire bytes를 처리하고 round별 색인 잔여0을 확인했다. 원본 이름 변경 외 소스1,684개 바이트 불변도 별도로 검사했다. 실게임·DB·운영 성능 보장은 아니다. 최종 native/src/tests/build는 이 검사 커밋과 동일하고 후속 커밋은 검증 기록을 추가한다.

@@ -88,3 +88,5 @@ Java21 production1704개 전체 타입 컴파일, 새64개 export/ABI/Java SHA p
 최근128개 패킷 기록·추가 운영 계측은 앞선 선택적 진단 후보로 유지하며 이번 네트워크 실행 경로 작업에 섞지 않았다.
 
 추가 범위 검사는 ABI8의 전체 소스 해시를 기준으로 네트워크 leaf 클래스와 root Server 외1,684개 파일의 바이트 불변을 확인한다. 첫 Windows 실행은 DLL ABI9와 self-test의 구 ABI8 기대값 불일치로 중단됐다. DLL/self-test가 같은 ABI 상수를 사용하고 빌드 시 Java ABI도 비교하도록 수정했다. 기록은 logs/abi9-windows-attempt1-failed.log.
+
+실제 ABI9 Windows Server2022/Temurin21 검사 통과: [실행43365489001](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43365489001), 검사 소스 `0ca18a8d10a84ede5db6d34ddbbd24cb29d0f811`. 새64개 entry의 DLL과 production Java FFM, 실제 gather 상수 송신/20K frame의16K 경계/기존 codec 일치/최종 packet·FIN/lease 해제를 확인했다. 동시32개 loopback은 30,134ms·누적54,304접속·6,950,912 L1 frames·3,558,866,944 C2S wire bytes를 처리하고 round별 색인 잔여0을 확인했다. 원본 이름 변경 외 소스1,684개 바이트 불변도 별도로 검사했다. 실게임·DB·운영 성능 보장은 아니다. 최종 native/src/tests/build는 이 검사 커밋과 동일하고 후속 커밋은 검증 기록을 추가한다.
