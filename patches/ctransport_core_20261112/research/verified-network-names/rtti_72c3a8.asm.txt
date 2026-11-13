@@ -1,0 +1,3 @@
+# rtti_72c3a8; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x72c3a8
+# chunk 0x72c3a8..0x72c3ad
+000000000072c3a8: jmp      0x72c1e0

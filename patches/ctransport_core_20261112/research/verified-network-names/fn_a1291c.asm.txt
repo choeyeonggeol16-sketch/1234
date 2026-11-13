@@ -1,0 +1,106 @@
+# fn_a1291c; PE pdata/unwind; entry 0xa1291c
+# chunk 0xa1291c..0xa12af9
+0000000000a1291c: push     rbx
+0000000000a1291e: push     rsi
+0000000000a1291f: push     rdi
+0000000000a12920: push     r12
+0000000000a12922: sub      rsp, 0x58
+0000000000a12926: mov      qword ptr [rsp + 0x40], 0xfffffffffffffffe
+0000000000a1292f: mov      rbx, rcx
+0000000000a12932: mov      r8d, dword ptr [rip + 0x2ebac89f]
+0000000000a12939: mov      rax, qword ptr gs:[0x58]
+0000000000a12942: mov      r12d, 0x7d58
+0000000000a12948: mov      rdi, qword ptr [rax + r8*8]
+0000000000a1294c: movsxd   r9, dword ptr [rdi + r12]
+0000000000a12950: lea      rsi, [rip - 0x612957]
+0000000000a12957: movsxd   r8, dword ptr [rsi + r9*4 + 0x47e2a40]
+0000000000a1295f: lea      eax, [r8 + 1]
+0000000000a12963: mov      dword ptr [rsi + r9*4 + 0x47e2a40], eax
+0000000000a1296b: imul     r9, r9, 0x3e8
+0000000000a12972: add      r9, r8
+0000000000a12975: lea      rax, [rip + 0x3b3474] ; UTF16 'void __cdecl CUserSocketReleaseVerifier::TimerExpired(int)'
+0000000000a1297c: mov      qword ptr [rsi + r9*8 + 0x47bf7c0], rax
+0000000000a12984: cmp      edx, 1
+0000000000a12987: jne      0xa129d1
+0000000000a12989: mov      rax, qword ptr [rcx + 0x18]
+0000000000a1298d: mov      r9d, 0x2bce
+0000000000a12993: lea      r8, [rip + 0x3a79b6]
+0000000000a1299a: mov      edx, dword ptr [rax + 0x4e8]
+0000000000a129a0: lea      rcx, [rip + 0x1744e009]
+0000000000a129a7: call     0xa08300
+0000000000a129ac: mov      edx, 0x61a8
+0000000000a129b1: mov      r8d, 2
+0000000000a129b7: mov      rcx, rbx
+0000000000a129ba: call     0x7048c4
+0000000000a129bf: nop
+0000000000a129c0: movsxd   rax, dword ptr [rdi + r12]
+0000000000a129c4: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+0000000000a129cc: jmp      0xa12aef
+0000000000a129d1: cmp      edx, 3
+0000000000a129d4: jne      0xa12a04
+0000000000a129d6: mov      rcx, qword ptr [rcx + 0x18]
+0000000000a129da: call     0xa123e8
+0000000000a129df: mov      edx, 0x1388
+0000000000a129e4: mov      r8d, 1
+0000000000a129ea: mov      rcx, rbx
+0000000000a129ed: call     0x7048c4
+0000000000a129f2: nop
+0000000000a129f3: movsxd   rax, dword ptr [rdi + r12]
+0000000000a129f7: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+0000000000a129ff: jmp      0xa12aef
+0000000000a12a04: cmp      edx, 4
+0000000000a12a07: jne      0xa12a37
+0000000000a12a09: mov      rcx, qword ptr [rcx + 0x18]
+0000000000a12a0d: call     0xa123e8
+0000000000a12a12: mov      edx, 0x1388
+0000000000a12a17: mov      r8d, 1
+0000000000a12a1d: mov      rcx, rbx
+0000000000a12a20: call     0x7048c4
+0000000000a12a25: nop
+0000000000a12a26: movsxd   rax, dword ptr [rdi + r12]
+0000000000a12a2a: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+0000000000a12a32: jmp      0xa12aef
+0000000000a12a37: mov      rcx, qword ptr [rcx + 0x18]
+0000000000a12a3b: mov      rax, qword ptr [rcx]
+0000000000a12a3e: mov      byte ptr [rsp + 0x20], 0
+0000000000a12a43: mov      r9d, 0x16
+0000000000a12a49: mov      r8d, 0x2be0
+0000000000a12a4f: lea      rdx, [rip + 0x3a78fa]
+0000000000a12a56: call     qword ptr [rax + 0x10]
+0000000000a12a59: test     eax, eax
+0000000000a12a5b: jle      0xa12ac1
+0000000000a12a5d: mov      rcx, qword ptr [rbx + 0x18]
+0000000000a12a61: mov      edx, dword ptr [rcx + 0x7e4]
+0000000000a12a67: mov      rax, qword ptr [rbx + 0x20]
+0000000000a12a6b: mov      qword ptr [rsp + 0x38], rax
+0000000000a12a70: mov      eax, dword ptr [rcx + 8]
+0000000000a12a73: mov      dword ptr [rsp + 0x30], eax
+0000000000a12a77: mov      dword ptr [rsp + 0x28], edx
+0000000000a12a7b: mov      dword ptr [rsp + 0x20], 0x2be3
+0000000000a12a83: lea      r9, [rip + 0x3a6716] ; UTF16 '.\\UserSocket.cpp'
+0000000000a12a8a: lea      r8, [rip + 0x3b32af] ; UTF16 '[%s][%d] ORT - UserSocket Release failed. AccountId [%d] refcount[%d] Caller is [%s]'
+0000000000a12a91: mov      edx, 2
+0000000000a12a96: lea      rcx, [rip + 0xd50ee03]
+0000000000a12a9d: call     0x734514
+0000000000a12aa2: mov      rcx, qword ptr [rbx + 0x18]
+0000000000a12aa6: mov      rax, qword ptr [rcx]
+0000000000a12aa9: mov      r8d, 0x2bea
+0000000000a12aaf: lea      rdx, [rip + 0x3a789a]
+0000000000a12ab6: call     qword ptr [rax + 0x18]
+0000000000a12ab9: lock add dword ptr [rip + 0x41db033], 1
+0000000000a12ac1: mov      rax, qword ptr [rbx]
+0000000000a12ac4: mov      byte ptr [rsp + 0x20], 0
+0000000000a12ac9: mov      r9d, 1
+0000000000a12acf: mov      r8d, 0x2bed
+0000000000a12ad5: lea      rdx, [rip + 0x3a7874]
+0000000000a12adc: mov      rcx, rbx
+0000000000a12adf: call     qword ptr [rax + 0x10]
+0000000000a12ae2: nop
+0000000000a12ae3: movsxd   rax, dword ptr [rdi + r12]
+0000000000a12ae7: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+0000000000a12aef: add      rsp, 0x58
+0000000000a12af3: pop      r12
+0000000000a12af5: pop      rdi
+0000000000a12af6: pop      rsi
+0000000000a12af7: pop      rbx
+0000000000a12af8: ret

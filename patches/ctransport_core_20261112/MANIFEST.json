@@ -4,7 +4,7 @@
   "dll": "CTransport.dll",
   "dll_sha256": "01d389928506719781cdcbd1b9042f58a3b9d89786f6fdb6f0bf2572a63afb75",
   "abi": "0xa0000",
-  "implementation_parent": "1a16f1cde8cde4d6e2c7618f4d74e5d05ded764b",
+  "implementation_parent": "8812c2e6019ad8380d5cef52801b3f6d40979d75",
   "transport_scope": "game",
   "mandatory": true,
   "pss": {
@@ -365,7 +365,7 @@
     "pss_unchanged_from": "2dfce4f; one unused experimental packet only has CIOUserSocket type references renamed"
   },
   "windows_evidence": {
-    "status": "pending",
+    "status": "passed",
     "abi": "0xa0000",
     "exports": 67,
     "implementation_parent": "a1d8d5d",
@@ -389,7 +389,16 @@
       ],
       "unchanged_source_files": 1711,
       "unchanged_java_files": 1710
-    }
+    },
+    "implementation_commit": "8812c2e6019ad8380d5cef52801b3f6d40979d75",
+    "tested_source_commit": "8812c2e6019ad8380d5cef52801b3f6d40979d75",
+    "run_id": 43491457850,
+    "job_id": 132113419130,
+    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43491457850",
+    "os": "Windows Server2022 GitHub-hosted runner",
+    "jdk": "Temurin21",
+    "scope": "Actual Windows DLL loopback and Java FFM timer/session/close/codec/PSS regression;typed queue corruption/concurrency separately ASan/UBSan and TSan",
+    "source_archive_sha256": "b337fb2657c56094768c431cd2fbf5cc759c01db0ff394c7f8e624a35e43565b"
   },
   "followup_structures": [
     "common L1 map/screen/radius/rectangle predicate",
@@ -424,15 +433,36 @@
     "MemoryObject original32 object identity/ref1 copy;bounded process reference-fault attribution",
     "checked decrement prevents zero-reference counter wrap;normal transport handles/cipher/PSS unchanged"
   ],
-  "source_scope": {
-    "baseline": "581cfc4",
-    "edited_java_files": [
-      "src/l1j/server/server/model/network/core/CIOConfig.java",
-      "src/l1j/server/server/model/network/core/CIOServer.java",
-      "src/l1j/server/server/model/network/core/CPoolDiagnostics.java"
+  "verified_timer_names": {
+    "evidence": "research/verified-network-names/VERIFIED_NAMES.json",
+    "confirmed": [
+      "CThreadLocalTimer",
+      "CThreadLocalTimer::CSlot",
+      "CMwmrQueue<CThreadLocalTimer::CSlot,4009>::Pop",
+      "CThreadLocalTimer::AddTimer",
+      "CThreadLocalTimer::Dispatch"
     ],
-    "unchanged_source_files": 1709,
-    "unchanged_java_files": 1708
+    "adapter_helpers": [
+      "CMwmrQueue::Return name unconfirmed",
+      "takeDue/cancel are L1 ownership adapters"
+    ],
+    "excluded": [
+      "original CIOThreadCallback is World_Sync/GC,not the L1 worker host",
+      "CUserSocketReleaseVerifier L2 close state machine is analyzed,not blindly duplicated"
+    ]
+  },
+  "source_scope": {
+    "baseline": "a1d8d5d",
+    "edited_java_files": [
+      "src/l1j/server/server/model/network/core/CIOConfig.java"
+    ],
+    "edited_native_files": [
+      "native/timer_wheel.hpp",
+      "native/io_server.hpp",
+      "native/CTransport.cpp"
+    ],
+    "unchanged_source_files": 1711,
+    "unchanged_java_files": 1710
   },
   "config_file": "config/ctransport.properties",
   "client_identity_status": "Server API/config existing;client identity transmitter/verifier not integrated;default limit0"

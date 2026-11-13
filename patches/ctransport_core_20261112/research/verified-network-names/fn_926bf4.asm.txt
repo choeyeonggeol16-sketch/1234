@@ -1,0 +1,116 @@
+# fn_926bf4; PE pdata/unwind; entry 0x926bf4
+# chunk 0x926bf4..0x926e08
+0000000000926bf4: push     rbx
+0000000000926bf6: push     rbp
+0000000000926bf7: push     rsi
+0000000000926bf8: push     rdi
+0000000000926bf9: push     r12
+0000000000926bfb: push     r13
+0000000000926bfd: push     r14
+0000000000926bff: sub      rsp, 0x60
+0000000000926c03: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000926c0c: mov      esi, r9d
+0000000000926c0f: mov      rbp, rdx
+0000000000926c12: mov      rdi, rcx
+0000000000926c15: mov      r10d, dword ptr [rip + 0x2ec985bc]
+0000000000926c1c: mov      rax, qword ptr gs:[0x58]
+0000000000926c25: mov      r14d, 0x7d58
+0000000000926c2b: mov      r12, qword ptr [rax + r10*8]
+0000000000926c2f: movsxd   r10, dword ptr [r12 + r14]
+0000000000926c33: lea      r13, [rip - 0x526c3a]
+0000000000926c3a: movsxd   rdx, dword ptr [r13 + r10*4 + 0x47e2a40]
+0000000000926c42: lea      eax, [rdx + 1]
+0000000000926c45: mov      dword ptr [r13 + r10*4 + 0x47e2a40], eax
+0000000000926c4d: imul     r10, r10, 0x3e8
+0000000000926c54: add      r10, rdx
+0000000000926c57: lea      rax, [rip + 0x44ec72] ; UTF16 'void __cdecl CThreadLocalTimer::AddTimer(class CIOObject *,const __int64,const int,const __int64)'
+0000000000926c5e: mov      qword ptr [r13 + r10*8 + 0x47bf7c0], rax
+0000000000926c66: movsxd   rbx, dword ptr [r12 + r14]
+0000000000926c6a: mov      rcx, r8
+0000000000926c6d: sub      rcx, qword ptr [rdi + rbx*8 + 0x4c95b98]
+0000000000926c75: movabs   r9, 0xa3d70a3d70a3d70b
+0000000000926c7f: mov      rax, r9
+0000000000926c82: imul     rcx
+0000000000926c85: add      rdx, rcx
+0000000000926c88: sar      rdx, 5
+0000000000926c8c: mov      rax, rdx
+0000000000926c8f: shr      rax, 0x3f
+0000000000926c93: add      rdx, rax
+0000000000926c96: jns      0x926cdc
+0000000000926c98: mov      dword ptr [rsp + 0x20], 0x1a6
+0000000000926ca0: lea      r9, [rip + 0x44e849] ; UTF16 '.\\ThreadSafeLibrary.cpp'
+0000000000926ca7: lea      r8, [rip + 0x44ebea] ; UTF16 '[%s][%d] Invalid timer time'
+0000000000926cae: mov      edx, 2
+0000000000926cb3: lea      rcx, [rip + 0xd5fabe6]
+0000000000926cba: call     0x734514
+0000000000926cbf: xor      edx, edx
+0000000000926cc1: lea      ecx, [rdx + 2]
+0000000000926cc4: call     0x6704e0
+0000000000926cc9: nop
+0000000000926cca: movsxd   rax, dword ptr [r12 + r14]
+0000000000926cce: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+0000000000926cd7: jmp      0x926df9
+0000000000926cdc: cmp      rdx, 0xc8
+0000000000926ce3: jge      0x926dba
+0000000000926ce9: mov      rcx, qword ptr [rdi + rbx*8 + 0x4c95c28]
+0000000000926cf1: lea      r8, [rdx + rcx]
+0000000000926cf5: mov      rax, r9
+0000000000926cf8: imul     r8
+0000000000926cfb: add      rdx, r8
+0000000000926cfe: sar      rdx, 7
+0000000000926d02: mov      rax, rdx
+0000000000926d05: shr      rax, 0x3f
+0000000000926d09: add      rdx, rax
+0000000000926d0c: imul     rdx, rdx, 0xc8
+0000000000926d13: sub      r8, rdx
+0000000000926d16: imul     rbx, rbx, 0xc8
+0000000000926d1d: add      rbx, r8
+0000000000926d20: mov      r9, qword ptr [rsp + 0xc0]
+0000000000926d28: mov      r8d, esi
+0000000000926d2b: mov      rdx, rbp
+0000000000926d2e: mov      rcx, qword ptr [rdi + rbx*8 + 0x4c8eb18]
+0000000000926d36: call     0x92533c
+0000000000926d3b: test     al, al
+0000000000926d3d: jne      0x926dec
+0000000000926d43: mov      rcx, rdi
+0000000000926d46: call     0x925498
+0000000000926d4b: mov      dword ptr [rax + 0x4e20], 0
+0000000000926d55: mov      qword ptr [rax + 0x4e28], 0
+0000000000926d60: mov      rcx, qword ptr [rdi + rbx*8 + 0x4c8eb18]
+0000000000926d68: mov      qword ptr [rax + 0x4e28], rcx
+0000000000926d6f: mov      qword ptr [rdi + rbx*8 + 0x4c8eb18], rax
+0000000000926d77: mov      r9, qword ptr [rsp + 0xc0]
+0000000000926d7f: mov      r8d, esi
+0000000000926d82: mov      rdx, rbp
+0000000000926d85: mov      rcx, rax
+0000000000926d88: call     0x92533c
+0000000000926d8d: test     al, al
+0000000000926d8f: jne      0x926dec
+0000000000926d91: mov      dword ptr [rsp + 0x20], 0x1ba
+0000000000926d99: lea      r9, [rip + 0x44e750] ; UTF16 '.\\ThreadSafeLibrary.cpp'
+0000000000926da0: lea      r8, [rip + 0x44ea19] ; UTF16 '[%s][%d] allocation new slot failed'
+0000000000926da7: mov      edx, 2
+0000000000926dac: lea      rcx, [rip + 0xd5faaed]
+0000000000926db3: call     0x734514
+0000000000926db8: jmp      0x926dec
+0000000000926dba: mov      qword ptr [rsp + 0x38], r8
+0000000000926dbf: mov      qword ptr [rsp + 0x40], rbp
+0000000000926dc4: mov      dword ptr [rsp + 0x48], esi
+0000000000926dc8: mov      rax, qword ptr [rsp + 0xc0]
+0000000000926dd0: mov      qword ptr [rsp + 0x50], rax
+0000000000926dd5: lea      rax, [rbx + rbx*4]
+0000000000926dd9: lea      rcx, [rdi + rax*8 + 0x4c95cb8]
+0000000000926de1: lea      rdx, [rsp + 0x38]
+0000000000926de6: call     0x926b7c
+0000000000926deb: nop
+0000000000926dec: movsxd   rax, dword ptr [r12 + r14]
+0000000000926df0: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+0000000000926df9: add      rsp, 0x60
+0000000000926dfd: pop      r14
+0000000000926dff: pop      r13
+0000000000926e01: pop      r12
+0000000000926e03: pop      rdi
+0000000000926e04: pop      rsi
+0000000000926e05: pop      rbp
+0000000000926e06: pop      rbx
+0000000000926e07: ret

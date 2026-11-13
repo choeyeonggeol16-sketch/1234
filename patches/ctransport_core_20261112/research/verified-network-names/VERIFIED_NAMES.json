@@ -1,0 +1,241 @@
+{
+  "binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "original_executed": false,
+  "method": "Exact UTF16 signature with validated RIP reference/pdata boundary;validated RTTI COL/vtable for CIOThreadCallback;no name inferred from role alone.",
+  "items": [
+    {
+      "literal": "0xd75300",
+      "signature": "class CThreadLocalTimer::CSlot *__cdecl CMwmrQueue<class CThreadLocalTimer::CSlot,4009>::Pop(void)",
+      "references": [
+        {
+          "at": "0x925561",
+          "entry": "0x925498",
+          "bytes": "488d1598fd4400"
+        }
+      ]
+    },
+    {
+      "literal": "0xd75420",
+      "signature": "void __cdecl CThreadLocalTimer::Dispatch(class CThreadLocalTimer::CSlot *,__int64)",
+      "references": [
+        {
+          "at": "0x92573b",
+          "entry": "0x9256d4",
+          "bytes": "488d05defc4400"
+        }
+      ]
+    },
+    {
+      "literal": "0xd75810",
+      "signature": "void __cdecl CThreadLocalTimer::Dispatch(void)",
+      "references": [
+        {
+          "at": "0x9268a3",
+          "entry": "0x926844",
+          "bytes": "488d0566ef4400"
+        }
+      ]
+    },
+    {
+      "literal": "0xd758d0",
+      "signature": "void __cdecl CThreadLocalTimer::AddTimer(class CIOObject *,const __int64,const int,const __int64)",
+      "references": [
+        {
+          "at": "0x926c57",
+          "entry": "0x926bf4",
+          "bytes": "488d0572ec4400"
+        }
+      ]
+    },
+    {
+      "literal": "0xdc5be0",
+      "signature": "__cdecl CUserSocketReleaseVerifier::CUserSocketReleaseVerifier(class CUserSocket *,const wchar_t *)",
+      "references": [
+        {
+          "at": "0xa126f4",
+          "entry": "0xa12674",
+          "bytes": "488d05e5343b00"
+        }
+      ]
+    },
+    {
+      "literal": "0xdc5df0",
+      "signature": "void __cdecl CUserSocketReleaseVerifier::TimerExpired(int)",
+      "references": [
+        {
+          "at": "0xa12975",
+          "entry": "0xa1291c",
+          "bytes": "488d0574343b00"
+        }
+      ]
+    }
+  ],
+  "CIOThreadCallback": {
+    "type_rva": "0xbfb780",
+    "vtables": [
+      {
+        "vtable": "0xc86678",
+        "col": "0xeb88c0",
+        "slots": [
+          "0x72c3a8"
+        ]
+      }
+    ]
+  },
+  "functions": {
+    "0x925498": {
+      "entry": "0x925498",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x925498",
+          "0x92560e"
+        ]
+      ],
+      "direct_calls": [
+        "0x66db28"
+      ],
+      "caller_count": 3
+    },
+    "0x9256d4": {
+      "entry": "0x9256d4",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9256d4",
+          "0x9257c8"
+        ]
+      ],
+      "direct_calls": [
+        "0x925374",
+        "0x925630",
+        "0x925374"
+      ],
+      "caller_count": 1
+    },
+    "0x926844": {
+      "entry": "0x926844",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x926844",
+          "0x926b62"
+        ]
+      ],
+      "direct_calls": [
+        "0x9256d4",
+        "0x92533c",
+        "0x925498",
+        "0x92533c",
+        "0x734514",
+        "0x92611c",
+        "0xa58428",
+        "0xa58428",
+        "0x705c88",
+        "0xa58428"
+      ],
+      "caller_count": 1
+    },
+    "0x926bf4": {
+      "entry": "0x926bf4",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x926bf4",
+          "0x926e08"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x6704e0",
+        "0x92533c",
+        "0x925498",
+        "0x92533c",
+        "0x734514",
+        "0x926b7c"
+      ],
+      "caller_count": 1
+    },
+    "0xa12674": {
+      "entry": "0xa12674",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa12674",
+          "0xa128df"
+        ]
+      ],
+      "direct_calls": [
+        "0x704148",
+        "0x735ab4",
+        "0x7048c4",
+        "0xa123e8",
+        "0x735ab4",
+        "0x734514",
+        "0x7048c4",
+        "0xa123e8",
+        "0x7048c4"
+      ],
+      "caller_count": 1
+    },
+    "0xa1291c": {
+      "entry": "0xa1291c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa1291c",
+          "0xa12af9"
+        ]
+      ],
+      "direct_calls": [
+        "0xa08300",
+        "0x7048c4",
+        "0xa123e8",
+        "0x7048c4",
+        "0xa123e8",
+        "0x7048c4",
+        "0x734514"
+      ],
+      "caller_count": 0
+    },
+    "0x72c3a8": {
+      "entry": "0x72c3a8",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x72c3a8",
+          "0x72c3ad"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0
+    },
+    "0x72c1e0": {
+      "entry": "0x72c1e0",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x72c1e0",
+          "0x72c361"
+        ]
+      ],
+      "direct_calls": [
+        "0x7274c8",
+        "0x727358",
+        "0x727410",
+        "0x84f8fc",
+        "0x727410",
+        "0x7da0d8",
+        "0x727580",
+        "0x727580"
+      ],
+      "caller_count": 1
+    }
+  },
+  "CIOThreadCallback_role": "vtable0xc86678 -> thunk0x72c3a8 ->0x72c1e0;World_Sync and garbage collect;not the L1 worker host",
+  "unknown_names": [
+    "Return routine0x925630 name is not disclosed;Return is an L1 adapter name.",
+    "CSlot insertion0x92533c method name is not disclosed.",
+    "Heap-record type name is not disclosed."
+  ]
+}

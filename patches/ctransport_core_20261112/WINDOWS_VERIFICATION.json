@@ -1,5 +1,5 @@
 {
-  "status": "pending",
+  "status": "passed",
   "abi": "0xa0000",
   "exports": 67,
   "implementation_parent": "a1d8d5d",
@@ -23,5 +23,14 @@
     ],
     "unchanged_source_files": 1711,
     "unchanged_java_files": 1710
-  }
+  },
+  "implementation_commit": "8812c2e6019ad8380d5cef52801b3f6d40979d75",
+  "tested_source_commit": "8812c2e6019ad8380d5cef52801b3f6d40979d75",
+  "run_id": 43491457850,
+  "job_id": 132113419130,
+  "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43491457850",
+  "os": "Windows Server2022 GitHub-hosted runner",
+  "jdk": "Temurin21",
+  "scope": "Actual Windows DLL loopback and Java FFM timer/session/close/codec/PSS regression;typed queue corruption/concurrency separately ASan/UBSan and TSan",
+  "source_archive_sha256": "b337fb2657c56094768c431cd2fbf5cc759c01db0ff394c7f8e624a35e43565b"
 }

@@ -48,5 +48,7 @@
   },
   "dll_sha256": "01d389928506719781cdcbd1b9042f58a3b9d89786f6fdb6f0bf2572a63afb75",
   "selftest_sha256": "2086fd5d0ce3bdf8b045558141534b562e79c0d73ce04b414b23533932d6ebec",
-  "windows_execution_tested": false
+  "windows_execution_tested": true,
+  "windows_run_id": 43491457850,
+  "tested_source_commit": "8812c2e6019ad8380d5cef52801b3f6d40979d75"
 }

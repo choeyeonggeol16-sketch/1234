@@ -1,0 +1,79 @@
+# CIOThreadCallback_body; PE pdata/unwind; entry 0x72c1e0
+# chunk 0x72c1e0..0x72c361
+000000000072c1e0: push     rbx
+000000000072c1e2: push     rsi
+000000000072c1e3: push     rdi
+000000000072c1e4: sub      rsp, 0x30
+000000000072c1e8: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+000000000072c1f1: mov      ecx, dword ptr [rip + 0x2ee92fe1]
+000000000072c1f7: mov      rax, qword ptr gs:[0x58]
+000000000072c200: mov      edi, 0x7d58
+000000000072c205: mov      rbx, qword ptr [rax + rcx*8]
+000000000072c209: movsxd   rdx, dword ptr [rbx + rdi]
+000000000072c20d: lea      rsi, [rip - 0x32c214]
+000000000072c214: movsxd   rcx, dword ptr [rsi + rdx*4 + 0x47e2a40]
+000000000072c21c: lea      eax, [rcx + 1]
+000000000072c21f: mov      dword ptr [rsi + rdx*4 + 0x47e2a40], eax
+000000000072c226: imul     rdx, rdx, 0x3e8
+000000000072c22d: add      rdx, rcx
+000000000072c230: lea      rax, [rip + 0x55ed91] ; UTF16 'World_Sync'
+000000000072c237: mov      qword ptr [rsi + rdx*8 + 0x47bf7c0], rax
+000000000072c23f: mov      rcx, qword ptr [rip + 0x1379682a]
+000000000072c246: add      rcx, 0x20
+000000000072c24a: mov      rax, qword ptr [rcx]
+000000000072c24d: call     qword ptr [rax + 8]
+000000000072c250: mov      rcx, qword ptr [rip + 0x13796811]
+000000000072c257: add      rcx, 0x20
+000000000072c25b: mov      rax, qword ptr [rcx]
+000000000072c25e: call     qword ptr [rax + 8]
+000000000072c261: mov      rcx, qword ptr [rip + 0x137967f8]
+000000000072c268: add      rcx, 0x20
+000000000072c26c: mov      rax, qword ptr [rcx]
+000000000072c26f: call     qword ptr [rax + 8]
+000000000072c272: mov      rcx, qword ptr [rip + 0x137967df]
+000000000072c279: add      rcx, 0x20
+000000000072c27d: mov      rax, qword ptr [rcx]
+000000000072c280: call     qword ptr [rax + 8]
+000000000072c283: mov      rcx, qword ptr [rip + 0x137967c6]
+000000000072c28a: add      rcx, 0x20
+000000000072c28e: mov      rax, qword ptr [rcx]
+000000000072c291: call     qword ptr [rax + 8]
+000000000072c294: nop
+000000000072c295: movsxd   rax, dword ptr [rbx + rdi]
+000000000072c299: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+000000000072c2a1: movsxd   rdx, dword ptr [rbx + rdi]
+000000000072c2a5: movsxd   rcx, dword ptr [rsi + rdx*4 + 0x47e2a40]
+000000000072c2ad: lea      eax, [rcx + 1]
+000000000072c2b0: mov      dword ptr [rsi + rdx*4 + 0x47e2a40], eax
+000000000072c2b7: imul     rdx, rdx, 0x3e8
+000000000072c2be: add      rdx, rcx
+000000000072c2c1: lea      rax, [rip + 0x55ece0] ; UTF16 'garbage collect'
+000000000072c2c8: mov      qword ptr [rsi + rdx*8 + 0x47bf7c0], rax
+000000000072c2d0: lea      rdx, [rip + 0xa591529]
+000000000072c2d7: lea      rcx, [rip + 0xa59152a]
+000000000072c2de: call     0x7274c8
+000000000072c2e3: lea      rdx, [rip + 0xbf4c96]
+000000000072c2ea: lea      rcx, [rip + 0xbf4c97]
+000000000072c2f1: call     0x727358
+000000000072c2f6: lea      rdx, [rip + 0x1370b3c3]
+000000000072c2fd: lea      rcx, [rip + 0x1370b3c4]
+000000000072c304: call     0x727410
+000000000072c309: call     0x84f8fc
+000000000072c30e: lea      rdx, [rip + 0x11e65b9b]
+000000000072c315: lea      rcx, [rip + 0x11e65b9c]
+000000000072c31c: call     0x727410
+000000000072c321: call     0x7da0d8
+000000000072c326: lea      rdx, [rip + 0x92b353]
+000000000072c32d: lea      rcx, [rip + 0x92b354]
+000000000072c334: call     0x727580
+000000000072c339: lea      rdx, [rip + 0x136fa630]
+000000000072c340: lea      rcx, [rip + 0x136fa631]
+000000000072c347: call     0x727580
+000000000072c34c: nop
+000000000072c34d: movsxd   rax, dword ptr [rbx + rdi]
+000000000072c351: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+000000000072c359: add      rsp, 0x30
+000000000072c35d: pop      rdi
+000000000072c35e: pop      rsi
+000000000072c35f: pop      rbx
+000000000072c360: ret

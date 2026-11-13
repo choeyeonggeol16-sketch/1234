@@ -1,0 +1,11 @@
+{
+  "baseline_commit": "a1d8d5d457e14431c94084eb6f134620cfd96019",
+  "implementation_commit": "8812c2e6019ad8380d5cef52801b3f6d40979d75",
+  "dll_sha256": "01d389928506719781cdcbd1b9042f58a3b9d89786f6fdb6f0bf2572a63afb75",
+  "runtime_files": {
+    "native/timer_wheel.hpp": "08c5185cac118ed169c50fb6f0cb66ef7eedf27d32290b287450feca44d26a7a",
+    "native/CTransport.cpp": "47d49240e96db8b3bd2ada59ff3af8f8e7e215fb3d85fb6ab204de2e76c34eec",
+    "native/io_server.hpp": "fa4bcc39bc88be60af95017422dca2116e0e0fcf43c5b4637815b4db3689cce8",
+    "src/l1j/server/server/model/network/core/CIOConfig.java": "4e79162b3c261d68109df7501448de356b77555209de84fe2662b7909e8e194c"
+  }
+}

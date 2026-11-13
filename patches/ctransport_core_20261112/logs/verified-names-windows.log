@@ -1,0 +1,339 @@
+actual-windows	Set up job	﻿2026-11-13T19:21:42.2892413Z Current runner version: '2.338.2'
+actual-windows	Set up job	2026-11-13T19:21:42.2935226Z ##[group]Runner Image Provisioner
+actual-windows	Set up job	2026-11-13T19:21:42.2935767Z Hosted Compute Agent
+actual-windows	Set up job	2026-11-13T19:21:42.2936177Z Version: 20261028.624
+actual-windows	Set up job	2026-11-13T19:21:42.2936519Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+actual-windows	Set up job	2026-11-13T19:21:42.2936926Z Build Date: 2026-10-28T21:51:42Z
+actual-windows	Set up job	2026-11-13T19:21:42.2937320Z Worker ID: {a98c9efe-1477-4e11-855d-ef0a0bab1bf3}
+actual-windows	Set up job	2026-11-13T19:21:42.2937730Z Region: centralus
+actual-windows	Set up job	2026-11-13T19:21:42.2938061Z Cloud: Azure
+actual-windows	Set up job	2026-11-13T19:21:42.2938369Z ##[endgroup]
+actual-windows	Set up job	2026-11-13T19:21:42.2939154Z ##[group]Operating System
+actual-windows	Set up job	2026-11-13T19:21:42.2939495Z Microsoft Windows Server 2022
+actual-windows	Set up job	2026-11-13T19:21:42.2939850Z 10.0.20348
+actual-windows	Set up job	2026-11-13T19:21:42.2940145Z Datacenter
+actual-windows	Set up job	2026-11-13T19:21:42.2940433Z ##[endgroup]
+actual-windows	Set up job	2026-11-13T19:21:42.2940727Z ##[group]Runner Image
+actual-windows	Set up job	2026-11-13T19:21:42.2941082Z Image: windows-2022
+actual-windows	Set up job	2026-11-13T19:21:42.2941385Z Version: 20261101.353.1
+actual-windows	Set up job	2026-11-13T19:21:42.2941979Z Included Software: https://github.com/actions/runner-images/blob/win22/20261101.353/images/windows/Windows2022-Readme.md
+actual-windows	Set up job	2026-11-13T19:21:42.2943038Z Image Release: https://github.com/actions/runner-images/releases/tag/win22%2F20261101.353
+actual-windows	Set up job	2026-11-13T19:21:42.2943579Z ##[endgroup]
+actual-windows	Set up job	2026-11-13T19:21:42.2944202Z ##[group]GITHUB_TOKEN Permissions
+actual-windows	Set up job	2026-11-13T19:21:42.2945366Z Contents: read
+actual-windows	Set up job	2026-11-13T19:21:42.2945671Z Metadata: read
+actual-windows	Set up job	2026-11-13T19:21:42.2946012Z ##[endgroup]
+actual-windows	Set up job	2026-11-13T19:21:42.2947393Z Secret source: Actions
+actual-windows	Set up job	2026-11-13T19:21:42.2947888Z Cache mode: write
+actual-windows	Set up job	2026-11-13T19:21:42.2948318Z Prepare workflow directory
+actual-windows	Set up job	2026-11-13T19:21:42.3182709Z Prepare all required actions
+actual-windows	Set up job	2026-11-13T19:21:42.3216746Z Getting action download info
+actual-windows	Set up job	2026-11-13T19:21:42.6309553Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+actual-windows	Set up job	2026-11-13T19:21:42.7166702Z Download action repository 'actions/setup-java@v4' (SHA:cf277c60eb25467037889841efdb72551f06f6c3)
+actual-windows	Set up job	2026-11-13T19:21:43.3370192Z Complete job name: actual-windows
+actual-windows	Run actions/checkout@v4	﻿2026-11-13T19:21:43.4893784Z ##[group]Run actions/checkout@v4
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4894700Z with:
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4895057Z   sparse-checkout: patches/ctransport_core_20261112
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4895490Z   repository: choeyeonggeol16-sketch/1234
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4898094Z   token: ***
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4898423Z   ssh-strict: true
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4898760Z   ssh-user: git
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4899069Z   persist-credentials: true
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4899393Z   clean: true
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4899717Z   sparse-checkout-cone-mode: true
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4900102Z   fetch-depth: 1
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4900404Z   fetch-tags: false
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4900740Z   show-progress: true
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4901052Z   lfs: false
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4901380Z   submodules: false
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4901701Z   set-safe-directory: true
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4902042Z   allow-unsafe-pr-checkout: false
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.4902508Z ##[endgroup]
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.5949337Z Syncing repository: choeyeonggeol16-sketch/1234
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.5951367Z ##[group]Getting Git version info
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.5951809Z Working directory is 'D:\a\1234\1234'
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:43.6557992Z [command]"C:\Program Files\Git\bin\git.exe" version
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.0548019Z git version 2.56.0.windows.4
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.0581022Z ##[endgroup]
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.0594841Z Temporarily overriding HOME='D:\a\_temp\69b5c762-94cf-4fa6-893c-4119c9acc490' before making global git config changes
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.0596560Z Adding repository directory to the temporary git global config as a safe directory
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.0602395Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\1234\1234
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.1124995Z Deleting the contents of 'D:\a\1234\1234'
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.1129085Z ##[group]Initializing the repository
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.1136813Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\1234\1234
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.1926743Z Initialized empty Git repository in D:/a/1234/1234/.git/
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.1983965Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/choeyeonggeol16-sketch/1234
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.2767711Z ##[endgroup]
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.2769351Z ##[group]Disabling automatic garbage collection
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.2783224Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.3059218Z ##[endgroup]
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.3060565Z ##[group]Setting up auth
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.3069540Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:44.3355340Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:45.8331655Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:45.8583549Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:46.2725242Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:46.3016416Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:46.7292881Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:46.7599941Z ##[endgroup]
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:46.7600629Z ##[group]Fetching the repository
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:46.7613222Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --filter=blob:none --depth=1 origin +8812c2e6019ad8380d5cef52801b3f6d40979d75:refs/remotes/origin/ctransport-shared-abi10-20261113
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:47.8531629Z From https://github.com/choeyeonggeol16-sketch/1234
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:47.8532597Z  * [new ref]         8812c2e6019ad8380d5cef52801b3f6d40979d75 -> origin/ctransport-shared-abi10-20261113
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:47.8564824Z ##[endgroup]
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:47.8565359Z ##[group]Determining the checkout info
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:47.8567605Z ##[endgroup]
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:47.8568685Z ##[group]Setting up sparse checkout
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:47.8578045Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout set patches/ctransport_core_20261112
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:47.9057620Z ##[endgroup]
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:47.9058314Z ##[group]Checking out the ref
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:47.9067784Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B ctransport-shared-abi10-20261113 refs/remotes/origin/ctransport-shared-abi10-20261113
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:48.9624013Z Updating files:   0% (1/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:48.9632744Z Updating files:   1% (10/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:48.9643538Z Updating files:   2% (20/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:48.9660235Z Updating files:   3% (30/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:48.9683053Z Updating files:   4% (40/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:48.9697398Z Updating files:   5% (50/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0040476Z Updating files:   6% (60/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0053330Z Updating files:   7% (70/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0071685Z Updating files:   8% (80/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0085359Z Updating files:   9% (90/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0099979Z Updating files:  10% (100/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0113984Z Updating files:  11% (110/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0128755Z Updating files:  12% (120/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0141005Z Updating files:  13% (130/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0149541Z Updating files:  14% (140/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0161076Z Updating files:  15% (150/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0171426Z Updating files:  16% (160/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0186534Z Updating files:  17% (170/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0213575Z Updating files:  18% (180/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0242642Z Updating files:  19% (190/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0251947Z Updating files:  20% (199/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0265056Z Updating files:  21% (209/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0284638Z Updating files:  22% (219/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0313332Z Updating files:  23% (229/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0379862Z Updating files:  24% (239/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0397275Z Updating files:  25% (249/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0431046Z Updating files:  26% (259/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0453294Z Updating files:  27% (269/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0470794Z Updating files:  28% (279/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0485816Z Updating files:  29% (289/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0507924Z Updating files:  30% (299/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0526605Z Updating files:  31% (309/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0538516Z Updating files:  32% (319/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0566124Z Updating files:  33% (329/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0579223Z Updating files:  34% (339/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0588665Z Updating files:  35% (349/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0601580Z Updating files:  36% (359/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0613613Z Updating files:  37% (369/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0629554Z Updating files:  38% (379/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0641164Z Updating files:  39% (389/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0664560Z Updating files:  40% (398/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0687469Z Updating files:  41% (408/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0719831Z Updating files:  42% (418/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0728606Z Updating files:  43% (428/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0739663Z Updating files:  44% (438/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0754418Z Updating files:  45% (448/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0768226Z Updating files:  46% (458/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0779517Z Updating files:  47% (468/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0793818Z Updating files:  48% (478/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0806349Z Updating files:  49% (488/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0816874Z Updating files:  50% (498/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0827996Z Updating files:  51% (508/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0840668Z Updating files:  52% (518/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0852479Z Updating files:  53% (528/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0863670Z Updating files:  54% (538/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0873554Z Updating files:  55% (548/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0881883Z Updating files:  56% (558/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0894109Z Updating files:  57% (568/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0916253Z Updating files:  58% (578/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0937304Z Updating files:  59% (588/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0954444Z Updating files:  60% (597/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0974059Z Updating files:  61% (607/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.0983217Z Updating files:  62% (617/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1004141Z Updating files:  63% (627/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1025547Z Updating files:  64% (637/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1041808Z Updating files:  65% (647/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1058771Z Updating files:  66% (657/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1086652Z Updating files:  67% (667/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1105794Z Updating files:  68% (677/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1128696Z Updating files:  69% (687/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1166011Z Updating files:  70% (697/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1183772Z Updating files:  71% (707/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1200892Z Updating files:  72% (717/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1217834Z Updating files:  73% (727/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1232455Z Updating files:  74% (737/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1243551Z Updating files:  75% (747/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1341328Z Updating files:  76% (757/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1341913Z Updating files:  77% (767/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1342159Z Updating files:  78% (777/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1342365Z Updating files:  79% (787/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1342568Z Updating files:  80% (796/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1342754Z Updating files:  81% (806/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1342957Z Updating files:  82% (816/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1343162Z Updating files:  83% (826/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1343342Z Updating files:  84% (836/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1351078Z Updating files:  85% (846/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1360335Z Updating files:  86% (856/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1370878Z Updating files:  87% (866/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1381092Z Updating files:  88% (876/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1390966Z Updating files:  89% (886/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1415353Z Updating files:  90% (896/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1429829Z Updating files:  91% (906/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1442186Z Updating files:  92% (916/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1450438Z Updating files:  93% (926/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1460723Z Updating files:  94% (936/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1468671Z Updating files:  95% (946/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1479181Z Updating files:  96% (956/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1490328Z Updating files:  97% (966/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1500169Z Updating files:  98% (976/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1512889Z Updating files:  99% (986/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1513158Z Updating files: 100% (995/995)
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1513437Z Updating files: 100% (995/995), done.
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1673101Z Switched to a new branch 'ctransport-shared-abi10-20261113'
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1688439Z branch 'ctransport-shared-abi10-20261113' set up to track 'origin/ctransport-shared-abi10-20261113'.
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.1731165Z ##[endgroup]
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.2069878Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+actual-windows	Run actions/checkout@v4	2026-11-13T19:21:49.2318924Z 8812c2e6019ad8380d5cef52801b3f6d40979d75
+actual-windows	Run actions/setup-java@v4	﻿2026-11-13T19:21:49.2710274Z ##[group]Run actions/setup-java@v4
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.2710507Z with:
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.2710650Z   distribution: temurin
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.2710777Z   java-version: 21
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.2710895Z   java-package: jdk
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.2711016Z   check-latest: false
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.2711133Z   server-id: github
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.2711253Z   server-username: GITHUB_ACTOR
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.2711405Z   server-password: GITHUB_TOKEN
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.2711545Z   overwrite-settings: true
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.2711688Z   job-status: success
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.2713276Z   token: ***
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.2713409Z ##[endgroup]
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4523328Z ##[warning]setup-java v4 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4528577Z ##[group]Installed distributions
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4641523Z Resolved Java 21.0.13+9.0 from tool-cache
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4641808Z Setting Java 21.0.13+9.0 as the default
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4655602Z (node:3060) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4656288Z (Use `node --trace-deprecation ...` to show where the warning was created)
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4658982Z Creating toolchains.xml for JDK version 21 from temurin
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4730008Z Writing to C:\Users\runneradmin\.m2\toolchains.xml
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4732722Z 
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4732879Z Java configuration:
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4733078Z   Distribution: temurin
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4733219Z   Version: 21.0.13+9.0
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4733582Z   Path: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4733794Z 
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4734206Z ##[endgroup]
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4754843Z Creating settings.xml with server-id: github
+actual-windows	Run actions/setup-java@v4	2026-11-13T19:21:49.4755165Z Writing to C:\Users\runneradmin\.m2\settings.xml
+actual-windows	Run shipped DLL and production FFM/PSS adapters	﻿2026-11-13T19:21:49.4968711Z ##[group]Run ./tests/run_windows.ps1
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:21:49.4968967Z [36;1m./tests/run_windows.ps1[0m
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:21:49.5544545Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:21:49.5544798Z env:
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:21:49.5545009Z   JAVA_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:21:49.5545328Z   JAVA_HOME_21_X64: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:21:49.5545566Z ##[endgroup]
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:21:50.0708940Z PASS actual Windows DLL: 20 loopback connections, 4MB fragmented echo, order and close counts.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:06.6932273Z Note: Some input files use preview features of Java SE 21.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:06.6934469Z Note: Recompile with -Xlint:preview for details.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:08.3414387Z PASS actual Windows shipped DLL + production Java21 FFM: 20 connections/4MB echo, work, timers/cancel, shutdown
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:08.4805943Z PASS production gameplay socket adapter: native 16K receives into 4K Java reads, stash/pause/resume and ordered writes
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:08.5554700Z PASS independent PSS NIO2 channel: fragmented HELLO, PING, BOUND/OPEN, detach, invalid greeting, dedicated expiry executor shutdown
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:09.1298488Z PASS Windows direct C++ codec/FFM: partial/empty/65535/coalesced frames, 67 exact C2S plaintext/rolling-key matches, 8 S2C matches, stable plaintext lease, foreign/duplicate release and invalid-length terminal
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:09.5668722Z PASS Windows native registry/timers: retired plaintext survives I/O terminal, release removes context, stale handles rejected, login timeout/auth cancellation/earlier callback deadline
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:09.6854040Z PASS actual Windows native packet completions: IOCP worker TLS identity, 64 pending packet leases cancel once on shutdown, no post after stop
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:10.1346291Z PASS Windows MAC policy: unidentified authentication denied, verified one-time binding/cap, terminal capacity reuse and stale handle rejection
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:40.2712246Z PASS Windows concurrent sessions:connections=29376,concurrent=32,L1Frames=3760128,bytes=1925185536,auth/enter/restart/close,zero active/retiring/Playing/EnterChar entries;elapsedMs=30132
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:40.2713597Z PASS Windows CPerfMon:actual owner15,system/process memory and process CPU availability; sustained production load and live DB are outside this bounded loopback test
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:42.6020224Z src\l1j\server\server\utils\SystemUtil.java:56: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:42.6020909Z 			list.add(new Integer(value));
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:42.6021190Z 			         ^
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:42.7200675Z Note: Some input files use preview features of Java SE 21.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:42.7201504Z Note: Recompile with -Xlint:preview for details.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:42.7203450Z 1 warning
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:43.1768459Z PASS production CUserSocket account/character/MAC provider hooks and restart/account-clear identities through real Windows FFM
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:43.3073769Z PASS real Windows native graceful close without output:normal EOF and production owner cleanup
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:43.4220610Z PASS production native SEND:plain first packet,max65535 S2C frame,8 packed action frames and final packet match unchanged codec;graceful final-byte delivery+EOF without RST;zero pending and owner violations
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:43.5407427Z PASS production CSocket::__async_AsyncSendConstBuffer:blocked completions force two queued frames into one gather;20K frame crosses16K pool blocks;unchanged codec and FIFO match;CIOBufferEx leases release
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:44.2058303Z Nov 13, 2026 7:22:44 PM l1j.server.server.model.network.core.CUserSocket transportNativePacket
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:44.2058725Z WARNING: Native packet session capture failed
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:44.2058971Z java.lang.IllegalStateException: injected session capture failure
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:44.2059315Z 	at l1j.server.server.model.network.core.CIOClient.getActiveChar(CIOClient.java:13)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:44.2062475Z 	at l1j.server.server.model.network.core.CUserSocket.transportNativePacket(CUserSocket.java:2903)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:44.2063045Z 	at l1j.server.server.model.network.core.CSocket.nativePacket(CSocket.java:92)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:44.2063556Z 	at l1j.server.server.model.network.core.CIOServer.onUserPacket(CIOServer.java:436)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:44.2063877Z 
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:44.2583142Z PASS actual production CUserSocket + Windows DLL: running handler retains plaintext through I/O terminal; queued session/SEND-pressure leases cancel; shutdown and session-capture exception release once; no pooled leases retained (game/account/scheduler/filter fixtures)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:45.6583265Z PASS actual Windows shared broadcast:one16K source,distinct L1 rolling keys,input released before blocked WRITE completion,ExceptSelf,unpublished encoder/shared/ordinary FIFO,close isolation,pending limit,zero refs/leases,live producer pins DLL across bounded shutdown and retry
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:46.1309192Z PASS SafeSend real1.5MiB reservations:inclusive boundary,emblem-only skip,no ticket/lease/hard-reason mutation,optional abort,unchanged plain-first+cipher FIFO and emblem wire
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:46.2460020Z PASS16 concurrent optional producers:one atomic boundary admission,no oversubscription,no connection close
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:46.4209227Z Nov 13, 2026 7:22:46 PM l1j.server.server.model.network.core.CUserSocket close
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:46.4210784Z WARNING: [CIO SEND] closing socket after rejection reason=1 remote=127.0.0.1 pendingWireBytes=2097152 queuedLeases=33 queued=0 staged=0 encoders=33 writing=0 logicalFrames=0 serializerPending=33 serializerDraining=0 serializerHeadKind=0 serializerOwner=none readOwner=false poolSmallUsed=1/128 poolLargeUsed=32/64
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:46.4741620Z PASS optional pool exhaustion rollback and reused frame reset;required abort/hard-cap policies preserved with explicit close causes
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:46.8431675Z PASS real Windows close causes:peer EOF,invalid L1 frame,RST;history persists after close;late cancellation cannot replace first status
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:47.1936867Z PASS Windows actual pool reclamation:18-value extension and legacy8 prefix;shared source survives closed socket,valid holder reported,final release returns all native blocks and Java leases;reserved slabs retained separately
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:48.0361234Z Note: Some input files use preview features of Java SE 21.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:48.0362055Z Note: Recompile with -Xlint:preview for details.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:48.1179801Z PASS production CSocket single/gather copy-close race:source lease retained until downcall exits,original bytes copied,one failed completion;first native status survives late bind and cancellation
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:48.9590993Z PASS production L1 opcode/state matrix, loading barrier, multiplexed protocol compatibility, native game/session-owner execution roles
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:48.9729745Z PASS production registry/deferred close: early retirement, I/O+logout fence, replacement identity, 400 concurrent close races, once-only stale-safe cleanup
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:50.0463001Z PASS game registration first; fragmented hello; exact bound/open bytes
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:50.0487013Z PASS helper registration first binds when game registration arrives
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:50.0508028Z PASS malformed hello does not consume game registration
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:50.0522181Z PASS wrong source IP cannot take another game session
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:50.0607986Z PASS expiry removes waiting peers, pending game references and idle channels
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:50.0633374Z PASS logout invalidates bound peer and releases owner reference
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:50.0663330Z PASS nonce replay needs a new authenticated game registration
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:50.0684637Z PASS bounded connection and pending-registration capacity
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:50.0734804Z PASS concurrent repeated item clicks keep writer serialization and bounded state
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:50.1376841Z RESULT groups=9 assertions=37; native game UI is tested separately
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.2693941Z Nov 13, 2026 7:22:52 PM l1j.server.server.model.character.pss.window.PlaySupportWindow transport
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.2911512Z INFO: [PSS-WINDOW] companion listening port=59806
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.2912036Z Nov 13, 2026 7:22:52 PM l1j.server.server.model.character.pss.window.PlaySupportWindow$Session attach
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.2912367Z INFO: [PSS-WINDOW] companion bound player=77
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.2927928Z Nov 13, 2026 7:22:52 PM l1j.server.server.model.character.pss.window.PlaySupportWindow open
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.2928584Z INFO: [PSS-WINDOW] item/window request queued player=77
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.2937573Z Nov 13, 2026 7:22:52 PM l1j.server.server.model.character.pss.window.PlaySupportWindow open
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.2938228Z INFO: [PSS-WINDOW] item/window request queued player=77
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.2959738Z Nov 13, 2026 7:22:52 PM l1j.server.server.model.character.pss.window.PlaySupportWindow$Session attach
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.2960300Z INFO: [PSS-WINDOW] companion bound player=77
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.3042047Z Nov 13, 2026 7:22:52 PM l1j.server.server.model.character.pss.window.PlaySupportWindow transport
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.3042679Z WARNING: [PSS-WINDOW] companion unavailable: Address already in use: bind
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.3056585Z Nov 13, 2026 7:22:52 PM l1j.server.server.model.character.pss.window.PlaySupportWindow transport
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.3057374Z INFO: [PSS-WINDOW] companion listening port=59810
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.3063739Z PASS production PSS startup/pairing/item OPEN/logout/restart; PSS shutdown/bind failure isolated from game session; no CTransport/FFM dependency
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:52.4426846Z PASS unchanged PE32 companion Pss2019.dll loaded; PssClientInit resolved; wrong-client attach refused
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:53.2471783Z PASS config/no-DB defaults+override;bounded128 ring/64 closed history;8000 concurrent samples;nested worker restore;reset epoch isolation;trace close/capacity reuse;admission byte semantics
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:54.0873836Z PASS extended diagnostics:one-event128 ring,distinct commands,base count/time preserved,nested restoration,overflow isolation,stale-slot guard,8000 concurrent tags,closed retention,bounded metadata release
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:54.1641370Z PASS disabled extended diagnostics:no work or packet records
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:54.2433391Z PASS pool diagnostic classification:valid holders,60s stable idle suspicion,negative clock,recovery,unavailable extension,60 sample bound;no forced reclaim
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:55.8881775Z src\l1j\server\server\utils\SystemUtil.java:56: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:55.8882727Z 			list.add(new Integer(value));
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:55.8883050Z 			         ^
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:55.9969421Z Note: src\l1j\server\swing\chocco.java uses or overrides a deprecated API.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:55.9972212Z Note: Recompile with -Xlint:deprecation for details.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:55.9991724Z Note: tests\WindowsUiMemory.java uses preview features of Java SE 21.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:55.9994938Z Note: Recompile with -Xlint:preview for details.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:22:55.9996190Z 1 warning
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:23:00.5547628Z real manager resize/move phase=0 postGcHeap=8575496 committedHeap=28311552 [workingSet,privateBytes,GDI,USER]=[99655680, 141602816, 99, 23]
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:23:02.1139564Z real manager resize/move phase=1 postGcHeap=7004376 committedHeap=28311552 [workingSet,privateBytes,GDI,USER]=[109600768, 137691136, 99, 23]
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:23:02.5431364Z PASS actual Swing manager:oversized saved bounds capped,12000 blocked-EDT updates coalesced/bounded,400 real moves/resizes,retained heap bound,8 pool-dialog lifecycles,no game/DB startup
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-13T19:23:03.6731742Z PASS production five broadcast encoders:shared/legacy byte equivalence,8 headings,coordinate truncation,self/map/connection/M filter,wide radius50,rectangle/radius boundaries,borrow/source cleanup on exception (world/transport fixtures)
+actual-windows	Post Run actions/setup-java@v4	﻿2026-11-13T19:23:03.7233366Z Post job cleanup.
+actual-windows	Post Run actions/setup-java@v4	2026-11-13T19:23:03.8527604Z (node:3816) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+actual-windows	Post Run actions/setup-java@v4	2026-11-13T19:23:03.8528112Z (Use `node --trace-deprecation ...` to show where the warning was created)
+actual-windows	Post Run actions/checkout@v4	﻿2026-11-13T19:23:03.8815474Z Post job cleanup.
+actual-windows	Post Run actions/checkout@v4	2026-11-13T19:23:04.0128372Z [command]"C:\Program Files\Git\bin\git.exe" version
+actual-windows	Post Run actions/checkout@v4	2026-11-13T19:23:04.0374262Z git version 2.56.0.windows.4
+actual-windows	Post Run actions/checkout@v4	2026-11-13T19:23:04.0430258Z Temporarily overriding HOME='D:\a\_temp\22b8200f-659c-4cfb-b775-e97a17f3203a' before making global git config changes
+actual-windows	Post Run actions/checkout@v4	2026-11-13T19:23:04.0430997Z Adding repository directory to the temporary git global config as a safe directory
+actual-windows	Post Run actions/checkout@v4	2026-11-13T19:23:04.0439972Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\1234\1234
+actual-windows	Post Run actions/checkout@v4	2026-11-13T19:23:04.0724465Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+actual-windows	Post Run actions/checkout@v4	2026-11-13T19:23:04.1002970Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+actual-windows	Post Run actions/checkout@v4	2026-11-13T19:23:04.6760831Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+actual-windows	Post Run actions/checkout@v4	2026-11-13T19:23:04.6998316Z http.https://github.com/.extraheader
+actual-windows	Post Run actions/checkout@v4	2026-11-13T19:23:04.7034772Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+actual-windows	Post Run actions/checkout@v4	2026-11-13T19:23:04.7318856Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+actual-windows	Post Run actions/checkout@v4	2026-11-13T19:23:05.2098969Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+actual-windows	Post Run actions/checkout@v4	2026-11-13T19:23:05.2392749Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+actual-windows	Complete job	﻿2026-11-13T19:23:05.6950472Z Cleaning up orphan processes
+actual-windows	Complete job	2026-11-13T19:23:05.7221564Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-java@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

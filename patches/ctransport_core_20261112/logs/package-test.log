@@ -1,3 +1,3 @@
 PASS source CRC/every byte; previous archive + changes/deletions reproduces all files.
 PASS game backend has no selector/fallback; independent PSS NIO2 listener enabled with authenticated OPEN; no game in-band window command.
-{"source_archive_sha256": "46ca8c477715693ef6e181c7122d908f624847d8758c362a70f6dc5f7c3d2e7b", "dll_sha256": "7ea2195879cd1a414796ffbd17477e3c842bc419c475acf8345e36d861538afc"}
+{"source_archive_sha256": "b337fb2657c56094768c431cd2fbf5cc759c01db0ff394c7f8e624a35e43565b", "dll_sha256": "01d389928506719781cdcbd1b9042f58a3b9d89786f6fdb6f0bf2572a63afb75"}

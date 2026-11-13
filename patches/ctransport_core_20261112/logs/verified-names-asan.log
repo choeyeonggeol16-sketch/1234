@@ -1,0 +1,1 @@
+PASS verified CThreadLocalTimer/CSlot/CMwmrQueue4009 names;10000 FIFO wraps;null/foreign/interior/duplicate returns unchanged;reentrant Dispatch;4000 concurrent AddTimer/cancel/Dispatch,exact release and zero borrowed at destruction

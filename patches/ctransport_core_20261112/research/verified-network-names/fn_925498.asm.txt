@@ -1,0 +1,82 @@
+# fn_925498; PE pdata/unwind; entry 0x925498
+# chunk 0x925498..0x92560e
+0000000000925498: push     rbx
+000000000092549a: push     rbp
+000000000092549b: push     rsi
+000000000092549c: push     rdi
+000000000092549d: push     r12
+000000000092549f: sub      rsp, 0x30
+00000000009254a3: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000009254ac: mov      rdi, rcx
+00000000009254af: xor      ebx, ebx
+00000000009254b1: xor      eax, eax
+00000000009254b3: lea      r12d, [rbx + 1]
+00000000009254b7: lock cmpxchg dword ptr [rcx + 0x4c8eaf8], r12d
+00000000009254c0: je       0x9254f8
+00000000009254c2: add      ebx, r12d
+00000000009254c5: mov      eax, 0x66666667
+00000000009254ca: imul     ebx
+00000000009254cc: sar      edx, 3
+00000000009254cf: mov      eax, edx
+00000000009254d1: shr      eax, 0x1f
+00000000009254d4: add      edx, eax
+00000000009254d6: lea      ecx, [rdx + rdx*4]
+00000000009254d9: shl      ecx, 2
+00000000009254dc: cmp      ebx, ecx
+00000000009254de: jne      0x9254eb
+00000000009254e0: mov      ecx, 0xa
+00000000009254e5: call     qword ptr [rip + 0x1f6c85] ; IAT Sleep
+00000000009254eb: xor      eax, eax
+00000000009254ed: lock cmpxchg dword ptr [rdi + 0x4c8eaf8], r12d
+00000000009254f6: jne      0x9254c2
+00000000009254f8: mov      rcx, qword ptr [rdi + 0x4c8eb08]
+00000000009254ff: mov      rax, qword ptr [rdi + 0x4c8eb00]
+0000000000925506: sub      rcx, rax
+0000000000925509: cmp      rcx, 8
+000000000092550d: jge      0x9255bc
+0000000000925513: mov      ecx, dword ptr [rip + 0x2ec99cbf]
+0000000000925519: mov      rax, qword ptr gs:[0x58]
+0000000000925522: mov      esi, 0x7d58
+0000000000925527: mov      rbx, qword ptr [rax + rcx*8]
+000000000092552b: movsxd   rdx, dword ptr [rbx + rsi]
+000000000092552f: lea      rbp, [rip - 0x525536]
+0000000000925536: movsxd   rcx, dword ptr [rbp + rdx*4 + 0x47e2a40]
+000000000092553e: lea      eax, [rcx + 1]
+0000000000925541: mov      dword ptr [rbp + rdx*4 + 0x47e2a40], eax
+0000000000925548: imul     rdx, rdx, 0x3e8
+000000000092554f: add      rdx, rcx
+0000000000925552: lea      rax, [rip + 0x44fe6f] ; UTF16 'MwmrQueue overflow...'
+0000000000925559: mov      qword ptr [rbp + rdx*8 + 0x47bf7c0], rax
+0000000000925561: lea      rdx, [rip + 0x44fd98]
+0000000000925568: lea      rcx, [rip + 0x42bd8d1]
+000000000092556f: call     qword ptr [rip + 0x1f70b3] ; IAT wsprintfW
+0000000000925575: lea      rdx, [rip + 0x20be74]
+000000000092557c: lea      rcx, [rip + 0x42be0bd]
+0000000000925583: call     qword ptr [rip + 0x1f709f] ; IAT wsprintfW
+0000000000925589: mov      r8d, 0x3ea
+000000000092558f: lea      rdx, [rip + 0x2013c2]
+0000000000925596: lea      rcx, [rip + 0x42be8a3]
+000000000092559d: call     qword ptr [rip + 0x1f7085] ; IAT wsprintfW
+00000000009255a3: mov      byte ptr [rip + 0x42bd883], r12b
+00000000009255aa: call     0x66db28
+00000000009255af: nop
+00000000009255b0: movsxd   rax, dword ptr [rbx + rsi]
+00000000009255b4: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009255bc: mov      rcx, qword ptr [rdi + 0x4c8eb00]
+00000000009255c3: add      rcx, 1
+00000000009255c7: mov      qword ptr [rdi + 0x4c8eb00], rcx
+00000000009255ce: movabs   rax, 0x82c71aa0ca4bfd31
+00000000009255d8: mul      rcx
+00000000009255db: shr      rdx, 0xb
+00000000009255df: imul     rdx, rdx, 0xfa9
+00000000009255e6: sub      rcx, rdx
+00000000009255e9: mov      rax, qword ptr [rdi + rcx*8 + 0x4c86db0]
+00000000009255f1: mov      dword ptr [rdi + 0x4c8eaf8], 0
+00000000009255fb: lock add dword ptr [rdi + 0x4c8eb10], -1
+0000000000925603: add      rsp, 0x30
+0000000000925607: pop      r12
+0000000000925609: pop      rdi
+000000000092560a: pop      rsi
+000000000092560b: pop      rbp
+000000000092560c: pop      rbx
+000000000092560d: ret

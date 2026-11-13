@@ -1,3 +1,7 @@
+## 2026-11-13 바이너리 확인 타이머 이름 적용
+
+원본 signature에 있는 CThreadLocalTimer / CSlot / CMwmrQueue4009::Pop / AddTimer / Dispatch를 기존 실행 코드에 적용했습니다. 기존 TimerWheel/TimerBlockPool 타입은 제거했습니다. 새 src와 CTransport.dll을 함께 적용합니다. 확인된 이름·L1 인자 계약·추정 보조 이름 및 추가 발견은 REPORT_VERIFIED_NETWORK_NAMES.md에서 구분합니다.
+
 ## 2026-11-13 네트워크 풀 오류 경로·객체 참조 진단
 
 기존 풀의 손상 항목 건너뛰기와 격리, MemoryObject ID/ref 오류 추적을 반영했습니다. 기존 풀·회수 진단에서 확인합니다. 새 전체 src와 CTransport.dll을 함께 사용하세요. 원본의 의도적 NULL 크래시는 기존 L1 실패 반환 정책으로 유지합니다. 상세 근거·차이·검증은 REPORT_NETWORK_FAULT_IDENTITY.md를 참조하세요.

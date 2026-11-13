@@ -1,3 +1,13 @@
+## 2026-11-13 — 원본 확인 타이머 클래스·함수 이름 적용
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**이름 근거·추가 발견 보고서**](reports/CTRANSPORT_VERIFIED_NETWORK_NAMES_20261113.md)
+
+원본 signature로 확인한 CThreadLocalTimer / CSlot / CMwmrQueue<…,4009>::Pop / AddTimer / Dispatch를 기존 실행 경로에 적용했습니다. 이전 TimerWheel/TimerBlockPool 구현은 남기지 않았습니다. 추가로 확인한 CIOThreadCallback의 World_Sync/GC 역할과 CUserSocketReleaseVerifier의 L2 종료 절차는 네트워크 worker·현재 종료 처리와 구분했습니다. 새 전체 src와 CTransport.dll을 함께 사용합니다. ABI10/67exports, 게임·PSS·코덱은 그대로입니다.
+
+이하 내용은 이전 배포 이력입니다.
+
+---
+
 ## 2026-11-13 — 네트워크 풀 오류 경로 / 객체 참조 진단
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·설정·검사**](downloads/CTransport_CORE_20261112.zip) · [**수정 보고서**](reports/CTRANSPORT_NETWORK_FAULT_IDENTITY_20261113.md)

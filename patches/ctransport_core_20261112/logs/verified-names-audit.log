@@ -1,0 +1,73 @@
+{
+  "signatures": [
+    [
+      "class CThreadLocalTimer::CSlot *__cdecl CMwmrQueue<class CThreadLocalTimer::CSlot,4009>::Pop(void)",
+      [
+        {
+          "at": "0x925561",
+          "entry": "0x925498",
+          "bytes": "488d1598fd4400"
+        }
+      ]
+    ],
+    [
+      "void __cdecl CThreadLocalTimer::Dispatch(class CThreadLocalTimer::CSlot *,__int64)",
+      [
+        {
+          "at": "0x92573b",
+          "entry": "0x9256d4",
+          "bytes": "488d05defc4400"
+        }
+      ]
+    ],
+    [
+      "void __cdecl CThreadLocalTimer::Dispatch(void)",
+      [
+        {
+          "at": "0x9268a3",
+          "entry": "0x926844",
+          "bytes": "488d0566ef4400"
+        }
+      ]
+    ],
+    [
+      "void __cdecl CThreadLocalTimer::AddTimer(class CIOObject *,const __int64,const int,const __int64)",
+      [
+        {
+          "at": "0x926c57",
+          "entry": "0x926bf4",
+          "bytes": "488d0572ec4400"
+        }
+      ]
+    ],
+    [
+      "__cdecl CUserSocketReleaseVerifier::CUserSocketReleaseVerifier(class CUserSocket *,const wchar_t *)",
+      [
+        {
+          "at": "0xa126f4",
+          "entry": "0xa12674",
+          "bytes": "488d05e5343b00"
+        }
+      ]
+    ],
+    [
+      "void __cdecl CUserSocketReleaseVerifier::TimerExpired(int)",
+      [
+        {
+          "at": "0xa12975",
+          "entry": "0xa1291c",
+          "bytes": "488d0574343b00"
+        }
+      ]
+    ]
+  ],
+  "CIOThreadCallback": [
+    {
+      "vtable": "0xc86678",
+      "col": "0xeb88c0",
+      "slots": [
+        "0x72c3a8"
+      ]
+    }
+  ]
+}
