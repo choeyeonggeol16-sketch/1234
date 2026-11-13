@@ -1,0 +1,99 @@
+# base_release; PE pdata/unwind; entry 0x7d6eb4
+# chunk 0x7d6eb4..0x7d703b
+00000000007d6eb4: push     rbx
+00000000007d6eb6: push     rbp
+00000000007d6eb7: push     rsi
+00000000007d6eb8: push     rdi
+00000000007d6eb9: push     r12
+00000000007d6ebb: sub      rsp, 0x30
+00000000007d6ebf: mov      ebx, 0xffffffff
+00000000007d6ec4: mov      r12d, r8d
+00000000007d6ec7: mov      rbp, rdx
+00000000007d6eca: mov      esi, ebx
+00000000007d6ecc: mov      rdi, rcx
+00000000007d6ecf: lock xadd dword ptr [rcx + 8], esi
+00000000007d6ed4: add      esi, ebx
+00000000007d6ed6: test     esi, esi
+00000000007d6ed8: jg       0x7d702e
+00000000007d6ede: jne      0x7d6fa4
+00000000007d6ee4: mov      eax, dword ptr [rcx + 0xc]
+00000000007d6ee7: test     eax, eax
+00000000007d6ee9: je       0x7d6f74
+00000000007d6eef: test     rdx, rdx
+00000000007d6ef2: je       0x7d6f2d
+00000000007d6ef4: call     0xac1090
+00000000007d6ef9: lea      rdx, [rip + 0x2ede8300]
+00000000007d6f00: mov      rcx, rax
+00000000007d6f03: call     0xab8550
+00000000007d6f08: lea      r8, [rip + 0x4f17b1] ; UTF16 'deleting in-timer-object![%S] at file[%S], line[%d]'
+00000000007d6f0f: lea      edx, [rbx + 3]
+00000000007d6f12: lea      rcx, [rip + 0xd74a987]
+00000000007d6f19: mov      r9, rax
+00000000007d6f1c: mov      dword ptr [rsp + 0x28], r12d
+00000000007d6f21: mov      qword ptr [rsp + 0x20], rbp
+00000000007d6f26: call     0x734514
+00000000007d6f2b: jmp      0x7d6f5c
+00000000007d6f2d: call     0xac1090
+00000000007d6f32: lea      rdx, [rip + 0x2ede82c7]
+00000000007d6f39: mov      rcx, rax
+00000000007d6f3c: call     0xab8550
+00000000007d6f41: lea      r8, [rip + 0x4f1738] ; UTF16 'deleting in-timer-object![%S]'
+00000000007d6f48: lea      rcx, [rip + 0xd74a951]
+00000000007d6f4f: mov      r9, rax
+00000000007d6f52: mov      edx, 2
+00000000007d6f57: call     0x734514
+00000000007d6f5c: mov      rax, qword ptr [rdi]
+00000000007d6f5f: lea      rdx, [rip + 0x4f170a]
+00000000007d6f66: mov      r8d, 0x76
+00000000007d6f6c: mov      rcx, rdi
+00000000007d6f6f: call     qword ptr [rax + 0x18]
+00000000007d6f72: jmp      0x7d6f8d
+00000000007d6f74: mov      rax, qword ptr [rcx]
+00000000007d6f77: xor      edx, edx
+00000000007d6f79: call     qword ptr [rax]
+00000000007d6f7b: lea      rcx, [rip + 0x2870e2e]
+00000000007d6f82: xor      r8d, r8d
+00000000007d6f85: mov      rdx, rdi
+00000000007d6f88: call     0x74e3bc
+00000000007d6f8d: movsxd   rax, dword ptr [rip + 0xe759684]
+00000000007d6f94: lea      rcx, [rip + 0xd74bfc5]
+00000000007d6f9b: lock add dword ptr [rcx + rax*4], ebx
+00000000007d6f9f: jmp      0x7d702e
+00000000007d6fa4: cmp      esi, ebx
+00000000007d6fa6: jg       0x7d702e
+00000000007d6fac: mov      ebx, dword ptr [rcx + 0x10]
+00000000007d6faf: call     0xac1090
+00000000007d6fb4: lea      rdx, [rip + 0x2ede8245]
+00000000007d6fbb: mov      rcx, rax
+00000000007d6fbe: call     0xab8550
+00000000007d6fc3: lea      r8, [rip + 0x4f1666] ; UTF16 'Invalid Memory (%d) on %S(%d)'
+00000000007d6fca: lea      rcx, [rip + 0xd74a8cf]
+00000000007d6fd1: mov      r9d, esi
+00000000007d6fd4: mov      edx, 2
+00000000007d6fd9: mov      dword ptr [rsp + 0x28], ebx
+00000000007d6fdd: mov      qword ptr [rsp + 0x20], rax
+00000000007d6fe2: call     0x734514
+00000000007d6fe7: test     rbp, rbp
+00000000007d6fea: je       0x7d700c
+00000000007d6fec: lea      r8, [rip + 0x3857c5]
+00000000007d6ff3: lea      rcx, [rip + 0xd74a8a6]
+00000000007d6ffa: mov      r9, rbp
+00000000007d6ffd: mov      edx, 2
+00000000007d7002: mov      dword ptr [rsp + 0x20], r12d
+00000000007d7007: call     0x73446c
+00000000007d700c: mov      rax, qword ptr [rdi]
+00000000007d700f: lea      rdx, [rip + 0x4f165a]
+00000000007d7016: mov      r8d, 0x86
+00000000007d701c: mov      rcx, rdi
+00000000007d701f: call     qword ptr [rax + 0x18]
+00000000007d7022: mov      dl, 1
+00000000007d7024: mov      ecx, 2
+00000000007d7029: call     0x6704e0
+00000000007d702e: mov      eax, esi
+00000000007d7030: add      rsp, 0x30
+00000000007d7034: pop      r12
+00000000007d7036: pop      rdi
+00000000007d7037: pop      rsi
+00000000007d7038: pop      rbp
+00000000007d7039: pop      rbx
+00000000007d703a: ret

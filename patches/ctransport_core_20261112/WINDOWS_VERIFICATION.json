@@ -1,5 +1,5 @@
 {
-  "status": "pending",
+  "status": "passed",
   "abi": "0xa0000",
   "exports": 67,
   "implementation_parent": "581cfc4",
@@ -20,5 +20,14 @@
     ],
     "unchanged_source_files": 1709,
     "unchanged_java_files": 1708
-  }
+  },
+  "implementation_commit": "1a16f1cde8cde4d6e2c7618f4d74e5d05ded764b",
+  "tested_source_commit": "1a16f1cde8cde4d6e2c7618f4d74e5d05ded764b",
+  "run_id": 43479323594,
+  "job_id": 132071365275,
+  "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43479323594",
+  "os": "Windows Server 2022 GitHub-hosted runner",
+  "jdk": "Temurin21",
+  "scope": "Existing Windows kernel/FFM regression including new count24 pool/fault marker and zero normal faults;corruption injection separately ASan/UBSan/TSan on Linux",
+  "source_archive_sha256": "46ca8c477715693ef6e181c7122d908f624847d8758c362a70f6dc5f7c3d2e7b"
 }

@@ -1,0 +1,5 @@
+# fault; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x66db28
+# chunk 0x66db28..0x66db2e
+000000000066db28: xor      eax, eax
+000000000066db2a: mov      byte ptr [rax], 1
+000000000066db2d: ret

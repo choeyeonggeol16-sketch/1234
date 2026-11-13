@@ -1,0 +1,84 @@
+# callstack_trace; PE pdata/unwind; entry 0x6704e0
+# chunk 0x6704e0..0x670617
+00000000006704e0: mov      byte ptr [rsp + 0x10], dl
+00000000006704e4: push     rbx
+00000000006704e5: push     rbp
+00000000006704e6: push     rsi
+00000000006704e7: push     rdi
+00000000006704e8: push     r12
+00000000006704ea: push     r13
+00000000006704ec: push     r14
+00000000006704ee: push     r15
+00000000006704f0: sub      rsp, 0x48
+00000000006704f4: mov      r8d, dword ptr [rip + 0x2ef4ecdd]
+00000000006704fb: mov      rax, qword ptr gs:[0x58]
+0000000000670504: mov      r15b, dl
+0000000000670507: mov      rbp, qword ptr [rax + r8*8]
+000000000067050b: mov      eax, 0x7d58
+0000000000670510: mov      r13d, ecx
+0000000000670513: movsxd   r12, dword ptr [rax + rbp]
+0000000000670517: mov      eax, 0x3ea4
+000000000067051c: mov      edx, ecx
+000000000067051e: add      dword ptr [rax + rbp], 1
+0000000000670522: mov      eax, dword ptr [rax + rbp]
+0000000000670525: xor      edi, edi
+0000000000670527: lea      r8, [rip + 0x5c9902] ; UTF16 '[CallStack][tid:%d][tick:%d][%d] Begin'
+000000000067052e: lea      rcx, [rip + 0xd8b136b]
+0000000000670535: mov      r9d, r12d
+0000000000670538: mov      dword ptr [rsp + 0x28], edi
+000000000067053c: mov      dword ptr [rsp + 0x20], eax
+0000000000670540: call     0x734514
+0000000000670545: lea      rax, [rip + 0x45724f4]
+000000000067054c: xor      esi, esi
+000000000067054e: mov      rbx, r12
+0000000000670551: cmp      dword ptr [rax + r12*4], esi
+0000000000670555: jle      0x6705c9
+0000000000670557: imul     rbx, rbx, 0x1f40
+000000000067055e: lea      r14, [rax + r12*4]
+0000000000670562: lea      rax, [rip + 0x454f257]
+0000000000670569: add      rbx, rax
+000000000067056c: mov      r15d, 0x3ea4
+0000000000670572: mov      rax, qword ptr [rbx]
+0000000000670575: add      edi, 1
+0000000000670578: lea      r8, [rip + 0x5c9861] ; UTF16 '[CallStack][tid:%d][tick:%d][%d][%d] %s'
+000000000067057f: mov      qword ptr [rsp + 0x38], rax
+0000000000670584: mov      eax, dword ptr [r15 + rbp]
+0000000000670588: mov      dword ptr [rsp + 0x30], esi
+000000000067058c: lea      rcx, [rip + 0xd8b130d]
+0000000000670593: mov      r9d, r12d
+0000000000670596: mov      edx, r13d
+0000000000670599: mov      dword ptr [rsp + 0x28], edi
+000000000067059d: mov      dword ptr [rsp + 0x20], eax
+00000000006705a1: call     0x734514
+00000000006705a6: mov      rdx, qword ptr [rbx]
+00000000006705a9: lea      rcx, [rip + 0x4be110]
+00000000006705b0: call     0x401f2c
+00000000006705b5: add      esi, 1
+00000000006705b8: add      rbx, 8
+00000000006705bc: cmp      esi, dword ptr [r14]
+00000000006705bf: jl       0x670572
+00000000006705c1: mov      r15b, byte ptr [rsp + 0x98]
+00000000006705c9: lea      eax, [rdi + 1]
+00000000006705cc: lea      r8, [rip + 0x5c97bd] ; UTF16 '[CallStack][tid:%d][tick:%d][%d] End'
+00000000006705d3: lea      rcx, [rip + 0xd8b12c6]
+00000000006705da: mov      dword ptr [rsp + 0x28], eax
+00000000006705de: mov      eax, 0x3ea4
+00000000006705e3: mov      r9d, r12d
+00000000006705e6: mov      eax, dword ptr [rax + rbp]
+00000000006705e9: mov      edx, r13d
+00000000006705ec: mov      dword ptr [rsp + 0x20], eax
+00000000006705f0: call     0x734514
+00000000006705f5: test     r15b, r15b
+00000000006705f8: je       0x670606
+00000000006705fa: mov      rcx, qword ptr [rip + 0x45727cf]
+0000000000670601: call     0x670110
+0000000000670606: add      rsp, 0x48
+000000000067060a: pop      r15
+000000000067060c: pop      r14
+000000000067060e: pop      r13
+0000000000670610: pop      r12
+0000000000670612: pop      rdi
+0000000000670613: pop      rsi
+0000000000670614: pop      rbp
+0000000000670615: pop      rbx
+0000000000670616: ret

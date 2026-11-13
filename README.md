@@ -1,3 +1,13 @@
+## 2026-11-13 — 네트워크 풀 오류 경로 / 객체 참조 진단
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·설정·검사**](downloads/CTransport_CORE_20261112.zip) · [**수정 보고서**](reports/CTRANSPORT_NETWORK_FAULT_IDENTITY_20261113.md)
+
+원본과 차이가 남았던 손상 풀 항목 처리와 MemoryObject 객체 식별자·참조 오류 진단을 반영했습니다. 늦은 반납으로 격리 블록을 재사용하지 않으며 기존 풀 진단 화면에서 확인합니다. 전체 src와 새 CTransport.dll을 함께 적용합니다. ABI10/67exports, 게임 규칙·독립 PSS·코덱은 그대로입니다. 원본의 고갈 시 의도적 크래시는 기존 L1 실패 반환 정책으로 유지합니다.
+
+이하 내용은 이전 배포 이력입니다.
+
+---
+
 ## 2026-11-13 — 풀 회수 진단 / 매니저 메모리 제한
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·설정·검사**](downloads/CTransport_CORE_20261112.zip) · [**구현 보고서**](reports/CTRANSPORT_POOL_MANAGER_20261113.md)

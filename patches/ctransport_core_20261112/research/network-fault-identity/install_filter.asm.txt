@@ -1,0 +1,22 @@
+# install_filter; PE pdata/unwind; entry 0x670808
+# chunk 0x670808..0x670867
+0000000000670808: push     rbx
+000000000067080a: sub      rsp, 0x20
+000000000067080e: mov      rbx, rcx
+0000000000670811: lea      rcx, [rip + 0x4572588]
+0000000000670818: call     qword ptr [rip + 0x4ab9c2] ; IAT InitializeCriticalSection
+000000000067081e: lea      rdx, [rip + 0x5c96d3] ; UTF16 'LinError.txt'
+0000000000670825: lea      rcx, [rip + 0x4572364]
+000000000067082c: call     0x66e75c
+0000000000670831: xor      ecx, ecx
+0000000000670833: call     0xab9970
+0000000000670838: lea      rcx, [rip - 0xef]
+000000000067083f: mov      dword ptr [rip + 0x4572553], eax
+0000000000670845: call     qword ptr [rip + 0x4ab9cd] ; IAT SetUnhandledExceptionFilter
+000000000067084b: lea      rcx, [rip - 0x2882]
+0000000000670852: mov      qword ptr [rip + 0x457222f], rax
+0000000000670859: call     0xac0760
+000000000067085e: mov      rax, rbx
+0000000000670861: add      rsp, 0x20
+0000000000670865: pop      rbx
+0000000000670866: ret

@@ -1,0 +1,13 @@
+{
+  "baseline_commit": "581cfc4",
+  "tested_source_commit": "1a16f1cde8cde4d6e2c7618f4d74e5d05ded764b",
+  "windows_run_id": 43479323594,
+  "dll_sha256": "7ea2195879cd1a414796ffbd17477e3c842bc419c475acf8345e36d861538afc",
+  "runtime_files": {
+    "native/cio_core.hpp": "366dceef1b9ade23843f339dbfada184633d737da8b6f23eb7e9decb40d57f31",
+    "native/CTransport.cpp": "e0e02d12f67f3553e83887e9845727404bfd933ae7c0cf6e62467706de2fd8de",
+    "src/l1j/server/server/model/network/core/CIOConfig.java": "05f3215712eb945e3fe3b89d9e696092c3d2937074c86d14d33364ed3f8f5420",
+    "src/l1j/server/server/model/network/core/CIOServer.java": "1d25a23046a81f30835afb5a06418d86f171409b64dc0080c50159953c13fb76",
+    "src/l1j/server/server/model/network/core/CPoolDiagnostics.java": "b2c0b73f2e09b3319daff7e01d35697f8950c3365afa0e541b42e48b0316369e"
+  }
+}

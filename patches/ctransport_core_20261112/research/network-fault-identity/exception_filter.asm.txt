@@ -1,0 +1,41 @@
+# exception_filter; PE pdata/unwind; entry 0x670750
+# chunk 0x670750..0x6707e8
+0000000000670750: push     rbx
+0000000000670752: sub      rsp, 0x30
+0000000000670756: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+000000000067075f: mov      rbx, rcx
+0000000000670762: cmp      dword ptr [rip + 0x45877e7], 0
+0000000000670769: je       0x67077f
+000000000067076b: mov      rax, qword ptr [rip + 0x4572316]
+0000000000670772: test     rax, rax
+0000000000670775: je       0x67077b
+0000000000670777: call     rax
+0000000000670779: jmp      0x6707e2
+000000000067077b: xor      eax, eax
+000000000067077d: jmp      0x6707e2
+000000000067077f: mov      dword ptr [rip + 0x45877c7], 1
+0000000000670789: cmp      dword ptr [rip + 0x4572698], 0
+0000000000670790: jne      0x6707cd
+0000000000670792: mov      rax, qword ptr [rcx]
+0000000000670795: cmp      dword ptr [rax], 0xe0000001
+000000000067079b: je       0x6707cd
+000000000067079d: lea      rcx, [rip + 0x45725fc]
+00000000006707a4: call     qword ptr [rip + 0x4aba26] ; IAT EnterCriticalSection
+00000000006707aa: nop
+00000000006707ab: mov      rcx, rbx
+00000000006707ae: call     0x670698
+00000000006707b3: mov      rcx, qword ptr [rip + 0x4572616]
+00000000006707ba: call     0x66e730
+00000000006707bf: nop
+00000000006707c0: lea      rcx, [rip + 0x45725d9]
+00000000006707c7: call     qword ptr [rip + 0x4aba0b] ; IAT LeaveCriticalSection
+00000000006707cd: mov      rax, qword ptr [rip + 0x45722b4]
+00000000006707d4: test     rax, rax
+00000000006707d7: je       0x6707e0
+00000000006707d9: mov      rcx, rbx
+00000000006707dc: call     rax
+00000000006707de: jmp      0x6707e2
+00000000006707e0: xor      eax, eax
+00000000006707e2: add      rsp, 0x30
+00000000006707e6: pop      rbx
+00000000006707e7: ret

@@ -4,7 +4,7 @@
   "dll": "CTransport.dll",
   "dll_sha256": "7ea2195879cd1a414796ffbd17477e3c842bc419c475acf8345e36d861538afc",
   "abi": "0xa0000",
-  "implementation_parent": "cf696369047f30d0eff8b67d42a2d642369a7f2d",
+  "implementation_parent": "1a16f1cde8cde4d6e2c7618f4d74e5d05ded764b",
   "transport_scope": "game",
   "mandatory": true,
   "pss": {
@@ -365,7 +365,7 @@
     "pss_unchanged_from": "2dfce4f; one unused experimental packet only has CIOUserSocket type references renamed"
   },
   "windows_evidence": {
-    "status": "pending",
+    "status": "passed",
     "abi": "0xa0000",
     "exports": 67,
     "implementation_parent": "581cfc4",
@@ -386,7 +386,16 @@
       ],
       "unchanged_source_files": 1709,
       "unchanged_java_files": 1708
-    }
+    },
+    "implementation_commit": "1a16f1cde8cde4d6e2c7618f4d74e5d05ded764b",
+    "tested_source_commit": "1a16f1cde8cde4d6e2c7618f4d74e5d05ded764b",
+    "run_id": 43479323594,
+    "job_id": 132071365275,
+    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43479323594",
+    "os": "Windows Server 2022 GitHub-hosted runner",
+    "jdk": "Temurin21",
+    "scope": "Existing Windows kernel/FFM regression including new count24 pool/fault marker and zero normal faults;corruption injection separately ASan/UBSan/TSan on Linux",
+    "source_archive_sha256": "46ca8c477715693ef6e181c7122d908f624847d8758c362a70f6dc5f7c3d2e7b"
   },
   "followup_structures": [
     "common L1 map/screen/radius/rectangle predicate",
@@ -415,13 +424,21 @@
     "real Windows manager resize/move and pool recovery tests;game bindings are fixtures",
     "1702 other sources unchanged from1f5ff36;unchanged independent PSS and codec"
   ],
+  "network_fault_structures": [
+    "invalid nonnull pool entries consumed and skipped;quarantined views never recycled by late returns",
+    "healthy lease counters exclude quarantined slots;legacy8/18 diagnostics plus fault24 optional marker",
+    "MemoryObject original32 object identity/ref1 copy;bounded process reference-fault attribution",
+    "checked decrement prevents zero-reference counter wrap;normal transport handles/cipher/PSS unchanged"
+  ],
   "source_scope": {
-    "baseline": "1f5ff36",
-    "unchanged_outside_allowlist": 1702,
-    "edited_existing_sources": 8,
-    "added_network_classes": 2,
-    "pss_unchanged": true,
-    "native_cpp_changed": "pool snapshot and optional diagnostic prefix extension;I/O paths unchanged"
+    "baseline": "581cfc4",
+    "edited_java_files": [
+      "src/l1j/server/server/model/network/core/CIOConfig.java",
+      "src/l1j/server/server/model/network/core/CIOServer.java",
+      "src/l1j/server/server/model/network/core/CPoolDiagnostics.java"
+    ],
+    "unchanged_source_files": 1709,
+    "unchanged_java_files": 1708
   },
   "config_file": "config/ctransport.properties",
   "client_identity_status": "Server API/config existing;client identity transmitter/verifier not integrated;default limit0"

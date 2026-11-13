@@ -1,0 +1,67 @@
+# critical_callstack; PE pdata/unwind; entry 0x670110
+# chunk 0x670110..0x670236
+0000000000670110: push     rbx
+0000000000670112: push     rbp
+0000000000670113: push     rsi
+0000000000670114: push     rdi
+0000000000670115: push     r12
+0000000000670117: sub      rsp, 0x260
+000000000067011e: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000670127: mov      rsi, rcx
+000000000067012a: mov      edx, dword ptr [rip + 0x2ef4f0a8]
+0000000000670130: mov      rax, qword ptr gs:[0x58]
+0000000000670139: mov      r12d, 0x7d58
+000000000067013f: mov      rdi, qword ptr [rax + rdx*8]
+0000000000670143: movsxd   r8, dword ptr [rdi + r12]
+0000000000670147: lea      rbp, [rip - 0x27014e]
+000000000067014e: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+0000000000670156: lea      eax, [rdx + 1]
+0000000000670159: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+0000000000670161: imul     r8, r8, 0x3e8
+0000000000670168: add      r8, rdx
+000000000067016b: lea      rax, [rip + 0x5c98ae] ; UTF16 'int __cdecl L2Exception::sendCriticalCallstack(const char *)'
+0000000000670172: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+000000000067017a: movdqu   xmm0, xmmword ptr [rip + 0x5c7bf6] ; UTF16 'Unknown'
+0000000000670182: movdqu   xmmword ptr [rsp + 0x40], xmm0
+0000000000670188: xor      edx, edx
+000000000067018a: mov      r8d, 0x1f8
+0000000000670190: lea      rcx, [rsp + 0x50]
+0000000000670195: call     0xab9430
+000000000067019a: lea      rdx, [rip + 0x5c9847] ; UTF16 'CriticalCallStack.txt'
+00000000006701a1: lea      rcx, [rsp + 0x40]
+00000000006701a6: call     0x66e86c
+00000000006701ab: mov      rbx, rax
+00000000006701ae: cmp      rax, -1
+00000000006701b2: jne      0x6701d1
+00000000006701b4: lea      rcx, [rip + 0x5c97e5] ; UTF16 'Error creating CriticalCallStack'
+00000000006701bb: call     qword ptr [rip + 0x4ac2c7] ; IAT OutputDebugStringW
+00000000006701c1: nop
+00000000006701c2: movsxd   rax, dword ptr [rdi + r12]
+00000000006701c6: add      dword ptr [rbp + rax*4 + 0x47e2a40], ebx
+00000000006701cd: xor      eax, eax
+00000000006701cf: jmp      0x670228
+00000000006701d1: mov      rcx, rax
+00000000006701d4: call     qword ptr [rip + 0x4ac0a6] ; IAT SetEndOfFile
+00000000006701da: mov      rcx, rbx
+00000000006701dd: call     0x66f190
+00000000006701e2: mov      rcx, rbx
+00000000006701e5: call     0x66fbd8
+00000000006701ea: call     0x66df2c
+00000000006701ef: mov      rcx, rbx
+00000000006701f2: call     qword ptr [rip + 0x4abf38] ; IAT CloseHandle
+00000000006701f8: mov      dword ptr [rsp + 0x20], 5
+0000000000670200: lea      r9, [rsp + 0x40]
+0000000000670205: lea      r8, [rip + 0x5c7e94]
+000000000067020c: lea      rdx, [rip + 0x5c7e75]
+0000000000670213: mov      rcx, rsi
+0000000000670216: call     0x66e36c
+000000000067021b: nop
+000000000067021c: movsxd   rcx, dword ptr [rdi + r12]
+0000000000670220: add      dword ptr [rbp + rcx*4 + 0x47e2a40], -1
+0000000000670228: add      rsp, 0x260
+000000000067022f: pop      r12
+0000000000670231: pop      rdi
+0000000000670232: pop      rsi
+0000000000670233: pop      rbp
+0000000000670234: pop      rbx
+0000000000670235: ret

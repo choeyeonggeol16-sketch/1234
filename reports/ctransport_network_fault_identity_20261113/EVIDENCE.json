@@ -1,0 +1,262 @@
+{
+  "binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "image_base": "0x400000",
+  "original_executed": false,
+  "scope": "Exact fault/constructor/release/IOCP paths;not a proof that all unnamed code has no additional ID consumers;not a new x86 audit.",
+  "verified_instructions": [
+    {
+      "at": "0x66db28",
+      "bytes": "33c0",
+      "instruction": "xor eax, eax"
+    },
+    {
+      "at": "0x66db2a",
+      "bytes": "c60001",
+      "instruction": "mov byte ptr [rax], 1"
+    },
+    {
+      "at": "0x66db2d",
+      "bytes": "c3",
+      "instruction": "ret "
+    },
+    {
+      "at": "0x7d6dd9",
+      "bytes": "41894110",
+      "instruction": "mov dword ptr [r9 + 0x10], eax"
+    },
+    {
+      "at": "0x7d6e99",
+      "bytes": "41894110",
+      "instruction": "mov dword ptr [r9 + 0x10], eax"
+    },
+    {
+      "at": "0x7d6ddd",
+      "bytes": "f04183410801",
+      "instruction": "lock add dword ptr [r9 + 8], 1"
+    },
+    {
+      "at": "0x7d6e9d",
+      "bytes": "f04183410801",
+      "instruction": "lock add dword ptr [r9 + 8], 1"
+    },
+    {
+      "at": "0x7d6fac",
+      "bytes": "8b5910",
+      "instruction": "mov ebx, dword ptr [rcx + 0x10]"
+    },
+    {
+      "at": "0x9f792d",
+      "bytes": "8b4310",
+      "instruction": "mov eax, dword ptr [rbx + 0x10]"
+    },
+    {
+      "at": "0x70425b",
+      "bytes": "4c8bc1",
+      "instruction": "mov r8, rcx"
+    },
+    {
+      "at": "0x6707e0",
+      "bytes": "33c0",
+      "instruction": "xor eax, eax"
+    },
+    {
+      "at": "0x6707dc",
+      "bytes": "ffd0",
+      "instruction": "call rax"
+    }
+  ],
+  "constructor_id_counter": "0xef30614",
+  "network_release_vtables": [
+    {
+      "class": "CIOObject",
+      "vtable": "0xc71c18",
+      "slot": 2,
+      "target": "0x7d6eb4"
+    },
+    {
+      "class": "CSocket",
+      "vtable": "0xd6ab88",
+      "slot": 2,
+      "target": "0x7d6eb4"
+    },
+    {
+      "class": "CUserSocket",
+      "vtable": "0xdc1c18",
+      "slot": 2,
+      "target": "0x9f7770"
+    }
+  ],
+  "functions": {
+    "fault": {
+      "entry": "0x66db28",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x66db28",
+          "0x66db2e"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 134
+    },
+    "install_filter": {
+      "entry": "0x670808",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x670808",
+          "0x670867"
+        ]
+      ],
+      "direct_calls": [
+        "0x66e75c",
+        "0xab9970",
+        "0xac0760"
+      ],
+      "caller_count": 1
+    },
+    "exception_filter": {
+      "entry": "0x670750",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x670750",
+          "0x6707e8"
+        ]
+      ],
+      "direct_calls": [
+        "0x670698",
+        "0x66e730"
+      ],
+      "caller_count": 0
+    },
+    "callstack_trace": {
+      "entry": "0x6704e0",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x6704e0",
+          "0x670617"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x734514",
+        "0x401f2c",
+        "0x734514",
+        "0x670110"
+      ],
+      "caller_count": 2412
+    },
+    "critical_callstack": {
+      "entry": "0x670110",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x670110",
+          "0x670236"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9430",
+        "0x66e86c",
+        "0x66f190",
+        "0x66fbd8",
+        "0x66df2c",
+        "0x66e36c"
+      ],
+      "caller_count": 2
+    },
+    "default_constructor": {
+      "entry": "0x7d6d5c",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x7d6d5c",
+          "0x7d6df4"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 182
+    },
+    "copy_constructor": {
+      "entry": "0x7d6e1c",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x7d6e1c",
+          "0x7d6eb4"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 5
+    },
+    "base_release": {
+      "entry": "0x7d6eb4",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x7d6eb4",
+          "0x7d703b"
+        ]
+      ],
+      "direct_calls": [
+        "0xac1090",
+        "0xab8550",
+        "0x734514",
+        "0xac1090",
+        "0xab8550",
+        "0x734514",
+        "0x74e3bc",
+        "0xac1090",
+        "0xab8550",
+        "0x734514",
+        "0x73446c",
+        "0x6704e0"
+      ],
+      "caller_count": 14
+    },
+    "user_release": {
+      "entry": "0x9f7770",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f7770",
+          "0x9f7998"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x734514",
+        "0x6704e0",
+        "0x73446c",
+        "0x73446c",
+        "0x74e3bc",
+        "0x73446c",
+        "0x73446c",
+        "0x6704e0"
+      ],
+      "caller_count": 0
+    },
+    "post_completion": {
+      "entry": "0x704248",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x704248",
+          "0x70429c"
+        ]
+      ],
+      "direct_calls": [
+        "0x6708d0"
+      ],
+      "caller_count": 0
+    }
+  },
+  "findings": [
+    "Fault helper deliberately writes to null;it is not socket-close or allocation recovery.",
+    "Installed unhandled filter gathers diagnostics and forwards to the previous filter,or returns CONTINUE_SEARCH(0). This is not evidence of automatic IO recovery.",
+    "Both constructors assign a fresh global32 ID and ref1. Base and CUserSocket release use the ID in reference-underflow diagnostics.",
+    "Examined IOCP posting passes the object pointer as the completion key;the MemoryObject diagnostic ID is not a replacement for L1 slot-generation handles."
+  ]
+}
