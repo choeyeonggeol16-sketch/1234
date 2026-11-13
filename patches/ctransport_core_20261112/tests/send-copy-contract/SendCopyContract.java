@@ -10,6 +10,15 @@ public final class SendCopyContract {
    if(owner.callbacks.get()!=0)throw new AssertionError("WRITE lease released before native copy returned");
    server.release.countDown();submit.join(5000);if(submit.isAlive()||owner.callbacks.get()!=1||owner.result!=-1||!Arrays.equals(server.captured,expected))throw new AssertionError("copy/close once-only failure contract");
   }
-  System.out.println("PASS production CSocket single/gather copy-close race:source lease retained until downcall exits,original bytes copied,one failed completion");
+  for(boolean lateBind:new boolean[]{false,true}){
+   CIOServer server=new CIOServer();CSocket socket=new CSocket(server,1,new InetSocketAddress(0),new InetSocketAddress(0));
+   CUserSocket owner=new CUserSocket(ByteBuffer.allocateDirect(1));
+   if(!lateBind)socket.bindUserSocketOwner(owner);
+   socket.nativeClosing(3,10054);
+   if(lateBind)socket.bindUserSocketOwner(owner);
+   socket.nativeTerminated(2,995);
+   if(owner.closeOperation!=3||owner.closeError!=10054)throw new AssertionError("native close status lost to cancellation or late owner bind");
+  }
+  System.out.println("PASS production CSocket single/gather copy-close race:source lease retained until downcall exits,original bytes copied,one failed completion;first native status survives late bind and cancellation");
  }
 }

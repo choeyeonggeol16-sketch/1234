@@ -33,12 +33,34 @@ final class CSocket implements AutoCloseable {
     public boolean isOpen() { return open && !closing; }
     private volatile CUserSocket userSocketOwner;
     private volatile boolean nativeIoDrained;
+    private volatile boolean nativeCloseStatusKnown;
+    private int nativeCloseOperation, nativeCloseError;
+    private void rememberNativeClose(int operation, int error) {
+        synchronized (this) {
+            if (!nativeCloseStatusKnown) {
+                nativeCloseOperation = operation; nativeCloseError = error;
+                nativeCloseStatusKnown = true;
+            }
+        }
+        // No game/lifecycle callback while holding the provider I/O lock.
+        CUserSocket owner = userSocketOwner;
+        if (owner != null) owner.onNativeCloseStatus(nativeCloseOperation, nativeCloseError);
+    }
     void bindUserSocketOwner(CUserSocket owner) {
         userSocketOwner = owner;
+        if (nativeCloseStatusKnown) owner.onNativeCloseStatus(nativeCloseOperation, nativeCloseError);
         if (closing || !open) owner.onTransportClosing();
         if (nativeIoDrained) owner.onTransportTerminated();
     }
     boolean isNativeIoDrained() { return nativeIoDrained; }
+    void nativeTerminated(int operation, int error) {
+        rememberNativeClose(operation, error);
+        nativeTerminated();
+    }
+    void nativeClosing(int operation, int error) {
+        rememberNativeClose(operation, error);
+        nativeClosing();
+    }
     // Only the real native terminal callback sets this flag. Local aborting
     // of Java READ/WRITE requests must not start game-session destruction.
     void nativeTerminated() {

@@ -7,6 +7,11 @@ import java.util.concurrent.atomic.*;
 /** Bounded metadata only: opcode/time/length, never credentials or packet bodies. */
 public final class CNetworkDiagnostics {
     private CNetworkDiagnostics() {}
+    /** L1 diagnostic labels; these are not reconstructed L2 enum numbers. */
+    public enum CloseReason {
+        SERVER_CLOSE, GRACEFUL_CLOSE, SEND_LIMIT, SEND_POOL, SEND_REJECTED, ENCODING_ERROR,
+        PROTOCOL_ERROR, HANDLER_ERROR, WRITE_TIMEOUT, PARTIAL_READ_TIMEOUT, GRACE_TIMEOUT
+    }
     private static final AtomicLong NEXT = new AtomicLong();
     private static final Map<Long, Trace> LIVE = new LinkedHashMap<>();
     private static final Trace[] CLOSED = new Trace[64];
@@ -38,10 +43,40 @@ public final class CNetworkDiagnostics {
         private final long[] at = new long[128];
         private long sequence;
         volatile boolean closed;
+        private CloseReason javaReason;
+        private boolean nativeStatusKnown;
+        private int nativeOperation, nativeError;
         Trace(String remote, long nativeHandle) { this.remote = remote; this.nativeHandle = nativeHandle; }
+        synchronized void javaClose(CloseReason reason) {
+            // A cleanup close following native shutdown is not its initiator.
+            if (javaReason == null && !(reason == CloseReason.SERVER_CLOSE && nativeStatusKnown)) javaReason = reason;
+        }
+        synchronized void nativeClose(int operation, int error) {
+            if (nativeStatusKnown) return;
+            nativeOperation = operation; nativeError = error; nativeStatusKnown = true;
+        }
+        private String nativeCause() {
+            if (!nativeStatusKnown) return "UNKNOWN";
+            if (nativeError == 10060) return "TIMEOUT";
+            if (nativeError == 13 && nativeOperation == 2) return "PROTOCOL_ERROR";
+            if (nativeError == 995) return "IO_CANCELLED";
+            return switch (nativeOperation) {
+                case 1 -> "ACCEPT_REJECTED";
+                case 2 -> nativeError == 0 ? "PEER_EOF" : "READ_ERROR";
+                case 3 -> "WRITE_ERROR";
+                case 5 -> nativeError == 0 ? "TRANSPORT_CLOSE" : "SHUTDOWN_ERROR";
+                default -> "NATIVE_CLOSE";
+            };
+        }
+        synchronized String summary() {
+            return "id=" + id + " native=" + nativeHandle + " peer=" + remote + " closed=" + closed
+                    + " javaReason=" + (javaReason == null ? "NONE" : javaReason)
+                    + " nativeCause=" + nativeCause()
+                    + (nativeStatusKnown ? " operation=" + nativeOperation + " error=" + Integer.toUnsignedString(nativeError) : "") + "\n";
+        }
         synchronized void record(int op) { int slot = (int)(sequence++ & 127); opcode[slot] = op; at[slot] = System.nanoTime(); }
         synchronized String recent() {
-            StringBuilder b = new StringBuilder("id=" + id + " native=" + nativeHandle + " peer=" + remote + " closed=" + closed + "\n");
+            StringBuilder b = new StringBuilder(summary());
             long now = System.nanoTime();
             for (long i = sequence - 1, end = Math.max(0, sequence - 128); i >= end; --i) {
                 int slot = (int)(i & 127);
@@ -67,6 +102,8 @@ public final class CNetworkDiagnostics {
             }
         }
     }
+    static void javaClose(Trace trace, CloseReason reason) { if (trace != null && reason != null) trace.javaClose(reason); }
+    static void nativeClose(Trace trace, int operation, int error) { if (trace != null) trace.nativeClose(operation, error); }
     static final class Work {
         final WeakReference<Thread> thread;
         final String name;
@@ -129,9 +166,9 @@ public final class CNetworkDiagnostics {
     public static String connections() {
         List<Trace> traces; synchronized (CNetworkDiagnostics.class) { traces = new ArrayList<>(LIVE.values()); }
         StringBuilder b = new StringBuilder("진단 연결 수=" + traces.size() + " (최대 " + CIOConfig.DIAGNOSTICS_MAX_CONNECTIONS + ")\n");
-        for (int i = 0; i < Math.min(traces.size(), 512); i++) { Trace t = traces.get(i); b.append("id=").append(t.id).append(" native=").append(t.nativeHandle).append(" peer=").append(t.remote).append('\n'); }
+        for (int i = 0; i < Math.min(traces.size(), 512); i++) b.append(traces.get(i).summary());
         b.append("최근 종료 연결(최대 64):\n");
-        synchronized (CNetworkDiagnostics.class) { for (Trace t : CLOSED) if (t != null) b.append("id=").append(t.id).append(" native=").append(t.nativeHandle).append(" peer=").append(t.remote).append('\n'); }
+        synchronized (CNetworkDiagnostics.class) { for (Trace t : CLOSED) if (t != null) b.append(t.summary()); }
         return b.toString();
     }
     public static String recent(long id) {

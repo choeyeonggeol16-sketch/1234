@@ -8,6 +8,7 @@ public final class CIOFrame {
     private CIOBufferEx lease;
     private WriteBuffer buffer;
     private boolean active;
+    private boolean optional;
     private int reservedBytes;
     private int reservedTicket = -1;
     private long reservedTicketId = -1L;
@@ -19,6 +20,7 @@ public final class CIOFrame {
         this.owner = owner;
         this.lease = lease;
         this.buffer = lease.writer();
+        optional = false;
         active = true;
     }
     void setReservation(int bytes, int ticket, long ticketId) {
@@ -30,12 +32,15 @@ public final class CIOFrame {
     int reservedBytes() { return reservedBytes; }
     int reservedTicket() { return reservedTicket; }
     long reservedTicketId() { return reservedTicketId; }
+    void setOptional(boolean value) { optional = value; }
+    boolean optional() { return optional; }
     CIOBufferEx ioLease(CUserSocket owner) {
         if (!active || this.owner != owner) throw new IllegalArgumentException("foreign frame");
         return lease;
     }
     void finishIO() {
         active = false;
+        optional = false;
         reservedBytes = 0;
         reservedTicket = -1;
         reservedTicketId = -1L;

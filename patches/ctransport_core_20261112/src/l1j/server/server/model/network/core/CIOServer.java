@@ -465,7 +465,7 @@ final class CIOServer implements AutoCloseable {
             if (rawEvents != null) { rawEvents.closed(id); return 0; }
             CSocket channel = closingConnections.remove(id);
             if (channel == null) { channel = find(id); if (channel != null) forget(channel); }
-            if (channel != null) channel.nativeTerminated();
+            if (channel != null) channel.nativeTerminated(operation, error);
             return 0;
         } catch (Throwable failure) {
             LOG.log(Level.WARNING, "CIO native CLOSE callback failed conn=" + id, failure);
@@ -530,7 +530,7 @@ final class CIOServer implements AutoCloseable {
             else {
                 CSocket channel = find(id);
                 if (channel != null) {
-                    channel.nativeClosing();
+                    channel.nativeClosing(operation, error);
                     closingConnections.put(id, channel);
                     forget(channel); // admission lookup ends before physical socket close
                 }

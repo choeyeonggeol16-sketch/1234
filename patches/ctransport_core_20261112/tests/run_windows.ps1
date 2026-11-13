@@ -24,7 +24,7 @@ try {
 New-Item -ItemType Directory -Force owner-classes | Out-Null
 $ownerSources = Get-Content tests/owner-production-sources.txt
 $ownerFixtures = (Get-ChildItem tests/owner-fixtures/*.java).FullName
-& javac --enable-preview --release 21 -encoding UTF-8 -d owner-classes $ownerSources $ownerFixtures tests/CIOPacketCodecReference.java tests/CUserSocketOwnerWindowsTest.java tests/CSharedBroadcastWindowsTest.java
+& javac --enable-preview --release 21 -encoding UTF-8 -d owner-classes $ownerSources $ownerFixtures tests/CIOPacketCodecReference.java tests/CUserSocketOwnerWindowsTest.java tests/CSharedBroadcastWindowsTest.java tests/CUserSocketSafeSendWindowsTest.java
 if ($LASTEXITCODE -ne 0) { throw 'Production user-socket owner compilation failed' }
 $ownerClasses = Join-Path $root 'owner-classes'
 Push-Location build
@@ -33,6 +33,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Production user-socket lease/close test failed' }
     & java --enable-preview --enable-native-access=ALL-UNNAMED -cp $ownerClasses l1j.server.server.model.network.core.CSharedBroadcastWindowsTest
     if ($LASTEXITCODE -ne 0) { throw 'Shared broadcast FIFO/keys/lifetime Windows test failed' }
+    & java --enable-preview --enable-native-access=ALL-UNNAMED -cp $ownerClasses l1j.server.server.model.network.core.CUserSocketSafeSendWindowsTest
+    if ($LASTEXITCODE -ne 0) { throw 'SafeSend and close reason Windows test failed' }
 } finally { Pop-Location }
 
 New-Item -ItemType Directory -Force copy-classes | Out-Null

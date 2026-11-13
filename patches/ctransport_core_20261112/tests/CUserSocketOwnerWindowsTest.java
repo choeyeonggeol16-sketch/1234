@@ -29,8 +29,12 @@ public final class CUserSocketOwnerWindowsTest {
  static final class Session implements AutoCloseable {
   final AtomicReference<CUserSocket> owner=new AtomicReference<>();final AtomicReference<CIOClient> client=new AtomicReference<>();
   final AtomicReference<CSocket> channel=new AtomicReference<>();final CountDownLatch closed=new CountDownLatch(1);
-  final CIOBufferPool pool=new CIOBufferPool(8,64,4,4);final CIOServer server;final Socket peer;
+  final CIOBufferPool pool;final CIOServer server;final Socket peer;
   Session(boolean ready,boolean failCapture)throws Exception{
+   this(ready,failCapture,new CIOBufferPool(8,64,4,4));
+  }
+  Session(boolean ready,boolean failCapture,CIOBufferPool buffers)throws Exception{
+   pool=buffers;
    CIOThreadCallback.INSTANCE.queued.set(null);
    server=new CIOServer(new InetSocketAddress("127.0.0.1",0),8,2,32,c->{
     CUserSocket socket=new CUserSocket(c,pool,CIOThreadCallback.INSTANCE,"127.0.0.1",0,256,x->closed.countDown());

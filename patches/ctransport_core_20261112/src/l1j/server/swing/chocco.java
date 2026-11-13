@@ -282,7 +282,7 @@ public class chocco extends JFrame {
         addDisabledItem(report, "테스트");
         addDisabledItem(report, "NPC 핑");
         addItem(report, "소켓", () -> showNetworkReport("소켓", this::networkSockets));
-        addItem(report, "최근 패킷 128개", this::showRecentPackets);
+        addItem(report, "종료 사유·최근 패킷 128개", this::showRecentPackets);
         addItem(report, "유저", this::showUserManager);
         addItem(report, "참조·수명 상태", () -> showNetworkReport("참조·수명 상태", this::networkReferences));
         addItem(report, "전송량 초기화", () -> { l1j.server.server.model.network.core.CNetworkDiagnostics.resetTraffic(); showSimpleReport("전송률", "수신/송신 접수량 통계를 초기화했습니다."); });
@@ -369,7 +369,7 @@ public class chocco extends JFrame {
         if (text == null) return;
         try {
             long id = Long.parseLong(text.trim());
-            showNetworkReport("최근 패킷 128개", () -> l1j.server.server.model.network.core.CNetworkDiagnostics.recent(id));
+            showNetworkReport("종료 사유·최근 패킷 128개", () -> l1j.server.server.model.network.core.CNetworkDiagnostics.recent(id));
         } catch (NumberFormatException failure) { showSimpleReport("최근 패킷", "숫자 id를 입력하세요."); }
     }
     private String networkProfile() {
@@ -385,6 +385,7 @@ public class chocco extends JFrame {
     }
     private String networkSockets() {
         StringBuilder text = new StringBuilder(l1j.server.server.model.network.core.CNetworkDiagnostics.connections());
+        text.append("\n선택적 송신 생략=").append(l1j.server.server.model.network.core.CUserSocket.softSendRejections()).append('\n');
         long[][] rows = l1j.server.Server.networkSocketDiagnostics();
         text.append("\nNative sockets=").append(rows.length)
                 .append("\n[handle,number,socket,closing,terminal,packetLease,readPosted,writePosted,outputBytes,addressFamily,ipv4,port]\n")

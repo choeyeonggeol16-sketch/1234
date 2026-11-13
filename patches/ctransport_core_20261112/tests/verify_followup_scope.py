@@ -3,6 +3,9 @@ import hashlib,json
 CORE='src/l1j/server/server/model/network/core/'
 EDITED={CORE+'CIOConfig.java',CORE+'CUserSocket.java','src/l1j/server/server/model/LocalWorldMap.java','src/l1j/server/Server.java','src/l1j/server/swing/chocco.java'}
 EDITED|={CORE+'sc/packet/'+n+'.java' for n in ['SC_DoActionGFX','SC_SkillSound','SC_MoveChar','SC_ChangeHeading','SC_RemoveObject']}
+# The subsequent SafeSend/close feature retains a separate tighter baseline.
+EDITED|={CORE+n+'.java' for n in ['CIOServer','CSocket','CIOFrame']}
+EDITED.add(CORE+'sc/packet/SC_Emblem.java')
 ADDED={CORE+n+'.java' for n in ['CTLMFilter','CSharedBroadcast','CNetworkDiagnostics']}
 def verify(sources,baseline_path):
  baseline=json.loads(Path(baseline_path).read_text())['files']

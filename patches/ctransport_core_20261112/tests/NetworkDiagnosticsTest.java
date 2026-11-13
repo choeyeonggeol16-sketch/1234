@@ -25,8 +25,19 @@ public final class NetworkDiagnosticsTest {
   check(CNetworkDiagnostics.timings().contains("opcode=255 completed=8000"),"concurrent completions lost");
   CNetworkDiagnostics.admitted(17);check(CNetworkDiagnostics.traffic().contains("17 bytes"),"admitted-byte meaning");
   CNetworkDiagnostics.resetTraffic();check(CNetworkDiagnostics.traffic().contains("0 bytes"),"traffic reset");
+  CNetworkDiagnostics.javaClose(a,CNetworkDiagnostics.CloseReason.SEND_LIMIT);
+  CNetworkDiagnostics.nativeClose(a,3,10054);
+  CNetworkDiagnostics.nativeClose(a,2,995);
+  CNetworkDiagnostics.javaClose(a,CNetworkDiagnostics.CloseReason.SERVER_CLOSE);
+  String cause=CNetworkDiagnostics.recent(a.id);
+  check(cause.contains("javaReason=SEND_LIMIT")&&cause.contains("nativeCause=WRITE_ERROR operation=3 error=10054"),"first cause overwritten by cleanup/cancellation");
+  CNetworkDiagnostics.nativeClose(b,2,0);
+  CNetworkDiagnostics.javaClose(b,CNetworkDiagnostics.CloseReason.SERVER_CLOSE);
+  check(CNetworkDiagnostics.recent(b.id).contains("javaReason=NONE nativeCause=PEER_EOF"),"peer shutdown mislabeled as server close");
   CNetworkDiagnostics.close(a);CNetworkDiagnostics.close(a);CNetworkDiagnostics.close(b);
   check(CNetworkDiagnostics.connections().contains("진단 연결 수=0")&&CNetworkDiagnostics.recent(a.id).contains("closed=true"),"close/history cleanup");
+  check(CNetworkDiagnostics.connections().contains("javaReason=SEND_LIMIT"),"closed cause absent from socket report");
+  CNetworkDiagnostics.nativeClose(null,2,995);CNetworkDiagnostics.javaClose(null,CNetworkDiagnostics.CloseReason.SERVER_CLOSE);
   check(CNetworkDiagnostics.open("reused")!=null,"trace capacity not returned");
   for(int i=0;i<80;i++){var trace=CNetworkDiagnostics.open("closed-"+i);check(trace!=null,"capacity reuse");CNetworkDiagnostics.close(trace);}
   check(!CNetworkDiagnostics.recent(a.id).contains("peer=one"),"closed history unbounded");

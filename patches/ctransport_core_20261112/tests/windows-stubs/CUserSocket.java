@@ -9,6 +9,7 @@ class CUserSocket {
  boolean ownsConstBuffer(CAsyncSendConstBuffer.Source source){return false;} void enqueueConstBuffer(CAsyncSendConstBuffer.Source source,int limit){}
  void close() {}
  void onTransportClosing() {}
+ void onNativeCloseStatus(int operation,int error) {}
  void onTransportTerminated() {}
  void transportReadCompleted(int bytes) { throw new AssertionError("unexpected gameplay callback"); }
  void transportWriteCompleted(int bytes) { throw new AssertionError("unexpected gameplay callback"); }

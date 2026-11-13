@@ -10,6 +10,7 @@ import java.io.File;
 import java.nio.file.Files;
 
 public final class SC_Emblem {
+    private static final int SEND_MARGIN_BYTES = 512 * 1024;
     private SC_Emblem() {}
     public static boolean send(CIOClient client, int emblemId) {
         if (client == null || !client.isConnected()) return false;
@@ -20,10 +21,10 @@ public final class SC_Emblem {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if (data.length > 65535) return false;
+        if (data.length > 65535 - 9) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
-        final CIOFrame frame = connection.beginDirectFrame(9 + data.length);
+        final CIOFrame frame = connection.beginSafeDirectFrame(9 + data.length, SEND_MARGIN_BYTES);
         if (frame == null) return false;
         boolean committed = false;
         try {

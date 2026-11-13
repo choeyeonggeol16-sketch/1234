@@ -10,6 +10,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.concurrent.atomic.AtomicLong;
+import l1j.server.server.model.network.core.CNetworkDiagnostics.CloseReason;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.utill.ConnectionState;
@@ -90,6 +91,12 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     public static final int REJECT_POOL = 4;
     public static final int REJECT_ENCODING = 5;
     private static final AtomicLongArray SEND_REJECTIONS = new AtomicLongArray(6);
+    private static final AtomicLong SOFT_SEND_REJECTIONS = new AtomicLong();
+    public static long softSendRejections() { return SOFT_SEND_REJECTIONS.get(); }
+    private boolean rejectDirectSend(boolean optional, int reason) {
+        if (optional) { SOFT_SEND_REJECTIONS.incrementAndGet(); return false; }
+        return rejectSend(reason);
+    }
     // A bounded, allocation-free completion-worker blockage diagnostic.
     // Slow opcode handlers are counted without printing per-packet logs.
     private static final long SLOW_HANDLER_NS = TimeUnit.MILLISECONDS.toNanos(10);
@@ -258,10 +265,19 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             long now=System.nanoTime(),progress=networkWriteProgress();
             if(hasPendingNetworkSend()) {
                 if(deadlineStalledSince==0||deadlinePriorProgress!=progress)deadlineStalledSince=now;
-                if(now-deadlineStalledSince>=NETWORK_WRITE_STALL_NANOS)return -1;
+                if(now-deadlineStalledSince>=NETWORK_WRITE_STALL_NANOS){
+                    CNetworkDiagnostics.javaClose(networkTrace, CloseReason.WRITE_TIMEOUT);return -1;
+                }
             }else deadlineStalledSince=0;
             deadlinePriorProgress=progress;
-            return networkDeadlineExpired(now)?-1:(int)nextNetworkDeadlineDelayMs(now,5000);
+            if (networkDeadlineExpired(now)) {
+                CNetworkDiagnostics.javaClose(networkTrace,
+                        _gracefulCloseStartedNs != 0L && now - _gracefulCloseStartedNs >= NETWORK_GRACEFUL_CLOSE_NANOS
+                                ? CloseReason.GRACE_TIMEOUT : _closing == 2 && isWriteIdleLocked()
+                                ? CloseReason.GRACEFUL_CLOSE : CloseReason.PARTIAL_READ_TIMEOUT);
+                return -1;
+            }
+            return (int)nextNetworkDeadlineDelayMs(now,5000);
         }finally{_stateLock.unlock();}
     }
 
@@ -1017,6 +1033,9 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
     private final java.util.concurrent.atomic.AtomicBoolean closeStarted = new java.util.concurrent.atomic.AtomicBoolean();
     private volatile boolean clientCleanupComplete;
+    void onNativeCloseStatus(int operation, int error) {
+        CNetworkDiagnostics.nativeClose(networkTrace, operation, error);
+    }
     void onTransportClosing() {
         if (!closeStarted.compareAndSet(false, true)) return;
         CNetworkDiagnostics.close(networkTrace);
@@ -1030,7 +1049,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     }
     boolean isCloseStarted() { return closeStarted.get(); }
     void onTransportTerminated() {
-        close();
+        close(false, null);
         notifyClosedWhenReleased();
     }
     boolean isClientCleanupComplete() { return clientCleanupComplete; }
@@ -1058,7 +1077,8 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     public void enqueuePacket(WritablePacket packet) {
         if (packet == null || !isClientConnected()) return;
         final CIOClient client = _client;
-        if (client == null || !tryWritePacket(client, packet)) close();
+        if (client == null) close();
+        else if (!tryWritePacket(client, packet)) close(CloseReason.SEND_REJECTED);
     }
 
     /**
@@ -1071,6 +1091,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     public void requestClientClose(WritablePacket packet) {
         if (_disconnecting != 0 || !isOpen()
                 || !CLOSING.compareAndSet(this, 0, 1)) return;
+        CNetworkDiagnostics.javaClose(networkTrace, CloseReason.GRACEFUL_CLOSE);
         _gracefulCloseStartedNs = System.nanoTime();
         if (_client == null) {
             close();
@@ -1098,7 +1119,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     public boolean sendAction(int objectId, int actionId) {
         if (!isClientConnected()) return false;
         if (tryWriteAction(objectId, actionId)) return true;
-        close();
+        close(CloseReason.SEND_REJECTED);
         return false;
     }
     boolean supportsConstBuffer() { return nativeDirect && !_handshakePlainPending; }
@@ -1125,7 +1146,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             finally { _stateLock.unlock(); }
         }
         if (accepted) finishStagedSend(lease, false);
-        else if (failed) close(); // preserve existing direct SEND rejection policy
+        else if (failed) close(CloseReason.SEND_REJECTED); // preserve existing direct SEND rejection policy
     }
 
     /** Drain accepted SENDs and retain a bounded minimum grace before closing. */
@@ -1138,6 +1159,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         try {
             if (_closed != 0 || _disconnecting != 0
                     || !CLOSING.compareAndSet(this, 0, 1)) return;
+            CNetworkDiagnostics.javaClose(networkTrace, CloseReason.GRACEFUL_CLOSE);
             final long now = System.nanoTime();
             _gracefulCloseStartedNs = now;
             _closeNotBeforeNs = now + TimeUnit.MILLISECONDS.toNanos(delayMs);
@@ -1248,6 +1270,21 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
      * The reusable handle is owned by its pooled lease, not allocated per packet.
      */
     public CIOFrame beginDirectFrame(int maxWireBytes) {
+        return beginDirectFrame(maxWireBytes, 0, false);
+    }
+
+    /** Original SafeSend policy adapted to L1 direct frames. Only optional
+     * payloads may use this API. Admission includes outstanding and reserved
+     * bytes under one lock; null never means that the payload was sent.
+     */
+    public CIOFrame beginSafeDirectFrame(int maxWireBytes, int marginBytes) {
+        if (maxWireBytes <= CIOBufferPool.HEADER_BYTES || maxWireBytes > CIOBufferPool.MAX_WIRE_BYTES
+                || marginBytes < 0 || marginBytes > MAX_PENDING_WIRE_BYTES)
+            throw new IllegalArgumentException("invalid SafeSend size or margin");
+        return beginDirectFrame(maxWireBytes, marginBytes, true);
+    }
+
+    private CIOFrame beginDirectFrame(int maxWireBytes, int marginBytes, boolean optional) {
         // This connection may have hundreds of packed CANCELLED tickets but
         // only one or two physical SEND leases. Give its ready FIFO prefix an
         // opportunity to retire before applying the serializer hard cap.
@@ -1262,8 +1299,8 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             if (_closed != 0 || _closing != 0) return null;
             if (maxWireBytes <= CIOBufferPool.HEADER_BYTES
                     || maxWireBytes > CIOBufferPool.MAX_WIRE_BYTES
-                    || !canAdmitBytes(maxWireBytes)) {
-                rejectSend(REJECT_WIRE_BYTES);
+                    || !canAdmitBytes(Math.max(maxWireBytes, marginBytes))) {
+                rejectDirectSend(optional, REJECT_WIRE_BYTES);
                 refused = true;
             } else {
                 if (physicalSendFullLocked()) {
@@ -1273,7 +1310,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                     // made commitDirectFrame() decrement the counters below 0.
                     compactReadyStagedPacketsLocked();
                     if (physicalSendFullLocked()) {
-                        rejectSend(REJECT_LOCAL_FRAMES);
+                        rejectDirectSend(optional, REJECT_LOCAL_FRAMES);
                         refused = true;
                     }
                 }
@@ -1282,7 +1319,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                 if (!refused) for (;;) {
                     final int pending = (int) SOCKET_PENDING.getVolatile(this);
                     if (pending >= SOCKET_REJECT_AT) {
-                        rejectSend(REJECT_SERIALIZER);
+                        rejectDirectSend(optional, REJECT_SERIALIZER);
                         refused = true;
                         break;
                     }
@@ -1306,7 +1343,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if (publishProducer) drainSocketCallbacks();
         if (refused) {
             // A packet that cannot be admitted must never look like a successful SEND.
-            close();
+            if (!optional) close(CloseReason.SEND_LIMIT);
             return null;
         }
 
@@ -1316,18 +1353,19 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             if (lease != null) {
                 final CIOFrame frame = lease.beginDirectFrame(this);
                 frame.setReservation(maxWireBytes, slot, ticket);
+                frame.setOptional(optional);
                 return frame;
             }
-            rejectSend(REJECT_POOL);
+            rejectDirectSend(optional, REJECT_POOL);
         } catch (Throwable failure) {
             rejectSend(REJECT_ENCODING);
             // Preserve the original failure, but release the ticket and lease.
             rollbackDirectBegin(maxWireBytes, slot, lease);
-            close();
+            close(CloseReason.ENCODING_ERROR);
             throw failure;
         }
         rollbackDirectBegin(maxWireBytes, slot, lease);
-        close();
+        if (!optional) close(CloseReason.SEND_POOL);
         return null;
     }
 
@@ -1416,7 +1454,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if (resumeRead && _closed == 0) kickRead();
         if (!accepted) {
             // The caller's finally aborts the still-owned frame/ticket.
-            close();
+            close(CloseReason.SEND_REJECTED);
         }
         return accepted;
     }
@@ -1426,6 +1464,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         final CIOBufferEx lease = frame.ioLease(this);
         final int bytes = frame.reservedBytes();
         final int slot = frame.reservedTicket();
+        final boolean optional = frame.optional();
         boolean resumeRead;
         _stateLock.lock();
         try {
@@ -1440,7 +1479,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if (resumeRead) kickRead();
         // Direct send failure is fatal for packet-stream consistency: never
         // silently lose an attack/HP update when callers ignore the boolean.
-        if (_closed == 0) close();
+        if (_closed == 0 && !optional) close(CloseReason.ENCODING_ERROR);
         notifyClosedWhenReleased();
     }
 
@@ -2113,7 +2152,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         } else {
             if (encodeFailed) rejectSend(REJECT_ENCODING);
             if (slot >= 0) drainSocketCallbacks();
-            if (encodeFailed || encoded != null) close();
+            if (encodeFailed || encoded != null) close(encodeFailed ? CloseReason.ENCODING_ERROR : CloseReason.SEND_LIMIT);
             if (_closed != 0) kickWrite();
             notifyClosedWhenReleased();
         }
@@ -2913,10 +2952,10 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                     throw new IllegalStateException("Packet executed outside its native/session role");
                 CNetworkDiagnostics.Work work = CNetworkDiagnostics.begin(networkTrace,
                         _nativePacketBuffer.get(0) & 255, _nativePacketLength);
-                try { if(!onNativePlaintext(_nativePacketBuffer,_nativePacketLength))close(); }
+                try { if(!onNativePlaintext(_nativePacketBuffer,_nativePacketLength))close(CloseReason.PROTOCOL_ERROR); }
                 finally { CNetworkDiagnostics.end(work); }
             }
-        }catch(Throwable failure){LOG.log(Level.WARNING,"[CIO NATIVE] packet execution failed",failure);close();}
+        }catch(Throwable failure){LOG.log(Level.WARNING,"[CIO NATIVE] packet execution failed",failure);close(CloseReason.HANDLER_ERROR);}
         finally{finishNativePacket();}
     }
 
@@ -3756,10 +3795,12 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         }
     }
 
-    private void closeGracefully(){close(true);}
-    @Override public void close(){close(false);}
-    private void close(boolean graceful) {
+    private void closeGracefully(){close(true, CloseReason.GRACEFUL_CLOSE);}
+    @Override public void close(){close(false, CloseReason.SERVER_CLOSE);}
+    private void close(CloseReason reason) { close(false, reason); }
+    private void close(boolean graceful, CloseReason reason) {
         if (!CLOSED.compareAndSet(this, 0, 1)) return;
+        CNetworkDiagnostics.javaClose(networkTrace, reason);
         onTransportClosing();
         cancelQueuedNativePacket();
         _networkDeadline = null;
