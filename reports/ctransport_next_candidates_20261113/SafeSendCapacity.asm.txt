@@ -1,0 +1,11 @@
+# SafeSendCapacity; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x9ef620
+# chunk 0x9ef620..0x9ef63a
+00000000009ef620: cmp      qword ptr [rcx + 0x18], -1
+00000000009ef625: jne      0x9ef62a
+00000000009ef627: xor      al, al
+00000000009ef629: ret
+00000000009ef62a: mov      eax, dword ptr [rcx + 0x20]
+00000000009ef62d: lea      ecx, [rdx + rax]
+00000000009ef630: cmp      ecx, 0x200000
+00000000009ef636: setle    al
+00000000009ef639: ret

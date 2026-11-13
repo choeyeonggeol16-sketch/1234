@@ -1,0 +1,38 @@
+{
+  "baseline": "abb71a8d4042edd53addfcddb48ed36da921a648",
+  "files": [
+    {
+      "path": "native/CTransport.cpp",
+      "sha256": "945ff5f622ce2319414ffcfeb780f073770c0821478c641ecb30e5d9de1aafdf"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/CUserSocket.java",
+      "sha256": "28187fcb46390dd88e8371722c037ac0389a517ee7c2cb0be4a1712206302779"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/CIOServer.java",
+      "sha256": "9e5d91d9abb1f3db29be605f71989ed6a759f50a023a2785c31d3ac5b4b53f2e"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/CSocket.java",
+      "sha256": "d863665892f42a13d88e43e7dc6c357cb0bd53ed6cefe8d78cfab54178f9804a"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/CNetworkDiagnostics.java",
+      "sha256": "cf35587e17f04ae7b59647beda0ccd86227b5f86bdd25faa38cc9d7399f59f13"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Emblem.java",
+      "sha256": "45a1f54e3b30aa5f03aa5047389112c349d6af1316642f1c93e5685569b2d439"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Ping.java",
+      "sha256": "0d0c4cd0caeddaa7f1bccce14b665f91df77c1d5bc4aa08e4892d90123f2aa6d"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java",
+      "sha256": "336b9fd363e4001a34511d1a9bbbcfaf4198bec15d812458fc0917f25fe6fb8f"
+    }
+  ],
+  "production_files_compared_byte_equal": 1733
+}

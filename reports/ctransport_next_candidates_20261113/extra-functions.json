@@ -1,0 +1,80 @@
+{
+  "SafeSendCapacity": {
+    "entry": "0x9ef620",
+    "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+    "chunks": [
+      [
+        "0x9ef620",
+        "0x9ef63a"
+      ]
+    ],
+    "direct_calls": [],
+    "callers": []
+  },
+  "HardWriteCheck": {
+    "entry": "0x9ef544",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x9ef544",
+        "0x9ef61f"
+      ]
+    ],
+    "direct_calls": [
+      "0x734514",
+      "0x734514",
+      "0x6704e0"
+    ],
+    "callers": []
+  },
+  "SafeSendCaller_97e518": {
+    "entry": "0x97e518",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x97e518",
+        "0x97e68e"
+      ]
+    ],
+    "direct_calls": [
+      "0x849870",
+      "0x976068",
+      "0x9ef41c",
+      "0x5c19f4"
+    ],
+    "callers": []
+  },
+  "SafeSendCaller_97e6d0": {
+    "entry": "0x97e6d0",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0x97e6d0",
+        "0x97e80f"
+      ]
+    ],
+    "direct_calls": [
+      "0x976068",
+      "0x9ef41c",
+      "0x5c18cc"
+    ],
+    "callers": []
+  },
+  "SafeSendCaller_a06c68": {
+    "entry": "0xa06c68",
+    "scope": "PE pdata/unwind",
+    "chunks": [
+      [
+        "0xa06c68",
+        "0xa06df0"
+      ]
+    ],
+    "direct_calls": [
+      "0x705278",
+      "0x976068",
+      "0x9ef41c",
+      "0x5c1b2c"
+    ],
+    "callers": []
+  }
+}

@@ -1,0 +1,90 @@
+# SafeSendCaller_a06c68; PE pdata/unwind; entry 0xa06c68
+# chunk 0xa06c68..0xa06df0
+0000000000a06c68: push     rbx
+0000000000a06c6a: push     rbp
+0000000000a06c6b: push     rsi
+0000000000a06c6c: push     rdi
+0000000000a06c6d: push     r12
+0000000000a06c6f: push     r13
+0000000000a06c71: sub      rsp, 0x68
+0000000000a06c75: mov      qword ptr [rsp + 0x40], 0xfffffffffffffffe
+0000000000a06c7e: mov      rbp, rdx
+0000000000a06c81: mov      rsi, rcx
+0000000000a06c84: mov      r8d, dword ptr [rip + 0x2ebb854d]
+0000000000a06c8b: mov      rax, qword ptr gs:[0x58]
+0000000000a06c94: mov      r13d, 0x7d58
+0000000000a06c9a: mov      rbx, qword ptr [rax + r8*8]
+0000000000a06c9e: movsxd   r9, dword ptr [rbx + r13]
+0000000000a06ca2: lea      r12, [rip - 0x606ca9]
+0000000000a06ca9: movsxd   r8, dword ptr [r12 + r9*4 + 0x47e2a40]
+0000000000a06cb1: lea      eax, [r8 + 1]
+0000000000a06cb5: mov      dword ptr [r12 + r9*4 + 0x47e2a40], eax
+0000000000a06cbd: imul     r9, r9, 0x3e8
+0000000000a06cc4: add      r9, r8
+0000000000a06cc7: lea      rax, [rip + 0x3bbec2] ; UTF16 'bool __cdecl AllianceCrestPacket(class CSocket *,const unsigned char *)'
+0000000000a06cce: mov      qword ptr [r12 + r9*8 + 0x47bf7c0], rax
+0000000000a06cd6: mov      rax, qword ptr [rcx]
+0000000000a06cd9: call     qword ptr [rax + 0xc0]
+0000000000a06cdf: mov      rdi, rax
+0000000000a06ce2: test     rax, rax
+0000000000a06ce5: jne      0xa06cfb
+0000000000a06ce7: movsxd   rax, dword ptr [rbx + r13]
+0000000000a06ceb: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+0000000000a06cf4: mov      al, 1
+0000000000a06cf6: jmp      0xa06de3
+0000000000a06cfb: lea      r8, [rsp + 0xa0]
+0000000000a06d03: lea      rdx, [rip + 0x122f6a]
+0000000000a06d0a: mov      rcx, rbp
+0000000000a06d0d: call     0x705278
+0000000000a06d12: mov      r11, qword ptr [rdi + 0xa88]
+0000000000a06d19: mov      eax, dword ptr [r11 + 0x2168]
+0000000000a06d20: mov      dword ptr [rsp + 0xb0], eax
+0000000000a06d27: mov      eax, dword ptr [rsp + 0xa0]
+0000000000a06d2e: mov      dword ptr [rsp + 0xb4], eax
+0000000000a06d35: mov      r8, qword ptr [rsp + 0xb0]
+0000000000a06d3d: lea      rdx, [rsp + 0x48]
+0000000000a06d42: lea      rcx, [rip + 0x12e14187]
+0000000000a06d49: call     0x976068
+0000000000a06d4e: nop
+0000000000a06d4f: mov      rax, qword ptr [rsp + 0x48]
+0000000000a06d54: test     rax, rax
+0000000000a06d57: je       0xa06d94
+0000000000a06d59: mov      ecx, dword ptr [rax + 0x1c]
+0000000000a06d5c: add      rax, 0x20
+0000000000a06d60: mov      qword ptr [rsp + 0x38], rax
+0000000000a06d65: mov      dword ptr [rsp + 0x30], ecx
+0000000000a06d69: mov      dword ptr [rsp + 0x28], ecx
+0000000000a06d6d: mov      eax, dword ptr [rsp + 0xa0]
+0000000000a06d74: mov      dword ptr [rsp + 0x20], eax
+0000000000a06d78: mov      r9d, 0xaf
+0000000000a06d7e: lea      r8, [rip + 0x1b5b83]
+0000000000a06d85: mov      edx, 0x80000
+0000000000a06d8a: mov      rcx, rsi
+0000000000a06d8d: call     0x9ef41c
+0000000000a06d92: jmp      0xa06dac
+0000000000a06d94: mov      r8d, dword ptr [rsp + 0xa0]
+0000000000a06d9c: mov      rdx, rdi
+0000000000a06d9f: lea      rcx, [rip + 0x2640002]
+0000000000a06da6: call     0x5c1b2c
+0000000000a06dab: nop
+0000000000a06dac: mov      rcx, qword ptr [rsp + 0x48]
+0000000000a06db1: test     rcx, rcx
+0000000000a06db4: je       0xa06dd4
+0000000000a06db6: mov      rax, qword ptr [rcx]
+0000000000a06db9: mov      byte ptr [rsp + 0x20], 0
+0000000000a06dbe: mov      r9d, dword ptr [rsp + 0x50]
+0000000000a06dc3: mov      r8d, 0x83
+0000000000a06dc9: lea      rdx, [rip + 0x121a90]
+0000000000a06dd0: call     qword ptr [rax + 0x10]
+0000000000a06dd3: nop
+0000000000a06dd4: movsxd   rax, dword ptr [rbx + r13]
+0000000000a06dd8: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+0000000000a06de1: xor      al, al
+0000000000a06de3: add      rsp, 0x68
+0000000000a06de7: pop      r13
+0000000000a06de9: pop      r12
+0000000000a06deb: pop      rdi
+0000000000a06dec: pop      rsi
+0000000000a06ded: pop      rbp
+0000000000a06dee: pop      rbx
+0000000000a06def: ret

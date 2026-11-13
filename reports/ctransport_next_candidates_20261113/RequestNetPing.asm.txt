@@ -1,0 +1,114 @@
+# RequestNetPing; PE pdata/unwind; entry 0xa01240
+# chunk 0xa01240..0xa01464
+0000000000a01240: push     rbx
+0000000000a01242: push     rbp
+0000000000a01243: push     rsi
+0000000000a01244: push     rdi
+0000000000a01245: push     r12
+0000000000a01247: push     r14
+0000000000a01249: push     r15
+0000000000a0124b: mov      r11, rsp
+0000000000a0124e: sub      rsp, 0xd0
+0000000000a01255: mov      qword ptr [rsp + 0x98], 0xfffffffffffffffe
+0000000000a01261: mov      r10, rdx
+0000000000a01264: mov      rbp, rcx
+0000000000a01267: mov      r8d, dword ptr [rip + 0x2ebbdf6a]
+0000000000a0126e: mov      rax, qword ptr gs:[0x58]
+0000000000a01277: mov      r15d, 0x7d58
+0000000000a0127d: mov      r12, qword ptr [rax + r8*8]
+0000000000a01281: movsxd   r9, dword ptr [r12 + r15]
+0000000000a01285: lea      r14, [rip - 0x60128c]
+0000000000a0128c: movsxd   r8, dword ptr [r14 + r9*4 + 0x47e2a40]
+0000000000a01294: lea      eax, [r8 + 1]
+0000000000a01298: mov      dword ptr [r14 + r9*4 + 0x47e2a40], eax
+0000000000a012a0: imul     r9, r9, 0x3e8
+0000000000a012a7: add      r9, r8
+0000000000a012aa: lea      rax, [rip + 0x3c074f] ; UTF16 'bool __cdecl CUserSocket::RequestNetPing(class CSocket *,const unsigned char *)'
+0000000000a012b1: mov      qword ptr [r14 + r9*8 + 0x47bf7c0], rax
+0000000000a012b9: xor      eax, eax
+0000000000a012bb: xchg     dword ptr [rcx + 0x544], eax
+0000000000a012c1: mov      dword ptr [r11 - 0x40], 0
+0000000000a012c9: mov      dword ptr [r11 + 0x58], 0
+0000000000a012d1: mov      dword ptr [r11 + 0x50], 0
+0000000000a012d9: lea      rax, [r11 + 0x50]
+0000000000a012dd: mov      qword ptr [rsp + 0x20], rax
+0000000000a012e2: lea      r9, [r11 + 0x58]
+0000000000a012e6: lea      r8, [r11 - 0x40]
+0000000000a012ea: lea      rdx, [rip + 0x139c43]
+0000000000a012f1: mov      rcx, r10
+0000000000a012f4: call     0x705278
+0000000000a012f9: mov      r11, qword ptr [rbp]
+0000000000a012fd: mov      rcx, rbp
+0000000000a01300: call     qword ptr [r11 + 0xc0]
+0000000000a01307: mov      rsi, rax
+0000000000a0130a: call     qword ptr [rip + 0x11ae10] ; IAT GetTickCount
+0000000000a01310: mov      edi, eax
+0000000000a01312: test     rsi, rsi
+0000000000a01315: je       0xa01443
+0000000000a0131b: mov      rbx, qword ptr [rsi + 0x3888]
+0000000000a01322: test     rbx, rbx
+0000000000a01325: je       0xa0142a
+0000000000a0132b: xor      eax, eax
+0000000000a0132d: mov      byte ptr [rsp + 0x110], al
+0000000000a01334: lea      rdx, [rsp + 0xa0]
+0000000000a0133c: mov      rcx, rbp
+0000000000a0133f: call     0x90ebe4
+0000000000a01344: nop
+0000000000a01345: cmp      qword ptr [rax + 0x20], 8
+0000000000a0134a: jb       0xa01352
+0000000000a0134c: mov      r11, qword ptr [rax + 8]
+0000000000a01350: jmp      0xa01356
+0000000000a01352: lea      r11, [rax + 8]
+0000000000a01356: mov      edx, dword ptr [rbx + 0x2c]
+0000000000a01359: mov      r8d, dword ptr [rbx + 0x28]
+0000000000a0135d: movsxd   r9, dword ptr [rsp + 0x120]
+0000000000a01365: movsxd   r10, dword ptr [rsp + 0x128]
+0000000000a0136d: sub      edi, dword ptr [rsp + 0x90]
+0000000000a01374: mov      eax, edi
+0000000000a01376: lea      rcx, [rbp + 0xc14]
+0000000000a0137d: mov      qword ptr [rsp + 0x88], 0
+0000000000a01389: mov      qword ptr [rsp + 0x80], 0
+0000000000a01395: mov      qword ptr [rsp + 0x78], 0
+0000000000a0139e: mov      qword ptr [rsp + 0x70], 0
+0000000000a013a7: mov      qword ptr [rsp + 0x68], 0
+0000000000a013b0: mov      qword ptr [rsp + 0x60], 0
+0000000000a013b9: mov      qword ptr [rsp + 0x58], rdx
+0000000000a013be: mov      qword ptr [rsp + 0x50], r8
+0000000000a013c3: mov      qword ptr [rsp + 0x48], r9
+0000000000a013c8: mov      qword ptr [rsp + 0x40], r10
+0000000000a013cd: mov      qword ptr [rsp + 0x38], rax
+0000000000a013d2: mov      qword ptr [rsp + 0x30], 0
+0000000000a013db: mov      qword ptr [rsp + 0x28], rcx
+0000000000a013e0: mov      qword ptr [rsp + 0x20], r11
+0000000000a013e5: xor      r9d, r9d
+0000000000a013e8: mov      r8, rsi
+0000000000a013eb: mov      edx, 0x36e
+0000000000a013f0: lea      rcx, [rsp + 0x110]
+0000000000a013f8: call     0x735ca4
+0000000000a013fd: nop
+0000000000a013fe: cmp      qword ptr [rsp + 0xc0], 8
+0000000000a01407: jb       0xa01443
+0000000000a01409: mov      rdx, qword ptr [rsp + 0xa8]
+0000000000a01411: test     rdx, rdx
+0000000000a01414: je       0xa01443
+0000000000a01416: mov      r8d, 1
+0000000000a0141c: lea      rcx, [rip + 0x264698d]
+0000000000a01423: call     0x74e3bc
+0000000000a01428: jmp      0xa01443
+0000000000a0142a: lea      r8, [rip + 0x3c0587] ; UTF16 'm_pAgent is not GameGuardAgent'
+0000000000a01431: mov      edx, 2
+0000000000a01436: lea      rcx, [rip + 0xd520463]
+0000000000a0143d: call     0x734514
+0000000000a01442: nop
+0000000000a01443: movsxd   rax, dword ptr [r12 + r15]
+0000000000a01447: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a01450: xor      al, al
+0000000000a01452: add      rsp, 0xd0
+0000000000a01459: pop      r15
+0000000000a0145b: pop      r14
+0000000000a0145d: pop      r12
+0000000000a0145f: pop      rdi
+0000000000a01460: pop      rsi
+0000000000a01461: pop      rbp
+0000000000a01462: pop      rbx
+0000000000a01463: ret

@@ -1,0 +1,65 @@
+{
+  "binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "checks": [
+    {
+      "at": "0x9ef493",
+      "bytes": "ff5078",
+      "instruction": "call qword ptr [rax + 0x78]"
+    },
+    {
+      "at": "0x9ef62d",
+      "bytes": "8d0c02",
+      "instruction": "lea ecx, [rdx + rax]"
+    },
+    {
+      "at": "0x9ef630",
+      "bytes": "81f900002000",
+      "instruction": "cmp ecx, 0x200000"
+    },
+    {
+      "at": "0x9ef636",
+      "bytes": "0f9ec0",
+      "instruction": "setle al"
+    },
+    {
+      "at": "0x9fcc52",
+      "bytes": "89913c050000",
+      "instruction": "mov dword ptr [rcx + 0x53c], edx"
+    },
+    {
+      "at": "0x9fcc58",
+      "bytes": "e8bf07a6ff",
+      "instruction": "call 0x45d41c"
+    },
+    {
+      "at": "0x97e626",
+      "bytes": "ba00000800",
+      "instruction": "mov edx, 0x80000"
+    },
+    {
+      "at": "0x97e62b",
+      "bytes": "e8ec0d0700",
+      "instruction": "call 0x9ef41c"
+    },
+    {
+      "at": "0x97e7aa",
+      "bytes": "ba00000800",
+      "instruction": "mov edx, 0x80000"
+    },
+    {
+      "at": "0x97e7af",
+      "bytes": "e8680c0700",
+      "instruction": "call 0x9ef41c"
+    },
+    {
+      "at": "0xa06d85",
+      "bytes": "ba00000800",
+      "instruction": "mov edx, 0x80000"
+    },
+    {
+      "at": "0xa06d8d",
+      "bytes": "e88a86feff",
+      "instruction": "call 0x9ef41c"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+# SafeSendCaller_97e518; PE pdata/unwind; entry 0x97e518
+# chunk 0x97e518..0x97e68e
+000000000097e518: push     rbx
+000000000097e51a: push     rbp
+000000000097e51b: push     rsi
+000000000097e51c: push     rdi
+000000000097e51d: push     r12
+000000000097e51f: push     r13
+000000000097e521: push     r14
+000000000097e523: push     r15
+000000000097e525: sub      rsp, 0x78
+000000000097e529: mov      qword ptr [rsp + 0x50], 0xfffffffffffffffe
+000000000097e532: mov      ebp, edx
+000000000097e534: mov      rsi, rcx
+000000000097e537: mov      r8d, dword ptr [rip + 0x2ec40c9a]
+000000000097e53e: mov      rax, qword ptr gs:[0x58]
+000000000097e547: mov      r15d, 0x7d58
+000000000097e54d: mov      r13, qword ptr [rax + r8*8]
+000000000097e551: movsxd   r9, dword ptr [r13 + r15]
+000000000097e556: lea      r14, [rip - 0x57e55d]
+000000000097e55d: movsxd   r8, dword ptr [r14 + r9*4 + 0x47e2a40]
+000000000097e565: lea      eax, [r8 + 1]
+000000000097e569: mov      dword ptr [r14 + r9*4 + 0x47e2a40], eax
+000000000097e571: imul     r9, r9, 0x3e8
+000000000097e578: add      r9, r8
+000000000097e57b: lea      rax, [rip + 0x416c1e] ; UTF16 'bool __cdecl User::OnPledgeEmblem(unsigned int)'
+000000000097e582: mov      qword ptr [r14 + r9*8 + 0x47bf7c0], rax
+000000000097e58a: xor      r12d, r12d
+000000000097e58d: mov      rax, qword ptr [rcx]
+000000000097e590: call     qword ptr [rax + 0xbb8]
+000000000097e596: test     rax, rax
+000000000097e599: je       0x97e5a6
+000000000097e59b: mov      rcx, rax
+000000000097e59e: call     0x849870
+000000000097e5a3: mov      r12d, eax
+000000000097e5a6: mov      rcx, qword ptr [rsi + 0xa88]
+000000000097e5ad: mov      edx, dword ptr [rcx + 0x2168]
+000000000097e5b3: mov      dword ptr [rsp + 0xc0], edx
+000000000097e5ba: mov      dword ptr [rsp + 0xc4], ebp
+000000000097e5c1: mov      r8, qword ptr [rsp + 0xc0]
+000000000097e5c9: lea      rdx, [rsp + 0x58]
+000000000097e5ce: lea      rcx, [rip + 0x12e9c8fb]
+000000000097e5d5: call     0x976068
+000000000097e5da: nop
+000000000097e5db: mov      rbx, qword ptr [rsp + 0x58]
+000000000097e5e0: test     rbx, rbx
+000000000097e5e3: je       0x97e632
+000000000097e5e5: mov      edi, dword ptr [rbx + 0x1c]
+000000000097e5e8: add      rbx, 0x20
+000000000097e5ec: mov      rax, qword ptr [rsi]
+000000000097e5ef: mov      rcx, rsi
+000000000097e5f2: call     qword ptr [rax + 0xb28]
+000000000097e5f8: mov      rcx, rax
+000000000097e5fb: mov      qword ptr [rsp + 0x48], rbx
+000000000097e600: mov      dword ptr [rsp + 0x40], edi
+000000000097e604: mov      dword ptr [rsp + 0x38], edi
+000000000097e608: mov      dword ptr [rsp + 0x30], ebp
+000000000097e60c: mov      dword ptr [rsp + 0x28], r12d
+000000000097e611: mov      dword ptr [rsp + 0x20], 0x1b
+000000000097e619: mov      r9d, 0xfe
+000000000097e61f: lea      r8, [rip + 0x275b32]
+000000000097e626: mov      edx, 0x80000
+000000000097e62b: call     0x9ef41c
+000000000097e630: jmp      0x97e645
+000000000097e632: mov      r8d, ebp
+000000000097e635: mov      rdx, rsi
+000000000097e638: lea      rcx, [rip + 0x26c8769]
+000000000097e63f: call     0x5c19f4
+000000000097e644: nop
+000000000097e645: mov      rcx, qword ptr [rsp + 0x58]
+000000000097e64a: test     rcx, rcx
+000000000097e64d: je       0x97e66d
+000000000097e64f: mov      rax, qword ptr [rcx]
+000000000097e652: mov      byte ptr [rsp + 0x20], 0
+000000000097e657: mov      r9d, dword ptr [rsp + 0x60]
+000000000097e65c: mov      r8d, 0x83
+000000000097e662: lea      rdx, [rip + 0x1aa1f7]
+000000000097e669: call     qword ptr [rax + 0x10]
+000000000097e66c: nop
+000000000097e66d: movsxd   rax, dword ptr [r13 + r15]
+000000000097e672: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+000000000097e67b: xor      al, al
+000000000097e67d: add      rsp, 0x78
+000000000097e681: pop      r15
+000000000097e683: pop      r14
+000000000097e685: pop      r13
+000000000097e687: pop      r12
+000000000097e689: pop      rdi
+000000000097e68a: pop      rsi
+000000000097e68b: pop      rbp
+000000000097e68c: pop      rbx
+000000000097e68d: ret
