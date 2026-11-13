@@ -1,0 +1,4538 @@
+{
+  "target_commit": "03b14538d2a813007f4b964ff207ae6aeb8f54ac",
+  "original_binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "original_executed": false,
+  "current_dll_sha256": "01d389928506719781cdcbd1b9042f58a3b9d89786f6fdb6f0bf2572a63afb75",
+  "known_inventory_before_worker_extension": 154,
+  "selected_function_entries": 156,
+  "verified_original_instructions": 14852,
+  "inventory_counts": {
+    "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE": 90,
+    "TIMER_CALLBACK_PROFILE_ADAPTED": 3,
+    "L2_PROFILE_EXCLUDED": 39,
+    "CXX_DESTRUCTOR_ADAPTED": 5,
+    "ORIGINAL_EMPTY_DEFAULT": 1,
+    "IO_COMPLETION_ROLE_ADAPTED": 1,
+    "SHARED_DEFAULT_STUB": 2,
+    "OPERATIONAL_PARTIAL": 1,
+    "SEND_POLICY_ADAPTED": 2,
+    "REFERENCE_OR_PACKET_DIAGNOSTICS_PARTIAL": 4,
+    "ORIGINAL_STATS_ONLY": 1,
+    "ORIGINAL_INSTRUMENTATION_ONLY": 1,
+    "L2_CLIENT_SERVICE_EXCLUDED": 1,
+    "CLIENT_IDENTITY_INTEGRATION_OPEN": 1,
+    "RUNTIME_HELPER_DETAIL_UNVERIFIED": 1,
+    "ORIGINAL_CLOSE_VERIFIER_NOT_PORTED": 2,
+    "ORIGINAL_TRACE_WRAPPER_ADAPTED": 1
+  },
+  "assessment_counts": {
+    "L1_ADAPTED": 17,
+    "ROLE_PRESENT": 13,
+    "ORIGINAL_PROFILE_UNPORTED": 1,
+    "CLIENT_INTEGRATION_OPEN": 1,
+    "PARTIAL_DIAGNOSTICS": 1,
+    "UNVERIFIED_BOUNDARY": 1,
+    "EXCLUDED": 2,
+    "VALIDATION_OPEN": 1,
+    "OPERATIONAL_PARTIAL": 1
+  },
+  "not_a_restoration_percentage": true,
+  "semantic_assessments_are_manual": true,
+  "worker_name_references": [
+    {
+      "at": "0x705385",
+      "entry": "0x705330",
+      "signature": "void __cdecl IOThreadCallback::IOThreadNextSyncTime(void)",
+      "bytes": "488d0504d45600"
+    },
+    {
+      "at": "0x705708",
+      "entry": "0x7056ac",
+      "signature": "void __cdecl IOThreadCallback::IOThread_common(void)",
+      "bytes": "488d05b1d35600"
+    },
+    {
+      "at": "0x70585f",
+      "entry": "0x7056ac",
+      "signature": "void __cdecl IOThreadCallback::IOThread_common(void)",
+      "bytes": "488d157ad15600"
+    },
+    {
+      "at": "0x705933",
+      "entry": "0x7056ac",
+      "signature": "void __cdecl IOThreadCallback::IOThread_common(void)",
+      "bytes": "488d15a6d05600"
+    },
+    {
+      "at": "0x705afe",
+      "entry": "0x705ab0",
+      "signature": "void __cdecl IOThreadCallback::IOThread_debug(void)",
+      "bytes": "488d055bd05600"
+    }
+  ],
+  "critical_instructions": [
+    {
+      "at": "0xa12a56",
+      "bytes": "ff5010",
+      "instruction": "call qword ptr [rax + 0x10]"
+    },
+    {
+      "at": "0xa12a59",
+      "bytes": "85c0",
+      "instruction": "test eax, eax"
+    },
+    {
+      "at": "0xa12a5b",
+      "bytes": "7e64",
+      "instruction": "jle 0xa12ac1"
+    },
+    {
+      "at": "0x66db28",
+      "bytes": "33c0",
+      "instruction": "xor eax, eax"
+    },
+    {
+      "at": "0x66db2a",
+      "bytes": "c60001",
+      "instruction": "mov byte ptr [rax], 1"
+    }
+  ],
+  "historical_address_hints_not_instruction_boundaries": [],
+  "original_gqcs_pdata_references": [
+    {
+      "at": "0x7057c9",
+      "op": "call",
+      "function": "0x7056ac",
+      "validation": "pdata instruction boundary"
+    }
+  ],
+  "current_dll_exports": 67,
+  "current_dll_imports": [
+    "CloseHandle",
+    "CreateEventA",
+    "CreateIoCompletionPort",
+    "CreateSemaphoreA",
+    "DeleteCriticalSection",
+    "DuplicateHandle",
+    "EnterCriticalSection",
+    "FileTimeToSystemTime",
+    "FormatMessageA",
+    "GetCurrentProcess",
+    "GetCurrentProcessId",
+    "GetCurrentThread",
+    "GetCurrentThreadId",
+    "GetHandleInformation",
+    "GetLastError",
+    "GetModuleHandleA",
+    "GetModuleHandleW",
+    "GetProcAddress",
+    "GetProcessAffinityMask",
+    "GetProcessTimes",
+    "GetQueuedCompletionStatusEx",
+    "GetSystemInfo",
+    "GetSystemTimeAdjustment",
+    "GetSystemTimeAsFileTime",
+    "GetThreadContext",
+    "GetThreadPriority",
+    "GetThreadTimes",
+    "GetTickCount",
+    "GlobalMemoryStatusEx",
+    "InitializeCriticalSection",
+    "IsDBCSLeadByteEx",
+    "IsDebuggerPresent",
+    "LeaveCriticalSection",
+    "LoadLibraryW",
+    "LocalFree",
+    "MultiByteToWideChar",
+    "OpenProcess",
+    "OutputDebugStringA",
+    "PostQueuedCompletionStatus",
+    "QueryPerformanceCounter",
+    "QueryPerformanceFrequency",
+    "RaiseException",
+    "ReleaseSemaphore",
+    "ResetEvent",
+    "ResumeThread",
+    "RtlCaptureContext",
+    "RtlLookupFunctionEntry",
+    "RtlUnwindEx",
+    "RtlVirtualUnwind",
+    "SetEvent",
+    "SetLastError",
+    "SetProcessAffinityMask",
+    "SetSystemTime",
+    "SetThreadAffinityMask",
+    "SetThreadContext",
+    "SetThreadPriority",
+    "Sleep",
+    "SuspendThread",
+    "TlsAlloc",
+    "TlsGetValue",
+    "TlsSetValue",
+    "TryEnterCriticalSection",
+    "VirtualProtect",
+    "VirtualQuery",
+    "WSACleanup",
+    "WSACloseEvent",
+    "WSACreateEvent",
+    "WSAEventSelect",
+    "WSAGetLastError",
+    "WSARecv",
+    "WSAResetEvent",
+    "WSASend",
+    "WSASocketW",
+    "WSAStartup",
+    "WaitForMultipleObjects",
+    "WaitForSingleObject",
+    "WideCharToMultiByte",
+    "__C_specific_handler",
+    "___lc_codepage_func",
+    "___mb_cur_max_func",
+    "__iob_func",
+    "_amsg_exit",
+    "_beginthreadex",
+    "_endthreadex",
+    "_errno",
+    "_initterm",
+    "_lock",
+    "_read",
+    "_setjmp",
+    "_strdup",
+    "_unlock",
+    "_vscprintf",
+    "_vsnprintf",
+    "abort",
+    "accept",
+    "bind",
+    "calloc",
+    "closesocket",
+    "exit",
+    "fprintf",
+    "fputc",
+    "fputs",
+    "free",
+    "freeaddrinfo",
+    "fwrite",
+    "getaddrinfo",
+    "getenv",
+    "getpeername",
+    "getsockname",
+    "inet_ntop",
+    "iswctype",
+    "listen",
+    "localeconv",
+    "longjmp",
+    "malloc",
+    "memchr",
+    "memcmp",
+    "memcpy",
+    "memmove",
+    "memset",
+    "ntohl",
+    "ntohs",
+    "printf",
+    "realloc",
+    "setlocale",
+    "setsockopt",
+    "shutdown",
+    "signal",
+    "strchr",
+    "strcmp",
+    "strcoll",
+    "strerror",
+    "strftime",
+    "strlen",
+    "strncmp",
+    "strtoul",
+    "strxfrm",
+    "towlower",
+    "towupper",
+    "vfprintf",
+    "wcscoll",
+    "wcsftime",
+    "wcslen",
+    "wcsxfrm"
+  ],
+  "windows_verification": {
+    "status": "passed",
+    "abi": "0xa0000",
+    "exports": 67,
+    "implementation_parent": "a1d8d5d",
+    "dll_sha256": "01d389928506719781cdcbd1b9042f58a3b9d89786f6fdb6f0bf2572a63afb75",
+    "codec_dll_sha256": "60bde93c2ba20057e7e307594edef69ced273b69f923535ab658769e09f0cea9",
+    "pss_client_dll_sha256": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
+    "previous_verified_run": {
+      "run_id": 43479323594,
+      "source_commit": "1a16f1cde8cde4d6e2c7618f4d74e5d05ded764b",
+      "dll_sha256": "7ea2195879cd1a414796ffbd17477e3c842bc419c475acf8345e36d861538afc"
+    },
+    "source_scope": {
+      "baseline": "a1d8d5d",
+      "edited_java_files": [
+        "src/l1j/server/server/model/network/core/CIOConfig.java"
+      ],
+      "edited_native_files": [
+        "native/timer_wheel.hpp",
+        "native/io_server.hpp",
+        "native/CTransport.cpp"
+      ],
+      "unchanged_source_files": 1711,
+      "unchanged_java_files": 1710
+    },
+    "implementation_commit": "8812c2e6019ad8380d5cef52801b3f6d40979d75",
+    "tested_source_commit": "8812c2e6019ad8380d5cef52801b3f6d40979d75",
+    "run_id": 43491457850,
+    "job_id": 132113419130,
+    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43491457850",
+    "os": "Windows Server2022 GitHub-hosted runner",
+    "jdk": "Temurin21",
+    "scope": "Actual Windows DLL loopback and Java FFM timer/session/close/codec/PSS regression;typed queue corruption/concurrency separately ASan/UBSan and TSan",
+    "source_archive_sha256": "b337fb2657c56094768c431cd2fbf5cc759c01db0ff394c7f8e624a35e43565b"
+  },
+  "rows": [
+    {
+      "id": "N01",
+      "name": "IOCP dequeue와 완료 분배",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0x7056ac",
+        "0x7057c9",
+        "0x7058d8"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "단일 GQCS의 completion-key 가상 호출 역할은 있다. 현재는 요청한 GQCSEx128/항목별 NTSTATUS/typed Operation을 쓴다.",
+      "difference_or_next_action": "추가 복원 대상 없음. 원본과 같은 dequeue 알고리즘이라고 표시하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "void IOThreadCallback::IOThread_common()",
+          "line": 884,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x7056ac",
+          "pdata_instruction_boundary": true,
+          "root": "0x7056ac",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x7057c9",
+          "pdata_instruction_boundary": true,
+          "root": "0x7056ac",
+          "instruction": "call qword ptr [rip + 0x416af1]"
+        },
+        {
+          "address": "0x7058d8",
+          "pdata_instruction_boundary": true,
+          "root": "0x7056ac",
+          "instruction": "call qword ptr [rax + 0x50]"
+        }
+      ]
+    },
+    {
+      "id": "N02",
+      "name": "8K/16K slab·소유 풀 반환",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x6b5094",
+        "0x6b4fb8",
+        "0x45d7f8",
+        "0x45d67c"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "8K/16K 고정 slab·선택 필드 offset·owner ring·최종 ref 반납이 있다. 현재는 view/외부 producer/잠금 정책이 다르다.",
+      "difference_or_next_action": "정상 pool 역할 대응. 전체 allocator ABI는 N37과 구분.",
+      "source_anchors": [
+        {
+          "path": "native/cio_core.hpp",
+          "text": "class CIOBufferPool",
+          "line": 91,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x6b5094",
+          "pdata_instruction_boundary": true,
+          "root": "0x6b5094",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x6b4fb8",
+          "pdata_instruction_boundary": true,
+          "root": "0x6b4fb8",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x45d7f8",
+          "pdata_instruction_boundary": true,
+          "root": "0x45d7f8",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x45d67c",
+          "pdata_instruction_boundary": true,
+          "root": "0x45d67c",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N03",
+      "name": "공유 수신 COW·유일 버퍼 compaction",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x45de2c"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "공유 수신은 남은 데이터를 새 블록으로 복사하고 단독 ref는 제자리 compaction한다.",
+      "difference_or_next_action": "새 결함 근거 없이 재작성하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/cio_core.hpp",
+          "text": "class ReceiveWindow",
+          "line": 200,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x45de2c",
+          "pdata_instruction_boundary": true,
+          "root": "0x45de2c",
+          "instruction": "sub rsp, 0x28"
+        }
+      ]
+    },
+    {
+      "id": "N04",
+      "name": "송신 FIFO·완료 길이·버퍼 반환",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0x545a18",
+        "0x545e38",
+        "0x54655c"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "native SEND FIFO/부분 완료 offset 진행·재게시·최종 반납이 있다. 원본 완료 길이 검사와 부분 송신 처리 방식은 다르다.",
+      "difference_or_next_action": "현재 부분 송신 안전 처리를 유지.",
+      "source_anchors": [
+        {
+          "path": "native/cio_core.hpp",
+          "text": "class SendChain",
+          "line": 223,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x545a18",
+          "pdata_instruction_boundary": true,
+          "root": "0x545a18",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x545e38",
+          "pdata_instruction_boundary": true,
+          "root": "0x545e38",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x54655c",
+          "pdata_instruction_boundary": true,
+          "root": "0x54655c",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N05",
+      "name": "상위 송신 serializer와 암호화 순서",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0x45c7ac",
+        "0x9ef544",
+        "0x9ef620"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "실제 SEND/암호화/WRITE 순서는 현재 native CExecutionSerializerFast가 관리한다. 이전 ABI5 표의 Java serializer 중심 설명은 최신 상태가 아니다.",
+      "difference_or_next_action": "512/504 직렬화·overflow rollback·세대 보호가 있다. L2 cipher/profile은 이식하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/execution_serializer.hpp",
+          "text": "class CExecutionSerializerFast",
+          "line": 9,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x45c7ac",
+          "pdata_instruction_boundary": true,
+          "root": "0x45c7ac",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x9ef544",
+          "pdata_instruction_boundary": true,
+          "root": "0x9ef544",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x9ef620",
+          "pdata_instruction_boundary": false,
+          "root": null,
+          "instruction": "cmp qword ptr [rcx + 0x18], -1"
+        }
+      ]
+    },
+    {
+      "id": "N06",
+      "name": "일반 completion 작업 게시와 참조",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x704248"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "IOCP 작업 게시 전에 owner retain, 실패 시 즉시 release, 완료 후 release를 한다.",
+      "difference_or_next_action": "게시 수명 역할 대응.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "bool post(Operation& op)",
+          "line": 155,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x704248",
+          "pdata_instruction_boundary": true,
+          "root": "0x704248",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N07",
+      "name": "50ms/200슬롯·1000-entry block·overflow heap",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x92533c",
+        "0x9256d4",
+        "0x92611c"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "50ms/200칸 wheel·1000-entry CSlot·32-byte overflow heap·공유 CMwmrQueue4009가 있다.",
+      "difference_or_next_action": "취소 인덱스/compaction/저장 예산은 L1 확장.",
+      "source_anchors": [
+        {
+          "path": "native/timer_wheel.hpp",
+          "text": "class CThreadLocalTimer",
+          "line": 61,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x92533c",
+          "pdata_instruction_boundary": false,
+          "root": null,
+          "instruction": "movsxd r10, dword ptr [rcx + 0x4e20]"
+        },
+        {
+          "address": "0x9256d4",
+          "pdata_instruction_boundary": true,
+          "root": "0x9256d4",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x92611c",
+          "pdata_instruction_boundary": true,
+          "root": "0x92611c",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N08",
+      "name": "timer message/argument·취소·clock",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0x925374",
+        "0x926bf4"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "AddTimer object/deadline/message/argument와 Dispatch가 실제 실행 경로에 있다. uint64 clock/bool admission/cancel key/callback 계약을 사용한다.",
+      "difference_or_next_action": "원본 void 반환형·두 Dispatch overload 원형까지 같은 것은 아님.",
+      "source_anchors": [
+        {
+          "path": "native/timer_wheel.hpp",
+          "text": "bool AddTimer(CIOObject* object,",
+          "line": 130,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x925374",
+          "pdata_instruction_boundary": true,
+          "root": "0x925374",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x926bf4",
+          "pdata_instruction_boundary": true,
+          "root": "0x926bf4",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N09",
+      "name": "종료 시작 hook·활성 해제·linger0",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x45d534",
+        "0xa12dec"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "close-start hook/active 제외/linger0·graceful half-close·I/O drain 이후 terminal이 있다.",
+      "difference_or_next_action": "원본 모든 close-state/타이밍 숫자와 같다는 의미는 아님.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "void finishIfReady()",
+          "line": 279,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x45d534",
+          "pdata_instruction_boundary": true,
+          "root": "0x45d534",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0xa12dec",
+          "pdata_instruction_boundary": true,
+          "root": "0xa12dec",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N10",
+      "name": "Server::Add / Remove의 잠금·참조",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x8b0404",
+        "0x8b04fc",
+        "Server vtable +0x70/+0x68"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "잠금 아래 native socket map 등록/제거와 retain/release를 수행한다.",
+      "difference_or_next_action": "기존 Add/Remove 경로를 유지.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "bool Server::Add(CIOSocket* c)",
+          "line": 859,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x8b0404",
+          "pdata_instruction_boundary": true,
+          "root": "0x8b0404",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x8b04fc",
+          "pdata_instruction_boundary": true,
+          "root": "0x8b04fc",
+          "instruction": "mov qword ptr [rsp + 0x10], rdx"
+        }
+      ]
+    },
+    {
+      "id": "N11",
+      "name": "Server::Shutdown snapshot의 참조 수명",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x8b0954",
+        "Server vtable +0x78"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "종료 snapshot은 소켓을 retain하고 잠금 밖에서 disconnect 후 release한다.",
+      "difference_or_next_action": "원본 역할 대응; snapshot container/layout은 다름.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "bool Server::Shutdown()",
+          "line": 877,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x8b0954",
+          "pdata_instruction_boundary": true,
+          "root": "0x8b0954",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N12",
+      "name": "수신 parser·opcode 분배",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0xa0372c"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "CUserSocketParser의 native framing/codec·lease와 Java L1 owner dispatch가 있다.",
+      "difference_or_next_action": "L2 opcode/game handler는 N31 범위 제외.",
+      "source_anchors": [
+        {
+          "path": "native/user_socket.hpp",
+          "text": "class CUserSocketParser",
+          "line": 14,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0xa0372c",
+          "pdata_instruction_boundary": true,
+          "root": "0xa0372c",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N13",
+      "name": "코덱 직접 연결",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0xa0372c",
+        "0x9ef384"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "새 transport가 기존 CIOPacketCodec.dll 함수를 직접 호출한다. 실제 Windows wire/key 회귀를 통과했다.",
+      "difference_or_next_action": "L1 codec 유지. 원본 L2 cipher 복원을 뜻하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/l1_codec.hpp",
+          "text": "class L1Codec",
+          "line": 31,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0xa0372c",
+          "pdata_instruction_boundary": true,
+          "root": "0xa0372c",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x9ef384",
+          "pdata_instruction_boundary": true,
+          "root": "0x9ef384",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N14",
+      "name": "packet lease·세션 owner·L1 deferred cleanup",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0xa12674",
+        "0xa123e8"
+      ],
+      "status": "ORIGINAL_PROFILE_UNPORTED",
+      "current_facts": "native drain/packet lease/Java owner 정리는 있다. 원본 CUserSocketReleaseVerifier 클래스와 종료 후 양수 잔여 ref 검사 절차는 없다.",
+      "difference_or_next_action": "정상 해제 경로와 별개로 남은 진단 H01/H02를 대조해야 함.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "void finalizeRegistration()",
+          "line": 309,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0xa12674",
+          "pdata_instruction_boundary": true,
+          "root": "0xa12674",
+          "instruction": "mov qword ptr [rsp + 8], rcx"
+        },
+        {
+          "address": "0xa123e8",
+          "pdata_instruction_boundary": true,
+          "root": "0xa123e8",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N15",
+      "name": "native 핸들·세대·retiring 조회",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0x90e548",
+        "0xa12dec"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "active/retiring map·lookup retain·slot+generation·stale handle 거절이 있다.",
+      "difference_or_next_action": "L1 세대 핸들은 원본 MemoryObject 진단 ID와 별개.",
+      "source_anchors": [
+        {
+          "path": "native/user_registry.hpp",
+          "text": "template<class T> class CUserSocketManager",
+          "line": 9,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x90e548",
+          "pdata_instruction_boundary": true,
+          "root": "0x90e548",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0xa12dec",
+          "pdata_instruction_boundary": true,
+          "root": "0xa12dec",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N16",
+      "name": "8,192-bucket 사용자번호 CObjectMap",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0xa0ce3e",
+        "0xa0ce49",
+        "0xa08138"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "사용자 번호 맵과 variant27/28의 Playing/EnterChar 맵을 현재 native에서 사용한다.",
+      "difference_or_next_action": "이전 미이식 표시는 해소. 원본 모든 L2 소비자 동등성은 아님.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "CObjectMap<CUserSocket,8192,27> userSocketMapPlaying",
+          "line": 96,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0xa0ce3e",
+          "pdata_instruction_boundary": true,
+          "root": "0xa0ccc4",
+          "instruction": "lock xadd dword ptr [rip + 0x17453b22], edx"
+        },
+        {
+          "address": "0xa0ce49",
+          "pdata_instruction_boundary": true,
+          "root": "0xa0ccc4",
+          "instruction": "mov dword ptr [rdi + 0x4e8], edx"
+        },
+        {
+          "address": "0xa08138",
+          "pdata_instruction_boundary": true,
+          "root": "0xa08138",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N17",
+      "name": "FD_ACCEPT→RegisterWait→IOCP 접속 수락",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x7066dc",
+        "0x706564",
+        "0x705e4c",
+        "0x704d1c",
+        "0x705508"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "FD_ACCEPT event → WaitThread 선택 → OnWaitCallback IOCP 게시 → OnIOCallback accept 경로가 있다.",
+      "difference_or_next_action": "이전 미이식 표시는 해소.",
+      "source_anchors": [
+        {
+          "path": "native/io_server.hpp",
+          "text": "bool RegisterWait(CIOServer* object,",
+          "line": 87,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x7066dc",
+          "pdata_instruction_boundary": true,
+          "root": "0x7066dc",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x706564",
+          "pdata_instruction_boundary": true,
+          "root": "0x706564",
+          "instruction": "mov qword ptr [rsp + 0x10], rdx"
+        },
+        {
+          "address": "0x705e4c",
+          "pdata_instruction_boundary": true,
+          "root": "0x705e4c",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x704d1c",
+          "pdata_instruction_boundary": true,
+          "root": "0x704d1c",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x705508",
+          "pdata_instruction_boundary": true,
+          "root": "0x705508",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N18",
+      "name": "factory→생성→등록→I/O 초기화 순서",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0x8af9cc",
+        "0x8b0738",
+        "0xa0d07c",
+        "0xa0ccc4",
+        "0x545260"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "factory 할당/등록/accept callback/admission/socket I/O 초기화가 있다.",
+      "difference_or_next_action": "L1 입장 정책과 초기 seed/codec 계약을 적용.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "void Server::OnAcceptedSocket(SOCKET socket)",
+          "line": 1006,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x8af9cc",
+          "pdata_instruction_boundary": true,
+          "root": "0x8af9cc",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x8b0738",
+          "pdata_instruction_boundary": true,
+          "root": "0x8b0738",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0xa0d07c",
+          "pdata_instruction_boundary": true,
+          "root": "0xa0d07c",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0xa0ccc4",
+          "pdata_instruction_boundary": true,
+          "root": "0xa0ccc4",
+          "instruction": "mov qword ptr [rsp + 8], rcx"
+        },
+        {
+          "address": "0x545260",
+          "pdata_instruction_boundary": true,
+          "root": "0x545260",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N19",
+      "name": "SO_RCVBUF/SO_SNDBUF=0 및 listen 정책",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x5452eb",
+        "0x545315",
+        "0x7067e2"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "admission 후 SO_RCVBUF/SO_SNDBUF=0을 설정한다. 기본 backlog5와 no-delay 설정이 있다.",
+      "difference_or_next_action": "이전 소켓 옵션 미이식 표시는 해소. 운영 설정값 동등성은 별도.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "SO_RCVBUF",
+          "line": 1017,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x5452eb",
+          "pdata_instruction_boundary": true,
+          "root": "0x545260",
+          "instruction": "call qword ptr [rip + 0x5d737f]"
+        },
+        {
+          "address": "0x545315",
+          "pdata_instruction_boundary": true,
+          "root": "0x545260",
+          "instruction": "call qword ptr [rip + 0x5d7355]"
+        },
+        {
+          "address": "0x7067e2",
+          "pdata_instruction_boundary": true,
+          "root": "0x7066dc",
+          "instruction": "call qword ptr [rip + 0x415f08]"
+        }
+      ]
+    },
+    {
+      "id": "N20",
+      "name": "IO worker 번호/TLS/owner 식별",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x705b38",
+        "0x9250f8",
+        "0x925118"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "native worker/TLS owner, 외부 producer owner, listener17, perf15 식별이 있다. 원본0x705708의 signature도 IOThreadCallback::IOThread_common이며 현재 worker 이름과 일치한다.",
+      "difference_or_next_action": "토큰 값으로 timer owner를 정하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "currentWorkerIndex = owner;",
+          "line": 890,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x705b38",
+          "pdata_instruction_boundary": true,
+          "root": "0x705b38",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x9250f8",
+          "pdata_instruction_boundary": false,
+          "root": null,
+          "instruction": "mov edx, dword ptr [rip + 0x2ec9a0da]"
+        },
+        {
+          "address": "0x925118",
+          "pdata_instruction_boundary": false,
+          "root": null,
+          "instruction": "movsxd rax, ecx"
+        }
+      ]
+    },
+    {
+      "id": "N21",
+      "name": "CPU 수 기반 worker 수·affinity",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x7044c4",
+        "0x705c4b"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "CPU 수에 따른 worker 제한과 worker affinity를 적용한다. 현재 상한8은 L1 정책이다.",
+      "difference_or_next_action": "이전 affinity 미이식 표시는 해소; 원본 worker 수와 동일하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "SetThreadAffinityMask(",
+          "line": 887,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x7044c4",
+          "pdata_instruction_boundary": true,
+          "root": "0x7044c4",
+          "instruction": "sub rsp, 0x58"
+        },
+        {
+          "address": "0x705c4b",
+          "pdata_instruction_boundary": true,
+          "root": "0x705b70",
+          "instruction": "call qword ptr [rip + 0x416677]"
+        }
+      ]
+    },
+    {
+      "id": "N22",
+      "name": "ListenThread owner17의 실제 실행 구조",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x7309df",
+        "0x730300",
+        "0x72f874",
+        "0x705e4c"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "ListenThread를 실제로 시작하고 owner17의 wait/timer 처리를 수행한다.",
+      "difference_or_next_action": "이전 listener 실행 미이식 표시는 해소.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "bool ListenThread::Start()",
+          "line": 953,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x7309df",
+          "pdata_instruction_boundary": true,
+          "root": "0x730408",
+          "instruction": "lea r8, [rip + 0x55be72]"
+        },
+        {
+          "address": "0x730300",
+          "pdata_instruction_boundary": true,
+          "root": "0x730300",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x72f874",
+          "pdata_instruction_boundary": true,
+          "root": "0x72f874",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x705e4c",
+          "pdata_instruction_boundary": true,
+          "root": "0x705e4c",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N23",
+      "name": "IP별 접속 제한·반환",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0xa0dc04"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "IP 제한 예약/거절/terminal 수명에 따른 카운터 반환이 있다.",
+      "difference_or_next_action": "접속 admission 정책은 현재 config에 맞춘다.",
+      "source_anchors": [
+        {
+          "path": "native/socket_limiter.hpp",
+          "text": "bool IncUserSocketPerIP(",
+          "line": 24,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0xa0dc04",
+          "pdata_instruction_boundary": true,
+          "root": "0xa0dc04",
+          "instruction": "mov dword ptr [rsp + 0x10], edx"
+        }
+      ]
+    },
+    {
+      "id": "N24",
+      "name": "MAC별 소켓 limiter",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0xa0ded4"
+      ],
+      "status": "CLIENT_INTEGRATION_OPEN",
+      "current_facts": "MAC 제한 서버 API/카운터·인증 전 검사·trusted identity bind hook은 있다. 실제 클라이언트 공급·검증은 연결하지 않았다.",
+      "difference_or_next_action": "서버 core 기능 누락으로 재작성하지 않음. 클라이언트 연동은 별도 열린 항목.",
+      "source_anchors": [
+        {
+          "path": "native/socket_limiter.hpp",
+          "text": "bool IncUserSocketPerMAC(",
+          "line": 26,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0xa0ded4",
+          "pdata_instruction_boundary": true,
+          "root": "0xa0ded4",
+          "instruction": "mov qword ptr [rsp + 0x10], rdx"
+        }
+      ]
+    },
+    {
+      "id": "N25",
+      "name": "원본 2MiB pending write 허용 정책",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x9ef5ca",
+        "0x9ef620"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "2MiB pending write 한도와 optional SafeSend512KiB 여유/rollback이 있다.",
+      "difference_or_next_action": "이전 송신 한도 미이식 표시는 해소. 모든 L2 Send 허용 정책과 동일하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "MaxQueuedBytes",
+          "line": 457,
+          "matching_line_count": 3
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x9ef5ca",
+          "pdata_instruction_boundary": true,
+          "root": "0x9ef544",
+          "instruction": "cmp dword ptr [rcx + 0x20], 0x200000"
+        },
+        {
+          "address": "0x9ef620",
+          "pdata_instruction_boundary": false,
+          "root": null,
+          "instruction": "cmp qword ptr [rcx + 0x18], -1"
+        }
+      ]
+    },
+    {
+      "id": "N26",
+      "name": "Server::ReportSocket 전체 peer 진단",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x8b0bac",
+        "0x72e25d"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "Server_ReportSocket와 bounded manager socket/queue/close 진단이 있다.",
+      "difference_or_next_action": "이전 peer 진단 전무 표시는 해소; 원본 필드·CSV 전체를 복제한 것은 아님.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "CIO_API int Server_ReportSocket(",
+          "line": 1300,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x8b0bac",
+          "pdata_instruction_boundary": true,
+          "root": "0x8b0bac",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x72e25d",
+          "pdata_instruction_boundary": true,
+          "root": "0x72d880",
+          "instruction": "call 0x8b0bac"
+        }
+      ]
+    },
+    {
+      "id": "N27",
+      "name": "원본 thread별 I/O 시간/lock stack 진단",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x926e2c",
+        "0x926e54",
+        "0x705850",
+        "0x705924"
+      ],
+      "status": "PARTIAL_DIAGNOSTICS",
+      "current_facts": "18 owner callback count/time/active 시간과 Java 최근 작업·패킷 metadata가 있다.",
+      "difference_or_next_action": "원본 모든 TLS lock/signature stack·payload dump는 그대로 복원하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "CIO_API int L1Interop_GetThreadDiagnostics(",
+          "line": 1285,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x926e2c",
+          "pdata_instruction_boundary": true,
+          "root": "0x926e2c",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x926e54",
+          "pdata_instruction_boundary": true,
+          "root": "0x926e54",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x705850",
+          "pdata_instruction_boundary": true,
+          "root": "0x7056ac",
+          "instruction": "lea rax, [rip + 0x56d1f9]"
+        },
+        {
+          "address": "0x705924",
+          "pdata_instruction_boundary": true,
+          "root": "0x7056ac",
+          "instruction": "lea rax, [rip + 0x56d06d]"
+        }
+      ]
+    },
+    {
+      "id": "N28",
+      "name": "native 네트워크 deadline",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0xa0d164",
+        "0x925374"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "native login/partial header·body/write stall/graceful deadline과 Java L1 grace predicate가 있다.",
+      "difference_or_next_action": "CUserSocket::TimerExpired의 L2 상태기계 전체는 동일하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "void CIOSocket::deadlineTick(",
+          "line": 725,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0xa0d164",
+          "pdata_instruction_boundary": true,
+          "root": "0xa0d164",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x925374",
+          "pdata_instruction_boundary": true,
+          "root": "0x925374",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N29",
+      "name": "조건부 서비스 스레드와 전체 시작·종료 경로",
+      "previous_abi5_status": "UNVERIFIED",
+      "original_addresses": [
+        "0x72f874",
+        "0x73029c",
+        "0x72d880"
+      ],
+      "status": "UNVERIFIED_BOUNDARY",
+      "current_facts": "현재 네트워크 Run/stop/restart 경로는 실행 검증됐다. 원본 전체 조건부 서비스·WinProc 시작/정지의 모든 분기는 대응을 확정하지 않았다.",
+      "difference_or_next_action": "원본 상위 서비스 분기 중 네트워크 책임 경계를 추가 확인해야 함. 미확정을 누락 기능으로 단정하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "bool Server::Run(",
+          "line": 1065,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x72f874",
+          "pdata_instruction_boundary": true,
+          "root": "0x72f874",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x73029c",
+          "pdata_instruction_boundary": true,
+          "root": "0x73029c",
+          "instruction": "sub rsp, 0x28"
+        },
+        {
+          "address": "0x72d880",
+          "pdata_instruction_boundary": true,
+          "root": "0x72d880",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N30",
+      "name": "CObjectMap variant27/28의 모든 소비자 의미",
+      "previous_abi5_status": "UNVERIFIED",
+      "original_addresses": [
+        "0xa08498",
+        "0x97ec10",
+        "0xa08660",
+        "0x8951bc"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "Playing/EnterChar 계정·캐릭터 진입/재진입 차단·종료 제거를 현재 native에 연결했다.",
+      "difference_or_next_action": "이전 variant 소비자 전무/미확정 설명 중 핵심 역할은 해소. L2 game caller 전체는 제외.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "bool SetCharacterEnteredLocked(",
+          "line": 631,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0xa08498",
+          "pdata_instruction_boundary": true,
+          "root": "0xa08498",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x97ec10",
+          "pdata_instruction_boundary": true,
+          "root": "0x97ec10",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0xa08660",
+          "pdata_instruction_boundary": true,
+          "root": "0xa08660",
+          "instruction": "mov dword ptr [rsp + 0x10], edx"
+        },
+        {
+          "address": "0x8951bc",
+          "pdata_instruction_boundary": true,
+          "root": "0x8951bc",
+          "instruction": "mov dword ptr [rsp + 0x10], edx"
+        }
+      ]
+    },
+    {
+      "id": "N31",
+      "name": "L2 게임 opcode·월드·서비스 초기화",
+      "previous_abi5_status": "EXCLUDED",
+      "original_addresses": [
+        "0x72f874",
+        "0xa0d164"
+      ],
+      "status": "EXCLUDED",
+      "current_facts": "L2 게임 opcode·World_Sync/GC·게임 actor serializer·AtomicAddTimer job packet의 원본 payload는 가져오지 않았다.",
+      "difference_or_next_action": "현재 요청은 L1 네트워크. 이 항목을 필수 transport 미복원으로 세지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/io_server.hpp",
+          "text": "the original CIOThreadCallback performs World_Sync/GC",
+          "line": 135,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x72f874",
+          "pdata_instruction_boundary": true,
+          "root": "0x72f874",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0xa0d164",
+          "pdata_instruction_boundary": true,
+          "root": "0xa0d164",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N32",
+      "name": "실게임·운영 DB·장시간 동접 검증",
+      "previous_abi5_status": "UNVERIFIED",
+      "original_addresses": [],
+      "status": "VALIDATION_OPEN",
+      "current_facts": "실제 Windows kernel/DLL/FFM loopback·단편화·암호화·타이머·종료와 sanitizer 회귀는 통과했다.",
+      "difference_or_next_action": "실게임 클라이언트/운영 DB/장기 동접 검증은 수행하지 않음.",
+      "source_anchors": [
+        {
+          "path": "WINDOWS_VERIFICATION.json",
+          "text": "\"run_id\": 43491457850",
+          "line": 29,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": []
+    },
+    {
+      "id": "N33",
+      "name": "독립 PSS 보존",
+      "previous_abi5_status": "EXCLUDED",
+      "original_addresses": [],
+      "status": "EXCLUDED",
+      "current_facts": "독립 PSS의 NIO2 채널·클라이언트 DLL과 Java 소스가 보존됐다.",
+      "difference_or_next_action": "사용자 지시대로 독립 기능 유지. 이번 audit에서도 변경하지 않음.",
+      "source_anchors": [
+        {
+          "path": "src/l1j/server/server/model/character/pss/window/PssWindowTransport.java",
+          "text": "AsynchronousChannelGroup",
+          "line": 7,
+          "matching_line_count": 3
+        }
+      ],
+      "original_address_checks": []
+    },
+    {
+      "id": "N34",
+      "name": "MemoryObject ID·ref1 복사·참조 오류",
+      "previous_abi5_status": null,
+      "original_addresses": [
+        "0x7d6d5c",
+        "0x7d6e1c",
+        "0x7d6eb4",
+        "0x9f7770"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "기본/복사 생성은 새32비트 ID와 ref1을 얻는다. live object의 ref0 감소를 막고 마지막 오류 ID를 고정 크기로 기록한다.",
+      "difference_or_next_action": "원본 per-reason sub-reference/file-line 진단은 H02에 남아 있다.",
+      "source_anchors": [
+        {
+          "path": "native/cio_core.hpp",
+          "text": "class MemoryObject",
+          "line": 14,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x7d6d5c",
+          "pdata_instruction_boundary": false,
+          "root": null,
+          "instruction": "mov edx, dword ptr [rip + 0x2ede8476]"
+        },
+        {
+          "address": "0x7d6e1c",
+          "pdata_instruction_boundary": false,
+          "root": null,
+          "instruction": "mov edx, dword ptr [rip + 0x2ede83b6]"
+        },
+        {
+          "address": "0x7d6eb4",
+          "pdata_instruction_boundary": true,
+          "root": "0x7d6eb4",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x9f7770",
+          "pdata_instruction_boundary": true,
+          "root": "0x9f7770",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N35",
+      "name": "풀 오류 처리·원본 강제 접근 위반",
+      "previous_abi5_status": null,
+      "original_addresses": [
+        "0x41e6e4",
+        "0x45d7f8",
+        "0x66db28"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "손상된 nonnull 풀 항목은 소비/격리 후 다음을 시도하고 늦은 반납을 차단한다. 원본 null-write 대신 기존 실패 반환 정책을 유지한다.",
+      "difference_or_next_action": "풀 전체 allocator/오류 정책이 원본과 완전히 같은 것은 아님.",
+      "source_anchors": [
+        {
+          "path": "native/cio_core.hpp",
+          "text": "p->quarantined=true;",
+          "line": 160,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x41e6e4",
+          "pdata_instruction_boundary": true,
+          "root": "0x41e6e4",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x45d7f8",
+          "pdata_instruction_boundary": true,
+          "root": "0x45d7f8",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x66db28",
+          "pdata_instruction_boundary": false,
+          "root": null,
+          "instruction": "xor eax, eax"
+        }
+      ]
+    },
+    {
+      "id": "N36",
+      "name": "확인된 타이머 타입·메서드 이름",
+      "previous_abi5_status": null,
+      "original_addresses": [
+        "0x925498",
+        "0x9256d4",
+        "0x926844",
+        "0x926bf4"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "CThreadLocalTimer/CSlot/CMwmrQueue4009::Pop/AddTimer/Dispatch가 기존 실행 경로에 적용돼 있다.",
+      "difference_or_next_action": "이름과 역할 대응이며 원본 두 Dispatch 원형·클래스 전체 layout 동등성 보증이 아님.",
+      "source_anchors": [
+        {
+          "path": "native/timer_wheel.hpp",
+          "text": "using SlotPool=CMwmrQueue<CSlot,4009>;",
+          "line": 70,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x925498",
+          "pdata_instruction_boundary": true,
+          "root": "0x925498",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x9256d4",
+          "pdata_instruction_boundary": true,
+          "root": "0x9256d4",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x926844",
+          "pdata_instruction_boundary": true,
+          "root": "0x926844",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x926bf4",
+          "pdata_instruction_boundary": true,
+          "root": "0x926bf4",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N37",
+      "name": "C++ 클래스 계층·allocator·전체 ABI",
+      "previous_abi5_status": null,
+      "original_addresses": [
+        "0x401f3c",
+        "0x45da20",
+        "0x545030",
+        "0x7d6eb4"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "MemoryObject/CIOObject/CIOServer/CIOSocketEx/CSocket/CUserSocket 계층이 있다. 현재 CIOSocketEx<Bytes>는 원본 CIOSocketEx<CIOBufferEx<N>>와 템플릿 인자·구현 배치가 다르며 공통 CIOSocket에 I/O 수명을 모은다. 일반 객체 해제는 new/delete 기반이다.",
+      "difference_or_next_action": "클래스 이름과 역할은 상당 부분 대응하나 전체 vtable/allocator/필드/함수 원형이 동일한 것은 아니다. 원본 +0x0c timer flag는 별도로 복원하지 않았다.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "class CIOSocket : public CIOObject",
+          "line": 162,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x401f3c",
+          "pdata_instruction_boundary": true,
+          "root": "0x401f3c",
+          "instruction": "push rbx"
+        },
+        {
+          "address": "0x45da20",
+          "pdata_instruction_boundary": true,
+          "root": "0x45da20",
+          "instruction": "mov qword ptr [rsp + 8], rcx"
+        },
+        {
+          "address": "0x545030",
+          "pdata_instruction_boundary": true,
+          "root": "0x545030",
+          "instruction": "mov qword ptr [rsp + 8], rcx"
+        },
+        {
+          "address": "0x7d6eb4",
+          "pdata_instruction_boundary": true,
+          "root": "0x7d6eb4",
+          "instruction": "push rbx"
+        }
+      ]
+    },
+    {
+      "id": "N38",
+      "name": "CPerfMon 전체 운영 출력",
+      "previous_abi5_status": null,
+      "original_addresses": [
+        "0x82c0c0"
+      ],
+      "status": "OPERATIONAL_PARTIAL",
+      "current_facts": "현재 CPerfMon owner15·CPU/process/system memory와 사용자/소켓 진단이 있다.",
+      "difference_or_next_action": "원본 PDH/CSV/mail 운영 기능 전체는 이식하지 않음. 필수 I/O 누락과 분리.",
+      "source_anchors": [
+        {
+          "path": "native/perfmon.hpp",
+          "text": "class CPerfMon",
+          "line": 11,
+          "matching_line_count": 1
+        }
+      ],
+      "original_address_checks": [
+        {
+          "address": "0x82c0c0",
+          "pdata_instruction_boundary": true,
+          "root": "0x82c0c0",
+          "instruction": "push rbx"
+        }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "entry": "0x401f3c",
+      "names": [
+        "void __cdecl MemoryObject::operator delete(void *)"
+      ],
+      "chunks": [
+        [
+          "0x401f3c",
+          "0x402045"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_401f3c.asm.txt",
+      "verified_instruction_count": 52,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x404c88",
+      "names": [
+        "VTable CIOObject slot5",
+        "VTable CIOSocketEx16384 slot5",
+        "VTable CIOSocketEx8192 slot5",
+        "VTable CSocket slot5",
+        "VTable CUserSocket slot5"
+      ],
+      "chunks": [
+        [
+          "0x404c88",
+          "0x404c94"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_404c88.asm.txt",
+      "verified_instruction_count": 4,
+      "manual_virtual_review": {
+        "status": "TIMER_CALLBACK_PROFILE_ADAPTED",
+        "fact": "객체+0x0c를0으로 바꾸고 vtable+0x20/+0x30으로 tail-jump.",
+        "current": "현재 wheel/NativeTask 참조 보유와 callback으로 역할을 대응한다. 원본 timer flag와 가상함수 원형을 복제하지 않았다.",
+        "row": "N08"
+      },
+      "status": "TIMER_CALLBACK_PROFILE_ADAPTED"
+    },
+    {
+      "entry": "0x404c94",
+      "names": [
+        "VTable CIOObject slot7",
+        "VTable CIOSocketEx16384 slot7",
+        "VTable CIOSocketEx8192 slot7",
+        "VTable CSocket slot7",
+        "VTable CUserSocket slot7"
+      ],
+      "chunks": [
+        [
+          "0x404c94",
+          "0x404ca0"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_404c94.asm.txt",
+      "verified_instruction_count": 4,
+      "manual_virtual_review": {
+        "status": "TIMER_CALLBACK_PROFILE_ADAPTED",
+        "fact": "객체+0x0c를0으로 바꾸고 vtable+0x20/+0x30으로 tail-jump.",
+        "current": "현재 wheel/NativeTask 참조 보유와 callback으로 역할을 대응한다. 원본 timer flag와 가상함수 원형을 복제하지 않았다.",
+        "row": "N08"
+      },
+      "status": "TIMER_CALLBACK_PROFILE_ADAPTED"
+    },
+    {
+      "entry": "0x404ca0",
+      "names": [
+        "VTable CIOObject slot11",
+        "VTable CIOSocketEx16384 slot11",
+        "VTable CIOSocketEx8192 slot11",
+        "VTable CSocket slot11",
+        "VTable CUserSocket slot11"
+      ],
+      "chunks": [
+        [
+          "0x404ca0",
+          "0x404cb4"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_404ca0.asm.txt",
+      "verified_instruction_count": 4,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x419e8c",
+      "names": [
+        "void __cdecl CNewMwsrQueue<class CIOBufferEx<16384> >::UnLock(void)"
+      ],
+      "chunks": [
+        [
+          "0x419e8c",
+          "0x419ef1"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_419e8c.asm.txt",
+      "verified_instruction_count": 20,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x41b994",
+      "names": [
+        "void __cdecl CExecutionSerializer<class CShipController,32>::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(struct CExecutionArgumentPad *),class CExecutionArgument *,const wchar_t *)"
+      ],
+      "chunks": [
+        [
+          "0x41b994",
+          "0x41bdd5"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_41b994.asm.txt",
+      "verified_instruction_count": 235,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x41c6f8",
+      "names": [
+        "BufferReturn",
+        "void __cdecl CNewMwsrQueue<class CIOBufferEx<16384> >::Push(class CIOBufferEx<16384> *)"
+      ],
+      "chunks": [
+        [
+          "0x41c6f8",
+          "0x41c7a6"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_41c6f8.asm.txt",
+      "verified_instruction_count": 44,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x41e6e4",
+      "names": [
+        "BufferAllocate",
+        "class CIOBufferEx<16384> *__cdecl CIOBufferEx<16384>::Alloc(void)"
+      ],
+      "chunks": [
+        [
+          "0x41e6e4",
+          "0x41e8ea"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_41e6e4.asm.txt",
+      "verified_instruction_count": 103,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x43bae0",
+      "names": [
+        "VTable AtomicAddTimer slot7"
+      ],
+      "chunks": [
+        [
+          "0x43bae0",
+          "0x43bb71"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_43bae0.asm.txt",
+      "verified_instruction_count": 32,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x43bb98",
+      "names": [
+        "VTable AtomicAddTimer slot8"
+      ],
+      "chunks": [
+        [
+          "0x43bb98",
+          "0x43bbf4"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_43bb98.asm.txt",
+      "verified_instruction_count": 16,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x43f5b8",
+      "names": [
+        "VTable AtomicAddTimer slot4",
+        "int __cdecl AtomicAddTimer::Assemble(char *,int)"
+      ],
+      "chunks": [
+        [
+          "0x43f5b8",
+          "0x43f669"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_43f5b8.asm.txt",
+      "verified_instruction_count": 41,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x43f690",
+      "names": [
+        "VTable AtomicAddTimer slot5",
+        "const unsigned char *__cdecl AtomicAddTimer::Disassemble(const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x43f690",
+          "0x43f736"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_43f690.asm.txt",
+      "verified_instruction_count": 37,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x43f758",
+      "names": [
+        "VTable AtomicAddTimer slot6",
+        "bool __cdecl AtomicAddTimer::Do(void)"
+      ],
+      "chunks": [
+        [
+          "0x43f758",
+          "0x43f801"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_43f758.asm.txt",
+      "verified_instruction_count": 38,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x44c0c8",
+      "names": [
+        "VTable AtomicAddTimer slot0",
+        "VTable CIOObject slot0"
+      ],
+      "chunks": [
+        [
+          "0x44c0c8",
+          "0x44c0f0"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_44c0c8.asm.txt",
+      "verified_instruction_count": 15,
+      "manual_virtual_review": {
+        "status": "CXX_DESTRUCTOR_ADAPTED",
+        "fact": "소멸자 호출 후 flag에 따라0x401f3c를 호출하는 C++ 삭제 wrapper.",
+        "current": "현재 가상 소멸자/new-delete 수명 처리가 있다. 원본 custom allocator와 operator delete 금지 오류 정책은 다르다.",
+        "row": "N37"
+      },
+      "status": "CXX_DESTRUCTOR_ADAPTED"
+    },
+    {
+      "entry": "0x45c7ac",
+      "names": [
+        "FastSerializer",
+        "int __cdecl CExecutionSerializerFast::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(void *),void *,const wchar_t *)"
+      ],
+      "chunks": [
+        [
+          "0x45c7ac",
+          "0x45c9cd"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45c7ac.asm.txt",
+      "verified_instruction_count": 137,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x45d3b4",
+      "names": [
+        "void __cdecl CNewMwsrQueue<class CIOBufferEx<8192> >::UnLock(void)"
+      ],
+      "chunks": [
+        [
+          "0x45d3b4",
+          "0x45d419"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45d3b4.asm.txt",
+      "verified_instruction_count": 20,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x45d41c",
+      "names": [
+        "void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::Close(void)"
+      ],
+      "chunks": [
+        [
+          "0x45d41c",
+          "0x45d50f"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45d41c.asm.txt",
+      "verified_instruction_count": 54,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x45d534",
+      "names": [
+        "void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::Close(void)"
+      ],
+      "chunks": [
+        [
+          "0x45d534",
+          "0x45d627"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45d534.asm.txt",
+      "verified_instruction_count": 54,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x45d67c",
+      "names": [
+        "void __cdecl CNewMwsrQueue<class CIOBufferEx<8192> >::Push(class CIOBufferEx<8192> *)"
+      ],
+      "chunks": [
+        [
+          "0x45d67c",
+          "0x45d72a"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45d67c.asm.txt",
+      "verified_instruction_count": 44,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x45d7f8",
+      "names": [
+        "class CIOBufferEx<8192> *__cdecl CIOBufferEx<8192>::Alloc(void)"
+      ],
+      "chunks": [
+        [
+          "0x45d7f8",
+          "0x45d9fe"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45d7f8.asm.txt",
+      "verified_instruction_count": 103,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x45da20",
+      "names": [
+        "__cdecl CIOSocketEx<class CIOBufferEx<8192> >::CIOSocketEx(unsigned __int64,int)"
+      ],
+      "chunks": [
+        [
+          "0x45da20",
+          "0x45db0b"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45da20.asm.txt",
+      "verified_instruction_count": 58,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x45db68",
+      "names": [
+        "VTable CIOSocketEx16384 slot16",
+        "VTable CIOSocketEx8192 slot16"
+      ],
+      "chunks": [
+        [
+          "0x45db68",
+          "0x45db73"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45db68.asm.txt",
+      "verified_instruction_count": 3,
+      "manual_virtual_review": {
+        "status": "ORIGINAL_EMPTY_DEFAULT",
+        "fact": "caller home slot에 인수만 저장한 뒤 반환하며 외부 전송 동작은 없다.",
+        "current": "기본 빈 구현을 미구현 송수신 엔진으로 세지 않는다.",
+        "row": "N37"
+      },
+      "status": "ORIGINAL_EMPTY_DEFAULT"
+    },
+    {
+      "entry": "0x45db74",
+      "names": [
+        "VTable CIOSocketEx8192 slot18",
+        "void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::GracefulClose(void)"
+      ],
+      "chunks": [
+        [
+          "0x45db74",
+          "0x45dc38"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45db74.asm.txt",
+      "verified_instruction_count": 46,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x45dc5c",
+      "names": [
+        "VTable CIOSocketEx8192 slot12",
+        "void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::Initialize(void)"
+      ],
+      "chunks": [
+        [
+          "0x45dc5c",
+          "0x45dd6d"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45dc5c.asm.txt",
+      "verified_instruction_count": 59,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x45dd94",
+      "names": [
+        "VTable CIOSocketEx8192 slot13",
+        "void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::OnCreate(void)"
+      ],
+      "chunks": [
+        [
+          "0x45dd94",
+          "0x45de12"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45dd94.asm.txt",
+      "verified_instruction_count": 28,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x45df80",
+      "names": [
+        "__cdecl CIOSocketEx<class CIOBufferEx<8192> >::~CIOSocketEx(void)"
+      ],
+      "chunks": [
+        [
+          "0x45df80",
+          "0x45e0d4"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45df80.asm.txt",
+      "verified_instruction_count": 63,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x45e138",
+      "names": [
+        "void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::Read(unsigned long)"
+      ],
+      "chunks": [
+        [
+          "0x45e138",
+          "0x45e41f"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45e138.asm.txt",
+      "verified_instruction_count": 147,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x45e480",
+      "names": [
+        "void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::__async_AsyncWrite(void *)"
+      ],
+      "chunks": [
+        [
+          "0x45e480",
+          "0x45e838"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45e480.asm.txt",
+      "verified_instruction_count": 198,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x45e878",
+      "names": [
+        "VTable CIOSocketEx8192 slot0"
+      ],
+      "chunks": [
+        [
+          "0x45e878",
+          "0x45e8a0"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45e878.asm.txt",
+      "verified_instruction_count": 15,
+      "manual_virtual_review": {
+        "status": "CXX_DESTRUCTOR_ADAPTED",
+        "fact": "소멸자 호출 후 flag에 따라0x401f3c를 호출하는 C++ 삭제 wrapper.",
+        "current": "현재 가상 소멸자/new-delete 수명 처리가 있다. 원본 custom allocator와 operator delete 금지 오류 정책은 다르다.",
+        "row": "N37"
+      },
+      "status": "CXX_DESTRUCTOR_ADAPTED"
+    },
+    {
+      "entry": "0x45f028",
+      "names": [
+        "VTable CIOSocketEx8192 slot10"
+      ],
+      "chunks": [
+        [
+          "0x45f028",
+          "0x45f11a"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_45f028.asm.txt",
+      "verified_instruction_count": 59,
+      "manual_virtual_review": {
+        "status": "IO_COMPLETION_ROLE_ADAPTED",
+        "fact": "8K 완료 분배: 오류 시 close, null OVERLAPPED timer, READ, 직렬 WRITE와 참조 해제.",
+        "current": "현재 typed Operation/ProcessIO/NativeTask와8K/16K family가 대응한다. 상태·호출 원형은 L1에 맞췄다.",
+        "row": "N04"
+      },
+      "status": "IO_COMPLETION_ROLE_ADAPTED"
+    },
+    {
+      "entry": "0x466d44",
+      "names": [
+        "void __cdecl CExecutionSerializer<class CCreatureController,32>::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(struct CExecutionArgumentPad *),class CExecutionArgument *,const wchar_t *)"
+      ],
+      "chunks": [
+        [
+          "0x466d44",
+          "0x46726c"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_466d44.asm.txt",
+      "verified_instruction_count": 258,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x53a8fc",
+      "names": [
+        "VTable AtomicAddTimer slot9",
+        "VTable CIOSocketEx16384 slot14",
+        "VTable CIOSocketEx16384 slot15",
+        "VTable CIOSocketEx8192 slot14",
+        "VTable CIOSocketEx8192 slot15",
+        "VTable CSocket slot14",
+        "VTable CSocket slot15"
+      ],
+      "chunks": [
+        [
+          "0x53a8fc",
+          "0x53a8ff"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_53a8fc.asm.txt",
+      "verified_instruction_count": 2,
+      "status": "SHARED_DEFAULT_STUB"
+    },
+    {
+      "entry": "0x545030",
+      "names": [
+        "__cdecl CIOSocketEx<class CIOBufferEx<16384> >::CIOSocketEx(unsigned __int64,int)"
+      ],
+      "chunks": [
+        [
+          "0x545030",
+          "0x54511b"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_545030.asm.txt",
+      "verified_instruction_count": 58,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x545178",
+      "names": [
+        "VTable CIOSocketEx16384 slot18",
+        "VTable CSocket slot18",
+        "VTable CUserSocket slot18",
+        "void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::GracefulClose(void)"
+      ],
+      "chunks": [
+        [
+          "0x545178",
+          "0x54523c"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_545178.asm.txt",
+      "verified_instruction_count": 46,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x545260",
+      "names": [
+        "VTable CIOSocketEx16384 slot12",
+        "VTable CSocket slot12",
+        "VTable CUserSocket slot12",
+        "void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::Initialize(void)"
+      ],
+      "chunks": [
+        [
+          "0x545260",
+          "0x545371"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_545260.asm.txt",
+      "verified_instruction_count": 59,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x545398",
+      "names": [
+        "VTable CIOSocketEx16384 slot13",
+        "VTable CSocket slot13",
+        "VTable CUserSocket slot13",
+        "void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::OnCreate(void)"
+      ],
+      "chunks": [
+        [
+          "0x545398",
+          "0x545416"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_545398.asm.txt",
+      "verified_instruction_count": 28,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x545518",
+      "names": [
+        "__cdecl CIOSocketEx<class CIOBufferEx<16384> >::~CIOSocketEx(void)"
+      ],
+      "chunks": [
+        [
+          "0x545518",
+          "0x54566c"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_545518.asm.txt",
+      "verified_instruction_count": 63,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x5456d0",
+      "names": [
+        "void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::Read(unsigned long)"
+      ],
+      "chunks": [
+        [
+          "0x5456d0",
+          "0x5459b7"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_5456d0.asm.txt",
+      "verified_instruction_count": 147,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x545a18",
+      "names": [
+        "void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::__async_AsyncWrite(void *)"
+      ],
+      "chunks": [
+        [
+          "0x545a18",
+          "0x545dd0"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_545a18.asm.txt",
+      "verified_instruction_count": 198,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x545e10",
+      "names": [
+        "VTable CIOSocketEx16384 slot0"
+      ],
+      "chunks": [
+        [
+          "0x545e10",
+          "0x545e38"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_545e10.asm.txt",
+      "verified_instruction_count": 15,
+      "manual_virtual_review": {
+        "status": "CXX_DESTRUCTOR_ADAPTED",
+        "fact": "소멸자 호출 후 flag에 따라0x401f3c를 호출하는 C++ 삭제 wrapper.",
+        "current": "현재 가상 소멸자/new-delete 수명 처리가 있다. 원본 custom allocator와 operator delete 금지 오류 정책은 다르다.",
+        "row": "N37"
+      },
+      "status": "CXX_DESTRUCTOR_ADAPTED"
+    },
+    {
+      "entry": "0x54655c",
+      "names": [
+        "VTable CIOSocketEx16384 slot10",
+        "VTable CSocket slot10",
+        "VTable CUserSocket slot10"
+      ],
+      "chunks": [
+        [
+          "0x54655c",
+          "0x54664e"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_54655c.asm.txt",
+      "verified_instruction_count": 59,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x56daa8",
+      "names": [
+        "VTable AtomicAddTimer slot3",
+        "VTable CIOObject slot3",
+        "VTable CIOObject slot4",
+        "VTable CIOObject slot6",
+        "VTable CIOObject slot9",
+        "VTable CIOSocketEx16384 slot17",
+        "VTable CIOSocketEx16384 slot19",
+        "VTable CIOSocketEx16384 slot3",
+        "VTable CIOSocketEx16384 slot4",
+        "VTable CIOSocketEx16384 slot6",
+        "VTable CIOSocketEx16384 slot9",
+        "VTable CIOSocketEx8192 slot17",
+        "VTable CIOSocketEx8192 slot19",
+        "VTable CIOSocketEx8192 slot3",
+        "VTable CIOSocketEx8192 slot4",
+        "VTable CIOSocketEx8192 slot6",
+        "VTable CIOSocketEx8192 slot9",
+        "VTable CSocket slot19",
+        "VTable CSocket slot23",
+        "VTable CSocket slot3",
+        "VTable CSocket slot4",
+        "VTable CSocket slot6",
+        "VTable CSocket slot9",
+        "VTable CUserSocket slot6",
+        "VTable CUserSocket slot9"
+      ],
+      "chunks": [
+        [
+          "0x56daa8",
+          "0x56daab"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_56daa8.asm.txt",
+      "verified_instruction_count": 1,
+      "status": "SHARED_DEFAULT_STUB"
+    },
+    {
+      "entry": "0x676bac",
+      "names": [
+        "void __cdecl CExecutionSerializer<class CFishingController,32>::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(struct CExecutionArgumentPad *),class CExecutionArgument *,const wchar_t *)"
+      ],
+      "chunks": [
+        [
+          "0x676bac",
+          "0x6770d4"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_676bac.asm.txt",
+      "verified_instruction_count": 258,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x704248",
+      "names": [
+        "VTable CIOObject slot8",
+        "VTable CIOSocketEx16384 slot8",
+        "VTable CIOSocketEx8192 slot8",
+        "VTable CSocket slot8",
+        "VTable CUserSocket slot8"
+      ],
+      "chunks": [
+        [
+          "0x704248",
+          "0x70429c"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_704248.asm.txt",
+      "verified_instruction_count": 22,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x70482c",
+      "names": [
+        "void __cdecl CIOObject::TimerDispatch(void)"
+      ],
+      "chunks": [
+        [
+          "0x70482c",
+          "0x7048ac"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_70482c.asm.txt",
+      "verified_instruction_count": 28,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x7048cc",
+      "names": [
+        "SetTimeStamp",
+        "bool __cdecl CIOObject::SetTimeStamp(long *)"
+      ],
+      "chunks": [
+        [
+          "0x7048cc",
+          "0x70495b"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_7048cc.asm.txt",
+      "verified_instruction_count": 37,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x704990",
+      "names": [
+        "SetShortTimeStamp",
+        "bool __cdecl CIOObject::SetShortTimeStamp(unsigned long *,unsigned long)"
+      ],
+      "chunks": [
+        [
+          "0x704990",
+          "0x704a29"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_704990.asm.txt",
+      "verified_instruction_count": 40,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x704bec",
+      "names": [
+        "__cdecl CIOServer::CIOServer(void)"
+      ],
+      "chunks": [
+        [
+          "0x704bec",
+          "0x704c7a"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_704bec.asm.txt",
+      "verified_instruction_count": 27,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x704c7c",
+      "names": [
+        "void __cdecl CIOServer::Close(void)"
+      ],
+      "chunks": [
+        [
+          "0x704c7c",
+          "0x704d1b"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_704c7c.asm.txt",
+      "verified_instruction_count": 37,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x704d1c",
+      "names": [
+        "void __cdecl CIOServer::OnWaitCallback(void)"
+      ],
+      "chunks": [
+        [
+          "0x704d1c",
+          "0x704dab"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_704d1c.asm.txt",
+      "verified_instruction_count": 34,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x705480",
+      "names": [
+        "__cdecl CIOServer::~CIOServer(void)"
+      ],
+      "chunks": [
+        [
+          "0x705480",
+          "0x705508"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_705480.asm.txt",
+      "verified_instruction_count": 32,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x705508",
+      "names": [
+        "AcceptFactory",
+        "void __cdecl CIOServer::OnIOCallback(int,unsigned long,struct _OVERLAPPED *)"
+      ],
+      "chunks": [
+        [
+          "0x705508",
+          "0x705642"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_705508.asm.txt",
+      "verified_instruction_count": 75,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x7056ac",
+      "names": [
+        "IOWorker",
+        "void __cdecl IOThreadCallback::IOThread_common(void)"
+      ],
+      "chunks": [
+        [
+          "0x7056ac",
+          "0x7059a1"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_7056ac.asm.txt",
+      "verified_instruction_count": 140,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x705d54",
+      "names": [
+        "VTable CIOObject slot10"
+      ],
+      "chunks": [
+        [
+          "0x705d54",
+          "0x705e2b"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_705d54.asm.txt",
+      "verified_instruction_count": 65,
+      "manual_virtual_review": {
+        "status": "TIMER_CALLBACK_PROFILE_ADAPTED",
+        "fact": "tick 기록 후 argument 유무에 따라 timer 가상 함수를 호출하고 참조를 해제한다.",
+        "current": "현재 NativeTask/Dispatch/IOCP owner hold가 대응한다. 원본 TLS 시간 컨테이너와 함수 원형은 다르다.",
+        "row": "N08"
+      },
+      "status": "TIMER_CALLBACK_PROFILE_ADAPTED"
+    },
+    {
+      "entry": "0x705e4c",
+      "names": [
+        "ListenThread"
+      ],
+      "chunks": [
+        [
+          "0x705e4c",
+          "0x70607c"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_705e4c.asm.txt",
+      "verified_instruction_count": 129,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x706564",
+      "names": [
+        "int __cdecl CIOObject::RegisterWait(void *)"
+      ],
+      "chunks": [
+        [
+          "0x706564",
+          "0x7066c2"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_706564.asm.txt",
+      "verified_instruction_count": 70,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x7066dc",
+      "names": [
+        "ListenerCreate",
+        "int __cdecl CIOServer::Create(int)"
+      ],
+      "chunks": [
+        [
+          "0x7066dc",
+          "0x706872"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_7066dc.asm.txt",
+      "verified_instruction_count": 97,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x7b071c",
+      "names": [
+        "void __cdecl CExecutionSerializer<class CCreature,16>::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(struct CExecutionArgumentPad *),class CExecutionArgument *,const wchar_t *)"
+      ],
+      "chunks": [
+        [
+          "0x7b071c",
+          "0x7b0c44"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_7b071c.asm.txt",
+      "verified_instruction_count": 258,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x7d6d50",
+      "names": [
+        "VTable AtomicAddTimer slot1",
+        "VTable CIOObject slot1",
+        "VTable CIOSocketEx16384 slot1",
+        "VTable CIOSocketEx8192 slot1",
+        "VTable CSocket slot1"
+      ],
+      "chunks": [
+        [
+          "0x7d6d50",
+          "0x7d6d59"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_7d6d50.asm.txt",
+      "verified_instruction_count": 3,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x7d6d5c",
+      "names": [
+        "__cdecl MemoryObject::MemoryObject(void)"
+      ],
+      "chunks": [
+        [
+          "0x7d6d5c",
+          "0x7d6df4"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_7d6d5c.asm.txt",
+      "verified_instruction_count": 27,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x7d6e1c",
+      "names": [
+        "__cdecl MemoryObject::MemoryObject(const class MemoryObject &)"
+      ],
+      "chunks": [
+        [
+          "0x7d6e1c",
+          "0x7d6eb4"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_7d6e1c.asm.txt",
+      "verified_instruction_count": 27,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x7d6eb4",
+      "names": [
+        "VTable AtomicAddTimer slot2",
+        "VTable CIOObject slot2",
+        "VTable CIOSocketEx16384 slot2",
+        "VTable CIOSocketEx8192 slot2",
+        "VTable CSocket slot2"
+      ],
+      "chunks": [
+        [
+          "0x7d6eb4",
+          "0x7d703b"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_7d6eb4.asm.txt",
+      "verified_instruction_count": 97,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x82c0c0",
+      "names": [
+        "FOR_ALL_OBJECT_IN_OBJECT_MAP <=== void __cdecl CPerfMon::ReportUserCount(void)"
+      ],
+      "chunks": [
+        [
+          "0x82c0c0",
+          "0x82c3cb"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "PARTIAL_OPERATIONS",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_82c0c0.asm.txt",
+      "verified_instruction_count": 174,
+      "status": "OPERATIONAL_PARTIAL"
+    },
+    {
+      "entry": "0x8b0738",
+      "names": [
+        "class CIOSocketEx<class CIOBufferEx<16384> > *__cdecl Server::CreateSocket(unsigned __int64,struct sockaddr_in *)"
+      ],
+      "chunks": [
+        [
+          "0x8b0738",
+          "0x8b0929"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_8b0738.asm.txt",
+      "verified_instruction_count": 112,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x90dec0",
+      "names": [
+        "VTable CSocket slot21",
+        "VTable CUserSocket slot21",
+        "void __cdecl CSocket::SetAddress(struct in_addr)"
+      ],
+      "chunks": [
+        [
+          "0x90dec0",
+          "0x90df28"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_90dec0.asm.txt",
+      "verified_instruction_count": 19,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x90df28",
+      "names": [
+        "VTable CSocket slot22",
+        "VTable CUserSocket slot22",
+        "struct in_addr __cdecl CSocket::GetAddress(void) const"
+      ],
+      "chunks": [
+        [
+          "0x90df28",
+          "0x90df92"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_90df28.asm.txt",
+      "verified_instruction_count": 19,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x90df94",
+      "names": [
+        "VTable CSocket slot16",
+        "VTable CUserSocket slot16",
+        "void __cdecl CSocket::Send(const char *,...)"
+      ],
+      "chunks": [
+        [
+          "0x90df94",
+          "0x90e02c"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_90df94.asm.txt",
+      "verified_instruction_count": 34,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x90e04c",
+      "names": [
+        "void __cdecl CSocket::SetKey(unsigned __int64)"
+      ],
+      "chunks": [
+        [
+          "0x90e04c",
+          "0x90e13e"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_90e04c.asm.txt",
+      "verified_instruction_count": 58,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x90e140",
+      "names": [
+        "unsigned int __cdecl CSocket::GetIPAddressUINT(void)"
+      ],
+      "chunks": [
+        [
+          "0x90e140",
+          "0x90e1ce"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_90e140.asm.txt",
+      "verified_instruction_count": 27,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x90e548",
+      "names": [
+        "__cdecl CSocket::CSocket(unsigned __int64,int)"
+      ],
+      "chunks": [
+        [
+          "0x90e548",
+          "0x90e642"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_90e548.asm.txt",
+      "verified_instruction_count": 45,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x90e644",
+      "names": [
+        "__cdecl CSocket::~CSocket(void)"
+      ],
+      "chunks": [
+        [
+          "0x90e644",
+          "0x90e6c1"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_90e644.asm.txt",
+      "verified_instruction_count": 21,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x90e6c4",
+      "names": [
+        "void __cdecl CSocket::__async_AsyncSendConstBuffer(void *)"
+      ],
+      "chunks": [
+        [
+          "0x90e6c4",
+          "0x90eb99"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_90e6c4.asm.txt",
+      "verified_instruction_count": 255,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x90ebbc",
+      "names": [
+        "VTable CSocket slot0"
+      ],
+      "chunks": [
+        [
+          "0x90ebbc",
+          "0x90ebe4"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_90ebbc.asm.txt",
+      "verified_instruction_count": 15,
+      "manual_virtual_review": {
+        "status": "CXX_DESTRUCTOR_ADAPTED",
+        "fact": "소멸자 호출 후 flag에 따라0x401f3c를 호출하는 C++ 삭제 wrapper.",
+        "current": "현재 가상 소멸자/new-delete 수명 처리가 있다. 원본 custom allocator와 operator delete 금지 오류 정책은 다르다.",
+        "row": "N37"
+      },
+      "status": "CXX_DESTRUCTOR_ADAPTED"
+    },
+    {
+      "entry": "0x90ebe4",
+      "names": [
+        "class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::xallocator<wchar_t> > __cdecl CSocket::GetIPAddressString(void)"
+      ],
+      "chunks": [
+        [
+          "0x90ebe4",
+          "0x90eceb"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_90ebe4.asm.txt",
+      "verified_instruction_count": 52,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x90ed10",
+      "names": [
+        "void __cdecl CSocket::__async_AsyncSend(void *)"
+      ],
+      "chunks": [
+        [
+          "0x90ed10",
+          "0x90ee54"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_90ed10.asm.txt",
+      "verified_instruction_count": 82,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x90ee9c",
+      "names": [
+        "VTable CSocket slot17",
+        "VTable CUserSocket slot17",
+        "void __cdecl CSocket::SendV(const char *,char *)"
+      ],
+      "chunks": [
+        [
+          "0x90ee9c",
+          "0x90f04a"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_90ee9c.asm.txt",
+      "verified_instruction_count": 100,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x9ba4f8",
+      "names": [
+        "PacketAcceptable"
+      ],
+      "chunks": [
+        [
+          "0x9ba4f8",
+          "0x9ba68e"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L1_POLICY_ADAPTATION",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9ba4f8.asm.txt",
+      "verified_instruction_count": 99,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x9ba6b0",
+      "names": [
+        "PacketExAcceptable"
+      ],
+      "chunks": [
+        [
+          "0x9ba6b0",
+          "0x9ba746"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "L1_POLICY_ADAPTATION",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9ba6b0.asm.txt",
+      "verified_instruction_count": 29,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x9ef41c",
+      "names": [
+        "bool __cdecl CUserSocket::SafeSend(int,const char *,...)"
+      ],
+      "chunks": [
+        [
+          "0x9ef41c",
+          "0x9ef51d"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9ef41c.asm.txt",
+      "verified_instruction_count": 60,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x9ef544",
+      "names": [
+        "VTable CUserSocket slot14"
+      ],
+      "chunks": [
+        [
+          "0x9ef544",
+          "0x9ef61f"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9ef544.asm.txt",
+      "verified_instruction_count": 46,
+      "manual_virtual_review": {
+        "status": "SEND_POLICY_ADAPTED",
+        "fact": "송신 허용 검사.0x9ef620은 유효 socket과 pending<=0x200000을 검사한다.",
+        "current": "현재 closing 상태/2MiB reservation/SafeSend에 대응한다. L2 상태와 진단 필드 전체는 복제하지 않았다.",
+        "row": "N25"
+      },
+      "status": "SEND_POLICY_ADAPTED"
+    },
+    {
+      "entry": "0x9ef620",
+      "names": [
+        "VTable CUserSocket slot15"
+      ],
+      "chunks": [
+        [
+          "0x9ef620",
+          "0x9ef63a"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9ef620.asm.txt",
+      "verified_instruction_count": 9,
+      "manual_virtual_review": {
+        "status": "SEND_POLICY_ADAPTED",
+        "fact": "송신 허용 검사.0x9ef620은 유효 socket과 pending<=0x200000을 검사한다.",
+        "current": "현재 closing 상태/2MiB reservation/SafeSend에 대응한다. L2 상태와 진단 필드 전체는 복제하지 않았다.",
+        "row": "N25"
+      },
+      "status": "SEND_POLICY_ADAPTED"
+    },
+    {
+      "entry": "0x9efca4",
+      "names": [
+        "bool __cdecl CUserSocket::DropItemPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9efca4",
+          "0x9efdbb"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9efca4.asm.txt",
+      "verified_instruction_count": 63,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9efef4",
+      "names": [
+        "bool __cdecl CUserSocket::TradeRequestPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9efef4",
+          "0x9effc3"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9efef4.asm.txt",
+      "verified_instruction_count": 49,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9effdc",
+      "names": [
+        "bool __cdecl CUserSocket::TradeStartPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9effdc",
+          "0x9f00a1"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9effdc.asm.txt",
+      "verified_instruction_count": 47,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f00c4",
+      "names": [
+        "bool __cdecl CUserSocket::TradeAddItemsPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9f00c4",
+          "0x9f016b"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f00c4.asm.txt",
+      "verified_instruction_count": 41,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f018c",
+      "names": [
+        "bool __cdecl CUserSocket::TradeDonePacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9f018c",
+          "0x9f025b"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f018c.asm.txt",
+      "verified_instruction_count": 49,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f1e0c",
+      "names": [
+        "bool __cdecl CUserSocket::ValidateLocationPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9f1e0c",
+          "0x9f1f49"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f1e0c.asm.txt",
+      "verified_instruction_count": 70,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f245c",
+      "names": [
+        "bool __cdecl CUserSocket::RequestEnchantItemPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9f245c",
+          "0x9f2529"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f245c.asm.txt",
+      "verified_instruction_count": 48,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f2544",
+      "names": [
+        "bool __cdecl CUserSocket::DestroyItem(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9f2544",
+          "0x9f2624"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f2544.asm.txt",
+      "verified_instruction_count": 51,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f3344",
+      "names": [
+        "bool __cdecl CUserSocket::ItemCrystallizePacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9f3344",
+          "0x9f36bb"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f3344.asm.txt",
+      "verified_instruction_count": 202,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f561c",
+      "names": [
+        "bool __cdecl CUserSocket::RequestUserCommand(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9f561c",
+          "0x9f5704"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f561c.asm.txt",
+      "verified_instruction_count": 57,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f7088",
+      "names": [
+        "bool __cdecl CUserSocket::ConfirmDialog(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9f7088",
+          "0x9f71d6"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f7088.asm.txt",
+      "verified_instruction_count": 78,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f773c",
+      "names": [
+        "VTable CUserSocket slot1"
+      ],
+      "chunks": [
+        [
+          "0x9f773c",
+          "0x9f776d"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f773c.asm.txt",
+      "verified_instruction_count": 11,
+      "status": "REFERENCE_OR_PACKET_DIAGNOSTICS_PARTIAL"
+    },
+    {
+      "entry": "0x9f7770",
+      "names": [
+        "VTable CUserSocket slot2"
+      ],
+      "chunks": [
+        [
+          "0x9f7770",
+          "0x9f7998"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f7770.asm.txt",
+      "verified_instruction_count": 134,
+      "status": "REFERENCE_OR_PACKET_DIAGNOSTICS_PARTIAL"
+    },
+    {
+      "entry": "0x9f7998",
+      "names": [
+        "VTable CUserSocket slot3"
+      ],
+      "chunks": [
+        [
+          "0x9f7998",
+          "0x9f7b65"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f7998.asm.txt",
+      "verified_instruction_count": 109,
+      "status": "REFERENCE_OR_PACKET_DIAGNOSTICS_PARTIAL"
+    },
+    {
+      "entry": "0x9f7b80",
+      "names": [
+        "void __cdecl CUserSocket::MakePacketBlockList(void)"
+      ],
+      "chunks": [
+        [
+          "0x9f7b80",
+          "0x9f7c97"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L1_POLICY_ADAPTATION",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f7b80.asm.txt",
+      "verified_instruction_count": 69,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x9f7f3c",
+      "names": [
+        "bool __cdecl CUserSocket::CheckMaxPacketAccept(int)"
+      ],
+      "chunks": [
+        [
+          "0x9f7f3c",
+          "0x9f802f"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "ORIGINAL_STATS_ONLY",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f7f3c.asm.txt",
+      "verified_instruction_count": 55,
+      "status": "ORIGINAL_STATS_ONLY"
+    },
+    {
+      "entry": "0x9f8080",
+      "names": [
+        "VTable CUserSocket slot23",
+        "void __cdecl CUserSocket::OnSending(unsigned char,unsigned short) const"
+      ],
+      "chunks": [
+        [
+          "0x9f8080",
+          "0x9f80dc"
+        ]
+      ],
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "previous_category": "ORIGINAL_INSTRUMENTATION_ONLY",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f8080.asm.txt",
+      "verified_instruction_count": 16,
+      "status": "ORIGINAL_INSTRUMENTATION_ONLY"
+    },
+    {
+      "entry": "0x9f8330",
+      "names": [
+        "void __cdecl CUserSocket::SendSystemMessage(wchar_t *,wchar_t *)"
+      ],
+      "chunks": [
+        [
+          "0x9f8330",
+          "0x9f851d"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f8330.asm.txt",
+      "verified_instruction_count": 116,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f853c",
+      "names": [
+        "void __cdecl CUserSocket::SendSystemMessage_Announce(const wchar_t *)"
+      ],
+      "chunks": [
+        [
+          "0x9f853c",
+          "0x9f85eb"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f853c.asm.txt",
+      "verified_instruction_count": 36,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f8604",
+      "names": [
+        "void __cdecl CUserSocket::SendSystemMessage(unsigned int)"
+      ],
+      "chunks": [
+        [
+          "0x9f8604",
+          "0x9f869d"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f8604.asm.txt",
+      "verified_instruction_count": 32,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f86bc",
+      "names": [
+        "void __cdecl CUserSocket::SendSystemMessage_Char(unsigned int,const wchar_t *)"
+      ],
+      "chunks": [
+        [
+          "0x9f86bc",
+          "0x9f8764"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f86bc.asm.txt",
+      "verified_instruction_count": 35,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f8784",
+      "names": [
+        "void __cdecl CUserSocket::SendSystemMessage_S(unsigned int,const wchar_t *)"
+      ],
+      "chunks": [
+        [
+          "0x9f8784",
+          "0x9f882d"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f8784.asm.txt",
+      "verified_instruction_count": 35,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f884c",
+      "names": [
+        "void __cdecl CUserSocket::SendSystemMessage_d(unsigned int,int)"
+      ],
+      "chunks": [
+        [
+          "0x9f884c",
+          "0x9f88f4"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f884c.asm.txt",
+      "verified_instruction_count": 36,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f8914",
+      "names": [
+        "void __cdecl CUserSocket::SendSystemMessage_Q(unsigned int,__int64)"
+      ],
+      "chunks": [
+        [
+          "0x9f8914",
+          "0x9f89bc"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f8914.asm.txt",
+      "verified_instruction_count": 35,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f89dc",
+      "names": [
+        "void __cdecl CUserSocket::SendSystemMessage_S_d(unsigned int,const wchar_t *,int)"
+      ],
+      "chunks": [
+        [
+          "0x9f89dc",
+          "0x9f8a92"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f89dc.asm.txt",
+      "verified_instruction_count": 37,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f8ab4",
+      "names": [
+        "void __cdecl CUserSocket::SendSystemMessage_i(unsigned int,int)"
+      ],
+      "chunks": [
+        [
+          "0x9f8ab4",
+          "0x9f8b5c"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f8ab4.asm.txt",
+      "verified_instruction_count": 35,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f8b7c",
+      "names": [
+        "void __cdecl CUserSocket::BindUser(class User *)"
+      ],
+      "chunks": [
+        [
+          "0x9f8b7c",
+          "0x9f8cf7"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f8b7c.asm.txt",
+      "verified_instruction_count": 85,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x9f8d58",
+      "names": [
+        "void __cdecl CUserSocket::ResetRelaxTime(struct _SYSTEMTIME *)"
+      ],
+      "chunks": [
+        [
+          "0x9f8d58",
+          "0x9f8e3f"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L1_POLICY_ADAPTATION",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f8d58.asm.txt",
+      "verified_instruction_count": 49,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x9f90c8",
+      "names": [
+        "bool __cdecl CUserSocket::MoveToLocationPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9f90c8",
+          "0x9f923f"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f90c8.asm.txt",
+      "verified_instruction_count": 84,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f9260",
+      "names": [
+        "bool __cdecl CUserSocket::CharacterCreatePacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9f9260",
+          "0x9f9a57"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f9260.asm.txt",
+      "verified_instruction_count": 426,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f9a7c",
+      "names": [
+        "bool __cdecl CUserSocket::CharacterDeletePacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9f9a7c",
+          "0x9f9bfc"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f9a7c.asm.txt",
+      "verified_instruction_count": 85,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9f9c14",
+      "names": [
+        "bool __cdecl CUserSocket::NewCharacterPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0x9f9c14",
+          "0x9f9faf"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9f9c14.asm.txt",
+      "verified_instruction_count": 169,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9fa250",
+      "names": [
+        "void __cdecl CUserSocket::ItemDebug(class User *,int)"
+      ],
+      "chunks": [
+        [
+          "0x9fa250",
+          "0x9fa40c"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9fa250.asm.txt",
+      "verified_instruction_count": 100,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0x9fc9b4",
+      "names": [
+        "bool __cdecl CUserSocket::CheckLoginTime(void)"
+      ],
+      "chunks": [
+        [
+          "0x9fc9b4",
+          "0x9fcbcb"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L1_POLICY_ADAPTATION",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9fc9b4.asm.txt",
+      "verified_instruction_count": 125,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x9fcbf0",
+      "names": [
+        "void __cdecl CUserSocket::ForceClose(enum SOCKET_CLOSE_REASON)"
+      ],
+      "chunks": [
+        [
+          "0x9fcbf0",
+          "0x9fcc72"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9fcbf0.asm.txt",
+      "verified_instruction_count": 28,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x9fcc98",
+      "names": [
+        "void __cdecl CUserSocket::ReportPacketLog(bool)"
+      ],
+      "chunks": [
+        [
+          "0x9fcc98",
+          "0x9fced6"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_9fcc98.asm.txt",
+      "verified_instruction_count": 128,
+      "status": "REFERENCE_OR_PACKET_DIAGNOSTICS_PARTIAL"
+    },
+    {
+      "entry": "0xa01240",
+      "names": [
+        "bool __cdecl CUserSocket::RequestNetPing(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0xa01240",
+          "0xa01464"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_CLIENT_SERVICE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a01240.asm.txt",
+      "verified_instruction_count": 112,
+      "status": "L2_CLIENT_SERVICE_EXCLUDED"
+    },
+    {
+      "entry": "0xa014ac",
+      "names": [
+        "void __cdecl CSocketLimiter::DeleteAllIP(void)"
+      ],
+      "chunks": [
+        [
+          "0xa014ac",
+          "0xa0155d"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a014ac.asm.txt",
+      "verified_instruction_count": 41,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa015a4",
+      "names": [
+        "void __cdecl CSocketLimiter::DeleteAllMAC(void)"
+      ],
+      "chunks": [
+        [
+          "0xa015a4",
+          "0xa01655"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a015a4.asm.txt",
+      "verified_instruction_count": 41,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa0169c",
+      "names": [
+        "__cdecl CUserSocket::~CUserSocket(void)"
+      ],
+      "chunks": [
+        [
+          "0xa0169c",
+          "0xa01790"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a0169c.asm.txt",
+      "verified_instruction_count": 40,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa017a0",
+      "names": [
+        "VTable CUserSocket slot0"
+      ],
+      "chunks": [
+        [
+          "0xa017a0",
+          "0xa017c8"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a017a0.asm.txt",
+      "verified_instruction_count": 15,
+      "manual_virtual_review": {
+        "status": "CXX_DESTRUCTOR_ADAPTED",
+        "fact": "소멸자 호출 후 flag에 따라0x401f3c를 호출하는 C++ 삭제 wrapper.",
+        "current": "현재 가상 소멸자/new-delete 수명 처리가 있다. 원본 custom allocator와 operator delete 금지 오류 정책은 다르다.",
+        "row": "N37"
+      },
+      "status": "CXX_DESTRUCTOR_ADAPTED"
+    },
+    {
+      "entry": "0xa017c8",
+      "names": [
+        "class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::xallocator<wchar_t> > __cdecl CUserSocket::GetMacAddressString(void)"
+      ],
+      "chunks": [
+        [
+          "0xa017c8",
+          "0xa018f9"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CLIENT_INTEGRATION_OPEN",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a017c8.asm.txt",
+      "verified_instruction_count": 66,
+      "status": "CLIENT_IDENTITY_INTEGRATION_OPEN"
+    },
+    {
+      "entry": "0xa035e4",
+      "names": [
+        "UserExPacket"
+      ],
+      "chunks": [
+        [
+          "0xa035e4",
+          "0xa03713"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a035e4.asm.txt",
+      "verified_instruction_count": 77,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa0372c",
+      "names": [
+        "VTable CUserSocket slot20",
+        "void __cdecl CUserSocket::OnRead(void)"
+      ],
+      "chunks": [
+        [
+          "0xa0372c",
+          "0xa03d8f"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a0372c.asm.txt",
+      "verified_instruction_count": 367,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa04a60",
+      "names": [
+        "int __cdecl CSocketLimiter::IncUserSocketPerIP(unsigned int)"
+      ],
+      "chunks": [
+        [
+          "0xa04a60",
+          "0xa04bfa"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a04a60.asm.txt",
+      "verified_instruction_count": 96,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa04c3c",
+      "names": [
+        "int __cdecl CSocketLimiter::IncUserSocketPerMAC(__int64)"
+      ],
+      "chunks": [
+        [
+          "0xa04c3c",
+          "0xa04dd0"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a04c3c.asm.txt",
+      "verified_instruction_count": 96,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa08940",
+      "names": [
+        "void __cdecl CUserSocket::IncUserCount(bool)"
+      ],
+      "chunks": [
+        [
+          "0xa08940",
+          "0xa08a26"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a08940.asm.txt",
+      "verified_instruction_count": 52,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa08a48",
+      "names": [
+        "void __cdecl CUserSocket::DecUserCount(bool)"
+      ],
+      "chunks": [
+        [
+          "0xa08a48",
+          "0xa08b2e"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a08a48.asm.txt",
+      "verified_instruction_count": 52,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa09028",
+      "names": [
+        "bool __cdecl CUserSocket::JoinPartyPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0xa09028",
+          "0xa09db6"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a09028.asm.txt",
+      "verified_instruction_count": 814,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0xa09e10",
+      "names": [
+        "bool __cdecl CUserSocket::AnswerJoinPartyPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0xa09e10",
+          "0xa0acde"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a09e10.asm.txt",
+      "verified_instruction_count": 840,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0xa0ccc4",
+      "names": [
+        "__cdecl CUserSocket::CUserSocket(unsigned __int64)"
+      ],
+      "chunks": [
+        [
+          "0xa0ccc4",
+          "0xa0cff8"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a0ccc4.asm.txt",
+      "verified_instruction_count": 147,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa0d07c",
+      "names": [
+        "class CSocket *__cdecl CUserSocket::Allocate(unsigned __int64)"
+      ],
+      "chunks": [
+        [
+          "0xa0d07c",
+          "0xa0d124"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a0d07c.asm.txt",
+      "verified_instruction_count": 40,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa0d164",
+      "names": [
+        "VTable CUserSocket slot4",
+        "void __cdecl CUserSocket::TimerExpired(int)"
+      ],
+      "chunks": [
+        [
+          "0xa0d164",
+          "0xa0db8a"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a0d164.asm.txt",
+      "verified_instruction_count": 556,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa0dc04",
+      "names": [
+        "int __cdecl CSocketLimiter::DecUserSocketPerIP(unsigned int)"
+      ],
+      "chunks": [
+        [
+          "0xa0dc04",
+          "0xa0dda1"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a0dc04.asm.txt",
+      "verified_instruction_count": 100,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa0dddc",
+      "names": [
+        "void __cdecl CSocketLimiter::DeleteUserSocketPerIP(unsigned int)"
+      ],
+      "chunks": [
+        [
+          "0xa0dddc",
+          "0xa0de95"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a0dddc.asm.txt",
+      "verified_instruction_count": 43,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa0ded4",
+      "names": [
+        "int __cdecl CSocketLimiter::DecUserSocketPerMAC(__int64)"
+      ],
+      "chunks": [
+        [
+          "0xa0ded4",
+          "0xa0e072"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a0ded4.asm.txt",
+      "verified_instruction_count": 100,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa0e0ac",
+      "names": [
+        "void __cdecl CSocketLimiter::DeleteUserSocketPerMAC(__int64)"
+      ],
+      "chunks": [
+        [
+          "0xa0e0ac",
+          "0xa0e166"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a0e0ac.asm.txt",
+      "verified_instruction_count": 43,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa0e1a4",
+      "names": [
+        "bool __cdecl CUserSocket::VersionPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0xa0e1a4",
+          "0xa0eb22"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a0e1a4.asm.txt",
+      "verified_instruction_count": 483,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa0f83c",
+      "names": [
+        "bool __cdecl CUserSocket::CharacterSelectPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0xa0f83c",
+          "0xa0fe2f"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a0f83c.asm.txt",
+      "verified_instruction_count": 321,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa0fe54",
+      "names": [
+        "bool __cdecl CUserSocket::_LoginPacket(wchar_t *,int,int,int,int,int,int)"
+      ],
+      "chunks": [
+        [
+          "0xa0fe54",
+          "0xa109cc"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a0fe54.asm.txt",
+      "verified_instruction_count": 602,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa10ad0",
+      "names": [
+        "bool __cdecl CUserSocket::LoginPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0xa10ad0",
+          "0xa10c71"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a10ad0.asm.txt",
+      "verified_instruction_count": 77,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa121a0",
+      "names": [
+        "void __cdecl CUserSocket::UnBindUser(void)"
+      ],
+      "chunks": [
+        [
+          "0xa121a0",
+          "0xa123cc"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a121a0.asm.txt",
+      "verified_instruction_count": 112,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa12dec",
+      "names": [
+        "VTable CUserSocket slot19",
+        "void __cdecl CUserSocket::OnClose(void)"
+      ],
+      "chunks": [
+        [
+          "0xa12dec",
+          "0xa12eed"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a12dec.asm.txt",
+      "verified_instruction_count": 56,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa1c58c",
+      "names": [
+        "bool __cdecl CUserSocket::HtmlCMDPacket(class CSocket *,const unsigned char *)"
+      ],
+      "chunks": [
+        [
+          "0xa1c58c",
+          "0xa1c83f"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a1c58c.asm.txt",
+      "verified_instruction_count": 157,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0xa1cb64",
+      "names": [
+        "void __cdecl CUserSocket::LoadHtmlCmdHandler(void)"
+      ],
+      "chunks": [
+        [
+          "0xa1cb64",
+          "0xa1ccc7"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "L2_GAME_PROFILE",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a1cb64.asm.txt",
+      "verified_instruction_count": 86,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0xa3a490",
+      "names": [
+        "void __cdecl CExecutionSerializer<class CWorld,4194304>::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(struct CExecutionArgumentPad *),class CExecutionArgument *,const wchar_t *)"
+      ],
+      "chunks": [
+        [
+          "0xa3a490",
+          "0xa3a8ee"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "CORE_ROLE_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_a3a490.asm.txt",
+      "verified_instruction_count": 236,
+      "status": "L2_PROFILE_EXCLUDED"
+    },
+    {
+      "entry": "0xab9010",
+      "names": [
+        "VTable CIOSocketEx16384 slot20",
+        "VTable CIOSocketEx8192 slot20",
+        "VTable CSocket slot20"
+      ],
+      "chunks": [
+        [
+          "0xab9010",
+          "0xab9046"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": "NETWORK_ADAPTER_MAPPED",
+      "assembly": "reports/ctransport_full_network_census_20261113/fn_ab9010.asm.txt",
+      "verified_instruction_count": 13,
+      "manual_virtual_review": {
+        "status": "RUNTIME_HELPER_DETAIL_UNVERIFIED",
+        "fact": "handler 해석과 여러 간접/직접 호출을 포함하는 지원 루틴. 원본 메서드 이름은 확인하지 않았다.",
+        "current": "원형을 복원했다고도, 별도 네트워크 기능 누락이라고도 단정하지 않는다.",
+        "row": "N37"
+      },
+      "status": "RUNTIME_HELPER_DETAIL_UNVERIFIED"
+    },
+    {
+      "entry": "0x925498",
+      "names": [
+        "class CThreadLocalTimer::CSlot *__cdecl CMwmrQueue<class CThreadLocalTimer::CSlot,4009>::Pop(void)"
+      ],
+      "chunks": [
+        [
+          "0x925498",
+          "0x92560e"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": null,
+      "assembly": "patches/ctransport_core_20261112/research/verified-network-names/fn_925498.asm.txt",
+      "verified_instruction_count": 80,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x9256d4",
+      "names": [
+        "void __cdecl CThreadLocalTimer::Dispatch(class CThreadLocalTimer::CSlot *,__int64)"
+      ],
+      "chunks": [
+        [
+          "0x9256d4",
+          "0x9257c8"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": null,
+      "assembly": "patches/ctransport_core_20261112/research/verified-network-names/fn_9256d4.asm.txt",
+      "verified_instruction_count": 59,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x926844",
+      "names": [
+        "void __cdecl CThreadLocalTimer::Dispatch(void)"
+      ],
+      "chunks": [
+        [
+          "0x926844",
+          "0x926b62"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": null,
+      "assembly": "patches/ctransport_core_20261112/research/verified-network-names/fn_926844.asm.txt",
+      "verified_instruction_count": 171,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x926bf4",
+      "names": [
+        "void __cdecl CThreadLocalTimer::AddTimer(class CIOObject *,const __int64,const int,const __int64)"
+      ],
+      "chunks": [
+        [
+          "0x926bf4",
+          "0x926e08"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": null,
+      "assembly": "patches/ctransport_core_20261112/research/verified-network-names/fn_926bf4.asm.txt",
+      "verified_instruction_count": 114,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0xa12674",
+      "names": [
+        "__cdecl CUserSocketReleaseVerifier::CUserSocketReleaseVerifier(class CUserSocket *,const wchar_t *)"
+      ],
+      "chunks": [
+        [
+          "0xa12674",
+          "0xa128df"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": null,
+      "assembly": "patches/ctransport_core_20261112/research/verified-network-names/fn_a12674.asm.txt",
+      "verified_instruction_count": 138,
+      "status": "ORIGINAL_CLOSE_VERIFIER_NOT_PORTED"
+    },
+    {
+      "entry": "0xa1291c",
+      "names": [
+        "void __cdecl CUserSocketReleaseVerifier::TimerExpired(int)"
+      ],
+      "chunks": [
+        [
+          "0xa1291c",
+          "0xa12af9"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": null,
+      "assembly": "patches/ctransport_core_20261112/research/verified-network-names/fn_a1291c.asm.txt",
+      "verified_instruction_count": 104,
+      "status": "ORIGINAL_CLOSE_VERIFIER_NOT_PORTED"
+    },
+    {
+      "entry": "0x705330",
+      "names": [
+        "void __cdecl IOThreadCallback::IOThreadNextSyncTime(void)"
+      ],
+      "chunks": [
+        [
+          "0x705330",
+          "0x7053d0"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": null,
+      "assembly": "reports/ctransport_current_network_audit_20261113/worker_705330.asm.txt",
+      "verified_instruction_count": 37,
+      "status": "CURRENT_MODULE_ROLE_LINKED_NOT_FULL_EQUIVALENCE"
+    },
+    {
+      "entry": "0x705ab0",
+      "names": [
+        "void __cdecl IOThreadCallback::IOThread_debug(void)"
+      ],
+      "chunks": [
+        [
+          "0x705ab0",
+          "0x705b13"
+        ]
+      ],
+      "scope": "PE pdata/unwind",
+      "previous_category": null,
+      "assembly": "reports/ctransport_current_network_audit_20261113/worker_705ab0.asm.txt",
+      "verified_instruction_count": 17,
+      "status": "ORIGINAL_TRACE_WRAPPER_ADAPTED"
+    }
+  ],
+  "limits": "Selected known functions and38 overlapping audit rows only;not complete enumeration of every unnamed PE function or all exception paths;role association is not semantic equivalence;no new x86 exhaustive audit."
+}

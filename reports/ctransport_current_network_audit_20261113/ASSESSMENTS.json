@@ -1,0 +1,709 @@
+{
+  "target_commit": "03b14538d2a813007f4b964ff207ae6aeb8f54ac",
+  "manual_assessments": true,
+  "scope": "33 historical feature rows plus5 current additions;overlapping roles,not an independent function denominator",
+  "rows": [
+    {
+      "id": "N01",
+      "name": "IOCP dequeue와 완료 분배",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0x7056ac",
+        "0x7057c9",
+        "0x7058d8"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "단일 GQCS의 completion-key 가상 호출 역할은 있다. 현재는 요청한 GQCSEx128/항목별 NTSTATUS/typed Operation을 쓴다.",
+      "difference_or_next_action": "추가 복원 대상 없음. 원본과 같은 dequeue 알고리즘이라고 표시하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "void IOThreadCallback::IOThread_common()"
+        }
+      ]
+    },
+    {
+      "id": "N02",
+      "name": "8K/16K slab·소유 풀 반환",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x6b5094",
+        "0x6b4fb8",
+        "0x45d7f8",
+        "0x45d67c"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "8K/16K 고정 slab·선택 필드 offset·owner ring·최종 ref 반납이 있다. 현재는 view/외부 producer/잠금 정책이 다르다.",
+      "difference_or_next_action": "정상 pool 역할 대응. 전체 allocator ABI는 N37과 구분.",
+      "source_anchors": [
+        {
+          "path": "native/cio_core.hpp",
+          "text": "class CIOBufferPool"
+        }
+      ]
+    },
+    {
+      "id": "N03",
+      "name": "공유 수신 COW·유일 버퍼 compaction",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x45de2c"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "공유 수신은 남은 데이터를 새 블록으로 복사하고 단독 ref는 제자리 compaction한다.",
+      "difference_or_next_action": "새 결함 근거 없이 재작성하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/cio_core.hpp",
+          "text": "class ReceiveWindow"
+        }
+      ]
+    },
+    {
+      "id": "N04",
+      "name": "송신 FIFO·완료 길이·버퍼 반환",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0x545a18",
+        "0x545e38",
+        "0x54655c"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "native SEND FIFO/부분 완료 offset 진행·재게시·최종 반납이 있다. 원본 완료 길이 검사와 부분 송신 처리 방식은 다르다.",
+      "difference_or_next_action": "현재 부분 송신 안전 처리를 유지.",
+      "source_anchors": [
+        {
+          "path": "native/cio_core.hpp",
+          "text": "class SendChain"
+        }
+      ]
+    },
+    {
+      "id": "N05",
+      "name": "상위 송신 serializer와 암호화 순서",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0x45c7ac",
+        "0x9ef544",
+        "0x9ef620"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "실제 SEND/암호화/WRITE 순서는 현재 native CExecutionSerializerFast가 관리한다. 이전 ABI5 표의 Java serializer 중심 설명은 최신 상태가 아니다.",
+      "difference_or_next_action": "512/504 직렬화·overflow rollback·세대 보호가 있다. L2 cipher/profile은 이식하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/execution_serializer.hpp",
+          "text": "class CExecutionSerializerFast"
+        }
+      ]
+    },
+    {
+      "id": "N06",
+      "name": "일반 completion 작업 게시와 참조",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x704248"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "IOCP 작업 게시 전에 owner retain, 실패 시 즉시 release, 완료 후 release를 한다.",
+      "difference_or_next_action": "게시 수명 역할 대응.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "bool post(Operation& op)"
+        }
+      ]
+    },
+    {
+      "id": "N07",
+      "name": "50ms/200슬롯·1000-entry block·overflow heap",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x92533c",
+        "0x9256d4",
+        "0x92611c"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "50ms/200칸 wheel·1000-entry CSlot·32-byte overflow heap·공유 CMwmrQueue4009가 있다.",
+      "difference_or_next_action": "취소 인덱스/compaction/저장 예산은 L1 확장.",
+      "source_anchors": [
+        {
+          "path": "native/timer_wheel.hpp",
+          "text": "class CThreadLocalTimer"
+        }
+      ]
+    },
+    {
+      "id": "N08",
+      "name": "timer message/argument·취소·clock",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0x925374",
+        "0x926bf4"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "AddTimer object/deadline/message/argument와 Dispatch가 실제 실행 경로에 있다. uint64 clock/bool admission/cancel key/callback 계약을 사용한다.",
+      "difference_or_next_action": "원본 void 반환형·두 Dispatch overload 원형까지 같은 것은 아님.",
+      "source_anchors": [
+        {
+          "path": "native/timer_wheel.hpp",
+          "text": "bool AddTimer(CIOObject* object,"
+        }
+      ]
+    },
+    {
+      "id": "N09",
+      "name": "종료 시작 hook·활성 해제·linger0",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x45d534",
+        "0xa12dec"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "close-start hook/active 제외/linger0·graceful half-close·I/O drain 이후 terminal이 있다.",
+      "difference_or_next_action": "원본 모든 close-state/타이밍 숫자와 같다는 의미는 아님.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "void finishIfReady()"
+        }
+      ]
+    },
+    {
+      "id": "N10",
+      "name": "Server::Add / Remove의 잠금·참조",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x8b0404",
+        "0x8b04fc",
+        "Server vtable +0x70/+0x68"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "잠금 아래 native socket map 등록/제거와 retain/release를 수행한다.",
+      "difference_or_next_action": "기존 Add/Remove 경로를 유지.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "bool Server::Add(CIOSocket* c)"
+        }
+      ]
+    },
+    {
+      "id": "N11",
+      "name": "Server::Shutdown snapshot의 참조 수명",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x8b0954",
+        "Server vtable +0x78"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "종료 snapshot은 소켓을 retain하고 잠금 밖에서 disconnect 후 release한다.",
+      "difference_or_next_action": "원본 역할 대응; snapshot container/layout은 다름.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "bool Server::Shutdown()"
+        }
+      ]
+    },
+    {
+      "id": "N12",
+      "name": "수신 parser·opcode 분배",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0xa0372c"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "CUserSocketParser의 native framing/codec·lease와 Java L1 owner dispatch가 있다.",
+      "difference_or_next_action": "L2 opcode/game handler는 N31 범위 제외.",
+      "source_anchors": [
+        {
+          "path": "native/user_socket.hpp",
+          "text": "class CUserSocketParser"
+        }
+      ]
+    },
+    {
+      "id": "N13",
+      "name": "코덱 직접 연결",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0xa0372c",
+        "0x9ef384"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "새 transport가 기존 CIOPacketCodec.dll 함수를 직접 호출한다. 실제 Windows wire/key 회귀를 통과했다.",
+      "difference_or_next_action": "L1 codec 유지. 원본 L2 cipher 복원을 뜻하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/l1_codec.hpp",
+          "text": "class L1Codec"
+        }
+      ]
+    },
+    {
+      "id": "N14",
+      "name": "packet lease·세션 owner·L1 deferred cleanup",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0xa12674",
+        "0xa123e8"
+      ],
+      "status": "ORIGINAL_PROFILE_UNPORTED",
+      "current_facts": "native drain/packet lease/Java owner 정리는 있다. 원본 CUserSocketReleaseVerifier 클래스와 종료 후 양수 잔여 ref 검사 절차는 없다.",
+      "difference_or_next_action": "정상 해제 경로와 별개로 남은 진단 H01/H02를 대조해야 함.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "void finalizeRegistration()"
+        }
+      ]
+    },
+    {
+      "id": "N15",
+      "name": "native 핸들·세대·retiring 조회",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0x90e548",
+        "0xa12dec"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "active/retiring map·lookup retain·slot+generation·stale handle 거절이 있다.",
+      "difference_or_next_action": "L1 세대 핸들은 원본 MemoryObject 진단 ID와 별개.",
+      "source_anchors": [
+        {
+          "path": "native/user_registry.hpp",
+          "text": "template<class T> class CUserSocketManager"
+        }
+      ]
+    },
+    {
+      "id": "N16",
+      "name": "8,192-bucket 사용자번호 CObjectMap",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0xa0ce3e",
+        "0xa0ce49",
+        "0xa08138"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "사용자 번호 맵과 variant27/28의 Playing/EnterChar 맵을 현재 native에서 사용한다.",
+      "difference_or_next_action": "이전 미이식 표시는 해소. 원본 모든 L2 소비자 동등성은 아님.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "CObjectMap<CUserSocket,8192,27> userSocketMapPlaying"
+        }
+      ]
+    },
+    {
+      "id": "N17",
+      "name": "FD_ACCEPT→RegisterWait→IOCP 접속 수락",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x7066dc",
+        "0x706564",
+        "0x705e4c",
+        "0x704d1c",
+        "0x705508"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "FD_ACCEPT event → WaitThread 선택 → OnWaitCallback IOCP 게시 → OnIOCallback accept 경로가 있다.",
+      "difference_or_next_action": "이전 미이식 표시는 해소.",
+      "source_anchors": [
+        {
+          "path": "native/io_server.hpp",
+          "text": "bool RegisterWait(CIOServer* object,"
+        }
+      ]
+    },
+    {
+      "id": "N18",
+      "name": "factory→생성→등록→I/O 초기화 순서",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0x8af9cc",
+        "0x8b0738",
+        "0xa0d07c",
+        "0xa0ccc4",
+        "0x545260"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "factory 할당/등록/accept callback/admission/socket I/O 초기화가 있다.",
+      "difference_or_next_action": "L1 입장 정책과 초기 seed/codec 계약을 적용.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "void Server::OnAcceptedSocket(SOCKET socket)"
+        }
+      ]
+    },
+    {
+      "id": "N19",
+      "name": "SO_RCVBUF/SO_SNDBUF=0 및 listen 정책",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x5452eb",
+        "0x545315",
+        "0x7067e2"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "admission 후 SO_RCVBUF/SO_SNDBUF=0을 설정한다. 기본 backlog5와 no-delay 설정이 있다.",
+      "difference_or_next_action": "이전 소켓 옵션 미이식 표시는 해소. 운영 설정값 동등성은 별도.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "SO_RCVBUF"
+        }
+      ]
+    },
+    {
+      "id": "N20",
+      "name": "IO worker 번호/TLS/owner 식별",
+      "previous_abi5_status": "MATCH",
+      "original_addresses": [
+        "0x705b38",
+        "0x9250f8",
+        "0x925118"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "native worker/TLS owner, 외부 producer owner, listener17, perf15 식별이 있다. 원본0x705708의 signature도 IOThreadCallback::IOThread_common이며 현재 worker 이름과 일치한다.",
+      "difference_or_next_action": "토큰 값으로 timer owner를 정하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "currentWorkerIndex = owner;"
+        }
+      ]
+    },
+    {
+      "id": "N21",
+      "name": "CPU 수 기반 worker 수·affinity",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x7044c4",
+        "0x705c4b"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "CPU 수에 따른 worker 제한과 worker affinity를 적용한다. 현재 상한8은 L1 정책이다.",
+      "difference_or_next_action": "이전 affinity 미이식 표시는 해소; 원본 worker 수와 동일하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "SetThreadAffinityMask("
+        }
+      ]
+    },
+    {
+      "id": "N22",
+      "name": "ListenThread owner17의 실제 실행 구조",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x7309df",
+        "0x730300",
+        "0x72f874",
+        "0x705e4c"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "ListenThread를 실제로 시작하고 owner17의 wait/timer 처리를 수행한다.",
+      "difference_or_next_action": "이전 listener 실행 미이식 표시는 해소.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "bool ListenThread::Start()"
+        }
+      ]
+    },
+    {
+      "id": "N23",
+      "name": "IP별 접속 제한·반환",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0xa0dc04"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "IP 제한 예약/거절/terminal 수명에 따른 카운터 반환이 있다.",
+      "difference_or_next_action": "접속 admission 정책은 현재 config에 맞춘다.",
+      "source_anchors": [
+        {
+          "path": "native/socket_limiter.hpp",
+          "text": "bool IncUserSocketPerIP("
+        }
+      ]
+    },
+    {
+      "id": "N24",
+      "name": "MAC별 소켓 limiter",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0xa0ded4"
+      ],
+      "status": "CLIENT_INTEGRATION_OPEN",
+      "current_facts": "MAC 제한 서버 API/카운터·인증 전 검사·trusted identity bind hook은 있다. 실제 클라이언트 공급·검증은 연결하지 않았다.",
+      "difference_or_next_action": "서버 core 기능 누락으로 재작성하지 않음. 클라이언트 연동은 별도 열린 항목.",
+      "source_anchors": [
+        {
+          "path": "native/socket_limiter.hpp",
+          "text": "bool IncUserSocketPerMAC("
+        }
+      ]
+    },
+    {
+      "id": "N25",
+      "name": "원본 2MiB pending write 허용 정책",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x9ef5ca",
+        "0x9ef620"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "2MiB pending write 한도와 optional SafeSend512KiB 여유/rollback이 있다.",
+      "difference_or_next_action": "이전 송신 한도 미이식 표시는 해소. 모든 L2 Send 허용 정책과 동일하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "MaxQueuedBytes"
+        }
+      ]
+    },
+    {
+      "id": "N26",
+      "name": "Server::ReportSocket 전체 peer 진단",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x8b0bac",
+        "0x72e25d"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "Server_ReportSocket와 bounded manager socket/queue/close 진단이 있다.",
+      "difference_or_next_action": "이전 peer 진단 전무 표시는 해소; 원본 필드·CSV 전체를 복제한 것은 아님.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "CIO_API int Server_ReportSocket("
+        }
+      ]
+    },
+    {
+      "id": "N27",
+      "name": "원본 thread별 I/O 시간/lock stack 진단",
+      "previous_abi5_status": "NOT_PORTED",
+      "original_addresses": [
+        "0x926e2c",
+        "0x926e54",
+        "0x705850",
+        "0x705924"
+      ],
+      "status": "PARTIAL_DIAGNOSTICS",
+      "current_facts": "18 owner callback count/time/active 시간과 Java 최근 작업·패킷 metadata가 있다.",
+      "difference_or_next_action": "원본 모든 TLS lock/signature stack·payload dump는 그대로 복원하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "CIO_API int L1Interop_GetThreadDiagnostics("
+        }
+      ]
+    },
+    {
+      "id": "N28",
+      "name": "native 네트워크 deadline",
+      "previous_abi5_status": "ADAPTED",
+      "original_addresses": [
+        "0xa0d164",
+        "0x925374"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "native login/partial header·body/write stall/graceful deadline과 Java L1 grace predicate가 있다.",
+      "difference_or_next_action": "CUserSocket::TimerExpired의 L2 상태기계 전체는 동일하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "void CIOSocket::deadlineTick("
+        }
+      ]
+    },
+    {
+      "id": "N29",
+      "name": "조건부 서비스 스레드와 전체 시작·종료 경로",
+      "previous_abi5_status": "UNVERIFIED",
+      "original_addresses": [
+        "0x72f874",
+        "0x73029c",
+        "0x72d880"
+      ],
+      "status": "UNVERIFIED_BOUNDARY",
+      "current_facts": "현재 네트워크 Run/stop/restart 경로는 실행 검증됐다. 원본 전체 조건부 서비스·WinProc 시작/정지의 모든 분기는 대응을 확정하지 않았다.",
+      "difference_or_next_action": "원본 상위 서비스 분기 중 네트워크 책임 경계를 추가 확인해야 함. 미확정을 누락 기능으로 단정하지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "bool Server::Run("
+        }
+      ]
+    },
+    {
+      "id": "N30",
+      "name": "CObjectMap variant27/28의 모든 소비자 의미",
+      "previous_abi5_status": "UNVERIFIED",
+      "original_addresses": [
+        "0xa08498",
+        "0x97ec10",
+        "0xa08660",
+        "0x8951bc"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "Playing/EnterChar 계정·캐릭터 진입/재진입 차단·종료 제거를 현재 native에 연결했다.",
+      "difference_or_next_action": "이전 variant 소비자 전무/미확정 설명 중 핵심 역할은 해소. L2 game caller 전체는 제외.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "bool SetCharacterEnteredLocked("
+        }
+      ]
+    },
+    {
+      "id": "N31",
+      "name": "L2 게임 opcode·월드·서비스 초기화",
+      "previous_abi5_status": "EXCLUDED",
+      "original_addresses": [
+        "0x72f874",
+        "0xa0d164"
+      ],
+      "status": "EXCLUDED",
+      "current_facts": "L2 게임 opcode·World_Sync/GC·게임 actor serializer·AtomicAddTimer job packet의 원본 payload는 가져오지 않았다.",
+      "difference_or_next_action": "현재 요청은 L1 네트워크. 이 항목을 필수 transport 미복원으로 세지 않음.",
+      "source_anchors": [
+        {
+          "path": "native/io_server.hpp",
+          "text": "the original CIOThreadCallback performs World_Sync/GC"
+        }
+      ]
+    },
+    {
+      "id": "N32",
+      "name": "실게임·운영 DB·장시간 동접 검증",
+      "previous_abi5_status": "UNVERIFIED",
+      "original_addresses": [],
+      "status": "VALIDATION_OPEN",
+      "current_facts": "실제 Windows kernel/DLL/FFM loopback·단편화·암호화·타이머·종료와 sanitizer 회귀는 통과했다.",
+      "difference_or_next_action": "실게임 클라이언트/운영 DB/장기 동접 검증은 수행하지 않음.",
+      "source_anchors": [
+        {
+          "path": "WINDOWS_VERIFICATION.json",
+          "text": "\"run_id\": 43491457850"
+        }
+      ]
+    },
+    {
+      "id": "N33",
+      "name": "독립 PSS 보존",
+      "previous_abi5_status": "EXCLUDED",
+      "original_addresses": [],
+      "status": "EXCLUDED",
+      "current_facts": "독립 PSS의 NIO2 채널·클라이언트 DLL과 Java 소스가 보존됐다.",
+      "difference_or_next_action": "사용자 지시대로 독립 기능 유지. 이번 audit에서도 변경하지 않음.",
+      "source_anchors": [
+        {
+          "path": "src/l1j/server/server/model/character/pss/window/PssWindowTransport.java",
+          "text": "AsynchronousChannelGroup"
+        }
+      ]
+    },
+    {
+      "id": "N34",
+      "name": "MemoryObject ID·ref1 복사·참조 오류",
+      "previous_abi5_status": null,
+      "original_addresses": [
+        "0x7d6d5c",
+        "0x7d6e1c",
+        "0x7d6eb4",
+        "0x9f7770"
+      ],
+      "status": "ROLE_PRESENT",
+      "current_facts": "기본/복사 생성은 새32비트 ID와 ref1을 얻는다. live object의 ref0 감소를 막고 마지막 오류 ID를 고정 크기로 기록한다.",
+      "difference_or_next_action": "원본 per-reason sub-reference/file-line 진단은 H02에 남아 있다.",
+      "source_anchors": [
+        {
+          "path": "native/cio_core.hpp",
+          "text": "class MemoryObject"
+        }
+      ]
+    },
+    {
+      "id": "N35",
+      "name": "풀 오류 처리·원본 강제 접근 위반",
+      "previous_abi5_status": null,
+      "original_addresses": [
+        "0x41e6e4",
+        "0x45d7f8",
+        "0x66db28"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "손상된 nonnull 풀 항목은 소비/격리 후 다음을 시도하고 늦은 반납을 차단한다. 원본 null-write 대신 기존 실패 반환 정책을 유지한다.",
+      "difference_or_next_action": "풀 전체 allocator/오류 정책이 원본과 완전히 같은 것은 아님.",
+      "source_anchors": [
+        {
+          "path": "native/cio_core.hpp",
+          "text": "p->quarantined=true;"
+        }
+      ]
+    },
+    {
+      "id": "N36",
+      "name": "확인된 타이머 타입·메서드 이름",
+      "previous_abi5_status": null,
+      "original_addresses": [
+        "0x925498",
+        "0x9256d4",
+        "0x926844",
+        "0x926bf4"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "CThreadLocalTimer/CSlot/CMwmrQueue4009::Pop/AddTimer/Dispatch가 기존 실행 경로에 적용돼 있다.",
+      "difference_or_next_action": "이름과 역할 대응이며 원본 두 Dispatch 원형·클래스 전체 layout 동등성 보증이 아님.",
+      "source_anchors": [
+        {
+          "path": "native/timer_wheel.hpp",
+          "text": "using SlotPool=CMwmrQueue<CSlot,4009>;"
+        }
+      ]
+    },
+    {
+      "id": "N37",
+      "name": "C++ 클래스 계층·allocator·전체 ABI",
+      "previous_abi5_status": null,
+      "original_addresses": [
+        "0x401f3c",
+        "0x45da20",
+        "0x545030",
+        "0x7d6eb4"
+      ],
+      "status": "L1_ADAPTED",
+      "current_facts": "MemoryObject/CIOObject/CIOServer/CIOSocketEx/CSocket/CUserSocket 계층이 있다. 현재 CIOSocketEx<Bytes>는 원본 CIOSocketEx<CIOBufferEx<N>>와 템플릿 인자·구현 배치가 다르며 공통 CIOSocket에 I/O 수명을 모은다. 일반 객체 해제는 new/delete 기반이다.",
+      "difference_or_next_action": "클래스 이름과 역할은 상당 부분 대응하나 전체 vtable/allocator/필드/함수 원형이 동일한 것은 아니다. 원본 +0x0c timer flag는 별도로 복원하지 않았다.",
+      "source_anchors": [
+        {
+          "path": "native/CTransport.cpp",
+          "text": "class CIOSocket : public CIOObject"
+        }
+      ]
+    },
+    {
+      "id": "N38",
+      "name": "CPerfMon 전체 운영 출력",
+      "previous_abi5_status": null,
+      "original_addresses": [
+        "0x82c0c0"
+      ],
+      "status": "OPERATIONAL_PARTIAL",
+      "current_facts": "현재 CPerfMon owner15·CPU/process/system memory와 사용자/소켓 진단이 있다.",
+      "difference_or_next_action": "원본 PDH/CSV/mail 운영 기능 전체는 이식하지 않음. 필수 I/O 누락과 분리.",
+      "source_anchors": [
+        {
+          "path": "native/perfmon.hpp",
+          "text": "class CPerfMon"
+        }
+      ]
+    }
+  ]
+}

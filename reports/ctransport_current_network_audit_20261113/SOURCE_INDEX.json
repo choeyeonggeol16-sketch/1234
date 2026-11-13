@@ -1,0 +1,29 @@
+{
+  "target_commit": "03b14538d2a813007f4b964ff207ae6aeb8f54ac",
+  "files": {
+    "native/CTransport.cpp": "47d49240e96db8b3bd2ada59ff3af8f8e7e215fb3d85fb6ab204de2e76c34eec",
+    "native/cio_core.hpp": "366dceef1b9ade23843f339dbfada184633d737da8b6f23eb7e9decb40d57f31",
+    "native/execution_serializer.hpp": "655069de16b6168d28d0eba2861e58325cc35e7461268d65d666e48a9e7d0b3d",
+    "native/timer_wheel.hpp": "08c5185cac118ed169c50fb6f0cb66ef7eedf27d32290b287450feca44d26a7a",
+    "native/user_socket.hpp": "27dc7bbcc0f023d96a87fc18fe6d7f249c86f41dc7c441f619cfa481b2a6bdf0",
+    "native/l1_codec.hpp": "10ea703f520d8a6d9107567b3ed0ec60d1e74b58f56f9ff2bda6f2d2f079c77c",
+    "native/user_registry.hpp": "9b2961fcc98b13f1877b55d9ebafe092634f42ea204d5d9b204cf30bc3d89231",
+    "native/io_server.hpp": "fa4bcc39bc88be60af95017422dca2116e0e0fcf43c5b4637815b4db3689cce8",
+    "native/socket_limiter.hpp": "5414631374597b1356da085dcbbcd615c56784449dc851dc51436357cdc5d7a1",
+    "WINDOWS_VERIFICATION.json": "ba9a6804e7a1be3a2d463f6462599ed499e691caa9d1aa9cfc13d948bd106658",
+    "src/l1j/server/server/model/character/pss/window/PssWindowTransport.java": "e8e3f1a1959eeff6a3e0a6d913aa7c8cd4b1ee0f7056ffeecc5f56f33874cca3",
+    "native/perfmon.hpp": "f08edf3e1cbe7b01bdce7d77dff2c1d8abb90f838abe66d453aad1e3e10b8f8d",
+    "src/l1j/server/server/model/network/core/CUserSocket.java": "c121ea78011bf242b0c86a427b70d073c9fd18df8d1da54ba048de53e4a1e9ab",
+    "src/l1j/server/server/model/network/core/CSocket.java": "4bcdc15a081f067d4a8f834260b1f2333945016dc241b3f3bf7640302c2233c8"
+  },
+  "runtime_git_trees": {
+    "patches": "b5d4a152d2b74996ae5d0a1b63cb86dc3da4fb00",
+    "downloads": "130813ae50c5af1816a79b4f1e83f4c06e937e88",
+    ".github": "edd2e12086d2879b8782e9810b7dfc125a44b45e"
+  },
+  "input_hashes": {
+    "reports/ctransport_full_network_census_20261113/FUNCTION_CENSUS.json": "b95e0ce741540743a67e6a0445abd358b16f288f1609cb1387880fdf994e037e",
+    "patches/ctransport_core_20261112/research/verified-network-names/VERIFIED_NAMES.json": "3e88f7c0a4a2f74511d4e6646dbe2c0e984802fce9e4a18171c29088943708de",
+    "reports/ctransport_verified_network_names_20261113/audit_network_abi5.py": "9e5f17163d9cc38c22a6b25fc4240323c73ab521ec7c969590bd5ef374d64634"
+  }
+}

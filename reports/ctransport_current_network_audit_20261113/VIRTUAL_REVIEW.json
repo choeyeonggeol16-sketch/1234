@@ -1,0 +1,80 @@
+{
+  "0x44c0c8": {
+    "status": "CXX_DESTRUCTOR_ADAPTED",
+    "fact": "소멸자 호출 후 flag에 따라0x401f3c를 호출하는 C++ 삭제 wrapper.",
+    "current": "현재 가상 소멸자/new-delete 수명 처리가 있다. 원본 custom allocator와 operator delete 금지 오류 정책은 다르다.",
+    "row": "N37"
+  },
+  "0x45e878": {
+    "status": "CXX_DESTRUCTOR_ADAPTED",
+    "fact": "소멸자 호출 후 flag에 따라0x401f3c를 호출하는 C++ 삭제 wrapper.",
+    "current": "현재 가상 소멸자/new-delete 수명 처리가 있다. 원본 custom allocator와 operator delete 금지 오류 정책은 다르다.",
+    "row": "N37"
+  },
+  "0x545e10": {
+    "status": "CXX_DESTRUCTOR_ADAPTED",
+    "fact": "소멸자 호출 후 flag에 따라0x401f3c를 호출하는 C++ 삭제 wrapper.",
+    "current": "현재 가상 소멸자/new-delete 수명 처리가 있다. 원본 custom allocator와 operator delete 금지 오류 정책은 다르다.",
+    "row": "N37"
+  },
+  "0x90ebbc": {
+    "status": "CXX_DESTRUCTOR_ADAPTED",
+    "fact": "소멸자 호출 후 flag에 따라0x401f3c를 호출하는 C++ 삭제 wrapper.",
+    "current": "현재 가상 소멸자/new-delete 수명 처리가 있다. 원본 custom allocator와 operator delete 금지 오류 정책은 다르다.",
+    "row": "N37"
+  },
+  "0xa017a0": {
+    "status": "CXX_DESTRUCTOR_ADAPTED",
+    "fact": "소멸자 호출 후 flag에 따라0x401f3c를 호출하는 C++ 삭제 wrapper.",
+    "current": "현재 가상 소멸자/new-delete 수명 처리가 있다. 원본 custom allocator와 operator delete 금지 오류 정책은 다르다.",
+    "row": "N37"
+  },
+  "0x404c88": {
+    "status": "TIMER_CALLBACK_PROFILE_ADAPTED",
+    "fact": "객체+0x0c를0으로 바꾸고 vtable+0x20/+0x30으로 tail-jump.",
+    "current": "현재 wheel/NativeTask 참조 보유와 callback으로 역할을 대응한다. 원본 timer flag와 가상함수 원형을 복제하지 않았다.",
+    "row": "N08"
+  },
+  "0x404c94": {
+    "status": "TIMER_CALLBACK_PROFILE_ADAPTED",
+    "fact": "객체+0x0c를0으로 바꾸고 vtable+0x20/+0x30으로 tail-jump.",
+    "current": "현재 wheel/NativeTask 참조 보유와 callback으로 역할을 대응한다. 원본 timer flag와 가상함수 원형을 복제하지 않았다.",
+    "row": "N08"
+  },
+  "0x45db68": {
+    "status": "ORIGINAL_EMPTY_DEFAULT",
+    "fact": "caller home slot에 인수만 저장한 뒤 반환하며 외부 전송 동작은 없다.",
+    "current": "기본 빈 구현을 미구현 송수신 엔진으로 세지 않는다.",
+    "row": "N37"
+  },
+  "0x45f028": {
+    "status": "IO_COMPLETION_ROLE_ADAPTED",
+    "fact": "8K 완료 분배: 오류 시 close, null OVERLAPPED timer, READ, 직렬 WRITE와 참조 해제.",
+    "current": "현재 typed Operation/ProcessIO/NativeTask와8K/16K family가 대응한다. 상태·호출 원형은 L1에 맞췄다.",
+    "row": "N04"
+  },
+  "0x705d54": {
+    "status": "TIMER_CALLBACK_PROFILE_ADAPTED",
+    "fact": "tick 기록 후 argument 유무에 따라 timer 가상 함수를 호출하고 참조를 해제한다.",
+    "current": "현재 NativeTask/Dispatch/IOCP owner hold가 대응한다. 원본 TLS 시간 컨테이너와 함수 원형은 다르다.",
+    "row": "N08"
+  },
+  "0x9ef544": {
+    "status": "SEND_POLICY_ADAPTED",
+    "fact": "송신 허용 검사.0x9ef620은 유효 socket과 pending<=0x200000을 검사한다.",
+    "current": "현재 closing 상태/2MiB reservation/SafeSend에 대응한다. L2 상태와 진단 필드 전체는 복제하지 않았다.",
+    "row": "N25"
+  },
+  "0x9ef620": {
+    "status": "SEND_POLICY_ADAPTED",
+    "fact": "송신 허용 검사.0x9ef620은 유효 socket과 pending<=0x200000을 검사한다.",
+    "current": "현재 closing 상태/2MiB reservation/SafeSend에 대응한다. L2 상태와 진단 필드 전체는 복제하지 않았다.",
+    "row": "N25"
+  },
+  "0xab9010": {
+    "status": "RUNTIME_HELPER_DETAIL_UNVERIFIED",
+    "fact": "handler 해석과 여러 간접/직접 호출을 포함하는 지원 루틴. 원본 메서드 이름은 확인하지 않았다.",
+    "current": "원형을 복원했다고도, 별도 네트워크 기능 누락이라고도 단정하지 않는다.",
+    "row": "N37"
+  }
+}

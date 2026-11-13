@@ -1,0 +1,45 @@
+{
+  "target_commit": "03b14538d2a813007f4b964ff207ae6aeb8f54ac",
+  "not_a_list_of_reproduced_production_bugs": true,
+  "gaps": [
+    {
+      "id": "H01",
+      "kind": "UNPORTED_DIAGNOSTIC",
+      "name": "종료 후 양수 잔여 native 참조 검사",
+      "original_entries": [
+        "0xa12674",
+        "0xa1291c"
+      ],
+      "decisive_instructions": [
+        "0xa12a56",
+        "0xa12a59",
+        "0xa12a5b"
+      ],
+      "current_difference": "현재 release는 void이며 ref0 감소를 진단한다. 원본 verifier는 release 반환의 양수 ref 잔여를 검사한다.",
+      "existing_role_not_missing": [
+        "native close/drain/terminal",
+        "packet lease release",
+        "registry active/retiring removal",
+        "Java owner cleanup hooks"
+      ],
+      "next_decision": "정상 종료를 다시 만들지 않고 기존 수명에 영향을 주지 않는 잔여 참조 관측 방식부터 결정한다."
+    },
+    {
+      "id": "H02",
+      "kind": "UNPORTED_DIAGNOSTIC",
+      "name": "CUserSocket 참조 종류별 카운터·last add/release 위치",
+      "original_entries": [
+        "0x9f773c",
+        "0x9f7770",
+        "0x9f7998"
+      ],
+      "current_difference": "현재 generic MemoryObject hold와 bounded close/work 기록은 있으나 원본의 per-subtype 인덱스 카운터와 file/line 필드 계약이 없다.",
+      "existing_role_not_missing": [
+        "retain/release",
+        "reference underflow prevention",
+        "last error object ID"
+      ],
+      "next_decision": "실제 원인 분석 가치와 측정 비용을 보고 기존 진단을 확장한다. 원본 모든 디버그 필드를 자동 이식할 요구로 확대하지 않는다."
+    }
+  ]
+}

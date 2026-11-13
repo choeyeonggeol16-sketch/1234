@@ -1,3 +1,11 @@
+## 2026-11-13 — 현재 네트워크 원본 대조 (배포03b1453)
+
+[**현재 대조 보고서**](reports/ctransport_current_network_audit_20261113/README_KO.md) · [**선택한156개 함수 목록**](reports/ctransport_current_network_audit_20261113/FUNCTION_INVENTORY.csv)
+
+현재 접속·송수신·풀·직렬화·타이머·등록·종료의 대응 경로와 원본 적용 차이를 정리했습니다. 종료 후 양수 잔여 참조 검사와 참조 종류별 호출 위치 진단은 원본대로 이식되지 않았습니다. MAC 클라이언트 연동·운영 출력·검증 범위도 별도로 표시했습니다. 이번에는 보고서만 추가했으며 src/DLL/배포 ZIP은03b1453 그대로입니다. 함수/항목 개수는 복원율이 아닙니다.
+
+---
+
 ## 2026-11-13 — 원본 확인 타이머 클래스·함수 이름 적용
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**이름 근거·추가 발견 보고서**](reports/CTRANSPORT_VERIFIED_NETWORK_NAMES_20261113.md)
