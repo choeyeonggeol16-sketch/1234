@@ -1,0 +1,1 @@
+PASS tested MSVC artifacts from run43527192672/artifact8136ae8;native19 source hashes and Java pin compared after LF/CRLF normalization;DLL/lib/selftest byte equality retained.

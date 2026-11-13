@@ -1,3 +1,13 @@
+## 2026-11-13 전용 객체 할당자·MSVC 객체 규약
+
+원본에서 확인한49개 크기 등급과 CSmartQueue 재사용 경로를 구현했습니다. MemoryObject/CIOObject/CISocket/CIOSocketEx/CSocket/CUserSocket 및 서버·팩터리·종료 검사기의 확인된 배치와 가상 호출 규약을 반영했습니다. 새 DLL은 MSVC x64로 빌드하며 전체 src와 함께 적용합니다. 매니저 보고서 → 풀·회수 진단에서 native 객체의 사용/반납/확보량을 확인합니다.
+
+실제 Windows DLL/FFM 검사와 원본 RTTI 계층·vtable 길이 대조를 통과했습니다. 원본에서 확인한 사실, L1 호환 차이, 빌드·검사 명령은 REPORT_OBJECT_MEMORY_ABI.md에 있습니다. ABI10/67exports·codec·독립 PSS·DB는 유지합니다. Windows x64 Visual Studio Developer 셸에서 `python native/build_native.py`로 빌드합니다.
+
+아래는 이전 배포 이력입니다.
+
+---
+
 ## 2026-11-13 종료 참조 검사·ORT31종 추적
 
 보고서 → 풀·회수 진단에 종료 후 잔여 참조, 종류별 카운터와 획득/반납 위치를 추가했습니다. 기존 타이머에서5초 후 검사하며 정상 정리 대기는25초 뒤 한 번 더 확인합니다. 검사기128개/기록16개/화면8개로 제한하고 종료 시 취소합니다. 강제 해제는 하지 않습니다. 새 src와 DLL을 함께 사용하세요. 원본 내부 규약 반영 범위와 의도적인 L1 차이는 REPORT_REFERENCE_RESTORATION.md에 있습니다. 실제 Windows 검증과 전체 Java 컴파일 통과, ABI10/67exports·PSS·codec·DB 유지.

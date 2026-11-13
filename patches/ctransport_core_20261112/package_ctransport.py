@@ -9,7 +9,7 @@ if PATCH.exists():shutil.rmtree(PATCH)
 PATCH.mkdir(parents=True)
 with zipfile.ZipFile(BASE) as z:old={n:z.read(n) for n in z.namelist() if not n.endswith('/')}
 current={str(p.relative_to(ROOT)):p.read_bytes() for p in sorted((ROOT/'src').rglob('*')) if p.is_file()}
-names_scope=runpy.run_path(str(ROOT/'tests/verify_reference_scope.py'))
+names_scope=runpy.run_path(str(ROOT/'tests/verify_object_memory_scope.py'))
 assert names_scope['verify'](ROOT)==1708
 # Build the full source archive first; the Windows evidence and native bundle
 # then name exactly this archive, avoiding a stale previous-source SHA.
@@ -44,19 +44,19 @@ for name in ['native_engine_test.cpp','fake_windows.hpp','run_native_tests.py','
  dest=PATCH/'tests'/name;dest.parent.mkdir(exist_ok=True)
  if (ROOT/'tests'/name).is_dir():shutil.copytree(ROOT/'tests'/name,dest)
  else:shutil.copy2(ROOT/'tests'/name,dest)
-for name in ['NetworkFaultTest.cpp','run_network_fault_tests.py','verify_network_fault_scope.py','VerifiedTimerNamesTest.cpp','run_verified_timer_tests.py','verify_verified_names_scope.py','ReferenceTraceTest.cpp','run_reference_tests.py','ReferenceDiagnosticsTest.java','ReferenceDiagnosticsWindowsTest.java','verify_reference_scope.py']:
+for name in ['NetworkFaultTest.cpp','run_network_fault_tests.py','verify_network_fault_scope.py','VerifiedTimerNamesTest.cpp','run_verified_timer_tests.py','verify_verified_names_scope.py','ReferenceTraceTest.cpp','run_reference_tests.py','ReferenceDiagnosticsTest.java','ReferenceDiagnosticsWindowsTest.java','verify_reference_scope.py','ObjectAllocatorTest.cpp','ObjectAbiTest.cpp','ObjectNetworkContract.cpp','run_object_memory_tests.py','verify_object_memory_scope.py','verify_msvc_rtti.py']:
  shutil.copy2(ROOT/'tests'/name,PATCH/'tests'/name)
-for name in ['scope','trace_restore_scope.py','find_core_initializers.py','recover_server_core.py','server-rtti.json','L2Server.exe.rtti-disasm.txt','L2Server(10).exe.rtti-disasm.txt','hp-batch-worker-excerpt.txt','recover_user_socket.py','user-socket','recover_registry.py','registry','network-audit','audit_network_abi5.py','build_network_audit_matrix.py','abi6','creature-serializer-audit','remaining-network-audit','send-close-audit','audit_send_close_abi8.py','abi9','abi10','followup','safesend-close','extended-diagnostics','pool-manager','network-fault-identity','verified-network-names','reference-restoration']:
+for name in ['scope','trace_restore_scope.py','find_core_initializers.py','recover_server_core.py','server-rtti.json','L2Server.exe.rtti-disasm.txt','L2Server(10).exe.rtti-disasm.txt','hp-batch-worker-excerpt.txt','recover_user_socket.py','user-socket','recover_registry.py','registry','network-audit','audit_network_abi5.py','build_network_audit_matrix.py','abi6','creature-serializer-audit','remaining-network-audit','send-close-audit','audit_send_close_abi8.py','abi9','abi10','followup','safesend-close','extended-diagnostics','pool-manager','network-fault-identity','verified-network-names','reference-restoration','object-memory-abi']:
  dest=PATCH/'research'/name;dest.parent.mkdir(exist_ok=True)
  if (ROOT/'research'/name).is_dir():shutil.copytree(ROOT/'research'/name,dest)
  else:shutil.copy2(ROOT/'research'/name,dest)
-for name in ['CTransport.dll','CTransport.lib','CTransport_SelfTest.exe','native-build.json','CIOPacketCodec.dll']:
+for name in ['CTransport.dll','CTransport.lib','CTransport_SelfTest.exe','ObjectAbiTest.exe','msvc-ci-artifact.json','native-build.json','CIOPacketCodec.dll']:
  out=PATCH/'build'/name;out.parent.mkdir(exist_ok=True);shutil.copy2(ROOT/'build'/name,out)
 shutil.copytree(ROOT/'build/pss-client',PATCH/'build/pss-client')
 for name in ['native-test.log','native-test-build.log','native-suite.log','tsan-test.log','tsan-test-build.log','tsan-suite.log','full-build.log','java-suite.log','transport-config-test.log','native-binary-test.log','windows-build.log','windows-selftest-build.log','build-manifest.log','scope-analysis.log','rtti-analysis.log','windows-smoke-compile.log','windows-actual-test.log','pss-independent-contract.log','pss-pairing-contract.log','pss-client-load-build.log','user-socket-analysis.log','user-socket-native-suite.log','user-socket-tsan-suite.log','user-socket-java-suite.log','user-socket-contract.log','user-socket-windows-compile.log','user-socket-binary-test.log','user-socket-build-manifest.log','user-socket-pss-preservation.log','abi5-native-suite.log','abi5-tsan-suite.log','abi5-java-suite.log','abi5-binary-test.log','abi5-build-manifest.log','abi5-windows-compile.log','abi5-owner-compile.log','abi5-pss-preservation.log','abi5-pss-contract.log','registry-analysis.log','abi5-windows-actual.log','network-audit.log']:
  out=PATCH/'logs'/name;out.parent.mkdir(exist_ok=True);shutil.copy2(ROOT/'logs'/name,out)
-for source in sorted([*(ROOT/'logs').glob('abi6-*.log'),*(ROOT/'logs').glob('abi7-*.log'),*(ROOT/'logs').glob('abi8-*.log'),*(ROOT/'logs').glob('abi9-*.log'),*(ROOT/'logs').glob('abi10-*.log'),*(ROOT/'logs').glob('followup-*.log'),*(ROOT/'logs').glob('safesend-*.log'),*(ROOT/'logs').glob('extended-*.log'),*(ROOT/'logs').glob('pool-ui-*.log'),*(ROOT/'logs').glob('network-fault-*.log'),*(ROOT/'logs').glob('verified-names-*.log'),*(ROOT/'logs').glob('reference-restore-*.log')]):
- if source.name in ('abi6-package.log','abi7-package.log','abi8-package.log','abi9-package.log','abi10-package.log','followup-package.log','safesend-package.log','extended-package.log','pool-ui-package.log','network-fault-package.log','verified-names-package.log','reference-restore-package.log'):continue
+for source in sorted([*(ROOT/'logs').glob('abi6-*.log'),*(ROOT/'logs').glob('abi7-*.log'),*(ROOT/'logs').glob('abi8-*.log'),*(ROOT/'logs').glob('abi9-*.log'),*(ROOT/'logs').glob('abi10-*.log'),*(ROOT/'logs').glob('followup-*.log'),*(ROOT/'logs').glob('safesend-*.log'),*(ROOT/'logs').glob('extended-*.log'),*(ROOT/'logs').glob('pool-ui-*.log'),*(ROOT/'logs').glob('network-fault-*.log'),*(ROOT/'logs').glob('verified-names-*.log'),*(ROOT/'logs').glob('reference-restore-*.log'),*(ROOT/'logs').glob('object-memory-*.log')]):
+ if source.name in ('abi6-package.log','abi7-package.log','abi8-package.log','abi9-package.log','abi10-package.log','followup-package.log','safesend-package.log','extended-package.log','pool-ui-package.log','network-fault-package.log','verified-names-package.log','reference-restore-package.log','object-memory-package.log'):continue
  shutil.copy2(source,PATCH/'logs'/source.name)
 shutil.copy2(ROOT/'WINDOWS_VERIFICATION.json',PATCH/'WINDOWS_VERIFICATION.json')
 shutil.copy2(ROOT/'README_CTRANSPORT.md',PATCH/'README.md')
@@ -73,6 +73,8 @@ shutil.copy2(ROOT/'REPORT_POOL_MANAGER.md',PATCH/'REPORT_POOL_MANAGER.md')
 shutil.copy2(ROOT/'REPORT_NETWORK_FAULT_IDENTITY.md',PATCH/'REPORT_NETWORK_FAULT_IDENTITY.md')
 shutil.copy2(ROOT/'REPORT_VERIFIED_NETWORK_NAMES.md',PATCH/'REPORT_VERIFIED_NETWORK_NAMES.md')
 shutil.copy2(ROOT/'REPORT_REFERENCE_RESTORATION.md',PATCH/'REPORT_REFERENCE_RESTORATION.md')
+shutil.copy2(ROOT/'REPORT_OBJECT_MEMORY_ABI.md',PATCH/'REPORT_OBJECT_MEMORY_ABI.md')
+shutil.copy2(ROOT/'REPORT_OBJECT_MEMORY_ABI.md',REPO/'reports/CTRANSPORT_OBJECT_MEMORY_ABI_20261113.md')
 shutil.copy2(ROOT/'REPORT_REFERENCE_RESTORATION.md',REPO/'reports/CTRANSPORT_REFERENCE_RESTORATION_20261113.md')
 shutil.copy2(ROOT/'REPORT_VERIFIED_NETWORK_NAMES.md',REPO/'reports/CTRANSPORT_VERIFIED_NETWORK_NAMES_20261113.md')
 shutil.copy2(ROOT/'REPORT_NETWORK_FAULT_IDENTITY.md',REPO/'reports/CTRANSPORT_NETWORK_FAULT_IDENTITY_20261113.md')
@@ -100,6 +102,7 @@ manifest['pool_manager_structures']=['native pool snapshot from existing ring po
 manifest['network_fault_structures']=['invalid nonnull pool entries consumed and skipped;quarantined views never recycled by late returns','healthy lease counters exclude quarantined slots;legacy8/18 diagnostics plus fault24 optional marker','MemoryObject original32 object identity/ref1 copy;bounded process reference-fault attribution','checked decrement prevents zero-reference counter wrap;normal transport handles/cipher/PSS unchanged']
 manifest['verified_timer_names']={'evidence':'research/verified-network-names/VERIFIED_NAMES.json','confirmed':['CThreadLocalTimer','CThreadLocalTimer::CSlot','CMwmrQueue<CThreadLocalTimer::CSlot,4009>::Pop','CThreadLocalTimer::AddTimer','CThreadLocalTimer::Dispatch'],'adapter_helpers':['CMwmrQueue::Return name unconfirmed','takeDue/cancel are L1 ownership adapters'],'excluded':['original CIOThreadCallback is World_Sync/GC,not the L1 worker host','CUserSocketReleaseVerifier L2 close state machine is analyzed,not blindly duplicated']}
 manifest['reference_restoration']={'report':'REPORT_REFERENCE_RESTORATION.md','evidence':'research/reference-restoration/EVIDENCE.json','verifier_budget':128,'record_capacity':16,'manager_records':8,'first_delay_ms':5000,'pending_recheck_ms':25000,'reason_kinds':31,'legacy_diagnostics_words':[8,18,24],'extended_diagnostics_words':1720,'scope':'network references,timer flag,typed buffer parameter;original custom allocator/full C++ vtable ABI not copied;requested item4 excluded'}
+manifest['object_memory_abi']={'report':'REPORT_OBJECT_MEMORY_ABI.md','evidence':'research/object-memory-abi/EVIDENCE.json','compiler_profile':'MSVC x64 C++20','allocator_classes':49,'small_requested_plus4_limit':32768,'physical_prefix':16,'original_size_field_offset':-4,'initial_queue_items':1,'initial_queue_slots':19,'queue_concurrency':18,'virtual_slots':{'MemoryObject':4,'CIOObject':12,'CISocket':21,'CIOSocketEx':21,'CSocket':24,'CUserSocket':24,'CIOServer':13,'Server':16,'CUserSocketReleaseVerifier':12,'CDummyServerCallback':2},'diagnostics_words':2030,'adaptations':'L1 protocol/ownership policies,16-byte aligned allocation prefix,external L1 state,ticket generations,bounded diagnostics;not original machine-code embedding or all L2 profiles'}
 manifest['source_scope']=verification['source_scope']
 manifest['config_file']='config/ctransport.properties'
 manifest['client_identity_status']='Server API/config existing;client identity transmitter/verifier not integrated;default limit0'
@@ -151,7 +154,7 @@ with zipfile.ZipFile(dest,'w',zipfile.ZIP_DEFLATED,compresslevel=6)as z:
   if p.is_file():z.write(p,str(p.relative_to(PATCH.parent)))
 with zipfile.ZipFile(dest)as z:assert z.testzip() is None
 archives[dest.name]=SHA(dest.read_bytes());Path(str(dest)+'.sha256').write_text(archives[dest.name]+'  '+dest.name+'\n')
-readme=REPO/'README.md';text=readme.read_text();title='## 2026-11-13 — 종료 참조 검사·종류별 추적'
-heading=title+'\n\n[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**변경·원본 대조 보고서**](reports/CTRANSPORT_REFERENCE_RESTORATION_20261113.md)\n\n기존 타이머에 CUserSocketReleaseVerifier와 ORT31종 카운터·획득/반납 위치를 연결했습니다. 매니저 보고서 → 풀·회수 진단에서 확인합니다. timer 상태·참조 반환 규약·CIOSocketEx 버퍼 타입을 반영했으며, 원본 전용 allocator와 전체 C++ ABI는 L1 호환 규약을 유지합니다. 검사기128개/기록16개/화면8개 제한. 새 src와 DLL을 함께 적용합니다. 실제 Windows CI와 전체 Java 컴파일 통과, ABI10/67exports·PSS·codec·DB 유지.\n\n이하 내용은 이전 배포 이력입니다.\n\n---\n\n'
+readme=REPO/'README.md';text=readme.read_text();title='## 2026-11-13 — 객체 할당자·원본 네트워크 객체 규약'
+heading=title+'\n\n[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**MSVC DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**복원 근거·변경 보고서**](reports/CTRANSPORT_OBJECT_MEMORY_ABI_20261113.md)\n\n원본의49개 크기 등급·CSmartQueue 객체 재사용을 구현하고, CISocket을 포함한 타입 계층과 서버·팩터리·유저 소켓·종료 검사기의 확인된 필드·가상 호출 규약을 반영했습니다. 실제 MSVC 슬롯 검사, DLL/Java FFM 회귀, 원본 RTTI 계층·vtable 길이 대조를 통과했습니다. 매니저 보고서 → 풀·회수 진단에 객체 할당 지표를 추가했습니다. 새 전체 src와 MSVC x64 DLL을 함께 적용합니다. ABI10/67exports·codec·독립 PSS·DB 유지. L1 호환 차이와 미확인 범위는 보고서에 구분했습니다.\n\n이하 내용은 이전 배포 이력입니다.\n\n---\n\n'
 if not text.startswith(title):readme.write_text(heading+text)
 print(json.dumps({'archives':archives,'dll_sha256':dllsha,'source_files':len(current),'java_files':manifest['java_files'],'changed':len(changed),'deleted':deleted},indent=2))

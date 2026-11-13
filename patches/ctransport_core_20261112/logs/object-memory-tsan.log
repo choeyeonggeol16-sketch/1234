@@ -1,0 +1,3 @@
+PASS49 original classes/size+4/32768 boundary,16-byte alignment,overaligned objects,constructor rollback,2000 held objects,120000 concurrent reuse pairs,zero live objects/bytes,overflow failure,cached slabs freed at process exit
+PASS original MemoryObject/CIOObject slots1..11;socket prefix0xb0/CSocket0x100/CUserSocket0xcd8;OV58/78,buffer98/a0,ORT100/110/114/118,number4e8,serializer48-byte offsets;socket virtuals12..23;packet format cases/bounds;zero live allocator objects
+PASS actual native original Send/SendV->L1 cipher/FIFO,OnSending before encryption,PostIOCompletion/2 success and rollback,terminal cleanup,zero live allocator objects

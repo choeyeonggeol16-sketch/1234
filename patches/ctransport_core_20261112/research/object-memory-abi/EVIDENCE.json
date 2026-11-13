@@ -1,4 +1,60 @@
 {
+  "hierarchies": {
+    "CIOServer": [
+      ".?AVCIOServer@@",
+      ".?AVCIOObject@@",
+      ".?AVMemoryObject@@"
+    ],
+    "Server": [
+      ".?AVServer@@",
+      ".?AVCIOServer@@",
+      ".?AVCIOObject@@",
+      ".?AVMemoryObject@@"
+    ],
+    "CDummyServerCallback": [
+      ".?AVCDummyServerCallback@@",
+      ".?AUIServerCallback@@"
+    ],
+    "CUserSocketReleaseVerifier": [
+      ".?AVCUserSocketReleaseVerifier@@",
+      ".?AVCIOObject@@",
+      ".?AVMemoryObject@@"
+    ],
+    "MemoryObject": [
+      ".?AVMemoryObject@@"
+    ],
+    "CIOObject": [
+      ".?AVCIOObject@@",
+      ".?AVMemoryObject@@"
+    ],
+    "CIOSocketEx8192": [
+      ".?AV?$CIOSocketEx@V?$CIOBufferEx@$0CAAA@@@@@",
+      ".?AVCISocket@@",
+      ".?AVCIOObject@@",
+      ".?AVMemoryObject@@"
+    ],
+    "CIOSocketEx16384": [
+      ".?AV?$CIOSocketEx@V?$CIOBufferEx@$0EAAA@@@@@",
+      ".?AVCISocket@@",
+      ".?AVCIOObject@@",
+      ".?AVMemoryObject@@"
+    ],
+    "CSocket": [
+      ".?AVCSocket@@",
+      ".?AV?$CIOSocketEx@V?$CIOBufferEx@$0EAAA@@@@@",
+      ".?AVCISocket@@",
+      ".?AVCIOObject@@",
+      ".?AVMemoryObject@@"
+    ],
+    "CUserSocket": [
+      ".?AVCUserSocket@@",
+      ".?AVCSocket@@",
+      ".?AV?$CIOSocketEx@V?$CIOBufferEx@$0EAAA@@@@@",
+      ".?AVCISocket@@",
+      ".?AVCIOObject@@",
+      ".?AVMemoryObject@@"
+    ]
+  },
   "verified_instructions": [
     {
       "address": "0x74e48f",

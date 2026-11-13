@@ -1,0 +1,38 @@
+PASS actual DLL MSVC RTTI:original CUserSocket6/Server4/verifier3/callback2 base chains;24/16/12/2 virtual slots;CISocket present,no extra CIOSocket class
+{
+  "CUserSocket": {
+    "hierarchy": [
+      ".?AVCUserSocket@@",
+      ".?AVCSocket@@",
+      ".?AV?$CIOSocketEx@V?$CIOBufferEx@$0EAAA@@@@@",
+      ".?AVCISocket@@",
+      ".?AVCIOObject@@",
+      ".?AVMemoryObject@@"
+    ],
+    "virtual_slots": 24
+  },
+  "Server": {
+    "hierarchy": [
+      ".?AVServer@@",
+      ".?AVCIOServer@@",
+      ".?AVCIOObject@@",
+      ".?AVMemoryObject@@"
+    ],
+    "virtual_slots": 16
+  },
+  "CUserSocketReleaseVerifier": {
+    "hierarchy": [
+      ".?AVCUserSocketReleaseVerifier@@",
+      ".?AVCIOObject@@",
+      ".?AVMemoryObject@@"
+    ],
+    "virtual_slots": 12
+  },
+  "CDummyServerCallback": {
+    "hierarchy": [
+      ".?AVCDummyServerCallback@@",
+      ".?AUIServerCallback@@"
+    ],
+    "virtual_slots": 2
+  }
+}

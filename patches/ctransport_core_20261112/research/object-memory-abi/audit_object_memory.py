@@ -27,5 +27,15 @@ for at,mnemonic,operand in [
  ins=o.valid(at);assert ins and(ins.mnemonic,ins.op_str)==(mnemonic,operand),(hex(at),ins)
  checks.append({'address':hex(at),'bytes':ins.bytes.hex(),'instruction':mnemonic+' '+operand})
 for info in functions.values():info['caller_count']=len(info.pop('callers'))
-result={'verified_instructions':checks,'size_classes':[(4+(n&3))<<((n>>2)+1)for n in range(49)],'binary_sha256' :s['EXPECTED']['x64'],'original_executed':False,'functions':functions,'vtables':vtables}
+hierarchies={}
+for name,table in vtables.items():
+ va=int(table['address'],16);col=struct.unpack('<Q',o.pe.get_data(va-o.base-8,8))[0]
+ hierarchy=struct.unpack('<I',o.pe.get_data(col-o.base+16,4))[0]
+ _,_,count,bases=struct.unpack('<4I',o.pe.get_data(hierarchy,16));assert 1<=count<=32
+ chain=[]
+ for n in range(count):
+  desc=struct.unpack('<I',o.pe.get_data(bases+n*4,4))[0];typ=struct.unpack('<I',o.pe.get_data(desc,4))[0]
+  chain.append(o.pe.get_data(typ+16,256).split(b'\0')[0].decode('ascii'))
+ hierarchies[name]=chain
+result={'hierarchies':hierarchies,'verified_instructions' :checks,'size_classes':[(4+(n&3))<<((n>>2)+1)for n in range(49)],'binary_sha256' :s['EXPECTED']['x64'],'original_executed':False,'functions':functions,'vtables':vtables}
 (out/'EVIDENCE.json').write_text(json.dumps(result,indent=2)+'\n');print('PASS pinned original allocator/callback/layout instructions and49 size classes;bounded original vtables,not adjacent string data')

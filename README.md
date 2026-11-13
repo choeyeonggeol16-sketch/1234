@@ -1,3 +1,13 @@
+## 2026-11-13 — 객체 할당자·원본 네트워크 객체 규약
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**MSVC DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**복원 근거·변경 보고서**](reports/CTRANSPORT_OBJECT_MEMORY_ABI_20261113.md)
+
+원본의49개 크기 등급·CSmartQueue 객체 재사용을 구현하고, CISocket을 포함한 타입 계층과 서버·팩터리·유저 소켓·종료 검사기의 확인된 필드·가상 호출 규약을 반영했습니다. 실제 MSVC 슬롯 검사, DLL/Java FFM 회귀, 원본 RTTI 계층·vtable 길이 대조를 통과했습니다. 매니저 보고서 → 풀·회수 진단에 객체 할당 지표를 추가했습니다. 새 전체 src와 MSVC x64 DLL을 함께 적용합니다. ABI10/67exports·codec·독립 PSS·DB 유지. L1 호환 차이와 미확인 범위는 보고서에 구분했습니다.
+
+이하 내용은 이전 배포 이력입니다.
+
+---
+
 ## 2026-11-13 — 종료 참조 검사·종류별 추적
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**변경·원본 대조 보고서**](reports/CTRANSPORT_REFERENCE_RESTORATION_20261113.md)

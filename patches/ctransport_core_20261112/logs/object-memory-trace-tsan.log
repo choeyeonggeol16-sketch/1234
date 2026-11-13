@@ -1,0 +1,2 @@
+PASS reference trace:80000 concurrent pairs,coherent file/line,negative-kind diagnostic,timer +0xc/final-free guard,128 budget/16 records,healthy/extra/packet references,account identity,5/25s phases accelerated in fixture,cancel-on-stop,legacy8/18/24/1720 canaries;no forced free
+
