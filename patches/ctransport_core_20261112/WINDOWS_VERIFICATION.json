@@ -1,68 +1,10 @@
 {
-  "status": "success",
-  "abi": "0x80000",
-  "implementation_parent": "859396fe01585e72f88a750a1989d4279f886341",
-  "implementation_commit": "292ef5bf3e21eb3851dce113a8a64c459dca3cea",
-  "tested_source_commit": "292ef5bf3e21eb3851dce113a8a64c459dca3cea",
-  "run_id": 43338213554,
-  "job_id": 131599696377,
-  "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43338213554",
-  "os": "Microsoft Windows Server 2022",
-  "jdk": "Temurin 21.0.13+9.0",
-  "dll_sha256": "00b03b8af47c50aed8bc3c896cfa008713269bde9170f986c760e127b232a848",
+  "status": "pending",
+  "abi": "0x90000",
+  "implementation_parent": "fbf430517a1adf2a2dfbcdb713707768fb1d23a0",
+  "dll_sha256": "c7fd6352053c99370ef5db59447c7a4b7f3a606cea2c9e7864ad0634d71cebe7",
   "codec_dll_sha256": "60bde93c2ba20057e7e307594edef69ced273b69f923535ab658769e09f0cea9",
   "pss_client_dll_sha256": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
-  "source_archive_sha256": "c22ffa1ea09ba8b6591a3195fdd24c7e626f0afb8b0634de8902b16501e1278f",
-  "historical_abi7": "research/send-close-audit/ABI7_WINDOWS_HISTORY.json",
-  "failed_attempts": [
-    {
-      "run_id": 43336507857,
-      "job_id": 131593922320,
-      "source_commit": "78afe0ab5fb57eb3f224c8f58c6c2895dcb5b438",
-      "log": "logs/abi8-windows-attempt1-failed.log"
-    },
-    {
-      "run_id": 43336980184,
-      "job_id": 131595506598,
-      "source_commit": "a407b291df4186dfaf0b353225438227f35bb73a",
-      "log": "logs/abi8-windows-attempt2-failed.log"
-    },
-    {
-      "run_id": 43337888625,
-      "job_id": 131598611794,
-      "source_commit": "19f1320c3fa424f9c722753729beaf41bdb984cf",
-      "log": "logs/abi8-windows-attempt3-failed.log",
-      "reason": "Existing test could dequeue both blocking tasks into one IOCP batch; post second only after first enters."
-    }
-  ],
-  "bounded_loopback": {
-    "duration_ms": 30128,
-    "concurrent_clients": 32,
-    "cumulative_connections": 55456,
-    "l1_frames": 7098368,
-    "c2s_wire_bytes": 3634364416,
-    "account_active_retiring_maps_empty_after_each_round": true,
-    "game_world_owner": "fixture; native account/session API transitions, not password/DB login"
-  },
-  "tests": [
-    "Native graceful close alone: real peer observes normal EOF; peer FIN then production terminal cleanup",
-    "Production CUserSocket: first plain packet,max65535 S2C frame,eight packed action frames and final packet match unchanged codec independently",
-    "Production CUserSocket: final-byte delivery,normal EOF before peer FIN,graceful=1/abortive=0,pending=0/ownerErrors=0",
-    "Production CSocket: single/gather copy-close race retains Java source lease until downcall exits;one failure callback",
-    "Shipped ABI8 DLL native+production Java FFM:20 connections/4MB echo,ordered adapter,work/timers/cancel/shutdown",
-    "Native existing L1 codec:67 C2S plaintext/rolling key matches,8 S2C matches,partial/empty/max65535/coalesced frames,borrowed plaintext and real terminal",
-    "Actual Windows native CPerfMon owner15,process CPU and system/process memory availability",
-    "MAC-enabled authentication denies missing identity;one-time binding/cap/terminal reuse/stale rejection",
-    "Concurrent L1 codec sessions with native account bind,enter,restart and close;zero all/Playing/EnterChar/retiring entries each round",
-    "Actual production CUserSocket account/character/MAC-provider hooks,64-bit high-bit identity,restart/account clear",
-    "Actual production CUserSocket packet-owner lifetime,queued session/SEND pressure cancellation,shutdown/injected capture exception,no pooled lease retained",
-    "64 pending IOCP tasks cancel once;production opcode/state matrix and400 registry/deferred-close races",
-    "Independent PSS TCP andproduction activation/pairing/OPEN/logout/restart/isolation;unchanged original PE32 client load"
-  ],
-  "limitations": [
-    "Actual L1 client identity sender/verifier absent:MAC default off;server API and require-on-auth implemented",
-    "Original supplied archive contains source and two DLLs only;no real game client,complete runtime config/database",
-    "Game/account/actor/scheduler/filter dependencies in owner tests are fixtures;password login/live DB/gameplay/hunting/full handler integration not executed",
-    "Bounded30-second loopback does not establish sustained production stability,max concurrent players,or comparative NIO2 performance"
-  ]
+  "historical_abi8": "research/abi9/WINDOWS_ABI8_HISTORY.json",
+  "reason": "ABI9 actual Windows tests pending; old ABI8 success is historical only."
 }

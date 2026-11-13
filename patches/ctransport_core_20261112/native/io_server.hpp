@@ -6,7 +6,6 @@
 #include <mutex>
 #include <thread>
 
-namespace ctransport {
 class Server;
 class CIOSocket;
 class IServerCallback {
@@ -14,11 +13,11 @@ public:
     virtual ~IServerCallback()=default;
     virtual CIOSocket* CreateSocket(Server*,SOCKET) noexcept=0;
 };
-class ServerCallbackAdapter final : public IServerCallback {
+class CDummyServerCallback final : public IServerCallback {
     using AllocateFunction=CIOSocket*(*)(Server*,SOCKET) noexcept;
     const AllocateFunction allocate_;
 public:
-    explicit ServerCallbackAdapter(AllocateFunction allocate):allocate_(allocate){}
+    explicit CDummyServerCallback(AllocateFunction allocate):allocate_(allocate){}
     CIOSocket* CreateSocket(Server* server,SOCKET socket)noexcept override{return allocate_(server,socket);}
 };
 // Original CIOServer owns the listening SOCKET/event and wait/I/O callbacks.
@@ -40,7 +39,7 @@ public:
     virtual void OnAcceptedSocket(SOCKET socket) noexcept=0;
     void OnWaitCallback() noexcept;
     void OnIOCallback() noexcept;
-    void completed(void*,bool,unsigned,unsigned)noexcept override{OnIOCallback();}
+    void OnIOCallback(void*,bool,unsigned,unsigned)noexcept override{OnIOCallback();}
     virtual void OnWaitFailure(unsigned error) noexcept=0;
     bool Create(const char* address,unsigned short number,int backlog) noexcept {
         addrinfo hints{};hints.ai_family=AF_INET;hints.ai_socktype=SOCK_STREAM;
@@ -142,4 +141,3 @@ public:
     void Join(){if(thread_.joinable())thread_.join();}
     void IOThread_common() noexcept;
 };
-}

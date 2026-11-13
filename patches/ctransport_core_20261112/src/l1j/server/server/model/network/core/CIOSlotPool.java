@@ -211,7 +211,7 @@ public final class CIOSlotPool {
 
     /**
      * Fast release for a caller that has already atomically revoked its lease.
-     * CIOBufferPool.Lease.release() gates exactly one releaser with ACTIVE.getAndSet.
+     * CIOBufferEx.release() gates exactly one releaser with ACTIVE.getAndSet.
      * Unlike the public release(), there cannot be a competing owner of this
      * generation, so a second generation CAS is redundant. The bitmap CAS is
      * still necessary because independent slots share a bitmap word.

@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import java.util.logging.LogManager;
 import l1j.server.server.GameServer;
 import l1j.server.server.model.network.core.CIOBufferPool;
-import l1j.server.server.model.network.core.CIOSocketFactory;
+import l1j.server.server.model.network.core.CDummyServerCallback;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.ConnectionConfig;
 import l1j.server.server.monitor.LoggerInstance;
@@ -93,7 +93,7 @@ public class Server {
             final ConnectionConfig config = new ConnectionConfig(address);
             final CIOBufferPool pool = new CIOBufferPool(connectionCapacity,
                     sendSlots, largeRecvSlots, largeSlots);
-            final CIOSocketFactory factory = new CIOSocketFactory(
+            final CDummyServerCallback factory = new CDummyServerCallback(
                     CIOThreadCallback.getInstance(), config);
             gameListener = new l1j.server.server.model.network.core.Server(address, connectionCapacity,
                     ioThreads, backlog, pool, factory);

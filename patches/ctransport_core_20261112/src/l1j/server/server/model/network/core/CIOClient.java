@@ -88,7 +88,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
         final CUserSocket socket = _connection;
         try {
             if (socket == null || !socket.isOpen()) return false;
-            socket.initializeCipher(Opcodes.getSeed());
+            socket.SetKey(Opcodes.getSeed());
             // sendPacket(byte[]) swallows staging failures. ACCEPT must not treat
             // a failed initial SEND reservation as a successful login handshake.
             if (!socket.tryWritePacket(this, new BytesWritablePacket(Opcodes.S_KEYBYTES))) {

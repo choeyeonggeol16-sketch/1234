@@ -29,7 +29,7 @@ final class CIOPacketCodec implements AutoCloseable {
     private boolean closed;
     CIOPacketCodec(CSocket channel,long seed) {
         this.channel=channel;
-        if(!channel.initializeUserSocket(API.FUNCTIONS,(int)seed))throw new IllegalStateException("Native L1 user socket/codec initialization failed");
+        if(!channel.SetKey(API.FUNCTIONS,(int)seed))throw new IllegalStateException("Native L1 user socket/codec initialization failed");
     }
     synchronized void encrypt(ByteBuffer buffer,int offset,int length) {
         if(closed)throw new IllegalStateException("L1 codec bridge closed");

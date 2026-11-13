@@ -1,0 +1,1 @@
+PASS original CDummyServerCallback -> IServerCallback and CIOObject -> MemoryObject RTTI;five exact call/name assertions;constant send and two remaining timestamp helper traces

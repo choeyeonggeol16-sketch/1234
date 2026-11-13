@@ -6,7 +6,6 @@
 #include <memory>
 #include <shared_mutex>
 #include <mutex>
-namespace ctransport {
 // Original CObjectMap<CUserSocket,8192,...>: hash to a bucket, RW locking,
 // ordered key/object entries and one reference for every registered object.
 template<class T,std::size_t Count=8192,unsigned Tag=26> class CObjectMap {
@@ -38,4 +37,3 @@ public:
     }
     std::uint64_t size()const noexcept{return size_.load();}
 };
-}

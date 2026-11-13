@@ -32,7 +32,6 @@
 #include <unordered_map>
 #include <vector>
 
-namespace ctransport {
 using AcceptFn = int (*)(void*, std::uint64_t, std::uint64_t);
 using DataFn = int (*)(void*, std::uint64_t, const void*, int);
 using CloseFn = int (*)(void*, std::uint64_t, int, int);
@@ -40,7 +39,7 @@ using PacketFn = int (*)(void*, std::uint64_t, std::uint64_t, const void*, int);
 using DeadlineFn = int (*)(void*, std::uint64_t);
 using NtStatusToErrorFn = ULONG (WINAPI *)(LONG);
 constexpr ULONG CompletionBatchSize = 128;
-struct Listener {
+struct L1Callbacks {
     std::atomic<AcceptFn> accept{nullptr};
     std::atomic<DataFn> receive{nullptr}, send{nullptr};
     std::atomic<CloseFn> close{nullptr}, closing{nullptr};
@@ -74,7 +73,7 @@ struct Operation {
 static_assert(offsetof(Operation, overlapped) == 0, "OVERLAPPED address contract");
 class Server : public CIOServer {
 public:
-    Listener* const callbacks;
+    L1Callbacks* const callbacks;
     CIOBufferPool buffers;
     NtStatusToErrorFn ntStatusToError = nullptr;
     std::vector<std::unique_ptr<IOThreadCallback>> workers;
@@ -121,11 +120,11 @@ public:
         changed.notify_all();
     }
 
-    explicit Server(Listener* listener) : callbacks(listener), buffers(65536) {
+    explicit Server(L1Callbacks* listener) : callbacks(listener), buffers(65536) {
         WSADATA data{}; wsaReady = WSAStartup(MAKEWORD(2, 2), &data) == 0;
     }
     ~Server() override;
-    bool start(const char* address, unsigned short portNumber) noexcept;
+    bool Run(const char* address, unsigned short portNumber) noexcept;
     bool stop() noexcept;
     bool stopAccepting() noexcept;
     bool stopAcceptingImpl() noexcept;
@@ -173,12 +172,14 @@ public:
     std::size_t reservedSendBytes=0;unsigned pendingSendRequests=0;
     bool gracefulRequested=false,gracefulSendShutdown=false,gracefulPeerEof=false,closeAbortive=true;
     std::uint64_t gracefulDue=0;
-    bool send(const Span*,unsigned,bool framed=false,bool plainFirst=false)noexcept;
-    void __async_AsyncSend(NativeSendRequest&)noexcept;
+    bool send(const Span*,unsigned,bool framed=false,bool plainFirst=false,bool constant=false)noexcept;
+    virtual void __async_AsyncSend(NativeSendRequest&)noexcept=0;
+    virtual void __async_AsyncSendConstBuffer(NativeSendRequest&)noexcept=0;
+    void ExecuteSend(NativeSendRequest&)noexcept;
     bool GracefulClose(unsigned timeoutMs)noexcept;
-    static void KickWriteCallback(CIOObject* object,void*)noexcept{
+    static void KickWriteCallback(MemoryObject* object,void*)noexcept{
         auto* c=static_cast<CIOSocket*>(object);
-        {std::lock_guard<std::mutex> lock(c->gate);c->writeLocked();}
+        {std::lock_guard<std::mutex> lock(c->gate);c->_Write();}
         c->finishIfReady();
     }
     virtual const sockaddr_storage& LocalAddress() const noexcept=0;
@@ -260,7 +261,7 @@ public:
             if (error != WSA_IO_PENDING) { state.readPosted = false; release(); failLocked(2, error); }
         }
     }
-    void writeLocked() noexcept {
+    void _Write() noexcept {
         if (!execution_.IsOwner() || !state.canWrite() || !writes.head()) return;
         auto* p = writes.head();
         writeOp.reset(); state.writePosted = true; retain();
@@ -342,12 +343,12 @@ public:
         if(!execution_.AddExecutable(this,KickWriteCallback,nullptr))disconnect(3,10055);
         finishIfReady();
     }
-    static void WriteCallback(CIOObject* owner,void* argument) noexcept {
+    static void WriteCallback(MemoryObject* owner,void* argument) noexcept {
         auto* socket=static_cast<CIOSocket*>(owner);const auto data=reinterpret_cast<std::uintptr_t>(argument);
         const auto error=static_cast<unsigned>(data);socket->ProcessIO(&socket->writeOp,error==0,static_cast<unsigned>(data>>32),error);
     }
-    static void CloseCallback(CIOObject* owner,void*) noexcept{static_cast<CIOSocket*>(owner)->closeCallback();}
-    void completed(void* operation,bool ok,unsigned bytes,unsigned error) noexcept override {
+    static void CloseCallback(MemoryObject* owner,void*) noexcept{static_cast<CIOSocket*>(owner)->closeCallback();}
+    void OnIOCallback(void* operation,bool ok,unsigned bytes,unsigned error) noexcept override {
         auto& op=*static_cast<Operation*>(operation);
         if(op.kind==OpKind::Write){
             const auto status=ok?0u:(error?error:31u);
@@ -366,7 +367,7 @@ public:
         if (op.kind == OpKind::Resume) {
             {std::lock_guard<std::mutex> lock(gate);resumePosted=false;userPumpActive=true;}
             pumpPackets();
-            {std::lock_guard<std::mutex> lock(gate);userPumpActive=false;readLocked();writeLocked();}
+            {std::lock_guard<std::mutex> lock(gate);userPumpActive=false;readLocked();_Write();}
             finishIfReady();return;
         }
         CIOBuffer* retired = nullptr;
@@ -402,7 +403,7 @@ public:
             std::lock_guard<std::mutex> lock(gate);
             if (op.kind == OpKind::Read) { if (deliver) reads.consume(bytes); state.readDelivering = false; } else state.writeDelivering = false;
             if (result != 0) failLocked(op.kind == OpKind::Read ? 2 : 3, ERROR_INVALID_DATA);
-            readLocked(); writeLocked();
+            readLocked(); _Write();
         }
         server->buffers.recycle(retired);
         finishIfReady();
@@ -414,15 +415,18 @@ public:
 class NativeSendRequest final:public CIOObject {
 public:
     CIOSocket* const socket;std::vector<unsigned char> bytes;
-    const bool framed,plainFirst;std::atomic<int> result{0};
-    NativeSendRequest(CIOSocket* owner,const Span* spans,unsigned count,std::size_t total,bool frames,bool plain)
-        :socket(owner),bytes(total),framed(frames),plainFirst(plain){
+    const bool framed,plainFirst,constant;std::atomic<int> result{0};
+    NativeSendRequest(CIOSocket* owner,const Span* spans,unsigned count,std::size_t total,bool frames,bool plain,bool immutable)
+        :socket(owner),bytes(total),framed(frames),plainFirst(plain),constant(immutable){
         socket->retain();std::size_t at=0;
         for(unsigned i=0;i<count;++i){if(spans[i].size)std::memcpy(bytes.data()+at,spans[i].data,spans[i].size);at+=spans[i].size;}
     }
     ~NativeSendRequest()override{socket->release();}
-    static void Execute(CIOObject* object,void*)noexcept{auto& request=*static_cast<NativeSendRequest*>(object);request.socket->__async_AsyncSend(request);}
-    void completed(void*,bool,unsigned,unsigned)noexcept override{}
+    static void Execute(MemoryObject* object,void*)noexcept{
+        auto& request=*static_cast<NativeSendRequest*>(object);
+        if(request.constant)request.socket->__async_AsyncSendConstBuffer(request);else request.socket->__async_AsyncSend(request);
+    }
+    void OnIOCallback(void*,bool,unsigned,unsigned)noexcept override{}
     bool ValidFrames()const noexcept{
         std::size_t at=0;while(at<bytes.size()){
             if(bytes.size()-at<2)return false;
@@ -431,7 +435,7 @@ public:
         }return at==bytes.size();
     }
 };
-bool CIOSocket::send(const Span* spans,unsigned count,bool framed,bool plainFirst)noexcept {
+bool CIOSocket::send(const Span* spans,unsigned count,bool framed,bool plainFirst,bool constant)noexcept {
     ObjectRef lifetime(this);std::size_t total=0;
     for(unsigned i=0;i<count;++i){if((!spans[i].data&&spans[i].size)||spans[i].size>MaxQueuedBytes-total){++server->sendsRejected;return false;}total+=spans[i].size;}
     if(!total)return true;
@@ -441,7 +445,7 @@ bool CIOSocket::send(const Span* spans,unsigned count,bool framed,bool plainFirs
         reservedSendBytes+=total;++pendingSendRequests;++server->pendingSends;
     }
     NativeSendRequest* request=nullptr;
-    try{request=new NativeSendRequest(this,spans,count,total,framed,plainFirst);}catch(...){}
+    try{request=new NativeSendRequest(this,spans,count,total,framed,plainFirst,constant);}catch(...){}
     if(!request||(framed&&!request->ValidFrames())){
         if(request)request->release();
         {std::lock_guard<std::mutex> lock(gate);reservedSendBytes-=total;--pendingSendRequests;--server->pendingSends;}
@@ -454,7 +458,7 @@ bool CIOSocket::send(const Span* spans,unsigned count,bool framed,bool plainFirs
     }
     ++server->sendsAccepted;return request->result.load(std::memory_order_acquire)>=0;
 }
-void CIOSocket::__async_AsyncSend(NativeSendRequest& request)noexcept {
+void CIOSocket::ExecuteSend(NativeSendRequest& request)noexcept {
     bool ok=false;
     {
         std::lock_guard<std::mutex> lock(gate);
@@ -462,7 +466,38 @@ void CIOSocket::__async_AsyncSend(NativeSendRequest& request)noexcept {
         if(!execution_.IsOwner()){++server->sendOwnerErrors;failLocked(3,31);}
         if(!state.closing){
             ok=true;
-            if(request.framed){
+            const bool wasEmpty=!writes.head();
+            if(request.constant){
+                // Original __async_AsyncSendConstBuffer copies/encrypts into
+                // socket-owned output, leaving its reference-counted source
+                // untouched. L1 frames can span several 16K pool blocks.
+                SendChain prepared(LargeBufferBytes);Span source{request.bytes.data(),request.bytes.size()};
+                ok=prepared.append(server->buffers,&source,1);
+                if(ok){
+                    SendChain::Cursor cursor(prepared);std::vector<unsigned char> scratch;
+                    std::size_t at=0;bool plain=request.plainFirst;
+                    while(at<request.bytes.size()){
+                        const unsigned size=request.bytes[at]|(static_cast<unsigned>(request.bytes[at+1])<<8);
+                        const auto body=size-2;cursor.advance(2);
+                        if(plain){++server->framesPlain;plain=false;cursor.advance(body);}
+                        else {
+                            unsigned char empty=0;auto* contiguous=body?cursor.contiguous(body):&empty;
+                            if(contiguous){
+                                if(!UserProtocol()->codec->encrypt(contiguous,static_cast<int>(body))){ok=false;break;}
+                                cursor.advance(body);
+                            }else{
+                                try{scratch.assign(request.bytes.data()+at+2,request.bytes.data()+at+size);}catch(...){ok=false;break;}
+                                if(!UserProtocol()->codec->encrypt(scratch.data(),static_cast<int>(body))){ok=false;break;}
+                                cursor.copy(scratch.data(),body);
+                            }
+                            ++server->framesEncrypted;
+                        }
+                        at+=size;
+                    }
+                    if(ok)ok=writes.adopt(server->buffers,prepared);
+                }
+                prepared.clear(server->buffers);
+            }else if(request.framed){
                 std::size_t at=0;bool plain=request.plainFirst;
                 while(at<request.bytes.size()){
                     const unsigned size=request.bytes[at]|(static_cast<unsigned>(request.bytes[at+1])<<8);
@@ -472,9 +507,9 @@ void CIOSocket::__async_AsyncSend(NativeSendRequest& request)noexcept {
                     at+=size;
                 }
             }
-            const bool wasEmpty=!writes.head();Span bytes{request.bytes.data(),request.bytes.size()};
-            if(ok)ok=writes.append(server->buffers,&bytes,1);
-            if(ok){if(wasEmpty)writeProgressAt=monotonicMs();writeLocked();ok=!state.closing;}
+            Span bytes{request.bytes.data(),request.bytes.size()};
+            if(ok&&!request.constant)ok=writes.append(server->buffers,&bytes,1);
+            if(ok){if(wasEmpty)writeProgressAt=monotonicMs();_Write();ok=!state.closing;}
             else failLocked(3,10055); // a failed cipher/post cannot leave a usable key stream
         }
         request.result.store(ok?1:-1,std::memory_order_release);
@@ -509,6 +544,10 @@ class CSocket : public CIOSocketEx<16384> {
     std::atomic<bool> ipReserved_{false};
     std::atomic<std::uint64_t> macIdentity_{0};
 public:
+    bool SendV(const Span* spans,unsigned count,bool plain)noexcept{return send(spans,count,true,plain);}
+    bool SendConstBuffer(const Span* spans,unsigned count,bool plain)noexcept{return send(spans,count,true,plain,true);}
+    void __async_AsyncSend(NativeSendRequest& request)noexcept override{ExecuteSend(request);}
+    void __async_AsyncSendConstBuffer(NativeSendRequest& request)noexcept override{ExecuteSend(request);}
     CSocket(Server* server,SOCKET socket,std::uint64_t id):CIOSocketEx<16384>(server,socket,id){
         int length=sizeof(local_);getsockname(socket,reinterpret_cast<sockaddr*>(&local_),&length);
         length=sizeof(remote_);getpeername(socket,reinterpret_cast<sockaddr*>(&remote_),&length);
@@ -712,7 +751,7 @@ public:
         }
         server->finishTask(this);
     }
-    void completed(void*, bool, unsigned, unsigned) noexcept override {
+    void OnIOCallback(void*, bool, unsigned, unsigned) noexcept override {
         auto expected = TaskState::Queued;
         if (state.compare_exchange_strong(expected, TaskState::Running)) {
             dispatch(0);
@@ -845,7 +884,7 @@ void IOThreadCallback::IOThread_common() noexcept {
                 else {
                     auto* object=reinterpret_cast<CIOObject*>(entry.lpCompletionKey);
                     const auto begin=monotonicMs();server->callbackStarted[owner]=begin;
-                    object->completed(nullptr,true,entry.dwNumberOfBytesTransferred,0);
+                    object->OnIOCallback(nullptr,true,entry.dwNumberOfBytesTransferred,0);
                     ++server->callbackCounts[owner];server->callbackMillis[owner].fetch_add(monotonicMs()-begin);
                     server->callbackStarted[owner]=0;object->release();
                 }
@@ -857,7 +896,7 @@ void IOThreadCallback::IOThread_common() noexcept {
             auto* operation = reinterpret_cast<Operation*>(entry.lpOverlapped);
             auto* owner = reinterpret_cast<CIOObject*>(entry.lpCompletionKey);
             const auto begin=monotonicMs();server->callbackStarted[owner_]=begin;
-            owner->completed(operation, ok, entry.dwNumberOfBytesTransferred, error);
+            owner->OnIOCallback(operation, ok, entry.dwNumberOfBytesTransferred, error);
             ++server->callbackCounts[owner_];server->callbackMillis[owner_].fetch_add(monotonicMs()-begin);
             server->callbackStarted[owner_]=0;owner->release();
         }
@@ -992,7 +1031,7 @@ bool CPerfMon::Start(unsigned interval)noexcept {
         currentWorker=nullptr;
     });return true;}catch(...){return false;}
 }
-bool Server::start(const char* address, unsigned short number) noexcept {
+bool Server::Run(const char* address, unsigned short number) noexcept {
     std::lock_guard<std::mutex> lock(lifecycle);
     if (running.load() || !wsaReady || !validSettings || !address || workerCount < 1 || workerCount > 64 || maxConnections < 1) return false;
     ntStatusToError = reinterpret_cast<NtStatusToErrorFn>(
@@ -1007,7 +1046,7 @@ bool Server::start(const char* address, unsigned short number) noexcept {
     if(!registry.initialize(static_cast<unsigned>(maxConnections))){Close();CloseHandle(port);port=nullptr;return false;}
     running.store(true); stopping.store(false); accepting.store(true);
     try {
-        socketFactory=std::make_unique<ServerCallbackAdapter>(CUserSocket::Allocate);
+        socketFactory=std::make_unique<CDummyServerCallback>(CUserSocket::Allocate);
         timerBlocks.reset(new TimerBlockPool(static_cast<std::size_t>(workerCount+1)*200+409));
         for(int i=0;i<workerCount;++i)timers.emplace_back(new TimerWheel(monotonicMs(),timerBlocks.get()));
         listenTimer.reset(new TimerWheel(monotonicMs(),timerBlocks.get()));
@@ -1064,9 +1103,7 @@ static bool addressText(const sockaddr_storage& storage, char* output, int* capa
     if (*capacity < needed) { *capacity = needed; return false; }
     std::memcpy(output, text, needed); *capacity = needed - 1; return true;
 }
-} // namespace ctransport
 
-using namespace ctransport;
 template<class F> static void configure(void* p, F apply) {
     if (!p) return;
     auto* server = static_cast<Server*>(p);
@@ -1074,34 +1111,34 @@ template<class F> static void configure(void* p, F apply) {
     // Configuration is a startup contract, not unsynchronized live tuning.
     if (!server->running.load()) apply(*server);
 }
-CIO_API unsigned CTransport_Version() { return 0x00080000; }
-CIO_API void* CIO_Create_TcpServerListener() { return new(std::nothrow) Listener; }
-CIO_API void CIO_Destroy_TcpServerListener(void* p) { delete static_cast<Listener*>(p); }
-CIO_API void* CIO_Create_TcpServer(void* p) { if (!p) return nullptr; try { return new Server(static_cast<Listener*>(p)); } catch (...) { return nullptr; } }
-CIO_API void CIO_Destroy_TcpServer(void* p) { if (p) { auto* s = static_cast<Server*>(p); if (s->stop()) s->release(); } }
-CIO_API void CIO_Set_FN_Server_OnAccept(void* p, AcceptFn fn) { if (p) static_cast<Listener*>(p)->accept.store(fn); }
-CIO_API void CIO_Set_FN_Server_OnReceive(void* p, DataFn fn) { if (p) static_cast<Listener*>(p)->receive.store(fn); }
-CIO_API void CIO_Set_FN_Server_OnSend(void* p, DataFn fn) { if (p) static_cast<Listener*>(p)->send.store(fn); }
-CIO_API void CIO_Set_FN_Server_OnClose(void* p, CloseFn fn) { if (p) static_cast<Listener*>(p)->close.store(fn); }
-CIO_API int CIO_Server_Start(void* p, const char* address, unsigned short port) { return p && static_cast<Server*>(p)->start(address, port); }
-CIO_API int CIO_StopAccepting(void* p) { return p && static_cast<Server*>(p)->stopAccepting(); }
-CIO_API int CIO_Server_Stop(void* p) { return p && static_cast<Server*>(p)->stop(); }
-CIO_API int CIO_Server_Wait(void* p, unsigned timeout) { return p && static_cast<Server*>(p)->wait(timeout); }
-CIO_API int CIO_Server_Disconnect(void* p, std::uint64_t id, int force) {
+CIO_API unsigned L1Interop_GetAbiVersion() { return 0x00090000; }
+CIO_API void* L1Interop_CreateCallbacks() { return new(std::nothrow) L1Callbacks; }
+CIO_API void L1Interop_ReleaseCallbacks(void* p) { delete static_cast<L1Callbacks*>(p); }
+CIO_API void* L1Interop_CreateServer(void* p) { if (!p) return nullptr; try { return new Server(static_cast<L1Callbacks*>(p)); } catch (...) { return nullptr; } }
+CIO_API void L1Interop_ReleaseServer(void* p) { if (p) { auto* s = static_cast<Server*>(p); if (s->stop()) s->release(); } }
+CIO_API void L1Interop_SetOnAccept(void* p, AcceptFn fn) { if (p) static_cast<L1Callbacks*>(p)->accept.store(fn); }
+CIO_API void L1Interop_SetOnRead(void* p, DataFn fn) { if (p) static_cast<L1Callbacks*>(p)->receive.store(fn); }
+CIO_API void L1Interop_SetOnWrite(void* p, DataFn fn) { if (p) static_cast<L1Callbacks*>(p)->send.store(fn); }
+CIO_API void L1Interop_SetOnClose(void* p, CloseFn fn) { if (p) static_cast<L1Callbacks*>(p)->close.store(fn); }
+CIO_API int Server_Run(void* p, const char* address, unsigned short port) { return p && static_cast<Server*>(p)->Run(address, port); }
+CIO_API int CIOServer_Close(void* p) { return p && static_cast<Server*>(p)->stopAccepting(); }
+CIO_API int L1Interop_StopServer(void* p) { return p && static_cast<Server*>(p)->stop(); }
+CIO_API int L1Interop_WaitServer(void* p, unsigned timeout) { return p && static_cast<Server*>(p)->wait(timeout); }
+CIO_API int CIOSocketEx_Close(void* p, std::uint64_t id) {
     if (!p) return 0; auto* c = static_cast<Server*>(p)->find(id,true); if (!c) return 0;
-    ObjectRef hold(c, false);if(!force)return c->GracefulClose(30000);c->disconnect(); return 1;
+    ObjectRef hold(c, false);c->disconnect(); return 1;
 }
-CIO_API int CIO_Server_PauseReceive(void* p, std::uint64_t id, int paused) {
+CIO_API int L1Interop_PauseRead(void* p, std::uint64_t id, int paused) {
     if (!p) return 0; auto* c = static_cast<Server*>(p)->find(id); if (!c) return 0;
     ObjectRef hold(c, false); return c->pause(paused != 0);
 }
-CIO_API int CIO_Server_Send(void* p, std::uint64_t id, const void* data, int length) {
+CIO_API int CIOSocket__Write(void* p, std::uint64_t id, const void* data, int length) {
     if (!p || length < 0 || (!data && length)) return 0;
     auto* c = static_cast<Server*>(p)->find(id); if (!c) return 0;
     ObjectRef hold(c, false); Span span{static_cast<const unsigned char*>(data), static_cast<std::size_t>(length)};
     return c->send(&span, 1);
 }
-CIO_API int CIO_Server_SendPackets(void* p, std::uint64_t id, const WSABUF* buffers, int count) {
+CIO_API int L1Interop_WriteBuffers(void* p, std::uint64_t id, const WSABUF* buffers, int count) {
     if (!p || !buffers || count < 1 || count > 1024) return 0;
     auto* c = static_cast<Server*>(p)->find(id); if (!c) return 0;
     ObjectRef hold(c, false);
@@ -1114,80 +1151,78 @@ CIO_API int CIO_Server_SendPackets(void* p, std::uint64_t id, const WSABUF* buff
         return c->send(spans, count);
     } catch (...) { return 0; }
 }
-CIO_API int CIO_Server_GetListenAddress(void* p, char* out, int* capacity, unsigned short* port) {
+CIO_API int L1Interop_GetListenAddress(void* p, char* out, int* capacity, unsigned short* port) {
     return p && addressText(static_cast<Server*>(p)->listenAddress, out, capacity, port);
 }
-CIO_API int CIO_Server_GetLocalAddress(void* p, std::uint64_t id, char* out, int* capacity, unsigned short* port) {
+CIO_API int L1Interop_GetLocalAddress(void* p, std::uint64_t id, char* out, int* capacity, unsigned short* port) {
     if (!p) return 0; auto* c = static_cast<Server*>(p)->find(id); if (!c) return 0;
     ObjectRef hold(c, false); return addressText(c->LocalAddress(), out, capacity, port);
 }
-CIO_API int CIO_Server_GetRemoteAddress(void* p, std::uint64_t id, char* out, int* capacity, unsigned short* port) {
+CIO_API int CSocket_GetIPAddressString(void* p, std::uint64_t id, char* out, int* capacity, unsigned short* port) {
     if (!p) return 0; auto* c = static_cast<Server*>(p)->find(id); if (!c) return 0;
     ObjectRef hold(c, false); return addressText(c->RemoteAddress(), out, capacity, port);
 }
-CIO_API void CIO_Server_SetMaxConnectionCount(void* p, int value) { configure(p, [=](Server& s){if (value > 0 && value <= 100000) s.maxConnections = value; else s.validSettings = false;}); }
-CIO_API void CIO_Server_SetWorkerThreadCount(void* p, int value) { configure(p, [=](Server& s){if (value > 0 && value <= 8) s.workerCount = value; else s.validSettings = false;}); }
-CIO_API void CIO_TcpServer_SetSocketListenQueue(void* p, int value) { configure(p, [=](Server& s){if (value > 0 && value <= 65535) s.backlog = value; else s.validSettings = false;}); }
-CIO_API void CIO_TcpServer_SetSocketBufferSize(void* p, int value) { configure(p, [=](Server& s){if (value > 0 && value <= static_cast<int>(LargeBufferBytes)) s.recvBytes = value; else s.validSettings = false;}); }
-CIO_API void CIO_TcpServer_SetNoDelay(void* p, int value) { configure(p, [=](Server& s){s.noDelay = value != 0;}); }
-CIO_API void CIO_Server_SetSendPolicy(void* p, int value) { configure(p, [=](Server& s){if (value != 0) s.validSettings = false;}); }
-CIO_API void CIO_Server_SetOnSendSyncPolicy(void* p, int value) { configure(p, [=](Server& s){if (value != 0) s.validSettings = false;}); }
+CIO_API void L1Interop_ConfigureCapacity(void* p, int value) { configure(p, [=](Server& s){if (value > 0 && value <= 100000) s.maxConnections = value; else s.validSettings = false;}); }
+CIO_API void L1Interop_ConfigureWorkers(void* p, int value) { configure(p, [=](Server& s){if (value > 0 && value <= 8) s.workerCount = value; else s.validSettings = false;}); }
+CIO_API void L1Interop_ConfigureBacklog(void* p, int value) { configure(p, [=](Server& s){if (value > 0 && value <= 65535) s.backlog = value; else s.validSettings = false;}); }
+CIO_API void L1Interop_ConfigureReadSize(void* p, int value) { configure(p, [=](Server& s){if (value > 0 && value <= static_cast<int>(LargeBufferBytes)) s.recvBytes = value; else s.validSettings = false;}); }
+CIO_API void L1Interop_ConfigureNoDelay(void* p, int value) { configure(p, [=](Server& s){s.noDelay = value != 0;}); }
 
-CIO_API void CTransport_SetTaskCallback(void* p, TaskFn fn) { if (p) static_cast<Listener*>(p)->task.store(fn); }
-CIO_API int CTransport_Server_PostTask(void* p, std::uint64_t token) { return p && static_cast<Server*>(p)->scheduleTask(token, 0); }
-CIO_API int CTransport_Server_Schedule(void* p, std::uint64_t token, unsigned delay) { return p && static_cast<Server*>(p)->scheduleTask(token, delay); }
-CIO_API int CTransport_Server_Cancel(void* p, std::uint64_t token) { return p && static_cast<Server*>(p)->cancelTask(token); }
-CIO_API int CTransport_Server_SetCodecApi(void* p,const std::uintptr_t* functions,int count) {
+CIO_API void L1Interop_SetOnIOCallback(void* p, TaskFn fn) { if (p) static_cast<L1Callbacks*>(p)->task.store(fn); }
+CIO_API int L1Interop_PostIOCallback(void* p, std::uint64_t token) { return p && static_cast<Server*>(p)->scheduleTask(token, 0); }
+CIO_API int L1Interop_ScheduleTimer(void* p, std::uint64_t token, unsigned delay) { return p && static_cast<Server*>(p)->scheduleTask(token, delay); }
+CIO_API int L1Interop_CancelTimer(void* p, std::uint64_t token) { return p && static_cast<Server*>(p)->cancelTask(token); }
+CIO_API int L1Interop_SetCodecApi(void* p,const std::uintptr_t* functions,int count) {
     if(!p)return 0;auto* server=static_cast<Server*>(p);
     try{auto api=std::make_shared<L1CodecApi>();if(!api->assign(functions,count))return 0;
         std::lock_guard<std::mutex> lock(server->codecGate);if(server->codec)return 1;server->codec=std::move(api);return 1;
     }catch(...){return 0;}
 }
-CIO_API void CTransport_SetUserPacketCallback(void* p,PacketFn fn){if(p)static_cast<Listener*>(p)->packet.store(fn);}
-CIO_API void CTransport_SetNetworkDeadlineCallback(void* p,DeadlineFn fn){if(p)static_cast<Listener*>(p)->deadline.store(fn);}
-CIO_API int CTransport_UserSocket_Initialize(void* p,std::uint64_t id,unsigned seed) {
+CIO_API void L1Interop_SetOnPacket(void* p,PacketFn fn){if(p)static_cast<L1Callbacks*>(p)->packet.store(fn);}
+CIO_API void L1Interop_SetOnTimerExpired(void* p,DeadlineFn fn){if(p)static_cast<L1Callbacks*>(p)->deadline.store(fn);}
+CIO_API int CSocket_SetKey(void* p,std::uint64_t id,unsigned seed) {
     if(!p)return 0;auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);return c->initializeUserSocket(seed);
 }
-CIO_API int CTransport_UserSocket_ReleasePacket(void* p,std::uint64_t id,std::uint64_t sequence) {
+CIO_API int L1Interop_ReleasePacket(void* p,std::uint64_t id,std::uint64_t sequence) {
     if(!p)return 0;auto* c=static_cast<Server*>(p)->find(id,true);if(!c)return 0;ObjectRef hold(c,false);return c->releasePacket(sequence);
 }
-CIO_API int CTransport_UserSocket_Encrypt(void* p,std::uint64_t id,void* bytes,int size) {
+CIO_API int CSocket_Encrypt(void* p,std::uint64_t id,void* bytes,int size) {
     if(!p||size<0||(!bytes&&size))return 0;auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);
     std::lock_guard<std::mutex> lock(c->gate);return !c->state.closing&&c->UserProtocol()&&c->UserProtocol()->codec->encrypt(bytes,size);
 }
-CIO_API int CTransport_UserSocket_SetSessionState(void* p,std::uint64_t id,int phase) {
+CIO_API int L1Interop_SetSessionState(void* p,std::uint64_t id,int phase) {
     if(!p||phase<0||phase>4)return 0;auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);
     std::lock_guard<std::mutex> lock(c->gate);if(c->state.closing||!c->UserProtocol())return 0;if(!c->SetSessionStateLocked(phase))return 0;if(phase!=0)c->loginDue=0;return 1;
 }
-CIO_API int CTransport_UserSocket_ConfigureDeadlines(void* p,std::uint64_t id,unsigned loginMs) {
+CIO_API int L1Interop_ConfigureDeadlines(void* p,std::uint64_t id,unsigned loginMs) {
     if(!p||loginMs>0x7fffffffu)return 0;auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);
     {std::lock_guard<std::mutex> lock(c->gate);if(c->state.closing||!c->UserProtocol())return 0;c->loginDue=loginMs&&c->sessionState==0?monotonicMs()+loginMs:0;}
     return c->requestDeadline(loginMs?std::min(loginMs,5000u):5000u);
 }
-CIO_API int CTransport_UserSocket_RequestDeadline(void* p,std::uint64_t id,unsigned delay) {
+CIO_API int L1Interop_RequestDeadline(void* p,std::uint64_t id,unsigned delay) {
     if(!p||delay>0x7fffffffu)return 0;auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);return c->requestDeadline(delay);
 }
-CIO_API int CTransport_UserSocket_GetState(void* p,std::uint64_t id,std::uint64_t* out,int count) {
+CIO_API int L1Interop_GetSocketState(void* p,std::uint64_t id,std::uint64_t* out,int count) {
     if(!p||!out||count<6)return 0;auto* c=static_cast<Server*>(p)->find(id,true);if(!c)return 0;ObjectRef hold(c,false);
     std::lock_guard<std::mutex> lock(c->gate);if(!c->UserProtocol())return 0;c->UserProtocol()->snapshot(out,monotonicMs());
     if(count>=10){out[6]=c->packetBorrowed;out[7]=c->packetSequence;out[8]=c->UserProtocol()->codec->pending();out[9]=c->sessionState;}if(count>=11)out[10]=c->SocketNumber();if(count>=14){out[11]=c->AccountId();out[12]=c->CharacterEntered();out[13]=c->HasMacIdentity();}return 1;
 }
-CIO_API int CTransport_Server_GetRegistryDiagnostics(void* p,std::uint64_t* out,int count){if(!p||!out||count<6)return 0;static_cast<Server*>(p)->registry.diagnostics(out);return 1;}
-CIO_API int CTransport_Server_ThreadOwner(void* p) {
+CIO_API int L1Interop_GetRegistryDiagnostics(void* p,std::uint64_t* out,int count){if(!p||!out||count<6)return 0;static_cast<Server*>(p)->registry.diagnostics(out);return 1;}
+CIO_API int L1Interop_GetThreadOwner(void* p) {
     return p && currentWorker == p ? static_cast<int>(currentWorkerIndex) : -1;
 }
-CIO_API void* CTransport_Server_RetainReceiveBuffer(void* p, std::uint64_t id) {
+CIO_API void* L1Interop_RetainReceiveBuffer(void* p, std::uint64_t id) {
     if (!p) return nullptr; auto* c = static_cast<Server*>(p)->find(id); if (!c) return nullptr;
     ObjectRef hold(c, false); std::lock_guard<std::mutex> lock(c->gate);
     if (!c->state.readDelivering || !c->reads.block() || c->UserProtocol()) return nullptr;
     return new(std::nothrow) BufferLease(c->server, c->reads.block());
 }
-CIO_API const void* CTransport_Buffer_Data(void* p) { auto* lease = static_cast<BufferLease*>(p); return lease ? lease->block->data.data() + lease->offset : nullptr; }
-CIO_API unsigned CTransport_Buffer_Size(void* p) { return p ? static_cast<unsigned>(static_cast<BufferLease*>(p)->length) : 0; }
-CIO_API void CTransport_Buffer_Release(void* p) { delete static_cast<BufferLease*>(p); }
+CIO_API const void* L1Interop_ReceiveBufferData(void* p) { auto* lease = static_cast<BufferLease*>(p); return lease ? lease->block->data.data() + lease->offset : nullptr; }
+CIO_API unsigned L1Interop_ReceiveBufferSize(void* p) { return p ? static_cast<unsigned>(static_cast<BufferLease*>(p)->length) : 0; }
+CIO_API void L1Interop_ReleaseReceiveBuffer(void* p) { delete static_cast<BufferLease*>(p); }
 
-CIO_API void CTransport_SetClosingCallback(void* p, CloseFn fn) { if (p) static_cast<Listener*>(p)->closing.store(fn); }
-CIO_API int CTransport_Server_GetDiagnostics(void* p, std::uint64_t* values, unsigned count) {
+CIO_API void L1Interop_SetOnClosing(void* p, CloseFn fn) { if (p) static_cast<L1Callbacks*>(p)->closing.store(fn); }
+CIO_API int L1Interop_GetDiagnostics(void* p, std::uint64_t* values, unsigned count) {
     if (!p || !values || count < 8) return 0;
     auto* s = static_cast<Server*>(p);
     values[0] = s->buffers.allocated(); values[1] = s->buffers.exhaustions();
@@ -1198,35 +1233,35 @@ CIO_API int CTransport_Server_GetDiagnostics(void* p, std::uint64_t* values, uns
 }
 
 
-CIO_API int CTransport_Server_ConfigureLimits(void* p,unsigned ip,unsigned mac){
+CIO_API int L1Interop_ConfigureSocketLimits(void* p,unsigned ip,unsigned mac){
     if(!p||ip>100000||mac>100000)return 0;auto* server=static_cast<Server*>(p);
     std::lock_guard<std::mutex> lock(server->lifecycle);
     return !server->running.load()&&server->socketLimiter.Configure(ip,mac);
 }
-CIO_API int CTransport_Server_GetLimiterDiagnostics(void* p,std::uint64_t* out,int count){
+CIO_API int L1Interop_GetSocketLimitDiagnostics(void* p,std::uint64_t* out,int count){
     if(!p||!out||count<4)return 0;static_cast<Server*>(p)->socketLimiter.Diagnostics(out);return 1;
 }
-CIO_API int CTransport_Server_GetListenerDiagnostics(void* p,std::uint64_t* out,int count){
+CIO_API int L1Interop_GetListenerDiagnostics(void* p,std::uint64_t* out,int count){
     if(!p||!out||count<8)return 0;auto* s=static_cast<Server*>(p);
     out[0]=s->accepting.load();out[1]=s->waitCallbacks;out[2]=s->acceptCallbacks;out[3]=s->lastWaitError;
     out[4]=s->waitFailures;out[5]=s->pendingAccepts;out[6]=s->socketNumbers.size();out[7]=s->workerCount;if(count>=9)out[8]=s->SocketMapCount();return 1;
 }
-CIO_API int CTransport_Server_GetThreadDiagnostics(void* p,std::uint64_t* out,int count){
+CIO_API int L1Interop_GetThreadDiagnostics(void* p,std::uint64_t* out,int count){
     if(!p||!out||count<54)return 0;auto* s=static_cast<Server*>(p);
     for(unsigned n=0;n<18;++n){out[n*3]=s->callbackCounts[n];out[n*3+1]=s->callbackMillis[n];out[n*3+2]=s->callbackStarted[n];}return 1;
 }
-CIO_API std::uint64_t CTransport_UserSocket_FindByNumber(void* p,unsigned number){
+CIO_API std::uint64_t L1Interop_FindSocketByNumber(void* p,unsigned number){
     if(!p||!number)return 0;auto* s=static_cast<Server*>(p);auto* user=s->socketNumbers.FindObject(number);
     if(!user)return 0;ObjectRef hold(user,false);std::uint64_t id;
     {std::lock_guard<std::mutex> lock(user->gate);if(user->state.closing)return 0;id=user->id;}
     auto* active=s->find(id);if(!active)return 0;
     ObjectRef activeHold(active,false);return active==user?id:0;
 }
-CIO_API int CTransport_UserSocket_SetMacIdentity(void* p,std::uint64_t id,std::uint64_t mac){
+CIO_API int L1Interop_BindMacIdentity(void* p,std::uint64_t id,std::uint64_t mac){
     if(!p||!mac)return 0;auto* s=static_cast<Server*>(p);auto* c=s->find(id);if(!c)return 0;ObjectRef hold(c,false);
     auto* socket=dynamic_cast<CSocket*>(c);return socket&&socket->SetMacIdentity(mac);
 }
-CIO_API int CTransport_Server_ReportSockets(void* p,std::uint64_t* out,int capacity,int stride){
+CIO_API int Server_ReportSocket(void* p,std::uint64_t* out,int capacity,int stride){
     if(!p||capacity<0||stride!=12||(!out&&capacity))return -1;auto* s=static_cast<Server*>(p);
     std::vector<CIOSocket*> snapshot;if(!s->registry.snapshot(snapshot))return -1;
     int written=0;for(auto* c:snapshot){
@@ -1240,50 +1275,51 @@ CIO_API int CTransport_Server_ReportSockets(void* p,std::uint64_t* out,int capac
     return out?written:static_cast<int>(snapshot.size());
 }
 
-CIO_API int CTransport_UserSocket_SetAccountIdentity(void* p,std::uint64_t id,unsigned account){
+CIO_API int L1Interop_BindAccount(void* p,std::uint64_t id,unsigned account){
     if(!p)return 0;auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);
     auto* user=dynamic_cast<CUserSocket*>(c);if(!user)return 0;
     std::lock_guard<std::mutex> lock(c->gate);return !c->state.closing&&user->SetAccountIdentityLocked(account);
 }
-CIO_API int CTransport_UserSocket_SetCharacterEntered(void* p,std::uint64_t id,int entered){
+CIO_API int L1Interop_SetEnterChar(void* p,std::uint64_t id,int entered){
     if(!p||(entered!=0&&entered!=1))return 0;auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);
     auto* user=dynamic_cast<CUserSocket*>(c);if(!user)return 0;
     std::lock_guard<std::mutex> lock(c->gate);return !c->state.closing&&user->SetCharacterEnteredLocked(entered!=0);
 }
-CIO_API std::uint64_t CTransport_UserSocket_FindEnteringAccount(void* p,unsigned account){
+CIO_API std::uint64_t L1Interop_FindEnteringAccount(void* p,unsigned account){
     if(!p||!account)return 0;auto* server=static_cast<Server*>(p);auto* user=server->userSocketMapEnterChar.FindObject(account);
     if(!user)return 0;ObjectRef hold(user,false);std::uint64_t id;
     {std::lock_guard<std::mutex> lock(user->gate);if(user->state.closing||user->AccountId()!=account||!user->CharacterEntered())return 0;id=user->id;}
     auto* active=server->find(id);if(!active)return 0;ObjectRef activeHold(active,false);return active==user?id:0;
 }
-CIO_API int CTransport_Server_GetAccountRegistryDiagnostics(void* p,std::uint64_t* out,int count){
+CIO_API int L1Interop_GetAccountRegistryDiagnostics(void* p,std::uint64_t* out,int count){
     if(!p||!out||count<4)return 0;auto* s=static_cast<Server*>(p);
     out[0]=s->socketNumbers.size();out[1]=s->userSocketMapPlaying.size();out[2]=s->userSocketMapEnterChar.size();out[3]=s->duplicateEnterDenied.load();return 1;
 }
-CIO_API int CTransport_Server_ConfigurePerf(void* p,unsigned interval){
+CIO_API int L1Interop_ConfigurePerf(void* p,unsigned interval){
     if(!p||interval<100||interval>60000)return 0;auto* s=static_cast<Server*>(p);
     std::lock_guard<std::mutex> lock(s->lifecycle);if(s->running.load())return 0;s->perfIntervalMs=interval;return 1;
 }
-CIO_API int CTransport_Server_GetPerfDiagnostics(void* p,std::uint64_t* out,int count){
+CIO_API int L1Interop_ReadPerf(void* p,std::uint64_t* out,int count){
     if(!p||!out||count<16)return 0;auto* s=static_cast<Server*>(p);
     auto monitor=std::atomic_load(&s->perfmon);if(!monitor)return 0;monitor->Read(out);return 1;
 }
 
-CIO_API int CTransport_UserSocket_SendFrames(void* p,std::uint64_t id,const void* bytes,int count,int plainFirst){
+CIO_API int CSocket_SendV(void* p,std::uint64_t id,const void* bytes,int count,int plainFirst){
     if(!p||count<0||(!bytes&&count)||(plainFirst!=0&&plainFirst!=1))return 0;
     auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);
-    Span span{static_cast<const unsigned char*>(bytes),static_cast<std::size_t>(count)};return c->send(&span,1,true,plainFirst!=0);
+    Span span{static_cast<const unsigned char*>(bytes),static_cast<std::size_t>(count)};
+    auto* socket=dynamic_cast<CSocket*>(c);return socket&&socket->SendV(&span,1,plainFirst!=0);
 }
-CIO_API int CTransport_UserSocket_SendFramePackets(void* p,std::uint64_t id,const WSABUF* buffers,int count,int plainFirst){
+CIO_API int CSocket___async_AsyncSendConstBuffer(void* p,std::uint64_t id,const WSABUF* buffers,int count,int plainFirst){
     if(!p||!buffers||count<1||count>8||(plainFirst!=0&&plainFirst!=1))return 0;
     auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;ObjectRef hold(c,false);
     std::array<Span,8> spans{};for(int i=0;i<count;++i)spans[i]={reinterpret_cast<const unsigned char*>(buffers[i].buf),buffers[i].len};
-    return c->send(spans.data(),count,true,plainFirst!=0);
+    auto* socket=dynamic_cast<CSocket*>(c);return socket&&socket->SendConstBuffer(spans.data(),count,plainFirst!=0);
 }
-CIO_API int CTransport_Server_GracefulClose(void* p,std::uint64_t id,unsigned timeout){
+CIO_API int CIOSocketEx_GracefulClose(void* p,std::uint64_t id,unsigned timeout){
     if(!p||timeout<1||timeout>30000)return 0;auto* c=static_cast<Server*>(p)->find(id,true);if(!c)return 0;ObjectRef hold(c,false);return c->GracefulClose(timeout);
 }
-CIO_API int CTransport_Server_GetSendDiagnostics(void* p,std::uint64_t* out,int count){
+CIO_API int L1Interop_GetSendDiagnostics(void* p,std::uint64_t* out,int count){
     if(!p||!out||count<9)return 0;auto* s=static_cast<Server*>(p);
     out[0]=s->sendsAccepted;out[1]=s->sendsExecuted;out[2]=s->framesEncrypted;out[3]=s->framesPlain;
     out[4]=s->gracefulCloses;out[5]=s->abortiveCloses;out[6]=s->sendsRejected;out[7]=s->pendingSends;out[8]=s->sendOwnerErrors;return 1;

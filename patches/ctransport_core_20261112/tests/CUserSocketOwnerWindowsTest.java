@@ -34,7 +34,7 @@ public final class CUserSocketOwnerWindowsTest {
    CIOThreadCallback.INSTANCE.queued.set(null);
    server=new CIOServer(new InetSocketAddress("127.0.0.1",0),8,2,32,c->{
     CUserSocket socket=new CUserSocket(c,pool,CIOThreadCallback.INSTANCE,"127.0.0.1",0,256,x->closed.countDown());
-    CIOClient user=new CIOClient(socket);user.ready=ready;user.failCapture=failCapture;socket.bindClient(user);socket.initializeCipher(73461);socket.configureNativeDeadlines(false);
+    CIOClient user=new CIOClient(socket);user.ready=ready;user.failCapture=failCapture;socket.bindClient(user);socket.SetKey(73461);socket.configureNativeDeadlines(false);
     client.set(user);channel.set(c);socket.startRead();owner.set(socket);
    });peer=new Socket("127.0.0.1",server.localAddress().getPort());until(()->owner.get()!=null);
   }
@@ -84,6 +84,23 @@ public final class CUserSocketOwnerWindowsTest {
    long[] send=session.server.sendDiagnostics();check(send[2]==10&&send[3]==1&&send[4]==1&&send[5]==0&&send[7]==0&&send[8]==0,"production cipher/normal-close diagnostics");
   }
   System.out.println("PASS production native SEND:plain first packet,max65535 S2C frame,8 packed action frames and final packet match unchanged codec;graceful final-byte delivery+EOF without RST;zero pending and owner violations");
+  try(Session session=new Session(true,false);CIOPacketCodecReference codec=new CIOPacketCodecReference(73461)){
+   session.peer.setSoTimeout(5000);CUserSocket owner=session.owner.get();byte[] key={1,2,3,4,5,6,7,8};
+   check(owner.tryWritePacket(session.client.get(),new l1j.server.server.model.network.packet.BytesWritablePacket(key)),"const path plain key");
+   checkRead(session,expectedPacket(codec,key,true));until(owner::isWriteIdle);
+   CountDownLatch entered=new CountDownLatch(2),releaseWorkers=new CountDownLatch(1);
+   CIOObject blocker=new CIOObject(){public void run(){entered.countDown();try{check(releaseWorkers.await(5,TimeUnit.SECONDS),"const test worker release");}catch(InterruptedException e){throw new AssertionError(e);}}public void cancel(){throw new AssertionError("running const test blocker cancelled");}};
+   check(session.server.postCompletion(blocker),"const first blocker");until(()->entered.getCount()==1);
+   check(session.server.postCompletion(blocker)&&entered.await(5,TimeUnit.SECONDS),"const second blocker");
+   byte[] first=new byte[20000],second=new byte[20000],last={6,5,4,3,2,1};new Random(918).nextBytes(first);new Random(719).nextBytes(second);
+   try{
+    for(byte[] bytes:new byte[][]{first,second,last})check(owner.tryWritePacket(session.client.get(),new l1j.server.server.model.network.packet.BytesWritablePacket(bytes)),"const queued production packet");
+   }finally{releaseWorkers.countDown();}
+   for(byte[] bytes:new byte[][]{first,second,last})checkRead(session,expectedPacket(codec,bytes,false));
+   until(owner::isWriteIdle);long[] send=session.server.sendDiagnostics();
+   check(send[0]==3&&send[2]==3&&send[3]==1&&send[7]==0&&send[8]==0,"production gather did not use one constant-buffer request or cipher ownership failed");
+  }
+  System.out.println("PASS production CSocket::__async_AsyncSendConstBuffer:blocked completions force two queued frames into one gather;20K frame crosses16K pool blocks;unchanged codec and FIFO match;CIOBufferEx leases release");
   int game=Opcodes.C_ALIVE&255,login=Opcodes.C_LOGIN&255;byte[] gameWire=wire(game),loginWire=wire(login);
   AtomicInteger calls=new AtomicInteger();CountDownLatch entered=new CountDownLatch(1),release=new CountDownLatch(1);
   AtomicReference<Throwable> failure=new AtomicReference<>();

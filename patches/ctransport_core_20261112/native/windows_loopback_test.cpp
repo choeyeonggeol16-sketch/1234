@@ -9,22 +9,22 @@
 #include <cstring>
 static std::atomic<int> closed{0};
 static void check(bool ok,const char* text){if(!ok)throw std::runtime_error(text);}
-static int acceptEvent(void* server,std::uint64_t id,std::uint64_t){return CIO_Server_PauseReceive(server,id,0)?0:2;}
-static int receiveEvent(void* server,std::uint64_t id,const void* bytes,int count){return CIO_Server_Send(server,id,bytes,count)?0:2;}
+static int acceptEvent(void* server,std::uint64_t id,std::uint64_t){return L1Interop_PauseRead(server,id,0)?0:2;}
+static int receiveEvent(void* server,std::uint64_t id,const void* bytes,int count){return CIOSocket__Write(server,id,bytes,count)?0:2;}
 static int sendEvent(void*,std::uint64_t,const void*,int){return 0;}
 static int closeEvent(void*,std::uint64_t,int,int){++closed;return 0;}
 int main(){
  try{
-  check(CTransport_Version()==0x80000,"native version");
+  check(L1Interop_GetAbiVersion()==0x80000,"native version");
   WSADATA data{};check(WSAStartup(MAKEWORD(2,2),&data)==0,"WSAStartup");
-  void* listener=CIO_Create_TcpServerListener();check(listener,"listener allocation");
-  CIO_Set_FN_Server_OnAccept(listener,acceptEvent);CIO_Set_FN_Server_OnReceive(listener,receiveEvent);
-  CIO_Set_FN_Server_OnSend(listener,sendEvent);CIO_Set_FN_Server_OnClose(listener,closeEvent);
-  void* server=CIO_Create_TcpServer(listener);check(server,"server allocation");
-  CIO_Server_SetWorkerThreadCount(server,4);CIO_TcpServer_SetSocketBufferSize(server,4096);
-  check(CIO_Server_Start(server,"127.0.0.1",0),"native start");
+  void* listener=L1Interop_CreateCallbacks();check(listener,"listener allocation");
+  L1Interop_SetOnAccept(listener,acceptEvent);L1Interop_SetOnRead(listener,receiveEvent);
+  L1Interop_SetOnWrite(listener,sendEvent);L1Interop_SetOnClose(listener,closeEvent);
+  void* server=L1Interop_CreateServer(listener);check(server,"server allocation");
+  L1Interop_ConfigureWorkers(server,4);L1Interop_ConfigureReadSize(server,4096);
+  check(Server_Run(server,"127.0.0.1",0),"native start");
   char text[64];int capacity=64;unsigned short port=0;
-  check(CIO_Server_GetListenAddress(server,text,&capacity,&port)&&port!=0,"bound port");
+  check(L1Interop_GetListenAddress(server,text,&capacity,&port)&&port!=0,"bound port");
   std::vector<char> original(200000),received(original.size());
   for(std::size_t i=0;i<original.size();++i)original[i]=static_cast<char>(i*37);
   for(int round=0;round<20;++round){
@@ -43,9 +43,9 @@ int main(){
   }
   const auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(5);
   while(closed.load()!=20&&std::chrono::steady_clock::now()<deadline)std::this_thread::yield();
-  check(closed==20,"close callback count");check(CIO_StopAccepting(server),"accept stop");
-  check(CIO_Server_Stop(server),"stop");check(CIO_Server_Wait(server,0),"wait");
-  CIO_Destroy_TcpServer(server);CIO_Destroy_TcpServerListener(listener);WSACleanup();
+  check(closed==20,"close callback count");check(CIOServer_Close(server),"accept stop");
+  check(L1Interop_StopServer(server),"stop");check(L1Interop_WaitServer(server,0),"wait");
+  L1Interop_ReleaseServer(server);L1Interop_ReleaseCallbacks(listener);WSACleanup();
   std::puts("PASS actual Windows DLL: 20 loopback connections, 4MB fragmented echo, order and close counts.");
   return 0;
  }catch(const std::exception& e){std::fprintf(stderr,"FAIL: %s (WSA %d)\n",e.what(),WSAGetLastError());return 1;}

@@ -4,7 +4,6 @@
 #include <mutex>
 #include <unordered_map>
 #include <vector>
-namespace ctransport {
 inline std::uint64_t monotonicMs()noexcept{return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();}
 // 0x92533c: three parallel arrays, then count at0x4e20/next at0x4e28.
 struct TimerBlock {
@@ -147,4 +146,3 @@ public:
  std::size_t size()noexcept{std::lock_guard<std::mutex> lock(gate_);return entries_.size();}
  std::size_t blocksInUse()noexcept{return pool_->inUse();}
 };
-} // namespace ctransport

@@ -3,13 +3,12 @@
 #include <array>
 #include <atomic>
 #include <cstdint>
-namespace ctransport {
 // CExecutionSerializerFast::AddExecutable: owner-thread reentry, ticket ring,
 // function publication and a single drain owner. The eight spare slots match
 // the original overflow margin; admission failure is reported to the socket.
 class CExecutionSerializerFast {
-    using Function=void(*)(CIOObject*,void*) noexcept;
-    struct Entry{CIOObject* object=nullptr;void* argument=nullptr;std::atomic<Function> function{nullptr};std::atomic<std::uint64_t> available{0};};
+    using Function=void(*)(MemoryObject*,void*) noexcept;
+    struct Entry{MemoryObject* object=nullptr;void* argument=nullptr;std::atomic<Function> function{nullptr};std::atomic<std::uint64_t> available{0};};
     static constexpr unsigned Slots=512,Limit=Slots-8;
     std::array<Entry,Slots> entries_{};
     std::atomic<std::uint64_t> tail_{0};
@@ -22,7 +21,7 @@ public:
     CExecutionSerializerFast()noexcept{
         for(unsigned i=0;i<Slots;++i)entries_[i].available.store(i,std::memory_order_relaxed);
     }
-    bool AddExecutable(CIOObject* object,Function function,void* argument) noexcept {
+    bool AddExecutable(MemoryObject* object,Function function,void* argument) noexcept {
         if(!object||!function)return false;
         if(owner_.load(std::memory_order_acquire)==thread_){function(object,argument);return true;}
         auto count=pending_.load(std::memory_order_acquire);
@@ -52,4 +51,3 @@ public:
     bool IsOwner()const noexcept{return owner_.load(std::memory_order_acquire)==thread_;}
     unsigned Pending()const noexcept{return pending_.load(std::memory_order_acquire);}
 };
-}

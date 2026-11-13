@@ -13,7 +13,7 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.ConnectionConfig;
 
 /** Native IOCP admission factory with an L1 session/timer owner. */
-public final class CIOSocketFactory implements Server.SocketFactory {
+public final class CDummyServerCallback implements IServerCallback {
     private final CIOThreadCallback scheduler;
     private final ConnectionConfig config;
     private final int shardCount;
@@ -21,7 +21,7 @@ public final class CIOSocketFactory implements Server.SocketFactory {
     private final AtomicIntegerArray liveByShard;
     private final int maxOnline;
 
-    public CIOSocketFactory(CIOThreadCallback scheduler, ConnectionConfig config) {
+    public CDummyServerCallback(CIOThreadCallback scheduler, ConnectionConfig config) {
         if (scheduler == null || config == null)
             throw new IllegalArgumentException("scheduler/config required");
         this.scheduler = scheduler;

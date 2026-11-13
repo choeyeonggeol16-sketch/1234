@@ -14,12 +14,8 @@ import java.util.logging.Logger;
 /** Native Windows TCP admission. IOCP workers are owned by CIOServer. */
 public final class Server implements AutoCloseable, CUserSocket.Closed {
     private static final Logger LOG = Logger.getLogger(Server.class.getName());
-    @FunctionalInterface public interface SocketFactory {
-        CUserSocket CreateSocket(CSocket socket, CIOBufferPool pool,
-                CUserSocket.Closed closedCallback) throws Exception;
-    }
     private final CIOBufferPool pool;
-    private final SocketFactory factory;
+    private final IServerCallback factory;
     private final CIOServer nativeServer;
     private final CUserSocketRegistry<CUserSocket> connections = new CUserSocketRegistry<>();
     private final AtomicBoolean acceptingStopped = new AtomicBoolean();
@@ -43,7 +39,7 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
 
 
     public Server(InetSocketAddress address, int maxConnections, int ioThreads, int backlog,
-            CIOBufferPool pool, SocketFactory factory) throws IOException {
+            CIOBufferPool pool, IServerCallback factory) throws IOException {
         if (address == null || pool == null || factory == null || maxConnections < 1
                 || ioThreads < 1 || backlog < 1) throw new IllegalArgumentException("invalid server configuration");
         // Do not pretend Windows native transport is a JDK asynchronous channel.

@@ -1,3 +1,4 @@
+src/l1j/server/server/model/network/core/CIOSocketFactory.java
 src/l1j/server/server/model/network/core/CIOTransportConfig.java
 src/l1j/server/server/model/network/core/CIOUserSocket.java
 src/l1j/server/server/model/network/core/CIOWinServer.java

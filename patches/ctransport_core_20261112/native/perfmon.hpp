@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <mutex>
 #include <thread>
-namespace ctransport {
 class Server;
 // Original thread15 is CPerfMon, separate from I/O workers and ListenThread17.
 // L1 samples process/system memory, process CPU and transport populations.
@@ -23,4 +22,3 @@ public:
     void Stop()noexcept{stopping_=true;changed_.notify_all();if(thread_.joinable())thread_.join();}
     void Read(std::uint64_t* out)noexcept{std::lock_guard<std::mutex> lock(gate_);std::copy(latest_.begin(),latest_.end(),out);}
 };
-}

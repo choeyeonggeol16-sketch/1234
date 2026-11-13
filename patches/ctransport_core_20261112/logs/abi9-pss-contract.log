@@ -1,0 +1,15 @@
+Nov 13, 2026 3:56:13 AM l1j.server.server.model.character.pss.window.PlaySupportWindow transport
+INFO: [PSS-WINDOW] companion listening port=37279
+Nov 13, 2026 3:56:13 AM l1j.server.server.model.character.pss.window.PlaySupportWindow$Session attach
+INFO: [PSS-WINDOW] companion bound player=77
+Nov 13, 2026 3:56:13 AM l1j.server.server.model.character.pss.window.PlaySupportWindow open
+INFO: [PSS-WINDOW] item/window request queued player=77
+Nov 13, 2026 3:56:13 AM l1j.server.server.model.character.pss.window.PlaySupportWindow open
+INFO: [PSS-WINDOW] item/window request queued player=77
+Nov 13, 2026 3:56:13 AM l1j.server.server.model.character.pss.window.PlaySupportWindow$Session attach
+INFO: [PSS-WINDOW] companion bound player=77
+Nov 13, 2026 3:56:14 AM l1j.server.server.model.character.pss.window.PlaySupportWindow transport
+WARNING: [PSS-WINDOW] companion unavailable: Address already in use
+Nov 13, 2026 3:56:14 AM l1j.server.server.model.character.pss.window.PlaySupportWindow transport
+INFO: [PSS-WINDOW] companion listening port=45297
+PASS production PSS startup/pairing/item OPEN/logout/restart; PSS shutdown/bind failure isolated from game session; no CTransport/FFM dependency

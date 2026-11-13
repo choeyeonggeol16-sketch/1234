@@ -6,7 +6,6 @@
 #include <mutex>
 #include <vector>
 
-namespace ctransport {
 // The JVM verifies and loads the unchanged L1 DLL once, then supplies its native
 // entry addresses. Feed/Next/Encrypt execute directly in C++; no wire-data JNI/FFM
 // round trip and no reimplementation of the L1 rolling-key algorithm.
@@ -70,4 +69,3 @@ public:
     bool encrypt(void* bytes,int length) noexcept {std::lock_guard<std::mutex> lock(gate_);return api_->encrypt(handle_,bytes,length)==0;}
     int pending() const noexcept {std::lock_guard<std::mutex> lock(gate_);return api_->pending(handle_);}
 };
-}

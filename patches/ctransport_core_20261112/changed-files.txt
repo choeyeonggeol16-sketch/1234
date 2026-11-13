@@ -7,6 +7,8 @@ src/l1j/server/server/model/character/pss/window/PssWindowTransport.java
 src/l1j/server/server/model/network/buffer/ReadBuffer.java
 src/l1j/server/server/model/network/buffer/WriteBuffer.java
 src/l1j/server/server/model/network/codec/Cryptor.java
+src/l1j/server/server/model/network/core/CDummyServerCallback.java
+src/l1j/server/server/model/network/core/CIOBufferEx.java
 src/l1j/server/server/model/network/core/CIOBufferPool.java
 src/l1j/server/server/model/network/core/CIOClient.java
 src/l1j/server/server/model/network/core/CIOConfig.java
@@ -16,12 +18,12 @@ src/l1j/server/server/model/network/core/CIOPacketCodec.java
 src/l1j/server/server/model/network/core/CIOServer.java
 src/l1j/server/server/model/network/core/CIOServerEndpoint.java
 src/l1j/server/server/model/network/core/CIOSlotPool.java
-src/l1j/server/server/model/network/core/CIOSocketFactory.java
 src/l1j/server/server/model/network/core/CPerfMon.java
 src/l1j/server/server/model/network/core/CSocket.java
 src/l1j/server/server/model/network/core/CUserSocket.java
 src/l1j/server/server/model/network/core/CUserSocketCloseTask.java
 src/l1j/server/server/model/network/core/CUserSocketRegistry.java
+src/l1j/server/server/model/network/core/IServerCallback.java
 src/l1j/server/server/model/network/core/Server.java
 src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java
 src/l1j/server/server/model/network/core/sc/packet/SC_Ability.java

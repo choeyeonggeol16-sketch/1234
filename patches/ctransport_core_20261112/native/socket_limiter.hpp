@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <map>
 #include <mutex>
-namespace ctransport {
 // Native CSocketLimiter keeps transport admission counts, separate from L1
 // account/world ownership. MAC admission requires an actual trusted identity.
 class CSocketLimiter {
@@ -29,4 +28,3 @@ public:
     bool RequiresMacIdentity()noexcept{std::lock_guard<std::mutex> lock(gate_);return macLimit_!=0;}
     void Diagnostics(std::uint64_t* out)noexcept{std::lock_guard<std::mutex> lock(gate_);out[0]=ip_.size();out[1]=mac_.size();out[2]=ipLimit_;out[3]=macLimit_;}
 };
-}

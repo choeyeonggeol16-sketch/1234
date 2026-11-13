@@ -7,7 +7,6 @@
 #include <vector>
 #include "l1_codec.hpp"
 
-namespace ctransport {
 // Parser helper for CUserSocket 0xa0372c: header(0), body(1), stopped(2), then opcode dispatch.
 // L1 adaptation: unsigned LE16 total size, legal empty frame(2), otherwise
 // four envelope bytes + >=4 encrypted plaintext bytes (wire >=10). L2's
@@ -112,4 +111,3 @@ public:
         out[5] = partial_ ? (paused_ ? pausedAt_ : now) - partialSince_ : 0;
     }
 };
-}

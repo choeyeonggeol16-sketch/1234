@@ -3,8 +3,8 @@ import java.nio.file.Path;
 /** Mandatory native transport. There is no alternate backend or selector. */
 final class CIOConfig {
     static final Path DLL = Path.of("CTransport.dll");
-    static final int ABI = 0x00080000;
-    static final String DLL_SHA256 = "00b03b8af47c50aed8bc3c896cfa008713269bde9170f986c760e127b232a848";
+    static final int ABI = 0x00090000;
+    static final String DLL_SHA256 = "c7fd6352053c99370ef5db59447c7a4b7f3a606cea2c9e7864ad0634d71cebe7";
     // MAC enforcement is off until a verified server-side provider binds identity.
     static final int MAC_LIMIT = bounded("ctransport.macLimit",0,0,100000);
     static final int PERF_INTERVAL_MS = bounded("ctransport.perf.intervalMs",1000,100,60000);

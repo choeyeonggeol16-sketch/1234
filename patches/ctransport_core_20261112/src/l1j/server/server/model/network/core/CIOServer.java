@@ -163,59 +163,59 @@ final class CIOServer implements AutoCloseable {
             Path dll = CIOConfig.DLL.toAbsolutePath();
             requireKnownDll(dll, CIOConfig.DLL_SHA256);
             symbols = SymbolLookup.libraryLookup(dll, arena);
-            MethodHandle version = fn("CTransport_Version", FunctionDescriptor.of(I));
+            MethodHandle version = fn("L1Interop_GetAbiVersion", FunctionDescriptor.of(I));
             if ((int) version.invokeExact() != CIOConfig.ABI)
                 throw new IOException("Unsupported CTransport ABI");
             // Require our patched export, not an unmodified third-party binary.
-            stopAccept = fn("CIO_StopAccepting", FunctionDescriptor.of(I, P));
-            start = fn("CIO_Server_Start", FunctionDescriptor.of(I, P, P, ValueLayout.JAVA_SHORT));
-            stop = fn("CIO_Server_Stop", FunctionDescriptor.of(I, P));
-            wait = fn("CIO_Server_Wait", FunctionDescriptor.of(I, P, I));
-            disconnect = fn("CIO_Server_Disconnect", FunctionDescriptor.of(I, P, L, I));
-            pause = fn("CIO_Server_PauseReceive", FunctionDescriptor.of(I, P, L, I));
-            sendFrames=fn("CTransport_UserSocket_SendFrames",FunctionDescriptor.of(I,P,L,P,I,I));
-            sendFramePackets=fn("CTransport_UserSocket_SendFramePackets",FunctionDescriptor.of(I,P,L,P,I,I));
-            gracefulClose=fn("CTransport_Server_GracefulClose",FunctionDescriptor.of(I,P,L,I));
-            getSendDiagnostics=fn("CTransport_Server_GetSendDiagnostics",FunctionDescriptor.of(I,P,P,I));
-            send = fn("CIO_Server_Send", FunctionDescriptor.of(I, P, L, P, I));
-            sendPackets = fn("CIO_Server_SendPackets", FunctionDescriptor.of(I, P, L, P, I));
-            getRemote = fn("CIO_Server_GetRemoteAddress", FunctionDescriptor.of(I, P, L, P, P, P));
-            getLocal = fn("CIO_Server_GetLocalAddress", FunctionDescriptor.of(I, P, L, P, P, P));
-            getListen = fn("CIO_Server_GetListenAddress", FunctionDescriptor.of(I, P, P, P, P));
-            MethodHandle createListener = fn("CIO_Create_TcpServerListener", FunctionDescriptor.of(P));
-            MethodHandle createServer = fn("CIO_Create_TcpServer", FunctionDescriptor.of(P, P));
-            MethodHandle setAccept = fn("CIO_Set_FN_Server_OnAccept", FunctionDescriptor.ofVoid(P, P));
-            MethodHandle setReceive = fn("CIO_Set_FN_Server_OnReceive", FunctionDescriptor.ofVoid(P, P));
-            MethodHandle setSend = fn("CIO_Set_FN_Server_OnSend", FunctionDescriptor.ofVoid(P, P));
-            MethodHandle setClose = fn("CIO_Set_FN_Server_OnClose", FunctionDescriptor.ofVoid(P, P));
-            scheduleTask = fn("CTransport_Server_Schedule", FunctionDescriptor.of(I, P, L, I));
-            setCodecApi=fn("CTransport_Server_SetCodecApi",FunctionDescriptor.of(I,P,P,I));
-            initializeUserSocket=fn("CTransport_UserSocket_Initialize",FunctionDescriptor.of(I,P,L,I));
-            releaseUserPacket=fn("CTransport_UserSocket_ReleasePacket",FunctionDescriptor.of(I,P,L,L));
-            encryptUserData=fn("CTransport_UserSocket_Encrypt",FunctionDescriptor.of(I,P,L,P,I));
-            getUserSocketState=fn("CTransport_UserSocket_GetState",FunctionDescriptor.of(I,P,L,P,I));
-            setUserState=fn("CTransport_UserSocket_SetSessionState",FunctionDescriptor.of(I,P,L,I));
-            configureDeadlines=fn("CTransport_UserSocket_ConfigureDeadlines",FunctionDescriptor.of(I,P,L,I));
-            requestDeadline=fn("CTransport_UserSocket_RequestDeadline",FunctionDescriptor.of(I,P,L,I));
-            getRegistryDiagnostics=fn("CTransport_Server_GetRegistryDiagnostics",FunctionDescriptor.of(I,P,P,I));
-            configureLimits=fn("CTransport_Server_ConfigureLimits",FunctionDescriptor.of(I,P,I,I));
-            getLimiterDiagnostics=fn("CTransport_Server_GetLimiterDiagnostics",FunctionDescriptor.of(I,P,P,I));
-            getListenerDiagnostics=fn("CTransport_Server_GetListenerDiagnostics",FunctionDescriptor.of(I,P,P,I));
-            setAccountIdentity=fn("CTransport_UserSocket_SetAccountIdentity",FunctionDescriptor.of(I,P,L,I));
-            setCharacterEntered=fn("CTransport_UserSocket_SetCharacterEntered",FunctionDescriptor.of(I,P,L,I));
-            findEnteringAccount=fn("CTransport_UserSocket_FindEnteringAccount",FunctionDescriptor.of(L,P,I));
-            getAccountRegistryDiagnostics=fn("CTransport_Server_GetAccountRegistryDiagnostics",FunctionDescriptor.of(I,P,P,I));
-            configurePerf=fn("CTransport_Server_ConfigurePerf",FunctionDescriptor.of(I,P,I));
-            getPerfDiagnostics=fn("CTransport_Server_GetPerfDiagnostics",FunctionDescriptor.of(I,P,P,I));
-            getThreadDiagnostics=fn("CTransport_Server_GetThreadDiagnostics",FunctionDescriptor.of(I,P,P,I));
-            findByNumber=fn("CTransport_UserSocket_FindByNumber",FunctionDescriptor.of(L,P,I));
-            setMacIdentity=fn("CTransport_UserSocket_SetMacIdentity",FunctionDescriptor.of(I,P,L,L));
-            reportSockets=fn("CTransport_Server_ReportSockets",FunctionDescriptor.of(I,P,P,I,I));
-            threadOwner = fn("CTransport_Server_ThreadOwner", FunctionDescriptor.of(I, P));
-            cancelTask = fn("CTransport_Server_Cancel", FunctionDescriptor.of(I, P, L));
-            MethodHandle setTask = fn("CTransport_SetTaskCallback", FunctionDescriptor.ofVoid(P, P));
-            MethodHandle setClosing = fn("CTransport_SetClosingCallback", FunctionDescriptor.ofVoid(P, P));
-            getDiagnostics = fn("CTransport_Server_GetDiagnostics", FunctionDescriptor.of(I, P, P, I));
+            stopAccept = fn("CIOServer_Close", FunctionDescriptor.of(I, P));
+            start = fn("Server_Run", FunctionDescriptor.of(I, P, P, ValueLayout.JAVA_SHORT));
+            stop = fn("L1Interop_StopServer", FunctionDescriptor.of(I, P));
+            wait = fn("L1Interop_WaitServer", FunctionDescriptor.of(I, P, I));
+            disconnect = fn("CIOSocketEx_Close", FunctionDescriptor.of(I, P, L));
+            pause = fn("L1Interop_PauseRead", FunctionDescriptor.of(I, P, L, I));
+            sendFrames=fn("CSocket_SendV",FunctionDescriptor.of(I,P,L,P,I,I));
+            sendFramePackets=fn("CSocket___async_AsyncSendConstBuffer",FunctionDescriptor.of(I,P,L,P,I,I));
+            gracefulClose=fn("CIOSocketEx_GracefulClose",FunctionDescriptor.of(I,P,L,I));
+            getSendDiagnostics=fn("L1Interop_GetSendDiagnostics",FunctionDescriptor.of(I,P,P,I));
+            send = fn("CIOSocket__Write", FunctionDescriptor.of(I, P, L, P, I));
+            sendPackets = fn("L1Interop_WriteBuffers", FunctionDescriptor.of(I, P, L, P, I));
+            getRemote = fn("CSocket_GetIPAddressString", FunctionDescriptor.of(I, P, L, P, P, P));
+            getLocal = fn("L1Interop_GetLocalAddress", FunctionDescriptor.of(I, P, L, P, P, P));
+            getListen = fn("L1Interop_GetListenAddress", FunctionDescriptor.of(I, P, P, P, P));
+            MethodHandle createListener = fn("L1Interop_CreateCallbacks", FunctionDescriptor.of(P));
+            MethodHandle createServer = fn("L1Interop_CreateServer", FunctionDescriptor.of(P, P));
+            MethodHandle setAccept = fn("L1Interop_SetOnAccept", FunctionDescriptor.ofVoid(P, P));
+            MethodHandle setReceive = fn("L1Interop_SetOnRead", FunctionDescriptor.ofVoid(P, P));
+            MethodHandle setSend = fn("L1Interop_SetOnWrite", FunctionDescriptor.ofVoid(P, P));
+            MethodHandle setClose = fn("L1Interop_SetOnClose", FunctionDescriptor.ofVoid(P, P));
+            scheduleTask = fn("L1Interop_ScheduleTimer", FunctionDescriptor.of(I, P, L, I));
+            setCodecApi=fn("L1Interop_SetCodecApi",FunctionDescriptor.of(I,P,P,I));
+            initializeUserSocket=fn("CSocket_SetKey",FunctionDescriptor.of(I,P,L,I));
+            releaseUserPacket=fn("L1Interop_ReleasePacket",FunctionDescriptor.of(I,P,L,L));
+            encryptUserData=fn("CSocket_Encrypt",FunctionDescriptor.of(I,P,L,P,I));
+            getUserSocketState=fn("L1Interop_GetSocketState",FunctionDescriptor.of(I,P,L,P,I));
+            setUserState=fn("L1Interop_SetSessionState",FunctionDescriptor.of(I,P,L,I));
+            configureDeadlines=fn("L1Interop_ConfigureDeadlines",FunctionDescriptor.of(I,P,L,I));
+            requestDeadline=fn("L1Interop_RequestDeadline",FunctionDescriptor.of(I,P,L,I));
+            getRegistryDiagnostics=fn("L1Interop_GetRegistryDiagnostics",FunctionDescriptor.of(I,P,P,I));
+            configureLimits=fn("L1Interop_ConfigureSocketLimits",FunctionDescriptor.of(I,P,I,I));
+            getLimiterDiagnostics=fn("L1Interop_GetSocketLimitDiagnostics",FunctionDescriptor.of(I,P,P,I));
+            getListenerDiagnostics=fn("L1Interop_GetListenerDiagnostics",FunctionDescriptor.of(I,P,P,I));
+            setAccountIdentity=fn("L1Interop_BindAccount",FunctionDescriptor.of(I,P,L,I));
+            setCharacterEntered=fn("L1Interop_SetEnterChar",FunctionDescriptor.of(I,P,L,I));
+            findEnteringAccount=fn("L1Interop_FindEnteringAccount",FunctionDescriptor.of(L,P,I));
+            getAccountRegistryDiagnostics=fn("L1Interop_GetAccountRegistryDiagnostics",FunctionDescriptor.of(I,P,P,I));
+            configurePerf=fn("L1Interop_ConfigurePerf",FunctionDescriptor.of(I,P,I));
+            getPerfDiagnostics=fn("L1Interop_ReadPerf",FunctionDescriptor.of(I,P,P,I));
+            getThreadDiagnostics=fn("L1Interop_GetThreadDiagnostics",FunctionDescriptor.of(I,P,P,I));
+            findByNumber=fn("L1Interop_FindSocketByNumber",FunctionDescriptor.of(L,P,I));
+            setMacIdentity=fn("L1Interop_BindMacIdentity",FunctionDescriptor.of(I,P,L,L));
+            reportSockets=fn("Server_ReportSocket",FunctionDescriptor.of(I,P,P,I,I));
+            threadOwner = fn("L1Interop_GetThreadOwner", FunctionDescriptor.of(I, P));
+            cancelTask = fn("L1Interop_CancelTimer", FunctionDescriptor.of(I, P, L));
+            MethodHandle setTask = fn("L1Interop_SetOnIOCallback", FunctionDescriptor.ofVoid(P, P));
+            MethodHandle setClosing = fn("L1Interop_SetOnClosing", FunctionDescriptor.ofVoid(P, P));
+            getDiagnostics = fn("L1Interop_GetDiagnostics", FunctionDescriptor.of(I, P, P, I));
             MethodHandles.Lookup lookup = MethodHandles.lookup();
             userPacketStub=LINKER.upcallStub(lookup.findVirtual(CIOServer.class,"onUserPacket",
                     MethodType.methodType(int.class,MemorySegment.class,long.class,long.class,MemorySegment.class,int.class)).bindTo(this),FunctionDescriptor.of(I,P,L,L,P,I),arena);
@@ -246,21 +246,19 @@ final class CIOServer implements AutoCloseable {
             setReceive.invokeExact(listener, receiveStub);
             setSend.invokeExact(listener, sendStub);
             setClose.invokeExact(listener, closeStub);
-            fn("CTransport_SetUserPacketCallback",FunctionDescriptor.ofVoid(P,P)).invokeExact(listener,userPacketStub);
-            fn("CTransport_SetNetworkDeadlineCallback",FunctionDescriptor.ofVoid(P,P)).invokeExact(listener,networkDeadlineStub);
+            fn("L1Interop_SetOnPacket",FunctionDescriptor.ofVoid(P,P)).invokeExact(listener,userPacketStub);
+            fn("L1Interop_SetOnTimerExpired",FunctionDescriptor.ofVoid(P,P)).invokeExact(listener,networkDeadlineStub);
             setClosing.invokeExact(listener, closingStub);
             setTask.invokeExact(listener, taskStub);
             server = (MemorySegment) createServer.invokeExact(listener);
             createdServer = server;
             if (server.address() == 0) throw new IOException("CIO server allocation failed");
-            fn("CIO_Server_SetMaxConnectionCount", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, maxConnections);
-            fn("CIO_Server_SetWorkerThreadCount", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, ioThreads);
-            fn("CIO_TcpServer_SetSocketListenQueue", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, backlog);
-            fn("CIO_TcpServer_SetSocketBufferSize", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, 16384);
-            fn("CIO_TcpServer_SetNoDelay", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, 1);
+            fn("L1Interop_ConfigureCapacity", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, maxConnections);
+            fn("L1Interop_ConfigureWorkers", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, ioThreads);
+            fn("L1Interop_ConfigureBacklog", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, backlog);
+            fn("L1Interop_ConfigureReadSize", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, 16384);
+            fn("L1Interop_ConfigureNoDelay", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, 1);
             // Native SP_PACK=0; CIO socket serializer already owns send ordering.
-            fn("CIO_Server_SetSendPolicy", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, 0);
-            fn("CIO_Server_SetOnSendSyncPolicy", FunctionDescriptor.ofVoid(P, I)).invokeExact(server, 0);
             if((int)configurePerf.invokeExact(server,CIOConfig.PERF_INTERVAL_MS)==0)throw new IOException("Native CPerfMon configuration rejected");
             if((int)configureLimits.invokeExact(server,ipLimit,macLimit)==0)throw new IOException("Native CSocketLimiter configuration rejected");
             try (Arena a = Arena.ofConfined()) {
@@ -278,12 +276,12 @@ final class CIOServer implements AutoCloseable {
             // BEFORE its FFM upcall arena is closed.
             try {
                 if (createdServer.address() != 0) {
-                    fn("CIO_Destroy_TcpServer", FunctionDescriptor.ofVoid(P)).invokeExact(createdServer);
+                    fn("L1Interop_ReleaseServer", FunctionDescriptor.ofVoid(P)).invokeExact(createdServer);
                 }
             } catch (Throwable cleanup) { failure.addSuppressed(cleanup); }
             try {
                 if (createdListener.address() != 0) {
-                    fn("CIO_Destroy_TcpServerListener", FunctionDescriptor.ofVoid(P)).invokeExact(createdListener);
+                    fn("L1Interop_ReleaseCallbacks", FunctionDescriptor.ofVoid(P)).invokeExact(createdListener);
                 }
             } catch (Throwable cleanup) { failure.addSuppressed(cleanup); }
             try { arena.close(); }
@@ -475,7 +473,9 @@ final class CIOServer implements AutoCloseable {
         try {
             Runnable callback = nativeTasks.remove(token);
             CIOObject completion = completionTasks.remove(token);
-            if (status == 0 && callback != null && !shuttingDown) callback.run();
+            if (status == 0 && callback != null && !shuttingDown) {
+                if(completion!=null)completion.OnIOCallback();else callback.run();
+            }
             else if (completion != null) completion.cancel();
         } catch (Throwable failure) { LOG.log(Level.WARNING, "CTransport task failed", failure); }
         finally { leaveCallback(); }
@@ -568,7 +568,7 @@ final class CIOServer implements AutoCloseable {
         }
     }
     @SuppressWarnings("preview")
-    boolean initializeUserSocket(long id,MemorySegment functions,int seed) {
+    boolean SetKey(long id,MemorySegment functions,int seed) {
         if(!enterNative())return false;
         try {return (int)setCodecApi.invokeExact(server,functions,7)!=0&&(int)initializeUserSocket.invokeExact(server,id,seed)!=0;}
         catch(Throwable failure){throw new IllegalStateException("Native codec setup failed",failure);}
@@ -698,7 +698,7 @@ final class CIOServer implements AutoCloseable {
     }
     boolean disconnect(long id) {
         if (!enterNative()) return false;
-        try { return (int) disconnect.invokeExact(server, id, 1) != 0; }
+        try { return (int) disconnect.invokeExact(server, id) != 0; }
         catch (Throwable failure) { return false; }
         finally { nativeCalls.decrementAndGet(); }
     }
@@ -778,7 +778,7 @@ final class CIOServer implements AutoCloseable {
             // The owning shutdown thread requests the second phase explicitly.
             while (!nativeStopRequested) LockSupport.park(this);
             if (started && (int) stop.invokeExact(server) == 0)
-                throw new IOException("native CIO_Server_Stop returned false");
+                throw new IOException("native L1Interop_StopServer returned false");
             nativeStopCompleted = true;
         } catch (Throwable error) {
             nativeShutdownFailure = error instanceof IOException io ? io :
@@ -844,8 +844,8 @@ final class CIOServer implements AutoCloseable {
         // joined. Only now is it safe to destroy the server and FFM upcall stubs.
         try {
             started = false;
-            fn("CIO_Destroy_TcpServer", FunctionDescriptor.ofVoid(P)).invokeExact(server);
-            fn("CIO_Destroy_TcpServerListener", FunctionDescriptor.ofVoid(P)).invokeExact(listener);
+            fn("L1Interop_ReleaseServer", FunctionDescriptor.ofVoid(P)).invokeExact(server);
+            fn("L1Interop_ReleaseCallbacks", FunctionDescriptor.ofVoid(P)).invokeExact(listener);
             destroyed = true;
             // Native Stop has joined every callback. Resolve accepted packet
             // leases cancelled by native shutdown before discarding their map.

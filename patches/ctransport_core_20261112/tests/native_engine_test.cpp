@@ -30,9 +30,9 @@ struct Probe {
 };
 static Probe* probe;
 static int acceptCallback(void* server, std::uint64_t id, std::uint64_t) {
- if (probe->userProfile) check(CTransport_UserSocket_Initialize(server,id,73461), "user-socket profile enable");
+ if (probe->userProfile) check(CSocket_SetKey(server,id,73461), "user-socket profile enable");
  { std::lock_guard<std::mutex> lock(probe->mutex); probe->ids.push_back(id); }
- if (probe->attemptStop.load()) check(!CIO_Server_Stop(server), "worker joined itself");
+ if (probe->attemptStop.load()) check(!L1Interop_StopServer(server), "worker joined itself");
  return probe->reject ? 2 : 0;
 }
 static int receiveCallback(void* server, std::uint64_t id, const void* data, int length) {
@@ -41,10 +41,10 @@ static int receiveCallback(void* server, std::uint64_t id, const void* data, int
   probe->receiveLengths.push_back(length);
   const auto* p = static_cast<const unsigned char*>(data); probe->received.insert(probe->received.end(), p, p + length);
  }
- if (probe->retainRead.exchange(false)) probe->retained=CTransport_Server_RetainReceiveBuffer(server,id);
- if (probe->pauseInCallback) CIO_Server_PauseReceive(server, id, 1);
+ if (probe->retainRead.exchange(false)) probe->retained=L1Interop_RetainReceiveBuffer(server,id);
+ if (probe->pauseInCallback) L1Interop_PauseRead(server, id, 1);
  if (probe->blockReceive) { probe->readEntered=true; while(!probe->releaseRead.load())std::this_thread::yield(); }
- if (probe->echo) check(CIO_Server_Send(server, id, data, length), "reentrant receive/send failed");
+ if (probe->echo) check(CIOSocket__Write(server, id, data, length), "reentrant receive/send failed");
  return 0;
 }
 static int packetCallback(void* server,std::uint64_t id,std::uint64_t sequence,const void* data,int length) {
@@ -52,21 +52,21 @@ static int packetCallback(void* server,std::uint64_t id,std::uint64_t sequence,c
  {std::lock_guard<std::mutex> lock(probe->mutex);auto* bytes=static_cast<const unsigned char*>(data);probe->received.insert(probe->received.end(),bytes,bytes+length);probe->receiveLengths.push_back(length);}
  ++probe->packetCalls;
  if(probe->holdPacket.exchange(false)){probe->heldPlaintext=static_cast<const unsigned char*>(data);probe->heldSequence=sequence;return 0;}
- check(CTransport_UserSocket_ReleasePacket(server,id,sequence),"native packet release rejected");return 0;
+ check(L1Interop_ReleasePacket(server,id,sequence),"native packet release rejected");return 0;
 }
 static int deadlineCallback(void*,std::uint64_t){++probe->deadlineCalls;return 5000;}
 static int sendCallback(void*, std::uint64_t, const void*, int length) { probe->sent.fetch_add(length); return 0; }
 static int closingCallback(void* server,std::uint64_t id,int,int) {
  ++probe->closing;
  if(probe->reenterClose){
-  check(!CIO_Server_Stop(server)&&!CIO_StopAccepting(server)&&!CIO_Server_Wait(server,INFINITE),"callback blocked in self stop/wait");
-  check(CIO_Server_Disconnect(server,id,1),"reentrant pre-close rejected");
+  check(!L1Interop_StopServer(server)&&!CIOServer_Close(server)&&!L1Interop_WaitServer(server,INFINITE),"callback blocked in self stop/wait");
+  check(CIOSocketEx_Close(server,id),"reentrant pre-close rejected");
  }
  if(probe->blockClosing){probe->closingEntered=true;while(!probe->releaseClosing)std::this_thread::yield();}
  return 0;
 }
 static int closeCallback(void* server, std::uint64_t, int, int) {
- if(probe->terminalStopCheck)check(!CIO_Server_Stop(server)&&!CIO_StopAccepting(server)&&!CIO_Server_Wait(server,INFINITE),"terminal callback self-wait");
+ if(probe->terminalStopCheck)check(!L1Interop_StopServer(server)&&!CIOServer_Close(server)&&!L1Interop_WaitServer(server,INFINITE),"terminal callback self-wait");
  ++probe->closed;return 0;
 }
 
@@ -87,7 +87,7 @@ struct BatchOwner final : CIOObject {
  std::atomic<unsigned> calls{0},wrong{0};std::atomic<bool>* destroyed;
  explicit BatchOwner(std::atomic<bool>* flag):destroyed(flag){}
  ~BatchOwner()override{*destroyed=true;}
- void completed(void* raw,bool ok,unsigned bytes,unsigned error)noexcept override{
+ void OnIOCallback(void* raw,bool ok,unsigned bytes,unsigned error)noexcept override{
   auto& operation=*reinterpret_cast<BatchOperation*>(raw);
   if(ok!=operation.expectedSuccess||error!=operation.expectedError||bytes!=operation.index+1||operation.visits.fetch_add(1)!=0)++wrong;
   ++calls;
@@ -95,7 +95,7 @@ struct BatchOwner final : CIOObject {
 };
 static void batchTests(){
  for(bool mixed: {false,true}){
-  Listener listener;auto* server=new Server(&listener);
+  L1Callbacks listener;auto* server=new Server(&listener);
   server->port=CreateIoCompletionPort(INVALID_HANDLE_VALUE,nullptr,0,4);
   server->ntStatusToError=fakewin::statusError;
   std::atomic<bool> destroyed{false};auto* owner=new BatchOwner(&destroyed);
@@ -131,8 +131,8 @@ static void batchTests(){
  check(fakewin::batchSizes[18]>0,"273 completions did not drain 128/128/18 including exit");
  check(fakewin::translatedStatuses>0,"failed entries never translated NTSTATUS");
  {
-  Listener listener;auto* server=new Server(&listener);fakewin::failStatusResolver=true;
-  check(!server->start("127.0.0.1",0),"missing NTSTATUS resolver silently accepted");
+  L1Callbacks listener;auto* server=new Server(&listener);fakewin::failStatusResolver=true;
+  check(!server->Run("127.0.0.1",0),"missing NTSTATUS resolver silently accepted");
   fakewin::failStatusResolver=false;server->release();
  }
  std::cout<<"PASS real worker: 273 completions drain 128/128/18; 124 mixed-status entries plus four front-loaded exit tokens; exact ref release and all workers exit\n";
@@ -142,16 +142,16 @@ static void batchTests(){
 struct Fixture {
  Probe state; void* listener; Server* server;
  Fixture(unsigned ipLimit=0,unsigned macLimit=0) {
-  probe = &state; listener = CIO_Create_TcpServerListener();
-  CIO_Set_FN_Server_OnAccept(listener, acceptCallback); CIO_Set_FN_Server_OnReceive(listener, receiveCallback);
-  CIO_Set_FN_Server_OnSend(listener, sendCallback); CIO_Set_FN_Server_OnClose(listener, closeCallback);
-  CTransport_SetTaskCallback(listener, taskCallback);
-  CTransport_SetClosingCallback(listener, closingCallback);
-  CTransport_SetUserPacketCallback(listener,packetCallback);CTransport_SetNetworkDeadlineCallback(listener,deadlineCallback);
-  server = static_cast<Server*>(CIO_Create_TcpServer(listener));auto codec=fixturecodec::functions();check(CTransport_Server_SetCodecApi(server,codec.data(),7),"fixture codec API install"); CIO_Server_SetWorkerThreadCount(server, 4); CIO_Server_SetMaxConnectionCount(server, 128);
-  check(CTransport_Server_ConfigureLimits(server,ipLimit,macLimit),"configure native limits");
-  check(CTransport_Server_ConfigurePerf(server,100),"configure native performance sampling");
-  check(CIO_Server_Start(server, "127.0.0.1", 0), "start failed");
+  probe = &state; listener = L1Interop_CreateCallbacks();
+  L1Interop_SetOnAccept(listener, acceptCallback); L1Interop_SetOnRead(listener, receiveCallback);
+  L1Interop_SetOnWrite(listener, sendCallback); L1Interop_SetOnClose(listener, closeCallback);
+  L1Interop_SetOnIOCallback(listener, taskCallback);
+  L1Interop_SetOnClosing(listener, closingCallback);
+  L1Interop_SetOnPacket(listener,packetCallback);L1Interop_SetOnTimerExpired(listener,deadlineCallback);
+  server = static_cast<Server*>(L1Interop_CreateServer(listener));auto codec=fixturecodec::functions();check(L1Interop_SetCodecApi(server,codec.data(),7),"fixture codec API install"); L1Interop_ConfigureWorkers(server, 4); L1Interop_ConfigureCapacity(server, 128);
+  check(L1Interop_ConfigureSocketLimits(server,ipLimit,macLimit),"configure native limits");
+  check(L1Interop_ConfigurePerf(server,100),"configure native performance sampling");
+  check(Server_Run(server, "127.0.0.1", 0), "start failed");
  }
  std::pair<SOCKET,std::uint64_t> connect() {
   std::size_t count; { std::lock_guard<std::mutex> lock(state.mutex); count = state.ids.size(); }
@@ -161,13 +161,13 @@ struct Fixture {
  }
  ~Fixture() {
   fakewin::holdSend = false;
-  check(CIO_Server_Stop(server), "stop failed"); check(CIO_Server_Wait(server, 0), "wait confused with running");
+  check(L1Interop_StopServer(server), "stop failed"); check(L1Interop_WaitServer(server, 0), "wait confused with running");
   check(state.closing==state.closed,"pre-close and terminal callback count differ");
-  CIO_Destroy_TcpServer(server); CIO_Destroy_TcpServerListener(listener);
+  L1Interop_ReleaseServer(server); L1Interop_ReleaseCallbacks(listener);
  }
 };
 static void coreTests() {
- using namespace ctransport;
+
  CIOBufferPool pool(1000); SendChain q;
  std::vector<unsigned char> payload(31000); for(std::size_t i=0;i<payload.size();++i)payload[i]=static_cast<unsigned char>(i*37);
  Span parts[]={{payload.data(),100},{payload.data()+100,9000},{payload.data()+9100,payload.size()-9100}};
@@ -195,22 +195,22 @@ static void engineTests() {
   fakewin::feed(socket,input);
   {std::lock_guard<std::mutex> lock(f.state.mutex);check(f.state.received.empty(),"accepted socket was not paused");}
   f.state.echo=true;fakewin::sendChunk=37;
-  check(CIO_Server_PauseReceive(f.server,id,0),"resume failed");
+  check(L1Interop_PauseRead(f.server,id,0),"resume failed");
   until([&]{return f.state.sent==static_cast<int>(input.size());});
   check(fakewin::wire(socket)==input,"echo/partial-send ordering mismatch");
   {std::lock_guard<std::mutex> lock(f.state.mutex);check(f.state.received==input,"receive data changed while borrowed");}
   char address[64];int capacity=64;unsigned short port;
-  check(CIO_Server_GetRemoteAddress(f.server,id,address,&capacity,&port)&&std::string(address)=="127.0.0.1"&&port==23456,"address ABI");
-  check(CIO_Server_Disconnect(f.server,id,1),"disconnect failed");until([&]{return f.state.closed==1;});
+  check(CSocket_GetIPAddressString(f.server,id,address,&capacity,&port)&&std::string(address)=="127.0.0.1"&&port==23456,"address ABI");
+  check(CIOSocketEx_Close(f.server,id),"disconnect failed");until([&]{return f.state.closed==1;});
   until([&]{return !f.server->connections.load();});
-  check(!CIO_Server_PauseReceive(f.server,id,0),"stale ID resolved after close");
+  check(!L1Interop_PauseRead(f.server,id,0),"stale ID resolved after close");
  }
  std::cout<<"PASS actual native adapter: event/IOCP accept admission paused, 17000-byte receive/echo, synchronous success plus 37-byte completions, address lookup, stale ID rejection\n";
  {
   Fixture f;auto [socket,id]=f.connect();fakewin::holdSend=true;fakewin::sendChunk=8192;
   std::array<std::vector<unsigned char>,8> data;std::array<WSABUF,8> buffers;std::vector<unsigned char> expected;
   for(int i=0;i<8;++i){data[i].assign(7000,static_cast<unsigned char>(i+1));buffers[i]={7000,reinterpret_cast<char*>(data[i].data())};expected.insert(expected.end(),data[i].begin(),data[i].end());}
-  check(CIO_Server_SendPackets(f.server,id,buffers.data(),8),"gathering ABI failed");
+  check(L1Interop_WriteBuffers(f.server,id,buffers.data(),8),"gathering ABI failed");
   for(auto& bytes:data)std::fill(bytes.begin(),bytes.end(),0);
   fakewin::holdSend=false;fakewin::flush(socket);until([&]{return f.state.sent==56000;});
   check(fakewin::wire(socket)==expected,"temporary gather source retained after return");
@@ -218,35 +218,35 @@ static void engineTests() {
  std::cout<<"PASS actual eight-WSABUF API, 56000-byte ordered send and immediate caller buffer reuse after native copy\n";
  {
   Fixture f;auto [socket,id]=f.connect();f.state.blockReceive=true;
-  CIO_Server_PauseReceive(f.server,id,0);fakewin::feed(socket,{1,2,3});until([&]{return f.state.readEntered.load();});
-  CIO_Server_Disconnect(f.server,id,1);check(f.state.closed==0,"terminal callback bypassed active receive callback");
+  L1Interop_PauseRead(f.server,id,0);fakewin::feed(socket,{1,2,3});until([&]{return f.state.readEntered.load();});
+  CIOSocketEx_Close(f.server,id);check(f.state.closed==0,"terminal callback bypassed active receive callback");
   f.state.releaseRead=true;until([&]{return f.state.closed==1;});
  }
  std::cout<<"PASS remote disconnect while receive callback is active preserves its buffer and delays terminal delivery\n";
  {
   Fixture f;auto [socket,id]=f.connect();f.state.pauseInCallback=true;
-  fakewin::feed(socket,std::vector<unsigned char>(9000,7));CIO_Server_PauseReceive(f.server,id,0);
+  fakewin::feed(socket,std::vector<unsigned char>(9000,7));L1Interop_PauseRead(f.server,id,0);
   until([&]{std::lock_guard<std::mutex> lock(f.state.mutex);return f.state.received.size()==4096;});
   until([&]{auto* c=f.server->find(id);ObjectRef hold(c,false);std::lock_guard<std::mutex> lock(c->gate);return !c->state.readPosted&&c->state.paused&&!c->state.readDelivering;});
-  f.state.pauseInCallback=false;CIO_Server_PauseReceive(f.server,id,0);
+  f.state.pauseInCallback=false;L1Interop_PauseRead(f.server,id,0);
   until([&]{std::lock_guard<std::mutex> lock(f.state.mutex);return f.state.received.size()==9000;});
-  fakewin::holdSend=true;const unsigned char data[]={1,2,3,4};check(CIO_Server_Send(f.server,id,data,4),"held send failed");
-  CIO_Server_Disconnect(f.server,id,1);until([&]{return f.state.closed==1;});
+  fakewin::holdSend=true;const unsigned char data[]={1,2,3,4};check(CIOSocket__Write(f.server,id,data,4),"held send failed");
+  CIOSocketEx_Close(f.server,id);until([&]{return f.state.closed==1;});
  }
  std::cout<<"PASS callback-reentrant pause/resume; close with both a posted read and held write drains cancellations before one terminal callback\n";
  {
   Fixture f;auto [socket,id]=f.connect();fakewin::holdSend=false;fakewin::failSend=true;
-  const unsigned char data[]={9,8,7};const bool admitted=CIO_Server_Send(f.server,id,data,3);
+  const unsigned char data[]={9,8,7};const bool admitted=CIOSocket__Write(f.server,id,data,3);
   // Admission can run behind the accept/write owner. An inline failure returns
   // false; a deferred failure must close once without reporting sent bytes.
   until([&]{return f.state.closed==1;});
   check(f.state.sent==0&&fakewin::wire(socket).empty(),"failed WSASend delivered bytes");
-  std::uint64_t stats[9]{};check(CTransport_Server_GetSendDiagnostics(f.server,stats,9),"failed send diagnostics");
+  std::uint64_t stats[9]{};check(L1Interop_GetSendDiagnostics(f.server,stats,9),"failed send diagnostics");
   check(stats[0]==1&&stats[1]==1&&stats[5]==1&&stats[7]==0&&stats[8]==0,"failed send lifetime/owner");
   (void)admitted;
  }
  {
-  Fixture f;auto [socket,id]=f.connect();fakewin::failRead=true;CIO_Server_PauseReceive(f.server,id,0);
+  Fixture f;auto [socket,id]=f.connect();fakewin::failRead=true;L1Interop_PauseRead(f.server,id,0);
   until([&]{return f.state.closed==1;});
  }
  {
@@ -259,11 +259,11 @@ static void engineTests() {
  for(int cycle=0;cycle<10;++cycle) {
   Fixture f;std::vector<std::pair<SOCKET,std::uint64_t>> connections;
   for(int i=0;i<12;++i)connections.push_back(f.connect());
-  for(auto [socket,id]:connections)CIO_Server_PauseReceive(f.server,id,0);
+  for(auto [socket,id]:connections)L1Interop_PauseRead(f.server,id,0);
   std::vector<std::thread> closers;
-  for(auto [socket,id]:connections)closers.emplace_back([&,id]{for(int k=0;k<5;++k)CIO_Server_Disconnect(f.server,id,1);});
+  for(auto [socket,id]:connections)closers.emplace_back([&,id]{for(int k=0;k<5;++k)CIOSocketEx_Close(f.server,id);});
   for(auto& t:closers)t.join();
-  check(CIO_StopAccepting(f.server),"accept-stop failed");until([&]{return f.state.closed==12;});
+  check(CIOServer_Close(f.server),"accept-stop failed");until([&]{return f.state.closed==12;});
   check(f.server->pendingAccepts==0,"accept operation hold leaked");
  }
  std::cout<<"PASS 120 connections/600 concurrent repeated closes; pending accepts cancelled and all workers drained over ten server lifetimes\n";
@@ -313,45 +313,45 @@ static void recoveredStructureTests(){
  std::cout<<"PASS deterministic 50ms/200-slot wheel, long-deadline heap promotion, cancellation and reference release\n";
  {
   void* retained=nullptr;
-  {Fixture f;auto [socket,id]=f.connect();f.state.retainRead=true;CIO_Server_PauseReceive(f.server,id,0);fakewin::feed(socket,{1,2,3,4});
+  {Fixture f;auto [socket,id]=f.connect();f.state.retainRead=true;L1Interop_PauseRead(f.server,id,0);fakewin::feed(socket,{1,2,3,4});
    until([&]{return f.state.retained.load()!=nullptr;});retained=f.state.retained;
    fakewin::feed(socket,{9,8,7});until([&]{std::lock_guard<std::mutex> lock(f.state.mutex);return f.state.received.size()==7;});
-   check(CTransport_Buffer_Size(retained)==4&&!std::memcmp(CTransport_Buffer_Data(retained),"\1\2\3\4",4),"retained RX overwritten by next I/O");
-   CIO_Server_Disconnect(f.server,id,1);until([&]{return f.state.closed==1;});
+   check(L1Interop_ReceiveBufferSize(retained)==4&&!std::memcmp(L1Interop_ReceiveBufferData(retained),"\1\2\3\4",4),"retained RX overwritten by next I/O");
+   CIOSocketEx_Close(f.server,id);until([&]{return f.state.closed==1;});
    std::lock_guard<std::mutex> lock(fakewin::mutex);check(fakewin::sockets.at(socket)->resetClose,"original linger0 close missing");
   }
-  check(CTransport_Buffer_Size(retained)==4&&static_cast<const unsigned char*>(CTransport_Buffer_Data(retained))[3]==4,"buffer lease died with server");
-  CTransport_Buffer_Release(retained);
+  check(L1Interop_ReceiveBufferSize(retained)==4&&static_cast<const unsigned char*>(L1Interop_ReceiveBufferData(retained))[3]==4,"buffer lease died with server");
+  L1Interop_ReleaseReceiveBuffer(retained);
  }
  std::cout<<"PASS native receive leases survive subsequent reads/disconnect/server destroy; SO_LINGER(1,0) applied\n";
  {
   Fixture f;
-  for(unsigned i=1;i<=512;++i)check(CTransport_Server_PostTask(f.server,i),"native work post");
-  check(CTransport_Server_Schedule(f.server,1000,55),"native timer schedule");
-  check(CTransport_Server_Schedule(f.server,2000,200000),"long timer schedule");
-  check(!CTransport_Server_Schedule(f.server,2000,20),"duplicate native token admitted");
-  check(CTransport_Server_Cancel(f.server,2000),"long timer cancellation");
+  for(unsigned i=1;i<=512;++i)check(L1Interop_PostIOCallback(f.server,i),"native work post");
+  check(L1Interop_ScheduleTimer(f.server,1000,55),"native timer schedule");
+  check(L1Interop_ScheduleTimer(f.server,2000,200000),"long timer schedule");
+  check(!L1Interop_ScheduleTimer(f.server,2000,20),"duplicate native token admitted");
+  check(L1Interop_CancelTimer(f.server,2000),"long timer cancellation");
   until([&]{std::lock_guard<std::mutex> lock(f.state.mutex);return f.state.taskTokens.size()==513;});
   {std::lock_guard<std::mutex> lock(f.state.mutex);auto copy=f.state.taskTokens;std::sort(copy.begin(),copy.end());check(std::adjacent_find(copy.begin(),copy.end())==copy.end()&&copy.back()==1000,"work callbacks duplicated or cancellation ran");}
-  for(unsigned i=3000;i<4000;++i){check(CTransport_Server_Schedule(f.server,i,100000),"timer cancellation stress registration");check(CTransport_Server_Cancel(f.server,i),"timer cancellation stress");}
-  check(CTransport_Server_Schedule(f.server,4000,100000),"shutdown timer registration");
+  for(unsigned i=3000;i<4000;++i){check(L1Interop_ScheduleTimer(f.server,i,100000),"timer cancellation stress registration");check(L1Interop_CancelTimer(f.server,i),"timer cancellation stress");}
+  check(L1Interop_ScheduleTimer(f.server,4000,100000),"shutdown timer registration");
  }
  {
-  Fixture f;f.state.blockTask=true;check(CTransport_Server_PostTask(f.server,1),"blocked task post");until([&]{return f.state.taskEntered.load();});
-  check(!CTransport_Server_Cancel(f.server,1),"executing callback cancelled successfully");
-  std::atomic<bool> stopped{false};std::thread stopper([&]{check(CIO_Server_Stop(f.server),"stop with task");stopped=true;});
+  Fixture f;f.state.blockTask=true;check(L1Interop_PostIOCallback(f.server,1),"blocked task post");until([&]{return f.state.taskEntered.load();});
+  check(!L1Interop_CancelTimer(f.server,1),"executing callback cancelled successfully");
+  std::atomic<bool> stopped{false};std::thread stopper([&]{check(L1Interop_StopServer(f.server),"stop with task");stopped=true;});
   until([&]{return f.server->stopping.load();});check(!stopped,"Stop bypassed running task callback");
   f.state.releaseTask=true;stopper.join();check(stopped&&f.server->taskCount==0,"task stop leaked callback");
  }
  {
   Fixture f;fakewin::failPost=true;
-  check(!CTransport_Server_PostTask(f.server,54)&&f.server->taskCount==0,"immediate task post failure leaked registration");
-  CTransport_SetTaskCallback(f.listener,failedTaskCallback);
-  CTransport_SetTaskCallback(f.listener,taskCallback);
-  for(unsigned i=1;i<=100;++i)check(CTransport_Server_Schedule(f.server,40000+i*4,1),"dispatch warmup");
+  check(!L1Interop_PostIOCallback(f.server,54)&&f.server->taskCount==0,"immediate task post failure leaked registration");
+  L1Interop_SetOnIOCallback(f.listener,failedTaskCallback);
+  L1Interop_SetOnIOCallback(f.listener,taskCallback);
+  for(unsigned i=1;i<=100;++i)check(L1Interop_ScheduleTimer(f.server,40000+i*4,1),"dispatch warmup");
   until([&]{std::lock_guard<std::mutex> lock(f.state.mutex);return f.state.taskTokens.size()==100;});
-  CTransport_SetTaskCallback(f.listener,failedTaskCallback);
-  check(CTransport_Server_Schedule(f.server,55+1,100),"scheduled failure setup");fakewin::failPost=true;
+  L1Interop_SetOnIOCallback(f.listener,failedTaskCallback);
+  check(L1Interop_ScheduleTimer(f.server,55+1,100),"scheduled failure setup");fakewin::failPost=true;
   until([&]{return taskPostFailures.load()==1;});until([&]{return f.server->taskCount==0;});
  }
  std::cout<<"PASS immediate/scheduled PostQueuedCompletionStatus failure balances references and reports scheduled error on worker\n";
@@ -361,13 +361,13 @@ struct TimerOwner final : CIOObject {
  unsigned token;std::atomic<unsigned>& destroyed;
  TimerOwner(unsigned t,std::atomic<unsigned>& d):token(t),destroyed(d){}
  ~TimerOwner()override{++destroyed;}
- void completed(void*,bool,unsigned,unsigned)noexcept override{}
+ void OnIOCallback(void*,bool,unsigned,unsigned)noexcept override{}
 };
 static void ownershipCallback(void* raw,std::uint64_t token,int status){
  auto* server=static_cast<Server*>(raw);check(token==7000&&status==0,"ownership callback");
- check(CTransport_Server_Schedule(server,7001,100000),"callback timer registration");
+ check(L1Interop_ScheduleTimer(server,7001,100000),"callback timer registration");
  {std::lock_guard<std::mutex> lock(server->taskGate);check(server->tasks.at(7001)->owner==currentWorkerIndex,"callback timer left registering worker");}
- check(CTransport_Server_Cancel(server,7001),"callback timer cancellation");++probe->sent;
+ check(L1Interop_CancelTimer(server,7001),"callback timer cancellation");++probe->sent;
 }
 static void exactStructureTests(){
  {
@@ -416,23 +416,23 @@ static void exactStructureTests(){
  }
  {
   Fixture f;auto [socket,id]=f.connect();f.state.reenterClose=true;f.state.blockClosing=true;
-  check(CIO_Server_PauseReceive(f.server,id,0),"closing test resume");
-  std::thread closer([&]{CIO_Server_Disconnect(f.server,id,1);});until([&]{return f.state.closingEntered.load();});
+  check(L1Interop_PauseRead(f.server,id,0),"closing test resume");
+  std::thread closer([&]{CIOSocketEx_Close(f.server,id);});until([&]{return f.state.closingEntered.load();});
   {std::lock_guard<std::mutex> lock(fakewin::mutex);check(fakewin::sockets.at(socket)->open&&!fakewin::sockets.at(socket)->resetClose,"socket closed before pre-close hook returned");}
-  check(f.state.closed==0&&!CIO_Server_PauseReceive(f.server,id,0),"terminal/admission bypassed pre-close");
+  check(f.state.closed==0&&!L1Interop_PauseRead(f.server,id,0),"terminal/admission bypassed pre-close");
   fakewin::feed(socket,{9,8,7});
   {std::lock_guard<std::mutex> lock(f.state.mutex);check(f.state.received.empty(),"closed parser delivered new data");}
   f.state.releaseClosing=true;closer.join();until([&]{return f.state.closed==1;});
   check(f.state.closing==1,"closing hook repeated");
-  std::uint64_t stats[8]{};check(CTransport_Server_GetDiagnostics(f.server,stats,8)&&stats[6]==1&&stats[7]==1,"close diagnostics changed");
+  std::uint64_t stats[8]{};check(L1Interop_GetDiagnostics(f.server,stats,8)&&stats[6]==1&&stats[7]==1,"close diagnostics changed");
  }
  {
-  Fixture f;for(unsigned i=1;i<=8;++i)check(CTransport_Server_Schedule(f.server,6000+i,100000),"producer timer registration");
+  Fixture f;for(unsigned i=1;i<=8;++i)check(L1Interop_ScheduleTimer(f.server,6000+i,100000),"producer timer registration");
   unsigned owner;
   {std::lock_guard<std::mutex> lock(f.server->taskGate);owner=f.server->tasks.at(6001)->owner;for(unsigned i=2;i<=8;++i)check(f.server->tasks.at(6000+i)->owner==owner,"token value changed timer owner");}
-  std::thread producer([&]{check(CTransport_Server_Schedule(f.server,6100,100000),"second producer registration");});producer.join();
+  std::thread producer([&]{check(L1Interop_ScheduleTimer(f.server,6100,100000),"second producer registration");});producer.join();
   {std::lock_guard<std::mutex> lock(f.server->taskGate);check(f.server->tasks.at(6100)->owner!=owner,"external producers did not register separate owners");}
-  CTransport_SetTaskCallback(f.listener,ownershipCallback);check(CTransport_Server_PostTask(f.server,7000),"owner callback post");until([&]{return f.state.sent==1;});
+  L1Interop_SetOnIOCallback(f.listener,ownershipCallback);check(L1Interop_PostIOCallback(f.server,7000),"owner callback post");until([&]{return f.state.sent==1;});
  }
  {
   Fixture f;auto [socket,id]=f.connect();
@@ -441,7 +441,7 @@ static void exactStructureTests(){
   // readiness. Finish that owner before asserting a caller-thread fallback.
   until([&]{return f.server->pendingAccepts.load()==0;});
   f.state.terminalStopCheck=true;fakewin::failPost=true;
-  check(CIO_Server_Disconnect(f.server,id,1)&&f.state.closed==1,"caller-thread terminal fallback failed");
+  check(CIOSocketEx_Close(f.server,id)&&f.state.closed==1,"caller-thread terminal fallback failed");
  }
  std::cout<<"PASS closing/terminal callback self-stop/wait guards, including failed close-post on a foreign caller\n";
  std::cout<<"PASS registering-worker/foreign-producer timer ownership; token values do not choose wheels\n";
@@ -480,10 +480,10 @@ static void userSocketTests() {
  }
  {
   Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();
-  check(CTransport_Server_ThreadOwner(f.server)==-1,"external caller impersonated native worker");
-  check(CIO_Server_PauseReceive(f.server,id,0),"user profile unpause");auto frame=l1Frame(10000,9);
+  check(L1Interop_GetThreadOwner(f.server)==-1,"external caller impersonated native worker");
+  check(L1Interop_PauseRead(f.server,id,0),"user profile unpause");auto frame=l1Frame(10000,9);
   fakewin::feed(socket,{frame[0]});
-  until([&]{std::uint64_t st[6]{};return CTransport_UserSocket_GetState(f.server,id,st,6)&&st[0]==0&&st[2]==1;});
+  until([&]{std::uint64_t st[6]{};return L1Interop_GetSocketState(f.server,id,st,6)&&st[0]==0&&st[2]==1;});
   {std::lock_guard<std::mutex>lock(f.state.mutex);check(f.state.received.empty(),"partial header leaked into raw gameplay callback");}
   fakewin::feed(socket,std::vector<unsigned char>(frame.begin()+1,frame.end()));
   until([&]{std::lock_guard<std::mutex>lock(f.state.mutex);return f.state.received.size()==frame.size()-6;});
@@ -514,43 +514,43 @@ static void managerAndNativeLeaseTests() {
   for(auto& t:threads)t.join();std::uint64_t diag[6]{};registry.diagnostics(diag);check(diag[0]==0&&diag[1]==0&&diag[3]==diag[4],"registry totals leaked");
  }
  {
-  Fixture f;f.state.userProfile=true;f.state.holdPacket=true;auto [socket,id]=f.connect();check(CIO_Server_PauseReceive(f.server,id,0),"lease read resume");
+  Fixture f;f.state.userProfile=true;f.state.holdPacket=true;auto [socket,id]=f.connect();check(L1Interop_PauseRead(f.server,id,0),"lease read resume");
   auto first=l1Frame(4096,3),second=l1Frame(8192,7);std::vector<unsigned char> wire=first;wire.insert(wire.end(),second.begin(),second.end());fakewin::feed(socket,wire);
   until([&]{return f.state.heldSequence.load()!=0;});const auto seq=f.state.heldSequence.load();auto* view=f.state.heldPlaintext.load();
   check(std::equal(view,view+first.size()-6,first.data()+6),"leased plaintext changed");
-  unsigned char outbound[]{1,2,3,4};check(CTransport_UserSocket_Encrypt(f.server,id,outbound,4)&&outbound[0]==(1^0xa7),"native outbound codec");
+  unsigned char outbound[]{1,2,3,4};check(CSocket_Encrypt(f.server,id,outbound,4)&&outbound[0]==(1^0xa7),"native outbound codec");
   check(std::equal(view,view+first.size()-6,first.data()+6)&&f.state.packetCalls==1,"send/next overwrote borrowed plaintext");
-  check(!CTransport_UserSocket_ReleasePacket(f.server,id,seq+1),"wrong sequence released packet");
-  check(CTransport_UserSocket_ReleasePacket(f.server,id,seq),"foreign caller lease release");until([&]{return f.state.packetCalls==2;});
-  check(!CTransport_UserSocket_ReleasePacket(f.server,id,seq),"duplicate packet release");
+  check(!L1Interop_ReleasePacket(f.server,id,seq+1),"wrong sequence released packet");
+  check(L1Interop_ReleasePacket(f.server,id,seq),"foreign caller lease release");until([&]{return f.state.packetCalls==2;});
+  check(!L1Interop_ReleasePacket(f.server,id,seq),"duplicate packet release");
  }
  {
-  Fixture f;f.state.userProfile=true;f.state.holdPacket=true;auto [socket,id]=f.connect();CIO_Server_PauseReceive(f.server,id,0);auto frame=l1Frame(128,5);fakewin::feed(socket,frame);until([&]{return f.state.heldSequence.load()!=0;});
-  const auto seq=f.state.heldSequence.load();auto* view=f.state.heldPlaintext.load();check(CIO_Server_Disconnect(f.server,id,1),"close held lease");until([&]{return f.state.closed==1;});
-  std::uint64_t diag[6]{};CTransport_Server_GetRegistryDiagnostics(f.server,diag,6);check(diag[0]==0&&diag[1]==1,"terminal dropped borrowed native context");
+  Fixture f;f.state.userProfile=true;f.state.holdPacket=true;auto [socket,id]=f.connect();L1Interop_PauseRead(f.server,id,0);auto frame=l1Frame(128,5);fakewin::feed(socket,frame);until([&]{return f.state.heldSequence.load()!=0;});
+  const auto seq=f.state.heldSequence.load();auto* view=f.state.heldPlaintext.load();check(CIOSocketEx_Close(f.server,id),"close held lease");until([&]{return f.state.closed==1;});
+  std::uint64_t diag[6]{};L1Interop_GetRegistryDiagnostics(f.server,diag,6);check(diag[0]==0&&diag[1]==1,"terminal dropped borrowed native context");
   check(std::equal(view,view+frame.size()-6,frame.data()+6),"terminal invalidated outstanding plaintext");
-  check(CTransport_UserSocket_ReleasePacket(f.server,id,seq),"retired native lease release");until([&]{return f.server->connections.load()==0;});
+  check(L1Interop_ReleasePacket(f.server,id,seq),"retired native lease release");until([&]{return f.server->connections.load()==0;});
   auto [newSocket,newId]=f.connect();check(newId!=id&&std::uint32_t(newId)==std::uint32_t(id),"production registry did not rotate generation");
-  check(!CTransport_UserSocket_ReleasePacket(f.server,id,seq)&&!CIO_Server_Send(f.server,id,frame.data(),frame.size()),"stale generation affected new socket");
+  check(!L1Interop_ReleasePacket(f.server,id,seq)&&!CIOSocket__Write(f.server,id,frame.data(),frame.size()),"stale generation affected new socket");
  }
  {
-  Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();check(CTransport_UserSocket_ConfigureDeadlines(f.server,id,60),"short login timer");until([&]{return f.state.closed==1;});until([&]{return f.server->taskCount==0;});
+  Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();check(L1Interop_ConfigureDeadlines(f.server,id,60),"short login timer");until([&]{return f.state.closed==1;});until([&]{return f.server->taskCount==0;});
  }
  {
-  Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();check(CTransport_UserSocket_ConfigureDeadlines(f.server,id,80)&&CTransport_UserSocket_SetSessionState(f.server,id,1),"authenticated login timer");
+  Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();check(L1Interop_ConfigureDeadlines(f.server,id,80)&&L1Interop_SetSessionState(f.server,id,1),"authenticated login timer");
   until([&]{return f.state.deadlineCalls.load()>0;});check(f.state.closed==0,"authenticated connection expired login timer");
-  auto calls=f.state.deadlineCalls.load();check(CTransport_UserSocket_RequestDeadline(f.server,id,1),"earlier application deadline");until([&]{return f.state.deadlineCalls.load()>calls;});
-  CIO_Server_Disconnect(f.server,id,1);until([&]{return f.state.closed==1&&f.server->taskCount==0;});
+  auto calls=f.state.deadlineCalls.load();check(L1Interop_RequestDeadline(f.server,id,1),"earlier application deadline");until([&]{return f.state.deadlineCalls.load()>calls;});
+  CIOSocketEx_Close(f.server,id);until([&]{return f.state.closed==1&&f.server->taskCount==0;});
  }
  {
   Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();auto* c=f.server->find(id);check(c!=nullptr,"partial deadline lookup");
   {std::lock_guard<std::mutex> lock(c->gate);unsigned char partial=10;check(c->UserProtocol()->feed(&partial,1,monotonicMs()-30001,[](auto*,unsigned){return true;}),"old partial header");}
-  c->release();check(CTransport_UserSocket_RequestDeadline(f.server,id,1),"partial native deadline");until([&]{return f.state.closed==1;});
+  c->release();check(L1Interop_RequestDeadline(f.server,id,1),"partial native deadline");until([&]{return f.state.closed==1;});
  }
  {
-  Fixture f;f.state.userProfile=true;f.state.holdPacket=true;auto [socket,id]=f.connect();CIO_Server_PauseReceive(f.server,id,0);fakewin::feed(socket,l1Frame(128));until([&]{return f.state.heldSequence.load()!=0;});
-  auto stop=std::async(std::launch::async,[&]{return CIO_Server_Stop(f.server);});until([&]{return f.state.closed==1;});check(stop.wait_for(std::chrono::milliseconds(20))==std::future_status::timeout,"stop bypassed native packet lease");
-  check(CTransport_UserSocket_ReleasePacket(f.server,id,f.state.heldSequence),"shutdown drain release rejected");check(stop.get(),"stop after lease release");
+  Fixture f;f.state.userProfile=true;f.state.holdPacket=true;auto [socket,id]=f.connect();L1Interop_PauseRead(f.server,id,0);fakewin::feed(socket,l1Frame(128));until([&]{return f.state.heldSequence.load()!=0;});
+  auto stop=std::async(std::launch::async,[&]{return L1Interop_StopServer(f.server);});until([&]{return f.state.closed==1;});check(stop.wait_for(std::chrono::milliseconds(20))==std::future_status::timeout,"stop bypassed native packet lease");
+  check(L1Interop_ReleasePacket(f.server,id,f.state.heldSequence),"shutdown drain release rejected");check(stop.get(),"stop after lease release");
  }
  check(fixturecodec::created==fixturecodec::destroyed,"native codec instances leaked");
  std::cout<<"PASS native manager: generation/retired lookup/exact erase/restart/3200 concurrent registrations; stale handles cannot affect replacements\n";
@@ -563,20 +563,20 @@ struct SerialProbe final : CIOObject {
  CExecutionSerializerFast queue;
  std::atomic<unsigned> calls{0},inside{0},maximum{0};
  std::atomic<bool> entered{false},releaseBlocked{false};
- static void Work(CIOObject* object,void*)noexcept{
+ static void Work(MemoryObject* object,void*)noexcept{
   auto& p=*static_cast<SerialProbe*>(object);const auto active=p.inside.fetch_add(1)+1;
   auto old=p.maximum.load();while(old<active&&!p.maximum.compare_exchange_weak(old,active)){}
   ++p.calls;--p.inside;
  }
- static void Reenter(CIOObject* object,void*)noexcept{
+ static void Reenter(MemoryObject* object,void*)noexcept{
   auto& p=*static_cast<SerialProbe*>(object);++p.calls;
   check(p.queue.AddExecutable(object,Work,nullptr),"same-owner serializer reentry");
  }
- static void Block(CIOObject* object,void*)noexcept{
+ static void Block(MemoryObject* object,void*)noexcept{
   auto& p=*static_cast<SerialProbe*>(object);p.entered=true;
   while(!p.releaseBlocked.load())std::this_thread::yield();++p.calls;
  }
- void completed(void*,bool,unsigned,unsigned)noexcept override{}
+ void OnIOCallback(void*,bool,unsigned,unsigned)noexcept override{}
 };
 static void originalStructureTests(){
  {
@@ -613,29 +613,29 @@ static void originalStructureTests(){
   for(unsigned n=0;n<48;++n)clients.push_back(fakewin::connect(f.server->listening));
   until([&]{std::lock_guard<std::mutex> lock(f.state.mutex);return f.state.ids.size()==48;});
   std::uint64_t listener[9]{},threads[54]{};
-  check(CTransport_Server_GetListenerDiagnostics(f.server,listener,9)&&listener[1]>=48&&listener[2]>=48&&listener[6]==48&&listener[8]==48,"burst rearm/listener/raw registry");
-  check(CTransport_Server_GetThreadDiagnostics(f.server,threads,54)&&threads[51]>0,"ListenThread owner17 did not run");
-  std::uint64_t rows[48*12]{};check(CTransport_Server_ReportSockets(f.server,rows,48,12)==48,"ReportSocket snapshot size");
-  for(unsigned n=0;n<48;++n)check(rows[n*12+1]&&CTransport_UserSocket_FindByNumber(f.server,rows[n*12+1])==rows[n*12],"user-number secondary lookup");
-  check(CIO_StopAccepting(f.server),"stop accepting burst");
-  check(CIO_Server_Stop(f.server),"shutdown raw SOCKET snapshot");
-  check(CTransport_Server_GetListenerDiagnostics(f.server,listener,9)&&listener[5]==0&&listener[6]==0&&listener[8]==0,"listener/secondary/raw registration leaked");
+  check(L1Interop_GetListenerDiagnostics(f.server,listener,9)&&listener[1]>=48&&listener[2]>=48&&listener[6]==48&&listener[8]==48,"burst rearm/listener/raw registry");
+  check(L1Interop_GetThreadDiagnostics(f.server,threads,54)&&threads[51]>0,"ListenThread owner17 did not run");
+  std::uint64_t rows[48*12]{};check(Server_ReportSocket(f.server,rows,48,12)==48,"ReportSocket snapshot size");
+  for(unsigned n=0;n<48;++n)check(rows[n*12+1]&&L1Interop_FindSocketByNumber(f.server,rows[n*12+1])==rows[n*12],"user-number secondary lookup");
+  check(CIOServer_Close(f.server),"stop accepting burst");
+  check(L1Interop_StopServer(f.server),"shutdown raw SOCKET snapshot");
+  check(L1Interop_GetListenerDiagnostics(f.server,listener,9)&&listener[5]==0&&listener[6]==0&&listener[8]==0,"listener/secondary/raw registration leaked");
  }
  {
   Fixture f(2,1);auto [a,idA]=f.connect();auto [b,idB]=f.connect();
-  check(CTransport_UserSocket_SetMacIdentity(f.server,idA,0x123456789abcull),"MAC identity reservation");
-  check(!CTransport_UserSocket_SetMacIdentity(f.server,idA,0x123456789abcull)&&!CTransport_UserSocket_SetMacIdentity(f.server,idB,0x123456789abcull),"duplicate/overlimit MAC identity accepted");
+  check(L1Interop_BindMacIdentity(f.server,idA,0x123456789abcull),"MAC identity reservation");
+  check(!L1Interop_BindMacIdentity(f.server,idA,0x123456789abcull)&&!L1Interop_BindMacIdentity(f.server,idB,0x123456789abcull),"duplicate/overlimit MAC identity accepted");
   const auto callbacks=f.server->acceptCallbacks.load();fakewin::connect(f.server->listening);
   until([&]{return f.server->acceptCallbacks.load()>callbacks&&f.server->pendingAccepts==0;});
   {std::lock_guard<std::mutex> lock(f.state.mutex);check(f.state.ids.size()==2,"native IP limiter admitted third socket");}
   auto* socket=f.server->find(idA);auto number=socket->SocketNumber();socket->release();
-  check(CIO_Server_Disconnect(f.server,idA,1),"limited socket close");until([&]{return f.state.closed==1;});
-  check(!CTransport_UserSocket_FindByNumber(f.server,number),"retired number still active");
-  check(CTransport_UserSocket_SetMacIdentity(f.server,idB,0x123456789abcull),"MAC reservation not returned on close");
+  check(CIOSocketEx_Close(f.server,idA),"limited socket close");until([&]{return f.state.closed==1;});
+  check(!L1Interop_FindSocketByNumber(f.server,number),"retired number still active");
+  check(L1Interop_BindMacIdentity(f.server,idB,0x123456789abcull),"MAC reservation not returned on close");
   auto [c,idC]=f.connect();check(idC!=idA,"replacement generation reused");
-  check(!CTransport_UserSocket_SetMacIdentity(f.server,idA,7),"stale handle changed limiter");
-  check(CIO_Server_Stop(f.server),"limited shutdown");std::uint64_t counts[4]{};
-  check(CTransport_Server_GetLimiterDiagnostics(f.server,counts,4)&&counts[0]==0&&counts[1]==0,"IP/MAC close accounting leaked");
+  check(!L1Interop_BindMacIdentity(f.server,idA,7),"stale handle changed limiter");
+  check(L1Interop_StopServer(f.server),"limited shutdown");std::uint64_t counts[4]{};
+  check(L1Interop_GetSocketLimitDiagnostics(f.server,counts,4)&&counts[0]==0&&counts[1]==0,"IP/MAC close accounting leaked");
  }
  std::cout<<"PASS original structure: serializer 8000 concurrent+reentry+504 capacity; RegisterWait64; 48 event accepts; owner17; raw/secondary/generation maps; native IP/MAC rejection and release; ReportSocket\n";
 }
@@ -644,55 +644,55 @@ static void originalStructureTests(){
 static void remainingNetworkTests(){
  {
   Fixture f;f.state.userProfile=true;auto [a,idA]=f.connect();auto [b,idB]=f.connect();
-  check(!CTransport_UserSocket_SetCharacterEntered(f.server,idA,1),"character entered without authenticated account");
-  check(CTransport_UserSocket_SetAccountIdentity(f.server,idA,77),"bind account A");
-  check(CTransport_UserSocket_SetAccountIdentity(f.server,idA,77)&&!CTransport_UserSocket_SetAccountIdentity(f.server,idA,78),"account rebinding was not fenced");
-  check(CTransport_UserSocket_SetAccountIdentity(f.server,idB,77),"bind account B");
-  check(CTransport_UserSocket_SetCharacterEntered(f.server,idA,1),"claim account enter map");
-  check(!CTransport_UserSocket_SetCharacterEntered(f.server,idB,1)&&CTransport_UserSocket_FindEnteringAccount(f.server,77)==idA,"duplicate account enter displaced live owner");
-  std::uint64_t counts[4]{},state[14]{};check(CTransport_Server_GetAccountRegistryDiagnostics(f.server,counts,4)&&counts[0]==2&&counts[1]==2&&counts[2]==1&&counts[3]==1,"26/27/28 counts or keys");
-  check(CTransport_UserSocket_GetState(f.server,idA,state,14)&&state[11]==77&&state[12]==1,"account state snapshot");
-  check(CTransport_UserSocket_SetSessionState(f.server,idA,1)&&!CTransport_UserSocket_FindEnteringAccount(f.server,77),"restart did not release enter map");
-  check(CTransport_UserSocket_SetCharacterEntered(f.server,idB,1),"restart account slot not reusable");
-  check(CIO_Server_Disconnect(f.server,idA,1),"old account close");until([&]{return f.state.closed==1;});
-  check(CTransport_UserSocket_FindEnteringAccount(f.server,77)==idB,"old close removed replacement account entry");
-  f.state.holdPacket=true;CIO_Server_PauseReceive(f.server,idB,0);fakewin::feed(b,l1Frame(128));until([&]{return f.state.heldSequence.load()!=0;});
-  check(CIO_Server_Disconnect(f.server,idB,1),"held account close");until([&]{return f.state.closed==2;});
-  check(CTransport_Server_GetAccountRegistryDiagnostics(f.server,counts,4)&&counts[0]==1&&counts[1]==0&&counts[2]==0,"close-start kept game identities or prematurely dropped packet owner");
-  check(CTransport_UserSocket_ReleasePacket(f.server,idB,f.state.heldSequence),"retired account packet release");until([&]{return f.server->connections==0;});
+  check(!L1Interop_SetEnterChar(f.server,idA,1),"character entered without authenticated account");
+  check(L1Interop_BindAccount(f.server,idA,77),"bind account A");
+  check(L1Interop_BindAccount(f.server,idA,77)&&!L1Interop_BindAccount(f.server,idA,78),"account rebinding was not fenced");
+  check(L1Interop_BindAccount(f.server,idB,77),"bind account B");
+  check(L1Interop_SetEnterChar(f.server,idA,1),"claim account enter map");
+  check(!L1Interop_SetEnterChar(f.server,idB,1)&&L1Interop_FindEnteringAccount(f.server,77)==idA,"duplicate account enter displaced live owner");
+  std::uint64_t counts[4]{},state[14]{};check(L1Interop_GetAccountRegistryDiagnostics(f.server,counts,4)&&counts[0]==2&&counts[1]==2&&counts[2]==1&&counts[3]==1,"26/27/28 counts or keys");
+  check(L1Interop_GetSocketState(f.server,idA,state,14)&&state[11]==77&&state[12]==1,"account state snapshot");
+  check(L1Interop_SetSessionState(f.server,idA,1)&&!L1Interop_FindEnteringAccount(f.server,77),"restart did not release enter map");
+  check(L1Interop_SetEnterChar(f.server,idB,1),"restart account slot not reusable");
+  check(CIOSocketEx_Close(f.server,idA),"old account close");until([&]{return f.state.closed==1;});
+  check(L1Interop_FindEnteringAccount(f.server,77)==idB,"old close removed replacement account entry");
+  f.state.holdPacket=true;L1Interop_PauseRead(f.server,idB,0);fakewin::feed(b,l1Frame(128));until([&]{return f.state.heldSequence.load()!=0;});
+  check(CIOSocketEx_Close(f.server,idB),"held account close");until([&]{return f.state.closed==2;});
+  check(L1Interop_GetAccountRegistryDiagnostics(f.server,counts,4)&&counts[0]==1&&counts[1]==0&&counts[2]==0,"close-start kept game identities or prematurely dropped packet owner");
+  check(L1Interop_ReleasePacket(f.server,idB,f.state.heldSequence),"retired account packet release");until([&]{return f.server->connections==0;});
  }
  {
   Fixture f;std::vector<std::uint64_t> ids;
-  for(unsigned i=0;i<16;++i){auto [socket,id]=f.connect();ids.push_back(id);check(CTransport_UserSocket_SetAccountIdentity(f.server,id,900),"contender account bind");}
+  for(unsigned i=0;i<16;++i){auto [socket,id]=f.connect();ids.push_back(id);check(L1Interop_BindAccount(f.server,id,900),"contender account bind");}
   std::atomic<unsigned> winners{0};std::vector<std::thread> contenders;
-  for(auto id:ids)contenders.emplace_back([&,id]{if(CTransport_UserSocket_SetCharacterEntered(f.server,id,1))++winners;});
+  for(auto id:ids)contenders.emplace_back([&,id]{if(L1Interop_SetEnterChar(f.server,id,1))++winners;});
   for(auto& t:contenders)t.join();check(winners==1,"parallel duplicate character entries both won");
-  for(auto id:ids)CIO_Server_Disconnect(f.server,id,1);until([&]{return f.server->connections==0;});
-  std::uint64_t counts[4]{};CTransport_Server_GetAccountRegistryDiagnostics(f.server,counts,4);check(counts[0]==0&&counts[1]==0&&counts[2]==0,"contending account maps leaked");
+  for(auto id:ids)CIOSocketEx_Close(f.server,id);until([&]{return f.server->connections==0;});
+  std::uint64_t counts[4]{};L1Interop_GetAccountRegistryDiagnostics(f.server,counts,4);check(counts[0]==0&&counts[1]==0&&counts[2]==0,"contending account maps leaked");
  }
  {
   Fixture f(0,1);auto [a,idA]=f.connect();auto [b,idB]=f.connect();
-  check(!CTransport_UserSocket_SetAccountIdentity(f.server,idA,1),"MAC-enabled authentication admitted unidentified client");
-  check(CTransport_UserSocket_SetMacIdentity(f.server,idA,0xaabbccddeeffull)&&CTransport_UserSocket_SetAccountIdentity(f.server,idA,1),"verified MAC authentication failed");
-  check(!CTransport_UserSocket_SetMacIdentity(f.server,idB,0xaabbccddeeffull),"MAC cap ignored");
-  CIO_Server_Disconnect(f.server,idA,1);until([&]{return f.state.closed==1;});
-  check(CTransport_UserSocket_SetMacIdentity(f.server,idB,0xaabbccddeeffull)&&CTransport_UserSocket_SetAccountIdentity(f.server,idB,2),"closed MAC capacity not returned");
+  check(!L1Interop_BindAccount(f.server,idA,1),"MAC-enabled authentication admitted unidentified client");
+  check(L1Interop_BindMacIdentity(f.server,idA,0xaabbccddeeffull)&&L1Interop_BindAccount(f.server,idA,1),"verified MAC authentication failed");
+  check(!L1Interop_BindMacIdentity(f.server,idB,0xaabbccddeeffull),"MAC cap ignored");
+  CIOSocketEx_Close(f.server,idA);until([&]{return f.state.closed==1;});
+  check(L1Interop_BindMacIdentity(f.server,idB,0xaabbccddeeffull)&&L1Interop_BindAccount(f.server,idB,2),"closed MAC capacity not returned");
  }
  {
   Fixture f;std::uint64_t sample[16]{};
-  until([&]{return CTransport_Server_GetPerfDiagnostics(f.server,sample,16)&&sample[0]>=2;});
+  until([&]{return L1Interop_ReadPerf(f.server,sample,16)&&sample[0]>=2;});
   check(sample[2]==15&&sample[1]>0&&sample[15]==0,"native CPerfMon TLS identity or fixture OS availability");
-  auto old=sample[0];std::atomic<bool> done{false};std::thread reader([&]{std::uint64_t values[16];while(!done)CTransport_Server_GetPerfDiagnostics(f.server,values,16);});
-  check(CIO_Server_Stop(f.server),"stop with concurrent performance read");done=true;reader.join();
-  check(!CTransport_Server_GetPerfDiagnostics(f.server,sample,16),"stopped monitor remained published");
-  check(CIO_Server_Start(f.server,"127.0.0.1",0),"restart after performance stop");until([&]{return CTransport_Server_GetPerfDiagnostics(f.server,sample,16)&&sample[0]>0;});
+  auto old=sample[0];std::atomic<bool> done{false};std::thread reader([&]{std::uint64_t values[16];while(!done)L1Interop_ReadPerf(f.server,values,16);});
+  check(L1Interop_StopServer(f.server),"stop with concurrent performance read");done=true;reader.join();
+  check(!L1Interop_ReadPerf(f.server,sample,16),"stopped monitor remained published");
+  check(Server_Run(f.server,"127.0.0.1",0),"restart after performance stop");until([&]{return L1Interop_ReadPerf(f.server,sample,16)&&sample[0]>0;});
  }
  {
   Fixture f;f.state.userProfile=true;
-  for(unsigned cycle=0;cycle<128;++cycle){auto [socket,id]=f.connect();check(CTransport_UserSocket_SetAccountIdentity(f.server,id,123)&&CTransport_UserSocket_SetCharacterEntered(f.server,id,1),"repeat account reuse admission");
-   check(CTransport_UserSocket_SetSessionState(f.server,id,0),"logout identity clear");
-   check(!CTransport_UserSocket_FindEnteringAccount(f.server,123),"logout retained entering account");
-   CIO_Server_Disconnect(f.server,id,1);until([&]{return f.server->connections==0;});
+  for(unsigned cycle=0;cycle<128;++cycle){auto [socket,id]=f.connect();check(L1Interop_BindAccount(f.server,id,123)&&L1Interop_SetEnterChar(f.server,id,1),"repeat account reuse admission");
+   check(L1Interop_SetSessionState(f.server,id,0),"logout identity clear");
+   check(!L1Interop_FindEnteringAccount(f.server,123),"logout retained entering account");
+   CIOSocketEx_Close(f.server,id);until([&]{return f.server->connections==0;});
   }
  }
  std::cout<<"PASS remaining network: original Playing(socket number)/EnterChar(account ID); authentication/enter/restart/logout/close;16-way duplicate entry;held plaintext/stale close;MAC-required auth/cap/reuse;actual CPerfMon owner15/restart/concurrent read-stop;128 account reconnects\n";
@@ -705,37 +705,59 @@ static std::vector<unsigned char> outboundFrame(unsigned n,unsigned seed=3){
 }
 static void sendCloseTests(){
  {
+  // The original fast serializer accepts MemoryObject, not only I/O objects.
+  struct MemoryOnly final:MemoryObject{
+   unsigned& calls;bool& destroyed;MemoryOnly(unsigned& c,bool& d):calls(c),destroyed(d){}
+   ~MemoryOnly()override{destroyed=true;}
+   static void Execute(MemoryObject* object,void*)noexcept{++static_cast<MemoryOnly*>(object)->calls;}
+  };
+  unsigned calls=0;bool destroyed=false;CExecutionSerializerFast execution;auto* object=new MemoryOnly(calls,destroyed);
+  check(execution.AddExecutable(object,MemoryOnly::Execute,nullptr)&&calls==1,"MemoryObject serializer admission");
+  object->release();check(destroyed,"MemoryObject virtual release did not destroy derived object");
+ }
+ {
+  Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();auto* c=f.server->find(id);ObjectRef socketHold(c,false);
+  std::vector<unsigned char> source;for(unsigned size:{16383u,10u,65535u,8u}){auto frame=outboundFrame(size,size);source.insert(source.end(),frame.begin(),frame.end());}
+  auto expected=source;std::size_t at=0;while(at<source.size()){unsigned size=source[at]|(source[at+1]<<8);for(unsigned i=2;i<size;++i)expected[at+i]^=0xa7;at+=size;}
+  Span input{source.data(),source.size()};auto* request=new NativeSendRequest(c,&input,1,source.size(),true,false,true);ObjectRef requestHold(request,false);
+  {std::lock_guard<std::mutex> lock(c->gate);c->reservedSendBytes+=source.size();++c->pendingSendRequests;++f.server->pendingSends;}
+  check(c->execution_.AddExecutable(request,NativeSendRequest::Execute,nullptr),"constant request owner");
+  until([&]{return request->result.load()!=0;});check(request->result==1&&request->bytes==source,"constant SEND modified its source");
+  until([&]{return f.state.sent==static_cast<int>(source.size());});check(fakewin::wire(socket)==expected,"constant frame/header split or max-frame encryption mismatch");
+ }
+ std::cout<<"PASS original MemoryObject-only fast-serializer target and virtual destruction;CSocket constant source remains unchanged across16K headers/max65535 frames;pooled encrypted output adopts without re-copy\n";
+ {
   Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();
   auto plain=outboundFrame(11),encrypted=outboundFrame(65535,9);std::vector<unsigned char> wire=plain;wire.insert(wire.end(),encrypted.begin(),encrypted.end());auto expected=wire;
   for(std::size_t i=plain.size()+2;i<expected.size();++i)expected[i]^=0xa7;
   auto* c=f.server->find(id);auto* blocker=new SerialProbe;
   std::thread owner([&]{check(c->execution_.AddExecutable(blocker,SerialProbe::Block,nullptr),"block native send owner");});until([&]{return blocker->entered.load();});
-  check(CTransport_UserSocket_SendFrames(f.server,id,wire.data(),wire.size(),1),"queued native frame send");std::fill(wire.begin(),wire.end(),0);
-  check(CTransport_Server_GracefulClose(f.server,id,5000),"queued graceful close");unsigned char late=9;check(!CIO_Server_Send(f.server,id,&late,1),"send admitted after graceful fence");
+  check(CSocket_SendV(f.server,id,wire.data(),wire.size(),1),"queued native frame send");std::fill(wire.begin(),wire.end(),0);
+  check(CIOSocketEx_GracefulClose(f.server,id,5000),"queued graceful close");unsigned char late=9;check(!CIOSocket__Write(f.server,id,&late,1),"send admitted after graceful fence");
   check(f.state.closed==0,"graceful close bypassed unpublished send request");blocker->releaseBlocked=true;owner.join();blocker->release();c->release();
   until([&]{return fakewin::sendShutdown(socket);});check(f.state.closed==0,"normal close did not await peer FIN");fakewin::peerFin(socket);
   until([&]{return f.state.closed==1;});check(fakewin::wire(socket)==expected,"copy/handshake/frame cipher or graceful prefix lost");
   {std::lock_guard<std::mutex> lock(fakewin::mutex);check(!fakewin::sockets.at(socket)->resetClose,"GracefulClose applied RST linger");}
-  std::uint64_t diag[9]{};check(CTransport_Server_GetSendDiagnostics(f.server,diag,9)&&diag[0]==1&&diag[1]==1&&diag[2]==1&&diag[3]==1&&diag[4]==1&&diag[5]==0&&diag[7]==0&&diag[8]==0,"native send owner/normal close diagnostics");
+  std::uint64_t diag[9]{};check(L1Interop_GetSendDiagnostics(f.server,diag,9)&&diag[0]==1&&diag[1]==1&&diag[2]==1&&diag[3]==1&&diag[4]==1&&diag[5]==0&&diag[7]==0&&diag[8]==0,"native send owner/normal close diagnostics");
  }
  {
   Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();
   unsigned char bad[]{12,0,1,2};const auto before=fixturecodec::encrypted.load();
-  check(!CTransport_UserSocket_SendFrames(f.server,id,bad,sizeof(bad),0)&&fixturecodec::encrypted==before,"invalid frame advanced cipher");
+  check(!CSocket_SendV(f.server,id,bad,sizeof(bad),0)&&fixturecodec::encrypted==before,"invalid frame advanced cipher");
   auto bytes=outboundFrame(32769);auto expected=bytes;for(std::size_t i=2;i<bytes.size();++i)expected[i]^=0xa7;
   WSABUF parts[]={{1,reinterpret_cast<char*>(bytes.data())},{4,reinterpret_cast<char*>(bytes.data()+1)},{static_cast<ULONG>(bytes.size()-5),reinterpret_cast<char*>(bytes.data()+5)}};
-  fakewin::sendChunk=37;check(CTransport_UserSocket_SendFramePackets(f.server,id,parts,3,0),"cross-descriptor frame admission");
+  fakewin::sendChunk=37;check(CSocket___async_AsyncSendConstBuffer(f.server,id,parts,3,0),"cross-descriptor frame admission");
   until([&]{return f.state.sent==static_cast<int>(bytes.size());});check(fakewin::wire(socket)==expected&&fixturecodec::encrypted==before+1,"partial completion re-encrypted or split frame lost");fakewin::sendChunk=8192;
  }
  {
   Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();auto bytes=outboundFrame(10);
-  fixturecodec::failEncrypt=true;CTransport_UserSocket_SendFrames(f.server,id,bytes.data(),bytes.size(),0);
+  fixturecodec::failEncrypt=true;CSocket_SendV(f.server,id,bytes.data(),bytes.size(),0);
   until([&]{return f.state.closed==1;});check(fakewin::wire(socket).empty(),"failed cipher data reached wire");
  }
  {
   Fixture f;auto [socket,id]=f.connect();fakewin::holdSend=true;
-  std::vector<unsigned char> data(20000,19);check(CIO_Server_Send(f.server,id,data.data(),data.size()),"held raw send");
-  check(CTransport_Server_GracefulClose(f.server,id,5000)&&f.state.closed==0,"graceful close did not await pending WRITE");
+  std::vector<unsigned char> data(20000,19);check(CIOSocket__Write(f.server,id,data.data(),data.size()),"held raw send");
+  check(CIOSocketEx_GracefulClose(f.server,id,5000)&&f.state.closed==0,"graceful close did not await pending WRITE");
   fakewin::peerFin(socket);check(f.state.closed==0,"early peer FIN bypassed pending WRITE");
   until([&]{fakewin::flush(socket);return f.state.closed==1;});check(fakewin::sendShutdown(socket)&&fakewin::wire(socket)==data&&f.state.sent==20000,"graceful pending WRITE lost prefix");
   {std::lock_guard<std::mutex> lock(fakewin::mutex);check(!fakewin::sockets.at(socket)->resetClose,"raw graceful used abortive close");}
@@ -743,20 +765,20 @@ static void sendCloseTests(){
  }
  {
   Fixture f;auto [socket,id]=f.connect();fakewin::holdSend=true;unsigned char data[100]{};
-  check(CIO_Server_Send(f.server,id,data,100)&&CTransport_Server_GracefulClose(f.server,id,60),"short graceful deadline");
+  check(CIOSocket__Write(f.server,id,data,100)&&CIOSocketEx_GracefulClose(f.server,id,60),"short graceful deadline");
   until([&]{return f.state.closed==1;});
   {std::lock_guard<std::mutex> lock(fakewin::mutex);check(fakewin::sockets.at(socket)->resetClose,"expired graceful close did not force cancellation");}
-  fakewin::holdSend=false;std::uint64_t d[9]{};CTransport_Server_GetSendDiagnostics(f.server,d,9);check(d[4]==0&&d[5]==1,"grace deadline close mode");
+  fakewin::holdSend=false;std::uint64_t d[9]{};L1Interop_GetSendDiagnostics(f.server,d,9);check(d[4]==0&&d[5]==1,"grace deadline close mode");
  }
  {
-  Fixture f;auto [socket,id]=f.connect();fakewin::holdSend=true;unsigned char data[100]{};check(CIO_Server_Send(f.server,id,data,100),"force override send");
-  check(CIO_Server_Disconnect(f.server,id,0)&&CIO_Server_Disconnect(f.server,id,1),"grace/force compatibility API");until([&]{return f.state.closed==1;});fakewin::holdSend=false;
-  std::uint64_t d[9]{};CTransport_Server_GetSendDiagnostics(f.server,d,9);check(d[5]==1&&d[4]==0,"force did not override draining graceful close");
+  Fixture f;auto [socket,id]=f.connect();fakewin::holdSend=true;unsigned char data[100]{};check(CIOSocket__Write(f.server,id,data,100),"force override send");
+  check(CIOSocketEx_GracefulClose(f.server,id,30000)&&CIOSocketEx_Close(f.server,id),"grace/force compatibility API");until([&]{return f.state.closed==1;});fakewin::holdSend=false;
+  std::uint64_t d[9]{};L1Interop_GetSendDiagnostics(f.server,d,9);check(d[5]==1&&d[4]==0,"force did not override draining graceful close");
  }
  {
-  Fixture f;auto [socket,id]=f.connect();check(CTransport_Server_GracefulClose(f.server,id,60),"peer FIN deadline admission");
+  Fixture f;auto [socket,id]=f.connect();check(CIOSocketEx_GracefulClose(f.server,id,60),"peer FIN deadline admission");
   until([&]{return fakewin::sendShutdown(socket);});check(f.state.closed==0,"half-close did not wait for peer");
-  until([&]{return f.state.closed==1;});std::uint64_t d[9]{};CTransport_Server_GetSendDiagnostics(f.server,d,9);check(d[5]==1&&d[4]==0,"missing FIN deadline did not force close");
+  until([&]{return f.state.closed==1;});std::uint64_t d[9]{};L1Interop_GetSendDiagnostics(f.server,d,9);check(d[5]==1&&d[4]==0,"missing FIN deadline did not force close");
  }
  std::cout<<"PASS native SEND/close:shared execution owner;copied queued source;plain first/max65535 frame;cross-descriptor frames;37-byte completions without re-encryption;invalid/cipher failure;graceful pending-send/WRITE drain,SD_SEND and peer FIN without RST;WRITE/peer-FIN deadlines and forced override\n";
 }

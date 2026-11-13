@@ -10,20 +10,23 @@
 #include <thread>
 #include <utility>
 #include <vector>
-namespace ctransport {
 constexpr std::size_t BufferBytes=8192, LargeBufferBytes=16384, MaxQueuedBytes=2u*1024u*1024u;
-class CIOObject {
+class MemoryObject {
  std::atomic<unsigned> references_{1};
-protected: virtual ~CIOObject()=default;
+protected: virtual ~MemoryObject()=default;
 public:
  void retain()noexcept{references_.fetch_add(1,std::memory_order_relaxed);}
  void release()noexcept{if(references_.fetch_sub(1,std::memory_order_acq_rel)==1)delete this;}
- virtual void completed(void*,bool,unsigned,unsigned)noexcept=0;
+};
+class CIOObject : public MemoryObject {
+protected: ~CIOObject()override=default;
+public:
+ virtual void OnIOCallback(void*,bool,unsigned,unsigned)noexcept=0;
 };
 class ObjectRef {
- CIOObject* p_;
+ MemoryObject* p_;
 public:
- explicit ObjectRef(CIOObject* p,bool add=true)noexcept:p_(p){if(p_&&add)p_->retain();}
+ explicit ObjectRef(MemoryObject* p,bool add=true)noexcept:p_(p){if(p_&&add)p_->retain();}
  ~ObjectRef(){if(p_)p_->release();}
  ObjectRef(const ObjectRef&)=delete;ObjectRef& operator=(const ObjectRef&)=delete;
 };
@@ -177,6 +180,35 @@ public:
  explicit SendChain(std::size_t bytes=BufferBytes)noexcept:blockBytes_(bytes){}
  SendChain(const SendChain&)=delete;SendChain& operator=(const SendChain&)=delete;
  CIOBuffer* head()const noexcept{return head_;}std::size_t size()const noexcept{return bytes_;}
+ // Transfer a prepared chain without copying encrypted payloads or changing
+ // ownership of the in-flight head. Both chains use the same server pool.
+ bool adopt(CIOBufferPool& pool,SendChain& source)noexcept{
+  if(source.bytes_>MaxQueuedBytes-bytes_)return false;
+  if(!source.head_)return true;
+  auto* first=source.head_;auto* last=source.tail_;
+  if(tail_&&tail_!=head_&&first->used<=tail_->capacity-tail_->used){
+   std::memcpy(tail_->data.data()+tail_->used,first->data.data(),first->used);tail_->used+=first->used;
+   auto* merged=first;first=first->next;if(last==merged)last=tail_;pool.recycle(merged);
+  }
+  if(first){if(tail_)tail_->next=first;else head_=first;tail_=last;}
+  bytes_+=source.bytes_;source.head_=source.tail_=nullptr;source.bytes_=0;return true;
+ }
+ class Cursor {
+  CIOBuffer* block_;std::size_t at_=0;
+ public:
+  explicit Cursor(SendChain& chain)noexcept:block_(chain.head_){}
+  unsigned char* contiguous(std::size_t n)noexcept{
+   return block_&&n<=block_->used-at_?block_->data.data()+at_:nullptr;
+  }
+  void advance(std::size_t n)noexcept{
+   while(n){const auto count=std::min(n,static_cast<std::size_t>(block_->used)-at_);at_+=count;n-=count;
+    if(at_==block_->used){block_=block_->next;at_=0;}}
+  }
+  void copy(const unsigned char* source,std::size_t n)noexcept{
+   while(n){const auto count=std::min(n,static_cast<std::size_t>(block_->used)-at_);
+    std::memcpy(block_->data.data()+at_,source,count);source+=count;n-=count;advance(count);}
+  }
+ };
  bool append(CIOBufferPool& pool,const Span* spans,std::size_t count)noexcept{
   std::size_t total=0;for(std::size_t i=0;i<count;++i){if((!spans[i].data&&spans[i].size)||spans[i].size>MaxQueuedBytes-total)return false;total+=spans[i].size;}
   if(total>MaxQueuedBytes-bytes_)return false;if(!total)return true;
@@ -202,4 +234,3 @@ struct IoState {
  bool canWrite()const noexcept{return !closing&&!writePosted&&!writeDelivering&&!acceptDelivering;}
  bool canClose()const noexcept{return closing&&!closeRetiring&&!readPosted&&!writePosted&&!readDelivering&&!writeDelivering&&!acceptDelivering&&!closeQueued;}
 };
-} // namespace ctransport

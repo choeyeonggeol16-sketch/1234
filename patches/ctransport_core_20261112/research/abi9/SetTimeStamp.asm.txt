@@ -1,0 +1,39 @@
+# SetTimeStamp; PE pdata/unwind; entry 0x7048cc
+# chunk 0x7048cc..0x70495b
+00000000007048cc: push     rbx
+00000000007048ce: push     rbp
+00000000007048cf: push     rsi
+00000000007048d0: push     rdi
+00000000007048d1: sub      rsp, 0x28
+00000000007048d5: mov      rax, qword ptr gs:[0x58]
+00000000007048de: mov      edx, dword ptr [rip + 0x2eeba8f4]
+00000000007048e4: lea      rsi, [rip - 0x3048eb]
+00000000007048eb: mov      rbx, qword ptr [rax + rdx*8]
+00000000007048ef: mov      ebp, 0x7d58
+00000000007048f4: mov      rdi, rcx
+00000000007048f7: movsxd   r8, dword ptr [rbx + rbp]
+00000000007048fb: xor      ecx, ecx
+00000000007048fd: movsxd   rdx, dword ptr [rsi + r8*4 + 0x47e2a40]
+0000000000704905: lea      eax, [rdx + 1]
+0000000000704908: mov      dword ptr [rsi + r8*4 + 0x47e2a40], eax
+0000000000704910: lea      rax, [rip + 0x56d5a9] ; UTF16 'bool __cdecl CIOObject::SetTimeStamp(long *)'
+0000000000704917: imul     r8, r8, 0x3e8
+000000000070491e: add      r8, rdx
+0000000000704921: mov      qword ptr [rsi + r8*8 + 0x47bf7c0], rax
+0000000000704929: call     0xab9970
+000000000070492e: cmp      eax, dword ptr [rdi]
+0000000000704930: jle      0x704944
+0000000000704932: xchg     dword ptr [rdi], eax
+0000000000704934: movsxd   rax, dword ptr [rbx + rbp]
+0000000000704938: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+0000000000704940: mov      al, 1
+0000000000704942: jmp      0x704952
+0000000000704944: movsxd   rax, dword ptr [rbx + rbp]
+0000000000704948: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+0000000000704950: xor      al, al
+0000000000704952: add      rsp, 0x28
+0000000000704956: pop      rdi
+0000000000704957: pop      rsi
+0000000000704958: pop      rbp
+0000000000704959: pop      rbx
+000000000070495a: ret

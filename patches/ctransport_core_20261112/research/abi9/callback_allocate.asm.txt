@@ -1,0 +1,5 @@
+# callback_allocate; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x8af8e8
+# chunk 0x8af8e8..0x8af8f2
+00000000008af8e8: mov      rax, rcx
+00000000008af8eb: mov      rcx, rdx
+00000000008af8ee: jmp      qword ptr [rax + 8]

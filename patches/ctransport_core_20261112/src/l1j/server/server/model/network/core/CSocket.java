@@ -56,7 +56,7 @@ final class CSocket implements AutoCloseable {
     boolean setAccountIdentity(int account){return parent.setAccountIdentity(id,account);}
     boolean setCharacterEntered(boolean entered){return parent.setCharacterEntered(id,entered);}
     boolean setMacIdentity(long value){return parent.setMacIdentity(id,value);}
-    boolean initializeUserSocket(MemorySegment api,int seed){return parent.initializeUserSocket(id,api,seed);}
+    boolean SetKey(MemorySegment api,int seed){return parent.SetKey(id,api,seed);}
     boolean releaseUserPacket(long sequence){return parent.releaseUserPacket(id,sequence);}
     boolean encryptUserData(ByteBuffer bytes){return parent.encryptUserData(id,bytes);}
     boolean setUserState(int state){return parent.setUserState(id,state);}
@@ -175,7 +175,7 @@ final class CSocket implements AutoCloseable {
     }
 
     public void write(ByteBuffer src,CUserSocket owner){write(src,owner,0);}
-    void writeFrames(ByteBuffer src,CUserSocket owner,int flags){write(src,owner,flags);}
+    void SendV(ByteBuffer src,CUserSocket owner,int flags){write(src,owner,flags);}
     private void write(ByteBuffer src, CUserSocket owner,int flags) {
         if (src == null || owner == null) throw new NullPointerException();
         int bytes = src.remaining();
@@ -193,7 +193,7 @@ final class CSocket implements AutoCloseable {
         sendReserved();
     }
     public void write(ByteBuffer[] srcs,int offset,int count,CUserSocket owner){write(srcs,offset,count,owner,0);}
-    void writeFrames(ByteBuffer[] srcs,int offset,int count,CUserSocket owner,int flags){write(srcs,offset,count,owner,flags);}
+    void SendConstBuffer(ByteBuffer[] srcs,int offset,int count,CUserSocket owner,int flags){write(srcs,offset,count,owner,flags);}
     private void write(ByteBuffer[] srcs, int offset, int count, CUserSocket owner,int flags) {
         if (srcs == null || owner == null) throw new NullPointerException();
         if (offset < 0 || count < 1 || offset > srcs.length - count)

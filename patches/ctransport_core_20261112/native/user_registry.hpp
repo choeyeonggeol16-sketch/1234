@@ -4,7 +4,6 @@
 #include <mutex>
 #include <vector>
 
-namespace ctransport {
 // L1 adaptation of the original ordered registry's lookup/retain/erase contract.
 // A network handle carries slot+generation. World/account ownership stays Java.
 template<class T> class CUserSocketManager {
@@ -79,4 +78,3 @@ public:
         out[3]=added_;out[4]=removed_;out[5]=stale_;
     }
 };
-}
