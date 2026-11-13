@@ -1,0 +1,35 @@
+# RegisterBaseHandler; PE pdata/unwind; entry 0x9f8eac
+# chunk 0x9f8eac..0x9f8f3f
+00000000009f8eac: push     rbx
+00000000009f8eae: push     rsi
+00000000009f8eaf: push     rdi
+00000000009f8eb0: mov      rax, qword ptr gs:[0x58]
+00000000009f8eb9: mov      r9d, dword ptr [rip + 0x2ebc6318]
+00000000009f8ec0: lea      rdi, [rip - 0x5f8ec7]
+00000000009f8ec7: movsxd   r11, edx
+00000000009f8eca: mov      rbx, r8
+00000000009f8ecd: mov      r8, qword ptr [rax + r9*8]
+00000000009f8ed1: mov      esi, 0x7d58
+00000000009f8ed6: movsxd   r9, dword ptr [r8 + rsi]
+00000000009f8eda: movsxd   rdx, dword ptr [rdi + r9*4 + 0x47e2a40]
+00000000009f8ee2: lea      eax, [rdx + 1]
+00000000009f8ee5: mov      dword ptr [rdi + r9*4 + 0x47e2a40], eax
+00000000009f8eed: lea      rax, [rip + 0x3250fc] ; UTF16 'bool Bind(int id, Callback func)'
+00000000009f8ef4: imul     r9, r9, 0x3e8
+00000000009f8efb: add      r9, rdx
+00000000009f8efe: cmp      r11d, 0xd0
+00000000009f8f05: mov      qword ptr [rdi + r9*8 + 0x47bf7c0], rax
+00000000009f8f0d: ja       0x9f8f2d
+00000000009f8f0f: mov      qword ptr [rcx + r11*8 + 0x10], rbx
+00000000009f8f14: mov      byte ptr [r11 + rcx + 0x698], 1
+00000000009f8f1d: movsxd   rcx, dword ptr [r8 + rsi]
+00000000009f8f21: add      dword ptr [rdi + rcx*4 + 0x47e2a40], -1
+00000000009f8f29: mov      al, 1
+00000000009f8f2b: jmp      0x9f8f3b
+00000000009f8f2d: movsxd   rax, dword ptr [r8 + rsi]
+00000000009f8f31: add      dword ptr [rdi + rax*4 + 0x47e2a40], -1
+00000000009f8f39: xor      al, al
+00000000009f8f3b: pop      rdi
+00000000009f8f3c: pop      rsi
+00000000009f8f3d: pop      rbx
+00000000009f8f3e: ret

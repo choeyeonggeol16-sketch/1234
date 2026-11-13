@@ -1,0 +1,30 @@
+{
+  "commit": "76c06b5e7002c30b96c47dae04453d0c08a480f1",
+  "source_archive_sha256": "4616ac17e25a0d482df215ed3e622e92ab60290951af32885e40b79762465489",
+  "files": [
+    {
+      "path": "src/l1j/server/server/model/network/core/CNetworkDiagnostics.java",
+      "sha256": "d9e602412bda353697549770f05608c554449c072b7f5e2013e85f3911e9e61f"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/CUserSocket.java",
+      "sha256": "c121ea78011bf242b0c86a427b70d073c9fd18df8d1da54ba048de53e4a1e9ab"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/CIOConfig.java",
+      "sha256": "41cf743048a6f3882e65a7f635094a881051d4c42157c65849330d4454499991"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "sha256": "f25f14ff547d263b067edec17a51e6bbb9778dd9a49f9fdb12ff354888a3f391"
+    },
+    {
+      "path": "src/l1j/server/server/Opcodes.java",
+      "sha256": "ac5e9d124112a2958da3b7493ac7846b1068b56e781f3ef8d9eb0154b09c2038"
+    },
+    {
+      "path": "src/l1j/server/swing/chocco.java",
+      "sha256": "bd69d10d3a493fe0e42bc7d7d7474094cf2c5fa7fc907f6fd4d481c6b8600d96"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+# UserExPacketRegistration; PE pdata/unwind; entry 0xb15c74
+# chunk 0xb15c74..0xb15c9b
+0000000000b15c74: sub      rsp, 0x28
+0000000000b15c78: lea      r8, [rip - 0x11269b]
+0000000000b15c7f: lea      rcx, [rip + 0x1752adaa]
+0000000000b15c86: mov      edx, 0xd0
+0000000000b15c8b: call     0x9f8eac
+0000000000b15c90: mov      byte ptr [rip + 0x1752b5e2], al
+0000000000b15c96: add      rsp, 0x28
+0000000000b15c9a: ret

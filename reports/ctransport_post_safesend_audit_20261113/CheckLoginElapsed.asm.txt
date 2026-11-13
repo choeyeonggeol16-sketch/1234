@@ -1,0 +1,15 @@
+# CheckLoginElapsed; PE pdata/unwind; entry 0x9f8210
+# chunk 0x9f8210..0x9f8239
+00000000009f8210: push     rbx
+00000000009f8212: sub      rsp, 0x20
+00000000009f8216: cmp      dword ptr [rcx + 0x790], 0
+00000000009f821d: mov      rbx, rcx
+00000000009f8220: jle      0x9f8231
+00000000009f8222: xor      ecx, ecx
+00000000009f8224: call     0xab9970
+00000000009f8229: sub      eax, dword ptr [rbx + 0x790]
+00000000009f822f: jmp      0x9f8233
+00000000009f8231: xor      eax, eax
+00000000009f8233: add      rsp, 0x20
+00000000009f8237: pop      rbx
+00000000009f8238: ret

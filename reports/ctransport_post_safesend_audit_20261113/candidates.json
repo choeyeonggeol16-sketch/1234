@@ -1,0 +1,1551 @@
+{
+  "binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "executed_original": false,
+  "strings": {
+    "0xdbe570": {
+      "label": "OnSending",
+      "text": "void __cdecl CUserSocket::OnSending(unsigned char,unsigned short) const"
+    },
+    "0xdc0600": {
+      "label": "CheckLoginTime",
+      "text": "bool __cdecl CUserSocket::CheckLoginTime(void)"
+    },
+    "0xdc2410": {
+      "label": "UserExPacket",
+      "text": "bool __cdecl UserExPacket(class CSocket *,const unsigned char *)"
+    }
+  },
+  "refs": [
+    {
+      "label": "CheckLoginTime",
+      "text": "bool __cdecl CUserSocket::CheckLoginTime(void)",
+      "at": "0x9fca1c",
+      "entry": "0x9fc9b4"
+    },
+    {
+      "label": "UserExPacket",
+      "text": "bool __cdecl UserExPacket(class CSocket *,const unsigned char *)",
+      "at": "0xa03645",
+      "entry": "0xa035e4"
+    },
+    {
+      "label": "UserExPacketRegistration",
+      "text": "LEA code pointer 0xa035e4",
+      "at": "0xb15c78",
+      "entry": "0xb15c74"
+    }
+  ],
+  "functions": {
+    "CheckLoginTime": {
+      "entry": "0x9fc9b4",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9fc9b4",
+          "0x9fcbcb"
+        ]
+      ],
+      "direct_calls": [
+        "0x9f8210",
+        "0x9f884c",
+        "0x9fc8d4",
+        "0x9fc768",
+        "0x734514"
+      ],
+      "callers": [
+        {
+          "at": "0x99754d",
+          "op": "call",
+          "function": "0x996cbc",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "UserExPacket": {
+      "entry": "0xa035e4",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa035e4",
+          "0xa03713"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278",
+        "0xa03470",
+        "0x9ba6b0"
+      ],
+      "callers": []
+    },
+    "UserExPacketRegistration": {
+      "entry": "0xb15c74",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xb15c74",
+          "0xb15c9b"
+        ]
+      ],
+      "direct_calls": [
+        "0x9f8eac"
+      ],
+      "callers": []
+    },
+    "CanUseBasePacket": {
+      "entry": "0x9ba4f8",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9ba4f8",
+          "0x9ba68e"
+        ]
+      ],
+      "direct_calls": [
+        "0x7ea0d0"
+      ],
+      "callers": [
+        {
+          "at": "0xa0399b",
+          "op": "call",
+          "function": "0xa0372c",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "CanUseExtendedPacket": {
+      "entry": "0x9ba6b0",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x9ba6b0",
+          "0x9ba746"
+        ]
+      ],
+      "direct_calls": [],
+      "callers": [
+        {
+          "at": "0xa036d4",
+          "op": "call",
+          "function": "0xa035e4",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "CheckLoginElapsed": {
+      "entry": "0x9f8210",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f8210",
+          "0x9f8239"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9970"
+      ],
+      "callers": [
+        {
+          "at": "0x45fc05",
+          "op": "call",
+          "function": "0x45fa74",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x627388",
+          "op": "call",
+          "function": "0x626f30",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x9eef98",
+          "op": "call",
+          "function": "0x9eedd4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x9fc8bf",
+          "op": "call",
+          "function": "0x9fc8ac",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x9fca2e",
+          "op": "call",
+          "function": "0x9fc9b4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xa0d544",
+          "op": "call",
+          "function": "0xa0d164",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xa10924",
+          "op": "call",
+          "function": "0xa0fe54",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xa12550",
+          "op": "call",
+          "function": "0xa123e8",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xa12575",
+          "op": "call",
+          "function": "0xa123e8",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "ReportPacketLog": {
+      "entry": "0x9fcc98",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9fcc98",
+          "0x9fced6"
+        ]
+      ],
+      "direct_calls": [
+        "0xabcd50",
+        "0xabcd50",
+        "0xab9430",
+        "0xab9d60",
+        "0x734514",
+        "0xab9910",
+        "0x734514"
+      ],
+      "callers": [
+        {
+          "at": "0x4c7069",
+          "op": "call",
+          "function": "0x4c6f18",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x62b35a",
+          "op": "call",
+          "function": "0x62b210",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x95ab2d",
+          "op": "call",
+          "function": "0x95a9e4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0x9d3183",
+          "op": "call",
+          "function": "0x9d2fcc",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "RegisterBaseHandler": {
+      "entry": "0x9f8eac",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f8eac",
+          "0x9f8f3f"
+        ]
+      ],
+      "direct_calls": [],
+      "callers": [
+        {
+          "at": "0xb13c0f",
+          "op": "call",
+          "function": "0xb13bf8",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13c37",
+          "op": "call",
+          "function": "0xb13c20",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13c5f",
+          "op": "call",
+          "function": "0xb13c48",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13c87",
+          "op": "call",
+          "function": "0xb13c70",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13caf",
+          "op": "call",
+          "function": "0xb13c98",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13cd4",
+          "op": "call",
+          "function": "0xb13cc0",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13cfb",
+          "op": "call",
+          "function": "0xb13ce4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13d23",
+          "op": "call",
+          "function": "0xb13d0c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13d4b",
+          "op": "call",
+          "function": "0xb13d34",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13d73",
+          "op": "call",
+          "function": "0xb13d5c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13d9b",
+          "op": "call",
+          "function": "0xb13d84",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13dc3",
+          "op": "call",
+          "function": "0xb13dac",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13deb",
+          "op": "call",
+          "function": "0xb13dd4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13e13",
+          "op": "call",
+          "function": "0xb13dfc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13e3b",
+          "op": "call",
+          "function": "0xb13e24",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13e63",
+          "op": "call",
+          "function": "0xb13e4c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13e8b",
+          "op": "call",
+          "function": "0xb13e74",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13eb3",
+          "op": "call",
+          "function": "0xb13e9c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13edb",
+          "op": "call",
+          "function": "0xb13ec4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13f03",
+          "op": "call",
+          "function": "0xb13eec",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13f2b",
+          "op": "call",
+          "function": "0xb13f14",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13f53",
+          "op": "call",
+          "function": "0xb13f3c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13f7b",
+          "op": "call",
+          "function": "0xb13f64",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13fa3",
+          "op": "call",
+          "function": "0xb13f8c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13fcb",
+          "op": "call",
+          "function": "0xb13fb4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb13ff3",
+          "op": "call",
+          "function": "0xb13fdc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1401b",
+          "op": "call",
+          "function": "0xb14004",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14043",
+          "op": "call",
+          "function": "0xb1402c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1406b",
+          "op": "call",
+          "function": "0xb14054",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14093",
+          "op": "call",
+          "function": "0xb1407c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb140bb",
+          "op": "call",
+          "function": "0xb140a4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb140e3",
+          "op": "call",
+          "function": "0xb140cc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1410b",
+          "op": "call",
+          "function": "0xb140f4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14133",
+          "op": "call",
+          "function": "0xb1411c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1415b",
+          "op": "call",
+          "function": "0xb14144",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14183",
+          "op": "call",
+          "function": "0xb1416c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb141ab",
+          "op": "call",
+          "function": "0xb14194",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb141d3",
+          "op": "call",
+          "function": "0xb141bc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb141fb",
+          "op": "call",
+          "function": "0xb141e4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14223",
+          "op": "call",
+          "function": "0xb1420c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1424b",
+          "op": "call",
+          "function": "0xb14234",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14273",
+          "op": "call",
+          "function": "0xb1425c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1429b",
+          "op": "call",
+          "function": "0xb14284",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb142c3",
+          "op": "call",
+          "function": "0xb142ac",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb142eb",
+          "op": "call",
+          "function": "0xb142d4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14313",
+          "op": "call",
+          "function": "0xb142fc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1433b",
+          "op": "call",
+          "function": "0xb14324",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14363",
+          "op": "call",
+          "function": "0xb1434c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1438b",
+          "op": "call",
+          "function": "0xb14374",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb143b3",
+          "op": "call",
+          "function": "0xb1439c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb143db",
+          "op": "call",
+          "function": "0xb143c4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14403",
+          "op": "call",
+          "function": "0xb143ec",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1442b",
+          "op": "call",
+          "function": "0xb14414",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14453",
+          "op": "call",
+          "function": "0xb1443c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1447b",
+          "op": "call",
+          "function": "0xb14464",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb144a3",
+          "op": "call",
+          "function": "0xb1448c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb144cb",
+          "op": "call",
+          "function": "0xb144b4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb144f3",
+          "op": "call",
+          "function": "0xb144dc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1451b",
+          "op": "call",
+          "function": "0xb14504",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14543",
+          "op": "call",
+          "function": "0xb1452c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1456b",
+          "op": "call",
+          "function": "0xb14554",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14593",
+          "op": "call",
+          "function": "0xb1457c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb145bb",
+          "op": "call",
+          "function": "0xb145a4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb145e3",
+          "op": "call",
+          "function": "0xb145cc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1460b",
+          "op": "call",
+          "function": "0xb145f4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14633",
+          "op": "call",
+          "function": "0xb1461c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1465b",
+          "op": "call",
+          "function": "0xb14644",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14683",
+          "op": "call",
+          "function": "0xb1466c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb146ab",
+          "op": "call",
+          "function": "0xb14694",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb146d3",
+          "op": "call",
+          "function": "0xb146bc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb146fb",
+          "op": "call",
+          "function": "0xb146e4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14723",
+          "op": "call",
+          "function": "0xb1470c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1474b",
+          "op": "call",
+          "function": "0xb14734",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14773",
+          "op": "call",
+          "function": "0xb1475c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1479b",
+          "op": "call",
+          "function": "0xb14784",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb147c3",
+          "op": "call",
+          "function": "0xb147ac",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb147eb",
+          "op": "call",
+          "function": "0xb147d4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14813",
+          "op": "call",
+          "function": "0xb147fc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1483b",
+          "op": "call",
+          "function": "0xb14824",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14863",
+          "op": "call",
+          "function": "0xb1484c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1488b",
+          "op": "call",
+          "function": "0xb14874",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb148b3",
+          "op": "call",
+          "function": "0xb1489c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb148db",
+          "op": "call",
+          "function": "0xb148c4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14903",
+          "op": "call",
+          "function": "0xb148ec",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1492b",
+          "op": "call",
+          "function": "0xb14914",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14953",
+          "op": "call",
+          "function": "0xb1493c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1497b",
+          "op": "call",
+          "function": "0xb14964",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb149a3",
+          "op": "call",
+          "function": "0xb1498c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb149cb",
+          "op": "call",
+          "function": "0xb149b4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb149f3",
+          "op": "call",
+          "function": "0xb149dc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14a1b",
+          "op": "call",
+          "function": "0xb14a04",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14a43",
+          "op": "call",
+          "function": "0xb14a2c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14a6b",
+          "op": "call",
+          "function": "0xb14a54",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14a93",
+          "op": "call",
+          "function": "0xb14a7c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14abb",
+          "op": "call",
+          "function": "0xb14aa4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14ae3",
+          "op": "call",
+          "function": "0xb14acc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14b0b",
+          "op": "call",
+          "function": "0xb14af4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14b33",
+          "op": "call",
+          "function": "0xb14b1c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14b5b",
+          "op": "call",
+          "function": "0xb14b44",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14b83",
+          "op": "call",
+          "function": "0xb14b6c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14bab",
+          "op": "call",
+          "function": "0xb14b94",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14bd3",
+          "op": "call",
+          "function": "0xb14bbc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14bfb",
+          "op": "call",
+          "function": "0xb14be4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14c23",
+          "op": "call",
+          "function": "0xb14c0c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14c4b",
+          "op": "call",
+          "function": "0xb14c34",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14c73",
+          "op": "call",
+          "function": "0xb14c5c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14c9b",
+          "op": "call",
+          "function": "0xb14c84",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14cc3",
+          "op": "call",
+          "function": "0xb14cac",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14ceb",
+          "op": "call",
+          "function": "0xb14cd4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14d13",
+          "op": "call",
+          "function": "0xb14cfc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14d3b",
+          "op": "call",
+          "function": "0xb14d24",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14d63",
+          "op": "call",
+          "function": "0xb14d4c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14d8b",
+          "op": "call",
+          "function": "0xb14d74",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14db3",
+          "op": "call",
+          "function": "0xb14d9c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14ddb",
+          "op": "call",
+          "function": "0xb14dc4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14e03",
+          "op": "call",
+          "function": "0xb14dec",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14e2b",
+          "op": "call",
+          "function": "0xb14e14",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14e53",
+          "op": "call",
+          "function": "0xb14e3c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14e7b",
+          "op": "call",
+          "function": "0xb14e64",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14ea3",
+          "op": "call",
+          "function": "0xb14e8c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14ecb",
+          "op": "call",
+          "function": "0xb14eb4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14ef3",
+          "op": "call",
+          "function": "0xb14edc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14f1b",
+          "op": "call",
+          "function": "0xb14f04",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14f43",
+          "op": "call",
+          "function": "0xb14f2c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14f6b",
+          "op": "call",
+          "function": "0xb14f54",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14f93",
+          "op": "call",
+          "function": "0xb14f7c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14fbb",
+          "op": "call",
+          "function": "0xb14fa4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb14fe3",
+          "op": "call",
+          "function": "0xb14fcc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1500b",
+          "op": "call",
+          "function": "0xb14ff4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15033",
+          "op": "call",
+          "function": "0xb1501c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1505b",
+          "op": "call",
+          "function": "0xb15044",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15083",
+          "op": "call",
+          "function": "0xb1506c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb150ab",
+          "op": "call",
+          "function": "0xb15094",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb150d3",
+          "op": "call",
+          "function": "0xb150bc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb150fb",
+          "op": "call",
+          "function": "0xb150e4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15123",
+          "op": "call",
+          "function": "0xb1510c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1514b",
+          "op": "call",
+          "function": "0xb15134",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15173",
+          "op": "call",
+          "function": "0xb1515c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1519b",
+          "op": "call",
+          "function": "0xb15184",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb151c3",
+          "op": "call",
+          "function": "0xb151ac",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb151eb",
+          "op": "call",
+          "function": "0xb151d4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15213",
+          "op": "call",
+          "function": "0xb151fc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1523b",
+          "op": "call",
+          "function": "0xb15224",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15263",
+          "op": "call",
+          "function": "0xb1524c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1528b",
+          "op": "call",
+          "function": "0xb15274",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb152b3",
+          "op": "call",
+          "function": "0xb1529c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb152db",
+          "op": "call",
+          "function": "0xb152c4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15303",
+          "op": "call",
+          "function": "0xb152ec",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1532b",
+          "op": "call",
+          "function": "0xb15314",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15353",
+          "op": "call",
+          "function": "0xb1533c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1537b",
+          "op": "call",
+          "function": "0xb15364",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb153a3",
+          "op": "call",
+          "function": "0xb1538c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb153cb",
+          "op": "call",
+          "function": "0xb153b4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb153f3",
+          "op": "call",
+          "function": "0xb153dc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1541b",
+          "op": "call",
+          "function": "0xb15404",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15443",
+          "op": "call",
+          "function": "0xb1542c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1546b",
+          "op": "call",
+          "function": "0xb15454",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15493",
+          "op": "call",
+          "function": "0xb1547c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb154bb",
+          "op": "call",
+          "function": "0xb154a4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb154e3",
+          "op": "call",
+          "function": "0xb154cc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1550b",
+          "op": "call",
+          "function": "0xb154f4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15533",
+          "op": "call",
+          "function": "0xb1551c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1555b",
+          "op": "call",
+          "function": "0xb15544",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15583",
+          "op": "call",
+          "function": "0xb1556c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb155ab",
+          "op": "call",
+          "function": "0xb15594",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb155d3",
+          "op": "call",
+          "function": "0xb155bc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb155fb",
+          "op": "call",
+          "function": "0xb155e4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15623",
+          "op": "call",
+          "function": "0xb1560c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1564b",
+          "op": "call",
+          "function": "0xb15634",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15673",
+          "op": "call",
+          "function": "0xb1565c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1569b",
+          "op": "call",
+          "function": "0xb15684",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb156c3",
+          "op": "call",
+          "function": "0xb156ac",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb156eb",
+          "op": "call",
+          "function": "0xb156d4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15713",
+          "op": "call",
+          "function": "0xb156fc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1573b",
+          "op": "call",
+          "function": "0xb15724",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15763",
+          "op": "call",
+          "function": "0xb1574c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1578b",
+          "op": "call",
+          "function": "0xb15774",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb157b3",
+          "op": "call",
+          "function": "0xb1579c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb157db",
+          "op": "call",
+          "function": "0xb157c4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15803",
+          "op": "call",
+          "function": "0xb157ec",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1582b",
+          "op": "call",
+          "function": "0xb15814",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15853",
+          "op": "call",
+          "function": "0xb1583c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1587b",
+          "op": "call",
+          "function": "0xb15864",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb158a3",
+          "op": "call",
+          "function": "0xb1588c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb158cb",
+          "op": "call",
+          "function": "0xb158b4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb158f3",
+          "op": "call",
+          "function": "0xb158dc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1591b",
+          "op": "call",
+          "function": "0xb15904",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15943",
+          "op": "call",
+          "function": "0xb1592c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb1596b",
+          "op": "call",
+          "function": "0xb15954",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15993",
+          "op": "call",
+          "function": "0xb1597c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb159bb",
+          "op": "call",
+          "function": "0xb159a4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb159e3",
+          "op": "call",
+          "function": "0xb159cc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15a0b",
+          "op": "call",
+          "function": "0xb159f4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15a33",
+          "op": "call",
+          "function": "0xb15a1c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15a5b",
+          "op": "call",
+          "function": "0xb15a44",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15a83",
+          "op": "call",
+          "function": "0xb15a6c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15aab",
+          "op": "call",
+          "function": "0xb15a94",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15ad3",
+          "op": "call",
+          "function": "0xb15abc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15afb",
+          "op": "call",
+          "function": "0xb15ae4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15b23",
+          "op": "call",
+          "function": "0xb15b0c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15b4b",
+          "op": "call",
+          "function": "0xb15b34",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15b73",
+          "op": "call",
+          "function": "0xb15b5c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15b9b",
+          "op": "call",
+          "function": "0xb15b84",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15bc3",
+          "op": "call",
+          "function": "0xb15bac",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15beb",
+          "op": "call",
+          "function": "0xb15bd4",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15c13",
+          "op": "call",
+          "function": "0xb15bfc",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15c3b",
+          "op": "call",
+          "function": "0xb15c24",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15c63",
+          "op": "call",
+          "function": "0xb15c4c",
+          "validation": "pdata instruction boundary"
+        },
+        {
+          "at": "0xb15c8b",
+          "op": "call",
+          "function": "0xb15c74",
+          "validation": "pdata instruction boundary"
+        }
+      ]
+    },
+    "OnRead": {
+      "entry": "0xa0372c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0372c",
+          "0xa03d8f"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d41c",
+        "0x9ef384",
+        "0x925138",
+        "0xa0340c",
+        "0xab9970",
+        "0x9f7f3c",
+        "0x9ba4f8",
+        "0x926eac",
+        "0xab9970",
+        "0x926eac",
+        "0x4205e0",
+        "0x734514",
+        "0x5456d0",
+        "0x4205e0",
+        "0xab9970",
+        "0x4205e0",
+        "0x73446c",
+        "0x4205e0",
+        "0xa71b3c",
+        "0x5456d0",
+        "0x45d41c",
+        "0x5456d0"
+      ],
+      "callers": []
+    }
+  }
+}

@@ -1,0 +1,7 @@
+Input:opcode0x51/command0x03e9 and opcode0x51/command0x03ea
+id=1 native=42 peer=diagnostic-fixture closed=false javaReason=NONE nativeCause=UNKNOWN
+#2 opcode=81 ageMs=30
+#1 opcode=81 ageMs=31
+diagnostics=true
+opcode=81 count=2
+REPRODUCED:both different L1 extended commands become opcode81;no subtype identity reaches production diagnostics
