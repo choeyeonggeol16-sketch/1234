@@ -31,6 +31,7 @@ int main(){
  WSADATA wsa{};assert(WSAStartup(MAKEWORD(2,2),&wsa)==0);
 #endif
  auto* probe=new TimerAbiProbe;assert(sizeof(MemoryObject)==0x18&&sizeof(CIOObject)==0x18);
+ static_assert(!std::is_base_of_v<ObjectAllocated,MemoryObject>);static_assert(std::is_base_of_v<CISocket,CIOSocket>);
  assert(ObjectAbiTestAccess::refs(*probe)==8&&ObjectAbiTestAccess::timer(*probe)==0xc&&ObjectAbiTestAccess::id(*probe)==0x10);
  using Hold=MemoryObject*(*)(MemoryObject*,const char*,unsigned,ObjectReferenceType);
  using Drop=unsigned(*)(MemoryObject*,const char*,unsigned,ObjectReferenceType,bool);

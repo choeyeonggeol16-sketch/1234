@@ -197,7 +197,23 @@ struct CIOSocketState final:ObjectAllocated {
  std::uint32_t number=0;bool(*setSession)(void*,int)noexcept=nullptr;
  CIOSocketState(CIOObject* owner,Server* s,std::uint64_t value,std::size_t bytes):server(s),id(value),writes(bytes),reads(s->buffers,bytes),readOp(OpKind::Read,owner),writeOp(OpKind::Write,owner),closeOp(OpKind::Close,owner),resumeOp(OpKind::Resume,owner){}
 };
-template<class Buffer>class CIOSocketEx : public CIOObject {
+// CISocket is confirmed in the original RTTI hierarchy. It has no data
+// before the socket at+0x18;the transport contract occupies slots12..20.
+class CISocket : public CIOObject {
+protected:~CISocket()override=default;
+public:
+ virtual void Initialize()noexcept=0;
+ virtual void OnCreate()noexcept=0;
+ virtual bool Slot14SendAllowed()const noexcept{return true;}
+ virtual bool Slot15SendAllowed()const noexcept{return true;}
+ virtual void Send(const char*,...)noexcept=0;
+ virtual void SendV(const char*,va_list)noexcept=0;
+ virtual void GracefulClose()noexcept=0;
+ virtual void OnClose()noexcept{}
+ virtual void OnRead()noexcept=0;
+};
+static_assert(sizeof(CISocket)==0x18);
+template<class Buffer>class CIOSocketEx : public CISocket {
 public:
     // Verified x64 CIOSocketEx prefix0xb0. L1 state lives in the allocator
     // extension pointer,so it does not move original network fields.
