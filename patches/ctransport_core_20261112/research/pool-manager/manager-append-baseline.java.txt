@@ -1,0 +1,14 @@
+    public static void appendLog(JTextArea textArea, String msg) {
+        if (textArea == null || msg == null) return;
+        SwingUtilities.invokeLater(() -> {
+            textArea.append(msg + "\n");
+            if (textArea.getLineCount() > MAX_LOG_LINES) {
+                try {
+                    int endOffset = textArea.getLineEndOffset(textArea.getLineCount() - MAX_LOG_LINES);
+                    textArea.replaceRange("", 0, endOffset);
+                } catch (Exception ignored) {
+                }
+            }
+            textArea.setCaretPosition(textArea.getDocument().getLength());
+        });
+    }

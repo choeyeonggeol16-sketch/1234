@@ -24,3 +24,4 @@ src/l1j/server/server/model/network/core/CAsyncSendConstBuffer.java
 src/l1j/server/server/model/network/core/CAsyncSendConstBufferExceptSelf.java
 src/l1j/server/server/model/network/core/CNetworkDiagnostics.java
 src/l1j/server/server/model/network/core/sc/packet/SC_Emblem.java
+src/l1j/server/server/model/network/core/CPoolDiagnostics.java

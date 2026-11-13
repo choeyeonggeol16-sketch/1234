@@ -149,6 +149,16 @@ public:
  std::uint64_t exhaustions()const noexcept{return exhaustions_.load();}
  std::uint64_t initializationFailures()const noexcept{return initializationFailures_.load();}
  std::uint64_t corruptions()const noexcept{return corruptions_.load();}
+ // Snapshot existing ring positions; no extra counter on the I/O hot path.
+ // Per family: capacity, borrowed blocks, cumulative acquire, final return.
+ void poolSnapshot(std::uint64_t* out)noexcept{
+  std::fill(out,out+9,0);
+  for(unsigned id=0;id<OwnerCount;++id)for(unsigned family=0;family<2;++family){
+   auto& r=rings_[id*2+family];SpinGuard hold(r.gate);auto* f=out+family*4;
+   f[0]+=r.capacity;f[1]+=r.read-r.write;f[2]+=r.read;f[3]+=r.write;
+   out[8]+=r.capacity*(family?sizeof(CIOBufferEx<16384>):sizeof(CIOBufferEx<8192>));
+  }
+ }
 };
 // Observed read path: shared -> copy remaining bytes, unique -> compact in place.
 class ReceiveWindow {

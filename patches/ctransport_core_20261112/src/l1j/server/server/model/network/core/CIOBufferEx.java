@@ -145,6 +145,7 @@ public final class CIOBufferEx {
         finally {
             // ACTIVE.getAndSet above guarantees a single lease releaser.
             _bucket._slots.releaseOwnedLease(_slot, _generation);
+            _bucket._returns.increment();
         }
     }
 }

@@ -61,6 +61,7 @@ public class Server {
     public static long[] networkSendDiagnostics(){final var listener=gameListener;return listener==null?new long[9]:listener.sendDiagnostics();}
     public static long[][] networkSocketDiagnostics(){final var listener=gameListener;return listener==null?new long[0][]:listener.ReportSocket();}
     public static long[] networkThreadDiagnostics(){final var listener=gameListener;return listener==null?new long[0]:listener.threadDiagnostics();}
+    public static String networkPoolReport(){final var listener=gameListener;return listener==null?"게임 네트워크 시작 전입니다.":listener.poolReport();}
     public static long findEnteringAccount(int accountId){
         final var listener=gameListener;return listener==null?0:listener.findEnteringAccount(accountId);
     }

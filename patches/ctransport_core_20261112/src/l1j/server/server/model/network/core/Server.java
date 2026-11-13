@@ -59,6 +59,12 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
     public long[][] ReportSocket(){return nativeServer.ReportSocket();}
     public long[] threadDiagnostics(){return nativeServer.threadDiagnostics();}
     public long[] listenerDiagnostics(){return nativeServer.listenerDiagnostics();}
+    private final CPoolDiagnostics poolDiagnostics = new CPoolDiagnostics();
+    public String poolReport(){
+        long[] registry=nativeServer.registryDiagnostics(),send=nativeServer.sendDiagnostics();
+        return poolDiagnostics.sample(System.nanoTime(),pool.snapshot(),nativeServer.poolDiagnostics(),new long[]{
+                connections.retained().size(),connections.pendingCleanup(),registry[0],registry[1],nativeServer.liveConstBuffers(),send[7]});
+    }
     private void activateAccepted(CSocket socket) {
         if (acceptingStopped.get() || closed.get() || !socket.isOpen()) {
             socket.close();

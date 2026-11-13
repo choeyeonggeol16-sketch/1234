@@ -62,7 +62,6 @@ public class chocco extends JFrame {
     private static final Font FIXED_FONT = new Font("Monospaced", Font.PLAIN, 12);
     private static final Font UI_FONT = new Font("Dialog", Font.PLAIN, 12);
     private static final DateTimeFormatter SERVER_CLOCK = DateTimeFormatter.ofPattern("HH:mm");
-    private static final int MAX_LOG_LINES = 300;
     private static final Preferences WINDOW_PREFS = Preferences.userRoot().node("Software/PROJECT_L1/LINEAGE_SERVER");
 
     public static boolean inf;
@@ -104,8 +103,17 @@ public class chocco extends JFrame {
     private JFrame userFrame;
     private JTextArea statusArea;
     private ScheduledExecutorService monitorScheduler;
+    private final java.util.concurrent.atomic.AtomicBoolean statusUpdatePending = new java.util.concurrent.atomic.AtomicBoolean();
+    private volatile boolean managerDisposed;
+    private volatile Runnable latestStatus;
+    private javax.swing.JDialog poolWindow;
 
     public chocco() {
+        this(true);
+    }
+
+    // A real UI can be exercised without booting a game server or database.
+    chocco(boolean autoStart) {
         initComponents();
         restoreWindowBounds();
         x_size = getHeight();
@@ -117,9 +125,24 @@ public class chocco extends JFrame {
             }
         });
 
-        startMonitoring();
+        if (autoStart) { startMonitoring(); stMouseClicked(); }
+    }
 
-        stMouseClicked();
+    @Override public void dispose() {
+        managerDisposed = true; latestStatus = null;
+        if (monitorScheduler != null) monitorScheduler.shutdownNow();
+        if (userFrame != null) userFrame.dispose();
+        if (setting != null) setting.dispose();
+        super.dispose();
+    }
+
+    private void publishStatus(Runnable update) {
+        if (managerDisposed) return;
+        latestStatus = update;
+        if (statusUpdatePending.compareAndSet(false, true)) SwingUtilities.invokeLater(() -> {
+            try { Runnable current = latestStatus; if (!managerDisposed && current != null) current.run(); }
+            finally { latestStatus = null; statusUpdatePending.set(false); }
+        });
     }
 
     private void initComponents() {
@@ -245,6 +268,14 @@ public class chocco extends JFrame {
         int y = WINDOW_PREFS.getInt("posy", 0);
         int w = Math.max(640, WINDOW_PREFS.getInt("sizex", 640));
         int h = Math.max(480, WINDOW_PREFS.getInt("sizey", 480));
+        java.awt.Rectangle screen = getGraphicsConfiguration().getBounds();
+        for (java.awt.GraphicsDevice device : java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
+            java.awt.Rectangle candidate = device.getDefaultConfiguration().getBounds();
+            if (candidate.contains(x, y)) { screen = candidate; break; }
+        }
+        w = Math.min(w, Math.max(640, screen.width)); h = Math.min(h, Math.max(480, screen.height));
+        x = Math.max(screen.x, Math.min(x, screen.x + screen.width - w));
+        y = Math.max(screen.y, Math.min(y, screen.y + screen.height - h));
         setBounds(x, y, w, h);
     }
 
@@ -285,6 +316,7 @@ public class chocco extends JFrame {
         addItem(report, "종료 사유·최근 패킷 128개", this::showRecentPackets);
         addItem(report, "유저", this::showUserManager);
         addItem(report, "참조·수명 상태", () -> showNetworkReport("참조·수명 상태", this::networkReferences));
+        addItem(report, "풀·회수 진단", this::showPoolReport);
         addItem(report, "전송량 초기화", () -> { l1j.server.server.model.network.core.CNetworkDiagnostics.resetTraffic(); showSimpleReport("전송률", "수신/송신 접수량 통계를 초기화했습니다."); });
         addItem(report, "전송률", () -> showNetworkReport("전송률", l1j.server.server.model.network.core.CNetworkDiagnostics::traffic));
         addItem(report, "서버 시간", () -> showSimpleReport("서버 시간", LocalTime.now().toString()));
@@ -401,6 +433,39 @@ public class chocco extends JFrame {
                 + java.util.Arrays.toString(l1j.server.Server.networkAccountRegistryDiagnostics())
                 + "\n[송신 접수,실행,암호화 frame,평문 frame,정상종료,강제종료,거절,pending,owner오류]\n"
                 + java.util.Arrays.toString(l1j.server.Server.networkSendDiagnostics()) + "\n" + networkSockets();
+    }
+
+    private void showPoolReport() {
+        if (poolWindow != null && poolWindow.isDisplayable()) { poolWindow.toFront(); return; }
+        javax.swing.JDialog dialog = new javax.swing.JDialog(this, "풀·회수 진단", false);
+        dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        JTextArea area = new JTextArea(24, 85); area.setEditable(false); area.setFont(FIXED_FONT);
+        dialog.add(new JScrollPane(area)); dialog.pack(); dialog.setLocationRelativeTo(this); poolWindow = dialog;
+        java.util.concurrent.atomic.AtomicBoolean busy = new java.util.concurrent.atomic.AtomicBoolean();
+        Runnable refresh = () -> {
+            if (!dialog.isDisplayable() || !busy.compareAndSet(false, true)) return;
+            new javax.swing.SwingWorker<String, Void>() {
+                protected String doInBackground() {
+                    Runtime r = Runtime.getRuntime();
+                    StringBuilder text = new StringBuilder("JVM heap 사용/확보/최대 bytes=")
+                            .append(r.totalMemory()-r.freeMemory()).append('/').append(r.totalMemory()).append('/').append(r.maxMemory()).append('\n');
+                    for (java.lang.management.BufferPoolMXBean p : ManagementFactory.getPlatformMXBeans(java.lang.management.BufferPoolMXBean.class))
+                        if (p.getName().equals("direct")) text.append("JVM direct 전체 bytes=").append(p.getMemoryUsed()).append('\n');
+                    text.append("프로세스/Native 메모리는 위 JVM 수치와 범위가 다릅니다.\n")
+                        .append(Server.networkPoolReport()).append("\n화면로그 [대기건수,대기글자,생략건수,갱신예약]=")
+                        .append(java.util.Arrays.toString(ManagerLogBuffer.diagnostics()));
+                    return text.toString();
+                }
+                protected void done() {
+                    try { if (dialog.isDisplayable()) { area.setText(get()); area.setCaretPosition(0); } }
+                    catch (Exception failure) { if (dialog.isDisplayable()) area.setText("진단을 조회할 수 없습니다: " + failure); }
+                    finally { busy.set(false); }
+                }
+            }.execute();
+        };
+        javax.swing.Timer timer = new javax.swing.Timer(2000, e -> refresh.run());
+        dialog.addWindowListener(new WindowAdapter() { public void windowClosed(WindowEvent e) { timer.stop(); if(poolWindow==dialog)poolWindow=null; } });
+        dialog.setVisible(true); refresh.run(); timer.start();
     }
 
     private void addDisabledItem(JMenu menu, String text) {
@@ -656,22 +721,12 @@ public class chocco extends JFrame {
         area.setForeground(LOG_FG);
         area.setCaretColor(Color.WHITE);
         area.setMargin(new Insets(3, 4, 3, 4));
+        ManagerLogBuffer.install(area);
         return area;
     }
 
     public static void appendLog(JTextArea textArea, String msg) {
-        if (textArea == null || msg == null) return;
-        SwingUtilities.invokeLater(() -> {
-            textArea.append(msg + "\n");
-            if (textArea.getLineCount() > MAX_LOG_LINES) {
-                try {
-                    int endOffset = textArea.getLineEndOffset(textArea.getLineCount() - MAX_LOG_LINES);
-                    textArea.replaceRange("", 0, endOffset);
-                } catch (Exception ignored) {
-                }
-            }
-            textArea.setCaretPosition(textArea.getDocument().getLength());
-        });
+        ManagerLogBuffer.append(textArea, msg);
     }
 
 	private void onCloseRequest() {
@@ -948,15 +1003,15 @@ public class chocco extends JFrame {
 				cpu = finalCpu;
 				count = players;
 
-				SwingUtilities.invokeLater(() -> {
+				publishStatus(() -> {
 					label2.setText(" "+ String.valueOf(players));
-					label4.setText("메모리        : " + mem + " MB");
+					label4.setText("JVM 힙 사용   : " + mem + " MB");
 					lblThread.setText("스레드        : " + thread);
 					lblCPU.setText("CPU          : " + finalCpu + "%");
 					stime.setText(serverClock);
 
 					statusArea.setText(
-							"IO버퍼풀크기: n/a\n"
+							"힙 확보: " + Runtime.getRuntime().totalMemory()/1048576 + " MB (사용량과 구분)\n"
 							+ "플레이 유저: " + players + "\n"
 							+ "최대 유저: " + Config.MAX_ONLINE_USERS + "\n\n"
 							+ "가동 시간: " + elapsed + "\n"

@@ -24,7 +24,7 @@ try {
 New-Item -ItemType Directory -Force owner-classes | Out-Null
 $ownerSources = Get-Content tests/owner-production-sources.txt
 $ownerFixtures = (Get-ChildItem tests/owner-fixtures/*.java).FullName
-& javac --enable-preview --release 21 -encoding UTF-8 -d owner-classes $ownerSources $ownerFixtures tests/CIOPacketCodecReference.java tests/CUserSocketOwnerWindowsTest.java tests/CSharedBroadcastWindowsTest.java tests/CUserSocketSafeSendWindowsTest.java
+& javac --enable-preview --release 21 -encoding UTF-8 -d owner-classes $ownerSources $ownerFixtures tests/CIOPacketCodecReference.java tests/CUserSocketOwnerWindowsTest.java tests/CSharedBroadcastWindowsTest.java tests/CUserSocketSafeSendWindowsTest.java tests/PoolReclamationWindowsTest.java tests/PoolDiagnosticsTest.java
 if ($LASTEXITCODE -ne 0) { throw 'Production user-socket owner compilation failed' }
 $ownerClasses = Join-Path $root 'owner-classes'
 Push-Location build
@@ -35,6 +35,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Shared broadcast FIFO/keys/lifetime Windows test failed' }
     & java --enable-preview --enable-native-access=ALL-UNNAMED -cp $ownerClasses l1j.server.server.model.network.core.CUserSocketSafeSendWindowsTest
     if ($LASTEXITCODE -ne 0) { throw 'SafeSend and close reason Windows test failed' }
+    & java --enable-preview --enable-native-access=ALL-UNNAMED -cp $ownerClasses l1j.server.server.model.network.core.PoolReclamationWindowsTest
+    if ($LASTEXITCODE -ne 0) { throw 'Native/Java pool reclamation test failed' }
 } finally { Pop-Location }
 
 New-Item -ItemType Directory -Force copy-classes | Out-Null
@@ -75,6 +77,16 @@ if ($LASTEXITCODE -ne 0) { throw 'Extended diagnostics test compilation failed' 
 if ($LASTEXITCODE -ne 0) { throw 'Extended command diagnostics test failed' }
 & java --enable-preview '-Dctransport.diagnostics.enabled=false' -cp owner-classes l1j.server.server.model.network.core.ExtendedPacketDiagnosticsTest disabled
 if ($LASTEXITCODE -ne 0) { throw 'Disabled extended diagnostics test failed' }
+& java --enable-preview -cp owner-classes l1j.server.server.model.network.core.PoolDiagnosticsTest
+if ($LASTEXITCODE -ne 0) { throw 'Pool diagnostic classification failed' }
+
+# Production Swing window and display queue. Only game/DB bindings are fixtures.
+New-Item -ItemType Directory -Force manager-classes | Out-Null
+$managerFixtures = (Get-ChildItem tests/manager-fixtures/*.java).FullName
+& javac --enable-preview --release 21 -encoding UTF-8 -cp owner-classes -d manager-classes src/l1j/server/swing/chocco.java src/l1j/server/swing/ManagerLogBuffer.java src/l1j/server/server/utils/SystemUtil.java $managerFixtures tests/ManagerWindowTest.java tests/WindowsUiMemory.java tests/ManagerLogBufferTest.java
+if ($LASTEXITCODE -ne 0) { throw 'Production manager compilation failed' }
+& java --enable-preview --enable-native-access=ALL-UNNAMED -Xmx192m '-Djava.awt.headless=false' -cp 'manager-classes;owner-classes' l1j.server.swing.ManagerWindowTest
+if ($LASTEXITCODE -ne 0) { throw 'Actual Windows manager resize/memory test failed' }
 New-Item -ItemType Directory -Force broadcast-classes | Out-Null
 $broadcastFixtures = (Get-ChildItem tests/broadcast-followup/*.java).FullName
 & javac --enable-preview --release 21 -encoding UTF-8 -d broadcast-classes "$core/CTLMFilter.java" "$core/CSharedBroadcast.java" src/l1j/server/server/Opcodes.java "$core/sc/packet/SC_MoveChar.java" "$core/sc/packet/SC_ChangeHeading.java" "$core/sc/packet/SC_RemoveObject.java" "$core/sc/packet/SC_DoActionGFX.java" "$core/sc/packet/SC_SkillSound.java" $broadcastFixtures

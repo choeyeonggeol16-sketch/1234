@@ -1,0 +1,3 @@
+package l1j.server;
+// Game/DB fixture only; production Swing manager and screen buffer are used.
+public final class Server {public Server(){throw new AssertionError("game boot in GUI test");}public static Object networkPerformance(){return "fixture";}public static long[] networkThreadDiagnostics(){return new long[0];}public static long[] networkAccountRegistryDiagnostics(){return new long[4];}public static long[] networkSendDiagnostics(){return new long[9];}public static long[][] networkSocketDiagnostics(){return new long[0][];}public static String networkPoolReport(){return "GUI fixture: live game/DB disabled";}}

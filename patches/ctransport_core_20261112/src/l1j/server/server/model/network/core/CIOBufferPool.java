@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 
 import l1j.server.server.model.network.buffer.WriteBuffer;
 
@@ -92,6 +93,16 @@ public final class CIOBufferPool {
         return _recv.used() + _largeRecv.used();
     }
 
+    /** Rows: slotBytes,capacity,used,successfulBorrows,finalReturns,allocatedDirectBytes,exhaustions.
+     * Concurrent snapshots can briefly straddle an acquire/return publication.
+     */
+    public long[][] snapshot() {
+        Bucket[] buckets={_recv,_largeRecv,_send,_largeSend};long[][] rows=new long[4][];
+        for(int i=0;i<4;i++){Bucket b=buckets[i];rows[i]=new long[]{b._bytes,b._slots.capacity(),b.used(),
+                b._borrows.sum(),b._returns.sum(),b._allocated.get(),b._exhaustions.get()};}
+        return rows;
+    }
+
     /** Each slot and its WriteBuffer are reused; no per-packet CIOBufferEx is allocated. */
     static final class Bucket {
         final int _bytes;
@@ -100,6 +111,7 @@ public final class CIOBufferPool {
         final AtomicLong _allocated = new AtomicLong();
         // Failure-only counter: no additional atomic operations on the SEND hot path.
         private final AtomicLong _exhaustions = new AtomicLong();
+        final LongAdder _borrows = new LongAdder(), _returns = new LongAdder();
 
         private Bucket(int bytes, int capacity) {
             _bytes = bytes;
@@ -114,7 +126,7 @@ public final class CIOBufferPool {
         private CIOBufferEx acquire(boolean send, int requested) {
             final int slot = _slots.acquire();
             if (slot < 0) {
-                if (send) _exhaustions.incrementAndGet();
+                _exhaustions.incrementAndGet();
                 return null;
             }
             CIOBufferEx lease = _leases[slot];
@@ -124,6 +136,7 @@ public final class CIOBufferPool {
             }
             try {
                 lease.start(send, requested);
+                _borrows.increment();
                 return lease;
             } catch (Throwable failure) {
                 _slots.release(slot);
@@ -140,7 +153,7 @@ public final class CIOBufferPool {
             try {
                 CIOBufferEx lease = _leases[slot];
                 if (lease == null) { lease = new CIOBufferEx(this, slot); _leases[slot] = lease; }
-                lease.startShared(source); return lease;
+                lease.startShared(source); _borrows.increment(); return lease;
             }
             catch (Throwable failure) { _slots.release(slot); throw failure; }
         }

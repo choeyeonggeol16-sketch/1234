@@ -1,12 +1,9 @@
 {
-  "compiler": "zig 0.14.1",
+  "compiler": "x86_64-w64-mingw32-g++-posix (GCC) 14-posix",
   "target": "x86_64-windows-gnu",
   "commands": [
     [
-      "/workspace/work/aden-nc-port-20261112/toolchain/zig-x86_64-linux-0.14.1/zig",
-      "c++",
-      "-target",
-      "x86_64-windows-gnu",
+      "/workspace/work/ats-ui-v8/runtime/root/usr/bin/x86_64-w64-mingw32-g++-posix",
       "-std=c++17",
       "-O2",
       "-g0",
@@ -15,14 +12,12 @@
       "-fno-sanitize=undefined",
       "/workspace/work/aden-rkern-cio-20261112/native/CTransport.cpp",
       "-lws2_32",
+      "-Wl,--out-implib,/workspace/work/aden-rkern-cio-20261112/build/CTransport.lib",
       "-o",
       "/workspace/work/aden-rkern-cio-20261112/build/CTransport.dll"
     ],
     [
-      "/workspace/work/aden-nc-port-20261112/toolchain/zig-x86_64-linux-0.14.1/zig",
-      "c++",
-      "-target",
-      "x86_64-windows-gnu",
+      "/workspace/work/ats-ui-v8/runtime/root/usr/bin/x86_64-w64-mingw32-g++-posix",
       "-std=c++17",
       "-O2",
       "-g0",
@@ -35,10 +30,10 @@
     ]
   ],
   "files": {
-    "CTransport.cpp": "945ff5f622ce2319414ffcfeb780f073770c0821478c641ecb30e5d9de1aafdf",
+    "CTransport.cpp": "60d210f1dd2c7410c13a914e81ac289c6cb535e63124754637f32f22a0b7229b",
     "CTransport.h": "9d600a11c818fb3ed16bfd5c4f2d813826c510a63f1c8b7ede7b525dafefd81c",
-    "build_native.py": "545bd2e3a985dcdf157e044ee20d46ed864e7b9807f35121a5102024f88f9cea",
-    "cio_core.hpp": "02e1f87a8f193a64ff74e3e286e0204025d0f3bfba10abed0a37653028378fc3",
+    "build_native.py": "2bf81ff59eae5664c8bff5fd5c928d869070556a9c8705d8551552c2eca4b72a",
+    "cio_core.hpp": "bcc74887cc675dc997f235e4ff59ece207f3df20d4e3137c6ea32a0a5053b003",
     "execution_serializer.hpp": "655069de16b6168d28d0eba2861e58325cc35e7461268d65d666e48a9e7d0b3d",
     "interop_abi.hpp": "ee0cc82dc619f1dc4ac98543a0df2cc17f854fd97d2f0d8c9edd63a4131714a7",
     "io_server.hpp": "1d1c7c99d33e719ac8633c540bff2e563c88abe7bdcf3bc78cb91e922fab7b7b",
@@ -51,9 +46,7 @@
     "user_socket.hpp": "27dc7bbcc0f023d96a87fc18fe6d7f249c86f41dc7c441f619cfa481b2a6bdf0",
     "windows_loopback_test.cpp": "da338b0b4c05f289ccb5044f29aa8acd4fdd7b722113bba774f57f73fa79d724"
   },
-  "dll_sha256": "de61cd0f15ec1895dfd91340156b3ba91c880837aeb66e034ab6d21666f29014",
-  "selftest_sha256": "3ad58047ab836e3a95237ce45d6f93b25ae7c24aa4b1ea68ba34a41d3ab8fcbc",
-  "windows_execution_tested": true,
-  "windows_run_id": 43395445331,
-  "tested_source_commit": "eef6429a3e2615e67dbf7cb89c341d27409ba335"
+  "dll_sha256": "cb2c9bf662e7be42636aaf77edbb34ba7773af20a3d435b4f1030df2c62e0a43",
+  "selftest_sha256": "1416085024b5bd1501512e750502a59a8cf189443e018c5744fa90308acb63e4",
+  "windows_execution_tested": false
 }
