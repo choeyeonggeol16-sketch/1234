@@ -1,3 +1,13 @@
+# ABI10 후속 — 문장 SafeSend·종료 사유 조회
+
+혈맹 마크 송신에 512KiB 여유분을 적용했습니다. 송신 대기량이 1.5MiB를 초과하면 해당 마크 전송을 생략하고 연결을 유지합니다. 필수 패킷의 기존 송신 정책은 유지합니다.
+
+매니저의 소켓 및 종료 사유·최근 패킷128개에서 Java 종료 이유와 native operation/error를 함께 조회합니다. 전체 src를 clean build해 적용하며 DLL/ABI/코덱/독립 PSS·SQL은 기존과 같습니다. 검증 결과와 범위는 REPORT_SAFESEND_CLOSE.md 및 WINDOWS_VERIFICATION.json을 확인하세요.
+
+아래 내용은 이전 배포 이력입니다.
+
+---
+
 # ABI10 후속 — 매니저 진단·필터·공유 방송 정리
 
 REPORT_NETWORK_FOLLOWUP.md 기준으로 전체 src를 clean build합니다. native DLL/ABI/코덱/PSS는 기존 ABI10과 동일합니다. config/ctransport.properties를 실행 폴더에 적용하고 변경 시 재시작합니다. -D 옵션이 파일보다 우선하며 추가 SQL은 없습니다.

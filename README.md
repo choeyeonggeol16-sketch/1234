@@ -1,3 +1,13 @@
+## 2026-11-13 — 문장 SafeSend / 종료 사유 조회
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·설정·검사**](downloads/CTransport_CORE_20261112.zip) · [**구현 보고서**](reports/CTRANSPORT_SAFESEND_CLOSE_20261113.md)
+
+혈맹 마크 송신에 512KiB 여유분을 적용하고 혼잡 시 해당 전송만 생략합니다. 매니저 소켓/최근 패킷 조회에 Java 종료 이유와 native operation/error를 연결했습니다. 실제 Windows DLL/FFM 검사 통과. 전체 src를 clean build하며 기존 DLL/코덱/독립 PSS와 DB는 동일합니다.
+
+이하 내용은 이전 배포 이력입니다.
+
+---
+
 ## 2026-11-13 — ABI10 후속 / 매니저 진단·방송 필터·중복 정리
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·설정·검사**](downloads/CTransport_CORE_20261112.zip) · [**구현 보고서**](reports/CTRANSPORT_MANAGER_FILTERS_FOLLOWUP_20261113.md)

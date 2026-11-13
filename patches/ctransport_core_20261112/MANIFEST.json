@@ -4,7 +4,7 @@
   "dll": "CTransport.dll",
   "dll_sha256": "de61cd0f15ec1895dfd91340156b3ba91c880837aeb66e034ab6d21666f29014",
   "abi": "0xa0000",
-  "implementation_parent": "eef6429a3e2615e67dbf7cb89c341d27409ba335",
+  "implementation_parent": "d3119ffdce8ad397962607b2e7f530ac126e2b14",
   "transport_scope": "game",
   "mandatory": true,
   "pss": {
@@ -288,7 +288,7 @@
     "no private input vector for native shared requests; per-socket cipher output remains private",
     "shared input references transferred to native before downcall return and released before wire completion",
     "queue saturation and disconnect rollback; FFM arena pinned by live producer handles",
-    "followup source guard:1697 files byte-identical to previous ABI10;unchanged codec and independent PSS"
+    "followup source guard:1693 files byte-identical to previous ABI10;unchanged codec and independent PSS"
   ],
   "new_abi9_structures": [
     "original RTTI CDummyServerCallback/IServerCallback names wired in C++ and Java",
@@ -364,37 +364,37 @@
     "status": "passed",
     "abi": "0xa0000",
     "exports": 67,
-    "implementation_parent": "d9e846126cbcdd184e3a6d39c5269794189237a7",
-    "implementation_commit": "eef6429a3e2615e67dbf7cb89c341d27409ba335",
-    "tested_source_commit": "eef6429a3e2615e67dbf7cb89c341d27409ba335",
-    "run_id": 43395445331,
-    "job_id": 131785122442,
-    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43395445331",
+    "implementation_parent": "32b7f46",
+    "implementation_commit": "d3119ffdce8ad397962607b2e7f530ac126e2b14",
+    "tested_source_commit": "d3119ffdce8ad397962607b2e7f530ac126e2b14",
+    "run_id": 43401445595,
+    "job_id": 131804993357,
+    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43401445595",
     "os": "Windows Server 2022 GitHub-hosted runner",
     "jdk": "Temurin 21.0.13+9",
     "dll_sha256": "de61cd0f15ec1895dfd91340156b3ba91c880837aeb66e034ab6d21666f29014",
     "codec_dll_sha256": "60bde93c2ba20057e7e307594edef69ced273b69f923535ab658769e09f0cea9",
     "pss_client_dll_sha256": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
-    "source_archive_sha256": "052604394b216aca4ff5faa6eb0d223cb3db7320d64da9acc17186254933e3e0",
+    "source_archive_sha256": "4616ac17e25a0d482df215ed3e622e92ab60290951af32885e40b79762465489",
     "historical_abi9": {
       "run_id": 43365489001,
       "tested_source_commit": "0ca18a8d10a84ede5db6d34ddbbd24cb29d0f811",
       "dll_sha256": "ffd5620b4aab7e6fe2a735a25814a37a5dc9f68f1d169bd290b16733f4a3c145"
     },
     "source_scope": {
-      "baseline": "d9e846126cbcdd184e3a6d39c5269794189237a7",
-      "unchanged_outside_allowlist": 1697,
-      "edited_existing_sources": 10,
-      "added_network_classes": 3,
+      "baseline": "32b7f46",
+      "unchanged_outside_allowlist": 1703,
+      "edited_existing_sources": 7,
+      "added_network_classes": 0,
       "pss_unchanged": true,
       "native_cpp_and_dll_unchanged": true
     },
     "bounded_loopback": {
-      "cumulative_connections": 53888,
+      "cumulative_connections": 54688,
       "concurrent": 32,
-      "frames": 6897664,
-      "wire_bytes": 3531603968,
-      "elapsed_ms": 30136
+      "frames": 7000064,
+      "wire_bytes": 3584032768,
+      "elapsed_ms": 30147
     },
     "tests": [
       "actual Windows DLL: 20 loopback connections, 4MB fragmented echo, order and close counts.",
@@ -405,7 +405,6 @@
       "Windows native registry/timers: retired plaintext survives I/O terminal, release removes context, stale handles rejected, login timeout/auth cancellation/earlier callback deadline",
       "actual Windows native packet completions: IOCP worker TLS identity, 64 pending packet leases cancel once on shutdown, no post after stop",
       "Windows MAC policy: unidentified authentication denied, verified one-time binding/cap, terminal capacity reuse and stale handle rejection",
-      "Windows concurrent sessions:connections=53888,concurrent=32,L1Frames=6897664,bytes=3531603968,auth/enter/restart/close,zero active/retiring/Playing/EnterChar entries;elapsedMs=30136",
       "Windows CPerfMon:actual owner15,system/process memory and process CPU availability; sustained production load and live DB are outside this bounded loopback test",
       "production CUserSocket account/character/MAC provider hooks and restart/account-clear identities through real Windows FFM",
       "real Windows native graceful close without output:normal EOF and production owner cleanup",
@@ -428,7 +427,10 @@
       "production PSS startup/pairing/item OPEN/logout/restart; PSS shutdown/bind failure isolated from game session; no CTransport/FFM dependency",
       "unchanged PE32 companion Pss2019.dll loaded; PssClientInit resolved; wrong-client attach refused",
       "config/no-DB defaults+override;bounded128 ring/64 closed history;8000 concurrent samples;nested worker restore;reset epoch isolation;trace close/capacity reuse;admission byte semantics",
-      "production five broadcast encoders:shared/legacy byte equivalence,8 headings,coordinate truncation,self/map/connection/M filter,wide radius50,rectangle/radius boundaries,borrow/source cleanup on exception (world/transport fixtures)"
+      "production five broadcast encoders:shared/legacy byte equivalence,8 headings,coordinate truncation,self/map/connection/M filter,wide radius50,rectangle/radius boundaries,borrow/source cleanup on exception (world/transport fixtures)",
+      "Windows concurrent sessions:connections=54688,concurrent=32,L1Frames=7000064,bytes=3584032768,auth/enter/restart/close,zero active/retiring/Playing/EnterChar entries;elapsedMs=30147",
+      "Real Windows production SafeSend:1.5MiB reservation boundary,16 concurrent producers,emblem plaintext/key/FIFO differential,pool rollback and required hard-cap/abort preservation",
+      "Real Windows production close causes:EOF,invalid L1 frame,RST,closed history and first native status preserved against late cancellation"
     ],
     "limitations": [
       "Game/world/account/scheduler dependencies are fixtures in differential/owner tests.",
@@ -439,6 +441,27 @@
     "historical_shared_broadcast": {
       "run_id": 43371588194,
       "tested_source_commit": "9255cca609b204c5e58ac8ae4bffe50863188c07"
+    },
+    "historical_manager_followup": {
+      "tested_source_commit": "eef6429a3e2615e67dbf7cb89c341d27409ba335",
+      "run_id": 43395445331,
+      "job_id": 131785122442,
+      "source_archive_sha256": "052604394b216aca4ff5faa6eb0d223cb3db7320d64da9acc17186254933e3e0",
+      "bounded_loopback": {
+        "cumulative_connections": 53888,
+        "concurrent": 32,
+        "frames": 6897664,
+        "wire_bytes": 3531603968,
+        "elapsed_ms": 30136
+      },
+      "source_scope": {
+        "baseline": "d9e846126cbcdd184e3a6d39c5269794189237a7",
+        "unchanged_outside_allowlist": 1697,
+        "edited_existing_sources": 10,
+        "added_network_classes": 3,
+        "pss_unchanged": true,
+        "native_cpp_and_dll_unchanged": true
+      }
     }
   },
   "followup_structures": [
@@ -446,7 +469,14 @@
     "five shared broadcast serializers with common recipient traversal",
     "bounded metadata packet history/worker context and manager reports",
     "config file with JVM override;existing MAC provider enforcement;no DB",
-    "source scope1697 unchanged from previous ABI10;native DLL unchanged"
+    "source scope1693 unchanged from previous ABI10;native DLL unchanged"
+  ],
+  "safesend_close_structures": [
+    "optional emblem-only SafeSend512KiB margin under reservation lock",
+    "optional rejection/abort/pool rollback without disconnect or cipher/FIFO consumption",
+    "first native operation/error forwarded through FFM callbacks and late owner binding",
+    "separate L1 Java close reason and native cause in manager history",
+    "1703 other sources unchanged from32b7f46;native DLL/codec/PSS unchanged"
   ],
   "config_file": "config/ctransport.properties",
   "client_identity_status": "Server API/config existing;client identity transmitter/verifier not integrated;default limit0"
