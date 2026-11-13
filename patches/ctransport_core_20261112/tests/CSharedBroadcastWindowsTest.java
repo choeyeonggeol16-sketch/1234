@@ -35,7 +35,13 @@ public final class CSharedBroadcastWindowsTest {
                 CIOClient client=new CIOClient(user);user.bindClient(client);user.SetKey(73461+i);
                 user.configureNativeDeadlines(false);users[i]=user;clients[i]=client;user.startRead();admitted.countDown();
             });
-            for(int i=0;i<4;i++){peers[i]=new Socket("127.0.0.1",server.localAddress().getPort());peers[i].setSoTimeout(5000);codecs[i]=new CIOPacketCodecReference(73461+i);}
+            // Accept callbacks may run on different IOCP workers. Establish
+            // each fixture identity before connecting the next peer; otherwise
+            // callback order can bind user[0] to peer[1] and fake a SEND timeout.
+            for(int i=0;i<4;i++){
+                peers[i]=new Socket("127.0.0.1",server.localAddress().getPort());peers[i].setSoTimeout(5000);codecs[i]=new CIOPacketCodecReference(73461+i);
+                final long remaining=3-i;until(()->admitted.getCount()<=remaining);
+            }
             check(admitted.await(5,TimeUnit.SECONDS),"four shared recipients");
             byte[] key={1,2,3,4,5,6,7,8};
             for(int i=0;i<4;i++){check(users[i].tryWritePacket(clients[i],new BytesWritablePacket(key)),"plain handshake");read(i,key,true);}
