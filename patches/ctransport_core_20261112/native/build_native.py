@@ -1,27 +1,8 @@
+"""Shipping Windows builds require the MSVC x64 object ABI.
+Linux sanitizer fixtures are built by tests/run_native_tests.py.
+"""
 from pathlib import Path
-import argparse,hashlib,json,re,subprocess
-
-root=Path(__file__).resolve().parents[1]
-native_abi=int(re.search(r'L1InteropAbiVersion=(0x[0-9a-fA-F]+)',(root/'native/interop_abi.hpp').read_text())[1],16)
-java_abi=int(re.search(r'ABI = (0x[0-9a-fA-F]+)',(root/'src/l1j/server/server/model/network/core/CIOConfig.java').read_text())[1],16)
-assert native_abi==java_abi,'C++/Java ABI mismatch'
-p=argparse.ArgumentParser();p.add_argument('--zig',type=Path);p.add_argument('--cxx',type=Path);p.add_argument('--write-java-hash',action='store_true');args=p.parse_args()
-assert bool(args.zig)!=bool(args.cxx),'select --zig or an existing MinGW --cxx compiler'
-out=root/'build';out.mkdir(exist_ok=True);logs=root/'logs';logs.mkdir(exist_ok=True)
-common=([str(args.zig.resolve()),'c++','-target','x86_64-windows-gnu'] if args.zig else [str(args.cxx.resolve())])+['-std=c++17','-O2','-g0','-static']
-commands=[common+['-shared','-fno-sanitize=undefined',str(root/'native/CTransport.cpp'),'-lws2_32','-Wl,--out-implib,'+str(out/'CTransport.lib'),'-o',str(out/'CTransport.dll')],
- common+[str(root/'native/windows_loopback_test.cpp'),str(out/'CTransport.lib'),'-lws2_32','-o',str(out/'CTransport_SelfTest.exe')]]
-for command,name in zip(commands,['windows-build.log','windows-selftest-build.log']):
- with (logs/name).open('w') as log:subprocess.run(command,cwd=root,stdout=log,stderr=subprocess.STDOUT,check=True,timeout=180)
-sha=hashlib.sha256((out/'CTransport.dll').read_bytes()).hexdigest()
-java=root/'src/l1j/server/server/model/network/core/CIOConfig.java'
-if args.write_java_hash:
- text=java.read_text();text,count=re.subn(r'(DLL_SHA256 = ")[0-9a-f]{64}(";)',lambda m:m[1]+sha+m[2],text)
- assert count==1;java.write_text(text)
-version=subprocess.check_output([str((args.zig or args.cxx).resolve()),'version' if args.zig else '--version'],text=True).splitlines()[0]
-manifest={'compiler':('zig ' if args.zig else '')+version,'target':'x86_64-windows-gnu','commands':commands,
- 'files':{f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in sorted((root/'native').glob('*')) if f.is_file()},
- 'dll_sha256':sha,'selftest_sha256':hashlib.sha256((out/'CTransport_SelfTest.exe').read_bytes()).hexdigest(),
- 'windows_execution_tested':False}
-(out/'native-build.json').write_text(json.dumps(manifest,indent=2)+'\n')
-print(json.dumps({'dll_sha256':sha,'compiler':manifest['compiler'],'java_pin_updated':args.write_java_hash}))
+import runpy,sys
+if sys.platform!='win32':raise SystemExit('Build the shipping DLL in an MSVC x64 Developer shell on Windows: python native/build_native.py. Linux: python tests/run_native_tests.py.')
+if '--write-java-hash' in sys.argv:sys.argv.remove('--write-java-hash')
+runpy.run_path(str(Path(__file__).with_name('build_native_msvc.py')),run_name='__main__')
