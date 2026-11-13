@@ -140,18 +140,19 @@ public:
   for(unsigned i=0;i<49;++i){auto& b=*pools_[i];auto at=16+i*6;out[at]=b.bytes;out[at+1]=b.live;out[at+2]=b.allocations;out[at+3]=b.returns;out[at+4]=b.queue.reserved();out[at+5]=b.queue.grows();out[9]+=out[at+4];}
  }
 };
-class ObjectAllocated {
-public:
- static void* operator new(std::size_t n){auto* p=ObjectAllocator::Instance().Alloc(n);if(!p)throw std::bad_alloc();return p;}
- static void* operator new(std::size_t n,const std::nothrow_t&)noexcept{try{return ObjectAllocator::Instance().Alloc(n);}catch(...){return nullptr;}}
- static void* operator new(std::size_t n,std::align_val_t alignment){auto* p=ObjectAllocator::Instance().Alloc(n,static_cast<std::size_t>(alignment));if(!p)throw std::bad_alloc();return p;}
- static void* operator new(std::size_t n,std::align_val_t alignment,const std::nothrow_t&)noexcept{try{return ObjectAllocator::Instance().Alloc(n,static_cast<std::size_t>(alignment));}catch(...){return nullptr;}}
- static void* operator new(std::size_t,void* p)noexcept{return p;}
- static void operator delete(void* p)noexcept{ObjectAllocator::Instance().Free(p);}
- static void operator delete(void* p,const std::nothrow_t&)noexcept{operator delete(p);}
- static void operator delete(void* p,std::size_t)noexcept{operator delete(p);}
- static void operator delete(void* p,std::align_val_t)noexcept{operator delete(p);}
- static void operator delete(void* p,std::align_val_t,const std::nothrow_t&)noexcept{operator delete(p);}
- static void operator delete(void* p,std::size_t,std::align_val_t)noexcept{operator delete(p);}
+#define CTRANSPORT_OBJECT_ALLOCATOR_OPERATORS \
+ static void* operator new(std::size_t n){auto* p=ObjectAllocator::Instance().Alloc(n);if(!p)throw std::bad_alloc();return p;} \
+ static void* operator new(std::size_t n,const std::nothrow_t&)noexcept{try{return ObjectAllocator::Instance().Alloc(n);}catch(...){return nullptr;}} \
+ static void* operator new(std::size_t n,std::align_val_t alignment){auto* p=ObjectAllocator::Instance().Alloc(n,static_cast<std::size_t>(alignment));if(!p)throw std::bad_alloc();return p;} \
+ static void* operator new(std::size_t n,std::align_val_t alignment,const std::nothrow_t&)noexcept{try{return ObjectAllocator::Instance().Alloc(n,static_cast<std::size_t>(alignment));}catch(...){return nullptr;}} \
+ static void* operator new(std::size_t,void* p)noexcept{return p;} \
+ static void operator delete(void* p)noexcept{ObjectAllocator::Instance().Free(p);} \
+ static void operator delete(void* p,const std::nothrow_t&)noexcept{operator delete(p);} \
+ static void operator delete(void* p,std::size_t)noexcept{operator delete(p);} \
+ static void operator delete(void* p,std::align_val_t)noexcept{operator delete(p);} \
+ static void operator delete(void* p,std::align_val_t,const std::nothrow_t&)noexcept{operator delete(p);} \
+ static void operator delete(void* p,std::size_t,std::align_val_t)noexcept{operator delete(p);} \
  static void operator delete(void*,void*)noexcept{}
+class ObjectAllocated {public:
+ CTRANSPORT_OBJECT_ALLOCATOR_OPERATORS
 };

@@ -9,7 +9,7 @@ int main(){
   check(c->l1().lastSending==0x120004,"original OnSending slot not invoked before cipher");
   std::array<std::uint64_t,93> reasons{};
   c->PostIOCompletion(9);until([&]{c->ReferenceSnapshot(reasons.data());return reasons[4*3]==0;});
-  auto refs=c->referenceCount();fakewin::failPosts=1;c->PostIOCompletion2(10);check(c->referenceCount()==refs,"original posting failure lost/retained a reference");
+  auto refs=c->referenceCount();fakewin::failPost=true;c->PostIOCompletion2(10);check(c->referenceCount()==refs,"original posting failure lost/retained a reference");
   check(CIOSocketEx_Close(f.server,pair.second),"contract close");until([&]{return f.state.closed==1;});
  }
  std::array<std::uint64_t,ObjectAllocator::ReportWords> heap{};ObjectAllocator::Instance().Snapshot(heap.data());check(heap[1]==0&&heap[2]==0&&heap[8]==0,"original virtual network path retained native objects");

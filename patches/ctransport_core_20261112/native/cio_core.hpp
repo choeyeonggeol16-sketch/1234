@@ -22,7 +22,10 @@
 #define CIO_SOURCE_LINE __builtin_LINE()
 #endif
 constexpr std::size_t BufferBytes=8192, LargeBufferBytes=16384, MaxQueuedBytes=2u*1024u*1024u;
-class MemoryObject : public ObjectAllocated {
+class MemoryObject {
+public:
+ CTRANSPORT_OBJECT_ALLOCATOR_OPERATORS
+private:
  std::atomic<unsigned> references_{1},inTimer_{0};
  alignas(8) const std::uint32_t objectId_;
  inline static std::atomic<std::uint32_t> nextObjectId_{0};
@@ -127,7 +130,8 @@ public:
 };
 class SpinGuard {SpinLock& lock_;public:explicit SpinGuard(SpinLock& l)noexcept:lock_(l){lock_.lock();}~SpinGuard(){lock_.unlock();}};
 struct CIOBuffer;
-template<std::size_t Bytes> struct CIOBufferEx {
+template<std::size_t Bytes> class CIOBufferEx {
+public:
  std::array<unsigned char,16> prefix{};
  std::array<unsigned char,Bytes> payload{};
  std::uint32_t used=0,padding=0;

@@ -96,15 +96,15 @@ struct BatchOwner final : CIOObject {
 static void batchTests(){
  for(bool mixed: {false,true}){
   L1Callbacks listener;auto* server=new Server(&listener);
-  server->port=CreateIoCompletionPort(INVALID_HANDLE_VALUE,nullptr,0,4);
+  server->port()=CreateIoCompletionPort(INVALID_HANDLE_VALUE,nullptr,0,4);
   server->ntStatusToError=fakewin::statusError;
   std::atomic<bool> destroyed{false};auto* owner=new BatchOwner(&destroyed);
   std::vector<std::unique_ptr<BatchOperation>> operations;
   const unsigned count=mixed?124:273, workers=mixed?4:1;
-  auto* port=static_cast<fakewin::Port*>(server->port);
+  auto* port=static_cast<fakewin::Port*>(server->port());
   // Four exit tokens at the front force one dequeue to contain every token
   // plus 124 real completions. It must finish them and wake the other workers.
-  if(mixed)for(unsigned n=0;n<workers;++n)PostQueuedCompletionStatus(server->port,0,0,nullptr);
+  if(mixed)for(unsigned n=0;n<workers;++n)PostQueuedCompletionStatus(server->port(),0,0,nullptr);
   for(unsigned i=0;i<count;++i){
    ULONG status=0;unsigned error=0;bool success=true;
    if(mixed)switch(i%5){
@@ -119,13 +119,13 @@ static void batchTests(){
    operations.back()->op.overlapped.Internal=0xc0000022u;
    owner->retain();fakewin::post(port,{i+1,reinterpret_cast<ULONG_PTR>(static_cast<CIOObject*>(owner)),&operations.back()->op.overlapped,0,status});
   }
-  if(!mixed)PostQueuedCompletionStatus(server->port,0,0,nullptr);
+  if(!mixed)PostQueuedCompletionStatus(server->port(),0,0,nullptr);
   std::vector<std::thread> threads;for(unsigned n=0;n<workers;++n)threads.emplace_back([&]{server->worker();});
   for(auto& thread:threads)thread.join();
   check(owner->calls==count&&owner->wrong==0,"batch lost/duplicated or misclassified entry");
   owner->release();check(destroyed.load(),"batch I/O reference leaked");
   {std::lock_guard<std::mutex> lock(port->mutex);check(port->queue.empty(),"worker exit token was lost/left over");}
-  CloseHandle(server->port);server->port=nullptr;server->release();
+  CloseHandle(server->port());server->port()=nullptr;server->release();
  }
  check(fakewin::singleCalls==0&&fakewin::requestedCapacity==128&&fakewin::maximumBatch==128,"worker did not use batch128");
  check(fakewin::batchSizes[18]>0,"273 completions did not drain 128/128/18 including exit");
@@ -265,7 +265,7 @@ static void engineTests() {
   for(auto [socket,id]:connections)closers.emplace_back([&,id]{for(int k=0;k<5;++k)CIOSocketEx_Close(f.server,id);});
   for(auto& t:closers)t.join();
   check(CIOServer_Close(f.server),"accept-stop failed");until([&]{return f.state.closed==12;});
-  check(f.server->pendingAccepts==0,"accept operation hold leaked");
+  check(f.server->pendingAccepts()==0,"accept operation hold leaked");
  }
  std::cout<<"PASS 120 connections/600 concurrent repeated closes; pending accepts cancelled and all workers drained over ten server lifetimes\n";
 }
@@ -440,7 +440,7 @@ static void exactStructureTests(){
   until([&]{auto* c=f.server->find(id);ObjectRef hold(c,false);std::lock_guard<std::mutex> lock(c->gate());return !c->state().acceptDelivering;});
   // accepted() now also submits a serialized WRITE kick and checks terminal
   // readiness. Finish that owner before asserting a caller-thread fallback.
-  until([&]{return f.server->pendingAccepts.load()==0;});
+  until([&]{return f.server->pendingAccepts().load()==0;});
   f.state.terminalStopCheck=true;fakewin::failPost=true;
   check(CIOSocketEx_Close(f.server,id)&&f.state.closed==1,"caller-thread terminal fallback failed");
  }
@@ -599,8 +599,9 @@ static void originalStructureTests(){
   struct WaitObject final:CIOServer {
    bool* destroyed;explicit WaitObject(bool* value):destroyed(value){}
    ~WaitObject()override{*destroyed=true;}
-   void NotifyPendingChanged()noexcept override{}void OnAcceptedSocket(SOCKET)noexcept override{}
-   void OnWaitFailure(unsigned)noexcept override{}
+   CIOSocket* CreateSocket(SOCKET,sockaddr_in*)noexcept override{return nullptr;}
+   void NotifyPendingChanged()noexcept{}void OnAcceptedSocket(SOCKET)noexcept{}
+   void OnWaitFailure(unsigned)noexcept{}
   };
   WaitThread wait;std::array<bool,65> destroyed{};std::array<WaitObject*,65> objects{};std::array<HANDLE,65> events{};
   for(unsigned n=0;n<65;++n){objects[n]=new WaitObject(&destroyed[n]);events[n]=WSACreateEvent();
@@ -626,8 +627,8 @@ static void originalStructureTests(){
   Fixture f(2,1);auto [a,idA]=f.connect();auto [b,idB]=f.connect();
   check(L1Interop_BindMacIdentity(f.server,idA,0x123456789abcull),"MAC identity reservation");
   check(!L1Interop_BindMacIdentity(f.server,idA,0x123456789abcull)&&!L1Interop_BindMacIdentity(f.server,idB,0x123456789abcull),"duplicate/overlimit MAC identity accepted");
-  const auto callbacks=f.server->acceptCallbacks.load();fakewin::connect(f.server->listening);
-  until([&]{return f.server->acceptCallbacks.load()>callbacks&&f.server->pendingAccepts==0;});
+  const auto callbacks=f.server->acceptCallbacks().load();fakewin::connect(f.server->listening);
+  until([&]{return f.server->acceptCallbacks().load()>callbacks&&f.server->pendingAccepts()==0;});
   {std::lock_guard<std::mutex> lock(f.state.mutex);check(f.state.ids.size()==2,"native IP limiter admitted third socket");}
   auto* socket=f.server->find(idA);auto number=socket->SocketNumber();socket->release();
   check(CIOSocketEx_Close(f.server,idA),"limited socket close");until([&]{return f.state.closed==1;});

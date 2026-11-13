@@ -7,40 +7,58 @@
 #include <thread>
 
 class Server;
-class CIOSocket;
-class IServerCallback {
+template<class Buffer>class CIOSocketEx;
+using CIOSocket=CIOSocketEx<CIOBufferEx<16384>>;
+class CIOServer;
+struct IServerCallback {
 public:
     virtual ~IServerCallback()=default;
-    virtual CIOSocket* CreateSocket(Server*,SOCKET) noexcept=0;
+    virtual CIOSocket* CreateSocket(SOCKET) noexcept=0;
 };
 class CDummyServerCallback final : public IServerCallback {
-    using AllocateFunction=CIOSocket*(*)(Server*,SOCKET) noexcept;
+    using AllocateFunction=CIOSocket*(*)(SOCKET) noexcept;
     const AllocateFunction allocate_;
 public:
     explicit CDummyServerCallback(AllocateFunction allocate):allocate_(allocate){}
-    CIOSocket* CreateSocket(Server* server,SOCKET socket)noexcept override{return allocate_(server,socket);}
+    CIOSocket* CreateSocket(SOCKET socket)noexcept override{return allocate_(socket);}
 };
 // Original CIOServer owns the listening SOCKET/event and wait/I/O callbacks.
 // The derived Server supplies socket allocation/admission and registration.
+struct CIOServerState final:ObjectAllocated {
+ HANDLE port=nullptr;bool acceptQueued=false;std::atomic<int> pendingAccepts{0};
+ std::atomic<std::uint64_t> waitCallbacks{0},acceptCallbacks{0},waitFailures{0},lastWaitError{0};
+ std::array<std::atomic<std::uint64_t>,18> callbackCounts{},callbackMillis{},callbackStarted{};
+ std::mutex acceptGate;std::atomic<bool> accepting{false};sockaddr_storage listenAddress{};int listenLength=sizeof(listenAddress);
+ void(*notify)(CIOServer*)noexcept=nullptr;void(*accepted)(CIOServer*,SOCKET)noexcept=nullptr;void(*failure)(CIOServer*,unsigned)noexcept=nullptr;
+};
 class CIOServer : public CIOObject {
 public:
-    SOCKET listening=INVALID_SOCKET; //original+0x18
-    HANDLE acceptEvent=nullptr; //original+0x20
-    HANDLE port=nullptr;
-    bool acceptQueued=false;
-    std::atomic<int> pendingAccepts{0};
-    std::atomic<std::uint64_t> waitCallbacks{0},acceptCallbacks{0},waitFailures{0},lastWaitError{0};
-    std::array<std::atomic<std::uint64_t>,18> callbackCounts{},callbackMillis{},callbackStarted{};
-    std::mutex acceptGate;
-    std::atomic<bool> accepting{false};
-    sockaddr_storage listenAddress{};
-    int listenLength=sizeof(listenAddress);
-    virtual void NotifyPendingChanged() noexcept=0;
-    virtual void OnAcceptedSocket(SOCKET socket) noexcept=0;
+ SOCKET listening=INVALID_SOCKET;HANDLE acceptEvent=nullptr;
+ CIOServerState& host()noexcept{return *static_cast<CIOServerState*>(ObjectAllocator::Extension(this));}
+ const CIOServerState& host()const noexcept{return *static_cast<const CIOServerState*>(ObjectAllocator::Extension(const_cast<CIOServer*>(this)));}
+ CIOServer(){ObjectAllocator::Extension(this)=new CIOServerState;}
+ ~CIOServer()override{auto* context=&host();ObjectAllocator::Extension(this)=nullptr;delete context;}
+ virtual CIOSocket* CreateSocket(SOCKET,sockaddr_in*)noexcept=0; //original slot12
+ auto& port()noexcept{return host().port;} const auto& port()const noexcept{return host().port;}
+ auto& acceptQueued()noexcept{return host().acceptQueued;} const auto& acceptQueued()const noexcept{return host().acceptQueued;}
+ auto& pendingAccepts()noexcept{return host().pendingAccepts;} const auto& pendingAccepts()const noexcept{return host().pendingAccepts;}
+ auto& waitCallbacks()noexcept{return host().waitCallbacks;} const auto& waitCallbacks()const noexcept{return host().waitCallbacks;}
+ auto& acceptCallbacks()noexcept{return host().acceptCallbacks;} const auto& acceptCallbacks()const noexcept{return host().acceptCallbacks;}
+ auto& waitFailures()noexcept{return host().waitFailures;} const auto& waitFailures()const noexcept{return host().waitFailures;}
+ auto& lastWaitError()noexcept{return host().lastWaitError;} const auto& lastWaitError()const noexcept{return host().lastWaitError;}
+ auto& callbackCounts()noexcept{return host().callbackCounts;} const auto& callbackCounts()const noexcept{return host().callbackCounts;}
+ auto& callbackMillis()noexcept{return host().callbackMillis;} const auto& callbackMillis()const noexcept{return host().callbackMillis;}
+ auto& callbackStarted()noexcept{return host().callbackStarted;} const auto& callbackStarted()const noexcept{return host().callbackStarted;}
+ auto& acceptGate()noexcept{return host().acceptGate;} const auto& acceptGate()const noexcept{return host().acceptGate;}
+ auto& accepting()noexcept{return host().accepting;} const auto& accepting()const noexcept{return host().accepting;}
+ auto& listenAddress()noexcept{return host().listenAddress;} const auto& listenAddress()const noexcept{return host().listenAddress;}
+ auto& listenLength()noexcept{return host().listenLength;} const auto& listenLength()const noexcept{return host().listenLength;}
+    void NotifyPendingChanged()noexcept{if(host().notify)host().notify(this);}
+    void OnAcceptedSocket(SOCKET socket)noexcept{if(host().accepted)host().accepted(this,socket);}
     void OnWaitCallback() noexcept;
     void OnIOCallback() noexcept;
     void OnIOCallback(int completionOk,unsigned completionBytes,OVERLAPPED* completionRaw)noexcept override{OnIOCallback();}
-    virtual void OnWaitFailure(unsigned error) noexcept=0;
+    void OnWaitFailure(unsigned error)noexcept{if(host().failure)host().failure(this,error);}
     bool Create(const char* address,unsigned short number,int backlog) noexcept {
         addrinfo hints{};hints.ai_family=AF_INET;hints.ai_socktype=SOCK_STREAM;
         hints.ai_protocol=IPPROTO_TCP;hints.ai_flags=AI_PASSIVE;
@@ -53,14 +71,14 @@ public:
             closesocket(listening);listening=INVALID_SOCKET;
         }
         freeaddrinfo(result);if(listening==INVALID_SOCKET)return false;
-        getsockname(listening,reinterpret_cast<sockaddr*>(&listenAddress),&listenLength);
+        getsockname(listening,reinterpret_cast<sockaddr*>(&listenAddress()),&listenLength());
         acceptEvent=WSACreateEvent();
         if(!acceptEvent||WSAEventSelect(listening,acceptEvent,FD_ACCEPT)!=0){Close();return false;}
         return true;
     }
     // Caller unregisters from WaitThread before closing a wait handle.
     void Close() noexcept {
-        std::lock_guard<std::mutex> lock(acceptGate);accepting=false;
+        std::lock_guard<std::mutex> lock(acceptGate());accepting()=false;
         if(listening!=INVALID_SOCKET){closesocket(listening);listening=INVALID_SOCKET;}
         if(acceptEvent){WSACloseEvent(acceptEvent);acceptEvent=nullptr;}
     }

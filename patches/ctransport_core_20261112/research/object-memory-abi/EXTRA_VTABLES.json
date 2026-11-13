@@ -1,0 +1,56 @@
+{
+  "Server": [
+    {
+      "vtable": "0xd2a5f8",
+      "COL": "0xec0c60",
+      "slots": [
+        "0x8b1014",
+        "0x7d6d50",
+        "0x7d6eb4",
+        "0x56daa8",
+        "0x56daa8",
+        "0x404c88",
+        "0x56daa8",
+        "0x404c94",
+        "0x704248",
+        "0x704d1c",
+        "0x705508",
+        "0x404ca0",
+        "0x8b0738",
+        "0x8b04fc",
+        "0x8b0404",
+        "0x8b0954"
+      ]
+    }
+  ],
+  "CDummyServerCallback": [
+    {
+      "vtable": "0xd29ee8",
+      "COL": "0xec0be8",
+      "slots": [
+        "0x8af8c0",
+        "0x8af8e8"
+      ]
+    }
+  ],
+  "CUserSocketReleaseVerifier": [
+    {
+      "vtable": "0xdc5cb8",
+      "COL": "0xec7698",
+      "slots": [
+        "0x44c0c8",
+        "0x7d6d50",
+        "0x7d6eb4",
+        "0x56daa8",
+        "0xa1291c",
+        "0x404c88",
+        "0x56daa8",
+        "0x404c94",
+        "0x704248",
+        "0x56daa8",
+        "0x705d54",
+        "0x404ca0"
+      ]
+    }
+  ]
+}

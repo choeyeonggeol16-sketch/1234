@@ -51,7 +51,6 @@ struct L1Callbacks {
     std::atomic<void (*)(void*, std::uint64_t, int)> task{nullptr};
 };
 class Server;
-class CIOSocket;
 class CSocket;
 class CUserSocket;
 class NativeTask;
@@ -59,6 +58,9 @@ class NativeSendRequest;
 class CUserSocketReleaseVerifier;
 struct L1ConstBuffer;
 using TaskFn = void (*)(void*, std::uint64_t, int);
+thread_local Server* currentFactoryServer=nullptr;
+thread_local CIOSocket* expectedRemoval=nullptr;
+thread_local Server* expectedRemovalServer=nullptr;
 thread_local Server* currentWorker = nullptr;
 thread_local unsigned currentWorkerIndex = 0;
 thread_local Server* currentCallbackServer = nullptr;
@@ -80,6 +82,8 @@ struct Operation {
 static_assert(offsetof(Operation, overlapped) == 0, "OVERLAPPED address contract");
 class Server : public CIOServer {
 public:
+    std::array<std::byte,0x68> originalServer28_{};
+    std::unique_ptr<IServerCallback> socketFactory; //original+0x90
     L1Callbacks* const callbacks;
     CIOBufferPool buffers;
     NtStatusToErrorFn ntStatusToError = nullptr;
@@ -117,7 +121,6 @@ public:
     unsigned referenceCheckDelayMs=5000;
     void VerifySocketRelease(CIOSocket*)noexcept;
     std::atomic<int> connections{0};
-    std::unique_ptr<IServerCallback> socketFactory;
     std::atomic<bool> stopping{false}, running{false};
     int maxConnections = 5000, workerCount = 8, backlog = 5, recvBytes = 4096;
     bool noDelay = true;
@@ -131,6 +134,9 @@ public:
     }
 
     explicit Server(L1Callbacks* listener) : callbacks(listener), buffers(65536) {
+        host().notify=[](CIOServer* p)noexcept{static_cast<Server*>(p)->NotifyPendingChanged();};
+        host().accepted=[](CIOServer* p,SOCKET socket)noexcept{static_cast<Server*>(p)->OnAcceptedSocket(socket);};
+        host().failure=[](CIOServer* p,unsigned error)noexcept{static_cast<Server*>(p)->OnWaitFailure(error);};
         WSADATA data{}; wsaReady = WSAStartup(MAKEWORD(2, 2), &data) == 0;
     }
     ~Server() override;
@@ -144,11 +150,17 @@ public:
         if (timeout == INFINITE) { changed.wait(lock, [&]{return !running.load();}); return true; }
         return changed.wait_for(lock, std::chrono::milliseconds(timeout), [&]{return !running.load();});
     }
-    void NotifyPendingChanged()noexcept override{notifyChange();}
-    void OnAcceptedSocket(SOCKET socket)noexcept override;
-    void OnWaitFailure(unsigned error) noexcept override;
+    void NotifyPendingChanged()noexcept{notifyChange();}
+    void OnAcceptedSocket(SOCKET socket)noexcept;
+    void OnWaitFailure(unsigned error) noexcept;
     CThreadLocalTimer* timerFor(unsigned owner) noexcept {return owner==17?listenTimer.get():owner<timers.size()?timers[owner].get():nullptr;}
-    CIOSocket* CreateSocket(SOCKET socket) noexcept;
+    CIOSocket* CreateSocket(SOCKET socket)noexcept;
+    CIOSocket* CreateSocket(SOCKET socket,sockaddr_in* peer)noexcept override;
+    virtual void Remove(SOCKET socket)noexcept; //13
+    virtual bool Add(SOCKET socket,CSocket* object)noexcept; //14
+    virtual void Shutdown()noexcept{shutdownSucceeded=ShutdownImpl();} //15
+    bool shutdownSucceeded=true;
+    bool ShutdownSockets()noexcept{Shutdown();return shutdownSucceeded;}
 
     void worker(unsigned owner = 0) noexcept;
     bool scheduleTask(std::uint64_t token, unsigned delay, CIOSocket* deadlineOwner=nullptr,CIOObject* observer=nullptr) noexcept;
@@ -159,10 +171,10 @@ public:
     bool Add(CIOSocket* c) noexcept;
     void Remove(SOCKET socket,CIOSocket* expected) noexcept;
     void ReleaseHandle(CIOSocket* c) noexcept;
-    bool Shutdown() noexcept;
+    bool ShutdownImpl()noexcept;
     bool post(Operation& op) noexcept {
         op.owner->retain(ObjectReferenceType::ORT_IOCP_MESSAGE_RETAIN);
-        if (PostQueuedCompletionStatus(port, 0, reinterpret_cast<ULONG_PTR>(op.owner), op.address())) return true;
+        if (PostQueuedCompletionStatus(port(), 0, reinterpret_cast<ULONG_PTR>(op.owner), op.address())) return true;
         op.owner->release(ObjectReferenceType::ORT_IOCP_MESSAGE_RETAIN); return false;
     }
 };
@@ -182,9 +194,10 @@ struct CIOSocketState final:ObjectAllocated {
  std::unique_ptr<CUserSocketParser> protocol_;
  std::uint32_t retiredAccountId_=0,accountId_=0;bool playingRegistered_=false,characterEntered_=false;
  mutable std::atomic<std::uint32_t> lastSending{0};bool initialized=false;
+ std::uint32_t number=0;bool(*setSession)(void*,int)noexcept=nullptr;
  CIOSocketState(CIOObject* owner,Server* s,std::uint64_t value,std::size_t bytes):server(s),id(value),writes(bytes),reads(s->buffers,bytes),readOp(OpKind::Read,owner),writeOp(OpKind::Write,owner),closeOp(OpKind::Close,owner),resumeOp(OpKind::Resume,owner){}
 };
-class CIOSocket : public CIOObject {
+template<class Buffer>class CIOSocketEx : public CIOObject {
 public:
     // Verified x64 CIOSocketEx prefix0xb0. L1 state lives in the allocator
     // extension pointer,so it does not move original network fields.
@@ -245,22 +258,19 @@ public:
         l1().initialized=setsockopt(socket,SOL_SOCKET,SO_RCVBUF,reinterpret_cast<const char*>(&zero),sizeof(zero))==0
             &&setsockopt(socket,SOL_SOCKET,SO_SNDBUF,reinterpret_cast<const char*>(&zero),sizeof(zero))==0
             &&setsockopt(socket,IPPROTO_TCP,TCP_NODELAY,reinterpret_cast<const char*>(&enabled),sizeof(enabled))==0
-            &&CreateIoCompletionPort(reinterpret_cast<HANDLE>(socket),server()->port,reinterpret_cast<ULONG_PTR>(static_cast<CIOObject*>(this)),0);
+            &&CreateIoCompletionPort(reinterpret_cast<HANDLE>(socket),server()->port(),reinterpret_cast<ULONG_PTR>(static_cast<CIOObject*>(this)),0);
     }
     virtual void OnCreate()noexcept{OnRead();} //13
-    virtual bool Slot14SendAllowed()const noexcept{return socket!=INVALID_SOCKET&&!state().closing;} //14
-    virtual bool Slot15SendAllowed()const noexcept{return Slot14SendAllowed()&&reservedSendBytes<=MaxQueuedBytes;} //15
+    virtual bool Slot14SendAllowed()const noexcept{return true;} //14
+    virtual bool Slot15SendAllowed()const noexcept{return true;} //15
     virtual void Send(const char* format,...)noexcept; //16
     virtual void SendV(const char* format,va_list arguments)noexcept; //17
     virtual void GracefulClose()noexcept{GracefulClose(30000);} //18
-    virtual void OnClose()noexcept{OnSocketRetired();} //19
+    virtual void OnClose()noexcept{} //19
     virtual void OnRead()noexcept=0; //20
-    virtual void SetAddress(in_addr)noexcept{} //21;CSocket overrides
-    virtual in_addr* GetAddress(in_addr* result)const noexcept{if(result)*result=in_addr{};return result;} //22
-    virtual void OnSending(unsigned char,unsigned short)const noexcept{} //23
     // L1 extension virtuals follow the original prefix.
-    virtual void __async_AsyncSend(NativeSendRequest&)noexcept=0;
-    virtual void __async_AsyncSendConstBuffer(NativeSendRequest&)noexcept=0;
+    void __async_AsyncSend(NativeSendRequest& request)noexcept{ExecuteSend(request);}
+    void __async_AsyncSendConstBuffer(NativeSendRequest& request)noexcept{ExecuteSend(request);}
     void ExecuteSend(NativeSendRequest&)noexcept;
     bool GracefulClose(unsigned timeoutMs)noexcept;
     static void KickWriteCallback(MemoryObject* object,void*)noexcept{
@@ -268,22 +278,24 @@ public:
         {std::lock_guard<std::mutex> lock(c->gate());c->_Write();}
         c->finishIfReady();
     }
-    virtual const sockaddr_storage& LocalAddress() const noexcept=0;
-    virtual const sockaddr_storage& RemoteAddress() const noexcept=0;
-    virtual std::uint32_t SocketNumber() const noexcept{return 0;}
-    virtual std::uint32_t AccountId()const noexcept{return 0;}
-    virtual bool HasMacIdentity()const noexcept{return false;}
-    virtual bool CharacterEntered()const noexcept{return false;}
-    virtual bool SetSessionStateLocked(int phase)noexcept{sessionState()=phase;return true;}
-    virtual void OnSocketRetired() noexcept{}
-    virtual CUserSocketParser* UserProtocol() noexcept {return nullptr;}
-    virtual bool ConfigureUserProtocol(std::shared_ptr<const L1CodecApi>,unsigned) noexcept{return false;}
-    CIOSocket(Server* s,SOCKET value,std::uint64_t valueId,std::size_t bufferBytes):socket(value){
+    const sockaddr_storage& LocalAddress()const noexcept{return local_();}
+    const sockaddr_storage& RemoteAddress()const noexcept{return remote_();}
+    std::uint32_t SocketNumber()const noexcept{return l1().number;}
+    std::uint32_t AccountId()const noexcept{return accountId_();}
+    bool HasMacIdentity()const noexcept{return macIdentity_().load()!=0;}
+    bool CharacterEntered()const noexcept{return characterEntered_();}
+    bool SetSessionStateLocked(int phase)noexcept{if(l1().setSession)return l1().setSession(this,phase);sessionState()=phase;return true;}
+    CUserSocketParser* UserProtocol()noexcept{return protocol_().get();}
+    bool ConfigureUserProtocol(std::shared_ptr<const L1CodecApi> api,unsigned seed)noexcept{
+        if(protocol_())return false;try{protocol_()=std::make_unique<CUserSocketParser>(std::move(api),seed);return true;}catch(...){return false;}
+    }
+    void NotifySending(unsigned char,unsigned short)const noexcept;
+    CIOSocketEx(Server* s,SOCKET value,std::uint64_t valueId,std::size_t bufferBytes=std::tuple_size<decltype(Buffer::payload)>::value):socket(value){
         ObjectAllocator::Extension(this)=new CIOSocketState(this,s,valueId,bufferBytes);
         readOp().external=&readOverlapped_;writeOp().external=&writeOverlapped_;
         s->retain();
     }
-    ~CIOSocket() override {
+    ~CIOSocketEx() override {
         auto* extra=&l1();auto* ownerServer=extra->server;
         extra->writes.clear(ownerServer->buffers);extra->reads.clear();
         if(socket!=INVALID_SOCKET)closesocket(socket);
@@ -535,7 +547,8 @@ public:
         }return at==length;
     }
 };
-bool CIOSocket::send(const Span* spans,unsigned count,bool framed,bool plainFirst,bool constant)noexcept {
+template<class Buffer>
+bool CIOSocketEx<Buffer>::send(const Span* spans,unsigned count,bool framed,bool plainFirst,bool constant)noexcept {
     ObjectRef lifetime(this);std::size_t total=0;
     for(unsigned i=0;i<count;++i){if((!spans[i].data&&spans[i].size)||spans[i].size>MaxQueuedBytes-total){++server()->sendsRejected;return false;}total+=spans[i].size;}
     if(!total)return true;
@@ -558,7 +571,8 @@ bool CIOSocket::send(const Span* spans,unsigned count,bool framed,bool plainFirs
     }
     ++server()->sendsAccepted;return request->result.load(std::memory_order_acquire)>=0;
 }
-bool CIOSocket::sendConstBuffer(L1ConstBuffer* source,bool plainFirst)noexcept {
+template<class Buffer>
+bool CIOSocketEx<Buffer>::sendConstBuffer(L1ConstBuffer* source,bool plainFirst)noexcept {
     ObjectRef lifetime(this);
     if(!source||source->server!=server())return false;
     const auto total=source->block->used;
@@ -575,7 +589,8 @@ bool CIOSocket::sendConstBuffer(L1ConstBuffer* source,bool plainFirst)noexcept {
     }
     ++server()->sendsAccepted;return request->result.load(std::memory_order_acquire)>=0;
 }
-void CIOSocket::ExecuteSend(NativeSendRequest& request)noexcept {
+template<class Buffer>
+void CIOSocketEx<Buffer>::ExecuteSend(NativeSendRequest& request)noexcept {
     bool ok=false;
     {
         std::lock_guard<std::mutex> lock(gate());
@@ -583,7 +598,7 @@ void CIOSocket::ExecuteSend(NativeSendRequest& request)noexcept {
         if(!execution_.IsOwner()){++server()->sendOwnerErrors;failLocked(3,31);}
         if(!state().closing){
             ok=true;
-            if(request.framed){for(std::size_t at=0;at<request.size();){const auto length=request.data()[at]|(static_cast<unsigned>(request.data()[at+1])<<8);OnSending(length>2?request.data()[at+2]:0,static_cast<unsigned short>(length));at+=length;}}
+            if(request.framed){for(std::size_t at=0;at<request.size();){const auto length=request.data()[at]|(static_cast<unsigned>(request.data()[at+1])<<8);NotifySending(length>2?request.data()[at+2]:0,static_cast<unsigned short>(length));at+=length;}}
         const bool wasEmpty=!writes().head();
             if(request.constant){
                 // Original __async_AsyncSendConstBuffer copies/encrypts into
@@ -634,7 +649,8 @@ void CIOSocket::ExecuteSend(NativeSendRequest& request)noexcept {
     }
     finishIfReady();
 }
-bool CIOSocket::GracefulClose(unsigned timeoutMs)noexcept {
+template<class Buffer>
+bool CIOSocketEx<Buffer>::GracefulClose(unsigned timeoutMs)noexcept {
     ObjectRef lifetime(this);
     {
         std::lock_guard<std::mutex> lock(gate());if(state().closing)return true;if(gracefulRequested())return true;
@@ -652,24 +668,19 @@ bool CIOSocket::GracefulClose(unsigned timeoutMs)noexcept {
 
 // Actual transport hierarchy: CIOSocket owns overlapped I/O and buffer life;
 // CSocket adds peer addresses; CUserSocket owns L1 parsing/cipher state.
-template<class Buffer> class CIOSocketEx : public CIOSocket {
-    static constexpr std::size_t Bytes=std::tuple_size<decltype(Buffer::payload)>::value;
-public:
-    static_assert(Bytes==8192||Bytes==16384,"original socket buffer families");
-    CIOSocketEx(Server* server,SOCKET socket,std::uint64_t id):CIOSocket(server,socket,id,Bytes){}
-};
 class CSocket : public CIOSocketEx<CIOBufferEx<16384>> {
     std::array<std::byte,8> originalB0_{};
     std::uint32_t peerAddress_=0,originalBC_=0;
     std::array<std::byte,0x40> originalC0_{};
 public:
     using CIOSocket::SendV;using CIOSocket::GracefulClose;
-    void SetAddress(in_addr value)noexcept override{peerAddress_=value.s_addr;}
-    in_addr* GetAddress(in_addr* value)const noexcept override{if(value)value->s_addr=peerAddress_;return value;}
+    virtual void SetAddress(in_addr value)noexcept{peerAddress_=value.s_addr;}
+    virtual in_addr* GetAddress(in_addr* value)const noexcept{if(value)value->s_addr=peerAddress_;return value;}
+    virtual void OnSending(unsigned char,unsigned short)const noexcept{}
     bool SendV(const Span* spans,unsigned count,bool plain)noexcept{return send(spans,count,true,plain);}
     bool SendConstBuffer(const Span* spans,unsigned count,bool plain)noexcept{return send(spans,count,true,plain,true);}
-    void __async_AsyncSend(NativeSendRequest& request)noexcept override{ExecuteSend(request);}
-    void __async_AsyncSendConstBuffer(NativeSendRequest& request)noexcept override{ExecuteSend(request);}
+    void __async_AsyncSend(NativeSendRequest& request)noexcept{ExecuteSend(request);}
+    void __async_AsyncSendConstBuffer(NativeSendRequest& request)noexcept{ExecuteSend(request);}
     CSocket(Server* ownerServer,SOCKET sockValue,std::uint64_t connectionId):CIOSocketEx<CIOBufferEx<16384>>(ownerServer,sockValue,connectionId){
         int length=sizeof(local_());getsockname(socket,reinterpret_cast<sockaddr*>(&local_()),&length);
         length=sizeof(remote_());getpeername(socket,reinterpret_cast<sockaddr*>(&remote_()),&length);
@@ -685,13 +696,13 @@ public:
         std::lock_guard<std::mutex> lock(gate());if(state().closing||!identity||macIdentity_().load())return false;
         if(!server()->socketLimiter.IncUserSocketPerMAC(identity))return false;macIdentity_()=identity;return true;
     }
-    bool HasMacIdentity()const noexcept override{return macIdentity_().load()!=0;}
-    void OnSocketRetired()noexcept override{
+    bool HasMacIdentity()const noexcept{return macIdentity_().load()!=0;}
+    void OnSocketRetired()noexcept{
         if(ipReserved_().exchange(false))server()->socketLimiter.DecUserSocketPerIP(reinterpret_cast<const sockaddr_in*>(&remote_())->sin_addr.s_addr);
         if(auto mac=macIdentity_().exchange(0))server()->socketLimiter.DecUserSocketPerMAC(mac);
     }
-    const sockaddr_storage& LocalAddress()const noexcept override{return local_();}
-    const sockaddr_storage& RemoteAddress()const noexcept override{return remote_();}
+    const sockaddr_storage& LocalAddress()const noexcept{return local_();}
+    const sockaddr_storage& RemoteAddress()const noexcept{return remote_();}
 };
 class CUserSocket final : public CSocket {
     ReferenceTrace referencesTrace_; //0x100..0x4df
@@ -705,7 +716,7 @@ class CUserSocket final : public CSocket {
     }
 public:
     static CIOSocket* Allocate(Server* ownerServer,SOCKET sockValue)noexcept{try{return new CUserSocket(ownerServer,sockValue,ownerServer->nextId.fetch_add(1));}catch(...){return nullptr;}}
-    CUserSocket(Server* ownerServer,SOCKET sockValue,std::uint64_t connectionId):CSocket(ownerServer,sockValue,connectionId),number_(ownerServer->AllocateSocketNumber()){referencesTrace_.add(ObjectReferenceType::ORT_CREATE_DELETE,__FILE__,__LINE__);}
+    CUserSocket(Server* ownerServer,SOCKET sockValue,std::uint64_t connectionId):CSocket(ownerServer,sockValue,connectionId),number_(ownerServer->AllocateSocketNumber()){l1().number=number_;l1().setSession=[](void* owner,int phase)noexcept{return static_cast<CUserSocket*>(owner)->SetSessionStateLocked(phase);};referencesTrace_.add(ObjectReferenceType::ORT_CREATE_DELETE,__FILE__,__LINE__);}
     ~CUserSocket()override{ClearAccountLocked();}
     using MemoryObject::retain;using MemoryObject::release;
     MemoryObject* retain(const char* file,unsigned line,ObjectReferenceType type)noexcept override{return retainTracked(&referencesTrace_,type,file,line);}
@@ -713,13 +724,15 @@ public:
     void ReportReferences(const char*,unsigned)const noexcept override{
         std::array<std::uint64_t,ReferenceRecordWords> row{};row[1]=monotonicMs();row[2]=objectId();row[3]=number_;row[4]=id();row[6]=referenceCount();row[7]=row[6];row[8]=4;row[9]=timerCount();row[10]=static_cast<std::uint64_t>(referencesTrace_.snapshot(row.data()+12));server()->referenceDiagnostics.record(row);
     }
+    bool Slot14SendAllowed()const noexcept override{return socket!=INVALID_SOCKET&&!state().closing;}
+    bool Slot15SendAllowed()const noexcept override{return Slot14SendAllowed()&&reservedSendBytes<=MaxQueuedBytes;}
     void OnRead()noexcept override{pumpPackets();}
     void OnSending(unsigned char opcode,unsigned short length)const noexcept override{l1().lastSending.store((std::uint32_t(opcode)<<16)|length,std::memory_order_relaxed);}
     std::int64_t ReferenceSnapshot(std::uint64_t* out)const noexcept{return referencesTrace_.snapshot(out);}
     std::uint32_t ReferenceAccount()const noexcept{return accountId_()?accountId_():retiredAccountId_();}
-    std::uint32_t SocketNumber()const noexcept override{return number_;}
-    std::uint32_t AccountId()const noexcept override{return accountId_();}
-    bool CharacterEntered()const noexcept override{return characterEntered_();}
+    std::uint32_t SocketNumber()const noexcept{return number_;}
+    std::uint32_t AccountId()const noexcept{return accountId_();}
+    bool CharacterEntered()const noexcept{return characterEntered_();}
     bool SetAccountIdentityLocked(std::uint32_t account)noexcept{
         if(!account){ClearAccountLocked();return true;}
         if(server()->socketLimiter.RequiresMacIdentity()&&!HasMacIdentity())return false;
@@ -734,26 +747,28 @@ public:
         if(!server()->userSocketMapEnterChar.Insert(accountId_(),this)){++server()->duplicateEnterDenied;return false;}
         characterEntered_()=true;return true;
     }
-    bool SetSessionStateLocked(int phase)noexcept override{
+    bool SetSessionStateLocked(int phase)noexcept{
         if(phase==0||phase==4)ClearAccountLocked();
         else if(phase==1||phase==3)SetCharacterEnteredLocked(false);
         else if(phase==2&&accountId_()&&!SetCharacterEnteredLocked(true))return false;
         sessionState()=phase;return true;
     }
-    void OnSocketRetired()noexcept override{
+    void OnClose()noexcept override{
         {std::lock_guard<std::mutex> lock(gate());if(!retiredAccountId_())retiredAccountId_()=accountId_();ClearAccountLocked();}
         CSocket::OnSocketRetired();
     }
-    CUserSocketParser* UserProtocol()noexcept override{return protocol_().get();}
-    bool ConfigureUserProtocol(std::shared_ptr<const L1CodecApi> api,unsigned seed)noexcept override {
-        if(protocol_())return false;
-        try{protocol_()=std::make_unique<CUserSocketParser>(std::move(api),seed);return true;}catch(...){return false;}
-    }
+
 };
 
 
-void CIOSocket::Send(const char* format,...)noexcept{va_list args;va_start(args,format);SendV(format,args);va_end(args);}
-void CIOSocket::SendV(const char* format,va_list arguments)noexcept{
+template<class Buffer>
+void CIOSocketEx<Buffer>::NotifySending(unsigned char opcode,unsigned short length)const noexcept{
+ static_cast<const CSocket*>(static_cast<const CIOSocket*>(this))->OnSending(opcode,length);
+}
+template<class Buffer>
+void CIOSocketEx<Buffer>::Send(const char* format,...)noexcept{va_list args;va_start(args,format);SendV(format,args);va_end(args);}
+template<class Buffer>
+void CIOSocketEx<Buffer>::SendV(const char* format,va_list arguments)noexcept{
  std::vector<unsigned char> body;
  if(!AssemblePacket(format,arguments,body)){disconnect(3,ERROR_INVALID_DATA);return;}
  try{
@@ -766,7 +781,8 @@ static_assert(sizeof(CIOSocket)==0xb0);
 static_assert(sizeof(CSocket)==0x100);
 static_assert(sizeof(CUserSocket)==0xcd8);
 
-void CIOSocket::pumpPackets() noexcept {
+template<class Buffer>
+void CIOSocketEx<Buffer>::pumpPackets() noexcept {
     for(;;){
         PlainPacket packet;int size;
         {
@@ -790,7 +806,8 @@ void CIOSocket::pumpPackets() noexcept {
         if(result!=0)return;
     }
 }
-bool CIOSocket::queueResume() noexcept {
+template<class Buffer>
+bool CIOSocketEx<Buffer>::queueResume() noexcept {
     bool post=false;
     {
         std::lock_guard<std::mutex> lock(gate());
@@ -804,7 +821,8 @@ bool CIOSocket::queueResume() noexcept {
     }
     return true;
 }
-bool CIOSocket::releasePacket(std::uint64_t sequence) noexcept {
+template<class Buffer>
+bool CIOSocketEx<Buffer>::releasePacket(std::uint64_t sequence) noexcept {
     {
         std::lock_guard<std::mutex> lock(gate());
         if(!packetBorrowed()||packetSequence()!=sequence||!UserProtocol()||!UserProtocol()->codec->release(sequence))return false;
@@ -812,7 +830,8 @@ bool CIOSocket::releasePacket(std::uint64_t sequence) noexcept {
     }
     queueResume();finalizeRegistration();release(ObjectReferenceType::ORT_SHARED_CONTAINER);return true;
 }
-bool CIOSocket::requestDeadline(unsigned delay) noexcept {
+template<class Buffer>
+bool CIOSocketEx<Buffer>::requestDeadline(unsigned delay) noexcept {
     if(delay>0x7fffffffu)return false;
     const auto now=monotonicMs(),due=now+std::max(delay,1u);
     std::uint64_t previous,token;
@@ -835,7 +854,8 @@ bool CIOSocket::requestDeadline(unsigned delay) noexcept {
     if(scheduled&&cancel)server()->cancelTask(token);
     return scheduled&&!cancel;
 }
-void CIOSocket::deadlineTick(std::uint64_t token,int status) noexcept {
+template<class Buffer>
+void CIOSocketEx<Buffer>::deadlineTick(std::uint64_t token,int status) noexcept {
     bool expired=false;unsigned next=5000;
     {
         std::lock_guard<std::mutex> lock(gate());
@@ -970,50 +990,56 @@ bool Server::cancelTasks() noexcept {
 // Name/TimerExpired are confirmed at0xa12674/0xa1291c. L2 game-state
 // transitions stay in the L1 owner; this object only observes native holds.
 class CUserSocketReleaseVerifier final:public CIOObject {
- Server* const server_;CUserSocket* const socket_;bool complete_=false;unsigned phase_=0;
- std::array<std::uint64_t,4> identity_{};std::uint64_t closeCause_=0;
+ struct Context final:ObjectAllocated {
+  Server* const server;bool complete=false;unsigned phase=0;
+  std::array<std::uint64_t,4> identity{};std::uint64_t closeCause=0;
+  explicit Context(Server* s):server(s){}
+ };
+ CUserSocket* const socket_;const wchar_t* const caller_; //original18/20
+ Context& context()noexcept{return *static_cast<Context*>(ObjectAllocator::Extension(this));}
  unsigned Capture(unsigned requested)noexcept{
-  std::array<std::uint64_t,ReferenceRecordWords> record{};std::uint64_t pending=0;
-  record[1]=monotonicMs();for(unsigned i=0;i<4;++i)record[2+i]=identity_[i];
-  {
-   std::lock_guard<std::mutex> lock(socket_->gate());
+  auto& owner=context();std::array<std::uint64_t,ReferenceRecordWords> record{};std::uint64_t pending=0;
+  record[1]=monotonicMs();for(unsigned i=0;i<4;++i)record[2+i]=owner.identity[i];
+  {std::lock_guard<std::mutex> lock(socket_->gate());
    pending=(socket_->state().readPosted?1:0)|(socket_->state().writePosted?2:0)|(socket_->state().readDelivering?4:0)|(socket_->state().writeDelivering?8:0)
     |(socket_->packetBorrowed()?16:0)|(socket_->packetDelivering()?32:0)|(!socket_->ioTerminal()?64:0)|(!socket_->registrationReleased()?128:0)
     |(socket_->pendingSendRequests()?256:0)|((socket_->resumePosted()||socket_->userPumpActive())?512:0);
-   const auto count=socket_->referenceCount();record[6]=count;record[7]=count?count-1:0;
-   record[9]=pending<<32|socket_->timerCount();record[10]=static_cast<std::uint64_t>(socket_->ReferenceSnapshot(record.data()+12));
+   auto count=socket_->referenceCount();record[6]=count;record[7]=count?count-1:0;record[9]=pending<<32|socket_->timerCount();record[10]=static_cast<std::uint64_t>(socket_->ReferenceSnapshot(record.data()+12));
   }
-  record[8]=requested==2?2:pending?3:record[7]?1:0;record[11]=closeCause_;
-  if(requested!=2){++server_->referenceDiagnostics.checked;if(record[8]==1)++server_->referenceDiagnostics.suspects;}
-  server_->referenceDiagnostics.record(record);return static_cast<unsigned>(record[8]);
+  record[8]=requested==2?2:pending?3:record[7]?1:0;record[11]=owner.closeCause;
+  if(requested!=2){++owner.server->referenceDiagnostics.checked;if(record[8]==1)++owner.server->referenceDiagnostics.suspects;}
+  owner.server->referenceDiagnostics.record(record);return static_cast<unsigned>(record[8]);
  }
 public:
- CUserSocketReleaseVerifier(Server* server,CUserSocket* socket)noexcept:server_(server),socket_(socket){
-  socket_->retain(ObjectReferenceType::ORT_VERIFIER_RETAIN);
-  std::lock_guard<std::mutex> lock(socket_->gate());identity_[0]=socket_->objectId();identity_[1]=socket_->SocketNumber();identity_[2]=socket_->id();identity_[3]=socket_->ReferenceAccount();
-  closeCause_=std::uint64_t(static_cast<unsigned>(socket_->closeOperation()))<<32|static_cast<unsigned>(socket_->closeError());
+ CUserSocketReleaseVerifier(Server* server,CUserSocket* socket,const wchar_t* caller=L"L1 retireSocket"):socket_(socket),caller_(caller){
+  auto value=std::make_unique<Context>(server);socket_->retain(ObjectReferenceType::ORT_VERIFIER_RETAIN);
+  try{
+   std::lock_guard<std::mutex> lock(socket_->gate());value->identity[0]=socket_->objectId();value->identity[1]=socket_->SocketNumber();value->identity[2]=socket_->id();value->identity[3]=socket_->ReferenceAccount();
+   value->closeCause=std::uint64_t(static_cast<unsigned>(socket_->closeOperation()))<<32|static_cast<unsigned>(socket_->closeError());
+  }catch(...){socket_->release(ObjectReferenceType::ORT_VERIFIER_RETAIN);throw;}
+  ObjectAllocator::Extension(this)=value.release();
  }
  ~CUserSocketReleaseVerifier()override{
-  if(!complete_){++server_->referenceDiagnostics.cancelled;Capture(2);}
-  socket_->release(ObjectReferenceType::ORT_VERIFIER_RETAIN);--server_->referenceDiagnostics.active;
+  auto* owner=&context();if(!owner->complete){++owner->server->referenceDiagnostics.cancelled;Capture(2);}
+  socket_->release(ObjectReferenceType::ORT_VERIFIER_RETAIN);--owner->server->referenceDiagnostics.active;
+  ObjectAllocator::Extension(this)=nullptr;delete owner;
  }
- void TimerExpired(int error)noexcept{
-  if(complete_)return;
-  auto status=Capture(error?2:0);
-  if(error){++server_->referenceDiagnostics.cancelled;complete_=true;return;}
-  if(status==3&&phase_++==0){
-   const auto token=0x8000000000000000ULL|server_->nextInternalTask.fetch_add(1);
-   if(server_->scheduleTask(token,25000,nullptr,this))return;
-   ++server_->referenceDiagnostics.skipped;
-  }
-  complete_=true;
+ void TimerExpired(int error)noexcept override{
+  auto& owner=context();if(owner.complete)return;auto status=Capture(error?2:0);
+  if(error){++owner.server->referenceDiagnostics.cancelled;owner.complete=true;return;}
+  if(status==3&&owner.phase++==0){const auto token=0x8000000000000000ULL|owner.server->nextInternalTask.fetch_add(1);
+   if(owner.server->scheduleTask(token,25000,nullptr,this))return;++owner.server->referenceDiagnostics.skipped;}
+  owner.complete=true;
  }
- void OnIOCallback(int completionOk,unsigned completionBytes,OVERLAPPED* completionRaw)noexcept override{auto ok=completionOk!=0;auto error=IOCompletionContext::error;TimerExpired(ok?0:static_cast<int>(error?error:995));}
+ void OnIOCallback(int completionOk,unsigned,OVERLAPPED*)noexcept override{TimerExpired(completionOk?0:static_cast<int>(IOCompletionContext::error?IOCompletionContext::error:995));}
 };
+static_assert(sizeof(CUserSocketReleaseVerifier)==0x28);
+static_assert(sizeof(CIOServer)==0x28);
+static_assert(sizeof(CDummyServerCallback)==0x10);
 void Server::VerifySocketRelease(CIOSocket* socket)noexcept{
  if(stopping.load()){++referenceDiagnostics.skipped;return;}
  auto* user=dynamic_cast<CUserSocket*>(socket);if(!user||!referenceDiagnostics.reserve())return;
- auto* verifier=new(std::nothrow) CUserSocketReleaseVerifier(this,user);
+ CUserSocketReleaseVerifier* verifier=nullptr;try{verifier=new CUserSocketReleaseVerifier(this,user);}catch(...){}
  if(!verifier){--referenceDiagnostics.active;++referenceDiagnostics.skipped;return;}
  const auto token=0x8000000000000000ULL|nextInternalTask.fetch_add(1);
  if(scheduleTask(token,referenceCheckDelayMs,nullptr,verifier))++referenceDiagnostics.started;
@@ -1025,7 +1051,7 @@ static bool PostOriginalCompletion(CIOObject* object,unsigned bytes,OVERLAPPED* 
  if(auto* socket=dynamic_cast<CIOSocket*>(object))owner=socket->server();
  else if(auto* task=dynamic_cast<NativeTask*>(object))owner=task->server;
  else owner=dynamic_cast<Server*>(object);
- return owner&&owner->running.load()&&!owner->stopping.load()&&PostQueuedCompletionStatus(owner->port,bytes,reinterpret_cast<ULONG_PTR>(object),raw);
+ return owner&&owner->running.load()&&!owner->stopping.load()&&PostQueuedCompletionStatus(owner->port(),bytes,reinterpret_cast<ULONG_PTR>(object),raw);
 }
 struct BufferLease {
     Server* server; CIOBuffer* block; std::size_t offset, length;
@@ -1036,7 +1062,9 @@ struct BufferLease {
 };
 
 CIOSocket* Server::find(std::uint64_t id,bool includeRetiring) noexcept {return registry.find(id,includeRetiring);}
-bool Server::Add(CIOSocket* c) noexcept {
+bool Server::Add(CIOSocket* c)noexcept{return Add(c->socket,static_cast<CSocket*>(c));}
+bool Server::Add(SOCKET value,CSocket* object)noexcept{
+    auto* c=static_cast<CIOSocket*>(object);if(!c||c->socket!=value)return false;
     std::lock_guard<std::mutex> publication(c->gate());
     if(c->state().closing)return false;
     if(connections.fetch_add(1)>=maxConnections){connections.fetch_sub(1);return false;}
@@ -1045,16 +1073,18 @@ bool Server::Add(CIOSocket* c) noexcept {
     try{std::lock_guard<std::mutex> lock(socketMapGate);added=socketMap.emplace(c->socket,c).second;if(added)c->retain(ObjectReferenceType::ORT_SOCKET_MAP);}catch(...){}
     if(!added){registry.remove(c->id(),c);connections.fetch_sub(1);notifyChange();}return added;
 }
-void Server::Remove(SOCKET socket,CIOSocket* expected) noexcept {
-    bool removed=false;
-    {std::lock_guard<std::mutex> lock(socketMapGate);auto at=socketMap.find(socket);
-     if(at!=socketMap.end()&&at->second==expected){socketMap.erase(at);removed=true;}}
-    if(removed)expected->release(ObjectReferenceType::ORT_SOCKET_MAP);
+void Server::Remove(SOCKET socket,CIOSocket* expected)noexcept{
+ auto* oldExpected=expectedRemoval;auto* oldServer=expectedRemovalServer;expectedRemoval=expected;expectedRemovalServer=this;
+ Remove(socket);expectedRemoval=oldExpected;expectedRemovalServer=oldServer;
 }
-void Server::ReleaseHandle(CIOSocket* c) noexcept {
-    if(registry.remove(c->id(),c)){connections.fetch_sub(1);notifyChange();}
+void Server::Remove(SOCKET value)noexcept{
+ CIOSocket* removed=nullptr;
+ {std::lock_guard<std::mutex> lock(socketMapGate);auto at=socketMap.find(value);
+  if(at!=socketMap.end()&&(expectedRemovalServer!=this||!expectedRemoval||at->second==expectedRemoval)){removed=at->second;socketMap.erase(at);}}
+ if(removed)removed->release(ObjectReferenceType::ORT_SOCKET_MAP);
 }
-bool Server::Shutdown() noexcept {
+void Server::ReleaseHandle(CIOSocket* c)noexcept{if(registry.remove(c->id(),c)){connections.fetch_sub(1);notifyChange();}}
+bool Server::ShutdownImpl()noexcept {
     std::vector<CIOSocket*> sockets;
     try{std::lock_guard<std::mutex> lock(socketMapGate);sockets.reserve(socketMap.size());
         for(auto& at:socketMap){sockets.push_back(at.second);at.second->retain(ObjectReferenceType::ORT_TEMP_USE);}}
@@ -1082,7 +1112,7 @@ void IOThreadCallback::IOThread_common() noexcept {
             });
         }
         ULONG removed = 0;
-        if (!GetQueuedCompletionStatusEx(server->port, entries.data(), CompletionBatchSize,
+        if (!GetQueuedCompletionStatusEx(server->port(), entries.data(), CompletionBatchSize,
                 &removed, 50, FALSE)) {
             if (GetLastError() == WAIT_TIMEOUT) continue;
             break;
@@ -1094,10 +1124,10 @@ void IOThreadCallback::IOThread_common() noexcept {
                 if (entry.lpCompletionKey == 0) ++exitTokens;
                 else {
                     auto* object=reinterpret_cast<CIOObject*>(entry.lpCompletionKey);
-                    const auto begin=monotonicMs();server->callbackStarted[owner]=begin;
+                    const auto begin=monotonicMs();server->callbackStarted()[owner]=begin;
                     object->OnIOCallback(nullptr,true,entry.dwNumberOfBytesTransferred,0);
-                    ++server->callbackCounts[owner];server->callbackMillis[owner].fetch_add(monotonicMs()-begin);
-                    server->callbackStarted[owner]=0;object->release(ObjectReferenceType::ORT_IOCP_MESSAGE_RETAIN);
+                    ++server->callbackCounts()[owner];server->callbackMillis()[owner].fetch_add(monotonicMs()-begin);
+                    server->callbackStarted()[owner]=0;object->release(ObjectReferenceType::ORT_IOCP_MESSAGE_RETAIN);
                 }
                 continue;
             }
@@ -1107,17 +1137,17 @@ void IOThreadCallback::IOThread_common() noexcept {
             auto* owner=reinterpret_cast<CIOObject*>(entry.lpCompletionKey);
             auto* socketOwner=dynamic_cast<CIOSocket*>(owner);
             auto* operation=socketOwner?socketOwner->DecodeOperation(entry.lpOverlapped):reinterpret_cast<Operation*>(entry.lpOverlapped);
-            const auto begin=monotonicMs();server->callbackStarted[owner_]=begin;
+            const auto begin=monotonicMs();server->callbackStarted()[owner_]=begin;
             owner->OnIOCallback(operation,ok,entry.dwNumberOfBytesTransferred,error,entry.lpOverlapped);
-            ++server->callbackCounts[owner_];server->callbackMillis[owner_].fetch_add(monotonicMs()-begin);
-            server->callbackStarted[owner_]=0;owner->release(operation->kind==OpKind::Read||operation->kind==OpKind::Write?ObjectReferenceType::ORT_IO_RETAIN:ObjectReferenceType::ORT_IOCP_MESSAGE_RETAIN);
+            ++server->callbackCounts()[owner_];server->callbackMillis()[owner_].fetch_add(monotonicMs()-begin);
+            server->callbackStarted()[owner_]=0;owner->release(operation->kind==OpKind::Read||operation->kind==OpKind::Write?ObjectReferenceType::ORT_IO_RETAIN:ObjectReferenceType::ORT_IOCP_MESSAGE_RETAIN);
         }
         if (exitTokens) {
             // A single worker can dequeue several workers' exit tokens. Finish
             // every real completion, consume one token, and return the others.
             // Breaking at the first token would strand I/O holds and workers.
             for (ULONG i = 1; i < exitTokens; ++i)
-                PostQueuedCompletionStatus(server->port, 0, 0, nullptr);
+                PostQueuedCompletionStatus(server->port(), 0, 0, nullptr);
             break;
         }
     }
@@ -1137,31 +1167,37 @@ bool ListenThread::Start() noexcept {
     catch(...){return false;}
 }
 void CIOServer::OnWaitCallback() noexcept {
-    bool posted=false,held=false;unsigned error=0;const auto begin=monotonicMs();callbackStarted[17]=begin;
+    bool posted=false,held=false;unsigned error=0;const auto begin=monotonicMs();callbackStarted()[17]=begin;
     {
-        std::lock_guard<std::mutex> lock(acceptGate);
-        if(!accepting.load()||!acceptEvent||acceptQueued){callbackStarted[17]=0;return;}
+        std::lock_guard<std::mutex> lock(acceptGate());
+        if(!accepting().load()||!acceptEvent||acceptQueued()){callbackStarted()[17]=0;return;}
         if(!WSAResetEvent(acceptEvent))error=WSAGetLastError();
         else {
-            ++waitCallbacks;acceptQueued=true;++pendingAccepts;retain();held=true;
-            posted=PostQueuedCompletionStatus(port,0,reinterpret_cast<ULONG_PTR>(static_cast<CIOObject*>(this)),nullptr)!=0;
-            if(!posted){error=GetLastError();acceptQueued=false;--pendingAccepts;}
+            ++waitCallbacks();acceptQueued()=true;++pendingAccepts();retain();held=true;
+            posted=PostQueuedCompletionStatus(port(),0,reinterpret_cast<ULONG_PTR>(static_cast<CIOObject*>(this)),nullptr)!=0;
+            if(!posted){error=GetLastError();acceptQueued()=false;--pendingAccepts();}
         }
     }
-    ++callbackCounts[17];callbackMillis[17].fetch_add(monotonicMs()-begin);callbackStarted[17]=0;
+    ++callbackCounts()[17];callbackMillis()[17].fetch_add(monotonicMs()-begin);callbackStarted()[17]=0;
     if(!posted){if(held)release();NotifyPendingChanged();OnWaitFailure(error?error:31);}
 }
 void Server::OnWaitFailure(unsigned error) noexcept {
-    ++waitFailures;lastWaitError=error;accepting=false;
+    ++waitFailures();lastWaitError()=error;accepting()=false;
     if(listenThread)listenThread->UnregisterWait(this);
     Close();notifyChange();
 }
 CIOSocket* Server::CreateSocket(SOCKET socket) noexcept {
-    auto* object=static_cast<CUserSocket*>(socketFactory->CreateSocket(this,socket));
+    auto* previous=currentFactoryServer;currentFactoryServer=this;
+    auto* object=static_cast<CUserSocket*>(socketFactory->CreateSocket(socket));currentFactoryServer=previous;
     if(object&&(!object->ReserveIP()||!socketNumbers.Insert(object->SocketNumber(),object))){
         object->socket=INVALID_SOCKET;object->release(ObjectReferenceType::ORT_CREATE_DELETE);return nullptr;
     }
     return object;
+}
+CIOSocket* Server::CreateSocket(SOCKET value,sockaddr_in* peer)noexcept{
+ auto* c=CreateSocket(value);if(!c)return nullptr;
+ if(!Add(value,static_cast<CSocket*>(c))){RemoveSocketNumber(c);c->socket=INVALID_SOCKET;c->release(ObjectReferenceType::ORT_CREATE_DELETE);return nullptr;}
+ if(peer)static_cast<CSocket*>(c)->SetAddress(peer->sin_addr);return c;
 }
 void Server::RemoveSocketNumber(CIOSocket* socket) noexcept {
     if(auto* user=dynamic_cast<CUserSocket*>(socket))socketNumbers.DeleteObject(user->SocketNumber(),user);
@@ -1171,36 +1207,27 @@ Server::~Server(){stop();if(wsaReady)WSACleanup();}
 void CIOServer::OnIOCallback() noexcept {
     SOCKET socket=INVALID_SOCKET;
     {
-        std::lock_guard<std::mutex> lock(acceptGate);
-        if(accepting.load()){
+        std::lock_guard<std::mutex> lock(acceptGate());
+        if(accepting().load()){
             sockaddr_storage peer{};int length=sizeof(peer);
             socket=accept(listening,reinterpret_cast<sockaddr*>(&peer),&length);
         }
         // accept() reenables FD_ACCEPT. Publish the free completion slot while
         // holding the same gate as ResetEvent so no rearmed event is lost.
-        acceptQueued=false;
+        acceptQueued()=false;
     }
-    ++acceptCallbacks;
+    ++acceptCallbacks();
     if(socket!=INVALID_SOCKET)OnAcceptedSocket(socket);
-    pendingAccepts.fetch_sub(1);NotifyPendingChanged();
+    pendingAccepts().fetch_sub(1);NotifyPendingChanged();
 }
-void Server::OnAcceptedSocket(SOCKET socket)noexcept {
-    if(socket!=INVALID_SOCKET){
-        auto* c=CreateSocket(socket);
-        if(c){
-            ObjectRef temporary(c,false,ObjectReferenceType::ORT_CREATE_DELETE);
-            if(Add(c)){
-                const auto fn=callbacks->accept.load();const int admission=fn?fn(this,c->id(),static_cast<std::uint64_t>(socket)):2;
-                bool initialized=false;
-                {std::lock_guard<std::mutex> lock(c->gate());
-                    if(!c->state().closing&&admission==0){
-                        c->Initialize();initialized=c->l1().initialized;
-                    }
-                }
-                c->accepted(initialized?0:2);
-            }else RemoveSocketNumber(c);
-        }else closesocket(socket);
-    }
+void Server::OnAcceptedSocket(SOCKET value)noexcept{
+ if(value==INVALID_SOCKET)return;sockaddr_in peer{};int length=sizeof(peer);getpeername(value,reinterpret_cast<sockaddr*>(&peer),&length);
+ auto* c=CreateSocket(value,&peer);if(!c){closesocket(value);return;}
+ ObjectRef temporary(c,false,ObjectReferenceType::ORT_CREATE_DELETE);
+ const auto fn=callbacks->accept.load();const int admission=fn?fn(this,c->id(),static_cast<std::uint64_t>(value)):2;
+ bool initialized=false;
+ {std::lock_guard<std::mutex> lock(c->gate());if(!c->state().closing&&admission==0){c->Initialize();initialized=c->l1().initialized;}}
+ c->accepted(initialized?0:2);
 }
 void CPerfMon::Sample()noexcept {
     std::array<std::uint64_t,16> values{};
@@ -1226,7 +1253,7 @@ void CPerfMon::Sample()noexcept {
 #endif
     values[9]=server_->connections.load();values[10]=server_->taskCount.load();
     values[11]=server_->socketNumbers.size();values[12]=server_->userSocketMapPlaying.size();values[13]=server_->userSocketMapEnterChar.size();
-    for(auto& count:server_->callbackCounts)values[14]+=count.load();
+    for(auto& count:server_->callbackCounts())values[14]+=count.load();
     std::lock_guard<std::mutex> lock(gate_);values[0]=latest_[0]+1;latest_=values;
 }
 bool CPerfMon::Start(unsigned interval)noexcept {
@@ -1249,12 +1276,12 @@ bool Server::Run(const char* address, unsigned short number) noexcept {
     workerCount=std::min(workerCount,static_cast<int>(std::min<DWORD>(information.dwNumberOfProcessors,8)));
     if(workerCount<1||!buffers.initialize(static_cast<unsigned>(workerCount),std::max<std::size_t>(static_cast<std::size_t>(maxConnections)*2,workerCount*200)))return false;
     if(!buffers.initializeOwner(15,0,100)||!buffers.initializeOwner(17,300,200)||!Create(address,number,backlog))return false;
-    port=CreateIoCompletionPort(INVALID_HANDLE_VALUE,nullptr,0,workerCount);
-    if(!port){Close();return false;}
-    if(!registry.initialize(static_cast<unsigned>(maxConnections))){Close();CloseHandle(port);port=nullptr;return false;}
-    running.store(true); stopping.store(false); accepting.store(true);
+    port()=CreateIoCompletionPort(INVALID_HANDLE_VALUE,nullptr,0,workerCount);
+    if(!port()){Close();return false;}
+    if(!registry.initialize(static_cast<unsigned>(maxConnections))){Close();CloseHandle(port());port()=nullptr;return false;}
+    running.store(true); stopping.store(false); accepting().store(true);
     try {
-        socketFactory=std::make_unique<CDummyServerCallback>(CUserSocket::Allocate);
+        socketFactory=std::make_unique<CDummyServerCallback>([](SOCKET socket)noexcept->CIOSocket*{return currentFactoryServer?CUserSocket::Allocate(currentFactoryServer,socket):nullptr;});
         timerBlocks.reset(new CThreadLocalTimer::SlotPool(static_cast<std::size_t>(workerCount+1)*200+409));
         for(int i=0;i<workerCount;++i)timers.emplace_back(new CThreadLocalTimer(monotonicMs(),timerBlocks.get()));
         listenTimer.reset(new CThreadLocalTimer(monotonicMs(),timerBlocks.get()));
@@ -1265,18 +1292,18 @@ bool Server::Run(const char* address, unsigned short number) noexcept {
         // never strand an already admitted socket in partial startup cleanup.
         if(!listenThread->RegisterWait(this,acceptEvent)||!listenThread->Start())throw std::bad_alloc();
     }catch(...){
-        accepting=false;if(auto monitor=std::atomic_load(&perfmon))monitor->Stop();std::atomic_store(&perfmon,std::shared_ptr<CPerfMon>{});if(listenThread)listenThread->Stop();Close();
-        for(std::size_t i=0;i<workers.size();++i)PostQueuedCompletionStatus(port,0,0,nullptr);
-        for(auto& worker:workers)worker->Join();workers.clear();listenThread.reset();listenTimer.reset();timers.clear();timerBlocks.reset();CloseHandle(port);port=nullptr;running=false;notifyChange();return false;
+        accepting()=false;if(auto monitor=std::atomic_load(&perfmon))monitor->Stop();std::atomic_store(&perfmon,std::shared_ptr<CPerfMon>{});if(listenThread)listenThread->Stop();Close();
+        for(std::size_t i=0;i<workers.size();++i)PostQueuedCompletionStatus(port(),0,0,nullptr);
+        for(auto& worker:workers)worker->Join();workers.clear();listenThread.reset();listenTimer.reset();timers.clear();timerBlocks.reset();CloseHandle(port());port()=nullptr;running=false;notifyChange();return false;
     }
     return true;
 }
 bool Server::stopAcceptingImpl() noexcept {
-    accepting=false;
+    accepting()=false;
     if(listenThread)listenThread->UnregisterWait(this);
     Close();
     std::unique_lock<std::mutex> lock(waitMutex);
-    changed.wait(lock, [&]{return pendingAccepts.load() == 0;});
+    changed.wait(lock, [&]{return pendingAccepts().load() == 0;});
     return true;
 }
 bool Server::stopAccepting() noexcept {
@@ -1292,11 +1319,11 @@ bool Server::stop() noexcept {
     if(listenThread)listenThread->Stop();
     if (!cancelTasks()) return false;
     { std::unique_lock<std::mutex> guard(waitMutex); changed.wait(guard, [&]{return taskCount.load() == 0;}); }
-    if(!Shutdown())return false;
+    if(!ShutdownSockets())return false;
     { std::unique_lock<std::mutex> guard(waitMutex); changed.wait(guard, [&]{return connections.load() == 0;}); }
-    for (std::size_t i = 0; i < workers.size(); ++i) PostQueuedCompletionStatus(port, 0, 0, nullptr);
+    for (std::size_t i = 0; i < workers.size(); ++i) PostQueuedCompletionStatus(port(), 0, 0, nullptr);
     for (auto& thread : workers) thread->Join();
-    workers.clear();std::atomic_store(&perfmon,std::shared_ptr<CPerfMon>{});listenThread.reset();listenTimer.reset();timers.clear();timerBlocks.reset(); CloseHandle(port); port = nullptr;
+    workers.clear();std::atomic_store(&perfmon,std::shared_ptr<CPerfMon>{});listenThread.reset();listenTimer.reset();timers.clear();timerBlocks.reset(); CloseHandle(port()); port() = nullptr;
     running.store(false); notifyChange(); return true;
 }
 
@@ -1360,7 +1387,7 @@ CIO_API int L1Interop_WriteBuffers(void* p, std::uint64_t id, const WSABUF* buff
     } catch (...) { return 0; }
 }
 CIO_API int L1Interop_GetListenAddress(void* p, char* out, int* capacity, unsigned short* port) {
-    return p && addressText(static_cast<Server*>(p)->listenAddress, out, capacity, port);
+    return p && addressText(static_cast<Server*>(p)->listenAddress(), out, capacity, port);
 }
 CIO_API int L1Interop_GetLocalAddress(void* p, std::uint64_t id, char* out, int* capacity, unsigned short* port) {
     if (!p) return 0; auto* c = static_cast<Server*>(p)->find(id); if (!c) return 0;
@@ -1458,12 +1485,12 @@ CIO_API int L1Interop_GetSocketLimitDiagnostics(void* p,std::uint64_t* out,int c
 }
 CIO_API int L1Interop_GetListenerDiagnostics(void* p,std::uint64_t* out,int count){
     if(!p||!out||count<8)return 0;auto* s=static_cast<Server*>(p);
-    out[0]=s->accepting.load();out[1]=s->waitCallbacks;out[2]=s->acceptCallbacks;out[3]=s->lastWaitError;
-    out[4]=s->waitFailures;out[5]=s->pendingAccepts;out[6]=s->socketNumbers.size();out[7]=s->workerCount;if(count>=9)out[8]=s->SocketMapCount();return 1;
+    out[0]=s->accepting().load();out[1]=s->waitCallbacks();out[2]=s->acceptCallbacks();out[3]=s->lastWaitError();
+    out[4]=s->waitFailures();out[5]=s->pendingAccepts();out[6]=s->socketNumbers.size();out[7]=s->workerCount;if(count>=9)out[8]=s->SocketMapCount();return 1;
 }
 CIO_API int L1Interop_GetThreadDiagnostics(void* p,std::uint64_t* out,int count){
     if(!p||!out||count<54)return 0;auto* s=static_cast<Server*>(p);
-    for(unsigned n=0;n<18;++n){out[n*3]=s->callbackCounts[n];out[n*3+1]=s->callbackMillis[n];out[n*3+2]=s->callbackStarted[n];}return 1;
+    for(unsigned n=0;n<18;++n){out[n*3]=s->callbackCounts()[n];out[n*3+1]=s->callbackMillis()[n];out[n*3+2]=s->callbackStarted()[n];}return 1;
 }
 CIO_API std::uint64_t L1Interop_FindSocketByNumber(void* p,unsigned number){
     if(!p||!number)return 0;auto* s=static_cast<Server*>(p);auto* user=s->socketNumbers.FindObject(number);

@@ -17,6 +17,7 @@ struct TimerAbiProbe final:CIOObject{
  void OnWaitCallback()noexcept override{++waits;}
  void OnIOCallback(int n,unsigned b,OVERLAPPED* p)noexcept override{value=n;bytes=b;raw=p;}
 };
+static SOCKET factoryArgument=0;
 static void* slot(void* object,unsigned number){
 #ifdef _MSC_VER
  return (*static_cast<void***>(object))[number];
@@ -45,6 +46,14 @@ int main(){
  reinterpret_cast<void(*)(CIOObject*,unsigned,OVERLAPPED*)>(slot(probe,8))(probe,7,nullptr);assert(probe->referenceCount()==1);
  reinterpret_cast<void(*)(CIOObject*,int)>(slot(probe,11))(probe,8);assert(probe->referenceCount()==1);probe->release();
  auto* callbacks=L1Interop_CreateCallbacks();auto* server=static_cast<Server*>(L1Interop_CreateServer(callbacks));assert(server);
+ assert(sizeof(CIOServer)==0x28&&reinterpret_cast<char*>(&server->socketFactory)-reinterpret_cast<char*>(server)==0x90);
+ server->socketFactory=std::make_unique<CDummyServerCallback>([](SOCKET value)noexcept->CIOSocket*{factoryArgument=value;return nullptr;});
+ auto* factory=server->socketFactory.get();assert(sizeof(CDummyServerCallback)==16);
+ assert(reinterpret_cast<CIOSocket*(*)(IServerCallback*,SOCKET)>(slot(factory,1))(factory,12345)==nullptr&&factoryArgument==12345);
+ assert(reinterpret_cast<CIOSocket*(*)(CIOServer*,SOCKET,sockaddr_in*)>(slot(server,12))(server,4321,nullptr)==nullptr&&factoryArgument==4321);
+ reinterpret_cast<void(*)(Server*,SOCKET)>(slot(server,13))(server,INVALID_SOCKET);
+ assert(!reinterpret_cast<bool(*)(Server*,SOCKET,CSocket*)>(slot(server,14))(server,INVALID_SOCKET,nullptr));
+ reinterpret_cast<void(*)(Server*)>(slot(server,15))(server);assert(server->shutdownSucceeded);
  assert(reinterpret_cast<char*>(&server->listening)-reinterpret_cast<char*>(server)==0x18&&reinterpret_cast<char*>(&server->acceptEvent)-reinterpret_cast<char*>(server)==0x20);
  SOCKET socketValue=INVALID_SOCKET;
 #ifndef _WIN32
@@ -75,6 +84,9 @@ int main(){
  reinterpret_cast<void(*)(const CUserSocket*,unsigned char,unsigned short)>(slot(socket,23))(socket,0x51,0x1234);assert(socket->l1().lastSending==0x511234);
  reinterpret_cast<void(*)(CIOSocket*)>(slot(socket,20))(socket);reinterpret_cast<void(*)(CIOSocket*)>(slot(socket,19))(socket);
  for(unsigned words:{8u,18u,24u,1720u,2030u}){std::array<std::uint64_t,2031> values;values.fill(0xacac);assert(L1Interop_GetDiagnostics(server,values.data(),words)&&values[words]==0xacac);if(words==2030)assert(values[1720]==ObjectAllocator::Marker);}
+ assert(server->referenceDiagnostics.reserve());auto* verifier=new CUserSocketReleaseVerifier(server,socket);auto* image=reinterpret_cast<unsigned char*>(verifier);
+ assert(sizeof(CUserSocketReleaseVerifier)==40&&*reinterpret_cast<CUserSocket**>(image+0x18)==socket&&*reinterpret_cast<const wchar_t**>(image+0x20));
+ verifier->release();assert(server->referenceDiagnostics.active==0);
  assert(slot(socket,16)&&slot(socket,17)&&slot(socket,18));socket->release(ObjectReferenceType::ORT_CREATE_DELETE);server->release();L1Interop_ReleaseCallbacks(callbacks);
  std::vector<unsigned char> bytes;unsigned char block[]{0x11,0x22};assert(format(bytes,"cChdQpfSsb",0x12,0x34,0x5678,0x12345678,std::uint64_t(0x1122334455667788ULL),static_cast<void*>(nullptr),1.0,u"가","a",2,static_cast<const void*>(block)));
  assert(bytes.size()==1+1+2+4+8+8+8+4+2+2&&bytes[0]==0x12&&bytes[2]==0x78&&bytes.back()==0x22);
