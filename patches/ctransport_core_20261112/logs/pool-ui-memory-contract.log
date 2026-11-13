@@ -1,0 +1,7 @@
+BASELINE original appendLog,EDT blocked:retainedMessages=12000 heapBytes=54881848
+REPRODUCED original unbounded pending UI callbacks;this is a controlled EDT stall,not proof of every Windows resize cause
+Bounded blocked EDT queue:[127, 260223, 11873, 1]
+resize phase heap bytes=11318632
+resize phase heap bytes=10017616
+PASS production screen logger:12000 updates while EDT blocked,bounded entries/chars,latest retained,64KiB/300-line document,800 resize/paint cycles
+PASS pool diagnostic classification:valid holders,60s stable idle suspicion,negative clock,recovery,unavailable extension,60 sample bound;no forced reclaim

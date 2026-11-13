@@ -1,0 +1,67 @@
+# fn_705d54; PE pdata/unwind; entry 0x705d54
+# chunk 0x705d54..0x705e2b
+0000000000705d54: push     rbx
+0000000000705d56: push     rbp
+0000000000705d57: push     rsi
+0000000000705d58: push     rdi
+0000000000705d59: push     r12
+0000000000705d5b: push     r13
+0000000000705d5d: sub      rsp, 0x48
+0000000000705d61: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000705d6a: mov      r12, r9
+0000000000705d6d: mov      ebp, r8d
+0000000000705d70: mov      rsi, rcx
+0000000000705d73: lea      r13, [rip + 0x8fe1ae]
+0000000000705d7a: mov      qword ptr [rsp + 0x38], r13
+0000000000705d7f: call     0x925138
+0000000000705d84: movsxd   rdi, eax
+0000000000705d87: movsxd   rbx, dword ptr [rip + 0x8fe19a]
+0000000000705d8e: call     qword ptr [rip + 0x41638c] ; IAT GetTickCount
+0000000000705d94: mov      r11d, eax
+0000000000705d97: mov      rax, rdi
+0000000000705d9a: shl      rax, 5
+0000000000705d9e: lea      rcx, [rip + 0x137c0043]
+0000000000705da5: add      rax, rcx
+0000000000705da8: mov      rcx, qword ptr [rax + 8]
+0000000000705dac: test     rcx, rcx
+0000000000705daf: je       0x705e18
+0000000000705db1: mov      rax, qword ptr [rax + 0x10]
+0000000000705db5: sub      rax, rcx
+0000000000705db8: sar      rax, 3
+0000000000705dbc: cmp      rbx, rax
+0000000000705dbf: jae      0x705e18
+0000000000705dc1: mov      qword ptr [rcx + rbx*8], r11
+0000000000705dc5: test     r12, r12
+0000000000705dc8: jne      0x705dd7
+0000000000705dca: mov      rax, qword ptr [rsi]
+0000000000705dcd: mov      edx, ebp
+0000000000705dcf: mov      rcx, rsi
+0000000000705dd2: call     qword ptr [rax + 0x28]
+0000000000705dd5: jmp      0x705de5
+0000000000705dd7: mov      rax, qword ptr [rsi]
+0000000000705dda: mov      r8, r12
+0000000000705ddd: mov      edx, ebp
+0000000000705ddf: mov      rcx, rsi
+0000000000705de2: call     qword ptr [rax + 0x38]
+0000000000705de5: mov      rax, qword ptr [rsi]
+0000000000705de8: mov      byte ptr [rsp + 0x20], 0
+0000000000705ded: mov      r9d, 2
+0000000000705df3: mov      r8d, 0x2bd
+0000000000705df9: lea      rdx, [rip + 0x56be78]
+0000000000705e00: mov      rcx, rsi
+0000000000705e03: call     qword ptr [rax + 0x10]
+0000000000705e06: nop
+0000000000705e07: mov      rdx, r13
+0000000000705e0a: lea      rcx, [rip + 0x137bfc6f]
+0000000000705e11: call     0x4205e0
+0000000000705e16: jmp      0x705e1e
+0000000000705e18: call     0xa71b3c
+0000000000705e1d: int3
+0000000000705e1e: add      rsp, 0x48
+0000000000705e22: pop      r13
+0000000000705e24: pop      r12
+0000000000705e26: pop      rdi
+0000000000705e27: pop      rsi
+0000000000705e28: pop      rbp
+0000000000705e29: pop      rbx
+0000000000705e2a: ret

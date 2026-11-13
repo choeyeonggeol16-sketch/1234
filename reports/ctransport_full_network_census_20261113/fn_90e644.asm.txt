@@ -1,0 +1,23 @@
+# fn_90e644; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x90e644
+# chunk 0x90e644..0x90e6c1
+000000000090e644: mov      edx, dword ptr [rip + 0x2ecb0b8e]
+000000000090e64a: lea      r11, [rip - 0x50e651]
+000000000090e651: mov      r9, rcx
+000000000090e654: mov      r10d, 0x7d58
+000000000090e65a: lea      rax, [rip + 0x45c527]
+000000000090e661: mov      qword ptr [rcx], rax
+000000000090e664: mov      rax, qword ptr gs:[0x58]
+000000000090e66d: mov      r8, qword ptr [rax + rdx*8]
+000000000090e671: movsxd   rdx, dword ptr [r8 + r10]
+000000000090e675: movsxd   rcx, dword ptr [r11 + rdx*4 + 0x47e2a40]
+000000000090e67d: lea      eax, [rcx + 1]
+000000000090e680: mov      dword ptr [r11 + rdx*4 + 0x47e2a40], eax
+000000000090e688: lea      rax, [rip + 0x45c5c1] ; UTF16 '__cdecl CSocket::~CSocket(void)'
+000000000090e68f: imul     rdx, rdx, 0x3e8
+000000000090e696: add      rdx, rcx
+000000000090e699: mov      rcx, r9
+000000000090e69c: mov      qword ptr [r11 + rdx*8 + 0x47bf7c0], rax
+000000000090e6a4: mov      qword ptr [r9 + 0xc0], 0
+000000000090e6af: movsxd   rax, dword ptr [r8 + r10]
+000000000090e6b3: add      dword ptr [r11 + rax*4 + 0x47e2a40], -1
+000000000090e6bc: jmp      0x545518

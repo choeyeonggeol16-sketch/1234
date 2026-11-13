@@ -1,0 +1,36 @@
+# fn_704d1c; PE pdata/unwind; entry 0x704d1c
+# chunk 0x704d1c..0x704dab
+0000000000704d1c: push     rbx
+0000000000704d1e: push     rbp
+0000000000704d1f: push     rsi
+0000000000704d20: push     rdi
+0000000000704d21: sub      rsp, 0x28
+0000000000704d25: mov      rax, qword ptr gs:[0x58]
+0000000000704d2e: mov      edx, dword ptr [rip + 0x2eeba4a4]
+0000000000704d34: lea      rbp, [rip - 0x304d3b]
+0000000000704d3b: mov      rbx, qword ptr [rax + rdx*8]
+0000000000704d3f: mov      esi, 0x7d58
+0000000000704d44: mov      rdi, rcx
+0000000000704d47: movsxd   r8, dword ptr [rbx + rsi]
+0000000000704d4b: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+0000000000704d53: lea      eax, [rdx + 1]
+0000000000704d56: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+0000000000704d5e: lea      rax, [rip + 0x56d5eb] ; UTF16 'void __cdecl CIOServer::OnWaitCallback(void)'
+0000000000704d65: imul     r8, r8, 0x3e8
+0000000000704d6c: add      r8, rdx
+0000000000704d6f: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+0000000000704d77: mov      rcx, qword ptr [rcx + 0x20]
+0000000000704d7b: call     qword ptr [rip + 0x417947] ; IAT WSAResetEvent
+0000000000704d81: mov      rcx, qword ptr [rip + 0x454c1a8]
+0000000000704d88: xor      r9d, r9d
+0000000000704d8b: mov      r8, rdi
+0000000000704d8e: xor      edx, edx
+0000000000704d90: call     qword ptr [rip + 0x417392] ; IAT PostQueuedCompletionStatus
+0000000000704d96: movsxd   rax, dword ptr [rbx + rsi]
+0000000000704d9a: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+0000000000704da2: add      rsp, 0x28
+0000000000704da6: pop      rdi
+0000000000704da7: pop      rsi
+0000000000704da8: pop      rbp
+0000000000704da9: pop      rbx
+0000000000704daa: ret

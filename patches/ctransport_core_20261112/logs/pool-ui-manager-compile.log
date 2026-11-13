@@ -1,0 +1,8 @@
+src/l1j/server/server/utils/SystemUtil.java:56: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal
+			list.add(new Integer(value));
+			         ^
+Note: src/l1j/server/swing/chocco.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: tests/WindowsUiMemory.java uses preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.
+1 warning

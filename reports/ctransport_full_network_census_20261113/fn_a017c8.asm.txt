@@ -1,0 +1,68 @@
+# fn_a017c8; PE pdata/unwind; entry 0xa017c8
+# chunk 0xa017c8..0xa018f9
+0000000000a017c8: push     rbx
+0000000000a017ca: push     rbp
+0000000000a017cb: push     rdi
+0000000000a017cc: push     r12
+0000000000a017ce: sub      rsp, 0x848
+0000000000a017d5: mov      qword ptr [rsp + 0x50], 0xfffffffffffffffe
+0000000000a017de: mov      rdi, rdx
+0000000000a017e1: mov      r9, rcx
+0000000000a017e4: mov      dword ptr [rsp + 0x870], 0
+0000000000a017ef: mov      r8d, dword ptr [rip + 0x2ebbd9e2]
+0000000000a017f6: mov      rax, qword ptr gs:[0x58]
+0000000000a017ff: mov      ebp, 0x7d58
+0000000000a01804: mov      rbx, qword ptr [rax + r8*8]
+0000000000a01808: movsxd   r8, dword ptr [rbx + rbp]
+0000000000a0180c: lea      r12, [rip - 0x601813]
+0000000000a01813: movsxd   rcx, dword ptr [r12 + r8*4 + 0x47e2a40]
+0000000000a0181b: lea      eax, [rcx + 1]
+0000000000a0181e: mov      dword ptr [r12 + r8*4 + 0x47e2a40], eax
+0000000000a01826: imul     r8, r8, 0x3e8
+0000000000a0182d: add      r8, rcx
+0000000000a01830: lea      rax, [rip + 0x3c04d9] ; UTF16 'class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::xallocator<wchar_t> > __cdecl CUserSocket::GetMacAddressString(void)'
+0000000000a01837: mov      qword ptr [r12 + r8*8 + 0x47bf7c0], rax
+0000000000a0183f: mov      r9, qword ptr [r9 + 0xc88]
+0000000000a01846: movzx    r11d, r9b
+0000000000a0184a: mov      rax, r9
+0000000000a0184d: sar      rax, 8
+0000000000a01851: movzx    r10d, al
+0000000000a01855: mov      rax, r9
+0000000000a01858: sar      rax, 0x10
+0000000000a0185c: movzx    r8d, al
+0000000000a01860: mov      rax, r9
+0000000000a01863: sar      rax, 0x18
+0000000000a01867: movzx    edx, al
+0000000000a0186a: mov      rax, r9
+0000000000a0186d: sar      rax, 0x20
+0000000000a01871: movzx    ecx, al
+0000000000a01874: sar      r9, 0x28
+0000000000a01878: movzx    r9d, r9b
+0000000000a0187c: mov      qword ptr [rsp + 0x40], r11
+0000000000a01881: mov      qword ptr [rsp + 0x38], r10
+0000000000a01886: mov      qword ptr [rsp + 0x30], r8
+0000000000a0188b: mov      qword ptr [rsp + 0x28], rdx
+0000000000a01890: mov      qword ptr [rsp + 0x20], rcx
+0000000000a01895: lea      r8, [rip + 0x18748c] ; UTF16 '%02X-%02X-%02X-%02X-%02X-%02X'
+0000000000a0189c: mov      edx, 0x3e7
+0000000000a018a1: lea      rcx, [rsp + 0x60]
+0000000000a018a6: call     0x670a48
+0000000000a018ab: mov      qword ptr [rdi + 0x20], 7
+0000000000a018b3: mov      qword ptr [rdi + 0x18], 0
+0000000000a018bb: mov      word ptr [rdi + 8], 0
+0000000000a018c1: lea      rcx, [rsp + 0x60]
+0000000000a018c6: call     0xab9e10
+0000000000a018cb: mov      r8, rax
+0000000000a018ce: lea      rdx, [rsp + 0x60]
+0000000000a018d3: mov      rcx, rdi
+0000000000a018d6: call     0x40a9c4
+0000000000a018db: nop
+0000000000a018dc: movsxd   rax, dword ptr [rbx + rbp]
+0000000000a018e0: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+0000000000a018e9: mov      rax, rdi
+0000000000a018ec: add      rsp, 0x848
+0000000000a018f3: pop      r12
+0000000000a018f5: pop      rdi
+0000000000a018f6: pop      rbp
+0000000000a018f7: pop      rbx
+0000000000a018f8: ret

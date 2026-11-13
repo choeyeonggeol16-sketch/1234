@@ -1,0 +1,6 @@
+# fn_404c88; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x404c88
+# chunk 0x404c88..0x404c94
+0000000000404c88: xor      eax, eax
+0000000000404c8a: xchg     dword ptr [rcx + 0xc], eax
+0000000000404c8d: mov      r8, qword ptr [rcx]
+0000000000404c90: jmp      qword ptr [r8 + 0x20]

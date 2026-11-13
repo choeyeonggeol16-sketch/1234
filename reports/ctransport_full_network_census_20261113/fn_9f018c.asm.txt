@@ -1,0 +1,51 @@
+# fn_9f018c; PE pdata/unwind; entry 0x9f018c
+# chunk 0x9f018c..0x9f025b
+00000000009f018c: push     rbx
+00000000009f018e: push     rbp
+00000000009f018f: push     rsi
+00000000009f0190: push     rdi
+00000000009f0191: push     r12
+00000000009f0193: sub      rsp, 0x30
+00000000009f0197: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000009f01a0: mov      rsi, rdx
+00000000009f01a3: mov      r8d, dword ptr [rip + 0x2ebcf02e]
+00000000009f01aa: mov      rax, qword ptr gs:[0x58]
+00000000009f01b3: mov      r12d, 0x7d58
+00000000009f01b9: mov      rbx, qword ptr [rax + r8*8]
+00000000009f01bd: movsxd   r9, dword ptr [rbx + r12]
+00000000009f01c1: lea      rbp, [rip - 0x5f01c8]
+00000000009f01c8: movsxd   r8, dword ptr [rbp + r9*4 + 0x47e2a40]
+00000000009f01d0: lea      eax, [r8 + 1]
+00000000009f01d4: mov      dword ptr [rbp + r9*4 + 0x47e2a40], eax
+00000000009f01dc: imul     r9, r9, 0x3e8
+00000000009f01e3: add      r9, r8
+00000000009f01e6: lea      rax, [rip + 0x3c9893] ; UTF16 'bool __cdecl CUserSocket::TradeDonePacket(class CSocket *,const unsigned char *)'
+00000000009f01ed: mov      qword ptr [rbp + r9*8 + 0x47bf7c0], rax
+00000000009f01f5: mov      dword ptr [rsp + 0x60], 0
+00000000009f01fd: mov      rax, qword ptr [rcx]
+00000000009f0200: call     qword ptr [rax + 0xc0]
+00000000009f0206: mov      rdi, rax
+00000000009f0209: test     rax, rax
+00000000009f020c: jne      0x9f021e
+00000000009f020e: movsxd   rax, dword ptr [rbx + r12]
+00000000009f0212: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009f021a: mov      al, 1
+00000000009f021c: jmp      0x9f0250
+00000000009f021e: lea      r8, [rsp + 0x60]
+00000000009f0223: lea      rdx, [rip + 0x139a4a]
+00000000009f022a: mov      rcx, rsi
+00000000009f022d: call     0x705278
+00000000009f0232: mov      r11, qword ptr [rdi]
+00000000009f0235: mov      edx, dword ptr [rsp + 0x60]
+00000000009f0239: mov      rcx, rdi
+00000000009f023c: call     qword ptr [r11 + 0xcc8]
+00000000009f0243: nop
+00000000009f0244: movsxd   rcx, dword ptr [rbx + r12]
+00000000009f0248: add      dword ptr [rbp + rcx*4 + 0x47e2a40], -1
+00000000009f0250: add      rsp, 0x30
+00000000009f0254: pop      r12
+00000000009f0256: pop      rdi
+00000000009f0257: pop      rsi
+00000000009f0258: pop      rbp
+00000000009f0259: pop      rbx
+00000000009f025a: ret

@@ -9,12 +9,8 @@ if PATCH.exists():shutil.rmtree(PATCH)
 PATCH.mkdir(parents=True)
 with zipfile.ZipFile(BASE) as z:old={n:z.read(n) for n in z.namelist() if not n.endswith('/')}
 current={str(p.relative_to(ROOT)):p.read_bytes() for p in sorted((ROOT/'src').rglob('*')) if p.is_file()}
-scope_module=runpy.run_path(str(ROOT/'tests/verify_followup_scope.py'))
-assert scope_module['verify'](current,ROOT/'research/followup/source-scope-baseline.json')==1692
-safe_scope=runpy.run_path(str(ROOT/'tests/verify_safesend_scope.py'))
-assert safe_scope['verify'](current,ROOT/'research/safesend-close/source-scope-baseline.json')==1702
-extended_scope=runpy.run_path(str(ROOT/'tests/verify_extended_scope.py'))
-assert extended_scope['verify'](current,ROOT/'research/extended-diagnostics/source-scope-baseline.json')==1707
+pool_scope=runpy.run_path(str(ROOT/'tests/verify_pool_manager_scope.py'))
+assert pool_scope['verify'](ROOT)==1702
 # Build the full source archive first; the Windows evidence and native bundle
 # then name exactly this archive, avoiding a stale previous-source SHA.
 source_archive=REPO/'downloads/CTransport_Aden_FULL_SRC_20261112.zip'
@@ -44,11 +40,11 @@ for name in changed:
  out=PATCH/name;out.parent.mkdir(parents=True,exist_ok=True);out.write_bytes(current[name])
 shutil.copytree(ROOT/'native',PATCH/'native')
 shutil.copytree(ROOT/'config',PATCH/'config')
-for name in ['native_engine_test.cpp','fake_windows.hpp','run_native_tests.py','test_java_batch.py','TransportConfigTest.java','verify_native_binary.py','CTransportWindowsSmokeTest.java','run_windows.ps1','windows-stubs','pss_window','test_pss_independent.py','pss_client_load.c','CUserSocketWindowsTest.java','CTransportSessionWindowsTest.java','CIOPacketCodecReference.java','CUserSocketOwnerWindowsTest.java','fake_l1_codec.hpp','owner-fixtures','owner-production-sources.txt','usersocket','send-copy-contract','test_send_copy_contract.py','verify_abi9_scope.py','verify_abi10_scope.py','CSharedBroadcastWindowsTest.java','verify_followup_scope.py','NetworkDiagnosticsTest.java','test_network_followup.py','broadcast-followup','CUserSocketSafeSendWindowsTest.java','verify_safesend_scope.py','ExtendedPacketDiagnosticsTest.java','ExtendedPacketDecoderTest.java','test_extended_diagnostics.py','verify_extended_scope.py']:
+for name in ['native_engine_test.cpp','fake_windows.hpp','run_native_tests.py','test_java_batch.py','TransportConfigTest.java','verify_native_binary.py','CTransportWindowsSmokeTest.java','run_windows.ps1','windows-stubs','pss_window','test_pss_independent.py','pss_client_load.c','CUserSocketWindowsTest.java','CTransportSessionWindowsTest.java','CIOPacketCodecReference.java','CUserSocketOwnerWindowsTest.java','fake_l1_codec.hpp','owner-fixtures','owner-production-sources.txt','usersocket','send-copy-contract','test_send_copy_contract.py','verify_abi9_scope.py','verify_abi10_scope.py','CSharedBroadcastWindowsTest.java','verify_followup_scope.py','NetworkDiagnosticsTest.java','test_network_followup.py','broadcast-followup','CUserSocketSafeSendWindowsTest.java','verify_safesend_scope.py','ExtendedPacketDiagnosticsTest.java','ExtendedPacketDecoderTest.java','test_extended_diagnostics.py','verify_extended_scope.py','ManagerLogBufferTest.java','ManagerWindowTest.java','WindowsUiMemory.java','PoolSnapshotTest.cpp','PoolDiagnosticsTest.java','PoolReclamationWindowsTest.java','test_manager_memory.py','test_manager_window.py','verify_pool_manager_scope.py','manager-fixtures']:
  dest=PATCH/'tests'/name;dest.parent.mkdir(exist_ok=True)
  if (ROOT/'tests'/name).is_dir():shutil.copytree(ROOT/'tests'/name,dest)
  else:shutil.copy2(ROOT/'tests'/name,dest)
-for name in ['scope','trace_restore_scope.py','find_core_initializers.py','recover_server_core.py','server-rtti.json','L2Server.exe.rtti-disasm.txt','L2Server(10).exe.rtti-disasm.txt','hp-batch-worker-excerpt.txt','recover_user_socket.py','user-socket','recover_registry.py','registry','network-audit','audit_network_abi5.py','build_network_audit_matrix.py','abi6','creature-serializer-audit','remaining-network-audit','send-close-audit','audit_send_close_abi8.py','abi9','abi10','followup','safesend-close','extended-diagnostics']:
+for name in ['scope','trace_restore_scope.py','find_core_initializers.py','recover_server_core.py','server-rtti.json','L2Server.exe.rtti-disasm.txt','L2Server(10).exe.rtti-disasm.txt','hp-batch-worker-excerpt.txt','recover_user_socket.py','user-socket','recover_registry.py','registry','network-audit','audit_network_abi5.py','build_network_audit_matrix.py','abi6','creature-serializer-audit','remaining-network-audit','send-close-audit','audit_send_close_abi8.py','abi9','abi10','followup','safesend-close','extended-diagnostics','pool-manager']:
  dest=PATCH/'research'/name;dest.parent.mkdir(exist_ok=True)
  if (ROOT/'research'/name).is_dir():shutil.copytree(ROOT/'research'/name,dest)
  else:shutil.copy2(ROOT/'research'/name,dest)
@@ -57,8 +53,8 @@ for name in ['CTransport.dll','CTransport.lib','CTransport_SelfTest.exe','native
 shutil.copytree(ROOT/'build/pss-client',PATCH/'build/pss-client')
 for name in ['native-test.log','native-test-build.log','native-suite.log','tsan-test.log','tsan-test-build.log','tsan-suite.log','full-build.log','java-suite.log','transport-config-test.log','native-binary-test.log','windows-build.log','windows-selftest-build.log','build-manifest.log','scope-analysis.log','rtti-analysis.log','windows-smoke-compile.log','windows-actual-test.log','pss-independent-contract.log','pss-pairing-contract.log','pss-client-load-build.log','user-socket-analysis.log','user-socket-native-suite.log','user-socket-tsan-suite.log','user-socket-java-suite.log','user-socket-contract.log','user-socket-windows-compile.log','user-socket-binary-test.log','user-socket-build-manifest.log','user-socket-pss-preservation.log','abi5-native-suite.log','abi5-tsan-suite.log','abi5-java-suite.log','abi5-binary-test.log','abi5-build-manifest.log','abi5-windows-compile.log','abi5-owner-compile.log','abi5-pss-preservation.log','abi5-pss-contract.log','registry-analysis.log','abi5-windows-actual.log','network-audit.log']:
  out=PATCH/'logs'/name;out.parent.mkdir(exist_ok=True);shutil.copy2(ROOT/'logs'/name,out)
-for source in sorted([*(ROOT/'logs').glob('abi6-*.log'),*(ROOT/'logs').glob('abi7-*.log'),*(ROOT/'logs').glob('abi8-*.log'),*(ROOT/'logs').glob('abi9-*.log'),*(ROOT/'logs').glob('abi10-*.log'),*(ROOT/'logs').glob('followup-*.log'),*(ROOT/'logs').glob('safesend-*.log'),*(ROOT/'logs').glob('extended-*.log')]):
- if source.name in ('abi6-package.log','abi7-package.log','abi8-package.log','abi9-package.log','abi10-package.log','followup-package.log','safesend-package.log','extended-package.log'):continue
+for source in sorted([*(ROOT/'logs').glob('abi6-*.log'),*(ROOT/'logs').glob('abi7-*.log'),*(ROOT/'logs').glob('abi8-*.log'),*(ROOT/'logs').glob('abi9-*.log'),*(ROOT/'logs').glob('abi10-*.log'),*(ROOT/'logs').glob('followup-*.log'),*(ROOT/'logs').glob('safesend-*.log'),*(ROOT/'logs').glob('extended-*.log'),*(ROOT/'logs').glob('pool-ui-*.log')]):
+ if source.name in ('abi6-package.log','abi7-package.log','abi8-package.log','abi9-package.log','abi10-package.log','followup-package.log','safesend-package.log','extended-package.log','pool-ui-package.log'):continue
  shutil.copy2(source,PATCH/'logs'/source.name)
 shutil.copy2(ROOT/'WINDOWS_VERIFICATION.json',PATCH/'WINDOWS_VERIFICATION.json')
 shutil.copy2(ROOT/'README_CTRANSPORT.md',PATCH/'README.md')
@@ -71,6 +67,8 @@ shutil.copy2(ROOT/'REPORT_SHARED_BROADCAST_ABI10.md',PATCH/'REPORT_SHARED_BROADC
 shutil.copy2(ROOT/'REPORT_NETWORK_FOLLOWUP.md',PATCH/'REPORT_NETWORK_FOLLOWUP.md')
 shutil.copy2(ROOT/'REPORT_SAFESEND_CLOSE.md',PATCH/'REPORT_SAFESEND_CLOSE.md')
 shutil.copy2(ROOT/'REPORT_EXTENDED_COMMANDS.md',PATCH/'REPORT_EXTENDED_COMMANDS.md')
+shutil.copy2(ROOT/'REPORT_POOL_MANAGER.md',PATCH/'REPORT_POOL_MANAGER.md')
+shutil.copy2(ROOT/'REPORT_POOL_MANAGER.md',REPO/'reports/CTRANSPORT_POOL_MANAGER_20261113.md')
 shutil.copy2(ROOT/'REPORT_EXTENDED_COMMANDS.md',REPO/'reports/CTRANSPORT_EXTENDED_COMMANDS_20261113.md')
 shutil.copy2(ROOT/'REPORT_SAFESEND_CLOSE.md',REPO/'reports/CTRANSPORT_SAFESEND_CLOSE_20261113.md')
 shutil.copy2(ROOT/'REPORT_NETWORK_FOLLOWUP.md',REPO/'reports/CTRANSPORT_MANAGER_FILTERS_FOLLOWUP_20261113.md')
@@ -90,6 +88,8 @@ manifest={'base_revision':'c76e7b2753876fc8bb1aac4075e78a5d31bf522f','branch':'c
 manifest['followup_structures']=['common L1 map/screen/radius/rectangle predicate','five shared broadcast serializers with common recipient traversal','bounded metadata packet history/worker context and manager reports','config file with JVM override;existing MAC provider enforcement;no DB','source scope1692 unchanged from previous ABI10;native DLL unchanged']
 manifest['safesend_close_structures']=['optional emblem-only SafeSend512KiB margin under reservation lock','optional rejection/abort/pool rollback without disconnect or cipher/FIFO consumption','first native operation/error forwarded through FFM callbacks and late owner binding','separate L1 Java close reason and native cause in manager history','1702 outside combined allowlist unchanged from32b7f46;native DLL/codec/PSS unchanged']
 manifest['extended_command_structures']=['actual decoder-selected EXTENDED/PROTOBUF/CRAFT/ACTION_UI identities','one-event128 history and active manager work;no payload or subtype aggregation','sequence-checked ring update;nested restoration and overflow isolation','1707 other sources unchanged fromd4ea0b9;DLL/codec/PSS unchanged']
+manifest['pool_manager_structures']=['native pool snapshot from existing ring positions;legacy8 diagnostic prefix plus18 optional extension marker','Java bucket borrow/final-return counters and request-driven60 sample observations','manager screen queue1024 entries/256KiChars;document64KiChars/300lines;coalesced status','real Windows manager resize/move and pool recovery tests;game bindings are fixtures','1702 other sources unchanged from1f5ff36;unchanged independent PSS and codec']
+manifest['source_scope']=verification['source_scope']
 manifest['config_file']='config/ctransport.properties'
 manifest['client_identity_status']='Server API/config existing;client identity transmitter/verifier not integrated;default limit0'
 (PATCH/'MANIFEST.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
@@ -140,7 +140,7 @@ with zipfile.ZipFile(dest,'w',zipfile.ZIP_DEFLATED,compresslevel=6)as z:
   if p.is_file():z.write(p,str(p.relative_to(PATCH.parent)))
 with zipfile.ZipFile(dest)as z:assert z.testzip() is None
 archives[dest.name]=SHA(dest.read_bytes());Path(str(dest)+'.sha256').write_text(archives[dest.name]+'  '+dest.name+'\n')
-readme=REPO/'README.md';text=readme.read_text();title='## 2026-11-13 — 매니저 확장 명령 조회'
-heading=title+'\n\n[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·설정·검사**](downloads/CTransport_CORE_20261112.zip) · [**구현 보고서**](reports/CTRANSPORT_EXTENDED_COMMANDS_20261113.md)\n\n매니저 보고서의 최근 패킷128개·프로파일에 실제 디코더가 선택한 확장 요청 종류와 명령 번호를 표시합니다. 기본 opcode별 카운트/시간 의미와 기존 송수신·코덱·독립 PSS는 유지합니다. 전체 src를 clean build해 적용하며 추가 SQL은 없습니다.\n\n이하 내용은 이전 배포 이력입니다.\n\n---\n\n'
+readme=REPO/'README.md';text=readme.read_text();title='## 2026-11-13 — 풀 회수 진단 / 매니저 메모리 제한'
+heading=title+'\n\n[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·설정·검사**](downloads/CTransport_CORE_20261112.zip) · [**구현 보고서**](reports/CTRANSPORT_POOL_MANAGER_20261113.md)\n\n보고서 → 풀·회수 진단에 사용중/확보량·대여/반납·회수 지연과 제한된 관측 기록을 추가했습니다. 화면 로그 큐/글자 수와 상태 갱신에 상한을 넣고 창 이동·크기 변경을 검사했습니다. 전체 src와 새 CTransport.dll을 함께 적용합니다. ABI10/67exports,코덱·독립 PSS와 SQL은 그대로입니다.\n\n이하 내용은 이전 배포 이력입니다.\n\n---\n\n'
 if not text.startswith(title):readme.write_text(heading+text)
 print(json.dumps({'archives':archives,'dll_sha256':dllsha,'source_files':len(current),'java_files':manifest['java_files'],'changed':len(changed),'deleted':deleted},indent=2))

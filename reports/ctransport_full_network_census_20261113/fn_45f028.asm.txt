@@ -1,0 +1,61 @@
+# fn_45f028; PE pdata/unwind; entry 0x45f028
+# chunk 0x45f028..0x45f11a
+000000000045f028: push     rbx
+000000000045f02a: sub      rsp, 0x30
+000000000045f02e: test     edx, edx
+000000000045f030: mov      rbx, rcx
+000000000045f033: jne      0x45f069
+000000000045f035: lea      rax, [rcx + 0x58]
+000000000045f039: cmp      r9, rax
+000000000045f03c: jne      0x45f043
+000000000045f03e: call     0x45d534
+000000000045f043: mov      rax, qword ptr [rbx]
+000000000045f046: lea      rdx, [rip + 0x6f5753]
+000000000045f04d: mov      r9d, 3
+000000000045f053: mov      r8d, 0x2da
+000000000045f059: mov      rcx, rbx
+000000000045f05c: mov      byte ptr [rsp + 0x20], 0
+000000000045f061: call     qword ptr [rax + 0x10]
+000000000045f064: jmp      0x45f114
+000000000045f069: test     r9, r9
+000000000045f06c: jne      0x45f085
+000000000045f06e: mov      rax, qword ptr [rcx]
+000000000045f071: mov      edx, r8d
+000000000045f074: call     qword ptr [rax + 0x28]
+000000000045f077: mov      r9d, 2
+000000000045f07d: mov      r8d, 0x2df
+000000000045f083: jmp      0x45f0d5
+000000000045f085: lea      rax, [rcx + 0x58]
+000000000045f089: cmp      r9, rax
+000000000045f08c: jne      0x45f09e
+000000000045f08e: mov      edx, r8d
+000000000045f091: call     0x45de2c
+000000000045f096: mov      r8d, 0x2e4
+000000000045f09c: jmp      0x45f0cf
+000000000045f09e: lea      rax, [rcx + 0x78]
+000000000045f0a2: cmp      r9, rax
+000000000045f0a5: jne      0x45f0ed
+000000000045f0a7: mov      r9d, r8d
+000000000045f0aa: lea      rax, [rip + 0x6f6547] ; UTF16 'WriteCallback'
+000000000045f0b1: lea      r8, [rip - 0x818]
+000000000045f0b8: add      rcx, 0x28
+000000000045f0bc: mov      rdx, rbx
+000000000045f0bf: mov      qword ptr [rsp + 0x20], rax
+000000000045f0c4: call     0x45c7ac
+000000000045f0c9: mov      r8d, 0x2e9
+000000000045f0cf: mov      r9d, 3
+000000000045f0d5: mov      r11, qword ptr [rbx]
+000000000045f0d8: lea      rdx, [rip + 0x6f56c1]
+000000000045f0df: mov      rcx, rbx
+000000000045f0e2: mov      byte ptr [rsp + 0x20], 0
+000000000045f0e7: call     qword ptr [r11 + 0x10]
+000000000045f0eb: jmp      0x45f114
+000000000045f0ed: lea      r9, [rip + 0x6d5c2c] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\ioc.h'
+000000000045f0f4: lea      r8, [rip + 0x6f651d] ; UTF16 '[%s][%d] Invalid overlapped!!!'
+000000000045f0fb: lea      rcx, [rip + 0xdac279e]
+000000000045f102: mov      edx, 2
+000000000045f107: mov      dword ptr [rsp + 0x20], 0x2ed
+000000000045f10f: call     0x734514
+000000000045f114: add      rsp, 0x30
+000000000045f118: pop      rbx
+000000000045f119: ret

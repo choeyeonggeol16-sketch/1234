@@ -1,0 +1,50 @@
+# fn_9f245c; PE pdata/unwind; entry 0x9f245c
+# chunk 0x9f245c..0x9f2529
+00000000009f245c: push     rbx
+00000000009f245e: push     rbp
+00000000009f245f: push     rsi
+00000000009f2460: push     rdi
+00000000009f2461: sub      rsp, 0x38
+00000000009f2465: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000009f246e: mov      r10, rdx
+00000000009f2471: mov      rbx, rcx
+00000000009f2474: mov      r8d, dword ptr [rip + 0x2ebccd5d]
+00000000009f247b: mov      rax, qword ptr gs:[0x58]
+00000000009f2484: mov      ebp, 0x7d58
+00000000009f2489: mov      rdi, qword ptr [rax + r8*8]
+00000000009f248d: movsxd   r9, dword ptr [rdi + rbp]
+00000000009f2491: lea      rsi, [rip - 0x5f2498]
+00000000009f2498: movsxd   r8, dword ptr [rsi + r9*4 + 0x47e2a40]
+00000000009f24a0: lea      eax, [r8 + 1]
+00000000009f24a4: mov      dword ptr [rsi + r9*4 + 0x47e2a40], eax
+00000000009f24ac: imul     r9, r9, 0x3e8
+00000000009f24b3: add      r9, r8
+00000000009f24b6: lea      rax, [rip + 0x3c8933] ; UTF16 'bool __cdecl CUserSocket::RequestEnchantItemPacket(class CSocket *,const unsigned char *)'
+00000000009f24bd: mov      qword ptr [rsi + r9*8 + 0x47bf7c0], rax
+00000000009f24c5: mov      dword ptr [rsp + 0x60], 0
+00000000009f24cd: lea      r8, [rsp + 0x60]
+00000000009f24d2: lea      rdx, [rip + 0x13779b]
+00000000009f24d9: mov      rcx, r10
+00000000009f24dc: call     0x705278
+00000000009f24e1: mov      r11, qword ptr [rbx]
+00000000009f24e4: mov      rcx, rbx
+00000000009f24e7: call     qword ptr [r11 + 0xc0]
+00000000009f24ee: mov      rcx, rax
+00000000009f24f1: test     rax, rax
+00000000009f24f4: jne      0x9f2506
+00000000009f24f6: movsxd   rax, dword ptr [rdi + rbp]
+00000000009f24fa: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000009f2502: mov      al, 1
+00000000009f2504: jmp      0x9f2520
+00000000009f2506: mov      rax, qword ptr [rax]
+00000000009f2509: mov      edx, dword ptr [rsp + 0x60]
+00000000009f250d: call     qword ptr [rax + 0xc98]
+00000000009f2513: nop
+00000000009f2514: movsxd   rcx, dword ptr [rdi + rbp]
+00000000009f2518: add      dword ptr [rsi + rcx*4 + 0x47e2a40], -1
+00000000009f2520: add      rsp, 0x38
+00000000009f2524: pop      rdi
+00000000009f2525: pop      rsi
+00000000009f2526: pop      rbp
+00000000009f2527: pop      rbx
+00000000009f2528: ret

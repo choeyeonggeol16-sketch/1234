@@ -1,0 +1,260 @@
+# fn_7b071c; PE pdata/unwind; entry 0x7b071c
+# chunk 0x7b071c..0x7b0c44
+00000000007b071c: mov      qword ptr [rsp + 0x10], rdx
+00000000007b0721: push     rbx
+00000000007b0722: push     rbp
+00000000007b0723: push     rsi
+00000000007b0724: push     rdi
+00000000007b0725: push     r12
+00000000007b0727: push     r13
+00000000007b0729: push     r14
+00000000007b072b: push     r15
+00000000007b072d: mov      r11, rsp
+00000000007b0730: sub      rsp, 0x148
+00000000007b0737: mov      qword ptr [rsp + 0xd0], 0xfffffffffffffffe
+00000000007b0743: mov      rbp, r8
+00000000007b0746: mov      rdi, rdx
+00000000007b0749: mov      r12, rcx
+00000000007b074c: mov      r10d, dword ptr [rip + 0x2ee0ea85]
+00000000007b0753: mov      rax, qword ptr gs:[0x58]
+00000000007b075c: mov      r13d, 0x7d58
+00000000007b0762: mov      r14, qword ptr [rax + r10*8]
+00000000007b0766: movsxd   r10, dword ptr [r14 + r13]
+00000000007b076a: lea      rsi, [rip - 0x3b0771]
+00000000007b0771: movsxd   r8, dword ptr [rsi + r10*4 + 0x47e2a40]
+00000000007b0779: lea      eax, [r8 + 1]
+00000000007b077d: mov      dword ptr [rsi + r10*4 + 0x47e2a40], eax
+00000000007b0785: imul     r10, r10, 0x3e8
+00000000007b078c: add      r10, r8
+00000000007b078f: lea      rax, [rip + 0x50a20a] ; UTF16 'void __cdecl CExecutionSerializer<class CCreature,16>::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(struct CExecutionArgumentPad *),class CExecutionArgument *,const wchar_t *)'
+00000000007b0796: mov      qword ptr [rsi + r10*8 + 0x47bf7c0], rax
+00000000007b079e: mov      eax, dword ptr [rcx + 0x14]
+00000000007b07a1: cmp      eax, dword ptr [r14 + r13]
+00000000007b07a5: jne      0x7b08cf
+00000000007b07ab: mov      rax, qword ptr [r9]
+00000000007b07ae: lea      rdx, [r11 - 0x68]
+00000000007b07b2: mov      rcx, r9
+00000000007b07b5: call     qword ptr [rax]
+00000000007b07b7: mov      r13d, 1
+00000000007b07bd: add      dword ptr [r12 + 0x5b0], r13d
+00000000007b07c5: cmp      dword ptr [r12 + 0x5b0], 4
+00000000007b07ce: jle      0x7b08a3
+00000000007b07d4: mov      rdx, rdi
+00000000007b07d7: lea      rcx, [rsp + 0xa0]
+00000000007b07df: call     0x925154
+00000000007b07e4: cvttsd2si ebx, qword ptr [rsp + 0xb0]
+00000000007b07ed: cvttsd2si edi, qword ptr [rsp + 0xa8]
+00000000007b07f6: cvttsd2si esi, qword ptr [rsp + 0xa0]
+00000000007b07ff: mov      rax, qword ptr [r12 + 0x5a8]
+00000000007b0807: lea      r15, [rip + 0x380ad2] ; UTF16 'name is null'
+00000000007b080e: test     rax, rax
+00000000007b0811: cmovne   r15, rax
+00000000007b0815: lea      rdx, [rip + 0x2ee0e9e4]
+00000000007b081c: lea      rcx, [rip + 0x83e695]
+00000000007b0823: call     0xab8550
+00000000007b0828: mov      dword ptr [rsp + 0x68], ebx
+00000000007b082c: mov      dword ptr [rsp + 0x60], edi
+00000000007b0830: mov      dword ptr [rsp + 0x58], esi
+00000000007b0834: mov      ecx, dword ptr [r12 + 0x5b0]
+00000000007b083c: mov      dword ptr [rsp + 0x50], ecx
+00000000007b0840: mov      dword ptr [rsp + 0x48], 0x10
+00000000007b0848: mov      qword ptr [rsp + 0x40], rax
+00000000007b084d: mov      rax, qword ptr [rsp + 0x1b0]
+00000000007b0855: mov      qword ptr [rsp + 0x38], rax
+00000000007b085a: mov      qword ptr [rsp + 0x30], r15
+00000000007b085f: mov      ebx, 0x7d58
+00000000007b0864: mov      eax, dword ptr [r14 + rbx]
+00000000007b0868: mov      dword ptr [rsp + 0x28], eax
+00000000007b086c: mov      dword ptr [rsp + 0x20], 0x775
+00000000007b0874: lea      r9, [rip + 0x3824f5] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\ThreadSafeLibrary.h'
+00000000007b087b: lea      r8, [rip + 0x38244e] ; UTF16 '[%s][%d][tid:%d][%s][%s][%S] Async Exec [%d] Recursive Count[%d] (%d, %d, %d)'
+00000000007b0882: lea      edx, [r13 + 1]
+00000000007b0886: lea      rcx, [rip + 0xd771013]
+00000000007b088d: call     0x734514
+00000000007b0892: mov      rdi, qword ptr [rsp + 0x198]
+00000000007b089a: lea      rsi, [rip - 0x3b08a1]
+00000000007b08a1: jmp      0x7b08a8
+00000000007b08a3: mov      ebx, 0x7d58
+00000000007b08a8: lea      rdx, [rsp + 0xe0]
+00000000007b08b0: mov      rcx, rdi
+00000000007b08b3: call     rbp
+00000000007b08b5: add      dword ptr [r12 + 0x5b0], -1
+00000000007b08be: movsxd   rax, dword ptr [r14 + rbx]
+00000000007b08c2: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000007b08ca: jmp      0x7b0c30
+00000000007b08cf: mov      eax, dword ptr [rcx + 0x10]
+00000000007b08d2: cmp      eax, 8
+00000000007b08d5: jl       0x7b098c
+00000000007b08db: lea      rcx, [rsp + 0x70]
+00000000007b08e0: call     0x925154
+00000000007b08e5: cvttsd2si ebx, qword ptr [rsp + 0x80]
+00000000007b08ee: cvttsd2si edi, qword ptr [rsp + 0x78]
+00000000007b08f4: cvttsd2si esi, qword ptr [rsp + 0x70]
+00000000007b08fa: mov      rax, qword ptr [r12 + 0x5a8]
+00000000007b0902: lea      r15, [rip + 0x3809d7] ; UTF16 'name is null'
+00000000007b0909: test     rax, rax
+00000000007b090c: cmovne   r15, rax
+00000000007b0910: lea      rdx, [rip + 0x2ee0e8e9]
+00000000007b0917: lea      rcx, [rip + 0x83e59a]
+00000000007b091e: call     0xab8550
+00000000007b0923: mov      dword ptr [rsp + 0x58], ebx
+00000000007b0927: mov      dword ptr [rsp + 0x50], edi
+00000000007b092b: mov      dword ptr [rsp + 0x48], esi
+00000000007b092f: mov      dword ptr [rsp + 0x40], 0x10
+00000000007b0937: mov      qword ptr [rsp + 0x38], rax
+00000000007b093c: mov      rax, qword ptr [rsp + 0x1b0]
+00000000007b0944: mov      qword ptr [rsp + 0x30], rax
+00000000007b0949: mov      qword ptr [rsp + 0x28], r15
+00000000007b094e: mov      eax, dword ptr [r12 + 0x14]
+00000000007b0953: mov      dword ptr [rsp + 0x20], eax
+00000000007b0957: mov      r9d, dword ptr [r14 + r13]
+00000000007b095b: lea      r8, [rip + 0x3822ce] ; UTF16 '[tid:%d][rtid:%d][%s][%s][%S] Async Exec Queue[%d] Overflow. 1 (%d, %d, %d)'
+00000000007b0962: mov      edx, 2
+00000000007b0967: lea      rcx, [rip + 0xd770f32]
+00000000007b096e: call     0x734514
+00000000007b0973: nop
+00000000007b0974: movsxd   rax, dword ptr [r14 + r13]
+00000000007b0978: lea      rcx, [rip - 0x3b097f]
+00000000007b097f: add      dword ptr [rcx + rax*4 + 0x47e2a40], -1
+00000000007b0987: jmp      0x7b0c30
+00000000007b098c: mov      r13d, 1
+00000000007b0992: mov      rbx, r13
+00000000007b0995: lock xadd qword ptr [rcx + 8], rbx
+00000000007b099b: add      rbx, r13
+00000000007b099e: and      ebx, 0xf
+00000000007b09a1: mov      r8, qword ptr [r9]
+00000000007b09a4: lea      rax, [rbx + rbx*4]
+00000000007b09a8: add      rax, rax
+00000000007b09ab: lea      rdx, [rcx + rax*8 + 0x1c]
+00000000007b09b0: mov      rcx, r9
+00000000007b09b3: call     qword ptr [r8]
+00000000007b09b6: mov      qword ptr [r12 + rbx*8 + 0x520], rbp
+00000000007b09be: mov      eax, r13d
+00000000007b09c1: lock xadd dword ptr [r12 + 0x10], eax
+00000000007b09c8: add      eax, r13d
+00000000007b09cb: cmp      eax, 0x10
+00000000007b09ce: jl       0x7b0a95
+00000000007b09d4: mov      rdx, rdi
+00000000007b09d7: lea      rcx, [rsp + 0x88]
+00000000007b09df: call     0x925154
+00000000007b09e4: cvttsd2si ebx, qword ptr [rsp + 0x98]
+00000000007b09ed: cvttsd2si edi, qword ptr [rsp + 0x90]
+00000000007b09f6: cvttsd2si esi, qword ptr [rsp + 0x88]
+00000000007b09ff: mov      rax, qword ptr [r12 + 0x5a8]
+00000000007b0a07: lea      r15, [rip + 0x3808d2] ; UTF16 'name is null'
+00000000007b0a0e: test     rax, rax
+00000000007b0a11: cmovne   r15, rax
+00000000007b0a15: lea      rdx, [rip + 0x2ee0e7e4]
+00000000007b0a1c: lea      rcx, [rip + 0x83e495]
+00000000007b0a23: call     0xab8550
+00000000007b0a28: mov      dword ptr [rsp + 0x58], ebx
+00000000007b0a2c: mov      dword ptr [rsp + 0x50], edi
+00000000007b0a30: mov      dword ptr [rsp + 0x48], esi
+00000000007b0a34: mov      dword ptr [rsp + 0x40], 0x10
+00000000007b0a3c: mov      qword ptr [rsp + 0x38], rax
+00000000007b0a41: mov      rax, qword ptr [rsp + 0x1b0]
+00000000007b0a49: mov      qword ptr [rsp + 0x30], rax
+00000000007b0a4e: mov      qword ptr [rsp + 0x28], r15
+00000000007b0a53: mov      eax, dword ptr [r12 + 0x14]
+00000000007b0a58: mov      dword ptr [rsp + 0x20], eax
+00000000007b0a5c: mov      ebx, 0x7d58
+00000000007b0a61: mov      r9d, dword ptr [r14 + rbx]
+00000000007b0a65: lea      r8, [rip + 0x382124] ; UTF16 '[tid:%d][rtid:%d][%s][%s][%S] Async Exec Queue[%d] Overflow. 2 (%d, %d, %d)'
+00000000007b0a6c: lea      edx, [r13 + 1]
+00000000007b0a70: lea      rcx, [rip + 0xd770e29]
+00000000007b0a77: call     0x734514
+00000000007b0a7c: nop
+00000000007b0a7d: movsxd   rax, dword ptr [r14 + rbx]
+00000000007b0a81: lea      rcx, [rip - 0x3b0a88]
+00000000007b0a88: add      dword ptr [rcx + rax*4 + 0x47e2a40], -1
+00000000007b0a90: jmp      0x7b0c30
+00000000007b0a95: cmp      eax, r13d
+00000000007b0a98: je       0x7b0ab0
+00000000007b0a9a: mov      ebx, 0x7d58
+00000000007b0a9f: movsxd   rax, dword ptr [r14 + rbx]
+00000000007b0aa3: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000007b0aab: jmp      0x7b0c30
+00000000007b0ab0: lea      r15, [rip + 0x380829] ; UTF16 'name is null'
+00000000007b0ab7: mov      esi, 0x7d58
+00000000007b0abc: mov      eax, r13d
+00000000007b0abf: lock xadd dword ptr [r12 + 0x18], eax
+00000000007b0ac6: add      eax, r13d
+00000000007b0ac9: cmp      eax, r13d
+00000000007b0acc: jle      0x7b0b8f
+00000000007b0ad2: mov      rdx, rdi
+00000000007b0ad5: lea      rcx, [rsp + 0xb8]
+00000000007b0add: call     0x925154
+00000000007b0ae2: cvttsd2si ebx, qword ptr [rsp + 0xc8]
+00000000007b0aeb: cvttsd2si edi, qword ptr [rsp + 0xc0]
+00000000007b0af4: cvttsd2si esi, qword ptr [rsp + 0xb8]
+00000000007b0afd: mov      rax, qword ptr [r12 + 0x5a8]
+00000000007b0b05: mov      rbp, r15
+00000000007b0b08: test     rax, rax
+00000000007b0b0b: cmovne   rbp, rax
+00000000007b0b0f: lea      rdx, [rip + 0x2ee0e6ea]
+00000000007b0b16: lea      rcx, [rip + 0x83e39b]
+00000000007b0b1d: call     0xab8550
+00000000007b0b22: mov      dword ptr [rsp + 0x60], ebx
+00000000007b0b26: mov      dword ptr [rsp + 0x58], edi
+00000000007b0b2a: mov      dword ptr [rsp + 0x50], esi
+00000000007b0b2e: mov      dword ptr [rsp + 0x48], 0x10
+00000000007b0b36: mov      qword ptr [rsp + 0x40], rax
+00000000007b0b3b: mov      qword ptr [rsp + 0x38], rbp
+00000000007b0b40: mov      eax, dword ptr [r12 + 0x14]
+00000000007b0b45: mov      dword ptr [rsp + 0x30], eax
+00000000007b0b49: mov      esi, 0x7d58
+00000000007b0b4e: mov      eax, dword ptr [r14 + rsi]
+00000000007b0b52: mov      dword ptr [rsp + 0x28], eax
+00000000007b0b56: mov      dword ptr [rsp + 0x20], 0x7ab
+00000000007b0b5e: lea      r9, [rip + 0x38220b] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\ThreadSafeLibrary.h'
+00000000007b0b65: lea      r8, [rip + 0x381f54] ; UTF16 '[%s][%d][tid:%d][running tid:%d][%s][%S] Asynchronous Execution [%d] Abnormal status!!! (%d, %d, %d)'
+00000000007b0b6c: mov      edx, 2
+00000000007b0b71: lea      rcx, [rip + 0xd770d28]
+00000000007b0b78: call     0x734514
+00000000007b0b7d: xor      edx, edx
+00000000007b0b7f: lea      ecx, [rdx + 2]
+00000000007b0b82: call     0x6704e0
+00000000007b0b87: mov      rdi, qword ptr [rsp + 0x198]
+00000000007b0b8f: mov      eax, dword ptr [r14 + rsi]
+00000000007b0b93: mov      dword ptr [r12 + 0x14], eax
+00000000007b0b98: mov      rbx, r13
+00000000007b0b9b: lock xadd qword ptr [r12], rbx
+00000000007b0ba1: add      rbx, r13
+00000000007b0ba4: and      ebx, 0xf
+00000000007b0ba7: xor      ecx, ecx
+00000000007b0ba9: mov      rax, qword ptr [r12 + rbx*8 + 0x520]
+00000000007b0bb1: test     rax, rax
+00000000007b0bb4: jne      0x7b0bdb
+00000000007b0bb6: add      ecx, r13d
+00000000007b0bb9: cmp      ecx, 0x3e8
+00000000007b0bbf: jle      0x7b0bce
+00000000007b0bc1: mov      ecx, 0xa
+00000000007b0bc6: call     qword ptr [rip + 0x36b5a4] ; IAT Sleep
+00000000007b0bcc: xor      ecx, ecx
+00000000007b0bce: mov      rax, qword ptr [r12 + rbx*8 + 0x520]
+00000000007b0bd6: test     rax, rax
+00000000007b0bd9: je       0x7b0bb6
+00000000007b0bdb: lea      rax, [rbx + rbx*4]
+00000000007b0bdf: add      rax, rax
+00000000007b0be2: lea      rdx, [r12 + rax*8 + 0x1c]
+00000000007b0be7: mov      rax, qword ptr [r12 + rbx*8 + 0x520]
+00000000007b0bef: mov      rcx, rdi
+00000000007b0bf2: call     rax
+00000000007b0bf4: mov      qword ptr [r12 + rbx*8 + 0x520], 0
+00000000007b0c00: mov      dword ptr [r12 + 0x14], 0xffffffff
+00000000007b0c09: lock add dword ptr [r12 + 0x18], -1
+00000000007b0c10: lock add dword ptr [r12 + 0x10], -1
+00000000007b0c17: jne      0x7b0abc
+00000000007b0c1d: movsxd   rax, dword ptr [r14 + rsi]
+00000000007b0c21: lea      rcx, [rip - 0x3b0c28]
+00000000007b0c28: add      dword ptr [rcx + rax*4 + 0x47e2a40], -1
+00000000007b0c30: add      rsp, 0x148
+00000000007b0c37: pop      r15
+00000000007b0c39: pop      r14
+00000000007b0c3b: pop      r13
+00000000007b0c3d: pop      r12
+00000000007b0c3f: pop      rdi
+00000000007b0c40: pop      rsi
+00000000007b0c41: pop      rbp
+00000000007b0c42: pop      rbx
+00000000007b0c43: ret

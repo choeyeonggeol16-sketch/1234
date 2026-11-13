@@ -1,0 +1,17 @@
+# fn_a017a0; PE pdata/unwind; entry 0xa017a0
+# chunk 0xa017a0..0xa017c8
+0000000000a017a0: push     rbx
+0000000000a017a2: push     rdi
+0000000000a017a3: sub      rsp, 0x28
+0000000000a017a7: mov      ebx, edx
+0000000000a017a9: mov      rdi, rcx
+0000000000a017ac: call     0xa0169c
+0000000000a017b1: test     bl, 1
+0000000000a017b4: je       0xa017be
+0000000000a017b6: mov      rcx, rdi
+0000000000a017b9: call     0x401f3c
+0000000000a017be: mov      rax, rdi
+0000000000a017c1: add      rsp, 0x28
+0000000000a017c5: pop      rdi
+0000000000a017c6: pop      rbx
+0000000000a017c7: ret

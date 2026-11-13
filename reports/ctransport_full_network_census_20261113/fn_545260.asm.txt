@@ -1,0 +1,61 @@
+# fn_545260; PE pdata/unwind; entry 0x545260
+# chunk 0x545260..0x545371
+0000000000545260: push     rbx
+0000000000545262: push     rdi
+0000000000545263: push     r12
+0000000000545265: push     r13
+0000000000545267: sub      rsp, 0x48
+000000000054526b: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+0000000000545274: mov      rbx, rcx
+0000000000545277: mov      edx, dword ptr [rip + 0x2f079f5b]
+000000000054527d: mov      rax, qword ptr gs:[0x58]
+0000000000545286: mov      r13d, 0x7d58
+000000000054528c: mov      rdi, qword ptr [rax + rdx*8]
+0000000000545290: movsxd   r8, dword ptr [rdi + r13]
+0000000000545294: lea      r12, [rip - 0x14529b]
+000000000054529b: movsxd   rdx, dword ptr [r12 + r8*4 + 0x47e2a40]
+00000000005452a3: lea      eax, [rdx + 1]
+00000000005452a6: mov      dword ptr [r12 + r8*4 + 0x47e2a40], eax
+00000000005452ae: imul     r8, r8, 0x3e8
+00000000005452b5: add      r8, rdx
+00000000005452b8: lea      rax, [rip + 0x679751] ; UTF16 'void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::Initialize(void)'
+00000000005452bf: mov      qword ptr [r12 + r8*8 + 0x47bf7c0], rax
+00000000005452c7: mov      dword ptr [rsp + 0x70], 0
+00000000005452cf: mov      dword ptr [rsp + 0x20], 4
+00000000005452d7: lea      r9, [rsp + 0x70]
+00000000005452dc: mov      edx, 0xffff
+00000000005452e1: mov      r8d, 0x1002
+00000000005452e7: mov      rcx, qword ptr [rcx + 0x18]
+00000000005452eb: call     qword ptr [rip + 0x5d737f] ; IAT setsockopt
+00000000005452f1: mov      dword ptr [rsp + 0x70], 0
+00000000005452f9: mov      dword ptr [rsp + 0x20], 4
+0000000000545301: lea      r9, [rsp + 0x70]
+0000000000545306: mov      edx, 0xffff
+000000000054530b: mov      r8d, 0x1001
+0000000000545311: mov      rcx, qword ptr [rbx + 0x18]
+0000000000545315: call     qword ptr [rip + 0x5d7355] ; IAT setsockopt
+000000000054531b: xor      r9d, r9d
+000000000054531e: mov      r8, rbx
+0000000000545321: mov      rdx, qword ptr [rip + 0x470bc08]
+0000000000545328: mov      rcx, qword ptr [rbx + 0x18]
+000000000054532c: call     qword ptr [rip + 0x5d6e4e] ; IAT CreateIoCompletionPort
+0000000000545332: test     rax, rax
+0000000000545335: jne      0x54534f
+0000000000545337: mov      rcx, rbx
+000000000054533a: call     0x45d41c
+000000000054533f: nop
+0000000000545340: movsxd   rax, dword ptr [rdi + r13]
+0000000000545344: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+000000000054534d: jmp      0x545366
+000000000054534f: mov      rax, qword ptr [rbx]
+0000000000545352: mov      rcx, rbx
+0000000000545355: call     qword ptr [rax + 0x68]
+0000000000545358: nop
+0000000000545359: movsxd   rax, dword ptr [rdi + r13]
+000000000054535d: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+0000000000545366: add      rsp, 0x48
+000000000054536a: pop      r13
+000000000054536c: pop      r12
+000000000054536e: pop      rdi
+000000000054536f: pop      rbx
+0000000000545370: ret

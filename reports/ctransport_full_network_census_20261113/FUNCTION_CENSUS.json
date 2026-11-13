@@ -1,0 +1,3719 @@
+{
+  "binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "original_executed": false,
+  "baseline": "1f5ff36",
+  "method": "UTF16 signatures validated by actual RIP references and PE unwind boundaries; additional previously audited structural roots",
+  "limits": "Census and source-role comparison are not proof of every unnamed function or every exception branch; x86 remains the previous crosscheck,not a new exhaustive audit.",
+  "functions": [
+    {
+      "entry": "0x401f3c",
+      "signatures": [
+        "void __cdecl MemoryObject::operator delete(void *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x401f3c",
+          "0x402045"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x6704e0",
+        "0x6704e0",
+        "0x66db28"
+      ],
+      "caller_count": 595,
+      "assembly": "fn_401f3c.asm.txt"
+    },
+    {
+      "entry": "0x404c88",
+      "signatures": [
+        "VTable CIOObject slot5",
+        "VTable CIOSocketEx16384 slot5",
+        "VTable CIOSocketEx8192 slot5",
+        "VTable CSocket slot5",
+        "VTable CUserSocket slot5"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x404c88",
+          "0x404c94"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_404c88.asm.txt"
+    },
+    {
+      "entry": "0x404c94",
+      "signatures": [
+        "VTable CIOObject slot7",
+        "VTable CIOSocketEx16384 slot7",
+        "VTable CIOSocketEx8192 slot7",
+        "VTable CSocket slot7",
+        "VTable CUserSocket slot7"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x404c94",
+          "0x404ca0"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_404c94.asm.txt"
+    },
+    {
+      "entry": "0x404ca0",
+      "signatures": [
+        "VTable CIOObject slot11",
+        "VTable CIOSocketEx16384 slot11",
+        "VTable CIOSocketEx8192 slot11",
+        "VTable CSocket slot11",
+        "VTable CUserSocket slot11"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x404ca0",
+          "0x404cb4"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_404ca0.asm.txt"
+    },
+    {
+      "entry": "0x41b994",
+      "signatures": [
+        "void __cdecl CExecutionSerializer<class CShipController,32>::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(struct CExecutionArgumentPad *),class CExecutionArgument *,const wchar_t *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x41b994",
+          "0x41bdd5"
+        ]
+      ],
+      "direct_calls": [
+        "0xab8550",
+        "0x734514",
+        "0xab8550",
+        "0x734514",
+        "0xab8550",
+        "0x734514",
+        "0xab8550",
+        "0x734514",
+        "0x6704e0"
+      ],
+      "caller_count": 6,
+      "assembly": "fn_41b994.asm.txt"
+    },
+    {
+      "entry": "0x41c6f8",
+      "signatures": [
+        "BufferReturn"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x41c6f8",
+          "0x41c7a6"
+        ]
+      ],
+      "direct_calls": [
+        "0x66db28"
+      ],
+      "caller_count": 36,
+      "assembly": "fn_41c6f8.asm.txt"
+    },
+    {
+      "entry": "0x41e6e4",
+      "signatures": [
+        "BufferAllocate"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x41e6e4",
+          "0x41e8ea"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x66db28"
+      ],
+      "caller_count": 13,
+      "assembly": "fn_41e6e4.asm.txt"
+    },
+    {
+      "entry": "0x43bae0",
+      "signatures": [
+        "VTable AtomicAddTimer slot7"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x43bae0",
+          "0x43bb71"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 1,
+      "assembly": "fn_43bae0.asm.txt"
+    },
+    {
+      "entry": "0x43bb98",
+      "signatures": [
+        "VTable AtomicAddTimer slot8"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x43bb98",
+          "0x43bbf4"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_43bb98.asm.txt"
+    },
+    {
+      "entry": "0x43f5b8",
+      "signatures": [
+        "VTable AtomicAddTimer slot4",
+        "int __cdecl AtomicAddTimer::Assemble(char *,int)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x43f5b8",
+          "0x43f669"
+        ]
+      ],
+      "direct_calls": [
+        "0x704e4c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_43f5b8.asm.txt"
+    },
+    {
+      "entry": "0x43f690",
+      "signatures": [
+        "VTable AtomicAddTimer slot5",
+        "const unsigned char *__cdecl AtomicAddTimer::Disassemble(const unsigned char *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x43f690",
+          "0x43f736"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_43f690.asm.txt"
+    },
+    {
+      "entry": "0x43f758",
+      "signatures": [
+        "VTable AtomicAddTimer slot6",
+        "bool __cdecl AtomicAddTimer::Do(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x43f758",
+          "0x43f801"
+        ]
+      ],
+      "direct_calls": [
+        "0x7acf7c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_43f758.asm.txt"
+    },
+    {
+      "entry": "0x44c0c8",
+      "signatures": [
+        "VTable AtomicAddTimer slot0",
+        "VTable CIOObject slot0"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x44c0c8",
+          "0x44c0f0"
+        ]
+      ],
+      "direct_calls": [
+        "0x7d6d44",
+        "0x401f3c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_44c0c8.asm.txt"
+    },
+    {
+      "entry": "0x45c7ac",
+      "signatures": [
+        "FastSerializer",
+        "int __cdecl CExecutionSerializerFast::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(void *),void *,const wchar_t *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45c7ac",
+          "0x45c9cd"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x6704e0",
+        "0x734514",
+        "0x6704e0"
+      ],
+      "caller_count": 19,
+      "assembly": "fn_45c7ac.asm.txt"
+    },
+    {
+      "entry": "0x45d41c",
+      "signatures": [
+        "void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::Close(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45d41c",
+          "0x45d50f"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 32,
+      "assembly": "fn_45d41c.asm.txt"
+    },
+    {
+      "entry": "0x45d534",
+      "signatures": [
+        "void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::Close(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45d534",
+          "0x45d627"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 15,
+      "assembly": "fn_45d534.asm.txt"
+    },
+    {
+      "entry": "0x45da20",
+      "signatures": [
+        "__cdecl CIOSocketEx<class CIOBufferEx<8192> >::CIOSocketEx(unsigned __int64,int)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45da20",
+          "0x45db0b"
+        ]
+      ],
+      "direct_calls": [
+        "0x704148",
+        "0x45c708",
+        "0xab9430",
+        "0xab9430",
+        "0x45d7f8"
+      ],
+      "caller_count": 4,
+      "assembly": "fn_45da20.asm.txt"
+    },
+    {
+      "entry": "0x45db68",
+      "signatures": [
+        "VTable CIOSocketEx16384 slot16",
+        "VTable CIOSocketEx8192 slot16"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x45db68",
+          "0x45db73"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_45db68.asm.txt"
+    },
+    {
+      "entry": "0x45db74",
+      "signatures": [
+        "VTable CIOSocketEx8192 slot18",
+        "void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::GracefulClose(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45db74",
+          "0x45dc38"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_45db74.asm.txt"
+    },
+    {
+      "entry": "0x45dc5c",
+      "signatures": [
+        "VTable CIOSocketEx8192 slot12",
+        "void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::Initialize(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45dc5c",
+          "0x45dd6d"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d534"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_45dc5c.asm.txt"
+    },
+    {
+      "entry": "0x45dd94",
+      "signatures": [
+        "VTable CIOSocketEx8192 slot13",
+        "void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::OnCreate(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45dd94",
+          "0x45de12"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_45dd94.asm.txt"
+    },
+    {
+      "entry": "0x45df80",
+      "signatures": [
+        "__cdecl CIOSocketEx<class CIOBufferEx<8192> >::~CIOSocketEx(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45df80",
+          "0x45e0d4"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d67c",
+        "0x45d67c",
+        "0x92545c"
+      ],
+      "caller_count": 8,
+      "assembly": "fn_45df80.asm.txt"
+    },
+    {
+      "entry": "0x45e138",
+      "signatures": [
+        "void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::Read(unsigned long)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45e138",
+          "0x45e41f"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d7f8",
+        "0xabcd50",
+        "0x45d67c",
+        "0xabcd50",
+        "0x734514",
+        "0x734514",
+        "0x45d534"
+      ],
+      "caller_count": 12,
+      "assembly": "fn_45e138.asm.txt"
+    },
+    {
+      "entry": "0x45e480",
+      "signatures": [
+        "void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::__async_AsyncWrite(void *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45e480",
+          "0x45e838"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d67c",
+        "0x45d67c",
+        "0x45d534",
+        "0x73446c",
+        "0x45d67c",
+        "0xabcd50",
+        "0x45d67c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_45e480.asm.txt"
+    },
+    {
+      "entry": "0x45e878",
+      "signatures": [
+        "VTable CIOSocketEx8192 slot0"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45e878",
+          "0x45e8a0"
+        ]
+      ],
+      "direct_calls": [
+        "0x45df80",
+        "0x401f3c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_45e878.asm.txt"
+    },
+    {
+      "entry": "0x45f028",
+      "signatures": [
+        "VTable CIOSocketEx8192 slot10"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45f028",
+          "0x45f11a"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d534",
+        "0x45de2c",
+        "0x45c7ac",
+        "0x734514"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_45f028.asm.txt"
+    },
+    {
+      "entry": "0x466d44",
+      "signatures": [
+        "void __cdecl CExecutionSerializer<class CCreatureController,32>::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(struct CExecutionArgumentPad *),class CExecutionArgument *,const wchar_t *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x466d44",
+          "0x46726c"
+        ]
+      ],
+      "direct_calls": [
+        "0x925e8c",
+        "0xab8550",
+        "0x734514",
+        "0x925e8c",
+        "0xab8550",
+        "0x734514",
+        "0x925e8c",
+        "0xab8550",
+        "0x734514",
+        "0x925e8c",
+        "0xab8550",
+        "0x734514",
+        "0x6704e0"
+      ],
+      "caller_count": 64,
+      "assembly": "fn_466d44.asm.txt"
+    },
+    {
+      "entry": "0x53a8fc",
+      "signatures": [
+        "VTable AtomicAddTimer slot9",
+        "VTable CIOSocketEx16384 slot14",
+        "VTable CIOSocketEx16384 slot15",
+        "VTable CIOSocketEx8192 slot14",
+        "VTable CIOSocketEx8192 slot15",
+        "VTable CSocket slot14",
+        "VTable CSocket slot15"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x53a8fc",
+          "0x53a8ff"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 11,
+      "assembly": "fn_53a8fc.asm.txt"
+    },
+    {
+      "entry": "0x545030",
+      "signatures": [
+        "__cdecl CIOSocketEx<class CIOBufferEx<16384> >::CIOSocketEx(unsigned __int64,int)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x545030",
+          "0x54511b"
+        ]
+      ],
+      "direct_calls": [
+        "0x704148",
+        "0x45c708",
+        "0xab9430",
+        "0xab9430",
+        "0x41e6e4"
+      ],
+      "caller_count": 5,
+      "assembly": "fn_545030.asm.txt"
+    },
+    {
+      "entry": "0x545178",
+      "signatures": [
+        "VTable CIOSocketEx16384 slot18",
+        "VTable CSocket slot18",
+        "VTable CUserSocket slot18",
+        "void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::GracefulClose(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x545178",
+          "0x54523c"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_545178.asm.txt"
+    },
+    {
+      "entry": "0x545260",
+      "signatures": [
+        "VTable CIOSocketEx16384 slot12",
+        "VTable CSocket slot12",
+        "VTable CUserSocket slot12",
+        "void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::Initialize(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x545260",
+          "0x545371"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d41c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_545260.asm.txt"
+    },
+    {
+      "entry": "0x545398",
+      "signatures": [
+        "VTable CIOSocketEx16384 slot13",
+        "VTable CSocket slot13",
+        "VTable CUserSocket slot13",
+        "void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::OnCreate(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x545398",
+          "0x545416"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_545398.asm.txt"
+    },
+    {
+      "entry": "0x545518",
+      "signatures": [
+        "__cdecl CIOSocketEx<class CIOBufferEx<16384> >::~CIOSocketEx(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x545518",
+          "0x54566c"
+        ]
+      ],
+      "direct_calls": [
+        "0x41c6f8",
+        "0x41c6f8",
+        "0x92545c"
+      ],
+      "caller_count": 9,
+      "assembly": "fn_545518.asm.txt"
+    },
+    {
+      "entry": "0x5456d0",
+      "signatures": [
+        "void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::Read(unsigned long)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x5456d0",
+          "0x5459b7"
+        ]
+      ],
+      "direct_calls": [
+        "0x41e6e4",
+        "0xabcd50",
+        "0x41c6f8",
+        "0xabcd50",
+        "0x734514",
+        "0x734514",
+        "0x45d41c"
+      ],
+      "caller_count": 23,
+      "assembly": "fn_5456d0.asm.txt"
+    },
+    {
+      "entry": "0x545a18",
+      "signatures": [
+        "void __cdecl CIOSocketEx<class CIOBufferEx<16384> >::__async_AsyncWrite(void *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x545a18",
+          "0x545dd0"
+        ]
+      ],
+      "direct_calls": [
+        "0x41c6f8",
+        "0x41c6f8",
+        "0x45d41c",
+        "0x73446c",
+        "0x41c6f8",
+        "0xabcd50",
+        "0x41c6f8"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_545a18.asm.txt"
+    },
+    {
+      "entry": "0x545e10",
+      "signatures": [
+        "VTable CIOSocketEx16384 slot0"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x545e10",
+          "0x545e38"
+        ]
+      ],
+      "direct_calls": [
+        "0x545518",
+        "0x401f3c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_545e10.asm.txt"
+    },
+    {
+      "entry": "0x54655c",
+      "signatures": [
+        "VTable CIOSocketEx16384 slot10",
+        "VTable CSocket slot10",
+        "VTable CUserSocket slot10"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x54655c",
+          "0x54664e"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d41c",
+        "0x545430",
+        "0x45c7ac",
+        "0x734514"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_54655c.asm.txt"
+    },
+    {
+      "entry": "0x56daa8",
+      "signatures": [
+        "VTable AtomicAddTimer slot3",
+        "VTable CIOObject slot3",
+        "VTable CIOObject slot4",
+        "VTable CIOObject slot6",
+        "VTable CIOObject slot9",
+        "VTable CIOSocketEx16384 slot17",
+        "VTable CIOSocketEx16384 slot19",
+        "VTable CIOSocketEx16384 slot3",
+        "VTable CIOSocketEx16384 slot4",
+        "VTable CIOSocketEx16384 slot6",
+        "VTable CIOSocketEx16384 slot9",
+        "VTable CIOSocketEx8192 slot17",
+        "VTable CIOSocketEx8192 slot19",
+        "VTable CIOSocketEx8192 slot3",
+        "VTable CIOSocketEx8192 slot4",
+        "VTable CIOSocketEx8192 slot6",
+        "VTable CIOSocketEx8192 slot9",
+        "VTable CSocket slot19",
+        "VTable CSocket slot23",
+        "VTable CSocket slot3",
+        "VTable CSocket slot4",
+        "VTable CSocket slot6",
+        "VTable CSocket slot9",
+        "VTable CUserSocket slot6",
+        "VTable CUserSocket slot9"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x56daa8",
+          "0x56daab"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 305,
+      "assembly": "fn_56daa8.asm.txt"
+    },
+    {
+      "entry": "0x676bac",
+      "signatures": [
+        "void __cdecl CExecutionSerializer<class CFishingController,32>::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(struct CExecutionArgumentPad *),class CExecutionArgument *,const wchar_t *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x676bac",
+          "0x6770d4"
+        ]
+      ],
+      "direct_calls": [
+        "0x925fd4",
+        "0xab8550",
+        "0x734514",
+        "0x925fd4",
+        "0xab8550",
+        "0x734514",
+        "0x925fd4",
+        "0xab8550",
+        "0x734514",
+        "0x925fd4",
+        "0xab8550",
+        "0x734514",
+        "0x6704e0"
+      ],
+      "caller_count": 3,
+      "assembly": "fn_676bac.asm.txt"
+    },
+    {
+      "entry": "0x704248",
+      "signatures": [
+        "VTable CIOObject slot8",
+        "VTable CIOSocketEx16384 slot8",
+        "VTable CIOSocketEx8192 slot8",
+        "VTable CSocket slot8",
+        "VTable CUserSocket slot8"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x704248",
+          "0x70429c"
+        ]
+      ],
+      "direct_calls": [
+        "0x6708d0"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_704248.asm.txt"
+    },
+    {
+      "entry": "0x70482c",
+      "signatures": [
+        "void __cdecl CIOObject::TimerDispatch(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x70482c",
+          "0x7048ac"
+        ]
+      ],
+      "direct_calls": [
+        "0x926844"
+      ],
+      "caller_count": 2,
+      "assembly": "fn_70482c.asm.txt"
+    },
+    {
+      "entry": "0x7048cc",
+      "signatures": [
+        "SetTimeStamp",
+        "bool __cdecl CIOObject::SetTimeStamp(long *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x7048cc",
+          "0x70495b"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9970"
+      ],
+      "caller_count": 40,
+      "assembly": "fn_7048cc.asm.txt"
+    },
+    {
+      "entry": "0x704990",
+      "signatures": [
+        "SetShortTimeStamp",
+        "bool __cdecl CIOObject::SetShortTimeStamp(unsigned long *,unsigned long)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x704990",
+          "0x704a29"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 13,
+      "assembly": "fn_704990.asm.txt"
+    },
+    {
+      "entry": "0x704bec",
+      "signatures": [
+        "__cdecl CIOServer::CIOServer(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Accept/IOCP/lifecycle role; original single GQCS versus selected GQCSEx128 adaptation.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x704bec",
+          "0x704c7a"
+        ]
+      ],
+      "direct_calls": [
+        "0x704148"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_704bec.asm.txt"
+    },
+    {
+      "entry": "0x704c7c",
+      "signatures": [
+        "void __cdecl CIOServer::Close(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Accept/IOCP/lifecycle role; original single GQCS versus selected GQCSEx128 adaptation.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x704c7c",
+          "0x704d1b"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 2,
+      "assembly": "fn_704c7c.asm.txt"
+    },
+    {
+      "entry": "0x704d1c",
+      "signatures": [
+        "void __cdecl CIOServer::OnWaitCallback(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Accept/IOCP/lifecycle role; original single GQCS versus selected GQCSEx128 adaptation.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x704d1c",
+          "0x704dab"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_704d1c.asm.txt"
+    },
+    {
+      "entry": "0x705480",
+      "signatures": [
+        "__cdecl CIOServer::~CIOServer(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Accept/IOCP/lifecycle role; original single GQCS versus selected GQCSEx128 adaptation.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x705480",
+          "0x705508"
+        ]
+      ],
+      "direct_calls": [
+        "0x704c7c"
+      ],
+      "caller_count": 4,
+      "assembly": "fn_705480.asm.txt"
+    },
+    {
+      "entry": "0x705508",
+      "signatures": [
+        "AcceptFactory",
+        "void __cdecl CIOServer::OnIOCallback(int,unsigned long,struct _OVERLAPPED *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Accept/IOCP/lifecycle role; original single GQCS versus selected GQCSEx128 adaptation.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x705508",
+          "0x705642"
+        ]
+      ],
+      "direct_calls": [
+        "0x704dac",
+        "0x73446c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_705508.asm.txt"
+    },
+    {
+      "entry": "0x7056ac",
+      "signatures": [
+        "IOWorker"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Accept/IOCP/lifecycle role; original single GQCS versus selected GQCSEx128 adaptation.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x7056ac",
+          "0x7059a1"
+        ]
+      ],
+      "direct_calls": [
+        "0xa22ae8",
+        "0x705330",
+        "0x926e2c",
+        "0x66db28",
+        "0x926e54",
+        "0x66db28"
+      ],
+      "caller_count": 2,
+      "assembly": "fn_7056ac.asm.txt"
+    },
+    {
+      "entry": "0x705d54",
+      "signatures": [
+        "VTable CIOObject slot10"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x705d54",
+          "0x705e2b"
+        ]
+      ],
+      "direct_calls": [
+        "0x925138",
+        "0x4205e0",
+        "0xa71b3c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_705d54.asm.txt"
+    },
+    {
+      "entry": "0x705e4c",
+      "signatures": [
+        "ListenThread"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Accept/IOCP/lifecycle role; original single GQCS versus selected GQCSEx128 adaptation.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x705e4c",
+          "0x70607c"
+        ]
+      ],
+      "direct_calls": [
+        "0x7053e8",
+        "0x7053e8",
+        "0x7053e8",
+        "0x704a5c",
+        "0x926e2c",
+        "0x70482c",
+        "0x926e54",
+        "0x66db28",
+        "0x705c88",
+        "0x705c88"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_705e4c.asm.txt"
+    },
+    {
+      "entry": "0x706564",
+      "signatures": [
+        "int __cdecl CIOObject::RegisterWait(void *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x706564",
+          "0x7066c2"
+        ]
+      ],
+      "direct_calls": [
+        "0x707fbc",
+        "0x734514",
+        "0x70801c",
+        "0x559050",
+        "0x559050",
+        "0x70801c"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_706564.asm.txt"
+    },
+    {
+      "entry": "0x7066dc",
+      "signatures": [
+        "ListenerCreate",
+        "int __cdecl CIOServer::Create(int)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Accept/IOCP/lifecycle role; original single GQCS versus selected GQCSEx128 adaptation.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x7066dc",
+          "0x706872"
+        ]
+      ],
+      "direct_calls": [
+        "0x704dac",
+        "0x704dac",
+        "0x704dac",
+        "0x706564",
+        "0x704dac",
+        "0x704c7c"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_7066dc.asm.txt"
+    },
+    {
+      "entry": "0x7b071c",
+      "signatures": [
+        "void __cdecl CExecutionSerializer<class CCreature,16>::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(struct CExecutionArgumentPad *),class CExecutionArgument *,const wchar_t *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x7b071c",
+          "0x7b0c44"
+        ]
+      ],
+      "direct_calls": [
+        "0x925154",
+        "0xab8550",
+        "0x734514",
+        "0x925154",
+        "0xab8550",
+        "0x734514",
+        "0x925154",
+        "0xab8550",
+        "0x734514",
+        "0x925154",
+        "0xab8550",
+        "0x734514",
+        "0x6704e0"
+      ],
+      "caller_count": 4,
+      "assembly": "fn_7b071c.asm.txt"
+    },
+    {
+      "entry": "0x7d6d50",
+      "signatures": [
+        "VTable AtomicAddTimer slot1",
+        "VTable CIOObject slot1",
+        "VTable CIOSocketEx16384 slot1",
+        "VTable CIOSocketEx8192 slot1",
+        "VTable CSocket slot1"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x7d6d50",
+          "0x7d6d59"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 4,
+      "assembly": "fn_7d6d50.asm.txt"
+    },
+    {
+      "entry": "0x7d6eb4",
+      "signatures": [
+        "VTable AtomicAddTimer slot2",
+        "VTable CIOObject slot2",
+        "VTable CIOSocketEx16384 slot2",
+        "VTable CIOSocketEx8192 slot2",
+        "VTable CSocket slot2"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x7d6eb4",
+          "0x7d703b"
+        ]
+      ],
+      "direct_calls": [
+        "0xac1090",
+        "0xab8550",
+        "0x734514",
+        "0xac1090",
+        "0xab8550",
+        "0x734514",
+        "0x74e3bc",
+        "0xac1090",
+        "0xab8550",
+        "0x734514",
+        "0x73446c",
+        "0x6704e0"
+      ],
+      "caller_count": 14,
+      "assembly": "fn_7d6eb4.asm.txt"
+    },
+    {
+      "entry": "0x82c0c0",
+      "signatures": [
+        "FOR_ALL_OBJECT_IN_OBJECT_MAP <=== void __cdecl CPerfMon::ReportUserCount(void)"
+      ],
+      "category": "PARTIAL_OPERATIONS",
+      "current_source": "native/perfmon.hpp",
+      "comparison": "Process health exists; full original PDH/CSV/mail operations are not ported.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x82c0c0",
+          "0x82c3cb"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9970",
+        "0xab9970",
+        "0xab9430",
+        "0xab9430",
+        "0x8aaa4c",
+        "0x6616e0",
+        "0x8aabdc",
+        "0x866f68",
+        "0x734514",
+        "0x80e1d4",
+        "0xab91d0",
+        "0x822948",
+        "0x734514",
+        "0x734514",
+        "0x480214"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_82c0c0.asm.txt"
+    },
+    {
+      "entry": "0x8b0738",
+      "signatures": [
+        "class CIOSocketEx<class CIOBufferEx<16384> > *__cdecl Server::CreateSocket(unsigned __int64,struct sockaddr_in *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x8b0738",
+          "0x8b0929"
+        ]
+      ],
+      "direct_calls": [
+        "0x73446c",
+        "0x73446c",
+        "0x707fbc",
+        "0x8b0674",
+        "0x70801c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_8b0738.asm.txt"
+    },
+    {
+      "entry": "0x90dec0",
+      "signatures": [
+        "VTable CSocket slot21",
+        "VTable CUserSocket slot21",
+        "void __cdecl CSocket::SetAddress(struct in_addr)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90dec0",
+          "0x90df28"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_90dec0.asm.txt"
+    },
+    {
+      "entry": "0x90df28",
+      "signatures": [
+        "VTable CSocket slot22",
+        "VTable CUserSocket slot22",
+        "struct in_addr __cdecl CSocket::GetAddress(void) const"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x90df28",
+          "0x90df92"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_90df28.asm.txt"
+    },
+    {
+      "entry": "0x90df94",
+      "signatures": [
+        "VTable CSocket slot16",
+        "VTable CUserSocket slot16",
+        "void __cdecl CSocket::Send(const char *,...)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90df94",
+          "0x90e02c"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_90df94.asm.txt"
+    },
+    {
+      "entry": "0x90e04c",
+      "signatures": [
+        "void __cdecl CSocket::SetKey(unsigned __int64)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90e04c",
+          "0x90e13e"
+        ]
+      ],
+      "direct_calls": [
+        "0xab7e20",
+        "0xab7e20"
+      ],
+      "caller_count": 4,
+      "assembly": "fn_90e04c.asm.txt"
+    },
+    {
+      "entry": "0x90e140",
+      "signatures": [
+        "unsigned int __cdecl CSocket::GetIPAddressUINT(void)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x90e140",
+          "0x90e1ce"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 4,
+      "assembly": "fn_90e140.asm.txt"
+    },
+    {
+      "entry": "0x90e548",
+      "signatures": [
+        "__cdecl CSocket::CSocket(unsigned __int64,int)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90e548",
+          "0x90e642"
+        ]
+      ],
+      "direct_calls": [
+        "0x545030",
+        "0xab9430",
+        "0xab9430"
+      ],
+      "caller_count": 4,
+      "assembly": "fn_90e548.asm.txt"
+    },
+    {
+      "entry": "0x90e644",
+      "signatures": [
+        "__cdecl CSocket::~CSocket(void)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x90e644",
+          "0x90e6c1"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 5,
+      "assembly": "fn_90e644.asm.txt"
+    },
+    {
+      "entry": "0x90e6c4",
+      "signatures": [
+        "void __cdecl CSocket::__async_AsyncSendConstBuffer(void *)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90e6c4",
+          "0x90eb99"
+        ]
+      ],
+      "direct_calls": [
+        "0x41c6f8",
+        "0x45d41c",
+        "0x41e6e4",
+        "0x90de2c",
+        "0x41e6e4",
+        "0xabcd50",
+        "0x73446c",
+        "0x734514",
+        "0x41c6f8",
+        "0x90de2c",
+        "0xabcd50",
+        "0x41e6e4",
+        "0x90de2c",
+        "0x41e6e4",
+        "0xabcd50",
+        "0x41c6f8",
+        "0x41c6f8"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_90e6c4.asm.txt"
+    },
+    {
+      "entry": "0x90ebbc",
+      "signatures": [
+        "VTable CSocket slot0"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90ebbc",
+          "0x90ebe4"
+        ]
+      ],
+      "direct_calls": [
+        "0x90e644",
+        "0x401f3c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_90ebbc.asm.txt"
+    },
+    {
+      "entry": "0x90ebe4",
+      "signatures": [
+        "class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::xallocator<wchar_t> > __cdecl CSocket::GetIPAddressString(void)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90ebe4",
+          "0x90eceb"
+        ]
+      ],
+      "direct_calls": [
+        "0x670a48",
+        "0xab9e10",
+        "0x40a9c4"
+      ],
+      "caller_count": 16,
+      "assembly": "fn_90ebe4.asm.txt"
+    },
+    {
+      "entry": "0x90ed10",
+      "signatures": [
+        "void __cdecl CSocket::__async_AsyncSend(void *)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90ed10",
+          "0x90ee54"
+        ]
+      ],
+      "direct_calls": [
+        "0x925138",
+        "0x90dda4",
+        "0x90e1d0",
+        "0x4205e0",
+        "0xa71b3c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_90ed10.asm.txt"
+    },
+    {
+      "entry": "0x90ee9c",
+      "signatures": [
+        "VTable CSocket slot17",
+        "VTable CUserSocket slot17",
+        "void __cdecl CSocket::SendV(const char *,char *)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90ee9c",
+          "0x90f04a"
+        ]
+      ],
+      "direct_calls": [
+        "0x41e6e4",
+        "0x70429c",
+        "0x41c6f8",
+        "0x41c6f8",
+        "0x45c7ac"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_90ee9c.asm.txt"
+    },
+    {
+      "entry": "0x9ba4f8",
+      "signatures": [
+        "PacketAcceptable"
+      ],
+      "category": "L1_POLICY_ADAPTATION",
+      "current_source": "src/l1j/server/server/model/network/core/CUserSocket.java",
+      "comparison": "L2 policy/fields are not one-to-one restored; retain L1 state/time/filter contracts.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9ba4f8",
+          "0x9ba68e"
+        ]
+      ],
+      "direct_calls": [
+        "0x7ea0d0"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_9ba4f8.asm.txt"
+    },
+    {
+      "entry": "0x9ba6b0",
+      "signatures": [
+        "PacketExAcceptable"
+      ],
+      "category": "L1_POLICY_ADAPTATION",
+      "current_source": "src/l1j/server/server/model/network/core/CUserSocket.java",
+      "comparison": "L2 policy/fields are not one-to-one restored; retain L1 state/time/filter contracts.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x9ba6b0",
+          "0x9ba746"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 1,
+      "assembly": "fn_9ba6b0.asm.txt"
+    },
+    {
+      "entry": "0x9ef41c",
+      "signatures": [
+        "bool __cdecl CUserSocket::SafeSend(int,const char *,...)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9ef41c",
+          "0x9ef51d"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514"
+      ],
+      "caller_count": 3,
+      "assembly": "fn_9ef41c.asm.txt"
+    },
+    {
+      "entry": "0x9ef544",
+      "signatures": [
+        "VTable CUserSocket slot14"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9ef544",
+          "0x9ef61f"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x734514",
+        "0x6704e0"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9ef544.asm.txt"
+    },
+    {
+      "entry": "0x9ef620",
+      "signatures": [
+        "VTable CUserSocket slot15"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x9ef620",
+          "0x9ef63a"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_9ef620.asm.txt"
+    },
+    {
+      "entry": "0x9efca4",
+      "signatures": [
+        "bool __cdecl CUserSocket::DropItemPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9efca4",
+          "0x9efdbb"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9efca4.asm.txt"
+    },
+    {
+      "entry": "0x9efef4",
+      "signatures": [
+        "bool __cdecl CUserSocket::TradeRequestPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9efef4",
+          "0x9effc3"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9efef4.asm.txt"
+    },
+    {
+      "entry": "0x9effdc",
+      "signatures": [
+        "bool __cdecl CUserSocket::TradeStartPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9effdc",
+          "0x9f00a1"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9effdc.asm.txt"
+    },
+    {
+      "entry": "0x9f00c4",
+      "signatures": [
+        "bool __cdecl CUserSocket::TradeAddItemsPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f00c4",
+          "0x9f016b"
+        ]
+      ],
+      "direct_calls": [
+        "0x95f120"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f00c4.asm.txt"
+    },
+    {
+      "entry": "0x9f018c",
+      "signatures": [
+        "bool __cdecl CUserSocket::TradeDonePacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f018c",
+          "0x9f025b"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f018c.asm.txt"
+    },
+    {
+      "entry": "0x9f1e0c",
+      "signatures": [
+        "bool __cdecl CUserSocket::ValidateLocationPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f1e0c",
+          "0x9f1f49"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f1e0c.asm.txt"
+    },
+    {
+      "entry": "0x9f245c",
+      "signatures": [
+        "bool __cdecl CUserSocket::RequestEnchantItemPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f245c",
+          "0x9f2529"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f245c.asm.txt"
+    },
+    {
+      "entry": "0x9f2544",
+      "signatures": [
+        "bool __cdecl CUserSocket::DestroyItem(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f2544",
+          "0x9f2624"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f2544.asm.txt"
+    },
+    {
+      "entry": "0x9f3344",
+      "signatures": [
+        "bool __cdecl CUserSocket::ItemCrystallizePacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f3344",
+          "0x9f36bb"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278",
+        "0x6fafec",
+        "0x9c46a4",
+        "0x6fafec",
+        "0x734514",
+        "0x95f480",
+        "0x997fc8",
+        "0x70af4c",
+        "0x6fa344",
+        "0x70d850",
+        "0x70a3e0"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f3344.asm.txt"
+    },
+    {
+      "entry": "0x9f561c",
+      "signatures": [
+        "bool __cdecl CUserSocket::RequestUserCommand(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f561c",
+          "0x9f5704"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f561c.asm.txt"
+    },
+    {
+      "entry": "0x9f7088",
+      "signatures": [
+        "bool __cdecl CUserSocket::ConfirmDialog(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f7088",
+          "0x9f71d6"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f7088.asm.txt"
+    },
+    {
+      "entry": "0x9f773c",
+      "signatures": [
+        "VTable CUserSocket slot1"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x9f773c",
+          "0x9f776d"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_9f773c.asm.txt"
+    },
+    {
+      "entry": "0x9f7770",
+      "signatures": [
+        "VTable CUserSocket slot2"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f7770",
+          "0x9f7998"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x734514",
+        "0x6704e0",
+        "0x73446c",
+        "0x73446c",
+        "0x74e3bc",
+        "0x73446c",
+        "0x73446c",
+        "0x6704e0"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f7770.asm.txt"
+    },
+    {
+      "entry": "0x9f7998",
+      "signatures": [
+        "VTable CUserSocket slot3"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f7998",
+          "0x9f7b65"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x73446c",
+        "0x734514",
+        "0x73446c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f7998.asm.txt"
+    },
+    {
+      "entry": "0x9f7b80",
+      "signatures": [
+        "void __cdecl CUserSocket::MakePacketBlockList(void)"
+      ],
+      "category": "L1_POLICY_ADAPTATION",
+      "current_source": "src/l1j/server/server/model/network/core/CUserSocket.java",
+      "comparison": "L2 policy/fields are not one-to-one restored; retain L1 state/time/filter contracts.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f7b80",
+          "0x9f7c97"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9430",
+        "0xab9430",
+        "0xab9430"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_9f7b80.asm.txt"
+    },
+    {
+      "entry": "0x9f7f3c",
+      "signatures": [
+        "bool __cdecl CUserSocket::CheckMaxPacketAccept(int)"
+      ],
+      "category": "ORIGINAL_STATS_ONLY",
+      "current_source": "src/l1j/server/server/model/network/core/CNetworkDiagnostics.java",
+      "comparison": "Examined original returns true;not a flood blocker. Existing L1 rate/filter policy remains.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f7f3c",
+          "0x9f802f"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 1,
+      "assembly": "fn_9f7f3c.asm.txt"
+    },
+    {
+      "entry": "0x9f8080",
+      "signatures": [
+        "VTable CUserSocket slot23",
+        "void __cdecl CUserSocket::OnSending(unsigned char,unsigned short) const"
+      ],
+      "category": "ORIGINAL_INSTRUMENTATION_ONLY",
+      "current_source": "src/l1j/server/server/model/network/core/CNetworkDiagnostics.java",
+      "comparison": "0x9f8080 reachable leaf body only updates TLS signature-stack metadata;no SEND/crypto/transport action to restore.",
+      "function_scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x9f8080",
+          "0x9f80dc"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0,
+      "assembly": "fn_9f8080.asm.txt"
+    },
+    {
+      "entry": "0x9f8330",
+      "signatures": [
+        "void __cdecl CUserSocket::SendSystemMessage(wchar_t *,wchar_t *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f8330",
+          "0x9f851d"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9e10",
+        "0xab9430",
+        "0xab9430",
+        "0xab9430"
+      ],
+      "caller_count": 2025,
+      "assembly": "fn_9f8330.asm.txt"
+    },
+    {
+      "entry": "0x9f853c",
+      "signatures": [
+        "void __cdecl CUserSocket::SendSystemMessage_Announce(const wchar_t *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f853c",
+          "0x9f85eb"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 4,
+      "assembly": "fn_9f853c.asm.txt"
+    },
+    {
+      "entry": "0x9f8604",
+      "signatures": [
+        "void __cdecl CUserSocket::SendSystemMessage(unsigned int)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f8604",
+          "0x9f869d"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 765,
+      "assembly": "fn_9f8604.asm.txt"
+    },
+    {
+      "entry": "0x9f86bc",
+      "signatures": [
+        "void __cdecl CUserSocket::SendSystemMessage_Char(unsigned int,const wchar_t *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f86bc",
+          "0x9f8764"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 86,
+      "assembly": "fn_9f86bc.asm.txt"
+    },
+    {
+      "entry": "0x9f8784",
+      "signatures": [
+        "void __cdecl CUserSocket::SendSystemMessage_S(unsigned int,const wchar_t *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f8784",
+          "0x9f882d"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 18,
+      "assembly": "fn_9f8784.asm.txt"
+    },
+    {
+      "entry": "0x9f884c",
+      "signatures": [
+        "void __cdecl CUserSocket::SendSystemMessage_d(unsigned int,int)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f884c",
+          "0x9f88f4"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 39,
+      "assembly": "fn_9f884c.asm.txt"
+    },
+    {
+      "entry": "0x9f8914",
+      "signatures": [
+        "void __cdecl CUserSocket::SendSystemMessage_Q(unsigned int,__int64)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f8914",
+          "0x9f89bc"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 7,
+      "assembly": "fn_9f8914.asm.txt"
+    },
+    {
+      "entry": "0x9f89dc",
+      "signatures": [
+        "void __cdecl CUserSocket::SendSystemMessage_S_d(unsigned int,const wchar_t *,int)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f89dc",
+          "0x9f8a92"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 1,
+      "assembly": "fn_9f89dc.asm.txt"
+    },
+    {
+      "entry": "0x9f8ab4",
+      "signatures": [
+        "void __cdecl CUserSocket::SendSystemMessage_i(unsigned int,int)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f8ab4",
+          "0x9f8b5c"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 7,
+      "assembly": "fn_9f8ab4.asm.txt"
+    },
+    {
+      "entry": "0x9f8b7c",
+      "signatures": [
+        "void __cdecl CUserSocket::BindUser(class User *)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f8b7c",
+          "0x9f8cf7"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x734514",
+        "0x734514"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_9f8b7c.asm.txt"
+    },
+    {
+      "entry": "0x9f8d58",
+      "signatures": [
+        "void __cdecl CUserSocket::ResetRelaxTime(struct _SYSTEMTIME *)"
+      ],
+      "category": "L1_POLICY_ADAPTATION",
+      "current_source": "src/l1j/server/server/model/network/core/CUserSocket.java",
+      "comparison": "L2 policy/fields are not one-to-one restored; retain L1 state/time/filter contracts.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f8d58",
+          "0x9f8e3f"
+        ]
+      ],
+      "direct_calls": [
+        "0x7048cc",
+        "0xab9970",
+        "0xabcd50"
+      ],
+      "caller_count": 4,
+      "assembly": "fn_9f8d58.asm.txt"
+    },
+    {
+      "entry": "0x9f90c8",
+      "signatures": [
+        "bool __cdecl CUserSocket::MoveToLocationPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f90c8",
+          "0x9f923f"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9970",
+        "0x705278"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f90c8.asm.txt"
+    },
+    {
+      "entry": "0x9f9260",
+      "signatures": [
+        "bool __cdecl CUserSocket::CharacterCreatePacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f9260",
+          "0x9f9a57"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9970",
+        "0x734514",
+        "0x9ef67c",
+        "0xab9430",
+        "0x705278",
+        "0x734514",
+        "0x94fc0c",
+        "0x94ff34",
+        "0x8b3f38",
+        "0xabcd50",
+        "0x8b3f38",
+        "0xabcd50",
+        "0x8b3f38",
+        "0xabcd50",
+        "0x5b9a28",
+        "0x734514",
+        "0x734514"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f9260.asm.txt"
+    },
+    {
+      "entry": "0x9f9a7c",
+      "signatures": [
+        "bool __cdecl CUserSocket::CharacterDeletePacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f9a7c",
+          "0x9f9bfc"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9970",
+        "0x734514",
+        "0x705278",
+        "0x5bb218"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f9a7c.asm.txt"
+    },
+    {
+      "entry": "0x9f9c14",
+      "signatures": [
+        "bool __cdecl CUserSocket::NewCharacterPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9f9c14",
+          "0x9f9faf"
+        ]
+      ],
+      "direct_calls": [
+        "0xafcbc0",
+        "0xab9970",
+        "0x734514",
+        "0x9ef67c",
+        "0x8b3f38",
+        "0x8b3f38",
+        "0x8b3f38",
+        "0x704e4c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_9f9c14.asm.txt"
+    },
+    {
+      "entry": "0x9fa250",
+      "signatures": [
+        "void __cdecl CUserSocket::ItemDebug(class User *,int)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9fa250",
+          "0x9fa40c"
+        ]
+      ],
+      "direct_calls": [
+        "0x6fafec",
+        "0x7e1900",
+        "0x9f8330"
+      ],
+      "caller_count": 2,
+      "assembly": "fn_9fa250.asm.txt"
+    },
+    {
+      "entry": "0x9fc9b4",
+      "signatures": [
+        "bool __cdecl CUserSocket::CheckLoginTime(void)"
+      ],
+      "category": "L1_POLICY_ADAPTATION",
+      "current_source": "src/l1j/server/server/model/network/core/CUserSocket.java",
+      "comparison": "L2 policy/fields are not one-to-one restored; retain L1 state/time/filter contracts.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9fc9b4",
+          "0x9fcbcb"
+        ]
+      ],
+      "direct_calls": [
+        "0x9f8210",
+        "0x9f884c",
+        "0x9fc8d4",
+        "0x9fc768",
+        "0x734514"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_9fc9b4.asm.txt"
+    },
+    {
+      "entry": "0x9fcbf0",
+      "signatures": [
+        "void __cdecl CUserSocket::ForceClose(enum SOCKET_CLOSE_REASON)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9fcbf0",
+          "0x9fcc72"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d41c"
+      ],
+      "caller_count": 44,
+      "assembly": "fn_9fcbf0.asm.txt"
+    },
+    {
+      "entry": "0x9fcc98",
+      "signatures": [
+        "void __cdecl CUserSocket::ReportPacketLog(bool)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9fcc98",
+          "0x9fced6"
+        ]
+      ],
+      "direct_calls": [
+        "0xabcd50",
+        "0xabcd50",
+        "0xab9430",
+        "0xab9d60",
+        "0x734514",
+        "0xab9910",
+        "0x734514"
+      ],
+      "caller_count": 4,
+      "assembly": "fn_9fcc98.asm.txt"
+    },
+    {
+      "entry": "0xa01240",
+      "signatures": [
+        "bool __cdecl CUserSocket::RequestNetPing(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_CLIENT_SERVICE",
+      "current_source": "src/l1j/server/server/model/network/core/sc/packet/SC_Ping.java",
+      "comparison": "Original GameGuard service;L1 has its own ping profile,not a missing IOCP engine.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa01240",
+          "0xa01464"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278",
+        "0x90ebe4",
+        "0x735ca4",
+        "0x74e3bc",
+        "0x734514"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_a01240.asm.txt"
+    },
+    {
+      "entry": "0xa014ac",
+      "signatures": [
+        "void __cdecl CSocketLimiter::DeleteAllIP(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/socket_limiter.hpp",
+      "comparison": "IP/MAC reservation role;L1 terminal ownership guards replace unsafe arbitrary deletion.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa014ac",
+          "0xa0155d"
+        ]
+      ],
+      "direct_calls": [
+        "0xa4ccec",
+        "0x84fac0",
+        "0xa4cd8c"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_a014ac.asm.txt"
+    },
+    {
+      "entry": "0xa015a4",
+      "signatures": [
+        "void __cdecl CSocketLimiter::DeleteAllMAC(void)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/socket_limiter.hpp",
+      "comparison": "IP/MAC reservation role;L1 terminal ownership guards replace unsafe arbitrary deletion.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa015a4",
+          "0xa01655"
+        ]
+      ],
+      "direct_calls": [
+        "0xa4ccec",
+        "0x521ae8",
+        "0xa4cd8c"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_a015a4.asm.txt"
+    },
+    {
+      "entry": "0xa0169c",
+      "signatures": [
+        "__cdecl CUserSocket::~CUserSocket(void)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0169c",
+          "0xa01790"
+        ]
+      ],
+      "direct_calls": [
+        "0xab8610",
+        "0xab8610"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_a0169c.asm.txt"
+    },
+    {
+      "entry": "0xa017a0",
+      "signatures": [
+        "VTable CUserSocket slot0"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa017a0",
+          "0xa017c8"
+        ]
+      ],
+      "direct_calls": [
+        "0xa0169c",
+        "0x401f3c"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_a017a0.asm.txt"
+    },
+    {
+      "entry": "0xa017c8",
+      "signatures": [
+        "class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::xallocator<wchar_t> > __cdecl CUserSocket::GetMacAddressString(void)"
+      ],
+      "category": "CLIENT_INTEGRATION_OPEN",
+      "current_source": "native/socket_limiter.hpp",
+      "comparison": "Server verified-identity API exists; actual L1 client identity supplier is not integrated.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa017c8",
+          "0xa018f9"
+        ]
+      ],
+      "direct_calls": [
+        "0x670a48",
+        "0xab9e10",
+        "0x40a9c4"
+      ],
+      "caller_count": 3,
+      "assembly": "fn_a017c8.asm.txt"
+    },
+    {
+      "entry": "0xa035e4",
+      "signatures": [
+        "UserExPacket"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa035e4",
+          "0xa03713"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278",
+        "0xa03470",
+        "0x9ba6b0"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_a035e4.asm.txt"
+    },
+    {
+      "entry": "0xa0372c",
+      "signatures": [
+        "VTable CUserSocket slot20",
+        "void __cdecl CUserSocket::OnRead(void)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0372c",
+          "0xa03d8f"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d41c",
+        "0x9ef384",
+        "0x925138",
+        "0xa0340c",
+        "0xab9970",
+        "0x9f7f3c",
+        "0x9ba4f8",
+        "0x926eac",
+        "0xab9970",
+        "0x926eac",
+        "0x4205e0",
+        "0x734514",
+        "0x5456d0",
+        "0x4205e0",
+        "0xab9970",
+        "0x4205e0",
+        "0x73446c",
+        "0x4205e0",
+        "0xa71b3c",
+        "0x5456d0",
+        "0x45d41c",
+        "0x5456d0"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_a0372c.asm.txt"
+    },
+    {
+      "entry": "0xa04a60",
+      "signatures": [
+        "int __cdecl CSocketLimiter::IncUserSocketPerIP(unsigned int)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/socket_limiter.hpp",
+      "comparison": "IP/MAC reservation role;L1 terminal ownership guards replace unsafe arbitrary deletion.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa04a60",
+          "0xa04bfa"
+        ]
+      ],
+      "direct_calls": [
+        "0xa4ccec",
+        "0x7c8fc4",
+        "0x801e88",
+        "0xa4cd8c",
+        "0x866f68",
+        "0xa4cd8c",
+        "0x480214",
+        "0xa4cd8c"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_a04a60.asm.txt"
+    },
+    {
+      "entry": "0xa04c3c",
+      "signatures": [
+        "int __cdecl CSocketLimiter::IncUserSocketPerMAC(__int64)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/socket_limiter.hpp",
+      "comparison": "IP/MAC reservation role;L1 terminal ownership guards replace unsafe arbitrary deletion.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa04c3c",
+          "0xa04dd0"
+        ]
+      ],
+      "direct_calls": [
+        "0xa4ccec",
+        "0xa03dd8",
+        "0x7c9218",
+        "0xa4cd8c",
+        "0x866f68",
+        "0xa4cd8c",
+        "0x480214",
+        "0xa4cd8c"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_a04c3c.asm.txt"
+    },
+    {
+      "entry": "0xa08940",
+      "signatures": [
+        "void __cdecl CUserSocket::IncUserCount(bool)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa08940",
+          "0xa08a26"
+        ]
+      ],
+      "direct_calls": [
+        "0xa08498"
+      ],
+      "caller_count": 4,
+      "assembly": "fn_a08940.asm.txt"
+    },
+    {
+      "entry": "0xa08a48",
+      "signatures": [
+        "void __cdecl CUserSocket::DecUserCount(bool)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa08a48",
+          "0xa08b2e"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0xa08660"
+      ],
+      "caller_count": 2,
+      "assembly": "fn_a08a48.asm.txt"
+    },
+    {
+      "entry": "0xa09028",
+      "signatures": [
+        "bool __cdecl CUserSocket::JoinPartyPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa09028",
+          "0xa09db6"
+        ]
+      ],
+      "direct_calls": [
+        "0x9f8604",
+        "0x9658dc",
+        "0x7ea0e0",
+        "0x9f8604",
+        "0xab9430",
+        "0x705278",
+        "0xab9430",
+        "0xa227cc",
+        "0xab9e10",
+        "0x40a9c4",
+        "0x4fe338",
+        "0x9f8604",
+        "0x9f8604",
+        "0x9f8604",
+        "0x89d934",
+        "0x9f8604",
+        "0x73446c",
+        "0x6704e0",
+        "0x9f86bc",
+        "0x970e04",
+        "0x73446c",
+        "0x6704e0",
+        "0x9f86bc",
+        "0x73446c",
+        "0x6704e0",
+        "0x9658dc",
+        "0x73446c",
+        "0x6704e0",
+        "0x7ea0e0",
+        "0x9f8604",
+        "0x7ff4b8",
+        "0x9f8604",
+        "0x9f8604",
+        "0x9f8604",
+        "0x73446c",
+        "0x6704e0",
+        "0x73446c",
+        "0x6704e0",
+        "0x9f86bc",
+        "0x66a274",
+        "0x6684b4",
+        "0x9f8604",
+        "0x89e5bc",
+        "0x73446c",
+        "0x6704e0",
+        "0x7ff66c",
+        "0x73446c",
+        "0x6704e0",
+        "0x9f86bc",
+        "0x73446c",
+        "0x6704e0",
+        "0x9f86bc"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_a09028.asm.txt"
+    },
+    {
+      "entry": "0xa09e10",
+      "signatures": [
+        "bool __cdecl CUserSocket::AnswerJoinPartyPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa09e10",
+          "0xa0acde"
+        ]
+      ],
+      "direct_calls": [
+        "0x9658dc",
+        "0x7ea0e0",
+        "0x9f8604",
+        "0x705278",
+        "0x89da5c",
+        "0x9f8604",
+        "0x5b86c8",
+        "0x88a2c0",
+        "0xab91d0",
+        "0x886350",
+        "0x9f8604",
+        "0x66a274",
+        "0x6684b4",
+        "0x89e8b8",
+        "0x73446c",
+        "0x6704e0",
+        "0x49a958",
+        "0x814568",
+        "0x7ff284",
+        "0x73446c",
+        "0x6704e0",
+        "0x8068e0",
+        "0x7ff51c",
+        "0x807a64",
+        "0x807a64",
+        "0x802b3c",
+        "0x73446c",
+        "0x6704e0",
+        "0x95af48",
+        "0x95af48",
+        "0x803a48",
+        "0x803a48",
+        "0x73446c",
+        "0x6704e0",
+        "0x9d2154",
+        "0x9d2154",
+        "0x482288",
+        "0x49a958",
+        "0x8118a8",
+        "0x81c848",
+        "0x81c848",
+        "0x8065a0",
+        "0x7ff66c",
+        "0x7358a8",
+        "0x74e3bc",
+        "0x800970",
+        "0x569dec",
+        "0x89e8b8",
+        "0x800db8",
+        "0x49a958",
+        "0x814568",
+        "0x807a64",
+        "0x95af48",
+        "0x49a958",
+        "0x8148e4",
+        "0x49a958",
+        "0x816ca0",
+        "0x807088",
+        "0x803a48",
+        "0x9d2154",
+        "0x9d1f3c",
+        "0x49a958",
+        "0x8118a8",
+        "0x81c848",
+        "0x42a730",
+        "0x76e9d0",
+        "0x8065a0",
+        "0x73446c",
+        "0x6704e0",
+        "0x73446c",
+        "0x6704e0",
+        "0x73446c",
+        "0x6704e0",
+        "0x73446c",
+        "0x6704e0",
+        "0x7ff66c",
+        "0x7358a8",
+        "0x74e3bc",
+        "0x56daa8",
+        "0x73446c",
+        "0x6704e0",
+        "0x73446c",
+        "0x6704e0",
+        "0x73446c",
+        "0x6704e0",
+        "0x73446c",
+        "0x6704e0",
+        "0x9f86bc",
+        "0x73446c",
+        "0x6704e0",
+        "0x89e8b8"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_a09e10.asm.txt"
+    },
+    {
+      "entry": "0xa0ccc4",
+      "signatures": [
+        "__cdecl CUserSocket::CUserSocket(unsigned __int64)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0ccc4",
+          "0xa0cff8"
+        ]
+      ],
+      "direct_calls": [
+        "0x90e548",
+        "0xa4ccd4",
+        "0xab9430",
+        "0xab9430",
+        "0xa08138",
+        "0xab9430",
+        "0x9f7f04",
+        "0xa07ee8",
+        "0xab9430",
+        "0xab9430",
+        "0xab9430"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_a0ccc4.asm.txt"
+    },
+    {
+      "entry": "0xa0d07c",
+      "signatures": [
+        "class CSocket *__cdecl CUserSocket::Allocate(unsigned __int64)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0d07c",
+          "0xa0d124"
+        ]
+      ],
+      "direct_calls": [
+        "0x9ef21c",
+        "0xa0ccc4"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_a0d07c.asm.txt"
+    },
+    {
+      "entry": "0xa0d164",
+      "signatures": [
+        "VTable CUserSocket slot4",
+        "void __cdecl CUserSocket::TimerExpired(int)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Wheel/task role; 64-bit monotonic L1 adaptation,not original32-bit clock equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0d164",
+          "0xa0db8a"
+        ]
+      ],
+      "direct_calls": [
+        "0x704a2c",
+        "0x734514",
+        "0x45d41c",
+        "0x704990",
+        "0x92f2b0",
+        "0x735ca4",
+        "0xab9970",
+        "0x45d41c",
+        "0xab9970",
+        "0x45d41c",
+        "0x9f8210",
+        "0x9f884c",
+        "0x9f884c",
+        "0x9f884c",
+        "0x9f8604",
+        "0x9f82c8",
+        "0x9f80dc",
+        "0x9f8d58",
+        "0x9fc768",
+        "0x5c97ec",
+        "0x9fc768",
+        "0x9f884c",
+        "0x9f8604",
+        "0x9f82c8",
+        "0x9f884c",
+        "0x9f8604",
+        "0x9f82c8",
+        "0x9f7ce0",
+        "0x9f7ce0",
+        "0x9f7e24",
+        "0x9f8604",
+        "0x9f7ce0",
+        "0x9f7ce0",
+        "0x9f7e24",
+        "0x9f8604",
+        "0x9f7e24",
+        "0x9f884c",
+        "0x7048c4"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_a0d164.asm.txt"
+    },
+    {
+      "entry": "0xa0dc04",
+      "signatures": [
+        "int __cdecl CSocketLimiter::DecUserSocketPerIP(unsigned int)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/socket_limiter.hpp",
+      "comparison": "IP/MAC reservation role;L1 terminal ownership guards replace unsafe arbitrary deletion.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0dc04",
+          "0xa0dda1"
+        ]
+      ],
+      "direct_calls": [
+        "0xa4ccec",
+        "0x7c8fc4",
+        "0xa4cd8c",
+        "0x866f68",
+        "0xa087f8",
+        "0xa4cd8c",
+        "0xa4cd8c",
+        "0x480214",
+        "0xa4cd8c"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_a0dc04.asm.txt"
+    },
+    {
+      "entry": "0xa0dddc",
+      "signatures": [
+        "void __cdecl CSocketLimiter::DeleteUserSocketPerIP(unsigned int)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/socket_limiter.hpp",
+      "comparison": "IP/MAC reservation role;L1 terminal ownership guards replace unsafe arbitrary deletion.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0dddc",
+          "0xa0de95"
+        ]
+      ],
+      "direct_calls": [
+        "0xa4ccec",
+        "0xa087f8",
+        "0xa4cd8c"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_a0dddc.asm.txt"
+    },
+    {
+      "entry": "0xa0ded4",
+      "signatures": [
+        "int __cdecl CSocketLimiter::DecUserSocketPerMAC(__int64)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/socket_limiter.hpp",
+      "comparison": "IP/MAC reservation role;L1 terminal ownership guards replace unsafe arbitrary deletion.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0ded4",
+          "0xa0e072"
+        ]
+      ],
+      "direct_calls": [
+        "0xa4ccec",
+        "0xa03dd8",
+        "0xa4cd8c",
+        "0x866f68",
+        "0xa0889c",
+        "0xa4cd8c",
+        "0xa4cd8c",
+        "0x480214",
+        "0xa4cd8c"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_a0ded4.asm.txt"
+    },
+    {
+      "entry": "0xa0e0ac",
+      "signatures": [
+        "void __cdecl CSocketLimiter::DeleteUserSocketPerMAC(__int64)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/socket_limiter.hpp",
+      "comparison": "IP/MAC reservation role;L1 terminal ownership guards replace unsafe arbitrary deletion.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0e0ac",
+          "0xa0e166"
+        ]
+      ],
+      "direct_calls": [
+        "0xa4ccec",
+        "0xa0889c",
+        "0xa4cd8c"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_a0e0ac.asm.txt"
+    },
+    {
+      "entry": "0xa0e1a4",
+      "signatures": [
+        "bool __cdecl CUserSocket::VersionPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0e1a4",
+          "0xa0eb22"
+        ]
+      ],
+      "direct_calls": [
+        "0x705278",
+        "0xab9430",
+        "0x74e3c8",
+        "0x8c0390",
+        "0x8c0390",
+        "0x9ef63c",
+        "0x4623b0",
+        "0x4623b0",
+        "0x4623b0",
+        "0x4623b0",
+        "0xab9430",
+        "0x951fdc",
+        "0x704990",
+        "0x7048c4",
+        "0x734514",
+        "0x705278",
+        "0xa01c74",
+        "0x734514",
+        "0x734514",
+        "0x4173e4",
+        "0x704148",
+        "0x706894",
+        "0x734514",
+        "0x705278",
+        "0xac28c0",
+        "0xab9430",
+        "0x951fdc",
+        "0x734514",
+        "0x705278",
+        "0x9ef63c",
+        "0xa0dbb0",
+        "0x90e04c",
+        "0x704990",
+        "0x7048c4",
+        "0xab9430",
+        "0x951fdc",
+        "0x734514",
+        "0xab9430",
+        "0x951fdc",
+        "0x704990",
+        "0x7048c4",
+        "0x734514"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_a0e1a4.asm.txt"
+    },
+    {
+      "entry": "0xa0f83c",
+      "signatures": [
+        "bool __cdecl CUserSocket::CharacterSelectPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0f83c",
+          "0xa0fe2f"
+        ]
+      ],
+      "direct_calls": [
+        "0x9f7f04",
+        "0x734514",
+        "0x734514",
+        "0x705278",
+        "0xab9970",
+        "0x734514",
+        "0x734514",
+        "0x734514",
+        "0x9fcbf0",
+        "0x705278",
+        "0x705278",
+        "0x734514",
+        "0x734514",
+        "0x515884",
+        "0x476cf4",
+        "0x734514",
+        "0x5c11bc",
+        "0x90f9ec",
+        "0x90f9ec",
+        "0x734514"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_a0f83c.asm.txt"
+    },
+    {
+      "entry": "0xa0fe54",
+      "signatures": [
+        "bool __cdecl CUserSocket::_LoginPacket(wchar_t *,int,int,int,int,int,int)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0fe54",
+          "0xa109cc"
+        ]
+      ],
+      "direct_calls": [
+        "0x708394",
+        "0x708b00",
+        "0xab91d0",
+        "0x708d3c",
+        "0x70843c",
+        "0x734514",
+        "0x9fcbf0",
+        "0x56daa8",
+        "0x56daa8",
+        "0xab9430",
+        "0xab9430",
+        "0x8aaa4c",
+        "0x458ed0",
+        "0x734514",
+        "0x8aabdc",
+        "0x866f68",
+        "0xabcd50",
+        "0xa22f08",
+        "0x8aabdc",
+        "0xab9e10",
+        "0xab9e10",
+        "0x734514",
+        "0x515884",
+        "0x476cf4",
+        "0x734514",
+        "0xa4ccec",
+        "0x664660",
+        "0x9e4b3c",
+        "0xa4cd8c",
+        "0x951fdc",
+        "0x90ebe4",
+        "0x734514",
+        "0x74e3bc",
+        "0x90e140",
+        "0xa04a60",
+        "0xa04c3c",
+        "0xa017c8",
+        "0x90ebe4",
+        "0x734514",
+        "0x74e3bc",
+        "0x74e3bc",
+        "0xa017c8",
+        "0x90ebe4",
+        "0x734514",
+        "0x74e3bc",
+        "0x74e3bc",
+        "0xab9d60",
+        "0xa22e1c",
+        "0x45b648",
+        "0xa08940",
+        "0xac01c0",
+        "0x734514",
+        "0x734514",
+        "0x9fcbf0",
+        "0x734514",
+        "0x9fcbf0",
+        "0x866f68",
+        "0x9f8210",
+        "0xa4cd8c",
+        "0x734514",
+        "0x734514",
+        "0x480214",
+        "0x480214"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_a0fe54.asm.txt"
+    },
+    {
+      "entry": "0xa10ad0",
+      "signatures": [
+        "bool __cdecl CUserSocket::LoginPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa10ad0",
+          "0xa10c71"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9430",
+        "0x705278",
+        "0xa0fe54"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_a10ad0.asm.txt"
+    },
+    {
+      "entry": "0xa121a0",
+      "signatures": [
+        "void __cdecl CUserSocket::UnBindUser(void)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa121a0",
+          "0xa123cc"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x5213d0",
+        "0x892794"
+      ],
+      "caller_count": 5,
+      "assembly": "fn_a121a0.asm.txt"
+    },
+    {
+      "entry": "0xa12dec",
+      "signatures": [
+        "VTable CUserSocket slot19",
+        "void __cdecl CUserSocket::OnClose(void)"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa12dec",
+          "0xa12eed"
+        ]
+      ],
+      "direct_calls": [
+        "0x8b04fc",
+        "0x90e140",
+        "0xa0dc04",
+        "0xa0ded4",
+        "0x4173e4",
+        "0xa12674"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_a12dec.asm.txt"
+    },
+    {
+      "entry": "0xa1c58c",
+      "signatures": [
+        "bool __cdecl CUserSocket::HtmlCMDPacket(class CSocket *,const unsigned char *)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa1c58c",
+          "0xa1c83f"
+        ]
+      ],
+      "direct_calls": [
+        "0xab9430",
+        "0x705278",
+        "0x734514",
+        "0x6da258",
+        "0x734514",
+        "0xab9e10",
+        "0xabd750",
+        "0x705c88",
+        "0xab9e10",
+        "0x705c88",
+        "0xa58428",
+        "0xa58428"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_a1c58c.asm.txt"
+    },
+    {
+      "entry": "0xa1cb64",
+      "signatures": [
+        "void __cdecl CUserSocket::LoadHtmlCmdHandler(void)"
+      ],
+      "category": "L2_GAME_PROFILE",
+      "current_source": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "comparison": "L1 game handler profile; do not transplant L2 gameplay packet bodies.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa1cb64",
+          "0xa1ccc7"
+        ]
+      ],
+      "direct_calls": [
+        "0xa77f94",
+        "0xa1c868",
+        "0xabb8c0",
+        "0x69f130",
+        "0x734514",
+        "0xa58428",
+        "0xa58428"
+      ],
+      "caller_count": 1,
+      "assembly": "fn_a1cb64.asm.txt"
+    },
+    {
+      "entry": "0xa3a490",
+      "signatures": [
+        "void __cdecl CExecutionSerializer<class CWorld,4194304>::AddExecutable(class MemoryObject *,void (__cdecl MemoryObject::* )(struct CExecutionArgumentPad *),class CExecutionArgument *,const wchar_t *)"
+      ],
+      "category": "CORE_ROLE_MAPPED",
+      "current_source": "native/cio_core.hpp",
+      "comparison": "Native slab/ring/refcount/COW role; latest snapshot observes final returns.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa3a490",
+          "0xa3a8ee"
+        ]
+      ],
+      "direct_calls": [
+        "0xab8550",
+        "0x734514",
+        "0xab8550",
+        "0x734514",
+        "0xab8550",
+        "0x734514",
+        "0xab8550",
+        "0x734514",
+        "0x6704e0"
+      ],
+      "caller_count": 31,
+      "assembly": "fn_a3a490.asm.txt"
+    },
+    {
+      "entry": "0xab9010",
+      "signatures": [
+        "VTable CIOSocketEx16384 slot20",
+        "VTable CIOSocketEx8192 slot20",
+        "VTable CSocket slot20"
+      ],
+      "category": "NETWORK_ADAPTER_MAPPED",
+      "current_source": "native/CTransport.cpp",
+      "comparison": "Native socket plus Java L1 session/decoder boundary; not blanket branch equivalence.",
+      "function_scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xab9010",
+          "0xab9046"
+        ]
+      ],
+      "direct_calls": [
+        "0xacb930",
+        "0xacc090",
+        "0xacb3b0"
+      ],
+      "caller_count": 0,
+      "assembly": "fn_ab9010.asm.txt"
+    }
+  ],
+  "unlocated_signatures": [
+    {
+      "va": "0xb26a12",
+      "signature": "void __cdecl MemoryObject::operator delete(void *)"
+    },
+    {
+      "va": "0xb318f2",
+      "signature": "void __cdecl CNewMwsrQueue<class CIOBufferEx<16384> >::UnLock(void)"
+    },
+    {
+      "va": "0xb33672",
+      "signature": "void __cdecl CNewMwsrQueue<class CIOBufferEx<16384> >::Push(class CIOBufferEx<16384> *)"
+    },
+    {
+      "va": "0xb34b92",
+      "signature": "class CIOBufferEx<16384> *__cdecl CIOBufferEx<16384>::Alloc(void)"
+    },
+    {
+      "va": "0xb546f2",
+      "signature": "void __cdecl CNewMwsrQueue<class CIOBufferEx<8192> >::UnLock(void)"
+    },
+    {
+      "va": "0xb54992",
+      "signature": "void __cdecl CNewMwsrQueue<class CIOBufferEx<8192> >::Push(class CIOBufferEx<8192> *)"
+    },
+    {
+      "va": "0xb54a92",
+      "signature": "class CIOBufferEx<8192> *__cdecl CIOBufferEx<8192>::Alloc(void)"
+    },
+    {
+      "va": "0xcc8550",
+      "signature": "__cdecl MemoryObject::MemoryObject(void)"
+    },
+    {
+      "va": "0xcc85b0",
+      "signature": "__cdecl MemoryObject::MemoryObject(const class MemoryObject &)"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+PASS native pool snapshot:existing-ring borrow/final-return accounting,shared retain,8000 concurrent leases,snapshot equality,zero borrowed after drain;slabBytes=28524480

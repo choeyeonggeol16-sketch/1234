@@ -1,0 +1,118 @@
+# fn_9f8330; PE pdata/unwind; entry 0x9f8330
+# chunk 0x9f8330..0x9f851d
+00000000009f8330: push     rbx
+00000000009f8332: push     rbp
+00000000009f8333: push     rsi
+00000000009f8334: push     rdi
+00000000009f8335: push     r12
+00000000009f8337: push     r13
+00000000009f8339: push     r14
+00000000009f833b: sub      rsp, 0x260
+00000000009f8342: mov      qword ptr [rsp + 0x40], 0xfffffffffffffffe
+00000000009f834b: mov      rbx, r8
+00000000009f834e: mov      r13, rdx
+00000000009f8351: mov      rsi, rcx
+00000000009f8354: mov      r9d, dword ptr [rip + 0x2ebc6e7d]
+00000000009f835b: mov      rax, qword ptr gs:[0x58]
+00000000009f8364: mov      ecx, 0x7d58
+00000000009f8369: mov      r14, qword ptr [rax + r9*8]
+00000000009f836d: movsxd   r9, dword ptr [r14 + rcx]
+00000000009f8371: lea      rcx, [rip - 0x5f8378]
+00000000009f8378: movsxd   r8, dword ptr [rcx + r9*4 + 0x47e2a40]
+00000000009f8380: lea      eax, [r8 + 1]
+00000000009f8384: mov      dword ptr [rcx + r9*4 + 0x47e2a40], eax
+00000000009f838c: imul     r9, r9, 0x3e8
+00000000009f8393: add      r9, r8
+00000000009f8396: lea      rax, [rip + 0x3c62f3] ; UTF16 'void __cdecl CUserSocket::SendSystemMessage(wchar_t *,wchar_t *)'
+00000000009f839d: mov      qword ptr [rcx + r9*8 + 0x47bf7c0], rax
+00000000009f83a5: mov      rcx, rbx
+00000000009f83a8: call     0xab9e10
+00000000009f83ad: mov      r12, rax
+00000000009f83b0: xor      ebp, ebp
+00000000009f83b2: xor      edx, edx
+00000000009f83b4: mov      r8d, 0x200
+00000000009f83ba: lea      rcx, [rsp + 0x50]
+00000000009f83bf: call     0xab9430
+00000000009f83c4: xor      edi, edi
+00000000009f83c6: test     r12d, r12d
+00000000009f83c9: jle      0x9f84f3
+00000000009f83cf: sub      r12d, 1
+00000000009f83d3: movzx    eax, word ptr [rbx]
+00000000009f83d6: cmp      ax, 0xd
+00000000009f83da: jne      0x9f8444
+00000000009f83dc: add      rbx, 2
+00000000009f83e0: cmp      word ptr [rbx], 0xa
+00000000009f83e4: jne      0x9f83ea
+00000000009f83e6: add      rbx, 2
+00000000009f83ea: test     rdi, rdi
+00000000009f83ed: jle      0x9f84ac
+00000000009f83f3: mov      rax, qword ptr [rsi]
+00000000009f83f6: lea      rcx, [rsp + 0x50]
+00000000009f83fb: mov      qword ptr [rsp + 0x38], rcx
+00000000009f8400: mov      dword ptr [rsp + 0x30], 0xffffffff
+00000000009f8408: mov      qword ptr [rsp + 0x28], r13
+00000000009f840d: mov      dword ptr [rsp + 0x20], 5
+00000000009f8415: xor      r9d, r9d
+00000000009f8418: lea      r8d, [r9 + 0x4a]
+00000000009f841c: lea      rdx, [rip + 0x185155]
+00000000009f8423: mov      rcx, rsi
+00000000009f8426: call     qword ptr [rax + 0x80]
+00000000009f842c: xor      ebp, ebp
+00000000009f842e: xor      edi, edi
+00000000009f8430: xor      edx, edx
+00000000009f8432: mov      r8d, 0x200
+00000000009f8438: lea      rcx, [rsp + 0x50]
+00000000009f843d: call     0xab9430
+00000000009f8442: jmp      0x9f84ac
+00000000009f8444: mov      word ptr [rsp + rdi*2 + 0x50], ax
+00000000009f8449: add      rbx, 2
+00000000009f844d: add      ebp, 1
+00000000009f8450: add      rdi, 1
+00000000009f8454: cmp      rdi, 0xc8
+00000000009f845b: jl       0x9f84ac
+00000000009f845d: mov      rax, qword ptr [rsi]
+00000000009f8460: lea      rcx, [rsp + 0x50]
+00000000009f8465: mov      qword ptr [rsp + 0x38], rcx
+00000000009f846a: mov      dword ptr [rsp + 0x30], 0xffffffff
+00000000009f8472: mov      qword ptr [rsp + 0x28], r13
+00000000009f8477: mov      dword ptr [rsp + 0x20], 5
+00000000009f847f: xor      r9d, r9d
+00000000009f8482: lea      r8d, [r9 + 0x4a]
+00000000009f8486: lea      rdx, [rip + 0x1850eb]
+00000000009f848d: mov      rcx, rsi
+00000000009f8490: call     qword ptr [rax + 0x80]
+00000000009f8496: xor      ebp, ebp
+00000000009f8498: xor      edi, edi
+00000000009f849a: xor      edx, edx
+00000000009f849c: mov      r8d, 0x200
+00000000009f84a2: lea      rcx, [rsp + 0x50]
+00000000009f84a7: call     0xab9430
+00000000009f84ac: test     r12d, r12d
+00000000009f84af: jg       0x9f83cf
+00000000009f84b5: test     ebp, ebp
+00000000009f84b7: jle      0x9f84f3
+00000000009f84b9: mov      rax, qword ptr [rsi]
+00000000009f84bc: lea      rcx, [rsp + 0x50]
+00000000009f84c1: mov      qword ptr [rsp + 0x38], rcx
+00000000009f84c6: mov      dword ptr [rsp + 0x30], 0xffffffff
+00000000009f84ce: mov      qword ptr [rsp + 0x28], r13
+00000000009f84d3: mov      dword ptr [rsp + 0x20], 5
+00000000009f84db: xor      r9d, r9d
+00000000009f84de: lea      r8d, [r9 + 0x4a]
+00000000009f84e2: lea      rdx, [rip + 0x18508f]
+00000000009f84e9: mov      rcx, rsi
+00000000009f84ec: call     qword ptr [rax + 0x80]
+00000000009f84f2: nop
+00000000009f84f3: mov      eax, 0x7d58
+00000000009f84f8: movsxd   rax, dword ptr [r14 + rax]
+00000000009f84fc: lea      rcx, [rip - 0x5f8503]
+00000000009f8503: add      dword ptr [rcx + rax*4 + 0x47e2a40], -1
+00000000009f850b: add      rsp, 0x260
+00000000009f8512: pop      r14
+00000000009f8514: pop      r13
+00000000009f8516: pop      r12
+00000000009f8518: pop      rdi
+00000000009f8519: pop      rsi
+00000000009f851a: pop      rbp
+00000000009f851b: pop      rbx
+00000000009f851c: ret

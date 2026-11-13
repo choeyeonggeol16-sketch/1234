@@ -1,0 +1,77 @@
+# fn_705508; PE pdata/unwind; entry 0x705508
+# chunk 0x705508..0x705642
+0000000000705508: push     rbx
+000000000070550a: push     rbp
+000000000070550b: push     rsi
+000000000070550c: push     rdi
+000000000070550d: push     r12
+000000000070550f: sub      rsp, 0x40
+0000000000705513: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+000000000070551c: mov      rdi, rcx
+000000000070551f: mov      edx, dword ptr [rip + 0x2eeb9cb3]
+0000000000705525: mov      rax, qword ptr gs:[0x58]
+000000000070552e: mov      r12d, 0x7d58
+0000000000705534: mov      rbx, qword ptr [rax + rdx*8]
+0000000000705538: movsxd   r8, dword ptr [rbx + r12]
+000000000070553c: lea      rbp, [rip - 0x305543]
+0000000000705543: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+000000000070554b: lea      eax, [rdx + 1]
+000000000070554e: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+0000000000705556: imul     r8, r8, 0x3e8
+000000000070555d: add      r8, rdx
+0000000000705560: lea      rax, [rip + 0x56d369] ; UTF16 'void __cdecl CIOServer::OnIOCallback(int,unsigned long,struct _OVERLAPPED *)'
+0000000000705567: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+000000000070556f: mov      dword ptr [rsp + 0x70], 0x10
+0000000000705577: lea      r8, [rsp + 0x70]
+000000000070557c: lea      rdx, [rsp + 0x28]
+0000000000705581: mov      rcx, qword ptr [rcx + 0x18]
+0000000000705585: call     qword ptr [rip + 0x41714d] ; IAT accept
+000000000070558b: mov      rsi, rax
+000000000070558e: cmp      rax, -1
+0000000000705592: jne      0x7055db
+0000000000705594: call     qword ptr [rip + 0x417136] ; IAT WSAGetLastError
+000000000070559a: cmp      eax, 0x2733
+000000000070559f: jne      0x7055b1
+00000000007055a1: movsxd   rax, dword ptr [rbx + r12]
+00000000007055a5: add      dword ptr [rbp + rax*4 + 0x47e2a40], esi
+00000000007055ac: jmp      0x705637
+00000000007055b1: cmp      qword ptr [rdi + 0x18], -1
+00000000007055b6: je       0x7055cd
+00000000007055b8: call     qword ptr [rip + 0x417112] ; IAT WSAGetLastError
+00000000007055be: mov      edx, eax
+00000000007055c0: lea      rcx, [rip + 0x56d2f1]
+00000000007055c7: call     0x704dac
+00000000007055cc: nop
+00000000007055cd: movsxd   rax, dword ptr [rbx + r12]
+00000000007055d1: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000007055d9: jmp      0x705637
+00000000007055db: mov      rax, qword ptr [rdi]
+00000000007055de: lea      r8, [rsp + 0x28]
+00000000007055e3: mov      rdx, rsi
+00000000007055e6: mov      rcx, rdi
+00000000007055e9: call     qword ptr [rax + 0x60]
+00000000007055ec: mov      rcx, rax
+00000000007055ef: test     rax, rax
+00000000007055f2: jne      0x705624
+00000000007055f4: mov      rcx, rsi
+00000000007055f7: call     qword ptr [rip + 0x41706b] ; IAT closesocket
+00000000007055fd: lea      r8, [rip + 0x56d29c]
+0000000000705604: mov      edx, 2
+0000000000705609: lea      rcx, [rip + 0xd81c290]
+0000000000705610: call     0x73446c
+0000000000705615: nop
+0000000000705616: movsxd   rax, dword ptr [rbx + r12]
+000000000070561a: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+0000000000705622: jmp      0x705637
+0000000000705624: mov      rax, qword ptr [rax]
+0000000000705627: call     qword ptr [rax + 0x60]
+000000000070562a: nop
+000000000070562b: movsxd   rax, dword ptr [rbx + r12]
+000000000070562f: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+0000000000705637: add      rsp, 0x40
+000000000070563b: pop      r12
+000000000070563d: pop      rdi
+000000000070563e: pop      rsi
+000000000070563f: pop      rbp
+0000000000705640: pop      rbx
+0000000000705641: ret

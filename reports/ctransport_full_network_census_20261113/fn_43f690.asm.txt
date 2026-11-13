@@ -1,0 +1,39 @@
+# fn_43f690; PE pdata/unwind; entry 0x43f690
+# chunk 0x43f690..0x43f736
+000000000043f690: push     rbx
+000000000043f692: push     rsi
+000000000043f693: push     rdi
+000000000043f694: sub      rsp, 0x40
+000000000043f698: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+000000000043f6a1: mov      r11, rdx
+000000000043f6a4: mov      r10, rcx
+000000000043f6a7: mov      r8d, dword ptr [rip + 0x2f17fb2a]
+000000000043f6ae: mov      rax, qword ptr gs:[0x58]
+000000000043f6b7: mov      edi, 0x7d58
+000000000043f6bc: mov      rbx, qword ptr [rax + r8*8]
+000000000043f6c0: movsxd   r9, dword ptr [rbx + rdi]
+000000000043f6c4: lea      rsi, [rip - 0x3f6cb]
+000000000043f6cb: movsxd   r8, dword ptr [rsi + r9*4 + 0x47e2a40]
+000000000043f6d3: lea      eax, [r8 + 1]
+000000000043f6d7: mov      dword ptr [rsi + r9*4 + 0x47e2a40], eax
+000000000043f6df: imul     r9, r9, 0x3e8
+000000000043f6e6: add      r9, r8
+000000000043f6e9: lea      rax, [rip + 0x7059a0] ; UTF16 'const unsigned char *__cdecl AtomicAddTimer::Disassemble(const unsigned char *)'
+000000000043f6f0: mov      qword ptr [rsi + r9*8 + 0x47bf7c0], rax
+000000000043f6f8: lea      rax, [rcx + 0x24]
+000000000043f6fc: add      rcx, 0x20
+000000000043f700: lea      r9, [r10 + 0x1c]
+000000000043f704: lea      r8, [r10 + 0x18]
+000000000043f708: mov      qword ptr [rsp + 0x28], rax
+000000000043f70d: mov      qword ptr [rsp + 0x20], rcx
+000000000043f712: lea      rdx, [rip + 0x6e792f]
+000000000043f719: mov      rcx, r11
+000000000043f71c: call     0x705278
+000000000043f721: nop
+000000000043f722: movsxd   rcx, dword ptr [rbx + rdi]
+000000000043f726: add      dword ptr [rsi + rcx*4 + 0x47e2a40], -1
+000000000043f72e: add      rsp, 0x40
+000000000043f732: pop      rdi
+000000000043f733: pop      rsi
+000000000043f734: pop      rbx
+000000000043f735: ret

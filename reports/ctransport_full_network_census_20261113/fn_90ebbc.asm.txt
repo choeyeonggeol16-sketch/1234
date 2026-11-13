@@ -1,0 +1,17 @@
+# fn_90ebbc; PE pdata/unwind; entry 0x90ebbc
+# chunk 0x90ebbc..0x90ebe4
+000000000090ebbc: push     rbx
+000000000090ebbe: push     rdi
+000000000090ebbf: sub      rsp, 0x28
+000000000090ebc3: mov      ebx, edx
+000000000090ebc5: mov      rdi, rcx
+000000000090ebc8: call     0x90e644
+000000000090ebcd: test     bl, 1
+000000000090ebd0: je       0x90ebda
+000000000090ebd2: mov      rcx, rdi
+000000000090ebd5: call     0x401f3c
+000000000090ebda: mov      rax, rdi
+000000000090ebdd: add      rsp, 0x28
+000000000090ebe1: pop      rdi
+000000000090ebe2: pop      rbx
+000000000090ebe3: ret

@@ -1,0 +1,323 @@
+# fn_a0f83c; PE pdata/unwind; entry 0xa0f83c
+# chunk 0xa0f83c..0xa0fe2f
+0000000000a0f83c: push     rbx
+0000000000a0f83e: push     rbp
+0000000000a0f83f: push     rsi
+0000000000a0f840: push     rdi
+0000000000a0f841: push     r12
+0000000000a0f843: push     r13
+0000000000a0f845: push     r14
+0000000000a0f847: push     r15
+0000000000a0f849: sub      rsp, 0x68
+0000000000a0f84d: mov      qword ptr [rsp + 0x48], 0xfffffffffffffffe
+0000000000a0f856: mov      rsi, rdx
+0000000000a0f859: mov      rbx, rcx
+0000000000a0f85c: mov      r8d, dword ptr [rip + 0x2ebaf975]
+0000000000a0f863: mov      rax, qword ptr gs:[0x58]
+0000000000a0f86c: mov      r12d, 0x7d58
+0000000000a0f872: mov      rdi, qword ptr [rax + r8*8]
+0000000000a0f876: movsxd   r9, dword ptr [rdi + r12]
+0000000000a0f87a: lea      r14, [rip - 0x60f881]
+0000000000a0f881: movsxd   r8, dword ptr [r14 + r9*4 + 0x47e2a40]
+0000000000a0f889: lea      eax, [r8 + 1]
+0000000000a0f88d: mov      dword ptr [r14 + r9*4 + 0x47e2a40], eax
+0000000000a0f895: imul     r9, r9, 0x3e8
+0000000000a0f89c: add      r9, r8
+0000000000a0f89f: lea      rax, [rip + 0x3b58ba] ; UTF16 'bool __cdecl CUserSocket::CharacterSelectPacket(class CSocket *,const unsigned char *)'
+0000000000a0f8a6: mov      qword ptr [r14 + r9*8 + 0x47bf7c0], rax
+0000000000a0f8ae: call     0x9f7f04
+0000000000a0f8b3: xor      r15d, r15d
+0000000000a0f8b6: mov      dword ptr [rsp + 0xc0], r15d
+0000000000a0f8be: mov      word ptr [rsp + 0xb0], r15w
+0000000000a0f8c7: mov      dword ptr [rsp + 0x44], r15d
+0000000000a0f8cc: mov      dword ptr [rsp + 0x40], r15d
+0000000000a0f8d1: mov      dword ptr [rsp + 0xc8], r15d
+0000000000a0f8d9: lea      ebp, [r15 + 2]
+0000000000a0f8dd: cmp      byte ptr [rip + 0x90360e], r15b
+0000000000a0f8e4: je       0xa0f974
+0000000000a0f8ea: mov      eax, dword ptr [rbx + 0xca4]
+0000000000a0f8f0: cmp      eax, 1
+0000000000a0f8f3: jne      0xa0f92e
+0000000000a0f8f5: mov      dword ptr [rsp + 0x20], 0x254
+0000000000a0f8fd: lea      r9, [rip + 0x3aaa4c]
+0000000000a0f904: lea      r8, [rip + 0x3b57d5] ; UTF16 '[%S][%d]Try hack? Invalid Secondary Auth State [SAS_REQUIRED]'
+0000000000a0f90b: mov      edx, ebp
+0000000000a0f90d: lea      rcx, [rip + 0xd511f8c]
+0000000000a0f914: call     0x734514
+0000000000a0f919: nop
+0000000000a0f91a: movsxd   rcx, dword ptr [rdi + r12]
+0000000000a0f91e: add      dword ptr [r14 + rcx*4 + 0x47e2a40], -1
+0000000000a0f927: mov      al, 1
+0000000000a0f929: jmp      0xa0fe1e
+0000000000a0f92e: cmp      eax, ebp
+0000000000a0f930: je       0xa0f974
+0000000000a0f932: cmp      eax, 3
+0000000000a0f935: je       0xa0f974
+0000000000a0f937: mov      dword ptr [rsp + 0x28], eax
+0000000000a0f93b: mov      dword ptr [rsp + 0x20], 0x25a
+0000000000a0f943: lea      r9, [rip + 0x3aaa06]
+0000000000a0f94a: lea      r8, [rip + 0x3b572f] ; UTF16 '[%S][%d]Invalid Secondary Auth State [%d]'
+0000000000a0f951: mov      edx, ebp
+0000000000a0f953: lea      rcx, [rip + 0xd511f46]
+0000000000a0f95a: call     0x734514
+0000000000a0f95f: nop
+0000000000a0f960: movsxd   rax, dword ptr [rdi + r12]
+0000000000a0f964: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0f96d: mov      al, 1
+0000000000a0f96f: jmp      0xa0fe1e
+0000000000a0f974: lea      r8, [rsp + 0xc0]
+0000000000a0f97c: lea      rdx, [rip + 0x11a2f1]
+0000000000a0f983: mov      rcx, rsi
+0000000000a0f986: call     0x705278
+0000000000a0f98b: mov      r13, rax
+0000000000a0f98e: mov      ecx, dword ptr [rsp + 0xc0]
+0000000000a0f995: cmp      ecx, 7
+0000000000a0f998: jae      0xa0fde6
+0000000000a0f99e: mov      r12d, dword ptr [rbx + rcx*4 + 0x558]
+0000000000a0f9a6: cmp      byte ptr [rip + 0x90353b], r15b
+0000000000a0f9ad: je       0xa0fa55
+0000000000a0f9b3: cmp      dword ptr [rbx + rcx*4 + 0x578], r15d
+0000000000a0f9bb: jle      0xa0fa55
+0000000000a0f9c1: call     qword ptr [rip + 0x10c759] ; IAT GetTickCount
+0000000000a0f9c7: mov      ecx, eax
+0000000000a0f9c9: xchg     dword ptr [rbx + 0xc90], ecx
+0000000000a0f9cf: cmp      ecx, r15d
+0000000000a0f9d2: jle      0xa0f9f6
+0000000000a0f9d4: sub      eax, ecx
+0000000000a0f9d6: cmp      eax, 0x3e8
+0000000000a0f9db: jg       0xa0f9f6
+0000000000a0f9dd: mov      esi, 0x7d58
+0000000000a0f9e2: movsxd   rax, dword ptr [rdi + rsi]
+0000000000a0f9e6: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0f9ef: xor      al, al
+0000000000a0f9f1: jmp      0xa0fe1e
+0000000000a0f9f6: mov      r10, qword ptr [rbx]
+0000000000a0f9f9: mov      eax, dword ptr [rsp + 0xc0]
+0000000000a0fa00: lea      rcx, [rax + rax*2]
+0000000000a0fa04: add      rcx, rcx
+0000000000a0fa07: lea      rax, [rbx + rcx*8 + 0x598]
+0000000000a0fa0f: mov      qword ptr [rsp + 0x30], rax
+0000000000a0fa14: mov      qword ptr [rsp + 0x28], r15
+0000000000a0fa19: mov      qword ptr [rsp + 0x20], r15
+0000000000a0fa1e: mov      r9d, 0x69
+0000000000a0fa24: mov      r8d, 0xfe
+0000000000a0fa2a: lea      rdx, [rip + 0x1e9ae7]
+0000000000a0fa31: mov      rcx, rbx
+0000000000a0fa34: call     qword ptr [r10 + 0x80]
+0000000000a0fa3b: nop
+0000000000a0fa3c: mov      esi, 0x7d58
+0000000000a0fa41: movsxd   rax, dword ptr [rdi + rsi]
+0000000000a0fa45: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0fa4e: xor      al, al
+0000000000a0fa50: jmp      0xa0fe1e
+0000000000a0fa55: mov      esi, 0x12
+0000000000a0fa5a: xchg     dword ptr [rbx + 0x7a0], esi
+0000000000a0fa60: xor      ecx, ecx
+0000000000a0fa62: call     0xab9970
+0000000000a0fa67: mov      dword ptr [rbx + 0x798], eax
+0000000000a0fa6d: cmp      esi, 0x12
+0000000000a0fa70: jne      0xa0fa8b
+0000000000a0fa72: mov      esi, 0x7d58
+0000000000a0fa77: movsxd   rax, dword ptr [rdi + rsi]
+0000000000a0fa7b: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0fa84: xor      al, al
+0000000000a0fa86: jmp      0xa0fe1e
+0000000000a0fa8b: cmp      esi, 0x13
+0000000000a0fa8e: je       0xa0fb3f
+0000000000a0fa94: cmp      esi, 0xc
+0000000000a0fa97: je       0xa0fb3f
+0000000000a0fa9d: cmp      esi, 0x2b
+0000000000a0faa0: je       0xa0fb3f
+0000000000a0faa6: cmp      r12d, r15d
+0000000000a0faa9: jle      0xa0faf2
+0000000000a0faab: mov      dword ptr [rsp + 0x30], esi
+0000000000a0faaf: mov      dword ptr [rsp + 0x28], r12d
+0000000000a0fab4: mov      dword ptr [rsp + 0x20], 0x287
+0000000000a0fabc: lea      r9, [rip + 0x3aa88d]
+0000000000a0fac3: lea      r8, [rip + 0x3b5546] ; UTF16 '[%S][%d]Try hack ? char_db[%d] last use packet [%d]'
+0000000000a0faca: mov      edx, ebp
+0000000000a0facc: lea      rcx, [rip + 0xd511dcd]
+0000000000a0fad3: call     0x734514
+0000000000a0fad8: nop
+0000000000a0fad9: mov      esi, 0x7d58
+0000000000a0fade: movsxd   rax, dword ptr [rdi + rsi]
+0000000000a0fae2: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0faeb: mov      al, 1
+0000000000a0faed: jmp      0xa0fe1e
+0000000000a0faf2: mov      dword ptr [rsp + 0x30], esi
+0000000000a0faf6: mov      eax, dword ptr [rsp + 0xc0]
+0000000000a0fafd: mov      dword ptr [rsp + 0x28], eax
+0000000000a0fb01: mov      dword ptr [rsp + 0x20], 0x28b
+0000000000a0fb09: lea      r9, [rip + 0x3aa840]
+0000000000a0fb10: lea      r8, [rip + 0x3b5489] ; UTF16 '[%S][%d]Try hack ? char index[%d] last use packet [%d]'
+0000000000a0fb17: mov      edx, ebp
+0000000000a0fb19: lea      rcx, [rip + 0xd511d80]
+0000000000a0fb20: call     0x734514
+0000000000a0fb25: nop
+0000000000a0fb26: mov      esi, 0x7d58
+0000000000a0fb2b: movsxd   rax, dword ptr [rdi + rsi]
+0000000000a0fb2f: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0fb38: mov      al, 1
+0000000000a0fb3a: jmp      0xa0fe1e
+0000000000a0fb3f: mov      rax, qword ptr [rbx]
+0000000000a0fb42: mov      rcx, rbx
+0000000000a0fb45: call     qword ptr [rax + 0xc0]
+0000000000a0fb4b: cmp      rax, r15
+0000000000a0fb4e: je       0xa0fbac
+0000000000a0fb50: mov      rdx, qword ptr [rax]
+0000000000a0fb53: mov      rcx, rax
+0000000000a0fb56: call     qword ptr [rdx + 0x488]
+0000000000a0fb5c: mov      qword ptr [rsp + 0x28], rax
+0000000000a0fb61: mov      dword ptr [rsp + 0x20], 0x293
+0000000000a0fb69: lea      r9, [rip + 0x3a9630] ; UTF16 '.\\UserSocket.cpp'
+0000000000a0fb70: lea      r8, [rip + 0x20af49] ; UTF16 '[%s][%d] BOT User Try Clone Login!!! (CharacterName = %s)'
+0000000000a0fb77: mov      edx, ebp
+0000000000a0fb79: lea      rcx, [rip + 0xd511d20]
+0000000000a0fb80: call     0x734514
+0000000000a0fb85: mov      edx, 6
+0000000000a0fb8a: mov      rcx, rbx
+0000000000a0fb8d: call     0x9fcbf0
+0000000000a0fb92: nop
+0000000000a0fb93: mov      esi, 0x7d58
+0000000000a0fb98: movsxd   rax, dword ptr [rdi + rsi]
+0000000000a0fb9c: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0fba5: xor      al, al
+0000000000a0fba7: jmp      0xa0fe1e
+0000000000a0fbac: lea      r8, [rsp + 0xb0]
+0000000000a0fbb4: lea      rdx, [rip + 0x13d6fd]
+0000000000a0fbbb: mov      rcx, r13
+0000000000a0fbbe: call     0x705278
+0000000000a0fbc3: cmp      word ptr [rsp + 0xb0], r15w
+0000000000a0fbcc: je       0xa0fbf4
+0000000000a0fbce: lea      rcx, [rsp + 0xc8]
+0000000000a0fbd6: mov      qword ptr [rsp + 0x20], rcx
+0000000000a0fbdb: lea      r9, [rsp + 0x40]
+0000000000a0fbe0: lea      r8, [rsp + 0x44]
+0000000000a0fbe5: lea      rdx, [rip + 0x12b348]
+0000000000a0fbec: mov      rcx, rax
+0000000000a0fbef: call     0x705278
+0000000000a0fbf4: cmp      r12d, r15d
+0000000000a0fbf7: jle      0xa0fdd0
+0000000000a0fbfd: cmp      byte ptr [rbx + 0x7e8], r15b
+0000000000a0fc04: jne      0xa0fc49
+0000000000a0fc06: mov      dword ptr [rsp + 0x28], r12d
+0000000000a0fc0b: mov      dword ptr [rsp + 0x20], 0x2a5
+0000000000a0fc13: lea      r9, [rip + 0x3aa736]
+0000000000a0fc1a: lea      r8, [rip + 0x3b531f] ; UTF16 '[%S][%d]Try hack ? not login char_db[%d]'
+0000000000a0fc21: mov      edx, ebp
+0000000000a0fc23: lea      rcx, [rip + 0xd511c76]
+0000000000a0fc2a: call     0x734514
+0000000000a0fc2f: nop
+0000000000a0fc30: mov      esi, 0x7d58
+0000000000a0fc35: movsxd   rax, dword ptr [rdi + rsi]
+0000000000a0fc39: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0fc42: mov      al, 1
+0000000000a0fc44: jmp      0xa0fe1e
+0000000000a0fc49: mov      esi, dword ptr [rbx + 0x7e4]
+0000000000a0fc4f: cmp      esi, r15d
+0000000000a0fc52: jne      0xa0fc9b
+0000000000a0fc54: mov      dword ptr [rsp + 0x30], esi
+0000000000a0fc58: mov      dword ptr [rsp + 0x28], r12d
+0000000000a0fc5d: mov      dword ptr [rsp + 0x20], 0x2ad
+0000000000a0fc65: lea      r9, [rip + 0x3aa6e4]
+0000000000a0fc6c: lea      r8, [rip + 0x3b526d] ; UTF16 '[%S][%d]Try hack ? char_db[%d], account[%d]'
+0000000000a0fc73: mov      edx, ebp
+0000000000a0fc75: lea      rcx, [rip + 0xd511c24]
+0000000000a0fc7c: call     0x734514
+0000000000a0fc81: nop
+0000000000a0fc82: mov      esi, 0x7d58
+0000000000a0fc87: movsxd   rax, dword ptr [rdi + rsi]
+0000000000a0fc8b: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0fc94: mov      al, 1
+0000000000a0fc96: jmp      0xa0fe1e
+0000000000a0fc9b: call     0x515884
+0000000000a0fca0: mov      rcx, rax
+0000000000a0fca3: mov      edx, esi
+0000000000a0fca5: call     0x476cf4
+0000000000a0fcaa: cmp      al, r15b
+0000000000a0fcad: je       0xa0fce9
+0000000000a0fcaf: lea      r9, [rbx + 0x7b4]
+0000000000a0fcb6: mov      dword ptr [rsp + 0x20], esi
+0000000000a0fcba: lea      r8, [rip + 0x3b51af] ; UTF16 'BotUser Try login. C_CHARACTER_SELECT account[%s][%d]'
+0000000000a0fcc1: mov      edx, ebp
+0000000000a0fcc3: lea      rcx, [rip + 0xd511bd6]
+0000000000a0fcca: call     0x734514
+0000000000a0fccf: nop
+0000000000a0fcd0: mov      esi, 0x7d58
+0000000000a0fcd5: movsxd   rax, dword ptr [rdi + rsi]
+0000000000a0fcd9: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0fce2: mov      al, 1
+0000000000a0fce4: jmp      0xa0fe1e
+0000000000a0fce9: movsx    ecx, word ptr [rsp + 0xb0]
+0000000000a0fcf1: mov      eax, dword ptr [rsp + 0xc8]
+0000000000a0fcf8: mov      dword ptr [rsp + 0x38], eax
+0000000000a0fcfc: mov      eax, dword ptr [rsp + 0x40]
+0000000000a0fd00: mov      dword ptr [rsp + 0x30], eax
+0000000000a0fd04: mov      eax, dword ptr [rsp + 0x44]
+0000000000a0fd08: mov      dword ptr [rsp + 0x28], eax
+0000000000a0fd0c: mov      dword ptr [rsp + 0x20], ecx
+0000000000a0fd10: mov      r9, rbx
+0000000000a0fd13: mov      r8d, r12d
+0000000000a0fd16: mov      edx, dword ptr [rip + 0x9031c0]
+0000000000a0fd1c: lea      rcx, [rip + 0x2637085]
+0000000000a0fd23: call     0x5c11bc
+0000000000a0fd28: mov      dword ptr [rbx + 0x53c], 1
+0000000000a0fd32: call     0x90f9ec
+0000000000a0fd37: mov      rcx, qword ptr [rax + 0x40]
+0000000000a0fd3b: cmp      dword ptr [rcx + 4], 3
+0000000000a0fd3f: jne      0xa0fd91
+0000000000a0fd41: call     0x90f9ec
+0000000000a0fd46: mov      esi, 0x7d58
+0000000000a0fd4b: movsxd   r8, dword ptr [rdi + rsi]
+0000000000a0fd4f: movsxd   rdx, dword ptr [r14 + r8*4 + 0x47e2a40]
+0000000000a0fd57: lea      ecx, [rdx + 1]
+0000000000a0fd5a: mov      dword ptr [r14 + r8*4 + 0x47e2a40], ecx
+0000000000a0fd62: imul     r8, r8, 0x3e8
+0000000000a0fd69: add      r8, rdx
+0000000000a0fd6c: lea      rcx, [rip + 0x15b85d] ; UTF16 'enum SSQPart::type __cdecl SSQSystem::GetWinner(void) const'
+0000000000a0fd73: mov      qword ptr [r14 + r8*8 + 0x47bf7c0], rcx
+0000000000a0fd7b: mov      rax, qword ptr [rax + 0x40]
+0000000000a0fd7f: mov      ecx, dword ptr [rax + 8]
+0000000000a0fd82: movsxd   rax, dword ptr [rdi + rsi]
+0000000000a0fd86: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0fd8f: jmp      0xa0fd99
+0000000000a0fd91: mov      cl, r15b
+0000000000a0fd94: mov      esi, 0x7d58
+0000000000a0fd99: mov      rax, qword ptr [rbx]
+0000000000a0fd9c: movsx    r9d, cl
+0000000000a0fda0: mov      dword ptr [rsp + 0x20], 1
+0000000000a0fda8: mov      r8d, 0x73
+0000000000a0fdae: lea      rdx, [rip + 0x143377]
+0000000000a0fdb5: mov      rcx, rbx
+0000000000a0fdb8: call     qword ptr [rax + 0x80]
+0000000000a0fdbe: nop
+0000000000a0fdbf: movsxd   rax, dword ptr [rdi + rsi]
+0000000000a0fdc3: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0fdcc: xor      al, al
+0000000000a0fdce: jmp      0xa0fe1e
+0000000000a0fdd0: mov      esi, 0x7d58
+0000000000a0fdd5: movsxd   rax, dword ptr [rdi + rsi]
+0000000000a0fdd9: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0fde2: mov      al, 1
+0000000000a0fde4: jmp      0xa0fe1e
+0000000000a0fde6: mov      dword ptr [rsp + 0x28], ecx
+0000000000a0fdea: mov      dword ptr [rsp + 0x20], 0x263
+0000000000a0fdf2: lea      r9, [rip + 0x3aa557]
+0000000000a0fdf9: lea      r8, [rip + 0x3b5010] ; UTF16 '[%S][%d]Try hack? invalid char index[%d]'
+0000000000a0fe00: mov      edx, ebp
+0000000000a0fe02: lea      rcx, [rip + 0xd511a97]
+0000000000a0fe09: call     0x734514
+0000000000a0fe0e: nop
+0000000000a0fe0f: movsxd   rax, dword ptr [rdi + r12]
+0000000000a0fe13: add      dword ptr [r14 + rax*4 + 0x47e2a40], -1
+0000000000a0fe1c: mov      al, 1
+0000000000a0fe1e: add      rsp, 0x68
+0000000000a0fe22: pop      r15
+0000000000a0fe24: pop      r14
+0000000000a0fe26: pop      r13
+0000000000a0fe28: pop      r12
+0000000000a0fe2a: pop      rdi
+0000000000a0fe2b: pop      rsi
+0000000000a0fe2c: pop      rbp
+0000000000a0fe2d: pop      rbx
+0000000000a0fe2e: ret

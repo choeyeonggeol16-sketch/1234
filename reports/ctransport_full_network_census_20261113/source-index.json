@@ -1,0 +1,37 @@
+{
+  "tested_source_commit": "cf696369047f30d0eff8b67d42a2d642369a7f2d",
+  "files": [
+    {
+      "path": "native/CTransport.cpp",
+      "sha256": "60d210f1dd2c7410c13a914e81ac289c6cb535e63124754637f32f22a0b7229b"
+    },
+    {
+      "path": "native/cio_core.hpp",
+      "sha256": "bcc74887cc675dc997f235e4ff59ece207f3df20d4e3137c6ea32a0a5053b003"
+    },
+    {
+      "path": "native/perfmon.hpp",
+      "sha256": "f08edf3e1cbe7b01bdce7d77dff2c1d8abb90f838abe66d453aad1e3e10b8f8d"
+    },
+    {
+      "path": "native/socket_limiter.hpp",
+      "sha256": "5414631374597b1356da085dcbbcd615c56784449dc851dc51436357cdc5d7a1"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/CNetworkDiagnostics.java",
+      "sha256": "37808ed208ed081ba21494443a78ca46c9d1b6a703e8fc6a33c1cbcee23c06c9"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/CUserSocket.java",
+      "sha256": "c121ea78011bf242b0c86a427b70d073c9fd18df8d1da54ba048de53e4a1e9ab"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Ping.java",
+      "sha256": "0d0c4cd0caeddaa7f1bccce14b665f91df77c1d5bc4aa08e4892d90123f2aa6d"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+      "sha256": "813c809e572d557f116b035221a59e371168bd0b5c6b3cbe5d97f4bb8414a361"
+    }
+  ]
+}

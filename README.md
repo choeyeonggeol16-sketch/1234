@@ -1,3 +1,13 @@
+## 2026-11-13 — 풀 회수 진단 / 매니저 메모리 제한
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·설정·검사**](downloads/CTransport_CORE_20261112.zip) · [**구현 보고서**](reports/CTRANSPORT_POOL_MANAGER_20261113.md)
+
+보고서 → 풀·회수 진단에 사용중/확보량·대여/반납·회수 지연과 제한된 관측 기록을 추가했습니다. 화면 로그 큐/글자 수와 상태 갱신에 상한을 넣고 창 이동·크기 변경을 검사했습니다. 전체 src와 새 CTransport.dll을 함께 적용합니다. ABI10/67exports,코덱·독립 PSS와 SQL은 그대로입니다.
+
+이하 내용은 이전 배포 이력입니다.
+
+---
+
 ## 2026-11-13 — 매니저 확장 명령 조회
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·설정·검사**](downloads/CTransport_CORE_20261112.zip) · [**구현 보고서**](reports/CTRANSPORT_EXTENDED_COMMANDS_20261113.md)

@@ -1,0 +1,36 @@
+# fn_90df94; PE pdata/unwind; entry 0x90df94
+# chunk 0x90df94..0x90e02c
+000000000090df94: mov      qword ptr [rsp + 0x10], rdx
+000000000090df99: mov      qword ptr [rsp + 0x18], r8
+000000000090df9e: mov      qword ptr [rsp + 0x20], r9
+000000000090dfa3: push     rbx
+000000000090dfa4: push     rsi
+000000000090dfa5: push     rdi
+000000000090dfa6: sub      rsp, 0x30
+000000000090dfaa: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+000000000090dfb3: mov      r9, rdx
+000000000090dfb6: mov      r8d, dword ptr [rip + 0x2ecb121b]
+000000000090dfbd: mov      rax, qword ptr gs:[0x58]
+000000000090dfc6: mov      edi, 0x7d58
+000000000090dfcb: mov      rbx, qword ptr [rax + r8*8]
+000000000090dfcf: movsxd   r8, dword ptr [rbx + rdi]
+000000000090dfd3: lea      rsi, [rip - 0x50dfda]
+000000000090dfda: movsxd   rdx, dword ptr [rsi + r8*4 + 0x47e2a40]
+000000000090dfe2: lea      eax, [rdx + 1]
+000000000090dfe5: mov      dword ptr [rsi + r8*4 + 0x47e2a40], eax
+000000000090dfed: imul     r8, r8, 0x3e8
+000000000090dff4: add      r8, rdx
+000000000090dff7: lea      rax, [rip + 0x45c942] ; UTF16 'void __cdecl CSocket::Send(const char *,...)'
+000000000090dffe: mov      qword ptr [rsi + r8*8 + 0x47bf7c0], rax
+000000000090e006: lea      r8, [rsp + 0x60]
+000000000090e00b: mov      rax, qword ptr [rcx]
+000000000090e00e: mov      rdx, r9
+000000000090e011: call     qword ptr [rax + 0x88]
+000000000090e017: nop
+000000000090e018: movsxd   rax, dword ptr [rbx + rdi]
+000000000090e01c: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+000000000090e024: add      rsp, 0x30
+000000000090e028: pop      rdi
+000000000090e029: pop      rsi
+000000000090e02a: pop      rbx
+000000000090e02b: ret

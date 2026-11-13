@@ -1,0 +1,101 @@
+# fn_9ba4f8; PE pdata/unwind; entry 0x9ba4f8
+# chunk 0x9ba4f8..0x9ba68e
+00000000009ba4f8: push     rbx
+00000000009ba4fa: push     rbp
+00000000009ba4fb: push     rsi
+00000000009ba4fc: push     rdi
+00000000009ba4fd: push     r12
+00000000009ba4ff: sub      rsp, 0x30
+00000000009ba503: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000009ba50c: movsxd   rbx, edx
+00000000009ba50f: mov      rdi, rcx
+00000000009ba512: mov      r8d, dword ptr [rip + 0x2ec04cbf]
+00000000009ba519: mov      rax, qword ptr gs:[0x58]
+00000000009ba522: mov      r12d, 0x7d58
+00000000009ba528: mov      rsi, qword ptr [rax + r8*8]
+00000000009ba52c: movsxd   r8, dword ptr [rsi + r12]
+00000000009ba530: lea      rbp, [rip - 0x5ba537]
+00000000009ba537: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+00000000009ba53f: lea      eax, [rdx + 1]
+00000000009ba542: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+00000000009ba54a: imul     r8, r8, 0x3e8
+00000000009ba551: add      r8, rdx
+00000000009ba554: lea      rax, [rip + 0x3eaaa5] ; UTF16 'bool __cdecl User::PacketAcceptable(int)'
+00000000009ba55b: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+00000000009ba563: cmp      byte ptr [rcx + 0x3418], 0
+00000000009ba56a: je       0x9ba5b5
+00000000009ba56c: cmp      ebx, 0x1f
+00000000009ba56f: je       0x9ba5a2
+00000000009ba571: cmp      byte ptr [rbx + rbp + 0x17a60440], 0
+00000000009ba579: je       0x9ba5a2
+00000000009ba57b: cmp      ebx, 0x59
+00000000009ba57e: je       0x9ba58f
+00000000009ba580: mov      rax, qword ptr [rcx]
+00000000009ba583: mov      edx, 0x30d
+00000000009ba588: call     qword ptr [rax + 0x860]
+00000000009ba58e: nop
+00000000009ba58f: movsxd   rax, dword ptr [rsi + r12]
+00000000009ba593: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009ba59b: xor      al, al
+00000000009ba59d: jmp      0x9ba683
+00000000009ba5a2: movsxd   rax, dword ptr [rsi + r12]
+00000000009ba5a6: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009ba5ae: mov      al, 1
+00000000009ba5b0: jmp      0x9ba683
+00000000009ba5b5: add      rcx, 0x34f8
+00000000009ba5bc: call     0x7ea0d0
+00000000009ba5c1: test     al, al
+00000000009ba5c3: je       0x9ba613
+00000000009ba5c5: cmp      ebx, 0xf
+00000000009ba5c8: je       0x9ba603
+00000000009ba5ca: cmp      ebx, 0x59
+00000000009ba5cd: je       0x9ba603
+00000000009ba5cf: cmp      ebx, 0x47
+00000000009ba5d2: je       0x9ba603
+00000000009ba5d4: cmp      byte ptr [rbx + rbp + 0x17a60440], 0
+00000000009ba5dc: je       0x9ba603
+00000000009ba5de: mov      rax, qword ptr [rdi]
+00000000009ba5e1: mov      edx, 0x30d
+00000000009ba5e6: mov      rcx, rdi
+00000000009ba5e9: call     qword ptr [rax + 0x860]
+00000000009ba5ef: nop
+00000000009ba5f0: movsxd   rax, dword ptr [rsi + r12]
+00000000009ba5f4: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009ba5fc: xor      al, al
+00000000009ba5fe: jmp      0x9ba683
+00000000009ba603: movsxd   rax, dword ptr [rsi + r12]
+00000000009ba607: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009ba60f: mov      al, 1
+00000000009ba611: jmp      0x9ba683
+00000000009ba613: cmp      dword ptr [rdi + 0xf5c], 0
+00000000009ba61a: je       0x9ba646
+00000000009ba61c: cmp      byte ptr [rbx + rbp + 0x17a60440], 0
+00000000009ba624: je       0x9ba636
+00000000009ba626: movsxd   rax, dword ptr [rsi + r12]
+00000000009ba62a: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009ba632: xor      al, al
+00000000009ba634: jmp      0x9ba683
+00000000009ba636: movsxd   rax, dword ptr [rsi + r12]
+00000000009ba63a: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009ba642: mov      al, 1
+00000000009ba644: jmp      0x9ba683
+00000000009ba646: mov      rax, qword ptr [rdi + 0xa88]
+00000000009ba64d: mov      ecx, dword ptr [rax + 0x2168]
+00000000009ba653: cmp      ecx, dword ptr [rip + 0x958883]
+00000000009ba659: je       0x9ba675
+00000000009ba65b: cmp      byte ptr [rbx + rbp + 0x17a60360], 0
+00000000009ba663: jne      0x9ba675
+00000000009ba665: movsxd   rax, dword ptr [rsi + r12]
+00000000009ba669: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009ba671: xor      al, al
+00000000009ba673: jmp      0x9ba683
+00000000009ba675: movsxd   rax, dword ptr [rsi + r12]
+00000000009ba679: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009ba681: mov      al, 1
+00000000009ba683: add      rsp, 0x30
+00000000009ba687: pop      r12
+00000000009ba689: pop      rdi
+00000000009ba68a: pop      rsi
+00000000009ba68b: pop      rbp
+00000000009ba68c: pop      rbx
+00000000009ba68d: ret

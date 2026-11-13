@@ -1,0 +1,65 @@
+# fn_9efca4; PE pdata/unwind; entry 0x9efca4
+# chunk 0x9efca4..0x9efdbb
+00000000009efca4: push     rbx
+00000000009efca6: push     rbp
+00000000009efca7: push     rsi
+00000000009efca8: push     rdi
+00000000009efca9: mov      r11, rsp
+00000000009efcac: sub      rsp, 0x68
+00000000009efcb0: mov      qword ptr [rsp + 0x50], 0xfffffffffffffffe
+00000000009efcb9: mov      r10, rdx
+00000000009efcbc: mov      rbx, rcx
+00000000009efcbf: mov      r8d, dword ptr [rip + 0x2ebcf512]
+00000000009efcc6: mov      rax, qword ptr gs:[0x58]
+00000000009efccf: mov      ebp, 0x7d58
+00000000009efcd4: mov      rdi, qword ptr [rax + r8*8]
+00000000009efcd8: movsxd   r9, dword ptr [rdi + rbp]
+00000000009efcdc: lea      rsi, [rip - 0x5efce3]
+00000000009efce3: movsxd   r8, dword ptr [rsi + r9*4 + 0x47e2a40]
+00000000009efceb: lea      eax, [r8 + 1]
+00000000009efcef: mov      dword ptr [rsi + r9*4 + 0x47e2a40], eax
+00000000009efcf7: imul     r9, r9, 0x3e8
+00000000009efcfe: add      r9, r8
+00000000009efd01: lea      rax, [rip + 0x3c9948] ; UTF16 'bool __cdecl CUserSocket::DropItemPacket(class CSocket *,const unsigned char *)'
+00000000009efd08: mov      qword ptr [rsi + r9*8 + 0x47bf7c0], rax
+00000000009efd10: mov      dword ptr [r11 + 0x28], 0
+00000000009efd18: mov      qword ptr [r11 - 0x20], 0
+00000000009efd20: lea      rax, [r11 + 0x38]
+00000000009efd24: mov      qword ptr [r11 - 0x38], rax
+00000000009efd28: lea      rax, [r11 + 0x40]
+00000000009efd2c: mov      qword ptr [r11 - 0x40], rax
+00000000009efd30: lea      rax, [r11 - 0x28]
+00000000009efd34: mov      qword ptr [r11 - 0x48], rax
+00000000009efd38: lea      r9, [r11 - 0x20]
+00000000009efd3c: lea      r8, [r11 + 0x28]
+00000000009efd40: lea      rdx, [rip + 0x3307c1]
+00000000009efd47: mov      rcx, r10
+00000000009efd4a: call     0x705278
+00000000009efd4f: mov      r11, qword ptr [rbx]
+00000000009efd52: mov      rcx, rbx
+00000000009efd55: call     qword ptr [r11 + 0xc0]
+00000000009efd5c: mov      rcx, rax
+00000000009efd5f: test     rax, rax
+00000000009efd62: jne      0x9efd74
+00000000009efd64: movsxd   rax, dword ptr [rdi + rbp]
+00000000009efd68: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000009efd70: mov      al, 1
+00000000009efd72: jmp      0x9efdb2
+00000000009efd74: mov      r10, qword ptr [rax]
+00000000009efd77: mov      eax, dword ptr [rsp + 0xa0]
+00000000009efd7e: mov      dword ptr [rsp + 0x28], eax
+00000000009efd82: mov      eax, dword ptr [rsp + 0xa8]
+00000000009efd89: mov      dword ptr [rsp + 0x20], eax
+00000000009efd8d: mov      r9d, dword ptr [rsp + 0x40]
+00000000009efd92: mov      r8, qword ptr [rsp + 0x48]
+00000000009efd97: mov      edx, dword ptr [rsp + 0x90]
+00000000009efd9e: call     qword ptr [r10 + 0xc88]
+00000000009efda5: nop
+00000000009efda6: movsxd   rcx, dword ptr [rdi + rbp]
+00000000009efdaa: add      dword ptr [rsi + rcx*4 + 0x47e2a40], -1
+00000000009efdb2: add      rsp, 0x68
+00000000009efdb6: pop      rdi
+00000000009efdb7: pop      rsi
+00000000009efdb8: pop      rbp
+00000000009efdb9: pop      rbx
+00000000009efdba: ret

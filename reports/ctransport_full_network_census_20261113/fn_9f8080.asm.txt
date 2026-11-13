@@ -1,0 +1,18 @@
+# fn_9f8080; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x9f8080
+# chunk 0x9f8080..0x9f80dc
+00000000009f8080: mov      ecx, dword ptr [rip + 0x2ebc7152]
+00000000009f8086: mov      rax, qword ptr gs:[0x58]
+00000000009f808f: lea      r9, [rip - 0x5f8096]
+00000000009f8096: mov      rax, qword ptr [rax + rcx*8]
+00000000009f809a: mov      edx, 0x7d58
+00000000009f809f: movsxd   r8, dword ptr [rdx + rax]
+00000000009f80a3: mov      rdx, r8
+00000000009f80a6: movsxd   rcx, dword ptr [r9 + r8*4 + 0x47e2a40]
+00000000009f80ae: imul     rdx, rdx, 0x3e8
+00000000009f80b5: lea      eax, [rcx + 1]
+00000000009f80b8: add      rdx, rcx
+00000000009f80bb: mov      dword ptr [r9 + r8*4 + 0x47e2a40], eax
+00000000009f80c3: add      dword ptr [r9 + r8*4 + 0x47e2a40], -1
+00000000009f80cc: lea      rax, [rip + 0x3c649d] ; UTF16 'void __cdecl CUserSocket::OnSending(unsigned char,unsigned short) const'
+00000000009f80d3: mov      qword ptr [r9 + rdx*8 + 0x47bf7c0], rax
+00000000009f80db: ret

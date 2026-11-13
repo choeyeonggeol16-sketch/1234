@@ -1,0 +1,131 @@
+# fn_705e4c; PE pdata/unwind; entry 0x705e4c
+# chunk 0x705e4c..0x70607c
+0000000000705e4c: push     rbx
+0000000000705e4e: push     rbp
+0000000000705e4f: push     rsi
+0000000000705e50: push     rdi
+0000000000705e51: push     r12
+0000000000705e53: push     r13
+0000000000705e55: sub      rsp, 0x38
+0000000000705e59: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000705e62: call     0x7053e8
+0000000000705e67: mov      edx, dword ptr [rip + 0x2eeb936b]
+0000000000705e6d: mov      rcx, qword ptr gs:[0x58]
+0000000000705e76: mov      r13d, 0x7d58
+0000000000705e7c: mov      rsi, qword ptr [rcx + rdx*8]
+0000000000705e80: mov      ecx, dword ptr [rsi + r13]
+0000000000705e84: mov      dword ptr [rax + 0x20], ecx
+0000000000705e87: mov      r8, qword ptr [rax]
+0000000000705e8a: xor      edx, edx
+0000000000705e8c: mov      rcx, rax
+0000000000705e8f: call     qword ptr [r8 + 0x20]
+0000000000705e93: mov      r11, qword ptr [rip + 0x454b51e]
+0000000000705e9a: test     r11, r11
+0000000000705e9d: jne      0x705ea3
+0000000000705e9f: xor      eax, eax
+0000000000705ea1: jmp      0x705eb1
+0000000000705ea3: mov      rax, qword ptr [rip + 0x454b516]
+0000000000705eaa: sub      rax, r11
+0000000000705ead: sar      rax, 3
+0000000000705eb1: test     rax, rax
+0000000000705eb4: sete     bpl
+0000000000705eb8: lea      r12, [rip - 0x305ebf]
+0000000000705ebf: movsxd   rbx, dword ptr [rsi + r13]
+0000000000705ec3: call     qword ptr [rip + 0x416257] ; IAT GetTickCount
+0000000000705ec9: mov      dword ptr [r12 + rbx*4 + 0x47e2de0], eax
+0000000000705ed1: mov      rdx, rbx
+0000000000705ed4: movsxd   rcx, dword ptr [r12 + rbx*4 + 0x47e2a40]
+0000000000705edc: lea      eax, [rcx + 1]
+0000000000705edf: mov      dword ptr [r12 + rbx*4 + 0x47e2a40], eax
+0000000000705ee7: imul     rdx, rdx, 0x3e8
+0000000000705eee: add      rdx, rcx
+0000000000705ef1: lea      rax, [rip + 0x56ce48] ; UTF16 'unsigned __stdcall WaitThread(void *)'
+0000000000705ef8: mov      qword ptr [r12 + rdx*8 + 0x47bf7c0], rax
+0000000000705f00: call     qword ptr [rip + 0x41621a] ; IAT GetTickCount
+0000000000705f06: mov      edi, eax
+0000000000705f08: lea      ebx, [rax + 0x2710]
+0000000000705f0e: call     0x7053e8
+0000000000705f13: cmp      byte ptr [rax + 0x24], 0
+0000000000705f17: je       0x705f35
+0000000000705f19: mov      ecx, edi
+0000000000705f1b: sub      ecx, dword ptr [rax + 0x18]
+0000000000705f1e: cmp      ecx, 0xea60
+0000000000705f24: jle      0x705f35
+0000000000705f26: call     0x7053e8
+0000000000705f2b: mov      rcx, rax
+0000000000705f2e: mov      edx, edi
+0000000000705f30: call     0x704a5c
+0000000000705f35: lea      rcx, [rip + 0x137bfb44]
+0000000000705f3c: call     0x926e2c
+0000000000705f41: call     0x70482c
+0000000000705f46: lea      rcx, [rip + 0x137bfb33]
+0000000000705f4d: call     0x926e54
+0000000000705f52: call     qword ptr [rip + 0x4161c8] ; IAT GetTickCount
+0000000000705f58: mov      ecx, ebx
+0000000000705f5a: sub      ecx, eax
+0000000000705f5c: cmp      ecx, 0x64
+0000000000705f5f: jae      0x705f6b
+0000000000705f61: call     qword ptr [rip + 0x4161b9] ; IAT GetTickCount
+0000000000705f67: sub      ebx, eax
+0000000000705f69: jmp      0x705f70
+0000000000705f6b: mov      ebx, 0x64
+0000000000705f70: test     bpl, bpl
+0000000000705f73: je       0x705f82
+0000000000705f75: mov      ecx, ebx
+0000000000705f77: call     qword ptr [rip + 0x4161f3] ; IAT Sleep
+0000000000705f7d: jmp      0x706006
+0000000000705f82: mov      rdx, qword ptr [rip + 0x454b42f]
+0000000000705f89: test     rdx, rdx
+0000000000705f8c: je       0x706076
+0000000000705f92: mov      rax, qword ptr [rip + 0x454b427]
+0000000000705f99: sub      rax, rdx
+0000000000705f9c: sar      rax, 3
+0000000000705fa0: je       0x706076
+0000000000705fa6: mov      r9d, ebx
+0000000000705fa9: xor      r8d, r8d
+0000000000705fac: mov      ecx, eax
+0000000000705fae: call     qword ptr [rip + 0x41631c] ; IAT WaitForMultipleObjects
+0000000000705fb4: mov      rdx, qword ptr [rip + 0x454b3fd]
+0000000000705fbb: test     rdx, rdx
+0000000000705fbe: jne      0x705fc4
+0000000000705fc0: xor      ecx, ecx
+0000000000705fc2: jmp      0x705fd2
+0000000000705fc4: mov      rcx, qword ptr [rip + 0x454b3f5]
+0000000000705fcb: sub      rcx, rdx
+0000000000705fce: sar      rcx, 3
+0000000000705fd2: mov      edx, eax
+0000000000705fd4: cmp      rdx, rcx
+0000000000705fd7: jae      0x706006
+0000000000705fd9: mov      rcx, qword ptr [rip + 0x454b3f8]
+0000000000705fe0: test     rcx, rcx
+0000000000705fe3: je       0x706070
+0000000000705fe9: mov      rax, qword ptr [rip + 0x454b3f0]
+0000000000705ff0: sub      rax, rcx
+0000000000705ff3: sar      rax, 3
+0000000000705ff7: cmp      rdx, rax
+0000000000705ffa: jae      0x706070
+0000000000705ffc: mov      rcx, qword ptr [rcx + rdx*8]
+0000000000706000: mov      rax, qword ptr [rcx]
+0000000000706003: call     qword ptr [rax + 0x48]
+0000000000706006: cmp      dword ptr [rip + 0x454af03], 0
+000000000070600d: je       0x70605e
+000000000070600f: lea      rdx, [rip + 0x56ccca]
+0000000000706016: lea      rcx, [rip + 0x44dce23]
+000000000070601d: call     qword ptr [rip + 0x416605] ; IAT wsprintfW
+0000000000706023: lea      rdx, [rip + 0x56bfb6]
+000000000070602a: lea      rcx, [rip + 0x44dd60f]
+0000000000706031: call     qword ptr [rip + 0x4165f1] ; IAT wsprintfW
+0000000000706037: mov      r8d, 0x347
+000000000070603d: lea      rdx, [rip + 0x420914]
+0000000000706044: lea      rcx, [rip + 0x44dddf5]
+000000000070604b: call     qword ptr [rip + 0x4165d7] ; IAT wsprintfW
+0000000000706051: mov      byte ptr [rip + 0x44dcdd5], 1
+0000000000706058: call     0x66db28
+000000000070605d: nop
+000000000070605e: movsxd   rax, dword ptr [rsi + r13]
+0000000000706062: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+000000000070606b: jmp      0x705ebf
+0000000000706070: call     0x705c88
+0000000000706075: int3
+0000000000706076: call     0x705c88
+000000000070607b: int3

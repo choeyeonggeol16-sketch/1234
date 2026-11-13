@@ -1,0 +1,59 @@
+# fn_9f561c; PE pdata/unwind; entry 0x9f561c
+# chunk 0x9f561c..0x9f5704
+00000000009f561c: push     rbx
+00000000009f561e: push     rbp
+00000000009f561f: push     rsi
+00000000009f5620: push     rdi
+00000000009f5621: push     r12
+00000000009f5623: sub      rsp, 0x30
+00000000009f5627: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000009f5630: mov      rsi, rdx
+00000000009f5633: mov      r8d, dword ptr [rip + 0x2ebc9b9e]
+00000000009f563a: mov      rax, qword ptr gs:[0x58]
+00000000009f5643: mov      r12d, 0x7d58
+00000000009f5649: mov      rdi, qword ptr [rax + r8*8]
+00000000009f564d: movsxd   r9, dword ptr [rdi + r12]
+00000000009f5651: mov      r8, r9
+00000000009f5654: lea      rbp, [rip - 0x5f565b]
+00000000009f565b: movsxd   rdx, dword ptr [rbp + r9*4 + 0x47e2a40]
+00000000009f5663: lea      eax, [rdx + 1]
+00000000009f5666: mov      dword ptr [rbp + r9*4 + 0x47e2a40], eax
+00000000009f566e: imul     r8, r8, 0x3e8
+00000000009f5675: add      r8, rdx
+00000000009f5678: lea      rax, [rip + 0x3c7591] ; UTF16 'bool __cdecl CUserSocket::RequestUserCommand(class CSocket *,const unsigned char *)'
+00000000009f567f: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+00000000009f5687: test     rcx, rcx
+00000000009f568a: jne      0x9f569c
+00000000009f568c: mov      rax, r9
+00000000009f568f: add      dword ptr [rbp + r9*4 + 0x47e2a40], -1
+00000000009f5698: xor      al, al
+00000000009f569a: jmp      0x9f56f9
+00000000009f569c: mov      rax, qword ptr [rcx]
+00000000009f569f: call     qword ptr [rax + 0xc0]
+00000000009f56a5: mov      rbx, rax
+00000000009f56a8: test     rax, rax
+00000000009f56ab: jne      0x9f56bd
+00000000009f56ad: movsxd   rax, dword ptr [rdi + r12]
+00000000009f56b1: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009f56b9: xor      al, al
+00000000009f56bb: jmp      0x9f56f9
+00000000009f56bd: mov      dword ptr [rsp + 0x60], 0
+00000000009f56c5: lea      r8, [rsp + 0x60]
+00000000009f56ca: lea      rdx, [rip + 0x1345a3]
+00000000009f56d1: mov      rcx, rsi
+00000000009f56d4: call     0x705278
+00000000009f56d9: mov      r11, qword ptr [rbx]
+00000000009f56dc: mov      edx, dword ptr [rsp + 0x60]
+00000000009f56e0: mov      rcx, rbx
+00000000009f56e3: call     qword ptr [r11 + 0xc78]
+00000000009f56ea: nop
+00000000009f56eb: movsxd   rax, dword ptr [rdi + r12]
+00000000009f56ef: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009f56f7: xor      al, al
+00000000009f56f9: add      rsp, 0x30
+00000000009f56fd: pop      r12
+00000000009f56ff: pop      rdi
+00000000009f5700: pop      rsi
+00000000009f5701: pop      rbp
+00000000009f5702: pop      rbx
+00000000009f5703: ret

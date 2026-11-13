@@ -23,6 +23,7 @@ src/l1j/server/server/model/network/core/CIOServerEndpoint.java
 src/l1j/server/server/model/network/core/CIOSlotPool.java
 src/l1j/server/server/model/network/core/CNetworkDiagnostics.java
 src/l1j/server/server/model/network/core/CPerfMon.java
+src/l1j/server/server/model/network/core/CPoolDiagnostics.java
 src/l1j/server/server/model/network/core/CSharedBroadcast.java
 src/l1j/server/server/model/network/core/CSocket.java
 src/l1j/server/server/model/network/core/CTLMFilter.java
@@ -236,8 +237,11 @@ src/l1j/server/server/model/network/thread/CIOThreadCallback.java
 src/l1j/server/server/model/network/thread/CThreadLocalTimer.java
 src/l1j/server/server/model/network/utill/ConnectionConfig.java
 src/l1j/server/server/model/network/utill/ConnectionState.java
+src/l1j/server/server/monitor/FileLogger.java
 src/l1j/server/server/packets/Protocol/Proto.java
 src/l1j/server/server/packets/Protocol/ProtoWriter.java
 src/l1j/server/server/utils/ConfigReader.java
+src/l1j/server/server/utils/SystemUtil.java
 src/l1j/server/server/utils/TimeUtil.java
+src/l1j/server/swing/ManagerLogBuffer.java
 src/l1j/server/swing/chocco.java

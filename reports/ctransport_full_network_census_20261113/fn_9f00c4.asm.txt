@@ -1,0 +1,43 @@
+# fn_9f00c4; PE pdata/unwind; entry 0x9f00c4
+# chunk 0x9f00c4..0x9f016b
+00000000009f00c4: push     rbx
+00000000009f00c6: push     rbp
+00000000009f00c7: push     rsi
+00000000009f00c8: push     rdi
+00000000009f00c9: sub      rsp, 0x38
+00000000009f00cd: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00000000009f00d6: mov      rdi, rdx
+00000000009f00d9: mov      r8d, dword ptr [rip + 0x2ebcf0f8]
+00000000009f00e0: mov      rax, qword ptr gs:[0x58]
+00000000009f00e9: mov      ebp, 0x7d58
+00000000009f00ee: mov      rbx, qword ptr [rax + r8*8]
+00000000009f00f2: movsxd   r9, dword ptr [rbx + rbp]
+00000000009f00f6: lea      rsi, [rip - 0x5f00fd]
+00000000009f00fd: movsxd   r8, dword ptr [rsi + r9*4 + 0x47e2a40]
+00000000009f0105: lea      eax, [r8 + 1]
+00000000009f0109: mov      dword ptr [rsi + r9*4 + 0x47e2a40], eax
+00000000009f0111: imul     r9, r9, 0x3e8
+00000000009f0118: add      r9, r8
+00000000009f011b: lea      rax, [rip + 0x3c987e] ; UTF16 'bool __cdecl CUserSocket::TradeAddItemsPacket(class CSocket *,const unsigned char *)'
+00000000009f0122: mov      qword ptr [rsi + r9*8 + 0x47bf7c0], rax
+00000000009f012a: mov      rax, qword ptr [rcx]
+00000000009f012d: call     qword ptr [rax + 0xc0]
+00000000009f0133: test     rax, rax
+00000000009f0136: jne      0x9f0148
+00000000009f0138: movsxd   rax, dword ptr [rbx + rbp]
+00000000009f013c: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000009f0144: mov      al, 1
+00000000009f0146: jmp      0x9f0162
+00000000009f0148: mov      rdx, rdi
+00000000009f014b: mov      rcx, rax
+00000000009f014e: call     0x95f120
+00000000009f0153: nop
+00000000009f0154: movsxd   rax, dword ptr [rbx + rbp]
+00000000009f0158: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000009f0160: xor      al, al
+00000000009f0162: add      rsp, 0x38
+00000000009f0166: pop      rdi
+00000000009f0167: pop      rsi
+00000000009f0168: pop      rbp
+00000000009f0169: pop      rbx
+00000000009f016a: ret

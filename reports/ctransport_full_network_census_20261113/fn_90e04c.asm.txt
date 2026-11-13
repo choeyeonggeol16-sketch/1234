@@ -1,0 +1,60 @@
+# fn_90e04c; PE pdata/unwind; entry 0x90e04c
+# chunk 0x90e04c..0x90e13e
+000000000090e04c: mov      qword ptr [rsp + 0x10], rdx
+000000000090e051: push     rbx
+000000000090e052: push     rbp
+000000000090e053: push     rsi
+000000000090e054: push     rdi
+000000000090e055: push     r12
+000000000090e057: sub      rsp, 0x30
+000000000090e05b: mov      rax, qword ptr gs:[0x58]
+000000000090e064: mov      edx, dword ptr [rip + 0x2ecb116e]
+000000000090e06a: lea      rbp, [rip - 0x50e071]
+000000000090e071: mov      rdi, qword ptr [rax + rdx*8]
+000000000090e075: mov      r12d, 0x7d58
+000000000090e07b: mov      rbx, rcx
+000000000090e07e: movsxd   r8, dword ptr [rdi + r12]
+000000000090e082: xor      ecx, ecx
+000000000090e084: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+000000000090e08c: mov      byte ptr [rsp + 0x20], cl
+000000000090e090: lea      eax, [rdx + 1]
+000000000090e093: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+000000000090e09b: lea      rax, [rip + 0x45c90e] ; UTF16 'void __cdecl CSocket::SetKey(unsigned __int64)'
+000000000090e0a2: imul     r8, r8, 0x3e8
+000000000090e0a9: add      r8, rdx
+000000000090e0ac: lea      edx, [rcx + 8]
+000000000090e0af: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+000000000090e0b7: xor      eax, eax
+000000000090e0b9: mov      qword ptr [rsp + 0x21], rax
+000000000090e0be: mov      dword ptr [rsp + 0x29], eax
+000000000090e0c2: mov      word ptr [rsp + 0x2d], ax
+000000000090e0c7: mov      byte ptr [rsp + 0x2f], al
+000000000090e0cb: mov      al, byte ptr [rsp + rcx + 0x68]
+000000000090e0cf: add      rcx, 1
+000000000090e0d3: sub      rdx, 1
+000000000090e0d7: mov      byte ptr [rsp + rcx + 0x1f], al
+000000000090e0db: mov      al, byte ptr [rcx + rbp + 0x96a99f]
+000000000090e0e2: mov      byte ptr [rsp + rcx + 0x27], al
+000000000090e0e6: jne      0x90e0cb
+000000000090e0e8: lea      esi, [rdx + 0x10]
+000000000090e0eb: lea      rcx, [rbx + 0xdd]
+000000000090e0f2: lea      r8, [rsp + 0x20]
+000000000090e0f7: mov      r9, rsi
+000000000090e0fa: mov      rdx, rsi
+000000000090e0fd: call     0xab7e20
+000000000090e102: lea      rcx, [rbx + 0xee]
+000000000090e109: lea      r8, [rsp + 0x20]
+000000000090e10e: mov      r9, rsi
+000000000090e111: mov      rdx, rsi
+000000000090e114: mov      byte ptr [rbx + 0xdc], 1
+000000000090e11b: call     0xab7e20
+000000000090e120: mov      byte ptr [rbx + 0xed], 1
+000000000090e127: movsxd   rax, dword ptr [rdi + r12]
+000000000090e12b: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+000000000090e133: add      rsp, 0x30
+000000000090e137: pop      r12
+000000000090e139: pop      rdi
+000000000090e13a: pop      rsi
+000000000090e13b: pop      rbp
+000000000090e13c: pop      rbx
+000000000090e13d: ret

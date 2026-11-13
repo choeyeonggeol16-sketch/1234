@@ -1,0 +1,30 @@
+# fn_70482c; PE pdata/unwind; entry 0x70482c
+# chunk 0x70482c..0x7048ac
+000000000070482c: push     rbx
+000000000070482e: push     rsi
+000000000070482f: push     rdi
+0000000000704830: sub      rsp, 0x30
+0000000000704834: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+000000000070483d: mov      ecx, dword ptr [rip + 0x2eeba995]
+0000000000704843: mov      rax, qword ptr gs:[0x58]
+000000000070484c: mov      edi, 0x7d58
+0000000000704851: mov      rbx, qword ptr [rax + rcx*8]
+0000000000704855: movsxd   rdx, dword ptr [rbx + rdi]
+0000000000704859: lea      rsi, [rip - 0x304860]
+0000000000704860: movsxd   rcx, dword ptr [rsi + rdx*4 + 0x47e2a40]
+0000000000704868: lea      eax, [rcx + 1]
+000000000070486b: mov      dword ptr [rsi + rdx*4 + 0x47e2a40], eax
+0000000000704872: imul     rdx, rdx, 0x3e8
+0000000000704879: add      rdx, rcx
+000000000070487c: lea      rax, [rip + 0x56d5dd] ; UTF16 'void __cdecl CIOObject::TimerDispatch(void)'
+0000000000704883: mov      qword ptr [rsi + rdx*8 + 0x47bf7c0], rax
+000000000070488b: lea      rcx, [rip + 0x454cb5e]
+0000000000704892: call     0x926844
+0000000000704897: nop
+0000000000704898: movsxd   rax, dword ptr [rbx + rdi]
+000000000070489c: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000007048a4: add      rsp, 0x30
+00000000007048a8: pop      rdi
+00000000007048a9: pop      rsi
+00000000007048aa: pop      rbx
+00000000007048ab: ret

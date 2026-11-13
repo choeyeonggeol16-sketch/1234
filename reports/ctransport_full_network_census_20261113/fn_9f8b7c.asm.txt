@@ -1,0 +1,87 @@
+# fn_9f8b7c; PE pdata/unwind; entry 0x9f8b7c
+# chunk 0x9f8b7c..0x9f8cf7
+00000000009f8b7c: push     rbx
+00000000009f8b7e: push     rbp
+00000000009f8b7f: push     rsi
+00000000009f8b80: push     rdi
+00000000009f8b81: push     r12
+00000000009f8b83: push     r13
+00000000009f8b85: push     r14
+00000000009f8b87: push     r15
+00000000009f8b89: sub      rsp, 0x68
+00000000009f8b8d: mov      qword ptr [rsp + 0x50], 0xfffffffffffffffe
+00000000009f8b96: mov      r14, rdx
+00000000009f8b99: mov      r15, rcx
+00000000009f8b9c: mov      r8d, dword ptr [rip + 0x2ebc6635]
+00000000009f8ba3: mov      rax, qword ptr gs:[0x58]
+00000000009f8bac: mov      ecx, 0x7d58
+00000000009f8bb1: mov      rax, qword ptr [rax + r8*8]
+00000000009f8bb5: mov      qword ptr [rsp + 0xb0], rax
+00000000009f8bbd: movsxd   r9, dword ptr [rax + rcx]
+00000000009f8bc1: lea      rbx, [rip - 0x5f8bc8]
+00000000009f8bc8: movsxd   r8, dword ptr [rbx + r9*4 + 0x47e2a40]
+00000000009f8bd0: lea      eax, [r8 + 1]
+00000000009f8bd4: mov      dword ptr [rbx + r9*4 + 0x47e2a40], eax
+00000000009f8bdc: imul     r9, r9, 0x3e8
+00000000009f8be3: add      r9, r8
+00000000009f8be6: lea      rax, [rip + 0x3c6263] ; UTF16 'void __cdecl CUserSocket::BindUser(class User *)'
+00000000009f8bed: mov      qword ptr [rbx + r9*8 + 0x47bf7c0], rax
+00000000009f8bf5: test     rdx, rdx
+00000000009f8bf8: jne      0x9f8c11
+00000000009f8bfa: lea      r8, [rip + 0x3c6207] ; UTF16 '[UserSocket] bound NULL user !'
+00000000009f8c01: lea      edx, [r14 + 2]
+00000000009f8c05: lea      rcx, [rip + 0xd528c94]
+00000000009f8c0c: call     0x734514
+00000000009f8c11: cmp      qword ptr [r15 + 0x4f0], 0
+00000000009f8c19: je       0x9f8cc6
+00000000009f8c1f: test     r14, r14
+00000000009f8c22: je       0x9f8cc6
+00000000009f8c28: lea      r8, [rip + 0x3c6181] ; UTF16 'CUserSocket has a user but try to rebind'
+00000000009f8c2f: mov      edx, 2
+00000000009f8c34: lea      rcx, [rip + 0xd528c65]
+00000000009f8c3b: call     0x734514
+00000000009f8c40: mov      r12d, dword ptr [r14 + 0x18]
+00000000009f8c44: mov      rax, qword ptr [r15 + 0x4f0]
+00000000009f8c4b: mov      r13d, dword ptr [rax + 0x18]
+00000000009f8c4f: mov      rsi, rax
+00000000009f8c52: mov      rax, qword ptr [r14]
+00000000009f8c55: mov      rcx, r14
+00000000009f8c58: call     qword ptr [rax + 0x488]
+00000000009f8c5e: mov      rbp, rax
+00000000009f8c61: mov      rdx, qword ptr [r14]
+00000000009f8c64: mov      rcx, r14
+00000000009f8c67: call     qword ptr [rdx + 0x490]
+00000000009f8c6d: mov      edi, eax
+00000000009f8c6f: mov      r8, qword ptr [rsi]
+00000000009f8c72: mov      rcx, rsi
+00000000009f8c75: call     qword ptr [r8 + 0x488]
+00000000009f8c7c: mov      rbx, rax
+00000000009f8c7f: mov      r8, qword ptr [rsi]
+00000000009f8c82: mov      rcx, rsi
+00000000009f8c85: call     qword ptr [r8 + 0x490]
+00000000009f8c8c: mov      r9d, eax
+00000000009f8c8f: mov      dword ptr [rsp + 0x40], r12d
+00000000009f8c94: mov      qword ptr [rsp + 0x38], rbp
+00000000009f8c99: mov      dword ptr [rsp + 0x30], edi
+00000000009f8c9d: mov      dword ptr [rsp + 0x28], r13d
+00000000009f8ca2: mov      qword ptr [rsp + 0x20], rbx
+00000000009f8ca7: lea      r8, [rip + 0x3c6062] ; UTF16 'prev user: dbid(%d) name(%s) sid(%d)  new user: dbid(%d) name(%s) sid(%d)'
+00000000009f8cae: mov      edx, 2
+00000000009f8cb3: lea      rcx, [rip + 0xd528be6]
+00000000009f8cba: call     0x734514
+00000000009f8cbf: lea      rbx, [rip - 0x5f8cc6]
+00000000009f8cc6: mov      qword ptr [r15 + 0x4f0], r14
+00000000009f8ccd: mov      rax, qword ptr [rsp + 0xb0]
+00000000009f8cd5: mov      ecx, 0x7d58
+00000000009f8cda: movsxd   rax, dword ptr [rax + rcx]
+00000000009f8cde: add      dword ptr [rbx + rax*4 + 0x47e2a40], -1
+00000000009f8ce6: add      rsp, 0x68
+00000000009f8cea: pop      r15
+00000000009f8cec: pop      r14
+00000000009f8cee: pop      r13
+00000000009f8cf0: pop      r12
+00000000009f8cf2: pop      rdi
+00000000009f8cf3: pop      rsi
+00000000009f8cf4: pop      rbp
+00000000009f8cf5: pop      rbx
+00000000009f8cf6: ret

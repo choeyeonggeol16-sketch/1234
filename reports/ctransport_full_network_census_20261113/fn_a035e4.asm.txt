@@ -1,0 +1,79 @@
+# fn_a035e4; PE pdata/unwind; entry 0xa035e4
+# chunk 0xa035e4..0xa03713
+0000000000a035e4: push     rbx
+0000000000a035e6: push     rbp
+0000000000a035e7: push     rsi
+0000000000a035e8: push     rdi
+0000000000a035e9: push     r12
+0000000000a035eb: push     r13
+0000000000a035ed: push     r14
+0000000000a035ef: sub      rsp, 0x30
+0000000000a035f3: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000a035fc: mov      r10, rdx
+0000000000a035ff: mov      rbx, rcx
+0000000000a03602: mov      r8d, dword ptr [rip + 0x2ebbbbcf]
+0000000000a03609: mov      rax, qword ptr gs:[0x58]
+0000000000a03612: mov      r14d, 0x7d58
+0000000000a03618: mov      rbp, qword ptr [rax + r8*8]
+0000000000a0361c: movsxd   r9, dword ptr [r14 + rbp]
+0000000000a03620: lea      r13, [rip - 0x603627]
+0000000000a03627: movsxd   r8, dword ptr [r13 + r9*4 + 0x47e2a40]
+0000000000a0362f: lea      eax, [r8 + 1]
+0000000000a03633: mov      dword ptr [r13 + r9*4 + 0x47e2a40], eax
+0000000000a0363b: imul     r9, r9, 0x3e8
+0000000000a03642: add      r9, r8
+0000000000a03645: lea      rax, [rip + 0x3bedc4] ; UTF16 'bool __cdecl UserExPacket(class CSocket *,const unsigned char *)'
+0000000000a0364c: mov      qword ptr [r13 + r9*8 + 0x47bf7c0], rax
+0000000000a03654: mov      word ptr [rsp + 0x70], 0
+0000000000a0365b: lea      r8, [rsp + 0x70]
+0000000000a03660: lea      rdx, [rip + 0x149c51]
+0000000000a03667: mov      rcx, r10
+0000000000a0366a: call     0x705278
+0000000000a0366f: mov      r12, rax
+0000000000a03672: movsx    edi, word ptr [rsp + 0x70]
+0000000000a03677: cmp      byte ptr [rip + 0x90f86f], 0
+0000000000a0367e: je       0xa0368c
+0000000000a03680: mov      edx, edi
+0000000000a03682: mov      rcx, rbx
+0000000000a03685: call     0xa03470
+0000000000a0368a: mov      edi, eax
+0000000000a0368c: mov      edx, dword ptr [rbx + 0xc08]
+0000000000a03692: sub      edx, 1
+0000000000a03695: and      edx, 0x7f
+0000000000a03698: movsx    ecx, di
+0000000000a0369b: add      dword ptr [rbx + rdx*4 + 0x804], ecx
+0000000000a036a2: cmp      edi, 0x97
+0000000000a036a8: ja       0xa036b7
+0000000000a036aa: movsxd   rcx, edi
+0000000000a036ad: mov      rsi, qword ptr [r13 + rcx*8 + 0x17a5fbc0]
+0000000000a036b5: jmp      0xa036be
+0000000000a036b7: mov      rsi, qword ptr [rip + 0x1745c4fa]
+0000000000a036be: mov      rax, qword ptr [rbx]
+0000000000a036c1: mov      rcx, rbx
+0000000000a036c4: call     qword ptr [rax + 0xc0]
+0000000000a036ca: test     rax, rax
+0000000000a036cd: je       0xa036ee
+0000000000a036cf: mov      edx, edi
+0000000000a036d1: mov      rcx, rax
+0000000000a036d4: call     0x9ba6b0
+0000000000a036d9: test     al, al
+0000000000a036db: jne      0xa036ee
+0000000000a036dd: movsxd   rax, dword ptr [r14 + rbp]
+0000000000a036e1: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+0000000000a036ea: xor      al, al
+0000000000a036ec: jmp      0xa03704
+0000000000a036ee: mov      rdx, r12
+0000000000a036f1: mov      rcx, rbx
+0000000000a036f4: call     rsi
+0000000000a036f6: nop
+0000000000a036f7: movsxd   rcx, dword ptr [r14 + rbp]
+0000000000a036fb: add      dword ptr [r13 + rcx*4 + 0x47e2a40], -1
+0000000000a03704: add      rsp, 0x30
+0000000000a03708: pop      r14
+0000000000a0370a: pop      r13
+0000000000a0370c: pop      r12
+0000000000a0370e: pop      rdi
+0000000000a0370f: pop      rsi
+0000000000a03710: pop      rbp
+0000000000a03711: pop      rbx
+0000000000a03712: ret

@@ -1,0 +1,5 @@
+# fn_45db68; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x45db68
+# chunk 0x45db68..0x45db73
+000000000045db68: mov      qword ptr [rsp + 0x18], r8
+000000000045db6d: mov      qword ptr [rsp + 0x20], r9
+000000000045db72: ret

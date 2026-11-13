@@ -1,0 +1,31 @@
+Note: /workspace/work/aden-rkern-cio-20261112/tests/WindowsUiMemory.java uses preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.
+Nov 13, 2026 10:39:11 AM java.util.prefs.FileSystemPreferences$1 run
+INFO: Created user preferences directory.
+Exception in thread "main" java.lang.UnsatisfiedLinkError: Can't load library: /usr/lib/jvm/java-21-openjdk-amd64/lib/libawt_xawt.so
+	at java.base/java.lang.ClassLoader.loadLibrary(ClassLoader.java:2422)
+	at java.base/java.lang.Runtime.load0(Runtime.java:852)
+	at java.base/java.lang.System.load(System.java:2026)
+	at java.base/jdk.internal.loader.NativeLibraries.load(Native Method)
+	at java.base/jdk.internal.loader.NativeLibraries$NativeLibraryImpl.open(NativeLibraries.java:331)
+	at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:197)
+	at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:139)
+	at java.base/jdk.internal.loader.NativeLibraries.findFromPaths(NativeLibraries.java:259)
+	at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:249)
+	at java.base/java.lang.ClassLoader.loadLibrary(ClassLoader.java:2427)
+	at java.base/java.lang.Runtime.loadLibrary0(Runtime.java:916)
+	at java.base/java.lang.System.loadLibrary(System.java:2064)
+	at java.desktop/java.awt.Toolkit$2.run(Toolkit.java:1384)
+	at java.desktop/java.awt.Toolkit$2.run(Toolkit.java:1382)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:319)
+	at java.desktop/java.awt.Toolkit.loadLibraries(Toolkit.java:1381)
+	at java.desktop/java.awt.Toolkit.initStatic(Toolkit.java:1419)
+	at java.desktop/java.awt.Toolkit.<clinit>(Toolkit.java:1393)
+	at java.desktop/java.awt.EventQueue.invokeAndWait(EventQueue.java:1346)
+	at l1j.server.swing.ManagerWindowTest.main(ManagerWindowTest.java:11)
+Traceback (most recent call last):
+  File "/workspace/work/aden-rkern-cio-20261112/tests/test_manager_window.py", line 17, in <module>
+    subprocess.run(['java','--enable-preview','--enable-native-access=ALL-UNNAMED','-Xmx192m','-Djava.awt.headless=false','-Djava.util.prefs.userRoot='+tmp,'-cp',tmp+os.pathsep+cp,'l1j.server.swing.ManagerWindowTest'],env=env,check=True,timeout=90)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['java', '--enable-preview', '--enable-native-access=ALL-UNNAMED', '-Xmx192m', '-Djava.awt.headless=false', '-Djava.util.prefs.userRoot=/tmp/manager-window-p6rhp807', '-cp', '/tmp/manager-window-p6rhp807:/workspace/work/aden-network-followup/safesend-classes:/workspace/work/aden-magic-fix/test-libs/HikariCP-6.3.0.jar:/workspace/work/aden-magic-fix/test-libs/agrona-2.2.4.jar:/workspace/work/aden-magic-fix/test-libs/caffeine-3.2.2.jar:/workspace/work/aden-magic-fix/test-libs/fastutil-8.5.15.jar:/workspace/work/aden-magic-fix/test-libs/h2-test.jar:/workspace/work/aden-magic-fix/test-libs/javax.activation-api-1.2.0.jar:/workspace/work/aden-magic-fix/test-libs/javolution-5.5.1.jar:/workspace/work/aden-magic-fix/test-libs/jaxb-api-2.3.1.jar:/workspace/work/aden-magic-fix/test-libs/jctools-core-4.0.5.jar:/workspace/work/aden-magic-fix/test-libs/slf4j-api-2.0.17.jar:/workspace/work/aden-magic-fix/test-libs/trove4j-3.0.3.jar', 'l1j.server.swing.ManagerWindowTest']' returned non-zero exit status 1.

@@ -1,0 +1,87 @@
+# fn_9f9a7c; PE pdata/unwind; entry 0x9f9a7c
+# chunk 0x9f9a7c..0x9f9bfc
+00000000009f9a7c: push     rbx
+00000000009f9a7e: push     rbp
+00000000009f9a7f: push     rsi
+00000000009f9a80: push     rdi
+00000000009f9a81: push     r12
+00000000009f9a83: push     r13
+00000000009f9a85: sub      rsp, 0x48
+00000000009f9a89: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000009f9a92: mov      rbp, rdx
+00000000009f9a95: mov      rdi, rcx
+00000000009f9a98: mov      r8d, dword ptr [rip + 0x2ebc5739]
+00000000009f9a9f: mov      rax, qword ptr gs:[0x58]
+00000000009f9aa8: mov      r13d, 0x7d58
+00000000009f9aae: mov      rsi, qword ptr [rax + r8*8]
+00000000009f9ab2: movsxd   r9, dword ptr [rsi + r13]
+00000000009f9ab6: lea      r12, [rip - 0x5f9abd]
+00000000009f9abd: movsxd   r8, dword ptr [r12 + r9*4 + 0x47e2a40]
+00000000009f9ac5: lea      eax, [r8 + 1]
+00000000009f9ac9: mov      dword ptr [r12 + r9*4 + 0x47e2a40], eax
+00000000009f9ad1: imul     r9, r9, 0x3e8
+00000000009f9ad8: add      r9, r8
+00000000009f9adb: lea      rax, [rip + 0x3c587e] ; UTF16 'bool __cdecl CUserSocket::CharacterDeletePacket(class CSocket *,const unsigned char *)'
+00000000009f9ae2: mov      qword ptr [r12 + r9*8 + 0x47bf7c0], rax
+00000000009f9aea: cmp      byte ptr [rcx + 0x534], 0
+00000000009f9af1: jne      0x9f9b2b
+00000000009f9af3: cmp      byte ptr [rip + 0x91934d], 0
+00000000009f9afa: je       0x9f9b2b
+00000000009f9afc: mov      rax, qword ptr [rcx]
+00000000009f9aff: mov      r9d, 4
+00000000009f9b05: lea      r8d, [r9 + 0x1a]
+00000000009f9b09: lea      rdx, [rip + 0x12fca8]
+00000000009f9b10: call     qword ptr [rax + 0x80]
+00000000009f9b16: nop
+00000000009f9b17: movsxd   rax, dword ptr [rsi + r13]
+00000000009f9b1b: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+00000000009f9b24: xor      al, al
+00000000009f9b26: jmp      0x9f9bef
+00000000009f9b2b: mov      ebx, 0xd
+00000000009f9b30: xchg     dword ptr [rcx + 0x7a0], ebx
+00000000009f9b36: xor      ecx, ecx
+00000000009f9b38: call     0xab9970
+00000000009f9b3d: mov      dword ptr [rdi + 0x798], eax
+00000000009f9b43: cmp      ebx, 0x13
+00000000009f9b46: je       0x9f9b8f
+00000000009f9b48: cmp      ebx, 0xc
+00000000009f9b4b: je       0x9f9b8f
+00000000009f9b4d: cmp      ebx, 0x2b
+00000000009f9b50: je       0x9f9b8f
+00000000009f9b52: mov      dword ptr [rsp + 0x28], ebx
+00000000009f9b56: mov      dword ptr [rsp + 0x20], 0x3c5
+00000000009f9b5e: lea      r9, [rip + 0x3c07eb]
+00000000009f9b65: lea      r8, [rip + 0x3c56c4] ; UTF16 '[%S][%d]Try hack ? last use packet [%d]'
+00000000009f9b6c: mov      edx, 2
+00000000009f9b71: lea      rcx, [rip + 0xd527d28]
+00000000009f9b78: call     0x734514
+00000000009f9b7d: nop
+00000000009f9b7e: movsxd   rax, dword ptr [rsi + r13]
+00000000009f9b82: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+00000000009f9b8b: mov      al, 1
+00000000009f9b8d: jmp      0x9f9bef
+00000000009f9b8f: mov      dword ptr [rsp + 0x80], 0
+00000000009f9b9a: lea      r8, [rsp + 0x80]
+00000000009f9ba2: lea      rdx, [rip + 0x1300cb]
+00000000009f9ba9: mov      rcx, rbp
+00000000009f9bac: call     0x705278
+00000000009f9bb1: cmp      dword ptr [rsp + 0x80], 7
+00000000009f9bb9: jae      0x9f9be0
+00000000009f9bbb: mov      eax, dword ptr [rsp + 0x80]
+00000000009f9bc2: mov      r9, rdi
+00000000009f9bc5: mov      r8d, dword ptr [rdi + rax*4 + 0x558]
+00000000009f9bcd: mov      edx, dword ptr [rdi + 0x7e4]
+00000000009f9bd3: lea      rcx, [rip + 0x264d1ce]
+00000000009f9bda: call     0x5bb218
+00000000009f9bdf: nop
+00000000009f9be0: movsxd   rax, dword ptr [rsi + r13]
+00000000009f9be4: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+00000000009f9bed: xor      al, al
+00000000009f9bef: add      rsp, 0x48
+00000000009f9bf3: pop      r13
+00000000009f9bf5: pop      r12
+00000000009f9bf7: pop      rdi
+00000000009f9bf8: pop      rsi
+00000000009f9bf9: pop      rbp
+00000000009f9bfa: pop      rbx
+00000000009f9bfb: ret

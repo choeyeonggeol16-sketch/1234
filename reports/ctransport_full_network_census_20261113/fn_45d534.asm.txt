@@ -1,0 +1,56 @@
+# fn_45d534; PE pdata/unwind; entry 0x45d534
+# chunk 0x45d534..0x45d627
+000000000045d534: push     rbx
+000000000045d536: push     rbp
+000000000045d537: push     rsi
+000000000045d538: push     rdi
+000000000045d539: push     r12
+000000000045d53b: sub      rsp, 0x40
+000000000045d53f: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+000000000045d548: mov      rbx, rcx
+000000000045d54b: mov      edx, dword ptr [rip + 0x2f161c87]
+000000000045d551: mov      rax, qword ptr gs:[0x58]
+000000000045d55a: mov      r12d, 0x7d58
+000000000045d560: mov      rsi, qword ptr [rax + rdx*8]
+000000000045d564: movsxd   r8, dword ptr [rsi + r12]
+000000000045d568: lea      rbp, [rip - 0x5d56f]
+000000000045d56f: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+000000000045d577: lea      eax, [rdx + 1]
+000000000045d57a: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+000000000045d582: imul     r8, r8, 0x3e8
+000000000045d589: add      r8, rdx
+000000000045d58c: lea      rax, [rip + 0x6f730d] ; UTF16 'void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::Close(void)'
+000000000045d593: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+000000000045d59b: mov      rdi, 0xffffffffffffffff
+000000000045d5a2: xchg     qword ptr [rcx + 0x18], rdi
+000000000045d5a6: cmp      rdi, -1
+000000000045d5aa: je       0x45d610
+000000000045d5ac: mov      rax, qword ptr [rcx]
+000000000045d5af: call     qword ptr [rax + 0x98]
+000000000045d5b5: mov      word ptr [rsp + 0x70], 1
+000000000045d5bc: mov      word ptr [rsp + 0x72], 0
+000000000045d5c3: mov      dword ptr [rsp + 0x20], 4
+000000000045d5cb: lea      r9, [rsp + 0x70]
+000000000045d5d0: mov      edx, 0xffff
+000000000045d5d5: mov      r8d, 0x80
+000000000045d5db: mov      rcx, rdi
+000000000045d5de: call     qword ptr [rip + 0x6bf08c] ; IAT setsockopt
+000000000045d5e4: mov      rcx, rdi
+000000000045d5e7: call     qword ptr [rip + 0x6bf07b] ; IAT closesocket
+000000000045d5ed: mov      r11, qword ptr [rbx]
+000000000045d5f0: mov      byte ptr [rsp + 0x20], 0
+000000000045d5f5: mov      r9d, 1
+000000000045d5fb: mov      r8d, 0x2a3
+000000000045d601: lea      rdx, [rip + 0x6f7198]
+000000000045d608: mov      rcx, rbx
+000000000045d60b: call     qword ptr [r11 + 0x10]
+000000000045d60f: nop
+000000000045d610: movsxd   rax, dword ptr [rsi + r12]
+000000000045d614: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+000000000045d61c: add      rsp, 0x40
+000000000045d620: pop      r12
+000000000045d622: pop      rdi
+000000000045d623: pop      rsi
+000000000045d624: pop      rbp
+000000000045d625: pop      rbx
+000000000045d626: ret

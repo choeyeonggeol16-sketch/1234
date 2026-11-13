@@ -1,0 +1,45 @@
+# fn_a0dddc; PE pdata/unwind; entry 0xa0dddc
+# chunk 0xa0dddc..0xa0de95
+0000000000a0dddc: mov      dword ptr [rsp + 0x10], edx
+0000000000a0dde0: push     rbx
+0000000000a0dde1: push     rbp
+0000000000a0dde2: push     rsi
+0000000000a0dde3: push     rdi
+0000000000a0dde4: sub      rsp, 0x38
+0000000000a0dde8: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000a0ddf1: mov      rdi, rcx
+0000000000a0ddf4: mov      edx, dword ptr [rip + 0x2ebb13de]
+0000000000a0ddfa: mov      rax, qword ptr gs:[0x58]
+0000000000a0de03: mov      esi, 0x7d58
+0000000000a0de08: mov      rbx, qword ptr [rax + rdx*8]
+0000000000a0de0c: movsxd   r8, dword ptr [rbx + rsi]
+0000000000a0de10: lea      rbp, [rip - 0x60de17]
+0000000000a0de17: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+0000000000a0de1f: lea      eax, [rdx + 1]
+0000000000a0de22: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+0000000000a0de2a: imul     r8, r8, 0x3e8
+0000000000a0de31: add      r8, rdx
+0000000000a0de34: lea      rax, [rip + 0x3b6365] ; UTF16 'void __cdecl CSocketLimiter::DeleteUserSocketPerIP(unsigned int)'
+0000000000a0de3b: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+0000000000a0de43: mov      qword ptr [rsp + 0x60], rcx
+0000000000a0de48: mov      r8d, 0x2c30
+0000000000a0de4e: lea      rdx, [rip + 0x3ab34b] ; UTF16 '.\\UserSocket.cpp'
+0000000000a0de55: call     0xa4ccec
+0000000000a0de5a: nop
+0000000000a0de5b: lea      rcx, [rdi + 0x10]
+0000000000a0de5f: lea      rdx, [rsp + 0x68]
+0000000000a0de64: call     0xa087f8
+0000000000a0de69: nop
+0000000000a0de6a: mov      r8d, 0x65
+0000000000a0de70: lea      rdx, [rip + 0x123b09] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\TemplateHelper.h'
+0000000000a0de77: mov      rcx, rdi
+0000000000a0de7a: call     0xa4cd8c
+0000000000a0de7f: nop
+0000000000a0de80: movsxd   rax, dword ptr [rbx + rsi]
+0000000000a0de84: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+0000000000a0de8c: add      rsp, 0x38
+0000000000a0de90: pop      rdi
+0000000000a0de91: pop      rsi
+0000000000a0de92: pop      rbp
+0000000000a0de93: pop      rbx
+0000000000a0de94: ret

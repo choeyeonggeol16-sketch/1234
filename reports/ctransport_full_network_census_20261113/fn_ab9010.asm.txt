@@ -1,0 +1,15 @@
+# fn_ab9010; PE pdata/unwind; entry 0xab9010
+# chunk 0xab9010..0xab9046
+0000000000ab9010: sub      rsp, 0x28
+0000000000ab9014: mov      rcx, qword ptr [rip + 0x2eb065f5]
+0000000000ab901b: call     0xacb930
+0000000000ab9020: test     rax, rax
+0000000000ab9023: je       0xab9027
+0000000000ab9025: call     rax
+0000000000ab9027: mov      ecx, 0x19
+0000000000ab902c: call     0xacc090
+0000000000ab9031: mov      edx, 1
+0000000000ab9036: xor      ecx, ecx
+0000000000ab9038: call     0xacb3b0
+0000000000ab903d: add      rsp, 0x28
+0000000000ab9041: jmp      0xacb300

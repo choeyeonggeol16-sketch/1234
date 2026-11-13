@@ -1,0 +1,30 @@
+# fn_45dd94; PE pdata/unwind; entry 0x45dd94
+# chunk 0x45dd94..0x45de12
+000000000045dd94: push     rbx
+000000000045dd96: push     rsi
+000000000045dd97: push     rdi
+000000000045dd98: sub      rsp, 0x30
+000000000045dd9c: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+000000000045dda5: mov      edx, dword ptr [rip + 0x2f16142d]
+000000000045ddab: mov      rax, qword ptr gs:[0x58]
+000000000045ddb4: mov      edi, 0x7d58
+000000000045ddb9: mov      rbx, qword ptr [rax + rdx*8]
+000000000045ddbd: movsxd   r8, dword ptr [rbx + rdi]
+000000000045ddc1: lea      rsi, [rip - 0x5ddc8]
+000000000045ddc8: movsxd   rdx, dword ptr [rsi + r8*4 + 0x47e2a40]
+000000000045ddd0: lea      eax, [rdx + 1]
+000000000045ddd3: mov      dword ptr [rsi + r8*4 + 0x47e2a40], eax
+000000000045dddb: imul     r8, r8, 0x3e8
+000000000045dde2: add      r8, rdx
+000000000045dde5: lea      rax, [rip + 0x6f7084] ; UTF16 'void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::OnCreate(void)'
+000000000045ddec: mov      qword ptr [rsi + r8*8 + 0x47bf7c0], rax
+000000000045ddf4: mov      rax, qword ptr [rcx]
+000000000045ddf7: call     qword ptr [rax + 0xa0]
+000000000045ddfd: nop
+000000000045ddfe: movsxd   rax, dword ptr [rbx + rdi]
+000000000045de02: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+000000000045de0a: add      rsp, 0x30
+000000000045de0e: pop      rdi
+000000000045de0f: pop      rsi
+000000000045de10: pop      rbx
+000000000045de11: ret

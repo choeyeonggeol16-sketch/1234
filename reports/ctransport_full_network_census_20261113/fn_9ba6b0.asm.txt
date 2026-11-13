@@ -1,0 +1,31 @@
+# fn_9ba6b0; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x9ba6b0
+# chunk 0x9ba6b0..0x9ba746
+00000000009ba6b0: mov      r8d, dword ptr [rip + 0x2ec04b21]
+00000000009ba6b7: mov      rax, qword ptr gs:[0x58]
+00000000009ba6c0: lea      r11, [rip - 0x5ba6c7]
+00000000009ba6c7: mov      rax, qword ptr [rax + r8*8]
+00000000009ba6cb: mov      r9d, 0x7d58
+00000000009ba6d1: movsxd   r10, dword ptr [r9 + rax]
+00000000009ba6d5: mov      r9, r10
+00000000009ba6d8: movsxd   r8, dword ptr [r11 + r10*4 + 0x47e2a40]
+00000000009ba6e0: imul     r9, r9, 0x3e8
+00000000009ba6e7: lea      eax, [r8 + 1]
+00000000009ba6eb: add      r9, r8
+00000000009ba6ee: mov      dword ptr [r11 + r10*4 + 0x47e2a40], eax
+00000000009ba6f6: lea      rax, [rip + 0x3ea963] ; UTF16 'bool __cdecl User::PacketExAcceptable(int)'
+00000000009ba6fd: mov      qword ptr [r11 + r9*8 + 0x47bf7c0], rax
+00000000009ba705: mov      rcx, qword ptr [rcx + 0xa88]
+00000000009ba70c: mov      eax, dword ptr [rip + 0x9587ca]
+00000000009ba712: cmp      dword ptr [rcx + 0x2168], eax
+00000000009ba718: je       0x9ba737
+00000000009ba71a: movsxd   rax, edx
+00000000009ba71d: cmp      byte ptr [rax + r11 + 0x17a602c0], 0
+00000000009ba726: jne      0x9ba737
+00000000009ba728: add      dword ptr [r11 + r10*4 + 0x47e2a40], -1
+00000000009ba731: mov      rax, r10
+00000000009ba734: xor      al, al
+00000000009ba736: ret
+00000000009ba737: add      dword ptr [r11 + r10*4 + 0x47e2a40], -1
+00000000009ba740: mov      rax, r10
+00000000009ba743: mov      al, 1
+00000000009ba745: ret

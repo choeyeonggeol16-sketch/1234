@@ -1,0 +1,43 @@
+# fn_a014ac; PE pdata/unwind; entry 0xa014ac
+# chunk 0xa014ac..0xa0155d
+0000000000a014ac: push     rbx
+0000000000a014ae: push     rbp
+0000000000a014af: push     rsi
+0000000000a014b0: push     rdi
+0000000000a014b1: sub      rsp, 0x38
+0000000000a014b5: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000a014be: mov      rdi, rcx
+0000000000a014c1: mov      edx, dword ptr [rip + 0x2ebbdd11]
+0000000000a014c7: mov      rax, qword ptr gs:[0x58]
+0000000000a014d0: mov      esi, 0x7d58
+0000000000a014d5: mov      rbx, qword ptr [rax + rdx*8]
+0000000000a014d9: movsxd   r8, dword ptr [rbx + rsi]
+0000000000a014dd: lea      rbp, [rip - 0x6014e4]
+0000000000a014e4: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+0000000000a014ec: lea      eax, [rdx + 1]
+0000000000a014ef: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+0000000000a014f7: imul     r8, r8, 0x3e8
+0000000000a014fe: add      r8, rdx
+0000000000a01501: lea      rax, [rip + 0x3c05c8] ; UTF16 'void __cdecl CSocketLimiter::DeleteAllIP(void)'
+0000000000a01508: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+0000000000a01510: mov      qword ptr [rsp + 0x60], rcx
+0000000000a01515: mov      r8d, 0x2c3a
+0000000000a0151b: lea      rdx, [rip + 0x3b7c7e] ; UTF16 '.\\UserSocket.cpp'
+0000000000a01522: call     0xa4ccec
+0000000000a01527: nop
+0000000000a01528: lea      rcx, [rdi + 0x10]
+0000000000a0152c: call     0x84fac0
+0000000000a01531: nop
+0000000000a01532: mov      r8d, 0x65
+0000000000a01538: lea      rdx, [rip + 0x130441] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\TemplateHelper.h'
+0000000000a0153f: mov      rcx, rdi
+0000000000a01542: call     0xa4cd8c
+0000000000a01547: nop
+0000000000a01548: movsxd   rax, dword ptr [rbx + rsi]
+0000000000a0154c: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+0000000000a01554: add      rsp, 0x38
+0000000000a01558: pop      rdi
+0000000000a01559: pop      rsi
+0000000000a0155a: pop      rbp
+0000000000a0155b: pop      rbx
+0000000000a0155c: ret

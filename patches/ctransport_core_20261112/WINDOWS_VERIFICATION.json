@@ -2,37 +2,37 @@
   "status": "passed",
   "abi": "0xa0000",
   "exports": 67,
-  "implementation_parent": "d4ea0b9",
-  "implementation_commit": "40f6f02e256cdf7dca80f8a14256dd1db1bb35f4",
-  "tested_source_commit": "40f6f02e256cdf7dca80f8a14256dd1db1bb35f4",
-  "run_id": 43405147948,
-  "job_id": 131817549788,
-  "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43405147948",
+  "implementation_parent": "1f5ff36",
+  "implementation_commit": "cf696369047f30d0eff8b67d42a2d642369a7f2d",
+  "tested_source_commit": "cf696369047f30d0eff8b67d42a2d642369a7f2d",
+  "run_id": 43412834686,
+  "job_id": 131843241327,
+  "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43412834686",
   "os": "Windows Server 2022 GitHub-hosted runner",
   "jdk": "Temurin 21.0.13+9",
-  "dll_sha256": "de61cd0f15ec1895dfd91340156b3ba91c880837aeb66e034ab6d21666f29014",
+  "dll_sha256": "cb2c9bf662e7be42636aaf77edbb34ba7773af20a3d435b4f1030df2c62e0a43",
   "codec_dll_sha256": "60bde93c2ba20057e7e307594edef69ced273b69f923535ab658769e09f0cea9",
   "pss_client_dll_sha256": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
-  "source_archive_sha256": "cdd6458c82bb55cdc8cbb2720853a019cfb0a33c341cf36e6ca932871d8e8fb5",
+  "source_archive_sha256": "63ebdcfd2b55ec7740ebb08826a97d4b7e21cb8491ac563935383f9296a4ac7f",
   "historical_abi9": {
     "run_id": 43365489001,
     "tested_source_commit": "0ca18a8d10a84ede5db6d34ddbbd24cb29d0f811",
     "dll_sha256": "ffd5620b4aab7e6fe2a735a25814a37a5dc9f68f1d169bd290b16733f4a3c145"
   },
   "source_scope": {
-    "baseline": "d4ea0b9",
-    "unchanged_outside_allowlist": 1707,
-    "edited_existing_sources": 3,
-    "added_network_classes": 0,
+    "baseline": "1f5ff36",
+    "unchanged_outside_allowlist": 1702,
+    "edited_existing_sources": 8,
+    "added_network_classes": 2,
     "pss_unchanged": true,
-    "native_cpp_and_dll_unchanged": true
+    "native_cpp_changed": "pool snapshot and optional diagnostic prefix extension;I/O paths unchanged"
   },
   "bounded_loopback": {
-    "cumulative_connections": 54272,
+    "cumulative_connections": 41792,
     "concurrent": 32,
-    "frames": 6946816,
-    "wire_bytes": 3556769792,
-    "elapsed_ms": 30146
+    "frames": 5349376,
+    "wire_bytes": 2738880512,
+    "elapsed_ms": 30126
   },
   "tests": [
     "actual Windows DLL: 20 loopback connections, 4MB fragmented echo, order and close counts.",
@@ -68,14 +68,17 @@
     "production five broadcast encoders:shared/legacy byte equivalence,8 headings,coordinate truncation,self/map/connection/M filter,wide radius50,rectangle/radius boundaries,borrow/source cleanup on exception (world/transport fixtures)",
     "Real Windows production SafeSend:1.5MiB reservation boundary,16 concurrent producers,emblem plaintext/key/FIFO differential,pool rollback and required hard-cap/abort preservation",
     "Real Windows production close causes:EOF,invalid L1 frame,RST,closed history and first native status preserved against late cancellation",
-    "Windows concurrent sessions:connections=54272,concurrent=32,L1Frames=6946816,bytes=3556769792,auth/enter/restart/close,zero active/retiring/Playing/EnterChar entries;elapsedMs=30146",
-    "Windows extended diagnostics:single128 ring,distinct subcommands,base count/time unchanged,nested/overflow/stale-slot isolation,8000 concurrent tags,closed retention and disabled mode"
+    "Windows extended diagnostics:single128 ring,distinct subcommands,base count/time unchanged,nested/overflow/stale-slot isolation,8000 concurrent tags,closed retention and disabled mode",
+    "Windows concurrent sessions:connections=41792,concurrent=32,L1Frames=5349376,bytes=2738880512,auth/enter/restart/close,zero active/retiring/Playing/EnterChar entries;elapsedMs=30126",
+    "Actual Windows production manager400 moves/resizes,12000 blocked-EDT log/status updates,8 pool dialogs;heap/private/GDI/USER bounds;game/DB bindings fixtures",
+    "Actual Windows pool18 extension and legacy8 prefix;valid shared source outlives closed socket;final release returns native/Java pool leases"
   ],
   "limitations": [
     "Game/world/account/scheduler dependencies are fixtures in differential/owner tests.",
     "No live game client/database/long-duration production load or speedup measurement.",
-    "Manager UI source compiles;actual interactive window clicks not tested.",
-    "MAC/HWID server config/API exist;client identity transmitter/verifier not integrated."
+    "MAC/HWID server config/API exist;client identity transmitter/verifier not integrated.",
+    "Original network census142 entries with9 unlocated signatures;not proof of every unnamed function/exception branch.",
+    "Linux actual JFrame unavailable in headless JDK;actual Windows JFrame tested;real game/DB workload not tested."
   ],
   "historical_shared_broadcast": {
     "run_id": 43371588194,
@@ -123,5 +126,42 @@
       "native_cpp_and_dll_unchanged": true
     }
   },
-  "local_decoder_validation": "Actual production CPacketHandler+CSProto JVM contract:ActionUI1001/1002,craft byte subtype,protobuf registry route,extended65535,short headers;null-client unchanged handler boundary;no real game/DB"
+  "local_decoder_validation": "Actual production CPacketHandler+CSProto JVM contract:ActionUI1001/1002,craft byte subtype,protobuf registry route,extended65535,short headers;null-client unchanged handler boundary;no real game/DB",
+  "historical_extended_commands": {
+    "tested_source_commit": "40f6f02e256cdf7dca80f8a14256dd1db1bb35f4",
+    "run_id": 43405147948,
+    "job_id": 131817549788,
+    "dll_sha256": "de61cd0f15ec1895dfd91340156b3ba91c880837aeb66e034ab6d21666f29014",
+    "source_archive_sha256": "cdd6458c82bb55cdc8cbb2720853a019cfb0a33c341cf36e6ca932871d8e8fb5",
+    "bounded_loopback": {
+      "cumulative_connections": 54272,
+      "concurrent": 32,
+      "frames": 6946816,
+      "wire_bytes": 3556769792,
+      "elapsed_ms": 30146
+    },
+    "source_scope": {
+      "baseline": "d4ea0b9",
+      "unchanged_outside_allowlist": 1707,
+      "edited_existing_sources": 3,
+      "added_network_classes": 0,
+      "pss_unchanged": true,
+      "native_cpp_and_dll_unchanged": true
+    }
+  },
+  "manager_window": {
+    "phase1": {
+      "post_gc_heap": 8547800,
+      "private_bytes": 140062720,
+      "gdi": 99,
+      "user": 23
+    },
+    "phase2": {
+      "post_gc_heap": 6988816,
+      "private_bytes": 135938048,
+      "gdi": 99,
+      "user": 23
+    },
+    "game_db_bindings": "fixtures;production Swing UI and screen logger"
+  }
 }

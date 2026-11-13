@@ -1,0 +1,48 @@
+# fn_45db74; PE pdata/unwind; entry 0x45db74
+# chunk 0x45db74..0x45dc38
+000000000045db74: push     rbx
+000000000045db76: push     rbp
+000000000045db77: push     rsi
+000000000045db78: push     rdi
+000000000045db79: push     r12
+000000000045db7b: sub      rsp, 0x40
+000000000045db7f: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+000000000045db88: mov      rbx, rcx
+000000000045db8b: mov      edx, dword ptr [rip + 0x2f161647]
+000000000045db91: mov      rax, qword ptr gs:[0x58]
+000000000045db9a: mov      r12d, 0x7d58
+000000000045dba0: mov      rdi, qword ptr [rax + rdx*8]
+000000000045dba4: movsxd   r8, dword ptr [rdi + r12]
+000000000045dba8: lea      rbp, [rip - 0x5dbaf]
+000000000045dbaf: movsxd   rdx, dword ptr [rbp + r8*4 + 0x47e2a40]
+000000000045dbb7: lea      eax, [rdx + 1]
+000000000045dbba: mov      dword ptr [rbp + r8*4 + 0x47e2a40], eax
+000000000045dbc2: imul     r8, r8, 0x3e8
+000000000045dbc9: add      r8, rdx
+000000000045dbcc: lea      rax, [rip + 0x6f711d] ; UTF16 'void __cdecl CIOSocketEx<class CIOBufferEx<8192> >::GracefulClose(void)'
+000000000045dbd3: mov      qword ptr [rbp + r8*8 + 0x47bf7c0], rax
+000000000045dbdb: mov      rsi, 0xffffffffffffffff
+000000000045dbe2: xchg     qword ptr [rcx + 0x18], rsi
+000000000045dbe6: cmp      rsi, -1
+000000000045dbea: je       0x45dc21
+000000000045dbec: mov      rax, qword ptr [rcx]
+000000000045dbef: call     qword ptr [rax + 0x98]
+000000000045dbf5: mov      rcx, rsi
+000000000045dbf8: call     qword ptr [rip + 0x6bea6a] ; IAT closesocket
+000000000045dbfe: mov      r11, qword ptr [rbx]
+000000000045dc01: mov      byte ptr [rsp + 0x20], 0
+000000000045dc06: mov      r9d, 1
+000000000045dc0c: mov      r8d, 0x290
+000000000045dc12: lea      rdx, [rip + 0x6f6b87]
+000000000045dc19: mov      rcx, rbx
+000000000045dc1c: call     qword ptr [r11 + 0x10]
+000000000045dc20: nop
+000000000045dc21: movsxd   rax, dword ptr [rdi + r12]
+000000000045dc25: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+000000000045dc2d: add      rsp, 0x40
+000000000045dc31: pop      r12
+000000000045dc33: pop      rdi
+000000000045dc34: pop      rsi
+000000000045dc35: pop      rbp
+000000000045dc36: pop      rbx
+000000000045dc37: ret

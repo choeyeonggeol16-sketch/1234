@@ -1,0 +1,29 @@
+# fn_90e140; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x90e140
+# chunk 0x90e140..0x90e1ce
+000000000090e140: mov      edx, dword ptr [rip + 0x2ecb1092]
+000000000090e146: mov      rax, qword ptr gs:[0x58]
+000000000090e14f: mov      r10, rcx
+000000000090e152: mov      rax, qword ptr [rax + rdx*8]
+000000000090e156: lea      r11, [rip - 0x50e15d]
+000000000090e15d: mov      ecx, 0x7d58
+000000000090e162: movsxd   r9, dword ptr [rcx + rax]
+000000000090e166: mov      r8, r9
+000000000090e169: movsxd   rdx, dword ptr [r11 + r9*4 + 0x47e2a40]
+000000000090e171: imul     r8, r8, 0x3e8
+000000000090e178: lea      eax, [rdx + 1]
+000000000090e17b: add      r8, rdx
+000000000090e17e: mov      dword ptr [r11 + r9*4 + 0x47e2a40], eax
+000000000090e186: lea      rax, [rip + 0x45c883] ; UTF16 'unsigned int __cdecl CSocket::GetIPAddressUINT(void)'
+000000000090e18d: mov      qword ptr [r11 + r8*8 + 0x47bf7c0], rax
+000000000090e195: movzx    edx, byte ptr [r10 + 0xb8]
+000000000090e19d: movzx    eax, byte ptr [r10 + 0xb9]
+000000000090e1a5: movzx    ecx, byte ptr [r10 + 0xba]
+000000000090e1ad: shl      eax, 0x10
+000000000090e1b0: shl      edx, 0x18
+000000000090e1b3: add      eax, edx
+000000000090e1b5: shl      ecx, 8
+000000000090e1b8: add      eax, ecx
+000000000090e1ba: movzx    ecx, byte ptr [r10 + 0xbb]
+000000000090e1c2: add      dword ptr [r11 + r9*4 + 0x47e2a40], -1
+000000000090e1cb: add      eax, ecx
+000000000090e1cd: ret

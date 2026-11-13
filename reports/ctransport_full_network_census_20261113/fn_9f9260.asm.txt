@@ -1,0 +1,428 @@
+# fn_9f9260; PE pdata/unwind; entry 0x9f9260
+# chunk 0x9f9260..0x9f9a57
+00000000009f9260: push     rbx
+00000000009f9262: push     rbp
+00000000009f9263: push     rsi
+00000000009f9264: push     rdi
+00000000009f9265: push     r12
+00000000009f9267: push     r13
+00000000009f9269: push     r14
+00000000009f926b: push     r15
+00000000009f926d: sub      rsp, 0x138
+00000000009f9274: mov      qword ptr [rsp + 0xf0], 0xfffffffffffffffe
+00000000009f9280: mov      rbp, rdx
+00000000009f9283: mov      rbx, rcx
+00000000009f9286: mov      r8d, dword ptr [rip + 0x2ebc5f4b]
+00000000009f928d: mov      rax, qword ptr gs:[0x58]
+00000000009f9296: mov      r14d, 0x7d58
+00000000009f929c: mov      rdi, qword ptr [rax + r8*8]
+00000000009f92a0: movsxd   r9, dword ptr [rdi + r14]
+00000000009f92a4: lea      r13, [rip - 0x5f92ab]
+00000000009f92ab: movsxd   r8, dword ptr [r13 + r9*4 + 0x47e2a40]
+00000000009f92b3: lea      eax, [r8 + 1]
+00000000009f92b7: mov      dword ptr [r13 + r9*4 + 0x47e2a40], eax
+00000000009f92bf: imul     r9, r9, 0x3e8
+00000000009f92c6: add      r9, r8
+00000000009f92c9: lea      rax, [rip + 0x3c5fb0] ; UTF16 'bool __cdecl CUserSocket::CharacterCreatePacket(class CSocket *,const unsigned char *)'
+00000000009f92d0: mov      qword ptr [r13 + r9*8 + 0x47bf7c0], rax
+00000000009f92d8: mov      esi, 0xc
+00000000009f92dd: xchg     dword ptr [rcx + 0x7a0], esi
+00000000009f92e3: xor      ecx, ecx
+00000000009f92e5: call     0xab9970
+00000000009f92ea: mov      dword ptr [rbx + 0x798], eax
+00000000009f92f0: cmp      esi, 0x13
+00000000009f92f3: je       0x9f933f
+00000000009f92f5: cmp      esi, 0xc
+00000000009f92f8: je       0x9f933f
+00000000009f92fa: cmp      esi, 0x2b
+00000000009f92fd: je       0x9f933f
+00000000009f92ff: mov      dword ptr [rsp + 0x28], esi
+00000000009f9303: mov      dword ptr [rsp + 0x20], 0x31a
+00000000009f930b: lea      r9, [rip + 0x3c103e]
+00000000009f9312: lea      r8, [rip + 0x3c5f17] ; UTF16 '[%S][%d]Try hack ? last use packet [%d]'
+00000000009f9319: mov      edx, 2
+00000000009f931e: lea      rcx, [rip + 0xd52857b]
+00000000009f9325: call     0x734514
+00000000009f932a: nop
+00000000009f932b: movsxd   rax, dword ptr [rdi + r14]
+00000000009f932f: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f9338: mov      al, 1
+00000000009f933a: jmp      0x9f9a43
+00000000009f933f: mov      byte ptr [rsp + 0x180], 0
+00000000009f9347: lea      r8, [rsp + 0x180]
+00000000009f934f: mov      r15d, 0x10
+00000000009f9355: mov      edx, r15d
+00000000009f9358: mov      rcx, rbx
+00000000009f935b: call     0x9ef67c
+00000000009f9360: test     al, al
+00000000009f9362: jne      0x9f937d
+00000000009f9364: movsxd   rax, dword ptr [rdi + r14]
+00000000009f9368: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f9371: mov      al, byte ptr [rsp + 0x180]
+00000000009f9378: jmp      0x9f9a43
+00000000009f937d: mov      esi, 0x30
+00000000009f9382: mov      r8, rsi
+00000000009f9385: xor      edx, edx
+00000000009f9387: lea      rcx, [rsp + 0xf8]
+00000000009f938f: call     0xab9430
+00000000009f9394: lea      r11, [rsp + 0x80]
+00000000009f939c: mov      qword ptr [rsp + 0x78], r11
+00000000009f93a1: lea      rax, [rsp + 0x88]
+00000000009f93a9: mov      qword ptr [rsp + 0x70], rax
+00000000009f93ae: lea      rax, [rsp + 0x198]
+00000000009f93b6: mov      qword ptr [rsp + 0x68], rax
+00000000009f93bb: lea      rax, [rsp + 0x94]
+00000000009f93c3: mov      qword ptr [rsp + 0x60], rax
+00000000009f93c8: lea      rax, [rsp + 0xa4]
+00000000009f93d0: mov      qword ptr [rsp + 0x58], rax
+00000000009f93d5: lea      rax, [rsp + 0x90]
+00000000009f93dd: mov      qword ptr [rsp + 0x50], rax
+00000000009f93e2: lea      rax, [rsp + 0xa0]
+00000000009f93ea: mov      qword ptr [rsp + 0x48], rax
+00000000009f93ef: lea      rax, [rsp + 0x98]
+00000000009f93f7: mov      qword ptr [rsp + 0x40], rax
+00000000009f93fc: lea      rax, [rsp + 0x9c]
+00000000009f9404: mov      qword ptr [rsp + 0x38], rax
+00000000009f9409: lea      rax, [rsp + 0x190]
+00000000009f9411: mov      qword ptr [rsp + 0x30], rax
+00000000009f9416: lea      rax, [rsp + 0x84]
+00000000009f941e: mov      qword ptr [rsp + 0x28], rax
+00000000009f9423: lea      rax, [rsp + 0x8c]
+00000000009f942b: mov      qword ptr [rsp + 0x20], rax
+00000000009f9430: lea      r9, [rsp + 0xf8]
+00000000009f9438: mov      r8, rsi
+00000000009f943b: lea      rdx, [rip + 0x3c5dd6]
+00000000009f9442: mov      rcx, rbp
+00000000009f9445: call     0x705278
+00000000009f944a: mov      eax, dword ptr [rsp + 0x84]
+00000000009f9451: test     eax, eax
+00000000009f9453: je       0x9f94d3
+00000000009f9455: cmp      eax, 1
+00000000009f9458: je       0x9f94c4
+00000000009f945a: mov      ecx, dword ptr [rbx + 0x7e4]
+00000000009f9460: lea      rax, [rbx + 0x7b4]
+00000000009f9467: mov      qword ptr [rsp + 0x30], rax
+00000000009f946c: mov      dword ptr [rsp + 0x28], ecx
+00000000009f9470: mov      dword ptr [rsp + 0x20], 0x336
+00000000009f9478: lea      r9, [rip + 0x3bfd21] ; UTF16 '.\\UserSocket.cpp'
+00000000009f947f: lea      r8, [rip + 0x3bfdaa] ; UTF16 '[%s][%d] Non-Client BOT? account[%d, %s]'
+00000000009f9486: lea      edx, [rsi - 0x2e]
+00000000009f9489: lea      rcx, [rip + 0xd528410]
+00000000009f9490: call     0x734514
+00000000009f9495: mov      r11, qword ptr [rbx]
+00000000009f9498: xor      r9d, r9d
+00000000009f949b: mov      r8d, r15d
+00000000009f949e: lea      rdx, [rip + 0x130313]
+00000000009f94a5: mov      rcx, rbx
+00000000009f94a8: call     qword ptr [r11 + 0x80]
+00000000009f94af: nop
+00000000009f94b0: movsxd   rax, dword ptr [rdi + r14]
+00000000009f94b4: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f94bd: mov      al, 1
+00000000009f94bf: jmp      0x9f9a43
+00000000009f94c4: cmp      dword ptr [rsp + 0x190], 0x7b
+00000000009f94cc: jne      0x9f94e1
+00000000009f94ce: jmp      0x9f99dc
+00000000009f94d3: cmp      dword ptr [rsp + 0x190], 0x7c
+00000000009f94db: je       0x9f99dc
+00000000009f94e1: cmp      dword ptr [rsp + 0x8c], 0x1b
+00000000009f94e9: ja       0x9f9973
+00000000009f94ef: xor      r8d, r8d
+00000000009f94f2: mov      edx, dword ptr [rip + 0x9194c8]
+00000000009f94f8: lea      rcx, [rsp + 0xf8]
+00000000009f9500: call     0x94fc0c
+00000000009f9505: test     al, al
+00000000009f9507: jne      0x9f953a
+00000000009f9509: mov      rax, qword ptr [rbx]
+00000000009f950c: mov      r9d, 4
+00000000009f9512: mov      r8d, r15d
+00000000009f9515: lea      rdx, [rip + 0x13029c]
+00000000009f951c: mov      rcx, rbx
+00000000009f951f: call     qword ptr [rax + 0x80]
+00000000009f9525: nop
+00000000009f9526: movsxd   rax, dword ptr [rdi + r14]
+00000000009f952a: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f9533: xor      al, al
+00000000009f9535: jmp      0x9f9a43
+00000000009f953a: mov      edx, 8
+00000000009f953f: cmp      dword ptr [rip + 0x91947b], edx
+00000000009f9545: jne      0x9f958c
+00000000009f9547: xor      r8d, r8d
+00000000009f954a: lea      rcx, [rsp + 0xf8]
+00000000009f9552: call     0x94ff34
+00000000009f9557: test     al, al
+00000000009f9559: jne      0x9f958c
+00000000009f955b: mov      rax, qword ptr [rbx]
+00000000009f955e: mov      r9d, 7
+00000000009f9564: mov      r8d, r15d
+00000000009f9567: lea      rdx, [rip + 0x13024a]
+00000000009f956e: mov      rcx, rbx
+00000000009f9571: call     qword ptr [rax + 0x80]
+00000000009f9577: nop
+00000000009f9578: movsxd   rax, dword ptr [rdi + r14]
+00000000009f957c: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f9585: xor      al, al
+00000000009f9587: jmp      0x9f9a43
+00000000009f958c: xor      ecx, ecx
+00000000009f958e: lea      rax, [rip + 0x3bf863]
+00000000009f9595: mov      edx, dword ptr [rsp + 0x190]
+00000000009f959c: cmp      edx, dword ptr [rax]
+00000000009f959e: je       0x9f95da
+00000000009f95a0: add      ecx, 1
+00000000009f95a3: add      rax, 4
+00000000009f95a7: cmp      ecx, 0xb
+00000000009f95aa: jb       0x9f959c
+00000000009f95ac: mov      rax, qword ptr [rbx]
+00000000009f95af: xor      r9d, r9d
+00000000009f95b2: mov      r8d, r15d
+00000000009f95b5: lea      rdx, [rip + 0x1301fc]
+00000000009f95bc: mov      rcx, rbx
+00000000009f95bf: call     qword ptr [rax + 0x80]
+00000000009f95c5: nop
+00000000009f95c6: movsxd   rax, dword ptr [rdi + r14]
+00000000009f95ca: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f95d3: xor      al, al
+00000000009f95d5: jmp      0x9f9a43
+00000000009f95da: call     0x8b3f38
+00000000009f95df: movsxd   rcx, dword ptr [rsp + 0x190]
+00000000009f95e7: lea      rdx, [rcx + rcx*2]
+00000000009f95eb: lea      rcx, [rsp + 0xc0]
+00000000009f95f3: lea      rdx, [rax + rdx*8 + 0x2978]
+00000000009f95fb: mov      esi, 0x18
+00000000009f9600: mov      r8, rsi
+00000000009f9603: call     0xabcd50
+00000000009f9608: call     0x8b3f38
+00000000009f960d: movsxd   rcx, dword ptr [rsp + 0x190]
+00000000009f9615: lea      rdx, [rcx + rcx*2]
+00000000009f9619: lea      rcx, [rsp + 0xa8]
+00000000009f9621: lea      rdx, [rax + rdx*8 + 0x1c70]
+00000000009f9629: mov      r8, rsi
+00000000009f962c: call     0xabcd50
+00000000009f9631: call     0x8b3f38
+00000000009f9636: movsxd   r12, dword ptr [rsp + 0x190]
+00000000009f963e: lea      rdx, [r12 + r12*2]
+00000000009f9642: lea      rcx, [rsp + 0xd8]
+00000000009f964a: lea      rdx, [rax + rdx*8 + 0x3680]
+00000000009f9652: mov      r8, rsi
+00000000009f9655: call     0xabcd50
+00000000009f965a: mov      rbp, qword ptr [rsp + 0xd8]
+00000000009f9662: mov      r8, rbp
+00000000009f9665: shr      r8, 0x20
+00000000009f9669: mov      r11, qword ptr [rsp + 0xe8]
+00000000009f9671: mov      r9, r11
+00000000009f9674: shr      r9, 0x20
+00000000009f9678: mov      rsi, qword ptr [rsp + 0xe0]
+00000000009f9680: mov      r10, rsi
+00000000009f9683: shr      r10, 0x20
+00000000009f9687: lea      ecx, [rsi + r11]
+00000000009f968b: add      ecx, r10d
+00000000009f968e: add      ecx, ebp
+00000000009f9690: add      ecx, r9d
+00000000009f9693: add      ecx, r8d
+00000000009f9696: mov      dword ptr [rsp + 0x9c], ebp
+00000000009f969d: mov      dword ptr [rsp + 0x98], r8d
+00000000009f96a5: mov      dword ptr [rsp + 0xa0], esi
+00000000009f96ac: mov      dword ptr [rsp + 0x90], r10d
+00000000009f96b4: mov      dword ptr [rsp + 0xa4], r11d
+00000000009f96bc: mov      dword ptr [rsp + 0x94], r9d
+00000000009f96c4: cmp      ebp, dword ptr [rsp + 0xc0]
+00000000009f96cb: jg       0x9f9945
+00000000009f96d1: cmp      ebp, dword ptr [rsp + 0xa8]
+00000000009f96d8: jl       0x9f9945
+00000000009f96de: cmp      r8d, dword ptr [rsp + 0xc4]
+00000000009f96e6: jg       0x9f9917
+00000000009f96ec: cmp      r8d, dword ptr [rsp + 0xac]
+00000000009f96f4: jl       0x9f9917
+00000000009f96fa: cmp      esi, dword ptr [rsp + 0xc8]
+00000000009f9701: jg       0x9f98e9
+00000000009f9707: cmp      esi, dword ptr [rsp + 0xb0]
+00000000009f970e: jl       0x9f98e9
+00000000009f9714: cmp      r10d, dword ptr [rsp + 0xcc]
+00000000009f971c: jg       0x9f98bb
+00000000009f9722: cmp      r10d, dword ptr [rsp + 0xb4]
+00000000009f972a: jl       0x9f98bb
+00000000009f9730: cmp      r11d, dword ptr [rsp + 0xd0]
+00000000009f9738: jg       0x9f988d
+00000000009f973e: cmp      r11d, dword ptr [rsp + 0xb8]
+00000000009f9746: jl       0x9f988d
+00000000009f974c: cmp      r9d, dword ptr [rsp + 0xd4]
+00000000009f9754: jg       0x9f985f
+00000000009f975a: cmp      r9d, dword ptr [rsp + 0xbc]
+00000000009f9762: jl       0x9f985f
+00000000009f9768: lea      eax, [rsi + r11]
+00000000009f976c: add      eax, ebp
+00000000009f976e: add      eax, r8d
+00000000009f9771: add      eax, r10d
+00000000009f9774: add      eax, r9d
+00000000009f9777: cmp      ecx, eax
+00000000009f9779: je       0x9f97a9
+00000000009f977b: mov      rax, qword ptr [rbx]
+00000000009f977e: xor      r9d, r9d
+00000000009f9781: mov      r8d, r15d
+00000000009f9784: lea      rdx, [rip + 0x13002d]
+00000000009f978b: mov      rcx, rbx
+00000000009f978e: call     qword ptr [rax + 0x80]
+00000000009f9794: nop
+00000000009f9795: movsxd   rax, dword ptr [rdi + r14]
+00000000009f9799: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f97a2: xor      al, al
+00000000009f97a4: jmp      0x9f9a43
+00000000009f97a9: mov      edx, dword ptr [rsp + 0x198]
+00000000009f97b0: test     edx, edx
+00000000009f97b2: js       0x9f97b9
+00000000009f97b4: cmp      edx, 0x64
+00000000009f97b7: jle      0x9f97c2
+00000000009f97b9: xor      edx, edx
+00000000009f97bb: mov      dword ptr [rsp + 0x198], edx
+00000000009f97c2: mov      ecx, dword ptr [rsp + 0x88]
+00000000009f97c9: test     ecx, ecx
+00000000009f97cb: js       0x9f97d2
+00000000009f97cd: cmp      ecx, 0x64
+00000000009f97d0: jle      0x9f97db
+00000000009f97d2: xor      ecx, ecx
+00000000009f97d4: mov      dword ptr [rsp + 0x88], ecx
+00000000009f97db: mov      eax, dword ptr [rsp + 0x80]
+00000000009f97e2: test     eax, eax
+00000000009f97e4: js       0x9f97eb
+00000000009f97e6: cmp      eax, 0x64
+00000000009f97e9: jle      0x9f97f4
+00000000009f97eb: xor      eax, eax
+00000000009f97ed: mov      dword ptr [rsp + 0x80], eax
+00000000009f97f4: mov      qword ptr [rsp + 0x70], rbx
+00000000009f97f9: mov      dword ptr [rsp + 0x68], eax
+00000000009f97fd: mov      dword ptr [rsp + 0x60], ecx
+00000000009f9801: mov      dword ptr [rsp + 0x58], edx
+00000000009f9805: mov      dword ptr [rsp + 0x50], r10d
+00000000009f980a: mov      dword ptr [rsp + 0x48], r9d
+00000000009f980f: mov      dword ptr [rsp + 0x40], ebp
+00000000009f9813: mov      dword ptr [rsp + 0x38], esi
+00000000009f9817: mov      dword ptr [rsp + 0x30], r11d
+00000000009f981c: mov      dword ptr [rsp + 0x28], r8d
+00000000009f9821: mov      dword ptr [rsp + 0x20], r12d
+00000000009f9826: mov      r9d, dword ptr [rsp + 0x84]
+00000000009f982e: mov      r8d, dword ptr [rsp + 0x8c]
+00000000009f9836: lea      rdx, [rsp + 0xf8]
+00000000009f983e: lea      rcx, [rip + 0x264d563]
+00000000009f9845: call     0x5b9a28
+00000000009f984a: nop
+00000000009f984b: movsxd   rax, dword ptr [rdi + r14]
+00000000009f984f: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f9858: xor      al, al
+00000000009f985a: jmp      0x9f9a43
+00000000009f985f: mov      rax, qword ptr [rbx]
+00000000009f9862: xor      r9d, r9d
+00000000009f9865: mov      r8d, r15d
+00000000009f9868: lea      rdx, [rip + 0x12ff49]
+00000000009f986f: mov      rcx, rbx
+00000000009f9872: call     qword ptr [rax + 0x80]
+00000000009f9878: nop
+00000000009f9879: movsxd   rax, dword ptr [rdi + r14]
+00000000009f987d: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f9886: xor      al, al
+00000000009f9888: jmp      0x9f9a43
+00000000009f988d: mov      rax, qword ptr [rbx]
+00000000009f9890: xor      r9d, r9d
+00000000009f9893: mov      r8d, r15d
+00000000009f9896: lea      rdx, [rip + 0x12ff1b]
+00000000009f989d: mov      rcx, rbx
+00000000009f98a0: call     qword ptr [rax + 0x80]
+00000000009f98a6: nop
+00000000009f98a7: movsxd   rax, dword ptr [rdi + r14]
+00000000009f98ab: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f98b4: xor      al, al
+00000000009f98b6: jmp      0x9f9a43
+00000000009f98bb: mov      rax, qword ptr [rbx]
+00000000009f98be: xor      r9d, r9d
+00000000009f98c1: mov      r8d, r15d
+00000000009f98c4: lea      rdx, [rip + 0x12feed]
+00000000009f98cb: mov      rcx, rbx
+00000000009f98ce: call     qword ptr [rax + 0x80]
+00000000009f98d4: nop
+00000000009f98d5: movsxd   rax, dword ptr [rdi + r14]
+00000000009f98d9: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f98e2: xor      al, al
+00000000009f98e4: jmp      0x9f9a43
+00000000009f98e9: mov      rax, qword ptr [rbx]
+00000000009f98ec: xor      r9d, r9d
+00000000009f98ef: mov      r8d, r15d
+00000000009f98f2: lea      rdx, [rip + 0x12febf]
+00000000009f98f9: mov      rcx, rbx
+00000000009f98fc: call     qword ptr [rax + 0x80]
+00000000009f9902: nop
+00000000009f9903: movsxd   rax, dword ptr [rdi + r14]
+00000000009f9907: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f9910: xor      al, al
+00000000009f9912: jmp      0x9f9a43
+00000000009f9917: mov      rax, qword ptr [rbx]
+00000000009f991a: xor      r9d, r9d
+00000000009f991d: mov      r8d, r15d
+00000000009f9920: lea      rdx, [rip + 0x12fe91]
+00000000009f9927: mov      rcx, rbx
+00000000009f992a: call     qword ptr [rax + 0x80]
+00000000009f9930: nop
+00000000009f9931: movsxd   rax, dword ptr [rdi + r14]
+00000000009f9935: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f993e: xor      al, al
+00000000009f9940: jmp      0x9f9a43
+00000000009f9945: mov      rax, qword ptr [rbx]
+00000000009f9948: xor      r9d, r9d
+00000000009f994b: mov      r8d, r15d
+00000000009f994e: lea      rdx, [rip + 0x12fe63]
+00000000009f9955: mov      rcx, rbx
+00000000009f9958: call     qword ptr [rax + 0x80]
+00000000009f995e: nop
+00000000009f995f: movsxd   rax, dword ptr [rdi + r14]
+00000000009f9963: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f996c: xor      al, al
+00000000009f996e: jmp      0x9f9a43
+00000000009f9973: mov      ecx, dword ptr [rbx + 0x7e4]
+00000000009f9979: lea      rax, [rbx + 0x7b4]
+00000000009f9980: mov      qword ptr [rsp + 0x30], rax
+00000000009f9985: mov      dword ptr [rsp + 0x28], ecx
+00000000009f9989: mov      dword ptr [rsp + 0x20], 0x344
+00000000009f9991: lea      r9, [rip + 0x3bf808] ; UTF16 '.\\UserSocket.cpp'
+00000000009f9998: lea      r8, [rip + 0x3bf891] ; UTF16 '[%s][%d] Non-Client BOT? account[%d, %s]'
+00000000009f999f: mov      edx, 2
+00000000009f99a4: lea      rcx, [rip + 0xd527ef5]
+00000000009f99ab: call     0x734514
+00000000009f99b0: mov      r11, qword ptr [rbx]
+00000000009f99b3: xor      r9d, r9d
+00000000009f99b6: mov      r8d, r15d
+00000000009f99b9: lea      rdx, [rip + 0x12fdf8]
+00000000009f99c0: mov      rcx, rbx
+00000000009f99c3: call     qword ptr [r11 + 0x80]
+00000000009f99ca: nop
+00000000009f99cb: movsxd   rax, dword ptr [rdi + r14]
+00000000009f99cf: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f99d8: mov      al, 1
+00000000009f99da: jmp      0x9f9a43
+00000000009f99dc: mov      ecx, dword ptr [rbx + 0x7e4]
+00000000009f99e2: lea      rax, [rbx + 0x7b4]
+00000000009f99e9: mov      qword ptr [rsp + 0x30], rax
+00000000009f99ee: mov      dword ptr [rsp + 0x28], ecx
+00000000009f99f2: mov      dword ptr [rsp + 0x20], 0x33d
+00000000009f99fa: lea      r9, [rip + 0x3bf79f] ; UTF16 '.\\UserSocket.cpp'
+00000000009f9a01: lea      r8, [rip + 0x3bf828] ; UTF16 '[%s][%d] Non-Client BOT? account[%d, %s]'
+00000000009f9a08: mov      edx, 2
+00000000009f9a0d: lea      rcx, [rip + 0xd527e8c]
+00000000009f9a14: call     0x734514
+00000000009f9a19: mov      r11, qword ptr [rbx]
+00000000009f9a1c: xor      r9d, r9d
+00000000009f9a1f: mov      r8d, r15d
+00000000009f9a22: lea      rdx, [rip + 0x12fd8f]
+00000000009f9a29: mov      rcx, rbx
+00000000009f9a2c: call     qword ptr [r11 + 0x80]
+00000000009f9a33: nop
+00000000009f9a34: movsxd   rax, dword ptr [rdi + r14]
+00000000009f9a38: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000009f9a41: mov      al, 1
+00000000009f9a43: add      rsp, 0x138
+00000000009f9a4a: pop      r15
+00000000009f9a4c: pop      r14
+00000000009f9a4e: pop      r13
+00000000009f9a50: pop      r12
+00000000009f9a52: pop      rdi
+00000000009f9a53: pop      rsi
+00000000009f9a54: pop      rbp
+00000000009f9a55: pop      rbx
+00000000009f9a56: ret

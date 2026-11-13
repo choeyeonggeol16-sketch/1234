@@ -1,0 +1,17 @@
+# fn_545e10; PE pdata/unwind; entry 0x545e10
+# chunk 0x545e10..0x545e38
+0000000000545e10: push     rbx
+0000000000545e12: push     rdi
+0000000000545e13: sub      rsp, 0x28
+0000000000545e17: mov      ebx, edx
+0000000000545e19: mov      rdi, rcx
+0000000000545e1c: call     0x545518
+0000000000545e21: test     bl, 1
+0000000000545e24: je       0x545e2e
+0000000000545e26: mov      rcx, rdi
+0000000000545e29: call     0x401f3c
+0000000000545e2e: mov      rax, rdi
+0000000000545e31: add      rsp, 0x28
+0000000000545e35: pop      rdi
+0000000000545e36: pop      rbx
+0000000000545e37: ret

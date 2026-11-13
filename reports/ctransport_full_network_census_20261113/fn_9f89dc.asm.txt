@@ -1,0 +1,39 @@
+# fn_9f89dc; PE pdata/unwind; entry 0x9f89dc
+# chunk 0x9f89dc..0x9f8a92
+00000000009f89dc: push     rbx
+00000000009f89de: push     rsi
+00000000009f89df: push     rdi
+00000000009f89e0: sub      rsp, 0x60
+00000000009f89e4: mov      qword ptr [rsp + 0x50], 0xfffffffffffffffe
+00000000009f89ed: mov      r11, r8
+00000000009f89f0: mov      r10d, dword ptr [rip + 0x2ebc67e1]
+00000000009f89f7: mov      rax, qword ptr gs:[0x58]
+00000000009f8a00: mov      edi, 0x7d58
+00000000009f8a05: mov      rbx, qword ptr [rax + r10*8]
+00000000009f8a09: movsxd   r10, dword ptr [rbx + rdi]
+00000000009f8a0d: lea      rsi, [rip - 0x5f8a14]
+00000000009f8a14: movsxd   r8, dword ptr [rsi + r10*4 + 0x47e2a40]
+00000000009f8a1c: lea      eax, [r8 + 1]
+00000000009f8a20: mov      dword ptr [rsi + r10*4 + 0x47e2a40], eax
+00000000009f8a28: imul     r10, r10, 0x3e8
+00000000009f8a2f: add      r10, r8
+00000000009f8a32: lea      rax, [rip + 0x3c6157] ; UTF16 'void __cdecl CUserSocket::SendSystemMessage_S_d(unsigned int,const wchar_t *,int)'
+00000000009f8a39: mov      qword ptr [rsi + r10*8 + 0x47bf7c0], rax
+00000000009f8a41: mov      rax, qword ptr [rcx]
+00000000009f8a44: mov      dword ptr [rsp + 0x40], r9d
+00000000009f8a49: mov      dword ptr [rsp + 0x38], 1
+00000000009f8a51: mov      qword ptr [rsp + 0x30], r11
+00000000009f8a56: mov      qword ptr [rsp + 0x28], 0
+00000000009f8a5f: mov      dword ptr [rsp + 0x20], 2
+00000000009f8a67: mov      r9d, edx
+00000000009f8a6a: mov      r8d, 0x62
+00000000009f8a70: lea      rdx, [rip + 0x1bc399]
+00000000009f8a77: call     qword ptr [rax + 0x80]
+00000000009f8a7d: nop
+00000000009f8a7e: movsxd   rax, dword ptr [rbx + rdi]
+00000000009f8a82: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+00000000009f8a8a: add      rsp, 0x60
+00000000009f8a8e: pop      rdi
+00000000009f8a8f: pop      rsi
+00000000009f8a90: pop      rbx
+00000000009f8a91: ret

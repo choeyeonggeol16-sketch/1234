@@ -1,0 +1,98 @@
+# fn_a04a60; PE pdata/unwind; entry 0xa04a60
+# chunk 0xa04a60..0xa04bfa
+0000000000a04a60: mov      dword ptr [rsp + 0x10], edx
+0000000000a04a64: push     rbx
+0000000000a04a65: push     rbp
+0000000000a04a66: push     rsi
+0000000000a04a67: push     rdi
+0000000000a04a68: push     r12
+0000000000a04a6a: push     r13
+0000000000a04a6c: mov      r11, rsp
+0000000000a04a6f: sub      rsp, 0x58
+0000000000a04a73: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+0000000000a04a7c: mov      ebp, edx
+0000000000a04a7e: mov      rdi, rcx
+0000000000a04a81: mov      r8d, dword ptr [rip + 0x2ebba750]
+0000000000a04a88: mov      rax, qword ptr gs:[0x58]
+0000000000a04a91: mov      r13d, 0x7d58
+0000000000a04a97: mov      rsi, qword ptr [rax + r8*8]
+0000000000a04a9b: movsxd   r8, dword ptr [rsi + r13]
+0000000000a04a9f: lea      r12, [rip - 0x604aa6]
+0000000000a04aa6: movsxd   rdx, dword ptr [r12 + r8*4 + 0x47e2a40]
+0000000000a04aae: lea      eax, [rdx + 1]
+0000000000a04ab1: mov      dword ptr [r12 + r8*4 + 0x47e2a40], eax
+0000000000a04ab9: imul     r8, r8, 0x3e8
+0000000000a04ac0: add      r8, rdx
+0000000000a04ac3: lea      rax, [rip + 0x3bdc66] ; UTF16 'int __cdecl CSocketLimiter::IncUserSocketPerIP(unsigned int)'
+0000000000a04aca: mov      qword ptr [r12 + r8*8 + 0x47bf7c0], rax
+0000000000a04ad2: mov      qword ptr [r11 + 0x48], rcx
+0000000000a04ad6: mov      r8d, 0x2bfa
+0000000000a04adc: lea      rdx, [rip + 0x3b46bd] ; UTF16 '.\\UserSocket.cpp'
+0000000000a04ae3: call     0xa4ccec
+0000000000a04ae8: nop
+0000000000a04ae9: cmp      dword ptr [rip + 0x90e378], 0
+0000000000a04af0: jle      0xa04bc8
+0000000000a04af6: lea      rbx, [rdi + 0x10]
+0000000000a04afa: lea      r8, [rsp + 0x98]
+0000000000a04b02: lea      rdx, [rsp + 0x28]
+0000000000a04b07: mov      rcx, rbx
+0000000000a04b0a: call     0x7c8fc4
+0000000000a04b0f: mov      rcx, qword ptr [rsp + 0x28]
+0000000000a04b14: test     rcx, rcx
+0000000000a04b17: je       0xa04bc2
+0000000000a04b1d: cmp      rcx, rbx
+0000000000a04b20: jne      0xa04bc2
+0000000000a04b26: mov      rdx, qword ptr [rsp + 0x30]
+0000000000a04b2b: cmp      rdx, qword ptr [rbx + 8]
+0000000000a04b2f: sete     al
+0000000000a04b32: test     al, al
+0000000000a04b34: je       0xa04b88
+0000000000a04b36: mov      dword ptr [rsp + 0x90], ebp
+0000000000a04b3d: mov      dword ptr [rsp + 0x94], 1
+0000000000a04b48: lea      r8, [rsp + 0x90]
+0000000000a04b50: lea      rdx, [rsp + 0x28]
+0000000000a04b55: mov      rcx, rbx
+0000000000a04b58: call     0x801e88
+0000000000a04b5d: nop
+0000000000a04b5e: mov      r8d, 0x65
+0000000000a04b64: lea      rdx, [rip + 0x12ce15] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\TemplateHelper.h'
+0000000000a04b6b: mov      rcx, rdi
+0000000000a04b6e: call     0xa4cd8c
+0000000000a04b73: nop
+0000000000a04b74: movsxd   rcx, dword ptr [rsi + r13]
+0000000000a04b78: add      dword ptr [r12 + rcx*4 + 0x47e2a40], -1
+0000000000a04b81: mov      eax, 1
+0000000000a04b86: jmp      0xa04bed
+0000000000a04b88: cmp      rdx, qword ptr [rcx + 8]
+0000000000a04b8c: jne      0xa04b94
+0000000000a04b8e: call     0x866f68
+0000000000a04b93: int3
+0000000000a04b94: add      dword ptr [rdx + 0x1c], 1
+0000000000a04b98: mov      ebx, dword ptr [rdx + 0x1c]
+0000000000a04b9b: mov      r8d, 0x65
+0000000000a04ba1: lea      rdx, [rip + 0x12cdd8] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\TemplateHelper.h'
+0000000000a04ba8: mov      rcx, rdi
+0000000000a04bab: call     0xa4cd8c
+0000000000a04bb0: nop
+0000000000a04bb1: movsxd   rcx, dword ptr [rsi + r13]
+0000000000a04bb5: add      dword ptr [r12 + rcx*4 + 0x47e2a40], -1
+0000000000a04bbe: mov      eax, ebx
+0000000000a04bc0: jmp      0xa04bed
+0000000000a04bc2: call     0x480214
+0000000000a04bc7: nop
+0000000000a04bc8: mov      r8d, 0x65
+0000000000a04bce: lea      rdx, [rip + 0x12cdab] ; UTF16 'd:\\vss2\\programming\\branch\\ct26_p4\\20110323\\server\\l2server\\TemplateHelper.h'
+0000000000a04bd5: mov      rcx, rdi
+0000000000a04bd8: call     0xa4cd8c
+0000000000a04bdd: nop
+0000000000a04bde: movsxd   rax, dword ptr [rsi + r13]
+0000000000a04be2: add      dword ptr [r12 + rax*4 + 0x47e2a40], -1
+0000000000a04beb: xor      eax, eax
+0000000000a04bed: add      rsp, 0x58
+0000000000a04bf1: pop      r13
+0000000000a04bf3: pop      r12
+0000000000a04bf5: pop      rdi
+0000000000a04bf6: pop      rsi
+0000000000a04bf7: pop      rbp
+0000000000a04bf8: pop      rbx
+0000000000a04bf9: ret

@@ -1,0 +1,6 @@
+# fn_404ca0; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x404ca0
+# chunk 0x404ca0..0x404cb4
+0000000000404ca0: mov      r8, rcx
+0000000000404ca3: mov      rcx, qword ptr [rip + 0x484c286]
+0000000000404caa: xor      r9d, r9d
+0000000000404cad: jmp      qword ptr [rip + 0x717474] ; IAT PostQueuedCompletionStatus

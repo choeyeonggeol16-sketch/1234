@@ -1,0 +1,46 @@
+# fn_41c6f8; PE pdata/unwind; entry 0x41c6f8
+# chunk 0x41c6f8..0x41c7a6
+000000000041c6f8: push     rbx
+000000000041c6fa: push     rdi
+000000000041c6fb: sub      rsp, 0x28
+000000000041c6ff: mov      r8, rdx
+000000000041c702: mov      rbx, rcx
+000000000041c705: mov      edi, 1
+000000000041c70a: mov      eax, dword ptr [rcx]
+000000000041c70c: test     eax, eax
+000000000041c70e: jne      0x41c70a
+000000000041c710: lock cmpxchg dword ptr [rcx], edi
+000000000041c714: cmp      eax, edi
+000000000041c716: je       0x41c70a
+000000000041c718: mov      rax, qword ptr [rbx + 0x18]
+000000000041c71c: movsxd   rcx, dword ptr [rcx + 4]
+000000000041c720: cqo
+000000000041c722: idiv     rcx
+000000000041c725: mov      rcx, qword ptr [rbx + 0x20]
+000000000041c729: mov      rax, qword ptr [rbx + 0x18]
+000000000041c72d: cmp      rax, rcx
+000000000041c730: jge      0x41c74a
+000000000041c732: mov      rcx, qword ptr [rbx + 0x10]
+000000000041c736: movsxd   rax, edx
+000000000041c739: cmp      qword ptr [rcx + rax*8], 0
+000000000041c73e: jne      0x41c74a
+000000000041c740: mov      qword ptr [rcx + rax*8], r8
+000000000041c744: add      qword ptr [rbx + 0x18], rdi
+000000000041c748: jmp      0x41c798
+000000000041c74a: lea      rdx, [rip + 0x716f1f]
+000000000041c751: lea      rcx, [rip + 0x47c66e8]
+000000000041c758: call     qword ptr [rip + 0x6ffeca] ; IAT wsprintfW
+000000000041c75e: lea      rdx, [rip + 0x714c8b]
+000000000041c765: lea      rcx, [rip + 0x47c6ed4]
+000000000041c76c: call     qword ptr [rip + 0x6ffeb6] ; IAT wsprintfW
+000000000041c772: lea      rdx, [rip + 0x70a1df]
+000000000041c779: lea      rcx, [rip + 0x47c76c0]
+000000000041c780: mov      r8d, 0x33a
+000000000041c786: call     qword ptr [rip + 0x6ffe9c] ; IAT wsprintfW
+000000000041c78c: mov      byte ptr [rip + 0x47c669a], dil
+000000000041c793: call     0x66db28
+000000000041c798: mov      rcx, rbx
+000000000041c79b: add      rsp, 0x28
+000000000041c79f: pop      rdi
+000000000041c7a0: pop      rbx
+000000000041c7a1: jmp      0x419e8c
