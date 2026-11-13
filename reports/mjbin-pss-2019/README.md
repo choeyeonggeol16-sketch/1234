@@ -4,6 +4,7 @@ The user identified this as a **MJ private-server** binary. This archive does no
 
 ## Available source analyses
 
+- [Additional legacy-client DLL feature candidates](CLIENT_FEATURES_FOR_LEGACY_DLL_20261113.md) — one-click continuous attack toggle and gates, auto magic doll, auto FoeSlayer, smart casting, companion potion, equipment switching and UI.
 - [Ctrl double-press auto-attack DLL porting full report](LEGACY_CLIENT_CTRL_DOUBLE_AUTOATTACK_DLL_FULL_REPORT_20261113.md) — x86 input timing, persistent mode flags, PvP target filters, target-event dispatch, legacy-client integration requirements and validation matrix.
 - [Full MJBin PSS reverse-engineering report](REVERSE_ENGINEERING_20261113.md) — BotConductor, 27 action nodes, config and packet formats, address inventory.
 - [Pathfinding, BotPlayPath and A*-family notes](PATHFINDING_AND_PLAYPATH_20261113.md) — disassembly-based follow-up.
