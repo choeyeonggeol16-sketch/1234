@@ -1,0 +1,147 @@
+# runtime_message; PE pdata/unwind; entry 0xacc090
+# chunk 0xacc090..0xacc110
+0000000000acc090: sub      rsp, 0x48
+0000000000acc094: mov      qword ptr [rsp + 0x50], rbx
+0000000000acc099: mov      qword ptr [rsp + 0x60], rsi
+0000000000acc09e: mov      qword ptr [rsp + 0x68], rdi
+0000000000acc0a3: mov      qword ptr [rsp + 0x40], r12
+0000000000acc0a8: lea      r12, [rip + 0x5491e1]
+0000000000acc0af: xor      esi, esi
+0000000000acc0b1: mov      rax, r12
+0000000000acc0b4: mov      edi, ecx
+0000000000acc0b6: mov      ebx, esi
+0000000000acc0b8: cmp      ecx, dword ptr [rax]
+0000000000acc0ba: je       0xacc0cd
+0000000000acc0bc: add      ebx, 1
+0000000000acc0bf: add      rax, 0x10
+0000000000acc0c3: cmp      ebx, 0x17
+0000000000acc0c6: jb       0xacc0b8
+0000000000acc0c8: jmp      0xacc2ae
+0000000000acc0cd: cmp      ebx, 0x17
+0000000000acc0d0: jae      0xacc2ae
+0000000000acc0d6: mov      ecx, 3
+0000000000acc0db: call     0xaf62c0
+0000000000acc0e0: cmp      eax, 1
+0000000000acc0e3: je       0xacc262
+0000000000acc0e9: mov      ecx, 3
+0000000000acc0ee: call     0xaf62c0
+0000000000acc0f3: test     eax, eax
+0000000000acc0f5: jne      0xacc104
+0000000000acc0f7: cmp      dword ptr [rip + 0x548d42], 1
+0000000000acc0fe: je       0xacc262
+0000000000acc104: cmp      edi, 0xfc
+0000000000acc10a: je       0xacc2ae
+# chunk 0xacc110..0xacc262
+0000000000acc110: mov      qword ptr [rsp + 0x58], rbp
+0000000000acc115: lea      rbp, [rip + 0x2eaf31d4]
+0000000000acc11c: lea      r8, [rip + 0x3da805]
+0000000000acc123: mov      rcx, rbp
+0000000000acc126: mov      edx, 0x314
+0000000000acc12b: call     0xabd790
+0000000000acc130: test     eax, eax
+0000000000acc132: je       0xacc148
+0000000000acc134: xor      r9d, r9d
+0000000000acc137: xor      r8d, r8d
+0000000000acc13a: xor      edx, edx
+0000000000acc13c: xor      ecx, ecx
+0000000000acc13e: mov      qword ptr [rsp + 0x20], rsi
+0000000000acc143: call     0xac06c0
+0000000000acc148: lea      rdx, [rip + 0x2eaf31ba]
+0000000000acc14f: mov      r8d, 0x104
+0000000000acc155: xor      ecx, ecx
+0000000000acc157: mov      byte ptr [rip + 0x2eaf32af], sil
+0000000000acc15e: call     qword ptr [rip + 0x50394] ; IAT GetModuleFileNameA
+0000000000acc164: test     eax, eax
+0000000000acc166: jne      0xacc198
+0000000000acc168: lea      r8, [rip + 0x3da7a1]
+0000000000acc16f: lea      rcx, [rip + 0x2eaf3193]
+0000000000acc176: mov      edx, 0x2fb
+0000000000acc17b: call     0xabd790
+0000000000acc180: test     eax, eax
+0000000000acc182: je       0xacc198
+0000000000acc184: xor      r9d, r9d
+0000000000acc187: xor      r8d, r8d
+0000000000acc18a: xor      edx, edx
+0000000000acc18c: xor      ecx, ecx
+0000000000acc18e: mov      qword ptr [rsp + 0x20], rsi
+0000000000acc193: call     0xac06c0
+0000000000acc198: xor      eax, eax
+0000000000acc19a: lea      rdi, [rip + 0x2eaf3168]
+0000000000acc1a1: mov      rcx, 0xffffffffffffffff
+0000000000acc1a8: repne scasb al, byte ptr [rdi]
+0000000000acc1aa: not      rcx
+0000000000acc1ad: cmp      rcx, 0x3c
+0000000000acc1b1: jbe      0xacc1ea
+0000000000acc1b3: lea      rcx, [rcx + rbp - 0x23]
+0000000000acc1b8: lea      rdx, [rip + 0x2eaf3445]
+0000000000acc1bf: lea      r9d, [rax + 3]
+0000000000acc1c3: lea      r8, [rip + 0x3da742]
+0000000000acc1ca: sub      rdx, rcx
+0000000000acc1cd: call     0xac2220
+0000000000acc1d2: test     eax, eax
+0000000000acc1d4: je       0xacc1ea
+0000000000acc1d6: xor      r9d, r9d
+0000000000acc1d9: xor      r8d, r8d
+0000000000acc1dc: xor      edx, edx
+0000000000acc1de: xor      ecx, ecx
+0000000000acc1e0: mov      qword ptr [rsp + 0x20], rsi
+0000000000acc1e5: call     0xac06c0
+0000000000acc1ea: lea      r8, [rip + 0x3da717]
+0000000000acc1f1: mov      edx, 0x314
+0000000000acc1f6: mov      rcx, rbp
+0000000000acc1f9: call     0xae22c0
+0000000000acc1fe: test     eax, eax
+0000000000acc200: je       0xacc216
+0000000000acc202: xor      r9d, r9d
+0000000000acc205: xor      r8d, r8d
+0000000000acc208: xor      edx, edx
+0000000000acc20a: xor      ecx, ecx
+0000000000acc20c: mov      qword ptr [rsp + 0x20], rsi
+0000000000acc211: call     0xac06c0
+0000000000acc216: movsxd   r8, ebx
+0000000000acc219: mov      edx, 0x314
+0000000000acc21e: mov      rcx, rbp
+0000000000acc221: add      r8, r8
+0000000000acc224: mov      r8, qword ptr [r12 + r8*8 + 8]
+0000000000acc229: call     0xae22c0
+0000000000acc22e: test     eax, eax
+0000000000acc230: je       0xacc246
+0000000000acc232: xor      r9d, r9d
+0000000000acc235: xor      r8d, r8d
+0000000000acc238: xor      edx, edx
+0000000000acc23a: xor      ecx, ecx
+0000000000acc23c: mov      qword ptr [rsp + 0x20], rsi
+0000000000acc241: call     0xac06c0
+0000000000acc246: lea      rdx, [rip + 0x3da693]
+0000000000acc24d: mov      r8d, 0x12010
+0000000000acc253: mov      rcx, rbp
+0000000000acc256: call     0xaf6080
+0000000000acc25b: mov      rbp, qword ptr [rsp + 0x58]
+0000000000acc260: jmp      0xacc2ae
+# chunk 0xacc262..0xacc2c7
+0000000000acc262: mov      ecx, 0xfffffff4
+0000000000acc267: call     qword ptr [rip + 0x502ab] ; IAT GetStdHandle
+0000000000acc26d: test     rax, rax
+0000000000acc270: mov      r11, rax
+0000000000acc273: je       0xacc2ae
+0000000000acc275: cmp      rax, -1
+0000000000acc279: je       0xacc2ae
+0000000000acc27b: xor      eax, eax
+0000000000acc27d: movsxd   rcx, ebx
+0000000000acc280: lea      r9, [rsp + 0x30]
+0000000000acc285: add      rcx, rcx
+0000000000acc288: mov      qword ptr [rsp + 0x20], rsi
+0000000000acc28d: mov      rdx, qword ptr [r12 + rcx*8 + 8]
+0000000000acc292: mov      rcx, 0xffffffffffffffff
+0000000000acc299: mov      rdi, rdx
+0000000000acc29c: repne scasb al, byte ptr [rdi]
+0000000000acc29e: not      rcx
+0000000000acc2a1: lea      r8, [rcx - 1]
+0000000000acc2a5: mov      rcx, r11
+0000000000acc2a8: call     qword ptr [rip + 0x4fe92] ; IAT WriteFile
+0000000000acc2ae: mov      r12, qword ptr [rsp + 0x40]
+0000000000acc2b3: mov      rdi, qword ptr [rsp + 0x68]
+0000000000acc2b8: mov      rsi, qword ptr [rsp + 0x60]
+0000000000acc2bd: mov      rbx, qword ptr [rsp + 0x50]
+0000000000acc2c2: add      rsp, 0x48
+0000000000acc2c6: ret

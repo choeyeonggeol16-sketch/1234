@@ -1,3 +1,11 @@
+## 2026-11-13 종료 참조 검사·ORT31종 추적
+
+보고서 → 풀·회수 진단에 종료 후 잔여 참조, 종류별 카운터와 획득/반납 위치를 추가했습니다. 기존 타이머에서5초 후 검사하며 정상 정리 대기는25초 뒤 한 번 더 확인합니다. 검사기128개/기록16개/화면8개로 제한하고 종료 시 취소합니다. 강제 해제는 하지 않습니다. 새 src와 DLL을 함께 사용하세요. 원본 내부 규약 반영 범위와 의도적인 L1 차이는 REPORT_REFERENCE_RESTORATION.md에 있습니다. 실제 Windows 검증과 전체 Java 컴파일 통과, ABI10/67exports·PSS·codec·DB 유지.
+
+아래는 이전 배포 이력입니다.
+
+---
+
 ## 2026-11-13 바이너리 확인 타이머 이름 적용
 
 원본 signature에 있는 CThreadLocalTimer / CSlot / CMwmrQueue4009::Pop / AddTimer / Dispatch를 기존 실행 코드에 적용했습니다. 기존 TimerWheel/TimerBlockPool 타입은 제거했습니다. 새 src와 CTransport.dll을 함께 적용합니다. 확인된 이름·L1 인자 계약·추정 보조 이름 및 추가 발견은 REPORT_VERIFIED_NETWORK_NAMES.md에서 구분합니다.

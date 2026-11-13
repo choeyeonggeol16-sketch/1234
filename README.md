@@ -1,3 +1,13 @@
+## 2026-11-13 — 종료 참조 검사·종류별 추적
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**변경·원본 대조 보고서**](reports/CTRANSPORT_REFERENCE_RESTORATION_20261113.md)
+
+기존 타이머에 CUserSocketReleaseVerifier와 ORT31종 카운터·획득/반납 위치를 연결했습니다. 매니저 보고서 → 풀·회수 진단에서 확인합니다. timer 상태·참조 반환 규약·CIOSocketEx 버퍼 타입을 반영했으며, 원본 전용 allocator와 전체 C++ ABI는 L1 호환 규약을 유지합니다. 검사기128개/기록16개/화면8개 제한. 새 src와 DLL을 함께 적용합니다. 실제 Windows CI와 전체 Java 컴파일 통과, ABI10/67exports·PSS·codec·DB 유지.
+
+이하 내용은 이전 배포 이력입니다.
+
+---
+
 ## 2026-11-13 — 현재 네트워크 원본 대조 (배포03b1453)
 
 [**현재 대조 보고서**](reports/ctransport_current_network_audit_20261113/README_KO.md) · [**선택한156개 함수 목록**](reports/ctransport_current_network_audit_20261113/FUNCTION_INVENTORY.csv)

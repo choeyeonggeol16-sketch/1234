@@ -1,0 +1,30 @@
+# runtime_decode; PE pdata/unwind; entry 0xacb930
+# chunk 0xacb930..0xacb993
+0000000000acb930: push     rbx
+0000000000acb932: sub      rsp, 0x20
+0000000000acb936: mov      rbx, rcx
+0000000000acb939: mov      ecx, dword ptr [rip + 0x549941]
+0000000000acb93f: cmp      ecx, -1
+0000000000acb942: je       0xacb958
+0000000000acb944: call     qword ptr [rip + 0x50a36] ; IAT FlsGetValue
+0000000000acb94a: test     rax, rax
+0000000000acb94d: je       0xacb958
+0000000000acb94f: mov      rax, qword ptr [rax + 0x2b0]
+0000000000acb956: jmp      0xacb97a
+0000000000acb958: lea      rcx, [rip + 0x3da9e9]
+0000000000acb95f: call     qword ptr [rip + 0x50a4b] ; IAT GetModuleHandleA
+0000000000acb965: test     rax, rax
+0000000000acb968: je       0xacb98a
+0000000000acb96a: lea      rdx, [rip + 0x3da9e7]
+0000000000acb971: mov      rcx, rax
+0000000000acb974: call     qword ptr [rip + 0x509de] ; IAT GetProcAddress
+0000000000acb97a: test     rax, rax
+0000000000acb97d: je       0xacb98a
+0000000000acb97f: mov      rcx, rbx
+0000000000acb982: add      rsp, 0x20
+0000000000acb986: pop      rbx
+0000000000acb987: jmp      rax
+0000000000acb98a: mov      rax, rbx
+0000000000acb98d: add      rsp, 0x20
+0000000000acb991: pop      rbx
+0000000000acb992: ret

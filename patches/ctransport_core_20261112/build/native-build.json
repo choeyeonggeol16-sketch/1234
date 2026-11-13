@@ -49,5 +49,7 @@
   },
   "dll_sha256": "b37e57e850ceb7134ff20c3a6950714973cad046a52a89243dec5dcda5ac4be1",
   "selftest_sha256": "a7d1d63c3da40edd326bd72b4f9fe60cbec30939e2976e23b05dd0f17606ef0c",
-  "windows_execution_tested": false
+  "windows_execution_tested": true,
+  "windows_test_run": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43509707411",
+  "tested_source_commit": "4f77fd4ec11463c0153f140effe09228161ad855"
 }

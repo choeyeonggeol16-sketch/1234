@@ -1,0 +1,5 @@
+In file included from /workspace/work/aden-rkern-cio-20261112/tests/ReferenceTraceTest.cpp:2:
+/workspace/work/aden-rkern-cio-20261112/tests/native_engine_test.cpp: In function ‘int nativeFixtureMain()’:
+/workspace/work/aden-rkern-cio-20261112/tests/native_engine_test.cpp:827:369: warning: no return statement in function returning non-void [-Wreturn-type]
+  827 | int main(){std::cout.setf(std::ios::unitbuf);sharedBroadcastTests();sendCloseTests();remainingNetworkTests();originalStructureTests();userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";}
+      |                                                                                                                                                                                                                                                                                                                                                                                 ^

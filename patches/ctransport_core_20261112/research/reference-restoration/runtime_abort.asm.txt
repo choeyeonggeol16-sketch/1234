@@ -1,0 +1,34 @@
+# runtime_abort; PE pdata/unwind; entry 0xacb300
+# chunk 0xacb300..0xacb3a1
+0000000000acb300: sub      rsp, 0x5a8
+0000000000acb307: test     byte ptr [rip + 0x549f62], 1
+0000000000acb30e: je       0xacb31a
+0000000000acb310: mov      ecx, 0xa
+0000000000acb315: call     0xacc090
+0000000000acb31a: call     0xae0890
+0000000000acb31f: test     rax, rax
+0000000000acb322: je       0xacb32e
+0000000000acb324: mov      ecx, 0x16
+0000000000acb329: call     0xae08a0
+0000000000acb32e: test     byte ptr [rip + 0x549f3b], 2
+0000000000acb335: je       0xacb396
+0000000000acb337: lea      rcx, [rsp + 0xd0]
+0000000000acb33f: call     qword ptr [rip + 0x510ab] ; IAT RtlCaptureContext
+0000000000acb345: lea      rcx, [rsp + 0x30]
+0000000000acb34a: xor      edx, edx
+0000000000acb34c: mov      r8d, 0x98
+0000000000acb352: call     0xab9430
+0000000000acb357: mov      rax, qword ptr [rsp + 0x5a8]
+0000000000acb35f: xor      ecx, ecx
+0000000000acb361: mov      qword ptr [rsp + 0x40], rax
+0000000000acb366: lea      rax, [rsp + 0x30]
+0000000000acb36b: mov      dword ptr [rsp + 0x30], 0x40000015
+0000000000acb373: mov      qword ptr [rsp + 0x20], rax
+0000000000acb378: lea      rax, [rsp + 0xd0]
+0000000000acb380: mov      qword ptr [rsp + 0x28], rax
+0000000000acb385: call     qword ptr [rip + 0x50e8d] ; IAT SetUnhandledExceptionFilter
+0000000000acb38b: lea      rcx, [rsp + 0x20]
+0000000000acb390: call     qword ptr [rip + 0x5106a] ; IAT UnhandledExceptionFilter
+0000000000acb396: mov      ecx, 3
+0000000000acb39b: call     0xac5110
+0000000000acb3a0: int3

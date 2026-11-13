@@ -1,0 +1,2 @@
+PASS fresh MemoryObject IDs/ref1 copy/+0x10 layout,4000 concurrent IDs,4001 live-object reference faults without counter wrap;8K/16K invalid-entry skip,late-return quarantine,2000 reuse cycles,zero borrowed after drain,legacy8/18 and fault24 diagnostic canaries
+

@@ -1,0 +1,2 @@
+PASS pool diagnostic classification:valid holders,60s stable idle suspicion,negative clock,recovery,unavailable extension,60 sample bound;no forced reclaim
+PASS bounded manager reference report:31 kinds,file/line mapping,4 statuses,latest8 of16,malformed/old DLL fallback

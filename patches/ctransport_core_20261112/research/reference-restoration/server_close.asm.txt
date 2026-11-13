@@ -1,0 +1,39 @@
+# server_close; PE pdata/unwind; entry 0x704c7c
+# chunk 0x704c7c..0x704d1b
+0000000000704c7c: push     rbx
+0000000000704c7e: push     rbp
+0000000000704c7f: push     rsi
+0000000000704c80: push     rdi
+0000000000704c81: sub      rsp, 0x28
+0000000000704c85: mov      rax, qword ptr gs:[0x58]
+0000000000704c8e: mov      edx, dword ptr [rip + 0x2eeba544]
+0000000000704c94: lea      rsi, [rip - 0x304c9b]
+0000000000704c9b: mov      rdi, qword ptr [rax + rdx*8]
+0000000000704c9f: mov      ebp, 0x7d58
+0000000000704ca4: mov      rbx, rcx
+0000000000704ca7: movsxd   r8, dword ptr [rdi + rbp]
+0000000000704cab: movsxd   rdx, dword ptr [rsi + r8*4 + 0x47e2a40]
+0000000000704cb3: lea      eax, [rdx + 1]
+0000000000704cb6: mov      dword ptr [rsi + r8*4 + 0x47e2a40], eax
+0000000000704cbe: lea      rax, [rip + 0x56d63b] ; UTF16 'void __cdecl CIOServer::Close(void)'
+0000000000704cc5: imul     r8, r8, 0x3e8
+0000000000704ccc: add      r8, rdx
+0000000000704ccf: mov      qword ptr [rsi + r8*8 + 0x47bf7c0], rax
+0000000000704cd7: mov      rcx, qword ptr [rcx + 0x18]
+0000000000704cdb: cmp      rcx, -1
+0000000000704cdf: je       0x704cef
+0000000000704ce1: call     qword ptr [rip + 0x417981] ; IAT closesocket
+0000000000704ce7: mov      qword ptr [rbx + 0x18], 0xffffffffffffffff
+0000000000704cef: mov      rcx, qword ptr [rbx + 0x20]
+0000000000704cf3: test     rcx, rcx
+0000000000704cf6: je       0x704d06
+0000000000704cf8: call     qword ptr [rip + 0x4179c2] ; IAT WSACloseEvent
+0000000000704cfe: mov      qword ptr [rbx + 0x20], 0
+0000000000704d06: movsxd   rax, dword ptr [rdi + rbp]
+0000000000704d0a: add      dword ptr [rsi + rax*4 + 0x47e2a40], -1
+0000000000704d12: add      rsp, 0x28
+0000000000704d16: pop      rdi
+0000000000704d17: pop      rsi
+0000000000704d18: pop      rbp
+0000000000704d19: pop      rbx
+0000000000704d1a: ret

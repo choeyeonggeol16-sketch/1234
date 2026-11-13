@@ -1,0 +1,10 @@
+# runtime_abort_flags; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0xacb3b0
+# chunk 0xacb3b0..0xacb3cc
+0000000000acb3b0: mov      eax, dword ptr [rip + 0x549eba]
+0000000000acb3b6: mov      r8d, edx
+0000000000acb3b9: and      ecx, edx
+0000000000acb3bb: not      r8d
+0000000000acb3be: and      r8d, eax
+0000000000acb3c1: or       r8d, ecx
+0000000000acb3c4: mov      dword ptr [rip + 0x549ea5], r8d
+0000000000acb3cb: ret

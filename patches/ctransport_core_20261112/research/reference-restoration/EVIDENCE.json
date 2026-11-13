@@ -1,4 +1,11 @@
 {
+  "runtime_helper_error25": [
+    {
+      "table_entry": "0x1015320",
+      "code": 25,
+      "message": "R6025\r\n- pure virtual function call\r\n"
+    }
+  ],
   "binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
   "original_executed": false,
   "labels": [
@@ -447,6 +454,129 @@
         "0x70482c",
         "0x926e54"
       ],
+      "caller_count": 1
+    },
+    "server_create": {
+      "entry": "0x7066dc",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x7066dc",
+          "0x706872"
+        ]
+      ],
+      "direct_calls": [
+        "0x704dac",
+        "0x704dac",
+        "0x704dac",
+        "0x706564",
+        "0x704dac",
+        "0x704c7c"
+      ],
+      "caller_count": 1
+    },
+    "server_close": {
+      "entry": "0x704c7c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x704c7c",
+          "0x704d1b"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 2
+    },
+    "virtual_runtime_helper": {
+      "entry": "0xab9010",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xab9010",
+          "0xab9046"
+        ]
+      ],
+      "direct_calls": [
+        "0xacb930",
+        "0xacc090",
+        "0xacb3b0"
+      ],
+      "caller_count": 0
+    },
+    "runtime_decode": {
+      "entry": "0xacb930",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xacb930",
+          "0xacb993"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 35
+    },
+    "runtime_message": {
+      "entry": "0xacc090",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xacc090",
+          "0xacc110"
+        ],
+        [
+          "0xacc110",
+          "0xacc262"
+        ],
+        [
+          "0xacc262",
+          "0xacc2c7"
+        ]
+      ],
+      "direct_calls": [
+        "0xaf62c0",
+        "0xaf62c0",
+        "0xabd790",
+        "0xac06c0",
+        "0xabd790",
+        "0xac06c0",
+        "0xac2220",
+        "0xac06c0",
+        "0xae22c0",
+        "0xac06c0",
+        "0xae22c0",
+        "0xac06c0",
+        "0xaf6080"
+      ],
+      "caller_count": 9
+    },
+    "runtime_abort": {
+      "entry": "0xacb300",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xacb300",
+          "0xacb3a1"
+        ]
+      ],
+      "direct_calls": [
+        "0xacc090",
+        "0xae0890",
+        "0xae08a0",
+        "0xab9430",
+        "0xac5110"
+      ],
+      "caller_count": 3
+    },
+    "runtime_abort_flags": {
+      "entry": "0xacb3b0",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0xacb3b0",
+          "0xacb3cc"
+        ]
+      ],
+      "direct_calls": [],
       "caller_count": 1
     }
   },
