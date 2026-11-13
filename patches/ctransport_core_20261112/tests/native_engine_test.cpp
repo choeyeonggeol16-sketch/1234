@@ -87,7 +87,7 @@ struct BatchOwner final : CIOObject {
  std::atomic<unsigned> calls{0},wrong{0};std::atomic<bool>* destroyed;
  explicit BatchOwner(std::atomic<bool>* flag):destroyed(flag){}
  ~BatchOwner()override{*destroyed=true;}
- void OnIOCallback(void* raw,bool ok,unsigned bytes,unsigned error)noexcept override{
+ void OnIOCallback(int completionOk,unsigned completionBytes,OVERLAPPED* completionRaw)noexcept override{auto raw=IOCompletionContext::operation?IOCompletionContext::operation:static_cast<void*>(completionRaw);auto ok=completionOk!=0;auto bytes=completionBytes;auto error=IOCompletionContext::error;
   auto& operation=*reinterpret_cast<BatchOperation*>(raw);
   if(ok!=operation.expectedSuccess||error!=operation.expectedError||bytes!=operation.index+1||operation.visits.fetch_add(1)!=0)++wrong;
   ++calls;
@@ -228,7 +228,7 @@ static void engineTests() {
   Fixture f;auto [socket,id]=f.connect();f.state.pauseInCallback=true;
   fakewin::feed(socket,std::vector<unsigned char>(9000,7));L1Interop_PauseRead(f.server,id,0);
   until([&]{std::lock_guard<std::mutex> lock(f.state.mutex);return f.state.received.size()==4096;});
-  until([&]{auto* c=f.server->find(id);ObjectRef hold(c,false);std::lock_guard<std::mutex> lock(c->gate);return !c->state.readPosted&&c->state.paused&&!c->state.readDelivering;});
+  until([&]{auto* c=f.server->find(id);ObjectRef hold(c,false);std::lock_guard<std::mutex> lock(c->gate());return !c->state().readPosted&&c->state().paused&&!c->state().readDelivering;});
   f.state.pauseInCallback=false;L1Interop_PauseRead(f.server,id,0);
   until([&]{std::lock_guard<std::mutex> lock(f.state.mutex);return f.state.received.size()==9000;});
   fakewin::holdSend=true;const unsigned char data[]={1,2,3,4};check(CIOSocket__Write(f.server,id,data,4),"held send failed");
@@ -362,7 +362,7 @@ struct TimerOwner final : CIOObject {
  unsigned token;std::atomic<unsigned>& destroyed;
  TimerOwner(unsigned t,std::atomic<unsigned>& d):token(t),destroyed(d){}
  ~TimerOwner()override{++destroyed;}
- void OnIOCallback(void*,bool,unsigned,unsigned)noexcept override{}
+ void OnIOCallback(int completionOk,unsigned completionBytes,OVERLAPPED* completionRaw)noexcept override{}
 };
 static void ownershipCallback(void* raw,std::uint64_t token,int status){
  auto* server=static_cast<Server*>(raw);check(token==7000&&status==0,"ownership callback");
@@ -437,7 +437,7 @@ static void exactStructureTests(){
  }
  {
   Fixture f;auto [socket,id]=f.connect();
-  until([&]{auto* c=f.server->find(id);ObjectRef hold(c,false);std::lock_guard<std::mutex> lock(c->gate);return !c->state.acceptDelivering;});
+  until([&]{auto* c=f.server->find(id);ObjectRef hold(c,false);std::lock_guard<std::mutex> lock(c->gate());return !c->state().acceptDelivering;});
   // accepted() now also submits a serialized WRITE kick and checks terminal
   // readiness. Finish that owner before asserting a caller-thread fallback.
   until([&]{return f.server->pendingAccepts.load()==0;});
@@ -545,7 +545,7 @@ static void managerAndNativeLeaseTests() {
  }
  {
   Fixture f;f.state.userProfile=true;auto [socket,id]=f.connect();auto* c=f.server->find(id);check(c!=nullptr,"partial deadline lookup");
-  {std::lock_guard<std::mutex> lock(c->gate);unsigned char partial=10;check(c->UserProtocol()->feed(&partial,1,monotonicMs()-30001,[](auto*,unsigned){return true;}),"old partial header");}
+  {std::lock_guard<std::mutex> lock(c->gate());unsigned char partial=10;check(c->UserProtocol()->feed(&partial,1,monotonicMs()-30001,[](auto*,unsigned){return true;}),"old partial header");}
   c->release();check(L1Interop_RequestDeadline(f.server,id,1),"partial native deadline");until([&]{return f.state.closed==1;});
  }
  {
@@ -571,28 +571,28 @@ struct SerialProbe final : CIOObject {
  }
  static void Reenter(MemoryObject* object,void*)noexcept{
   auto& p=*static_cast<SerialProbe*>(object);++p.calls;
-  check(p.queue.AddExecutable(object,Work,nullptr),"same-owner serializer reentry");
+  check(p.queue.TryAddExecutable(object,Work,nullptr),"same-owner serializer reentry");
  }
  static void Block(MemoryObject* object,void*)noexcept{
   auto& p=*static_cast<SerialProbe*>(object);p.entered=true;
   while(!p.releaseBlocked.load())std::this_thread::yield();++p.calls;
  }
- void OnIOCallback(void*,bool,unsigned,unsigned)noexcept override{}
+ void OnIOCallback(int completionOk,unsigned completionBytes,OVERLAPPED* completionRaw)noexcept override{}
 };
 static void originalStructureTests(){
  {
   auto* p=new SerialProbe;
   std::vector<std::thread> producers;
   for(unsigned i=0;i<8;++i)producers.emplace_back([&]{for(unsigned n=0;n<1000;++n){
-   while(!p->queue.AddExecutable(p,SerialProbe::Work,nullptr))std::this_thread::yield();
+   while(!p->queue.TryAddExecutable(p,SerialProbe::Work,nullptr))std::this_thread::yield();
   }});
   for(auto& t:producers)t.join();
   check(p->calls==8000&&p->maximum==1&&p->queue.Pending()==0,"serializer lost/doubled/concurrent callback");
-  check(p->queue.AddExecutable(p,SerialProbe::Reenter,nullptr)&&p->calls==8002,"serializer reentry did not execute");
-  std::thread blocked([&]{check(p->queue.AddExecutable(p,SerialProbe::Block,nullptr),"serializer blocked owner");});
+  check(p->queue.TryAddExecutable(p,SerialProbe::Reenter,nullptr)&&p->calls==8002,"serializer reentry did not execute");
+  std::thread blocked([&]{check(p->queue.TryAddExecutable(p,SerialProbe::Block,nullptr),"serializer blocked owner");});
   until([&]{return p->entered.load();});
-  for(unsigned n=0;n<503;++n)check(p->queue.AddExecutable(p,SerialProbe::Work,nullptr),"serializer rejected within original margin");
-  check(!p->queue.AddExecutable(p,SerialProbe::Work,nullptr)&&p->queue.Pending()==504,"serializer overflow did not preserve eight spare slots");
+  for(unsigned n=0;n<503;++n)check(p->queue.TryAddExecutable(p,SerialProbe::Work,nullptr),"serializer rejected within original margin");
+  check(!p->queue.TryAddExecutable(p,SerialProbe::Work,nullptr)&&p->queue.Pending()==504,"serializer overflow did not preserve eight spare slots");
   p->releaseBlocked=true;blocked.join();check(p->queue.Pending()==0&&p->calls==8506,"serializer overflow rollback/drain");p->release();
  }
  {
@@ -713,7 +713,7 @@ static void sendCloseTests(){
    static void Execute(MemoryObject* object,void*)noexcept{++static_cast<MemoryOnly*>(object)->calls;}
   };
   unsigned calls=0;bool destroyed=false;CExecutionSerializerFast execution;auto* object=new MemoryOnly(calls,destroyed);
-  check(execution.AddExecutable(object,MemoryOnly::Execute,nullptr)&&calls==1,"MemoryObject serializer admission");
+  check(execution.TryAddExecutable(object,MemoryOnly::Execute,nullptr)&&calls==1,"MemoryObject serializer admission");
   object->release();check(destroyed,"MemoryObject virtual release did not destroy derived object");
  }
  {
@@ -721,8 +721,8 @@ static void sendCloseTests(){
   std::vector<unsigned char> source;for(unsigned size:{16383u,10u,65535u,8u}){auto frame=outboundFrame(size,size);source.insert(source.end(),frame.begin(),frame.end());}
   auto expected=source;std::size_t at=0;while(at<source.size()){unsigned size=source[at]|(source[at+1]<<8);for(unsigned i=2;i<size;++i)expected[at+i]^=0xa7;at+=size;}
   Span input{source.data(),source.size()};auto* request=new NativeSendRequest(c,&input,1,source.size(),true,false,true);ObjectRef requestHold(request,false);
-  {std::lock_guard<std::mutex> lock(c->gate);c->reservedSendBytes+=source.size();++c->pendingSendRequests;++f.server->pendingSends;}
-  check(c->execution_.AddExecutable(request,NativeSendRequest::Execute,nullptr),"constant request owner");
+  {std::lock_guard<std::mutex> lock(c->gate());c->reservedSendBytes+=source.size();++c->pendingSendRequests();++f.server->pendingSends;}
+  check(c->execution_.TryAddExecutable(request,NativeSendRequest::Execute,nullptr),"constant request owner");
   until([&]{return request->result.load()!=0;});check(request->result==1&&request->bytes==source,"constant SEND modified its source");
   until([&]{return f.state.sent==static_cast<int>(source.size());});check(fakewin::wire(socket)==expected,"constant frame/header split or max-frame encryption mismatch");
  }
@@ -732,7 +732,7 @@ static void sendCloseTests(){
   auto plain=outboundFrame(11),encrypted=outboundFrame(65535,9);std::vector<unsigned char> wire=plain;wire.insert(wire.end(),encrypted.begin(),encrypted.end());auto expected=wire;
   for(std::size_t i=plain.size()+2;i<expected.size();++i)expected[i]^=0xa7;
   auto* c=f.server->find(id);auto* blocker=new SerialProbe;
-  std::thread owner([&]{check(c->execution_.AddExecutable(blocker,SerialProbe::Block,nullptr),"block native send owner");});until([&]{return blocker->entered.load();});
+  std::thread owner([&]{check(c->execution_.TryAddExecutable(blocker,SerialProbe::Block,nullptr),"block native send owner");});until([&]{return blocker->entered.load();});
   check(CSocket_SendV(f.server,id,wire.data(),wire.size(),1),"queued native frame send");std::fill(wire.begin(),wire.end(),0);
   check(CIOSocketEx_GracefulClose(f.server,id,5000),"queued graceful close");unsigned char late=9;check(!CIOSocket__Write(f.server,id,&late,1),"send admitted after graceful fence");
   check(f.state.closed==0,"graceful close bypassed unpublished send request");blocker->releaseBlocked=true;owner.join();blocker->release();c->release();
@@ -791,8 +791,8 @@ static void sharedBroadcastTests(){
   auto* block=source->block;CIOBufferPool::retain(block);
   auto* ca=f.server->find(a.second);ObjectRef ah(ca,false);auto* cb=f.server->find(b.second);ObjectRef bh(cb,false);
   auto* x=new SerialProbe;auto* y=new SerialProbe;
-  std::thread first([&]{check(ca->execution_.AddExecutable(x,SerialProbe::Block,nullptr),"shared first owner");});
-  std::thread second([&]{check(cb->execution_.AddExecutable(y,SerialProbe::Block,nullptr),"shared second owner");});
+  std::thread first([&]{check(ca->execution_.TryAddExecutable(x,SerialProbe::Block,nullptr),"shared first owner");});
+  std::thread second([&]{check(cb->execution_.TryAddExecutable(y,SerialProbe::Block,nullptr),"shared second owner");});
   until([&]{return x->entered&&y->entered;});
   check(L1Interop_SendConstBuffer(f.server,a.second,source,0)&&L1Interop_SendConstBuffer(f.server,b.second,source,0),"shared queued sends");
   check(block->references==4,"shared buffer lacks producer/inspection/two recipient references");
@@ -809,7 +809,7 @@ static void sharedBroadcastTests(){
   check(!L1Interop_CreateConstBuffer(f.server,input.data(),9),"bad shared frame accepted");
   auto* source=static_cast<L1ConstBuffer*>(L1Interop_CreateConstBuffer(f.server,input.data(),input.size()));check(source,"bounded source");
   auto* c=f.server->find(pair.second);ObjectRef hold(c,false);auto* blocker=new SerialProbe;
-  std::thread owner([&]{check(c->execution_.AddExecutable(blocker,SerialProbe::Block,nullptr),"shared saturation owner");});until([&]{return blocker->entered.load();});
+  std::thread owner([&]{check(c->execution_.TryAddExecutable(blocker,SerialProbe::Block,nullptr),"shared saturation owner");});until([&]{return blocker->entered.load();});
   for(unsigned i=0;i<503;++i)check(L1Interop_SendConstBuffer(f.server,pair.second,source,0),"shared queued capacity");
   auto references=source->block->references.load();auto pending=f.server->pendingSends.load();
   check(!L1Interop_SendConstBuffer(f.server,pair.second,source,0)&&source->block->references==references&&f.server->pendingSends==pending,"shared overflow leaked reference/reservation");

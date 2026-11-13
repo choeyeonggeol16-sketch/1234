@@ -79,7 +79,7 @@ public final class CPoolDiagnostics {
          .append(" 진행 상한=").append(r[15]).append("\n프로세스 timer 상태오류=").append(r[12]).append(" 종류별 과반납=").append(r[13]).append('\n');
         int count=(int)r[8];for(int n=Math.max(0,count-8);n<count;n++){
             int at=16+n*STRIDE;long state=r[at+8],pending=r[at+9]>>>32;
-            String status=state==0?"추가 참조 없음":state==1?"잔여 참조 의심":state==2?"검사 취소":"I/O·패킷·등록 정리 대기";
+            String status=state==0?"추가 참조 없음":state==1?"잔여 참조 의심":state==2?"검사 취소":state==4?"요청된 참조 진단":"I/O·패킷·등록 정리 대기";
             b.append('#').append(r[at]).append(' ').append(status).append(" objectId=").append(r[at+2]).append(" socketNo=").append(r[at+3]).append(" connectionId=").append(r[at+4]).append(" account=").append(r[at+5])
              .append(" ref=").append(r[at+6]).append(" 검사기 제외=").append(r[at+7]).append(" timer=").append(r[at+9]&0xffffffffL).append(" pending=0x").append(Long.toHexString(pending)).append('\n');
             for(int kind=0;kind<REASONS;kind++){
@@ -89,6 +89,21 @@ public final class CPoolDiagnostics {
         }
         return b.append("정상 I/O·패킷 보유와 원인 미확정 잔여 참조를 구분합니다. 검사기 자신의1개 참조는 잔여량에서 제외합니다.\n")
           .append("최근 기록 최대16개 중8개 표시. 위치는 L1 소스이며 RAII 반납은 소유 scope 위치입니다. 동시에 읽은 카운터는 순간 차이가 날 수 있습니다.\n").toString();
+    }
+
+    public static String objectAllocatorReport(long[] data) {
+        if(data.length!=16+49*6||data[0]!=0x43544f4100010000L||data[10]!=49||data[13]!=6)
+            return "\nNative 객체 할당자: DLL 확장 미지원/종료 중\n";
+        StringBuilder out=new StringBuilder("\nNative 객체 할당자 (프로세스 전체, 네트워크 객체·실행 메타데이터)\n");
+        out.append("사용 객체=").append(data[1]).append(" 요청 bytes(크기 헤더4 포함)=").append(data[2])
+           .append(" 대형 객체/bytes=").append(data[3]).append('/').append(data[4])
+           .append("\n누적 할당/반납=").append(data[5]).append('/').append(data[6])
+           .append(" 실패/반납오류=").append(data[7]).append('/').append(data[8])
+           .append("\n작은 객체 풀 확보 bytes=").append(data[9]).append(" classes=").append(data[10]).append(" 실제 prefix=").append(data[12]).append("\n");
+        out.append("크기등급 / 사용중 / 누적할당 / 누적반납 / 풀확보bytes / 초기화·증설\n");
+        for(int i=0;i<49;i++){int at=16+i*6;if(data[at+2]==0&&data[at+1]==0)continue;
+            for(int n=0;n<6;n++){if(n>0)out.append(" / ");out.append(data[at+n]);}out.append('\n');}
+        return out.append("반납된 작은 블록은 재사용을 위해 풀에 남습니다. 버퍼 풀·Java 힙과 별도 지표이며 동시 조회 수치는 순간 차이가 날 수 있습니다.\n").toString();
     }
 
 }

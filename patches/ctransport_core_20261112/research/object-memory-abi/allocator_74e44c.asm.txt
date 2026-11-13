@@ -1,0 +1,15 @@
+# allocator_74e44c; PE pdata/unwind; entry 0x74e44c
+# chunk 0x74e44c..0x74e47f
+000000000074e44c: push     rbx
+000000000074e44e: sub      rsp, 0x20
+000000000074e452: mov      rbx, rcx
+000000000074e455: mov      rcx, qword ptr [rcx + 8]
+000000000074e459: lea      rdx, [rsp + 0x30]
+000000000074e45e: mov      dword ptr [rsp + 0x30], 0
+000000000074e466: call     0x74e3d4
+000000000074e46b: mov      edx, dword ptr [rsp + 0x30]
+000000000074e46f: lock xadd dword ptr [rbx + 0x10], edx
+000000000074e474: lock add dword ptr [rbx + 0x14], 1
+000000000074e479: add      rsp, 0x20
+000000000074e47d: pop      rbx
+000000000074e47e: ret

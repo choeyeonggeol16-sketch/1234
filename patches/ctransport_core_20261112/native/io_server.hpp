@@ -24,13 +24,13 @@ public:
 // The derived Server supplies socket allocation/admission and registration.
 class CIOServer : public CIOObject {
 public:
+    SOCKET listening=INVALID_SOCKET; //original+0x18
+    HANDLE acceptEvent=nullptr; //original+0x20
     HANDLE port=nullptr;
-    SOCKET listening=INVALID_SOCKET;
     bool acceptQueued=false;
     std::atomic<int> pendingAccepts{0};
     std::atomic<std::uint64_t> waitCallbacks{0},acceptCallbacks{0},waitFailures{0},lastWaitError{0};
     std::array<std::atomic<std::uint64_t>,18> callbackCounts{},callbackMillis{},callbackStarted{};
-    HANDLE acceptEvent=nullptr;
     std::mutex acceptGate;
     std::atomic<bool> accepting{false};
     sockaddr_storage listenAddress{};
@@ -39,7 +39,7 @@ public:
     virtual void OnAcceptedSocket(SOCKET socket) noexcept=0;
     void OnWaitCallback() noexcept;
     void OnIOCallback() noexcept;
-    void OnIOCallback(void*,bool,unsigned,unsigned)noexcept override{OnIOCallback();}
+    void OnIOCallback(int completionOk,unsigned completionBytes,OVERLAPPED* completionRaw)noexcept override{OnIOCallback();}
     virtual void OnWaitFailure(unsigned error) noexcept=0;
     bool Create(const char* address,unsigned short number,int backlog) noexcept {
         addrinfo hints{};hints.ai_family=AF_INET;hints.ai_socktype=SOCK_STREAM;

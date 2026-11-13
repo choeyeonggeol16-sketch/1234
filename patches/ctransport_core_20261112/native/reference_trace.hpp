@@ -3,6 +3,7 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <thread>
 // Labels/indices0..30 are read from the original table at0xcc8430.
 // The enum type name and packed file IDs are L1 adapter interfaces.
 enum class ObjectReferenceType : unsigned {
@@ -16,7 +17,7 @@ enum class ObjectReferenceType : unsigned {
 };
 inline constexpr unsigned ReferenceKinds=31;
 constexpr bool referenceSuffix(const char* value,const char* ending)noexcept{
- std::size_t n=0,m=0;while(value[n])++n;while(ending[m])++m;
+ if(!value)return false;std::size_t n=0,m=0;while(value[n])++n;while(ending[m])++m;
  if(m>n)return false;for(std::size_t i=0;i<m;++i)if(value[n-m+i]!=ending[i])return false;return true;
 }
 constexpr std::uint32_t referenceFile(const char* path)noexcept{
@@ -28,29 +29,41 @@ constexpr std::uint32_t referenceFile(const char* path)noexcept{
 constexpr std::uint64_t referenceSite(const char* file,unsigned line)noexcept{return std::uint64_t(referenceFile(file))<<32|line;}
 class ReferenceTrace {
  struct Slot {
-  std::atomic<std::uint64_t> add{0},release{0};
-  std::atomic<std::int32_t> count{0};std::uint32_t reserved[3]{};
+  std::atomic<const char*> addFile{nullptr},releaseFile{nullptr};
+  std::atomic<std::int32_t> count{0};
+  std::atomic<std::uint32_t> addLine{0},releaseLine{0},sequence{0};
  };
- static_assert(sizeof(Slot)==32&&offsetof(Slot,count)==0x10,"original reason stride/count position");
+ static_assert(sizeof(Slot)==32&&offsetof(Slot,count)==0x10&&offsetof(Slot,addLine)==0x14&&offsetof(Slot,releaseLine)==0x18);
  std::array<Slot,ReferenceKinds> slots_{};
  inline static std::atomic<std::uint64_t> mismatches_{0};
  static unsigned index(ObjectReferenceType type)noexcept{auto n=static_cast<unsigned>(type);return n<ReferenceKinds?n:0;}
+ struct Write {
+  Slot& slot;explicit Write(Slot& value):slot(value){auto n=slot.sequence.load(std::memory_order_relaxed);
+   for(;;){if(!(n&1)&&slot.sequence.compare_exchange_weak(n,n+1,std::memory_order_acquire))break;n=slot.sequence.load(std::memory_order_relaxed);std::this_thread::yield();}}
+  ~Write(){slot.sequence.fetch_add(1,std::memory_order_release);}
+ };
 public:
  void add(ObjectReferenceType type,const char* file,unsigned line)noexcept{
-  auto& slot=slots_[index(type)];slot.count.fetch_add(1,std::memory_order_relaxed);slot.add.store(referenceSite(file,line),std::memory_order_relaxed);
+  auto& slot=slots_[index(type)];Write hold(slot);slot.count.fetch_add(1,std::memory_order_relaxed);slot.addFile.store(file,std::memory_order_relaxed);slot.addLine.store(line,std::memory_order_relaxed);
  }
  void release(ObjectReferenceType type,const char* file,unsigned line)noexcept{
-  auto& slot=slots_[index(type)];slot.release.store(referenceSite(file,line),std::memory_order_relaxed);
+  auto& slot=slots_[index(type)];Write hold(slot);slot.releaseFile.store(file,std::memory_order_relaxed);slot.releaseLine.store(line,std::memory_order_relaxed);
   if(slot.count.fetch_sub(1,std::memory_order_relaxed)<=0)mismatches_.fetch_add(1,std::memory_order_relaxed);
  }
- void undoRelease(ObjectReferenceType type)noexcept{slots_[index(type)].count.fetch_add(1,std::memory_order_relaxed);}
+ void undoRelease(ObjectReferenceType type)noexcept{auto& slot=slots_[index(type)];Write hold(slot);slot.count.fetch_add(1,std::memory_order_relaxed);}
  std::int64_t snapshot(std::uint64_t* out)const noexcept{
-  std::int64_t total=0;for(unsigned i=0;i<ReferenceKinds;++i){const auto& s=slots_[i];auto n=s.count.load(std::memory_order_relaxed);total+=n;
-   out[i*3]=static_cast<std::uint64_t>(static_cast<std::int64_t>(n));out[i*3+1]=s.add.load(std::memory_order_relaxed);out[i*3+2]=s.release.load(std::memory_order_relaxed);}
-  return total;
+  std::int64_t total=0;
+  for(unsigned i=0;i<ReferenceKinds;++i){const auto& s=slots_[i];std::int32_t n;std::uint64_t add,release;
+   for(;;){const auto stamp=s.sequence.load(std::memory_order_acquire);if(stamp&1){std::this_thread::yield();continue;}
+    n=s.count.load(std::memory_order_relaxed);add=referenceSite(s.addFile.load(std::memory_order_relaxed),s.addLine.load(std::memory_order_relaxed));release=referenceSite(s.releaseFile.load(std::memory_order_relaxed),s.releaseLine.load(std::memory_order_relaxed));
+    if(s.sequence.load(std::memory_order_acquire)==stamp)break;
+   }
+   total+=n;out[i*3]=static_cast<std::uint64_t>(static_cast<std::int64_t>(n));out[i*3+1]=add;out[i*3+2]=release;
+  }return total;
  }
  static std::uint64_t mismatches()noexcept{return mismatches_.load(std::memory_order_relaxed);}
 };
+static_assert(sizeof(ReferenceTrace)==31*32);
 inline constexpr unsigned ReferenceRecordWords=12+ReferenceKinds*3,ReferenceRecordCount=16,ReferenceHeaderWords=16;
 inline constexpr unsigned ReferenceReportWords=ReferenceHeaderWords+ReferenceRecordWords*ReferenceRecordCount;
 inline constexpr std::uint64_t ReferenceReportMarker=0x4354524600010000ULL;

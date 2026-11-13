@@ -1,0 +1,23 @@
+# allocator_74e5f8; PE pdata/unwind; entry 0x74e5f8
+# chunk 0x74e5f8..0x74e642
+000000000074e5f8: sub      rsp, 0x38
+000000000074e5fc: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+000000000074e605: mov      ecx, 0x38
+000000000074e60a: call     0xab8ea0
+000000000074e60f: mov      qword ptr [rsp + 0x48], rax
+000000000074e614: xor      edx, edx
+000000000074e616: cmp      rax, rdx
+000000000074e619: je       0x74e61e
+000000000074e61b: mov      qword ptr [rax], rdx
+000000000074e61e: lea      rcx, [rax + 8]
+000000000074e622: cmp      rcx, rdx
+000000000074e625: je       0x74e62a
+000000000074e627: mov      qword ptr [rcx], rdx
+000000000074e62a: lea      rcx, [rax + 0x10]
+000000000074e62e: cmp      rcx, rdx
+000000000074e631: je       0x74e636
+000000000074e633: mov      qword ptr [rcx], rdx
+000000000074e636: mov      byte ptr [rax + 0x30], 1
+000000000074e63a: mov      byte ptr [rax + 0x31], dl
+000000000074e63d: add      rsp, 0x38
+000000000074e641: ret

@@ -1,0 +1,125 @@
+# allocator_74d840; PE pdata/unwind; entry 0x74d840
+# chunk 0x74d840..0x74da96
+000000000074d840: push     rbx
+000000000074d842: push     rbp
+000000000074d843: push     rdi
+000000000074d844: push     r13
+000000000074d846: sub      rsp, 0x38
+000000000074d84a: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+000000000074d853: mov      rbx, rcx
+000000000074d856: mov      qword ptr [rcx + 0x20], 0
+000000000074d85e: mov      dword ptr [rcx + 0x28], edx
+000000000074d861: mov      dword ptr [rcx + 0x30], 0
+000000000074d868: mov      dword ptr [rcx + 0x2c], 0
+000000000074d86f: mov      dword ptr [rcx + 0x18], 1
+000000000074d876: mov      dword ptr [rcx + 0x1c], 0x13
+000000000074d87d: mov      edx, dword ptr [rip + 0x2ee71955]
+000000000074d883: mov      rax, qword ptr gs:[0x58]
+000000000074d88c: mov      r13d, 0x7d58
+000000000074d892: mov      rdi, qword ptr [rax + rdx*8]
+000000000074d896: movsxd   rdx, dword ptr [rdi + r13]
+000000000074d89a: lea      rbp, [rip - 0x34d8a1]
+000000000074d8a1: movsxd   rcx, dword ptr [rbp + rdx*4 + 0x47e2a40]
+000000000074d8a9: lea      eax, [rcx + 1]
+000000000074d8ac: mov      dword ptr [rbp + rdx*4 + 0x47e2a40], eax
+000000000074d8b3: imul     rdx, rdx, 0x3e8
+000000000074d8ba: add      rdx, rcx
+000000000074d8bd: lea      rax, [rip + 0x5493ac] ; UTF16 'TEXT("SmartQueue::SmartQueue - Alloc initial RoundQueue")'
+000000000074d8c4: mov      qword ptr [rbp + rdx*8 + 0x47bf7c0], rax
+000000000074d8cc: mov      ecx, dword ptr [rbx + 0x1c]
+000000000074d8cf: shl      rcx, 3
+000000000074d8d3: call     0xabd840
+000000000074d8d8: mov      qword ptr [rbx + 0x20], rax
+000000000074d8dc: movsxd   rax, dword ptr [rdi + r13]
+000000000074d8e0: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+000000000074d8e8: cmp      qword ptr [rbx + 0x20], 0
+000000000074d8ed: jne      0x74d982
+000000000074d8f3: movsxd   rdx, dword ptr [rdi + r13]
+000000000074d8f7: movsxd   rcx, dword ptr [rbp + rdx*4 + 0x47e2a40]
+000000000074d8ff: lea      eax, [rcx + 1]
+000000000074d902: mov      dword ptr [rbp + rdx*4 + 0x47e2a40], eax
+000000000074d909: imul     rdx, rdx, 0x3e8
+000000000074d910: add      rdx, rcx
+000000000074d913: lea      rax, [rip + 0x549326] ; UTF16 'NewItems is null'
+000000000074d91a: mov      qword ptr [rbp + rdx*8 + 0x47bf7c0], rax
+000000000074d922: lea      rdx, [rip + 0x5492b7]
+000000000074d929: lea      rcx, [rip + 0x4495510]
+000000000074d930: call     qword ptr [rip + 0x3cecf2] ; IAT wsprintfW
+000000000074d936: lea      rdx, [rip + 0x549203]
+000000000074d93d: lea      rcx, [rip + 0x4495cfc]
+000000000074d944: call     qword ptr [rip + 0x3cecde] ; IAT wsprintfW
+000000000074d94a: mov      r8d, 0xe5
+000000000074d950: lea      rdx, [rip + 0x3d9001]
+000000000074d957: lea      rcx, [rip + 0x44964e2]
+000000000074d95e: call     qword ptr [rip + 0x3cecc4] ; IAT wsprintfW
+000000000074d964: mov      byte ptr [rip + 0x44954c2], 1
+000000000074d96b: call     0x66db28
+000000000074d970: nop
+000000000074d971: movsxd   rax, dword ptr [rdi + r13]
+000000000074d975: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+000000000074d97d: jmp      0x74da89
+000000000074d982: mov      r8d, dword ptr [rbx + 0x1c]
+000000000074d986: shl      r8, 3
+000000000074d98a: xor      edx, edx
+000000000074d98c: mov      rcx, qword ptr [rbx + 0x20]
+000000000074d990: call     0xab9430
+000000000074d995: mov      ecx, dword ptr [rbx + 0x18]
+000000000074d998: imul     ecx, dword ptr [rbx + 0x28]
+000000000074d99c: call     0xabd840
+000000000074d9a1: mov      r11, rax
+000000000074d9a4: test     rax, rax
+000000000074d9a7: jne      0x74da39
+000000000074d9ad: movsxd   rdx, dword ptr [rdi + r13]
+000000000074d9b1: movsxd   rcx, dword ptr [rbp + rdx*4 + 0x47e2a40]
+000000000074d9b9: lea      eax, [rcx + 1]
+000000000074d9bc: mov      dword ptr [rbp + rdx*4 + 0x47e2a40], eax
+000000000074d9c3: imul     rdx, rdx, 0x3e8
+000000000074d9ca: add      rdx, rcx
+000000000074d9cd: lea      rax, [rip + 0x549144] ; UTF16 'newitems is null'
+000000000074d9d4: mov      qword ptr [rbp + rdx*8 + 0x47bf7c0], rax
+000000000074d9dc: lea      rdx, [rip + 0x5491fd]
+000000000074d9e3: lea      rcx, [rip + 0x4495456]
+000000000074d9ea: call     qword ptr [rip + 0x3cec38] ; IAT wsprintfW
+000000000074d9f0: lea      rdx, [rip + 0x549149]
+000000000074d9f7: lea      rcx, [rip + 0x4495c42]
+000000000074d9fe: call     qword ptr [rip + 0x3cec24] ; IAT wsprintfW
+000000000074da04: mov      r8d, 0xf1
+000000000074da0a: lea      rdx, [rip + 0x3d8f47]
+000000000074da11: lea      rcx, [rip + 0x4496428]
+000000000074da18: call     qword ptr [rip + 0x3cec0a] ; IAT wsprintfW
+000000000074da1e: mov      byte ptr [rip + 0x4495408], 1
+000000000074da25: call     0x66db28
+000000000074da2a: nop
+000000000074da2b: movsxd   rax, dword ptr [rdi + r13]
+000000000074da2f: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+000000000074da37: jmp      0x74da89
+000000000074da39: xor      edx, edx
+000000000074da3b: mov      eax, dword ptr [rbx + 0x18]
+000000000074da3e: test     eax, eax
+000000000074da40: je       0x74da64
+000000000074da42: xor      r8d, r8d
+000000000074da45: mov      ecx, dword ptr [rbx + 0x28]
+000000000074da48: imul     ecx, edx
+000000000074da4b: add      rcx, r11
+000000000074da4e: mov      rax, qword ptr [rbx + 0x20]
+000000000074da52: mov      qword ptr [r8 + rax], rcx
+000000000074da56: add      edx, 1
+000000000074da59: add      r8, 8
+000000000074da5d: mov      eax, dword ptr [rbx + 0x18]
+000000000074da60: cmp      edx, eax
+000000000074da62: jb       0x74da45
+000000000074da64: mov      qword ptr [rbx + 8], 0xffffffffffffffff
+000000000074da6c: mov      eax, dword ptr [rbx + 0x18]
+000000000074da6f: add      eax, -1
+000000000074da72: mov      qword ptr [rbx + 0x10], rax
+000000000074da76: mov      qword ptr [rbx], 0
+000000000074da7d: mov      ecx, dword ptr [rbx + 0x18]
+000000000074da80: imul     ecx, dword ptr [rbx + 0x28]
+000000000074da84: lock xadd qword ptr [rbx], rcx
+000000000074da89: mov      rax, rbx
+000000000074da8c: add      rsp, 0x38
+000000000074da90: pop      r13
+000000000074da92: pop      rdi
+000000000074da93: pop      rbp
+000000000074da94: pop      rbx
+000000000074da95: ret

@@ -1,0 +1,6 @@
+# timer_forward64; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x404c94
+# chunk 0x404c94..0x404ca0
+0000000000404c94: xor      eax, eax
+0000000000404c96: xchg     dword ptr [rcx + 0xc], eax
+0000000000404c99: mov      r9, qword ptr [rcx]
+0000000000404c9c: jmp      qword ptr [r9 + 0x30]

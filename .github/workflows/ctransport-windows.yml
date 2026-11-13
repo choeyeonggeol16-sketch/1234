@@ -22,7 +22,29 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Build or verify the MSVC object ABI and DLL
+        shell: pwsh
+        working-directory: patches/ctransport_core_20261112
+        run: |
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { throw 'MSVC x64 toolchain missing' }
+          $dev = Join-Path $vs 'Common7/Tools/VsDevCmd.bat'
+          & cmd /s /c "`"$dev`" -arch=x64 -host_arch=x64 && python native/build_native_msvc.py --reuse"
+          if ($LASTEXITCODE -ne 0) { throw 'MSVC ABI build/test failed' }
       - name: Run shipped DLL and production FFM/PSS adapters
         shell: pwsh
         working-directory: patches/ctransport_core_20261112
         run: ./tests/run_windows.ps1
+      - name: Upload the exact tested MSVC binaries and Java pin
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctransport-msvc-tested
+          path: |
+            patches/ctransport_core_20261112/build/CTransport.dll
+            patches/ctransport_core_20261112/build/CTransport.lib
+            patches/ctransport_core_20261112/build/CTransport_SelfTest.exe
+            patches/ctransport_core_20261112/build/ObjectAbiTest.exe
+            patches/ctransport_core_20261112/build/native-build.json
+            patches/ctransport_core_20261112/src/l1j/server/server/model/network/core/CIOConfig.java
+            patches/ctransport_core_20261112/logs/object-memory-*.log

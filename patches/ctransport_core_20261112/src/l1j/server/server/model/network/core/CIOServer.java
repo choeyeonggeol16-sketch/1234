@@ -555,6 +555,13 @@ final class CIOServer implements AutoCloseable {
         finally { nativeCalls.decrementAndGet(); }
     }
 
+    long[] objectAllocatorDiagnostics() {
+        final int offset=24+16+16*(12+31*3);
+        long[] values=readDiagnostics(getDiagnostics,offset+16+49*6);
+        if(values.length<offset+16||values[offset]!=0x43544f4100010000L)return new long[0];
+        return java.util.Arrays.copyOfRange(values,offset,values.length);
+    }
+
     long[] referenceDiagnostics() {
         long[] values=readDiagnostics(getDiagnostics,24+16+16*(12+31*3));
         if(values.length<24+16||values[24]!=0x4354524600010000L)return new long[0];

@@ -1,0 +1,33 @@
+# socket_operator_new; PE pdata/unwind; entry 0x9ef21c
+# chunk 0x9ef21c..0x9ef2bd
+00000000009ef21c: push     rbx
+00000000009ef21e: push     rdi
+00000000009ef21f: sub      rsp, 0x38
+00000000009ef223: mov      rdi, rcx
+00000000009ef226: mov      rdx, rcx
+00000000009ef229: lea      r9, [rip + 0x3c9b38] ; UTF16 'CUserSocket'
+00000000009ef230: lea      rcx, [rip + 0x2658b79]
+00000000009ef237: mov      r8b, 1
+00000000009ef23a: mov      dword ptr [rsp + 0x20], 0
+00000000009ef242: call     0x74f0f4
+00000000009ef247: movsxd   rdx, dword ptr [rip + 0x1765202e]
+00000000009ef24e: lea      r8, [rip - 0x5ef255]
+00000000009ef255: mov      rbx, rax
+00000000009ef258: lock add dword ptr [r8 + rdx*4 + 0xdb22f60], 1
+00000000009ef262: movsxd   rcx, dword ptr [rip + 0x17652013]
+00000000009ef269: lea      rax, [rip + 0x3c9be8]
+00000000009ef270: xor      edx, edx
+00000000009ef272: mov      qword ptr [r8 + rcx*8 + 0xdb62f60], rax
+00000000009ef27a: mov      dword ptr [r8 + rcx*4 + 0xdbe2f60], 0xcd8
+00000000009ef286: mov      r8, rdi
+00000000009ef289: mov      rcx, rbx
+00000000009ef28c: call     0xab9430
+00000000009ef291: lea      rax, [rip + 0x16d4f8]
+00000000009ef298: mov      dword ptr [rbx + 0x130], 1
+00000000009ef2a2: mov      qword ptr [rbx + 0x120], rax
+00000000009ef2a9: mov      dword ptr [rbx + 0x134], 0
+00000000009ef2b3: mov      rax, rbx
+00000000009ef2b6: add      rsp, 0x38
+00000000009ef2ba: pop      rdi
+00000000009ef2bb: pop      rbx
+00000000009ef2bc: ret

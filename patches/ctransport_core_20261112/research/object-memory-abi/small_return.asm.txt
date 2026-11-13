@@ -1,0 +1,44 @@
+# small_return; PE pdata/unwind; entry 0x74dc0c
+# chunk 0x74dc0c..0x74dc8b
+000000000074dc0c: push     rbx
+000000000074dc0e: push     rsi
+000000000074dc0f: push     rdi
+000000000074dc10: sub      rsp, 0x20
+000000000074dc14: mov      rsi, rdx
+000000000074dc17: mov      rbx, rcx
+000000000074dc1a: mov      edi, 1
+000000000074dc1f: mov      eax, dword ptr [rbx + 0x30]
+000000000074dc22: test     eax, eax
+000000000074dc24: jne      0x74dc39
+000000000074dc26: mov      eax, edi
+000000000074dc28: lock xadd dword ptr [rbx + 0x2c], eax
+000000000074dc2d: add      eax, edi
+000000000074dc2f: cmp      eax, 0x12
+000000000074dc32: jle      0x74dc43
+000000000074dc34: lock add dword ptr [rbx + 0x2c], -1
+000000000074dc39: xor      ecx, ecx
+000000000074dc3b: call     qword ptr [rip + 0x3ce52f] ; IAT Sleep
+000000000074dc41: jmp      0x74dc1f
+000000000074dc43: mov      rax, rdi
+000000000074dc46: lock xadd qword ptr [rbx + 0x10], rax
+000000000074dc4c: mov      ecx, dword ptr [rbx + 0x1c]
+000000000074dc4f: add      rax, rdi
+000000000074dc52: xor      edx, edx
+000000000074dc54: div      rcx
+000000000074dc57: mov      rcx, qword ptr [rbx + 0x20]
+000000000074dc5b: xor      eax, eax
+000000000074dc5d: mov      rdi, rdx
+000000000074dc60: lock cmpxchg qword ptr [rcx + rdx*8], rsi
+000000000074dc66: je       0x74dc7e
+000000000074dc68: xor      ecx, ecx
+000000000074dc6a: call     qword ptr [rip + 0x3ce500] ; IAT Sleep
+000000000074dc70: mov      r11, qword ptr [rbx + 0x20]
+000000000074dc74: xor      eax, eax
+000000000074dc76: lock cmpxchg qword ptr [r11 + rdi*8], rsi
+000000000074dc7c: jne      0x74dc68
+000000000074dc7e: lock add dword ptr [rbx + 0x2c], -1
+000000000074dc83: add      rsp, 0x20
+000000000074dc87: pop      rdi
+000000000074dc88: pop      rsi
+000000000074dc89: pop      rbx
+000000000074dc8a: ret

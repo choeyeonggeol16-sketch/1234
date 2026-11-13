@@ -10,6 +10,9 @@ public final class ReferenceDiagnosticsTest {
   check(text.contains("추가 참조 없음")&&text.contains("잔여 참조 의심")&&text.contains("검사 취소")&&text.contains("정리 대기"),"reference classifications");
   report[8]=17;check(CPoolDiagnostics.referenceActive(report)==0&&CPoolDiagnostics.referenceReport(report).contains("미지원"),"malformed shape accepted");
   check(CPoolDiagnostics.referenceReport(new long[0]).contains("미지원"),"old DLL handling");
+  long[] heap=new long[16+49*6];heap[0]=0x43544f4100010000L;heap[1]=1;heap[5]=12;heap[6]=11;heap[10]=49;heap[13]=6;heap[16]=8;heap[18]=12;
+  String objects=CPoolDiagnostics.objectAllocatorReport(heap);check(objects.contains("사용 객체=1")&&objects.contains("12/11")&&objects.contains("8 / 0 / 12"),"object allocator counters");
+  check(CPoolDiagnostics.objectAllocatorReport(new long[0]).contains("미지원"),"old allocator diagnostics fallback");
   System.out.println("PASS bounded manager reference report:31 kinds,file/line mapping,4 statuses,latest8 of16,malformed/old DLL fallback");
  }
 }

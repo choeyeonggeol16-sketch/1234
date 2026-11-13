@@ -12,13 +12,23 @@
 #include <vector>
 #include <type_traits>
 #include "reference_trace.hpp"
+#include "object_allocator.hpp"
+#if defined(_MSC_VER)
+#include <source_location>
+#define CIO_SOURCE_FILE std::source_location::current().file_name()
+#define CIO_SOURCE_LINE std::source_location::current().line()
+#else
+#define CIO_SOURCE_FILE __builtin_FILE()
+#define CIO_SOURCE_LINE __builtin_LINE()
+#endif
 constexpr std::size_t BufferBytes=8192, LargeBufferBytes=16384, MaxQueuedBytes=2u*1024u*1024u;
-class MemoryObject {
+class MemoryObject : public ObjectAllocated {
  std::atomic<unsigned> references_{1},inTimer_{0};
  alignas(8) const std::uint32_t objectId_;
  inline static std::atomic<std::uint32_t> nextObjectId_{0};
  inline static std::atomic<std::uint64_t> referenceErrors_{0},lastReferenceError_{0},timerErrors_{0};
  friend struct MemoryObjectTestAccess;
+ friend struct ObjectAbiTestAccess;
  void error(unsigned previous,bool timer=false)noexcept{
   lastReferenceError_.store(std::uint64_t(objectId_)<<32|previous,std::memory_order_relaxed);
   referenceErrors_.fetch_add(1,std::memory_order_release);if(timer)timerErrors_.fetch_add(1,std::memory_order_relaxed);
@@ -38,7 +48,7 @@ protected:
    if(!previous||(previous==1&&inTimer_.load(std::memory_order_acquire))){if(trace)trace->undoRelease(type);error(previous,previous!=0);return previous;}
    if(references_.compare_exchange_weak(previous,previous-1,std::memory_order_acq_rel,std::memory_order_relaxed))break;
   }
-  auto remaining=previous-1;if(!remaining)delete this;return remaining;
+  auto remaining=previous-1;if(!remaining){void* storage=this;this->~MemoryObject();ObjectAllocator::Instance().Free(storage);}return remaining;
  }
 public:
  MemoryObject()noexcept:objectId_(nextObjectId_.fetch_add(1,std::memory_order_relaxed)+1){}
@@ -53,8 +63,12 @@ public:
   do{if(!n){error(referenceCount(),true);return;}}
   while(!inTimer_.compare_exchange_weak(n,n-1,std::memory_order_acq_rel,std::memory_order_relaxed));
  }
- virtual MemoryObject* retain(ObjectReferenceType type=ObjectReferenceType::ORT_ANONYMOUS,const char* file=__builtin_FILE(),unsigned line=__builtin_LINE())noexcept{return retainTracked(nullptr,type,file,line);}
- virtual unsigned release(ObjectReferenceType type=ObjectReferenceType::ORT_ANONYMOUS,const char* file=__builtin_FILE(),unsigned line=__builtin_LINE())noexcept{return releaseTracked(nullptr,type,file,line);}
+ // MSVC x64 slots0 destructor,1 retain,2 release,3 reference report.
+ virtual MemoryObject* retain(const char* file,unsigned line,ObjectReferenceType type)noexcept{return retainTracked(nullptr,type,file,line);}
+ virtual unsigned release(const char* file,unsigned line,ObjectReferenceType type,bool=false)noexcept{return releaseTracked(nullptr,type,file,line);}
+ virtual void ReportReferences(const char*,unsigned)const noexcept{}
+ MemoryObject* retain(ObjectReferenceType type=ObjectReferenceType::ORT_ANONYMOUS,const char* file=CIO_SOURCE_FILE,unsigned line=CIO_SOURCE_LINE)noexcept{return retain(file,line,type);}
+ unsigned release(ObjectReferenceType type=ObjectReferenceType::ORT_ANONYMOUS,const char* file=CIO_SOURCE_FILE,unsigned line=CIO_SOURCE_LINE)noexcept{return release(file,line,type,false);}
  static void referenceDiagnostics(std::uint64_t* out)noexcept{
   out[0]=referenceErrors_.load(std::memory_order_acquire);auto last=lastReferenceError_.load(std::memory_order_relaxed);out[1]=last>>32;out[2]=last&0xffffffffu;
  }
@@ -66,15 +80,41 @@ template<class T>inline void retainReference(T* p,ObjectReferenceType type,const
 template<class T>inline void releaseReference(T* p,ObjectReferenceType type,const char* file,unsigned line)noexcept{
  if constexpr(std::is_base_of_v<MemoryObject,T>)p->release(type,file,line);else p->release();
 }
+struct IOCompletionContext {
+ inline static thread_local void* operation=nullptr;
+ inline static thread_local unsigned error=0;
+};
 class CIOObject : public MemoryObject {
 protected: ~CIOObject()override=default;
 public:
- virtual void OnIOCallback(void*,bool,unsigned,unsigned)noexcept=0;
+ using CompletionPoster=bool(*)(CIOObject*,unsigned,OVERLAPPED*)noexcept;
+ inline static std::atomic<CompletionPoster> completionPoster{nullptr};
+ // The original12-slot CIOObject prefix. Wrapper names without original
+ // signatures are adapter names,not recovered symbols.
+ virtual void TimerExpired(int)noexcept{} //4
+ virtual void OnTimerExpired(int message)noexcept{if(timerCount())unlinkTimer();TimerExpired(message);} //5
+ virtual void TimerExpired2(int,std::int64_t)noexcept{} //6
+ virtual void OnTimerExpired2(int message,std::int64_t value)noexcept{if(timerCount())unlinkTimer();TimerExpired2(message,value);} //7
+ virtual void PostIOCompletion(unsigned bytes,OVERLAPPED* raw)noexcept{retain(ObjectReferenceType::ORT_IOCP_MESSAGE_RETAIN);auto fn=completionPoster.load();if(!fn||!fn(this,bytes,raw))release(ObjectReferenceType::ORT_IOCP_MESSAGE_RETAIN);} //8
+ virtual void OnWaitCallback()noexcept{} //9
+ virtual void OnIOCallback(int,unsigned message,OVERLAPPED* data)noexcept{ //10
+  if(data)OnTimerExpired2(static_cast<int>(message),reinterpret_cast<std::intptr_t>(data));else OnTimerExpired(static_cast<int>(message));
+  release(ObjectReferenceType::ORT_TIMER);
+ }
+ virtual void PostIOCompletion2(int message)noexcept{PostIOCompletion(static_cast<unsigned>(message),nullptr);} //11
+ void PostIOCompletion(int message)noexcept{PostIOCompletion2(message);}
+ // Preserve typed L1 completion/error context without adding a vtable slot.
+ void OnIOCallback(void* operation,bool ok,unsigned bytes,unsigned error,OVERLAPPED* raw=nullptr)noexcept{
+  auto* previous=IOCompletionContext::operation;auto oldError=IOCompletionContext::error;
+  IOCompletionContext::operation=operation;IOCompletionContext::error=error;
+  OnIOCallback(static_cast<int>(ok),bytes,raw?raw:static_cast<OVERLAPPED*>(operation));
+  IOCompletionContext::operation=previous;IOCompletionContext::error=oldError;
+ }
 };
 class ObjectRef {
  MemoryObject* p_;ObjectReferenceType type_;const char* file_;unsigned line_;
 public:
- explicit ObjectRef(MemoryObject* p,bool add=true,ObjectReferenceType type=ObjectReferenceType::Count,const char* file=__builtin_FILE(),unsigned line=__builtin_LINE())noexcept
+ explicit ObjectRef(MemoryObject* p,bool add=true,ObjectReferenceType type=ObjectReferenceType::Count,const char* file=CIO_SOURCE_FILE,unsigned line=CIO_SOURCE_LINE)noexcept
  :p_(p),type_(type==ObjectReferenceType::Count?(add?ObjectReferenceType::ORT_FUNCTION_LOCAL:ObjectReferenceType::ORT_FIND_OBJECT):type),file_(file),line_(line){if(p_&&add)p_->retain(type_,file_,line_);}
  ~ObjectRef(){if(p_)p_->release(type_,file_,line_);}
  ObjectRef(const ObjectRef&)=delete;ObjectRef& operator=(const ObjectRef&)=delete;

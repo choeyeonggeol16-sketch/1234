@@ -1,0 +1,29 @@
+# server_ctor; PE pdata/unwind; entry 0x704bec
+# chunk 0x704bec..0x704c7a
+0000000000704bec: push     rbx
+0000000000704bee: sub      rsp, 0x20
+0000000000704bf2: mov      rbx, rcx
+0000000000704bf5: call     0x704148
+0000000000704bfa: mov      rax, qword ptr gs:[0x58]
+0000000000704c03: mov      edx, dword ptr [rip + 0x2eeba5cf]
+0000000000704c09: lea      r10, [rip - 0x304c10]
+0000000000704c10: mov      r9d, 0x7d58
+0000000000704c16: mov      r8, qword ptr [rax + rdx*8]
+0000000000704c1a: lea      r11, [rip + 0x56d677]
+0000000000704c21: mov      qword ptr [rbx], r11
+0000000000704c24: movsxd   rdx, dword ptr [r8 + r9]
+0000000000704c28: movsxd   rcx, dword ptr [r10 + rdx*4 + 0x47e2a40]
+0000000000704c30: lea      eax, [rcx + 1]
+0000000000704c33: mov      dword ptr [r10 + rdx*4 + 0x47e2a40], eax
+0000000000704c3b: lea      rax, [rip + 0x56d5fe] ; UTF16 '__cdecl CIOServer::CIOServer(void)'
+0000000000704c42: imul     rdx, rdx, 0x3e8
+0000000000704c49: add      rdx, rcx
+0000000000704c4c: mov      qword ptr [r10 + rdx*8 + 0x47bf7c0], rax
+0000000000704c54: mov      qword ptr [rbx + 0x18], 0xffffffffffffffff
+0000000000704c5c: mov      qword ptr [rbx + 0x20], 0
+0000000000704c64: movsxd   rax, dword ptr [r8 + r9]
+0000000000704c68: add      dword ptr [r10 + rax*4 + 0x47e2a40], -1
+0000000000704c71: mov      rax, rbx
+0000000000704c74: add      rsp, 0x20
+0000000000704c78: pop      rbx
+0000000000704c79: ret

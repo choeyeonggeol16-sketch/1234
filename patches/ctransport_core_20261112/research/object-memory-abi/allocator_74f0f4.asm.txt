@@ -1,0 +1,35 @@
+# allocator_74f0f4; PE pdata/unwind; entry 0x74f0f4
+# chunk 0x74f0f4..0x74f165
+000000000074f0f4: push     rbx
+000000000074f0f6: push     rsi
+000000000074f0f7: push     rdi
+000000000074f0f8: sub      rsp, 0x40
+000000000074f0fc: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+000000000074f105: mov      rbx, r9
+000000000074f108: mov      dil, r8b
+000000000074f10b: mov      rsi, rdx
+000000000074f10e: mov      rcx, qword ptr [rip + 0xe553e4b]
+000000000074f115: test     rcx, rcx
+000000000074f118: jne      0x74f144
+000000000074f11a: mov      ecx, 0x201f0
+000000000074f11f: call     0xab8ea0
+000000000074f124: mov      qword ptr [rsp + 0x38], rax
+000000000074f129: test     rax, rax
+000000000074f12c: je       0x74f13b
+000000000074f12e: mov      rcx, rax
+000000000074f131: call     0x74ef5c
+000000000074f136: mov      rcx, rax
+000000000074f139: jmp      0x74f13d
+000000000074f13b: xor      ecx, ecx
+000000000074f13d: mov      qword ptr [rip + 0xe553e1c], rcx
+000000000074f144: mov      eax, dword ptr [rsp + 0x80]
+000000000074f14b: mov      dword ptr [rsp + 0x20], eax
+000000000074f14f: mov      r9, rbx
+000000000074f152: mov      r8b, dil
+000000000074f155: mov      rdx, rsi
+000000000074f158: call     0x74e480
+000000000074f15d: add      rsp, 0x40
+000000000074f161: pop      rdi
+000000000074f162: pop      rsi
+000000000074f163: pop      rbx
+000000000074f164: ret

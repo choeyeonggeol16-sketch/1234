@@ -1,0 +1,4 @@
+# object_return; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0x74e3bc
+# chunk 0x74e3bc..0x74e3c8
+000000000074e3bc: mov      rcx, qword ptr [rip + 0xe554b9d]
+000000000074e3c3: jmp      0x74e08c

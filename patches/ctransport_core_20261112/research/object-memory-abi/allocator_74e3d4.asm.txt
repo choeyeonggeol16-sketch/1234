@@ -1,0 +1,40 @@
+# allocator_74e3d4; PE pdata/unwind; entry 0x74e3d4
+# chunk 0x74e3d4..0x74e44a
+000000000074e3d4: push     rbx
+000000000074e3d6: push     rdi
+000000000074e3d7: sub      rsp, 0x28
+000000000074e3db: mov      rdi, rdx
+000000000074e3de: mov      rbx, rcx
+000000000074e3e1: mov      eax, dword ptr [rbx + 0x30]
+000000000074e3e4: test     eax, eax
+000000000074e3e6: jne      0x74e436
+000000000074e3e8: mov      eax, 1
+000000000074e3ed: lock xadd dword ptr [rbx + 0x2c], eax
+000000000074e3f2: add      eax, 1
+000000000074e3f5: cmp      eax, 0x12
+000000000074e3f8: jg       0x74e431
+000000000074e3fa: mov      eax, 1
+000000000074e3ff: lock xadd qword ptr [rbx + 8], rax
+000000000074e405: mov      ecx, dword ptr [rbx + 0x1c]
+000000000074e408: add      rax, 1
+000000000074e40c: xor      edx, edx
+000000000074e40e: div      rcx
+000000000074e411: mov      rax, qword ptr [rbx + 0x20]
+000000000074e415: xor      ecx, ecx
+000000000074e417: xchg     qword ptr [rax + rdx*8], rcx
+000000000074e41b: lock add dword ptr [rbx + 0x2c], -1
+000000000074e420: test     rcx, rcx
+000000000074e423: jne      0x74e440
+000000000074e425: mov      rcx, rbx
+000000000074e428: call     0x74dc8c
+000000000074e42d: add      dword ptr [rdi], eax
+000000000074e42f: jmp      0x74e3e1
+000000000074e431: lock add dword ptr [rbx + 0x2c], -1
+000000000074e436: xor      ecx, ecx
+000000000074e438: call     qword ptr [rip + 0x3cdd32] ; IAT Sleep
+000000000074e43e: jmp      0x74e3e1
+000000000074e440: mov      rax, rcx
+000000000074e443: add      rsp, 0x28
+000000000074e447: pop      rdi
+000000000074e448: pop      rbx
+000000000074e449: ret

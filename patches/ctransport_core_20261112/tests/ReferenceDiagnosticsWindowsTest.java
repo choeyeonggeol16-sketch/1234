@@ -8,6 +8,8 @@ public final class ReferenceDiagnosticsWindowsTest {
   try(Session s=new Session(true,false)){
    check(s.channel.get().setAccountIdentity(45321),"native account identity");s.peer.close();check(s.closed.await(5,TimeUnit.SECONDS),"native terminal");
    await(()->{long[] r=s.server.referenceDiagnostics();return r.length==1696&&r[3]>=1&&r[2]==0;});
+   long[] heap=s.server.objectAllocatorDiagnostics();check(heap.length==310&&heap[0]==0x43544f4100010000L&&heap[1]>=1&&heap[8]==0&&heap[10]==49,"native object allocator diagnostics");
+   check(CPoolDiagnostics.objectAllocatorReport(heap).contains("프로세스 전체"),"actual allocator rendering");
    long[] r=s.server.referenceDiagnostics();int at=16;
    check(r[0]==0x4354524600010000L&&r[8]==1&&r[4]==0&&r[12]==0&&r[13]==0,"native diagnostic marker/fault/false positive");
    check(r[at+8]==0&&r[at+6]==1&&r[at+7]==0&&r[at+5]==45321&&r[at+10]==1,"native healthy final count/identity");

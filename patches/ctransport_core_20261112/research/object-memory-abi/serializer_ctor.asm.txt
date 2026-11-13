@@ -1,0 +1,42 @@
+# serializer_ctor; PE pdata/unwind; entry 0x45c708
+# chunk 0x45c708..0x45c7ac
+000000000045c708: push     rbx
+000000000045c70a: sub      rsp, 0x30
+000000000045c70e: xor      eax, eax
+000000000045c710: mov      dword ptr [rcx + 0x1c], edx
+000000000045c713: mov      rbx, rcx
+000000000045c716: mov      qword ptr [rcx], rax
+000000000045c719: mov      qword ptr [rcx + 8], rax
+000000000045c71d: mov      dword ptr [rcx + 0x10], eax
+000000000045c720: mov      dword ptr [rcx + 0x14], 0xffffffff
+000000000045c727: movsxd   rdx, edx
+000000000045c72a: mov      dword ptr [rcx + 0x18], eax
+000000000045c72d: lea      rcx, [rip + 0x2beb67c]
+000000000045c734: lea      r9, [rip + 0x6f7215] ; UTF16 'CExecutionSerializerFast_Args'
+000000000045c73b: mov      r8b, 1
+000000000045c73e: shl      rdx, 3
+000000000045c742: mov      dword ptr [rsp + 0x20], 2
+000000000045c74a: call     0x74f0f4
+000000000045c74f: movsxd   rdx, dword ptr [rbx + 0x1c]
+000000000045c753: lea      r9, [rip + 0x6f71b6] ; UTF16 'CExecutionSerializerFast_Funcs'
+000000000045c75a: lea      rcx, [rip + 0x2beb64f]
+000000000045c761: shl      rdx, 3
+000000000045c765: mov      r8b, 1
+000000000045c768: mov      qword ptr [rbx + 0x20], rax
+000000000045c76c: mov      dword ptr [rsp + 0x20], 2
+000000000045c774: call     0x74f0f4
+000000000045c779: movsxd   r8, dword ptr [rbx + 0x1c]
+000000000045c77d: mov      rcx, qword ptr [rbx + 0x20]
+000000000045c781: xor      edx, edx
+000000000045c783: shl      r8, 3
+000000000045c787: mov      qword ptr [rbx + 0x28], rax
+000000000045c78b: call     0xab9430
+000000000045c790: movsxd   r8, dword ptr [rbx + 0x1c]
+000000000045c794: mov      rcx, qword ptr [rbx + 0x28]
+000000000045c798: shl      r8, 3
+000000000045c79c: xor      edx, edx
+000000000045c79e: call     0xab9430
+000000000045c7a3: mov      rax, rbx
+000000000045c7a6: add      rsp, 0x30
+000000000045c7aa: pop      rbx
+000000000045c7ab: ret

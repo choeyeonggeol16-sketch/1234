@@ -13,6 +13,9 @@ template<class T> class CUserSocketManager {
     std::vector<std::uint32_t> generations_, free_;
     unsigned capacity_=0;
     std::uint64_t added_=0, removed_=0, stale_=0;
+static void setIdentity(T* object,std::uint64_t id)noexcept{
+ if constexpr(std::is_base_of_v<MemoryObject,T>)object->id()=id;else object->id=id;
+}
 public:
     bool initialize(unsigned capacity) noexcept {
         std::lock_guard<std::mutex> lock(gate_);
@@ -33,10 +36,10 @@ public:
             const auto generation=generations_[slot]+1;
             const std::uint64_t id=(std::uint64_t(generation)<<32)|(slot+1);
             try {
-                object->id=id;
-                if(!active_.emplace(id,object).second){object->id=0;return 0;}
+                setIdentity(object,id);
+                if(!active_.emplace(id,object).second){setIdentity(object,0);return 0;}
                 generations_[slot]=generation;free_.pop_back();retainReference(object,ObjectReferenceType::ORT_OBJECT_STORAGE,__FILE__,__LINE__);++added_;return id;
-            } catch (...) { object->id=0;return 0; }
+            } catch (...) { setIdentity(object,0);return 0; }
         }
         return 0;
     }

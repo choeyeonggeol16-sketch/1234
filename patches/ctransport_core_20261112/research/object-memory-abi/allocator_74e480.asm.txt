@@ -1,0 +1,85 @@
+# allocator_74e480; PE pdata/unwind; entry 0x74e480
+# chunk 0x74e480..0x74e5eb
+000000000074e480: push     rbx
+000000000074e482: push     rbp
+000000000074e483: push     rsi
+000000000074e484: push     rdi
+000000000074e485: sub      rsp, 0x38
+000000000074e489: mov      rbp, r9
+000000000074e48c: mov      rbx, rcx
+000000000074e48f: lea      rdi, [rdx + 4]
+000000000074e493: lock add dword ptr [rcx + 0x2018c], 1
+000000000074e49b: mov      rax, rdi
+000000000074e49e: lock xadd qword ptr [rcx + 0x201a8], rax
+000000000074e4a7: cmp      dword ptr [rsp + 0x80], 1
+000000000074e4af: jne      0x74e4bf
+000000000074e4b1: mov      rax, rdi
+000000000074e4b4: lock xadd qword ptr [rcx + 0x20198], rax
+000000000074e4bd: jmp      0x74e4d5
+000000000074e4bf: cmp      dword ptr [rsp + 0x80], 2
+000000000074e4c7: jne      0x74e4d5
+000000000074e4c9: mov      rax, rdi
+000000000074e4cc: lock xadd qword ptr [rcx + 0x201a0], rax
+000000000074e4d5: cmp      rdi, 0x8001
+000000000074e4dc: jae      0x74e4f7
+000000000074e4de: movsxd   rcx, dword ptr [rcx + rdi*4 + 0x188]
+000000000074e4e6: mov      rcx, qword ptr [rbx + rcx*8]
+000000000074e4ea: call     0x74e44c
+000000000074e4ef: mov      rsi, rax
+000000000074e4f2: jmp      0x74e5dc
+000000000074e4f7: mov      rcx, rdi
+000000000074e4fa: call     0xabd840
+000000000074e4ff: xor      r10d, r10d
+000000000074e502: cmp      rax, r10
+000000000074e505: mov      rsi, rax
+000000000074e508: jne      0x74e511
+000000000074e50a: xor      eax, eax
+000000000074e50c: jmp      0x74e5e2
+000000000074e511: mov      rax, rdi
+000000000074e514: lock xadd qword ptr [rbx + 0x20190], rax
+000000000074e51d: mov      ecx, dword ptr [rip + 0x2ee70cb5]
+000000000074e523: mov      rax, qword ptr gs:[0x58]
+000000000074e52c: mov      edx, 0x7d58
+000000000074e531: mov      rax, qword ptr [rax + rcx*8]
+000000000074e535: movsxd   r8, dword ptr [rdx + rax]
+000000000074e539: lea      rdx, [rip - 0x34e540]
+000000000074e540: mov      eax, dword ptr [rdx + r8*4 + 0x47e2a40]
+000000000074e548: cmp      eax, r10d
+000000000074e54b: jl       0x74e5b3
+000000000074e54d: cmp      byte ptr [rip + 0xd7d49fc], r10b
+000000000074e554: je       0x74e5dc
+000000000074e55a: add      eax, -1
+000000000074e55d: lea      r9, [rsp + 0x68]
+000000000074e562: mov      dword ptr [rsp + 0x60], r10d
+000000000074e567: cmp      eax, r10d
+000000000074e56a: mov      dword ptr [rsp + 0x68], eax
+000000000074e56e: lea      rcx, [rsp + 0x60]
+000000000074e573: cmovge   rcx, r9
+000000000074e577: mov      r9, rbp
+000000000074e57a: movsxd   rax, dword ptr [rcx]
+000000000074e57d: lea      rcx, [rip + 0xd7d331c]
+000000000074e584: imul     r8, r8, 0x3e8
+000000000074e58b: add      rax, r8
+000000000074e58e: lea      r8, [rip + 0x548e9b] ; UTF16 '[NO_ERROR] Malloc (>32k), ClassName[%s], AllocSize[%d] Call by [%s]'
+000000000074e595: mov      rax, qword ptr [rdx + rax*8 + 0x47bf7c0]
+000000000074e59d: mov      edx, 2
+000000000074e5a2: mov      qword ptr [rsp + 0x28], rax
+000000000074e5a7: mov      qword ptr [rsp + 0x20], rdi
+000000000074e5ac: call     0x734514
+000000000074e5b1: jmp      0x74e5dc
+000000000074e5b3: cmp      byte ptr [rip + 0xd7d4996], r10b
+000000000074e5ba: je       0x74e5dc
+000000000074e5bc: lea      r8, [rip + 0x548dfd] ; UTF16 '[NO_ERROR] Malloc (>32k), ClassName[%s], AllocSize[%d]'
+000000000074e5c3: lea      rcx, [rip + 0xd7d32d6]
+000000000074e5ca: mov      r9, rbp
+000000000074e5cd: mov      edx, 2
+000000000074e5d2: mov      qword ptr [rsp + 0x20], rdi
+000000000074e5d7: call     0x734514
+000000000074e5dc: mov      dword ptr [rsi], edi
+000000000074e5de: lea      rax, [rsi + 4]
+000000000074e5e2: add      rsp, 0x38
+000000000074e5e6: pop      rdi
+000000000074e5e7: pop      rsi
+000000000074e5e8: pop      rbp
+000000000074e5e9: pop      rbx
+000000000074e5ea: ret

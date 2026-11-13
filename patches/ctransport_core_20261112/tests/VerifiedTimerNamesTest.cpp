@@ -6,7 +6,7 @@
 struct TimerProbe final:CIOObject {
  std::atomic<unsigned>& destroyed;explicit TimerProbe(std::atomic<unsigned>& n):destroyed(n){}
  ~TimerProbe()override{++destroyed;}
- void OnIOCallback(void*,bool,unsigned,unsigned)noexcept override{}
+ void OnIOCallback(int completionOk,unsigned completionBytes,OVERLAPPED* completionRaw)noexcept override{}
 };
 int main(){
  static_assert(std::is_same_v<CThreadLocalTimer::SlotPool,CMwmrQueue<CThreadLocalTimer::CSlot,4009>>);

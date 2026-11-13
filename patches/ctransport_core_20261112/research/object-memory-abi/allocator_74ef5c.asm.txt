@@ -1,0 +1,78 @@
+# allocator_74ef5c; PE pdata/unwind; entry 0x74ef5c
+# chunk 0x74ef5c..0x74f08d
+000000000074ef5c: mov      qword ptr [rsp + 8], rcx
+000000000074ef61: push     rbx
+000000000074ef62: push     rbp
+000000000074ef63: push     rsi
+000000000074ef64: push     rdi
+000000000074ef65: sub      rsp, 0x38
+000000000074ef69: mov      qword ptr [rsp + 0x20], 0xfffffffffffffffe
+000000000074ef72: mov      rdi, rcx
+000000000074ef75: add      rcx, 0x201b0
+000000000074ef7c: call     0x707d84
+000000000074ef81: nop
+000000000074ef82: lea      rcx, [rdi + 0x201d8]
+000000000074ef89: call     0x74e5f8
+000000000074ef8e: mov      qword ptr [rdi + 0x201e0], rax
+000000000074ef95: mov      byte ptr [rax + 0x31], 1
+000000000074ef99: mov      rax, qword ptr [rdi + 0x201e0]
+000000000074efa0: mov      qword ptr [rax + 8], rax
+000000000074efa4: mov      rax, qword ptr [rdi + 0x201e0]
+000000000074efab: mov      qword ptr [rax], rax
+000000000074efae: mov      rax, qword ptr [rdi + 0x201e0]
+000000000074efb5: mov      qword ptr [rax + 0x10], rax
+000000000074efb9: mov      qword ptr [rdi + 0x201e8], 0
+000000000074efc4: mov      dword ptr [rdi + 0x2018c], 0
+000000000074efce: mov      qword ptr [rdi + 0x20190], 0
+000000000074efd9: mov      qword ptr [rdi + 0x20198], 0
+000000000074efe4: mov      qword ptr [rdi + 0x201a0], 0
+000000000074efef: mov      qword ptr [rdi + 0x201a8], 0
+000000000074effa: xor      ebx, ebx
+000000000074effc: mov      rsi, rdi
+000000000074efff: mov      ebp, ebx
+000000000074f001: and      ebp, 3
+000000000074f004: add      ebp, 4
+000000000074f007: mov      ecx, ebx
+000000000074f009: shr      ecx, 2
+000000000074f00c: add      ecx, 1
+000000000074f00f: shl      ebp, cl
+000000000074f011: mov      ecx, 0x18
+000000000074f016: call     0xab8ea0
+000000000074f01b: mov      qword ptr [rsp + 0x68], rax
+000000000074f020: test     rax, rax
+000000000074f023: je       0x74f032
+000000000074f025: movsxd   rdx, ebp
+000000000074f028: mov      rcx, rax
+000000000074f02b: call     0x74e014
+000000000074f030: jmp      0x74f034
+000000000074f032: xor      eax, eax
+000000000074f034: mov      qword ptr [rsi], rax
+000000000074f037: add      ebx, 1
+000000000074f03a: add      rsi, 8
+000000000074f03e: cmp      ebx, 0x31
+000000000074f041: jb       0x74efff
+000000000074f043: xor      ecx, ecx
+000000000074f045: lea      rdx, [rdi + 0x188]
+000000000074f04c: mov      r10d, 0x8001
+000000000074f052: xor      r9d, r9d
+000000000074f055: mov      rax, qword ptr [rdi]
+000000000074f058: cmp      qword ptr [rax], rcx
+000000000074f05b: jae      0x74f070
+000000000074f05d: mov      r8, rdi
+000000000074f060: add      r9d, 1
+000000000074f064: add      r8, 8
+000000000074f068: mov      rax, qword ptr [r8]
+000000000074f06b: cmp      qword ptr [rax], rcx
+000000000074f06e: jb       0x74f060
+000000000074f070: mov      dword ptr [rdx], r9d
+000000000074f073: add      rcx, 1
+000000000074f077: add      rdx, 4
+000000000074f07b: sub      r10, 1
+000000000074f07f: jne      0x74f052
+000000000074f081: mov      rax, rdi
+000000000074f084: add      rsp, 0x38
+000000000074f088: pop      rdi
+000000000074f089: pop      rsi
+000000000074f08a: pop      rbp
+000000000074f08b: pop      rbx
+000000000074f08c: ret
