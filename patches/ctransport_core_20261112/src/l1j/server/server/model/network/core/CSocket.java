@@ -207,7 +207,7 @@ final class CSocket implements AutoCloseable {
             }
         }
         if (rejected) { owner.transportWriteCompleted(-1); return; }
-        // The source handle is pinned by the active Java lease until this
+        // The source reference transferred from the Java FIFO is pinned until this
         // downcall exits, including a simultaneous close/inline completion.
         boolean success = false;
         try { success = parent.sendConstBuffer(id, source, flags); }

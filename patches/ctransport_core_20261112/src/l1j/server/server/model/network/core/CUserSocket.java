@@ -3624,7 +3624,16 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
             _socketPosting = true;
             try {
-                if (lease.shared()) _channel.SendConstBuffer(bytes,lease._sharedSource.handle,this,lease._nativeSendFlags);
+                if (lease.shared()) {
+                    // Transfer this FIFO reference to the downcall. Native
+                    // retains the CIOBufferEx block before returning, so the
+                    // shared producer handle need not wait for wire completion.
+                    final CAsyncSendConstBuffer.Source source = lease._sharedSource;
+                    if (source == null) throw new IllegalStateException("shared WRITE submitted twice");
+                    lease._sharedSource = null;
+                    try { _channel.SendConstBuffer(bytes,source.handle,this,lease._nativeSendFlags); }
+                    finally { source.release(); }
+                }
                 else if(nativeDirect)_channel.SendV(bytes,this,lease._nativeSendFlags);
                 else _channel.write(bytes, this);
             } finally {

@@ -65,6 +65,21 @@ public final class CSharedBroadcastWindowsTest {
         byte[] body=Arrays.copyOfRange(frame,2,frame.length),before=frame.clone();
         byte[] prefix={7,6,5,4,3,2,1,0},suffix={9,8,7,6,5,4,3,2};
         try(World world=new World()) {
+            CountDownLatch workersEntered=new CountDownLatch(2),workersRelease=new CountDownLatch(1);
+            CIOObject blocker=new CIOObject(){
+                public void run(){workersEntered.countDown();try{check(workersRelease.await(5,TimeUnit.SECONDS),"shared worker release");}catch(InterruptedException e){throw new AssertionError(e);}}
+                public void cancel(){throw new AssertionError("running shared worker cancelled");}
+            };
+            check(world.server.postCompletion(blocker),"shared first worker blocker");
+            until(()->workersEntered.getCount()==1);
+            check(world.server.postCompletion(blocker)&&workersEntered.await(5,TimeUnit.SECONDS),"shared second worker blocker");
+            try {
+                try(var broadcast=new CAsyncSendConstBufferExceptSelf(frame,999,Integer.MAX_VALUE)) {
+                    check(broadcast.apply(world.users[3],103),"shared transfer while completions blocked");
+                }
+                check(sources(world.server)==0&&!world.users[3].isWriteIdle(),"shared input retained until wire completion");
+            } finally { workersRelease.countDown(); }
+            world.read(3,body,false);until(world.users[3]::isWriteIdle);
             CIOFrame reserved=world.users[0].beginDirectFrame(10);check(reserved!=null,"earlier unpublished FIFO encoder");
             fill(reserved,prefix);
             try(var broadcast=new CAsyncSendConstBufferExceptSelf(frame,999,Integer.MAX_VALUE)) {
@@ -102,6 +117,6 @@ public final class CSharedBroadcastWindowsTest {
             catch(java.io.IOException expected){check(expected.getMessage().contains("release downcall"),"unexpected shutdown phase: "+expected);}
             producer.close();world.server.closeWithBudget(TimeUnit.SECONDS.toNanos(3));
         }
-        System.out.println("PASS actual Windows shared broadcast:one16K source,three distinct L1 rolling keys,ExceptSelf,unpublished encoder/shared/ordinary FIFO,close isolation,pending limit,zero refs/leases,live producer pins DLL across bounded shutdown and retry");
+        System.out.println("PASS actual Windows shared broadcast:one16K source,distinct L1 rolling keys,input released before blocked WRITE completion,ExceptSelf,unpublished encoder/shared/ordinary FIFO,close isolation,pending limit,zero refs/leases,live producer pins DLL across bounded shutdown and retry");
     }
 }
