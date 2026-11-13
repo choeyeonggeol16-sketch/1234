@@ -35,11 +35,12 @@
     ]
   ],
   "files": {
-    "CTransport.cpp": "c2b6446e98b288e2a239bdf7333e5403cf39c0358e6d05e2114c28d82d5706d4",
+    "CTransport.cpp": "a99e6f78e80e6d4e714bfd3fbc9da9446bde83b54317ef2dad70459123240476",
     "CTransport.h": "a219dbc23fab0f31f9e26e55d4b1ea221fe5397ae870e7c9535c3d2e33364131",
-    "build_native.py": "6280d7308dbc5609106780ccefd185f15b32e46483e1b9da772363ceca4c9e9e",
+    "build_native.py": "545bd2e3a985dcdf157e044ee20d46ed864e7b9807f35121a5102024f88f9cea",
     "cio_core.hpp": "02e1f87a8f193a64ff74e3e286e0204025d0f3bfba10abed0a37653028378fc3",
     "execution_serializer.hpp": "655069de16b6168d28d0eba2861e58325cc35e7461268d65d666e48a9e7d0b3d",
+    "interop_abi.hpp": "d56ef5365ae936577a460891ee03eb653f63a2ad0ec6c6b0538f1be6760308fb",
     "io_server.hpp": "1d1c7c99d33e719ac8633c540bff2e563c88abe7bdcf3bc78cb91e922fab7b7b",
     "l1_codec.hpp": "10ea703f520d8a6d9107567b3ed0ec60d1e74b58f56f9ff2bda6f2d2f079c77c",
     "object_map.hpp": "786e2f0116e64b891063410a45866c954b0f2e1a97d2eb1ac716f2a787598724",
@@ -48,9 +49,9 @@
     "timer_wheel.hpp": "f45e15e334d3c05e068e9b5a4e63e74156c5a4e3ad6cc470029cb953e173dc4f",
     "user_registry.hpp": "9b2961fcc98b13f1877b55d9ebafe092634f42ea204d5d9b204cf30bc3d89231",
     "user_socket.hpp": "27dc7bbcc0f023d96a87fc18fe6d7f249c86f41dc7c441f619cfa481b2a6bdf0",
-    "windows_loopback_test.cpp": "6f5371165421a8b1480eb04a9df603d1b1f782c8d8e3f1a90682038306e0d5bc"
+    "windows_loopback_test.cpp": "da338b0b4c05f289ccb5044f29aa8acd4fdd7b722113bba774f57f73fa79d724"
   },
-  "dll_sha256": "c7fd6352053c99370ef5db59447c7a4b7f3a606cea2c9e7864ad0634d71cebe7",
-  "selftest_sha256": "00673f08380e89bbf7da45b8486ff3cf570e50abc2050abf7488454fbc4657d1",
+  "dll_sha256": "ffd5620b4aab7e6fe2a735a25814a37a5dc9f68f1d169bd290b16733f4a3c145",
+  "selftest_sha256": "b0a92f1c650497d707ce278413dde8ae32e8b08933c476c946ca779466244643",
   "windows_execution_tested": false
 }

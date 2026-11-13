@@ -86,3 +86,5 @@ Java21 production1704개 전체 타입 컴파일, 새64개 export/ABI/Java SHA p
 | 실제 클라이언트 MAC/HWID 공급 | 서버 API·정책은 이미 있고 실제 클라이언트 전송/검증 자료가 필요한 별도 연동 |
 
 최근128개 패킷 기록·추가 운영 계측은 앞선 선택적 진단 후보로 유지하며 이번 네트워크 실행 경로 작업에 섞지 않았다.
+
+추가 범위 검사는 ABI8의 전체 소스 해시를 기준으로 네트워크 leaf 클래스와 root Server 외1,684개 파일의 바이트 불변을 확인한다. 첫 Windows 실행은 DLL ABI9와 self-test의 구 ABI8 기대값 불일치로 중단됐다. DLL/self-test가 같은 ABI 상수를 사용하고 빌드 시 Java ABI도 비교하도록 수정했다. 기록은 logs/abi9-windows-attempt1-failed.log.

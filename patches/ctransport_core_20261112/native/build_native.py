@@ -2,6 +2,9 @@ from pathlib import Path
 import argparse,hashlib,json,re,subprocess
 
 root=Path(__file__).resolve().parents[1]
+native_abi=int(re.search(r'L1InteropAbiVersion=(0x[0-9a-fA-F]+)',(root/'native/interop_abi.hpp').read_text())[1],16)
+java_abi=int(re.search(r'ABI = (0x[0-9a-fA-F]+)',(root/'src/l1j/server/server/model/network/core/CIOConfig.java').read_text())[1],16)
+assert native_abi==java_abi,'C++/Java ABI mismatch'
 p=argparse.ArgumentParser();p.add_argument('--zig',type=Path,required=True);p.add_argument('--write-java-hash',action='store_true');args=p.parse_args()
 out=root/'build';out.mkdir(exist_ok=True);logs=root/'logs';logs.mkdir(exist_ok=True)
 common=[str(args.zig.resolve()),'c++','-target','x86_64-windows-gnu','-std=c++17','-O2','-g0','-static']

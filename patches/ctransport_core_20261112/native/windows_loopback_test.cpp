@@ -1,4 +1,5 @@
 #include "CTransport.h"
+#include "interop_abi.hpp"
 #include <ws2tcpip.h>
 #include <atomic>
 #include <chrono>
@@ -15,7 +16,7 @@ static int sendEvent(void*,std::uint64_t,const void*,int){return 0;}
 static int closeEvent(void*,std::uint64_t,int,int){++closed;return 0;}
 int main(){
  try{
-  check(L1Interop_GetAbiVersion()==0x80000,"native version");
+  check(L1Interop_GetAbiVersion()==L1InteropAbiVersion,"native version");
   WSADATA data{};check(WSAStartup(MAKEWORD(2,2),&data)==0,"WSAStartup");
   void* listener=L1Interop_CreateCallbacks();check(listener,"listener allocation");
   L1Interop_SetOnAccept(listener,acceptEvent);L1Interop_SetOnRead(listener,receiveEvent);

@@ -1,0 +1,159 @@
+﻿2026-11-13T04:18:48.7564128Z Current runner version: '2.338.2'
+2026-11-13T04:18:48.7587401Z ##[group]Runner Image Provisioner
+2026-11-13T04:18:48.7588185Z Hosted Compute Agent
+2026-11-13T04:18:48.7588706Z Version: 20261028.624
+2026-11-13T04:18:48.7589270Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-13T04:18:48.7589928Z Build Date: 2026-10-28T21:51:42Z
+2026-11-13T04:18:48.7590525Z Worker ID: {7677f5ea-5f19-4ac0-a6a8-a251b78dc3f2}
+2026-11-13T04:18:48.7591177Z Region: westus2
+2026-11-13T04:18:48.7591649Z Cloud: Azure
+2026-11-13T04:18:48.7592105Z ##[endgroup]
+2026-11-13T04:18:48.7593388Z ##[group]Operating System
+2026-11-13T04:18:48.7594050Z Microsoft Windows Server 2022
+2026-11-13T04:18:48.7594669Z 10.0.20348
+2026-11-13T04:18:48.7595152Z Datacenter
+2026-11-13T04:18:48.7595602Z ##[endgroup]
+2026-11-13T04:18:48.7596106Z ##[group]Runner Image
+2026-11-13T04:18:48.7596616Z Image: windows-2022
+2026-11-13T04:18:48.7597119Z Version: 20261101.353.1
+2026-11-13T04:18:48.7598665Z Included Software: https://github.com/actions/runner-images/blob/win22/20261101.353/images/windows/Windows2022-Readme.md
+2026-11-13T04:18:48.7600143Z Image Release: https://github.com/actions/runner-images/releases/tag/win22%2F20261101.353
+2026-11-13T04:18:48.7601044Z ##[endgroup]
+2026-11-13T04:18:48.7602063Z ##[group]GITHUB_TOKEN Permissions
+2026-11-13T04:18:48.7603895Z Contents: read
+2026-11-13T04:18:48.7604456Z Metadata: read
+2026-11-13T04:18:48.7604937Z ##[endgroup]
+2026-11-13T04:18:48.7606876Z Secret source: Actions
+2026-11-13T04:18:48.7607735Z Cache mode: write
+2026-11-13T04:18:48.7608345Z Prepare workflow directory
+2026-11-13T04:18:48.7922523Z Prepare all required actions
+2026-11-13T04:18:48.7984941Z Getting action download info
+2026-11-13T04:18:49.2224346Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-13T04:18:49.3446162Z Download action repository 'actions/setup-java@v4' (SHA:cf277c60eb25467037889841efdb72551f06f6c3)
+2026-11-13T04:18:49.8495977Z Complete job name: actual-windows
+2026-11-13T04:18:50.0353018Z ##[group]Run actions/checkout@v4
+2026-11-13T04:18:50.0354128Z with:
+2026-11-13T04:18:50.0354689Z   sparse-checkout: patches/ctransport_core_20261112
+2026-11-13T04:18:50.0355437Z   repository: choeyeonggeol16-sketch/1234
+2026-11-13T04:18:50.0359613Z   token: ***
+2026-11-13T04:18:50.0360105Z   ssh-strict: true
+2026-11-13T04:18:50.0360595Z   ssh-user: git
+2026-11-13T04:18:50.0361074Z   persist-credentials: true
+2026-11-13T04:18:50.0361620Z   clean: true
+2026-11-13T04:18:50.0362095Z   sparse-checkout-cone-mode: true
+2026-11-13T04:18:50.0362634Z   fetch-depth: 1
+2026-11-13T04:18:50.0363111Z   fetch-tags: false
+2026-11-13T04:18:50.0363604Z   show-progress: true
+2026-11-13T04:18:50.0364096Z   lfs: false
+2026-11-13T04:18:50.0364639Z   submodules: false
+2026-11-13T04:18:50.0365130Z   set-safe-directory: true
+2026-11-13T04:18:50.0365674Z   allow-unsafe-pr-checkout: false
+2026-11-13T04:18:50.0366521Z ##[endgroup]
+2026-11-13T04:18:50.1757269Z Syncing repository: choeyeonggeol16-sketch/1234
+2026-11-13T04:18:50.1759253Z ##[group]Getting Git version info
+2026-11-13T04:18:50.1759925Z Working directory is 'D:\a\1234\1234'
+2026-11-13T04:18:50.2918516Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-13T04:18:50.6383170Z git version 2.56.0.windows.4
+2026-11-13T04:18:50.6422319Z ##[endgroup]
+2026-11-13T04:18:50.6439033Z Temporarily overriding HOME='D:\a\_temp\49939d14-4a74-491c-b320-af769d24ca0f' before making global git config changes
+2026-11-13T04:18:50.6440977Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-13T04:18:50.6450003Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\1234\1234
+2026-11-13T04:18:50.6975395Z Deleting the contents of 'D:\a\1234\1234'
+2026-11-13T04:18:50.6980677Z ##[group]Initializing the repository
+2026-11-13T04:18:50.6988576Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\1234\1234
+2026-11-13T04:18:50.7850697Z Initialized empty Git repository in D:/a/1234/1234/.git/
+2026-11-13T04:18:50.7885828Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/choeyeonggeol16-sketch/1234
+2026-11-13T04:18:50.8584131Z ##[endgroup]
+2026-11-13T04:18:50.8587581Z ##[group]Disabling automatic garbage collection
+2026-11-13T04:18:50.8592611Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-13T04:18:50.9004065Z ##[endgroup]
+2026-11-13T04:18:50.9006593Z ##[group]Setting up auth
+2026-11-13T04:18:50.9018454Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-13T04:18:50.9423392Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-13T04:18:52.3863191Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-13T04:18:52.4140271Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-13T04:18:52.8599088Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-13T04:18:52.8879409Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-13T04:18:53.3297013Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-13T04:18:53.3583354Z ##[endgroup]
+2026-11-13T04:18:53.3584875Z ##[group]Fetching the repository
+2026-11-13T04:18:53.3599533Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --filter=blob:none --depth=1 origin +4c31f6df1b9be8918c040cb40bd4ce56426337ee:refs/remotes/origin/ctransport-core-20261112
+2026-11-13T04:18:54.2269630Z From https://github.com/choeyeonggeol16-sketch/1234
+2026-11-13T04:18:54.2270965Z  * [new ref]         4c31f6df1b9be8918c040cb40bd4ce56426337ee -> origin/ctransport-core-20261112
+2026-11-13T04:18:54.2299523Z ##[endgroup]
+2026-11-13T04:18:54.2300307Z ##[group]Determining the checkout info
+2026-11-13T04:18:54.2302647Z ##[endgroup]
+2026-11-13T04:18:54.2304217Z ##[group]Setting up sparse checkout
+2026-11-13T04:18:54.2312929Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout set patches/ctransport_core_20261112
+2026-11-13T04:18:54.2617616Z ##[endgroup]
+2026-11-13T04:18:54.2618435Z ##[group]Checking out the ref
+2026-11-13T04:18:54.2626206Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B ctransport-core-20261112 refs/remotes/origin/ctransport-core-20261112
+2026-11-13T04:18:55.0972026Z Switched to a new branch 'ctransport-core-20261112'
+2026-11-13T04:18:55.0985484Z branch 'ctransport-core-20261112' set up to track 'origin/ctransport-core-20261112'.
+2026-11-13T04:18:55.1021179Z ##[endgroup]
+2026-11-13T04:18:55.1318363Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-13T04:18:55.1573038Z 4c31f6df1b9be8918c040cb40bd4ce56426337ee
+2026-11-13T04:18:55.2148655Z ##[group]Run actions/setup-java@v4
+2026-11-13T04:18:55.2149120Z with:
+2026-11-13T04:18:55.2149390Z   distribution: temurin
+2026-11-13T04:18:55.2149677Z   java-version: 21
+2026-11-13T04:18:55.2150007Z   java-package: jdk
+2026-11-13T04:18:55.2150259Z   check-latest: false
+2026-11-13T04:18:55.2150534Z   server-id: github
+2026-11-13T04:18:55.2150830Z   server-username: GITHUB_ACTOR
+2026-11-13T04:18:55.2151137Z   server-password: GITHUB_TOKEN
+2026-11-13T04:18:55.2151441Z   overwrite-settings: true
+2026-11-13T04:18:55.2151722Z   job-status: success
+2026-11-13T04:18:55.2154750Z   token: ***
+2026-11-13T04:18:55.2154989Z ##[endgroup]
+2026-11-13T04:18:55.4039187Z ##[warning]setup-java v4 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.
+2026-11-13T04:18:55.4050541Z ##[group]Installed distributions
+2026-11-13T04:18:55.4186426Z Resolved Java 21.0.13+9.0 from tool-cache
+2026-11-13T04:18:55.4186987Z Setting Java 21.0.13+9.0 as the default
+2026-11-13T04:18:55.4205862Z (node:5852) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-13T04:18:55.4206594Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-13T04:18:55.4210582Z Creating toolchains.xml for JDK version 21 from temurin
+2026-11-13T04:18:55.4313905Z Writing to C:\Users\runneradmin\.m2\toolchains.xml
+2026-11-13T04:18:55.4356297Z 
+2026-11-13T04:18:55.4356763Z Java configuration:
+2026-11-13T04:18:55.4357405Z   Distribution: temurin
+2026-11-13T04:18:55.4357859Z   Version: 21.0.13+9.0
+2026-11-13T04:18:55.4358588Z   Path: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+2026-11-13T04:18:55.4359226Z 
+2026-11-13T04:18:55.4359795Z ##[endgroup]
+2026-11-13T04:18:55.4374966Z Creating settings.xml with server-id: github
+2026-11-13T04:18:55.4378019Z Writing to C:\Users\runneradmin\.m2\settings.xml
+2026-11-13T04:18:55.4628265Z ##[group]Run ./tests/run_windows.ps1
+2026-11-13T04:18:55.4628691Z [36;1m./tests/run_windows.ps1[0m
+2026-11-13T04:18:55.5278024Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-13T04:18:55.5278503Z env:
+2026-11-13T04:18:55.5278916Z   JAVA_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+2026-11-13T04:18:55.5279634Z   JAVA_HOME_21_X64: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+2026-11-13T04:18:55.5280198Z ##[endgroup]
+2026-11-13T04:18:55.9171410Z FAIL: native version (WSA 0)
+2026-11-13T04:18:56.1589036Z [31;1mException: [0mD:\a\1234\1234\patches\ctransport_core_20261112\tests\run_windows.ps1:5[0m
+2026-11-13T04:18:56.1590023Z [31;1m[0m[36;1mLine |[0m
+2026-11-13T04:18:56.1590962Z [31;1m[0m[36;1m[36;1m   5 | [0m if ($LASTEXITCODE -ne 0) { [36;1mthrow 'Native Windows loopback failed'[0m }[0m
+2026-11-13T04:18:56.1592320Z [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+2026-11-13T04:18:56.1593481Z [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mNative Windows loopback failed[0m
+2026-11-13T04:18:56.2062424Z ##[error]Process completed with exit code 1.
+2026-11-13T04:18:56.2264571Z Post job cleanup.
+2026-11-13T04:18:56.3791801Z (node:1672) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-13T04:18:56.3792614Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-13T04:18:56.4076604Z Post job cleanup.
+2026-11-13T04:18:56.6470939Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-13T04:18:56.6748945Z git version 2.56.0.windows.4
+2026-11-13T04:18:56.6815790Z Temporarily overriding HOME='D:\a\_temp\f00cce87-b1d0-4f04-9a51-ab9bb1d44f58' before making global git config changes
+2026-11-13T04:18:56.6817112Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-13T04:18:56.6828129Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\1234\1234
+2026-11-13T04:18:56.7139014Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-13T04:18:56.7421079Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-13T04:18:57.2124505Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-13T04:18:57.2374714Z http.https://github.com/.extraheader
+2026-11-13T04:18:57.2406217Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-11-13T04:18:57.2684754Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-13T04:18:57.7436936Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-13T04:18:57.7765797Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-13T04:18:58.2441728Z Cleaning up orphan processes
+2026-11-13T04:18:58.2547684Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-java@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+

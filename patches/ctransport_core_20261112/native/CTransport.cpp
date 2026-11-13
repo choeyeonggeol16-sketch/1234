@@ -15,6 +15,7 @@
 #define CIO_API extern "C" __declspec(dllexport)
 #endif
 #include "cio_core.hpp"
+#include "interop_abi.hpp"
 #include "timer_wheel.hpp"
 #include "user_socket.hpp"
 #include "user_registry.hpp"
@@ -1111,7 +1112,7 @@ template<class F> static void configure(void* p, F apply) {
     // Configuration is a startup contract, not unsynchronized live tuning.
     if (!server->running.load()) apply(*server);
 }
-CIO_API unsigned L1Interop_GetAbiVersion() { return 0x00090000; }
+CIO_API unsigned L1Interop_GetAbiVersion() { return L1InteropAbiVersion; }
 CIO_API void* L1Interop_CreateCallbacks() { return new(std::nothrow) L1Callbacks; }
 CIO_API void L1Interop_ReleaseCallbacks(void* p) { delete static_cast<L1Callbacks*>(p); }
 CIO_API void* L1Interop_CreateServer(void* p) { if (!p) return nullptr; try { return new Server(static_cast<L1Callbacks*>(p)); } catch (...) { return nullptr; } }

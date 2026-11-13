@@ -4,7 +4,7 @@ import java.nio.file.Path;
 final class CIOConfig {
     static final Path DLL = Path.of("CTransport.dll");
     static final int ABI = 0x00090000;
-    static final String DLL_SHA256 = "c7fd6352053c99370ef5db59447c7a4b7f3a606cea2c9e7864ad0634d71cebe7";
+    static final String DLL_SHA256 = "ffd5620b4aab7e6fe2a735a25814a37a5dc9f68f1d169bd290b16733f4a3c145";
     // MAC enforcement is off until a verified server-side provider binds identity.
     static final int MAC_LIMIT = bounded("ctransport.macLimit",0,0,100000);
     static final int PERF_INTERVAL_MS = bounded("ctransport.perf.intervalMs",1000,100,60000);
