@@ -1,0 +1,205 @@
+// EXTRACTED FROM BINARY: PlaySupport.proto
+syntax = "proto2";
+package PSS;
+
+enum BlessCode {
+  BLESSED = 0;
+  NORMAL = 1;
+  CURSED = 2;
+  UNIDENTIFIED = 3;
+}
+
+message Point {
+  required int32 x = 1;
+  required int32 y = 2;
+}
+
+message PathInfo {
+  enum PathType {
+    PATH = 0;
+    TELEPORT = 1;
+    DIALOG = 2;
+    HACTION = 3;
+    ITEM = 4;
+    MAX = 5;
+  }
+  required int32 map = 1;
+  required PSS.Point pos = 2;
+  required PSS.PathInfo.PathType type = 3;
+  optional string strValue = 4;
+  optional int32 id = 5;
+  optional PSS.BlessCode bless = 6;
+}
+
+message PathRecord {
+  required string name = 1;
+  repeated PSS.PathInfo pathlist = 2;
+}
+
+message SlotInfo {
+  enum SlotType {
+    UNKNOWN = 0;
+    ITEM = 1;
+    SKILL = 2;
+  }
+  required string desc = 1;
+  required int32 icon = 2 [default = -1];
+  required PSS.SlotInfo.SlotType slotType = 3 [default = UNKNOWN];
+  optional int32 count = 4;
+  optional PSS.BlessCode bless = 5 [default = NORMAL];
+}
+
+message UsingCondition {
+  enum StateType {
+    HP = 0;
+    MP = 1;
+    DETOX = 2;
+    SINK = 3;
+    BUFF = 4;
+    NONCOMBAT = 5;
+    COMBATTIME = 6;
+    PVP = 7;
+    ATTACKNUM = 8;
+    ITEM = 9;
+    PSSPLAY = 10;
+    WEIGHT = 11;
+    INVENSIZE = 12;
+    DIE = 13;
+    TIME = 14;
+    RETURN = 15;
+    COUNT = 16;
+    PSSSTOP = 17;
+    NONE = 18;
+  }
+  enum Operator {
+    GREATER_EQUAL = 0;
+    EQUAL = 1;
+    LESS_EQUAL = 2;
+  }
+  required PSS.UsingCondition.StateType state = 1 [default = NONE];
+  required uint32 value = 2;
+  required bool activate = 3;
+  optional PSS.UsingCondition.Operator operator = 4 [default = GREATER_EQUAL];
+  repeated string strValue = 5;
+  repeated PSS.SlotInfo itemInfo = 6;
+}
+
+message AutoUsingInfo {
+  required PSS.UsingCondition condition = 1;
+  repeated PSS.SlotInfo slots = 2;
+}
+
+message PlaySupportConfig {
+  enum ClassID {
+    PRINCE = 0;
+    KNIGHT = 1;
+    ELF = 2;
+    MAGICIAN = 3;
+    DARKELF = 4;
+    DRAGON_KNIGHT = 5;
+    ILLUSIONIST = 6;
+    WARRIOR = 7;
+    UNKNOWN = 8;
+  }
+  message RecommendConfig {
+    required bool usingForClass = 1 [default = false];
+    required bool useAll = 2 [default = false];
+    required bool usePart = 3 [default = false];
+    required bool useHuntingArea = 4 [default = false];
+    optional int32 selectIndex = 5 [default = -1];
+  }
+  message PrepareConfig {
+    enum ItemArrange {
+      Default = 0;
+      Ascending = 1;
+    }
+    message PrepareOption {
+      required PSS.SlotInfo itemInfo = 1;
+      required uint32 retrieveCount = 2 [default = 0];
+      required bool needToBuy = 3 [default = false];
+      required bool needToMelting = 4 [default = false];
+      optional uint32 buyingCount = 5;
+    }
+    message StartOption {
+      required uint32 hp = 1 [default = 0];
+      required uint32 mp = 2 [default = 0];
+    }
+    required bool enable = 1 [default = false];
+    required bool activateSetting = 2 [default = false];
+    required bool activateStore = 3 [default = false];
+    required bool activateStartOption = 4 [default = false];
+    required bool activateBuff = 5 [default = false];
+    repeated PSS.PlaySupportConfig.PrepareConfig.PrepareOption prepareItems = 6;
+    optional PSS.PlaySupportConfig.PrepareConfig.StartOption startOption = 7;
+  }
+  message HuntingConfig {
+    required bool enable = 1;
+    required bool activateCustomMove = 2;
+    required int32 selectIndex = 3;
+    repeated PSS.PathRecord pathRecords = 4;
+    repeated PSS.SlotInfo teleportSlotList = 5;
+    optional bool activateHoldHunting = 6 [default = false];
+    optional bool activateTeleport = 7 [default = false];
+    optional int32 teleportSec = 8 [default = 0];
+    optional int32 searchRange = 9 [default = 10];
+    optional bool exceptHuntedNpc = 10 [default = false];
+    optional bool priorQuestNpc = 11 [default = false];
+    optional bool priorAggresiveNpc = 12 [default = false];
+  }
+  message AttackConfig {
+    required bool activateBasicAttack = 1;
+    repeated PSS.SlotInfo skillList = 2;
+    repeated PSS.AutoUsingInfo customSkillList = 3;
+    optional bool activateSkillAttack = 4 [default = false];
+    optional bool activateCustomSkillAttack = 5 [default = false];
+    optional bool activateGetItem = 6 [default = false];
+    optional int32 tryCount = 7 [default = 0];
+    optional bool giveUpItem = 8 [default = false];
+  }
+  message RecoveryConfig {
+    required bool enable = 1;
+    required PSS.AutoUsingInfo hp1 = 2;
+    required PSS.AutoUsingInfo mp = 3;
+  }
+  message BuffConfig {
+    required bool enable = 1;
+    required bool activateAutoUsing = 2;
+    required bool activatePolymoprh = 3;
+    required PSS.AutoUsingInfo polymorphList = 4;
+    required bool activateTimerUsing = 5;
+    repeated PSS.AutoUsingInfo autoUsingList = 6;
+    repeated PSS.AutoUsingInfo timerUsingList = 7;
+  }
+  message EscapeConfig {
+    required bool enable = 1;
+    repeated PSS.SlotInfo usingSlot = 2;
+    repeated PSS.UsingCondition conditionList = 3;
+  }
+  message ReturnConfig {
+    required bool activateReturn = 1;
+    repeated PSS.UsingCondition conditionList = 2;
+    optional bool activateCustomReturn = 3 [default = false];
+    optional int32 customReturnIndex = 4 [default = 0];
+    optional PSS.SlotInfo returnSlot = 5;
+  }
+  message StopConfig {
+    required bool enable = 1;
+    repeated PSS.UsingCondition conditionList = 2;
+    optional bool activateMobile = 3;
+  }
+  required PSS.PlaySupportConfig.ClassID Class = 1 [default = UNKNOWN];
+  required PSS.PlaySupportConfig.BuffConfig BuffCfg = 2;
+  required PSS.PlaySupportConfig.RecoveryConfig RecoverCfg = 3;
+  required PSS.PlaySupportConfig.EscapeConfig EscapeCfg = 4;
+  required PSS.PlaySupportConfig.AttackConfig AttackCfg = 5;
+  required PSS.PlaySupportConfig.ReturnConfig ReturnCfg = 6;
+  optional PSS.PlaySupportConfig.RecommendConfig RecommendCfg = 7;
+  optional PSS.PlaySupportConfig.HuntingConfig HuntingCfg = 8;
+  optional PSS.PlaySupportConfig.PrepareConfig PrepareCfg = 9;
+  optional PSS.PlaySupportConfig.StopConfig StopCfg = 10;
+}
+
+message ClassRecommends {
+  repeated PSS.PlaySupportConfig PSClassDatas = 1;
+}
+
