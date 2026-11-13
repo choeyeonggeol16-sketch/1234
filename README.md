@@ -1,3 +1,13 @@
+## 2026-11-13 — 매니저 확장 명령 조회
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·설정·검사**](downloads/CTransport_CORE_20261112.zip) · [**구현 보고서**](reports/CTRANSPORT_EXTENDED_COMMANDS_20261113.md)
+
+매니저 보고서의 최근 패킷128개·프로파일에 실제 디코더가 선택한 확장 요청 종류와 명령 번호를 표시합니다. 기본 opcode별 카운트/시간 의미와 기존 송수신·코덱·독립 PSS는 유지합니다. 전체 src를 clean build해 적용하며 추가 SQL은 없습니다.
+
+이하 내용은 이전 배포 이력입니다.
+
+---
+
 ## 2026-11-13 — 문장 SafeSend / 종료 사유 조회
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·설정·검사**](downloads/CTransport_CORE_20261112.zip) · [**구현 보고서**](reports/CTRANSPORT_SAFESEND_CLOSE_20261113.md)
