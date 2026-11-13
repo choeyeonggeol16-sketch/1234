@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core;
 import java.util.concurrent.*;
 import static l1j.server.server.model.network.core.CUserSocketOwnerWindowsTest.*;
 public final class PoolReclamationWindowsTest {
- static long used(long[] p){check(p.length==18&&p[8]==0x4354504c00010000L,"pool extension marker");check(p[10]==p[11]-p[12]&&p[14]==p[15]-p[16],"native ring snapshot mismatch");return p[10]+p[14];}
+ static long used(long[] p){check(p.length==24&&p[8]==0x4354504c00010000L&&p[18]==0x4354464100010000L,"pool/fault extension marker");check(p[19]==0&&p[20]==0&&p[21]==0,"unexpected native pool/reference fault");check(p[10]==p[11]-p[12]&&p[14]==p[15]-p[16],"native ring snapshot mismatch");return p[10]+p[14];}
  public static void main(String[] args)throws Exception{
   try(Session s=new Session(true,false)){
    until(()->used(s.server.poolDiagnostics())>0);

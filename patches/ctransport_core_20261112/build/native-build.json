@@ -30,10 +30,10 @@
     ]
   ],
   "files": {
-    "CTransport.cpp": "60d210f1dd2c7410c13a914e81ac289c6cb535e63124754637f32f22a0b7229b",
+    "CTransport.cpp": "e0e02d12f67f3553e83887e9845727404bfd933ae7c0cf6e62467706de2fd8de",
     "CTransport.h": "9d600a11c818fb3ed16bfd5c4f2d813826c510a63f1c8b7ede7b525dafefd81c",
     "build_native.py": "2bf81ff59eae5664c8bff5fd5c928d869070556a9c8705d8551552c2eca4b72a",
-    "cio_core.hpp": "bcc74887cc675dc997f235e4ff59ece207f3df20d4e3137c6ea32a0a5053b003",
+    "cio_core.hpp": "366dceef1b9ade23843f339dbfada184633d737da8b6f23eb7e9decb40d57f31",
     "execution_serializer.hpp": "655069de16b6168d28d0eba2861e58325cc35e7461268d65d666e48a9e7d0b3d",
     "interop_abi.hpp": "ee0cc82dc619f1dc4ac98543a0df2cc17f854fd97d2f0d8c9edd63a4131714a7",
     "io_server.hpp": "1d1c7c99d33e719ac8633c540bff2e563c88abe7bdcf3bc78cb91e922fab7b7b",
@@ -46,10 +46,7 @@
     "user_socket.hpp": "27dc7bbcc0f023d96a87fc18fe6d7f249c86f41dc7c441f619cfa481b2a6bdf0",
     "windows_loopback_test.cpp": "da338b0b4c05f289ccb5044f29aa8acd4fdd7b722113bba774f57f73fa79d724"
   },
-  "dll_sha256": "cb2c9bf662e7be42636aaf77edbb34ba7773af20a3d435b4f1030df2c62e0a43",
-  "selftest_sha256": "1416085024b5bd1501512e750502a59a8cf189443e018c5744fa90308acb63e4",
-  "windows_execution_tested": true,
-  "windows_run_id": 43412834686,
-  "windows_job_id": 131843241327,
-  "tested_source_commit": "cf696369047f30d0eff8b67d42a2d642369a7f2d"
+  "dll_sha256": "7ea2195879cd1a414796ffbd17477e3c842bc419c475acf8345e36d861538afc",
+  "selftest_sha256": "7c02279f1aff1f0eeaabbfed6d043a7a7ee45000a85998a742eb7017e2589b8d",
+  "windows_execution_tested": false
 }

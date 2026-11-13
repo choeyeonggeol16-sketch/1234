@@ -556,10 +556,10 @@ final class CIOServer implements AutoCloseable {
     }
 
     long[] poolDiagnostics() {
-        long[] values = readDiagnostics(getDiagnostics,18);
+        long[] values = readDiagnostics(getDiagnostics,24);
         // Older ABI10 DLLs can return the original prefix only. Never display
         // their unpopulated extension as a zero-use / leak-free measurement.
-        if(values.length!=18||values[8]!=0x4354504c00010000L)return new long[0];
+        if(values.length<18||values[8]!=0x4354504c00010000L)return new long[0];
         return values;
     }
     int liveConstBuffers() { return constBuffers.get(); }

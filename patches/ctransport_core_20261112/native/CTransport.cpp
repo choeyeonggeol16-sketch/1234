@@ -1264,7 +1264,10 @@ CIO_API int L1Interop_GetDiagnostics(void* p, std::uint64_t* values, unsigned co
     values[4] = s->timerInline.load(); values[5] = s->timerPosted.load();
     values[6] = s->closeStarts.load(); values[7] = s->closeTerminals.load();
     // Backwards compatible extension: callers requesting8 values are unchanged.
-    if(count>=18){values[8]=0x4354504c00010000ULL;s->buffers.poolSnapshot(values+9);}
+    if(count>=18){
+        values[8]=0x4354504c00010000ULL;s->buffers.poolSnapshot(values+9,count>=24?values+19:nullptr);
+        if(count>=24){values[18]=0x4354464100010000ULL;MemoryObject::referenceDiagnostics(values+21);}
+    }
     return 1;
 }
 

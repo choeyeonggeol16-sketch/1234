@@ -13,10 +13,33 @@
 constexpr std::size_t BufferBytes=8192, LargeBufferBytes=16384, MaxQueuedBytes=2u*1024u*1024u;
 class MemoryObject {
  std::atomic<unsigned> references_{1};
+ // Original +0x10 identifier is for reference-error attribution, not a handle.
+ // Keep the original ID position without duplicating timer ownership state.
+ alignas(8) const std::uint32_t objectId_;
+ inline static std::atomic<std::uint32_t> nextObjectId_{0};
+ inline static std::atomic<std::uint64_t> referenceErrors_{0},lastReferenceError_{0};
+ friend struct MemoryObjectTestAccess;
 protected: virtual ~MemoryObject()=default;
 public:
+ MemoryObject()noexcept:objectId_(nextObjectId_.fetch_add(1,std::memory_order_relaxed)+1){}
+ MemoryObject(const MemoryObject&)noexcept:MemoryObject(){}
+ MemoryObject& operator=(const MemoryObject&)=delete;
+ std::uint32_t objectId()const noexcept{return objectId_;}
  void retain()noexcept{references_.fetch_add(1,std::memory_order_relaxed);}
- void release()noexcept{if(references_.fetch_sub(1,std::memory_order_acq_rel)==1)delete this;}
+ void release()noexcept{
+  auto previous=references_.load(std::memory_order_relaxed);
+  do{
+   if(previous==0){
+    lastReferenceError_.store(std::uint64_t(objectId_)<<32|previous,std::memory_order_relaxed);
+    referenceErrors_.fetch_add(1,std::memory_order_release);return;
+   }
+  }while(!references_.compare_exchange_weak(previous,previous-1,std::memory_order_acq_rel,std::memory_order_relaxed));
+  if(previous==1)delete this;
+ }
+ static void referenceDiagnostics(std::uint64_t* out)noexcept{
+  out[0]=referenceErrors_.load(std::memory_order_acquire);auto last=lastReferenceError_.load(std::memory_order_relaxed);
+  out[1]=last>>32;out[2]=last&0xffffffffu;
+ }
 };
 class CIOObject : public MemoryObject {
 protected: ~CIOObject()override=default;
@@ -59,7 +82,7 @@ struct CIOBuffer {
  struct Payload{unsigned char* bytes;unsigned char* data()noexcept{return bytes;}const unsigned char* data()const noexcept{return bytes;}}data;
  std::atomic<unsigned>& references;
  std::uint32_t& used;std::size_t offset=0;CIOBuffer*& next;
- unsigned& owner;unsigned bucket;const std::size_t capacity;
+ unsigned& owner;unsigned bucket;const std::size_t capacity;bool quarantined=false;
  template<std::size_t Bytes> CIOBuffer(CIOBufferEx<Bytes>& raw,unsigned id,unsigned family)
  :data{raw.payload.data()},references(raw.references),used(raw.used),next(raw.next),owner(raw.owner),bucket(family),capacity(Bytes){owner=id;}
 };
@@ -72,7 +95,7 @@ class CIOBufferPool {
   std::unique_ptr<CIOBufferEx<8192>[]>small;
   std::unique_ptr<CIOBufferEx<16384>[]>large;
   std::vector<CIOBuffer> views;
-  std::uint64_t read=0,write=0;std::size_t capacity=0;
+  std::uint64_t read=0,write=0,quarantined=0;std::size_t capacity=0;
  };
  std::unique_ptr<Ring[]>rings_{new Ring[OwnerCount*2]};
  std::atomic<std::size_t>allocated_{0};const std::size_t limit_;const std::uint64_t generation_;
@@ -127,18 +150,29 @@ public:
   unsigned id=owner(),family=bytes==LargeBufferBytes?1:0;auto& r=rings_[id*2+family];SpinGuard hold(r.gate);
   // External thread registration initializes a complete fixed-size ring once.
   if(!r.capacity&&!initializeRing(r,id,family,std::min(limit_,family?foreign16_:foreign8_)))return nullptr;
-  if(r.read-r.write>=r.capacity){++exhaustions_;return nullptr;}
-  auto& slot=r.slots[r.read%r.capacity];auto* p=slot;
-  if(!p||p->references.load()!=0||p->used||p->next){++corruptions_;return nullptr;}
-  slot=nullptr;++r.read;p->owner=id;p->offset=0;p->references.store(1,std::memory_order_release);return p;
+  while(r.read-r.write<r.capacity){
+   auto& slot=r.slots[r.read%r.capacity];auto* p=slot;
+   if(!p){++corruptions_;return nullptr;}
+   slot=nullptr;++r.read;
+   if(p->references.load()!=0||p->used||p->next||p->quarantined){
+    // Original Alloc consumes invalid nonnull entries and tries the next.
+    // A late release must never put a discarded block back in circulation.
+    p->quarantined=true;++r.quarantined;++corruptions_;continue;
+   }
+   p->owner=id;p->offset=0;p->references.store(1,std::memory_order_release);return p;
+  }
+  ++exhaustions_;return nullptr;
  }
  static void retain(CIOBuffer* p)noexcept{if(p)p->references.fetch_add(1,std::memory_order_relaxed);}
  void recycle(CIOBuffer* p)noexcept{
-  if(!p)return;auto previous=p->references.fetch_sub(1,std::memory_order_acq_rel);
-  if(previous==0){p->references.fetch_add(1);++corruptions_;return;}if(previous!=1)return;
-  p->used=0;p->offset=0;p->next=nullptr;
+  if(!p)return;auto previous=p->references.load(std::memory_order_relaxed);
+  do{if(previous==0){++corruptions_;return;}}
+  while(!p->references.compare_exchange_weak(previous,previous-1,std::memory_order_acq_rel,std::memory_order_relaxed));
+  if(previous!=1)return;
   if(p->owner>=OwnerCount||p->bucket>1){++corruptions_;return;}
   auto& r=rings_[p->owner*2+p->bucket];SpinGuard hold(r.gate);
+  if(p->quarantined)return;
+  p->used=0;p->offset=0;p->next=nullptr;
   if(!r.capacity){++corruptions_;return;}
   auto& slot=r.slots[r.write%r.capacity];
   if(r.write>=r.read||slot){++corruptions_;return;}
@@ -151,11 +185,13 @@ public:
  std::uint64_t corruptions()const noexcept{return corruptions_.load();}
  // Snapshot existing ring positions; no extra counter on the I/O hot path.
  // Per family: capacity, borrowed blocks, cumulative acquire, final return.
- void poolSnapshot(std::uint64_t* out)noexcept{
+ void poolSnapshot(std::uint64_t* out,std::uint64_t* quarantined=nullptr)noexcept{
   std::fill(out,out+9,0);
+  if(quarantined)std::fill(quarantined,quarantined+2,0);
   for(unsigned id=0;id<OwnerCount;++id)for(unsigned family=0;family<2;++family){
    auto& r=rings_[id*2+family];SpinGuard hold(r.gate);auto* f=out+family*4;
-   f[0]+=r.capacity;f[1]+=r.read-r.write;f[2]+=r.read;f[3]+=r.write;
+   f[0]+=r.capacity;f[1]+=r.read-r.write-r.quarantined;f[2]+=r.read-r.quarantined;f[3]+=r.write;
+   if(quarantined)quarantined[family]+=r.quarantined;
    out[8]+=r.capacity*(family?sizeof(CIOBufferEx<16384>):sizeof(CIOBufferEx<8192>));
   }
  }

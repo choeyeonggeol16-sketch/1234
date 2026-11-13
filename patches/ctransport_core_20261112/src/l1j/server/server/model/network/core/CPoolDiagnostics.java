@@ -10,7 +10,8 @@ public final class CPoolDiagnostics {
     private boolean quietTracking;
     public synchronized String sample(long now,long[][] javaPool,long[] nativePool,long[] ownership) {
         if(javaPool.length!=4||ownership.length!=6)throw new IllegalArgumentException("pool diagnostic shape");
-        boolean available=nativePool.length==18&&nativePool[8]==0x4354504c00010000L;
+        boolean available=nativePool.length>=18&&nativePool[8]==0x4354504c00010000L;
+        boolean faults=available&&nativePool.length>=24&&nativePool[18]==0x4354464100010000L;
         StringBuilder b=new StringBuilder("풀·회수 진단 (강제 회수 없음)\n");
         b.append("Java: 슬롯크기 / 사용중 / 용량 / 관측최고 / 누적대여 / 누적반납 / 확보direct bytes / 실패\n");
         String[] names={"RX4K","RX64K","TX16K","TX64K"};long javaUsed=0,nativeUsed=0;
@@ -31,6 +32,9 @@ public final class CPoolDiagnostics {
             b.append("Native slab 확보 bytes=").append(nativePool[17]).append(" 획득실패=").append(nativePool[1])
                 .append(" 초기화실패=").append(nativePool[2]).append(" 풀무결성오류=").append(nativePool[3]).append('\n');
             b.append("Native close 시작/terminal=").append(nativePool[6]).append('/').append(nativePool[7]).append('\n');
+            if(faults)b.append("Native 격리 슬롯 8K/16K=").append(nativePool[19]).append('/').append(nativePool[20])
+                .append(" (재사용 제외, 사용중 수에서 제외)\n프로세스 MemoryObject 참조오류=").append(nativePool[21])
+                .append(" 마지막 객체ID=").append(nativePool[22]).append(" 감소 전 참조수=").append(nativePool[23]).append('\n');
         }else b.append("Native 풀 상세: DLL 확장 측정 미지원/종료 중 — 0으로 판정하지 않음\n");
         long holders=0;for(long v:ownership)holders+=v;
         b.append("[Java 보유소켓,Java cleanup대기,native active,native retiring,공유입력생산자,송신요청대기]\n")
@@ -44,6 +48,8 @@ public final class CPoolDiagnostics {
         else if(!quiet)b.append("판정: 연결·작업·생산자가 보유 중 (누수 판정 안 함)\n");
         else if(now-quietSince>=60_000_000_000L)b.append("판정: 미회수 의심 — 관측된 보유자 없이 같은 잔여량 60초 이상; 확정 누수 아님\n");
         else b.append("판정: 회수 확인 대기\n");
+        if(faults&&(nativePool[19]+nativePool[20]>0||nativePool[21]>0))
+            b.append("무결성 오류 기록 있음: 격리 슬롯·객체 참조오류를 정상 대여/회수 판정과 별도로 확인하세요.\n");
         history[cursor++%history.length]=new Sample(now,javaUsed,available?nativeUsed:-1,holders);count=Math.min(count+1,history.length);
         b.append("확보된 풀 메모리는 재사용을 위해 유지됩니다. 사용중/보유량과 구분하세요.\n")
             .append("활성 작업 중 대여·반납 카운터는 순간 차이가 날 수 있습니다. 최고값은 조회 시 관측값입니다.\n")
