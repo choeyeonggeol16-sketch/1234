@@ -1,0 +1,2 @@
+PASS config/no-DB defaults+override;bounded128 ring/64 closed history;8000 concurrent samples;nested worker restore;reset epoch isolation;trace close/capacity reuse;admission byte semantics
+PASS production five broadcast encoders:shared/legacy byte equivalence,8 headings,coordinate truncation,self/map/connection/M filter,wide radius50,rectangle/radius boundaries,borrow/source cleanup on exception (world/transport fixtures)

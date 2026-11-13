@@ -1,0 +1,212 @@
+﻿2026-11-13T08:43:28.1479982Z Current runner version: '2.338.2'
+2026-11-13T08:43:28.1516597Z ##[group]Runner Image Provisioner
+2026-11-13T08:43:28.1517737Z Hosted Compute Agent
+2026-11-13T08:43:28.1518551Z Version: 20261028.624
+2026-11-13T08:43:28.1519429Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-13T08:43:28.1520451Z Build Date: 2026-10-28T21:51:42Z
+2026-11-13T08:43:28.1521512Z Worker ID: {9c5dcc44-69cd-4d58-bc0f-93c33ae0b993}
+2026-11-13T08:43:28.1522538Z Region: eastus3
+2026-11-13T08:43:28.1523239Z Cloud: Azure
+2026-11-13T08:43:28.1523957Z ##[endgroup]
+2026-11-13T08:43:28.1526185Z ##[group]Operating System
+2026-11-13T08:43:28.1527176Z Microsoft Windows Server 2022
+2026-11-13T08:43:28.1528020Z 10.0.20348
+2026-11-13T08:43:28.1528721Z Datacenter
+2026-11-13T08:43:28.1529398Z ##[endgroup]
+2026-11-13T08:43:28.1530112Z ##[group]Runner Image
+2026-11-13T08:43:28.1530982Z Image: windows-2022
+2026-11-13T08:43:28.1531737Z Version: 20261101.353.1
+2026-11-13T08:43:28.1534045Z Included Software: https://github.com/actions/runner-images/blob/win22/20261101.353/images/windows/Windows2022-Readme.md
+2026-11-13T08:43:28.1536406Z Image Release: https://github.com/actions/runner-images/releases/tag/win22%2F20261101.353
+2026-11-13T08:43:28.1537767Z ##[endgroup]
+2026-11-13T08:43:28.1539324Z ##[group]GITHUB_TOKEN Permissions
+2026-11-13T08:43:28.1541426Z Contents: read
+2026-11-13T08:43:28.1541935Z Metadata: read
+2026-11-13T08:43:28.1542488Z ##[endgroup]
+2026-11-13T08:43:28.1544426Z Secret source: Actions
+2026-11-13T08:43:28.1545156Z Cache mode: write
+2026-11-13T08:43:28.1545809Z Prepare workflow directory
+2026-11-13T08:43:28.1877690Z Prepare all required actions
+2026-11-13T08:43:28.1945360Z Getting action download info
+2026-11-13T08:43:28.4307284Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-13T08:43:28.5516129Z Download action repository 'actions/setup-java@v4' (SHA:cf277c60eb25467037889841efdb72551f06f6c3)
+2026-11-13T08:43:29.0790375Z Complete job name: actual-windows
+2026-11-13T08:43:29.2399105Z ##[group]Run actions/checkout@v4
+2026-11-13T08:43:29.2400910Z with:
+2026-11-13T08:43:29.2401774Z   sparse-checkout: patches/ctransport_core_20261112
+2026-11-13T08:43:29.2402856Z   repository: choeyeonggeol16-sketch/1234
+2026-11-13T08:43:29.2408671Z   token: ***
+2026-11-13T08:43:29.2409164Z   ssh-strict: true
+2026-11-13T08:43:29.2409666Z   ssh-user: git
+2026-11-13T08:43:29.2410134Z   persist-credentials: true
+2026-11-13T08:43:29.2410614Z   clean: true
+2026-11-13T08:43:29.2411097Z   sparse-checkout-cone-mode: true
+2026-11-13T08:43:29.2411642Z   fetch-depth: 1
+2026-11-13T08:43:29.2412085Z   fetch-tags: false
+2026-11-13T08:43:29.2412593Z   show-progress: true
+2026-11-13T08:43:29.2413045Z   lfs: false
+2026-11-13T08:43:29.2413461Z   submodules: false
+2026-11-13T08:43:29.2413927Z   set-safe-directory: true
+2026-11-13T08:43:29.2414441Z   allow-unsafe-pr-checkout: false
+2026-11-13T08:43:29.2415611Z ##[endgroup]
+2026-11-13T08:43:29.3960551Z Syncing repository: choeyeonggeol16-sketch/1234
+2026-11-13T08:43:29.3962740Z ##[group]Getting Git version info
+2026-11-13T08:43:29.3963312Z Working directory is 'D:\a\1234\1234'
+2026-11-13T08:43:29.5004681Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-13T08:43:29.7980521Z git version 2.56.0.windows.4
+2026-11-13T08:43:29.8034857Z ##[endgroup]
+2026-11-13T08:43:29.8055874Z Temporarily overriding HOME='D:\a\_temp\bf4c4d8c-6b90-4cbc-b2de-75abced7b83d' before making global git config changes
+2026-11-13T08:43:29.8058582Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-13T08:43:29.8067786Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\1234\1234
+2026-11-13T08:43:29.8587033Z Deleting the contents of 'D:\a\1234\1234'
+2026-11-13T08:43:29.8592315Z ##[group]Initializing the repository
+2026-11-13T08:43:29.8603435Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\1234\1234
+2026-11-13T08:43:29.9334426Z Initialized empty Git repository in D:/a/1234/1234/.git/
+2026-11-13T08:43:29.9378007Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/choeyeonggeol16-sketch/1234
+2026-11-13T08:43:29.9963229Z ##[endgroup]
+2026-11-13T08:43:29.9964636Z ##[group]Disabling automatic garbage collection
+2026-11-13T08:43:29.9970627Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-13T08:43:30.0296981Z ##[endgroup]
+2026-11-13T08:43:30.0297979Z ##[group]Setting up auth
+2026-11-13T08:43:30.0310794Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-13T08:43:30.0635916Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-13T08:43:31.3027471Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-13T08:43:31.3359204Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-13T08:43:31.8907418Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-13T08:43:31.9226391Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-13T08:43:32.4903470Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-13T08:43:32.5234453Z ##[endgroup]
+2026-11-13T08:43:32.5235393Z ##[group]Fetching the repository
+2026-11-13T08:43:32.5253474Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --filter=blob:none --depth=1 origin +eef6429a3e2615e67dbf7cb89c341d27409ba335:refs/remotes/origin/ctransport-shared-abi10-20261113
+2026-11-13T08:43:33.3139951Z From https://github.com/choeyeonggeol16-sketch/1234
+2026-11-13T08:43:33.3141826Z  * [new ref]         eef6429a3e2615e67dbf7cb89c341d27409ba335 -> origin/ctransport-shared-abi10-20261113
+2026-11-13T08:43:33.3184098Z ##[endgroup]
+2026-11-13T08:43:33.3184947Z ##[group]Determining the checkout info
+2026-11-13T08:43:33.3185941Z ##[endgroup]
+2026-11-13T08:43:33.3186794Z ##[group]Setting up sparse checkout
+2026-11-13T08:43:33.3201043Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout set patches/ctransport_core_20261112
+2026-11-13T08:43:33.3716577Z ##[endgroup]
+2026-11-13T08:43:33.3717450Z ##[group]Checking out the ref
+2026-11-13T08:43:33.3728031Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B ctransport-shared-abi10-20261113 refs/remotes/origin/ctransport-shared-abi10-20261113
+2026-11-13T08:43:34.3679930Z Switched to a new branch 'ctransport-shared-abi10-20261113'
+2026-11-13T08:43:34.3702045Z branch 'ctransport-shared-abi10-20261113' set up to track 'origin/ctransport-shared-abi10-20261113'.
+2026-11-13T08:43:34.3746273Z ##[endgroup]
+2026-11-13T08:43:34.4154685Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-13T08:43:34.4449238Z eef6429a3e2615e67dbf7cb89c341d27409ba335
+2026-11-13T08:43:34.4917206Z ##[group]Run actions/setup-java@v4
+2026-11-13T08:43:34.4917668Z with:
+2026-11-13T08:43:34.4917992Z   distribution: temurin
+2026-11-13T08:43:34.4918280Z   java-version: 21
+2026-11-13T08:43:34.4918641Z   java-package: jdk
+2026-11-13T08:43:34.4918918Z   check-latest: false
+2026-11-13T08:43:34.4919191Z   server-id: github
+2026-11-13T08:43:34.4919497Z   server-username: GITHUB_ACTOR
+2026-11-13T08:43:34.4919816Z   server-password: GITHUB_TOKEN
+2026-11-13T08:43:34.4920118Z   overwrite-settings: true
+2026-11-13T08:43:34.4920415Z   job-status: success
+2026-11-13T08:43:34.4922859Z   token: ***
+2026-11-13T08:43:34.4923162Z ##[endgroup]
+2026-11-13T08:43:34.7023724Z ##[warning]setup-java v4 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.
+2026-11-13T08:43:34.7034881Z ##[group]Installed distributions
+2026-11-13T08:43:34.7139003Z Resolved Java 21.0.13+9.0 from tool-cache
+2026-11-13T08:43:34.7139745Z Setting Java 21.0.13+9.0 as the default
+2026-11-13T08:43:34.7157679Z (node:3152) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-13T08:43:34.7162344Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-13T08:43:34.7162848Z Creating toolchains.xml for JDK version 21 from temurin
+2026-11-13T08:43:34.7274955Z Writing to C:\Users\runneradmin\.m2\toolchains.xml
+2026-11-13T08:43:34.7278525Z 
+2026-11-13T08:43:34.7279320Z Java configuration:
+2026-11-13T08:43:34.7279918Z   Distribution: temurin
+2026-11-13T08:43:34.7280395Z   Version: 21.0.13+9.0
+2026-11-13T08:43:34.7283541Z   Path: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+2026-11-13T08:43:34.7284188Z 
+2026-11-13T08:43:34.7284866Z ##[endgroup]
+2026-11-13T08:43:34.7301676Z Creating settings.xml with server-id: github
+2026-11-13T08:43:34.7303308Z Writing to C:\Users\runneradmin\.m2\settings.xml
+2026-11-13T08:43:34.7602408Z ##[group]Run ./tests/run_windows.ps1
+2026-11-13T08:43:34.7602967Z [36;1m./tests/run_windows.ps1[0m
+2026-11-13T08:43:34.8033758Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-13T08:43:34.8034366Z env:
+2026-11-13T08:43:34.8034755Z   JAVA_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+2026-11-13T08:43:34.8035415Z   JAVA_HOME_21_X64: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+2026-11-13T08:43:34.8035848Z ##[endgroup]
+2026-11-13T08:43:35.4518035Z PASS actual Windows DLL: 20 loopback connections, 4MB fragmented echo, order and close counts.
+2026-11-13T08:43:39.6355270Z Note: Some input files use preview features of Java SE 21.
+2026-11-13T08:43:39.6357175Z Note: Recompile with -Xlint:preview for details.
+2026-11-13T08:43:41.1167707Z PASS actual Windows shipped DLL + production Java21 FFM: 20 connections/4MB echo, work, timers/cancel, shutdown
+2026-11-13T08:43:41.2558548Z PASS production gameplay socket adapter: native 16K receives into 4K Java reads, stash/pause/resume and ordered writes
+2026-11-13T08:43:41.3207903Z PASS independent PSS NIO2 channel: fragmented HELLO, PING, BOUND/OPEN, detach, invalid greeting, dedicated expiry executor shutdown
+2026-11-13T08:43:41.9513161Z PASS Windows direct C++ codec/FFM: partial/empty/65535/coalesced frames, 67 exact C2S plaintext/rolling-key matches, 8 S2C matches, stable plaintext lease, foreign/duplicate release and invalid-length terminal
+2026-11-13T08:43:42.3552915Z PASS Windows native registry/timers: retired plaintext survives I/O terminal, release removes context, stale handles rejected, login timeout/auth cancellation/earlier callback deadline
+2026-11-13T08:43:42.6577636Z PASS actual Windows native packet completions: IOCP worker TLS identity, 64 pending packet leases cancel once on shutdown, no post after stop
+2026-11-13T08:43:43.2199450Z PASS Windows MAC policy: unidentified authentication denied, verified one-time binding/cap, terminal capacity reuse and stale handle rejection
+2026-11-13T08:44:13.3628532Z PASS Windows concurrent sessions:connections=53888,concurrent=32,L1Frames=6897664,bytes=3531603968,auth/enter/restart/close,zero active/retiring/Playing/EnterChar entries;elapsedMs=30136
+2026-11-13T08:44:13.3630850Z PASS Windows CPerfMon:actual owner15,system/process memory and process CPU availability; sustained production load and live DB are outside this bounded loopback test
+2026-11-13T08:44:16.5667930Z Note: Some input files use preview features of Java SE 21.
+2026-11-13T08:44:16.5669121Z Note: Recompile with -Xlint:preview for details.
+2026-11-13T08:44:17.1411276Z PASS production CUserSocket account/character/MAC provider hooks and restart/account-clear identities through real Windows FFM
+2026-11-13T08:44:17.2448717Z PASS real Windows native graceful close without output:normal EOF and production owner cleanup
+2026-11-13T08:44:17.4253363Z PASS production native SEND:plain first packet,max65535 S2C frame,8 packed action frames and final packet match unchanged codec;graceful final-byte delivery+EOF without RST;zero pending and owner violations
+2026-11-13T08:44:17.5499128Z PASS production CSocket::__async_AsyncSendConstBuffer:blocked completions force two queued frames into one gather;20K frame crosses16K pool blocks;unchanged codec and FIFO match;CIOBufferEx leases release
+2026-11-13T08:44:18.2320283Z Nov 13, 2026 8:44:18 AM l1j.server.server.model.network.core.CUserSocket transportNativePacket
+2026-11-13T08:44:18.2321032Z WARNING: Native packet session capture failed
+2026-11-13T08:44:18.2321661Z java.lang.IllegalStateException: injected session capture failure
+2026-11-13T08:44:18.2322606Z 	at l1j.server.server.model.network.core.CIOClient.getActiveChar(CIOClient.java:13)
+2026-11-13T08:44:18.2323893Z 	at l1j.server.server.model.network.core.CUserSocket.transportNativePacket(CUserSocket.java:2864)
+2026-11-13T08:44:18.2325109Z 	at l1j.server.server.model.network.core.CSocket.nativePacket(CSocket.java:70)
+2026-11-13T08:44:18.2329864Z 	at l1j.server.server.model.network.core.CIOServer.onUserPacket(CIOServer.java:436)
+2026-11-13T08:44:18.2330647Z 
+2026-11-13T08:44:18.3248580Z PASS actual production CUserSocket + Windows DLL: running handler retains plaintext through I/O terminal; queued session/SEND-pressure leases cancel; shutdown and session-capture exception release once; no pooled leases retained (game/account/scheduler/filter fixtures)
+2026-11-13T08:44:19.7060357Z PASS actual Windows shared broadcast:one16K source,distinct L1 rolling keys,input released before blocked WRITE completion,ExceptSelf,unpublished encoder/shared/ordinary FIFO,close isolation,pending limit,zero refs/leases,live producer pins DLL across bounded shutdown and retry
+2026-11-13T08:44:20.8217837Z Note: Some input files use preview features of Java SE 21.
+2026-11-13T08:44:20.8244833Z Note: Recompile with -Xlint:preview for details.
+2026-11-13T08:44:20.9325610Z PASS production CSocket single/gather copy-close race:source lease retained until downcall exits,original bytes copied,one failed completion
+2026-11-13T08:44:22.1156914Z PASS production L1 opcode/state matrix, loading barrier, multiplexed protocol compatibility, native game/session-owner execution roles
+2026-11-13T08:44:22.1334869Z PASS production registry/deferred close: early retirement, I/O+logout fence, replacement identity, 400 concurrent close races, once-only stale-safe cleanup
+2026-11-13T08:44:23.6345846Z PASS game registration first; fragmented hello; exact bound/open bytes
+2026-11-13T08:44:23.6375499Z PASS helper registration first binds when game registration arrives
+2026-11-13T08:44:23.6407537Z PASS malformed hello does not consume game registration
+2026-11-13T08:44:23.6429796Z PASS wrong source IP cannot take another game session
+2026-11-13T08:44:23.6505227Z PASS expiry removes waiting peers, pending game references and idle channels
+2026-11-13T08:44:23.6531496Z PASS logout invalidates bound peer and releases owner reference
+2026-11-13T08:44:23.6563355Z PASS nonce replay needs a new authenticated game registration
+2026-11-13T08:44:23.6588976Z PASS bounded connection and pending-registration capacity
+2026-11-13T08:44:23.6654111Z PASS concurrent repeated item clicks keep writer serialization and bounded state
+2026-11-13T08:44:23.7354621Z RESULT groups=9 assertions=37; native game UI is tested separately
+2026-11-13T08:44:25.8932906Z Nov 13, 2026 8:44:25 AM l1j.server.server.model.character.pss.window.PlaySupportWindow transport
+2026-11-13T08:44:25.8934347Z INFO: [PSS-WINDOW] companion listening port=54255
+2026-11-13T08:44:25.9275303Z Nov 13, 2026 8:44:25 AM l1j.server.server.model.character.pss.window.PlaySupportWindow$Session attach
+2026-11-13T08:44:25.9276591Z INFO: [PSS-WINDOW] companion bound player=77
+2026-11-13T08:44:25.9294500Z Nov 13, 2026 8:44:25 AM l1j.server.server.model.character.pss.window.PlaySupportWindow open
+2026-11-13T08:44:25.9295762Z INFO: [PSS-WINDOW] item/window request queued player=77
+2026-11-13T08:44:25.9308168Z Nov 13, 2026 8:44:25 AM l1j.server.server.model.character.pss.window.PlaySupportWindow open
+2026-11-13T08:44:25.9310955Z INFO: [PSS-WINDOW] item/window request queued player=77
+2026-11-13T08:44:25.9333725Z Nov 13, 2026 8:44:25 AM l1j.server.server.model.character.pss.window.PlaySupportWindow$Session attach
+2026-11-13T08:44:25.9336085Z INFO: [PSS-WINDOW] companion bound player=77
+2026-11-13T08:44:25.9401122Z Nov 13, 2026 8:44:25 AM l1j.server.server.model.character.pss.window.PlaySupportWindow transport
+2026-11-13T08:44:25.9402781Z WARNING: [PSS-WINDOW] companion unavailable: Address already in use: bind
+2026-11-13T08:44:25.9416904Z Nov 13, 2026 8:44:25 AM l1j.server.server.model.character.pss.window.PlaySupportWindow transport
+2026-11-13T08:44:25.9417816Z INFO: [PSS-WINDOW] companion listening port=54259
+2026-11-13T08:44:25.9427864Z PASS production PSS startup/pairing/item OPEN/logout/restart; PSS shutdown/bind failure isolated from game session; no CTransport/FFM dependency
+2026-11-13T08:44:26.0646253Z PASS unchanged PE32 companion Pss2019.dll loaded; PssClientInit resolved; wrong-client attach refused
+2026-11-13T08:44:27.1547223Z PASS config/no-DB defaults+override;bounded128 ring/64 closed history;8000 concurrent samples;nested worker restore;reset epoch isolation;trace close/capacity reuse;admission byte semantics
+2026-11-13T08:44:28.5590331Z PASS production five broadcast encoders:shared/legacy byte equivalence,8 headings,coordinate truncation,self/map/connection/M filter,wide radius50,rectangle/radius boundaries,borrow/source cleanup on exception (world/transport fixtures)
+2026-11-13T08:44:28.6162450Z Post job cleanup.
+2026-11-13T08:44:28.8018669Z (node:7908) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-13T08:44:28.8019359Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-13T08:44:28.8365312Z Post job cleanup.
+2026-11-13T08:44:29.0421051Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-13T08:44:29.0859088Z git version 2.56.0.windows.4
+2026-11-13T08:44:29.0934543Z Temporarily overriding HOME='D:\a\_temp\e92714f1-72a7-4be9-b4c1-c4e64b167bc0' before making global git config changes
+2026-11-13T08:44:29.0938023Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-13T08:44:29.0949548Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\1234\1234
+2026-11-13T08:44:29.1304740Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-13T08:44:29.1642329Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-13T08:44:29.7084789Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-13T08:44:29.7371068Z http.https://github.com/.extraheader
+2026-11-13T08:44:29.7420486Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-11-13T08:44:29.7831630Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-13T08:44:30.3530158Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-13T08:44:30.3887572Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-13T08:44:31.0686223Z Cleaning up orphan processes
+2026-11-13T08:44:31.0914035Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-java@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

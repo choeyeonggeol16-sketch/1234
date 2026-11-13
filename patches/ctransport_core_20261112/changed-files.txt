@@ -2,6 +2,7 @@ src/l1j/server/MJINNSystem/MJINNHelper.java
 src/l1j/server/MJTemplate/PacketHelper/MJPacketFactory.java
 src/l1j/server/Server.java
 src/l1j/server/server/Opcodes.java
+src/l1j/server/server/model/LocalWorldMap.java
 src/l1j/server/server/model/character/pss/window/PlaySupportWindow.java
 src/l1j/server/server/model/character/pss/window/PssWindowTransport.java
 src/l1j/server/server/model/network/buffer/ReadBuffer.java
@@ -20,8 +21,11 @@ src/l1j/server/server/model/network/core/CIOPacketCodec.java
 src/l1j/server/server/model/network/core/CIOServer.java
 src/l1j/server/server/model/network/core/CIOServerEndpoint.java
 src/l1j/server/server/model/network/core/CIOSlotPool.java
+src/l1j/server/server/model/network/core/CNetworkDiagnostics.java
 src/l1j/server/server/model/network/core/CPerfMon.java
+src/l1j/server/server/model/network/core/CSharedBroadcast.java
 src/l1j/server/server/model/network/core/CSocket.java
+src/l1j/server/server/model/network/core/CTLMFilter.java
 src/l1j/server/server/model/network/core/CUserSocket.java
 src/l1j/server/server/model/network/core/CUserSocketCloseTask.java
 src/l1j/server/server/model/network/core/CUserSocketRegistry.java
@@ -236,3 +240,4 @@ src/l1j/server/server/packets/Protocol/Proto.java
 src/l1j/server/server/packets/Protocol/ProtoWriter.java
 src/l1j/server/server/utils/ConfigReader.java
 src/l1j/server/server/utils/TimeUtil.java
+src/l1j/server/swing/chocco.java

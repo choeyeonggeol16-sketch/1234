@@ -1,3 +1,15 @@
+# ABI10 후속 — 매니저 진단·필터·공유 방송 정리
+
+REPORT_NETWORK_FOLLOWUP.md 기준으로 전체 src를 clean build합니다. native DLL/ABI/코덱/PSS는 기존 ABI10과 동일합니다. config/ctransport.properties를 실행 폴더에 적용하고 변경 시 재시작합니다. -D 옵션이 파일보다 우선하며 추가 SQL은 없습니다.
+
+매니저의 패킷 카운트·시간 분석·소켓·프로파일·참조/수명 상태·전송률을 연결했습니다. 최근 패킷 조회는 소켓 보고서의 진단 id를 사용합니다. 이동·방향·삭제와 기존 액션·이펙트의 공통 방송 경로 및 맵/거리 필터를 정리했습니다.
+
+MAC 제한 기본0은 비활성입니다. 서버 제한/API는 있지만 실제 클라이언트 식별자 공급은 미연동입니다. 진단의 byte 수치는 복호화 본문/송신 접수량이며 TCP 완료량이 아닙니다. 원본 전체 복원·실게임/DB 장시간 검증·매니저 실제 클릭 검증을 완료한 결과는 아닙니다.
+
+아래 내용은 이전 배포 이력입니다.
+
+---
+
 # CTransport ABI10 — 공유 평문 방송
 
 전체 src와 같은 묶음의 CTransport.dll을 함께 적용하고 clean build합니다. ABI0xa0000 / 67 exports이며 ABI9 Jar/DLL 혼용은 시작을 거절합니다. 기존 삭제 목록(deleted-files.txt), Java 21 preview/native-access 옵션과 CIOPacketCodec.dll을 유지합니다.

@@ -1,3 +1,13 @@
+## 2026-11-13 — ABI10 후속 / 매니저 진단·방송 필터·중복 정리
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·설정·검사**](downloads/CTransport_CORE_20261112.zip) · [**구현 보고서**](reports/CTRANSPORT_MANAGER_FILTERS_FOLLOWUP_20261113.md)
+
+매니저의 패킷 카운트/시간 분석/소켓/프로파일/수명 상태/전송률을 연결했습니다. 이동·방향·삭제 공유 방송을 확대하고 화면·맵·거리 검사와 방송 반복 코드를 합쳤습니다. config/ctransport.properties로 설정하며 DB 변경은 없습니다. 클라이언트 HWID 공급은 별도 연동이며 기본 MAC 제한0입니다. 기존 ABI10 DLL/코덱/PSS는 유지합니다. 전체 소스를 clean build하고 보고서의 검사 범위를 확인하세요.
+
+이하 내용은 이전 배포 이력입니다.
+
+---
+
 ## 2026-11-13 — CTransport ABI10 / 공유 평문 방송
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**같은 버전 DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**구현·검증 보고서**](reports/CTRANSPORT_SHARED_BROADCAST_ABI10_20261113.md)

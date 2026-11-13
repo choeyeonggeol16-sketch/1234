@@ -4,7 +4,7 @@
   "dll": "CTransport.dll",
   "dll_sha256": "de61cd0f15ec1895dfd91340156b3ba91c880837aeb66e034ab6d21666f29014",
   "abi": "0xa0000",
-  "implementation_parent": "9255cca609b204c5e58ac8ae4bffe50863188c07",
+  "implementation_parent": "eef6429a3e2615e67dbf7cb89c341d27409ba335",
   "transport_scope": "game",
   "mandatory": true,
   "pss": {
@@ -20,13 +20,14 @@
   },
   "fallback": false,
   "completion_batch": 128,
-  "source_files": 1707,
-  "java_files": 1706,
+  "source_files": 1710,
+  "java_files": 1709,
   "changed_files": [
     "src/l1j/server/MJINNSystem/MJINNHelper.java",
     "src/l1j/server/MJTemplate/PacketHelper/MJPacketFactory.java",
     "src/l1j/server/Server.java",
     "src/l1j/server/server/Opcodes.java",
+    "src/l1j/server/server/model/LocalWorldMap.java",
     "src/l1j/server/server/model/character/pss/window/PlaySupportWindow.java",
     "src/l1j/server/server/model/character/pss/window/PssWindowTransport.java",
     "src/l1j/server/server/model/network/buffer/ReadBuffer.java",
@@ -45,8 +46,11 @@
     "src/l1j/server/server/model/network/core/CIOServer.java",
     "src/l1j/server/server/model/network/core/CIOServerEndpoint.java",
     "src/l1j/server/server/model/network/core/CIOSlotPool.java",
+    "src/l1j/server/server/model/network/core/CNetworkDiagnostics.java",
     "src/l1j/server/server/model/network/core/CPerfMon.java",
+    "src/l1j/server/server/model/network/core/CSharedBroadcast.java",
     "src/l1j/server/server/model/network/core/CSocket.java",
+    "src/l1j/server/server/model/network/core/CTLMFilter.java",
     "src/l1j/server/server/model/network/core/CUserSocket.java",
     "src/l1j/server/server/model/network/core/CUserSocketCloseTask.java",
     "src/l1j/server/server/model/network/core/CUserSocketRegistry.java",
@@ -260,7 +264,8 @@
     "src/l1j/server/server/packets/Protocol/Proto.java",
     "src/l1j/server/server/packets/Protocol/ProtoWriter.java",
     "src/l1j/server/server/utils/ConfigReader.java",
-    "src/l1j/server/server/utils/TimeUtil.java"
+    "src/l1j/server/server/utils/TimeUtil.java",
+    "src/l1j/server/swing/chocco.java"
   ],
   "deleted_files": [
     "src/l1j/server/server/model/network/core/CIOSocketFactory.java",
@@ -283,7 +288,7 @@
     "no private input vector for native shared requests; per-socket cipher output remains private",
     "shared input references transferred to native before downcall return and released before wire completion",
     "queue saturation and disconnect rollback; FFM arena pinned by live producer handles",
-    "scope guard:1697 source files unchanged from ABI9;unchanged codec and independent PSS"
+    "followup source guard:1697 files byte-identical to previous ABI10;unchanged codec and independent PSS"
   ],
   "new_abi9_structures": [
     "original RTTI CDummyServerCallback/IServerCallback names wired in C++ and Java",
@@ -359,36 +364,37 @@
     "status": "passed",
     "abi": "0xa0000",
     "exports": 67,
-    "implementation_parent": "b74eb78c4d15084a70019be02d1b10a1341fb678",
-    "implementation_commit": "9255cca609b204c5e58ac8ae4bffe50863188c07",
-    "tested_source_commit": "9255cca609b204c5e58ac8ae4bffe50863188c07",
-    "run_id": 43371588194,
-    "job_id": 131708341702,
-    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43371588194",
+    "implementation_parent": "d9e846126cbcdd184e3a6d39c5269794189237a7",
+    "implementation_commit": "eef6429a3e2615e67dbf7cb89c341d27409ba335",
+    "tested_source_commit": "eef6429a3e2615e67dbf7cb89c341d27409ba335",
+    "run_id": 43395445331,
+    "job_id": 131785122442,
+    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43395445331",
     "os": "Windows Server 2022 GitHub-hosted runner",
     "jdk": "Temurin 21.0.13+9",
     "dll_sha256": "de61cd0f15ec1895dfd91340156b3ba91c880837aeb66e034ab6d21666f29014",
     "codec_dll_sha256": "60bde93c2ba20057e7e307594edef69ced273b69f923535ab658769e09f0cea9",
     "pss_client_dll_sha256": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
-    "source_archive_sha256": "1e8126cd98c17f6fdffbf3b4a29f26b18eaf4919aac6fd2479d028896434ab9f",
+    "source_archive_sha256": "052604394b216aca4ff5faa6eb0d223cb3db7320d64da9acc17186254933e3e0",
     "historical_abi9": {
       "run_id": 43365489001,
       "tested_source_commit": "0ca18a8d10a84ede5db6d34ddbbd24cb29d0f811",
       "dll_sha256": "ffd5620b4aab7e6fe2a735a25814a37a5dc9f68f1d169bd290b16733f4a3c145"
     },
     "source_scope": {
-      "baseline": "b74eb78c4d15084a70019be02d1b10a1341fb678",
+      "baseline": "d9e846126cbcdd184e3a6d39c5269794189237a7",
       "unchanged_outside_allowlist": 1697,
-      "edited_existing_sources": 8,
-      "added_network_classes": 2,
-      "pss_unchanged": true
+      "edited_existing_sources": 10,
+      "added_network_classes": 3,
+      "pss_unchanged": true,
+      "native_cpp_and_dll_unchanged": true
     },
     "bounded_loopback": {
-      "cumulative_connections": 53920,
+      "cumulative_connections": 53888,
       "concurrent": 32,
-      "frames": 6901760,
-      "wire_bytes": 3533701120,
-      "elapsed_ms": 30144
+      "frames": 6897664,
+      "wire_bytes": 3531603968,
+      "elapsed_ms": 30136
     },
     "tests": [
       "actual Windows DLL: 20 loopback connections, 4MB fragmented echo, order and close counts.",
@@ -399,7 +405,7 @@
       "Windows native registry/timers: retired plaintext survives I/O terminal, release removes context, stale handles rejected, login timeout/auth cancellation/earlier callback deadline",
       "actual Windows native packet completions: IOCP worker TLS identity, 64 pending packet leases cancel once on shutdown, no post after stop",
       "Windows MAC policy: unidentified authentication denied, verified one-time binding/cap, terminal capacity reuse and stale handle rejection",
-      "Windows concurrent sessions:connections=53920,concurrent=32,L1Frames=6901760,bytes=3533701120,auth/enter/restart/close,zero active/retiring/Playing/EnterChar entries;elapsedMs=30144",
+      "Windows concurrent sessions:connections=53888,concurrent=32,L1Frames=6897664,bytes=3531603968,auth/enter/restart/close,zero active/retiring/Playing/EnterChar entries;elapsedMs=30136",
       "Windows CPerfMon:actual owner15,system/process memory and process CPU availability; sustained production load and live DB are outside this bounded loopback test",
       "production CUserSocket account/character/MAC provider hooks and restart/account-clear identities through real Windows FFM",
       "real Windows native graceful close without output:normal EOF and production owner cleanup",
@@ -420,11 +426,28 @@
       "bounded connection and pending-registration capacity",
       "concurrent repeated item clicks keep writer serialization and bounded state",
       "production PSS startup/pairing/item OPEN/logout/restart; PSS shutdown/bind failure isolated from game session; no CTransport/FFM dependency",
-      "unchanged PE32 companion Pss2019.dll loaded; PssClientInit resolved; wrong-client attach refused"
+      "unchanged PE32 companion Pss2019.dll loaded; PssClientInit resolved; wrong-client attach refused",
+      "config/no-DB defaults+override;bounded128 ring/64 closed history;8000 concurrent samples;nested worker restore;reset epoch isolation;trace close/capacity reuse;admission byte semantics",
+      "production five broadcast encoders:shared/legacy byte equivalence,8 headings,coordinate truncation,self/map/connection/M filter,wide radius50,rectangle/radius boundaries,borrow/source cleanup on exception (world/transport fixtures)"
     ],
     "limitations": [
-      "Game/account/scheduler dependencies are fixtures for production CUserSocket tests.",
-      "No live game client/database/long-duration production load or speedup measurement."
-    ]
-  }
+      "Game/world/account/scheduler dependencies are fixtures in differential/owner tests.",
+      "No live game client/database/long-duration production load or speedup measurement.",
+      "Manager UI source compiles;actual interactive window clicks not tested.",
+      "MAC/HWID server config/API exist;client identity transmitter/verifier not integrated."
+    ],
+    "historical_shared_broadcast": {
+      "run_id": 43371588194,
+      "tested_source_commit": "9255cca609b204c5e58ac8ae4bffe50863188c07"
+    }
+  },
+  "followup_structures": [
+    "common L1 map/screen/radius/rectangle predicate",
+    "five shared broadcast serializers with common recipient traversal",
+    "bounded metadata packet history/worker context and manager reports",
+    "config file with JVM override;existing MAC provider enforcement;no DB",
+    "source scope1697 unchanged from previous ABI10;native DLL unchanged"
+  ],
+  "config_file": "config/ctransport.properties",
+  "client_identity_status": "Server API/config existing;client identity transmitter/verifier not integrated;default limit0"
 }

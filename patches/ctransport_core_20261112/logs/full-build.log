@@ -18,4 +18,4 @@ Note: Recompile with -Xlint:deprecation for details.
 Note: Some input files use preview features of Java SE 21.
 Note: Recompile with -Xlint:preview for details.
 5 warnings
-PASS full Java21 type compilation: 1706 production sources; zero errors.
+PASS full Java21 type compilation: 1709 production sources; zero errors.
