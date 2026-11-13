@@ -7,6 +7,8 @@ src/l1j/server/server/model/character/pss/window/PssWindowTransport.java
 src/l1j/server/server/model/network/buffer/ReadBuffer.java
 src/l1j/server/server/model/network/buffer/WriteBuffer.java
 src/l1j/server/server/model/network/codec/Cryptor.java
+src/l1j/server/server/model/network/core/CAsyncSendConstBuffer.java
+src/l1j/server/server/model/network/core/CAsyncSendConstBufferExceptSelf.java
 src/l1j/server/server/model/network/core/CDummyServerCallback.java
 src/l1j/server/server/model/network/core/CIOBufferEx.java
 src/l1j/server/server/model/network/core/CIOBufferPool.java

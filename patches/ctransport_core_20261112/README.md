@@ -1,3 +1,13 @@
+# CTransport ABI10 — 공유 평문 방송
+
+전체 src와 같은 묶음의 CTransport.dll을 함께 적용하고 clean build합니다. ABI0xa0000 / 67 exports이며 ABI9 Jar/DLL 혼용은 시작을 거절합니다. 기존 삭제 목록(deleted-files.txt), Java 21 preview/native-access 옵션과 CIOPacketCodec.dll을 유지합니다.
+
+액션·이펙트 방송은 CAsyncSendConstBuffer/ExceptSelf로 평문 하나를 공유하고 기존 Java FIFO를 거쳐 소켓별 출력에서 암호화합니다. 소스 ID 제외, 순서·참조 회수·종료를 실제 Windows에서 검증했습니다. 일반 패킷과 기존 송신 제한은 유지합니다. PSS는 기존 독립 연결로 활성화된 상태이며 추가 SQL은 없습니다.
+
+자세한 변경/검증/제약은 REPORT_SHARED_BROADCAST_ABI10.md와 WINDOWS_VERIFICATION.json을 확인하세요. 실게임/운영 DB/장시간 부하 및 속도 향상폭은 미검증입니다. 아래 ABI9 이전 설명과 검사 기록은 당시 이력입니다.
+
+---
+
 # CTransport ABI9
 
 원본 RTTI에서 CDummyServerCallback/IServerCallback과 MemoryObject 기반을 확인해 실제 C++/Java 호출에 연결했습니다. Java CIOSocketFactory는 CDummyServerCallback으로 바꾸고 CIOBufferEx를 독립 클래스로 사용합니다. 상수 입력을 보존하는 CSocket::__async_AsyncSendConstBuffer 경로를 실제 gather SEND에 연결했습니다.

@@ -1,3 +1,13 @@
+## 2026-11-13 — CTransport ABI10 / 공유 평문 방송
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**같은 버전 DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**구현·검증 보고서**](reports/CTRANSPORT_SHARED_BROADCAST_ABI10_20261113.md)
+
+원본 CAsyncSendConstBuffer/ExceptSelf 흐름을 L1의 기존 송신 FIFO에 연결했습니다. 액션·이펙트 평문을 한 번 작성해 공유하고 소켓별 출력에서 기존 코덱으로 암호화합니다. ABI0xa0000/67 exports의 전체 src와 DLL을 함께 적용하고 clean build합니다. PSS 독립 동작·기존 코덱 유지, 추가 SQL 없음. [실제 Windows 검증](patches/ctransport_core_20261112/WINDOWS_VERIFICATION.json) 통과. 실게임·운영 DB·장시간 부하 및 성능 향상폭은 미검증입니다.
+
+이하 ABI9 이전 설명은 당시 이력입니다. 최신 적용 기준은 위 ABI10 보고서입니다.
+
+---
+
 ## 2026-11-13 — CTransport ABI9 / 원본 이름·MemoryObject·상수 송신
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**같은 버전 DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**분석·구현 보고서**](reports/CTRANSPORT_ORIGINAL_NAMES_CONST_ABI9_20261113.md)
