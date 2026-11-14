@@ -1,0 +1,39 @@
+name: Audit active legacy packet call contexts
+on:
+  push:
+    branches: [broadcast-nonsc-audit16-20261115]
+    paths: [".github/workflows/broadcast-audit16.yml"]
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect phase14 legacy packet callers and class definition
+        run: |
+          python3 - <<'PY'
+          import zipfile,hashlib,re
+          p='downloads/RKern_Broadcast_NonSC_Phase14_FULL_SRC_20261115.zip'
+          b=open(p,'rb').read()
+          assert hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()=='85b50b789b9152d35d480352a2dfde76ca042f45'
+          focus=['L1Burf.java','DragonPearl.java','HelpBySupport.java','Broadcaster.java','S_SkillSound.java','CAttackAction.java','MJItemSkillModel.java','SC_SkillSound.java','L1World.java','MJLFCObject.java']
+          with zipfile.ZipFile(p) as z:
+            names=z.namelist()
+            for short in focus:
+              hits=[n for n in names if n.endswith('/'+short)]
+              print('\n===============',short,hits)
+              if len(hits)!=1:continue
+              name=hits[0];lines=z.read(name).decode('utf8').splitlines()
+              if short in ('Broadcaster.java','S_SkillSound.java','L1Burf.java','DragonPearl.java','MJItemSkillModel.java','SC_SkillSound.java'):
+                  ranges=[(1,min(len(lines),350))]
+              else:
+                  markers=['broadcastPacket(', 'S_SkillSound(','sendGreenMsgToList(', 'protected void broadcastPacket(']
+                  locs=[i for i,line in enumerate(lines) if any(m in line for m in markers)]
+                  ranges=[]
+                  for at in locs:
+                      a=max(0,at-20);b=min(len(lines),at+25)
+                      if ranges and a<=ranges[-1][1]:ranges[-1]=(ranges[-1][0],max(b,ranges[-1][1]))
+                      else:ranges.append((a,b))
+              for a,b in ranges[:12]:
+                  for i in range(a,b):print(f'{i+1:4} {lines[i]}')
+          PY
