@@ -221,6 +221,12 @@ def remove_socket_old_enqueue(s):
     return s
 
 def replace_shared_source(s):
+    source_doc=("A false apply result means the caller must use its existing serializer.\n"
+                " * True includes an excluded/closed peer or a peer deliberately skipped by limit.")
+    new_doc=("The same frozen plaintext is sent to every accepted recipient.\n"
+             " * No per-packet legacy encoder is called during broadcast.")
+    if source_doc not in s:raise ValueError("Outdated shared buffer fallback documentation changed")
+    s=s.replace(source_doc,new_doc)
     assert "frame.length > 16384" in s
     s=s.replace("frame.length > 16384","frame.length > 0xFFFF",1)
     a,b,method=find_java_method(s,"public final synchronized boolean apply(")
@@ -308,6 +314,8 @@ def drop_item(s):
     s,n=rx.subn('final boolean delivered=shared.send(client.getConnection(),pc.getId());',s)
     if n!=1:raise ValueError("Expected ground-item duplicate send exactly once, got "+str(n))
     if 'shared.applyConfirmed' in s:raise ValueError("Still using applyConfirmed")
+    s=s.replace("serialized independently into each recipient's outbound frame.",
+                "serialized once and submitted as one immutable frame across recipients.")
     s=s.replace('if(max>16384 || max>ConnectionConfig.MAX_WIRE_PACKET_SIZE)return null;',
                 'if(max>ConnectionConfig.MAX_WIRE_PACKET_SIZE)return null;')
     return s
