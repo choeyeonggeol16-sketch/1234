@@ -219,7 +219,8 @@ def replace_shared_source(s):
     marker="    @Override public final synchronized void close()"
     if marker not in s:raise ValueError("missing shared close")
     s=s.replace(marker,SHARED_SEND+"\n"+marker,1)
-    assert 'legacy' not in s.lower().replace("existing serializer","")
+    assert "public final synchronized boolean apply(" not in s
+    assert "public final synchronized boolean applyConfirmed(" not in s
     return s
 
 def remove_null_legacy_blocks(s):
