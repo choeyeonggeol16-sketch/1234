@@ -1,0 +1,82 @@
+name: MainServer Proto consolidation
+on:
+  push:
+    branches: [mainserver-proto-consolidation-20261115]
+    paths:
+      - '.github/workflows/mainserver-proto-consolidation.yml'
+      - 'patches/mainserver_proto_consolidation_20261115/**'
+permissions:
+  contents: write
+jobs:
+  consolidate-verify-publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Verify exact latest source and migrate all Protobuf-specific classes
+        run: |
+          python3 patches/mainserver_proto_consolidation_20261115/consolidate_proto.py --work "$RUNNER_TEMP/proto"
+      - name: Fetch and verify pinned Java compile dependencies
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, urllib.request
+          rows=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          deps=pathlib.Path('.compile-deps')
+          deps.mkdir(exist_ok=True)
+          for item in rows:
+            out=deps/item['file']
+            urllib.request.urlretrieve(item['url'],out)
+            assert hashlib.sha256(out.read_bytes()).hexdigest()==item['sha256'], item['file']
+          print('Pinned dependencies SHA256 passed:',len(rows))
+          PY
+      - name: Compile complete Java 21 source and inspect consolidated packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP/proto/src" -name '*.java' | sort > "$RUNNER_TEMP/proto/files.txt"
+          test "$(wc -l < "$RUNNER_TEMP/proto/files.txt")" -eq 1711
+          mkdir -p "$RUNNER_TEMP/proto/classes"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g \
+            -cp "$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/proto/classes" @"$RUNNER_TEMP/proto/files.txt"
+          root="$RUNNER_TEMP/proto/classes/l1j/server/server/packets/Protocol/MainServer/Proto"
+          for name in CSProto Proto ProtoMsg ProtoPacket ProtoPacketWriter ProtoReader ProtoWriter; do
+            test -f "$root/$name.class"
+          done
+          for name in ProtoInputStream ProtoOutputStream WireFormat; do
+            test -f "$root/Stream/$name.class"
+          done
+          test -f "$root/Dispatch/CS_ExtendedProto.class"
+          test -f "$root/Adapter/SC_NOTIFICATION_MESSAGE.class"
+          test ! -e "$RUNNER_TEMP/proto/classes/l1j/server/server/packets/Protocol/ProtoReader.class"
+          test -f "$RUNNER_TEMP/proto/classes/l1j/server/server/packets/Protocol/MainServer/PlaySupport/PlaySupport2019.class"
+          javap -classpath "$RUNNER_TEMP/proto/classes" \
+            l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader \
+            | grep -q varint32
+          python3 - <<'PY'
+          import json, os, pathlib, zipfile
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'proto'
+          r=json.loads((root/'audit.json').read_text())
+          assert r['moved_java']==12 and r['java_count']==1711 and r['schema_count']==12
+          with zipfile.ZipFile('downloads/CTransport_MainServer_Proto_Consolidated_FULL_SRC_20261115.zip') as z:
+            assert z.testzip() is None
+          print('Full Java 21 compilation PASSED; files moved=',r['moved_java'],
+                'files updated=',r['edited_java'],
+                'FQCN rewrites=',r['references_updated'])
+          PY
+      - name: Commit one fully validated full source ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/CTransport_MainServer_Proto_Consolidated_FULL_SRC_20261115.zip
+          git diff --cached --quiet && { echo "Already published"; exit 0; }
+          git commit -m "Publish MainServer consolidated Proto complete source [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
