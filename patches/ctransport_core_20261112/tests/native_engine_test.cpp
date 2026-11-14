@@ -825,4 +825,22 @@ static void sharedBroadcastTests(){
  }
  std::cout<<"PASS shared const broadcast: one frozen16K source/two queued recipients;producer released before execution;close isolation;unchanged plaintext;504-slot overflow rolls back refs/reservations;503 queued cancellations;source outlives server shutdown\n";
 }
-int main(){std::cout.setf(std::ios::unitbuf);sharedBroadcastTests();sendCloseTests();remainingNetworkTests();originalStructureTests();userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";return 0;}
+static void resumeHandoffTests(){
+ for(bool resumeOwner:{false,true}){
+  Fixture f;f.state.userProfile=true;f.state.holdPacket=true;auto [socket,id]=f.connect();check(L1Interop_PauseRead(f.server,id,0),"handoff resume");
+  auto wire=l1Frame(10,3),second=l1Frame(10,7);wire.insert(wire.end(),second.begin(),second.end());fakewin::feed(socket,wire);
+  until([&]{return f.state.heldSequence.load()!=0;});
+  auto* base=f.server->find(id);check(base,"handoff lookup");ObjectRef hold(base,false);auto* c=dynamic_cast<CUserSocket*>(base);check(c,"handoff user socket");
+  until([&]{std::lock_guard<std::mutex> lock(c->gate());return !c->state().readDelivering&&!c->userPumpActive();});
+  {std::lock_guard<std::mutex> lock(c->gate());check(c->UserProtocol()->codec->pending()>0,"no buffered second frame");if(resumeOwner)c->userPumpActive()=true;else c->state().readDelivering=true;}
+  // Force the foreign lease return while the completion owner is leaving its
+  // drain. queueResume must defer here; the owner must carry that wakeup.
+  std::thread foreign([&]{check(L1Interop_ReleasePacket(f.server,id,f.state.heldSequence.load()),"foreign handoff release");});foreign.join();
+  {std::lock_guard<std::mutex> lock(c->gate());check(!c->resumePosted(),"handoff did not hit suppressed resume window");if(resumeOwner)c->userPumpActive()=false;else c->state().readDelivering=false;c->readLocked();
+   check(!c->state().readPosted,"buffered frame was stranded behind a new WSARecv");}
+  check(c->queueResume(),"owner handoff post");until([&]{return f.state.packetCalls==2;});
+  check(f.state.received.size()==8,"handoff frame loss");
+ }
+ std::cout<<"PASS receive handoff:foreign lease release during READ/RESUME drain cannot strand buffered frames behind WSARecv;no extra input required\n";
+}
+int main(){std::cout.setf(std::ios::unitbuf);resumeHandoffTests();sharedBroadcastTests();sendCloseTests();remainingNetworkTests();originalStructureTests();userSocketTests();managerAndNativeLeaseTests();coreTests();batchTests();engineTests();recoveredStructureTests();exactStructureTests();std::cout<<"PASS all native tests. Windows completion APIs are fixtures, not the Windows kernel.\n";return 0;}

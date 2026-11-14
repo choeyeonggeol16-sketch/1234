@@ -32,7 +32,20 @@ public final class CUserSocketReceivePerformanceTest {
                     }));
                 }
                 check(ready.await(15,TimeUnit.SECONDS),"RX admission");long cpu=cpuTime(),began=System.nanoTime();Instant wall=Instant.now();deadline.set(began+seconds*1_000_000_000L);start.countDown();
-                for(Future<?> future:futures)future.get(seconds+30,TimeUnit.SECONDS);long elapsed=System.nanoTime()-began,cpuNanos=cpuTime()-cpu;
+                try{for(Future<?> future:futures)future.get(seconds+30,TimeUnit.SECONDS);}
+                catch(Throwable failure){
+                    Map<String,Object> dump=new LinkedHashMap<>();dump.put("phase",name);List<Object> states=new ArrayList<>();
+                    for(int n=0;n<clients;n++){
+                        Map<String,Object> row=new LinkedHashMap<>();row.put("client",n);row.put("observed",observed[n].get());row.put("open",world.users[n].isOpen());
+                        for(String field:List.of("nativePacketPhase","_nativeGamePending","_nativePacketOnIo","_sendReadPaused","_closed","_closing")){
+                            var f=CUserSocket.class.getDeclaredField(field);f.setAccessible(true);row.put(field,String.valueOf(f.get(world.users[n])));
+                        }
+                        var channel=CUserSocket.class.getDeclaredField("_channel");channel.setAccessible(true);
+                        row.put("native",Arrays.toString(((l1j.server.server.model.network.core.transport.CSocket)channel.get(world.users[n])).userSocketState()));states.add(row);
+                    }
+                    dump.put("users",states);dump.put("workers",Arrays.toString(world.server.threadDiagnostics()));dump.put("registry",Arrays.toString(world.server.registryDiagnostics()));write(Path.of("stability-rxowner-failure.json"),dump);throw failure;
+                }
+                long elapsed=System.nanoTime()-began,cpuNanos=cpuTime()-cpu;
                 check(error.get()==null,"RX failure "+error.get());for(int n=0;n<clients;n++)check(observed[n].get()==totals[n],"RX loss/duplicate");healthy(world.server);
                 long total=Arrays.stream(totals).sum();long[] latency=new long[Arrays.stream(samples).mapToInt(a->a.length).sum()];int at=0;for(long[] a:samples){System.arraycopy(a,0,latency,at,a.length);at+=a.length;}
                 Map<String,Object> result=result(name,total,total*size,elapsed,latency);measured(name,wall,Instant.now(),elapsed,cpuNanos,result);

@@ -370,6 +370,10 @@ public:
         const bool graceRead=gracefulRequested()&&gracefulSendShutdown()&&!gracefulPeerEof()&&!state().closing
                 &&!state().readPosted&&!state().readDelivering&&!state().acceptDelivering;
         if ((!state().canRead()&&!graceRead) || (!graceRead&&UserProtocol() && (packetBorrowed()||packetDelivering()||resumePosted()||userPumpActive()))) return;
+        // A foreign lease return can race the READ/RESUME drain's last check.
+        // Complete frames already fed to the codec must be drained before a
+        // fresh WSARecv: the peer may be waiting for those buffered frames.
+        if (!graceRead && UserProtocol() && UserProtocol()->codec->pending() > 0) return;
         if (!reads().prepare()) { failLocked(2, 10055); return; }
         nativeReadBuffer_=reads().block()?static_cast<void*>(reads().block()->data.data()-16):nullptr;
         readOp().reset(); state().readPosted = true; retain(ObjectReferenceType::ORT_IO_RETAIN);
@@ -491,6 +495,8 @@ public:
             {std::lock_guard<std::mutex> lock(gate());resumePosted()=false;userPumpActive()=true;}
             OnRead();
             {std::lock_guard<std::mutex> lock(gate());userPumpActive()=false;readLocked();_Write();}
+            // Carry a release suppressed while userPumpActive was still set.
+            queueResume();
             finishIfReady();return;
         }
         CIOBuffer* retired = nullptr;
@@ -529,6 +535,9 @@ public:
             readLocked(); _Write();
         }
         server()->buffers.recycle(retired);
+        // readLocked leaves complete codec input for this drain. Recheck only
+        // after readDelivering is clear, closing the foreign-release window.
+        if (op.kind == OpKind::Read && UserProtocol()) queueResume();
         finishIfReady();
     }
 };
