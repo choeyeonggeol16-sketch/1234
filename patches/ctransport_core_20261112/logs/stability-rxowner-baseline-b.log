@@ -1,0 +1,14 @@
+Exception in thread "main" java.util.concurrent.ExecutionException: java.lang.RuntimeException: java.lang.AssertionError: production RX stalled client=0 observed=591669
+	at java.base/java.util.concurrent.FutureTask.report(FutureTask.java:122)
+	at java.base/java.util.concurrent.FutureTask.get(FutureTask.java:205)
+	at l1j.server.server.model.network.core.connection.CUserSocketReceivePerformanceTest.run(CUserSocketReceivePerformanceTest.java:35)
+	at l1j.server.server.model.network.core.connection.CUserSocketReceivePerformanceTest.main(CUserSocketReceivePerformanceTest.java:46)
+Caused by: java.lang.RuntimeException: java.lang.AssertionError: production RX stalled client=0 observed=591669
+	at l1j.server.server.model.network.core.connection.CUserSocketReceivePerformanceTest.lambda$run$1(CUserSocketReceivePerformanceTest.java:31)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)
+Caused by: java.lang.AssertionError: production RX stalled client=0 observed=591669
+	at l1j.server.server.model.network.core.stability.StressMetrics.check(StressMetrics.java:18)
+	at l1j.server.server.model.network.core.connection.CUserSocketReceivePerformanceTest.lambda$run$1(CUserSocketReceivePerformanceTest.java:28)
+	... 3 more
