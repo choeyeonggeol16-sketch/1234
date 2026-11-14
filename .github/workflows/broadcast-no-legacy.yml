@@ -1,0 +1,17 @@
+name: Audit broadcast legacy code on authoritative full SRC
+on:
+  push:
+    branches: [mainserver-broadcast-no-legacy-20261115]
+    paths:
+      - 'patches/ctransport_broadcast_no_legacy_20261115/**'
+      - '.github/workflows/broadcast-no-legacy.yml'
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect the compiled 55-class source baseline
+        run: python3 patches/ctransport_broadcast_no_legacy_20261115/inspect.py
