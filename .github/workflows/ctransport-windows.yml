@@ -41,6 +41,10 @@ jobs:
         shell: pwsh
         working-directory: patches/ctransport_core_20261112
         run: ./tests/run_stability.ps1
+      - name: Separate-client latency and extended reconnect soak
+        shell: pwsh
+        working-directory: patches/ctransport_core_20261112
+        run: ./tests/run_extended_stability.ps1
       - name: Upload the exact tested MSVC binaries and Java pin
         if: always()
         uses: actions/upload-artifact@v4
