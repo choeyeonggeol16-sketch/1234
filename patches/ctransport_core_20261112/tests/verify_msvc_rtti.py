@@ -29,5 +29,5 @@ for name in ['CUserSocket','Server','CUserSocketReleaseVerifier','CDummyServerCa
  assert any(chain==expected and count==len(original['vtables'][name]['slots'])for chain,count in candidates),(name,candidates,expected)
  actual[name]={'hierarchy':expected,'virtual_slots':len(original['vtables'][name]['slots'])}
 assert b'.?AVCIOSocket@@\0'not in raw,'extra adapter class remains in RTTI'
-print('PASS actual DLL MSVC RTTI:original CUserSocket6/Server4/verifier3/callback2 base chains;24/16/12/2 virtual slots;CISocket present,no extra CIOSocket class')
+print('PASS actual DLL MSVC RTTI:original CUserSocket6/Server4/verifier3/callback2 base chains;26/16/12/2 virtual slots;CISocket present,no extra CIOSocket class')
 print(json.dumps(actual,indent=2))

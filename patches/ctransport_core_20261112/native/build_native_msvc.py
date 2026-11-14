@@ -14,7 +14,7 @@ if not reuse:
   with(logs/name).open('w')as log:subprocess.run(command,cwd=root,stdout=log,stderr=subprocess.STDOUT,check=True,timeout=180)
  dllsha=sha(out/'CTransport.dll');java=root/'src/l1j/server/server/model/network/core/CIOConfig.java'
  text,count=re.subn(r'(DLL_SHA256 = ")[0-9a-f]{64}(";)',lambda m:m[1]+dllsha+m[2],java.read_text());assert count==1;java.write_text(text)
- manifest={'compiler':'MSVC x64 C++20 /MT /Brepro','target':'x86_64-windows-msvc','commands':commands,'files':files,'dll_sha256':dllsha,'selftest_sha256':sha(out/'CTransport_SelfTest.exe'),'windows_execution_tested':False,'internal_vtable_profile':'MSVC x64 MemoryObject4,CIOObject12,first24 socket slots;L1 extension slots follow'}
+ manifest={'compiler':'MSVC x64 C++20 /MT /Brepro','target':'x86_64-windows-msvc','commands':commands,'files':files,'dll_sha256':dllsha,'selftest_sha256':sha(out/'CTransport_SelfTest.exe'),'windows_execution_tested':False,'internal_vtable_profile':'MSVC x64 MemoryObject4,CIOObject12,CSocket24,CUserSocket26;slot15 int margin,slot24 raw pointer getter,slot25 socket number'}
  (out/'native-build.json').write_text(json.dumps(manifest,indent=2)+'\n')
 else:
  assert previous['dll_sha256']in(root/'src/l1j/server/server/model/network/core/CIOConfig.java').read_text(),'shipped Java DLL pin mismatch'

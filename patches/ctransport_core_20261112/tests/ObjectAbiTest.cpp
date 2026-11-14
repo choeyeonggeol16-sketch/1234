@@ -78,7 +78,27 @@ int main(){
 #endif
  reinterpret_cast<void(*)(CIOSocket*)>(slot(socket,13))(socket);
  auto savedSocket=socket->socket;socket->socket=INVALID_SOCKET;
- assert(!reinterpret_cast<bool(*)(const CIOSocket*)>(slot(socket,14))(socket)&&!reinterpret_cast<bool(*)(const CIOSocket*)>(slot(socket,15))(socket));socket->socket=savedSocket;
+ using HardCheck=bool(*)(const CIOSocket*);using MarginCheck=bool(*)(const CIOSocket*,int);
+ auto hardCheck=reinterpret_cast<HardCheck>(slot(socket,14));auto marginCheck=reinterpret_cast<MarginCheck>(slot(socket,15));
+ assert(!hardCheck(socket)&&!marginCheck(socket,0));
+ socket->socket=static_cast<SOCKET>(1); //predicate-only fixture;no OS call
+ {
+  std::lock_guard<std::mutex> lock(socket->gate());
+  assert(hardCheck(socket)&&marginCheck(socket,0)&&!marginCheck(socket,-1)&&!marginCheck(socket,INT_MAX));
+  socket->reservedSendBytes=0x180000;assert(marginCheck(socket,0x80000));
+  socket->reservedSendBytes=0x180001;assert(!marginCheck(socket,0x80000));
+  socket->reservedSendBytes=0x200000;assert(hardCheck(socket)&&marginCheck(socket,0)&&!marginCheck(socket,1));
+  socket->reservedSendBytes=0x200001;assert(!hardCheck(socket)&&!marginCheck(socket,0));socket->reservedSendBytes=0;
+  const unsigned char byte=0x12;Span one{&byte,1};assert(socket->writes().append(server->buffers,&one,1));
+  socket->reservedSendBytes=0x1fffff;assert(hardCheck(socket)&&marginCheck(socket,0)&&!marginCheck(socket,1));
+  socket->writes().clear(server->buffers);socket->reservedSendBytes=0;
+ }
+ socket->socket=savedSocket;
+ auto pointerGetter=reinterpret_cast<void*(*)(const CUserSocket*)>(slot(socket,24));
+ auto numberGetter=reinterpret_cast<std::uint32_t(*)(const CUserSocket*)>(slot(socket,25));
+ assert(!pointerGetter(socket)&&numberGetter(socket)==socket->SocketNumber());
+ int marker=123;void* originalPointer=&marker;std::memcpy(start+0x4f0,&originalPointer,sizeof(originalPointer));
+ assert(pointerGetter(socket)==&marker);originalPointer=nullptr;std::memcpy(start+0x4f0,&originalPointer,sizeof(originalPointer));
  in_addr address{};address.s_addr=0x12345678;reinterpret_cast<void(*)(CSocket*,in_addr)>(slot(socket,21))(socket,address);
  in_addr copy{};auto* returned=reinterpret_cast<in_addr*(*)(const CSocket*,in_addr*)>(slot(socket,22))(socket,&copy);assert(returned==&copy&&copy.s_addr==address.s_addr);
  assert(*reinterpret_cast<std::uint32_t*>(start+0xb8)==address.s_addr);
@@ -93,7 +113,7 @@ int main(){
  assert(bytes.size()==1+1+2+4+8+8+8+4+2+2&&bytes[0]==0x12&&bytes[2]==0x78&&bytes.back()==0x22);
  bytes.clear();assert(!format(bytes,"b",-1,static_cast<const void*>(nullptr)));bytes.assign(65533,0);assert(!format(bytes,"c",1));
  std::array<std::uint64_t,ObjectAllocator::ReportWords> heap{};ObjectAllocator::Instance().Snapshot(heap.data());assert(heap[1]==0&&heap[2]==0&&heap[8]==0);
- std::cout<<"PASS original MemoryObject/CIOObject slots1..11;socket prefix0xb0/CSocket0x100/CUserSocket0xcd8;OV58/78,buffer98/a0,ORT100/110/114/118,number4e8,serializer48-byte offsets;socket virtuals12..23;packet format cases/bounds;zero live allocator objects\n";
+ std::cout<<"PASS original MemoryObject/CIOObject slots1..11;socket prefix0xb0/CSocket0x100/CUserSocket0xcd8;OV58/78,buffer98/a0,ORT100/110/114/118,number4e8,serializer48-byte offsets;socket virtuals12..25;slot15 int margin,boundaries/overflow,FIFO+reservations;slot24 pointer getter;slot25 socket number;packet format cases/bounds;zero live allocator objects\n";
 #ifdef _WIN32
  WSACleanup();
 #endif

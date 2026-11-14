@@ -15,8 +15,16 @@ while pending:
   v=int(target,16)
   if 0x74d000<=v<0x74f600 and v not in seen:pending.append(v)
 vtables={}
-for name,at,count in [('CIOServer',0xc72298,13),('Server',0xd2a5f8,16),('CDummyServerCallback',0xd29ee8,2),('CUserSocketReleaseVerifier',0xdc5cb8,12),('MemoryObject',0xcc8530,4),('CIOObject',0xc71c18,12),('CIOSocketEx8192',0xb54c18,21),('CIOSocketEx16384',0xbbe878,21),('CSocket',0xd6ab88,24),('CUserSocket',0xdc1c18,24)]:
- values=list(struct.unpack('<'+'Q'*count,o.pe.get_data(at-o.base,count*8)));vtables[name]={'address':hex(at),'slots':[hex(v)for v in values]}
+for name,at,count in [('CIOServer',0xc72298,13),('Server',0xd2a5f8,16),('CDummyServerCallback',0xd29ee8,2),('CUserSocketReleaseVerifier',0xdc5cb8,12),('MemoryObject',0xcc8530,4),('CIOObject',0xc71c18,12),('CIOSocketEx8192',0xb54c18,21),('CIOSocketEx16384',0xbbe878,21),('CSocket',0xd6ab88,24),('CUserSocket',0xdc1c18,26)]:
+ values=[]
+ for number in range(128):
+  value=struct.unpack('<Q',o.pe.get_data(at-o.base+number*8,8))[0]
+  section=o.pe.get_section_by_rva(value-o.base)if value>=o.base else None
+  if not section or not section.Characteristics&0x20000000:break
+  values.append(value)
+ else:raise AssertionError('unbounded vtable:'+name)
+ assert len(values)==count,(name,len(values),count)
+ vtables[name]={'address':hex(at),'slots':[hex(v)for v in values],'boundary':'first non-executable pointer','first_non_code':hex(value)}
 checks=[]
 for at,mnemonic,operand in [
  (0x74e48f,'lea','rdi, [rdx + 4]'),(0x74e4d5,'cmp','rdi, 0x8001'),(0x74e5dc,'mov','dword ptr [rsi], edi'),(0x74e5de,'lea','rax, [rsi + 4]'),

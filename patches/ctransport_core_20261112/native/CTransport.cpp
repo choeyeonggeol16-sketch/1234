@@ -205,7 +205,7 @@ public:
  virtual void Initialize()noexcept=0;
  virtual void OnCreate()noexcept=0;
  virtual bool Slot14SendAllowed()const noexcept{return true;}
- virtual bool Slot15SendAllowed()const noexcept{return true;}
+ virtual bool Slot15SendAllowed(int)const noexcept{return true;}
  virtual void Send(const char*,...)noexcept=0;
  virtual void SendV(const char*,va_list)noexcept=0;
  virtual void GracefulClose()noexcept=0;
@@ -277,8 +277,17 @@ public:
             &&CreateIoCompletionPort(reinterpret_cast<HANDLE>(socket),server()->port(),reinterpret_cast<ULONG_PTR>(static_cast<CIOObject*>(this)),0);
     }
     virtual void OnCreate()noexcept{OnRead();} //13
-    virtual bool Slot14SendAllowed()const noexcept{return true;} //14
-    virtual bool Slot15SendAllowed()const noexcept{return true;} //15
+    // Caller holds gate(),as for the SEND admission/reservation below.
+    bool SendBytesAllowedLocked(std::size_t extra)const noexcept{
+        if(socket==INVALID_SOCKET||state().closing)return false;
+        const auto queued=writes().size();
+        return queued<=MaxQueuedBytes&&reservedSendBytes<=MaxQueuedBytes-queued
+            &&extra<=MaxQueuedBytes-queued-reservedSendBytes;
+    }
+    virtual bool Slot14SendAllowed()const noexcept{return SendBytesAllowedLocked(0);} //14
+    virtual bool Slot15SendAllowed(int margin)const noexcept{ //15;original int argument
+        return margin>=0&&Slot14SendAllowed()&&SendBytesAllowedLocked(static_cast<std::size_t>(margin));
+    }
     virtual void Send(const char* format,...)noexcept; //16
     virtual void SendV(const char* format,va_list arguments)noexcept; //17
     virtual void GracefulClose()noexcept{GracefulClose(30000);} //18
@@ -570,7 +579,7 @@ bool CIOSocketEx<Buffer>::send(const Span* spans,unsigned count,bool framed,bool
     if(!total)return true;
     {
         std::lock_guard<std::mutex> lock(gate());
-        if(state().closing||gracefulRequested()||(framed&&!UserProtocol())||total>MaxQueuedBytes-writes().size()-reservedSendBytes){++server()->sendsRejected;return false;}
+        if(gracefulRequested()||(framed&&!UserProtocol())||!Slot15SendAllowed(static_cast<int>(total))){++server()->sendsRejected;return false;}
         reservedSendBytes+=total;++pendingSendRequests();++server()->pendingSends;
     }
     NativeSendRequest* request=nullptr;
@@ -594,7 +603,7 @@ bool CIOSocketEx<Buffer>::sendConstBuffer(L1ConstBuffer* source,bool plainFirst)
     const auto total=source->block->used;
     {
         std::lock_guard<std::mutex> lock(gate());
-        if(state().closing||gracefulRequested()||!UserProtocol()||!total||total>MaxQueuedBytes-writes().size()-reservedSendBytes){++server()->sendsRejected;return false;}
+        if(gracefulRequested()||!UserProtocol()||!total||total>MaxQueuedBytes||!Slot15SendAllowed(static_cast<int>(total))){++server()->sendsRejected;return false;}
         reservedSendBytes+=total;++pendingSendRequests();++server()->pendingSends;
     }
     auto* request=new(std::nothrow) NativeSendRequest(this,*source,plainFirst);
@@ -612,6 +621,9 @@ void CIOSocketEx<Buffer>::ExecuteSend(NativeSendRequest& request)noexcept {
         std::lock_guard<std::mutex> lock(gate());
         reservedSendBytes-=request.size();--pendingSendRequests();--server()->pendingSends;++server()->sendsExecuted;
         if(!execution_.IsOwner()){++server()->sendOwnerErrors;failLocked(3,31);}
+        // Recheck before cipher mutation. Already admitted sends may drain
+        // during GracefulClose;the predicate deliberately permits that drain.
+        if(!state().closing&&(!Slot14SendAllowed()||!Slot15SendAllowed(static_cast<int>(request.size()))))failLocked(3,10055);
         if(!state().closing){
             ok=true;
             if(request.framed){for(std::size_t at=0;at<request.size();){const auto length=request.data()[at]|(static_cast<unsigned>(request.data()[at+1])<<8);NotifySending(length>2?request.data()[at+2]:0,static_cast<unsigned short>(length));at+=length;}}
@@ -740,13 +752,19 @@ public:
     void ReportReferences(const char*,unsigned)const noexcept override{
         std::array<std::uint64_t,ReferenceRecordWords> row{};row[1]=monotonicMs();row[2]=objectId();row[3]=number_;row[4]=id();row[6]=referenceCount();row[7]=row[6];row[8]=4;row[9]=timerCount();row[10]=static_cast<std::uint64_t>(referencesTrace_.snapshot(row.data()+12));server()->referenceDiagnostics.record(row);
     }
-    bool Slot14SendAllowed()const noexcept override{return socket!=INVALID_SOCKET&&!state().closing;}
-    bool Slot15SendAllowed()const noexcept override{return Slot14SendAllowed()&&reservedSendBytes<=MaxQueuedBytes;}
+    bool Slot14SendAllowed()const noexcept override{return CIOSocket::Slot14SendAllowed();}
+    bool Slot15SendAllowed(int margin)const noexcept override{return CIOSocket::Slot15SendAllowed(margin);}
     void OnRead()noexcept override{pumpPackets();}
     void OnSending(unsigned char opcode,unsigned short length)const noexcept override{l1().lastSending.store((std::uint32_t(opcode)<<16)|length,std::memory_order_relaxed);}
     std::int64_t ReferenceSnapshot(std::uint64_t* out)const noexcept{return referencesTrace_.snapshot(out);}
     std::uint32_t ReferenceAccount()const noexcept{return accountId_()?accountId_():retiredAccountId_();}
-    std::uint32_t SocketNumber()const noexcept{return number_;}
+    // Original slots24/25 at0xa01790/0xa01798. Slot24's original name and
+    // pointee contract remain unconfirmed. Read its existing+0x4f0 storage;
+    // the L2 profile stays zero in L1,so no Java/game pointer is fabricated.
+    virtual void* Slot24OriginalPointer()const noexcept{
+        void* value=nullptr;std::memcpy(&value,originalL2Profile_.data()+4,sizeof(value));return value;
+    }
+    virtual std::uint32_t SocketNumber()const noexcept{return number_;} //25
     std::uint32_t AccountId()const noexcept{return accountId_();}
     bool CharacterEntered()const noexcept{return characterEntered_();}
     bool SetAccountIdentityLocked(std::uint32_t account)noexcept{

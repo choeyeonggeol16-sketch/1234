@@ -733,7 +733,9 @@
         "0x705508",
         "0x404ca0",
         "0xab9010"
-      ]
+      ],
+      "boundary": "first non-executable pointer",
+      "first_non_code": "0x640069006f0076"
     },
     "Server": {
       "address": "0xd2a5f8",
@@ -754,14 +756,18 @@
         "0x8b04fc",
         "0x8b0404",
         "0x8b0954"
-      ]
+      ],
+      "boundary": "first non-executable pointer",
+      "first_non_code": "0x119930522"
     },
     "CDummyServerCallback": {
       "address": "0xd29ee8",
       "slots": [
         "0x8af8c0",
         "0x8af8e8"
-      ]
+      ],
+      "boundary": "first non-executable pointer",
+      "first_non_code": "0x119930522"
     },
     "CUserSocketReleaseVerifier": {
       "address": "0xdc5cb8",
@@ -778,7 +784,9 @@
         "0x56daa8",
         "0x705d54",
         "0x404ca0"
-      ]
+      ],
+      "boundary": "first non-executable pointer",
+      "first_non_code": "0x119930522"
     },
     "MemoryObject": {
       "address": "0xcc8530",
@@ -787,7 +795,9 @@
         "0x7d6d50",
         "0x7d6eb4",
         "0x56daa8"
-      ]
+      ],
+      "boundary": "first non-executable pointer",
+      "first_non_code": "0x640063005f005f"
     },
     "CIOObject": {
       "address": "0xc71c18",
@@ -804,7 +814,9 @@
         "0x56daa8",
         "0x705d54",
         "0x404ca0"
-      ]
+      ],
+      "boundary": "first non-executable pointer",
+      "first_non_code": "0x70632e636f695c2e"
     },
     "CIOSocketEx8192": {
       "address": "0xb54c18",
@@ -830,7 +842,9 @@
         "0x45db74",
         "0x56daa8",
         "0xab9010"
-      ]
+      ],
+      "boundary": "first non-executable pointer",
+      "first_non_code": "0x119930522"
     },
     "CIOSocketEx16384": {
       "address": "0xbbe878",
@@ -856,7 +870,9 @@
         "0x545178",
         "0x56daa8",
         "0xab9010"
-      ]
+      ],
+      "boundary": "first non-executable pointer",
+      "first_non_code": "0x119930522"
     },
     "CSocket": {
       "address": "0xd6ab88",
@@ -885,7 +901,9 @@
         "0x90dec0",
         "0x90df28",
         "0x56daa8"
-      ]
+      ],
+      "boundary": "first non-executable pointer",
+      "first_non_code": "0x0"
     },
     "CUserSocket": {
       "address": "0xdc1c18",
@@ -913,8 +931,12 @@
         "0xa0372c",
         "0x90dec0",
         "0x90df28",
-        "0x9f8080"
-      ]
+        "0x9f8080",
+        "0xa01790",
+        "0xa01798"
+      ],
+      "boundary": "first non-executable pointer",
+      "first_non_code": "0x119930522"
     }
   }
 }
