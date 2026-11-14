@@ -42,7 +42,7 @@ jobs:
           set -euo pipefail
           root="$RUNNER_TEMP/broadcast-phase16"
           find "$root/src" -name '*.java' | sort > "$root/sources.txt"
-          test "$(wc -l < "$root/sources.txt")" -eq 1710
+          test "$(wc -l < "$root/sources.txt")" -eq 1711
           mkdir -p "$root/classes" "$root/testclasses"
           javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g \
             -cp "$(pwd)/.compile-deps/*" -d "$root/classes" @"$root/sources.txt"
@@ -50,14 +50,14 @@ jobs:
           import json,os,pathlib,zipfile
           root=pathlib.Path(os.environ['RUNNER_TEMP'])/'broadcast-phase16'
           d=json.loads((root/'audit.json').read_text())
-          assert d['java_sources']==1710 and len(d['modified_java'])==4
+          assert d['java_sources']==1711 and len(d['modified_java'])==5
           assert d['obsolete_generic_methods_removed']==15
           assert d['raw_and_string_shared_broadcast_preserved']
-          assert len(d['deleted_java'])==1
+          assert len(d['deleted_java'])==0
           assert d['native_unchanged'] and d['no_legacy_fallback']
           with zipfile.ZipFile('downloads/RKern_Broadcast_NonSC_Phase16_FULL_SRC_20261115.zip') as z:
             assert z.testzip() is None
-            assert sum(s.endswith('.java') for s in z.namelist())==1710
+            assert sum(s.endswith('.java') for s in z.namelist())==1711
           print('PHASE16_VERIFIED',d['output_sha256'])
           PY
       - name: Publish validated single whole-source ZIP
