@@ -245,7 +245,7 @@ def main():
         if not path.startswith(BASE) or not path.endswith(".java"):continue
         body=data.decode("utf8")
         if re.search(r"\b(?:broadcast|broadcastFast|broadcastM|broadcastWide|broadcastAll|broadcastClan|sendAndBroadcast)\s*\(",body):
-            if not re.search(r"\\bCSharedBroadcast\\.send(?:All)?\\s*\\(",body):
+            if not re.search(r"\bCSharedBroadcast\.send(?:All)?\s*\(",body):
                 after[path.split("/")[-1]]=len(body)
     assert not any(c+'.java' in after for c in CLASSES)
     assert sum(p.endswith('.java') for p in files)==1711
