@@ -99,6 +99,42 @@ NEW=r'''public static void sendNoDirAndBroadcast(L1Character caster, ArrayList<L
             shared.send(socket,pc.getId());
     }'''
 
+# Native immutable CTransport input is strictly limited to a 16 KiB frame;
+# preserve legacy 65,535-byte area frames with the existing Java FIFO direct
+# lease, but serialize the payload only once, not once per recipient.
+NEW=NEW.replace('        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(', '''        if(wire.length>16384) {
+            final byte[] payload=java.util.Arrays.copyOfRange(wire,2,wire.length);
+            if(caster instanceof L1PcInstance)
+                sendLarge((L1PcInstance)caster,wire.length,payload);
+            for(L1PcInstance viewer:L1World.getInstance().getVisiblePlayer(caster))
+                sendLarge(viewer,wire.length,payload);
+            return;
+        }
+        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(''',1)
+NEW=NEW.replace('    private static void sendShared(', '''    /** Full 65,535-byte game frames use the existing large direct FIFO lease.
+     * The encoded body is shared across all recipients; only the mandatory
+     * per-socket buffer copy is performed, and the original encoder is gone.
+     */
+    private static boolean sendLarge(L1PcInstance pc,int length,byte[] payload) {
+        if(pc==null)return false;
+        final CIOClient client=pc.getNetConnection();
+        if(client==null || !client.isConnected())return false;
+        final CUserSocket connection=client.getConnection();
+        if(connection==null || !connection.isClientConnected())return false;
+        final CIOFrame frame=connection.beginDirectFrame(length);
+        if(frame==null)return false;
+        boolean committed=false;
+        try {
+            frame.buffer().writeBytes(payload);
+            committed=connection.commitDirectFrame(frame);
+            return committed;
+        } finally {
+            if(!committed)connection.abortDirectFrame(frame);
+        }
+    }
+
+    private static void sendShared(''',1)
+
 def patch(s):
     a,b,old=bounds(s,"public static void sendNoDirAndBroadcast(L1Character caster, ArrayList<L1Character> targets,")
     for word in ("SEQUENCE.incrementAndGet()","send((L1PcInstance) caster","getVisiblePlayer(caster)","send(pc, id, x, y, heading, seq, gfx, action, ids)"):
@@ -180,7 +216,7 @@ def main():
     report={"phase":13,"input_blob":PIN,"output_sha256":hashlib.sha256(OUTPUT.read_bytes()).hexdigest(),
             "modified_java":modified,"java_sources":1711,"shared_area_attack":True,
             "self_first_and_duplicates_preserved":True,"target_array_and_seq_preserved":True,
-            "native_unchanged":True,"no_fallback":True,"windows_runtime_tested":False}
+            "native_unchanged":True,"no_fallback":True,"large_frame_direct_FIFO":True,"windows_runtime_tested":False}
     (args.work/"audit.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
     print(json.dumps(report,ensure_ascii=False,indent=2))
 if __name__=="__main__":main()
