@@ -1,0 +1,25 @@
+name: Inspect phase7 AOI remove object fanout
+on:
+  push:
+    branches: [broadcast-nonsc-phase7-20261115]
+    paths:
+      - "patches/broadcast_nonsc_phase7_20261115/inspect.py"
+      - ".github/workflows/broadcast-nonsc-phase7-inspect.yml"
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inventory exact latest phase6 source for AOI removals
+        run: python3 patches/broadcast_nonsc_phase7_20261115/inspect.py
+      - name: Publish inspection
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/broadcast_nonsc_phase7_20261115/FOCUS.txt
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish phase7 AOI removal source inspection [skip ci]"
+          git push origin "HEAD:$GITHUB_REF_NAME"
