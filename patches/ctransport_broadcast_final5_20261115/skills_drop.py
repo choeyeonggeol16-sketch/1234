@@ -152,10 +152,10 @@ def replace_fast_loop(body,marker,replacement):
 def range_skill(s):
     old=M(s,"private","dispatch");body=old[3]
     marker='        {\n            final L1World __cioWorld0'
-    replacement='''        final byte[] wire=sharedWire(id,x,y,heading,seq,gfx,action,type,ids,used);
+    replacement='''        final int frozenHeading=heading, frozenCount=used;\n        final byte[] wire=sharedWire(id,x,y,frozenHeading,seq,gfx,action,type,ids,frozenCount);
         if(wire!=null) {
             '''+PLAYERS+'''(caster,wire,true,-1,null,
-                viewer -> send(viewer,id,x,y,heading,seq,gfx,action,type,ids,used));
+                viewer -> send(viewer,id,x,y,frozenHeading,seq,gfx,action,type,ids,frozenCount));
         } else {
 '''+body[body.index(marker):].strip()+'''
         }
