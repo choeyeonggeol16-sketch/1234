@@ -4,6 +4,7 @@ The user identified this as a **MJ private-server** binary. This archive does no
 
 ## Available source analyses
 
+- [MainServer 연동·수정 작업 기준](MAIN_SERVER_WORKSPACE_20261114.md) — 복원된 PSS 메시지 계약, 원본 바이너리 목록, MainServer 원본 부재와 업로드 상태. 
 - [AutoSummonMagicDoll reverse engineering](AUTO_SUMMON_MAGIC_DOLL_REVERSE_ENGINEERING_20261113.md) — UI toggle, event 0x13/0x95, remembered item ID, item type gate 0x49, existing item-use function and unverified wire opcode.
 - [Additional legacy-client DLL feature candidates](CLIENT_FEATURES_FOR_LEGACY_DLL_20261113.md) — one-click continuous attack toggle and gates, auto magic doll, auto FoeSlayer, smart casting, companion potion, equipment switching and UI.
 - [Ctrl double-press auto-attack DLL porting full report](LEGACY_CLIENT_CTRL_DOUBLE_AUTOATTACK_DLL_FULL_REPORT_20261113.md) — x86 input timing, persistent mode flags, PvP target filters, target-event dispatch, legacy-client integration requirements and validation matrix.
