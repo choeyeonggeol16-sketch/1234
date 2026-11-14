@@ -205,11 +205,11 @@ def modify(name, original):
     elif name=="SC_EffectLocation":
         params="L1Character anchor, int x, int y, int gfxId"
         put("public static void broadcast("+params+")",shared("anchor","x, y, gfxId"))
-        put("public static void broadcastFast(L1Character c, int x, int y, int gfxId)",
+        put("public static void broadcastFast(l1j.server.server.model.L1Character c, int x, int y, int gfxId)",
             shared("c","x, y, gfxId",fast=True))
-        put("public static void broadcastM(L1Character c, int x, int y, int gfxId)",
+        put("public static void broadcastM(l1j.server.server.model.L1Character c, int x, int y, int gfxId)",
             shared("c","x, y, gfxId",filter="pc -> pc.getLinMeff() != 2"))
-        put("public static void broadcastWide(L1Character c, int x, int y, int gfxId)",
+        put("public static void broadcastWide(l1j.server.server.model.L1Character c, int x, int y, int gfxId)",
             shared("c","x, y, gfxId",radius="50"))
     elif name=="SC_OnlyEffect":
         put("public static void broadcast(L1Character anchor, int objectId, int effectId)",
