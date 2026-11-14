@@ -71,6 +71,62 @@ jobs:
           print('Changed files:',d['changed_count'],'wire null legacy branches removed:',d['legacy_null_broadcast_branches_removed'])
           print('SHA256:',d['output_sha256'])
           PY
+      - name: Exercise immutable 20KiB to 65535-byte frame boundaries without legacy serializer
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/no-legacy/FrozenFrameBoundary.java" <<'JAVA'
+          import java.lang.reflect.*;
+          import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+          public final class FrozenFrameBoundary {
+              public static void main(String[] args) throws Exception {
+                  Field field=CAsyncSendConstBuffer.class.getDeclaredField("wire");
+                  field.setAccessible(true);
+                  int total=0;
+                  for(int size:new int[]{3,16384,16385,20000,65535}){
+                      byte[] original=new byte[size];
+                      original[0]=(byte)size;
+                      original[1]=(byte)(size>>>8);
+                      original[2]=(byte)0x55;
+                      try(CAsyncSendConstBuffer buf=new CAsyncSendConstBuffer(original,123,Integer.MAX_VALUE)){
+                          byte[] frozen=(byte[])field.get(buf);
+                          if(frozen==original || frozen.length!=size)throw new AssertionError("frame ownership "+size);
+                          original[2]=(byte)0x21;
+                          if(frozen[2]!=(byte)0x55)throw new AssertionError("frame mutated "+size);
+                          total++;
+                      }
+                  }
+                  try {
+                      int size=65536;
+                      byte[] tooLong=new byte[size];
+                      tooLong[0]=(byte)size;
+                      tooLong[1]=(byte)(size>>>8);
+                      new CAsyncSendConstBuffer(tooLong,123,Integer.MAX_VALUE);
+                      throw new AssertionError("16-bit frame exceeded");
+                  } catch(IllegalArgumentException expected){total++;}
+                  Class<?> range=Class.forName("l1j.server.server.model.network.core.sc.packet.SC_RangeSkill");
+                  Method wire=range.getDeclaredMethod("sharedWire",int.class,int.class,int.class,
+                      int.class,int.class,int.class,int.class,int.class,int[].class,int.class);
+                  wire.setAccessible(true);
+                  byte[] area=(byte[])wire.invoke(null,1,2,3,4,5,6,7,8,new int[2800],2800);
+                  if(area==null || area.length!=16824)throw new AssertionError("Large AoE shared frame");
+                  total++;
+                  Class<?> change=Class.forName("l1j.server.server.model.network.core.sc.packet.SC_ChangeName");
+                  Method names=change.getDeclaredMethod("sharedWire",int.class,String.class);
+                  names.setAccessible(true);
+                  byte[] largeName=(byte[])names.invoke(null,7,"a".repeat(20000));
+                  if(largeName==null || largeName.length!=20008)throw new AssertionError("Large MS949 text shared frame");
+                  total++;
+                  System.out.println("FROZEN_FRAME_BOUNDARY_OK checks="+total);
+              }
+          }
+          JAVA
+          javac --enable-preview --release 21 -encoding UTF-8 \
+            -cp "$RUNNER_TEMP/no-legacy/classes:$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/no-legacy/testclasses" "$RUNNER_TEMP/no-legacy/FrozenFrameBoundary.java"
+          java --enable-preview \
+            -cp "$RUNNER_TEMP/no-legacy/testclasses:$RUNNER_TEMP/no-legacy/classes:$(pwd)/.compile-deps/*" \
+            FrozenFrameBoundary
       - name: Publish one fully verified complete full-source ZIP
         shell: bash
         run: |
