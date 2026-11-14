@@ -1,0 +1,1 @@
+{"name":"client","frames":7029696,"wire_bytes":3599204352,"elapsed_ms":8009.8547,"frames_per_second":877630.901344565,"mib_per_second":428.53071354715087,"latency":{"p50_ms":3.966,"p95_ms":6.0405,"p99_ms":8.4772,"max_ms":388.2329,"samples":109839},"client_cpu_ms":9156.25,"latency_samples_total":109839}

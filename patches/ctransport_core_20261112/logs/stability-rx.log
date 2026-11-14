@@ -1,0 +1,9 @@
+MEASURE warmup frames=8192 elapsed_ms=76.2883 fps=107382.1280589553 {p50_ms=2.0927, p95_ms=11.7114, p99_ms=19.8569, max_ms=20.4679, samples=128}
+MEASURE rx-workers1 frames=2181824 elapsed_ms=3002.3336 fps=726709.383660763 {p50_ms=1.1669, p95_ms=2.0218, p99_ms=2.7084, max_ms=184.4683, samples=34091}
+MEASURE rx-workers2 frames=2808256 elapsed_ms=3001.4027 fps=935647.855584324 {p50_ms=1.031099, p95_ms=1.5344, p99_ms=1.7504, max_ms=164.608699, samples=43879}
+MEASURE rx-workers8 frames=4361536 elapsed_ms=3054.857 fps=1427738.188727001 {p50_ms=0.5302, p95_ms=1.6331, p99_ms=2.358701, max_ms=309.3892, samples=68149}
+MEASURE rx-clients64 frames=3861888 elapsed_ms=3004.8547 fps=1285216.2202718155 {p50_ms=2.0144, p95_ms=8.425701, p99_ms=11.7939, max_ms=200.105499, samples=60342}
+MEASURE rx-fragmented8192 frames=38912 elapsed_ms=3011.398901 fps=12921.569436409913 {p50_ms=31.752799, p95_ms=91.4253, p99_ms=187.379401, max_ms=291.638799, samples=608}
+MEASURE rx-workers1-repeat frames=2508800 elapsed_ms=3001.803 fps=835764.372278927 {p50_ms=1.156, p95_ms=1.258, p99_ms=1.5858, max_ms=90.1067, samples=39200}
+MEASURE rx-checksum512 frames=65536 elapsed_ms=335.4225 fps=195383.43432536576 {p50_ms=0.4386, p95_ms=6.5483, p99_ms=13.8329, max_ms=117.2731, samples=1024}
+MEASURE rx-checksum8192 frames=4096 elapsed_ms=501.8154 fps=8162.3640884675915 {p50_ms=14.9832, p95_ms=26.6788, p99_ms=196.5801, max_ms=196.5801, samples=64}
