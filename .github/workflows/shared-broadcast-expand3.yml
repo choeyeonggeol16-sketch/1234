@@ -1,0 +1,82 @@
+name: Shared broadcast expansion phase 3
+on:
+  push:
+    branches: [mainserver-broadcast-expand3-20261115]
+    paths:
+      - '.github/workflows/shared-broadcast-expand3.yml'
+      - 'patches/ctransport_broadcast_expand3_20261115/**'
+permissions:
+  contents: write
+jobs:
+  compile-parity-publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Apply nine packet migrations to exactly verified phase 2 full SRC
+        run: |
+          python3 patches/ctransport_broadcast_expand3_20261115/expand3.py \
+            --work "$RUNNER_TEMP/phase3"
+      - name: Fetch and SHA256-verify pinned Java dependencies
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, urllib.request
+          rows=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          dst=pathlib.Path('.compile-deps')
+          dst.mkdir(exist_ok=True)
+          for d in rows:
+            out=dst/d['file']
+            urllib.request.urlretrieve(d['url'],out)
+            assert hashlib.sha256(out.read_bytes()).hexdigest()==d['sha256'],d['file']
+          print('Verified',len(rows),'Java dependencies')
+          PY
+      - name: Compile all Java21 sources and validate 2304 exact wire cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP/phase3/src" -name '*.java' | sort > "$RUNNER_TEMP/phase3/sources.txt"
+          test "$(wc -l < "$RUNNER_TEMP/phase3/sources.txt")" -eq 1711
+          mkdir -p "$RUNNER_TEMP/phase3/classes" "$RUNNER_TEMP/phase3/testclasses"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g \
+            -cp "$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/phase3/classes" @"$RUNNER_TEMP/phase3/sources.txt"
+          javac --enable-preview --release 21 -encoding UTF-8 \
+            -cp "$RUNNER_TEMP/phase3/classes:$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/phase3/testclasses" \
+            "$RUNNER_TEMP/phase3/testsrc/SharedBroadcastWireParity2.java" \
+            "$RUNNER_TEMP/phase3/testsrc/AttackMissWireParity.java"
+          java --enable-preview \
+            -cp "$RUNNER_TEMP/phase3/testclasses:$RUNNER_TEMP/phase3/classes:$(pwd)/.compile-deps/*" \
+            SharedBroadcastWireParity2
+          java --enable-preview \
+            -cp "$RUNNER_TEMP/phase3/testclasses:$RUNNER_TEMP/phase3/classes:$(pwd)/.compile-deps/*" \
+            AttackMissWireParity
+          python3 - <<'PY'
+          import json, os, pathlib, zipfile
+          work=pathlib.Path(os.environ['RUNNER_TEMP'])/'phase3'
+          r=json.loads((work/'audit.json').read_text())
+          assert r['migrated_classes']==9 and r['wire_parity_test_cases']==2304
+          assert r['socket_send_core_unchanged'] and r['legacy_send_methods_unchanged']
+          with zipfile.ZipFile('downloads/CTransport_SharedBroadcast_32Packet_FULL_SRC_20261115.zip') as z:
+            assert z.testzip() is None
+            assert sum(p.endswith('.java') for p in z.namelist())==1711
+          print('PASS phase 3: 9 classes; Java 21 full compile; 2304 shared/legacy wire parity; ZIP CRC')
+          print('Remaining unconverted class count:',r['remaining_unconverted_count'])
+          print('Remaining names:',','.join(r['remaining_unconverted_packet_broadcast_classes']))
+          PY
+      - name: Publish one final compiled full source ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/CTransport_SharedBroadcast_32Packet_FULL_SRC_20261115.zip
+          git diff --cached --quiet && { echo "Already published"; exit 0; }
+          git commit -m "Publish validated 32-class shared broadcast full source [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
