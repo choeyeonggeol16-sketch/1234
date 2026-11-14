@@ -1,0 +1,75 @@
+name: Shared broadcast expansion phase 6
+on:
+  push:
+    branches: [mainserver-broadcast-expand6-20261115]
+    paths:
+      - '.github/workflows/shared-broadcast-expand6.yml'
+      - 'patches/ctransport_broadcast_expand6_20261115/**'
+permissions:
+  contents: write
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Expand four AOI broadcast paths from verified 44-class SRC
+        run: |
+          python3 patches/ctransport_broadcast_expand6_20261115/expand6.py \
+            --work "$RUNNER_TEMP/phase6"
+      - name: Restore SHA256-pinned Java dependencies
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,pathlib,urllib.request
+          deps=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          folder=pathlib.Path('.compile-deps')
+          folder.mkdir(exist_ok=True)
+          for d in deps:
+            fn=folder/d['file']
+            urllib.request.urlretrieve(d['url'],fn)
+            assert hashlib.sha256(fn.read_bytes()).hexdigest()==d['sha256'],d['file']
+          print('Verified dependencies',len(deps))
+          PY
+      - name: Compile all Java21 and compare 1031 new direct/shared packet encodings
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP/phase6/src" -name '*.java' | sort > "$RUNNER_TEMP/phase6/sources.txt"
+          test "$(wc -l < "$RUNNER_TEMP/phase6/sources.txt")" -eq 1711
+          mkdir -p "$RUNNER_TEMP/phase6/classes" "$RUNNER_TEMP/phase6/testclasses"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g \
+            -cp "$(pwd)/.compile-deps/*" -d "$RUNNER_TEMP/phase6/classes" \
+            @"$RUNNER_TEMP/phase6/sources.txt"
+          javac --enable-preview --release 21 -encoding UTF-8 \
+            -cp "$RUNNER_TEMP/phase6/classes:$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/phase6/testclasses" "$RUNNER_TEMP/phase6/testsrc/SharedBroadcastWireParity6.java"
+          java --enable-preview \
+            -cp "$RUNNER_TEMP/phase6/testclasses:$RUNNER_TEMP/phase6/classes:$(pwd)/.compile-deps/*" \
+            SharedBroadcastWireParity6
+          python3 - <<'PY'
+          import json,os,pathlib,zipfile
+          d=json.loads((pathlib.Path(os.environ['RUNNER_TEMP'])/'phase6/audit.json').read_text())
+          assert d['new_class_count']==4 and d['shared_packet_class_total']==48
+          assert d['java_file_count']==1711 and d['dll_unchanged']
+          with zipfile.ZipFile('downloads/CTransport_SharedBroadcast_48Packet_FULL_SRC_20261115.zip') as z:
+            assert z.testzip() is None
+            assert sum(n.endswith('.java') for n in z.namelist())==1711
+          print('PASS: phase6 48 shared broadcast classes, 1711 Java21 compile, ZIP CRC')
+          print('Unconverted packet classes:',d['remaining_count'],','.join(d['remaining_legacy_packet_broadcast_classes']))
+          PY
+      - name: Publish one validated complete SRC ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/CTransport_SharedBroadcast_48Packet_FULL_SRC_20261115.zip
+          git diff --cached --quiet && { echo "Already published"; exit 0; }
+          git commit -m "Publish shared broadcast 48-class validated full SRC [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
