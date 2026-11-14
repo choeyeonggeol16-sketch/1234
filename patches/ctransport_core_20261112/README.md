@@ -1,3 +1,9 @@
+## 2026-11-14 진단 집계 경합 개선
+
+CNetworkDiagnostics의 관측용 카운터를 분산 집계로 수정했습니다. Windows ABBA 송신 비교에서 합산 처리량약21.45% 증가,회차별 p99 평균약14.86% 감소를 관측했습니다. 전체 CPU/패킷·메모리 절감은 확인되지 않았습니다. REPORT_PERFORMANCE.md의 범위와 최초 session timeout 미확정 항목을 확인합니다. 전체 src 교체 후 clean build하며 DLL·PSS는 동일합니다. 최신 범위 검사는 `python tests/verify_performance_scope.py`입니다.
+
+---
+
 ## 2026-11-14 추가 Windows 검증
 
 동일 프로토콜에서 클라이언트 JVM 분리 비교,IOCP worker 대기 주입,180초/1,469회 재접속과5,876개 소켓 회수를 통과했습니다. 운영 src1712개와 DLL/PSS는 직전 배포와 동일합니다. REPORT_STABILITY_EXTENDED.md 및 research/stability-extended-20261114/에 수치와 원시 증거가 있습니다. 최신 범위 검사는 `python tests/verify_extended_stability_scope.py`, 추가 시험은 기존 Windows 검사 후 `tests/run_extended_stability.ps1`입니다.

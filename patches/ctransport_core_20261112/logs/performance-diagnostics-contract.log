@@ -1,0 +1,2 @@
+PASS extended diagnostics:one-event128 ring,distinct commands,base count/time preserved,nested restoration,overflow isolation,stale-slot guard,8000 concurrent tags,closed retention,bounded metadata release
+PASS disabled extended diagnostics:no work or packet records

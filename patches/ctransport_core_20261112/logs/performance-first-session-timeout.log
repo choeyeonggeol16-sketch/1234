@@ -1,0 +1,34 @@
+actual-windows	Run shipped DLL and production FFM/PSS adapters	﻿2026-11-14T07:38:33.1764687Z ##[group]Run ./tests/run_windows.ps1
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:33.1765045Z [36;1m./tests/run_windows.ps1[0m
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:33.1797089Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:33.1797360Z env:
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:33.1797607Z   JAVA_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:33.1798015Z   JAVA_HOME_21_X64: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\21.0.13-9.0\x64
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:33.1798315Z ##[endgroup]
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:33.5890691Z PASS actual Windows DLL: 20 loopback connections, 4MB fragmented echo, order and close counts.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:38.8104653Z Note: Some input files use preview features of Java SE 21.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:38.8105399Z Note: Recompile with -Xlint:preview for details.
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:40.2672573Z PASS actual Windows shipped DLL + production Java21 FFM: 20 connections/4MB echo, work, timers/cancel, shutdown
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:40.3913217Z PASS production gameplay socket adapter: native 16K receives into 4K Java reads, stash/pause/resume and ordered writes
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:40.4613750Z PASS independent PSS NIO2 channel: fragmented HELLO, PING, BOUND/OPEN, detach, invalid greeting, dedicated expiry executor shutdown
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:40.9337533Z PASS Windows direct C++ codec/FFM: partial/empty/65535/coalesced frames, 67 exact C2S plaintext/rolling-key matches, 8 S2C matches, stable plaintext lease, foreign/duplicate release and invalid-length terminal
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:41.3384175Z PASS Windows native registry/timers: retired plaintext survives I/O terminal, release removes context, stale handles rejected, login timeout/auth cancellation/earlier callback deadline
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:41.4542848Z PASS actual Windows native packet completions: IOCP worker TLS identity, 64 pending packet leases cancel once on shutdown, no post after stop
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:41.8857672Z PASS Windows MAC policy: unidentified authentication denied, verified one-time binding/cap, terminal capacity reuse and stale handle rejection
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:58.3686692Z ##[error]Exception in thread "main" java.util.concurrent.ExecutionException: java.lang.AssertionError: session stress deadline
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:58.3690649Z 	at java.base/java.util.concurrent.FutureTask.report(FutureTask.java:122)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:58.3691078Z 	at java.base/java.util.concurrent.FutureTask.get(FutureTask.java:205)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:58.3691644Z 	at l1j.server.server.model.network.core.transport.CTransportSessionWindowsTest.main(CTransportSessionWindowsTest.java:52)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:58.3692171Z Caused by: java.lang.AssertionError: session stress deadline
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:58.3693722Z 	at l1j.server.server.model.network.core.transport.CTransportSessionWindowsTest.check(CTransportSessionWindowsTest.java:12)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:58.3694444Z 	at l1j.server.server.model.network.core.transport.CTransportSessionWindowsTest.until(CTransportSessionWindowsTest.java:13)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:58.3695196Z 	at l1j.server.server.model.network.core.transport.CTransportSessionWindowsTest.lambda$main$5(CTransportSessionWindowsTest.java:47)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:58.3695818Z 	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:58.3696226Z 	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:58.3696569Z 	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:59.0132540Z [31;1mException: [0mD:\a\1234\1234\patches\ctransport_core_20261112\tests\run_windows.ps1:19[0m
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:59.0133111Z [31;1m[0m[36;1mLine |[0m
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:59.0133783Z [31;1m[0m[36;1m[36;1m  19 | [0m … DE -ne 0) { [36;1mthrow 'Account/MAC/performance/concurrent session Windows[0m …[0m
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:59.0134619Z [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:59.0135489Z [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mAccount/MAC/performance/concurrent session Windows test failed[0m
+actual-windows	Run shipped DLL and production FFM/PSS adapters	2026-11-14T07:38:59.0278281Z ##[error]Process completed with exit code 1.

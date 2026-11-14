@@ -1,3 +1,11 @@
+## 2026-11-14 — 네트워크 진단 집계 경합 개선·ABBA 실측
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**수정 전후 실측**](reports/CTRANSPORT_PERFORMANCE_20261114.md)
+
+기본 활성화된 네트워크 진단의 공용 카운터를 분산 집계로 변경했습니다. 진단 경로와 실제 송신의 수정 전후 결과를 구분해 보고합니다. ABI·DLL·독립 PSS·패킷 순서·DB는 유지합니다. 전체 src 교체 후 clean build합니다.
+
+---
+
 ## 2026-11-14 — 별도 JVM 지연 비교·워커 정지 영향·재접속 지속 검사
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**추가 실측 보고서**](reports/CTRANSPORT_STABILITY_EXTENDED_20261114.md)

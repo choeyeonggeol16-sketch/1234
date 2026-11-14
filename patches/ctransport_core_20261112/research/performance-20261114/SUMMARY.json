@@ -1,0 +1,17 @@
+{
+  "baseline_wire": {
+    "fps": 148983.08688313942,
+    "p99_mean_ms": 0.26926666666666665,
+    "cpu_ns_per_frame": 16659.49821472168,
+    "frames": 1572864
+  },
+  "candidate_wire": {
+    "fps": 180934.58039892468,
+    "p99_mean_ms": 0.22925016666666667,
+    "cpu_ns_per_frame": 16748.905181884766,
+    "frames": 1572864
+  },
+  "wire_throughput_change_percent": 21.44638977768505,
+  "wire_case_p99_mean_reduction_percent": 14.861289923248322,
+  "wire_cpu_per_frame_change_percent": 0.5366726296958779
+}
