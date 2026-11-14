@@ -1,0 +1,24 @@
+name: Inventory generic broadcast call sites phase3
+on:
+  push:
+    branches: [broadcast-nonsc-phase3-20261115]
+    paths:
+      - "patches/broadcast_nonsc_phase3_20261115/inspect_calls.py"
+      - ".github/workflows/broadcast-nonsc-phase3-inspect.yml"
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract generic broadcast call sites
+        run: python3 patches/broadcast_nonsc_phase3_20261115/inspect_calls.py
+      - name: Publish call-site inventory
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/broadcast_nonsc_phase3_20261115/CALLS.json reports/broadcast_nonsc_phase3_20261115/CALLS.txt
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish generic broadcast call inventory [skip ci]"
+          git push origin "HEAD:$GITHUB_REF_NAME"
