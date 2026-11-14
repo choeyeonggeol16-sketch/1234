@@ -1,0 +1,235 @@
+MISSING src/l1j/server/server/serverpackets/S_SkillSound.java
+======== src/l1j/server/server/model/item/function/DragonPearl.java ========
+1: package l1j.server.server.model.item.function;
+2: 
+3: import l1j.server.server.model.Instance.L1ItemInstance;
+4: import l1j.server.server.model.Instance.L1PcInstance;
+5: import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+6: 
+7: import l1j.server.server.templates.L1Item;
+8: 
+9: public class DragonPearl
+10:   extends L1ItemInstance
+11: {
+12:   public DragonPearl(L1Item item)
+13:   {
+14:     super(item);
+15:   }
+16:   
+17:   public static void checkCondition(L1PcInstance pc, L1ItemInstance item)
+18:   {
+19:     int itemId = item.getItemId();
+20:     if (pc.hasSkillEffect(71))
+21:     {
+22:       SC_ServerMessage.send(pc, 698);
+23:       return;
+24:     }
+25:     if ((pc.hasSkillEffect(157)) || 
+26:       (pc.hasSkillEffect(33)) || 
+27:       (pc.hasSkillEffect(10101)) || 
+28:       (pc.hasSkillEffect(30007)) || 
+29:       (pc.hasSkillEffect(30002)) || 
+30:       (pc.hasSkillEffect(30006)) || 
+31:       (pc.hasSkillEffect(40007)) || 
+32:       (pc.hasSkillEffect(30081)) || 
+33:       (pc.hasSkillEffect(22055)) || 
+34:       (pc.hasSkillEffect(22025)) || 
+35:       (pc.hasSkillEffect(22026)) || 
+36:       (pc.hasSkillEffect(22027)) || 
+37:       (pc.hasSkillEffect(30004)) || 
+38:       (pc.hasSkillEffect(87)) || 
+39:       (pc.hasSkillEffect(208)) || 
+40:       (pc.hasSkillEffect(103)) || 
+41:       (pc.hasSkillEffect(212)) || 
+42:       (pc.hasSkillEffect(123))) {
+43:       return;
+44:     }
+45:     // The effect implementation below is disabled. Never debit an item
+46:     // for an inactive effect (also applies to any future direct caller).
+47:     return;
+48:   }
+49:   private static void useDragonPearl(L1PcInstance pc, int item_id)
+50:   {
+51: 	// 드래곤의 진주
+52: 	  
+53: 	  /*
+54: 			if (pc.hasSkillEffect(DECAY_POTION) == true) { // 디케이포션 상태
+55: 				SC_ServerMessage.send(pc, 698);
+56: 				return;
+57: 			}
+58: 			pc.cancelAbsoluteBarrier();
+59: 			int time = (10 * 60 * 1000) + 1000;
+60: 			if (pc.hasSkillEffect(STATUS_DRAGON_PEARL)) {
+61: 				pc.killSkillEffectTimer(STATUS_DRAGON_PEARL);
+62: 				RPacketBox.send(pc, RPacketBox.DRAGON_PEARL, 8, 0);
+63: 				SC_Liquor.send(pc, pc.getId(), 0);
+64: 				pc.setPearl(0);
+65: 			}
+66: 			SC_ServerMessage.send(pc, 1065);
+67: 			pc.sendPackets(new S_SkillSound(pc.getId(), 197));
+68: 			pc.broadcastPacket(new S_SkillSound(pc.getId(), 197));
+69: 
+70: 			pc.sendPackets(new S_SkillSound(pc.getId(), 15355));
+71: 			pc.broadcastPacket(new S_SkillSound(pc.getId(), 15355));
+72: 			pc.setSkillEffect(STATUS_DRAGON_PEARL, time);
+73: 			SC_Liquor.send(pc, pc.getId(), 8);
+74: 			SC_Liquor.broadcast(pc, pc.getId(), 8);
+75: 			RPacketBox.send(pc, RPacketBox.DRAGON_PEARL, 8, 151);
+76: 			pc.setPearl(1);
+77: 		*/
+78:   }
+79: }
+80: //  private static void useDragonPearl(L1PcInstance pc, int item_id)
+81: //  {
+82: //    pc.cancelAbsoluteBarrier();
+83: //    pc.cancelMoebius();
+84: //    
+85: //    int time = 601000;
+86: //    if (pc.hasSkillEffect(22017))
+87: //    {
+88: //      pc.killSkillEffectTimer(22017);
+89: //      SC_Liquor.send(pc, pc.getId(), 0);
+90: //      pc.sendPackets(new RPacketBox(60, 0, 0));
+91: //      pc.setPearl(0);
+92: //    }
+93: //    pc.sendPackets(new SC_ServerMessage(1065));
+94: //    pc.sendPackets(new S_SkillSound(pc.getId(), 7976));
+95: //    pc.broadcastPacket(new S_SkillSound(pc.getId(), 7976));
+96: //    pc.setSkillEffect(22017, time);
+97: //    SC_Liquor.send(pc, pc.getId(), 8);
+98: //    SC_Liquor.broadcast(pc, pc.getId(), 8);
+99: //    pc.sendPackets(new RPacketBox(60, 8, 601));
+100: //    pc.setPearl(1);
+101: //  }
+102: //}
+======== src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java ========
+1340:             itemId = 600227;
+1341:         } else {
+1342:             return;
+1343:         }
+1344: 
+1345:         final L1ItemInstance item =
+1346:                 pc.getInventory()
+1347:                         .storeItem(
+1348:                                 itemId,
+1349:                                 1);
+1350: 
+1351:         if (item == null) {
+1352:             return;
+1353:         }
+1354: 
+1355:         SC_ServerMessage.send(pc, 403, item.getName()
+1356:                                 + " (1)");
+1357: 
+1358:         final boolean ok =
+1359:                 tam.tamcancle(
+1360:                         encoded);
+1361: 
+1362:         tam.invalidateCache();
+1363: 
+1364:         if (!ok) {
+1365: 
+1366:             SC_SystemMessage.send(pc, "예약 취소 처리에 실패했습니다.");
+1367:         }
+1368: 
+1369:         SC_TAM_WINDOW.sendAsync(pc);
+1370:     }
+1371: 
+1372:     private static void handleSocialAction(
+1373:             L1PcInstance pc,
+1374:             int actionType,
+1375:             int code) {
+1376: 
+1377:         final ServerPacket packet =
+1378:                 SC_SOCIAL_ACTION_NOTI.get(
+1379:                         pc.getId(),
+1380:                         actionType,
+1381:                         code);
+1382: 
+1383:         if (packet != null) {
+1384: 
+1385:             pc.sendPackets(
+1386:                     packet);
+1387: 
+1388:             pc.broadcastPacket(
+1389:                     packet);
+1390:         }
+1391:     }
+1392: 
+1393:     private static void handleCastleWarProclaim(
+1394:             L1PcInstance pc,
+1395:             int castleId) {
+1396: 
+1397:         try {
+1398: 
+1399:             MJCastleWarBusiness
+1400:                     .getInstance()
+1401:                     .proclaim(
+1402:                             pc,
+1403:                             castleId);
+1404: 
+1405:         } catch (Exception e) {
+1406: 
+1407:             e.printStackTrace();
+1408:         }
+1409:     }
+1410: 
+======== src/l1j/server/MJItemSkillSystem/Model/MJItemSkillModel.java ========
+155: 		} else {
+156: 			cc = 0.51;
+157: 		}
+158: 
+159: 		dmg -= dmg * cc;
+160: 
+161: 		if (dmg < 0) {
+162: 			dmg = 0;
+163: 		}
+164: 
+165: 		return dmg;
+166: 	}
+167: 	
+168: 	protected double calcAttr(L1Character defender, double pure_dmg){
+169: 		double dmg = pure_dmg;
+170: 		if(defender.getResistance() != null){
+171: 			switch(attr_type){
+172: 			case L1Skills.ATTR_EARTH:
+173: 				dmg = MJCommons.getAttrDamage(dmg, defender.getResistance().getEarth());
+174: 				break;
+175: 			case L1Skills.ATTR_FIRE:
+176: 				dmg = MJCommons.getAttrDamage(dmg, defender.getResistance().getFire());
+177: 				break;
+178: 			case L1Skills.ATTR_WATER:
+179: 				dmg = MJCommons.getAttrDamage(dmg, defender.getResistance().getWater());
+180: 				break;
+181: 			case L1Skills.ATTR_WIND:
+182: 				dmg = MJCommons.getAttrDamage(dmg, defender.getResistance().getWind());
+183: 				break;
+184: 			}
+185: 		}
+186: 		
+187: 		return dmg;
+188: 	}
+189: 	
+190: 	protected void broadcast(L1Character c, ServerPacket pck){
+191: 		c.sendPackets(pck, false);
+192: 		c.broadcastPacket(pck);
+193: 	}
+194: 	
+195: 	protected void sendPackets(L1Character c, ServerPacket pck){
+196: 		c.sendPackets(pck, false);
+197: 		c.broadcastPacket(pck);
+198: 	}
+199: 	
+200: 	protected boolean isCounterMagic(L1Character c){
+201: 		if(c.hasSkillEffect(L1SkillId.COUNTER_MAGIC)){
+202: 			c.removeSkillEffect(L1SkillId.COUNTER_MAGIC);
+203: 			SC_SkillSound.sendAndBroadcast(c, c.getId(), 10702);
+204: 			return true;
+205: 		}
+206: 		return false;
+207: 	}
+208: 	
+209: 	public boolean isAttack(){
+210: 		return true;
+211: 	}
+212: }
