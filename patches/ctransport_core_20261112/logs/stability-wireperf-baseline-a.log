@@ -1,0 +1,4 @@
+MEASURE warmup frames=4096 elapsed_ms=179.168 fps=22861.22521878907 {p50_ms=0.3112, p95_ms=1.9006, p99_ms=4.1911, max_ms=15.5774, samples=4096}
+MEASURE send-0 frames=262144 elapsed_ms=1955.9415 fps=134024.45829796034 {p50_ms=0.0847, p95_ms=0.1947, p99_ms=0.3094, max_ms=32.6302, samples=262144}
+MEASURE send-1 frames=262144 elapsed_ms=1597.7171 fps=164074.10298105967 {p50_ms=0.0783, p95_ms=0.1675, p99_ms=0.2317, max_ms=24.3435, samples=262144}
+MEASURE send-2 frames=262144 elapsed_ms=1665.3126 fps=157414.28966549583 {p50_ms=0.0829, p95_ms=0.181, p99_ms=0.2631, max_ms=37.1978, samples=262144}

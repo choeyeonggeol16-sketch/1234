@@ -1,0 +1,14 @@
+MEASURE warmup frames=4096 elapsed_ms=138.2401 fps=29629.608196174628 {p50_ms=0.2371, p95_ms=1.3386, p99_ms=3.8797, max_ms=9.7557, samples=4096}
+MEASURE production-S2C-small-1 frames=1048576 elapsed_ms=4759.206 fps=220325.82745945436 {p50_ms=0.0522, p95_ms=0.1233, p99_ms=0.1972, max_ms=45.8683, samples=1048576}
+MEASURE production-S2C-small-2 frames=1048576 elapsed_ms=4271.1684 fps=245500.9734572863 {p50_ms=0.0527, p95_ms=0.108, p99_ms=0.1435, max_ms=40.2126, samples=1048576}
+MEASURE production-S2C-small-3 frames=1048576 elapsed_ms=4198.8031 fps=249732.12008917495 {p50_ms=0.0521, p95_ms=0.1071, p99_ms=0.1404, max_ms=68.667, samples=1048576}
+MEASURE production-S2C-4k frames=131072 elapsed_ms=1247.129 fps=105098.99136336337 {p50_ms=0.1038, p95_ms=0.1958, p99_ms=0.3122, max_ms=20.3178, samples=131072}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=35.2367 fps=29060.61010253514 {p50_ms=0.0789, p95_ms=0.2689, p99_ms=1.8588, max_ms=26.8045, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=7.4193 fps=138018.4114404324 {p50_ms=0.0657, p95_ms=0.1496, p99_ms=0.7799, max_ms=0.9081, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=7.3966 fps=138441.98685882703 {p50_ms=0.0597, p95_ms=0.1424, p99_ms=1.0747, max_ms=1.2041, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=17.8994 fps=57208.62151803971 {p50_ms=0.0886, p95_ms=0.4362, p99_ms=1.6219, max_ms=6.8812, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=6.9065 fps=148266.12611308187 {p50_ms=0.0597, p95_ms=0.1285, p99_ms=1.1173, max_ms=1.1657, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=13.1797 fps=77695.24344256698 {p50_ms=0.0704, p95_ms=0.1829, p99_ms=1.2117, max_ms=8.6384, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=19.2582 fps=53172.15523776885 {p50_ms=0.0575, p95_ms=0.1234, p99_ms=1.8692, max_ms=14.6307, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=17.1501 fps=59708.10665827021 {p50_ms=0.0643, p95_ms=0.2931, p99_ms=1.5521, max_ms=8.5091, samples=1024}
+MEASURE slow-reader-and-RST accepted=64 refused=4

@@ -1,0 +1,4 @@
+MEASURE warmup 3623040 frames 2001.9121 ms {p50_ms=0.4939, p95_ms=0.9161, p99_ms=1.6274, max_ms=76.2387, samples=56610}
+MEASURE same-jvm 16716928 frames 8004.0048 ms {p50_ms=1.909, p95_ms=2.8722, p99_ms=3.6943, max_ms=38.4164, samples=261202}
+MEASURE split-jvm 1.3826432E7 frames 8006.1668 ms {p50_ms=2.0471, p95_ms=2.8293, p99_ms=3.7333, max_ms=239.6091, samples=216038.0}
+MEASURE split-jvm-repeat 1.384288E7 frames 8006.6205 ms {p50_ms=2.083, p95_ms=2.9013, p99_ms=3.8727, max_ms=215.5951, samples=216295.0}
