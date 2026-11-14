@@ -95,7 +95,7 @@ BUILDERS={
 }
 
 def replace_method(s, signature, body):
-    pat=re.compile(re.escape(signature).replace(r'\ ',r'\s*')+r'\s*\{',re.S)
+    pat=re.compile(re.escape(signature).replace(r'\ ',r'\s*').replace(r'\(',r'\s*\(\s*').replace(r'\)',r'\s*\)\s*').replace(',',r'\s*,\s*')+r'\s*\{',re.S)
     matches=list(pat.finditer(s))
     if len(matches)!=1:
         raise ValueError(f"Expected one method {signature!r}, found {len(matches)}")
