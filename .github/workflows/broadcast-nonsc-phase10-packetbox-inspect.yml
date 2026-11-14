@@ -1,0 +1,23 @@
+name: Inspect phase10 packetbox full serialization
+on:
+  push:
+    branches: [broadcast-nonsc-phase10-20261115]
+    paths:
+      - "patches/broadcast_nonsc_phase10_20261115/inspect_packetbox.py"
+      - ".github/workflows/broadcast-nonsc-phase10-packetbox-inspect.yml"
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase10_20261115/inspect_packetbox.py
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/broadcast_nonsc_phase10_20261115/PACKETBOX.txt
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish SC packet box exact writer [skip ci]"
+          git push origin "HEAD:$GITHUB_REF_NAME"
