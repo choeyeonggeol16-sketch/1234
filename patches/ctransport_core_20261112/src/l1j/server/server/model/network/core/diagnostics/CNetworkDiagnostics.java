@@ -20,13 +20,22 @@ public final class CNetworkDiagnostics {
     private static final Trace[] CLOSED = new Trace[64];
     private static int closedCursor;
     private static final List<Work> OWNERS = new ArrayList<>();
-    private static volatile AtomicLongArray counts = new AtomicLongArray(256);
+    // These are observational totals, not admission/lifetime counters. Stripe
+    // concurrent updates instead of bouncing one cache line between workers.
+    // Reports are live snapshots; after writers stop, sums are exact.
+    private static LongAdder[] counters() {
+        LongAdder[] result = new LongAdder[256];
+        for (int i = 0; i < result.length; i++) result[i] = new LongAdder();
+        return result;
+    }
+    private static volatile LongAdder[] counts = counters();
     private static final class Timing {
-        final AtomicLongArray completed = new AtomicLongArray(256), nanos = new AtomicLongArray(256), max = new AtomicLongArray(256);
+        final LongAdder[] completed = counters(), nanos = counters();
+        final AtomicLongArray max = new AtomicLongArray(256);
     }
     private static final class Traffic {
         final long started = System.nanoTime();
-        final AtomicLong received = new AtomicLong(), admitted = new AtomicLong();
+        final LongAdder received = new LongAdder(), admitted = new LongAdder();
     }
     private static volatile Timing timing = new Timing();
     private static volatile Traffic traffic = new Traffic();
@@ -142,7 +151,7 @@ public final class CNetworkDiagnostics {
     public static Work begin(Trace trace, int opcode, int plaintextBytes) {
         if (!CIOConfig.DIAGNOSTICS_ENABLED) return null;
         int op = opcode & 255;
-        counts.incrementAndGet(op); traffic.received.addAndGet(plaintextBytes);
+        counts[op].increment(); traffic.received.add(plaintextBytes);
         long ticket = trace == null ? -1 : trace.record(op);
         Work work = localWork();
         synchronized (work) {
@@ -183,34 +192,34 @@ public final class CNetworkDiagnostics {
             work.epochs[slot] = null;
             work.traces[slot] = null; work.kinds[slot] = null;
             long elapsed = Math.max(0, System.nanoTime() - work.started[slot]);
-            epoch.nanos.addAndGet(op, elapsed); epoch.completed.incrementAndGet(op);
+            epoch.nanos[op].add(elapsed); epoch.completed[op].increment();
             long old = epoch.max.get(op);
             while (old < elapsed && !epoch.max.compareAndSet(op, old, elapsed)) old = epoch.max.get(op);
         }
     }
-    public static void admitted(int wireBytes) { if (CIOConfig.DIAGNOSTICS_ENABLED) traffic.admitted.addAndGet(wireBytes); }
-    public static void resetCounts() { counts = new AtomicLongArray(256); }
+    public static void admitted(int wireBytes) { if (CIOConfig.DIAGNOSTICS_ENABLED) traffic.admitted.add(wireBytes); }
+    public static void resetCounts() { counts = counters(); }
     public static void resetTiming() { timing = new Timing(); }
     public static void resetTraffic() { traffic = new Traffic(); }
     public static String packetCounts() {
-        AtomicLongArray snapshot = counts; StringBuilder b = new StringBuilder("diagnostics=" + CIOConfig.DIAGNOSTICS_ENABLED + "\n");
-        for (int i = 0; i < 256; ++i) if (snapshot.get(i) != 0) b.append("opcode=").append(i).append(" count=").append(snapshot.get(i)).append('\n');
+        LongAdder[] snapshot = counts; StringBuilder b = new StringBuilder("diagnostics=" + CIOConfig.DIAGNOSTICS_ENABLED + "\n");
+        for (int i = 0; i < 256; ++i) if (snapshot[i].sum() != 0) b.append("opcode=").append(i).append(" count=").append(snapshot[i].sum()).append('\n');
         return b.toString();
     }
     public static String timings() {
         Timing t = timing; StringBuilder b = new StringBuilder("Handler/filter elapsed time (completed packets)\n");
         for (int i = 0; i < 256; ++i) {
-            long n = t.completed.get(i); if (n == 0) continue;
+            long n = t.completed[i].sum(); if (n == 0) continue;
             b.append("opcode=").append(i).append(" completed=").append(n)
-                    .append(" avgUs=").append(t.nanos.get(i) / n / 1000).append(" maxUs=").append(t.max.get(i) / 1000).append('\n');
+                    .append(" avgUs=").append(t.nanos[i].sum() / n / 1000).append(" maxUs=").append(t.max.get(i) / 1000).append('\n');
         }
         return b.toString();
     }
     public static String traffic() {
         Traffic t = traffic; double seconds = Math.max(0.001, (System.nanoTime() - t.started) / 1_000_000_000.0);
         return String.format(Locale.ROOT, "진단=%s\n복호화 후 수신 본문: %d bytes (%.1f KiB/s)\n송신 접수 wire: %d bytes (%.1f KiB/s)\n누적 구간: %.1f s\nOS/TCP 전송 완료량과 구분한 수치입니다.",
-                CIOConfig.DIAGNOSTICS_ENABLED, t.received.get(), t.received.get() / seconds / 1024,
-                t.admitted.get(), t.admitted.get() / seconds / 1024, seconds);
+                CIOConfig.DIAGNOSTICS_ENABLED, t.received.sum(), t.received.sum() / seconds / 1024,
+                t.admitted.sum(), t.admitted.sum() / seconds / 1024, seconds);
     }
     public static String connections() {
         List<Trace> traces; synchronized (CNetworkDiagnostics.class) { traces = new ArrayList<>(LIVE.values()); }
