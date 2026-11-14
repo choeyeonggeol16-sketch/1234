@@ -8,6 +8,7 @@ import l1j.server.server.model.network.utill.ConnectionState;
 public final class CIOClient {
  public final CUserSocket connection;public volatile boolean ready=true,failCapture;
  public volatile StackTraceElement[] closeStack;
+ public volatile Runnable packetObserver;
  public CIOClient(CUserSocket c){connection=c;}
  public CUserSocket getConnection(){return connection;}
  public boolean isConnected(){return connection.isOpen();}
@@ -17,7 +18,7 @@ public final class CIOClient {
  public ConnectionState getConnectionState(){return ConnectionState.CONNECTED;}
  public int incrementEmptyPacketCount(){return 1;}
  public void resetEmptyPacketCount(){}
- public boolean checkPacketRateLimit(long now){return false;}
+ public boolean checkPacketRateLimit(long now){Runnable observer=packetObserver;if(observer!=null)observer.run();return false;}
  public void onTransportClosing(){closeStack=Thread.currentThread().getStackTrace();ready=false;}
  public void disconnect(){connection.close();}
 }
