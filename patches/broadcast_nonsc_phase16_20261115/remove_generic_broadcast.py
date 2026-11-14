@@ -57,14 +57,15 @@ def main():
  old=files.copy()
  assert sum(n.endswith(".java") for n in files)==1711 and "CTransport.dll" in files
  assert b"public static void broadcastPacket(L1Character cha, ServerPacket packet)" in files[DELETE]
- del files[DELETE]
+ files[DELETE]=remove_method(files[DELETE].decode("utf8"),
+  "public static void broadcastPacket(L1Character cha, ServerPacket packet) {").encode("utf8")
  for path,methods in TARGETS.items():
   source=files[path].decode("utf8")
   for sig in methods:source=remove_method(source,sig)
   files[path]=source.encode("utf8")
- modified=sorted(n for n in TARGETS if old[n]!=files[n])
- assert modified==sorted(TARGETS)
- assert sorted(set(old)-set(files))==[DELETE]
+ modified=sorted(n for n in list(TARGETS)+[DELETE] if old[n]!=files[n])
+ assert modified==sorted(list(TARGETS)+[DELETE])
+ assert set(old)==set(files)
  assert files["CTransport.dll"]==old["CTransport.dll"]
  # Still used shared raw and system-message routes MUST survive.
  assert b"public void broadcastPacket(byte[] data)" in files[BASE+"server/model/L1Character.java"]
@@ -84,11 +85,11 @@ def main():
   assert z.testzip() is None and set(z.namelist())==set(files)
  result={"phase":16,"input_blob":PIN,"output_sha256":hashlib.sha256(OUTPUT.read_bytes()).hexdigest(),
     "java_sources":sum(n.endswith(".java") for n in files),
-    "modified_java":modified,"deleted_java":[DELETE],
+    "modified_java":modified,"deleted_java":[],
     "obsolete_generic_methods_removed":sum(len(x) for x in TARGETS.values())+1,
     "raw_and_string_shared_broadcast_preserved":True,"native_unchanged":True,
     "no_legacy_fallback":True,"windows_runtime_tested":False}
- assert result["java_sources"]==1710
+ assert result["java_sources"]==1711
  (args.work/"audit.json").write_text(json.dumps(result,indent=2)+"\n")
  print(json.dumps(result,indent=2))
 if __name__=="__main__":main()
