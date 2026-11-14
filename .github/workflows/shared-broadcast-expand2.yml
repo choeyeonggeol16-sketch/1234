@@ -1,0 +1,78 @@
+name: Shared broadcast expansion phase 2
+on:
+  push:
+    branches: [mainserver-broadcast-expand2-20261115]
+    paths:
+      - '.github/workflows/shared-broadcast-expand2.yml'
+      - 'patches/ctransport_broadcast_expand2_20261115/**'
+permissions:
+  contents: write
+jobs:
+  compile-parity-publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Apply to exact latest full SRC with direct sender protection
+        run: |
+          python3 patches/ctransport_broadcast_expand2_20261115/expand2.py --work "$RUNNER_TEMP/phase2"
+      - name: Restore exact SHA256 pinned Java dependencies
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, urllib.request
+          rows=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          dst=pathlib.Path('.compile-deps')
+          dst.mkdir(exist_ok=True)
+          for row in rows:
+            jar=dst/row['file']
+            urllib.request.urlretrieve(row['url'],jar)
+            if hashlib.sha256(jar.read_bytes()).hexdigest()!=row['sha256']:
+              raise RuntimeError("dependency SHA256 mismatch: "+row['file'])
+          print("Pinned dependencies verified",len(rows))
+          PY
+      - name: Java 21 full compile and 2560 deterministic wire parity cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP/phase2/src" -name '*.java' | sort > "$RUNNER_TEMP/phase2/sources.txt"
+          test "$(wc -l < "$RUNNER_TEMP/phase2/sources.txt")" -eq 1711
+          mkdir -p "$RUNNER_TEMP/phase2/classes" "$RUNNER_TEMP/phase2/testclasses"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g \
+            -cp "$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/phase2/classes" @"$RUNNER_TEMP/phase2/sources.txt"
+          javac --enable-preview --release 21 -encoding UTF-8 \
+            -cp "$RUNNER_TEMP/phase2/classes:$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/phase2/testclasses" \
+            "$RUNNER_TEMP/phase2/testsrc/SharedBroadcastWireParity2.java"
+          java --enable-preview \
+            -cp "$RUNNER_TEMP/phase2/testclasses:$RUNNER_TEMP/phase2/classes:$(pwd)/.compile-deps/*" \
+            SharedBroadcastWireParity2
+          python3 - <<'PY'
+          import os, pathlib, json, zipfile
+          work=pathlib.Path(os.environ['RUNNER_TEMP'])/'phase2'
+          r=json.loads((work/'audit.json').read_text())
+          assert r['new_shared_classes_count']==10 and r['new_wire_parity_cases']==2560
+          assert not r['direct_sender_code_changed'] and not r['native_dll_changed']
+          with zipfile.ZipFile('downloads/CTransport_SharedBroadcast_23Packet_FULL_SRC_20261115.zip') as z:
+            assert z.testzip() is None
+            assert sum(n.endswith('.java') for n in z.namelist())==1711
+          print('Broadcast expansion phase 2 PASSED; 10 classes, 2560 wire tests, 1711 compiled')
+          print('Remaining unconverted broadcast classes:',r['known_unconverted_after_count'])
+          print('Remaining names:',','.join(r['known_packet_classes_with_broadcast_but_no_shared_path_after']))
+          PY
+      - name: Publish single full source ZIP after successful compilation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/CTransport_SharedBroadcast_23Packet_FULL_SRC_20261115.zip
+          git diff --cached --quiet && { echo "Already published"; exit 0; }
+          git commit -m "Publish validated 23-class shared broadcast full source [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
