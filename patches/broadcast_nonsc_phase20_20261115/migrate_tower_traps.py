@@ -5,7 +5,7 @@ No change to event timing, phase advancement, target list order, duplicates,
 per-socket cipher/FIFO, or CTransport native library.
 """
 from pathlib import Path
-import hashlib,json,zipfile,regex as re,argparse
+import hashlib,json,zipfile,re,argparse
 ROOT=Path(__file__).resolve().parents[2]
 SOURCE=ROOT/"downloads/RKern_Broadcast_NonSC_Phase19_FULL_SRC_20261115.zip"
 OUTPUT=ROOT/"downloads/RKern_Broadcast_NonSC_Phase20_FULL_SRC_20261115.zip"
