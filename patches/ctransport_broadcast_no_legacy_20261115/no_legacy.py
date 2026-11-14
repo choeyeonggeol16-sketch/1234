@@ -117,9 +117,15 @@ SHARED_SEND=r'''
         final int limit=recipientId==senderId?Integer.MAX_VALUE:pendingLimit;
         if(wire.length<=16384 && target.supportsConstBuffer()
                 && target.pendingSendBytes()<limit) {
-            if(source==null)source=target.createConstBuffer(wire);
-            if(source!=null && target.ownsConstBuffer(source))
-                return target.enqueueConstBufferConfirmed(source,limit);
+            try {
+                if(source==null)source=target.createConstBuffer(wire);
+                if(source!=null && target.ownsConstBuffer(source)
+                        && target.enqueueConstBufferConfirmed(source,limit))
+                    return true;
+            } catch (RuntimeException failure) {
+                // The immutable plaintext is still available for the ordinary
+                // socket FIFO frame path; no packet serializer is repeated.
+            }
         }
         return target.sendFrozenWire(wire);
     }
@@ -184,6 +190,7 @@ def replace_shared_calls(s):
             if not ('->' in fields[5] or '::' in fields[5]):
                 raise ValueError("Unexpected non-legacy sixth argument")
             fields=fields[:5];new_label='send'
+        print("OLD_CALLBACK", label, (" ".join((args[-1] if label=="sendAll" else args[-1]).split()))[:320])
         rewritten="CSharedBroadcast."+new_label+"("+", ".join(fields)+")"
         ranges.append((m.start(),close,rewritten))
         num+=1
