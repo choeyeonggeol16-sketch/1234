@@ -19,13 +19,15 @@ jobs:
         run: python3 -m pip install --user tree-sitter==0.25.2 tree-sitter-java==0.23.5
       - name: Audit all Java packages and build report
         run: python3 patches/broadcast_full_audit_20261115/audit.py
+      - name: Snapshot exact central broadcast dispatcher source
+        run: python3 patches/broadcast_full_audit_20261115/inspect_focus.py
       - name: Publish audit report
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reports/broadcast_full_audit_20261115/AUDIT_KO.md reports/broadcast_full_audit_20261115/audit.json
+          git add reports/broadcast_full_audit_20261115/AUDIT_KO.md reports/broadcast_full_audit_20261115/audit.json reports/broadcast_full_audit_20261115/FOCUS_SOURCES.txt
           git diff --cached --quiet && exit 0
           git commit -m "Publish full Java21 non-SC broadcast census [skip ci]"
           git push origin "HEAD:$GITHUB_REF_NAME"
