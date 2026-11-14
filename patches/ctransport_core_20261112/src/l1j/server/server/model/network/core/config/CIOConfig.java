@@ -4,7 +4,7 @@ import java.nio.file.Path;
 public final class CIOConfig {
     public static final Path DLL = Path.of("CTransport.dll");
     public static final int ABI = 0x000a0000;
-    public static final String DLL_SHA256 = "62604a5b1b111526da30b0d06f224eb6d5f3e4aafca0292571aae7932b3f272e";
+    public static final String DLL_SHA256 = "0801f22fedac95ee29d33c747c5e4019c3b36d79d31615c7d84cc79405258606";
     private static final java.util.Properties SETTINGS = loadSettings();
     public static final boolean DIAGNOSTICS_ENABLED = flag("ctransport.diagnostics.enabled", true);
     public static final int DIAGNOSTICS_MAX_CONNECTIONS = bounded("ctransport.diagnostics.maxConnections",10000,1,100000);
