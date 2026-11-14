@@ -1,0 +1,5 @@
+Exception in thread "main" java.lang.IllegalStateException: [ProtoReader] truncated field need=32 remaining=2 | pos=6 | length=8
+	at l1j.server.server.packets.Protocol.ProtoReader.malformed(ProtoReader.java:287)
+	at l1j.server.server.packets.Protocol.ProtoReader.require(ProtoReader.java:277)
+	at l1j.server.server.packets.Protocol.ProtoReader.readBytes(ProtoReader.java:211)
+	at NotificationAdapterContract.main(NotificationAdapterContract.java:29)

@@ -1,0 +1,87 @@
+// Recovered from mjlin_loaded_code_00400000_0180D000.bin, SHA-256 256f7886e98d7d2c573ab76917f78e30dc4f34cb723a002d604602cdb2f6cbdb
+// Source: embedded FileDescriptorProto, NOT NC-authored source file.
+// package/message/field/enum/number/cardinality derived directly from binary descriptor.
+// syntax="proto2" reconstructed from descriptor required/optional semantics.
+syntax = "proto2";
+package LIN.BUILDER;
+
+import "MainServer_Client_Inventory.proto";
+
+message BuilderCommand {
+  required int32 command_no = 1;
+  required int32 limit_builder_level = 2;
+  required bytes command = 3;
+  required bool need_target_id = 4;
+  required bool need_target_pos = 5;
+  required bool need_inven_target_id = 6;
+}
+
+message SC_BUILDER_COMMAND_LIST_NOTI {
+  repeated .LIN.BUILDER.BuilderCommand builder_commands = 1;
+}
+
+message CS_BUILDER_COMMAND_REQ {
+  required int32 command_no = 1;
+  repeated bytes command_params = 2;
+  optional uint32 target_id = 3;
+  optional uint32 target_pos_x = 4;
+  optional uint32 target_pos_y = 5;
+}
+
+message SC_BUILDER_COMMAND_ACK {
+  enum ResultCode {
+    SUCCESS = 0;
+    FAIL = 1;
+    INVALID_USER = 2;
+  }
+  required .LIN.BUILDER.SC_BUILDER_COMMAND_ACK.ResultCode result_code = 1;
+  optional bytes result_message = 2;
+}
+
+message SC_EQUIP_INFO_NOTI {
+  required bytes target_name = 1;
+  required int32 target_gender = 2;
+  required int32 target_class = 3;
+  optional .LIN.SC_EQUIP_LIST_NOTI equip_list_noti = 4;
+}
+
+message SC_LIST_USER_NOTI {
+  message Info {
+    required bytes name = 1;
+    required uint32 level = 2;
+    required uint32 game_class = 3;
+    required bytes account = 4;
+    required uint32 ip = 5;
+    required bytes pledge = 6;
+  }
+  repeated .LIN.BUILDER.SC_LIST_USER_NOTI.Info infos = 1;
+  required bool begin = 2;
+  required bool last = 3;
+}
+
+message SC_SPELL_LATE_HANDLING_NOTI {
+  enum eLevel {
+    NOT_CORRECTION = 0;
+    LEVEL_1 = 1;
+    LEVEL_2 = 2;
+    LEVEL_3 = 3;
+    LEVEL_4 = 4;
+    LEVEL_5 = 5;
+  }
+  required bool on_off = 1;
+  optional .LIN.BUILDER.SC_SPELL_LATE_HANDLING_NOTI.eLevel correction_level = 2;
+}
+
+message SC_PRE_CREATECHAR_NOTI {
+  required uint32 serverId = 1;
+  required bool no_char = 2;
+}
+
+message SC_BUILDER_MESSAGE_NOTI {
+  enum eTarget {
+    PREFARE_CHAR = 0;
+    ENTRANCE_USER = 1;
+  }
+  required .LIN.BUILDER.SC_BUILDER_MESSAGE_NOTI.eTarget target_user = 1;
+  optional bytes target_message = 2;
+}

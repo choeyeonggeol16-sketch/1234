@@ -1,0 +1,14 @@
+// Recovered from mjlin_loaded_code_00400000_0180D000.bin, SHA-256 256f7886e98d7d2c573ab76917f78e30dc4f34cb723a002d604602cdb2f6cbdb
+// Source: embedded FileDescriptorProto, NOT NC-authored source file.
+// package/message/field/enum/number/cardinality derived directly from binary descriptor.
+// syntax="proto2" reconstructed from descriptor required/optional semantics.
+syntax = "proto2";
+package LIN;
+
+message SC_GAMEGATE_INSTANT_TOKEN_NOTI {
+  required string instant_token_id = 1;
+}
+
+message CS_GAMEGATE_INSTANT_TOKEN_REQ {
+  required string app_id = 1;
+}

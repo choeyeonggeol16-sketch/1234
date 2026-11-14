@@ -1,0 +1,77 @@
+// Recovered from mjlin_loaded_code_00400000_0180D000.bin, SHA-256 256f7886e98d7d2c573ab76917f78e30dc4f34cb723a002d604602cdb2f6cbdb
+// Source: embedded FileDescriptorProto, NOT NC-authored source file.
+// package/message/field/enum/number/cardinality derived directly from binary descriptor.
+// syntax="proto2" reconstructed from descriptor required/optional semantics.
+syntax = "proto2";
+package LIN;
+
+import "Lineage_CommonDataTypes.proto";
+
+message InputItemT {
+  required int32 slot_id = 1;
+  required int32 name_id = 2;
+}
+
+message SC_WEAPON_MASTERY_INFO_NOTI {
+  required .LIN.WeaponMasteryT weapon_mastery = 1;
+  optional int32 mastery_gauge = 2;
+}
+
+message SC_WEAPON_MASTERY_GAUGE_NOTI {
+  required int32 mastery_gauge = 1;
+}
+
+message SC_WEAPON_MASTERY_POINT_NOTI {
+  required int32 weapon_type = 1;
+  required int32 mastery_point = 2;
+}
+
+message CS_WEAPON_MASTERY_ENCHANT_REQ {
+  required int32 weapon_type = 1;
+  required int32 mastery_slot_id = 2;
+  repeated .LIN.InputItemT input_item = 3;
+}
+
+message SC_WEAPON_MASTERY_ENCHANT_ACK {
+  enum eResult {
+    ENCHANT_SUCCESS = 0;
+    ENCHANT_FAIL = 1;
+    ENCHANT_ERROR = 2;
+  }
+  required int32 weapon_type = 1;
+  required int32 mastery_slot_id = 2;
+  required int32 enchant_value = 3;
+  required .LIN.SC_WEAPON_MASTERY_ENCHANT_ACK.eResult result = 4;
+}
+
+message CS_WEAPON_MASTERY_ROULETTE_TRY_REQ {
+  required int32 weapon_type = 1;
+}
+
+message SC_WEAPON_MASTERY_SLOT_OPEN_NOTI {
+  required int32 weapon_type = 1;
+  required int32 mastery_slot_id = 2;
+  required int32 enchant_value = 3 [default = 0];
+}
+
+message SC_WEAPON_MASTERY_ROULETTE_TRY_ACK {
+}
+
+message CS_WEAPON_MASTERY_ROULETTE_SLOT_LOCK_REQ {
+  enum eAction {
+    LOCK_REQ = 0;
+    UN_LOCK_REQ = 1;
+  }
+  required int32 weapon_type = 1;
+  required int32 roulette_slot_id = 2;
+  required .LIN.CS_WEAPON_MASTERY_ROULETTE_SLOT_LOCK_REQ.eAction action = 3;
+}
+
+message SC_WEAPON_MASTERY_ROULETTE_SLOT_LOCK_ACK {
+}
+
+message SC_WEAPON_MASTERY_ROULETTE_SLOT_OPEN_NOTI {
+  required int32 weapon_type = 1;
+  required int32 mastery_slot_id = 2;
+  required int32 bonus_id = 3 [default = 0];
+}

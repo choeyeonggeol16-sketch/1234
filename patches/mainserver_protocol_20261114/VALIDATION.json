@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "production_java": 1711,
+  "source_files": 1712,
+  "renamed_class_names": 86,
+  "renamed_class_files": 87,
+  "descriptor_names": 81,
+  "local_adapter_names": 5,
+  "wire_cases_unchanged": 170,
+  "null_dto_cases_unchanged": 16,
+  "reader_assertions": 20052,
+  "notification_field_cases": 15,
+  "dll_sha256": "0801f22fedac95ee29d33c747c5e4019c3b36d79d31615c7d84cc79405258606",
+  "tests": [
+    {
+      "test": "baseline-reader",
+      "exit": 1,
+      "expected": "reproduced original bug"
+    },
+    {
+      "test": "baseline-notification",
+      "exit": 1,
+      "expected": "reproduced original bug"
+    },
+    {
+      "test": "final-reader",
+      "exit": 0,
+      "expected": "pass"
+    },
+    {
+      "test": "final-notification",
+      "exit": 0,
+      "expected": "pass"
+    }
+  ],
+  "scope": "Java21 compile; actual serializers and buffer code with network/PC fixtures; Windows game/DB runtime not rerun"
+}

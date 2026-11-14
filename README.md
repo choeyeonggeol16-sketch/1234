@@ -1,3 +1,11 @@
+## 2026-11-14 — MainServer proto 이름 정리·수신 파서/알림 수정
+
+[**전체 소스·호환 DLL**](downloads/CTransport_MainServer_Protocol_FULL_SRC_20261114.zip) · [**패치·이름 대응표·검증**](downloads/CTransport_MainServer_Protocol_PATCH_20261114.zip) · [**적용 안내**](patches/mainserver_protocol_20261114/README_KO.md)
+
+마지막 네트워크 개선 검증 팩 기준으로 패킷 클래스·상수·요청 함수와 모든 호출부를 정리했습니다. varint 경계와 알림 길이 직렬화 오류도 수정했습니다. 전체 Java 1,711개 컴파일, 송신 170사례 동일, 파서·알림 회귀 통과. 전체 src 교체·clean build와 함께 동봉 CTransport.dll을 적용합니다.
+
+---
+
 ## 2026-11-14 — 네트워크 진단 집계 경합 개선·ABBA 실측
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**수정 전후 실측**](reports/CTRANSPORT_PERFORMANCE_20261114.md)
