@@ -3438,7 +3438,12 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
             final int nextSlot = (int) _socketHead & SOCKET_MASK;
             _socketOwner = null;
-            SOCKET_DRAINING.setRelease(this, 0);
+            // This store must precede the readiness loads below (StoreLoad).
+            // A release-only store permits both this owner to miss a newly
+            // published callback and its publisher to observe the old owner.
+            // Then the ready callback has no drainer and no future I/O to
+            // wake it. Volatile release closes that lost-wakeup window.
+            SOCKET_DRAINING.setVolatile(this, 0);
             
             // Release/reacquire handshake: a writer that posts just before
             // release sees the old owner, which must recheck this bit; a

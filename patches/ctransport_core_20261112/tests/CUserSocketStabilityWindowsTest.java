@@ -155,7 +155,8 @@ public final class CUserSocketStabilityWindowsTest {
             until(()->probe.performanceDiagnostics()[0]>0,5000,"probe sampler startup");
             long baseline=probe.objectAllocatorDiagnostics()[1];report.put("baseline",memory(probe));
             try(CSharedBroadcastWindowsTest.World world=new CSharedBroadcastWindowsTest.World()){
-                cases.add(send(world,1024,15,"warmup"));cases.add(send(world,262144,15,"production-S2C-small"));
+                cases.add(send(world,1024,15,"warmup"));
+                for(int round=1;round<=3;round++)cases.add(send(world,262144,15,"production-S2C-small-"+round));
                 cases.add(send(world,32768,4096,"production-S2C-4k"));
             }
             quiesce(probe,baseline);report.put("after_send_cleanup",memory(probe));
