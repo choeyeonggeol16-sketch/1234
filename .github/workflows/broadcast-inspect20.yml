@@ -1,0 +1,39 @@
+name: Inspect phase19 safe shared broadcast loops
+on:
+  push:
+    branches: [broadcast-nonsc-audit20-20261115]
+    paths: [".github/workflows/broadcast-inspect20.yml"]
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print exact phase18 source around shared loop candidates
+        run: |
+          python3 - <<'PY'
+          import zipfile,hashlib
+          path='downloads/RKern_Broadcast_NonSC_Phase18_FULL_SRC_20261115.zip'
+          b=open(path,'rb').read()
+          assert hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()=='5052f9bc337e907d73adaf8f85a0b38311bcfd6a'
+          data=[
+            ('MJLFCWarSquareTrap.java',[(60,95),(125,158)]),
+            ('Hadin.java',[(713,746)]),
+            ('OrimController.java',[(500,545)]),
+            ('MJRaidObject.java',[(523,548)]),
+            ('SC_DisplayEffect.java',[(1,140)]),
+            ('CSharedBroadcast.java',[(1,210)]),
+            ('MJEffectTriggerInstance.java',[(63,120)]),
+            ('DisplayEffectTrap.java',[(1,63)]),
+            ('SC_SystemMessage.java',[(1,98)]),
+          ]
+          with zipfile.ZipFile(path) as z:
+            for short,ranges in data:
+              matching=[n for n in z.namelist() if n.startswith('src/') and n.endswith('/'+short)]
+              print('=======FILE',short,matching)
+              if len(matching)!=1:continue
+              lines=z.read(matching[0]).decode('utf8').splitlines()
+              for a,b in ranges:
+                for i in range(a-1,min(b,len(lines))):
+                  print(f'{i+1:4} {lines[i]}')
+          PY
