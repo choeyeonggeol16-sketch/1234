@@ -437,7 +437,15 @@ def main():
     from patches.ctransport_broadcast_final5_20261115 import build_final5
     test=args.work/'testsrc/l1j/server/server/model/network/core/sc/packet/SharedFinalFiveWireParity.java'
     test.parent.mkdir(parents=True,exist_ok=True)
-    test.write_text(build_final5.PARITY_SRC,encoding='utf8')
+    parity=build_final5.PARITY_SRC
+    old_check='''if(invoke("SC_RangeSkill","sharedWire",types,1,2,3,4,5,6,7,8,ids,2800)!=null)
+           throw new AssertionError("Oversized range frames must use legacy send");'''
+    new_check='''byte[] large=invoke("SC_RangeSkill","sharedWire",types,1,2,3,4,5,6,7,8,ids,2800);
+        if(large==null || large.length!=24+2800*6)
+           throw new AssertionError("Large range frame was not encoded once");'''
+    if old_check not in parity:raise ValueError("Previous range parity source changed")
+    parity=parity.replace(old_check,new_check)
+    test.write_text(parity,encoding='utf8')
     args.output.parent.mkdir(parents=True,exist_ok=True)
     with zipfile.ZipFile(args.output,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
         for p,b in sorted(files.items()):z.writestr(p,b)
