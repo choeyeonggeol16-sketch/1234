@@ -14,8 +14,8 @@ SOURCE_SHA="32ca38db2dbe46f0fb58dd2d064c15c124b7069acc8d19e008a5b312704a652b"
 OUTPUT="downloads/RKern_Broadcast_NonSC_Phase2_FULL_SRC_20261115.zip"
 ROOT_JAVA="src/l1j/server/server/"
 CHANGES={
-    "event":ROOT_JAVA+"SpecialEventHandler.java",
-    "gate":ROOT_JAVA+"MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+    "event":"src/l1j/server/SpecialEventHandler.java",
+    "gate":"src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
     "message":ROOT_JAVA+"model/network/core/sc/packet/SC_SystemMessage.java",
     "action":ROOT_JAVA+"model/network/core/sc/packet/SC_DoActionGFX.java",
     "remove":ROOT_JAVA+"model/network/core/sc/packet/SC_RemoveObject.java",
