@@ -180,6 +180,7 @@ def replace_shared_calls(s):
         close=matched_close(s,open_idx)
         label=m[1]
         fields=java_arguments(s[open_idx+1:close-1])
+        print("OLD_CALLBACK",label," ".join(fields[-1].split())[:320])
         if label=='sendAll':
             if len(fields)!=2:raise ValueError("sendAll requires legacy arg "+str(fields))
             if not ('->' in fields[1] or '::' in fields[1]):
@@ -190,7 +191,7 @@ def replace_shared_calls(s):
             if not ('->' in fields[5] or '::' in fields[5]):
                 raise ValueError("Unexpected non-legacy sixth argument")
             fields=fields[:5];new_label='send'
-        print("OLD_CALLBACK", label, (" ".join((args[-1] if label=="sendAll" else args[-1]).split()))[:320])
+
         rewritten="CSharedBroadcast."+new_label+"("+", ".join(fields)+")"
         ranges.append((m.start(),close,rewritten))
         num+=1
