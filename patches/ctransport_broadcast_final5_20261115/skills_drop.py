@@ -191,9 +191,9 @@ def arrow_skill(s):
     # inclusion of sender; use the non-except-self immutable buffer.
     old=M(out,"public","sendToReceivers")
     body=old[3]
-    marker='        for (L1Object o : receivers)'
-    k=body.find(marker)
-    if k<0:raise ValueError("Missing receiver loop")
+    receiver_loop=re.search(r"\bfor\s*\(\s*L1Object\s+o\s*:\s*receivers\s*\)",body)
+    if receiver_loop is None:raise ValueError("Missing receiver loop")
+    k=receiver_loop.start()
     repl='''        try (var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                 sharedWire(attackerId,ox,oy,oh,actId,targetId,spellGfx,tx,ty,isHit,seq),
                 Integer.MIN_VALUE,Integer.MAX_VALUE)) {
