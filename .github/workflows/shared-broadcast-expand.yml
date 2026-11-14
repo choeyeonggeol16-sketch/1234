@@ -1,0 +1,77 @@
+name: Shared broadcast expansion Java 21 verification
+on:
+  push:
+    branches: [mainserver-broadcast-expand-20261115]
+    paths:
+      - '.github/workflows/shared-broadcast-expand.yml'
+      - 'patches/ctransport_broadcast_expand_20261115/**'
+permissions:
+  contents: write
+jobs:
+  compile-compare-publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Expand eight fixed-layout shared broadcasts on verified latest SRC
+        run: |
+          python3 patches/ctransport_broadcast_expand_20261115/expand_broadcast.py \
+            --work "$RUNNER_TEMP/bcast"
+      - name: Verify pinned Java dependencies
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, urllib.request
+          rows=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          dst=pathlib.Path('.compile-deps')
+          dst.mkdir(exist_ok=True)
+          for row in rows:
+            jar=dst/row['file']
+            urllib.request.urlretrieve(row['url'],jar)
+            actual=hashlib.sha256(jar.read_bytes()).hexdigest()
+            if actual!=row['sha256']:
+              raise RuntimeError("SHA256 mismatch: "+row['file'])
+          print("Pinned dependencies verified",len(rows))
+          PY
+      - name: Compile all 1711 Java 21 files and run 1024 wire parity checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP/bcast/src" -name '*.java' | sort > "$RUNNER_TEMP/bcast/sources.txt"
+          test "$(wc -l < "$RUNNER_TEMP/bcast/sources.txt")" -eq 1711
+          mkdir -p "$RUNNER_TEMP/bcast/classes" "$RUNNER_TEMP/bcast/testclasses"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g \
+            -cp "$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/bcast/classes" @"$RUNNER_TEMP/bcast/sources.txt"
+          javac --enable-preview --release 21 -encoding UTF-8 \
+            -cp "$RUNNER_TEMP/bcast/classes:$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/bcast/testclasses" \
+            "$RUNNER_TEMP/bcast/testsrc/SharedBroadcastWireParity.java"
+          java --enable-preview \
+            -cp "$RUNNER_TEMP/bcast/testclasses:$RUNNER_TEMP/bcast/classes:$(pwd)/.compile-deps/*" \
+            SharedBroadcastWireParity
+          python3 - <<'PY'
+          import os, pathlib, json, zipfile
+          work=pathlib.Path(os.environ['RUNNER_TEMP'])/'bcast'
+          d=json.loads((work/'audit.json').read_text())
+          assert d['changed_java_files']==8 and d['wire_parity_cases']==1024
+          z=zipfile.ZipFile('downloads/CTransport_SharedBroadcast_8Packet_Expanded_FULL_SRC_20261115.zip')
+          assert z.testzip() is None
+          assert sum(p.endswith('.java') for p in z.namelist())==1711
+          print("PASSED: 8 expanded classes, 1024 wire cases, Java21 full compile, ZIP CRC")
+          PY
+      - name: Publish single verified latest full source ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/CTransport_SharedBroadcast_8Packet_Expanded_FULL_SRC_20261115.zip
+          git diff --cached --quiet && { echo "Already published"; exit 0; }
+          git commit -m "Publish verified eight-packet shared broadcast expansion full SRC [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
