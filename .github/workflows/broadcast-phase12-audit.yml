@@ -1,0 +1,42 @@
+name: Read-only search for phase12 broadcast candidates
+on:
+  push:
+    branches: [broadcast-nonsc-audit-20261115]
+    paths: [".github/workflows/broadcast-phase12-audit.yml"]
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read pinned full-source ZIP for remaining callsites
+        run: |
+          python3 - <<'PY'
+          import zipfile,hashlib,re,collections
+          p="downloads/RKern_Broadcast_NonSC_Phase10_FULL_SRC_20261115.zip"
+          buf=open(p,"rb").read()
+          assert hashlib.sha1(b"blob "+str(len(buf)).encode()+b"\0"+buf).hexdigest()=="508c8343ba1f959861690b922f28d25c9c16afa7"
+          with zipfile.ZipFile(p) as z:
+              names=[n for n in z.namelist() if n.startswith("src/") and n.endswith(".java")]
+              print("JAVA_FILES",len(names))
+              matches=[]
+              for name in names:
+                  content=z.read(name).decode("utf8")
+                  if "enum LFCMessages" in content or "class LFCMessages" in content:
+                      print("\n============== DECLARING LFCMessages",name)
+                      for i,line in enumerate(content.splitlines(),1):
+                          if i<550:print(f"{i:4} {line}")
+                  if "sendGreenMsgToList" in content and ("enum LFCMessages" not in content and "class LFCMessages" not in content):
+                      matches.append((name,content.count("sendGreenMsgToList")))
+              print("\nLFC_MESSAGES_USAGE",matches[:70])
+              for name in names:
+                  if name.endswith("L1World.java") or name.endswith("L1Character.java"):
+                      continue
+                  if not name.endswith("MJItemSkillModel.java") and not name.endswith("MJL1LiftGateInstance.java") and not name.endswith("MJLFCObject.java"):
+                      continue
+                  content=z.read(name).decode("utf8")
+                  print("\n====== BROADCAST CALLERS IN",name)
+                  for i,line in enumerate(content.splitlines(),1):
+                      if "broadcast(" in line or "broadcastPacket(" in line:
+                          print(i,line.strip())
+          PY
