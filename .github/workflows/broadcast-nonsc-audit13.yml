@@ -1,0 +1,53 @@
+name: Audit remaining SC and world direct broadcasts
+on:
+  push:
+    branches: [broadcast-nonsc-audit13-20261115]
+    paths: [".github/workflows/broadcast-nonsc-audit13.yml"]
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read pinned phase11 source for next shared broadcast routes
+        run: |
+          python3 - <<'PY'
+          import zipfile,hashlib,collections,re
+          p="downloads/RKern_Broadcast_NonSC_Phase11_FULL_SRC_20261115.zip"
+          buf=open(p,"rb").read()
+          assert hashlib.sha1(b"blob "+str(len(buf)).encode()+b"\0"+buf).hexdigest()=="3095ab082568d79299ecb0270cc04491b562e8ae"
+          with zipfile.ZipFile(p) as z:
+              names=[n for n in z.namelist() if n.startswith("src/") and n.endswith(".java")]
+              ranked=[]
+              for name in names:
+                  if "/sc/packet/" not in name:continue
+                  lines=z.read(name).decode("utf8").splitlines()
+                  for i,line in enumerate(lines):
+                      if ("for(" in line or "for (" in line) and ("L1PcInstance" in line or "CIOClient" in line):
+                          following="\n".join(lines[i:i+20])
+                          if "send(" in following or "sendFormatted(" in following or "sendPackets(" in following:
+                              ranked.append((name,i+1,line.strip(),following[:600]))
+              print("SC_DIRECT_LOOP_CANDIDATES",len(ranked))
+              for f,line,txt,snip in ranked[:105]:
+                  print("LOOP",f,line,repr(txt),repr(snip[:350]))
+              for short in ["SC_SkillSound.java","L1World.java","CSharedBroadcast.java","MJL1TreasureChest.java"]:
+                  found=[n for n in names if n.endswith("/"+short)]
+                  if len(found)!=1:continue
+                  lines=z.read(found[0]).decode("utf8").splitlines()
+                  print("\n======= FILE",found[0],len(lines))
+                  if short=="L1World.java":
+                      points=[i for i,l in enumerate(lines) if ("void broadcast_map(" in l or "void broadcastPacketToAll(" in l)]
+                  elif short=="CSharedBroadcast.java":
+                      points=[i for i,l in enumerate(lines) if ("public static" in l)]
+                  elif short=="MJL1TreasureChest.java":
+                      points=[i for i,l in enumerate(lines) if ("showCloud(" in l)]
+                  else:
+                      points=[i for i,l in enumerate(lines) if ("broadcast(" in l or "sharedWire(" in l or "sendAndBroadcast(" in l)]
+                  ranges=[]
+                  for i in points:
+                      lo=max(0,i-5);hi=min(len(lines),i+27)
+                      if ranges and lo<=ranges[-1][1]:ranges[-1]=(ranges[-1][0],max(hi,ranges[-1][1]))
+                      else:ranges.append((lo,hi))
+                  for lo,hi in ranges[:22]:
+                      for j in range(lo,hi):print(f"{j+1:4} {lines[j]}")
+          PY
