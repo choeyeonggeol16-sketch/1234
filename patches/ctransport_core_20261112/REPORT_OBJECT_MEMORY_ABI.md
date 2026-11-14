@@ -1,5 +1,7 @@
 # 전용 객체 할당자·네트워크 객체 배치·MSVC 호출 규약 — 2026-11-13
 
+> 2026-11-14 정정: 원본 CUserSocket은 26슬롯이며 배포 DLL은 24슬롯이다. 아래의 24슬롯 일치 주장은 기존 원본 추출 길이 제한에 따른 잘못된 판정이었다. 송신 검사 슬롯 15의 margin 인자 및 일부 필드 반영도 남아 있다. [후속 원본 대조 보고서](https://github.com/choeyeonggeol16-sketch/1234/blob/ctransport-core-20261112/reports/CTRANSPORT_FINAL_NETWORK_GAPS_20261114.md)를 우선 참조한다. 기존 DLL·ZIP은 변경하지 않았다.
+
 요청한 전용 메모리 할당자와 네트워크 타입 배치·가상함수 호출 규약을 구현했다. 제공된 x64 L2Server(10).exe의 명령과 RTTI를 기준으로 한 L1 호환 구현이다. 이 바이너리의 출시 연도가2002년이라는 근거는 확인하지 않았으며, 특정2002년판의 완전 복제나 원본 모든 분기의 동일성을 주장하지 않는다.
 
 **새 전체src와 CTransport.dll을 함께 적용하고 clean build한다.** DLL의 내부 C++ ABI를 맞추기 위해 배포 빌드를 **MSVC x64/C++20**으로 변경했다. Java는 기존 Java21 FFM을 사용한다. 외부 ABI10/67exports는 유지했다. Windows의 x64 Visual Studio Developer 셸에서 `python native/build_native.py`로 DLL·자체 검사·Java DLL SHA pin을 함께 만든다. Linux에서는 `python tests/run_native_tests.py` 및 `python tests/run_object_memory_tests.py [--tsan]`로 검사한다.

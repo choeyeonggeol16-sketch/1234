@@ -1,0 +1,62 @@
+# user_safe_send; PE pdata/unwind; entry 0x9ef41c
+# chunk 0x9ef41c..0x9ef51d
+00000000009ef41c: mov      qword ptr [rsp + 0x18], r8
+00000000009ef421: mov      qword ptr [rsp + 0x20], r9
+00000000009ef426: push     rbx
+00000000009ef427: push     rbp
+00000000009ef428: push     rsi
+00000000009ef429: push     rdi
+00000000009ef42a: push     r12
+00000000009ef42c: sub      rsp, 0x40
+00000000009ef430: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000009ef439: mov      esi, edx
+00000000009ef43b: mov      rbx, rcx
+00000000009ef43e: mov      r8d, dword ptr [rip + 0x2ebcfd93]
+00000000009ef445: mov      rax, qword ptr gs:[0x58]
+00000000009ef44e: mov      r12d, 0x7d58
+00000000009ef454: mov      rdi, qword ptr [rax + r8*8]
+00000000009ef458: movsxd   r9, dword ptr [rdi + r12]
+00000000009ef45c: lea      rbp, [rip - 0x5ef463]
+00000000009ef463: movsxd   r8, dword ptr [rbp + r9*4 + 0x47e2a40]
+00000000009ef46b: lea      eax, [r8 + 1]
+00000000009ef46f: mov      dword ptr [rbp + r9*4 + 0x47e2a40], eax
+00000000009ef477: imul     r9, r9, 0x3e8
+00000000009ef47e: add      r9, r8
+00000000009ef481: lea      rax, [rip + 0x3c9bb8] ; UTF16 'bool __cdecl CUserSocket::SafeSend(int,const char *,...)'
+00000000009ef488: mov      qword ptr [rbp + r9*8 + 0x47bf7c0], rax
+00000000009ef490: mov      rax, qword ptr [rcx]
+00000000009ef493: call     qword ptr [rax + 0x78]
+00000000009ef496: test     al, al
+00000000009ef498: jne      0x9ef4e7
+00000000009ef49a: lea      rax, [rbx + 0x7b4]
+00000000009ef4a1: lea      rcx, [rip + 0x388610] ; UTF16 'null'
+00000000009ef4a8: test     rax, rax
+00000000009ef4ab: cmovne   rcx, rax
+00000000009ef4af: mov      qword ptr [rsp + 0x28], rcx
+00000000009ef4b4: mov      dword ptr [rsp + 0x20], esi
+00000000009ef4b8: mov      r9d, 0x800
+00000000009ef4be: lea      r8, [rip + 0x3c9aeb] ; UTF16 'SafeSend. UserSocket pending write > %d KB, magin[%d], account[%s]'
+00000000009ef4c5: mov      edx, 2
+00000000009ef4ca: lea      rcx, [rip + 0xd5323cf]
+00000000009ef4d1: call     0x734514
+00000000009ef4d6: nop
+00000000009ef4d7: movsxd   rax, dword ptr [rdi + r12]
+00000000009ef4db: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009ef4e3: xor      al, al
+00000000009ef4e5: jmp      0x9ef512
+00000000009ef4e7: lea      r8, [rsp + 0x88]
+00000000009ef4ef: mov      rax, qword ptr [rbx]
+00000000009ef4f2: mov      rdx, qword ptr [rsp + 0x80]
+00000000009ef4fa: mov      rcx, rbx
+00000000009ef4fd: call     qword ptr [rax + 0x88]
+00000000009ef503: nop
+00000000009ef504: movsxd   rax, dword ptr [rdi + r12]
+00000000009ef508: add      dword ptr [rbp + rax*4 + 0x47e2a40], -1
+00000000009ef510: mov      al, 1
+00000000009ef512: add      rsp, 0x40
+00000000009ef516: pop      r12
+00000000009ef518: pop      rdi
+00000000009ef519: pop      rsi
+00000000009ef51a: pop      rbp
+00000000009ef51b: pop      rbx
+00000000009ef51c: ret

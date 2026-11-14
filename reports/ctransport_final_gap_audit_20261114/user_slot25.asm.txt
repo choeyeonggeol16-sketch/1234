@@ -1,0 +1,4 @@
+# user_slot25; reachable leaf CFG within 512 bytes; no pdata function boundary; entry 0xa01798
+# chunk 0xa01798..0xa0179f
+0000000000a01798: mov      eax, dword ptr [rcx + 0x4e8]
+0000000000a0179e: ret

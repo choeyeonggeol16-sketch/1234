@@ -1,0 +1,58 @@
+# listener_start; PE pdata/unwind; entry 0x8af9cc
+# chunk 0x8af9cc..0x8afaa6
+00000000008af9cc: push     rbx
+00000000008af9ce: push     rbp
+00000000008af9cf: push     rsi
+00000000008af9d0: push     rdi
+00000000008af9d1: push     r12
+00000000008af9d3: push     r13
+00000000008af9d5: push     r14
+00000000008af9d7: sub      rsp, 0x40
+00000000008af9db: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000008af9e4: mov      sil, r9b
+00000000008af9e7: mov      rbx, r8
+00000000008af9ea: mov      ebp, edx
+00000000008af9ec: mov      r12, rcx
+00000000008af9ef: mov      r10d, dword ptr [rip + 0x2ed0f7e2]
+00000000008af9f6: mov      rax, qword ptr gs:[0x58]
+00000000008af9ff: mov      r14d, 0x7d58
+00000000008afa05: mov      rdi, qword ptr [rax + r10*8]
+00000000008afa09: movsxd   r10, dword ptr [rdi + r14]
+00000000008afa0d: lea      r13, [rip - 0x4afa14]
+00000000008afa14: movsxd   r8, dword ptr [r13 + r10*4 + 0x47e2a40]
+00000000008afa1c: lea      eax, [r8 + 1]
+00000000008afa20: mov      dword ptr [r13 + r10*4 + 0x47e2a40], eax
+00000000008afa28: imul     r10, r10, 0x3e8
+00000000008afa2f: add      r10, r8
+00000000008afa32: lea      rax, [rip + 0x47a5b7] ; UTF16 'void __cdecl Server::Run(int,class CSocket *(__cdecl *)(unsigned __int64),bool,int,int)'
+00000000008afa39: mov      qword ptr [r13 + r10*8 + 0x47bf7c0], rax
+00000000008afa41: mov      ecx, 0x10
+00000000008afa46: call     0xab8ea0
+00000000008afa4b: mov      r8, rax
+00000000008afa4e: test     rax, rax
+00000000008afa51: je       0x8afa63
+00000000008afa53: lea      rax, [rip + 0x47a48e]
+00000000008afa5a: mov      qword ptr [r8], rax
+00000000008afa5d: mov      qword ptr [r8 + 8], rbx
+00000000008afa61: jmp      0x8afa66
+00000000008afa63: xor      r8d, r8d
+00000000008afa66: mov      eax, dword ptr [rsp + 0xa8]
+00000000008afa6d: mov      dword ptr [rsp + 0x28], eax
+00000000008afa71: mov      eax, dword ptr [rsp + 0xa0]
+00000000008afa78: mov      dword ptr [rsp + 0x20], eax
+00000000008afa7c: mov      r9b, sil
+00000000008afa7f: mov      edx, ebp
+00000000008afa81: mov      rcx, r12
+00000000008afa84: call     0x8af8f4
+00000000008afa89: nop
+00000000008afa8a: movsxd   rax, dword ptr [rdi + r14]
+00000000008afa8e: add      dword ptr [r13 + rax*4 + 0x47e2a40], -1
+00000000008afa97: add      rsp, 0x40
+00000000008afa9b: pop      r14
+00000000008afa9d: pop      r13
+00000000008afa9f: pop      r12
+00000000008afaa1: pop      rdi
+00000000008afaa2: pop      rsi
+00000000008afaa3: pop      rbp
+00000000008afaa4: pop      rbx
+00000000008afaa5: ret

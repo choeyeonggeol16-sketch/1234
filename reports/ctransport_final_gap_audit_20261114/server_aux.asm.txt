@@ -1,0 +1,153 @@
+# server_aux; PE pdata/unwind; entry 0x8b0bac
+# chunk 0x8b0bac..0x8b0e1b
+00000000008b0bac: push     rbx
+00000000008b0bae: push     rbp
+00000000008b0baf: push     rsi
+00000000008b0bb0: push     rdi
+00000000008b0bb1: push     r12
+00000000008b0bb3: push     r13
+00000000008b0bb5: push     r15
+00000000008b0bb7: sub      rsp, 0x70
+00000000008b0bbb: mov      qword ptr [rsp + 0x30], 0xfffffffffffffffe
+00000000008b0bc4: mov      r12, rcx
+00000000008b0bc7: mov      edx, dword ptr [rip + 0x2ed0e60b]
+00000000008b0bcd: mov      rax, qword ptr gs:[0x58]
+00000000008b0bd6: mov      esi, 0x7d58
+00000000008b0bdb: mov      r13, qword ptr [rax + rdx*8]
+00000000008b0bdf: movsxd   r8, dword ptr [r13 + rsi]
+00000000008b0be4: lea      r15, [rip - 0x4b0beb]
+00000000008b0beb: movsxd   rdx, dword ptr [r15 + r8*4 + 0x47e2a40]
+00000000008b0bf3: lea      eax, [rdx + 1]
+00000000008b0bf6: mov      dword ptr [r15 + r8*4 + 0x47e2a40], eax
+00000000008b0bfe: imul     r8, r8, 0x3e8
+00000000008b0c05: add      r8, rdx
+00000000008b0c08: lea      rax, [rip + 0x479921] ; UTF16 'void __cdecl Server::ReportSocket(void)'
+00000000008b0c0f: mov      qword ptr [r15 + r8*8 + 0x47bf7c0], rax
+00000000008b0c17: mov      qword ptr [rsp + 0x50], 0
+00000000008b0c20: mov      qword ptr [rsp + 0x58], 0
+00000000008b0c29: mov      qword ptr [rsp + 0x60], 0
+00000000008b0c32: lea      rbp, [rcx + 0x60]
+00000000008b0c36: mov      rcx, rbp
+00000000008b0c39: call     qword ptr [rip + 0x26b591] ; IAT EnterCriticalSection
+00000000008b0c3f: add      r12, 0x40
+00000000008b0c43: mov      rax, qword ptr [r12 + 8]
+00000000008b0c48: mov      rdi, qword ptr [rax]
+00000000008b0c4b: mov      qword ptr [rsp + 0x40], rdi
+00000000008b0c50: mov      rbx, r12
+00000000008b0c53: mov      qword ptr [rsp + 0x38], r12
+00000000008b0c58: mov      rax, r12
+00000000008b0c5b: mov      rcx, qword ptr [r12 + 8]
+00000000008b0c60: test     rbx, rbx
+00000000008b0c63: je       0x8b0e06
+00000000008b0c69: cmp      rbx, rax
+00000000008b0c6c: jne      0x8b0e06
+00000000008b0c72: cmp      rdi, rcx
+00000000008b0c75: sete     al
+00000000008b0c78: test     al, al
+00000000008b0c7a: sete     al
+00000000008b0c7d: test     al, al
+00000000008b0c7f: je       0x8b0ce2
+00000000008b0c81: cmp      rdi, qword ptr [rbx + 8]
+00000000008b0c85: je       0x8b0cdc
+00000000008b0c87: lea      rdx, [rdi + 0x20]
+00000000008b0c8b: lea      rcx, [rsp + 0x48]
+00000000008b0c90: call     0x559050
+00000000008b0c95: cmp      rdi, qword ptr [rbx + 8]
+00000000008b0c99: je       0x8b0cd6
+00000000008b0c9b: mov      rcx, qword ptr [rdi + 0x20]
+00000000008b0c9f: mov      rax, qword ptr [rcx]
+00000000008b0ca2: mov      r9d, 0xe
+00000000008b0ca8: mov      r8d, 0xe0
+00000000008b0cae: lea      rdx, [rip + 0x47948b]
+00000000008b0cb5: call     qword ptr [rax + 8]
+00000000008b0cb8: lea      rcx, [rsp + 0x38]
+00000000008b0cbd: call     0x6616e0
+00000000008b0cc2: mov      rax, r12
+00000000008b0cc5: mov      rcx, qword ptr [r12 + 8]
+00000000008b0cca: mov      rdi, qword ptr [rsp + 0x40]
+00000000008b0ccf: mov      rbx, qword ptr [rsp + 0x38]
+00000000008b0cd4: jmp      0x8b0c60
+00000000008b0cd6: call     0x866f68
+00000000008b0cdb: int3
+00000000008b0cdc: call     0x866f68
+00000000008b0ce1: int3
+00000000008b0ce2: mov      rcx, rbp
+00000000008b0ce5: call     qword ptr [rip + 0x26b4ed] ; IAT LeaveCriticalSection
+00000000008b0ceb: lea      r8, [rip + 0x479806]
+00000000008b0cf2: xor      edx, edx
+00000000008b0cf4: lea      rcx, [rip + 0xd670ba5]
+00000000008b0cfb: call     0x73446c
+00000000008b0d00: mov      rdx, qword ptr [rsp + 0x50]
+00000000008b0d05: mov      rcx, qword ptr [rsp + 0x58]
+00000000008b0d0a: cmp      rdx, rcx
+00000000008b0d0d: ja       0x8b0e00
+00000000008b0d13: mov      rbx, rdx
+00000000008b0d16: cmp      rdx, rcx
+00000000008b0d19: ja       0x8b0dfa
+00000000008b0d1f: cmp      rbx, rcx
+00000000008b0d22: sete     al
+00000000008b0d25: test     al, al
+00000000008b0d27: sete     al
+00000000008b0d2a: test     al, al
+00000000008b0d2c: je       0x8b0dcd
+00000000008b0d32: cmp      rbx, rcx
+00000000008b0d35: jae      0x8b0dc7
+00000000008b0d3b: mov      rcx, qword ptr [rbx]
+00000000008b0d3e: mov      rax, qword ptr [rcx]
+00000000008b0d41: lea      rdx, [rsp + 0xb0]
+00000000008b0d49: call     qword ptr [rax + 0xb0]
+00000000008b0d4f: mov      ecx, dword ptr [rax]
+00000000008b0d51: call     qword ptr [rip + 0x26b9a9] ; IAT inet_ntoa
+00000000008b0d57: mov      r9, qword ptr [rbx]
+00000000008b0d5a: mov      qword ptr [rsp + 0x20], rax
+00000000008b0d5f: mov      r9, qword ptr [r9 + 0xb0]
+00000000008b0d66: lea      r8, [rip + 0x479773]
+00000000008b0d6d: xor      edx, edx
+00000000008b0d6f: lea      rcx, [rip + 0xd670b2a]
+00000000008b0d76: call     0x73446c
+00000000008b0d7b: cmp      rbx, qword ptr [rsp + 0x58]
+00000000008b0d80: jae      0x8b0dc1
+00000000008b0d82: mov      rcx, qword ptr [rbx]
+00000000008b0d85: mov      rax, qword ptr [rcx]
+00000000008b0d88: mov      byte ptr [rsp + 0x20], 0
+00000000008b0d8d: mov      r9d, 0xe
+00000000008b0d93: mov      r8d, 0xe8
+00000000008b0d99: lea      rdx, [rip + 0x4793a0]
+00000000008b0da0: call     qword ptr [rax + 0x10]
+00000000008b0da3: mov      rcx, qword ptr [rsp + 0x58]
+00000000008b0da8: cmp      rbx, rcx
+00000000008b0dab: jae      0x8b0dbb
+00000000008b0dad: add      rbx, 8
+00000000008b0db1: mov      rdx, qword ptr [rsp + 0x50]
+00000000008b0db6: jmp      0x8b0d16
+00000000008b0dbb: call     0x705c88
+00000000008b0dc0: int3
+00000000008b0dc1: call     0x705c88
+00000000008b0dc6: int3
+00000000008b0dc7: call     0x705c88
+00000000008b0dcc: nop
+00000000008b0dcd: test     rdx, rdx
+00000000008b0dd0: je       0x8b0de5
+00000000008b0dd2: mov      r8d, 1
+00000000008b0dd8: lea      rcx, [rip + 0x2796fd1]
+00000000008b0ddf: call     0x74e3bc
+00000000008b0de4: nop
+00000000008b0de5: mov      eax, 0x7d58
+00000000008b0dea: movsxd   rax, dword ptr [r13 + rax]
+00000000008b0def: add      dword ptr [r15 + rax*4 + 0x47e2a40], -1
+00000000008b0df8: jmp      0x8b0e0c
+00000000008b0dfa: call     0xa58428
+00000000008b0dff: int3
+00000000008b0e00: call     0xa58428
+00000000008b0e05: int3
+00000000008b0e06: call     0x480214
+00000000008b0e0b: nop
+00000000008b0e0c: add      rsp, 0x70
+00000000008b0e10: pop      r15
+00000000008b0e12: pop      r13
+00000000008b0e14: pop      r12
+00000000008b0e16: pop      rdi
+00000000008b0e17: pop      rsi
+00000000008b0e18: pop      rbp
+00000000008b0e19: pop      rbx
+00000000008b0e1a: ret

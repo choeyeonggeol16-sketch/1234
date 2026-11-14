@@ -1,0 +1,4 @@
+REPRODUCED slot15: field+0x20=1572865, margin=524288; original condition=false, current method=true (no margin parameter)
+REPRODUCED slot14: field+0x20=2097153; original condition=false, current method=true
+PASS independent production send(): 1 additional byte rejected when reservations equal 2MiB
+PASS fixture cleanup: zero live allocator objects and bytes

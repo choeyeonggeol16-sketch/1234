@@ -1,0 +1,707 @@
+{
+  "binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "original_executed": false,
+  "architecture_scope": "supplied x64 only",
+  "source_index": {
+    "native/CTransport.cpp": "093df93ea163c7eac6390ddb960f5f776dd3aa8659f738004d2714d169f14d47",
+    "native/cio_core.hpp": "e7fd4b222c94f8e2b3b10102b8a7bd13b5a1a546c4f5402b19341ac048e363cf",
+    "native/io_server.hpp": "1f5d970c5e330d7d56b3de00cd6226ba89f1f2d15ed3397e8bd97ba8d0d94d44",
+    "native/reference_trace.hpp": "e47e54f4fa904f2fab58ba36d3818dee2d74bae9b068c55f470755affa069e6e",
+    "native/timer_wheel.hpp": "c78c626df47f4c395e0260199fa717e8b4b976c8b618a591088f10a54b976e45",
+    "tests/ObjectAbiTest.cpp": "3b2445d6eec79a6299c14cca3f4957a04e46862b42731ef2e1d5d220cddaae59",
+    "tests/ObjectNetworkContract.cpp": "c6f1906ea676391073d160e9a240a115020aaa1e9b382c825cb5ebf172f4947b",
+    "tests/verify_msvc_rtti.py": "699ec1e715a2ccc8c18fdc5a6879334ee3a89c1e6714e8e1db9a7377b7888f4a",
+    "src/l1j/server/server/model/network/core/CUserSocket.java": "c121ea78011bf242b0c86a427b70d073c9fd18df8d1da54ba048de53e4a1e9ab",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Emblem.java": "51e2a461fdf8f8654125e58d50384a66fc7b160bb6fcd5884e49491593109b3f"
+  },
+  "vtables": {
+    "CUserSocket": {
+      "address": "0xdc1c18",
+      "slots": [
+        "0xa017a0",
+        "0x9f773c",
+        "0x9f7770",
+        "0x9f7998",
+        "0xa0d164",
+        "0x404c88",
+        "0x56daa8",
+        "0x404c94",
+        "0x704248",
+        "0x56daa8",
+        "0x54655c",
+        "0x404ca0",
+        "0x545260",
+        "0x545398",
+        "0x9ef544",
+        "0x9ef620",
+        "0x90df94",
+        "0x90ee9c",
+        "0x545178",
+        "0xa12dec",
+        "0xa0372c",
+        "0x90dec0",
+        "0x90df28",
+        "0x9f8080",
+        "0xa01790",
+        "0xa01798"
+      ],
+      "count": 26,
+      "first_non_code": "0x119930522"
+    },
+    "CSocket": {
+      "address": "0xd6ab88",
+      "slots": [
+        "0x90ebbc",
+        "0x7d6d50",
+        "0x7d6eb4",
+        "0x56daa8",
+        "0x56daa8",
+        "0x404c88",
+        "0x56daa8",
+        "0x404c94",
+        "0x704248",
+        "0x56daa8",
+        "0x54655c",
+        "0x404ca0",
+        "0x545260",
+        "0x545398",
+        "0x53a8fc",
+        "0x53a8fc",
+        "0x90df94",
+        "0x90ee9c",
+        "0x545178",
+        "0x56daa8",
+        "0xab9010",
+        "0x90dec0",
+        "0x90df28",
+        "0x56daa8"
+      ],
+      "count": 24,
+      "first_non_code": "0x0"
+    },
+    "Server": {
+      "address": "0xd2a5f8",
+      "slots": [
+        "0x8b1014",
+        "0x7d6d50",
+        "0x7d6eb4",
+        "0x56daa8",
+        "0x56daa8",
+        "0x404c88",
+        "0x56daa8",
+        "0x404c94",
+        "0x704248",
+        "0x704d1c",
+        "0x705508",
+        "0x404ca0",
+        "0x8b0738",
+        "0x8b04fc",
+        "0x8b0404",
+        "0x8b0954"
+      ],
+      "count": 16,
+      "first_non_code": "0x119930522"
+    }
+  },
+  "functions": {
+    "server_ctor": {
+      "entry": "0x8b0f1c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x8b0f1c",
+          "0x8b0ff3"
+        ]
+      ],
+      "direct_calls": [
+        "0x704bec",
+        "0x84f1bc"
+      ],
+      "caller_count": 3
+    },
+    "server_dtor": {
+      "entry": "0x8b0e54",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x8b0e54",
+          "0x8b0eff"
+        ]
+      ],
+      "direct_calls": [
+        "0x9205b0"
+      ],
+      "caller_count": 8
+    },
+    "server_add": {
+      "entry": "0x8b0404",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x8b0404",
+          "0x8b04e3"
+        ]
+      ],
+      "direct_calls": [
+        "0x8b0340"
+      ],
+      "caller_count": 1
+    },
+    "server_remove": {
+      "entry": "0x8b04fc",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x8b04fc",
+          "0x8b0653"
+        ]
+      ],
+      "direct_calls": [
+        "0x96986c",
+        "0x866f68",
+        "0x91ffd8",
+        "0x734514",
+        "0x480214"
+      ],
+      "caller_count": 2
+    },
+    "server_shutdown": {
+      "entry": "0x8b0954",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x8b0954",
+          "0x8b0b6b"
+        ]
+      ],
+      "direct_calls": [
+        "0x559050",
+        "0x6616e0",
+        "0x866f68",
+        "0x866f68",
+        "0x45d41c",
+        "0x705c88",
+        "0x705c88",
+        "0x705c88",
+        "0x74e3bc",
+        "0xa58428",
+        "0xa58428",
+        "0x480214"
+      ],
+      "caller_count": 0
+    },
+    "server_aux": {
+      "entry": "0x8b0bac",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x8b0bac",
+          "0x8b0e1b"
+        ]
+      ],
+      "direct_calls": [
+        "0x559050",
+        "0x6616e0",
+        "0x866f68",
+        "0x866f68",
+        "0x73446c",
+        "0x73446c",
+        "0x705c88",
+        "0x705c88",
+        "0x705c88",
+        "0x74e3bc",
+        "0xa58428",
+        "0xa58428",
+        "0x480214"
+      ],
+      "caller_count": 1
+    },
+    "server_factory": {
+      "entry": "0x8b0738",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x8b0738",
+          "0x8b0929"
+        ]
+      ],
+      "direct_calls": [
+        "0x73446c",
+        "0x73446c",
+        "0x707fbc",
+        "0x8b0674",
+        "0x70801c"
+      ],
+      "caller_count": 0
+    },
+    "listener_start": {
+      "entry": "0x8af9cc",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x8af9cc",
+          "0x8afaa6"
+        ]
+      ],
+      "direct_calls": [
+        "0xab8ea0",
+        "0x8af8f4"
+      ],
+      "caller_count": 3
+    },
+    "listener_run": {
+      "entry": "0x8af8f4",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x8af8f4",
+          "0x8af9b0"
+        ]
+      ],
+      "direct_calls": [
+        "0x7066dc",
+        "0x73446c"
+      ],
+      "caller_count": 1
+    },
+    "user_slot24": {
+      "entry": "0xa01790",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0xa01790",
+          "0xa01798"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0
+    },
+    "user_slot25": {
+      "entry": "0xa01798",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0xa01798",
+          "0xa0179f"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0
+    },
+    "user_send_check_slot14": {
+      "entry": "0x9ef544",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9ef544",
+          "0x9ef61f"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514",
+        "0x734514",
+        "0x6704e0"
+      ],
+      "caller_count": 0
+    },
+    "user_send_check_slot15": {
+      "entry": "0x9ef620",
+      "scope": "reachable leaf CFG within 512 bytes; no pdata function boundary",
+      "chunks": [
+        [
+          "0x9ef620",
+          "0x9ef63a"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 0
+    },
+    "user_safe_send": {
+      "entry": "0x9ef41c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x9ef41c",
+          "0x9ef51d"
+        ]
+      ],
+      "direct_calls": [
+        "0x734514"
+      ],
+      "caller_count": 3
+    },
+    "socket_send_v": {
+      "entry": "0x90ee9c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90ee9c",
+          "0x90f04a"
+        ]
+      ],
+      "direct_calls": [
+        "0x41e6e4",
+        "0x70429c",
+        "0x41c6f8",
+        "0x41c6f8",
+        "0x45c7ac"
+      ],
+      "caller_count": 0
+    },
+    "socket_write_packet": {
+      "entry": "0x90e1d0",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90e1d0",
+          "0x90e522"
+        ]
+      ],
+      "direct_calls": [
+        "0x41c6f8",
+        "0x41c6f8",
+        "0x45d41c",
+        "0x73446c",
+        "0x734514",
+        "0x41c6f8",
+        "0xabcd50",
+        "0x41c6f8"
+      ],
+      "caller_count": 1
+    },
+    "async_send": {
+      "entry": "0x90ed10",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x90ed10",
+          "0x90ee54"
+        ]
+      ],
+      "direct_calls": [
+        "0x925138",
+        "0x90dda4",
+        "0x90e1d0",
+        "0x4205e0",
+        "0xa71b3c"
+      ],
+      "caller_count": 0
+    },
+    "socket_close": {
+      "entry": "0x45d41c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x45d41c",
+          "0x45d50f"
+        ]
+      ],
+      "direct_calls": [],
+      "caller_count": 32
+    },
+    "user_timer": {
+      "entry": "0xa0d164",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa0d164",
+          "0xa0db8a"
+        ]
+      ],
+      "direct_calls": [
+        "0x704a2c",
+        "0x734514",
+        "0x45d41c",
+        "0x704990",
+        "0x92f2b0",
+        "0x735ca4",
+        "0xab9970",
+        "0x45d41c",
+        "0xab9970",
+        "0x45d41c",
+        "0x9f8210",
+        "0x9f884c",
+        "0x9f884c",
+        "0x9f884c",
+        "0x9f8604",
+        "0x9f82c8",
+        "0x9f80dc",
+        "0x9f8d58",
+        "0x9fc768",
+        "0x5c97ec",
+        "0x9fc768",
+        "0x9f884c",
+        "0x9f8604",
+        "0x9f82c8",
+        "0x9f884c",
+        "0x9f8604",
+        "0x9f82c8",
+        "0x9f7ce0",
+        "0x9f7ce0",
+        "0x9f7e24",
+        "0x9f8604",
+        "0x9f7ce0",
+        "0x9f7ce0",
+        "0x9f7e24",
+        "0x9f8604",
+        "0x9f7e24",
+        "0x9f884c",
+        "0x7048c4"
+      ],
+      "caller_count": 0
+    },
+    "user_on_close": {
+      "entry": "0xa12dec",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa12dec",
+          "0xa12eed"
+        ]
+      ],
+      "direct_calls": [
+        "0x8b04fc",
+        "0x90e140",
+        "0xa0dc04",
+        "0xa0ded4",
+        "0x4173e4",
+        "0xa12674"
+      ],
+      "caller_count": 0
+    },
+    "release_verifier_timer": {
+      "entry": "0xa1291c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0xa1291c",
+          "0xa12af9"
+        ]
+      ],
+      "direct_calls": [
+        "0xa08300",
+        "0x7048c4",
+        "0xa123e8",
+        "0x7048c4",
+        "0xa123e8",
+        "0x7048c4",
+        "0x734514"
+      ],
+      "caller_count": 0
+    },
+    "socket_io_dispatch": {
+      "entry": "0x54655c",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x54655c",
+          "0x54664e"
+        ]
+      ],
+      "direct_calls": [
+        "0x45d41c",
+        "0x545430",
+        "0x45c7ac",
+        "0x734514"
+      ],
+      "caller_count": 0
+    },
+    "socket_write_completion": {
+      "entry": "0x545e38",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x545e38",
+          "0x5460b8"
+        ]
+      ],
+      "direct_calls": [
+        "0x73446c",
+        "0x734514",
+        "0x734514",
+        "0x73446c",
+        "0x734514",
+        "0x41c6f8"
+      ],
+      "caller_count": 0
+    },
+    "socket_read_submit": {
+      "entry": "0x5456d0",
+      "scope": "PE pdata/unwind",
+      "chunks": [
+        [
+          "0x5456d0",
+          "0x5459b7"
+        ]
+      ],
+      "direct_calls": [
+        "0x41e6e4",
+        "0xabcd50",
+        "0x41c6f8",
+        "0xabcd50",
+        "0x734514",
+        "0x734514",
+        "0x45d41c"
+      ],
+      "caller_count": 23
+    }
+  },
+  "release_dll": {
+    "sha256": "9b8992db78c851d76522e30406a8049b84e08b5a53af395689d5847154dad6a1",
+    "CUserSocket_tables": [
+      {
+        "table_rva": "0x349a0",
+        "count": 24,
+        "slots": [
+          "0x180007490",
+          "0x180014b10",
+          "0x180013e10",
+          "0x18000c6d0",
+          "0x18000b350",
+          "0x18000b9f0",
+          "0x18000b350",
+          "0x18000b990",
+          "0x18000bdb0",
+          "0x18000b350",
+          "0x18000b3f0",
+          "0x18000bda0",
+          "0x18000aca0",
+          "0x18000b3e0",
+          "0x18000e1a0",
+          "0x18000e1c0",
+          "0x18000da10",
+          "0x18000da40",
+          "0x18000a5e0",
+          "0x18000b360",
+          "0x18000b7a0",
+          "0x18000dc70",
+          "0x18000a380",
+          "0x18000b7b0"
+        ]
+      }
+    ]
+  },
+  "verified_instructions": [
+    {
+      "address": "0x9ef620",
+      "bytes": "48837918ff",
+      "instruction": "cmp qword ptr [rcx + 0x18], -1"
+    },
+    {
+      "address": "0x9ef62a",
+      "bytes": "8b4120",
+      "instruction": "mov eax, dword ptr [rcx + 0x20]"
+    },
+    {
+      "address": "0x9ef62d",
+      "bytes": "8d0c02",
+      "instruction": "lea ecx, [rdx + rax]"
+    },
+    {
+      "address": "0x9ef630",
+      "bytes": "81f900002000",
+      "instruction": "cmp ecx, 0x200000"
+    },
+    {
+      "address": "0x9ef636",
+      "bytes": "0f9ec0",
+      "instruction": "setle al"
+    },
+    {
+      "address": "0x9ef5ca",
+      "bytes": "81792000002000",
+      "instruction": "cmp dword ptr [rcx + 0x20], 0x200000"
+    },
+    {
+      "address": "0x9ef5bc",
+      "bytes": "c7833c05000005000000",
+      "instruction": "mov dword ptr [rbx + 0x53c], 5"
+    },
+    {
+      "address": "0x9ef493",
+      "bytes": "ff5078",
+      "instruction": "call qword ptr [rax + 0x78]"
+    },
+    {
+      "address": "0x8b0477",
+      "bytes": "4883c160",
+      "instruction": "add rcx, 0x60"
+    },
+    {
+      "address": "0x8b04a7",
+      "bytes": "488d4e40",
+      "instruction": "lea rcx, [rsi + 0x40]"
+    },
+    {
+      "address": "0x90effc",
+      "bytes": "ff90b8000000",
+      "instruction": "call qword ptr [rax + 0xb8]"
+    },
+    {
+      "address": "0x8b0fcc",
+      "bytes": "488d4f60",
+      "instruction": "lea rcx, [rdi + 0x60]"
+    },
+    {
+      "address": "0x8b0fd0",
+      "bytes": "baa00f0000",
+      "instruction": "mov edx, 0xfa0"
+    },
+    {
+      "address": "0x8b0f4b",
+      "bytes": "488d4f40",
+      "instruction": "lea rcx, [rdi + 0x40]"
+    },
+    {
+      "address": "0x8b0ecf",
+      "bytes": "488b4f58",
+      "instruction": "mov rcx, qword ptr [rdi + 0x58]"
+    },
+    {
+      "address": "0x8af969",
+      "bytes": "44888988000000",
+      "instruction": "mov byte ptr [rcx + 0x88], r9b"
+    },
+    {
+      "address": "0x8b07b5",
+      "bytes": "80b98800000000",
+      "instruction": "cmp byte ptr [rcx + 0x88], 0"
+    },
+    {
+      "address": "0x8b07be",
+      "bytes": "807f040a",
+      "instruction": "cmp byte ptr [rdi + 4], 0xa"
+    },
+    {
+      "address": "0x8b07c4",
+      "bytes": "807f050a",
+      "instruction": "cmp byte ptr [rdi + 5], 0xa"
+    },
+    {
+      "address": "0xa01790",
+      "bytes": "488b81f0040000",
+      "instruction": "mov rax, qword ptr [rcx + 0x4f0]"
+    },
+    {
+      "address": "0xa01798",
+      "bytes": "8b81e8040000",
+      "instruction": "mov eax, dword ptr [rcx + 0x4e8]"
+    },
+    {
+      "address": "0x90e26f",
+      "bytes": "ff5070",
+      "instruction": "call qword ptr [rax + 0x70]"
+    },
+    {
+      "address": "0x90e2e1",
+      "bytes": "488b8fa8000000",
+      "instruction": "mov rcx, qword ptr [rdi + 0xa8]"
+    },
+    {
+      "address": "0x90e2f1",
+      "bytes": "48899fa8000000",
+      "instruction": "mov qword ptr [rdi + 0xa8], rbx"
+    }
+  ],
+  "claim_limit": "Selected function and field comparison, not all network branches or a restoration percentage."
+}
