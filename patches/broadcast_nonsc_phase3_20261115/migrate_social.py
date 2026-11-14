@@ -174,7 +174,7 @@ def main():
         "l1j.server.server.packets.Protocol.MainServer.Proto.SC_SOCIAL_ACTION_NOTI",
         pkg.group(1)+".SC_SOCIAL_ACTION_NOTI")
     for typ in ("ProtoWriter","ProtoMsg"):
-        m=re.search(r"(?m)^import\\s+([\\w.]+\\."+typ+r")\\s*;",code)
+        m=re.search(r"(?m)^import\s+([\w.]+\."+typ+r")\s*;",code)
         if m is None:raise ValueError("Missing "+typ+" import in canonical social packet")
         test_code=test_code.replace("l1j.server.server.packets.Protocol."+typ,m.group(1))
     test.write_text(test_code,encoding="utf8")
