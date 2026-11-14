@@ -1,0 +1,32 @@
+name: Audit remaining legacy broadcast callsites at phase13
+on:
+  push:
+    branches: [broadcast-nonsc-audit15-20261115]
+    paths: [".github/workflows/broadcast-audit15.yml"]
+jobs:
+  census:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read verified phase13 SRC and classify legacy callsites
+        run: |
+          python3 - <<'PY'
+          import hashlib,zipfile,collections,re
+          p='downloads/RKern_Broadcast_NonSC_Phase13_FULL_SRC_20261115.zip'
+          raw=open(p,'rb').read()
+          assert hashlib.sha1(b"blob "+str(len(raw)).encode()+b"\0"+raw).hexdigest()=="9d3d02c635e1d62010b5e2d8d33c931ee2474ab1"
+          targets=['broadcastPacket(', 'broadcastPacketM(', 'broadcastPacketFast(','wideBroadcastPacket(','broadcastPacketToAll(','broadcast_map(','sendGreenMsgToList(','sendSystemMsgToList(','MJL1LiftGateInstance','SC_AreaAttackEffect','CSharedBroadcast']
+          with zipfile.ZipFile(p) as z:
+              for target in targets:
+                  print('\n======= MATCH',target)
+                  hit=[]
+                  for n in z.namelist():
+                      if not(n.startswith('src/') and n.endswith('.java')):continue
+                      lines=z.read(n).decode('utf8').splitlines()
+                      for i,line in enumerate(lines):
+                          if target in line:
+                              hit.append((n,i+1,line.strip()[:190]))
+                  print('TOTAL',len(hit),'FILES',len(set(n for n,_,_ in hit)))
+                  for n,i,line in hit[:100]:print('  ',n,i,line)
+          PY
