@@ -1,0 +1,42 @@
+name: Inspect tower and team event repeated notices
+on:
+  push:
+    branches: [broadcast-nonsc-audit21-20261115]
+    paths: [".github/workflows/broadcast-inspect21.yml"]
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Analyze pinned phase18 remaining common broadcasts
+        run: |
+          python3 - <<'PY'
+          import zipfile,hashlib
+          p="downloads/RKern_Broadcast_NonSC_Phase18_FULL_SRC_20261115.zip"
+          b=open(p,'rb').read()
+          assert hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()=='5052f9bc337e907d73adaf8f85a0b38311bcfd6a'
+          with zipfile.ZipFile(p) as z:
+            files=z.namelist()
+            names=["DominanceFloorLv1.java","DominanceFloorLv2.java","DominanceFloorLv3.java","DominanceFloorLv4.java","DominanceFloorLv5.java","DominanceFloorLv6.java","DominanceFloorLv7.java","DominanceFloorLv8.java","DominanceFloorLv9.java","DominanceFloorLv10.java",
+              "SC_LFCTrapEffect.java","DisplayEffectTrap.java","MJServerMacroLoader.java","SC_OnlyEffect.java","SC_WarStartMessage.java"]
+            for name in names:
+              found=[n for n in files if n.startswith("src/") and n.endswith("/"+name)]
+              print("=======FILE",name,found)
+              if len(found)!=1:continue
+              lines=z.read(found[0]).decode("utf8").splitlines()
+              if name=="DisplayEffectTrap.java":spans=[(1,60)]
+              elif name=="SC_LFCTrapEffect.java":spans=[(1,180)]
+              elif name=="MJServerMacroLoader.java":spans=[(110,185)]
+              elif name=="SC_OnlyEffect.java":spans=[(1,90)]
+              elif name=="SC_WarStartMessage.java":spans=[(1,90)]
+              else:
+                points=[i for i,x in enumerate(lines) if "GREEN_MESSAGE" in x or "PcCK()" in x or "SC_DisplayEffect.send" in x]
+                spans=[]
+                for i in points:
+                  a=max(0,i-5);b=min(len(lines),i+9)
+                  if spans and a<=spans[-1][1]:spans[-1]=(spans[-1][0],max(spans[-1][1],b))
+                  else:spans.append((a,b))
+              for a,b in spans[:18]:
+                for i in range(a-1,min(b,len(lines))):print(f"{i+1:4} {lines[i]}")
+          PY
