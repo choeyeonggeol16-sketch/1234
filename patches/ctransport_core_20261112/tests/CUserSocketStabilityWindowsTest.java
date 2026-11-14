@@ -124,8 +124,9 @@ public final class CUserSocketStabilityWindowsTest {
             System.out.println("MEASURE slow-reader-and-RST accepted="+accepted+" refused="+refused);return result;
         }
     }
-    static Map<String,Object> closeRace()throws Exception {
+    static Map<String,Object> closeRace(boolean localClose)throws Exception {
         long began=System.nanoTime();CountDownLatch held=new CountDownLatch(4),release=new CountDownLatch(1);
+        AtomicInteger accepted=new AtomicInteger();
         try(CSharedBroadcastWindowsTest.World world=new CSharedBroadcastWindowsTest.World();ExecutorService executor=Executors.newVirtualThreadPerTaskExecutor()){
             List<Future<?>> futures=new ArrayList<>();
             for(CUserSocket user:world.users)futures.add(executor.submit(()->{
@@ -133,7 +134,12 @@ public final class CUserSocketStabilityWindowsTest {
                 try{
                     held.countDown();check(release.await(15,TimeUnit.SECONDS),"race producer fence");
                     frame.buffer().writeByte(new byte[62]);committed=user.commitDirectFrame(frame);
-                    check(!committed,"closing connection accepted held encoder");
+                    // Native close-start is an early observer notification, not
+                    // the Java CLOSED transition. An earlier reservation may
+                    // still be admitted and then fail asynchronously. Explicit
+                    // Java close must reject; both paths must release all leases.
+                    if(localClose)check(!committed,"closed connection accepted held encoder");
+                    if(committed)accepted.incrementAndGet();
                 }finally{if(!committed)user.abortDirectFrame(frame);}
                 return null;
             }));
@@ -141,10 +147,11 @@ public final class CUserSocketStabilityWindowsTest {
                 check(held.await(10,TimeUnit.SECONDS),"race encoders not held");
                 for(Socket peer:world.peers){peer.setSoLinger(true,0);peer.close();}
                 until(()->Arrays.stream(world.users).allMatch(CUserSocket::isCloseStarted),10000,"RST did not enter close");
+                if(localClose)for(CUserSocket user:world.users)user.close();
                 release.countDown();for(Future<?> future:futures)future.get(15,TimeUnit.SECONDS);
                 until(()->Arrays.stream(world.users).allMatch(CUserSocket::isCloseComplete),10000,"held encoder close did not finish");
                 check(world.pool.usedSendSlots()==0&&world.pool.usedRecvSlots()==0,"held encoder lease leak");healthy(world.server);
-                return Map.of("name","close-with-four-held-encoders","elapsed_ms",(System.nanoTime()-began)/1e6,"after",memory(world.server));
+                return Map.of("name",localClose?"java-close-with-four-held-encoders":"RST-with-four-held-encoders","elapsed_ms",(System.nanoTime()-began)/1e6,"admitted_reserved_frames",accepted.get(),"after",memory(world.server));
             }finally{release.countDown();}
         }
     }
@@ -166,7 +173,8 @@ public final class CUserSocketStabilityWindowsTest {
                 Map<String,Object> snapshot=memory(probe);snapshot.put("wave",wave+1);snapshot.put("weak_users_remaining",references.stream().filter(x->x.get()!=null).count());waves.add(snapshot);
             }
             report.put("reconnect_memory_waves",waves);System.gc();until(()->references.stream().allMatch(x->x.get()==null),10000,"closed Java users retained by GC roots");
-            report.put("collected_java_users",references.size());cases.add(pressure());quiesce(probe,baseline);cases.add(closeRace());quiesce(probe,baseline);
+            report.put("collected_java_users",references.size());cases.add(pressure());quiesce(probe,baseline);
+            cases.add(closeRace(false));quiesce(probe,baseline);cases.add(closeRace(true));quiesce(probe,baseline);
             System.gc();Thread.sleep(1100);report.put("final",memory(probe));report.put("profile",profile.finish());report.put("status","passed");
         }catch(Throwable failure){report.put("status","failed");report.put("failure",failure.toString());throw failure;}
         finally{report.put("total_elapsed_ms",(System.nanoTime()-began)/1e6);write(Path.of("stability-java.json"),report);}
