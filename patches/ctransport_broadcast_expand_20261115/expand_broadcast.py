@@ -245,7 +245,8 @@ def modify(name, original):
             shared("anchor","objectId, polyId, weaponState",fast=True))
     else:raise ValueError("Unreviewed class "+name)
     if "sharedWire(" in original:raise ValueError("already shared " + name)
-    idx=s.find("    public static ")
+    match=re.search(r"(?m)^[ \t]*public\s+static\s+", s)
+    idx=match.start() if match else -1
     if idx<0:raise ValueError("No public static for wire insertion "+name)
     s=s[:idx]+BUILDERS[name]+"\n"+s[idx:]
     if SHARED not in s or "private static byte[] sharedWire" not in s:
