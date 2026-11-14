@@ -1,0 +1,84 @@
+name: Full source audit and safe central broadcast migrations
+on:
+  push:
+    branches: [broadcast-full-audit-20261115]
+    paths:
+      - '.github/workflows/broadcast-central-migrate.yml'
+      - 'patches/broadcast_full_audit_20261115/migrate_central.py'
+permissions:
+  contents: write
+jobs:
+  compile-and-publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Migrate two confirmed recipient-invariant central broadcasts
+        run: |
+          python3 patches/broadcast_full_audit_20261115/migrate_central.py \
+            --work "$RUNNER_TEMP/broadcast-central"
+      - name: Fetch and verify SHA256-pinned dependencies
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,pathlib,urllib.request
+          manifest=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          out=pathlib.Path('.compile-deps')
+          out.mkdir(exist_ok=True)
+          for lib in manifest:
+            target=out/lib['file']
+            urllib.request.urlretrieve(lib['url'],target)
+            if hashlib.sha256(target.read_bytes()).hexdigest()!=lib['sha256']:
+              raise AssertionError(lib['file']+' dependency hash changed')
+          print('Dependency SHA256 verified:',len(manifest))
+          PY
+      - name: Compile all Java21 sources and verify raw/Map broadcast wire parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP/broadcast-central/src" -name '*.java' | sort \
+            > "$RUNNER_TEMP/broadcast-central/java_sources.txt"
+          test "$(wc -l < "$RUNNER_TEMP/broadcast-central/java_sources.txt")" -eq 1711
+          mkdir -p "$RUNNER_TEMP/broadcast-central/classes" "$RUNNER_TEMP/broadcast-central/testclasses"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g \
+            -cp "$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/broadcast-central/classes" \
+            @"$RUNNER_TEMP/broadcast-central/java_sources.txt"
+          javac --enable-preview --release 21 -encoding UTF-8 \
+            -cp "$RUNNER_TEMP/broadcast-central/classes:$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/broadcast-central/testclasses" \
+            "$RUNNER_TEMP/broadcast-central/testsrc/BroadcastCentral2WireRegression.java"
+          java --enable-preview \
+            -cp "$RUNNER_TEMP/broadcast-central/testclasses:$RUNNER_TEMP/broadcast-central/classes:$(pwd)/.compile-deps/*" \
+            BroadcastCentral2WireRegression
+          python3 - <<'PY'
+          import os,pathlib,json,zipfile
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'broadcast-central'
+          manifest=json.loads((root/'build.json').read_text())
+          assert manifest['java_count']==1711 and manifest['changed_legacy_broadcast_loops']==2
+          assert len(manifest['changed_files'])==4 and manifest['legacy_fallbacks_added']==0
+          assert manifest['original_native_dll_unchanged']
+          target=pathlib.Path('downloads/RKern_Broadcast_FullAudit_Central2_FULL_SRC_20261115.zip')
+          with zipfile.ZipFile(target) as z:
+            assert z.testzip() is None
+            assert sum(p.endswith('.java') for p in z.namelist())==1711
+            assert 'docs/broadcast_full_audit_20261115/AUDIT_KO.md' in z.namelist()
+            assert 'docs/broadcast_full_audit_20261115/audit.json' in z.namelist()
+          print('BROADCAST_CENTRAL_SOURCE_AND_CRC_OK')
+          print('OUTPUT_SHA256',manifest['output_sha256'])
+          PY
+      - name: Publish one source ZIP including full-source audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/RKern_Broadcast_FullAudit_Central2_FULL_SRC_20261115.zip
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish verified first full-broadcast cleanup and source audit [skip ci]"
+          git push origin "HEAD:$GITHUB_REF_NAME"
