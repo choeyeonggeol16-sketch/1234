@@ -280,7 +280,7 @@ def drop_item(s):
     }}
 '''
     # This overload returns int (viewer count), unlike most void broadcasts.
-    hit=re.search(r"\\bpublic\\s+static\\s+int\\s+broadcast\\s*\\(",s)
+    hit=re.search(r"\bpublic\s+static\s+int\s+broadcast\s*\(",s)
     if hit is None:raise ValueError("Ground item counted broadcast not found")
     k=hit.end();lvl=1
     while lvl:
