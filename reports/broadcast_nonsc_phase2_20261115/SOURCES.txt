@@ -1,0 +1,1087 @@
+======================================================================
+FILE src/l1j/server/SpecialEventHandler.java (95 lines)
+...
+1: package l1j.server;
+2: import l1j.server.server.model.network.core.sc.packet.SC_GMHtml;
+3: 
+4: import static l1j.server.server.model.character.skill.L1SkillId.ADDITIONAL_FIRE;
+5: import static l1j.server.server.model.character.skill.L1SkillId.BLESS_WEAPON;
+6: import static l1j.server.server.model.character.skill.L1SkillId.COMA_B;
+7: import static l1j.server.server.model.character.skill.L1SkillId.DECREASE_WEIGHT;
+8: import static l1j.server.server.model.character.skill.L1SkillId.DRAGON_SKIN;
+9: import static l1j.server.server.model.character.skill.L1SkillId.FEATHER_BUFF_A;
+10: import static l1j.server.server.model.character.skill.L1SkillId.God_buff;
+11: import static l1j.server.server.model.character.skill.L1SkillId.INSIGHT;
+12: import static l1j.server.server.model.character.skill.L1SkillId.IRON_SKIN;
+13: import static l1j.server.server.model.character.skill.L1SkillId.NATURES_TOUCH;
+14: import static l1j.server.server.model.character.skill.L1SkillId.PHYSICAL_ENCHANT_DEX;
+15: import static l1j.server.server.model.character.skill.L1SkillId.PHYSICAL_ENCHANT_STR;
+16: 
+17: import l1j.server.server.datatables.ItemTable;
+18: import l1j.server.server.model.L1World;
+19: import l1j.server.server.model.Instance.L1ItemInstance;
+20: import l1j.server.server.model.Instance.L1PcInstance;
+21: import l1j.server.server.model.character.skill.L1SkillId;
+22: import l1j.server.server.model.character.skill.L1SkillUse;
+23: import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+24: 
+25: enum SpecialEvent {
+26: 	BugRace, AllBuf, InfinityFight, DoNotChatEveryone, DoChatEveryone
+27: };
+28: 
+29: // 게임 내, 전체 이벤트에 대한 처리를 담당
+30: public class SpecialEventHandler {
+31: 
+32: 	private static volatile SpecialEventHandler uniqueInstance = null;
+33: 
+34: 	private SpecialEventHandler() {
+35: 	}
+36: 
+37: 	public static SpecialEventHandler getInstance() {
+38: 		if (uniqueInstance == null) {
+39: 			synchronized (SpecialEventHandler.class) {
+40: 				if (uniqueInstance == null) {
+41: 					uniqueInstance = new SpecialEventHandler();
+42: 				}
+43: 			}
+44: 		}
+45: 
+46: 		return uniqueInstance;
+47: 	}
+48: 
+49: 	//TODO 코마의 축복 코인
+50: 	public void doGiveEventStaff() {
+51: 		for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+52: 			if (pc.getNetConnection() != null) {
+53: 				pc.getInventory().storeItem(30104, 1);
+54: 				L1ItemInstance item = ItemTable.getInstance().createItem(30104);
+55: 				SC_GMHtml.send(pc, "보낸이:" + pc.getName() + "", "아이템:"+item.getLogName()+" 이 도착 했습니다.");
+56: 				pc.sendPackets("\\aH메티스님께서 코마의 축복 코인이 지급 하였습니다.");
+57: 			}
+58: 		}
+59: 	}
+60: 
+61: 	//TODO 드래곤의 토파즈
+62: 	public void doGiveEventStaff1() {
+63: 		for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+64: 			if (pc.getNetConnection() != null) {
+65: 				pc.getInventory().storeItem(7241, 1);
+66: 				L1ItemInstance item = ItemTable.getInstance().createItem(7241);
+67: 				SC_GMHtml.send(pc, "보낸이:" + pc.getName() + "", "아이템:"+item.getLogName()+" 이 도착 했습니다.");
+68: 				pc.sendPackets("\\aH메티스님께서 드래곤의 토파즈가 지급 하였습니다.");
+69: 			}
+70: 		}
+71: 	}
+72: 
+73: 	//TODO 보스소환주문서
+74: 	public void doGiveEventStaff2() {
+75: 		for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+76: 			if (pc.getNetConnection() != null) {
+77: 				pc.getInventory().storeItem(3000123, 1);
+78: 				L1ItemInstance item = ItemTable.getInstance().createItem(3000123);
+79: 				SC_GMHtml.send(pc, "보낸이:"+pc.getName()+"♥", "♥"+item.getLogName()+" 1장이 도착♥　　 　(필드에서만 사용이 가능합니다)　(혈원분들과 함께 레이드 하세요)");
+80: 				pc.sendPackets("\\aG메티스님께서 소환주문서 1장이 지급 하였습니다.");
+81: 			}
+82: 		}
+83: 	}
+84: 
+85: 	public void doNotChatEveryone() {
+86: 		L1World.getInstance().set_worldChatElabled(false);
+87: 		SC_SystemMessage.broadcast("잠시후 월드채팅이 비활성화 상태로 돌입 합니다.");
+88: 	}
+89: 
+90: 	public void doChatEveryone() {
+91: 		L1World.getInstance().set_worldChatElabled(true);
+92: 		SC_SystemMessage.broadcast("잠시후 월드채팅이 활성화 상태로 돌입 합니다.");
+93: 	}
+94: 
+95: }
+======================================================================
+FILE src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java (318 lines)
+...
+1: package l1j.server.MJTemplate.L1Instance;
+2: 
+3: 
+4: import l1j.server.MJTemplate.MJL1Type;
+5: import l1j.server.server.model.network.core.sc.packet.SC_ChangeAttr;
+6: import l1j.server.server.ThreadPool;
+7: import l1j.server.server.model.L1Object;
+8: import l1j.server.server.model.L1World;
+9: import l1j.server.server.model.Instance.L1PcInstance;
+10: import l1j.server.server.model.Instance.L1SupportInstance;
+11: import l1j.server.server.model.map.L1Map;
+12: import l1j.server.server.model.map.L1WorldMap;
+13: import l1j.server.server.model.network.packet.ServerPacket;
+14: import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+15: import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
+16: import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+17: import l1j.server.server.utils.MJBytesOutputStream;
+18: 
+19: public class MJL1LiftGateInstance extends L1Object{
+20: 	private static final long serialVersionUID = 1L;
+21: 	public static final int LIFT_OPEN 	= 28;
+22: 	public static final int LIFT_CLOSE 	= 29;
+23: 
+24: 	private final int[] _attrCoordinates;
+25: 	private int 					_gfx;
+26: 	private int					_act;
+27: 	private int 					_heading;
+28: 	private boolean				_isDisposing;
+29: 	private byte[]				_worldPutBody;
+30: 	private boolean				_isWidth;
+31: 	private int					_weight;
+32: 
+33: 	public MJL1LiftGateInstance(int id, int gfx, int x, int y, int h, short mapid, boolean isWidth, int weight){
+34: 		this(id, gfx, x, y, h, mapid, LIFT_CLOSE, isWidth, weight);
+35: 	}
+36: 
+37: 	public MJL1LiftGateInstance(int id, int gfx, int x, int y, int h, short mapid, int act, boolean isWidth, int weight){
+38: 		super();
+39: 		setId(id);
+40: 		setX(x);
+41: 		setY(y);
+42: 		setMap(mapid);
+43: 		_heading 	= h;
+44: 		_gfx 		= gfx;
+45: 		_act 		= act;
+46: 		_isDisposing= false;
+47: 
+48: 		_isWidth	= isWidth;
+49: 		_weight = weight;
+50: 		_attrCoordinates = new int[_weight * 4];
+51: 		createAttrs();
+52: 		_worldPutBody = serialize();
+53: 		onPass(false);
+54: 	}
+55: 
+56: 	private void createAttrs() {
+57:         final int x = getX(), y = getY();
+58:         final int diff = (_weight - 1) / 2;
+59:         int j = 0;
+60:         for (int i = 0; i < _weight; ++i) {
+61:             if (_isWidth) {
+62:                 _attrCoordinates[j++] = x - 1;
+63:                 _attrCoordinates[j++] = y - diff + i;
+64:                 _attrCoordinates[j++] = x;
+65:                 _attrCoordinates[j++] = y - diff + i;
+66:             } else {
+67:                 _attrCoordinates[j++] = x - diff + i;
+68:                 _attrCoordinates[j++] = y - 1;
+69:                 _attrCoordinates[j++] = x - diff + i;
+70:                 _attrCoordinates[j++] = y;
+71:             }
+72:         }
+73:     }
+74: 
+75:     private void sendAttrs(L1PcInstance pc) {
+76:         final boolean close = isClose();
+77:         for (int i = 0; i < _attrCoordinates.length; i += 2) {
+78:             SC_ChangeAttr.send(pc, _attrCoordinates[i], _attrCoordinates[i + 1], _isWidth, close);
+79:         }
+80:     }
+81: 
+82: 	public int getHeading(){
+83: 		return _heading;
+84: 	}
+85: 
+86: 	public int getGfx(){
+87: 		return _gfx;
+88: 	}
+89: 
+90: 	public int getAction(){
+91: 		return _act;
+92: 	}
+93: 
+94: 	public boolean isClose(){
+95: 		return _act == LIFT_CLOSE;
+96: 	}
+97: 
+98: 	@Override
+99: 	public void onPerceive(L1PcInstance perceivedFrom) {
+100: 		if(this == null || perceivedFrom == null)
+101: 			return;
+102: 
+103: 		perceivedFrom.addKnownObject(this);
+104: 
+105: 		final byte[] body = _worldPutBody;
+106: 		if(body != null)
+107: 			SC_WorldPutObject.get(perceivedFrom.getNetConnection(), body);
+108: 
+109:         sendAttrs(perceivedFrom);
+110: 	}
+111: 
+112: 	@Override
+113: 	public void onPerceive(L1SupportInstance perceivedFrom) {
+114: 	}
+115: 
+116: 	public void up(){
+117: 		if(isClose())
+118: 			return;
+119: 
+120: 		_act		= LIFT_CLOSE;
+121: 		swapWorldPut();
+122: 		notifyChanged();
+123: 		onPass(false);
+124: 	}
+125: 
+126: 	public void down(){
+127: 		if(!isClose())
+128: 			return;
+129: 
+130: 		_act		= LIFT_OPEN;
+131: 		swapWorldPut();
+132: 		if(_isDisposing)
+133: 			notifyDispose();
+134: 		else
+135: 			notifyChanged();
+136: 		onPass(true);
+137: 	}
+138: 
+139: 	private void swapWorldPut(){
+140: 		if(!_isDisposing)
+141: 			_worldPutBody = serialize();
+142: 	}
+143: 
+144: 
+145: 	private void onPass(boolean isPass){
+146: 		L1Map m = L1WorldMap.getInstance().getMap(getMapId());
+147: 		int x = getX();
+148: 		int y = getY();
+149: 		if(_isWidth){
+150: 			int diff = (_weight - 1) / 2;
+151: 			for(int i=0; i<_weight; ++i){
+152: 				m.setPassable(x - 1, y-diff + i, isPass);
+153: 				m.setPassable(x, 		y-diff + i, isPass);
+154: 			}
+155: 		}else{
+156: 			int diff = (_weight - 1) / 2;
+157: 			for(int i=0; i<_weight; ++i){
+158: 				m.setPassable(x - diff + i, y-1, isPass);
+159: 				m.setPassable(x - diff + i, y, isPass);
+160: 			}
+161: 		}
+162: 	}
+163: 
+164: 	public void dispose(){
+165: 		L1World.getInstance().removeVisibleObject(this);
+166: 		L1World.getInstance().removeObject(this);
+167: 		_isDisposing = true;
+168: 		_worldPutBody = null;
+169: 		down();
+170: 	}
+171: 	public void notifyDispose() {
+172: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+173: 			if (pc == null) {
+174: 				continue;
+175: 			}
+176: 
+177: 			pc.removeKnownObject(this);
+178: 
+179: 	            sendAttrs(pc);
+180: 
+181: 			SC_DoActionGFX.send(
+182: 					pc.getNetConnection(),
+183: 					getId(),
+184: 					_act);
+185: 
+186: 			SC_RemoveObject.send(
+187: 					pc.getNetConnection(),
+188: 					this);
+189: 		}
+190: 
+191: 
+192: 	}
+193: 
+194: 	public void notifyChanged(){
+195: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+196: 			if(pc == null)
+197: 				continue;
+198: 
+199: 			SC_DoActionGFX.send(
+200: 					pc.getNetConnection(),
+201: 					getId(),
+202: 					_act);
+203: 
+204:             sendAttrs(pc);
+205: 		}
+206: 	}
+207: 
+208: 	public void broadcast(ServerPacket packet){
+209: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+210: 			pc.sendPackets(packet, false);
+211: 		}
+212: 	//	packet.clear();
+213: 	}
+214: 
+215: 	public void broadcast(ServerPacket packet, boolean isClear){
+216: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+217: 			pc.sendPackets(packet, false);
+218: 		}
+219: //		if(isClear)
+220: //			packet.clear();
+221: 	}
+222: 
+223: 	public void takeClose(long l){
+224: 		down();
+225: 		ThreadPool.getInstance().scheduleRequired(new Runnable(){
+226: 			@Override
+227: 			public void run(){
+228: 				up();
+229: 			}
+230: 		}, l);
+231: 	}
+232: 
+233: 	public byte[] serialize(){
+234: 		MJBytesOutputStream s = new MJBytesOutputStream(256);
+235: 		byte[] 				b = null;
+236: 		try{
+237: 			s.write(0x08);				// point
+238: 			s.writePoint(getX(), getY());
+239: 			s.write(0x10);				// objectnumber
+240: 			s.writeBit(getId());
+241: 			s.write(0x18); 				// objectsprite
+242: 			s.writeBit(getGfx());
+243: 			s.write(0x20); 				// action
+244: 			s.writeBit(getAction());
+245: 			s.write(0x28); 				// direction
+246: 			s.writeBit(getHeading());
+247: 			s.write(0x30); 				// lightRadius
+248: 			s.writeBit(15);
+249: 			s.write(0x38); 				// objectcount
+250: 			s.write(1);
+251: 			s.write(0x40); 				// alignment(lawful)
+252: 			s.writeBit(0);
+253: 			s.write(0x4A);				// desc
+254: 			s.write(0x00);
+255: 			s.write(0x52); 				// title
+256: 			s.write(0x00);
+257: 			s.write(0x58);	 			// speed data
+258: 			s.write(0x00);
+259: 			s.write(0x60); 				// emotion
+260: 			s.write(0x00);
+261: 			s.write(0x68);				// drunken
+262: 			s.writeBit(0x00);
+263: 			s.write(0x70); 				// isghost
+264: 			s.write(0x00);
+265: 			s.write(0x78); 				// isparalyzed
+266: 			s.write(0x00);
+267: 			s.writeBit(0x80);			// isuser
+268: 			s.write(0x00);
+269: 			s.writeBit(0x88);			// isinvisible
+270: 			s.write(0x00);
+271: 			s.writeBit(0x90); 			// ispoisoned
+272: 			s.write(0x00);
+273: 			s.writeBit(0x98);			// emblemid
+274: 			s.write(0x00);
+275: 			s.writeBit(0xA2); 			// pledgename
+276: 			s.write(0x00);
+277: 			s.writeBit(0xAA); 			// mastername
+278: 			s.write(0x00);
+279: 			s.writeBit(0xB0); 			// altitude
+280: 			s.write(0x00);
+281: 			s.writeBit(0xB8);			// hitratio
+282: 			s.writeBit(-1);
+283: 			s.writeBit(0xC0); 			// safelevel
+284: 			s.write(0x00);
+285: 			s.writeBit(0xD0);	 		// weapon sprite
+286: 			s.write(0x00);
+287: 			s.writeBit(0xD8);	 		// couplestate
+288: 			s.write(0x00);
+289: 			s.writeBit(0xE0); 			// boundarylevelindex
+290: 			s.writeBit(0x00);
+291: 			s.writeBit(0xE8); 			// weakelemental
+292: 			s.write(0x00);
+293: 			s.writeBit(0xF0);			// manaratio
+294: 			s.writeBit(-1);
+295: 			s.writeBit(0xF8);			// botindex
+296: 			s.write(0x00);
+297: 			s.writeBit(0x100); 			// home server no
+298: 			s.write(0x00);
+299: 			s.writeH(0x00);
+300: 			b = s.toArray();
+301: 		}catch(Exception e){
+302: 			e.printStackTrace();
+303: 		}finally{
+304: 			if(s != null){
+305: 				s.close();
+306: 				s.dispose();
+307: 				s = null;
+308: 			}
+309: 		}
+310: 		return b;
+311: 	}
+312: 
+313: 	private static int _instanceType = -1;
+314: 	@Override
+315: 	public int getL1Type(){
+316: 		return _instanceType == -1 ? _instanceType = super.getL1Type() | MJL1Type.L1TYPE_LIFT : _instanceType;
+317: 	}
+318: }
+======================================================================
+FILE src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java (284 lines)
+...
+118: 		dispose(true);
+119: 	}
+120: 
+121: 	public void dispose(){
+122: 		L1World.getInstance().removeVisibleObject(this);
+123: 		L1World.getInstance().removeObject(this);
+124: 		_worldPutBody = null;
+125: 		remove();
+126: 		_ofilter 		= null;
+127: 		_afilter 		= null;
+128: 		_compensator 	= null;
+129: 	}
+130: 
+131: 	public void dispose(boolean isDestroy){
+132: 		L1World.getInstance().removeVisibleObject(this);
+133: 		L1World.getInstance().removeObject(this);
+134: 		_worldPutBody = null;
+135: 		ThreadPool.getInstance().execute(new Runnable(){
+136: 			@Override
+137: 			public void run() {
+138: 				try{
+139: 					showOpen();
+140: 					if(isDestroy)
+141: 						showBlackCloud();
+142: 					else{
+143: 						showCloud();
+144: 						Thread.sleep(300);
+145: 						if(_compensator != null)
+146: 							_compensator.compensate(MJL1TreasureChest.this);
+147: 					}
+148: 					Thread.sleep(300);
+149: 					dispose();
+150: 				}catch(Exception e){
+151: 					e.printStackTrace();
+152: 				}finally{
+153: 
+154: 				}
+155: 			}
+156: 		});
+157: 	}
+158: 
+159: 	private void remove() {
+160: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+161: 			if (pc == null) {
+162: 				continue;
+163: 			}
+164: 
+165: 			pc.removeKnownObject(this);
+166: 
+167: 			SC_RemoveObject.send(
+168: 					pc.getNetConnection(),
+169: 					this);
+170: 		}
+171: 	}
+172: 	private void showOpen(){
+173: 		for(L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)){
+174: 			if(pc == null)
+175: 				continue;
+176: 
+177: 			SC_DoActionGFX.send(
+178: 					pc.getNetConnection(),
+179: 					getId(),
+180: 					CHEST_OPEN);
+181: 		}
+182: 	}
+183: 
+184: 	private void showCloud(){
+185: 		showCloud(12157);
+186: 	}
+187: 
+188: 	private void showBlackCloud(){
+189: 		showCloud(12158);
+190: 	}
+191: 
+192: 	private void showCloud(int i){
+193: 		for(L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)){
+194: 			SC_SkillSound.broadcast(pc, getId(), i);
+195: 		}
+196: 	
+197: 	}
+198: 
+199: 	public byte[] serialize(){
+200: 		MJBytesOutputStream s = new MJBytesOutputStream(256);
+201: 		byte[] 				b = null;
+202: 		try{
+203: 			s.write(0x08);				// point
+204: 			s.writePoint(getX(), getY());
+205: 			s.write(0x10);				// objectnumber
+206: 			s.writeBit(getId());
+207: 			s.write(0x18); 				// objectsprite
+208: 			s.writeBit(_gfx);
+209: 			s.write(0x20); 				// action
+210: 			s.writeBit(_act);
+211: 			s.write(0x28); 				// direction
+212: 			s.writeBit(_heading);
+213: 			s.write(0x30); 				// lightRadius
+214: 			s.writeBit(15);
+215: 			s.write(0x38); 				// objectcount
+216: 			s.write(1);
+217: 			s.write(0x40); 				// alignment(lawful)
+218: 			s.writeBit(0);
+219: 			s.write(0x4A);				// desc
+220: 			s.writeS2(_name);
+221: 			s.write(0x52); 				// title
+======================================================================
+FILE src/l1j/server/server/model/L1Character.java (1491 lines)
+...
+340: 
+341: 	public void cureParalaysis() {
+342: 		if (_paralysis != null) {
+343: 			_paralysis.cure();
+344: 		}
+345: 	}
+346: 
+347: 	public void broadcastPacket(ServerPacket[] pcs) {
+348: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+349: 			for (int i = 0; i < pcs.length; i++)
+350: 				pc.sendPackets(pcs[i], false);
+351: 		}
+352: 	}
+353: 
+354: 	public void broadcastPacket(ServerPacket[] pcs, boolean isClear) {
+355: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+356: 			for (int i = 0; i < pcs.length; i++)
+357: 				pc.sendPackets(pcs[i], false);
+358: 		}
+359: 
+360: 	}
+361: 
+362: 	public void broadcastPacket(ServerPacket packet) {
+363: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+364: 			pc.sendPackets(packet);
+365: 		}
+366: 	}
+367: 	
+368: 	public void broadcastPacket(byte[] data) {
+369: 	    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawRecipients(
+370: 	            L1World.getInstance().getVisiblePlayer(this), data);
+371: 	}
+372: 
+373: 	public void broadcastPacketM(ServerPacket packet) {
+374: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+375: 			if(pc.getLinMeff() != 2){
+376: 				pc.sendPackets(packet);
+377: 			}
+378: 		}
+379: 	}
+380: 
+381: 	public void broadcastPacket(ServerPacket packet, int clanid) {
+382: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+383: 			pc.sendPackets(packet, false, clanid);
+384: 		}
+385: 	}
+386: 
+387: 	public void broadcastPacket(ServerPacket packet, boolean isClear) {
+388: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+389: 			pc.sendPackets(packet, false);
+390: 		}
+391: 	}
+392: 
+393: 	public void broadcastPacket(ServerPacket packet, L1Character target) {
+394: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+395: 			pc.sendPackets(packet, false);
+396: 		}
+397: 	}
+398: 	
+399: 	/**
+400: 	 * 시야 검색 순회 나중에 브로드캐스트 다 바꿀것 전체 순회가 아니라 시야 순회라 부하 급감.
+401: 	 * 
+402: 	 */
+403:     public void broadcastPacketFast(ServerPacket packet) {
+404:         for (L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(this)) {
+405:             pc.sendPackets(packet);
+406:         }
+407:     }
+408: 
+409: 	public void wideBroadcastPacket(ServerPacket packet) {
+410: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this, 50)) {
+411: 			pc.sendPackets(packet, false);
+412: 		}
+413: 	}
+414: 
+415: 	public int[] getFrontLoc() {
+416: 		int[] loc = new int[2];
+417: 		int x = getX();
+418: 		int y = getY();
+419: 		int heading = getHeading();
+420: 		switch (heading) {
+421: 		case 0: { y--; } break;
+422: 		case 1: { x++; y--; } break;
+423: 		case 2: { x++; } break;
+424: 		case 3: { x++; y++; } break;
+425: 		case 4: { y++; } break;
+426: 		case 5: { x--; y++; } break;
+427: 		case 6: { x--; } break;
+428: 		case 7: { x--; y--; } break;
+429: 		default: break;
+430: 		}
+431: 		loc[0] = x;
+432: 		loc[1] = y;
+433: 		return loc;
+434: 	}
+435: 
+436: 	public int targetDirection(int tx, int ty) {
+437: 		float dis_x = Math.abs(getX() - tx);
+438: 		float dis_y = Math.abs(getY() - ty);
+======================================================================
+FILE src/l1j/server/server/model/L1World.java (935 lines)
+...
+396:         list.clear();
+397:     }
+398: 
+399:     public List<L1PcInstance> getVisiblePlayerFast(L1Object object) {
+400:         return _worldExecutor.getClusterGrid().queryScreenPlayers(object);
+401:     }
+402:     
+403:     public void broadcast_map(int map_id, String message){
+404:         SC_SystemMessage.broadcastRecipients(getVisiblePlayers(map_id), message);
+405:     }
+406:     
+407:     public void broadcast_map(int map_id, ServerPacket pck){
+408:         broadcast_map(map_id, pck, true);
+409:     }
+410:     
+411:     public void broadcast_map(int map_id, ServerPacket pck, boolean is_clear){
+412:         for(L1PcInstance pc : getVisiblePlayers(map_id)){
+413:             if(pc != null)
+414:                 pc.sendPackets(pck, false);
+415:         }
+416:     }
+417:     
+418: 	public int getAllPlayersSize(){
+419: 		return _allPlayers.size();
+420: 	}
+421: 	
+422:     
+423:     public void broadcast_map(int map_id, ServerPacket[] pcks){
+424:         broadcast_map(map_id, pcks, true);
+425:     }
+426:     
+427:     public void broadcast_map(int map_id, ServerPacket[] pcks, boolean is_clear){
+428:         for(L1PcInstance pc : getVisiblePlayers(map_id)){
+429:             if(pc != null)
+430:                 pc.sendPackets(pcks, false);
+431:         }
+432:     }
+433:     
+434:     public ArrayList<L1Object> getVisibleObjects(L1Object object) {
+435:         return getVisibleObjects(object, -1);
+436:     }
+437:     
+438:     public ArrayList<L1Object> getVisibleObjects(L1Object object, int radius) {
+439:         L1Map map = object.getMap();
+440:         Point pt = object.getLocation();
+441:         int mapId = object.getMapId();
+442:         ArrayList<L1Object> result = null;
+443: 
+444:         if(radius < 0)
+445:             result = new ArrayList<L1Object>(19 * 8);
+446:         else if(radius == 0)
+447:             result = new ArrayList<L1Object>(2);
+448:         else
+449:             result = new ArrayList<L1Object>(radius * 8);
+450:         
+451:         if (map.getId() <= MAX_MAP_ID) {
+452:             L1IntRegistry<L1Object> mapSrc = visibleMap(map.getId(), false);
+453:             if (mapSrc != null) {
+454:                 final int selfId = object.getId();
+455: 
+456:                 for (L1Object element : mapSrc.values()) {
+...
+746:         return _processingContributionTotal;
+747:     }
+748: 
+749:     public L1Object[] getObject2() {
+750:         return _worldExecutor.values().toArray(new L1Object[_worldExecutor.objectCount()]);
+751:     }
+752: 
+753:     public void broadcastPacketToAll(ServerPacket[] pcks) {
+754:         for (L1PcInstance pc : getAllPlayers()) {
+755:             if(pc == null)
+756:                 continue;
+757:             
+758:             for(ServerPacket pck : pcks)
+759:                 pc.sendPackets(pck, false);
+760:         }
+761:     }
+762:     
+763:     public void broadcastPacketToAll(ServerPacket[] pcks, boolean isClear) {
+764:         for (L1PcInstance pc : getAllPlayers()) {
+765:             if(pc == null)
+766:                 continue;
+767:             
+768:             for(ServerPacket pck : pcks)
+769:                 pc.sendPackets(pck, false);
+770:         }
+771:     }
+772:     
+773:     public void broadcastPacketToAll(WritablePacket<CIOClient>[] packets) {
+774:         if (packets == null) return;
+775:         for (L1PcInstance pc : getAllPlayers()) {
+776:             if (pc != null) pc.sendPackets(packets, false);
+777:         }
+778:     }
+779: 
+780:     public void broadcastPacketToAll(String message) {
+781:         SC_SystemMessage.broadcast(message);
+782:     }
+783:     
+784:     public void broadcastPacketToAll(ServerPacket packet) {
+785:         for (L1PcInstance pc : getAllPlayers()) {
+786:             if (pc != null)
+787:                 pc.sendPackets(packet);
+788:         }
+789:     }
+790: 
+791:     public void broadcastPacketToAll(ServerPacket packet, boolean clear) {
+792:         Collection<L1PcInstance> pclist = getAllPlayers();
+793:         _log.finest("players to notify : " + pclist.size());
+794:         for (L1PcInstance pc : pclist) {
+795:             if (pc != null)
+796:                 pc.sendPackets(packet, false);
+797:         }
+798:     }
+799: 
+800:     public void getMapObject(int mapid) {
+801:         L1IntRegistry<L1Object> mapSrc = visibleMap(mapid, false);
+802:         if (mapSrc == null) return;
+803:         for (L1Object obj : mapSrc.values()) {
+804:             if (obj instanceof L1MonsterInstance) {
+805:                 L1MonsterInstance mon = (L1MonsterInstance) obj;
+806:                 if (mon.getHiddenStatus() != 0 || mon.isDead())
+807:                     continue;
+808: 
+809:                 if (mon.getMapId() == mapid)
+810:                     mon.re();
+811:             }
+======================================================================
+FILE src/l1j/server/server/model/Instance/L1MonsterInstance.java (1242 lines)
+...
+569: 			int loc_y = this.getY() + CommonUtil.random(-3, 3);
+570: 
+571: 			if (glanceCheck(loc_x, loc_y)) {
+572: 				pc.start_teleport(loc_x, loc_y, this.getMapId(), CommonUtil.random(7), 169, true, false);
+573: 			}
+574: 		}
+575: 	}
+576: 	 private void BossCoinGet(L1Character lastAttacker)
+577: 	  {
+578: 	    if (Config.보스아이템지급여부)
+579: 	    {
+580: 	      int npcId = getNpcTemplate().get_npcId();
+581: 	      int[] bossIds = TYUtil.GetIntTokenizeIntArray(Config.BossAreaDropBossIds);
+582: 	      for (int i = 0; i < bossIds.length; i++) {
+583: 	        if (npcId == bossIds[i]) {
+584: 	          for (L1PcInstance pc : L1World.getInstance().getAllPlayers())
+585: 	          {
+586: 	            if ((lastAttacker.getMapId() == pc.getMapId()) && (pc.is특정보스()) && (!pc.isDead()) && (!pc.isInvisble()) && 
+587: 	              (getLocation().getTileLineDistance(new Point(pc.getLocation())) < 20))
+588: 	            {
+589: 	              createNewItem(pc, Config.BossAreaDropItemId, Config.BossAreaDropItemCount, 0);
+590: 	              
+591: 	              SC_SkillSound.send(pc, pc.getId(), 7783);
+592: 	              SC_SkillSound.broadcast(pc, pc.getId(), 7783);
+593: 	              SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, Config.한입만멘트 + TYUtil.GetItemInstByID(Config.BossAreaDropItemId).getName() + " (" + Config.BossAreaDropItemCount + "개)");
+594: 	              TYUtil.SetSystemMessage(pc, Config.한입만멘트 + 
+595: 	              //TYUtil.SetSystemMessage(pc, "\\f=[선물] \\ff보스공략 참여보상 : " + 
+596: 	              
+597: 	                TYUtil.GetItemInstByID(Config.BossAreaDropItemId).getName()  + " (" + Config.BossAreaDropItemCount + "개)");
+598: 	            }
+599: 	            pc.set특정보스(false);
+600: 	          }
+601: 	        }
+602: 	      }
+603: 	    }
+604: 	  }
+605: 	  
+606: 	  private void BossCoinGet1(L1Character lastAttacker)
+607: 	  {
+608: 	    if (Config.보스아이템지급여부1)
+609: 	    {
+610: 	      int npcId = getNpcTemplate().get_npcId();
+611: 	      int[] bossIds = TYUtil.GetIntTokenizeIntArray(Config.BossAreaDropBossIds1);
+612: 	      for (int i = 0; i < bossIds.length; i++) {
+613: 	        if (npcId == bossIds[i]) {
+614: 	          for (L1PcInstance pc : L1World.getInstance().getAllPlayers())
+615: 	          {
+616: 	            if ((lastAttacker.getMapId() == pc.getMapId()) && (pc.is특정보스투()) && (!pc.isDead()) && (!pc.isInvisble()) && 
+617: 	              (getLocation().getTileLineDistance(new Point(pc.getLocation())) < 20))
+618: 	            {
+619: 	              createNewItem(pc, Config.BossAreaDropItemId1, Config.BossAreaDropItemCount1, 0);
+620: 	              
+621: 	              SC_SkillSound.send(pc, pc.getId(), 7783);
+622: 	              SC_SkillSound.broadcast(pc, pc.getId(), 7783);
+623: 	              SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, Config.한입만멘트1 + TYUtil.GetItemInstByID(Config.BossAreaDropItemId1).getName() + " (" + Config.BossAreaDropItemCount1 + "개)");
+624: 	              TYUtil.SetSystemMessage(pc, Config.한입만멘트1 + 
+625: 	              //TYUtil.SetSystemMessage(pc, "\\f=[선물] \\ff보스공략 참여보상 : " + 
+626: 	              
+627: 	                TYUtil.GetItemInstByID(Config.BossAreaDropItemId1).getName()  + " (" + Config.BossAreaDropItemCount1 + "개)");
+628: 	            }
+629: 	            pc.set특정보스투(false);
+630: 	          }
+631: 	        }
+632: 	      }
+633: 	    }
+634: 	  }
+635: 	  
+636:     @Override
+637:     public void setCurrentHp(int i) {
+638:         super.setCurrentHp(i);
+639:         onNpcAtomicHpChanged(getCurrentHp());
+640:     }
+641: 
+642:     @Override
+643:     protected void onNpcAtomicHpChanged(int i) {
+644:         if (getNpcId() == 707026 && i > 0) {
+645: 			int p = (int) (((double) getCurrentHp() / (double) getMaxHp()) * 100D);
+646: 			if (getStatus() == 6) {
+647: 				if (p <= 90) {
+648: 					SC_DoActionGFX.broadcast(this, 4);
+649: 					setStatus(0);
+650: 				}
+651: 			}
+...
+681:             }
+======================================================================
+FILE src/l1j/server/server/model/L1WeaponSkill.java (1496 lines)
+======================================================================
+FILE src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java (122 lines)
+...
+1: package l1j.server.server.model.network.core.sc.packet;
+2: 
+3: import l1j.server.server.Opcodes;
+4: import l1j.server.server.model.network.buffer.WriteBuffer;
+5: import l1j.server.server.model.network.core.connection.CUserSocket;
+6: import l1j.server.server.model.network.core.connection.CIOFrame;
+7: import l1j.server.server.model.network.core.session.CIOClient;
+8: import l1j.server.server.model.L1Character;
+9: import l1j.server.server.model.L1World;
+10: import l1j.server.server.model.Instance.L1PcInstance;
+11: 
+12: public final class SC_SkillSound {
+13:     private static final int WIRE_SIZE = 2 + 13;
+14: 
+15:     private SC_SkillSound() {
+16:     }
+17: 
+18:     public static boolean send(CIOClient client, int objectId, int gfxId) {
+19:         if (client == null || !client.isConnected()) {
+20:             return false;
+21:         }
+22:         final CUserSocket connection = client.getConnection();
+23:         if (connection == null || !connection.isClientConnected()) {
+24:             return false;
+25:         }
+26:         final CIOFrame frame = connection.beginDirectFrame(WIRE_SIZE);
+27:         if (frame == null) {
+28:             return false;
+29:         }
+30:         boolean committed = false;
+31:         try {
+32:             final WriteBuffer buffer = frame.buffer();
+33:             buffer.writeC(Opcodes.S_EFFECT);
+34:             buffer.writeD(objectId);
+35:             buffer.writeH(gfxId);
+36:             buffer.writeH(0);
+37:             buffer.writeD(0);
+38:             committed = connection.commitDirectFrame(frame);
+39:             return committed;
+40:         } finally {
+41:             if (!committed) {
+42:                 connection.abortDirectFrame(frame);
+43:             }
+44:         }
+45:     }
+46: 
+47:     public static boolean send(L1PcInstance pc, int objectId, int gfxId) {
+48:         return pc != null && send(pc.getNetConnection(), objectId, gfxId);
+49:     }
+50: 
+51:     public static void broadcast(L1Character anchor, int objectId, int gfxId) {
+52:         broadcast0(anchor, objectId, gfxId, false);
+53:     }
+54: 
+55:     public static void broadcastFast(L1Character anchor, int objectId, int gfxId) {
+56:         broadcast0(anchor, objectId, gfxId, true);
+57:     }
+58: 
+59:     private static byte[] sharedWire(int objectId, int gfxId) {
+60:         return java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+61:                 .putShort((short) WIRE_SIZE).put((byte) Opcodes.S_EFFECT).putInt(objectId)
+62:                 .putShort((short) gfxId).putShort((short) 0).putInt(0).array();
+63:     }
+64:     private static void broadcast0(L1Character anchor, int objectId, int gfxId, boolean fast) {
+65:         if (anchor != null) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, gfxId), fast, -1, null);
+66:     }
+67: 
+68:     public static boolean send(l1j.server.server.model.L1Character target, int objectId, int gfxId) {
+69:         return target instanceof L1PcInstance && send((L1PcInstance) target, objectId, gfxId);
+70:     }
+71: 
+72:     public static long pack(int objectId, int gfxId) {
+73:         return ((long) objectId << 32) | (gfxId & 0xffffL);
+74:     }
+75: 
+76:     public static long pack(int objectId, int gfxId, int ignoredAid) {
+77:         return pack(objectId, gfxId);
+78:     }
+79: 
+80:     public static void sendPacked(l1j.server.server.model.L1Character pc, long packet) {
+81:         send(pc, (int) (packet >> 32), (int) packet & 0xffff);
+82:     }
+83: 
+84:     public static void sendAndBroadcast(l1j.server.server.model.L1Character c, int objectId, int gfxId) {
+85:         send(c, objectId, gfxId);
+86:         broadcast(c, objectId, gfxId);
+87:     }
+88: 
+89:     public static void sendAndBroadcast(l1j.server.server.model.L1Character c, int gfxId) {
+90:         if (c != null) sendAndBroadcast(c, c.getId(), gfxId);
+91:     }
+92: 
+93:     public static void sendAndBroadcastPacked(l1j.server.server.model.L1Character c, long p) {
+94:         sendAndBroadcast(c, (int) (p >> 32), (int) p & 0xffff);
+95:     }
+96: 
+97:     public static void broadcastPacked(l1j.server.server.model.L1Character c, long p) {
+98:         broadcast(c, (int) (p >> 32), (int) p & 0xffff);
+99:     }
+100: 
+101:     public static void broadcastFastPacked(l1j.server.server.model.L1Character c, long p) {
+102:         broadcastFast(c, (int) (p >> 32), (int) p & 0xffff);
+103:     }
+104: 
+105:     public static void broadcastM(l1j.server.server.model.L1Character c, int objectId, int gfxId) {
+106:         if (c == null) return;
+107:         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(c, sharedWire(objectId, gfxId), false, -1, pc -> pc.getLinMeff() != 2);
+108:     }
+109: 
+110:     public static void broadcastMPacked(l1j.server.server.model.L1Character c, long p) {
+111:         broadcastM(c, (int) (p >> 32), (int) p & 0xffff);
+112:     }
+113: 
+114:     public static void broadcastWide(l1j.server.server.model.L1Character c, int objectId, int gfxId) {
+115:         if (c == null) return;
+116:         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(c, sharedWire(objectId, gfxId), false, 50, null);
+117:     }
+118: 
+119:     public static void broadcastWidePacked(l1j.server.server.model.L1Character c, long p) {
+120:         broadcastWide(c, (int) (p >> 32), (int) p & 0xffff);
+121:     }
+122: }
+======================================================================
+FILE src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java (82 lines)
+...
+30:             committed = connection.commitDirectFrame(frame);
+31:             return committed;
+32:         } finally {
+33:             if (!committed) connection.abortDirectFrame(frame);
+34:         }
+35:     }
+36: 
+37:     public static void broadcast(String message) {
+38:         final byte[] wire=sharedWire(message);
+39:         if(wire==null)return;
+40:         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(wire);
+41:     }
+42: 
+43: 
+44:     /** Map/party recipients: serialize one frame and send to exactly the
+45:      * specified players, with no per-client legacy serialization.
+46:      */
+47:     public static void broadcastRecipients(
+48:             Iterable<? extends L1PcInstance> recipients,String message) {
+49:         final byte[] wire=sharedWire(message);
+50:         if(wire!=null)
+51:             l1j.server.server.model.network.core.broadcast.CSharedBroadcast
+52:                     .sendRecipients(recipients,wire);
+53:     }
+54: 
+55:     private static void writeContent(WriteBuffer buffer, String msg, boolean nameId) {
+56:         if (!nameId) {
+57:             buffer.writeC(Opcodes.S_MESSAGE);
+58:             buffer.writeC(0x09);
+59:             buffer.writeS(msg);
+60:         } else {
+61:             buffer.writeC(Opcodes.S_SAY_CODE);
+62:             buffer.writeC(2);
+63:             buffer.writeD(0);
+64:             buffer.writeS(msg);
+65:         }
+66:     }
+67: 
+68:     
+69: 
+70:     private static byte[] sharedWire(String message) {
+71:         final byte[] text=(message==null ? "" : message)
+72:                 .getBytes(java.nio.charset.Charset.forName("MS949"));
+73:         final int size=5+text.length;
+74:         if(size>0xFFFF)return null;
+75:         final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate(size)
+76:                 .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+77:         b.putShort((short)size).put((byte)Opcodes.S_MESSAGE)
+78:          .put((byte)0x09).put(text).put((byte)0);
+79:         return b.array();
+80:     }
+81: 
+82: }
+======================================================================
+FILE src/l1j/server/server/model/network/packet/BytesWritablePacket.java (23 lines)
+...
+2: 
+3: import l1j.server.server.model.network.buffer.WriteBuffer;
+4: import l1j.server.server.model.network.core.session.CIOClient;
+5: 
+6: /**
+7:  * 스트림 받는 패킷 구조
+8:  */
+9: public class BytesWritablePacket extends WritablePacket<CIOClient> {
+10: 	private final byte[] _data;
+11: 
+12: 	public BytesWritablePacket(byte[] data) {
+13: 		_data = data;
+14: 	}
+15: 
+16: 	@Override
+17: 	public boolean write(CIOClient client, WriteBuffer buffer) {
+18: 		if (_data != null && _data.length > 0) {
+19: 			buffer.writeBytes(_data); 
+20: 		}
+21: 		return true;
+22: 	}
+23: }
+======================================================================
+FILE src/l1j/server/server/packets/Protocol/MainServer/Proto/Proto.java (94 lines)
+...
+66:         connection.abortDirectFrame(frame);
+67:     }
+68: 
+69:     public static int capacityBound(long bytes) {
+70:         return (int) Math.max(7L, Math.min(65535L, bytes));
+71:     }
+72: 
+73:     public static boolean sendRaw(L1PcInstance pc, byte[] encoded) {
+74:         return pc != null && sendRaw(pc.getNetConnection(), encoded);
+75:     }
+76: 
+77:     /** Cached bytes already include opcode/message ID/trailer; no Raw wrapper. */
+78:     public static boolean sendRaw(CIOClient client, byte[] encoded) {
+79:         if (encoded == null || encoded.length == 0 || encoded.length > 65533
+80:                 || client == null || !client.isConnected()) return false;
+81:         final CUserSocket connection = client.getConnection();
+82:         if (connection == null || !connection.isClientConnected()) return false;
+83:         final CIOFrame frame = connection.beginDirectFrame(encoded.length + 2);
+84:         if (frame == null) return false;
+85:         boolean committed = false;
+86:         try {
+87:             frame.buffer().writeBytes(encoded);
+88:             committed = connection.commitDirectFrame(frame);
+89:             return committed;
+90:         } finally {
+91:             if (!committed) connection.abortDirectFrame(frame);
+92:         }
+93:     }
+94: }
