@@ -2927,12 +2927,12 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if(_closed!=0||_closing!=0){cancelQueuedNativePacket();return;}
         if(_sendReadPaused||!nativePacketPhase.compareAndSet(1,2))return;
         try {
-            if(_nativePacketOnIo&&_channel.currentNativeOwner()>=0)executeNativePacket(true);
+            if(_nativePacketOnIo&&_channel.currentNativeOwner()>=0)executeNativePacket();
             else if(!(_nativePacketOnIo?_channel.postCompletion(this)
                     :CIOThreadCallback.getInstance().enqueuePacketImmediate(_affinityShard,this)))close();
         }catch(Throwable failure){LOG.log(Level.WARNING,"Native packet dispatch admission failed",failure);close();}
     }
-    @Override public void run(){executeNativePacket(false);}
+    @Override public void run(){executeNativePacket();}
     @Override public void cancel(){close();cancelQueuedNativePacket();}
     private void cancelQueuedNativePacket() {
         for(;;){int phase=nativePacketPhase.get();if(phase!=1&&phase!=2)return;
@@ -2948,17 +2948,14 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if(sequence!=0)_channel.releaseUserPacket(sequence);
         notifyClosedWhenReleased();
     }
-    private void executeNativePacket(boolean nativeOwnerVerified) {
-        // true is supplied only by the synchronous dispatch branch immediately
-        // after its native owner check. Posted/session tasks enter through
-        // run(false) and still verify their actual execution role here.
+    private void executeNativePacket() {
         if(!nativePacketPhase.compareAndSet(2,3))return;
         if(_closed==0&&_sendReadPaused){nativePacketPhase.set(1);kickRead();return;}
         try {
             final var actor=_nativePacketActor;
             boolean current=actor==null||(actor==_client.getActiveChar()&&actor.getNetConnection()==_client&&actor.getSessionStamp()==_nativePacketStamp);
             if(_closed==0&&_client.isConnected()&&current){
-                if(_nativePacketOnIo?(!nativeOwnerVerified&&_channel.currentNativeOwner()<0):CIOThreadCallback.currentShardIndex()!=_affinityShard)
+                if(_nativePacketOnIo?_channel.currentNativeOwner()<0:CIOThreadCallback.currentShardIndex()!=_affinityShard)
                     throw new IllegalStateException("Packet executed outside its native/session role");
                 CNetworkDiagnostics.Work work = CNetworkDiagnostics.begin(networkTrace,
                         _nativePacketBuffer.get(0) & 255, _nativePacketLength);

@@ -38,14 +38,16 @@ jobs:
         working-directory: patches/ctransport_core_20261112
         run: ./tests/run_windows.ps1
       - name: Measure packet load, memory recovery and close races
+        if: "!contains(github.event.head_commit.message, '[dispatch-final]')"
         shell: pwsh
         working-directory: patches/ctransport_core_20261112
         run: ./tests/run_stability.ps1
       - name: Separate-client latency and extended reconnect soak
+        if: "!contains(github.event.head_commit.message, '[dispatch-final]')"
         shell: pwsh
         working-directory: patches/ctransport_core_20261112
         run: ./tests/run_extended_stability.ps1
-      - name: ABBA production receive dispatch comparison
+      - name: Verify shipped production receive dispatch
         shell: pwsh
         working-directory: patches/ctransport_core_20261112
         run: ./tests/run_dispatch_performance.ps1

@@ -1739,6 +1739,9 @@
   "dll_sha256": "62604a5b1b111526da30b0d06f224eb6d5f3e4aafca0292571aae7932b3f272e",
   "pss_sha256": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
   "allowed_source_changes": [
-    "src/l1j/server/server/model/network/core/connection/CUserSocket.java"
-  ]
+    "src/l1j/server/server/model/network/core/config/CIOConfig.java"
+  ],
+  "expected_native_changes": {
+    "native/CTransport.cpp": "101d004d6accc8697ff502ddec23b598fc8ca3b20ef0e3b56862252f5b3489d2"
+  }
 }
