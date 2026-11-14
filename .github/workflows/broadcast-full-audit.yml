@@ -1,0 +1,31 @@
+name: Full Java broadcast call-site audit
+on:
+  push:
+    branches: [broadcast-full-audit-20261115]
+    paths:
+      - 'patches/broadcast_full_audit_20261115/**'
+      - '.github/workflows/broadcast-full-audit.yml'
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Install Java tree-sitter parser
+        run: python3 -m pip install --user tree-sitter==0.25.2 tree-sitter-java==0.23.5
+      - name: Audit all Java packages and build report
+        run: python3 patches/broadcast_full_audit_20261115/audit.py
+      - name: Publish audit report
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/broadcast_full_audit_20261115/AUDIT_KO.md reports/broadcast_full_audit_20261115/audit.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish full Java21 non-SC broadcast census [skip ci]"
+          git push origin "HEAD:$GITHUB_REF_NAME"
