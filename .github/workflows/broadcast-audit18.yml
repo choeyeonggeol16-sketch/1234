@@ -1,0 +1,45 @@
+name: Audit final active legacy broadcast expression types
+on:
+  push:
+    branches: [broadcast-nonsc-audit18-20261115]
+    paths: [".github/workflows/broadcast-audit18.yml"]
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect typed legacy callsites in phase15 SRC
+        run: |
+          python3 - <<'PY'
+          import zipfile,hashlib,re
+          p='downloads/RKern_Broadcast_NonSC_Phase15_FULL_SRC_20261115.zip'
+          b=open(p,'rb').read()
+          assert hashlib.sha1(b"blob "+str(len(b)).encode()+b"\0"+b).hexdigest()=="05b6529cdc5bd0cef2c665212d5bfc570d5e065a"
+          with zipfile.ZipFile(p) as z:
+            names=z.namelist()
+            focus=[
+               ('src/l1j/server/server/model/character/action/CAttackAction.java',['broadcastPacket(pck)','ServerPacket pck']),
+               ('src/l1j/server/MJItemSkillSystem/Model/MJItemSkillModel.java',['protected void broadcast(','protected void sendPackets(']),
+               ('src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java',['broadcastPacketToAll(','_opened_message']),
+               ('src/l1j/server/server/model/L1Character.java',['public void broadcastPacket(ServerPacket packet)','public void broadcastPacket(ServerPacket[]']),
+            ]
+            for path,markers in focus:
+                print('=====FILE',path)
+                lines=z.read(path).decode('utf8').splitlines()
+                hits=[i for i,line in enumerate(lines) if any(x in line for x in markers)]
+                ranges=[]
+                for hit in hits:
+                    a=max(0,hit-24);b=min(len(lines),hit+20)
+                    if ranges and a<=ranges[-1][1]:ranges[-1]=(ranges[-1][0],max(b,ranges[-1][1]))
+                    else:ranges.append((a,b))
+                for a,b in ranges[:12]:
+                    for i in range(a,b):print(f'{i+1:4} {lines[i]}')
+            print('\n====== MJITEM SKILL MODEL METHOD INVOCATIONS')
+            for name in names:
+                if not name.startswith('src/l1j/server/MJItemSkillSystem/'):continue
+                if not name.endswith('.java'):continue
+                for i,line in enumerate(z.read(name).decode('utf8').splitlines(),1):
+                    if ('broadcast(' in line or 'sendPackets(' in line) and not (line.strip().startswith('//') or line.strip().startswith('*')):
+                        print(name,i,line.strip()[:190])
+          PY
