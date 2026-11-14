@@ -1,0 +1,76 @@
+name: Broadcast phase9 shared NPC FX and chest action
+on:
+  push:
+    branches: [broadcast-nonsc-phase9-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase9-build.yml"
+      - "patches/broadcast_nonsc_phase9_20261115/migrate_action_effect.py"
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Migrate broadcast from verified phase8 full SRC
+        run: |
+          python3 patches/broadcast_nonsc_phase9_20261115/migrate_action_effect.py \
+            --work "$RUNNER_TEMP/broadcast-phase9"
+      - name: Fetch verified Java dependencies
+        run: |
+          python3 - <<'PY'
+          import json,hashlib,pathlib,urllib.request
+          manifest=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          root=pathlib.Path('.compile-deps')
+          root.mkdir(exist_ok=True)
+          for row in manifest:
+            jar=root/row['file']
+            urllib.request.urlretrieve(row['url'],jar)
+            assert hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256'],row['file']
+          print('Verified dependencies:',len(manifest))
+          PY
+      - name: Complete Java21 compilation, frame parity, ZIP integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/broadcast-phase9"
+          find "$root/src" -name '*.java' | sort > "$root/sources.txt"
+          test "$(wc -l < "$root/sources.txt")" -eq 1711
+          mkdir -p "$root/classes" "$root/testclasses"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g \
+            -cp "$(pwd)/.compile-deps/*" -d "$root/classes" @"$root/sources.txt"
+          javac --enable-preview --release 21 -encoding UTF-8 \
+            -cp "$root/classes:$(pwd)/.compile-deps/*" \
+            -d "$root/testclasses" "$root/testsrc/ActionEffectSharedParity9.java"
+          java --enable-preview -cp "$root/testclasses:$root/classes:$(pwd)/.compile-deps/*" \
+            ActionEffectSharedParity9
+          python3 - <<'PY'
+          import json,os,pathlib,zipfile
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'broadcast-phase9'
+          d=json.loads((root/'audit.json').read_text())
+          assert len(d['changed_java'])==3 and d['java_count']==1711
+          assert d['npc_effect_before_remove'] and d['npc_remove_before_forget']
+          assert d['chest_original_aoi'] and d['recipient_major_send_order']
+          assert d['no_legacy_fallback'] and d['native_dll_unchanged']
+          with zipfile.ZipFile('downloads/RKern_Broadcast_NonSC_Phase9_FULL_SRC_20261115.zip') as z:
+            assert z.testzip() is None
+            assert sum(s.endswith('.java') for s in z.namelist())==1711
+          print('PHASE9_VERIFIED',d['output_sha256'])
+          PY
+      - name: Publish validated complete source ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/RKern_Broadcast_NonSC_Phase9_FULL_SRC_20261115.zip
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish validated phase9 shared broadcast entire source [skip ci]"
+          git push origin "HEAD:$GITHUB_REF_NAME"
