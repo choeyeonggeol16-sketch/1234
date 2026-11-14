@@ -10,7 +10,7 @@ if ($CompareExperiment) {
     & javac --enable-preview --release 21 -encoding UTF-8 -cp owner-classes -d dispatch-experiment-classes research/dispatch-performance-20261114/rejected-candidate/CUserSocket.java
     if ($LASTEXITCODE -ne 0) { throw 'Rejected experiment compile failed' }
 }
-& javac --enable-preview --release 21 -encoding UTF-8 -cp owner-classes -d owner-classes tests/CUserSocketReceivePerformanceTest.java
+& javac --enable-preview --release 21 -encoding UTF-8 -cp owner-classes -d owner-classes tests/StressMetrics.java tests/CUserSocketReceivePerformanceTest.java
 if ($LASTEXITCODE -ne 0) { throw 'Production receive performance compile failed' }
 $candidate = Join-Path $root 'owner-classes'
 $baseline = (Join-Path $root 'dispatch-baseline-classes') + ';' + $candidate
