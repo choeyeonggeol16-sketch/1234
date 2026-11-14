@@ -119,7 +119,7 @@ public final class SocialActionSharedParity {
             verify(Arrays.equals(once,reference),"social proto encoding "+i);
             final byte[] shared=frame(once);
             verify(shared!=null && shared.length==once.length+2,"framed size "+i);
-            verify((shared[0]&255)|((shared[1]&255)<<8)==shared.length,"LE header "+i);
+            verify(((shared[0]&255)|((shared[1]&255)<<8))==shared.length,"LE header "+i);
             verify(Arrays.equals(once,Arrays.copyOfRange(shared,2,shared.length)),"payload "+i);
             once[0]^=0x5a;
             verify(shared[2]!=once[0],"immutable ownership "+i);
@@ -170,9 +170,14 @@ def main():
     # Dynamically reflect the canonical class package in test compilation.
     pkg=re.search(r"(?m)^package\s+([\w.]+)\s*;",code)
     if not pkg:raise ValueError("Social Proto source lacks package")
-    test.write_text(TEST.replace(
+    test_code=TEST.replace(
         "l1j.server.server.packets.Protocol.MainServer.Proto.SC_SOCIAL_ACTION_NOTI",
-        pkg.group(1)+".SC_SOCIAL_ACTION_NOTI"),encoding="utf8")
+        pkg.group(1)+".SC_SOCIAL_ACTION_NOTI")
+    for typ in ("ProtoWriter","ProtoMsg"):
+        m=re.search(r"(?m)^import\\s+([\\w.]+\\."+typ+r")\\s*;",code)
+        if m is None:raise ValueError("Missing "+typ+" import in canonical social packet")
+        test_code=test_code.replace("l1j.server.server.packets.Protocol."+typ,m.group(1))
+    test.write_text(test_code,encoding="utf8")
     args.output.parent.mkdir(parents=True,exist_ok=True)
     with zipfile.ZipFile(args.output,"w",zipfile.ZIP_DEFLATED,compresslevel=6) as z:
         for path,data in sorted(contents.items()):z.writestr(path,data)
