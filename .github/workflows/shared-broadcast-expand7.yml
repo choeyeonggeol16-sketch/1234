@@ -1,0 +1,76 @@
+name: Shared broadcast expansion phase 7
+on:
+  push:
+    branches: [mainserver-broadcast-expand7-20261115]
+    paths:
+      - '.github/workflows/shared-broadcast-expand7.yml'
+      - 'patches/ctransport_broadcast_expand7_20261115/**'
+permissions:
+  contents: write
+jobs:
+  build-test-publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Apply shared chat/icon adaptation to hash-verified latest 48-class source
+        run: |
+          python3 patches/ctransport_broadcast_expand7_20261115/expand7.py \
+            --work "$RUNNER_TEMP/phase7"
+      - name: Verify pinned Java dependencies SHA256
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, urllib.request
+          rows=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          base=pathlib.Path('.compile-deps')
+          base.mkdir(exist_ok=True)
+          for row in rows:
+            dest=base/row['file']
+            urllib.request.urlretrieve(row['url'],dest)
+            assert hashlib.sha256(dest.read_bytes()).hexdigest()==row['sha256'],row['file']
+          print('SHA256 verified',len(rows),'compile dependencies')
+          PY
+      - name: Compile all Java21 and verify chat and icon wire parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP/phase7/src" -name '*.java' | sort > "$RUNNER_TEMP/phase7/sources.txt"
+          test "$(wc -l < "$RUNNER_TEMP/phase7/sources.txt")" -eq 1711
+          mkdir -p "$RUNNER_TEMP/phase7/classes" "$RUNNER_TEMP/phase7/testclasses"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g \
+            -cp "$(pwd)/.compile-deps/*" -d "$RUNNER_TEMP/phase7/classes" \
+            @"$RUNNER_TEMP/phase7/sources.txt"
+          javac --enable-preview --release 21 -encoding UTF-8 \
+            -cp "$RUNNER_TEMP/phase7/classes:$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/phase7/testclasses" \
+            "$RUNNER_TEMP/phase7/testsrc/SharedGlobalEncodingParity7.java"
+          java --enable-preview \
+            -cp "$RUNNER_TEMP/phase7/testclasses:$RUNNER_TEMP/phase7/classes:$(pwd)/.compile-deps/*" \
+            SharedGlobalEncodingParity7
+          python3 - <<'PY'
+          import os, json, pathlib, zipfile
+          r=json.loads((pathlib.Path(os.environ['RUNNER_TEMP'])/'phase7/audit.json').read_text())
+          assert r['new_count']==2 and r['total_shared_packet_classes']==50
+          assert r['all_java_files']==1711 and r['dll_unchanged']
+          with zipfile.ZipFile('downloads/CTransport_SharedBroadcast_50Packet_FULL_SRC_20261115.zip') as z:
+            assert z.testzip() is None
+            assert sum(p.endswith('.java') for p in z.namelist())==1711
+          print('PASS 50 shared broadcast classes, full Java21 compile, ZIP CRC')
+          print('Remaining classes:',r['remaining_count'],','.join(r['remaining_unconverted_classes']))
+          PY
+      - name: Publish validated full source ZIP only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/CTransport_SharedBroadcast_50Packet_FULL_SRC_20261115.zip
+          git diff --cached --quiet && { echo "Already published"; exit 0; }
+          git commit -m "Publish validated 50-class shared broadcast full source [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
