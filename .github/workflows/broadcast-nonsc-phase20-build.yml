@@ -48,9 +48,9 @@ jobs:
             -cp "$(pwd)/.compile-deps/*" -d "$root/classes" @"$root/sources.txt"
           javac --enable-preview --release 21 -encoding UTF-8 \
             -cp "$root/classes:$(pwd)/.compile-deps/*" \
-            -d "$root/testclasses" "$root/testsrc/Phase20WireParity.java"
+            -d "$root/testclasses" "$root/testsrc/Phase20TrapNoticeParity.java"
           java --enable-preview -cp "$root/testclasses:$root/classes:$(pwd)/.compile-deps/*" \
-            Phase20WireParity
+            Phase20TrapNoticeParity
           python3 - <<'PY'
           import json,os,pathlib,zipfile
           root=pathlib.Path(os.environ['RUNNER_TEMP'])/'broadcast-phase20'
