@@ -1,3 +1,9 @@
+## 2026-11-14 추가 Windows 검증
+
+동일 프로토콜에서 클라이언트 JVM 분리 비교,IOCP worker 대기 주입,180초/1,469회 재접속과5,876개 소켓 회수를 통과했습니다. 운영 src1712개와 DLL/PSS는 직전 배포와 동일합니다. REPORT_STABILITY_EXTENDED.md 및 research/stability-extended-20261114/에 수치와 원시 증거가 있습니다. 최신 범위 검사는 `python tests/verify_extended_stability_scope.py`, 추가 시험은 기존 Windows 검사 후 `tests/run_extended_stability.ps1`입니다.
+
+---
+
 ## 2026-11-14 실제 Windows 부하·안정성 검사
 
 송신 완료 큐의 깨우기 누락을 실제 부하로 재현해 소유권 해제의 메모리 순서를 수정했습니다. 전체 src를 교체하고 clean build합니다. CTransport.dll과 독립 PSS는 동일합니다. 수치·실행 이력·제한은 REPORT_STABILITY.md와 research/stability-20261114/에 있습니다. 최신 범위 검사는 `python tests/verify_stability_scope.py`, Windows 재현은 `./tests/run_windows.ps1` 후 `./tests/run_stability.ps1`입니다.

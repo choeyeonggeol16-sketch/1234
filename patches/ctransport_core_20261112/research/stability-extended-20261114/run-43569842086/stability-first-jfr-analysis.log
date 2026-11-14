@@ -1,0 +1,68 @@
+research/stability-20261114/run-43563240217/stability-rx.jfr GC count=5 total_ms=19.172 max_ms=5.2014
+TOP
+106167328 [J
+94689408 jdk.internal.foreign.NativeMemorySegmentImpl
+54917936 jdk.internal.foreign.GlobalSession
+20210952 jdk.internal.util.StrongReferenceKey
+4956424 [B
+1603344 java.util.concurrent.FutureTask$WaitNode
+1108176 jdk.internal.org.objectweb.asm.SymbolTable$Entry
+1101512 jdk.internal.event.ThreadSleepEvent
+1029312 java.util.concurrent.locks.AbstractQueuedSynchronizer$SharedNode
+1021040 java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask
+TOP
+86010384 l1j.server.server.model.network.core.transport.CIOServer.readDiagnostics:665
+20372136 l1j.server.server.model.network.core.stability.StressMetrics$Profile.<init>:93
+16843320 l1j.server.server.model.network.core.transport.CIOServer.referenceDiagnostics:572
+7981152 l1j.server.server.model.network.core.transport.CIOServer.fn:304
+3832520 l1j.server.server.model.network.core.transport.CIOServer.objectAllocatorDiagnostics:566
+2769760 l1j.server.server.model.network.core.transport.CTransportLoadWindowsTest.lambda$run$4:55
+2194128 l1j.server.server.model.network.core.transport.CIOServer.onUserPacket:440
+1603344 l1j.server.server.model.network.core.transport.CTransportLoadWindowsTest.run:66
+1101512 l1j.server.server.model.network.core.stability.StressMetrics.until:19
+1047992 l1j.server.server.model.network.core.transport.CTransportLoadWindowsTest.run:44
+TOP
+1193 sun.nio.ch.WEPoll.wait
+20 java.lang.invoke.LambdaForm$MH.0x000001e681132400.invoke
+7 sun.nio.ch.SocketDispatcher.write0
+6 java.lang.invoke.LambdaForm$MH.0x000001e6810db400.invoke
+6 jdk.jfr.internal.JVM.emitEvent
+5 java.lang.invoke.LambdaForm$MH.0x000001e68112e400.invoke
+2 java.lang.invoke.LambdaForm$MH.0x000001e6810dd800.invoke
+2 jdk.internal.foreign.AbstractMemorySegmentImpl$$Lambda.0x000001e6811433c0.apply
+1 jdk.jfr.internal.periodic.JVMEventTask.execute
+1 java.util.ArrayList$ArrayListSpliterator.tryAdvance
+research/stability-20261114/run-43563240217/stability-java.jfr GC count=70 total_ms=195.4238 max_ms=15.6881
+TOP
+10664029848 [B
+282117200 java.lang.Integer
+176604408 jdk.internal.vm.StackChunk
+14433656 jdk.internal.foreign.NativeMemorySegmentImpl
+13555072 [J
+10818584 java.nio.DirectByteBuffer
+10713904 jdk.internal.foreign.GlobalSession
+9731760 java.lang.String
+9663440 java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask
+6414088 java.util.concurrent.locks.AbstractQueuedSynchronizer$SharedNode
+TOP
+9984316752 l1j.server.server.model.network.core.connection.CUserSocketStabilityWindowsTest.lambda$send$0:35
+434973176 l1j.server.server.model.network.core.connection.CUserSocketStabilityWindowsTest.lambda$send$0:27
+292618792 l1j.server.server.model.network.core.connection.CUserSocketStabilityWindowsTest.lambda$send$0:31
+230146960 l1j.server.server.model.network.core.connection.CUserSocketStabilityWindowsTest.lambda$send$1:41
+192189096 l1j.server.server.model.network.core.connection.CUserSocketStabilityWindowsTest.lambda$send$1:44
+20599384 l1j.server.server.model.network.core.stability.StressMetrics$Profile.<init>:93
+13956280 l1j.server.server.model.network.core.transport.CIOPacketCodecReference.encrypt:155
+10818584 l1j.server.server.model.network.core.transport.CIOPacketCodecReference.encrypt:151
+8350456 l1j.server.server.model.network.core.transport.CIOServer.referenceDiagnostics:572
+6132144 l1j.server.server.model.network.core.transport.CIOServer.fn:304
+TOP
+458 sun.nio.ch.WEPoll.wait
+82 java.lang.System$2.unparkVirtualThread
+62 java.lang.Integer.getChars
+24 sun.nio.ch.WEPoll.ctl
+13 l1j.server.server.model.network.core.connection.CUserSocketStabilityWindowsTest.lambda$send$0
+9 java.lang.invoke.LambdaForm$MH.0x0000024881188400.invoke
+9 java.lang.invoke.LambdaForm$MH.0x000002488109b400.invoke
+8 sun.nio.ch.SocketDispatcher.read0
+5 jdk.jfr.internal.JVM.emitEvent
+4 java.lang.invoke.LambdaForm$MH.0x000002488109d800.invoke

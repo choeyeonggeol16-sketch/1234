@@ -9,7 +9,7 @@ if PATCH.exists():shutil.rmtree(PATCH)
 PATCH.mkdir(parents=True)
 with zipfile.ZipFile(BASE) as z:old={n:z.read(n) for n in z.namelist() if not n.endswith('/')}
 current={str(p.relative_to(ROOT)):p.read_bytes() for p in sorted((ROOT/'src').rglob('*')) if p.is_file()}
-names_scope=runpy.run_path(str(ROOT/'tests/verify_stability_scope.py'))
+names_scope=runpy.run_path(str(ROOT/'tests/verify_extended_stability_scope.py'))
 assert names_scope['verify'](ROOT)==1712
 # Build the full source archive first; the Windows evidence and native bundle
 # then name exactly this archive, avoiding a stale previous-source SHA.
@@ -45,9 +45,9 @@ for name in ['native_engine_test.cpp','fake_windows.hpp','run_native_tests.py','
  dest=PATCH/'tests'/name;dest.parent.mkdir(exist_ok=True)
  if (ROOT/'tests'/name).is_dir():shutil.copytree(ROOT/'tests'/name,dest)
  else:shutil.copy2(ROOT/'tests'/name,dest)
-for name in ['NetworkFaultTest.cpp','run_network_fault_tests.py','verify_network_fault_scope.py','VerifiedTimerNamesTest.cpp','run_verified_timer_tests.py','verify_verified_names_scope.py','ReferenceTraceTest.cpp','run_reference_tests.py','ReferenceDiagnosticsTest.java','ReferenceDiagnosticsWindowsTest.java','verify_reference_scope.py','ObjectAllocatorTest.cpp','ObjectAbiTest.cpp','ObjectNetworkContract.cpp','run_object_memory_tests.py','verify_object_memory_scope.py','verify_msvc_rtti.py','verify_package_layout_scope.py','check_package_compile.py','StressMetrics.java','CTransportLoadWindowsTest.java','CUserSocketStabilityWindowsTest.java','JfrAllocationSummary.java','run_stability.ps1','verify_stability_scope.py']:
+for name in ['NetworkFaultTest.cpp','run_network_fault_tests.py','verify_network_fault_scope.py','VerifiedTimerNamesTest.cpp','run_verified_timer_tests.py','verify_verified_names_scope.py','ReferenceTraceTest.cpp','run_reference_tests.py','ReferenceDiagnosticsTest.java','ReferenceDiagnosticsWindowsTest.java','verify_reference_scope.py','ObjectAllocatorTest.cpp','ObjectAbiTest.cpp','ObjectNetworkContract.cpp','run_object_memory_tests.py','verify_object_memory_scope.py','verify_msvc_rtti.py','verify_package_layout_scope.py','check_package_compile.py','StressMetrics.java','CTransportLoadWindowsTest.java','CUserSocketStabilityWindowsTest.java','JfrAllocationSummary.java','run_stability.ps1','verify_stability_scope.py','CTransportSplitWindowsTest.java','CUserSocketSoakWindowsTest.java','run_extended_stability.ps1','verify_extended_stability_scope.py']:
  shutil.copy2(ROOT/'tests'/name,PATCH/'tests'/name)
-for name in ['scope','trace_restore_scope.py','find_core_initializers.py','recover_server_core.py','server-rtti.json','L2Server.exe.rtti-disasm.txt','L2Server(10).exe.rtti-disasm.txt','hp-batch-worker-excerpt.txt','recover_user_socket.py','user-socket','recover_registry.py','registry','network-audit','audit_network_abi5.py','build_network_audit_matrix.py','abi6','creature-serializer-audit','remaining-network-audit','send-close-audit','audit_send_close_abi8.py','abi9','abi10','followup','safesend-close','extended-diagnostics','pool-manager','network-fault-identity','verified-network-names','reference-restoration','object-memory-abi','package-layout-20261114','stability-20261114']:
+for name in ['scope','trace_restore_scope.py','find_core_initializers.py','recover_server_core.py','server-rtti.json','L2Server.exe.rtti-disasm.txt','L2Server(10).exe.rtti-disasm.txt','hp-batch-worker-excerpt.txt','recover_user_socket.py','user-socket','recover_registry.py','registry','network-audit','audit_network_abi5.py','build_network_audit_matrix.py','abi6','creature-serializer-audit','remaining-network-audit','send-close-audit','audit_send_close_abi8.py','abi9','abi10','followup','safesend-close','extended-diagnostics','pool-manager','network-fault-identity','verified-network-names','reference-restoration','object-memory-abi','package-layout-20261114','stability-20261114','stability-extended-20261114']:
  dest=PATCH/'research'/name;dest.parent.mkdir(exist_ok=True)
  if (ROOT/'research'/name).is_dir():shutil.copytree(ROOT/'research'/name,dest,ignore=shutil.ignore_patterns('__pycache__','reorganize.py','apply_visibility.py','compile.args','VISIBILITY.json'))
  else:shutil.copy2(ROOT/'research'/name,dest)
@@ -76,6 +76,8 @@ shutil.copy2(ROOT/'REPORT_VERIFIED_NETWORK_NAMES.md',PATCH/'REPORT_VERIFIED_NETW
 shutil.copy2(ROOT/'REPORT_REFERENCE_RESTORATION.md',PATCH/'REPORT_REFERENCE_RESTORATION.md')
 shutil.copy2(ROOT/'REPORT_OBJECT_MEMORY_ABI.md',PATCH/'REPORT_OBJECT_MEMORY_ABI.md')
 shutil.copy2(ROOT/'REPORT_SLOT_SEND_FIX.md',PATCH/'REPORT_SLOT_SEND_FIX.md')
+shutil.copy2(ROOT/'REPORT_STABILITY_EXTENDED.md',PATCH/'REPORT_STABILITY_EXTENDED.md')
+shutil.copy2(ROOT/'REPORT_STABILITY_EXTENDED.md',REPO/'reports/CTRANSPORT_STABILITY_EXTENDED_20261114.md')
 shutil.copy2(ROOT/'REPORT_STABILITY.md',PATCH/'REPORT_STABILITY.md')
 shutil.copy2(ROOT/'REPORT_STABILITY.md',REPO/'reports/CTRANSPORT_STABILITY_20261114.md')
 shutil.copy2(ROOT/'REPORT_PACKAGE_LAYOUT.md',PATCH/'REPORT_PACKAGE_LAYOUT.md')
@@ -115,6 +117,7 @@ manifest['object_memory_abi']={'report':'REPORT_OBJECT_MEMORY_ABI.md','evidence'
 manifest['slot_send_fix']={'report':'REPORT_SLOT_SEND_FIX.md','items':[1,2],'user_socket_virtual_slots':26,'slot15_margin_argument':'int','slot24':'existing raw pointer at+0x4f0;zero in L1;original pointee/name unconfirmed','slot25':'actual socket number at+0x4e8','admission':'same gate,FIFO+reserved+margin,checked subtraction,existing graceful drain','unchanged':['original field placement','restricted IP mode','PSS','codec','DB']}
 manifest['package_layout']={'report':'REPORT_PACKAGE_LAYOUT.md','classes':26,'packages':['transport','connection','session','server','broadcast','diagnostics','execution','config'],'scope':'historical package-layout change;subsequent CUserSocket ordering fix is recorded separately'}
 manifest['stability_fix']={'report':'REPORT_STABILITY.md','baseline':'481ba8cfb4baed361e1f2955030150e9cc7d4b76','production_changes':['CUserSocket serializer ownership release uses setVolatile before readiness recheck'],'scope_verifier':'tests/verify_stability_scope.py','native_dll_unchanged':True}
+manifest['extended_stability']={'report':'REPORT_STABILITY_EXTENDED.md','baseline':'60a85fafb868c4f38eafc82de0bdafd88e65f61f','source_scope':'all1712 production sources and native DLL unchanged','scope_verifier':'tests/verify_extended_stability_scope.py'}
 manifest['source_scope']=verification['source_scope']
 manifest['config_file']='config/ctransport.properties'
 manifest['client_identity_status']='Server API/config existing;client identity transmitter/verifier not integrated;default limit0'
@@ -166,7 +169,7 @@ with zipfile.ZipFile(dest,'w',zipfile.ZIP_DEFLATED,compresslevel=6)as z:
   if p.is_file():z.write(p,str(p.relative_to(PATCH.parent)))
 with zipfile.ZipFile(dest)as z:assert z.testzip() is None
 archives[dest.name]=SHA(dest.read_bytes());Path(str(dest)+'.sha256').write_text(archives[dest.name]+'  '+dest.name+'\n')
-readme=REPO/'README.md';text=readme.read_text();title='## 2026-11-14 — 네트워크 부하·안정성 실측 및 송신 정지 수정'
-heading=title+'\n\n[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**실측 보고서·원시 결과**](reports/CTRANSPORT_STABILITY_20261114.md)\n\nWindows에서 실제 DLL/FFM/자바 송신 큐에 부하를 가해 송신 큐 깨우기 누락을 재현하고 수정했습니다. 패킷 수·소요 시간·지연·메모리 회수와 시험 범위는 보고서에 기록했습니다. 전체 src 교체 후 clean build합니다. DLL과 독립 PSS는 동일합니다.\n\n---\n\n'
+readme=REPO/'README.md';text=readme.read_text();title='## 2026-11-14 — 별도 JVM 지연 비교·워커 정지 영향·재접속 지속 검사'
+heading=title+'\n\n[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**추가 실측 보고서**](reports/CTRANSPORT_STABILITY_EXTENDED_20261114.md)\n\n실제 Windows DLL/FFM에서 동일 프로토콜의 클라이언트 JVM 분리 비교, IOCP worker 정지 주입, 지속 재접속과 소켓 GC·풀 회수를 검사했습니다. 직전 배포의 운영 소스와 DLL·PSS는 동일하며 시험 코드와 증거를 갱신했습니다.\n\n---\n\n'
 if not text.startswith(title):readme.write_text(heading+text)
 print(json.dumps({'archives':archives,'dll_sha256':dllsha,'source_files':len(current),'java_files':manifest['java_files'],'changed':len(changed),'deleted':deleted},indent=2))

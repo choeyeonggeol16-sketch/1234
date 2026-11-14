@@ -1,3 +1,11 @@
+## 2026-11-14 — 별도 JVM 지연 비교·워커 정지 영향·재접속 지속 검사
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**추가 실측 보고서**](reports/CTRANSPORT_STABILITY_EXTENDED_20261114.md)
+
+실제 Windows DLL/FFM에서 동일 프로토콜의 클라이언트 JVM 분리 비교, IOCP worker 정지 주입, 지속 재접속과 소켓 GC·풀 회수를 검사했습니다. 직전 배포의 운영 소스와 DLL·PSS는 동일하며 시험 코드와 증거를 갱신했습니다.
+
+---
+
 ## 2026-11-14 — 네트워크 부하·안정성 실측 및 송신 정지 수정
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**실측 보고서·원시 결과**](reports/CTRANSPORT_STABILITY_20261114.md)

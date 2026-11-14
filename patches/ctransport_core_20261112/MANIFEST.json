@@ -4,7 +4,7 @@
   "dll": "CTransport.dll",
   "dll_sha256": "62604a5b1b111526da30b0d06f224eb6d5f3e4aafca0292571aae7932b3f272e",
   "abi": "0xa0000",
-  "implementation_parent": "1e57cca6c67a6b20aac227c13841088b018aa839",
+  "implementation_parent": "5fdbc659ad60b6bca625bbd46bd6cf7f0a2aec28",
   "transport_scope": "game",
   "mandatory": true,
   "pss": {
@@ -630,39 +630,36 @@
     "status": "passed",
     "abi": "0xa0000",
     "exports": 67,
-    "implementation_parent": "481ba8cfb4baed361e1f2955030150e9cc7d4b76",
+    "implementation_parent": "60a85fafb868c4f38eafc82de0bdafd88e65f61f",
     "dll_sha256": "62604a5b1b111526da30b0d06f224eb6d5f3e4aafca0292571aae7932b3f272e",
     "codec_dll_sha256": "60bde93c2ba20057e7e307594edef69ced273b69f923535ab658769e09f0cea9",
     "pss_client_dll_sha256": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
     "previous_verified_run": {
-      "run_id": 43559706222,
-      "tested_source_commit": "70d2cb580de2dde213bac1dffddf52778147c11d",
+      "run_id": 43567498897,
+      "tested_source_commit": "1e57cca6c67a6b20aac227c13841088b018aa839",
       "dll_sha256": "62604a5b1b111526da30b0d06f224eb6d5f3e4aafca0292571aae7932b3f272e"
     },
     "source_scope": {
-      "baseline": "481ba8cfb4baed361e1f2955030150e9cc7d4b76",
-      "kind": "CUserSocket serializer ownership StoreLoad fix",
+      "baseline": "60a85fafb868c4f38eafc82de0bdafd88e65f61f",
+      "kind": "extended tests and evidence only",
       "source_files": 1712,
       "java_files": 1711,
-      "changed_source_texts": 1,
-      "changed_sources": [
-        "src/l1j/server/server/model/network/core/connection/CUserSocket.java"
-      ],
-      "unchanged_sources": 1711,
+      "changed_source_texts": 0,
+      "unchanged_sources": 1712,
       "native_cpp_unchanged": true,
       "native_dll_unchanged": true,
       "pss_unchanged": true,
-      "scope_verifier": "tests/verify_stability_scope.py"
+      "scope_verifier": "tests/verify_extended_stability_scope.py"
     },
     "os": "Windows Server2022 GitHub-hosted runner",
     "jdk": "Temurin21",
-    "scope": "Actual Windows production DLL/FFM/Java send FIFO stress,checksum/cipher/FIFO integrity,slow reader,RST/held encoders,reconnect/GC/native baseline recovery,JFR;all previous network/PSS/manager regressions;full1711 Java compile and unchanged-native Linux ASan/UBSan/TSan",
-    "implementation_commit": "1e57cca6c67a6b20aac227c13841088b018aa839",
-    "tested_source_commit": "1e57cca6c67a6b20aac227c13841088b018aa839",
-    "artifact_commit": "277d077eb1fea3cbedc05ca696b13731a4fc6be6",
-    "run_id": 43567498897,
-    "job_id": 132364416263,
-    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43567498897",
+    "scope": "Unchanged production sources/DLL;actual Windows full regressions plus split-client JVM completion latency,controlled native-worker handler stalls,180-second production Java FIFO/reconnect/GC/native recovery soak",
+    "implementation_commit": "60a85fafb868c4f38eafc82de0bdafd88e65f61f",
+    "tested_source_commit": "5fdbc659ad60b6bca625bbd46bd6cf7f0a2aec28",
+    "artifact_commit": "f75436475e3f9804918c5024e39e6051447c85e7",
+    "run_id": 43569842086,
+    "job_id": 132371612643,
+    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43569842086",
     "compiler": "MSVC x64 C++20 /MT /Brepro",
     "source_line_ending_validation": "19 native files and Java DLL pin match the tested checkout after LF/CRLF normalization",
     "source_archive_sha256": "f700e9b1998f10c5669c045e6ab2ca2abe3f6e50cdd6322134c2e30c139be0a7",
@@ -703,7 +700,7 @@
       "unchanged_java_files": 1707
     },
     "java_tested_source_validation": "483 published source files match successful Windows source tree after line-ending normalization",
-    "stability": {
+    "previous_stability": {
       "report": "REPORT_STABILITY.md",
       "raw_results": "research/stability-20261114/run-43567498897",
       "status": "passed",
@@ -714,6 +711,24 @@
       "collected_java_users": 32,
       "production_fix": "SOCKET_DRAINING.setRelease -> setVolatile before readiness recheck",
       "scope": "Windows localhost;game/DB/scheduler dependencies are fixtures;includes client and verifier CPU"
+    },
+    "stability": {
+      "status": "passed",
+      "run_id": 43569842086,
+      "rx_frames": 15839040,
+      "tx_main_and_warmup_frames": 3280896,
+      "raw_results": "research/stability-extended-20261114/run-43569842086"
+    },
+    "stability_extended": {
+      "report": "REPORT_STABILITY_EXTENDED.md",
+      "status": "passed",
+      "split_frames": 24564480,
+      "soak_frames": 1504256,
+      "soak_duration_ms": 180074.7462,
+      "reconnect_waves": 1469,
+      "collected_java_users": 5876,
+      "production_changes": false,
+      "scope": "same Windows host;split client JVM;game/account/scheduler fixtures;controlled handler waits;180sec not hours"
     }
   },
   "followup_structures": [
@@ -853,20 +868,23 @@
     "scope_verifier": "tests/verify_stability_scope.py",
     "native_dll_unchanged": true
   },
+  "extended_stability": {
+    "report": "REPORT_STABILITY_EXTENDED.md",
+    "baseline": "60a85fafb868c4f38eafc82de0bdafd88e65f61f",
+    "source_scope": "all1712 production sources and native DLL unchanged",
+    "scope_verifier": "tests/verify_extended_stability_scope.py"
+  },
   "source_scope": {
-    "baseline": "481ba8cfb4baed361e1f2955030150e9cc7d4b76",
-    "kind": "CUserSocket serializer ownership StoreLoad fix",
+    "baseline": "60a85fafb868c4f38eafc82de0bdafd88e65f61f",
+    "kind": "extended tests and evidence only",
     "source_files": 1712,
     "java_files": 1711,
-    "changed_source_texts": 1,
-    "changed_sources": [
-      "src/l1j/server/server/model/network/core/connection/CUserSocket.java"
-    ],
-    "unchanged_sources": 1711,
+    "changed_source_texts": 0,
+    "unchanged_sources": 1712,
     "native_cpp_unchanged": true,
     "native_dll_unchanged": true,
     "pss_unchanged": true,
-    "scope_verifier": "tests/verify_stability_scope.py"
+    "scope_verifier": "tests/verify_extended_stability_scope.py"
   },
   "config_file": "config/ctransport.properties",
   "client_identity_status": "Server API/config existing;client identity transmitter/verifier not integrated;default limit0"

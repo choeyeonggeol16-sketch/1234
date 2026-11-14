@@ -1,0 +1,1 @@
+실행43569842086의 실제 Windows 원시 증거입니다. 상세 수치·범위는 ../../REPORT_STABILITY_EXTENDED.md를 확인합니다. BASELINE.json은 직전60a85fa 전체 src1712개와 native 파일의 해시입니다. split은 동일 완료 회신 프로토콜의 JVM 비교,soak는180초 재접속/송신/종료와 핸들러 정지 주입 결과입니다. 실제 게임/DB 부하 또는 수시간 시험으로 확대 해석하지 않습니다.

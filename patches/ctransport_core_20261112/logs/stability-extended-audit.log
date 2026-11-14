@@ -1,0 +1,9 @@
+Source inspection;not a full gameplay load test.
+CUserSocket.dispatchNativePacket: ready non-session packets execute on native IO owner; session packets use affinity shard.
+CNetworkDiagnostics.timings/workers: existing per-opcode completed/average/max and active work;native threadDiagnostics exposes callback time/start.
+CS_CommonClick.submitCharList/loadCommonClick: SQL queued via CacheD.submitDbJobOrdered.
+CS_Mail.submitMailSql: ordered DB job followed by completeSessionReply with session-stamp guard.
+CS_Attr.resetKillDeath/experience recovery: existing L1InventoryTransaction SQL/commit path.
+CS_Craft.insertExclude/delExclude: existing ordered DB jobs.
+CS_NpcAcion2.spawn contains Thread.sleep(1),but no call to that spawn helper found in src;not treated as an observed active IOCP stall.
+No production change justified by source inspection alone.
