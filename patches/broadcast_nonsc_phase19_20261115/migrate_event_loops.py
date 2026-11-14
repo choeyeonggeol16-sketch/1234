@@ -70,7 +70,7 @@ def patch(files):
         assert 'getParty().getMembers()' in old
         assert 'SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "$"+count);' in old
         return src[:a]+"""private void BonginSendPacekt(int count){
-        """+CLS+""".sendRecipients(
+        """+CLS+""".sendArray(
                 getParty().getMembers(), SC_PacketBox.sharedGreenWire("$"+count));
     }"""+src[b:]
     edit(HADIN,hadin)
