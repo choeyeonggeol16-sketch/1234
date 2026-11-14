@@ -1,0 +1,270 @@
+// Recovered from mjlin_loaded_code_00400000_0180D000.bin, SHA-256 256f7886e98d7d2c573ab76917f78e30dc4f34cb723a002d604602cdb2f6cbdb
+// Source: embedded FileDescriptorProto, NOT NC-authored source file.
+// package/message/field/enum/number/cardinality derived directly from binary descriptor.
+// syntax="proto2" reconstructed from descriptor required/optional semantics.
+syntax = "proto2";
+package LIN;
+
+import "Lineage_CommonDataTypes.proto";
+
+message CS_ARENACO_BYPASS_INDUN_ROOM_LIST_REQ {
+  required uint32 page_id = 1 [default = 1];
+  optional .LIN.eArenaMapKind map_kind = 2 [default = None];
+}
+
+message SC_ARENACO_BYPASS_INDUN_ROOM_LIST_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    ERROR_INTENAL = 2;
+    ERROR_NOT_EXIST_USER = 3;
+    ERROR_NOT_EXIST_ROOM = 4;
+    ERROR_ARENACO_DISCONNECTED = 5;
+  }
+  required .LIN.SC_ARENACO_BYPASS_INDUN_ROOM_LIST_ACK.eResult result = 1;
+  required uint32 page_id = 2;
+  required uint32 total_page = 3;
+  repeated .LIN.IndunRoomInfo room_info = 4;
+}
+
+message CS_ARENACO_BYPASS_INDUN_ROOM_INFO_REQ {
+  required uint32 room_id = 1;
+}
+
+message SC_ARENACO_BYPASS_INDUN_ROOM_INFO_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    ERROR_INTENAL = 2;
+    ERROR_NOT_EXIST_USER = 3;
+    ERROR_NOT_EXIST_ROOM = 4;
+  }
+  required .LIN.SC_ARENACO_BYPASS_INDUN_ROOM_INFO_ACK.eResult result = 1;
+  optional .LIN.IndunRoomDetailInfo room_info = 2;
+}
+
+message CS_ARENACO_CREATE_INDUN_ROOM_REQ {
+  required .LIN.IndunBuildInfo build_info = 1;
+}
+
+message SC_ARENACO_CREATE_INDUN_ROOM_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    ERROR_INTERNAL = 2;
+    ERROR_NOT_EXIST_USER = 3;
+    ERROR_EXCEED_MAX_ROOM_COUNT = 4;
+    ERROR_EXCEED_MAX_ARENA_COUNT = 5;
+    ERROR_CANNOT_CREATE_ARENA = 6;
+    ERROR_INVALID_TITLE = 7;
+    ERROR_PASSWORD = 8;
+    ERROR_TEAM_COUNT = 9;
+    ERROR_TEAM_MEMBER_COUNT = 10;
+    ERROR_ALLOCATE_ARENA = 11;
+    ERROR_JOIN_ROOM = 12;
+    ERROR_OTHER_ROOM_ENTERED = 13;
+    ERROR_LEVEL = 14;
+    ERROR_NOT_ENOUGH_KEY = 15;
+    ERROR_INVALID_FEE = 16;
+    ERROR_ENTER_LIMIT = 17;
+    ERROR_INDUN_BLOCK = 18;
+  }
+  required .LIN.SC_ARENACO_CREATE_INDUN_ROOM_ACK.eResult result = 1;
+  optional uint32 room_id = 2;
+}
+
+message CS_ARENACO_BYPASS_CHANGE_INDUN_ROOM_PROPERTY_REQ {
+  required uint32 room_id = 1;
+  required bytes title = 2;
+  required int32 min_level = 3;
+  required bool closed = 4;
+  required string password = 5;
+  required .LIN.eDistributionType distribution_type = 6;
+  required int32 max_player = 7;
+  required .LIN.eArenaMapKind map_kind = 8;
+}
+
+message SC_ARENACO_BYPASS_CHANGE_INDUN_ROOM_PROPERTY_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+    FAIL_NOT_EXIST_USER = 3;
+    FAIL_TITLE = 4;
+    FAIL_MIN_LEVEL = 5;
+    FAIL_CLOSED = 6;
+    FAIL_PASSWORD = 7;
+    FAIL_DISTRIBUTION_TYPE = 8;
+    FAIL_MAX_PLAYER = 9;
+    FAIL_INVALID_ROOM_STATUS = 10;
+    FAIL_NOT_FOUND_ROOM = 11;
+    FAIL_INVALID_ROOMID = 12;
+    FAIL_NOT_OWNER = 13;
+  }
+  required .LIN.SC_ARENACO_BYPASS_CHANGE_INDUN_ROOM_PROPERTY_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+}
+
+message SC_ARENACO_BYPASS_CHANGE_INDUN_ROOM_STATUS_NOTI {
+  required uint32 room_id = 1;
+  required uint32 observer_count = 2;
+  repeated .LIN.ArenaUserInfo player_info = 3;
+  optional .LIN.IndunRoomInfo room_info = 4;
+}
+
+message CS_ARENACO_ENTER_INDUN_ROOM_REQ {
+  required uint32 room_id = 1;
+  optional string password = 2;
+  optional bool invite_accept = 3;
+  optional bytes host_char_name = 4;
+}
+
+message SC_ARENACO_ENTER_INDUN_ROOM_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+    FAIL_TO_ALREADY_PLAY = 3;
+    FAIL_NOT_ENOUGH_MONEY = 4;
+    FAIL_INVALID_PASSWORD = 5;
+    FAIL_INVALID_ROOM_STATUS = 6;
+    FAIL_NOT_FOUND_ROOM = 7;
+    FAIL_FULL = 8;
+    FAIL_ALREADY_ENTERED_PLAYER = 9;
+    FAIL_OTHER_ROOM_ENTERED = 10;
+    FAIL_LEVEL = 11;
+    FAIL_INVALID_SERVER = 12;
+    FAIL_ENTER_LIMIT = 13;
+    FAIL_INDUN_BLOCK = 14;
+  }
+  required .LIN.SC_ARENACO_ENTER_INDUN_ROOM_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+}
+
+message SC_ARENACO_BYPASS_ENTER_INDUN_ROOM_NOTI {
+  required uint32 room_id = 1;
+  required .LIN.ArenaUserInfo user_info = 2;
+}
+
+message CS_ARENACO_BYPASS_CHANGE_INDUN_READY_ENTER_REQ {
+  required uint32 room_id = 1;
+  required bool ready = 2;
+  optional uint64 own_adena = 3;
+  optional uint32 user_level = 4;
+}
+
+message SC_ARENACO_BYPASS_CHANGE_INDUN_READY_ENTER_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+    FAIL_NOT_ENOUGH_MONEY = 3;
+    FAIL_LEVEL = 4;
+  }
+  required .LIN.SC_ARENACO_BYPASS_CHANGE_INDUN_READY_ENTER_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+  required bool ready = 3;
+}
+
+message CS_ARENACO_BYPASS_INDUN_GAME_START_REQ {
+  required uint32 room_id = 1;
+  required .LIN.eArenaMapKind map_kind = 2;
+  optional uint32 user_level = 3;
+}
+
+message SC_ARENACO_BYPASS_INDUN_GAME_START_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+    FAIL_INVALID_USER = 3;
+    FAIL_INVALID_ROOM = 4;
+    FAIL_INVALID_OWNER = 5;
+    FAIL_INVALID_STATE = 6;
+    FAIL_ISSUE_PLAY = 7;
+    FAIL_NOT_ENOUGH_KEY = 8;
+    FAIL_LEVEL = 9;
+    FAIL_ENTER_LIMIT = 10;
+    FAIL_INDUN_BLOCK = 11;
+  }
+  required .LIN.SC_ARENACO_BYPASS_INDUN_GAME_START_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+}
+
+message CS_ARENACO_INVITE_INDUN_ROOM_REQ {
+  required uint32 room_id = 1;
+  required int64 host_arena_char_id = 2;
+  required bytes guest_char_name = 3;
+  required bool need_password = 4;
+  required .LIN.IndunEnterCondition condition = 5;
+  optional bytes buildercaster_password = 6;
+}
+
+message SC_ARENACO_INVITE_INDUN_ROOM_ACK {
+  enum eInviteResult {
+    eRESULT_SUCCESS = 1;
+    eRESULT_ERROR_REJECT = 2;
+    eRESULT_ERROR_NOT_EXIST_USER = 3;
+    eRESULT_ERROR = 4;
+    eRESULT_ERROR_NOT_OPEN_TIME = 5;
+  }
+  required .LIN.SC_ARENACO_INVITE_INDUN_ROOM_ACK.eInviteResult result = 1;
+  required uint32 room_id = 2;
+  required int64 host_arena_char_id = 3;
+}
+
+message CS_ARENACO_BYPASS_INDUN_NOTI_REQ {
+}
+
+message SC_ARENACO_BYPASS_INDUN_NOTI_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    ERROR_INTENAL = 2;
+    ERROR_NOT_EXIST_USER = 3;
+  }
+  required .LIN.SC_ARENACO_BYPASS_INDUN_NOTI_ACK.eResult result = 1;
+  repeated .LIN.IndunNotiInfo noti_info = 2;
+}
+
+message CS_ARENACO_EXIT_INDUN_ROOM_REQ {
+  required uint32 room_id = 1;
+}
+
+message SC_ARENACO_EXIT_INDUN_ROOM_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+  }
+  required .LIN.SC_ARENACO_EXIT_INDUN_ROOM_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+}
+
+message SC_ARENACO_BYPASS_EXIT_INDUN_ROOM_NOTI {
+  required uint32 room_id = 1;
+  required .LIN.ArenaUserInfo user_info = 2;
+}
+
+message CS_ARENACO_BYPASS_INDUN_KICK_REQ {
+  required uint32 room_id = 1;
+  required int64 kick_arena_char_id = 2;
+}
+
+message SC_ARENACO_BYPASS_INDUN_KICK_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+    FAIL_NOT_EXIST_KICKER = 3;
+    FAIL_INVALID_KICKER = 4;
+    FAIL_NOT_EXIST_TARGET = 5;
+    FAIL_ROOM_STATE = 6;
+    FAIL_ROOM_EXIT = 7;
+    FAIL_INVALID_ROOM_TYPE = 8;
+  }
+  required .LIN.SC_ARENACO_BYPASS_INDUN_KICK_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+  required int64 kick_arena_char_id = 3;
+}
+
+message SC_ARENACO_BYPASS_INDUN_KICK_NOTI {
+  required uint32 room_id = 1;
+  required int64 kick_arena_char_id = 2;
+  required bytes kick_char_name = 3;
+}
+
+message SC_INDUN_TOWER_HIT_POINT_RATIO_NOTI {
+  required uint32 object_id = 1;
+  required int32 hp_ratio = 2;
+}

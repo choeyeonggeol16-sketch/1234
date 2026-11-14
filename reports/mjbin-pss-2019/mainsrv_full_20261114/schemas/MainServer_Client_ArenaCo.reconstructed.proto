@@ -1,0 +1,561 @@
+// Recovered from mjlin_loaded_code_00400000_0180D000.bin, SHA-256 256f7886e98d7d2c573ab76917f78e30dc4f34cb723a002d604602cdb2f6cbdb
+// Source: embedded FileDescriptorProto, NOT NC-authored source file.
+// package/message/field/enum/number/cardinality derived directly from binary descriptor.
+// syntax="proto2" reconstructed from descriptor required/optional semantics.
+syntax = "proto2";
+package LIN;
+
+import "Lineage_CommonDataTypes.proto";
+
+message SC_ARENACO_SERVER_STATUS_NOTI {
+  enum eStatus {
+    INTERAL_ERROR = 1;
+    NOW_CLOSED = 2;
+  }
+  required .LIN.SC_ARENACO_SERVER_STATUS_NOTI.eStatus status = 1;
+}
+
+message CS_ARENACO_BYPASS_MY_INFO_REQ {
+}
+
+message SC_ARENACO_BYPASS_MY_INFO_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    ERROR_INTENAL = 2;
+    ERROR_NOT_EXIST_USER = 3;
+    ERROR_NOT_FOUND_RECORD = 4;
+  }
+  required .LIN.SC_ARENACO_BYPASS_MY_INFO_ACK.eResult result = 1;
+  repeated .LIN.ArenaRoomInfo.ArenaRecord record_info = 2;
+}
+
+message CS_ARENACO_BYPASS_ROOM_LIST_REQ {
+  required uint32 page_id = 1 [default = 1];
+}
+
+message SC_ARENACO_BYPASS_ROOM_LIST_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    ERROR_INTENAL = 2;
+    ERROR_NOT_EXIST_USER = 3;
+    ERROR_NOT_EXIST_ROOM = 4;
+  }
+  required .LIN.SC_ARENACO_BYPASS_ROOM_LIST_ACK.eResult result = 1;
+  required uint32 page_id = 2;
+  required uint32 total_page = 3;
+  repeated .LIN.ArenaRoomInfo room_info = 4;
+}
+
+message CS_ARENACO_BYPASS_ROOM_INFO_REQ {
+  required uint32 room_id = 1;
+}
+
+message SC_ARENACO_BYPASS_ROOM_INFO_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    ERROR_INTENAL = 2;
+    ERROR_NOT_EXIST_USER = 3;
+    ERROR_NOT_EXIST_ROOM = 4;
+  }
+  required .LIN.SC_ARENACO_BYPASS_ROOM_INFO_ACK.eResult result = 1;
+  optional .LIN.ArenaRoomInfo room_info = 2;
+}
+
+message CS_ARENACO_CREATE_ROOM_REQ {
+  required .LIN.ArenaBuildInfo build_info = 1;
+}
+
+message SC_ARENACO_CREATE_ROOM_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    ERROR_INTERNAL = 2;
+    ERROR_NOT_EXIST_USER = 3;
+    ERROR_EXCEED_MAX_ROOM_COUNT = 4;
+    ERROR_EXCEED_MAX_ARENA_COUNT = 5;
+    ERROR_CANNOT_CREATE_ARENA = 6;
+    ERROR_NOT_ENOUGH_MONEY = 7;
+    ERROR_INVALID_TITLE = 8;
+    ERROR_PASSWORD = 9;
+    ERROR_TEAM_COUNT = 10;
+    ERROR_TEAM_MEMBER_COUNT = 11;
+    ERROR_ALLOCATE_ARENA = 12;
+    ERROR_JOIN_ROOM = 13;
+    ERROR_OTHER_ROOM_ENTERED = 14;
+    ERROR_CLASS = 15;
+    ERROR_SERVER = 16;
+    ERROR_GAMBLETYPE = 17;
+    ERROR_LEVEL = 18;
+    ERROR_NOT_OPEN_TIME = 19;
+  }
+  required .LIN.SC_ARENACO_CREATE_ROOM_ACK.eResult result = 1;
+  optional uint32 room_id = 2;
+}
+
+message CS_ARENACO_BYPASS_CHANGE_ROOM_PROPERTY_REQ {
+  required uint32 room_id = 1;
+  required bytes title = 2;
+  required bool closed = 3;
+  required string password = 4;
+  required .LIN.eArenaMapKind map_kind = 6;
+}
+
+message SC_ARENACO_BYPASS_CHANGE_ROOM_PROPERTY_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+    FAIL_NOT_EXIST_USER = 3;
+    FAIL_TITLE = 4;
+    FAIL_PASSWORD = 5;
+    FAIL_MAPKIND = 6;
+    FAIL_INVALID_ROOM_STATUS = 7;
+    FAIL_NOT_FOUND_ROOM = 8;
+    FAIL_INVALID_ROOMID = 9;
+    FAIL_NOT_OWNER = 10;
+  }
+  required .LIN.SC_ARENACO_BYPASS_CHANGE_ROOM_PROPERTY_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+}
+
+message SC_ARENACO_BYPASS_CHANGE_ROOM_STATUS_NOTI {
+  required uint32 room_id = 1;
+  required uint32 observer_count = 2;
+  repeated .LIN.ArenaUserInfo player_info = 3;
+  optional .LIN.ArenaRoomInfo room_info = 4;
+}
+
+message CS_ARENACO_ENTER_ROOM_REQ {
+  required uint32 room_id = 1;
+  required .LIN.ArenaUserInfo.eRole role = 2;
+  optional string password = 3;
+  optional bool invite_accept = 4;
+  optional bytes host_char_name = 5;
+}
+
+message SC_ARENACO_ENTER_ROOM_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+    FAIL_TO_ALREADY_PLAY = 3;
+    FAIL_NOT_ENOUGH_MONEY = 4;
+    FAIL_CANNOT_OBSERVE = 5;
+    FAIL_INVALID_PASSWORD = 6;
+    FAIL_INVALID_ROOM_STATUS = 7;
+    FAIL_NOT_FOUND_ROOM = 8;
+    FAIL_FULL = 9;
+    FAIL_ALREADY_ENTERED_PLAYER = 10;
+    FAIL_ALREADY_ENTERED_OBSERVER = 11;
+    FAIL_INVALID_ROLE = 12;
+    FAIL_OTHER_ROOM_ENTERED = 13;
+    FAIL_CLASS = 14;
+    FAIL_SERVER = 15;
+    FAIL_GAMBLETYPE = 16;
+    FAIL_LEVEL = 17;
+    FAIL_ALREADY_ENTERED_CASTER = 18;
+    FAIL_NOT_OPEN_TIME = 19;
+  }
+  required .LIN.SC_ARENACO_ENTER_ROOM_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+}
+
+message SC_ARENACO_BYPASS_ENTER_ROOM_NOTI {
+  required uint32 room_id = 1;
+  required .LIN.ArenaUserInfo user_info = 2;
+}
+
+message CS_ARENACO_BYPASS_CHANGE_TEAM_REQ {
+  required uint32 room_id = 1;
+  required .LIN.eArenaTeam team_id = 2;
+}
+
+message SC_ARENACO_BYPASS_CHANGE_TEAM_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    ERROR_FULL = 2;
+    FAIL = 3;
+  }
+  required .LIN.SC_ARENACO_BYPASS_CHANGE_TEAM_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+  required .LIN.eArenaTeam team_id = 3;
+}
+
+message SC_ARENACO_BYPASS_CHANGE_TEAM_NOTI {
+  required uint32 room_id = 1;
+  required int64 arena_char_id = 2;
+  required .LIN.eArenaTeam team_id = 3;
+}
+
+message CS_ARENACO_BYPASS_CHANGE_READY_ENTER_REQ {
+  required uint32 room_id = 1;
+  required bool ready = 2;
+  optional uint64 own_adena = 3;
+  optional uint64 entrance_adena = 4;
+  optional uint32 user_level = 5;
+}
+
+message SC_ARENACO_BYPASS_CHANGE_READY_ENTER_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+    FAIL_NOT_ENOUGH_MONEY = 3;
+    FAIL_GAMBLETYPE = 4;
+    FAIL_LEVEL = 5;
+  }
+  required .LIN.SC_ARENACO_BYPASS_CHANGE_READY_ENTER_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+  required bool ready = 3;
+}
+
+message SC_ARENACO_BYPASS_CHANGE_READY_ENTER_NOTI {
+  required uint32 room_id = 1;
+  required int64 arena_char_id = 2;
+  required bool ready = 3;
+}
+
+message CS_ARENACO_BYPASS_CHANGE_LOCK_ROOM_REQ {
+  required uint32 room_id = 1;
+  required bool is_lock = 2;
+}
+
+message SC_ARENACO_BYPASS_CHANGE_LOCK_ROOM_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+    FAIL_NOT_OWNER = 3;
+    FAIL_INVALID_ROOM_STATUS = 4;
+  }
+  required .LIN.SC_ARENACO_BYPASS_CHANGE_LOCK_ROOM_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+  required bool is_lock = 3;
+}
+
+message SC_ARENACO_BYPASS_CHANGE_LOCK_ROOM_NOTI {
+  required uint32 room_id = 1;
+  required bool is_lock = 2;
+}
+
+message CS_ARENACO_BYPASS_GAME_START_REQ {
+  required uint32 room_id = 1;
+  optional uint64 own_adena = 2;
+  optional uint64 entrance_adena = 3;
+  optional uint32 user_level = 5;
+}
+
+message SC_ARENACO_BYPASS_GAME_START_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+    FAIL_INVALID_USER = 3;
+    FAIL_INVALID_ROOM = 4;
+    FAIL_INVALID_OWNER = 5;
+    FAIL_INVALID_STATE = 6;
+    FAIL_ISSUE_PLAY = 7;
+    FAIL_NOT_ENOUGH_MONEY = 8;
+    FAIL_GAMBLETYPE = 9;
+    FAIL_LEVEL = 10;
+    FAIL_NOT_OPEN_TIME = 11;
+  }
+  required .LIN.SC_ARENACO_BYPASS_GAME_START_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+}
+
+message CS_ARENACO_BYPASS_ROOM_CHAT_REQ {
+  required uint32 room_id = 1;
+  required bytes message = 2;
+  optional bytes sender_char_name = 3;
+}
+
+message SC_ARENACO_BYPASS_ROOM_CHAT_NOTI {
+  required uint32 room_id = 1;
+  required int64 arena_char_id = 2;
+  required bytes message = 3;
+  required bytes sender_char_name = 4;
+  required uint32 server_id = 5;
+}
+
+message CS_ARENACO_EXIT_ROOM_REQ {
+  required uint32 room_id = 1;
+}
+
+message SC_ARENACO_EXIT_ROOM_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+  }
+  required .LIN.SC_ARENACO_EXIT_ROOM_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+}
+
+message SC_ARENACO_BYPASS_EXIT_ROOM_NOTI {
+  required uint32 room_id = 1;
+  required .LIN.ArenaUserInfo user_info = 2;
+}
+
+message CS_ARENACO_INVITE_ROOM_REQ {
+  required uint32 room_id = 1;
+  required int64 host_arena_char_id = 2;
+  repeated bytes guest_char_name = 3;
+  required bool need_password = 4;
+  optional bytes buildercaster_password = 5;
+}
+
+message SC_ARENACO_INVITE_ROOM_ACK {
+  enum eInviteResult {
+    eRESULT_SUCCESS = 1;
+    eRESULT_ERROR_REJECT = 2;
+    eRESULT_ERROR_NOT_EXIST_USER = 3;
+    eRESULT_ERROR = 4;
+    eRESULT_ERROR_NOT_OPEN_TIME = 5;
+  }
+  required .LIN.SC_ARENACO_INVITE_ROOM_ACK.eInviteResult result = 1;
+  required uint32 room_id = 2;
+  required int64 host_arena_char_id = 3;
+}
+
+message SC_ARENACO_INVITE_ROOM_NOTI {
+  required uint32 room_id = 1;
+  required bytes host_char_name = 2;
+  required bytes guest_char_name = 3;
+  required bool need_password = 4;
+  optional bytes buildercaster_password = 5;
+  optional bool from_builder = 6;
+  optional bool is_indun = 7 [default = false];
+}
+
+message CS_ARENACO_INVITE_ROOM_DENY_REQ {
+  required uint32 room_id = 1;
+  required bytes host_char_name = 2;
+  required bytes guest_char_name = 3;
+  optional bool is_indun = 4 [default = false];
+}
+
+message SC_ARENACO_INVITE_ROOM_DENY_NOTI {
+  required uint32 room_id = 1;
+  required bytes host_char_name = 2;
+  required bytes guest_char_name = 3;
+}
+
+message CS_ARENACO_BYPASS_KICK_REQ {
+  required uint32 room_id = 1;
+  required int64 kick_arena_char_id = 2;
+}
+
+message SC_ARENACO_BYPASS_KICK_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+    FAIL_NOT_EXIST_KICKER = 3;
+    FAIL_INVALID_KICKER = 4;
+    FAIL_NOT_EXIST_TARGET = 5;
+    FAIL_ROOM_STATE = 6;
+    FAIL_ROOM_EXIT = 7;
+  }
+  required .LIN.SC_ARENACO_BYPASS_KICK_ACK.eResult result = 1;
+  required uint32 room_id = 2;
+  required int64 kick_arena_char_id = 3;
+}
+
+message SC_ARENACO_BYPASS_KICK_NOTI {
+  required uint32 room_id = 1;
+  required int64 kick_arena_char_id = 2;
+  required bytes kick_char_name = 3;
+}
+
+message ArenaActorInfo {
+  required int64 arena_char_id = 1;
+  required .LIN.ArenaUserInfo.eRole role = 2;
+  optional uint32 server_id = 3;
+  optional bytes character_name = 4;
+  optional .LIN.CharacterClass character_class = 5;
+  optional .LIN.Gender gender = 6;
+  optional .LIN.eArenaTeam team_id = 7;
+  optional int32 marker_id = 8;
+}
+
+message ArenaPlayerStatus {
+  required int64 arena_char_id = 1;
+  optional uint32 kill_count = 2;
+  optional uint32 death_count = 3;
+  optional uint32 hp_ratio = 4;
+  optional uint32 mp_ratio = 5;
+  optional int32 loc_x = 6;
+  optional int32 loc_y = 7;
+  optional uint32 attack_amount = 8;
+  optional uint32 damaged_amount = 9;
+  optional uint32 heal_amount = 10;
+  optional bool poisoned = 11;
+  optional bool paralysed = 12;
+  optional bool is_live = 13;
+  optional uint32 obj_id = 14;
+  optional bool is_ready = 15;
+}
+
+message RoundScoreBoard {
+  message RoundScore {
+    required bool is_win = 1;
+    optional uint32 attack_amount = 2;
+  }
+  repeated .LIN.RoundScoreBoard.RoundScore team_a = 1;
+  repeated .LIN.RoundScoreBoard.RoundScore team_b = 2;
+}
+
+message ArenaGameStatus {
+  message TeamStatus {
+    required .LIN.eArenaTeam team_id = 1;
+    optional uint32 cheer_msg_count = 2;
+    optional uint32 team_kill_count = 3;
+  }
+  optional uint32 play_time_msec = 1;
+  optional bool is_timer_run = 2;
+  optional uint32 observer_count = 3;
+  optional .LIN.RoundScoreBoard round_score_board = 4;
+  repeated .LIN.ArenaGameStatus.TeamStatus team_status = 5;
+}
+
+message SC_ARENA_GAME_INFO_NOTI {
+  repeated .LIN.ArenaActorInfo player_info = 1;
+  required .LIN.eArenaMapKind map_kind = 2;
+  required uint32 round = 3;
+  required uint32 round_time_sec = 4;
+  required uint32 result_display_time_sec = 5;
+}
+
+message SC_ARENA_PLAY_STATUS_NOTI {
+  repeated .LIN.ArenaPlayerStatus player_status = 1;
+  optional .LIN.ArenaGameStatus game_status = 2;
+}
+
+message SC_ARENA_OBJECT_STATUS_NOTI {
+  message Tower {
+    required uint32 obj_id = 1;
+    optional .LIN.eArenaTeam team_id = 2;
+    optional int32 hp_ratio = 3;
+  }
+  repeated .LIN.SC_ARENA_OBJECT_STATUS_NOTI.Tower towers = 1;
+}
+
+message SC_ARENA_PLAY_EVENT_NOTI {
+  enum eType {
+    GameForfeited = 1;
+    GameCountDown3Sec = 2;
+    GameCountDown10Sec = 3;
+    PlayerEntered = 11;
+    PlayerOut = 12;
+    PlayerDead = 13;
+    PlayerSpellSucceded = 14;
+    YourSelfEntered = 21;
+    BattleHunterWin = 31;
+    TeamTowerBroke = 41;
+  }
+  required .LIN.SC_ARENA_PLAY_EVENT_NOTI.eType type = 1;
+  optional .LIN.ArenaActorInfo actor_info = 10;
+  optional int64 arena_char_id_target = 20;
+  optional int64 arena_char_id_causer = 21;
+  optional .LIN.eArenaTeam team_id = 30;
+  optional uint32 spell_id = 40;
+}
+
+message SC_ARENA_PLAY_RESULT_NOTI {
+  enum eReason {
+    None = 1;
+    AttackAmount = 2;
+  }
+  required .LIN.ArenaResult result = 1;
+  required int32 remain_time_sec = 2;
+  required .LIN.SC_ARENA_PLAY_RESULT_NOTI.eReason reason = 3;
+}
+
+message CS_ARENA_PLAY_EXIT_REQ {
+}
+
+message CS_ARENA_CHEER_REQ {
+  required .LIN.eArenaTeam to_team_id = 1;
+  required string text_msg = 2;
+}
+
+message SC_ARENA_CHEER_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+  }
+  required .LIN.SC_ARENA_CHEER_ACK.eResult result = 1;
+}
+
+message ArenaCheer {
+  enum eConst {
+    MAX_MSG_BYTE_LENGTH = 50;
+    MAX_CHEER_COUNT = 10000;
+  }
+  required int32 server_id = 1;
+  required string sender = 2;
+  required .LIN.CharacterClass character_class = 3;
+  required string msg = 4;
+  required int32 received_time = 5;
+}
+
+message SC_ARENA_CHEER_NOTI {
+  required .LIN.eArenaTeam team_id = 1;
+  repeated .LIN.ArenaCheer cheers = 2;
+  required int32 total_count = 3;
+}
+
+message CS_ARENA_CHEER_LIST_REQ {
+  required .LIN.eArenaTeam team_id = 1;
+}
+
+message SC_ARENA_CHEER_LIST_NOTI {
+  required .LIN.eArenaTeam team_id = 1;
+  repeated .LIN.ArenaCheer cheers = 2;
+  optional bool begin = 3;
+  optional bool end = 4;
+}
+
+message CS_ARENA_CHAT_BLOCK_REQ {
+  required int64 arena_char_id = 1;
+  required bool is_blocked = 2;
+}
+
+message SC_ARENA_CHAT_BLOCK_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+  }
+  required .LIN.SC_ARENA_CHAT_BLOCK_ACK.eResult result = 1;
+  required int64 arena_char_id = 2;
+}
+
+message CS_ARENA_OBSERVER_TELEPORT_REQ {
+  optional int64 player_arena_char_id = 1;
+  optional int32 x = 2;
+  optional int32 y = 3;
+}
+
+message SC_ARENA_OBSERVER_TELEPORT_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL_TARGET_PLAYER_NOT_EXISTED = 2;
+    FAIL_TARGET_PLAYER_LEAVE_GAME = 3;
+    FAIL_TARGET_PLAYER_BECAME_OBSERVER = 4;
+    FAIL_CANT_GO_INVALID_LOCATION = 5;
+    FAIL_INVALID_REQUEST = 6;
+  }
+  required .LIN.SC_ARENA_OBSERVER_TELEPORT_ACK.eResult result = 1;
+}
+
+message CS_ARENA_PLAY_READY_REQ {
+}
+
+message SC_ARENA_PLAY_READY_ACK {
+  enum eResult {
+    SUCCESS = 1;
+    FAIL = 2;
+  }
+  required .LIN.SC_ARENA_PLAY_READY_ACK.eResult result = 1;
+}
+
+message SC_SCRIPT_PRESENTATION_NOTI {
+  enum eType {
+    ArenaMapSelect = 1;
+  }
+  required .LIN.SC_SCRIPT_PRESENTATION_NOTI.eType type = 1;
+  repeated int32 args = 2;
+}

@@ -1,0 +1,1117 @@
+// Dependency descriptor extracted from mjlin_loaded_code_00400000_0180D000.bin; NOT original source.
+syntax = "proto2";
+package LIN;
+
+enum BodyPart {
+  NONE = 0;
+  HEAD = 1;
+  TORSO = 2;
+  SHIRT = 4;
+  CLOAK = 8;
+  LEG = 16;
+  FOOT = 32;
+  L_HAND = 64;
+  R_HAND = 128;
+  L_HOLD = 256;
+  R_HOLD = 512;
+  L_FINGER = 1024;
+  R_FINGER = 2048;
+  NECK = 4096;
+  WAIST = 8192;
+  EAR = 16384;
+  R_SHOULDER = 32768;
+  L_SHOULDER = 65536;
+  BACK = 131072;
+  R_WRIST = 262144;
+  L_WRIST = 524288;
+  RUNE = 1048576;
+  EXT_SLOTS = 2097152;
+  BP_HERALDRY = 4194304;
+  BP_PAULDRON = 8388608;
+  BP_INSIGNIA = 16777216;
+  BODYPART_ALL = -1;
+}
+
+enum Material {
+  LIQUID = 1;
+  WAX = 2;
+  VEGGY = 3;
+  FLESH = 4;
+  PAPER = 5;
+  CLOTH = 6;
+  LEATHER = 7;
+  WOOD = 8;
+  BONE = 9;
+  DRAGON_HIDE = 10;
+  IRON = 11;
+  METAL = 12;
+  COPPER = 13;
+  SILVER = 14;
+  GOLD = 15;
+  PLATINUM = 16;
+  MITHRIL = 17;
+  PLASTIC = 18;
+  GLASS = 19;
+  GEMSTONE = 20;
+  MINERAL = 21;
+  ORIHARUKON = 22;
+}
+
+enum Gender {
+  MALE = 0;
+  FEMALE = 1;
+}
+
+enum CharacterClass {
+  PRINCE = 0;
+  KNIGHT = 1;
+  ELF = 2;
+  MAGICIAN = 3;
+  DARKELF = 4;
+  DRAGON_KNIGHT = 5;
+  ILLUSIONIST = 6;
+  WARRIOR = 7;
+  CLASS_ALL = 255;
+}
+
+enum ExtendedWeaponType {
+  WEAPON_EX_ONEHAND_SWORD = 0;
+  WEAPON_EX_AXE = 1;
+  WEAPON_EX_BOW = 2;
+  WEAPON_EX_SPEAR = 3;
+  WEAPON_EX_STAFF = 4;
+  WEAPON_EX_DAGGER = 5;
+  WEAPON_EX_LARGE_SWORD = 6;
+  WEAPON_EX_DOUBLE_SWORD = 7;
+  WEAPON_EX_CRAW = 8;
+  WEAPON_EX_GAUNTLET = 9;
+  WEAPON_EX_CHAIN_SWORD = 10;
+  WEAPON_EX_DOUBLE_AXE = 11;
+  WEAPON_EX_KIRINGKU = 12;
+  WEAPON_EX_NOT_EQUIPPED = 13;
+}
+
+enum eNpcCategory {
+  UNKNOWN = -1;
+  DOPPELGANGER = 126;
+}
+
+enum SpellCategory {
+  SPELL = 0;
+  SPELL_BUFF = 1;
+  COMPANION_SPELL_BUFF = 2;
+}
+
+enum eArenaTeamBuildingType {
+  TEAM_BUILDING_NORMAL = 1;
+  TEAM_BUILDING_MATCH = 2;
+  TEAM_BUILDING_BROADCAST = 3;
+}
+
+enum eArenaMapKind {
+  None = 0;
+  _SMALL_MAP_BEGIN = 1;
+  LastShowdown = 1;
+  _SMALL_MAP_END = 1;
+  _MIDDLE_MAP_BEGIN = 11;
+  ArenaMatch = 11;
+  WarSquare = 12;
+  WarSquare2 = 13;
+  BattleHunter = 14;
+  ArenaMatch_LFC = 15;
+  WarSquare_LFC = 16;
+  WarSquare_LFC1 = 17;
+  WarSquare_LFC2 = 18;
+  WarSquare_LFC3 = 19;
+  WarSquare_LFC4 = 20;
+  WarSquare_LFC5 = 21;
+  BreakingTower = 22;
+  BreakingTower_LFC = 23;
+  LastShowdown_LFC = 24;
+  _MIDDLE_MAP_END = 24;
+  _INSTANCE_DUNGEON_BEGIN = 201;
+  OrimLab_Minor = 201;
+  OrimLab_Normal = 202;
+  OrimLab_Major = 203;
+  _INSTANCE_DUNGEON_END = 203;
+}
+
+enum eArenaGambleType {
+  GAMBLE_NONE = 0;
+  GAMBLE_ADENA_100K = 1;
+}
+
+enum eArenaTeam {
+  NEUTRAL_PASSIVE = -2;
+  NEUTRAL_HOSTILE = -1;
+  TEAM_NONE = 0;
+  TEAM_A = 1;
+  TEAM_B = 2;
+  TEAM_C = 3;
+}
+
+enum eDistributionType {
+  AUTO_DISTRIBUTION = 1;
+  GET_PRIORITY = 2;
+}
+
+enum eDungeonType {
+  UNDEFINED = 0;
+  DEFENCE_TYPE = 1;
+  DUNGEON_TYPE = 2;
+}
+
+enum eMonsterBookV2RewardGrade {
+  RG_NORMAL = 1;
+  RG_DRAGON = 2;
+  RG_HIGH_DRAGON = 3;
+}
+
+enum eMonsterBookV2BonusRewardGrade {
+  BRG_REBEL = 1;
+  BRG_HERO = 2;
+}
+
+enum eMonsterBookV2NPCGrade {
+  NG_NORMAL = 1;
+  NG_RARE = 2;
+  NG_BOSS = 3;
+}
+
+enum eMonsterBookV2DeckDifficulty {
+  DD_EASY = 1;
+  DD_NORMAL = 2;
+  DD_HARD = 3;
+}
+
+enum eMonsterBookV2DeckState {
+  DS_IN_PROGRESS = 1;
+  DS_REQUEST_COMPLETE = 2;
+  DS_COMPLETED = 3;
+  DS_REQUEST_REWARD = 4;
+  DS_REWARDED = 5;
+}
+
+enum eMonsterBookV2RewardConnective {
+  And = 1;
+  Or = 2;
+}
+
+enum eMonsterBookV2RewardType {
+  BaseReward = 1;
+  ExtraReward = 2;
+}
+
+message ElementalResistance {
+  required int32 fire = 1;
+  required int32 water = 2;
+  required int32 air = 3;
+  required int32 earth = 4;
+}
+
+message RegionT {
+  optional uint32 OriginalMapID = 1;
+  optional uint32 SX = 2 [default = 0];
+  optional uint32 SY = 3 [default = 0];
+  optional uint32 EX = 4 [default = 0];
+  optional uint32 EY = 5 [default = 0];
+  optional uint32 MapID = 10;
+}
+
+message CommonBonusDescription {
+  required string name = 1;
+  required uint32 enum_desc = 2;
+  repeated string value = 3;
+}
+
+message CommonItemInfo {
+  enum eItemCategory {
+    WEAPON = 1;
+    ARMOR = 19;
+    FOOD = 21;
+    LIGHT = 22;
+    ITEM = 23;
+    POTION = 1000;
+    POTION_HEAL = 1001;
+    SCROLL_TELEPORT_TOWN = 1002;
+    SCROLL_TELEPORT_HOME = 1003;
+    SCROLL = 1004;
+    ARMOR_SERIES = 1005;
+    ARMOR_SERIES_MAIN = 1006;
+    WAND_CALL_LIGHTNING = 1007;
+    LUCKY_BAG = 1008;
+    POTION_MANA = 1009;
+    ARROW = 1010;
+  }
+  message ArmorSeriesInfo {
+    required uint32 series_number = 1;
+    required bool is_main = 2;
+    repeated .LIN.CommonBonusDescription series_bonus_list = 3;
+    optional int32 series_part = 4;
+  }
+  required uint32 name_id = 1;
+  optional uint32 icon_id = 2;
+  optional uint32 sprite_id = 3;
+  optional string desc = 4;
+  optional string real_desc = 5;
+  optional .LIN.Material material = 6;
+  optional uint32 weight_1000ea = 7;
+  optional uint32 level_limit_min = 8;
+  optional uint32 level_limit_max = 9;
+  repeated .LIN.CharacterClass class_permit = 10;
+  repeated .LIN.CommonBonusDescription equip_bonus_list = 11;
+  optional uint32 interaction_type = 12;
+  optional .LIN.CommonItemInfo.eItemCategory item_category = 19;
+  optional .LIN.BodyPart body_part = 20;
+  optional uint32 ac = 21;
+  optional .LIN.ExtendedWeaponType extended_weapon_type = 30;
+  optional uint32 large_damage = 31;
+  optional uint32 small_damage = 32;
+  optional uint32 hit_bonus = 33;
+  optional uint32 damage_bonus = 34;
+  optional .LIN.CommonItemInfo.ArmorSeriesInfo armor_series_info = 40;
+  optional int32 cost = 41;
+  optional bool can_set_mage_enchant = 42;
+  optional bool merge = 43;
+  optional bool pss_event_item = 44;
+}
+
+message CommonNPCInfo {
+  enum eTendency {
+    NEUTRAL = 0;
+    PASSIVE = 1;
+    AGGRESSIVE = 2;
+  }
+  message DropItemT {
+    required uint32 name_id = 1;
+    optional int32 bless = 2;
+  }
+  required uint32 class_id = 1;
+  optional uint32 sprite_id = 2;
+  optional string desc = 3;
+  optional int32 level = 4;
+  optional int32 ac = 5;
+  optional int32 hp = 6;
+  optional int32 mp = 7;
+  optional uint32 dex = 8;
+  optional uint32 str = 9;
+  optional uint32 int = 10;
+  optional uint32 wis = 11;
+  optional uint32 con = 12;
+  optional uint32 cha = 13;
+  optional int32 mr = 14;
+  optional int32 magic_level = 15;
+  optional int32 magic_bonus = 16;
+  optional int32 magic_evasion = 17;
+  optional .LIN.ElementalResistance elemental_resistance = 18;
+  optional int32 alignment = 19;
+  optional bool big = 20;
+  repeated .LIN.CommonNPCInfo.DropItemT drop_items = 21;
+  optional .LIN.CommonNPCInfo.eTendency tendency = 22;
+  optional int32 category = 23;
+}
+
+message CompanionSpellBuff {
+  optional int32 on_icon_id = 1;
+  optional int32 off_icon_id = 2;
+  optional int32 icon_priority = 3;
+  optional int32 tooltip_str_id = 4;
+  optional int32 new_str_id = 5;
+  optional int32 end_str_id = 6;
+  optional int32 is_good = 7;
+  optional int32 duration_show_type = 8;
+}
+
+message CommonSpellInfo {
+  required uint32 spell_id = 1;
+  optional .LIN.SpellCategory spell_category = 2 [default = SPELL];
+  optional int32 on_icon_id = 3 [default = 0];
+  optional int32 off_icon_id = 4 [default = 0];
+  optional int32 duration = 6 [default = 0];
+  optional uint32 tooltip_str_id = 7 [default = 0];
+  repeated .LIN.CommonBonusDescription spell_bonus_list = 8;
+  optional .LIN.CompanionSpellBuff companion_spell_buff = 9;
+}
+
+message JsonGameData {
+  required uint32 key = 1;
+  required string value = 2;
+}
+
+message GameData {
+  required uint32 key = 1;
+  required bytes value = 2;
+}
+
+message GameDataFile {
+  repeated .LIN.JsonGameData json_list = 1;
+  repeated .LIN.GameData bin_list = 2;
+}
+
+message RewardT {
+  enum eType {
+    ITEM = 1;
+    EXP = 2;
+    SPELL_BUFF = 3;
+    AUTO_USE_ITEM = 4;
+    BUFF_STATUE = 5;
+  }
+  required .LIN.RewardT.eType Type = 1;
+  optional uint32 AssetID = 2 [default = 0];
+  optional uint64 Amount = 3 [default = 1];
+  optional bool HighlightReward = 4;
+  optional int32 WorldNumber = 5;
+  optional int32 X = 6;
+  optional int32 Y = 7;
+  optional int32 Direction = 8;
+  optional int32 BuffDuration = 9;
+  optional int32 BuffGroupIndex = 10;
+  optional string StatueHtml = 11;
+  optional string StatueObjectName = 12;
+}
+
+message RewardListT {
+  repeated .LIN.RewardT Reward = 1;
+}
+
+message OptionalRewardT {
+  optional uint32 Count = 1 [default = 1];
+  repeated .LIN.RewardT Reward = 2;
+}
+
+message QuestListT {
+  repeated .LIN.QuestT Quest = 1;
+  repeated .LIN.PortraitT Portrait = 2;
+}
+
+message PortraitT {
+  required uint32 AssetID = 1;
+  required string Desc = 2;
+}
+
+message QuestT {
+  enum ObjectiveTypeT {
+    KILL_NPC = 1;
+    COLLECT_ITEM = 2;
+    REACH_LEVEL = 3;
+    TUTORIAL_BLOOD_PLEDGE_JOIN = 4;
+    TUTORIAL_USE_ITEM = 5;
+    DESTROY_NOVICE_SIEGE_DOOR = 6;
+    DESTROY_NOVICE_SIEGE_TOWER = 7;
+    TUTORIAL_ENCHANT_MAX = 8;
+    TUTORIAL_BLOOD_PLEDGE_CREATE = 9;
+    QUEST_REVEAL = 10;
+    VIEW_DIALOGUE = 11;
+    START_PSS = 12;
+  }
+  message DescriptionT {
+    message DialogueListT {
+      repeated .LIN.QuestT.DescriptionT.DialogueT Dialogue = 1;
+    }
+    message DialogueT {
+      optional uint32 Text = 1;
+      optional bytes Sound = 2;
+      optional uint32 PortraitAssetID = 3;
+      optional bool ShowQuestWindowAndHighlightCloseButton = 4;
+      optional bool ShowQuestWindowAndHighlightRewardButton = 5;
+      optional bool HighlightProgressWindow = 6;
+    }
+    optional uint32 Title = 1;
+    optional uint32 BriefText = 2;
+    optional uint32 FullText = 3;
+    optional .LIN.QuestT.DescriptionT.DialogueListT StartDialogueList = 4;
+    optional .LIN.QuestT.DescriptionT.DialogueListT CompleteDialogueList = 5;
+    optional .LIN.QuestT.DescriptionT.DialogueListT FinishDialogueList = 6;
+  }
+  message PrerequisiteT {
+    enum eConnective {
+      And = 1;
+      Or = 2;
+    }
+    enum eQuestCondition {
+      NOT_REVEALED = 1;
+      FINISHED = 5;
+    }
+    enum eBloodPledgeStatus {
+      HAS_BLOOD_PLEDGE = 1;
+      NO_BLOOD_PLEDGE = 2;
+    }
+    message LevelT {
+      optional uint32 Minimum = 1;
+      optional uint32 Maximum = 2;
+    }
+    message CharacterClassListT {
+      repeated .LIN.CharacterClass Classes = 1;
+    }
+    message RequiredQuestT {
+      repeated uint32 IDs = 1;
+      optional .LIN.QuestT.PrerequisiteT.eConnective Connective = 2 [default = And];
+      optional .LIN.QuestT.PrerequisiteT.eQuestCondition Condition = 3 [default = FINISHED];
+    }
+    message BloodPledgeT {
+      optional .LIN.QuestT.PrerequisiteT.eBloodPledgeStatus Status = 1 [default = HAS_BLOOD_PLEDGE];
+    }
+    optional .LIN.QuestT.PrerequisiteT.LevelT Level = 1;
+    optional .LIN.QuestT.PrerequisiteT.CharacterClassListT CharacterClass = 2;
+    optional .LIN.QuestT.PrerequisiteT.RequiredQuestT Quest = 3;
+    optional .LIN.RegionT Region = 4;
+    optional .LIN.QuestT.PrerequisiteT.BloodPledgeT BloodPledge = 5;
+  }
+  message ObjectiveListT {
+    repeated .LIN.QuestT.ObjectiveT Objective = 1;
+  }
+  message ObjectiveT {
+    required uint32 ID = 1;
+    optional uint32 Desc = 2;
+    required .LIN.QuestT.ObjectiveTypeT Type = 3;
+    optional uint32 AssetID = 4;
+    optional uint32 RequiredQuantity = 5;
+  }
+  message TeleportT {
+    optional uint32 Cost = 1;
+    required uint32 MapID = 2;
+    required uint32 X = 3;
+    required uint32 Y = 4;
+    optional uint32 QuestionText = 5;
+    optional bool NoTeleport = 6;
+  }
+  required uint32 ID = 1;
+  optional bool AutoActive = 2;
+  optional .LIN.QuestT.DescriptionT Description = 3;
+  optional .LIN.QuestT.PrerequisiteT Prerequisite = 4;
+  optional .LIN.QuestT.ObjectiveListT ObjectiveList = 5;
+  optional .LIN.RewardListT AdvanceRewardList = 6;
+  optional .LIN.RewardListT RewardList = 7;
+  optional .LIN.OptionalRewardT OptionalRewardList = 8;
+  optional .LIN.QuestT.TeleportT Teleport = 9;
+  optional bool Obsolete = 10;
+}
+
+message LineageAchievement {
+  message CriteriaT {
+    enum eCriteriaType {
+      KILL_NPC = 1;
+    }
+    enum eProgressType {
+      SET = 1;
+      ACCUMULATE = 2;
+      HIGHEST = 3;
+    }
+    enum eShareMode {
+      NONE = 1;
+      ACTOR = 2;
+    }
+    message RegionListT {
+      repeated .LIN.RegionT Region = 6;
+    }
+    required uint32 CriteriaID = 1;
+    required .LIN.LineageAchievement.CriteriaT.eCriteriaType CriteriaType = 2;
+    optional .LIN.LineageAchievement.CriteriaT.eProgressType ProgressType = 3 [default = ACCUMULATE];
+    repeated uint32 AssetID = 4;
+    optional .LIN.LineageAchievement.CriteriaT.RegionListT RegionList = 5;
+    optional uint32 CompletionAchievementID = 6 [default = 0];
+    optional .LIN.LineageAchievement.CriteriaT.eShareMode ShareMode = 7 [default = NONE];
+    optional bool Obsolete = 8 [default = false];
+  }
+  message AchievementCriteriaT {
+    enum eDisplayType {
+      PROGRESS_BAR = 1;
+    }
+    required uint32 CriteriaID = 1;
+    required uint64 RequiredQuantity = 2;
+    optional .LIN.LineageAchievement.AchievementCriteriaT.eDisplayType DisplayType = 3 [default = PROGRESS_BAR];
+  }
+  message AchievementCriteriaListT {
+    repeated .LIN.LineageAchievement.AchievementCriteriaT AchievementCriteria = 1;
+  }
+  message AchievementT {
+    enum eBlessCode {
+      BLESSED = 0;
+      NORMAL = 1;
+      CURSED = 2;
+    }
+    enum eAchievementCategory {
+      GENERAL = 1;
+      MONSTER_DEX = 2;
+    }
+    message TeleportT {
+      optional uint32 CostNameID = 1 [default = 7];
+      optional .LIN.LineageAchievement.AchievementT.eBlessCode BlessCode = 2 [default = NORMAL];
+      required uint32 Cost = 3;
+      required uint32 MapID = 4;
+      required uint32 SX = 5;
+      required uint32 SY = 6;
+      required uint32 EX = 7;
+      required uint32 EY = 8;
+    }
+    message MonsterDexDisplayT {
+      required uint32 DelegateNPCClassID = 1;
+      repeated uint32 LocationID = 2;
+      optional uint32 ImageID = 3 [default = 0];
+      optional int32 SpriteCenterX = 4 [default = 0];
+      optional int32 SpriteCenterY = 5 [default = 0];
+      optional uint32 FrameID = 6 [default = 11858];
+      optional uint32 DescriptionID = 7 [default = 0];
+      optional uint32 ActionCode = 8 [default = 3];
+      optional uint32 GradeID = 9 [default = 0];
+      optional uint32 Number = 10 [default = 0];
+      repeated uint32 HighLightNPCClassID = 11;
+    }
+    message DisplayT {
+      optional uint32 IconID = 1 [default = 0];
+      optional uint32 TitleID = 2 [default = 0];
+      optional uint32 DescriptionID = 3 [default = 0];
+    }
+    message MiniMapT {
+      required uint32 MapID = 1;
+      required uint32 CenterX = 2;
+      required uint32 CenterY = 3;
+    }
+    required uint32 AchievementID = 1;
+    required .LIN.LineageAchievement.AchievementT.eAchievementCategory Category = 2;
+    required .LIN.LineageAchievement.AchievementCriteriaListT AchievementCriteriaList = 3;
+    optional uint32 ReplacementID = 4 [default = 0];
+    optional .LIN.RewardListT RewardList = 5;
+    optional .LIN.OptionalRewardT OptionalRewardList = 6;
+    optional .LIN.LineageAchievement.AchievementT.TeleportT Teleport = 7;
+    optional .LIN.LineageAchievement.AchievementT.DisplayT Display = 8;
+    optional .LIN.LineageAchievement.AchievementT.MonsterDexDisplayT MonsterDexDisplay = 9;
+    optional bool Obsolete = 10 [default = false];
+    optional .LIN.LineageAchievement.AchievementT.MiniMapT MiniMap = 11;
+  }
+  message CriteriaListT {
+    repeated .LIN.LineageAchievement.CriteriaT Criteria = 1;
+  }
+  message AchievementListT {
+    repeated .LIN.LineageAchievement.AchievementT Achievement = 1;
+  }
+  required .LIN.LineageAchievement.CriteriaListT CriteriaList = 1;
+  required .LIN.LineageAchievement.AchievementListT AchievementList = 2;
+}
+
+message ArenaBuildInfo {
+  required bytes title = 1;
+  required .LIN.eArenaTeamBuildingType team_building_type = 2;
+  required uint32 min_level = 3;
+  required uint32 max_level = 4;
+  repeated .LIN.CharacterClass allow_class = 5;
+  required .LIN.eArenaGambleType gamble = 6;
+  required bool closed = 7;
+  optional string password = 8;
+  required bool observe = 9;
+  required .LIN.eArenaMapKind map_kind = 10;
+  required bool allow_all_server = 11;
+  repeated uint32 allow_server = 12;
+}
+
+message ArenaRoomInfo {
+  message ArenaRecord {
+    enum eArenaRankType {
+      RANK_NONE = 0;
+      RANK_SOLO = 1;
+      RANK_TEAM = 2;
+    }
+    required .LIN.ArenaRoomInfo.ArenaRecord.eArenaRankType type = 1;
+    required uint32 total = 2;
+    required uint32 win = 3;
+    required uint32 draw = 4;
+    required uint32 lose = 5;
+    required uint32 win_rate = 6;
+  }
+  message MemberInfo {
+    required .LIN.ArenaUserInfo userInfo = 1;
+    repeated .LIN.ArenaRoomInfo.ArenaRecord record = 2;
+  }
+  message GameInfo {
+    required uint32 min_level = 1;
+    required uint32 max_level = 2;
+    repeated .LIN.CharacterClass allow_class = 3;
+    required bool allow_all_server = 4;
+    repeated uint32 allow_server = 5;
+  }
+  message Base {
+    required uint32 room_id = 1;
+    required bytes title = 2;
+    required uint32 member_count_cur = 3;
+    required uint32 member_count_max = 4;
+    required uint32 member_count_min = 5;
+    required .LIN.eArenaMapKind map_kind = 6;
+    required bool closed = 7;
+    required bool observe = 8;
+    required .LIN.eArenaGambleType gamble = 9;
+    required .LIN.eArenaTeamBuildingType team_building_type = 10;
+    required .LIN.ArenaRoomInfo.GameInfo game = 11;
+    optional bool is_playing = 12;
+    optional bool is_locked = 13;
+  }
+  message Extend {
+    repeated .LIN.ArenaRoomInfo.MemberInfo member = 1;
+  }
+  required .LIN.ArenaRoomInfo.Base base = 1;
+  optional .LIN.ArenaRoomInfo.Extend extend = 2;
+}
+
+message ArenaUserInfo {
+  enum eRole {
+    Player = 1;
+    Observer = 2;
+    BuilderCaster = 3;
+  }
+  required int64 arena_char_id = 1;
+  required uint32 server_id = 2;
+  required bytes character_name = 3;
+  required .LIN.CharacterClass character_class = 4;
+  required .LIN.Gender gender = 5;
+  required .LIN.eArenaTeam team_id = 6 [default = TEAM_A];
+  required .LIN.ArenaUserInfo.eRole role = 7 [default = Player];
+  required bool room_owner = 8 [default = false];
+  required bool ready = 9 [default = false];
+  required bool in_room = 10 [default = false];
+  optional uint32 order = 11;
+  optional int32 enter_count = 12;
+}
+
+message ArenaUserRecord {
+  enum eArenaRankType {
+    RANK_NONE = 0;
+    RANK_SOLO = 1;
+    RANK_TEAM = 2;
+  }
+  required .LIN.ArenaUserRecord.eArenaRankType type = 1;
+  required uint32 total = 2;
+  required uint32 win = 3;
+  required uint32 draw = 4;
+  required uint32 lose = 5;
+  required uint32 win_rate = 6;
+}
+
+message ArenaMemberInfo {
+  required .LIN.ArenaUserInfo userInfo = 1;
+  repeated .LIN.ArenaUserRecord record = 2;
+}
+
+message ArenaUserResult {
+  enum eArenaResultGrade {
+    MVP = 1;
+    BEST_ATTACKER = 2;
+    BEST_DEFENDER = 3;
+    BEST_HEALER = 4;
+    BEST_POINTER = 5;
+    NONE = 6;
+  }
+  required int64 arena_char_id = 1;
+  required .LIN.ArenaUserResult.eArenaResultGrade grade = 2;
+  required uint32 kill = 3;
+  required uint32 attack = 4;
+  required uint32 defence = 5;
+  required uint32 heal = 6;
+}
+
+message ArenaTeamResult {
+  enum eOutcome {
+    eRESULT_DRAW = 0;
+    eRESULT_VICTORY = 1;
+    eRESULT_DEFEAT = 2;
+  }
+  required .LIN.eArenaTeam team_id = 1;
+  required .LIN.ArenaTeamResult.eOutcome outcome = 2;
+  required uint32 cheeringmessage_count = 3;
+  repeated .LIN.ArenaUserResult user_result = 4;
+  required uint32 kill_count = 5;
+}
+
+message ArenaResult {
+  repeated .LIN.ArenaTeamResult team_result = 1;
+  required .LIN.eArenaGambleType gamble = 2;
+}
+
+message IndunEnterCondition {
+  optional uint32 fee = 1;
+  optional uint32 key_item_id = 2;
+}
+
+message IndunBuildInfo {
+  required bytes title = 1;
+  required uint32 min_level = 2;
+  required uint32 fee = 3;
+  required uint32 key_item_id = 4;
+  required .LIN.eDistributionType distribution_type = 5;
+  required bool closed = 6;
+  required uint32 max_player = 7;
+  optional string password = 8;
+  required .LIN.eArenaMapKind map_kind = 9;
+  optional int32 server_no = 10;
+}
+
+message IndunRoomInfo {
+  required uint32 room_id = 1;
+  required bytes title = 2;
+  required uint32 member_count_cur = 3;
+  required uint32 member_count_max = 4;
+  required uint32 member_count_min = 5;
+  required .LIN.eArenaMapKind map_kind = 6;
+  required bool closed = 7;
+  required uint32 min_level = 8;
+  required uint32 fee = 9;
+  required .LIN.eDistributionType distribution_type = 10;
+  optional bool is_playing = 11;
+  optional bool is_locked = 12;
+}
+
+message IndunRoomDetailInfo {
+  required uint32 min_level = 1;
+  required .LIN.eDungeonType dungeon_type = 2;
+  required uint32 max_player = 3;
+  required .LIN.eDistributionType distribution_type = 4;
+  required .LIN.IndunEnterCondition condition = 5;
+  required .LIN.eArenaMapKind map_kind = 6;
+}
+
+message IndunNotiInfo {
+  required .LIN.eArenaMapKind map_kind = 1;
+  required uint32 count = 2;
+}
+
+message IndunInfoForClient {
+  required int32 keyItemId = 1;
+  required int32 minPlayer = 2;
+  required int32 maxPlayer = 3;
+  required int32 minAdena = 4;
+  required int32 maxAdena = 5;
+  repeated int32 minLevel = 6;
+}
+
+message ArmorElementalEnchantBonus {
+  message EnchantBonus {
+    required uint32 enchant = 1;
+    optional uint32 fr = 2;
+    optional uint32 wr = 3;
+    optional uint32 ar = 4;
+    optional uint32 er = 5;
+  }
+  required uint32 type = 1;
+  repeated .LIN.ArmorElementalEnchantBonus.EnchantBonus enchant_bonus_list = 2;
+}
+
+message MapList {
+  enum eWorldType {
+    Main = 1;
+    Battle = 2;
+    Arena = 3;
+    Dungeon = 4;
+  }
+  message MapInfoT {
+    required uint32 Number = 1;
+    required .LIN.MapList.eWorldType WorldType = 2;
+    optional uint32 CopyStartNumber = 3;
+    optional uint32 CopyCount = 4 [default = 1];
+    optional bool IsUnderground = 5;
+    optional bool IsNPCForbidden = 6;
+    optional bool IsDogAllowed = 7;
+    optional bool IsSafeWorld = 8;
+    optional uint32 GroupID = 9;
+    optional string NativeScript = 10;
+    optional bool IsNoItemUse = 11 [default = false];
+    optional bool IsNoSpellUse = 12 [default = false];
+    optional uint32 dmgModiPc2Npc = 13 [default = 100];
+    optional uint32 dmgModiNpc2Pc = 14 [default = 100];
+    optional bool equipChange = 15 [default = true];
+    optional bool forceLoad = 16 [default = false];
+    optional .LIN.RegionT GhostRegion = 17;
+    optional int32 contentEndKillAllNpc_ik = 18 [default = 0];
+    optional string LuaScript = 19;
+    optional bool UITeleport = 20 [default = false];
+  }
+  message MapGroupT {
+    repeated .LIN.MapList.MapInfoT Map = 1;
+  }
+  repeated .LIN.MapList.MapInfoT Map = 1;
+  repeated .LIN.MapList.MapGroupT MapGroup = 2;
+}
+
+message AutoHuntHelperNPCInfo {
+  message NPC {
+    enum eCategory {
+      Checker = 1;
+      Merchant = 2;
+      Teleporter = 3;
+      Restorer = 4;
+      Cook = 5;
+      BuffShop = 6;
+    }
+    required .LIN.AutoHuntHelperNPCInfo.NPC.eCategory category = 1;
+    required int32 world_number = 2;
+    required int32 loc_x = 3;
+    required int32 loc_y = 4;
+    optional string desc = 5;
+    optional int32 entermap_id = 6;
+    optional int32 lev = 7;
+  }
+  repeated .LIN.AutoHuntHelperNPCInfo.NPC npc_list = 1;
+}
+
+message CompanionT {
+  enum eStatType {
+    STR = 0;
+    CON = 1;
+    INT_ = 2;
+  }
+  enum eCommand {
+    TM_Aggressive = 2;
+    TM_Defensive = 3;
+    TM_GetItem = 6;
+    TM_Attack = 7;
+    TM_PullBack = 9;
+    Dismiss = 100;
+    Joke = 101;
+    Happy = 102;
+  }
+  enum eCategory {
+    FIERCE_ANIMAL = 1;
+    DEVINE_BEAST = 2;
+    PET = 3;
+    WILD = 4;
+    DOG_FIGHT = 5;
+  }
+  enum eElement {
+    NONE = 0;
+    FIRE = 1;
+    WATER = 2;
+    AIR = 3;
+    EARTH = 4;
+    LIGHT = 5;
+  }
+  message StatT {
+    message BaseStatBonusT {
+      required int32 id = 1;
+      required .LIN.CompanionT.eStatType statType = 2;
+      required int32 value = 3;
+      optional int32 meleeDmg = 4;
+      optional int32 meleeHit = 5;
+      optional int32 regenHP = 6;
+      optional int32 AC = 7;
+      optional int32 spellDmg = 8;
+      optional int32 spellHit = 9;
+    }
+    repeated .LIN.CompanionT.StatT.BaseStatBonusT BaseStatBonus = 1;
+  }
+  message SkillEnchantTierT {
+    message EnchantCostT {
+      repeated uint32 friendship = 1;
+      optional uint32 catalystItem = 2;
+    }
+    message OpenCostT {
+      required uint32 level = 1;
+      optional uint32 minEnchant = 2;
+      optional uint32 friendship = 3;
+      optional uint32 adena = 4;
+    }
+    required uint32 tier = 1;
+    required .LIN.CompanionT.SkillEnchantTierT.EnchantCostT EnchantCost = 2;
+    required .LIN.CompanionT.SkillEnchantTierT.OpenCostT OpenCost = 3;
+  }
+  message WildSkillT {
+    message SkillT {
+      message EnchantBonusT {
+        required int32 value = 1;
+        optional int32 meleeDmg = 2;
+        optional int32 meleeHit = 3;
+        optional double meleeCriHit = 4;
+        optional int32 ignoreReduction = 5;
+        optional double bloodSuckHit = 6;
+        optional int32 bloodSuckHeal = 7;
+        optional int32 regenHP = 8;
+        optional int32 AC = 9;
+        optional int32 MR = 10;
+        optional int32 potionHP = 11;
+        optional int32 dmgReduction = 12;
+        optional int32 maxHP = 13;
+        optional int32 spellDmgMulti = 14;
+        optional int32 spellHit = 15;
+        optional double moveDelayReduce = 16;
+        optional double attackDelayReduce = 17;
+        optional int32 fireElementalDmg = 18;
+        optional int32 waterElementalDmg = 19;
+        optional int32 airElementalDmg = 20;
+        optional int32 earthElementalDmg = 21;
+        optional int32 lightElementalDmg = 22;
+        optional int32 comboDmgMulti = 23;
+        optional int32 spellDmgAdd = 24;
+      }
+      required int32 id = 1;
+      required int32 descNum = 2;
+      repeated .LIN.CompanionT.WildSkillT.SkillT.EnchantBonusT EnchantBonus = 3;
+    }
+    repeated .LIN.CompanionT.WildSkillT.SkillT Skill = 1;
+  }
+  message ClassInfoT {
+    message ClassT {
+      message SkillT {
+        required uint32 tier = 1;
+        repeated uint32 skillId = 2;
+      }
+      required string class = 1;
+      required uint32 classId = 2;
+      required .LIN.CompanionT.eCategory category = 3;
+      required .LIN.CompanionT.eElement element = 5;
+      repeated .LIN.CompanionT.ClassInfoT.ClassT.SkillT Skill = 6;
+    }
+    repeated .LIN.CompanionT.ClassInfoT.ClassT Class = 1;
+  }
+}
+
+message Point {
+  required uint32 x = 1;
+  required uint32 y = 2;
+}
+
+message MasteryUnitT {
+  message SlotEnchantT {
+    required int32 slot_id = 1;
+    required int32 enchant = 2;
+  }
+  message RouletteSlotT {
+    required int32 slot_id = 1;
+    required int32 bonus_id = 2;
+  }
+  required int32 weapon_type = 1;
+  optional int32 mastery_point = 2;
+  repeated .LIN.MasteryUnitT.SlotEnchantT slot_enchant_info = 3;
+  repeated .LIN.MasteryUnitT.RouletteSlotT roulette_slot_info = 4;
+}
+
+message MasteryGaugeT {
+  required int32 gauge = 1;
+  optional int64 last_charge_unix_time = 2;
+}
+
+message WeaponMasteryT {
+  repeated .LIN.MasteryUnitT mastery_unit = 1;
+}
+
+message XmlMasteryUnitT {
+  message XmlEnchantBonusT {
+    optional int32 bonusId = 1;
+    required .LIN.Bonus BonusOption = 2;
+  }
+  message XmlInputItemT {
+    required int32 nameId = 1;
+    required int32 count = 2;
+    required int32 inputSlot = 3;
+  }
+  message XmlMasterySlotT {
+    message XmlEnchantInfoT {
+      required int32 enchantValue = 1;
+      required int32 inputMasteryCost = 2;
+      repeated .LIN.XmlMasteryUnitT.XmlInputItemT InputItem = 3;
+      required .LIN.XmlMasteryUnitT.XmlEnchantBonusT EnchantBonus = 4;
+    }
+    required int32 slotId = 1;
+    required int32 slotOpeningCost = 2;
+    required int32 slotOpeningLevel = 3;
+    optional int32 slotOpeningPrevEnchant = 4;
+    required int32 slotEnchantLimit = 5;
+    repeated .LIN.XmlMasteryUnitT.XmlMasterySlotT.XmlEnchantInfoT SlotEnchantInfo = 6;
+  }
+  message XmlRouletteSlotInfoT {
+    message XmlRouletteSlotT {
+      required int32 slotId = 1;
+      required int32 slotOpeningMasteryEnchant = 2;
+      required int32 slotOpeningCost = 3;
+      repeated .LIN.XmlMasteryUnitT.XmlEnchantBonusT RouletteBonus = 4;
+    }
+    required int32 inputMasteryCost = 1;
+    repeated .LIN.XmlMasteryUnitT.XmlInputItemT InputItem = 2;
+    repeated .LIN.XmlMasteryUnitT.XmlRouletteSlotInfoT.XmlRouletteSlotT RouletteSlot = 3;
+  }
+  required .LIN.ExtendedWeaponType weaponType = 1;
+  repeated uint32 availableClass = 2;
+  repeated .LIN.XmlMasteryUnitT.XmlMasterySlotT MasterySlot = 3;
+  required .LIN.XmlMasteryUnitT.XmlRouletteSlotInfoT RouletteSlotInfo = 4;
+}
+
+message Bonus {
+  optional string dmgBonus = 1;
+  optional string missileDmgBonus = 2;
+  optional string spBonus = 3;
+  optional string hitBonus = 4;
+  optional string projBonus = 5;
+  optional string magicHitBonus = 6;
+  optional string meleeCriticalProb = 7;
+  optional string rangeCriticalProb = 8;
+  optional string magicCriticalBonus = 9;
+  optional string pierceAll = 10;
+  optional string sdamBonus = 11;
+  optional string ldamBonus = 12;
+  optional string decreaseTargetDG = 13;
+  optional string decreaseTargetER = 14;
+  optional string doubleAttackProb = 15;
+  optional string exposureWeakPointProb = 16;
+  optional string attackSpeedBonus = 17;
+  optional string hpBonus = 18;
+  optional string mpBonus = 19;
+  optional string RBonusAbility = 20;
+  optional string RBonusSpirit = 21;
+  optional string RBonusDragonSpell = 22;
+  optional string RBonusFear = 23;
+  optional string RBonusAllResistance = 24;
+  optional string expBonus = 25;
+  optional string restExpBonus = 26;
+  optional string pvpDmgBonus = 27;
+  optional string pvpDmgReductionBonus = 28;
+  optional string magicDmgBonus = 29;
+}
+
+message RaceInfoT {
+  required int32 worldNumber = 1;
+  required int32 raceNumber = 2;
+  required int32 raceKind = 3;
+  required int32 trackId = 4;
+  required int32 bookMakerNpcId = 5;
+}
+
+message RacerInfoT {
+  required int32 racerId = 1;
+  required int32 x = 2;
+  required int32 y = 3;
+  required int32 dir = 4;
+  required int32 laneId = 5;
+}
+
+message RacerMapViewDataT {
+  required .LIN.RacerInfoT racerInfo = 1;
+  required string name = 2;
+  required int32 condition = 3;
+}
+
+message RacerTicketT {
+  required int32 laneId = 1;
+  required string name = 2;
+  required int32 condition = 3;
+  required double winRate = 4;
+  required int32 price = 5;
+  required int32 racerId = 6;
+}
+
+message RaceRankInfoT {
+  required int32 rank = 1;
+  required int32 serverNumber = 2;
+  required string name = 3;
+  required uint32 weeklyPrize = 4;
+}
+
+message CharOnServerInfo {
+  required int32 server_no = 1;
+  required int32 char_nums = 2;
+}
+
+message ServerTrafficInfo {
+  required int32 server_no = 1;
+  required int32 server_traffic = 2;
+}
+
+message Penalty {
+  optional int32 item = 1 [default = 100];
+  optional int32 adena = 2 [default = 100];
+  optional int32 exp = 3 [default = 100];
+}

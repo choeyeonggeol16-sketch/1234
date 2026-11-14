@@ -29,3 +29,10 @@ Source artifacts used for analysis:
 The duplicate `mjlin(1).zip` is byte-identical to `mjlin.zip`. Memory dumps should be checked for credentials/private data before public redistribution.
 
 All addresses are 32-bit virtual addresses from the captured image; complete class lifecycles, behavior transitions and dynamic execution remain subject to verification.
+
+## MainServer 프로토콜 전수 역분석 (2026-11-14)
+
+- [복호화 mjlin에서 추출한 MainServer 프로토콜 종합 보고서](mainsrv_full_20261114/MAINSERVER_PROTOCOL_FULL_REVERSE_20261114.md)
+- [패키지별 11개 proto 복원 + 공용 타입 + 수신 opcode 분기표](mainsrv_full_20261114/)
+
+본 자료는 클라이언트 복호화 코드 기반이며 MainServer 서버 바이너리의 내부 함수/SQL을 입증한 자료가 아닙니다.

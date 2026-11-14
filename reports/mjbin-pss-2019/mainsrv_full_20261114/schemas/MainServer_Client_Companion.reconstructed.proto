@@ -1,0 +1,123 @@
+// Recovered from mjlin_loaded_code_00400000_0180D000.bin, SHA-256 256f7886e98d7d2c573ab76917f78e30dc4f34cb723a002d604602cdb2f6cbdb
+// Source: embedded FileDescriptorProto, NOT NC-authored source file.
+// package/message/field/enum/number/cardinality derived directly from binary descriptor.
+// syntax="proto2" reconstructed from descriptor required/optional semantics.
+syntax = "proto2";
+package LIN;
+
+import "Lineage_CommonDataTypes.proto";
+
+message SC_COMPANION_STATUS_NOTI {
+  required uint32 obj_id = 1;
+  optional bytes name = 2;
+  optional uint32 class_id = 3;
+  optional uint32 level = 4;
+  optional int32 exp = 5;
+  optional uint32 base_max_hp = 6;
+  optional uint32 temp_max_hp = 7;
+  optional uint32 hp = 8;
+  optional uint32 base_str = 9;
+  optional uint32 base_con = 10;
+  optional uint32 base_int = 11;
+  optional uint32 bonus_str = 12;
+  optional uint32 bonus_con = 13;
+  optional uint32 bonus_int = 14;
+  optional uint32 elixir_use_count = 15;
+  optional uint32 remain_stats = 16;
+  optional uint32 temp_str = 17;
+  optional uint32 temp_con = 18;
+  optional uint32 temp_int = 19;
+  optional int32 friend_ship_guage = 20;
+  optional int32 friend_ship_marble = 21;
+  optional bool minus_exp_penalty = 22;
+  optional int32 ac = 30;
+  optional int32 mr = 31;
+  optional double movedelay_reduce = 32;
+  optional double attackdelay_reduce = 33;
+  optional uint32 pvp_dmg_ratio = 34;
+  optional bool is_combo_time = 35;
+}
+
+message CS_COMPANION_NAME_CHANGE_REQ {
+  required bytes desired_name = 1;
+}
+
+message SC_COMPANION_NAME_CHANGE_ACK {
+  enum eResult {
+    Success = 0;
+    SameNameExisted = 1;
+    BadName = 2;
+    SystemError = 3;
+  }
+  required .LIN.SC_COMPANION_NAME_CHANGE_ACK.eResult result = 1;
+  optional bytes new_name = 2;
+}
+
+message CS_COMPANION_STAT_INCREASE_REQ {
+  optional uint32 str = 1;
+  optional uint32 int = 2;
+  optional uint32 con = 3;
+}
+
+message SC_COMPANION_BUFF_NOTI {
+  message Buff {
+    required int32 spell_id = 1;
+    required uint32 duration = 2;
+  }
+  repeated .LIN.SC_COMPANION_BUFF_NOTI.Buff buff_list = 1;
+}
+
+message CS_COMPANION_TM_COMMAND_REQ {
+  required .LIN.CompanionT.eCommand command = 1;
+  optional uint32 target_id = 2;
+}
+
+message SC_COMPANION_SKILL_NOTI {
+  message Skill {
+    required uint32 id = 1;
+    required uint32 enchant = 2;
+  }
+  repeated .LIN.SC_COMPANION_SKILL_NOTI.Skill skills = 1;
+}
+
+message CS_COMPANION_SKILL_NEXT_TIER_OPEN_REQ {
+}
+
+message CS_COMPANION_SKILL_ENCHANT_REQ {
+  required uint32 skill_id = 1;
+}
+
+message SC_COMPANION_SKILL_ENCHANT_ACK {
+  enum eResult {
+    SUCCESS = 0;
+    FAIL = 1;
+    NOTHING = 2;
+  }
+  required uint32 skill_id = 1;
+  required .LIN.SC_COMPANION_SKILL_ENCHANT_ACK.eResult result = 2;
+}
+
+message SC_COMPANION_COMBAT_DATA_NOTI {
+  required uint32 obj_id = 1;
+  optional int32 melee_hit = 2;
+  optional double melee_cri_hit = 3;
+  optional double melee_cri_server_hit = 4;
+  optional int32 melee_dice_dmg = 5;
+  optional int32 melee_stat_dmg = 6;
+  optional int32 melee_wild_dmg = 7;
+  optional int32 melee_buff_dmg = 8;
+  optional int32 melee_elemental_dmg = 9;
+  optional int32 melee_last_dmg = 10;
+  optional int32 spell_id = 11;
+  optional int32 spell_hit = 12;
+  optional int32 spell_server_hit = 13;
+  optional double spell_cri_hit = 14;
+  optional double spell_cri_server_hit = 15;
+  optional int32 spell_dice_dmg = 16;
+  optional int32 spell_stat_dmg = 17;
+  optional int32 spell_wild_dmg = 18;
+  optional int32 spell_buff_dmg = 19;
+  optional int32 spell_dmg_multi = 20;
+  optional int32 spell_last_dmg = 21;
+  optional int32 total_dmg = 22;
+}

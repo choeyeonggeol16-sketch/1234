@@ -1,0 +1,55 @@
+// Recovered from mjlin_loaded_code_00400000_0180D000.bin, SHA-256 256f7886e98d7d2c573ab76917f78e30dc4f34cb723a002d604602cdb2f6cbdb
+// Source: embedded FileDescriptorProto, NOT NC-authored source file.
+// package/message/field/enum/number/cardinality derived directly from binary descriptor.
+// syntax="proto2" reconstructed from descriptor required/optional semantics.
+syntax = "proto2";
+package LIN;
+
+message CS_START_PLAY_SUPPORT_REQ {
+}
+
+message SC_START_PLAY_SUPPORT_ACK {
+  enum eResult {
+    VALID = 0;
+    INVALID_MAP = 1;
+    INVALID_LEVEL = 2;
+    TIME_EXPIRE = 3;
+    UNKNOWN_ERROR = 99;
+  }
+  required .LIN.SC_START_PLAY_SUPPORT_ACK.eResult result = 1;
+}
+
+message CS_FINISH_PLAY_SUPPORT_REQ {
+}
+
+message SC_FINISH_PLAY_SUPPORT_ACK {
+  required uint32 remain_time = 1;
+}
+
+message SC_FORCE_FINISH_PLAY_SUPPORT_NOTI {
+  enum eReason {
+    INVALID_MAP = 1;
+    INVALID_LEVEL = 2;
+    TIME_EXPIRE = 3;
+    USER_DEAD = 4;
+    MAP_TIME_EXPIRED = 5;
+  }
+  required .LIN.SC_FORCE_FINISH_PLAY_SUPPORT_NOTI.eReason reason = 1;
+  required uint32 remain_time = 2;
+}
+
+message CS_PSS_TIME_CHECK_REQ {
+}
+
+message SC_PSS_TIME_CHECK_ACK {
+  required uint32 remain_time = 1;
+}
+
+message SC_UPDATE_PLAY_SUPPORT_TIME_NOTI {
+  enum eType {
+    CHARGE_BY_EVENT = 1;
+    CHARGE_BY_ITEM = 2;
+  }
+  required .LIN.SC_UPDATE_PLAY_SUPPORT_TIME_NOTI.eType type = 1;
+  required uint32 remain_time = 2;
+}

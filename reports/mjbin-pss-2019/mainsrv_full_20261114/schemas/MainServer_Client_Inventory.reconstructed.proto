@@ -1,0 +1,143 @@
+// Recovered from mjlin_loaded_code_00400000_0180D000.bin, SHA-256 256f7886e98d7d2c573ab76917f78e30dc4f34cb723a002d604602cdb2f6cbdb
+// Source: embedded FileDescriptorProto, NOT NC-authored source file.
+// package/message/field/enum/number/cardinality derived directly from binary descriptor.
+// syntax="proto2" reconstructed from descriptor required/optional semantics.
+syntax = "proto2";
+package LIN;
+
+message ItemInfo {
+  message CompanionCard {
+    optional bool is_oblivion = 1;
+    optional bool is_dead = 2;
+    optional bool is_summoned = 3;
+    optional uint32 class_id = 4;
+    optional uint32 level = 5;
+    optional string name = 6;
+    optional uint32 elixir_use_count = 7;
+  }
+  required uint32 object_id = 1;
+  optional int32 name_id = 2;
+  optional int32 db_id = 3;
+  optional int32 count = 4;
+  optional int32 interact_type = 5;
+  optional int32 number_of_use = 6;
+  optional int32 icon_id = 7;
+  optional int32 bless_code_for_display = 8;
+  optional int32 attribute_bit_set = 9;
+  optional uint64 attribute_bit_set_ex = 10;
+  optional bool is_timeout = 11;
+  optional int32 category = 12;
+  optional int32 enchant = 13;
+  optional uint32 deposit = 14;
+  optional int32 overlay_surf_id = 15;
+  optional int32 elemental_enchant_type = 16;
+  optional int32 elemental_enchant_value = 17;
+  optional bytes description = 18;
+  optional bytes extra_description = 19;
+  optional int32 left_time_for_pre_notify = 20;
+  optional .LIN.ItemInfo.CompanionCard companion_card = 21;
+  optional int32 bless_code = 22;
+  optional int32 real_enchant = 23;
+  optional bool is_merging = 24;
+  optional int32 weight = 25;
+  optional bool is_identified = 26;
+}
+
+message ItemEquipInfo {
+  required uint32 object_id = 1;
+  required int32 equip_position = 2;
+  optional bool is_equiped = 3 [default = true];
+  optional .LIN.ItemInfo item_info = 4;
+}
+
+message SC_EQUIP_LIST_NOTI {
+  repeated .LIN.ItemEquipInfo item_equip_infos = 1;
+}
+
+message SC_EQUIP_LIST_UPDATE_NOTI {
+  repeated .LIN.ItemEquipInfo item_equip_infos = 1;
+}
+
+message SC_INVENTORY_INFO_NOTI {
+  repeated .LIN.ItemInfo item_infos = 1;
+  optional uint32 owner_object_id = 2;
+  optional int32 total_pages = 3;
+  optional int32 cur_pages = 4;
+}
+
+message SC_ADD_INVENTORY_NOTI {
+  repeated .LIN.ItemInfo item_info = 1;
+  optional bool on_start = 2;
+  optional uint32 owner_oid = 3;
+}
+
+message SC_UPDATE_INVENTORY_NOTI {
+  repeated .LIN.ItemInfo item_info = 1;
+}
+
+message SC_INVENTORY_EFFECT_NOTI {
+  enum eEffectCodeType {
+    Enchant_Elemental_Fire = 1;
+    Enchant_Elemental_Water = 2;
+    Enchant_Elemental_Air = 3;
+    Enchant_Elemental_Earth = 4;
+    Gear_Enchant = 5;
+    Life = 6;
+  }
+  required uint32 item_id = 1;
+  required .LIN.SC_INVENTORY_EFFECT_NOTI.eEffectCodeType effect_code = 2;
+}
+
+message TradeItemInfo {
+  required int32 index = 1;
+  required int32 count = 2;
+  required int32 price = 3;
+  required .LIN.ItemInfo item_info = 4;
+  optional int32 trade_info = 5;
+  optional int32 buy_count = 6;
+}
+
+message SC_PERSONAL_SHOP_ITEM_LIST_NOTI {
+  enum ePersonalShopType {
+    TRADE_BUY = 0;
+    TRADE_SELL = 1;
+  }
+  required .LIN.SC_PERSONAL_SHOP_ITEM_LIST_NOTI.ePersonalShopType type = 1;
+  required int32 seller_id = 2;
+  required int32 size = 3;
+  repeated .LIN.TradeItemInfo item_list = 4;
+}
+
+message SC_WAREHOUSE_ITEM_LIST_NOTI {
+  enum eWarehouseType {
+    TRADE_RETRIEVE = 3;
+    TRADE_RETRIEVE_PLEDGE = 5;
+    TRADE_RETRIEVE_ELVEN = 9;
+    TRADE_RETRIEVE_CHAR = 18;
+    TRADE_RETRIEVE_CONTRACT = 20;
+  }
+  message WarehouseItemInfo {
+    required int32 index = 1;
+    required .LIN.ItemInfo item_info = 2;
+  }
+  required int32 checker = 1;
+  required int32 count = 2;
+  required .LIN.SC_WAREHOUSE_ITEM_LIST_NOTI.eWarehouseType warehouse_type = 3;
+  required int32 price = 4;
+  optional int32 warehouse_size = 5;
+  repeated .LIN.SC_WAREHOUSE_ITEM_LIST_NOTI.WarehouseItemInfo item_list = 6;
+  optional bool serial_last = 7;
+}
+
+message SC_EXCHANGE_ITEM_LIST_NOTI {
+  enum eExchangeType {
+    EXC_SELF = 0;
+    EXC_OPPOSITE = 1;
+  }
+  required .LIN.SC_EXCHANGE_ITEM_LIST_NOTI.eExchangeType type = 1;
+  repeated .LIN.ItemInfo item_list = 2;
+}
+
+message SC_GOODS_INVEN_NOTI {
+  optional bool add_state = 1;
+}
