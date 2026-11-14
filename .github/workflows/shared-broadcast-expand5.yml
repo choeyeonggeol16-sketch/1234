@@ -1,0 +1,75 @@
+name: Shared broadcast expansion phase 5 global fanout
+on:
+  push:
+    branches: [mainserver-broadcast-expand5-20261115]
+    paths:
+      - '.github/workflows/shared-broadcast-expand5.yml'
+      - 'patches/ctransport_broadcast_expand5_20261115/**'
+permissions:
+  contents: write
+jobs:
+  verify-and-publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Apply source-hash-verified global broadcast migration
+        run: |
+          python3 patches/ctransport_broadcast_expand5_20261115/expand5.py \
+            --work "$RUNNER_TEMP/phase5"
+      - name: Restore SHA256-pinned build dependencies
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, urllib.request
+          records=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          root=pathlib.Path('.compile-deps')
+          root.mkdir(exist_ok=True)
+          for dep in records:
+            dest=root/dep['file']
+            urllib.request.urlretrieve(dep['url'],dest)
+            assert hashlib.sha256(dest.read_bytes()).hexdigest()==dep['sha256'],dep['file']
+          print('Dependency verification passed',len(records))
+          PY
+      - name: Compile full Java21 source and compare global message wire formats
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP/phase5/src" -name '*.java' | sort > "$RUNNER_TEMP/phase5/sources.txt"
+          test "$(wc -l < "$RUNNER_TEMP/phase5/sources.txt")" -eq 1711
+          mkdir -p "$RUNNER_TEMP/phase5/classes" "$RUNNER_TEMP/phase5/testclasses"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g \
+            -cp "$(pwd)/.compile-deps/*" -d "$RUNNER_TEMP/phase5/classes" \
+            @"$RUNNER_TEMP/phase5/sources.txt"
+          javac --enable-preview --release 21 -encoding UTF-8 \
+            -cp "$RUNNER_TEMP/phase5/classes:$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/phase5/testclasses" "$RUNNER_TEMP/phase5/testsrc/SharedGlobalBroadcastParity.java"
+          java --enable-preview \
+            -cp "$RUNNER_TEMP/phase5/testclasses:$RUNNER_TEMP/phase5/classes:$(pwd)/.compile-deps/*" \
+            SharedGlobalBroadcastParity
+          python3 - <<'PY'
+          import json, os, pathlib, zipfile
+          d=json.loads((pathlib.Path(os.environ['RUNNER_TEMP'])/'phase5/audit.json').read_text())
+          assert d['new_shared_count']==6 and d['total_shared_classes']==44
+          assert d['java_files_total']==1711 and d['native_dll_unchanged']
+          with zipfile.ZipFile('downloads/CTransport_SharedBroadcast_44Packet_FULL_SRC_20261115.zip') as z:
+            assert z.testzip() is None
+            assert sum(n.endswith('.java') for n in z.namelist())==1711
+          print('PASS: phase 5, 44 shared-broadcast classes, full Java21 compile, ZIP CRC')
+          print('Remaining unconverted:',d['remaining_count'],','.join(d['remaining_classes']))
+          PY
+      - name: Publish only validated complete full SRC archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/CTransport_SharedBroadcast_44Packet_FULL_SRC_20261115.zip
+          git diff --cached --quiet && { echo "Already published"; exit 0; }
+          git commit -m "Publish shared broadcast 44-class validated full source [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
