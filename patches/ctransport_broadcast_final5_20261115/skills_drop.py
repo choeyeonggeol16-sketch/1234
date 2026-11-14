@@ -279,7 +279,20 @@ def drop_item(s):
         }}
     }}
 '''
-    old=M(s,"public","broadcast",lambda p:"boolean addKnownObject" in p)
+    # This overload returns int (viewer count), unlike most void broadcasts.
+    hit=re.search(r"\\bpublic\\s+static\\s+int\\s+broadcast\\s*\\(",s)
+    if hit is None:raise ValueError("Ground item counted broadcast not found")
+    k=hit.end();lvl=1
+    while lvl:
+        lvl+=(s[k]=='(')-(s[k]==')');k+=1
+    signature=s[hit.end():k-1]
+    if "boolean addKnownObject" not in signature:raise ValueError("Unexpected ground fanout")
+    while s[k].isspace():k+=1
+    if s[k]!='{':raise ValueError("Ground fanout body absent")
+    brace=k;k+=1;depth=1
+    while depth:
+        depth+=(s[k]=='{')-(s[k]=='}');k+=1
+    old=(hit.start(),k,signature,s[brace+1:k-1],s[hit.start():k])
     before=old[3]
     # Limit pre-serialization to exactly the already captured snapshot. Any
     # unsupported/oversized source returns null and runs the original block.
