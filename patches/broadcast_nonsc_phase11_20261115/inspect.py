@@ -19,7 +19,7 @@ targets={
 "MJLFCObject.java":None,
 "L1World.java":None,
 }
-pat=re.compile(r'broadcastPacket|sendGreenMsgToList|broadcast\\(|sendPackets\\(|SC_SkillSound\\.broadcast|L1World\\.getInstance\\(\\)\\.get(AllPlayers|VisiblePlayers?)')
+pat=("broadcastPacket","sendGreenMsgToList","broadcast(","sendPackets(","SC_SkillSound.broadcast","L1World.getInstance().get")
 with zipfile.ZipFile(src) as z:
  assert z.testzip() is None
  names=z.namelist()
@@ -31,7 +31,7 @@ with zipfile.ZipFile(src) as z:
   if short in ("LFCMessages.java","SpecialEventHandler.java","MJL1LiftGateInstance.java","MJBattleTournamentArea.java","MJItemSkillModel.java","SC_NpcChatPacket.java"):
    spans=[(1,min(len(lines),350))]
   elif short in ("L1World.java","SC_PacketBox.java","MJLFCObject.java","MJL1TreasureChest.java"):
-   hits=[i for i,line in enumerate(lines) if pat.search(line)]
+   hits=[i for i,line in enumerate(lines) if any(key in line for key in pat)]
    spans=[]
    for i in hits:
     lo=max(1,i-8);hi=min(len(lines),i+17)
