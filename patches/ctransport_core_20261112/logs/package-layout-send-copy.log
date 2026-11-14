@@ -1,0 +1,3 @@
+Note: Some input files use preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.
+PASS production CSocket single/gather copy-close race:source lease retained until downcall exits,original bytes copied,one failed completion;first native status survives late bind and cancellation

@@ -1,3 +1,9 @@
+## 2026-11-14 네트워크 코어 패키지 정리
+
+core 아래26개 클래스를 transport·connection·session·server·broadcast·diagnostics·execution·config로 분리했습니다. 전체 src로 교체하고 clean build합니다. 클래스 이름·메서드 본문·native DLL은 유지합니다. 상세 경로와 검증은 REPORT_PACKAGE_LAYOUT.md 및 WINDOWS_VERIFICATION.json을 확인하세요. 현재 범위 검사는 `python tests/verify_package_layout_scope.py`입니다.
+
+---
+
 ## 2026-11-13 전용 객체 할당자·MSVC 객체 규약
 
 원본에서 확인한49개 크기 등급과 CSmartQueue 재사용 경로를 구현했습니다. MemoryObject/CIOObject/CISocket/CIOSocketEx/CSocket/CUserSocket 및 서버·팩터리·종료 검사기의 확인된 배치와 가상 호출 규약을 반영했습니다. 새 DLL은 MSVC x64로 빌드하며 전체 src와 함께 적용합니다. 매니저 보고서 → 풀·회수 진단에서 native 객체의 사용/반납/확보량을 확인합니다.

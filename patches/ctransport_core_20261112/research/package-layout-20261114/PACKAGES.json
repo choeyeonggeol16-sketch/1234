@@ -1,0 +1,74 @@
+{
+  "groups": {
+    "transport": [
+      "CIOServer",
+      "CSocket",
+      "CIOServerEndpoint",
+      "CIOPacketCodec"
+    ],
+    "connection": [
+      "CUserSocket",
+      "CUserSocketCloseTask",
+      "CUserSocketRegistry",
+      "CIOBufferEx",
+      "CIOBufferPool",
+      "CIOSlotPool",
+      "CIOFrame"
+    ],
+    "session": [
+      "CIOClient",
+      "DominationHybrid"
+    ],
+    "server": [
+      "Server",
+      "IServerCallback",
+      "CDummyServerCallback"
+    ],
+    "broadcast": [
+      "CAsyncSendConstBuffer",
+      "CAsyncSendConstBufferExceptSelf",
+      "CSharedBroadcast",
+      "CTLMFilter"
+    ],
+    "diagnostics": [
+      "CNetworkDiagnostics",
+      "CPerfMon",
+      "CPoolDiagnostics"
+    ],
+    "execution": [
+      "CIOObject",
+      "CIOShardContext"
+    ],
+    "config": [
+      "CIOConfig"
+    ]
+  },
+  "paths": {
+    "src/l1j/server/server/model/network/core/CIOServer.java": "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    "src/l1j/server/server/model/network/core/CSocket.java": "src/l1j/server/server/model/network/core/transport/CSocket.java",
+    "src/l1j/server/server/model/network/core/CIOServerEndpoint.java": "src/l1j/server/server/model/network/core/transport/CIOServerEndpoint.java",
+    "src/l1j/server/server/model/network/core/CIOPacketCodec.java": "src/l1j/server/server/model/network/core/transport/CIOPacketCodec.java",
+    "src/l1j/server/server/model/network/core/CUserSocket.java": "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    "src/l1j/server/server/model/network/core/CUserSocketCloseTask.java": "src/l1j/server/server/model/network/core/connection/CUserSocketCloseTask.java",
+    "src/l1j/server/server/model/network/core/CUserSocketRegistry.java": "src/l1j/server/server/model/network/core/connection/CUserSocketRegistry.java",
+    "src/l1j/server/server/model/network/core/CIOBufferEx.java": "src/l1j/server/server/model/network/core/connection/CIOBufferEx.java",
+    "src/l1j/server/server/model/network/core/CIOBufferPool.java": "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    "src/l1j/server/server/model/network/core/CIOSlotPool.java": "src/l1j/server/server/model/network/core/connection/CIOSlotPool.java",
+    "src/l1j/server/server/model/network/core/CIOFrame.java": "src/l1j/server/server/model/network/core/connection/CIOFrame.java",
+    "src/l1j/server/server/model/network/core/CIOClient.java": "src/l1j/server/server/model/network/core/session/CIOClient.java",
+    "src/l1j/server/server/model/network/core/DominationHybrid.java": "src/l1j/server/server/model/network/core/session/DominationHybrid.java",
+    "src/l1j/server/server/model/network/core/Server.java": "src/l1j/server/server/model/network/core/server/Server.java",
+    "src/l1j/server/server/model/network/core/IServerCallback.java": "src/l1j/server/server/model/network/core/server/IServerCallback.java",
+    "src/l1j/server/server/model/network/core/CDummyServerCallback.java": "src/l1j/server/server/model/network/core/server/CDummyServerCallback.java",
+    "src/l1j/server/server/model/network/core/CAsyncSendConstBuffer.java": "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    "src/l1j/server/server/model/network/core/CAsyncSendConstBufferExceptSelf.java": "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    "src/l1j/server/server/model/network/core/CSharedBroadcast.java": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "src/l1j/server/server/model/network/core/CTLMFilter.java": "src/l1j/server/server/model/network/core/broadcast/CTLMFilter.java",
+    "src/l1j/server/server/model/network/core/CNetworkDiagnostics.java": "src/l1j/server/server/model/network/core/diagnostics/CNetworkDiagnostics.java",
+    "src/l1j/server/server/model/network/core/CPerfMon.java": "src/l1j/server/server/model/network/core/diagnostics/CPerfMon.java",
+    "src/l1j/server/server/model/network/core/CPoolDiagnostics.java": "src/l1j/server/server/model/network/core/diagnostics/CPoolDiagnostics.java",
+    "src/l1j/server/server/model/network/core/CIOObject.java": "src/l1j/server/server/model/network/core/execution/CIOObject.java",
+    "src/l1j/server/server/model/network/core/CIOShardContext.java": "src/l1j/server/server/model/network/core/execution/CIOShardContext.java",
+    "src/l1j/server/server/model/network/core/CIOConfig.java": "src/l1j/server/server/model/network/core/config/CIOConfig.java"
+  }
+}

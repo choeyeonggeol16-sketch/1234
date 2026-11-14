@@ -1,0 +1,23 @@
+{
+  "archives": {
+    "CTransport_Aden_FULL_SRC_20261112.zip": "bfd48d3fa445ba7592d4589f3cbd2c38b62ce73cd53964786555351e866d55a4",
+    "CTransport_CORE_20261112.zip": "3e37cc51de9a2f71ff4fa5547580c7cc2a030800ba56de94561c7696a9c33cc1"
+  },
+  "dll_sha256": "62604a5b1b111526da30b0d06f224eb6d5f3e4aafca0292571aae7932b3f272e",
+  "source_files": 1712,
+  "java_files": 1711,
+  "changed": 247,
+  "deleted": [
+    "src/l1j/server/server/model/network/core/CIOSocketFactory.java",
+    "src/l1j/server/server/model/network/core/CIOTransportConfig.java",
+    "src/l1j/server/server/model/network/core/CIOUserSocket.java",
+    "src/l1j/server/server/model/network/core/CIOWinServer.java",
+    "src/l1j/server/server/model/network/core/CIOWinSocket.java",
+    "src/l1j/server/server/model/network/core/CTransportConfig.java",
+    "src/l1j/server/server/model/network/core/CTransportEndpoint.java",
+    "src/l1j/server/server/model/network/core/CTransportServer.java",
+    "src/l1j/server/server/model/network/core/CTransportSocket.java",
+    "src/l1j/server/server/model/network/core/CTransportTask.java",
+    "src/l1j/server/server/model/network/core/CUserSocketDispatch.java"
+  ]
+}

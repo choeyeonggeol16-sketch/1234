@@ -1,3 +1,11 @@
+## 2026-11-14 — 네트워크 코어 패키지 정리
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**패키지 구조·검증**](reports/CTRANSPORT_PACKAGE_LAYOUT_20261114.md)
+
+26개 클래스를 transport·connection·session·server·broadcast·diagnostics·execution·config로 나눴습니다. 클래스 이름과 메서드 본문은 유지하고 참조·접근 범위·빌드/테스트 경로를 맞췄습니다. 전체 src로 교체하고 clean build합니다. native DLL·ABI10/67exports·독립 PSS·패킷 규약은 유지합니다.
+
+---
+
 ## 2026-11-14 — 유저 소켓 두 슬롯·송신 검사 수정
 
 [전체 src](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [테스트한 DLL·C++ 묶음](downloads/CTransport_CORE_20261112.zip) · [변경 보고서](reports/CTRANSPORT_SLOT_SEND_FIX_20261114.md)

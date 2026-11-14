@@ -70,7 +70,7 @@
   },
   "dll_sha256": "62604a5b1b111526da30b0d06f224eb6d5f3e4aafca0292571aae7932b3f272e",
   "selftest_sha256": "9bb792bbcc2683c6d9cedecaedd1b8bc896308b58a133ed608f63d26cb49567f",
-  "windows_execution_tested": false,
+  "windows_execution_tested": true,
   "internal_vtable_profile": "MSVC x64 MemoryObject4,CIOObject12,CSocket24,CUserSocket26;slot15 int margin,slot24 raw pointer getter,slot25 socket number",
   "files_lf": {
     "build_native.py": "70b3e4fe36543d092133adebd26206f6d2dc9b3ae711eae887a5efda64fb9f42",
@@ -93,9 +93,9 @@
     "user_socket.hpp": "27dc7bbcc0f023d96a87fc18fe6d7f249c86f41dc7c441f619cfa481b2a6bdf0",
     "windows_loopback_test.cpp": "da338b0b4c05f289ccb5044f29aa8acd4fdd7b722113bba774f57f73fa79d724"
   },
-  "tested_source_commit": "d2743dec174f6a0244e716ac4826c182fb447c3a",
-  "artifact_commit": "f00b64567734cd0b49d6acd8aa9302d83da51501",
-  "windows_run_id": 43557005905,
+  "tested_source_commit": "70d2cb580de2dde213bac1dffddf52778147c11d",
+  "artifact_commit": "7e55707266ac6ffc6ca8e25609f6fcdfdb5f81f4",
+  "windows_run_id": 43559706222,
   "line_ending_note": "files are exact Windows checkout hashes;files_lf are normalized release source hashes",
   "package_layout_build_note": "Only Java pin source path changed in builder;all C++ sources and compiler/linker arguments remain unchanged;reuse existing DLL for relocated Java validation"
 }
