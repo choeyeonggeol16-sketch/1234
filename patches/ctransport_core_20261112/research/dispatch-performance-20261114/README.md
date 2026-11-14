@@ -1,0 +1,1 @@
+최종 변경은 native/CTransport.cpp의 buffered receive handoff와 CIOConfig DLL pin입니다. Java owner-query 실험은 철회했습니다. BASELINE.json은df32496 전체 src/native 해시입니다. run43578175936 실패,run43579624676 전체/실험,run43580772728 최종 배포 원시 증거를 보존합니다. 세부 범위는 REPORT_DISPATCH_PERFORMANCE.md입니다.

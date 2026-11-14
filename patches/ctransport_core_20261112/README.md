@@ -1,3 +1,9 @@
+## 2026-11-14 DLL 수신 재개 경합 수정
+
+foreign lease 반환이 READ/RESUME drain 종료와 겹칠 때 codec에 받은 프레임을 남기고 새 수신을 기다리던 경합을 수정했습니다. **새 CTransport.dll과 전체 src를 함께 교체하고 clean build합니다.** PSS는 동일합니다. Java FFM 중복 확인 제거 실험은 실측이 나빠져 철회했습니다. REPORT_DISPATCH_PERFORMANCE.md에서 재현·검증·제한을 확인하세요. 최신 범위 검사는 `python tests/verify_dispatch_performance_scope.py`입니다.
+
+---
+
 ## 2026-11-14 진단 집계 경합 개선
 
 CNetworkDiagnostics의 관측용 카운터를 분산 집계로 수정했습니다. Windows ABBA 송신 비교에서 합산 처리량약21.45% 증가,회차별 p99 평균약14.86% 감소를 관측했습니다. 전체 CPU/패킷·메모리 절감은 확인되지 않았습니다. REPORT_PERFORMANCE.md의 범위와 최초 session timeout 미확정 항목을 확인합니다. 전체 src 교체 후 clean build하며 DLL·PSS는 동일합니다. 최신 범위 검사는 `python tests/verify_performance_scope.py`입니다.

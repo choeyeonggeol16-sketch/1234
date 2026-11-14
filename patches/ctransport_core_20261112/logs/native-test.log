@@ -1,3 +1,4 @@
+PASS receive handoff:foreign lease release during READ/RESUME drain cannot strand buffered frames behind WSARecv;no extra input required
 PASS shared const broadcast: one frozen16K source/two queued recipients;producer released before execution;close isolation;unchanged plaintext;504-slot overflow rolls back refs/reservations;503 queued cancellations;source outlives server shutdown
 PASS original MemoryObject-only fast-serializer target and virtual destruction;CSocket constant source remains unchanged across16K headers/max65535 frames;pooled encrypted output adopts without re-copy
 PASS native SEND/close:shared execution owner;copied queued source;plain first/max65535 frame;cross-descriptor frames;37-byte completions without re-encryption;invalid/cipher failure;graceful pending-send/WRITE drain,SD_SEND and peer FIN without RST;WRITE/peer-FIN deadlines and forced override

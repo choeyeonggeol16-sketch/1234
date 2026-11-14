@@ -1,3 +1,11 @@
+## 2026-11-14 — DLL 수신 재개 경합 수정
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**수신 전후 실측**](reports/CTRANSPORT_DISPATCH_PERFORMANCE_20261114.md)
+
+이미 받은 프레임이 남았는데 새 WSARecv를 기다리던 DLL 경합을 수정했습니다. FFM 검사 제거 실험은 성능이 나빠져 철회했습니다. 새 DLL과 전체 src를 함께 적용하고 clean build합니다. 기존 진단 개선·PSS·FIFO·DB는 유지합니다. 재현·검증 근거는 보고서를 확인하세요.
+
+---
+
 ## 2026-11-14 — 네트워크 진단 집계 경합 개선·ABBA 실측
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**수정 전후 실측**](reports/CTRANSPORT_PERFORMANCE_20261114.md)

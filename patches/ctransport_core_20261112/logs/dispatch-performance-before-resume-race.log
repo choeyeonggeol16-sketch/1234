@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/workspace/work/aden-rkern-cio-20261112/tests/run_native_tests.py", line 12, in <module>
+    subprocess.run([str(binary)],check=True,stdout=log,stderr=subprocess.STDOUT,env=env,timeout=45)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/work/aden-rkern-cio-20261112/build/native_engine_native']' died with <Signals.SIGABRT: 6>.
