@@ -1,0 +1,15 @@
+MEASURE warmup frames=4096 elapsed_ms=172.8222 fps=23700.65882739602 {p50_ms=0.3235, p95_ms=1.3455, p99_ms=3.566, max_ms=21.2568, samples=4096}
+Exception in thread "main" java.util.concurrent.ExecutionException: java.net.SocketTimeoutException: Read timed out
+	at java.base/java.util.concurrent.FutureTask.report(FutureTask.java:122)
+	at java.base/java.util.concurrent.FutureTask.get(FutureTask.java:205)
+	at l1j.server.server.model.network.core.connection.CUserSocketStabilityWindowsTest.send(CUserSocketStabilityWindowsTest.java:57)
+	at l1j.server.server.model.network.core.connection.CUserSocketStabilityWindowsTest.main(CUserSocketStabilityWindowsTest.java:136)
+Caused by: java.net.SocketTimeoutException: Read timed out
+	at java.base/sun.nio.ch.NioSocketImpl.timedRead(NioSocketImpl.java:278)
+	at java.base/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:304)
+	at java.base/sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346)
+	at java.base/sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796)
+	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:1099)
+	at l1j.server.server.model.network.core.connection.CUserSocketStabilityWindowsTest.lambda$send$0(CUserSocketStabilityWindowsTest.java:32)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)

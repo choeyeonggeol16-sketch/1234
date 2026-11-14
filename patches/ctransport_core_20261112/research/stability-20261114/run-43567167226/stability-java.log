@@ -1,0 +1,24 @@
+MEASURE warmup frames=4096 elapsed_ms=283.9173 fps=14426.736236220899 {p50_ms=0.4555, p95_ms=3.3095, p99_ms=7.6149, max_ms=25.6491, samples=4096}
+MEASURE production-S2C-small-1 frames=1048576 elapsed_ms=12123.4994 fps=86491.19906749036 {p50_ms=0.1491, p95_ms=0.3072, p99_ms=0.4087, max_ms=57.9201, samples=1048576}
+MEASURE production-S2C-small-2 frames=1048576 elapsed_ms=11385.2324 fps=92099.65709615203 {p50_ms=0.1455, p95_ms=0.3007, p99_ms=0.3838, max_ms=74.5536, samples=1048576}
+MEASURE production-S2C-small-3 frames=1048576 elapsed_ms=11507.2861 fps=91122.78871731537 {p50_ms=0.1503, p95_ms=0.306, p99_ms=0.3881, max_ms=9.5671, samples=1048576}
+MEASURE production-S2C-4k frames=131072 elapsed_ms=2758.9856 fps=47507.31573227493 {p50_ms=0.2561, p95_ms=0.4529, p99_ms=0.6748, max_ms=36.8052, samples=131072}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=37.0659 fps=27626.4706913902 {p50_ms=0.2786, p95_ms=1.4704, p99_ms=4.5045, max_ms=9.8826, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=23.4511 fps=43665.32913168252 {p50_ms=0.1585, p95_ms=0.539, p99_ms=2.3359, max_ms=7.9325, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=20.3168 fps=50401.63805323673 {p50_ms=0.1902, p95_ms=0.4208, p99_ms=1.3279, max_ms=2.6918, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=18.626 fps=54976.913991195106 {p50_ms=0.1984, p95_ms=0.4481, p99_ms=1.3557, max_ms=1.5175, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=20.7967 fps=49238.581121043244 {p50_ms=0.2214, p95_ms=0.4739, p99_ms=1.6253, max_ms=2.9454, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=19.5645 fps=52339.69689999744 {p50_ms=0.2154, p95_ms=0.4533, p99_ms=1.5572, max_ms=1.8397, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=18.3321 fps=55858.30319494221 {p50_ms=0.1812, p95_ms=0.4074, p99_ms=0.9234, max_ms=1.7101, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=16.0245 fps=63902.14983306811 {p50_ms=0.1826, p95_ms=0.3739, p99_ms=1.101, max_ms=1.3012, samples=1024}
+MEASURE slow-reader-and-RST accepted=64 refused=4
+Exception in thread "main" java.util.concurrent.ExecutionException: java.lang.AssertionError: closing connection accepted held encoder
+	at java.base/java.util.concurrent.FutureTask.report(FutureTask.java:122)
+	at java.base/java.util.concurrent.FutureTask.get(FutureTask.java:205)
+	at l1j.server.server.model.network.core.connection.CUserSocketStabilityWindowsTest.closeRace(CUserSocketStabilityWindowsTest.java:144)
+	at l1j.server.server.model.network.core.connection.CUserSocketStabilityWindowsTest.main(CUserSocketStabilityWindowsTest.java:169)
+Caused by: java.lang.AssertionError: closing connection accepted held encoder
+	at l1j.server.server.model.network.core.stability.StressMetrics.check(StressMetrics.java:18)
+	at l1j.server.server.model.network.core.connection.CUserSocketStabilityWindowsTest.lambda$closeRace$5(CUserSocketStabilityWindowsTest.java:136)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)

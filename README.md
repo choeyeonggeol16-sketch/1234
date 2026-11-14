@@ -1,3 +1,11 @@
+## 2026-11-14 — 네트워크 부하·안정성 실측 및 송신 정지 수정
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**실측 보고서·원시 결과**](reports/CTRANSPORT_STABILITY_20261114.md)
+
+Windows에서 실제 DLL/FFM/자바 송신 큐에 부하를 가해 송신 큐 깨우기 누락을 재현하고 수정했습니다. 패킷 수·소요 시간·지연·메모리 회수와 시험 범위는 보고서에 기록했습니다. 전체 src 교체 후 clean build합니다. DLL과 독립 PSS는 동일합니다.
+
+---
+
 ## 2026-11-14 — 네트워크 코어 패키지 정리
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**패키지 구조·검증**](reports/CTRANSPORT_PACKAGE_LAYOUT_20261114.md)

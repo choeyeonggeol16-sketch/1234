@@ -1,6 +1,12 @@
+## 2026-11-14 실제 Windows 부하·안정성 검사
+
+송신 완료 큐의 깨우기 누락을 실제 부하로 재현해 소유권 해제의 메모리 순서를 수정했습니다. 전체 src를 교체하고 clean build합니다. CTransport.dll과 독립 PSS는 동일합니다. 수치·실행 이력·제한은 REPORT_STABILITY.md와 research/stability-20261114/에 있습니다. 최신 범위 검사는 `python tests/verify_stability_scope.py`, Windows 재현은 `./tests/run_windows.ps1` 후 `./tests/run_stability.ps1`입니다.
+
+---
+
 ## 2026-11-14 네트워크 코어 패키지 정리
 
-core 아래26개 클래스를 transport·connection·session·server·broadcast·diagnostics·execution·config로 분리했습니다. 전체 src로 교체하고 clean build합니다. 클래스 이름·메서드 본문·native DLL은 유지합니다. 상세 경로와 검증은 REPORT_PACKAGE_LAYOUT.md 및 WINDOWS_VERIFICATION.json을 확인하세요. 현재 범위 검사는 `python tests/verify_package_layout_scope.py`입니다.
+core 아래26개 클래스를 transport·connection·session·server·broadcast·diagnostics·execution·config로 분리했습니다. 전체 src로 교체하고 clean build합니다. 클래스 이름·메서드 본문·native DLL은 유지합니다. 상세 경로와 검증은 REPORT_PACKAGE_LAYOUT.md 및 WINDOWS_VERIFICATION.json을 확인하세요. 당시 패키지 정리 범위 검사는 `python tests/verify_package_layout_scope.py`입니다. 이후 안정성 수정은 아래 최신 검사를 사용합니다.
 
 ---
 
