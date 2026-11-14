@@ -1,0 +1,1021 @@
+FILE src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java, lines=1039
+======== 1-110 ========
+1: package l1j.server.server.model.network.core.sc.packet;
+2: 
+3: import java.sql.Connection;
+4: import java.sql.PreparedStatement;
+5: import java.sql.ResultSet;
+6: import java.sql.SQLException;
+7: import java.sql.Timestamp;
+8: import java.util.Calendar;
+9: import java.util.Iterator;
+10: import java.util.List;
+11: import java.util.TimeZone;
+12: 
+13: import l1j.server.Config;
+14: import l1j.server.DatabaseFactory;
+15: import l1j.server.server.Account;
+16: import l1j.server.server.Opcodes;
+17: import l1j.server.server.model.network.core.connection.CUserSocket;
+18: import l1j.server.server.model.network.core.connection.CIOFrame;
+19: import l1j.server.server.model.L1World;
+20: import l1j.server.server.model.Instance.L1ItemInstance;
+21: import l1j.server.server.model.Instance.L1PcInstance;
+22: import l1j.server.server.model.network.buffer.WriteBuffer;
+23: import l1j.server.server.model.network.core.session.CIOClient;
+24: import l1j.server.server.model.network.utill.ConnectionConfig;
+25: import l1j.server.server.templates.L1BookMark;
+26: import l1j.server.server.utils.SQLUtil;
+27: 
+28: /**
+29:  * 스킬 아이콘이나 차단 리스트의 표시 등 복수의 용도에 사용되는 패킷의 클래스
+30:  */
+31: public final class SC_PacketBox {
+32: 
+33: 	// *** S_107 sub code list ***
+34: 	public static final int MSG_WAR_BEGIN = 0;
+35: 	public static final int MSG_WAR_END = 1;
+36: 	public static final int MSG_WAR_GOING = 2;
+37: 	public static final int MSG_WAR_INITIATIVE = 3;
+38: 	public static final int MSG_WAR_OCCUPY = 4;
+39: 	public static final int MSG_DUEL = 5;
+40: 	public static final int MSG_SMS_SENT = 6;
+41: 	public static final int MSG_MARRIED = 9;
+42: 	public static final int WEIGHT = 10;
+43: 	public static final int FOOD = 11;
+44: 	public static final int MSG_LEVEL_OVER = 12;
+45: 	public static final int HTML_UB = 14;
+46: 	public static final int MSG_ELF = 15;
+47: 	public static final int SHOW_LIST_EXCLUDE = 17;
+48: 	public static final int ADD_EXCLUDE = 18;
+49: 	public static final int REM_EXCLUDE = 19;
+50: 	public static final int PC방버프 = 127;
+51: 	public static final int ICONS1 = 20;
+52: 	public static final int ICONS2 = 21;
+53: 	public static final int ICON_AURA = 22;
+54: 	public static final int MSG_TOWN_LEADER = 23;
+55: 	public static final int PLEDGE_TWO = 24;
+56: 	public static final int PLEDGE_REFRESH_PLUS = 25;
+57: 	public static final int PLEDGE_REFRESH_MINUS = 26;
+58: 	public static final int MSG_RANK_CHANGED = 27;
+59: 	public static final int MSG_WIN_LASTAVARD = 30;
+60: 	public static final int MSG_FEEL_GOOD = 31;
+61: 	public static final int LOGIN_UNKNOWN3 = 32;
+62: 	public static final int SOMETHING1 = 33;
+63: 	public static final int ICON_BLUEPOTION = 34;
+64: 	public static final int ICON_POLYMORPH = 35;
+65: 	public static final int ICON_CHATBAN = 36;
+66: 	public static final int SOMETHING2 = 37;
+67: 	public static final int HTML_CLAN1 = 38;
+68: 	public static final int ICON_I2H = 40;
+69: 	public static final int CHARACTER_CONFIG = 41;
+70: 	public static final int LOGOUT = 42;
+71: 	public static final int MSG_CANT_LOGOUT = 43;
+72: 	public static final int CALL_SOMETHING = 45;
+73: 	public static final int MSG_COLOSSEUM = 49;
+74: 	public static final int HTML_CLAN2 = 51;
+75: 	public static final int COOK_WINDOW = 52;
+76: 	public static final int ICON_COOKING = 53;
+77: 	public static final int FISHING = 55;
+78: 	public static final int DEL_ICON = 59;
+79: 	public static final int DRAGON_PEARL = 60;
+80: 	public static final int ALLIANCE_LIST = 62;
+81: 	public static final int MINIGAME_START_COUNT = 64;
+82: 	public static final int MINIGAME_TIME2 = 65;
+83: 	public static final int MINIGAME_LIST = 66;
+84: 	public static final int MINIGAME_10SECOND_COUNT = 69;
+85: 	public static final int MINIGAME_END = 70;
+86: 	public static final int MINIGAME_TIME = 71;
+87: 	public static final int MINIGAME_TIME_CLEAR = 72;
+88: 	public static final int SPOT = 75;
+89: 	public static final int aaaa1 = 78;
+90: 	public static final int bbbb2 = 79;
+91: 	public static final int cccc3 = 80;
+92: 	public static final int EINHASAD = 82;
+93: 	public static final int HADIN_DISPLAY = 83;
+94: 	public static final int GREEN_MESSAGE = 84;
+95: 	public static final int YELLOW_MESSAGE = 61;
+96: 	public static final int RED_MESSAGE = 51;
+97: 	public static final int SCORE_MARK = 4;
+98: 	public static final int EMERALD_ICON = 86;
+99: 	public static final int KARMA = 87;
+100: 	public static final int INIT_DODGE = 88;
+101: 	public static final int DRAGONBLOOD = 100;
+102: 	public static final int DODGE = 101;
+103: 	public static final int DragonMenu = 102;
+104: 	public static final int MINI_MAP_SEND = 111;
+105: 	public static final int CLAN_WAREHOUSE_LIST = 117;
+106: 	public static final int BAPO = 114;
+107: 	public static final int ICON_SECURITY_SERVICES = 125;
+108: 	public static final int ICON_PC_BUFF = 127;
+109: 	public static final int ER_UpDate = 132;
+110: 	public static final int BOOKMARK_SIZE_PLUS_10 = 141;
+======== 140-330 ========
+140: 	public static final int a = 103;
+141: 
+142: 
+143: 
+144:     
+145: 
+146:     public static void broadcastGreen(String message) {
+147:         for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+148:             if (pc != null) send(pc, GREEN_MESSAGE, message);
+149:         }
+150:     }
+151: 
+152:     public static void broadcastGreenMap(int mapId, String message) {
+153:         for (L1PcInstance pc : L1World.getInstance().getVisiblePlayers(mapId)) {
+154:             if (pc != null) send(pc, GREEN_MESSAGE, message);
+155:         }
+156:     }
+157: 
+158:     public static boolean send(L1PcInstance receiver, int subCode) {
+159:         return sendEncoded(receiver,
+160:                 1, subCode, 0, 0, 0, 0, false, null, null, null, null, null, null, null);
+161:     }
+162: 
+163:     public static boolean send(L1PcInstance receiver, int time, boolean ck, boolean ck2) {
+164:         return sendEncoded(receiver,
+165:                 2, 0x56, time, 0, 0, 0, ck, null, null, null, null, null, null, null);
+166:     }
+167: 
+168:     public static boolean send(L1PcInstance receiver, int subCode, L1PcInstance pc, L1ItemInstance weapon) {
+169:         return sendEncoded(receiver,
+170:                 3, subCode, 0, 0, 0, 0, false, null, null, weapon, pc, null, null, null);
+171:     }
+172: 
+173:     public static boolean send(L1PcInstance receiver, int subCode, int range, int type, boolean bow, L1PcInstance pc) {
+174:         return sendEncoded(receiver,
+175:                 4, subCode, range, type, 0, 0, bow, null, null, null, pc, null, null, null);
+176:     }
+177: 
+178:     public static boolean send(L1PcInstance receiver, int subCode, int time1, int time2, int time3, int time4) {
+179:         return sendEncoded(receiver,
+180:                 5, subCode, time1, time2, time3, time4, false, null, null, null, null, null, null, null);
+181:     }
+182: 
+183:     public static boolean send(L1PcInstance receiver, int subCode, L1PcInstance pc) {
+184:         return sendEncoded(receiver,
+185:                 6, subCode, 0, 0, 0, 0, false, null, null, null, pc, null, null, null);
+186:     }
+187: 
+188:     public static boolean send(L1PcInstance receiver, int subCode, int value) {
+189:         return sendEncoded(receiver,
+190:                 7, subCode, value, 0, 0, 0, false, null, null, null, null, null, null, null);
+191:     }
+192: 
+193:     public static boolean send(L1PcInstance receiver, int subCode, int type, int time, boolean second, boolean temp) {
+194:         return sendEncoded(receiver,
+195:                 8, subCode, type, time, 0, 0, second, null, null, null, null, null, null, null);
+196:     }
+197: 
+198:     public static boolean send(L1PcInstance receiver, int subCode, int time, int gfxid, int type) {
+199:         return sendEncoded(receiver,
+200:                 9, subCode, time, gfxid, type, 0, false, null, null, null, null, null, null, null);
+201:     }
+202: 
+203:     public static boolean send(L1PcInstance receiver, int subCode, int type, int time) {
+204:         return sendEncoded(receiver,
+205:                 10, subCode, type, time, 0, 0, false, null, null, null, null, null, null, null);
+206:     }
+207: 
+208:     public static boolean send(L1PcInstance receiver, int time, int val, boolean ck, boolean ck2) {
+209:         return sendEncoded(receiver,
+210:                 11, EMERALD_ICON, time, val, 0, 0, ck, null, null, null, null, null, null, null);
+211:     }
+212: 
+213:     public static boolean send(L1PcInstance receiver, int i, int time, boolean ck, boolean ck2, boolean ck3) {
+214:         return sendEncoded(receiver,
+215:                 12, EMERALD_ICON, i, time, 0, 0, ck, null, null, null, null, null, null, null);
+216:     }
+217: 
+218:     public static boolean send(L1PcInstance receiver, int subCode, String name) {
+219:         return sendEncoded(receiver,
+220:                 13, subCode, 0, 0, 0, 0, false, name, null, null, null, null, null, null);
+221:     }
+222: 
+223:     public static boolean send(L1PcInstance receiver, int subCode, int id, String name, String clanName) {
+224:         return sendEncoded(receiver,
+225:                 14, subCode, id, 0, 0, 0, false, name, clanName, null, null, null, null, null);
+226:     }
+227: 
+228:     public static boolean send(L1PcInstance receiver, int subCode, L1ItemInstance item, int type) {
+229:         return sendEncoded(receiver,
+230:                 15, subCode, type, 0, 0, 0, false, null, null, item, null, null, null, null);
+231:     }
+232: 
+233:     public static boolean send(L1PcInstance receiver, int subCode1, int subCode2, String name) {
+234:         return sendEncoded(receiver,
+235:                 16, subCode1, subCode2, 0, 0, 0, false, name, null, null, null, null, null, null);
+236:     }
+237: 
+238:     public static boolean send(L1PcInstance receiver, int subCode, int range, int type, boolean bow) {
+239:         return sendEncoded(receiver,
+240:                 17, subCode, range, type, 0, 0, bow, null, null, null, null, null, null, null);
+241:     }
+242: 
+243:     public static boolean send(L1PcInstance receiver, int subCode, Object[] names) {
+244:         return sendEncoded(receiver,
+245:                 18, subCode, 0, 0, 0, 0, false, null, null, null, null, names, null, null);
+246:     }
+247: 
+248:     public static boolean send(L1PcInstance receiver, int subCode, String[] names, int type) {
+249:         return sendEncoded(receiver,
+250:                 19, subCode, type, 0, 0, 0, false, null, null, null, null, null, names, null);
+251:     }
+252: 
+253:     public static boolean send(L1PcInstance receiver, int subCode, L1ItemInstance item) {
+254:         return sendEncoded(receiver,
+255:                 20, subCode, 0, 0, 0, 0, false, null, null, item, null, null, null, null);
+256:     }
+257: 
+258:     public static boolean send(L1PcInstance receiver, int subCode, L1PcInstance pc, int value1, int value2) {
+259:         return sendEncoded(receiver,
+260:                 21, subCode, value1, value2, 0, 0, false, null, null, null, pc, null, null, null);
+261:     }
+262: 
+263:     public static boolean send(L1PcInstance receiver, L1PcInstance pc, int subCode) {
+264:         return sendEncoded(receiver,
+265:                 22, subCode, 0, 0, 0, 0, false, null, null, null, pc, null, null, null);
+266:     }
+267: 
+268:     public static boolean send(L1PcInstance receiver, int subCode, String name, int mapid, int x, int y, int Mid) {
+269:         return sendEncoded(receiver,
+270:                 23, subCode, mapid, x, y, Mid, false, name, null, null, null, null, null, null);
+271:     }
+272: 
+273:     public static boolean send(L1PcInstance receiver, int subCode, int value, boolean show) {
+274:         return sendEncoded(receiver,
+275:                 24, subCode, value, 0, 0, 0, show, null, null, null, null, null, null, null);
+276:     }
+277: 
+278:     public static boolean send(L1PcInstance receiver, int subCode, boolean show) {
+279:         return sendEncoded(receiver,
+280:                 25, subCode, 0, 0, 0, 0, show, null, null, null, null, null, null, null);
+281:     }
+282: 
+283:     public static boolean send(L1PcInstance receiver, int subCode, int itemid, String name, List<L1BookMark> list) {
+284:         return sendEncoded(receiver,
+285:                 26, subCode, itemid, 0, 0, 0, false, name, null, null, null, null, null, list);
+286:     }
+287: 
+288: 
+289:     private static boolean sendEncoded(L1PcInstance receiver, int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<L1BookMark> _bookmarks) {
+290:         if (receiver == null) return false;
+291:         final CIOClient socket = receiver.getNetConnection();
+292:         if (socket == null || !socket.isConnected()) return false;
+293:         final CUserSocket connection = socket.getConnection();
+294:         if (connection == null || !connection.isClientConnected()) return false;
+295:         final int capacity = estimateFrameCapacity(_constructorType, _subCode, _val1, _val2, _val3, _val4, _bool1, _strVal1, _strVal2, _item, _pc, _objs, _strs, _bookmarks);
+296:         if (capacity <= 0) return false;
+297:         final CIOFrame frame = connection.beginDirectFrame(capacity);
+298:         if (frame == null) return false;
+299:         boolean committed = false;
+300:         try {
+301:             writePayload(frame.buffer(), _constructorType, _subCode, _val1, _val2, _val3, _val4, _bool1, _strVal1, _strVal2, _item, _pc, _objs, _strs, _bookmarks);
+302:             committed = connection.commitDirectFrame(frame);
+303:             return committed;
+304:         } catch (WriteBuffer.RegisteredCapacityExceededException exceeded) {
+305:             return false;
+306:         } finally {
+307:             if (!committed) connection.abortDirectFrame(frame);
+308:         }
+309:     }
+310: 
+311:     private static int estimateFrameCapacity(int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<L1BookMark> _bookmarks) {
+312:         if ((_constructorType == 22 && _subCode == CLAN_WAREHOUSE_LIST)
+313:                 || (_constructorType == 1 && _subCode == CALL_SOMETHING)) {
+314:             return ConnectionConfig.MAX_WIRE_PACKET_SIZE;
+315:         }
+316:         long size = (_constructorType == 7 ? 128L : 256L);
+317:         if (_strVal1 != null) size += ((long) _strVal1.length() << 1) + 2;
+318:         if (_strVal2 != null) size += ((long) _strVal2.length() << 1) + 2;
+319:         if (_strs != null) {
+320:             for (String value : _strs) {
+321:                 if (value != null) size += ((long) value.length() << 1) + 2;
+322:             }
+323:         }
+324:         if (_objs != null) {
+325:             for (Object obj : _objs) {
+326:                 if (obj instanceof L1PcInstance) {
+327:                     final String name = ((L1PcInstance) obj).getName();
+328:                     if (name != null) size += ((long) name.length() << 1) + 4;
+329:                 }
+330:             }
+======== 330-500 ========
+330:             }
+331:         }
+332:         if (_bookmarks != null) {
+333:             for (L1BookMark book : _bookmarks) {
+334:                 if (book == null) continue;
+335:                 final String name = book.getName();
+336:                 size += 16L + (name == null ? 0L : ((long) name.length() << 1));
+337:             }
+338:         }
+339:         return size > Integer.MAX_VALUE ? -1 : (int) size;
+340:     }
+341: 
+342: 	private static void writePayload(WriteBuffer buffer, int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<L1BookMark> _bookmarks) {
+343: 		buffer.writeC(Opcodes.S_EVENT);
+344: 		buffer.writeC(_subCode);
+345: 
+346: 		switch (_constructorType) {
+347: 		case 1:
+348: 			switch (_subCode) {
+349: 			case aaaa1:
+350: 			case bbbb2:
+351: 				buffer.writeC(7);
+352: 				for (int i = 0; i < 7; i++) buffer.writeS("");
+353: 				buffer.writeH(0);
+354: 				break;
+355: 			case 몰라3:
+356: 				buffer.writeD(0);
+357: 				buffer.writeD(0);
+358: 				break;
+359: 			case 인벤저장:
+360: 				buffer.writeD(0x00);
+361: 				break;
+362: 			case WORLDMAP_UNKNOWN1:
+363: 				buffer.writeH(0);
+364: 				break;
+365: 			case MSG_WAR_INITIATIVE:
+366: 			case MSG_WAR_OCCUPY:
+367: 			case MSG_MARRIED:
+368: 			case MSG_FEEL_GOOD:
+369: 			case MSG_CANT_LOGOUT:
+370: 			case LOGOUT:
+371: 			case ICON_SECURITY_SERVICES:
+372: 			case FISHING:
+373: 			case MINIGAME_TIME2:
+374: 				break;
+375: 			case CALL_SOMETHING:
+376: 				callSomething(buffer);
+377: 				break;
+378: 			case MINIGAME_10SECOND_COUNT:
+379: 				buffer.writeC(10); buffer.writeC(109); buffer.writeC(85); buffer.writeC(208); buffer.writeC(2); buffer.writeC(220);
+380: 				break;
+381: 			case DEL_ICON:
+382: 				buffer.writeH(0);
+383: 				break;
+384: 			case MINIGAME_END:
+385: 				buffer.writeC(147); buffer.writeC(92); buffer.writeC(151); buffer.writeC(220); buffer.writeC(42); buffer.writeC(74);
+386: 				break;
+387: 			case MINIGAME_START_COUNT:
+388: 				buffer.writeC(5); buffer.writeC(129); buffer.writeC(252); buffer.writeC(125); buffer.writeC(110); buffer.writeC(17);
+389: 				break;
+390: 			case ICON_AURA:
+391: 				buffer.writeC(0x98); buffer.writeC(0); buffer.writeC(0); buffer.writeC(0); buffer.writeC(0); buffer.writeC(0);
+392: 				break;
+393: 			default:
+394: 				break;
+395: 			}
+396: 			break;
+397: 
+398: 		case 2:
+399: 			buffer.writeC(0xAA);
+400: 			buffer.writeC(0x01);
+401: 			buffer.writeH(_val1 / 16);
+402: 			buffer.writeH(0x00);
+403: 			break;
+404: 
+405: 		case 3: {
+406: 			int range = 1;
+407: 			int equipType = 0;
+408: 			int isTohand = 0;
+409: 
+410: 			if (_item != null && _item.isEquipped()) {
+411: 				int weaponType = _item.getItem().getType();
+412: 				if (_item.getItem().isTwohandedWeapon()) {
+413: 					isTohand = 1;
+414: 				}
+415: 				switch (weaponType) {
+416: 				case 1: case 3: equipType = 1; break;
+417: 				case 6: case 15: equipType = 2; break;
+418: 				case 4: range = 17; equipType = 3; break;
+419: 				case 10: case 13: range = 15; equipType = 3; break;
+420: 				case 12: equipType = 4; break;
+421: 				case 5: case 14: case 18:
+422: 					range = 2;
+423: 					if (weaponType == 18) equipType = 10;
+424: 					else equipType = 5;
+425: 					break;
+426: 				case 7: case 16: equipType = 6; break;
+427: 				case 2: equipType = 7; break;
+428: 				case 11: case 17: equipType = 8; break;
+429: 				default: equipType = 0; break;
+430: 				}
+431: 			}
+432: 			if (_pc != null) {
+433: 				_pc.setAttackRang(range);
+434: 			}
+435: 			buffer.writeC(range);
+436: 			buffer.writeC(equipType);
+437: 			buffer.writeC(isTohand);
+438: 			break;
+439: 		}
+440: 
+441: 		case 4:
+442: 			switch (_subCode) {
+443: 			case 공격가능거리:
+444: 				buffer.writeC(_val1);
+445: 				buffer.writeC(_val2);
+446: 				if (_bool1) buffer.writeC(1);
+447: 				else buffer.writeC(0);
+448: 				if (_pc != null) {
+449: 					_pc.setAutoRange(_val1);
+450: 				}
+451: 				break;
+452: 			}
+453: 			break;
+454: 
+455: 		case 5:
+456: 			switch (_subCode) {
+457: 			case DungeonTime:
+458: 				buffer.writeD(7); buffer.writeD(1); buffer.writeS("$12125"); buffer.writeD(_val1);
+459: 				buffer.writeD(2); buffer.writeS("$6081"); buffer.writeD(_val2);
+460: 				buffer.writeD(15); buffer.writeS("$13527"); buffer.writeD(_val3);
+461: 				buffer.writeD(500); buffer.writeS("$19375"); buffer.writeD(_val4);
+462: 				buffer.writeD(49200);
+463: 				break;
+464: 			default:
+465: 				break;
+466: 			}
+467: 			break;
+468: 
+469: 		case 6:
+470: 			switch (_subCode) {
+471: 			case TOWN_TELEPORT:
+472: 				buffer.writeC(0x01);
+473: 				if (_pc != null) {
+474: 					buffer.writeH(_pc.getX());
+475: 					buffer.writeH(_pc.getY());
+476: 				} else {
+477: 					buffer.writeH(0); buffer.writeH(0);
+478: 				}
+479: 				break;
+480: 			case 유저빽스탭:
+481: 				if (_pc != null) {
+482: 					buffer.writeH(_pc.getX());
+483: 					buffer.writeH(_pc.getY());
+484: 				} else {
+485: 					buffer.writeH(0); buffer.writeH(0);
+486: 				}
+487: 				break;
+488: 			}
+489: 			break;
+490: 
+491: 		case 7:
+492: 			switch (_subCode) {
+493: 			case LOGIN_UNKNOWN3:
+494: 				buffer.writeC(0x10);
+495: 				buffer.writeD(0); 
+496: 				buffer.writeD(2);
+497: 				buffer.writeD(0);
+498: 				buffer.writeD(0x00200000);
+499: 				break;
+500: 			case DRAGONRAID_BUFF:
+======== 500-700 ========
+500: 			case DRAGONRAID_BUFF:
+501: 				buffer.writeC(0x01); buffer.writeC(0x27); buffer.writeC(0x0E);
+502: 				buffer.writeD(_val1);
+503: 				buffer.writeH(0x63EF);
+504: 				break;
+505: 			case 204:
+506: 				buffer.writeC(_val1);
+507: 				buffer.writeH(0);
+508: 				break;
+509: 			case PC방버프:
+510: 				if (_val1 == 1) buffer.writeC(0x18);
+511: 				else buffer.writeC(0);
+512: 				break;
+513: 			case 상점개설횟수:
+514: 				buffer.writeD(_val1); buffer.writeD(0x28); buffer.writeD(0x00);
+515: 				break;
+516: 			case ICON_BLUEPOTION:
+517: 			case ICON_CHATBAN:
+518: 			case ICON_I2H:
+519: 			case MINIGAME_TIME:
+520: 			case INIT_DODGE:
+521: 				buffer.writeH(_val1);
+522: 				break;
+523: 			case MAP_TIMER:
+524: 				buffer.writeD(_val1);
+525: 				break;
+526: 			case 배틀샷:
+527: 				buffer.writeD(_val1);
+528: 				break;
+529: 			case MSG_WAR_BEGIN:
+530: 			case MSG_WAR_END:
+531: 			case MSG_WAR_GOING:
+532: 				buffer.writeC(_val1);
+533: 				buffer.writeH(0);
+534: 				break;
+535: 			case MSG_SMS_SENT:
+536: 			case WEIGHT:
+537: 			case FOOD:
+538: 			case DODGE:
+539: 				buffer.writeC(_val1);
+540: 				break;
+541: 			case MSG_ELF:
+542: 			case MSG_COLOSSEUM:
+543: 			case SPOT:
+544: 			case ER_UpDate:
+545: 				buffer.writeC(_val1);
+546: 				break;
+547: 			case MSG_LEVEL_OVER:
+548: 				buffer.writeC(0);
+549: 				buffer.writeC(_val1);
+550: 				break;
+551: 			case COOK_WINDOW:
+552: 				buffer.writeC(0xdb); buffer.writeC(0x31); buffer.writeC(0xdf); buffer.writeC(0x02); buffer.writeC(0x01);
+553: 				buffer.writeC(_val1);
+554: 				break;
+555: 			case MINIGAME_LIST:
+556: 				buffer.writeH(0x00); buffer.writeH(0x00);
+557: 				break;
+558: 			case EINHASAD: {
+559: 				int einVal = _val1 / 10000;
+560: 				buffer.writeD(einVal);
+561: 				buffer.writeC(0);
+562: 				buffer.writeD(16);
+563: 				buffer.writeC(32); buffer.writeC(0); buffer.writeC(0);
+564: 				buffer.writeD(1);
+565: 				buffer.writeC(0); buffer.writeC(0); buffer.writeC(0); buffer.writeC(0);
+566: 				break;
+567: 			}
+568: 			case HADIN_DISPLAY:
+569: 				buffer.writeC(_val1);
+570: 				break;
+571: 			case BOOKMARK_SIZE_PLUS_10:
+572: 				buffer.writeC(_val1);
+573: 				break;
+574: 			case PLEDGE_EMBLEM_STATUS:
+575: 				buffer.writeC(1);
+576: 				if (_val1 == 0) buffer.writeC(0);
+577: 				else if (_val1 == 1) buffer.writeC(1);
+578: 				buffer.writeD(0x00);
+579: 				break;
+580: 			case ROUND1:
+581: 				buffer.writeD(_val1);
+582: 				buffer.writeD(12);
+583: 				break;
+584: 			default:
+585: 				break;
+586: 			}
+587: 			break;
+588: 
+589: 		case 8:
+590: 			switch (_subCode) {
+591: 			case BUFFICON:
+592: 				buffer.writeH(_val2);
+593: 				buffer.writeH(_val1);
+594: 				buffer.writeH(0x00);
+595: 				buffer.writeH(_bool1 ? 0x01 : 0x00);
+596: 				break;
+597: 			}
+598: 			break;
+599: 
+600: 		case 9:
+601: 			switch (_subCode) {
+602: 			case SOMETHING2:
+603: 				buffer.writeC(_val1);
+604: 				buffer.writeD(_val2);
+605: 				buffer.writeH(_val3);
+606: 				break;
+607: 			case BUFFICON:
+608: 				buffer.writeH(_val1);
+609: 				buffer.writeD(_val2);
+610: 				buffer.writeC(_val3);
+611: 				buffer.writeC(0x00);
+612: 				break;
+613: 			case EMERALD_ICON:
+614: 				buffer.writeC(_val1);
+615: 				buffer.writeC(1);
+616: 				switch (_val1) {
+617: 				case 62:
+618: 					buffer.writeH(_val2);
+619: 					buffer.writeC(20);
+620: 					buffer.writeC(_val3);
+621: 					break;
+622: 				case 112:
+623: 				case 129:
+624: 					buffer.writeC(_val2);
+625: 					buffer.writeH(_val3);
+626: 					break;
+627: 				default:
+628: 					buffer.writeD(_val2);
+629: 				}
+630: 				break;
+631: 			}
+632: 			break;
+633: 
+634: 		case 10:
+635: 			switch (_subCode) {
+636: 			case ICON_POLYMORPH:
+637: 				buffer.writeH(_val1);
+638: 				buffer.writeC(_val2);
+639: 				break;
+640: 			case ICON_COOKING:
+641: 				if (_val1 != 7) {
+642: 					buffer.writeC(0x0c); buffer.writeC(0x0c); buffer.writeC(0x0c); buffer.writeC(0x12);
+643: 					buffer.writeC(0x0c); buffer.writeC(0x09); buffer.writeC(0x00); buffer.writeC(0x00);
+644: 					buffer.writeC(_val1); buffer.writeC(0x24); buffer.writeH(_val2); buffer.writeH(0x00);
+645: 				} else {
+646: 					buffer.writeC(0x0c); buffer.writeC(0x0c); buffer.writeC(0x0c); buffer.writeC(0x12);
+647: 					buffer.writeC(0x0c); buffer.writeC(0x09); buffer.writeC(0xc8); buffer.writeC(0x00);
+648: 					buffer.writeC(_val1); buffer.writeC(0x26); buffer.writeH(_val2); buffer.writeC(0x3e); buffer.writeC(0x87);
+649: 				}
+650: 				break;
+651: 			case ICON_AURA:
+652: 				buffer.writeC(0xdd);
+653: 				buffer.writeH(_val2);
+654: 				buffer.writeC(_val1);
+655: 				break;
+656: 			case MSG_DUEL:
+657: 				buffer.writeD(_val1);
+658: 				buffer.writeD(_val2);
+659: 				break;
+660: 			case BUFFICON:
+661: 				buffer.writeH(_val2);
+662: 				buffer.writeH(_val1);
+663: 				buffer.writeH(0);
+664: 				break;
+665: 			case DRAGONBLOOD:
+666: 				buffer.writeC(_val1);
+667: 				buffer.writeD(_val2);
+668: 				break;
+669: 			case ROUND:
+670: 				buffer.writeD(_val1);
+671: 				buffer.writeD(_val2);
+672: 				break;
+673: 			case DRAGON_PEARL:
+674: 				buffer.writeC(_val2);
+675: 				buffer.writeC(_val1);
+676: 				break;
+677: 			case EMERALD_ICON:
+678: 				buffer.writeC(0x70);
+679: 				buffer.writeC(0x01);
+680: 				buffer.writeC(_val1);
+681: 				buffer.writeH(_val2);
+682: 				break;
+683: 			case NONE_TIME_ICON:
+684: 				buffer.writeC(_val1);
+685: 				buffer.writeD(_val2);
+686: 				buffer.writeD(0x00000D67);
+687: 				buffer.writeH(0x00);
+688: 				break;
+689: 			default:
+690: 				break;
+691: 			}
+692: 			break;
+693: 
+694: 		case 11:
+695: 			buffer.writeC(0x81);
+696: 			buffer.writeC(0x01);
+697: 			buffer.writeC(_val2);
+698: 			buffer.writeH(_val1);
+699: 			break;
+700: 
+======== 700-860 ========
+700: 
+701: 		case 12:
+702: 			buffer.writeC(0x3e);
+703: 			buffer.writeC(_val1);
+704: 			buffer.writeH(_val2);
+705: 			buffer.writeC(0x14);
+706: 			buffer.writeC(0x86);
+707: 			break;
+708: 
+709: 		case 13:
+710: 			switch (_subCode) {
+711: 			case MSG_TOWN_LEADER:
+712: 			case HTML_PLEDGE_REALEASE_ANNOUNCE:
+713: 				buffer.writeS(_strVal1);
+714: 				break;
+715: 			case GREEN_MESSAGE:
+716: 				buffer.writeC(2);
+717: 				buffer.writeS(_strVal1);
+718: 				break;
+719: 			default:
+720: 				break;
+721: 			}
+722: 			break;
+723: 
+724: 		case 14:
+725: 			switch (_subCode) {
+726: 			case MSG_WIN_LASTAVARD:
+727: 				buffer.writeD(_val1);
+728: 				buffer.writeS(_strVal1);
+729: 				buffer.writeS(_strVal2);
+730: 				break;
+731: 			default:
+732: 				break;
+733: 			}
+734: 			break;
+735: 
+736: 		case 15:
+737: 			switch (_subCode) {
+738: 			case ITEM_STATUS:
+739: 				if (_item != null) {
+740: 					buffer.writeD(_item.getId());
+741: 				} else {
+742: 					buffer.writeD(0);
+743: 				}
+744: 				buffer.writeH(_val1);
+745: 				break;
+746: 			}
+747: 			break;
+748: 
+749: 		case 16:
+750: 			switch (_val1) {
+751: 			case RED_MESSAGE:
+752: 			case YELLOW_MESSAGE:
+753: 				buffer.writeC(2);
+754: 				buffer.writeH(26204);
+755: 				buffer.writeC(_val1);
+756: 				buffer.writeS(_strVal1);
+757: 				break;
+758: 			case SCORE_MARK:
+759: 				buffer.writeC(_val1);
+760: 				buffer.writeS(_strVal1);
+761: 				break;
+762: 			default:
+763: 				switch (_subCode) {
+764: 				case MSG_RANK_CHANGED:
+765: 					buffer.writeC(_val1);
+766: 					buffer.writeS(_strVal1);
+767: 					break;
+768: 				case ADD_EXCLUDE:
+769: 				case REM_EXCLUDE:
+770: 					buffer.writeS(_strVal1);
+771: 					buffer.writeC(_val1);
+772: 					break;
+773: 				}
+774: 				break;
+775: 			}
+776: 			break;
+777: 
+778: 		case 17:
+779: 			switch (_subCode) {
+780: 			case EMERALD_ICON:
+781: 				buffer.writeC(62);
+782: 				if (_val2 == 0 || _val2 == 2) {
+783: 					buffer.writeC(_bool1 ? 1 : 2);
+784: 				} else {
+785: 					buffer.writeC(_bool1 ? 1 : 3);
+786: 				}
+787: 				buffer.writeH(_val1);
+788: 				buffer.writeC(0); buffer.writeC(0);
+789: 				if (_val2 == 0) buffer.writeC(0x86);
+790: 				else buffer.writeC(0x49);
+791: 				break;
+792: 			}
+793: 			break;
+794: 
+795: 		case 18:
+796: 			switch (_subCode) {
+797: 			case HTML_PLEDGE_ONLINE_MEMBERS:
+798: 				if (_objs != null) {
+799: 					buffer.writeH(_objs.length);
+800: 					for (Object name : _objs) {
+801: 						if (name == null) continue;
+802: 						L1PcInstance memberPc = (L1PcInstance) name;
+803: 						buffer.writeS(memberPc.getName());
+804: 						buffer.writeC(0);
+805: 					}
+806: 				} else {
+807: 					buffer.writeH(0);
+808: 				}
+809: 				break;
+810: 			default:
+811: 				break;
+812: 			}
+813: 			break;
+814: 
+815: 		case 19:
+816: 			buffer.writeC(0);
+817: 			switch (_subCode) {
+818: 			case SHOW_LIST_EXCLUDE:
+819: 				buffer.writeC(_val1);
+820: 				if (_strs != null) {
+821: 					buffer.writeC(_strs.length);
+822: 					for (String name : _strs) {
+823: 						buffer.writeS(name);
+824: 					}
+825: 				} else {
+826: 					buffer.writeC(0);
+827: 				}
+828: 				buffer.writeH(0);
+829: 				break;
+830: 			}
+831: 			break;
+832: 
+833: 		case 20:
+834: 			switch (_subCode) {
+835: 			case DragonMenu:
+836: 				if (_item != null) {
+837: 					buffer.writeD(_item.getId());
+838: 					buffer.writeC(_item.getItemId() == 490012 ? 0x01 : 0x00);
+839: 					buffer.writeC(_item.getItemId() == 490013 ? 0x01 : 0x00);
+840: 					buffer.writeC(_item.getItemId() == 490014 ? 0x01 : 0x00);
+841: 				} else {
+842: 					buffer.writeD(0); buffer.writeC(0); buffer.writeC(0); buffer.writeC(0);
+843: 				}
+844: 				buffer.writeC(0);
+845: 				break;
+846: 			case ITEM_ENCHANT_UPDATE:
+847: 				if (_item != null) {
+848: 					buffer.writeD(_item.getId());
+849: 					buffer.writeC(24);
+850: 					buffer.writeC(0);
+851: 					buffer.writeH(0);
+852: 					buffer.writeH(0);
+853: 					buffer.writeC(_item.getEnchantLevel());
+854: 					buffer.writeD(_item.getId());
+855: 					buffer.writeD(0);
+856: 					buffer.writeD(0);
+857: 					buffer.writeD(_item.getBless() >= 128 ? 3 : _item.getItem().isTradable() ? 7 : 2);
+858: 					buffer.writeC(0);
+859: 					buffer.writeC(_item.getAttrEnchantBit(_item.getAttrEnchantLevel()));
+860: 					buffer.writeH(0);
+======== 860-1039 ========
+860: 					buffer.writeH(0);
+861: 				}
+862: 				break;
+863: 			default:
+864: 				break;
+865: 			}
+866: 			break;
+867: 
+868: 		case 21:
+869: 			switch (_subCode) {
+870: 			case POSION_ICON:
+871: 				buffer.writeC(_val1);
+872: 				buffer.writeD(_val2);
+873: 				break;
+874: 			default:
+875: 				break;
+876: 			}
+877: 			break;
+878: 
+879: 		case 22:
+880: 			if (_subCode == CLAN_WAREHOUSE_LIST) {
+881: 				int count = 0;
+882: 				Connection con = null;
+883: 				PreparedStatement pstm = null;
+884: 				PreparedStatement pstm2 = null;
+885: 				PreparedStatement pstm3 = null;
+886: 				ResultSet rs = null;
+887: 				ResultSet rs3 = null;
+888: 				try {
+889: 					con = DatabaseFactory.getInstance().getConnection();
+890: 					String clanName = (_pc != null) ? _pc.getClanname() : "";
+891: 					pstm = con.prepareStatement("SELECT id, time FROM clan_warehouse_log WHERE clan_name=?");
+892: 					pstm.setString(1, clanName);
+893: 					rs = pstm.executeQuery();
+894: 					while (rs.next()) {
+895: 						Timestamp ts = rs.getTimestamp(2);
+896: 						if (ts != null && System.currentTimeMillis() - ts.getTime() > 4320000) {
+897: 							pstm2 = con.prepareStatement("DELETE FROM clan_warehouse_log WHERE id=?");
+898: 							pstm2.setInt(1, rs.getInt(1));
+899: 							pstm2.execute();
+900: 							SQLUtil.close(pstm2);
+901: 						} else {
+902: 							count++;
+903: 						}
+904: 					}
+905: 					buffer.writeD(count);
+906: 					pstm3 = con.prepareStatement("SELECT name, item_name, item_count, type, time FROM clan_warehouse_log WHERE clan_name=?");
+907: 					pstm3.setString(1, clanName);
+908: 					rs3 = pstm3.executeQuery();
+909: 					while (rs3.next()) {
+910: 						buffer.writeS(rs3.getString(1));
+911: 						buffer.writeC(rs3.getInt(4));
+912: 						buffer.writeS(rs3.getString(2));
+913: 						buffer.writeD(rs3.getInt(3));
+914: 						Timestamp ts = rs3.getTimestamp(5);
+915: 						long diff = ts != null ? System.currentTimeMillis() - ts.getTime() : 0L;
+916: 						buffer.writeD((int) (diff / 60000));
+917: 					}
+918: 				} catch (SQLException e) {
+919: 				} finally {
+920: 					SQLUtil.close(rs3);
+921: 					SQLUtil.close(rs);
+922: 					SQLUtil.close(pstm3);
+923: 					SQLUtil.close(pstm2);
+924: 					SQLUtil.close(pstm);
+925: 					SQLUtil.close(con);
+926: 				}
+927: 			} else if (_subCode == PLEDGE_REFRESH_MINUS) {
+928: 				if (_pc != null) {
+929: 					buffer.writeS(_pc.getName());
+930: 					buffer.writeC(_pc.getClanRank());
+931: 				} else {
+932: 					buffer.writeS(""); buffer.writeC(0);
+933: 				}
+934: 				buffer.writeH(0);
+935: 			} else if (_subCode == KARMA) {
+936: 				if (_pc != null) {
+937: 					buffer.writeD(_pc.getKarma());
+938: 				} else {
+939: 					buffer.writeD(0);
+940: 				}
+941: 			}
+942: 			break;
+943: 
+944: 		case 23:
+945: 			switch (_subCode) {
+946: 			case MINI_MAP_SEND:
+947: 				buffer.writeS(_strVal1);
+948: 				buffer.writeH(_val1);
+949: 				buffer.writeH(_val2);
+950: 				buffer.writeH(_val3);
+951: 				buffer.writeD(_val4);
+952: 				break;
+953: 			default:
+954: 				break;
+955: 			}
+956: 			break;
+957: 
+958: 		case 24:
+959: 			switch (_subCode) {
+960: 			case BAPO:
+961: 				buffer.writeD(_val1);
+962: 				buffer.writeD(_bool1 ? 0x01 : 0x00);
+963: 				break;
+964: 			case UNLIMITED_ICON:
+965: 				buffer.writeC(_bool1 ? 0x01 : 0x00);
+966: 				buffer.writeC(_val1);
+967: 				break;
+968: 			case UNLIMITED_ICON1:
+969: 				buffer.writeC(_bool1 ? 0x01 : 0x00);
+970: 				buffer.writeD(_val1);
+971: 				buffer.writeD(0);
+972: 				buffer.writeH(0);
+973: 				break;
+974: 			default:
+975: 				break;
+976: 			}
+977: 			break;
+978: 
+979: 		case 25:
+980: 			switch (_subCode) {
+981: 			case CLAN_BUFF_ICON:
+982: 				buffer.writeC(_bool1 ? 0x01 : 0x00);
+983: 				break;
+984: 			}
+985: 			break;
+986: 
+987: 		case 26:
+988: 			switch (_subCode) {
+989: 			case BOOKMARK:
+990: 				buffer.writeC(0);
+991: 				buffer.writeD(_val1);
+992: 				buffer.writeS(_strVal1);
+993: 				if (_bookmarks != null) {
+994: 					buffer.writeC(_bookmarks.size());
+995: 					for (L1BookMark book : _bookmarks) {
+996: 						buffer.writeS(book.getName());
+997: 						buffer.writeD(book.getMapId());
+998: 						buffer.writeH(book.getLocX());
+999: 						buffer.writeH(book.getLocY());
+1000: 					}
+1001: 				} else {
+1002: 					buffer.writeC(0);
+1003: 				}
+1004: 				break;
+1005: 			}
+1006: 			break;
+1007: 
+1008: 		default:
+1009: 			break;
+1010: 		}
+1011: 	}
+1012: 
+1013: 
+1014: 	private static void callSomething(WriteBuffer buffer) {
+1015: 		Iterator<L1PcInstance> itr = L1World.getInstance().getAllPlayers().iterator();
+1016: 
+1017: 		buffer.writeC(L1World.getInstance().getAllPlayers().size());
+1018: 		L1PcInstance targetPc = null;
+1019: 		Account acc = null;
+1020: 		Calendar cal = null;
+1021: 		while (itr.hasNext()) {
+1022: 			targetPc = itr.next();
+1023: 			acc = Account.load(targetPc.getAccountName());
+1024: 			if (acc == null) {
+1025: 				buffer.writeD(0);
+1026: 			} else {
+1027: 				cal = Calendar.getInstance(TimeZone.getTimeZone(Config.TIME_ZONE));
+1028: 				long lastactive = acc.getLastActive().getTime();
+1029: 				cal.setTimeInMillis(lastactive);
+1030: 				cal.set(Calendar.YEAR, 1970);
+1031: 				int time = (int) (cal.getTimeInMillis() / 1000);
+1032: 				buffer.writeD(time);
+1033: 			}
+1034: 
+1035: 			buffer.writeS(targetPc.getName());
+1036: 			buffer.writeS(targetPc.getClanname());
+1037: 		}
+1038: 	}
+1039: }
