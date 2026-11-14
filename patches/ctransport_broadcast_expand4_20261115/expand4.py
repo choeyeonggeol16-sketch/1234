@@ -291,7 +291,7 @@ public final class SharedBroadcastWireParity4 {
            .putShort((short)(k+9)).putShort((short)(k+10))
            .put((byte)0).put((byte)0).put((byte)0).put((byte)0);
           eq(invoke("SC_AttackCritical","sharedWireMode2",
-             new Class<?>[]{int.class,int.class,int.class,int.class,int.class,boolean.class,int.class,int.class,int.class,int.class,int.class,int.class},
+             new Class<?>[]{int.class,int.class,int.class,int.class,boolean.class,int.class,int.class,int.class,int.class,int.class,int.class},
              a,d,hd,act,k%2==0,t,g,k+7,k+8,k+9,k+10),e,"SC_AttackCriticalMode2",k);
         }
       }
