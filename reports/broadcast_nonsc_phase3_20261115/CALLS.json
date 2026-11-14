@@ -1,0 +1,973 @@
+{
+  "stats": [
+    [
+      "call",
+      "broadcastPacket",
+      55
+    ],
+    [
+      "call",
+      "broadcastPacketToAll",
+      18
+    ],
+    [
+      "method-def",
+      "broadcastPacket",
+      11
+    ],
+    [
+      "call",
+      "broadcastAll",
+      7
+    ],
+    [
+      "method-def",
+      "broadcastPacketToAll",
+      6
+    ],
+    [
+      "call",
+      "broadcast_map",
+      5
+    ],
+    [
+      "method-def",
+      "broadcast_map",
+      5
+    ],
+    [
+      "method-def",
+      "broadcastAll",
+      4
+    ],
+    [
+      "method-def",
+      "broadcastPacketM",
+      1
+    ],
+    [
+      "method-def",
+      "broadcastPacketFast",
+      1
+    ],
+    [
+      "method-def",
+      "wideBroadcastPacket",
+      1
+    ]
+  ],
+  "sites": [
+    {
+      "path": "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java",
+      "line": 237,
+      "name": "broadcast_map",
+      "kind": "call",
+      "call": "broadcast_map(_map_id, s)",
+      "context": "t.send(pc, effect); } } private void broadcast(String s){ if(_round_id >= 4){ L1World.getInstance().broadcast_map(_map_id, s); }else{ String s_message = s; for(L1PcInstance pc : L1World.getInstance().getVisiblePlayers(_map_id)){ if(pc != null && pc.get_"
+    },
+    {
+      "path": "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentObserver.java",
+      "line": 290,
+      "name": "broadcast_map",
+      "kind": "call",
+      "call": "broadcast_map(_copyMapId, String.format(\"%d초 후 문이 닫힙니다. 빠르게 다음 스테이지로 이동해주세요.\", MJCombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND))",
+      "context": "stance().execute(new Runnable(){ @Override public void run(){ try{ L1World.getInstance().broadcast_map(_copyMapId, String.format(\"%d초 후 문이 닫힙니다. 빠르게 다음 스테이지로 이동해주세요.\", MJCombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND)); Thread.sleep(MJCombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND * 1000L); }catch(Exception e){ e.printStackTrace();"
+    },
+    {
+      "path": "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentObserver.java",
+      "line": 354,
+      "name": "broadcast_map",
+      "kind": "call",
+      "call": "broadcast_map(_copyMapId, String.format(\"%d초 후 문이 닫힙니다. 빠르게 다음 스테이지로 이동해주세요.\", MJCombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND))",
+      "context": "ThreadPool.getInstance().execute(new Runnable(){ @Override public void run(){ try{ L1World.getInstance().broadcast_map(_copyMapId, String.format(\"%d초 후 문이 닫힙니다. 빠르게 다음 스테이지로 이동해주세요.\", MJCombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND)); Thread.sleep(MJCombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND * 1000L); }catch(Exception e){ e.printStackTrace(); }finall"
+    },
+    {
+      "path": "src/l1j/server/MJCombatSystem/MJCombatObserver.java",
+      "line": 320,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(message)",
+      "context": ".format(\"참가 인원이 부족하여 %s이(가) 종료되었습니다.\", _combat_info.get_game_type().to_kr_desc()); L1World.getInstance().broadcastPacketToAll(message); byte[] stream = SC_NOTIFICATION_MESSAGE.of( String.format(\"%s\\r\\n%d초"
+    },
+    {
+      "path": "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java",
+      "line": 216,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(SC_PacketBox.GREEN_MESSAGE, msg)",
+      "context": "LL.sendSystemMsg(_blue.get(0).getParty().getLeader()); } } protected void sendInPlayerMessage(String msg){ this.broadcastPacket(SC_PacketBox.GREEN_MESSAGE, msg); // box.clear(); } protected void waitCount() throws Exception{ try{ String sec = new StringBuilder().append(_lType.getReadySecon"
+    },
+    {
+      "path": "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java",
+      "line": 235,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(SC_PacketBox.MAP_TIMER, _time)",
+      "context": "LFCMessages.INGAME_NOTIFY_READY.sendGreenMsgToList(_blue, msg.toString()); } Thread.sleep(1000); } this.broadcastPacket(SC_PacketBox.MAP_TIMER, _time); // mTimer.clear(); LFCMessages.INGAME_NOTIFY_START.sendGreenMsgToList(_red); LFCMessages.INGAME_NOTIFY_START.sendGreenMsgToList(_b"
+    },
+    {
+      "path": "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java",
+      "line": 374,
+      "name": "broadcastPacket",
+      "kind": "method-def",
+      "call": "broadcastPacket(int subCode, int value)",
+      "context": "eturn true; return false; } protected int getRandomNum(){ return _rnd.nextInt(100) + 1; } protected void broadcastPacket(int subCode, int value) { for (L1PcInstance pc : _red) if (pc != null) SC_PacketBox.send(pc, subCode, value); for (L1PcInstance pc : _blue) if (pc"
+    },
+    {
+      "path": "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java",
+      "line": 379,
+      "name": "broadcastPacket",
+      "kind": "method-def",
+      "call": "broadcastPacket(int subCode, String value)",
+      "context": "for (L1PcInstance pc : _blue) if (pc != null) SC_PacketBox.send(pc, subCode, value); } protected void broadcastPacket(int subCode, String value) { for (L1PcInstance pc : _red) if (pc != null) SC_PacketBox.send(pc, subCode, value); for (L1PcInstance pc : _blue) if (pc"
+    },
+    {
+      "path": "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java",
+      "line": 384,
+      "name": "broadcastPacket",
+      "kind": "method-def",
+      "call": "broadcastPacket(ServerPacket pck)",
+      "context": "e); for (L1PcInstance pc : _blue) if (pc != null) SC_PacketBox.send(pc, subCode, value); } protected void broadcastPacket(ServerPacket pck){ L1PcInstance pc = null; int size = _red.size(); for(int i=0; i<size; i++){ pc = _red.get(i); if(pc != null) pc.sendPacke"
+    },
+    {
+      "path": "src/l1j/server/MJItemSkillSystem/Model/MJItemSkillModel.java",
+      "line": 192,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pck)",
+      "context": "} return dmg; } protected void broadcast(L1Character c, ServerPacket pck){ c.sendPackets(pck, false); c.broadcastPacket(pck); } protected void sendPackets(L1Character c, ServerPacket pck){ c.sendPackets(pck, false); c.broadcastPacket(pck); } protected"
+    },
+    {
+      "path": "src/l1j/server/MJItemSkillSystem/Model/MJItemSkillModel.java",
+      "line": 197,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pck)",
+      "context": "oadcastPacket(pck); } protected void sendPackets(L1Character c, ServerPacket pck){ c.sendPackets(pck, false); c.broadcastPacket(pck); } protected boolean isCounterMagic(L1Character c){ if(c.hasSkillEffect(L1SkillId.COUNTER_MAGIC)){ c.removeSkillEffect(L1SkillId.C"
+    },
+    {
+      "path": "src/l1j/server/MJKDASystem/MJKDA.java",
+      "line": 311,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(new SC_SystemMessage(\"\\\\f3[ 승리 : \\\\aA\"+killer.getName() + \" \\\\f3] ■ [ 패배 : \\\\aA\"+victim.getName()+\"\\\\f3]\"))",
+      "context": "ng.format(\"\\\\aG%s 님이 %s 님을 죽였습니다.\", killer.getName(), victim.getName()), Opcodes.S_MESSAGE), //L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"\\\\f3[ 승리 : \\\\aA\"+killer.getName() + \" \\\\f3] ■ [ 패배 : \\\\aA\"+victim.getName()+\"\\\\f3]\")); //L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"\\\\f3사망위치 : \\\\aA\"+locName)); //new SC_ChatPacket(String.format(\"\\\\"
+    },
+    {
+      "path": "src/l1j/server/MJKDASystem/MJKDA.java",
+      "line": 312,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(new SC_SystemMessage(\"\\\\f3사망위치 : \\\\aA\"+locName))",
+      "context": "ge(\"\\\\f3[ 승리 : \\\\aA\"+killer.getName() + \" \\\\f3] ■ [ 패배 : \\\\aA\"+victim.getName()+\"\\\\f3]\")); //L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"\\\\f3사망위치 : \\\\aA\"+locName)); //new SC_ChatPacket(String.format(\"\\\\f>사망위치 : %s\", MapsTable.getInstance().getMapName(killer.getMapId())), Opcodes.S_MESSAGE), //};"
+    },
+    {
+      "path": "src/l1j/server/MJKDASystem/MJKDA.java",
+      "line": 315,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(pcks, true)",
+      "context": "망위치 : %s\", MapsTable.getInstance().getMapName(killer.getMapId())), Opcodes.S_MESSAGE), //}; //L1World.getInstance().broadcastPacketToAll(pcks, true); /* if (killer.hasSkillEffect(L1SkillId.킬1)) { killer.removeSkillEffect(L1SkillId.킬1); killer.setSkillEffect(L1SkillId.킬2,20*"
+    },
+    {
+      "path": "src/l1j/server/MJKDASystem/MJKDA.java",
+      "line": 320,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+\"님이 더블킬중 입니다.\"))",
+      "context": "killer.removeSkillEffect(L1SkillId.킬1); killer.setSkillEffect(L1SkillId.킬2,20*1000); L1World.getInstance().broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+\"님이 더블킬중 입니다.\")); } else if (killer.hasSkillEffect(L1SkillId.킬2)) { killer.removeSkillEffect(L1SkillId.킬2); killer.setSkillEffect(L1SkillId.킬3,20"
+    },
+    {
+      "path": "src/l1j/server/MJKDASystem/MJKDA.java",
+      "line": 324,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+\"님이 트리플킬중 입니다.\"))",
+      "context": "killer.removeSkillEffect(L1SkillId.킬2); killer.setSkillEffect(L1SkillId.킬3,20*1000); L1World.getInstance().broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+\"님이 트리플킬중 입니다.\")); } else if (killer.hasSkillEffect(L1SkillId.킬3)) { killer.removeSkillEffect(L1SkillId.킬3); killer.setSkillEffect(L1SkillId.킬4,20"
+    },
+    {
+      "path": "src/l1j/server/MJKDASystem/MJKDA.java",
+      "line": 328,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+\"님이 쿼드라킬중 입니다.\"))",
+      "context": "killer.removeSkillEffect(L1SkillId.킬3); killer.setSkillEffect(L1SkillId.킬4,20*1000); L1World.getInstance().broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+\"님이 쿼드라킬중 입니다.\")); } else if (killer.hasSkillEffect(L1SkillId.킬4)) { killer.removeSkillEffect(L1SkillId.킬4); killer.setSkillEffect(L1SkillId.킬5,20"
+    },
+    {
+      "path": "src/l1j/server/MJKDASystem/MJKDA.java",
+      "line": 332,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+\"님이 학살중 입니다.\"))",
+      "context": "killer.removeSkillEffect(L1SkillId.킬4); killer.setSkillEffect(L1SkillId.킬5,20*1000); L1World.getInstance().broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+\"님이 학살중 입니다.\")); } else { killer.setSkillEffect(L1SkillId.킬1,20*1000); } */ } private boolean isInWarAreaAndWarTime(L1PcInstance pc) { i"
+    },
+    {
+      "path": "src/l1j/server/MJRaidSystem/BossSkill/DeathHeal.java",
+      "line": 96,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pc, oe)",
+      "context": "OnlyEffect oe = new S_OnlyEffect(pc.getId(), _effectId); pc.sendPackets(oe, false); Broadcaster.broadcastPacket(pc, oe); }*/ if(pc.hasSkillEffect(MJRaidLoadManager.MRS_BS_DEATHHEAL_ID)){ pc.removeSkillEffect(MJRaidLoadManager.MRS_B"
+    },
+    {
+      "path": "src/l1j/server/MJRaidSystem/BossSkill/DeathPotion.java",
+      "line": 95,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pc, oe)",
+      "context": "OnlyEffect oe = new S_OnlyEffect(pc.getId(), _effectId); pc.sendPackets(oe, false); Broadcaster.broadcastPacket(pc, oe); }*/ if(pc.hasSkillEffect(MJRaidLoadManager.MRS_BS_DEATHPOTION_ID)) pc.removeSkillEffect(MJRaidLoadManager.MRS"
+    },
+    {
+      "path": "src/l1j/server/MJRaidSystem/BossSkill/Normal.java",
+      "line": 95,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pc, oe)",
+      "context": "OnlyEffect oe = new S_OnlyEffect(pc.getId(), _effectId); pc.sendPackets(oe, false); Broadcaster.broadcastPacket(pc, oe); }*/ pc.receiveDamage(own, calcDamage(own, pc)); SC_DoActionGFX.send( pc.getNetConnection(),"
+    },
+    {
+      "path": "src/l1j/server/MJRaidSystem/BossSkill/ParalPoison.java",
+      "line": 99,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pc, oe)",
+      "context": "OnlyEffect oe = new S_OnlyEffect(pc.getId(), _effectId); pc.sendPackets(oe, false); Broadcaster.broadcastPacket(pc, oe); }*/ L1ParalysisPoison.doInfection(pc, 9998); } }"
+    },
+    {
+      "path": "src/l1j/server/MJRaidSystem/BossSkill/PosChange.java",
+      "line": 92,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pc, oe)",
+      "context": "OnlyEffect oe = new S_OnlyEffect(pc.getId(), _effectId); pc.sendPackets(oe, false); Broadcaster.broadcastPacket(pc, oe); }*/ int div = _range / 2; int x = ThreadLocalRandom.current().nextInt(div); int y = ThreadLocalRandom.cu"
+    },
+    {
+      "path": "src/l1j/server/MJRaidSystem/BossSkill/ReCall.java",
+      "line": 94,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pc, oe)",
+      "context": "OnlyEffect oe = new S_OnlyEffect(pc.getId(), _effectId); pc.sendPackets(oe, false); Broadcaster.broadcastPacket(pc, oe); }*/ pc.start_teleport(own.getX() + ThreadLocalRandom.current().nextInt(2) + 1, own.getY() + ThreadLocalRandom.current().n"
+    },
+    {
+      "path": "src/l1j/server/MJRaidSystem/BossSkill/ReduceHeal.java",
+      "line": 97,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pc, oe)",
+      "context": "OnlyEffect oe = new S_OnlyEffect(pc.getId(), _effectId); pc.sendPackets(oe, false); Broadcaster.broadcastPacket(pc, oe); }*/ if(pc.hasSkillEffect(MJRaidLoadManager.MRS_BS_REDUCEHEAL_ID)) pc.removeSkillEffect(MJRaidLoadManager.MRS_"
+    },
+    {
+      "path": "src/l1j/server/MJRaidSystem/BossSkill/TargetToEffect.java",
+      "line": 92,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pc, packet)",
+      "context": "ion packet = new S_EffectLocation(pc.getX(), pc.getY(), _effectId); pc.sendPackets(packet); Broadcaster.broadcastPacket(pc, packet);*/ pc.receiveDamage(own, calcDamage(own, pc)); SC_DoActionGFX.send(pc.getNetConnection(), pc.getId(), ActionCodes.ACTION_D"
+    },
+    {
+      "path": "src/l1j/server/MJRaidSystem/BossSkill/ValakasNormal.java",
+      "line": 114,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pc, oe)",
+      "context": "OnlyEffect oe = new S_OnlyEffect(pc.getId(), _effectId); pc.sendPackets(oe, false); Broadcaster.broadcastPacket(pc, oe); }*/ pc.receiveDamage(own, calcDamageForValakas(own, pc)); SC_DoActionGFX.send(pc.getNetConnection(), pc.getId(),"
+    },
+    {
+      "path": "src/l1j/server/MJRaidSystem/BossSkill/WideAreaSkill.java",
+      "line": 96,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pc, oe)",
+      "context": "S_OnlyEffect oe = new S_OnlyEffect(pc.getId(), _effectId); pc.sendPackets(oe); Broadcaster.broadcastPacket(pc, oe); }*/ pc.receiveDamage(own, calcDamage(own, pc)); SC_DoActionGFX.send(pc.getNetConnection(), pc.getId(), ActionCodes"
+    },
+    {
+      "path": "src/l1j/server/MJRaidSystem/BossSkill/WpBrk.java",
+      "line": 99,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pc, oe)",
+      "context": "S_OnlyEffect oe = new S_OnlyEffect(pc.getId(), _effectId); pc.sendPackets(oe); Broadcaster.broadcastPacket(pc, oe); }*/ } }"
+    },
+    {
+      "path": "src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java",
+      "line": 127,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(_opened_message)",
+      "context": "@Override public AbstractDateAcceptor do_open(Calendar cal) { if(_opened_message != null) L1World.getInstance().broadcastPacketToAll(_opened_message); SC_PacketBox.broadcastGreen(_opened_message); if(_listener.get_npc_id() == 70086){Config.잊섬오픈 = 1;} if(_listener.get_npc_id() == 771"
+    },
+    {
+      "path": "src/l1j/server/MJWarSystem/MJWar.java",
+      "line": 151,
+      "name": "broadcastAll",
+      "kind": "call",
+      "call": "broadcastAll(type, c1.getClanName(), c2.getClanName())",
+      "context": "er, L1Clan loser){ broadcast(4, winner, loser); } public void broadcast(int type, L1Clan c1, L1Clan c2){ SC_War.broadcastAll(type, c1.getClanName(), c2.getClanName()); } public void notifyDeclaration(L1Clan defense, L1Clan offense){ notify(1, offense, defense); } public void notifySurrender(L1Cl"
+    },
+    {
+      "path": "src/l1j/server/server/GMCommands.java",
+      "line": 903,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(new SC_SystemMessage(\"동쪽 해역에서 폭풍우가 치고 있습니다.\"))",
+      "context": "fig.시그널1 = 0; Config.시그널2 = 0; Config.시그널3 = 0; gm.sendPackets(\"포세이돈 이벤트를 시작합니다.\"); //L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"동쪽 해역에서 폭풍우가 치고 있습니다.\")); //RPacketBox.broadcastGreen(\"동쪽 해역에서 폭풍우가 치고 있습니다.\")); break; case \"포세이돈종료\" : //From.Neige Config.포세이돈 = 0; Config.시그널1 = 1;"
+    },
+    {
+      "path": "src/l1j/server/server/GMCommands.java",
+      "line": 912,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(new SC_SystemMessage(\"바다가 잠잠해졌습니다.\"))",
+      "context": "fig.시그널1 = 1; Config.시그널2 = 1; Config.시그널3 = 4; gm.sendPackets(\"포세이돈 이벤트를 종료합니다.\"); //L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"바다가 잠잠해졌습니다.\")); //L1World.getInstance().broadcastPacketToAll(new RPacketBox(RPacketBox.GREEN_MESSAGE, \"바다가 잠잠해졌습니다.\")); break; case \"포세이돈테스트\" : //"
+    },
+    {
+      "path": "src/l1j/server/server/GMCommands.java",
+      "line": 913,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(new RPacketBox(RPacketBox.GREEN_MESSAGE, \"바다가 잠잠해졌습니다.\"))",
+      "context": "다.\"); //L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"바다가 잠잠해졌습니다.\")); //L1World.getInstance().broadcastPacketToAll(new RPacketBox(RPacketBox.GREEN_MESSAGE, \"바다가 잠잠해졌습니다.\")); break; case \"포세이돈테스트\" : //From.Neige Config.포세이돈 = 0; Config.시그널1 = 1; Config.시그널2 = 1; Config.시그널3 = 3; gm.sendPacket"
+    },
+    {
+      "path": "src/l1j/server/server/GMCommands.java",
+      "line": 2810,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(new SC_SystemMessage(\"\\\\fY[\"+target.getName()+\"]님이 수배범이 되었습니다.\"))",
+      "context": "target.sendPackets(message1); //target.sendPackets(\"\\\\fY수배효과: 추타+3,명중+3,AC-3,SP+3\"); //L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"\\\\fY[\"+target.getName()+\"]님이 수배범이 되었습니다.\")); //L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"\\\\fY[수배자]: \"+pc.getName())); target.setSkillEffect(L1Skil"
+    },
+    {
+      "path": "src/l1j/server/server/GMCommands.java",
+      "line": 2811,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(new SC_SystemMessage(\"\\\\fY[수배자]: \"+pc.getName()))",
+      "context": "ce().broadcastPacketToAll(new SC_SystemMessage(\"\\\\fY[\"+target.getName()+\"]님이 수배범이 되었습니다.\")); //L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"\\\\fY[수배자]: \"+pc.getName())); target.setSkillEffect(L1SkillId.USER_WANTED, -1); target.doWanted(true); pc.getInventory().consumeItem(40308, price); }"
+    },
+    {
+      "path": "src/l1j/server/server/GMCommands.java",
+      "line": 7000,
+      "name": "broadcastAll",
+      "kind": "call",
+      "call": "broadcastAll(3)",
+      "context": "괴상한 산타클로스 무리(\"+locName+\")\"); SC_PacketBox.broadcastGreen(\"\\\\fO[이벤트 스폰]: 괴상한 산타클로스 무리 (\"+locName+\")\"); SC_Weather.broadcastAll(3); } catch (Exception e){ SC_SystemMessage.send(gm, \".산타\"); } } private void searchclaner(L1PcInstance gm, String name) { try {"
+    },
+    {
+      "path": "src/l1j/server/server/UserCommands.java",
+      "line": 857,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(new SC_SystemMessage(\"\\\\fY[\"+target.getName()+\"]님이 수배범이 되었습니다.\"))",
+      "context": "; target.sendPackets(message1); //target.sendPackets(\"\\\\fY수배효과: 추타+3,명중+3,AC-3,SP+3\"); //L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"\\\\fY[\"+target.getName()+\"]님이 수배범이 되었습니다.\")); //L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"\\\\fY[수배자]: \"+pc.getName())); target.setSkillEffect(L1Skil"
+    },
+    {
+      "path": "src/l1j/server/server/UserCommands.java",
+      "line": 858,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(new SC_SystemMessage(\"\\\\fY[수배자]: \"+pc.getName()))",
+      "context": "ce().broadcastPacketToAll(new SC_SystemMessage(\"\\\\fY[\"+target.getName()+\"]님이 수배범이 되었습니다.\")); //L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"\\\\fY[수배자]: \"+pc.getName())); target.setSkillEffect(L1SkillId.USER_WANTED, -1); target.doWanted(true); pc.getInventory().consumeItem(40308, price); }"
+    },
+    {
+      "path": "src/l1j/server/server/command/executor/L1Burf.java",
+      "line": 71,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(pc.getId(), sprid))",
+      "context": "t sprid = Integer.parseInt(stringtokenizer.nextToken()); pc.sendPackets(new S_SkillSound(pc.getId(), sprid)); pc.broadcastPacket(new S_SkillSound(pc.getId(), sprid)); } catch (Exception e) { SC_SystemMessage.send(pc, cmdName + \" [castgfx] 라고 입력해 주세요. \"); } }*/ }"
+    },
+    {
+      "path": "src/l1j/server/server/command/executor/L1ChangeWeather.java",
+      "line": 24,
+      "name": "broadcastAll",
+      "kind": "call",
+      "call": "broadcastAll(weather)",
+      "context": "); int weather = Integer.parseInt(tok.nextToken()); L1World.getInstance(). setWeather(weather); SC_Weather.broadcastAll(weather); } catch (Exception e) { SC_SystemMessage.send(pc, cmdName + \" 0~3(눈), 16~19(비)라고 입력 해주세요.\"); } } }"
+    },
+    {
+      "path": "src/l1j/server/server/command/executor/L1Reload.java",
+      "line": 382,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(new SC_SystemMessage(\"\\\\f:보스알람시간이 재정비되었습니다.\" ))",
+      "context": "리로드: armor_set 테이블이 리로드 되었습니다\"); // } else if (arg.equalsIgnoreCase(\"이벤트알람\")) { // try { // L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"\\\\f:보스알람시간이 재정비되었습니다.\" )); // L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"\\\\f:리스 후 보스알람시간표기가 리로드됩니다.\" )); // // } catch (Exception e) {"
+    },
+    {
+      "path": "src/l1j/server/server/command/executor/L1Reload.java",
+      "line": 383,
+      "name": "broadcastPacketToAll",
+      "kind": "call",
+      "call": "broadcastPacketToAll(new SC_SystemMessage(\"\\\\f:리스 후 보스알람시간표기가 리로드됩니다.\" ))",
+      "context": "L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"\\\\f:보스알람시간이 재정비되었습니다.\" )); // L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage(\"\\\\f:리스 후 보스알람시간표기가 리로드됩니다.\" )); // // } catch (Exception e) { // e.printStackTrace(); // } } else if (arg.equalsIgnoreCase(\"보스스폰\")) { if (BossController.r"
+    },
+    {
+      "path": "src/l1j/server/server/command/executor/L1Ress.java",
+      "line": 45,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(objid, 759))",
+      "context": "ng cmdName, String arg) { try { int objid = pc.getId(); //pc.sendPackets(new S_SkillSound(objid, 759)); //pc.broadcastPacket(new S_SkillSound(objid, 759)); for (L1PcInstance tg : L1World.getInstance(). getVisiblePlayer(pc)) { if (tg.getCurrentHp() == 0 && tg.isDead()) { //tg.sendPa"
+    },
+    {
+      "path": "src/l1j/server/server/model/Broadcaster.java",
+      "line": 15,
+      "name": "broadcastPacket",
+      "kind": "method-def",
+      "call": "broadcastPacket(L1Character cha, ServerPacket packet)",
+      "context": "있는 플레이어에, 패킷을 송신한다. * * @param packet * 송신하는 패킷을 나타내는 ServerBasePacket 오브젝트. */ public static void broadcastPacket(L1Character cha, ServerPacket packet) { Iterator<L1PcInstance> iter = L1World.getInstance().getVisiblePlayer(cha).iterator(); L1PcInstance pc = null; while (iter.hasNex"
+    },
+    {
+      "path": "src/l1j/server/server/model/HelpBySupport.java",
+      "line": 297,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(_pc.getId(), 228))",
+      "context": "(_pc, 40, 32); SC_DoActionGFX.broadcast(_support, 19); _pc.sendPackets(new S_SkillSound(_pc.getId(), 228)); _pc.broadcastPacket(new S_SkillSound(_pc.getId(), 228)); _support.setCurrentMp(_support.getCurrentMp() - 30); }else{ npctalk(0); } }else{ npctalk(2); }*/ } public void npctalk"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1MerchantInstance.java",
+      "line": 177,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(player, new S_OtherCharPacks(player))",
+      "context": "), 169, true, false); // player.setGmInvis(false); // SC_Invis.send(player, player.getId(), 0); // Broadcaster.broadcastPacket(player, new S_OtherCharPacks(player)); // player.killSkillEffectTimer(L1SkillId.INVISIBILITY); // player.sendPackets(new SC_SystemMessage(\"투명상태를 해제했습니다. \")); break;"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1OrimQuestInstance.java",
+      "line": 441,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_DoActionGFX(temp.getId(), 0))",
+      "context": "== 0) {// 좌표 고정 // L1NpcInstance temp = spawnOne(new L1Location(32803, 32788, _mapId), 91445, 4); // temp.broadcastPacket(new S_DoActionGFX(temp.getId(), 0)); // sendMessage(\"$\", 0);// 오림 : 주위에 상어 떼가 있습니다. 조심해! // deleteNpc(temp); // } else { // L1NpcInstance temp = nul"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1OrimQuestInstance.java",
+      "line": 466,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_DoActionGFX(temp.getId(), 0))",
+      "context": "} else if (i == 3) { // temp = spawnOne(new L1Location(32800, 32794, _mapId), 91494, 4); // temp.broadcastPacket(new S_DoActionGFX(temp.getId(), 0)); // deleteNpc(temp); // sendMessage(\"$9544\", 0); // // 오림 : 그 무시 무시한 놈은어딘가 위험 해 보인다. // } // } //"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1OrimQuestInstance.java",
+      "line": 627,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(fire.getId(), 762))",
+      "context": "e(L1Location.randomLocation(new L1Location(32799, // 32803, _mapId), 1, 6, false), 91487, 5); // fire.broadcastPacket(new S_SkillSound(fire.getId(), 762)); // if (_ship_burning >= 10) { // sendMessage(\"$9562\", 1); // // 오림 : 배가침몰합니다! 서둘러탈출하세요! 이 상태에서위험하다! //"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1OrimQuestInstance.java",
+      "line": 662,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(fire.getId(), 762))",
+      "context": "L1Location.randomLocation(new L1Location(32799, // 32803, _mapId), 1, 6, false), 91487, 5); // fire.broadcastPacket(new S_SkillSound(fire.getId(), 762)); // if (_ship_burning >= 10) { // sendMessage(\"$9562\", 1); // // 오림 : 배가침몰합니다!서둘러탈출하세요! // Thread.sl"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1OrimQuestInstance.java",
+      "line": 1023,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_DoActionGFX(_cannon_1.getId(), 2))",
+      "context": "/ sendPackets(se); // break; // case _STATUS_FIRE_CANON_1: // if (_cannon_1 != null) { // _cannon_1.broadcastPacket(new S_DoActionGFX(_cannon_1.getId(), 2)); // } // break; // case _STATUS_FIRE_CANON_2: // if (_cannon_2 != null) { // _cannon_2.broadcastPacket(new S_DoActionGF"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1OrimQuestInstance.java",
+      "line": 1028,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_DoActionGFX(_cannon_2.getId(), 2))",
+      "context": "getId(), 2)); // } // break; // case _STATUS_FIRE_CANON_2: // if (_cannon_2 != null) { // _cannon_2.broadcastPacket(new S_DoActionGFX(_cannon_2.getId(), 2)); // } // break; // }// isDeleteTrancaction End // }// swicth End // cancel(); // } // } // // /** // * 퀘스트에 참여하는 플레이어에게 메시"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1OrimQuestInstance.java",
+      "line": 1142,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(pc.getId(), 2030))",
+      "context": "ll; // for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) { // if (pc.getMapId() == _mapId) { // pc.broadcastPacket(new S_SkillSound(pc.getId(), 2030)); // pc.sendPackets(new S_SkillSound(pc.getId(), 2030)); // } // } // if (_OrimQuestStatus >= _STATUS_ORIMQUEAT_START) { // if"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1OrimQuestInstance.java",
+      "line": 1170,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(pc.getId(), 2029))",
+      "context": "표시) // for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) { // if (pc.getMapId() == _mapId) { // pc.broadcastPacket(new S_SkillSound(pc.getId(), 2029)); // pc.sendPackets(new S_SkillSound(pc.getId(), 2029)); // } // } // // if (!(_OrimQuestStatus >= _STATUS_ORIMQUEAT_START)) { //"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1OrimQuestInstance.java",
+      "line": 1462,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_DoActionGFX(_shipWall.getId(), _shipWall.getStatus()))",
+      "context": "_shipWall.setStatus(36);// 침몰 // } else { // _shipWall.setStatus(_shipWall.getStatus() + 1); // } // _shipWall.broadcastPacket(new S_DoActionGFX(_shipWall.getId(), _shipWall.getStatus())); // if (_shipWall.getStatus() > 35) { // sendMessage(\"$9562\", 1);// 오림 : 배가 침몰합니다! 서둘러 탈출하세요! 이 상태에서 // // 위험하다! // sendPa"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1OrimQuestInstance.java",
+      "line": 1537,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_DoActionGFX(_craken_tail_left.getId(), ActionCodes.ACTION_Die))",
+      "context": "/ public void crakenDead() { // this._isCrakenDead = true; // if (_craken_tail_left != null) { // _craken_tail_left.broadcastPacket(new S_DoActionGFX(_craken_tail_left.getId(), ActionCodes.ACTION_Die)); // _craken_tail_left.deleteMe(); // } // // if (_craken_tail_right != null) { // _craken_tail_right.broadcastPacket(new S_DoActionGF"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1OrimQuestInstance.java",
+      "line": 1542,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_DoActionGFX(_craken_tail_right.getId(), ActionCodes.ACTION_Die))",
+      "context": "ACTION_Die)); // _craken_tail_left.deleteMe(); // } // // if (_craken_tail_right != null) { // _craken_tail_right.broadcastPacket(new S_DoActionGFX(_craken_tail_right.getId(), ActionCodes.ACTION_Die)); // _craken_tail_right.deleteMe(); // } // } // // public void crakenTailDead_Left() { // _craken_tail_left = null; // } // // public v"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+      "line": 3641,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(getId(), 2236))",
+      "context": "tAI().getBotType(); // if (type == MJBotType.REDKNIGHT || type == MJBotType.PROTECTOR) { // broadcastPacket(new S_SkillSound(getId(), 2236)); // return; // } // } // 전투 필드(컴뱃) / 일반 KDA 처리 if (is_combat_field()) {"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1SupportInstance.java",
+      "line": 266,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_DoActionGFX(getId(), ActionCodes.ACTION_Die))",
+      "context": "setStatus(ActionCodes.ACTION_Die); // setCurrentHp(0); // // getMap().setPassable(getLocation(), true); // broadcastPacket(new S_DoActionGFX(getId(), ActionCodes.ACTION_Die)); // L1PcInstance player = null; // if (lastAttacker instanceof L1PcInstance) { // player = (L1PcInstance) lastAttacker; // }"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/L1SupportInstance.java",
+      "line": 298,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(s_lawful)",
+      "context": "awful s_lawful = new S_Lawful(player.getId(), player.getLawful()); // player.sendPackets(s_lawful); // player.broadcastPacket(s_lawful); // // if (isChangePkCount && player.get_PKcount() >= 5 && player.get_PKcount() < 100) { // player.sendPackets(new S_BlueMessag"
+    },
+    {
+      "path": "src/l1j/server/server/model/Instance/MJMessengerInstance.java",
+      "line": 37,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(make_object_packet(), /// MJEProtoMessages.SC_WORLD_PUT_OBJECT_NOTI, true, false)",
+      "context": "s_ghost; } public void broadcast_message() { SC_ChangeName.broadcast(this, getId(), get_current_message()); /// broadcastPacket(make_object_packet(), /// MJEProtoMessages.SC_WORLD_PUT_OBJECT_NOTI, true, false); } @Override public void onPerceive(L1PcInstance perceivedFrom) { if (perceivedFrom == null) return; if(getNpcId() == 50000063"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Character.java",
+      "line": 347,
+      "name": "broadcastPacket",
+      "kind": "method-def",
+      "call": "broadcastPacket(ServerPacket[] pcs)",
+      "context": "ralysis = p; } public void cureParalaysis() { if (_paralysis != null) { _paralysis.cure(); } } public void broadcastPacket(ServerPacket[] pcs) { for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) { for (int i = 0; i < pcs.length; i++) pc.sendPackets(pcs[i"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Character.java",
+      "line": 354,
+      "name": "broadcastPacket",
+      "kind": "method-def",
+      "call": "broadcastPacket(ServerPacket[] pcs, boolean isClear)",
+      "context": "tVisiblePlayer(this)) { for (int i = 0; i < pcs.length; i++) pc.sendPackets(pcs[i], false); } } public void broadcastPacket(ServerPacket[] pcs, boolean isClear) { for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) { for (int i = 0; i < pcs.length; i++) pc.sendPackets(pcs[i"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Character.java",
+      "line": 362,
+      "name": "broadcastPacket",
+      "kind": "method-def",
+      "call": "broadcastPacket(ServerPacket packet)",
+      "context": "VisiblePlayer(this)) { for (int i = 0; i < pcs.length; i++) pc.sendPackets(pcs[i], false); } } public void broadcastPacket(ServerPacket packet) { for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) { pc.sendPackets(packet); } } public void broadcastPacket"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Character.java",
+      "line": 368,
+      "name": "broadcastPacket",
+      "kind": "method-def",
+      "call": "broadcastPacket(byte[] data)",
+      "context": "for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) { pc.sendPackets(packet); } } public void broadcastPacket(byte[] data) { l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawRecipients( L1World.getInstance().getVisiblePlay"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Character.java",
+      "line": 373,
+      "name": "broadcastPacketM",
+      "kind": "method-def",
+      "call": "broadcastPacketM(ServerPacket packet)",
+      "context": ".CSharedBroadcast.sendRawRecipients( L1World.getInstance().getVisiblePlayer(this), data); } public void broadcastPacketM(ServerPacket packet) { for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) { if(pc.getLinMeff() != 2){ pc.sendPackets(packet); }"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Character.java",
+      "line": 381,
+      "name": "broadcastPacket",
+      "kind": "method-def",
+      "call": "broadcastPacket(ServerPacket packet, int clanid)",
+      "context": "Instance().getVisiblePlayer(this)) { if(pc.getLinMeff() != 2){ pc.sendPackets(packet); } } } public void broadcastPacket(ServerPacket packet, int clanid) { for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) { pc.sendPackets(packet, false, clanid); } } public void b"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Character.java",
+      "line": 387,
+      "name": "broadcastPacket",
+      "kind": "method-def",
+      "call": "broadcastPacket(ServerPacket packet, boolean isClear)",
+      "context": "nce pc : L1World.getInstance().getVisiblePlayer(this)) { pc.sendPackets(packet, false, clanid); } } public void broadcastPacket(ServerPacket packet, boolean isClear) { for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) { pc.sendPackets(packet, false); } } public void broadcast"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Character.java",
+      "line": 393,
+      "name": "broadcastPacket",
+      "kind": "method-def",
+      "call": "broadcastPacket(ServerPacket packet, L1Character target)",
+      "context": "1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) { pc.sendPackets(packet, false); } } public void broadcastPacket(ServerPacket packet, L1Character target) { for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) { pc.sendPackets(packet, false); } } /** * 시야 검색 순회 나중에"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Character.java",
+      "line": 403,
+      "name": "broadcastPacketFast",
+      "kind": "method-def",
+      "call": "broadcastPacketFast(ServerPacket packet)",
+      "context": "dPackets(packet, false); } } /** * 시야 검색 순회 나중에 브로드캐스트 다 바꿀것 전체 순회가 아니라 시야 순회라 부하 급감. * */ public void broadcastPacketFast(ServerPacket packet) { for (L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(this)) { pc.sendPackets(packet); } }"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Character.java",
+      "line": 409,
+      "name": "wideBroadcastPacket",
+      "kind": "method-def",
+      "call": "wideBroadcastPacket(ServerPacket packet)",
+      "context": ": L1World.getInstance().getVisiblePlayerFast(this)) { pc.sendPackets(packet); } } public void wideBroadcastPacket(ServerPacket packet) { for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this, 50)) { pc.sendPackets(packet, false); } } public int[] getF"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Magic.java",
+      "line": 591,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(_targetPc, new * S_SkillSound(_targetPc.getId(), 13418))",
+      "context": "alcType == PC_PC) { /* * _targetPc.sendPackets(new S_SkillSound(_targetPc.getId(), * 13418)); Broadcaster.broadcastPacket(_targetPc, new * S_SkillSound(_targetPc.getId(), 13418)); */ isSuccess = false; } else if (_calcType == PC_NPC) { SC_SkillSound.send(_pc, _targetNpc.getId(), 13418); // Broadca"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Magic.java",
+      "line": 597,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(_pc, new // S_SkillSound(_targetNpc.getId(), 13418))",
+      "context": "false; } else if (_calcType == PC_NPC) { SC_SkillSound.send(_pc, _targetNpc.getId(), 13418); // Broadcaster.broadcastPacket(_pc, new // S_SkillSound(_targetNpc.getId(), 13418));// 이거는 다른 사람도 보게... isSuccess = false; } } if (!isSuccess & skillId == TURN_UNDEAD) { if (_calcType == PC_NPC) { _targetN"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Magic.java",
+      "line": 2034,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(_targetPc.getId(), 13136))",
+      "context": "pId()); // } // //_targetPc.sendPackets(new S_SkillSound(_targetPc.getId(), 13136)); // //_targetPc.broadcastPacket(new S_SkillSound(_targetPc.getId(), 13136)); // _targetPc.sendPackets(new S_SkillSound(_targetPc.getId(), 14453)); // _targetPc.broadcastPacket(new S_SkillSound(_targetPc."
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Magic.java",
+      "line": 2036,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(_targetPc.getId(), 14453))",
+      "context": "rgetPc.getId(), 13136)); // _targetPc.sendPackets(new S_SkillSound(_targetPc.getId(), 14453)); // _targetPc.broadcastPacket(new S_SkillSound(_targetPc.getId(), 14453)); // // SC_Paralysis.send(_targetPc, SC_Paralysis.TYPE_BIND, true); // _targetPc.sendPackets(\"창에 궤뚫려 행동에 제약을 받습니다\"); //"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Magic.java",
+      "line": 2053,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(_targetPc.getId(), 14452))",
+      "context": "// // }else { // _targetPc.sendPackets(new S_SkillSound(_targetPc.getId(), 14452)); // _targetPc.broadcastPacket(new S_SkillSound(_targetPc.getId(), 14452)); // } // if (_pc.isGm()) { // _pc.sendPackets(\"제약: 확률[\" + 랜덤 + \"] 렙차[\" + 렙차 + \"*\" + Config.이터양 + \"+\" + 기본확률 // +"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Magic.java",
+      "line": 2081,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(_targetPc.getId(), 13136))",
+      "context": "pId()); // } // //_targetPc.sendPackets(new S_SkillSound(_targetPc.getId(), 13136)); // //_targetPc.broadcastPacket(new S_SkillSound(_targetPc.getId(), 13136)); // _targetPc.sendPackets(new S_SkillSound(_targetPc.getId(), 14453)); // _targetPc.broadcastPacket(new S_SkillSound(_targetPc."
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Magic.java",
+      "line": 2083,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(_targetPc.getId(), 14453))",
+      "context": "rgetPc.getId(), 13136)); // _targetPc.sendPackets(new S_SkillSound(_targetPc.getId(), 14453)); // _targetPc.broadcastPacket(new S_SkillSound(_targetPc.getId(), 14453)); // SC_Paralysis.send(_targetPc, SC_Paralysis.TYPE_BIND, true); // _targetPc.sendPackets(\"창에 궤뚫려 행동에 제약을 받습니다\"); // //"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Magic.java",
+      "line": 2092,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(_targetPc.getId(), 14452))",
+      "context": "/ }else { // // _targetPc.sendPackets(new S_SkillSound(_targetPc.getId(), 14452)); // _targetPc.broadcastPacket(new S_SkillSound(_targetPc.getId(), 14452)); // } // if (_pc.isGm()) { // _pc.sendPackets(\"제약: 확률[\" + 랜덤 + \"] 렙차[-\" + 렙차 + \"*\" + Config.이터음 + \"+\" + 기본확률 //"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Magic.java",
+      "line": 2356,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(_targetNpc.getId(), 13136))",
+      "context": "EEZE, Config.이터제약); // //_targetNpc.sendPackets(new S_SkillSound(_targetNpc.getId(), 13136)); // //_targetNpc.broadcastPacket(new S_SkillSound(_targetNpc.getId(), 13136)); // _targetNpc.sendPackets(new S_SkillSound(_targetNpc.getId(), 14453)); // _targetNpc.broadcastPacket(new S_SkillSound(_targetNp"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Magic.java",
+      "line": 2358,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(_targetNpc.getId(), 14453))",
+      "context": "etNpc.getId(), 13136)); // _targetNpc.sendPackets(new S_SkillSound(_targetNpc.getId(), 14453)); // _targetNpc.broadcastPacket(new S_SkillSound(_targetNpc.getId(), 14453)); // SC_Paralysis.send(_targetNpc, SC_Paralysis.TYPE_BIND, true); // Start1(); // @SuppressWarnings(\"unused\") // L1Effec"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1Magic.java",
+      "line": 2368,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(_targetNpc.getId(), 14452))",
+      "context": "/ } else { // // _targetNpc.sendPackets(new S_SkillSound(_targetNpc.getId(), 14452)); // _targetNpc.broadcastPacket(new S_SkillSound(_targetNpc.getId(), 14452)); // } // if (_pc.isGm()) { // _pc.sendPackets(\"제약: 확률[\" + 랜덤 + \"] 확률범위[1~\" + Config.이터몬스터 + \"]\"); // } // // } // }"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1World.java",
+      "line": 403,
+      "name": "broadcast_map",
+      "kind": "method-def",
+      "call": "broadcast_map(int map_id, String message)",
+      "context": "1Object object) { return _worldExecutor.getClusterGrid().queryScreenPlayers(object); } public void broadcast_map(int map_id, String message){ SC_SystemMessage.broadcastRecipients(getVisiblePlayers(map_id), message); } public void broadcast_map(int map_id, Ser"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1World.java",
+      "line": 407,
+      "name": "broadcast_map",
+      "kind": "method-def",
+      "call": "broadcast_map(int map_id, ServerPacket pck)",
+      "context": "message){ SC_SystemMessage.broadcastRecipients(getVisiblePlayers(map_id), message); } public void broadcast_map(int map_id, ServerPacket pck){ broadcast_map(map_id, pck, true); } public void broadcast_map(int map_id, ServerPacket pck, boolean is_clear){"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1World.java",
+      "line": 408,
+      "name": "broadcast_map",
+      "kind": "call",
+      "call": "broadcast_map(map_id, pck, true)",
+      "context": "ts(getVisiblePlayers(map_id), message); } public void broadcast_map(int map_id, ServerPacket pck){ broadcast_map(map_id, pck, true); } public void broadcast_map(int map_id, ServerPacket pck, boolean is_clear){ for(L1PcInstance pc : getVisiblePlayers("
+    },
+    {
+      "path": "src/l1j/server/server/model/L1World.java",
+      "line": 411,
+      "name": "broadcast_map",
+      "kind": "method-def",
+      "call": "broadcast_map(int map_id, ServerPacket pck, boolean is_clear)",
+      "context": "void broadcast_map(int map_id, ServerPacket pck){ broadcast_map(map_id, pck, true); } public void broadcast_map(int map_id, ServerPacket pck, boolean is_clear){ for(L1PcInstance pc : getVisiblePlayers(map_id)){ if(pc != null) pc.sendPackets(pck, false); }"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1World.java",
+      "line": 423,
+      "name": "broadcast_map",
+      "kind": "method-def",
+      "call": "broadcast_map(int map_id, ServerPacket[] pcks)",
+      "context": "k, false); } } public int getAllPlayersSize(){ return _allPlayers.size(); } public void broadcast_map(int map_id, ServerPacket[] pcks){ broadcast_map(map_id, pcks, true); } public void broadcast_map(int map_id, ServerPacket[] pcks, boolean is_clear){"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1World.java",
+      "line": 424,
+      "name": "broadcast_map",
+      "kind": "call",
+      "call": "broadcast_map(map_id, pcks, true)",
+      "context": "sSize(){ return _allPlayers.size(); } public void broadcast_map(int map_id, ServerPacket[] pcks){ broadcast_map(map_id, pcks, true); } public void broadcast_map(int map_id, ServerPacket[] pcks, boolean is_clear){ for(L1PcInstance pc : getVisiblePlaye"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1World.java",
+      "line": 427,
+      "name": "broadcast_map",
+      "kind": "method-def",
+      "call": "broadcast_map(int map_id, ServerPacket[] pcks, boolean is_clear)",
+      "context": "d broadcast_map(int map_id, ServerPacket[] pcks){ broadcast_map(map_id, pcks, true); } public void broadcast_map(int map_id, ServerPacket[] pcks, boolean is_clear){ for(L1PcInstance pc : getVisiblePlayers(map_id)){ if(pc != null) pc.sendPackets(pcks, false);"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1World.java",
+      "line": 753,
+      "name": "broadcastPacketToAll",
+      "kind": "method-def",
+      "call": "broadcastPacketToAll(ServerPacket[] pcks)",
+      "context": "() { return _worldExecutor.values().toArray(new L1Object[_worldExecutor.objectCount()]); } public void broadcastPacketToAll(ServerPacket[] pcks) { for (L1PcInstance pc : getAllPlayers()) { if(pc == null) continue; for(Serve"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1World.java",
+      "line": 763,
+      "name": "broadcastPacketToAll",
+      "kind": "method-def",
+      "call": "broadcastPacketToAll(ServerPacket[] pcks, boolean isClear)",
+      "context": "for(ServerPacket pck : pcks) pc.sendPackets(pck, false); } } public void broadcastPacketToAll(ServerPacket[] pcks, boolean isClear) { for (L1PcInstance pc : getAllPlayers()) { if(pc == null) continue; for(Serve"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1World.java",
+      "line": 773,
+      "name": "broadcastPacketToAll",
+      "kind": "method-def",
+      "call": "broadcastPacketToAll(WritablePacket<CIOClient>[] packets)",
+      "context": "for(ServerPacket pck : pcks) pc.sendPackets(pck, false); } } public void broadcastPacketToAll(WritablePacket<CIOClient>[] packets) { if (packets == null) return; for (L1PcInstance pc : getAllPlayers()) { if (pc != null) pc.sendPackets(packets"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1World.java",
+      "line": 780,
+      "name": "broadcastPacketToAll",
+      "kind": "method-def",
+      "call": "broadcastPacketToAll(String message)",
+      "context": "ce pc : getAllPlayers()) { if (pc != null) pc.sendPackets(packets, false); } } public void broadcastPacketToAll(String message) { SC_SystemMessage.broadcast(message); } public void broadcastPacketToAll(ServerPacket packet) { for (L1PcInst"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1World.java",
+      "line": 784,
+      "name": "broadcastPacketToAll",
+      "kind": "method-def",
+      "call": "broadcastPacketToAll(ServerPacket packet)",
+      "context": "lic void broadcastPacketToAll(String message) { SC_SystemMessage.broadcast(message); } public void broadcastPacketToAll(ServerPacket packet) { for (L1PcInstance pc : getAllPlayers()) { if (pc != null) pc.sendPackets(packet); } }"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1World.java",
+      "line": 791,
+      "name": "broadcastPacketToAll",
+      "kind": "method-def",
+      "call": "broadcastPacketToAll(ServerPacket packet, boolean clear)",
+      "context": "getAllPlayers()) { if (pc != null) pc.sendPackets(packet); } } public void broadcastPacketToAll(ServerPacket packet, boolean clear) { Collection<L1PcInstance> pclist = getAllPlayers(); _log.finest(\"players to notify : \" + pclist.size()); for (L1Pc"
+    },
+    {
+      "path": "src/l1j/server/server/model/character/action/CAttackAction.java",
+      "line": 2453,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(pck)",
+      "context": "사 타이탄 대미지를 산출 ●●●● protected static void broadcast(L1Character c, ServerPacket pck) { c.sendPackets(pck, false); c.broadcastPacket(pck); } public void set_hit_rate(int rate) { _hitRate = rate; } public void set_hit(boolean hit) { _isHit = hit; } public void set_"
+    },
+    {
+      "path": "src/l1j/server/server/model/item/Exp/CalcExp.java",
+      "line": 87,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(data)",
+      "context": "()); } pet.setExpPercent(expPercentage); byte[] data = SC_WORLD_PUT_OBJECT_NOTI.newInstance(pet).encode(); pc.broadcastPacket(data); if (gap != 0) { SC_SkillSound.send(pc, pet.getId(), 6353); SC_SkillSound.broadcast(pc, pet.getId(), 6353); final L1Pet petTem"
+    },
+    {
+      "path": "src/l1j/server/server/model/item/function/DragonPearl.java",
+      "line": 68,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(pc.getId(), 197))",
+      "context": "pc.setPearl(0); } SC_ServerMessage.send(pc, 1065); pc.sendPackets(new S_SkillSound(pc.getId(), 197)); pc.broadcastPacket(new S_SkillSound(pc.getId(), 197)); pc.sendPackets(new S_SkillSound(pc.getId(), 15355)); pc.broadcastPacket(new S_SkillSound(pc.getId(), 15355)); pc.setSkillEffect("
+    },
+    {
+      "path": "src/l1j/server/server/model/item/function/DragonPearl.java",
+      "line": 71,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(pc.getId(), 15355))",
+      "context": "pc.broadcastPacket(new S_SkillSound(pc.getId(), 197)); pc.sendPackets(new S_SkillSound(pc.getId(), 15355)); pc.broadcastPacket(new S_SkillSound(pc.getId(), 15355)); pc.setSkillEffect(STATUS_DRAGON_PEARL, time); SC_Liquor.send(pc, pc.getId(), 8); SC_Liquor.broadcast(pc, pc.getId(), 8); RPack"
+    },
+    {
+      "path": "src/l1j/server/server/model/item/function/DragonPearl.java",
+      "line": 95,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(pc.getId(), 7976))",
+      "context": "} // pc.sendPackets(new SC_ServerMessage(1065)); // pc.sendPackets(new S_SkillSound(pc.getId(), 7976)); // pc.broadcastPacket(new S_SkillSound(pc.getId(), 7976)); // pc.setSkillEffect(22017, time); // SC_Liquor.send(pc, pc.getId(), 8); // SC_Liquor.broadcast(pc, pc.getId(), 8); // pc.send"
+    },
+    {
+      "path": "src/l1j/server/server/model/item/function/ItemUseWorldHelpers.java",
+      "line": 249,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(support.getId(), 5935))",
+      "context": "tance().getTemplate(npcId); // support = new L1SupportInstance(template, pc, supportType, itemObjectId); // support.broadcastPacket(new S_SkillSound(support.getId(), 5935)); // SC_OwnCharStatus.send(pc); // pc.getInventory().consumeItem(40308, 1); // pc.setSupporting(true); // } else { // support.broad"
+    },
+    {
+      "path": "src/l1j/server/server/model/item/function/ItemUseWorldHelpers.java",
+      "line": 254,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(new S_SkillSound(support.getId(), 5936))",
+      "context": "arStatus.send(pc); // pc.getInventory().consumeItem(40308, 1); // pc.setSupporting(true); // } else { // support.broadcastPacket(new S_SkillSound(support.getId(), 5936)); // support.deleteSupport(); // SC_OwnCharStatus.send(pc); // pc.setSupporting(false); // } } public static void useSupport1(L1Pc"
+    },
+    {
+      "path": "src/l1j/server/server/model/item/teleport/L1Teleport.java",
+      "line": 314,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(SC_WORLD_PUT_OBJECT_NOTI.newInstance(petNpc).encode())",
+      "context": "NOTI.sendNewInstance(pc, (L1SummonInstance) petNpc, pc); } else if (petNpc instanceof L1PetInstance) { pc.broadcastPacket(SC_WORLD_PUT_OBJECT_NOTI.newInstance(petNpc).encode()); } } else { removePetGracefully(pc, petNpc); } } } // 2. 컴패니언 final L1CompanionInstance companion = pc.get_"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java",
+      "line": 1388,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket( packet)",
+      "context": "code); if (packet != null) { pc.sendPackets( packet); pc.broadcastPacket( packet); } } private static void handleCastleWarProclaim( L1PcInstance pc, int castleId) { try {"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+      "line": 985,
+      "name": "broadcastPacket",
+      "kind": "call",
+      "call": "broadcastPacket(data)",
+      "context": "SC_RemoveObject.broadcast(pc, pet.getId()); byte[] data = SC_WORLD_PUT_OBJECT_NOTI.newInstance(pet).encode(); pc.broadcastPacket(data); } private static void callClan(L1PcInstance pc) { L1PcInstance callClanPc = (L1PcInstance) L1World.getInstance().findObject(pc.getTem"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Chat.java",
+      "line": 55,
+      "name": "broadcastAll",
+      "kind": "call",
+      "call": "broadcastAll(pc, 4, 3, chatText, \"[******] \")",
+      "context": "if (pc.isGm()) { SC_PacketBox.broadcastGreen(\"\\\\f=[******] \" + chatText); SC_NewChat.broadcastAll(pc, 4, 3, chatText, \"[******] \"); return; } if (pc.hasSkillEffect(1005)) { SC_ServerMessage.send(pc, 242); return;"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+      "line": 843,
+      "name": "broadcastAll",
+      "kind": "call",
+      "call": "broadcastAll(pc, 4, 12, text, \"[******] \")",
+      "context": "LoggerInstance.getInstance().addChat(ChatType.Global, pc, text); return; } if (chatType == 12) { SC_NewChat.broadcastAll(pc, 4, 12, text, \"[******] \"); SC_NewChat.broadcastAll(pc, 4, 3, text, \"[******] \"); SC_PacketBox.broadcastGreen(\"\" + text); } } private static void insertExc"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+      "line": 844,
+      "name": "broadcastAll",
+      "kind": "call",
+      "call": "broadcastAll(pc, 4, 3, text, \"[******] \")",
+      "context": "text); return; } if (chatType == 12) { SC_NewChat.broadcastAll(pc, 4, 12, text, \"[******] \"); SC_NewChat.broadcastAll(pc, 4, 3, text, \"[******] \"); SC_PacketBox.broadcastGreen(\"\" + text); } } private static void insertExclude(L1PcInstance pc, int subType, int objId, String name"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_NewChat.java",
+      "line": 139,
+      "name": "broadcastAll",
+      "kind": "method-def",
+      "call": "broadcastAll(L1PcInstance sender, int type, int chatType, String text, String targetName)",
+      "context": "} finally { if (!committed) connection.abortDirectFrame(frame); } } public static void broadcastAll(L1PcInstance sender, int type, int chatType, String text, String targetName) { final ChatData data=prepare(sender,type,chatType,text,targetName); final byte[] wire=sharedWire(data); if(wire==n"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_TopMessage.java",
+      "line": 37,
+      "name": "broadcastAll",
+      "kind": "method-def",
+      "call": "broadcastAll(String msg)",
+      "context": "cInstance pc, String msg) { return pc != null && send(pc.getNetConnection(), msg); } public static void broadcastAll(String msg) { final byte[] wire=sharedWire(msg); if(wire==null)return; l1j.server.server.model.network.core.broadcast.CSharedBr"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_War.java",
+      "line": 36,
+      "name": "broadcastAll",
+      "kind": "method-def",
+      "call": "broadcastAll(int type, String clan1, String clan2)",
+      "context": "ing clan2) { return pc != null && send(pc.getNetConnection(), type, clan1, clan2); } public static void broadcastAll(int type, String clan1, String clan2) { final byte[] wire=sharedWire(type, clan1, clan2); if(wire==null)return; l1j.server.server.model.network.core.broa"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Weather.java",
+      "line": 37,
+      "name": "broadcastAll",
+      "kind": "method-def",
+      "call": "broadcastAll(int weather)",
+      "context": "nce pc, int weather) { return pc != null && send(pc.getNetConnection(), weather); } public static void broadcastAll(int weather) { final byte[] wire=sharedWire(weather); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(w"
+    },
+    {
+      "path": "src/l1j/server/server/utils/MessageUtil.java",
+      "line": 23,
+      "name": "broadcastAll",
+      "kind": "call",
+      "call": "broadcastAll(message)",
+      "context": "Message.broadcast(message); } public static void greenMessageToAllPlayers(String message) { SC_TopMessage.broadcastAll(message); } @SuppressWarnings(\"null\") public static void toPlayers(String message) { L1PcInstance pc = null; L1PcInstance pc1 ="
+    }
+  ]
+}
