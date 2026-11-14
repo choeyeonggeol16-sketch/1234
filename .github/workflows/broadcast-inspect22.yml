@@ -1,0 +1,38 @@
+name: Audit Orim, macro, raid and event packet wire forms
+on:
+  push:
+    branches: [broadcast-nonsc-audit22-20261115]
+    paths: [".github/workflows/broadcast-inspect22.yml"]
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect latest verified phase21 SRC
+        run: |
+          python3 - <<'PY'
+          import zipfile,hashlib
+          p="downloads/RKern_Broadcast_NonSC_Phase21_FULL_SRC_20261115.zip"
+          b=open(p,'rb').read()
+          assert hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()=='aa4b1d70e6eec8f0b4098c60a323593f874bfee5'
+          focuses=[
+            ('SC_PacketBox.java',[(1,250)]),
+            ('SC_IconMessage.java',[(1,160)]),
+            ('SC_ChatMessageNoti.java',[(1,145)]),
+            ('OrimController.java',[(515,538),(761,784)]),
+            ('MJRaidObject.java',[(500,529)]),
+            ('MJCompanionRegenerator.java',[(90,116)]),
+            ('MJServerMacroLoader.java',[(138,174)]),
+            ('StadiumObject.java',[(24,105)]),
+            ('SC_ChartRank.java',[(1,120)]),
+          ]
+          with zipfile.ZipFile(p) as z:
+            for short,ranges in focuses:
+              match=[name for name in z.namelist() if name.startswith("src/") and name.endswith("/"+short)]
+              print("=======FILE",short,match)
+              if len(match)!=1:continue
+              lines=z.read(match[0]).decode("utf8").splitlines()
+              for a,b in ranges:
+                for i in range(a-1,min(len(lines),b)):print(f"{i+1:4} {lines[i]}")
+          PY
