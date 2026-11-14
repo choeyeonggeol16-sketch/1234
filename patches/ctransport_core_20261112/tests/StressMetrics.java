@@ -12,6 +12,8 @@ import jdk.jfr.consumer.*;
 
 /** Measurement helpers only; no mock timing or production policy changes. */
 public final class StressMetrics {
+    private record Window(String name,Instant begin,Instant end){}
+    private static final List<Window> WINDOWS=new ArrayList<>();
     private StressMetrics() {}
     public static void check(boolean value,String reason) { if(!value)throw new AssertionError(reason); }
     public static void until(BooleanSupplier predicate,long timeoutMillis,String reason)throws Exception {
@@ -73,6 +75,23 @@ public final class StressMetrics {
         v.put("elapsed_ms",elapsed/1e6);v.put("frames_per_second",frames*1e9/elapsed);v.put("mib_per_second",bytes*1e9/elapsed/1048576.0);
         if(latency!=null)v.put("latency",latency(latency));return v;
     }
+    public static long cpuTime(){return ((com.sun.management.OperatingSystemMXBean)ManagementFactory.getOperatingSystemMXBean()).getProcessCpuTime();}
+    public static void measured(String name,Instant begin,Instant end,long elapsed,long cpuNanos,Map<String,Object> result){
+        WINDOWS.add(new Window(name,begin,end));result.put("load_begin_utc",begin.toString());result.put("load_end_utc",end.toString());
+        result.put("process_cpu_ms",cpuNanos/1e6);result.put("process_cpu_percent",100.0*cpuNanos/elapsed/Runtime.getRuntime().availableProcessors());
+    }
+    public static final class Sampler implements AutoCloseable {
+        private final Thread thread;private volatile boolean running=true;private volatile Throwable error;
+        private final Map<String,Long> peak=new LinkedHashMap<>();
+        public Sampler(CIOServer server){thread=Thread.ofPlatform().daemon(true).name("stability-memory").start(()->{
+            try{while(running){Map<String,Object> current=memory(server);
+                for(String key:List.of("heap_used","direct_used","working_set","private_bytes","object_live","object_live_bytes","pool_borrowed_8k","pool_borrowed_16k"))peak.merge(key,((Number)current.get(key)).longValue(),Math::max);
+                Thread.sleep(250);
+            }}catch(InterruptedException done){}catch(Throwable failure){error=failure;}
+        });}
+        public Map<String,Long> finish()throws Exception{running=false;thread.interrupt();thread.join(3000);check(!thread.isAlive()&&error==null,"memory sampler failed: "+error);return new LinkedHashMap<>(peak);}
+        public void close(){running=false;thread.interrupt();}
+    }
     public static void write(Path path,Object value)throws Exception {Files.createDirectories(path.toAbsolutePath().getParent());Files.writeString(path,json(value)+"\n");}
     private static String json(Object value) {
         if(value==null)return "null";
@@ -90,15 +109,29 @@ public final class StressMetrics {
             recording.disable("jdk.InitialEnvironmentVariable");recording.disable("jdk.InitialSystemProperty");recording.disable("jdk.InitialSecurityProperty");
             recording.enable("jdk.ExecutionSample").withPeriod(Duration.ofMillis(10));
             recording.enable("jdk.JavaMonitorEnter").withThreshold(Duration.ofMillis(1));
-            recording.enable("jdk.ThreadPark").withThreshold(Duration.ofMillis(1));recording.start();
+            recording.enable("jdk.ThreadPark").withThreshold(Duration.ofMillis(1));recording.setMaxSize(32L*1024*1024);recording.start();
         }
         public Map<String,Object> finish()throws Exception {
-            recording.stop();recording.dump(file);recording.close();Map<String,Long> frames=new HashMap<>();long samples=0,parks=0,gcs=0;
+            recording.stop();recording.dump(file);recording.close();Map<String,Long> frames=new HashMap<>(),allocations=new HashMap<>();long samples=0,active=0,parks=0,gcs=0,environmentEvents=0,pauseNanos=0,maxPause=0;
             try(RecordingFile input=new RecordingFile(file)){
                 while(input.hasMoreEvents()){
                     RecordedEvent event=input.readEvent();String name=event.getEventType().getName();
+                    if(name.equals("jdk.InitialEnvironmentVariable")||name.equals("jdk.InitialSystemProperty"))environmentEvents++;
                     if(name.equals("jdk.ThreadPark"))parks++;if(name.equals("jdk.GarbageCollection"))gcs++;
+                    boolean inLoad=WINDOWS.stream().anyMatch(w->!event.getStartTime().isBefore(w.begin)&&!event.getStartTime().isAfter(w.end));
+                    if(inLoad&&name.equals("jdk.GCPhasePause")){long n=event.getDuration().toNanos();pauseNanos+=n;maxPause=Math.max(maxPause,n);}
+                    if(inLoad&&name.equals("jdk.ObjectAllocationSample")){
+                        RecordedStackTrace stack=event.getStackTrace();if(stack!=null)for(RecordedFrame f:stack.getFrames()){
+                            String type=f.getMethod().getType().getName();if(type.startsWith("l1j.")){
+                                allocations.merge(type+"."+f.getMethod().getName()+":"+f.getLineNumber(),event.getLong("weight"),Long::sum);break;
+                            }
+                        }
+                    }
                     if(!name.equals("jdk.ExecutionSample")&&!name.equals("jdk.NativeMethodSample"))continue;samples++;
+                    // NativeMethodSample includes blocked pollers. Use Java execution
+                    // samples during packet load for this statistical core view.
+                    if(!inLoad||!name.equals("jdk.ExecutionSample"))continue;
+                    if(event.getThread()!=null&&event.getThread().getJavaName().equals("stability-memory"))continue;active++;
                     RecordedStackTrace stack=event.getStackTrace();if(stack==null)continue;
                     for(RecordedFrame frame:stack.getFrames()){
                         String type=frame.getMethod().getType().getName();
@@ -109,7 +142,10 @@ public final class StressMetrics {
                 }
             }
             List<Object> top=new ArrayList<>();frames.entrySet().stream().sorted(Map.Entry.<String,Long>comparingByValue().reversed()).limit(12).forEach(e->top.add(Map.of("method",e.getKey(),"samples",e.getValue())));
-            return Map.of("execution_samples",samples,"sampled_core_methods",top,"thread_park_events",parks,"gc_events",gcs,"recording",file.toString(),"limit","statistical Java stack samples;not an exclusive native CPU profile");
+            List<Object> alloc=new ArrayList<>();allocations.entrySet().stream().sorted(Map.Entry.<String,Long>comparingByValue().reversed()).limit(12).forEach(e->alloc.add(Map.of("site",e.getKey(),"sampled_weight_bytes",e.getValue())));
+            if(environmentEvents!=0){Files.deleteIfExists(file);throw new AssertionError("recording unexpectedly contains environment/property events");}
+            Map<String,Object> result=new LinkedHashMap<>();result.put("execution_and_native_samples",samples);result.put("active_java_execution_samples",active);result.put("sampled_core_methods",top);result.put("active_allocation_sites",alloc);
+            result.put("thread_park_events",parks);result.put("gc_events",gcs);result.put("load_gc_pause_ms",pauseNanos/1e6);result.put("load_max_gc_pause_ms",maxPause/1e6);result.put("environment_events",environmentEvents);result.put("recording",file.toString());result.put("limit","statistical Java load-window samples;not exclusive native CPU time;allocation weights are sampled estimates");return result;
         }
         public void close(){recording.close();}
     }

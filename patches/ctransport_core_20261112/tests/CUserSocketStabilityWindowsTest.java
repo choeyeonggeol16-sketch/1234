@@ -8,6 +8,7 @@ import java.lang.ref.*;
 import java.net.*;
 import java.nio.*;
 import java.nio.file.*;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
@@ -32,7 +33,7 @@ public final class CUserSocketStabilityWindowsTest {
                         long ended=System.nanoTime(),stamp=sent[client].get(sequence);check(stamp>0,"unpublished S2C timestamp");
                         expected.clear();expected.putShort((short)size).put((byte)0x46).putInt(sequence).putLong(stamp).put(tail);
                         world.codecs[client].encrypt(expected,2,bodySize);
-                        for(int k=0;k<size;k++)check(actual[k]==expected.get(k),"S2C byte/cipher/FIFO mismatch client="+client+" seq="+sequence+" offset="+k);
+                        for(int k=0;k<size;k++)if(actual[k]!=expected.get(k))throw new AssertionError("S2C byte/cipher/FIFO mismatch client="+client+" seq="+sequence+" offset="+k);
                         latency[client*each+sequence]=ended-stamp;permits.release();
                     }
                     return null;
@@ -52,13 +53,14 @@ public final class CUserSocketStabilityWindowsTest {
                     return null;
                 }));
             }
-            check(ready.await(10,TimeUnit.SECONDS),"S2C admission barrier");long began=System.nanoTime();start.countDown();
+            check(ready.await(10,TimeUnit.SECONDS),"S2C admission barrier");Instant wall=Instant.now();long cpu=cpuTime(),began=System.nanoTime();StressMetrics.Sampler sampler=new StressMetrics.Sampler(world.server);start.countDown();
             try{for(Future<?> task:tasks)task.get(90,TimeUnit.SECONDS);}
             catch(Throwable failure){for(Socket socket:world.peers)try{socket.close();}catch(IOException ignored){}for(Future<?> task:tasks)task.cancel(true);throw failure;}
-            long elapsed=System.nanoTime()-began;until(()->Arrays.stream(world.users).allMatch(CUserSocket::isWriteIdle),15000,"S2C drain");
+            long elapsed=System.nanoTime()-began,cpuNanos=cpuTime()-cpu;Instant ended=Instant.now();Map<String,Long> peak=sampler.finish();until(()->Arrays.stream(world.users).allMatch(CUserSocket::isWriteIdle),15000,"S2C drain");
             healthy(world.server);check(world.pool.usedSendSlots()==0,"S2C Java lease retained");
             Map<String,Object> result=result(name,(long)clients*each,(long)clients*each*size,elapsed,latency);
-            result.put("clients",clients);result.put("window",window);result.put("frame_bytes",size);result.put("latency_kind","producer timestamp through client read;includes localhost stack/client scheduling;all bytes verified against independent rolling cipher");
+            measured(name,wall,ended,elapsed,cpuNanos,result);result.put("peak_samples",peak);
+            result.put("clients",clients);result.put("window",window);result.put("frame_bytes",size);result.put("latency_kind","producer timestamp through client read;includes localhost stack/client scheduling;all bytes compared using separate rolling-key state in the same supplied codec DLL");
             result.put("before",before);result.put("after",memory(world.server));
             System.out.println("MEASURE "+name+" frames="+result.get("frames")+" elapsed_ms="+result.get("elapsed_ms")+" fps="+result.get("frames_per_second")+" "+result.get("latency"));return result;
         }finally{start.countDown();}
@@ -131,8 +133,8 @@ public final class CUserSocketStabilityWindowsTest {
             until(()->probe.performanceDiagnostics()[0]>0,5000,"probe sampler startup");
             long baseline=probe.objectAllocatorDiagnostics()[1];report.put("baseline",memory(probe));
             try(CSharedBroadcastWindowsTest.World world=new CSharedBroadcastWindowsTest.World()){
-                cases.add(send(world,1024,15,"warmup"));cases.add(send(world,65536,15,"production-S2C-small"));
-                cases.add(send(world,8192,4096,"production-S2C-4k"));
+                cases.add(send(world,1024,15,"warmup"));cases.add(send(world,262144,15,"production-S2C-small"));
+                cases.add(send(world,32768,4096,"production-S2C-4k"));
             }
             quiesce(probe,baseline);report.put("after_send_cleanup",memory(probe));
             List<WeakReference<CUserSocket>> references=new ArrayList<>();List<Object> waves=new ArrayList<>();
@@ -142,7 +144,7 @@ public final class CUserSocketStabilityWindowsTest {
             }
             report.put("reconnect_memory_waves",waves);System.gc();until(()->references.stream().allMatch(x->x.get()==null),10000,"closed Java users retained by GC roots");
             report.put("collected_java_users",references.size());cases.add(pressure());quiesce(probe,baseline);cases.add(closeRace());quiesce(probe,baseline);
-            report.put("final",memory(probe));report.put("profile",profile.finish());report.put("status","passed");
+            System.gc();Thread.sleep(1100);report.put("final",memory(probe));report.put("profile",profile.finish());report.put("status","passed");
         }catch(Throwable failure){report.put("status","failed");report.put("failure",failure.toString());throw failure;}
         finally{report.put("total_elapsed_ms",(System.nanoTime()-began)/1e6);write(Path.of("stability-java.json"),report);}
     }
