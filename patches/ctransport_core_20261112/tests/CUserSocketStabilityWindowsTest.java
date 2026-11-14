@@ -5,6 +5,7 @@ import l1j.server.server.model.network.core.transport.CIOPacketCodecReference;
 import l1j.server.server.model.network.core.stability.StressMetrics;
 import java.io.*;
 import java.lang.ref.*;
+import java.lang.reflect.*;
 import java.net.*;
 import java.nio.*;
 import java.nio.file.*;
@@ -20,11 +21,13 @@ public final class CUserSocketStabilityWindowsTest {
         final int clients=world.users.length,bodySize=size-2,window=4;
         long[] latency=new long[clients*each];AtomicLongArray[] sent=new AtomicLongArray[clients];
         List<Future<?>> tasks=new ArrayList<>();CountDownLatch ready=new CountDownLatch(clients*2),start=new CountDownLatch(1);
+        Thread[] threads=new Thread[clients*2];AtomicIntegerArray progress=new AtomicIntegerArray(clients*2);
         Map<String,Object> before=memory(world.server);
         try(ExecutorService executor=Executors.newVirtualThreadPerTaskExecutor()){
             for(int n=0;n<clients;n++){
                 final int client=n;sent[n]=new AtomicLongArray(each);Semaphore permits=new Semaphore(window);
                 tasks.add(executor.submit(()->{
+                    threads[client*2]=Thread.currentThread();
                     byte[] actual=new byte[size];ByteBuffer expected=ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN);
                     byte[] tail=new byte[bodySize-13];for(int k=0;k<tail.length;k++)tail[k]=(byte)(k*17+9);
                     InputStream input=world.peers[client].getInputStream();ready.countDown();check(start.await(10,TimeUnit.SECONDS),"reader start barrier");
@@ -35,10 +38,12 @@ public final class CUserSocketStabilityWindowsTest {
                         world.codecs[client].encrypt(expected,2,bodySize);
                         for(int k=0;k<size;k++)if(actual[k]!=expected.get(k))throw new AssertionError("S2C byte/cipher/FIFO mismatch client="+client+" seq="+sequence+" offset="+k);
                         latency[client*each+sequence]=ended-stamp;permits.release();
+                        progress.set(client*2,sequence+1);
                     }
                     return null;
                 }));
                 tasks.add(executor.submit(()->{
+                    threads[client*2+1]=Thread.currentThread();
                     byte[] tail=new byte[bodySize-13];for(int k=0;k<tail.length;k++)tail[k]=(byte)(k*17+9);
                     CUserSocket owner=world.users[client];ready.countDown();check(start.await(10,TimeUnit.SECONDS),"writer start barrier");
                     for(int sequence=0;sequence<each;sequence++){
@@ -48,6 +53,7 @@ public final class CUserSocketStabilityWindowsTest {
                             long stamp=System.nanoTime();sent[client].set(sequence,stamp);
                             frame.buffer().writeC(0x46);frame.buffer().writeD(sequence);frame.buffer().writeLong(stamp);frame.buffer().writeByte(tail);
                             check(committed=owner.commitDirectFrame(frame),"S2C commit failed");
+                            progress.set(client*2+1,sequence+1);
                         }finally{if(!committed)owner.abortDirectFrame(frame);}
                     }
                     return null;
@@ -55,7 +61,23 @@ public final class CUserSocketStabilityWindowsTest {
             }
             check(ready.await(10,TimeUnit.SECONDS),"S2C admission barrier");Instant wall=Instant.now();long cpu=cpuTime(),began=System.nanoTime();StressMetrics.Sampler sampler=new StressMetrics.Sampler(world.server);start.countDown();
             try{for(Future<?> task:tasks)task.get(90,TimeUnit.SECONDS);}
-            catch(Throwable failure){for(Socket socket:world.peers)try{socket.close();}catch(IOException ignored){}for(Future<?> task:tasks)task.cancel(true);throw failure;}
+            catch(Throwable failure){
+                Map<String,Object> dump=new LinkedHashMap<>();dump.put("phase",name);List<Object> users=new ArrayList<>();
+                for(int n=0;n<clients;n++){
+                    Map<String,Object> row=new LinkedHashMap<>();CUserSocket user=world.users[n];row.put("client",n);row.put("read_frames",progress.get(n*2));row.put("sent_frames",progress.get(n*2+1));row.put("open",user.isOpen());
+                    for(Field field:CUserSocket.class.getDeclaredFields())if(!Modifier.isStatic(field.getModifiers())&&(field.getType().isPrimitive()||field.getType()==AtomicInteger.class)){
+                        field.setAccessible(true);row.put(field.getName(),String.valueOf(field.get(user)));
+                    }
+                    Field channelField=CUserSocket.class.getDeclaredField("_channel");channelField.setAccessible(true);Object channel=channelField.get(user);Map<String,Object> channelState=new LinkedHashMap<>();
+                    for(Field field:channel.getClass().getDeclaredFields())if(!Modifier.isStatic(field.getModifiers())&&(field.getType().isPrimitive()||field.getName().equals("writeOwner"))){field.setAccessible(true);channelState.put(field.getName(),String.valueOf(field.get(channel)));}row.put("channel",channelState);
+                    Field callbacks=CUserSocket.class.getDeclaredField("_socketCallbacks");callbacks.setAccessible(true);long[] slots=(long[])callbacks.get(user);Field head=CUserSocket.class.getDeclaredField("_socketHead");head.setAccessible(true);row.put("head_slot",slots[(int)head.getLong(user)&511]);
+                    for(int k=0;k<2;k++)if(threads[n*2+k]!=null)row.put(k==0?"reader_stack":"writer_stack",Arrays.toString(threads[n*2+k].getStackTrace()));users.add(row);
+                }
+                dump.put("users",users);List<String> errors=new ArrayList<>();
+                for(Future<?> task:tasks)if(task.isDone()&&!task.isCancelled())try{task.get();}catch(Exception error){errors.add(error.toString());failure.addSuppressed(error);}
+                dump.put("other_task_errors",errors);write(Path.of("stability-failure.json"),dump);dump.put("memory",memory(world.server));dump.put("java_pool",Arrays.deepToString(world.pool.snapshot()));write(Path.of("stability-failure.json"),dump);
+                for(Socket socket:world.peers)try{socket.close();}catch(IOException ignored){}for(Future<?> task:tasks)task.cancel(true);throw failure;
+            }
             long elapsed=System.nanoTime()-began,cpuNanos=cpuTime()-cpu;Instant ended=Instant.now();Map<String,Long> peak=sampler.finish();until(()->Arrays.stream(world.users).allMatch(CUserSocket::isWriteIdle),15000,"S2C drain");
             healthy(world.server);check(world.pool.usedSendSlots()==0,"S2C Java lease retained");
             Map<String,Object> result=result(name,(long)clients*each,(long)clients*each*size,elapsed,latency);

@@ -1,3 +1,4 @@
+param([ValidateSet('all','java')][string]$Mode = 'all')
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
@@ -10,8 +11,10 @@ $receive = Join-Path $root 'windows-classes'
 $owners = Join-Path $root 'owner-classes'
 Push-Location build
 try {
-    & java --enable-preview --enable-native-access=ALL-UNNAMED -Xms128m -Xmx768m -cp $receive l1j.server.server.model.network.core.transport.CTransportLoadWindowsTest 2>&1 | Tee-Object -FilePath ../logs/stability-rx.log
-    if ($LASTEXITCODE -ne 0) { throw 'Receive stability failed' }
+    if ($Mode -eq 'all') {
+        & java --enable-preview --enable-native-access=ALL-UNNAMED -Xms128m -Xmx768m -cp $receive l1j.server.server.model.network.core.transport.CTransportLoadWindowsTest 2>&1 | Tee-Object -FilePath ../logs/stability-rx.log
+        if ($LASTEXITCODE -ne 0) { throw 'Receive stability failed' }
+    }
     & java --enable-preview --enable-native-access=ALL-UNNAMED -Xms128m -Xmx768m -cp $owners l1j.server.server.model.network.core.connection.CUserSocketStabilityWindowsTest 2>&1 | Tee-Object -FilePath ../logs/stability-java.log
     if ($LASTEXITCODE -ne 0) { throw 'Production Java stability failed' }
 } finally { Pop-Location }

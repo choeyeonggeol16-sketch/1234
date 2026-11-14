@@ -40,7 +40,7 @@ jobs:
       - name: Measure packet load, memory recovery and close races
         shell: pwsh
         working-directory: patches/ctransport_core_20261112
-        run: ./tests/run_stability.ps1
+        run: ./tests/run_stability.ps1 -Mode java
       - name: Upload the exact tested MSVC binaries and Java pin
         if: always()
         uses: actions/upload-artifact@v4
