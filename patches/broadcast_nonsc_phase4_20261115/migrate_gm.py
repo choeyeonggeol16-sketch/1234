@@ -45,7 +45,7 @@ SEND_GMS = '''
 
 '''
 
-TARGET_SEND = r'SC_SystemMessage\.send\(\s*pc\s*,\s*"\\fY\[GM\] "\s*\+\s*getName\(\)\s*\+\s*"님의 \["\s*\+\s*item\.getLogName\(\)\s*\+\s*"\] 드랍"\s*\)\s*;'
+TARGET_SEND = r'SC_SystemMessage\.send\(\s*pc\s*,\s*"\\\\fY\[GM\] "\s*\+\s*getName\(\)\s*\+\s*"님의 \["\s*\+\s*item\.getLogName\(\)\s*\+\s*"\] 드랍"\s*\)\s*;'
 LOOP = re.compile(
     r'for\s*\(\s*L1PcInstance\s+pc\s*:\s*L1World\.getInstance\(\)\.getAllPlayers\(\)\s*\)'
     r'\s*\{\s*if\s*\(\s*pc\.isGm\(\)\s*\)\s*\{\s*'
