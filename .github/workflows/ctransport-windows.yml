@@ -15,7 +15,7 @@ jobs:
     permissions:
       contents: write
     runs-on: windows-2022
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,6 +37,10 @@ jobs:
         shell: pwsh
         working-directory: patches/ctransport_core_20261112
         run: ./tests/run_windows.ps1
+      - name: Measure packet load, memory recovery and close races
+        shell: pwsh
+        working-directory: patches/ctransport_core_20261112
+        run: ./tests/run_stability.ps1
       - name: Upload the exact tested MSVC binaries and Java pin
         if: always()
         uses: actions/upload-artifact@v4
@@ -50,6 +54,8 @@ jobs:
             patches/ctransport_core_20261112/build/native-build.json
             patches/ctransport_core_20261112/src/l1j/server/server/model/network/core/config/CIOConfig.java
             patches/ctransport_core_20261112/logs/object-memory-*.log
+            patches/ctransport_core_20261112/build/stability-*
+            patches/ctransport_core_20261112/logs/stability-*.log
       - name: Publish tested binaries to a run-specific review branch
         if: success() && github.ref_name == 'ctransport-shared-abi10-20261113'
         shell: pwsh
@@ -62,3 +68,15 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Tested artifact commit failed' }
           git push origin "HEAD:refs/heads/ctransport-msvc-tested-$env:GITHUB_RUN_ID"
           if ($LASTEXITCODE -ne 0) { throw 'Tested artifact publication failed' }
+      - name: Publish load-test diagnostics including failed tests
+        if: always() && github.ref_name == 'ctransport-shared-abi10-20261113'
+        shell: pwsh
+        working-directory: patches/ctransport_core_20261112
+        run: |
+          @{ source_commit=$env:GITHUB_SHA; run_id=$env:GITHUB_RUN_ID; dll_sha256=(Get-FileHash build/CTransport.dll -Algorithm SHA256).Hash.ToLowerInvariant() } | ConvertTo-Json | Set-Content -Encoding UTF8 build/stability-ci.json
+          $files = @((Get-ChildItem build/stability-* -File -ErrorAction SilentlyContinue).FullName) + @((Get-ChildItem logs/stability-*.log -File -ErrorAction SilentlyContinue).FullName)
+          git add -- $files
+          git -c user.name=Codex -c user.email=codex@openai.com commit -m "Publish stability measurements from run $env:GITHUB_RUN_ID" --quiet
+          if ($LASTEXITCODE -ne 0) { throw 'Stability diagnostics commit failed' }
+          git push origin "HEAD:refs/heads/ctransport-stability-$env:GITHUB_RUN_ID"
+          if ($LASTEXITCODE -ne 0) { throw 'Stability diagnostics publication failed' }
