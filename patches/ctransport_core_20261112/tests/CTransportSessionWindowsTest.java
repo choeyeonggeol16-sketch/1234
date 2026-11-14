@@ -44,7 +44,15 @@ public final class CTransportSessionWindowsTest {
     for(int n=0;n<32;n++)futures.add(clients.submit(()->{
      try(Socket socket=new Socket("127.0.0.1",server.localAddress().getPort())){
       int port=socket.getLocalPort();until(()->owners.containsKey(port));Owner own=owners.get(port);
-      socket.getOutputStream().write(wire);until(()->own.frames.get()==128);
+      socket.getOutputStream().write(wire);
+      try { until(()->own.frames.get()==128); }
+      catch(Throwable failure) {
+       System.err.println("SESSION_STALL port="+port+" id="+own.channel.id()+" frames="+own.frames.get()+" open="+own.channel.isOpen()
+         +" state="+Arrays.toString(own.channel.userSocketState())+" registry="+Arrays.toString(server.registryDiagnostics())
+         +" workers="+Arrays.toString(server.threadDiagnostics())+" pools="+Arrays.toString(server.poolDiagnostics())
+         +" send="+Arrays.toString(server.sendDiagnostics()));
+       throw failure;
+      }
       check(own.channel.setUserState(1)&&own.channel.setCharacterEntered(true)&&own.channel.setUserState(2),"restart/reenter transition");
       own.close();check(own.closed.await(10,TimeUnit.SECONDS),"stress terminal");owners.remove(port,own);completed.incrementAndGet();
      }catch(Exception failure){throw new CompletionException(failure);}
