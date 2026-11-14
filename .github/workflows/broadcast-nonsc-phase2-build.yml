@@ -1,0 +1,84 @@
+name: Non-SC broadcast phase2 compile and publish
+on:
+  push:
+    branches: [broadcast-nonsc-phase2-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase2-build.yml"
+      - "patches/broadcast_nonsc_phase2_20261115/migrate.py"
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Migrate event and gate shared fanout using exact source SHA
+        run: |
+          python3 patches/broadcast_nonsc_phase2_20261115/migrate.py \
+            --work "$RUNNER_TEMP/non-sc-phase2"
+      - name: Fetch checksum pinned Java dependencies
+        run: |
+          python3 - <<'PY'
+          import json,hashlib,pathlib,urllib.request
+          manifest=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          base=pathlib.Path('.compile-deps')
+          base.mkdir(exist_ok=True)
+          for lib in manifest:
+            target=base/lib['file']
+            urllib.request.urlretrieve(lib['url'],target)
+            assert hashlib.sha256(target.read_bytes()).hexdigest()==lib['sha256'],lib['file']
+          print('SHA256 verified Java dependencies',len(manifest))
+          PY
+      - name: Compile all Java 21 and test packet bytes and 5 preserved broadcast-order paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP/non-sc-phase2/src" -name '*.java' | sort \
+            > "$RUNNER_TEMP/non-sc-phase2/sources.txt"
+          test "$(wc -l < "$RUNNER_TEMP/non-sc-phase2/sources.txt")" -eq 1711
+          mkdir -p "$RUNNER_TEMP/non-sc-phase2/classes" "$RUNNER_TEMP/non-sc-phase2/testclasses"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g \
+            -cp "$(pwd)/.compile-deps/*" -d "$RUNNER_TEMP/non-sc-phase2/classes" \
+            @"$RUNNER_TEMP/non-sc-phase2/sources.txt"
+          javac --enable-preview --release 21 -encoding UTF-8 \
+            -cp "$RUNNER_TEMP/non-sc-phase2/classes:$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/non-sc-phase2/testclasses" \
+            "$RUNNER_TEMP/non-sc-phase2/testsrc/BroadcastPhase2WireParity.java"
+          java --enable-preview \
+            -cp "$RUNNER_TEMP/non-sc-phase2/testclasses:$RUNNER_TEMP/non-sc-phase2/classes:$(pwd)/.compile-deps/*" \
+            BroadcastPhase2WireParity
+          python3 - <<'PY'
+          import json,os,pathlib,zipfile
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'non-sc-phase2'
+          report=json.loads((root/'audit.json').read_text())
+          assert report['completed_event_broadcasts']==3
+          assert report['completed_gate_broadcasts']==2
+          assert report['new_fallback_branches']==0
+          assert report['new_threads_or_queues']==0
+          assert report['changed_java_count']==6
+          assert report['native_dll_unchanged']
+          out=pathlib.Path('downloads/RKern_Broadcast_NonSC_Phase2_FULL_SRC_20261115.zip')
+          with zipfile.ZipFile(out) as z:
+            assert z.testzip() is None
+            assert sum(p.endswith('.java') for p in z.namelist())==1711
+            assert 'docs/broadcast_full_audit_20261115/audit.json' in z.namelist()
+          print('BROADCAST_NONSC_PHASE2_FULL_SOURCE_OK')
+          print('OUTPUT_SHA256',report['output_sha256'])
+          PY
+      - name: Publish one verified complete SRC ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/RKern_Broadcast_NonSC_Phase2_FULL_SRC_20261115.zip
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish verified whole-source non-SC shared broadcast phase2 [skip ci]"
+          git push origin "HEAD:$GITHUB_REF_NAME"
