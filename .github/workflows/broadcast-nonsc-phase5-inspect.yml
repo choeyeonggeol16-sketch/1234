@@ -1,0 +1,26 @@
+name: Inspect remaining active world and map broadcasts phase5
+on:
+  push:
+    branches: [broadcast-nonsc-phase5-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase5-inspect.yml"
+      - "patches/broadcast_nonsc_phase5_20261115/inspect.py"
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Extract source lines from exact validated phase4 ZIP
+        run: python3 patches/broadcast_nonsc_phase5_20261115/inspect.py
+      - name: Publish source evidence for phase5
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/broadcast_nonsc_phase5_20261115/FOCUS.txt
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish exact phase4 world and map broadcast source [skip ci]"
+          git push origin "HEAD:$GITHUB_REF_NAME"
