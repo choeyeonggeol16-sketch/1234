@@ -1,0 +1,79 @@
+name: Non-SC broadcast phase3 shared generic social Proto
+on:
+  push:
+    branches: [broadcast-nonsc-phase3-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase3-build.yml"
+      - "patches/broadcast_nonsc_phase3_20261115/migrate_social.py"
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Convert social-action ServerPacket broadcast from exact latest full SRC
+        run: |
+          python3 patches/broadcast_nonsc_phase3_20261115/migrate_social.py \
+            --work "$RUNNER_TEMP/non-sc-phase3"
+      - name: Restore checksum-pinned Java dependencies
+        run: |
+          python3 - <<'PY'
+          import json,hashlib,pathlib,urllib.request
+          manifest=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          root=pathlib.Path('.compile-deps')
+          root.mkdir(exist_ok=True)
+          for row in manifest:
+            jar=root/row['file']
+            urllib.request.urlretrieve(row['url'],jar)
+            assert hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256'],row['file']
+          print('Verified dependencies:',len(manifest))
+          PY
+      - name: Full Java 21 compilation and 2560 social protobuf byte parity checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP/non-sc-phase3/src" -name '*.java' | sort > "$RUNNER_TEMP/non-sc-phase3/sources.txt"
+          test "$(wc -l < "$RUNNER_TEMP/non-sc-phase3/sources.txt")" -eq 1711
+          mkdir -p "$RUNNER_TEMP/non-sc-phase3/classes" "$RUNNER_TEMP/non-sc-phase3/testclasses"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g \
+            -cp "$(pwd)/.compile-deps/*" -d "$RUNNER_TEMP/non-sc-phase3/classes" \
+            @"$RUNNER_TEMP/non-sc-phase3/sources.txt"
+          javac --enable-preview --release 21 -encoding UTF-8 \
+            -cp "$RUNNER_TEMP/non-sc-phase3/classes:$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/non-sc-phase3/testclasses" \
+            "$RUNNER_TEMP/non-sc-phase3/testsrc/SocialActionSharedParity.java"
+          java --enable-preview \
+            -cp "$RUNNER_TEMP/non-sc-phase3/testclasses:$RUNNER_TEMP/non-sc-phase3/classes:$(pwd)/.compile-deps/*" \
+            SocialActionSharedParity
+          python3 - <<'PY'
+          import json,os,pathlib,zipfile
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'non-sc-phase3'
+          d=json.loads((root/'audit.json').read_text())
+          assert d['modified_count']==2 and d['full_java_sources']==1711
+          assert d['no_legacy_packet_fallback'] and d['raw_proto_encoded_once']
+          assert d['recipient_self_send_first'] and d['native_dll_unchanged']
+          with zipfile.ZipFile('downloads/RKern_Broadcast_NonSC_Phase3_FULL_SRC_20261115.zip') as z:
+            assert z.testzip() is None
+            assert sum(x.endswith('.java') for x in z.namelist())==1711
+            assert 'docs/broadcast_full_audit_20261115/audit.json' in z.namelist()
+          print('BROADCAST_NONSC_PHASE3_FULL_SRC_OK')
+          print('SHA256',d['output_sha256'])
+          PY
+      - name: Publish single whole-source validated ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/RKern_Broadcast_NonSC_Phase3_FULL_SRC_20261115.zip
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish validated social action shared broadcast full SRC [skip ci]"
+          git push origin "HEAD:$GITHUB_REF_NAME"
