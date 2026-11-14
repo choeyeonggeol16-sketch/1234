@@ -1,0 +1,32 @@
+name: Audit area attack shared wire layout
+on:
+  push:
+    branches: [broadcast-nonsc-audit13-20261115]
+    paths: [".github/workflows/broadcast-nonsc-audit14.yml"]
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print exact SC area attack and packet source
+        run: |
+          python3 - <<'PY'
+          import zipfile,hashlib
+          p="downloads/RKern_Broadcast_NonSC_Phase11_FULL_SRC_20261115.zip"
+          data=open(p,"rb").read()
+          assert hashlib.sha1(b"blob "+str(len(data)).encode()+b"\0"+data).hexdigest()=="3095ab082568d79299ecb0270cc04491b562e8ae"
+          with zipfile.ZipFile(p) as z:
+              files=z.namelist()
+              for short in ["SC_AreaAttackEffect.java","SC_DropItem.java","SC_SystemMessage.java","L1Character.java"]:
+                  found=[n for n in files if n.endswith("/"+short)]
+                  print("FILE",short,found)
+                  if len(found)!=1:continue
+                  lines=z.read(found[0]).decode("utf8").splitlines()
+                  if short=="SC_AreaAttackEffect.java":ranges=[(1,len(lines))]
+                  elif short=="SC_DropItem.java":ranges=[(95,190)]
+                  elif short=="SC_SystemMessage.java":ranges=[(1,85)]
+                  else:ranges=[(338,418)]
+                  for a,b in ranges:
+                      for i in range(a-1,min(b,len(lines))):print(f"{i+1:4} {lines[i]}")
+          PY
