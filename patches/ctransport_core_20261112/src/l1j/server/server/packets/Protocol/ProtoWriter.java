@@ -5,8 +5,8 @@ import java.util.Arrays;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.CIOFrame;
-import l1j.server.server.model.network.core.CUserSocket;
+import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class ProtoWriter {
 

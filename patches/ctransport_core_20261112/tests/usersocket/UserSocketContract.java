@@ -1,4 +1,4 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.connection;
 
 import java.util.ArrayList;
 import java.util.concurrent.*;

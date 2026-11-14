@@ -58,11 +58,11 @@ public class MJPacketFactory {
 
     public static boolean sendOffTime(l1j.server.server.model.Instance.L1PcInstance pc) {
         if (pc == null) return false;
-        final l1j.server.server.model.network.core.CIOClient socket = pc.getNetConnection();
+        final l1j.server.server.model.network.core.session.CIOClient socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final l1j.server.server.model.network.core.CUserSocket connection = socket.getConnection();
+        final l1j.server.server.model.network.core.connection.CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
-        final l1j.server.server.model.network.core.CIOFrame frame = connection.beginDirectFrame(8);
+        final l1j.server.server.model.network.core.connection.CIOFrame frame = connection.beginDirectFrame(8);
         if (frame == null) return false;
         boolean committed = false;
         try {
@@ -78,11 +78,11 @@ public class MJPacketFactory {
 
     public static boolean sendTime(l1j.server.server.model.Instance.L1PcInstance pc, long seconds) {
         if (pc == null) return false;
-        final l1j.server.server.model.network.core.CIOClient socket = pc.getNetConnection();
+        final l1j.server.server.model.network.core.session.CIOClient socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final l1j.server.server.model.network.core.CUserSocket connection = socket.getConnection();
+        final l1j.server.server.model.network.core.connection.CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
-        final l1j.server.server.model.network.core.CIOFrame frame = connection.beginDirectFrame(8);
+        final l1j.server.server.model.network.core.connection.CIOFrame frame = connection.beginDirectFrame(8);
         if (frame == null) return false;
         boolean committed = false;
         try {

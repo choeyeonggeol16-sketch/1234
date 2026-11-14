@@ -1,1 +1,1 @@
-package l1j.server.server.model.network.core;import l1j.server.server.model.network.buffer.WriteBuffer;public class CIOFrame {final WriteBuffer writer;CIOFrame(int n){writer=new WriteBuffer(n);}public WriteBuffer buffer(){return writer;}}
+package l1j.server.server.model.network.core.connection;import l1j.server.server.model.network.buffer.WriteBuffer;public class CIOFrame {final WriteBuffer writer;CIOFrame(int n){writer=new WriteBuffer(n);}public WriteBuffer buffer(){return writer;}}

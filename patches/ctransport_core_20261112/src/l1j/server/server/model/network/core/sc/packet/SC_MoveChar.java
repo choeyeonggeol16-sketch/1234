@@ -5,9 +5,9 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.CUserSocket;
-import l1j.server.server.model.network.core.CIOFrame;
-import l1j.server.server.model.network.core.CIOClient;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.session.CIOClient;
 
 public final class SC_MoveChar {
 
@@ -93,7 +93,7 @@ public final class SC_MoveChar {
         byte[] wire = java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)
                 .putShort((short) WIRE_SIZE).put((byte) Opcodes.S_MOVE_OBJECT).putInt(objectId)
                 .putShort((short) x).putShort((short) y).put((byte) heading).put((byte) 129).putInt(0).array();
-        l1j.server.server.model.network.core.CSharedBroadcast.send(cha, wire, true, -1, null,
+        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(cha, wire, true, -1, null,
                 client -> send(client, objectId, x, y, heading));
     }
     public static void broadcast(L1Character cha) {

@@ -1,0 +1,51 @@
+package l1j.server.server.model.network.core.connection;
+
+import l1j.server.server.model.network.buffer.WriteBuffer;
+
+/** Reusable direct SEND lease handle; owned by CIOBufferPool. */
+public final class CIOFrame {
+    private CUserSocket owner;
+    private CIOBufferEx lease;
+    private WriteBuffer buffer;
+    private boolean active;
+    private boolean optional;
+    private int reservedBytes;
+    private int reservedTicket = -1;
+    private long reservedTicketId = -1L;
+
+    CIOFrame() {}
+    public WriteBuffer buffer() { return buffer; }
+    void beginIO(CUserSocket owner, CIOBufferEx lease) {
+        if (active) throw new IllegalStateException("outbound frame still reserved");
+        this.owner = owner;
+        this.lease = lease;
+        this.buffer = lease.writer();
+        optional = false;
+        active = true;
+    }
+    void setReservation(int bytes, int ticket, long ticketId) {
+        if (!active) throw new IllegalStateException("frame not active");
+        reservedBytes = bytes;
+        reservedTicket = ticket;
+        reservedTicketId = ticketId;
+    }
+    int reservedBytes() { return reservedBytes; }
+    int reservedTicket() { return reservedTicket; }
+    long reservedTicketId() { return reservedTicketId; }
+    void setOptional(boolean value) { optional = value; }
+    boolean optional() { return optional; }
+    CIOBufferEx ioLease(CUserSocket owner) {
+        if (!active || this.owner != owner) throw new IllegalArgumentException("foreign frame");
+        return lease;
+    }
+    void finishIO() {
+        active = false;
+        optional = false;
+        reservedBytes = 0;
+        reservedTicket = -1;
+        reservedTicketId = -1L;
+        owner = null;
+        lease = null;
+        buffer = null;
+    }
+}

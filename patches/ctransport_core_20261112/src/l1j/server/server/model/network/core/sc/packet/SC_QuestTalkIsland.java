@@ -10,10 +10,10 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1QuestInfo;
 import l1j.server.server.templates.L1QuestView;
 import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.CIOClient;
+import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.utils.BinaryOutputStream;
-import l1j.server.server.model.network.core.CUserSocket;
-import l1j.server.server.model.network.core.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.connection.CIOFrame;
 
 public final class SC_QuestTalkIsland {
     private SC_QuestTalkIsland() {}

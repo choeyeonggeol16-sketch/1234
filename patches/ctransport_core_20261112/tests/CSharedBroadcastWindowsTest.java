@@ -1,4 +1,12 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.connection;
+
+import l1j.server.server.model.network.core.transport.CIOPacketCodecReference;
+
+import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBufferExceptSelf;
+import l1j.server.server.model.network.core.execution.CIOObject;
+import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.transport.CIOServer;
 
 import java.net.*;
 import java.nio.*;

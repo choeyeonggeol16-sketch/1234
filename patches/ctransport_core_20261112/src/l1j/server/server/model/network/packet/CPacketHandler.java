@@ -1,6 +1,6 @@
 package l1j.server.server.model.network.packet;
 
-import l1j.server.server.model.network.core.CNetworkDiagnostics;
+import l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -12,7 +12,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.buffer.ReadBuffer;
-import l1j.server.server.model.network.core.CIOClient;
+import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.network.core.cs.packet.CS_ActionUi;
 import l1j.server.server.model.network.core.cs.packet.CS_Attr;
 import l1j.server.server.model.network.core.cs.packet.CS_Channel;
@@ -404,7 +404,7 @@ public final class CPacketHandler {
      * These remain synchronized with state-changing CacheD completions.
      */
     public static boolean isSessionOpcode(int opcode) {
-        return l1j.server.server.model.network.core.CUserSocket.isSessionOpcode(opcode);
+        return l1j.server.server.model.network.core.connection.CUserSocket.isSessionOpcode(opcode);
     }
 
     // ------------------------------------------------------------------

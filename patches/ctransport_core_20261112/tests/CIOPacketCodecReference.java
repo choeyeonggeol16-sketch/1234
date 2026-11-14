@@ -1,4 +1,4 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.transport;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
@@ -18,9 +18,9 @@ import java.nio.file.Path;
  * Windows x64: build CIOPacketCodec.dll from native/CIOPacketCodecReference.cpp.
  */
 @SuppressWarnings("preview")
-final class CIOPacketCodecReference implements AutoCloseable {
-    static final int INCOMPLETE = -2;
-    static final int EMPTY = -3;
+public final class CIOPacketCodecReference implements AutoCloseable {
+    public static final int INCOMPLETE = -2;
+    public static final int EMPTY = -3;
     private static final int MAX_PLAINTEXT = 65535;
 
     private static final class API {
@@ -78,7 +78,7 @@ final class CIOPacketCodecReference implements AutoCloseable {
     private ByteBuffer plaintext = ByteBuffer.allocateDirect(4096)
             .order(ByteOrder.LITTLE_ENDIAN);
 
-    CIOPacketCodecReference(long seed) {
+    public CIOPacketCodecReference(long seed) {
         try {
             handle = (MemorySegment) API.CREATE.invokeExact((int) seed);
             if (handle.address() == 0) throw new OutOfMemoryError("native codec allocation");
@@ -92,7 +92,7 @@ final class CIOPacketCodecReference implements AutoCloseable {
     }
 
     /** The input buffer's current position/limit define the bytes to feed. */
-    synchronized void feed(ByteBuffer source) {
+    public synchronized void feed(ByteBuffer source) {
         checkOpen();
         if (!source.isDirect()) throw new IllegalArgumentException("native READ must be direct");
         final int size = source.remaining();
@@ -107,7 +107,7 @@ final class CIOPacketCodecReference implements AutoCloseable {
     }
 
     /** >0 decoded payload bytes, -2 incomplete, -3 empty; all other errors fatal. */
-    synchronized int next() {
+    public synchronized int next() {
         checkOpen();
         try {
             for (;;) {
@@ -133,16 +133,16 @@ final class CIOPacketCodecReference implements AutoCloseable {
     }
 
     /** Valid only until the next call to next() on this connection. */
-    synchronized ByteBuffer plaintext() { checkOpen(); return plaintext; }
+    public synchronized ByteBuffer plaintext() { checkOpen(); return plaintext; }
 
-    synchronized int pending() {
+    public synchronized int pending() {
         checkOpen();
         try { return (int) API.PENDING.invokeExact(handle); }
         catch (Throwable e) { throw new IllegalStateException("CIO native pending failed", e); }
     }
 
     /** Encrypt exactly the payload range, excluding the 2-byte length. */
-    synchronized void encrypt(ByteBuffer buffer, int offset, int length) {
+    public synchronized void encrypt(ByteBuffer buffer, int offset, int length) {
         checkOpen();
         if (!buffer.isDirect() || offset < 0 || length < 0
                 || offset > buffer.capacity() - length)

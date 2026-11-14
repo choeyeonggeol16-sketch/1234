@@ -4,9 +4,9 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.CUserSocket;
-import l1j.server.server.model.network.core.CIOFrame;
-import l1j.server.server.model.network.core.CIOClient;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.session.CIOClient;
 
 public final class SC_Paralysis {
     public static final int TYPE_PARALYSIS = 1;

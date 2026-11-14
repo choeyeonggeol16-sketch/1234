@@ -2,9 +2,9 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.CUserSocket;
-import l1j.server.server.model.network.core.CIOFrame;
-import l1j.server.server.model.network.core.CIOClient;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -62,7 +62,7 @@ public final class SC_SkillSound {
                 .putShort((short) gfxId).putShort((short) 0).putInt(0).array();
     }
     private static void broadcast0(L1Character anchor, int objectId, int gfxId, boolean fast) {
-        if (anchor != null) l1j.server.server.model.network.core.CSharedBroadcast.send(
+        if (anchor != null) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(
                 anchor, sharedWire(objectId, gfxId), fast, -1, null, client -> send(client, objectId, gfxId));
     }
 
@@ -105,7 +105,7 @@ public final class SC_SkillSound {
 
     public static void broadcastM(l1j.server.server.model.L1Character c, int objectId, int gfxId) {
         if (c == null) return;
-        l1j.server.server.model.network.core.CSharedBroadcast.send(c, sharedWire(objectId, gfxId),
+        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(c, sharedWire(objectId, gfxId),
                 false, -1, pc -> pc.getLinMeff() != 2, client -> send(client, objectId, gfxId));
     }
 
@@ -115,7 +115,7 @@ public final class SC_SkillSound {
 
     public static void broadcastWide(l1j.server.server.model.L1Character c, int objectId, int gfxId) {
         if (c == null) return;
-        l1j.server.server.model.network.core.CSharedBroadcast.send(c, sharedWire(objectId, gfxId),
+        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(c, sharedWire(objectId, gfxId),
                 false, 50, null, client -> send(client, objectId, gfxId));
     }
 

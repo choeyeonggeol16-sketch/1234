@@ -6,7 +6,7 @@ p=argparse.ArgumentParser();p.add_argument('--root',type=Path,default=root);args
 dll=root/'build/CTransport.dll';pe=pefile.PE(str(dll))
 assert pe.FILE_HEADER.Machine==0x8664 and pe.OPTIONAL_HEADER.Magic==0x20b
 exports={v.name.decode():v for v in pe.DIRECTORY_ENTRY_EXPORT.symbols if v.name}
-java=(root/'src/l1j/server/server/model/network/core/CIOServer.java').read_text()
+java=(root/'src/l1j/server/server/model/network/core/transport/CIOServer.java').read_text()
 symbols=set(re.findall(r'fn\("([^"]+)"',java))
 assert symbols<=set(exports),(symbols-set(exports))
 assert len(exports)==67 and not any(v.startswith(('HP_','Create_HP_')) for v in exports)
@@ -15,7 +15,7 @@ assert set(exports)==set(names['exports'].values())|{'L1Interop_CreateConstBuffe
 assert not set(exports)&set(names['exports'])
 assert not set(exports)&set(names['removed_noop_hp_policies'])
 sha=hashlib.sha256(dll.read_bytes()).hexdigest()
-assert sha in (root/'src/l1j/server/server/model/network/core/CIOConfig.java').read_text()
+assert sha in (root/'src/l1j/server/server/model/network/core/config/CIOConfig.java').read_text()
 version=exports['L1Interop_GetAbiVersion']
 md=capstone.Cs(capstone.CS_ARCH_X86,capstone.CS_MODE_64)
 instructions=[]

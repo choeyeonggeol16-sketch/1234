@@ -12,8 +12,8 @@ import java.net.InetSocketAddress;
 import java.sql.SQLException;
 import java.util.logging.LogManager;
 import l1j.server.server.GameServer;
-import l1j.server.server.model.network.core.CIOBufferPool;
-import l1j.server.server.model.network.core.CDummyServerCallback;
+import l1j.server.server.model.network.core.connection.CIOBufferPool;
+import l1j.server.server.model.network.core.server.CDummyServerCallback;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.ConnectionConfig;
 import l1j.server.server.monitor.LoggerInstance;
@@ -48,10 +48,10 @@ public class Server {
         return uniqueInstance;
     }
 
-    private static volatile l1j.server.server.model.network.core.Server gameListener;
+    private static volatile l1j.server.server.model.network.core.server.Server gameListener;
 
     /** Sampled native thread15 process and transport health; null before startup. */
-    public static l1j.server.server.model.network.core.CPerfMon.Snapshot networkPerformance(){
+    public static l1j.server.server.model.network.core.diagnostics.CPerfMon.Snapshot networkPerformance(){
         final var listener=gameListener;return listener==null?null:listener.performance();
     }
     /** Counts: all retained sockets, authenticated sockets, entering accounts, duplicate denials. */
@@ -98,7 +98,7 @@ public class Server {
                     sendSlots, largeRecvSlots, largeSlots);
             final CDummyServerCallback factory = new CDummyServerCallback(
                     CIOThreadCallback.getInstance(), config);
-            gameListener = new l1j.server.server.model.network.core.Server(address, connectionCapacity,
+            gameListener = new l1j.server.server.model.network.core.server.Server(address, connectionCapacity,
                     ioThreads, backlog, pool, factory);
             System.out.println("네트워크 서버 연결이 완료되었습니다.");
             return true;
@@ -112,7 +112,7 @@ public class Server {
 
     /** One deadline across accept stop, native worker join, and Java await. */
     public static void stopNewConnections() {
-        final l1j.server.server.model.network.core.Server listener = gameListener;
+        final l1j.server.server.model.network.core.server.Server listener = gameListener;
         if (listener == null) return;
         final long deadline = System.nanoTime() + 30_000_000_000L;
         networkShutdownDeadlineNs = deadline;
@@ -130,7 +130,7 @@ public class Server {
     }
 
     public static void stopLoginServer() {
-        final l1j.server.server.model.network.core.Server listener = gameListener;
+        final l1j.server.server.model.network.core.server.Server listener = gameListener;
         if (listener == null) return;
         final long deadline = networkShutdownDeadlineNs != 0L
                 ? networkShutdownDeadlineNs : System.nanoTime() + 30_000_000_000L;

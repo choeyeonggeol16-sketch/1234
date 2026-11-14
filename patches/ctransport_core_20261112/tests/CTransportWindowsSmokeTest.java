@@ -1,4 +1,6 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.transport;
+
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 import java.net.*;
 import java.io.*;
@@ -54,8 +56,8 @@ public final class CTransportWindowsSmokeTest {
             final ByteBuffer bytes=ByteBuffer.allocateDirect(4096);
             EchoOwner(CSocket channel){this.channel=channel;}
             void start(){bytes.clear();channel.read(bytes,this);}
-            @Override void transportReadCompleted(int count){if(count<0)return;bytes.flip();channel.write(bytes,this);}
-            @Override void transportWriteCompleted(int count){if(count<0)return;start();}
+            @Override public void transportReadCompleted(int count){if(count<0)return;bytes.flip();channel.write(bytes,this);}
+            @Override public void transportWriteCompleted(int count){if(count<0)return;start();}
         }
         try(CIOServer gameplay=new CIOServer(new InetSocketAddress("127.0.0.1",0),32,4,256,channel -> new EchoOwner(channel).start())) {
             byte[] source=new byte[100000];new Random(99).nextBytes(source);

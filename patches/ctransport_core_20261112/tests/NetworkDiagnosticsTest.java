@@ -1,4 +1,6 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.diagnostics;
+
+import l1j.server.server.model.network.core.config.CIOConfig;
 import java.util.*;
 public final class NetworkDiagnosticsTest {
  static void check(boolean ok,String why){if(!ok)throw new AssertionError(why);}

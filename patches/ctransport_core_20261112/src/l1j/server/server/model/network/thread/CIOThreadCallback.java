@@ -26,8 +26,8 @@ import l1j.server.server.model.character.action.CCreatureController;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.TomahawkBleedService;
 import l1j.server.server.model.npc.ai.NpcServer;
-import l1j.server.server.model.network.core.CIOShardContext;
-import l1j.server.server.model.network.core.CIOClient;
+import l1j.server.server.model.network.core.execution.CIOShardContext;
+import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.network.utill.ConnectionConfig;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
@@ -363,7 +363,7 @@ public final class CIOThreadCallback {
      * A rejection is terminal to that connection (the READ pump closes it).
      */
     /** A packet is either executed on its owner or cancelled during shutdown. */
-    public interface PacketTask extends l1j.server.server.model.network.core.CIOObject {
+    public interface PacketTask extends l1j.server.server.model.network.core.execution.CIOObject {
     }
 
     public boolean enqueuePacketImmediate(int shardIndex, PacketTask packetTask) {

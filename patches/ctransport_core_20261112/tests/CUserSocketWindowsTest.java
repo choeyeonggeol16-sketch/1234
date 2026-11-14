@@ -1,4 +1,7 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.transport;
+
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.execution.CIOObject;
 
 import java.net.*;
 import java.nio.*;
@@ -27,16 +30,16 @@ public final class CUserSocketWindowsTest {
         final CountDownLatch terminal=new CountDownLatch(1);
         volatile boolean hold=true;volatile long sequence;volatile ByteBuffer view;
         UserOwner(CSocket channel){this.channel=channel;codec=new CIOPacketCodec(channel,73461);channel.bindUserSocketOwner(this);}
-        @Override boolean transportNativePacket(long sequence,ByteBuffer packet,int length){
+        @Override public boolean transportNativePacket(long sequence,ByteBuffer packet,int length){
             check(channel.currentNativeOwner()>=0,"plaintext escaped IOCP worker");
             if(length==0){frames.incrementAndGet();return true;}
             byte[] bytes=new byte[length];packet.duplicate().get(bytes);actual.add(bytes);
             if(hold){hold=false;view=packet;this.sequence=sequence;frames.incrementAndGet();return true;}
             check(channel.releaseUserPacket(sequence),"native plaintext release");frames.incrementAndGet();return true;
         }
-        @Override int transportNetworkDeadline(){deadlines.incrementAndGet();return 5000;}
-        @Override void onTransportTerminated(){terminal.countDown();}
-        @Override void close(){channel.close();}
+        @Override public int transportNetworkDeadline(){deadlines.incrementAndGet();return 5000;}
+        @Override public void onTransportTerminated(){terminal.countDown();}
+        @Override public void close(){channel.close();}
     }
     static byte[] copy(ByteBuffer source){byte[] out=new byte[source.remaining()];source.duplicate().get(out);return out;}
     public static void main(String[] args)throws Exception{

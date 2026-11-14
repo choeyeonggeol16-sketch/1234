@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.packet;
 
 import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.CIOClient;
+import l1j.server.server.model.network.core.session.CIOClient;
 
 /**
  * 스트림 받는 패킷 구조

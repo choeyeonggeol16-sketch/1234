@@ -1,4 +1,4 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.diagnostics;
 public final class PoolDiagnosticsTest {
  static void check(boolean b,String why){if(!b)throw new AssertionError(why);}
  static long[][] javaPool(long used){return new long[][]{{4096,8,used,3,3-used,8192,0},{65536,4,0,0,0,0,0},{16384,16,0,0,0,0,0},{65536,8,0,0,0,0,0}};}

@@ -13,10 +13,10 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.CIOClient;
+import l1j.server.server.model.network.core.session.CIOClient;
 import java.nio.charset.Charset;
-import l1j.server.server.model.network.core.CUserSocket;
-import l1j.server.server.model.network.core.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.connection.CIOFrame;
 
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.network.thread.CIOThreadCallback;

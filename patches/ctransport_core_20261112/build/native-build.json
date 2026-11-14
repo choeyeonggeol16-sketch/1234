@@ -49,7 +49,7 @@
   ],
   "files": {
     "build_native.py": "bb2dc1b4a1340bda562201f8f50294aeb889c4d8fc247fadd36024fb0e4c14dc",
-    "build_native_msvc.py": "66f7311710df41aa9c66ebd13e7ed96327bb078e207f44228151a4261acb6601",
+    "build_native_msvc.py": "8a44fa4eae9c1e2ee1283b6746876b7e5d4b8995ca4d507bc8b43c3b469320d6",
     "cio_core.hpp": "dc587325af60960b32591253d07fea12d9af77d2fc7d05d9e3d01a92b89acd20",
     "CTransport.cpp": "2e3da9b7da6142ddb78d897edfbba3d2ec3c0648dc72918cbe017b8034d9c965",
     "CTransport.h": "6f636ca91642a74e0113ff214747b9e05755323bf38fa5176941d16155747660",
@@ -70,11 +70,11 @@
   },
   "dll_sha256": "62604a5b1b111526da30b0d06f224eb6d5f3e4aafca0292571aae7932b3f272e",
   "selftest_sha256": "9bb792bbcc2683c6d9cedecaedd1b8bc896308b58a133ed608f63d26cb49567f",
-  "windows_execution_tested": true,
+  "windows_execution_tested": false,
   "internal_vtable_profile": "MSVC x64 MemoryObject4,CIOObject12,CSocket24,CUserSocket26;slot15 int margin,slot24 raw pointer getter,slot25 socket number",
   "files_lf": {
     "build_native.py": "70b3e4fe36543d092133adebd26206f6d2dc9b3ae711eae887a5efda64fb9f42",
-    "build_native_msvc.py": "46b4cbd1d996902fcc66cf6149710c2784f266826c5e79a3f2050f3ed986e4b1",
+    "build_native_msvc.py": "fd48f2541e76593c1b1d277469357f7d4c0257160b67208799c83433556b2ab1",
     "cio_core.hpp": "e7fd4b222c94f8e2b3b10102b8a7bd13b5a1a546c4f5402b19341ac048e363cf",
     "CTransport.cpp": "f9ca15dfa49acb31818970610f204e12a5b63dea042c827fbbef81a916865f61",
     "CTransport.h": "9d600a11c818fb3ed16bfd5c4f2d813826c510a63f1c8b7ede7b525dafefd81c",
@@ -96,5 +96,6 @@
   "tested_source_commit": "d2743dec174f6a0244e716ac4826c182fb447c3a",
   "artifact_commit": "f00b64567734cd0b49d6acd8aa9302d83da51501",
   "windows_run_id": 43557005905,
-  "line_ending_note": "files are exact Windows checkout hashes;files_lf are normalized release source hashes"
+  "line_ending_note": "files are exact Windows checkout hashes;files_lf are normalized release source hashes",
+  "package_layout_build_note": "Only Java pin source path changed in builder;all C++ sources and compiler/linker arguments remain unchanged;reuse existing DLL for relocated Java validation"
 }

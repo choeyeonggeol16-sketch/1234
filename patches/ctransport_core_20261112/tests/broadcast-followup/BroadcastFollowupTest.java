@@ -1,4 +1,6 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.broadcast;
+
+import l1j.server.server.model.network.core.session.CIOClient;
 import java.util.*;import l1j.server.server.model.*;import l1j.server.server.model.Instance.*;import l1j.server.server.model.network.core.sc.packet.*;
 public class BroadcastFollowupTest {
  static void check(boolean ok,String why){if(!ok)throw new AssertionError(why);}

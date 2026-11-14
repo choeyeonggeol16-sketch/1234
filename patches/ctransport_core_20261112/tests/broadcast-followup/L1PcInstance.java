@@ -1,1 +1,3 @@
-package l1j.server.server.model.Instance; import l1j.server.server.model.L1Character;import l1j.server.server.model.network.core.CIOClient; public class L1PcInstance extends L1Character {public CIOClient client;public int meff;public CIOClient getNetConnection(){return client;}public int getLinMeff(){return meff;}}
+package l1j.server.server.model.Instance;
+
+import l1j.server.server.model.network.core.session.CIOClient; import l1j.server.server.model.L1Character;import l1j.server.server.model.network.core.session.CIOClient; public class L1PcInstance extends L1Character {public CIOClient client;public int meff;public CIOClient getNetConnection(){return client;}public int getLinMeff(){return meff;}}

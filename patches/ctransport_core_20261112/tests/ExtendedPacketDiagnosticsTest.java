@@ -1,9 +1,11 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.diagnostics;
+
+import l1j.server.server.model.network.core.config.CIOConfig;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
-import l1j.server.server.model.network.core.CNetworkDiagnostics.PacketKind;
+import l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.PacketKind;
 
 public final class ExtendedPacketDiagnosticsTest {
  static void check(boolean value,String why){if(!value)throw new AssertionError(why);}

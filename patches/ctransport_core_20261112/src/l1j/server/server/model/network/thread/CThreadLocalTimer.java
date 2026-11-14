@@ -11,7 +11,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.action.CCreatureController;
 import l1j.server.server.model.npc.ai.NpcServer;
-import l1j.server.server.model.network.core.CUserSocket;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback.CIOThread;
 import l1j.server.server.model.network.thread.CIOThreadCallback.TaskHandle;
 import l1j.server.server.model.network.thread.CIOThreadCallback.WheelTask;

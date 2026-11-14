@@ -5,9 +5,9 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.CUserSocket;
-import l1j.server.server.model.network.core.CIOFrame;
-import l1j.server.server.model.network.core.CIOClient;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.session.CIOClient;
 
 public final class SC_ChangeHeading {
     private static final int WIRE_SIZE = 2 + 6;
@@ -41,7 +41,7 @@ public final class SC_ChangeHeading {
         if (anchor == null) return;
         byte[] wire = java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)
                 .putShort((short) WIRE_SIZE).put((byte) Opcodes.S_CHANGE_DIRECTION).putInt(objectId).put((byte) heading).array();
-        l1j.server.server.model.network.core.CSharedBroadcast.send(anchor, wire, fast, -1, null,
+        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, fast, -1, null,
                 client -> send(client, objectId, heading));
     }
     public static void broadcast(L1Character anchor, int objectId, int heading) { broadcast0(anchor, objectId, heading, false); }

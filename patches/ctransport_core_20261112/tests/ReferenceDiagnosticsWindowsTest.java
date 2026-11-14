@@ -1,7 +1,9 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.connection;
+
+import l1j.server.server.model.network.core.diagnostics.CPoolDiagnostics;
 import java.util.concurrent.*;
 import java.util.function.BooleanSupplier;
-import static l1j.server.server.model.network.core.CUserSocketOwnerWindowsTest.*;
+import static l1j.server.server.model.network.core.connection.CUserSocketOwnerWindowsTest.*;
 public final class ReferenceDiagnosticsWindowsTest {
  static void await(BooleanSupplier check)throws Exception{long end=System.nanoTime()+TimeUnit.SECONDS.toNanos(12);while(!check.getAsBoolean()&&System.nanoTime()<end)Thread.sleep(5);check(check.getAsBoolean(),"native reference verifier deadline");}
  public static void main(String[] args)throws Exception{

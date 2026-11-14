@@ -1,6 +1,6 @@
 from pathlib import Path
 import hashlib,json
-EDITED={'src/l1j/server/server/model/network/core/CNetworkDiagnostics.java',
+EDITED={'src/l1j/server/server/model/network/core/diagnostics/CNetworkDiagnostics.java',
         'src/l1j/server/server/model/network/packet/CPacketHandler.java','src/l1j/server/swing/chocco.java'}
 def verify(sources,baseline_path):
     baseline=json.loads(Path(baseline_path).read_text())['files']

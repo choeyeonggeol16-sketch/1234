@@ -5,20 +5,20 @@ ROOT=Path(__file__).resolve().parents[1]
 sources={
 'l1j/server/Config.java':'package l1j.server;public class Config{public static int GAME_SERVER_PORT=5000;}',
 'l1j/server/server/model/network/utill/ConnectionState.java':'package l1j.server.server.model.network.utill;public enum ConnectionState{IN_GAME,LOGIN}',
-'l1j/server/server/model/network/core/CIOClient.java':'''package l1j.server.server.model.network.core;
+'l1j/server/server/model/network/core/session/CIOClient.java':'''package l1j.server.server.model.network.core.session;
 import l1j.server.server.model.character.pss.window.PlaySupportWindow;import l1j.server.server.model.Instance.L1PcInstance;import l1j.server.server.model.network.utill.ConnectionState;
 public class CIOClient{public boolean connected=true,ready=true;public L1PcInstance pc;public Object automation=new Object();private PlaySupportWindow.Session session;
 public boolean isConnected(){return connected;}public boolean isGameSessionReady(){return ready;}public ConnectionState getConnectionState(){return ConnectionState.IN_GAME;}public L1PcInstance getActiveChar(){return pc;}public String getIp(){return "127.0.0.1";}
 public synchronized PlaySupportWindow.Session pssWindowSession(){if(session==null)session=new PlaySupportWindow.Session(this);return session;}public PlaySupportWindow.Session peekPssWindowSession(){return session;}}
 ''',
 'l1j/server/server/model/Instance/L1PcInstance.java':'''package l1j.server.server.model.Instance;
-import java.util.*;import l1j.server.server.model.network.core.CIOClient;
+import java.util.*;import l1j.server.server.model.network.core.session.CIOClient;
 public class L1PcInstance{public CIOClient client;public int stamp=7;public boolean logout;public Inventory inventory=new Inventory();public CIOClient getNetConnection(){return client;}public int getId(){return 77;}public int getSessionStamp(){return stamp;}public boolean isLogoutStarted(){return logout;}public Inventory getInventory(){return inventory;}public static class Inventory{public Map<Integer,L1ItemInstance> items=new HashMap<>();public L1ItemInstance getItem(int id){return items.get(id);}}}
 ''',
 'l1j/server/server/model/Instance/L1ItemInstance.java':'''package l1j.server.server.model.Instance;public class L1ItemInstance{public int count=1;public int getId(){return 88;}public int getCount(){return count;}public Template getItem(){return new Template();}public static class Template{public int getItemId(){return 900000901;}}}''',
 'l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java':'package l1j.server.server.model.network.core.sc.packet;public class SC_SystemMessage{public static boolean send(l1j.server.server.model.Instance.L1PcInstance pc,String message){return true;}}',
 'IndependentPssContract.java':'''import java.net.*;import java.nio.*;import java.util.*;
-import l1j.server.server.model.character.pss.window.PlaySupportWindow;import l1j.server.server.model.network.core.CIOClient;import l1j.server.server.model.Instance.*;
+import l1j.server.server.model.character.pss.window.PlaySupportWindow;import l1j.server.server.model.network.core.session.CIOClient;import l1j.server.server.model.Instance.*;
 public class IndependentPssContract{
 static void check(boolean value,String why){if(!value)throw new AssertionError(why);}
 static int read(Socket socket)throws Exception{try{return socket.getInputStream().read();}catch(SocketException failure){String message=String.valueOf(failure.getMessage()).toLowerCase(java.util.Locale.ROOT);if(message.contains("reset")||message.contains("abort"))return -1;throw failure;}}

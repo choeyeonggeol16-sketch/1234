@@ -9,8 +9,8 @@ import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.network.utill.ConnectionConfig;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import l1j.server.server.model.network.core.CUserSocket;
-import l1j.server.server.model.network.core.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.connection.CIOFrame;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.CIOClient;
+import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.templates.L1BoardPost;
 
 public final class SC_Board {

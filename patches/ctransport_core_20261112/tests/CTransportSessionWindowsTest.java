@@ -1,4 +1,7 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.transport;
+
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.diagnostics.CPerfMon;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -11,9 +14,9 @@ public final class CTransportSessionWindowsTest {
  static final class Owner extends CUserSocket {
   final CSocket channel;final CIOPacketCodec codec;final AtomicInteger frames=new AtomicInteger();final CountDownLatch closed=new CountDownLatch(1);
   Owner(CSocket c){channel=c;codec=new CIOPacketCodec(c,73461);c.bindUserSocketOwner(this);c.pauseNativeUser(false);}
-  @Override boolean transportNativePacket(long sequence,java.nio.ByteBuffer bytes,int length){if(length>0)check(channel.releaseUserPacket(sequence),"stress packet release");frames.incrementAndGet();return true;}
-  @Override void onTransportTerminated(){closed.countDown();}
-  @Override void close(){channel.close();}
+  @Override public boolean transportNativePacket(long sequence,java.nio.ByteBuffer bytes,int length){if(length>0)check(channel.releaseUserPacket(sequence),"stress packet release");frames.incrementAndGet();return true;}
+  @Override public void onTransportTerminated(){closed.countDown();}
+  @Override public void close(){channel.close();}
  }
  public static void main(String[] args)throws Exception{
   ConcurrentHashMap<Integer,Owner> owners=new ConcurrentHashMap<>();

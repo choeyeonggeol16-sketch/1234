@@ -413,7 +413,7 @@ public final class LocalWorldMap {
             for (int i = 0, size = _objectCount; i < size; i++) {
                 final L1Object obj = objects[i];
 
-                if (l1j.server.server.model.network.core.CTLMFilter.nearby(origin, obj, radius, screenMode))
+                if (l1j.server.server.model.network.core.broadcast.CTLMFilter.nearby(origin, obj, radius, screenMode))
                     result.add(obj);
             }
         }
@@ -434,7 +434,7 @@ public final class LocalWorldMap {
             for (int i = 0; i < playerCount; i++) {
                 final L1PcInstance pc = players[i];
 
-                if (l1j.server.server.model.network.core.CTLMFilter.nearby(origin, pc, radius, screenMode))
+                if (l1j.server.server.model.network.core.broadcast.CTLMFilter.nearby(origin, pc, radius, screenMode))
                     result.add(pc);
             }
         }
@@ -454,7 +454,7 @@ public final class LocalWorldMap {
             for (int i = 0; i < playerCount; i++) {
                 final L1PcInstance pc = players[i];
 
-                if (l1j.server.server.model.network.core.CTLMFilter.nearby(origin, pc, radius, screenMode))
+                if (l1j.server.server.model.network.core.broadcast.CTLMFilter.nearby(origin, pc, radius, screenMode))
                     return true;
             }
 
@@ -618,7 +618,7 @@ public final class LocalWorldMap {
         for (int cx = minX; cx <= maxX; cx++) {
             for (int cy = minY; cy <= maxY; cy++) {
                 if (mapId == skipMapId
-                        && l1j.server.server.model.network.core.CTLMFilter.insideRectangle(
+                        && l1j.server.server.model.network.core.broadcast.CTLMFilter.insideRectangle(
                                 cx, cy, skipMinX, skipMaxX, skipMinY, skipMaxY)) continue;
                 final long key = packedKey(mapId, cx, cy);
                 final CanonicalStripe stripe = canonicalStripe(key);

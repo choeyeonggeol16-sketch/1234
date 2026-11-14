@@ -1,4 +1,8 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.connection;
+
+import l1j.server.server.model.network.core.transport.CIOPacketCodecReference;
+
+import l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics;
 
 import java.nio.*;
 import java.nio.file.*;
@@ -7,7 +11,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.core.sc.packet.SC_Emblem;
-import static l1j.server.server.model.network.core.CUserSocketOwnerWindowsTest.*;
+import static l1j.server.server.model.network.core.connection.CUserSocketOwnerWindowsTest.*;
 
 /** Real Windows DLL/FFM, production owner/frame/pool and emblem encoder. */
 public final class CUserSocketSafeSendWindowsTest {

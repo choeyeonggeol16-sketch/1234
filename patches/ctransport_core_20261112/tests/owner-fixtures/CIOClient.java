@@ -1,4 +1,6 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.session;
+
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.Account;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.utill.ConnectionState;
@@ -16,6 +18,6 @@ public final class CIOClient {
  public int incrementEmptyPacketCount(){return 1;}
  public void resetEmptyPacketCount(){}
  public boolean checkPacketRateLimit(long now){return false;}
- void onTransportClosing(){closeStack=Thread.currentThread().getStackTrace();ready=false;}
+ public void onTransportClosing(){closeStack=Thread.currentThread().getStackTrace();ready=false;}
  public void disconnect(){connection.close();}
 }

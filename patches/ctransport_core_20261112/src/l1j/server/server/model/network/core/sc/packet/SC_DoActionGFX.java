@@ -3,8 +3,8 @@ package l1j.server.server.model.network.core.sc.packet;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.CUserSocket;
-import l1j.server.server.model.network.core.CIOClient;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.session.CIOClient;
 
 /**
  * NC-style direct serializer for S_DoActionGFX.
@@ -48,7 +48,7 @@ public final class SC_DoActionGFX {
                 .order(java.nio.ByteOrder.LITTLE_ENDIAN).putShort((short) 8)
                 .put((byte) l1j.server.server.Opcodes.S_ACTION)
                 .putInt(objectId).put((byte) actionId).array();
-        l1j.server.server.model.network.core.CSharedBroadcast.send(cha, wire, true, -1, null,
+        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(cha, wire, true, -1, null,
                 client -> send(client, objectId, actionId));
     }
 

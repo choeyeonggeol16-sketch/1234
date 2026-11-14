@@ -1,4 +1,6 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.connection;
+
+import l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics;
 
 import java.nio.*;
 import java.util.*;

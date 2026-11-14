@@ -1,4 +1,11 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.connection;
+
+import l1j.server.server.model.network.core.transport.CIOPacketCodecReference;
+
+import l1j.server.server.model.network.core.execution.CIOObject;
+import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.transport.CIOServer;
+import l1j.server.server.model.network.core.transport.CSocket;
 import java.net.*;
 import java.nio.*;
 import java.lang.reflect.*;

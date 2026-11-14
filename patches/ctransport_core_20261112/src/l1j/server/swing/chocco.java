@@ -304,10 +304,10 @@ public class chocco extends JFrame {
         report.add(creature);
         addDisabledItem(report, "아이템 분포");
         addDisabledItem(report, "공격형 몬스터 주변");
-        addItem(report, "시간 분석", () -> showNetworkReport("시간 분석", l1j.server.server.model.network.core.CNetworkDiagnostics::timings));
-        addItem(report, "시간 분석 초기화", () -> { l1j.server.server.model.network.core.CNetworkDiagnostics.resetTiming(); showSimpleReport("시간 분석", "완료 시간 통계를 초기화했습니다."); });
-        addItem(report, "패킷 카운트", () -> showNetworkReport("패킷 카운트", l1j.server.server.model.network.core.CNetworkDiagnostics::packetCounts));
-        addItem(report, "패킷 카운트 초기화", () -> { l1j.server.server.model.network.core.CNetworkDiagnostics.resetCounts(); showSimpleReport("패킷 카운트", "패킷 카운트를 초기화했습니다. 최근 기록은 유지됩니다."); });
+        addItem(report, "시간 분석", () -> showNetworkReport("시간 분석", l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics::timings));
+        addItem(report, "시간 분석 초기화", () -> { l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.resetTiming(); showSimpleReport("시간 분석", "완료 시간 통계를 초기화했습니다."); });
+        addItem(report, "패킷 카운트", () -> showNetworkReport("패킷 카운트", l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics::packetCounts));
+        addItem(report, "패킷 카운트 초기화", () -> { l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.resetCounts(); showSimpleReport("패킷 카운트", "패킷 카운트를 초기화했습니다. 최근 기록은 유지됩니다."); });
         addDisabledItem(report, "프로파일 초기화");
         addItem(report, "프로파일", () -> showNetworkReport("프로파일", this::networkProfile));
         addDisabledItem(report, "테스트");
@@ -317,8 +317,8 @@ public class chocco extends JFrame {
         addItem(report, "유저", this::showUserManager);
         addItem(report, "참조·수명 상태", () -> showNetworkReport("참조·수명 상태", this::networkReferences));
         addItem(report, "풀·회수 진단", this::showPoolReport);
-        addItem(report, "전송량 초기화", () -> { l1j.server.server.model.network.core.CNetworkDiagnostics.resetTraffic(); showSimpleReport("전송률", "수신/송신 접수량 통계를 초기화했습니다."); });
-        addItem(report, "전송률", () -> showNetworkReport("전송률", l1j.server.server.model.network.core.CNetworkDiagnostics::traffic));
+        addItem(report, "전송량 초기화", () -> { l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.resetTraffic(); showSimpleReport("전송률", "수신/송신 접수량 통계를 초기화했습니다."); });
+        addItem(report, "전송률", () -> showNetworkReport("전송률", l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics::traffic));
         addItem(report, "서버 시간", () -> showSimpleReport("서버 시간", LocalTime.now().toString()));
         addDisabledItem(report, "공유 팩토리 보고");
 
@@ -401,7 +401,7 @@ public class chocco extends JFrame {
         if (text == null) return;
         try {
             long id = Long.parseLong(text.trim());
-            showNetworkReport("종료 사유·최근 패킷 128개(확장 명령 포함)", () -> l1j.server.server.model.network.core.CNetworkDiagnostics.recent(id));
+            showNetworkReport("종료 사유·최근 패킷 128개(확장 명령 포함)", () -> l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.recent(id));
         } catch (NumberFormatException failure) { showSimpleReport("최근 패킷", "숫자 id를 입력하세요."); }
     }
     private String networkProfile() {
@@ -414,11 +414,11 @@ public class chocco extends JFrame {
                     .append(" activeSinceMs=").append(workers[offset + 2]).append('\n');
         }
         return text.append("\n확장 요청은 종류·명령 번호를 함께 표시합니다.\n")
-                .append(l1j.server.server.model.network.core.CNetworkDiagnostics.workers()).toString();
+                .append(l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.workers()).toString();
     }
     private String networkSockets() {
-        StringBuilder text = new StringBuilder(l1j.server.server.model.network.core.CNetworkDiagnostics.connections());
-        text.append("\n선택적 송신 생략=").append(l1j.server.server.model.network.core.CUserSocket.softSendRejections()).append('\n');
+        StringBuilder text = new StringBuilder(l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.connections());
+        text.append("\n선택적 송신 생략=").append(l1j.server.server.model.network.core.connection.CUserSocket.softSendRejections()).append('\n');
         long[][] rows = l1j.server.Server.networkSocketDiagnostics();
         text.append("\nNative sockets=").append(rows.length)
                 .append("\n[handle,number,socket,closing,terminal,packetLease,readPosted,writePosted,outputBytes,addressFamily,ipv4,port]\n")

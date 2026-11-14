@@ -1,4 +1,6 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.transport;
+
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import java.net.*;import java.nio.*;import java.util.*;import java.util.concurrent.*;
 public final class SendCopyContract {
  public static void main(String[] args)throws Exception{

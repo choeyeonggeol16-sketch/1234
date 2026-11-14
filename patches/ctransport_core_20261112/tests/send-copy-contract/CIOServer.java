@@ -1,4 +1,6 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.transport;
+
+import l1j.server.server.model.network.core.execution.CIOObject;
 import java.nio.*;import java.lang.foreign.*;import java.util.concurrent.*;
 final class CIOServer {
  final CountDownLatch entered=new CountDownLatch(1),release=new CountDownLatch(1);byte[] captured;

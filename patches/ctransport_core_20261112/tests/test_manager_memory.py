@@ -21,6 +21,6 @@ release.countDown();System.exit(0);
 '''
 with tempfile.TemporaryDirectory(prefix='manager-memory-') as tmp:
  out=Path(tmp);src=out/'ManagerBacklogBaseline.java';src.write_text(baseline)
- subprocess.run(['java','-m','jdk.compiler/com.sun.tools.javac.Main','-encoding','UTF-8','-d',tmp,str(src),str(r/'src/l1j/server/swing/ManagerLogBuffer.java'),str(r/'tests/ManagerLogBufferTest.java'),str(r/'src/l1j/server/server/model/network/core/CPoolDiagnostics.java'),str(r/'tests/PoolDiagnosticsTest.java')],check=True)
- for cls in ['ManagerBacklogBaseline','l1j.server.swing.ManagerLogBufferTest','l1j.server.server.model.network.core.PoolDiagnosticsTest']:
+ subprocess.run(['java','-m','jdk.compiler/com.sun.tools.javac.Main','-encoding','UTF-8','-d',tmp,str(src),str(r/'src/l1j/server/swing/ManagerLogBuffer.java'),str(r/'tests/ManagerLogBufferTest.java'),str(r/'src/l1j/server/server/model/network/core/diagnostics/CPoolDiagnostics.java'),str(r/'tests/PoolDiagnosticsTest.java')],check=True)
+ for cls in ['ManagerBacklogBaseline','l1j.server.swing.ManagerLogBufferTest','l1j.server.server.model.network.core.diagnostics.PoolDiagnosticsTest']:
   subprocess.run(['java','-Xmx192m','-Djava.awt.headless=true','-cp',tmp,cls],check=True,timeout=60)

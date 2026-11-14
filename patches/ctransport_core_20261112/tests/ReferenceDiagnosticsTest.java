@@ -1,4 +1,4 @@
-package l1j.server.server.model.network.core;
+package l1j.server.server.model.network.core.diagnostics;
 public final class ReferenceDiagnosticsTest {
  static void check(boolean value,String why){if(!value)throw new AssertionError(why);}
  public static void main(String[] args){

@@ -48,7 +48,7 @@ jobs:
             patches/ctransport_core_20261112/build/CTransport_SelfTest.exe
             patches/ctransport_core_20261112/build/ObjectAbiTest.exe
             patches/ctransport_core_20261112/build/native-build.json
-            patches/ctransport_core_20261112/src/l1j/server/server/model/network/core/CIOConfig.java
+            patches/ctransport_core_20261112/src/l1j/server/server/model/network/core/config/CIOConfig.java
             patches/ctransport_core_20261112/logs/object-memory-*.log
       - name: Publish tested binaries to a run-specific review branch
         if: success() && github.ref_name == 'ctransport-shared-abi10-20261113'
@@ -56,7 +56,7 @@ jobs:
         working-directory: patches/ctransport_core_20261112
         run: |
           @{ source_commit=$env:GITHUB_SHA; run_id=$env:GITHUB_RUN_ID; dll_sha256=(Get-FileHash build/CTransport.dll -Algorithm SHA256).Hash.ToLowerInvariant() } | ConvertTo-Json | Set-Content -Encoding UTF8 build/msvc-ci-artifact.json
-          git add build/CTransport.dll build/CTransport.lib build/CTransport_SelfTest.exe build/ObjectAbiTest.exe build/native-build.json build/msvc-ci-artifact.json src/l1j/server/server/model/network/core/CIOConfig.java
+          git add build/CTransport.dll build/CTransport.lib build/CTransport_SelfTest.exe build/ObjectAbiTest.exe build/native-build.json build/msvc-ci-artifact.json src/l1j/server/server/model/network/core/config/CIOConfig.java
           git add logs/object-memory-*.log
           git -c user.name=Codex -c user.email=codex@openai.com commit -m "Publish tested MSVC artifacts from run $env:GITHUB_RUN_ID"
           if ($LASTEXITCODE -ne 0) { throw 'Tested artifact commit failed' }

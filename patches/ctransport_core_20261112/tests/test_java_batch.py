@@ -13,5 +13,5 @@ with tempfile.TemporaryDirectory(prefix='nc-batch-java-') as tmp:
  testcp=str(args.build.resolve())+':'+cp
  subprocess.run(['java','-m','jdk.compiler/com.sun.tools.javac.Main','--enable-preview','-source','21','-target','21','-cp',testcp,'-d',str(args.build.resolve()),str(root/'tests/TransportConfigTest.java')],check=True,timeout=30)
  with (root/'logs/transport-config-test.log').open('w') as log:
-  subprocess.run(['java','--enable-preview','-cp',testcp,'l1j.server.server.model.network.core.TransportConfigTest',str(args.native_dll.resolve())],stdout=log,stderr=subprocess.STDOUT,check=True,timeout=30)
+  subprocess.run(['java','--enable-preview','-cp',testcp,'l1j.server.server.model.network.core.config.TransportConfigTest',str(args.native_dll.resolve())],stdout=log,stderr=subprocess.STDOUT,check=True,timeout=30)
 print(f'PASS {len(sources)} production Java sources and mandatory CTransport binding with current DLL hash')
