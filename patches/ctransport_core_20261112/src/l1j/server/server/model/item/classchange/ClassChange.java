@@ -17,7 +17,7 @@ import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
 import l1j.server.server.model.network.core.cs.packet.CS_CommonClick;
 import l1j.server.server.model.rank.loader.RankUserLoader;
-import l1j.server.server.packets.Protocol.Packet.SC_TopRankerNoti;
+import LIN.SC_TOP_RANKER_NOTI;
 import l1j.server.server.model.network.core.sc.packet.SC_DelSkill;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -126,7 +126,7 @@ public class ClassChange {
         pc.setCurrentSprite(newClassId);
 
         // 랭킹 시스템 업데이트
-        SC_TopRankerNoti noti = RankUserLoader.getInstance().get(pc.getId());
+        LIN.SC_TOP_RANKER_NOTI noti = RankUserLoader.getInstance().get(pc.getId());
         if (noti != null) {
             noti.set_class(EClassesType.fromGfx(pc.getClassId()).toInt());
         }

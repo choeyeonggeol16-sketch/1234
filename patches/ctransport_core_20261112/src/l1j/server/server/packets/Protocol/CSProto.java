@@ -5,28 +5,28 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.packets.Protocol.Packet.CS_AchievementTeleportReq;
-import l1j.server.server.packets.Protocol.Packet.CS_AlchemyDesignReq;
-import l1j.server.server.packets.Protocol.Packet.CS_AlchemyMakeReq;
-import l1j.server.server.packets.Protocol.Packet.CS_AttendanceBonusRequestExtend;
-import l1j.server.server.packets.Protocol.Packet.CS_AttendanceRewardReq;
-import l1j.server.server.packets.Protocol.Packet.CS_ClientVersionInfo;
-import l1j.server.server.packets.Protocol.Packet.CS_CompanionNameChangeReq;
-import l1j.server.server.packets.Protocol.Packet.CS_CompanionSkillEnchantReq;
-import l1j.server.server.packets.Protocol.Packet.CS_CompanionSkillNextTierOpenReq;
-import l1j.server.server.packets.Protocol.Packet.CS_CompanionStatIncreaseReq;
-import l1j.server.server.packets.Protocol.Packet.CS_CompanionTmCommandReq;
-import l1j.server.server.packets.Protocol.Packet.CS_CompletedAchievementRewardReq;
-import l1j.server.server.packets.Protocol.Packet.CS_CraftBatchReq;
-import l1j.server.server.packets.Protocol.Packet.CS_CraftIdListReq;
-import l1j.server.server.packets.Protocol.Packet.CS_CraftListAllReq;
-import l1j.server.server.packets.Protocol.Packet.CS_CraftMakeReq;
-import l1j.server.server.packets.Protocol.Packet.CS_MonsterBookV2RewardReq;
-import l1j.server.server.packets.Protocol.Packet.CS_MonsterBookV2TeleportReq;
-import l1j.server.server.packets.Protocol.Packet.CS_MyRankingReq;
+import LIN.CS_ACHIEVEMENT_TELEPORT_REQ;
+import LIN.CS_ALCHEMY_DESIGN_REQ;
+import LIN.CS_ALCHEMY_MAKE_REQ;
+import LIN.CS_ATTENDANCE_BONUS_REQUEST_EXTEND;
+import LIN.CS_ATTENDANCE_REWARD_REQ;
+import LIN.CS_CLIENT_VERSION_INFO;
+import LIN.CS_COMPANION_NAME_CHANGE_REQ;
+import LIN.CS_COMPANION_SKILL_ENCHANT_REQ;
+import LIN.CS_COMPANION_SKILL_NEXT_TIER_OPEN_REQ;
+import LIN.CS_COMPANION_STAT_INCREASE_REQ;
+import LIN.CS_COMPANION_TM_COMMAND_REQ;
+import LIN.CS_COMPLETED_ACHIEVEMENT_REWARD_REQ;
+import LIN.CS_CRAFT_BATCH_REQ;
+import LIN.CS_CRAFT_ID_LIST_REQ;
+import LIN.CS_CRAFT_LIST_ALL_REQ;
+import LIN.CS_CRAFT_MAKE_REQ;
+import LIN.CS_MONSTER_BOOK_V2_REWARD_REQ;
+import LIN.CS_MONSTER_BOOK_V2_TELEPORT_REQ;
+import LIN.CS_MY_RANKING_REQ;
 import l1j.server.server.packets.Protocol.Packet.CS_PartyControl;
-import l1j.server.server.packets.Protocol.Packet.CS_TopRankerReq;
-import l1j.server.server.packets.Protocol.Packet.CS_UserPlayInfo;
+import LIN.CS_TOP_RANKER_REQ;
+import LIN.CS_USER_PLAY_INFO_REQ;
 import l1j.server.server.packets.Protocol.Packet.GludioDungeonPackets;
 
 /**
@@ -180,30 +180,30 @@ public final class CSProto {
         }
 
         // bodyless: ProtoReader가 필요 없으므로 raw로 등록
-        t.putRaw(ProtoMsg.CS_USER_PLAY_INFO_REQ, (c, buf, pos, len) -> CS_UserPlayInfo.handle(c));
+        t.putRaw(ProtoMsg.CS_USER_PLAY_INFO_REQ, (c, buf, pos, len) -> LIN.CS_USER_PLAY_INFO_REQ.handle(c));
 
         // raw handlers
-        t.putReader(ProtoMsg.CS_CLIENT_VERSION_INFO_REQ, CS_ClientVersionInfo::handle);
+        t.putReader(ProtoMsg.CS_CLIENT_VERSION_INFO_REQ, LIN.CS_CLIENT_VERSION_INFO::handle);
         t.putReader(ProtoMsg.CS_PARTY_CONTROL_REQ, CS_PartyControl::handle);
-        t.putReader(ProtoMsg.CS_MY_RANKING_REQ, CS_MyRankingReq::handle);
-        t.putReader(ProtoMsg.CS_TOP_RANKER_REQ, CS_TopRankerReq::handle);
-        t.putReader(ProtoMsg.CS_ALCHEMY_DESIGN_REQ, CS_AlchemyDesignReq::handle);
-        t.putReader(ProtoMsg.CS_ALCHEMY_MAKE_REQ, CS_AlchemyMakeReq::handle);
-        t.putReader(ProtoMsg.CS_ATTENDANCE_BONUS_REQUEST_EXTEND, CS_AttendanceBonusRequestExtend::handle);
-        t.putReader(ProtoMsg.CS_ATTENDANCE_REWARD_REQ, CS_AttendanceRewardReq::handle);
-        t.putReader(ProtoMsg.CS_CRAFT_LIST_ALL_REQ, CS_CraftListAllReq::handle);
-        t.putReader(ProtoMsg.CS_CRAFT_ID_LIST_REQ, CS_CraftIdListReq::handle);
-        t.putReader(ProtoMsg.CS_CRAFT_MAKE_REQ, CS_CraftMakeReq::handle);
-        t.putReader(ProtoMsg.CS_CRAFT_BATCH_REQ, CS_CraftBatchReq::handle);
-        t.putReader(ProtoMsg.CS_MONSTER_BOOK_V2_REWARD_REQ, CS_MonsterBookV2RewardReq::handle);
-        t.putReader(ProtoMsg.CS_MONSTER_BOOK_V2_TELEPORT_REQ, CS_MonsterBookV2TeleportReq::handle);
-        t.putReader(ProtoMsg.CS_ACHIEVEMENT_TELEPORT_REQ, CS_AchievementTeleportReq::handle);
-        t.putReader(ProtoMsg.CS_COMPLETED_ACHIEVEMENT_REWARD_REQ, CS_CompletedAchievementRewardReq::handle);
-        t.putReader(ProtoMsg.CS_COMPANION_NAME_CHANGE_REQ, CS_CompanionNameChangeReq::handle);
-        t.putReader(ProtoMsg.CS_COMPANION_STAT_INCREASE_REQ, CS_CompanionStatIncreaseReq::handle);
-        t.putReader(ProtoMsg.CS_COMPANION_TM_COMMAND_REQ, CS_CompanionTmCommandReq::handle);
-        t.putReader(ProtoMsg.CS_COMPANION_SKILL_NEXT_TIER_OPEN_REQ, CS_CompanionSkillNextTierOpenReq::handle);
-        t.putReader(ProtoMsg.CS_COMPANION_SKILL_ENCHANT_REQ, CS_CompanionSkillEnchantReq::handle);
+        t.putReader(ProtoMsg.CS_MY_RANKING_REQ, LIN.CS_MY_RANKING_REQ::handle);
+        t.putReader(ProtoMsg.CS_TOP_RANKER_REQ, LIN.CS_TOP_RANKER_REQ::handle);
+        t.putReader(ProtoMsg.CS_ALCHEMY_DESIGN_REQ, LIN.CS_ALCHEMY_DESIGN_REQ::handle);
+        t.putReader(ProtoMsg.CS_ALCHEMY_MAKE_REQ, LIN.CS_ALCHEMY_MAKE_REQ::handle);
+        t.putReader(ProtoMsg.CS_ATTENDANCE_BONUS_REQUEST_EXTEND, LIN.CS_ATTENDANCE_BONUS_REQUEST_EXTEND::handle);
+        t.putReader(ProtoMsg.CS_ATTENDANCE_REWARD_REQ, LIN.CS_ATTENDANCE_REWARD_REQ::handle);
+        t.putReader(ProtoMsg.CS_CRAFT_LIST_ALL_REQ, LIN.CS_CRAFT_LIST_ALL_REQ::handle);
+        t.putReader(ProtoMsg.CS_CRAFT_ID_LIST_REQ, LIN.CS_CRAFT_ID_LIST_REQ::handle);
+        t.putReader(ProtoMsg.CS_CRAFT_MAKE_REQ, LIN.CS_CRAFT_MAKE_REQ::handle);
+        t.putReader(ProtoMsg.CS_CRAFT_BATCH_REQ, LIN.CS_CRAFT_BATCH_REQ::handle);
+        t.putReader(ProtoMsg.CS_MONSTER_BOOK_V2_REWARD_REQ, LIN.CS_MONSTER_BOOK_V2_REWARD_REQ::handle);
+        t.putReader(ProtoMsg.CS_MONSTER_BOOK_V2_TELEPORT_REQ, LIN.CS_MONSTER_BOOK_V2_TELEPORT_REQ::handle);
+        t.putReader(ProtoMsg.CS_ACHIEVEMENT_TELEPORT_REQ, LIN.CS_ACHIEVEMENT_TELEPORT_REQ::handle);
+        t.putReader(ProtoMsg.CS_COMPLETED_ACHIEVEMENT_REWARD_REQ, LIN.CS_COMPLETED_ACHIEVEMENT_REWARD_REQ::handle);
+        t.putReader(ProtoMsg.CS_COMPANION_NAME_CHANGE_REQ, LIN.CS_COMPANION_NAME_CHANGE_REQ::handle);
+        t.putReader(ProtoMsg.CS_COMPANION_STAT_INCREASE_REQ, LIN.CS_COMPANION_STAT_INCREASE_REQ::handle);
+        t.putReader(ProtoMsg.CS_COMPANION_TM_COMMAND_REQ, LIN.CS_COMPANION_TM_COMMAND_REQ::handle);
+        t.putReader(ProtoMsg.CS_COMPANION_SKILL_NEXT_TIER_OPEN_REQ, LIN.CS_COMPANION_SKILL_NEXT_TIER_OPEN_REQ::handle);
+        t.putReader(ProtoMsg.CS_COMPANION_SKILL_ENCHANT_REQ, LIN.CS_COMPANION_SKILL_ENCHANT_REQ::handle);
 
         return t;
     }

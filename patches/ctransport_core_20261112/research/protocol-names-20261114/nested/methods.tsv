@@ -1,0 +1,11 @@
+LIN.SC_ALL_SPELL_PASSIVE_NOTI.SpellPassiveData	SpellPassiveData	spellpassivedata
+LIN.SC_ALL_SPELL_PASSIVE_NOTI.SpellPassiveData	get_passiveId	passiveid
+LIN.SC_ALL_SPELL_PASSIVE_NOTI.SpellPassiveData	get_param	param
+LIN.SC_CRAFT_LIST_ALL_ACK.Craft	get_attr	craft_attr
+LIN.SC_CRAFT_LIST_ALL_ACK.Craft	set_attr	set_craft_attr
+LIN.SC_FATIGUE_NOTI.FatigueStatus	FatigueStatus	FATIGUE_STATUS
+LIN.SC_NOTIFICATION_MESSAGE.DisplayPosition	DisplayPosition	display_position
+LIN.SC_PARTY_OPERATION_RESULT_NOTI.Type	Type	ePARTY_OPERATION_TYPE
+LIN.SC_SIEGE_INJURY_TIME_NOIT.SiegeKind	SiegeKind	SIEGE_KIND
+LIN.SC_SIEGE_ZONE_UPDATE_NOT.SiegeZoneKind	SiegeZoneKind	SIEGE_ZONE_KIND
+LIN.SC_USER_PLAY_INFO_NOTI.MapTimeLimitInfo	MapTimeLimitInfo	MAP_TIME_LIMIT_INFO

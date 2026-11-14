@@ -1,0 +1,4 @@
+{
+  "src/l1j/server/server/packets/Protocol/ProtoReader.java": "49e13fd5ac9bdde774998ee3dbe826a494d3a0e570e004b7f378e7486322618e",
+  "src/l1j/server/server/packets/Protocol/Stream/ProtoInputStream.java": "626e4c9c7f03d890b6d2fed90ed1d5f3878e38ed066a3a0f34e77330ed7c6aef"
+}

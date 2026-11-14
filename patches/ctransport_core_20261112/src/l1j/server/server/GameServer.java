@@ -125,8 +125,8 @@ import l1j.server.server.model.rank.loader.RankLoadManager;
 import l1j.server.server.model.rank.loader.RankUserLoader;
 import l1j.server.server.model.trap.L1WorldTraps;
 import l1j.server.server.monitor.LoggerInstance;
-import l1j.server.server.packets.Protocol.Packet.SC_AlchemyDesignAck;
-import l1j.server.server.packets.Protocol.Packet.SC_CraftListAllAck;
+import LIN.SC_ALCHEMY_DESIGN_ACK;
+import LIN.SC_CRAFT_LIST_ALL_ACK;
 import l1j.server.server.packets.Protocol.Packet.Craft.CraftLoader;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.utils.MJCommons;
@@ -165,10 +165,10 @@ public class GameServer {
 		
 		CraftProbability.getInstance();
 		CraftLoader.load();
-		SC_CraftListAllAck.buildCaches();
-		SC_CraftListAllAck.buildNpcCaches();
+		LIN.SC_CRAFT_LIST_ALL_ACK.buildCaches();
+		LIN.SC_CRAFT_LIST_ALL_ACK.buildNpcCaches();
 		AlchemyProbability.getInstance();
-		SC_AlchemyDesignAck.load(); 
+		LIN.SC_ALCHEMY_DESIGN_ACK.load();
 		MJAlchemyProbabilityBox.getInstance();	
 		
 		

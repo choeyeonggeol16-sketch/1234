@@ -1,0 +1,1185 @@
+[
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/AttendanceBonusGroup.java",
+    "matches": [
+      [
+        "LIN",
+        "AttendanceBonusGroup",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/AttendanceBonusInfo.java",
+    "matches": [
+      [
+        "LIN",
+        "AttendanceBonusInfo",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/AttendanceBonusType.java",
+    "matches": [
+      [
+        "LIN",
+        "AttendanceBonusType",
+        "enum",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/AttendanceGroupType.java",
+    "matches": [
+      [
+        "LIN",
+        "AttendanceGroupType",
+        "enum",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/AttendanceUserFlag.java",
+    "matches": [
+      [
+        "LIN",
+        "AttendanceUserFlag",
+        "enum",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/UserAttendanceDataExtend.java",
+    "matches": [
+      [
+        "LIN",
+        "UserAttendanceDataExtend",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/UserAttendanceDataGroup.java",
+    "matches": [
+      [
+        "LIN",
+        "UserAttendanceDataGroup",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/UserAttendanceState.java",
+    "matches": [
+      [
+        "LIN",
+        "UserAttendanceState",
+        "enum",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/UserAttendanceTimeStatus.java",
+    "matches": [
+      [
+        "LIN",
+        "UserAttendanceTimeStatus",
+        "enum",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_AchievementTeleportReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_ACHIEVEMENT_TELEPORT_REQ",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_AlchemyDesignReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_ALCHEMY_DESIGN_REQ",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_AlchemyMakeReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_ALCHEMY_MAKE_REQ",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_AttendanceBonusRequestExtend.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_ATTENDANCE_BONUS_REQUEST_EXTEND",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_AttendanceRewardReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_ATTENDANCE_REWARD_REQ",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_ClientVersionInfo.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_CLIENT_VERSION_INFO",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CompanionNameChangeReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_COMPANION_NAME_CHANGE_REQ",
+        "message",
+        "MainServer_Client_Companion.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CompanionSkillEnchantReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_COMPANION_SKILL_ENCHANT_REQ",
+        "message",
+        "MainServer_Client_Companion.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CompanionSkillNextTierOpenReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_COMPANION_SKILL_NEXT_TIER_OPEN_REQ",
+        "message",
+        "MainServer_Client_Companion.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CompanionStatIncreaseReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_COMPANION_STAT_INCREASE_REQ",
+        "message",
+        "MainServer_Client_Companion.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CompanionTmCommandReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_COMPANION_TM_COMMAND_REQ",
+        "message",
+        "MainServer_Client_Companion.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CompletedAchievementRewardReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_COMPLETED_ACHIEVEMENT_REWARD_REQ",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CraftBatchReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_CRAFT_BATCH_REQ",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CraftIdListReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_CRAFT_ID_LIST_REQ",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CraftListAllReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_CRAFT_LIST_ALL_REQ",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CraftMakeReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_CRAFT_MAKE_REQ",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_MonsterBookV2RewardReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_MONSTER_BOOK_V2_REWARD_REQ",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_MonsterBookV2TeleportReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_MONSTER_BOOK_V2_TELEPORT_REQ",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_MyRankingReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_MY_RANKING_REQ",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_PartyControl.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_TopRankerReq.java",
+    "matches": [
+      [
+        "LIN",
+        "CS_TOP_RANKER_REQ",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_UserPlayInfo.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Companion/CompanionT.java",
+    "matches": [
+      [
+        "LIN",
+        "CompanionT",
+        "message",
+        "Lineage_CommonDataTypes.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/Craft.java",
+    "matches": [
+      [
+        "LIN",
+        "Craft",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftAttr.java",
+    "matches": [
+      [
+        "LIN",
+        "CraftAttr",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftEvent.java",
+    "matches": [
+      [
+        "LIN",
+        "CraftEvent",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftInputItem.java",
+    "matches": [
+      [
+        "LIN",
+        "CraftInputItem",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftInputItemSlotInfo.java",
+    "matches": [
+      [
+        "LIN",
+        "CraftInputItemSlotInfo",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftInputList.java",
+    "matches": [
+      [
+        "LIN",
+        "CraftInputList",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftLoader.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftOutputItem.java",
+    "matches": [
+      [
+        "LIN",
+        "CraftOutputItem",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ],
+      [
+        "LIN",
+        "CraftOutputItem",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftOutputItemResult.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftOutputList.java",
+    "matches": [
+      [
+        "LIN",
+        "CraftOutputList",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftOutputSFList.java",
+    "matches": [
+      [
+        "LIN",
+        "CraftOutputSFList",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftRequiredItemList.java",
+    "matches": [
+      [
+        "LIN",
+        "CraftRequiredItemList",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftRequiredQuestList.java",
+    "matches": [
+      [
+        "LIN",
+        "CraftRequiredQuestList",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftRequiredSpriteList.java",
+    "matches": [
+      [
+        "LIN",
+        "CraftRequiredSpriteList",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/eCraftMakeReqResultType.java",
+    "matches": [
+      [
+        "LIN",
+        "eCraftMakeReqResultType",
+        "enum",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/GludioDungeonPackets.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Inventory/ItemInfo.java",
+    "matches": [
+      [
+        "LIN",
+        "ItemInfo",
+        "message",
+        "MainServer_Client_Inventory.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Inventory/TradeItemInfo.java",
+    "matches": [
+      [
+        "LIN",
+        "TradeItemInfo",
+        "message",
+        "MainServer_Client_Inventory.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/MonsterBook/CompletedAchievement.java",
+    "matches": [
+      [
+        "LIN",
+        "CompletedAchievement",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/MonsterBook/CriteriaProgress.java",
+    "matches": [
+      [
+        "LIN",
+        "CriteriaProgress",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/MonsterBook/MonsterBookV2Info.java",
+    "matches": [
+      [
+        "LIN",
+        "MonsterBookV2Info",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/MonsterBook/eMonsterBookV2BonusRewardGrade.java",
+    "matches": [
+      [
+        "LIN",
+        "eMonsterBookV2BonusRewardGrade",
+        "enum",
+        "Lineage_CommonDataTypes.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/MonsterBook/eMonsterBookV2DeckState.java",
+    "matches": [
+      [
+        "LIN",
+        "eMonsterBookV2DeckState",
+        "enum",
+        "Lineage_CommonDataTypes.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/MonsterBook/eMonsterBookV2RewardGrade.java",
+    "matches": [
+      [
+        "LIN",
+        "eMonsterBookV2RewardGrade",
+        "enum",
+        "Lineage_CommonDataTypes.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Ranker/Ranker.java",
+    "matches": [
+      [
+        "LIN",
+        "Ranker",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AchievementCompleteNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ACHIEVEMENT_COMPLETE_NOTI",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AchievementTeleportAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ACHIEVEMENT_TELEPORT_ACk",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AddActiveSpellExNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ADD_ACTIVE_SPELL_EX_NOTI",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AddCompletedAchievementBatch.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ADD_COMPLETED_ACHIEVEMENT_BATCH",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AddCriteriaProgressBatch.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ADD_CRITERIA_PROGRESS_BATCH",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AddInventoryNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ADD_INVENTORY_NOTI",
+        "message",
+        "MainServer_Client_Inventory.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AlchemyDesignAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ALCHEMY_DESIGN_ACK",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AlchemyExtraInfoNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ALCHEMY_EXTRA_INFO_NOTI",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AlchemyMakeAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ALCHEMY_MAKE_ACK",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AllSpellPassiveNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ALL_SPELL_PASSIVE_NOTI",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AttendanceBonusGroupInfo.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ATTENDANCE_BONUS_GROUP_INFO",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AttendanceBonusInfoExtend.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ATTENDANCE_BONUS_INFO_EXTEND",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AttendanceDataUpdateExtend.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ATTENDANCE_DATA_UPDATE_EXTEND",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AttendanceRewardAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ATTENDANCE_REWARD_ACK",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AttendanceUserDataExtend.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_ATTENDANCE_USER_DATA_EXTEND",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_BoxAttrChangeNoti.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CharStat.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompanionBuffNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_COMPANION_BUFF_NOTI",
+        "message",
+        "MainServer_Client_Companion.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompanionCombatDataNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_COMPANION_COMBAT_DATA_NOTI",
+        "message",
+        "MainServer_Client_Companion.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompanionNameChangeAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_COMPANION_NAME_CHANGE_ACK",
+        "message",
+        "MainServer_Client_Companion.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompanionSkillEnchantAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_COMPANION_SKILL_ENCHANT_ACK",
+        "message",
+        "MainServer_Client_Companion.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompanionSkillNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_COMPANION_SKILL_NOTI",
+        "message",
+        "MainServer_Client_Companion.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompanionStatusNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_COMPANION_STATUS_NOTI",
+        "message",
+        "MainServer_Client_Companion.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompletedAchievementRewardAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_COMPLETED_ACHIEVEMENT_REWARD_ACK",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CraftBatchAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_CRAFT_BATCH_ACK",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CraftListAllAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_CRAFT_LIST_ALL_ACK",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CraftMakeAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_CRAFT_MAKE_ACK",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CriteriaUpdateNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_CRITERIA_UPDATE_NOTI",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_DollOnOff.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_EventCountdownNoti.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_FatigueNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_FATIGUE_NOTI",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_Fishing_Proto.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_MapID.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_MonsterBookV2InfoNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_MONSTER_BOOK_V2_INFO_NOTI",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_MonsterBookV2RewardAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_MONSTER_BOOK_V2_REWARD_ACK",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_MonsterBookV2TeleportAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_MONSTER_BOOK_V2_TELEPORT_ACK",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_MonsterBookV2UpdateAmountNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_MONSTER_BOOK_V2_UPDATE_AMOUNT_NOTI",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_MonsterBookV2UpdateStateNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_MONSTER_BOOK_V2_UPDATE_STATE_NOTI",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_MyRankingAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_MY_RANKING_ACK",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_NotificationMessage.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_NOTIFICATION_MESSAGE",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_NotificationMessageNot.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_NOTIFICATION_MESSAGE_NOT",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PartyMemberList.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_PARTY_MEMBER_LIST",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PartyMemberListChange.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_PARTY_MEMBER_LIST_CHANGE",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PartyMemberMarkChange.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PartyMemberStatus.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_PARTY_MEMBER_STATUS",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PartyOperationResult.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PartySyncPeriodicInfo.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_PARTY_SYNC_PERIODIC_INFO",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PersonalShopItemListNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_PERSONAL_SHOP_ITEM_LIST_NOTI",
+        "message",
+        "MainServer_Client_Inventory.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_RestExpInfo.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_ServerVersionInfo.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_SERVER_VERSION_INFO",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_SiegeInjuryTime.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_SiegeZoneUpdate.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_SlotChange.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_SocialAction.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_SpecialResistance.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_SpellBuffNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_SPELL_BUFF_NOTI",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_TamWindow.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_TelePortUi.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_TopRankerAck.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_TOP_RANKER_ACK",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_TopRankerNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_TOP_RANKER_NOTI",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_UpdateInventoryNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_UPDATE_INVENTORY_NOTI",
+        "message",
+        "MainServer_Client_Inventory.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_UserPlayInfo.java",
+    "matches": []
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_WarehouseItemListNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_WAREHOUSE_ITEM_LIST_NOTI",
+        "message",
+        "MainServer_Client_Inventory.reconstructed.proto"
+      ]
+    ]
+  },
+  {
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_WorldPutObjectNoti.java",
+    "matches": [
+      [
+        "LIN",
+        "SC_WORLD_PUT_OBJECT_NOTI",
+        "message",
+        "MainServer_Client.reconstructed.proto"
+      ]
+    ]
+  }
+]

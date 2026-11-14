@@ -7,7 +7,7 @@ import l1j.server.server.model.Warehouse.SupplementaryService;
 import l1j.server.server.model.Warehouse.WarehouseManager;
 import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.shop.L1AdenShop;
-import l1j.server.server.packets.Protocol.Packet.SC_WarehouseItemListNoti;
+import LIN.SC_WAREHOUSE_ITEM_LIST_NOTI;
 
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -263,7 +263,7 @@ public final class CS_AdenShop {
 
         if (size > 0) {
 
-            SC_WarehouseItemListNoti
+            LIN.SC_WAREHOUSE_ITEM_LIST_NOTI
                     .send_user_supplementary_service(
                             pc,
                             pc.getId());

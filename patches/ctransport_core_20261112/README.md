@@ -1,3 +1,9 @@
+## 2026-11-14 메인서버 프로토 이름 정리
+
+복원 스키마의 `LIN`과 확인된 타입 116개·접근자 363개의 이름을 적용했습니다. 제작 타입의 중첩 구조를 맞추고 수신 파서 두 곳의 varint64 경계 오류를 수정했습니다. 전체 src 교체 후 clean build하며 패치 적용 시 deleted-files.txt도 반영합니다. DLL·독립 PSS·DB는 동일합니다. 변경표와 검증은 REPORT_PROTOCOL_NAMES.md, 최신 범위 검사는 `python tests/verify_protocol_names.py`입니다.
+
+---
+
 ## 2026-11-14 DLL 수신 재개 경합 수정
 
 foreign lease 반환이 READ/RESUME drain 종료와 겹칠 때 codec에 받은 프레임을 남기고 새 수신을 기다리던 경합을 수정했습니다. **새 CTransport.dll과 전체 src를 함께 교체하고 clean build합니다.** PSS는 동일합니다. Java FFM 중복 확인 제거 실험은 실측이 나빠져 철회했습니다. REPORT_DISPATCH_PERFORMANCE.md에서 재현·검증·제한을 확인하세요. 최신 범위 검사는 `python tests/verify_dispatch_performance_scope.py`입니다.

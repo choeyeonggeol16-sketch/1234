@@ -32,7 +32,7 @@ import l1j.server.server.model.network.packet.ServerPacket;
 import l1j.server.server.model.network.packet.WritablePacket;
 import l1j.server.server.model.network.utill.ConnectionConfig;
 import l1j.server.server.model.network.utill.ConnectionState;
-import l1j.server.server.packets.Protocol.Packet.SC_CraftListAllAck;
+import LIN.SC_CRAFT_LIST_ALL_ACK;
 import l1j.server.server.packets.Protocol.Stream.ProtoOutputStream;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 
@@ -211,7 +211,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 
 		try {
 			// 메모리 제거
-			SC_CraftListAllAck.onDisconnect(this);
+			LIN.SC_CRAFT_LIST_ALL_ACK.onDisconnect(this);
             final CUserSocket socket = _connection;
             if (socket != null) socket.clearCipher();
 			setAccount(null);

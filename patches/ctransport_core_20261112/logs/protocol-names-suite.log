@@ -1,0 +1,38 @@
+/workspace/work/aden-rkern-cio-20261112/src/l1j/server/MJCombatSystem/MJCombatObserver.java:154: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal
+            _team_q.add(new Integer(i));
+                        ^
+/workspace/work/aden-rkern-cio-20261112/src/l1j/server/server/datatables/IncreaseEinhasadMap.java:51: warning: [removal] Double(double) in Double has been deprecated and marked for removal
+					m_increaseInfo.put(rs.getInt("target_map_id"), new Double(ratio * 0.01));
+					                                               ^
+/workspace/work/aden-rkern-cio-20261112/src/l1j/server/server/datatables/RaceTable.java:63: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal
+		return (L1Racer) _namelist.get(new Integer(name));
+		                               ^
+/workspace/work/aden-rkern-cio-20261112/src/l1j/server/server/utils/SystemUtil.java:56: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal
+			list.add(new Integer(value));
+			         ^
+/workspace/work/aden-rkern-cio-20261112/src/l1j/server/server/utils/TYUtil.java:28: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal
+      list.add(new Integer(value));
+               ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.
+5 warnings
+/workspace/work/aden-rkern-cio-20261112/tests/ProtoWireSnapshot.java:5: warning: Unsafe is internal proprietary API and may be removed in a future release
+import sun.misc.Unsafe;
+               ^
+/workspace/work/aden-rkern-cio-20261112/tests/ProtoWireSnapshot.java:11: warning: Unsafe is internal proprietary API and may be removed in a future release
+    static final Unsafe U;
+                 ^
+/workspace/work/aden-rkern-cio-20261112/tests/ProtoWireSnapshot.java:12: warning: Unsafe is internal proprietary API and may be removed in a future release
+    static{try{Field f=Unsafe.class.getDeclaredField("theUnsafe");f.setAccessible(true);U=(Unsafe)f.get(null);}catch(Exception e){throw new ExceptionInInitializerError(e);}}
+                       ^
+/workspace/work/aden-rkern-cio-20261112/tests/ProtoWireSnapshot.java:12: warning: Unsafe is internal proprietary API and may be removed in a future release
+    static{try{Field f=Unsafe.class.getDeclaredField("theUnsafe");f.setAccessible(true);U=(Unsafe)f.get(null);}catch(Exception e){throw new ExceptionInInitializerError(e);}}
+                                                                                           ^
+4 warnings
+PASS 228 serializer states byte-identical
+PASS both varint64 readers:100011 valid values,265 truncated/overflow/frame-boundary cases;no eleventh-byte consumption
+PASS actual production CPacketHandler+CSProto:ActionUI1001/1002,craft byte subtype,protobuf precedence route,extended unsigned65535,short headers;unchanged delegate/cursor/bytes
+PASS 116 descriptor types,363 accessor declarations;all mapped type bodies and 66 changed caller/parser files checked;native/DLL/codec/PSS preserved
+PASS clean full compile:1698 Java sources;wire/reader/actual dispatcher/source scope

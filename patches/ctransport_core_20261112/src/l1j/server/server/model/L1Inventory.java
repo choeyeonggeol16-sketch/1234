@@ -26,8 +26,8 @@ import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.packets.Protocol.Packet.CS_AlchemyMakeReq;
-import l1j.server.server.packets.Protocol.Packet.Craft.CraftInputItemSlotInfo;
+import LIN.CS_ALCHEMY_MAKE_REQ;
+import LIN.CS_CRAFT_MAKE_REQ.CraftInputItemSlotInfo;
 import l1j.server.server.templates.L1Item;
 
 public class L1Inventory extends L1Object {
@@ -2360,7 +2360,7 @@ public class L1Inventory extends L1Object {
 	}
 	
 	
-	public int fillCraftInputItem(LinkedList<CraftInputItemSlotInfo> slotInfo){
+	public int fillCraftInputItem(LinkedList<LIN.CS_CRAFT_MAKE_REQ.CraftInputItemSlotInfo> slotInfo){
 		int fillCount = 0;
 		int sSize = slotInfo.size();
 		for(L1ItemInstance item : getItems()){
@@ -2370,12 +2370,12 @@ public class L1Inventory extends L1Object {
 			if(item == null)
 				continue;
 
-			for(CraftInputItemSlotInfo sInfo : slotInfo){
+			for(LIN.CS_CRAFT_MAKE_REQ.CraftInputItemSlotInfo sInfo : slotInfo){
 				if(sInfo.hasRemoved())
 					continue;
 
 				if(sInfo.isInput(item)){
-					sInfo.addTemporaryRemovedItems(item, item.isStackable() ? sInfo.get_count() : 1);
+					sInfo.addTemporaryRemovedItems(item, item.isStackable() ? sInfo.count() : 1);
 					if(sInfo.hasRemoved()){	
 						++fillCount;
 					}
@@ -2386,7 +2386,7 @@ public class L1Inventory extends L1Object {
 		return fillCount;
 	}
 	
-	public int fillAlchemyInputItem(LinkedList<CS_AlchemyMakeReq.Input> inputs){
+	public int fillAlchemyInputItem(LinkedList<LIN.CS_ALCHEMY_MAKE_REQ.Input> inputs){
 		int fillCount = 0;
 		int size = inputs.size();
 		for(L1ItemInstance item : getItems()){
@@ -2396,7 +2396,7 @@ public class L1Inventory extends L1Object {
 			if(item == null)
 				continue;
 			
-			for(CS_AlchemyMakeReq.Input input : inputs){
+			for(LIN.CS_ALCHEMY_MAKE_REQ.Input input : inputs){
 				if(input.hasRemoved())
 					continue;
 				

@@ -1,3 +1,11 @@
+## 2026-11-14 — 메인서버 프로토 이름 정리
+
+[**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**패치·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**이름 변경표·검증 보고서**](reports/MAIN_SERVER_PROTOCOL_NAMES_20261114.md)
+
+복원 스키마의 LIN namespace와 확인된 메시지·중첩 타입·필드 접근자 이름을 적용했습니다. 수신 파서 두 곳의 varint64 경계 오류도 수정했습니다. 전체 Java clean compile·직렬화228건 동일·정상값10만건과잘못된입력 검사를 통과했습니다. 전체 src 교체 후 clean build합니다. DLL과 독립 PSS는 동일합니다.
+
+---
+
 ## 2026-11-14 — DLL 수신 재개 경합 수정
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**DLL·C++·검사 묶음**](downloads/CTransport_CORE_20261112.zip) · [**수신 전후 실측**](reports/CTRANSPORT_DISPATCH_PERFORMANCE_20261114.md)

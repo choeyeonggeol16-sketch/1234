@@ -27,9 +27,9 @@ import l1j.server.server.model.rank.loader.RankLoadManager;
 import l1j.server.server.model.rank.loader.RankUserLoader;
 import l1j.server.server.packets.Protocol.Proto;
 import l1j.server.server.packets.Protocol.ProtoPacketWriter;
-import l1j.server.server.packets.Protocol.Packet.SC_MyRankingAck;
-import l1j.server.server.packets.Protocol.Packet.SC_TopRankerAck;
-import l1j.server.server.packets.Protocol.Packet.SC_TopRankerNoti;
+import LIN.SC_MY_RANKING_ACK;
+import LIN.SC_TOP_RANKER_ACK;
+import LIN.SC_TOP_RANKER_NOTI;
 
 /**
  * 랭킹 비즈니스 로직.
@@ -47,25 +47,25 @@ public class RankBusiness implements TimeListener{
     private volatile long _version;
     private byte[] _nowNotServiceAck;
     private volatile byte[][][] _acks;
-    private SC_TopRankerAck[][] _rankInfos;
+    private LIN.SC_TOP_RANKER_ACK[][] _rankInfos;
     private final AtomicBoolean _refreshRunning = new AtomicBoolean();
     private volatile boolean _refreshPending;
     private volatile long _refreshGeneration;
-    private volatile SC_TopRankerNoti _lastTopRanker;
+    private volatile LIN.SC_TOP_RANKER_NOTI _lastTopRanker;
     private volatile boolean _isrun;
     
     private RankBusiness(){
         _accumulate_second = 0;
         
-        _nowNotServiceAck = new SC_TopRankerAck()
-                .resultCodeOnly(SC_TopRankerAck.ResultCode.NOW_NOT_SERVICE.toInt())
+        _nowNotServiceAck = new LIN.SC_TOP_RANKER_ACK()
+                .resultCodeOnly(LIN.SC_TOP_RANKER_ACK.ResultCode.NOW_NOT_SERVICE.toInt())
                 .encode();
         
         _acks = new byte[9][2][];
-        _rankInfos = new SC_TopRankerAck[9][2];
+        _rankInfos = new LIN.SC_TOP_RANKER_ACK[9][2];
         for(int i=8; i>=0; --i){
-            _rankInfos[i][0] = SC_TopRankerAck.newInstance(i, 2, 1);
-            _rankInfos[i][1] = SC_TopRankerAck.newInstance(i, 2, 2);
+            _rankInfos[i][0] = LIN.SC_TOP_RANKER_ACK.newInstance(i, 2, 1);
+            _rankInfos[i][1] = LIN.SC_TOP_RANKER_ACK.newInstance(i, 2, 2);
         }
     }
     
@@ -149,9 +149,9 @@ public class RankBusiness implements TimeListener{
     private void initializeRankerInfo(){
         _version = System.currentTimeMillis();
         for(int i=8; i>=0; --i){
-            _rankInfos[i][0].clearRankers();
+            _rankInfos[i][0].clear_rankers();
             _rankInfos[i][0].set_version(_version);
-            _rankInfos[i][1].clearRankers();
+            _rankInfos[i][1].clear_rankers();
             _rankInfos[i][1].set_version(_version);
         }
     }
@@ -163,13 +163,13 @@ public class RankBusiness implements TimeListener{
         byte[][][] acks = new byte[9][2][];
         for(int i=8; i>=0; --i){
             int totalPage = 1;
-            if(_rankInfos[i][1].hasRankers()){
+            if(_rankInfos[i][1].has_rankers()){
                 totalPage = 2;
                 _rankInfos[i][1].set_current_page(2);
                 _rankInfos[i][1].set_total_page(2);
                 acks[i][1] = _rankInfos[i][1].encode();
             }
-            if(_rankInfos[i][0].hasRankers()){
+            if(_rankInfos[i][0].has_rankers()){
                 _rankInfos[i][0].set_current_page(1);
                 _rankInfos[i][0].set_total_page(totalPage);
                 acks[i][0] = _rankInfos[i][0].encode();
@@ -179,18 +179,18 @@ public class RankBusiness implements TimeListener{
     }
     
     private void doUpdateRank(){
-        ArrayList<SC_TopRankerNoti> rankers = RankUserLoader.getInstance().createSortSnapshot();
+        ArrayList<LIN.SC_TOP_RANKER_NOTI> rankers = RankUserLoader.getInstance().createSortSnapshot();
     //    System.out.println("[Rank] doUpdateRank size=" + (rankers==null?-1:rankers.size()));
         if(rankers == null)
             return;
         
         int[] currentPlace = new int[]{1,1,1,1,1,1,1,1,1};
-        SC_TopRankerNoti[] prevRankers = new SC_TopRankerNoti[9];
+        LIN.SC_TOP_RANKER_NOTI[] prevRankers = new LIN.SC_TOP_RANKER_NOTI[9];
         
         try{
             int size = rankers.size();
             for(int i=0; i<size; ++i){
-                SC_TopRankerNoti rnk = rankers.get(i);
+                LIN.SC_TOP_RANKER_NOTI rnk = rankers.get(i);
                 int class_id = rnk.get_class();
                 int current_class_place = currentPlace[class_id];
                 int current_total_place = currentPlace[8];
@@ -200,11 +200,11 @@ public class RankBusiness implements TimeListener{
                 }else{
                     rnk.updatePlace(current_class_place, current_total_place);
                     rnk.updateRating(current_class_place, current_total_place);
-                    SC_TopRankerNoti prev_class = prevRankers[class_id];
-                    SC_TopRankerNoti prev_total = prevRankers[8];
+                    LIN.SC_TOP_RANKER_NOTI prev_class = prevRankers[class_id];
+                    LIN.SC_TOP_RANKER_NOTI prev_total = prevRankers[8];
                     rnk.updateAlmost(prev_class, prev_total);
                     if(current_class_place <= RankLoadManager.MRK_SYS_CLASS_RANGE){
-                        _rankInfos[class_id][current_class_place > 100 ? 1 : 0].add_rankers(rnk.get_class_ranker());
+                        _rankInfos[class_id][current_class_place > 100 ? 1 : 0].add_rankers(rnk.class_ranker());
                         prevRankers[class_id] = rnk;
                         currentPlace[class_id] = ++current_class_place;
                     }
@@ -213,7 +213,7 @@ public class RankBusiness implements TimeListener{
                         if(current_total_place == 1)
                             _lastTopRanker = rnk;
                         
-                        _rankInfos[8][current_total_place > 100 ? 1 : 0].add_rankers(rnk.get_total_ranker());
+                        _rankInfos[8][current_total_place > 100 ? 1 : 0].add_rankers(rnk.total_ranker());
                         prevRankers[8] = rnk;
                         
                         if(current_total_place == RankLoadManager.MRK_SYS_RANK_POTION - 1) 
@@ -247,9 +247,9 @@ public class RankBusiness implements TimeListener{
             pc.sendPackets("GM은 해당 아이템을 사용할 수 없습니다.");
             return;
         }
-        SC_TopRankerNoti noti = RankUserLoader.getInstance().get(pc.getId());
+        LIN.SC_TOP_RANKER_NOTI noti = RankUserLoader.getInstance().get(pc.getId());
         if (noti == null) noti = RankUserLoader.getInstance().create_user_information(pc);
-        else if (noti.get_total_ranker().get_rank() <= RankLoadManager.MRK_SYS_RANK_POTION) {
+        else if (noti.total_ranker().rank() <= RankLoadManager.MRK_SYS_RANK_POTION) {
             pc.sendPackets("진입하려는 랭킹보다 현재 랭킹이 높습니다.");
             return;
         }
@@ -305,11 +305,11 @@ public class RankBusiness implements TimeListener{
                 return false;
             }
             
-            SC_TopRankerNoti noti = RankUserLoader.getInstance().get(pc.getId());
+            LIN.SC_TOP_RANKER_NOTI noti = RankUserLoader.getInstance().get(pc.getId());
             if(noti == null){
                 noti = RankUserLoader.getInstance().create_user_information(pc);
             }else{
-                if(noti.get_total_ranker().get_rank() <= RankLoadManager.MRK_SYS_RANK_POTION){
+                if(noti.total_ranker().rank() <= RankLoadManager.MRK_SYS_RANK_POTION){
                     pc.sendPackets("진입하려는 랭킹보다 현재 랭킹이 높습니다.");
                     return false;
                 }
@@ -326,7 +326,7 @@ public class RankBusiness implements TimeListener{
     }
     
     public void noti(CIOClient clnt, int objid){
-        SC_TopRankerNoti noti = RankUserLoader.getInstance().get(objid);
+        LIN.SC_TOP_RANKER_NOTI noti = RankUserLoader.getInstance().get(objid);
         if(noti != null) {
             clnt.sendPacket(noti);
         }
@@ -334,13 +334,13 @@ public class RankBusiness implements TimeListener{
     
     public void ack_private_version(L1PcInstance pc, long version){
         if(!RankLoadManager.MRK_SYS_ISON){
-            SC_MyRankingAck.send_not_service(pc);
+            LIN.SC_MY_RANKING_ACK.send_not_service(pc);
         }else if(_version == version){
-            SC_MyRankingAck.send(pc);
+            LIN.SC_MY_RANKING_ACK.send(pc);
         }else{
-            SC_TopRankerNoti noti = RankUserLoader.getInstance().getRankNoti(pc);
+            LIN.SC_TOP_RANKER_NOTI noti = RankUserLoader.getInstance().getRankNoti(pc);
             if(noti != null){
-                SC_MyRankingAck.send(pc, noti, _version);
+                LIN.SC_MY_RANKING_ACK.send(pc, noti, _version);
             }
         }
     }
@@ -352,7 +352,7 @@ public class RankBusiness implements TimeListener{
             return;
         }
         if(version == _version){
-            SC_TopRankerAck.sendNoChange(pc, version);
+            LIN.SC_TOP_RANKER_ACK.sendNoChange(pc, version);
             return;
         }
         if(classId < 0 || classId >= _acks.length){
@@ -373,7 +373,7 @@ public class RankBusiness implements TimeListener{
         }
     }
     
-    public SC_TopRankerNoti getLastTopRanker(){
+    public LIN.SC_TOP_RANKER_NOTI getLastTopRanker(){
         return _lastTopRanker;
     }
 }

@@ -149,15 +149,15 @@ import l1j.server.server.model.rank.loader.RankUserLoader;
 import l1j.server.server.monitor.Logger.ItemActionType;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.packets.Protocol.Proto;
-import l1j.server.server.packets.Protocol.Packet.SC_AttendanceUserDataExtend;
+import LIN.SC_ATTENDANCE_USER_DATA_EXTEND;
 import l1j.server.server.packets.Protocol.Packet.SC_CharStat;
 import l1j.server.server.packets.Protocol.Packet.SC_RestExpInfo;
-import l1j.server.server.packets.Protocol.Packet.SC_SpellBuffNoti;
-import l1j.server.server.packets.Protocol.Packet.SC_SpellBuffNoti.eDurationShowType;
-import l1j.server.server.packets.Protocol.Packet.SC_SpellBuffNoti.eNotiType;
+import LIN.SC_SPELL_BUFF_NOTI;
+import LIN.SC_SPELL_BUFF_NOTI.eDurationShowType;
+import LIN.SC_SPELL_BUFF_NOTI.eNotiType;
 import l1j.server.server.packets.Protocol.Stream.ProtoOutputStream;
-import l1j.server.server.packets.Protocol.Packet.Attend.AttendanceUserFlag;
-import l1j.server.server.packets.Protocol.Packet.Companion.CompanionT.eCommand;
+import LIN.AttendanceUserFlag;
+import LIN.CompanionT.eCommand;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI2;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeShape;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
@@ -413,12 +413,12 @@ public class L1PcInstance extends L1Character {
 
 	public void setPC방_버프(boolean b) {
 		PC방_버프 = b;
-		SC_AttendanceUserDataExtend userData = getAttendanceData();
+		LIN.SC_ATTENDANCE_USER_DATA_EXTEND userData = getAttendanceData();
 		if (userData != null) {
-			AttendanceUserFlag flag = b ? AttendanceUserFlag.USER_FLAG_PC_CAFE : AttendanceUserFlag.USER_FLAG_NORMAL;
-			if (!userData.get_userFlag().equals(flag)) {
+			LIN.AttendanceUserFlag flag = b ? LIN.AttendanceUserFlag.USER_FLAG_PC_CAFE : LIN.AttendanceUserFlag.USER_FLAG_NORMAL;
+			if (!userData.userFlag().equals(flag)) {
 				userData.set_userFlag(flag);
-				SC_AttendanceUserDataExtend.send(this);
+				LIN.SC_ATTENDANCE_USER_DATA_EXTEND.send(this);
 			}
 		}
 		SC_RestExpInfo.send(this);
@@ -2551,9 +2551,9 @@ public class L1PcInstance extends L1Character {
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout dungeon time save failed: " + getId(), e); }
             try {
                 if (!is무인상점()) {
-                    SC_AttendanceUserDataExtend userData = getAttendanceData();
+                    LIN.SC_ATTENDANCE_USER_DATA_EXTEND userData = getAttendanceData();
                     if (userData != null) {
-                        SC_AttendanceUserDataExtend.update(getAccountName(), userData);
+                        LIN.SC_ATTENDANCE_USER_DATA_EXTEND.update(getAccountName(), userData);
                         setAttendanceData(null);
                     }
                 }
@@ -3398,7 +3398,7 @@ public class L1PcInstance extends L1Character {
 						}
 					}
 					L1CompanionInstance companion = attacker_pc.get_companion();
-					if (companion != null && companion.get_command_state().equals(eCommand.TM_Aggressive)) {
+					if (companion != null && companion.get_command_state().equals(LIN.CompanionT.eCommand.TM_Aggressive)) {
 						if (getZoneType() == 0 && companion.getZoneType() == 0)
 							companion.do_pink_name();
 					}
@@ -7153,13 +7153,13 @@ public class L1PcInstance extends L1Character {
 		}
 	}
 
-	private SC_AttendanceUserDataExtend _attendance_data;
+	private LIN.SC_ATTENDANCE_USER_DATA_EXTEND _attendance_data;
 
-	public void setAttendanceData(SC_AttendanceUserDataExtend attendance_data) {
+	public void setAttendanceData(LIN.SC_ATTENDANCE_USER_DATA_EXTEND attendance_data) {
 		_attendance_data = attendance_data;
 	}
 
-	public SC_AttendanceUserDataExtend getAttendanceData() {
+	public LIN.SC_ATTENDANCE_USER_DATA_EXTEND getAttendanceData() {
 		return _attendance_data;
 	}
 

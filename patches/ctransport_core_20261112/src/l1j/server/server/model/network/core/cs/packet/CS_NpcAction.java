@@ -111,8 +111,8 @@ import l1j.server.server.model.npc.action.ActionControlHandler;
 import l1j.server.server.model.npc.action.L1NpcAction;
 import l1j.server.server.model.shop.L1AssessedItem;
 import l1j.server.server.model.shop.L1Shop;
-import l1j.server.server.packets.Protocol.Packet.SC_PersonalShopItemListNoti;
-import l1j.server.server.packets.Protocol.Packet.SC_WarehouseItemListNoti;
+import LIN.SC_PERSONAL_SHOP_ITEM_LIST_NOTI;
+import LIN.SC_WAREHOUSE_ITEM_LIST_NOTI;
 
 import l1j.server.server.model.network.core.sc.packet.SC_AuctionBoardRead;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
@@ -424,7 +424,7 @@ public final class CS_NpcAction {
 						|| npcid == 5000009 || npcid == 5000007 || npcid == 5000008 || npcid == 5000010 || npcid == 779199
 						|| npcid >= 5000001 && npcid <= 5000004 || npcid >= 5000011 && npcid <= 5000018 
 						|| npcid == 900173 || npcid == 7310103 || npcid == 7310200 || npcid == 7310201|| npcid == 7310202 || npcid == 7310104 || npcid == 7310199 || npcid == 7310102 || npcid == 7310125) {
-					SC_PersonalShopItemListNoti.do_send_for_npc(pc, objid, SC_PersonalShopItemListNoti.ePersonalShopType.TRADE_BUY);
+					LIN.SC_PERSONAL_SHOP_ITEM_LIST_NOTI.do_send_for_npc(pc, objid, LIN.SC_PERSONAL_SHOP_ITEM_LIST_NOTI.ePersonalShopType.TRADE_BUY);
 					return;
 				}
 				if (npcid == 7320121 || npcid == 7320085) {
@@ -499,7 +499,7 @@ public final class CS_NpcAction {
 			} else if (s.equalsIgnoreCase("retrieve")) {
 				
 				if (pc.getLevel() >= 5) {
-					SC_WarehouseItemListNoti.send_user_warehouse_items(pc, objid);
+					LIN.SC_WAREHOUSE_ITEM_LIST_NOTI.send_user_warehouse_items(pc, objid);
 				}
 			} else if (s.equalsIgnoreCase("retrieve-elven")) {
 				if (pc.getInventory().getSize() > 180){
@@ -539,7 +539,7 @@ public final class CS_NpcAction {
 						SC_ServerMessage.send(pc, 728);
 						return;
 					}
-					SC_WarehouseItemListNoti.send_user_pledge_warehouse_items(pc, objid);
+					LIN.SC_WAREHOUSE_ITEM_LIST_NOTI.send_user_pledge_warehouse_items(pc, objid);
 					return;
 				}
 			} else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 200007) {//오류

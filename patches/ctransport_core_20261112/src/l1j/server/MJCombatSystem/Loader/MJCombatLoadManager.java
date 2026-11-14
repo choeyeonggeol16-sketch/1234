@@ -21,7 +21,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.packet.ServerPacket;
 import l1j.server.server.model.network.packet.WritablePacket;
-import l1j.server.server.packets.Protocol.Packet.SC_NotificationMessage;
+import LIN.SC_NOTIFICATION_MESSAGE;
 import l1j.server.server.packets.Protocol.Stream.ProtoOutputStream;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -182,25 +182,25 @@ public class MJCombatLoadManager implements MJCommand{
 		}
 	}
 	
-    public static SC_NotificationMessage create_winner_message(){
+    public static LIN.SC_NOTIFICATION_MESSAGE create_winner_message(){
         return create_result_message(true, COMBAT_WINNER_MESSAGE_RGB, COMBAT_WINNER_MESSAGE_DURATION);
     }
-    public static SC_NotificationMessage create_loser_message(){
+    public static LIN.SC_NOTIFICATION_MESSAGE create_loser_message(){
         return create_result_message(false, COMBAT_LOSER_MESSAGE_RGB, COMBAT_LOSER_MESSAGE_DURATION);
     }
-    public static SC_NotificationMessage create_result_message(boolean is_winner, MJSimpleRgb rgb, int duration){
+    public static LIN.SC_NOTIFICATION_MESSAGE create_result_message(boolean is_winner, MJSimpleRgb rgb, int duration){
         return create_result_message(String.format("경기가 종료되었습니다. %s! %d초 후 마을로 이동됩니다.", is_winner ? "승리" : "패배", duration), rgb, duration);
     }
-    public static SC_NotificationMessage create_result_message(String s, MJSimpleRgb rgb, int duration){
-        return SC_NotificationMessage.of(s, rgb, duration);  
+    public static LIN.SC_NOTIFICATION_MESSAGE create_result_message(String s, MJSimpleRgb rgb, int duration){
+        return LIN.SC_NOTIFICATION_MESSAGE.of(s, rgb, duration);
     }
 
     /**
      * [수정] 승/패/랭커 3종 통지 — 이전엔 ProtoOutputStream[] 를 만들어 소비자가
      * 각각 sendPackets 했다면, 이제 패킷 자체를 반환하니 소비자는 Proto.send로 전송.
      */
-    public static SC_NotificationMessage[] create_result_notify(TeamKda winner_kda, UserKda[] ranker_kdas){
-        return new SC_NotificationMessage[]{
+    public static LIN.SC_NOTIFICATION_MESSAGE[] create_result_notify(TeamKda winner_kda, UserKda[] ranker_kdas){
+        return new LIN.SC_NOTIFICATION_MESSAGE[]{
                 create_winner_message(),
                 create_loser_message(),
                 create_result_message(

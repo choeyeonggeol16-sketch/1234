@@ -65,7 +65,7 @@ import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.packets.Protocol.ProtoPacketWriter;
-import l1j.server.server.packets.Protocol.Packet.SC_WorldPutObjectNoti;
+import LIN.SC_WORLD_PUT_OBJECT_NOTI;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ClanAttention;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -981,7 +981,7 @@ public final class CS_Attr {
 		SC_RemoveObject.send(pc.getNetConnection(), pet);
 		SC_RemoveObject.broadcast(pc, pet.getId());
 
-		byte[] data = SC_WorldPutObjectNoti.newInstance(pet).encode();
+		byte[] data = LIN.SC_WORLD_PUT_OBJECT_NOTI.newInstance(pet).encode();
 		pc.broadcastPacket(data);
 	}
 

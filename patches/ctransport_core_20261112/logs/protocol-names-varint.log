@@ -1,0 +1,1 @@
+PASS both varint64 readers:100011 valid values,265 truncated/overflow/frame-boundary cases;no eleventh-byte consumption

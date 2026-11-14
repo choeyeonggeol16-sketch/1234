@@ -1,0 +1,874 @@
+[
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Attend.AttendanceBonusGroup",
+    "new": "LIN.AttendanceBonusGroup",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/AttendanceBonusGroup.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Attend.AttendanceBonusInfo",
+    "new": "LIN.AttendanceBonusInfo",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/AttendanceBonusInfo.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Attend.AttendanceBonusType",
+    "new": "LIN.AttendanceBonusType",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/AttendanceBonusType.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "enum"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Attend.AttendanceGroupType",
+    "new": "LIN.AttendanceGroupType",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/AttendanceGroupType.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "enum"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Attend.AttendanceUserFlag",
+    "new": "LIN.AttendanceUserFlag",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/AttendanceUserFlag.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "enum"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Attend.UserAttendanceDataExtend",
+    "new": "LIN.UserAttendanceDataExtend",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/UserAttendanceDataExtend.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Attend.UserAttendanceDataGroup",
+    "new": "LIN.UserAttendanceDataGroup",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/UserAttendanceDataGroup.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Attend.UserAttendanceState",
+    "new": "LIN.UserAttendanceState",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/UserAttendanceState.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "enum"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Attend.UserAttendanceTimeStatus",
+    "new": "LIN.UserAttendanceTimeStatus",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Attend/UserAttendanceTimeStatus.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "enum"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_AchievementTeleportReq",
+    "new": "LIN.CS_ACHIEVEMENT_TELEPORT_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_AchievementTeleportReq.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_AlchemyDesignReq",
+    "new": "LIN.CS_ALCHEMY_DESIGN_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_AlchemyDesignReq.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_AlchemyMakeReq",
+    "new": "LIN.CS_ALCHEMY_MAKE_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_AlchemyMakeReq.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_AttendanceBonusRequestExtend",
+    "new": "LIN.CS_ATTENDANCE_BONUS_REQUEST_EXTEND",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_AttendanceBonusRequestExtend.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_AttendanceRewardReq",
+    "new": "LIN.CS_ATTENDANCE_REWARD_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_AttendanceRewardReq.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_ClientVersionInfo",
+    "new": "LIN.CS_CLIENT_VERSION_INFO",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_ClientVersionInfo.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_CompanionNameChangeReq",
+    "new": "LIN.CS_COMPANION_NAME_CHANGE_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CompanionNameChangeReq.java",
+    "schema": "MainServer_Client_Companion.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_CompanionSkillEnchantReq",
+    "new": "LIN.CS_COMPANION_SKILL_ENCHANT_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CompanionSkillEnchantReq.java",
+    "schema": "MainServer_Client_Companion.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_CompanionSkillNextTierOpenReq",
+    "new": "LIN.CS_COMPANION_SKILL_NEXT_TIER_OPEN_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CompanionSkillNextTierOpenReq.java",
+    "schema": "MainServer_Client_Companion.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_CompanionStatIncreaseReq",
+    "new": "LIN.CS_COMPANION_STAT_INCREASE_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CompanionStatIncreaseReq.java",
+    "schema": "MainServer_Client_Companion.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_CompanionTmCommandReq",
+    "new": "LIN.CS_COMPANION_TM_COMMAND_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CompanionTmCommandReq.java",
+    "schema": "MainServer_Client_Companion.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_CompletedAchievementRewardReq",
+    "new": "LIN.CS_COMPLETED_ACHIEVEMENT_REWARD_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CompletedAchievementRewardReq.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_CraftBatchReq",
+    "new": "LIN.CS_CRAFT_BATCH_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CraftBatchReq.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_CraftIdListReq",
+    "new": "LIN.CS_CRAFT_ID_LIST_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CraftIdListReq.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_CraftListAllReq",
+    "new": "LIN.CS_CRAFT_LIST_ALL_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CraftListAllReq.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_CraftMakeReq",
+    "new": "LIN.CS_CRAFT_MAKE_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_CraftMakeReq.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_MonsterBookV2RewardReq",
+    "new": "LIN.CS_MONSTER_BOOK_V2_REWARD_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_MonsterBookV2RewardReq.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_MonsterBookV2TeleportReq",
+    "new": "LIN.CS_MONSTER_BOOK_V2_TELEPORT_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_MonsterBookV2TeleportReq.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_MyRankingReq",
+    "new": "LIN.CS_MY_RANKING_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_MyRankingReq.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_TopRankerReq",
+    "new": "LIN.CS_TOP_RANKER_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_TopRankerReq.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.CS_UserPlayInfo",
+    "new": "LIN.CS_USER_PLAY_INFO_REQ",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/CS_UserPlayInfo.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Companion.CompanionT",
+    "new": "LIN.CompanionT",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Companion/CompanionT.java",
+    "schema": "Lineage_CommonDataTypes.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Craft.Craft",
+    "new": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/Craft.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": "LIN.SC_CRAFT_LIST_ALL_ACK",
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Craft.CraftAttr",
+    "new": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftAttr",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftAttr.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft",
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Craft.CraftEvent",
+    "new": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList.CraftEvent",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftEvent.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList",
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Craft.CraftInputItem",
+    "new": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftInputList.CraftInputItem",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftInputItem.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftInputList",
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Craft.CraftInputItemSlotInfo",
+    "new": "LIN.CS_CRAFT_MAKE_REQ.CraftInputItemSlotInfo",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftInputItemSlotInfo.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": "LIN.CS_CRAFT_MAKE_REQ",
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Craft.CraftInputList",
+    "new": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftInputList",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftInputList.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft",
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Craft.CraftOutputItem",
+    "new": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList.CraftOutputItem",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftOutputItem.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList",
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Craft.CraftOutputList",
+    "new": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftOutputList.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft",
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Craft.CraftOutputSFList",
+    "new": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftOutputSFList.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList",
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Craft.CraftRequiredItemList",
+    "new": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftRequiredItemList",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftRequiredItemList.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft",
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Craft.CraftRequiredQuestList",
+    "new": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftRequiredQuestList",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftRequiredQuestList.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft",
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Craft.CraftRequiredSpriteList",
+    "new": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftRequiredSpriteList",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/CraftRequiredSpriteList.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": "LIN.SC_CRAFT_LIST_ALL_ACK.Craft",
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Craft.eCraftMakeReqResultType",
+    "new": "LIN.SC_CRAFT_MAKE_ACK.eCraftMakeReqResultType",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Craft/eCraftMakeReqResultType.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": "LIN.SC_CRAFT_MAKE_ACK",
+    "kind": "enum"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Inventory.ItemInfo",
+    "new": "LIN.ItemInfo",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Inventory/ItemInfo.java",
+    "schema": "MainServer_Client_Inventory.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Inventory.TradeItemInfo",
+    "new": "LIN.TradeItemInfo",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Inventory/TradeItemInfo.java",
+    "schema": "MainServer_Client_Inventory.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.MonsterBook.CompletedAchievement",
+    "new": "LIN.CompletedAchievement",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/MonsterBook/CompletedAchievement.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.MonsterBook.CriteriaProgress",
+    "new": "LIN.CriteriaProgress",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/MonsterBook/CriteriaProgress.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.MonsterBook.MonsterBookV2Info",
+    "new": "LIN.MonsterBookV2Info",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/MonsterBook/MonsterBookV2Info.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.MonsterBook.eMonsterBookV2BonusRewardGrade",
+    "new": "LIN.eMonsterBookV2BonusRewardGrade",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/MonsterBook/eMonsterBookV2BonusRewardGrade.java",
+    "schema": "Lineage_CommonDataTypes.reconstructed.proto",
+    "parent": null,
+    "kind": "enum"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.MonsterBook.eMonsterBookV2DeckState",
+    "new": "LIN.eMonsterBookV2DeckState",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/MonsterBook/eMonsterBookV2DeckState.java",
+    "schema": "Lineage_CommonDataTypes.reconstructed.proto",
+    "parent": null,
+    "kind": "enum"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.MonsterBook.eMonsterBookV2RewardGrade",
+    "new": "LIN.eMonsterBookV2RewardGrade",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/MonsterBook/eMonsterBookV2RewardGrade.java",
+    "schema": "Lineage_CommonDataTypes.reconstructed.proto",
+    "parent": null,
+    "kind": "enum"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.Ranker.Ranker",
+    "new": "LIN.Ranker",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/Ranker/Ranker.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AchievementCompleteNoti",
+    "new": "LIN.SC_ACHIEVEMENT_COMPLETE_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AchievementCompleteNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AchievementTeleportAck",
+    "new": "LIN.SC_ACHIEVEMENT_TELEPORT_ACk",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AchievementTeleportAck.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AddActiveSpellExNoti",
+    "new": "LIN.SC_ADD_ACTIVE_SPELL_EX_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AddActiveSpellExNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AddCompletedAchievementBatch",
+    "new": "LIN.SC_ADD_COMPLETED_ACHIEVEMENT_BATCH",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AddCompletedAchievementBatch.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AddCriteriaProgressBatch",
+    "new": "LIN.SC_ADD_CRITERIA_PROGRESS_BATCH",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AddCriteriaProgressBatch.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AddInventoryNoti",
+    "new": "LIN.SC_ADD_INVENTORY_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AddInventoryNoti.java",
+    "schema": "MainServer_Client_Inventory.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AlchemyDesignAck",
+    "new": "LIN.SC_ALCHEMY_DESIGN_ACK",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AlchemyDesignAck.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AlchemyExtraInfoNoti",
+    "new": "LIN.SC_ALCHEMY_EXTRA_INFO_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AlchemyExtraInfoNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AlchemyMakeAck",
+    "new": "LIN.SC_ALCHEMY_MAKE_ACK",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AlchemyMakeAck.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AllSpellPassiveNoti",
+    "new": "LIN.SC_ALL_SPELL_PASSIVE_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AllSpellPassiveNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AttendanceBonusGroupInfo",
+    "new": "LIN.SC_ATTENDANCE_BONUS_GROUP_INFO",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AttendanceBonusGroupInfo.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AttendanceBonusInfoExtend",
+    "new": "LIN.SC_ATTENDANCE_BONUS_INFO_EXTEND",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AttendanceBonusInfoExtend.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AttendanceDataUpdateExtend",
+    "new": "LIN.SC_ATTENDANCE_DATA_UPDATE_EXTEND",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AttendanceDataUpdateExtend.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AttendanceRewardAck",
+    "new": "LIN.SC_ATTENDANCE_REWARD_ACK",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AttendanceRewardAck.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AttendanceUserDataExtend",
+    "new": "LIN.SC_ATTENDANCE_USER_DATA_EXTEND",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_AttendanceUserDataExtend.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_BoxAttrChangeNoti",
+    "new": "LIN.SC_BOX_ATTR_CHANGE_NOTI_PACKET",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_BoxAttrChangeNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_CompanionBuffNoti",
+    "new": "LIN.SC_COMPANION_BUFF_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompanionBuffNoti.java",
+    "schema": "MainServer_Client_Companion.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_CompanionCombatDataNoti",
+    "new": "LIN.SC_COMPANION_COMBAT_DATA_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompanionCombatDataNoti.java",
+    "schema": "MainServer_Client_Companion.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_CompanionNameChangeAck",
+    "new": "LIN.SC_COMPANION_NAME_CHANGE_ACK",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompanionNameChangeAck.java",
+    "schema": "MainServer_Client_Companion.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_CompanionSkillEnchantAck",
+    "new": "LIN.SC_COMPANION_SKILL_ENCHANT_ACK",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompanionSkillEnchantAck.java",
+    "schema": "MainServer_Client_Companion.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_CompanionSkillNoti",
+    "new": "LIN.SC_COMPANION_SKILL_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompanionSkillNoti.java",
+    "schema": "MainServer_Client_Companion.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_CompanionStatusNoti",
+    "new": "LIN.SC_COMPANION_STATUS_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompanionStatusNoti.java",
+    "schema": "MainServer_Client_Companion.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_CompletedAchievementRewardAck",
+    "new": "LIN.SC_COMPLETED_ACHIEVEMENT_REWARD_ACK",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CompletedAchievementRewardAck.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_CraftBatchAck",
+    "new": "LIN.SC_CRAFT_BATCH_ACK",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CraftBatchAck.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_CraftListAllAck",
+    "new": "LIN.SC_CRAFT_LIST_ALL_ACK",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CraftListAllAck.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_CraftMakeAck",
+    "new": "LIN.SC_CRAFT_MAKE_ACK",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CraftMakeAck.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_CriteriaUpdateNoti",
+    "new": "LIN.SC_CRITERIA_UPDATE_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_CriteriaUpdateNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_EventCountdownNoti",
+    "new": "LIN.SC_EVENT_COUNTDOWN_NOTI_PACKET",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_EventCountdownNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_FatigueNoti",
+    "new": "LIN.SC_FATIGUE_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_FatigueNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_MonsterBookV2InfoNoti",
+    "new": "LIN.SC_MONSTER_BOOK_V2_INFO_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_MonsterBookV2InfoNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_MonsterBookV2RewardAck",
+    "new": "LIN.SC_MONSTER_BOOK_V2_REWARD_ACK",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_MonsterBookV2RewardAck.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_MonsterBookV2TeleportAck",
+    "new": "LIN.SC_MONSTER_BOOK_V2_TELEPORT_ACK",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_MonsterBookV2TeleportAck.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_MonsterBookV2UpdateAmountNoti",
+    "new": "LIN.SC_MONSTER_BOOK_V2_UPDATE_AMOUNT_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_MonsterBookV2UpdateAmountNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_MonsterBookV2UpdateStateNoti",
+    "new": "LIN.SC_MONSTER_BOOK_V2_UPDATE_STATE_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_MonsterBookV2UpdateStateNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_MyRankingAck",
+    "new": "LIN.SC_MY_RANKING_ACK",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_MyRankingAck.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_NotificationMessage",
+    "new": "LIN.SC_NOTIFICATION_MESSAGE",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_NotificationMessage.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_NotificationMessageNot",
+    "new": "LIN.SC_NOTIFICATION_MESSAGE_NOT",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_NotificationMessageNot.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_PartyMemberList",
+    "new": "LIN.SC_PARTY_MEMBER_LIST",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PartyMemberList.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_PartyMemberListChange",
+    "new": "LIN.SC_PARTY_MEMBER_LIST_CHANGE",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PartyMemberListChange.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_PartyMemberMarkChange",
+    "new": "LIN.SC_PARTY_MEMBER_MARK_CHANGE_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PartyMemberMarkChange.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_PartyMemberStatus",
+    "new": "LIN.SC_PARTY_MEMBER_STATUS",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PartyMemberStatus.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_PartyOperationResult",
+    "new": "LIN.SC_PARTY_OPERATION_RESULT_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PartyOperationResult.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_PartySyncPeriodicInfo",
+    "new": "LIN.SC_PARTY_SYNC_PERIODIC_INFO",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PartySyncPeriodicInfo.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_PersonalShopItemListNoti",
+    "new": "LIN.SC_PERSONAL_SHOP_ITEM_LIST_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_PersonalShopItemListNoti.java",
+    "schema": "MainServer_Client_Inventory.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_ServerVersionInfo",
+    "new": "LIN.SC_SERVER_VERSION_INFO",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_ServerVersionInfo.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_SiegeInjuryTime",
+    "new": "LIN.SC_SIEGE_INJURY_TIME_NOIT",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_SiegeInjuryTime.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_SiegeZoneUpdate",
+    "new": "LIN.SC_SIEGE_ZONE_UPDATE_NOT",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_SiegeZoneUpdate.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_SocialAction",
+    "new": "LIN.SC_SOCIAL_ACTION_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_SocialAction.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_SpecialResistance",
+    "new": "LIN.SC_SPECIAL_RESISTANCE_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_SpecialResistance.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_SpellBuffNoti",
+    "new": "LIN.SC_SPELL_BUFF_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_SpellBuffNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_TopRankerAck",
+    "new": "LIN.SC_TOP_RANKER_ACK",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_TopRankerAck.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_TopRankerNoti",
+    "new": "LIN.SC_TOP_RANKER_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_TopRankerNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_UpdateInventoryNoti",
+    "new": "LIN.SC_UPDATE_INVENTORY_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_UpdateInventoryNoti.java",
+    "schema": "MainServer_Client_Inventory.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_UserPlayInfo",
+    "new": "LIN.SC_USER_PLAY_INFO_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_UserPlayInfo.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_WarehouseItemListNoti",
+    "new": "LIN.SC_WAREHOUSE_ITEM_LIST_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_WarehouseItemListNoti.java",
+    "schema": "MainServer_Client_Inventory.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_WorldPutObjectNoti",
+    "new": "LIN.SC_WORLD_PUT_OBJECT_NOTI",
+    "path": "src/l1j/server/server/packets/Protocol/Packet/SC_WorldPutObjectNoti.java",
+    "schema": "MainServer_Client.reconstructed.proto",
+    "parent": null,
+    "kind": "message"
+  }
+]

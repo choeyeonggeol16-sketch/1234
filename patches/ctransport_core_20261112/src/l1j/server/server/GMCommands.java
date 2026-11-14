@@ -139,10 +139,10 @@ import l1j.server.server.model.network.safe.NetworkSafeLoadManager;
 import l1j.server.server.model.rank.loader.RankLoadManager;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.packets.Protocol.Proto;
-import l1j.server.server.packets.Protocol.Packet.SC_AddInventoryNoti;
-import l1j.server.server.packets.Protocol.Packet.SC_EventCountdownNoti;
+import LIN.SC_ADD_INVENTORY_NOTI;
+import LIN.SC_EVENT_COUNTDOWN_NOTI_PACKET;
 import l1j.server.server.packets.Protocol.Packet.SC_RestExpInfo;
-import l1j.server.server.packets.Protocol.Packet.Inventory.ItemInfo;
+import LIN.ItemInfo;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.Controller.BossController;
 
@@ -330,7 +330,7 @@ public class GMCommands {
 			   String[] args = cmd.split(" ", 3);
 		        int sec = args.length > 1 ? Integer.parseInt(args[1]) : 60;
 		        String desc = args.length > 2 ? args[2] : "테스트 이벤트";
-		        SC_EventCountdownNoti.send(gm, sec, desc);
+		        LIN.SC_EVENT_COUNTDOWN_NOTI_PACKET.send(gm, sec, desc);
 		        gm.sendPackets("카운트다운 전송: " + sec + "초, " + desc);
 			break;
 //		case "아이피딜레이체크":
@@ -5365,7 +5365,7 @@ private void 퀘스트멘트(L1PcInstance gm, String param) {
 	        int start = Integer.parseInt(st.nextToken());
 	        int end = Integer.parseInt(st.nextToken()) + start;
 	        long notiWire_present = 0L;
-	        java.util.List<l1j.server.server.packets.Protocol.Packet.Inventory.ItemInfo> notiWire_items = new java.util.LinkedList<>();
+	        java.util.List<LIN.ItemInfo> notiWire_items = new java.util.LinkedList<>();
 	        java.util.List<byte[]> notiWire_rawItems = new java.util.LinkedList<>();
 
 	        L1Item temp = ItemTable.getInstance().getTemplate(410016);
@@ -5375,10 +5375,10 @@ private void 퀘스트멘트(L1PcInstance gm, String param) {
 	            item.setItem(temp);
 	            item.setBless(temp.getBless());
 	            item.setIdentified(false);
-	            { notiWire_items.add((ItemInfo.newInstance(item, i, String.valueOf(i).getBytes(), item.getBless()))); }
+	            { notiWire_items.add((LIN.ItemInfo.newInstance(item, i, String.valueOf(i).getBytes(), item.getBless()))); }
 	            m_use_type_items.add(item);
 	        }
-	        SC_AddInventoryNoti.sendFields(gm, notiWire_present, notiWire_items, notiWire_rawItems, false, 0);
+	        LIN.SC_ADD_INVENTORY_NOTI.sendFields(gm, notiWire_present, notiWire_items, notiWire_rawItems, false, 0);
 	    } catch (Exception e) {
 	        gm.sendPackets(".유즈타입 [시작번호] [끝번호]");
 	    }

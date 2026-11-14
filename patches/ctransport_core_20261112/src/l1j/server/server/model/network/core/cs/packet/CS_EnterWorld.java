@@ -100,15 +100,15 @@ import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.utill.ConnectionState;
 import l1j.server.server.model.rank.loader.RankUserLoader;
 import l1j.server.server.monitor.LoggerInstance;
-import l1j.server.server.packets.Protocol.Packet.SC_AddInventoryNoti;
-import l1j.server.server.packets.Protocol.Packet.SC_AttendanceBonusGroupInfo;
-import l1j.server.server.packets.Protocol.Packet.SC_AttendanceBonusInfoExtend;
-import l1j.server.server.packets.Protocol.Packet.SC_AttendanceUserDataExtend;
+import LIN.SC_ADD_INVENTORY_NOTI;
+import LIN.SC_ATTENDANCE_BONUS_GROUP_INFO;
+import LIN.SC_ATTENDANCE_BONUS_INFO_EXTEND;
+import LIN.SC_ATTENDANCE_USER_DATA_EXTEND;
 import l1j.server.server.packets.Protocol.Packet.SC_MapID;
 import l1j.server.server.packets.Protocol.Packet.SC_RestExpInfo;
 import l1j.server.server.packets.Protocol.Packet.SC_SlotChange;
-import l1j.server.server.packets.Protocol.Packet.SC_WorldPutObjectNoti;
-import l1j.server.server.packets.Protocol.Packet.Inventory.ItemInfo;
+import LIN.SC_WORLD_PUT_OBJECT_NOTI;
+import LIN.ItemInfo;
 import l1j.server.server.model.network.core.sc.packet.SC_CharacterConfig;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.storage.CacheD;
@@ -171,7 +171,7 @@ public final class CS_EnterWorld {
         L1PcInstance pc;
         ArrayList<L1ItemInstance> items;
         CachedRowSet[] warehouseRows;
-        SC_AttendanceUserDataExtend.LoginSnapshot attendance;
+        LIN.SC_ATTENDANCE_USER_DATA_EXTEND.LoginSnapshot attendance;
         int[] skills;
         List<Integer> mastery;
         List<BuffInfo> buffs;
@@ -261,7 +261,7 @@ public final class CS_EnterWorld {
         }
         data.warehouseRows = readWarehouseRows(data.pc.getAccountName(), data.pc.getName());
         if (Config.USE_ATTENDANCE_SYSTEM && data.pc.getLevel() >= 50)
-            data.attendance = SC_AttendanceUserDataExtend.readLoginSnapshot(data.pc.getAccountName());
+            data.attendance = LIN.SC_ATTENDANCE_USER_DATA_EXTEND.readLoginSnapshot(data.pc.getAccountName());
         data.mastery = new ArrayList<>();
         data.skills = loadSkills(data.pc, data.mastery);
         data.buffs = loadBuff(data.pc);
@@ -751,10 +751,10 @@ public final class CS_EnterWorld {
         pc.onWorldMove(pc.getMapId(), pc.getX(), pc.getY());
         
         if (Config.USE_ATTENDANCE_SYSTEM && pc.getLevel() >= 50) {
-			SC_AttendanceBonusInfoExtend.send(pc);
-			SC_AttendanceBonusGroupInfo.send(pc);
-			SC_AttendanceUserDataExtend.applyLoginSnapshot(pc, data.attendance);
-			SC_AttendanceUserDataExtend.send(pc);
+			LIN.SC_ATTENDANCE_BONUS_INFO_EXTEND.send(pc);
+			LIN.SC_ATTENDANCE_BONUS_GROUP_INFO.send(pc);
+			LIN.SC_ATTENDANCE_USER_DATA_EXTEND.applyLoginSnapshot(pc, data.attendance);
+			LIN.SC_ATTENDANCE_USER_DATA_EXTEND.send(pc);
         }
         if (pc.getLevel() >= 50) {
             SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, Config.GAME_SERVER_MENT);
@@ -1067,7 +1067,7 @@ public final class CS_EnterWorld {
 					summon.setMaster(pc);
 					pc.addPet(summon);
 					for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(summon)) {
-						SC_WorldPutObjectNoti.sendNewInstance(visiblePc, summon, visiblePc);
+						LIN.SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(visiblePc, summon, visiblePc);
 					}
 				}
 			}
@@ -1335,7 +1335,7 @@ public static void loadNBuff(L1PcInstance pc) {
 	        L1ItemInstance item = snap[i];
 	        if (item == null || item.getItem() == null) continue;
 	        try {
-	            encoded[i] = ItemInfo.encodeItemBody(item);
+	            encoded[i] = LIN.ItemInfo.encodeItemBody(item);
 	        } catch (Throwable t) {
 	            _log.log(Level.WARNING, "[INV] ItemInfo encode failed: pc=" + pc.getName()
 	                + " objId=" + safeObjId(item) + " itemId=" + safeItemId(item) + " name=" + safeName(item), t);
@@ -1355,7 +1355,7 @@ public static void loadNBuff(L1PcInstance pc) {
 	        final byte[] body = encoded[i];
 	        if (body == null) continue;
 
-	        final int addBytes = ItemInfo.encodedWireSize(body);
+	        final int addBytes = LIN.ItemInfo.encodedWireSize(body);
 
 	        // 단일 아이템이 청크 한도 초과 → 독립 전송
 	        if (addBytes >= INVENTORY_NOTI_MAX_BYTES) {
@@ -1369,7 +1369,7 @@ public static void loadNBuff(L1PcInstance pc) {
 	            }
 
 	            try {
-	                SC_AddInventoryNoti.sendEncodedItem(pc, body, ON_START, pc.getId());
+	                LIN.SC_ADD_INVENTORY_NOTI.sendEncodedItem(pc, body, ON_START, pc.getId());
 	            } catch (Throwable t) {
 	                _log.log(Level.SEVERE, "[INV] SINGLE send failed: pc=" + pc.getName()
 	                    + " addBytes=" + addBytes
@@ -1418,7 +1418,7 @@ public static void loadNBuff(L1PcInstance pc) {
 	        int total,
 	        L1ItemInstance lastItem) {
 	    try {
-            SC_AddInventoryNoti.sendEncoded(pc, encoded, from, to, true, pc.getId());
+            LIN.SC_ADD_INVENTORY_NOTI.sendEncoded(pc, encoded, from, to, true, pc.getId());
 	    } catch (Throwable t) {
 	        _log.log(Level.SEVERE, "[INV] send failed on chunk#" + chunkNo
 	                + " pc=" + (pc != null ? pc.getName() : "null") + "(" + (pc != null ? pc.getId() : 0) + ")"

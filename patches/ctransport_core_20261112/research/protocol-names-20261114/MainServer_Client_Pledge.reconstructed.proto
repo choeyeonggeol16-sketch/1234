@@ -1,0 +1,68 @@
+// Recovered from mjlin_loaded_code_00400000_0180D000.bin, SHA-256 256f7886e98d7d2c573ab76917f78e30dc4f34cb723a002d604602cdb2f6cbdb
+// Source: embedded FileDescriptorProto, NOT NC-authored source file.
+// package/message/field/enum/number/cardinality derived directly from binary descriptor.
+// syntax="proto2" reconstructed from descriptor required/optional semantics.
+syntax = "proto2";
+package LIN;
+
+message WorldInfo {
+  enum eState {
+    Idle = 1;
+    Selected = 2;
+    Unselected = 3;
+  }
+  required int32 world_id = 1;
+  required .LIN.WorldInfo.eState world_state = 2;
+}
+
+message CS_BLESS_OF_BLOOD_PLEDGE_PICK_REQ {
+  required .LIN.WorldInfo world = 1;
+}
+
+message CS_BLESS_OF_BLOOD_PLEDGE_SHUFFLE_REQ {
+}
+
+message SC_BLESS_OF_BLOOD_PLEDGE_ACK {
+  enum eResult {
+    Success = 0;
+    WorldExistingFail = 1;
+    PledgeCheckFail = 2;
+    PledgeRankFail = 3;
+    EnoughAdenaFail = 4;
+    ShuffleConditionFail = 5;
+    TeleportConditionFail = 6;
+  }
+  required .LIN.SC_BLESS_OF_BLOOD_PLEDGE_ACK.eResult result = 1;
+}
+
+message SC_BLESS_OF_BLOOD_PLEDGE_UPDATE_NOTI {
+  repeated .LIN.WorldInfo world_candidate = 1;
+  optional bool can_shuffle = 2;
+}
+
+message SC_REST_EXP_INFO_NOTI {
+  required int32 rest_gauge = 1;
+  required int32 default_ration = 2;
+  required int32 extra_exp_ratio = 3;
+  required int32 reduce_efficiency = 4;
+  optional bool bless_of_blood_pledge = 5 [default = false];
+}
+
+message PledgeInfo {
+  required uint32 pledge_id = 1;
+  required string pledge_name = 2;
+  required string master_name = 3;
+  required uint32 emblem_id = 4;
+}
+
+message SC_BLOOD_PLEDGE_ALLY_LIST {
+  required .LIN.PledgeInfo master = 1;
+  required int32 leader_pledge_foundation_day = 2;
+  repeated .LIN.PledgeInfo allys = 3;
+}
+
+message SC_BLOOD_PLEDGE_ALLY_LIST_CHANGE {
+  optional .LIN.PledgeInfo add_pledge = 1;
+  optional .LIN.PledgeInfo remove_pledge = 2;
+  optional bool dismiss_ally = 3;
+}

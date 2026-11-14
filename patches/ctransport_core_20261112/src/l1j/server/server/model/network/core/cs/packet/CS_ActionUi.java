@@ -38,7 +38,7 @@ import l1j.server.server.model.network.packet.ServerPacket;
 import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
-import l1j.server.server.packets.Protocol.Packet.SC_SocialAction;
+import LIN.SC_SOCIAL_ACTION_NOTI;
 import l1j.server.server.packets.Protocol.Packet.SC_TamWindow;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeShape;
@@ -1375,7 +1375,7 @@ public final class CS_ActionUi {
             int code) {
 
         final ServerPacket packet =
-                SC_SocialAction.get(
+                LIN.SC_SOCIAL_ACTION_NOTI.get(
                         pc.getId(),
                         actionType,
                         code);

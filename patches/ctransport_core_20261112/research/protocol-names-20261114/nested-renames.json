@@ -1,0 +1,37 @@
+[
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_AllSpellPassiveNoti.SpellPassiveData",
+    "intermediate": "LIN.SC_ALL_SPELL_PASSIVE_NOTI.SpellPassiveData",
+    "new": "LIN.SC_ALL_SPELL_PASSIVE_NOTI.spellpassivedata"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_FatigueNoti.FatigueStatus",
+    "intermediate": "LIN.SC_FATIGUE_NOTI.FatigueStatus",
+    "new": "LIN.SC_FATIGUE_NOTI.FATIGUE_STATUS"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_NotificationMessage.DisplayPosition",
+    "intermediate": "LIN.SC_NOTIFICATION_MESSAGE.DisplayPosition",
+    "new": "LIN.SC_NOTIFICATION_MESSAGE.display_position"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_PartyOperationResult.Type",
+    "intermediate": "LIN.SC_PARTY_OPERATION_RESULT_NOTI.Type",
+    "new": "LIN.SC_PARTY_OPERATION_RESULT_NOTI.ePARTY_OPERATION_TYPE"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_SiegeInjuryTime.SiegeKind",
+    "intermediate": "LIN.SC_SIEGE_INJURY_TIME_NOIT.SiegeKind",
+    "new": "LIN.SC_SIEGE_INJURY_TIME_NOIT.SIEGE_KIND"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_SiegeZoneUpdate.SiegeZoneKind",
+    "intermediate": "LIN.SC_SIEGE_ZONE_UPDATE_NOT.SiegeZoneKind",
+    "new": "LIN.SC_SIEGE_ZONE_UPDATE_NOT.SIEGE_ZONE_KIND"
+  },
+  {
+    "old": "l1j.server.server.packets.Protocol.Packet.SC_UserPlayInfo.MapTimeLimitInfo",
+    "intermediate": "LIN.SC_USER_PLAY_INFO_NOTI.MapTimeLimitInfo",
+    "new": "LIN.SC_USER_PLAY_INFO_NOTI.MAP_TIME_LIMIT_INFO"
+  }
+]

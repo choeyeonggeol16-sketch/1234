@@ -6,7 +6,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.packets.Protocol.Packet.SC_PersonalShopItemListNoti;
+import LIN.SC_PERSONAL_SHOP_ITEM_LIST_NOTI;
 
 public final class CS_QueryPersonalShop {
 
@@ -54,10 +54,10 @@ public final class CS_QueryPersonalShop {
                 return;
             }
 
-            SC_PersonalShopItemListNoti.do_send(
+            LIN.SC_PERSONAL_SHOP_ITEM_LIST_NOTI.do_send(
                     pc,
                     objectId,
-                    SC_PersonalShopItemListNoti
+                    LIN.SC_PERSONAL_SHOP_ITEM_LIST_NOTI
                             .ePersonalShopType
                             .fromInt(type));
 
@@ -69,11 +69,11 @@ public final class CS_QueryPersonalShop {
          */
         if (shopObject instanceof L1NpcShopInstance) {
 
-            SC_PersonalShopItemListNoti
+            LIN.SC_PERSONAL_SHOP_ITEM_LIST_NOTI
                     .do_send_for_npc(
                             pc,
                             objectId,
-                            SC_PersonalShopItemListNoti
+                            LIN.SC_PERSONAL_SHOP_ITEM_LIST_NOTI
                                     .ePersonalShopType
                                     .fromInt(type));
 
