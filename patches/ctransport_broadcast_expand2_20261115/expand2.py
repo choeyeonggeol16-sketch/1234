@@ -117,7 +117,10 @@ def replace_broadcast(name,s,method,send_params):
         # The original applies a defensive snapshot of HP/MP before its
         # broadcast loop, including catch(Exception); retain that verbatim.
         needle=re.compile(r'for\s*\(\s*L1PcInstance\s+pc\s*:\s*L1World\.getInstance\(\)\.getVisiblePlayer\(anchor\)\s*\)\s*send\s*\(\s*pc\s*,\s*objectId\s*,\s*hpRatio\s*,\s*mpRatio\s*\)\s*;')
-        replacement=f'{SHARED}(anchor, sharedWire(objectId, hpRatio, mpRatio), false, -1, null,\n                client -> send(client, objectId, hpRatio, mpRatio));'
+        replacement=(
+            'final int frozenId = objectId, frozenHp = hpRatio, frozenMp = mpRatio;\n        '
+            + f'{SHARED}(anchor, sharedWire(frozenId, frozenHp, frozenMp), false, -1, null,\n                client -> send(client, frozenId, frozenHp, frozenMp));'
+        )
         newbody,count=needle.subn(lambda m:replacement,body)
         if count!=1:raise ValueError("HP snapshot-send loop not found")
         updated=s[:start]+full.replace(body,newbody,1)+s[end:]
