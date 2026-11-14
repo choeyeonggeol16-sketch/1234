@@ -62,7 +62,7 @@ jobs:
           with zipfile.ZipFile('downloads/RKern_Broadcast_NonSC_Phase12_FULL_SRC_20261115.zip') as z:
             assert z.testzip() is None
             assert sum(s.endswith('.java') for s in z.namelist())==1711
-          print('PHASE12_VERIFIED',d['output_sha256'])
+          print('PHASE12_VERIFIED',d['sha256'])
           PY
       - name: Publish validated single whole-source ZIP
         shell: bash
