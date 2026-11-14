@@ -185,7 +185,7 @@ def arrow_skill(s):
         args=f"attackerId,ox,oy,oh,actId,{target},spellGfx,{tx},{ty},isHit,seq"
         newbody=body[:mm.start()]+f'''        {SEND}({anchor}, sharedWire({args}), true, -1, null,
                 client -> send0(client,{args}));
-''' 
+'''+("        return selfSent;\n" if kind=="sendAndBroadcast" else "")
         out=R(out,old,old[-1].replace(body,newbody,1))
     # Explicit receiver lists are *not* AOI: retain order, duplicates, and
     # inclusion of sender; use the non-except-self immutable buffer.
@@ -227,7 +227,7 @@ def attack_skill(s):
         args="fixedActionId,chaId,targetObj,isHit,heading,seq,spellGfx,myX,myY,x,y"
         new=body[:marker.start()]+f'''        {SEND}({anchor},sharedWire({args}),true,-1,null,
                 client -> send0(client,{args}));
-'''
+'''+("        return selfSent;\n" if name=="sendAndBroadcast" else "")
         out=R(out,old,old[-1].replace(body,new,1))
     prepared=M(out,"private","broadcastPrepared")
     signature=prepared[2]
