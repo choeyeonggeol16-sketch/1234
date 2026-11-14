@@ -183,7 +183,7 @@ def replace_shared_calls(s):
         label=m[1]
         fields=java_arguments(s[open_idx+1:close-1])
         cb=" ".join(fields[-1].split())
-        if not (re.match(r"^[A-Za-z_]\\w*\\s*->\\s*send[A-Za-z_0-9]*\\(",cb)
+        if not (re.match(r"^[A-Za-z_]\w*\s*->\s*send[A-Za-z_0-9]*\(",cb)
                 or cb=="data::send"):
             raise ValueError("Callback has non-send side effects: "+cb[:160])
         if label=='sendAll':
