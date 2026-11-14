@@ -73,7 +73,7 @@ def main():
  assert b"public void broadcast_map(int map_id, String message)" in files[BASE+"server/model/L1World.java"]
  # No other bytes modified.
  for path in set(old)&set(files):
-  if path not in TARGETS:assert files[path]==old[path],path
+  if path not in TARGETS and path!=DELETE:assert files[path]==old[path],path
  args.work.mkdir(parents=True,exist_ok=True)
  for path,data in files.items():
   if path.startswith("src/") and path.endswith(".java"):
