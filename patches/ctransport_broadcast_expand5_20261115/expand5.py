@@ -158,7 +158,8 @@ def replace_global(name,s):
     }}'''
         s=last.replace(s,v,copy)
     assert "private static byte[] sharedWire" not in s
-    ins=last.method(s,"public","send",None)[0]
+    ins=s.rfind("}")
+    if ins < 0:raise ValueError("No class closing brace "+name)
     s=s[:ins]+WIRES[name]+"\n"+s[ins:]
     return s
 
@@ -239,7 +240,13 @@ def main():
         result=replace_global(name,original)
         if result==original:raise AssertionError("No broadcast change "+name)
         files[path]=result.encode('utf8')
-    after=last.prev.remaining(files)
+    after={}
+    for path,data in files.items():
+        if not path.startswith(BASE) or not path.endswith(".java"):continue
+        body=data.decode("utf8")
+        if re.search(r"\\b(?:broadcast|broadcastFast|broadcastM|broadcastWide|broadcastAll|broadcastClan|sendAndBroadcast)\\s*\\(",body):
+            if not re.search(r"\\bCSharedBroadcast\\.send(?:All)?\\s*\\(",body):
+                after[path.split("/")[-1]]=len(body)
     assert not any(c+'.java' in after for c in CLASSES)
     assert sum(p.endswith('.java') for p in files)==1711
     assert SHA(files['CTransport.dll'])=="0801f22fedac95ee29d33c747c5e4019c3b36d79d31615c7d84cc79405258606"
