@@ -1,0 +1,47 @@
+name: Final phase18 executable legacy broadcast and recipient-loop census
+on:
+  push:
+    branches: [broadcast-nonsc-audit19-20261115]
+    paths: [".github/workflows/broadcast-final-audit19.yml"]
+jobs:
+  census:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan all production Java without comments
+        run: |
+          python3 - <<'PY'
+          import zipfile,hashlib,re,collections
+          p='downloads/RKern_Broadcast_NonSC_Phase18_FULL_SRC_20261115.zip'
+          data=open(p,'rb').read()
+          assert hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()=='5052f9bc337e907d73adaf8f85a0b38311bcfd6a'
+          token=re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|//[^\n]*|/\*[\s\S]*?\*/')
+          def strip(t):
+             def fix(m):
+               v=m.group()
+               if v.startswith(('"',"'")):return '""'
+               return ''.join('\n' if c=='\n' else ' ' for c in v)
+             return token.sub(fix,t)
+          legacy=['broadcastPacket(', 'broadcastPacketToAll(', 'broadcast_map(', 'Broadcaster.', 'protected void broadcast(', 'public void broadcast(']
+          rows=[]
+          loops=[]
+          with zipfile.ZipFile(p) as z:
+             for name in z.namelist():
+               if not(name.startswith('src/') and name.endswith('.java')):continue
+               s=strip(z.read(name).decode('utf8'))
+               lines=s.splitlines()
+               for i,line in enumerate(lines):
+                  for key in legacy:
+                    if key in line:
+                      rows.append((name,i+1,key,line.strip()[:160]))
+                  if 'for(' in line or 'for (' in line:
+                    ctx='\n'.join(lines[i:i+25])
+                    if ('sendPackets(' in ctx or 'SC_' in ctx and '.send(' in ctx) and (
+                      'getVisiblePlayer(' in ctx or 'getAllPlayers(' in ctx or 'L1PcInstance' in line or 'CIOClient' in line):
+                       loops.append((name,i+1,line.strip()[:125],ctx[:440].replace('\n',' | ')))
+          print('LEGACY_EXECUTABLE_HITS',len(rows))
+          for row in rows[:150]:print('LEGACY',*row)
+          print('RECIPIENT_SEND_LOOPS',len(loops),'FILES',len(set(x[0] for x in loops)))
+          for row in loops[:150]:print('LOOP',*row)
+          PY
