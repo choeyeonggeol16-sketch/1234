@@ -117,15 +117,17 @@ SHARED_SEND=r'''
         final int limit=recipientId==senderId?Integer.MAX_VALUE:pendingLimit;
         if(wire.length<=16384 && target.supportsConstBuffer()
                 && target.pendingSendBytes()<limit) {
-            try {
-                if(source==null)source=target.createConstBuffer(wire);
-                if(source!=null && target.ownsConstBuffer(source)
-                        && target.enqueueConstBufferConfirmed(source,limit))
-                    return true;
-            } catch (RuntimeException failure) {
-                // The immutable plaintext is still available for the ordinary
-                // socket FIFO frame path; no packet serializer is repeated.
+            if(source==null) {
+                try {
+                    source=target.createConstBuffer(wire);
+                } catch (RuntimeException failure) {
+                    // Resource acquisition failed before any SEND was staged.
+                    // The same frozen bytes remain available to the FIFO path.
+                }
             }
+            if(source!=null && target.ownsConstBuffer(source)
+                    && target.enqueueConstBufferConfirmed(source,limit))
+                return true;
         }
         return target.sendFrozenWire(wire);
     }
@@ -180,7 +182,10 @@ def replace_shared_calls(s):
         close=matched_close(s,open_idx)
         label=m[1]
         fields=java_arguments(s[open_idx+1:close-1])
-        print("OLD_CALLBACK",label," ".join(fields[-1].split())[:320])
+        cb=" ".join(fields[-1].split())
+        if not (re.match(r"^[A-Za-z_]\\w*\\s*->\\s*send[A-Za-z_0-9]*\\(",cb)
+                or cb=="data::send"):
+            raise ValueError("Callback has non-send side effects: "+cb[:160])
         if label=='sendAll':
             if len(fields)!=2:raise ValueError("sendAll requires legacy arg "+str(fields))
             if not ('->' in fields[1] or '::' in fields[1]):
