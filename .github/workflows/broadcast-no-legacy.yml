@@ -1,4 +1,4 @@
-name: Audit broadcast legacy code on authoritative full SRC
+name: Shared broadcast without packet-level fallbacks
 on:
   push:
     branches: [mainserver-broadcast-no-legacy-20261115]
@@ -13,5 +13,71 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect the compiled 55-class source baseline
-        run: python3 patches/ctransport_broadcast_no_legacy_20261115/inspect.py
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Convert all legacy shared-broadcast callback sites to single frozen frame
+        run: |
+          python3 patches/ctransport_broadcast_no_legacy_20261115/no_legacy.py \
+            --work "$RUNNER_TEMP/no-legacy"
+      - name: Verify SHA256-pinned Java21 dependencies
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,pathlib,urllib.request
+          rows=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          root=pathlib.Path('.compile-deps')
+          root.mkdir(exist_ok=True)
+          for row in rows:
+            p=root/row['file']
+            urllib.request.urlretrieve(row['url'],p)
+            assert hashlib.sha256(p.read_bytes()).hexdigest()==row['sha256'],row['file']
+          print('Pinned dependencies SHA256 checked:',len(rows))
+          PY
+      - name: Compile every Java21 production source and 2148 deterministic frame cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP/no-legacy/src" -name '*.java' | sort > "$RUNNER_TEMP/no-legacy/sources.txt"
+          test "$(wc -l < "$RUNNER_TEMP/no-legacy/sources.txt")" -eq 1711
+          mkdir -p "$RUNNER_TEMP/no-legacy/classes" "$RUNNER_TEMP/no-legacy/testclasses"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g \
+            -cp "$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/no-legacy/classes" @"$RUNNER_TEMP/no-legacy/sources.txt"
+          javac --enable-preview --release 21 -encoding UTF-8 \
+            -cp "$RUNNER_TEMP/no-legacy/classes:$(pwd)/.compile-deps/*" \
+            -d "$RUNNER_TEMP/no-legacy/testclasses" \
+            "$RUNNER_TEMP/no-legacy/testsrc/l1j/server/server/model/network/core/sc/packet/SharedFinalFiveWireParity.java"
+          java --enable-preview \
+            -cp "$RUNNER_TEMP/no-legacy/testclasses:$RUNNER_TEMP/no-legacy/classes:$(pwd)/.compile-deps/*" \
+            l1j.server.server.model.network.core.sc.packet.SharedFinalFiveWireParity
+          python3 - <<'PY'
+          import json,os,pathlib,zipfile
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'no-legacy'
+          d=json.loads((root/'audit.json').read_text())
+          assert d['legacy_callback_calls_removed']==88
+          assert d['callback_classes']==54
+          assert d['explicit_legacy_sender_loops_removed']==2
+          assert d['max_wire_bytes']==0xffff
+          assert d['all_java_files']==1711
+          assert d['dll_unchanged'] and not d['broadcasts_reencode_per_recipient']
+          path=pathlib.Path('downloads/CTransport_SharedBroadcast_NoLegacy_FULL_SRC_20261115.zip')
+          with zipfile.ZipFile(path) as z:
+            assert z.testzip() is None
+            assert sum(p.endswith('.java') for p in z.namelist())==1711
+          print('PASS: 88 legacy AOI/global callbacks eliminated; 1711 Java 21 sources compile')
+          print('Changed files:',d['changed_count'],'wire null legacy branches removed:',d['legacy_null_broadcast_branches_removed'])
+          print('SHA256:',d['output_sha256'])
+          PY
+      - name: Publish one fully verified complete full-source ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/CTransport_SharedBroadcast_NoLegacy_FULL_SRC_20261115.zip
+          git diff --cached --quiet && { echo "Already published"; exit 0; }
+          git commit -m "Publish no-legacy shared broadcast full SRC, Java21 validated [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
