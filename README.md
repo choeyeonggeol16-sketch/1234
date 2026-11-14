@@ -1,3 +1,13 @@
+## 2026-11-14 — 유저 소켓 두 슬롯·송신 검사 수정
+
+[전체 src](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [테스트한 DLL·C++ 묶음](downloads/CTransport_CORE_20261112.zip) · [변경 보고서](reports/CTRANSPORT_SLOT_SEND_FIX_20261114.md)
+
+CUserSocket 26개 가상 슬롯과 송신 검사 int margin 계약을 반영했습니다. 기존 FIFO·예약량 검사에 연결하고 MSVC 실제 슬롯 호출·DLL/Java FFM 및 Linux ASan/UBSan·TSan 검사를 통과했습니다. 미확정 포인터는 기존 값의 조회만 제공하며 L2 객체를 추정하지 않습니다. 요청한 1·2번만 변경했습니다. 새 src와 DLL을 함께 적용합니다.
+
+[Windows 검증 실행](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43557005905)
+
+---
+
 ## 2026-11-13 — 객체 할당자·원본 네트워크 객체 규약
 
 [**전체 src**](downloads/CTransport_Aden_FULL_SRC_20261112.zip) · [**MSVC DLL·C++·검사**](downloads/CTransport_CORE_20261112.zip) · [**복원 근거·변경 보고서**](reports/CTRANSPORT_OBJECT_MEMORY_ABI_20261113.md)

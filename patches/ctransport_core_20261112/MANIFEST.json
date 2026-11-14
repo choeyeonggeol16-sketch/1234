@@ -2,9 +2,9 @@
   "base_revision": "c76e7b2753876fc8bb1aac4075e78a5d31bf522f",
   "branch": "ctransport-core-20261112",
   "dll": "CTransport.dll",
-  "dll_sha256": "9b8992db78c851d76522e30406a8049b84e08b5a53af395689d5847154dad6a1",
+  "dll_sha256": "62604a5b1b111526da30b0d06f224eb6d5f3e4aafca0292571aae7932b3f272e",
   "abi": "0xa0000",
-  "implementation_parent": "d4f46c2caf98b842c713e5a185222e5f5e2635c0",
+  "implementation_parent": "d2743dec174f6a0244e716ac4826c182fb447c3a",
   "transport_scope": "game",
   "mandatory": true,
   "pss": {
@@ -369,13 +369,13 @@
     "abi": "0xa0000",
     "exports": 67,
     "implementation_parent": "60fcd25e26284c3b20b7e644425b053adcf066e0",
-    "dll_sha256": "9b8992db78c851d76522e30406a8049b84e08b5a53af395689d5847154dad6a1",
+    "dll_sha256": "62604a5b1b111526da30b0d06f224eb6d5f3e4aafca0292571aae7932b3f272e",
     "codec_dll_sha256": "60bde93c2ba20057e7e307594edef69ced273b69f923535ab658769e09f0cea9",
     "pss_client_dll_sha256": "35b476815c56b578e5e12a3d500589e72220ec6493bbc0041da541c588b861fa",
     "previous_verified_run": {
-      "run_id": 43509707411,
-      "tested_source_commit": "4f77fd4ec11463c0153f140effe09228161ad855",
-      "dll_sha256": "b37e57e850ceb7134ff20c3a6950714973cad046a52a89243dec5dcda5ac4be1"
+      "run_id": 43527192672,
+      "tested_source_commit": "d4f46c2caf98b842c713e5a185222e5f5e2635c0",
+      "dll_sha256": "9b8992db78c851d76522e30406a8049b84e08b5a53af395689d5847154dad6a1"
     },
     "source_scope": {
       "baseline": "fa688252c93ea6c4199ed2dc7092d70a063eca55",
@@ -404,16 +404,27 @@
     },
     "os": "Windows Server2022 GitHub-hosted runner",
     "jdk": "Temurin21",
-    "scope": "Actual MSVC raw object/vtable ABI test and DLL/production Java FFM codec/session/send/close/shared-buffer/reference/independent-PSS/manager regression;PE RTTI chains/slots verified separately;Linux ASan/UBSan and TSan;full1711 Java type compilation",
-    "implementation_commit": "d4f46c2caf98b842c713e5a185222e5f5e2635c0",
-    "tested_source_commit": "d4f46c2caf98b842c713e5a185222e5f5e2635c0",
-    "artifact_commit": "8136ae812e3f1204f8c54592d56e47b2d5daf042",
-    "run_id": 43527192672,
-    "job_id": 132235762996,
-    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43527192672",
+    "scope": "MSVC actual26-slot CUserSocket ABI/raw getters/int margin boundaries;actual DLL/Java FFM codec/session/send/close/shared-buffer/SafeSend/independent-PSS/manager regression;Linux ASan/UBSan object and full native plus TSan full native",
+    "implementation_commit": "d2743dec174f6a0244e716ac4826c182fb447c3a",
+    "tested_source_commit": "d2743dec174f6a0244e716ac4826c182fb447c3a",
+    "artifact_commit": "f00b64567734cd0b49d6acd8aa9302d83da51501",
+    "run_id": 43557005905,
+    "job_id": 132332031102,
+    "run_url": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43557005905",
     "compiler": "MSVC x64 C++20 /MT /Brepro",
     "source_line_ending_validation": "19 native files and Java DLL pin match the tested checkout after LF/CRLF normalization",
-    "source_archive_sha256": "5e78727dd3ff1e3baa6f48b18edb201615c99d1796ce8ed68ec4b7e73de81016"
+    "source_archive_sha256": "bfd48d3fa445ba7592d4589f3cbd2c38b62ce73cd53964786555351e866d55a4",
+    "slot_send_fix": {
+      "items": [
+        1,
+        2
+      ],
+      "unchanged_items": [
+        3,
+        4
+      ],
+      "slot24": "original raw pointer getter;L2 profile remains zero;no fabricated Java pointer"
+    }
   },
   "followup_structures": [
     "common L1 map/screen/radius/rectangle predicate",
@@ -500,7 +511,7 @@
       "CISocket": 21,
       "CIOSocketEx": 21,
       "CSocket": 24,
-      "CUserSocket": 24,
+      "CUserSocket": 26,
       "CIOServer": 13,
       "Server": 16,
       "CUserSocketReleaseVerifier": 12,
@@ -508,6 +519,25 @@
     },
     "diagnostics_words": 2030,
     "adaptations": "L1 protocol/ownership policies,16-byte aligned allocation prefix,external L1 state,ticket generations,bounded diagnostics;not original machine-code embedding or all L2 profiles"
+  },
+  "slot_send_fix": {
+    "report": "REPORT_SLOT_SEND_FIX.md",
+    "items": [
+      1,
+      2
+    ],
+    "user_socket_virtual_slots": 26,
+    "slot15_margin_argument": "int",
+    "slot24": "existing raw pointer at+0x4f0;zero in L1;original pointee/name unconfirmed",
+    "slot25": "actual socket number at+0x4e8",
+    "admission": "same gate,FIFO+reserved+margin,checked subtraction,existing graceful drain",
+    "unchanged": [
+      "original field placement",
+      "restricted IP mode",
+      "PSS",
+      "codec",
+      "DB"
+    ]
   },
   "source_scope": {
     "baseline": "fa688252c93ea6c4199ed2dc7092d70a063eca55",

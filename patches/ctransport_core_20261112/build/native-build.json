@@ -49,9 +49,9 @@
   ],
   "files": {
     "build_native.py": "bb2dc1b4a1340bda562201f8f50294aeb889c4d8fc247fadd36024fb0e4c14dc",
-    "build_native_msvc.py": "e55bba31ffffe4f740947ec710f955ff354f6f4833bd241793105c80f2507add",
+    "build_native_msvc.py": "66f7311710df41aa9c66ebd13e7ed96327bb078e207f44228151a4261acb6601",
     "cio_core.hpp": "dc587325af60960b32591253d07fea12d9af77d2fc7d05d9e3d01a92b89acd20",
-    "CTransport.cpp": "45e3a4b50b8490abcab9af43a964b7046e9abefcc66f5e41402576d8ca399a32",
+    "CTransport.cpp": "2e3da9b7da6142ddb78d897edfbba3d2ec3c0648dc72918cbe017b8034d9c965",
     "CTransport.h": "6f636ca91642a74e0113ff214747b9e05755323bf38fa5176941d16155747660",
     "execution_serializer.hpp": "50a5ea65fe75141cd980ad94d9e9f0f66c7f356b27cedba72216e1bed7c7d0c2",
     "interop_abi.hpp": "6f6d291eb31fcf75ffa2b71f46735aa3b2b6507f5d1e4aee4c114e8c3fe21253",
@@ -68,15 +68,15 @@
     "user_socket.hpp": "738beb8c1c1fb5fc2bdbf812bf64e59639f9525cf0bdb5bf599643a50085c6e3",
     "windows_loopback_test.cpp": "94157a686a303cbcdb0d513c7b9eb89074791932f864348a5df702b380135a54"
   },
-  "dll_sha256": "9b8992db78c851d76522e30406a8049b84e08b5a53af395689d5847154dad6a1",
+  "dll_sha256": "62604a5b1b111526da30b0d06f224eb6d5f3e4aafca0292571aae7932b3f272e",
   "selftest_sha256": "9bb792bbcc2683c6d9cedecaedd1b8bc896308b58a133ed608f63d26cb49567f",
   "windows_execution_tested": true,
-  "internal_vtable_profile": "MSVC x64 MemoryObject4,CIOObject12,first24 socket slots;L1 extension slots follow",
+  "internal_vtable_profile": "MSVC x64 MemoryObject4,CIOObject12,CSocket24,CUserSocket26;slot15 int margin,slot24 raw pointer getter,slot25 socket number",
   "files_lf": {
     "build_native.py": "70b3e4fe36543d092133adebd26206f6d2dc9b3ae711eae887a5efda64fb9f42",
-    "build_native_msvc.py": "4649a20219a909d42372036d3ce11311813c568acd2dbfde989ac56e3eb97d26",
+    "build_native_msvc.py": "46b4cbd1d996902fcc66cf6149710c2784f266826c5e79a3f2050f3ed986e4b1",
     "cio_core.hpp": "e7fd4b222c94f8e2b3b10102b8a7bd13b5a1a546c4f5402b19341ac048e363cf",
-    "CTransport.cpp": "093df93ea163c7eac6390ddb960f5f776dd3aa8659f738004d2714d169f14d47",
+    "CTransport.cpp": "f9ca15dfa49acb31818970610f204e12a5b63dea042c827fbbef81a916865f61",
     "CTransport.h": "9d600a11c818fb3ed16bfd5c4f2d813826c510a63f1c8b7ede7b525dafefd81c",
     "execution_serializer.hpp": "f3ec27608e9be91a7f6ac149fd4971c1923d45b0db8691c570417dbfd80a88c9",
     "interop_abi.hpp": "ee0cc82dc619f1dc4ac98543a0df2cc17f854fd97d2f0d8c9edd63a4131714a7",
@@ -93,7 +93,8 @@
     "user_socket.hpp": "27dc7bbcc0f023d96a87fc18fe6d7f249c86f41dc7c441f619cfa481b2a6bdf0",
     "windows_loopback_test.cpp": "da338b0b4c05f289ccb5044f29aa8acd4fdd7b722113bba774f57f73fa79d724"
   },
-  "line_ending_note": "files records the actual Windows CRLF checkout;files_lf records the identical LF-normalized release sources",
-  "tested_source_commit": "d4f46c2caf98b842c713e5a185222e5f5e2635c0",
-  "windows_test_run": "https://github.com/choeyeonggeol16-sketch/1234/actions/runs/43527192672"
+  "tested_source_commit": "d2743dec174f6a0244e716ac4826c182fb447c3a",
+  "artifact_commit": "f00b64567734cd0b49d6acd8aa9302d83da51501",
+  "windows_run_id": 43557005905,
+  "line_ending_note": "files are exact Windows checkout hashes;files_lf are normalized release source hashes"
 }
