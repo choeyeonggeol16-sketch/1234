@@ -1,0 +1,802 @@
+phase6_blob=2a759d2fc875bd7141246958e0c267ac2660a0eb
+
+==== src/l1j/server/server/model/L1GroundInventory.java ====
+75:     }
+76: 
+77:     @Override
+78:     public void deleteItem(L1ItemInstance item) {
+79:         if (item == null) {
+80:             return;
+81:         }
+82: 
+83:         if (DEBUG_GROUND_ITEM_TIMER) {
+84:             debug("DELETE-BEGIN", item, "contained=" + _items.contains(item));
+85:         }
+86: 
+87:         final boolean removed = _items.remove(item);
+88:         if (!removed) {
+89:             return;
+90:         }
+91: 
+92:         item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE);
+93: 
+94:         if (DEBUG_GROUND_ITEM_TIMER) {
+95:             debug("TIMER-CANCEL", item, "generation invalidated");
+96:         }
+97: 
+98:         for (L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(item)) {
+99:             SC_RemoveObject.send(pc.getNetConnection(), item);
+100:             pc.removeKnownObject(item);
+101:         }
+102: 
+103:         if (DEBUG_GROUND_ITEM_TIMER) {
+104:             debug("DELETE-END", item,
+105:                     "removed=" + removed + " remaining=" + _items.size());
+106:         }
+107: 
+108:         if (_items.isEmpty()) {
+109:             L1World.getInstance().removeVisibleObject(this);
+110: 
+111:             if (DEBUG_GROUND_ITEM_TIMER) {
+112:                 debug("GROUND-EMPTY", item, "inventory removed from visible world");
+113:             }
+114:         }
+115:     }
+116: 
+117:     private static void debug(String event, L1ItemInstance item, String extra) {
+118:         if (!DEBUG_GROUND_ITEM_TIMER) {
+119:             return;
+120:         }
+121: 
+122:         final Thread thread = Thread.currentThread();
+123: 
+124:         _log.info(
+125:                 "[CITEM TIMER] "
+126:                 + event
+127:                 + " | oid=" + safeId(item)
+128:                 + " itemId=" + safeItemId(item)
+129:                 + " pos=" + safeX(item) + "," + safeY(item) + "," + safeMap(item)
+130:                 + " | thread=" + thread.getName()
+131:                 + " cioShard=" + CIOThreadCallback.currentShardIndex()
+132:                 + " | " + extra);
+133:     }
+134: 
+
+==== src/l1j/server/server/model/Instance/L1EffectInstance.java ====
+97:                 if (damage == 0) {
+98:                     continue;
+99:                 }
+100: 
+101:                 SC_DoActionGFX.broadcast(mob, ActionCodes.ACTION_Damage);
+102:                 mob.receiveDamage(this, damage);
+103:             }
+104:         }
+105:     }
+106: 
+107:     @Override
+108:     public void onAction(L1PcInstance pc) {
+109:     }
+110: 
+111:     @Override
+112:     public void deleteMe() {
+113:     	_destroyed = true;
+114: 		if (getInventory() != null) {
+115: 			getInventory().clearItems();
+116: 		}
+117: 		allTargetClear();
+118: 		L1World.getInstance().removeVisibleObject(this);
+119: 		L1World.getInstance().removeObject(this);
+120: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(this)) {
+121: 			if (pc == null) continue;
+122: 			pc.removeKnownObject(this);
+123: 			SC_RemoveObject.send(pc.getNetConnection(), this);
+124: 		}
+125: 		removeAllKnownObjects();
+126:         _master = null;
+127:     }
+128: }
+
+==== src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java ====
+137: 			public void run() {
+138: 				try{
+139: 					showOpen();
+140: 					if(isDestroy)
+141: 						showBlackCloud();
+142: 					else{
+143: 						showCloud();
+144: 						Thread.sleep(300);
+145: 						if(_compensator != null)
+146: 							_compensator.compensate(MJL1TreasureChest.this);
+147: 					}
+148: 					Thread.sleep(300);
+149: 					dispose();
+150: 				}catch(Exception e){
+151: 					e.printStackTrace();
+152: 				}finally{
+153: 
+154: 				}
+155: 			}
+156: 		});
+157: 	}
+158: 
+159: 	private void remove() {
+160: 		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+161: 			if (pc == null) {
+162: 				continue;
+163: 			}
+164: 
+165: 			pc.removeKnownObject(this);
+166: 
+167: 			SC_RemoveObject.send(
+168: 					pc.getNetConnection(),
+169: 					this);
+170: 		}
+171: 	}
+172: 	private void showOpen(){
+173: 		for(L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)){
+174: 			if(pc == null)
+175: 				continue;
+176: 
+177: 			SC_DoActionGFX.send(
+178: 					pc.getNetConnection(),
+179: 					getId(),
+180: 					CHEST_OPEN);
+181: 		}
+182: 	}
+183: 
+184: 	private void showCloud(){
+185: 		showCloud(12157);
+186: 	}
+187: 
+188: 	private void showBlackCloud(){
+189: 		showCloud(12158);
+190: 	}
+191: 
+192: 	private void showCloud(int i){
+193: 		for(L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)){
+194: 			SC_SkillSound.broadcast(pc, getId(), i);
+195: 		}
+196: 	
+197: 	}
+198: 
+199: 	public byte[] serialize(){
+200: 		MJBytesOutputStream s = new MJBytesOutputStream(256);
+201: 		byte[] 				b = null;
+202: 		try{
+203: 			s.write(0x08);				// point
+204: 			s.writePoint(getX(), getY());
+205: 			s.write(0x10);				// objectnumber
+206: 			s.writeBit(getId());
+207: 			s.write(0x18); 				// objectsprite
+208: 			s.writeBit(_gfx);
+209: 			s.write(0x20); 				// action
+210: 			s.writeBit(_act);
+211: 			s.write(0x28); 				// direction
+212: 			s.writeBit(_heading);
+213: 			s.write(0x30); 				// lightRadius
+214: 			s.writeBit(15);
+215: 			s.write(0x38); 				// objectcount
+216: 			s.write(1);
+217: 			s.write(0x40); 				// alignment(lawful)
+218: 			s.writeBit(0);
+219: 			s.write(0x4A);				// desc
+220: 			s.writeS2(_name);
+221: 			s.write(0x52); 				// title
+222: 			s.write(0x00);
+223: 			s.write(0x58);	 			// speed data
+224: 			s.write(0x00);
+225: 			s.write(0x60); 				// emotion
+226: 			s.write(0x00);
+227: 			s.write(0x68);				// drunken
+
+==== src/l1j/server/server/model/network/core/sc/packet/SC_RemoveObject.java ====
+1: package l1j.server.server.model.network.core.sc.packet;
+2: 
+3: import l1j.server.server.Opcodes;
+4: import l1j.server.server.model.L1Object;
+5: import l1j.server.server.model.L1World;
+6: import l1j.server.server.model.Instance.L1PcInstance;
+7: import l1j.server.server.model.network.buffer.WriteBuffer;
+8: import l1j.server.server.model.network.core.connection.CUserSocket;
+9: import l1j.server.server.model.network.core.connection.CIOFrame;
+10: import l1j.server.server.model.network.core.session.CIOClient;
+11: import l1j.server.server.model.network.utill.ConnectionConfig;
+12: 
+13: public final class SC_RemoveObject {
+14: 
+15: 	private static final int WIRE_SIZE =
+16: 			ConnectionConfig.HEADER_SIZE
+17: 					+ 1
+18: 					+ Integer.BYTES
+19: 					+ Short.BYTES;
+20: 
+21: 	private SC_RemoveObject() {
+22: 	}
+23: 
+24: 	public static boolean send(
+25: 			CIOClient client,
+26: 			L1Object obj) {
+27: 
+28: 		return send(
+29: 				client,
+30: 				obj != null ? obj.getId() : 0);
+31: 	}
+32: 
+33: 	public static boolean send(
+34: 			CIOClient client,
+35: 			int objectId) {
+36: 
+37: 		if (client == null || !client.isConnected()) {
+38: 			return false;
+39: 		}
+40: 
+41: 		final CUserSocket connection = client.getConnection();
+42: 		if (connection == null || !connection.isClientConnected()) {
+43: 			return false;
+44: 		}
+45: 
+46: 		final CIOFrame frame =
+47: 				connection.beginDirectFrame(
+48: 						WIRE_SIZE);
+49: 
+50: 		if (frame == null) {
+51: 			return false;
+52: 		}
+53: 
+54: 		final WriteBuffer buffer = frame.buffer();
+55: 		boolean committed = false;
+56: 
+57: 		try {
+58: 			buffer.writeC(Opcodes.S_REMOVE_OBJECT);
+59: 			buffer.writeD(objectId);
+60: 			buffer.writeH(0);
+61: 
+62: 			committed =
+63: 					connection.commitDirectFrame(
+64: 							frame);
+65: 
+66: 			return committed;
+67: 
+68: 		} finally {
+69: 			if (!committed) {
+70: 				connection.abortDirectFrame(frame);
+71: 			}
+72: 		}
+73: 	}
+74: 
+75: 	public static void broadcast(L1Object obj) {
+76: 		if (obj == null) {
+77: 			return;
+78: 		}
+79: 
+80: 		broadcast(
+81: 				obj,
+82: 				obj.getId());
+83: 	}
+84: 
+85: 	public static void broadcast(
+86: 			L1Object anchor,
+87: 			int objectId) {
+88: 
+89: 		if (anchor == null) {
+90: 			return;
+91: 		}
+92: 
+93:         byte[] wire = java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+94:                 .putShort((short) WIRE_SIZE).put((byte) Opcodes.S_REMOVE_OBJECT).putInt(objectId).putShort((short) 0).array();
+95:         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, true, -1, null);
+96:     }
+97: 
+98: 
+99:     /** Immutable remove-object frame, including the original 2-byte trailer. */
+100:     public static byte[] broadcastWire(int objectId) {
+101:         return java.nio.ByteBuffer.allocate(WIRE_SIZE)
+102:                 .order(java.nio.ByteOrder.LITTLE_ENDIAN)
+103:                 .putShort((short)WIRE_SIZE)
+104:                 .put((byte)Opcodes.S_REMOVE_OBJECT)
+105:                 .putInt(objectId).putShort((short)0).array();
+106:     }
+107: 
+108: }
+
+==== src/l1j/server/server/model/Instance/L1NpcInstance.java ====
+1236:         _spawn = null;
+1237:         super.dispose();
+1238:     }
+1239: 
+1240:     public void deleteMe() {
+1241:         l1j.server.MJEffectSystem.Realize.OnEffectThread.cancelNpc(this);
+1242:         synchronized (this) {
+1243:             if (_destroyed) {
+1244:                 return;
+1245:             }
+1246:             _destroyed = true;
+1247:             _corpseDeleteStarted = true;
+1248:             _corpseQueuedGeneration = 0;
+1249:             if ((_corpseTimerGeneration & 1) != 0) {
+1250:                 ++_corpseTimerGeneration;
+1251:             }
+1252:         }
+1253:         L1Inventory inv = _inventory;
+1254:         if (inv != null) {
+1255:             inv.clearItems();
+1256:         }
+1257:         allTargetClear();
+1258:         
+1259:         final List<L1PcInstance> players = L1World.getInstance().getVisiblePlayerFast(this);
+1260: 
+1261:         L1World.getInstance().leaveAndRemoveObject(this);
+1262: 
+1263:         if (!players.isEmpty()) {
+1264:         	for (L1PcInstance pc : players) {
+1265:         		if (pc != null) {
+1266:         			pc.removeKnownObject(this);
+1267:         			SC_RemoveObject.send(pc.getNetConnection(), this);
+1268:         		}
+1269:         	}
+1270:         }
+1271:         removeAllKnownObjects();
+1272:         L1MobGroupInfo mobGroupInfo = getMobGroupInfo();
+1273:         if (mobGroupInfo == null) {
+1274:             if (isReSpawn()) {
+1275:                 onDecay(true);
+1276:             }
+1277:         } else {
+1278:             if (mobGroupInfo.removeMember(this) == 0) {
+1279:                 setMobGroupInfo(null);
+1280:                 if (isReSpawn()) {
+1281:                     onDecay(false);
+1282:                 }
+1283:             }
+1284:         }
+1285:         dispose();
+1286:     }
+1287: 
+1288:     public void NpcDie() {
+1289:         try {
+1290:             setDeathProcessing(true);
+1291:             setCurrentHp(0);
+1292:             setDead(true);
+1293:             setDeathProcessing(false);
+1294:             setExp(0);
+1295:             setKarma(0);
+1296:             setLawful(0);
+1297:             allTargetClear();
+1298:             deleteMe();
+1299:         } catch (Exception e) {
+1300:         }
+1301:     }
+1503:         final TileOccupancyNpc occNpc = TileOccupancyNpc.getInstance();
+1504:         final TileOccupancy occPc = TileOccupancy.getInstance();
+1505: 
+1506:         for (int i = 0; i < 8; i++) {
+1507:             final int dir = (rdir + i) & 7;
+1508:             final int tx = ox + DIR_DX[dir];
+1509:             final int ty = oy + DIR_DY[dir];
+1510: 
+1511:             if (!getMap().isPassable(tx, ty)) continue;
+1512:             if (occNpc.getOccupier(getMapId(), tx, ty) != 0) continue;
+1513:             if (occPc.getOccupier(getMapId(), tx, ty) != 0) continue;
+1514: 
+1515:             int face = dir + 4;
+1516:             if (face > 7) face -= 8;
+1517: 
+1518:             teleport(tx, ty, face);
+1519:             setCurrentMp(getCurrentMp() - 10);
+1520:             return true;
+1521:         }
+1522:         return false;
+1523:     }
+1524: 
+1525:     public void teleport(int nx, int ny, int dir) {
+1526:     	for (L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(this)) {
+1527:     		if (pc == null) {
+1528:     			continue;
+1529:     		}
+1530:     		SC_SkillSound.send(pc, getId(), 169);
+1531:     		SC_RemoveObject.send(pc.getNetConnection(), this);
+1532: 
+1533:     		pc.removeKnownObject(this);
+1534:     	}
+1535: 
+1536:         final int oldX = getX();
+1537:         final int oldY = getY();
+1538:         final int oldMapId = getMapId();
+1539: 
+1540:         L1World.getInstance().relocateVisibleObject(this, nx, ny, oldMapId);
+1541:         setHeading(dir);
+1542:         NpcEventFactory.onNpcWorldEvent(this);
+1543:         teleportNpcOcc(oldMapId, oldX, oldY, oldMapId, nx, ny);
+1544:     }
+1545: 
+1546:     // ----------From L1Character-------------
+1547:     private String _nameId;
+1548:     private boolean _Agro;
+1549:     private boolean _Agrocoi;
+1550:     private boolean _Agrososc;
+1551:     private int _homeX;
+1552:     private int _homeY;
+1553:     private int _homeRnd;
+1554:     private boolean _reSpawn;
+1555:     private int _lightSize;
+1556:     private boolean _weaponBreaked;
+1557:     private int _hiddenStatus;
+1558:     private int _movementDistance = 0;
+1559:     private int _tempLawful = 0;
+1560: 
+1561:     public String getNameId() {
+1562:         return _nameId;
+1563:     }
+1564: 
+1565:     public void setNameId(String s) {
+1566:         _nameId = s;
+1567:     }
+1933:         }
+1934:         int result = Math.min(drain, getCurrentMp());
+1935:         if (_drainedMana + result > Config.MANA_DRAIN_LIMIT_PER_NPC) {
+1936:             result = Config.MANA_DRAIN_LIMIT_PER_NPC - _drainedMana;
+1937:         }
+1938:         _drainedMana += result;
+1939:         return result;
+1940:     }
+1941: 
+1942:     public volatile boolean _destroyed = false;
+1943: 
+1944:     public boolean isDestroyed() {
+1945:         return _destroyed;
+1946:     }
+1947: 
+1948:     protected void transform(int transformId) {
+1949:         int transformGfxId = getNpcTemplate().getTransformGfxId();
+1950:         if (transformGfxId != 0) {
+1951:             SC_SkillSound.broadcast(this, getId(), transformGfxId);
+1952:         }
+1953:         L1Npc npcTemplate = NpcTable.getInstance().getTemplate(transformId);
+1954:         setting_template(npcTemplate);
+1955:         sendShape(getCurrentSpriteId());
+1956:         for (L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(this)) {
+1957:             if (pc != null) {
+1958:                 onPerceive(pc);
+1959:             }
+1960:         }
+1961:     }
+1962: 
+1963:     public void setRest(boolean _rest) {
+1964:         this._rest = _rest;
+1965:     }
+1966: 
+1967:     public boolean isRest() {
+1968:         return _rest;
+1969:     }
+1970: 
+1971:     public boolean isResurrect() {
+1972:         return _isResurrect;
+1973:     }
+1974: 
+1975:     public void setResurrect(boolean flag) {
+1976:         _isResurrect = flag;
+1977:     }
+1978: 
+1979:     @Override
+1980:     public synchronized void resurrect(int hp) {
+1981:         if (_destroyed || _corpseDeleteStarted) {
+1982:             return;
+1983:         }
+1984:         if ((_corpseTimerGeneration & 1) != 0) {
+1985:             ++_corpseTimerGeneration;
+1986:         }
+1987:         _corpseQueuedGeneration = 0;
+1988:         super.resurrect(hp);        
+1989:         L1SkillUse.cast(
+1990:                 null,
+2213:             }
+2214:             _destroyed = true;
+2215:             _corpseDeleteStarted = true;
+2216:             _corpseQueuedGeneration = 0;
+2217:             if ((_corpseTimerGeneration & 1) != 0) {
+2218:                 ++_corpseTimerGeneration;
+2219:             }
+2220:         }
+2221: 
+2222:         L1Inventory inv = _inventory;
+2223:         if (inv != null) {
+2224:             inv.clearItems();
+2225:         }
+2226:         allTargetClear();
+2227:         _master = null;
+2228: 
+2229:         L1World.getInstance().leaveAndRemoveObject(this);
+2230:         List<L1PcInstance> players =
+2231:         		L1World.getInstance().getRecognizePlayer(this);
+2232: 
+2233:         if (players.size() > 0) {
+2234:         	for (L1PcInstance pc : players) {
+2235:         		if (pc != null) {
+2236:         			pc.removeKnownObject(this);
+2237: 
+2238:         			SC_RemoveObject.send(
+2239:         					pc.getNetConnection(),
+2240:         					this);
+2241:         		}
+2242:         	}
+2243:         }
+2244:         removeAllKnownObjects();
+2245:         // onDecay(false);
+2246: 
+2247:     }
+2248: 
+2249:     public L1NpcInstance CastleTarget = null;
+2250: 
+2251:     public long skillDelayTime = 0;
+2252:     public int castgfx = 0;
+2253:     public long isMentTime = 0;
+2254: 
+2255:     private boolean _isPassObject = true;
+2256: 
+2257:     public boolean isPassObject() {
+2258:         return _isPassObject;
+2259:     }
+2260: 
+2261:     public void setPassObject(boolean b) {
+2262:         _isPassObject = b;
+2263:     }
+2264: 
+2265:     private long _explosion_remain_time;
+2266: 
+2267:     public long getExplosionTime() {
+2268:         return _explosion_remain_time;
+2269:     }
+2270: 
+2271:     public void setExplosionTime(long l) {
+2272:         _explosion_remain_time = l;
+
+==== src/l1j/server/server/model/item/teleport/L1Teleport.java ====
+231: 
+232: 		pc.sendVisualEffectAtTeleport();
+233: 		SC_CharVisualUpdate.sendPacked(pc, SC_CharVisualUpdate.pack(pc));
+234: 	}
+235: 
+236: 	private void syncBuffsAndEffects(L1PcInstance pc) {
+237: 		if (!pc.hasSkillEffect(L1SkillId.비욘드)) {
+238: 			pc.killSkillEffectTimer(L1SkillId.MEDITATION);
+239: 		}
+240: 		pc.setCallClanId(0);
+241: 
+242: 		if (pc.isPinkName()) {
+243: 			SC_PinkName.send(pc, pc.getId(), pc.getPinkNameTime());
+244: 		}
+245: 
+246: 		if (pc.hasSkillEffect(L1SkillId.STATUS_DRAGON_PEARL)) {
+247: 			int sec = pc.getSkillEffectTimeSec(L1SkillId.STATUS_DRAGON_PEARL);
+248: 			SC_Liquor.send(pc, pc.getId(), 8);
+249: 			SC_PacketBox.send(pc, SC_PacketBox.DRAGON_PEARL, 8, sec / 4);
+250: 			pc.setPearl(1);
+251: 		}
+252: 
+253: 		if (pc.isGm() && pc.hasSkillEffect(L1SkillId.INVISIBILITY)) {
+254: 			SC_RemoveObject.broadcast(pc);
+255: 		}
+256: 		
+257: 		// 주변 핑크네임 유저 확인
+258: 		L1Party party = pc.getParty();
+259: 		for (L1PcInstance visible : L1World.getInstance().getVisiblePlayerFast(pc)) {
+260: 			if (visible.isPinkName()) {
+261: 				SC_PinkName.send(pc, visible.getId(), visible.getPinkNameTime());
+262: 			}
+263: 			if (party != null && party.isMember(visible)) {
+264: 				party.refreshPartyMemberStatus(visible);
+265: 			}
+266: 		}
+267: 	}
+268: 
+269: 	private void clearOwnedCombatTargets(final L1PcInstance pc) {
+270: 		if (pc == null) {
+271: 			return;
+272: 		}
+273: 
+274: 		/*
+275: 		 * Pet / Summon은 petList 공동 소유.
+276: 		 * allTargetClear()로 target뿐 아니라 hate/dropHate와
+277: 		 * 현재 추격/action 상태까지 함께 끊는다.
+278: 		 */
+279: 		if (!pc.getPetList().isEmpty()) {
+280: 			for (L1NpcInstance npc : pc.getPetList().values()) {
+281: 				if (npc == null) {
+282: 					continue;
+283: 				}
+284: 
+285: 				if (npc instanceof L1PetInstance
+286: 						|| npc instanceof L1SummonInstance) {
+287: 					npc.allTargetClear();
+288: 				}
+289: 			}
+290: 		}
+291: 
+292: 		/*
+293: 		 * Companion은 petList와 별도 보관.
+294: 		 */
+295: 		final L1CompanionInstance companion =
+296: 				pc.get_companion();
+297: 
+298: 		if (companion != null) {
+299: 			companion.allTargetClear();
+300: 		}
+301: 	}
+302: 
+303: 	private void processCompanions(L1PcInstance pc, int mapid, ArrayList<L1PcInstance> subjects) {
+304: 		boolean canTakePets = !pc.isGhost() && pc.getMap().isTakePets() && isPetAllowedMap(pc.getMapId());
+305: 
+306: 		// 1. 펫 & 소환수 
+307: 		if (!pc.getPetList().isEmpty()) {
+308: 			for (L1NpcInstance petNpc : pc.getPetList().values()) {
+309: 				if (canTakePets) {
+310: 					moveFollower(pc, petNpc, mapid, subjects);
+311: 					if (petNpc instanceof L1SummonInstance) {
+312: 						SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(pc, (L1SummonInstance) petNpc, pc);
+313: 					} else if (petNpc instanceof L1PetInstance) {
+314: 					    pc.broadcastPacket(SC_WORLD_PUT_OBJECT_NOTI.newInstance(petNpc).encode());
+315: 					}
+316: 				} else {
+317: 					removePetGracefully(pc, petNpc);
+318: 				}
+319: 			}
+320: 		}
+321: 
+322: 		// 2. 컴패니언
+323: 		final L1CompanionInstance companion =
+324: 				pc.get_companion();
+325: 
+326: 		if (companion != null) {
+327: 			companion.allTargetClear();
+328: 
+329: 			if (canTakePets) {
+330: 				moveFollower(
+331: 						pc,
+332: 						companion,
+333: 						mapid,
+334: 						subjects);
+335: 
+336: 				companion.onPerceive(pc);
+337: 			}
+338: 		}
+339: 
+340: 		// 3. 마법인형
+341: 		if (!pc.getDollList().isEmpty()) {
+342: 			for (L1DollInstance doll : pc.getDollList().values()) {
+343: 				if (canTakePets) {
+344: 					moveFollower(pc, doll, mapid, subjects);
+345: 					SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(pc, doll);
+346: 				} else {
+347: 					doll.deleteDoll(false);
+348: 				}
+355: 				if (canTakePets) {
+356: 					moveFollower(pc, support, mapid, subjects);
+357: 					l1j.server.server.model.network.core.sc.packet.SC_SupportPack.send(pc, support);
+358: 				} else {
+359: 					support.deleteSupport();
+360: 				}
+361: 			}
+362: 		}
+363: 	}
+364: 
+365: 	private void moveFollower(L1PcInstance owner, L1NpcInstance follower, int mapid, ArrayList<L1PcInstance> subjects) {
+366: 		L1Location loc = owner.getLocation().randomLocation(3, false);
+367: 		int nx = loc.getX();
+368: 		int ny = loc.getY();
+369: 
+370: 		if (isFixedCoordMap(owner.getMapId())) {
+371: 			nx = 32799 + CommonUtil.random(5) - 3;
+372: 			ny = 32864 + CommonUtil.random(5) - 3;
+373: 		}
+374: 
+375: 		teleport(follower, nx, ny, (short) mapid, owner.getHeading());
+376: 
+377: 		final L1World world = L1World.getInstance();
+378: 		for (L1PcInstance visible : world.getVisiblePlayerFast(follower)) {
+379: 			visible.removeKnownObject(follower);
+380: 			addSubject(subjects, visible);
+381: 		}
+382: 	}
+383: 
+384: 	private static void addSubject(
+385: 			ArrayList<L1PcInstance> subjects,
+386: 			L1PcInstance pc) {
+387: 
+388: 		if (pc == null) {
+389: 			return;
+390: 		}
+391: 
+392: 		for (int i = 0, size = subjects.size(); i < size; i++) {
+393: 			final L1PcInstance current = subjects.get(i);
+394: 
+395: 			if (current == pc || pc.equals(current)) {
+396: 				return;
+397: 			}
+398: 		}
+399: 
+400: 		subjects.add(pc);
+401: 	}
+402: 
+403: 	private void removePetGracefully(L1PcInstance owner, L1NpcInstance petNpc) {
+404: 		if (petNpc instanceof L1PetInstance) {
+405: 			L1PetInstance pet = (L1PetInstance) petNpc;
+406: 			pet.dropItem();
+407: 			owner.getPetList().remove(pet.getId());
+408: 			pet.deleteMe();
+409: 		} else if (petNpc instanceof L1SummonInstance) {
+410: 			L1SummonInstance summon = (L1SummonInstance) petNpc;
+411: 			for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayerFast(summon)) {
+412: 				SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(visiblePc, summon, visiblePc);
+413: 			}
+414: 		}
+415: 	}
+416: 
+417: 	private void processMapContentLogic(L1PcInstance pc, int oldMapId, int newMapId) {
+418: 		// 인스턴스 던전 밖으로 나갈 때 아이템 삭제
+419: 		if (!isIndunMap(pc.getMap().getBaseMapId())) {
+420: 			cleanupIndunItems(pc);
+421: 		}
+422: 		
+423: 		// 공포의 집 버프 해제
+424: 		if ((oldMapId == 5140 || oldMapId == 5143) && oldMapId != newMapId) {
+425: 			L1HauntedHouse.getInstance().clearBuff(pc);
+426: 		}
+427: 		
+428: 		if (pc.getAutoHunt() && oldMapId != newMapId) {
+429:             if (newMapId == 4) {
+430:                 if (oldMapId != 4) { 
+431:                     pc.setAutoHuntMapId(oldMapId);
+432:                 }
+433:             } else {
+434:                 pc.setAutoHuntMapId(newMapId);
+435:             }
+436:         }
+437: 
+438: 		// 특정 퀘스트/던전 상태 업데이트
+439: 		updateQuestState(pc, oldMapId, newMapId);
+440: 
+441: 		// 공성 관련 위치 이동 처리
+442: 		MJCastleWarBusiness.move(pc);
+443: 
+444: 		// 개인 상점 찾기 HTML 복구
+445: 		if (pc.getFindMerchantId() != 0) {
+561: 		}
+562: 		loc.setX(lx); loc.setY(ly);
+563: 		return loc;
+564: 	}
+565: 
+566: 	public void teleportToTargetFront(L1Character cha, L1Character target, int distance, boolean check) {
+567: 		L1Location loc = 소환텔레포트(target, distance);
+568: 		if (target.getMap().isPassable(loc.getX(), loc.getY())) {
+569: 			if (cha instanceof L1PcInstance) {
+570: 				((L1PcInstance) cha).start_teleport(loc.getX(), loc.getY(), (short)loc.getMapId(), cha.getHeading(), 169, true, check);
+571: 			}
+572: 		}
+573: 	}
+574: 
+575: 	public void randomTeleport(L1PcInstance pc, boolean effect) {
+576: 		L1Location loc = pc.getLocation().randomLocation(200, true);
+577: 		pc.start_teleport(loc.getX(), loc.getY(), (short) loc.getMapId(), pc.getHeading(), 169, effect, false);
+578: 	}
+579: 	
+580:     private static void clearPcFromOldViewers(L1PcInstance pc) {
+581:     	try {
+582:     		final L1World world = L1World.getInstance();
+583: 
+584:     		for (L1PcInstance v : world.getVisiblePlayerFast(pc)) {
+585:     			if (v == null || v == pc) {
+586:     				continue;
+587:     			}
+588: 
+589:     			v.removeKnownObject(pc);
+590:     			SC_RemoveObject.send(v.getNetConnection(), pc);
+591:     		}
+592: 
+593:         } catch (Exception e) {
+594:         	LOG.log(
+595:         			Level.WARNING,
+596:         			"Old-viewer cleanup failed. pcId=" + pc.getId(),
+597:         			e);
+598:         }
+599:     }
+600: }
