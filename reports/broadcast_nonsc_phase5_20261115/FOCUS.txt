@@ -1,0 +1,1259 @@
+Git blob: 47588e2fbef3990f042080efa9b4eabe090c93ae
+SHA256: 22136a343e719a0d8ccc44fa2c55be96d3f5f0225ca58c741e0af5e30b63dfc2
+
+========== src/l1j/server/server/model/network/core/cs/packet/CS_Chat.java (88 lines) ==========
+1: package l1j.server.server.model.network.core.cs.packet;
+2: 
+3: import l1j.server.Config;
+4: import l1j.server.server.GMCommands;
+5: import l1j.server.server.datatables.SpamTable;
+6: import l1j.server.server.model.L1ExcludingList;
+7: import l1j.server.server.model.L1World;
+8: import l1j.server.server.model.Instance.L1PcInstance;
+9: import l1j.server.server.model.network.core.session.CIOClient;
+10: import l1j.server.server.model.network.core.sc.packet.SC_NewChat;
+11: import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+12: import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+13: 
+14: public final class CS_Chat {
+15: 
+16:     private CS_Chat() {
+17:     }
+18: 
+19:     public static void handle(CIOClient client, String chatText) {
+20:         if (client == null || chatText == null || chatText.isEmpty()) {
+21:             return;
+22:         }
+23: 
+24:         final L1PcInstance pc = client.getActiveChar();
+25:         if (pc == null) {
+26:             return;
+27:         }
+28: 
+29:         if (l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.handleLinkCommand(pc, chatText)) return;
+30: 
+31:         handleWorldChat(pc, chatText);
+32:     }
+33: 
+34:     private static void handleWorldChat(L1PcInstance pc, String chatText) {
+35:         if (!pc.isGm() && pc.getLevel() < Config.GLOBAL_CHAT_LEVEL) {
+36:             SC_ServerMessage.send(pc, 195, String.valueOf(Config.GLOBAL_CHAT_LEVEL));
+37:             return;
+38:         }
+39: 
+40:         if (!pc.isGm() && !L1World.getInstance().isWorldChatElabled()) {
+41:             SC_ServerMessage.send(pc, 510);
+42:             return;
+43:         }
+44: 
+45:         if (pc.get_food() < 12) {
+46:             SC_ServerMessage.send(pc, 462);
+47:             return;
+48:         }
+49: 
+50:         SC_PacketBox.send(pc, SC_PacketBox.FOOD, pc.get_food());
+51: 
+52:         if (pc.isGm()) {
+53:             SC_PacketBox.broadcastGreen("\\f=[******] " + chatText);
+54: 
+55:             SC_NewChat.broadcastAll(pc, 4, 3, chatText, "[******] ");
+56:             return;
+57:         }
+58: 
+59:         if (pc.hasSkillEffect(1005)) {
+60:             SC_ServerMessage.send(pc, 242);
+61:             return;
+62:         }
+63: 
+64:         if (GMCommands.전체채팅) {
+65:             broadcastToWorld(pc, chatText);
+66:         }
+67:     }
+68: 
+69:     private static void broadcastToWorld(L1PcInstance sender, String chatText) {
+70:         final SC_NewChat.ChatData cp = SC_NewChat.prepare(sender, 4, 12, chatText, "");
+71:         final SC_NewChat.ChatData cp2 = SC_NewChat.prepare(sender, 4, 3, chatText, "");
+72:         final String senderName = sender.getName();
+73: 
+74:         for (L1PcInstance listener : L1World.getInstance().getAllPlayers()) {
+75:             if (listener == null) {
+76:                 continue;
+77:             }
+78: 
+79:             final L1ExcludingList spamList =
+80:                     SpamTable.getInstance().getExcludeTable(listener.getId());
+81: 
+82:             if (spamList != null && !spamList.contains(0, senderName)) {
+83:                 cp.send(listener);
+84:                 cp2.send(listener);
+85:             }
+86:         }
+87:     }
+88: }
+
+========== src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java (882 lines) ==========
+750: 			else if (chatText.startsWith("2")) type = 4;
+751: 			else if (chatText.startsWith("3")) type = 5;
+752: 			else if (chatText.startsWith("4")) type = 6;
+753: 			else if (chatText.startsWith("5")) type = 7;
+754: 			else if (chatText.startsWith("6")) type = 8;
+755: 
+756: 			if (type != -1) {
+757: 				gam.Gambling2(pc, chatText, type);
+758: 				return true;
+759: 			}
+760: 		}
+761: 
+762: 		if (pc.isGambling3()) {
+763: 			final L1Gambling3 gam3 = new L1Gambling3();
+764: 			int type3 = -1;
+765: 
+766: 			if (chatText.startsWith("오크전사")) type3 = 1;
+767: 			else if (chatText.startsWith("스파토이")) type3 = 2;
+768: 			else if (chatText.startsWith("멧돼지")) type3 = 3;
+769: 			else if (chatText.startsWith("슬라임")) type3 = 4;
+770: 			else if (chatText.startsWith("해골")) type3 = 5;
+771: 			else if (chatText.startsWith("늑대인간")) type3 = 6;
+772: 			else if (chatText.startsWith("버그베어")) type3 = 7;
+773: 			else if (chatText.startsWith("장로")) type3 = 8;
+774: 			else if (chatText.startsWith("괴물눈")) type3 = 9;
+775: 
+776: 			if (type3 != -1) {
+777: 				gam3.Gambling3(pc, chatText, type3);
+778: 				return true;
+779: 			}
+780: 		}
+781: 
+782: 		return false;
+783: 	}
+784: 
+785: 	private static void chatWorld(L1PcInstance pc, int chatType, String text) {
+786: 		try {
+787: 			if (pc.isGm() || pc.getAccessLevel() == 1) {
+788: 				sendGmWorld(pc, chatType, text);
+789: 				return;
+790: 			}
+791: 
+792: 			if (pc.getLevel() < Config.GLOBAL_CHAT_LEVEL) {
+793: 				SC_ServerMessage.send(pc, 195, String.valueOf(Config.GLOBAL_CHAT_LEVEL));
+794: 				return;
+795: 			}
+796: 
+797: 			if (!L1World.getInstance().isWorldChatElabled()) {
+798: 				SC_ServerMessage.send(pc, 510);
+799: 				return;
+800: 			}
+801: 
+802: 			if (pc.get_food() <= 12) {
+803: 				SC_ServerMessage.send(pc, 462);
+804: 				return;
+805: 			}
+806: 
+807: 			SC_PacketBox.send(pc, SC_PacketBox.FOOD, pc.get_food());
+808: 
+809: 			for (L1PcInstance listener : L1World.getInstance().getAllPlayers()) {
+810: 				final L1ExcludingList spam = SpamTable.getInstance().getExcludeTable(listener.getId());
+811: 				if (spam.contains(0, pc.getName())) {
+812: 					continue;
+813: 				}
+814: 
+815: 				if (chatType == 12) {
+816: 					if (listener.isShowTradeChat()) {
+817: 						SC_NewChat.send(listener, pc, 4, chatType, text, "");
+818: 					}
+819: 				} else if (chatType == 3) {
+820: 					if (listener.isShowWorldChat()) {
+821: 						SC_NewChat.send(listener, pc, 4, chatType, text, "");
+822: 					}
+823: 				}
+824: 			}
+825: 
+826: 			if (chatType == 3) {
+827: 				LoggerInstance.getInstance().addChat(ChatType.Global, pc, text);
+828: 			}
+829: 
+830: 		} catch (Exception e) {
+831: 		}
+832: 	}
+833: 
+834: 	private static void sendGmWorld(L1PcInstance pc, int chatType, String text) {
+835: 		if (chatType == 3) {
+836: 			SC_SystemMessage.broadcast(text);
+837: 			SC_PacketBox.broadcastGreen("\\f= " + text);
+838: 			LoggerInstance.getInstance().addChat(ChatType.Global, pc, text);
+839: 			return;
+840: 		}
+841: 
+842: 		if (chatType == 12) {
+843: 			SC_NewChat.broadcastAll(pc, 4, 12, text, "[******] ");
+844: 			SC_NewChat.broadcastAll(pc, 4, 3, text, "[******] ");
+845: 			SC_PacketBox.broadcastGreen("" + text);
+846: 		}
+847: 	}
+848: 
+849: 	private static void insertExclude(L1PcInstance pc, int subType, int objId, String name) {
+850:         final int ownerId = pc.getId();
+851:         CacheD.getInstance().submitDbJobOrdered(ownerId, () -> {
+852:             try (Connection con = DatabaseFactory.getInstance().getConnection();
+853:                  PreparedStatement ps = con.prepareStatement(
+854:                      "INSERT INTO character_exclude SET char_id=?, type=?, exclude_id=?, exclude_name=?")) {
+855:                 ps.setInt(1, ownerId);
+856:                 ps.setInt(2, subType);
+857:                 ps.setInt(3, objId);
+858:                 ps.setString(4, name);
+859:                 ps.executeUpdate();
+860:             } catch (SQLException ex) {
+861:                 throw new IllegalStateException("Character exclude insert failed: " + ownerId, ex);
+862:             }
+863:         });
+864:     }
+865: 
+866:     private static void delExclude(L1PcInstance pc, int subType, String name) {
+867:         final int ownerId = pc.getId();
+868:         CacheD.getInstance().submitDbJobOrdered(ownerId, () -> {
+869:             try (Connection con = DatabaseFactory.getInstance().getConnection();
+870:                  PreparedStatement ps = con.prepareStatement(
+
+========== src/l1j/server/server/model/network/core/sc/packet/SC_NewChat.java (266 lines) ==========
+1: package l1j.server.server.model.network.core.sc.packet;
+2: 
+3: import java.nio.charset.Charset;
+4: 
+5: import l1j.server.Config;
+6: import l1j.server.server.Opcodes;
+7: import l1j.server.server.model.Instance.L1PcInstance;
+8: import l1j.server.server.model.network.buffer.WriteBuffer;
+9: import l1j.server.server.model.L1World;
+10: import l1j.server.server.model.network.core.connection.CUserSocket;
+11: import l1j.server.server.model.network.core.connection.CIOFrame;
+12: import l1j.server.server.model.network.core.session.CIOClient;
+13: 
+14: public final class SC_NewChat {
+15: 
+16: 	private static final Charset MS949 = Charset.forName("MS949");
+17: 	private static final byte[] EMPTY_BYTES = new byte[0];
+18: 
+19:     private SC_NewChat() {}
+20: 
+21:     public static final class ChatData {
+22:         private final int type, chatType, pcObjId, pcX, pcY, rankLevel;
+23:         private final byte[] textBytes, targetBytes, senderBytes;
+24: 
+25:         private ChatData(L1PcInstance sender, int type, int chatType, String text, String target) {
+26:             this.type = type;
+27:             this.chatType = chatType;
+28:             textBytes = text == null ? EMPTY_BYTES : text.getBytes(MS949);
+29:             targetBytes = type == 3 && chatType == 1 && target != null
+30:                     ? target.getBytes(MS949) : EMPTY_BYTES;
+31:             senderBytes = type == 4 && sender != null
+32:                     ? resolveSenderNameBytes(sender, chatType) : EMPTY_BYTES;
+33:             pcObjId = type == 4 && sender != null ? sender.getId() : 0;
+34:             pcX = type == 4 && sender != null ? sender.getX() : 0;
+35:             pcY = type == 4 && sender != null ? sender.getY() : 0;
+36:             rankLevel = type == 4 && sender != null ? sender.getRankLevel() : 0;
+37:         }
+38: 
+39:         public boolean send(L1PcInstance receiver) {
+40:             return sendFrame(receiver, type, chatType, textBytes, targetBytes,
+41:                     senderBytes, pcObjId, pcX, pcY, rankLevel);
+42:         }
+43:     }
+44: 
+45:     // One data snapshot per broadcast, not one packet per recipient.
+46:     public static ChatData prepare(L1PcInstance sender, int type, int chatType,
+47:                                    String text, String target) {
+48:         return new ChatData(sender, type, chatType, text, target);
+49:     }
+50: 
+51:     public static boolean send(L1PcInstance receiver, L1PcInstance sender, int type,
+52:                                int chatType, String text, String target) {
+53:         final byte[] textBytes = text == null ? EMPTY_BYTES : text.getBytes(MS949);
+54:         final byte[] targetBytes = type == 3 && chatType == 1 && target != null
+55:                 ? target.getBytes(MS949) : EMPTY_BYTES;
+56:         final byte[] senderBytes = type == 4 && sender != null
+57:                 ? resolveSenderNameBytes(sender, chatType) : EMPTY_BYTES;
+58:         return sendFrame(receiver, type, chatType, textBytes, targetBytes, senderBytes,
+59:                 type == 4 && sender != null ? sender.getId() : 0,
+60:                 type == 4 && sender != null ? sender.getX() : 0,
+61:                 type == 4 && sender != null ? sender.getY() : 0,
+62:                 type == 4 && sender != null ? sender.getRankLevel() : 0);
+63:     }
+64: 
+65: 	private static byte[] resolveSenderNameBytes(L1PcInstance pc, int chatType) {
+66: 		String nameStr;
+67: 
+68: 		if (pc.isGm() && chatType == 3) {
+69: 			nameStr = "******";
+70: //		} else if (pc.is_shift_battle()) {
+71: //			String serverDescription = pc.get_server_description();
+72: //			MJThebeCharacterInfo cInfo = pc.get_thebe_info();
+73: //			if (MJCommons.isNullOrEmpty(serverDescription) || cInfo == null) {
+74: //				nameStr = "미지인";
+75: //			} else {
+76: //				nameStr = cInfo.to_name_pair();
+77: //			}
+78: 		} else if (pc.getAge() != 0 && chatType == 4) {
+79: 			nameStr = pc.getName() + "(" + pc.getAge() + ")";
+80: 		} else if (pc.isGm()) {
+81: 			nameStr = "\\f3GM) \\aA" + pc.getName();
+82: 		} else if (Config.클랜이름) {
+83: 			String clanName = pc.getClanname();
+84: 			boolean hasClan = pc.getClanid() != 0;
+85: 			boolean hasCastle = hasClan && pc.getClan() != null && pc.getClan().getCastleId() != 0;
+86: 
+87: 			if (chatType == 3) {
+88: 				if (hasClan) {
+89: 					nameStr = pc.getName() + (hasCastle ? "\\fH[" : "\\f9[") + clanName + "]\\fM";
+90: 				} else {
+91: 					nameStr = pc.getName();
+92: 				}
+93: 			} else if (chatType == 12) {
+94: 				if (hasClan) {
+95: 					nameStr = pc.getName() + (hasCastle ? "\\fH[" : "\\f9[") + clanName + "]\\aR";
+96: 				} else {
+97: 					nameStr = pc.getName();
+98: 				}
+99: 			} else if (chatType == 0) {
+100: 				if (hasClan) {
+101: 					nameStr = pc.getName() + (hasCastle ? "\\fH[" : "\\f9[") + clanName + "]\\aA";
+102: 				} else {
+103: 					nameStr = pc.getName();
+104: 				}
+105: 			} else {
+106: 				nameStr = pc.getName();
+107: 			}
+108: 		} else {
+109: 			nameStr = pc.getName();
+110: 		}
+111: 
+112: 		return nameStr != null ? nameStr.getBytes(MS949) : EMPTY_BYTES;
+113: 	}
+114: 
+115:     private static boolean sendFrame(L1PcInstance receiver, int type, int chatType,
+116:                                      byte[] textBytes, byte[] targetNameBytes,
+117:                                      byte[] senderNameBytes, int pcObjId, int pcX,
+118:                                      int pcY, int rankLevel) {
+119:         if (receiver == null) return false;
+120:         final CIOClient socket = receiver.getNetConnection();
+121:         if (socket == null || !socket.isConnected()) return false;
+122:         final CUserSocket connection = socket.getConnection();
+123:         if (connection == null || !connection.isClientConnected()) return false;
+124:         final long needed = 64L + textBytes.length + targetNameBytes.length + senderNameBytes.length;
+125:         if (needed > Integer.MAX_VALUE) return false;
+126:         final CIOFrame frame = connection.beginDirectFrame((int) needed);
+127:         if (frame == null) return false;
+128:         boolean committed = false;
+129:         try {
+130:             writePayload(frame.buffer(), type, chatType, textBytes, targetNameBytes,
+131:                     senderNameBytes, pcObjId, pcX, pcY, rankLevel);
+132:             committed = connection.commitDirectFrame(frame);
+133:             return committed;
+134:         } finally {
+135:             if (!committed) connection.abortDirectFrame(frame);
+136:         }
+137:     }
+138: 
+139:     public static void broadcastAll(L1PcInstance sender, int type, int chatType,
+140:                                     String text, String targetName) {
+141:         final ChatData data=prepare(sender,type,chatType,text,targetName);
+142:         final byte[] wire=sharedWire(data);
+143:         if(wire==null)return;
+144:         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(wire);
+145:     }
+146: 
+147: 	private static void writePayload(WriteBuffer buffer, int type, int chatType, byte[] textBytes, byte[] targetNameBytes, byte[] senderNameBytes, int pcObjId, int pcX, int pcY, int rankLevel) {
+148: 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
+149: 
+150: 		switch (type) {
+151: 			case 3:
+152: 				buffer.writeC(0x03);
+153: 				break;
+154: 			case 4:
+155: 				buffer.writeC(0x04);
+156: 				break;
+157: 		}
+158: 
+159: 		buffer.writeC(0x02);
+160: 		buffer.writeC(0x08);
+161: 		buffer.writeC(0x00);
+162: 		buffer.writeC(0x10);
+163: 		buffer.writeC(chatType);
+164: 
+165: 		buffer.writeC(0x1a);
+166: 		buffer.writeC(textBytes.length);
+167: 		buffer.writeByte(textBytes);
+168: 
+169: 		switch (type) {
+170: 			case 3:
+171: 				buffer.writeC(0x22);
+172: 				if (chatType == 0) {
+173: 					buffer.writeC(0x00);
+174: 					buffer.writeC(0x28);
+175: 					buffer.writeC(0x00);
+176: 					buffer.writeC(0x30);
+177: 					buffer.writeC(0x18);
+178: 					buffer.writeC(0x38);
+179: 					buffer.writeC(0x00);
+180: 				} else if (chatType == 1) {
+181: 					buffer.writeC(targetNameBytes.length);
+182: 					buffer.writeByte(targetNameBytes);
+183: 					buffer.writeC(0x28);
+184: 					buffer.writeC(0x00);
+185: 					buffer.writeC(0x30);
+186: 					buffer.writeC(0x00);
+187: 					buffer.writeH(0);
+188: 				}
+189: 				break;
+190: 			case 4:
+191: 				buffer.writeC(0x2a);
+192: 				buffer.writeC(senderNameBytes.length);
+193: 				buffer.writeByte(senderNameBytes);
+194: 
+195: 				if (chatType == 0) {
+196: 					buffer.writeC(0x38);
+197: 					buffer.writeK(pcObjId);
+198: 					buffer.writeC(0x40);
+199: 					buffer.writeK(pcX);
+200: 					buffer.writeC(0x48);
+201: 					buffer.writeK(pcY);
+202: 				}
+203: 				if (rankLevel != 0) {
+204: 					buffer.writeC(0x50);
+205: 					buffer.writeC(rankLevel);
+206: 				}
+207: 				buffer.writeH(0);
+208: 				break;
+209: 		}
+210: 	}
+211: 
+212:     /** Preserves the historical writeK(int) (not generic protobuf varint).
+213:      * In particular it uses signed int division and Java's 5-byte path.
+214:      */
+215:     private static void putK(java.nio.ByteBuffer b,int value) {
+216:         final int v=value/128;
+217:         if(v==0)b.put((byte)value);
+218:         else if(v<=127)b.put((byte)((value&0x7f)+128)).put((byte)v);
+219:         else if(v<=16383)b.put((byte)((value&0x7f)+128))
+220:                 .put((byte)((v&0x7f)+128)).put((byte)(v/128));
+221:         else if(v<=2097151)b.put((byte)((value&0x7f)+128))
+222:                 .put((byte)((v&0x7f)+128)).put((byte)(((v/128)&0x7f)+128))
+223:                 .put((byte)(v/16384));
+224:         else b.put((byte)((value&0x7f)+128))
+225:                 .put((byte)((v&0x7f)+128)).put((byte)(((v/128)&0x7f)+128))
+226:                 .put((byte)(((v/16384)&0x7f)+128)).put((byte)(v/2097152));
+227:     }
+228: 
+229:     private static byte[] sharedWire(ChatData d) {
+230:         final long capacity=2L+64L+d.textBytes.length+d.targetBytes.length
+231:                               +d.senderBytes.length;
+232:         if(capacity>0xFFFF)return null;
+233:         final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate((int)capacity)
+234:                 .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+235:         b.position(2);
+236:         b.put((byte)Opcodes.S_EXTENDED_PROTOBUF);
+237:         if(d.type==3)b.put((byte)0x03);
+238:         else if(d.type==4)b.put((byte)0x04);
+239:         b.put((byte)0x02).put((byte)0x08).put((byte)0x00)
+240:          .put((byte)0x10).put((byte)d.chatType);
+241:         b.put((byte)0x1a).put((byte)d.textBytes.length).put(d.textBytes);
+242:         if(d.type==3) {
+243:             b.put((byte)0x22);
+244:             if(d.chatType==0)
+245:                 b.put((byte)0x00).put((byte)0x28).put((byte)0x00)
+246:                  .put((byte)0x30).put((byte)0x18).put((byte)0x38).put((byte)0x00);
+247:             else if(d.chatType==1)
+248:                 b.put((byte)d.targetBytes.length).put(d.targetBytes)
+249:                  .put((byte)0x28).put((byte)0x00).put((byte)0x30)
+250:                  .put((byte)0x00).putShort((short)0);
+251:         } else if(d.type==4) {
+252:             b.put((byte)0x2a).put((byte)d.senderBytes.length).put(d.senderBytes);
+253:             if(d.chatType==0) {
+254:                 b.put((byte)0x38);putK(b,d.pcObjId);
+255:                 b.put((byte)0x40);putK(b,d.pcX);
+256:                 b.put((byte)0x48);putK(b,d.pcY);
+257:             }
+258:             if(d.rankLevel!=0)b.put((byte)0x50).put((byte)d.rankLevel);
+259:             b.putShort((short)0);
+260:         }
+261:         final int size=b.position();
+262:         if(size>0xFFFF)return null;
+263:         b.putShort(0,(short)size);
+264:         return java.util.Arrays.copyOf(b.array(),size);
+265:     }
+266: }
+
+========== src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java (1039 lines) ==========
+1: package l1j.server.server.model.network.core.sc.packet;
+2: 
+3: import java.sql.Connection;
+4: import java.sql.PreparedStatement;
+5: import java.sql.ResultSet;
+6: import java.sql.SQLException;
+7: import java.sql.Timestamp;
+8: import java.util.Calendar;
+9: import java.util.Iterator;
+10: import java.util.List;
+11: import java.util.TimeZone;
+12: 
+13: import l1j.server.Config;
+14: import l1j.server.DatabaseFactory;
+15: import l1j.server.server.Account;
+16: import l1j.server.server.Opcodes;
+17: import l1j.server.server.model.network.core.connection.CUserSocket;
+18: import l1j.server.server.model.network.core.connection.CIOFrame;
+19: import l1j.server.server.model.L1World;
+20: import l1j.server.server.model.Instance.L1ItemInstance;
+21: import l1j.server.server.model.Instance.L1PcInstance;
+22: import l1j.server.server.model.network.buffer.WriteBuffer;
+23: import l1j.server.server.model.network.core.session.CIOClient;
+24: import l1j.server.server.model.network.utill.ConnectionConfig;
+25: import l1j.server.server.templates.L1BookMark;
+26: import l1j.server.server.utils.SQLUtil;
+27: 
+28: /**
+29:  * 스킬 아이콘이나 차단 리스트의 표시 등 복수의 용도에 사용되는 패킷의 클래스
+30:  */
+31: public final class SC_PacketBox {
+32: 
+33: 	// *** S_107 sub code list ***
+34: 	public static final int MSG_WAR_BEGIN = 0;
+35: 	public static final int MSG_WAR_END = 1;
+36: 	public static final int MSG_WAR_GOING = 2;
+37: 	public static final int MSG_WAR_INITIATIVE = 3;
+38: 	public static final int MSG_WAR_OCCUPY = 4;
+39: 	public static final int MSG_DUEL = 5;
+40: 	public static final int MSG_SMS_SENT = 6;
+41: 	public static final int MSG_MARRIED = 9;
+42: 	public static final int WEIGHT = 10;
+43: 	public static final int FOOD = 11;
+44: 	public static final int MSG_LEVEL_OVER = 12;
+45: 	public static final int HTML_UB = 14;
+46: 	public static final int MSG_ELF = 15;
+47: 	public static final int SHOW_LIST_EXCLUDE = 17;
+48: 	public static final int ADD_EXCLUDE = 18;
+49: 	public static final int REM_EXCLUDE = 19;
+50: 	public static final int PC방버프 = 127;
+51: 	public static final int ICONS1 = 20;
+52: 	public static final int ICONS2 = 21;
+53: 	public static final int ICON_AURA = 22;
+54: 	public static final int MSG_TOWN_LEADER = 23;
+55: 	public static final int PLEDGE_TWO = 24;
+56: 	public static final int PLEDGE_REFRESH_PLUS = 25;
+57: 	public static final int PLEDGE_REFRESH_MINUS = 26;
+58: 	public static final int MSG_RANK_CHANGED = 27;
+59: 	public static final int MSG_WIN_LASTAVARD = 30;
+60: 	public static final int MSG_FEEL_GOOD = 31;
+61: 	public static final int LOGIN_UNKNOWN3 = 32;
+62: 	public static final int SOMETHING1 = 33;
+63: 	public static final int ICON_BLUEPOTION = 34;
+64: 	public static final int ICON_POLYMORPH = 35;
+65: 	public static final int ICON_CHATBAN = 36;
+66: 	public static final int SOMETHING2 = 37;
+67: 	public static final int HTML_CLAN1 = 38;
+68: 	public static final int ICON_I2H = 40;
+69: 	public static final int CHARACTER_CONFIG = 41;
+70: 	public static final int LOGOUT = 42;
+71: 	public static final int MSG_CANT_LOGOUT = 43;
+72: 	public static final int CALL_SOMETHING = 45;
+73: 	public static final int MSG_COLOSSEUM = 49;
+74: 	public static final int HTML_CLAN2 = 51;
+75: 	public static final int COOK_WINDOW = 52;
+76: 	public static final int ICON_COOKING = 53;
+77: 	public static final int FISHING = 55;
+78: 	public static final int DEL_ICON = 59;
+79: 	public static final int DRAGON_PEARL = 60;
+80: 	public static final int ALLIANCE_LIST = 62;
+81: 	public static final int MINIGAME_START_COUNT = 64;
+82: 	public static final int MINIGAME_TIME2 = 65;
+83: 	public static final int MINIGAME_LIST = 66;
+84: 	public static final int MINIGAME_10SECOND_COUNT = 69;
+85: 	public static final int MINIGAME_END = 70;
+86: 	public static final int MINIGAME_TIME = 71;
+87: 	public static final int MINIGAME_TIME_CLEAR = 72;
+88: 	public static final int SPOT = 75;
+89: 	public static final int aaaa1 = 78;
+90: 	public static final int bbbb2 = 79;
+91: 	public static final int cccc3 = 80;
+92: 	public static final int EINHASAD = 82;
+93: 	public static final int HADIN_DISPLAY = 83;
+94: 	public static final int GREEN_MESSAGE = 84;
+95: 	public static final int YELLOW_MESSAGE = 61;
+96: 	public static final int RED_MESSAGE = 51;
+97: 	public static final int SCORE_MARK = 4;
+98: 	public static final int EMERALD_ICON = 86;
+99: 	public static final int KARMA = 87;
+100: 	public static final int INIT_DODGE = 88;
+101: 	public static final int DRAGONBLOOD = 100;
+102: 	public static final int DODGE = 101;
+103: 	public static final int DragonMenu = 102;
+104: 	public static final int MINI_MAP_SEND = 111;
+105: 	public static final int CLAN_WAREHOUSE_LIST = 117;
+106: 	public static final int BAPO = 114;
+107: 	public static final int ICON_SECURITY_SERVICES = 125;
+108: 	public static final int ICON_PC_BUFF = 127;
+109: 	public static final int ER_UpDate = 132;
+110: 	public static final int BOOKMARK_SIZE_PLUS_10 = 141;
+111: 	public static final int BOOKMARK = 142;
+112: 	public static final int UNLIMITED_ICON = 147;
+113: 	public static final int UNLIMITED_ICON1 = 180;
+114: 	public static final int NONE_TIME_ICON = 180;
+115: 	public static final int ITEM_STATUS = 149;
+116: 	public static final int MAP_TIMER = 153;
+117: 	public static final int BUFFICON = 154;
+118: 	public static final int ROUND = 156;
+119: 	public static final int ROUND1 = 156;
+120: 	public static final int DungeonTime = 159;
+121: 	public static final int POSION_ICON = 161;
+122: 	public static final int CLAN_BUFF_ICON = 165;
+123: 	public static final int HTML_PLEDGE_ANNOUNCE = 167;
+124: 	public static final int HTML_PLEDGE_REALEASE_ANNOUNCE = 168;
+125: 	public static final int HTML_PLEDGE_WRITE_NOTES = 169;
+126: 	public static final int HTML_PLEDGE_MEMBERS = 170;
+127: 	public static final int HTML_PLEDGE_ONLINE_MEMBERS = 171;
+128: 	public static final int ITEM_ENCHANT_UPDATE = 172;
+129: 	public static final int PLEDGE_EMBLEM_STATUS = 173;
+130: 	public static final int TOWN_TELEPORT = 176;
+131: 	public static final int 공격가능거리 = 160;
+132: 	public static final int WORLDMAP_UNKNOWN1 = 184;
+133: 	public static final int 몰라3 = 188;
+134: 	public static final int 인벤저장 = 189;
+135: 	public static final int 배틀샷 = 181;
+136: 	public static final int 상점개설횟수 = 198;
+137: 	public static final int 유저빽스탭 = 193;
+138: 	public static final int ICON_COMBO_BUFF = 204;
+139: 	public static final int DRAGONRAID_BUFF = 179;
+140: 	public static final int a = 103;
+141: 
+142: 
+143: 
+144:     
+145: 
+146:     public static void broadcastGreen(String message) {
+147:         for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+148:             if (pc != null) send(pc, GREEN_MESSAGE, message);
+149:         }
+150:     }
+151: 
+152:     public static void broadcastGreenMap(int mapId, String message) {
+153:         for (L1PcInstance pc : L1World.getInstance().getVisiblePlayers(mapId)) {
+154:             if (pc != null) send(pc, GREEN_MESSAGE, message);
+155:         }
+156:     }
+157: 
+158:     public static boolean send(L1PcInstance receiver, int subCode) {
+159:         return sendEncoded(receiver,
+160:                 1, subCode, 0, 0, 0, 0, false, null, null, null, null, null, null, null);
+161:     }
+162: 
+163:     public static boolean send(L1PcInstance receiver, int time, boolean ck, boolean ck2) {
+164:         return sendEncoded(receiver,
+165:                 2, 0x56, time, 0, 0, 0, ck, null, null, null, null, null, null, null);
+166:     }
+167: 
+168:     public static boolean send(L1PcInstance receiver, int subCode, L1PcInstance pc, L1ItemInstance weapon) {
+169:         return sendEncoded(receiver,
+170:                 3, subCode, 0, 0, 0, 0, false, null, null, weapon, pc, null, null, null);
+171:     }
+172: 
+173:     public static boolean send(L1PcInstance receiver, int subCode, int range, int type, boolean bow, L1PcInstance pc) {
+174:         return sendEncoded(receiver,
+175:                 4, subCode, range, type, 0, 0, bow, null, null, null, pc, null, null, null);
+176:     }
+177: 
+178:     public static boolean send(L1PcInstance receiver, int subCode, int time1, int time2, int time3, int time4) {
+179:         return sendEncoded(receiver,
+180:                 5, subCode, time1, time2, time3, time4, false, null, null, null, null, null, null, null);
+181:     }
+182: 
+183:     public static boolean send(L1PcInstance receiver, int subCode, L1PcInstance pc) {
+184:         return sendEncoded(receiver,
+185:                 6, subCode, 0, 0, 0, 0, false, null, null, null, pc, null, null, null);
+186:     }
+187: 
+188:     public static boolean send(L1PcInstance receiver, int subCode, int value) {
+189:         return sendEncoded(receiver,
+190:                 7, subCode, value, 0, 0, 0, false, null, null, null, null, null, null, null);
+191:     }
+192: 
+193:     public static boolean send(L1PcInstance receiver, int subCode, int type, int time, boolean second, boolean temp) {
+194:         return sendEncoded(receiver,
+195:                 8, subCode, type, time, 0, 0, second, null, null, null, null, null, null, null);
+196:     }
+197: 
+198:     public static boolean send(L1PcInstance receiver, int subCode, int time, int gfxid, int type) {
+199:         return sendEncoded(receiver,
+200:                 9, subCode, time, gfxid, type, 0, false, null, null, null, null, null, null, null);
+201:     }
+202: 
+203:     public static boolean send(L1PcInstance receiver, int subCode, int type, int time) {
+204:         return sendEncoded(receiver,
+205:                 10, subCode, type, time, 0, 0, false, null, null, null, null, null, null, null);
+206:     }
+207: 
+208:     public static boolean send(L1PcInstance receiver, int time, int val, boolean ck, boolean ck2) {
+209:         return sendEncoded(receiver,
+210:                 11, EMERALD_ICON, time, val, 0, 0, ck, null, null, null, null, null, null, null);
+211:     }
+212: 
+213:     public static boolean send(L1PcInstance receiver, int i, int time, boolean ck, boolean ck2, boolean ck3) {
+214:         return sendEncoded(receiver,
+215:                 12, EMERALD_ICON, i, time, 0, 0, ck, null, null, null, null, null, null, null);
+216:     }
+217: 
+218:     public static boolean send(L1PcInstance receiver, int subCode, String name) {
+219:         return sendEncoded(receiver,
+220:                 13, subCode, 0, 0, 0, 0, false, name, null, null, null, null, null, null);
+
+========== src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java (355 lines) ==========
+185: 				}catch(Exception e){
+186: 					e.printStackTrace();
+187: 				}
+188: 			}
+189: 		});
+190: 	}
+191: 	
+192: 	public void do_close(){
+193: 		if(is_closed())
+194: 			return;
+195: 		
+196: 		set_status(MJEStatus.CLOSED);
+197: 		_lift.up();
+198: 	}
+199: 	
+200: 	public void do_complete(){
+201: 		if(is_completed())
+202: 			return;
+203: 		
+204: 		set_status(MJEStatus.COMPLETED);
+205: 		_lift.down();
+206: 	}
+207: 
+208: 	private int[] create_boss_notify_packet(){
+209: 		switch(get_round_id()){
+210: 		case 0:
+211: 			return new int[]{SC_DisplayEffect.RINDVIOR_BORDER_DISPLAY};
+212: 		case 1:
+213: 			return new int[]{SC_DisplayEffect.PUPLE_BORDER_DISPLAY};
+214: 		case 2:
+215: 			return new int[]{SC_DisplayEffect.RINDVIOR_BORDER_DISPLAY};
+216: 		case 3:
+217: 			return new int[]{SC_DisplayEffect.VALAKAS_BORDER_DISPLAY};
+218: 		case 4:
+219: 			return new int[]{
+220: 					SC_DisplayEffect.VALAKAS_BORDER_DISPLAY, SC_DisplayEffect.QUAKE_DISPLAY};
+221: 		}
+222: 		return null;
+223: 	}
+224: 	
+225: 	
+226:     private void broadcast(int[] packets, boolean ignored) {
+227:         if (packets == null) return;
+228:         for (L1PcInstance pc : L1World.getInstance().getVisiblePlayers(_map_id)) {
+229:             if (pc == null) continue;
+230:             if (_round_id < 4 && pc.get_current_combat_team_id() != _team_id) continue;
+231:             for (int effect : packets) SC_DisplayEffect.send(pc, effect);
+232:         }
+233:     }
+234: 	
+235: 	private void broadcast(String s){
+236: 		if(_round_id >= 4){
+237: 			L1World.getInstance().broadcast_map(_map_id, s);
+238: 		}else{
+239: 			String s_message = s;
+240: 			for(L1PcInstance pc : L1World.getInstance().getVisiblePlayers(_map_id)){
+241: 				if(pc != null && pc.get_current_combat_team_id() == _team_id){
+242: 					SC_SystemMessage.send(pc, s_message);
+243: 				}
+244: 			}
+245: 		}
+246: 	}
+247: 	
+248: 	public void do_boss_spawn(){
+249: 		ThreadPool.getInstance().execute(new Runnable(){
+250: 			@Override
+251: 			public void run(){
+252: 				try{
+253: 					L1Npc npc = _boss_sbuilder.getNpc();
+254: 					if(npc == null){
+255: 						System.out.println(String.format("MJBattleHunterArea boss spawn is null!!! team_id : %d, round_id : %d", _team_id, _round_id));
+256: 						return;
+257: 					}
+258: 					
+259: 					for(int i=MJCombatLoadManager.COMBAT_BT_BOSS_SPAWN_SECOND; i>=1; --i){
+260: 						broadcast(String.format("%d초 후 %s가 출현합니다.", i, npc.get_name()));
+261: 						Thread.sleep(1000L);
+262: 					}
+263: 					int[] pcks = create_boss_notify_packet();
+264: 					broadcast(pcks, false);
+265: 					_boss_sbuilder.build(_area.x, _area.y, 0, (short) _map_id, new MJMonsterDeathHandler(){
+266: 						@Override
+267: 						public boolean onDeathNotify(L1MonsterInstance m){
+268: 							if(m._destroyed)
+269: 								return false;
+270: 							
+
+========== src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java (484 lines) ==========
+175: 		}
+176: 		LFCMessages.INGAME_CLOSE.sendGreenMsgToList(_blue);
+177: 		
+178: 		if(redKill > blueKill){
+179: 			winners = _red;
+180: 			losers	= _blue;
+181: 		}else if(redKill < blueKill){
+182: 			winners = _blue;
+183: 			losers	= _red;
+184: 		}else if(redDmg > blueDmg){
+185: 			winners = _red;
+186: 			losers	= _blue;
+187: 		}else if(redDmg < blueDmg){
+188: 			winners = _blue;
+189: 			losers	= _red;
+190: 		}
+191: 
+192: 		try{
+193: 			Thread.sleep(3000);
+194: 		}catch(Exception e){
+195: 			
+196: 		}
+197: 		
+198: 		compensate(winners, losers);
+199: 		getBack();
+200: 		_isrun = false;
+201: 		MJInstanceSpace.getInstance().releaseInstance(this);
+202: 	}
+203: 	
+204: 	@Override
+205: 	public void notifySizeOver(){
+206: 		if(_lType.isPvp()){
+207: 			InstSpcMessages.INSTANCE_SPACE_FULL.sendSystemMsg(_red.get(0));
+208: 			InstSpcMessages.INSTANCE_SPACE_FULL.sendSystemMsg(_blue.get(0));
+209: 		}else{
+210: 			InstSpcMessages.INSTANCE_SPACE_FULL.sendSystemMsg(_red.get(0).getParty().getLeader());
+211: 			InstSpcMessages.INSTANCE_SPACE_FULL.sendSystemMsg(_blue.get(0).getParty().getLeader());
+212: 		}
+213: 	}
+214: 	
+215: 	protected void sendInPlayerMessage(String msg){
+216: 		this.broadcastPacket(SC_PacketBox.GREEN_MESSAGE, msg);
+217: //		box.clear();
+218: 	}
+219: 	
+220: 	protected void waitCount() throws Exception{
+221: 		try{
+222: 			String sec = new StringBuilder().append(_lType.getReadySecond()).append("초 후 경기가 시작됩니다.").toString();
+223: 			LFCMessages.INGAME_NOTIFY_READY.sendGreenMsgToList(_red, sec);
+224: 			LFCMessages.INGAME_NOTIFY_READY.sendGreenMsgToList(_blue, sec);
+225: 		
+226: 			for(int i=_lType.getReadySecond(); i > 0 ; i--){
+227: 				if(i <= 10){
+228: 					StringBuilder msg = new StringBuilder();
+229: 					msg.append(i).append("초 후 경기가 시작됩니다.");
+230: 					LFCMessages.INGAME_NOTIFY_READY.sendGreenMsgToList(_red, msg.toString());
+231: 					LFCMessages.INGAME_NOTIFY_READY.sendGreenMsgToList(_blue, msg.toString());
+232: 				}
+233: 				Thread.sleep(1000);
+234: 			}
+235: 			this.broadcastPacket(SC_PacketBox.MAP_TIMER, _time);
+236: 		//	mTimer.clear();
+237: 			LFCMessages.INGAME_NOTIFY_START.sendGreenMsgToList(_red);
+238: 			LFCMessages.INGAME_NOTIFY_START.sendGreenMsgToList(_blue);
+239: 
+240: 		}catch(Exception e){
+241: 			throw e;
+242: 		}
+243: 	}
+244: 	
+245: 	protected boolean checkSecond(){
+246: 		if(_time > 0){
+247: 			_time--;
+248: 			
+249: 			if(_time <= 10 && _time != 0){
+250: 				String sec = String.format("%d초 후 경기가 종료됩니다.", _time);
+251: 				LFCMessages.INGAME_NOTIFY_CLOSETIME.sendGreenMsgToList(_red, sec);
+252: 				LFCMessages.INGAME_NOTIFY_CLOSETIME.sendGreenMsgToList(_blue, sec);
+253: 			}
+254: 			
+255: 			/* 버프 스폰 */
+256: 			if(_lType.getBuffSpawnSecond() != 0 && _time % _lType.getBuffSpawnSecond() == 0)
+257: 				spawnBuff(2);
+258: 		}
+259: 		
+260: 		if(_time <= 0)
+261: 			return false;
+262: 		
+263: 		return true;
+264: 	}
+265: 	
+266: 	protected void spawnBuff(int num){
+267: 		L1NpcInstance buff 		= null;
+268: 		ArrayList<Integer> arr 	= MJInstanceLoadManager.MIS_SP_BUFF_IDS;
+269: 		int rNum;
+270: 		try{
+271: 			for(int i=0; i<num; i++){
+272: 				rNum = getRandomNum();
+273: 				buff = NpcTable.getInstance().newNpcInstance(arr.get(rNum % arr.size()));
+274: 				buff.setId(IdFactory.getInstance().nextId());
+275: 				buff.setMap((short)getCopyMapId());
+276: 				buff.getLocation().forward(0);
+277: 				buff.setX(_lType.getMapRect().to_random_x());
+278: 				buff.setY(_lType.getMapRect().to_random_y());
+279: 				buff.setHomeX(buff.getX());
+280: 				buff.setHomeY(buff.getY());
+
+========== src/l1j/server/server/Controller/BossController.java (527 lines) ==========
+245: 
+246:         try {
+247:             final L1MonsterInstance bossMon = boss_spawn(
+248:                     boss, boss.getX(), boss.getY(), (short) boss.getMap(),
+249:                     boss.getNpcId(), boss.getRndLoc(), 3600000, boss.isMent(),
+250:                     boss.isYn(), boss.get_display_effect());
+251: 
+252:             if (bossMon == null) {
+253:                 _log.warning(String.format("[BossController] 스폰 실패 npcId=%d name=%s — 10분 후 재시도",
+254:                         boss.getNpcId(), boss.getMonName()));
+255: 
+256:                 ThreadPool.getInstance().scheduleRequired(new Runnable() {
+257:                     @Override
+258:                     public void run() {
+259:                         if (version != SCHEDULE_VERSION.get()) {
+260:                             return;
+261:                         }
+262:                         spawnAndReschedule(boss, version);
+263:                     }
+264:                 }, 600_000L);
+265:                 return;
+266:             }
+267:         } catch (Exception e) {
+268:             _log.log(Level.WARNING, "[BossController] 스폰 예외 npcId=" + boss.getNpcId(), e);
+269:         }
+270: 
+271:         /*
+272:          * 스폰 도중 reload가 됐으면
+273:          * 구버전 객체로 다음 예약하지 않는다.
+274:          */
+275:         if (version == SCHEDULE_VERSION.get()) {
+276:             scheduleNext(boss, version);
+277:         }
+278:     }
+279: 
+280:     private static void notifyGm(final String msg) {
+281:         for (final L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+282:             if (pc != null && pc.isGm()) {
+283:                 SC_SystemMessage.send(pc, msg);
+284:             }
+285:         }
+286:     }
+287:     
+288:     // 1 여왕개미 2 샌드 웜 3 공성전 4는안뜸 
+289:     private static final int EVENT_BOSS_TYPE = 1;
+290:     
+291:     private static final class BossEvent {
+292: 
+293:     	final L1NpcInstance npc;
+294:     	final int bossType;
+295:     	final int startTime;
+296:     	final int endTime;
+297: 
+298:     	BossEvent(
+299:     			L1NpcInstance npc,
+300:     			int bossType,
+301:     			int startTime,
+302:     			int endTime) {
+303: 
+304:     		this.npc = npc;
+305:     		this.bossType = bossType;
+306:     		this.startTime = startTime;
+307:     		this.endTime = endTime;
+308:     	}
+309:     }
+310: 
+311:     private static final ConcurrentHashMap<Integer, BossEvent> BOSS_EVENTS = new ConcurrentHashMap<>();
+312: 
+313:     // Enable only after the running 2019 client confirms that it displays the two rows.
+314:     private static volatile boolean shopAlarmsEnabled;
+315:     private static volatile SC_ActionUI.ShopEntry adenShop = new SC_ActionUI.ShopEntry(
+455:                     if (npc.getMap().isInMap(npc.getLocation()) && npc.getMap().isPassable(npc.getLocation())) {
+456:                         break;
+457:                     }
+458:                 } while (tryCount < 50);
+459: 
+460:                 if (tryCount >= 50) {
+461:                     npc.getLocation().set(x, y, map);
+462:                     npc.getLocation().forward(5);
+463:                 }
+464:             }
+465: 
+466:             if (npc.getNpcId() == 900007 || npc.getNpcId() == 900015
+467:                     || npc.getNpcId() == 900036 || npc.getNpcId() == 900219) {
+468:                 for (final L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(npc)) {
+469:                     npc.onPerceive(pc);
+470:                     SC_DoActionGFX.send(pc.getNetConnection(), npc.getId(), ActionCodes.ACTION_AxeWalk);
+471:                 }
+472:             }
+473: 
+474:             npc.setHomeX(npc.getX());
+475:             npc.setHomeY(npc.getY());
+476:             npc.setHeading(5);
+477: 
+478:             L1World.getInstance().storeAndEnterWorld(npc);
+479: 
+480:             sendBossEventSystem(npc);
+481: 
+482:             if (ment) {
+483:                 SC_SystemMessage.broadcast(b.getMentMessage());
+484:                 SC_PacketBox.broadcastGreen(b.getMentMessage());
+485:             }
+486: 
+487:             if (ynment && !Config.STANDBY_SERVER) {
+488:                 if (display_effect > 0) {
+489:                     
+490:                     for (final L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+491:                         if (pc == null || pc.isPrivateShop() || !pc.isBossNotify()
+492:                                 || !pc.is_world() || !pc.getMap().isEscapable()) {
+493:                             continue;
+494:                         }
+495:                         SC_DisplayEffect.send(pc, display_effect);
+496:                         pc.setBossYN(npc.getNpcId());
+497:                         SC_MessageYN.send(pc, CS_Attr.MSGCODE_622_BOSS, 622, b.getYnMessage());
+498:                     }
+499:                 }
+500: 
+501:                 final int spawnedNpcId = npc.getNpcId();
+502:                 ThreadPool.getInstance().scheduleRequired(new Runnable() {
+503:                     @Override
+504:                     public void run() {
+505:                         for (final L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+506:                             if (pc != null && pc.getBossYN() == spawnedNpcId) {
+507:                                 pc.setBossYN(0);
+508:                             }
+509:                         }
+510:                     }
+511:                 }, 10000L);
+512:             }
+513: 
+514:             npc.getLight().turnOnOffLight();
+515:             npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
+516: 
+517:             if (timeMillisToDelete > 0) {
+518:             	npc.startTimedDelete(timeMillisToDelete);
+519:             }
+520: 
+
+========== src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java (133 lines) ==========
+1: package l1j.server.server.model.network.core.broadcast;
+2: 
+3: import java.util.List;
+4: import java.util.function.Predicate;
+5: import l1j.server.server.model.L1Object;
+6: import l1j.server.server.model.L1World;
+7: import l1j.server.server.model.Instance.L1PcInstance;
+8: import l1j.server.server.model.network.core.session.CIOClient;
+9: 
+10: /** One immutable encoded frame, shared across every eligible recipient.
+11:  * Packet-specific old serializers are never invoked during broadcast.
+12:  */
+13: public final class CSharedBroadcast {
+14:     private CSharedBroadcast() {}
+15: 
+16:     public static void send(L1Object anchor, byte[] wire, boolean fast, int radius,
+17:             Predicate<L1PcInstance> filter) {
+18:         if (anchor == null || wire == null) return;
+19:         final L1World world=L1World.getInstance();
+20:         final boolean borrowed=fast && radius < 0;
+21:         final List<L1PcInstance> recipients=borrowed
+22:                 ? world.borrowVisiblePlayerFast(anchor)
+23:                 : radius < 0 ? world.getVisiblePlayer(anchor)
+24:                 : world.getVisiblePlayer(anchor, radius);
+25:         try (var shared=new CAsyncSendConstBufferExceptSelf(wire,anchor.getId(),Integer.MAX_VALUE)) {
+26:             for (L1PcInstance pc:recipients) {
+27:                 if (!CTLMFilter.sameWorldOther(anchor,pc)
+28:                         || filter != null && !filter.test(pc))continue;
+29:                 final CIOClient client=pc.getNetConnection();
+30:                 if(client!=null && client.isConnected())
+31:                     shared.send(client.getConnection(),pc.getId());
+32:             }
+33:         } finally {
+34:             if(borrowed)world.releaseVisiblePlayerFast(recipients);
+35:         }
+36:     }
+37: 
+38: 
+39:     /**
+40:      * Broadcast an already framed immutable packet to a specified recipient
+41:      * collection. Retains its exact inclusion/ordering semantics (no AOI or
+42:      * self-exclusion override). The packet-specific serializer never runs in
+43:      * the recipient loop.
+44:      */
+45:     public static void sendRecipients(Iterable<? extends L1PcInstance> recipients,
+46:             byte[] wire) {
+47:         if (recipients == null || wire == null) return;
+48:         try (var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+49:             for (L1PcInstance pc:recipients) {
+50:                 if (pc == null) continue;
+51:                 final CIOClient client=pc.getNetConnection();
+52:                 if (client != null && client.isConnected())
+53:                     shared.send(client.getConnection(),pc.getId());
+54:             }
+55:         }
+56:     }
+57: 
+58:     /** Proto.sendRaw uses an unframed already-encoded payload. Convert once
+59:      * to its 2-byte little-endian wire length, then broadcast shared bytes.
+60:      */
+61:     private static byte[] frameRaw(byte[] encoded) {
+62:         if(encoded==null || encoded.length==0 || encoded.length>65533)return null;
+63:         final int size=encoded.length+2;
+64:         final byte[] frame=new byte[size];
+65:         frame[0]=(byte)size;
+66:         frame[1]=(byte)(size>>>8);
+67:         System.arraycopy(encoded,0,frame,2,encoded.length);
+68:         return frame;
+69:     }
+70: 
+71:     public static void sendRawRecipients(Iterable<? extends L1PcInstance> recipients,
+72:             byte[] encoded) {
+73:         final byte[] framed=frameRaw(encoded);
+74:         if(framed!=null)sendRecipients(recipients,framed);
+75:     }
+76: 
+77: 
+78:     /**
+79:      * Send a single cached protobuf frame to the triggering PC first, then to
+80:      * every visible PC in the original world traversal order. This preserves
+81:      * the exact recipients and the prior own-send-first order, while removing
+82:      * repeated ServerPacket.writeImpl() calls. No per-recipient encoder.
+83:      */
+84:     public static void sendRawSelfAndVisible(L1PcInstance self,byte[] encoded) {
+85:         if(self==null)return;
+86:         final byte[] wire=frameRaw(encoded);
+87:         if(wire==null)return;
+88:         try(var shared=new CAsyncSendConstBuffer(
+89:                 wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+90:             final CIOClient own=self.getNetConnection();
+91:             if(own!=null && own.isConnected())shared.send(own.getConnection(),self.getId());
+92:             for(L1PcInstance pc:L1World.getInstance().getVisiblePlayer(self)) {
+93:                 if(pc==null)continue;
+94:                 final CIOClient client=pc.getNetConnection();
+95:                 if(client!=null && client.isConnected())
+96:                     shared.send(client.getConnection(),pc.getId());
+97:             }
+98:         }
+99:     }
+100: 
+101: 
+102:     /**
+103:      * One identical frame for online GM recipients. The original world
+104:      * traversal order and per-connection FIFO are preserved, and non-GMs
+105:      * receive no packet. No temporary recipient collection is allocated.
+106:      */
+107:     public static void sendAllGms(byte[] wire) {
+108:         if (wire == null) return;
+109:         try (var shared = new CAsyncSendConstBuffer(
+110:                 wire, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+111:             for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+112:                 if (pc == null || !pc.isGm()) continue;
+113:                 final CIOClient client = pc.getNetConnection();
+114:                 if (client != null && client.isConnected()) {
+115:                     shared.send(client.getConnection(), pc.getId());
+116:                 }
+117:             }
+118:         }
+119:     }
+120: 
+121:     /** Global broadcast includes the sender and uses the normal socket FIFO. */
+122:     public static void sendAll(byte[] wire) {
+123:         if(wire==null)return;
+124:         try (var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+125:             for (L1PcInstance pc:L1World.getInstance().getAllPlayers()) {
+126:                 if(pc==null)continue;
+127:                 final CIOClient client=pc.getNetConnection();
+128:                 if(client!=null && client.isConnected())
+129:                     shared.send(client.getConnection(),pc.getId());
+130:             }
+131:         }
+132:     }
+133: }
+
+========== src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java (82 lines) ==========
+1: package l1j.server.server.model.network.core.sc.packet;
+2: 
+3: import l1j.server.server.Opcodes;
+4: import l1j.server.server.model.Instance.L1PcInstance;
+5: import l1j.server.server.model.network.core.connection.CUserSocket;
+6: import l1j.server.server.model.network.core.connection.CIOFrame;
+7: import l1j.server.server.model.network.buffer.WriteBuffer;
+8: import l1j.server.server.model.network.core.session.CIOClient;
+9: 
+10: public final class SC_SystemMessage {
+11: 
+12:     public static boolean send(L1PcInstance pc, String text) {
+13:         return send(pc, text, false);
+14:     }
+15: 
+16:     public static boolean send(L1PcInstance pc, String text, boolean nameId) {
+17:         if (pc == null) return false;
+18:         final CIOClient socket = pc.getNetConnection();
+19:         if (socket == null || !socket.isConnected()) return false;
+20:         final CUserSocket connection = socket.getConnection();
+21:         if (connection == null || !connection.isClientConnected()) return false;
+22:         final String value = text == null ? "" : text;
+23:         final long needed = 16L + ((long) value.length() << 1);
+24:         if (needed > Integer.MAX_VALUE) return false;
+25:         final CIOFrame frame = connection.beginDirectFrame((int) needed);
+26:         if (frame == null) return false;
+27:         boolean committed = false;
+28:         try {
+29:             writeContent(frame.buffer(), value, nameId);
+30:             committed = connection.commitDirectFrame(frame);
+31:             return committed;
+32:         } finally {
+33:             if (!committed) connection.abortDirectFrame(frame);
+34:         }
+35:     }
+36: 
+37:     public static void broadcast(String message) {
+38:         final byte[] wire=sharedWire(message);
+39:         if(wire==null)return;
+40:         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(wire);
+41:     }
+42: 
+43: 
+44:     /** Map/party recipients: serialize one frame and send to exactly the
+45:      * specified players, with no per-client legacy serialization.
+46:      */
+47:     public static void broadcastRecipients(
+48:             Iterable<? extends L1PcInstance> recipients,String message) {
+49:         final byte[] wire=sharedWire(message);
+50:         if(wire!=null)
+51:             l1j.server.server.model.network.core.broadcast.CSharedBroadcast
+52:                     .sendRecipients(recipients,wire);
+53:     }
+54: 
+55:     private static void writeContent(WriteBuffer buffer, String msg, boolean nameId) {
+56:         if (!nameId) {
+57:             buffer.writeC(Opcodes.S_MESSAGE);
+58:             buffer.writeC(0x09);
+59:             buffer.writeS(msg);
+60:         } else {
+61:             buffer.writeC(Opcodes.S_SAY_CODE);
+62:             buffer.writeC(2);
+63:             buffer.writeD(0);
+64:             buffer.writeS(msg);
+65:         }
+66:     }
+67: 
+68:     
+69: 
+70:     public static byte[] sharedWire(String message) {
+71:         final byte[] text=(message==null ? "" : message)
+72:                 .getBytes(java.nio.charset.Charset.forName("MS949"));
+73:         final int size=5+text.length;
+74:         if(size>0xFFFF)return null;
+75:         final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate(size)
+76:                 .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+77:         b.putShort((short)size).put((byte)Opcodes.S_MESSAGE)
+78:          .put((byte)0x09).put(text).put((byte)0);
+79:         return b.array();
+80:     }
+81: 
+82: }
