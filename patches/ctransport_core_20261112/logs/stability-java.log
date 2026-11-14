@@ -1,0 +1,12 @@
+MEASURE warmup frames=4096 elapsed_ms=247.2498 fps=16566.24191404806 {p50_ms=0.4121, p95_ms=2.9015, p99_ms=6.3675, max_ms=11.7384, samples=4096}
+MEASURE production-S2C-small frames=262144 elapsed_ms=2858.5198 fps=91706.20402909226 {p50_ms=0.1135, p95_ms=0.2566, p99_ms=0.5738, max_ms=35.3284, samples=262144}
+MEASURE production-S2C-4k frames=32768 elapsed_ms=2305.7409 fps=14211.484039685465 {p50_ms=0.4016, p95_ms=1.0647, p99_ms=6.8489, max_ms=203.4479, samples=32768}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=25.5017 fps=40154.18579937808 {p50_ms=0.1836, p95_ms=0.5521, p99_ms=4.3429, max_ms=8.0267, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=14.3859 fps=71180.80898657713 {p50_ms=0.1571, p95_ms=0.3527, p99_ms=0.9016, max_ms=1.6651, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=14.3498 fps=71359.87958020321 {p50_ms=0.1443, p95_ms=0.3339, p99_ms=1.0928, max_ms=1.6029, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=20.427 fps=50129.73025897097 {p50_ms=0.1888, p95_ms=0.4499, p99_ms=1.1004, max_ms=3.2463, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=15.0299 fps=68130.85915408618 {p50_ms=0.1599, p95_ms=0.3611, p99_ms=1.0786, max_ms=1.7982, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=15.0055 fps=68241.64473026557 {p50_ms=0.1677, p95_ms=0.3466, p99_ms=1.0336, max_ms=1.5715, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=12.9736 fps=78929.51840661035 {p50_ms=0.1369, p95_ms=0.3136, p99_ms=0.4056, max_ms=1.6851, samples=1024}
+MEASURE reconnect-cycle frames=1024 elapsed_ms=13.5426 fps=75613.25004061259 {p50_ms=0.1511, p95_ms=0.2948, p99_ms=1.2165, max_ms=1.654, samples=1024}
+MEASURE slow-reader-and-RST accepted=64 refused=4
