@@ -1,0 +1,33 @@
+name: Inspect PacketBox colored and round wire layout
+on:
+  push:
+    branches: [broadcast-nonsc-audit23-20261115]
+    paths: [".github/workflows/broadcast-inspect23.yml"]
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect pinned phase22 PacketBox encoder and macro invariants
+        run: |
+          python3 - <<'PY'
+          import hashlib,zipfile
+          p='downloads/RKern_Broadcast_NonSC_Phase22_FULL_SRC_20261115.zip'
+          raw=open(p,'rb').read()
+          assert hashlib.sha1(b"blob "+str(len(raw)).encode()+b"\0"+raw).hexdigest()=="f7eb5fa0ee33f50b58b0e05ed646baa0401bf9dd"
+          with zipfile.ZipFile(p) as z:
+            for short,ranges in [
+              ('SC_PacketBox.java',[(250,345),(345,620)]),
+              ('MJServerMacroObject.java',[(1,160)]),
+              ('CSharedBroadcast.java',[(175,260)]),
+              ('StadiumObject.java',[(1,116)]),
+              ('MJRaidObject.java',[(505,535)]),
+            ]:
+              matches=[n for n in z.namelist() if n.startswith('src/') and n.endswith('/'+short)]
+              print('======FILE',short,matches)
+              if len(matches)!=1:continue
+              lines=z.read(matches[0]).decode('utf8').splitlines()
+              for a,b in ranges:
+                for i in range(a-1,min(len(lines),b)):print(f"{i+1:4} {lines[i]}")
+          PY
