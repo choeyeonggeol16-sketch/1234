@@ -91,13 +91,13 @@ def main():
                                 if x.endswith("/SC_SOCIAL_ACTION_NOTI.java") and x.startswith("src/")]
                         assert len(social)==1,social
                         jsource=zz.read(social[0]).decode("utf8")
-                    package=re.search(r"(?m)^package\\s+([\\w.]+)\\s*;",jsource)
+                    package=re.search(r"(?m)^package\s+([\w.]+)\s*;",jsource)
                     assert package is not None,"social Proto package declaration missing"
                     sourcecode=sourcecode.replace(
                         "l1j.server.server.packets.Protocol.MainServer.Proto.SC_SOCIAL_ACTION_NOTI",
                         package.group(1)+".SC_SOCIAL_ACTION_NOTI")
                     for proto_type in ("ProtoWriter","ProtoMsg"):
-                        imported=re.search(r"(?m)^import\\s+([\\w.]+\\."+proto_type+r")\\s*;",jsource)
+                        imported=re.search(r"(?m)^import\s+([\w.]+\."+proto_type+r")\s*;",jsource)
                         assert imported is not None,("stage3 proto import",proto_type)
                         sourcecode=sourcecode.replace(
                             "l1j.server.server.packets.Protocol."+proto_type,imported.group(1))
