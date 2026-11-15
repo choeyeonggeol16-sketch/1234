@@ -1,0 +1,14 @@
+name: Broadcast phase46 inspect YN and clan UI fanouts
+on:
+  push:
+    branches: [broadcast-nonsc-phase46-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase46-audit.yml"
+      - "patches/broadcast_nonsc_phase46_20261115/candidates.py"
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase46_20261115/candidates.py
