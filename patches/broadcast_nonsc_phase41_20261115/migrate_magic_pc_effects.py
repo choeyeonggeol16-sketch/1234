@@ -18,11 +18,21 @@ def main():
   assert z.testzip() is None
   files={i.filename:z.read(i) for i in z.infolist() if not i.is_dir()}
  old=files.copy();s=files[TARGET].decode("utf8")
- pattern=re.compile(r'(?m)^(?P<indent>[ \t]*)_targetPc\.sendPackets\(new S_SkillSound\(_targetPc\.getId\(\), (?P<gfx>14453|14452)\)\);[ \t]*\r?\n[ \t]*_targetPc\.broadcastPacket\(new S_SkillSound\(_targetPc\.getId\(\), (?P=gfx)\)\);')
- found=pattern.findall(s)
- assert len(found)==4,found
- s,n=pattern.subn(lambda m:m.group("indent")+"l1j.server.server.model.network.core.sc.packet.SC_SkillSound.sendAndBroadcast(_targetPc, _targetPc.getId(), "+m.group("gfx")+");",s)
- assert n==4
+ lines=s.splitlines(keepends=True)
+ replacements=[]
+ for i in range(len(lines)-1):
+  first=lines[i].strip()
+  second=lines[i+1].strip()
+  for gfx in (14453,14452):
+   send=f"_targetPc.sendPackets(new S_SkillSound(_targetPc.getId(), {gfx}));"
+   broadcast=f"_targetPc.broadcastPacket(new S_SkillSound(_targetPc.getId(), {gfx}));"
+   if first==send and second==broadcast:
+    replacements.append((i,gfx))
+ assert len(replacements)==4,replacements
+ for i,gfx in reversed(replacements):
+  indent=lines[i][:len(lines[i])-len(lines[i].lstrip())]
+  lines[i:i+2]=[indent+f"l1j.server.server.model.network.core.sc.packet.SC_SkillSound.sendAndBroadcast(_targetPc, _targetPc.getId(), {gfx});\\n".replace("\\\\n","\\n")]
+ s="".join(lines)
  assert s.count("SC_SkillSound.sendAndBroadcast(_targetPc, _targetPc.getId(), 14453);")==2
  assert s.count("SC_SkillSound.sendAndBroadcast(_targetPc, _targetPc.getId(), 14452);")==2
  files[TARGET]=s.encode("utf8")
