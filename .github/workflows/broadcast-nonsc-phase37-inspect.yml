@@ -1,0 +1,14 @@
+name: Broadcast phase37 inspect cached KDA chart fanout
+on:
+  push:
+    branches: [broadcast-nonsc-phase37-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase37-inspect.yml"
+      - "patches/broadcast_nonsc_phase37_20261115/inspect.py"
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase37_20261115/inspect.py
