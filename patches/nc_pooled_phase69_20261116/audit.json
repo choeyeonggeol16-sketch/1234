@@ -1,0 +1,30 @@
+{
+  "phase": 69,
+  "base_sha256": "7db9e443c82d5a6855483bca9eecb805cbeb9583c5b6fe6a731d771bf870fd10",
+  "output_sha256": "f02337601b96e3ffeae8d31c55fc52512c4e9d111b854c8c92a5442e10f4050a",
+  "dll_sha256": "4449c322110c70961ed371ba64ace64f80739c3a2277efbfd1526f48981b0ecd",
+  "changed": [
+    "CTransport.dll",
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "src/l1j/server/server/model/network/core/config/CIOConfig.java",
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java"
+  ],
+  "added_native_source": [
+    "native/CTransport.cpp",
+    "native/CTransport.h",
+    "native/interop_abi.hpp"
+  ],
+  "java_sources": 1710,
+  "zip_entries": 1732,
+  "no_java_byte_array_action_move_hot_path": true,
+  "native_pool": "CIOBufferEx<16384>",
+  "native_pool_direct_assembly": true,
+  "native_refcounts_preserved": true,
+  "socket_fifo_unchanged": true,
+  "owner_specific_cipher_unchanged": true,
+  "generic_frame_clone_unchanged": true,
+  "new_worker_or_queue": false
+}
