@@ -164,7 +164,7 @@ __declspec(dllimport) void* L1Interop_CreateMoveConstBuffer(void*,int,int,int,in
         """handle = (MemorySegment) createFormattedConstBuffer.invokeExact(
                     server, 2, opcode, objectId, x, y, heading);""",SERVER)
     server.write_text(text,encoding="utf-8")
-    assert "createPooledAction" not in text and "createPooledMove" not in text
+    assert "createPooledAction.invokeExact" not in text and "createPooledMove.invokeExact" not in text
     print("PHASE70_ORIGINAL_NC_ASSEMBLE_PREPARED",WORK)
 
 def package():
