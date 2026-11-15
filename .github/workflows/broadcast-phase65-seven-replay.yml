@@ -1,0 +1,32 @@
+name: Broadcast historical 7 testless stages reproducible migration
+on:
+  push:
+    branches: [broadcast-nonsc-phase65-historical-audit-20261116]
+    paths:
+      - ".github/workflows/broadcast-phase65-seven-replay.yml"
+      - "patches/broadcast_nonsc_phase65_20261116/replay_no_parity_stages.py"
+permissions:
+  contents: write
+jobs:
+  reproduce:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Re-execute 4/5/15/16/17/18/41 source migration from original snapshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 patches/broadcast_nonsc_phase65_20261116/replay_no_parity_stages.py --scratch "$RUNNER_TEMP/phase65-7-gap-replay"
+      - name: Store historical reproducibility audit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/broadcast_nonsc_phase65_20261116/PHASE1_55_SEVEN_GAP_REPLAY.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record seven historical broadcast migration replay guards [skip ci]"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
