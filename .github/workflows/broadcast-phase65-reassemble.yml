@@ -1,0 +1,48 @@
+name: Broadcast phase65 correct 55-stage evidence reassembly
+on:
+  push:
+    branches: [broadcast-nonsc-phase65-historical-audit-20261116]
+    paths:
+      - ".github/workflows/broadcast-phase65-reassemble.yml"
+      - "patches/broadcast_nonsc_phase65_20261116/recover_matrix_artifacts.py"
+permissions:
+  contents: write
+  actions: read
+jobs:
+  reassemble:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 43763322309
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: broadcast-historical-shard-*
+          merge-multiple: false
+          path: ${{ runner.temp }}/phase65-shard-originals
+      - name: Recover only the matching shard from each original matrix artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 patches/broadcast_nonsc_phase65_20261116/recover_matrix_artifacts.py \
+            --artifact-root "$RUNNER_TEMP/phase65-shard-originals"
+      - name: Independently aggregate 55 stages, all embedded parity regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 patches/broadcast_nonsc_phase65_20261116/aggregate_compile_1_55.py
+      - name: Save corrected evidence and phase-by-phase verdict
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/broadcast_nonsc_phase65_20261116/compile-stages
+          git add reports/broadcast_nonsc_phase65_20261116/PHASE1_55_COMPILE_PARITY.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Phase65 verified 55-stage compile/parity source artifacts without overwrite [skip ci]"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
