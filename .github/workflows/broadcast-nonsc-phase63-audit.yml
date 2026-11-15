@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/broadcast-nonsc-phase63-audit.yml"
       - "patches/broadcast_nonsc_phase63_20261116/full_lineage_audit.py"
+      - "patches/broadcast_nonsc_phase63_20261116/classify_modern_broadcasts.py"
 permissions:
   contents: write
 jobs:
@@ -20,6 +21,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 patches/broadcast_nonsc_phase63_20261116/full_lineage_audit.py
+          python3 patches/broadcast_nonsc_phase63_20261116/classify_modern_broadcasts.py
       - name: Commit complete audit evidence
         shell: bash
         run: |
