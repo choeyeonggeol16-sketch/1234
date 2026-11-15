@@ -1,0 +1,40 @@
+name: Phase69 inspect exact baseline pooled buffer sources
+on:
+  push:
+    branches: [broadcast-nc-pooled-s-packet-phase69-20261116]
+    paths:
+      - ".github/workflows/nc-pooled-phase69-inspect.yml"
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Extract only latest source owner/native bridge inspection files
+        run: |
+          python3 - <<'PY'
+          import zipfile, pathlib, hashlib, json
+          zpath=pathlib.Path("downloads/RKern_NC_SAction_Shared_FULL_SRC_20261116.zip")
+          assert hashlib.sha256(zpath.read_bytes()).hexdigest()=="7db9e443c82d5a6855483bca9eecb805cbeb9583c5b6fe6a731d771bf870fd10"
+          d=pathlib.Path("reports/nc_pooled_phase69_baseline")
+          d.mkdir(parents=True,exist_ok=True)
+          with zipfile.ZipFile(zpath) as z:
+              files=z.namelist()
+              stems=("CAsyncSendConstBuffer.java","CAsyncSendConstBufferExceptSelf.java","CSharedBroadcast.java","CUserSocket.java","CIOServer.java","CIOBufferPool.java","CIOBufferEx.java","SC_DoActionGFX.java","SC_MoveChar.java","CIOConfig.java")
+              selected=[name for name in files if name.startswith("src/") and name.endswith(stems)]
+              print("INSPECTION",selected)
+              for name in selected:
+                  (d/pathlib.Path(name).name).write_bytes(z.read(name))
+              (d/"zip-manifest.json").write_text(json.dumps(files,indent=2))
+          PY
+      - name: Save source snapshots for exact API comparison
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f reports/nc_pooled_phase69_baseline
+          git commit -m "Inspect exact phase68 source and bridge signatures [skip ci]"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
