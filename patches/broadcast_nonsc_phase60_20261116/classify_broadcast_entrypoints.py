@@ -118,7 +118,7 @@ for receiver,_ in sc_rows:
 # Central sending/ownership context for deterministic human inspection.
 cores=[
  "CSharedBroadcast.java","CAsyncSendConstBuffer.java","CAsyncSendConstBufferExceptSelf.java",
- "CUserSocket.java","CIOServer.java","SC_MoveChar.java"]
+ "CUserSocket.java","CIOServer.java","SC_MoveChar.java","SC_ChatPacket.java","L1MJRaidPoisonInstance.java"]
 for base in cores:
     match=[(n,s) for n,s in files.items() if n.endswith("/"+base)]
     if not match:continue
