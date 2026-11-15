@@ -1,7 +1,7 @@
 name: Broadcast phase62 legacy size admission regression validation
 on:
   push:
-    branches: [broadcast-nonsc-phase62-20261116]
+    branches: [broadcast-nonsc-phase62-verify-20261116]
     paths:
       - ".github/workflows/broadcast-nonsc-phase62-build.yml"
       - "patches/broadcast_nonsc_phase62_20261116/restore_legacy_size_guard.py"
