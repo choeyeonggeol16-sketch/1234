@@ -1,0 +1,305 @@
+PHASE1: java_count=1711 modified=4 added=3 removed=0
+  src/l1j/server/server/model/L1Character.java
+  src/l1j/server/server/model/L1World.java
+  src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java
+  docs/broadcast_full_audit_20261115/AUDIT_KO.md
+  docs/broadcast_full_audit_20261115/STATUS.txt
+  docs/broadcast_full_audit_20261115/audit.json
+PHASE2: java_count=1711 modified=6 added=0 removed=0
+  src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java
+  src/l1j/server/SpecialEventHandler.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_ChangeAttr.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_DoActionGFX.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_RemoveObject.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java
+PHASE3: java_count=1711 modified=2 added=0 removed=0
+  src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java
+PHASE4: java_count=1711 modified=2 added=0 removed=0
+  src/l1j/server/server/model/Instance/L1PcInstance.java
+  src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java
+PHASE5: java_count=1711 modified=2 added=0 removed=0
+  src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java
+  src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java
+PHASE6: java_count=1711 modified=3 added=0 removed=0
+  src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java
+  src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_DisplayEffect.java
+PHASE7: java_count=1711 modified=3 added=0 removed=0
+  src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java
+  src/l1j/server/server/model/Instance/L1EffectInstance.java
+  src/l1j/server/server/model/L1GroundInventory.java
+PHASE8: java_count=1711 modified=2 added=0 removed=0
+  src/l1j/server/server/model/Instance/L1NpcInstance.java
+  src/l1j/server/server/model/item/teleport/L1Teleport.java
+PHASE9: java_count=1711 modified=3 added=0 removed=0
+  src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java
+  src/l1j/server/server/model/Instance/L1NpcInstance.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java
+PHASE10: java_count=1711 modified=3 added=0 removed=0
+  src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java
+  src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java
+PHASE11: java_count=1711 modified=1 added=0 removed=0
+  src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java
+PHASE12: java_count=1711 modified=1 added=0 removed=0
+  src/l1j/server/MJInstanceSystem/MJInstanceEnums.java
+PHASE13: java_count=1711 modified=1 added=0 removed=0
+  src/l1j/server/server/model/network/core/sc/packet/SC_AreaAttackEffect.java
+PHASE14: java_count=1711 modified=2 added=0 removed=0
+  src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java
+  src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java
+PHASE15: java_count=1711 modified=4 added=0 removed=0
+  src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java
+  src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java
+  src/l1j/server/server/model/L1Character.java
+  src/l1j/server/server/model/L1World.java
+PHASE16: java_count=1711 modified=5 added=0 removed=0
+  src/l1j/server/MJItemSkillSystem/Model/MJItemSkillModel.java
+  src/l1j/server/server/model/Broadcaster.java
+  src/l1j/server/server/model/L1Character.java
+  src/l1j/server/server/model/L1World.java
+  src/l1j/server/server/model/character/action/CAttackAction.java
+PHASE17: java_count=1711 modified=9 added=0 removed=0
+  src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java
+  src/l1j/server/MJCombatSystem/Games/MJBattleTournamentObserver.java
+  src/l1j/server/MJCombatSystem/MJCombatObserver.java
+  src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java
+  src/l1j/server/server/model/L1Character.java
+  src/l1j/server/server/model/L1World.java
+  src/l1j/server/server/model/item/Exp/CalcExp.java
+  src/l1j/server/server/model/item/teleport/L1Teleport.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java
+PHASE18: java_count=1710 modified=24 added=0 removed=1
+  src/l1j/server/IndunSystem/Orim/OrimFight.java
+  src/l1j/server/IndunSystem/ValakasRoom/ValakasReady.java
+  src/l1j/server/IndunSystem/ValakasRoom/ValakasStart.java
+  src/l1j/server/MJPassiveSkill/MJPassiveLoader.java
+  src/l1j/server/MJRaidSystem/BossSkill/Cancellation.java
+  src/l1j/server/MJRaidSystem/BossSkill/MJRaidBossCombo.java
+  src/l1j/server/MJRaidSystem/BossSkill/MJRaidBossSkill.java
+  src/l1j/server/MJRaidSystem/BossSkill/ParalPoison.java
+  src/l1j/server/MJRaidSystem/BossSkill/PoisonCloud.java
+  src/l1j/server/MJRaidSystem/BossSkill/ReduceHeal.java
+  src/l1j/server/MJRaidSystem/BossSkill/Summon.java
+  src/l1j/server/MJRaidSystem/MJRaidObject.java
+  src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java
+  src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java
+  src/l1j/server/MJRaidSystem/Spawn/MJRaidNpcSpawn.java
+  src/l1j/server/server/Controller/ShipTimeController.java
+  src/l1j/server/server/GMCommands.java
+  src/l1j/server/server/datatables/CharacterShopTable.java
+  src/l1j/server/server/model/Instance/L1CataInstance.java
+  src/l1j/server/server/model/Instance/L1MerchantInstance.java
+  src/l1j/server/server/model/Instance/L1MonsterInstance.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_PersonalShop.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_Title.java
+  src/l1j/server/server/model/Broadcaster.java
+PHASE19: java_count=1710 modified=5 added=0 removed=0
+  src/l1j/server/IndunSystem/Hadin/Hadin.java
+  src/l1j/server/IndunSystem/Orim/OrimController.java
+  src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCWarSquareTrap.java
+  src/l1j/server/MJRaidSystem/MJRaidObject.java
+  src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java
+PHASE20: java_count=1710 modified=13 added=0 removed=0
+  src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCWarSquareTrap.java
+  src/l1j/server/MJTemplate/Trap/DisplayEffectTrap.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_LFCTrapEffect.java
+PHASE21: java_count=1710 modified=11 added=0 removed=0
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java
+  src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java
+PHASE22: java_count=1710 modified=3 added=0 removed=0
+  src/l1j/server/MJCompanion/Instance/MJCompanionRegenerator.java
+  src/l1j/server/MJRaidSystem/MJRaidObject.java
+  src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java
+PHASE23: java_count=1710 modified=2 added=0 removed=0
+  src/l1j/server/IndunSystem/Orim/OrimController.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java
+PHASE24: java_count=1710 modified=7 added=0 removed=0
+  src/l1j/server/IndunSystem/BossRaid/BossRaid.java
+  src/l1j/server/IndunSystem/BossRaid2/Queen1.java
+  src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java
+  src/l1j/server/IndunSystem/Hadin/HadinTrap.java
+  src/l1j/server/IndunSystem/Ice/Demon/Demon.java
+  src/l1j/server/MJRaidSystem/MJRaidMessage.java
+  src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java
+PHASE25: java_count=1710 modified=6 added=0 removed=0
+  src/l1j/server/IndunSystem/BossRaid/BossRaidSystem.java
+  src/l1j/server/IndunSystem/BossRaid2/Queen1.java
+  src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java
+  src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java
+  src/l1j/server/IndunSystem/Hadin/HadinTrap.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_ServerMessage.java
+PHASE26: java_count=1710 modified=4 added=0 removed=0
+  src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java
+  src/l1j/server/server/Controller/BossController.java
+  src/l1j/server/server/model/L1DeathMatch.java
+  src/l1j/server/server/model/L1Racing.java
+PHASE27: java_count=1710 modified=4 added=0 removed=0
+  src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java
+  src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java
+  src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java
+  src/l1j/server/server/model/L1HauntedHouse.java
+PHASE28: java_count=1710 modified=1 added=0 removed=0
+  src/l1j/server/server/Controller/ShipTimeController.java
+PHASE29: java_count=1710 modified=3 added=0 removed=0
+  src/l1j/server/server/model/L1DeathMatch.java
+  src/l1j/server/server/model/L1HauntedHouse.java
+  src/l1j/server/server/model/L1Racing.java
+PHASE30: java_count=1710 modified=2 added=0 removed=0
+  src/l1j/server/server/model/L1HauntedHouse.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java
+PHASE31: java_count=1710 modified=2 added=0 removed=0
+  src/l1j/server/server/model/L1DeathMatch.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java
+PHASE32: java_count=1710 modified=6 added=0 removed=0
+  src/l1j/server/IndunSystem/Ice/Queen/Queen.java
+  src/l1j/server/Stadium/StadiumObject.java
+  src/l1j/server/server/Announcecycle.java
+  src/l1j/server/server/model/L1ChatParty.java
+  src/l1j/server/server/model/L1Clan.java
+  src/l1j/server/server/model/L1Party.java
+PHASE33: java_count=1710 modified=3 added=0 removed=0
+  src/l1j/server/server/model/L1ClanJoin.java
+  src/l1j/server/server/model/L1Party.java
+  src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java
+PHASE34: java_count=1710 modified=4 added=0 removed=0
+  src/l1j/server/MJDungeonTimer/Updator/DungeonTimeUpdator.java
+  src/l1j/server/server/Controller/FishingTimeController.java
+  src/l1j/server/server/UserCommands.java
+  src/l1j/server/server/model/L1ChatParty.java
+PHASE35: java_count=1710 modified=1 added=0 removed=0
+  src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java
+PHASE36: java_count=1710 modified=2 added=0 removed=0
+  src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java
+  src/l1j/server/MJServerMacroSystem/MJServerMacroObject.java
+PHASE37: java_count=1710 modified=2 added=0 removed=0
+  src/l1j/server/MJKDASystem/Chart/MJKDAChartUpdator.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_ChartRank.java
+PHASE38: java_count=1710 modified=3 added=0 removed=0
+  src/l1j/server/IndunSystem/Orim/OrimController.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java
+PHASE39: java_count=1710 modified=2 added=0 removed=0
+  src/l1j/server/server/model/Instance/L1MonsterInstance.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_ServerMessage.java
+PHASE40: java_count=1710 modified=3 added=0 removed=0
+  src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_ChatMessageNoti.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java
+PHASE41: java_count=1710 modified=1 added=0 removed=0
+  src/l1j/server/server/model/HelpBySupport.java
+PHASE42: java_count=1710 modified=4 added=0 removed=0
+  src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java
+  src/l1j/server/MJWarSystem/MJCastleWar.java
+  src/l1j/server/server/Controller/BossController.java
+  src/l1j/server/server/Controller/BugRaceController.java
+PHASE43: java_count=1710 modified=6 added=0 removed=0
+  src/l1j/server/MJRaidSystem/MJRaidObject.java
+  src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java
+  src/l1j/server/MJWarSystem/MJCastleWar.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_WarStartMessage.java
+PHASE44: java_count=1710 modified=13 added=0 removed=0
+  src/l1j/server/server/command/executor/L1PartyRecall.java
+  src/l1j/server/server/command/executor/L1Recall.java
+  src/l1j/server/server/model/BookQuest/Loader/BQSLoadManager.java
+  src/l1j/server/server/model/BookQuest/Loader/BQSWQDecksLoader.java
+  src/l1j/server/server/model/Instance/L1PcInstance.java
+  src/l1j/server/server/model/L1NewUltimateBattle.java
+  src/l1j/server/server/model/L1UltimateBattle.java
+  src/l1j/server/server/model/character/Item/Drop/DropShareEngine.java
+  src/l1j/server/server/model/character/action/CGetItemAction.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_LeavePledge.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_Title.java
+PHASE45: java_count=1710 modified=9 added=0 removed=0
+  src/l1j/server/server/Controller/HomeTownTimeController.java
+  src/l1j/server/server/GMCommands.java
+  src/l1j/server/server/model/Instance/L1PcInstance.java
+  src/l1j/server/server/model/item/function/CItemUseClan.java
+  src/l1j/server/server/model/item/function/ItemUseCommandCombat.java
+  src/l1j/server/server/model/item/function/ItemUseConsignment.java
+  src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_RankControl.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java
+PHASE46: java_count=1710 modified=10 added=0 removed=0
+  src/l1j/server/MJWarSystem/MJCastleWar.java
+  src/l1j/server/server/Controller/BossController.java
+  src/l1j/server/server/UserCommands.java
+  src/l1j/server/server/model/L1DeathMatch.java
+  src/l1j/server/server/model/L1HauntedHouse.java
+  src/l1j/server/server/model/L1Racing.java
+  src/l1j/server/server/model/item/function/ItemUseCommandCombat.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_CastleMaster.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_MessageYN.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_TrueTargetNew.java
+PHASE47: java_count=1710 modified=6 added=0 removed=0
+  src/l1j/server/server/command/executor/L1Ress.java
+  src/l1j/server/server/model/Instance/L1MonsterInstance.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_ActionUI.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java
+PHASE48: java_count=1710 modified=2 added=0 removed=0
+  src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_NewChat.java
+PHASE49: java_count=1710 modified=5 added=0 removed=0
+  src/l1j/server/server/model/L1Racing.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_EtcPacket.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_GameRap.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_GameStart.java
+PHASE50: java_count=1710 modified=7 added=0 removed=0
+  src/l1j/server/server/Controller/ShipTimeController.java
+  src/l1j/server/server/model/L1NpcChatTimer.java
+  src/l1j/server/server/model/L1Racing.java
+  src/l1j/server/server/model/character/skill/SkillHandlers.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_Result.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_GameEnd.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_GameOver.java
+PHASE51: java_count=1710 modified=6 added=0 removed=0
+  src/l1j/server/IndunSystem/MiniGame/L1Gambling.java
+  src/l1j/server/IndunSystem/MiniGame/L1Gambling3.java
+  src/l1j/server/IndunSystem/Orim/OrimController.java
+  src/l1j/server/MJKDASystem/MJKDA.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_ShowCmd.java
+PHASE52: java_count=1710 modified=5 added=0 removed=0
+  src/l1j/server/server/model/L1Party.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java
+  src/l1j/server/server/model/network/core/cs/packet/CS_PledgeWatch.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_ClanAttention.java
+  src/l1j/server/server/model/network/core/sc/packet/SC_Party.java
+PHASE53: java_count=1710 modified=3 added=0 removed=0
+  src/l1j/server/server/model/character/skill/SkillHandlers.java
+  src/l1j/server/server/model/item/function/ItemUseActiveSkills.java
+  src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java
+PHASE54: java_count=1710 modified=2 added=0 removed=0
+  src/l1j/server/server/GMCommands.java
+  src/l1j/server/server/UserCommands.java
+PHASE55: java_count=1710 modified=1 added=0 removed=0
+  src/l1j/server/server/GMCommands.java
