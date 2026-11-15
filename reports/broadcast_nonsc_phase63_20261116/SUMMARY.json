@@ -1,0 +1,23 @@
+{
+  "source": "phase62",
+  "files": 1729,
+  "java_files": 1710,
+  "changed_from_phase56": [
+    "src/l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java",
+    "src/l1j/server/MJInstanceSystem/MJInstanceEnums.java",
+    "src/l1j/server/MJRaidSystem/Util/L1MJRaidPoisonInstance.java",
+    "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+    "src/l1j/server/server/GMCommands.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_MoveChar.java"
+  ],
+  "identical_native_dll": true,
+  "identical_non_java_files": true,
+  "legacy_active_sites": {},
+  "modern_sc_broadcast_methods": 134,
+  "modern_sc_broadcast_owners": 58,
+  "loop_suspects_unreviewed": 699,
+  "loop_suspects_are_not_proven_bugs": true,
+  "actual_windows_runtime_tested_here": false,
+  "source_sha256": "c0bc5a578837abe7d16cf5f2bbd88fde6108cccc0162aff785ecb63e64ff3420"
+}
