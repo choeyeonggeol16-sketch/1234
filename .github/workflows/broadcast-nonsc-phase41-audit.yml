@@ -1,0 +1,14 @@
+name: Broadcast phase41 legacy callsite audit
+on:
+  push:
+    branches: [broadcast-nonsc-phase41-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase41-audit.yml"
+      - "patches/broadcast_nonsc_phase41_20261115/audit.py"
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase41_20261115/audit.py
