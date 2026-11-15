@@ -31,6 +31,18 @@ assert test.count(".apply(")==6,test.count(".apply(")
 test=test.replace(".apply(", ".send(")
 test=test.replace("CIOThreadCallback.INSTANCE","CIOThreadCallback.getInstance()")
 test=test.replace("new CIOClient(user)","new CIOClient(user,false)")
+# Old .apply was an operation-status predicate even for excluded recipients.
+# New .send returns false for ExceptSelf exclusion: that is the correct result.
+old='for(int i=0;i<4;i++)check(broadcast.send(world.users[i],i==3?999:100+i),"shared broadcast unavailable");'
+new='for(int i=0;i<4;i++)check(broadcast.send(world.users[i],i==3?999:100+i)==(i!=3),"shared broadcast inclusion/exclusion incorrect");'
+assert test.count(old)==1, "historical inclusion assertion changed"
+test=test.replace(old,new,1)
+# CIO game's long-lived owner shards are intentionally non-daemon.
+# End the standalone test JVM only AFTER all World.close() lease assertions.
+suffix="    }\n}\n"
+assert test.endswith(suffix)
+test=test[:-len(suffix)]+"        System.exit(0);\n"+suffix
+
 # Test-only native codec reference and its DLL are needed for
 # independent per-socket ciphertext comparison.
 codec_src=ROOT/"patches/ctransport_core_20261112/tests/CIOPacketCodecReference.java"
