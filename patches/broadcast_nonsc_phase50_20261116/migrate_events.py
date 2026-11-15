@@ -160,9 +160,13 @@ NPC_HELPER=r'''
 def patch_npc(files):
     s=files[NPC_PACKET].decode("utf8")
     anchor="    private static boolean sendFormatted(L1PcInstance pc, int npcId, int color, String text) {"
-    assert s.count(anchor)==1 and "public static byte[] sharedNpcWire(" not in s
+    assert s.count(anchor)==1
     assert "formatNpcChat(npc,chat,type)" in s
-    files[NPC_PACKET]=s.replace(anchor,NPC_HELPER+anchor,1).encode("utf8")
+    if "public static byte[] sharedNpcWire(" not in s:
+        files[NPC_PACKET]=s.replace(anchor,NPC_HELPER+anchor,1).encode("utf8")
+    else:
+        assert s.count("public static byte[] sharedNpcWire(")==1
+        print("NPC sharedNpcWire helper already present; reuse original method")
     s=files[NPC_TIMER].decode("utf8")
     a,b,method=block(s,"private void chat(L1NpcInstance npc, int chatTiming, String chatId,")
     signature="for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {"
@@ -227,7 +231,8 @@ def main():
  assert sum(n.endswith(".java") for n in files)==1710 and "CTransport.dll" in files
  patch_ship(files);patch_grace(files);patch_shop(files);patch_race(files);patch_npc(files)
  changed=sorted(n for n in files if files[n]!=before[n])
- assert changed==TARGETS,(changed,TARGETS)
+ assert changed==[n for n in TARGETS if files[n]!=before[n]],(changed,TARGETS)
+ assert len(changed) in (7,8),changed
  assert files["CTransport.dll"]==before["CTransport.dll"]
  args.work.mkdir(parents=True,exist_ok=True)
  for n,data in files.items():
