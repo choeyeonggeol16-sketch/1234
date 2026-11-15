@@ -18,7 +18,7 @@ def main():
   assert z.testzip() is None
   files={i.filename:z.read(i) for i in z.infolist() if not i.is_dir()}
  old=files.copy();s=files[TARGET].decode("utf8")
- pattern=re.compile(r'(?m)^(?P<indent>[ \t]*)_targetPc\.sendPackets\(new S_SkillSound\(_targetPc\.getId\(\), (?P<gfx>14453|14452)\)\);[ \t]*\r?\n(?P=indent)_targetPc\.broadcastPacket\(new S_SkillSound\(_targetPc\.getId\(\), (?P=gfx)\)\);')
+ pattern=re.compile(r'(?m)^(?P<indent>[ \t]*)_targetPc\.sendPackets\(new S_SkillSound\(_targetPc\.getId\(\), (?P<gfx>14453|14452)\)\);[ \t]*\r?\n[ \t]*_targetPc\.broadcastPacket\(new S_SkillSound\(_targetPc\.getId\(\), (?P=gfx)\)\);')
  found=pattern.findall(s)
  assert len(found)==4,found
  s,n=pattern.subn(lambda m:m.group("indent")+"l1j.server.server.model.network.core.sc.packet.SC_SkillSound.sendAndBroadcast(_targetPc, _targetPc.getId(), "+m.group("gfx")+");",s)
