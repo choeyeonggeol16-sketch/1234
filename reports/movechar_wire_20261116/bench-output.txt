@@ -1,0 +1,26 @@
+PARITY_CASES=100648 variants=4 (17-byte identical)
+RUN name=ByteBuffer+clone  pass=0 bytes_per_event=80.0 ns_per_event=34.30
+RUN name=manual+clone      pass=0 bytes_per_event=80.0 ns_per_event=47.71
+RUN name=VarHandle+clone   pass=0 bytes_per_event=80.0 ns_per_event=26.97
+RUN name=template+clone    pass=0 bytes_per_event=80.0 ns_per_event=24.45
+RUN name=trusted(no clone) pass=0 bytes_per_event=40.0 ns_per_event=14.35
+RUN name=VarHandle+clone   pass=1 bytes_per_event=80.0 ns_per_event=22.50
+RUN name=template+clone    pass=1 bytes_per_event=80.0 ns_per_event=25.47
+RUN name=trusted(no clone) pass=1 bytes_per_event=40.0 ns_per_event=13.65
+RUN name=ByteBuffer+clone  pass=1 bytes_per_event=80.3 ns_per_event=27.29
+RUN name=manual+clone      pass=1 bytes_per_event=80.0 ns_per_event=21.62
+RUN name=trusted(no clone) pass=2 bytes_per_event=40.0 ns_per_event=16.63
+RUN name=ByteBuffer+clone  pass=2 bytes_per_event=80.0 ns_per_event=25.11
+RUN name=manual+clone      pass=2 bytes_per_event=80.0 ns_per_event=22.49
+RUN name=VarHandle+clone   pass=2 bytes_per_event=80.0 ns_per_event=22.80
+RUN name=template+clone    pass=2 bytes_per_event=80.0 ns_per_event=22.29
+RUN name=manual+clone      pass=3 bytes_per_event=80.0 ns_per_event=24.08
+RUN name=VarHandle+clone   pass=3 bytes_per_event=80.0 ns_per_event=23.17
+RUN name=template+clone    pass=3 bytes_per_event=80.0 ns_per_event=24.14
+RUN name=trusted(no clone) pass=3 bytes_per_event=40.0 ns_per_event=14.66
+RUN name=ByteBuffer+clone  pass=3 bytes_per_event=80.0 ns_per_event=24.56
+RUN name=template+clone    pass=4 bytes_per_event=80.0 ns_per_event=25.02
+RUN name=trusted(no clone) pass=4 bytes_per_event=40.0 ns_per_event=15.31
+RUN name=ByteBuffer+clone  pass=4 bytes_per_event=80.0 ns_per_event=22.02
+RUN name=manual+clone      pass=4 bytes_per_event=80.0 ns_per_event=22.44
+RUN name=VarHandle+clone   pass=4 bytes_per_event=80.0 ns_per_event=26.03
