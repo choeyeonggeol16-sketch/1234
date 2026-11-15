@@ -118,8 +118,9 @@ def patch_chat(files):
  updated=(part[:i]+BC+".CSharedBroadcast.sendRecipients(__cioVisible0,\n"+
        "sharedWire(opcode,0,objectId,text,true));"+part[j:])
  s=s[:a]+updated+s[b:]
- for needle in ('sendDirectRaw(receiver, MODE_MSG_TYPE1','sendDirectRaw(receiver, MODE_OPCODE_TYPE2',
-                'sendDirectRaw(receiver, MODE_COMPLEX_0'):
+ for needle in ('sendDirectRaw(receiver, MODE_MSG_TYPE1',
+                'sendDirectRaw(receiver, MODE_OPCODE_TYPE2',
+                'sendDirectRaw(receiver, MODE_COMPLEX_0, opcode, 0, objectId, text,'):
   assert needle not in s,needle
  files[CHAT]=s.encode("utf8")
 def patch_gambling(files,path,method,sourcecall):
