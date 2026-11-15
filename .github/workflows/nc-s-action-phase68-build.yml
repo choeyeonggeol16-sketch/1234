@@ -76,7 +76,7 @@ jobs:
           test "$(wc -l < "$root/sources.txt")" -eq 1710
           mkdir -p "$root/classes" "$root/testclasses"
           javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g -cp "$(pwd)/.compile-deps/*" -d "$root/classes" @"$root/sources.txt"
-          javac --enable-preview --release 21 -encoding UTF-8 -cp "$root/classes:$(pwd)/.compile-deps/*" -d "$root/testclasses" patches/movechar_phase67_20261116/MoveCharPhase67Parity.java
+          javac --enable-preview --release 21 -encoding UTF-8 -cp "$root/classes:$(pwd)/.compile-deps/*" -d "$root/testclasses" patches/movechar_phase67_20261116/MoveCharPhase67Parity.java patches/nc_s_action_phase68_20261116/Phase68ActionParity.java
           java --enable-preview -cp "$root/testclasses:$root/classes:$(pwd)/.compile-deps/*" l1j.server.server.model.network.core.broadcast.MoveCharPhase67Parity
           java --enable-preview -cp "$root/testclasses:$root/classes:$(pwd)/.compile-deps/*" l1j.server.server.model.network.core.broadcast.Phase68ActionParity
           python3 - <<'PY'
