@@ -167,7 +167,11 @@ def patch_orim(files):
                       chatWire,Integer.MIN_VALUE,Integer.MAX_VALUE)){
             '''+changed+'''
             }'''
- method=method[:i]+wrapped+method[j:]
+ before=method[:i]
+ assert before.count("if (pc.getParty().isLeader(pc))")==1
+ before=before.replace("if (pc.getParty().isLeader(pc))",
+                       "if (pc.getParty().isLeader(pc)) {",1)
+ method=before+wrapped+"\n}"+method[j:]
  s=s[:a]+method+s[b:];files[ORIM]=s.encode("utf8")
 def patch_pk(files):
  s=files[SHOW].decode("utf8")
