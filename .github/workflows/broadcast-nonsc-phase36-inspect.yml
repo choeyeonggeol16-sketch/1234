@@ -1,0 +1,14 @@
+name: Broadcast phase36 inspect macro packet types
+on:
+  push:
+    branches: [broadcast-nonsc-phase36-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase36-inspect.yml"
+      - "patches/broadcast_nonsc_phase36_20261115/inspect.py"
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase36_20261115/inspect.py
