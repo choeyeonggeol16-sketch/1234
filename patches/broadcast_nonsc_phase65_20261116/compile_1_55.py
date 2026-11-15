@@ -26,7 +26,8 @@ def embedded_tests(n):
         for node in tree.body:
             if isinstance(node,(ast.Assign,ast.AnnAssign)):
                 names=[t.id for t in node.targets if isinstance(t,ast.Name)] if isinstance(node,ast.Assign) else [node.target.id] if isinstance(node.target,ast.Name) else []
-                if not any(x in ("TEST","JAVA_TEST","TEST_SOURCE") for x in names):continue
+                # Earlier stages name their embedded parity classes REGRESSION or PARITY,
+                # not necessarily TEST. Discover by runnable Java main method.
                 try:source=ast.literal_eval(node.value)
                 except (ValueError,TypeError,KeyError):continue
                 if not isinstance(source,str):continue
@@ -81,6 +82,25 @@ def main():
                 "embedded_tests":[]}
         if build["exit"]==0:
             for classname,sourcecode,script in embedded_tests(i):
+                if i==3 and classname=="SocialActionSharedParity":
+                    # Phase3's original build dynamically rewrote its source-level
+                    # placeholder imports to the canonical generated Proto package.
+                    # Restore exactly that historical test compilation contract.
+                    with zipfile.ZipFile(source) as zz:
+                        social=[x for x in zz.namelist()
+                                if x.endswith("/SC_SOCIAL_ACTION_NOTI.java") and x.startswith("src/")]
+                        assert len(social)==1,social
+                        jsource=zz.read(social[0]).decode("utf8")
+                    package=re.search(r"(?m)^package\\s+([\\w.]+)\\s*;",jsource)
+                    assert package is not None,"social Proto package declaration missing"
+                    sourcecode=sourcecode.replace(
+                        "l1j.server.server.packets.Protocol.MainServer.Proto.SC_SOCIAL_ACTION_NOTI",
+                        package.group(1)+".SC_SOCIAL_ACTION_NOTI")
+                    for proto_type in ("ProtoWriter","ProtoMsg"):
+                        imported=re.search(r"(?m)^import\\s+([\\w.]+\\."+proto_type+r")\\s*;",jsource)
+                        assert imported is not None,("stage3 proto import",proto_type)
+                        sourcecode=sourcecode.replace(
+                            "l1j.server.server.packets.Protocol."+proto_type,imported.group(1))
                 target=tmp/"testsrc"/(classname+".java")
                 target.parent.mkdir(exist_ok=True,parents=True)
                 target.write_text(sourcecode,encoding="utf8")
