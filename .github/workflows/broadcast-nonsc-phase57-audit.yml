@@ -29,7 +29,7 @@ jobs:
           assert len(files)==1710,len(files)
           out=Path('reports/broadcast_nonsc_phase57_20261116')
           out.mkdir(parents=True,exist_ok=True)
-          sel=['CSharedBroadcast.java','CAsyncSendConstBuffer.java','L1Character.java','L1World.java','SC_SystemMessage.java','GMCommands.java']
+          sel=['CSharedBroadcast.java','CAsyncSendConstBuffer.java','L1Character.java','L1World.java','SC_SystemMessage.java','GMCommands.java','GludioInstanceDungeon.java','DropShareEngine.java','MJEffectTriggerInstance.java','L1Gambling.java','L1Gambling3.java','L1PcInstance.java']
           names=[]
           for suffix in sel:
             hits=[n for n in files if n.endswith('/'+suffix)]
