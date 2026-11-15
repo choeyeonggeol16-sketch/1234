@@ -60,6 +60,14 @@ def patch(files):
     for path,recipient,needle,frame_expr,guards in SITES:
         key=BASE+path
         s=files[key].decode("utf8")
+        if path.endswith("/L1Recall.java"):
+            found=[line.strip() for line in s.splitlines()
+                   if "SC_SystemMessage.send(target," in line and "운영자님" in line]
+            assert len(found)==1,found
+            needle=found[0]
+            prefix="SC_SystemMessage.send(target, "
+            assert needle.startswith(prefix) and needle.endswith(");"),needle
+            frame_expr="SC_SystemMessage.sharedWire("+needle[len(prefix):-2]+")"
         files[key]=wrap_one(s,recipient,needle,frame_expr,guards).encode("utf8")
     s=files[GM_ITEM].decode("utf8")
     lines=s.splitlines()
