@@ -26,30 +26,6 @@ def change_method(src,signature,replacement):
                 return src[:start]+replacement+src[end+1:]
     raise AssertionError("unbalanced "+signature)
 
-HELPERS="""
-    // Frame construction is outside the recipient loop, once per broadcast.
-    // writeS uses MS949 followed by one zero byte; the framing bytes are LE.
-    private static final java.nio.charset.Charset SHARED_MS949 =
-            java.nio.charset.Charset.forName("MS949");
-
-    private static byte[] sharedWire(int opcode, int type, int objectId,
-            String text, boolean includeObjectId) {
-        final byte[] bytes=(text==null?"":text).getBytes(SHARED_MS949);
-        final long frameLength=5L+(includeObjectId?4:0)+bytes.length;
-        if(frameLength>65535L)return null;
-        final java.nio.ByteBuffer b=java.nio.ByteBuffer
-                .allocate((int)frameLength)
-                .order(java.nio.ByteOrder.LITTLE_ENDIAN);
-        b.putShort((short)frameLength);
-        b.put((byte)opcode);
-        b.put((byte)type);
-        if(includeObjectId)b.putInt(objectId);
-        b.put(bytes);
-        b.put((byte)0);
-        return b.array();
-    }
-
-"""
 MESSAGE="""public static void broadcastMessage(String chat) {
         final byte[] wire=sharedWire(Opcodes.S_MESSAGE,1,0,chat,false);
         if(wire!=null)
@@ -153,9 +129,7 @@ def main():
     assert sum(p.endswith(".java") for p in original)==1710
     files=original.copy()
     s=files[CHAT].decode("utf-8")
-    assert "SHARED_MS949" not in s
-    assert s.count("    private SC_ChatPacket() {}")==1
-    s=s.replace("    private SC_ChatPacket() {}",HELPERS+"    private SC_ChatPacket() {}",1)
+    assert "sharedWire" in s, "existing immutable-frame serializer missing"
     s=change_method(s,"public static void broadcastMessage(String chat)",MESSAGE)
     s=change_method(s,"public static void broadcastOpcode(String chat, int opcode)",OPCODE)
     s=change_method(s,"public static void broadcastComplex0(L1PcInstance source, String chat, int opcode)",COMPLEX)
