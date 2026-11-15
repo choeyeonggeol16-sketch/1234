@@ -73,3 +73,20 @@ with zipfile.ZipFile(p) as z:
    for i in hits[:6]:
     print("-- line",i+1)
     for j in range(max(0,i-5),min(len(lines),i+8)):print(j+1,lines[j])
+
+with zipfile.ZipFile(p) as z:
+ for short,ranges in {
+  "UserCommands.java":[(1135,1188),(1194,1250)],
+  "GMCommands.java":[(2938,3022),(3102,3152),(3701,3750),(4564,4610)],
+  "Give.java":[(65,169)],
+  "SpecialEventHandler.java":[(1,125)],
+  "SC_GMHtml.java":[(1,105)],
+  "SC_SystemMessage.java":[(1,105)],
+ }.items():
+  paths=[n for n in z.namelist() if n.startswith("src/") and n.endswith("/"+short)]
+  for path in paths[:1]:
+   lines=z.read(path).decode("utf8").splitlines()
+   print("===FOCUS",path,len(lines))
+   for a,b in ranges:
+    print("-- RANGE",a,b)
+    for i in range(a-1,min(b,len(lines))):print(f"{i+1:4} {lines[i]}")
