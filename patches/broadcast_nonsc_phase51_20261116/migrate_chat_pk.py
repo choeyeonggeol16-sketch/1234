@@ -106,8 +106,8 @@ def patch_chat(files):
   for_sig="for (L1PcInstance receiver : L1World.getInstance().getAllPlayers()) {"
   i,j,loop=block(part,for_sig)
   assert old in loop
-  part=part[:i]+BC+".CSharedBroadcast.sendRecipients(\n"+
-       "L1World.getInstance().getAllPlayers(),sharedWire("+params+"));"+part[j:]
+  part=(part[:i]+BC+".CSharedBroadcast.sendRecipients(\n"+
+       "L1World.getInstance().getAllPlayers(),sharedWire("+params+"));"+part[j:])
   s=s[:a]+part+s[b:]
  a,b,part=block(s,"public static void broadcastComplex0(L1PcInstance source, String chat, int opcode) {")
  needle="sendDirectRaw(receiver, MODE_COMPLEX_0, opcode, 0, objectId, text, \"\", 0, 0);"
@@ -115,8 +115,8 @@ def patch_chat(files):
  assert "borrowVisiblePlayerFast(source)" in part and "releaseVisiblePlayerFast(__cioVisible0)" in part
  i,j,loop=block(part,"for (L1PcInstance receiver : __cioVisible0) {")
  assert needle in loop
- updated=part[:i]+BC+".CSharedBroadcast.sendRecipients(__cioVisible0,\n"+
-       "sharedWire(opcode,0,objectId,text,true));"+part[j:]
+ updated=(part[:i]+BC+".CSharedBroadcast.sendRecipients(__cioVisible0,\n"+
+       "sharedWire(opcode,0,objectId,text,true));"+part[j:])
  s=s[:a]+updated+s[b:]
  for needle in ('sendDirectRaw(receiver, MODE_MSG_TYPE1','sendDirectRaw(receiver, MODE_OPCODE_TYPE2',
                 'sendDirectRaw(receiver, MODE_COMPLEX_0'):
