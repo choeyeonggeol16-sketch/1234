@@ -16,3 +16,12 @@ with zipfile.ZipFile(zfile) as z:
    print("====== FILE",path,"LINES",len(lines))
    for a,b in spans:
     for i in range(a-1,min(len(lines),b)):print(f"{i+1:4} {lines[i]}")
+
+ print("======= WRITE BUFFER BIT/RAW")
+ for p in z.namelist():
+  if not p.startswith("src/") or not p.endswith("/WriteBuffer.java"):continue
+  lines=z.read(p).decode("utf8").splitlines()
+  for i,line in enumerate(lines):
+   if any(x in line for x in ("writeBit(", "writeByte(", "writeBytes(", "writeH(")):
+    print("--",p,i+1)
+    for j in range(max(0,i-4),min(len(lines),i+20)):print(f"{j+1:4} {lines[j]}")
