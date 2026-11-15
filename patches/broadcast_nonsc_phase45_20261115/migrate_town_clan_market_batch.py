@@ -90,8 +90,8 @@ def patch(files):
   assert loop.count(old)==1
   assert "partymember" in loop and "14446" in loop
   transformed=loop.replace(old,BC+".CSharedBroadcast.sendRecipient(shared,partymember);",1)
-  wrapped="try(var shared=new "+BC+".CAsyncSendConstBuffer(\n"+
-      "SC_SkillSound.sharedWire(getId(),14446),Integer.MIN_VALUE,Integer.MAX_VALUE)) {\n"+transformed+"\n}"
+  wrapped=("try(var shared=new "+BC+".CAsyncSendConstBuffer(\n"+
+      "SC_SkillSound.sharedWire(getId(),14446),Integer.MIN_VALUE,Integer.MAX_VALUE)) {\n"+transformed+"\n}")
   s=s[:a]+wrapped+s[b:]
  assert s.count(old)==0;files[PC]=s.encode("utf8")
  s=files[GM].decode("utf8")
@@ -122,12 +122,9 @@ def patch(files):
  assert "pc.getName()" in expr and "points" in expr
  old=found[0].group(0)
  s=wrap_one_loop(s,loopSig,
-  [(old,BC+".CSharedBroadcast.sendRecipient(shared,member);",1)],
-  ["SC_PacketBox.sharedGreenWire("+expr+")"],["shared"],
-  ("pointsClan.addWarPointCommitted","member.sendPackets(") if False else wrap_one_loop(
-  s,loopSig,[(old,BC+".CSharedBroadcast.sendRecipient(shared,member);",1)],
-  ["SC_PacketBox.sharedGreenWire("+expr+")"],["shared"],("member.sendPackets(",))
- files[REWARD]=s.encode("utf8")
+   [(old,BC+".CSharedBroadcast.sendRecipient(shared,member);",1)],
+   ["SC_PacketBox.sharedGreenWire("+expr+")"],["shared"],("member.sendPackets(",))
+  files[REWARD]=s.encode("utf8")
  s=files[COMBAT].decode("utf8")
  loopSig="for (L1PcInstance partymember : pc.getParty().getMembers()) {"
  a,b,loop=find_loop(s,loopSig)
