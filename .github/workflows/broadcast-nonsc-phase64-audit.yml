@@ -1,4 +1,4 @@
-name: Broadcast phase64 full 56-to-62 source lineage audit
+name: Broadcast phase64 full 56-to-64 source lineage audit
 on:
   push:
     branches: [broadcast-nonsc-phase64-20261116]
@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: true
-      - name: Scan all 1710 Java sources and compare 56-62 exact bytes
+      - name: Scan all 1710 Java sources and compare 56-64 exact bytes
         shell: bash
         run: |
           set -euo pipefail
