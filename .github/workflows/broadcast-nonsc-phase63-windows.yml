@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/broadcast-nonsc-phase63-windows.yml"
       - "patches/broadcast_nonsc_phase63_20261116/prepare_windows_native.py"
+      - "patches/broadcast_nonsc_phase63_20261116/run_windows_real.py"
 permissions:
   contents: read
 jobs:
@@ -62,15 +63,10 @@ jobs:
           & javac --enable-preview --release 21 -encoding UTF-8 -cp "$root\classes;$deps" -d "$root\testclasses" "$root\testsrc\l1j\server\server\model\network\core\transport\CIOPacketCodecReference.java" "$root\testsrc\l1j\server\server\model\network\core\connection\CSharedBroadcastWindowsTest.java"
           if($LASTEXITCODE -ne 0){throw 'IOCP real broadcast regression harness compilation failed'}
           Write-Host 'PHASE63_WINDOWS_COMPILE_OK'
-      - name: Run real TCP IOCP/FMM/CTransport encryption and shared SEND regression
+      - name: Run bounded actual IOCP/TCP test with deadlock diagnostics
         shell: pwsh
         run: |
           $ErrorActionPreference='Stop'
           $root=Join-Path $env:RUNNER_TEMP 'phase63-broadcast'
-          $deps=Join-Path $PWD '.compile-deps\*'
-          Push-Location $root
-          try {
-            & java --enable-preview --enable-native-access=ALL-UNNAMED "-Djava.library.path=$root" -cp "$root\testclasses;$root\classes;$deps" l1j.server.server.model.network.core.connection.CSharedBroadcastWindowsTest
-            if($LASTEXITCODE -ne 0){throw 'REAL_WINDOWS_IOCP_BROADCAST_TEST_FAILED'}
-            Write-Host 'PHASE63_REAL_WINDOWS_IOCP_PASS'
-          } finally { Pop-Location }
+          python patches/broadcast_nonsc_phase63_20261116/run_windows_real.py "$root"
+          if($LASTEXITCODE -ne 0){throw 'Real Windows IOCP regression failed'}
