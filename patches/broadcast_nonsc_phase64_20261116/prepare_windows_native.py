@@ -56,7 +56,7 @@ extra="""
             for(CUserSocket user:world.users)until(user::isWriteIdle);
             System.out.println("PHASE64_NATIVE_EMBLEM_4_CIPHERS_PASS");
 """
-test=test.replace(marker,marker+"\\n"+extra,1)
+test=test.replace(marker,marker+"\n"+extra,1)
 
 # CIO game's long-lived owner shards are intentionally non-daemon.
 # End the standalone test JVM only AFTER all World.close() lease assertions.
