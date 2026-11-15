@@ -13,7 +13,7 @@
       "source": "RKern_Broadcast_NonSC_Phase11_FULL_SRC_20261115.zip",
       "java": 1711,
       "compile_ok": true,
-      "compile_seconds": 13.639,
+      "compile_seconds": 18.924,
       "compiler_tail": "/home/runner/work/_temp/historic-broadcast-2/phase11/src/l1j/server/MJCombatSystem/MJCombatObserver.java:154: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal\n            _team_q.add(new Integer(i));\n                        ^\n/home/runner/work/_temp/historic-broadcast-2/phase11/src/l1j/server/server/datatables/IncreaseEinhasadMap.java:51: warning: [removal] Double(double) in Double has been deprecated and marked for removal\n\t\t\t\t\tm_increaseInfo.put(rs.getInt(\"target_map_id\"), new Double(ratio * 0.01));\n\t\t\t\t\t                                               ^\n/home/runner/work/_temp/historic-broadcast-2/phase11/src/l1j/server/server/datatables/RaceTable.java:63: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal\n\t\treturn (L1Racer) _namelist.get(new Integer(name));\n\t\t                               ^\n/home/runner/work/_temp/historic-broadcast-2/phase11/src/l1j/server/server/utils/SystemUtil.java:56: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal\n\t\t\tlist.add(new Integer(value));\n\t\t\t         ^\n/home/runner/work/_temp/historic-broadcast-2/phase11/src/l1j/server/server/utils/TYUtil.java:28: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal\n      list.add(new Integer(value));\n               ^\nNote: Some input files use or override a deprecated API.\nNote: Recompile with -Xlint:deprecation for details.\nNote: Some input files use preview features of Java SE 21.\nNote: Recompile with -Xlint:preview for details.\n5 warnings\n",
       "migration_scripts": [
         "patches/broadcast_nonsc_phase11_20261115/migrate_chat.py"
@@ -23,9 +23,9 @@
           "class": "SharedNpcChatParity11",
           "source": "patches/broadcast_nonsc_phase11_20261115/migrate_chat.py",
           "compile_ok": true,
-          "compile_seconds": 0.599,
+          "compile_seconds": 0.788,
           "passed": true,
-          "runtime_seconds": 0.077,
+          "runtime_seconds": 0.217,
           "runtime_tail": "SHARED_NPC_CHAT_PARITY11_OK 4306\n"
         }
       ]
@@ -35,7 +35,7 @@
       "source": "RKern_Broadcast_NonSC_Phase12_FULL_SRC_20261115.zip",
       "java": 1711,
       "compile_ok": true,
-      "compile_seconds": 11.904,
+      "compile_seconds": 15.817,
       "compiler_tail": "/home/runner/work/_temp/historic-broadcast-2/phase12/src/l1j/server/MJCombatSystem/MJCombatObserver.java:154: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal\n            _team_q.add(new Integer(i));\n                        ^\n/home/runner/work/_temp/historic-broadcast-2/phase12/src/l1j/server/server/datatables/IncreaseEinhasadMap.java:51: warning: [removal] Double(double) in Double has been deprecated and marked for removal\n\t\t\t\t\tm_increaseInfo.put(rs.getInt(\"target_map_id\"), new Double(ratio * 0.01));\n\t\t\t\t\t                                               ^\n/home/runner/work/_temp/historic-broadcast-2/phase12/src/l1j/server/server/datatables/RaceTable.java:63: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal\n\t\treturn (L1Racer) _namelist.get(new Integer(name));\n\t\t                               ^\n/home/runner/work/_temp/historic-broadcast-2/phase12/src/l1j/server/server/utils/SystemUtil.java:56: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal\n\t\t\tlist.add(new Integer(value));\n\t\t\t         ^\n/home/runner/work/_temp/historic-broadcast-2/phase12/src/l1j/server/server/utils/TYUtil.java:28: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal\n      list.add(new Integer(value));\n               ^\nNote: Some input files use or override a deprecated API.\nNote: Recompile with -Xlint:deprecation for details.\nNote: Some input files use preview features of Java SE 21.\nNote: Recompile with -Xlint:preview for details.\n5 warnings\n",
       "migration_scripts": [
         "patches/broadcast_nonsc_phase12_20261115/migrate_lfc_notices.py"
@@ -45,9 +45,9 @@
           "class": "LfcNoticeParity12",
           "source": "patches/broadcast_nonsc_phase12_20261115/migrate_lfc_notices.py",
           "compile_ok": true,
-          "compile_seconds": 0.635,
+          "compile_seconds": 0.835,
           "passed": true,
-          "runtime_seconds": 0.107,
+          "runtime_seconds": 0.105,
           "runtime_tail": "LFC_NOTICE_PARITY12_OK 8204\n"
         }
       ]
@@ -57,7 +57,7 @@
       "source": "RKern_Broadcast_NonSC_Phase13_FULL_SRC_20261115.zip",
       "java": 1711,
       "compile_ok": true,
-      "compile_seconds": 10.532,
+      "compile_seconds": 16.636,
       "compiler_tail": "/home/runner/work/_temp/historic-broadcast-2/phase13/src/l1j/server/MJCombatSystem/MJCombatObserver.java:154: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal\n            _team_q.add(new Integer(i));\n                        ^\n/home/runner/work/_temp/historic-broadcast-2/phase13/src/l1j/server/server/datatables/IncreaseEinhasadMap.java:51: warning: [removal] Double(double) in Double has been deprecated and marked for removal\n\t\t\t\t\tm_increaseInfo.put(rs.getInt(\"target_map_id\"), new Double(ratio * 0.01));\n\t\t\t\t\t                                               ^\n/home/runner/work/_temp/historic-broadcast-2/phase13/src/l1j/server/server/datatables/RaceTable.java:63: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal\n\t\treturn (L1Racer) _namelist.get(new Integer(name));\n\t\t                               ^\n/home/runner/work/_temp/historic-broadcast-2/phase13/src/l1j/server/server/utils/SystemUtil.java:56: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal\n\t\t\tlist.add(new Integer(value));\n\t\t\t         ^\n/home/runner/work/_temp/historic-broadcast-2/phase13/src/l1j/server/server/utils/TYUtil.java:28: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal\n      list.add(new Integer(value));\n               ^\nNote: Some input files use or override a deprecated API.\nNote: Recompile with -Xlint:deprecation for details.\nNote: Some input files use preview features of Java SE 21.\nNote: Recompile with -Xlint:preview for details.\n5 warnings\n",
       "migration_scripts": [
         "patches/broadcast_nonsc_phase13_20261115/migrate_area_attack.py"
@@ -67,9 +67,9 @@
           "class": "SharedAreaAttackParity13",
           "source": "patches/broadcast_nonsc_phase13_20261115/migrate_area_attack.py",
           "compile_ok": true,
-          "compile_seconds": 0.568,
+          "compile_seconds": 0.776,
           "passed": true,
-          "runtime_seconds": 0.069,
+          "runtime_seconds": 0.071,
           "runtime_tail": "AREA_ATTACK_PARITY13_OK 4099\n"
         }
       ]
@@ -79,7 +79,7 @@
       "source": "RKern_Broadcast_NonSC_Phase14_FULL_SRC_20261115.zip",
       "java": 1711,
       "compile_ok": true,
-      "compile_seconds": 10.306,
+      "compile_seconds": 17.315,
       "compiler_tail": "/home/runner/work/_temp/historic-broadcast-2/phase14/src/l1j/server/MJCombatSystem/MJCombatObserver.java:154: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal\n            _team_q.add(new Integer(i));\n                        ^\n/home/runner/work/_temp/historic-broadcast-2/phase14/src/l1j/server/server/datatables/IncreaseEinhasadMap.java:51: warning: [removal] Double(double) in Double has been deprecated and marked for removal\n\t\t\t\t\tm_increaseInfo.put(rs.getInt(\"target_map_id\"), new Double(ratio * 0.01));\n\t\t\t\t\t                                               ^\n/home/runner/work/_temp/historic-broadcast-2/phase14/src/l1j/server/server/datatables/RaceTable.java:63: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal\n\t\treturn (L1Racer) _namelist.get(new Integer(name));\n\t\t                               ^\n/home/runner/work/_temp/historic-broadcast-2/phase14/src/l1j/server/server/utils/SystemUtil.java:56: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal\n\t\t\tlist.add(new Integer(value));\n\t\t\t         ^\n/home/runner/work/_temp/historic-broadcast-2/phase14/src/l1j/server/server/utils/TYUtil.java:28: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal\n      list.add(new Integer(value));\n               ^\nNote: Some input files use or override a deprecated API.\nNote: Recompile with -Xlint:deprecation for details.\nNote: Some input files use preview features of Java SE 21.\nNote: Recompile with -Xlint:preview for details.\n5 warnings\n",
       "migration_scripts": [
         "patches/broadcast_nonsc_phase14_20261115/migrate_chest_cloud.py"
@@ -89,9 +89,9 @@
           "class": "ChestCloudParity14",
           "source": "patches/broadcast_nonsc_phase14_20261115/migrate_chest_cloud.py",
           "compile_ok": true,
-          "compile_seconds": 0.54,
+          "compile_seconds": 0.803,
           "passed": true,
-          "runtime_seconds": 0.046,
+          "runtime_seconds": 0.059,
           "runtime_tail": "CHEST_CLOUD_PARITY14_OK 4126\n"
         }
       ]
@@ -101,7 +101,7 @@
       "source": "RKern_Broadcast_NonSC_Phase15_FULL_SRC_20261115.zip",
       "java": 1711,
       "compile_ok": true,
-      "compile_seconds": 11.384,
+      "compile_seconds": 16.176,
       "compiler_tail": "/home/runner/work/_temp/historic-broadcast-2/phase15/src/l1j/server/MJCombatSystem/MJCombatObserver.java:154: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal\n            _team_q.add(new Integer(i));\n                        ^\n/home/runner/work/_temp/historic-broadcast-2/phase15/src/l1j/server/server/datatables/IncreaseEinhasadMap.java:51: warning: [removal] Double(double) in Double has been deprecated and marked for removal\n\t\t\t\t\tm_increaseInfo.put(rs.getInt(\"target_map_id\"), new Double(ratio * 0.01));\n\t\t\t\t\t                                               ^\n/home/runner/work/_temp/historic-broadcast-2/phase15/src/l1j/server/server/datatables/RaceTable.java:63: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal\n\t\treturn (L1Racer) _namelist.get(new Integer(name));\n\t\t                               ^\n/home/runner/work/_temp/historic-broadcast-2/phase15/src/l1j/server/server/utils/SystemUtil.java:56: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal\n\t\t\tlist.add(new Integer(value));\n\t\t\t         ^\n/home/runner/work/_temp/historic-broadcast-2/phase15/src/l1j/server/server/utils/TYUtil.java:28: warning: [removal] Integer(String) in Integer has been deprecated and marked for removal\n      list.add(new Integer(value));\n               ^\nNote: Some input files use or override a deprecated API.\nNote: Recompile with -Xlint:deprecation for details.\nNote: Some input files use preview features of Java SE 21.\nNote: Recompile with -Xlint:preview for details.\n5 warnings\n",
       "migration_scripts": [],
       "embedded_tests": []
