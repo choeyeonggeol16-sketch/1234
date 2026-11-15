@@ -1,0 +1,35 @@
+name: Broadcast phase64 full 56-to-62 source lineage audit
+on:
+  push:
+    branches: [broadcast-nonsc-phase64-20261116]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase64-audit.yml"
+      - "patches/broadcast_nonsc_phase64_20261116/full_lineage_audit.py"
+      - "patches/broadcast_nonsc_phase64_20261116/classify_modern_broadcasts.py"
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Scan all 1710 Java sources and compare 56-62 exact bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 patches/broadcast_nonsc_phase64_20261116/full_lineage_audit.py
+          python3 patches/broadcast_nonsc_phase64_20261116/classify_modern_broadcasts.py
+      - name: Commit complete audit evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/broadcast_nonsc_phase64_20261116
+          git diff --cached --quiet && exit 0
+          git commit -m "Record phase64 56-62 source audit and legacy broadcast gate [skip ci]"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
