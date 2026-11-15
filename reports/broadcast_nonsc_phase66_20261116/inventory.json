@@ -1,0 +1,953 @@
+{
+  "sha256": "1fd040e4bb4fe89c9c8fe1d8e5f6c2877fbfb6e990f5e551016fe8dc1557a23d",
+  "java": 1710,
+  "legacy": {
+    "broadcastPacket": [],
+    "broadcastPacketToAll": [],
+    "Broadcaster dot call": [],
+    "ServerPacket generic broadcast method": []
+  },
+  "broadcast_named_classes": [
+    {
+      "path": "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+      "class": "CAsyncSendConstBuffer",
+      "other_file_references": [
+        {
+          "path": "src/l1j/server/IndunSystem/BossRaid/BossRaidSystem.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/Hadin/HadinTrap.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/MiniGame/L1Gambling.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/MiniGame/L1Gambling3.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/Orim/OrimController.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/MJCompanion/Instance/MJCompanionRegenerator.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJDungeonTimer/Updator/DungeonTimeUpdator.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJKDASystem/Chart/MJKDAChartUpdator.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJKDASystem/MJKDA.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/MJRaidMessage.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/MJRaidObject.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/Util/L1MJRaidPoisonInstance.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+          "count": 8
+        },
+        {
+          "path": "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJWarSystem/MJCastleWar.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/SpecialEventHandler.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/Stadium/StadiumObject.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/Controller/BossController.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/Controller/BugRaceController.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/Controller/HomeTownTimeController.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/Controller/ShipTimeController.java",
+          "count": 9
+        },
+        {
+          "path": "src/l1j/server/server/GMCommands.java",
+          "count": 9
+        },
+        {
+          "path": "src/l1j/server/server/UserCommands.java",
+          "count": 6
+        },
+        {
+          "path": "src/l1j/server/server/command/executor/L1PartyRecall.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/command/executor/L1Recall.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/command/executor/L1Ress.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/BookQuest/Loader/BQSLoadManager.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/BookQuest/Loader/BQSWQDecksLoader.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/Instance/L1EffectInstance.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/server/model/L1ChatParty.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/L1DeathMatch.java",
+          "count": 6
+        },
+        {
+          "path": "src/l1j/server/server/model/L1GroundInventory.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/L1HauntedHouse.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/L1NewUltimateBattle.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/L1NpcChatTimer.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/L1Party.java",
+          "count": 5
+        },
+        {
+          "path": "src/l1j/server/server/model/L1Racing.java",
+          "count": 9
+        },
+        {
+          "path": "src/l1j/server/server/model/L1UltimateBattle.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/character/Item/Drop/DropShareEngine.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/character/action/CGetItemAction.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/item/function/CItemUseClan.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/item/teleport/L1Teleport.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+          "count": 17
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/connection/CIOBufferEx.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+          "count": 5
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+          "count": 7
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_LeavePledge.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_PledgeWatch.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_RankControl.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Result.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Title.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_AreaAttackEffect.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_DropItem.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_UseArrowSkill.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_War.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+          "count": 4
+        }
+      ],
+      "possible_dead": false
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+      "class": "CAsyncSendConstBufferExceptSelf",
+      "other_file_references": [
+        {
+          "path": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+          "count": 1
+        }
+      ],
+      "possible_dead": false
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+      "class": "CSharedBroadcast",
+      "other_file_references": [
+        {
+          "path": "src/l1j/server/IndunSystem/BossRaid/BossRaid.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/BossRaid/BossRaidSystem.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+          "count": 7
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/Hadin/Hadin.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/Hadin/HadinTrap.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/Ice/Demon/Demon.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/Ice/Queen/Queen.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/MiniGame/L1Gambling.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/MiniGame/L1Gambling3.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/IndunSystem/Orim/OrimController.java",
+          "count": 11
+        },
+        {
+          "path": "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/MJCompanion/Instance/MJCompanionRegenerator.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJDungeonTimer/Updator/DungeonTimeUpdator.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJInstanceSystem/MJInstanceEnums.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCWarSquareTrap.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/MJKDASystem/Chart/MJKDAChartUpdator.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJKDASystem/MJKDA.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/MJRaidMessage.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/MJRaidObject.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/MJRaidSystem/Util/L1MJRaidPoisonInstance.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+          "count": 5
+        },
+        {
+          "path": "src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/MJTemplate/Trap/DisplayEffectTrap.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/MJWarSystem/MJCastleWar.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/Stadium/StadiumObject.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+          "count": 8
+        },
+        {
+          "path": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/Announcecycle.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/Controller/BossController.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/server/Controller/BugRaceController.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/Controller/FishingTimeController.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/Controller/HomeTownTimeController.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/Controller/ShipTimeController.java",
+          "count": 9
+        },
+        {
+          "path": "src/l1j/server/server/GMCommands.java",
+          "count": 8
+        },
+        {
+          "path": "src/l1j/server/server/UserCommands.java",
+          "count": 6
+        },
+        {
+          "path": "src/l1j/server/server/command/executor/L1PartyRecall.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/command/executor/L1Recall.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/command/executor/L1Ress.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/BookQuest/Loader/BQSLoadManager.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/BookQuest/Loader/BQSWQDecksLoader.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/L1ChatParty.java",
+          "count": 6
+        },
+        {
+          "path": "src/l1j/server/server/model/L1ClanJoin.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/L1DeathMatch.java",
+          "count": 7
+        },
+        {
+          "path": "src/l1j/server/server/model/L1HauntedHouse.java",
+          "count": 5
+        },
+        {
+          "path": "src/l1j/server/server/model/L1NewUltimateBattle.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/L1NpcChatTimer.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/L1Party.java",
+          "count": 10
+        },
+        {
+          "path": "src/l1j/server/server/model/L1Racing.java",
+          "count": 9
+        },
+        {
+          "path": "src/l1j/server/server/model/L1UltimateBattle.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/character/Item/Drop/DropShareEngine.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/character/action/CGetItemAction.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/server/model/item/Exp/CalcExp.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/item/function/CItemUseClan.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+          "count": 12
+        },
+        {
+          "path": "src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/item/teleport/L1Teleport.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+          "count": 5
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+          "count": 9
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_LeavePledge.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_PledgeWatch.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_RankControl.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Result.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Title.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Attack.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_AttackCritical.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_AttackMissPacket.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_AttackPacket.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_AttackPacketForNpc.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_AttackStatus.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeHeading.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeName.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeShape.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_CharSpeedUpdate.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_CharTitle.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_CharVisualUpdate.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Dexup.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_DoActionGFX.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_DoActionShop.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Door.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_ExplosionNoti.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Fishing.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_HPMeter.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Invis.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Lawful.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Light.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Liquor.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_MessageYN.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_MoveChar.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_NewChat.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_NpcShopAction.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_OnlyEffect.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_PinkName.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Poison.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_RangeSkill.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_RemoveObject.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Resurrection.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_ReturnedStat.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_ServerMessage.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillBrave.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillHaste.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconAura.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconBlessOfEva.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconShield.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconWindShackle.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconWisdomPotion.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Sound.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Strup.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java",
+          "count": 2
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_TopMessage.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_TrueTargetNew.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_UseArrowSkill.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+          "count": 3
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_War.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Weather.java",
+          "count": 1
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java",
+          "count": 3
+        }
+      ],
+      "possible_dead": false
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/broadcast/CTLMFilter.java",
+      "class": "CTLMFilter",
+      "other_file_references": [
+        {
+          "path": "src/l1j/server/server/model/LocalWorldMap.java",
+          "count": 4
+        },
+        {
+          "path": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+          "count": 2
+        }
+      ],
+      "possible_dead": false
+    }
+  ],
+  "delete_performed": false
+}
