@@ -89,7 +89,7 @@ jobs:
           with zipfile.ZipFile('downloads/RKern_Broadcast_NonSC_Phase60_FULL_SRC_20261116.zip') as z:
             assert z.testzip() is None
             assert sum(n.endswith('.java') for n in z.namelist())==1710
-          print('PHASE58_VERIFIED',d['sha256'])
+          print('PHASE60_VERIFIED',d['sha256'])
           PY
       - name: Publish one verified whole source ZIP
         shell: bash
@@ -100,4 +100,5 @@ jobs:
           git add -f downloads/RKern_Broadcast_NonSC_Phase60_FULL_SRC_20261116.zip
           git diff --cached --quiet && exit 0
           git commit -m "Publish phase60 verified shared chat/raid removal SRC [skip ci]"
+          git pull --rebase origin "$GITHUB_REF_NAME"
           git push origin "HEAD:$GITHUB_REF_NAME"
