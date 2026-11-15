@@ -30,3 +30,19 @@ with zipfile.ZipFile(p) as z:
      for j in range(lo,hi):
       if j not in seen:print(f"{j+1:4} {lines[j]}")
       seen.add(j)
+
+with zipfile.ZipFile(p) as z:
+ for short,needles in {
+  "SC_ActionUI.java":["public static boolean send(L1PcInstance pc, byte[]","public static boolean send(L1PcInstance","public static void send(L1PcInstance"],
+  "SC_PacketBox.java":["public static boolean send(L1PcInstance pc, int subCode, int","public static boolean send(L1PcInstance pc, int subCode","public static boolean send(L1PcInstance pc"],
+  "SC_ActionUI2.java":["public static boolean send(L1PcInstance pc, int type, int stat,","public static boolean send(L1PcInstance pc, int type,","private static boolean send("]
+ }.items():
+  paths=[n for n in z.namelist() if n.startswith("src/") and n.endswith("/"+short)]
+  for path in paths[:1]:
+   lines=z.read(path).decode("utf8").splitlines()
+   print("==SIGNATURE",path)
+   for i,l in enumerate(lines):
+    if any(t in l for t in needles):
+     print("---",i+1)
+     for j in range(max(0,i-2),min(len(lines),i+29)):
+      print(f"{j+1:4} {lines[j]}")
