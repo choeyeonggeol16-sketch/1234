@@ -1,0 +1,79 @@
+name: Broadcast phase57 baseline audit
+on:
+  push:
+    branches: [broadcast-nonsc-phase57-20261116]
+    paths: [".github/workflows/broadcast-nonsc-phase57-audit.yml"]
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Inspect exact phase56 source for remaining broadcast gateways
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile,re,hashlib,collections
+          zpath=Path('downloads/RKern_Broadcast_NonSC_Phase56_FULL_SRC_20261116.zip')
+          raw=zpath.read_bytes()
+          assert hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()=='2f4c214acbae218d724ad2982b0432bcc90ba443'
+          with zipfile.ZipFile(zpath) as z:
+            assert z.testzip() is None
+            files={n:z.read(n).decode('utf-8-sig',errors='replace') for n in z.namelist() if n.endswith('.java')}
+          assert len(files)==1710,len(files)
+          out=Path('reports/broadcast_nonsc_phase57_20261116')
+          out.mkdir(parents=True,exist_ok=True)
+          sel=['CSharedBroadcast.java','CAsyncSendConstBuffer.java','L1Character.java','L1World.java','SC_SystemMessage.java','GMCommands.java']
+          names=[]
+          for suffix in sel:
+            hits=[n for n in files if n.endswith('/'+suffix)]
+            names.append(suffix+': '+repr(hits))
+            for i,n in enumerate(hits):
+              (out/(suffix.removesuffix('.java')+('_'+str(i) if i else '')+'.txt')).write_text('SOURCE: '+n+'\n'+files[n],encoding='utf-8')
+          (out/'FILES.txt').write_text('\n'.join(names),encoding='utf-8')
+          selectors=[
+            ('broadcastPacket','broadcastPacket\\s*\\('),
+            ('broadcastPacketToAll','broadcastPacketToAll\\s*\\('),
+            ('sendRecipient','sendRecipient\\s*\\('),
+            ('sendShared','sendShared\\s*\\('),
+            ('nativeSend','CAsyncSendConstBuffer\\s*\\('),
+            ('sendPackets','sendPackets\\s*\\('),
+          ]
+          lines=[]
+          totals=collections.Counter()
+          for n,s in files.items():
+            t=s.splitlines()
+            for label,regex in selectors:
+              matches=[i for i,line in enumerate(t) if re.search(regex,line)]
+              totals[label]+=len(matches)
+              if label in ('sendPackets','sendRecipient','sendShared','nativeSend'):
+                continue
+              for i in matches[:20]:
+                ctx=' | '.join(v.strip() for v in t[max(0,i-2):min(len(t),i+4)])
+                lines.append(n+':'+str(i+1)+' ['+label+'] '+ctx[:700])
+          text='BASE '+str(zpath)+'\nSHA256 '+hashlib.sha256(raw).hexdigest()+'\nJAVA '+str(len(files))+'\n'
+          text+='TOTALS '+repr(totals)+'\n\n'+'\n'.join(lines)
+          (out/'CALLSITES.txt').write_text(text[:300000],encoding='utf-8')
+          # Show class-local patterns, to avoid conflating all per-client send methods with old broadcasting.
+          suspects=[]
+          for n,s in files.items():
+            if any(token in s for token in ('for (L1PcInstance','for (L1Character','for (final L1PcInstance','getVisiblePlayer(')):
+              t=s.splitlines()
+              for i,line in enumerate(t):
+                if re.search(r'\\.sendPackets\\(|SC_[A-Za-z0-9_]+\\.send\\(',line):
+                  before=' '.join(t[max(0,i-14):i])
+                  if re.search(r'for\\s*\\(',before):
+                    suspects.append(n+':'+str(i+1)+' '+line.strip()[:200]+'\n'+'   '+before[-400:])
+          (out/'LOOP_SEND_SUSPECTS.txt').write_text('SUSPECTS '+str(len(suspects))+'\n'+'\n'.join(suspects)[:300000],encoding='utf-8')
+          print('PHASE57 AUDIT',len(files),dict(totals),'loop suspects',len(suspects))
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/broadcast_nonsc_phase57_20261116
+          git diff --cached --quiet || (git commit -m "Audit phase56 broadcast gateways for phase57 [skip ci]" && git push origin "HEAD:$GITHUB_REF_NAME")
