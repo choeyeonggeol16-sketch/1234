@@ -1,0 +1,14 @@
+name: Broadcast phase55 nested fanout audit
+on:
+  push:
+    branches: [broadcast-nonsc-phase55-20261116]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase55-audit.yml"
+      - "patches/broadcast_nonsc_phase55_20261116/audit_nested.py"
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase55_20261116/audit_nested.py
