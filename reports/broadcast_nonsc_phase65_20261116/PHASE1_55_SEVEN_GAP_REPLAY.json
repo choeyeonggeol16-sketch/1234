@@ -1,0 +1,105 @@
+{
+  "verified_stages": [
+    4,
+    5,
+    15,
+    16,
+    17,
+    18,
+    41
+  ],
+  "all_passed": true,
+  "records": [
+    {
+      "stage": 4,
+      "script": "patches/broadcast_nonsc_phase4_20261115/migrate_gm.py",
+      "expected_zip": "RKern_Broadcast_NonSC_Phase4_FULL_SRC_20261115.zip",
+      "source_entries": 1730,
+      "java_sources": 1711,
+      "all_published_entries_reproduced": true,
+      "complete_zip_sha256_identical": false,
+      "native_dll_identical": true,
+      "elapsed_seconds": 1.903,
+      "original_script_assertions_executed": true,
+      "test_scope": "deterministic source transform, ZIP-bytes, original guards, not gameplay execution"
+    },
+    {
+      "stage": 5,
+      "script": "patches/broadcast_nonsc_phase5_20261115/migrate_team.py",
+      "expected_zip": "RKern_Broadcast_NonSC_Phase5_FULL_SRC_20261115.zip",
+      "source_entries": 1730,
+      "java_sources": 1711,
+      "all_published_entries_reproduced": true,
+      "complete_zip_sha256_identical": false,
+      "native_dll_identical": true,
+      "elapsed_seconds": 1.865,
+      "original_script_assertions_executed": true,
+      "test_scope": "deterministic source transform, ZIP-bytes, original guards, not gameplay execution"
+    },
+    {
+      "stage": 15,
+      "script": "patches/broadcast_nonsc_phase15_20261115/prune_dead_broadcast.py",
+      "expected_zip": "RKern_Broadcast_NonSC_Phase15_FULL_SRC_20261115.zip",
+      "source_entries": 1730,
+      "java_sources": 1711,
+      "all_published_entries_reproduced": true,
+      "complete_zip_sha256_identical": false,
+      "native_dll_identical": true,
+      "elapsed_seconds": 1.92,
+      "original_script_assertions_executed": true,
+      "test_scope": "deterministic source transform, ZIP-bytes, original guards, not gameplay execution"
+    },
+    {
+      "stage": 16,
+      "script": "patches/broadcast_nonsc_phase16_20261115/remove_generic_broadcast.py",
+      "expected_zip": "RKern_Broadcast_NonSC_Phase16_FULL_SRC_20261115.zip",
+      "source_entries": 1730,
+      "java_sources": 1711,
+      "all_published_entries_reproduced": true,
+      "complete_zip_sha256_identical": false,
+      "native_dll_identical": true,
+      "elapsed_seconds": 1.847,
+      "original_script_assertions_executed": true,
+      "test_scope": "deterministic source transform, ZIP-bytes, original guards, not gameplay execution"
+    },
+    {
+      "stage": 17,
+      "script": "patches/broadcast_nonsc_phase17_20261115/remove_last_wrappers.py",
+      "expected_zip": "RKern_Broadcast_NonSC_Phase17_FULL_SRC_20261115.zip",
+      "source_entries": 1730,
+      "java_sources": 1711,
+      "all_published_entries_reproduced": true,
+      "complete_zip_sha256_identical": false,
+      "native_dll_identical": true,
+      "elapsed_seconds": 1.85,
+      "original_script_assertions_executed": true,
+      "test_scope": "deterministic source transform, ZIP-bytes, original guards, not gameplay execution"
+    },
+    {
+      "stage": 18,
+      "script": "patches/broadcast_nonsc_phase18_20261115/remove_dead_broadcaster.py",
+      "expected_zip": "RKern_Broadcast_NonSC_Phase18_FULL_SRC_20261115.zip",
+      "source_entries": 1729,
+      "java_sources": 1710,
+      "all_published_entries_reproduced": true,
+      "complete_zip_sha256_identical": false,
+      "native_dll_identical": true,
+      "elapsed_seconds": 1.868,
+      "original_script_assertions_executed": true,
+      "test_scope": "deterministic source transform, ZIP-bytes, original guards, not gameplay execution"
+    },
+    {
+      "stage": 41,
+      "script": "patches/broadcast_nonsc_phase41_20261115/migrate_magic_pc_effects.py",
+      "expected_zip": "RKern_Broadcast_NonSC_Phase41_FULL_SRC_20261115.zip",
+      "source_entries": 1729,
+      "java_sources": 1710,
+      "all_published_entries_reproduced": true,
+      "complete_zip_sha256_identical": false,
+      "native_dll_identical": true,
+      "elapsed_seconds": 1.867,
+      "original_script_assertions_executed": true,
+      "test_scope": "deterministic source transform, ZIP-bytes, original guards, not gameplay execution"
+    }
+  ]
+}
