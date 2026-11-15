@@ -1,0 +1,14 @@
+name: Broadcast phase44 identify untouched recipient loops
+on:
+  push:
+    branches: [broadcast-nonsc-phase44-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase44-audit.yml"
+      - "patches/broadcast_nonsc_phase44_20261115/inspect.py"
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase44_20261115/inspect.py
