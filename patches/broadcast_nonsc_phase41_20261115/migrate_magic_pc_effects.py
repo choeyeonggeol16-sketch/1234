@@ -31,7 +31,7 @@ def main():
  assert len(replacements)==4,replacements
  for i,gfx in reversed(replacements):
   indent=lines[i][:len(lines[i])-len(lines[i].lstrip())]
-  lines[i:i+2]=[indent+f"l1j.server.server.model.network.core.sc.packet.SC_SkillSound.sendAndBroadcast(_targetPc, _targetPc.getId(), {gfx});\\n".replace("\\\\n","\\n")]
+  lines[i:i+2]=[indent+f"l1j.server.server.model.network.core.sc.packet.SC_SkillSound.sendAndBroadcast(_targetPc, _targetPc.getId(), {gfx});"+chr(10)]
  s="".join(lines)
  assert s.count("SC_SkillSound.sendAndBroadcast(_targetPc, _targetPc.getId(), 14453);")==2
  assert s.count("SC_SkillSound.sendAndBroadcast(_targetPc, _targetPc.getId(), 14452);")==2
