@@ -1,0 +1,14 @@
+name: Broadcast phase32 remaining legacy fanout audit
+on:
+  push:
+    branches: [broadcast-nonsc-phase32-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase32-inspect.yml"
+      - "patches/broadcast_nonsc_phase32_20261115/inspect_remaining.py"
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase32_20261115/inspect_remaining.py
