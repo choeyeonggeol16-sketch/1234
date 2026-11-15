@@ -66,9 +66,9 @@ jobs:
             if any(token in s for token in ('for (L1PcInstance','for (L1Character','for (final L1PcInstance','getVisiblePlayer(')):
               t=s.splitlines()
               for i,line in enumerate(t):
-                if re.search(r'\\.sendPackets\\(|SC_[A-Za-z0-9_]+\\.send\\(',line):
+                if re.search(r'\.sendPackets\(|SC_[A-Za-z0-9_]+\.send\(',line):
                   before=' '.join(t[max(0,i-14):i])
-                  if re.search(r'for\\s*\\(',before):
+                  if re.search(r'for\s*\(',before):
                     suspects.append(n+':'+str(i+1)+' '+line.strip()[:200]+'\n'+'   '+before[-400:])
           (out/'LOOP_SEND_SUSPECTS.txt').write_text('SUSPECTS '+str(len(suspects))+'\n'+'\n'.join(suspects)[:300000],encoding='utf-8')
           print('PHASE57 AUDIT',len(files),dict(totals),'loop suspects',len(suspects))
