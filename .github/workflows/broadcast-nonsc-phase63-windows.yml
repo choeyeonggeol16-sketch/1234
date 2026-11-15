@@ -59,7 +59,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path "$root\classes","$root\testclasses" | Out-Null
           & javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g -cp "$deps" -d "$root\classes" "@$root\sources.txt"
           if($LASTEXITCODE -ne 0){throw 'JDK21 production compilation failed'}
-          & javac --enable-preview --release 21 -encoding UTF-8 -cp "$root\classes;$deps" -d "$root\testclasses" "$root\testsrc\l1j\server\server\model\network\core\connection\CSharedBroadcastWindowsTest.java"
+          & javac --enable-preview --release 21 -encoding UTF-8 -cp "$root\classes;$deps" -d "$root\testclasses" "$root\testsrc\l1j\server\server\model\network\core\transport\CIOPacketCodecReference.java" "$root\testsrc\l1j\server\server\model\network\core\connection\CSharedBroadcastWindowsTest.java"
           if($LASTEXITCODE -ne 0){throw 'IOCP real broadcast regression harness compilation failed'}
           Write-Host 'PHASE63_WINDOWS_COMPILE_OK'
       - name: Run real TCP IOCP/FMM/CTransport encryption and shared SEND regression
