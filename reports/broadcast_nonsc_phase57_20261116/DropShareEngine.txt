@@ -1,0 +1,257 @@
+SOURCE: src/l1j/server/server/model/character/Item/Drop/DropShareEngine.java
+package l1j.server.server.model.character.Item.Drop;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import l1j.server.Config;
+import l1j.server.server.datatables.AutoLoot;
+import l1j.server.server.datatables.BossMonsterSpawnList;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+
+public final class DropShareEngine {
+
+    private static final Random RND = new Random();
+
+    private DropShareEngine() {}
+
+    private static boolean isPartyAuto(L1PcInstance pc) {
+        try {
+            if (pc == null || pc.getParty() == null || pc.getParty().getLeader() == null) return false;
+            return pc.getParty().getLeader().getPartyType() == 1;
+        } catch (Throwable t) { return false; }
+    }
+
+    private static String distTagByPartySetting(L1PcInstance pc) {
+        return isPartyAuto(pc) ? "자동 분배" : "일반 분배";
+    }
+
+    public static void handleOneItem(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance lastAttackerPc) {
+        handleOneItem_AllModes(npc, mobInv, item, snap, lastAttackerPc);
+    }
+
+    public static boolean handleOneItem_AllModes(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance lastAttackerPc) {
+        if (Config.STANDBY_SERVER) return true;
+        if (npc == null || mobInv == null || item == null) return true;
+
+        try {
+            if (item.getItem().getType2() == 0 && item.getItem().getType() == 2) item.setNowLighting(false);
+        } catch (Throwable ignored) {}
+        
+    	// 보스라면 오토루팅 무시하고 무조건 바닥 드랍!
+        if (Config.BOSS_DROP_GROUND_ENABLE && 
+        		BossMonsterSpawnList.find(npc.getNpcId()) != null) {
+        	return handleNonAuto(npc, mobInv, item, snap, lastAttackerPc);
+        }
+ 
+        final int itemId = item.getItemId();
+
+        // 특정 아이템 강제 오토루팅
+        if (itemId == 810008) return handleAutoLoot(npc, mobInv, item, snap, lastAttackerPc);
+
+        // 오토루팅 여부 판별 (snap이 없어도 Config가 1이면 무조건 오토루팅 시도)
+        if (isAutoLootItem(itemId, snap, lastAttackerPc)) {
+            return handleAutoLoot(npc, mobInv, item, snap, lastAttackerPc);
+        }
+
+        // 위 조건 아니면 바닥 드랍
+        return handleNonAuto(npc, mobInv, item, snap, lastAttackerPc);
+    }
+
+    private static boolean isAutoLootItem(int itemId, DropAcqSnapshot snap, L1PcInstance lastAttacker) {
+        // 글로벌 Config가 켜져 있으면 무조건 오토루팅
+        if (Config.AUTO_LOOT != 0) {
+            return true;
+        }
+        
+        // 글로벌 Config가 꺼져 있어도, DB(AutoLoot 테이블)에 등록된 아이템(예: 아데나 등)이면 오토루팅
+        try { 
+            if (AutoLoot.getInstance().isAutoLoot(itemId)) {
+                return true;
+            }
+        } catch (Throwable t) {}
+        
+        // 위의 두 조건에 해당하지 않으면 오토루팅이 아님 (바닥 드랍)
+        return false;
+    }
+
+    private static boolean handleAutoLoot(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance lastAttackerPc) {
+    	 if (snap == null || snap.size <= 0) {
+             tradeSafely(mobInv, item, item.getCount(), L1World.getInstance().getInventory(npc.getX(), npc.getY(), npc.getMapId()));
+             return true;
+         }
+
+         // 누적 대미지 1위(Max Hate)를 주인공으로 선정
+         L1PcInstance topHater = null;
+         if (snap.maxIdx >= 0 && snap.acqs[snap.maxIdx] instanceof L1PcInstance) {
+             topHater = (L1PcInstance) snap.acqs[snap.maxIdx];
+         }
+
+         // 대미지 리스트가 꼬였을 때만 막타자를 보험으로 씀
+         L1PcInstance primaryOwner = (topHater != null) ? topHater : lastAttackerPc;
+         L1Character winner = null;
+
+         // 대미지 1위의 파티원들 중 자격 있는 놈 선출
+         if (Config.PARTY_LOOT_ENABLE && primaryOwner != null && primaryOwner.getParty() != null) {
+             List<L1PcInstance> candidates = collectEligiblePartyMembers(npc, snap, primaryOwner);
+             if (!candidates.isEmpty()) {
+                 winner = candidates.get(RND.nextInt(candidates.size()));
+             }
+         }
+
+         // 파티가 없으면 그냥 대미지 1위가 독식
+         if (winner == null) {
+             winner = primaryOwner;
+         }
+         
+         // 만약 여기까지 winner가 null이면 진짜 바닥행
+         if (winner == null) {
+             tradeSafely(mobInv, item, item.getCount(), L1World.getInstance().getInventory(npc.getX(), npc.getY(), npc.getMapId()));
+             return true;
+         }
+
+         // 파티 분배 처리
+         if (Config.PARTY_LOOT_ENABLE && winner instanceof L1PcInstance) {
+             L1PcInstance wpc = (L1PcInstance) winner;
+             if (wpc.getParty() != null) {
+                 if (item.getItemId() == L1ItemId.ADENA) {
+                     if (tryDistributePartyAdena_AutoLoot(npc, mobInv, item, snap, wpc)) return true;
+                 } else {
+                     if (tryDistributePartyItem_AutoLoot(npc, mobInv, item, snap, wpc)) return true;
+                 }
+             }
+         }
+
+        // 분배 대상 없으면 그냥 승자 인벤토리로
+        L1Inventory dest = decideAutoLootTargetInventory(npc, item, winner);
+        tradeSafely(mobInv, item, item.getCount(), dest);
+        return true;
+    }
+
+    private static boolean tryDistributePartyAdena_AutoLoot(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance winnerPc) {
+        final ArrayList<L1PcInstance> visible = collectEligiblePartyMembers(npc, snap, winnerPc);
+        if (visible.isEmpty()) return false;
+
+        int total = item.getCount();
+        int n = visible.size();
+        int each = total / n;
+        int rem = total % n;
+
+        for (L1PcInstance p : visible) {
+            int amt = each + (p.getId() == winnerPc.getId() ? rem : 0);
+            if (amt <= 0) continue;
+            
+            L1Inventory targetInv = p.getInventory();
+            // 20억 체크
+            L1ItemInstance adena = targetInv.findItemId(L1ItemId.ADENA);
+            if (adena != null && adena.getCount() + amt > 2000000000) {
+                targetInv = L1World.getInstance().getInventory(p.getX(), p.getY(), p.getMapId());
+            }
+            
+            tradeSafely(mobInv, item, amt, targetInv);
+            if (p.RootMent1) {
+            	String msg = String.format("%s 획득 : %s(%s)", item.getLogName(), p.getName(), distTagByPartySetting(winnerPc));
+            	 SC_SystemMessage.send(p, msg); 
+            }
+        }
+        return true;
+    }
+
+    private static boolean tryDistributePartyItem_AutoLoot(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance winnerPc) {
+        final List<L1PcInstance> elig = collectEligiblePartyMembers(npc, snap, winnerPc);
+        if (elig.isEmpty()) return false;
+
+        L1PcInstance target;
+        if (Config.PARTY_LOOT_MODE == 2) target = elig.get(PartyLootCursor.nextIndex(winnerPc, elig.size()));
+        else if (Config.PARTY_LOOT_MODE == 1) target = elig.get(RND.nextInt(elig.size()));
+        else target = winnerPc;
+
+        tradeSafely(mobInv, item, item.getCount(), decideAutoLootTargetInventory(npc, item, target));
+        
+        String msg = String.format("%s 획득 : %s(%s)", item.getLogName(), target.getName(), distTagByPartySetting(winnerPc));
+        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+       SC_SystemMessage.sharedWire(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+for (L1PcInstance member : elig) {
+            if (member.RootMent1) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
+        }
+}
+        return true;
+    }
+
+    private static ArrayList<L1PcInstance> collectEligiblePartyMembers(L1NpcInstance npc, DropAcqSnapshot snap, L1PcInstance center) {
+        final ArrayList<L1PcInstance> out = new ArrayList<>();
+        if (center == null || center.getParty() == null) return out;
+
+        for (L1PcInstance m : center.getParty().getMembers()) {
+            if (m == null || m.isDead() || m.getMapId() != npc.getMapId()) continue;
+            if (m.getLocation().getTileLineDistance(npc.getLocation()) > Config.PARTY_LOOT_RANGE) continue;
+            
+            // Eligibility = 0일 때만 때린 사람인지 체크, 1이면 무시하고 통과
+            if (Config.PARTY_LOOT_ELIGIBILITY == 0 && !isInSnapshot(snap, m)) continue;
+            
+            out.add(m);
+        }
+        return out;
+    }
+
+    private static boolean handleNonAuto(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance lastAttackerPc) {
+        item.setDropMobId(npc.getNpcTemplate().get_npcId());
+        L1PcInstance owner = (snap != null && snap.maxIdx >= 0) ? (L1PcInstance) snap.acqs[snap.maxIdx] : lastAttackerPc;
+        if (owner != null) item.startItemOwnerTimer(owner);
+        tradeSafely(mobInv, item, item.getCount(), pickGroundInventorySmart(npc));
+        return true;
+    }
+
+    private static L1Inventory pickGroundInventorySmart(L1NpcInstance npc) {
+        final int baseX = npc.getX(), baseY = npc.getY(), mapId = npc.getMapId();
+        ArrayDeque<int[]> q = new ArrayDeque<>();
+        q.add(new int[]{baseX, baseY});
+        HashSet<Long> vis = new HashSet<>();
+        vis.add((((long) baseX) << 32) | (baseY & 0xffffffffL));
+
+        while (!q.isEmpty()) {
+            int[] cur = q.poll();
+            if (Math.max(Math.abs(baseX - cur[0]), Math.abs(baseY - cur[1])) > 3) continue;
+            if (npc.getMap().isPassable(cur[0], cur[1])) return L1World.getInstance().getInventory(cur[0], cur[1], (short) mapId);
+            for (int i = 0; i < 8; i++) {
+                int nx = cur[0] + (i==1||i==2||i==3?1:i==5||i==6||i==7?-1:0);
+                int ny = cur[1] + (i==0||i==1||i==7?-1:i==3||i==4||i==5?1:0);
+                long key = (((long) nx) << 32) | (ny & 0xffffffffL);
+                if (vis.add(key)) q.add(new int[]{nx, ny});
+            }
+        }
+        return L1World.getInstance().getInventory(baseX, baseY, (short) mapId);
+    }
+
+    private static boolean isInSnapshot(DropAcqSnapshot snap, L1PcInstance pc) {
+        if (snap == null) return false;
+        for (int i = 0; i < snap.size; i++) {
+            if (snap.acqs[i] instanceof L1PcInstance && ((L1PcInstance) snap.acqs[i]).getId() == pc.getId()) return true;
+        }
+        return false;
+    }
+
+    private static L1Inventory decideAutoLootTargetInventory(L1NpcInstance npc, L1ItemInstance item, L1Character winner) {
+        if (winner instanceof L1PcInstance) {
+            L1PcInstance pc = (L1PcInstance) winner;
+            if (pc.getInventory().checkAddItem(item, item.getCount()) == L1Inventory.OK) return pc.getInventory();
+            return L1World.getInstance().getInventory(pc.getX(), pc.getY(), pc.getMapId());
+        }
+        return L1World.getInstance().getInventory(npc.getX(), npc.getY(), npc.getMapId());
+    }
+
+    private static void tradeSafely(L1Inventory from, L1ItemInstance item, int count, L1Inventory to) {
+        if (from != null && item != null && to != null && count > 0) {
+            try { from.tradeItem(item, count, to); } catch (Throwable t) {}
+        }
+    }
+}
