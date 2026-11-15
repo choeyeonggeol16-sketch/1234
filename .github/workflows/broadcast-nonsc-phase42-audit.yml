@@ -1,0 +1,14 @@
+name: Broadcast phase42 active legacy and fanout audit
+on:
+  push:
+    branches: [broadcast-nonsc-phase42-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase42-audit.yml"
+      - "patches/broadcast_nonsc_phase42_20261115/audit.py"
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase42_20261115/audit.py
