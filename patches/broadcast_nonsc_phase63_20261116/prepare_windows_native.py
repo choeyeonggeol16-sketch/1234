@@ -27,7 +27,7 @@ with zipfile.ZipFile(ARCHIVE) as z:
     assert sha in config,("CIOConfig DLL checksum differs",sha)
 test=(ROOT/"patches/ctransport_core_20261112/tests/CSharedBroadcastWindowsTest.java").read_text(encoding="utf-8")
 # The old test used CAsyncSendConstBuffer.apply; the new production name is send.
-assert test.count(".apply(")==5,test.count(".apply(")
+assert test.count(".apply(")==6,test.count(".apply(")
 test=test.replace(".apply(", ".send(")
 out=work/"testsrc/l1j/server/server/model/network/core/connection/CSharedBroadcastWindowsTest.java"
 out.parent.mkdir(parents=True,exist_ok=True)
