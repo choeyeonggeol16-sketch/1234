@@ -84,3 +84,26 @@ with zipfile.ZipFile(p) as z:
     lo=max(0,i-12);hi=min(len(ls),i+28)
     print("----")
     for j in range(lo,hi):print(f"{j+1} {ls[j]}")
+
+ print("=== PHASE50 TARGET LINE CONTEXT ===")
+ targets={
+  "ShipTimeController.java":[(105,262)],
+  "SkillHandlers.java":[(3070,3155)],
+  "CS_Result.java":[(331,405)],
+  "L1Racing.java":[(325,450)],
+  "SC_GameEnd.java":[(1,90)],
+  "SC_GameOver.java":[(1,90)],
+  "SC_DisplayEffect.java":[(1,105)],
+  "SC_ServerMessage.java":[(1,130)],
+  "CS_Attr.java":[(528,593)],
+  "L1NpcChatTimer.java":[(89,138)],
+  "SC_NpcChatPacket.java":[(1,102)],
+  "L1Party.java":[(222,273)]
+ }
+ for name,lines in lines_by_file.items():
+  short=name.rsplit("/",1)[-1]
+  if short not in targets:continue
+  print("TARGET",name,len(lines))
+  for a,b in targets[short]:
+   print("BLOCK",a,b)
+   for i in range(max(0,a-1),min(len(lines),b)):print(f"{i+1:4} {lines[i]}")
