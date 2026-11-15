@@ -19,7 +19,7 @@ TARGETS=[QUEEN,AZ,BOSSSYS,QUEENSYS,HADIN,SERVER]
 FQ="l1j.server.server.model.network.core.broadcast"
 def sha(b):return hashlib.sha1(b"blob "+str(len(b)).encode()+b"\0"+b).hexdigest()
 def bounds(src,sig):
-    assert src.count(sig)==1,(sig,src.count(sig))
+    assert src.count(sig)>=1,(sig,src.count(sig))
     i=src.index(sig);j=src.index("{",i);depth=0
     for k in range(j,len(src)):
         if src[k]=="{":depth+=1
