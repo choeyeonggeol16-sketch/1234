@@ -1,0 +1,106 @@
+name: Broadcast phase39 monster party loot shared server message
+on:
+  push:
+    branches: [broadcast-nonsc-phase39-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase39-build.yml"
+      - "patches/broadcast_nonsc_phase39_20261115/migrate_monster_loot.py"
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Migrate monster party loot broadcast from verified phase38
+        run: |
+          python3 patches/broadcast_nonsc_phase39_20261115/migrate_monster_loot.py --work "$RUNNER_TEMP/broadcast-phase39"
+      - name: Restore cached pinned compile dependencies
+        uses: actions/cache@v4
+        with:
+          path: .compile-deps
+          key: rkern-java21-deps-${{ hashFiles('patches/mainserver_protocol_20261114/logs/dependencies.json') }}
+      - name: Restore SHA256 pinned Java dependencies
+        run: |
+          python3 - <<'PY'
+          import json,hashlib,pathlib,urllib.request,urllib.error,time
+          manifest=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          root=pathlib.Path('.compile-deps');root.mkdir(exist_ok=True)
+          for row in manifest:
+            jar=root/row['file']
+            if jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256']:
+              continue
+            url=row['url']
+            candidates=[url]
+            if 'repo.maven.apache.org/maven2/' in url:
+              suffix=url.split('repo.maven.apache.org/maven2/',1)[1]
+              candidates=[
+                'https://maven.aliyun.com/repository/central/'+suffix,
+                'https://mirrors.huaweicloud.com/repository/maven/'+suffix,
+                url,
+                'https://repo1.maven.org/maven2/'+suffix
+              ]
+            errors=[]
+            for attempt in range(3):
+              for mirror in candidates:
+                try:
+                  req=urllib.request.Request(mirror,headers={'User-Agent':'RKern-Compile-Verify/1.0'})
+                  with urllib.request.urlopen(req,timeout=45) as response:
+                    blob=response.read()
+                  if hashlib.sha256(blob).hexdigest()!=row['sha256']:
+                    raise RuntimeError('dependency hash mismatch: '+row['file'])
+                  jar.write_bytes(blob)
+                  break
+                except (urllib.error.HTTPError,urllib.error.URLError,TimeoutError) as exc:
+                  errors.append(str(exc))
+              if jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256']:
+                break
+              time.sleep(min(40,5*(attempt+1)))
+            assert jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256'],(row['file'],errors[-3:])
+          print('Verified pinned dependencies:',len(manifest))
+          PY
+      - name: Compile all Java21, verify three argument loot notice wire and ZIP CRC
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/broadcast-phase39"
+          find "$root/src" -name '*.java' | sort > "$root/sources.txt"
+          test "$(wc -l < "$root/sources.txt")" -eq 1710
+          mkdir -p "$root/classes" "$root/testclasses"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g -cp "$(pwd)/.compile-deps/*" -d "$root/classes" @"$root/sources.txt"
+          javac --enable-preview --release 21 -encoding UTF-8 -cp "$root/classes:$(pwd)/.compile-deps/*" -d "$root/testclasses" "$root/testsrc/Phase39MonsterLootWireParity.java"
+          java --enable-preview -cp "$root/testclasses:$root/classes:$(pwd)/.compile-deps/*" Phase39MonsterLootWireParity
+          python3 - <<'PY'
+          import json,os,pathlib,zipfile
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'broadcast-phase39'
+          d=json.loads((root/'audit.json').read_text())
+          assert d['java_sources']==1710 and len(d['modified_java'])==2
+          assert d['party_monster_loot_notice_loops']==1
+          assert d['nonparty_loot_packet_unchanged']
+          assert d['inventory_commit_save_order_unchanged']
+          assert d['party_array_and_duplicate_order_retained']
+          assert d['three_nullable_param_wire_count_preserved']
+          assert d['native_unchanged'] and d['no_legacy_fallback']
+          assert d['new_workers_queues_classes']==0
+          with zipfile.ZipFile('downloads/RKern_Broadcast_NonSC_Phase39_FULL_SRC_20261115.zip') as z:
+            assert z.testzip() is None
+            assert sum(n.endswith('.java') for n in z.namelist())==1710
+          print('PHASE39_VERIFIED',d['output_sha256'])
+          PY
+      - name: Publish one verified whole source ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/RKern_Broadcast_NonSC_Phase39_FULL_SRC_20261115.zip
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish phase39 compiled haunted NPC dialogue shared SRC [skip ci]"
+          git push origin "HEAD:$GITHUB_REF_NAME"
