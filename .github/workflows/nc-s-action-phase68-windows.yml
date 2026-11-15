@@ -65,9 +65,9 @@ jobs:
           & javac --enable-preview --release 21 -encoding UTF-8 -cp "$root\classes;$deps" -d "$root\testclasses" "patches/movechar_phase67_20261116/MoveCharPhase67Parity.java" "patches/nc_s_action_phase68_20261116/Phase68ActionParity.java"
           if($LASTEXITCODE -ne 0){throw 'phase67 move parity test compilation failed'}
           & java --enable-preview -cp "$root\testclasses;$root\classes;$deps" l1j.server.server.model.network.core.broadcast.MoveCharPhase67Parity
+          if($LASTEXITCODE -ne 0){throw 'phase67 move parity test failed'}
           & java --enable-preview -cp "$root\testclasses;$root\classes;$deps" l1j.server.server.model.network.core.broadcast.Phase68ActionParity
           if($LASTEXITCODE -ne 0){throw 'phase68 S_ACTION parity test failed'}
-          if($LASTEXITCODE -ne 0){throw 'phase67 move parity test failed'}
           Write-Host 'PHASE68_WINDOWS_COMPILE_AND_PARITY_OK'
       - name: Ten successive real TCP IOCP/FFM/DLL broadcast rounds, 4 L1 cipher keys each
         shell: pwsh
