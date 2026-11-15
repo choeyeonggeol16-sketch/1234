@@ -10,3 +10,6 @@ MJEffectTriggerInstance.java: ['src/l1j/server/MJTemplate/L1Instance/MJEffectTri
 L1Gambling.java: ['src/l1j/server/IndunSystem/MiniGame/L1Gambling.java']
 L1Gambling3.java: ['src/l1j/server/IndunSystem/MiniGame/L1Gambling3.java']
 L1PcInstance.java: ['src/l1j/server/server/model/Instance/L1PcInstance.java']
+L1Burf.java: ['src/l1j/server/server/command/executor/L1Burf.java']
+ServerPacket.java: ['src/l1j/server/server/model/network/packet/ServerPacket.java']
+S_SkillSound.java: []
