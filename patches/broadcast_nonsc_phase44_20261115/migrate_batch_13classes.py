@@ -80,7 +80,10 @@ def patch(files):
     s=wrap_one(s,"pc",old,"SC_SystemMessage.sharedWire("+expr+")",("if (pc.isGm())",))
     files[GM_ITEM]=s.encode("utf8")
     s=files[GM_REPORT].decode("utf8")
-    needle='SC_SystemMessage.send(gm, "\\fY 신 고 자 : " + reporterName);'
+    candidates=[line.strip() for line in s.splitlines()
+                if "SC_SystemMessage.send(gm," in line and "reporterName" in line]
+    assert len(candidates)==1,candidates
+    needle=candidates[0]
     a,b,loop=find_enclosing(s,"gm",needle)
     sends=re.findall(r'SC_SystemMessage\.send\(gm,\s*(.*?)\);',loop)
     assert len(sends)==3,sends
