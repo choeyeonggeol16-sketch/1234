@@ -25,3 +25,18 @@ with zipfile.ZipFile(p) as z:
    for a,b in ranges:
     print("BLOCK",a,b)
     for i in range(max(0,a-1),min(len(lines),b)):print(f"{i+1:4} {lines[i]}")
+
+with zipfile.ZipFile(p) as z:
+ for short,needles in {
+  "L1PcInstance.java":["void sendPackets(String","boolean sendPackets(String","sendPackets(String msg)","sendPackets(String message)"],
+  "ItemUseActiveSkills.java":["player.sendPackets("],
+  "SC_Pledge.java":["public static boolean sendBless("],
+ }.items():
+  paths=[n for n in z.namelist() if n.startswith("src/") and n.endswith("/"+short)]
+  for path in paths[:1]:
+   ls=z.read(path).decode("utf8").splitlines()
+   print("==EXTRA",path)
+   hits=[i for i,l in enumerate(ls) if any(q in l for q in needles)]
+   for i in hits[:5]:
+    print("---",i+1)
+    for j in range(max(0,i-24),min(len(ls),i+75)):print(f"{j+1:4} {ls[j]}")
