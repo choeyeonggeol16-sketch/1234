@@ -24,3 +24,18 @@ with zipfile.ZipFile(p) as z:
     for j in range(lo,hi):
      if j not in seen:print(f"{j+1:4} {lines[j]}")
      seen.add(j)
+
+with zipfile.ZipFile(p) as z:
+ for short in ("SC_GameStart.java","SC_EtcPacket.java","SC_GameList.java",
+               "L1DeathMatch.java","SC_ActionUI2.java","CS_Craft.java"):
+  paths=[n for n in z.namelist() if n.startswith("src/") and n.endswith("/"+short)]
+  for path in paths[:1]:
+   lines=z.read(path).decode("utf8").splitlines()
+   print("+++ PACKET",path)
+   hits=[i for i,l in enumerate(lines) if any(x in l for x in
+     ("SC_GameStart.send(","SC_EtcPacket.send(","SC_GameRap.send(","SC_ActionUI2.send(",
+      "for (L1PcInstance", "public static boolean send(L1PcInstance", "public static boolean send(CIOClient"))]
+   for i in (hits[:15] if short in ("L1DeathMatch.java","CS_Craft.java") else [0]):
+    print("---",i+1)
+    for j in range(max(0,i-6),min(len(lines),i+(110 if short.startswith("SC_") else 24))):
+     print(f"{j+1:4} {lines[j]}")
