@@ -1,0 +1,15 @@
+name: Broadcast phase24 inspect remaining fanout
+on:
+  push:
+    branches: [broadcast-nonsc-phase24-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase24-inspect.yml"
+      - "patches/broadcast_nonsc_phase24_20261115/inspect.py"
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect exact phase23 remaining broadcast methods
+        run: python3 patches/broadcast_nonsc_phase24_20261115/inspect.py
