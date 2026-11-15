@@ -1,0 +1,229 @@
+SOURCE src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java
+1: package l1j.server.server.model.network.core.sc.packet;
+2: 
+3: import l1j.server.server.Opcodes;
+4: import l1j.server.server.model.Instance.L1PcInstance;
+5: import l1j.server.server.model.network.buffer.WriteBuffer;
+6: import l1j.server.server.model.L1World;
+7: import l1j.server.server.model.network.core.connection.CUserSocket;
+8: import l1j.server.server.model.network.core.connection.CIOFrame;
+9: import l1j.server.server.model.network.core.session.CIOClient;
+10: 
+11: public final class SC_ChatPacket {
+12: 
+13:     // Direct SEND variants for immediate chat sends; cached/broadcast packets stay immutable.
+14:     public static boolean sendDirect(L1PcInstance recipient, L1PcInstance source, String chat) {
+15:         return sendDirectRaw(recipient, MODE_MSG_TYPE1, Opcodes.S_MESSAGE, 1, 0,
+16:                 chat == null ? "" : chat, "", 0, 0);
+17:     }
+18: 
+19:     public static boolean sendDirect(L1PcInstance recipient, L1PcInstance source, String chat, int test) {
+20:         return sendDirectRaw(recipient, MODE_SAY_TEST, Opcodes.S_SAY, 15,
+21:                 source == null ? 0 : source.getId(), chat == null ? "" : chat, "", 0, 0);
+22:     }
+23: 
+24:     public static boolean sendDirect(L1PcInstance recipient, String chat) {
+25:         return sendDirectRaw(recipient, MODE_MSG_GLOBAL, Opcodes.S_MESSAGE, 0x0F,
+26:                 0, chat == null ? "" : chat, "", 0, 0);
+27:     }
+28: 
+29:     public static boolean sendDirect(L1PcInstance recipient, String chat, int opcode) {
+30:         return sendDirectRaw(recipient, MODE_OPCODE_TYPE2, opcode, 2,
+31:                 0, chat == null ? "" : chat, "", 0, 0);
+32:     }
+33: 
+34:     public static void broadcastMessage(String chat) {
+35:         final String safe = chat == null ? "" : chat;
+36:         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(
+37: L1World.getInstance().getAllPlayers(),sharedWire(Opcodes.S_MESSAGE,1,0,safe,false));
+38:     }
+39: 
+40:     public static void broadcastOpcode(String chat, int opcode) {
+41:         final String safe = chat == null ? "" : chat;
+42:         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(
+43: L1World.getInstance().getAllPlayers(),sharedWire(opcode,2,0,safe,false));
+44:     }
+45: 
+46:     public static boolean sendComplex0(L1PcInstance receiver, L1PcInstance source, String chat, int opcode) {
+47:         if (source == null) return false;
+48:         final String name = source.getName() == null ? "" : source.getName();
+49:         return sendDirectRaw(receiver, MODE_COMPLEX_0, opcode, 0, source.getId(),
+50:                 name + ": " + (chat == null ? "" : chat), "", 0, 0);
+51:     }
+52: 
+53:     public static void broadcastComplex0(L1PcInstance source, String chat, int opcode) {
+54:         if (source == null) return;
+55:         final String name = source.getName() == null ? "" : source.getName();
+56:         final String text = name + ": " + (chat == null ? "" : chat);
+57:         final int objectId = source.getId();
+58:         {
+59:             final L1World __cioWorld0 = L1World.getInstance();
+60:             final java.util.List<L1PcInstance> __cioVisible0 = __cioWorld0.borrowVisiblePlayerFast(source);
+61:             try {
+62:                 l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(__cioVisible0,
+63: sharedWire(opcode,0,objectId,text,true));
+64:             } finally {
+65:                 __cioWorld0.releaseVisiblePlayerFast(__cioVisible0);
+66:             }
+67:         }
+68:     }
+69: 
+70: 
+71:     /** Full immutable frame matching MODE_MSG_TYPE1, MODE_OPCODE_TYPE2,
+72:      * MODE_SAY_TEST and MODE_COMPLEX_0: S_*(opcode), C(type),
+73:      * optional D(objectId), MS949 nul-terminated text. Native transport
+74:      * applies receiver-specific encryption after enqueue.
+75:      */
+76:     public static byte[] sharedWire(int opcode,int type,int objectId,
+77:                                     String text,boolean includeObjectId) {
+78:         final byte[] txt=(text==null?"":text).getBytes(
+79:                 java.nio.charset.Charset.forName("MS949"));
+80:         final long needed=5L+txt.length+(includeObjectId?4L:0L);
+81:         if(needed>0xffffL)return null;
+82:         final int size=(int)needed;
+83:         final byte[] wire=new byte[size];
+84:         wire[0]=(byte)size;
+85:         wire[1]=(byte)(size>>>8);
+86:         wire[2]=(byte)opcode;
+87:         wire[3]=(byte)type;
+88:         int at=4;
+89:         if(includeObjectId){
+90:             wire[at++]=(byte)objectId;
+91:             wire[at++]=(byte)(objectId>>>8);
+92:             wire[at++]=(byte)(objectId>>>16);
+93:             wire[at++]=(byte)(objectId>>>24);
+94:         }
+95:         System.arraycopy(txt,0,wire,at,txt.length);
+96:         return wire;
+97:     }
+98: 
+99:     private static boolean sendDirectRaw(L1PcInstance recipient, int mode, int opcode,
+100:             int type, int objectId, String text1, String text2, int x, int y) {
+101:         if (recipient == null || mode == 0) return false;
+102:         final CIOClient socket = recipient.getNetConnection();
+103:         if (socket == null || !socket.isConnected()) return false;
+104:         final CUserSocket c = socket.getConnection();
+105:         if (c == null || !c.isClientConnected()) return false;
+106:         final long capacity = 32L + 4L * ((long) text1.length() + text2.length());
+107:         if (capacity > Integer.MAX_VALUE) return false;
+108:         final CIOFrame frame = c.beginDirectFrame((int) capacity);
+109:         if (frame == null) return false;
+110:         boolean committed = false;
+111:         try {
+112:             final WriteBuffer buffer = frame.buffer();
+113:             writePayload(buffer, mode, opcode, type, objectId, text1, text2, x, y);
+114:             committed = c.commitDirectFrame(frame);
+115:             return committed;
+116:         } finally {
+117:             if (!committed) c.abortDirectFrame(frame);
+118:         }
+119:     }
+120: 
+121: 	// 패킷 직렬화 서브 모드 정의
+122: 	private static final int MODE_TARGET_MSG   = 1;
+123: 	private static final int MODE_TELL         = 2;
+124: 	private static final int MODE_MSG_TYPE1    = 3;
+125: 	private static final int MODE_MSG_GLOBAL   = 4;
+126: 	private static final int MODE_SAY_TEST     = 5;
+127: 	private static final int MODE_OPCODE_TYPE2 = 6;
+128: 
+129: 	// 복합 채팅 서브 모드
+130: 	private static final int MODE_COMPLEX_0     = 10; // opcode + type + id + text
+131: 	private static final int MODE_COMPLEX_2     = 12; // opcode + type + id + text + x + y
+132: 	private static final int MODE_COMPLEX_SIMPLE = 13; // opcode + type + text
+133: 	private static final int MODE_COMPLEX_14    = 14; // opcode + type + id + text
+134: 	private static final int MODE_COMPLEX_16    = 16; // opcode + text1 + text2
+135: 
+136:     private SC_ChatPacket() {}
+137: 
+138:     public static boolean sendTargetMsg(L1PcInstance receiver, String targetName, int type, String chat) {
+139:         final String formatted = "[" + (targetName == null ? "" : targetName) + "] " + (chat == null ? "" : chat);
+140:         return sendDirectRaw(receiver, MODE_TARGET_MSG, Opcodes.S_MESSAGE, type, 0, formatted, "", 0, 0);
+141:     }
+142: 
+143: 	private static void writePayload(WriteBuffer buffer, int mode, int opcode, int type, int objectId, String text1, String text2, int x, int y) {
+144: 		if (mode == 0) {
+145: 			return;
+146: 		}
+147: 
+148: 		switch (mode) {
+149: 		case MODE_TARGET_MSG:
+150: 			buffer.writeC(opcode);
+151: 			buffer.writeC(type);
+152: 			buffer.writeS(text1);
+153: 			break;
+154: 
+155: 		case MODE_TELL:
+156: 			buffer.writeC(opcode);
+157: 			buffer.writeS(text1);
+158: 			buffer.writeS(text2);
+159: 			break;
+160: 
+161: 		case MODE_MSG_TYPE1:
+162: 			buffer.writeC(opcode);
+163: 			buffer.writeC(type);
+164: 			buffer.writeS(text1);
+165: 			break;
+166: 
+167: 		case MODE_MSG_GLOBAL:
+168: 			buffer.writeC(opcode);
+169: 			buffer.writeC(type);
+170: 			buffer.writeD(objectId);
+171: 			buffer.writeS(text1);
+172: 			break;
+173: 
+174: 		case MODE_SAY_TEST:
+175: 			buffer.writeC(opcode);
+176: 			buffer.writeC(type);
+177: 			buffer.writeD(objectId);
+178: 			buffer.writeS(text1);
+179: 			break;
+180: 
+181: 		case MODE_OPCODE_TYPE2:
+182: 			buffer.writeC(opcode);
+183: 			buffer.writeC(type);
+184: 			buffer.writeS(text1);
+185: 			break;
+186: 
+187: 		case MODE_COMPLEX_0:
+188: 			buffer.writeC(opcode);
+189: 			buffer.writeC(type);
+190: 			buffer.writeD(objectId);
+191: 			buffer.writeS(text1);
+192: 			break;
+193: 
+194: 		case MODE_COMPLEX_2:
+195: 			buffer.writeC(opcode);
+196: 			buffer.writeC(type);
+197: 			buffer.writeD(objectId);
+198: 			buffer.writeS(text1);
+199: 			buffer.writeH(x);
+200: 			buffer.writeH(y);
+201: 			break;
+202: 
+203: 		case MODE_COMPLEX_SIMPLE:
+204: 			buffer.writeC(opcode);
+205: 			buffer.writeC(type);
+206: 			buffer.writeS(text1);
+207: 			break;
+208: 
+209: 		case MODE_COMPLEX_14:
+210: 			buffer.writeC(opcode);
+211: 			buffer.writeC(type);
+212: 			buffer.writeD(objectId);
+213: 			buffer.writeS(text1);
+214: 			break;
+215: 
+216: 		case MODE_COMPLEX_16:
+217: 			buffer.writeC(opcode);
+218: 			buffer.writeS(text1);
+219: 			buffer.writeS(text2);
+220: 			break;
+221: 
+222: 		default:
+223: 			break;
+224: 		}
+225: 	}
+226: 
+227: 
+228: }

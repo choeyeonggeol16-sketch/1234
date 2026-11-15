@@ -1,0 +1,78 @@
+SOURCE src/l1j/server/MJRaidSystem/Util/L1MJRaidPoisonInstance.java
+1: package l1j.server.MJRaidSystem.Util;
+2: 
+3: import java.util.concurrent.ThreadLocalRandom;
+4: 
+5: import l1j.server.server.ThreadPool;
+6: import l1j.server.server.model.L1World;
+7: import l1j.server.server.model.Instance.L1MonsterInstance;
+8: import l1j.server.server.model.Instance.L1NpcInstance;
+9: import l1j.server.server.model.Instance.L1PcInstance;
+10: import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
+11: import l1j.server.server.model.poison.L1DamagePoison;
+12: import l1j.server.server.templates.L1Npc;
+13: 
+14: @SuppressWarnings("serial")
+15: public class L1MJRaidPoisonInstance extends L1NpcInstance{
+16: 	private static final int	INTERVAL	= 0x3e8;
+17: 	private L1MonsterInstance 	_owner;
+18: 	public L1MJRaidPoisonInstance(L1Npc template){
+19: 		super(template);
+20: 	}
+21: 	
+22: 	public void setOwner(L1MonsterInstance owner){
+23: 		_owner = owner;
+24: 	}
+25: 	
+26: 	public L1MonsterInstance getOwner(){
+27: 		return _owner;
+28: 	}
+29: 	
+30: 	@Override
+31: 	public void deleteMe() {
+32: 		_destroyed = true;
+33: 		if (getInventory() != null) {
+34: 			getInventory().clearItems();
+35: 		}
+36: 		allTargetClear();
+37: 		_master = null;
+38: 		L1World.getInstance().removeVisibleObject(this);
+39: 		L1World.getInstance().removeObject(this);
+40: 		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+41: 			if (pc == null) {
+42: 				continue;
+43: 			}
+44: 
+45: 			pc.removeKnownObject(this);
+46: 			SC_RemoveObject.send(
+47: 					pc.getNetConnection(),
+48: 					this);
+49: 		}
+50: 		removeAllKnownObjects();
+51: 	}
+52: 	
+53: 	class poisonTickTimer implements Runnable{
+54: 		private L1MJRaidPoisonInstance _poison;
+55: 		public poisonTickTimer(L1MJRaidPoisonInstance poison){
+56: 			_poison = poison;
+57: 		}
+58: 		@Override 
+59: 		public void run(){
+60: 			if(_destroyed)
+61: 				return;
+62: 			
+63: 			try{	
+64: 				for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
+65: 					if(pc == null || getMapId() != pc.getMapId() || getX() != pc.getX() || getY() != pc.getY() || pc.isDead()  || pc.isGhost() || pc.isGm())
+66: 						continue;
+67: 					
+68: 					int dmg = ThreadLocalRandom.current().nextInt(150) + 50;
+69: 					L1DamagePoison.doInfection(getOwner() == null ? _poison : getOwner(), pc, 3000, dmg, false,30000);
+70: 				}
+71: 				ThreadPool.getInstance().scheduleRequired(this, INTERVAL);
+72: 			}catch(Exception e){
+73: 				e.printStackTrace();
+74: 			}
+75: 		}
+76: 	}
+77: }
