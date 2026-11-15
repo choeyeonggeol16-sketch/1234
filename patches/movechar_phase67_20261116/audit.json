@@ -1,0 +1,18 @@
+{
+  "phase": 67,
+  "input_sha256": "1fd040e4bb4fe89c9c8fe1d8e5f6c2877fbfb6e990f5e551016fe8dc1557a23d",
+  "output_sha256": "81185c238e8342ca22b83045d4c3ad2ea70551c1dfba9dd5d92b574e81c9814d",
+  "source_java": 1710,
+  "zip_entries": 1729,
+  "changed_java": [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_MoveChar.java"
+  ],
+  "other_entries_byte_identical": true,
+  "native_dll_byte_identical": true,
+  "existing_general_clone_kept": true,
+  "additional_worker_queue_pool": false,
+  "in_game_verified": false
+}
