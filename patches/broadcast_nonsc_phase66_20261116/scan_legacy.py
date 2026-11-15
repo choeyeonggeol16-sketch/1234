@@ -39,7 +39,7 @@ raw=BASE.read_bytes();hash256=hashlib.sha256(raw).hexdigest()
 assert hash256=="1fd040e4bb4fe89c9c8fe1d8e5f6c2877fbfb6e990f5e551016fe8dc1557a23d",hash256
 with zipfile.ZipFile(BASE) as z:
     assert z.testzip() is None
-    js={p:z.read(p).decode('utf8-sig',errors='replace') for p in z.namelist() if p.endswith('.java')}
+    js={p:z.read(p).decode('utf-8-sig',errors='replace') for p in z.namelist() if p.endswith('.java')}
 assert len(js)==1710,len(js)
 ex={p:executable(s) for p,s in js.items()}
 names=sorted(n for n in js if re.search(r'broadcas',n,re.I))
