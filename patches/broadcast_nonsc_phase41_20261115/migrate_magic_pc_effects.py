@@ -28,7 +28,7 @@ def main():
    broadcast=f"_targetPc.broadcastPacket(new S_SkillSound(_targetPc.getId(), {gfx}));"
    if first==send and second==broadcast:
     replacements.append((i,gfx))
- assert len(replacements)==4,replacements
+ assert len(replacements)==4,[(i,repr(lines[i]),repr(lines[i+1])) for i in range(len(lines)-1) if "_targetPc.sendPackets(new S_SkillSound" in lines[i]][:12]
  for i,gfx in reversed(replacements):
   indent=lines[i][:len(lines[i])-len(lines[i].lstrip())]
   lines[i:i+2]=[indent+f"l1j.server.server.model.network.core.sc.packet.SC_SkillSound.sendAndBroadcast(_targetPc, _targetPc.getId(), {gfx});"+chr(10)]
