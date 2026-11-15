@@ -124,7 +124,7 @@ def patch(files):
  s=wrap_one_loop(s,loopSig,
    [(old,BC+".CSharedBroadcast.sendRecipient(shared,member);",1)],
    ["SC_PacketBox.sharedGreenWire("+expr+")"],["shared"],("member.sendPackets(",))
-  files[REWARD]=s.encode("utf8")
+ files[REWARD]=s.encode("utf8")
  s=files[COMBAT].decode("utf8")
  loopSig="for (L1PcInstance partymember : pc.getParty().getMembers()) {"
  a,b,loop=find_loop(s,loopSig)
