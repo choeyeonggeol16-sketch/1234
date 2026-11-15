@@ -1,0 +1,31 @@
+{
+  "source_base": "RKern_Broadcast_NonSC_Phase56_FULL_SRC_20261116.zip",
+  "source_final": "RKern_Broadcast_NonSC_Phase58_FULL_SRC_20261116.zip",
+  "source_final_sha256": "7593606d8cb04fb90207e7fc53dc70f9de19bbfb218d8cd9be3fc8247e0a65f3",
+  "source_files": 1729,
+  "java_sources": 1710,
+  "changed_java_from_56_to_58": [
+    "src/l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java",
+    "src/l1j/server/MJInstanceSystem/MJInstanceEnums.java",
+    "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_MoveChar.java"
+  ],
+  "non_java_files_content_identical": true,
+  "no_files_added_or_removed": true,
+  "native_dll_content_identical": true,
+  "banned_legacy_active_sites": {
+    "old_broadcastPacket": 0,
+    "old_broadcastPacketToAll": 0,
+    "old_Broadcaster_utility": 0,
+    "generic_ServerPacket_broadcast": 0,
+    "reuse_pck_in_fanout": 0,
+    "shared_broadcast_refs": 363,
+    "files_using_shared_frame": 77,
+    "modern_broadcast_calls": 744
+  },
+  "legacy_named_java_files": [],
+  "same_shared_engine_preserved": true,
+  "full_java21_compile_phase58_run": 43755091161,
+  "wire_parity_cases_phase58_run": 24579,
+  "windows_iocp_runtime_tested": false
+}

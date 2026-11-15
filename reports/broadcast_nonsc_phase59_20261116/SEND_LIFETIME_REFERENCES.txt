@@ -1,0 +1,1415 @@
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:185
+182         _nativeCodec = null;
+183 
+184         _cryptor = null;
+185         if (nativeCodec != null) nativeCodec.close();
+186     }
+187     private Cryptor readCipher() { return _cryptor; }
+188     public boolean encrypt(WriteBuffer buffer, int offset, int length) {
+189         if (_handshakePlainPending) {
+190             _handshakePlainPending = false;
+191             return true;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:248
+245         if(!nativeDirect||_closed!=0||!_channel.isOpen())return;
+246         final int accountId=account==null?0:account.getAccountId();
+247         if((account!=null&&accountId<=0)||!_channel.setAccountIdentity(accountId)){
+248             close();throw new IllegalStateException("Native account identity rejected (missing MAC, invalid account or closed socket)");
+249         }
+250     }
+251     public void onCharacterChanged(l1j.server.server.model.Instance.L1PcInstance pc){
+252         if(nativeDirect&&_closed==0&&_channel.isOpen()&&!_channel.setCharacterEntered(pc!=null)){
+253             close();throw new IllegalStateException("Native entering-character account registration rejected");
+254         }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:253
+250     }
+251     public void onCharacterChanged(l1j.server.server.model.Instance.L1PcInstance pc){
+252         if(nativeDirect&&_closed==0&&_channel.isOpen()&&!_channel.setCharacterEntered(pc!=null)){
+253             close();throw new IllegalStateException("Native entering-character account registration rejected");
+254         }
+255     }
+256     /** Only a server-side provider that verified the identity may call this.
+257      * This method does not add a client packet or change independent PSS. */
+258     public boolean bindVerifiedMacIdentity(long identity){
+259         return identity!=0&&nativeDirect&&_closed==0&&_channel.isOpen()&&_channel.setMacIdentity(identity);
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:263
+260     }
+261     public void onSessionStateChanged(l1j.server.server.model.network.utill.ConnectionState state) {
+262         if(nativeDirect&&_closed==0&&_channel.isOpen()&&!_channel.setUserState(state.ordinal())){
+263             close();throw new IllegalStateException("Native session registry transition rejected");
+264         }
+265     }
+266     public int transportNetworkDeadline() {
+267         // An earlier request can overlap the currently running wheel callback.
+268         // Share the existing socket state lock with SEND/grace transitions.
+269         _stateLock.lock();
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:552
+549                         // Provider write(), including any inline completion,
+550                         // must run after unlocking and before owner release.
+551                         try {
+552                             if (fusionFailed) socket.close();
+553                             else if (fusedWrite != null) {
+554                                 // OneLock has already consumed the FIFO head,
+555                                 // but its pending count remains until write()
+556                                 // returns. Treat it as the executing ticket so
+557                                 // an inline completion can be deferred locally.
+558                                 if (INLINE_WRITE_COMPLETION) socket._socketExecutingTicket = true;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:565
+562                                 }
+563                             }
+564                         } catch (Throwable failure) {
+565                             socket.close();
+566                         } finally {
+567                             if (fusedWrite != null)
+568                                 SOCKET_PENDING.getAndAdd(socket, -1);
+569                             socket.drainSocketCallbacksAcquired();
+570                         }
+571                         // Unexpected eligibility loss is handled by the
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:575
+572                         // original FIFO drainer; retain the old final kick.
+573                         if (fusedWrite == null && !fusionFailed) {
+574                             try { socket.kickWrite(); }
+575                             catch (Throwable failure) { socket.close(); }
+576                         }
+577                     } else {
+578                         // The reserved FIFO ticket must be visible before WRITE is kicked.
+579                         if (publish) socket.drainSocketCallbacks();
+580                         // May have been posted by another producer; kickWrite is idempotent.
+581                         try { socket.kickWrite(); }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:582
+579                         if (publish) socket.drainSocketCallbacks();
+580                         // May have been posted by another producer; kickWrite is idempotent.
+581                         try { socket.kickWrite(); }
+582                         catch (Throwable failure) { socket.close(); }
+583                     }
+584                 }
+585             } finally {
+586                 flushing = false;
+587             }
+588         }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:788
+785         if (!READ_EVENT.compareAndSet(this, 0, event)) {
+786             // An already-published completion cannot be overwritten by a
+787             // second callback; the first one must still release its READ lease.
+788             close();
+789             return;
+790         }
+791         kickRead();
+792     }
+793 
+794     public void transportWriteCompleted(int bytes) {
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:816
+813         if (!WRITE_EVENT.compareAndSet(this, 0L, event)) {
+814             // A second completion for one in-flight WRITE is a transport violation.
+815             // Never overwrite the first callback or release its lease twice.
+816             close();
+817             return;
+818         }
+819         // Native IOCP completions run inside write() while this thread
+820         // already owns the serializer. Defer their retirement until the write
+821         // invocation returns, then consume in the existing nonrecursive loop.
+822         if (INLINE_WRITE_COMPLETION && deferOwnerInlineWriteCompletion(event)) return;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:831
+828         if (!serializeSocketCallback(SOCKET_WRITE_COMPLETE, event)) {
+829             // The completion remains in the mailbox. Close and let the current
+830             // drainer retire it once earlier callback tickets have finished.
+831             close();
+832         }
+833     }
+834 
+835     /**
+836      * Only the serializer owner may publish this local deferral. A ticket
+837      * reserved before this WRITE callback must still execute first. While
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:908
+905                     drainWriteCompletion(event);
+906                 return true;
+907             } catch (Throwable failure) {
+908                 close();
+909                 return true;
+910             } finally {
+911                 drainSocketCallbacksAcquired();
+912             }
+913         }
+914         // The READ-fusion owner (or another callback drainer) already owns
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:945
+942         if (kind == WRITE_FAILED) {
+943             final CIOBufferEx lease = _writing;
+944             if (lease != null) completeWrite(lease, false);
+945             else close();
+946             return;
+947         }
+948         if (kind == GATHER_FAILED) {
+949             completeGather(false);
+950             return;
+951         }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:954
+951         }
+952         if (kind == WRITE_DONE) {
+953             final CIOBufferEx lease = _writing;
+954             if (lease == null) { close(); return; }
+955             if (_closed != 0) { completeWrite(lease, false); return; }
+956             final ByteBuffer buffer = lease.buffer();
+957             if (buffer.hasRemaining()) {
+958                 final long written = event >>> 3;
+959 
+960                 if (written == 0L && ++_zeroWriteCompletions >= 8) {
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:998
+995                 if (written != 0L) {
+996                     _zeroWriteCompletions = 0;
+997                 }
+998                 if (_writing == null) { close(); return; }
+999                 // Like the single-buffer partial path: the same serializer
+1000                 // still owns every gather lease. Repost the remaining WSABUFs
+1001                 // without reacquiring _stateLock or changing the FIFO head.
+1002                 // The provider call remains outside the state lock and inline
+1003                 // completions are trampolined by the existing callback ring.
+1004                 _writing._ioPending = false;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1012
+1009             }
+1010             return;
+1011         }
+1012         close();
+1013     }
+1014 
+1015     public CUserSocket(CSocket channel, CIOBufferPool pool,
+1016                          CIOThreadCallback scheduler, String remoteAddress,
+1017                          int affinityShard, int maxQueuedFrames, Closed closedCallback) {
+1018         if (channel == null || pool == null || scheduler == null
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1048
+1045     }
+1046     public void onTransportClosing() {
+1047         if (!closeStarted.compareAndSet(false, true)) return;
+1048         CNetworkDiagnostics.close(networkTrace);
+1049         CIOClient client = _client;
+1050         if (client != null) client.onTransportClosing();
+1051         cancelQueuedNativePacket();
+1052         if (_closedCallback != null) {
+1053             try { _closedCallback.onClosing(this); }
+1054             catch (Throwable failure) { LOG.log(Level.WARNING, "User-socket closing observer failed", failure); }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1059
+1056     }
+1057     public boolean isCloseStarted() { return closeStarted.get(); }
+1058     public void onTransportTerminated() {
+1059         close(false, null);
+1060         notifyClosedWhenReleased();
+1061     }
+1062     public boolean isClientCleanupComplete() { return clientCleanupComplete; }
+1063     public void onClientCleanupComplete() {
+1064         clientCleanupComplete = true;
+1065         if (_closedCallback != null) {
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1087
+1084     public void enqueuePacket(WritablePacket packet) {
+1085         if (packet == null || !isClientConnected()) return;
+1086         final CIOClient client = _client;
+1087         if (client == null) close();
+1088         else if (!tryWritePacket(client, packet)) close(CloseReason.SEND_REJECTED);
+1089     }
+1090 
+1091     /**
+1092      * Graceful close: 0=open, 1=waiting to admit final, 3=encoding final,
+1093      * 2=draining. A WRITE completion must never close before the final encoder
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1088
+1085         if (packet == null || !isClientConnected()) return;
+1086         final CIOClient client = _client;
+1087         if (client == null) close();
+1088         else if (!tryWritePacket(client, packet)) close(CloseReason.SEND_REJECTED);
+1089     }
+1090 
+1091     /**
+1092      * Graceful close: 0=open, 1=waiting to admit final, 3=encoding final,
+1093      * 2=draining. A WRITE completion must never close before the final encoder
+1094      * attaches its serializer ticket. This path is distinct from
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1095
+1092      * Graceful close: 0=open, 1=waiting to admit final, 3=encoding final,
+1093      * 2=draining. A WRITE completion must never close before the final encoder
+1094      * attaches its serializer ticket. This path is distinct from
+1095      * close(), which remains the immediate error/cancellation path.
+1096      */
+1097     @SuppressWarnings({"rawtypes", "unchecked"})
+1098     public void requestClientClose(WritablePacket packet) {
+1099         if (_disconnecting != 0 || !isOpen()
+1100                 || !CLOSING.compareAndSet(this, 0, 1)) return;
+1101         CNetworkDiagnostics.javaClose(networkTrace, CloseReason.GRACEFUL_CLOSE);
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1104
+1101         CNetworkDiagnostics.javaClose(networkTrace, CloseReason.GRACEFUL_CLOSE);
+1102         _gracefulCloseStartedNs = System.nanoTime();
+1103         if (_client == null) {
+1104             close();
+1105             return;
+1106         }
+1107         // Wait for previously accepted SENDs before admitting the final packet.
+1108         // Saturated local slots cannot cause an error-close that discards the
+1109         // accepted prefix. The final packet is encoded exactly once.
+1110         boolean publish;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1113
+1110         boolean publish;
+1111         _stateLock.lock();
+1112         try {
+1113             // close() may win after the open-state CAS and before this lock.
+1114             // Never reattach a final packet after forced-close cleanup.
+1115             if (_closed != 0) return;
+1116             _deferredClosePacket = packet;
+1117             publish = publishProducerLeaseLocked();
+1118         } finally { _stateLock.unlock(); }
+1119         if (publish) drainSocketCallbacks();
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1129
+1126     public boolean sendAction(int objectId, int actionId) {
+1127         if (!isClientConnected()) return false;
+1128         if (tryWriteAction(objectId, actionId)) return true;
+1129         close(CloseReason.SEND_REJECTED);
+1130         return false;
+1131     }
+1132     public boolean supportsConstBuffer() { return nativeDirect && !_handshakePlainPending; }
+1133     public CAsyncSendConstBuffer.Source createConstBuffer(byte[] wire) { return _channel.server().createConstBuffer(wire); }
+1134     public boolean ownsConstBuffer(CAsyncSendConstBuffer.Source source) { return source.owner == _channel.server(); }
+1135 
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1133
+1130         return false;
+1131     }
+1132     public boolean supportsConstBuffer() { return nativeDirect && !_handshakePlainPending; }
+1133     public CAsyncSendConstBuffer.Source createConstBuffer(byte[] wire) { return _channel.server().createConstBuffer(wire); }
+1134     public boolean ownsConstBuffer(CAsyncSendConstBuffer.Source source) { return source.owner == _channel.server(); }
+1135 
+1136     /** Frozen bytes need no encoder reservation; their SEND_ENQUEUE still
+1137      * takes an ordinary FIFO ticket behind any unpublished earlier encoder.
+1138      */
+1139     
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1134
+1131     }
+1132     public boolean supportsConstBuffer() { return nativeDirect && !_handshakePlainPending; }
+1133     public CAsyncSendConstBuffer.Source createConstBuffer(byte[] wire) { return _channel.server().createConstBuffer(wire); }
+1134     public boolean ownsConstBuffer(CAsyncSendConstBuffer.Source source) { return source.owner == _channel.server(); }
+1135 
+1136     /** Frozen bytes need no encoder reservation; their SEND_ENQUEUE still
+1137      * takes an ordinary FIFO ticket behind any unpublished earlier encoder.
+1138      */
+1139     
+1140 
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1167
+1164         // 5-second check forward only when this grace period requires it.
+1165         // Failed deadline admission must not leave an orphaned denied peer.
+1166         if (_closed == 0 && (deadline == null
+1167                 || !deadline.scheduleEarlier(Math.max(1L, delayMs)))) close();
+1168     }
+1169 
+1170     public boolean beginClientDisconnect() {
+1171         if (!DISCONNECTING.compareAndSet(this, 0, 1)) return false;
+1172         if (_gracefulCloseStartedNs == 0L) _gracefulCloseStartedNs = System.nanoTime();
+1173         _closing = 1;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1178
+1175         return true;
+1176     }
+1177 
+1178     public void finishClientDisconnect() { close(); }
+1179     public int drainOnOwner() { return 0; }
+1180     public void onSendDrainedOwner() { onSendProgress(); }
+1181     public boolean hasDrainWorkOnOwner() { return getEstimateQueueSize() != 0; }
+1182     public void requestDrain() { /* WRITE completion pump owns the drain. */ }
+1183 
+1184     public boolean whenWriteDrained(Runnable callback) {
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1222
+1219             try {
+1220                 accepted = tryWritePacketInternal(_client, finalPacket, true);
+1221             } catch (Throwable failed) {
+1222                 close();
+1223                 return;
+1224             }
+1225             if (!accepted) {
+1226                 // At this point the earlier accepted prefix has drained.
+1227                 close();
+1228                 return;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1227
+1224             }
+1225             if (!accepted) {
+1226                 // At this point the earlier accepted prefix has drained.
+1227                 close();
+1228                 return;
+1229             }
+1230             CLOSING.setRelease(this, 2);
+1231             kickWrite();
+1232             onSendProgress();
+1233             return;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1335
+1332         if (publishProducer) drainSocketCallbacks();
+1333         if (refused) {
+1334             // A packet that cannot be admitted must never look like a successful SEND.
+1335             if (!optional) close(CloseReason.SEND_LIMIT);
+1336             return null;
+1337         }
+1338 
+1339         CIOBufferEx lease = null;
+1340         try {
+1341             lease = beginOutboundFrame(maxWireBytes);
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1353
+1350             rejectSend(REJECT_ENCODING);
+1351             // Preserve the original failure, but release the ticket and lease.
+1352             rollbackDirectBegin(maxWireBytes, slot, lease);
+1353             close(CloseReason.ENCODING_ERROR);
+1354             throw failure;
+1355         }
+1356         rollbackDirectBegin(maxWireBytes, slot, lease);
+1357         if (!optional) close(CloseReason.SEND_POOL);
+1358         return null;
+1359     }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1357
+1354             throw failure;
+1355         }
+1356         rollbackDirectBegin(maxWireBytes, slot, lease);
+1357         if (!optional) close(CloseReason.SEND_POOL);
+1358         return null;
+1359     }
+1360 
+1361     private void cancelReservedTicketLocked(int slot) {
+1362         if (slot < 0) return;
+1363         _socketSendArguments[slot] = null;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1412
+1409                         // socket on a different thread.
+1410                         frame.finishIO();
+1411                         if (packed) {
+1412                             _pool.release(lease);
+1413                         } else {
+1414                             // Only a committed, unclaimed small SEND lease can
+1415                             // be expanded for later FIFO packing. No producer
+1416                             // can still write to this buffer after finishIO().
+1417                             if (lease.reserved()
+1418                                     && lease.buffer().capacity() == CIOBufferPool.SMALL_SEND_BYTES)
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1446
+1443         if (resumeRead && _closed == 0) kickRead();
+1444         if (!accepted) {
+1445             // The caller's finally aborts the still-owned frame/ticket.
+1446             close(CloseReason.SEND_REJECTED);
+1447         }
+1448         return accepted;
+1449     }
+1450 
+1451     public void abortDirectFrame(CIOFrame frame) {
+1452         if (frame == null) return;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1471
+1468         if (resumeRead) kickRead();
+1469         // Direct send failure is fatal for packet-stream consistency: never
+1470         // silently lose an attack/HP update when callers ignore the boolean.
+1471         if (_closed == 0 && !optional) close(CloseReason.ENCODING_ERROR);
+1472         notifyClosedWhenReleased();
+1473     }
+1474 
+1475     /**
+1476      * Allocate the large pending ring only when a connection actually has a burst.
+1477      * Called with the connection state lock held. The ring grows at most to the
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1544
+1541         earlier._actionOnly = false;
+1542         bytesAdmitted(length);
+1543         _stagedPacketLastTicket = ticket;
+1544         if (!directFrame) _pool.release(packet);
+1545         // The earlier ticket carries these bytes. Retire this ticket in place
+1546         // rather than changing the FIFO or the serializer's pending count.
+1547         SOCKET_ARGUMENT_SLOT.setRelease(_socketArguments, slot, 0L);
+1548         SOCKET_CALLBACK_SLOT.setRelease(_socketCallbacks, slot, SOCKET_CANCELLED);
+1549         return true;
+1550     }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1621
+1618                     _socketSendArguments[slot] = null;
+1619                     SOCKET_ARGUMENT_SLOT.setRelease(_socketArguments, slot, 0L);
+1620                     SOCKET_CALLBACK_SLOT.setRelease(_socketCallbacks, slot, SOCKET_CANCELLED);
+1621                     _pool.release(next);
+1622                     continue;
+1623                 }
+1624             }
+1625             first = next;
+1626             firstTicket = ticket;
+1627         }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1772
+1769         try {
+1770             acceptStagedSend(lease);
+1771         } catch (Throwable failure) {
+1772             close();
+1773         }
+1774     }
+1775 
+1776     /** Consume SEND under the current socket serializer token. */
+1777     private void acceptStagedSend(CIOBufferEx lease) {
+1778         boolean start = false;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1833
+1830             if (!success) {
+1831                 resumeRead = bytesReleased(length,
+1832                         lease._packedFrames ? lease._frameCount : 1);
+1833                 _pool.release(lease);
+1834             }
+1835         } finally { _stateLock.unlock(); }
+1836         if (!success && _closed == 0) close();
+1837         // The only selected lease was marked pending under _stateLock. The
+1838         // NIO.2 provider call and its possible inline completion run outside
+1839         // the lock, exactly as in driveWriteOnce() -> postWrite().
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1836
+1833                 _pool.release(lease);
+1834             }
+1835         } finally { _stateLock.unlock(); }
+1836         if (!success && _closed == 0) close();
+1837         // The only selected lease was marked pending under _stateLock. The
+1838         // NIO.2 provider call and its possible inline completion run outside
+1839         // the lock, exactly as in driveWriteOnce() -> postWrite().
+1840         if (selectedWrite != null) postWrite(selectedWrite);
+1841         // P6-A: SendBurst.flush() may already have published SEND_START.
+1842         // If we own this serializer, its outer loop will consume that bit
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:1986
+1983                 tail._frameCount += frameCount;
+1984                 tail._packedFrames = true;
+1985                 tail._actionOnly &= lease._actionOnly;
+1986                 _pool.release(lease);
+1987                 return true;
+1988             }
+1989         }
+1990         if (physicalSendFullLocked()) {
+1991             lease.unpublish();
+1992             return false;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2144
+2141         } else {
+2142             if (encodeFailed) rejectSend(REJECT_ENCODING);
+2143             if (slot >= 0) drainSocketCallbacks();
+2144             if (encodeFailed || encoded != null) close(encodeFailed ? CloseReason.ENCODING_ERROR : CloseReason.SEND_LIMIT);
+2145             if (_closed != 0) kickWrite();
+2146             notifyClosedWhenReleased();
+2147         }
+2148         return accepted;
+2149     }
+2150 
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2251
+2248                         lease._frameCount = 1;
+2249                         lease._actionOnly = true;
+2250                         if (!commitStagedOutboundFrameLocked(lease)) {
+2251                             if (lease.reserved()) _pool.release(lease);
+2252                             valid = false;
+2253                         }
+2254                     }
+2255                 }
+2256             }
+2257         } finally { _stateLock.unlock(); }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2259
+2256             }
+2257         } finally { _stateLock.unlock(); }
+2258         if (resume && _closed == 0) kickRead();
+2259         if (!valid) { close(); return; }
+2260         if (_closed == 0) kickWrite();
+2261     }
+2262 
+2263     public boolean tryWriteAction(int objectId, int actionId) {
+2264         if (_closing != 0) return false;
+2265         boolean retriedDeferredSend = false;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2358
+2355                                     }
+2356                                 }
+2357                             } finally {
+2358                                 if (!accepted && lease.reserved()) _pool.release(lease);
+2359                             }
+2360                         }
+2361                     }
+2362                 }
+2363             } finally {
+2364                 _stateLock.unlock();
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2533
+2530                 if (!tryWriteAction(objectIds[offset + done], actionIds[offset + done])) {
+2531                     // Previous frames in this batch cannot be rolled back after
+2532                     // publication; never keep a partially accepted batch live.
+2533                     if (done != 0 && _closed == 0) close();
+2534                     return false;
+2535                 }
+2536                 ++done;
+2537             }
+2538         }
+2539         return true;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2579
+2576             accepted = stageOutboundFrameLocked(lease, direct);
+2577         } finally {
+2578             try {
+2579                 if (!accepted && lease != null && lease.reserved()) _pool.release(lease);
+2580             } finally {
+2581                 _stateLock.unlock();
+2582             }
+2583         }
+2584         if (accepted) finishStagedSend(lease, direct);
+2585         return accepted ? frames : 0;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2669
+2666         if (lease == null) return;
+2667         if (!_pool.owns(lease) || !lease.reserved())
+2668             throw new IllegalStateException("abort after commit or foreign SEND lease");
+2669         _pool.release(lease);
+2670     }
+2671 
+2672     /** Exactly one pending read per socket. */
+2673     public void startRead() {
+2674         if(nativeDirect){if(_closed==0&&READ_ACTIVE.compareAndSet(this,0,1))kickRead();return;}
+2675         try {
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2682
+2679                     _reading = _pool.acquireRecv();
+2680                 } catch (RuntimeException | Error failure) {
+2681                     READ_ACTIVE.setVolatile(this, 0);
+2682                     close();
+2683                     throw failure;
+2684                 }
+2685                 if (_reading == null) {
+2686                     READ_ACTIVE.setVolatile(this, 0);
+2687                     close();
+2688                     return;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2687
+2684                 }
+2685                 if (_reading == null) {
+2686                     READ_ACTIVE.setVolatile(this, 0);
+2687                     close();
+2688                     return;
+2689                 }
+2690             } finally { _stateLock.unlock(); }
+2691         } finally {
+2692             // close() may reenter under the state lock on pool failure.
+2693             if (_closed != 0) kickWrite();
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2692
+2689                 }
+2690             } finally { _stateLock.unlock(); }
+2691         } finally {
+2692             // close() may reenter under the state lock on pool failure.
+2693             if (_closed != 0) kickWrite();
+2694         }
+2695         kickRead();
+2696     }
+2697 
+2698     /**
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2708
+2705             if(_closed!=0){cancelQueuedNativePacket();finishReadIfClosed();notifyClosedWhenReleased();return;}
+2706             if(!_channel.isOpen())return;
+2707             boolean pause=_sendReadPaused||_closing!=0;
+2708             if(!_channel.pauseNativeUser(pause)){close();return;}
+2709             if(!pause)dispatchNativePacket();
+2710             return;
+2711         }
+2712         if ((int) READ_KICK.getAndAdd(this, 1) != 0) return;
+2713         drainReadPump(1, 0);
+2714     }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2732
+2729 
+2730                 _readPending = false;
+2731                 if (event == 1 || _closed != 0) {
+2732                     close();
+2733                 } else if (event == 2) {
+2734                     if (++_zeroReadCompletions >= 8) close();
+2735                 } else {
+2736                     _zeroReadCompletions = 0;
+2737                 }
+2738             }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2734
+2731                 if (event == 1 || _closed != 0) {
+2732                     close();
+2733                 } else if (event == 2) {
+2734                     if (++_zeroReadCompletions >= 8) close();
+2735                 } else {
+2736                     _zeroReadCompletions = 0;
+2737                 }
+2738             }
+2739             if (_closed == 0 && _closing == 0 && !_readPending && !_sendReadPaused) {
+2740                 try {
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2759
+2756                             releaseFusedReadSendOwner();
+2757                     }
+2758                     if (!accepted) {
+2759                         close();
+2760                     } else if (_closed == 0 && !_sendReadPaused && !_readYielded) {
+2761                         postRead();
+2762                     }
+2763                 } catch (Throwable failure) {
+2764                     LOG.log(Level.SEVERE, "[CIO READ] dispatch failed remote=" + _remoteAddress, failure);
+2765                     close();
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2765
+2762                     }
+2763                 } catch (Throwable failure) {
+2764                     LOG.log(Level.SEVERE, "[CIO READ] dispatch failed remote=" + _remoteAddress, failure);
+2765                     close();
+2766                 }
+2767             }
+2768             missed = ((int) READ_KICK.getAndAdd(this, -missed) - missed);
+2769         } while (missed != 0);
+2770         finishReadIfClosed();
+2771     }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2814
+2811         if (_closed != 0 || _closing != 0) return;
+2812         final ByteBuffer recv = _reading.buffer();
+2813         if (!recv.hasRemaining()) {
+2814             close();
+2815             return;
+2816         }
+2817         // Set before the call: async I/O may invoke completed() synchronously.
+2818         _readPending = true;
+2819 
+2820         try {
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2824
+2821             _channel.read(recv, this);
+2822         } catch (Throwable t) {
+2823             _readPending = false;
+2824             close();
+2825         } finally {
+2826 
+2827         }
+2828     }
+2829 
+2830     /** Release the READ lease on close only after the last completion. */
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2901
+2898             // failed session lookup must not strand phase 5 during shutdown.
+2899             nativePacketPhase.set(1);
+2900             LOG.log(Level.WARNING,"Native packet session capture failed",failure);
+2901             close();cancelQueuedNativePacket();return true;
+2902         }
+2903         nativePacketPhase.set(1); // waiting for SEND pressure/dispatch
+2904         if(_closed!=0||!_client.isConnected()){close();cancelQueuedNativePacket();return true;}
+2905         if(_sendReadPaused){_channel.pauseNativeUser(true);return true;}
+2906         dispatchNativePacket();return true;
+2907     }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2904
+2901             close();cancelQueuedNativePacket();return true;
+2902         }
+2903         nativePacketPhase.set(1); // waiting for SEND pressure/dispatch
+2904         if(_closed!=0||!_client.isConnected()){close();cancelQueuedNativePacket();return true;}
+2905         if(_sendReadPaused){_channel.pauseNativeUser(true);return true;}
+2906         dispatchNativePacket();return true;
+2907     }
+2908     private void dispatchNativePacket() {
+2909         if(_closed!=0||_closing!=0){cancelQueuedNativePacket();return;}
+2910         if(_sendReadPaused||!nativePacketPhase.compareAndSet(1,2))return;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2914
+2911         try {
+2912             if(_nativePacketOnIo&&_channel.currentNativeOwner()>=0)executeNativePacket();
+2913             else if(!(_nativePacketOnIo?_channel.postCompletion(this)
+2914                     :CIOThreadCallback.getInstance().enqueuePacketImmediate(_affinityShard,this)))close();
+2915         }catch(Throwable failure){LOG.log(Level.WARNING,"Native packet dispatch admission failed",failure);close();}
+2916     }
+2917     @Override public void run(){executeNativePacket();}
+2918     @Override public void cancel(){close();cancelQueuedNativePacket();}
+2919     private void cancelQueuedNativePacket() {
+2920         for(;;){int phase=nativePacketPhase.get();if(phase!=1&&phase!=2)return;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2915
+2912             if(_nativePacketOnIo&&_channel.currentNativeOwner()>=0)executeNativePacket();
+2913             else if(!(_nativePacketOnIo?_channel.postCompletion(this)
+2914                     :CIOThreadCallback.getInstance().enqueuePacketImmediate(_affinityShard,this)))close();
+2915         }catch(Throwable failure){LOG.log(Level.WARNING,"Native packet dispatch admission failed",failure);close();}
+2916     }
+2917     @Override public void run(){executeNativePacket();}
+2918     @Override public void cancel(){close();cancelQueuedNativePacket();}
+2919     private void cancelQueuedNativePacket() {
+2920         for(;;){int phase=nativePacketPhase.get();if(phase!=1&&phase!=2)return;
+2921             if(nativePacketPhase.compareAndSet(phase,4)){finishNativePacket();return;}}
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2918
+2915         }catch(Throwable failure){LOG.log(Level.WARNING,"Native packet dispatch admission failed",failure);close();}
+2916     }
+2917     @Override public void run(){executeNativePacket();}
+2918     @Override public void cancel(){close();cancelQueuedNativePacket();}
+2919     private void cancelQueuedNativePacket() {
+2920         for(;;){int phase=nativePacketPhase.get();if(phase!=1&&phase!=2)return;
+2921             if(nativePacketPhase.compareAndSet(phase,4)){finishNativePacket();return;}}
+2922     }
+2923     private void finishNativePacket() {
+2924         long sequence=_nativePacketSequence;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2944
+2941                     throw new IllegalStateException("Packet executed outside its native/session role");
+2942                 CNetworkDiagnostics.Work work = CNetworkDiagnostics.begin(networkTrace,
+2943                         _nativePacketBuffer.get(0) & 255, _nativePacketLength);
+2944                 try { if(!onNativePlaintext(_nativePacketBuffer,_nativePacketLength))close(CloseReason.PROTOCOL_ERROR); }
+2945                 finally { CNetworkDiagnostics.end(work); }
+2946             }
+2947         }catch(Throwable failure){LOG.log(Level.WARNING,"[CIO NATIVE] packet execution failed",failure);close(CloseReason.HANDLER_ERROR);}
+2948         finally{finishNativePacket();}
+2949     }
+2950 
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:2947
+2944                 try { if(!onNativePlaintext(_nativePacketBuffer,_nativePacketLength))close(CloseReason.PROTOCOL_ERROR); }
+2945                 finally { CNetworkDiagnostics.end(work); }
+2946             }
+2947         }catch(Throwable failure){LOG.log(Level.WARNING,"[CIO NATIVE] packet execution failed",failure);close(CloseReason.HANDLER_ERROR);}
+2948         finally{finishNativePacket();}
+2949     }
+2950 
+2951     private boolean onNativePlaintext(ByteBuffer payload, int bytes) {
+2952         if (_closing != 0) return _closed == 0;
+2953         if (!_client.isConnected() || bytes < 4) return false;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3070
+3067             large.buffer().put(recv);
+3068             final CIOBufferEx old = _reading;
+3069             _reading = large;
+3070             _pool.release(old);
+3071         } else if (_reading.buffer().capacity() > CIOBufferPool.RECV_BYTES
+3072                 && recv.position() == 0) {
+3073             final CIOBufferEx compact = _pool.acquireRecv();
+3074             if (compact != null) {
+3075                 final CIOBufferEx old = _reading;
+3076                 _reading = compact;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3077
+3074             if (compact != null) {
+3075                 final CIOBufferEx old = _reading;
+3076                 _reading = compact;
+3077                 _pool.release(old);
+3078             }
+3079         }
+3080         // _reading may now be a large receive lease after an upgrade above.
+3081         // Only the incomplete frame at the *current head* owns a deadline:
+3082         // a fully buffered frame held behind SEND backpressure is not partial.
+3083         refreshPartialReadDeadline(_reading.buffer());
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3105
+3102         if (_readReleased || (_readActive != 0)) return;
+3103         final CIOBufferEx recv = _reading;
+3104         _reading = null;
+3105         if (recv != null) _pool.release(recv);
+3106         _readReleased = true;
+3107         } finally {
+3108             _stateLock.unlock();
+3109         }
+3110     }
+3111 
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3328
+3325                         // The owner still consumes only after write() returns.
+3326                         if (WRITE_EVENT.compareAndSet(this, inline, 0L))
+3327                             drainWriteCompletion(inline);
+3328                     } catch (Throwable failure) { close(); }
+3329                     continue;
+3330                 }
+3331                 final int pending = (int) SOCKET_PENDING.getVolatile(this);
+3332                 final int slot = (int) _socketHead & SOCKET_MASK;
+3333                 final long kind = pending == 0 ? 0L
+3334                         : (long) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, slot);
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3347
+3344                     try {
+3345                         if (WRITE_EVENT.compareAndSet(this, prefix, 0L))
+3346                             drainWriteCompletion(prefix);
+3347                     } catch (Throwable failure) { close(); }
+3348                     continue;
+3349                 }
+3350                 if (pending == 0 || kind == 0L) break;
+3351                 final long argument = (long) SOCKET_ARGUMENT_SLOT.getAcquire(_socketArguments, slot);
+3352                 final CIOBufferEx sendLease = kind == SOCKET_SEND_ENQUEUE
+3353                         ? _socketSendArguments[slot] : null;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3374
+3371                     } else if (kind == SOCKET_PACKED_ACTION) {
+3372                         acceptPackedAction(argument);
+3373                     } else if (kind != SOCKET_CANCELLED) {
+3374                         close();
+3375                     }
+3376                 } catch (Throwable failure) {
+3377                     close();
+3378                 } finally {
+3379                     if (INLINE_WRITE_COMPLETION) _socketExecutingTicket = outerExecutingTicket;
+3380                     SOCKET_PENDING.getAndAdd(this, -1);
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3377
+3374                         close();
+3375                     }
+3376                 } catch (Throwable failure) {
+3377                     close();
+3378                 } finally {
+3379                     if (INLINE_WRITE_COMPLETION) _socketExecutingTicket = outerExecutingTicket;
+3380                     SOCKET_PENDING.getAndAdd(this, -1);
+3381                 }
+3382             }
+3383     }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3402
+3399                         || hasCommittedWriteReady())
+3400                     && (int) SOCKET_START_PENDING.getAndSet(this, 0) != 0) {
+3401                 try { driveWriteOnce(); }
+3402                 catch (Throwable failure) { close(); }
+3403             }
+3404 
+3405             if (_closed != 0 && (int) SOCKET_PENDING.getVolatile(this) == 0) {
+3406                 final long stranded = (long) WRITE_EVENT.getAndSet(this, 0L);
+3407                 if (stranded != 0L) {
+3408                     try { drainWriteCompletion(stranded); }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3409
+3406                 final long stranded = (long) WRITE_EVENT.getAndSet(this, 0L);
+3407                 if (stranded != 0L) {
+3408                     try { drainWriteCompletion(stranded); }
+3409                     catch (Throwable ignored) { close(); }
+3410                 }
+3411                 try { driveWriteOnce(); }
+3412                 catch (Throwable ignored) { close(); }
+3413             }
+3414             
+3415             // The coalesced SEND_START drive above can complete write()
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3412
+3409                     catch (Throwable ignored) { close(); }
+3410                 }
+3411                 try { driveWriteOnce(); }
+3412                 catch (Throwable ignored) { close(); }
+3413             }
+3414             
+3415             // The coalesced SEND_START drive above can complete write()
+3416             // inline after the inner loop has already exited. Keep the
+3417             // current owner until the deferred completion is retired.
+3418             if (INLINE_WRITE_COMPLETION && _inlineWriteCompletion != 0L)
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3470
+3467     /** SEND registration and next-WRITE selection, executed by the serializer. */
+3468     private void kickWrite() {
+3469         if (!COALESCE_SEND_START) {
+3470             if (!serializeSocketCallback(SOCKET_SEND_START, 0L)) close();
+3471             return;
+3472         }
+3473         // A ticket-free READ owner cannot bypass an earlier reserved SEND.
+3474         if (canExecuteOwnerControlDirect()) {
+3475             // Already-posted WRITE owns the committed FIFO prefix. Its
+3476             // completion (or failure/close) drives the next lease. Avoid
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3581
+3578             LOG.log(Level.WARNING, "[CIO WRITE] gather post failed remote=" + _remoteAddress, error);
+3579             // A provider may publish a completion before throwing. Let the
+3580             // serializer consume the mailbox exactly once after write returns.
+3581             if (INLINE_WRITE_COMPLETION && (long) WRITE_EVENT.getVolatile(this) != 0L) close();
+3582             else completeGather(false);
+3583         }
+3584     }
+3585 
+3586     private void completeGather(boolean success) {
+3587 
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3593
+3590         _stateLock.lock();
+3591         try {
+3592             if (_gatherCount <= 1 || _writing != _gatherFrames[0]) {
+3593                 close();
+3594                 return;
+3595             }
+3596             int releasedBytes = 0;
+3597             int releasedFrames = 0;
+3598             for (int i = 0; i < _gatherCount; i++) {
+3599                 final CIOBufferEx frame = _gatherFrames[i];
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3602
+3599                 final CIOBufferEx frame = _gatherFrames[i];
+3600                 releasedBytes += frame.wireLength();
+3601                 releasedFrames += frame._frameCount;
+3602                 _pool.release(frame);
+3603                 _gatherFrames[i] = null;
+3604                 _gatherBuffers[i] = null;
+3605             }
+3606             // READ resumes once, after all gather frames have been retired.
+3607             resumeInbound = bytesReleased(releasedBytes, releasedFrames);
+3608             _gatherCount = 0;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3624
+3621             _stateLock.unlock();
+3622 
+3623         }
+3624         if (!success) close();
+3625         else if (next != null) {
+3626 
+3627             kickWrite();
+3628         }
+3629         if (resumeInbound && _closed == 0) kickRead();
+3630         if (success && _closed == 0) notifySendSlotAvailable();
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3635
+3632     }
+3633 
+3634     private void notifySendSlotAvailable() {
+3635         try { onSendProgress(); } catch (Throwable failure) { close(); }
+3636     }
+3637 
+3638     private void postWrite(CIOBufferEx lease) {
+3639         if (_closed != 0) {
+3640             lease._ioPending = false;
+3641             completeWrite(lease, false);
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3675
+3672                     if (source == null) throw new IllegalStateException("shared WRITE submitted twice");
+3673                     lease._sharedSource = null;
+3674                     try { _channel.SendConstBuffer(bytes,source.handle,this,lease._nativeSendFlags); }
+3675                     finally { source.release(); }
+3676                 }
+3677                 else if(nativeDirect)_channel.SendV(bytes,this,lease._nativeSendFlags);
+3678                 else _channel.write(bytes, this);
+3679             } finally {
+3680                 _socketPosting = false;
+3681 
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3685
+3682             }
+3683         } catch (Throwable error) {
+3684             LOG.log(Level.WARNING, "[CIO WRITE] post failed remote=" + _remoteAddress, error);
+3685             if (INLINE_WRITE_COMPLETION && (long) WRITE_EVENT.getVolatile(this) != 0L) close();
+3686             else {
+3687                 lease._ioPending = false;
+3688                 completeWrite(lease, false);
+3689             }
+3690         }
+3691     }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3700
+3697         _stateLock.lock();
+3698         try {
+3699             if (_writing != lease) {
+3700                 close();
+3701                 return;
+3702             }
+3703             resumeInbound = bytesReleased(lease.wireLength(), lease._frameCount);
+3704             _pool.release(lease);
+3705             _writing = null;
+3706             if (success && _closed == 0 && _queued != 0) {
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3704
+3701                 return;
+3702             }
+3703             resumeInbound = bytesReleased(lease.wireLength(), lease._frameCount);
+3704             _pool.release(lease);
+3705             _writing = null;
+3706             if (success && _closed == 0 && _queued != 0) {
+3707                 // The next lease is already committed in FIFO order. Do not
+3708                 // bypass unsealed producer tickets or the gather path.
+3709                 next = _pending[_head];
+3710                 _pending[_head] = null;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3721
+3718 
+3719         }
+3720         if (!success) {
+3721             close();
+3722         } else if (next != null) {
+3723 
+3724             kickWrite();
+3725         }
+3726         if (resumeInbound && _closed == 0) kickRead();
+3727         if (success && _closed == 0) notifySendSlotAvailable();
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3732
+3729     }
+3730 
+3731     /** No allocation; useful for admission diagnostics and slow-peer checks. */
+3732     public int pendingSendBytes() {
+3733         _stateLock.lock();
+3734         try { return _outstandingWireBytes + _reservedWireBytes; }
+3735         finally { _stateLock.unlock(); }
+3736     }
+3737 
+3738     /** True when the connection's outbound backlog allows further socket reads. */
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3792
+3789         }
+3790     }
+3791 
+3792     private void closeGracefully(){close(true, CloseReason.GRACEFUL_CLOSE);}
+3793     @Override public void close(){close(false, CloseReason.SERVER_CLOSE);}
+3794     private void close(CloseReason reason) { close(false, reason); }
+3795     private void close(boolean graceful, CloseReason reason) {
+3796         if (!CLOSED.compareAndSet(this, 0, 1)) return;
+3797         CNetworkDiagnostics.javaClose(networkTrace, reason);
+3798         onTransportClosing();
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3793
+3790     }
+3791 
+3792     private void closeGracefully(){close(true, CloseReason.GRACEFUL_CLOSE);}
+3793     @Override public void close(){close(false, CloseReason.SERVER_CLOSE);}
+3794     private void close(CloseReason reason) { close(false, reason); }
+3795     private void close(boolean graceful, CloseReason reason) {
+3796         if (!CLOSED.compareAndSet(this, 0, 1)) return;
+3797         CNetworkDiagnostics.javaClose(networkTrace, reason);
+3798         onTransportClosing();
+3799         cancelQueuedNativePacket();
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3794
+3791 
+3792     private void closeGracefully(){close(true, CloseReason.GRACEFUL_CLOSE);}
+3793     @Override public void close(){close(false, CloseReason.SERVER_CLOSE);}
+3794     private void close(CloseReason reason) { close(false, reason); }
+3795     private void close(boolean graceful, CloseReason reason) {
+3796         if (!CLOSED.compareAndSet(this, 0, 1)) return;
+3797         CNetworkDiagnostics.javaClose(networkTrace, reason);
+3798         onTransportClosing();
+3799         cancelQueuedNativePacket();
+3800         _networkDeadline = null;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3795
+3792     private void closeGracefully(){close(true, CloseReason.GRACEFUL_CLOSE);}
+3793     @Override public void close(){close(false, CloseReason.SERVER_CLOSE);}
+3794     private void close(CloseReason reason) { close(false, reason); }
+3795     private void close(boolean graceful, CloseReason reason) {
+3796         if (!CLOSED.compareAndSet(this, 0, 1)) return;
+3797         CNetworkDiagnostics.javaClose(networkTrace, reason);
+3798         onTransportClosing();
+3799         cancelQueuedNativePacket();
+3800         _networkDeadline = null;
+3801         // Failure-only report, outside state-lock/serializer ownership. A
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3843
+3840                     + "/" + _pool.largeSendSlots());
+3841         }
+3842         ON_DRAINED.setVolatile(this, null);
+3843         if(graceful)_channel.closeGracefully();else _channel.close();
+3844         boolean drainProducer;
+3845         _stateLock.lock(); try {
+3846             _deferredClosePacket = null;
+3847             _stagedPacketPack = null;
+3848             drainProducer = publishProducerLeaseLocked();
+3849             int releasedBytes = 0;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3858
+3855                 --_queued;
+3856                 releasedBytes += lease.wireLength();
+3857                 releasedFrames += lease._frameCount;
+3858                 _pool.release(lease);
+3859             }
+3860             if (releasedFrames != 0) bytesReleased(releasedBytes, releasedFrames);
+3861         } finally { _stateLock.unlock(); }
+3862         if (drainProducer) drainSocketCallbacks();
+3863         _stateLock.lock(); try {
+3864             if (_readActive == 0) releaseReadWhenIdle();
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3877
+3874      * Unlike enqueueConstBuffer(), false means no shared frame was staged.
+3875      * No existing sender semantics are changed.
+3876      */
+3877     public boolean enqueueConstBufferConfirmed(CAsyncSendConstBuffer.Source source, int pendingLimit) {
+3878         CIOBufferEx lease = null;
+3879         boolean accepted = false, failed = false;
+3880         _stateLock.lock();
+3881         try {
+3882             if (_closed != 0 || _closing != 0 || !ownsConstBuffer(source)
+3883                     || _outstandingWireBytes + _reservedWireBytes >= pendingLimit) return false;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3882
+3879         boolean accepted = false, failed = false;
+3880         _stateLock.lock();
+3881         try {
+3882             if (_closed != 0 || _closing != 0 || !ownsConstBuffer(source)
+3883                     || _outstandingWireBytes + _reservedWireBytes >= pendingLimit) return false;
+3884             lease = _pool.acquireShared(source);
+3885             accepted = lease != null && stageOutboundFrameLocked(lease, false);
+3886             failed = !accepted;
+3887         } catch (Throwable failure) {
+3888             failed = true;
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3890
+3887         } catch (Throwable failure) {
+3888             failed = true;
+3889         } finally {
+3890             try { if (!accepted && lease != null) _pool.release(lease); }
+3891             finally { _stateLock.unlock(); }
+3892         }
+3893         if (accepted) finishStagedSend(lease, false);
+3894         else if (failed) close(CloseReason.SEND_REJECTED);
+3895         return accepted;
+3896     }
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3894
+3891             finally { _stateLock.unlock(); }
+3892         }
+3893         if (accepted) finishStagedSend(lease, false);
+3894         else if (failed) close(CloseReason.SEND_REJECTED);
+3895         return accepted;
+3896     }
+3897 
+3898 
+3899     /** Uniform frozen-frame admission for transport modes without a reusable
+3900      * native ConstBuffer handle. Bytes are already serialized once by the
+
+src/l1j/server/server/model/network/core/connection/CUserSocket.java:3904
+3901      * broadcaster. This is NOT a packet-specific serializer or fallback.
+3902      * The normal direct frame reserves a FIFO ticket before any byte is copied.
+3903      */
+3904     public boolean sendFrozenWire(byte[] frameBytes) {
+3905         if(frameBytes==null || frameBytes.length<=CIOBufferPool.HEADER_BYTES
+3906                 || frameBytes.length>CIOBufferPool.MAX_WIRE_BYTES
+3907                 || ((frameBytes[0]&0xff)|((frameBytes[1]&0xff)<<8))!=frameBytes.length
+3908                 || !isClientConnected()) return false;
+3909         final CIOFrame frame=beginDirectFrame(frameBytes.length);
+3910         if(frame==null)return false;
+
+src/l1j/server/server/model/network/core/transport/CIOServer.java:92
+89     @SuppressWarnings("unused")
+90 	private final MethodHandle start, stop, wait, stopAccept, disconnect, pause, send, sendPackets;
+91     private final MethodHandle sendFrames,sendFramePackets,gracefulClose,getSendDiagnostics;
+92     private final MethodHandle createConstBuffer,releaseConstBuffer,sendConstBuffer;
+93     private final AtomicInteger constBuffers = new AtomicInteger();
+94     private final MethodHandle getRemote, getLocal, getListen;
+95     @SuppressWarnings("preview")
+96 	private final MemorySegment acceptStub, receiveStub, sendStub, closeStub;
+97     private volatile boolean started;
+98     private volatile boolean destroyed;
+
+src/l1j/server/server/model/network/core/transport/CIOServer.java:186
+183             sendFramePackets=fn("CSocket___async_AsyncSendConstBuffer",FunctionDescriptor.of(I,P,L,P,I,I));
+184             gracefulClose=fn("CIOSocketEx_GracefulClose",FunctionDescriptor.of(I,P,L,I));
+185             getSendDiagnostics=fn("L1Interop_GetSendDiagnostics",FunctionDescriptor.of(I,P,P,I));
+186             createConstBuffer=fn("L1Interop_CreateConstBuffer",FunctionDescriptor.of(P,P,P,I));
+187             releaseConstBuffer=fn("L1Interop_ReleaseConstBuffer",FunctionDescriptor.ofVoid(P));
+188             sendConstBuffer=fn("L1Interop_SendConstBuffer",FunctionDescriptor.of(I,P,L,P,I));
+189             send = fn("CIOSocket__Write", FunctionDescriptor.of(I, P, L, P, I));
+190             sendPackets = fn("L1Interop_WriteBuffers", FunctionDescriptor.of(I, P, L, P, I));
+191             getRemote = fn("CSocket_GetIPAddressString", FunctionDescriptor.of(I, P, L, P, P, P));
+192             getLocal = fn("L1Interop_GetLocalAddress", FunctionDescriptor.of(I, P, L, P, P, P));
+
+src/l1j/server/server/model/network/core/transport/CIOServer.java:296
+293                     fn("L1Interop_ReleaseCallbacks", FunctionDescriptor.ofVoid(P)).invokeExact(createdListener);
+294                 }
+295             } catch (Throwable cleanup) { failure.addSuppressed(cleanup); }
+296             try { arena.close(); }
+297             catch (Throwable cleanup) { failure.addSuppressed(cleanup); }
+298             if (failure instanceof IOException e) throw e;
+299             throw new IOException("CIO FFM/IOCP startup failed (Java 21 preview and patched x64 DLL required)", failure);
+300         }
+301     }
+302 
+
+src/l1j/server/server/model/network/core/transport/CIOServer.java:718
+715         return false;
+716     }
+717     @SuppressWarnings("preview")
+718     public CAsyncSendConstBuffer.Source createConstBuffer(byte[] wire) {
+719         if (!enterNative()) return null;
+720         MemorySegment handle = MemorySegment.NULL;
+721         try (Arena temporary = Arena.ofConfined()) {
+722             MemorySegment input = temporary.allocate(wire.length);
+723             input.copyFrom(MemorySegment.ofArray(wire));
+724             handle = (MemorySegment) createConstBuffer.invokeExact(server, input, wire.length);
+
+src/l1j/server/server/model/network/core/transport/CIOServer.java:724
+721         try (Arena temporary = Arena.ofConfined()) {
+722             MemorySegment input = temporary.allocate(wire.length);
+723             input.copyFrom(MemorySegment.ofArray(wire));
+724             handle = (MemorySegment) createConstBuffer.invokeExact(server, input, wire.length);
+725             if (handle.address() == 0) return null;
+726             CAsyncSendConstBuffer.Source source = new CAsyncSendConstBuffer.Source(this, handle, wire);
+727             constBuffers.incrementAndGet();
+728             return source;
+729         } catch (Throwable failure) {
+730             if (handle.address() != 0) {
+
+src/l1j/server/server/model/network/core/transport/CIOServer.java:773
+770         finally { nativeCalls.decrementAndGet(); }
+771     }
+772     @SuppressWarnings("preview")
+773 	boolean send(long id, ByteBuffer[] bufs, int offset, int count) {return send(id,bufs,offset,count,0);}
+774     @SuppressWarnings("preview")
+775     boolean send(long id, ByteBuffer[] bufs, int offset, int count,int flags) {
+776         if (!enterNative()) return false;
+777         try {
+778             if (count == 1) {
+779                 ByteBuffer b = bufs[offset];
+
+src/l1j/server/server/model/network/core/transport/CIOServer.java:775
+772     @SuppressWarnings("preview")
+773 	boolean send(long id, ByteBuffer[] bufs, int offset, int count) {return send(id,bufs,offset,count,0);}
+774     @SuppressWarnings("preview")
+775     boolean send(long id, ByteBuffer[] bufs, int offset, int count,int flags) {
+776         if (!enterNative()) return false;
+777         try {
+778             if (count == 1) {
+779                 ByteBuffer b = bufs[offset];
+780                 int n = b.remaining();
+781                 if (b.isDirect()) {
+
+src/l1j/server/server/model/network/core/transport/CIOServer.java:859
+856     public IOException shutdownFailure() { return nativeShutdownFailure; }
+857 
+858     @SuppressWarnings("preview")
+859     @Override public synchronized void close() throws IOException {
+860         closeWithBudget(SHUTDOWN_BUDGET_NS);
+861     }
+862 
+863     @SuppressWarnings("preview")
+864     public synchronized void closeWithBudget(long budgetNs) throws IOException {
+865         if (destroyed) return;
+
+src/l1j/server/server/model/network/core/transport/CIOServer.java:923
+920             completionTasks.clear();
+921             nativeTasks.clear();
+922             closingConnections.clear();
+923             arena.close();
+924         } catch (Throwable error) {
+925             throw new IOException("CIO native destruction failed", error);
+926         }
+927     }
+928     boolean isStopping() { return shuttingDown; }
+929     public boolean isAcceptStopped() { return nativeAcceptStopped || destroyed; }
+
+src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java:49
+46      * No recipient-specific packet construction, no legacy serializer.
+47      * true means this socket actually admitted a SEND lease.
+48      */
+49     public final synchronized boolean send(CUserSocket target,int recipientId) {
+50         if(closed)throw new IllegalStateException("broadcast already closed");
+51         if(target==null || exclude(recipientId) || !target.isClientConnected())return false;
+52         final int limit=recipientId==senderId?Integer.MAX_VALUE:pendingLimit;
+53         if(wire.length<=16384 && target.supportsConstBuffer()
+54                 && target.pendingSendBytes()<limit) {
+55             if(source==null) {
+
+src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java:54
+51         if(target==null || exclude(recipientId) || !target.isClientConnected())return false;
+52         final int limit=recipientId==senderId?Integer.MAX_VALUE:pendingLimit;
+53         if(wire.length<=16384 && target.supportsConstBuffer()
+54                 && target.pendingSendBytes()<limit) {
+55             if(source==null) {
+56                 try {
+57                     source=target.createConstBuffer(wire);
+58                 } catch (RuntimeException failure) {
+59                     // Resource acquisition failed before any SEND was staged.
+60                     // The same frozen bytes remain available to the FIFO path.
+
+src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java:57
+54                 && target.pendingSendBytes()<limit) {
+55             if(source==null) {
+56                 try {
+57                     source=target.createConstBuffer(wire);
+58                 } catch (RuntimeException failure) {
+59                     // Resource acquisition failed before any SEND was staged.
+60                     // The same frozen bytes remain available to the FIFO path.
+61                 }
+62             }
+63             if(source!=null && target.ownsConstBuffer(source)
+
+src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java:63
+60                     // The same frozen bytes remain available to the FIFO path.
+61                 }
+62             }
+63             if(source!=null && target.ownsConstBuffer(source)
+64                     && target.enqueueConstBufferConfirmed(source,limit))
+65                 return true;
+66         }
+67         return target.sendFrozenWire(wire);
+68     }
+69 
+
+src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java:64
+61                 }
+62             }
+63             if(source!=null && target.ownsConstBuffer(source)
+64                     && target.enqueueConstBufferConfirmed(source,limit))
+65                 return true;
+66         }
+67         return target.sendFrozenWire(wire);
+68     }
+69 
+70     @Override public final synchronized void close() {
+
+src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java:67
+64                     && target.enqueueConstBufferConfirmed(source,limit))
+65                 return true;
+66         }
+67         return target.sendFrozenWire(wire);
+68     }
+69 
+70     @Override public final synchronized void close() {
+71         if (closed) return;
+72         closed = true;
+73         if (source != null) { source.release(); source = null; }
+
+src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java:70
+67         return target.sendFrozenWire(wire);
+68     }
+69 
+70     @Override public final synchronized void close() {
+71         if (closed) return;
+72         closed = true;
+73         if (source != null) { source.release(); source = null; }
+74     }
+75 
+76     /** Java queue references keep the FFM handle/DLL live through its last use.
+
+src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java:73
+70     @Override public final synchronized void close() {
+71         if (closed) return;
+72         closed = true;
+73         if (source != null) { source.release(); source = null; }
+74     }
+75 
+76     /** Java queue references keep the FFM handle/DLL live through its last use.
+77      * Native requests separately retain the CIOBufferEx block before returning.
+78      */
+79     @SuppressWarnings("preview")
+
+src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java:90
+87             this.handle = handle;
+88             wire = ByteBuffer.wrap(bytes).asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
+89         }
+90         public Source retain() {
+91             for (;;) {
+92                 int n = references.get();
+93                 if (n == 0 || n == Integer.MAX_VALUE) throw new IllegalStateException("constant source lifetime");
+94                 if (references.compareAndSet(n, n + 1)) return this;
+95             }
+96         }
+
+src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java:97
+94                 if (references.compareAndSet(n, n + 1)) return this;
+95             }
+96         }
+97         public void release() {
+98             int n = references.decrementAndGet();
+99             if (n < 0) throw new IllegalStateException("constant source double release");
+100             if (n == 0) owner.releaseConstBuffer(handle);
+101         }
+102     }
+103 }
