@@ -106,11 +106,11 @@ jobs:
           $root=Join-Path $env:RUNNER_TEMP 'nc-direct-slab-phase71'
           python patches/nc_direct_slab_phase71_20261116/migrate.py "$root" package
           if($LASTEXITCODE -ne 0){throw 'phase71 final zip validation failed'}
-          Copy-Item "$root\audit.json" "patches/nc_assemble_phase71_20261116/audit.json"
+          Copy-Item "$root\audit.json" "patches/nc_direct_slab_phase71_20261116/audit.json"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f downloads/RKern_NC_DirectSlab_SPackets_FULL_SRC_20261116.zip
-          git add -f patches/nc_assemble_phase71_20261116/audit.json
+          git add -f patches/nc_direct_slab_phase71_20261116/audit.json
           git diff --cached --quiet
           if($LASTEXITCODE -eq 0){exit 0}
           git commit -m "Publish NC pooled native S-packet source and verified DLL [skip ci]"
