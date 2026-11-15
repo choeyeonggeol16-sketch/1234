@@ -40,9 +40,15 @@ jobs:
             url=row['url']
             candidates=[url]
             if 'repo.maven.apache.org/maven2/' in url:
-              candidates.append(url.replace('repo.maven.apache.org/maven2/','repo1.maven.org/maven2/'))
+              suffix=url.split('repo.maven.apache.org/maven2/',1)[1]
+              candidates=[
+                'https://maven.aliyun.com/repository/central/'+suffix,
+                'https://mirrors.huaweicloud.com/repository/maven/'+suffix,
+                url,
+                'https://repo1.maven.org/maven2/'+suffix
+              ]
             errors=[]
-            for attempt in range(5):
+            for attempt in range(3):
               for mirror in candidates:
                 try:
                   req=urllib.request.Request(mirror,headers={'User-Agent':'RKern-Compile-Verify/1.0'})
