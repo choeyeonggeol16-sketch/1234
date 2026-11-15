@@ -32,3 +32,18 @@ with zipfile.ZipFile(p) as z:
     for j in range(lo,hi):
      if j not in seen:print(f"{j+1:4} {lines[j]}")
      seen.add(j)
+
+with zipfile.ZipFile(p) as z:
+ for short,terms in {
+  "CItemUseClan.java":["SC_PacketBox.send(member,","SC_SystemMessage.send(member,notice)","SC_SystemMessage.send(member, notice)"],
+  "SC_PacketBox.java":["case 13:","case 6:","case 1:"],
+  "CS_Channel.java":["SC_PacketBox.send(member, SC_PacketBox.PLEDGE_EMBLEM_STATUS"]
+ }.items():
+  path=next((n for n in z.namelist() if n.startswith("src/") and n.endswith("/"+short)),None)
+  if path is None:continue
+  lines=z.read(path).decode("utf8").splitlines()
+  print("===EXTRA",path)
+  hits=[i for i,line in enumerate(lines) if any(x in line for x in terms)]
+  for i in hits[:8]:
+   print("--- AT",i+1)
+   for j in range(max(0,i-20),min(len(lines),i+18)):print(f"{j+1:4} {lines[j]}")
