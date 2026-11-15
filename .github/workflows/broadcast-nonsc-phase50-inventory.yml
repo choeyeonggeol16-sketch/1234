@@ -1,0 +1,14 @@
+name: Broadcast phase50 remaining direct sender inventory
+on:
+  push:
+    branches: [broadcast-nonsc-phase50-20261116]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase50-inventory.yml"
+      - "patches/broadcast_nonsc_phase50_20261116/inventory.py"
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase50_20261116/inventory.py
