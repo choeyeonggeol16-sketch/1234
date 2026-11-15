@@ -74,3 +74,34 @@ with zipfile.ZipFile(p) as z:
      if j not in seen:print(j+1,ls[j]);seen.add(j)
     printCount+=1
     if printCount>5:break
+
+with zipfile.ZipFile(p) as z:
+ for short,needles in {
+ "L1NewUltimateBattle.java":["SC_SystemMessage.send(pc, msg)"],
+ "L1UltimateBattle.java":["SC_SystemMessage.send(pc, msg)"],
+ "BQSLoadManager.java":["SC_SystemMessage.send(pc, message)"],
+ "BQSWQDecksLoader.java":["SC_SystemMessage.send(pc, message)"],
+ "DropShareEngine.java":["SC_SystemMessage.send(p, msg)","SC_SystemMessage.send(member, msg)"],
+ "CGetItemAction.java":["SC_SystemMessage.send(m, msg)","SC_SystemMessage.send(member, msg)"],
+ "L1PartyRecall.java":["SC_SystemMessage.send(pc2, "],
+ "CS_EnterWorld.java":["SC_ServerMessage.send(member, 843"],
+ "CS_LeavePledge.java":["SC_ServerMessage.send(member, 178"],
+ "CS_Title.java":["SC_ServerMessage.send(clanPc, 203"],
+ "CS_NpcAcion2.java":["SC_SystemMessage.send(player, \"파티원의"],
+ "ItemUseClan.java":["SC_PacketBox.send(member, SC_PacketBox.GREEN_MESSAGE","SC_SystemMessage.send(member, notice)"],
+ "CS_Channel.java":["SC_SystemMessage.send(gm, \"\\\\fY"],
+ "L1PcInstance.java":["SC_SystemMessage.send(pc, \"\\\\fY[GM]"],
+ }.items():
+  paths=[x for x in z.namelist() if x.startswith("src/") and x.endswith("/"+short)]
+  for n in paths:
+   lines=z.read(n).decode("utf8").splitlines()
+   hits=[i for i,x in enumerate(lines) if any(y in x for y in needles)]
+   print("==DETAIL",n,"HITS",len(hits))
+   spans=[]
+   for i in hits[:5]:
+    lo=max(0,i-19);hi=min(len(lines),i+13)
+    if spans and lo<=spans[-1][1]:spans[-1]=(spans[-1][0],max(spans[-1][1],hi))
+    else:spans.append((lo,hi))
+   for lo,hi in spans:
+    print("---")
+    for i in range(lo,hi):print(f"{i+1:4} {lines[i]}")
