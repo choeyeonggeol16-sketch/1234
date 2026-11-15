@@ -29,6 +29,17 @@ test=(ROOT/"patches/ctransport_core_20261112/tests/CSharedBroadcastWindowsTest.j
 # The old test used CAsyncSendConstBuffer.apply; the new production name is send.
 assert test.count(".apply(")==6,test.count(".apply(")
 test=test.replace(".apply(", ".send(")
+test=test.replace("CIOThreadCallback.INSTANCE","CIOThreadCallback.getInstance()")
+test=test.replace("new CIOClient(user)","new CIOClient(user,false)")
+# Test-only native codec reference and its DLL are needed for
+# independent per-socket ciphertext comparison.
+codec_src=ROOT/"patches/ctransport_core_20261112/tests/CIOPacketCodecReference.java"
+codec_dst=work/"testsrc/l1j/server/server/model/network/core/transport/CIOPacketCodecReference.java"
+codec_dst.parent.mkdir(parents=True,exist_ok=True)
+codec_dst.write_bytes(codec_src.read_bytes())
+codec_dll=ROOT/"patches/ctransport_core_20261112/build/CIOPacketCodec.dll"
+assert codec_dll.is_file()
+(work/"CIOPacketCodec.dll").write_bytes(codec_dll.read_bytes())
 out=work/"testsrc/l1j/server/server/model/network/core/connection/CSharedBroadcastWindowsTest.java"
 out.parent.mkdir(parents=True,exist_ok=True)
 out.write_text(test,encoding="utf-8")
