@@ -66,6 +66,11 @@ for name,source_text in sorted(source.items()):
     if re.search(r"\bget(?:Declared)?Method\s*\(\s*[^\n]*broadcast",s):
         report.append(name+" [reflection broadcast method may be looked up]")
         counts["reflectionCandidate"]+=1
+
+for suffix in ("MJInstanceEnums.java","MJEffectTriggerInstance.java","MJCompanionTeleportHandler.java","L1CompanionInstance.java"):
+    matches=[(n,s) for n,s in source.items() if n.endswith("/"+suffix)]
+    for ix,(name,body) in enumerate(matches):
+        (out/(suffix.removesuffix(".java")+(str(ix) if ix else "")+".txt")).write_text("SOURCE: "+name+"\n"+body,encoding="utf-8")
 (out/"RESIDUAL_CALLSITES.txt").write_text("\n".join(report),encoding="utf-8")
 (out/"COUNTS.json").write_text(json.dumps(dict(counts),indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
 print("PHASE58_AUDIT_OK",len(source),dict(counts))
