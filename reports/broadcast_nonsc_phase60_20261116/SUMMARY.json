@@ -1,0 +1,14 @@
+{
+  "input_zip_sha256": "7593606d8cb04fb90207e7fc53dc70f9de19bbfb218d8cd9be3fc8247e0a65f3",
+  "java_sources": 1710,
+  "matched_broadcast_calls": 744,
+  "exact_no_whitespace_dot_broadcast_calls": 744,
+  "receiver_count": 40,
+  "sc_receiver_count": 38,
+  "other_receiver_count": 2,
+  "sc_receiver_calls": 740,
+  "other_receiver_calls": 4,
+  "production_files_changed": 0,
+  "classes_not_searched_in_comments_strings": true,
+  "verified_runtime_io_completion": false
+}

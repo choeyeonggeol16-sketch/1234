@@ -1,0 +1,10 @@
+SOURCE src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java
+1: package l1j.server.server.model.network.core.broadcast;
+2: 
+3: /** Original ExceptSelf predicate compares the source object's ID. */
+4: public final class CAsyncSendConstBufferExceptSelf extends CAsyncSendConstBuffer {
+5:     public CAsyncSendConstBufferExceptSelf(byte[] frame, int senderId, int pendingLimit) {
+6:         super(frame, senderId, pendingLimit);
+7:     }
+8:     @Override protected boolean exclude(int recipientId) { return recipientId == senderId(); }
+9: }

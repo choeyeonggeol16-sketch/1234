@@ -1,0 +1,104 @@
+SOURCE src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java
+1: package l1j.server.server.model.network.core.broadcast;
+2: 
+3: import l1j.server.server.model.network.core.connection.CUserSocket;
+4: import l1j.server.server.model.network.core.transport.CIOServer;
+5: 
+6: import java.lang.foreign.MemorySegment;
+7: import java.nio.ByteBuffer;
+8: import java.nio.ByteOrder;
+9: import java.util.concurrent.atomic.AtomicInteger;
+10: 
+11: /** Original broadcast role: one immutable plaintext, per-socket ordered output.
+12:  * The same frozen plaintext is sent to every accepted recipient.
+13:  * No per-packet legacy encoder is called during broadcast.
+14:  */
+15: public class CAsyncSendConstBuffer implements AutoCloseable {
+16:     private final byte[] wire;
+17:     private final int senderId, pendingLimit;
+18:     private Source source;
+19:     private boolean closed;
+20: 
+21:     public CAsyncSendConstBuffer(byte[] frame, int senderId, int pendingLimit) {
+22:         if (frame == null || frame.length < 3 || frame.length > 0xFFFF
+23:                 || ((frame[0] & 255) | ((frame[1] & 255) << 8)) != frame.length
+24:                 || pendingLimit <= 0) throw new IllegalArgumentException("constant frame/limit");
+25:         wire = frame.clone(); // one defensive copy, never a per-recipient copy
+26:         this.senderId = senderId;
+27:         this.pendingLimit = pendingLimit;
+28:     }
+29: 
+30:     protected boolean exclude(int recipientId) { return false; }
+31:     protected final int senderId() { return senderId; }
+32: 
+33:     
+34: 
+35: 
+36:     /** True only when this recipient's shared SEND lease was staged.
+37:      * Used by broadcasts that must update world state after SEND acceptance.
+38:      */
+39:     
+40: 
+41: 
+42:     /**
+43:      * The single shared-broadcast SEND contract.
+44:      * Native <=16 KiB: retain one immutable ConstBuffer source per owner.
+45:      * Other transports/large frames: enqueue those SAME frozen bytes directly.
+46:      * No recipient-specific packet construction, no legacy serializer.
+47:      * true means this socket actually admitted a SEND lease.
+48:      */
+49:     public final synchronized boolean send(CUserSocket target,int recipientId) {
+50:         if(closed)throw new IllegalStateException("broadcast already closed");
+51:         if(target==null || exclude(recipientId) || !target.isClientConnected())return false;
+52:         final int limit=recipientId==senderId?Integer.MAX_VALUE:pendingLimit;
+53:         if(wire.length<=16384 && target.supportsConstBuffer()
+54:                 && target.pendingSendBytes()<limit) {
+55:             if(source==null) {
+56:                 try {
+57:                     source=target.createConstBuffer(wire);
+58:                 } catch (RuntimeException failure) {
+59:                     // Resource acquisition failed before any SEND was staged.
+60:                     // The same frozen bytes remain available to the FIFO path.
+61:                 }
+62:             }
+63:             if(source!=null && target.ownsConstBuffer(source)
+64:                     && target.enqueueConstBufferConfirmed(source,limit))
+65:                 return true;
+66:         }
+67:         return target.sendFrozenWire(wire);
+68:     }
+69: 
+70:     @Override public final synchronized void close() {
+71:         if (closed) return;
+72:         closed = true;
+73:         if (source != null) { source.release(); source = null; }
+74:     }
+75: 
+76:     /** Java queue references keep the FFM handle/DLL live through its last use.
+77:      * Native requests separately retain the CIOBufferEx block before returning.
+78:      */
+79:     @SuppressWarnings("preview")
+80:     public static final class Source {
+81:         public final CIOServer owner;
+82:         public final MemorySegment handle;
+83:         public final ByteBuffer wire;
+84:         private final AtomicInteger references = new AtomicInteger(1);
+85:         public Source(CIOServer owner, MemorySegment handle, byte[] bytes) {
+86:             this.owner = owner;
+87:             this.handle = handle;
+88:             wire = ByteBuffer.wrap(bytes).asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
+89:         }
+90:         public Source retain() {
+91:             for (;;) {
+92:                 int n = references.get();
+93:                 if (n == 0 || n == Integer.MAX_VALUE) throw new IllegalStateException("constant source lifetime");
+94:                 if (references.compareAndSet(n, n + 1)) return this;
+95:             }
+96:         }
+97:         public void release() {
+98:             int n = references.decrementAndGet();
+99:             if (n < 0) throw new IllegalStateException("constant source double release");
+100:             if (n == 0) owner.releaseConstBuffer(handle);
+101:         }
+102:     }
+103: }

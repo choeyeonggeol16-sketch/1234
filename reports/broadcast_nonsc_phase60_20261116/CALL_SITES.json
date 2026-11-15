@@ -1,0 +1,5210 @@
+[
+  {
+    "file": "src/l1j/server/DogFight/Instance/MJDogFightInstance.java",
+    "line": 257,
+    "receiver": "SC_HPMeter",
+    "kind": "SC_static",
+    "code": "SC_HPMeter.broadcast(this, this);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/FanstasyIsland/FantasyIsland.java",
+    "line": 271,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(unicorn, unicorn.getId(), 1911);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/FanstasyIsland/FantasyIsland.java",
+    "line": 295,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(unicorn, unicorn.getId(), 169);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Hadin/Hadin.java",
+    "line": 559,
+    "receiver": "SC_Door",
+    "kind": "SC_static",
+    "code": "SC_Door.broadcast(door, door.getX(), door.getY(), 0, door.PASS);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Hadin/Hadin.java",
+    "line": 567,
+    "receiver": "SC_Door",
+    "kind": "SC_static",
+    "code": "SC_Door.broadcast(door, door.getX(), door.getY(), 0, door.PASS);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Hadin/Hadin.java",
+    "line": 573,
+    "receiver": "SC_Door",
+    "kind": "SC_static",
+    "code": "SC_Door.broadcast(door, door.getX(), door.getY(), 0, door.PASS);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Hadin/Hadin.java",
+    "line": 579,
+    "receiver": "SC_Door",
+    "kind": "SC_static",
+    "code": "SC_Door.broadcast(door, door.getX(), door.getY(), 0, door.PASS);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Hadin/Hadin.java",
+    "line": 585,
+    "receiver": "SC_Door",
+    "kind": "SC_static",
+    "code": "SC_Door.broadcast(door, door.getX(), door.getY(), 0, door.PASS);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Hadin/Hadin.java",
+    "line": 591,
+    "receiver": "SC_Door",
+    "kind": "SC_static",
+    "code": "SC_Door.broadcast(door, door.getX(), door.getY(), 0, door.PASS);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Hadin/Hadin.java",
+    "line": 597,
+    "receiver": "SC_Door",
+    "kind": "SC_static",
+    "code": "SC_Door.broadcast(door, door.getX(), door.getY(), 0, door.PASS);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Hadin/Hadin.java",
+    "line": 601,
+    "receiver": "SC_Door",
+    "kind": "SC_static",
+    "code": "SC_Door.broadcast(door, door.getX(), door.getY(), 0, door.PASS);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Hadin/Hadin.java",
+    "line": 602,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(Npc_Hadin, Npc_Hadin.getId(), 169);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/MiniGame/L1Gambling.java",
+    "line": 110,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, dealer.getId(), gfxid);"
+  },
+  {
+    "file": "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java",
+    "line": 182,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(m, m.getX(), m.getY(), 2236);"
+  },
+  {
+    "file": "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java",
+    "line": 273,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(m, mx, my, 2236);"
+  },
+  {
+    "file": "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java",
+    "line": 311,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(m, m.getX(), m.getY(), 2236);"
+  },
+  {
+    "file": "src/l1j/server/MJCombatSystem/MJCombatObserver.java",
+    "line": 320,
+    "receiver": "l1j.server.server.model.network.core.sc.packet.SC_SystemMessage",
+    "kind": "instance_or_unknown",
+    "code": "l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcast(message);"
+  },
+  {
+    "file": "src/l1j/server/MJCompanion/Instance/MJCompanionAttackHandler.java",
+    "line": 156,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(attacker, attacker.getId(), sInfo.get_attacker_effect_id());"
+  },
+  {
+    "file": "src/l1j/server/MJCompanion/Instance/MJCompanionAttackHandler.java",
+    "line": 158,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(target, target.getId(), sInfo.get_target_effect_id());"
+  },
+  {
+    "file": "src/l1j/server/MJEffectSystem/Realize/OnEffectThread.java",
+    "line": 134,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(owner, 19);"
+  },
+  {
+    "file": "src/l1j/server/MJEffectSystem/Realize/OnEffectThread.java",
+    "line": 194,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/MJEffectSystem/Realize/OnEffectThread.java",
+    "line": 254,
+    "receiver": "SC_OnlyEffect",
+    "kind": "SC_static",
+    "code": "SC_OnlyEffect.broadcast(pc, pc.getId(), cast);"
+  },
+  {
+    "file": "src/l1j/server/MJItemEnchantSystem/MJItemEnchanter.java",
+    "line": 134,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(broadcast);"
+  },
+  {
+    "file": "src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_NormalRangeAttack.java",
+    "line": 35,
+    "receiver": "SC_UseAttackSkill",
+    "kind": "SC_static",
+    "code": "SC_UseAttackSkill.broadcast("
+  },
+  {
+    "file": "src/l1j/server/MJItemSkillSystem/Model/Attack/Atk_NormalRangeAttack.java",
+    "line": 44,
+    "receiver": "SC_UseAttackSkill",
+    "kind": "SC_static",
+    "code": "SC_UseAttackSkill.broadcast("
+  },
+  {
+    "file": "src/l1j/server/MJKDASystem/MJKDA.java",
+    "line": 257,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"\\\\f>[\" + killer.getName() + \"]님이  [\""
+  },
+  {
+    "file": "src/l1j/server/MJKDASystem/MJKDA.java",
+    "line": 267,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"\\\\f>[\" + killer.getName() + \"]님이  [\""
+  },
+  {
+    "file": "src/l1j/server/MJKDASystem/MJKDA.java",
+    "line": 291,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"\\\\f>[\" + killer.getName() + \"]님이  [\""
+  },
+  {
+    "file": "src/l1j/server/MJKDASystem/MJKDA.java",
+    "line": 301,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"\\\\f3[\" + killer.getName() + \"]님이  [\""
+  },
+  {
+    "file": "src/l1j/server/MJPassiveSkill/MJPassiveLoader.java",
+    "line": 153,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 3, 0);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/AttackSkill.java",
+    "line": 41,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/AttackSkill.java",
+    "line": 98,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/AttackSkill.java",
+    "line": 147,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Cancellation.java",
+    "line": 48,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Cancellation.java",
+    "line": 84,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Cancellation.java",
+    "line": 141,
+    "receiver": "SC_SkillHaste",
+    "kind": "SC_static",
+    "code": "SC_SkillHaste.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Cancellation.java",
+    "line": 148,
+    "receiver": "SC_Invis",
+    "kind": "SC_static",
+    "code": "SC_Invis.broadcast(pc, pc.getId(), 0);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Cancellation.java",
+    "line": 156,
+    "receiver": "SC_RemoveObject",
+    "kind": "SC_static",
+    "code": "SC_RemoveObject.broadcast(pc);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Cancellation.java",
+    "line": 163,
+    "receiver": "SC_Invis",
+    "kind": "SC_static",
+    "code": "SC_Invis.broadcast(pc, pc.getId(), 0);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Cancellation.java",
+    "line": 169,
+    "receiver": "SC_RemoveObject",
+    "kind": "SC_static",
+    "code": "SC_RemoveObject.broadcast(pc);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/DeathHeal.java",
+    "line": 32,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/DeathHeal.java",
+    "line": 68,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/DeathPotion.java",
+    "line": 31,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/DeathPotion.java",
+    "line": 67,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/MJRaidBossSkill.java",
+    "line": 192,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), a);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/MJRaidBossSkill.java",
+    "line": 275,
+    "receiver": "SC_OnlyEffect",
+    "kind": "SC_static",
+    "code": "SC_OnlyEffect.broadcast(pc, pc.getId(), 15835);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/MJWideArea.java",
+    "line": 28,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/MJWideArea.java",
+    "line": 50,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Normal.java",
+    "line": 30,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Normal.java",
+    "line": 67,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Normal.java",
+    "line": 104,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/ParalPoison.java",
+    "line": 33,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/ParalPoison.java",
+    "line": 69,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/PoisonCloud.java",
+    "line": 33,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/PoisonCloud.java",
+    "line": 69,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/PosChange.java",
+    "line": 28,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/PosChange.java",
+    "line": 65,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/ReCall.java",
+    "line": 29,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/ReCall.java",
+    "line": 66,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/ReduceHeal.java",
+    "line": 32,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/ReduceHeal.java",
+    "line": 68,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/RindFly.java",
+    "line": 36,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/RindFly.java",
+    "line": 103,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/RindFly.java",
+    "line": 157,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Stun.java",
+    "line": 33,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Stun.java",
+    "line": 70,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Stun.java",
+    "line": 101,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Summon.java",
+    "line": 30,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/Summon.java",
+    "line": 59,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/TargetToEffect.java",
+    "line": 30,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/TargetToEffect.java",
+    "line": 66,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/TargetToEffect.java",
+    "line": 96,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/ValakasNormal.java",
+    "line": 29,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/ValakasNormal.java",
+    "line": 76,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/ValakasNormal.java",
+    "line": 119,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/WideAreaSkill.java",
+    "line": 30,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/WideAreaSkill.java",
+    "line": 67,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/WideAreaSkill.java",
+    "line": 100,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/WpBrk.java",
+    "line": 31,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/BossSkill/WpBrk.java",
+    "line": 66,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(own, getSafeActId());"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/MJRaidObject.java",
+    "line": 371,
+    "receiver": "SC_OnlyEffect",
+    "kind": "SC_static",
+    "code": "SC_OnlyEffect.broadcast(pc, pc.getId(), 7783);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    "line": 350,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    "line": 371,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    "line": 443,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, 19);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    "line": 463,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, 19);"
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    "line": 605,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(fire, 28);"
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToCombatListenerAdapter.java",
+    "line": 140,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(_opened_message);"
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java",
+    "line": 127,
+    "receiver": "l1j.server.server.model.network.core.sc.packet.SC_SystemMessage",
+    "kind": "instance_or_unknown",
+    "code": "l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcast(_opened_message);"
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/L1Instance/MJL1TowerInstance.java",
+    "line": 40,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, act);"
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/L1Instance/MJL1TowerInstance.java",
+    "line": 54,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_TowerDie);"
+  },
+  {
+    "file": "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    "line": 478,
+    "receiver": "SC_IconMessage",
+    "kind": "SC_static",
+    "code": "SC_IconMessage.broadcast(CASTLE_ANNOUNCEMENTS[_castleId - 1], MJSimpleRgb.red(), 6298, 10);"
+  },
+  {
+    "file": "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    "line": 482,
+    "receiver": "SC_IconMessage",
+    "kind": "SC_static",
+    "code": "SC_IconMessage.broadcast(3757, MJSimpleRgb.red(), 6298, 10);"
+  },
+  {
+    "file": "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    "line": 500,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(String.format(\"현재 진행중인 공성: '%s'\", _castleName));"
+  },
+  {
+    "file": "src/l1j/server/SpecialEventHandler.java",
+    "line": 114,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"잠시후 월드채팅이 비활성화 상태로 돌입 합니다.\");"
+  },
+  {
+    "file": "src/l1j/server/SpecialEventHandler.java",
+    "line": 119,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"잠시후 월드채팅이 활성화 상태로 돌입 합니다.\");"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+    "line": 137,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(_ment);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+    "line": 136,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(_ment);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    "line": 171,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(_ment);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+    "line": 136,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(_ment);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+    "line": 136,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(_ment);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+    "line": 136,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(_ment);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+    "line": 136,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(_ment);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+    "line": 136,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(_ment);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+    "line": 136,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(_ment);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+    "line": 136,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(_ment);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+    "line": 136,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(_ment);"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/BossController.java",
+    "line": 479,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(b.getMentMessage());"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/BugRaceController.java",
+    "line": 1161,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(_littleBugBear[_bugId], _littleBugBear[_bugId].getId(), 30);"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/BugRaceController.java",
+    "line": 1180,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(_littleBugBear[_bugId], _littleBugBear[_bugId].getId(), 30);"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/BugRaceController.java",
+    "line": 1202,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(_littleBugBear[_bugId], _littleBugBear[_bugId].getId(), 30);"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/BugRaceController.java",
+    "line": 1221,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(_littleBugBear[_bugId], _littleBugBear[_bugId].getId(), 30);"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/BugRaceController.java",
+    "line": 1236,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(_littleBugBear[_bugId], _littleBugBear[_bugId].getId(), 30);"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/FishingTimeController.java",
+    "line": 757,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 763);"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/FishingTimeController.java",
+    "line": 765,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 763);"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/GameEffectActionController.java",
+    "line": 48,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, _actId);"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/GameSoundController.java",
+    "line": 48,
+    "receiver": "SC_Sound",
+    "kind": "SC_static",
+    "code": "SC_Sound.broadcast(npc, _soundNum);"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/ShipTimeController.java",
+    "line": 250,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"동쪽 해역에서 항해중이던 선박이 침몰하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 678,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"할파스의 집념 드랍율 이벤트가 종료되었습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 682,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"할파스의 집념 드랍율 이벤트가 시작되었습니다. [드랍 수량 : \"+even1+\"배]\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 695,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"영웅 변신 카드 상자 드랍율 이벤트가 종료되었습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 699,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"영웅 변신 카드 상자 드랍율 이벤트가 시작되었습니다. [드랍 수량 : \"+even2+\"배]\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 712,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"금빛 마법 인형 주머니 드랍율 이벤트가 종료되었습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 716,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"금빛 마법 인형 주머니 드랍율 이벤트가 시작되었습니다. [드랍 수량 : \"+even3+\"배]\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 729,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"오림 장신구 주문서 상자 드랍율 이벤트가 종료되었습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 733,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"오림 장신구 주문서 상자 드랍율 이벤트가 시작되었습니다. [드랍 수량 : \"+even5+\"배]\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 746,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"수호성 상자 드랍율 이벤트가 종료되었습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 750,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"수호성 상자 드랍율 이벤트가 시작되었습니다. [드랍 수량 : \"+even4+\"배]\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 1532,
+    "receiver": "SC_CharTitle",
+    "kind": "SC_static",
+    "code": "SC_CharTitle.broadcast(pc, pc.getId(), \"\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 3351,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), sprid);"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5780,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"누군가가 샌드 웜의 모래 주머니에서 (\" + item.getName() + \") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5787,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"누군가가 샌드 웜의 모래 주머니에서 (\" + item.getName() + \") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5793,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 (\"+ item.getName() +\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5799,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 (\"+ item.getName() +\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5805,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 (\"+ item.getName() +\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5811,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 (\"+ item.getName() +\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5817,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 (\"+ item.getName() +\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5823,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 (\"+ item.getName() +\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5829,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 (\"+ item.getName() +\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5835,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 (\"+ item.getName() +\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5841,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 (\"+ item.getName() +\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5847,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 (\"+ item.getName() +\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5853,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 (\"+ item.getName() +\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5859,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 (\"+ item.getName() +\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5866,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"누군가가 에르자베의 알에서 (\" + item.getName() + \") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5901,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"누군가가 빛나는 룬스톤에서 (\" + item.getName() + \") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5908,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"누군가가 빛나는 룬스톤에서 (\" + item.getName() + \") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5915,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"누군가가 빛나는 룬스톤에서 (\" + item.getName() + \") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 5922,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"누군가가 빛나는 룬스톤에서 (\" + item.getName() + \") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 68,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 84,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 101,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 118,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 134,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 150,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 166,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 182,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 198,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 214,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 230,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 246,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 262,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 278,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 294,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 310,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 326,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 342,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 358,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 374,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 390,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 407,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 423,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 439,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 455,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 471,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 487,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 503,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 519,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 536,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 552,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 568,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 584,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 600,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 616,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard.java",
+    "line": 632,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 75,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 92,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 109,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 126,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 143,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 160,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 177,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 194,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 210,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 226,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 242,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 258,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 274,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 291,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 311,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 329,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 346,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 363,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 380,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 397,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 415,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard2.java",
+    "line": 432,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard3.java",
+    "line": 75,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard3.java",
+    "line": 93,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard3.java",
+    "line": 112,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeCard3.java",
+    "line": 131,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeGMEvent.java",
+    "line": 86,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"할파스의 집념 드랍율 이벤트가 시작되었습니다. [드랍 수량 : \"+Config.할파스갯수+\"배]\");"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeGMEvent.java",
+    "line": 91,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"영웅 변신 카드상자 드랍율 이벤트가 시작되었습니다. [드랍 수량 : \"+Config.카드갯수+\"배]\");"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeGMEvent.java",
+    "line": 96,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"오림의 장신구 마법 주문서 상자 드랍율 이벤트가 시작되었습니다. [드랍 수량 : \"+Config.오림갯수+\"배]\");"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeGMEvent.java",
+    "line": 101,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"금빛 마법인형 주머니 드랍율 이벤트가 시작되었습니다. [드랍 수량 : \"+Config.인형갯수+\"배]\");"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeGMEvent.java",
+    "line": 106,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"수호성 상자 드랍율 이벤트가 시작되었습니다. [드랍 수량 : \"+Config.수호성갯수+\"배]\");"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeGMEvent.java",
+    "line": 111,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"할파스의 집념 드랍율 이벤트가 종료되었습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeGMEvent.java",
+    "line": 116,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"영웅 변신 카드상자 드랍율 이벤트가 종료되었습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeGMEvent.java",
+    "line": 121,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"오림의 장신구 마법 주문서 상자 드랍율 이벤트가 종료되었습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeGMEvent.java",
+    "line": 126,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"금빛 마법인형 주머니 드랍율 이벤트가 종료되었습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeGMEvent.java",
+    "line": 131,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"수호성 상자 드랍율 이벤트가 종료되었습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 48,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 54,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 60,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 66,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 72,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 78,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 84,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 90,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 96,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 102,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 108,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 114,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 120,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 126,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 132,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 138,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 144,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeLow.java",
+    "line": 150,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 44,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 50,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 56,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 62,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 68,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 74,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 80,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 86,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 92,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 98,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 104,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 110,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 116,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 122,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 128,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 134,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeNormal.java",
+    "line": 140,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6082);"
+  },
+  {
+    "file": "src/l1j/server/server/NeigeTower.java",
+    "line": 70,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7976);"
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1AdShop.java",
+    "line": 164,
+    "receiver": "SC_DoActionShop",
+    "kind": "SC_static",
+    "code": "SC_DoActionShop.broadcast(newPc, newPc.getId(), ActionCodes.ACTION_Shop, chat);"
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1AddSkill.java",
+    "line": 43,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, object_id, '\\343');"
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1Burf.java",
+    "line": 40,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _pc.getId(), _sprid+i);"
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1ChatNG2.java",
+    "line": 34,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(name + \" 캐릭터 \"+ String.valueOf(time) + \"분간 채팅금지 (사유: \" + reason + \")\");"
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1ImPactGfxid.java",
+    "line": 123,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_NpcInstance, _PactId);"
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1ImPactGfxid1.java",
+    "line": 117,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_NpcInstance, _PactId);"
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1Invisible.java",
+    "line": 26,
+    "receiver": "SC_Invis",
+    "kind": "SC_static",
+    "code": "SC_Invis.broadcast(pc, pc.getId(), 1);"
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1Invisible.java",
+    "line": 28,
+    "receiver": "SC_RemoveObject",
+    "kind": "SC_static",
+    "code": "SC_RemoveObject.broadcast(pc);"
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1Ress.java",
+    "line": 51,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(tg, tg.getId(), 3944);"
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1Ress.java",
+    "line": 58,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(tg, tg.getId(), 832);"
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1Status.java",
+    "line": 85,
+    "receiver": "SC_Lawful",
+    "kind": "SC_static",
+    "code": "SC_Lawful.broadcast(target, target.getId(), lawful);"
+  },
+  {
+    "file": "src/l1j/server/server/datatables/CharacterShopTable.java",
+    "line": 106,
+    "receiver": "SC_DoActionShop",
+    "kind": "SC_static",
+    "code": "SC_DoActionShop.broadcast(pc, pc.getId(), ActionCodes.ACTION_Shop, text);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 98,
+    "receiver": "SC_SkillHaste",
+    "kind": "SC_static",
+    "code": "SC_SkillHaste.broadcast(_pc, _pc.getId(), 1, 1200);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 100,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_support, 19);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 102,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _pc.getId(), 755);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 113,
+    "receiver": "SC_SkillHaste",
+    "kind": "SC_static",
+    "code": "SC_SkillHaste.broadcast(_support, _support.getId(), 1, 1200);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 115,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_support, 19);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 116,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_support, _support.getId(), 755);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 127,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(_support, _support.getId(), 4, 32);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 130,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_support, 19);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 131,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_support, _support.getId(), 3936);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 148,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_support, 19);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 150,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _pc.getId(), 751);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 168,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_support, 19);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 170,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _pc.getId(), 750);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 180,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_support, 19);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 182,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _pc.getId(), 830);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 193,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_support, 19);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 195,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _pc.getId(), 830);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 206,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_support, 19);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 207,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_support, _support.getId(), 830);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 218,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_support, 19);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 220,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _pc.getId(), 871);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 245,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_support, 19);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 247,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _pc.getId(), 3935);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 264,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_support, 19);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 266,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _pc.getId(), 3943);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 279,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_support, 19);"
+  },
+  {
+    "file": "src/l1j/server/server/model/HelpBySupport.java",
+    "line": 281,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _pc.getId(), 228);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1CastleGuardInstance.java",
+    "line": 399,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1CataInstance.java",
+    "line": 164,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1CompanionInstance.java",
+    "line": 1355,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(this, getId(), 6353);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1DollInstance.java",
+    "line": 535,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_master, _master.getId(), 6319);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1DollInstance.java",
+    "line": 547,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_master, _master.getId(), 6319);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1DoorInstance.java",
+    "line": 153,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, DoorAction(GfxId, ActionCodes.ACTION_DoorAction5));"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1DoorInstance.java",
+    "line": 159,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_DoorAction4);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1DoorInstance.java",
+    "line": 165,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_DoorAction3);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1DoorInstance.java",
+    "line": 171,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_DoorAction2);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1DoorInstance.java",
+    "line": 177,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_DoorAction1);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1DoorInstance.java",
+    "line": 206,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(L1DoorInstance.this, DoorAction(GfxId, ActionCodes.ACTION_DoorDie));"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1DoorInstance.java",
+    "line": 268,
+    "receiver": "SC_Door",
+    "kind": "SC_static",
+    "code": "SC_Door.broadcast(this, x, y, getDirection(), att);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1DoorInstance.java",
+    "line": 288,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Open);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1DoorInstance.java",
+    "line": 302,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Close);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1EffectInstance.java",
+    "line": 87,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1EffectInstance.java",
+    "line": 101,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(mob, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1GuardInstance.java",
+    "line": 372,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1GuardianInstance.java",
+    "line": 198,
+    "receiver": "SC_ChangeHeading",
+    "kind": "SC_static",
+    "code": "SC_ChangeHeading.broadcast(this);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1GuardianInstance.java",
+    "line": 274,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MerchantInstance.java",
+    "line": 135,
+    "receiver": "SC_ChangeHeading",
+    "kind": "SC_static",
+    "code": "SC_ChangeHeading.broadcast(this);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MerchantInstance.java",
+    "line": 204,
+    "receiver": "SC_Invis",
+    "kind": "SC_static",
+    "code": "SC_Invis.broadcast(player, player.getId(), 1);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MerchantInstance.java",
+    "line": 205,
+    "receiver": "SC_RemoveObject",
+    "kind": "SC_static",
+    "code": "SC_RemoveObject.broadcast(player);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MerchantInstance.java",
+    "line": 391,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(player, player.getId(), 9009);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 593,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7783);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 629,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7783);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 659,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, 4);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 699,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(PearlBuff, PearlBuff.getId(), 7836);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 706,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(PearlBuff, PearlBuff.getId(), 7834);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 743,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(Pearl, Pearl.getId(), 233);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 749,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(Pearl, Pearl.getId(), 224);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 754,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(PearlBuff, PearlBuff.getId(), 7836);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 758,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(PearlBuff, PearlBuff.getId(), 7834);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 784,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, dieGfx);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 1020,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Hide);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 1031,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_AntharasHide);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 1043,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Moveup);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 1054,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Moveup);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    "line": 963,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Movedown);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    "line": 1356,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Appear);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    "line": 1366,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Movedown);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    "line": 1423,
+    "receiver": "SC_MoveChar",
+    "kind": "SC_static",
+    "code": "SC_MoveChar.broadcast(this);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    "line": 1964,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(this, getId(), transformGfxId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    "line": 2312,
+    "receiver": "SC_ExplosionNoti",
+    "kind": "SC_static",
+    "code": "SC_ExplosionNoti.broadcast(_npc, _npc.getId(), _explosion_remain_time);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 1857,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(this, getId(), 16533);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 1859,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(this, getId(), 12, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 2137,
+    "receiver": "SC_Poison",
+    "kind": "SC_static",
+    "code": "SC_Poison.broadcast(this, getId(), poisonId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 3193,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(this, getId(), 14541);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 3209,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(this, getId(), 14541);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 3528,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(this, getId(), 14541);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 3544,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(this, getId(), 14541);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 3665,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"==========================\");"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 3747,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 5008,
+    "receiver": "SC_CharTitle",
+    "kind": "SC_static",
+    "code": "SC_CharTitle.broadcast(this, getId(), \"\");"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 5253,
+    "receiver": "SC_Poison",
+    "kind": "SC_static",
+    "code": "SC_Poison.broadcast(this, getId(), effectId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 6459,
+    "receiver": "SC_CharTitle",
+    "kind": "SC_static",
+    "code": "SC_CharTitle.broadcast(this, getId(), broadcastTitle);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 6676,
+    "receiver": "SC_CharSpeedUpdate",
+    "kind": "SC_static",
+    "code": "SC_CharSpeedUpdate.broadcast(this, getId(), status, level);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 7142,
+    "receiver": "SC_ChangeShape",
+    "kind": "SC_static",
+    "code": "SC_ChangeShape.broadcast(this, getId(), poly, getCurrentWeapon());"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PeopleInstance.java",
+    "line": 89,
+    "receiver": "SC_ChangeHeading",
+    "kind": "SC_static",
+    "code": "SC_ChangeHeading.broadcast(this);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PeopleInstance.java",
+    "line": 164,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PetInstance.java",
+    "line": 264,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1QuestInstance.java",
+    "line": 85,
+    "receiver": "SC_ChangeHeading",
+    "kind": "SC_static",
+    "code": "SC_ChangeHeading.broadcast(this);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1ScarecrowInstance.java",
+    "line": 48,
+    "receiver": "SC_ChangeHeading",
+    "kind": "SC_static",
+    "code": "SC_ChangeHeading.broadcast(this);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1SummonInstance.java",
+    "line": 314,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1SummonInstance.java",
+    "line": 351,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(this, getId(), 169);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1TowerFromLfcInstance.java",
+    "line": 43,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1TowerFromLfcInstance.java",
+    "line": 53,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1TowerFromLfcInstance.java",
+    "line": 63,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1TowerFromLfcInstance.java",
+    "line": 87,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1TowerInstance.java",
+    "line": 96,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1TowerInstance.java",
+    "line": 108,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1TowerInstance.java",
+    "line": 120,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1TowerInstance.java",
+    "line": 132,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1TowerInstance.java",
+    "line": 268,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1TowerInstance.java",
+    "line": 285,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1TowerInstance.java",
+    "line": 302,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1TowerInstance.java",
+    "line": 334,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_TowerDie);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/MJMessengerInstance.java",
+    "line": 36,
+    "receiver": "SC_ChangeName",
+    "kind": "SC_static",
+    "code": "SC_ChangeName.broadcast(this, getId(), get_current_message());"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Character.java",
+    "line": 1306,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(this, action_id);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1ClanJoin.java",
+    "line": 147,
+    "receiver": "SC_CharTitle",
+    "kind": "SC_static",
+    "code": "SC_CharTitle.broadcast(joinPc, joinPc.getId(), joinPc.getTitle());"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1EquipmentSlot.java",
+    "line": 12332,
+    "receiver": "SC_SkillHaste",
+    "kind": "SC_static",
+    "code": "SC_SkillHaste.broadcast(_owner, _owner.getId(), 1, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1EquipmentSlot.java",
+    "line": 12339,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(_owner, _owner.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1EquipmentSlot.java",
+    "line": 12408,
+    "receiver": "SC_SkillHaste",
+    "kind": "SC_static",
+    "code": "SC_SkillHaste.broadcast(_owner, _owner.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1GroundInventory.java",
+    "line": 62,
+    "receiver": "SC_DropItem",
+    "kind": "SC_static",
+    "code": "final int viewers = SC_DropItem.broadcast(item, true);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1GroundInventory.java",
+    "line": 74,
+    "receiver": "SC_DropItem",
+    "kind": "SC_static",
+    "code": "SC_DropItem.broadcast(item);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 200,
+    "receiver": "SC_OnlyEffect",
+    "kind": "SC_static",
+    "code": "SC_OnlyEffect.broadcast(_targetPc, _targetPc.getId(), 10702);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 549,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_targetPc, _targetPc.getId(), 14446);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 562,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_targetPc, _targetPc.getId(), 14446);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 568,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_targetPc, _targetPc.getId(), 14446);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 607,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_targetNpc, _targetNpc.getId(), 8987);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 608,
+    "receiver": "SC_SkillHaste",
+    "kind": "SC_static",
+    "code": "SC_SkillHaste.broadcast(_targetNpc, _targetNpc.getId(), 1, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 1728,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _pc.getId(), awakeeff1);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 1730,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _targetPc.getId(), awakeeff2);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 1736,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _targetPc.getId(), 21161);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 1742,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _targetPc.getId(), 374);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 1825,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _pc.getId(), awakeeff1);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 1827,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _targetNpc.getId(), awakeeff2);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 1833,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _targetNpc.getId(), 21161);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Magic.java",
+    "line": 1839,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pc, _targetNpc.getId(), 374);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1MobSkillUse.java",
+    "line": 316,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(attacker, attacker.getId(), 761);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1MobSkillUse.java",
+    "line": 318,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/L1MobSkillUse.java",
+    "line": 386,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 230);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1MobSkillUse.java",
+    "line": 391,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/L1MobSkillUse.java",
+    "line": 1300,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/L1MobSkillUse.java",
+    "line": 1308,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/L1PetMatch.java",
+    "line": 193,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pet1[petMatchNo], _pet1[petMatchNo].getId(), a);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1PetMatch.java",
+    "line": 194,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pet2[petMatchNo], _pet2[petMatchNo].getId(), b);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1PetMatch.java",
+    "line": 431,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pet1, _pet1.getId(), 6354);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1PetMatch.java",
+    "line": 434,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(_pet2, _pet2.getId(), 6354);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1PinkName.java",
+    "line": 85,
+    "receiver": "SC_PinkName",
+    "kind": "SC_static",
+    "code": "SC_PinkName.broadcast(pc, pc.getId(), 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1PolyMorph.java",
+    "line": 263,
+    "receiver": "SC_ChangeShape",
+    "kind": "SC_static",
+    "code": "SC_ChangeShape.broadcast(pc, pc.getId(), polyId, 29);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1PolyMorph.java",
+    "line": 325,
+    "receiver": "SC_ChangeShape",
+    "kind": "SC_static",
+    "code": "SC_ChangeShape.broadcast(mob, mob.getId(), polyId, 29);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1PolyMorph.java",
+    "line": 352,
+    "receiver": "SC_ChangeShape",
+    "kind": "SC_static",
+    "code": "SC_ChangeShape.broadcast(pc, pc.getId(), PolyList[polyIndex - 1], ActionCodes.ACTION_Shop);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1PolyMorph.java",
+    "line": 367,
+    "receiver": "SC_ChangeShape",
+    "kind": "SC_static",
+    "code": "SC_ChangeShape.broadcast(pc, pc.getId(), classId, pc.getCurrentWeapon());"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1PolyMorph.java",
+    "line": 380,
+    "receiver": "SC_ChangeShape",
+    "kind": "SC_static",
+    "code": "SC_ChangeShape.broadcast(pc, pc.getId(), classId, pc.getCurrentWeapon());"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1PolyMorph.java",
+    "line": 441,
+    "receiver": "SC_ChangeShape",
+    "kind": "SC_static",
+    "code": "SC_ChangeShape.broadcast(mob, mob.getId(), mob.getCurrentSpriteId(), 29);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Question.java",
+    "line": 76,
+    "receiver": "SC_MessageYN",
+    "kind": "SC_static",
+    "code": "SC_MessageYN.broadcast(622, maintext);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Spawn.java",
+    "line": 502,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(mob, 4);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 139,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18488);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 144,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(targetPc, targetPc.getId(), 4184);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 149,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18492);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 169,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 173,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 200,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18484);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 204,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18486);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 224,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 228,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 280,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 6983);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 283,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7049);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 316,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(targetPc, targetPc.getId(), 4184);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 324,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(npc, npc.getId(), 4184);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 373,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 2230);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 396,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 3939);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 418,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 3939);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 440,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 3939);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 476,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, 7398);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 494,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18516);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 498,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18514);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 518,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 522,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 550,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18478);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 556,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(targetPc, targetPc.getId(), 4184);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 562,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18482);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 584,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 588,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 615,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18520);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 621,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(targetPc, targetPc.getId(), 4184);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 643,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18510);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 671,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 675,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 702,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18500);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 708,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(targetPc, targetPc.getId(), 4184);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 731,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18496);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 759,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 763,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 785,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18502);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 790,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(targetPc, targetPc.getId(), 4184);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 796,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18506);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 818,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 822,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 849,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18474);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 855,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(targetPc, cha.getId(), 4184);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 877,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 18470);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 905,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 909,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 936,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 13469);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 942,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(targetPc, targetPc.getId(), 4184);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 948,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, cha.getId(), 13471);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 969,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 973,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 994,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1011,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1028,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1045,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1062,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1100,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1117,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1137,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1160,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1181,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1202,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1223,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1244,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1263,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1283,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1305,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1327,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1345,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1367,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1388,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1408,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, locx, locy, effect);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1WeaponSkill.java",
+    "line": 1485,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(cha, cha.getId(), 10702);"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1World.java",
+    "line": 765,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(message);"
+  },
+  {
+    "file": "src/l1j/server/server/model/Light.java",
+    "line": 73,
+    "receiver": "SC_Light",
+    "kind": "SC_static",
+    "code": "SC_Light.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/SeasonRewardHandler.java",
+    "line": 72,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), Config.SEASON_REWARD_EFFECT);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/Combat/MortalBody/MortalBodyProcEngine.java",
+    "line": 48,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(attacker, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 794,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(attacker, attacker.getId(), gfxId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 805,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(attacker, attacker.getId(), gfxId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2024,
+    "receiver": "SC_AttackCritical",
+    "kind": "SC_static",
+    "code": "SC_AttackCritical.broadcast(_pc, _targetId, _targetX, _targetY, _weaponType, true);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2037,
+    "receiver": "SC_AttackCritical",
+    "kind": "SC_static",
+    "code": "SC_AttackCritical.broadcast(_pc, _targetId, _targetX, _targetY, _weaponType, true);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2048,
+    "receiver": "SC_AttackMissPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackMissPacket.broadcast(_pc, _targetId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2051,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(_pc, 0, ActionCodes.ACTION_Attack);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2077,
+    "receiver": "SC_AttackCritical",
+    "kind": "SC_static",
+    "code": "SC_AttackCritical.broadcast(_pc, _targetId,"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2082,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(_pc, _targetId, ActionCodes.ACTION_Attack, _attackType);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2136,
+    "receiver": "SC_UseArrowSkill",
+    "kind": "SC_static",
+    "code": "SC_UseArrowSkill.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2147,
+    "receiver": "SC_UseAttackSkill",
+    "kind": "SC_static",
+    "code": "SC_UseAttackSkill.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2156,
+    "receiver": "SC_AttackPacketForNpc",
+    "kind": "SC_static",
+    "code": "SC_AttackPacketForNpc.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2283,
+    "receiver": "SC_AttackMissPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackMissPacket.broadcast(_pc, _targetId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2285,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2300,
+    "receiver": "SC_UseAttackSkill",
+    "kind": "SC_static",
+    "code": "SC_UseAttackSkill.broadcast(_npc, _target, _npc.getId(), getGfxId(), _targetX, _targetY, actId, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2302,
+    "receiver": "SC_AttackMissPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackMissPacket.broadcast(_npc, _targetId, actId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2304,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_npc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2325,
+    "receiver": "SC_UseAttackSkill",
+    "kind": "SC_static",
+    "code": "SC_UseAttackSkill.broadcast(pc, _target, pc.getId(), getGfxId(), _targetX, _targetY, actId, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2327,
+    "receiver": "SC_AttackMissPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackMissPacket.broadcast(pc, _targetId, actId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2329,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2352,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2358,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "if (animateNormalAttack) SC_DoActionGFX.broadcast(_npc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2491,
+    "receiver": "SC_AttackMissPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackMissPacket.broadcast(_pc, _targetId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2497,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2510,
+    "receiver": "SC_UseAttackSkill",
+    "kind": "SC_static",
+    "code": "SC_UseAttackSkill.broadcast(_npc, _target, _npc.getId(), getGfxId(), _targetX, _targetY, actId, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2512,
+    "receiver": "SC_AttackMissPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackMissPacket.broadcast(_npc, _targetId, actId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CAttackAction.java",
+    "line": 2514,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(_npc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CCreatureController.java",
+    "line": 587,
+    "receiver": "SC_ChangeHeading",
+    "kind": "SC_static",
+    "code": "SC_ChangeHeading.broadcast(pc, pc.getId(), a0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CGeneralAction.java",
+    "line": 211,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CGetItemAction.java",
+    "line": 446,
+    "receiver": "SC_AttackStatus",
+    "kind": "SC_static",
+    "code": "SC_AttackStatus.broadcast(owner, attackId, attackHeading, tId, ActionCodes.ACTION_Pickup);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CMoveAction.java",
+    "line": 236,
+    "receiver": "SC_MoveChar",
+    "kind": "SC_static",
+    "code": "SC_MoveChar.broadcast(pc);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/effect/PcWantedEffects.java",
+    "line": 49,
+    "receiver": "SC_CharTitle",
+    "kind": "SC_static",
+    "code": "SC_CharTitle.broadcast(pc, pc.getId(), L1PcInstance.WANTED_TITLE1);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/effect/PcWantedEffects.java",
+    "line": 68,
+    "receiver": "SC_CharTitle",
+    "kind": "SC_static",
+    "code": "SC_CharTitle.broadcast(pc, pc.getId(), L1PcInstance.WANTED_TITLE);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java",
+    "line": 69,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 1, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java",
+    "line": 74,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 3, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java",
+    "line": 79,
+    "receiver": "SC_SkillHaste",
+    "kind": "SC_static",
+    "code": "SC_SkillHaste.broadcast(pc, pc.getId(), 1, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java",
+    "line": 383,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 3, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java",
+    "line": 387,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 4, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/login/skill/BuffRestoreRegistryInit.java",
+    "line": 515,
+    "receiver": "SC_Liquor",
+    "kind": "SC_static",
+    "code": "SC_Liquor.broadcast(pc, pc.getId(), 8);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/scheduler/CRegenController.java",
+    "line": 357,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/character/scheduler/PcInventoryExpiryScheduler.java",
+    "line": 436,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(support, support.getId(), 5936);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/L1BuffUtil.java",
+    "line": 45,
+    "receiver": "SC_SkillHaste",
+    "kind": "SC_static",
+    "code": "SC_SkillHaste.broadcast(pc, objId, 1, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/L1BuffUtil.java",
+    "line": 48,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, objId, 191);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/L1BuffUtil.java",
+    "line": 68,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, objId, 1, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/L1BuffUtil.java",
+    "line": 71,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, objId, 751);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/L1BuffUtil.java",
+    "line": 85,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, objId, 8031);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/L1BuffUtil.java",
+    "line": 88,
+    "receiver": "SC_Liquor",
+    "kind": "SC_static",
+    "code": "SC_Liquor.broadcast(pc, objId, 8);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/L1BuffUtil.java",
+    "line": 235,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(target, target.getId(), skill.getCastGfx());"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/L1BuffUtil.java",
+    "line": 323,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(target, objId, skill.getCastGfx());"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/TomahawkBleedService.java",
+    "line": 244,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/helper/SkillGfxHelper.java",
+    "line": 131,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, actionId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/helper/SkillGfxHelper.java",
+    "line": 185,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(player, actionId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/helper/SkillGfxHelper.java",
+    "line": 241,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(player, skill.getActionId());"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/helper/SkillGfxHelper.java",
+    "line": 312,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(user, skill.getActionId());"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/helper/SkillGfxHelper.java",
+    "line": 319,
+    "receiver": "SC_UseAttackSkill",
+    "kind": "SC_static",
+    "code": "SC_UseAttackSkill.broadcast(user, targetId, castgfx, fx, fy, actionId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/helper/SkillGfxHelper.java",
+    "line": 324,
+    "receiver": "SC_UseAttackSkill",
+    "kind": "SC_static",
+    "code": "SC_UseAttackSkill.broadcast(user, 0, castgfx, fx, fy, actionId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/helper/SkillGfxHelper.java",
+    "line": 334,
+    "receiver": "SC_UseAttackSkill",
+    "kind": "SC_static",
+    "code": "SC_UseAttackSkill.broadcast(user, 0, castgfx, fx, fy, actionId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/helper/SkillGfxHelper.java",
+    "line": 340,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(user, skill.getActionId());"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/Card/L1CardAlchemy2.java",
+    "line": 133,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7976);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/Card/L1CardAlchemy3.java",
+    "line": 216,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7976);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/Exp/CalcExp.java",
+    "line": 91,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pet.getId(), 6353);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/L1TreasureBox.java",
+    "line": 386,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(pc.getName()+\"님께서 \"+boxName+\"에서 (\"+name+\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/L1TreasureBox.java",
+    "line": 390,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"누군가가 빛나는 룬스톤에서 (\"+name+\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/L1TreasureBox.java",
+    "line": 393,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"누군가가 에르자베의 알에서 (\"+name+\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/L1TreasureBox.java",
+    "line": 397,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"누군가가 샌드 웜의 모래 주머니에서 (\"+name+\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/L1TreasureBox.java",
+    "line": 401,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 (\"+name+\") 를(을) 획득하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/BluePotion.java",
+    "line": 83,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 190);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/BravePotion.java",
+    "line": 78,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/BravePotion.java",
+    "line": 83,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), type, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/BravePotion.java",
+    "line": 85,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), pc.isPassive(MJPassiveID.DARK_HORSE.toInt()) ? 751 : 7110);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/BravePotion.java",
+    "line": 113,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 3, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/BravePotion.java",
+    "line": 117,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 1, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/BravePotion.java",
+    "line": 121,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 751);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/BravePotion.java",
+    "line": 131,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/CItemUseClan.java",
+    "line": 127,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member, member.getId(), 13566);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/CItemUseRewards.java",
+    "line": 226,
+    "receiver": "l1j.server.server.model.network.core.sc.packet.SC_Sound",
+    "kind": "instance_or_unknown",
+    "code": "l1j.server.server.model.network.core.sc.packet.SC_Sound.broadcast(pc, 165);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/CItemUseRewards.java",
+    "line": 238,
+    "receiver": "l1j.server.server.model.network.core.sc.packet.SC_Sound",
+    "kind": "instance_or_unknown",
+    "code": "l1j.server.server.model.network.core.sc.packet.SC_Sound.broadcast(pc, 165);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/CurePotion.java",
+    "line": 53,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 192);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/FishitemService.java",
+    "line": 225,
+    "receiver": "SC_Fishing",
+    "kind": "SC_static",
+    "code": "SC_Fishing.broadcast(pc, pc.getId(), ActionCodes.ACTION_Fishing, fishX, fishY);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemLearningRule.java",
+    "line": 123,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 224);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 69,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 8531);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 156,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 12301);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 213,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(player, player.getId(), 12301);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 280,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 231);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 329,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 21103);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 360,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(player, player.getId(), 231);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 411,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(player, player.getId(), 21103);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 460,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 14455);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 515,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 16647);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 560,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 10909);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 606,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 12335);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseAinBlessing.java",
+    "line": 99,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 15357);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseAinBlessing.java",
+    "line": 118,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 15357);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseAinBlessing.java",
+    "line": 132,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 15357);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseAinBlessing.java",
+    "line": 146,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 15357);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseAinBlessing.java",
+    "line": 184,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 197);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseAinBlessing.java",
+    "line": 203,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 197);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseAreaDamage.java",
+    "line": 68,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, 2);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseAreaDamage.java",
+    "line": 78,
+    "receiver": "SC_UseAttackSkill",
+    "kind": "SC_static",
+    "code": "SC_UseAttackSkill.broadcast(pc, target.getId(), effect,"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCombatSupport.java",
+    "line": 60,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCombatSupport.java",
+    "line": 64,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCombatSupport.java",
+    "line": 89,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(cha, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCombatSupport.java",
+    "line": 103,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(member1, ActionCodes.ACTION_Damage);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    "line": 37,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    "line": 89,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member, member.getId(), 10702);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    "line": 123,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member, member.getId(), 14545);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    "line": 143,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    "line": 201,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member, member.getId(), 12261);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    "line": 225,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java",
+    "line": 267,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), gfxid);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java",
+    "line": 325,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 190);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseConsumablesCases.java",
+    "line": 298,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 190);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCraftAndBuff.java",
+    "line": 107,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7954);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCraftAndBuff.java",
+    "line": 128,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7952);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCraftAndBuff.java",
+    "line": 151,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7956);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCreature.java",
+    "line": 53,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 12536);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCreature.java",
+    "line": 83,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 12536);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCreature.java",
+    "line": 153,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseDurable.java",
+    "line": 389,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7976);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseDurable.java",
+    "line": 611,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 16518);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseDurableSkills.java",
+    "line": 218,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 3241);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseEnchantments.java",
+    "line": 494,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(\"어느 아덴 용사 님께서 +\"+oldEnchantLvl+\" \" +item.getName()+\" \\\\fH인챈트에 성공하였습니다.\");"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMagicCombat.java",
+    "line": 40,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMagicCombat.java",
+    "line": 105,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member, member.getId(), 13136);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMagicCombat.java",
+    "line": 111,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member, member.getId(), 13136);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMagicCombat.java",
+    "line": 144,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member, member.getId(), 13136);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMagicCombat.java",
+    "line": 150,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member, member.getId(), 13136);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMagicCombat.java",
+    "line": 216,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member1, member1.getId(), 13136);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMagicCombat.java",
+    "line": 223,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member1, member1.getId(), 13136);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMiscActions.java",
+    "line": 82,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMiscActions.java",
+    "line": 144,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 14102);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMiscActions.java",
+    "line": 155,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMiscActions.java",
+    "line": 175,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMiscActions.java",
+    "line": 236,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, pc.getX(), pc.getY(), 2235);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMiscActions.java",
+    "line": 311,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMiscActions.java",
+    "line": 335,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(target, target.getId(), 15101);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseMiscActions.java",
+    "line": 346,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(targetnpc, obj.getId(), 15101);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePassiveLearning.java",
+    "line": 157,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 3, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePassiveLearning.java",
+    "line": 173,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 3, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 465,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 191);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 478,
+    "receiver": "SC_SkillHaste",
+    "kind": "SC_static",
+    "code": "SC_SkillHaste.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 483,
+    "receiver": "SC_SkillHaste",
+    "kind": "SC_static",
+    "code": "SC_SkillHaste.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 499,
+    "receiver": "SC_SkillHaste",
+    "kind": "SC_static",
+    "code": "SC_SkillHaste.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 502,
+    "receiver": "SC_SkillHaste",
+    "kind": "SC_static",
+    "code": "SC_SkillHaste.broadcast(pc, pc.getId(), 1, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 535,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 544,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 553,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 560,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 566,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 572,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 578,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 588,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 594,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 601,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 613,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 3, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 617,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), 1, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 621,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 751);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 650,
+    "receiver": "SC_SkillBrave",
+    "kind": "SC_static",
+    "code": "SC_SkillBrave.broadcast(pc, pc.getId(), pc.getBraveSpeed(), 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 652,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7110);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 682,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 190);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 722,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 750);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 763,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 190);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUsePotions.java",
+    "line": 879,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), scroll);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseShadowCombat.java",
+    "line": 40,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseShadowCombat.java",
+    "line": 93,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, pc.getX(), pc.getY(), 2235);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseShadowCombat.java",
+    "line": 178,
+    "receiver": "SC_EffectLocation",
+    "kind": "SC_static",
+    "code": "SC_EffectLocation.broadcast(pc, pc.getX(), pc.getY(), 2235);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseShadowCombat.java",
+    "line": 180,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member1, member1.getId(), 12531);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseShadowCombat.java",
+    "line": 207,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseShadowCombat.java",
+    "line": 292,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, actionId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseShadowCombat.java",
+    "line": 300,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member, member.getId(), 14449);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseShadowCombat.java",
+    "line": 315,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member, member.getId(), 17233);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseShadowCombat.java",
+    "line": 317,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member, member.getId(), 14448);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseStunCombat.java",
+    "line": 39,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseStunCombat.java",
+    "line": 110,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, member.getId(), 5146);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseStunCombat.java",
+    "line": 183,
+    "receiver": "SC_AttackPacket",
+    "kind": "SC_static",
+    "code": "SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseStunCombat.java",
+    "line": 288,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member, member.getId(), 15839);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseStunCombat.java",
+    "line": 366,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(member1, member1.getId(), 15839);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseTransformation.java",
+    "line": 907,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 15846);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseTravelAndRecovery.java",
+    "line": 224,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7470);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseTravelAndRecovery.java",
+    "line": 237,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 750);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseTravelAndRecovery.java",
+    "line": 251,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 750);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseUtilityCases.java",
+    "line": 131,
+    "receiver": "SC_Sound",
+    "kind": "SC_static",
+    "code": "SC_Sound.broadcast(pc, 437);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseWorldHelpers.java",
+    "line": 311,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(support, support.getId(), 5935);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseWorldHelpers.java",
+    "line": 316,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(support, support.getId(), 5936);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseWorldItems.java",
+    "line": 319,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 192);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseWorldItems.java",
+    "line": 338,
+    "receiver": "SC_Sound",
+    "kind": "SC_static",
+    "code": "SC_Sound.broadcast(pc, 10);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseWorldItems.java",
+    "line": 429,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 192);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/Telbookitem.java",
+    "line": 217,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/TeleportUseService.java",
+    "line": 348,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/WisdomPotion.java",
+    "line": 74,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 750);"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/tam/TamFruitUseService.java",
+    "line": 330,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "try { SC_SkillSound.broadcast(caller, caller.getId(), 2028); } catch (Throwable ignore) {}"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/teleport/L1Teleport.java",
+    "line": 254,
+    "receiver": "SC_RemoveObject",
+    "kind": "SC_static",
+    "code": "SC_RemoveObject.broadcast(pc);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java",
+    "line": 426,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java",
+    "line": 719,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java",
+    "line": 759,
+    "receiver": "SC_DoActionShop",
+    "kind": "SC_static",
+    "code": "SC_DoActionShop.broadcast(pc, pc.getId(), ActionCodes.ACTION_Shop, chat);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java",
+    "line": 790,
+    "receiver": "SC_ChangeShape",
+    "kind": "SC_static",
+    "code": "SC_ChangeShape.broadcast(pc, pc.getId(), poly, 70);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java",
+    "line": 824,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    "line": 636,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), '\\346');"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    "line": 641,
+    "receiver": "SC_Resurrection",
+    "kind": "SC_static",
+    "code": "SC_Resurrection.broadcast(pc, pc, resusepc1, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    "line": 653,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), '\\346');"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    "line": 658,
+    "receiver": "SC_Resurrection",
+    "kind": "SC_static",
+    "code": "SC_Resurrection.broadcast(pc, pc, resusepc2, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    "line": 992,
+    "receiver": "SC_RemoveObject",
+    "kind": "SC_static",
+    "code": "SC_RemoveObject.broadcast(pc, pet.getId());"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    "line": 866,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(text);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_ExtraCommand.java",
+    "line": 51,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, actionId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_ExtraCommand.java",
+    "line": 108,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(orim.getShell1(), 10242);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_ExtraCommand.java",
+    "line": 112,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(orim.getShell2(), 10242);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java",
+    "line": 753,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 8473);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java",
+    "line": 764,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 3944);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java",
+    "line": 766,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 9009);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java",
+    "line": 1522,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 9009);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java",
+    "line": 2690,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java",
+    "line": 2775,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 3944);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java",
+    "line": 2795,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 3944);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java",
+    "line": 2815,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 3944);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java",
+    "line": 2905,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java",
+    "line": 2911,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast("
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 1954,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 750);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 2172,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 750);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 4263,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7947);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 4277,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7948);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 4290,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7949);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 4304,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7950);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 4832,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 3944);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 4853,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 3944);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 4867,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 3944);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 5976,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 3944);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 6910,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7382);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 6926,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7383);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 6965,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7382);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java",
+    "line": 6987,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), 7383);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_PersonalShop.java",
+    "line": 274,
+    "receiver": "SC_DoActionShop",
+    "kind": "SC_static",
+    "code": "SC_DoActionShop.broadcast(pc, pc.getId(), ActionCodes.ACTION_Shop, chat);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_PersonalShop.java",
+    "line": 282,
+    "receiver": "SC_ChangeShape",
+    "kind": "SC_static",
+    "code": "SC_ChangeShape.broadcast(pc, pc.getId(), poly, 70);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_PersonalShop.java",
+    "line": 488,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Idle);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_RankControl.java",
+    "line": 354,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), gfx);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Restart.java",
+    "line": 113,
+    "receiver": "SC_RemoveObject",
+    "kind": "SC_static",
+    "code": "SC_RemoveObject.broadcast(pc);"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Title.java",
+    "line": 271,
+    "receiver": "SC_CharTitle",
+    "kind": "SC_static",
+    "code": "SC_CharTitle.broadcast(pc, objectId, broadcastTitle);"
+  },
+  {
+    "file": "src/l1j/server/server/model/npc/action/ActionControlHandler.java",
+    "line": 237,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(pc, pc.getId(), soundId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/npc/ai/NpcPotionPolicy.java",
+    "line": 29,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(npc, npc.getId(), effectId);"
+  },
+  {
+    "file": "src/l1j/server/server/model/npc/ai/NpcPotionPolicy.java",
+    "line": 35,
+    "receiver": "SC_SkillHaste",
+    "kind": "SC_static",
+    "code": "SC_SkillHaste.broadcast(npc, npc.getId(), 1, time);"
+  },
+  {
+    "file": "src/l1j/server/server/model/npc/ai/NpcPotionPolicy.java",
+    "line": 36,
+    "receiver": "SC_SkillSound",
+    "kind": "SC_static",
+    "code": "SC_SkillSound.broadcast(npc, npc.getId(), 191);"
+  },
+  {
+    "file": "src/l1j/server/server/model/npc/shop/NpcShopManager.java",
+    "line": 262,
+    "receiver": "SC_NpcShopAction",
+    "kind": "SC_static",
+    "code": "SC_NpcShopAction.broadcast(npc, npc.getId(), ActionCodes.ACTION_Shop, shop.getShopName());"
+  },
+  {
+    "file": "src/l1j/server/server/packets/Protocol/MainServer/Proto/CS_ALCHEMY_MAKE_REQ.java",
+    "line": 303,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(message);"
+  },
+  {
+    "file": "src/l1j/server/server/packets/Protocol/MainServer/Proto/CS_CRAFT_MAKE_REQ.java",
+    "line": 216,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(message);"
+  },
+  {
+    "file": "src/l1j/server/server/templates/L1Npc.java",
+    "line": 731,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, bornAction);"
+  },
+  {
+    "file": "src/l1j/server/server/utils/L1SpawnUtil.java",
+    "line": 57,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, 4);"
+  },
+  {
+    "file": "src/l1j/server/server/utils/L1SpawnUtil.java",
+    "line": 60,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/utils/L1SpawnUtil.java",
+    "line": 63,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, 8);"
+  },
+  {
+    "file": "src/l1j/server/server/utils/L1SpawnUtil.java",
+    "line": 111,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, 4);"
+  },
+  {
+    "file": "src/l1j/server/server/utils/L1SpawnUtil.java",
+    "line": 114,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/utils/L1SpawnUtil.java",
+    "line": 117,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, 8);"
+  },
+  {
+    "file": "src/l1j/server/server/utils/L1SpawnUtil.java",
+    "line": 166,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, 4);"
+  },
+  {
+    "file": "src/l1j/server/server/utils/L1SpawnUtil.java",
+    "line": 169,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, 0);"
+  },
+  {
+    "file": "src/l1j/server/server/utils/L1SpawnUtil.java",
+    "line": 172,
+    "receiver": "SC_DoActionGFX",
+    "kind": "SC_static",
+    "code": "SC_DoActionGFX.broadcast(npc, 8);"
+  },
+  {
+    "file": "src/l1j/server/server/utils/MJCommons.java",
+    "line": 386,
+    "receiver": "SC_OnlyEffect",
+    "kind": "SC_static",
+    "code": "SC_OnlyEffect.broadcast(c, c.getId(), 10702);"
+  },
+  {
+    "file": "src/l1j/server/server/utils/MessageUtil.java",
+    "line": 17,
+    "receiver": "SC_SystemMessage",
+    "kind": "SC_static",
+    "code": "SC_SystemMessage.broadcast(message);"
+  }
+]

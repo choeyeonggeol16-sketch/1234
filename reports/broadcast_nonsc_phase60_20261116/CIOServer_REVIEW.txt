@@ -1,0 +1,172 @@
+SOURCE src/l1j/server/server/model/network/core/transport/CIOServer.java
+83:     private int registryLive, registryTombstones;
+84:     private final Object registryLock = new Object();
+85:     @SuppressWarnings("preview")
+86: 	private final MemorySegment listener;
+87:     @SuppressWarnings("preview")
+88: 	private final MemorySegment server;
+89:     @SuppressWarnings("unused")
+90: 	private final MethodHandle start, stop, wait, stopAccept, disconnect, pause, send, sendPackets;
+91:     private final MethodHandle sendFrames,sendFramePackets,gracefulClose,getSendDiagnostics;
+92:     private final MethodHandle createConstBuffer,releaseConstBuffer,sendConstBuffer;
+93:     private final AtomicInteger constBuffers = new AtomicInteger();
+94:     private final MethodHandle getRemote, getLocal, getListen;
+95:     @SuppressWarnings("preview")
+96: 	private final MemorySegment acceptStub, receiveStub, sendStub, closeStub;
+97:     private volatile boolean started;
+98:     private volatile boolean destroyed;
+99:     private volatile boolean accepting = true;
+100:     // Prevent native server destruction while an arbitrary Java SEND,
+101:     // PAUSE or DISCONNECT downcall is still executing. No global hot-path lock.
+102:     private final AtomicInteger nativeCalls = new AtomicInteger();
+103:     private volatile boolean shuttingDown;
+104:     private volatile boolean nativeAcceptStopped;
+105:     // One daemon thread only during shutdown; game IOCP and CIO worker layout is unchanged.
+106:     // Never release FFM upcall arenas while a native Stop/StopAccepting call is hung.
+107:     private volatile Thread nativeShutdownThread;
+108:     private volatile boolean nativeStopRequested;
+109:     private volatile boolean nativeStopCompleted;
+175:             // Require our patched export, not an unmodified third-party binary.
+176:             stopAccept = fn("CIOServer_Close", FunctionDescriptor.of(I, P));
+177:             start = fn("Server_Run", FunctionDescriptor.of(I, P, P, ValueLayout.JAVA_SHORT));
+178:             stop = fn("L1Interop_StopServer", FunctionDescriptor.of(I, P));
+179:             wait = fn("L1Interop_WaitServer", FunctionDescriptor.of(I, P, I));
+180:             disconnect = fn("CIOSocketEx_Close", FunctionDescriptor.of(I, P, L));
+181:             pause = fn("L1Interop_PauseRead", FunctionDescriptor.of(I, P, L, I));
+182:             sendFrames=fn("CSocket_SendV",FunctionDescriptor.of(I,P,L,P,I,I));
+183:             sendFramePackets=fn("CSocket___async_AsyncSendConstBuffer",FunctionDescriptor.of(I,P,L,P,I,I));
+184:             gracefulClose=fn("CIOSocketEx_GracefulClose",FunctionDescriptor.of(I,P,L,I));
+185:             getSendDiagnostics=fn("L1Interop_GetSendDiagnostics",FunctionDescriptor.of(I,P,P,I));
+186:             createConstBuffer=fn("L1Interop_CreateConstBuffer",FunctionDescriptor.of(P,P,P,I));
+187:             releaseConstBuffer=fn("L1Interop_ReleaseConstBuffer",FunctionDescriptor.ofVoid(P));
+188:             sendConstBuffer=fn("L1Interop_SendConstBuffer",FunctionDescriptor.of(I,P,L,P,I));
+189:             send = fn("CIOSocket__Write", FunctionDescriptor.of(I, P, L, P, I));
+190:             sendPackets = fn("L1Interop_WriteBuffers", FunctionDescriptor.of(I, P, L, P, I));
+191:             getRemote = fn("CSocket_GetIPAddressString", FunctionDescriptor.of(I, P, L, P, P, P));
+192:             getLocal = fn("L1Interop_GetLocalAddress", FunctionDescriptor.of(I, P, L, P, P, P));
+193:             getListen = fn("L1Interop_GetListenAddress", FunctionDescriptor.of(I, P, P, P, P));
+194:             MethodHandle createListener = fn("L1Interop_CreateCallbacks", FunctionDescriptor.of(P));
+195:             MethodHandle createServer = fn("L1Interop_CreateServer", FunctionDescriptor.of(P, P));
+196:             MethodHandle setAccept = fn("L1Interop_SetOnAccept", FunctionDescriptor.ofVoid(P, P));
+197:             MethodHandle setReceive = fn("L1Interop_SetOnRead", FunctionDescriptor.ofVoid(P, P));
+198:             MethodHandle setSend = fn("L1Interop_SetOnWrite", FunctionDescriptor.ofVoid(P, P));
+199:             MethodHandle setClose = fn("L1Interop_SetOnClose", FunctionDescriptor.ofVoid(P, P));
+200:             scheduleTask = fn("L1Interop_ScheduleTimer", FunctionDescriptor.of(I, P, L, I));
+201:             setCodecApi=fn("L1Interop_SetCodecApi",FunctionDescriptor.of(I,P,P,I));
+202:             initializeUserSocket=fn("CSocket_SetKey",FunctionDescriptor.of(I,P,L,I));
+203:             releaseUserPacket=fn("L1Interop_ReleasePacket",FunctionDescriptor.of(I,P,L,L));
+204:             encryptUserData=fn("CSocket_Encrypt",FunctionDescriptor.of(I,P,L,P,I));
+205:             getUserSocketState=fn("L1Interop_GetSocketState",FunctionDescriptor.of(I,P,L,P,I));
+710:     private boolean enterNative() {
+711:         if (shuttingDown) return false;
+712:         nativeCalls.incrementAndGet();
+713:         if (!shuttingDown) return true;
+714:         nativeCalls.decrementAndGet();
+715:         return false;
+716:     }
+717:     @SuppressWarnings("preview")
+718:     public CAsyncSendConstBuffer.Source createConstBuffer(byte[] wire) {
+719:         if (!enterNative()) return null;
+720:         MemorySegment handle = MemorySegment.NULL;
+721:         try (Arena temporary = Arena.ofConfined()) {
+722:             MemorySegment input = temporary.allocate(wire.length);
+723:             input.copyFrom(MemorySegment.ofArray(wire));
+724:             handle = (MemorySegment) createConstBuffer.invokeExact(server, input, wire.length);
+725:             if (handle.address() == 0) return null;
+726:             CAsyncSendConstBuffer.Source source = new CAsyncSendConstBuffer.Source(this, handle, wire);
+727:             constBuffers.incrementAndGet();
+728:             return source;
+729:         } catch (Throwable failure) {
+730:             if (handle.address() != 0) {
+731:                 try { releaseConstBuffer.invokeExact(handle); }
+732:                 catch (Throwable releaseFailure) { failure.addSuppressed(releaseFailure); }
+733:             }
+734:             throw new IllegalStateException("CTransport constant buffer creation failed", failure);
+735:         } finally { nativeCalls.decrementAndGet(); }
+736:     }
+737:     @SuppressWarnings("preview")
+738:     public void releaseConstBuffer(MemorySegment handle) {
+739:         // A live Source is counted until this downcall finishes. Shutdown may
+740:         // stop sockets first, but cannot destroy the server/arena under it.
+741:         nativeCalls.incrementAndGet();
+742:         try { releaseConstBuffer.invokeExact(handle); constBuffers.decrementAndGet(); }
+743:         catch (Throwable failure) { throw new IllegalStateException("CTransport constant buffer release failed", failure); }
+744:         finally { nativeCalls.decrementAndGet(); }
+745:     }
+746:     @SuppressWarnings("preview")
+747:     boolean sendConstBuffer(long id, MemorySegment handle, int flags) {
+748:         if (!enterNative()) return false;
+749:         try { return (int) sendConstBuffer.invokeExact(server, id, handle, (flags & 2) >>> 1) != 0; }
+750:         catch (Throwable failure) { return false; }
+751:         finally { nativeCalls.decrementAndGet(); }
+752:     }
+753:     boolean pause(long id, boolean paused) {
+754:         if (!enterNative()) return false;
+755:         try { return (int) pause.invokeExact(server, id, paused ? 1 : 0) != 0; }
+756:         catch (Throwable failure) { throw new IllegalStateException("CIO pause failed", failure); }
+757:         finally { nativeCalls.decrementAndGet(); }
+758:     }
+759:     public long[] sendDiagnostics(){return readDiagnostics(getSendDiagnostics,9);}
+760:     public boolean closeGracefully(long id,int timeoutMs){
+761:         if(!enterNative())return false;
+762:         try{return (int)gracefulClose.invokeExact(server,id,timeoutMs)!=0;}
+763:         catch(Throwable failure){return false;}
+764:         finally{nativeCalls.decrementAndGet();}
+765:     }
+766:     boolean disconnect(long id) {
+809:                         data = MemorySegment.ofBuffer(b);
+810:                     } else {
+811:                         data = a.allocate(n);
+812:                         data.copyFrom(MemorySegment.ofBuffer(b));
+813:                     }
+814:                     wsabufs.set(I, o, n);
+815:                     wsabufs.set(P, o + 8, data);
+816:                 }
+817:                 return flags==0?(int)sendPackets.invokeExact(server,id,wsabufs,count)!=0:(int)sendFramePackets.invokeExact(server,id,wsabufs,count,(flags&2)>>>1)!=0;
+818:             }
+819:         } catch (Throwable failure) {
+820:             LOG.log(Level.WARNING, "CIO native SEND call failed conn=" + id, failure);
+821:             return false;
+822:         } finally { nativeCalls.decrementAndGet(); }
+823:     }
+824:     /** Starts native accept-stop without blocking the Java shutdown owner.
+825:      * This never runs on a completion callback; no extra packet worker is added.
+826:      */
+827:     public synchronized void stopAccepting() throws IOException {
+828:         if (destroyed || nativeAcceptStopped) return;
+829:         if (isCompletionThread())
+830:             throw new IOException("cannot stop native listener inside completion callback");
+831:         accepting = false;
+832:         if (nativeShutdownThread != null) return;
+833:         final Thread t = new Thread(this::nativeShutdownRoutine, "CIO-native-shutdown");
+834:         t.setDaemon(true);
+852:                     new IOException("CIO native shutdown downcall failed", error);
+853:         }
+854:     }
+855: 
+856:     public IOException shutdownFailure() { return nativeShutdownFailure; }
+857: 
+858:     @SuppressWarnings("preview")
+859:     @Override public synchronized void close() throws IOException {
+860:         closeWithBudget(SHUTDOWN_BUDGET_NS);
+861:     }
+862: 
+863:     @SuppressWarnings("preview")
+864:     public synchronized void closeWithBudget(long budgetNs) throws IOException {
+865:         if (destroyed) return;
+866:         if (isCompletionThread())
+867:             throw new IOException("CIO native Stop cannot join its own IOCP worker");
+868:         if (budgetNs <= 0L) throw new IOException("CIO shutdown deadline expired; native memory preserved");
+869:         final long startedAt = System.nanoTime();
+870:         // Starting stopAccepting is asynchronous: even an unresponsive native
+871:         // listener cannot trap the caller in an unbounded downcall.
+872:         stopAccepting();
+873:         shuttingDown = true;
+874:         for(var entry:completionTasks.entrySet()) {
+875:             if(completionTasks.remove(entry.getKey(),entry.getValue())){nativeTasks.remove(entry.getKey());entry.getValue().cancel();}
+876:         }
+877:         while (!nativeAcceptStopped || nativeCalls.get() != 0) {
+878:             final IOException failed = nativeShutdownFailure;
+879:             if (failed != null) throw failed;
+880:             if (System.nanoTime() - startedAt >= budgetNs)
+881:                 throw new IOException("CIO shutdown timed out waiting accept/downcalls; outstanding="

@@ -1,0 +1,323 @@
+SOURCE src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java
+1: package l1j.server.server.model.network.core.broadcast;
+2: 
+3: import java.util.List;
+4: import java.util.function.Predicate;
+5: import l1j.server.server.model.L1Object;
+6: import l1j.server.server.model.L1World;
+7: import l1j.server.server.model.Instance.L1PcInstance;
+8: import l1j.server.server.model.network.core.session.CIOClient;
+9: 
+10: /** One immutable encoded frame, shared across every eligible recipient.
+11:  * Packet-specific old serializers are never invoked during broadcast.
+12:  */
+13: public final class CSharedBroadcast {
+14:     private CSharedBroadcast() {}
+15: 
+16:     public static void send(L1Object anchor, byte[] wire, boolean fast, int radius,
+17:             Predicate<L1PcInstance> filter) {
+18:         if (anchor == null || wire == null) return;
+19:         final L1World world=L1World.getInstance();
+20:         final boolean borrowed=fast && radius < 0;
+21:         final List<L1PcInstance> recipients=borrowed
+22:                 ? world.borrowVisiblePlayerFast(anchor)
+23:                 : radius < 0 ? world.getVisiblePlayer(anchor)
+24:                 : world.getVisiblePlayer(anchor, radius);
+25:         try (var shared=new CAsyncSendConstBufferExceptSelf(wire,anchor.getId(),Integer.MAX_VALUE)) {
+26:             for (L1PcInstance pc:recipients) {
+27:                 if (!CTLMFilter.sameWorldOther(anchor,pc)
+28:                         || filter != null && !filter.test(pc))continue;
+29:                 final CIOClient client=pc.getNetConnection();
+30:                 if(client!=null && client.isConnected())
+31:                     shared.send(client.getConnection(),pc.getId());
+32:             }
+33:         } finally {
+34:             if(borrowed)world.releaseVisiblePlayerFast(recipients);
+35:         }
+36:     }
+37: 
+38: 
+39:     /**
+40:      * Broadcast an already framed immutable packet to a specified recipient
+41:      * collection. Retains its exact inclusion/ordering semantics (no AOI or
+42:      * self-exclusion override). The packet-specific serializer never runs in
+43:      * the recipient loop.
+44:      */
+45: 
+46:     /** One immutable GREEN_MESSAGE or other framed packet for the existing
+47:      * L1Object registry value traversal. Only PCs receive the frame.
+48:      * No AOI selection replacement, sorting, deduplication or copy.
+49:      */
+50:     public static void sendObjectPlayers(
+51:             Iterable<? extends L1Object> objects, byte[] wire) {
+52:         if(objects==null || wire==null)return;
+53:         try(var shared=new CAsyncSendConstBuffer(
+54:                 wire,Integer.MIN_VALUE,Integer.MAX_VALUE)){
+55:             for(L1Object obj:objects){
+56:                 if(obj instanceof L1PcInstance)
+57:                     sendRecipient(shared,(L1PcInstance)obj);
+58:             }
+59:         }
+60:     }
+61: 
+62:     public static void sendRecipients(Iterable<? extends L1PcInstance> recipients,
+63:             byte[] wire) {
+64:         if (recipients == null || wire == null) return;
+65:         try (var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+66:             for (L1PcInstance pc:recipients) {
+67:                 if (pc == null) continue;
+68:                 final CIOClient client=pc.getNetConnection();
+69:                 if (client != null && client.isConnected())
+70:                     shared.send(client.getConnection(),pc.getId());
+71:             }
+72:         }
+73:     }
+74: 
+75:     /** Proto.sendRaw uses an unframed already-encoded payload. Convert once
+76:      * to its 2-byte little-endian wire length, then broadcast shared bytes.
+77:      */
+78:     private static byte[] frameRaw(byte[] encoded) {
+79:         if(encoded==null || encoded.length==0 || encoded.length>65533)return null;
+80:         final int size=encoded.length+2;
+81:         final byte[] frame=new byte[size];
+82:         frame[0]=(byte)size;
+83:         frame[1]=(byte)(size>>>8);
+84:         System.arraycopy(encoded,0,frame,2,encoded.length);
+85:         return frame;
+86:     }
+87: 
+88: 
+89:     /** Borrow one immutable raw Proto payload as a framed shared SEND.
+90:      * Input is exactly the argument accepted by Proto.sendRaw:
+91:      * its opcode/message ID/trailer are included, header is not.
+92:      */
+93:     public static CAsyncSendConstBuffer openRaw(byte[] encoded) {
+94:         final byte[] wire=frameRaw(encoded);
+95:         return wire==null?null:new CAsyncSendConstBuffer(
+96:                 wire,Integer.MIN_VALUE,Integer.MAX_VALUE);
+97:     }
+98: 
+99:     /** Array fanout without an iterable adapter, one frame for all members. */
+100:     public static void sendRawArray(L1PcInstance[] recipients,byte[] encoded) {
+101:         if(recipients==null || recipients.length==0)return;
+102:         try(var shared=openRaw(encoded)){
+103:             if(shared==null)return;
+104:             for(L1PcInstance pc:recipients)
+105:                 sendRecipient(shared,pc);
+106:         }
+107:     }
+108: 
+109:     public static void sendRawRecipients(Iterable<? extends L1PcInstance> recipients,
+110:             byte[] encoded) {
+111:         final byte[] framed=frameRaw(encoded);
+112:         if(framed!=null)sendRecipients(recipients,framed);
+113:     }
+114: 
+115: 
+116:     /**
+117:      * Send a single cached protobuf frame to the triggering PC first, then to
+118:      * every visible PC in the original world traversal order. This preserves
+119:      * the exact recipients and the prior own-send-first order, while removing
+120:      * repeated ServerPacket.writeImpl() calls. No per-recipient encoder.
+121:      */
+122:     public static void sendRawSelfAndVisible(L1PcInstance self,byte[] encoded) {
+123:         if(self==null)return;
+124:         final byte[] wire=frameRaw(encoded);
+125:         if(wire==null)return;
+126:         try(var shared=new CAsyncSendConstBuffer(
+127:                 wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+128:             final CIOClient own=self.getNetConnection();
+129:             if(own!=null && own.isConnected())shared.send(own.getConnection(),self.getId());
+130:             for(L1PcInstance pc:L1World.getInstance().getVisiblePlayer(self)) {
+131:                 if(pc==null)continue;
+132:                 final CIOClient client=pc.getNetConnection();
+133:                 if(client!=null && client.isConnected())
+134:                     shared.send(client.getConnection(),pc.getId());
+135:             }
+136:         }
+137:     }
+138: 
+139: 
+140:     /**
+141:      * One identical frame for online GM recipients. The original world
+142:      * traversal order and per-connection FIFO are preserved, and non-GMs
+143:      * receive no packet. No temporary recipient collection is allocated.
+144:      */
+145:     public static void sendAllGms(byte[] wire) {
+146:         if (wire == null) return;
+147:         try (var shared = new CAsyncSendConstBuffer(
+148:                 wire, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+149:             for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+150:                 if (pc == null || !pc.isGm()) continue;
+151:                 final CIOClient client = pc.getNetConnection();
+152:                 if (client != null && client.isConnected()) {
+153:                     shared.send(client.getConnection(), pc.getId());
+154:                 }
+155:             }
+156:         }
+157:     }
+158: 
+159: 
+160:     /** An identical system-message frame for one combat team on a single map.
+161:      * Retain the original getVisiblePlayers iteration and team visibility.
+162:      */
+163:     public static void sendMapTeam(int mapId, int teamId, byte[] wire) {
+164:         if (wire == null) return;
+165:         try (var shared=new CAsyncSendConstBuffer(
+166:                 wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+167:             for (L1PcInstance pc : L1World.getInstance().getVisiblePlayers(mapId)) {
+168:                 if (pc==null || pc.get_current_combat_team_id()!=teamId) continue;
+169:                 final CIOClient client=pc.getNetConnection();
+170:                 if (client!=null && client.isConnected())
+171:                     shared.send(client.getConnection(),pc.getId());
+172:             }
+173:         }
+174:     }
+175: 
+176:     /**
+177:      * Send identical frames in recipient-major order. Previous behavior was
+178:      * for each visible PC: send all display effects in input array order.
+179:      * Team filtering, map iteration order, and socket FIFO are unchanged.
+180:      * This method never serializes inside the recipient iteration.
+181:      */
+182:     public static void sendMapTeamFrames(
+183:             int mapId, int teamId, boolean teamOnly, byte[][] wires) {
+184:         if (wires==null || wires.length==0) return;
+185:         final CAsyncSendConstBuffer[] shared=
+186:                 new CAsyncSendConstBuffer[wires.length];
+187:         int opened=0;
+188:         try {
+189:             for(int i=0;i<wires.length;i++) {
+190:                 if(wires[i]==null) return;
+191:                 shared[i]=new CAsyncSendConstBuffer(
+192:                         wires[i],Integer.MIN_VALUE,Integer.MAX_VALUE);
+193:                 opened++;
+194:             }
+195:             for(L1PcInstance pc:L1World.getInstance().getVisiblePlayers(mapId)) {
+196:                 if(pc==null || (teamOnly && pc.get_current_combat_team_id()!=teamId))
+197:                     continue;
+198:                 final CIOClient client=pc.getNetConnection();
+199:                 if(client==null || !client.isConnected()) continue;
+200:                 final var socket=client.getConnection();
+201:                 if(socket==null || !socket.isClientConnected()) continue;
+202:                 for(int i=0;i<opened;i++)
+203:                     shared[i].send(socket,pc.getId());
+204:             }
+205:         } finally {
+206:             for(int i=0;i<opened;i++) shared[i].close();
+207:         }
+208:     }
+209: 
+210: 
+211:     /** Global screen effects: keep the original live-world and private-shop
+212:      * predicate, walking the same all-players view and retaining duplicate
+213:      * recipients without a temporary selection array.
+214:      */
+215:     public static void sendAllPlayable(byte[] wire) {
+216:         if(wire==null)return;
+217:         try(var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)){
+218:             for(L1PcInstance pc:L1World.getInstance().getAllPlayers()) {
+219:                 if(pc.isPrivateShop() || !pc.is_world())continue;
+220:                 final CIOClient client=pc.getNetConnection();
+221:                 if(client==null || !client.isConnected())continue;
+222:                 final var socket=client.getConnection();
+223:                 if(socket!=null && socket.isClientConnected())
+224:                     shared.send(socket,pc.getId());
+225:             }
+226:         }
+227:     }
+228: 
+229:     /**
+230:      * One frame for two existing recipient lists. Crucially preserve the
+231:      * original first-list then second-list order, including duplicate members,
+232:      * without constructing a temporary combined list.
+233:      */
+234:     public static void sendGroups(Iterable<? extends L1PcInstance> first,
+235:             Iterable<? extends L1PcInstance> second, byte[] wire) {
+236:         if(wire==null)return;
+237:         try(var shared=new CAsyncSendConstBuffer(
+238:                 wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+239:             sendGroup(first,shared);
+240:             sendGroup(second,shared);
+241:         }
+242:     }
+243: 
+244:     /** One recipient of an already opened native shared frame. Allows
+245:      * side effects or other packets between fanout recipients without
+246:      * changing per-client FIFO ordering or allocating new lists.
+247:      */
+248:     public static void sendRecipient(CAsyncSendConstBuffer shared,L1PcInstance pc) {
+249:         if(shared==null || pc==null)return;
+250:         final CIOClient client=pc.getNetConnection();
+251:         if(client==null || !client.isConnected())return;
+252:         final var socket=client.getConnection();
+253:         if(socket!=null && socket.isClientConnected())
+254:             shared.send(socket,pc.getId());
+255:     }
+256: 
+257:     /** Array event recipients, no temporary iterable or per-recipient encoder.
+258:      * Original order and duplicate members are maintained.
+259:      */
+260:     public static void sendArray(L1PcInstance[] members,byte[] wire) {
+261:         if(members==null || wire==null)return;
+262:         try(var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)){
+263:             for(L1PcInstance pc:members) {
+264:                 if(pc==null)continue;
+265:                 final CIOClient client=pc.getNetConnection();
+266:                 if(client==null || !client.isConnected())continue;
+267:                 final var socket=client.getConnection();
+268:                 if(socket!=null && socket.isClientConnected())
+269:                     shared.send(socket,pc.getId());
+270:             }
+271:         }
+272:     }
+273: 
+274:     private static void sendGroup(Iterable<? extends L1PcInstance> members,
+275:             CAsyncSendConstBuffer shared) {
+276:         if(members==null)return;
+277:         for(L1PcInstance pc:members) {
+278:             if(pc==null)continue;
+279:             final CIOClient client=pc.getNetConnection();
+280:             if(client==null || !client.isConnected())continue;
+281:             final var socket=client.getConnection();
+282:             if(socket!=null && socket.isClientConnected())
+283:                 shared.send(socket,pc.getId());
+284:         }
+285:     }
+286: 
+287: 
+288:     /** Preserve the original nested AOI semantics used by treasure-chest
+289:      * cloud effects: for each chest viewer, rebroadcast around that viewer.
+290:      * Do not coalesce, deduplicate, or change the iteration sequence.
+291:      * The same immutable frame is nevertheless serialized only once.
+292:      */
+293:     public static void sendNestedVisible(L1Object origin,byte[] wire) {
+294:         if(origin==null || wire==null)return;
+295:         final L1World world=L1World.getInstance();
+296:         try(var shared=new CAsyncSendConstBuffer(
+297:                 wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+298:             for(L1PcInstance anchor:world.getVisiblePlayer(origin)) {
+299:                 if(anchor==null)continue;
+300:                 for(L1PcInstance recipient:world.getVisiblePlayer(anchor)) {
+301:                     if(!CTLMFilter.sameWorldOther(anchor,recipient))continue;
+302:                     final CIOClient client=recipient.getNetConnection();
+303:                     if(client!=null && client.isConnected())
+304:                         shared.send(client.getConnection(),recipient.getId());
+305:                 }
+306:             }
+307:         }
+308:     }
+309: 
+310:     /** Global broadcast includes the sender and uses the normal socket FIFO. */
+311:     public static void sendAll(byte[] wire) {
+312:         if(wire==null)return;
+313:         try (var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+314:             for (L1PcInstance pc:L1World.getInstance().getAllPlayers()) {
+315:                 if(pc==null)continue;
+316:                 final CIOClient client=pc.getNetConnection();
+317:                 if(client!=null && client.isConnected())
+318:                     shared.send(client.getConnection(),pc.getId());
+319:             }
+320:         }
+321:     }
+322: }

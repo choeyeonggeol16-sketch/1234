@@ -1,0 +1,109 @@
+SOURCE src/l1j/server/server/model/network/core/sc/packet/SC_MoveChar.java
+1: package l1j.server.server.model.network.core.sc.packet;
+2: 
+3: import l1j.server.server.Opcodes;
+4: import l1j.server.server.model.L1Character;
+5: import l1j.server.server.model.L1World;
+6: import l1j.server.server.model.Instance.L1PcInstance;
+7: import l1j.server.server.model.network.buffer.WriteBuffer;
+8: import l1j.server.server.model.network.core.connection.CUserSocket;
+9: import l1j.server.server.model.network.core.connection.CIOFrame;
+10: import l1j.server.server.model.network.core.session.CIOClient;
+11: 
+12: public final class SC_MoveChar {
+13: 
+14: 	private static final int WIRE_SIZE = 17;
+15: 
+16: 	private static final int[] HEADING_TABLE_X = {
+17: 		 0, -1, -1, -1,  0,  1,  1,  1
+18: 	};
+19: 
+20: 	private static final int[] HEADING_TABLE_Y = {
+21: 		 1,  1,  0, -1, -1, -1,  0,  1
+22: 	};
+23: 
+24: 	private SC_MoveChar() {
+25: 	}
+26: 
+27: 	public static boolean send(
+28: 			CIOClient client,
+29: 			int objectId,
+30: 			int x,
+31: 			int y,
+32: 			int heading) {
+33: 
+34: 		if (client == null || !client.isConnected()) {
+35: 			return false;
+36: 		}
+37: 
+38: 		final CUserSocket connection = client.getConnection();
+39: 		if (connection == null || !connection.isClientConnected()) {
+40: 			return false;
+41: 		}
+42: 
+43: 		final CIOFrame frame = connection.beginDirectFrame(WIRE_SIZE);
+44: 
+45: 		if (frame == null) {
+46: 			return false;
+47: 		}
+48: 
+49: 		final WriteBuffer buffer = frame.buffer();
+50: 		boolean committed = false;
+51: 
+52: 		try {
+53: 			buffer.writeC(Opcodes.S_MOVE_OBJECT);
+54: 			buffer.writeD(objectId);
+55: 			buffer.writeH(x);
+56: 			buffer.writeH(y);
+57: 			buffer.writeC(heading);
+58: 			buffer.writeC(129);
+59: 			buffer.writeD(0);
+60: 
+61: 			committed =
+62: 					connection.commitDirectFrame(frame);
+63: 			return committed;
+64: 		} finally {
+65: 			if (!committed) {
+66: 				connection.abortDirectFrame(frame);
+67: 			}
+68: 		}
+69: 	}
+70: 
+71: 	/**
+72: 	 * 현재 cha 좌표에서 heading 방향으로 한 칸 이동한
+73: 	 * 목적지 좌표를 계산해서 전송한다.
+74: 	 */
+75: 	public static boolean send(CIOClient client, L1Character cha) {
+76: 		if (cha == null) {
+77: 			return false;
+78: 		}
+79: 
+80: 		final int heading = cha.getHeading();
+81: 
+82: 		return send(
+83: 				client,
+84: 				cha.getId(),
+85: 				cha.getX() + HEADING_TABLE_X[heading],
+86: 				cha.getY() + HEADING_TABLE_Y[heading],
+87: 				heading);
+88: 	}
+89: 
+90:     /** Exact immutable 17-byte move frame, shared by any recipient set. */
+91:     public static byte[] broadcastWire(int objectId, int x, int y, int heading) {
+92:         return java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+93:                 .putShort((short) WIRE_SIZE).put((byte) Opcodes.S_MOVE_OBJECT).putInt(objectId)
+94:                 .putShort((short) x).putShort((short) y).put((byte) heading).put((byte) 129).putInt(0).array();
+95:     }
+96: 
+97:     public static void broadcast(L1Character cha, int x, int y, int heading) {
+98:         if (cha == null) return;
+99:         int objectId = cha.getId();
+100:         byte[] wire = broadcastWire(objectId, x, y, heading);
+101:         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(cha, wire, true, -1, null);
+102:     }
+103:     public static void broadcast(L1Character cha) {
+104:         if (cha == null) return;
+105:         int heading = cha.getHeading();
+106:         broadcast(cha, cha.getX() + HEADING_TABLE_X[heading], cha.getY() + HEADING_TABLE_Y[heading], heading);
+107:     }
+108: }
