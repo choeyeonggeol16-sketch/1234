@@ -1,0 +1,19 @@
+{
+  "phase": 68,
+  "nc_reference": "L2Server(10).exe 0x41F694/0x70429C/0x9241F8/0x45C7AC/0x90E6C4",
+  "previous_sha256": "81185c238e8342ca22b83045d4c3ad2ea70551c1dfba9dd5d92b574e81c9814d",
+  "output_sha256": "7db9e443c82d5a6855483bca9eecb805cbeb9583c5b6fe6a731d771bf870fd10",
+  "entries": 1729,
+  "java_count": 1710,
+  "changed": [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_DoActionGFX.java"
+  ],
+  "unchanged_identical": true,
+  "native_dll_identical": true,
+  "existing_movechar_67_kept": true,
+  "legacy_fallback": false,
+  "new_worker_queue_pool": false,
+  "nc_native_slab_emulated": false
+}
