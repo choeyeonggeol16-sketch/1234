@@ -170,13 +170,15 @@ public final class Phase49ChatRaceParity {
  }
  static byte[] chat(String s,int type) {
   byte[] t=s.getBytes(Charset.forName("MS949"));
-  byte[] b=new byte[t.length+15];int i=0;
+  byte[] b=new byte[t.length+15+(type==0?6:0)];int i=0;
   b[i++]=(byte)b.length;b[i++]=(byte)(b.length>>>8);
   b[i++]=(byte)Opcodes.S_EXTENDED_PROTOBUF;
   b[i++]=4;b[i++]=2;b[i++]=8;b[i++]=0;
   b[i++]=0x10;b[i++]=(byte)type;b[i++]=0x1a;b[i++]=(byte)t.length;
   System.arraycopy(t,0,b,i,t.length);i+=t.length;
-  b[i++]=0x2a;b[i++]=0;b[i++]=0;b[i++]=0;
+  b[i++]=0x2a;b[i++]=0;
+  if(type==0){b[i++]=0x38;b[i++]=0;b[i++]=0x40;b[i++]=0;b[i++]=0x48;b[i++]=0;}
+  b[i++]=0;b[i++]=0;
   if(i!=b.length)throw new AssertionError("length");
   return b;
  }
