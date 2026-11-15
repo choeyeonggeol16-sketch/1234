@@ -38,7 +38,7 @@ CHAT_REPLACE="""l1j.server.server.model.network.core.broadcast.CSharedBroadcast.
                         SC_ChatPacket.sharedTargetWire(name, 0x03, msg));"""
 CLAN_REPLACE="""l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendArray(
                         clanMember,
-                        SC_ServerMessage.sharedWire(ServerMessage.LEAVE_CLAN, param, clan.getClanName()));"""
+                        SC_ServerMessage.sharedWire(ServerMessage.LEAVE_CLAN, param, clan.getClanName(), null));"""
 TEST=r"""
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -81,7 +81,7 @@ public final class Phase61GmParity {
             checks++;
         }
         for(String a:texts)for(String b:texts)for(int type:new int[]{0,1,3,94,127,65535}) {
-            final byte[] actual=SC_ServerMessage.sharedWire(type,a,b);
+            final byte[] actual=SC_ServerMessage.sharedWire(type,a,b,null);
             if(!Arrays.equals(actual,directServer(type,a,b)))
                 throw new AssertionError("server message mismatch "+type+"/"+a+"/"+b);
             checks++;
