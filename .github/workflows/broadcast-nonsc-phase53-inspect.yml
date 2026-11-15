@@ -1,0 +1,14 @@
+name: Broadcast phase53 inspect remaining identical combat gift fanouts
+on:
+  push:
+    branches: [broadcast-nonsc-phase53-20261116]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase53-inspect.yml"
+      - "patches/broadcast_nonsc_phase53_20261116/inspect.py"
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase53_20261116/inspect.py
