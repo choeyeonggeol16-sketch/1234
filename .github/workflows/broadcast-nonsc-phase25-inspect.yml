@@ -1,0 +1,14 @@
+name: Broadcast phase25 inspect clan notices and raid entries
+on:
+  push:
+    branches: [broadcast-nonsc-phase25-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase25-inspect.yml"
+      - "patches/broadcast_nonsc_phase25_20261115/inspect.py"
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase25_20261115/inspect.py
