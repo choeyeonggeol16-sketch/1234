@@ -58,7 +58,8 @@ def patch(files):
   assert check in old,(sig,old)
   s=s[:a]+s[b:]
  for sig in ("public void broadcast(ServerPacket pck)", "public void broadcast(ProtoOutputStream output)"):
-  assert sig not in s
+  # Archived code has commented examples; only reject live declarations.
+  assert not re.search(r"(?m)^[ \\t]*"+re.escape(sig),s),sig
  # Imports can still be needed elsewhere; don't remove unrelated imports.
  files[CLAN]=s.encode("utf8")
  s=files[PARTY].decode("utf8")
