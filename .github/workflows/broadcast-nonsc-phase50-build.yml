@@ -4,7 +4,7 @@ on:
     branches: [broadcast-nonsc-phase50-20261116]
     paths:
       - ".github/workflows/broadcast-nonsc-phase50-build.yml"
-      - "patches/broadcast_nonsc_phase50_20261115/migrate_events.py"
+      - "patches/broadcast_nonsc_phase50_20261116/migrate_events.py"
 permissions:
   contents: write
 jobs:
@@ -21,7 +21,7 @@ jobs:
           java-version: "21"
       - name: Migrate ten ship race shop grace NPC fanouts from verified phase49
         run: |
-          python3 patches/broadcast_nonsc_phase50_20261115/migrate_events.py --work "$RUNNER_TEMP/broadcast-phase50"
+          python3 patches/broadcast_nonsc_phase50_20261116/migrate_events.py --work "$RUNNER_TEMP/broadcast-phase50"
       - name: Restore cached pinned compile dependencies
         uses: actions/cache@v4
         with:
