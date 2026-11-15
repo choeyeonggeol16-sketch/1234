@@ -95,7 +95,7 @@ def patch_shop(files):
     assert "player.isGm() || pc == player" in loop
     s=replace_loop(s,a,b,loop,old,
         BC+".CSharedBroadcast.sendRecipient(shared,player);",
-        'SC_SystemMessage.sharedWire(pc.getName() + "님 상점 최대구매 수량 (" + itemcount + ")를 초과 하였습니다.)'.replace("초과 하였습니다.)",'초과 하였습니다.")'),
+        'SC_SystemMessage.sharedWire(pc.getName() + "님 상점 최대구매 수량 (" + itemcount + ")를 초과 하였습니다.")',
         ("player.isGm() || pc == player",))
     files[SHOP]=s.encode("utf8")
 GAME_END_HELPER=r'''
