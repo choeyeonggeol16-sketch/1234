@@ -19,7 +19,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - name: Migrate four PC effect broadcast callsites from verified phase40
+      - name: Migrate support spell broadcast callsites from verified phase40
         run: |
           python3 patches/broadcast_nonsc_phase41_20261115/migrate_magic_pc_effects.py --work "$RUNNER_TEMP/broadcast-phase41"
       - name: Restore cached pinned compile dependencies
@@ -80,8 +80,8 @@ jobs:
           root=pathlib.Path(os.environ['RUNNER_TEMP'])/'broadcast-phase41'
           d=json.loads((root/'audit.json').read_text())
           assert d['java_sources']==1710 and len(d['modified_java'])==1
-          assert d['legacy_pc_effect_broadcasts_removed']==4
-          assert d['send_before_aoi_preserved'] and d['npc_and_commented_code_unchanged']
+          assert d['legacy_pc_effect_broadcasts_removed']==1
+          assert d['send_before_aoi_preserved'] and d['support_skill_mp_order_preserved']
           assert d['native_unchanged'] and d['no_legacy_fallback']
           assert d['new_workers_queues_classes']==0
           with zipfile.ZipFile('downloads/RKern_Broadcast_NonSC_Phase41_FULL_SRC_20261115.zip') as z:
