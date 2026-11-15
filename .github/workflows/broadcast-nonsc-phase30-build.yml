@@ -4,7 +4,7 @@ on:
     branches: [broadcast-nonsc-phase30-20261115]
     paths:
       - ".github/workflows/broadcast-nonsc-phase30-build.yml"
-      - "patches/broadcast_nonsc_phase30_20261115/migrate_haunted NPC dialogue_codes.py"
+      - "patches/broadcast_nonsc_phase30_20261115/migrate_haunted_dialogue.py"
 permissions:
   contents: write
 jobs:
@@ -19,9 +19,9 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - name: Migrate haunted NPC dialogue status fanouts from verified phase28
+      - name: Migrate haunted NPC dialogue status fanouts from verified phase29
         run: |
-          python3 patches/broadcast_nonsc_phase30_20261115/migrate_haunted NPC dialogue_codes.py --work "$RUNNER_TEMP/broadcast-phase30"
+          python3 patches/broadcast_nonsc_phase30_20261115/migrate_haunted_dialogue.py --work "$RUNNER_TEMP/broadcast-phase30"
       - name: Restore cached pinned compile dependencies
         uses: actions/cache@v4
         with:
