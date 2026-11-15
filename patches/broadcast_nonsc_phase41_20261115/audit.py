@@ -15,3 +15,18 @@ with zipfile.ZipFile(p) as z:
    for i in hits[:18]:
     print("---",i+1)
     for j in range(max(0,i-4),min(len(lines),i+5)):print(f"{j+1:4} {lines[j]}")
+
+with zipfile.ZipFile(p) as z:
+ for suffix in ("SC_SkillSound.java","L1Character.java","L1World.java","CSharedBroadcast.java","DragonPearl.java"):
+  for n in z.namelist():
+   if n.endswith("/"+suffix):
+    print("===== TARGET",n)
+    lines=z.read(n).decode("utf8").splitlines()
+    if suffix in ("SC_SkillSound.java","DragonPearl.java"): spans=[(0,len(lines))]
+    else:
+     hits=[i for i,l in enumerate(lines) if "broadcastPacket(" in l or "broadcastPacketToAll(" in l or "sendAround" in l or "sendSight" in l]
+     spans=[(max(0,i-3),min(len(lines),i+10)) for i in hits[:12]]
+    printed=set()
+    for a,b in spans:
+     for i in range(a,b):
+      if i not in printed:print(i+1,lines[i]);printed.add(i)
