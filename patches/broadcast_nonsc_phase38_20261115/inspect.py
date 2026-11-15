@@ -7,7 +7,7 @@ with zipfile.ZipFile(src) as z:
  assert z.testzip() is None
  cases=(("OrimController.java",[(1,135),(428,460),(770,851),(896,950)]),
    ("SC_EffectLocation.java",[(1,160)]),
-   ("SC_PacketBox.java",[(1,175),(230,285),(320,460)]),
+   ("SC_PacketBox.java",[(460,770)]),
    ("CSharedBroadcast.java",[(1,135),(218,260)]))
  for short,spans in cases:
   for p in [n for n in z.namelist() if n.startswith("src/") and n.endswith("/"+short)]:
