@@ -7,7 +7,7 @@ src=root/"downloads/RKern_Broadcast_NonSC_Phase23_FULL_SRC_20261115.zip"
 raw=src.read_bytes()
 sha=hashlib.sha1(b"blob "+str(len(raw)).encode()+b"\0"+raw).hexdigest()
 assert sha=="6ae749fe9a0b961ed12d6d41e3b36538aba9bee7",sha
-targets=("SC_SkillSound.java","MJL1TreasureChest.java","L1Character.java",
+targets=("SC_SkillSound.java","MJL1TreasureChest.java","CSharedBroadcast.java","L1Character.java",
          "MJLFCObject.java","MJItemSkillModel.java","L1World.java",
          "MJL1LiftGateInstance.java","SC_PacketBox.java","LFCMessages.java")
 with zipfile.ZipFile(src) as z:
@@ -18,7 +18,7 @@ with zipfile.ZipFile(src) as z:
         print("\n==========",short,paths,"==========")
         for path in paths[:1]:
             lines=z.read(path).decode("utf8").splitlines()
-            if short in ("SC_SkillSound.java","MJL1TreasureChest.java","MJLFCObject.java","MJItemSkillModel.java","MJL1LiftGateInstance.java"):
+            if short in ("SC_SkillSound.java","MJL1TreasureChest.java","CSharedBroadcast.java","MJLFCObject.java","MJItemSkillModel.java","MJL1LiftGateInstance.java"):
                 for i,line in enumerate(lines,1):
                     print(f"{i:4} {line}")
             else:
