@@ -70,6 +70,7 @@ broadcast_methods=[]
 suspects=[]
 for path,body in sorted(java.items()):
     ex=executable(body)
+    lines=body.splitlines()
     for label,regex in legacy.items():
         for match in re.finditer(regex,ex):
             line=ex.count("\n",0,match.start())+1
@@ -93,8 +94,8 @@ for path,body in sorted(java.items()):
         if x is None:continue
         # skip gigantic parent scopes; this is a risk hint not a proven error.
         ln=ex.count("\n",0,m.start())+1
-        if len(executable(body).splitlines())<ln:continue
-        snippet=body.splitlines()[ln-1].strip()[:150]
+        if ln>len(lines):continue
+        snippet=lines[ln-1].strip()[:150]
         suspects.append(f"{path}:{ln} {snippet}")
 REPORT.mkdir(exist_ok=True,parents=True)
 summary={
