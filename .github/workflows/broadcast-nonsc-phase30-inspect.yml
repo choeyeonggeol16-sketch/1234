@@ -1,0 +1,14 @@
+name: Broadcast phase30 inspect NPC chat and haunted fanout
+on:
+  push:
+    branches: [broadcast-nonsc-phase30-20261115]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase30-inspect.yml"
+      - "patches/broadcast_nonsc_phase30_20261115/inspect.py"
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase30_20261115/inspect.py
