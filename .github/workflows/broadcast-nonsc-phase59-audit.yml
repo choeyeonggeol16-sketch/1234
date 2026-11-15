@@ -1,0 +1,24 @@
+name: Broadcast phase59 final legacy elimination gate
+on:
+  push:
+    branches: [broadcast-nonsc-phase59-20261116]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase59-audit.yml"
+      - "patches/broadcast_nonsc_phase59_20261116/final_audit.py"
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify phase56-to-phase58 content invariants and old broadcast elimination
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 patches/broadcast_nonsc_phase59_20261116/final_audit.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/broadcast_nonsc_phase59_20261116
+          git diff --cached --quiet || (git commit -m "Record phase59 no-legacy broadcast exit-gate results [skip ci]" && git push origin "HEAD:$GITHUB_REF_NAME")
