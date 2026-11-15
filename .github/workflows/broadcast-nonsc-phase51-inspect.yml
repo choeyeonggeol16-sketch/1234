@@ -1,0 +1,14 @@
+name: Broadcast phase51 clan alliance and chat fanout inspect
+on:
+  push:
+    branches: [broadcast-nonsc-phase51-20261116]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase51-inspect.yml"
+      - "patches/broadcast_nonsc_phase51_20261116/inspect.py"
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 patches/broadcast_nonsc_phase51_20261116/inspect.py
