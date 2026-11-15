@@ -1,0 +1,40 @@
+{
+  "phase": 70,
+  "base_sha256": "f02337601b96e3ffeae8d31c55fc52512c4e9d111b854c8c92a5442e10f4050a",
+  "output_sha256": "d3e91922910a9614ba4aa5003367cb9dd939ebdedfabcbec16ab6977789ebefe",
+  "dll_sha256": "419f8d2a8435d35f650a4d5b8def25e66808ce3dd0c1de6d9c99f39175a6f64a",
+  "changed": [
+    "CTransport.dll",
+    "native/CTransport.cpp",
+    "native/CTransport.h",
+    "native/interop_abi.hpp",
+    "src/l1j/server/server/model/network/core/config/CIOConfig.java",
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java"
+  ],
+  "source_count_java": 1710,
+  "zip_entries": 1732,
+  "original_binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "verified_nc_broadcast_call_chain": [
+    "0x41e6e4",
+    "0x41f694",
+    "0x70429c",
+    "0x421c18",
+    "0x57e1d8",
+    "0x9241f8",
+    "0x45c7ac",
+    "0x90e6c4"
+  ],
+  "nc_equivalent_policy": {
+    "native_pooled_assembler": true,
+    "direct_write_into_pooled_block": true,
+    "original_nc_format_semantics_integer_subset": true,
+    "single_immutable_source_shared": true,
+    "per_socket_fifo_and_cipher": true,
+    "source_refcount_to_pool": true,
+    "l1_wire_fields_preserved": true,
+    "no_per_packet_native_assembly_function": true,
+    "no_java_byte_arrays_in_broadcast_hotpath": true,
+    "all_original_nc_l2_packet_opcodes_used": false,
+    "nc_exact_l2_movement_action_callsite_implemented": false
+  }
+}
