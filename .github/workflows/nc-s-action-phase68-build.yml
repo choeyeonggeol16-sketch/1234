@@ -1,0 +1,108 @@
+name: Phase68 NC S_ACTION shared plaintext and real FIFO framing
+on:
+  push:
+    branches: [broadcast-nc-s-action-phase68-20261116]
+    paths:
+      - ".github/workflows/nc-s-action-phase68-build.yml"
+      - "patches/nc_s_action_phase68_20261116/migrate.py"
+      - "patches/nc_s_action_phase68_20261116/Phase68ActionParity.java"
+permissions:
+  contents: write
+jobs:
+  compile_and_verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Rewrite exactly three production Java files in phase67 verified source
+        run: |
+          python3 patches/nc_s_action_phase68_20261116/migrate.py "$RUNNER_TEMP/nc-s-action-phase68"
+      - name: Restore cached pinned compile dependencies
+        uses: actions/cache@v4
+        with:
+          path: .compile-deps
+          key: rkern-java21-deps-${{ hashFiles('patches/mainserver_protocol_20261114/logs/dependencies.json') }}
+      - name: Restore SHA256 pinned Java dependencies
+        run: |
+          python3 - <<'PY'
+          import json,hashlib,pathlib,urllib.request,urllib.error,time
+          manifest=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          root=pathlib.Path('.compile-deps');root.mkdir(exist_ok=True)
+          for row in manifest:
+            jar=root/row['file']
+            if jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256']:
+              continue
+            url=row['url']
+            candidates=[url]
+            if 'repo.maven.apache.org/maven2/' in url:
+              suffix=url.split('repo.maven.apache.org/maven2/',1)[1]
+              candidates=[
+                'https://maven.aliyun.com/repository/central/'+suffix,
+                'https://mirrors.huaweicloud.com/repository/maven/'+suffix,
+                url,
+                'https://repo1.maven.org/maven2/'+suffix
+              ]
+            errors=[]
+            for attempt in range(3):
+              for mirror in candidates:
+                try:
+                  req=urllib.request.Request(mirror,headers={'User-Agent':'RKern-Compile-Verify/1.0'})
+                  with urllib.request.urlopen(req,timeout=45) as response:
+                    blob=response.read()
+                  if hashlib.sha256(blob).hexdigest()!=row['sha256']:
+                    raise RuntimeError('dependency hash mismatch: '+row['file'])
+                  jar.write_bytes(blob)
+                  break
+                except (urllib.error.HTTPError,urllib.error.URLError,TimeoutError) as exc:
+                  errors.append(str(exc))
+              if jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256']:
+                break
+              time.sleep(min(40,5*(attempt+1)))
+            assert jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256'],(row['file'],errors[-3:])
+          print('Verified pinned dependencies:',len(manifest))
+          PY
+      - name: Compile all Java21 production sources and verify NC S_ACTION and MoveChar parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/nc-s-action-phase68"
+          find "$root/src" -name '*.java' | sort > "$root/sources.txt"
+          test "$(wc -l < "$root/sources.txt")" -eq 1710
+          mkdir -p "$root/classes" "$root/testclasses"
+          javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g -cp "$(pwd)/.compile-deps/*" -d "$root/classes" @"$root/sources.txt"
+          javac --enable-preview --release 21 -encoding UTF-8 -cp "$root/classes:$(pwd)/.compile-deps/*" -d "$root/testclasses" patches/movechar_phase67_20261116/MoveCharPhase67Parity.java
+          java --enable-preview -cp "$root/testclasses:$root/classes:$(pwd)/.compile-deps/*" l1j.server.server.model.network.core.broadcast.MoveCharPhase67Parity
+          java --enable-preview -cp "$root/testclasses:$root/classes:$(pwd)/.compile-deps/*" l1j.server.server.model.network.core.broadcast.Phase68ActionParity
+          python3 - <<'PY'
+          import json,os,pathlib,zipfile,hashlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'nc-s-action-phase68'
+          audit=json.loads((root/'audit.json').read_text())
+          assert audit['java_count']==1710 and audit['entries']==1729
+          assert len(audit['changed'])==3
+          assert audit['native_dll_identical'] and audit['unchanged_identical']
+          assert audit['existing_movechar_67_kept'] and not audit['new_worker_queue_pool']
+          zpath=pathlib.Path('downloads/RKern_NC_SAction_Shared_FULL_SRC_20261116.zip')
+          assert hashlib.sha256(zpath.read_bytes()).hexdigest()==audit['output_sha256']
+          with zipfile.ZipFile(zpath) as z:
+              assert z.testzip() is None
+          print('PHASE68_NC_SACTION_ZIP_CRC_OK',audit['output_sha256'])
+          PY
+      - name: Publish one checked full source ZIP and static audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$RUNNER_TEMP/nc-s-action-phase68/audit.json" patches/nc_s_action_phase68_20261116/audit.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/RKern_NC_SAction_Shared_FULL_SRC_20261116.zip
+          git add -f patches/nc_s_action_phase68_20261116/audit.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish JDK21 compiled NC S_ACTION shared-frame full SRC [skip ci]"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
