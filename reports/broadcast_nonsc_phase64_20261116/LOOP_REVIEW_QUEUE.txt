@@ -1,0 +1,699 @@
+src/l1j/server/DogFight/Instance/MJDogFightInstance.java:222 for(MJDogFightInstance fighter : targets){
+src/l1j/server/DogFight/Instance/MJDogFightInstance.java:231 for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+src/l1j/server/IndunSystem/BossRaid2/Queen1.java:170 for (int i = _list2.size() - 1; i >= 0; i--) {
+src/l1j/server/IndunSystem/BossRaid2/Queen1.java:188 for (int i = _list3.size() - 1; i >= 0; i--) {
+src/l1j/server/IndunSystem/BossRaid2/Queen1.java:195 for (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {
+src/l1j/server/IndunSystem/FanstasyIsland/FantasyIsland.java:57 while(Running){
+src/l1j/server/IndunSystem/FanstasyIsland/FantasyIsland.java:61 for(L1NpcInstance npc : NpcList){
+src/l1j/server/IndunSystem/Hadin/Hadin.java:682 for(L1Object ob : cklist){
+src/l1j/server/IndunSystem/Hadin/Hadin.java:711 for(L1NpcInstance npc : BasicNpcList){
+src/l1j/server/IndunSystem/Hadin/Hadin.java:725 for(L1PcInstance c : getParty().getMembers()) {
+src/l1j/server/IndunSystem/MiniGame/L1Gambling.java:129 for (L1Object o : L1World.getInstance().getObject()) {
+src/l1j/server/IndunSystem/MiniGame/L1Gambling3.java:117 for (L1Object o : L1World.getInstance().getObject()) {
+src/l1j/server/IndunSystem/Orim/OrimController.java:815 for(L1PcInstance c:getPlayMemberArray())
+src/l1j/server/IndunSystem/Orim/OrimController.java:827 for (int shellCount = 0; shellCount < 5 - attackCount / 2; shellCount++) {
+src/l1j/server/IndunSystem/Orim/OrimController.java:828 for (L1PcInstance pc : getPlayMemberArray())
+src/l1j/server/MJCTSystem/Loader/MJCTLoadManager.java:30 for(int i=0; i<size; i++){
+src/l1j/server/MJCombatSystem/Loader/MJCombatLoadManager.java:239 for(MJCombatObserver observer : _current_observers.values())
+src/l1j/server/MJCompanion/MJCompanionCommandExecutor.java:181 for(Skill sk : skills)
+src/l1j/server/MJCompanion/MJCompanionCommandExecutor.java:199 for(L1CompanionInstance companion : L1World.getInstance().getAllCompanions()){
+src/l1j/server/MJCompanion/MJCompanionCommandExecutor.java:226 for(L1CompanionInstance companion : L1World.getInstance().getAllCompanions()){
+src/l1j/server/MJCompanion/MJCompanionCommandExecutor.java:248 for(L1CompanionInstance companion : L1World.getInstance().getAllCompanions()){
+src/l1j/server/MJDTSSystem/MJDTSLoader.java:48 while(rs.next()){
+src/l1j/server/MJDungeonTimer/Updator/DungeonTimeUpdator.java:170 for (int i = 0; i < 2; ++i) {
+src/l1j/server/MJDungeonTimer/Updator/DungeonTimeUpdator.java:171 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/MJEffectSystem/Realize/OnEffectThread.java:185 for (int i = 0, size = snapshot.size(); i < size; i++) {
+src/l1j/server/MJEffectSystem/Realize/OnEffectThread.java:242 for (OnEffectThread task : ACTIVE.values()) task.finish();
+src/l1j/server/MJINNSystem/MJINNRoom.java:120 for(Integer i : _keyIds)
+src/l1j/server/MJINNSystem/MJINNRoom.java:89 for(L1ItemInstance item : items)
+src/l1j/server/MJInstanceSystem/Loader/MJInstanceLoadManager.java:33 for(int i=0; i<size; i++){
+src/l1j/server/MJInstanceSystem/Loader/MJInstanceLoadManager.java:81 while(it.hasNext()){
+src/l1j/server/MJInstanceSystem/Loader/MJInstanceLoadManager.java:95 while(it.hasNext()){
+src/l1j/server/MJPassiveSkill/MJPassiveUserLoader.java:79 for (int i = 0; i < ids.length; i++) {
+src/l1j/server/MJRaidSystem/BossSkill/AttackSkill.java:113 for (int i = 0; i < size; i++) {
+src/l1j/server/MJRaidSystem/BossSkill/Cancellation.java:109 for (int skillNum = SKILLS_BEGIN; skillNum <= SKILLS_END; skillNum++) {
+src/l1j/server/MJRaidSystem/BossSkill/Cancellation.java:116 for (int skillNum = STATUS_BEGIN; skillNum <= STATUS_CANCLEEND; skillNum++) {
+src/l1j/server/MJRaidSystem/BossSkill/Cancellation.java:126 for (int skillNum = COOKING_BEGIN; skillNum <= COOKING_END; skillNum++) {
+src/l1j/server/MJRaidSystem/BossSkill/Normal.java:74 for(int i=0; i<size; i++){
+src/l1j/server/MJRaidSystem/BossSkill/RindFly.java:138 for(int i=0; i<size; i++){
+src/l1j/server/MJRaidSystem/BossSkill/Stun.java:77 for(int i=0; i<size; i++){
+src/l1j/server/MJRaidSystem/BossSkill/TargetToEffect.java:72 for(int i=0; i<size; i++){
+src/l1j/server/MJRaidSystem/BossSkill/ValakasNormal.java:89 for(int i=0; i<size; i++){
+src/l1j/server/MJRaidSystem/BossSkill/WideAreaSkill.java:74 for(int i=0; i<size; i++){
+src/l1j/server/MJRaidSystem/BossSkill/WpBrk.java:73 for(int i=0; i<size; i++){
+src/l1j/server/MJRaidSystem/Loader/MJRaidLoadManager.java:107 while(it.hasNext()){
+src/l1j/server/MJRaidSystem/Loader/MJRaidLoadManager.java:121 while(it.hasNext()){
+src/l1j/server/MJRaidSystem/Loader/MJRaidLoadManager.java:237 for(int i=0; i<size; i++){
+src/l1j/server/MJRaidSystem/Loader/MJRaidLoadManager.java:45 for(int i=0; i<size; i++){
+src/l1j/server/MJRaidSystem/MJRaidMessage.java:57 for(int i=0; i<arrs.length; i++)
+src/l1j/server/MJRaidSystem/MJRaidMessage.java:64 for(int i=0; i<arrs.length; i++)
+src/l1j/server/MJRaidSystem/MJRaidObject.java:335 for(int i=0; i<usize; i++){
+src/l1j/server/MJRaidSystem/MJRaidObject.java:349 for(int i=0; i<size; i++){
+src/l1j/server/MJRaidSystem/MJRaidObject.java:365 for(int i=0; i<size; i++){
+src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java:339 for(int i=0; i<size; i++){
+src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java:360 for(int i=0; i<size; i++){
+src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java:403 for(int i=0; i<size; i++){
+src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java:164 for(int i=0; i<2; ++i){
+src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java:165 for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
+src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java:174 for(int mapId : mapIds){
+src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java:59 for (int i = 0; i < _weight; ++i) {
+src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java:76 for (int i = 0; i < _attrCoordinates.length; i += 2) {
+src/l1j/server/MJWarSystem/MJCastleWarBusiness.java:283 for(MJCastleWar war : _castleWars.values()){
+src/l1j/server/MJWarSystem/MJCastleWarBusiness.java:296 for (String text : _viewMessages) SC_SystemMessage.send(pc, text);
+src/l1j/server/SpecialEventHandler.java:55 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/SpecialEventHandler.java:76 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/SpecialEventHandler.java:97 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java:186 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java:207 } while (tryCount < 50);
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java:215 for (L1PcInstance pc
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java:189 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java:210 } while (tryCount < 50);
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java:218 for (L1PcInstance pc
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java:303 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java:324 } while (tryCount < 50);
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java:334 for (L1PcInstance pc
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java:361 for (L1PcInstance pc
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java:188 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java:209 } while (tryCount < 50);
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java:217 for (L1PcInstance pc
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java:188 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java:209 } while (tryCount < 50);
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java:217 for (L1PcInstance pc
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java:188 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java:209 } while (tryCount < 50);
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java:217 for (L1PcInstance pc
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java:188 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java:209 } while (tryCount < 50);
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java:217 for (L1PcInstance pc
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java:188 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java:209 } while (tryCount < 50);
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java:217 for (L1PcInstance pc
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java:188 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java:209 } while (tryCount < 50);
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java:217 for (L1PcInstance pc
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java:187 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java:208 } while (tryCount < 50);
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java:216 for (L1PcInstance pc
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java:187 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java:208 } while (tryCount < 50);
+src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java:216 for (L1PcInstance pc
+src/l1j/server/server/Announcements.java:49 for (String msg : _announcements) {
+src/l1j/server/server/Controller/AuraController.java:228 for (L1PcInstance m : party.getMembers()) {
+src/l1j/server/server/Controller/BossController.java:333 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/server/Controller/BossController.java:454 } while (tryCount < 50);
+src/l1j/server/server/Controller/BossController.java:464 for (final L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(npc)) {
+src/l1j/server/server/Controller/FishingTimeController.java:561 for (int i = 0; i < table.length; i += 3) {
+src/l1j/server/server/Controller/ShipTimeController.java:137 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/server/Controller/ShipTimeController.java:167 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/server/Controller/ShipTimeController.java:182 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/server/Controller/ShipTimeController.java:198 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/server/Controller/ShipTimeController.java:214 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/server/Controller/ShipTimeController.java:229 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/server/Controller/ShipTimeController.java:242 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/server/DungeonTimeCommand.java:35 for (DungeonTimeInformation dtInfo : DungeonTimeInformationLoader.getInstance().get_enumerator()) {
+src/l1j/server/server/GMCommands.java:1520 for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
+src/l1j/server/server/GMCommands.java:1698 for (int i = 0; i < 5; ++i)
+src/l1j/server/server/GMCommands.java:2124 for (createCount = 0; createCount < count; createCount++) {
+src/l1j/server/server/GMCommands.java:2582 for (L1PcInstance target : L1World.getInstance().getAllPlayers3()) {
+src/l1j/server/server/GMCommands.java:2722 for (int i = 1; i <= 255; i++) {
+src/l1j/server/server/GMCommands.java:2832 for (L1PcInstance player : list) {
+src/l1j/server/server/GMCommands.java:2957 for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(gm, 22)) {
+src/l1j/server/server/GMCommands.java:299 while (token.hasMoreTokens()) {
+src/l1j/server/server/GMCommands.java:3019 for (createCount = 0; createCount < count; createCount++) {
+src/l1j/server/server/GMCommands.java:3152 for (L1PcInstance pc :
+src/l1j/server/server/GMCommands.java:3172 for (int i = 0; i < skillIds.length; i++) {
+src/l1j/server/server/GMCommands.java:3315 for (L1PcInstance Targetpc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/server/GMCommands.java:3433 for (i$ = itemids.iterator(); i$.hasNext();) {
+src/l1j/server/server/GMCommands.java:3752 for (L1PcInstance target : player) {
+src/l1j/server/server/GMCommands.java:3806 for (L1PcInstance target : player) {
+src/l1j/server/server/GMCommands.java:4140 for (Object obj : L1World.getInstance().getObject()) {
+src/l1j/server/server/GMCommands.java:4159 for (Object obj : L1World.getInstance().getObject()) {
+src/l1j/server/server/GMCommands.java:4439 for (L1Object each1 : L1World.getInstance().getVisibleObjects(i).values()) {
+src/l1j/server/server/GMCommands.java:4624 for (L1PcInstance target : player) {
+src/l1j/server/server/GMCommands.java:5407 for (L1ItemInstance item : m_use_type_items) {
+src/l1j/server/server/GMCommands.java:6865 while (rs.next()) {
+src/l1j/server/server/GMCommands.java:6914 while (rs.next()) {
+src/l1j/server/server/NeigeTower.java:46 while(cnt2 < 10){
+src/l1j/server/server/NeigeTower.java:62 while(cnt2 < 10){
+src/l1j/server/server/UserCommands.java:112 while (token.hasMoreTokens()) {
+src/l1j/server/server/UserCommands.java:1366 while (rs.next()) {
+src/l1j/server/server/UserCommands.java:1455 for (L1PcInstance target : L1World.getInstance().getAllPlayers3()) {
+src/l1j/server/server/UserCommands.java:2199 while(r.next()){
+src/l1j/server/server/UserCommands.java:2208 while(r1.next()){
+src/l1j/server/server/UserCommands.java:438 for (L1Clan clan : L1World.getInstance().getAllClans()) {
+src/l1j/server/server/UserCommands.java:480 for (L1Clan clan : L1World.getInstance().getAllClans()) {
+src/l1j/server/server/UserCommands.java:656 for (L1PcInstance target : L1World.getInstance().getAllPlayers3()) {
+src/l1j/server/server/UserCommands.java:784 for (int i = 0; i < 원격맵.length; i++) {
+src/l1j/server/server/UserCommands.java:792 for (int i = 0; i < 원격맵1.length; i++) {
+src/l1j/server/server/command/executor/L1AddSkill.java:109 for (cnt = 1; cnt <= 48; cnt++) {// LV1~6 마법
+src/l1j/server/server/command/executor/L1AddSkill.java:119 for (cnt = 129; cnt <= 176; cnt++) {// 에르프 마법
+src/l1j/server/server/command/executor/L1AddSkill.java:133 for (cnt = 1; cnt <= 80; cnt++) {// LV1~10 마법
+src/l1j/server/server/command/executor/L1AddSkill.java:157 for (cnt = 97; cnt <= 112; cnt++) { // DE마법
+src/l1j/server/server/command/executor/L1AddSkill.java:189 for (cnt = 177; cnt <= 200; cnt++) { // 용기사스킬
+src/l1j/server/server/command/executor/L1AddSkill.java:202 for (cnt = 201; cnt <= 224; cnt++) { // 환술사스킬
+src/l1j/server/server/command/executor/L1AddSkill.java:228 for (cnt = 1; cnt <= 8; cnt++) {// LV1 마법
+src/l1j/server/server/command/executor/L1AddSkill.java:237 for (cnt = 225; cnt <= 240; cnt++) {// 전사 마법
+src/l1j/server/server/command/executor/L1AddSkill.java:247 for(MJPassiveInfo pInfo : passives){
+src/l1j/server/server/command/executor/L1AddSkill.java:50 for (cnt = 1; cnt <= 16; cnt++) { // LV1~2 마법
+src/l1j/server/server/command/executor/L1AddSkill.java:60 for (cnt = 113; cnt <= 122; cnt++) {// 프리 마법
+src/l1j/server/server/command/executor/L1AddSkill.java:74 for (cnt = 1; cnt <= 8; cnt++) {// LV1 마법
+src/l1j/server/server/command/executor/L1AddSkill.java:84 for (cnt = 87; cnt <= 94; cnt++) {// 나이트 마법
+src/l1j/server/server/command/executor/L1BanIp.java:33 for (L1PcInstance tg : L1World.getInstance(). getAllPlayers()) {
+src/l1j/server/server/command/executor/L1Buff.java:106 for (L1PcInstance target : players) {
+src/l1j/server/server/command/executor/L1BuffIcon.java:26 for (int i = 0; i < count; i++) {
+src/l1j/server/server/command/executor/L1Burf.java:32 for (int i = 0; i < _count; i++) {
+src/l1j/server/server/command/executor/L1CheckCharacter.java:104 while(r1.next()){
+src/l1j/server/server/command/executor/L1CheckCharacter.java:122 while (r.next()){
+src/l1j/server/server/command/executor/L1CheckCharacter.java:129 while (r1.next()){
+src/l1j/server/server/command/executor/L1CheckCharacter.java:48 while(r.next()){
+src/l1j/server/server/command/executor/L1CheckCharacter.java:57 while(r1.next()){
+src/l1j/server/server/command/executor/L1CheckCharacter.java:72 while (r.next()){
+src/l1j/server/server/command/executor/L1CheckCharacter.java:79 while (r1.next()){
+src/l1j/server/server/command/executor/L1CheckCharacter.java:95 while(r.next()){
+src/l1j/server/server/command/executor/L1CommandHelp.java:20 for (L1Command cmd : list) {
+src/l1j/server/server/command/executor/L1CreateItem.java:72 for (createCount = 0; createCount < count; createCount++) {
+src/l1j/server/server/command/executor/L1CreateItemSet.java:33 for (L1ItemSetItem item : list) {
+src/l1j/server/server/command/executor/L1CreateItemSet.java:36 for (int i = 0; i < item.getAmount(); i++) {
+src/l1j/server/server/command/executor/L1DescId.java:30 for (int i = 0; i < count; i++) {
+src/l1j/server/server/command/executor/L1DescId.java:49 for (L1ItemInstance item : pc.getInventory().getItems()) {
+src/l1j/server/server/command/executor/L1DescIdArmor.java:30 for (int i = 0; i < count; i++) {
+src/l1j/server/server/command/executor/L1DescIdArmor.java:49 for (L1ItemInstance item : pc.getInventory().getItems()) {
+src/l1j/server/server/command/executor/L1DescIdWeapon.java:36 for (int i = 0; i < count; i++) {
+src/l1j/server/server/command/executor/L1DescIdWeapon.java:56 for (L1ItemInstance item : pc.getInventory().getItems()) {
+src/l1j/server/server/command/executor/L1Favorite.java:61 while (st.hasMoreTokens()) {
+src/l1j/server/server/command/executor/L1Favorite.java:75 while (st2.hasMoreTokens()) {
+src/l1j/server/server/command/executor/L1Favorite.java:83 while (st.hasMoreTokens()) {
+src/l1j/server/server/command/executor/L1GfxId.java:51 for (int i = 0; i < count; i++) {
+src/l1j/server/server/command/executor/L1GlobalBan.java:40 for (L1PcInstance otherPc : pcs) {
+src/l1j/server/server/command/executor/L1HpBar.java:51 for (L1Object obj : pc.getKnownObjects()) {
+src/l1j/server/server/command/executor/L1HpBar.java:72 for (L1Object obj : pc.getKnownObjects()) {
+src/l1j/server/server/command/executor/L1ImPactGfxid.java:76 for (int i = 0; i < ImPactList.size(); i++) {
+src/l1j/server/server/command/executor/L1ImPactGfxid1.java:75 for (int i = 0; i < ImPactList.size(); i++) {
+src/l1j/server/server/command/executor/L1InvGfxId.java:47 for(int i=0; i<page; ++i){
+src/l1j/server/server/command/executor/L1InvGfxId.java:57 for (L1ItemInstance item : pc.getInventory().getItems()) {
+src/l1j/server/server/command/executor/L1ItemDelete.java:42 for(int i = 0; i < accounts.size(); i++) {
+src/l1j/server/server/command/executor/L1ItemDelete.java:47 for(L1PcInstance players : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/server/command/executor/L1ItemDelete.java:54 for(L1Clan clans : L1World.getInstance().getAllClans()) {
+src/l1j/server/server/command/executor/L1NpcDown.java:38 for (L1Object obj : L1World.getInstance().getAllObj()) {
+src/l1j/server/server/command/executor/L1NpcDown.java:55 for (L1Object npc : L1World.getInstance().getAllObj()) {
+src/l1j/server/server/command/executor/L1PartyRecall.java:53 for (L1PcInstance pc2 : players) {
+src/l1j/server/server/command/executor/L1Present.java:90 for (createCount = 0; createCount < count; createCount++) {
+src/l1j/server/server/command/executor/L1QueryCharacter.java:52 for (L1PcInstance otherPc : pcs) {
+src/l1j/server/server/command/executor/L1RangeKick.java:95 while(rs.next()){
+src/l1j/server/server/command/executor/L1Recall.java:46 for (L1PcInstance target : targets) {
+src/l1j/server/server/command/executor/L1RemoveNpc.java:36 for (L1Object obj : L1World.getInstance().getVisibleObjects(pc)) {
+src/l1j/server/server/command/executor/L1Ress.java:48 for (L1PcInstance tg : L1World.getInstance(). getVisiblePlayer(pc)) {
+src/l1j/server/server/command/executor/L1RessBuff.java:44 for (L1PcInstance target :
+src/l1j/server/server/command/executor/L1RessBuff.java:58 for (int i = 0; i < ALL_BUFF_SKILLS.length; i++) {
+src/l1j/server/server/command/executor/L1Search.java:104 while (rs.next()) {
+src/l1j/server/server/command/executor/L1Search.java:158 while (rs.next()) {
+src/l1j/server/server/command/executor/L1Search.java:186 while (rs.next()) {
+src/l1j/server/server/command/executor/L1Search.java:214 while (rs.next()) {
+src/l1j/server/server/command/executor/L1Search.java:242 while (rs.next()) {
+src/l1j/server/server/command/executor/L1Search.java:261 while (rs.next()) {
+src/l1j/server/server/command/executor/L1Search.java:34 while (st.hasMoreTokens()) {
+src/l1j/server/server/command/executor/L1Search1.java:123 for (int i = 0, size = messages.size(); i < size; i++) {
+src/l1j/server/server/command/executor/L1ServerMessage.java:23 for (int i = 0; i <= count; i++ ) {
+src/l1j/server/server/command/executor/L1ServerName.java:25 for (int i = 0; i < count; i++) {
+src/l1j/server/server/command/executor/L1ShowTrap.java:47 for (L1Object obj : pc.getKnownObjects()) {
+src/l1j/server/server/command/executor/L1SkillEffect.java:49 for (int i = _sprid; i <= _count; i++) {
+src/l1j/server/server/command/executor/L1SkillIcon.java:26 for (int i = 0; i < count; i++) {
+src/l1j/server/server/command/executor/L1SpawnCmd.java:80 for (int i = 0; i < count; i++) {
+src/l1j/server/server/command/executor/L1Summon.java:42 for (int i = 0; i < count; i++) {
+src/l1j/server/server/command/executor/L1Thread.java:22 for(int i=0; i<th.length; i++){
+src/l1j/server/server/command/executor/L1Who.java:27 for (L1PcInstance each : players) {
+src/l1j/server/server/command/executor/L1요리아이콘.java:26 for (int i = 0; i < count; i++) {
+src/l1j/server/server/command/executor/change.java:70 for (L1ItemInstance armor : pc.getInventory().getItems()) {
+src/l1j/server/server/command/executor/change.java:71 for (int type = 0; type <= 12; type++) {
+src/l1j/server/server/datatables/CharacterTable.java:319 while (rs.next()) {
+src/l1j/server/server/datatables/CharacterTable.java:340 while (loginRs.next()) {
+src/l1j/server/server/datatables/CharacterTable.java:347 while (characterRs.next()) {
+src/l1j/server/server/datatables/CharacterTable.java:373 while (loginRs.next()) {
+src/l1j/server/server/datatables/CharacterTable.java:380 while (characterRs.next()) {
+src/l1j/server/server/model/Attendance/AttendanceLoadManager.java:174 for(UserAttendanceDataGroup dGroup : userData.get_groups()){
+src/l1j/server/server/model/Attendance/AttendanceLoadManager.java:193 for(UserAttendanceDataGroup dGroup : userData.get_groups()){
+src/l1j/server/server/model/Beginner.java:57 while (rs.next()) {
+src/l1j/server/server/model/Beginner.java:80 for (int i = 0; i < count; i++) {
+src/l1j/server/server/model/Instance/L1CastleGuardInstance.java:263 for (L1Clan clan : L1World.getInstance().getAllClans()) {
+src/l1j/server/server/model/Instance/L1CastleGuardInstance.java:275 for (L1Clan clan : L1World.getInstance().getAllClans()) {
+src/l1j/server/server/model/Instance/L1CastleGuardInstance.java:286 for (L1Clan clan : L1World.getInstance().getAllClans()) {
+src/l1j/server/server/model/Instance/L1ClanJoinInstance.java:138 for (L1PcInstance player : world.getAllPlayers()) {
+src/l1j/server/server/model/Instance/L1CompanionInstance.java:1024 for(L1ItemInstance item : items){
+src/l1j/server/server/model/Instance/L1CompanionInstance.java:1033 for(L1ItemInstance item : items){
+src/l1j/server/server/model/Instance/L1CompanionInstance.java:1156 for(MJEffectTriggerInstance trigger : m_triggers.values())
+src/l1j/server/server/model/Instance/L1CompanionInstance.java:1351 for(int i = gap - 1; i>=0; --i){
+src/l1j/server/server/model/Instance/L1CompanionInstance.java:185 for(int skill_id : bInfo.get_deduplications_spell_id()){
+src/l1j/server/server/model/Instance/L1CompanionInstance.java:696 for(MJEffectTriggerInstance trigger : triggers){
+src/l1j/server/server/model/Instance/L1CompanionInstance.java:715 for (L1PcInstance visible : L1World.getInstance().getRecognizePlayer(this)) {
+src/l1j/server/server/model/Instance/L1CompanionInstance.java:971 for(L1Object obj : L1World.getInstance().getVisibleObjects(this, 10)){
+src/l1j/server/server/model/Instance/L1CompanionInstance.java:976 for(L1GroundInventory inventory : ground_inventories){
+src/l1j/server/server/model/Instance/L1CompanionInstance.java:977 for(L1ItemInstance item : inventory.getItems()){
+src/l1j/server/server/model/Instance/L1CompanionInstance.java:991 for(L1ItemInstance item : items){
+src/l1j/server/server/model/Instance/L1CrownInstance.java:82 for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+src/l1j/server/server/model/Instance/L1DoorInstance.java:235 for (int x = leftEdgeLocation; x <= rightEdgeLocation; x++) {
+src/l1j/server/server/model/Instance/L1DoorInstance.java:244 for (int y = leftEdgeLocation; y <= rightEdgeLocation; y++) {
+src/l1j/server/server/model/Instance/L1DoorInstance.java:89 for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+src/l1j/server/server/model/Instance/L1EffectInstance.java:56 for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(this, 0)) {
+src/l1j/server/server/model/Instance/L1FieldObjectInstance.java:100 for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+src/l1j/server/server/model/Instance/L1FieldObjectInstance.java:41 for(L1PcInstance player : L1World.getInstance().getAllPlayers()){
+src/l1j/server/server/model/Instance/L1FollowerInstance.java:136 for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+src/l1j/server/server/model/Instance/L1FurnitureInstance.java:46 for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+src/l1j/server/server/model/Instance/L1GuardInstance.java:271 for (L1Clan clan : L1World.getInstance().getAllClans()) {
+src/l1j/server/server/model/Instance/L1GuardInstance.java:281 for (L1Clan clan : L1World.getInstance().getAllClans()) {
+src/l1j/server/server/model/Instance/L1GuardInstance.java:291 for (L1Clan clan : L1World.getInstance().getAllClans()) {
+src/l1j/server/server/model/Instance/L1HousekeeperInstance.java:84 for (L1House house : HouseTable.getInstance().getHouseTableList()) {
+src/l1j/server/server/model/Instance/L1HousekeeperInstance.java:98 for (L1Clan targetClan : L1World.getInstance().getAllClans()) {
+src/l1j/server/server/model/Instance/L1MonsterInstance.java:140 for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+src/l1j/server/server/model/Instance/L1MonsterInstance.java:581 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/Instance/L1MonsterInstance.java:585 for (L1PcInstance pc : L1World.getInstance().getAllPlayers())
+src/l1j/server/server/model/Instance/L1MonsterInstance.java:617 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/Instance/L1MonsterInstance.java:621 for (L1PcInstance pc : L1World.getInstance().getAllPlayers())
+src/l1j/server/server/model/Instance/L1MonsterInstance.java:681 for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(Sahel, 5)) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:1945 for (L1ItemInstance item : allItems) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:2117 for (L1Object known : getKnownObjects()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:2289 for (L1PcInstance player : playersArray) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:2894 for (int i = 0; i < packets.length; i++) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:2961 for (Object supportObject : supportList) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:3150 for (L1ItemInstance item : getInventory().getItems()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:3172 for (L1PcInstance partymember : this.getParty().getMembers()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:3485 for (L1ItemInstance item : getInventory().getItems()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:3507 for (L1PcInstance partymember : this.getParty().getMembers()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:3891 for (int i = 0; i < count; i++) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:3900 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:4943 for (int i = 0; i < clanMember.length; i++) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:5559 for (L1ItemInstance armor : getInventory().getItems()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:5560 for (int type = 0; type <= 12; type++) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:5606 for (L1ItemInstance armor : getInventory().getItems()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:5607 for (int type = 0; type <= 12; type++) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:6326 for (L1ItemInstance item : getInventory().getItems()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:6342 for (L1ItemInstance item : getInventory().getItems()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:6362 for (L1ItemInstance item : getInventory().getItems()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:6382 for (L1ItemInstance item : getInventory().getItems()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:6404 for (L1ItemInstance item : getInventory().getItems()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:6420 for (L1ItemInstance item : getInventory().getItems()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:7661 for (String idStr : mapList) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:8481 for (L1PcInstance viewer
+src/l1j/server/server/model/Instance/L1PcInstance.java:8556 for (L1PcInstance target
+src/l1j/server/server/model/Instance/L1PcInstance.java:8713 for (L1Object known : getKnownObjects()) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:8718 for (L1Object visible : L1World.getInstance().getClusterGrid().queryNearbyReusable(this, Config.PC_RECOGNIZE_RANGE)) {
+src/l1j/server/server/model/Instance/L1PcInstance.java:8731 for (L1Object visible : L1World.getInstance().getClusterGrid().queryNearbyReusable(this, Config.PC_RECOGNIZE_RANGE)) {
+src/l1j/server/server/model/Instance/L1PetInstance.java:333 for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(monster)) {
+src/l1j/server/server/model/Instance/L1PetInstance.java:343 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/Instance/L1PetInstance.java:395 for(int i=size - 1; i>=0; --i){
+src/l1j/server/server/model/Instance/L1PetInstance.java:408 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/Instance/L1PetInstance.java:509 for (Object petObject : petList) {
+src/l1j/server/server/model/Instance/L1PetInstance.java:582 for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(this, 10)) {
+src/l1j/server/server/model/Instance/L1PetInstance.java:589 for(int i=0; i < groundinv; i++) {
+src/l1j/server/server/model/Instance/L1PetInstance.java:591 for (L1ItemInstance item : inventory.getItems()) {
+src/l1j/server/server/model/Instance/L1SummonInstance.java:303 for (L1ItemInstance item : items) {
+src/l1j/server/server/model/Instance/L1SummonInstance.java:327 for (L1ItemInstance item : items) {
+src/l1j/server/server/model/Instance/L1TowerInstance.java:361 for (L1PcInstance pc
+src/l1j/server/server/model/Instance/L1TrapInstance.java:100 for (L1PcInstance pc : _knownPlayers) {
+src/l1j/server/server/model/Instance/L1TrapInstance.java:76 for (int i = 0; i < 50; i++) {
+src/l1j/server/server/model/L1Character.java:1353 for (int skillId : _elf_skill_braves) {
+src/l1j/server/server/model/L1ChatParty.java:105 for(L1PcInstance member:getMembers())
+src/l1j/server/server/model/L1ClanJoin.java:114 while (rs.next()) {
+src/l1j/server/server/model/L1ClanJoin.java:157 for (L1PcInstance other : clan.getOnlineClanMember()) {
+src/l1j/server/server/model/L1ClanJoin.java:201 for (L1Clan.ClanMember member : roster)
+src/l1j/server/server/model/L1ClanJoin.java:207 for (L1Clan.ClanMember member : roster) {
+src/l1j/server/server/model/L1ClanJoin.java:325 for (L1Clan.ClanMember member : roster) {
+src/l1j/server/server/model/L1DeathMatch.java:183 for (L1PcInstance pc : getMembersArray()) {
+src/l1j/server/server/model/L1DeathMatch.java:199 for (L1PcInstance pc : getMembersArray()) {
+src/l1j/server/server/model/L1DeathMatch.java:235 for (L1PcInstance pc : getMembersArray()) {
+src/l1j/server/server/model/L1DeathMatch.java:256 for (L1PcInstance pc : getMembersArray()) {
+src/l1j/server/server/model/L1EquipmentSlot.java:1285 for (L1ArmorSet armorSet : L1ArmorSet.getAllSet()) {
+src/l1j/server/server/model/L1GroundInventory.java:35 for (L1ItemInstance item : getItems()) {
+src/l1j/server/server/model/L1HauntedHouse.java:147 for (L1PcInstance player : getMembersArray()) {
+src/l1j/server/server/model/L1HauntedHouse.java:365 for (L1PcInstance pc : getMembersArray()) {
+src/l1j/server/server/model/L1Magic.java:345 for (L1Object obj : L1World.getInstance().getVisibleObjects(_targetPc)) {
+src/l1j/server/server/model/L1MobSkillUse.java:344 for (L1PcInstance pc :
+src/l1j/server/server/model/L1MobSkillUse.java:377 for (L1PcInstance pc :
+src/l1j/server/server/model/L1NeigeSaveChar.java:23 for(int i=0; i<size; i++){
+src/l1j/server/server/model/L1Party.java:335 for(L1PcInstance member:getMembers())
+src/l1j/server/server/model/L1Party.java:350 for(L1PcInstance member:getMembers())
+src/l1j/server/server/model/L1Party.java:90 for(L1PcInstance t:targets){
+src/l1j/server/server/model/L1PcInventory.java:1078 for (Object itemObject : _items) {
+src/l1j/server/server/model/L1PcInventory.java:486 for (L1ItemInstance item : loadedItems) {
+src/l1j/server/server/model/L1PendingCredit.java:86 for(Credit credit:credits) {
+src/l1j/server/server/model/L1PolyMorph.java:401 for (L1ItemInstance items : pc.getInventory().getItems()) {
+src/l1j/server/server/model/L1Racing.java:297 for(L1PcInstance pc : toArray(일반)){
+src/l1j/server/server/model/L1Racing.java:503 for(L1PcInstance player : toArray(일반)){
+src/l1j/server/server/model/L1Trade.java:102 for(Offered line:logs)try{
+src/l1j/server/server/model/L1Trade.java:118 for(L1ItemInstance offer:pc.getTradeWindowInventory().getItems()) {
+src/l1j/server/server/model/L1WeaponSkill.java:153 for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+src/l1j/server/server/model/L1WeaponSkill.java:208 for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+src/l1j/server/server/model/L1WeaponSkill.java:502 for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+src/l1j/server/server/model/L1WeaponSkill.java:567 for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+src/l1j/server/server/model/L1WeaponSkill.java:648 for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+src/l1j/server/server/model/L1WeaponSkill.java:736 for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+src/l1j/server/server/model/L1WeaponSkill.java:800 for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+src/l1j/server/server/model/L1WeaponSkill.java:882 for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+src/l1j/server/server/model/L1WeaponSkill.java:953 for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+src/l1j/server/server/model/Light.java:55 for (L1ItemInstance item : character.getInventory().getItems()) {
+src/l1j/server/server/model/character/Item/Drop/DropShareEngine.java:148 for (L1PcInstance p : visible) {
+src/l1j/server/server/model/character/action/CAttackAction.java:463 for (int bossId : bossIds) {
+src/l1j/server/server/model/character/action/CGetItemAction.java:307 for (L1PcInstance m : members) {
+src/l1j/server/server/model/character/action/CGetItemAction.java:420 for (L1PcInstance member : party.getMembers()) {
+src/l1j/server/server/model/character/equip/EquipService.java:70 for (L1ItemInstance it : pc.getEquipSlot().getWeapons()) {
+src/l1j/server/server/model/character/scheduler/PcInventoryExpiryScheduler.java:424 for (L1DollInstance doll : pc.getDollList().values()) {
+src/l1j/server/server/model/character/scheduler/PcInventoryExpiryScheduler.java:434 for (L1SupportInstance support : pc.getSupportList().values()) {
+src/l1j/server/server/model/character/skill/L1BuffUtil.java:108 for (L1PcInstance target : pcList) {
+src/l1j/server/server/model/character/skill/L1BuffUtil.java:120 for (int i = 0; i < buffList.length; i++) {
+src/l1j/server/server/model/character/skill/SkillHandlers.java:1039 for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(pc, 0)) {
+src/l1j/server/server/model/character/skill/SkillHandlers.java:1087 for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(npc, 0)) {
+src/l1j/server/server/model/character/skill/SkillHandlers.java:2092 for (L1PcInstance m : L1World.getInstance().getVisiblePlayer(caster, CUBE_RANGE)) {
+src/l1j/server/server/model/character/skill/SkillHandlers.java:2609 for (Object o : pc.getPetList().values()) {
+src/l1j/server/server/model/character/skill/SkillHandlers.java:2957 for (L1PcInstance member : members) {
+src/l1j/server/server/model/character/skill/SkillHandlers.java:3127 for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
+src/l1j/server/server/model/character/skill/SkillHandlers.java:3469 for (Object o : pc.getDollList().values()) {
+src/l1j/server/server/model/character/skill/SkillHandlers.java:4154 for (L1PcInstance v : L1World.getInstance().getVisiblePlayer(pc, 0)) {
+src/l1j/server/server/model/character/skill/SkillHandlers.java:4178 for (L1PcInstance v : L1World.getInstance().getVisiblePlayer(npc, 0)) {
+src/l1j/server/server/model/character/skill/SkillHandlers.java:4690 for (int a : arr) if (v == a) return true;
+src/l1j/server/server/model/character/skill/SkillHandlers.java:5704 for (int i = 0;
+src/l1j/server/server/model/character/skill/SkillHandlers.java:6269 for (int i = 0; i < count; i++) {
+src/l1j/server/server/model/character/skill/SkillHandlers.java:6380 for (int skillNum = su.hdStatusBegin();
+src/l1j/server/server/model/character/skill/SkillHandlers.java:6395 for (int skillNum = su.hdCookingBegin();
+src/l1j/server/server/model/character/skill/SkillHandlers.java:6784 for (int i = 0; i < candidates.length; i++) {
+src/l1j/server/server/model/character/skill/SkillHandlers.java:6800 for (int id : skillIds) {
+src/l1j/server/server/model/character/skill/SkillHandlers.java:6808 for (int id : skillIds) {
+src/l1j/server/server/model/character/skill/helper/SkillIconHelper.java:80 for (Entry e : entries) {
+src/l1j/server/server/model/character/skill/helper/SkillIconHelper.java:89 for (Entry e : entries) {
+src/l1j/server/server/model/character/skill/helper/SummonHelper.java:46 for (int i = fromOrder; i <= toOrder; i++) {
+src/l1j/server/server/model/item/Card/L1CardAlchemy1.java:231 for (int c : counts) args.add(c == 0 ? "[ 0장 ]" : "[ " + c + "장 ]");
+src/l1j/server/server/model/item/Card/L1CardAlchemy2.java:236 for (int c : counts) args.add(c == 0 ? "[ 0장 ]" : "[ " + c + "장 ]");
+src/l1j/server/server/model/item/Card/L1CardAlchemy2.java:75 for (int cardId : cards) {
+src/l1j/server/server/model/item/Card/L1CardAlchemy2.java:95 for (int cardId : cards) {
+src/l1j/server/server/model/item/Card/L1CardAlchemy3.java:199 for (int c : counts) args.add(c == 0 ? "[ 0장 ]" : "[ " + c + "장 ]");
+src/l1j/server/server/model/item/Card/L1CardAlchemy3.java:52 for (int cardId : selectedCards) {
+src/l1j/server/server/model/item/Card/L1CardAlchemy3.java:71 for (int cardId : selectedCards) {
+src/l1j/server/server/model/item/Card/L1CardHPast.java:27 for (int i = 1; i <= 36; i++) {
+src/l1j/server/server/model/item/Exp/CalcExp.java:77 for (int i = 1; i <= gap; i++) {
+src/l1j/server/server/model/item/L1TreasureBox.java:310 for(TreasureNotice notice:outputs) {
+src/l1j/server/server/model/item/classchange/ClassChange.java:106 for (L1ItemInstance armor : pc.getInventory().getItems()) {
+src/l1j/server/server/model/item/classchange/ClassChange.java:163 for (int skillId : skillsWithIcons) {
+src/l1j/server/server/model/item/classchange/ClassChange.java:170 for (int skillId : skillsOnly) {
+src/l1j/server/server/model/item/classchange/ClassChange.java:194 for (L1ItemInstance item : pc.getInventory().getItems()) {
+src/l1j/server/server/model/item/cooking/CookingRegistry.java:848 for (; applied < profile.effects.length; applied++) {
+src/l1j/server/server/model/item/cooking/CookingRegistry.java:862 for (int i = lastApplied; i >= 0; i--) {
+src/l1j/server/server/model/item/function/BravePotion.java:127 for (int skillId : skillsToCheck) {
+src/l1j/server/server/model/item/function/CItemUseClan.java:111 for (L1PcInstance member : clan.getOnlineClanMember()) {
+src/l1j/server/server/model/item/function/CItemUseDoll.java:26 for (Object value : pc.getDollList().values()) {
+src/l1j/server/server/model/item/function/CItemUseRewards.java:199 for (int reward : CLASS_GIFT_COMMON) {
+src/l1j/server/server/model/item/function/CItemUseRewards.java:216 for (l1j.server.server.model.L1Object visible : pc.getKnownObjects()) {
+src/l1j/server/server/model/item/function/Change/ChangeItem1_1.java:32 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem1_2.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem1_3.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem1_4.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem1_5.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem1_6.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem1_7.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem1_8.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem1_9.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem1_99.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem2_1.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem2_2.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem2_3.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem2_4.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem2_5.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem2_6.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem2_7.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem2_8.java:30 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem2_9.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/Change/ChangeItem2_99.java:31 for (int i = 0; i < bossIds.length; i++) {
+src/l1j/server/server/model/item/function/FishitemService.java:69 while (lo <= hi) {
+src/l1j/server/server/model/item/function/IceBuffItem.java:134 for (int i = 0; i < ALL_BUFF_SKILLS.length; i++) {
+src/l1j/server/server/model/item/function/ItemUseAdminPackage.java:35 for (int i = 0; i < REWARD_ID.length; ++i) {
+src/l1j/server/server/model/item/function/ItemUseAdminPackage.java:45 for (int i = 0; i < rewardNames.length; ++i)
+src/l1j/server/server/model/item/function/ItemUseAreaDamage.java:63 for (L1Object object : L1World.getInstance().getVisiblePoint(target.getLocation(), 4)) {
+src/l1j/server/server/model/item/function/ItemUseCommandCombat.java:244 for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(pc, 18)) {
+src/l1j/server/server/model/item/function/ItemUseCommandCombat.java:256 for (L1PcInstance partymember : pc.getParty().getMembers()) {
+src/l1j/server/server/model/item/function/ItemUseConsignment.java:62 for (Object dollObject : dollList1) {
+src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java:147 for (L1PcInstance member : pointsClan.getOnlineClanMember()) {
+src/l1j/server/server/model/item/function/ItemUseDurable.java:661 for (L1NpcInstance pet : pc.getPetList().values()) petCost += pet.getPetcost();
+src/l1j/server/server/model/item/function/ItemUseDurableGoods.java:114 for (L1ItemInstance candidate : pc.getInventory().getItems()) {
+src/l1j/server/server/model/item/function/ItemUseDurableGoods.java:242 for (int i = 0; i < SLOT_UNLOCK_QUESTS.length; i++) {
+src/l1j/server/server/model/item/function/ItemUseDurableGoods.java:264 for (int i = 0; i < SLOT_UNLOCK_QUESTS.length; i++) {
+src/l1j/server/server/model/item/function/ItemUseDurableGoods.java:285 for (int i = 0; i < SLOT_UNLOCK_QUESTS.length; i++) {
+src/l1j/server/server/model/item/function/ItemUseDurableGoods.java:80 for (L1ItemInstance item : pc.getInventory().getItems()) {
+src/l1j/server/server/model/item/function/ItemUseDurableSkills.java:195 for (int i = 0; i < POTENTIAL_CLEAR_SKILLS.length; i++)
+src/l1j/server/server/model/item/function/ItemUseEquipmentRewards.java:130 for (int i = 0; i < Weapon.length; i++) { // 무기
+src/l1j/server/server/model/item/function/ItemUseEquipmentRewards.java:133 for (int i = 0; i < Armor.length; i++) { // 방어구
+src/l1j/server/server/model/item/function/ItemUseEquipmentRewards.java:136 for (int i = 0; i < Accessory.length; i++) { // 악세사리
+src/l1j/server/server/model/item/function/ItemUseEquipmentRewards.java:139 for (int i = 0; i < SpellBook.length; i++) { // 법서
+src/l1j/server/server/model/item/function/ItemUseEquipmentRewards.java:150 for (int i = 0; i < rewards.size(); i++) {
+src/l1j/server/server/model/item/function/ItemUseMiscActions.java:315 for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(pc, 10)) {
+src/l1j/server/server/model/item/function/ItemUseMiscActions.java:491 for (int skillId = 4075; skillId <= 4094; skillId++) {
+src/l1j/server/server/model/item/function/ItemUseMiscActions.java:501 for (int skillId = 4086; skillId <= 4089; skillId++) {
+src/l1j/server/server/model/item/function/ItemUseMiscActions.java:540 for(int skill=4075;skill<=4094;skill++)if(pc.hasSkillEffect(skill))pc.removeSkillEffect(skill);
+src/l1j/server/server/model/item/function/ItemUseSkillBookLearning.java:39 for (int id=kind.first; id<=kind.last; id++) {
+src/l1j/server/server/model/item/function/ItemUseTravelAndRecovery.java:193 for (L1Object object : L1World.getInstance().getVisibleObjects(pc, 3)) {
+src/l1j/server/server/model/item/function/ItemUseTravelAndRecovery.java:272 for (int skill : skills) {
+src/l1j/server/server/model/item/function/ItemUseTravelCases.java:55 for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(target, 0)) {
+src/l1j/server/server/model/item/function/ItemUseTravelCases.java:87 for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(npc, 0)) {
+src/l1j/server/server/model/item/function/ItemUseTravelCases.java:98 for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(npc, 0)) {
+src/l1j/server/server/model/item/function/ItemUseUtilityCases.java:133 for (Object petObject : petList) {
+src/l1j/server/server/model/item/function/ItemUseUtilityCases.java:255 for (L1Clan clan : L1World.getInstance().getAllClans()) {
+src/l1j/server/server/model/item/function/ItemUseUtilityCases.java:300 while (iter.hasNext()) {
+src/l1j/server/server/model/item/function/ItemUseUtilityCases.java:317 for (int i = 0; i < pet_size; i++) {
+src/l1j/server/server/model/item/function/ItemUseWorldHelpers.java:172 for (L1PcInstance element : pc1) {
+src/l1j/server/server/model/item/function/ItemUseWorldHelpers.java:288 for (Object supportObject : supportList) {
+src/l1j/server/server/model/item/function/ItemUseWorldHelpers.java:89 for (Object pet : petList) {
+src/l1j/server/server/model/item/function/L1HealingPotion.java:132 for (L1HealingPotion each : list) {
+src/l1j/server/server/model/item/function/L1HealingPotion.java:177 for (int i = 0, n = effects.length; i < n; i++) {
+src/l1j/server/server/model/item/function/MagicDoll.java:115 for (Object o : snapshot) {
+src/l1j/server/server/model/item/function/MagicDoll.java:42 for (L1DollInstance doll : pc.getDollList().values()) {
+src/l1j/server/server/model/item/function/StatReset.java:88 for (L1ItemInstance armor : pc.getInventory().getItems()) {
+src/l1j/server/server/model/item/function/Telbookitem.java:179 while (iter.hasNext()) {
+src/l1j/server/server/model/item/function/Telbookitem.java:38 for (L1BookMark book : pc.getBookMarkArray()) {
+src/l1j/server/server/model/item/function/Telbookitem.java:47 for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc)) {
+src/l1j/server/server/model/item/function/TeleportUseService.java:176 for (L1BookMark b : pc.getBookMarkArray()) {
+src/l1j/server/server/model/item/function/TeleportUseService.java:322 for (L1PcInstance m : L1World.getInstance().getVisiblePlayer(pc, 3)) {
+src/l1j/server/server/model/item/function/additem.java:874 for (int i = 0; i < messages.size(); i++)
+src/l1j/server/server/model/item/function/additem2.java:386 for (int i = 0; i < messages.size(); i++)
+src/l1j/server/server/model/item/teleport/L1Teleport.java:259 for (L1PcInstance visible : L1World.getInstance().getVisiblePlayerFast(pc)) {
+src/l1j/server/server/model/item/teleport/L1Teleport.java:342 for (L1DollInstance doll : pc.getDollList().values()) {
+src/l1j/server/server/model/item/teleport/L1Teleport.java:354 for (L1SupportInstance support : pc.getSupportList().values()) {
+src/l1j/server/server/model/item/teleport/L1Teleport.java:411 for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayerFast(summon)) {
+src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java:1024 for (int map :
+src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java:360 for (int runeId :
+src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java:402 for (L1PcInstance target :
+src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java:451 for (int i = 0;
+src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java:535 for (Object petObject :
+src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java:553 for (Object dollObject :
+src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java:582 for (int i = 0;
+src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java:666 for (Object petObject :
+src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java:684 for (Object dollObject :
+src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java:901 } while (++currentTry < limitTry
+src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java:1048 for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(callClanPc, 1)) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java:453 }while(++current_try < limit_try && !MJPoint.isValidPosition(m, cx, cy));
+src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java:562 for (L1PcInstance member : targetClan.getOnlineClanMember()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java:926 for (L1PcInstance player : list) {
+src/l1j/server/server/model/network/core/cs/packet/CS_BanishParty.java:48 for (L1PcInstance member :
+src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java:360 for (L1PcInstance gm : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java:410 for(int n=0;n<8;n++){
+src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java:464 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java:491 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java:494 for (L1BookMark book : current) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java:527 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java:538 for (int i = 0; i < 5; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_ChatParty.java:88 for (L1PcInstance member : chatParty.getMembers()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_CommonClick.java:150 for (int i = 0, size = rows.size(); i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java:233 for (L1PcInstance member : clan.getOnlineClanMember()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java:293 for(int i=0;i<4;i++)ps.setInt(7+i,after.times[i]);
+src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java:399 for (L1CharName cn : CharacterTable.getInstance().getCharNameList()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java:546 for (L1PcInstance listener : L1World.getInstance().getVisiblePlayerFast(pc)) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java:680 for (L1PcInstance listener : clan.getOnlineClanMember()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_CreateChar.java:193 for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_DestroyItem.java:33 for (int i = 1, end = pairs.length; i < end; i += 2) {
+src/l1j/server/server/model/network/core/cs/packet/CS_DestroyItem.java:37 for (int i = 0, end = pairs.length; i < end; i += 2) {
+src/l1j/server/server/model/network/core/cs/packet/CS_DestroyItem.java:62 for (Object petObject : pc.getPetList().values()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_DestroyItem.java:72 for (Object dollObject : pc.getDollList().values()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java:1032 while (rs.next()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java:1091 while (rs.next()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java:1136 for (BuffInfo buffInfo : buffList) {
+src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java:477 for (int i = 0, n = data.mastery.size(); i < n; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java:538 for (L1ItemInstance item : pc.getInventory().getItems()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java:584 for (L1ItemInstance armor : pc.getInventory().getItems()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java:703 for (L1ItemInstance item : pc.getInventory().getItems()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_ExchangeSpell.java:410 for (int bit = 0;
+src/l1j/server/server/model/network/core/cs/packet/CS_ExtraCommand.java:116 for (int i = 0; i < members.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_ExtraCommand.java:138 for (int i = 0; i < members.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_ExtraCommand.java:91 for (int i = 0; i < members.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Fix.java:140 for (Object petObject :
+src/l1j/server/server/model/network/core/cs/packet/CS_GiveItem.java:159 for (Object petObject : pc.getPetList().values()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_GiveItem.java:170 for (Object dollObject : pc.getDollList().values()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_GiveItem.java:286 for (L1NpcInstance pet : pc.getPetList().values()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_JoinPledge.java:147 for (String clanIdStr :
+src/l1j/server/server/model/network/core/cs/packet/CS_LeavePledge.java:165 for (L1Clan.ClanMember member :
+src/l1j/server/server/model/network/core/cs/packet/CS_LeavePledge.java:264 for (L1PcInstance member : clan.getOnlineClanMember()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Mail.java:105 for (ClanMember member : clan.getClanMemberList()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Mail.java:130 for (Letter letter : prepared) notifyWritten(letter);
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java:1122 for (int i = 0; i < allBuffSkill.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java:1143 for (int i = 0; i < allBuffSkill.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java:1161 for (L1PcInstance player : pc.getParty().getMembers()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java:1180 for (L1PcInstance pc1 : players) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java:2864 } while (tryCount < 50);
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java:2888 for (L1Object object : L1World.getInstance().getVisibleObjects(effect, 3)) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:1049 for (Object petObject : petList) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:1072 for (Object itemObject : pc.getInventory().getItems()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:2606 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:2617 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:2656 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:2696 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:2884 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:2968 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:2980 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:4135 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:4178 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:4705 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:4749 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:4762 for (int i = 0; i < item.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:4776 for (int i = 0; i < item.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:5672 for (int j = 0; j < materials.length; j++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:5684 for (int k = 0; k < createitem.length; k++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:5704 for (int j = 0; j < materials.length; j++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:5708 for (int k = 0; k < createitem.length; k++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:5759 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:5774 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:5788 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:5814 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:5838 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:5865 for (int i = 0; i < item_ids.length; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:5992 for (int i = 0; i < 20; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:6005 for (int i = 0; i < 10; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:6008 for (L1ItemInstance item : pc.getInventory().getItems()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:6062 for (Object pet : petlist) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:6239 for (int loop = 0; loop < summonstr_list.length; loop++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:6254 for (Object pet : petlist) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:6287 for (int cnt = 0; cnt < summoncount; cnt++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:6554 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:6590 for (L1DoorInstance door : doors) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:6857 for (L1ItemInstance armor : pc.getInventory().getItems()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:6858 for (int type = 0; type <= 12; type++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:6896 for (int i = 0; i < type; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:7148 for (int skillId : skills) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:858 for (L1PcInstance Ppc : pc.getParty().getMembers()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java:987 for (L1ItemInstance item : pc.getInventory().getItems()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_PersonalShop.java:133 for (int i = 0; i < sellCount; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_PledgeWatch.java:106 for (String gazeName :
+src/l1j/server/server/model/network/core/cs/packet/CS_RankControl.java:178 for (L1PcInstance member : clan.getOnlineClanMember()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Restart.java:173 for (int skillId : RE_LOAD_N_BUFF_SKILLS) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1004 for (Object petObject : pc.getPetList().values()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1015 for (Object dollObject : pc.getDollList().values()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1076 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1113 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1164 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1214 for (Object petObject : petlist) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1259 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1280 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1331 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1383 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1487 for (PrivateShopLine line : lines.values()) tx.transfer(seller, line.item, line.count, pc);
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1490 for (PrivateShopLine line : lines.values())
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1495 for (PrivateShopLine line : lines.values())
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1498 for (PrivateShopLine line : lines.values()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1522 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1545 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1640 for (java.util.Map.Entry<Integer, Integer> e : listingQuantities.entrySet()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:1648 for (java.util.Map.Entry<Integer, Integer> e : listingQuantities.entrySet()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:226 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:233 for (int j = 0; j < i; j++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:249 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:256 for (int j = 0; j < i; j++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:345 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:422 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:669 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:688 for (L1ShopBuyOrder order : oList.getList()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:746 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:800 for (Object petObject : pc.getPetList().values()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:810 for (Object dollObject : pc.getDollList().values()) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:864 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:887 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Result.java:949 for (int i = 0; i < size; i++) {
+src/l1j/server/server/model/network/core/cs/packet/CS_Title.java:146 for (L1PcInstance clanPc :
+src/l1j/server/server/model/network/core/cs/packet/CS_TradeAddItem.java:172 for (Object value :
+src/l1j/server/server/model/network/core/cs/packet/CS_TradeAddItem.java:196 for (Object value :
+src/l1j/server/server/model/network/core/cs/packet/CS_WhoPledge.java:74 for (int i = 0; i < count; i++) {
+src/l1j/server/server/model/network/core/sc/packet/SC_ShopBuyList.java:48 for (int i = 0, n = assessedItems.size(); i < n; ++i) {
+src/l1j/server/server/model/npc/action/ActionControlHandler.java:227 for (L1Object obj : L1World.getInstance().getObject()) {
+src/l1j/server/server/model/npc/action/L1NpcMakeItemAction.java:113 for (L1ObjectAmount<Integer> makingItem : _items) {
+src/l1j/server/server/model/npc/action/L1NpcMakeItemAction.java:138 for (L1ObjectAmount<Integer> material : _materials) {
+src/l1j/server/server/model/npc/action/L1NpcMakeItemAction.java:145 for (L1ObjectAmount<Integer> makingItem : _items) {
+src/l1j/server/server/model/npc/action/L1NpcMakeItemAction.java:165 for (L1ObjectAmount<Integer> material : _materials) {
+src/l1j/server/server/model/npc/action/L1NpcMakeItemAction.java:94 for (L1ObjectAmount<Integer> material : _materials) {
+src/l1j/server/server/model/poison/L1DamagePoison.java:94 } while (false);
+src/l1j/server/server/model/shop/L1Shop.java:1047 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1075 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1103 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1225 for (int i = isRemoveFromList.length - 1; i >= 0; i--) {
+src/l1j/server/server/model/shop/L1Shop.java:1244 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1273 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1407 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1431 for (L1ShopBuyOrder order: orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1461 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1550 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1589 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1627 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1665 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1690 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1725 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1764 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:180 for (L1ShopItem item : _purchasingItems) {
+src/l1j/server/server/model/shop/L1Shop.java:1803 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:181 for (L1ItemInstance targetItem : inv.findItemsId(item.getItemId())) {
+src/l1j/server/server/model/shop/L1Shop.java:1894 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1926 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:1965 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2005 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2045 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2093 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2124 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:219 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2206 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2224 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2252 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2289 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2326 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2352 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2378 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2419 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2460 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:2507 for (L1ShopBuyOrder order : orderList.getList()) {
+src/l1j/server/server/model/shop/L1Shop.java:874 for(Runnable action:state)action.run();
+src/l1j/server/server/model/shop/L1Shop.java:875 for(Runnable action:after)try{action.run();}catch(RuntimeException failure){
+src/l1j/server/server/model/shop/L1Shop.java:941 for(L1ShopBuyOrder order:orderList.getList()) {
+src/l1j/server/server/model/trap/L1PetRaceTrap.java:76 for(int i = 0; i < L1Racing.getInstance().size(0); i++){
+src/l1j/server/server/packets/Protocol/MainServer/Companion/Proto/CS_COMPANION_NAME_CHANGE_REQ.java:45 while (!r.isAtEnd()) {
+src/l1j/server/server/packets/Protocol/MainServer/Companion/Proto/CS_COMPANION_NAME_CHANGE_REQ.java:94 for (int i = replaceName.length() - 1; i >= 0; --i) {
+src/l1j/server/server/packets/Protocol/MainServer/Companion/Proto/CS_COMPANION_SKILL_ENCHANT_REQ.java:26 while (!r.isAtEnd()) {
+src/l1j/server/server/packets/Protocol/MainServer/Companion/Proto/CS_COMPANION_STAT_INCREASE_REQ.java:22 while (!r.isAtEnd()) {
+src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_UPDATE_INVENTORY_NOTI.java:32 for (ItemInfo item : _items) {
+src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_WAREHOUSE_ITEM_LIST_NOTI.java:71 for (WarehouseItemInfo wi : items) {
+src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_WAREHOUSE_ITEM_LIST_NOTI.java:76 for (byte[] raw : rawItems) {
+src/l1j/server/server/packets/Protocol/MainServer/PlaySupport/window/PlaySupportWindow.java:66 for (int i = 0; valid && i < token.length; i++) {
+src/l1j/server/server/packets/Protocol/MainServer/Proto/CS_ACHIEVEMENT_TELEPORT_REQ.java:24 while (!r.isAtEnd()) {
+src/l1j/server/server/packets/Protocol/MainServer/Proto/CS_ALCHEMY_DESIGN_REQ.java:20 while (!r.isAtEnd()) {
+src/l1j/server/server/packets/Protocol/MainServer/Proto/CS_CLIENT_VERSION_INFO.java:18 while (!r.isAtEnd()) {
+src/l1j/server/server/packets/Protocol/MainServer/Proto/CS_CRAFT_BATCH_REQ.java:19 while (!r.isAtEnd()) {
+src/l1j/server/server/packets/Protocol/MainServer/Proto/CS_CRAFT_LIST_ALL_REQ.java:15 while (!r.isAtEnd()) {
+src/l1j/server/server/packets/Protocol/MainServer/Proto/CS_CRAFT_MAKE_REQ.java:208 for (CraftAttempt attempt : attempts) {
+src/l1j/server/server/packets/Protocol/MainServer/Proto/CS_MONSTER_BOOK_V2_REWARD_REQ.java:28 while (!r.isAtEnd()) {
+src/l1j/server/server/packets/Protocol/MainServer/Proto/CS_MONSTER_BOOK_V2_TELEPORT_REQ.java:27 while (!r.isAtEnd()) {
+src/l1j/server/server/packets/Protocol/MainServer/Proto/MonsterBook/MonsterBookV2Info.java:538 for(CardT card : _cards){
+src/l1j/server/server/packets/Protocol/MainServer/Proto/MonsterBook/MonsterBookV2Info.java:550 for(CardT card : _cards){
+src/l1j/server/server/templates/L1BookMark.java:221 for (L1BookMark books : pc.getBookMarkArray()) {
+src/l1j/server/server/templates/L1BookMark.java:232 for (L1BookMark books : pc.getSpeedBookMarkArray()) {
+src/l1j/server/server/templates/L1BookMark.java:363 for (L1BookMark book : prepared) {
+src/l1j/server/server/templates/L1ItemBookMark.java:136 for (L1BookMark book : prepared) pc.addBookMark(book);
+src/l1j/server/server/utils/FaceToFace.java:24 for (L1PcInstance target : players) {
+src/l1j/server/server/utils/L1SpawnUtil.java:231 } while (tryCount < 50);
+src/l1j/server/server/utils/L1SpawnUtil.java:240 for (L1PcInstance _pc : L1World.getInstance().getVisiblePlayer(npc)) {
+src/l1j/server/server/utils/L1SpawnUtil.java:336 } while (tryCount < 50);
+src/l1j/server/server/utils/L1SpawnUtil.java:345 for (L1PcInstance _pc : L1World.getInstance().getVisiblePlayer(npc)) {
+src/l1j/server/server/utils/L1SpawnUtil.java:351 for (L1PcInstance _pc : L1World.getInstance().getVisiblePlayer(npc)) {
+src/l1j/server/server/utils/MJFullStater.java:41 for(int i = _count - 1; i>= 0; --i){
+src/l1j/server/server/utils/TYUtil.java:20 while (values.hasMoreElements()) {
+src/l1j/server/server/utils/TYUtil.java:25 while (List.hasMoreElements())
+src/l1j/server/server/utils/TYUtil.java:37 for (int i = 0; i < list.size(); i++) {
+src/l1j/server/swing/Give.java:132 for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+src/l1j/server/swing/Give.java:152 for (createCount = 0; createCount < count; createCount++) {
