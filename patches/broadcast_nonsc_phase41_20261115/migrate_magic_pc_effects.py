@@ -8,12 +8,12 @@ ROOT=Path(__file__).resolve().parents[2]
 SRC=ROOT/"downloads/RKern_Broadcast_NonSC_Phase40_FULL_SRC_20261115.zip"
 OUT=ROOT/"downloads/RKern_Broadcast_NonSC_Phase41_FULL_SRC_20261115.zip"
 TARGET="src/l1j/server/server/model/L1Magic.java"
-PIN="TO_BE_PINNED"
+PIN="2df1ee034745d997cf56af05cb41ef6a8da666df"
 def blob(b):return hashlib.sha1(b"blob "+str(len(b)).encode()+b"\0"+b).hexdigest()
 def main():
  p=argparse.ArgumentParser();p.add_argument("--work",type=Path,default=Path("/tmp/broadcast-phase41"));args=p.parse_args()
  raw=SRC.read_bytes()
- if PIN!="TO_BE_PINNED":assert blob(raw)==PIN,"phase40 mismatch"
+ assert blob(raw)==PIN,"phase40 mismatch"
  with zipfile.ZipFile(SRC) as z:
   assert z.testzip() is None
   files={i.filename:z.read(i) for i in z.infolist() if not i.is_dir()}
