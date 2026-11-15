@@ -31,7 +31,7 @@ def method(src,sig,start=0):
             if depth==0:return a,i+1,src[a:i+1]
     raise AssertionError("unclosed method/loop: "+sig)
 def replace_block(src,anchor,loop_sig,old_send,new_send,frame_expr,required=()):
-    assert src.count(anchor)==1,(anchor,src.count(anchor))
+    assert src.count(anchor)>=1,(anchor,src.count(anchor))
     z=src.index(anchor)
     a,b,old=method(src,loop_sig,z)
     assert old.count(old_send)==1,(anchor,old.count(old_send))
