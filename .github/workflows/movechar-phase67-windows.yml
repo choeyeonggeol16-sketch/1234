@@ -55,7 +55,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference='Stop'
-          $root=Join-Path $env:RUNNER_TEMP 'phase64-broadcast'
+          $root=Join-Path $env:RUNNER_TEMP 'phase67-movechar'
           $deps=Join-Path $PWD '.compile-deps\*'
           New-Item -ItemType Directory -Force -Path "$root\classes","$root\testclasses" | Out-Null
           & javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g -cp "$deps" -d "$root\classes" "@$root\sources.txt"
@@ -71,10 +71,10 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference='Stop'
-          $root=Join-Path $env:RUNNER_TEMP 'phase64-broadcast'
+          $root=Join-Path $env:RUNNER_TEMP 'phase67-movechar'
           for($i=1;$i -le 10;$i++){
-            Write-Host "PHASE64_WINDOWS_ROUND_$i"
+            Write-Host "PHASE67_WINDOWS_ROUND_$i"
             python patches/broadcast_nonsc_phase64_20261116/run_windows_real.py "$root"
             if($LASTEXITCODE -ne 0){throw "Real Windows IOCP round $i failed"}
           }
-          Write-Host 'PHASE64_WINDOWS_10_ROUNDS_PASS'
+          Write-Host 'PHASE67_WINDOWS_10_ROUNDS_PASS'
