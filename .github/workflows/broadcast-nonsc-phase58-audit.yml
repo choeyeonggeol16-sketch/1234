@@ -1,0 +1,24 @@
+name: Broadcast phase58 legacy reachability audit
+on:
+  push:
+    branches: [broadcast-nonsc-phase58-20261116]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase58-audit.yml"
+      - "patches/broadcast_nonsc_phase58_20261116/audit_legacy.py"
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan all verified phase57 Java for active legacy broadcast and generic fanout
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 patches/broadcast_nonsc_phase58_20261116/audit_legacy.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/broadcast_nonsc_phase58_20261116
+          git diff --cached --quiet || (git commit -m "Record phase58 active legacy broadcast callsites [skip ci]" && git push origin "HEAD:$GITHUB_REF_NAME")
