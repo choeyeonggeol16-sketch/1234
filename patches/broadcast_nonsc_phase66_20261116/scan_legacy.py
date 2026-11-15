@@ -63,3 +63,32 @@ for k,pat in patterns.items():
 out={'sha256':hash256,'java':len(js),'legacy':legacy,'broadcast_named_classes':candidates,'delete_performed':False}
 (OUT/'inventory.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
 print('PHASE66_INVENTORY',json.dumps(out,ensure_ascii=False))
+
+# Phase66 targeted owner inventory: record source lines without altering any Java.
+targets=('L1Character.java','L1World.java','CWorld.java','L1PcInstance.java',
+         'CCreature.java','L1NpcInstance.java','L1MonsterInstance.java')
+patterns={
+  'legacyGeneric':r'\b(?:broadcastPacket|broadcastPacketToAll)\s*\(',
+  'newCore':r'\b(?:CSharedBroadcast|CAsyncSendConstBuffer)\b',
+  'scBroadcast':r'\bSC_\w+\.broadcast\w*\s*\(',
+  'directBroadcastMethod':r'\bbroadcast\w*\s*\(',
+  'sendPackets':r'\bsendPackets?\s*\(',
+  'visibility':r'\b(?:getVisiblePlayers?|getAllPlayers|borrowVisiblePlayerFast)\s*\(',
+}
+targeted={}
+for p,source in js.items():
+    if p.rsplit('/',1)[-1] not in targets:continue
+    code=ex[p]; scanned=code.splitlines()
+    rawlines=source.splitlines()
+    counts={}
+    detailed={}
+    for kind,pattern in patterns.items():
+        rx=re.compile(pattern)
+        hits=[{'line':ix+1,'source':rawlines[ix].strip()[:300]}
+              for ix,line in enumerate(scanned) if rx.search(line)]
+        counts[kind]=len(hits)
+        detailed[kind]=hits[:100]
+    targeted[p]={'counts':counts,'sites':detailed}
+(OUT/'owner_inventory.json').write_text(
+    json.dumps({'source_sha256':hash256,'files':targeted},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+print('PHASE66_OWNER_COUNTS',json.dumps({p:v['counts'] for p,v in targeted.items()},ensure_ascii=False))
