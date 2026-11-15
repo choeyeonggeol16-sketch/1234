@@ -1,0 +1,24 @@
+name: Broadcast phase61 raid removal review gate
+on:
+  push:
+    branches: [broadcast-nonsc-phase61-verify-20261116]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase61-review.yml"
+      - "patches/broadcast_nonsc_phase61_verify_20261116/inspect_remove_send.py"
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Review source without mutating production
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 patches/broadcast_nonsc_phase61_verify_20261116/inspect_remove_send.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/broadcast_nonsc_phase61_verify_20261116
+          git diff --cached --quiet || (git commit -m "Publish verified phase61 packet and ownership review [skip ci]" && git push origin "HEAD:$GITHUB_REF_NAME")
