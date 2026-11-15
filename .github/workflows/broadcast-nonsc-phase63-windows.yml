@@ -1,0 +1,76 @@
+name: Broadcast phase63 actual Windows IOCP shared-send regression
+on:
+  push:
+    branches: [broadcast-nonsc-phase63-validation-20261116]
+    paths:
+      - ".github/workflows/broadcast-nonsc-phase63-windows.yml"
+      - "patches/broadcast_nonsc_phase63_20261116/prepare_windows_native.py"
+permissions:
+  contents: read
+jobs:
+  native_windows:
+    runs-on: windows-2025
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Extract SHA-pinned phase62 full source and native DLL
+        shell: pwsh
+        run: |
+          python patches/broadcast_nonsc_phase63_20261116/prepare_windows_native.py "$env:RUNNER_TEMP\phase63-broadcast"
+      - name: Restore SHA-256 pinned Java dependencies
+        shell: pwsh
+        run: |
+          @'
+          import pathlib,json,hashlib,time,urllib.request,urllib.error
+          manifest=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          root=pathlib.Path('.compile-deps');root.mkdir(exist_ok=True)
+          for row in manifest:
+              jar=root/row['file']
+              if jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256']:continue
+              url=row['url'];urls=[url]
+              if 'repo.maven.apache.org/maven2/' in url:
+                  suffix=url.split('repo.maven.apache.org/maven2/',1)[1]
+                  urls=['https://maven.aliyun.com/repository/central/'+suffix,
+                        'https://mirrors.huaweicloud.com/repository/maven/'+suffix,url]
+              errors=[]
+              for attempt in range(3):
+                  for u in urls:
+                      try:
+                          req=urllib.request.Request(u,headers={'User-Agent':'RKern-Win-IOCP-Validate/1.0'})
+                          with urllib.request.urlopen(req,timeout=45) as response: data=response.read()
+                          if hashlib.sha256(data).hexdigest()!=row['sha256']:raise RuntimeError('jar hash mismatch: '+jar.name)
+                          jar.write_bytes(data);break
+                      except (urllib.error.URLError,urllib.error.HTTPError,TimeoutError) as error:errors.append(str(error))
+                  if jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256']:break
+                  time.sleep(3*(attempt+1))
+              assert jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256'],(jar,errors[-4:])
+          print('PHASE63_PINNED_DEPENDENCIES',len(manifest))
+          '@ | python -
+      - name: Compile entire production server with JDK21 (Windows)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $env:RUNNER_TEMP 'phase63-broadcast'
+          $deps=Join-Path $PWD '.compile-deps\*'
+          New-Item -ItemType Directory -Force -Path "$root\classes","$root\testclasses" | Out-Null
+          & javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g -cp "$deps" -d "$root\classes" "@$root\sources.txt"
+          if($LASTEXITCODE -ne 0){throw 'JDK21 production compilation failed'}
+          & javac --enable-preview --release 21 -encoding UTF-8 -cp "$root\classes;$deps" -d "$root\testclasses" "$root\testsrc\l1j\server\server\model\network\core\connection\CSharedBroadcastWindowsTest.java"
+          if($LASTEXITCODE -ne 0){throw 'IOCP real broadcast regression harness compilation failed'}
+          Write-Host 'PHASE63_WINDOWS_COMPILE_OK'
+      - name: Run real TCP IOCP/FMM/CTransport encryption and shared SEND regression
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $env:RUNNER_TEMP 'phase63-broadcast'
+          $deps=Join-Path $PWD '.compile-deps\*'
+          Push-Location $root
+          try {
+            & java --enable-preview --enable-native-access=ALL-UNNAMED "-Djava.library.path=$root" -cp "$root\testclasses;$root\classes;$deps" l1j.server.server.model.network.core.connection.CSharedBroadcastWindowsTest
+            if($LASTEXITCODE -ne 0){throw 'REAL_WINDOWS_IOCP_BROADCAST_TEST_FAILED'}
+            Write-Host 'PHASE63_REAL_WINDOWS_IOCP_PASS'
+          } finally { Pop-Location }
