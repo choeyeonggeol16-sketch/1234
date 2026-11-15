@@ -20,17 +20,17 @@ def executable(s):
                 out.append(' ');i+=1;state="string" if c=='"' else "char";escape=False;continue
             out.append(c);i+=1;continue
         if state=="line":
-            out.append('\\n' if c=='\\n' else ' ')
-            if c=='\\n':state="code"
+            out.append('\n' if c=='\n' else ' ')
+            if c=='\n':state="code"
             i+=1;continue
         if state=="block":
             if c=='*' and q=='/':out.extend('  ');i+=2;state="code";continue
-            out.append('\\n' if c=='\\n' else ' ');i+=1;continue
+            out.append('\n' if c=='\n' else ' ');i+=1;continue
         if state=="text" and s.startswith('"""',i):out.extend('   ');i+=3;state="code";continue
-        out.append('\\n' if c=='\\n' else ' ')
+        out.append('\n' if c=='\n' else ' ')
         if state!="text":
             if escape:escape=False
-            elif c=='\\\\':escape=True
+            elif c=='\\':escape=True
             elif c==('"' if state=="string" else "'"):state="code"
         i+=1
     return ''.join(out)
@@ -46,20 +46,20 @@ names=sorted(n for n in js if re.search(r'broadcas',n,re.I))
 candidates=[]
 for p in names:
     cls=p.rsplit('/',1)[-1][:-5]
-    token=re.compile(r'\\b'+re.escape(cls)+r'\\b')
+    token=re.compile(r'\b'+re.escape(cls)+r'\b')
     refs=[{'path':q,'count':len(token.findall(x))} for q,x in ex.items() if q!=p and token.search(x)]
     refs.sort(key=lambda x:x['path'])
     candidates.append({'path':p,'class':cls,'other_file_references':refs,'possible_dead':len(refs)==0})
 legacy={}
 patterns={
-  'broadcastPacket':r'\\bbroadcastPacket\\s*\\(',
-  'broadcastPacketToAll':r'\\bbroadcastPacketToAll\\s*\\(',
-  'Broadcaster dot call':r'\\bBroadcaster\\s*\\.',
-  'ServerPacket generic broadcast method':r'\\bbroadcast\\s*\\(\\s*ServerPacket\\b'}
+  'broadcastPacket':r'\bbroadcastPacket\s*\(',
+  'broadcastPacketToAll':r'\bbroadcastPacketToAll\s*\(',
+  'Broadcaster dot call':r'\bBroadcaster\s*\.',
+  'ServerPacket generic broadcast method':r'\bbroadcast\s*\(\s*ServerPacket\b'}
 for k,pat in patterns.items():
     rx=re.compile(pat)
     hits=[{'path':p,'count':len(rx.findall(code))} for p,code in ex.items() if rx.search(code)]
     legacy[k]=hits
 out={'sha256':hash256,'java':len(js),'legacy':legacy,'broadcast_named_classes':candidates,'delete_performed':False}
-(OUT/'inventory.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\\n',encoding='utf8')
+(OUT/'inventory.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
 print('PHASE66_INVENTORY',json.dumps(out,ensure_ascii=False))
