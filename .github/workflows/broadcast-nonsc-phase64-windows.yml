@@ -49,7 +49,7 @@ jobs:
                   if jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256']:break
                   time.sleep(3*(attempt+1))
               assert jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256'],(jar,errors[-4:])
-          print('PHASE63_PINNED_DEPENDENCIES',len(manifest))
+          print('PHASE64_PINNED_DEPENDENCIES',len(manifest))
           '@ | python -
       - name: Compile entire production server with JDK21 (Windows)
         shell: pwsh
@@ -62,7 +62,7 @@ jobs:
           if($LASTEXITCODE -ne 0){throw 'JDK21 production compilation failed'}
           & javac --enable-preview --release 21 -encoding UTF-8 -cp "$root\classes;$deps" -d "$root\testclasses" "$root\testsrc\l1j\server\server\model\network\core\transport\CIOPacketCodecReference.java" "$root\testsrc\l1j\server\server\model\network\core\connection\CSharedBroadcastWindowsTest.java"
           if($LASTEXITCODE -ne 0){throw 'IOCP real broadcast regression harness compilation failed'}
-          Write-Host 'PHASE63_WINDOWS_COMPILE_OK'
+          Write-Host 'PHASE64_WINDOWS_COMPILE_OK'
       - name: Ten successive real TCP IOCP/FFM/DLL broadcast rounds, 4 L1 cipher keys each
         shell: pwsh
         run: |
