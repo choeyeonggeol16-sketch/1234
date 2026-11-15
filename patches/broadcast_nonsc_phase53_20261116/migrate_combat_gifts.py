@@ -29,8 +29,8 @@ def block(s,signature,start=0):
    if depth==0:return i,k+1,s[i:k+1]
  raise AssertionError(("unbalanced",signature))
 def shared(wire,name):
- return "try(var "+name+"=new "+BC+".CAsyncSendConstBuffer(\n"+
-  wire+",Integer.MIN_VALUE,Integer.MAX_VALUE)) {\n"
+ return ("try(var "+name+"=new "+BC+".CAsyncSendConstBuffer(\n"+
+         wire+",Integer.MIN_VALUE,Integer.MAX_VALUE)) {\n")
 def find_loop_for(s,needle):
  sig="for (L1PcInstance player :"
  loops=[];start=0
