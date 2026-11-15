@@ -1,7 +1,7 @@
 name: Broadcast phase50 remaining event and NPC fanout shared frames
 on:
   push:
-    branches: [broadcast-nonsc-phase50-20261115]
+    branches: [broadcast-nonsc-phase50-20261116]
     paths:
       - ".github/workflows/broadcast-nonsc-phase50-build.yml"
       - "patches/broadcast_nonsc_phase50_20261115/migrate_events.py"
@@ -93,7 +93,7 @@ jobs:
           assert d['gm_shop_warning_filter_kept']
           assert d['native_unchanged'] and d['no_fallback']
           assert d['new_workers_queues_classes']==0
-          with zipfile.ZipFile('downloads/RKern_Broadcast_NonSC_Phase50_FULL_SRC_20261115.zip') as z:
+          with zipfile.ZipFile('downloads/RKern_Broadcast_NonSC_Phase50_FULL_SRC_20261116.zip') as z:
             assert z.testzip() is None
             assert sum(n.endswith('.java') for n in z.namelist())==1710
           print('PHASE50_VERIFIED',d['output_sha256'])
@@ -104,7 +104,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f downloads/RKern_Broadcast_NonSC_Phase50_FULL_SRC_20261115.zip
+          git add -f downloads/RKern_Broadcast_NonSC_Phase50_FULL_SRC_20261116.zip
           git diff --cached --quiet && exit 0
           git commit -m "Publish phase50 compiled haunted NPC dialogue shared SRC [skip ci]"
           git push origin "HEAD:$GITHUB_REF_NAME"
