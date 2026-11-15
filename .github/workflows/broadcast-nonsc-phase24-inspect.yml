@@ -6,6 +6,7 @@ on:
       - ".github/workflows/broadcast-nonsc-phase24-inspect.yml"
       - "patches/broadcast_nonsc_phase24_20261115/inspect.py"
       - "patches/broadcast_nonsc_phase24_20261115/candidate_scan.py"
+      - "patches/broadcast_nonsc_phase24_20261115/inspect_targets.py"
 jobs:
   inspect:
     runs-on: ubuntu-24.04
@@ -13,4 +14,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Inspect exact phase23 remaining broadcast methods
-        run: python3 patches/broadcast_nonsc_phase24_20261115/candidate_scan.py
+        run: python3 patches/broadcast_nonsc_phase24_20261115/inspect_targets.py
