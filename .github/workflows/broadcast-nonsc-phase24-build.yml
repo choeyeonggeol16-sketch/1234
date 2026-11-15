@@ -1,10 +1,10 @@
-name: Broadcast phase24 nested chest AOI immutable sound
+name: Broadcast phase24 shared indun notices and raid lists
 on:
   push:
     branches: [broadcast-nonsc-phase24-20261115]
     paths:
       - ".github/workflows/broadcast-nonsc-phase24-build.yml"
-      - "patches/broadcast_nonsc_phase24_20261115/migrate_nested_sound.py"
+      - "patches/broadcast_nonsc_phase24_20261115/migrate_indun_green.py"
 permissions:
   contents: write
 jobs:
@@ -19,9 +19,9 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - name: Migrate phase24 chest nested AOI
+      - name: Migrate phase24 indun green notice fanouts
         run: |
-          python3 patches/broadcast_nonsc_phase24_20261115/migrate_nested_sound.py --work "$RUNNER_TEMP/broadcast-phase24"
+          python3 patches/broadcast_nonsc_phase24_20261115/migrate_indun_green.py --work "$RUNNER_TEMP/broadcast-phase24"
       - name: Restore SHA256-pinned Java dependencies
         run: |
           python3 - <<'PY'
@@ -33,7 +33,7 @@ jobs:
             assert hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256'],row['file']
           print('Pinned dependencies verified',len(manifest))
           PY
-      - name: Full Java21 compilation, skill FX parity and CRC
+      - name: Full Java21 compilation, green and system wire parity and CRC
         shell: bash
         run: |
           set -euo pipefail
@@ -42,15 +42,16 @@ jobs:
           test "$(wc -l < "$root/sources.txt")" -eq 1710
           mkdir -p "$root/classes" "$root/testclasses"
           javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g -cp "$(pwd)/.compile-deps/*" -d "$root/classes" @"$root/sources.txt"
-          javac --enable-preview --release 21 -encoding UTF-8 -cp "$root/classes:$(pwd)/.compile-deps/*" -d "$root/testclasses" "$root/testsrc/Phase24SkillSoundParity.java"
-          java --enable-preview -cp "$root/testclasses:$root/classes:$(pwd)/.compile-deps/*" Phase24SkillSoundParity
+          javac --enable-preview --release 21 -encoding UTF-8 -cp "$root/classes:$(pwd)/.compile-deps/*" -d "$root/testclasses" "$root/testsrc/Phase24IndunGreenParity.java"
+          java --enable-preview -cp "$root/testclasses:$root/classes:$(pwd)/.compile-deps/*" Phase24IndunGreenParity
           python3 - <<'PY'
           import json,os,pathlib,zipfile
           root=pathlib.Path(os.environ['RUNNER_TEMP'])/'broadcast-phase24'
           d=json.loads((root/'audit.json').read_text())
-          assert d['java_sources']==1710 and len(d['modified_java'])==2
-          assert d['nested_AOI_preserved'] and d['duplicate_receivers_preserved']
-          assert d['one_shared_buffer_per_chest_effect'] and d['self_and_map_filter_preserved']
+          assert d['java_sources']==1710 and len(d['modified_java'])==7
+          assert d['shared_green_indun_loops']==11 and d['raid_message_list_loops']==2
+          assert d['map_object_iteration_preserved'] and d['recipient_order_and_duplicates_preserved']
+          assert d['per_pc_clan_message_unchanged'] and d['no_workers_or_queues_added']
           assert d['native_unchanged'] and d['no_legacy_fallback']
           with zipfile.ZipFile('downloads/RKern_Broadcast_NonSC_Phase24_FULL_SRC_20261115.zip') as z:
             assert z.testzip() is None
