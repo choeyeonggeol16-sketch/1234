@@ -123,7 +123,7 @@ def patch_chat(files):
                 'sendDirectRaw(receiver, MODE_COMPLEX_0, opcode, 0, objectId, text,'):
   assert needle not in s,needle
  files[CHAT]=s.encode("utf8")
-def patch_gambling(files,path,method,sourcecall):
+def patch_gambling(files,path,method):
  s=files[path].decode("utf8")
  a,b,part=block(s,method)
  original="SC_ChatPacket.sendComplex0(pc, pc, chatText, Opcodes.S_SAY);"
