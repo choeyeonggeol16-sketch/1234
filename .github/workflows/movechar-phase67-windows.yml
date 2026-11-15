@@ -3,7 +3,7 @@ on:
   push:
     branches: [broadcast-movechar-lazy-owned-20261116]
     paths:
-      - ".github/workflows/broadcast-nonsc-phase64-windows.yml"
+      - ".github/workflows/movechar-phase67-windows.yml"
       - "patches/movechar_phase67_20261116/prepare_windows_native.py"
       - "patches/broadcast_nonsc_phase64_20261116/run_windows_real.py"
 permissions:
