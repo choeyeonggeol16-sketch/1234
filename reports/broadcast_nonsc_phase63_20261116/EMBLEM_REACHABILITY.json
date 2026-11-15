@@ -1,0 +1,23 @@
+{
+  "emblem_source_path": "src/l1j/server/server/model/network/core/sc/packet/SC_ReturnedStat.java",
+  "definition": "public static void broadcastEmblem(L1Character source, int objId, int emblemId) {\n        if (source == null) return;\n        for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(source))\n            sendEmblem(pc, objId, emblemId);\n    }",
+  "nonself_calls": [
+    {
+      "path": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+      "line": 6461,
+      "source": "SC_ReturnedStat.broadcastEmblem(this, getId(), 0);"
+    },
+    {
+      "path": "src/l1j/server/server/model/L1ClanJoin.java",
+      "line": 159,
+      "source": "SC_ReturnedStat.broadcastEmblem(other, other.getId(), clan.getEmblemId());"
+    },
+    {
+      "path": "src/l1j/server/server/model/network/core/cs/packet/CS_Emblem.java",
+      "line": 83,
+      "source": "SC_ReturnedStat.broadcastEmblem(pc, pc.getId(), newEmblemId);"
+    }
+  ],
+  "nonself_call_count": 3,
+  "game_source_files": 1710
+}
