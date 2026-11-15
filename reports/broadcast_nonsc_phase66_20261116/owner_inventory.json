@@ -1,0 +1,847 @@
+{
+  "source_sha256": "1fd040e4bb4fe89c9c8fe1d8e5f6c2877fbfb6e990f5e551016fe8dc1557a23d",
+  "files": {
+    "src/l1j/server/server/model/CWorld.java": {
+      "counts": {
+        "legacyGeneric": 0,
+        "newCore": 0,
+        "scBroadcast": 0,
+        "directBroadcastMethod": 0,
+        "sendPackets": 0,
+        "visibility": 0
+      },
+      "sites": {
+        "legacyGeneric": [],
+        "newCore": [],
+        "scBroadcast": [],
+        "directBroadcastMethod": [],
+        "sendPackets": [],
+        "visibility": []
+      }
+    },
+    "src/l1j/server/server/model/Instance/L1MonsterInstance.java": {
+      "counts": {
+        "legacyGeneric": 0,
+        "newCore": 7,
+        "scBroadcast": 23,
+        "directBroadcastMethod": 23,
+        "sendPackets": 0,
+        "visibility": 2
+      },
+      "sites": {
+        "legacyGeneric": [],
+        "newCore": [
+          {
+            "line": 583,
+            "source": "l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer greenShared=null;"
+          },
+          {
+            "line": 595,
+            "source": "greenShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+          },
+          {
+            "line": 597,
+            "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(greenShared,pc);"
+          },
+          {
+            "line": 619,
+            "source": "l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer greenShared=null;"
+          },
+          {
+            "line": 631,
+            "source": "greenShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+          },
+          {
+            "line": 633,
+            "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(greenShared,pc);"
+          },
+          {
+            "line": 1163,
+            "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendArray("
+          }
+        ],
+        "scBroadcast": [
+          {
+            "line": 593,
+            "source": "SC_SkillSound.broadcast(pc, pc.getId(), 7783);"
+          },
+          {
+            "line": 629,
+            "source": "SC_SkillSound.broadcast(pc, pc.getId(), 7783);"
+          },
+          {
+            "line": 659,
+            "source": "SC_DoActionGFX.broadcast(this, 4);"
+          },
+          {
+            "line": 699,
+            "source": "SC_SkillSound.broadcast(PearlBuff, PearlBuff.getId(), 7836);"
+          },
+          {
+            "line": 700,
+            "source": "SC_NpcChatPacket.broadcastNpc(Sahel, Sahel, \"$8468\", 0); // 힐을 줍니다"
+          },
+          {
+            "line": 706,
+            "source": "SC_SkillSound.broadcast(PearlBuff, PearlBuff.getId(), 7834);"
+          },
+          {
+            "line": 709,
+            "source": "SC_NpcChatPacket.broadcastNpc(Sahel, Sahel, \"$8471\", 0); // 근거리 물리력에"
+          },
+          {
+            "line": 711,
+            "source": "SC_NpcChatPacket.broadcastNpc(Sahel, Sahel, \"$8472\", 0); // 원거리 물리력에"
+          },
+          {
+            "line": 713,
+            "source": "SC_NpcChatPacket.broadcastNpc(Sahel, Sahel, \"$8470\", 0); // 마법에"
+          },
+          {
+            "line": 715,
+            "source": "SC_NpcChatPacket.broadcastNpc(Sahel, Sahel, \"$8469\", 0); // 헤이스트"
+          },
+          {
+            "line": 743,
+            "source": "SC_SkillSound.broadcast(Pearl, Pearl.getId(), 233);"
+          },
+          {
+            "line": 749,
+            "source": "SC_SkillSound.broadcast(Pearl, Pearl.getId(), 224);"
+          },
+          {
+            "line": 754,
+            "source": "SC_SkillSound.broadcast(PearlBuff, PearlBuff.getId(), 7836);"
+          },
+          {
+            "line": 758,
+            "source": "SC_SkillSound.broadcast(PearlBuff, PearlBuff.getId(), 7834);"
+          },
+          {
+            "line": 784,
+            "source": "SC_DoActionGFX.broadcast(this, dieGfx);"
+          },
+          {
+            "line": 1020,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Hide);"
+          },
+          {
+            "line": 1022,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          },
+          {
+            "line": 1031,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_AntharasHide);"
+          },
+          {
+            "line": 1033,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          },
+          {
+            "line": 1043,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Moveup);"
+          },
+          {
+            "line": 1045,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          },
+          {
+            "line": 1054,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Moveup);"
+          },
+          {
+            "line": 1056,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          }
+        ],
+        "directBroadcastMethod": [
+          {
+            "line": 593,
+            "source": "SC_SkillSound.broadcast(pc, pc.getId(), 7783);"
+          },
+          {
+            "line": 629,
+            "source": "SC_SkillSound.broadcast(pc, pc.getId(), 7783);"
+          },
+          {
+            "line": 659,
+            "source": "SC_DoActionGFX.broadcast(this, 4);"
+          },
+          {
+            "line": 699,
+            "source": "SC_SkillSound.broadcast(PearlBuff, PearlBuff.getId(), 7836);"
+          },
+          {
+            "line": 700,
+            "source": "SC_NpcChatPacket.broadcastNpc(Sahel, Sahel, \"$8468\", 0); // 힐을 줍니다"
+          },
+          {
+            "line": 706,
+            "source": "SC_SkillSound.broadcast(PearlBuff, PearlBuff.getId(), 7834);"
+          },
+          {
+            "line": 709,
+            "source": "SC_NpcChatPacket.broadcastNpc(Sahel, Sahel, \"$8471\", 0); // 근거리 물리력에"
+          },
+          {
+            "line": 711,
+            "source": "SC_NpcChatPacket.broadcastNpc(Sahel, Sahel, \"$8472\", 0); // 원거리 물리력에"
+          },
+          {
+            "line": 713,
+            "source": "SC_NpcChatPacket.broadcastNpc(Sahel, Sahel, \"$8470\", 0); // 마법에"
+          },
+          {
+            "line": 715,
+            "source": "SC_NpcChatPacket.broadcastNpc(Sahel, Sahel, \"$8469\", 0); // 헤이스트"
+          },
+          {
+            "line": 743,
+            "source": "SC_SkillSound.broadcast(Pearl, Pearl.getId(), 233);"
+          },
+          {
+            "line": 749,
+            "source": "SC_SkillSound.broadcast(Pearl, Pearl.getId(), 224);"
+          },
+          {
+            "line": 754,
+            "source": "SC_SkillSound.broadcast(PearlBuff, PearlBuff.getId(), 7836);"
+          },
+          {
+            "line": 758,
+            "source": "SC_SkillSound.broadcast(PearlBuff, PearlBuff.getId(), 7834);"
+          },
+          {
+            "line": 784,
+            "source": "SC_DoActionGFX.broadcast(this, dieGfx);"
+          },
+          {
+            "line": 1020,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Hide);"
+          },
+          {
+            "line": 1022,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          },
+          {
+            "line": 1031,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_AntharasHide);"
+          },
+          {
+            "line": 1033,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          },
+          {
+            "line": 1043,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Moveup);"
+          },
+          {
+            "line": 1045,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          },
+          {
+            "line": 1054,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Moveup);"
+          },
+          {
+            "line": 1056,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          }
+        ],
+        "sendPackets": [],
+        "visibility": [
+          {
+            "line": 585,
+            "source": "for (L1PcInstance pc : L1World.getInstance().getAllPlayers())"
+          },
+          {
+            "line": 621,
+            "source": "for (L1PcInstance pc : L1World.getInstance().getAllPlayers())"
+          }
+        ]
+      }
+    },
+    "src/l1j/server/server/model/Instance/L1NpcInstance.java": {
+      "counts": {
+        "legacyGeneric": 0,
+        "newCore": 4,
+        "scBroadcast": 12,
+        "directBroadcastMethod": 12,
+        "sendPackets": 0,
+        "visibility": 0
+      },
+      "sites": {
+        "legacyGeneric": [],
+        "newCore": [
+          {
+            "line": 1264,
+            "source": "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_RemoveObject.broadcastWire(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+          },
+          {
+            "line": 1533,
+            "source": "try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_SkillSound.sharedWire(getId(),169),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+          },
+          {
+            "line": 1534,
+            "source": "var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_RemoveObject.broadcastWire(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+          },
+          {
+            "line": 2247,
+            "source": "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_RemoveObject.broadcastWire(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+          }
+        ],
+        "scBroadcast": [
+          {
+            "line": 963,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Movedown);"
+          },
+          {
+            "line": 965,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          },
+          {
+            "line": 1264,
+            "source": "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_RemoveObject.broadcastWire(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+          },
+          {
+            "line": 1356,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Appear);"
+          },
+          {
+            "line": 1358,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          },
+          {
+            "line": 1366,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Movedown);"
+          },
+          {
+            "line": 1368,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          },
+          {
+            "line": 1423,
+            "source": "SC_MoveChar.broadcast(this);"
+          },
+          {
+            "line": 1534,
+            "source": "var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_RemoveObject.broadcastWire(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+          },
+          {
+            "line": 1964,
+            "source": "SC_SkillSound.broadcast(this, getId(), transformGfxId);"
+          },
+          {
+            "line": 2247,
+            "source": "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_RemoveObject.broadcastWire(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+          },
+          {
+            "line": 2312,
+            "source": "SC_ExplosionNoti.broadcast(_npc, _npc.getId(), _explosion_remain_time);"
+          }
+        ],
+        "directBroadcastMethod": [
+          {
+            "line": 963,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Movedown);"
+          },
+          {
+            "line": 965,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          },
+          {
+            "line": 1264,
+            "source": "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_RemoveObject.broadcastWire(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+          },
+          {
+            "line": 1356,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Appear);"
+          },
+          {
+            "line": 1358,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          },
+          {
+            "line": 1366,
+            "source": "SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Movedown);"
+          },
+          {
+            "line": 1368,
+            "source": "SC_WorldPutObject.broadcastNpc(this);"
+          },
+          {
+            "line": 1423,
+            "source": "SC_MoveChar.broadcast(this);"
+          },
+          {
+            "line": 1534,
+            "source": "var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_RemoveObject.broadcastWire(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+          },
+          {
+            "line": 1964,
+            "source": "SC_SkillSound.broadcast(this, getId(), transformGfxId);"
+          },
+          {
+            "line": 2247,
+            "source": "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_RemoveObject.broadcastWire(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+          },
+          {
+            "line": 2312,
+            "source": "SC_ExplosionNoti.broadcast(_npc, _npc.getId(), _explosion_remain_time);"
+          }
+        ],
+        "sendPackets": [],
+        "visibility": []
+      }
+    },
+    "src/l1j/server/server/model/Instance/L1PcInstance.java": {
+      "counts": {
+        "legacyGeneric": 0,
+        "newCore": 7,
+        "scBroadcast": 21,
+        "directBroadcastMethod": 22,
+        "sendPackets": 17,
+        "visibility": 1
+      },
+      "sites": {
+        "legacyGeneric": [],
+        "newCore": [
+          {
+            "line": 3170,
+            "source": "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+          },
+          {
+            "line": 3174,
+            "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,partymember);"
+          },
+          {
+            "line": 3505,
+            "source": "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+          },
+          {
+            "line": 3509,
+            "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,partymember);"
+          },
+          {
+            "line": 3898,
+            "source": "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+          },
+          {
+            "line": 3902,
+            "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);"
+          },
+          {
+            "line": 3917,
+            "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllGms(SC_SystemMessage.sharedWire(\"\\\\fY[GM] \" + getName() + \"님의 [\" + item.getLogName() + \"] 드랍\"));"
+          }
+        ],
+        "scBroadcast": [
+          {
+            "line": 1857,
+            "source": "SC_SkillSound.broadcast(this, getId(), 16533);"
+          },
+          {
+            "line": 1859,
+            "source": "SC_SkillBrave.broadcast(this, getId(), 12, 0);"
+          },
+          {
+            "line": 2137,
+            "source": "SC_Poison.broadcast(this, getId(), poisonId);"
+          },
+          {
+            "line": 3193,
+            "source": "SC_SkillSound.broadcast(this, getId(), 14541);"
+          },
+          {
+            "line": 3209,
+            "source": "SC_SkillSound.broadcast(this, getId(), 14541);"
+          },
+          {
+            "line": 3528,
+            "source": "SC_SkillSound.broadcast(this, getId(), 14541);"
+          },
+          {
+            "line": 3544,
+            "source": "SC_SkillSound.broadcast(this, getId(), 14541);"
+          },
+          {
+            "line": 3664,
+            "source": "SC_ChatPacket.broadcastOpcode(String.format(\"\\\\aG승리[%s] \\\\aA=> \\\\aL패배[%s]\", player.getName(), getName()), Opcodes.S_MESSAGE);"
+          },
+          {
+            "line": 3665,
+            "source": "SC_SystemMessage.broadcast(\"==========================\");"
+          },
+          {
+            "line": 3747,
+            "source": "SC_DoActionGFX.broadcast("
+          },
+          {
+            "line": 4654,
+            "source": "SC_Lawful.broadcastFast(this, getId(), lawful);"
+          },
+          {
+            "line": 5008,
+            "source": "SC_CharTitle.broadcast(this, getId(), \"\");"
+          },
+          {
+            "line": 5253,
+            "source": "SC_Poison.broadcast(this, getId(), effectId);"
+          },
+          {
+            "line": 6459,
+            "source": "SC_CharTitle.broadcast(this, getId(), broadcastTitle);"
+          },
+          {
+            "line": 6461,
+            "source": "SC_ReturnedStat.broadcastEmblem(this, getId(), 0);"
+          },
+          {
+            "line": 6619,
+            "source": "SC_SkillSound.broadcastPacked(this, ss);"
+          },
+          {
+            "line": 6676,
+            "source": "SC_CharSpeedUpdate.broadcast(this, getId(), status, level);"
+          },
+          {
+            "line": 7142,
+            "source": "SC_ChangeShape.broadcast(this, getId(), poly, getCurrentWeapon());"
+          },
+          {
+            "line": 7152,
+            "source": "SC_CharVisualUpdate.broadcastPacked(this, SC_CharVisualUpdate.pack(this));"
+          },
+          {
+            "line": 7557,
+            "source": "SC_PinkName.broadcastFast(this, getId(), remain_seconds);"
+          },
+          {
+            "line": 7629,
+            "source": "SC_SkillSound.broadcastFastPacked(this, ss);"
+          }
+        ],
+        "directBroadcastMethod": [
+          {
+            "line": 1857,
+            "source": "SC_SkillSound.broadcast(this, getId(), 16533);"
+          },
+          {
+            "line": 1859,
+            "source": "SC_SkillBrave.broadcast(this, getId(), 12, 0);"
+          },
+          {
+            "line": 2116,
+            "source": "public void broadcastRemoveAllKnownObjects() {"
+          },
+          {
+            "line": 2137,
+            "source": "SC_Poison.broadcast(this, getId(), poisonId);"
+          },
+          {
+            "line": 3193,
+            "source": "SC_SkillSound.broadcast(this, getId(), 14541);"
+          },
+          {
+            "line": 3209,
+            "source": "SC_SkillSound.broadcast(this, getId(), 14541);"
+          },
+          {
+            "line": 3528,
+            "source": "SC_SkillSound.broadcast(this, getId(), 14541);"
+          },
+          {
+            "line": 3544,
+            "source": "SC_SkillSound.broadcast(this, getId(), 14541);"
+          },
+          {
+            "line": 3664,
+            "source": "SC_ChatPacket.broadcastOpcode(String.format(\"\\\\aG승리[%s] \\\\aA=> \\\\aL패배[%s]\", player.getName(), getName()), Opcodes.S_MESSAGE);"
+          },
+          {
+            "line": 3665,
+            "source": "SC_SystemMessage.broadcast(\"==========================\");"
+          },
+          {
+            "line": 3747,
+            "source": "SC_DoActionGFX.broadcast("
+          },
+          {
+            "line": 4654,
+            "source": "SC_Lawful.broadcastFast(this, getId(), lawful);"
+          },
+          {
+            "line": 5008,
+            "source": "SC_CharTitle.broadcast(this, getId(), \"\");"
+          },
+          {
+            "line": 5253,
+            "source": "SC_Poison.broadcast(this, getId(), effectId);"
+          },
+          {
+            "line": 6459,
+            "source": "SC_CharTitle.broadcast(this, getId(), broadcastTitle);"
+          },
+          {
+            "line": 6461,
+            "source": "SC_ReturnedStat.broadcastEmblem(this, getId(), 0);"
+          },
+          {
+            "line": 6619,
+            "source": "SC_SkillSound.broadcastPacked(this, ss);"
+          },
+          {
+            "line": 6676,
+            "source": "SC_CharSpeedUpdate.broadcast(this, getId(), status, level);"
+          },
+          {
+            "line": 7142,
+            "source": "SC_ChangeShape.broadcast(this, getId(), poly, getCurrentWeapon());"
+          },
+          {
+            "line": 7152,
+            "source": "SC_CharVisualUpdate.broadcastPacked(this, SC_CharVisualUpdate.pack(this));"
+          },
+          {
+            "line": 7557,
+            "source": "SC_PinkName.broadcastFast(this, getId(), remain_seconds);"
+          },
+          {
+            "line": 7629,
+            "source": "SC_SkillSound.broadcastFastPacked(this, ss);"
+          }
+        ],
+        "sendPackets": [
+          {
+            "line": 2842,
+            "source": "public void sendPackets(ProtoOutputStream stream, boolean isClear) {"
+          },
+          {
+            "line": 2844,
+            "source": "getNetConnection().sendPacket(stream, isClear);"
+          },
+          {
+            "line": 2847,
+            "source": "public void sendPackets(ServerPacket[] sp, boolean clear) {"
+          },
+          {
+            "line": 2850,
+            "source": "getNetConnection().sendPacket(pck);"
+          },
+          {
+            "line": 2854,
+            "source": "public void sendPackets(ServerPacket sp, boolean clear) {"
+          },
+          {
+            "line": 2857,
+            "source": "getNetConnection().sendPacket(sp);"
+          },
+          {
+            "line": 2862,
+            "source": "public void sendPackets(ServerPacket sp, boolean clear, int clanid) {"
+          },
+          {
+            "line": 2866,
+            "source": "getNetConnection().sendPacket(sp);"
+          },
+          {
+            "line": 2892,
+            "source": "public void sendPackets(l1j.server.server.model.network.packet.WritablePacket<CIOClient>[] packets, boolean clear) {"
+          },
+          {
+            "line": 2895,
+            "source": "sendPackets(packets[i], clear);"
+          },
+          {
+            "line": 2899,
+            "source": "public void sendPackets(l1j.server.server.model.network.packet.WritablePacket<CIOClient> packet, boolean clear) {"
+          },
+          {
+            "line": 2906,
+            "source": "public void sendPackets(String s) {"
+          },
+          {
+            "line": 2910,
+            "source": "public void sendPackets(int code) {"
+          },
+          {
+            "line": 2920,
+            "source": "public void sendPackets(ServerPacket sp) {"
+          },
+          {
+            "line": 2924,
+            "source": "getNetConnection().sendPacket(sp);"
+          },
+          {
+            "line": 3167,
+            "source": "sendPackets(\"\\\\fY할파스의 신의가 발동되었습니다.\");"
+          },
+          {
+            "line": 3502,
+            "source": "sendPackets(\"\\\\fY할파스의 신의가 발동되었습니다.\");"
+          }
+        ],
+        "visibility": [
+          {
+            "line": 3900,
+            "source": "for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {"
+          }
+        ]
+      }
+    },
+    "src/l1j/server/server/model/L1Character.java": {
+      "counts": {
+        "legacyGeneric": 0,
+        "newCore": 0,
+        "scBroadcast": 7,
+        "directBroadcastMethod": 7,
+        "sendPackets": 2,
+        "visibility": 0
+      },
+      "sites": {
+        "legacyGeneric": [],
+        "newCore": [],
+        "scBroadcast": [
+          {
+            "line": 614,
+            "source": "SC_Poison.broadcastFast(this, getId(), effectId);"
+          },
+          {
+            "line": 1234,
+            "source": "SC_ChangeShape.broadcastFast(this, getId(), poly, 0);"
+          },
+          {
+            "line": 1293,
+            "source": "SC_SkillSound.broadcastFastPacked(this, sound);"
+          },
+          {
+            "line": 1306,
+            "source": "SC_DoActionGFX.broadcast(this, action_id);"
+          },
+          {
+            "line": 1312,
+            "source": "SC_PinkName.broadcastFast(this, getId(), remain_seconds);"
+          },
+          {
+            "line": 1318,
+            "source": "SC_Lawful.broadcastFast(this, getId(), lawful);"
+          },
+          {
+            "line": 1357,
+            "source": "SC_SkillBrave.broadcastFast(this, getId(), 0, 0);"
+          }
+        ],
+        "directBroadcastMethod": [
+          {
+            "line": 614,
+            "source": "SC_Poison.broadcastFast(this, getId(), effectId);"
+          },
+          {
+            "line": 1234,
+            "source": "SC_ChangeShape.broadcastFast(this, getId(), poly, 0);"
+          },
+          {
+            "line": 1293,
+            "source": "SC_SkillSound.broadcastFastPacked(this, sound);"
+          },
+          {
+            "line": 1306,
+            "source": "SC_DoActionGFX.broadcast(this, action_id);"
+          },
+          {
+            "line": 1312,
+            "source": "SC_PinkName.broadcastFast(this, getId(), remain_seconds);"
+          },
+          {
+            "line": 1318,
+            "source": "SC_Lawful.broadcastFast(this, getId(), lawful);"
+          },
+          {
+            "line": 1357,
+            "source": "SC_SkillBrave.broadcastFast(this, getId(), 0, 0);"
+          }
+        ],
+        "sendPackets": [
+          {
+            "line": 1186,
+            "source": "public void sendPackets(ServerPacket pck, boolean clear) {"
+          },
+          {
+            "line": 1201,
+            "source": "public void sendPackets(ServerPacket sbp) {"
+          }
+        ],
+        "visibility": []
+      }
+    },
+    "src/l1j/server/server/model/L1World.java": {
+      "counts": {
+        "legacyGeneric": 0,
+        "newCore": 0,
+        "scBroadcast": 1,
+        "directBroadcastMethod": 2,
+        "sendPackets": 0,
+        "visibility": 9
+      },
+      "sites": {
+        "legacyGeneric": [],
+        "newCore": [],
+        "scBroadcast": [
+          {
+            "line": 765,
+            "source": "SC_SystemMessage.broadcast(message);"
+          }
+        ],
+        "directBroadcastMethod": [
+          {
+            "line": 764,
+            "source": "public void broadcastServerMessage(String message) {"
+          },
+          {
+            "line": 765,
+            "source": "SC_SystemMessage.broadcast(message);"
+          }
+        ],
+        "sendPackets": [],
+        "visibility": [
+          {
+            "line": 336,
+            "source": "public final Collection<L1PcInstance> getVisiblePlayers(int map_id){"
+          },
+          {
+            "line": 363,
+            "source": "public List<L1PcInstance> borrowVisiblePlayerFast(L1Object object) {"
+          },
+          {
+            "line": 491,
+            "source": "public ArrayList<L1PcInstance> getVisiblePlayer(L1Object object) {"
+          },
+          {
+            "line": 492,
+            "source": "return getVisiblePlayer(object, -1);"
+          },
+          {
+            "line": 495,
+            "source": "public ArrayList<L1PcInstance> getVisiblePlayer(L1Object object, int radius) {"
+          },
+          {
+            "line": 527,
+            "source": "public ArrayList<L1Object> getVisiblePlayer(L1Object object, int radius, int i) {"
+          },
+          {
+            "line": 554,
+            "source": "return getVisiblePlayer(object, Config.PC_RECOGNIZE_RANGE);"
+          },
+          {
+            "line": 563,
+            "source": "public Collection<L1PcInstance> getAllPlayers() {"
+          },
+          {
+            "line": 569,
+            "source": "Collection<L1PcInstance> col = getAllPlayers();"
+          }
+        ]
+      }
+    }
+  }
+}
