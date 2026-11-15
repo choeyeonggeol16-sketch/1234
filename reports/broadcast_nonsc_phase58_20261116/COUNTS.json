@@ -1,0 +1,7 @@
+{
+  "legacyNewPacketInLoop": 4,
+  "sharedFanout": 368,
+  "triggerTypeUsage": 23,
+  "packetReuseSend": 3,
+  "genericBroadcastMethod": 1
+}
