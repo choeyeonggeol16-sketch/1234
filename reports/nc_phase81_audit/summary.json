@@ -1,0 +1,1309 @@
+{
+  "phase": 81,
+  "input_sha256": "a0d534b066395b12a3a9e545cb094602e1cd568ea80ddca2900ff46a0a54e391",
+  "java_count": 1710,
+  "suspect_count": {
+    "raw_byte_broadcast": 69,
+    "raw_direct_buffer": 16,
+    "manual_world_broadcast": 104,
+    "legacy_sendall": 0,
+    "native_writer": 43,
+    "native_source": 6
+  },
+  "suspect_locations": {
+    "raw_byte_broadcast": [
+      [
+        "src/l1j/server/IndunSystem/BossRaid/BossRaid.java",
+        125,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers("
+      ],
+      [
+        "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+        144,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers("
+      ],
+      [
+        "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+        159,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers("
+      ],
+      [
+        "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+        177,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers("
+      ],
+      [
+        "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+        217,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers("
+      ],
+      [
+        "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+        236,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers("
+      ],
+      [
+        "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+        96,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers("
+      ],
+      [
+        "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+        227,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers("
+      ],
+      [
+        "src/l1j/server/IndunSystem/Hadin/HadinTrap.java",
+        160,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers(cklist,SC_ServerMessage.sharedWire(8719));"
+      ],
+      [
+        "src/l1j/server/IndunSystem/Hadin/HadinTrap.java",
+        220,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers(cklist,SC_PacketBox.sharedGreenWire(\"$\"+count));"
+      ],
+      [
+        "src/l1j/server/IndunSystem/Ice/Demon/Demon.java",
+        118,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers("
+      ],
+      [
+        "src/l1j/server/IndunSystem/Ice/Demon/Demon.java",
+        191,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers("
+      ],
+      [
+        "src/l1j/server/IndunSystem/Ice/Queen/Queen.java",
+        120,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers("
+      ],
+      [
+        "src/l1j/server/IndunSystem/Ice/Queen/Queen.java",
+        195,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers("
+      ],
+      [
+        "src/l1j/server/MJInstanceSystem/MJInstanceEnums.java",
+        111,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(pcs,SC_PacketBox.sharedGreenWire(get()));"
+      ],
+      [
+        "src/l1j/server/MJInstanceSystem/MJInstanceEnums.java",
+        116,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(pcs,SC_PacketBox.sharedGreenWire(message));"
+      ],
+      [
+        "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+        151,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_SystemMessage.sharedWire(packet));"
+      ],
+      [
+        "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+        153,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_PacketBox.sharedGreenWire(packet));"
+      ],
+      [
+        "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+        155,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_IconMessage.sharedGmWire(packet));"
+      ],
+      [
+        "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+        157,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire("
+      ],
+      [
+        "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+        161,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire("
+      ],
+      [
+        "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+        72,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients("
+      ],
+      [
+        "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+        78,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients("
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+        89,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27422\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+        95,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27430\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+        97,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27431\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+        89,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27669\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+        95,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27677\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+        97,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27678\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+        103,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fV$27679\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+        107,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27689\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+        112,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27699\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+        129,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27707\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+        131,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27708\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+        204,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fV$27688\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+        210,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27698\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+        89,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27432\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+        95,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27440\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+        97,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27441\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+        89,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27442\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+        95,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27450\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+        97,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27451\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+        89,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27452\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+        95,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27460\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+        97,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27461\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+        89,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27462\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+        95,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27470\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+        97,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27471\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+        89,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27472\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+        95,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27480\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+        97,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27481\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+        89,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27482\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+        95,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27490\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+        97,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27491\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+        89,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27649\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+        95,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27657\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+        97,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27658\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+        89,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27659\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+        95,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27667\"));"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+        97,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27668\"));"
+      ],
+      [
+        "src/l1j/server/server/Announcecycle.java",
+        138,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients("
+      ],
+      [
+        "src/l1j/server/server/Controller/FishingTimeController.java",
+        590,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients("
+      ],
+      [
+        "src/l1j/server/server/Controller/FishingTimeController.java",
+        593,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients("
+      ],
+      [
+        "src/l1j/server/server/GMCommands.java",
+        1459,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll("
+      ],
+      [
+        "src/l1j/server/server/model/L1ChatParty.java",
+        34,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(_membersList,"
+      ],
+      [
+        "src/l1j/server/server/model/L1Party.java",
+        59,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawArray(targets,data);"
+      ],
+      [
+        "src/l1j/server/server/model/item/Exp/CalcExp.java",
+        87,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),data);"
+      ],
+      [
+        "src/l1j/server/server/model/item/teleport/L1Teleport.java",
+        314,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),SC_WORLD_PU"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+        995,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),data);"
+      ]
+    ],
+    "raw_direct_buffer": [
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        290,
+        "shared=new CAsyncSendConstBuffer(source,Integer.MIN_VALUE,Integer.MAX_VALUE);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        336,
+        "shared=new CAsyncSendConstBuffer(source,Integer.MIN_VALUE,Integer.MAX_VALUE);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        393,
+        "shared=new CAsyncSendConstBuffer(source,Integer.MIN_VALUE,Integer.MAX_VALUE);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        440,
+        "shared=new CAsyncSendConstBuffer(source,item.getId(),Integer.MAX_VALUE);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        499,
+        "try(var shared=new CAsyncSendConstBuffer("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        511,
+        "try (var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        541,
+        "return wire==null?null:new CAsyncSendConstBuffer("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        572,
+        "try(var shared=new CAsyncSendConstBuffer("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        593,
+        "try (var shared = new CAsyncSendConstBuffer("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        611,
+        "try (var shared=new CAsyncSendConstBuffer("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        637,
+        "shared[i]=new CAsyncSendConstBuffer("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        663,
+        "try(var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        683,
+        "try(var shared=new CAsyncSendConstBuffer("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        708,
+        "try(var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        742,
+        "try(var shared=new CAsyncSendConstBuffer("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        759,
+        "try (var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+      ]
+    ],
+    "manual_world_broadcast": [
+      [
+        "src/l1j/server/IndunSystem/Orim/OrimController.java",
+        544,
+        "for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc)) {"
+      ],
+      [
+        "src/l1j/server/MJCompanion/Instance/MJCompanionTeleportHandler.java",
+        37,
+        "L1World.getInstance().getVisiblePlayer(companion);"
+      ],
+      [
+        "src/l1j/server/MJEffectSystem/Realize/OnEffectThread.java",
+        133,
+        "players = L1World.getInstance().getVisiblePlayer(owner, model.getRange());"
+      ],
+      [
+        "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+        99,
+        "for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {"
+      ],
+      [
+        "src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+        171,
+        "final java.util.List<L1PcInstance> viewers=L1World.getInstance().getVisiblePlayer(this);"
+      ],
+      [
+        "src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+        200,
+        "final java.util.List<L1PcInstance> viewers=L1World.getInstance().getVisiblePlayer(this);"
+      ],
+      [
+        "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+        162,
+        "for(L1PcInstance pc:L1World.getInstance().getVisiblePlayer(this)) {"
+      ],
+      [
+        "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+        176,
+        ".sendRecipients(L1World.getInstance().getVisiblePlayer(this),"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+        217,
+        ".getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+        220,
+        ".getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+        336,
+        ".getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+        363,
+        ".getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+        219,
+        ".getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+        219,
+        ".getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+        219,
+        ".getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+        219,
+        ".getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+        219,
+        ".getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+        219,
+        ".getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+        218,
+        ".getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+        218,
+        ".getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/server/GMCommands.java",
+        2032,
+        "for (L1PcInstance player : L1World.getInstance().getVisiblePlayer(pc, range)) {"
+      ],
+      [
+        "src/l1j/server/server/GMCommands.java",
+        2957,
+        "for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(gm, 22)) {"
+      ],
+      [
+        "src/l1j/server/server/GMCommands.java",
+        3153,
+        "L1World.getInstance().getVisiblePlayer(gm, 22)) {"
+      ],
+      [
+        "src/l1j/server/server/GMCommands.java",
+        3227,
+        "for (L1PcInstance Targetpc : L1World.getInstance().getVisiblePlayer(gm, range)) {"
+      ],
+      [
+        "src/l1j/server/server/GMCommands.java",
+        3248,
+        "for (L1PcInstance Targetpc : L1World.getInstance().getVisiblePlayer(gm)) {"
+      ],
+      [
+        "src/l1j/server/server/command/executor/L1Buff.java",
+        56,
+        ".getVisiblePlayer(pc);"
+      ],
+      [
+        "src/l1j/server/server/command/executor/L1DeleteGroundItem.java",
+        42,
+        "//\tplayers = L1World.getInstance().getVisiblePlayer(l1iteminstance, 2);"
+      ],
+      [
+        "src/l1j/server/server/command/executor/L1Ress.java",
+        48,
+        "for (L1PcInstance tg : L1World.getInstance(). getVisiblePlayer(pc)) {"
+      ],
+      [
+        "src/l1j/server/server/command/executor/L1RessBuff.java",
+        45,
+        "L1World.getInstance().getVisiblePlayer(pc)) {"
+      ],
+      [
+        "src/l1j/server/server/model/ElementalStoneGenerator.java",
+        58,
+        "if (L1World.getInstance().getVisiblePlayer(_dummy).size() > 0) {"
+      ],
+      [
+        "src/l1j/server/server/model/Instance/L1ItemInstance.java",
+        10647,
+        "if (!L1World.getInstance().getVisiblePlayer(this, Config.ALT_ITEM_DELETION_RANGE).isEmpty()) {"
+      ],
+      [
+        "src/l1j/server/server/model/Instance/L1MobTrapInstance.java",
+        75,
+        "for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this, 0)) {"
+      ],
+      [
+        "src/l1j/server/server/model/Instance/L1OrimQuestInstance.java",
+        569,
+        "//\t\t\t\t\t\t\t\t\t\t\tArrayList<L1PcInstance> pclist = L1World.getInstance().getVisiblePlayer("
+      ],
+      [
+        "src/l1j/server/server/model/Instance/L1OrimQuestInstance.java",
+        1324,
+        "//\t\t\tfor (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(npc, 15)) {"
+      ],
+      [
+        "src/l1j/server/server/model/Instance/L1SummonInstance.java",
+        580,
+        "for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(this)) {"
+      ],
+      [
+        "src/l1j/server/server/model/Instance/L1TeleporterInstance.java",
+        431,
+        ".getVisiblePlayer(player, 3)) {"
+      ],
+      [
+        "src/l1j/server/server/model/Instance/L1TeleporterInstance.java",
+        451,
+        ".getVisiblePlayer(player, 3)) {"
+      ],
+      [
+        "src/l1j/server/server/model/L1MobGroupSpawn.java",
+        191,
+        "if (L1World.getInstance().getVisiblePlayer(mob).size() == 0) {"
+      ],
+      [
+        "src/l1j/server/server/model/L1MobSkillUse.java",
+        345,
+        "L1World.getInstance().getVisiblePlayer(attacker)) {"
+      ],
+      [
+        "src/l1j/server/server/model/L1MobSkillUse.java",
+        378,
+        "L1World.getInstance().getVisiblePlayer(attacker)) {"
+      ],
+      [
+        "src/l1j/server/server/model/L1World.java",
+        363,
+        "public List<L1PcInstance> borrowVisiblePlayerFast(L1Object object) {"
+      ],
+      [
+        "src/l1j/server/server/model/L1World.java",
+        491,
+        "public ArrayList<L1PcInstance> getVisiblePlayer(L1Object object) {"
+      ],
+      [
+        "src/l1j/server/server/model/L1World.java",
+        492,
+        "return getVisiblePlayer(object, -1);"
+      ],
+      [
+        "src/l1j/server/server/model/L1World.java",
+        495,
+        "public ArrayList<L1PcInstance> getVisiblePlayer(L1Object object, int radius) {"
+      ],
+      [
+        "src/l1j/server/server/model/L1World.java",
+        527,
+        "public ArrayList<L1Object> getVisiblePlayer(L1Object object, int radius, int i) {"
+      ],
+      [
+        "src/l1j/server/server/model/L1World.java",
+        554,
+        "return getVisiblePlayer(object, Config.PC_RECOGNIZE_RANGE);"
+      ],
+      [
+        "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+        1038,
+        "if (L1World.getInstance().getVisiblePlayer(pc, 0).size() > 0) {"
+      ],
+      [
+        "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+        1039,
+        "for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(pc, 0)) {"
+      ],
+      [
+        "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+        1085,
+        "&& L1World.getInstance().getVisiblePlayer(npc, 0).size() > 0) {"
+      ],
+      [
+        "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+        1087,
+        "for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(npc, 0)) {"
+      ],
+      [
+        "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+        2092,
+        "for (L1PcInstance m : L1World.getInstance().getVisiblePlayer(caster, CUBE_RANGE)) {"
+      ],
+      [
+        "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+        2903,
+        "for (L1PcInstance p : L1World.getInstance().getVisiblePlayer(center, range)) {"
+      ],
+      [
+        "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+        3127,
+        "for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {"
+      ],
+      [
+        "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+        4153,
+        "if (L1World.getInstance().getVisiblePlayer(pc, 0).size() > 0) {"
+      ],
+      [
+        "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+        4154,
+        "for (L1PcInstance v : L1World.getInstance().getVisiblePlayer(pc, 0)) {"
+      ],
+      [
+        "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+        4177,
+        "&& L1World.getInstance().getVisiblePlayer(npc, 0).size() > 0) {"
+      ],
+      [
+        "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+        4178,
+        "for (L1PcInstance v : L1World.getInstance().getVisiblePlayer(npc, 0)) {"
+      ],
+      [
+        "src/l1j/server/server/model/character/skill/helper/SkillUseHelper.java",
+        460,
+        "for (L1PcInstance tgt : world.getVisiblePlayer(pc)) {"
+      ],
+      [
+        "src/l1j/server/server/model/item/Exp/CalcExp.java",
+        87,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),data);"
+      ],
+      [
+        "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+        162,
+        "for (L1PcInstance player : L1World.getInstance().getVisiblePlayer(pc, 20)) {"
+      ],
+      [
+        "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+        340,
+        "for (L1PcInstance player : L1World.getInstance().getVisiblePlayer(pc, 9)) {"
+      ],
+      [
+        "src/l1j/server/server/model/item/function/ItemUseTravelCases.java",
+        54,
+        "if (L1World.getInstance().getVisiblePlayer(target, 0).size() > 0) {"
+      ],
+      [
+        "src/l1j/server/server/model/item/function/ItemUseTravelCases.java",
+        55,
+        "for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(target, 0)) {"
+      ],
+      [
+        "src/l1j/server/server/model/item/function/ItemUseTravelCases.java",
+        86,
+        "if ((npc instanceof L1PetInstance || npc instanceof L1CompanionInstance) && L1World.getInstance().getVisiblePlayer(npc, 0).size() > 0) {"
+      ],
+      [
+        "src/l1j/server/server/model/item/function/ItemUseTravelCases.java",
+        87,
+        "for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(npc, 0)) {"
+      ],
+      [
+        "src/l1j/server/server/model/item/function/ItemUseTravelCases.java",
+        97,
+        "if ((npc instanceof L1PetInstance || npc instanceof L1CompanionInstance) && L1World.getInstance().getVisiblePlayer(npc, 0).size() > 0) {"
+      ],
+      [
+        "src/l1j/server/server/model/item/function/ItemUseTravelCases.java",
+        98,
+        "for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(npc, 0)) {"
+      ],
+      [
+        "src/l1j/server/server/model/item/function/Telbookitem.java",
+        47,
+        "for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc)) {"
+      ],
+      [
+        "src/l1j/server/server/model/item/function/Telbookitem.java",
+        157,
+        "iter = L1World.getInstance().getVisiblePlayer(pc).iterator();"
+      ],
+      [
+        "src/l1j/server/server/model/item/function/Telbookitem.java",
+        175,
+        "iter = L1World.getInstance().getVisiblePlayer(pc, 3).iterator();"
+      ],
+      [
+        "src/l1j/server/server/model/item/function/TeleportUseService.java",
+        286,
+        "for (L1PcInstance m : L1World.getInstance().getVisiblePlayer(pc, 3)) {"
+      ],
+      [
+        "src/l1j/server/server/model/item/function/TeleportUseService.java",
+        322,
+        "for (L1PcInstance m : L1World.getInstance().getVisiblePlayer(pc, 3)) {"
+      ],
+      [
+        "src/l1j/server/server/model/item/teleport/L1Teleport.java",
+        314,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),SC_WORLD_PU"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        69,
+        "? world.borrowVisiblePlayerFast(anchor)"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        70,
+        ": world.getVisiblePlayer(anchor);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        112,
+        "? world.borrowVisiblePlayerFast(anchor)"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        113,
+        ": radius < 0 ? world.getVisiblePlayer(anchor)"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        114,
+        ": world.getVisiblePlayer(anchor, radius);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        157,
+        "final List<L1PcInstance> recipients = world.borrowVisiblePlayerFast(anchor);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        186,
+        "final List<L1PcInstance> recipients = world.borrowVisiblePlayerFast(anchor);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        245,
+        "? world.borrowVisiblePlayerFast(anchor)"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        246,
+        ": radius<0?world.getVisiblePlayer(anchor)"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        247,
+        ":world.getVisiblePlayer(anchor,radius);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        410,
+        "for(L1PcInstance viewer:L1World.getInstance().getVisiblePlayer(anchor))"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        426,
+        "final List<L1PcInstance> visible=world.borrowVisiblePlayerFast(item);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        468,
+        "? world.borrowVisiblePlayerFast(anchor)"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        469,
+        ": radius < 0 ? world.getVisiblePlayer(anchor)"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        470,
+        ": world.getVisiblePlayer(anchor, radius);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        576,
+        "for(L1PcInstance pc:L1World.getInstance().getVisiblePlayer(self)) {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        744,
+        "for(L1PcInstance anchor:world.getVisiblePlayer(origin)) {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        746,
+        "for(L1PcInstance recipient:world.getVisiblePlayer(anchor)) {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+        995,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),data);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java",
+        1072,
+        "for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(summon)) {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_AreaAttackEffect.java",
+        42,
+        "for(L1PcInstance viewer:L1World.getInstance().getVisiblePlayer(caster))"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+        61,
+        "final java.util.List<L1PcInstance> visible=world.borrowVisiblePlayerFast(source);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+        91,
+        "L1World.getInstance().getVisiblePlayer(source), b -> { b.put((byte)Opcodes.S_SAY_CODE).put((byte)0).putInt(cha.getId()); l1j.server.server.model.network.core.br"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+        100,
+        "final java.util.List<L1PcInstance> visible=world.borrowVisiblePlayerFast(source);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+        132,
+        "L1World.getInstance().getVisiblePlayer(source), b -> { b.put((byte)Opcodes.S_SAY_CODE).put((byte)color).putInt(npc.getId()); l1j.server.server.model.network.cor"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+        141,
+        "L1World.getInstance().getVisiblePlayer(source,50), b -> { b.put((byte)Opcodes.S_SAY_CODE).put((byte)color).putInt(npc.getId()); l1j.server.server.model.network."
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_ReturnedStat.java",
+        239,
+        "L1World.getInstance().getVisiblePlayer(source), b -> { b.put((byte)Opcodes.S_VOICE_CHAT).put((byte)0x3c).putInt(objId).putInt(emblemId); });"
+      ],
+      [
+        "src/l1j/server/server/utils/L1SpawnUtil.java",
+        240,
+        "for (L1PcInstance _pc : L1World.getInstance().getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/server/utils/L1SpawnUtil.java",
+        247,
+        "for (L1PcInstance _pc : L1World.getInstance().getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/server/utils/L1SpawnUtil.java",
+        345,
+        "for (L1PcInstance _pc : L1World.getInstance().getVisiblePlayer(npc)) {"
+      ],
+      [
+        "src/l1j/server/server/utils/L1SpawnUtil.java",
+        351,
+        "for (L1PcInstance _pc : L1World.getInstance().getVisiblePlayer(npc)) {"
+      ]
+    ],
+    "legacy_sendall": [],
+    "native_writer": [
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        239,
+        "public static void sendWritten(L1Object anchor,NativeWireWriter writer,boolean fast,"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        274,
+        "public static void sendWrittenRecipients("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        315,
+        "public static void sendWrittenClan("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        403,
+        "public static void sendWrittenSelfAndVisible("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        419,
+        "public static int sendWrittenGroundItem("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        458,
+        "public static void sendWrittenAll(NativeWireWriter writer) {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        459,
+        "sendWrittenRecipients(L1World.getInstance().getAllPlayers(),writer);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/cs/packet/CS_Mail.java",
+        146,
+        "SC_LetterList.sendWritten(target,letter.type==0 ? 80 : 81,letter.id,"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_AreaAttackEffect.java",
+        46,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenSelfAndVisible(caster,"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeName.java",
+        41,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_CHANGE_DESC).putInt(objectId); l1j.server.serve"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeName.java",
+        46,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_CHANGE_DESC).putInt(objectId); l1j.server.serve"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_CharTitle.java",
+        41,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_TITLE).putInt(objectId); l1j.server.server.mode"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+        37,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+        44,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+        63,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(visible,"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_DoActionShop.java",
+        60,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_ACTION).putInt(id).put((byte)action); if(messag"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_DoActionShop.java",
+        64,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_ACTION).putInt(id).put((byte)action); l1j.serve"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_DropItem.java",
+        133,
+        "return l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenGroundItem(item,addKnownObject,"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_ExplosionNoti.java",
+        41,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_EXTENDED_PROTOBUF).putShort((short)0x0332); b.p"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+        53,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+        66,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_LetterList.java",
+        122,
+        "public static boolean sendWritten(L1PcInstance pc, int writeType, int id, int type, String name, String title) {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_MessageYN.java",
+        55,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_NewChat.java",
+        142,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> writeNativeChat(b,data));"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+        90,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+        102,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(visible, b -> { b.put((byte)Opcodes.S_SAY_CODE).put((byte)color).putInt(np"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+        131,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+        140,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_NpcShopAction.java",
+        41,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_ACTION).putInt(objectId).put((byte)action); fin"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java",
+        288,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> { b.put((byte)Opcodes.S_EVENT).put((byte)GREEN_MESSAGE).put((byte)2); l1j.se"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java",
+        292,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_RangeSkill.java",
+        58,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(caster, b -> { b.put((byte)Opcodes.S_ATTACK_MANY).put((byte)action).putInt(id).putSh"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_ReturnedStat.java",
+        238,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_ServerMessage.java",
+        80,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> b.put((byte)Opcodes.S_MESSAGE_CODE)"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java",
+        38,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java",
+        51,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(recipients,b -> {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_TopMessage.java",
+        38,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_War.java",
+        37,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> writeNativeWar(b,type,clan1,clan2));"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_War.java",
+        41,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenClan(clan,b -> writeNativeWar(b,type,clan1,clan2));"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_Weather.java",
+        38,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> b.put((byte)Opcodes.S_WEATHER)"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java",
+        878,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(npc,"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java",
+        898,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(pc,"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java",
+        908,
+        "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor,"
+      ]
+    ],
+    "native_source": [
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+        106,
+        "static Source openWrittenSource(CUserSocket target,CSharedBroadcast.NativeWireWriter writer) {"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+        67,
+        "CAsyncSendConstBuffer.openWrittenSource(socket,writer);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        287,
+        "CAsyncSendConstBuffer.openWrittenSource(socket,writer);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        332,
+        "CAsyncSendConstBuffer.openWrittenSource(socket,writer);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        389,
+        "CAsyncSendConstBuffer.openWrittenSource(socket,writer);"
+      ],
+      [
+        "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+        436,
+        "CAsyncSendConstBuffer.openWrittenSource(socket,writer);"
+      ]
+    ]
+  },
+  "sc_legacy": [],
+  "selected": {
+    "CSharedBroadcast": {
+      "path": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+      "sha256": "b245a83448bcd6b147a83c6c4d3795b7a0b1ad771ebffc742c49f81d28c11b10",
+      "bytes": 35799
+    },
+    "CAsyncSendConstBuffer": {
+      "path": "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+      "sha256": "1d48992a99ead4da78202d61bce09f679044ea6d86ea2942a11746dd6973b254",
+      "bytes": 7481
+    },
+    "CAsyncSendConstBufferExceptSelf": {
+      "path": "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+      "sha256": "8e72bb5402ea26762da79aad58984b3b81dad69356d55d97bb6ed0fd2ba7bb5e",
+      "bytes": 3591
+    },
+    "CUserSocket": {
+      "path": "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+      "sha256": "b1410722a04d96e5daa87a3ce3e1ad293395d47f095e78bdc8f96c45b4b99b79",
+      "bytes": 193030
+    },
+    "CIOServer": {
+      "path": "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+      "sha256": "8b627aeaef85189d49e4e1e38865801eefb98698733bf571af4c03a8dd5d8c72",
+      "bytes": 64028
+    },
+    "CIOConfig": {
+      "path": "src/l1j/server/server/model/network/core/config/CIOConfig.java",
+      "sha256": "917178f49f31ab6300e45024531bceaf733fad321f6a3b7a0fd3021bb3defc48",
+      "bytes": 2723
+    },
+    "SC_AreaAttackEffect": {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_AreaAttackEffect.java",
+      "sha256": "62d344734c2543b70228113bdc21707ef1b07a7c7db2fae7ab42a8febf947036",
+      "bytes": 5380
+    },
+    "SC_ChatPacket": {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+      "sha256": "85d0e1b673bd1de11ae2b51cb512bb5bd1ee9ebf361cfb60c386c95b843df327",
+      "bytes": 9972
+    },
+    "SC_DropItem": {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_DropItem.java",
+      "sha256": "2ab9f20721724b627e50dfe5a283e53a83947ad7a6e978df0abab93825c8993b",
+      "bytes": 11654
+    },
+    "SC_UseArrowSkill": {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_UseArrowSkill.java",
+      "sha256": "cce49ace6798eb642ef2ba220d1b82b947a4fa5f598121a7238de88ca15f621c",
+      "bytes": 6910
+    },
+    "SC_IconMessage": {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+      "sha256": "a1ac4cb366aee66324d9c9190db2fd1b65f35a68d8b65c334a44917a9ae2e1c0",
+      "bytes": 7491
+    },
+    "SC_NewChat": {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_NewChat.java",
+      "sha256": "cb657040513867a4392078ee5f10062300bc567f06ac59032f00069d1c8fcf9f",
+      "bytes": 11784
+    },
+    "SC_ChangeShape": {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeShape.java",
+      "sha256": "da09dcea6b89b3d4a1bc44ab58fc5f94c34621d51221a61da5ba2c41beca3463",
+      "bytes": 2481
+    },
+    "SC_WorldPutObject": {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java",
+      "sha256": "f2a61da2973c86104ed52de414efe3a7fb9ba19352aa1fece7d53dcada18843c",
+      "bytes": 55130
+    },
+    "SC_SystemMessage": {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java",
+      "sha256": "c07dfa75f4989cdaebb54486119bb44c0a32f392a762defceb1bed865f4c76c4",
+      "bytes": 3385
+    },
+    "SC_War": {
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_War.java",
+      "sha256": "7d2c9a361542111af1f74626de13ec0ea5b57d3b3f0c9db11fbc105ad951d90d",
+      "bytes": 3230
+    },
+    "CIOBufferPool": {
+      "path": "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+      "sha256": "4667fcbc03f32782b4d6001bd77f7fceadcfe6cb0ab8bc505f2004aca14ebcbf",
+      "bytes": 6812
+    },
+    "CTLMFilter": {
+      "path": "src/l1j/server/server/model/network/core/broadcast/CTLMFilter.java",
+      "sha256": "87d44b07ef05e4480087e37527dc41183e4a5944d4166cce8ed88aa03df1ddc7",
+      "bytes": 1178
+    }
+  }
+}
