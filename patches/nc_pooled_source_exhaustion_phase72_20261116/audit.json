@@ -1,0 +1,31 @@
+{
+  "phase": 72,
+  "baseline_sha256": "e04cdcf7df4a1bb30a6d6ae1b93d0d09cb4125f830e7b99f3b55ec833ff6d2d0",
+  "full_src_sha256": "e173dc9eab31fe340fd66983e2cea4dd094c243d02aa07a053bd3dd3c4d7fca3",
+  "dll_sha256": "5346db6fea210fea7ecf4a477ce1002f49466db4790b2b064949bcf8393374d3",
+  "native_abi": "0x000a0004",
+  "changed": [
+    "CTransport.dll",
+    "native/CTransport.cpp",
+    "native/cio_core.hpp",
+    "native/interop_abi.hpp",
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "src/l1j/server/server/model/network/core/config/CIOConfig.java"
+  ],
+  "added": [
+    "native/nc_source_pool_overflow_test.cpp"
+  ],
+  "java_count": 1710,
+  "zip_entries": 1734,
+  "new_worker": false,
+  "new_send_queue": false,
+  "packet_specific_encoder": false,
+  "source_path": "CIOBufferPool.acquireSharedSource",
+  "regular_ring_fixed": true,
+  "fixed_ring_exhaustion": "elastic per-source native CIOBufferEx; retain/recycle through existing path",
+  "genuine_os_allocation_failure": "explicit Java exception, not silent skip",
+  "unbounded_guarantee": false,
+  "io_cipher_fifo_unchanged": true,
+  "all_other_files_byte_identical": true,
+  "game_5000_soak_verified": false
+}
