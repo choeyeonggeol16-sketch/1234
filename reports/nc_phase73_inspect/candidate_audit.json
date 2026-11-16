@@ -1,0 +1,1013 @@
+{
+  "SC_ChangeHeading": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeHeading.java",
+    "sha256": "cfdbc213bb8f4b3a03ce374cc15bf899b8d943919bf75d28f9fe9a5edb5ef36e",
+    "lines": 57,
+    "callsites": [
+      {
+        "line": 26,
+        "text": "buffer.writeC(Opcodes.S_CHANGE_DIRECTION);"
+      },
+      {
+        "line": 27,
+        "text": "buffer.writeD(objectId);"
+      },
+      {
+        "line": 28,
+        "text": "buffer.writeC(heading);"
+      },
+      {
+        "line": 40,
+        "text": "private static void broadcast0(L1Character anchor, int objectId, int heading, boolean fast) {"
+      },
+      {
+        "line": 42,
+        "text": "byte[] wire = java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+      },
+      {
+        "line": 44,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, fast, -1, null);"
+      },
+      {
+        "line": 46,
+        "text": "public static void broadcast(L1Character anchor, int objectId, int heading) { broadcast0(anchor, objectId, heading, false); }"
+      },
+      {
+        "line": 47,
+        "text": "public static void broadcastFast(L1Character anchor, int objectId, int heading) { broadcast0(anchor, objectId, heading, true); }"
+      },
+      {
+        "line": 49,
+        "text": "public static void broadcast(L1Character object) {"
+      },
+      {
+        "line": 50,
+        "text": "if (object != null) broadcast(object, object.getId(), object.getHeading());"
+      },
+      {
+        "line": 53,
+        "text": "public static void broadcastFast(L1Character object) {"
+      },
+      {
+        "line": 54,
+        "text": "if (object != null) broadcastFast(object, object.getId(), object.getHeading());"
+      }
+    ]
+  },
+  "SC_OnlyEffect": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_OnlyEffect.java",
+    "sha256": "7bbf1916dac92f59e7580befdaa697b84c598626402d42a0a6adc223a61bd649",
+    "lines": 56,
+    "callsites": [
+      {
+        "line": 17,
+        "text": "return java.nio.ByteBuffer.allocate(9).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+      },
+      {
+        "line": 39,
+        "text": "buffer.writeC(Opcodes.S_EFFECT);"
+      },
+      {
+        "line": 40,
+        "text": "buffer.writeD(objectId);"
+      },
+      {
+        "line": 41,
+        "text": "buffer.writeH(effectId);"
+      },
+      {
+        "line": 49,
+        "text": "public static void broadcast(L1Character anchor, int objectId, int effectId) {"
+      },
+      {
+        "line": 50,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, effectId), false, -1, null);"
+      },
+      {
+        "line": 53,
+        "text": "public static void broadcastFast(L1Character anchor, int objectId, int effectId) {"
+      },
+      {
+        "line": 54,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, effectId), true, -1, null);"
+      }
+    ]
+  },
+  "SC_EffectLocation": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+    "sha256": "e1ce04e8822c602f1bd0b3dcaecf853dbe59e064ee4683f5a823bb338615e8d2",
+    "lines": 119,
+    "callsites": [
+      {
+        "line": 19,
+        "text": "return java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+      },
+      {
+        "line": 40,
+        "text": "buffer.writeC(Opcodes.S_EFFECT_LOC);"
+      },
+      {
+        "line": 41,
+        "text": "buffer.writeH(x);"
+      },
+      {
+        "line": 42,
+        "text": "buffer.writeH(y);"
+      },
+      {
+        "line": 43,
+        "text": "buffer.writeH(gfxId);"
+      },
+      {
+        "line": 44,
+        "text": "buffer.writeC(0);"
+      },
+      {
+        "line": 58,
+        "text": "public static void broadcast(L1Character anchor, int x, int y, int gfxId) {"
+      },
+      {
+        "line": 59,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(x, y, gfxId), false, -1, null);"
+      },
+      {
+        "line": 84,
+        "text": "public static void broadcastPacked(l1j.server.server.model.L1Character c, long p) {"
+      },
+      {
+        "line": 85,
+        "text": "broadcast(c, (int) (p >> 32) & 0xffff, (int) (p >> 16) & 0xffff, (int) p & 0xffff);"
+      },
+      {
+        "line": 88,
+        "text": "public static void broadcastFast(l1j.server.server.model.L1Character c, int x, int y, int gfxId) {"
+      },
+      {
+        "line": 89,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(c, sharedWire(x, y, gfxId), true, -1, null);"
+      },
+      {
+        "line": 92,
+        "text": "public static void broadcastFastPacked(l1j.server.server.model.L1Character c, long p) {"
+      },
+      {
+        "line": 93,
+        "text": "broadcastFast(c, (int) (p >> 32) & 0xffff, (int) (p >> 16) & 0xffff, (int) p & 0xffff);"
+      },
+      {
+        "line": 96,
+        "text": "public static void broadcastM(l1j.server.server.model.L1Character c, int x, int y, int gfxId) {"
+      },
+      {
+        "line": 97,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(c, sharedWire(x, y, gfxId), false, -1, pc -> pc.getLinMeff() != 2);"
+      },
+      {
+        "line": 100,
+        "text": "public static void broadcastMPacked(l1j.server.server.model.L1Character c, long p) {"
+      },
+      {
+        "line": 101,
+        "text": "broadcastM(c, (int) (p >> 32) & 0xffff, (int) (p >> 16) & 0xffff, (int) p & 0xffff);"
+      },
+      {
+        "line": 104,
+        "text": "public static void broadcastWide(l1j.server.server.model.L1Character c, int x, int y, int gfxId) {"
+      },
+      {
+        "line": 105,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(c, sharedWire(x, y, gfxId), false, 50, null);"
+      },
+      {
+        "line": 108,
+        "text": "public static void broadcastWidePacked(l1j.server.server.model.L1Character c, long p) {"
+      },
+      {
+        "line": 109,
+        "text": "broadcastWide(c, (int) (p >> 32) & 0xffff, (int) (p >> 16) & 0xffff, (int) p & 0xffff);"
+      },
+      {
+        "line": 113,
+        "text": "send(c, x, y, gfxId); broadcast(c, x, y, gfxId);"
+      }
+    ]
+  },
+  "SC_Sound": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_Sound.java",
+    "sha256": "c887610d484f23e5b1ec1aa41401b5506a16991f6ff002eacec94cf0c1e48e2c",
+    "lines": 60,
+    "callsites": [
+      {
+        "line": 18,
+        "text": "return java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+      },
+      {
+        "line": 32,
+        "text": "buffer.writeC(Opcodes.S_SOUND_EFFECT);"
+      },
+      {
+        "line": 33,
+        "text": "buffer.writeC(0);"
+      },
+      {
+        "line": 34,
+        "text": "buffer.writeH(sound);"
+      },
+      {
+        "line": 46,
+        "text": "public static void broadcast(L1Character anchor, int sound) {"
+      },
+      {
+        "line": 47,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(sound), false, -1, null);"
+      },
+      {
+        "line": 50,
+        "text": "public static void broadcastFast(L1Character anchor, int sound) {"
+      },
+      {
+        "line": 51,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(sound), true, -1, null);"
+      },
+      {
+        "line": 57,
+        "text": "broadcastFast(anchor, sound);"
+      }
+    ]
+  },
+  "SC_RemoveObject": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_RemoveObject.java",
+    "sha256": "ba31c744db1e75fb4194cf13efd257e1fb4d02f8ba6cf3989d618c2a23aa988f",
+    "lines": 108,
+    "callsites": [
+      {
+        "line": 58,
+        "text": "buffer.writeC(Opcodes.S_REMOVE_OBJECT);"
+      },
+      {
+        "line": 59,
+        "text": "buffer.writeD(objectId);"
+      },
+      {
+        "line": 60,
+        "text": "buffer.writeH(0);"
+      },
+      {
+        "line": 75,
+        "text": "public static void broadcast(L1Object obj) {"
+      },
+      {
+        "line": 80,
+        "text": "broadcast("
+      },
+      {
+        "line": 85,
+        "text": "public static void broadcast("
+      },
+      {
+        "line": 93,
+        "text": "byte[] wire = java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+      },
+      {
+        "line": 95,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, true, -1, null);"
+      },
+      {
+        "line": 100,
+        "text": "public static byte[] broadcastWire(int objectId) {"
+      },
+      {
+        "line": 101,
+        "text": "return java.nio.ByteBuffer.allocate(WIRE_SIZE)"
+      }
+    ]
+  },
+  "SC_SkillSound": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java",
+    "sha256": "5058bb1fe2ff0c412f055f37ff7f4fef8132a0fcef1b463da29d351f2e2c9e5b",
+    "lines": 122,
+    "callsites": [
+      {
+        "line": 33,
+        "text": "buffer.writeC(Opcodes.S_EFFECT);"
+      },
+      {
+        "line": 34,
+        "text": "buffer.writeD(objectId);"
+      },
+      {
+        "line": 35,
+        "text": "buffer.writeH(gfxId);"
+      },
+      {
+        "line": 36,
+        "text": "buffer.writeH(0);"
+      },
+      {
+        "line": 37,
+        "text": "buffer.writeD(0);"
+      },
+      {
+        "line": 51,
+        "text": "public static void broadcast(L1Character anchor, int objectId, int gfxId) {"
+      },
+      {
+        "line": 52,
+        "text": "broadcast0(anchor, objectId, gfxId, false);"
+      },
+      {
+        "line": 55,
+        "text": "public static void broadcastFast(L1Character anchor, int objectId, int gfxId) {"
+      },
+      {
+        "line": 56,
+        "text": "broadcast0(anchor, objectId, gfxId, true);"
+      },
+      {
+        "line": 60,
+        "text": "return java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+      },
+      {
+        "line": 64,
+        "text": "private static void broadcast0(L1Character anchor, int objectId, int gfxId, boolean fast) {"
+      },
+      {
+        "line": 65,
+        "text": "if (anchor != null) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, gfxId), fast, -1, null);"
+      },
+      {
+        "line": 86,
+        "text": "broadcast(c, objectId, gfxId);"
+      },
+      {
+        "line": 97,
+        "text": "public static void broadcastPacked(l1j.server.server.model.L1Character c, long p) {"
+      },
+      {
+        "line": 98,
+        "text": "broadcast(c, (int) (p >> 32), (int) p & 0xffff);"
+      },
+      {
+        "line": 101,
+        "text": "public static void broadcastFastPacked(l1j.server.server.model.L1Character c, long p) {"
+      },
+      {
+        "line": 102,
+        "text": "broadcastFast(c, (int) (p >> 32), (int) p & 0xffff);"
+      },
+      {
+        "line": 105,
+        "text": "public static void broadcastM(l1j.server.server.model.L1Character c, int objectId, int gfxId) {"
+      },
+      {
+        "line": 107,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(c, sharedWire(objectId, gfxId), false, -1, pc -> pc.getLinMeff() != 2);"
+      },
+      {
+        "line": 110,
+        "text": "public static void broadcastMPacked(l1j.server.server.model.L1Character c, long p) {"
+      },
+      {
+        "line": 111,
+        "text": "broadcastM(c, (int) (p >> 32), (int) p & 0xffff);"
+      },
+      {
+        "line": 114,
+        "text": "public static void broadcastWide(l1j.server.server.model.L1Character c, int objectId, int gfxId) {"
+      },
+      {
+        "line": 116,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(c, sharedWire(objectId, gfxId), false, 50, null);"
+      },
+      {
+        "line": 119,
+        "text": "public static void broadcastWidePacked(l1j.server.server.model.L1Character c, long p) {"
+      },
+      {
+        "line": 120,
+        "text": "broadcastWide(c, (int) (p >> 32), (int) p & 0xffff);"
+      }
+    ]
+  },
+  "SC_ChangeShape": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeShape.java",
+    "sha256": "68536425972a3923937122f4f27b18e1b1b010c837c00c647b4647f489c931be",
+    "lines": 57,
+    "callsites": [
+      {
+        "line": 16,
+        "text": "return java.nio.ByteBuffer.allocate(18).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+      },
+      {
+        "line": 33,
+        "text": "buffer.writeC(Opcodes.S_POLYMORPH);"
+      },
+      {
+        "line": 34,
+        "text": "buffer.writeD(objectId);"
+      },
+      {
+        "line": 35,
+        "text": "buffer.writeH(polyId);"
+      },
+      {
+        "line": 36,
+        "text": "buffer.writeC(weaponState);"
+      },
+      {
+        "line": 37,
+        "text": "buffer.writeC(0xFF);"
+      },
+      {
+        "line": 38,
+        "text": "buffer.writeC(0xFF);"
+      },
+      {
+        "line": 39,
+        "text": "buffer.writeC(0);"
+      },
+      {
+        "line": 50,
+        "text": "public static void broadcast(L1Character anchor, int objectId, int polyId, int weaponState) {"
+      },
+      {
+        "line": 51,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, polyId, weaponState), false, -1, null);"
+      },
+      {
+        "line": 53,
+        "text": "public static void broadcastFast(L1Character anchor, int objectId, int polyId, int weaponState) {"
+      },
+      {
+        "line": 54,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, polyId, weaponState), true, -1, null);"
+      }
+    ]
+  },
+  "SC_Light": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_Light.java",
+    "sha256": "8499e3243979a0739c7cffb8251cd5a3f44e6a83e61240c51812c3ae54f5db88",
+    "lines": 86,
+    "callsites": [
+      {
+        "line": 25,
+        "text": "return java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+      },
+      {
+        "line": 62,
+        "text": "buffer.writeC(Opcodes.S_CHANGE_LIGHT);"
+      },
+      {
+        "line": 63,
+        "text": "buffer.writeD(objectId);"
+      },
+      {
+        "line": 64,
+        "text": "buffer.writeC(type);"
+      },
+      {
+        "line": 79,
+        "text": "public static void broadcast("
+      },
+      {
+        "line": 84,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(cha, sharedWire(objectId, type), true, -1, null);"
+      }
+    ]
+  },
+  "SC_Poison": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_Poison.java",
+    "sha256": "84c303f2141918c8d4ab1dec70b07e2a62c5653246c07f22c101b073e68e8264",
+    "lines": 63,
+    "callsites": [
+      {
+        "line": 18,
+        "text": "final java.nio.ByteBuffer b = java.nio.ByteBuffer.allocate(9)"
+      },
+      {
+        "line": 37,
+        "text": "buffer.writeC(Opcodes.S_POISON);"
+      },
+      {
+        "line": 38,
+        "text": "buffer.writeD(objectId);"
+      },
+      {
+        "line": 39,
+        "text": "buffer.writeC(type == 1 ? 1 : 0);"
+      },
+      {
+        "line": 40,
+        "text": "buffer.writeC(type == 2 ? 1 : 0);"
+      },
+      {
+        "line": 52,
+        "text": "public static void broadcast(L1Character anchor, int objectId, int type) {"
+      },
+      {
+        "line": 55,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, type), false, -1, null);"
+      },
+      {
+        "line": 58,
+        "text": "public static void broadcastFast(L1Character anchor, int objectId, int type) {"
+      },
+      {
+        "line": 61,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, type), true, -1, null);"
+      }
+    ]
+  },
+  "SC_HPMeter": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_HPMeter.java",
+    "sha256": "bba8f1e00026b429f1cf97f16cce20b34569e63b65d4a5107582ea5223ce1beb",
+    "lines": 82,
+    "callsites": [
+      {
+        "line": 16,
+        "text": "final java.nio.ByteBuffer b = java.nio.ByteBuffer.allocate(11)"
+      },
+      {
+        "line": 35,
+        "text": "buffer.writeC(Opcodes.S_HIT_RATIO);"
+      },
+      {
+        "line": 36,
+        "text": "buffer.writeD(objId);"
+      },
+      {
+        "line": 37,
+        "text": "buffer.writeC(hpRatio);"
+      },
+      {
+        "line": 38,
+        "text": "buffer.writeC(mpRatio);"
+      },
+      {
+        "line": 39,
+        "text": "buffer.writeH(0);"
+      },
+      {
+        "line": 66,
+        "text": "public static void broadcast(L1Character anchor, L1Character cha) {"
+      },
+      {
+        "line": 79,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(frozenId, frozenHp, frozenMp), false, -1, null);"
+      }
+    ]
+  },
+  "SC_CharSpeedUpdate": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_CharSpeedUpdate.java",
+    "sha256": "353049cea3d824a68d4c3798bd9888de33342553533c424ad48fd4bc3cb9ff0b",
+    "lines": 57,
+    "callsites": [
+      {
+        "line": 17,
+        "text": "final java.nio.ByteBuffer b = java.nio.ByteBuffer.allocate(10)"
+      },
+      {
+        "line": 36,
+        "text": "buffer.writeC(Opcodes.S_CHANGE_LEVEL);"
+      },
+      {
+        "line": 37,
+        "text": "buffer.writeD(objectId);"
+      },
+      {
+        "line": 38,
+        "text": "buffer.writeC(speed);"
+      },
+      {
+        "line": 39,
+        "text": "buffer.writeC(level);"
+      },
+      {
+        "line": 40,
+        "text": "buffer.writeC(0);"
+      },
+      {
+        "line": 52,
+        "text": "public static void broadcast(L1Character anchor, int objectId, int speed, int level) {"
+      },
+      {
+        "line": 54,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, speed, level), false, -1, null);"
+      }
+    ]
+  },
+  "SC_MoveChar": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_MoveChar.java",
+    "sha256": "617b652e79a88a401d72c36f35afc515ea0bf038a1239e9289b72d493fdfa5b9",
+    "lines": 108,
+    "callsites": [
+      {
+        "line": 53,
+        "text": "buffer.writeC(Opcodes.S_MOVE_OBJECT);"
+      },
+      {
+        "line": 54,
+        "text": "buffer.writeD(objectId);"
+      },
+      {
+        "line": 55,
+        "text": "buffer.writeH(x);"
+      },
+      {
+        "line": 56,
+        "text": "buffer.writeH(y);"
+      },
+      {
+        "line": 57,
+        "text": "buffer.writeC(heading);"
+      },
+      {
+        "line": 58,
+        "text": "buffer.writeC(129);"
+      },
+      {
+        "line": 59,
+        "text": "buffer.writeD(0);"
+      },
+      {
+        "line": 91,
+        "text": "public static byte[] broadcastWire(int objectId, int x, int y, int heading) {"
+      },
+      {
+        "line": 92,
+        "text": "return java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+      },
+      {
+        "line": 97,
+        "text": "public static void broadcast(L1Character cha, int x, int y, int heading) {"
+      },
+      {
+        "line": 100,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendMove("
+      },
+      {
+        "line": 103,
+        "text": "public static void broadcast(L1Character cha) {"
+      },
+      {
+        "line": 106,
+        "text": "broadcast(cha, cha.getX() + HEADING_TABLE_X[heading], cha.getY() + HEADING_TABLE_Y[heading], heading);"
+      }
+    ]
+  },
+  "SC_DoActionGFX": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_DoActionGFX.java",
+    "sha256": "7ec7faed393808f24bd83399055e6eb61e7a9ccf264b9b57b8d3eb69c76a7ee4",
+    "lines": 65,
+    "callsites": [
+      {
+        "line": 44,
+        "text": "public static void broadcast(L1Character cha, int actionId) {"
+      },
+      {
+        "line": 47,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAction("
+      },
+      {
+        "line": 51,
+        "text": "public static void broadcast(L1PcInstance cha, int actionId) {"
+      },
+      {
+        "line": 52,
+        "text": "broadcast((L1Character) cha, actionId);"
+      },
+      {
+        "line": 57,
+        "text": "public static byte[] broadcastWire(int objectId,int actionId) {"
+      },
+      {
+        "line": 58,
+        "text": "return java.nio.ByteBuffer.allocate(8)"
+      }
+    ]
+  },
+  "SC_Invis": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_Invis.java",
+    "sha256": "baa9a9b6c95c7479345be0314c9ba28a686fe30cb9b9e73394e6fe528df11021",
+    "lines": 56,
+    "callsites": [
+      {
+        "line": 20,
+        "text": "final java.nio.ByteBuffer b = java.nio.ByteBuffer.allocate(8)"
+      },
+      {
+        "line": 37,
+        "text": "buffer.writeC(Opcodes.S_INVISIBLE);"
+      },
+      {
+        "line": 38,
+        "text": "buffer.writeD(objectId);"
+      },
+      {
+        "line": 39,
+        "text": "buffer.writeC(type);"
+      },
+      {
+        "line": 47,
+        "text": "public static void broadcast(L1Character anchor, int objectId, int type) {"
+      },
+      {
+        "line": 49,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, type), false, -1, null);"
+      },
+      {
+        "line": 52,
+        "text": "public static void broadcastFast(L1Character anchor, int objectId, int type) {"
+      },
+      {
+        "line": 54,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, type), true, -1, null);"
+      }
+    ]
+  },
+  "SC_Fishing": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_Fishing.java",
+    "sha256": "665a607d22030afcd645e35d195fc9122145b219e8672d7b61d217bbe1900540",
+    "lines": 59,
+    "callsites": [
+      {
+        "line": 17,
+        "text": "final java.nio.ByteBuffer b = java.nio.ByteBuffer.allocate(18)"
+      },
+      {
+        "line": 38,
+        "text": "buffer.writeC(Opcodes.S_ACTION);"
+      },
+      {
+        "line": 39,
+        "text": "buffer.writeD(objectId);"
+      },
+      {
+        "line": 40,
+        "text": "buffer.writeC(motionNum);"
+      },
+      {
+        "line": 41,
+        "text": "buffer.writeH(x);"
+      },
+      {
+        "line": 42,
+        "text": "buffer.writeH(y);"
+      },
+      {
+        "line": 43,
+        "text": "buffer.writeD(0);"
+      },
+      {
+        "line": 44,
+        "text": "buffer.writeH(0);"
+      },
+      {
+        "line": 55,
+        "text": "public static void broadcast(L1Character anchor, int objectId, int motionNum, int x, int y) {"
+      },
+      {
+        "line": 57,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, motionNum, x, y), false, -1, null);"
+      }
+    ]
+  },
+  "SC_DoActionShop": {
+    "src": "src/l1j/server/server/model/network/core/sc/packet/SC_DoActionShop.java",
+    "sha256": "552202b9028a94d981446e456af6589924afe631195f8a36b92fe7526e0880a7",
+    "lines": 93,
+    "callsites": [
+      {
+        "line": 26,
+        "text": "buffer.writeC(Opcodes.S_ACTION);"
+      },
+      {
+        "line": 27,
+        "text": "buffer.writeD(objectId);"
+      },
+      {
+        "line": 28,
+        "text": "buffer.writeC(action);"
+      },
+      {
+        "line": 48,
+        "text": "buffer.writeC(Opcodes.S_ACTION);"
+      },
+      {
+        "line": 49,
+        "text": "buffer.writeD(objectId);"
+      },
+      {
+        "line": 50,
+        "text": "buffer.writeC(action);"
+      },
+      {
+        "line": 58,
+        "text": "public static void broadcast(L1Character anchor, int id, int action, byte[] message) {"
+      },
+      {
+        "line": 62,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, false, -1, null);"
+      },
+      {
+        "line": 64,
+        "text": "public static void broadcast(L1Character anchor, int id, int action, String message) {"
+      },
+      {
+        "line": 68,
+        "text": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, false, -1, null);"
+      },
+      {
+        "line": 74,
+        "text": "final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate(size)"
+      },
+      {
+        "line": 86,
+        "text": "final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate(size)"
+      }
+    ]
+  },
+  "CSharedBroadcast": {
+    "src": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "sha256": "971b2edc2358f10db0529a87e05e10c4bd75ea0ae169abb421f1e1316e7eb899",
+    "lines": 392,
+    "callsites": [
+      {
+        "line": 1,
+        "text": "package l1j.server.server.model.network.core.broadcast;"
+      },
+      {
+        "line": 11,
+        "text": "* Packet-specific old serializers are never invoked during broadcast."
+      },
+      {
+        "line": 13,
+        "text": "public final class CSharedBroadcast {"
+      },
+      {
+        "line": 14,
+        "text": "private CSharedBroadcast() {}"
+      },
+      {
+        "line": 95,
+        "text": "try (var shared=new CAsyncSendConstBufferExceptSelf(wire,anchor.getId(),Integer.MAX_VALUE)) {"
+      },
+      {
+        "line": 123,
+        "text": "try(var shared=new CAsyncSendConstBuffer("
+      },
+      {
+        "line": 135,
+        "text": "try (var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+      },
+      {
+        "line": 146,
+        "text": "* to its 2-byte little-endian wire length, then broadcast shared bytes."
+      },
+      {
+        "line": 165,
+        "text": "return wire==null?null:new CAsyncSendConstBuffer("
+      },
+      {
+        "line": 196,
+        "text": "try(var shared=new CAsyncSendConstBuffer("
+      },
+      {
+        "line": 217,
+        "text": "try (var shared = new CAsyncSendConstBuffer("
+      },
+      {
+        "line": 235,
+        "text": "try (var shared=new CAsyncSendConstBuffer("
+      },
+      {
+        "line": 256,
+        "text": "new CAsyncSendConstBuffer[wires.length];"
+      },
+      {
+        "line": 261,
+        "text": "shared[i]=new CAsyncSendConstBuffer("
+      },
+      {
+        "line": 287,
+        "text": "try(var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+      },
+      {
+        "line": 307,
+        "text": "try(var shared=new CAsyncSendConstBuffer("
+      },
+      {
+        "line": 332,
+        "text": "try(var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+      },
+      {
+        "line": 359,
+        "text": "* cloud effects: for each chest viewer, rebroadcast around that viewer."
+      },
+      {
+        "line": 366,
+        "text": "try(var shared=new CAsyncSendConstBuffer("
+      },
+      {
+        "line": 380,
+        "text": "/** Global broadcast includes the sender and uses the normal socket FIFO. */"
+      },
+      {
+        "line": 383,
+        "text": "try (var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+      }
+    ]
+  },
+  "CAsyncSendConstBufferExceptSelf": {
+    "src": "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    "sha256": "3ffcddbc075c4aa4b14704eb9772a79088cb6bc13d98d76ba508f279079f64a6",
+    "lines": 32,
+    "callsites": [
+      {
+        "line": 1,
+        "text": "package l1j.server.server.model.network.core.broadcast;"
+      },
+      {
+        "line": 19,
+        "text": "return pooled == null ? null : new CAsyncSendConstBufferExceptSelf(pooled, senderId);"
+      },
+      {
+        "line": 28,
+        "text": "return pooled == null ? null : new CAsyncSendConstBufferExceptSelf(pooled, senderId);"
+      }
+    ]
+  },
+  "CAsyncSendConstBuffer": {
+    "src": "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    "sha256": "95033e9470e2511eb151e1cabf5a93454404161481d5d59f7a4a574ef12aa20a",
+    "lines": 141,
+    "callsites": [
+      {
+        "line": 1,
+        "text": "package l1j.server.server.model.network.core.broadcast;"
+      },
+      {
+        "line": 11,
+        "text": "/** Original broadcast role: one immutable plaintext, per-socket ordered output."
+      },
+      {
+        "line": 13,
+        "text": "* No per-packet legacy encoder is called during broadcast."
+      },
+      {
+        "line": 26,
+        "text": "* Package-private owned-frame path. Only broadcast code that has just"
+      },
+      {
+        "line": 64,
+        "text": "* Used by broadcasts that must update world state after SEND acceptance."
+      },
+      {
+        "line": 70,
+        "text": "* The single shared-broadcast SEND contract."
+      },
+      {
+        "line": 77,
+        "text": "if(closed)throw new IllegalStateException(\"broadcast already closed\");"
+      }
+    ]
+  },
+  "CIOServer": {
+    "src": "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    "sha256": "1c94545c0186f4644a646f476b3e2b68edc791e864f2a1216b855da655a0291c",
+    "lines": 1012,
+    "callsites": [
+      {
+        "line": 3,
+        "text": "import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;"
+      },
+      {
+        "line": 730,
+        "text": "CAsyncSendConstBuffer.Source source = new CAsyncSendConstBuffer.Source(this, handle, wire);"
+      },
+      {
+        "line": 757,
+        "text": "return new CAsyncSendConstBuffer.Source(this, handle, bytes);"
+      }
+    ]
+  },
+  "CUserSocket": {
+    "src": "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    "sha256": "81a5f52b81cdac7016e3f3937c1aeb310e2d453a0b3fb202c66885db237d6c10",
+    "lines": 3965,
+    "callsites": [
+      {
+        "line": 3,
+        "text": "import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;"
+      },
+      {
+        "line": 3881,
+        "text": "* Receipt-bearing constant-buffer admission for stateful broadcasts."
+      },
+      {
+        "line": 3909,
+        "text": "* broadcaster. This is NOT a packet-specific serializer or fallback."
+      }
+    ]
+  }
+}
