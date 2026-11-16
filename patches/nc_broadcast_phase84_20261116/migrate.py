@@ -210,15 +210,15 @@ def modify(files):
     apply(files,key,old,"final "+FQ+".NativeWireWriter noticeWire="+FQ+".systemWriter(",3,tag="staff_announcement")
     # Event staff NPC chat
     key=pre("server/model/L1HauntedHouse.java")
-    old="""        final byte[] wire=SC_NpcChatPacket.sharedNpcWire(_guide,msg,2);
-        if(wire==null)return;
-        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {"""
-    new="""        final var writer="""+FQ+""".npcChatWriter(_guide,msg,2);
+    expr=r"final byte\[\] wire=SC_NpcChatPacket\.sharedNpcWire\(_guide,msg,2\);\s*if\(wire==null\)return;\s*try\(var shared=new l1j\.server\.server\.model\.network\.core\.broadcast\.CAsyncSendConstBuffer\(\s*wire,Integer\.MIN_VALUE,Integer\.MAX_VALUE\)\)\s*\{"
+    replacement="""final var writer="""+FQ+""".npcChatWriter(_guide,msg,2);
         if(writer==null)return;
         try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                 writer,Integer.MIN_VALUE,Integer.MAX_VALUE)) {"""
-    apply(files,key,old,new,tag="haunted_npc_chat")
+    patched,n=re.subn(expr,lambda _:replacement,files[key])
+    assert n==1,(key,"haunted_npc_chat",n)
+    files[key]=patched
+    counts["haunted_npc_chat"]+=1
     # Public chat channels: writer captures ChatData and builds native frame
     # only if any accepted recipient remains after spam/AOI filters.
     key=pre("server/model/network/core/cs/packet/CS_Craft.java")
