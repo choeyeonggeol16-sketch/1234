@@ -144,11 +144,11 @@ jobs:
           $root=Join-Path $env:RUNNER_TEMP 'nc-assemble-broadcast-phase82'
           python patches/nc_broadcast_nonsc_phase82_20261116/migrate.py "$root" package
           if($LASTEXITCODE -ne 0){throw 'phase82 final zip validation failed'}
-          Copy-Item "$root\audit.json" "patches/nc_broadcast_full_phase82_20261116/audit.json"
+          Copy-Item "$root\audit82.json" "patches/nc_broadcast_nonsc_phase82_20261116/audit82.json"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f downloads/RKern_NC_NonSC_Native_Broadcast_Phase82_FULL_SRC_20261116.zip
-          git add -f patches/nc_broadcast_full_phase82_20261116/audit.json
+          git add -f patches/nc_broadcast_nonsc_phase82_20261116/audit82.json
           git diff --cached --quiet
           if($LASTEXITCODE -eq 0){exit 0}
           git commit -m "Publish NC pooled native S-packet source and verified DLL [skip ci]"
