@@ -1,7 +1,7 @@
 {
   "phase": 85,
   "baseline_sha256": "5e442ada66a78c14075952e9114c1d0a41dccb45ef9c081aec16789c77599c3c",
-  "full_src_sha256": "57ac194535466fa18d50c5e559318d0c6aa22a02bd63e6f21206b7bbe5d36b9f",
+  "full_src_sha256": "79c3d805ad1b5cbd850945470191c193588e02f9c98c64123e28dd07444b431e",
   "dll_sha256": "984c30433687d343e6d882b80c048e85f4a1961c4184dc488916a8174d7c524f",
   "changed": [
     "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java"
@@ -70,15 +70,15 @@
       "count": 1
     },
     {
+      "method": "frameRaw",
+      "count": 1
+    },
+    {
       "method": "openRaw",
       "count": 1
     }
   ],
-  "remaining_legacy_api_references": {
-    "frameRaw": {
-      "internal_references_after_candidate_removal": true
-    }
-  },
+  "remaining_legacy_api_references": {},
   "new_classes_workers_queues": 0,
   "5000_ingame_soak_verified": false
 }
