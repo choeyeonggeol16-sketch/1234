@@ -37,9 +37,41 @@ with zipfile.ZipFile(src) as z:
            "SC_ChatMessageNoti","SC_LFCTrapEffect","SC_EffectLocation",
            "SC_IconMessage","SC_MessageYN","SC_Weather","SC_PartyChat","SC_ChatPacket",
            "SC_OnlyEffect","SC_Trap","SC_Fishing","SC_PinkName","SC_Magic","SC_ChangeHeading",
-           "SC_NewChat","SC_War","SC_WorldPutObject"]
+           "SC_NewChat","SC_War","SC_WorldPutObject",
+           "SC_MoveChar","SC_DoActionGFX","SC_SkillSound","SC_ActionUI","SC_ShowCmd",
+           "SC_RemoveObject","SC_WORLD_PUT_OBJECT_NOTI","SC_SOCIAL_ACTION_NOTI",
+           "SC_PartyMemberList","SC_PartyMember"]
         if name.startswith("src/") and "/sc/packet/" in name and Path(name).stem in focus:
             (out/Path(name).name).write_text(s)
+# Inventory remaining wrapper constructors and their exact first source expression.
+def parse_args(s,i):
+    depth=1;start=i+1;chunks=[];stack=["("];string=None;esc=False
+    for j in range(i+1,len(s)):
+        c=s[j]
+        if esc:esc=False;continue
+        if string:
+            if c=="\\":esc=True
+            elif c==string:string=None
+            continue
+        if c in ("'",'"'):string=c;continue
+        if c in "([{":stack.append(c)
+        elif c in ")]}":
+            stack.pop()
+            if not stack:chunks.append(s[start:j]);return chunks
+        elif c=="," and len(stack)==1:
+            chunks.append(s[start:j]);start=j+1
+    return []
+ctor=[]
+with zipfile.ZipFile(src) as z:
+    for name in z.namelist():
+        if not name.endswith(".java") or not name.startswith("src/"):continue
+        ss=z.read(name).decode("utf-8")
+        for m in re.finditer(r"new\s+(?:l1j\.server\.server\.model\.network\.core\.broadcast\.)?CAsyncSendConstBuffer\s*\(",ss):
+            args=parse_args(ss,m.end()-1)
+            ctor.append({"file":name,"line":ss.count("\n",0,m.start())+1,
+                "args":[x.strip()[:2000] for x in args]})
+(out/"constructors.json").write_text(json.dumps(ctor,ensure_ascii=False,indent=2))
+
 for method,vals in by_type.items():
     (out/("calls_"+method+".json")).write_text(json.dumps(vals,ensure_ascii=False,indent=2))
 (out/"summary.json").write_text(json.dumps({"total":len(rows),"methods":dict(ct),
