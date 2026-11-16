@@ -1,0 +1,22 @@
+{
+  "phase": 81,
+  "baseline_sha256": "a0d534b066395b12a3a9e545cb094602e1cd568ea80ddca2900ff46a0a54e391",
+  "full_src_sha256": "6b077cbbafdc1067e8a5c31e9781dfe4221c78331b7bf3cde4659a0c631bb0c3",
+  "dll_sha256": "984c30433687d343e6d882b80c048e85f4a1961c4184dc488916a8174d7c524f",
+  "changed": [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_DropItem.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_RangeSkill.java"
+  ],
+  "java_count": 1710,
+  "zip_entries": 1734,
+  "sc_legacy_broadcast_remaining": 0,
+  "native_abi": "0x000a0009",
+  "item_name_MS949_actual_length_fix": true,
+  "icon_writeS2_255_guard_fix": true,
+  "rangeskill_large_direct_FIFO_fix": true,
+  "native_pool_16384_preserved": true,
+  "new_queues_workers_classes": 0,
+  "5000_ingame_soak_verified": false
+}
