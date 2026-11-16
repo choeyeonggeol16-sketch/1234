@@ -50,9 +50,8 @@ def convert_as(s):
         // When the receiver's pending-byte cap is already full, never allocate
         // a Native *shared* source merely to use the direct FIFO alternative.
         // This branch only applies when writer provided an exact frame length.
-        if(writer!=null && source==null && exactWriterBytes>0
-                && target.pendingSendBytes()>=limit)
-            return CSharedBroadcast.sendLargeDirectFrame(target,exactWriterBytes,writer);
+        if(target.pendingSendBytes()>=limit)
+            return false;
 """)
     s=rep(s,"""        final int limit=recipientId==senderId?Integer.MAX_VALUE:pendingLimit;
         final int length = source.wire.remaining();""",
