@@ -1,0 +1,40 @@
+name: 'Phase81 inspect pinned Native CIOBufferEx source and queue lifetime'
+on:
+  push:
+    branches: [nc-broadcast-deep-audit-phase81-20261116]
+    paths: [.github/workflows/nc-broadcast-phase81-native-inspect.yml]
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract native source and source test inventories
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile,hashlib
+          p=Path('downloads/RKern_NC_SPacket_Assemble_Phase80_FULL_SRC_20261116.zip')
+          assert hashlib.sha256(p.read_bytes()).hexdigest()=='a0d534b066395b12a3a9e545cb094602e1cd568ea80ddca2900ff46a0a54e391'
+          out=Path('reports/nc_phase81_audit/native');out.mkdir(parents=True,exist_ok=True)
+          with zipfile.ZipFile(p) as z:
+              for name in z.namelist():
+                  if name.endswith(('CTransport.cpp','interop_abi.hpp','nc_source_pool_overflow_test.cpp')):
+                      x=z.read(name); (out/Path(name).name).write_bytes(x)
+                      print('EXTRACT_NATIVE',name,len(x),hashlib.sha256(x).hexdigest(),flush=True)
+          PY
+      - name: Publish native source
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f reports/nc_phase81_audit/native
+          git diff --cached --quiet && exit 0
+          git commit -m 'Snapshot exact phase80 native CIOBufferEx allocator for safety audit [skip ci]'
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            sleep 2
+          done
+          exit 1
