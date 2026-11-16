@@ -69,8 +69,8 @@ def install_core(files):
         if(!p||length<3||length>static_cast<int>(LargeBufferBytes))return 0;
         auto* block=static_cast<CIOBuffer*>(p);
         if(!block->constSourceOwner)return 0;
-        block->data[0]=static_cast<unsigned char>(length);
-        block->data[1]=static_cast<unsigned char>(length>>8);
+        block->data.data()[0]=static_cast<unsigned char>(length);
+        block->data.data()[1]=static_cast<unsigned char>(length>>8);
         block->used=static_cast<unsigned>(length);
         return 1;
     }
