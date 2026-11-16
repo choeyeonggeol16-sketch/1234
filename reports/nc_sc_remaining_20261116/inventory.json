@@ -1,0 +1,2131 @@
+{
+  "sha256": "4f5d0f8cdb1850693aa0b36ef1fba5c609292233f6c7558102f047287a24b3d8",
+  "total_SC": 195,
+  "with_broadcast": 70,
+  "unconverted_SC": 35,
+  "remaining_shared_wire": 31,
+  "others": [
+    {
+      "name": "SC_AreaAttackEffect.java",
+      "methods": [],
+      "calls": [
+        {
+          "line": 31,
+          "source": "final byte[] wire=sharedWire(id,x,y,heading,seq,gfx,action,ids);"
+        },
+        {
+          "line": 55,
+          "source": "public static byte[] sharedWire(int id,int x,int y,int heading,int seq,int gfx,"
+        }
+      ]
+    },
+    {
+      "name": "SC_CastleMaster.java",
+      "methods": [],
+      "calls": [
+        {
+          "line": 16,
+          "source": "public static byte[] sharedWire(int type,int objectId) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_ChangeAttr.java",
+      "methods": [
+        {
+          "line": 38,
+          "declaration": "public static byte[] broadcastWire(int x,int y,boolean width,boolean close) {"
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "SC_ChangeHeading.java",
+      "methods": [
+        {
+          "line": 40,
+          "declaration": "private static void broadcast0(L1Character anchor, int objectId, int heading, boolean fast) {"
+        },
+        {
+          "line": 46,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int heading) { broadcast0(anchor, objectId, heading, false); }"
+        },
+        {
+          "line": 47,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, int heading) { broadcast0(anchor, objectId, heading, true); }"
+        },
+        {
+          "line": 49,
+          "declaration": "public static void broadcast(L1Character object) {"
+        },
+        {
+          "line": 50,
+          "declaration": "if (object != null) broadcast(object, object.getId(), object.getHeading());"
+        },
+        {
+          "line": 53,
+          "declaration": "public static void broadcastFast(L1Character object) {"
+        },
+        {
+          "line": 54,
+          "declaration": "if (object != null) broadcastFast(object, object.getId(), object.getHeading());"
+        }
+      ],
+      "calls": [
+        {
+          "line": 42,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 43,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_HEADING,"
+        }
+      ]
+    },
+    {
+      "name": "SC_CharSpeedUpdate.java",
+      "methods": [
+        {
+          "line": 41,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int speed, int level) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 43,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 44,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CHAR_SPEED,"
+        }
+      ]
+    },
+    {
+      "name": "SC_ChartRank.java",
+      "methods": [],
+      "calls": [
+        {
+          "line": 78,
+          "source": "public static byte[] sharedWire(Snapshot snapshot) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_ChatPacket.java",
+      "methods": [
+        {
+          "line": 34,
+          "declaration": "public static void broadcastMessage(String chat) {"
+        },
+        {
+          "line": 41,
+          "declaration": "public static void broadcastOpcode(String chat, int opcode) {"
+        },
+        {
+          "line": 55,
+          "declaration": "public static void broadcastComplex0(L1PcInstance source, String chat, int opcode) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 77,
+          "source": "public static byte[] sharedWire(int opcode,int type,int objectId,"
+        },
+        {
+          "line": 114,
+          "source": "return sharedWire(opcode, type, objectId, safe, includeObjectId);"
+        }
+      ]
+    },
+    {
+      "name": "SC_DisplayEffect.java",
+      "methods": [],
+      "calls": [
+        {
+          "line": 25,
+          "source": "public static byte[] sharedWire(int value) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_DoActionGFX.java",
+      "methods": [
+        {
+          "line": 44,
+          "declaration": "public static void broadcast(L1Character cha, int actionId) {"
+        },
+        {
+          "line": 51,
+          "declaration": "public static void broadcast(L1PcInstance cha, int actionId) {"
+        },
+        {
+          "line": 52,
+          "declaration": "broadcast((L1Character) cha, actionId);"
+        },
+        {
+          "line": 57,
+          "declaration": "public static byte[] broadcastWire(int objectId,int actionId) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 47,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAction("
+        }
+      ]
+    },
+    {
+      "name": "SC_DropItem.java",
+      "methods": [
+        {
+          "line": 91,
+          "declaration": "public static void broadcast(L1ItemInstance item) {"
+        },
+        {
+          "line": 92,
+          "declaration": "broadcast(item, false);"
+        },
+        {
+          "line": 101,
+          "declaration": "public static int broadcast("
+        }
+      ],
+      "calls": [
+        {
+          "line": 133,
+          "source": "final byte[] frozen=sharedWire(x,y,objectId,groundGfxId,lightRange,count,itemName);"
+        },
+        {
+          "line": 414,
+          "source": "private static byte[] sharedWire(int x,int y,int objectId,int groundGfxId,"
+        }
+      ]
+    },
+    {
+      "name": "SC_EffectLocation.java",
+      "methods": [
+        {
+          "line": 58,
+          "declaration": "public static void broadcast(L1Character anchor, int x, int y, int gfxId) {"
+        },
+        {
+          "line": 86,
+          "declaration": "public static void broadcastPacked(l1j.server.server.model.L1Character c, long p) {"
+        },
+        {
+          "line": 87,
+          "declaration": "broadcast(c, (int) (p >> 32) & 0xffff, (int) (p >> 16) & 0xffff, (int) p & 0xffff);"
+        },
+        {
+          "line": 90,
+          "declaration": "public static void broadcastFast(l1j.server.server.model.L1Character c, int x, int y, int gfxId) {"
+        },
+        {
+          "line": 96,
+          "declaration": "public static void broadcastFastPacked(l1j.server.server.model.L1Character c, long p) {"
+        },
+        {
+          "line": 97,
+          "declaration": "broadcastFast(c, (int) (p >> 32) & 0xffff, (int) (p >> 16) & 0xffff, (int) p & 0xffff);"
+        },
+        {
+          "line": 100,
+          "declaration": "public static void broadcastM(l1j.server.server.model.L1Character c, int x, int y, int gfxId) {"
+        },
+        {
+          "line": 106,
+          "declaration": "public static void broadcastMPacked(l1j.server.server.model.L1Character c, long p) {"
+        },
+        {
+          "line": 107,
+          "declaration": "broadcastM(c, (int) (p >> 32) & 0xffff, (int) (p >> 16) & 0xffff, (int) p & 0xffff);"
+        },
+        {
+          "line": 110,
+          "declaration": "public static void broadcastWide(l1j.server.server.model.L1Character c, int x, int y, int gfxId) {"
+        },
+        {
+          "line": 116,
+          "declaration": "public static void broadcastWidePacked(l1j.server.server.model.L1Character c, long p) {"
+        },
+        {
+          "line": 117,
+          "declaration": "broadcastWide(c, (int) (p >> 32) & 0xffff, (int) (p >> 16) & 0xffff, (int) p & 0xffff);"
+        },
+        {
+          "line": 121,
+          "declaration": "send(c, x, y, gfxId); broadcast(c, x, y, gfxId);"
+        }
+      ],
+      "calls": [
+        {
+          "line": 18,
+          "source": "public static byte[] sharedWire(int x, int y, int gfxId) {"
+        },
+        {
+          "line": 59,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 60,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_EFFECT_LOCATION,"
+        },
+        {
+          "line": 91,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 92,
+          "source": "c, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_EFFECT_LOCATION,"
+        },
+        {
+          "line": 101,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 102,
+          "source": "c, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_EFFECT_LOCATION,"
+        },
+        {
+          "line": 111,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 112,
+          "source": "c, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_EFFECT_LOCATION,"
+        }
+      ]
+    },
+    {
+      "name": "SC_Fishing.java",
+      "methods": [
+        {
+          "line": 42,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int motionNum, int x, int y) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 44,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 45,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_FISHING,"
+        }
+      ]
+    },
+    {
+      "name": "SC_GameEnd.java",
+      "methods": [],
+      "calls": [
+        {
+          "line": 15,
+          "source": "public static byte[] sharedWire() {"
+        }
+      ]
+    },
+    {
+      "name": "SC_GameOver.java",
+      "methods": [],
+      "calls": [
+        {
+          "line": 15,
+          "source": "public static byte[] sharedWire() {"
+        }
+      ]
+    },
+    {
+      "name": "SC_GameRap.java",
+      "methods": [],
+      "calls": [
+        {
+          "line": 16,
+          "source": "public static byte[] sharedWire(int value) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_GameStart.java",
+      "methods": [],
+      "calls": [
+        {
+          "line": 15,
+          "source": "public static byte[] sharedWire() {"
+        }
+      ]
+    },
+    {
+      "name": "SC_HPMeter.java",
+      "methods": [
+        {
+          "line": 55,
+          "declaration": "public static void broadcast(L1Character anchor, L1Character cha) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 68,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 69,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_HP_METER,"
+        }
+      ]
+    },
+    {
+      "name": "SC_IconMessage.java",
+      "methods": [
+        {
+          "line": 50,
+          "declaration": "public static void broadcast(String message, MJSimpleRgb color, int surface, int duration) {"
+        },
+        {
+          "line": 56,
+          "declaration": "public static void broadcast(int index, MJSimpleRgb color, int surface, int duration) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 25,
+          "source": "final byte[] wire=sharedWire(message,0,GM_COLOR,28,60,false);"
+        },
+        {
+          "line": 43,
+          "source": "return sharedWire(\"\",index,color,surface,duration,true);"
+        },
+        {
+          "line": 51,
+          "source": "final byte[] wire=sharedWire(message, 0, color, surface, duration, false);"
+        },
+        {
+          "line": 53,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(wire);"
+        },
+        {
+          "line": 57,
+          "source": "final byte[] wire=sharedWire(\"\", index, color, surface, duration, true);"
+        },
+        {
+          "line": 59,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(wire);"
+        },
+        {
+          "line": 121,
+          "source": "private static byte[] sharedWire(String msg,int index,MJSimpleRgb color,"
+        }
+      ]
+    },
+    {
+      "name": "SC_Invis.java",
+      "methods": [
+        {
+          "line": 38,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int type) {"
+        },
+        {
+          "line": 45,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, int type) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 40,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 41,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_INVIS,"
+        },
+        {
+          "line": 47,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 48,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_INVIS,"
+        }
+      ]
+    },
+    {
+      "name": "SC_LFCTrapEffect.java",
+      "methods": [],
+      "calls": [
+        {
+          "line": 13,
+          "source": "public static byte[] sharedWire(int objectId,int gfxId) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_Light.java",
+      "methods": [
+        {
+          "line": 73,
+          "declaration": "public static void broadcast("
+        }
+      ],
+      "calls": [
+        {
+          "line": 78,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 79,
+          "source": "cha, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_LIGHT,"
+        }
+      ]
+    },
+    {
+      "name": "SC_MessageYN.java",
+      "methods": [
+        {
+          "line": 54,
+          "declaration": "public static void broadcast(int type, String message) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 55,
+          "source": "final byte[] wire=sharedWire(type, message);"
+        },
+        {
+          "line": 57,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(wire);"
+        },
+        {
+          "line": 76,
+          "source": "public static byte[] sharedWire(int type, String message) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_MoveChar.java",
+      "methods": [
+        {
+          "line": 91,
+          "declaration": "public static byte[] broadcastWire(int objectId, int x, int y, int heading) {"
+        },
+        {
+          "line": 97,
+          "declaration": "public static void broadcast(L1Character cha, int x, int y, int heading) {"
+        },
+        {
+          "line": 103,
+          "declaration": "public static void broadcast(L1Character cha) {"
+        },
+        {
+          "line": 106,
+          "declaration": "broadcast(cha, cha.getX() + HEADING_TABLE_X[heading], cha.getY() + HEADING_TABLE_Y[heading], heading);"
+        }
+      ],
+      "calls": [
+        {
+          "line": 100,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendMove("
+        }
+      ]
+    },
+    {
+      "name": "SC_NewChat.java",
+      "methods": [
+        {
+          "line": 139,
+          "declaration": "public static void broadcastAll(L1PcInstance sender, int type, int chatType,"
+        }
+      ],
+      "calls": [
+        {
+          "line": 142,
+          "source": "final byte[] wire=sharedWire(data);"
+        },
+        {
+          "line": 144,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(wire);"
+        },
+        {
+          "line": 229,
+          "source": "public static byte[] sharedWire(ChatData d) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_OnlyEffect.java",
+      "methods": [
+        {
+          "line": 49,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int effectId) {"
+        },
+        {
+          "line": 55,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, int effectId) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 16,
+          "source": "private static byte[] sharedWire(int objectId, int effectId) {"
+        },
+        {
+          "line": 50,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 51,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ONLY_EFFECT,"
+        },
+        {
+          "line": 56,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 57,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ONLY_EFFECT,"
+        }
+      ]
+    },
+    {
+      "name": "SC_Poison.java",
+      "methods": [
+        {
+          "line": 42,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int type) {"
+        },
+        {
+          "line": 50,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, int type) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 45,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 46,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_POISON,"
+        },
+        {
+          "line": 53,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 54,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_POISON,"
+        }
+      ]
+    },
+    {
+      "name": "SC_RemoveObject.java",
+      "methods": [
+        {
+          "line": 75,
+          "declaration": "public static void broadcast(L1Object obj) {"
+        },
+        {
+          "line": 80,
+          "declaration": "broadcast("
+        },
+        {
+          "line": 85,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 100,
+          "declaration": "public static byte[] broadcastWire(int objectId) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 93,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 94,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_REMOVE_OBJECT,"
+        }
+      ]
+    },
+    {
+      "name": "SC_ServerMessage.java",
+      "methods": [
+        {
+          "line": 79,
+          "declaration": "public static void broadcast(int type) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 80,
+          "source": "final byte[] wire=sharedWire(type);"
+        },
+        {
+          "line": 82,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(wire);"
+        },
+        {
+          "line": 92,
+          "source": "public static byte[] sharedWire(int type, String message) {"
+        },
+        {
+          "line": 93,
+          "source": "if(message==null)return sharedWire(type);"
+        },
+        {
+          "line": 113,
+          "source": "public static byte[] sharedWire(int type,String msg1,String msg2,String msg3) {"
+        },
+        {
+          "line": 138,
+          "source": "public static byte[] sharedWire(int type) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_SkillSound.java",
+      "methods": [
+        {
+          "line": 51,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int gfxId) {"
+        },
+        {
+          "line": 52,
+          "declaration": "broadcast0(anchor, objectId, gfxId, false);"
+        },
+        {
+          "line": 55,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, int gfxId) {"
+        },
+        {
+          "line": 56,
+          "declaration": "broadcast0(anchor, objectId, gfxId, true);"
+        },
+        {
+          "line": 64,
+          "declaration": "private static void broadcast0(L1Character anchor, int objectId, int gfxId, boolean fast) {"
+        },
+        {
+          "line": 88,
+          "declaration": "broadcast(c, objectId, gfxId);"
+        },
+        {
+          "line": 99,
+          "declaration": "public static void broadcastPacked(l1j.server.server.model.L1Character c, long p) {"
+        },
+        {
+          "line": 100,
+          "declaration": "broadcast(c, (int) (p >> 32), (int) p & 0xffff);"
+        },
+        {
+          "line": 103,
+          "declaration": "public static void broadcastFastPacked(l1j.server.server.model.L1Character c, long p) {"
+        },
+        {
+          "line": 104,
+          "declaration": "broadcastFast(c, (int) (p >> 32), (int) p & 0xffff);"
+        },
+        {
+          "line": 107,
+          "declaration": "public static void broadcastM(l1j.server.server.model.L1Character c, int objectId, int gfxId) {"
+        },
+        {
+          "line": 114,
+          "declaration": "public static void broadcastMPacked(l1j.server.server.model.L1Character c, long p) {"
+        },
+        {
+          "line": 115,
+          "declaration": "broadcastM(c, (int) (p >> 32), (int) p & 0xffff);"
+        },
+        {
+          "line": 118,
+          "declaration": "public static void broadcastWide(l1j.server.server.model.L1Character c, int objectId, int gfxId) {"
+        },
+        {
+          "line": 125,
+          "declaration": "public static void broadcastWidePacked(l1j.server.server.model.L1Character c, long p) {"
+        },
+        {
+          "line": 126,
+          "declaration": "broadcastWide(c, (int) (p >> 32), (int) p & 0xffff);"
+        }
+      ],
+      "calls": [
+        {
+          "line": 59,
+          "source": "public static byte[] sharedWire(int objectId, int gfxId) {"
+        },
+        {
+          "line": 65,
+          "source": "if (anchor != null) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 66,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILL_SOUND,"
+        },
+        {
+          "line": 109,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 110,
+          "source": "c, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILL_SOUND,"
+        },
+        {
+          "line": 120,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 121,
+          "source": "c, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILL_SOUND,"
+        }
+      ]
+    },
+    {
+      "name": "SC_Sound.java",
+      "methods": [
+        {
+          "line": 46,
+          "declaration": "public static void broadcast(L1Character anchor, int sound) {"
+        },
+        {
+          "line": 52,
+          "declaration": "public static void broadcastFast(L1Character anchor, int sound) {"
+        },
+        {
+          "line": 61,
+          "declaration": "broadcastFast(anchor, sound);"
+        }
+      ],
+      "calls": [
+        {
+          "line": 17,
+          "source": "private static byte[] sharedWire(int sound) {"
+        },
+        {
+          "line": 47,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 48,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SOUND,"
+        },
+        {
+          "line": 53,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+        },
+        {
+          "line": 54,
+          "source": "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SOUND,"
+        }
+      ]
+    },
+    {
+      "name": "SC_SystemMessage.java",
+      "methods": [
+        {
+          "line": 37,
+          "declaration": "public static void broadcast(String message) {"
+        },
+        {
+          "line": 47,
+          "declaration": "public static void broadcastRecipients("
+        }
+      ],
+      "calls": [
+        {
+          "line": 38,
+          "source": "final byte[] wire=sharedWire(message);"
+        },
+        {
+          "line": 40,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(wire);"
+        },
+        {
+          "line": 49,
+          "source": "final byte[] wire=sharedWire(message);"
+        },
+        {
+          "line": 70,
+          "source": "public static byte[] sharedWire(String message) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_TopMessage.java",
+      "methods": [
+        {
+          "line": 37,
+          "declaration": "public static void broadcastAll(String msg) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 38,
+          "source": "final byte[] wire=sharedWire(msg);"
+        },
+        {
+          "line": 40,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(wire);"
+        },
+        {
+          "line": 44,
+          "source": "private static byte[] sharedWire(String msg) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_War.java",
+      "methods": [
+        {
+          "line": 36,
+          "declaration": "public static void broadcastAll(int type, String clan1, String clan2) {"
+        },
+        {
+          "line": 41,
+          "declaration": "public static void broadcastClan(l1j.server.server.model.L1Clan clan, int type, String clan1, String clan2) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 37,
+          "source": "final byte[] wire=sharedWire(type, clan1, clan2);"
+        },
+        {
+          "line": 39,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(wire);"
+        },
+        {
+          "line": 43,
+          "source": "final byte[] wire=sharedWire(type, clan1, clan2);"
+        },
+        {
+          "line": 57,
+          "source": "private static byte[] sharedWire(int type, String clan1, String clan2) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_WarStartMessage.java",
+      "methods": [],
+      "calls": [
+        {
+          "line": 31,
+          "source": "public static byte[] sharedWire(String[] clanNames) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_Weather.java",
+      "methods": [
+        {
+          "line": 37,
+          "declaration": "public static void broadcastAll(int weather) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 38,
+          "source": "final byte[] wire=sharedWire(weather);"
+        },
+        {
+          "line": 40,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(wire);"
+        },
+        {
+          "line": 44,
+          "source": "private static byte[] sharedWire(int weather) {"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "name": "SC_Attack.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Attack.java",
+      "bytes": 3814,
+      "methods": [],
+      "calls": [
+        {
+          "line": 16,
+          "source": "private static byte[] sharedWire(int attackerId, int targetId, int damage, int heading,"
+        },
+        {
+          "line": 37,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(pc, sharedWire(attackerId, targetId, damage, heading, seq, effect, x, y, endX, endY), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_AttackCritical.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_AttackCritical.java",
+      "bytes": 10795,
+      "methods": [
+        {
+          "line": 55,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 65,
+          "declaration": "broadcastMode1("
+        },
+        {
+          "line": 75,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 86,
+          "declaration": "broadcastMode1("
+        },
+        {
+          "line": 121,
+          "declaration": "broadcastMode1("
+        },
+        {
+          "line": 171,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 183,
+          "declaration": "broadcast("
+        },
+        {
+          "line": 193,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 212,
+          "declaration": "broadcastMode2("
+        },
+        {
+          "line": 282,
+          "declaration": "broadcastMode2("
+        },
+        {
+          "line": 299,
+          "declaration": "private static void broadcastMode1("
+        },
+        {
+          "line": 308,
+          "declaration": "private static void broadcastMode2("
+        }
+      ],
+      "calls": [
+        {
+          "line": 305,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWireMode1(attackerId, targetId, heading, gfxId), true, -1, null);"
+        },
+        {
+          "line": 321,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWireMode2(attackerId, targetId, heading, aid, isHit, seq, gfxId, targetX, targetY, chaX, chaY), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_AttackMissPacket.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_AttackMissPacket.java",
+      "bytes": 3811,
+      "methods": [
+        {
+          "line": 84,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 88,
+          "declaration": "broadcast("
+        },
+        {
+          "line": 94,
+          "declaration": "public static void broadcast(L1Character attacker, int targetId, int actId) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 98,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(attacker, sharedWire(attackerId, targetId, actId, heading), true, -1, null);"
+        },
+        {
+          "line": 101,
+          "source": "private static byte[] sharedWire(int attackerId, int targetId, int actId, int heading) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_AttackPacket.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_AttackPacket.java",
+      "bytes": 6151,
+      "methods": [
+        {
+          "line": 103,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 112,
+          "declaration": "broadcast0("
+        },
+        {
+          "line": 121,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 131,
+          "declaration": "broadcast0("
+        },
+        {
+          "line": 140,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 151,
+          "declaration": "broadcast0("
+        },
+        {
+          "line": 160,
+          "declaration": "private static void broadcast0(L1Character cha, int mode, int objId, int type, int attackType, int gfx) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 163,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(cha, sharedWire(mode, chaId, objId, type, heading, attackType, gfx), true, -1, null);"
+        },
+        {
+          "line": 166,
+          "source": "private static byte[] sharedWire(int mode, int chaId, int objId, int type,"
+        }
+      ]
+    },
+    {
+      "name": "SC_AttackPacketForNpc.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_AttackPacketForNpc.java",
+      "bytes": 3069,
+      "methods": [
+        {
+          "line": 49,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 58,
+          "declaration": "broadcast("
+        },
+        {
+          "line": 65,
+          "declaration": "public static void broadcast("
+        }
+      ],
+      "calls": [
+        {
+          "line": 21,
+          "source": "private static byte[] sharedWire(int type, int npcObjectId, int chaId, int heading) {"
+        },
+        {
+          "line": 73,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(type, npcObjectId, chaId, heading), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_AttackStatus.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_AttackStatus.java",
+      "bytes": 3540,
+      "methods": [
+        {
+          "line": 61,
+          "declaration": "public static void broadcast(L1Character anchor, int attackerId, int heading, int receiverId, int type) {"
+        },
+        {
+          "line": 66,
+          "declaration": "public static void broadcastFast(L1Character anchor, int attackerId, int heading, int receiverId, int type) {"
+        },
+        {
+          "line": 76,
+          "declaration": "if (fast) broadcastFast(pc, attackerId, heading, receiverId, type);"
+        },
+        {
+          "line": 77,
+          "declaration": "else broadcast(pc, attackerId, heading, receiverId, type);"
+        }
+      ],
+      "calls": [
+        {
+          "line": 23,
+          "source": "private static byte[] sharedWire(int attackerId, int heading, int receiverId, int type) {"
+        },
+        {
+          "line": 63,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(attackerId, heading, receiverId, type), false, -1, null);"
+        },
+        {
+          "line": 68,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(attackerId, heading, receiverId, type), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_ChangeName.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeName.java",
+      "bytes": 2776,
+      "methods": [
+        {
+          "line": 51,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, String name) {"
+        },
+        {
+          "line": 58,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, String name) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 16,
+          "source": "private static byte[] sharedWire(int objectId, String name) {"
+        },
+        {
+          "line": 53,
+          "source": "final byte[] wire=sharedWire(objectId, name);"
+        },
+        {
+          "line": 55,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, false, -1, null);"
+        },
+        {
+          "line": 60,
+          "source": "final byte[] wire=sharedWire(objectId, name);"
+        },
+        {
+          "line": 62,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_ChangeShape.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeShape.java",
+      "bytes": 2844,
+      "methods": [
+        {
+          "line": 50,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int polyId, int weaponState) {"
+        },
+        {
+          "line": 53,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, int polyId, int weaponState) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 14,
+          "source": "private static byte[] sharedWire(int objectId, int polyId, int weaponState) {"
+        },
+        {
+          "line": 51,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, polyId, weaponState), false, -1, null);"
+        },
+        {
+          "line": 54,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, polyId, weaponState), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_CharTitle.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_CharTitle.java",
+      "bytes": 2453,
+      "methods": [
+        {
+          "line": 51,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, String title) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 16,
+          "source": "private static byte[] sharedWire(int objectId, String title) {"
+        },
+        {
+          "line": 53,
+          "source": "final byte[] wire=sharedWire(objectId, title);"
+        },
+        {
+          "line": 55,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, false, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_CharVisualUpdate.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_CharVisualUpdate.java",
+      "bytes": 2969,
+      "methods": [
+        {
+          "line": 60,
+          "declaration": "public static void broadcastPacked(L1Character anchor, long packed) {"
+        },
+        {
+          "line": 65,
+          "declaration": "public static void broadcastFastPacked(L1Character anchor, long packed) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 16,
+          "source": "private static byte[] sharedWire(long packed) {"
+        },
+        {
+          "line": 62,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(packed), false, -1, null);"
+        },
+        {
+          "line": 67,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(packed), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_Dexup.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Dexup.java",
+      "bytes": 3033,
+      "methods": [
+        {
+          "line": 44,
+          "declaration": "public static void broadcast(L1Character anchor, L1PcInstance actor, int type, int time) {"
+        },
+        {
+          "line": 52,
+          "declaration": "public static void broadcastFast(L1Character anchor, L1PcInstance actor, int type, int time) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 48,
+          "source": "final byte[] wire=sharedWire(dex,type,time);"
+        },
+        {
+          "line": 49,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, false, -1, null);"
+        },
+        {
+          "line": 56,
+          "source": "final byte[] wire=sharedWire(dex,type,time);"
+        },
+        {
+          "line": 57,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, true, -1, null);"
+        },
+        {
+          "line": 60,
+          "source": "private static byte[] sharedWire(int dex,int type,int time){"
+        }
+      ]
+    },
+    {
+      "name": "SC_DoActionShop.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_DoActionShop.java",
+      "bytes": 4374,
+      "methods": [
+        {
+          "line": 58,
+          "declaration": "public static void broadcast(L1Character anchor, int id, int action, byte[] message) {"
+        },
+        {
+          "line": 64,
+          "declaration": "public static void broadcast(L1Character anchor, int id, int action, String message) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 60,
+          "source": "final byte[] wire=sharedWire(id,action,message);"
+        },
+        {
+          "line": 62,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, false, -1, null);"
+        },
+        {
+          "line": 66,
+          "source": "final byte[] wire=sharedWire(id,action,message);"
+        },
+        {
+          "line": 68,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, false, -1, null);"
+        },
+        {
+          "line": 71,
+          "source": "private static byte[] sharedWire(int id,int action,byte[] message) {"
+        },
+        {
+          "line": 81,
+          "source": "private static byte[] sharedWire(int id,int action,String message) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_Door.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Door.java",
+      "bytes": 2349,
+      "methods": [
+        {
+          "line": 51,
+          "declaration": "public static void broadcast(L1Character anchor, int x, int y, int direction, int passable) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 15,
+          "source": "private static byte[] sharedWire(int x, int y, int direction, int passable) {"
+        },
+        {
+          "line": 53,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(x, y, direction, passable), false, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_ExplosionNoti.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_ExplosionNoti.java",
+      "bytes": 2723,
+      "methods": [
+        {
+          "line": 39,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, long mills) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 41,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId,mills), false, -1, null);"
+        },
+        {
+          "line": 52,
+          "source": "private static byte[] sharedWire(int objectId,long mills) {"
+        }
+      ]
+    },
+    {
+      "name": "SC_Lawful.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Lawful.java",
+      "bytes": 2573,
+      "methods": [
+        {
+          "line": 51,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int lawful) {"
+        },
+        {
+          "line": 56,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, int lawful) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 17,
+          "source": "private static byte[] sharedWire(int objectId, int lawful) {"
+        },
+        {
+          "line": 53,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, lawful), false, -1, null);"
+        },
+        {
+          "line": 58,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, lawful), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_Liquor.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Liquor.java",
+      "bytes": 2468,
+      "methods": [
+        {
+          "line": 49,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int type) {"
+        },
+        {
+          "line": 54,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, int type) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 17,
+          "source": "private static byte[] sharedWire(int objectId, int type) {"
+        },
+        {
+          "line": 51,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, type), false, -1, null);"
+        },
+        {
+          "line": 56,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, type), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_NpcChatPacket.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+      "bytes": 6356,
+      "methods": [
+        {
+          "line": 87,
+          "declaration": "public static void broadcastCharacter(L1Character source, L1Character cha, String chat) {"
+        },
+        {
+          "line": 95,
+          "declaration": "public static void broadcastNpcFast(L1Character source, L1NpcInstance npc, String chat, int type) {"
+        },
+        {
+          "line": 128,
+          "declaration": "public static void broadcastNpc(L1Character source, L1NpcInstance npc, String chat, int type) {"
+        },
+        {
+          "line": 138,
+          "declaration": "public static void broadcastNpcWide(L1Character source, L1NpcInstance npc, String chat, int type) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 40,
+          "source": "public static byte[] sharedWire(int objectId,int color,String text) {"
+        },
+        {
+          "line": 90,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients("
+        },
+        {
+          "line": 92,
+          "source": "sharedWire(cha.getId(),0,message));"
+        },
+        {
+          "line": 100,
+          "source": "final byte[] wire=sharedWire(npc.getId(),color,formatted);"
+        },
+        {
+          "line": 104,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(visible,wire);"
+        },
+        {
+          "line": 118,
+          "source": "return sharedWire(npc.getId(),"
+        },
+        {
+          "line": 133,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients("
+        },
+        {
+          "line": 135,
+          "source": "sharedWire(npc.getId(),color,formatted));"
+        },
+        {
+          "line": 143,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients("
+        },
+        {
+          "line": 145,
+          "source": "sharedWire(npc.getId(),color,formatted));"
+        }
+      ]
+    },
+    {
+      "name": "SC_NpcShopAction.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_NpcShopAction.java",
+      "bytes": 2659,
+      "methods": [
+        {
+          "line": 52,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int action, String shopName) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 16,
+          "source": "private static byte[] sharedWire(int objectId, int action, String shopName) {"
+        },
+        {
+          "line": 54,
+          "source": "final byte[] wire=sharedWire(objectId, action, shopName);"
+        },
+        {
+          "line": 56,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, false, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_PacketBox.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java",
+      "bytes": 37683,
+      "methods": [
+        {
+          "line": 287,
+          "declaration": "public static void broadcastGreen(String message) {"
+        },
+        {
+          "line": 291,
+          "declaration": "public static void broadcastGreenMap(int mapId, String message) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 288,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAll(sharedGreenWire(message));"
+        },
+        {
+          "line": 292,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients("
+        }
+      ]
+    },
+    {
+      "name": "SC_PinkName.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_PinkName.java",
+      "bytes": 2474,
+      "methods": [
+        {
+          "line": 49,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int time) {"
+        },
+        {
+          "line": 54,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, int time) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 17,
+          "source": "private static byte[] sharedWire(int objectId, int time) {"
+        },
+        {
+          "line": 51,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, time), false, -1, null);"
+        },
+        {
+          "line": 56,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, time), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_RangeSkill.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_RangeSkill.java",
+      "bytes": 5314,
+      "methods": [
+        {
+          "line": 26,
+          "declaration": "public static void broadcastFast(L1Character caster, L1Character[] targets,"
+        }
+      ],
+      "calls": [
+        {
+          "line": 57,
+          "source": "final byte[] wire=sharedWire(id,x,y,frozenHeading,seq,gfx,action,type,ids,frozenCount);"
+        },
+        {
+          "line": 59,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(caster, wire, true, -1, null);"
+        },
+        {
+          "line": 109,
+          "source": "private static byte[] sharedWire(int id,int x,int y,int heading,int seq,int gfx,"
+        }
+      ]
+    },
+    {
+      "name": "SC_Resurrection.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Resurrection.java",
+      "bytes": 2935,
+      "methods": [
+        {
+          "line": 58,
+          "declaration": "public static void broadcast(L1Character anchor, L1PcInstance target, L1PcInstance user, int type) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 16,
+          "source": "private static byte[] sharedWire(int targetId, int type, int userId, int targetClassId) {"
+        },
+        {
+          "line": 63,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(targetId, type, userId, targetClassId), false, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_ReturnedStat.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_ReturnedStat.java",
+      "bytes": 10254,
+      "methods": [
+        {
+          "line": 236,
+          "declaration": "public static void broadcastEmblem(L1Character source, int objId, int emblemId) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 238,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients("
+        }
+      ]
+    },
+    {
+      "name": "SC_SkillBrave.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillBrave.java",
+      "bytes": 2619,
+      "methods": [
+        {
+          "line": 51,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int mode, int time) {"
+        },
+        {
+          "line": 56,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, int mode, int time) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 17,
+          "source": "private static byte[] sharedWire(int objectId, int mode, int time) {"
+        },
+        {
+          "line": 53,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, mode, time), false, -1, null);"
+        },
+        {
+          "line": 58,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, mode, time), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_SkillHaste.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillHaste.java",
+      "bytes": 2615,
+      "methods": [
+        {
+          "line": 51,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int mode, int time) {"
+        },
+        {
+          "line": 56,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, int mode, int time) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 17,
+          "source": "private static byte[] sharedWire(int objectId, int mode, int time) {"
+        },
+        {
+          "line": 53,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, mode, time), false, -1, null);"
+        },
+        {
+          "line": 58,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, mode, time), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_SkillIconAura.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconAura.java",
+      "bytes": 2524,
+      "methods": [
+        {
+          "line": 51,
+          "declaration": "public static void broadcast(L1Character anchor, int iconId, int time) {"
+        },
+        {
+          "line": 56,
+          "declaration": "public static void broadcastFast(L1Character anchor, int iconId, int time) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 17,
+          "source": "private static byte[] sharedWire(int iconId, int time) {"
+        },
+        {
+          "line": 53,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(iconId, time), false, -1, null);"
+        },
+        {
+          "line": 58,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(iconId, time), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_SkillIconBlessOfEva.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconBlessOfEva.java",
+      "bytes": 2498,
+      "methods": [
+        {
+          "line": 49,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int time) {"
+        },
+        {
+          "line": 54,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, int time) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 17,
+          "source": "private static byte[] sharedWire(int objectId, int time) {"
+        },
+        {
+          "line": 51,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, time), false, -1, null);"
+        },
+        {
+          "line": 56,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, time), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_SkillIconShield.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconShield.java",
+      "bytes": 2519,
+      "methods": [
+        {
+          "line": 51,
+          "declaration": "public static void broadcast(L1Character anchor, int type, int time) {"
+        },
+        {
+          "line": 56,
+          "declaration": "public static void broadcastFast(L1Character anchor, int type, int time) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 17,
+          "source": "private static byte[] sharedWire(int type, int time) {"
+        },
+        {
+          "line": 53,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(type, time), false, -1, null);"
+        },
+        {
+          "line": 58,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(type, time), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_SkillIconWindShackle.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconWindShackle.java",
+      "bytes": 2675,
+      "methods": [
+        {
+          "line": 55,
+          "declaration": "public static void broadcast(L1Character anchor, int objectId, int time) {"
+        },
+        {
+          "line": 60,
+          "declaration": "public static void broadcastFast(L1Character anchor, int objectId, int time) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 17,
+          "source": "private static byte[] sharedWire(int objectId, int time) {"
+        },
+        {
+          "line": 57,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, time), false, -1, null);"
+        },
+        {
+          "line": 62,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(objectId, time), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_SkillIconWisdomPotion.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconWisdomPotion.java",
+      "bytes": 2452,
+      "methods": [
+        {
+          "line": 51,
+          "declaration": "public static void broadcast(L1Character anchor, int time) {"
+        },
+        {
+          "line": 56,
+          "declaration": "public static void broadcastFast(L1Character anchor, int time) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 17,
+          "source": "private static byte[] sharedWire(int time) {"
+        },
+        {
+          "line": 53,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(time), false, -1, null);"
+        },
+        {
+          "line": 58,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(time), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_Strup.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_Strup.java",
+      "bytes": 3452,
+      "methods": [
+        {
+          "line": 46,
+          "declaration": "public static void broadcast(L1Character anchor, L1PcInstance actor, int type, int time) {"
+        },
+        {
+          "line": 55,
+          "declaration": "public static void broadcastFast(L1Character anchor, L1PcInstance actor, int type, int time) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 51,
+          "source": "final byte[] wire=sharedWire(totalStr,weight100,type,time);"
+        },
+        {
+          "line": 52,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, false, -1, null);"
+        },
+        {
+          "line": 60,
+          "source": "final byte[] wire=sharedWire(totalStr,weight100,type,time);"
+        },
+        {
+          "line": 61,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, wire, true, -1, null);"
+        },
+        {
+          "line": 64,
+          "source": "private static byte[] sharedWire(int totalStr,int weight100,int type,int time){"
+        }
+      ]
+    },
+    {
+      "name": "SC_TrueTargetNew.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_TrueTargetNew.java",
+      "bytes": 2480,
+      "methods": [
+        {
+          "line": 56,
+          "declaration": "public static void broadcastFast(l1j.server.server.model.L1Character anchor, int targetId, boolean active) {"
+        }
+      ],
+      "calls": [
+        {
+          "line": 13,
+          "source": "public static byte[] sharedWire(int targetId, boolean active) {"
+        },
+        {
+          "line": 58,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(targetId, active), true, -1, null);"
+        }
+      ]
+    },
+    {
+      "name": "SC_UseArrowSkill.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_UseArrowSkill.java",
+      "bytes": 6867,
+      "methods": [
+        {
+          "line": 133,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 159,
+          "declaration": "public static void broadcast("
+        }
+      ],
+      "calls": [
+        {
+          "line": 129,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(pc, sharedWire(attackerId,ox,oy,oh,actId,targetObj,spellGfx,x,y,isHit,seq), true, -1, null);"
+        },
+        {
+          "line": 156,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(cha, sharedWire(attackerId,ox,oy,oh,actId,targetObj,spellGfx,x,y,isHit,seq), true, -1, null);"
+        },
+        {
+          "line": 178,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(attackerId,ox,oy,oh,actId,targetId,spellGfx,tx,ty,isHit,seq), true, -1, null);"
+        },
+        {
+          "line": 272,
+          "source": "sharedWire(attackerId,ox,oy,oh,actId,targetId,spellGfx,tx,ty,isHit,seq),"
+        },
+        {
+          "line": 308,
+          "source": "private static byte[] sharedWire(int attackerId,int ox,int oy,int oh,int actId,"
+        }
+      ]
+    },
+    {
+      "name": "SC_UseAttackSkill.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+      "bytes": 15330,
+      "methods": [
+        {
+          "line": 157,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 165,
+          "declaration": "broadcast("
+        },
+        {
+          "line": 176,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 185,
+          "declaration": "broadcast("
+        },
+        {
+          "line": 196,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 205,
+          "declaration": "broadcast("
+        },
+        {
+          "line": 216,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 399,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 408,
+          "declaration": "broadcast("
+        },
+        {
+          "line": 420,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 430,
+          "declaration": "broadcast("
+        },
+        {
+          "line": 442,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 452,
+          "declaration": "broadcast("
+        },
+        {
+          "line": 464,
+          "declaration": "public static void broadcast("
+        },
+        {
+          "line": 503,
+          "declaration": "broadcastPrepared("
+        },
+        {
+          "line": 601,
+          "declaration": "broadcastPrepared("
+        },
+        {
+          "line": 623,
+          "declaration": "public static void broadcastPair("
+        },
+        {
+          "line": 634,
+          "declaration": "broadcastPair("
+        },
+        {
+          "line": 647,
+          "declaration": "public static void broadcastPair("
+        },
+        {
+          "line": 688,
+          "declaration": "broadcastPrepared("
+        },
+        {
+          "line": 704,
+          "declaration": "broadcastPrepared("
+        },
+        {
+          "line": 720,
+          "declaration": "private static void broadcastPrepared("
+        }
+      ],
+      "calls": [
+        {
+          "line": 264,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(cha, sharedWire(fixedActionId,chaId,targetObj,isHit,heading,seq,spellGfx,myX,myY,x,y), true, -1, null);"
+        },
+        {
+          "line": 389,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(pc, sharedWire(fixedActionId,chaId,targetObj,isHit,heading,seq,spellGfx,myX,myY,x,y), true, -1, null);"
+        },
+        {
+          "line": 733,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, sharedWire(actionId,chaId,targetObjId,isHit,heading,seq,spellGfx,myX,myY,targetX,targetY), true, -1, null);"
+        },
+        {
+          "line": 900,
+          "source": "private static byte[] sharedWire(int actionId,int chaId,int targetObjId,"
+        }
+      ]
+    },
+    {
+      "name": "SC_WorldPutObject.java",
+      "path": "src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java",
+      "bytes": 54735,
+      "methods": [
+        {
+          "line": 874,
+          "declaration": "public static void broadcastNpc("
+        },
+        {
+          "line": 883,
+          "declaration": "public static void broadcastPc("
+        },
+        {
+          "line": 886,
+          "declaration": "broadcastPc("
+        },
+        {
+          "line": 892,
+          "declaration": "public static void broadcastPc("
+        },
+        {
+          "line": 902,
+          "declaration": "public static void broadcastBuilder("
+        },
+        {
+          "line": 1547,
+          "declaration": "public void broadcast(L1Character anchor) {"
+        },
+        {
+          "line": 1548,
+          "declaration": "SC_WorldPutObject.broadcastBuilder("
+        }
+      ],
+      "calls": [
+        {
+          "line": 879,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(npc, frozen, true, -1, null);"
+        },
+        {
+          "line": 899,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(pc, frozen, true, -1, null);"
+        },
+        {
+          "line": 908,
+          "source": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.send(anchor, frozen, true, -1, null);"
+        }
+      ]
+    }
+  ]
+}
