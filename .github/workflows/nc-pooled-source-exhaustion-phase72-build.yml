@@ -1,4 +1,4 @@
-name: Phase72 NC pooled source exhaustion: guaranteed slab for fixed ring depletion
+name: 'Phase72 NC pooled source exhaustion: guaranteed slab for fixed ring depletion'
 on:
   push:
     branches: [nc-pooled-source-exhaustion-phase72-20261116]
