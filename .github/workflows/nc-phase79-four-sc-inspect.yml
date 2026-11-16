@@ -22,7 +22,7 @@ jobs:
           with zipfile.ZipFile(source) as z:
               assert z.testzip() is None
               for classname in selected:
-                  matches=[n for n in z.namelist() if n.endswith('/'+classname+'.java') and n.startswith('src/')]
+                  matches=[n for n in z.namelist() if n.endswith('/'+(classname+'.java' if classname.startswith('C') else 'SC_'+classname+'.java')) and n.startswith('src/')]
                   assert len(matches)==1,(classname,matches)
                   data=z.read(matches[0])
                   (report/(classname+'.java')).write_bytes(data)
