@@ -170,9 +170,10 @@ def migrate_new_chat(files):
     assert method.count(before)==1,"NewChat private writer array suffix"
     method=method.replace(before,"        if(b.position()>16384)throw new java.nio.BufferOverflowException();",1)
     assert "ByteBuffer.allocate" not in method
-    marker="\n}\n"
-    assert s.endswith(marker),"NewChat final class marker"
-    s=s[:-len(marker)]+"\n\n"+method+"\n}\n"
+    trimmed=s.rstrip()
+    assert trimmed.endswith("}"),"NewChat final class marker"
+    last=trimmed.rfind("}")
+    s=trimmed[:last]+"\n\n"+method+"\n}\n"
     files[k]=(s.replace("\n","\r\n") if crlf else s).encode("utf-8")
     # Keep public original sharedWire(ChatData) as differential test oracle.
 
