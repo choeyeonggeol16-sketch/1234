@@ -26,7 +26,7 @@ with zipfile.ZipFile(src) as z:
             'old_shared_broadcast':s.count('CSharedBroadcast.send('),
             'new_native_broadcast':s.count('CSharedBroadcast.sendFormatted('),
             'other_native_broadcast':s.count('CSharedBroadcast.sendMove(')+s.count('CSharedBroadcast.sendAction('),
-            'sharedWire':s.count('sharedWire('),'broadcast_method':len(re.findall(r'public static (?:void|boolean) broadcast\\w*\\s*\\(',s)),
+            'sharedWire':s.count('sharedWire('),'broadcast_method':s.count('public static void broadcast')+s.count('public static boolean broadcast'),
             'lines_excerpt':highlights[:75]}
     other=[n for n in z.namelist() if '/sc/packet/' in n and n.endswith('.java') and '/SC_' not in n]
     summary={'phase':75,'input_sha':PIN,'total_sc_files':len(names),'legacy_shared_sc':[n for n in names if report[n]['old_shared_broadcast']],'legacy_wire_sc':[n for n in names if report[n]['sharedWire']],'non_sc_packet_count':len(other),'rows':report}
