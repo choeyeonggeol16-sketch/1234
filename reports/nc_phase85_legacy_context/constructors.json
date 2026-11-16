@@ -1,0 +1,1568 @@
+[
+  {
+    "file": "src/l1j/server/IndunSystem/BossRaid/BossRaidSystem.java",
+    "line": 39,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"3초 후에 보스레이드 맵으로 이동합니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+    "line": 41,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"3초 후에 클랜레이드 맵으로 이동합니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+    "line": 43,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"같은 혈원이 아니기에 입장에서 제외 됩니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+    "line": 59,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"같은 혈원이 아니기에 입장에서 제외 됩니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java",
+    "line": 591,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Hadin/HadinTrap.java",
+    "line": 166,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(403,\"$9355 (1)\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/MiniGame/L1Gambling.java",
+    "line": 72,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.chatWriter(Opcodes.S_SAY,0,pc.getId(),frozenChat,true)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/MiniGame/L1Gambling3.java",
+    "line": 72,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.chatWriter(Opcodes.S_SAY,0,pc.getId(),frozenChat,true)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    "line": 438,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.effectLocationWriter(32801,32788,8142)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    "line": 537,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.chatWriter(l1j.server.server.Opcodes.S_SAY,15,pc.getId(),msg,true)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    "line": 804,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.hadinDisplayWriter(first)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    "line": 806,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.hadinDisplayWriter(2)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJCompanion/Instance/MJCompanionRegenerator.java",
+    "line": 102,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(message)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJDungeonTimer/Updator/DungeonTimeUpdator.java",
+    "line": 167,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(message)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJKDASystem/Chart/MJKDAChartUpdator.java",
+    "line": 111,
+    "args": [
+      "writer",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJKDASystem/MJKDA.java",
+    "line": 353,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.showPkWriter(plain,victimBytes)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJKDASystem/MJKDA.java",
+    "line": 361,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.showPkWriter(colored,victimBytes)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/MJRaidMessage.java",
+    "line": 77,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(_msg)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/MJRaidMessage.java",
+    "line": 86,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(_msg)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/MJRaidObject.java",
+    "line": 361,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.dragonRaidBuffWriter(\n                       (int)(MJRaidLoadManager.MRS_RAID_DELAY/1000))",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/MJRaidObject.java",
+    "line": 519,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(pck)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java",
+    "line": 94,
+    "args": [
+      "i<s_startMessages.length\n                    ? l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(s_startMessages[i])\n                    : l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(s_lastMessage)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java",
+    "line": 97,
+    "args": [
+      "i<s_startMessages.length\n                    ? l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(s_startMessages[i])\n                    : l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(s_lastMessage)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java",
+    "line": 94,
+    "args": [
+      "i<s_startMessages.length\n                    ? l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(s_startMessages[i])\n                    : l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(s_lastMessage)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    "line": 184,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(s_startMessages[i])",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    "line": 201,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(s_blackDisplay)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    "line": 203,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(s_valaksDisplay)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    "line": 207,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(s_startMessagesValakas[i])",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJRaidSystem/Util/L1MJRaidPoisonInstance.java",
+    "line": 40,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java",
+    "line": 162,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(message)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+    "line": 96,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+    "line": 176,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.actionWriter(objectId,action)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+    "line": 177,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(objectId)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+    "line": 203,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.actionWriter(objectId,action)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+    "line": 328,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.changeAttrWriter(_attrCoordinates[idx],\n                                _attrCoordinates[idx+1],_isWidth,closed)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+    "line": 160,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    "line": 183,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(643)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    "line": 184,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.castleMasterWriter(_castleId,nextDefense.getLeaderId())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    "line": 527,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.iconIndexWriter(1510,MJSimpleRgb.red(),6298,10)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    "line": 530,
+    "args": [
+      "SC_WarStartMessage.nativeWriter(names)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/SpecialEventHandler.java",
+    "line": 52,
+    "args": [
+      "noticeWire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/SpecialEventHandler.java",
+    "line": 73,
+    "args": [
+      "noticeWire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/SpecialEventHandler.java",
+    "line": 94,
+    "args": [
+      "noticeWire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/Stadium/StadiumObject.java",
+    "line": 46,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(message)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/Stadium/StadiumObject.java",
+    "line": 85,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(message)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/Controller/BossController.java",
+    "line": 486,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(display_effect)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/Controller/BossController.java",
+    "line": 487,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askIndexedWriter(\n                      CS_Attr.MSGCODE_622_BOSS,622,b.getYnMessage())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/Controller/BugRaceController.java",
+    "line": 1073,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(text)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/Controller/HomeTownTimeController.java",
+    "line": 114,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.townLeaderWriter(leader)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/Controller/ShipTimeController.java",
+    "line": 131,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"해적섬 행 배가 선착장에 정박했습니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/Controller/ShipTimeController.java",
+    "line": 133,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"서둘러 배에 승선해주십시오.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/Controller/ShipTimeController.java",
+    "line": 176,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(box)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/Controller/ShipTimeController.java",
+    "line": 177,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(eff1)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/Controller/ShipTimeController.java",
+    "line": 192,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(eff1)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/Controller/ShipTimeController.java",
+    "line": 205,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(box)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/Controller/ShipTimeController.java",
+    "line": 206,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(eff1)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/Controller/ShipTimeController.java",
+    "line": 220,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(eff1)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/Controller/ShipTimeController.java",
+    "line": 232,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(eff1)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 1517,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(94,pc.getName())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 3002,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(giftMessage)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 3036,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(giftMessage)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 3145,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(message)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 3764,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(giftMessage)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 4636,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(giftMessage)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/UserCommands.java",
+    "line": 1165,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f:귀하의 혈맹에서 혈맹파티 신청이 들어왔습니다 (Y/N)\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/UserCommands.java",
+    "line": 1167,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askWriter(954,pc.getName())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/UserCommands.java",
+    "line": 1168,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fQ자동분배는 한 화면에 파티원들이 있을 경우 분배됩니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/UserCommands.java",
+    "line": 1229,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f:You have received a clan party invitation. (Y/N)\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/UserCommands.java",
+    "line": 1231,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askWriter(954,pc.getName())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/UserCommands.java",
+    "line": 1232,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fQAuto-loot only works when party members are on the same screen.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1PartyRecall.java",
+    "line": 51,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"메티스님께서 소환하였습니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1Recall.java",
+    "line": 44,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\f:운영자님께서 당신을 소환 하였습니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/command/executor/L1Ress.java",
+    "line": 46,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askWriter(322,\"\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/BookQuest/Loader/BQSLoadManager.java",
+    "line": 229,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(message)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/BookQuest/Loader/BQSWQDecksLoader.java",
+    "line": 71,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(message)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1EffectInstance.java",
+    "line": 120,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 595,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(Config.한입만멘트 + TYUtil.GetItemInstByID(Config.BossAreaDropItemId).getName() + \" (\" + Config.BossAreaDropItemCount + \"개)\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 630,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(Config.한입만멘트1 + TYUtil.GetItemInstByID(Config.BossAreaDropItemId1).getName() + \" (\" + Config.BossAreaDropItemCount1 + \"개)\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    "line": 1264,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    "line": 1533,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.skillSoundWriter(getId(),169)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    "line": 1534,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    "line": 2247,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 3170,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.skillSoundWriter(getId(),14446)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 3504,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.skillSoundWriter(getId(),14446)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 3896,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fY[GM] \" + getName() + \"님의 [\" + item.getLogName() + \"] 증발\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1ChatParty.java",
+    "line": 79,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(418)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1ChatParty.java",
+    "line": 92,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(420,pc.getName())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1DeathMatch.java",
+    "line": 151,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(1270)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1DeathMatch.java",
+    "line": 168,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(1269)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1DeathMatch.java",
+    "line": 179,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.miniGameTimeWriter(1800)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1DeathMatch.java",
+    "line": 194,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.miniGameEndWriter()",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1DeathMatch.java",
+    "line": 229,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.miniGameEndWriter()",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1DeathMatch.java",
+    "line": 281,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askWriter(1268,\"\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1GroundInventory.java",
+    "line": 98,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(item.getId())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1HauntedHouse.java",
+    "line": 145,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askWriter(1256,\"\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1HauntedHouse.java",
+    "line": 181,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(1264)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1HauntedHouse.java",
+    "line": 224,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1HauntedHouse.java",
+    "line": 251,
+    "args": [
+      "writer",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1NewUltimateBattle.java",
+    "line": 270,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1NpcChatTimer.java",
+    "line": 107,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.npcChatWriter(npc,chatId,3)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Party.java",
+    "line": 247,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.partyColorWriter(pc.getId(),partyColor)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Party.java",
+    "line": 308,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(418)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Party.java",
+    "line": 330,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(420,pc.getName())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Party.java",
+    "line": 344,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(420,pc.getName())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Party.java",
+    "line": 380,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(message)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Racing.java",
+    "line": 261,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(1264)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Racing.java",
+    "line": 287,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(1258)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Racing.java",
+    "line": 289,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.gameStartWriter()",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Racing.java",
+    "line": 290,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.gameRapWriter(1)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Racing.java",
+    "line": 291,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.racingWriter()",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Racing.java",
+    "line": 342,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Racing.java",
+    "line": 378,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.gameEndWriter()",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Racing.java",
+    "line": 418,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.gameOverWriter()",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1Racing.java",
+    "line": 493,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askWriter(1256,\"\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/L1UltimateBattle.java",
+    "line": 289,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/character/Item/Drop/DropShareEngine.java",
+    "line": 180,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/character/action/CGetItemAction.java",
+    "line": 418,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+    "line": 665,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.trueTargetWriter(targetId,true)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+    "line": 3124,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(4734)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/CItemUseClan.java",
+    "line": 107,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(green)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/CItemUseClan.java",
+    "line": 108,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(notice)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 158,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"프라임의 효과가 적용되었습니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 159,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"공성존의 프라임 효과가 적용되었습니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 334,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\f:[\" + pc.getName() + \"]님의 매스 이뮨 투 함이 시전되었습니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    "line": 335,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fY같은 혈맹이 아니므로 매스 이뮨 투 함 미적용\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    "line": 252,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\f2[전투 지휘자: \" + pc.getName() + \"] 지목상대: \\\\fH[\" + member.getName() + \"] \\\\f2 지목!\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    "line": 253,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.trueTargetWriter(target.getId(),true)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    "line": 143,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\f:========== 해당물품이 등록되었습니다 ========== \")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    "line": 144,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"판매금액: \\\\aA\"+ggg)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    "line": 145,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\f:판매물품: [\" + l1iteminstance1.getName() + \"\\\\f:] \")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    "line": 146,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\f:판매물품: [\" + l1iteminstance1.getLogName() + \"\\\\f:] \")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java",
+    "line": 143,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fH\" + pc.getName() + \"\\\\f2님이 혈맹포인트상자에서 \\\\fH[\" + points + \"]\\\\f2 포인트를 획득하였습니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java",
+    "line": 144,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fH\" + pc.getName() + \"\\\\f2님이 혈맹포인트상자에서 \\\\fH[\" + points + \"]\\\\f2 포인트를 획득하였습니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/item/teleport/L1Teleport.java",
+    "line": 584,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(pc.getId())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 301,
+    "args": [
+      "source",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 347,
+    "args": [
+      "source",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 409,
+    "args": [
+      "source",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 456,
+    "args": [
+      "source",
+      "item.getId()",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 564,
+    "args": [
+      "wire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 576,
+    "args": [
+      "wire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 606,
+    "args": [
+      "wire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 637,
+    "args": [
+      "wire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 658,
+    "args": [
+      "wire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 676,
+    "args": [
+      "wire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 702,
+    "args": [
+      "wires[i]",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 728,
+    "args": [
+      "wire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 748,
+    "args": [
+      "wire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 773,
+    "args": [
+      "wire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 807,
+    "args": [
+      "wire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 1201,
+    "args": [
+      "writer",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 1228,
+    "args": [
+      "displayEffectWriter(effects[i])",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "line": 1250,
+    "args": [
+      "wire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    "line": 548,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.clanMentWriter(true,targetClan.getClanName())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    "line": 549,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.clanListWriter(pcClan.getGazeSize(),pcClan.getGazeList())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    "line": 556,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.clanMentWriter(true,pcClan.getClanName())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    "line": 557,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.clanListWriter(targetClan.getGazeSize(),targetClan.getGazeList())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    "line": 354,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fY 신 고 자 : \" + reporterName)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    "line": 355,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fY 피신고자 : \" + targetName)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    "line": 356,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fY해당 유저를 소환하여 취조하길 바랍니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    "line": 594,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.emblemStatusWriter(emblemStatus)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    "line": 539,
+    "args": [
+      "chatBytes",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    "line": 594,
+    "args": [
+      "chatBytes",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    "line": 614,
+    "args": [
+      "chatBytes",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    "line": 639,
+    "args": [
+      "chatBytes",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    "line": 659,
+    "args": [
+      "chatBytes",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    "line": 678,
+    "args": [
+      "chatBytes",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    "line": 836,
+    "args": [
+      "chatWire",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java",
+    "line": 638,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(843,pc.getName())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_LeavePledge.java",
+    "line": 262,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(178,playerName,clanName,null)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_PledgeWatch.java",
+    "line": 238,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.clanListWriter(clan.getGazeSize(),clan.getGazeList())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_PledgeWatch.java",
+    "line": 249,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.clanListWriter(targetClan.getGazeSize(),targetClan.getGazeList())",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_RankControl.java",
+    "line": 175,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(target.getName()\n                                        + \" 님의 계급이 \" + rankString + \"(으)로 변경되었습니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Result.java",
+    "line": 371,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pc.getName() + \"님 상점 최대구매 수량 (\" + itemcount + \")를 초과 하였습니다.\")",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Title.java",
+    "line": 144,
+    "args": [
+      "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(203,pc.getName(),charName,title)",
+      "Integer.MIN_VALUE",
+      "Integer.MAX_VALUE"
+    ]
+  }
+]

@@ -1,0 +1,9 @@
+[
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 1459,
+    "method": "sendWrittenAll",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.targetChatWriter(name, 0x03, msg)",
+    "context": "\t\tcase \"챗\":\n\t\t\ttry {\n\t\t\t\tStringTokenizer st = new StringTokenizer(param);\n\t\t\t\tString name = st.nextToken();\n\t\t\t\tString msg = st.nextToken();\n\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.targetChatWriter(name, 0x03, msg));\n\t\t\t} catch (Exception e) {\n\t\t\t\tgm.sendPackets(\".챗 [캐릭명] [채팅말] 입력\");\n\t\t\t}\n\t\t\tbreak;\n\t\tcase \"성혈조작\":\n\t\t\ttry {\n\t\t\t\tStringTokenizer st = new StringTokenizer(param);"
+  }
+]

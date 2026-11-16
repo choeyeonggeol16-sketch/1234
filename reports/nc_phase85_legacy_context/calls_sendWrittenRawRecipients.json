@@ -1,0 +1,23 @@
+[
+  {
+    "file": "src/l1j/server/server/model/item/Exp/CalcExp.java",
+    "line": 87,
+    "method": "sendWrittenRawRecipients",
+    "args": "l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),data",
+    "context": "\t\t}\n\n\t\tpet.setExpPercent(expPercentage);\n\n\t\tbyte[] data = SC_WORLD_PUT_OBJECT_NOTI.newInstance(pet).encode();\n\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),data);\n\n\t\tif (gap != 0) {\n\t\t\tSC_SkillSound.send(pc, pet.getId(), 6353);\n\t\t\tSC_SkillSound.broadcast(pc, pet.getId(), 6353);\n\n\t\t\tfinal L1Pet petTemplate = PetTable.getInstance().getTemplate(petItemObjId);\n\t\t\tif (petTemplate == null) {"
+  },
+  {
+    "file": "src/l1j/server/server/model/item/teleport/L1Teleport.java",
+    "line": 314,
+    "method": "sendWrittenRawRecipients",
+    "args": "l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),SC_WORLD_PUT_OBJECT_NOTI.newInstance(petNpc).encode()",
+    "context": "\t\t\t\tif (canTakePets) {\n\t\t\t\t\tmoveFollower(pc, petNpc, mapid, subjects);\n\t\t\t\t\tif (petNpc instanceof L1SummonInstance) {\n\t\t\t\t\t\tSC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(pc, (L1SummonInstance) petNpc, pc);\n\t\t\t\t\t} else if (petNpc instanceof L1PetInstance) {\n\t\t\t\t\t    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),SC_WORLD_PUT_OBJECT_NOTI.newInstance(petNpc).encode());\n\t\t\t\t\t}\n\t\t\t\t} else {\n\t\t\t\t\tremovePetGracefully(pc, petNpc);\n\t\t\t\t}\n\t\t\t}\n\t\t}\n"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    "line": 991,
+    "method": "sendWrittenRawRecipients",
+    "args": "l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),data",
+    "context": "\n\t\tSC_RemoveObject.send(pc.getNetConnection(), pet);\n\t\tSC_RemoveObject.broadcast(pc, pet.getId());\n\n\t\tbyte[] data = SC_WORLD_PUT_OBJECT_NOTI.newInstance(pet).encode();\n\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),data);\n\t}\n\n\tprivate static void callClan(L1PcInstance pc) {\n\t\tL1PcInstance callClanPc = (L1PcInstance) L1World.getInstance().findObject(pc.getTempID());\n\t\tpc.setTempID(0);\n\t\tif (callClanPc == null) {\n\t\t\treturn;"
+  }
+]

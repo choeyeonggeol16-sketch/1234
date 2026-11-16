@@ -1,0 +1,46 @@
+package l1j.server.server.model.network.core.sc.packet;
+
+import l1j.server.server.Opcodes;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.session.CIOClient;
+
+public final class SC_CastleMaster {
+
+    private SC_CastleMaster() {}
+
+
+    /** S_CASTLE_OWNER frame identical to the eight-byte direct writer. */
+    public static byte[] sharedWire(int type,int objectId) {
+        return java.nio.ByteBuffer.allocate(8)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN)
+                .putShort((short)8).put((byte)Opcodes.S_CASTLE_OWNER)
+                .put((byte)type).putInt(objectId).array();
+    }
+
+    public static boolean send(CIOClient client, int type, int objectId) {
+        if (client == null || !client.isConnected()) return false;
+        final CUserSocket connection = client.getConnection();
+        if (connection == null || !connection.isClientConnected()) return false;
+        final CIOFrame frame = connection.beginDirectFrame(8);
+        if (frame == null) return false;
+        boolean committed = false;
+        try {
+            final WriteBuffer buffer = frame.buffer();
+            buffer.writeC(Opcodes.S_CASTLE_OWNER);
+            buffer.writeC(type);
+            buffer.writeD(objectId);
+            committed = connection.commitDirectFrame(frame);
+            return committed;
+        } finally {
+            if (!committed) connection.abortDirectFrame(frame);
+        }
+    }
+
+    public static boolean send(L1PcInstance pc, int type, int objectId) {
+        return pc != null && send(pc.getNetConnection(), type, objectId);
+    }
+
+}

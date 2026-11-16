@@ -1,0 +1,9 @@
+[
+  {
+    "file": "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    "line": 94,
+    "method": "sendLargeDirectFrame",
+    "args": "target,writer.wireLength(),writer",
+    "context": "     */\n    public final synchronized boolean send(CUserSocket target,int recipientId) {\n        if(closed)throw new IllegalStateException(\"broadcast already closed\");\n        if(target==null || exclude(recipientId) || !target.isClientConnected())return false;\n        if(writer!=null && writer.wireLength()>16384)\n            return CSharedBroadcast.sendLargeDirectFrame(target,writer.wireLength(),writer);\n        if(writer!=null && source==null) {\n            source=openWrittenSource(target,writer);\n            if(source==null)throw new IllegalStateException(\"Native broadcast source unavailable\");\n        }\n        final int limit=recipientId==senderId?Integer.MAX_VALUE:pendingLimit;\n        final int length = wire == null ? source.wire.remaining() : wire.length;\n        if(length<=16384 && target.supportsConstBuffer()"
+  }
+]

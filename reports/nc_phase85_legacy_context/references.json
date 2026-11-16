@@ -1,0 +1,3282 @@
+[
+  [
+    "src/l1j/server/IndunSystem/BossRaid/BossRaid.java",
+    125,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers("
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid/BossRaid.java",
+    126,
+    "L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min+\"분 후에 마을로 강제 이동 됩니다.\"));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid/BossRaidSystem.java",
+    39,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"3초 후에 보스레이드 맵으로 이동합니다.\"),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid/BossRaidSystem.java",
+    42,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,partymember);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    144,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers("
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    145,
+    "L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min + \"분 후에 마을로 강제 이동 됩니다.\"));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    158,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers("
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    159,
+    "L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f3??? : 나에게 도착 할 수 있을거라 생각하는가? 어리석군...\"));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    175,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers("
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    176,
+    "L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f3하수인 : 막아라! 더이상 주인님을 화나게 만들면 안된다!\"));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    214,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers("
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    215,
+    "L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f3??? : 어리석은것들.... 내가 상대해주마 오거라! \"));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    232,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers("
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    233,
+    "L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f3??? : 윽.... 끝이라 생각하지 마라 나는 곧 돌아온다....\"));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    255,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    259,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+    41,
+    "try(var accepted=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"3초 후에 클랜레이드 맵으로 이동합니다.\"),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+    43,
+    "var refused=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"같은 혈원이 아니기에 입장에서 제외 됩니다.\"),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+    47,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(accepted,partymember);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+    49,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(refused,partymember);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+    59,
+    "try(var refused=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"같은 혈원이 아니기에 입장에서 제외 됩니다.\"),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+    66,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(refused,partymember);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+    96,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers("
+  ],
+  [
+    "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+    97,
+    "L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min+\"분뒤에 던전은 종료됩니다.\"));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+    209,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+    213,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+    226,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers("
+  ],
+  [
+    "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+    227,
+    "L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"30초후 지하통로가 닫힙니다.\"));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java",
+    591,
+    "try (var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java",
+    592,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java",
+    595,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared, m.pc);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Hadin/Hadin.java",
+    731,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray("
+  ],
+  [
+    "src/l1j/server/IndunSystem/Hadin/Hadin.java",
+    732,
+    "getParty().getMembers(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"$\"+count));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Hadin/HadinTrap.java",
+    160,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(cklist,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(8719));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Hadin/HadinTrap.java",
+    166,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(403,\"$9355 (1)\"),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Hadin/HadinTrap.java",
+    173,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Hadin/HadinTrap.java",
+    219,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(cklist,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"$\"+count));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Ice/Demon/Demon.java",
+    118,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers("
+  ],
+  [
+    "src/l1j/server/IndunSystem/Ice/Demon/Demon.java",
+    119,
+    "L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min+\"분 후에 마을로 강제 이동 됩니다.\"));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Ice/Demon/Demon.java",
+    190,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers("
+  ],
+  [
+    "src/l1j/server/IndunSystem/Ice/Demon/Demon.java",
+    191,
+    "L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"벽 뒤에 있는 스빈을 만나십시오.\"));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Ice/Queen/Queen.java",
+    120,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers("
+  ],
+  [
+    "src/l1j/server/IndunSystem/Ice/Queen/Queen.java",
+    121,
+    "L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min + \"분 후에 마을로 강제 이동 됩니다.\"));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Ice/Queen/Queen.java",
+    194,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers("
+  ],
+  [
+    "src/l1j/server/IndunSystem/Ice/Queen/Queen.java",
+    195,
+    "L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"벽 뒤에 있는 스빈을 만나십시오.\"));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/MiniGame/L1Gambling.java",
+    72,
+    "try(var chatShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/IndunSystem/MiniGame/L1Gambling.java",
+    73,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.chatWriter(Opcodes.S_SAY,0,pc.getId(),frozenChat,true),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/MiniGame/L1Gambling.java",
+    75,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(chatShared,pc);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/MiniGame/L1Gambling.java",
+    77,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(chatShared,listner);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/MiniGame/L1Gambling3.java",
+    72,
+    "try(var chatShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/IndunSystem/MiniGame/L1Gambling3.java",
+    73,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.chatWriter(Opcodes.S_SAY,0,pc.getId(),frozenChat,true),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/MiniGame/L1Gambling3.java",
+    75,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(chatShared,pc);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/MiniGame/L1Gambling3.java",
+    77,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(chatShared,listner);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    438,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.effectLocationWriter(32801,32788,8142),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    442,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    443,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    521,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray("
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    522,
+    "getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(msg));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    526,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.colorNoticeWriter(SC_PacketBox.YELLOW_MESSAGE,msg));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    530,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.colorNoticeWriter(SC_PacketBox.RED_MESSAGE,msg));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    537,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    538,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.chatWriter(l1j.server.server.Opcodes.S_SAY,15,pc.getId(),msg,true),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    541,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    542,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    776,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.roundWriter(stageNum));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    781,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.scoreWriter(Integer.toString(totalScore)));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    804,
+    "try(var primary=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.hadinDisplayWriter(first),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    806,
+    "var secondary=i==0 ? new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.hadinDisplayWriter(2),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    810,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(primary,c);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    812,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(secondary,c);"
+  ],
+  [
+    "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java",
+    228,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast"
+  ],
+  [
+    "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java",
+    236,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast"
+  ],
+  [
+    "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java",
+    237,
+    ".sendWrittenMapTeam(_map_id, _team_id,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(s));"
+  ],
+  [
+    "src/l1j/server/MJCompanion/Instance/MJCompanionRegenerator.java",
+    102,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(message),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/MJCompanion/Instance/MJCompanionRegenerator.java",
+    110,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/MJDungeonTimer/Updator/DungeonTimeUpdator.java",
+    167,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(message),"
+  ],
+  [
+    "src/l1j/server/MJDungeonTimer/Updator/DungeonTimeUpdator.java",
+    172,
+    "if(i==0)l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/MJInstanceEnums.java",
+    111,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(pcs,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(get()));"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/MJInstanceEnums.java",
+    116,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(pcs,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(message));"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java",
+    215,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenGroups(_red,_blue,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(msg));"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java",
+    234,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenGroups(_red,_blue,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.mapTimerWriter(_time));"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCWarSquareTrap.java",
+    76,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenGroups(_red,_blue,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.lfcTrapWriter(effectObjectId,6132));"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCWarSquareTrap.java",
+    138,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenGroups(_red,_blue,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));"
+  ],
+  [
+    "src/l1j/server/MJKDASystem/Chart/MJKDAChartUpdator.java",
+    111,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/MJKDASystem/Chart/MJKDAChartUpdator.java",
+    116,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/MJKDASystem/MJKDA.java",
+    353,
+    "try(var plainShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.showPkWriter(plain,victimBytes),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/MJKDASystem/MJKDA.java",
+    356,
+    "if (pc != null) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(plainShared,pc);"
+  ],
+  [
+    "src/l1j/server/MJKDASystem/MJKDA.java",
+    361,
+    "try(var coloredShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.showPkWriter(colored,victimBytes),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/MJKDASystem/MJKDA.java",
+    364,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(pc.getClanid()==cid?coloredShared:plainShared,pc);"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/MJRaidMessage.java",
+    77,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(_msg),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/MJRaidMessage.java",
+    80,
+    "if(pc!=null)l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/MJRaidMessage.java",
+    86,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(_msg),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/MJRaidMessage.java",
+    89,
+    "if(pc!=null)l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/MJRaidObject.java",
+    361,
+    "try(var raidShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.dragonRaidBuffWriter("
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/MJRaidObject.java",
+    373,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(raidShared,pc);"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/MJRaidObject.java",
+    519,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(pck),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/MJRaidObject.java",
+    528,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java",
+    94,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java",
+    96,
+    "? l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(s_startMessages[i])"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java",
+    97,
+    ": l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(s_lastMessage),"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java",
+    102,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java",
+    97,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java",
+    99,
+    "? l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(s_startMessages[i])"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java",
+    100,
+    ": l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(s_lastMessage),"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java",
+    105,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java",
+    94,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java",
+    96,
+    "? l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(s_startMessages[i])"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java",
+    97,
+    ": l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(s_lastMessage),"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java",
+    102,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    184,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(s_startMessages[i]),"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    189,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    201,
+    "try(var blackShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(s_blackDisplay),"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    203,
+    "var valakasShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(s_valaksDisplay),"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    207,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(s_startMessagesValakas[i]),"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    213,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(blackShared,pc);"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    215,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(valakasShared,pc);"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    217,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Util/L1MJRaidPoisonInstance.java",
+    40,
+    "try (var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId()),"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Util/L1MJRaidPoisonInstance.java",
+    47,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared, pc);"
+  ],
+  [
+    "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    151,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(col,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(packet));"
+  ],
+  [
+    "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    153,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(col,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(packet));"
+  ],
+  [
+    "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    155,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(col,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.gmIconWriter(packet));"
+  ],
+  [
+    "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    157,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(col,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.macroWriter("
+  ],
+  [
+    "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    161,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(col,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.macroWriter("
+  ],
+  [
+    "src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java",
+    162,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(message),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java",
+    169,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+    71,
+    "final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter wire = l1j.server.server.model.network.core.broadcast.CSharedBroadcast.moveObjectWriter(getId(), x, y, h);"
+  ],
+  [
+    "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+    72,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+  ],
+  [
+    "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+    77,
+    "final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter wire = l1j.server.server.model.network.core.broadcast.CSharedBroadcast.actionWriter(getId(), action);"
+  ],
+  [
+    "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+    78,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+  ],
+  [
+    "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+    96,
+    "try (var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId()),"
+  ],
+  [
+    "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+    101,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared, pc);"
+  ],
+  [
+    "src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+    176,
+    "try (var actionFrame=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.actionWriter(objectId,action),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+    177,
+    "var removeFrame=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(objectId),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+    203,
+    "try (var actionFrame=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.actionWriter(objectId,action),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+    323,
+    "final var frames=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer[count];"
+  ],
+  [
+    "src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+    328,
+    "frames[made++]=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java",
+    329,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.changeAttrWriter(_attrCoordinates[idx],"
+  ],
+  [
+    "src/l1j/server/MJTemplate/Trap/DisplayEffectTrap.java",
+    28,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(pc_array,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(asset_id));"
+  ],
+  [
+    "src/l1j/server/MJTemplate/Trap/DisplayEffectTrap.java",
+    34,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(pc_array,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(asset_id));"
+  ],
+  [
+    "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+    160,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+    174,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast"
+  ],
+  [
+    "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+    175,
+    ".sendWrittenRecipients(L1World.getInstance().getVisiblePlayer(this),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.actionWriter(getId(), CHEST_OPEN));"
+  ],
+  [
+    "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+    187,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenNestedVisible("
+  ],
+  [
+    "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+    188,
+    "this,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.skillSoundWriter(getId(),i));"
+  ],
+  [
+    "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    183,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(643),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    184,
+    "try(var ownerShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.castleMasterWriter(_castleId,nextDefense.getLeaderId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    196,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    199,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(ownerShared,pc);"
+  ],
+  [
+    "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    527,
+    "try(var iconShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    528,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.iconIndexWriter(1510,MJSimpleRgb.red(),6298,10),"
+  ],
+  [
+    "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    530,
+    "var rosterShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    534,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(iconShared,pc);"
+  ],
+  [
+    "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    535,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(rosterShared,pc);"
+  ],
+  [
+    "src/l1j/server/SpecialEventHandler.java",
+    51,
+    "final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter noticeWire=l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\aH메티스님께서 코마의 축복 코인이 지급 하였습니다.\");"
+  ],
+  [
+    "src/l1j/server/SpecialEventHandler.java",
+    52,
+    "try (var broadcast=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/SpecialEventHandler.java",
+    72,
+    "final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter noticeWire=l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\aH메티스님께서 드래곤의 토파즈가 지급 하였습니다.\");"
+  ],
+  [
+    "src/l1j/server/SpecialEventHandler.java",
+    73,
+    "try (var broadcast=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/SpecialEventHandler.java",
+    93,
+    "final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter noticeWire=l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\aG메티스님께서 소환주문서 1장이 지급 하였습니다.\");"
+  ],
+  [
+    "src/l1j/server/SpecialEventHandler.java",
+    94,
+    "try (var broadcast=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/Stadium/StadiumObject.java",
+    46,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(message),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/Stadium/StadiumObject.java",
+    51,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/Stadium/StadiumObject.java",
+    85,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(message),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/Stadium/StadiumObject.java",
+    91,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+    89,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27422\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+    95,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27430\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+    97,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27431\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+    145,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+    89,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27669\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+    95,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27677\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+    97,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27678\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    103,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fV$27679\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    107,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27689\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    112,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27699\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    129,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27707\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    131,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27708\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    179,
+    "if(effect>0)l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    204,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fV$27688\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    210,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27698\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+    89,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27432\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+    95,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27440\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+    97,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27441\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+    89,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27442\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+    95,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27450\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+    97,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27451\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+    89,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27452\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+    95,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27460\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+    97,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27461\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+    89,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27462\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+    95,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27470\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+    97,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27471\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+    89,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27472\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+    95,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27480\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+    97,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27481\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+    89,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27482\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+    95,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27490\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+    97,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27491\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+    89,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27649\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+    95,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27657\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+    97,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27658\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+    89,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27659\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+    95,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27667\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+    97,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(PcCK(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fY$27668\"));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));"
+  ],
+  [
+    "src/l1j/server/server/Announcecycle.java",
+    138,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+  ],
+  [
+    "src/l1j/server/server/Announcecycle.java",
+    139,
+    "allpc,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg));"
+  ],
+  [
+    "src/l1j/server/server/Controller/BossController.java",
+    281,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllGms(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg));"
+  ],
+  [
+    "src/l1j/server/server/Controller/BossController.java",
+    486,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(display_effect),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/Controller/BossController.java",
+    487,
+    "var ynShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askIndexedWriter("
+  ],
+  [
+    "src/l1j/server/server/Controller/BossController.java",
+    495,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/Controller/BossController.java",
+    497,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(ynShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/Controller/BugRaceController.java",
+    1073,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(text),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/Controller/BugRaceController.java",
+    1076,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,player);"
+  ],
+  [
+    "src/l1j/server/server/Controller/FishingTimeController.java",
+    590,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+  ],
+  [
+    "src/l1j/server/server/Controller/FishingTimeController.java",
+    591,
+    "L1World.getInstance().getVisiblePlayers(5490),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(message));"
+  ],
+  [
+    "src/l1j/server/server/Controller/FishingTimeController.java",
+    592,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+  ],
+  [
+    "src/l1j/server/server/Controller/FishingTimeController.java",
+    593,
+    "L1World.getInstance().getVisiblePlayers(5490),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.skillSoundWriter(owner_object_id,effect_id));"
+  ],
+  [
+    "src/l1j/server/server/Controller/HomeTownTimeController.java",
+    114,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.townLeaderWriter(leader),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/Controller/HomeTownTimeController.java",
+    118,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    131,
+    "try(var docked=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"해적섬 행 배가 선착장에 정박했습니다.\"),"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    133,
+    "var boarding=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"서둘러 배에 승선해주십시오.\"),"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    138,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(docked,pc);"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    139,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(boarding,pc);"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    176,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(box),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    177,
+    "try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    180,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    181,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(effectShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    192,
+    "try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    195,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(effectShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    205,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(box),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    206,
+    "try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    209,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    210,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(effectShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    220,
+    "try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    223,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(effectShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    232,
+    "try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    236,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(effectShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    1459,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.targetChatWriter(name, 0x03, msg));"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    1517,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(94,pc.getName()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    1519,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,clanMembers);"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    1552,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray("
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    1553,
+    "clanMember,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(ServerMessage.LEAVE_CLAN, param, clan.getClanName(), null));"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    3002,
+    "memoGiftFrame = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(giftMessage),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    3005,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(memoGiftFrame,pc);"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    3036,
+    "memoGiftFrame = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(giftMessage),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    3039,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(memoGiftFrame,pc);"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    3145,
+    "try(var buffShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(message),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    3178,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(buffShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    3764,
+    "memoGiftFrame = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(giftMessage),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    3767,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(memoGiftFrame,target);"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    4636,
+    "memoGiftFrame = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(giftMessage),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    4639,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(memoGiftFrame,target);"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1165,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f:귀하의 혈맹에서 혈맹파티 신청이 들어왔습니다 (Y/N)\"),"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1167,
+    "try(var ynShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askWriter(954,pc.getName()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1168,
+    "try(var noticeShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fQ자동분배는 한 화면에 파티원들이 있을 경우 분배됩니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1176,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(ynShared,member);"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1178,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1179,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(noticeShared,member);"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1229,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f:You have received a clan party invitation. (Y/N)\"),"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1231,
+    "try(var ynShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askWriter(954,pc.getName()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1232,
+    "try(var noticeShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fQAuto-loot only works when party members are on the same screen.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1240,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(ynShared,member);"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1242,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1243,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(noticeShared,member);"
+  ],
+  [
+    "src/l1j/server/server/command/executor/L1PartyRecall.java",
+    51,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"메티스님께서 소환하였습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/command/executor/L1PartyRecall.java",
+    55,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc2);"
+  ],
+  [
+    "src/l1j/server/server/command/executor/L1Recall.java",
+    44,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\f:운영자님께서 당신을 소환 하였습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/command/executor/L1Recall.java",
+    61,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,target);"
+  ],
+  [
+    "src/l1j/server/server/command/executor/L1Ress.java",
+    46,
+    "try(var askShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askWriter(322,\"\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/command/executor/L1Ress.java",
+    54,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(askShared,tg); // 또 부활하고 싶습니까? (Y/N)"
+  ],
+  [
+    "src/l1j/server/server/model/BookQuest/Loader/BQSLoadManager.java",
+    229,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(message),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/BookQuest/Loader/BQSLoadManager.java",
+    249,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/BookQuest/Loader/BQSWQDecksLoader.java",
+    71,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(message),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/BookQuest/Loader/BQSWQDecksLoader.java",
+    85,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1EffectInstance.java",
+    120,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    595,
+    "greenShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(Config.한입만멘트 + TYUtil.GetItemInstByID(Config.BossAreaDropItemId).getName() + \" (\" + Config.BossAreaDropItemCount + \"개)\"),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    596,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(greenShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    630,
+    "greenShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(Config.한입만멘트1 + TYUtil.GetItemInstByID(Config.BossAreaDropItemId1).getName() + \" (\" + Config.BossAreaDropItemCount1 + \"개)\"),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    631,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(greenShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    1161,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray("
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    1162,
+    "pc.getParty().getMembers(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(813,"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    1264,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    1533,
+    "try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.skillSoundWriter(getId(),169),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    1534,
+    "var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    2247,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    3170,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.skillSoundWriter(getId(),14446),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    3173,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,partymember);"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    3504,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.skillSoundWriter(getId(),14446),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    3507,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,partymember);"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    3896,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fY[GM] \" + getName() + \"님의 [\" + item.getLogName() + \"] 증발\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    3899,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    3914,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllGms(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fY[GM] \" + getName() + \"님의 [\" + item.getLogName() + \"] 드랍\"));"
+  ],
+  [
+    "src/l1j/server/server/model/L1ChatParty.java",
+    34,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(_membersList,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(424,pc.getName()));"
+  ],
+  [
+    "src/l1j/server/server/model/L1ChatParty.java",
+    79,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(418),"
+  ],
+  [
+    "src/l1j/server/server/model/L1ChatParty.java",
+    83,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/L1ChatParty.java",
+    92,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(420,pc.getName()),"
+  ],
+  [
+    "src/l1j/server/server/model/L1ChatParty.java",
+    98,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1ChatParty.java",
+    99,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,leader);"
+  ],
+  [
+    "src/l1j/server/server/model/L1ChatParty.java",
+    103,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/L1ChatParty.java",
+    104,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    139,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(94,joinPc.getName()));"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    151,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(1270),"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    156,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    168,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(1269),"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    172,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    179,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.miniGameTimeWriter(1800),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    185,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    194,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.miniGameEndWriter(),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    219,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    229,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.miniGameEndWriter(),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    242,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    260,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray("
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    261,
+    "getMembersArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(type,msg));"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    281,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askWriter(1268,\"\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    285,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,player);"
+  ],
+  [
+    "src/l1j/server/server/model/L1GroundInventory.java",
+    98,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(item.getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    145,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askWriter(1256,\"\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    149,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,player);"
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    181,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(1264),"
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    186,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    203,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getMembersArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(1257));"
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    224,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    227,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    249,
+    "final var writer=l1j.server.server.model.network.core.broadcast.CSharedBroadcast.npcChatWriter(_guide,msg,2);"
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    251,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    255,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1NewUltimateBattle.java",
+    270,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1NewUltimateBattle.java",
+    272,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1NpcChatTimer.java",
+    107,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.npcChatWriter(npc,chatId,3),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1NpcChatTimer.java",
+    110,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    59,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRawArray(targets,data);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    89,
+    "try(var shared=l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openWrittenRaw(data)){"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    93,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,t);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    247,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.partyColorWriter(pc.getId(),partyColor),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    253,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    255,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    308,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(418),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    313,
+    "if(ok(m))l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,m);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    330,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(420,pc.getName()),"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    333,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    334,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    344,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(420,pc.getName()),"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    347,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    380,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(message),"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    384,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    261,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(1264),"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    268,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    287,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(1258),"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    289,
+    "try(var startShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.gameStartWriter(),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    290,
+    "var rapShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.gameRapWriter(1),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    291,
+    "var etcShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.racingWriter(),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    294,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(startShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    295,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(rapShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    297,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(etcShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    299,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    342,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    346,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    378,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.gameEndWriter(),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    383,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    418,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.gameOverWriter(),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    421,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,c);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    493,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.askWriter(1256,\"\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    496,
+    "if(player.getMap().getId() != getMapId()) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,player);"
+  ],
+  [
+    "src/l1j/server/server/model/L1UltimateBattle.java",
+    289,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1UltimateBattle.java",
+    291,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/character/Item/Drop/DropShareEngine.java",
+    180,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/character/Item/Drop/DropShareEngine.java",
+    182,
+    "if (member.RootMent1) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/character/action/CGetItemAction.java",
+    418,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/character/action/CGetItemAction.java",
+    425,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+    665,
+    "try(var targetShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.trueTargetWriter(targetId,true),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+    666,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(targetShared,pri);"
+  ],
+  [
+    "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+    693,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(targetShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+    3124,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(4734),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+    3150,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/item/Exp/CalcExp.java",
+    87,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),data);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/CItemUseClan.java",
+    107,
+    "try(var greenShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(green),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/CItemUseClan.java",
+    108,
+    "var noticeShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(notice),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/CItemUseClan.java",
+    126,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(greenShared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/CItemUseClan.java",
+    127,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(noticeShared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    158,
+    "try(var noticeA=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"프라임의 효과가 적용되었습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    159,
+    "var noticeB=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"공성존의 프라임 효과가 적용되었습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    193,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(noticeA,player);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    204,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(noticeB,player);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    334,
+    "try(var noticeA=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\f:[\" + pc.getName() + \"]님의 매스 이뮨 투 함이 시전되었습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    335,
+    "var noticeB=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fY같은 혈맹이 아니므로 매스 이뮨 투 함 미적용\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    408,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(noticeA,player);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    410,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(noticeB,player);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    252,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\f2[전투 지휘자: \" + pc.getName() + \"] 지목상대: \\\\fH[\" + member.getName() + \"] \\\\f2 지목!\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    253,
+    "try(var targetShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.trueTargetWriter(target.getId(),true),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    259,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(targetShared,partymember);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    261,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,partymember);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    263,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,partymember);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    143,
+    "try(var headerShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\f:========== 해당물품이 등록되었습니다 ========== \"),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    144,
+    "var priceShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"판매금액: \\\\aA\"+ggg),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    145,
+    "var nameShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\f:판매물품: [\" + l1iteminstance1.getName() + \"\\\\f:] \"),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    146,
+    "var logShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\f:판매물품: [\" + l1iteminstance1.getLogName() + \"\\\\f:] \"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    151,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(headerShared,pc1);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    152,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(nameShared,pc1);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    153,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(priceShared,pc1);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    157,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(headerShared,pc1);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    158,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(logShared,pc1);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    159,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(priceShared,pc1);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    165,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(headerShared,pc1);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    166,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(nameShared,pc1);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    167,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(priceShared,pc1);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    170,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(headerShared,pc1);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    171,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(logShared,pc1);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    172,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(priceShared,pc1);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java",
+    143,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\fH\" + pc.getName() + \"\\\\f2님이 혈맹포인트상자에서 \\\\fH[\" + points + \"]\\\\f2 포인트를 획득하였습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java",
+    144,
+    "try(var systemShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fH\" + pc.getName() + \"\\\\f2님이 혈맹포인트상자에서 \\\\fH[\" + points + \"]\\\\f2 포인트를 획득하였습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java",
+    146,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java",
+    147,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(systemShared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/item/teleport/L1Teleport.java",
+    314,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),SC_WORLD_PUT_OBJECT_NOTI.newInstance(petNpc).encode());"
+  ],
+  [
+    "src/l1j/server/server/model/item/teleport/L1Teleport.java",
+    584,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.removeObjectWriter(pc.getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    17,
+    "private final CSharedBroadcast.NativeWireWriter writer;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    46,
+    "public CAsyncSendConstBuffer(CSharedBroadcast.NativeWireWriter nativeWriter,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    94,
+    "return CSharedBroadcast.sendLargeDirectFrame(target,writer.wireLength(),writer);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    126,
+    "static Source openWrittenSource(CUserSocket target,CSharedBroadcast.NativeWireWriter writer) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    19,
+    "return pooled == null ? null : new CAsyncSendConstBufferExceptSelf(pooled, senderId);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    28,
+    "return pooled == null ? null : new CAsyncSendConstBufferExceptSelf(pooled, senderId);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    39,
+    "return new CAsyncSendConstBufferExceptSelf(pooled, senderId);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    56,
+    "return new CAsyncSendConstBufferExceptSelf(pooled,senderId);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    65,
+    "int senderId,CSharedBroadcast.NativeWireWriter writer) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    70,
+    "return new CAsyncSendConstBufferExceptSelf(source,senderId);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    13,
+    "public final class CSharedBroadcast {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    14,
+    "private CSharedBroadcast() {}"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    301,
+    "shared=new CAsyncSendConstBuffer(source,Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    347,
+    "shared=new CAsyncSendConstBuffer(source,Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    409,
+    "shared=new CAsyncSendConstBuffer(source,Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    456,
+    "shared=new CAsyncSendConstBuffer(source,item.getId(),Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    536,
+    "try (var shared=new CAsyncSendConstBufferExceptSelf(wire,anchor.getId(),Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    564,
+    "try(var shared=new CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    576,
+    "try (var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    606,
+    "return wire==null?null:new CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    637,
+    "try(var shared=new CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    658,
+    "try (var shared = new CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    676,
+    "try (var shared=new CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    697,
+    "new CAsyncSendConstBuffer[wires.length];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    702,
+    "shared[i]=new CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    728,
+    "try(var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    748,
+    "try(var shared=new CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    773,
+    "try(var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    807,
+    "try(var shared=new CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    1201,
+    "new CAsyncSendConstBuffer(writer,Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    1224,
+    "final CAsyncSendConstBuffer[] frames=new CAsyncSendConstBuffer[effects.length];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    1228,
+    "frames[i]=new CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    1250,
+    "try (var shared=new CAsyncSendConstBuffer(wire,Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java",
+    1268,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(party.getMembers(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.actionUiFlagWriter(bytes));"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java",
+    1371,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    548,
+    "try(var mentShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.clanMentWriter(true,targetClan.getClanName()),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    549,
+    "var listShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.clanListWriter(pcClan.getGazeSize(),pcClan.getGazeList()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    551,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(mentShared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    552,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(listShared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    556,
+    "try(var mentShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.clanMentWriter(true,pcClan.getClanName()),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    557,
+    "var listShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.clanListWriter(targetClan.getGazeSize(),targetClan.getGazeList()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    559,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(mentShared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    560,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(listShared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Attr.java",
+    991,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),data);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    354,
+    "try(var shared0=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fY 신 고 자 : \" + reporterName),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    355,
+    "var shared1=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fY 피신고자 : \" + targetName),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    356,
+    "var shared2=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fY해당 유저를 소환하여 취조하길 바랍니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    359,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared0,gm);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    360,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared1,gm);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    361,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared2,gm);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    594,
+    "try(var emblemShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.emblemStatusWriter(emblemStatus),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    597,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(emblemShared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    539,
+    "try(var chatShared=chatBytes==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    543,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(chatShared,pc);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    563,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(chatShared,listener);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    594,
+    "try(var chatShared=chatBytes==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    599,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(chatShared,listener);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    614,
+    "try(var chatShared=chatBytes==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    618,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(chatShared,listener);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    639,
+    "try(var chatShared=chatBytes==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    644,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(chatShared,listener);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    659,
+    "try(var chatShared=chatBytes==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    663,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(chatShared,listener);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    678,
+    "try(var chatShared=chatBytes==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    682,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(chatShared,listener);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    833,
+    "final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter chatWire=(chatType==3 || chatType==12)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    836,
+    "try(var chatShared=chatWire==null ? null : new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    846,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(chatShared,listener);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    850,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(chatShared,listener);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java",
+    638,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(843,pc.getName()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java",
+    641,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_LeavePledge.java",
+    262,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(178,playerName,clanName,null),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_LeavePledge.java",
+    264,
+    "if (member != null) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_PledgeWatch.java",
+    238,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.clanListWriter(clan.getGazeSize(),clan.getGazeList()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_PledgeWatch.java",
+    242,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_PledgeWatch.java",
+    249,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.clanListWriter(targetClan.getGazeSize(),targetClan.getGazeList()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_PledgeWatch.java",
+    253,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_RankControl.java",
+    175,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(target.getName()"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_RankControl.java",
+    179,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,member);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Result.java",
+    371,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pc.getName() + \"님 상점 최대구매 수량 (\" + itemcount + \")를 초과 하였습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Result.java",
+    374,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,player);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Title.java",
+    144,
+    "try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(203,pc.getName(),charName,title),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Title.java",
+    152,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipient(shared,clanPc);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AreaAttackEffect.java",
+    46,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenSelfAndVisible(caster,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Attack.java",
+    24,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(pc, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACK, Opcodes.S_ATTACK, attackerId, targetId, damage, heading, seq, effect, x, y, endX, endY, 0, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AttackCritical.java",
+    305,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CRITICAL1, Opcodes.S_ATTACK, attackerId, targetId, heading, gfxId, 0, 0, 0, 0, 0, 0, 0, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AttackCritical.java",
+    321,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CRITICAL2, Opcodes.S_ATTACK, attackerId, targetId, heading, aid, (isHit ? 1 : 0), seq, gfxId, targetX, targetY, chaX, chaY, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AttackMissPacket.java",
+    98,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(attacker, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKMISS, Opcodes.S_ATTACK, attackerId, targetId, actId, heading, 0, 0, 0, 0, 0, 0, 0, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AttackPacket.java",
+    164,
+    "case MODE_1 -> l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKPACKET1;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AttackPacket.java",
+    165,
+    "case MODE_2 -> l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKPACKET2;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AttackPacket.java",
+    166,
+    "case MODE_3 -> l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKPACKET3;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AttackPacket.java",
+    169,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(cha, nativeKind, Opcodes.S_ATTACK, 0, chaId, objId, type, heading, attackType, gfx, 0, 0, 0, 0, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AttackPacketForNpc.java",
+    65,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKNPC, Opcodes.S_ATTACK, type, npcObjectId, chaId, heading, 0, 0, 0, 0, 0, 0, 0, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AttackStatus.java",
+    49,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKSTATUS, Opcodes.S_ATTACK, attackerId, heading, receiverId, type, 0, 0, 0, 0, 0, 0, 0, false);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AttackStatus.java",
+    54,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKSTATUS, Opcodes.S_ATTACK, attackerId, heading, receiverId, type, 0, 0, 0, 0, 0, 0, 0, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeHeading.java",
+    42,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeHeading.java",
+    43,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_HEADING,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeName.java",
+    41,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_CHANGE_DESC).putInt(objectId); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,name); b.put((byte)0); }, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeName.java",
+    46,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_CHANGE_DESC).putInt(objectId); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,name); b.put((byte)0); }, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeShape.java",
+    41,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CHANGESHAPE, Opcodes.S_POLYMORPH, objectId, polyId, weaponState, 0, 0, 0, 0, 0, 0, 0, 0, false);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeShape.java",
+    44,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CHANGESHAPE, Opcodes.S_POLYMORPH, objectId, polyId, weaponState, 0, 0, 0, 0, 0, 0, 0, 0, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_CharSpeedUpdate.java",
+    43,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_CharSpeedUpdate.java",
+    44,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CHAR_SPEED,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_CharTitle.java",
+    41,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_TITLE).putInt(objectId); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,title); b.put((byte)0); }, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_CharVisualUpdate.java",
+    54,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CHARVISUALUPDATE, Opcodes.S_WIELD, (int)(packed >>> 32), (int)packed, 0, 0, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_CharVisualUpdate.java",
+    59,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CHARVISUALUPDATE, Opcodes.S_WIELD, (int)(packed >>> 32), (int)packed, 0, 0, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChartRank.java",
+    80,
+    "public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChartRank.java",
+    83,
+    "return new l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter(){"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    37,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    44,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    63,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(visible,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    77,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,text);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Dexup.java",
+    48,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_DEXUP, Opcodes.S_MAGE_DEXTERITY, time, dex, type, 0, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Dexup.java",
+    55,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_DEXUP, Opcodes.S_MAGE_DEXTERITY, time, dex, type, 0, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_DoActionGFX.java",
+    47,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAction("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_DoActionShop.java",
+    60,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_ACTION).putInt(id).put((byte)action); if(message!=null)b.put(message); }, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_DoActionShop.java",
+    64,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_ACTION).putInt(id).put((byte)action); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message); b.put((byte)0); }, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Door.java",
+    42,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_DOOR, Opcodes.S_CHANGE_ATTR, x, y, direction, passable, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_DropItem.java",
+    132,
+    "return l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenGroundItem(item,addKnownObject,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_DropItem.java",
+    402,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,frozenName);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+    59,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+    60,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_EFFECT_LOCATION,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+    91,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+    92,
+    "c, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_EFFECT_LOCATION,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+    101,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+    102,
+    "c, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_EFFECT_LOCATION,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+    111,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+    112,
+    "c, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_EFFECT_LOCATION,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ExplosionNoti.java",
+    41,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_EXTENDED_PROTOBUF).putShort((short)0x0332); b.put((byte)0x08); writeVar(b,objectId); b.put((byte)0x10); writeVar(b,mills); b.putShort((short)0); }, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Fishing.java",
+    44,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Fishing.java",
+    45,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_FISHING,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_HPMeter.java",
+    68,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_HPMeter.java",
+    69,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_HP_METER,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+    56,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+    59,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949S2(b,text);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+    69,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Invis.java",
+    40,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Invis.java",
+    41,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_INVIS,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Invis.java",
+    47,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Invis.java",
+    48,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_INVIS,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Lawful.java",
+    43,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_LAWFUL, Opcodes.S_CHANGE_ALIGNMENT, objectId, lawful, 0, 0, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Lawful.java",
+    48,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_LAWFUL, Opcodes.S_CHANGE_ALIGNMENT, objectId, lawful, 0, 0, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Light.java",
+    78,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Light.java",
+    79,
+    "cha, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_LIGHT,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Liquor.java",
+    42,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_LIQUOR, Opcodes.S_DRUNKEN, objectId, type, 0, 0, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Liquor.java",
+    47,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_LIQUOR, Opcodes.S_DRUNKEN, objectId, type, 0, 0, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_MessageYN.java",
+    55,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_MessageYN.java",
+    57,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_MoveChar.java",
+    100,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendMove("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NewChat.java",
+    142,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> writeNativeChat(b,data));"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NewChat.java",
+    229,
+    "public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    90,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    91,
+    "L1World.getInstance().getVisiblePlayer(source), b -> { b.put((byte)Opcodes.S_SAY_CODE).put((byte)0).putInt(cha.getId()); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message); b.put((byte)0); });"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    102,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(visible, b -> { b.put((byte)Opcodes.S_SAY_CODE).put((byte)color).putInt(npc.getId()); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,formatted); b.put((byte)0); });"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    131,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    132,
+    "L1World.getInstance().getVisiblePlayer(source), b -> { b.put((byte)Opcodes.S_SAY_CODE).put((byte)color).putInt(npc.getId()); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,formatted); b.put((byte)0); });"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    140,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    141,
+    "L1World.getInstance().getVisiblePlayer(source,50), b -> { b.put((byte)Opcodes.S_SAY_CODE).put((byte)color).putInt(npc.getId()); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,formatted); b.put((byte)0); });"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcShopAction.java",
+    41,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_ACTION).putInt(objectId).put((byte)action); final String text=shopName==null?\"\":shopName; for(int i=0;i<text.length();i++)b.putChar(text.charAt(i)); b.putShort((short)0); }, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_OnlyEffect.java",
+    50,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_OnlyEffect.java",
+    51,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ONLY_EFFECT,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_OnlyEffect.java",
+    56,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_OnlyEffect.java",
+    57,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ONLY_EFFECT,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java",
+    288,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> { b.put((byte)Opcodes.S_EVENT).put((byte)GREEN_MESSAGE).put((byte)2); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message); b.put((byte)0); });"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java",
+    292,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java",
+    293,
+    "L1World.getInstance().getVisiblePlayers(mapId), b -> { b.put((byte)Opcodes.S_EVENT).put((byte)GREEN_MESSAGE).put((byte)2); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message); b.put((byte)0); });"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_PinkName.java",
+    42,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_PINKNAME, Opcodes.S_CRIMINAL, objectId, time, 0, 0, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_PinkName.java",
+    47,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_PINKNAME, Opcodes.S_CRIMINAL, objectId, time, 0, 0, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Poison.java",
+    45,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Poison.java",
+    46,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_POISON,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Poison.java",
+    53,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Poison.java",
+    54,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_POISON,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_RangeSkill.java",
+    59,
+    "final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter writer=b -> {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_RangeSkill.java",
+    68,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(caster,writer,true,-1,null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_RangeSkill.java",
+    70,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenLarge(caster,(int)size,writer);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_RemoveObject.java",
+    93,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_RemoveObject.java",
+    94,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_REMOVE_OBJECT,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Resurrection.java",
+    52,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_RESURRECTION, Opcodes.S_RESURRECT, targetId, type, userId, targetClassId, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ReturnedStat.java",
+    238,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ServerMessage.java",
+    80,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> b.put((byte)Opcodes.S_MESSAGE_CODE)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillBrave.java",
+    43,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLBRAVE, Opcodes.S_EMOTION, objectId, mode, time, 0, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillBrave.java",
+    48,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLBRAVE, Opcodes.S_EMOTION, objectId, mode, time, 0, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillHaste.java",
+    43,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLHASTE, Opcodes.S_SPEED, objectId, mode, time, 0, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillHaste.java",
+    48,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLHASTE, Opcodes.S_SPEED, objectId, mode, time, 0, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconAura.java",
+    43,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLICONAURA, Opcodes.S_EVENT, 0x16, iconId, time, 0, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconAura.java",
+    48,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLICONAURA, Opcodes.S_EVENT, 0x16, iconId, time, 0, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconBlessOfEva.java",
+    42,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLICONBLESSOFEVA, Opcodes.S_BREATH, objectId, time, 0, 0, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconBlessOfEva.java",
+    47,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLICONBLESSOFEVA, Opcodes.S_BREATH, objectId, time, 0, 0, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconShield.java",
+    43,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLICONSHIELD, Opcodes.S_MAGE_SHIELD, time, type, 0, 0, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconShield.java",
+    48,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLICONSHIELD, Opcodes.S_MAGE_SHIELD, time, type, 0, 0, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconWindShackle.java",
+    45,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLICONWINDSHACKLE, Opcodes.S_EVENT, objectId, 0, 0, 0, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconWindShackle.java",
+    50,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLICONWINDSHACKLE, Opcodes.S_EVENT, objectId, 0, 0, 0, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconWisdomPotion.java",
+    43,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLICONWISDOMPOTION, Opcodes.S_EVENT, 0x39, 0x2c, time, 0, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillIconWisdomPotion.java",
+    48,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILLICONWISDOMPOTION, Opcodes.S_EVENT, 0x39, 0x2c, time, 0, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java",
+    65,
+    "if (anchor != null) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java",
+    66,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILL_SOUND,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java",
+    109,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java",
+    110,
+    "c, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILL_SOUND,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java",
+    120,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java",
+    121,
+    "c, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SKILL_SOUND,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Sound.java",
+    47,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Sound.java",
+    48,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SOUND,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Sound.java",
+    53,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Sound.java",
+    54,
+    "anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SOUND,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Strup.java",
+    51,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_STRUP, Opcodes.S_MAGE_STRENGTH, time, totalStr, weight100, type, false, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Strup.java",
+    59,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_STRUP, Opcodes.S_MAGE_STRENGTH, time, totalStr, weight100, type, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java",
+    38,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java",
+    40,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java",
+    51,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(recipients,b -> {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java",
+    53,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_TopMessage.java",
+    38,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_TopMessage.java",
+    40,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,msg);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_TrueTargetNew.java",
+    58,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_TRUETARGETNEW, Opcodes.S_EVENT, targetId, (active ? 1 : 0), 0, 0, true, -1, null);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseArrowSkill.java",
+    129,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(pc, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ARROWSKILL, Opcodes.S_ATTACK, attackerId, ox, oy, oh, actId, targetObj, spellGfx, x, y, (isHit ? 1 : 0), seq, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseArrowSkill.java",
+    156,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(cha, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ARROWSKILL, Opcodes.S_ATTACK, attackerId, ox, oy, oh, actId, targetObj, spellGfx, x, y, (isHit ? 1 : 0), seq, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseArrowSkill.java",
+    178,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ARROWSKILL, Opcodes.S_ATTACK, attackerId, ox, oy, oh, actId, targetId, spellGfx, tx, ty, (isHit ? 1 : 0), seq, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseArrowSkill.java",
+    271,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtendedObjects("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseArrowSkill.java",
+    272,
+    "receivers,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ARROWSKILL,Opcodes.S_ATTACK,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    264,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(cha, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKSKILL, Opcodes.S_ATTACK, fixedActionId, chaId, targetObj, isHit, heading, seq, spellGfx, myX, myY, x, y, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    389,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(pc, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKSKILL, Opcodes.S_ATTACK, fixedActionId, chaId, targetObj, isHit, heading, seq, spellGfx, myX, myY, x, y, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    733,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKSKILL, Opcodes.S_ATTACK, actionId, chaId, targetObjId, isHit, heading, seq, spellGfx, myX, myY, targetX, targetY, true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_War.java",
+    37,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> writeNativeWar(b,type,clan1,clan2));"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_War.java",
+    41,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenClan(clan,b -> writeNativeWar(b,type,clan1,clan2));"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_War.java",
+    48,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,clan1);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_War.java",
+    50,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,clan2);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_WarStartMessage.java",
+    32,
+    "public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_WarStartMessage.java",
+    39,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,name);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Weather.java",
+    38,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> b.put((byte)Opcodes.S_WEATHER)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java",
+    878,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(npc,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java",
+    898,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(pc,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java",
+    908,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    735,
+    "CAsyncSendConstBuffer.Source source = new CAsyncSendConstBuffer.Source(this, handle, wire);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    762,
+    "return new CAsyncSendConstBuffer.Source(this, handle, bytes);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    914,
+    "new CAsyncSendConstBuffer.Source(this,handle,writable,true);"
+  ]
+]
