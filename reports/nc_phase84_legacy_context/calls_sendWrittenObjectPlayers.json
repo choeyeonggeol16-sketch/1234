@@ -1,0 +1,100 @@
+[
+  {
+    "file": "src/l1j/server/IndunSystem/BossRaid/BossRaid.java",
+    "line": 125,
+    "method": "sendWrittenObjectPlayers",
+    "args": "\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min+\"분 후에 마을로 강제 이동 됩니다.\")",
+    "context": "\t\t} else if (Time <= 1790) {\n\t\t\tCheckPc();\n\t\t} \n\t\tif (Time % 60 == 0) {\n\t\t\tint min = Time / 60;\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min+\"분 후에 마을로 강제 이동 됩니다.\"));\n\t\t}\n\t}\n\t\n\tprivate void First() {\n\t\tif (_list1.size() > 0) {\n\t\t\tfor (int i = _list1.size()-1; i >= 0; i--) {"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    "line": 144,
+    "method": "sendWrittenObjectPlayers",
+    "args": "\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min + \"분 후에 마을로 강제 이동 됩니다.\")",
+    "context": "\t\t\tCheckClanId();\n\n\t\t}\n\t\tif (Time % 60 == 0) {\n\t\t\tint min = Time / 60;\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min + \"분 후에 마을로 강제 이동 됩니다.\"));\n\t\t}\n\t}\n\n\tprivate void First() {\n\t\tif (_list1.size() > 0) {\n\t\t\tfor (int i = _list1.size() - 1; i >= 0; i--) {"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    "line": 158,
+    "method": "sendWrittenObjectPlayers",
+    "args": "\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f3??? : 나에게 도착 할 수 있을거라 생각하는가? 어리석군...\")",
+    "context": "\t\t\t\tif (npc.getCurrentHp() <= 0) {\n\t\t\t\t\tremove(npc, 1);\n\t\t\t\t}\n\t\t\t}\n\t\t} else {\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f3??? : 나에게 도착 할 수 있을거라 생각하는가? 어리석군...\"));\n\t\t\topenDoor(5147); // 첫번째 문 개방.\n\t\t\tFirstRoom = false;\n\t\t\tSecondRoom = true;\n\t\t}\n\t}\n"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    "line": 175,
+    "method": "sendWrittenObjectPlayers",
+    "args": "\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f3하수인 : 막아라! 더이상 주인님을 화나게 만들면 안된다!\")",
+    "context": "\t\t\t\tif (npc.getCurrentHp() <= 0) {\n\t\t\t\t\tremove(npc, 2);\n\t\t\t\t}\n\t\t\t}\n\t\t} else {\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f3하수인 : 막아라! 더이상 주인님을 화나게 만들면 안된다!\"));\n\t\t\topenDoor(5148); // 두번째 문 개방.\n\t\t\tSecondRoom = false;\n\t\t\tThirdRoom = true;\n\t\t}\n\t}\n"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    "line": 214,
+    "method": "sendWrittenObjectPlayers",
+    "args": "\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f3??? : 어리석은것들.... 내가 상대해주마 오거라! \")",
+    "context": "\t\t\t\tif (npc.getCurrentHp() <= 0) {\n\t\t\t\t\tremove(npc, 4);\n\t\t\t\t}\n\t\t\t}\n\t\t} else {\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f3??? : 어리석은것들.... 내가 상대해주마 오거라! \"));\n\t\t\topenDoor(5150); // 네번째 문 개방.\n\t\t\tFourthRoom = false;\n\t\t\tBossRoom = true;\n\t\t}\n\t}\n"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    "line": 232,
+    "method": "sendWrittenObjectPlayers",
+    "args": "\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f3??? : 윽.... 끝이라 생각하지 마라 나는 곧 돌아온다....\")",
+    "context": "\t\t\t\t\tremove(npc, 5);\n\t\t\t\t}\n\t\t\t}\n\t\t} else {\n\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"\\\\f3??? : 윽.... 끝이라 생각하지 마라 나는 곧 돌아온다....\"));\n\t\t\topenDoor(5151); // 다섯번째 문 개방.\n\t\t\tBossRoom = false;\n\t\t\t}\n\t}\n\tprivate void CheckClanId() {\t\n\t\tfor (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+    "line": 96,
+    "method": "sendWrittenObjectPlayers",
+    "args": "\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min+\"분뒤에 던전은 종료됩니다.\")",
+    "context": "\t\t} else if (Time <= 3590) {\n\t\t\tCheckClanId();\n\t\t} \n\t\tif (Time % 600 == 0) {\n\t\t\tint min = Time / 60;\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min+\"분뒤에 던전은 종료됩니다.\"));\n\t\t}\n\t}\n\n\tprivate void First() {\n\t\tif (_list1.size() > 0) {\n\t\t\tfor (int i = _list1.size()-1; i >= 0; i--) {"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+    "line": 226,
+    "method": "sendWrittenObjectPlayers",
+    "args": "\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"30초후 지하통로가 닫힙니다.\")",
+    "context": "\t\t}\n\t}\n\t\n\tprivate void End() {\n\t\ttry {\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"30초후 지하통로가 닫힙니다.\"));\n\t\t\tThread.sleep(30000);\n\t\t\tfor (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {\n\t\t\t\tif (obj instanceof L1PcInstance) {\n\t\t\t\t\tL1PcInstance pc = (L1PcInstance) obj;\t\t\t\t\n//\t\t\t\t\tL1Teleport.teleport(pc, 33426, 32811, (short) 4, 5, true);\n\t\t\t\t\tpc.start_teleport(33426, 32811, 4, 5, 169, true, false);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Hadin/HadinTrap.java",
+    "line": 160,
+    "method": "sendWrittenObjectPlayers",
+    "args": "cklist,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(8719)",
+    "context": "\t\t\tL1SpawnUtil.spawn2(32743, 32928, _map, 900160, 0, 0, 0);\n\t\t\tLEVEL_4_TRAP_CK = true;\n\t\t} else if (LAST_TRAP_1 && LAST_TRAP_2 && LAST_TRAP_4 && LAST_TRAP_5){\n\t\t\tCollection<L1Object> cklist;\n\t\t\tcklist = L1World.getInstance().getVisibleObjects(_map).values();\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(cklist,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(8719));\n\t\t\tLAST_TRAP_CK = true;\n\t\t} else if (LAST_TRAP){\n\t\t\tRunning = false;\n\t\t\tCollection<L1Object> cklist;\n\t\t\tcklist = L1World.getInstance().getVisibleObjects(_map).values();\n\t\t\ttry(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(403,\"$9355 (1)\"),\n                        Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Hadin/HadinTrap.java",
+    "line": 219,
+    "method": "sendWrittenObjectPlayers",
+    "args": "cklist,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"$\"+count)",
+    "context": "\t}\n\n\tprivate void BonginSendPacekt(int count){\n\t\tCollection<L1Object> cklist;\n\t\tcklist = L1World.getInstance().getVisibleObjects(_map).values();\n\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(cklist,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"$\"+count));\n\t}\n\n}"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Ice/Demon/Demon.java",
+    "line": 118,
+    "method": "sendWrittenObjectPlayers",
+    "args": "\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min+\"분 후에 마을로 강제 이동 됩니다.\")",
+    "context": "\t\t} else if (Time <= 3590) {\n\t\t\tCheckPc();\n\t\t} \n\t\tif (Time % 60 == 0) {\n\t\t\tint min = Time / 60;\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min+\"분 후에 마을로 강제 이동 됩니다.\"));\n\t\t}\n\t}\n\t\n\tprivate void First() {\n\t\tif (_list1.size() > 0) {\n\t\t\tfor (int i = _list1.size()-1; i >= 0; i--) {"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Ice/Demon/Demon.java",
+    "line": 190,
+    "method": "sendWrittenObjectPlayers",
+    "args": "\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"벽 뒤에 있는 스빈을 만나십시오.\")",
+    "context": "\t\t\t\tif (npc.getCurrentHp() <= 0) {\n\t\t\t\t\tremove(npc, 5);\n\t\t\t\t}\n\t\t\t}\n\t\t} else {\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(\n                    L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"벽 뒤에 있는 스빈을 만나십시오.\"));\n\t\t\topenDoor(5151); // 다섯번째 문 개방.\n\t\t\tBossRoom = false;\n\t\t}\n\t}\n\t\n\tprivate void Demon_Delete(){"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Ice/Queen/Queen.java",
+    "line": 120,
+    "method": "sendWrittenObjectPlayers",
+    "args": "\n                L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min + \"분 후에 마을로 강제 이동 됩니다.\")",
+    "context": "\t\t} else if (Time <= 3590) {\n\t\t\tCheckPc();\n\t\t}\n\t\tif (Time % 60 == 0) {\n\t\t\tint min = Time / 60;\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(\n                L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(min + \"분 후에 마을로 강제 이동 됩니다.\"));\n\t\t}\n\t}\n\n\tprivate void First() {\n\t\tif (_list1.size() > 0) {\n\t\t\tfor (int i = _list1.size() - 1; i >= 0; i--) {"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Ice/Queen/Queen.java",
+    "line": 194,
+    "method": "sendWrittenObjectPlayers",
+    "args": "\n                L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"벽 뒤에 있는 스빈을 만나십시오.\")",
+    "context": "\t\t\t\tif (npc.getCurrentHp() <= 0) {\n\t\t\t\t\tremove(npc, 5);\n\t\t\t\t}\n\t\t\t}\n\t\t} else {\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayers(\n                L1World.getInstance().getVisibleObjects(_map).values(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"벽 뒤에 있는 스빈을 만나십시오.\"));\n\t\t\topenDoor(5151); // 다섯번째 문 개방.\n\t\t\tBossRoom = false;\n\t\t}\n\t}\n\n\tprivate void Queen_Delete() {"
+  }
+]

@@ -1,0 +1,9 @@
+[
+  {
+    "file": "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java",
+    "line": 228,
+    "method": "sendWrittenMapTeamEffects",
+    "args": "_map_id,_team_id,_round_id<4,packets",
+    "context": "\t}\n\t\n\t\n    private void broadcast(int[] packets, boolean ignored) {\n        if (packets == null || packets.length == 0) return;\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast\n                .sendWrittenMapTeamEffects(_map_id,_team_id,_round_id<4,packets);\n    }\n\t\n\tprivate void broadcast(String s){\n        if (_round_id >= 4) {\n            l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(L1World.getInstance().getVisiblePlayers(_map_id),s);\n        } else {"
+  }
+]

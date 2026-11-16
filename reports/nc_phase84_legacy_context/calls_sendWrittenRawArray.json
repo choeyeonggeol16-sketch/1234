@@ -1,0 +1,9 @@
+[
+  {
+    "file": "src/l1j/server/server/model/L1Party.java",
+    "line": 59,
+    "method": "sendWrittenRawArray",
+    "args": "targets,data",
+    "context": "    }\n\n    /** 특정 대상 목록에게 공유 바이트 전송 */\n    private static void sendRawTo(L1PcInstance[] targets, byte[] data) {\n        if(targets==null || targets.length==0 || data==null)return;\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRawArray(targets,data);\n    }\n\n    /** 파티 전원에게 공유 바이트 전송 */\n    public void broadcastRaw(byte[] data) {\n        sendRawTo(getMembers(), data);\n    }\n"
+  }
+]

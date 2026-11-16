@@ -1,0 +1,79 @@
+[
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+    "line": 145,
+    "method": "sendWrittenAllPlayable",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect)",
+    "context": "\n\t\t\tint effect = 0;\n\t\t\tif (_effectuse) {\n\t\t\t\tif (_effid > 0)\n\t\t\t\t\teffect = _effid;\n\t\t\t\tif(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));\n//\t\t\t\tif (effect > 0)\n//\t\t\t\t\teffect.clear();\n\t\t\t}\n\t\t}\n\t}\n\n\tprivate void TimeCheck() {"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+    "line": 144,
+    "method": "sendWrittenAllPlayable",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect)",
+    "context": "\n\t\t\tint effect = 0;\n\t\t\tif (_effectuse) {\n\t\t\t\tif (_effid > 0)\n\t\t\t\t\teffect = _effid;\n\t\t\t\tif(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));\n//\t\t\t\tif (effect > 0)\n//\t\t\t\t\teffect.clear();\n\t\t\t}\n\t\t}\n\t}\n\n\tprivate void TimeCheck() {"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    "line": 179,
+    "method": "sendWrittenAllPlayable",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect)",
+    "context": "\n\t\t\tint effect = 0;\n\t\t\tif (_effectuse) {\n\t\t\t\tif (_effid > 0)\n\t\t\t\t\teffect = _effid;\n\t\t\t\tif(effect>0)l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));\n//\t\t\t\tif (effect > 0)\n//\t\t\t\t\teffect.clear();\n\t\t\t}\n\t\t}\n\t}\n\n\tprivate void TimeCheck() {"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+    "line": 144,
+    "method": "sendWrittenAllPlayable",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect)",
+    "context": "\n\t\t\tint effect = 0;\n\t\t\tif (_effectuse) {\n\t\t\t\tif (_effid > 0)\n\t\t\t\t\teffect = _effid;\n\t\t\t\tif(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));\n\t\t\t\t\n\t\t\t}\n\t\t}\n\t}\n\n\tprivate void TimeCheck() {\n\t\tif (Time > 0) {"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+    "line": 144,
+    "method": "sendWrittenAllPlayable",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect)",
+    "context": "\n\t\t\tint effect = 0;\n\t\t\tif (_effectuse) {\n\t\t\t\tif (_effid > 0)\n\t\t\t\t\teffect = _effid;\n\t\t\t\tif(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));\n\n\t\t\t}\n\t\t}\n\t}\n\n\tprivate void TimeCheck() {\n\t\tif (Time > 0) {"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+    "line": 144,
+    "method": "sendWrittenAllPlayable",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect)",
+    "context": "\n\t\t\tint effect = 0;\n\t\t\tif (_effectuse) {\n\t\t\t\tif (_effid > 0)\n\t\t\t\t\teffect = _effid;\n\t\t\t\tif(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));\n\t\t\t\n\t\t\t}\n\t\t}\n\t}\n\n\tprivate void TimeCheck() {\n\t\tif (Time > 0) {"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+    "line": 144,
+    "method": "sendWrittenAllPlayable",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect)",
+    "context": "\n\t\t\tint effect = 0;\n\t\t\tif (_effectuse) {\n\t\t\t\tif (_effid > 0)\n\t\t\t\t\teffect = _effid;\n\t\t\t\tif(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));\n\t\t\t\n\t\t\t}\n\t\t}\n\t}\n\n\tprivate void TimeCheck() {\n\t\tif (Time > 0) {"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+    "line": 144,
+    "method": "sendWrittenAllPlayable",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect)",
+    "context": "\n\t\t\tint effect = 0;\n\t\t\tif (_effectuse) {\n\t\t\t\tif (_effid > 0)\n\t\t\t\t\teffect = _effid;\n\t\t\t\tif(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));\n\t\t\t\n\t\t\t}\n\t\t}\n\t}\n\n\tprivate void TimeCheck() {\n\t\tif (Time > 0) {"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+    "line": 144,
+    "method": "sendWrittenAllPlayable",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect)",
+    "context": "\n\t\t\tint effect = 0;\n\t\t\tif (_effectuse) {\n\t\t\t\tif (_effid > 0)\n\t\t\t\t\teffect = _effid;\n\t\t\t\tif(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));\n\t\t\t\t\n\t\t\t}\n\t\t}\n\t}\n\n\tprivate void TimeCheck() {\n\t\tif (Time > 0) {"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+    "line": 144,
+    "method": "sendWrittenAllPlayable",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect)",
+    "context": "\n\t\t\tint effect = 0;\n\t\t\tif (_effectuse) {\n\t\t\t\tif (_effid > 0)\n\t\t\t\t\teffect = _effid;\n\t\t\t\tif(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));\n\t\t\t}\n\t\t}\n\t}\n\n\tprivate void TimeCheck() {\n\t\tif (Time > 0) {\n\t\t\tTime--;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+    "line": 144,
+    "method": "sendWrittenAllPlayable",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect)",
+    "context": "\n\t\t\tint effect = 0;\n\t\t\tif (_effectuse) {\n\t\t\t\tif (_effid > 0)\n\t\t\t\t\teffect = _effid;\n\t\t\t\tif(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllPlayable(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(effect));\n\t\t\t}\n\t\t}\n\t}\n\n\tprivate void TimeCheck() {\n\t\tif (Time > 0) {\n\t\t\tTime--;"
+  }
+]

@@ -1,0 +1,128 @@
+[
+  {
+    "file": "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    "line": 255,
+    "method": "sendWrittenArray",
+    "args": "clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck)",
+    "context": "\t\t\t\t\t\t\t\tlong now = System.currentTimeMillis();\n\t\t\t\t\t\t\t\tTimestamp time = new Timestamp(now);\n\t\t\t\t\t\t\t\tclan.setRankDate(time);\n\t\t\t\t\t\t\t\tClanTable.getInstance().updateRankDate(clan.getClanId(), time);\n\t\t\t\t\t\t\t\tString pck = String.format(\"기록을 %d분 %d초 로 갱신하였습니다.\", min, second);\n                                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck)); \n\t\t\t\t\t\t\t//\tpck.clear();\n\t\t\t\t\t\t\t} else if (clan.getRankTime() < clantime) {\n\t\t\t\t\t\t\t\tString pck = \"기존의 기록을 갱신하는데 실패하였습니다.\";\n                                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck)); \t\n\t\t\t\t\t\t\t//\tpck.clear();\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\tEnd();"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    "line": 259,
+    "method": "sendWrittenArray",
+    "args": "clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck)",
+    "context": "\t\t\t\t\t\t\t\tString pck = String.format(\"기록을 %d분 %d초 로 갱신하였습니다.\", min, second);\n                                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck)); \n\t\t\t\t\t\t\t//\tpck.clear();\n\t\t\t\t\t\t\t} else if (clan.getRankTime() < clantime) {\n\t\t\t\t\t\t\t\tString pck = \"기존의 기록을 갱신하는데 실패하였습니다.\";\n                                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck)); \t\n\t\t\t\t\t\t\t//\tpck.clear();\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\tEnd();\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+    "line": 209,
+    "method": "sendWrittenArray",
+    "args": "clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck)",
+    "context": "\t\t\t\t\t\t\t\tlong now = System.currentTimeMillis();\n\t\t\t\t\t\t\t\tTimestamp time = new Timestamp(now);\n\t\t\t\t\t\t\t\tclan.setRankDate(time);\n\t\t\t\t\t\t\t\tClanTable.getInstance().updateRankDate(clan.getClanId(), time);\n\t\t\t\t\t\t\t\tString pck = String.format(\"기록을 %d분 %d초 로 갱신하였습니다.\", min, second);\n                                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck)); \n\t\t\t\t\t\t//\t\tpck.clear();\n\t\t\t\t\t\t\t} else if (clan.getRankTime() < clantime) {\n\t\t\t\t\t\t\t\tString pck = \"기존의 기록을 갱신하는데 실패하였습니다.\";\n                                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck)); \t\n\t\t\t\t\t\t//\t\tpck.clear();\n\t\t\t\t\t\t}\n\t\t\t\t\t\t\tEnd();"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+    "line": 213,
+    "method": "sendWrittenArray",
+    "args": "clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck)",
+    "context": "\t\t\t\t\t\t\t\tString pck = String.format(\"기록을 %d분 %d초 로 갱신하였습니다.\", min, second);\n                                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck)); \n\t\t\t\t\t\t//\t\tpck.clear();\n\t\t\t\t\t\t\t} else if (clan.getRankTime() < clantime) {\n\t\t\t\t\t\t\t\tString pck = \"기존의 기록을 갱신하는데 실패하였습니다.\";\n                                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(pck)); \t\n\t\t\t\t\t\t//\t\tpck.clear();\n\t\t\t\t\t\t}\n\t\t\t\t\t\t\tEnd();\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Hadin/Hadin.java",
+    "line": 731,
+    "method": "sendWrittenArray",
+    "args": "\n                getParty().getMembers(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"$\"+count)",
+    "context": "\t\t\tSC_SkillSound.send(c, c.getId(), 1249);\n\t\t}\n\t}\n\n\tprivate void BonginSendPacekt(int count){\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(\n                getParty().getMembers(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(\"$\"+count));\n    }\n\n\tprivate void RETURN_TEL(){\n\t\tfor(L1PcInstance pc : getParty().getMembers()){\n//\t\t\tL1Teleport.teleport(pc, 32572, 32944, (short) 0, 3, true);\n\t\t\tpc.start_teleport(32572, 32944, 0, 3, 169, true, false);"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    "line": 521,
+    "method": "sendWrittenArray",
+    "args": "\n                getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(msg)",
+    "context": "\t\t\t}\n\t\t}\n\t}\n\n\tprivate void sendMessage(String msg) {\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(\n                getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(msg));\n    }\n\n\tprivate void sendMessage1(String msg) {\n          l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.colorNoticeWriter(SC_PacketBox.YELLOW_MESSAGE,msg));\n      }\n"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    "line": 526,
+    "method": "sendWrittenArray",
+    "args": "getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.colorNoticeWriter(SC_PacketBox.YELLOW_MESSAGE,msg)",
+    "context": "        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(\n                getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(msg));\n    }\n\n\tprivate void sendMessage1(String msg) {\n          l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.colorNoticeWriter(SC_PacketBox.YELLOW_MESSAGE,msg));\n      }\n\n\tprivate void sendMessage2(String msg) {\n          l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.colorNoticeWriter(SC_PacketBox.RED_MESSAGE,msg));\n      }\n\n\tprivate void talkPartyleader(String msg) {"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    "line": 530,
+    "method": "sendWrittenArray",
+    "args": "getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.colorNoticeWriter(SC_PacketBox.RED_MESSAGE,msg)",
+    "context": "\tprivate void sendMessage1(String msg) {\n          l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.colorNoticeWriter(SC_PacketBox.YELLOW_MESSAGE,msg));\n      }\n\n\tprivate void sendMessage2(String msg) {\n          l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.colorNoticeWriter(SC_PacketBox.RED_MESSAGE,msg));\n      }\n\n\tprivate void talkPartyleader(String msg) {\n\t\tcheckMember();\n\t\tL1PcInstance pc = getPlayMemberArray()[0];\n\t\tif (pc.getParty().isLeader(pc)) {\n\t\t\tfinal byte[] chatWire=SC_ChatPacket.sharedWire("
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    "line": 777,
+    "method": "sendWrittenArray",
+    "args": "getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.roundWriter(stageNum)",
+    "context": "\t\t}\n\t}\n\n\tprivate void stageMark(int stageNum) {\n          checkMember();\n          l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.roundWriter(stageNum));\n      }\n\n\tprivate void scoreMark() {\n          checkMember();\n          l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.scoreWriter(Integer.toString(totalScore)));\n      }\n"
+  },
+  {
+    "file": "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    "line": 782,
+    "method": "sendWrittenArray",
+    "args": "getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.scoreWriter(Integer.toString(totalScore))",
+    "context": "          l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.roundWriter(stageNum));\n      }\n\n\tprivate void scoreMark() {\n          checkMember();\n          l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getPlayMemberArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.scoreWriter(Integer.toString(totalScore)));\n      }\n\n\tpublic void addMonList(L1NpcInstance npc) {\n\t\tif (npc == null) return;\n\t\t_list.add(npc);\n\t}\n"
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/Trap/DisplayEffectTrap.java",
+    "line": 28,
+    "method": "sendWrittenArray",
+    "args": "pc_array,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(asset_id)",
+    "context": "\tpublic void do_traps(L1PcInstance[] pc_array) {\n\t\tint asset_id = get_asset_id();\n        java.util.Objects.requireNonNull(pc_array);\n\t\t\n\t\t\n\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(pc_array,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(asset_id));\n\t\t\n\t\tif(asset_id == SC_DisplayEffect.QUAKE_DISPLAY){\n\t\t\tThreadPool.getInstance().scheduleRequired(new Runnable(){\n\t\t\t\t@Override\n\t\t\t\tpublic void run(){\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(pc_array,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(asset_id));\n\t\t\t\t//\teff.clear();"
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/Trap/DisplayEffectTrap.java",
+    "line": 34,
+    "method": "sendWrittenArray",
+    "args": "pc_array,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(asset_id)",
+    "context": "\t\t\n\t\tif(asset_id == SC_DisplayEffect.QUAKE_DISPLAY){\n\t\t\tThreadPool.getInstance().scheduleRequired(new Runnable(){\n\t\t\t\t@Override\n\t\t\t\tpublic void run(){\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(pc_array,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.displayEffectWriter(asset_id));\n\t\t\t\t//\teff.clear();\n\t\t\t\t}\n\t\t\t}, 1000L);\n\t\t}else{\n\t\t\t//eff.clear();\n\t\t}\n\t\t"
+  },
+  {
+    "file": "src/l1j/server/server/GMCommands.java",
+    "line": 1552,
+    "method": "sendWrittenArray",
+    "args": "\n                        clanMember,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(ServerMessage.LEAVE_CLAN, param, clan.getClanName(), null)",
+    "context": "\t\t\t\t\tgm.sendPackets(\"그런 유저는 없습니다.\");\n\t\t\t\t\treturn;\n\t\t\t\t}\n\t\t\t\tL1Clan clan = pc.getClan();\n\t\t\t\tL1PcInstance clanMember[] = clan.getOnlineClanMember();\n\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(\n                        clanMember,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(ServerMessage.LEAVE_CLAN, param, clan.getClanName(), null));\n\t\t\t\tpc.ClearPlayerClanData(clan);\n\t\t\t\tclan.removeClanMember(pc.getName());\n\t\t\t\tpc.start_teleport(pc.getX(), pc.getY(), pc.getMapId(), pc.getHeading(), 169, false, true);\n\t\t\t} catch (Exception e) {\n\t\t\t\tgm.sendPackets(\".혈탈퇴 [캐릭명] 입력\");\n\t\t\t}"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    "line": 1161,
+    "method": "sendWrittenArray",
+    "args": "\n                        pc.getParty().getMembers(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(813,\n                                getNpcTemplate().get_name(),item.getLogName(),pc.getName())",
+    "context": "\t\t\t\tpc.getInventory().saveItem(item, L1PcInventory.COL_BLESS);\n\t\t\t} else { // 가질 수 없는 경우는 지면에 떨어뜨리는 처리의 캔슬은 하지 않는다(부정 방지)\n\t\t\t\tL1World.getInstance().getInventory(pc.getX(), pc.getY(), pc.getMapId()).storeItem(item);\n\t\t\t}\n\t\t\tif (pc.isInParty()) { // 파티 인경우\n                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(\n                        pc.getParty().getMembers(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(813,\n                                getNpcTemplate().get_name(),item.getLogName(),pc.getName()));\n            } else { // 파티가 아닌 경우\n\t\t\t\tSC_ServerMessage.send(pc, 143, getNpcTemplate().get_name(), item.getLogName());\n\t\t\t}\n\t\t\treturn true;\n\t\t} else {"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1ClanJoin.java",
+    "line": 139,
+    "method": "sendWrittenArray",
+    "args": "clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(94,joinPc.getName())",
+    "context": "                if (result != null) result.accept(false);\n            });\n            tx.commitAfterInventoryRelease(() -> {\n                if (L1World.getInstance().getClan(clanId) != clan || joinPc.getClanid() != 0)\n                    throw new IllegalStateException(\"Stale clan admission after COMMIT\");\n                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(clan.getOnlineClanMember(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(94,joinPc.getName()));\n                joinPc.setClanid(clanId);\n                joinPc.setClanname(clanName);\n                joinPc.setClanRank(rank);\n                joinPc.setClanMemberNotes(\"\");\n                joinPc.setTitle(tutorial ? Config.GAME_SERVER_NAME : \"\");\n                SC_CharTitle.send(joinPc, joinPc.getId(), joinPc.getTitle());\n                SC_CharTitle.broadcast(joinPc, joinPc.getId(), joinPc.getTitle());"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1DeathMatch.java",
+    "line": 260,
+    "method": "sendWrittenArray",
+    "args": "\n                getMembersArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(type,msg)",
+    "context": "\t\t\t}\n\t\t}\n\t}\n\n\tpublic void sendMessage(int type, String msg) {\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(\n                getMembersArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(type,msg));\n    }\n\n\tpublic void addMember(L1PcInstance pc) {\n\t\tif (!_members.contains(pc)) {\n\t\t\t_members.add(pc);\n\t\t\t// %d번째 순번으로 입장 예약되었습니다."
+  },
+  {
+    "file": "src/l1j/server/server/model/L1HauntedHouse.java",
+    "line": 203,
+    "method": "sendWrittenArray",
+    "args": "getMembersArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(1257)",
+    "context": "\t\t\treturn false;\n\t\t}\n\n\t\tsetHauntedHouseStatus(STATUS_PLAYING);\n\n\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(getMembersArray(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.serverMessageWriter(1257));\n\n\t\treturn true;\n\t}\n\n\tpublic void removeRetiredMembers() {\n\t\tfor (L1PcInstance pc : getMembersArray()) {\n\t\t\tif (pc.getMapId() != 5140) {"
+  },
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java",
+    "line": 1268,
+    "method": "sendWrittenArray",
+    "args": "party.getMembers(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.actionUiFlagWriter(bytes)",
+    "context": "\n        if (party == null) {\n            return;\n        }\n\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray(party.getMembers(),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.actionUiFlagWriter(bytes));\n    }\n\n    private static void handleTamCancel(\n            L1PcInstance pc,\n            String encoded) {\n\n        if (encoded == null) {"
+  }
+]
