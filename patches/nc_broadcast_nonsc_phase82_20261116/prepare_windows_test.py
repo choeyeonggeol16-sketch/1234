@@ -88,5 +88,5 @@ block=r"""
 """
 s=s.replace(marker,marker+"\n"+block,1)
 p.write_text(s,encoding="utf-8")
-assert s.count("PHASE82_NATIVE_FOUR_KEY_SHARED_SOURCE_PASS")==1
+assert s.count("PHASE82_NonSC_NATIVE_FOUR_KEY_SHARED_SOURCE_PASS")==1
 print("PHASE82_WINDOWS_EXTENDED_PARITY_PREPARED",flush=True)
