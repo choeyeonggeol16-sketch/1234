@@ -1,0 +1,1232 @@
+[
+  [
+    "src/l1j/server/IndunSystem/BossRaid/BossRaidSystem.java",
+    40,
+    "SC_SystemMessage.sharedWire(\"3초 후에 보스레이드 맵으로 이동합니다.\"),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    260,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendArray(clan.getOnlineClanMember(),SC_SystemMessage.sharedWire(pck));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/Queen1.java",
+    264,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendArray(clan.getOnlineClanMember(),SC_SystemMessage.sharedWire(pck));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+    42,
+    "SC_SystemMessage.sharedWire(\"3초 후에 클랜레이드 맵으로 이동합니다.\"),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+    45,
+    "SC_SystemMessage.sharedWire(\"같은 혈원이 아니기에 입장에서 제외 됩니다.\"),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/BossRaid2/QueenSystem2.java",
+    62,
+    "SC_SystemMessage.sharedWire(\"같은 혈원이 아니기에 입장에서 제외 됩니다.\"),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+    210,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendArray(clan.getOnlineClanMember(),SC_SystemMessage.sharedWire(pck));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/ClanDungeon/Azmodan.java",
+    214,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendArray(clan.getOnlineClanMember(),SC_SystemMessage.sharedWire(pck));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java",
+    591,
+    "final byte[] wire = l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.sharedWire(msg);"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Hadin/HadinTrap.java",
+    160,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendObjectPlayers(cklist,SC_ServerMessage.sharedWire(8719));"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Hadin/HadinTrap.java",
+    167,
+    "SC_ServerMessage.sharedWire(403,\"$9355 (1)\"),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/MiniGame/L1Gambling.java",
+    70,
+    "final byte[] chatWire=SC_ChatPacket.sharedWire(Opcodes.S_SAY,0,pc.getId(),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/MiniGame/L1Gambling3.java",
+    70,
+    "final byte[] chatWire=SC_ChatPacket.sharedWire(Opcodes.S_SAY,0,pc.getId(),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    439,
+    "SC_EffectLocation.sharedWire(32801,32788,8142),"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Orim/OrimController.java",
+    540,
+    "final byte[] chatWire=SC_ChatPacket.sharedWire("
+  ],
+  [
+    "src/l1j/server/MJ3SEx/SpriteInformation.java",
+    62,
+    "ActionInformation[] next = Arrays.copyOf(current,"
+  ],
+  [
+    "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java",
+    230,
+    "frames[i]=SC_DisplayEffect.sharedWire(packets[i]);"
+  ],
+  [
+    "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java",
+    240,
+    ".sendMapTeam(_map_id, _team_id, SC_SystemMessage.sharedWire(s));"
+  ],
+  [
+    "src/l1j/server/MJCompanion/Instance/MJCompanionRegenerator.java",
+    103,
+    "SC_SystemMessage.sharedWire(message),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCWarSquareTrap.java",
+    76,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendGroups(_red,_blue,SC_LFCTrapEffect.sharedWire(effectObjectId,6132));"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCWarSquareTrap.java",
+    138,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendGroups(_red,_blue,SC_DisplayEffect.sharedWire(effect));"
+  ],
+  [
+    "src/l1j/server/MJKDASystem/Chart/MJKDAChartUpdator.java",
+    109,
+    "final byte[] wire=SC_ChartRank.sharedWire(_pck);"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/MJRaidMessage.java",
+    78,
+    "SC_SystemMessage.sharedWire(_msg),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java",
+    96,
+    "? SC_ServerMessage.sharedWire(s_startMessages[i])"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java",
+    97,
+    ": SC_SystemMessage.sharedWire(s_lastMessage),"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java",
+    99,
+    "? SC_ServerMessage.sharedWire(s_startMessages[i])"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java",
+    100,
+    ": SC_SystemMessage.sharedWire(s_lastMessage),"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java",
+    96,
+    "? SC_ServerMessage.sharedWire(s_startMessages[i])"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java",
+    97,
+    ": SC_SystemMessage.sharedWire(s_lastMessage),"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    203,
+    "SC_DisplayEffect.sharedWire(s_blackDisplay),"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Objects/MJRaidValakas.java",
+    206,
+    "SC_DisplayEffect.sharedWire(s_valaksDisplay),"
+  ],
+  [
+    "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    151,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_SystemMessage.sharedWire(packet));"
+  ],
+  [
+    "src/l1j/server/MJServerMacroSystem/MJServerMacroObject.java",
+    54,
+    "if (pcks.size() > packetTypes.length) packetTypes = java.util.Arrays.copyOf(packetTypes, packetTypes.length << 1);"
+  ],
+  [
+    "src/l1j/server/MJTemplate/Trap/DisplayEffectTrap.java",
+    28,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendArray(pc_array,SC_DisplayEffect.sharedWire(asset_id));"
+  ],
+  [
+    "src/l1j/server/MJTemplate/Trap/DisplayEffectTrap.java",
+    34,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendArray(pc_array,SC_DisplayEffect.sharedWire(asset_id));"
+  ],
+  [
+    "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+    190,
+    "this,SC_SkillSound.sharedWire(getId(),i));"
+  ],
+  [
+    "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    184,
+    "SC_ServerMessage.sharedWire(643),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    186,
+    "SC_CastleMaster.sharedWire(_castleId,nextDefense.getLeaderId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/MJWarSystem/MJCastleWar.java",
+    531,
+    "final byte[] rosterWire=SC_WarStartMessage.sharedWire(names);"
+  ],
+  [
+    "src/l1j/server/SpecialEventHandler.java",
+    51,
+    "final byte[] noticeWire=SC_SystemMessage.sharedWire(\"\\\\aH메티스님께서 코마의 축복 코인이 지급 하였습니다.\");"
+  ],
+  [
+    "src/l1j/server/SpecialEventHandler.java",
+    72,
+    "final byte[] noticeWire=SC_SystemMessage.sharedWire(\"\\\\aH메티스님께서 드래곤의 토파즈가 지급 하였습니다.\");"
+  ],
+  [
+    "src/l1j/server/SpecialEventHandler.java",
+    93,
+    "final byte[] noticeWire=SC_SystemMessage.sharedWire(\"\\\\aG메티스님께서 소환주문서 1장이 지급 하였습니다.\");"
+  ],
+  [
+    "src/l1j/server/Stadium/StadiumObject.java",
+    87,
+    "SC_SystemMessage.sharedWire(message),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+    145,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllPlayable(SC_DisplayEffect.sharedWire(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllPlayable(SC_DisplayEffect.sharedWire(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    179,
+    "if(effect>0)l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllPlayable(SC_DisplayEffect.sharedWire(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllPlayable(SC_DisplayEffect.sharedWire(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllPlayable(SC_DisplayEffect.sharedWire(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllPlayable(SC_DisplayEffect.sharedWire(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllPlayable(SC_DisplayEffect.sharedWire(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllPlayable(SC_DisplayEffect.sharedWire(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllPlayable(SC_DisplayEffect.sharedWire(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllPlayable(SC_DisplayEffect.sharedWire(effect));"
+  ],
+  [
+    "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+    144,
+    "if(effect > 0) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllPlayable(SC_DisplayEffect.sharedWire(effect));"
+  ],
+  [
+    "src/l1j/server/server/Announcecycle.java",
+    139,
+    "allpc,SC_SystemMessage.sharedWire(msg));"
+  ],
+  [
+    "src/l1j/server/server/Controller/BossController.java",
+    281,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllGms(SC_SystemMessage.sharedWire(msg));"
+  ],
+  [
+    "src/l1j/server/server/Controller/BossController.java",
+    487,
+    "SC_DisplayEffect.sharedWire(display_effect),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/Controller/BugRaceController.java",
+    1074,
+    "SC_SystemMessage.sharedWire(text),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/Controller/FishingTimeController.java",
+    595,
+    "SC_SkillSound.sharedWire(owner_object_id,effect_id));"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    181,
+    "SC_DisplayEffect.sharedWire(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    197,
+    "SC_DisplayEffect.sharedWire(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    213,
+    "SC_DisplayEffect.sharedWire(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    228,
+    "SC_DisplayEffect.sharedWire(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/Controller/ShipTimeController.java",
+    241,
+    "SC_DisplayEffect.sharedWire(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    1519,
+    "SC_ServerMessage.sharedWire(94,pc.getName()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    1556,
+    "SC_ServerMessage.sharedWire(ServerMessage.LEAVE_CLAN, param, clan.getClanName(), null));"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    3006,
+    "l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.sharedWire(giftMessage),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    3041,
+    "l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.sharedWire(giftMessage),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    3151,
+    "l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.sharedWire(message),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    3771,
+    "l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.sharedWire(giftMessage),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/GMCommands.java",
+    4644,
+    "l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.sharedWire(giftMessage),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1169,
+    "SC_MessageYN.sharedWire(954,pc.getName()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1171,
+    "l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.sharedWire(\"\\\\fQ자동분배는 한 화면에 파티원들이 있을 경우 분배됩니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1236,
+    "SC_MessageYN.sharedWire(954,pc.getName()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/UserCommands.java",
+    1238,
+    "l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.sharedWire(\"\\\\fQAuto-loot only works when party members are on the same screen.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/command/executor/L1PartyRecall.java",
+    52,
+    "SC_SystemMessage.sharedWire(\"메티스님께서 소환하였습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/command/executor/L1Recall.java",
+    45,
+    "SC_SystemMessage.sharedWire(\"\\\\f:운영자님께서 당신을 소환 하였습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/command/executor/L1Ress.java",
+    47,
+    "SC_MessageYN.sharedWire(322,\"\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/datatables/CharacterSlotItemTable.java",
+    43,
+    "slots = Arrays.copyOf(slots, count == 0 ? 16 : count << 1);"
+  ],
+  [
+    "src/l1j/server/server/datatables/CharacterSlotItemTable.java",
+    53,
+    "return count == slots.length ? slots : Arrays.copyOf(slots, count);"
+  ],
+  [
+    "src/l1j/server/server/datatables/WeaponAddDamage.java",
+    58,
+    "loadedIds = Arrays.copyOf(loadedIds, count << 1);"
+  ],
+  [
+    "src/l1j/server/server/datatables/WeaponAddDamage.java",
+    59,
+    "loadedBonuses = Arrays.copyOf(loadedBonuses, count << 1);"
+  ],
+  [
+    "src/l1j/server/server/model/BookQuest/Loader/BQSLoadManager.java",
+    230,
+    "SC_SystemMessage.sharedWire(message),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/BookQuest/Loader/BQSWQDecksLoader.java",
+    72,
+    "SC_SystemMessage.sharedWire(message),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1MonsterInstance.java",
+    1165,
+    "SC_ServerMessage.sharedWire(813,"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    1533,
+    "try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_SkillSound.sharedWire(getId(),169),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    3171,
+    "SC_SkillSound.sharedWire(getId(),14446),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    3506,
+    "SC_SkillSound.sharedWire(getId(),14446),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    3899,
+    "SC_SystemMessage.sharedWire(\"\\\\fY[GM] \" + getName() + \"님의 [\" + item.getLogName() + \"] 증발\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    3917,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAllGms(SC_SystemMessage.sharedWire(\"\\\\fY[GM] \" + getName() + \"님의 [\" + item.getLogName() + \"] 드랍\"));"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    4709,
+    "levels = java.util.Arrays.copyOf(levels, levels.length << 1);"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    4716,
+    "return java.util.Arrays.copyOf(levels, count);"
+  ],
+  [
+    "src/l1j/server/server/model/L1ChatParty.java",
+    35,
+    "SC_ServerMessage.sharedWire(424,pc.getName()));"
+  ],
+  [
+    "src/l1j/server/server/model/L1ChatParty.java",
+    81,
+    "SC_ServerMessage.sharedWire(418),"
+  ],
+  [
+    "src/l1j/server/server/model/L1ChatParty.java",
+    95,
+    "SC_ServerMessage.sharedWire(420,pc.getName()),"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    140,
+    "SC_ServerMessage.sharedWire(94,joinPc.getName()));"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    152,
+    "SC_ServerMessage.sharedWire(1270),"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    170,
+    "SC_ServerMessage.sharedWire(1269),"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    266,
+    "getMembersArray(),SC_ServerMessage.sharedWire(type,msg));"
+  ],
+  [
+    "src/l1j/server/server/model/L1DeathMatch.java",
+    287,
+    "SC_MessageYN.sharedWire(1268,\"\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    146,
+    "SC_MessageYN.sharedWire(1256,\"\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    183,
+    "SC_ServerMessage.sharedWire(1264),"
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    205,
+    "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendArray(getMembersArray(),SC_ServerMessage.sharedWire(1257));"
+  ],
+  [
+    "src/l1j/server/server/model/L1HauntedHouse.java",
+    227,
+    "SC_SystemMessage.sharedWire(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/server/model/L1NewUltimateBattle.java",
+    271,
+    "SC_SystemMessage.sharedWire(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    310,
+    "SC_ServerMessage.sharedWire(418),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    333,
+    "SC_ServerMessage.sharedWire(420,pc.getName()),"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    348,
+    "SC_ServerMessage.sharedWire(420,pc.getName()),"
+  ],
+  [
+    "src/l1j/server/server/model/L1Party.java",
+    385,
+    "SC_SystemMessage.sharedWire(message),"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    262,
+    "SC_ServerMessage.sharedWire(1264),"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    289,
+    "SC_ServerMessage.sharedWire(1258),"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    292,
+    "SC_GameStart.sharedWire(),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    294,
+    "SC_GameRap.sharedWire(1),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    348,
+    "SC_SystemMessage.sharedWire(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)){"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    385,
+    "SC_GameEnd.sharedWire(),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    426,
+    "SC_GameOver.sharedWire(),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1Racing.java",
+    502,
+    "SC_MessageYN.sharedWire(1256,\"\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1UltimateBattle.java",
+    290,
+    "SC_SystemMessage.sharedWire(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1World.java",
+    367,
+    "scratch.lists = java.util.Arrays.copyOf(scratch.lists, depth << 1);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    979,
+    "final int[] xs = Arrays.copyOf(nodeX, nodeCount);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    980,
+    "final int[] ys = Arrays.copyOf(nodeY, nodeCount);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    982,
+    "final byte[] edgeCount = Arrays.copyOf(linkCount, nodeCount);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    1025,
+    "nodeX = Arrays.copyOf(nodeX, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    1026,
+    "nodeY = Arrays.copyOf(nodeY, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    1027,
+    "nodeType = Arrays.copyOf(nodeType, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    1028,
+    "nodeActive = Arrays.copyOf(nodeActive, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    1029,
+    "nodeNextInBucket = Arrays.copyOf(nodeNextInBucket, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    1030,
+    "linkCount = Arrays.copyOf(linkCount, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    1033,
+    "links = Arrays.copyOf(links, cap * MAX_SIBLINGS);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathNodeWorld.java",
+    1107,
+    "seen = Arrays.copyOf(seen, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathNodeWorld.java",
+    1108,
+    "bestG = Arrays.copyOf(bestG, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathNodeWorld.java",
+    1109,
+    "goalMark = Arrays.copyOf(goalMark, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathNodeWorld.java",
+    1122,
+    "openNode = Arrays.copyOf(openNode, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathNodeWorld.java",
+    1123,
+    "openFirst = Arrays.copyOf(openFirst, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathNodeWorld.java",
+    1124,
+    "openDepth = Arrays.copyOf(openDepth, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathNodeWorld.java",
+    1125,
+    "openG = Arrays.copyOf(openG, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathNodeWorld.java",
+    1126,
+    "openH = Arrays.copyOf(openH, cap);"
+  ],
+  [
+    "src/l1j/server/server/model/character/Attack/Helper/HitEvasionModel.java",
+    185,
+    "slope = Arrays.copyOf(a, count);"
+  ],
+  [
+    "src/l1j/server/server/model/character/Attack/Helper/HitEvasionModel.java",
+    186,
+    "intercept = Arrays.copyOf(b, count);"
+  ],
+  [
+    "src/l1j/server/server/model/character/Attack/Helper/HitEvasionModel.java",
+    187,
+    "start = Arrays.copyOf(from, count);"
+  ],
+  [
+    "src/l1j/server/server/model/character/Item/Drop/DropShareEngine.java",
+    181,
+    "SC_SystemMessage.sharedWire(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/character/action/CGetItemAction.java",
+    419,
+    "SC_SystemMessage.sharedWire(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+    666,
+    "SC_TrueTargetNew.sharedWire(targetId,true),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/character/skill/SkillHandlers.java",
+    3126,
+    "SC_ServerMessage.sharedWire(4734),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/character/slot/SlotChangeManager.java",
+    213,
+    "a = Arrays.copyOf(a, a.length + (a.length >> 1) + 8);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/CItemUseClan.java",
+    110,
+    "SC_SystemMessage.sharedWire(notice),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    159,
+    "SC_SystemMessage.sharedWire(\"프라임의 효과가 적용되었습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    161,
+    "SC_SystemMessage.sharedWire(\"공성존의 프라임 효과가 적용되었습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    337,
+    "SC_SystemMessage.sharedWire(\"\\\\f:[\" + pc.getName() + \"]님의 매스 이뮨 투 함이 시전되었습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseActiveSkills.java",
+    339,
+    "SC_SystemMessage.sharedWire(\"\\\\fY같은 혈맹이 아니므로 매스 이뮨 투 함 미적용\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    253,
+    "SC_SystemMessage.sharedWire(\"\\\\f2[전투 지휘자: \" + pc.getName() + \"] 지목상대: \\\\fH[\" + member.getName() + \"] \\\\f2 지목!\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseCommandCombat.java",
+    255,
+    "SC_TrueTargetNew.sharedWire(target.getId(),true),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    144,
+    "SC_SystemMessage.sharedWire(\"\\\\f:========== 해당물품이 등록되었습니다 ========== \"),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    146,
+    "SC_SystemMessage.sharedWire(\"판매금액: \\\\aA\"+ggg),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    148,
+    "SC_SystemMessage.sharedWire(\"\\\\f:판매물품: [\" + l1iteminstance1.getName() + \"\\\\f:] \"),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsignment.java",
+    150,
+    "SC_SystemMessage.sharedWire(\"\\\\f:판매물품: [\" + l1iteminstance1.getLogName() + \"\\\\f:] \"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseConsumableRewards.java",
+    146,
+    "SC_SystemMessage.sharedWire(\"\\\\fH\" + pc.getName() + \"\\\\f2님이 혈맹포인트상자에서 \\\\fH[\" + points + \"]\\\\f2 포인트를 획득하였습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    502,
+    "sockets = java.util.Arrays.copyOf(sockets,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    355,
+    "SC_SystemMessage.sharedWire(\"\\\\fY 신 고 자 : \" + reporterName),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    357,
+    "SC_SystemMessage.sharedWire(\"\\\\fY 피신고자 : \" + targetName),Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java",
+    359,
+    "SC_SystemMessage.sharedWire(\"\\\\fY해당 유저를 소환하여 취조하길 바랍니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    538,
+    "final byte[] chatBytes=SC_NewChat.sharedWire(sChatPacket);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    593,
+    "final byte[] chatBytes=SC_NewChat.sharedWire(packet);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    613,
+    "final byte[] chatBytes=SC_NewChat.sharedWire(packet);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    638,
+    "final byte[] chatBytes=SC_NewChat.sharedWire(packet);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    658,
+    "final byte[] chatBytes=SC_NewChat.sharedWire(packet);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    677,
+    "final byte[] chatBytes=SC_NewChat.sharedWire(packet);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java",
+    834,
+    "? SC_NewChat.sharedWire(SC_NewChat.prepare(pc,4,chatType,text,\"\"))"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java",
+    639,
+    "SC_ServerMessage.sharedWire(843,pc.getName()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_LeavePledge.java",
+    263,
+    "SC_ServerMessage.sharedWire(178,playerName,clanName,null),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_RankControl.java",
+    176,
+    "SC_SystemMessage.sharedWire(target.getName()"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Result.java",
+    372,
+    "SC_SystemMessage.sharedWire(pc.getName() + \"님 상점 최대구매 수량 (\" + itemcount + \")를 초과 하였습니다.\"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Title.java",
+    145,
+    "SC_ServerMessage.sharedWire(203,pc.getName(),charName,title),Integer.MIN_VALUE,Integer.MAX_VALUE)) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AreaAttackEffect.java",
+    37,
+    "final byte[] wire=sharedWire(id,x,y,heading,seq,gfx,action,ids);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AreaAttackEffect.java",
+    65,
+    "public static byte[] sharedWire(int id,int x,int y,int heading,int seq,int gfx,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_CastleMaster.java",
+    16,
+    "public static byte[] sharedWire(int type,int objectId) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_CastleMaster.java",
+    17,
+    "return java.nio.ByteBuffer.allocate(8)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeAttr.java",
+    39,
+    "return java.nio.ByteBuffer.allocate(9)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChartRank.java",
+    78,
+    "public static byte[] sharedWire(Snapshot snapshot) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChartRank.java",
+    80,
+    "final java.nio.ByteBuffer out=java.nio.ByteBuffer.allocate(snapshot.wireSize)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    71,
+    "// Original sharedWire() is kept as a test oracle and for 1:1 callers."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    86,
+    "public static byte[] sharedWire(int opcode,int type,int objectId,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    119,
+    "private static byte[] sharedDirectAdmissionWire(int opcode, int type,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    123,
+    "return sharedWire(opcode, type, objectId, safe, includeObjectId);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    170,
+    "return sharedDirectAdmissionWire(Opcodes.S_MESSAGE,type,0,formatted,false);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_DisplayEffect.java",
+    25,
+    "public static byte[] sharedWire(int value) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_DoActionGFX.java",
+    58,
+    "return java.nio.ByteBuffer.allocate(8)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_DropItem.java",
+    394,
+    "private static byte[] sharedWire(int x,int y,int objectId,int groundGfxId,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_DropItem.java",
+    399,
+    "final java.nio.ByteBuffer heap=java.nio.ByteBuffer.allocate((int)max)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_DropItem.java",
+    434,
+    "return java.util.Arrays.copyOf(heap.array(),len);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+    18,
+    "public static byte[] sharedWire(int x, int y, int gfxId) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+    19,
+    "return java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_GameEnd.java",
+    15,
+    "public static byte[] sharedWire() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_GameOver.java",
+    15,
+    "public static byte[] sharedWire() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_GameRap.java",
+    16,
+    "public static byte[] sharedWire(int value) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_GameStart.java",
+    15,
+    "public static byte[] sharedWire() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+    25,
+    "final byte[] wire=sharedWire(message,0,GM_COLOR,28,60,false);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+    43,
+    "return sharedWire(\"\",index,color,surface,duration,true);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+    136,
+    "private static byte[] sharedWire(String msg,int index,MJSimpleRgb color,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+    147,
+    "final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate((int)reserve)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+    169,
+    "return java.util.Arrays.copyOf(b.array(),size);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_LFCTrapEffect.java",
+    13,
+    "public static byte[] sharedWire(int objectId,int gfxId) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_MessageYN.java",
+    71,
+    "final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate(size)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_MessageYN.java",
+    78,
+    "public static byte[] sharedWire(int type, String message) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_MessageYN.java",
+    83,
+    "final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate(size)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_MoveChar.java",
+    92,
+    "return java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NewChat.java",
+    227,
+    "public static byte[] sharedWire(ChatData d) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NewChat.java",
+    231,
+    "final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate((int)capacity)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NewChat.java",
+    262,
+    "return java.util.Arrays.copyOf(b.array(),size);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    40,
+    "public static byte[] sharedWire(int objectId,int color,String text) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    116,
+    "return sharedWire(npc.getId(),"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_OnlyEffect.java",
+    16,
+    "private static byte[] sharedWire(int objectId, int effectId) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_OnlyEffect.java",
+    17,
+    "return java.nio.ByteBuffer.allocate(9).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_RemoveObject.java",
+    101,
+    "return java.nio.ByteBuffer.allocate(WIRE_SIZE)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_RetrieveList.java",
+    61,
+    "items = Arrays.copyOf(items, next * 6);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_RetrieveList.java",
+    62,
+    "names = Arrays.copyOf(names, next);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ServerMessage.java",
+    91,
+    "public static byte[] sharedWire(int type, String message) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ServerMessage.java",
+    92,
+    "if(message==null)return sharedWire(type);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ServerMessage.java",
+    112,
+    "public static byte[] sharedWire(int type,String msg1,String msg2,String msg3) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ServerMessage.java",
+    137,
+    "public static byte[] sharedWire(int type) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ServerMessage.java",
+    138,
+    "final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate(6)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ShowCmd.java",
+    57,
+    "final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate(n)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java",
+    59,
+    "public static byte[] sharedWire(int objectId, int gfxId) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java",
+    60,
+    "return java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Sound.java",
+    17,
+    "private static byte[] sharedWire(int sound) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Sound.java",
+    18,
+    "return java.nio.ByteBuffer.allocate(WIRE_SIZE).order(java.nio.ByteOrder.LITTLE_ENDIAN)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java",
+    73,
+    "public static byte[] sharedWire(String message) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java",
+    78,
+    "final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate(size)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_TrueTargetNew.java",
+    13,
+    "public static byte[] sharedWire(int targetId, boolean active) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_TrueTargetNew.java",
+    14,
+    "final java.nio.ByteBuffer b = java.nio.ByteBuffer.allocate(18)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseArrowSkill.java",
+    302,
+    "private static byte[] sharedWire(int attackerId,int ox,int oy,int oh,int actId,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseArrowSkill.java",
+    304,
+    "final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate(WIRE_SIZE)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_War.java",
+    54,
+    "private static byte[] sharedWire(int type, String clan1, String clan2) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_War.java",
+    60,
+    "final java.nio.ByteBuffer out=java.nio.ByteBuffer.allocate((int)size)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_WarStartMessage.java",
+    31,
+    "public static byte[] sharedWire(String[] clanNames) {"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/CDesirePQ.java",
+    1680,
+    "skillIds = java.util.Arrays.copyOf(skillIds, next);"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/CDesirePQ.java",
+    1681,
+    "skillMoveTypes = java.util.Arrays.copyOf(skillMoveTypes, next);"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/CDesirePQ.java",
+    1682,
+    "skillFlags = java.util.Arrays.copyOf(skillFlags, next);"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/CDesirePQ.java",
+    1683,
+    "skillExtras = java.util.Arrays.copyOf(skillExtras, next);"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/CDesirePQ.java",
+    1684,
+    "skillEffectPoints = java.util.Arrays.copyOf(skillEffectPoints, next);"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/CDesirePQ.java",
+    1687,
+    "attackPayload = java.util.Arrays.copyOf(attackPayload, next << 2);"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/PlaySupport/window/PssWindowTransport.java",
+    201,
+    "private final ByteBuffer input = ByteBuffer.allocate(24);"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/PlaySupport/window/PssWindowTransport.java",
+    202,
+    "private final ByteBuffer output = ByteBuffer.allocate(1);"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Proto/ProtoWriter.java",
+    113,
+    "_a = Arrays.copyOf(_a, cap);"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Proto/ProtoWriter.java",
+    304,
+    "_patch = Arrays.copyOf(_patch, _patch.length << 1);"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Proto/ProtoWriter.java",
+    385,
+    "return Arrays.copyOf(_a, _p);"
+  ]
+]

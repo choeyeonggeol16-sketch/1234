@@ -1,0 +1,4437 @@
+[
+  [
+    "src/l1j/server/Base64.java",
+    140,
+    "private static byte[] encode3to4(byte[] source, int srcOffset,"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    154,
+    "int inBuff = (numSigBytes > 0 ? ((source[srcOffset] << 24) >>> 8) : 0)"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    155,
+    "| (numSigBytes > 1 ? ((source[srcOffset + 1] << 24) >>> 16) : 0)"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    156,
+    "| (numSigBytes > 2 ? ((source[srcOffset + 2] << 24) >>> 24) : 0);"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    235,
+    "public static String encodeBytes(byte[] source) {"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    236,
+    "return encodeBytes(source, 0, source.length, NO_OPTIONS);"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    239,
+    "public static String encodeBytes(byte[] source, int options) {"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    240,
+    "return encodeBytes(source, 0, source.length, options);"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    243,
+    "public static String encodeBytes(byte[] source, int off, int len) {"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    244,
+    "return encodeBytes(source, off, len, NO_OPTIONS);"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    247,
+    "public static String encodeBytes(byte[] source, int off, int len,"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    265,
+    "gzos.write(source, off, len);"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    300,
+    "encode3to4(source, d + off, 3, outBuff, e);"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    311,
+    "encode3to4(source, d + off, len - d, outBuff, e);"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    330,
+    "* Decodes four bytes from array <var>source</var> and writes the resulting"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    331,
+    "* bytes (up to three of them) to <var>destination</var>. The source and"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    335,
+    "* <var>srcOffset</var> + 4 for the <var>source</var> array or"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    341,
+    "* @param source"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    352,
+    "private static int decode4to3(byte[] source, int srcOffset,"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    355,
+    "if (source[srcOffset + 2] == EQUALS_SIGN) {"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    357,
+    "// int outBuff = ( ( DECODABET[ source[ srcOffset ] ] << 24 ) >>> 6"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    359,
+    "// | ( ( DECODABET[ source[ srcOffset + 1] ] << 24 ) >>> 12 );"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    360,
+    "int outBuff = ((DECODABET[source[srcOffset]] & 0xFF) << 18)"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    361,
+    "| ((DECODABET[source[srcOffset + 1]] & 0xFF) << 12);"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    368,
+    "else if (source[srcOffset + 3] == EQUALS_SIGN) {"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    370,
+    "// int outBuff = ( ( DECODABET[ source[ srcOffset ] ] << 24 ) >>> 6"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    372,
+    "// | ( ( DECODABET[ source[ srcOffset + 1 ] ] << 24 ) >>> 12 )"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    373,
+    "// | ( ( DECODABET[ source[ srcOffset + 2 ] ] << 24 ) >>> 18 );"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    374,
+    "int outBuff = ((DECODABET[source[srcOffset]] & 0xFF) << 18)"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    375,
+    "| ((DECODABET[source[srcOffset + 1]] & 0xFF) << 12)"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    376,
+    "| ((DECODABET[source[srcOffset + 2]] & 0xFF) << 6);"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    388,
+    "// int outBuff = ( ( DECODABET[ source[ srcOffset ] ] << 24 )"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    390,
+    "// | ( ( DECODABET[ source[ srcOffset + 1 ] ] << 24 ) >>> 12 )"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    391,
+    "// | ( ( DECODABET[ source[ srcOffset + 2 ] ] << 24 ) >>> 18 )"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    392,
+    "// | ( ( DECODABET[ source[ srcOffset + 3 ] ] << 24 ) >>> 24 );"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    393,
+    "int outBuff = ((DECODABET[source[srcOffset]] & 0xFF) << 18)"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    394,
+    "| ((DECODABET[source[srcOffset + 1]] & 0xFF) << 12)"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    395,
+    "| ((DECODABET[source[srcOffset + 2]] & 0xFF) << 6)"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    396,
+    "| ((DECODABET[source[srcOffset + 3]] & 0xFF));"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    404,
+    "System.out.println(\"\" + source[srcOffset] + \": \" + (DECODABET[source[srcOffset]]));"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    405,
+    "System.out.println(\"\" + source[srcOffset + 1] + \": \" + (DECODABET[source[srcOffset + 1]]));"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    406,
+    "System.out.println(\"\" + source[srcOffset + 2] + \": \" + (DECODABET[source[srcOffset + 2]]));"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    407,
+    "System.out.println(\"\" + source[srcOffset + 3] + \": \" + (DECODABET[source[srcOffset + 3]]));"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    418,
+    "* @param source"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    427,
+    "public static byte[] decode(byte[] source, int off, int len) {"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    438,
+    "sbiCrop = (byte) (source[i] & 0x7f); // Only the low seven bits"
+  ],
+  [
+    "src/l1j/server/Base64.java",
+    461,
+    "+ source[i] + \"(decimal)\");"
+  ],
+  [
+    "src/l1j/server/CachedMapReader.java",
+    122,
+    "throw new IOException(\"Gludio source map \" + mapId"
+  ],
+  [
+    "src/l1j/server/CachedMapReader.java",
+    206,
+    "throw new IOException(\"Map cache source missing/modified \" + mapId);"
+  ],
+  [
+    "src/l1j/server/CachedMapReader.java",
+    238,
+    "// The source TXT is authoritative. Rebuild only after the cache"
+  ],
+  [
+    "src/l1j/server/Config.java",
+    1052,
+    "/** Debug/release mode */"
+  ],
+  [
+    "src/l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java",
+    184,
+    "// At most one pending invite per target; do not retain expired invitations indefinitely."
+  ],
+  [
+    "src/l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java",
+    329,
+    "// The original server runs the first room on the actual source map."
+  ],
+  [
+    "src/l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java",
+    406,
+    "LOG.warning(\"[Gludio-Indun] Missing source-map walkable entry cells; \""
+  ],
+  [
+    "src/l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java",
+    617,
+    "LOG.warning(\"[Gludio-Indun] Cleanup admission refused; retain map=\"+r.mapId);"
+  ],
+  [
+    "src/l1j/server/MJ3SEx/Loader/SpriteInformationLoader.java",
+    72,
+    "public static void release() {"
+  ],
+  [
+    "src/l1j/server/MJ3SEx/SpriteInformation.java",
+    33,
+    "// retain direct O(1) lookup without 256 references for every sprite."
+  ],
+  [
+    "src/l1j/server/MJActionListener/ActionListenerLinkageLoader.java",
+    19,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJCTSystem/Loader/MJCTLoadManager.java",
+    112,
+    "public void  release(){"
+  ],
+  [
+    "src/l1j/server/MJCTSystem/Loader/MJCTLoadManager.java",
+    113,
+    "MJCTSpellLoader.release();"
+  ],
+  [
+    "src/l1j/server/MJCTSystem/Loader/MJCTLoadManager.java",
+    114,
+    "MJCTSystemLoader.release();"
+  ],
+  [
+    "src/l1j/server/MJCTSystem/Loader/MJCTSpellLoader.java",
+    25,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJCTSystem/Loader/MJCTSystemLoader.java",
+    37,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJCaptchaSystem/Loader/MJCaptchaDataLoader.java",
+    19,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJCaptchaSystem/Loader/MJCaptchaLoadManager.java",
+    34,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJCombatSystem/Loader/MJCombatInformationLoader.java",
+    25,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJCombatSystem/Loader/MJCombatLoadManager.java",
+    37,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJCombatSystem/Loader/MJCombatRewardLoader.java",
+    25,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJCombatSystem/Loader/MJCombatTrapsLoader.java",
+    19,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJDShopSystem/MJDShopStorage.java",
+    18,
+    "public static MJDShopItem copyListing(MJDShopItem source) {"
+  ],
+  [
+    "src/l1j/server/MJDShopSystem/MJDShopStorage.java",
+    20,
+    "copy.objId=source.objId; copy.itemId=source.itemId; copy.name=source.name;"
+  ],
+  [
+    "src/l1j/server/MJDShopSystem/MJDShopStorage.java",
+    21,
+    "copy.invId=source.invId; copy.count=source.count; copy.price=source.price;"
+  ],
+  [
+    "src/l1j/server/MJDShopSystem/MJDShopStorage.java",
+    22,
+    "copy.iden=source.iden; copy.enchant=source.enchant; copy.attr=source.attr;"
+  ],
+  [
+    "src/l1j/server/MJDShopSystem/MJDShopStorage.java",
+    23,
+    "copy.isPurchase=source.isPurchase;"
+  ],
+  [
+    "src/l1j/server/MJDTSSystem/MJDTSLoader.java",
+    22,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJDungeonTimer/Loader/DungeonTimeInformationLoader.java",
+    21,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJDungeonTimer/Loader/DungeonTimeLoadManager.java",
+    24,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJDungeonTimer/Loader/DungeonTimePotionLoader.java",
+    20,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJDungeonTimer/Updator/DungeonTimeUpdator.java",
+    32,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJEffectSystem/Loader/MJEffectModelLoader.java",
+    44,
+    "public static void release() {"
+  ],
+  [
+    "src/l1j/server/MJExpAmpSystem/MJExpAmplifierLoader.java",
+    26,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/Loader/MJInstanceLoadManager.java",
+    204,
+    "public void release(){"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/Loader/MJInstanceLoadManager.java",
+    205,
+    "MJLFCTypeLoader.release();"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/Loader/MJInstanceLoadManager.java",
+    206,
+    "MJLFCCompensateLoader.release();"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/Loader/MJInstanceLoadManager.java",
+    207,
+    "MJInstanceSpace.release();"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/Loader/MJLFCCompensateLoader.java",
+    31,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/Loader/MJLFCTypeLoader.java",
+    20,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJInstanceSystem/MJInstanceSpace.java",
+    31,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJItemEnchantSystem/MJItemEnchantSystemLoadManager.java",
+    15,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJItemEnchantSystem/MJItemEnchanteeLoader.java",
+    18,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJItemEnchantSystem/MJItemEnchanterLoader.java",
+    19,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJItemSkillSystem/MJItemSkillModelLoader.java",
+    54,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJKDASystem/Chart/MJKDAChartScheduler.java",
+    23,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJKDASystem/MJKDALoadManager.java",
+    89,
+    "MJKDAChartScheduler.release();"
+  ],
+  [
+    "src/l1j/server/MJKDASystem/MJKDALoadManager.java",
+    114,
+    "public void release(){"
+  ],
+  [
+    "src/l1j/server/MJKDASystem/MJKDALoadManager.java",
+    115,
+    "MJKDALoader.release();"
+  ],
+  [
+    "src/l1j/server/MJKDASystem/MJKDALoadManager.java",
+    116,
+    "MJKDAChartScheduler.release();"
+  ],
+  [
+    "src/l1j/server/MJKDASystem/MJKDALoader.java",
+    29,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJPassiveSkill/MJPassiveLoader.java",
+    34,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidBossSkillLoader.java",
+    23,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidBossSprLoader.java",
+    25,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidCompensatorLoader.java",
+    24,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidCreatorLoader.java",
+    24,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidLoadManager.java",
+    294,
+    "public void release(){"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidLoadManager.java",
+    295,
+    "MJRaidSpace.release();"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidLoadManager.java",
+    296,
+    "MJRaidTypesLoader.release();"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidLoadManager.java",
+    297,
+    "MJRaidCreatorLoader.release();"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidLoadManager.java",
+    298,
+    "MJRaidCompensatorLoader.release();"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidLoadManager.java",
+    299,
+    "MJRaidBossSkillLoader.release();"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidLoadManager.java",
+    300,
+    "MJRaidSpawnLoader.release();"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidLoadManager.java",
+    301,
+    "//MJRaidBossSprLoader.release();"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidSpawnLoader.java",
+    21,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/Loader/MJRaidTypesLoader.java",
+    21,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/MJRaidObject.java",
+    133,
+    "// Cancel the shared scheduled expiry to release its raid reference promptly."
+  ],
+  [
+    "src/l1j/server/MJRaidSystem/MJRaidSpace.java",
+    34,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    46,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/MJTemplate/Aes/MJAes.java",
+    18,
+    "public String encrypt(String source) throws Exception{"
+  ],
+  [
+    "src/l1j/server/MJTemplate/Aes/MJAes.java",
+    19,
+    "byte[] buff = source.getBytes(\"UTF-8\");"
+  ],
+  [
+    "src/l1j/server/MJTemplate/Aes/MJAes.java",
+    31,
+    "public String decrypt(final String source) throws Exception{"
+  ],
+  [
+    "src/l1j/server/MJTemplate/Aes/MJAes.java",
+    35,
+    "byte[] dArray = removePadding(cipher.doFinal(toBytes(source)));"
+  ],
+  [
+    "src/l1j/server/PrideSystem/PrideLoadManager.java",
+    29,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/server/Controller/FishingTimeController.java",
+    170,
+    "* 낚시 상태의 source of truth는 L1PcInstance 자체다."
+  ],
+  [
+    "src/l1j/server/server/GameServer.java",
+    551,
+    "MJRaidLoadManager.getInstance().release();"
+  ],
+  [
+    "src/l1j/server/server/GameServer.java",
+    553,
+    "MJInstanceLoadManager.getInstance().release();"
+  ],
+  [
+    "src/l1j/server/server/GameServer.java",
+    557,
+    "MJCTLoadManager.getInstance().release();"
+  ],
+  [
+    "src/l1j/server/server/GameServer.java",
+    559,
+    "MJItemSkillModelLoader.release();"
+  ],
+  [
+    "src/l1j/server/server/GameServer.java",
+    561,
+    "MJKDALoadManager.getInstance().release();"
+  ],
+  [
+    "src/l1j/server/server/GameServer.java",
+    563,
+    "NetworkSafeLoadManager.getInstance().release();"
+  ],
+  [
+    "src/l1j/server/server/GameServer.java",
+    574,
+    "NetworkSafeLoadManager.getInstance().release();"
+  ],
+  [
+    "src/l1j/server/server/GameServer.java",
+    576,
+    "RankUserLoader.getInstance().release();"
+  ],
+  [
+    "src/l1j/server/server/GameServer.java",
+    578,
+    "NetworkClientCounter.getInstance().release();"
+  ],
+  [
+    "src/l1j/server/server/GameServer.java",
+    584,
+    "MJEffectModelLoader.release();"
+  ],
+  [
+    "src/l1j/server/server/GameServer.java",
+    596,
+    "// stale periodic callbacks must not retain listeners/game objects."
+  ],
+  [
+    "src/l1j/server/server/ThreadPool.java",
+    90,
+    "// Cancelled long-delay tasks must not retain their captured game objects."
+  ],
+  [
+    "src/l1j/server/server/ThreadPool.java",
+    276,
+    "blockingSlots.release();"
+  ],
+  [
+    "src/l1j/server/server/appcenter/AppCenterService.java",
+    172,
+    "catch(RuntimeException ignored){/* retain last complete snapshot */}"
+  ],
+  [
+    "src/l1j/server/server/appcenter/AppCenterService.java",
+    218,
+    "// One background refresh worker; HTTP threads NEVER borrow connections."
+  ],
+  [
+    "src/l1j/server/server/appcenter/AppCenterService.java",
+    312,
+    "try{process(ex);}finally{requests.release();}"
+  ],
+  [
+    "src/l1j/server/server/datatables/AlchemyProbability.java",
+    22,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/server/datatables/ClanTable.java",
+    741,
+    "/** Memory-only retirement for a source pledge already removed in the"
+  ],
+  [
+    "src/l1j/server/server/datatables/ClanTable.java",
+    747,
+    "throw new IllegalStateException(\"Stale source pledge after merge commit\");"
+  ],
+  [
+    "src/l1j/server/server/datatables/CraftProbability.java",
+    26,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/server/datatables/IncreaseEinhasadMap.java",
+    18,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/server/datatables/MJAlchemyProbabilityBox.java",
+    20,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/server/datatables/SkillsTable.java",
+    162,
+    "// waiting on a JDBC SELECT. Offline/GM lookups retain the DB fallback."
+  ],
+  [
+    "src/l1j/server/server/model/BookQuest/Loader/BQSInformationLoader.java",
+    32,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/server/model/BookQuest/Loader/BQSRewardsLoader.java",
+    31,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/server/model/BookQuest/Loader/BQSWQDecksLoader.java",
+    35,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/server/model/BookQuest/Loader/BQSWQInformationLoader.java",
+    26,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/server/model/BookQuest/Loader/BQSWQRewardsLoader.java",
+    29,
+    "public static void release(){"
+  ],
+  [
+    "src/l1j/server/server/model/CWorld.java",
+    658,
+    "final L1IntRegistry<L1Object> source = world.visibleMap(oldMap, false);"
+  ],
+  [
+    "src/l1j/server/server/model/CWorld.java",
+    659,
+    "if (source != null) source.remove(id, object);"
+  ],
+  [
+    "src/l1j/server/server/model/CWorld.java",
+    684,
+    "final L1IntRegistry<L1Object> source = world.visibleMap(oldMap, false);"
+  ],
+  [
+    "src/l1j/server/server/model/CWorld.java",
+    685,
+    "if (source != null) source.remove(id, object);"
+  ],
+  [
+    "src/l1j/server/server/model/CWorld.java",
+    708,
+    "final L1IntRegistry<L1Object> source = world.visibleMap(oldMap, false);"
+  ],
+  [
+    "src/l1j/server/server/model/CWorld.java",
+    709,
+    "if (source != null) source.remove(id, object);"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1NpcInstance.java",
+    555,
+    "// Explicit tagertClear()/allTargetClear() retain their normal"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    2474,
+    "// Buff persistence failure must not retain live skill timers on a disconnected PC."
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    2540,
+    "catch (RuntimeException e) { _log.log(Level.SEVERE, \"Logout party loot release failed: \" + getId(), e); }"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    2543,
+    "catch (RuntimeException e) { _log.log(Level.SEVERE, \"Logout companion release failed: \" + getId(), e); }"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    2585,
+    "catch (RuntimeException e) { _log.log(Level.SEVERE, \"Logout CacheD owner release failed: \" + getId(), e); }"
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    6473,
+    "// Do not retain an unscheduled timer after bounded scheduler rejection."
+  ],
+  [
+    "src/l1j/server/server/model/Instance/L1TeleporterInstance.java",
+    477,
+    "// A rejected 15-minute release must not lock the portal forever."
+  ],
+  [
+    "src/l1j/server/server/model/InventoryTransactionOwners.java",
+    12,
+    "* Gate release is idempotent, including a callback which starts a new receipt."
+  ],
+  [
+    "src/l1j/server/server/model/InventoryTransactionOwners.java",
+    162,
+    "void release() {"
+  ],
+  [
+    "src/l1j/server/server/model/L1AuctionTransaction.java",
+    201,
+    "* changes before the SQL commit; failed/ambiguous commits retain the gate."
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    179,
+    "/** Transfer an entire source pledge in ONE durable receipt. A failed SQL"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    181,
+    "* The source warehouse must be unused and empty: a merge must NEVER delete"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    184,
+    "private boolean mergeClanAtomic(L1Clan target, L1Clan source, L1PcInstance sourceLeader,"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    186,
+    "if (target == null || source == null || target == source || sourceLeader == null"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    187,
+    "|| sourceLeader.getClanid() != source.getClanId()"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    188,
+    "|| source.getLeaderId() != sourceLeader.getId() || !sourceLeader.isCrown()"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    189,
+    "|| source.getHouseId() != 0 || source.getCastleId() != 0"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    190,
+    "|| source.getCurrentWar() != null || source.getAlliance() != 0"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    192,
+    "+ source.getClanMemberList().size() > capacity))"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    194,
+    "final int sourceId = source.getClanId();"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    196,
+    "final String sourceName = source.getClanName(), targetName = target.getClanName();"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    197,
+    "final List<L1Clan.ClanMember> roster = new ArrayList<>(source.getClanMemberList());"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    214,
+    "// the deleted source after this transaction commits. Nonblocking"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    314,
+    "if (L1World.getInstance().getClan(sourceId) != source"
+  ],
+  [
+    "src/l1j/server/server/model/L1ClanJoin.java",
+    352,
+    "ClanTable.getInstance().forgetCommittedClanMerge(source);"
+  ],
+  [
+    "src/l1j/server/server/model/L1CurseParalysis.java",
+    87,
+    "// A missing release deadline must never strand paralysis."
+  ],
+  [
+    "src/l1j/server/server/model/L1CurseParalysis.java",
+    190,
+    "// An old release timer may outlive the curse that installed it."
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1418,
+    "throw new IllegalStateException(\"Warehouse batch source changed after COMMIT\");"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1465,
+    "* Special non-stackable charge-merging items retain their existing single-item path."
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1468,
+    "Warehouse source, int feeItemId, int feeEach, Runnable onCommitted) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1471,
+    "|| source == null || !(source instanceof l1j.server.server.model.Warehouse.PrivateWarehouse"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1472,
+    "|| source instanceof l1j.server.server.model.Warehouse.ClanWarehouse"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1473,
+    "|| source instanceof l1j.server.server.model.Warehouse.ElfWarehouse)"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1491,
+    "synchronized (source) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1499,
+    "final L1ItemInstance item = source.getItem(ids[i]);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1557,
+    "try { reserved = CacheD.beginWarehouseMove(pc.getId(), source.transferOrderKey()); }"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1567,
+    "source.prepareTransferDelete(item);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1572,
+    "source.updateItem(l1j.server.server.model.Warehouse.Warehouse.transferCopy("
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1603,
+    "synchronized (source) {"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1610,
+    "if (source.getItem(ids[i]) != sources[i]"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1612,
+    "throw new IllegalStateException(\"Withdrawal source changed after COMMIT\");"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1620,
+    "L1ItemInstance result = source.tradeItem(sources[i], counts[i],"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1630,
+    "pc, source, false, sources[i], counts[i]);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1777,
+    "// source and destination rows in the same JDBC transaction."
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1841,
+    "// The warehouse rejected the transfer after the source was changed."
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1842,
+    "// Restore the source rather than completing a one-sided move."
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1891,
+    "// A destination gate rejection must happen before a source delete,"
+  ],
+  [
+    "src/l1j/server/server/model/L1Inventory.java",
+    1895,
+    "// source inventory가 현재 이 exact object를 소유하는지 다시 확인한다."
+  ],
+  [
+    "src/l1j/server/server/model/L1InventoryTransaction.java",
+    82,
+    "owners.release();"
+  ],
+  [
+    "src/l1j/server/server/model/L1InventoryTransaction.java",
+    100,
+    "owners.release();"
+  ],
+  [
+    "src/l1j/server/server/model/L1InventoryTransaction.java",
+    593,
+    "// A failure callback can start a new receipt as soon as we release the"
+  ],
+  [
+    "src/l1j/server/server/model/L1InventoryTransaction.java",
+    594,
+    "// old gate, so the terminal completion must never release it a second"
+  ],
+  [
+    "src/l1j/server/server/model/L1InventoryTransaction.java",
+    613,
+    "owners.release();"
+  ],
+  [
+    "src/l1j/server/server/model/L1Magic.java",
+    93,
+    "/** Legacy/direct/weapon effects retain their existing damage rules. */"
+  ],
+  [
+    "src/l1j/server/server/model/L1PcInventory.java",
+    133,
+    "throw new IllegalStateException(\"Economy source object changed\");"
+  ],
+  [
+    "src/l1j/server/server/model/L1PcInventory.java",
+    713,
+    "// retain the old full-save behavior instead of silently dropping it."
+  ],
+  [
+    "src/l1j/server/server/model/L1PcInventory.java",
+    813,
+    "// The committed replay already owns the gate and must retain it."
+  ],
+  [
+    "src/l1j/server/server/model/L1Spawn.java",
+    114,
+    "* _decayAtMs는 READY release-store 전에 기록되므로 owner acquire-read에서 보인다."
+  ],
+  [
+    "src/l1j/server/server/model/L1Spawn.java",
+    643,
+    "* 이 release-store가 decayAt write를 owner에게 함께 publish한다."
+  ],
+  [
+    "src/l1j/server/server/model/L1Spawn.java",
+    702,
+    "* owner state payload를 먼저 기록하고 WAIT_RESPAWN을 release publish."
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    40,
+    "L1ItemInstance source=player.getInventory().getItem(itemId);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    41,
+    "if(source==null || source.isEquipped() || !source.getItem().isTradable() || source.getBless()>=128"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    42,
+    "|| (!source.isStackable() && amount!=1))return;"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    43,
+    "if(characterToken(source)) {unsupportedCharacterTrade(player);return;}"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    46,
+    "if(offered>source.getCount() || offered>L1Inventory.MAX_AMOUNT)return;"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    48,
+    "L1ItemInstance offer=Warehouse.transferCopy(source,source.getId(),(int)offered,source.getChargeCount());"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    68,
+    "L1ItemInstance source=from.getInventory().getItem(offer.getId());"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    69,
+    "if(source==null || source.getItemId()!=offer.getItemId() || source.getCount()<offer.getCount()"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    70,
+    "|| offer.getCount()<=0 || source.isEquipped() || characterToken(source)"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    71,
+    "|| source.getEnchantLevel()!=offer.getEnchantLevel() || source.getBless()!=offer.getBless()"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    72,
+    "|| source.getChargeCount()!=offer.getChargeCount() || source.getAttrEnchantLevel()!=offer.getAttrEnchantLevel()"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    73,
+    "|| source.getSpecialEnchant()!=offer.getSpecialEnchant()"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    74,
+    "|| source.isPackage()!=offer.isPackage()"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    75,
+    "|| !java.util.Objects.equals(source.getEndTime(),offer.getEndTime()))"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    77,
+    "tx.transfer(from,source,offer.getCount(),to);"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    119,
+    "L1ItemInstance source=pc.getInventory().getItem(offer.getId());"
+  ],
+  [
+    "src/l1j/server/server/model/L1Trade.java",
+    120,
+    "if(source!=null)try{SC_ItemStatus.send(pc,source);}catch(RuntimeException failure){LOG.fine(\"Trade resync send expired\");}"
+  ],
+  [
+    "src/l1j/server/server/model/L1World.java",
+    389,
+    "throw new IllegalStateException(\"AOI snapshot release out of order\");"
+  ],
+  [
+    "src/l1j/server/server/model/L1World.java",
+    392,
+    "// Do not retain exceptionally large AOI arrays for the worker lifetime."
+  ],
+  [
+    "src/l1j/server/server/model/LocalWorldMap.java",
+    560,
+    "* remove the stale source reference, but add only when the object's current"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/PrivateWarehouse.java",
+    178,
+    "throw new SQLException(\"Private warehouse move source/type/count mismatch: \" + id);"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/PrivateWarehouse.java",
+    349,
+    "throw new IllegalStateException(\"Private warehouse move stale source\");"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    274,
+    "throw new SQLException(\"Warehouse transfer source stale (owner/type/count): \" + id);"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    366,
+    "public static L1ItemInstance transferCopy(L1ItemInstance source, int id, int count, int charge) {"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    367,
+    "if (source == null || id <= 0 || count <= 0) throw new IllegalArgumentException(\"Transfer snapshot\");"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    370,
+    "result.setItem(source.getItem());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    372,
+    "result.setEnchantLevel(source.getEnchantLevel());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    373,
+    "result.setIdentified(source.isIdentified());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    374,
+    "result.set_durability(source.get_durability());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    376,
+    "result.setRemainingTime(source.getRemainingTime());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    377,
+    "result.setLastUsed(copyTime(source.getLastUsed()));"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    378,
+    "result.setBless(source.getBless());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    379,
+    "result.setAttrEnchantLevel(source.getAttrEnchantLevel());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    380,
+    "result.setSpecialEnchant(source.getSpecialEnchant());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    381,
+    "result.setPackage(source.isPackage());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    382,
+    "result.set_bless_level(source.get_bless_level());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    383,
+    "result.set_bless_level2(source.get_bless_level2());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    384,
+    "result.set_item_level(source.get_item_level());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    385,
+    "result.setHotel_Town(source.getHotel_Town());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    386,
+    "result.setEndTime(copyTime(source.getEndTime()));"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    392,
+    "public static L1ItemInstance allocateDetachedTransfer(L1ItemInstance source, int count) {"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    393,
+    "return transferCopy(source, IdFactory.getInstance().nextId(), count, source.getChargeCount());"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    398,
+    "L1ItemInstance source, int count) {"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    404,
+    "try { LoggerInstance.getInstance().addWarehouse(type, deposit, pc, source, count); }"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    412,
+    "public static L1ItemInstance characterTransferCopy(L1ItemInstance source,"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    414,
+    "L1ItemInstance row = transferCopy(source, id, count, charge);"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    419,
+    "public final void prepareTransferDelete(L1ItemInstance source) {"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    421,
+    "if (source == null || getItem(source.getId()) != source)"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    422,
+    "throw new IllegalStateException(\"Warehouse move stale source\");"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    424,
+    "((PrivateWarehouse) this).preparePrivateTransferDelete(source);"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    426,
+    "submitWarehouseDelete(CLAN_ROWS, source);"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    428,
+    "submitWarehouseDelete(ELF_ROWS, source);"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    430,
+    "submitWarehouseDelete(SPECIAL_ROWS, source);"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    432,
+    "submitWarehouseDelete(SUPPLEMENT_ROWS, source);"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    738,
+    "// Destination refused the item. Restore the source's in-memory"
+  ],
+  [
+    "src/l1j/server/server/model/Warehouse/Warehouse.java",
+    751,
+    "// must not skip restoration of the destination and source items."
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathFinder.java",
+    321,
+    "private final Node source = new Node();"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathFinder.java",
+    774,
+    "source.reuse(sx, sy, 0, 0, null);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathFinder.java",
+    775,
+    "next.reuse(nx, ny, stepCost, 0, source);"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    449,
+    "for (int source = 0; source < nodeCount; source++) {"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    452,
+    "final int sx = nodeX[source];"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    453,
+    "final int sy = nodeY[source];"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    466,
+    "if (target != source) {"
+  ],
+  [
+    "src/l1j/server/server/model/ai/core/PathMaker.java",
+    507,
+    "if (addDirectedLink(source, target)) {"
+  ],
+  [
+    "src/l1j/server/server/model/character/Attack/Helper/DamageReductionHelper.java",
+    48,
+    "// Original src22 ArmorProcEngine is unavailable in the 2019 source."
+  ],
+  [
+    "src/l1j/server/server/model/character/Attack/Helper/L1DamageCalcHelper.java",
+    40,
+    "// Legacy callers retain their original unarmed/zero-core contract."
+  ],
+  [
+    "src/l1j/server/server/model/character/TileOccupancy/TileOccupancy.java",
+    54,
+    "// Call only with BOTH source and destination coordinate gates held."
+  ],
+  [
+    "src/l1j/server/server/model/character/TileOccupancy/TileOccupancy.java",
+    66,
+    "private boolean teleportGuarded(MapContext source, MapContext target,"
+  ],
+  [
+    "src/l1j/server/server/model/character/TileOccupancy/TileOccupancy.java",
+    72,
+    "if (source != null) source.release(source.getKey(oldX, oldY), actorId);"
+  ],
+  [
+    "src/l1j/server/server/model/character/TileOccupancy/TileOccupancy.java",
+    131,
+    "public void release(long key, int objectId) {"
+  ],
+  [
+    "src/l1j/server/server/model/character/TileOccupancy/TileOccupancy.java",
+    310,
+    "ctx.release(k, occupierId);"
+  ],
+  [
+    "src/l1j/server/server/model/character/TileOccupancy/TileOccupancy.java",
+    332,
+    "ctx.release(ctx.getKey(x, y), objectId);"
+  ],
+  [
+    "src/l1j/server/server/model/character/TileOccupancy/TileOccupancyNpc.java",
+    48,
+    "// A different owner may have claimed between the read and release."
+  ],
+  [
+    "src/l1j/server/server/model/character/TileOccupancy/TileOccupancyNpc.java",
+    54,
+    "private boolean teleportGuarded(MapContext source, MapContext target,"
+  ],
+  [
+    "src/l1j/server/server/model/character/TileOccupancy/TileOccupancyNpc.java",
+    60,
+    "if (source != null) source.release(source.getKey(oldX, oldY), actorId);"
+  ],
+  [
+    "src/l1j/server/server/model/character/TileOccupancy/TileOccupancyNpc.java",
+    119,
+    "public void release(long key, int objectId) {"
+  ],
+  [
+    "src/l1j/server/server/model/character/TileOccupancy/TileOccupancyNpc.java",
+    301,
+    "ctx.release(k, occupierId);"
+  ],
+  [
+    "src/l1j/server/server/model/character/TileOccupancy/TileOccupancyNpc.java",
+    323,
+    "ctx.release(ctx.getKey(x, y), occupierId);"
+  ],
+  [
+    "src/l1j/server/server/model/character/action/CAttackAction.java",
+    879,
+    "* Combat fields are reset on borrow/release; nested attacks do not share a live context."
+  ],
+  [
+    "src/l1j/server/server/model/character/action/CCreatureController.java",
+    140,
+    "// same 32-slot sequence; unrelated world events retain their owner path."
+  ],
+  [
+    "src/l1j/server/server/model/character/action/CGetItemAction.java",
+    115,
+    "* source transfer가 실제 성공한 경우에만 애니메이션/레이드 통지/"
+  ],
+  [
+    "src/l1j/server/server/model/character/action/CGetItemAction.java",
+    316,
+    "* source inventory lock은 OnStart()가 이미 소유하고 있다."
+  ],
+  [
+    "src/l1j/server/server/model/character/scheduler/PcInventoryExpiryScheduler.java",
+    338,
+    "// receipt for the source debit and reward/related SQL. Never retry an"
+  ],
+  [
+    "src/l1j/server/server/model/character/skill/L1SkillUse.java",
+    128,
+    "void release(L1SkillUse su) {"
+  ],
+  [
+    "src/l1j/server/server/model/character/skill/L1SkillUse.java",
+    368,
+    "pool.release(su);"
+  ],
+  [
+    "src/l1j/server/server/model/character/skill/L1SkillUse.java",
+    431,
+    "pool.release(su);"
+  ],
+  [
+    "src/l1j/server/server/model/character/skill/L1SkillUse.java",
+    485,
+    "pool.release(su);"
+  ],
+  [
+    "src/l1j/server/server/model/character/skill/L1SkillUse.java",
+    520,
+    "pool.release(su);"
+  ],
+  [
+    "src/l1j/server/server/model/item/ItemEffectRegistry.java",
+    94,
+    "final List<Bonus> source = (classType >= 0 && classType < byClass.length)"
+  ],
+  [
+    "src/l1j/server/server/model/item/ItemEffectRegistry.java",
+    96,
+    "for (Bonus b : source) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/ItemEffectRegistry.java",
+    120,
+    "final List<Bonus> source = (classType >= 0 && classType < byClass.length) ? byClass[classType] : bonuses;"
+  ],
+  [
+    "src/l1j/server/server/model/item/ItemEffectRegistry.java",
+    121,
+    "for (Bonus b : source) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/ItemEffectRegistry.java",
+    152,
+    "public static void register(int itemId, Def def, String source) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/ItemEffectRegistry.java",
+    157,
+    "+ \" 새 정의(\" + source + \")가 기존 정의를 덮어씀 — 확인 필요\");"
+  ],
+  [
+    "src/l1j/server/server/model/item/ItemEffectRegistry.java",
+    160,
+    "+ \" 보너스 \" + def.allBonuses().size() + \"건 (\" + source + \")\");"
+  ],
+  [
+    "src/l1j/server/server/model/item/ItemEffectRegistry.java",
+    163,
+    "/** source 없이 등록 (간단 호출용) */"
+  ],
+  [
+    "src/l1j/server/server/model/item/L1TreasureBox.java",
+    225,
+    "public void openAtomic(L1PcInstance pc, L1ItemInstance source) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/L1TreasureBox.java",
+    226,
+    "openAtomic(pc,source,null);"
+  ],
+  [
+    "src/l1j/server/server/model/item/L1TreasureBox.java",
+    232,
+    "public void openAtomic(L1PcInstance pc, L1ItemInstance source, Runnable afterCommitted) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/L1TreasureBox.java",
+    233,
+    "openAtomic(pc, source, null, afterCommitted);"
+  ],
+  [
+    "src/l1j/server/server/model/item/L1TreasureBox.java",
+    239,
+    "public void openAtomic(L1PcInstance pc, L1ItemInstance source,"
+  ],
+  [
+    "src/l1j/server/server/model/item/L1TreasureBox.java",
+    242,
+    "if (pc == null || source == null || source.getItemId() != getBoxId()"
+  ],
+  [
+    "src/l1j/server/server/model/item/L1TreasureBox.java",
+    243,
+    "|| pc.getInventory().getItem(source.getId()) != source) return;"
+  ],
+  [
+    "src/l1j/server/server/model/item/L1TreasureBox.java",
+    257,
+    "final int delay=((L1EtcItem)source.getItem()).get_delayEffect();"
+  ],
+  [
+    "src/l1j/server/server/model/item/L1TreasureBox.java",
+    267,
+    "if (delay>0 && afterCommitted==null) tx.change(source,image->image.setLastUsed(new Timestamp(now)));"
+  ],
+  [
+    "src/l1j/server/server/model/item/L1TreasureBox.java",
+    268,
+    "else if (!tx.debit(source,1)) return;"
+  ],
+  [
+    "src/l1j/server/server/model/item/L1TreasureBox.java",
+    323,
+    "try { L1ItemDelay.onItemUse(pc,source); }"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemLearningRule.java",
+    11,
+    "/** Immutable learning policy. Rules retain IDs and text, never a player or item. */"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseAttributeScroll.java",
+    16,
+    "/** Attribute conversion and guaranteed-grade scrolls: source debit + target update share one receipt. */"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseDurableSkills.java",
+    44,
+    "/** A permanent learned passive and its source item are one durable decision."
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseEconomyRewards.java",
+    66,
+    "public static void exchangeLegacyItem(L1PcInstance pc, L1ItemInstance source) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseEconomyRewards.java",
+    67,
+    "if (pc == null || source == null"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseEconomyRewards.java",
+    68,
+    "|| pc.getInventory().getItem(source.getId()) != source) return;"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseEconomyRewards.java",
+    69,
+    "final int id = source.getItemId();"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseEconomyRewards.java",
+    82,
+    "if (!tx.debit(source, 1)) return;"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseEquipmentRewards.java",
+    101,
+    "public static void openStarterKit(L1PcInstance pc, L1ItemInstance source) {"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseEquipmentRewards.java",
+    102,
+    "if (pc == null || source == null || source.getItemId() != 30071"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseEquipmentRewards.java",
+    103,
+    "|| pc.getInventory().getItem(source.getId()) != source) return;"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseEquipmentRewards.java",
+    129,
+    "if (!tx.debit(source, 1)) return;"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUsePassiveLearning.java",
+    14,
+    "/** Item rules are immutable; callbacks retain only the player until the existing commit completes. */"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseSealScroll.java",
+    38,
+    "// The source scroll and target blessing are one durable"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/ItemUseSkillLearning.java",
+    8,
+    "/** Item rules are immutable; callbacks retain only the player until the existing commit completes. */"
+  ],
+  [
+    "src/l1j/server/server/model/item/function/StarterSupportHandler.java",
+    30,
+    "/** Starter settlement: source debit, optional box rewards, EXP and quest"
+  ],
+  [
+    "src/l1j/server/server/model/network/buffer/WriteBuffer.java",
+    541,
+    "* 들어가는 cold path로 분리한다. detach/release 상태는 _capacity=0이므로"
+  ],
+  [
+    "src/l1j/server/server/model/network/client/manager/NetworkClientCounter.java",
+    25,
+    "public void release() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/client/manager/NetworkClientCounter.java",
+    42,
+    "* -1 in a counter is a tombstone: the last release claimed the empty"
+  ],
+  [
+    "src/l1j/server/server/model/network/client/manager/NetworkClientCounter.java",
+    59,
+    "// Help complete concurrent last-release removal."
+  ],
+  [
+    "src/l1j/server/server/model/network/codec/Cryptor.java",
+    234,
+    "// offsets retain the original bytewise path."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    18,
+    "private Source source;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    28,
+    "* Ordinary callers ALWAYS retain the defensive clone contract."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    41,
+    "* CIOBufferEx slab, and this object takes exactly the initial producer ref."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    52,
+    "source = pooled;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    71,
+    "* Native <=16 KiB: retain one immutable ConstBuffer source per owner."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    80,
+    "final int length = wire == null ? source.wire.remaining() : wire.length;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    83,
+    "if(source==null) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    85,
+    "source=target.createConstBuffer(wire);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    91,
+    "if(source!=null && target.ownsConstBuffer(source)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    92,
+    "&& target.enqueueConstBufferConfirmed(source,limit))"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    96,
+    "// CIOBufferEx slab. For a foreign owner the existing socket FIFO"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    98,
+    "return wire == null ? target.sendFrozenWire(source.wire)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    108,
+    "final Source source=target.createPooledWritableConstBuffer();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    109,
+    "if(source==null)return null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    111,
+    "final ByteBuffer out=source.mutableWire;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    112,
+    "if(out==null)throw new IllegalStateException(\"Native writable source lost\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    116,
+    "target.sealPooledWritableConstBuffer(source,length);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    117,
+    "return source;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    119,
+    "source.release();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    127,
+    "if (source != null) { source.release(); source = null; }"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    131,
+    "* Native requests separately retain the CIOBufferEx block before returning."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    146,
+    "/** Native pooled memory, not a Java copy. Held until last lease release. */"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    157,
+    "public Source retain() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    160,
+    "if (n == 0 || n == Integer.MAX_VALUE) throw new IllegalStateException(\"constant source lifetime\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    164,
+    "public void release() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    166,
+    "if (n < 0) throw new IllegalStateException(\"constant source double release\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    3,
+    "/** Original ExceptSelf predicate compares the source object's ID. */"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    22,
+    "/** Native pooled CIOBufferEx: 8-byte S_ACTION direct write, no Java byte[]. */"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    41,
+    "pooled.release();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    58,
+    "pooled.release();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    66,
+    "final CAsyncSendConstBuffer.Source source="
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    68,
+    "if(source==null)return null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    70,
+    "return new CAsyncSendConstBufferExceptSelf(source,senderId);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    72,
+    "source.release();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    23,
+    "// Additional fixed L1 formats, all assembled into one refcounted Native source."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    84,
+    "\"Native pooled combat source unavailable: \"+kind);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    129,
+    "\"pooled S-packet source unavailable: \" + format);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    170,
+    "if (shared == null) throw new IllegalStateException(\"S_ACTION shared Native source unavailable (allocation or shutdown)\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    200,
+    "if (shared == null) throw new IllegalStateException(\"S_MOVE shared Native source unavailable (allocation or shutdown)\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    214,
+    "* Encodes once directly into an NC-style Native pooled CIOBufferEx."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    216,
+    "* A failed source acquire/encode/commit never silently drops a broadcast."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    260,
+    "if(shared==null)throw new IllegalStateException(\"Native SC writable source unavailable\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    286,
+    "final CAsyncSendConstBuffer.Source source="
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    288,
+    "if(source==null)throw new IllegalStateException(\"Native recipient source unavailable\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    290,
+    "shared=new CAsyncSendConstBuffer(source,Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    292,
+    "source.release();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    331,
+    "final CAsyncSendConstBuffer.Source source="
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    333,
+    "if(source==null)throw new IllegalStateException("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    334,
+    "\"Native clan immutable source unavailable\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    336,
+    "shared=new CAsyncSendConstBuffer(source,Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    338,
+    "source.release();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    350,
+    "// One Native pool source across explicit L1Object recipients. Reuse the"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    369,
+    "\"Native explicit combat source unavailable\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    378,
+    "// One lazily assembled immutable source; self is sent first, then every"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    388,
+    "final CAsyncSendConstBuffer.Source source="
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    390,
+    "if(source==null)throw new IllegalStateException("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    391,
+    "\"Native self-and-visible source unavailable\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    393,
+    "shared=new CAsyncSendConstBuffer(source,Integer.MIN_VALUE,Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    395,
+    "source.release();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    418,
+    "// Preserve the visible-list borrow, all duplicate entries and recipient FIFO."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    435,
+    "final CAsyncSendConstBuffer.Source source="
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    437,
+    "if(source==null)throw new IllegalStateException("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    438,
+    "\"Native ground item source unavailable\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    440,
+    "shared=new CAsyncSendConstBuffer(source,item.getId(),Integer.MAX_VALUE);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    442,
+    "source.release();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferEx.java",
+    8,
+    "/** L1 Java view of a pooled CIOBufferEx; JVM object layout is not the original C++ ABI. */"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferEx.java",
+    9,
+    "public final class CIOBufferEx {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferEx.java",
+    10,
+    "private static final AtomicIntegerFieldUpdater<CIOBufferEx> ACTIVE ="
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferEx.java",
+    11,
+    "AtomicIntegerFieldUpdater.newUpdater(CIOBufferEx.class, \"_active\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferEx.java",
+    33,
+    "CIOBufferEx(CIOBufferPool.Bucket bucket, int slot) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferEx.java",
+    103,
+    "void startShared(CAsyncSendConstBuffer.Source source) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferEx.java",
+    108,
+    "_sharedView = source.wire.asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferEx.java",
+    109,
+    "_sharedSource = source.retain();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferEx.java",
+    133,
+    "void release() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferEx.java",
+    136,
+    "throw new IllegalStateException(\"double lease release\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferEx.java",
+    146,
+    "try { if (shared != null) shared.release(); }"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    38,
+    "public CIOBufferEx acquireRecv() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    39,
+    "final CIOBufferEx lease = _recv.acquire(false, 0);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    44,
+    "public CIOBufferEx acquireLargeRecv() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    45,
+    "final CIOBufferEx lease = _largeRecv.acquire(false, 0);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    51,
+    "public CIOBufferEx acquireSend(int maxWireBytes) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    55,
+    "final CIOBufferEx lease = maxWireBytes > SMALL_SEND_BYTES"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    62,
+    "public boolean owns(CIOBufferEx lease) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    66,
+    "CIOBufferEx acquireShared(CAsyncSendConstBuffer.Source source) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    67,
+    "return _send.acquireShared(source);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    108,
+    "/** Each slot and its WriteBuffer are reused; no per-packet CIOBufferEx is allocated. */"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    112,
+    "private final CIOBufferEx[] _leases;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    122,
+    "// can initialize _leases[slot]; release/acquire CAS publishes the"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    125,
+    "_leases = new CIOBufferEx[capacity];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    128,
+    "private CIOBufferEx acquire(boolean send, int requested) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    134,
+    "CIOBufferEx lease = _leases[slot];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    136,
+    "lease = new CIOBufferEx(this, slot);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    144,
+    "_slots.release(slot);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    152,
+    "private CIOBufferEx acquireShared(CAsyncSendConstBuffer.Source source) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    156,
+    "CIOBufferEx lease = _leases[slot];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    157,
+    "if (lease == null) { lease = new CIOBufferEx(this, slot); _leases[slot] = lease; }"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    158,
+    "lease.startShared(source); _borrows.increment(); return lease;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    160,
+    "catch (Throwable failure) { _slots.release(slot); throw failure; }"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    164,
+    "public void release(CIOBufferEx lease) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOBufferPool.java",
+    167,
+    "lease.release();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOFrame.java",
+    8,
+    "private CIOBufferEx lease;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOFrame.java",
+    18,
+    "void beginIO(CUserSocket owner, CIOBufferEx lease) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOFrame.java",
+    37,
+    "CIOBufferEx ioLease(CUserSocket owner) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOSlotPool.java",
+    10,
+    "* used as a pooled-buffer lease token source without stale-slot aliasing after reuse."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOSlotPool.java",
+    138,
+    "public void release(int slot) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOSlotPool.java",
+    140,
+    "release(slot, _generation.get(slot));"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOSlotPool.java",
+    143,
+    "public void release("
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOSlotPool.java",
+    157,
+    "\"RConcurrentSlot double release: \""
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOSlotPool.java",
+    188,
+    "\"RConcurrentSlot concurrent release: \""
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOSlotPool.java",
+    198,
+    "\"RConcurrentSlot double release: \""
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOSlotPool.java",
+    213,
+    "* Fast release for a caller that has already atomically revoked its lease."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOSlotPool.java",
+    214,
+    "* CIOBufferEx.release() gates exactly one releaser with ACTIVE.getAndSet."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOSlotPool.java",
+    215,
+    "* Unlike the public release(), there cannot be a competing owner of this"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CIOSlotPool.java",
+    239,
+    "throw new IllegalStateException(\"RConcurrentSlot double release: \" + slot);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    132,
+    "// The normal FIFO drain/release handshake still owns completion and closing."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    345,
+    "private CIOBufferEx[] _pending;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    364,
+    "private final CIOBufferEx[] _socketSendArguments = new CIOBufferEx[SOCKET_SLOTS];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    471,
+    "private CIOBufferEx _producerLease;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    524,
+    "CIOBufferEx fusedWrite = null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    536,
+    "// pending counter or owner release of a ticket callback."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    550,
+    "// must run after unlocking and before owner release."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    572,
+    "// original FIFO drainer; retain the old final kick."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    636,
+    "private CIOBufferEx _stagedPacketPack;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    734,
+    "private volatile CIOBufferEx _writing;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    738,
+    "private CIOBufferEx _stagedBurstAction;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    748,
+    "// P19: retain the serializer-driven partial WRITE progression; no runtime flag."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    751,
+    "private CIOBufferEx[] _gatherFrames;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    759,
+    "private CIOBufferEx _reading;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    787,
+    "// second callback; the first one must still release its READ lease."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    804,
+    "* the sole executor of completion, next-send and buffer-release transitions."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    807,
+    "* retain queued outbound buffers without a redundant callback queue."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    815,
+    "// Never overwrite the first callback or release its lease twice."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    892,
+    "final CIOBufferEx active = _writing;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    898,
+    "// Uncontended and already-returned completions retain the P8 path."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    919,
+    "final CIOBufferEx active = _writing;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    922,
+    "// A race with owner release is closed by the ordinary recheck below."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    943,
+    "final CIOBufferEx lease = _writing;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    953,
+    "final CIOBufferEx lease = _writing;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1156,
+    "public void sealPooledWritableConstBuffer(CAsyncSendConstBuffer.Source source,int length) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1157,
+    "_channel.server().sealPooledWritableConstBuffer(source,length);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1159,
+    "public boolean ownsConstBuffer(CAsyncSendConstBuffer.Source source) { return source.owner == _channel.server(); }"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1166,
+    "/** Drain accepted SENDs and retain a bounded minimum grace before closing. */"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1277,
+    "public CIOBufferEx beginOutboundFrame(int maxWireBytes) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1364,
+    "CIOBufferEx lease = null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1376,
+    "// Preserve the original failure, but release the ticket and lease."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1394,
+    "CIOBufferEx lease) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1411,
+    "final CIOBufferEx lease = frame.ioLease(this);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1424,
+    "// The public DirectFrame writer must retain its original"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1437,
+    "_pool.release(lease);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1478,
+    "final CIOBufferEx lease = frame.ioLease(this);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1506,
+    "final CIOBufferEx[] old = _pending;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1508,
+    "_pending = new CIOBufferEx[Math.min(_maxQueuedFrames, 8)];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1514,
+    "final CIOBufferEx[] next = new CIOBufferEx[capacity];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1531,
+    "private boolean packAdjacentStagedPacketLocked(CIOBufferEx packet,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1536,
+    "private boolean packAdjacentStagedPacketLocked(CIOBufferEx packet,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1538,
+    "final CIOBufferEx earlier = _stagedPacketPack;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1569,
+    "if (!directFrame) _pool.release(packet);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1578,
+    "private void promoteDirectPackCapacityLocked(CIOBufferEx lease) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1602,
+    "CIOBufferEx first = null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1610,
+    "final CIOBufferEx next = _socketSendArguments[slot];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1646,
+    "_pool.release(next);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1656,
+    "public boolean commitOutboundFrame(CIOBufferEx lease) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1668,
+    "private boolean stageOutboundFrameLocked(CIOBufferEx lease, boolean direct) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1672,
+    "private boolean stageOutboundFrameLocked(CIOBufferEx lease, boolean direct,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1737,
+    "* Normal ticket-owning serializer callbacks retain their existing path."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1764,
+    "// SEND_ENQUEUE slot has been release-published. The current producer's"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1782,
+    "private void finishStagedSend(CIOBufferEx lease, boolean direct,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1789,
+    "private void finishStagedSend(CIOBufferEx lease, boolean direct) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1802,
+    "private void acceptStagedSend(CIOBufferEx lease) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1806,
+    "CIOBufferEx selectedWrite = null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1858,
+    "_pool.release(lease);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1900,
+    "final CIOBufferEx lease = _socketSendArguments[slot];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1918,
+    "private CIOBufferEx commitSingleFlushSendLocked() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1930,
+    "final CIOBufferEx lease = _socketSendArguments[slot];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1952,
+    "private boolean commitStagedOutboundFrameLocked(CIOBufferEx lease) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1964,
+    "// Mixed or externally encoded packets retain the full header walk."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1992,
+    "final CIOBufferEx tail = _queued != 0"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2011,
+    "_pool.release(lease);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2090,
+    "CIOBufferEx encoded = null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2095,
+    "CIOBufferEx lease = null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2182,
+    "final CIOBufferEx lease = _producerLease;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2251,
+    "CIOBufferEx tail = null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2266,
+    "// Mixed packet tails retain their full per-frame cipher walk."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2268,
+    "final CIOBufferEx lease = _pool.acquireSend(CIOBufferPool.SMALL_SEND_BYTES);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2276,
+    "if (lease.reserved()) _pool.release(lease);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2299,
+    "CIOBufferEx stagedLease = null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2337,
+    "final CIOBufferEx lease = _pool.acquireSend(CIOBufferPool.SMALL_SEND_BYTES);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2351,
+    "// owner release/reacquire before WRITE submission."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2372,
+    "// Even a rejected stage must release an acquired token."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2383,
+    "if (!accepted && lease.reserved()) _pool.release(lease);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2415,
+    "// subsequent reservations, and inline callbacks before release."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2433,
+    "final CIOBufferEx lease = _stagedBurstAction;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2470,
+    "private CIOBufferEx writableBurstTailLocked() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2483,
+    "final CIOBufferEx tail = _writing;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2496,
+    "private CIOBufferEx writableQueuedActionTailLocked() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2504,
+    "final CIOBufferEx tail = _pending[_tail == 0"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2513,
+    "CIOBufferEx tail = writableBurstTailLocked();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2574,
+    "CIOBufferEx lease = null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2604,
+    "if (!accepted && lease != null && lease.reserved()) _pool.release(lease);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2617,
+    "final CIOBufferEx tail = writableBurstTailLocked();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2655,
+    "private void prepareNativeFrames(CIOBufferEx lease){"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2663,
+    "private boolean preparePackedEncryption(CIOBufferEx lease) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2690,
+    "public void abortOutboundFrame(CIOBufferEx lease) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2694,
+    "_pool.release(lease);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2766,
+    "// Only one short, fully buffered frame may borrow an idle"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2768,
+    "// registration. Queued SEND reservations retain original FIFO."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2779,
+    "// dispatch, the READ pump must still release that token."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    2952,
+    "// Publish all Java lease release before C++ may deliver the next packet."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3041,
+    "// Keep its frame encrypted/buffered until the low-water release."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3084,
+    "// SEND-pressure backpressure can retain a complete frame."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3089,
+    "final CIOBufferEx large = _pool.acquireLargeRecv();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3093,
+    "final CIOBufferEx old = _reading;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3095,
+    "_pool.release(old);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3098,
+    "final CIOBufferEx compact = _pool.acquireRecv();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3100,
+    "final CIOBufferEx old = _reading;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3102,
+    "_pool.release(old);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3128,
+    "final CIOBufferEx recv = _reading;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3130,
+    "if (recv != null) _pool.release(recv);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3175,
+    "// so later packets retain the correct key state."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3377,
+    "final CIOBufferEx sendLease = kind == SOCKET_SEND_ENQUEUE"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3449,
+    "// A release-only store permits both this owner to miss a newly"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3452,
+    "// wake it. Volatile release closes that lost-wakeup window."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3456,
+    "// release sees the old owner, which must recheck this bit; a"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3504,
+    "final CIOBufferEx active = _writing;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3515,
+    "CIOBufferEx current = null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3525,
+    "_gatherFrames = new CIOBufferEx[GATHER_MAX_FRAMES];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3532,
+    "final CIOBufferEx candidate = _pending[_head];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3533,
+    "if (candidate.shared()) break; // immutable source is an ordered WRITE boundary"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3573,
+    "final CIOBufferEx lease = _gatherFrames[i];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3613,
+    "CIOBufferEx next = null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3624,
+    "final CIOBufferEx frame = _gatherFrames[i];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3627,
+    "_pool.release(frame);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3663,
+    "private void postWrite(CIOBufferEx lease) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3694,
+    "// retains the CIOBufferEx block before returning, so the"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3696,
+    "final CAsyncSendConstBuffer.Source source = lease._sharedSource;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3697,
+    "if (source == null) throw new IllegalStateException(\"shared WRITE submitted twice\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3699,
+    "try { _channel.SendConstBuffer(bytes,source.handle,this,lease._nativeSendFlags); }"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3700,
+    "finally { source.release(); }"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3718,
+    "private void completeWrite(CIOBufferEx lease, boolean success) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3720,
+    "CIOBufferEx next = null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3729,
+    "_pool.release(lease);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3812,
+    "// Never retain a closed socket when a lifecycle observer fails."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3877,
+    "final CIOBufferEx lease = _pending[_head];"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3883,
+    "_pool.release(lease);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3902,
+    "public boolean enqueueConstBufferConfirmed(CAsyncSendConstBuffer.Source source, int pendingLimit) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3903,
+    "CIOBufferEx lease = null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3907,
+    "if (_closed != 0 || _closing != 0 || !ownsConstBuffer(source)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3909,
+    "lease = _pool.acquireShared(source);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3915,
+    "try { if (!accepted && lease != null) _pool.release(lease); }"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3931,
+    "* or cannot accept a native shared source. No Java byte[] is created."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_DropItem.java",
+    300,
+    "* 실패 요청이 source item의 giveItem/delay/log 상태를 오염시키지 않는다."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_DropItem.java",
+    315,
+    "* 부분 드랍이면 source stack이 inventory에 그대로 남아 있으므로"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_PersonalShop.java",
+    309,
+    "// In this *mandatory* cleanup/persistence boundary only, retain the old"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Result.java",
+    484,
+    "final l1j.server.server.model.Warehouse.Warehouse source;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Result.java",
+    485,
+    "if (kind == 3) source = WarehouseManager.getInstance()"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Result.java",
+    489,
+    "source = clan == null ? null : WarehouseManager.getInstance()"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Result.java",
+    491,
+    "} else if (kind == 9) source = WarehouseManager.getInstance()"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Result.java",
+    494,
+    "if (source == null) return false;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/CS_Result.java",
+    496,
+    "L1ItemInstance item = source.getItem(param1(packed0, params, i));"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/User.java",
+    23,
+    "// Do not add a second pending flag or release it on DB submission."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/cs/packet/User.java",
+    32,
+    "// a new receipt or change equipment, and must not borrow a replay bypass."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/diagnostics/CPoolDiagnostics.java",
+    86,
+    "int slot=at+12+kind*3;long refs=r[slot],add=r[slot+1],release=r[slot+2];if(refs==0&&add==0&&release==0)continue;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/diagnostics/CPoolDiagnostics.java",
+    87,
+    "b.append(\"  \").append(REFERENCE_NAMES[kind]).append('=').append(refs).append(\" add \").append(referenceSite(add)).append(\" release \").append(referenceSite(release)).append('\\n');"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ActionUI.java",
+    192,
+    "public static boolean sendTamAccount(L1PcInstance pc, L1PcInstance source) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ActionUI.java",
+    195,
+    "final int tam = source != null && source.getAccount() != null"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ActionUI.java",
+    196,
+    "? Math.max(0, source.getAccount().getTamPoint()) : 0;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ActionUI2.java",
+    232,
+    "public static boolean send(L1PcInstance recipient, L1PcInstance source, int code) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ActionUI2.java",
+    240,
+    "if (code == CLAN_RANK && source != null && source.getClanname() != null) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ActionUI2.java",
+    241,
+    "nameBytes = source.getClanname().getBytes();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ActionUI2.java",
+    242,
+    "final int rawRank = source.getClanRank();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AreaAttackEffect.java",
+    33,
+    "// The 16-KiB Native pool is fixed. Large multi-target frames retain"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    14,
+    "public static boolean sendDirect(L1PcInstance recipient, L1PcInstance source, String chat) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    19,
+    "public static boolean sendDirect(L1PcInstance recipient, L1PcInstance source, String chat, int test) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    21,
+    "source == null ? 0 : source.getId(), chat == null ? \"\" : chat, \"\", 0, 0);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    48,
+    "public static boolean sendComplex0(L1PcInstance receiver, L1PcInstance source, String chat, int opcode) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    49,
+    "if (source == null) return false;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    50,
+    "final String name = source.getName() == null ? \"\" : source.getName();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    51,
+    "return sendDirectRaw(receiver, MODE_COMPLEX_0, opcode, 0, source.getId(),"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    55,
+    "public static void broadcastComplex0(L1PcInstance source, String chat, int opcode) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    56,
+    "if(source==null)return;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    57,
+    "final String name=source.getName()==null?\"\":source.getName();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    61,
+    "final java.util.List<L1PcInstance> visible=world.borrowVisiblePlayerFast(source);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    64,
+    "b -> writeNativeChat(b,opcode,0,source.getId(),formatted,true));"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ClanAttention.java",
+    36,
+    "* source's original synchronized monitor protects both size and byte"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ClanAttention.java",
+    39,
+    "public static byte[] sharedListWire(int count,List<String> source) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ClanAttention.java",
+    42,
+    "if(source==null){"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ClanAttention.java",
+    53,
+    "synchronized(source){"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ClanAttention.java",
+    55,
+    "for(String name:source) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ClanAttention.java",
+    71,
+    "for(String name:source){"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ClanAttention.java",
+    102,
+    "public static boolean sendList(L1PcInstance pc, int count, List<String> source) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ClanAttention.java",
+    108,
+    "if (source != null) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ClanAttention.java",
+    109,
+    "synchronized (source) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ClanAttention.java",
+    110,
+    "for (String name : source) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    87,
+    "public static void broadcastCharacter(L1Character source, L1Character cha, String chat) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    88,
+    "if(source==null || cha==null)return;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    91,
+    "L1World.getInstance().getVisiblePlayer(source), b -> { b.put((byte)Opcodes.S_SAY_CODE).put((byte)0).putInt(cha.getId()); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message); b.put((byte)0); }"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    94,
+    "public static void broadcastNpcFast(L1Character source, L1NpcInstance npc, String chat, int type) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    95,
+    "if(source==null || npc==null)return;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    100,
+    "final java.util.List<L1PcInstance> visible=world.borrowVisiblePlayerFast(source);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    126,
+    "public static void broadcastNpc(L1Character source, L1NpcInstance npc, String chat, int type) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    127,
+    "if(source==null || npc==null)return;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    132,
+    "L1World.getInstance().getVisiblePlayer(source), b -> { b.put((byte)Opcodes.S_SAY_CODE).put((byte)color).putInt(npc.getId()); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,formatted); b.put((byte"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    135,
+    "public static void broadcastNpcWide(L1Character source, L1NpcInstance npc, String chat, int type) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    136,
+    "if(source==null || npc==null)return;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NpcChatPacket.java",
+    141,
+    "L1World.getInstance().getVisiblePlayer(source,50), b -> { b.put((byte)Opcodes.S_SAY_CODE).put((byte)color).putInt(npc.getId()); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,formatted); b.put((b"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ReturnedStat.java",
+    236,
+    "public static void broadcastEmblem(L1Character source, int objId, int emblemId) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ReturnedStat.java",
+    237,
+    "if (source == null) return;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ReturnedStat.java",
+    239,
+    "L1World.getInstance().getVisiblePlayer(source), b -> { b.put((byte)Opcodes.S_VOICE_CHAT).put((byte)0x3c).putInt(objId).putInt(emblemId); });"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    401,
+    "L1Character source,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    410,
+    "source,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    422,
+    "L1Character source,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    432,
+    "source,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    444,
+    "L1Character source,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    454,
+    "source,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    466,
+    "L1Character source,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    475,
+    "if (anchor == null || source == null) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    480,
+    "fixActionId(source, actionId);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    482,
+    "final int myX = source.getX();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    483,
+    "final int myY = source.getY();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    491,
+    "? source.getHeading()"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    494,
+    "source.setHeading(heading);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    500,
+    "? source.getId()"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    524,
+    "L1Character source,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    535,
+    "source,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    548,
+    "L1Character source,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    558,
+    "if (source == null || anchor == null) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    563,
+    "fixActionId(source, actionId);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    565,
+    "final int myX = source.getX();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    566,
+    "final int myY = source.getY();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    574,
+    "? source.getHeading()"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    577,
+    "source.setHeading(heading);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    583,
+    "? source.getId()"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    624,
+    "L1Character source,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    635,
+    "source,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    648,
+    "L1Character source,"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    659,
+    "if (source == null) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    664,
+    "fixActionId(source, actionId);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    666,
+    "final int myX = source.getX();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    667,
+    "final int myY = source.getY();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    675,
+    "? source.getHeading()"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    678,
+    "source.setHeading(heading);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseAttackSkill.java",
+    684,
+    "? source.getId()"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java",
+    1562,
+    "if(npc==null)throw new IllegalArgumentException(\"null WorldPut source\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java",
+    1701,
+    "if(pc==null)throw new IllegalArgumentException(\"null WorldPut source\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java",
+    1841,
+    "if(s==null)throw new IllegalArgumentException(\"null WorldPut source\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/session/DominationHybrid.java",
+    43,
+    "// retain the tower reservation while their client behavior is investigated."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/session/DominationHybrid.java",
+    355,
+    "writer.int32(1, 1); // Result_sucess in the source pack."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    108,
+    "// Never release FFM upcall arenas while a native Stop/StopAccepting call is hung."
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    626,
+    "catch(Throwable failure){throw new IllegalStateException(\"Native packet release failed\",failure);}"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    735,
+    "CAsyncSendConstBuffer.Source source = new CAsyncSendConstBuffer.Source(this, handle, wire);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    737,
+    "return source;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    747,
+    "* C++ CIOBufferEx<16384> is borrowed and formatted BEFORE any recipient"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    847,
+    "final CAsyncSendConstBuffer.Source source = pooledSource(handle, length);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    849,
+    "return source;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    861,
+    "/** Typed L1 combat primitives -> same native pooled Assemble source. */"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    887,
+    "final CAsyncSendConstBuffer.Source source=pooledSource(handle,length);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    889,
+    "return source;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    910,
+    "if(data.address()==0)throw new IllegalStateException(\"Writable pooled source has null data\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    913,
+    "final CAsyncSendConstBuffer.Source source="
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    916,
+    "return source;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    922,
+    "throw new IllegalStateException(\"Native writable source acquire failed\",failure);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    928,
+    "public void sealPooledWritableConstBuffer(CAsyncSendConstBuffer.Source source,int length) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    929,
+    "if(source==null||source.owner!=this||source.mutableWire==null"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    931,
+    "throw new IllegalArgumentException(\"invalid writable Native source/length\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    934,
+    "final int ok=(int)sealWritableConstBuffer.invokeExact(source.handle,length);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    936,
+    "source.wire.limit(length);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    937,
+    "source.mutableWire=null;"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    939,
+    "throw new IllegalStateException(\"Native pooled source seal failed\",failure);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    949,
+    "catch (Throwable failure) { throw new IllegalStateException(\"CTransport constant buffer release failed\", failure); }"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    1113,
+    "if(System.nanoTime()-startedAt>=budgetNs)throw new IOException(\"Packet release downcall still active; native memory retained\");"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CSocket.java",
+    140,
+    "/** Never retain the native buffer; it is valid only during the upcall. */"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CSocket.java",
+    224,
+    "public void SendConstBuffer(ByteBuffer bytes, MemorySegment source, CUserSocket owner, int flags) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CSocket.java",
+    235,
+    "// The source reference transferred from the Java FIFO is pinned until this"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CSocket.java",
+    238,
+    "try { success = parent.sendConstBuffer(id, source, flags); }"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CSocket.java",
+    278,
+    "// a copy of its bytes; Java source leases stay pinned by the CIO pump."
+  ],
+  [
+    "src/l1j/server/server/model/network/packet/CPacketHandler.java",
+    4393,
+    "// A disconnected/old CIOClient may still retain its previous activeChar"
+  ],
+  [
+    "src/l1j/server/server/model/network/safe/NetworkSafeLoadManager.java",
+    55,
+    "public void release(){"
+  ],
+  [
+    "src/l1j/server/server/model/network/thread/CIOThreadCallback.java",
+    310,
+    "* The terminal callback must only release/freeze persistence metadata."
+  ],
+  [
+    "src/l1j/server/server/model/network/thread/CIOThreadCallback.java",
+    2361,
+    "* Callers that can retry must retain their own operation and retry later."
+  ],
+  [
+    "src/l1j/server/server/model/network/thread/CIOThreadCallback.java",
+    2935,
+    "// The bounded NPC event pool is full: retain the same"
+  ],
+  [
+    "src/l1j/server/server/model/network/thread/CThreadLocalTimer.java",
+    454,
+    "// Do not release the heartbeat generation merely because"
+  ],
+  [
+    "src/l1j/server/server/model/network/thread/CThreadLocalTimer.java",
+    496,
+    "// On stop, a scheduled callback must not retain PCs/NPCs/Spawn and"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/HateEvent.java",
+    41,
+    "public static void release(HateEvent e) {"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    955,
+    "final L1MonsterInstance source,"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    959,
+    "if (source == null"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    962,
+    "|| source.isDead()"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    963,
+    "|| source.getCurrentHp() <= 0) {"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    968,
+    "source.getNpcTemplate();"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    981,
+    "source,"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    985,
+    "final int sx = source.getX();"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    986,
+    "final int sy = source.getY();"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    987,
+    "final int mapId = source.getMapId();"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1004,
+    "if (helper == source"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1049,
+    "final L1MonsterInstance source,"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1052,
+    "if (source == null || attacker == null) {"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1057,
+    "source.getMobGroupId();"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1069,
+    "source,"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1088,
+    "if (helper == source"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1092,
+    "!= source.getMapId()"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1114,
+    "* helper/source share the same non-zero family."
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1120,
+    "final L1Npc source,"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1123,
+    "if (source == null || helper == null) {"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1128,
+    "source.get_family();"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1749,
+    "final L1NpcInstance source,"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1752,
+    "if (source == null"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1754,
+    "|| source.isDead()"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1755,
+    "|| source.getCurrentHp() <= 0) {"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1760,
+    "source instanceof L1GuardInstance;"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1763,
+    "source instanceof L1CastleGuardInstance;"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1775,
+    "source,"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1779,
+    "final int sx = source.getX();"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1780,
+    "final int sy = source.getY();"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1781,
+    "final int mapId = source.getMapId();"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcEventFactory.java",
+    1791,
+    "|| obj == source) {"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/NpcServer.java",
+    993,
+    "// NpcServer is a static singleton. Stop paths must not retain NPCs"
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/action/AiRuntime.java",
+    650,
+    "// not to SEE_CREATURE. Never retain a one-shot sight event for 7s."
+  ],
+  [
+    "src/l1j/server/server/model/npc/ai/action/AiRuntime.java",
+    849,
+    "HateEvent.release(event);"
+  ],
+  [
+    "src/l1j/server/server/model/rank/loader/RankUserLoader.java",
+    30,
+    "public void release() {"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_PERSONAL_SHOP_ITEM_LIST_NOTI.java",
+    105,
+    "final ArrayList<MJDShopItem> source = shopPc.getSellings();"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_PERSONAL_SHOP_ITEM_LIST_NOTI.java",
+    106,
+    "if (source == null || source.isEmpty()) {"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_PERSONAL_SHOP_ITEM_LIST_NOTI.java",
+    111,
+    "final List<MJDShopItem> list = new ArrayList<MJDShopItem>(source);"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_PERSONAL_SHOP_ITEM_LIST_NOTI.java",
+    189,
+    "final ArrayList<MJDShopItem> source = shopPc.getPurchasings();"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_PERSONAL_SHOP_ITEM_LIST_NOTI.java",
+    190,
+    "if (source == null || source.isEmpty()) {"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_PERSONAL_SHOP_ITEM_LIST_NOTI.java",
+    194,
+    "final List<MJDShopItem> purchasingsItems = new ArrayList<MJDShopItem>(source);"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_PERSONAL_SHOP_ITEM_LIST_NOTI.java",
+    335,
+    "final List<L1ShopItem> source = shop.getSellingItems();"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_PERSONAL_SHOP_ITEM_LIST_NOTI.java",
+    336,
+    "if (source == null || source.isEmpty()) {"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_PERSONAL_SHOP_ITEM_LIST_NOTI.java",
+    340,
+    "final List<L1ShopItem> shopItems = new ArrayList<L1ShopItem>(source);"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_PERSONAL_SHOP_ITEM_LIST_NOTI.java",
+    468,
+    "final List<L1ShopItem> source = shop.getBuyingItems();"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_PERSONAL_SHOP_ITEM_LIST_NOTI.java",
+    469,
+    "if (source == null || source.isEmpty()) {"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_PERSONAL_SHOP_ITEM_LIST_NOTI.java",
+    473,
+    "final List<L1ShopItem> shopItems = new ArrayList<L1ShopItem>(source);"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/PlaySupport/PssConfig.java",
+    44,
+    "/** On invalid settings, retain the last good configuration. */"
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Proto/SC_CRAFT_LIST_ALL_ACK.java",
+    192,
+    "// retain the per-connection sending barrier for a task that cannot run."
+  ],
+  [
+    "src/l1j/server/server/packets/Protocol/MainServer/Proto/SC_SERVER_VERSION_INFO.java",
+    22,
+    "// Stop further requests, retain the grace period, and drain the"
+  ],
+  [
+    "src/l1j/server/server/storage/CacheD.java",
+    52,
+    "* This is never a rolled-back operation and must retain the owner barriers."
+  ],
+  [
+    "src/l1j/server/server/storage/CacheD.java",
+    237,
+    "// release a DB-confirmed transaction with stale game memory."
+  ],
+  [
+    "src/l1j/server/server/storage/CacheD.java",
+    462,
+    "/** Call before modifying either the source or an existing destination stack. */"
+  ],
+  [
+    "src/l1j/server/server/storage/CacheD.java",
+    497,
+    "throw new IllegalStateException(\"Repeated batch warehouse source \" + sourceId);"
+  ],
+  [
+    "src/l1j/server/server/storage/CacheD.java",
+    755,
+    "// Singleton resource lanes retain the state directly: 131k distinct"
+  ],
+  [
+    "src/l1j/server/server/storage/CacheD.java",
+    1371,
+    "// Only a published session supersedes the previous owner release."
+  ],
+  [
+    "src/l1j/server/server/storage/CacheD.java",
+    1482,
+    "// cancel an earlier logout release until session publication."
+  ],
+  [
+    "src/l1j/server/server/storage/cached/CTransaction.java",
+    43,
+    "* tables. The caller has already snapshotted each source and destination."
+  ],
+  [
+    "src/l1j/server/server/storage/cached/CTransaction.java",
+    203,
+    "/** Compare the complete persisted source image under its row lock. */"
+  ],
+  [
+    "src/l1j/server/server/storage/cached/CTransaction.java",
+    331,
+    "if (previousCount <= 0) throw new SQLException(\"Missing character source quantity: \" + id);"
+  ],
+  [
+    "src/l1j/server/server/storage/cached/CTransaction.java",
+    339,
+    "throw new SQLException(\"Character move source quantity/owner changed: \" + id);"
+  ],
+  [
+    "src/l1j/server/server/storage/mysql/MySqlCharactersItemStorage.java",
+    121,
+    "private final L1ItemInstance source;"
+  ],
+  [
+    "src/l1j/server/server/storage/mysql/MySqlCharactersItemStorage.java",
+    131,
+    "source = item;"
+  ],
+  [
+    "src/l1j/server/server/storage/mysql/MySqlCharactersItemStorage.java",
+    201,
+    "L1ItemInstance item = source;"
+  ],
+  [
+    "src/l1j/server/server/storage/mysql/MySqlCharactersItemStorage.java",
+    385,
+    "* item. Keep binary/source compatibility, but never issue unsafe SQL."
+  ],
+  [
+    "src/l1j/server/server/templates/L1ItemBookMark.java",
+    194,
+    "if (ps.executeUpdate() != result.size()) throw new SQLException(\"Stored bookmark source changed\");"
+  ],
+  [
+    "src/l1j/server/server/templates/L1MobSkill.java",
+    89,
+    "private void cloneSkills(SkillEntry[] source) {"
+  ],
+  [
+    "src/l1j/server/server/templates/L1MobSkill.java",
+    90,
+    "for (int i = 0; i < source.length; i++) {"
+  ],
+  [
+    "src/l1j/server/server/templates/L1MobSkill.java",
+    91,
+    "if (source[i] != null) {"
+  ],
+  [
+    "src/l1j/server/server/templates/L1MobSkill.java",
+    92,
+    "_skills[i] = source[i].clone();"
+  ],
+  [
+    "src/l1j/server/server/utils/CalcStat.java",
+    762,
+    "// Legacy public API aliases. All game-source callers use the Korean table APIs"
+  ],
+  [
+    "native/CTransport.cpp",
+    176,
+    "op.owner->retain(ObjectReferenceType::ORT_IOCP_MESSAGE_RETAIN);"
+  ],
+  [
+    "native/CTransport.cpp",
+    178,
+    "op.owner->release(ObjectReferenceType::ORT_IOCP_MESSAGE_RETAIN); return false;"
+  ],
+  [
+    "native/CTransport.cpp",
+    321,
+    "s->retain();"
+  ],
+  [
+    "native/CTransport.cpp",
+    327,
+    "ObjectAllocator::Extension(this)=nullptr;delete extra;ownerServer->release();"
+  ],
+  [
+    "native/CTransport.cpp",
+    379,
+    "readOp().reset(); state().readPosted = true; retain(ObjectReferenceType::ORT_IO_RETAIN);"
+  ],
+  [
+    "native/CTransport.cpp",
+    385,
+    "if (error != WSA_IO_PENDING) { state().readPosted = false; release(ObjectReferenceType::ORT_IO_RETAIN); failLocked(2, error); }"
+  ],
+  [
+    "native/CTransport.cpp",
+    392,
+    "writeOp().reset(); state().writePosted = true; retain(ObjectReferenceType::ORT_IO_RETAIN);"
+  ],
+  [
+    "native/CTransport.cpp",
+    398,
+    "if (error != WSA_IO_PENDING) { state().writePosted = false; release(ObjectReferenceType::ORT_IO_RETAIN); failLocked(3, error); }"
+  ],
+  [
+    "native/CTransport.cpp",
+    498,
+    "// Carry a release suppressed while userPumpActive was still set."
+  ],
+  [
+    "native/CTransport.cpp",
+    539,
+    "// after readDelivering is clear, closing the foreign-release window."
+  ],
+  [
+    "native/CTransport.cpp",
+    547,
+    "// The FFM handle owns the producer reference. Requests retain the original"
+  ],
+  [
+    "native/CTransport.cpp",
+    548,
+    "// CIOBufferEx block directly; a queued request never borrows a Java pointer."
+  ],
+  [
+    "native/CTransport.cpp",
+    549,
+    "// The original NC block is the Source. Refcount is on CIOBufferEx itself."
+  ],
+  [
+    "native/CTransport.cpp",
+    558,
+    "socket->retain(ObjectReferenceType::ORT_IO_SOCKET_WRITE);std::size_t at=0;"
+  ],
+  [
+    "native/CTransport.cpp",
+    561,
+    "NativeSendRequest(CIOSocket* owner,CIOBuffer& source,bool plain)noexcept"
+  ],
+  [
+    "native/CTransport.cpp",
+    562,
+    ":socket(owner),sharedBlock(&source),framed(true),plainFirst(plain),constant(true){"
+  ],
+  [
+    "native/CTransport.cpp",
+    563,
+    "socket->retain(ObjectReferenceType::ORT_IO_SOCKET_WRITE);CIOBufferPool::retain(sharedBlock);"
+  ],
+  [
+    "native/CTransport.cpp",
+    567,
+    "~NativeSendRequest()override{if(sharedBlock)socket->server()->buffers.recycle(sharedBlock);socket->release(ObjectReferenceType::ORT_IO_SOCKET_WRITE);}"
+  ],
+  [
+    "native/CTransport.cpp",
+    594,
+    "if(request)request->release();"
+  ],
+  [
+    "native/CTransport.cpp",
+    606,
+    "bool CIOSocketEx<Buffer>::sendConstBuffer(CIOBuffer* source,bool plainFirst)noexcept {"
+  ],
+  [
+    "native/CTransport.cpp",
+    609,
+    "if(!source||source->constSourceOwner!=server())return false;"
+  ],
+  [
+    "native/CTransport.cpp",
+    610,
+    "const auto total=source->used;"
+  ],
+  [
+    "native/CTransport.cpp",
+    616,
+    "auto* request=new(std::nothrow) NativeSendRequest(this,*source,plainFirst);"
+  ],
+  [
+    "native/CTransport.cpp",
+    640,
+    "// socket-owned output, leaving its reference-counted source"
+  ],
+  [
+    "native/CTransport.cpp",
+    642,
+    "SendChain prepared(LargeBufferBytes);Span source{request.data(),request.size()};"
+  ],
+  [
+    "native/CTransport.cpp",
+    643,
+    "ok=prepared.append(server()->buffers,&source,1);"
+  ],
+  [
+    "native/CTransport.cpp",
+    706,
+    "class CSocket : public CIOSocketEx<CIOBufferEx<16384>> {"
+  ],
+  [
+    "native/CTransport.cpp",
+    719,
+    "CSocket(Server* ownerServer,SOCKET sockValue,std::uint64_t connectionId):CIOSocketEx<CIOBufferEx<16384>>(ownerServer,sockValue,connectionId){"
+  ],
+  [
+    "native/CTransport.cpp",
+    756,
+    "using MemoryObject::retain;using MemoryObject::release;"
+  ],
+  [
+    "native/CTransport.cpp",
+    757,
+    "MemoryObject* retain(const char* file,unsigned line,ObjectReferenceType type)noexcept override{return retainTracked(&referencesTrace_,type,file,line);}"
+  ],
+  [
+    "native/CTransport.cpp",
+    758,
+    "unsigned release(const char* file,unsigned line,ObjectReferenceType type,bool=false)noexcept override{return releaseTracked(&referencesTrace_,type,file,line);}"
+  ],
+  [
+    "native/CTransport.cpp",
+    835,
+    "if(size>0){packetBorrowed()=true;packetSequence()=packet.sequence;retain(ObjectReferenceType::ORT_SHARED_CONTAINER);UserProtocol()->pause(true,monotonicMs());}"
+  ],
+  [
+    "native/CTransport.cpp",
+    869,
+    "if(!packetBorrowed()||packetSequence()!=sequence||!UserProtocol()||!UserProtocol()->codec->release(sequence))return false;"
+  ],
+  [
+    "native/CTransport.cpp",
+    872,
+    "queueResume();finalizeRegistration();release(ObjectReferenceType::ORT_SHARED_CONTAINER);return true;"
+  ],
+  [
+    "native/CTransport.cpp",
+    938,
+    "server->retain();if(deadlineOwner){deadlineOwner->retain(ObjectReferenceType::ORT_TIMER);deadlineOwner->linkTimer();}"
+  ],
+  [
+    "native/CTransport.cpp",
+    939,
+    "if(observer){observer->retain(ObjectReferenceType::ORT_TIMER);observer->linkTimer();}ownersLinked=true;"
+  ],
+  [
+    "native/CTransport.cpp",
+    942,
+    "~NativeTask() override {UnlinkOwners();if(deadlineOwner)deadlineOwner->release(ObjectReferenceType::ORT_TIMER);if(observer)observer->release(ObjectReferenceType::ORT_TIMER);server->release();}"
+  ],
+  [
+    "native/CTransport.cpp",
+    986,
+    "} catch (...) { if (task) task->release(); return false; }"
+  ],
+  [
+    "native/CTransport.cpp",
+    994,
+    "if (!queued) { tasks.erase(token); --taskCount; task->release(); return false; }"
+  ],
+  [
+    "native/CTransport.cpp",
+    1004,
+    "if (removed) { task->release(); notifyChange(); }"
+  ],
+  [
+    "native/CTransport.cpp",
+    1011,
+    "task = found->second; task->retain();"
+  ],
+  [
+    "native/CTransport.cpp",
+    1017,
+    "if (auto* queued = timerFor(task->owner)->cancel(token)) queued->release(ObjectReferenceType::ORT_TIMER);"
+  ],
+  [
+    "native/CTransport.cpp",
+    1056,
+    "auto value=std::make_unique<Context>(server);socket_->retain(ObjectReferenceType::ORT_VERIFIER_RETAIN);"
+  ],
+  [
+    "native/CTransport.cpp",
+    1060,
+    "}catch(...){socket_->release(ObjectReferenceType::ORT_VERIFIER_RETAIN);throw;}"
+  ],
+  [
+    "native/CTransport.cpp",
+    1061,
+    "ObjectAllocator::Extension(this)=value.release();"
+  ],
+  [
+    "native/CTransport.cpp",
+    1065,
+    "socket_->release(ObjectReferenceType::ORT_VERIFIER_RETAIN);--owner->server->referenceDiagnostics.active;"
+  ],
+  [
+    "native/CTransport.cpp",
+    1088,
+    "verifier->release();"
+  ],
+  [
+    "native/CTransport.cpp",
+    1100,
+    "server->retain(); CIOBufferPool::retain(block);"
+  ],
+  [
+    "native/CTransport.cpp",
+    1102,
+    "~BufferLease() { server->buffers.recycle(block); server->release(); }"
+  ],
+  [
+    "native/CTransport.cpp",
+    1114,
+    "try{std::lock_guard<std::mutex> lock(socketMapGate);added=socketMap.emplace(c->socket,c).second;if(added)c->retain(ObjectReferenceType::ORT_SOCKET_MAP);}catch(...){}"
+  ],
+  [
+    "native/CTransport.cpp",
+    1125,
+    "if(removed)removed->release(ObjectReferenceType::ORT_SOCKET_MAP);"
+  ],
+  [
+    "native/CTransport.cpp",
+    1131,
+    "for(auto& at:socketMap){sockets.push_back(at.second);at.second->retain(ObjectReferenceType::ORT_TEMP_USE);}}"
+  ],
+  [
+    "native/CTransport.cpp",
+    1132,
+    "catch(...){for(auto* socket:sockets)socket->release(ObjectReferenceType::ORT_TEMP_USE);return false;}"
+  ],
+  [
+    "native/CTransport.cpp",
+    1133,
+    "for(auto* socket:sockets){socket->disconnect();socket->release(ObjectReferenceType::ORT_TEMP_USE);}return true;"
+  ],
+  [
+    "native/CTransport.cpp",
+    1171,
+    "server->callbackStarted()[owner]=0;object->release(ObjectReferenceType::ORT_IOCP_MESSAGE_RETAIN);"
+  ],
+  [
+    "native/CTransport.cpp",
+    1184,
+    "server->callbackStarted()[owner_]=0;owner->release(operation->kind==OpKind::Read||operation->kind==OpKind::Write?ObjectReferenceType::ORT_IO_RETAIN:ObjectReferenceType::ORT_IOCP_MESSAGE_RETAIN);"
+  ],
+  [
+    "native/CTransport.cpp",
+    1217,
+    "++waitCallbacks();acceptQueued()=true;++pendingAccepts();retain();held=true;"
+  ],
+  [
+    "native/CTransport.cpp",
+    1223,
+    "if(!posted){if(held)release();NotifyPendingChanged();OnWaitFailure(error?error:31);}"
+  ],
+  [
+    "native/CTransport.cpp",
+    1234,
+    "object->socket=INVALID_SOCKET;object->release(ObjectReferenceType::ORT_CREATE_DELETE);return nullptr;"
+  ],
+  [
+    "native/CTransport.cpp",
+    1240,
+    "if(!Add(value,static_cast<CSocket*>(c))){RemoveSocketNumber(c);c->socket=INVALID_SOCKET;c->release(ObjectReferenceType::ORT_CREATE_DELETE);return nullptr;}"
+  ],
+  [
+    "native/CTransport.cpp",
+    1394,
+    "CIO_API void L1Interop_ReleaseServer(void* p) { if (p) { auto* s = static_cast<Server*>(p); if (s->stop()) s->release(); } }"
+  ],
+  [
+    "native/CTransport.cpp",
+    1556,
+    "}c->release(ObjectReferenceType::ORT_TEMP_USE);"
+  ],
+  [
+    "native/CTransport.cpp",
+    1599,
+    "server->retain();  // Source producer lease through Java Source.release()."
+  ],
+  [
+    "native/CTransport.cpp",
+    1602,
+    "// NC-style S packet assembly: borrow an existing 16KiB CIOBufferEx slab,"
+  ],
+  [
+    "native/CTransport.cpp",
+    1604,
+    "// producer reference. All recipients share that immutable source."
+  ],
+  [
+    "native/CTransport.cpp",
+    1606,
+    "// Original NC 0x41f694 calls 0x41e6e4 for one pooled CIOBufferEx,"
+  ],
+  [
+    "native/CTransport.cpp",
+    1648,
+    "server->retain(); // exactly one producer lease on the shared slab"
+  ],
+  [
+    "native/CTransport.cpp",
+    1868,
+    "// Java encodes directly into a privately borrowed 16KiB native source,"
+  ],
+  [
+    "native/CTransport.cpp",
+    1879,
+    "server->retain();"
+  ],
+  [
+    "native/CTransport.cpp",
+    1902,
+    "owner->release(); // Release producer lease; requests hold their own refs."
+  ],
+  [
+    "native/CTransport.cpp",
+    1904,
+    "CIO_API int L1Interop_SendConstBuffer(void* p,std::uint64_t id,void* source,int plainFirst){"
+  ],
+  [
+    "native/CTransport.cpp",
+    1905,
+    "if(!p||!source)return 0;auto* c=static_cast<Server*>(p)->find(id);if(!c)return 0;"
+  ],
+  [
+    "native/CTransport.cpp",
+    1906,
+    "ObjectRef hold(c,false);return c->sendConstBuffer(static_cast<CIOBuffer*>(source),plainFirst!=0);"
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    3,
+    "// refcount/recycle path for dynamically leased shared-source slabs."
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    30,
+    "// Exhaust the only ordinary 16KiB source slot. New sources MUST"
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    31,
+    "// receive a *valid Native refcounted source*, not nullptr."
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    33,
+    "check(extra && extra->sourceOverflowRecord,\"overflow source on fixed ring exhaustion\");"
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    36,
+    "CIOBufferPool::retain(extra);      // Simulate async NativeSendRequest"
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    41,
+    "check(pool.sourceOverflowActive()==0,\"last release returns overflow memory\");"
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    44,
+    "// Exhaust while multiple recipients retain the SAME source."
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    48,
+    "check(extra && extra->sourceOverflowRecord,\"second overflow source\");"
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    49,
+    "for(int i=0;i<30;i++)CIOBufferPool::retain(extra);"
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    50,
+    "pool.recycle(extra); // Producer release while all 30 SENDs retain"
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    54,
+    "check(pool.sourceOverflowActive()==0,\"30-recipient release exact\");"
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    59,
+    "check(ordinary!=nullptr,\"fixed source\");"
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    65,
+    "check(p && p->sourceOverflowRecord,\"no drops while 512 source events overlap\");"
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    85,
+    "CIOBufferPool::retain(p);"
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    91,
+    "check(pool.sourceOverflowActive()==0,\"all concurrently borrowed source slabs returned\");"
+  ],
+  [
+    "native/nc_source_pool_overflow_test.cpp",
+    94,
+    "check(pool.sourceOverflowFailures()==0,\"no Native OS source allocation failure\");"
+  ]
+]

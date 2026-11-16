@@ -1,0 +1,14 @@
+{
+  "baseline_sha256": "a0d534b066395b12a3a9e545cb094602e1cd568ea80ddca2900ff46a0a54e391",
+  "zip_entries": 1734,
+  "java_count": 1710,
+  "source_count": 1712,
+  "matches_count": {
+    "broadcast_call": 374,
+    "direct_source": 22,
+    "old_packet_loop": 1649,
+    "native_pool": 887,
+    "legacy_wire": 246
+  },
+  "native_abi_expected": "0x000a0009"
+}

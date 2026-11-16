@@ -1,0 +1,112 @@
+[
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    92,
+    "&& target.enqueueConstBufferConfirmed(source,limit))"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    98,
+    "return wire == null ? target.sendFrozenWire(source.wire)"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    99,
+    ": target.sendFrozenWire(wire);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    106,
+    "static Source openWrittenSource(CUserSocket target,CSharedBroadcast.NativeWireWriter writer) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    108,
+    "final Source source=target.createPooledWritableConstBuffer();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    116,
+    "target.sealPooledWritableConstBuffer(source,length);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    167,
+    "if (n == 0) owner.releaseConstBuffer(handle);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    67,
+    "CAsyncSendConstBuffer.openWrittenSource(socket,writer);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    287,
+    "CAsyncSendConstBuffer.openWrittenSource(socket,writer);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    332,
+    "CAsyncSendConstBuffer.openWrittenSource(socket,writer);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    389,
+    "CAsyncSendConstBuffer.openWrittenSource(socket,writer);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    436,
+    "CAsyncSendConstBuffer.openWrittenSource(socket,writer);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1153,
+    "public CAsyncSendConstBuffer.Source createPooledWritableConstBuffer() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1154,
+    "return _channel.server().createPooledWritableConstBuffer();"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1156,
+    "public void sealPooledWritableConstBuffer(CAsyncSendConstBuffer.Source source,int length) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    1157,
+    "_channel.server().sealPooledWritableConstBuffer(source,length);"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3902,
+    "public boolean enqueueConstBufferConfirmed(CAsyncSendConstBuffer.Source source, int pendingLimit) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3933,
+    "public boolean sendFrozenWire(java.nio.ByteBuffer nativeFrame) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    3959,
+    "public boolean sendFrozenWire(byte[] frameBytes) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    903,
+    "public CAsyncSendConstBuffer.Source createPooledWritableConstBuffer() {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    928,
+    "public void sealPooledWritableConstBuffer(CAsyncSendConstBuffer.Source source,int length) {"
+  ],
+  [
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    944,
+    "public void releaseConstBuffer(MemorySegment handle) {"
+  ]
+]
