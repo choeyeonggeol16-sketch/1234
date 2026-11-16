@@ -5,7 +5,7 @@ on:
     paths:
       - ".github/workflows/nc-broadcast-native-only-phase86-build.yml"
       - "patches/nc_broadcast_native_only_phase86_20261116/migrate.py"
-      - "patches/nc_broadcast_cleanup_phase85_20261116/prepare_windows_test.py"
+      - "patches/nc_broadcast_native_only_phase86_20261116/prepare_windows_test.py"
 permissions:
   contents: write
 jobs:
@@ -83,7 +83,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference='Stop'
-          python patches/nc_broadcast_cleanup_phase85_20261116/prepare_windows_test.py "$env:RUNNER_TEMP\nc-assemble-broadcast-phase86"
+          python patches/nc_broadcast_native_only_phase86_20261116/prepare_windows_test.py "$env:RUNNER_TEMP\nc-assemble-broadcast-phase86"
           if($LASTEXITCODE -ne 0){throw 'fixture preparation failed'}
       - name: Restore SHA-256 pinned Java dependencies
         shell: pwsh
