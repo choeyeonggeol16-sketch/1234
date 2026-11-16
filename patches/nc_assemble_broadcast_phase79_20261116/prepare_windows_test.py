@@ -4,6 +4,16 @@ from pathlib import Path
 import subprocess,sys
 ROOT=Path(__file__).resolve().parents[2]
 WORK=Path(sys.argv[1]).resolve()
+# The previous run's original WorldPutBuilder is test-only, not in the
+# production Phase78 ZIP. Reconstruct it exactly for the retained Phase78 oracle.
+import zipfile,hashlib
+p77=ROOT/"downloads/RKern_NC_SPacket_Assemble_Phase77_FULL_SRC_20261116.zip"
+assert hashlib.sha256(p77.read_bytes()).hexdigest()=="c9c0eb7dd2ac7dc0833fb8b7ed87c0623c141f6420d79429fe8d993ab0637fb3"
+with zipfile.ZipFile(p77) as archive:
+    oracle=archive.read("src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java").decode("utf-8")
+oraclepath=WORK/"testsrc/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObjectOracle.java"
+oraclepath.parent.mkdir(parents=True,exist_ok=True)
+oraclepath.write_text(oracle.replace("SC_WorldPutObject","SC_WorldPutObjectOracle"),encoding="utf-8")
 subprocess.run([sys.executable,
         str(ROOT/"patches/nc_assemble_broadcast_phase78_20261116/prepare_windows_test.py"),
         str(WORK)],check=True)
