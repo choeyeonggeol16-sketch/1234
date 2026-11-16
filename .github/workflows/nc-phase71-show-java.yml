@@ -1,0 +1,49 @@
+name: Read exact final 71 Java sources from verified full SRC
+on:
+  push:
+    branches: [nc-direct-slab-phase71-20261116]
+    paths:
+      - ".github/workflows/nc-phase71-show-java.yml"
+permissions:
+  contents: write
+jobs:
+  extract_exact:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Verify final ZIP SHA and export original Java source excerpts
+        run: |
+          python3 - <<'PY'
+          import hashlib,zipfile,pathlib,json
+          p=pathlib.Path('downloads/RKern_NC_DirectSlab_SPackets_FULL_SRC_20261116.zip')
+          sha=hashlib.sha256(p.read_bytes()).hexdigest()
+          assert sha=='e04cdcf7df4a1bb30a6d6ae1b93d0d09cb4125f830e7b99f3b55ec833ff6d2d0',sha
+          names=['SC_MoveChar','SC_DoActionGFX','CSharedBroadcast',
+                 'CAsyncSendConstBuffer','CAsyncSendConstBufferExceptSelf',
+                 'CIOServer','CUserSocket','CIOConfig']
+          prefix='src/l1j/server/server/model/network/core/'
+          out=pathlib.Path('reports/nc_direct_slab_phase71_java')
+          out.mkdir(parents=True,exist_ok=True)
+          manifest={}
+          with zipfile.ZipFile(p) as z:
+              assert z.testzip() is None
+              java=[x for x in z.namelist() if x.startswith(prefix) and x.endswith('.java')]
+              for name in names:
+                  candidates=[x for x in java if x.endswith('/'+name+'.java')]
+                  assert len(candidates)==1,(name,candidates)
+                  raw=z.read(candidates[0]);(out/(name+'.java')).write_bytes(raw)
+                  manifest[name]={'original_path':candidates[0],'sha256':hashlib.sha256(raw).hexdigest(),'size':len(raw)}
+          (out/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
+          print('EXACT_PHASE71_JAVA_SOURCES_EXTRACTED',len(manifest),sha)
+          PY
+      - name: Publish exact source copies without changing production ZIP
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f reports/nc_direct_slab_phase71_java
+          git diff --cached --quiet && exit 0
+          git commit -m "Expose exact phase71 Java packet-path sources for review [skip ci]"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
