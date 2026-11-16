@@ -1,0 +1,17 @@
+{
+  "phase": 78,
+  "baseline_sha256": "c9c0eb7dd2ac7dc0833fb8b7ed87c0623c141f6420d79429fe8d993ab0637fb3",
+  "full_src_sha256": "07bfc9631c56a9ea4dc6a6bce60824b0ce2a9065b0b8c64ced4451863c1fb943",
+  "dll_sha256": "984c30433687d343e6d882b80c048e85f4a1961c4184dc488916a8174d7c524f",
+  "native_abi": "0x000a0009",
+  "production_changed": [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObject.java"
+  ],
+  "java_count": 1710,
+  "zip_entries": 1734,
+  "sc_legacy_broadcast_call_sites_remaining": 0,
+  "phase72_77_all_bytes_except_worldput_identical": true,
+  "native_pool_cipher_socket_fifo_preserved": true,
+  "native_writable_slab_max_bytes": 16384,
+  "game_5000_soak_verified": false
+}
