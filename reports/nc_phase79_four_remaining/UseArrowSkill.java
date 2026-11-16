@@ -1,0 +1,321 @@
+package l1j.server.server.model.network.core.sc.packet;
+
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import l1j.server.server.Opcodes;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.utill.ConnectionConfig;
+
+public final class SC_UseArrowSkill {
+
+	private static final AtomicInteger SEQ =
+			new AtomicInteger(0);
+
+	private static final int WIRE_SIZE =
+			ConnectionConfig.HEADER_SIZE + 33;
+
+	private SC_UseArrowSkill() {
+	}
+
+	public static boolean send(
+			CIOClient client,
+			int attackerId,
+			int ox,
+			int oy,
+			int oh,
+			int actId,
+			int targetId,
+			int spellGfx,
+			int tx,
+			int ty,
+			boolean isHit) {
+
+		final int seq = nextSeq();
+
+		return send0(
+				client,
+				attackerId,
+				ox,
+				oy,
+				oh,
+				actId,
+				targetId,
+				spellGfx,
+				tx,
+				ty,
+				isHit,
+				seq);
+	}
+
+	public static boolean send(
+			CIOClient client,
+			L1Character cha,
+			int targetObj,
+			int spellGfx,
+			int x,
+			int y,
+			boolean isHit) {
+
+		int attackerId = 0;
+		int ox = 0;
+		int oy = 0;
+		int oh = 0;
+		int actId = 1;
+
+		if (cha != null) {
+			attackerId = cha.getId();
+			ox = cha.getX();
+			oy = cha.getY();
+			oh = cha.getHeading();
+
+			actId =
+					resolveActIdBySprite(
+							cha.getCurrentSpriteId());
+		}
+
+		final int seq = nextSeq();
+
+		return send0(
+				client,
+				attackerId,
+				ox,
+				oy,
+				oh,
+				actId,
+				targetObj,
+				spellGfx,
+				x,
+				y,
+				isHit,
+				seq);
+	}
+
+	public static boolean sendAndBroadcast(
+			L1PcInstance pc,
+			int targetObj,
+			int spellGfx,
+			int x,
+			int y,
+			boolean isHit) {
+
+		if (pc == null) {
+			return false;
+		}
+
+		final int attackerId = pc.getId();
+		final int ox = pc.getX();
+		final int oy = pc.getY();
+		final int oh = pc.getHeading();
+		final int actId =
+				resolveActIdBySprite(
+						pc.getCurrentSpriteId());
+
+		final int seq = nextSeq();
+
+		final boolean selfSent =
+				send0(
+						pc.getNetConnection(),
+						attackerId, ox, oy, oh, actId,
+						targetObj, spellGfx, x, y, isHit, seq);
+
+        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(pc, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ARROWSKILL, Opcodes.S_ATTACK, attackerId, ox, oy, oh, actId, targetObj, spellGfx, x, y, (isHit ? 1 : 0), seq, true);
+        return selfSent;
+}
+
+	public static void broadcast(
+			L1Character cha,
+			int targetObj,
+			int spellGfx,
+			int x,
+			int y,
+			boolean isHit) {
+
+		if (cha == null) {
+			return;
+		}
+
+		final int attackerId = cha.getId();
+		final int ox = cha.getX();
+		final int oy = cha.getY();
+		final int oh = cha.getHeading();
+
+		final int actId =
+				resolveActIdBySprite(
+						cha.getCurrentSpriteId());
+
+		final int seq = nextSeq();
+
+        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(cha, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ARROWSKILL, Opcodes.S_ATTACK, attackerId, ox, oy, oh, actId, targetObj, spellGfx, x, y, (isHit ? 1 : 0), seq, true);
+}
+
+	public static void broadcast(
+			L1Character anchor,
+			int attackerId,
+			int ox,
+			int oy,
+			int oh,
+			int actId,
+			int targetId,
+			int spellGfx,
+			int tx,
+			int ty,
+			boolean isHit) {
+
+		if (anchor == null) {
+			return;
+		}
+
+		final int seq = nextSeq();
+
+        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ARROWSKILL, Opcodes.S_ATTACK, attackerId, ox, oy, oh, actId, targetId, spellGfx, tx, ty, (isHit ? 1 : 0), seq, true);
+}
+
+	private static boolean send0(
+			CIOClient client,
+			int attackerId,
+			int ox,
+			int oy,
+			int oh,
+			int actId,
+			int targetId,
+			int spellGfx,
+			int tx,
+			int ty,
+			boolean isHit,
+			int seq) {
+
+		if (client == null || !client.isConnected()) {
+			return false;
+		}
+
+		final CUserSocket connection = client.getConnection();
+		if (connection == null || !connection.isClientConnected()) {
+			return false;
+		}
+
+		final CIOFrame frame =
+				connection.beginDirectFrame(
+						WIRE_SIZE);
+
+		if (frame == null) {
+			return false;
+		}
+
+		final WriteBuffer buffer = frame.buffer();
+		boolean committed = false;
+
+		try {
+			buffer.writeC(Opcodes.S_ATTACK);
+			buffer.writeC(actId);
+			buffer.writeD(attackerId);
+			buffer.writeD(targetId);
+			buffer.writeC(isHit ? 6 : 0);
+			buffer.writeC(0x00);
+			buffer.writeC(oh);
+			buffer.writeD(seq);
+			buffer.writeH(spellGfx);
+
+			buffer.writeC(0);
+
+			buffer.writeH(ox);
+			buffer.writeH(oy);
+			buffer.writeH(tx);
+			buffer.writeH(ty);
+
+			buffer.writeC(0);
+			buffer.writeC(0);
+			buffer.writeC(0);
+			buffer.writeC(0);
+			buffer.writeC(0);
+
+			committed =
+					connection.commitDirectFrame(
+							frame);
+
+			return committed;
+
+		} finally {
+			if (!committed) {
+				connection.abortDirectFrame(frame);
+			}
+		}
+	}
+	
+	public static void sendToReceivers(
+			ArrayList<L1Object> receivers,
+			int attackerId,
+			int ox,
+			int oy,
+			int oh,
+			int actId,
+			int targetId,
+			int spellGfx,
+			int tx,
+			int ty,
+			boolean isHit) {
+
+		if (receivers == null || receivers.isEmpty()) {
+			return;
+		}
+
+		final int seq = nextSeq();
+
+		        try (var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+                sharedWire(attackerId,ox,oy,oh,actId,targetId,spellGfx,tx,ty,isHit,seq),
+                Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+            for (L1Object o : receivers) {
+                if (!(o instanceof L1PcInstance)) continue;
+                final L1PcInstance pc=(L1PcInstance)o;
+                final CIOClient client=pc.getNetConnection();
+                if(client!=null && client.isConnected()) shared.send(client.getConnection(),pc.getId());
+            }
+        }
+}
+
+	private static int nextSeq() {
+		return SEQ.incrementAndGet();
+	}
+
+	private static int resolveActIdBySprite(
+			int spriteId) {
+
+		switch (spriteId) {
+		case 3860:
+		case 15053:
+			return 21;
+
+		case 21090:
+		case 21094:
+			return 82;
+
+		case 16198:
+			return 18;
+
+		default:
+			return 1;
+		}
+	}
+
+
+    private static byte[] sharedWire(int attackerId,int ox,int oy,int oh,int actId,
+            int targetId,int spellGfx,int tx,int ty,boolean isHit,int seq) {
+        final java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate(WIRE_SIZE)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        b.putShort((short)WIRE_SIZE).put((byte)Opcodes.S_ATTACK).put((byte)actId)
+         .putInt(attackerId).putInt(targetId).put((byte)(isHit?6:0))
+         .put((byte)0).put((byte)oh).putInt(seq).putShort((short)spellGfx)
+         .put((byte)0).putShort((short)ox).putShort((short)oy)
+         .putShort((short)tx).putShort((short)ty)
+         .put((byte)0).put((byte)0).put((byte)0).put((byte)0).put((byte)0);
+        return b.array();
+    }
+
+}
