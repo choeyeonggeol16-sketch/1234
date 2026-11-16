@@ -40,7 +40,10 @@ with zipfile.ZipFile(src) as z:
            "SC_NewChat","SC_War","SC_WorldPutObject",
            "SC_MoveChar","SC_DoActionGFX","SC_SkillSound","SC_ActionUI","SC_ShowCmd",
            "SC_RemoveObject","SC_WORLD_PUT_OBJECT_NOTI","SC_SOCIAL_ACTION_NOTI",
-           "SC_PartyMemberList","SC_PartyMember"]
+           "SC_PartyMemberList","SC_PartyMember","SC_ClanAttention","SC_CastleMaster",
+           "SC_GameStart","SC_GameRap","SC_EtcPacket","SC_GameEnd","SC_GameOver",
+           "SC_Party","SC_TrueTargetNew","SC_NpcChatPacket","SC_ShowCmd",
+           "SC_Attack","SC_ChatMessageNoti","SC_BossYN"]
         if name.startswith("src/") and "/sc/packet/" in name and Path(name).stem in focus:
             (out/Path(name).name).write_text(s)
 # Inventory remaining wrapper constructors and their exact first source expression.
