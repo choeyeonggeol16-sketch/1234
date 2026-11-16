@@ -1,7 +1,7 @@
 name: 'Phase86 Native-only shared broadcaster: remove byte-array constructors, real Windows IOCP regression'
 on:
   push:
-    branches: [nc-broadcast-native-only-phase86-20261116]
+    branches: [nc-broadcast-native-only-phase86-20261116, nc-broadcast-phase86-pending-cap-fix-20261116]
     paths:
       - ".github/workflows/nc-broadcast-native-only-phase86-build.yml"
       - "patches/nc_broadcast_native_only_phase86_20261116/migrate.py"
