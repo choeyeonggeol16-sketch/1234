@@ -3,7 +3,7 @@ on:
   push:
     branches: [nc-broadcast-full-regression-audit81-20261116]
     paths:
-      - ".github/workflows/nc-assemble-broadcast-audit81-build.yml"
+      - ".github/workflows/nc-broadcast-audit81-build.yml"
       - "patches/nc_broadcast_full_audit81_20261116/migrate.py"
       - "patches/nc_broadcast_full_audit81_20261116/prepare_windows_test.py"
 permissions:
