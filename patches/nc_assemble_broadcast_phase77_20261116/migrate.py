@@ -388,7 +388,7 @@ def migrate_sc(files):
     new=(f"        {FQ}.sendWrittenRecipients(\n"
          f"                L1World.getInstance().getVisiblePlayer(source), {wire_writer(body)});")
     replace_send(files,name,old,new)
-    remove_private(files,SC[name],"emblemWire")
+    # Keep legacy private 12-byte oracle method for independently verified Windows regression.\n    # The broadcast call site no longer invokes it; Native source is assembled directly.
     name="NpcChatPacket"
     old=(f"        {FQ}.sendRecipients(\n"
          "                L1World.getInstance().getVisiblePlayer(source),\n"
