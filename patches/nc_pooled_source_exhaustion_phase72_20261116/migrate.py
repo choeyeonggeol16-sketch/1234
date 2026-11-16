@@ -128,14 +128,12 @@ def prepare():
     # allocation fail (or the server has been closed). Failing to publish an
     # object position is a protocol-integrity fault, not a successful send.
     p=WORK/BROADCAST;s=p.read_text(encoding="utf-8")
-    s=once(s,
-      "if (shared == null) return; // NC bounded pool admission; no unsafe fallback",
-      "if (shared == null) throw new IllegalStateException(\"S_ACTION shared Native source unavailable (allocation or shutdown)\");",
-      BROADCAST)
-    s=once(s,
-      "if (shared == null) return; // NC bounded pool admission; no unsafe fallback",
-      "if (shared == null) throw new IllegalStateException(\"S_MOVE shared Native source unavailable (allocation or shutdown)\");",
-      BROADCAST)
+    old="if (shared == null) return; // NC bounded pool admission; no unsafe fallback"
+    assert s.count(old)==2,("missing two legacy silent-drop branches",s.count(old))
+    s=s.replace(old,
+      "if (shared == null) throw new IllegalStateException(\"S_ACTION shared Native source unavailable (allocation or shutdown)\");",1)
+    s=s.replace(old,
+      "if (shared == null) throw new IllegalStateException(\"S_MOVE shared Native source unavailable (allocation or shutdown)\");",1)
     p.write_text(s,encoding="utf-8")
 
     p=WORK/ABI;s=p.read_text(encoding="utf-8")
