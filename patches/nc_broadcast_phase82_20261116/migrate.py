@@ -347,7 +347,7 @@ def prepare():
             files[name]=(code.replace("\n","\r\n") if "\r\n" in original else code).encode("utf-8")
     # Preserve the exact original ZIP ordering, metadata and unchanged entries.
     for name,data in files.items():
-        if name.startswith("src/") and name.endswith(".java"):
+        if (name.startswith("src/") and name.endswith(".java")) or name.startswith("native/"):
             p=WORK/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)
     # The original Windows workflow compiles the same old native files and
     # then restores the pinned shipping DLL before Java/IOCP tests.
