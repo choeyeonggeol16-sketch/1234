@@ -83,7 +83,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference='Stop'
-          python patches/nc_broadcast_full_audit81_20261116/prepare_windows_test.py "$env:RUNNER_TEMP\nc-assemble-broadcast-phase82"
+          python patches/nc_broadcast_nonsc_phase82_20261116/prepare_windows_test.py "$env:RUNNER_TEMP\nc-assemble-broadcast-phase82"
           if($LASTEXITCODE -ne 0){throw 'fixture preparation failed'}
       - name: Restore SHA-256 pinned Java dependencies
         shell: pwsh
