@@ -393,9 +393,12 @@ def transform_calls(path,s):
             REPLACED[old]=REPLACED.get(old,0)+count
     # Full package prefix does not prevent this local match.
     s=DECL.sub(lambda m:m.group(1)+FQT+m.group(3),s)
-    # Recipient-major frame list: preserve original bytes order but no Java array.
-    s=re.sub(r'byte\s*\[\s*\]\s*\[\s*\]\s+(\w+)\s*=\s*new\s+byte\s*\[\s*([^\]]+)\s*\]\s*\[\s*\]',
-             FQT+r'[] \1=new '+FQT+r'[\2]',s)
+    # Only the explicitly migrated BattleTournament SC_DisplayEffect frame list;
+    # NEVER rewrite unrelated inventory/warehouse byte[][] arrays.
+    if path=="src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java":
+        old_frames="final byte[][] frames=new byte[packets.length][];"
+        assert s.count(old_frames)==1,(path,"frame list")
+        s=s.replace(old_frames,"final "+FQT+"[] frames=new "+FQT+"[packets.length];",1)
     return s
 
 def migrate(files):
