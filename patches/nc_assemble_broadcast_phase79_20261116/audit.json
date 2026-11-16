@@ -1,0 +1,44 @@
+{
+  "phase": 79,
+  "baseline_sha256": "07bfc9631c56a9ea4dc6a6bce60824b0ce2a9065b0b8c64ced4451863c1fb943",
+  "full_src_sha256": "a27401dc579e5c2086e1a7336ea55e3c0b26e3eff5e194171e1ad7050ad78731",
+  "dll_sha256": "984c30433687d343e6d882b80c048e85f4a1961c4184dc488916a8174d7c524f",
+  "native_abi": "0x000a0009",
+  "changed": [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_IconMessage.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_MessageYN.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_NewChat.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ServerMessage.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SystemMessage.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_TopMessage.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_War.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Weather.java"
+  ],
+  "java_count": 1710,
+  "zip_entries": 1734,
+  "sc_legacy_broadcast_remaining": 4,
+  "phase80_pending_legacy": [
+    [
+      "src/l1j/server/server/model/network/core/sc/packet/SC_AreaAttackEffect.java",
+      "new CAsyncSendConstBuffer"
+    ],
+    [
+      "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+      "sendRecipients"
+    ],
+    [
+      "src/l1j/server/server/model/network/core/sc/packet/SC_DropItem.java",
+      "new CAsyncSendConstBuffer"
+    ],
+    [
+      "src/l1j/server/server/model/network/core/sc/packet/SC_UseArrowSkill.java",
+      "new CAsyncSendConstBuffer"
+    ]
+  ],
+  "all_SC_java_files_scanned": true,
+  "native_socket_fifo_cipher_preserved": true,
+  "new_queues_workers_classes": 0,
+  "native_shared_writable_max_bytes": 16384,
+  "5000_ingame_soak_verified": false
+}
