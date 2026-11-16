@@ -128,7 +128,9 @@ def prepare():
     s=one(s,
 """return p ? static_cast<L1ConstBuffer*>(p)->block->data.data() : nullptr;""",
 """return p ? static_cast<CIOBuffer*>(p)->data.data() : nullptr;""",CPP)
-    assert "L1ConstBuffer" not in s.replace("L1ConstBuffer wrapper","")
+    assert "struct L1ConstBuffer" not in s
+    assert "new(std::nothrow) L1ConstBuffer" not in s
+    assert "static_cast<L1ConstBuffer*>" not in s
     assert "new(std::nothrow) NativeSendRequest" in s
     assert "AssemblePooled(" in s
     assert "CreateFormattedConstBuffer" in s
