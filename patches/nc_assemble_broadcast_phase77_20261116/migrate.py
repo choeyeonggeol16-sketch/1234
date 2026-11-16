@@ -351,7 +351,7 @@ def migrate_sc(files):
         files[key]=(s.replace("\n","\r\n") if crlf else s).encode("utf-8")
     name="ExplosionNoti"
     old=f"{FQ}.send(anchor, sharedWire(objectId,mills), false, -1, null);"
-    body=("(b.put((byte)Opcodes.S_EXTENDED_PROTOBUF).putShort((short)0x0332)); "
+    body=("b.put((byte)Opcodes.S_EXTENDED_PROTOBUF).putShort((short)0x0332); "
           "b.put((byte)0x08); writeVar(b,objectId); b.put((byte)0x10); "
           "writeVar(b,mills); b.putShort((short)0);")
     replace_send(files,name,old,f"{FQ}.sendWritten(anchor, {wire_writer(body)}, false, -1, null);")
