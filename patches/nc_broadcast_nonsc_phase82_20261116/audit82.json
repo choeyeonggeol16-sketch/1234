@@ -1,0 +1,32 @@
+{
+  "phase": 82,
+  "baseline_sha256": "6b077cbbafdc1067e8a5c31e9781dfe4221c78331b7bf3cde4659a0c631bb0c3",
+  "sha256": "d7ebe1d56a4a978ad336d0585c8767416b27587666c40aa42492654ebfe42967",
+  "dll_sha256": "984c30433687d343e6d882b80c048e85f4a1961c4184dc488916a8174d7c524f",
+  "changed_java_files": 91,
+  "java_count": 1710,
+  "factory_calls_migrated": {
+    "SC_PacketBox.sharedGreenWire": 74,
+    "SC_SystemMessage.sharedWire": 59,
+    "SC_ServerMessage.sharedWire": 27,
+    "SC_ChatPacket.sharedWire": 3,
+    "SC_PacketBox.sharedColorNoticeWire": 2,
+    "SC_PacketBox.sharedScoreWire": 1,
+    "SC_PacketBox.sharedRoundWire": 1,
+    "SC_PacketBox.sharedHadinDisplayWire": 2,
+    "SC_DisplayEffect.sharedWire": 23,
+    "SC_PacketBox.sharedMapTimerWire": 1,
+    "SC_PacketBox.sharedDragonRaidBuffWire": 1,
+    "SC_SkillSound.sharedWire": 5,
+    "SC_MessageYN.sharedIndexedWire": 1,
+    "SC_PacketBox.sharedTownLeaderWire": 1,
+    "SC_MessageYN.sharedWire": 6,
+    "SC_PacketBox.sharedMiniGameTimeWire": 1,
+    "SC_PacketBox.sharedMiniGameEndWire": 2,
+    "SC_TrueTargetNew.sharedWire": 2,
+    "SC_PacketBox.sharedEmblemStatusWire": 1
+  },
+  "calls_total": 213,
+  "new_queues_workers_classes": 0,
+  "5000_ingame_soak_verified": false
+}
