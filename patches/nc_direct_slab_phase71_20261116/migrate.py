@@ -118,6 +118,7 @@ def prepare():
     s=one(s,
 """return c->sendConstBuffer(static_cast<L1ConstBuffer*>(source),plainFirst!=0);""",
 """return c->sendConstBuffer(static_cast<CIOBuffer*>(source),plainFirst!=0);""",CPP)
+    s=one(s,"static L1ConstBuffer* AssemblePooled(","static CIOBuffer* AssemblePooled(",CPP)
     s=one(s,
 """        auto* shared=new(std::nothrow) L1ConstBuffer(server,block);
         if(!shared)server->buffers.recycle(block);
