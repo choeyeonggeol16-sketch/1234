@@ -36,7 +36,10 @@ jobs:
           Push-Location $root
           try {
             python native/build_native_msvc.py
-            if($LASTEXITCODE -ne 0){throw 'MSVC native pooled packet build failed'}
+            if($LASTEXITCODE -ne 0){
+              Get-Content -Tail 140 "$root\logs\object-memory-msvc-build.log" -ErrorAction SilentlyContinue
+              throw 'MSVC native pooled packet build failed'
+            }
             Copy-Item -Force "$root\build\CTransport.dll" "$root\CTransport.dll"
             & "$root\build\CTransport_SelfTest.exe"
             if($LASTEXITCODE -ne 0){throw 'native loopback selftest failed'}
