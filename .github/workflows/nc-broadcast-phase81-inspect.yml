@@ -1,0 +1,70 @@
+name: 'Phase81 extract exact phase80 broadcast/network implementation for deep audit'
+on:
+  push:
+    branches: [nc-broadcast-deep-audit-phase81-20261116]
+    paths: [.github/workflows/nc-broadcast-phase81-inspect.yml]
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Verify 80 ZIP and extract exact implementation and call graph
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,zipfile,re,json
+          p=Path('downloads/RKern_NC_SPacket_Assemble_Phase80_FULL_SRC_20261116.zip')
+          expected='a0d534b066395b12a3a9e545cb094602e1cd568ea80ddca2900ff46a0a54e391'
+          assert hashlib.sha256(p.read_bytes()).hexdigest()==expected
+          out=Path('reports/nc_phase81_audit');out.mkdir(parents=True,exist_ok=True)
+          names=('CSharedBroadcast','CAsyncSendConstBuffer','CAsyncSendConstBufferExceptSelf','CUserSocket','CIOServer','CIOConfig','SC_AreaAttackEffect','SC_ChatPacket','SC_DropItem','SC_UseArrowSkill','SC_IconMessage','SC_NewChat','SC_ChangeShape','SC_WorldPutObject','SC_SystemMessage','SC_War','CIOBufferPool','CTLMFilter')
+          with zipfile.ZipFile(p) as z:
+              assert z.testzip() is None
+              allfiles={n:z.read(n) for n in z.namelist() if n.endswith('.java')}
+              report={'phase':81,'input_sha256':expected,'java_count':len(allfiles),'suspect_count':{},'suspect_locations':{},'sc_legacy':[],'selected':{}}
+              for name in names:
+                  found=[n for n in allfiles if n.endswith('/'+name+'.java')]
+                  if len(found)==1:
+                      data=allfiles[found[0]]
+                      (out/(name+'.java')).write_bytes(data)
+                      report['selected'][name]={'path':found[0],'sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data)}
+              probes={
+                  'raw_byte_broadcast':r'CSharedBroadcast\\s*\\.\\s*(?:send|sendAll|sendRecipients|sendRawRecipients|sendRawArray|sendObjectPlayers)\\s*\\(',
+                  'raw_direct_buffer':r'new\\s+CAsyncSendConstBuffer\\s*\\(',
+                  'manual_world_broadcast':r'getVisiblePlayer\\s*\\(|borrowVisiblePlayerFast\\s*\\(',
+                  'legacy_sendall':r'sendPacketsAll\\s*\\(',
+                  'native_writer':r'sendWritten(?:All|Recipients|Clan|SelfAndVisible|GroundItem)?\\s*\\(',
+                  'native_source':r'openWrittenSource\\s*\\(',
+              }
+              for typ,pat in probes.items():
+                  hits=[]
+                  for n,data in allfiles.items():
+                      src=data.decode('utf-8',errors='replace')
+                      for i,line in enumerate(src.splitlines(),1):
+                          if re.search(pat,line):hits.append([n,i,line.strip()[:160]])
+                  report['suspect_count'][typ]=len(hits)
+                  report['suspect_locations'][typ]=hits[:500]
+              for n,data in allfiles.items():
+                  if '/sc/packet/SC_' in n and re.search(r'CSharedBroadcast\\.send(?:All|Recipients)?\\s*\\(',data.decode('utf-8')):
+                      report['sc_legacy'].append(n)
+              (out/'summary.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+              print('PHASE81_SOURCE_AUDIT',json.dumps({'selected':report['selected'],'suspect_count':report['suspect_count'],'sc_legacy':report['sc_legacy']}),flush=True)
+          PY
+      - name: Publish audit sources and reports
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f reports/nc_phase81_audit
+          git diff --cached --quiet && exit 0
+          git commit -m 'Record phase80 full-source broadcast deep audit snapshot [skip ci]'
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            sleep 2
+          done
+          exit 1
