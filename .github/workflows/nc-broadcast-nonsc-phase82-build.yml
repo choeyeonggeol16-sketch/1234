@@ -5,7 +5,7 @@ on:
     paths:
       - ".github/workflows/nc-broadcast-nonsc-phase82-build.yml"
       - "patches/nc_broadcast_nonsc_phase82_20261116/migrate.py"
-      - "patches/nc_broadcast_full_audit81_20261116/prepare_windows_test.py"
+      - "patches/nc_broadcast_nonsc_phase82_20261116/prepare_windows_test.py"
 permissions:
   contents: write
 jobs:
