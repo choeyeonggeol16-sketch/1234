@@ -1,0 +1,38 @@
+{
+  "phase": 73,
+  "baseline_sha256": "e173dc9eab31fe340fd66983e2cea4dd094c243d02aa07a053bd3dd3c4d7fca3",
+  "full_src_sha256": "c330159d27d4f1f85634b2fd1606e259989a6b49e71db175c355c45d6ff31c19",
+  "dll_sha256": "31631e618a3c263fe56ae9ccfaef6b1d06c0031d81a244a7360b901ae70ccaec",
+  "native_abi": "0x000a0005",
+  "production_changed": [
+    "CTransport.dll",
+    "native/CTransport.cpp",
+    "native/interop_abi.hpp",
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "src/l1j/server/server/model/network/core/config/CIOConfig.java",
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeHeading.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_OnlyEffect.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_RemoveObject.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Sound.java",
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java"
+  ],
+  "packet_classes": [
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChangeHeading.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_EffectLocation.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_OnlyEffect.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_RemoveObject.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_SkillSound.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Sound.java"
+  ],
+  "java_count": 1710,
+  "zip_entries": 1734,
+  "old_move_action_native_path_untouched": true,
+  "pool_exhaustion_phase72_preserved": true,
+  "no_new_queues_workers_classes": true,
+  "existing_socket_fifo_cipher_preserved": true,
+  "in_game_5000_soak_verified": false
+}
