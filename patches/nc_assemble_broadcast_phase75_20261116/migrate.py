@@ -87,7 +87,7 @@ def edit_sc(files, name, spec):
     def migrate_call(m):
         anchor, fast = m.group(1), m.group(2)
         return (f"CSharedBroadcast.sendFormatted({anchor}, "
-                f"CSharedBroadcast.FORMAT_{name.upper()}, "
+                f"l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_{name.upper()}, "
                 f"Opcodes.{opcode}, {args}, {fast}, -1, null);")
     s, count = re.subn(target, migrate_call, s)
     assert count == expected, (name, "broadcast count", count, expected)
