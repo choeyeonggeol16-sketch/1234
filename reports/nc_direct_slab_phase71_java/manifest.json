@@ -1,0 +1,42 @@
+{
+  "SC_MoveChar": {
+    "original_path": "src/l1j/server/server/model/network/core/sc/packet/SC_MoveChar.java",
+    "sha256": "617b652e79a88a401d72c36f35afc515ea0bf038a1239e9289b72d493fdfa5b9",
+    "size": 3095
+  },
+  "SC_DoActionGFX": {
+    "original_path": "src/l1j/server/server/model/network/core/sc/packet/SC_DoActionGFX.java",
+    "sha256": "7ec7faed393808f24bd83399055e6eb61e7a9ccf264b9b57b8d3eb69c76a7ee4",
+    "size": 1940
+  },
+  "CSharedBroadcast": {
+    "original_path": "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "sha256": "a9636b3f7350f6a28ad3ac656b9090f2c009dc318470402e39460c1c23d6c6ae",
+    "size": 17321
+  },
+  "CAsyncSendConstBuffer": {
+    "original_path": "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    "sha256": "95033e9470e2511eb151e1cabf5a93454404161481d5d59f7a4a574ef12aa20a",
+    "size": 6223
+  },
+  "CAsyncSendConstBufferExceptSelf": {
+    "original_path": "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    "sha256": "3ffcddbc075c4aa4b14704eb9772a79088cb6bc13d98d76ba508f279079f64a6",
+    "size": 1674
+  },
+  "CIOServer": {
+    "original_path": "src/l1j/server/server/model/network/core/transport/CIOServer.java",
+    "sha256": "1c94545c0186f4644a646f476b3e2b68edc791e864f2a1216b855da655a0291c",
+    "size": 57210
+  },
+  "CUserSocket": {
+    "original_path": "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    "sha256": "81a5f52b81cdac7016e3f3937c1aeb310e2d453a0b3fb202c66885db237d6c10",
+    "size": 192109
+  },
+  "CIOConfig": {
+    "original_path": "src/l1j/server/server/model/network/core/config/CIOConfig.java",
+    "sha256": "5c210f87c39f81762166fae0dc238a0de316fde88d103c7afdaf54e030488057",
+    "size": 2723
+  }
+}
