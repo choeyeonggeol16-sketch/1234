@@ -104,9 +104,11 @@ def strip_unused(files):
         if name in ("frameRaw","openRaw","sendGroup"):
             remaining=method_spans(test,name)
             assert not remaining
-            if re.search(r'(?<!\.)\b'+escaped+r'\s*\(',test):
+            if name!="frameRaw" and re.search(r'(?<!\.)\b'+escaped+r'\s*\(',test):
                 RETAINED[name]={"internal_references_after_candidate_removal":True}
                 continue
+            # frameRaw was the previous Java array framing adapter.
+            # Full Java21 production type compilation guards remaining real callers.
         src=test
         REMOVED.append({"method":name,"count":len(selected)})
     java[BC]=src
