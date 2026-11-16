@@ -74,6 +74,14 @@ with zipfile.ZipFile(src) as z:
             ctor.append({"file":name,"line":ss.count("\n",0,m.start())+1,
                 "args":[x.strip()[:2000] for x in args]})
 (out/"constructors.json").write_text(json.dumps(ctor,ensure_ascii=False,indent=2))
+source_names=sorted(set(v["file"] for v in ctor if "CSharedBroadcast.java" not in v["file"]
+         and not v["args"][0].startswith("l1j.server.server.model.network.core.broadcast.CSharedBroadcast.")))
+with zipfile.ZipFile(src) as z:
+    for name in source_names:
+        dest=out/"legacy_src"/name
+        dest.parent.mkdir(parents=True,exist_ok=True)
+        dest.write_text(z.read(name).decode("utf-8"))
+
 
 # Identify still-used legacy array based helpers and byte[] wrappers globally
 names=set()
