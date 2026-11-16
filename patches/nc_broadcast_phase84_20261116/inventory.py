@@ -43,6 +43,7 @@ with zipfile.ZipFile(src) as z:
            "SC_PartyMemberList","SC_PartyMember","SC_ClanAttention","SC_CastleMaster",
            "SC_GameStart","SC_GameRap","SC_EtcPacket","SC_GameEnd","SC_GameOver",
            "SC_Party","SC_TrueTargetNew","SC_NpcChatPacket","SC_ShowCmd",
+           "SC_ChartRank","SC_ChangeAttr","SC_WarStartMessage","SC_NewChat",
            "SC_Attack","SC_ChatMessageNoti","SC_BossYN"]
         if name.startswith("src/") and "/sc/packet/" in name and Path(name).stem in focus:
             (out/Path(name).name).write_text(s)
