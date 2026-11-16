@@ -193,8 +193,8 @@ def package():
         s=data.decode("utf-8")
         for method in ("send","sendRecipients","sendAll","sendRawRecipients",
                        "sendRawArray","sendArray","sendObjectPlayers","sendRawSelfAndVisible"):
-            assert not re.search(r"CSharedBroadcast\s*\.\s*"+method+r"\\s*\\(",s),(n,method)
-        assert not re.search(r"new\s+(?:l1j\.server\.server\.model\.network\.core\.broadcast\.)?CAsyncSendConstBuffer\s*\\(",s),n
+            assert not re.search(r"CSharedBroadcast\s*\.\s*"+method+r"\s*\(",s),(n,method)
+        assert not re.search(r"new\s+(?:l1j\.server\.server\.model\.network\.core\.broadcast\.)?CAsyncSendConstBuffer\s*\(",s),n
     assert len(new)==1734 and sum(n.endswith(".java") for n in new)==1710
     with zipfile.ZipFile(OUT,"w",zipfile.ZIP_DEFLATED,compresslevel=6) as z:
         for info in infos:z.writestr(info,b"" if info.is_dir() else new[info.filename])
