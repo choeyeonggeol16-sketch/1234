@@ -1,0 +1,40 @@
+name: 'Phase79 inspect four exact remaining custom SC broadcast sources'
+on:
+  push:
+    branches: [nc-assemble-broadcast-phase79-20261116]
+    paths: [.github/workflows/nc-phase79-four-sc-inspect.yml]
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract four SHA-pinned exact phase78 packet classes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib,hashlib,zipfile,json
+          source=pathlib.Path('downloads/RKern_NC_SPacket_Assemble_Phase78_FULL_SRC_20261116.zip')
+          assert hashlib.sha256(source.read_bytes()).hexdigest()=='07bfc9631c56a9ea4dc6a6bce60824b0ce2a9065b0b8c64ced4451863c1fb943'
+          report=pathlib.Path('reports/nc_phase79_four_remaining');report.mkdir(parents=True,exist_ok=True)
+          selected=('AreaAttackEffect','ChatPacket','DropItem','UseArrowSkill','CSharedBroadcast','CAsyncSendConstBuffer','CAsyncSendConstBufferExceptSelf')
+          with zipfile.ZipFile(source) as z:
+              assert z.testzip() is None
+              for classname in selected:
+                  matches=[n for n in z.namelist() if n.endswith('/'+classname+'.java') and n.startswith('src/')]
+                  assert len(matches)==1,(classname,matches)
+                  data=z.read(matches[0])
+                  (report/(classname+'.java')).write_bytes(data)
+                  print('SC_EXTRACT',classname,len(data),hashlib.sha256(data).hexdigest(),flush=True)
+          PY
+      - name: Commit extracted review sources
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f reports/nc_phase79_four_remaining
+          git diff --cached --quiet && exit 0
+          git commit -m 'Extract four pinned phase78 residual SC senders [skip ci]'
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
