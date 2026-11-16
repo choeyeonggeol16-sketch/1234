@@ -13,14 +13,14 @@ with zipfile.ZipFile(ZIP) as z:
 rows=[]
 for name,src in sorted(sources.items()):
     if not pathlib.PurePosixPath(name).name.startswith("SC_"):continue
-    direct=len(re.findall(r"\\bbroadcast(?:Fast)?\\s*\\(",src))
-    shared=len(re.findall(r"CSharedBroadcast\\.(?:send|sendFormatted|sendAction|sendMove)\\s*\\(",src))
-    formatted=len(re.findall(r"CSharedBroadcast\\.sendFormatted\\s*\\(",src))
-    legacy=len(re.findall(r"\\b(?:broadcastPacket|broadcastPacketForFindInvis|broadcastPacketAll|sendPacketsToAll)\\s*\\(",src))
-    bytewire=len(re.findall(r"\\bsharedWire\\s*\\(",src))
-    bytebuffer=len(re.findall(r"ByteBuffer\\.allocate\\s*\\(",src))
+    direct=len(re.findall(r"\bbroadcast(?:Fast)?\s*\(",src))
+    shared=len(re.findall(r"CSharedBroadcast\.(?:send|sendFormatted|sendAction|sendMove)\s*\(",src))
+    formatted=len(re.findall(r"CSharedBroadcast\.sendFormatted\s*\(",src))
+    legacy=len(re.findall(r"\b(?:broadcastPacket|broadcastPacketForFindInvis|broadcastPacketAll|sendPacketsToAll)\s*\(",src))
+    bytewire=len(re.findall(r"\bsharedWire\s*\(",src))
+    bytebuffer=len(re.findall(r"ByteBuffer\.allocate\s*\(",src))
     class_name=pathlib.PurePosixPath(name).name
-    rows.append(dict(name=class_name,path=name,broadcast_methods=direct,shared_calls=shared,formatted_calls=formatted,legacy_calls=legacy,sharedWire_calls=bytewire,byteBuffer_allocations=bytebuffer,lines=src.count("\\n")+1))
+    rows.append(dict(name=class_name,path=name,broadcast_methods=direct,shared_calls=shared,formatted_calls=formatted,legacy_calls=legacy,sharedWire_calls=bytewire,byteBuffer_allocations=bytebuffer,lines=src.count("\n")+1))
 counts=collections.Counter()
 for row in rows:
     if row["broadcast_methods"] or row["shared_calls"] or row["legacy_calls"]:counts["broadcast_related"]+=1
