@@ -20,7 +20,12 @@ helper="""
         if(framed==null||framed.length<3)
             throw new IllegalArgumentException("framed test input");
         final byte[] snapshot=framed.clone();
-        return b->b.put(snapshot,2,snapshot.length-2);
+        return new l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter(){
+            @Override public void write(java.nio.ByteBuffer b) {
+                b.put(snapshot,2,snapshot.length-2);
+            }
+            @Override public int wireLength() {return snapshot.length;}
+        };
     }
 
 """
