@@ -1,0 +1,9 @@
+[
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java",
+    "line": 1268,
+    "method": "sendArray",
+    "args": "party.getMembers(),SC_ActionUI.sharedFlagWire(bytes)",
+    "context": "\n        if (party == null) {\n            return;\n        }\n\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendArray(party.getMembers(),SC_ActionUI.sharedFlagWire(bytes));\n    }\n\n    private static void handleTamCancel(\n            L1PcInstance pc,\n            String encoded) {\n\n        if (encoded == null) {"
+  }
+]

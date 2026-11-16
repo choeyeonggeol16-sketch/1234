@@ -1,0 +1,51 @@
+[
+  {
+    "file": "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    "line": 155,
+    "method": "sendRecipients",
+    "args": "col,SC_IconMessage.sharedGmWire(packet)",
+    "context": "                if(selectedType==0){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(col,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(packet));\n                } else if(selectedType==2){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(col,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(packet));\n                } else if(selectedType==1){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_IconMessage.sharedGmWire(packet));\n                } else if(selectedType==3){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_PLEDGE_NOTICE,\n                            packet,Config.GAME_SERVER_NAME));\n                } else if(selectedType==4){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_WHISPER,"
+  },
+  {
+    "file": "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    "line": 157,
+    "method": "sendRecipients",
+    "args": "col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_PLEDGE_NOTICE,\n                            packet,Config.GAME_SERVER_NAME)",
+    "context": "                } else if(selectedType==2){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(col,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(packet));\n                } else if(selectedType==1){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_IconMessage.sharedGmWire(packet));\n                } else if(selectedType==3){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_PLEDGE_NOTICE,\n                            packet,Config.GAME_SERVER_NAME));\n                } else if(selectedType==4){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_WHISPER,\n                            packet,\"오늘의 검색어\"));\n                }"
+  },
+  {
+    "file": "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    "line": 161,
+    "method": "sendRecipients",
+    "args": "col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_WHISPER,\n                            packet,\"오늘의 검색어\")",
+    "context": "                } else if(selectedType==3){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_PLEDGE_NOTICE,\n                            packet,Config.GAME_SERVER_NAME));\n                } else if(selectedType==4){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_WHISPER,\n                            packet,\"오늘의 검색어\"));\n                }\n\n                obj.nextMs = cur + obj.delay;\n\t\t\t}\n\t\t}catch(Exception e){"
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+    "line": 72,
+    "method": "sendRecipients",
+    "args": "\n                L1World.getInstance().getRecognizePlayer(this), wire",
+    "context": "\n\tpublic void do_move(int x, int y, int h){\n        setX(x);\n        setY(y);\n        final byte[] wire = SC_MoveChar.broadcastWire(getId(), x, y, h);\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(\n                L1World.getInstance().getRecognizePlayer(this), wire);\n    }\n\n\tpublic void do_action(int action){\n        final byte[] wire = SC_DoActionGFX.broadcastWire(getId(), action);\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(\n                L1World.getInstance().getRecognizePlayer(this), wire);"
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+    "line": 78,
+    "method": "sendRecipients",
+    "args": "\n                L1World.getInstance().getRecognizePlayer(this), wire",
+    "context": "                L1World.getInstance().getRecognizePlayer(this), wire);\n    }\n\n\tpublic void do_action(int action){\n        final byte[] wire = SC_DoActionGFX.broadcastWire(getId(), action);\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(\n                L1World.getInstance().getRecognizePlayer(this), wire);\n    }\n\n\t\n\n\t@Override\n\tpublic void onPerceive(L1PcInstance perceivedFrom) {"
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+    "line": 175,
+    "method": "sendRecipients",
+    "args": "L1World.getInstance().getVisiblePlayer(this),\n                        SC_DoActionGFX.broadcastWire(getId(), CHEST_OPEN)",
+    "context": "                }\n            }\n        }\n    }\n\tprivate void showOpen(){\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast\n                .sendRecipients(L1World.getInstance().getVisiblePlayer(this),\n                        SC_DoActionGFX.broadcastWire(getId(), CHEST_OPEN));\n    }\n\n\tprivate void showCloud(){\n\t\tshowCloud(12157);\n\t}"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/FishingTimeController.java",
+    "line": 592,
+    "method": "sendRecipients",
+    "args": "\n                L1World.getInstance().getVisiblePlayers(5490),\n                SC_SkillSound.sharedWire(owner_object_id,effect_id)",
+    "context": "    private void distribute_message(\n            int owner_object_id,String message,int effect_id){\n        // Preserve two independent AOI lookups, first all notices, then all FX.\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(\n                L1World.getInstance().getVisiblePlayers(5490),l1j.server.server.model.network.core.broadcast.CSharedBroadcast.greenWriter(message));\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(\n                L1World.getInstance().getVisiblePlayers(5490),\n                SC_SkillSound.sharedWire(owner_object_id,effect_id));\n    }\n\n    private void distribute_message(int owner_object_id, int itemid) {\n        switch (itemid) {\n        case 41303:"
+  }
+]

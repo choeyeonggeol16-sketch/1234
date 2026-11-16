@@ -1,0 +1,9 @@
+[
+  {
+    "file": "src/l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java",
+    "line": 1371,
+    "method": "sendRawSelfAndVisible",
+    "args": "pc,encoded",
+    "context": "            L1PcInstance pc,\n            int actionType,\n            int code) {\n        final byte[] encoded=SC_SOCIAL_ACTION_NOTI.encodeFields(\n                pc.getId(),actionType,code);\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast\n                .sendRawSelfAndVisible(pc,encoded);\n    }\n\n    private static void handleCastleWarProclaim(\n            L1PcInstance pc,\n            int castleId) {\n"
+  }
+]

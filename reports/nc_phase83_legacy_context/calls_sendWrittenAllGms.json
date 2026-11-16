@@ -1,0 +1,16 @@
+[
+  {
+    "file": "src/l1j/server/server/Controller/BossController.java",
+    "line": 281,
+    "method": "sendWrittenAllGms",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg)",
+    "context": "            scheduleNext(boss, version);\n        }\n    }\n\n    private static void notifyGm(final String msg) {\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllGms(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(msg));\n    }\n    \n    // 1 여왕개미 2 샌드 웜 3 공성전 4는안뜸 \n    private static final int EVENT_BOSS_TYPE = 1;\n    \n    private static final class BossEvent {\n"
+  },
+  {
+    "file": "src/l1j/server/server/model/Instance/L1PcInstance.java",
+    "line": 3916,
+    "method": "sendWrittenAllGms",
+    "args": "l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fY[GM] \" + getName() + \"님의 [\" + item.getLogName() + \"] 드랍\")",
+    "context": "\t                    SC_SystemMessage.send(this, \"사망 패널티(드랍): [\" + item.getLogName() + \"] \");\n\n\t                   // sendPackets(new SC_ServerMessage(638, item.getLogName()));// 증발\n\n\n\t                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllGms(l1j.server.server.model.network.core.broadcast.CSharedBroadcast.systemWriter(\"\\\\fY[GM] \" + getName() + \"님의 [\" + item.getLogName() + \"] 드랍\"));\n\t                    /** 파일로그저장 **/\n\t                    LoggerInstance.getInstance().addItemAction(ItemActionType.del, this, item, count);\n\t                }\n\t            }\n\t        }\n\t\t\n"
+  }
+]

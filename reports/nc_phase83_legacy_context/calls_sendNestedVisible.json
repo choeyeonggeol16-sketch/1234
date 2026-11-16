@@ -1,0 +1,9 @@
+[
+  {
+    "file": "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+    "line": 189,
+    "method": "sendNestedVisible",
+    "args": "\n                this,SC_SkillSound.sharedWire(getId(),i)",
+    "context": "\tprivate void showBlackCloud(){\n\t\tshowCloud(12158);\n\t}\n\n\tprivate void showCloud(int i){\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendNestedVisible(\n                this,SC_SkillSound.sharedWire(getId(),i));\n    }\n\n\tpublic byte[] serialize(){\n\t\tMJBytesOutputStream s = new MJBytesOutputStream(256);\n\t\tbyte[] \t\t\t\tb = null;\n\t\ttry{"
+  }
+]
