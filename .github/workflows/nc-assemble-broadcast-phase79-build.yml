@@ -123,7 +123,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path "$root\classes","$root\testclasses" | Out-Null
           & javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g -cp "$deps" -d "$root\classes" "@$root\sources.txt"
           if($LASTEXITCODE -ne 0){throw 'Java 21 full source compilation failed'}
-          & javac --enable-preview --release 21 -encoding UTF-8 -cp "$root\classes;$deps" -d "$root\testclasses" "$root\testsrc\l1j\server\server\model\network\core\transport\CIOPacketCodecReference.java" "$root\testsrc\l1j\server\server\model\network\core\connection\CSharedBroadcastWindowsTest.java" "$root\testsrc\l1j\server\server\model\network\core\sc\packet\SC_WorldPutObjectOracle.java"
+          & javac --enable-preview --release 21 -encoding UTF-8 -cp "$root\classes;$deps" -d "$root\testclasses" "$root\testsrc\l1j\server\server\model\network\core\transport\CIOPacketCodecReference.java" "$root\testsrc\l1j\server\server\model\network\core\connection\CSharedBroadcastWindowsTest.java" "$root\testsrc\l1j\server\server\model\network\core\sc\packet\SC_WorldPutObjectOracle.java" "$root\testsrc\l1j\server\server\model\network\core\sc\packet\SC_TopMessageOracle.java" "$root\testsrc\l1j\server\server\model\network\core\sc\packet\SC_WeatherOracle.java"
           if($LASTEXITCODE -ne 0){throw 'Java 21 real IOCP harness compile failed'}
           Write-Host 'PHASE79_1710_JAVA21_COMPILED'
       - name: Run 10 real Windows IOCP rounds, nine global original-vs-Native oracles and earlier regressions and four rolling keys
