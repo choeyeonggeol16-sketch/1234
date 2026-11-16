@@ -45,6 +45,28 @@ jobs:
             & "$root\build\CTransport_SelfTest.exe"
             if($LASTEXITCODE -ne 0){throw 'native loopback selftest failed'}
           } finally { Pop-Location }
+      - name: Restore exact phase77 shipping DLL and config pin for phase78 integration
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $env:RUNNER_TEMP 'nc-assemble-broadcast-phase78'
+          @'
+          from pathlib import Path
+          import zipfile,hashlib,sys
+          root=Path(sys.argv[1])
+          with zipfile.ZipFile('downloads/RKern_NC_SPacket_Assemble_Phase77_FULL_SRC_20261116.zip') as z:
+              dll=z.read('CTransport.dll')
+              config=z.read('src/l1j/server/server/model/network/core/config/CIOConfig.java')
+          sha=hashlib.sha256(dll).hexdigest()
+          assert sha=='984c30433687d343e6d882b80c048e85f4a1961c4184dc488916a8174d7c524f',sha
+          assert sha.encode('ascii') in config
+          (root/'build/CTransport.dll').write_bytes(dll)
+          (root/'CTransport.dll').write_bytes(dll)
+          target=root/'src/l1j/server/server/model/network/core/config/CIOConfig.java'
+          target.write_bytes(config)
+          print('PHASE78_SHIPPED_PHASE77_DLL_AND_JAVA_SHA_PIN_RESTORED',sha)
+          '@ | python - "$root"
+          if($LASTEXITCODE -ne 0){throw 'Phase77 shipping binary restore failed'}
       - name: Force Native owner pool exhaustion, 512 concurrent source leases and 30-recipient fanout
         shell: pwsh
         run: |
