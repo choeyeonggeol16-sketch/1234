@@ -2,6 +2,9 @@
 // Compile against the EXACT phase72 CIOBufferPool and verify the same
 // refcount/recycle path for dynamically leased shared-source slabs.
 // No sockets are needed to force the fixed pool to run out of owner slots.
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <Windows.h>
 #include "cio_core.hpp"
 #include <cstdio>
