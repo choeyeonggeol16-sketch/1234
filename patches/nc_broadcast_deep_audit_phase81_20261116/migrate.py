@@ -113,7 +113,7 @@ def package():
     for n,data in new.items():
         if "/sc/packet/SC_" not in n or not n.endswith(".java"):continue
         s=data.decode("utf-8")
-        if re.search(r'CSharedBroadcast\\.send(?:All|Recipients)?\\s*\\(',s):
+        if re.search(r'CSharedBroadcast\.send(?:All|Recipients)?\s*\(',s):
             legacy.append(n)
     assert not legacy,legacy
     report={"phase":81,"baseline_sha256":PIN,
