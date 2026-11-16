@@ -96,6 +96,13 @@ with zipfile.ZipFile(src) as z:
 (out/"references.json").write_text(json.dumps(sorted(names),ensure_ascii=False,indent=2))
 
 
+with zipfile.ZipFile(src) as z:
+    for filename in (
+      "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+      "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+      "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java"):
+        (out/Path(filename).name).write_text(z.read(filename).decode("utf-8"))
+
 for method,vals in by_type.items():
     (out/("calls_"+method+".json")).write_text(json.dumps(vals,ensure_ascii=False,indent=2))
 (out/"summary.json").write_text(json.dumps({"total":len(rows),"methods":dict(ct),
