@@ -1,0 +1,28 @@
+{
+  "phase": 74,
+  "baseline_sha256": "c330159d27d4f1f85634b2fd1606e259989a6b49e71db175c355c45d6ff31c19",
+  "full_src_sha256": "4f5d0f8cdb1850693aa0b36ef1fba5c609292233f6c7558102f047287a24b3d8",
+  "dll_sha256": "5b44fa566b950537f4f68868a80aebbb06224128042312552f65f28ddf4475a8",
+  "native_abi": "0x000a0006",
+  "modified": [
+    "CTransport.dll",
+    "native/CTransport.cpp",
+    "native/interop_abi.hpp",
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "src/l1j/server/server/model/network/core/config/CIOConfig.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_CharSpeedUpdate.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Fishing.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_HPMeter.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Invis.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Light.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_Poison.java",
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java"
+  ],
+  "java_count": 1710,
+  "zip_entries": 1734,
+  "native_pool_exhaustion_phase72_preserved": true,
+  "phase73_6_formatters_preserved": true,
+  "socket_fifo_cipher_preserved": true,
+  "no_new_workers_queues_classes": true,
+  "in_game_5000_soak_verified": false
+}
