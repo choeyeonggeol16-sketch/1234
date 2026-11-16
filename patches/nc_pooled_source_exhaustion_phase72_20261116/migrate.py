@@ -91,7 +91,7 @@ def prepare():
 """
     s=once(s,marker,acquire+marker,POOL)
     s=once(s,
-        "   if(previous!=1)return;\n   if(p->owner>=OwnerCount||p->bucket>1){++corruptions_;return;}",
+        "  if(previous!=1)return;\n  if(p->owner>=OwnerCount||p->bucket>1){++corruptions_;return;}",
         """   if(previous!=1)return;
    // Same refcount contract as fixed CIOBufferEx slabs. A live producer
    // Source or queued NativeSendRequest prevents this final release.
