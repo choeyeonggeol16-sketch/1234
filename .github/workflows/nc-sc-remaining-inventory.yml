@@ -1,0 +1,25 @@
+name: SC remaining broadcast exact-source inventory
+on:
+  push:
+    branches: [nc-assemble-broadcast-sc-remainder-20261116]
+    paths:
+      - ".github/workflows/nc-sc-remaining-inventory.yml"
+      - "patches/nc_sc_remaining_20261116/inventory.py"
+permissions:
+  contents: write
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect pinned phase74 SC packets and exact wire layouts
+        run: python3 patches/nc_sc_remaining_20261116/inventory.py
+      - name: Publish auditable source extracts and call-site report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f reports/nc_sc_remaining_20261116
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Extract all remaining SC broadcast packet sources [skip ci]"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
