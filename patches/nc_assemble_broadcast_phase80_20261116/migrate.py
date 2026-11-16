@@ -294,6 +294,58 @@ def move_arrow(files):
                 isHit?1:0,seq);"""
     update(files,key,old,new)
 
+def make_codec_writers_testable(files):
+    # Only the codec body is extracted; the broadcast uses this exact method,
+    # and the Windows fixture can compare it to the frozen original bytes.
+    key=FILES["AreaAttackEffect"]
+    src,crlf=norm(files,key)
+    start=src.index("        "+FQ+".sendWrittenSelfAndVisible(caster,b -> {")
+    end=src.index("        });",start)+len("        });")
+    call="""        """+FQ+""".sendWrittenSelfAndVisible(caster,
+                b -> writeNativeArea(b,id,x,y,heading,seq,gfx,action,ids));"""
+    src=src[:start]+call+src[end:]
+    marker="    public static byte[] sharedWire("
+    method="""    private static void writeNativeArea(java.nio.ByteBuffer b,
+            int id,int x,int y,int heading,int seq,int gfx,int action,int[] ids) {
+        b.put((byte)Opcodes.S_ATTACK_MANY).put((byte)action).putInt(id);
+        b.putShort((short)x).putShort((short)y).put((byte)heading);
+        b.putInt(seq).putShort((short)gfx).put((byte)0)
+         .putShort((short)0).putShort((short)ids.length);
+        for(int targetId:ids)
+            b.putInt(targetId).put((byte)0x20)
+             .put((byte)ActionCodes.ACTION_Damage);
+        b.putShort((short)0);
+    }
+
+"""
+    assert src.count(marker)==1
+    put(files,key,src.replace(marker,method+marker,1),crlf)
+    key=FILES["DropItem"]
+    src,crlf=norm(files,key)
+    start=src.index("        return "+FQ+".sendWrittenGroundItem(item,addKnownObject,b -> {")
+    end=src.index("        });",start)+len("        });")
+    call="""        return """+FQ+""".sendWrittenGroundItem(item,addKnownObject,
+                b -> writeNativeGroundItem(b,x,y,objectId,groundGfxId,
+                        lightRange,count,frozenName));"""
+    src=src[:start]+call+src[end:]
+    marker="    private static byte[] sharedWire("
+    method="""    private static void writeNativeGroundItem(java.nio.ByteBuffer b,
+            int x,int y,int objectId,int groundGfxId,int lightRange,int count,
+            String frozenName) {
+        b.put((byte)Opcodes.S_PUT_OBJECT).putShort((short)x)
+         .putShort((short)y).putInt(objectId).putShort((short)groundGfxId);
+        b.put((byte)0).put((byte)0).put((byte)lightRange).put((byte)0);
+        b.putInt(count).put((byte)0).put((byte)0);
+        """+FQ+""".writeMS949(b,frozenName);
+        b.put((byte)0).put((byte)0).putInt(0).putInt(0);
+        b.put((byte)255).put((byte)0).put((byte)0).put((byte)0);
+        b.putShort((short)65535).putInt(0).put((byte)8).put((byte)0);
+    }
+
+"""
+    assert src.count(marker)==1
+    put(files,key,src.replace(marker,method+marker,1),crlf)
+
 def prepare():
     assert hashlib.sha256(BASE.read_bytes()).hexdigest()==PIN,"phase79 baseline SHA mismatch"
     with zipfile.ZipFile(BASE) as z:
@@ -304,6 +356,7 @@ def prepare():
     assert len(files)==1734 and sum(x.endswith(".java") for x in files)==1710
     add_broadcast_utilities(files)
     move_chat(files);move_area(files);move_drop(files);move_arrow(files)
+    make_codec_writers_testable(files)
     touched={n for n in old if old[n]!=files[n]}
     assert touched==CHANGED,("phase80 unexpected diff",sorted(touched^CHANGED))
     for n,data in files.items():
