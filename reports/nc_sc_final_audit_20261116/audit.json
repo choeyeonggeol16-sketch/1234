@@ -1,0 +1,110 @@
+{
+  "from_phase": 74,
+  "through_phase": 78,
+  "phase74_sha256": "4f5d0f8cdb1850693aa0b36ef1fba5c609292233f6c7558102f047287a24b3d8",
+  "phase78_sha256": "07bfc9631c56a9ea4dc6a6bce60824b0ce2a9065b0b8c64ced4451863c1fb943",
+  "total_SC_classes": 195,
+  "sc_broadcast_classes_before": 57,
+  "sc_broadcast_classes_after": 57,
+  "original_legacy_path_classes": 43,
+  "legacy_path_classes_remaining": 8,
+  "legacy_remaining": {
+    "SC_IconMessage.java": [
+      "sendAll"
+    ],
+    "SC_MessageYN.java": [
+      "sendAll"
+    ],
+    "SC_NewChat.java": [
+      "sendAll"
+    ],
+    "SC_ServerMessage.java": [
+      "sendAll"
+    ],
+    "SC_SystemMessage.java": [
+      "sendAll"
+    ],
+    "SC_TopMessage.java": [
+      "sendAll"
+    ],
+    "SC_War.java": [
+      "sendAll"
+    ],
+    "SC_Weather.java": [
+      "sendAll"
+    ]
+  },
+  "current_shared_helper_methods_by_sc_class_count": {
+    "sendExtended": 9,
+    "sendFormatted": 28,
+    "sendWritten": 7,
+    "writeMS949": 5,
+    "sendAction": 1,
+    "sendAll": 8,
+    "sendMove": 1,
+    "sendWrittenRecipients": 3,
+    "sendWrittenAll": 1
+  },
+  "total_changed_SC_classes": 35,
+  "all_35_changed_verified": true,
+  "unexpected_changes": [],
+  "java_count": 1710,
+  "zip_entries": 1734,
+  "zip_crc_pass": true,
+  "source_candidate_classes": [
+    "SC_Attack.java",
+    "SC_AttackCritical.java",
+    "SC_AttackMissPacket.java",
+    "SC_AttackPacket.java",
+    "SC_AttackPacketForNpc.java",
+    "SC_AttackStatus.java",
+    "SC_ChangeName.java",
+    "SC_ChangeShape.java",
+    "SC_CharTitle.java",
+    "SC_CharVisualUpdate.java",
+    "SC_Dexup.java",
+    "SC_DoActionShop.java",
+    "SC_Door.java",
+    "SC_ExplosionNoti.java",
+    "SC_IconMessage.java",
+    "SC_Lawful.java",
+    "SC_Liquor.java",
+    "SC_MessageYN.java",
+    "SC_NewChat.java",
+    "SC_NpcChatPacket.java",
+    "SC_NpcShopAction.java",
+    "SC_PacketBox.java",
+    "SC_PinkName.java",
+    "SC_RangeSkill.java",
+    "SC_Resurrection.java",
+    "SC_ReturnedStat.java",
+    "SC_ServerMessage.java",
+    "SC_SkillBrave.java",
+    "SC_SkillHaste.java",
+    "SC_SkillIconAura.java",
+    "SC_SkillIconBlessOfEva.java",
+    "SC_SkillIconShield.java",
+    "SC_SkillIconWindShackle.java",
+    "SC_SkillIconWisdomPotion.java",
+    "SC_Strup.java",
+    "SC_SystemMessage.java",
+    "SC_TopMessage.java",
+    "SC_TrueTargetNew.java",
+    "SC_UseArrowSkill.java",
+    "SC_UseAttackSkill.java",
+    "SC_War.java",
+    "SC_Weather.java",
+    "SC_WorldPutObject.java"
+  ],
+  "changed_non_sc": [
+    "CTransport.dll",
+    "native/CTransport.cpp",
+    "native/interop_abi.hpp",
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java",
+    "src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java",
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "src/l1j/server/server/model/network/core/config/CIOConfig.java",
+    "src/l1j/server/server/model/network/core/connection/CUserSocket.java",
+    "src/l1j/server/server/model/network/core/transport/CIOServer.java"
+  ]
+}
