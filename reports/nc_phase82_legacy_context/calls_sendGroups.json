@@ -1,0 +1,30 @@
+[
+  {
+    "file": "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java",
+    "line": 215,
+    "method": "sendGroups",
+    "args": "_red,_blue,SC_PacketBox.sharedGreenWire(msg)",
+    "context": "\t\t\tInstSpcMessages.INSTANCE_SPACE_FULL.sendSystemMsg(_blue.get(0).getParty().getLeader());\n\t\t}\n\t}\n\t\n\tprotected void sendInPlayerMessage(String msg){\n\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendGroups(_red,_blue,SC_PacketBox.sharedGreenWire(msg));\n//\t\tbox.clear();\n\t}\n\t\n\tprotected void waitCount() throws Exception{\n\t\ttry{\n\t\t\tString sec = new StringBuilder().append(_lType.getReadySecond()).append(\"초 후 경기가 시작됩니다.\").toString();\n\t\t\tLFCMessages.INGAME_NOTIFY_READY.sendGreenMsgToList(_red, sec);"
+  },
+  {
+    "file": "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java",
+    "line": 234,
+    "method": "sendGroups",
+    "args": "_red,_blue,SC_PacketBox.sharedMapTimerWire(_time)",
+    "context": "\t\t\t\t\tLFCMessages.INGAME_NOTIFY_READY.sendGreenMsgToList(_red, msg.toString());\n\t\t\t\t\tLFCMessages.INGAME_NOTIFY_READY.sendGreenMsgToList(_blue, msg.toString());\n\t\t\t\t}\n\t\t\t\tThread.sleep(1000);\n\t\t\t}\n\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendGroups(_red,_blue,SC_PacketBox.sharedMapTimerWire(_time));\n\t\t//\tmTimer.clear();\n\t\t\tLFCMessages.INGAME_NOTIFY_START.sendGreenMsgToList(_red);\n\t\t\tLFCMessages.INGAME_NOTIFY_START.sendGreenMsgToList(_blue);\n\n\t\t}catch(Exception e){\n\t\t\tthrow e;\n\t\t}"
+  },
+  {
+    "file": "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCWarSquareTrap.java",
+    "line": 76,
+    "method": "sendGroups",
+    "args": "_red,_blue,SC_LFCTrapEffect.sharedWire(effectObjectId,6132)",
+    "context": "\t\tpublic void run() {\n\t\t\tMJLFCTrapThorn thorn;\n\t\t\twhile(!_thorn_Q.isEmpty()){\n\t\t\t\tthorn = _thorn_Q.poll();\n\t\t\t\tfinal int effectObjectId = thorn.getthornNpc().getId();\n                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendGroups(_red,_blue,SC_LFCTrapEffect.sharedWire(effectObjectId,6132));\n\t\t\t\tthorn.delete();\n\t\t\t}\n\t\t\ttry{\n\t\t\t\tThread.sleep(50);\n\t\t\t}catch(Exception e){\n\t\t\t\te.printStackTrace();\n\t\t\t}"
+  },
+  {
+    "file": "src/l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCWarSquareTrap.java",
+    "line": 138,
+    "method": "sendGroups",
+    "args": "_red,_blue,SC_DisplayEffect.sharedWire(effect)",
+    "context": "\t\t\t_rndTrapCount = 0;\n\t\t}\n\t}\n\t\n    private void broadcastEffect(int effect) {\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendGroups(_red,_blue,SC_DisplayEffect.sharedWire(effect));\n    }\n\n\tprivate void posToDamage(){\n\t\tL1PcInstance attacker = null;\n\t\tint dmg = (_rnd.nextInt(MJInstanceLoadManager.MIS_EFF_THORNDMG_MAX - MJInstanceLoadManager.MIS_EFF_THORNDMG_MIN)) + MJInstanceLoadManager.MIS_EFF_THORNDMG_MIN;\n\t\tfor(L1PcInstance pc : _red){\n\t\t\tif(pc.isDead() || pc.getCurrentHp() <= 0)"
+  }
+]

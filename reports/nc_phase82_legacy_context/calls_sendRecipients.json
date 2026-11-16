@@ -1,0 +1,359 @@
+[
+  {
+    "file": "src/l1j/server/MJInstanceSystem/MJInstanceEnums.java",
+    "line": 111,
+    "method": "sendRecipients",
+    "args": "pcs,SC_PacketBox.sharedGreenWire(get())",
+    "context": "\t\tpublic void sendGreenMsg(L1PcInstance pc, String msg){\n\t\t\tSC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, new StringBuilder(get()).append(\" \").append(msg).toString());\n\t\t}\n\t\tpublic void sendGreenMsgToList(ArrayList<L1PcInstance> pcs){\n            java.util.Objects.requireNonNull(pcs);\n            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(pcs,SC_PacketBox.sharedGreenWire(get()));\n        }\n\t\tpublic void sendGreenMsgToList(ArrayList<L1PcInstance> pcs, String msg){\n            java.util.Objects.requireNonNull(pcs);\n            final String message=new StringBuilder(get()).append(\" \").append(msg).toString();\n            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(pcs,SC_PacketBox.sharedGreenWire(message));\n        }\n\t\t"
+  },
+  {
+    "file": "src/l1j/server/MJInstanceSystem/MJInstanceEnums.java",
+    "line": 116,
+    "method": "sendRecipients",
+    "args": "pcs,SC_PacketBox.sharedGreenWire(message)",
+    "context": "            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(pcs,SC_PacketBox.sharedGreenWire(get()));\n        }\n\t\tpublic void sendGreenMsgToList(ArrayList<L1PcInstance> pcs, String msg){\n            java.util.Objects.requireNonNull(pcs);\n            final String message=new StringBuilder(get()).append(\" \").append(msg).toString();\n            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(pcs,SC_PacketBox.sharedGreenWire(message));\n        }\n\t\t\n\t\t\n\t\t\n\t\tpublic void sendSurvey(L1PcInstance pc){\n\t\t\tSC_MessageYN.send(pc, CS_Attr.MSGCODE_622_LFC, 622, get());\n\t\t}"
+  },
+  {
+    "file": "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    "line": 151,
+    "method": "sendRecipients",
+    "args": "col,SC_SystemMessage.sharedWire(packet)",
+    "context": "\t\t\t\t\tbreak;\n\t\t\t\t\nfinal String packet=obj.get();\n                final int selectedType=obj.getSelectedType();\n                if(selectedType==0){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_SystemMessage.sharedWire(packet));\n                } else if(selectedType==2){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_PacketBox.sharedGreenWire(packet));\n                } else if(selectedType==1){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_IconMessage.sharedGmWire(packet));\n                } else if(selectedType==3){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_PLEDGE_NOTICE,"
+  },
+  {
+    "file": "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    "line": 153,
+    "method": "sendRecipients",
+    "args": "col,SC_PacketBox.sharedGreenWire(packet)",
+    "context": "final String packet=obj.get();\n                final int selectedType=obj.getSelectedType();\n                if(selectedType==0){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_SystemMessage.sharedWire(packet));\n                } else if(selectedType==2){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_PacketBox.sharedGreenWire(packet));\n                } else if(selectedType==1){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_IconMessage.sharedGmWire(packet));\n                } else if(selectedType==3){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_PLEDGE_NOTICE,\n                            packet,Config.GAME_SERVER_NAME));\n                } else if(selectedType==4){"
+  },
+  {
+    "file": "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    "line": 155,
+    "method": "sendRecipients",
+    "args": "col,SC_IconMessage.sharedGmWire(packet)",
+    "context": "                if(selectedType==0){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_SystemMessage.sharedWire(packet));\n                } else if(selectedType==2){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_PacketBox.sharedGreenWire(packet));\n                } else if(selectedType==1){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_IconMessage.sharedGmWire(packet));\n                } else if(selectedType==3){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_PLEDGE_NOTICE,\n                            packet,Config.GAME_SERVER_NAME));\n                } else if(selectedType==4){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_WHISPER,"
+  },
+  {
+    "file": "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    "line": 157,
+    "method": "sendRecipients",
+    "args": "col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_PLEDGE_NOTICE,\n                            packet,Config.GAME_SERVER_NAME)",
+    "context": "                } else if(selectedType==2){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_PacketBox.sharedGreenWire(packet));\n                } else if(selectedType==1){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_IconMessage.sharedGmWire(packet));\n                } else if(selectedType==3){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_PLEDGE_NOTICE,\n                            packet,Config.GAME_SERVER_NAME));\n                } else if(selectedType==4){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_WHISPER,\n                            packet,\"오늘의 검색어\"));\n                }"
+  },
+  {
+    "file": "src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java",
+    "line": 161,
+    "method": "sendRecipients",
+    "args": "col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_WHISPER,\n                            packet,\"오늘의 검색어\")",
+    "context": "                } else if(selectedType==3){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_PLEDGE_NOTICE,\n                            packet,Config.GAME_SERVER_NAME));\n                } else if(selectedType==4){\n                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(col,SC_ChatMessageNoti.sharedMacroWire(\n                            SC_ChatMessageNoti.CHAT_WHISPER,\n                            packet,\"오늘의 검색어\"));\n                }\n\n                obj.nextMs = cur + obj.delay;\n\t\t\t}\n\t\t}catch(Exception e){"
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+    "line": 72,
+    "method": "sendRecipients",
+    "args": "\n                L1World.getInstance().getRecognizePlayer(this), wire",
+    "context": "\n\tpublic void do_move(int x, int y, int h){\n        setX(x);\n        setY(y);\n        final byte[] wire = SC_MoveChar.broadcastWire(getId(), x, y, h);\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(\n                L1World.getInstance().getRecognizePlayer(this), wire);\n    }\n\n\tpublic void do_action(int action){\n        final byte[] wire = SC_DoActionGFX.broadcastWire(getId(), action);\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(\n                L1World.getInstance().getRecognizePlayer(this), wire);"
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java",
+    "line": 78,
+    "method": "sendRecipients",
+    "args": "\n                L1World.getInstance().getRecognizePlayer(this), wire",
+    "context": "                L1World.getInstance().getRecognizePlayer(this), wire);\n    }\n\n\tpublic void do_action(int action){\n        final byte[] wire = SC_DoActionGFX.broadcastWire(getId(), action);\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(\n                L1World.getInstance().getRecognizePlayer(this), wire);\n    }\n\n\t\n\n\t@Override\n\tpublic void onPerceive(L1PcInstance perceivedFrom) {"
+  },
+  {
+    "file": "src/l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java",
+    "line": 175,
+    "method": "sendRecipients",
+    "args": "L1World.getInstance().getVisiblePlayer(this),\n                        SC_DoActionGFX.broadcastWire(getId(), CHEST_OPEN)",
+    "context": "                }\n            }\n        }\n    }\n\tprivate void showOpen(){\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast\n                .sendRecipients(L1World.getInstance().getVisiblePlayer(this),\n                        SC_DoActionGFX.broadcastWire(getId(), CHEST_OPEN));\n    }\n\n\tprivate void showCloud(){\n\t\tshowCloud(12157);\n\t}"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+    "line": 89,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27422\")",
+    "context": "\t\twhile (Running && !Thread.currentThread().isInterrupted()) {\n\t\t\ttry {\n\t\t\t\tTimeCheck();\n\t\t\t\tswitch (stage) {\n\t\t\t\tcase EVENT:\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27422\"));\n\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27430\"));\n\t\t\t\t\t\tThread.sleep(7000);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+    "line": 95,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27430\")",
+    "context": "\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27430\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27431\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java",
+    "line": 97,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27431\")",
+    "context": "\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27430\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27431\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;\n\t\t\t\tdefault:\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+    "line": 89,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27669\")",
+    "context": "\t\twhile (Running && !Thread.currentThread().isInterrupted()) {\n\t\t\ttry {\n\t\t\t\tTimeCheck();\n\t\t\t\tswitch (stage) {\n\t\t\t\tcase EVENT:\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27669\"));\n\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27677\"));\n\t\t\t\t\t\tThread.sleep(7000);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+    "line": 95,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27677\")",
+    "context": "\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27677\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27678\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java",
+    "line": 97,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27678\")",
+    "context": "\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27677\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27678\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;\n\t\t\t\tdefault:\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    "line": 103,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fV$27679\")",
+    "context": "\t\t\t\t\tspawn(32723, 32904, (short) _mapid, 0, 8500132, ActionCodes.ACTION_Hide);\n\t\t\t\t\tspawn(32723, 32903, (short) _mapid, 0, 8500133, ActionCodes.ACTION_Hide);\n\t\t\t\t\tspawn(32722, 32902, (short) _mapid, 0, 8500134, ActionCodes.ACTION_Hide);\n\t\t\t\t\tspawn(32721, 32902, (short) _mapid, 0, 8500135, ActionCodes.ACTION_Hide);\n\t\t\t\t\tspawn(32722, 32903, (short) _mapid, 0, 8500301, ActionCodes.ACTION_Hide);\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fV$27679\"));\n\t\t\t\t\tspawn(32713, 32902, (short) _mapid, 0, 8500130, ActionCodes.ACTION_SwordWalk);\n\t\t\t\t\tspawn(32722, 32913, (short) _mapid, 0, 8500131, ActionCodes.ACTION_SwordWalk);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27689\"));\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase EVENT2:\n\t\t\t\t\tif (_EVENT1 == true) {"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    "line": 107,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27689\")",
+    "context": "\t\t\t\t\tspawn(32722, 32903, (short) _mapid, 0, 8500301, ActionCodes.ACTION_Hide);\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fV$27679\"));\n\t\t\t\t\tspawn(32713, 32902, (short) _mapid, 0, 8500130, ActionCodes.ACTION_SwordWalk);\n\t\t\t\t\tspawn(32722, 32913, (short) _mapid, 0, 8500131, ActionCodes.ACTION_SwordWalk);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27689\"));\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase EVENT2:\n\t\t\t\t\tif (_EVENT1 == true) {\n\t\t\t\t\t\tThread.sleep(15000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27699\"));\n\t\t\t\t\t\tThread.sleep(3000);\n\t\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, 8500137, ActionCodes.ACTION_Appear);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    "line": 112,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27699\")",
+    "context": "\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27689\"));\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase EVENT2:\n\t\t\t\t\tif (_EVENT1 == true) {\n\t\t\t\t\t\tThread.sleep(15000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27699\"));\n\t\t\t\t\t\tThread.sleep(3000);\n\t\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, 8500137, ActionCodes.ACTION_Appear);\n\t\t\t\t\t\tL1Object effect = L1World.getInstance().findNpc(8500137);\n\t\t\t\t\t\tif (effect != null && effect instanceof L1NpcInstance && !(effect instanceof L1DollInstance)) {\n\t\t\t\t\t\t\tL1NpcInstance npc = (L1NpcInstance) effect;\n\t\t\t\t\t\t\tdeleteNpc(npc);\n\t\t\t\t\t\t}"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    "line": 129,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27707\")",
+    "context": "\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27707\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27708\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    "line": 131,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27708\")",
+    "context": "\t\t\t\t\tbreak;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27707\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27708\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;\n\t\t\t\tdefault:\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    "line": 204,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fV$27688\")",
+    "context": "\t\t\t\tmob = (L1NpcInstance) object;\n\t\t\t\tint npc = mob.getNpcTemplate().get_npcId();\n\t\t\t\tswitch (npc) {\n\t\t\t\tcase 8500130:\n\t\t\t\t\tif (mob != null && mob.isDead() && _event == false) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fV$27688\"));\n\t\t\t\t\t\t_event = true;\n\t\t\t\t\t}\n\t\t\t\t\tbreak;\n\t\t\t\tcase 8500131:\n\t\t\t\t\tif (mob != null && mob.isDead() && _event2 == false) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27698\"));\n\t\t\t\t\t\t_event2 = true;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java",
+    "line": 210,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27698\")",
+    "context": "\t\t\t\t\t\t_event = true;\n\t\t\t\t\t}\n\t\t\t\t\tbreak;\n\t\t\t\tcase 8500131:\n\t\t\t\t\tif (mob != null && mob.isDead() && _event2 == false) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27698\"));\n\t\t\t\t\t\t_event2 = true;\n\t\t\t\t\t}\n\t\t\t\t\tbreak;\n\t\t\t\tdefault:\n\t\t\t\t\tbreak;\n\t\t\t\t}\n\t\t\t\tif (npc == _npcid) {"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+    "line": 89,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27432\")",
+    "context": "\t\twhile (Running && !Thread.currentThread().isInterrupted()) {\n\t\t\ttry {\n\t\t\t\tTimeCheck();\n\t\t\t\tswitch (stage) {\n\t\t\t\tcase EVENT:\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27432\"));\n\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27440\"));\n\t\t\t\t\t\tThread.sleep(7000);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+    "line": 95,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27440\")",
+    "context": "\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27440\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27441\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java",
+    "line": 97,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27441\")",
+    "context": "\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27440\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27441\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;\n\t\t\t\tdefault:\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+    "line": 89,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27442\")",
+    "context": "\t\twhile (Running && !Thread.currentThread().isInterrupted()) {\n\t\t\ttry {\n\t\t\t\tTimeCheck();\n\t\t\t\tswitch (stage) {\n\t\t\t\tcase EVENT:\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27442\"));\n\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27450\"));\n\t\t\t\t\t\tThread.sleep(7000);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+    "line": 95,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27450\")",
+    "context": "\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27450\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27451\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java",
+    "line": 97,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27451\")",
+    "context": "\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27450\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27451\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;\n\t\t\t\tdefault:\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+    "line": 89,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27452\")",
+    "context": "\t\twhile (Running && !Thread.currentThread().isInterrupted()) {\n\t\t\ttry {\n\t\t\t\tTimeCheck();\n\t\t\t\tswitch (stage) {\n\t\t\t\tcase EVENT:\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27452\"));\n\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27460\"));\n\t\t\t\t\t\tThread.sleep(7000);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+    "line": 95,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27460\")",
+    "context": "\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27460\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27461\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java",
+    "line": 97,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27461\")",
+    "context": "\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27460\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27461\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;\n\t\t\t\tdefault:\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+    "line": 89,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27462\")",
+    "context": "\t\twhile (Running && !Thread.currentThread().isInterrupted()) {\n\t\t\ttry {\n\t\t\t\tTimeCheck();\n\t\t\t\tswitch (stage) {\n\t\t\t\tcase EVENT:\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27462\"));\n\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27470\"));\n\t\t\t\t\t\tThread.sleep(7000);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+    "line": 95,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27470\")",
+    "context": "\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27470\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27471\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java",
+    "line": 97,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27471\")",
+    "context": "\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27470\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27471\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;\n\t\t\t\tdefault:\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+    "line": 89,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27472\")",
+    "context": "\t\twhile (Running && !Thread.currentThread().isInterrupted()) {\n\t\t\ttry {\n\t\t\t\tTimeCheck();\n\t\t\t\tswitch (stage) {\n\t\t\t\tcase EVENT:\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27472\"));\n\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27480\"));\n\t\t\t\t\t\tThread.sleep(7000);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+    "line": 95,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27480\")",
+    "context": "\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27480\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27481\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java",
+    "line": 97,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27481\")",
+    "context": "\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27480\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27481\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;\n\t\t\t\tdefault:\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+    "line": 89,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27482\")",
+    "context": "\t\twhile (Running && !Thread.currentThread().isInterrupted()) {\n\t\t\ttry {\n\t\t\t\tTimeCheck();\n\t\t\t\tswitch (stage) {\n\t\t\t\tcase EVENT:\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27482\"));\n\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27490\"));\n\t\t\t\t\t\tThread.sleep(7000);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+    "line": 95,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27490\")",
+    "context": "\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27490\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27491\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java",
+    "line": 97,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27491\")",
+    "context": "\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27490\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27491\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;\n\t\t\t\tdefault:\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+    "line": 89,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27649\")",
+    "context": "\t\twhile (Running && !Thread.currentThread().isInterrupted()) {\n\t\t\ttry {\n\t\t\t\tTimeCheck();\n\t\t\t\tswitch (stage) {\n\t\t\t\tcase EVENT:\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27649\"));\n\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27657\"));\n\t\t\t\t\t\tThread.sleep(7000);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+    "line": 95,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27657\")",
+    "context": "\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27657\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27658\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java",
+    "line": 97,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27658\")",
+    "context": "\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27657\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27658\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;\n\t\t\t\tdefault:\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+    "line": 89,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27659\")",
+    "context": "\t\twhile (Running && !Thread.currentThread().isInterrupted()) {\n\t\t\ttry {\n\t\t\t\tTimeCheck();\n\t\t\t\tswitch (stage) {\n\t\t\t\tcase EVENT:\n\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27659\"));\n\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27667\"));\n\t\t\t\t\t\tThread.sleep(7000);"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+    "line": 95,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27667\")",
+    "context": "\t\t\t\t\tspawn(_mapx, _mapy, (short) _mapid, 0, _npcid, ActionCodes.ACTION_Appear);\n\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27667\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27668\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java",
+    "line": 97,
+    "method": "sendRecipients",
+    "args": "PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27668\")",
+    "context": "\t\t\t\t\tstage = 2;\n\t\t\t\tcase END:\n\t\t\t\t\tif (_END == true) {\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27667\"));\n\t\t\t\t\t\tThread.sleep(7000);\n\t\t\t\t\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(PcCK(),SC_PacketBox.sharedGreenWire(\"\\\\fY$27668\"));\n\t\t\t\t\t\tRunning = false;\n\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tObject_Check();\n\t\t\t\t\tbreak;\n\t\t\t\tdefault:\n\t\t\t\t\tbreak;"
+  },
+  {
+    "file": "src/l1j/server/server/Announcecycle.java",
+    "line": 138,
+    "method": "sendRecipients",
+    "args": "\n                allpc,SC_SystemMessage.sharedWire(msg)",
+    "context": "\t\t}\n\t}\n\n\tprivate void ShowAnnounceToAll(String msg) {\n        Collection<L1PcInstance> allpc=L1World.getInstance().getAllPlayers();\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(\n                allpc,SC_SystemMessage.sharedWire(msg));\n    }\n}"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/FishingTimeController.java",
+    "line": 590,
+    "method": "sendRecipients",
+    "args": "\n                L1World.getInstance().getVisiblePlayers(5490),\n                SC_PacketBox.sharedGreenWire(message)",
+    "context": "    }\n\n    private void distribute_message(\n            int owner_object_id,String message,int effect_id){\n        // Preserve two independent AOI lookups, first all notices, then all FX.\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(\n                L1World.getInstance().getVisiblePlayers(5490),\n                SC_PacketBox.sharedGreenWire(message));\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(\n                L1World.getInstance().getVisiblePlayers(5490),\n                SC_SkillSound.sharedWire(owner_object_id,effect_id));\n    }\n"
+  },
+  {
+    "file": "src/l1j/server/server/Controller/FishingTimeController.java",
+    "line": 593,
+    "method": "sendRecipients",
+    "args": "\n                L1World.getInstance().getVisiblePlayers(5490),\n                SC_SkillSound.sharedWire(owner_object_id,effect_id)",
+    "context": "            int owner_object_id,String message,int effect_id){\n        // Preserve two independent AOI lookups, first all notices, then all FX.\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(\n                L1World.getInstance().getVisiblePlayers(5490),\n                SC_PacketBox.sharedGreenWire(message));\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(\n                L1World.getInstance().getVisiblePlayers(5490),\n                SC_SkillSound.sharedWire(owner_object_id,effect_id));\n    }\n\n    private void distribute_message(int owner_object_id, int itemid) {\n        switch (itemid) {\n        case 41303:"
+  },
+  {
+    "file": "src/l1j/server/server/model/L1ChatParty.java",
+    "line": 34,
+    "method": "sendRecipients",
+    "args": "_membersList,\n                SC_ServerMessage.sharedWire(424,pc.getName())",
+    "context": "\t\t}\n\n\t\t_membersList.add(pc);\n\t\tpc.setChatParty(this);\n\t\t\n\t\tl1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipients(_membersList,\n                SC_ServerMessage.sharedWire(424,pc.getName()));\n\t}\n\n\tprivate void removeMember(L1PcInstance pc) {\n\t\tif (!_membersList.contains(pc)) {\n\t\t\treturn;\n\t\t}"
+  }
+]

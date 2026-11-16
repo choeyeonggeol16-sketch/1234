@@ -1,0 +1,9 @@
+[
+  {
+    "file": "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java",
+    "line": 231,
+    "method": "sendMapTeamFrames",
+    "args": "_map_id,_team_id,_round_id<4,frames",
+    "context": "    private void broadcast(int[] packets, boolean ignored) {\n        if (packets == null || packets.length == 0) return;\n        final byte[][] frames=new byte[packets.length][];\n        for(int i=0;i<packets.length;i++)\n            frames[i]=SC_DisplayEffect.sharedWire(packets[i]);\n        l1j.server.server.model.network.core.broadcast.CSharedBroadcast\n                .sendMapTeamFrames(_map_id,_team_id,_round_id<4,frames);\n    }\n\t\n\tprivate void broadcast(String s){\n        if (_round_id >= 4) {\n            l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(L1World.getInstance().getVisiblePlayers(_map_id),s);\n        } else {"
+  }
+]

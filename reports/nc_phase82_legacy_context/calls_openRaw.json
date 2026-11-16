@@ -1,0 +1,9 @@
+[
+  {
+    "file": "src/l1j/server/server/model/L1Party.java",
+    "line": 89,
+    "method": "openRaw",
+    "args": "data",
+    "context": "            members.add(SC_PARTY_MEMBER_LIST.Member.from(m,\n                    _membersMark.getOrDefault(m.getId(),0)));\n        }\n        byte[] data=new SC_PARTY_MEMBER_LIST(\n                _leader!=null?_leader.getName():\"\",members).encode();\n        try(var shared=l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw(data)){\n            for(L1PcInstance t:targets){\n                if(!ok(t))continue;\n                if(!force && !canSendFullListNow(t.getId()))continue;\n                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,t);\n            }\n        }\n    }"
+  }
+]

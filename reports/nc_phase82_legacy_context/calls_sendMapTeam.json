@@ -1,0 +1,9 @@
+[
+  {
+    "file": "src/l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java",
+    "line": 239,
+    "method": "sendMapTeam",
+    "args": "_map_id, _team_id, SC_SystemMessage.sharedWire(s)",
+    "context": "\t\n\tprivate void broadcast(String s){\n        if (_round_id >= 4) {\n            l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(L1World.getInstance().getVisiblePlayers(_map_id),s);\n        } else {\n            l1j.server.server.model.network.core.broadcast.CSharedBroadcast\n                    .sendMapTeam(_map_id, _team_id, SC_SystemMessage.sharedWire(s));\n        }\n    }\n\t\n\tpublic void do_boss_spawn(){\n\t\tThreadPool.getInstance().execute(new Runnable(){\n\t\t\t@Override"
+  }
+]
