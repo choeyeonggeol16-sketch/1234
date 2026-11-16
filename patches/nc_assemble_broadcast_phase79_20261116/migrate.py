@@ -310,7 +310,13 @@ def package():
                 legacy.append((n,method))
         if re.search(r"new\s+(?:l1j\.server\.server\.model\.network\.core\.broadcast\.)?CAsyncSendConstBuffer\s*\(",s):
             legacy.append((n,"new CAsyncSendConstBuffer"))
-    assert not legacy,("SC legacy shared SEND remains",legacy)
+    # Phase79 closes the remaining global fanouts. Four non-global custom
+    # recipient/side-effect senders are deliberately tracked for Phase80.
+    expected={(P+"sc/packet/SC_AreaAttackEffect.java","new CAsyncSendConstBuffer"),
+              (P+"sc/packet/SC_ChatPacket.java","sendRecipients"),
+              (P+"sc/packet/SC_DropItem.java","new CAsyncSendConstBuffer"),
+              (P+"sc/packet/SC_UseArrowSkill.java","new CAsyncSendConstBuffer")}
+    assert set(legacy)==expected,("unexpected SC legacy SEND scope",legacy)
     with zipfile.ZipFile(OUT,"w",zipfile.ZIP_DEFLATED,compresslevel=6) as z:
         for info in infos:z.writestr(info,b"" if info.is_dir() else new[info.filename])
     with zipfile.ZipFile(OUT) as z:
@@ -320,8 +326,9 @@ def package():
        "dll_sha256":hashlib.sha256(old["CTransport.dll"]).hexdigest(),
        "native_abi":"0x000a0009",
        "changed":sorted(touched),"java_count":1710,"zip_entries":1734,
-       "sc_legacy_broadcast_remaining":0,
-       "all_195_SC_scanned":True,
+       "sc_legacy_broadcast_remaining":len(legacy),
+       "phase80_pending_legacy":legacy,
+       "all_SC_java_files_scanned":True,
        "native_socket_fifo_cipher_preserved":True,
        "new_queues_workers_classes":0,
        "native_shared_writable_max_bytes":16384,
