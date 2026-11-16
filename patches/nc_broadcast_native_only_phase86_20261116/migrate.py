@@ -51,6 +51,16 @@ def convert_es(s):
         super(frame, senderId, pendingLimit);
     }
 ""","")
+    anchor="    private CAsyncSendConstBufferExceptSelf(\n"
+    assert s.count(anchor)==1
+    native="""    /** Source-only constructor: the original payload is assembled in Native memory. */
+    public CAsyncSendConstBufferExceptSelf(CSharedBroadcast.NativeWireWriter writer,
+            int senderId,int pendingLimit) {
+        super(writer,senderId,pendingLimit);
+    }
+
+"""
+    s=s.replace(anchor,native+anchor,1)
     assert "CAsyncSendConstBufferExceptSelf(byte[]" not in s
     return s
 
