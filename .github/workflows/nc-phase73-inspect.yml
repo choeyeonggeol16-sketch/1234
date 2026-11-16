@@ -1,0 +1,58 @@
+name: Phase73 inspect final 72 broadcast packet candidates
+on:
+  push:
+    branches: [nc-assemble-broadcast-phase73-20261116]
+    paths:
+      - ".github/workflows/nc-phase73-inspect.yml"
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify pinned 72 SRC and extract exact SC packet sources
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib,zipfile,pathlib,json,re
+          p=pathlib.Path("downloads/RKern_NC_PoolExhaustion_NoSilentDrop_FULL_SRC_20261116.zip")
+          h=hashlib.sha256(p.read_bytes()).hexdigest()
+          assert h=="e173dc9eab31fe340fd66983e2cea4dd094c243d02aa07a053bd3dd3c4d7fca3",h
+          names=("SC_ChangeHeading","SC_OnlyEffect","SC_EffectLocation","SC_Sound",
+                 "SC_RemoveObject","SC_SkillSound","SC_ChangeShape","SC_Light","SC_Poison",
+                 "SC_HPMeter","SC_CharSpeedUpdate","SC_MoveChar","SC_DoActionGFX",
+                 "SC_Invis","SC_Fishing","SC_DoActionShop","CSharedBroadcast",
+                 "CAsyncSendConstBufferExceptSelf","CAsyncSendConstBuffer","CIOServer",
+                 "CUserSocket")
+          prefix="src/l1j/server/server/model/network/core/"
+          out=pathlib.Path("reports/nc_phase73_inspect");out.mkdir(parents=True,exist_ok=True)
+          summary={}
+          with zipfile.ZipFile(p) as z:
+              assert z.testzip() is None
+              allnames=[x for x in z.namelist() if x.startswith(prefix) and x.endswith(".java")]
+              for name in names:
+                  matches=[x for x in allnames if x.endswith("/"+name+".java")]
+                  assert len(matches)==1,(name,matches)
+                  full=matches[0];data=z.read(full);text=data.decode("utf-8")
+                  (out/(name+".java")).write_bytes(data)
+                  call=[{"line":i+1,"text":line.strip()} for i,line in enumerate(text.splitlines())
+                       if ("broadcast" in line or "new CAsyncSend" in line or
+                           "CSharedBroadcast" in line or "ByteBuffer.allocate" in line or
+                           "writeD(" in line or "writeH(" in line or "writeC(" in line)]
+                  summary[name]={"src":full,"sha256":hashlib.sha256(data).hexdigest(),
+                                 "lines":len(text.splitlines()),"callsites":call[:70]}
+              (out/"candidate_audit.json").write_text(json.dumps(summary,indent=2,ensure_ascii=False)+"\n")
+              for src in ("native/CTransport.cpp","native/cio_core.hpp"):
+                  data=z.read(src);(out/pathlib.Path(src).name).write_bytes(data)
+          print("PHASE73_72_SOURCE_CRC_AND_EXTRACT_PASS",len(names))
+          PY
+      - name: Publish exact review sources
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f reports/nc_phase73_inspect
+          git diff --cached --quiet && exit 0
+          git commit -m "Extract SHA-pinned phase72 S packet candidates for NC Assemble migration [skip ci]"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
