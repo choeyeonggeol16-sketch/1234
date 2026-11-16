@@ -1,0 +1,159 @@
+name: 'Phase86 Native-only shared broadcaster: remove byte-array constructors, real Windows IOCP regression'
+on:
+  push:
+    branches: [nc-broadcast-native-only-phase86-20261116]
+    paths:
+      - ".github/workflows/nc-broadcast-native-only-phase86-build.yml"
+      - "patches/nc_broadcast_native_only_phase86_20261116/migrate.py"
+      - "patches/nc_broadcast_cleanup_phase85_20261116/prepare_windows_test.py"
+permissions:
+  contents: write
+jobs:
+  msbuild_javac_real_iocp:
+    runs-on: windows-2025
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - name: Prepare SHA-pinned phase72 full SRC and four final L1 SC broadcast senders
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python patches/nc_broadcast_native_only_phase86_20261116/migrate.py "$env:RUNNER_TEMP\nc-assemble-broadcast-phase86" prepare
+          if($LASTEXITCODE -ne 0){throw 'prepare failed'}
+      - name: Build MSVC x64 CTransport.dll with unchanged Native ABI17 with final WorldPut direct source
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $env:RUNNER_TEMP 'nc-assemble-broadcast-phase86'
+          Push-Location $root
+          try {
+            python native/build_native_msvc.py
+            if($LASTEXITCODE -ne 0){
+              Get-Content -Tail 140 "$root\logs\object-memory-msvc-build.log" -ErrorAction SilentlyContinue
+              throw 'MSVC native pooled packet build failed'
+            }
+            Copy-Item -Force "$root\build\CTransport.dll" "$root\CTransport.dll"
+            & "$root\build\CTransport_SelfTest.exe"
+            if($LASTEXITCODE -ne 0){throw 'native loopback selftest failed'}
+          } finally { Pop-Location }
+      - name: Restore exact phase77 shipping DLL and config pin for phase78 integration
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $env:RUNNER_TEMP 'nc-assemble-broadcast-phase86'
+          @'
+          from pathlib import Path
+          import zipfile,hashlib,sys
+          root=Path(sys.argv[1])
+          with zipfile.ZipFile('downloads/RKern_NC_SPacket_Assemble_Phase78_FULL_SRC_20261116.zip') as z:
+              dll=z.read('CTransport.dll')
+              config=z.read('src/l1j/server/server/model/network/core/config/CIOConfig.java')
+          sha=hashlib.sha256(dll).hexdigest()
+          assert sha=='984c30433687d343e6d882b80c048e85f4a1961c4184dc488916a8174d7c524f',sha
+          assert sha.encode('ascii') in config
+          (root/'build/CTransport.dll').write_bytes(dll)
+          (root/'CTransport.dll').write_bytes(dll)
+          target=root/'src/l1j/server/server/model/network/core/config/CIOConfig.java'
+          target.write_bytes(config)
+          print('PHASE86_SHIPPED_PHASE77_DLL_AND_JAVA_SHA_PIN_RESTORED',sha)
+          '@ | python - "$root"
+          if($LASTEXITCODE -ne 0){throw 'Phase77 shipping binary restore failed'}
+      - name: Force Native owner pool exhaustion, 512 concurrent source leases and 30-recipient fanout
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $env:RUNNER_TEMP 'nc-assemble-broadcast-phase86'
+          Push-Location $root
+          try {
+            & cl /nologo /std:c++20 /O2 /EHsc /MT /permissive- /utf-8 /I"native" "native/nc_source_pool_overflow_test.cpp" /Fe:"build/NC_Pool_Overflow_Test.exe" /link /Brepro
+            if($LASTEXITCODE -ne 0){throw 'Native source overflow regression compilation failed'}
+            & "$root\build\NC_Pool_Overflow_Test.exe"
+            if($LASTEXITCODE -ne 0){throw 'Native source overflow regression failed'}
+          } finally { Pop-Location }
+      - name: Use actual Windows IOCP shared SEND fixture including six packet kinds
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python patches/nc_broadcast_cleanup_phase85_20261116/prepare_windows_test.py "$env:RUNNER_TEMP\nc-assemble-broadcast-phase86"
+          if($LASTEXITCODE -ne 0){throw 'fixture preparation failed'}
+      - name: Restore SHA-256 pinned Java dependencies
+        shell: pwsh
+        run: |
+          @'
+          import pathlib,json,hashlib,time,urllib.request,urllib.error
+          manifest=json.loads(pathlib.Path('patches/mainserver_protocol_20261114/logs/dependencies.json').read_text())
+          root=pathlib.Path('.compile-deps');root.mkdir(exist_ok=True)
+          for row in manifest:
+              jar=root/row['file']
+              if jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256']:continue
+              url=row['url'];urls=[url]
+              if 'repo.maven.apache.org/maven2/' in url:
+                  suffix=url.split('repo.maven.apache.org/maven2/',1)[1]
+                  urls=['https://maven.aliyun.com/repository/central/'+suffix,
+                        'https://mirrors.huaweicloud.com/repository/maven/'+suffix,url]
+              errors=[]
+              for attempt in range(3):
+                  for u in urls:
+                      try:
+                          req=urllib.request.Request(u,headers={'User-Agent':'RKern-Win-IOCP-Validate/1.0'})
+                          with urllib.request.urlopen(req,timeout=45) as response: data=response.read()
+                          if hashlib.sha256(data).hexdigest()!=row['sha256']:raise RuntimeError('jar hash mismatch: '+jar.name)
+                          jar.write_bytes(data);break
+                      except (urllib.error.URLError,urllib.error.HTTPError,TimeoutError) as error:errors.append(str(error))
+                  if jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256']:break
+                  time.sleep(3*(attempt+1))
+              assert jar.exists() and hashlib.sha256(jar.read_bytes()).hexdigest()==row['sha256'],(jar,errors[-4:])
+          print('PHASE64_PINNED_DEPENDENCIES',len(manifest))
+          '@ | python -
+      - name: Compile every Java 21 production source and native IOCP regression
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $env:RUNNER_TEMP 'nc-assemble-broadcast-phase86'
+          $deps=Join-Path $PWD '.compile-deps\*'
+          New-Item -ItemType Directory -Force -Path "$root\classes","$root\testclasses" | Out-Null
+          & javac --enable-preview --release 21 -encoding UTF-8 -J-Xmx5g -cp "$deps" -d "$root\classes" "@$root\sources.txt"
+          if($LASTEXITCODE -ne 0){throw 'Java 21 full source compilation failed'}
+          & javac --enable-preview --release 21 -encoding UTF-8 -cp "$root\classes;$deps" -d "$root\testclasses" "$root\testsrc\l1j\server\server\model\network\core\transport\CIOPacketCodecReference.java" "$root\testsrc\l1j\server\server\model\network\core\connection\CSharedBroadcastWindowsTest.java" "$root\testsrc\l1j\server\server\model\network\core\sc\packet\SC_WorldPutObjectOracle.java" "$root\testsrc\l1j\server\server\model\network\core\sc\packet\SC_TopMessageOracle.java" "$root\testsrc\l1j\server\server\model\network\core\sc\packet\SC_WeatherOracle.java"
+          if($LASTEXITCODE -ne 0){throw 'Java 21 real IOCP harness compile failed'}
+          Write-Host 'PHASE86_1710_JAVA21_COMPILED'
+      - name: Run 10 real Windows IOCP rounds, variable sourced SC Native writer byte-parity, large FIFO and other previous regressions and earlier regressions and four rolling keys
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $env:RUNNER_TEMP 'nc-assemble-broadcast-phase86'
+          for($i=1;$i -le 10;$i++){
+            Write-Host "PHASE86_NATIVE_POOLED_ROUND_$i"
+            python patches/broadcast_nonsc_phase64_20261116/run_windows_real.py "$root"
+            if($LASTEXITCODE -ne 0){throw "Windows pooled-native S packet round $i failed"}
+          }
+          Write-Host 'PHASE86_NATIVE_POOLED_WINDOWS_10_ROUNDS_PASS'
+      - name: Publish one complete pinned SRC with Native-only CAsyncSendConstBuffer after tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $env:RUNNER_TEMP 'nc-assemble-broadcast-phase86'
+          python patches/nc_broadcast_native_only_phase86_20261116/migrate.py "$root" package
+          if($LASTEXITCODE -ne 0){throw 'phase86 final zip validation failed'}
+          Copy-Item "$root\audit86.json" "patches/nc_broadcast_native_only_phase86_20261116/audit86.json"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f downloads/RKern_NC_SPacket_Assemble_Phase86_FULL_SRC_20261116.zip
+          git add -f patches/nc_broadcast_native_only_phase86_20261116/audit86.json
+          git diff --cached --quiet
+          if($LASTEXITCODE -eq 0){exit 0}
+          git commit -m "Publish NC pooled native S-packet source and verified DLL [skip ci]"
+          if($LASTEXITCODE -ne 0){throw 'commit failed'}
+          git pull --rebase origin "$env:GITHUB_REF_NAME"
+          if($LASTEXITCODE -ne 0){throw 'rebase failed'}
+          git push origin "HEAD:$env:GITHUB_REF_NAME"
+          if($LASTEXITCODE -ne 0){throw 'push failed'}
