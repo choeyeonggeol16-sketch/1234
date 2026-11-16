@@ -34,12 +34,12 @@ jobs:
                       (out/(name+'.java')).write_bytes(data)
                       report['selected'][name]={'path':found[0],'sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data)}
               probes={
-                  'raw_byte_broadcast':r'CSharedBroadcast\\s*\\.\\s*(?:send|sendAll|sendRecipients|sendRawRecipients|sendRawArray|sendObjectPlayers)\\s*\\(',
-                  'raw_direct_buffer':r'new\\s+CAsyncSendConstBuffer\\s*\\(',
-                  'manual_world_broadcast':r'getVisiblePlayer\\s*\\(|borrowVisiblePlayerFast\\s*\\(',
-                  'legacy_sendall':r'sendPacketsAll\\s*\\(',
-                  'native_writer':r'sendWritten(?:All|Recipients|Clan|SelfAndVisible|GroundItem)?\\s*\\(',
-                  'native_source':r'openWrittenSource\\s*\\(',
+                  'raw_byte_broadcast':r'CSharedBroadcast\s*\.\s*(?:send|sendAll|sendRecipients|sendRawRecipients|sendRawArray|sendObjectPlayers)\s*\(',
+                  'raw_direct_buffer':r'new\s+CAsyncSendConstBuffer\s*\(',
+                  'manual_world_broadcast':r'getVisiblePlayer\s*\(|borrowVisiblePlayerFast\s*\(',
+                  'legacy_sendall':r'sendPacketsAll\s*\(',
+                  'native_writer':r'sendWritten(?:All|Recipients|Clan|SelfAndVisible|GroundItem)?\s*\(',
+                  'native_source':r'openWrittenSource\s*\(',
               }
               for typ,pat in probes.items():
                   hits=[]
@@ -50,7 +50,7 @@ jobs:
                   report['suspect_count'][typ]=len(hits)
                   report['suspect_locations'][typ]=hits[:500]
               for n,data in allfiles.items():
-                  if '/sc/packet/SC_' in n and re.search(r'CSharedBroadcast\\.send(?:All|Recipients)?\\s*\\(',data.decode('utf-8')):
+                  if '/sc/packet/SC_' in n and re.search(r'CSharedBroadcast\.send(?:All|Recipients)?\s*\(',data.decode('utf-8')):
                       report['sc_legacy'].append(n)
               (out/'summary.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
               print('PHASE81_SOURCE_AUDIT',json.dumps({'selected':report['selected'],'suspect_count':report['suspect_count'],'sc_legacy':report['sc_legacy']}),flush=True)
