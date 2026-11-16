@@ -1,0 +1,22 @@
+{
+  "phase": 80,
+  "baseline_sha256": "a27401dc579e5c2086e1a7336ea55e3c0b26e3eff5e194171e1ad7050ad78731",
+  "full_src_sha256": "a0d534b066395b12a3a9e545cb094602e1cd568ea80ddca2900ff46a0a54e391",
+  "dll_sha256": "984c30433687d343e6d882b80c048e85f4a1961c4184dc488916a8174d7c524f",
+  "native_abi": "0x000a0009",
+  "changed": [
+    "src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_AreaAttackEffect.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_ChatPacket.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_DropItem.java",
+    "src/l1j/server/server/model/network/core/sc/packet/SC_UseArrowSkill.java"
+  ],
+  "java_count": 1710,
+  "zip_entries": 1734,
+  "sc_legacy_broadcast_remaining": 0,
+  "all_SC_java_files_scanned": true,
+  "no_new_queues_workers_classes": true,
+  "native_socket_fifo_cipher_preserved": true,
+  "large_area_attack_existing_direct_FIFO_preserved": true,
+  "5000_ingame_soak_verified": false
+}
