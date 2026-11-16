@@ -17,8 +17,18 @@ counts=collections.Counter()
 def apply(files,key,old,new,expected=1,tag=None):
     s=files[key]
     n=s.count(old)
-    assert n==expected,(key,tag,n,old[:180])
-    files[key]=s.replace(old,new)
+    if n==expected:
+        files[key]=s.replace(old,new)
+    else:
+        # Preserve exact Java tokens, but tolerate indentation and line-wrap
+        # differences in the archived original. Never rewrite by method name
+        # alone: each complete multi-token source window must match exactly
+        # the declared number of occurrences.
+        tokens=re.findall(r'\\S+',old)
+        pattern=re.compile(r'\\s*'.join(map(re.escape,tokens)))
+        found=list(pattern.finditer(s))
+        assert len(found)==expected,(key,tag,n,len(found),old[:180])
+        files[key]=pattern.sub(lambda _:new,s)
     counts[tag or key]+=expected
 def pre(name):
     return "src/l1j/server/"+name
