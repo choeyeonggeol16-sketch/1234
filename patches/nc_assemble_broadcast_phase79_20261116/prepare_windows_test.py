@@ -14,6 +14,18 @@ with zipfile.ZipFile(p77) as archive:
 oraclepath=WORK/"testsrc/l1j/server/server/model/network/core/sc/packet/SC_WorldPutObjectOracle.java"
 oraclepath.parent.mkdir(parents=True,exist_ok=True)
 oraclepath.write_text(oracle.replace("SC_WorldPutObject","SC_WorldPutObjectOracle"),encoding="utf-8")
+# Stage79 removes two unused private broadcast helpers from production. Rebuild
+# the original byte-array oracle in test-only classes from SHA-pinned phase78.
+p78=ROOT/"downloads/RKern_NC_SPacket_Assemble_Phase78_FULL_SRC_20261116.zip"
+assert hashlib.sha256(p78.read_bytes()).hexdigest()=="07bfc9631c56a9ea4dc6a6bce60824b0ce2a9065b0b8c64ced4451863c1fb943"
+with zipfile.ZipFile(p78) as archive:
+    for packet in ("TopMessage","Weather"):
+        name="SC_"+packet
+        original=archive.read("src/l1j/server/server/model/network/core/sc/packet/"+name+".java").decode("utf-8")
+        oracle_name=name+"Oracle"
+        path=WORK/("testsrc/l1j/server/server/model/network/core/sc/packet/"+oracle_name+".java")
+        path.parent.mkdir(parents=True,exist_ok=True)
+        path.write_text(original.replace(name,oracle_name),encoding="utf-8")
 subprocess.run([sys.executable,
         str(ROOT/"patches/nc_assemble_broadcast_phase78_20261116/prepare_windows_test.py"),
         str(WORK)],check=True)
@@ -31,7 +43,7 @@ test=r"""
                   l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter.class);
             p79Factory.setAccessible(true);
             final java.lang.reflect.Method p79TopOracle=
-                l1j.server.server.model.network.core.sc.packet.SC_TopMessage.class
+                l1j.server.server.model.network.core.sc.packet.SC_TopMessageOracle.class
                 .getDeclaredMethod("sharedWire",String.class);
             p79TopOracle.setAccessible(true);
             final java.lang.reflect.Method p79WarOracle=
@@ -39,7 +51,7 @@ test=r"""
                 .getDeclaredMethod("sharedWire",int.class,String.class,String.class);
             p79WarOracle.setAccessible(true);
             final java.lang.reflect.Method p79WeatherOracle=
-                l1j.server.server.model.network.core.sc.packet.SC_Weather.class
+                l1j.server.server.model.network.core.sc.packet.SC_WeatherOracle.class
                 .getDeclaredMethod("sharedWire",int.class);
             p79WeatherOracle.setAccessible(true);
             final java.lang.reflect.Method p79WarWriter=
