@@ -41,6 +41,22 @@ def convert_as(s):
     s=rep(s,old,"")
     s=rep(s,"        return wire == null ? target.sendFrozenWire(source.wire)\n                : target.sendFrozenWire(wire);",
              "        return target.sendFrozenWire(source.wire);")
+    s=rep(s,"""        if(writer!=null && writer.wireLength()>16384)
+            return CSharedBroadcast.sendLargeDirectFrame(target,writer.wireLength(),writer);
+""","""        final int limit=recipientId==senderId?Integer.MAX_VALUE:pendingLimit;
+        final int exactWriterBytes=writer==null?-1:writer.wireLength();
+        if(writer!=null && exactWriterBytes>16384)
+            return CSharedBroadcast.sendLargeDirectFrame(target,exactWriterBytes,writer);
+        // When the receiver's pending-byte cap is already full, never allocate
+        // a Native *shared* source merely to use the direct FIFO alternative.
+        // This branch only applies when writer provided an exact frame length.
+        if(writer!=null && source==null && exactWriterBytes>0
+                && target.pendingSendBytes()>=limit)
+            return CSharedBroadcast.sendLargeDirectFrame(target,exactWriterBytes,writer);
+""")
+    s=rep(s,"""        final int limit=recipientId==senderId?Integer.MAX_VALUE:pendingLimit;
+        final int length = source.wire.remaining();""",
+        "        final int length = source.wire.remaining();")
     assert "private final byte[] wire" not in s
     assert "createConstBuffer(wire)" not in s
     assert "CAsyncSendConstBuffer(byte[]" not in s
