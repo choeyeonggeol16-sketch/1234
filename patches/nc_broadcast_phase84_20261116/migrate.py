@@ -147,14 +147,14 @@ def modify(files):
                 Integer.MIN_VALUE,Integer.MAX_VALUE)){"""
         apply(files,key,old,new,tag="gambling_chat")
     key=pre("IndunSystem/Orim/OrimController.java")
-    old="""            final byte[] chatWire=SC_ChatPacket.sharedWire(
-                      l1j.server.server.Opcodes.S_SAY,15,pc.getId(),msg,true);
-            try(var shared=chatWire==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                      chatWire,Integer.MIN_VALUE,Integer.MAX_VALUE)){"""
-    new="""            try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+    expr=r"final byte\[\]\s+chatWire=SC_ChatPacket\.sharedWire\(\s*l1j\.server\.server\.Opcodes\.S_SAY,15,pc\.getId\(\),msg,true\);\s*try\(var shared=chatWire==null\?null:new l1j\.server\.server\.model\.network\.core\.broadcast\.CAsyncSendConstBuffer\(\s*chatWire,Integer\.MIN_VALUE,Integer\.MAX_VALUE\)\)\s*\{"
+    replacement="""try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                     """+FQ+""".chatWriter(l1j.server.server.Opcodes.S_SAY,15,pc.getId(),msg,true),
                     Integer.MIN_VALUE,Integer.MAX_VALUE)){"""
-    apply(files,key,old,new,tag="orim_chat")
+    patched,n=re.subn(expr,lambda _:replacement,files[key])
+    assert n==1,(key,"orim_chat",n)
+    files[key]=patched
+    counts["orim_chat"]+=1
     # KDA Chart Snapshot, preserving pre-existing chart view predicates.
     key=pre("MJKDASystem/Chart/MJKDAChartUpdator.java")
     old="""                    final byte[] wire=SC_ChartRank.sharedWire(_pck);
