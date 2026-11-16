@@ -338,13 +338,18 @@ def patch_core(name,code):
         needle="""        if(shared==null) {
             final CAsyncSendConstBuffer.Source source=
                     CAsyncSendConstBuffer.openWrittenSource(socket,writer);"""
-        assert code.count(needle)==1
-        code=code.replace(needle, """        final int oversized=writer.wireLength();
+        method="    private static CAsyncSendConstBuffer sendWrittenTo("
+        from_index=code.index(method)
+        to_index=code.index("    public static void sendWrittenSelfAndVisible(",from_index)
+        chunk=code[from_index:to_index]
+        assert chunk.count(needle)==1
+        chunk=chunk.replace(needle, """        final int oversized=writer.wireLength();
         if(oversized>16384) {
             sendLargeDirectFrame(socket,oversized,writer);
             return shared;
         }
 """+needle,1)
+        code=code[:from_index]+chunk+code[to_index:]
         needle="""        CAsyncSendConstBuffer shared=null;
         try {
             for(L1PcInstance pc:recipients) {
@@ -387,7 +392,8 @@ def prepare():
     counts=collections.Counter();changed=[]
     for name in list(files):
         if not name.startswith("src/") or not name.endswith(".java"):continue
-        old=files[name].decode("utf-8")
+        original=files[name].decode("utf-8")
+        old=re.sub(r"\r+\n","\n",original).replace("\r","\n")
         code=a82.transform_calls(name,old,counts)
         code=a82.transform_new(name,code,counts)
         code=rename_calls(name,code,counts)
@@ -395,7 +401,7 @@ def prepare():
         code=patch_core(name,code)
         if code!=old:
             changed.append(name)
-            files[name]=(code.replace("\n","\r\n") if "\r\n" in old else code).encode("utf-8")
+            files[name]=(code.replace("\n","\r\n") if "\r\n" in original else code).encode("utf-8")
     for name,data in files.items():
         if (name.startswith("src/") and name.endswith(".java")) or name.startswith("native/"):
             p=WORK/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)
