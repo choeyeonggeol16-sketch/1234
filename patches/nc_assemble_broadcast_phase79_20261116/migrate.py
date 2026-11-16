@@ -63,7 +63,10 @@ def add_shared_api(files):
         if(clan==null||writer==null)return;
         CAsyncSendConstBuffer shared=null;
         try {
-            for(var member:clan.createOnlineMembers()) {
+            try(var members=clan.createOnlineMembers()) {
+                final var it=members.iterator();
+                while(it.hasNext()) {
+                final var member=it.next();
                 final L1PcInstance pc=member.player;
                 if(pc==null)continue;
                 final CIOClient client=pc.getNetConnection();
@@ -83,6 +86,7 @@ def add_shared_api(files):
                     }
                 }
                 shared.send(socket,pc.getId());
+                }
             }
         } finally {
             if(shared!=null)shared.close();
