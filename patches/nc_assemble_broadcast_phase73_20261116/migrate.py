@@ -106,7 +106,7 @@ def prepare():
             l1j.server.server.model.network.core.connection.CUserSocket socket,
             int senderId, int kind, int opcode,
             int p0, int p1, int p2, int p3) {
-        final Source pooled = socket.createPooledFormattedConstBuffer(
+        final CAsyncSendConstBuffer.Source pooled = socket.createPooledFormattedConstBuffer(
                 kind, opcode, p0, p1, p2, p3);
         if (pooled == null) return null;
         try {
