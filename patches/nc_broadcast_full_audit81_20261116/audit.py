@@ -42,7 +42,11 @@ focus=("CSharedBroadcast.java","CAsyncSendConstBuffer.java","CAsyncSendConstBuff
     "CIOThreadCallback.java","SC_AreaAttackEffect.java","SC_ChatPacket.java",
     "SC_DropItem.java","SC_UseArrowSkill.java","SC_TopMessage.java",
     "SC_NewChat.java","SC_IconMessage.java","SC_SystemMessage.java",
-    "SC_War.java","SC_WorldPutObject.java","SC_PacketBox.java","CTransport.cpp")
+    "SC_War.java","SC_WorldPutObject.java","SC_PacketBox.java","CTransport.cpp",
+    "SC_RangeSkill.java","SC_MessageYN.java","SC_ChangeName.java",
+    "SC_CharTitle.java","SC_DoActionShop.java","SC_ReturnedStat.java",
+    "SC_NpcChatPacket.java","SC_NpcShopAction.java",
+    "SC_ExplosionNoti.java","SC_ServerMessage.java")
 for fname in focus:
     cand=[n for n in all_src if n.endswith("/"+fname)]
     if len(cand)==1:(REPORT/fname).write_text(all_src[cand[0]],encoding="utf-8")
