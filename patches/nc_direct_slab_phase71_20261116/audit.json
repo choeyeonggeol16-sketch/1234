@@ -1,0 +1,24 @@
+{
+  "phase": 71,
+  "baseline_zip_sha256": "d3e91922910a9614ba4aa5003367cb9dd939ebdedfabcbec16ab6977789ebefe",
+  "output_zip_sha256": "e04cdcf7df4a1bb30a6d6ae1b93d0d09cb4125f830e7b99f3b55ec833ff6d2d0",
+  "dll_sha256": "8a00218b72dccddd8791ad48fb9b28d6a5d35947349ee5676b8ac5f1b98aea8e",
+  "original_binary_sha256": "9940df15727ec88086cefc036d153fe18c153c9c26a5c90bafe1545de797b588",
+  "changed": [
+    "CTransport.dll",
+    "native/CTransport.cpp",
+    "native/interop_abi.hpp",
+    "src/l1j/server/server/model/network/core/config/CIOConfig.java"
+  ],
+  "added": [
+    "native/cio_core.hpp"
+  ],
+  "java_sources": 1710,
+  "zip_entries": 1733,
+  "CIOBufferEx_layout_unmodified": true,
+  "Native_source_wrapper_heap_allocation_removed": true,
+  "Native_send_request_allocation_retained": true,
+  "zero_recipient_no_packet_allocation": true,
+  "per_socket_fifo_and_cipher_unchanged": true,
+  "in_game_soak_verified": false
+}
