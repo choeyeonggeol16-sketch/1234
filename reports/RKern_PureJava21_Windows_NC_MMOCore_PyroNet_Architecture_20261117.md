@@ -84,7 +84,7 @@
 | 게임 로직 | 직접/외부 실행 | packet handler | listener callback | **기존 CIO 소유 실행부** |
 | 비채택 요소 | OS API 직접 호출, 포화 실패의 모호한 수명 | selectNow + sleep, 불필요한 intermediate copy | Selector 전체 timeout 순회, queue만 넣고 wakeup 없음 | 제거 |
 
-**핵심 결론:** NC를 그대로 복제하는 것이 아니라 **NC의 실행 보장**, **MMOCore의 게임 송신 병합**, **PyroNet의 첫 SEND 지연 최소화**를 Java의 완료 모델로 구현한다.
+**핵심 결론:** NC를 그대로 복제하는 것이 아니라 **NC의 실행 보장**, **MMOCore의 게임 송신 병합**, **PyroNet의 첫 SEND 지연 최소화**를 Java의 완료 모델로 구현한다. **최초 구현 시 SerializerQueue → SendQueue → BatchQueue 식의 중복 계층을 만들지 않고, 연결별 단일 TX Pump와 하나의 송신 FIFO로 통합한다. 이 최적화는 완성 후 작업이 아니라 첫 제품 필수 사양이다.**
 
 ## 4. 최종 제품 아키텍처(단일 확정안)
 
@@ -144,6 +144,8 @@ JDK의 AsynchronousChannelGroup 명세는 같은 그룹 스레드가 I/O를 즉�
 ## 6. 소켓별 NC 논리 Serializer — 정확한 규약
 
 ### 6.1 소유권
+
+**독립된 Serializer 작업 큐와 SEND 패킷 큐를 각각 만들지 않는다.** 동일 연결의 송신 FIFO·TX Owner·16KiB 병합·암호화·WRITE 완료 조정을 하나의 TX Pump 상태 머신에 통합한다. NC Serializer의 순서·수명 보장을 없애는 것이 아니라 중복 실행 단계를 제거하는 것이다.
 
 소켓에는 고정된 OS 스레드 번호가 없다. **현재 실행권을 획득한 완료 스레드 또는 게임 호출 스레드가 해당 소켓의 TX 상태를 직렬 처리**한다.
 
@@ -208,7 +210,8 @@ READ 완료는 완료 바이트 수가 0/양수/-1인지 구분한다. -1은 EOF
 
 - txAdmissionSequence / txDrainSequence: 성공 접수 FIFO 순번.
 - txPendingFrames / txPendingBytes: bounded 압력 계수.
-- txWriterOwner: TX 상태 변경 실행권.
+- txWriterOwner: TX 상태 변경 실행권(단일 TX Pump, 중복 Serializer/SEND Queue 없음).
+- txPendingRing: 연결별 단 하나의 논리 SEND FIFO. 선행 티켓이 없는 유휴 fast path에서만 큐를 건너뛰고, 경합 시 bounded reuse ring을 사용.
 - txAssembleLease: 현재 조립 가능한 16 KiB 풀 버퍼.
 - txFlightLease: JDK에 WRITE 제출한 버퍼(완료 전 불변).
 - txWritePending: 동일 세션에 미완료 WRITE 하나만.
@@ -631,6 +634,210 @@ Native 기존 서버에서 **운영에 안전한 테스트 계정과 로컬 환�
 5. **최종 산출물:** Windows 실서비스용 **Java 21 하나의 정규 네트워크 구현**, 사용자 작성 Native DLL/FFM/JNI/RIO 제거, 기존 CIO 게임 실행 구조·게임 프로토콜은 보존한다.
 
 **제품 원칙: 단순한 Java 라이브러리가 아니라, NC의 실행 정책 + MMOCore 패킷 병합 + PyroNet 즉시 WRITE + 전용 ListenThread + 저수준 데이터 지향 구현이 결합된 최상급 Windows 순수 Java MMORPG 네트워크 엔진을 목표로 한다.**
+
+---
+
+
+## 24. 최상위 구현 필수: 최초 제작부터 비용을 제거하는 고성능 설계 (2026-11-17 추가)
+
+> **중요:** 아래는 네트워크가 완성된 뒤 다시 뜯어고치는 후속 최적화 제안이 아니다. **처음 구현할 때부터 반영해야 하는 설계 계약**이다. 기존 0~23장과 상충하는 중복 큐/불필요한 작업 객체 설명이 있으면 이 24장의 비용 절감 실행 경로를 우선한다. Windows 순수 Java 21, 기존 CIO, 프로토콜·보안·수명 보장 조건은 유지한다.
+
+### 24.1 패킷당 비용을 항목별로 줄인다
+
+    CPU(send/packet)
+      = admission·FIFO 확정
+      + 큐 이동 및 메모리 fence
+      + 직렬화/게임 시점 스냅샷
+      + 연결별 암호화
+      + 바이트 복사
+      + WRITE 제출 CPU / 해당 WRITE의 게임 패킷 수
+      + WRITE 완료 CPU / 해당 WRITE의 게임 패킷 수
+
+    GC pressure = 앱 신규 객체/packet + JDK 내부 I/O 작업 객체/READ·WRITE
+    Resident memory = 연결별 고정 필드 + 활성 RX/TX 버퍼 + 대기 FIFO + JDK 소켓 상태
+
+**목표:** CPU/packet·JFR bytes allocated/packet·queue hops/packet·bytes copied/frame·WRITE submissions/1000 frames·p99 지연·세션당 retained heap을 초기 구현부터 계측한다. WRITE 등록 수 감소가 RTT나 CPU에 자동으로 몇 퍼센트 유리하다는 숫자는 꾸며 쓰지 않는다.
+
+### 24.2 가장 큰 구조 변경: Serializer와 SEND Queue를 하나로 합쳐라
+
+**배제할 계층**
+
+    게임 패킷 → Serializer Queue → SEND Queue → Batch Queue → WRITE Queue → IOCP
+
+**채택할 유일한 실행 경로**
+
+    CIOClient.sendPacket()
+           |
+     소켓별 admission: 접수 순서/FIFO/바이트 정원 선형화
+           |
+       +---+-----------------------------+
+       |                                 |
+      소유자 FREE + 선행 없음           선행 있음 / 다른 생산자 접수 중 /
+       |                                WRITE 진행 중
+       v                                 |
+      직접 TX owner fast path             단일 bounded FIFO
+       |                                 |
+       +---------------+-----------------+
+                       |
+                  TX Pump owner
+                       |
+              Direct 16KiB assembly
+              + 연결별 순서 암호화
+                       |
+               하나의 in-flight WRITE
+                       |
+               JDK async IOCP completion
+                       |
+               부분 WRITE 잔여 바이트 우선
+               완료되면 다음 FIFO batch
+
+- **송신용 논리 큐는 연결마다 최대 하나.** 큐에 넣기 위해 패킷별 Runnable/Continuation/TaskNode를 만들지 않고 기존 패킷 참조·재사용 슬롯·primitive 메타데이터로 관리한다.
+- **비경합 즉시 경로는 큐 경유 0회**를 목표로 한다. 단, 이미 접수한 선행 티켓 또는 암호화 대기 프레임이 있다면 반드시 그걸 먼저 처리한다.
+- **admission 선형화와 owner 확보의 동시성 프로토콜이 먼저다.** CAS만 성공했다고 FIFO 보장이 되지 않는다. 순서 예약 후 미게시 슬롯을 후속 producer가 추월할 수 없게 publish sequence/ready prefix를 보장한다.
+- 접수 순서는 작은 per-socket admission critical section 하나에서 확정한다. 선택 방식은 짧은 synchronized 또는 안전한 CAS+publish다. 전체 연결을 막는 global SEND lock 금지.
+- **락 보호 중 패킷 직렬화·암호화·Direct 복사·비동기 WRITE 등록을 길게 수행하지 않는다.** owner 내부의 bulk work는 다른 producer가 접수 순서만 확정할 수 있도록 분리한다.
+- owner는 초당 패킷마다 새 스레드를 뜻하지 않는다. 게임 호출자 또는 비동기 완료 워커 중 현재 해당 연결 TX 상태의 실행권을 확보한 하나의 실행 문맥이다.
+- 완료 중 다시 WRITE 등록 시 callback inline 재진입과 재귀 stack 폭주를 막는 단일 wip/owner loop를 사용한다. 다른 네트워크 전용 worker/queue를 추가하지 않는다.
+
+**비용 목표:** 비경합 packet은 추가 SEND 큐 이동 0, 경합/WRITE 대기 packet은 논리 SEND 큐 1개; packet마다 Serializer Lock + Queue Lock + Batch Lock 3단 잠금을 만들지 않는다. 서로 다른 소켓의 송신끼리는 global critical section을 공유하지 않는다.
+
+### 24.3 두 번째: WRITE 요청 횟수를 줄여 JDK 내부 객체 생성까지 감소
+
+**Windows JDK 21 내부에서 확인한 비용:** OpenJDK jdk21u의 WindowsAsynchronousSocketChannelImpl은 implWrite마다 PendingFuture, WriteTask와 단일버퍼용 1칸 ByteBuffer 배열 생성 경로가 있다. implRead도 PendingFuture, ReadTask, 배열 생성 경로가 있다. CompletionHandler 재사용만으로 이 내부 할당은 없어지지 않는다.
+
+참조: https://github.com/openjdk/jdk21u/blob/master/src/java.base/windows/classes/sun/nio/ch/WindowsAsynchronousSocketChannelImpl.java
+
+**처음부터 적용할 구현**
+- 서로 다른 게임 패킷을 TCP 스트림 하나로 병합: 각 프레임의 기존 2바이트 길이와 암호문/평문 경계를 유지하면서 최대 약 16KiB의 하나의 WRITE로 제출한다.
+- 게임 명령 하나에서 연속 sendPacket이 나오는 **기존 burst 경계**는 명령 종료 시점에서 한 번 flush한다. 그동안 packet마다 즉시 WRITE를 제출하지 않는다. 새 배치용 타이머, Runnable, 큐 금지.
+- 유휴 연결의 단일 패킷은 **즉시 WRITE 제출**한다. 병합률을 높이겠다고 1~5ms 인위적 기다림을 두어 첫 패킷 지연을 악화시키지 않는다.
+- WRITE가 이미 pending이면 새 패킷은 단일 FIFO에서 다음 batch로 합친다. 이미 kernel에 제출한 flight는 절대로 덮어쓰지 않는다.
+- 예시: 32B 프레임 16개가 **이미 한꺼번에 준비**되어 있다면 512B로 병합해 정상적으로 WRITE 16건 대신 1건으로 제출할 수 있다. 부분 송신·실제 생산 간격에 따라 제출 횟수는 달라진다.
+- 단일 큰 프레임은 16KiB 한도로 잘라 게임 프레임 규약을 깨지 않는다. 기존 프로토콜의 유효 길이 범위에 따라 64KiB 등 큰 버퍼로 처리한다.
+- 기본 소형 경로에서 Gathering WRITE용 ByteBuffer 배열·slice/duplicate를 매번 만들지 않는다. 여러 독립 대형 버퍼가 이미 안정적으로 살아 있는 경우에만 비용을 따져 채택한다.
+
+**측정 지표:** frames/write, bytes/write, JDK writes/1000 frames, WRITE callback/1000 frames, first-frame queue time, CPU/packet, allocated bytes/packet.
+
+### 24.4 세 번째: 패킷을 최종 Direct Assembly에 직접 기록해 중간 복사 제거
+
+**배제**
+
+    packet -> new byte[] -> temp heap ByteBuffer
+           -> Direct staging copy -> encrypted copy -> async WRITE
+
+**직접 작성 가능한 packet에 채택**
+
+    producer가 확정한 패킷 데이터
+           -> 최종 Direct 16KiB Assembly에 기존 2B header/body 기록
+           -> 연결별 순서 암호화 in-place
+           -> 동일 버퍼를 immutable flight로 양도
+           -> async WRITE
+
+- 게임 객체 상태를 완료 워커가 **나중에 읽어 패킷 내용을 재계산**하는 방식은 금지한다. producer 호출 시점의 snapshot/바이트 또는 불변 primitive verb로 데이터 내용을 보존한다.
+- 기존 패킷 serializer가 heap buffer를 반환한다면 한 번의 복사가 불가피할 수 있다. 호환성이 보장된 직접 기록 가능 패킷부터 네트워크 층의 **추가 중간 복사 0회**를 목표로 한다.
+- Direct ByteBuffer는 객체도 메모리도 소비한다. packet마다 ByteBuffer.wrap/duplicate/slice 또는 새 byte[]를 만드는 설계를 금지하고 재사용 버퍼 및 primitive cursor를 쓴다.
+- **TX 암호화는 소켓 FIFO 순서로 정확히 한 번.** 암호화 후 배치의 임의 패킷만 취소/드롭하거나 연결 키 전진을 되돌리는 방식 금지.
+- 버퍼 소유권은 assembly 단계와 in-flight flight 단계를 분리한다. JDK write 호출 이후 flight bytes·position·limit을 완료 전 다른 스레드가 건드리지 않는다.
+- 암호화·직접 기록이 게임 호출 스레드에서 너무 길게 이어져 CIO shard를 막는 문제는 owner의 작업 예산으로 제한한다. 해결책으로 패킷별 추가 queue/worker를 만드는 것은 기본 정책이 아니다.
+
+**측정 지표:** copy passes/frame, copied bytes/wire byte, serializer time/packet, codec time/packet, direct pool lease time, retained snapshot bytes.
+
+### 24.5 네 번째: RECV에서 패킷별 객체·불필요한 I/O 제출 제거
+
+    하나의 RX Direct Buffer
+          |
+      READ 완료
+          |
+      2바이트 길이 cursor
+          |
+      완성 패킷 A, B, C ... 를 동일 버퍼에서 순차 해석
+          |
+      RX 복호화·opcode·기존 CIO enqueue
+          |
+      부분 프레임 보존 / 압력 확인 / 다음 1개 READ 등록
+
+- READ 완료마다 새 CompletionHandler, 새 ByteBuffer, 임시 List, packet별 byte[] 복제/래퍼를 만들지 않는다.
+- 한 READ에 여러 완전한 프레임이 있으면 **각 프레임마다 다시 READ를 등록하지 않고** 같은 parser cursor에서 순서대로 처리한다. 하나의 소켓에는 미완료 READ 최대 한 개.
+- 메시지 길이 헤더 1B/2B 분할, 프레임 완성 직전 수신 중단, 여러 패킷 합쳐진 READ, 대형 패킷, 암호화 전진을 모두 parser의 primitive 상태로 관리한다.
+- CIO에 패킷 작업을 넘길 때는 **수신 버퍼의 바이트가 다음 READ에 덮어써지기 전에** 필요한 데이터 소유권을 확정한다. 무조건 0-copy라고 주장하거나 완료 전 풀에 반환하면 데이터가 깨진다.
+- 완료 워커 하나가 특정 소켓의 수천 프레임을 무한 처리하지 않도록 처리 예산을 두되, 미완료·미처리 바이트를 조용히 버리지 않는다. 기존 CIO 접수 압력과 READ pause/resume 계약을 보존한다.
+
+**측정 지표:** frames/read, read registrations/1000 frames, RX copy bytes/frame, RX allocations/frame, decode CPU/frame, shard handoffs/frame.
+
+### 24.6 다섯 번째: 5,000 연결의 메모리 상주비용 절감
+
+- **READ가 pending인 연결에는 살아 있는 RX 버퍼가 필요하다.** 5,000 × 4KiB = 약 19.5MiB의 RX 순수 데이터 영역이므로 이를 0으로 산정하지 않는다. ByteBuffer 객체, 세션 필드, JDK 소켓 메모리는 별도다.
+- 유휴 연결 전원에게 **16KiB TX assembly + 16KiB flight + 512 슬롯 객체**를 상시 배정하지 않는다. TX는 송신 시점에 lease, 큰 RX는 필요할 때 확대, 경합 ring은 lazy allocation/reuse.
+- 단기 할당을 줄이겠다고 5,000개 연결이 영구적으로 거대한 대형 배열을 붙잡는 것도 금지한다. pool miss, retained heap, GC, CPU의 실제 차이를 본다.
+- 고부하 송신에서 한 전역 synchronized buffer pool이 병목이 되지 않도록 기존 CIOBufferPool의 lease 모델을 유지하면서 필요한 경우 샤드 지역 free-slot/재사용 구조로 메모리 경쟁을 줄인다. 다른 소켓/완료 워커가 반환하는 cross-thread recycle 안전성이 우선이다.
+- 대기 큐는 연결별 프레임 수와 바이트 수, 서버 총량에 상한이 있다. 버퍼 부족 시 무제한 new로 우회하지 않는다. **암호화 전 admission**에서 적절한 reject/close 정책으로 누적 메모리를 제한한다.
+- long-lived 연결 필드는 primitive와 재사용 handler 중심으로 최소화하고, 박싱/임시 Collection/람다 capture/packet별 Runnable을 피한다.
+
+**측정 지표:** idle retained heap/client, active heap/client, direct memory actual/peak, pending bytes/client, pool miss/s, GC bytes/packet.
+
+### 24.7 여섯 번째: MMORPG 방송 fanout 비용 절감
+
+    한 번만 생성한 immutable 방송 원본
+              |
+      기존 AOI 수신자 그대로 순회
+              |
+      각 수신자의 단일 TX FIFO에 접수
+              |
+      해당 수신자의 Direct assembly로 바이트 기록
+      + 수신자별 독립 TX rolling cipher
+              |
+      각 연결의 다음 WRITE batch
+
+- 동일 이동·공격·스킬 원본을 수신자 N명에게 보내면서 packet serializer를 N번 실행하는 경로 제거. immutable 공통 원본은 **이벤트당 1회 생성/작성** 목표.
+- **수신자별 암호화는 제거할 수 없다.** 대신 암호화된 결과를 그 연결의 최종 Direct assembly에 기록해 추가 임시 버퍼·복사를 줄인다.
+- 기존 AOI, 자신 포함 여부, GM/clan/party, optional/mandatory 정책을 바꾸지 않는다. 대량 fanout의 비용을 줄인다는 명목으로 새로운 broadcaster thread/queue를 추가하지 않는다.
+- 수신자가 공유 원본을 사용하는 동안 그 데이터를 회수·수정하지 않는다. pool/lease/refcount의 수명 보장을 지킨다.
+- 한 CIO shard가 거대 fanout을 실행하며 다른 게임 작업을 오랫동안 막지 않도록 기존 게임 실행 경계를 유지하면서 fanout CPU/event 및 처리 예산을 관찰한다.
+
+**측정 지표:** common packet serializations/event(목표 1), recipient additional allocations, bytes copied/recipient, fanout CPU/event, frames/write.
+
+### 24.8 일곱 번째: I/O 워커·ListenThread·타이머 비용 최적화
+
+- ListenThread는 **1개**, TCP Accept/admission만 수행. 게임 READ/SEND/암호화/DB를 맡기지 않는다.
+- JDK AsyncChannelGroup의 고정 완료 워커 여러 개가 모든 소켓 완료 이벤트를 병렬 처리한다. 소켓별 스레드·보조 packet-worker·추가 command queue를 만들지 않는다.
+- 완료 워커에서 DB, 게임 상태 락 장시간 점유, blocking get(), sleep(), 폭발적인 log를 금지한다. 긴 게임 처리는 기존 CIO 소유 shard에서 처리한다.
+- 접속 타임아웃과 네트워크 deadline은 기존 CIO Timing Wheel을 재사용한다. 개별 소켓의 packet마다 새 ScheduledFuture를 만들지 않는다.
+- CPU를 덜 쓴다는 명목으로 NIO.2 기본 경로에 무한 spin, 대기 중 SELECT polling, Thread.yield를 추가하지 않는다.
+- owner 수행 예산과 완료 콜백의 재진입 방지로 **한 소켓이 모든 완료 워커 시간을 독점**하는 일을 막는다.
+
+### 24.9 구현 전/후 '비용 제거표' (구현자가 승인받아야 할 항목)
+
+| 위치 | 비효율적인 설계 | **처음부터 적용할 고속 경로** | 확인 지표 |
+|---|---|---|---|
+| TX 계층 | Serializer Queue→SEND Queue→Batch Queue | **TX Pump 1개, SEND FIFO 1개** | packet당 queue hop |
+| 비경합 SEND | 매번 FIFO 노드/Task 생성 | 선행 작업 없으면 owner 직접 실행, 추가 큐 **0회** | app allocation/send |
+| 경합 순서 | 큐락+Serializer락+WRITE락 연쇄 | 접수 선형화 짧게 1곳 + owner bulk work 무락 | CAS retries/packet, lock hold |
+| packet 직렬화 | heap 중간 배열→Direct 중간 버퍼→최종 | 안정적인 packet은 **최종 Direct에 바로 기록** | copied bytes/frame |
+| WRITE 등록 | 16프레임에 16 WRITE | 이미 모인 16프레임/512B라면 **1 WRITE** | frames/write |
+| JDK 내부 할당 | READ/WRITE를 패킷마다 잦게 호출 | batched WRITE·연속 RX 해석으로 I/O 등록 수 감소 | JFR JDK allocation/packet |
+| TX 메모리 | 유휴 클라이언트마다 2×16KiB 예약 | 송신 활성 연결 중심 lazy lease | idle TX memory/client |
+| RX 메모리 | 유휴 연결마다 64KiB 예약 | READ pending마다 기본 4KiB, 대형은 필요 시 승격 | RX retained/client |
+| 방송 | recipient별 공통 원본 재생성 | 공통 본문 1회, 수신자별 필수 암호화만 | serializations/broadcast |
+| 실행 객체 | Packet마다 new Runnable/Closure/List | 재사용 Handler·slot·primitive state | alloc count/op |
+| 버퍼 수명 | 비동기 완료 전에 재사용/반환 | flight IN_FLIGHT 기간 불변, once-release | pool leak/double-free |
+| 운영 스레드 | 소켓별 쓰레드·다중 dispatcher | ListenThread 1 + JDK 완료 워커 + 기존 CIO | thread count/context switches |
+
+**표의 숫자는 실행 구조의 연산 수 목표이지 미측정 성능 개선률이 아니다.** 특히 신규 JDK I/O task/future/bytebuffer 배열과 기존 게임 packet 생성까지 0이라고 주장하지 않는다.
+
+### 24.10 최초 구현 완료 조건 — 나중에 또 수정하지 않도록
+
+이 24장의 최적화는 **개발 마지막 단계로 미루지 않는다.** 다음을 최초 제품 구현의 Definition of Done에 넣는다.
+
+1. CIOServer: ListenThread 1개, AsyncChannelGroup 다중 완료 워커. Native/FFM 제거, 접속 admission/종료 정확성.
+2. CUserSocket: **단일 TX Pump + 논리 FIFO 1개 + owner + 16KiB flight/assembly**. 경합이 없는 정상 송신에서 불필요한 추가 queue 0.
+3. CIOPacketCodec/Cryptor: 기존 wire 규약 완전 일치, 불필요한 중간 byte[]/ByteBuffer 래퍼 0 목표.
+4. CIOBufferPool: 4/16/64KiB bounded lazy lease, 정확한 수명, buffer copy 최소화.
+5. CIOClient.sendPacket: 기존 동작·snapshot 보존, burst scope와 Eager Write 결합, 기존 CIO 소유권 변경 없음.
+6. CSharedBroadcast: 공유 원본 1회, 수신자별 순서 암호화·병합, 부하 압력과 pool 수명 보존.
+7. 계측: allocations/packet, CPU/packet, frames/write, queue hops/packet, bytes copied/frame, pool retained/peak, p99 기록.
+8. 회귀: 5,000연결, 다중 SEND producer, partial WRITE, READ 1B split/여러 프레임, 로그인 재진입, 방송 경쟁, close race, 타임아웃, pool 1회 반환.
+
+**최종 판정:** 압도적인 네트워크를 목표로 한다면 패킷 한 건을 처리하는 동안 **중복 큐·임시 객체·중간 복사·불필요한 WRITE 등록·글로벌 락을 없애는 것이 첫 구현의 필수 사양**이다. 기존 NC FIFO·L1 프로토콜·CIO 게임 실행 순서·로그인·수명 안정성은 절대 희생하지 않는다.
 
 ---
 
