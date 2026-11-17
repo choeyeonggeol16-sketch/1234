@@ -3,7 +3,7 @@
 > 작성: 2026-11-17  
 > 대상: RKern/L1J, Windows, Java 21, 실서비스 단일 물리 서버 5,000 동접 1차 목표  
 > 문서 유형: **실제 구현용 상세 설계 보고서**. 코드 변경이나 운영 검증 완료를 의미하지 않음.  
-> 최종 결론: **JDK 21 NIO.2/Windows IOCP + NC식 연결별 논리 Serializer + MMOCore식 패킷 병합 + PyroNet식 즉시 WRITE 등록 + 기존 CIO 게임 소유 실행부 유지.**
+> 최종 결론: **전용 ListenThread 1개 + JDK 21 NIO.2/Windows IOCP 다중 완료 워커 + NC식 연결별 논리 Serializer + MMOCore식 패킷 병합 + PyroNet식 즉시 WRITE 등록 + 기존 CIO 게임 소유 실행부 유지. 전체 통신 핫패스 저수준·저할당 설계.**
 
 ---
 
@@ -12,7 +12,8 @@
 - **순수 Java 21 애플리케이션.** CTransport.dll, 직접 FFM downcall/upcall, JNI 사용자 라이브러리, RIO 의존성을 최종 서버에서 제거한다. JDK 내부가 OS 네이티브 API를 사용하는 것은 별개다.
 - **Windows 운영 전용.** Linux Selector, epoll 대체 구현 및 그에 대한 분기·설정은 이번 제품 범위에 넣지 않는다.
 - **실서비스용 단일 구조.** NIO.1/NIO.2를 사용자에게 선택시키는 전송 토글, 실패한 실험 경로의 상시 유지, 임의 워커·중복 큐를 만들지 않는다.
-- **다중 스레드.** I/O는 여러 JDK 완료 스레드가 병렬 처리한다. **소켓 하나의 READ/WRITE/암호화 상태는 논리적으로 직렬화**한다. 소켓마다 전담 스레드를 만들지 않는다.
+- **전용 로그인 입구 + 다중 스레드.** 오직 1개의 전용 ListenThread가 TCP ACCEPT와 짧은 접속 admission을 담당한다. I/O는 여러 JDK 완료 스레드가 병렬 처리한다. **소켓 하나의 READ/WRITE/암호화 상태는 논리적으로 직렬화**한다. 소켓마다 전담 스레드를 만들지 않는다.
+- **저수준·저할당 절대 기준.** RECV/SEND/암호화/방송/완료 콜백 핫패스에서 불필요한 객체 생성, 박싱, 임시 컬렉션·람다·Future·Runnable·ByteBuffer wrapper·byte[] 복사를 최소화하고 가능한 한 제거한다. Primitive·flat array·재사용 객체·bounded pool을 우선하며 메모리·CPU·p99를 측정한다.
 - **기존 게임 동작 보존.** CIO 샤드의 게임 상태 소유 실행, CIO Timing Wheel, CacheD, NPC, 프로토콜, 필터·접속 절차는 재설계하지 않는다. 기존 호출 API를 최대한 동일하게 유지한다.
 - **송신과 방송의 순서·상태 유지.** 이동·공격·스킬 및 방송이 동일 접속자에게 도착하는 순서, 암호화 키 발전 순서, 버퍼 수명, 종료 후 콜백 무해성을 보장한다.
 - **운영 성능 목표.** 5,000 동접, 짧은 게임 패킷/혼합 부하, 장시간 안정성, CPU/패킷과 p99 지연, GC 할당량, 부분 송신 복구. 10,000 동접은 확장 여유를 확인할 후속 목표.
@@ -90,6 +91,10 @@
     5,000 TCP clients
            |
            v
+    [dedicated ListenThread x1]
+      ACCEPT / admission only
+           |
+           v
     [Windows JDK 21 AsyncChannelGroup]
       완료 워커 1 ... N (멀티스레드)
            |
@@ -122,7 +127,8 @@
 - AsynchronousChannelGroup.withFixedThreadPool(initialWorkers, NetworkThreadFactory).
 - 초기 워커 기준은 min(8, max(2, availableProcessors))이다. NC의 최대 8과 운영 환경을 함께 반영한 **기본 배치 값**이며, 숫자 자체가 성능 검증 결과는 아니다.
 - JDK 그룹의 완료 스레드는 RECEIVE·SEND 결과와 핸들러 실행을 담당한다. 서버가 연결마다 Thread를 생성하지 않는다.
-- AsynchronousServerSocketChannel 1개를 동일 그룹에 바인딩하고, ACCEPT 완료 즉시 **다음 ACCEPT를 먼저 재등록**한 뒤 세션을 초기화한다.
+- **전용 플랫폼 ListenThread 1개**를 만들고, 동일 AsyncChannelGroup에 바인딩한 AsynchronousServerSocketChannel의 단일 outstanding accept() Future를 **이 ListenThread에서만 get()으로 기다린다**. 완료되면 **다음 ACCEPT를 먼저 재등록**하고, 짧은 접속 quota/IP/상태 admission 후 해당 채널에 첫 READ를 등록한다. accepted 채널의 RECV/WRITE 완료는 기존 AsyncChannelGroup의 여러 완료 워커에서 실행한다. ListenThread에서 로그인 DB·게임 로직은 실행하지 않는다.
+- JDK Future는 연결 수립마다 발생하는 콜드패스 비용으로 취급한다. **게임 패킷마다 Future·Runnable·CompletionHandler를 만들지 않는다.** 별도 I/O 그룹과 소켓별 스레드를 추가하지 않는다.
 - 별도의 자체 I/O worker pool, 무제한 work queue, 이벤트 복사 전용 dispatcher를 추가하지 않는다.
 - 그룹 shutdown은 서비스 종료 제어 스레드에서 수행하고, 완료 핸들러 안에서는 awaitTermination·Thread.sleep·Future.get을 실행하지 않는다.
 
@@ -367,8 +373,12 @@ Native 기존 서버에서 **운영에 안전한 테스트 계정과 로컬 환�
 
 ## 15. 운영 단계의 정확한 스레드 구조
 
+    ListenThread (platform thread x1)
+        <-- ACCEPT 단일 pending Future 대기 / 입구 정원·IP 검증
+        <-- 로그인 DB·게임 로직 금지
+
     AsynchronousChannelGroup
-        worker-0  <-- 여러 소켓의 ACCEPT/READ/WRITE 완료
+        worker-0  <-- 여러 소켓의 ACCEPT 완료/READ/WRITE 완료
         worker-1  <-- 여러 소켓의 ACCEPT/READ/WRITE 완료
         ...
         worker-N  <-- 여러 소켓의 ACCEPT/READ/WRITE 완료
@@ -380,7 +390,8 @@ Native 기존 서버에서 **운영에 안전한 테스트 계정과 로컬 환�
     기존 CIO Timing Wheel
         <-- 네트워크 deadline 이벤트 연결
 
-- 총 I/O 완료 스레드는 설정된 그룹의 고정 수; 클라이언트 5,000명이 Thread 5,000개를 뜻하지 않는다.
+- 네트워크는 **ListenThread 1개 + 고정 수의 JDK I/O 완료 워커 여러 개**로 운영한다. 5,000명에게 스레드 5,000개를 생성하지 않는다.
+- ListenThread는 접속 입구 전담이며 로그인 인증/DB/게임 상태 변경을 실행하지 않는다. 클라이언트의 pre-auth 상태와 quota만 짧게 다룬다.
 - 네트워크 워커는 다른 유저의 WRITE·READ를 동시에 처리한다.
 - 동일 소켓은 필요한 상태에만 논리 실행권을 적용한다. 서로 다른 소켓의 전송은 독립적이다.
 - 게임 상태는 기존 shard에서 처리하므로 두 소켓이 같은 게임 객체를 변경할 때도 해당 게임 실행 계약을 따른다.
@@ -390,7 +401,7 @@ Native 기존 서버에서 **운영에 안전한 테스트 계정과 로컬 환�
 
 | 순서 | 기존 파일 | 의도 |
 |---|---|---|
-| M1 | core/transport/CIOServer.java | FFM 로딩 제거, AsyncGroup/Accept·종료 제어 |
+| M1 | core/transport/CIOServer.java | FFM 로딩 제거, 전용 ListenThread 1개 + AsyncGroup/Accept·입장 admission·종료/join 제어 |
 | M2 | core/transport/CSocket.java | Native socket handle 제거, AsynchronousSocketChannel wrapper |
 | M3 | core/transport/CIOPacketCodec.java | Native SetKey/codec 제거, 순수 Java 프레이밍·암호화 연결 |
 | M4 | core/connection/CUserSocket.java | READ/WRITE pumps, Serializer, 512 bounded admission, complete/close |
@@ -412,7 +423,8 @@ Native 기존 서버에서 **운영에 안전한 테스트 계정과 로컬 환�
 - Native identity/deadline와 Java 대응 목록 확정.
 
 **2단계: Windows 순수 Java 21 I/O 기반 연결**
-- AsyncGroup + Accept + one READ/one WRITE + close-state.
+- ListenThread 1개 + AsyncGroup + 단일 outstanding ACCEPT + one READ/one WRITE + close-state.
+- 새 ACCEPT 먼저 등록, pre-auth quota/IP admission, listener 종료 시 close/join까지 완료.
 - CIOClient 기존 호출 계약 유지.
 - Windows JDK 21 실제 호스트에서 우선 확인.
 
@@ -439,6 +451,9 @@ Native 기존 서버에서 **운영에 안전한 테스트 계정과 로컬 환�
 | 분야 | 필수 시나리오 | 합격 조건 |
 |---|---|---|
 | TCP | 연결/끊김/재접속/반쯤 닫힘 | session cleanup 1회 |
+| ListenThread/ACCEPT | 1개 전용 입구, 5,000 접속 폭주, backlog·pre-auth 제한, 취소·종료·재시작 | 이중 ACCEPT/누수/중복 ListenThread 0, join 완료 |
+| 로그인 입구 | 느린 handshake·분할 프레임·IP 집중 접속·동일 계정 | ListenThread에서 DB/게임 실행 0, pre-auth 슬롯 누수 0 |
+| 저할당 | 1/1,024/5,000 연결 이동·공격·SEND·RECV·방송의 JFR 할당 추적 | 패킷별 신규 Runnable/Future/ByteBuffer/임시컬렉션/중간복사 0 또는 명시적 예외 기록 |
 | RX split | 길이 헤더 1B+1B, 바디 모든 절단점 | 정확히 원본 1패킷 |
 | RX coalesce | 단일 READ에 수십 패킷 | 원래 순서 유지 |
 | Crypto | Native 골든 벡터/키 전진 | byte-for-byte 100% |
@@ -466,7 +481,9 @@ Native 기존 서버에서 **운영에 안전한 테스트 계정과 로컬 환�
 - 작은 이동·공격 패킷, 256B/1KiB/4KiB 혼합, 16KiB/64KiB 대형
 - fanout 10/100/1000명 및 대규모 이동 방송
 - RECV/s, SEND/s, 총 Mbps, CPU/packet 또는 ns/packet, 평균/p95/p99/p99.9
-- direct memory actual/peak, heap retained, allocation/op, GC pause, pending byte/frame, READ paused 시간
+- direct memory actual/peak, heap retained, allocation/op 및 count/op, GC pause, pending byte/frame, READ paused 시간
+- ListenThread CPU, ACCEPT/s, admission 처리시간, pre-auth slots/bytes, 로그인 거부·타임아웃·backlog 압력
+- JFR 할당 stack top-N, 호출 위치별 생성량·보유량, pool miss, fallback 생성·복제 횟수
 - 연결별 stalled-write time, write-submit/completion count, 평균 packets/write, buffer-pool exhaustion
 - 실제 Windows Process Explorer/ETW/JFR 계측으로 코어 핫패스 분석
 
@@ -503,12 +520,117 @@ Native 기존 서버에서 **운영에 안전한 테스트 계정과 로컬 환�
 1. **정확성:** NC식 연결별 Serializer/순서 보장, rolling cipher, close/lifetime.
 2. **핫패스:** PyroNet의 지연 없는 첫 WRITE 제출, 네트워크 완료 처리 단축.
 3. **처리량:** MMOCore의 작은 패킷 일괄 병합, 16KiB Assembly, 부분 송신 보존.
-4. **메모리:** 기존 RKern CIOBufferPool의 bounded lazy Lease·재사용을 보존.
+4. **메모리:** **저수준 데이터 지향·핫패스 불필요 객체 생성 제거**를 설계 필수조건으로 두고, 기존 RKern CIOBufferPool의 bounded lazy Lease·재사용을 보존.
 5. **게임 호환:** CIOClient API, CIO 샤드, Timing Wheel, 브로드캐스트와 게임 프로토콜을 유지.
 
 이 조합은 **네트워크 전체는 다중 완료 스레드로 병렬 실행하고, 각 소켓에 필요한 작업만 순서대로 실행하는 구조**다. NC의 실행 철학에 MMOCore의 MMO 패킷 최적화와 PyroNet의 빠른 송신 시작 정책을 결합한다.
 
 최종 서버는 Native 코드를 유지한 개선판이 아니라, **CTransport 통신 계층을 완전히 제거한 순수 Java 21 Windows MMORPG 네트워크 엔진**이어야 한다.
+
+---
+
+
+
+## 22. 운영 필수: NC식 전용 ListenThread / 로그인 진입부 (2026-11-17 추가)
+
+### 22.1 기본 원칙 및 실제 스레드 구성
+
+**TCP 접속의 입구는 전용 ListenThread(플랫폼 스레드) 1개로 구현한다.** NC의 네트워크 입구 역할 분리 철학을 따르되, 분석 기록에 없는 NC 전용 스레드 이름·내부 구현을 실제 확인 사실로 단정하지 않는다.
+
+    [Windows TCP listen socket]
+               |
+               v
+       [ListenThread x 1]
+         - 단일 pending ACCEPT
+         - 빠른 admission/quota/IP 검사
+         - NEXT ACCEPT 먼저 등록
+               |
+               v
+       [JDK 21 AsyncChannelGroup]
+       completion worker 1 ... N
+         - READ / WRITE completions
+         - length framing / Java codec
+               |
+               v
+       [기존 CIO 소유 shard]
+         - 로그인 인증 결과와 게임 상태 변경
+         - 캐릭터 입장, 이동, 공격, 스킬
+
+**스레드 소유권과 수행 범위**
+
+1. 서버 부트스트랩은 기존 CIOServer 계층에서 ListenThread를 단 1개 생성한다. 개별 클라이언트마다 Thread/Executor/Timer/Worker를 생성하지 않는다.
+2. Java 21에서 비동기 소켓을 유지하면서 입구를 분리하기 위해, 전용 ListenThread가 AsynchronousServerSocketChannel.accept()의 Future.get()을 대기한다. 이 blocking은 **입구 스레드에서만 허용**된다. READ/WRITE 완료 워커에서는 get(), sleep(), 대기성 DB 호출이 금지된다.
+3. ACCEPT는 **동시에 1건만 outstanding**으로 등록한다. 완료되면 다음 ACCEPT를 재등록한 뒤, 이전 accepted channel의 짧은 admission을 수행한다. ACCEPT 등록 간의 빈 구간을 줄이고 admission이 길어지는 설계를 막는다.
+4. Accepted AsynchronousSocketChannel은 리슨 소켓과 동일한 AsyncChannelGroup에 소속된다. ACCEPT 소켓을 별도 async 그룹으로 이전시키거나, SocketChannel을 AsynchronousSocketChannel로 변환하는 비표준/native 방식은 금지한다.
+5. ListenThread는 connection quota, pre-auth quota, 빠른 IP/접속 제한, 세션 세대 번호/기본 상태, 최초 READ 등록까지만 수행한다. **DB 로그인 인증·DNS 역조회·패킷 암복호화 본처리·게임 이벤트·큰 메모리 할당·블로킹 로그는 수행하지 않는다.**
+6. 로그인 인증·계정/캐릭터 상태 변경은 기존 프로토콜 처리 및 CIO 실행 소유권을 그대로 따른다. pre-auth → authenticated → active 승격 상태는 연결별 정확히 한 번만 처리한다.
+7. 서버 종료 시 리슨 채널을 닫아 pending accept().get()을 해제하고 서버 종료 제어 스레드가 ListenThread를 join한다. 이후 활성 소켓의 READ/WRITE in-flight 해소 및 async 그룹 종료를 수행한다. 모든 오류 경로에서 busy-spin과 listener 중복 생성은 금지한다.
+
+**JDK 제약을 정확히 반영:** AsynchronousServerSocketChannel의 pending ACCEPT는 하나이고, CompletionHandler는 비동기 채널 그룹 워커에서 실행된다. 여기서 말하는 ListenThread는 **완료 워커가 아니라 ACCEPT를 기다리고 입구를 통제하는 별도 제어 스레드**다. 따라서 실제 입구 스레드라는 요구와 NIO.2/IOCP 멀티 완료 모델이 공존한다.
+
+참조: https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/channels/AsynchronousServerSocketChannel.html 및 https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/channels/AsynchronousChannelGroup.html
+
+### 22.2 로그인 입구의 메모리·공격 방어
+
+- 입구에서는 pre-auth 세션 수, 계정 승격 대기량, 연결별 초기 버퍼 바이트를 제한한다. 대기 중인 소켓마다 대형 버퍼나 512개 객체를 미리 잡지 않는다.
+- 느린/부분 핸드셰이크, 첫 패킷 없이 정지한 연결, IP당 과도한 접속 시도, 입구 정원 초과를 기존 정책과 호환되게 처리한다. 기존 CIO Timing Wheel의 deadline을 재사용한다.
+- 거부/취소/중단 시 연결 상태, 버퍼 Lease, admission counter를 **정확히 한 번만 회수**한다.
+- 로그인 때문에 기존 게임 네트워크의 READ/WRITE가 멎지 않도록 ListenThread의 CPU 비용 및 admission 최대 처리시간을 운영 지표로 계측한다.
+- 1,000/5,000 동시 진입·퇴장·재접속 폭주에서도 I/O 완료 워커가 listener 대기나 인증 DB의 영향을 직접 받지 않게 한다.
+
+### 22.3 ListenThread 합격 조건
+
+- 실행 중 ListenThread는 정확히 한 개; restart/close 후 유령 listen thread 0.
+- 단일 outstanding accept, 중복 accept 예외 0, 정상 수락 소켓 유실 0.
+- ACCEPT 중 interrupt, listen close, 그룹 shutdown, 로그인 실패, pre-auth 초과, 통신 오류를 모두 검사.
+- 프레임·암호화·캐릭터 입장 전후 기존 연결 규약/세션 ID/차단·중복 로그인 규칙 유지.
+
+## 23. 운영 필수: 최상급 저수준 Java 21 네트워크 / 객체 생성 최소화 (2026-11-17 추가)
+
+### 23.1 최우선 개발 철학
+
+**'객체지향적으로 보기 좋은 코드'보다 데이터 배치, cache locality, CPU/packet, allocation rate, retained heap, Direct memory peak, p99 지연과 운영 안정성을 우선한다.** 순수 Java 21 범위에서 가능한 가장 저수준의 데이터 지향 설계를 선택한다.
+
+- **RECV 패킷 한 건 / SEND 패킷 한 건 / WRITE 완료 한 건 / 브로드캐스트 수신자 한 명마다 추가 객체를 만들지 않는 것**을 핫패스 기본 규약으로 한다.
+- Primitive/int/long/boolean 필드, flat array, bounded primitive ring, 연결별 재사용 completion handler, buffer pool, 단일 owner pump를 먼저 사용한다.
+- 핫패스에서는 불필요한 new, autoboxing, lambda capture, Stream/Iterator, 임시 HashMap/List, Runnable·Future·CompletableFuture, ByteBuffer.wrap/duplicate/slice, 임시 byte[], Packet wrapper 계층 추가를 금지한다.
+- **Accept Future·새 Socket Channel·실제 세션 생성 객체**는 접속 수립에서 발생하는 콜드패스 비용이다. API에 필수인 객체까지 0이라고 주장하지 않는다. 세션 생성 시 장수명 상태 객체는 필요한 만큼만 만들고 즉시 버릴 객체는 피한다.
+- 512슬롯은 NC 실행 규칙을 위한 정책상의 한계이지 접속 5,000개 모두에 512개 작업 객체를 만들어두라는 뜻이 아니다. 평시의 연결별 필드를 최소화하고 경합 시 재사용 가능한 슬롯/primitive 구조를 쓴다.
+- 더 많은 메모리를 사용해도 **실제 성능 향상이 뚜렷한 경우**는 허용한다. 단, 무제한 생성/큐 팽창/불필요한 상시 대형 객체는 금지한다.
+- 실패한 실험용 JVM 스위치/중복 코드 경로를 운영 코드에 남기지 않고 가장 검증된 기본 경로 하나로 유지한다.
+
+### 23.2 층별 구현 규약
+
+| 계층 | 금지할 저효율 패턴 | 채택할 기본 패턴 |
+|---|---|---|
+| Listen/ACCEPT | 연결마다 새 worker/thread/task graph | ListenThread 하나 + lazy, bounded pre-auth |
+| READ | 매 완료 새 Handler, ByteBuffer, 복제 배열 | 연결별 재사용 Handler + pooled RX + primitive cursor/length |
+| 프레이밍/복호화 | 매 패킷 임시 객체·복사·박싱 | 직접 바이트 범위 처리 + 독립 rolling cipher 상태 |
+| Serializer | 작업당 Runnable/Future/Node 객체 | primitive ticket, reuse slots, FIFO linearization |
+| SEND | heap 패킷 → 임시 wrapper → Direct copy | 가능하면 Direct assembly에 바로 작성, 재사용 포인터 |
+| MMOCore 병합 | 매 패킷 복수 중간 복사·버퍼 할당 | 16KiB 재사용 batch + 부분 WRITE 상태 유지 |
+| Gathering | 매 호출 ByteBuffer[]와 view 생성 | 기존 완성 버퍼와 재사용 가능한 view 배열 |
+| WRITE 완료 | callback마다 새 Closure·재귀 체인 | 재사용 Handler, bounded loop pump, in-flight 최대 1 |
+| 방송 | 수신자마다 원본 전체 재생성 | immutable 공유 원본 + 수신자별 암호화/병합 |
+| CLOSE | 지연 작업별 별도 보조 객체·큐 | generation과 명시적 종료 상태, lease once-release |
+
+### 23.3 버퍼·메모리 수명
+
+- 4KiB RX / 16KiB TX / 필요시 64KiB 대형 풀의 **lazy bounded lease** 정책을 기본으로 한다. 접속마다 큰 RX·TX·512슬롯을 상시 예약하지 않는다.
+- 패킷별 헤더/암호화 상태를 정확하게 유지하면서 필요하지 않은 임시 byte 배열 복사를 줄인다. 게임 패킷 객체 생성 API 자체는 기존 호출을 우선 보존하고, 신규 네트워크 계층이 만들어내는 추가 할당부터 제거한다.
+- JDK에 WRITE 제출한 ByteBuffer의 position/limit/내용은 완료 이전까지 누구도 변경하지 않는다. 완료 후 잔여 데이터 처리, close race, 세션 generation, pool lease 반환을 정확히 한 번 처리한다.
+- Direct ByteBuffer도 Java wrapper와 Direct memory를 점유한다. 풀 크기를 키우기 전 **활성 수/보유 피크/CPU/packet**을 계측한다.
+- Direct-buffer staging을 한 단계 줄일 때 생기는 락·경쟁·부가 복사·핸들러 호출 비용까지 합산하여 결정한다.
+
+### 23.4 객관적 성능·안정성 합격 기준
+
+1. **핫패스 할당 감사:** JFR/프로파일링으로 READ, SEND, 암호화, broadcast, completion별 allocations/op, bytes/op, retained heap을 분리해서 측정한다. 새 Runnable/Future/임시 컬렉션/ByteBuffer/중간 복사 발견 시 제거하거나 불가피한 이유와 비용을 보고서에 명시한다.
+2. **1,024/5,000 접속 메모리 검증:** 유휴/이동·공격/송신 폭주/접속 폭주 단계에서 총 힙, 세션당 retained heap, Direct memory peak, pool miss, GC pause, 입구 pre-auth 메모리 상한을 검사한다.
+3. **CPU와 공정성:** 패킷당 CPU·시스템 호출·암복호화/병합 비용, 워커 경합, tail latency, false sharing, busy loop 여부를 측정한다.
+4. **정확성:** 로그인/입장/재접속, 소켓별 FIFO, RX 프레이밍, rolling crypto, 부분 WRITE, 연속 SEND, buffer retain/release, shutdown/join을 회귀 검증한다.
+5. **최종 산출물:** Windows 실서비스용 **Java 21 하나의 정규 네트워크 구현**, 사용자 작성 Native DLL/FFM/JNI/RIO 제거, 기존 CIO 게임 실행 구조·게임 프로토콜은 보존한다.
+
+**제품 원칙: 단순한 Java 라이브러리가 아니라, NC의 실행 정책 + MMOCore 패킷 병합 + PyroNet 즉시 WRITE + 전용 ListenThread + 저수준 데이터 지향 구현이 결합된 최상급 Windows 순수 Java MMORPG 네트워크 엔진을 목표로 한다.**
 
 ---
 
