@@ -985,6 +985,149 @@ Native 기존 서버에서 **운영에 안전한 테스트 계정과 로컬 환�
 
 ---
 
+## 26. 완성형 네트워크 이후의 추가 최적화 — CIO 접수·진단·RX Batch·직접 송신 (2026-11-18)
+
+> **전제:** 0~25장의 Windows Java 21 NIO.2 / IOCP, 전용 ListenThread, 소켓별 TX Pump + FIFO, 16KiB 병합, Direct Assembly, RX 프레이밍, 기존 CIO owner 실행, 방송 fanout, 버퍼 수명·역압력이 모두 완성되고 정확성 테스트를 통과한 **다음 단계**의 성능 개선 명세다. 새로운 네트워크 엔진을 다시 선택하거나 별도 워커·보조 큐를 추가하지 않는다. 아래 여섯 항목은 최종 완성형에 통합할 후보/요구사항이며, 현행 Native SRC의 발견 사항과 완료 가정 하의 변경 지점을 혼동하지 않는다.
+
+### 26.1 P0 — CIO PacketIngress의 이중 락을 bounded MPSC ring으로 교체
+
+**실제 소스 근거 (2026-11-17 최신 SRC):**
+
+- src/l1j/server/server/model/network/thread/CIOThreadCallback.java:369~380의 enqueuePacketImmediate()는 synchronized(owner)에서 owner.running 검사와 owner.packetIngress.offer(packetTask)를 수행하고, 락 해제 후 signalWork(true)를 호출한다.
+- 같은 파일 1185~1189: PACKET_INGRESS_CAPACITY=8192, MAX_PACKET_BURST=64, packetIngress는 ArrayBlockingQueue<PacketTask>.
+- 같은 파일 1961~1974: 단일 CIO 소유 스레드가 packetIngress.poll()을 burst 64개까지 처리하고 backlog 여부를 확인한다.
+- 같은 파일 2008~2019, 3082~3092: shutdown은 owner 모니터와 running 경계를 통해 새로운 접수를 막고, 접수됐지만 실행하지 못한 PacketTask.cancel()을 호출한다.
+- 따라서 현재 패킷 접수에는 외부 synchronized(owner) 모니터와 ArrayBlockingQueue 자체의 잠금이 중첩된다. 종료와 접수의 선형화 때문에 외부 모니터를 무조건 삭제할 수는 없다.
+
+**최적화 목표:** 기존 packetIngress **한 개만** 고정 용량 MPSC ring으로 대체한다. 네트워크 -> CIO handoff 수를 추가하지 않고 다중 I/O 완료 생산자, 단일 CIO owner 소비자에 맞춰 패킷 접수 fast path에서 모니터와 ArrayBlockingQueue 잠금을 모두 제거한다.
+
+**필수 알고리즘 계약:**
+
+1. ring은 고정 크기이며 슬롯별 sequence/발행 상태, 생산자 예약, 단일 소비자 cursor를 가진다. producer가 인덱스만 예약하고 내용을 게시하기 전에 consumer가 미완성 슬롯을 읽는 일은 없어야 한다. 적절한 VarHandle acquire/release 또는 동등한 Java Memory Model 보장을 사용한다.
+2. **접수 선형화와 종료 선형화**를 명시한다. STOP 시작 후에는 어떤 생산자도 성공으로 반환할 수 없고, STOP 직전에 성공한 예약 중 미게시 상태가 있다면 종료 drain이 그 생산자의 발행/취소 귀결을 기다리거나 폐기 표시를 정확히 처리해야 한다. 예약 후 enqueue 실패/close 경쟁은 유실된 티켓, 영원히 미완성된 슬롯, 영구 spin을 남겨서는 안 된다.
+3. 각 PacketTask의 결과는 실행 정확히 1회, 종료 시 취소 정확히 1회, 또는 **접수 실패** 중 하나다. 실행과 취소의 이중 발생, 수명 lease 이중 반환, 종료 후 새 작업 실행은 금지한다.
+4. 용량 초과는 bounded 실패로 반환하고 현재의 READ pause / 연결 종료 / backlog admission 경로에 정확히 전파한다. 슬롯 포화 시 I/O 완료 워커가 무한 CAS 또는 spin하지 않는다. 정상 MPSC 경합에서 일정한 재시도 예산 후 빠르게 실패하거나 기존 backpressure 정책을 따른다.
+5. FIFO는 성공한 ring 예약 순서로 보장한다. 소켓별 재사용 PacketTask의 single-pending 제약을 유지한다. shutdown 및 resize/bind는 active ring에서 무단 교체를 하지 않는다.
+6. 기존 CIO owner의 MAX_PACKET_BURST=64와 타이밍 휠 실행 우선권, signalWork의 wakeGate/park-unpark 교착 방지, owner-only 게임 상태 실행을 보존한다.
+
+**비용 제거 대상:** 정상 packet admission의 객체 모니터 진입 및 ArrayBlockingQueue lock/unlock, 각 enqueue/poll에 수반하는 락 경합. ring의 sequence 원자 비용은 존재하므로 per-frame CAS 횟수도 측정한다.
+
+**필수 검증:** 1/2/8/20 producer, stop과 동시 접수, full queue, 예약 후 생산자 중단/지연, wakeGate lost-wakeup, reconnect, PacketTask exactly-once run/cancel, timer 기아 없음. 비교 지표 ns/enqueue, CPU/frame, failed admission, lock contention, CAS retries, CIO queue p50/p99.
+
+### 26.2 P0 — 상세 네트워크 진단의 상시 패킷 비용 분리
+
+**실제 소스 근거:**
+
+- src/l1j/server/server/model/network/core/config/CIOConfig.java:9에서 DIAGNOSTICS_ENABLED의 기본 fallback은 true다.
+- src/l1j/server/server/model/network/core/diagnostics/CNetworkDiagnostics.java:151~165의 begin()은 opcode LongAdder, traffic 통계, 연결 Trace 기록, thread Work 동기화 및 System.nanoTime()을 수행한다.
+- 같은 파일 186~198의 end()는 Work 동기화, elapsed 계산, opcode별 LongAdder 두 개와 최대 지연 갱신 CAS 경로를 거친다.
+- 현재 이 진단 코드는 운영 현상의 추적 기능이다. 스킬/패킷 보안 규칙, rate-limit, 세션 유효성, 프로토콜 검증과 혼동해서 제거하지 않는다.
+
+**완성형 기본 정책:**
+
+1. 일반 정상 패킷에서 상세 Trace.record, 연결별 최근 opcode 기록, Work synchronized, packet별 nanoTime, max latency CAS, 전역 per-opcode LongAdder 갱신을 무조건 수행하지 않는다.
+2. 운영 필수 health counter(접속·거부·오류·큐 수위·타임아웃·버퍼 고갈)는 가벼운 per-owner/worker 집계와 event 기반 계측으로 유지한다. 실제 보안·quota 판정에 필요한 정확한 카운터는 생략하지 않는다.
+3. 상세 진단은 지정된 계측 구간/연결 또는 제한된 sampling 경로로 활성화한다. 활성화·비활성화 때 thread-local depth나 짝지어진 begin/end가 불일치하지 않도록 capture된 진단 문맥을 정확히 반환한다.
+4. 장애 대응에 필요한 예외 로그·연결 종료 이유·취소 사유·운영 측정 가능성은 반드시 보존한다. 무조건 로그/진단 전부 삭제는 금지한다.
+
+**검증:** diagnostics off/minimal/sample/full 동일 프로토콜 replay에서 동작 일치, packet당 ns·allocation, 원자 갱신 수, 노이즈 없는 p99, 장애 재현 가능성.
+
+### 26.3 P1 — byte[] 송신의 BytesWritablePacket 중간 객체 제거
+
+**실제 소스 근거:**
+
+- src/l1j/server/server/model/network/core/session/CIOClient.java:381~393의 sendPacket(byte[]) / enqueue(byte[])는 _connection.enqueuePacket(new BytesWritablePacket(data))를 사용한다.
+- src/l1j/server/server/model/network/packet/BytesWritablePacket.java:9~21은 참조를 보유하는 작은 래퍼이며 write()에서 buffer.writeBytes(_data)를 호출한다.
+
+**목표 경로:** 이미 확정된 byte[] -> 기존 단일 TX Pump의 direct-bytes admission -> 동일한 연결별 FIFO -> Direct Assembly + rolling cipher -> WRITE.
+
+- 새 네트워크 송신 큐나 바이트 배열 저장 전용 보조 워커를 만들지 않는다.
+- **배열 소유권:** 기존 BytesWritablePacket은 전달받은 byte[] 참조를 보유한다. 신규 직접 경로는 이와 호환되는 송신 시점 snapshot / 직렬화 순서 / 공유 배열 수명 정책을 먼저 확정해야 한다. 즉시 buffer에 기록할 수 있으면 추가 래퍼 없이 copy 또는 direct write하고, 지연 처리 시 호출자가 수정·회수하는 배열 참조를 안전하다고 간주하지 않는다.
+- frame length, cipher key advancement, eager write, TX 순서, 성공/거부/종료 의미론이 기존 경로와 동일해야 한다.
+- 핸드셰이크의 첫 평문·별도 crypto 초기화 경로, broadcast shared original 및 패킷 별 optional/mandatory 분기를 byte[] 최적화 하나로 무단 통합하지 않는다.
+
+**검증:** mutable caller array, broadcast reused source, 동시 SEND producer, 첫 키 평문, partial WRITE, close competition, byte-for-byte packet golden vector, wrapper allocations/send.
+
+### 26.4 P1 — Protobuf 인코더에서 최종 TX 버퍼로 직접 기록
+
+**실제 소스 근거:**
+
+- CIOClient.java:405~417의 sendPacket(ProtoOutputStream, boolean)은 createProtoBytes()를 필요시 호출한 뒤 getProtoBytes() 결과를 byte[] enqueue에 전달한다. isClear가 true면 스트림 dispose()를 수행한다.
+- src/l1j/server/server/packets/Protocol/MainServer/Proto/Stream/ProtoOutputStream.java:106~112의 createProtoBytes()는 new byte[offset+2] 후 System.arraycopy(buff,0,protoBytes,0,offset)를 수행한다.
+- 따라서 호출 경로에 이미 생성된 ProtoOutputStream 내부 buffer -> protoBytes 신규 배열 -> BytesWritablePacket -> TX assembly의 중간 객체/복사 기회가 남는다.
+
+**완성형 직접 기록 API:**
+
+- 인코딩 결과의 **기존 on-wire 2바이트 예약 영역, messageId 위치, 길이·endian 규칙**을 golden vector로 확인한 다음 writeTo(finalTxWriter) 형태의 직접 기록 경로를 제공한다. 패킷별 새로운 ProtoOutputStream 인스턴스까지 모두 0으로 만든다는 뜻은 아니며, 현행 생성된 protoBytes와 래퍼가 추가 발생하지 않도록 하는 것이 목표다.
+- 이미 생성된 스트림의 내부 버퍼를 final TX에 1회만 복사하는 호환 fast path와, 애초에 final TX writer에 직접 인코딩하는 더 깊은 경로를 구분한다. 전자는 중간 배열 제거이며 후자는 최초 본문 생성 자체의 중간 복사 제거다.
+- 스트림 크기/필드 순서/길이/바운더리, dispose() 호출 시점, 재사용·공유 스트림, multi-recipient fanout에서 원본 불변성, TX pending 시 session snapshot을 유지한다.
+- event-owned shared proto source를 recipient마다 재인코딩하지 않는다. 연결별 crypto는 기존 FIFO에서 정확히 한 번 수행한다.
+- 다른 packet writer까지 무조건 리팩터링하지 말고, 이미 direct writer인 패킷은 그대로 유지한다.
+
+**검증:** 모든 현행 Proto messageId 대표 패킷 golden vector, 다중 수신자 재사용, dispose race, 동일 스트림 연속 사용 규칙, 낡은 writer 대비 byte equality, allocated bytes/proto, copy passes/proto.
+
+### 26.5 P1 — 한 번의 READ에서 여러 프레임을 단일 CIO 배치로 인계
+
+**25장과의 관계:** 24.5는 하나의 READ에서 여러 프레임을 decode하도록 요구하고, 25.1은 중복 큐를 금지한다. 여기서는 **여러 프레임을 해석하는 것과 CIO 접수 횟수 자체를 줄이는 것을 구분**해 최적화한다.
+
+**목표 흐름:**
+
+    IOCP READ complete
+      -> 2바이트 length / 여러 frame 파싱
+      -> 같은 소켓의 bounded RX Batch (owned bytes, offsets, lengths, sequence)
+      -> 기존 CIO packetIngress 1회 admission
+      -> 기존 CIO owner: packet[0..N) 순서대로 처리
+      -> 자원 release / 다음 READ admission
+
+**필수 안전 조건:**
+
+1. **기존 CUserSocket이 PacketTask를 구현**한다는 사실을 활용한다. 하나의 재사용 task가 batch를 소유하고 CIO에서 순차 실행할 수 있다. 별도 packet마다 Runnable/Task 객체는 만들지 않는다.
+2. single-pending/phase와 READ pause barrier를 지킨다. batch가 실행·취소 완료되기 전에 해당 task의 필드나 source READ buffer가 재사용되어서는 안 된다. owned lease 또는 필요한 bytes의 bounded 사본으로 수명을 분명히 한다.
+3. **엄격한 wire 순서:** 로그인·로그아웃·월드 진입·일반 게임 명령 등 서로 다른 opcode 실행 경로를 배치 경계에서 역전시키면 안 된다. 기존 session-sensitive path와 CIO 경계를 분리할 필요가 있으면 ordering barrier로 batch를 절단한다.
+4. READ 하나가 수백 패킷을 포함하더라도 무조건 무한 배치하지 않는다. 최대 frames/bytes 및 CIO owner 처리 예산을 설정하고, 초과분은 소유 상태로 보존한 뒤 기존 wakeup/budget 방식으로 이어간다. 기존 MAX_PACKET_BURST=64의 공정성이 batch 때문에 무력화되지 않도록 **배치 내부 프레임 수도 처리 예산에 계상**한다.
+5. 큐 상한이 packet batch **개수만** 세면서 네트워크 미처리 byte/frame 총량이 무한히 늘지 않도록 per-connection/global backlog quota에 batch frame 수·bytes를 함께 반영한다.
+6. decryption/rolling cipher state는 wire 순서대로 정확히 한 번 발전한다. CANCEL 또는 CLOSE가 발생하면 batch에서 미실행 프레임은 명시적으로 취소·반환되며 CIO owner는 실제 적용한 게임 작업만 count한다.
+7. 단일 패킷 또는 간헐적 트래픽은 batch 채우기 위한 시간 지연 없이 eager admission한다. 한 READ에 여러 패킷이 **이미 존재할 때만** 자연 병합하고, 지연을 만들어 인위적으로 모으지 않는다.
+8. 이 변경은 **추가 큐가 아니라 기존 packetIngress의 하나의 entry가 bounded frame group을 나타내는 표현 변경**이다.
+
+**검증:** 1/2/6/64/100+ frames/read, 1B split header, half-frame, 다른 opcode 세션 경계, concurrent close, paused read, queue full, cipher snapshot, delayed owner, owner fairness, 0 duplicate/lost/reorder, ingress offers/1000 frames, wait p99, allocated bytes/frame.
+
+### 26.6 P2 — 완성된 NIO.2에서 JDK 작업 등록 비용의 잔여분 제거
+
+**기존 24·25장의 기술을 유지하면서 적용할 마지막 단계:**
+
+- OpenJDK Windows 비동기 소켓 READ/WRITE 내부는 작업 등록 시 PendingFuture, ReadTask/WriteTask와 단일 버퍼 배열 등 JDK 구현 측 객체를 생성한다. 애플리케이션이 new를 쓰지 않는다고 이 객체가 0이 되지는 않는다.
+- 사용자가 구현한 Listener / IOCP worker / TX Pump와 무관한 별도 Native/JNI/FFM 엔진을 만들지 않는다. 기존 Java 21 AsynchronousSocketChannel을 유지한다.
+- completed WRITE가 남긴 bytes를 먼저 고갈시키고 다음 **미완료 WRITE 등록 하나만** 유지한다. 동시 등록 여러 개, packet별 WRITE submit, 16KiB를 채우려는 인위적 timer 지연은 금지한다.
+- 한 READ에 이미 받은 여러 프레임을 모두 파싱하고 다음 READ를 등록한다. **더 큰 RX 버퍼가 무조건 더 적은 I/O 비용을 보장한다고 가정하지 않으며**, 4KiB 기본 + 필요시 승격과 실제 frame 분포를 함께 사용한다.
+- JDK callback이 인라인/재진입하더라도 비재귀 owner pump와 연결별 실행권을 보존한다. JDK 비동기 buffer의 position/limit은 완료 전 건드리지 않는다.
+- JFR / allocation profiler에서 OpenJDK 패키지별 bytes/packet 및 READ·WRITE registrations/1000 frames를 집계한다. 우선 목표는 중복 전송 요청과 완료 전달을 줄이는 것이지 JDK 내부를 reflection으로 패치하는 것이 아니다.
+
+### 26.7 여섯 항목의 구현 순서 및 회귀·성능 승인 기준
+
+| 차수 | 우선순위 | 수정 지점 | 제거 대상 | 특히 중요한 정확성 |
+|---|---|---|---|---|
+| 1 | P0 | CIOThreadCallback packetIngress / enqueuePacketImmediate | 두 겹의 잠금 | stop/admission 순서, exactly-once cancel |
+| 2 | P0 | CNetworkDiagnostics / 경량 진단 gate | 패킷별 nanoTime·동기화·원자 작업 | 보안·운영 필수 계측 보존 |
+| 3 | P1 | CUserSocket RX owner -> CIO batch | packetIngress 접수·깨우기 횟수 | 세션 opcode 순서, 64-frame fairness, buffer lifetime |
+| 4 | P1 | CIOClient byte[] -> TX Pump | BytesWritablePacket 래퍼 | 호출자 배열 수정·TX FIFO·키 순서 |
+| 5 | P1 | ProtoOutputStream writer -> Direct Assembly | protoBytes 중간 배열·복사·래퍼 | 원래 on-wire byte equality, dispose |
+| 6 | P2 | NIO.2 READ/WRITE 패킹 비용 | 잦은 JDK registration/completion | 1 pending READ/WRITE, tail latency |
+
+**적용 규칙:** 위 순서는 성능 추정치를 순위로 단정한 것이 아니라, 측정이 쉬운 경계 및 실행권·수명 의존성에 따라 정한 구현 순서다. 1~6 모두 기존 Windows Java21 pure-Java 아키텍처 안에 들어간다. 여섯 변경을 한 번에 적용하기보다 각 변경의 상태 전이·회귀를 검증해 문제 원인을 분리하고, 최종 운영본의 기본 경로에는 승인된 구현만 남긴다. 사용자에게 운영용 A/B JVM 토글 여러 개를 떠넘기지 않는다.
+
+**필수 동일 조건 계측:**
+
+- 1/16/1024/5000 연결, 단일 연결 latency와 대량 broadcast 혼합, burst login, slow receiver.
+- 1/2/8/20 SEND·RECV producer 경쟁, 게임 CIO shard 1~8 병렬 실행, timer 중첩.
+- CPU µs/frame, native/JDK/app allocated bytes/frame, successful packet admission ns, ring CAS retries, ingress enqueue count/1000 frames, frames/read·WRITE, copied bytes/wire byte, peak RX/TX/direct heap, p99 game command latency.
+- 시뮬레이션 검증 0건 조건: packet duplicate/loss/reorder, stale-session command, double release, live payload overwrite, wrong crypto progression, packet executed after shutdown, pending packet never canceled, starving timer.
+- 실제 Windows Java21 IOCP 사용량·완료 워커 점유·JFR allocation 결과로 마지막 병목을 확인한다. Linux selector 결과를 Windows IOCP 결과로 대체하지 않는다.
+
+**최종 판단:** 0~25장이 완성형 네트워크 I/O 코어의 설계라면, 26장은 그 코어 위에 남은 **네트워크->CIO 접수·진단·수신 배치·직접 직렬화 비용**까지 제거해 MMORPG의 짧은 패킷·대량 fanout에서 CPU/frame과 memory allocation을 더 낮추는 후속 최적화 명세다. 새 워커·새 엔진 없이 기존 CIO owner / Timing Wheel / NC식 FIFO를 유지한다.
+
+---
+
 ## 출처 및 범위
 
 - RKern: 2026-11-17 저장된 최신 전체 SRC 두 ZIP의 실제 Java 소스 비교. 프로덕션 코드는 이 보고서 작성 과정에서 수정하지 않음.
