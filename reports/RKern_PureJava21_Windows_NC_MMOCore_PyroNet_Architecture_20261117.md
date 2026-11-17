@@ -841,6 +841,150 @@ Native 기존 서버에서 **운영에 안전한 테스트 계정과 로컬 환�
 
 ---
 
+
+## 25. 추가 필수: 24장만으로는 부족하다 — 게임 패킷 처리·CPU 캐시·폭주·운영 비용 제거 (2026-11-17 보강)
+
+> **필수 제품 구현 사양.** 24장의 송신 큐 통합·WRITE 병합·Direct 복사 감소에 더해, 아래 항목까지 **초기부터 구현해야 완성형 저수준 MMORPG 네트워크**가 된다. 25장은 별도 실험 엔진/토글/새 worker를 만들자는 내용이 아니다. 실제 RKern의 수신→CIO 경계, 패킷 코덱·소켓 등록·풀 재사용·연결 생명주기를 기준으로 한다.
+
+### 25.1 1순위: RECV에서 기존 CIO까지 중복 실행·큐 이동 금지
+
+최신 RKern에는 이미 CUserSocket의 네이티브 완료 수신 상태(nativePacketPhase), enqueuePacketImmediate(), CIOThreadCallback.PacketTask가 있으며, 게임 상태는 기존 CIO shard가 소유한다.
+
+**초기 구현의 정확한 요구 사항**
+
+    Windows IOCP READ completion
+          |
+      CUserSocket RX state
+          |
+      2B frame + per-session decrypt + opcode
+          |
+      +-- 이미 네트워크 완료 문맥에서 안전한 짧은 프로토콜 작업
+      |
+      +-- 게임/세션 소유 실행 작업: 기존 CIO enqueuePacketImmediate()
+          (불필요한 NetworkDispatcher, DecodeQueue, PacketTaskQueue 추가 금지)
+
+- 연결별 RX logical sequence를 유지한다. 먼저 온 명령의 실제 처리·게임 소유권 검증 이전에 뒤 패킷을 무단으로 앞질러 실행하지 않는다.
+- CUserSocket이 이미 CIOThreadCallback.PacketTask를 구현한 사실을 활용해 **패킷마다 새 Runnable/PacketEvent 객체를 만들지 않는다.** 단, 단일 재사용 PacketTask가 미완료인 상태에서 다음 READ가 같은 필드를 덮어쓰면 안 된다. 기존 단일 pending ingress 계약을 보존하거나 명시적인 bounded owned slot으로 확장한다.
+- CIO에 전달할 바이트는 READ 재등록 및 Buffer Pool 반환과 경쟁하지 않도록 **수명 인계(lease/ownership)**를 확정한다. zero-copy가 불가능한 게임 패킷만 필요한 길이만큼 copy한다.
+- 단순 packet decode 때문에 게임 서버의 새 worker에 enqueue 후 다시 기존 CIO에 enqueue하는 **이중 handoff**를 금지한다.
+- 기존 opcode별 세션 소유 분기와 연결 검증을 재사용하며, 호출 경계가 바뀌어도 NPC·CacheD·게임 소유 샤드는 수정하지 않는다.
+
+**비용 절감 대상:** 패킷당 추가 작업 객체 1개, 네트워크→게임 중복 큐 한 번, 바이트 배열 한 번의 중간 복사, 중복 소유권 검사. 단, 실제로 원본 경로가 이미 이를 피한다면 **그 최적화를 유지**하고 다시 만들지 않는다.
+
+**측정:** inbound queue handoffs/frame, allocations/frame, pending RX bytes/session, CIO admission latency, per-socket sequence violations=0.
+
+### 25.2 2순위: 디코더·opcode 분기·암복호화 CPU 비용 절감
+
+- 긴 객체 그래프/가상 호출/HashMap lookup/리플렉션 대신 opcode → 기존 핸들러 경로의 정적 분기/사전 확정된 dispatch table을 이용한다. 현재 opcode 허용·세션 검사를 먼저 확인하고 보안 분기를 제거하지 않는다.
+- 길이 헤더, opcode, packet cursor는 primitive 필드로 유지하고 매 프레임 임시 ReadBuffer/ByteBuffer wrapper·Iterator를 만들지 않는다.
+- Cryptor.java에는 이미 rolling cipher, opcode preview, 복호화의 long 단위 처리 경로가 있다. 이를 무턱대고 폐기하지 않고 **JDK 21 JIT가 최적화하기 쉬운 단일 바이트 루프/8바이트 fast path**를 정확한 골든 벡터로 검증한다.
+- opcode/skill 미리보기 때문에 **같은 프레임 전체를 두 번 복호화하거나 두 번 복사하지 않는다.** 미리보기는 key 비전진, 실제 decrypt는 정확히 한 번 key 발전.
+- 기존 프로토콜의 첫 평문, 4바이트 cipher prefix, 길이와 endian, 여러 패킷이 한 READ에 함께 들어온 경우의 key progression을 byte-for-byte 유지한다.
+- 시스템 시간, 원격 주소 문자열, debug-format, stack trace를 정상 패킷마다 생성·조회하지 않는다. deadline 갱신은 기존 Timing Wheel의 coarse 이벤트/필드와 연동한다.
+
+**비용 절감 대상:** decrypt/프레임 반복 처리, 분기/간접 호출, 시간·로그 비용, 패킷별 임시 객체.
+
+**측정:** cycles/decrypt-byte, ns/decoded packet, key advancement mismatch=0, alloc/frame, opcode hot top-N.
+
+### 25.3 3순위: Connection Registry와 공유 메타데이터의 캐시·원자 비용 절감
+
+현행 CIOServer에는 연결을 찾는 AtomicReferenceArray<CSocket>와 관리용 ConcurrentHashMap이 있다. **관리 자료구조를 READ/WRITE 정상 경로에 중복 조회시키지 않는다.**
+
+- 완료 콜백 attachment에는 그 연결에 이미 귀속된 객체·세대 번호를 보유하고, 매 완료마다 전역 연결 레지스트리를 다시 찾는 조회를 피한다. 기존 참조 수명·세션 세대 검증은 유지한다.
+- 연결별 hot fields(RX cursor, TX owner, pending byte, cipher state)와 cold fields(remote address, 로깅·진단·계정 문자열)를 구분한다. 외부 API를 깨뜨리지 않는 범위에서 데이터 접근 지역성을 높인다.
+- 전역 패킷 카운터에 frame마다 atomic increment를 하지 않는다. 모니터링은 per-worker/per-shard primitive counter 또는 부담이 작은 누적 방식으로 구현하고, 운영자가 조회할 때 aggregate한다. 기능상 반드시 정확한 quota 카운터와 계측용 근사 카운터를 혼동하지 않는다.
+- 각 ByteBuffer에 대해 매번 동기화된 글로벌 인덱스 검색/래퍼 변환을 실행하지 않도록 lease slot/generation을 기존 연결 상태에 간결히 보유한다.
+- 이득이 불명확한 volatile 필드·Atomic 객체·전역 락을 새로 추가하지 않는다. 필요 상태는 publication/happens-before가 정확히 성립하는 최소 필드에 한정한다. Java Memory Model 위반으로 stale completion이 살아 있는 buffer를 돌려주는 일이 없어야 한다.
+- per-worker counters와 자주 갱신되는 session metadata 사이의 false sharing을 회피하는 배치가 필요한지는 JFR/프로파일로 확인한다. 무작정 padding을 5,000개 세션에 추가하지 않는다.
+
+**비용 절감 대상:** lookup, 캐시 미스, 원자 갱신, 객체 보유량, 경합.
+
+**측정:** connection-registry accesses/READ·WRITE completion, global atomic updates/frame, lock contention, cache misses, heap/client.
+
+### 25.4 4순위: Pool 중앙 병목·경쟁을 없애되 Buffer 수명 보존
+
+- 풀 획득·반환을 모든 I/O 워커가 한 synchronized lock에서 수행하면 병렬화가 무너진다. 기존 CIOBufferPool의 bounded lazy lease를 기본으로 삼아, **유휴/경합 없는 정상 경로에서 지역 free-slot 우선**을 검토한다.
+- 소켓 간 풀 반환이 완료 콜백 스레드에서 이루어져도 정확히 한 번만 slot을 반환하도록 owner/generation/in-flight 상태를 유지한다.
+- 자주 쓰는 4KiB RX/16KiB TX는 사용량이 높은 크기별로 고정 슬롯을 재사용하고, 64KiB large pool은 큰 프레임에서만 쓴다.
+- free-slot을 자주 찾기 위해 매 packet마다 전체 pool 배열을 순회하거나 큰 Bitmap을 반복 스캔하지 않는다. 구현 구조가 실제로 그런 경로를 가진 경우에만 bounded free-index/간결한 할당자 경로로 개선한다.
+- Direct ByteBuffer의 오래 살아 있는 Java wrapper와 실제 native direct 영역을 별도로 계측한다. buffer lifetime을 추적하는 참조가 GC 대상 버퍼를 계속 잡고 있는 leak을 피한다.
+- **Connection A가 I/O 미완료로 보유 중인 lease를 Connection B에게 조기 반환하는 최적화는 절대 금지한다.**
+
+**측정:** pool acquire/return ns/op, contention, scan steps/acquire, misses/s, retained bytes, double-return=0.
+
+### 25.5 5순위: 폭주·느린 클라이언트·WRITE 정체 때 전체 서버 보호
+
+평상시 throughput만 높아도 특정 연결이 SEND 대기 메모리를 무한히 소모하면 5,000동접 실서비스 엔진이 아니다.
+
+- pre-auth admission, 연결별 TX pending frames/bytes, 서버 전체 pending bytes, RX→CIO backlog, buffer pool 용량을 **서로 연결된 제한 정책**으로 설계한다.
+- 부하가 증가할 때 WRITE를 무조건 더 제출하거나 큐에 더 쌓지 않는다. 연결별 in-flight WRITE 1개를 지키고, 해당 연결의 과도한 적체를 제한한다.
+- READ pause/resume은 현행 CIO 압력/타이머 규칙을 존중한다. WRITE backlog 때문에 READ를 pause해야 할 경우 프로토콜 응답·재인증·로그아웃/타임아웃 등 필수 제어 절차가 어떻게 진행되는지 명시한다.
+- optional broadcast는 **접수 및 암호화 전**에만 정책에 따라 제외 가능하다. 암호화가 시작된 송신 프레임을 일부만 없애면서 연결을 유지하는 방식 금지.
+- 풀 용량이 부족하면 글로벌 새 byte[]/Direct Buffer 무제한 생성으로 우회하지 않는다. 버퍼 lease 실패는 명시적 거부·유예·정리 정책으로 진행한다.
+- 한 연결의 close/reconnect가 반복되더라도 새 handler/lease를 무한 축적하지 않는다. ListenThread 및 CIO Timing Wheel은 기존 리소스 제한과 함께 운영한다.
+
+**측정:** slow-client pending-time, pending bytes/client & global, RX pause duration, rejection/close counts, drop-after-encrypt=0, bound violations=0.
+
+### 25.6 6순위: NIO.2 시간 제한·완료 핸들러·스레드 인계 비용 제거
+
+- Java 비동기 READ/WRITE 호출마다 새로운 timeout/예약 작업 객체를 생성하는 경로를 기본으로 쓰지 않는다. 연결 deadline은 **이미 존재하는 CIO Timing Wheel**에서 관리한다. 단, 기존 socket timeout 및 보안 기능은 동등하게 보존한다.
+- WRITE 완료 후 다음 WRITE 제출이 **즉시 완료되는 콜백 재진입**으로 이어질 수 있으므로, 연결별 drain/wip 상태로 non-recursive pump를 유지한다.
+- 완료 콜백에서 packet마다 ThreadPool.execute/CompletableFuture/Thread.ofVirtual()을 호출하는 구조 금지. 기존 CIO에 게임 소유권을 인계해야 할 때만 기존 접수 API를 사용한다.
+- 한 worker가 특정 connection의 대형 RX batch 또는 긴 TX drain에 갇히면 다른 connection tail latency가 증가한다. byte/frame budget을 두되 미처리 수신 데이터를 **반드시 소유 상태로 보존**하고 다음 기회에 처리한다. 단순 budget 반환으로 pending 작업을 잃지 않는다.
+- 빈 소켓이 CPU를 차지하는 timer polling이나 write spin loop를 만들지 않는다. 이벤트/IO 완료에서만 재개한다.
+- JDK의 자체 I/O 작업 객체 생성은 호출 횟수를 줄여 간접 감축한다. JDK 내부 구조를 리플렉션으로 수정하거나 사용자 Native transport를 추가하지 않는다.
+
+**측정:** handoffs/frame, callback CPU distribution, max callback runtime, worker blocked time, inlining recursion depth=0, retry-loop spins=0.
+
+### 25.7 7순위: Socket Option과 전송 버퍼의 용도 분리
+
+- TCP_NODELAY의 적용 여부는 게임의 소형 응답 지연을 기준으로 정한다. 애플리케이션의 16KiB batching과 OS Nagle 처리/Windows send buffer 설정은 독립된 요소다.
+- SO_RCVBUF/SO_SNDBUF는 연결당 OS 메모리를 소비하므로 **무조건 크게 만들지 않는다.** 5,000 연결 × 소켓당 커널 버퍼가 예상보다 크게 잡히면 Java heap보다 OS TCP 메모리가 커질 수 있다.
+- 16KiB는 **Application WRITE Batch 크기**다. TCP MSS/MTU와 혼동하거나 OS 세그먼트 크기를 강제로 16KiB라고 가정하지 않는다.
+- 로그인/handshake/평상시 게임 패킷/대량 방송의 크기 분포를 기록하여 적절한 소켓 옵션을 최종 코드 기본값에 정한다. 설정 플래그를 사용자에게 여러 개 떠넘기지 않는다.
+- 재접속·Half-close·RST·버퍼 고갈에서 실패 처리와 close 상태가 일치해야 한다.
+
+**측정:** Windows per-process/private bytes, TCP send/recv buffer footprint, packet p99, small-packet response time, WRITE completions/s, connection abort rates.
+
+### 25.8 8순위: 로그인 입구와 세션 생성의 진짜 비용 제어
+
+- ListenThread는 하나이고 ACCEPT만 담당한다. 인증 DB, 캐릭터 생성, 암호화 초기화 전체, 로그 및 큰 버퍼 확보를 넣지 않는다.
+- 로그인 전 수립된 연결은 **pre-auth의 최소 상태**만 보유하고, 인증 및 초기 키 교환을 통과한 뒤에 필요한 게임 세션 상태로 승격한다.
+- 초기 접속 실패/handshake timeout이 많은 경우에도 거대한 큐와 buffer/slot 선할당이 증가하지 않도록 수명·resource cap을 관리한다.
+- 로그인 중 중복 로그인/동일 계정/세션 세대 번호·MAC/IP 정책과 기존 CIO 소유 경계를 유지한다. 빠르다는 이유로 보안 검사를 생략하지 않는다.
+- 입구 burst가 READ/WRITE 완료 워커의 tail latency에 끼치는 영향을 별도로 계측한다. 단순 연결 수용량과 로그인 성공 처리량을 서로 구분한다.
+
+**측정:** accepted/s, authenticated/s, time-to-first-valid-frame, pre-auth retained bytes, leaked pre-auth slots, active-game p99 under login storm.
+
+### 25.9 초기 구현 단계의 우선순위 결정
+
+| 우선순위 | 영역 | 처음부터 반드시 구현할 내용 | 이미 24장에 있는지 |
+|---|---|---|---|
+| **P0** | TX 실행권 + FIFO | 단일 TX Pump, 선형화, direct fast path, in-flight WRITE 1개 | **24장 필수** |
+| **P0** | RX→CIO | 기존 PacketTask/샤드 경로 재사용, 추가 dispatcher/queue 0 | **25장 추가** |
+| **P0** | 프로토콜 | 암호화 1회/키 순서/게임 객체 snapshot 보존 | 24장 + **25장 구체화** |
+| **P0** | 수명·역압력 | 느린 소켓 격리, pool 고갈 시 명시적 종료·복구 | **25장 강화** |
+| **P1** | WRITE cost | 16KiB 자연 batching, Direct 작성, JDK 내부 등록 수 절감 | **24장 필수** |
+| **P1** | 메모리/Pool | 연결별 lazy lease, 중앙 pool 경합·스캔 감소 | 24장 + **25장 강화** |
+| **P1** | 비용 없는 dispatch | opcode/cipher primitive hot path, 불필요한 시간·로그 제거 | **25장 추가** |
+| **P1** | 워커 공정성 | 비재귀 completion, budget, 기존 CIO handoff만 | **25장 강화** |
+| **P2** | Windows 튜닝 | TCP options, send/recv OS buffer footprint, 실제 frame size 확인 | **25장 추가** |
+| **P2** | CPU cache/layout | session hot/cold, registry 조회, 계측용 atomic contention | **25장 추가** |
+| **P2** | 로그인 | 1 ListenThread, pre-auth lazy state와 admission 폭주 보호 | 기존 22장 + **25장 강화** |
+
+### 25.10 출시 판단 기준 및 결론
+
+1. RX·TX·방송·로그인 각각에 대해 **CPU/packet, allocations/packet, queue hops/packet, copied bytes/packet, average frames/WRITE, p99, retained heap/client**를 실제 Windows에서 측정한다.
+2. 1,024 연결뿐 아니라 5,000 연결에서 유휴와 대량 방송·동시 이동·로그인 폭주를 구분하여 측정한다. 특히 **활성 게임 이용자의 p99**가 로그인 폭주 때문에 악화되는지 검증한다.
+3. 정확성 기준은 패킷 누락/중복/FIFO 역전/rolling key mismatch/lease 이중 반환/세션 유출 **0건**이다.
+4. 높은 처리량을 위해 코어가 무한 busy spin하거나 특정 CIO 샤드를 멈추게 하는 설계는 채택하지 않는다.
+5. 사용자 Native DLL/FFM/JNI를 다시 도입하지 않고, 이 비용 절감 규칙을 **제품 첫 구현의 기본 경로 하나**에 통합한다.
+6. 이미 RKern 기존 코드가 잘하고 있는 최적화(재사용 PacketTask, rolling crypto fast path, 기존 CIO·BufferPool·방송 공유 원본)는 삭제하거나 다시 만드는 것이 아니라 **장점을 유지한 채 중복 비용만 제거한다.**
+
+**최종 결론: 24장만으로 '최적화 완료'가 아니다. 24장이 송신 비용의 뼈대라면, 25장은 수신→게임 인계·암호화·글로벌 경합·정체·운영 메모리까지 통합한 제품 성능 요구사항이다. 두 장을 합쳐 첫 구현에서부터 적용한다.**
+
+---
+
 ## 출처 및 범위
 
 - RKern: 2026-11-17 저장된 최신 전체 SRC 두 ZIP의 실제 Java 소스 비교. 프로덕션 코드는 이 보고서 작성 과정에서 수정하지 않음.
