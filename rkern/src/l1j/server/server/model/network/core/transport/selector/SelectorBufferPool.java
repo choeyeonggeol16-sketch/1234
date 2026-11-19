@@ -3,9 +3,10 @@ package l1j.server.server.model.network.core.transport.selector;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-/** Bounded direct receive storage owned by one Selector thread. */
-public final class SelectorReceivePool {
-    static final int COMPACT_BYTES = 4 * 1024;
+/** Bounded direct storage owned by one Selector thread. */
+public final class SelectorBufferPool {
+    static final int RECEIVE_BYTES = 4 * 1024;
+    static final int SEND_BYTES = 16 * 1024;
     static final int LARGE_BYTES = 64 * 1024;
 
     public record Stats(int inUse, long borrows, long returns, long allocatedDirectBytes, long maxDirectBytes) { }
@@ -14,9 +15,17 @@ public final class SelectorReceivePool {
     private final Bucket compact;
     private final Bucket large;
 
-    public SelectorReceivePool(int compactSlots, int largeSlots) {
-        if (compactSlots < 1 || largeSlots < 1) throw new IllegalArgumentException("Invalid receive pool size");
-        compact = new Bucket(COMPACT_BYTES, compactSlots);
+    public static SelectorBufferPool receive(int compactSlots, int largeSlots) {
+        return new SelectorBufferPool(RECEIVE_BYTES, compactSlots, largeSlots);
+    }
+
+    static SelectorBufferPool send(int compactSlots, int largeSlots) {
+        return new SelectorBufferPool(SEND_BYTES, compactSlots, largeSlots);
+    }
+
+    private SelectorBufferPool(int compactBytes, int compactSlots, int largeSlots) {
+        if (compactSlots < 1 || largeSlots < 1) throw new IllegalArgumentException("Invalid pool size");
+        compact = new Bucket(compactBytes, compactSlots);
         large = new Bucket(LARGE_BYTES, largeSlots);
     }
 
@@ -30,6 +39,10 @@ public final class SelectorReceivePool {
         return large.acquire();
     }
 
+    Lease acquire(int capacity) {
+        return capacity <= compact.bytes ? acquireCompact() : acquireLarge();
+    }
+
     void release(Lease lease) {
         requireOwner();
         if (lease == null) return;
@@ -41,16 +54,18 @@ public final class SelectorReceivePool {
         requireOwner();
         return new Stats(compact.used() + large.used(), compact.borrows + large.borrows,
                 compact.returns + large.returns, compact.allocated + large.allocated,
-                (long) COMPACT_BYTES * compact.free.length + (long) LARGE_BYTES * large.free.length);
+                (long) compact.bytes * compact.free.length + (long) LARGE_BYTES * large.free.length);
     }
 
     private void requireOwner() {
-        if (Thread.currentThread() != owner) throw new IllegalStateException("Wrong receive pool owner");
+        if (Thread.currentThread() != owner) throw new IllegalStateException("Wrong buffer pool owner");
     }
 
     static final class Lease {
         private final Bucket bucket;
         final ByteBuffer buffer;
+        Lease next;
+        int frames;
         private boolean active;
 
         private Lease(Bucket bucket) {
@@ -91,6 +106,8 @@ public final class SelectorReceivePool {
         void release(Lease lease) {
             if (!lease.active) throw new IllegalStateException("Double lease release");
             lease.active = false;
+            lease.next = null;
+            lease.frames = 0;
             lease.buffer.clear();
             free[available++] = lease;
             returns++;

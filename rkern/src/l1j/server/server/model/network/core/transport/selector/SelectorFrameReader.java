@@ -18,15 +18,15 @@ public final class SelectorFrameReader implements AutoCloseable {
 
     private static final int HEADER_BYTES = Short.BYTES;
 
-    private final SelectorReceivePool pool;
+    private final SelectorBufferPool pool;
     private final Thread owner = Thread.currentThread();
     private final ReadBuffer frame = new ReadBuffer();
-    private SelectorReceivePool.Lease lease;
+    private SelectorBufferPool.Lease lease;
     private int readOffset;
     private boolean dispatching;
     private boolean closed;
 
-    public SelectorFrameReader(SelectorReceivePool pool) {
+    public SelectorFrameReader(SelectorBufferPool pool) {
         this.pool = Objects.requireNonNull(pool);
     }
 
@@ -48,9 +48,9 @@ public final class SelectorFrameReader implements AutoCloseable {
             if (!input.hasRemaining()) {
                 // With no complete frame at the head, a full compact buffer
                 // belongs to one frame larger than the compact lease.
-                SelectorReceivePool.Lease large = pool.acquireLarge();
+                SelectorBufferPool.Lease large = pool.acquireLarge();
                 if (large == null) throw new IOException("Large receive pool exhausted");
-                SelectorReceivePool.Lease compact = lease;
+                SelectorBufferPool.Lease compact = lease;
                 lease = large;
                 try {
                     large.buffer.put(input.flip());
@@ -116,7 +116,7 @@ public final class SelectorFrameReader implements AutoCloseable {
                 releaseLease();
             } else if (readOffset == filled) {
                 readOffset = 0;
-                if (input.capacity() > SelectorReceivePool.COMPACT_BYTES) releaseLease();
+                if (input.capacity() > SelectorBufferPool.RECEIVE_BYTES) releaseLease();
                 else input.clear();
             }
         }
@@ -130,7 +130,7 @@ public final class SelectorFrameReader implements AutoCloseable {
     }
 
     private void releaseLease() {
-        SelectorReceivePool.Lease released = lease;
+        SelectorBufferPool.Lease released = lease;
         lease = null;
         readOffset = 0;
         pool.release(released);

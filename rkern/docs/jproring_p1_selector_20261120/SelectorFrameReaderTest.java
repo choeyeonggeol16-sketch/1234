@@ -10,7 +10,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 import l1j.server.server.model.network.buffer.ReadBuffer;
-import l1j.server.server.model.network.core.transport.selector.SelectorReceivePool;
+import l1j.server.server.model.network.core.transport.selector.SelectorBufferPool;
 import l1j.server.server.model.network.core.transport.selector.SelectorFrameReader;
 
 public final class SelectorFrameReaderTest {
@@ -18,7 +18,7 @@ public final class SelectorFrameReaderTest {
     private interface CheckedAction { void run() throws IOException; }
 
     public static void main(String[] args) throws IOException {
-        SelectorReceivePool pool = new SelectorReceivePool(2, 1);
+        SelectorBufferPool pool = SelectorBufferPool.receive(2, 1);
         try (ServerSocketChannel server = ServerSocketChannel.open()) {
             server.bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
             checkFraming(server, pool);
@@ -37,14 +37,14 @@ public final class SelectorFrameReaderTest {
                 check(pool.stats().allocatedDirectBytes() == warmBytes, "direct memory grew after warmup");
             }
         }
-        SelectorReceivePool.Stats stats = pool.stats();
+        SelectorBufferPool.Stats stats = pool.stats();
         check(stats.inUse() == 0 && stats.borrows() == stats.returns(), "outstanding or duplicate lease");
         check(pool.stats().allocatedDirectBytes() <= pool.stats().maxDirectBytes(), "pool direct cap exceeded");
         System.out.printf("PASS Selector receive tests, 256 reconnects, direct allocated=%d, pool cap=%d%n",
                 pool.stats().allocatedDirectBytes(), pool.stats().maxDirectBytes());
     }
 
-    private static void checkFraming(ServerSocketChannel server, SelectorReceivePool pool) throws IOException {
+    private static void checkFraming(ServerSocketChannel server, SelectorBufferPool pool) throws IOException {
         try (Connection conn = new Connection(server, pool)) {
             ByteBuffer first = wireFrame(3, 7);
             conn.send(first.slice(0, 1));
@@ -86,7 +86,7 @@ public final class SelectorFrameReaderTest {
         check(pool.stats().inUse() == 0, "framing test drained");
     }
 
-    private static void checkCloseDuringDispatch(ServerSocketChannel server, SelectorReceivePool pool) throws IOException {
+    private static void checkCloseDuringDispatch(ServerSocketChannel server, SelectorBufferPool pool) throws IOException {
         try (Connection conn = new Connection(server, pool)) {
             conn.send(wireFrame(1, 7));
             conn.receive(3);
@@ -105,7 +105,7 @@ public final class SelectorFrameReaderTest {
         }
     }
 
-    private static void checkReadFailures(ServerSocketChannel server, SelectorReceivePool pool) throws IOException {
+    private static void checkReadFailures(ServerSocketChannel server, SelectorBufferPool pool) throws IOException {
         try (Connection conn = new Connection(server, pool)) {
             conn.send(ByteBuffer.wrap(new byte[] {1, 0}));
             conn.receive(2);
@@ -128,7 +128,7 @@ public final class SelectorFrameReaderTest {
         }
     }
 
-    private static void checkExhaustion(ServerSocketChannel server, SelectorReceivePool pool) throws IOException {
+    private static void checkExhaustion(ServerSocketChannel server, SelectorBufferPool pool) throws IOException {
         try (Connection holder = new Connection(server, pool); Connection conn = new Connection(server, pool)) {
             holder.send(wireFrame(4_998, 1));
             holder.receive(5_000);
@@ -178,7 +178,7 @@ public final class SelectorFrameReaderTest {
         final Selector selector;
         final SelectorFrameReader reader;
 
-        Connection(ServerSocketChannel server, SelectorReceivePool pool) throws IOException {
+        Connection(ServerSocketChannel server, SelectorBufferPool pool) throws IOException {
             output = SocketChannel.open(server.getLocalAddress());
             input = server.accept();
             input.configureBlocking(false);
