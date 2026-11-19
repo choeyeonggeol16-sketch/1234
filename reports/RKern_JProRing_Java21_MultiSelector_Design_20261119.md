@@ -289,3 +289,71 @@ D: Linux 진단용 B vs Netty NIO 및 Netty native epoll, 별도 결과로 표�
 외부 프로젝트 소스는 설계 참고이며 이 문서에는 원본 코드를 복제하지 않았다. 채택 구현 시 라이선스 및 귀속을 검토한다. JProRing은 현재 설계 이름이며 아직 구현된 제품이 아니다.
 
 **최종 원칙: NC 실행 순서 + Libman 완료 모델 + Asio 실행권/수명 최적화 + Netty 고정 owner + io_uring의 데이터 지향 배치. 전송 계층에서 줄일 것이 있는지 실측하고, 기존 게임 상태의 확정성을 손상시키지 않는다.**
+
+---
+
+## 13. 추가 검증: 동일 Owner 장시간 점유 방지 — 실제 공개 구현 비교 (2026-11-19)
+
+범위 확정: CacheD/DB/NpcServer의 실행 구조는 그대로 둔다. JProRing의 network-enabled CIO owner에서 네트워크와 게임 실행을 조합하는 문제에만 집중한다. 방송의 수신자 결정, 게임 규칙, 트랜잭션 경계는 변경하지 않는다. 아래는 원본 공개 코드에서 확인한 사실과 RKern 적용 제안을 구분한 추가 설계 기록이다. 아직 RKern 코드 변경이나 성능 실측은 하지 않았다.
+
+### 13.1 직접 확인한 공개 소스와 기술
+
+소스 위치는 조회 당시 branch 기준이며 blob SHA는 확인한 소스의 식별자다. 이후 branch HEAD가 바뀔 수 있다.
+
+| 프로젝트 | 실제 코드/동작 | 한계 및 JProRing 적용 |
+|---|---|---|
+| Seastar | [maybe_yield.hh](https://github.com/scylladb/seastar/blob/master/include/seastar/coroutine/maybe_yield.hh) L32~40, blob 83db7ad8a1dbbd7cff83f944bd2fdc346e441f6d. await_ready는 need_preempt를 확인하고, 필요하면 await_suspend에서 coroutine promise를 schedule한다. [공식 튜토리얼](https://docs.seastar.io/master/split/4.html)은 기본 task quota 500µs와 explicit preemption point를 설명한다. | 강제 선점이 아니다. yield 지점 없는 CPU 연산은 reactor를 굶길 수 있다. 500µs는 Seastar 설정이지 RKern 측정 결과가 아니다. Java에서는 안전 지점에서 primitive cursor를 저장하고 동일 owner에서 재개하는 상태 기계로 적응. |
+| Netty 4.1 | [NioEventLoop.java](https://github.com/netty/netty/blob/4.1/transport/src/main/java/io/netty/channel/nio/NioEventLoop.java) L135,548~569, blob 399cddcda3071f98e58c89b57319d53247914b13. 기본 ioRatio=50, 측정한 ioTime에 (100-ioRatio)/ioRatio를 곱해 task 예산을 계산. [SingleThreadEventExecutor.java](https://github.com/netty/netty/blob/4.1/common/src/main/java/io/netty/util/concurrent/SingleThreadEventExecutor.java) L460~490, blob 03b49d0b213f6206a4fa298de27ab989d5854e73. deadline 확인은 64개 task 단위. | 개별 task를 중간에 끊지 않는다. 일반 게임 handler가 I/O 처리 안에서 동기 호출되면 task 예산만으로는 그 handler를 제어하지 못한다. I/O와 continuation 양쪽에 상한을 두고 실제 시간도 측정. ioRatio나 64를 그대로 채택하지 않는다. |
+| Redis | [expire.c](https://github.com/redis/redis/blob/unstable/src/expire.c) L320~321,363~368,384~399,447~448,498~501, blob bf46862cfbce3c080cb005598b81f1d72641fa19. current_db 및 expires_cursor로 진행 상태 보존, fast/slow expire cycle별 시간 예산, 16회 iteration마다 경과 시간 검사 및 timelimit_exit 설정. [server.c](https://github.com/redis/redis/blob/unstable/src/server.c)의 beforeSleep에서 fast expire cycle 실행. | Redis가 모든 명령을 선점한다는 뜻이 아니다. 증분 순회 가능한 느슨한 작업에 적용. JProRing에서는 기존 게임 의미와 snapshot 규약이 보존되는 작업에만 cursor 재개 후보. CacheD를 Redis처럼 변경하지 않는다. |
+| Aeron / Agrona | [MediaDriver.java](https://github.com/aeron-io/aeron/blob/master/aeron-driver/src/main/java/io/aeron/driver/MediaDriver.java) L251~266, blob 9e0970a4890f2142b98a3810ca9dd3896fe3bbe5. SHARED mode는 sender, receiver, nativeResourceAgent, conductor를 같은 AgentRunner의 composite에 넣는다. [CompositeAgent.java](https://github.com/aeron-io/agrona/blob/master/agrona/src/main/java/org/agrona/concurrent/CompositeAgent.java) L119~132, blob b186f80cf95a64df2ed7f9734b16518c4af6c0cd. 각 agent.doWork를 순회하고 workCount를 합산한다. [공식 Agent Concurrency Model](https://github.com/aeron-io/agrona/wiki/Agent-Concurrency-Model)은 doWork가 유한한 작업 후 반환하는 계약을 설명. | Composite 호출 자체에 강제 시간 제한이 있는 것은 아니다. 각 단계가 유한량만 수행해야 한다. JProRing owner의 RECV/ingress/timers/continuation/SEND를 bounded duty cycle로 구성. Aeron UDP transport나 busy-spin 기본값을 그대로 가져오지 않는다. |
+| Libevent | [event.c](https://github.com/libevent/libevent/blob/master/event.c) L1692~1805,1826~1848, blob 861043d699d044a93cde0cf2b072d81b7aec8c64. event_process_active_single_queue에 max_to_process/endtime 전달, 처리 중 시간 상한 확인. [공식 설정 API](https://libevent.org/doc/event_8h.html) event_config_set_max_dispatch_interval에서 max_interval, max_callbacks, min_priority 적용을 설명. | callback이 끝난 경계의 제한이며 강제 선점 아님. 특정 우선순위는 제한 제외 가능. RKern에서는 긴급 close/control의 유실을 방지하되 무제한 우선순위 처리로 정상 I/O를 굶기지 않음. |
+| libuv | [src/win/core.c](https://github.com/libuv/libuv/blob/v1.x/src/win/core.c) L730~735, blob 96a796106239fcacacc4966b898407267efc17b9. uv__poll 후 pending request 처리 반복을 최대 8회로 제한하여 starvation 완화. [Unix core.c](https://github.com/libuv/libuv/blob/v1.x/src/unix/core.c)도 같은 정책을 포함. | 8개 개별 콜백 제한이 아니라 pending drain pass 제한이다. callback 하나 또는 pass 하나의 최악 시간까지 보장하지 않는다. JProRing에서는 재귀 flush/continuation pass에 상한을 두되 처리량 및 시간도 따로 제어. |
+| TrinityCore | [WorldSession.cpp](https://github.com/TrinityCore/TrinityCore/blob/master/src/server/game/Server/WorldSession.cpp) L366~371,498~506, blob 96455f150805e6b4b588c3198063aa7a59dd1391. Update에서 MAX_PROCESSED_PACKETS_IN_SAME_WORLDSESSION_UPDATE=100 선언. 실제 종료 비교는 increment 뒤 >100이므로 단순 정상 흐름에서는 101개까지 실행 가능. 나머지는 다음 Update에서 처리. | 별도 game/session update model이다. 동일 IO thread 방식의 성능 근거는 아님. 세션별 packet budget 및 남은 패킷의 재실행 정책만 참고. 상한 100을 복제하지 않는다. |
+| Skynet | [skynet_server.c](https://github.com/cloudwu/skynet/blob/master/skynet-src/skynet_server.c) L293~346, blob 782abffacbafb9593f30a5645b2aeab51c3b5c5d. 첫 메시지 후 남은 queue length를 weight만큼 우측 shift해서 배치를 정하고 다른 global queue가 있으면 현재 queue를 되돌려 다음 서비스로 전환한다. | actor/service mailbox 공정성 참고. weight에 따라 상당한 배치를 처리할 수 있고 고정 wall-time 상한이 아니다. worker pool이므로 Core/owner 고정 실행과 같지 않다. JProRing에 별도 서비스 큐나 worker를 추가할 근거가 아니다. |
+
+보조 검증:
+- [Tokio coop/mod.rs](https://github.com/tokio-rs/tokio/blob/master/tokio/src/task/coop/mod.rs) L116,343, blob fccaebd9a6ebc0ddebeb38147d068167139f4395: cooperative budget 초기 128 및 poll_proceed. count 기반으로 작업 중 양보하는 참고 사례. Tokio executor나 future 생성은 채택하지 않는다. Rust task 재개와 고정 CIO owner 실행은 구분한다.
+- [SPDK Event Framework](https://spdk.io/doc/event.html): 공식 문서상 CPU별 reactor, lockless message queue, poller와 이벤트 처리 교차 실행. storage framework 사례이며 게임 서버 성능 증거가 아니다.
+- NC: 기존 L2Server 바이너리에서 OnRead -> opcode/user 메서드 -> recv rearm 확인. 긴 게임 로직에서 yield / quota / 별도 scheduling을 수행했다는 직접적인 증거는 확보되지 않았다. 임의로 NC 기술로 귀속하지 않는다.
+- 위 기술들은 각각 같은 종류의 starvation 문제에 대한 해결책을 제공한다. 모든 시스템이 같은 실행 구조를 쓰거나 Libman에게 직접 영향을 받았다는 주장은 하지 않는다.
+
+### 13.2 JProRing 실행 정책 (위 구현을 근거로 제안, 미구현)
+
+채택 후보: NC 직접 실행 + Aeron bounded duty cycle + Netty/Libevent 시간 및 개수 예산 + Seastar/Redis 안전한 중단 지점과 cursor 재개. 기존 section 4,5,6,9의 실행 루프 및 순서 계약을 구체화한다.
+
+1. 같은 CIO owner 내부에는 함수 호출만 남긴다. 별도의 game worker, task executor, per-packet queue를 추가하지 않는다. 단, 기존 외부 owner/CacheD/NpcServer 간 정상 전달은 유지한다.
+2. loop마다 I/O-ready, ingress/control, expired timer, local continuation, SEND 각각이 실행 기회를 얻어야 한다. 큐의 끝까지 무제한 실행 금지. control burst도 제한하되 close/commit 결과 정리 등 mandatory 처리가 유실되지 않도록 기존 delivery 계약 보존.
+3. owner 전체 phase budget + 소켓당 frame/byte budget + 안전하게 분할 가능한 개별 작업 budget을 분리한다. 한 phase의 남은 일을 이유로 다른 phase가 무한히 밀리지 않도록 round-robin cursor를 활용한다. 실제 처리 예산은 미확정.
+4. 0 반환/nonready는 진전 없음을 뜻하고 즉시 반복하지 않는다. 다만 메모리에 읽어 둔 완성 프레임, due timer, dirty SEND, 게시된 ingress, runnable continuation이 남아 있으면 selector.selectNow를 사용한다. 읽기 예산 종료 후 새 readiness를 기다리지 않아야 한다.
+5. 개별 짧은 opcode의 원자 실행을 우선한다. game handler 내부에 임의의 yield를 넣거나 selector를 재귀 호출하지 않는다. 루프 경계의 시간 예산은 이미 시작한 긴 단일 handler를 강제로 중단하지 못한다.
+6. 실제 측정에서 긴 순회로 확인된 작업만 명시적인 안전 지점에서 단계화: owner-local persistent cursor/phase, 필요한 immutable inputs/generation/lease를 유지하고 return 후 기존 owner 로컬 작업 메커니즘으로 재개한다. 별도 OS 스레드로 보내지 않으며, Java Thread.yield/sleep/park를 cooperative continuation의 대용으로 사용하지 않는다. 게임 로직 전체를 coroutine이나 virtual thread로 변환하지 않는다.
+7. 재개 시 대상 generation, session validity, 타겟/월드 상태 및 작업 의미에 필요한 version을 확인. 변경된 데이터에 대해 재시작·취소·snapshot 유지 중 기존 게임 동작에 맞는 정책을 사전에 선택한다. 진행률을 위해 atomic section을 억지로 쪼개지 않는다.
+8. packet 순서를 보존하기 위해 이미 처리 중인 session의 뒤따르는 opcode가 continuation을 추월하지 않게 한다. 한 세션이 pending일 때 다른 세션 I/O는 계속 처리 가능하지만, 외부 명령과 lifecycle/close/CacheD callback ordering도 함께 검증한다. 다음 socket packet을 기다리면서 기존 완성 프레임을 무기한 묶어 두지 않는다.
+9. 방송/공격/거래/재화/인벤토리 등은 단순 loop처럼 임의 분할하면 안 된다. 방송 수신자 순회 분할도 snapshot과 packet order/lease를 검증하기 전에는 구현하지 않는다. 이번 범위에서는 게임 동작 및 방송 정책을 변경하지 않는다. 안전한 중단 지점이 확인되지 않으면 원래 단일 실행을 유지하고 핫패스 최적화 또는 기존 전용 실행부 사용을 검토한다.
+10. Timing Wheel은 미래 실행 시점 예약, cooperative continuation은 현재 준비된 긴 작업의 공정한 재개다. 별도의 스레드를 만들 필요는 없다. 즉시 재개할 일을 50ms game wheel에 넣어 인위적인 지연을 만들지 않는다. 기존 타이머 cadence와 취소 의미 보존.
+
+실행 루프 의사코드 (개념, 새 클래스나 큐 추가 지시가 아님):
+
+    while (running):
+        runBoundedControlAndIngress()
+        pollSelectorWhenNeededWithoutBlockingOnReadyWork()
+        runBoundedReadyFramesRoundRobin()
+        runBoundedDueTimers()
+        resumeBoundedSafeContinuations()
+        flushBoundedDirtySockets()
+        if noRunnableWorkAndNoDueDeadline:
+            prepareSleepRecheckAndSelect()
+        # 위 phase 순서는 기존 순서 계약에 맞춰 검증 후 확정
+
+Budget 튜닝은 64/128/256/500µs 등의 시간 후보와 batch/frame count 후보를 평가하되, 외부 프로젝트 숫자를 RKern production 기본값으로 채택하지 않는다. System.nanoTime 호출 비용을 고려해 count/time hybrid 확인을 A/B 비교하며 긴 작업 측정은 별도로 유지한다. 단일 atomic handler가 2ms라면 100µs phase budget을 설정해도 그 handler는 여전히 2ms 실행될 수 있다.
+
+### 13.3 추가 검증 시나리오
+
+- 동일 owner에 2ms 인위적 CPU 작업 + 다수 소켓, 기존 단일 실행 vs 안전한 분할 실행 비교. 동일 결과를 내는 독립 테스트 작업으로 먼저 측정하고 게임 원자 영역에 인위적 yield를 넣지 않는다.
+- RECV flood / tiny frames / partial reads / slow SEND / 타이머 동시 만료 / 외부 제어 작업 burst를 각각 및 혼합으로 가해 phase starvation 확인.
+- 수집: max/p99 owner turn duration, phase budget overrun, individual handler max, readiness-to-dispatch, timer lateness, local continuation age, pending frame age, per-session fairness, ingress queue wait, bytes per write, CPU/req, allocations, OS context switch. JVM/OS scheduler/GC 지연은 애플리케이션 명령 전달과 분리 측정.
+- 무한 local continuation, endlessly ready socket, unpublished producer slot, mandatory close 및 ACK, generation 재사용, 순서 추월, source lease 조기 반환 여부 검증.
+- 5000명 목표 부하에서 기존 RKern / Netty NIO와 동일 offered load 및 동일 game semantics 비교. budget 적용 전후의 p99/p99.9, 처리량, CPU 및 최대 단일 handler 시간을 비교한다. 지연 개선 대신 게임 결과/처리량이 허용 범위 밖으로 악화되면 채택하지 않는다.
+- 신규 스레드/큐, CacheD 구조 변경, NPC 실행 구조 변경 없이 달성할 수 있는 개선을 우선한다.
+
+검증 상태: 외부 생산 코드의 관련 구현과 공식 문서 확인 완료. 원본 전체 프로젝트의 실행 시험, 동일 하드웨어 비교, RKern의 구현이나 실측은 수행하지 않았다. 실제 적용 방식·budget·분할 가능한 게임 동작은 P0/P6에서 별도 증명해야 한다.
