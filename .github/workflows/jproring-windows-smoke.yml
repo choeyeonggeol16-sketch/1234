@@ -1,4 +1,4 @@
-name: JProRing Windows receive self-test
+name: JProRing Windows transport self-test
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  receive:
+  transport:
     runs-on: windows-2025
     timeout-minutes: 8
     steps:
@@ -18,8 +18,10 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             rkern/src/l1j/server/server/model/network/buffer
+            rkern/src/l1j/server/server/model/network/codec
             rkern/src/l1j/server/server/model/network/core/transport/selector
             rkern/docs/jproring_p1_selector_20261120
+            rkern/docs/jproring_selector_transport_20261120
       - name: Compile and test with Windows JDK 21
         shell: pwsh
         working-directory: rkern
@@ -50,10 +52,20 @@ jobs:
           $classes = Join-Path $env:RUNNER_TEMP 'jproring-class-files'
           $null = New-Item -ItemType Directory -Path $classes
           $selectorSources = Get-ChildItem 'src/l1j/server/server/model/network/core/transport/selector' -Filter '*.java' | ForEach-Object { $_.FullName }
-          & $javac -encoding UTF-8 -d $classes 'src/l1j/server/server/model/network/buffer/ReadBuffer.java' @selectorSources 'docs/jproring_p1_selector_20261120/SelectorFrameReaderTest.java'
+          $sources = @(
+            'src/l1j/server/server/Opcodes.java'
+            'src/l1j/server/server/model/network/buffer/ReadBuffer.java'
+            'src/l1j/server/server/model/network/buffer/WriteBuffer.java'
+            'src/l1j/server/server/model/network/codec/Cryptor.java'
+            'docs/jproring_p1_selector_20261120/SelectorFrameReaderTest.java'
+            'docs/jproring_selector_transport_20261120/SelectorTransportTest.java'
+          ) + $selectorSources
+          & $javac -encoding UTF-8 -d $classes @sources
           $results = foreach ($run in 1..5) {
-              $result = & $java -cp $classes SelectorFrameReaderTest
-              "Run ${run} $result"
+              $receive = & $java -cp $classes SelectorFrameReaderTest
+              $transport = & $java -cp $classes SelectorTransportTest
+              "Run ${run} $receive"
+              "Run ${run} $transport"
           }
           $results
-          $platform, $results | Add-Content $env:GITHUB_STEP_SUMMARY
+          (@($platform) + @($results)) | Add-Content $env:GITHUB_STEP_SUMMARY
