@@ -1,0 +1,59 @@
+name: JProRing Windows receive self-test
+
+on:
+  push:
+    branches:
+      - rkern/jproring-windows-check-20261120
+
+permissions:
+  contents: read
+
+jobs:
+  receive:
+    runs-on: windows-2025
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            rkern/src/l1j/server/server/model/network/buffer
+            rkern/src/l1j/server/server/model/network/core/transport/selector
+            rkern/docs/jproring_p1_selector_20261120
+      - name: Compile and test with Windows JDK 21
+        shell: pwsh
+        working-directory: rkern
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $java = Join-Path $env:JAVA_HOME_21_X64 'bin/java.exe'
+          $javac = Join-Path $env:JAVA_HOME_21_X64 'bin/javac.exe'
+          & $java -version
+          $probe = Join-Path $env:RUNNER_TEMP 'SelectorPlatform.java'
+          @'
+          import java.nio.channels.Selector;
+          class SelectorPlatform {
+              public static void main(String[] args) throws Exception {
+                  try (Selector selector = Selector.open()) {
+                      String platform = System.getProperty("os.name");
+                      String selectorType = selector.getClass().getName();
+                      System.out.println("Platform=" + platform + " Selector=" + selectorType);
+                      if (!platform.startsWith("Windows") || !selectorType.contains("WEPoll")) {
+                          throw new AssertionError("Expected Windows WEPoll Selector");
+                      }
+                  }
+              }
+          }
+          '@ | Set-Content -Path $probe -Encoding utf8NoBOM
+          $platform = & $java $probe
+          $platform
+          $classes = Join-Path $env:RUNNER_TEMP 'jproring-class-files'
+          $null = New-Item -ItemType Directory -Path $classes
+          $selectorSources = Get-ChildItem 'src/l1j/server/server/model/network/core/transport/selector' -Filter '*.java' | ForEach-Object { $_.FullName }
+          & $javac -encoding UTF-8 -d $classes 'src/l1j/server/server/model/network/buffer/ReadBuffer.java' @selectorSources 'docs/jproring_p1_selector_20261120/SelectorFrameReaderTest.java'
+          $results = foreach ($run in 1..5) {
+              $result = & $java -cp $classes SelectorFrameReaderTest
+              "Run ${run} $result"
+          }
+          $results
+          $platform, $results | Add-Content $env:GITHUB_STEP_SUMMARY
