@@ -1,0 +1,10 @@
+Account getter count: 70
+baseline typed compile passed 10 files
+baseline cases=11520
+baseline allocation trial 0 allocated bytes/call=2758.987093333333,sink=-8864928779460596204
+baseline allocation trial 1 allocated bytes/call=2753.6894933333333,sink=-8864928779460596204
+modified typed compile passed 10 files
+modified cases=11520
+modified allocation trial 0 allocated bytes/call=2404.650666666667,sink=-8864928779460596204
+modified allocation trial 1 allocated bytes/call=2416.710826666667,sink=-8864928779460596204
+PASS 11532 card-view scenarios exact original output

@@ -1,0 +1,206 @@
+{
+  "baseline_sha256": "bf9f313ab97bcc1b1497d2c5d6d84d76b7ae0e44615f44e672a35d855dfb0d8a",
+  "moved": [
+    {
+      "source": "ItemBonusHooks",
+      "method": "putAll",
+      "body_sha256": "bc28fba5c39b85eb1db45e80de86462264d23a33cddfc39ba3cb9a2966480a7d",
+      "len": 47
+    },
+    {
+      "source": "ItemBonusHooks",
+      "method": "calcMpTick",
+      "body_sha256": "42694b151137abf8953a1f30784f1632862ff31adbba23c6fd46eb3b364edc42",
+      "len": 280
+    },
+    {
+      "source": "ItemBonusHooks",
+      "method": "calcHpTick",
+      "body_sha256": "41fe3d537b3978986b5576df8bbf8507e965efb3c16a1cde463d55bbd2ff4737",
+      "len": 261
+    },
+    {
+      "source": "ItemBonusHooks",
+      "method": "onDollSpawned",
+      "body_sha256": "ac2335ead79bd4acd9feb14c9d6ddd15a67f6a607262cb661e9055815d96a1cf",
+      "len": 645
+    },
+    {
+      "source": "ItemBonusHooks",
+      "method": "onDollRemoved",
+      "body_sha256": "ef2bf3e28a050ddbd8a4300ef9f37bba2eda1cecda1fc3027b83df49ad031eb1",
+      "len": 586
+    },
+    {
+      "source": "ItemBonusHooks",
+      "method": "calcDollAdd",
+      "body_sha256": "c258d666b25155b152cab4c50911e618191c985833197dd7d160b9c62fce7990",
+      "len": 53
+    },
+    {
+      "source": "ItemBonusHooks",
+      "method": "putAll(IntDoubleMap)",
+      "body_sha256": "aea86d8ce3033d295eed9de7f2e17976dc5fb2c41ca581ba3de4012176587b61",
+      "len": 38
+    },
+    {
+      "source": "ItemBonusHooks",
+      "method": "onEquipChanged",
+      "body_sha256": "4561038616f27fcd08015c8c27ed82e9d747cfc52116e6614521b1b68c481aff",
+      "len": 549
+    },
+    {
+      "source": "ItemBonusHooks",
+      "method": "onEnchantChanged",
+      "body_sha256": "73e7ad3c32e3eac1b0438de68bff2590cbd27facbf4fc4c147e16d1967ba435b",
+      "len": 150
+    },
+    {
+      "source": "ItemBonusHooks",
+      "method": "calcArkaDeltaIfAny",
+      "body_sha256": "6a3c8aa061f63a5753b539bca6552d46ae969b6a950c20be57ea99cebb85a1d5",
+      "len": 836
+    },
+    {
+      "source": "ItemBonusHooks",
+      "method": "applyInsigniaIfMatch",
+      "body_sha256": "cfca89c34a6c06270a47ad2f800b86e842992e8b8933dd9c0a372f4693efe04d",
+      "len": 457
+    },
+    {
+      "source": "ItemBonusHooks",
+      "method": "resetInsigniaIfMatch",
+      "body_sha256": "b97ba43f24f5f3893a9945b0f4fd4e52935eed19c339f7e5796bcd076ab47494",
+      "len": 353
+    },
+    {
+      "source": "IceBuffItem",
+      "method": "applyStrIce",
+      "body_sha256": "9aad5c4e6b97dd328350de6b6f2df69ecbd3b5cd44856943ceb6ab782994b84f",
+      "len": 310
+    },
+    {
+      "source": "IceBuffItem",
+      "method": "applyDexIce",
+      "body_sha256": "c5fa00c62cbf16d41fba3b45c92be9962970be16c7df91d7c665a8c18426f6c9",
+      "len": 390
+    },
+    {
+      "source": "IceBuffItem",
+      "method": "applyIntIce",
+      "body_sha256": "8fc7499cc1accce3ea775c5b973490d2569a87be6eda5d3965ee5849a29f8ca3",
+      "len": 401
+    },
+    {
+      "source": "IceBuffItem",
+      "method": "clearIceBuff",
+      "body_sha256": "1e810245d756a656617e3a460fb6297c6ed84958e538f3e26500c96be2519713",
+      "len": 140
+    },
+    {
+      "source": "IceBuffItem",
+      "method": "clearCashScrollBuff",
+      "body_sha256": "03d85f2da936515d36fa45639668a10cea0e3b0fd4d502f660b643574aff06ae",
+      "len": 361
+    },
+    {
+      "source": "IceBuffItem",
+      "method": "removeEffect",
+      "body_sha256": "1d66dd44c4a945726f7a710effd46c895ede864d12db3ebb2b09aefeb23140b8",
+      "len": 77
+    },
+    {
+      "source": "IceBuffItem",
+      "method": "useStrIce",
+      "body_sha256": "dda995a8905fdac90aeb1bb57898b13d2c5c614704cdc46276a255e83e075f04",
+      "len": 123
+    },
+    {
+      "source": "IceBuffItem",
+      "method": "useDexIce",
+      "body_sha256": "9262e1a1de63f16cbdb30385bc5e45eedf39398ce217fcc8186c9cf9436cfe27",
+      "len": 123
+    },
+    {
+      "source": "IceBuffItem",
+      "method": "useIntIce",
+      "body_sha256": "552af3a60e10fc16f718ace0264ac3e9ce823e0e78a546e7d2c928061c5d24c4",
+      "len": 123
+    },
+    {
+      "source": "IceBuffItem",
+      "method": "useAllBuff",
+      "body_sha256": "11fa3908ce3836aa60401bc8f5812cbcce34f20adfca3a7aaa0bf90d488bc71f",
+      "len": 1984
+    },
+    {
+      "source": "TeleportUseService",
+      "method": "canBypassMapRestrictions",
+      "body_sha256": "84bd2633cd008fde03e8d46d72b6d70b56d62f67a36cb6bd2b6b12369c2aa014",
+      "len": 344
+    },
+    {
+      "source": "TeleportUseService",
+      "method": "preCheckTeleportState",
+      "body_sha256": "c7e2d7a93c88ad7abb9be85ec64a7c7922c32fc5243cbb196684c529986323f2",
+      "len": 430
+    },
+    {
+      "source": "TeleportUseService",
+      "method": "isValidBookmark",
+      "body_sha256": "7660c242d33f5a0da3643e608048fb08e6a95719ed49441c58c3602a0ceb0445",
+      "len": 246
+    },
+    {
+      "source": "TeleportUseService",
+      "method": "canRandomTeleportHere",
+      "body_sha256": "6cfeb00d61aab67a343dabebff51f79d59e15e86ac90742eaa7132be7e524e85",
+      "len": 2061
+    },
+    {
+      "source": "TeleportUseService",
+      "method": "doRandomTeleport",
+      "body_sha256": "7828c422f5a1f7a2d9f154e98dcf9fe3fba74db328a44f466fa67773327d6281",
+      "len": 562
+    },
+    {
+      "source": "TeleportUseService",
+      "method": "executeRandomTeleport",
+      "body_sha256": "e1790e045bc45c53d9734333fc7dbb14c8bf772859ec2ad3be37891bf3d9decc",
+      "len": 371
+    },
+    {
+      "source": "TeleportUseService",
+      "method": "doMassTeleportRandom",
+      "body_sha256": "932b61c9c169fff42d37aaa67c555c8bbaefab1e9116b4d256a4504b4aa5c6fd",
+      "len": 1377
+    },
+    {
+      "source": "TeleportUseService",
+      "method": "startAction",
+      "body_sha256": "8c7c683fc4f2cbea8652b2e660575f7f77219184eaff86e505d3b8641426b1df",
+      "len": 177
+    },
+    {
+      "source": "TeleportUseService",
+      "method": "teleportClanMembersAroundBookmarkMass",
+      "body_sha256": "c7393f25e3c229cba62e5ef722063231aa607612035da707c91a3fd72a65d227",
+      "len": 761
+    }
+  ],
+  "files": [
+    "ItemBonusPrimitiveMaps.java",
+    "DollTickBonuses.java",
+    "DollExperienceBonuses.java",
+    "EquipmentExperienceBonuses.java",
+    "IceBuffEffects.java",
+    "IceBuffSingleUse.java",
+    "IceBuffAllUse.java",
+    "TeleportItemRules.java",
+    "TeleportRandomTravel.java",
+    "TeleportClanBookmarkTravel.java",
+    "ItemBonusHooks.java",
+    "IceBuffItem.java",
+    "TeleportUseService.java"
+  ]
+}

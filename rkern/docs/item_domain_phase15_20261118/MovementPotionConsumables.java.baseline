@@ -1,0 +1,186 @@
+package l1j.server.server.model.item.function;
+
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import static l1j.server.server.model.item.function.PotionEffects.useGreenPotion;
+import static l1j.server.server.model.item.function.PotionEffects.useBravePotion;
+import static l1j.server.server.model.item.function.PotionEffects.useFruit;
+
+/** Original item-use potion branch, moved without changing inventory operations. */
+final class MovementPotionConsumables {
+    private MovementPotionConsumables() {}
+
+    static boolean use(L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId) {
+        switch (itemId) {
+        // BEGIN_ORIGINAL_MOVEMENTPOTIONCONSUMABLES
+		case 40030:
+			useGreenPotion(pc, itemId);
+			pc.getInventory().removeItem(l1iteminstance, 1);
+			break;
+		case 40013:
+		case 7006:
+		case 40018:
+		case 40039:
+		case 40040:
+		case 41338:
+		case 41261:
+		case 41262:
+		case 41268:
+		case 41269:
+		case 41271:
+		case 41272:
+		case 41273:
+		case 41342:
+		case 30067:
+		case 140013:
+		case 140018:
+		case 30158:
+		case 875640293:
+			/*
+			 * 초록 물약, 강화 초록 물약, 와인, 위스키, 상아탑의 속도향상 물약 축복받은 포도주, 주먹밥,
+			 * 닭꼬치구이, 조각 피자, 옥수수구이 뻥튀기,오뎅, 와플, 메두사의 피, 용사의 속도 향상 물약,
+			 */
+			useGreenPotion(pc, itemId);
+			pc.getInventory().removeItem(l1iteminstance, 1);
+			break;
+		case 40014:
+		case 140014:
+		case 41415:
+			// 용기의 물약, 복지 용기의 물약, 상아탑의 용기의 물약
+			if (pc.isKnight() || pc.isWarrior() || pc.isCrown()) {
+				useBravePotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+				// \f1 아무것도 일어나지 않았습니다.
+			}
+			break;
+		case 30073:
+			/*
+			 * if (!(pc.getMapId() == 7783 || pc.getMapId() == 12152 ||
+			 * pc.getMapId() == 12149 || pc.getMapId() == 3 ||
+			 * pc.getMapId() == 12154 || pc.getMapId() == 12358 ||
+			 * pc.getMapId() == 12153 || pc.getMapId() == 12146 ||
+			 * pc.getMapId() == 12147 || pc.getMapId() == 12148 ||
+			 * pc.getMapId() == 12258 || pc.getMapId() == 12150 ||
+			 * pc.getMapId() == 12257 || pc.getMapId() == 12358)) {
+			 * SC_SystemMessage.send(pc, 
+			 * "클라우디아 맵에서만 사용이 가능합니다."); return; }
+			 */
+			// 용기의 물약, 복지 용기의 물약, 상아탑의 용기의 물약
+			if (pc.isKnight() || pc.isWarrior() || pc.isCrown()) {
+				useBravePotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+				// \f1 아무것도 일어나지 않았습니다.
+			}
+			break;
+		case 40068:
+		case 140068:
+		case 210110:
+			// 엘븐 와퍼, 복지 엘븐 와퍼, 상아탑의 엘븐 와퍼
+			if (pc.isElf()) {
+				useBravePotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+				// \f1 아무것도 일어나지 않았습니다.
+			}
+			break;
+		case 30076:
+			/*
+			 * if (!(pc.getMapId() == 7783 || pc.getMapId() == 12152 ||
+			 * pc.getMapId() == 12149 || pc.getMapId() == 3 ||
+			 * pc.getMapId() == 12154 || pc.getMapId() == 12358 ||
+			 * pc.getMapId() == 12153 || pc.getMapId() == 12146 ||
+			 * pc.getMapId() == 12147 || pc.getMapId() == 12148 ||
+			 * pc.getMapId() == 12258 || pc.getMapId() == 12150 ||
+			 * pc.getMapId() == 12257 || pc.getMapId() == 12358)) {
+			 * SC_SystemMessage.send(pc, 
+			 * "클라우디아 맵에서만 사용이 가능합니다."); return; }
+			 */
+			// 엘븐 와퍼, 복지 엘븐 와퍼, 상아탑의 엘븐 와퍼
+			if (pc.isElf()) {
+				useBravePotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+				// \f1 아무것도 일어나지 않았습니다.
+			}
+			break;
+		case 712:
+		case 40031:
+			// 악마의 피, 상아탑의 악마의 피 , 복지 악마의피
+			if (pc.isCrown()) {
+				useBravePotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+			}
+			break;
+		case 30075:
+			/*
+			 * if (!(pc.getMapId() == 7783 || pc.getMapId() == 12152 ||
+			 * pc.getMapId() == 12149 || pc.getMapId() == 3 ||
+			 * pc.getMapId() == 12154 || pc.getMapId() == 12358 ||
+			 * pc.getMapId() == 12153 || pc.getMapId() == 12146 ||
+			 * pc.getMapId() == 12147 || pc.getMapId() == 12148 ||
+			 * pc.getMapId() == 12258 || pc.getMapId() == 12150 ||
+			 * pc.getMapId() == 12257 || pc.getMapId() == 12358)) {
+			 * SC_SystemMessage.send(pc, 
+			 * "클라우디아 맵에서만 사용이 가능합니다."); return; }
+			 */
+			// 악마의 피, 상아탑의 악마의 피 , 복지 악마의피
+			if (pc.isCrown()) {
+				useBravePotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+				// \f1 아무것도 일어나지 않았습니다.
+			}
+			break;
+		case 713:
+		case 210036:
+			// 유그드라 열매, 상아탑의 유그드라 열매
+			if (pc.isBlackwizard()) {
+				useFruit(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);// \f1 아무것도 일어나지
+				// 않았습니다.
+			}
+			break;
+		case 30077:
+			/*
+			 * if (!(pc.getMapId() == 7783 || pc.getMapId() == 12152 ||
+			 * pc.getMapId() == 12149 || pc.getMapId() == 3 ||
+			 * pc.getMapId() == 12154 || pc.getMapId() == 12358 ||
+			 * pc.getMapId() == 12153 || pc.getMapId() == 12146 ||
+			 * pc.getMapId() == 12147 || pc.getMapId() == 12148 ||
+			 * pc.getMapId() == 12258 || pc.getMapId() == 12150 ||
+			 * pc.getMapId() == 12257 || pc.getMapId() == 12358)) {
+			 * SC_SystemMessage.send(pc, 
+			 * "클라우디아 맵에서만 사용이 가능합니다."); return; }
+			 */
+			// 유그드라 열매, 상아탑의 유그드라 열매
+			if (pc.isBlackwizard()) {
+				useFruit(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);// \f1 아무것도 일어나지
+				// 않았습니다.
+			}
+			break;
+		case 40733:// 명예의 코인
+			useBravePotion(pc, itemId);
+			pc.getInventory().removeItem(l1iteminstance, 1);
+			break;
+        // END_ORIGINAL_MOVEMENTPOTIONCONSUMABLES
+        default:
+            break;
+        }
+        return false;
+    }
+}

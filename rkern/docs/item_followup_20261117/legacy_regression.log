@@ -1,0 +1,18 @@
+PARSED=1713 ERRORS=0
+PASS router: 7 maan, 3 vouchers, 3 raid, 1 life, cooldown and unknown
+PASS context: zero-target skip, ITEM and DEFAULT lookup parity
+PASS table classes: 9 arrays, Java 21 typed compilation and sizes
+PASS raid boss cache: CSV parity, config refresh, 100k zero-parse reuse
+PASS no ItemUse-prefixed item-function classes or source references
+Note: Some input files use preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.
+Nov 17, 2026 8:36:38 AM l1j.server.server.model.network.core.broadcast.CSharedBroadcast logOptionalNoticeFailure
+WARNING: Optional shared broadcast failed (count=1)
+java.lang.IllegalStateException: injected per-socket send failure
+	at l1j.server.server.model.network.core.connection.CUserSocket.enqueueConstBufferConfirmed(CUserSocket.java:29)
+	at l1j.server.server.model.network.core.broadcast.VisualDeliveryFailure114$PooledSocket.enqueueConstBufferConfirmed(VisualDeliveryFailure114.java:35)
+	at l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer.send(CAsyncSendConstBuffer.java:108)
+	at l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendMove(CSharedBroadcast.java:210)
+	at l1j.server.server.model.network.core.broadcast.VisualDeliveryFailure114.main(VisualDeliveryFailure114.java:64)
+
+114 production broadcast: 10 failure scenarios + 5000-recipient stress, FIFO/refs/known-object accounting, invalid encoder isolation PASS

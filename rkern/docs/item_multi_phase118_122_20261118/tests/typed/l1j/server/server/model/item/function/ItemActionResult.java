@@ -1,0 +1,1 @@
+package l1j.server.server.model.item.function;public enum ItemActionResult{COMPLETE,STOP;}

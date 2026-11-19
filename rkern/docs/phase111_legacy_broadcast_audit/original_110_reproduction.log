@@ -1,0 +1,8 @@
+Note: Some input files use preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.
+Exception in thread "main" java.lang.IllegalStateException: injected per-socket send failure
+	at l1j.server.server.model.network.core.connection.CUserSocket.enqueueConstBufferConfirmed(CUserSocket.java:29)
+	at l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer.send(CAsyncSendConstBuffer.java:108)
+	at l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(CSharedBroadcast.java:429)
+	at l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(CSharedBroadcast.java:723)
+	at l1j.server.server.model.network.core.broadcast.GlobalFailure111.main(GlobalFailure111.java:36)

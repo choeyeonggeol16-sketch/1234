@@ -1,0 +1,9 @@
+Phase106 production files: L1CardLPast.java L1CardHPast.java L1CardMyPast.java
+Baseline: Phase105 full SRC
+Original 70 card mappings: 23+36+11 exact getter+card-ID parity PASS
+Real production classes typed Java21 compile and functional test: 16019 checks PASS
+Legacy Phase105 NPC guard compile/execution: 410 conditions PASS; 2 central actions
+Legacy Phase104: 65 checks PASS
+Legacy Phase103: 2498 checks PASS
+Full SRC Java21 syntax-only parser: 1923/1923 files, 0 syntax errors
+No full dependencies compilation; no actual MySQL, IOCP, or in-game tests.

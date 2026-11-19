@@ -1,0 +1,4 @@
+PASS Java21 extracted-method parity brave=5120 exp=1212 deterministic rolls=300000
+PASS item-only static lookup tables, unchanged RNG invocation and 5 no-per-use-array checks
+PASS Java21 original 4 classes vs consolidated movement potion: 3648 scenarios, exact effects/consumption/exceptions
+PASS movement helper method bodies byte-identical after consolidation

@@ -1,0 +1,15 @@
+src/l1j/server/server/model/item/function/SkillBookLearning.java
+src/l1j/server/server/model/item/function/WarriorSkillBookItems.java
+src/l1j/server/server/model/item/Card/L1CardAlchemy1.java
+src/l1j/server/server/model/item/Card/L1CardMyPast.java
+src/l1j/server/server/model/item/Card/L1CardMythList.java
+src/l1j/server/server/model/item/Card/L1CardLegendList.java
+src/l1j/server/server/model/item/Card/L1CardAlchemy2.java
+src/l1j/server/server/model/item/Card/L1CardLPast.java
+src/l1j/server/server/model/item/Card/L1CardStep3.java
+src/l1j/server/server/model/item/Card/L1CardStep1.java
+src/l1j/server/server/model/item/Card/L1CardHeroList.java
+src/l1j/server/server/model/item/Card/L1CardHPast.java
+src/l1j/server/server/model/item/Card/L1CardStep2.java
+src/l1j/server/server/model/item/Card/L1CardAlchemy3.java
+src/l1j/server/server/model/item/Card/L1CardCollection.java

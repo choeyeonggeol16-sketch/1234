@@ -1,0 +1,258 @@
+package l1j.server.server.model.item.function;
+
+import java.util.ArrayList;
+import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.Instance.L1PcInstance;
+import static l1j.server.server.model.item.function.PackageRewardStaging.stageReward;
+import static l1j.server.server.model.item.function.PackageRewardStaging.stageSealedReward;
+
+/** Contents of level 82 through 90 achievement packages; transaction ownership belongs to the caller. */
+final class LevelMilestonePackages {
+    private LevelMilestonePackages() {}
+
+    static void stage(L1PcInstance pc, int itemId, L1InventoryTransaction tx, ArrayList<String> messages) {
+        switch (itemId) {
+		case 714:// Lv.82 달성 선물상자
+			if (pc.getInventory().checkItem(714, 1)) { // 체크 되는 아이템과 수량
+
+
+				if (pc.isWarrior()) {
+					stageReward(tx, messages, 50021, 20, 0, 129, 0, true); // 봉인 해제 주문서
+					stageReward(tx, messages, 400254, 1, 0, 129, 0, true); // 아데나 수표(1억)
+				}
+				if (pc.isKnight()) {
+					stageReward(tx, messages, 50021, 20, 0, 129, 0, true); // 봉인 해제 주문서
+					stageReward(tx, messages, 400254, 1, 0, 129, 0, true); // 아데나 수표(1억)
+				}
+				if (pc.isDragonknight()) {
+					stageReward(tx, messages, 50021, 20, 0, 129, 0, true); // 봉인 해제 주문서
+					stageReward(tx, messages, 400254, 3, 0, 129, 0, true); // 아데나 수표(1억)
+				}
+				if (pc.isCrown()) {
+					stageReward(tx, messages, 50021, 20, 0, 129, 0, true); // 봉인 해제 주문서
+					stageReward(tx, messages, 400254, 1, 0, 129, 0, true); // 아데나 수표(1억)
+				}
+				if (pc.isWizard()) {
+					stageReward(tx, messages, 50021, 20, 0, 129, 0, true); // 봉인 해제 주문서
+					stageReward(tx, messages, 400254, 1, 0, 129, 0, true); // 아데나 수표(1억)
+				}
+				if (pc.isBlackwizard()) {
+					stageReward(tx, messages, 50021, 20, 0, 129, 0, true); // 봉인 해제 주문서
+					stageReward(tx, messages, 400254, 1, 0, 129, 0, true); // 아데나 수표(1억)
+				}
+				if (pc.isElf()) {
+					stageReward(tx, messages, 50021, 20, 0, 129, 0, true); // 봉인 해제 주문서
+					stageReward(tx, messages, 400254, 1, 0, 129, 0, true); // 아데나 수표(1억)
+				}
+				if (pc.isDarkelf()) {
+					stageReward(tx, messages, 50021, 20, 0, 129, 0, true); // 봉인 해제 주문서
+					stageReward(tx, messages, 400254, 1, 0, 129, 0, true); // 아데나 수표(1억)
+				}
+			}
+			break;
+
+		case 715:// Lv.84 달성 선물상자
+			if (pc.getInventory().checkItem(715, 1)) { // 체크 되는 아이템과 수량
+
+
+				if (pc.isWarrior()) {
+					stageReward(tx, messages, 400254, 5, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100044, 2, 0, 129, 0, true); // 신비한 마법인형 상자(4단계)
+				}
+				if (pc.isKnight()) {
+					stageReward(tx, messages, 400254, 5, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100044, 2, 0, 129, 0, true); // 신비한 마법인형 상자(4단계)
+				}
+				if (pc.isDragonknight()) {
+					stageReward(tx, messages, 400254, 5, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100044, 2, 0, 129, 0, true); // 신비한 마법인형 상자(4단계)
+				}
+				if (pc.isCrown()) {
+					stageReward(tx, messages, 400254, 5, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100044, 2, 0, 129, 0, true); // 신비한 마법인형 상자(4단계)
+				}
+				if (pc.isWizard()) {
+					stageReward(tx, messages, 400254, 5, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100044, 2, 0, 129, 0, true); // 신비한 마법인형 상자(4단계)
+				}
+				if (pc.isBlackwizard()) {
+					stageReward(tx, messages, 400254, 5, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100044, 2, 0, 129, 0, true); // 신비한 마법인형 상자(4단계)
+				}
+				if (pc.isElf()) {
+					stageReward(tx, messages, 400254, 5, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100044, 2, 0, 129, 0, true); // 신비한 마법인형 상자(4단계)
+				}
+				if (pc.isDarkelf()) {
+					stageReward(tx, messages, 400254, 5, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100044, 2, 0, 129, 0, true); // 신비한 마법인형 상자(4단계)
+				}
+			}
+			break;
+
+		case 716:// Lv.86 달성 선물상자
+			if (pc.getInventory().checkItem(716, 1)) { // 체크 되는 아이템과 수량
+
+
+				if (pc.isWarrior()) {
+					stageReward(tx, messages, 400254, 7, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100045, 3, 0, 129, 0, true); // 신비한 마법인형 상자(5단계)
+				}
+				if (pc.isKnight()) {
+					stageReward(tx, messages, 400254, 7, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100045, 3, 0, 129, 0, true); // 신비한 마법인형 상자(5단계)
+				}
+				if (pc.isDragonknight()) {
+					stageReward(tx, messages, 400254, 7, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100045, 3, 0, 129, 0, true); // 신비한 마법인형 상자(5단계)
+				}
+				if (pc.isCrown()) {
+					stageReward(tx, messages, 400254, 7, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100045, 3, 0, 129, 0, true); // 신비한 마법인형 상자(5단계)
+				}
+				if (pc.isWizard()) {
+					stageReward(tx, messages, 400254, 7, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100045, 3, 0, 129, 0, true); // 신비한 마법인형 상자(5단계)
+				}
+				if (pc.isBlackwizard()) {
+					stageReward(tx, messages, 400254, 7, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100045, 3, 0, 129, 0, true); // 신비한 마법인형 상자(5단계)
+				}
+				if (pc.isElf()) {
+					stageReward(tx, messages, 400254, 7, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100045, 3, 0, 129, 0, true); // 신비한 마법인형 상자(5단계)
+				}
+				if (pc.isDarkelf()) {
+					stageReward(tx, messages, 400254, 7, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100045, 3, 0, 129, 0, true); // 신비한 마법인형 상자(5단계)
+				}
+			}
+			break;
+
+		case 717:// Lv.88 달성 선물상자
+			if (pc.getInventory().checkItem(717, 1)) { // 체크 되는 아이템과 수량
+
+
+				if (pc.isWarrior()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+					stageReward(tx, messages, 4100164, 1, 0, 129, 0, true); // 전설 변신권 상자
+				}
+				if (pc.isKnight()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+					stageReward(tx, messages, 4100164, 1, 0, 129, 0, true); // 전설 변신권 상자
+				}
+				if (pc.isDragonknight()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+					stageReward(tx, messages, 4100164, 1, 0, 129, 0, true); // 전설 변신권 상자
+				}
+				if (pc.isCrown()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+					stageReward(tx, messages, 4100164, 1, 0, 129, 0, true); // 전설 변신권 상자
+				}
+				if (pc.isWizard()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+					stageReward(tx, messages, 4100164, 1, 0, 129, 0, true); // 전설 변신권 상자
+				}
+				if (pc.isBlackwizard()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+					stageReward(tx, messages, 4100164, 1, 0, 129, 0, true); // 전설 변신권 상자
+				}
+				if (pc.isElf()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+					stageReward(tx, messages, 4100164, 1, 0, 129, 0, true); // 전설 변신권 상자
+				}
+				if (pc.isDarkelf()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+					stageReward(tx, messages, 4100164, 1, 0, 129, 0, true); // 전설 변신권 상자
+				}
+			}
+			break;
+
+		case 721:// Lv.89 달성 선물상자
+			if (pc.getInventory().checkItem(721, 1)) { // 체크 되는 아이템과 수량
+
+
+				if (pc.isWarrior()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+				}
+				if (pc.isKnight()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+				}
+				if (pc.isDragonknight()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+				}
+				if (pc.isCrown()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+				}
+				if (pc.isWizard()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+				}
+				if (pc.isBlackwizard()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+				}
+				if (pc.isElf()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+				}
+				if (pc.isDarkelf()) {
+					stageReward(tx, messages, 400254, 10, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100046, 1, 0, 129, 0, true); // 신비한 마법인형 상자(특수)
+				}
+			}
+			break;
+
+		case 722:// Lv.90 달성 선물상자
+			if (pc.getInventory().checkItem(722, 1)) { // 체크 되는 아이템과 수량
+
+
+				if (pc.isWarrior()) {
+					stageReward(tx, messages, 400254, 30, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100165, 1, 0, 129, 0, true); // 신화 변신권 상자
+				}
+				if (pc.isKnight()) {
+					stageReward(tx, messages, 400254, 30, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100165, 1, 0, 129, 0, true); // 신화 변신권 상자
+				}
+				if (pc.isDragonknight()) {
+					stageReward(tx, messages, 400254, 30, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100165, 1, 0, 129, 0, true); // 신화 변신권 상자
+				}
+				if (pc.isCrown()) {
+					stageReward(tx, messages, 400254, 30, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100165, 1, 0, 129, 0, true); // 신화 변신권 상자
+				}
+				if (pc.isWizard()) {
+					stageReward(tx, messages, 400254, 30, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100165, 1, 0, 129, 0, true); // 신화 변신권 상자
+				}
+				if (pc.isBlackwizard()) {
+					stageReward(tx, messages, 400254, 30, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100165, 1, 0, 129, 0, true); // 신화 변신권 상자
+				}
+				if (pc.isElf()) {
+					stageReward(tx, messages, 400254, 30, 0, 129, 0, true); // 아데나 수표(1억)
+//					stageReward(tx, messages, 4100165, 1, 0, 129, 0, true); // 신화 변신권 상자
+				}
+				if (pc.isDarkelf()) {
+					stageReward(tx, messages, 400254, 30, 0, 129, 0, true); // 아데나 수표(1억)
+					stageReward(tx, messages, 4100165, 1, 0, 129, 0, true); // 신화 변신권 상자
+				}
+			}
+			break;
+        }
+    }
+}

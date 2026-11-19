@@ -1,0 +1,1 @@
+package l1j.server.server.model.network.core.sc.packet;import l1j.server.server.model.Instance.L1PcInstance; public class SC_SkillSound{public static void send(L1PcInstance p,int id,int sound){Faults.maybe(2);} public static void broadcast(L1PcInstance p,int id,int sound){Faults.maybe(4);}}

@@ -1,0 +1,104 @@
+{
+  "tables": {
+    "BravePotion": {
+      "type": "int",
+      "values": [
+        "1000",
+        "1016",
+        "52",
+        "101",
+        "177",
+        "178",
+        "179",
+        "155",
+        "20079"
+      ]
+    },
+    "TargetPolymorphEffects": {
+      "type": "int",
+      "values": [
+        "29",
+        "979",
+        "1037",
+        "1039",
+        "3860",
+        "3861",
+        "3862",
+        "3863",
+        "3864",
+        "3865",
+        "3904",
+        "3906",
+        "95",
+        "146",
+        "2374",
+        "2376",
+        "2377",
+        "2378",
+        "3866",
+        "3867",
+        "3868",
+        "3869",
+        "3870",
+        "3871",
+        "3872",
+        "3873",
+        "3874",
+        "3875",
+        "3876",
+        "3882",
+        "3883",
+        "3884",
+        "3885",
+        "11358",
+        "11396",
+        "11397",
+        "12225",
+        "12226",
+        "11399",
+        "11398",
+        "12227"
+      ]
+    },
+    "PetAndSummonItems": {
+      "type": "int",
+      "values": [
+        "7320072",
+        "7320073",
+        "7320074",
+        "7320075",
+        "7320076",
+        "7320077",
+        "7320078",
+        "7320079",
+        "7320080",
+        "7320081",
+        "7320000"
+      ]
+    },
+    "ProtectedClanJoinItemUse": {
+      "type": "String",
+      "values": [
+        "\"중립\""
+      ]
+    },
+    "EquipmentExperienceBonuses": {
+      "type": "double",
+      "values": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0.05",
+        "0.06",
+        "0.08",
+        "0.10"
+      ]
+    }
+  },
+  "methods": {
+    "oldBrave": "private static void clearConflictingBraveEffects(L1PcInstance pc, int excludeSkillId) {\n\t    int[] skillsToCheck = {1000, 1016, 52, 101, 177, 178, 179, 155, 20079};\n\t    for (int skillId : skillsToCheck) {\n\t        if (skillId != excludeSkillId && pc.hasSkillEffect(skillId)) {\n\t            pc.killSkillEffectTimer(skillId);\n\t            SC_SkillBrave.send(pc, pc.getId(), 0, 0);\n\t            SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);\n\t            pc.setBraveSpeed(0);\n\t        }\n\t    }\n\t}",
+    "oldExp": "static double calcArkaDeltaIfAny(L1ItemInstance item) {\n \t\tfinal int id = item.getItemId();\n\n \t\tdouble fixed = ARKA_FIXED.getOrZero(id);\n \t\tif (fixed != 0.0) return fixed;\n\n \t\tfinal int ench = item.getEnchantLevel();\n\n \t\t// 900025 : ench>=8 -> ((ench-7)*2)*0.01\n \t\tif (id == 900025) {\n \t\t\tif (ench >= 8) return ((ench - 7) * 2) * 0.01;\n \t\t\treturn 0.0;\n \t\t}\n\n \t\t// 900184 : ench>=7 -> ((ench-6)*2)*0.01\n \t\tif (id == 900184) {\n \t\t\tif (ench >= 7) return ((ench - 6) * 2) * 0.01;\n \t\t\treturn 0.0;\n \t\t}\n\n \t\t// 900116 : ench 5=0.05, 6=0.06, 7=0.08, 8=0.10\n \t\tif (id == 900116) {\n \t\t\t// tiny table (index=ench)\n \t\t\tif (ench < 5 || ench > 8) return 0.0;\n \t\t\t// 0..8\n \t\t\tfinal double[] t = {0,0,0,0,0, 0.05, 0.06, 0.08, 0.10};\n \t\t\treturn t[ench];\n \t\t}\n\n \t\t// 900130 : ench<=2 -> 0.02 else ench*0.01\n \t\tif (id == 900130) {\n \t\t\tif (ench <= 2) return 0.02;\n \t\t\treturn ench * 0.01;\n \t\t}\n\n \t\treturn 0.0;\n \t}"
+  }
+}

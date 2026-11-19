@@ -1,0 +1,1 @@
+package l1j.server.server.model.item; public class L1ItemId {public static final int B_POTION_OF_EMOTION_BRAVERY=40000;public static final int B_POTION_OF_HASTE_SELF=40001;public static final int POTION_OF_EMOTION_BRAVERY=40002;public static final int POTION_OF_HASTE_SELF=40003;}

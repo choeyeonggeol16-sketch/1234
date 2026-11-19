@@ -1,0 +1,14 @@
+baseline:
+compare=30000 sha256=45a5d1c1f8895dff5174af1cae9c4f63a895523df7a74e9a9c7cc4cf2d7b6ddd
+allocation.A=8640.0
+allocation.B=6752.0
+allocation.C=2872.0
+optimized:
+compare=30000 sha256=45a5d1c1f8895dff5174af1cae9c4f63a895523df7a74e9a9c7cc4cf2d7b6ddd
+allocation.A=4712.0
+allocation.B=4192.0
+allocation.C=1728.0
+PASS: 30,000 Java21 typed screen-call comparisons including getter order
+allocation.A reduction: 45.46 percent
+allocation.B reduction: 37.91 percent
+allocation.C reduction: 39.83 percent

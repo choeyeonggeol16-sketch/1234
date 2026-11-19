@@ -1,0 +1,4 @@
+Scroll legacy/current success and shortage cases=1240
+Scroll staged failure/replay mock cases=750
+Buff and empty selection equivalence=60
+Additional invalid amount/buff failed debit=5

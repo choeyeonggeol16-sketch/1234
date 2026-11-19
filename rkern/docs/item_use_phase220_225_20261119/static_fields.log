@@ -1,0 +1,23 @@
+src/l1j/server/server/model/item/Card/L1CardHeroList.java L1CardHeroList List<HeroCardData> HERO_POOL
+src/l1j/server/server/model/item/Card/L1CardLegendList.java L1CardLegendList List<LegendCard> LEGEND_POOL
+src/l1j/server/server/model/item/Card/L1CardStep1.java L1CardStep1 List<LegendData> LEGEND_POOL
+src/l1j/server/server/model/item/Card/L1CardStep2.java L1CardStep2 List<HeroData> HERO_POOL
+src/l1j/server/server/model/item/Card/L1CardStep3.java L1CardStep3 List<MythData> MYTH_POOL
+src/l1j/server/server/model/item/Exp/CalcExp.java CalcExp ThreadLocal<Work> TL
+src/l1j/server/server/model/item/ItemEffectRegistry.java ItemEffectRegistry Map<Integer, Def> DEFS
+src/l1j/server/server/model/item/L1TreasureBox.java L1TreasureBox HashMap<Integer, L1TreasureBox> _dataMap
+src/l1j/server/server/model/item/cooking/CookingRegistry.java CookingRegistry Map<Integer, Def> BY_ITEM_ID
+src/l1j/server/server/model/item/cooking/CookingRegistry.java CookingRegistry Map<Integer, Def> BY_SKILL_ID
+src/l1j/server/server/model/item/cooking/CookingRegistry.java CookingRegistry WeakHashMap<L1PcInstance, ActiveState> ACTIVE
+src/l1j/server/server/model/item/doll/DollRegistry.java DollRegistry Map<Integer, Def> BY_ITEM_ID
+src/l1j/server/server/model/item/function/ClanRaidBossSelection.java ClanRaidBossSelection BossList cachedBossList
+src/l1j/server/server/model/item/function/DollExperienceBonuses.java DollExperienceBonuses IntDoubleMap DOLL_ADD
+src/l1j/server/server/model/item/function/DollTickBonuses.java DollTickBonuses IntIntMap MP_BY_TYPE
+src/l1j/server/server/model/item/function/DollTickBonuses.java DollTickBonuses IntIntMap HP_BY_TYPE
+src/l1j/server/server/model/item/function/DollTickBonuses.java DollTickBonuses IntIntMap MP_BY_LV
+src/l1j/server/server/model/item/function/DollTickBonuses.java DollTickBonuses IntIntMap HP_BY_LV
+src/l1j/server/server/model/item/function/EquipmentExperienceBonuses.java EquipmentExperienceBonuses IntDoubleMap ARKA_FIXED
+src/l1j/server/server/model/item/function/L1HealingPotion.java L1HealingPotion Int2ObjectMap<L1HealingPotion> _dataMap
+src/l1j/server/server/model/item/tam/TamFruitUseService.java TamFruitUseService ConcurrentHashMap<Integer, Long> RESERVE_THROTTLE
+src/l1j/server/server/model/item/teleport/L1Teleport.java L1Teleport ThreadLocal<ArrayList<L1PcInstance>> TL_SUBJECTS
+FILES=366 STATIC_FIELDS=713 CANDIDATE_FIELDS=22 ACTOR_OR_ITEM_TYPED=2

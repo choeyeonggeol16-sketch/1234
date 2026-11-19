@@ -1,0 +1,235 @@
+{
+  "baseline": "RKern_ItemFunction_DomainSeparation_Phase7_FULL_SRC_20261117.zip",
+  "active_skills": {
+    "70706": {
+      "class": "BerserkSkillConsumable",
+      "body_sha256": "8e7d0c3abcd0b2bcdd24926bb61dcb07936430d542bdbb2f1c4d352e2245ef6b"
+    },
+    "70708": {
+      "class": "PrimeSkillConsumable",
+      "body_sha256": "c0c03c3eca8c8983c1aee00c0f001995d17f60b020c0b3cca25cf0013c490e91"
+    },
+    "70733": {
+      "class": "MassImmuneSkillConsumable",
+      "body_sha256": "f68c259d1c1fa5890c8b3d1f2542cdecc2deeaf8860d014f26196dc309a65d9d"
+    },
+    "70710": {
+      "class": "HalphasSkillConsumable",
+      "body_sha256": "7bfbfd4e005b443c53007857abf162a9faea3f278f6eae06e95941374b4f1d8f"
+    },
+    "70714": {
+      "class": "PotentialSkillConsumable",
+      "body_sha256": "2b4b91029f8dfc8646de7f1d9dfb6df3160258592cc1a527cab435b42aca30c2"
+    },
+    "44001": {
+      "class": "BurningShotSkillConsumable",
+      "body_sha256": "e84a132f1866fb684b944390e899525b90badc48aff279bbec33edecee4cdb4d"
+    },
+    "70735": {
+      "class": "LiberationSkillConsumable",
+      "body_sha256": "64e26bf02c281f7173289f8e9a1a206103d76c0c081191c93d75dff6637f4298"
+    }
+  },
+  "enchantment_methods": {
+    "악세인챈": {
+      "body_sha256": "3eeb5a7dced333c1c08cef9f4e6ca24f3545a01e325f14170582cb7c657e24d3",
+      "class": "AccessoryBlessingScrollEffects"
+    },
+    "악세인챈100": {
+      "body_sha256": "11e5a52c0bab6e564fcfa306634b769a6f513141f97da27dfa11542e18e31901",
+      "class": "AccessoryBlessingScrollEffects"
+    },
+    "집행진화주문서": {
+      "body_sha256": "689cb86b17b8c3c8a49628b2c568a719735f680e87dab5a883189caafef78c01",
+      "class": "WeaponEvolutionScrollEffects"
+    },
+    "방어구축복100": {
+      "body_sha256": "f8b0c82a992e4cfc9c1af07a2f008b8a256cb5e18d8cd02a784a0e65fc0f75be",
+      "class": "ArmorBlessingScrollEffects"
+    },
+    "방어구축복": {
+      "body_sha256": "187393f7b4fc8172fadc63c7e0a1dc11ac0c08e82e656ad08e428a19f94b28a8",
+      "class": "ArmorBlessingScrollEffects"
+    },
+    "무기축복": {
+      "body_sha256": "644f5ef1474fc7418f24c3fec9b798e94bf7073eabc935f941e8a1e8769e8b65",
+      "class": "WeaponBlessingScrollEffects"
+    },
+    "무기축복100": {
+      "body_sha256": "7e834c67c0f6bb5f204a3d2571e7edabc8444ebdaa4b7a3ee132f34167dab3b8",
+      "class": "WeaponBlessingScrollEffects"
+    },
+    "옵션부여": {
+      "body_sha256": "3a5f4c64c352cb80c51f9edc0a6d42e9b6c67e2f2b22dc3918faf0b5eb7e3968",
+      "class": "ItemOptionScrollEffects"
+    },
+    "품질부여주문서": {
+      "body_sha256": "38c94cde550b12f2ffb3dacb63bd6e72339bcf5cdca22ef10c8c0833ffcd4a17",
+      "class": "ItemOptionScrollEffects"
+    }
+  },
+  "doll_effects": [
+    {
+      "skill": "hp300",
+      "class": "DollVitalDefenseEffectRemoval",
+      "body_sha256": "6c4b15e86c9fa2bbff04b0f72ed73607a03424fb95d95c969c0e697516da775e"
+    },
+    {
+      "skill": "mp300",
+      "class": "DollVitalDefenseEffectRemoval",
+      "body_sha256": "dc1c7f206689d80b8371c20566b87e568e404070f3b35c4156617b60384a22ce"
+    },
+    {
+      "skill": "대미지감소5",
+      "class": "DollVitalDefenseEffectRemoval",
+      "body_sha256": "f68b09974169ce53cad50ef255305e6e70018dfdb223e9575d34178ed29feeb0"
+    },
+    {
+      "skill": "ac5",
+      "class": "DollVitalDefenseEffectRemoval",
+      "body_sha256": "43c177f9f1ed3c5a260ad5282361011794ff8e702411ff21a753ef87ab5cd36f"
+    },
+    {
+      "skill": "mr15",
+      "class": "DollVitalDefenseEffectRemoval",
+      "body_sha256": "ecc43d917abf2d6098ce6bbc6f647acfddeebd98742cd6eb2ac39a0bc9716128"
+    },
+    {
+      "skill": "경험치10",
+      "class": "DollVitalDefenseEffectRemoval",
+      "body_sha256": "bcd38f055f2976605e46c520a9c68ba5881d7e95705514922dfa326a7a78994f"
+    },
+    {
+      "skill": "모든속성저항20",
+      "class": "DollVitalDefenseEffectRemoval",
+      "body_sha256": "5a9ab9b9a20b29d8006324a9df457428ba5bd3689a745777ab97f90db5538da6"
+    },
+    {
+      "skill": "힘3",
+      "class": "DollAttributeEffectRemoval",
+      "body_sha256": "1cf2b4146ac764f5cc9e69811c55ed9a229c4fa86ecaf59830c1878439257927"
+    },
+    {
+      "skill": "덱3",
+      "class": "DollAttributeEffectRemoval",
+      "body_sha256": "ac43a12e1bcd893bc3024b307a559bfd5f8682a48c3dc13bae2f14b5873e3dfe"
+    },
+    {
+      "skill": "콘3",
+      "class": "DollAttributeEffectRemoval",
+      "body_sha256": "c9535b842b009636bcc89ef7748c0162fe2fe95e270c6d151ea12cf9b8d0c683"
+    },
+    {
+      "skill": "위즈3",
+      "class": "DollAttributeEffectRemoval",
+      "body_sha256": "cbe243a6915e3741f92b122f0d15c0262e60317b14750aa4774832ba768c40f4"
+    },
+    {
+      "skill": "인트3",
+      "class": "DollAttributeEffectRemoval",
+      "body_sha256": "89a97624092b6063a07650264a9b64aa0845b9329aee287f19c93ffd5908286b"
+    },
+    {
+      "skill": "pvp대미지7",
+      "class": "DollCombatEffectRemoval",
+      "body_sha256": "b9ab5a6b6395150f1d7aa541ac640eebc1785163c962bf90d5a3f7a229c3d133"
+    },
+    {
+      "skill": "pvp감소7",
+      "class": "DollCombatEffectRemoval",
+      "body_sha256": "31e7a931357035b89fc510959254906e53e97c7e3f62a26e64afbb0d9ae69a9c"
+    },
+    {
+      "skill": "근거리대미지5",
+      "class": "DollCombatEffectRemoval",
+      "body_sha256": "af8a14e0a9437524f9d1d577093d23ec48d9a15d30f7f6a8a8e46d2ecb8c10fb"
+    },
+    {
+      "skill": "원거리대미지5",
+      "class": "DollCombatEffectRemoval",
+      "body_sha256": "ecd6d8130ac5c99971956da58cb4a424f6312032878f20430f45c25f464c7f38"
+    },
+    {
+      "skill": "근거리명중5",
+      "class": "DollCombatEffectRemoval",
+      "body_sha256": "524ebe815c2fce67b0ce946f6f822b85d96a3b1c8aaa5cb39e7c28c86cae5270"
+    },
+    {
+      "skill": "원거리명중5",
+      "class": "DollCombatEffectRemoval",
+      "body_sha256": "bcee7d46fee9de2410634fdcb1a441738241d689bc21018326e20b6b7bfa1c6d"
+    },
+    {
+      "skill": "sp5",
+      "class": "DollCombatEffectRemoval",
+      "body_sha256": "063b9c06ef0dfb4690ff46dadbb01dd751b5db613d287123aaf884640fb1a670"
+    },
+    {
+      "skill": "마법적중5",
+      "class": "DollCombatEffectRemoval",
+      "body_sha256": "55d7e47a8866459182e3da73ed271ba5f156a770a04c53a04b9e5dd9f9a715bb"
+    },
+    {
+      "skill": "기술내성8",
+      "class": "DollResistanceEffectRemoval",
+      "body_sha256": "073f5a726906defaf7dc8a4e2bda61cd6210a9a93beae9d9c79aa3f3bb748c90"
+    },
+    {
+      "skill": "정령내성8",
+      "class": "DollResistanceEffectRemoval",
+      "body_sha256": "31e6c2ab63c2b8988a8cf44cabcde3625d7b8cfbed38ff2ce3e4fd79b20df105"
+    },
+    {
+      "skill": "용언내성3",
+      "class": "DollResistanceEffectRemoval",
+      "body_sha256": "2d1be6d56b9509c0207dbd5f80641283d16471c90ad0ab56848d665974fb5c5e"
+    },
+    {
+      "skill": "공포내성3",
+      "class": "DollResistanceEffectRemoval",
+      "body_sha256": "147888b7c66afc38fac0df045b22fc6b0846c026a6aa414ef30f96a74fc91f11"
+    },
+    {
+      "skill": "모든내성3",
+      "class": "DollResistanceEffectRemoval",
+      "body_sha256": "5e2ca530c31efc9864ce198a3e608209ef32644f6e72a0a2f2472176f6ccb77b"
+    },
+    {
+      "skill": "정령적중5",
+      "class": "DollResistanceEffectRemoval",
+      "body_sha256": "5f257c6b7f0dfd8d2713245cfa187e8204709431391b69fba5fc0232b675e8e2"
+    },
+    {
+      "skill": "용언적중5",
+      "class": "DollResistanceEffectRemoval",
+      "body_sha256": "fcf7b442968c57189ac4a22378c099a6224392e0124e4d220e652c91337b8073"
+    },
+    {
+      "skill": "공포적중5",
+      "class": "DollResistanceEffectRemoval",
+      "body_sha256": "4c2a067c97eb0f69d2bb83d735e3ccedeac5f05441992b541447e0b6d3bd76c5"
+    },
+    {
+      "skill": "기술적중5",
+      "class": "DollResistanceEffectRemoval",
+      "body_sha256": "1c1516049215837e1e8ac09303abf936d4e0e826e960ab6c64d3615172596a8d"
+    },
+    {
+      "skill": "모든적중3",
+      "class": "DollResistanceEffectRemoval",
+      "body_sha256": "7d61e9f9fa211b99fbd39a578a7c5c0cbb485255b759ba289cd2d53d0b2abe68"
+    },
+    {
+      "skill": "경험치보너스20",
+      "class": "DollResistanceEffectRemoval",
+      "body_sha256": "8bb88d2a0f4f2b0999bd687421d26cb4c80a98ff093c1a24fb3a9513f6d8118b"
+    }
+  ],
+  "doll_groups": [
+    "DollVitalDefenseEffectRemoval",
+    "DollAttributeEffectRemoval",
+    "DollCombatEffectRemoval",
+    "DollResistanceEffectRemoval"
+  ],
+  "doll_final_notification": "SC_OwnCharAttrDef.send(pc);"
+}

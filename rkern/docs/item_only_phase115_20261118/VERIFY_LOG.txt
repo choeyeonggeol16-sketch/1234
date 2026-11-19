@@ -1,0 +1,14 @@
+Phase 115 verification (2026-11-18)
+Java 21 typed production compiler + deterministic stub model: PASS, 154 assertions
+Java 21 syntax-only parser (src): PASS, 1923 files, 0 syntax errors
+Prior 114: PASS, 232459 assertions
+Prior 113: PASS, 54150 assertions
+Prior 112: PASS, 6925 assertions
+Prior 111: PASS, 118+24 checks
+Prior 110: PASS, 25353 checks
+Prior 109: PASS, 25353 + 546 checks (includes 103 regression)
+Prior 108: PASS, 25371 checks
+Prior 105 isolated selection guard: PASS, 410 checks + 2 central entrypoints
+Prior 106 isolated auto selection: PASS, 16019 checks
+These tests use typed mocks and fault injection, not live MySQL or game integration.
+Final ZIP byte-level delta and CRC are checked by package115.py.

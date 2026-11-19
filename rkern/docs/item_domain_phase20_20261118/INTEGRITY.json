@@ -1,0 +1,23 @@
+{
+  "baseline_zip": "RKern_Item_Consolidation_Memory_Phase19_FULL_SRC_20261118.zip",
+  "baseline_sha256": "fbd83686033564cdf63033ae778dd9de2e64e2c6402b80d224866db35213a0c7",
+  "new_zip": "RKern_Item_Consolidation_Memory_Phase20_FULL_SRC_20261118.zip",
+  "changed_production_files": [
+    "src/l1j/server/server/model/item/function/DominationTowerReturnHandler.java",
+    "src/l1j/server/server/model/item/function/NearbyItemTargetQueries.java",
+    "src/l1j/server/server/model/item/function/OmanAmuletHandler.java",
+    "src/l1j/server/server/model/item/function/RuneRewardPackages.java"
+  ],
+  "deleted_production_files": [
+    "src/l1j/server/server/model/item/function/SealedRuneLevel55Rewards.java",
+    "src/l1j/server/server/model/item/function/SealedRuneLevel70Rewards.java",
+    "src/l1j/server/server/model/item/function/SealedRuneLevel80Rewards.java",
+    "src/l1j/server/server/model/item/function/SealedRuneLevel85Rewards.java",
+    "src/l1j/server/server/model/item/function/SealedRuneLevel90Rewards.java"
+  ],
+  "modified_readme": true,
+  "production_java": 1935,
+  "baseline_entries": 2348,
+  "new_doc_files": 17,
+  "unchanged_entries": 2338
+}

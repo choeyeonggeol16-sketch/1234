@@ -1,0 +1,264 @@
+package l1j.server.server.model.item.function;
+
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.item.cooking.L1Cooking;
+import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.templates.L1EtcItem;
+import static l1j.server.server.model.item.function.CreatureItemActions.cancelAbsoluteBarrier;
+import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsume;
+import static l1j.server.server.model.item.function.WarriorSkillBookItems.전사스킬;
+import static l1j.server.server.model.item.function.SpellBookItems.SpellBook1;
+import static l1j.server.server.model.item.function.SpellBookItems.SpellBook3;
+import static l1j.server.server.model.item.function.SpellBookItems.SpellBook4;
+import static l1j.server.server.model.item.function.SpellBookItems.SpellBook5;
+import static l1j.server.server.model.item.function.SpellBookItems.SpellBook6;
+import static l1j.server.server.model.item.function.SpellBookItems.useElfSpellBook;
+import static l1j.server.server.model.item.function.SpellBookItems.useSpellBook;
+import static l1j.server.server.model.item.function.FurniturePlacementItems.useFurnitureItem;
+
+/** Default-path item domain, extracted without changing action branch bodies. */
+final class ClassSpellbookItems {
+    private ClassSpellbookItems() {}
+
+    static ItemActionResult wizardBooks(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        CIOClient client = use.client();
+        L1ItemInstance item = use.item();
+        int itemId = use.itemId();
+        int itemObjectId = use.itemObjectId();
+        int skillId = use.skillId();
+        int spellTargetId = use.spellTargetId();
+        int spellTargetX = use.spellX();
+        int spellTargetY = use.spellY();
+
+            useSpellBook(pc, item, itemId);
+
+                return ItemActionResult.COMPLETE;
+    }
+
+    static ItemActionResult royalBooks(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        CIOClient client = use.client();
+        L1ItemInstance item = use.item();
+        int itemId = use.itemId();
+        int itemObjectId = use.itemObjectId();
+        int skillId = use.skillId();
+        int spellTargetId = use.spellTargetId();
+        int spellTargetX = use.spellX();
+        int spellTargetY = use.spellY();
+
+            if (pc.isCrown() || pc.isGm()) {
+                if (itemId == 40226 && pc.getLevel() >= 1) {
+                    SpellBook4(pc, item, client);
+
+                } else if (itemId == 40227 && pc.getLevel() >= 1) {
+                    SpellBook4(pc, item, client);
+
+                } else if ((itemId == 40232) && pc.getLevel() >= 1) {
+                    SpellBook4(pc, item, client);
+                } else if (itemId == 40230 && pc.getLevel() >= 1) {
+                    SpellBook4(pc, item, client);
+                } else if (itemId == 40229 && pc.getLevel() >= 1) {
+                    SpellBook4(pc, item, client);
+                } else if (itemId == 5560 ||itemId == 3000090 || itemId == 3000089 && pc.getLevel() >= 1) {
+                    SpellBook4(pc, item, client);
+
+                } else {
+                    SC_ServerMessage.send(pc, 312);
+                }
+            } else {
+                SC_ServerMessage.send(pc, 79);
+            }
+
+                return ItemActionResult.COMPLETE;
+    }
+
+    static ItemActionResult elfBooks(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        CIOClient client = use.client();
+        L1ItemInstance item = use.item();
+        int itemId = use.itemId();
+        int itemObjectId = use.itemObjectId();
+        int skillId = use.skillId();
+        int spellTargetId = use.spellTargetId();
+        int spellTargetX = use.spellX();
+        int spellTargetY = use.spellY();
+
+            useElfSpellBook(pc, item, itemId);
+                return ItemActionResult.COMPLETE;
+    }
+
+    static ItemActionResult darkElfBooks(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        CIOClient client = use.client();
+        L1ItemInstance item = use.item();
+        int itemId = use.itemId();
+        int itemObjectId = use.itemObjectId();
+        int skillId = use.skillId();
+        int spellTargetId = use.spellTargetId();
+        int spellTargetX = use.spellX();
+        int spellTargetY = use.spellY();
+
+            if (pc.isDarkelf() || pc.isGm()) {
+                if (itemId >= 40265 && itemId <= 40269 && pc.getLevel() >= 1) {
+                    SpellBook1(pc, item, client);
+                } else if (((itemId == 40270) || (itemId >= 40272 && itemId <= 40274) && pc.getLevel() >= 1)) {
+                    SpellBook1(pc, item, client);
+                } else if (itemId >= 40275 && itemId <= 40278 && pc.getLevel() >= 1) {
+                    SpellBook1(pc, item, client);
+                } else if (itemId == 5559 && pc.getLevel() >= 1) {
+                    SpellBook1(pc, item, client);
+                } else if ((itemId == 4100103 || itemId == 4100104) && pc.getLevel() >= 1) {
+                    SpellBook1(pc, item, client);
+                } else if ((itemId == 4100105) && pc.getLevel() >= 1) {
+                    SpellBook1(pc, item, client);
+                } else {
+                    SC_ServerMessage.send(pc, 312);
+                }
+            } else {
+                SC_ServerMessage.send(pc, 79);
+
+            }
+
+                return ItemActionResult.COMPLETE;
+    }
+
+    static ItemActionResult knightBooks(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        CIOClient client = use.client();
+        L1ItemInstance item = use.item();
+        int itemId = use.itemId();
+        int itemObjectId = use.itemObjectId();
+        int skillId = use.skillId();
+        int spellTargetId = use.spellTargetId();
+        int spellTargetX = use.spellX();
+        int spellTargetY = use.spellY();
+
+            if (pc.isKnight() || pc.isGm()) {
+                if (itemId == 40165 && pc.getLevel() >= 1) {
+                    SpellBook3(pc, item, client);
+
+                } else if (itemId == 40164 && pc.getLevel() >= 1) {
+                    SpellBook3(pc, item, client);
+                } else if ((itemId == 40166) && pc.getLevel() >= 1) {
+                    SpellBook3(pc, item, client);
+
+                } else if (itemId == 4100101 && pc.getLevel() >= 1) {
+                    SpellBook3(pc, item, client);
+                } else if (itemId == 41148 && pc.getLevel() >= 1) {
+                    SpellBook3(pc, item, client);
+                } else if (itemId == 4100102 || itemId == 3000092 && pc.getLevel() >= 1) {
+                    SpellBook3(pc, item, client);
+                } else {
+                    SC_ServerMessage.send(pc, 312);
+                }
+            } else {
+                SC_ServerMessage.send(pc, 79);
+            }
+                return ItemActionResult.COMPLETE;
+    }
+
+    static ItemActionResult dragonKnightBooks(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        CIOClient client = use.client();
+        L1ItemInstance item = use.item();
+        int itemId = use.itemId();
+        int itemObjectId = use.itemObjectId();
+        int skillId = use.skillId();
+        int spellTargetId = use.spellTargetId();
+        int spellTargetX = use.spellX();
+        int spellTargetY = use.spellY();
+
+            if (pc.isDragonknight() || pc.isGm()) {
+                if (itemId >= 210020 && itemId <= 210023 && pc.getLevel() >= 1) {
+                    SpellBook5(pc, item, client);
+                } else if (itemId >= 210024 && itemId <= 210031 && pc.getLevel() >= 1) {
+                    SpellBook5(pc, item, client);
+                } else if (itemId >= 210032 && itemId <= 210034 && pc.getLevel() >= 1) {
+                    SpellBook5(pc, item, client);
+                } else if (itemId == 4100106 && pc.getLevel() >= 1) {
+                    SpellBook5(pc, item, client);
+                } else {
+                    SC_ServerMessage.send(pc, 312);
+                }
+            } else {
+                SC_ServerMessage.send(pc, 79);
+            }
+                return ItemActionResult.COMPLETE;
+    }
+
+    static ItemActionResult blackWizardBooks(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        CIOClient client = use.client();
+        L1ItemInstance item = use.item();
+        int itemId = use.itemId();
+        int itemObjectId = use.itemObjectId();
+        int skillId = use.skillId();
+        int spellTargetId = use.spellTargetId();
+        int spellTargetX = use.spellX();
+        int spellTargetY = use.spellY();
+
+            if (pc.isBlackwizard() || pc.isGm()) {
+                if (itemId >= 210000 && itemId <= 210004 && pc.getLevel() >= 1) {
+                    SpellBook6(pc, item, client);
+                } else if (((itemId >= 210005 && itemId <= 210007) ||  (itemId == 210009)) && pc.getLevel() >= 1) {
+                    SpellBook6(pc, item, client);
+                } else if (((itemId >= 210010 && itemId <= 210012) ||  (itemId == 210014))&& pc.getLevel() >= 1) {
+                    SpellBook6(pc, item, client);
+                } else if (itemId >= 210015 && itemId <= 210019 && pc.getLevel() >= 1) {
+                    SpellBook6(pc, item, client);
+                } else if (itemId == 4100109 && pc.getLevel() >= 1) {
+                    SpellBook6(pc, item, client);
+                } else if (itemId == 3000096 && pc.getLevel() >= 1) {
+                    SpellBook6(pc, item, client);
+                } else if (itemId == 5618 && pc.getLevel() >= 1) {
+                    SpellBook6(pc, item, client);
+                } else if (itemId == 5617 && pc.getLevel() >= 1) {
+                    SpellBook6(pc, item, client);
+                } else {
+                    SC_ServerMessage.send(pc, 312);
+                }
+            } else {
+                SC_ServerMessage.send(pc, 79);
+            }
+                return ItemActionResult.COMPLETE;
+    }
+
+    static ItemActionResult warriorBooks(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        CIOClient client = use.client();
+        L1ItemInstance item = use.item();
+        int itemId = use.itemId();
+        int itemObjectId = use.itemObjectId();
+        int skillId = use.skillId();
+        int spellTargetId = use.spellTargetId();
+        int spellTargetX = use.spellX();
+        int spellTargetY = use.spellY();
+
+
+            if (pc.isWarrior()) {
+
+                if (itemId == 210121 && pc.getLevel() >= 1) {
+                    전사스킬(pc, item, false);
+                } else if ( itemId == 210129 && pc.getLevel() >= 1) {
+                    전사스킬(pc, item, false);
+                } else if (itemId == 210130 || itemId == 210123 && pc.getLevel() >= 1) {
+                    전사스킬(pc, item, false);
+                } else if (itemId == 210131 || itemId == 210125 && pc.getLevel() >= 1) {
+                    전사스킬(pc, item, false);
+                } else if (itemId == 3000094 && pc.getLevel() >= 1) {
+                    전사스킬(pc, item, false);
+                } else {
+                    전사스킬(pc, item, true);
+                }
+
+            }
+                return ItemActionResult.COMPLETE;
+    }
+}

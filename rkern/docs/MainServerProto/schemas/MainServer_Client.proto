@@ -1,0 +1,2891 @@
+// Recovered from mjlin_loaded_code_00400000_0180D000.bin, SHA-256 256f7886e98d7d2c573ab76917f78e30dc4f34cb723a002d604602cdb2f6cbdb
+// Source: embedded FileDescriptorProto, NOT NC-authored source file.
+// package/message/field/enum/number/cardinality derived directly from binary descriptor.
+// syntax="proto2" reconstructed from descriptor required/optional semantics.
+syntax = "proto2";
+package LIN;
+
+import "Lineage_CommonDataTypes.proto";
+
+enum ePLEDGE_JOIN_REQ_TYPE {
+  ePLEDGE_JOIN_REQ_TYPE_IMMEDIATLY = 0;
+  ePLEDGE_JOIN_REQ_TYPE_CONFIRMATION = 1;
+  ePLEDGE_JOIN_REQ_TYPE_PASSWORD = 2;
+}
+
+enum ePLEDGE_JOINING_LIST_TYPE {
+  ePLEDGE_JOINING_LIST_TYPE_USER = 1;
+  ePLEDGE_JOINING_LIST_TYPE_PLEDGE = 2;
+}
+
+enum SOCIAL_ACTION_TYPE {
+  SOCIAL_ACTION_TYPE_NORMAL = 1;
+  SOCIAL_ACTION_TYPE_EMOTICON = 2;
+  SOCIAL_ACTION_TYPE_STATUS = 3;
+  SOCIAL_ACTION_TYPE_NPC_EMOTICON = 4;
+}
+
+enum SOCIAL_ACTION_STATUS_CODE {
+  FOUND_ENEMY = 1;
+}
+
+enum TUTORIAL_TYPE {
+  TUTORIAL_TYPE_NONE = 0;
+  TUTORIAL_TYPE_BEGINNER = 1;
+}
+
+enum TUTORIAL_RESULT {
+  TUTORIAL_RESULT_SUCCESS = 0;
+  TUTORIAL_RESULT_FAIL = 1;
+  TUTORIAL_RESULT_INVALID_TYPE = 2;
+  TUTORIAL_RESULT_ALREADY_PLAYING = 3;
+  TUTORIAL_RESULT_CANT_FIND_TUTORIAL = 4;
+}
+
+enum Result {
+  Result_sucess = 1;
+  Result_fail = 2;
+  Result_wrong_clientip = 3;
+}
+
+enum UserAttendanceState {
+  INIT = 0;
+  COMPLETE = 1;
+  CLEAR = 2;
+}
+
+enum UserAttendanceTimeStatus {
+  ATTENDANCE_NORMAL = 0;
+  ATTENDANCE_NO_MORE_TIME = 1;
+  ATTENDANCE_NO_MORE_REWARD = 2;
+  ATTENDANCE_CANT_BE_ACHIEVE_TIME = 3;
+  ATTENDANCE_ALL_CLEAR = 4;
+  ATTENDANCE_ALL_COMPLETE = 5;
+}
+
+enum AttendanceBonusType {
+  UseItem = 1;
+  GiveItem = 2;
+}
+
+enum AttendanceGroupType {
+  NORMAL = 0;
+  PC_CAFE = 1;
+}
+
+enum AttendanceUserFlag {
+  USER_FLAG_NORMAL = 0;
+  USER_FLAG_PC_CAFE = 1;
+}
+
+enum AttendanceBonusRewardType {
+  AB_REWARD_NORMAL = 0;
+  AB_REWARD_PC_CAFE = 1;
+}
+
+enum ChatType {
+  CHAT_NORMAL = 0;
+  CHAT_WHISPER = 1;
+  CHAT_SHOUT = 2;
+  CHAT_WORLD = 3;
+  CHAT_PLEDGE = 4;
+  CHAT_HUNT_PARTY = 11;
+  CHAT_TRADE = 12;
+  CHAT_PLEDGE_PRINCE = 13;
+  CHAT_CHAT_PARTY = 14;
+  CHAT_PLEDGE_ALLIANCE = 15;
+  CHAT_PLEDGE_NOTICE = 17;
+  CHAT_CLASS = 22;
+  CHAT_TEAM = 29;
+  CHAT_ARENA_TEAM = 30;
+  CHAT_ARENA_OBSERVER = 31;
+  CHAT_ROOM_ARENA_ALL = 32;
+}
+
+enum CHAT_RESULT {
+  CHAT_RESULT_SUCCESS = 0;
+  CHAT_RESULT_FAIL = 1;
+  CHAT_RESULT_FAIL_USER_NOT_FOUND = 2;
+  CHAT_RESULT_FAIL_USER_INFO_NOT_LOADED = 3;
+  CHAT_RESULT_FAIL_EXCLUDE_LIST_NOT_LOADED = 4;
+  CHAT_RESULT_FAIL_TARGET_USER_NOT_FOUND = 5;
+  CHAT_RESULT_FAIL_SEND_PACKET_ERROR = 6;
+  CHAT_RESULT_FAIL_NOT_PLEDGE_MEMBER = 7;
+  CHAT_RESULT_FAIL_NOT_PARTY_MEMBER = 8;
+  CHAT_RESULT_FAIL_GLOBAL_CHAT_DISABLE = 20;
+  CHAT_RESULT_FAIL_BLOCKED_BY_GLOBAL_NOTIFICATION = 21;
+  CHAT_RESULT_FAIL_BLOCKED_BY_ACCOUNT_SETTING = 22;
+  CHAT_RESULT_FAIL_EXCLUDE_USER = 23;
+  CHAT_RESULT_FAIL_NOT_ENOUGH_LEVEL = 24;
+  CHAT_RESULT_FAIL_DISABLE_SHOUT = 25;
+  CHAT_RESULT_FAIL_STR_FLOODING = 26;
+  CHAT_RESULT_FAIL_SILENCE = 50;
+  CHAT_RESULT_FAIL_DUNGEON_EVENT = 51;
+  CHAT_RESULT_FAIL_IN_DEATH_MATCH = 52;
+  CHAT_RESULT_FAIL_NOT_ENOUGH_BUILDER_LEVEL = 53;
+  CHAT_RESULT_FAIL_NOT_ENOUGH_NUTRITION = 54;
+  CHAT_RESULT_FAIL_GHOST_CANNOT_SAY = 55;
+  CHAT_RESULT_FAIL_REFUSED = 56;
+  CHAT_RESULT_FAIL_INVALID_TARGET_USER = 57;
+  CHAT_RESULT_FAIL_NOT_TEAM_MEMBER = 58;
+  CHAT_RESULT_FAIL_NOT_ALLOWED_TO_ARENA = 59;
+}
+
+enum MinigameCode {
+  PUZZLE = 0;
+  CATCH_GREMLIN = 1;
+  ADVENTURE_OF_ADEN = 2;
+}
+
+message CS_NP_LOGIN_REQ {
+  required uint32 client_ip = 1;
+  required uint32 otp_security = 2;
+  required string auth_provider = 3;
+  required string authn_token = 4;
+  required bytes mac_hash = 5;
+}
+
+message CS_KEEP_ALIVE_REQ {
+  required int32 transaction_id = 1;
+  required uint64 client_time = 2;
+}
+
+message SC_KEEP_ALIVE_ACK {
+  required int32 transaction_id = 1;
+  required uint64 client_time = 2;
+  required uint64 server_time = 3;
+}
+
+message SC_PING_REQ {
+  required int32 transaction_id = 1;
+}
+
+message CS_PING_ACK {
+  required int32 transaction_id = 1;
+}
+
+message CS_MOVE_SERVER_AUTH_REQ {
+  required uint32 dest_serverno = 1;
+}
+
+message SC_MOVE_SERVER_AUTH_ERROR_ACK {
+  enum eErrorType {
+    error_fail = 1;
+    error_full = 2;
+    error_notopen = 3;
+    error_not_register = 4;
+    error_already_reserve = 5;
+    error_wait = 6;
+    error_logout = 7;
+    error_complete = 8;
+    error_not_connected = 9;
+    error_system_error = 10;
+    error_not_find = 11;
+    error_not_ingame = 12;
+    error_invalid_server = 13;
+    error_invalid_state = 14;
+    error_not_security = 15;
+  }
+  optional .LIN.SC_MOVE_SERVER_AUTH_ERROR_ACK.eErrorType error = 1;
+}
+
+message CS_CRAFT_LIST_ALL_REQ {
+  required bytes hash_value = 1;
+}
+
+message SC_CRAFT_LIST_ALL_ACK {
+  enum eCraftListAllReqResultType {
+    RP_CRAFT_LOAD_START = 0;
+    RP_CRAFT_LOADING = 1;
+    RP_CRAFT_LOAD_FINISH = 2;
+    RP_ERROR_SAME_HASH_VAL = 3;
+    RP_ERROR_INVALID_HASH_VAL = 4;
+    RP_ERROR_UNKNOWN = 9999;
+  }
+  message Craft {
+    message CraftRequiredQuestList {
+      message CraftQuestFlag {
+        required int64 flag1 = 1;
+        required int64 flag2 = 2;
+      }
+      required bool and_or = 1;
+      required int32 count = 2;
+      required .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftRequiredQuestList.CraftQuestFlag flag = 3;
+    }
+    message CraftRequiredSpriteList {
+      required int32 count = 1;
+      repeated int32 sprite_id = 2;
+    }
+    message CraftRequiredItemList {
+      message CraftRequiredItem {
+        required int32 name_id = 1;
+        required int32 count = 2;
+        required bool is_nagative = 3;
+      }
+      required bool and_or = 1;
+      required int32 count = 2;
+      repeated .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftRequiredItemList.CraftRequiredItem items = 3;
+    }
+    message CraftInputList {
+      message CraftInputItem {
+        required int32 name_id = 1;
+        required int32 count = 2;
+        required int32 slot = 3;
+        required int32 enchant = 4;
+        required int32 bless = 5;
+        required string desc = 6;
+        required int32 iconId = 7;
+        optional int32 elemental_enchant_type = 8;
+        optional int32 elemental_enchant_value = 9;
+        optional int32 increase_prob = 10;
+        optional bool all_enchants_allowed = 11;
+      }
+      repeated .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftInputList.CraftInputItem arr_input_item = 1;
+      repeated .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftInputList.CraftInputItem arr_option_item = 2;
+    }
+    message CraftOutputList {
+      message CraftOutputSFList {
+        message CraftQuestFlag {
+          required int64 flag1 = 1;
+          required int64 flag2 = 2;
+        }
+        message CraftOutputItem {
+          required int32 name_id = 1;
+          required int32 count = 2;
+          required int32 slot = 3;
+          required int32 enchant = 4;
+          required int32 bless = 5;
+          required int32 elemental_type = 6;
+          required int32 elemental_level = 7;
+          required string desc = 8;
+          optional int32 system_desc = 9;
+          required int32 broadcast_desc = 10;
+          required int32 iconId = 11;
+          required string url = 12;
+          optional bytes extra_desc = 13;
+          optional int32 inherit_enchant_from = 14;
+          optional int32 inherit_elemental_enchant_from = 15;
+          optional int32 event_id = 16;
+          optional int32 inherit_bless_from = 17;
+        }
+        message CraftEvent {
+          required int32 event_id = 1;
+          required int32 prob_count = 2;
+          required int32 non_prob_count = 3;
+          repeated .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList.CraftOutputItem output_prob_items = 4;
+          repeated .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList.CraftOutputItem output_items = 5;
+        }
+        required .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList.CraftQuestFlag on_flag = 1;
+        required .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList.CraftQuestFlag off_flag = 2;
+        required int32 prob_count = 3;
+        required int32 non_prob_count = 4;
+        repeated .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList.CraftOutputItem output_prob_items = 5;
+        repeated .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList.CraftOutputItem output_items = 6;
+        repeated .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList.CraftEvent events = 7;
+        optional int32 event_count = 8;
+      }
+      required .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList success = 1;
+      required .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList.CraftOutputSFList failure = 2;
+      required int32 success_prob_by_million = 3;
+    }
+    message CraftAttr {
+      required int32 desc = 1;
+      required int32 min_level = 2;
+      required int32 max_level = 3;
+      required int32 required_gender = 4;
+      required int32 min_align = 5;
+      required int32 max_align = 6;
+      required int32 min_karma = 7;
+      required int32 max_karma = 8;
+      required int32 max_count = 9;
+      optional bool show = 10 [default = false];
+    }
+    required int32 id = 1;
+    required .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftAttr craft_attr = 2;
+    required int32 required_classes = 3;
+    required .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftRequiredQuestList required_quests = 4;
+    required .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftRequiredSpriteList required_sprites = 5;
+    required .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftRequiredItemList required_items = 6;
+    required .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftInputList inputs = 7;
+    required .LIN.SC_CRAFT_LIST_ALL_ACK.Craft.CraftOutputList outputs = 8;
+    optional int32 batch_delay_sec = 9;
+  }
+  required .LIN.SC_CRAFT_LIST_ALL_ACK.eCraftListAllReqResultType eResult = 1;
+  repeated .LIN.SC_CRAFT_LIST_ALL_ACK.Craft craft = 2;
+}
+
+message CS_CRAFT_ID_LIST_REQ {
+  required int32 npc_id = 1;
+}
+
+message SC_CRAFT_ID_LIST_ACK {
+  enum eCraftIdListReqResultType {
+    RP_SUCCESS = 0;
+    RP_ERROR_INVALID_NPC_ID = 1;
+    RP_ERROR_OUT_OF_RANGE = 2;
+    RP_ERROR_UNKNOWN = 9999;
+  }
+  enum eCraftNpcType {
+    DEFAULT = 0;
+    MAGIC_DOLL = 1;
+  }
+  message CraftIdList {
+    required int32 craft_id = 1;
+    required int32 max_success_cnt = 2;
+    required int32 cur_success_cnt = 3;
+  }
+  required .LIN.SC_CRAFT_ID_LIST_ACK.eCraftIdListReqResultType eResult = 1;
+  repeated .LIN.SC_CRAFT_ID_LIST_ACK.CraftIdList craft_id_list = 2;
+  optional int32 eBlindType = 3;
+  optional .LIN.SC_CRAFT_ID_LIST_ACK.eCraftNpcType npc_type = 4;
+}
+
+message CS_CRAFT_MAKE_REQ {
+  message CraftInputItemSlotInfo {
+    required int32 input_slot_no = 1;
+    required int32 item_name_id = 2;
+    optional int32 count = 3;
+    optional int32 enchant = 4;
+    optional int32 elemental_enchant_type = 5;
+    optional int32 elemental_enchant_value = 6;
+    optional int32 bless = 7;
+  }
+  required int32 npc_id = 1;
+  required int32 craft_id = 2;
+  required int32 count = 3;
+  repeated .LIN.CS_CRAFT_MAKE_REQ.CraftInputItemSlotInfo slotInfo = 4;
+  optional int32 batch_transaction_id = 5;
+}
+
+message SC_CRAFT_MAKE_ACK {
+  enum eCraftMakeReqResultType {
+    RP_SUCCESS = 0;
+    RP_FAILURE = 1;
+    RP_ERROR_INVALID_INPUT = 2;
+    RP_ERROR_LACK_OF_ADENA = 3;
+    RP_ERROR_INVEN_OVER = 4;
+    RP_ERROR_WEIGHT_OVER = 5;
+    RP_ERROR_INVALID_NPC = 6;
+    RP_ERROR_BAD_QUALIFICATION = 7;
+    RP_ERROR_CRAFT_DOES_NOT_EXIST = 8;
+    RP_ERROR_NO_REQUIRED_ITEM = 9;
+    RP_ERROR_TOO_MANY_MAKE_REQ = 10;
+    RP_ERROR_INPUT_ITEM_NOT_EXIST = 11;
+    RP_ERROR_OPTION_ITEM_NOT_EXIST = 12;
+    RP_ERROR_NPC_OUT_OF_RANGE = 13;
+    RP_ERROR_BLOCKED_CRAFT_ID = 14;
+    RP_ERROR_REJECTED_REQUIRED_ITEM = 15;
+    RP_ERROR_SUCCESS_COUNT_EXCEED = 16;
+    RP_ERROR_BATCH_CRAFT = 17;
+    RP_ERROR_UNKNOWN = 9999;
+  }
+  message CraftOutputItem {
+    required int32 name_id = 1;
+    required int32 count = 2;
+    required int32 slot = 3;
+    required int32 enchant = 4;
+    required int32 bless = 5;
+    required int32 elemental_type = 6;
+    required int32 elemental_level = 7;
+    required string desc = 8;
+    required int32 system_desc = 9;
+    required int32 broadcast_desc = 10;
+    required int32 iconId = 11;
+    required string url = 12;
+  }
+  message LimitCraftInfo {
+    required int32 max_success_cnt = 1;
+    required int32 cur_success_cnt = 2;
+  }
+  required .LIN.SC_CRAFT_MAKE_ACK.eCraftMakeReqResultType eResult = 1;
+  repeated .LIN.SC_CRAFT_MAKE_ACK.CraftOutputItem output_items = 2;
+  optional .LIN.SC_CRAFT_MAKE_ACK.LimitCraftInfo limit_craft_info = 3;
+}
+
+message CS_CRAFT_BATCH_REQ {
+  required int32 npc_id = 1;
+  required int32 craft_id = 2;
+  required int32 count = 3;
+}
+
+message SC_CRAFT_BATCH_ACK {
+  enum eCraftBatchAckResultType {
+    RP_SUCCESS = 0;
+    RP_FAILURE = 1;
+  }
+  required .LIN.SC_CRAFT_BATCH_ACK.eCraftBatchAckResultType eResult = 1;
+  required int32 batch_transaction_id = 2;
+}
+
+message SC_FISHING_NOT {
+  enum FISHING_NOT_KIND {
+    FISHING_NOT_KIND_START = 1;
+    FISHING_NOT_KIND_END_PREPARE = 2;
+  }
+  enum FISHING_ROD {
+    FISHING_ROD_NORMAL = 1;
+    FISHING_ROD_SPECIAL = 2;
+  }
+  required .LIN.SC_FISHING_NOT.FISHING_NOT_KIND fishingKind = 1;
+  optional int32 startTime = 2;
+  optional .LIN.SC_FISHING_NOT.FISHING_ROD rodKind = 3;
+  optional int32 rodCount = 4;
+}
+
+message SC_NOTIFICATION_MESSAGE_NOT {
+  required sint32 suffileNumber = 1;
+  required string notificationMessage = 2;
+  required bytes messageRGB = 3;
+  required sint32 duration = 4;
+}
+
+message SC_NOTIFICATION_STRINGKINDEX_NOTI {
+  required sint32 suffileNumber = 1;
+  required sint32 stringIndex = 2;
+  required bytes messageRGB = 3;
+  required sint32 duration = 4;
+  repeated string args = 5;
+}
+
+message SC_SIEGE_OBJECT_PUT_NOT {
+  enum SIEGE_BLOOD_KIND {
+    SIEGE_RED_BLOOD = 1;
+    SIEGE_BLACK_BLOOD = 2;
+    SIEGE_RED_INIT = 3;
+  }
+  required uint32 IdOfObject = 1;
+  required .LIN.SC_SIEGE_OBJECT_PUT_NOT.SIEGE_BLOOD_KIND bloodKind = 2;
+}
+
+message SC_SIEGE_ZONE_UPDATE_NOT {
+  enum SIEGE_ZONE_KIND {
+    SIEGE_ZONE_BEGIN = 1;
+    SIEGE_ZONE_END = 2;
+  }
+  required .LIN.SC_SIEGE_ZONE_UPDATE_NOT.SIEGE_ZONE_KIND siegeZoneKind = 1;
+}
+
+message SC_SIEGE_EVENT_NOT {
+  enum SIEGE_EVENT_KIND {
+    SIEGE_EVENT_KIND_START = 1;
+    SIEGE_EVENT_PROGRESSING = 2;
+    SIEGE_EVENT_KIND_COLLECT_END = 3;
+    SIEGE_EVENT_KIND_END = 4;
+  }
+  message CASTLE_INFO {
+    required int32 stringNumber = 1;
+    required string ownerName = 2;
+  }
+  required .LIN.SC_SIEGE_EVENT_NOT.SIEGE_EVENT_KIND eventKind = 1;
+  repeated .LIN.SC_SIEGE_EVENT_NOT.CASTLE_INFO castles = 2;
+}
+
+message CS_SIEGE_WAR_REQ {
+  required uint32 castleId = 1;
+}
+
+message SC_DEVELSERVER_MESSAGE_NOTI {
+  enum S_KIND {
+    S_KIND_NORMAL = 1;
+    S_KIND_WRITE = 2;
+    S_KIND_ERROR = 3;
+  }
+  required .LIN.SC_DEVELSERVER_MESSAGE_NOTI.S_KIND messagegKind = 1;
+  required string develMessage = 2;
+}
+
+message SC_SIEGE_INJURY_TIME_NOIT {
+  enum SIEGE_KIND {
+    SIEGE_DEFFENCE = 1;
+    SIEGE_ATTACK = 2;
+  }
+  required .LIN.SC_SIEGE_INJURY_TIME_NOIT.SIEGE_KIND siegeKind = 1;
+  required sint32 remainSecond = 2;
+  optional string pledgeName = 3;
+}
+
+message SC_WITHDRAW_DEFENCE_SUCCESS_ADENA_NOTI {
+  required uint32 npcId = 1;
+  required sint64 withdrawalAdena = 2;
+}
+
+message CS_WITHDRAW_DEFENCE_SUCCESS_ADENA_REQ {
+  required uint32 npcId = 1;
+  required sint64 adenaCount = 2;
+}
+
+message CS_ITEM_EXCHANGE_REQ {
+  required int32 source_warehouse = 1;
+  repeated int32 source_id = 2;
+}
+
+message SC_WAREHOUSE_INFO_NOT {
+  enum eAckType {
+    RP_REFRESH = 0;
+    RP_ADD = 1;
+  }
+  message Item {
+    required int32 nameid = 1;
+    required int32 count = 2;
+    required int32 icon = 3;
+    required int32 index = 4;
+    required string desc = 5;
+  }
+  required int32 warehouseType = 1;
+  required int32 ackType = 2;
+  repeated .LIN.SC_WAREHOUSE_INFO_NOT.Item iteminfo = 3;
+}
+
+message SC_ACCOUNT_BENEFIT_NOTI {
+  enum eBenefitType {
+    ABT_NONE = 0;
+    ABT_NEW = 1;
+    ABT_DORMANT = 2;
+  }
+  required .LIN.SC_ACCOUNT_BENEFIT_NOTI.eBenefitType type = 1;
+  required bool enable = 2;
+}
+
+message SC_SIEGE_PROMOTE_NOTI {
+  required int32 surfNumber = 1;
+  required int32 stringIndexMesage = 2;
+  required bytes messageRGB = 3;
+  required int32 duration = 4;
+  optional sint32 descCastle = 5;
+  required string descNPC = 6;
+}
+
+message SC_NOTIFICATION_MESSAGE {
+  enum display_position {
+    screen_top = 1;
+    screen_middle = 2;
+    screen_bottom = 3;
+  }
+  required .LIN.SC_NOTIFICATION_MESSAGE.display_position pos = 1;
+  required string desc = 2;
+  required bytes messageRGB = 3;
+  required int32 duration = 4;
+  optional int32 serverno = 5;
+}
+
+message SC_REDBLOOD_ENEMY_PLEDGE_NOTI {
+  enum init_status {
+    siegeinsertattack = 1;
+    siegeinsertdefence = 2;
+    siegedeletewar = 3;
+  }
+  required .LIN.SC_REDBLOOD_ENEMY_PLEDGE_NOTI.init_status status = 1;
+  optional string enemypledge = 2;
+}
+
+message SC_SIEGE_TRUE_TARGET_NOTI {
+  enum tt_status {
+    begin = 1;
+    keep = 2;
+    end = 3;
+  }
+  required uint32 targetNumber = 1;
+  required .LIN.SC_SIEGE_TRUE_TARGET_NOTI.tt_status status = 2;
+  required int32 spritenumber = 3;
+}
+
+message SC_SPELL_BUFF_NOTI {
+  enum eNotiType {
+    NEW = 1;
+    RESTAT = 2;
+    END = 3;
+    TIMEOUT = 4;
+  }
+  enum eDurationShowType {
+    TYPE_EFF_NONE = 0;
+    TYPE_EFF_PERCENT = 1;
+    TYPE_EFF_MINUTE = 2;
+    TYPE_EFF_PERCENT_ORC_SERVER = 3;
+    TYPE_EFF_EINHASAD_COOLTIME_MINUTE = 4;
+    TYPE_EFF_LEGACY_TIME = 5;
+    TYPE_EFF_VARIABLE_VALUE = 6;
+    TYPE_EFF_DAY_HOUR_MIN = 7;
+    TYPE_EFF_AUTO_DAY_HOUR_MIN_SEC = 8;
+    TYPE_EFF_NSERVICE_TOPPING = 9;
+    TYPE_EFF_UNLIMIT = 10;
+    TYPE_EFF_CUSTOM = 11;
+    TYPE_EFF_COUNT = 12;
+    TYPE_EFF_RATE = 13;
+  }
+  required .LIN.SC_SPELL_BUFF_NOTI.eNotiType noti_type = 1;
+  required uint32 spell_id = 2;
+  optional uint32 duration = 3;
+  optional .LIN.SC_SPELL_BUFF_NOTI.eDurationShowType duration_show_type = 4;
+  optional uint32 on_icon_id = 5;
+  optional uint32 off_icon_id = 6;
+  optional uint32 icon_priority = 7;
+  optional uint32 tooltip_str_id = 8;
+  optional uint32 new_str_id = 9;
+  optional uint32 end_str_id = 10;
+  optional bool is_good = 11;
+  optional uint32 overlap_buff_icon = 12;
+  optional uint32 main_tooltip_str_id = 13;
+  optional uint32 buff_icon_priority = 14;
+  optional uint32 buff_group_id = 15;
+  optional uint32 buff_group_priority = 16;
+}
+
+message CS_CASTLE_PROPERTY_REQ {
+  enum REQ_KIND {
+    CASTLE_TOTAL = 1;
+    CASTLE_ONE = 2;
+  }
+  required .LIN.CS_CASTLE_PROPERTY_REQ.REQ_KIND reqKind = 1;
+  optional uint32 castle_Id = 2;
+}
+
+message SC_CASTLE_PROPERTY_ACK {
+  message CASTLE_INFO {
+    required uint32 castleID = 1;
+    required bytes ownerPledge = 2;
+    required bytes ownerLord = 3;
+    required uint32 siegePoint = 4;
+    required uint32 occupyTime = 5;
+    required sint64 propertyTotal = 6;
+    required sint64 propertyGet = 7;
+  }
+  repeated .LIN.SC_CASTLE_PROPERTY_ACK.CASTLE_INFO castleInfoList = 1;
+}
+
+message CS_BLOOD_PLEDGE_JOIN_OPTION_REQ {
+  enum eOPTION_TYPE {
+    eOPTION_TYPE_ENABLE_JOIN = 1;
+    eOPTION_TYPE_JOIN_TYPE = 2;
+    eOPTION_TYPE_HASHED_PASSWORD = 3;
+    eOPTION_TYPE_ALL = 4;
+  }
+  required .LIN.CS_BLOOD_PLEDGE_JOIN_OPTION_REQ.eOPTION_TYPE type = 1;
+}
+
+message SC_BLOOD_PLEDGE_JOIN_OPTION_ACK {
+  enum eRESULT {
+    eRESULT_OK = 1;
+    eRESULT_ERROR_NOT_LORD = 2;
+    eRESULT_ERROR_HAVE_NO_PLEDGE = 3;
+  }
+  required .LIN.SC_BLOOD_PLEDGE_JOIN_OPTION_ACK.eRESULT result = 1;
+  optional bool enable_join = 2;
+  optional .LIN.ePLEDGE_JOIN_REQ_TYPE join_type = 3;
+  optional bytes hashed_password = 4;
+}
+
+message CS_BLOOD_PLEDGE_JOIN_OPTION_CHANGE_REQ {
+  required bool enable_join = 1;
+  required .LIN.ePLEDGE_JOIN_REQ_TYPE join_type = 2;
+  optional bytes hashed_password = 3;
+}
+
+message SC_BLOOD_PLEDGE_JOIN_OPTION_CHANGE_ACK {
+  enum ePLEDGE_JOIN_OPTION_CHANGE_ACK_RESULT {
+    ePLEDGE_JOIN_OPTION_CHANGE_ACK_RESULT_OK = 0;
+    ePLEDGE_JOIN_OPTION_CHANGE_ACK_RESULT_INVALID_JOIN_TYPE = 1;
+    ePLEDGE_JOIN_OPTION_CHANGE_ACK_RESULT_INVALID_PASSWORD = 2;
+    ePLEDGE_JOIN_OPTION_CHANGE_ACK_RESULT_PLEDGE_NOT_EXIST = 3;
+    ePLEDGE_JOIN_OPTION_CHANGE_ACK_RESULT_NOT_ALLOWED = 4;
+    ePLEDGE_JOIN_OPTION_CHANGE_ACK_RESULT_UNKNOWN_ERROR = 9999;
+  }
+  required .LIN.SC_BLOOD_PLEDGE_JOIN_OPTION_CHANGE_ACK.ePLEDGE_JOIN_OPTION_CHANGE_ACK_RESULT result = 1;
+}
+
+message CS_BLOOD_PLEDGE_JOIN_REQ {
+  required string pledge_name = 1;
+  required .LIN.ePLEDGE_JOIN_REQ_TYPE join_type = 2;
+  required string join_msg = 3;
+  optional bytes hashed_password = 4;
+}
+
+message SC_BLOOD_PLEDGE_JOIN_ACK {
+  enum ePLEDGE_JOIN_ACK_RESULT {
+    ePLEDGE_JOIN_ACK_RESULT_JOIN_OK = 0;
+    ePLEDGE_JOIN_ACK_RESULT_CONFIRMING = 1;
+    ePLEDGE_JOIN_ACK_RESULT_INVALID_JOIN_TYPE = 2;
+    ePLEDGE_JOIN_ACK_RESULT_INVALID_PASSWORD = 3;
+    ePLEDGE_JOIN_ACK_RESULT_PLEDGE_NOT_EXIST = 4;
+    ePLEDGE_JOIN_ACK_RESULT_USER_JOINING_COUNT_IS_OVER = 5;
+    ePLEDGE_JOIN_ACK_RESULT_PLEDGE_JOINING_COUNT_IS_OVER = 6;
+    ePLEDGE_JOIN_ACK_RESULT_PLEDGE_IS_FULL = 7;
+    ePLEDGE_JOIN_ACK_RESULT_NEED_LEVEL = 8;
+    ePLEDGE_JOIN_ACK_RESULT_ALREADY_JOINED = 9;
+    ePLEDGE_JOIN_ACK_RESULT_PLEDGE_NOT_OPENED = 10;
+    ePLEDGE_JOIN_ACK_RESULT_NO_PLEDGE_MEMBER_IN_WORLD = 11;
+    ePLEDGE_JOIN_ACK_RESULT_DIED = 12;
+    ePLEDGE_JOIN_ACK_RESULT_PRINCE_NEED_OTHER_METHOD = 13;
+    ePLEDGE_JOIN_ACK_RESULT_JOIN_MSG_NOT_EXIST = 14;
+    ePLEDGE_JOIN_ACK_RESULT_UNKNOWN_ERROR = 9999;
+  }
+  required .LIN.SC_BLOOD_PLEDGE_JOIN_ACK.ePLEDGE_JOIN_ACK_RESULT result = 1;
+  optional string pledge_name = 2;
+  optional .LIN.ePLEDGE_JOIN_REQ_TYPE need_join_type = 3;
+  optional string msg = 4;
+}
+
+message CS_BLOOD_PLEDGE_JOINING_LIST_REQ {
+  required .LIN.ePLEDGE_JOINING_LIST_TYPE req_type = 1;
+}
+
+message SC_BLOOD_PLEDGE_JOINING_LIST_ACK {
+  message PLEDGE_JOINING_DATA {
+    required uint32 pledge_uid = 1;
+    required string pledge_name = 2;
+    required uint64 user_uid = 3;
+    required string user_name = 4;
+    required string join_msg = 5;
+    required bool online = 6;
+    required int32 char_class = 7;
+  }
+  required .LIN.ePLEDGE_JOINING_LIST_TYPE req_type = 1;
+  repeated .LIN.SC_BLOOD_PLEDGE_JOINING_LIST_ACK.PLEDGE_JOINING_DATA data = 2;
+}
+
+message CS_BLOOD_PLEDGE_JOIN_CANCEL_REQ {
+  required uint32 pledge_uid = 1;
+}
+
+message SC_BLOOD_PLEDGE_JOIN_CANCEL_ACK {
+  enum ePLEDGE_JOIN_CANCEL_ACK_RESULT {
+    ePLEDGE_JOIN_CANCEL_ACK_RESULT_OK = 0;
+    ePLEDGE_JOIN_CANCEL_ACK_RESULT_ERROR = 1;
+    ePLEDGE_JOIN_CANCEL_ACK_RESULT_NOT_EXIST = 2;
+  }
+  required .LIN.SC_BLOOD_PLEDGE_JOIN_CANCEL_ACK.ePLEDGE_JOIN_CANCEL_ACK_RESULT result = 1;
+}
+
+message CS_BLOOD_PLEDGE_JOIN_CONFIRM_REQ {
+  enum ePLEDGE_JOIN_CONFIRM_REQ_TYPE {
+    ePLEDGE_JOIN_CONFIRM_REQ_TYPE_ACCEPT = 1;
+    ePLEDGE_JOIN_CONFIRM_REQ_TYPE_REJECT = 2;
+  }
+  required .LIN.CS_BLOOD_PLEDGE_JOIN_CONFIRM_REQ.ePLEDGE_JOIN_CONFIRM_REQ_TYPE req_type = 1;
+  required string user_name = 2;
+}
+
+message SC_BLOOD_PLEDGE_JOIN_CONFIRM_ACK {
+  enum ePLEDGE_JOIN_CONFIRM_ACK_RESULT {
+    ePLEDGE_JOIN_CONFIRM_ACK_RESULT_OK = 0;
+    ePLEDGE_JOIN_CONFIRM_ACK_RESULT_ERROR = 1;
+    ePLEDGE_JOIN_CONFIRM_ACK_RESULT_USER_OFFLINE = 2;
+    ePLEDGE_JOIN_CONFIRM_ACK_RESULT_NO_PRIVILEGE = 3;
+    ePLEDGE_JOIN_CONFIRM_ACK_RESULT_PLEDGE_NOT_EXIST = 4;
+    ePLEDGE_JOIN_CONFIRM_ACK_RESULT_PLEDGE_ALREADY_EXIST = 5;
+    ePLEDGE_JOIN_CONFIRM_ACK_RESULT_JOIN_REQ_NOT_EXIST = 6;
+    ePLEDGE_JOIN_CONFIRM_ACK_RESULT_PLEDGE_IS_FULL = 7;
+  }
+  required .LIN.SC_BLOOD_PLEDGE_JOIN_CONFIRM_ACK.ePLEDGE_JOIN_CONFIRM_ACK_RESULT result = 1;
+}
+
+message CS_SOCIAL_ACTION_REQ {
+  required .LIN.SOCIAL_ACTION_TYPE action_type = 1;
+  required int32 action_code = 2;
+}
+
+message SC_SOCIAL_ACTION_NOTI {
+  required uint32 object_id = 1;
+  required .LIN.SOCIAL_ACTION_TYPE action_type = 2;
+  required int32 action_code = 3;
+}
+
+message SC_TOGGLE_EFFECT_NOTI {
+  required uint32 object_id = 1;
+  required bool bWear = 2;
+  optional int32 effect_id = 3;
+}
+
+message SC_ALL_SPELL_PASSIVE_NOTI {
+  message spellpassivedata {
+    required int32 passiveid = 1;
+    optional int32 param = 2;
+  }
+  repeated .LIN.SC_ALL_SPELL_PASSIVE_NOTI.spellpassivedata passives = 1;
+}
+
+message SC_ADD_SPELL_PASSIVE_NOTI {
+  required int32 passiveid = 1;
+  optional int32 param = 2;
+}
+
+message SC_DAMAGE_OF_TIME_NOTI {
+  required int32 targetid = 1;
+}
+
+message SC_BUFF_ICON_ON_OFF_NOTI {
+  required int32 iconid = 1;
+  required bool on = 2;
+}
+
+message SC_TAM_POINT_NOTI {
+  required uint64 tam_point = 1;
+}
+
+message SC_PLAY_TIME_LIMIT_NOTI {
+  required int32 playTimeLimitSec = 1;
+  required int32 remainPlayTimeSec = 2;
+}
+
+message SC_FATIGUE_NOTI {
+  enum FATIGUE_STATUS {
+    FATIGUE_STATUS_OK = 1;
+    FATIGUE_STATUS_FAIL = 2;
+    FATIGUE_STATUS_NOT_USE = 3;
+  }
+  required .LIN.SC_FATIGUE_NOTI.FATIGUE_STATUS fatigueStatus = 1;
+  required int32 penaltyLevel = 2;
+  required uint64 combatFatigue = 3;
+}
+
+message SC_SIHON_RANK {
+  message RankHistoryInfo {
+    required string userid = 1;
+    required int32 gameClass = 2;
+    required int32 elapsedTime = 3;
+    required int32 updateTime = 4;
+    required int32 mapLevel = 5;
+  }
+  message RankInfo {
+    required string userid = 1;
+    required int32 gameClass = 2;
+    required int32 elapsedTime = 3;
+    required int32 updateTime = 4;
+    required int32 mapLevel = 5;
+  }
+  message MyInfo {
+    required int32 elapsedTime = 1;
+    required int32 updateTime = 2;
+    required int32 mapLevel = 3;
+  }
+  repeated .LIN.SC_SIHON_RANK.RankHistoryInfo historyRankInfos = 1;
+  repeated .LIN.SC_SIHON_RANK.RankInfo rankinfos = 2;
+  repeated .LIN.SC_SIHON_RANK.MyInfo myinfos = 3;
+  optional int32 emptyData = 4;
+}
+
+message SC_SIEGE_REDBLOOD_LOTTO_NOTI {
+  required int32 surfNumber = 1;
+  required int32 stringIndexMesage = 2;
+  required bytes messageRGB = 3;
+  required int32 duration = 4;
+  required string lottouser = 5;
+  required int32 lottoAdena = 6;
+}
+
+message SC_ARCA_ACTIVATION_INFO_ACK {
+  message UserInfo {
+    required uint32 server_no = 1;
+    required uint32 user_uid = 2;
+    required int64 activation_remain_time = 3;
+    required uint32 activation_remain_count = 4;
+    optional bytes user_name = 5;
+    optional uint32 user_level = 6;
+    optional uint32 user_class = 7;
+    optional uint32 user_gender = 8;
+  }
+  repeated .LIN.SC_ARCA_ACTIVATION_INFO_ACK.UserInfo activate_user_list = 1;
+  required uint32 max_activate_characters = 2;
+  optional uint32 buff_spell_id = 3;
+  optional int64 cancelation_delay = 4;
+}
+
+message CS_ARCA_ACTIVATION_CANCEL_REQ {
+  required uint32 user_id = 1;
+}
+
+message SC_NPC_INFO {
+  required uint32 npcId = 1;
+  required uint32 npcHp = 2;
+  required uint32 npcMaxHp = 3;
+  required uint32 npcMp = 4;
+  required uint32 npcMaxMp = 5;
+}
+
+message SC_DEATH_PENALTY_STATUS {
+  required uint32 globalDeathPenaltyStatus = 1;
+  required uint32 expDeathPenaltyStatus = 2;
+  required uint32 itemDeathPenaltyStatus = 3;
+}
+
+message SC_POLYMORPH_EVENT_NOTI {
+  required bool eventEnable = 1;
+}
+
+message SC_HUNTING_GUIDE_BOOKMARK_NOTI {
+  message HUNTING_GUIDE_BOOKMARK_DATA {
+    required int32 seq = 1;
+    required int32 level = 2;
+    required int32 mapNo = 3;
+    required int32 x = 4;
+    required int32 y = 5;
+    required string desc = 6;
+    required string strIndex = 7;
+    required int32 icon = 8;
+  }
+  repeated .LIN.SC_HUNTING_GUIDE_BOOKMARK_NOTI.HUNTING_GUIDE_BOOKMARK_DATA bookmarks = 1;
+}
+
+message SC_BUDDY_LIST_NOTI {
+  enum eBUDDY_LIST_TYPE {
+    eBUDDY_LIST_TYPE_BUDDIES = 1;
+  }
+  message BUDDY_DATA {
+    required string name = 1;
+    required bool online = 2;
+    required string memo = 3;
+  }
+  required .LIN.SC_BUDDY_LIST_NOTI.eBUDDY_LIST_TYPE type = 1;
+  repeated .LIN.SC_BUDDY_LIST_NOTI.BUDDY_DATA buddys = 2;
+}
+
+message CS_PARTY_MEMBER_MARK_CHANGE_REQ {
+  required int32 member_id = 1;
+  required int32 mark = 2;
+}
+
+message SC_PARTY_MEMBER_MARK_CHANGE_NOTI {
+  required int32 member_id = 1;
+  required int32 mark = 2;
+}
+
+message SC_PARTY_OPERATION_RESULT_NOTI {
+  enum ePARTY_OPERATION_TYPE {
+    ePARTY_OPERATION_TYPE_INVITE_REJECT = 1;
+    ePARTY_OPERATION_TYPE_INVITE_ACCEPT = 2;
+  }
+  required .LIN.SC_PARTY_OPERATION_RESULT_NOTI.ePARTY_OPERATION_TYPE type = 1;
+  required string actor_name = 2;
+}
+
+message CS_TUTORIAL_START_REQ {
+  required .LIN.TUTORIAL_TYPE type = 1;
+  required bool is_skip = 2;
+}
+
+message SC_TUTORIAL_START_ACK {
+  required .LIN.TUTORIAL_TYPE type = 1;
+  required .LIN.TUTORIAL_RESULT result = 2;
+}
+
+message CS_TUTORIAL_END_REQ {
+  required .LIN.TUTORIAL_TYPE type = 1;
+}
+
+message SC_TUTORIAL_END_ACK {
+  required .LIN.TUTORIAL_TYPE type = 1;
+  required .LIN.TUTORIAL_RESULT result = 2;
+}
+
+message SC_TUTORIAL_NOTI {
+  enum NOTI_TYPE {
+    NOTI_TYPE_CHECK_BEGINNER_TUTORIAL = 0;
+  }
+  required .LIN.SC_TUTORIAL_NOTI.NOTI_TYPE type = 1;
+}
+
+message SC_CHARACTER_STATUS_NOTI {
+  enum STATUS_TYPE {
+    STATUS_TYPE_MELEE_DMG_PRIMARY = 1;
+    STATUS_TYPE_MELEE_DMG_SECONDARY = 2;
+    STATUS_TYPE_MELEE_HIT_PROB_PRIMARY = 3;
+    STATUS_TYPE_MELEE_HIT_PROB_SECONDARY = 4;
+    STATUS_TYPE_MISSILE_DMG = 5;
+    STATUS_TYPE_MISSILE_HIT_PROB = 6;
+    STATUS_TYPE_MAGIC_DMG = 7;
+    STATUS_TYPE_MAGIC_HIT_PROB = 8;
+    STATUS_TYPE_MAGIC_CRITICAL_PROB = 9;
+    STATUS_TYPE_MR = 10;
+    STATUS_TYPE_SP = 11;
+    STATUS_TYPE_DG = 12;
+    STATUS_TYPE_AC = 13;
+    STATUS_TYPE_ER = 14;
+    STATUS_TYPE_MP_COST_REDUCTION = 15;
+    STATUS_TYPE_HP_MOD = 16;
+    STATUS_TYPE_MP_MOD = 17;
+    STATUS_TYPE_MAX_HP = 18;
+    STATUS_TYPE_MAX_MP = 19;
+  }
+  message STATUS_DATA {
+    required .LIN.SC_CHARACTER_STATUS_NOTI.STATUS_TYPE sts_type = 1;
+    required int32 sts_value = 2;
+  }
+  repeated .LIN.SC_CHARACTER_STATUS_NOTI.STATUS_DATA sts_data = 1;
+}
+
+message CS_CHAT_SERVER_INFO_REQ_PACKET {
+  required uint32 transaction_id = 1;
+}
+
+message SC_CHAT_SERVER_INFO_ACK_PACKET {
+  required uint32 transaction_id = 1;
+  required string address = 2;
+  required uint32 port_number = 3;
+}
+
+message CS_CHAT_SERVER_PASSPORT_REQ_PACKET {
+  required uint32 transaction_id = 1;
+}
+
+message SC_CHAT_SERVER_PASSPORT_ACK_PACKET {
+  required uint32 transaction_id = 1;
+  required uint32 world_id = 2;
+  required uint64 socket_id = 3;
+  required uint32 passport = 4;
+}
+
+message SC_RANGE_INFO {
+  enum RANGE_TYPE {
+    RANGE_TYPE_DIALOG = 0;
+    RANGE_TYPE_PARTY = 1;
+  }
+  required .LIN.SC_RANGE_INFO.RANGE_TYPE range_type = 1;
+  required int32 targe_id = 2;
+  required int32 range = 3;
+}
+
+message SC_ENCHANT_RESULT_NOTI {
+  enum ENCHANT_TYPE {
+    ENCHANT_TYPE_WEAPON = 1;
+    ENCHANT_TYPE_ARMOR = 2;
+    ENCHANT_TYPE_ACCESSORY = 3;
+    ENCHANT_TYPE_UNIDENTIFIED = 4;
+  }
+  enum ENCHANT_RESULT_TYPE {
+    ENCHANT_FAIL = 1;
+    ENCHANT_SUCCESS = 2;
+    ENCHANT_NOTHING_HAPPEN = 3;
+    ENCHANT_DIFFERENT_ELEMENT_TYPE = 4;
+    ENCHANT_CANT_ENCHANT_ANYMORE = 5;
+    ENCHANT_TARGET_DOESE_NOT_ELEMENTALLY_ENCHANTED = 6;
+    ENCHANT_SAME_ELEMENT_ENCHANT_TYPE = 7;
+    ENCHANT_CANT_CHANGE_ELEMENT_TYPE = 8;
+  }
+  enum BLESS_CODE {
+    BC_BLESSED = 0;
+    BC_NORMAL = 1;
+    BC_CURSED = 2;
+    BC_UNIDENTIFIED = 3;
+  }
+  required .LIN.SC_ENCHANT_RESULT_NOTI.ENCHANT_TYPE enchant_type = 1;
+  required .LIN.SC_ENCHANT_RESULT_NOTI.ENCHANT_RESULT_TYPE enchant_result = 2;
+  required .LIN.SC_ENCHANT_RESULT_NOTI.BLESS_CODE bless_code = 3;
+}
+
+message SC_CLIENTGATE_APPTOKEN_NOTI {
+  required string appToken = 1;
+}
+
+message SC_CONNECT_HIBREEDSERVER_NOTI_PACKET {
+  required uint32 destIP = 1;
+  required int32 destPort = 2;
+  required uint32 reservednumber = 3;
+  required bytes onetimetoken = 4;
+  optional int32 interkind = 5;
+  optional string domainname = 6;
+  optional bool worldmove = 7 [default = false];
+}
+
+message CS_HIBREED_AUTH_REQ_PACKET {
+  required uint64 reservednumber = 1;
+  required string onetimetoken = 2;
+}
+
+message SC_HIBREED_AUTH_ACK_PACKET {
+  required .LIN.Result result = 1;
+}
+
+message CS_MOVE_LOGOUT_NOTI_PACKET {
+  required uint64 reservednumber = 1;
+}
+
+message SC_ACTIVE_SPELL_EX_NOTI {
+  message spellex {
+    required int32 spellid = 1;
+    required int32 spelltype = 2;
+  }
+  repeated .LIN.SC_ACTIVE_SPELL_EX_NOTI.spellex spells = 1;
+}
+
+message SC_ADD_ACTIVE_SPELL_EX_NOTI {
+  required int32 spellid = 1;
+  required int32 spelltype = 2;
+}
+
+message SC_ACTIVE_SPELL_EX_INFO {
+  message info {
+    required int32 spellid = 1;
+    required int32 spelltype = 2;
+    required int32 graphic = 3;
+    repeated int32 value = 4;
+  }
+  repeated .LIN.SC_ACTIVE_SPELL_EX_INFO.info infos = 1;
+}
+
+message SC_ATTENDANCE_BONUS_INFO {
+  enum BonusType {
+    UseItem = 1;
+    GiveItem = 2;
+  }
+  message BonusInfo {
+    required .LIN.SC_ATTENDANCE_BONUS_INFO.BonusType bonusType = 1;
+    required int32 itemId = 2;
+    required int32 itemCount = 3;
+    required string itemName = 4;
+    required int32 itemInteractType = 5;
+    required int32 itemIcon = 6;
+    required int32 itemBless = 7;
+    required string itemDesc = 8;
+    required bytes itemExtraDesc = 9;
+    required int32 itemAttr = 10;
+  }
+  message AttendanceBonus {
+    required int32 attendaceIndex = 1;
+    repeated .LIN.SC_ATTENDANCE_BONUS_INFO.BonusInfo bonuses = 2;
+  }
+  required int32 checkInterval = 1;
+  required int32 startTime = 2;
+  required int32 resetPeriod = 3;
+  required int32 dailyMaxCount = 4;
+  required int32 weekendMaxCount = 5;
+  repeated .LIN.SC_ATTENDANCE_BONUS_INFO.AttendanceBonus attendanceBonuses = 6;
+}
+
+message SC_ATTENDANCE_USER_DATA {
+  message UserAttendanceData {
+    required int32 attendanceIndex = 1;
+    required .LIN.UserAttendanceState attendanceState = 2;
+  }
+  repeated .LIN.SC_ATTENDANCE_USER_DATA.UserAttendanceData attendanceData = 1;
+}
+
+message SC_ATTENDANCE_TIME_INFO {
+  required int32 attendanceTime = 1;
+  required int32 attendanceStartTime = 2;
+  required int32 todayRewardCount = 3;
+  required int32 remainedTime = 4;
+  required int32 remainedRewardCount = 5;
+  required .LIN.UserAttendanceTimeStatus resultCode = 6;
+  required bool rewardableUser = 7;
+}
+
+message CS_ATTENDANCE_TIME_INFO {
+}
+
+message CS_ATTENDANCE_BONUS_REQUEST {
+  required int32 attendanceIndex = 1;
+}
+
+message SC_ATTENDANCE_DATA_UPDATE {
+  required int32 attendanceIndex = 1;
+  required int32 attendanceState = 2;
+}
+
+message AttendanceBonusInfo {
+  required .LIN.AttendanceBonusType bonusType = 1;
+  required int32 itemId = 2;
+  required int32 itemCount = 3;
+  required string itemName = 4;
+  required int32 itemInteractType = 5;
+  required int32 itemIcon = 6;
+  required int32 itemBless = 7;
+  required string itemDesc = 8;
+  required bytes itemExtraDesc = 9;
+  required int32 itemAttr = 10;
+}
+
+message AttendanceBonusGroup {
+  required int32 attendaceIndex = 1;
+  repeated .LIN.AttendanceBonusInfo bonuses = 2;
+}
+
+message SC_ATTENDANCE_BONUS_INFO_EXTEND {
+  required int32 checkInterval = 1;
+  required int32 resetPeriod = 2;
+  required int32 dailyMaxCount = 3;
+  required int32 weekendMaxCount = 4;
+  required int32 totalBonusGroupCount = 5;
+}
+
+message SC_ATTENDANCE_BONUS_GROUP_INFO {
+  required .LIN.AttendanceGroupType groupType = 1;
+  repeated .LIN.AttendanceBonusGroup bonusGroup = 2;
+}
+
+message UserAttendanceDataExtend {
+  required int32 index = 1;
+  required .LIN.UserAttendanceState state = 2;
+  required int32 time = 3;
+}
+
+message UserAttendanceDataGroup {
+  required .LIN.AttendanceGroupType groupType = 1;
+  repeated .LIN.UserAttendanceDataExtend groupData = 2;
+  required .LIN.UserAttendanceTimeStatus resultCode = 3;
+  required int32 recvedRewardCount = 4;
+  required int32 totalRewardCount = 5;
+  required int32 attendanceTime = 6;
+  required int32 totalAttendanceTime = 7;
+}
+
+message SC_ATTENDANCE_USER_DATA_EXTEND {
+  repeated .LIN.UserAttendanceDataGroup groups = 1;
+  required .LIN.AttendanceUserFlag userFlag = 2;
+  repeated .LIN.AttendanceGroupType active_group = 3;
+}
+
+message CS_ATTENDANCE_BONUS_REQUEST_EXTEND {
+  required int32 index = 1;
+  required .LIN.AttendanceGroupType group = 2;
+}
+
+message SC_ATTENDANCE_DATA_UPDATE_EXTEND {
+  required int32 index = 1;
+  required int32 state = 2;
+  required .LIN.AttendanceGroupType group = 3;
+}
+
+message SC_BLOODPLEDGE_USER_INFO_NOTI {
+  required bytes bloodpledge_name = 1;
+  required uint32 rank = 2;
+}
+
+message SC_GAME_GATE_ERROR_NOTI {
+  enum GameGateErrorType {
+    GGE_ERROR_ETC = 0;
+    GGE_AUTH_LOGINTOKEN = 1;
+    GGE_AUTH_REQUESTTOKEN = 2;
+    GGE_GRADE_LISTGRADES = 3;
+  }
+  required .LIN.SC_GAME_GATE_ERROR_NOTI.GameGateErrorType errorType = 1;
+  required int32 errorCode = 2;
+  required int32 errorModule = 3;
+  required int32 errorLine = 4;
+}
+
+message SC_WORLD_PUT_NOTI {
+  required int32 worldnumber = 1;
+  required int32 homeserverno = 2;
+  required bool isunderwather = 3;
+  required bool isunderground = 4;
+  optional uint32 eventflag1 = 5;
+  optional uint32 eventflag2 = 6;
+  optional .LIN.RegionT ghost_region = 7;
+}
+
+message SC_WORLD_PUT_OBJECT_NOTI {
+  message Companion {
+    required double move_delay_reduce = 1;
+    required double attack_delay_reduce = 2;
+    required uint32 pvp_dmg_ratio = 3;
+  }
+  required uint32 point = 1;
+  required uint32 objectnumber = 2;
+  required int32 objectsprite = 3;
+  required int32 action = 4;
+  required int32 direction = 5;
+  required int32 lightRadius = 6;
+  required int32 objectcount = 7;
+  required int32 alignment = 8;
+  required bytes desc = 9;
+  required bytes title = 10;
+  required int32 speeddata = 11;
+  required int32 emotion = 12;
+  required int32 drunken = 13;
+  required bool isghost = 14;
+  required bool isparalyzed = 15;
+  required bool isuser = 16;
+  required bool isinvisible = 17;
+  required bool ispoisoned = 18;
+  required uint32 emblemid = 19;
+  required bytes pledgename = 20;
+  required bytes mastername = 21;
+  required int32 altitude = 22;
+  required int32 hitratio = 23;
+  required int32 safelevel = 24;
+  optional bytes shoptitle = 25;
+  required int32 weaponsprite = 26;
+  required int32 couplestate = 27;
+  required int32 boundarylevelindex = 28;
+  optional int32 weakelemental = 29;
+  optional int32 manaratio = 30;
+  optional uint32 botindex = 31;
+  optional int32 homeserverno = 32;
+  optional uint32 team_id = 33;
+  optional uint32 dialog_radius = 34;
+  optional int32 speed_value_flag = 35;
+  optional int32 second_speed_type = 36;
+  optional uint32 explosion_remain_time_ms = 37;
+  optional bool proclamation_siege_mark = 38;
+  optional int32 npc_class_id = 39;
+  optional .LIN.SC_WORLD_PUT_OBJECT_NOTI.Companion companion = 40;
+  optional string force_haction = 41;
+  optional bool is_portal = 42;
+  optional bool proclamation_siege_pledge = 43;
+}
+
+message SC_WHOUSER_NOTI_PACKET {
+  message ACCOUNT_INFO {
+    required string accountname = 1;
+    required int32 worldnumber = 2;
+    required int32 location = 3;
+    required string ip = 4;
+    required int32 ipkind = 5;
+  }
+  message WHOUSER_INFO {
+    required string username = 1;
+    required string alignstr = 2;
+    required int32 serverno = 3;
+    optional string title = 4;
+    optional string pledge = 5;
+    optional .LIN.SC_WHOUSER_NOTI_PACKET.ACCOUNT_INFO accountinfo = 6;
+  }
+  message HuntingMapInfo {
+    required uint32 map_desc = 1;
+    required uint32 user_count = 2;
+  }
+  repeated .LIN.SC_WHOUSER_NOTI_PACKET.WHOUSER_INFO whouserinfo = 1;
+  optional int32 currentusercount = 2;
+  repeated .LIN.SC_WHOUSER_NOTI_PACKET.HuntingMapInfo hunting_map_info = 3;
+}
+
+message SC_BUILDER_LIST_NOTI_PACKET {
+  message BUILDER_INFO {
+    required string buildername = 1;
+    required int32 serverno = 2;
+    required string ip = 3;
+  }
+  repeated .LIN.SC_BUILDER_LIST_NOTI_PACKET.BUILDER_INFO builders = 1;
+}
+
+message SC_STAT_RENEWAL_INFO_NOTI {
+  enum INFO_TYPE {
+    STAT_NORMAL = 1;
+    STAT_CALC = 2;
+    STAT_LEVUP = 4;
+    STAT_CALC_START = 8;
+    STAT_CALC_INGAME = 16;
+  }
+  message STR_INFO {
+    required int32 damagebonus = 1;
+    required int32 hitbonus = 2;
+    required int32 cribonus = 3;
+    required int32 carrybonus = 4;
+  }
+  message INT_INFO {
+    required int32 damagebonus = 1;
+    required int32 hitbonus = 2;
+    required int32 cribonus = 3;
+    required int32 magicbonus = 4;
+    required int32 reducemp = 5;
+  }
+  message WIS_INFO {
+    required int32 mpregen = 1;
+    required int32 mpincpotion = 2;
+    required int32 mrbonus = 3;
+    required int32 maxmplow = 4;
+    required int32 maxmphigh = 5;
+    optional int32 magicpoint = 6;
+    optional int32 basemaxmp = 7;
+  }
+  message DEX_INFO {
+    required int32 damagebonus = 1;
+    required int32 hitbonus = 2;
+    required int32 cribonus = 3;
+    required int32 acbonus = 4;
+    required int32 evasionbonus = 5;
+  }
+  message CON_INFO {
+    required int32 hpregen = 1;
+    required int32 hpincpotion = 2;
+    required int32 carrybonus = 3;
+    required int32 maxhpinc = 4;
+    optional int32 hitpoint = 5;
+    optional int32 basemaxhp = 6;
+  }
+  message CHA_INFO {
+    required bool dummy = 1;
+  }
+  required sint32 infotype = 1;
+  optional .LIN.SC_STAT_RENEWAL_INFO_NOTI.STR_INFO strinfo = 2;
+  optional .LIN.SC_STAT_RENEWAL_INFO_NOTI.INT_INFO intinfo = 3;
+  optional .LIN.SC_STAT_RENEWAL_INFO_NOTI.WIS_INFO wisinfo = 4;
+  optional .LIN.SC_STAT_RENEWAL_INFO_NOTI.DEX_INFO dexinfo = 5;
+  optional .LIN.SC_STAT_RENEWAL_INFO_NOTI.CON_INFO coninfo = 6;
+  optional .LIN.SC_STAT_RENEWAL_INFO_NOTI.CHA_INFO chainfo = 7;
+}
+
+message CS_STAT_RENEWAL_CALC_INFO_REQ {
+  enum INFO_TYPE {
+    STAT_NORMAL = 1;
+    STAT_CALC = 2;
+    STAT_LEVUP = 4;
+    STAT_CALC_START = 8;
+    STAT_CALC_INGAME = 16;
+  }
+  enum OPTION_VALUE {
+    OPTION_NO_RESPONSE = 1;
+  }
+  enum OPTION_MASK {
+    OPTION_STR_MASK = 1;
+    OPTION_INT_MASK = 2;
+    OPTION_WIS_MASK = 4;
+    OPTION_DEX_MASK = 8;
+    OPTION_CON_MASK = 16;
+    OPTION_CHA_MASK = 32;
+  }
+  required int32 lev = 1;
+  required int32 class = 2;
+  required int32 infotype = 3;
+  optional int32 option_value = 4;
+  optional int32 option_mask = 5;
+  optional int32 str = 6;
+  optional int32 int = 7;
+  optional int32 wis = 8;
+  optional int32 dex = 9;
+  optional int32 con = 10;
+  optional int32 cha = 11;
+}
+
+message CS_STAT_RENEWAL_BASESTAT_INFO_REQ {
+  optional int32 str = 1;
+  optional int32 int = 2;
+  optional int32 wis = 3;
+  optional int32 dex = 4;
+  optional int32 con = 5;
+  optional int32 cha = 6;
+}
+
+message SC_STAT_RENEWAL_BASESTAT_INFO_RES {
+  message STR_INFO {
+    required int32 basestr = 1;
+    optional int32 damagebonus = 2;
+    optional int32 hitbonus = 3;
+    optional int32 cribonus = 4;
+    optional int32 carrybonus = 5;
+  }
+  message INT_INFO {
+    required int32 baseint = 1;
+    optional int32 damagebonus = 2;
+    optional int32 hitbonus = 3;
+    optional int32 cribonus = 4;
+    optional int32 magicbonus = 5;
+    optional int32 reducemp = 6;
+  }
+  message WIS_INFO {
+    required int32 basewis = 1;
+    optional int32 mpregen = 2;
+    optional int32 mpincpotion = 3;
+    optional int32 mrbonus = 4;
+    optional int32 maxmplow = 5;
+    optional int32 maxmphigh = 6;
+    optional int32 addmpinc = 7;
+  }
+  message DEX_INFO {
+    required int32 basedex = 1;
+    optional int32 damagebonus = 2;
+    optional int32 hitbonus = 3;
+    optional int32 cribonus = 4;
+    optional int32 acbonus = 5;
+    optional int32 evasionbonus = 6;
+  }
+  message CON_INFO {
+    required int32 basecon = 1;
+    optional int32 hpregen = 2;
+    optional int32 hpincpotion = 3;
+    optional int32 carrybonus = 4;
+    optional int32 maxhpinc = 5;
+    optional int32 addhpinc = 6;
+  }
+  message CHA_INFO {
+    required int32 basecha = 1;
+  }
+  optional .LIN.SC_STAT_RENEWAL_BASESTAT_INFO_RES.STR_INFO strinfo = 1;
+  optional .LIN.SC_STAT_RENEWAL_BASESTAT_INFO_RES.INT_INFO intinfo = 2;
+  optional .LIN.SC_STAT_RENEWAL_BASESTAT_INFO_RES.WIS_INFO wisinfo = 3;
+  optional .LIN.SC_STAT_RENEWAL_BASESTAT_INFO_RES.DEX_INFO dexinfo = 4;
+  optional .LIN.SC_STAT_RENEWAL_BASESTAT_INFO_RES.CON_INFO coninfo = 5;
+  optional .LIN.SC_STAT_RENEWAL_BASESTAT_INFO_RES.CHA_INFO chainfo = 6;
+}
+
+message SC_STAT_RENEWAL_CARRY_WEIGHT_INFO_NOTI {
+  required int32 carrypercent = 1;
+  required int32 carrycurrent = 2;
+  required int32 carrymax = 3;
+}
+
+message SC_MAGIC_EVASION_NOTI {
+  required int32 magicevasion = 1;
+}
+
+message SC_TOTAL_DRINKED_ELIXIR_NOTI {
+  required int32 elixir = 1;
+}
+
+message SC_STAT_RENEWAL_BASE_STAT_NOTI {
+  required int32 str = 1;
+  required int32 int = 2;
+  required int32 wis = 3;
+  required int32 dex = 4;
+  required int32 con = 5;
+  required int32 cha = 6;
+}
+
+message CS_ALCHEMY_DESIGN_REQ {
+  required bytes hash_value = 1;
+}
+
+message SC_ALCHEMY_DESIGN_ACK {
+  enum ResultCode {
+    RC_ALCHEMY_LOAD_START = 0;
+    RC_ALCHEMY_LOADING = 1;
+    RC_ALCHEMY_LOAD_FINISH = 2;
+    RC_ALCHEMY_SAME_HASH_VAL = 3;
+    RC_ALCHEMY_INVALID_HASH_VAL = 4;
+    RC_ALCHEMY_CURRENTLY_CLOSED = 5;
+    RC_ERROR_UNKNOWN = 9999;
+  }
+  message Item {
+    optional int32 name_id = 1;
+    optional int32 icon = 2;
+    optional int32 bless_code = 3;
+  }
+  message InputList {
+    required int32 id = 1;
+    repeated .LIN.SC_ALCHEMY_DESIGN_ACK.Item item = 2;
+  }
+  message OutputList {
+    required int32 id = 1;
+    repeated .LIN.SC_ALCHEMY_DESIGN_ACK.Item item = 2;
+  }
+  message Alchemy {
+    message Input {
+      required int32 slot_number = 1;
+      required bool is_required = 2;
+      required int32 input_list_id = 3;
+      optional bool is_hyper = 4;
+    }
+    message Output {
+      repeated int32 filled_slots = 1;
+      required int32 output_list_id = 2;
+      repeated .LIN.SC_ALCHEMY_DESIGN_ACK.Alchemy.Output hyper_outputs = 3;
+    }
+    required int32 id = 1;
+    repeated .LIN.SC_ALCHEMY_DESIGN_ACK.Alchemy.Input inputs = 2;
+    repeated .LIN.SC_ALCHEMY_DESIGN_ACK.Alchemy.Output outputs = 3;
+  }
+  required .LIN.SC_ALCHEMY_DESIGN_ACK.ResultCode result_code = 1;
+  repeated .LIN.SC_ALCHEMY_DESIGN_ACK.InputList inputLists = 2;
+  repeated .LIN.SC_ALCHEMY_DESIGN_ACK.OutputList outputLists = 3;
+  repeated .LIN.SC_ALCHEMY_DESIGN_ACK.Alchemy alchemies = 4;
+}
+
+message SC_ALCHEMY_EXTRA_INFO_NOTI {
+  repeated int32 summoned_petball_item_id = 1;
+}
+
+message CS_ALCHEMY_MAKE_REQ {
+  message Input {
+    required int32 slot_no = 1;
+    required int32 item_name_id = 2;
+    required int32 item_id = 3;
+  }
+  required int32 alchemy_id = 1;
+  repeated .LIN.CS_ALCHEMY_MAKE_REQ.Input inputs = 2;
+}
+
+message SC_ALCHEMY_MAKE_ACK {
+  enum ResultCode {
+    RC_SUCCESS = 0;
+    RC_FAIL = 1;
+    RC_ERROR_INVALID_INPUT = 2;
+    RC_ERROR_INVEN_OVER = 3;
+    RC_ERROR_WEIGHT_OVER = 4;
+    RC_ERROR_ALCHEMY_DOES_NOT_EXIST = 5;
+    RC_ERROR_NO_REQUIRED_ITEM = 6;
+    RC_ERROR_BLOCKED_ALCHEMY_ID = 7;
+    RC_ERROR_CURRENTLY_CLOSED = 8;
+    RC_ERROR_PETBALL_SUMMONING = 9;
+    RC_HYPER_SUCCESS = 10;
+    RC_ERROR_UNKNOWN = 9999;
+  }
+  message OutputItem {
+    required int32 item_id = 1;
+    required int32 icon_id = 2;
+    optional int32 bless_code = 3;
+  }
+  required .LIN.SC_ALCHEMY_MAKE_ACK.ResultCode result_code = 1;
+  repeated .LIN.SC_ALCHEMY_MAKE_ACK.OutputItem output_items = 2;
+}
+
+message SC_USER_START_SUNDRY_NOTI {
+  optional bool is_pccafe = 1;
+  optional bool is_enable_ranking_system = 2;
+  optional int32 pc_move_delay_reduce_rate = 3;
+  optional int32 npc_move_delay_reduce = 4;
+}
+
+message SC_BASECAMP_CHART_NOTI_PACKET {
+  message CHART_INFO {
+    required string user_name = 1;
+    required int64 user_points = 2;
+  }
+  repeated .LIN.SC_BASECAMP_CHART_NOTI_PACKET.CHART_INFO charts = 1;
+  required int64 team_points = 2;
+  optional int32 winner_team_id = 3;
+}
+
+message SC_BASECAMP_POINTRANK_NOTI_PACKET {
+  message PointRankInfoT {
+    required uint32 user_rank = 1;
+    required bytes user_name = 2;
+    required int64 user_points = 3;
+  }
+  repeated .LIN.SC_BASECAMP_POINTRANK_NOTI_PACKET.PointRankInfoT top_rankers = 1;
+  optional .LIN.SC_BASECAMP_POINTRANK_NOTI_PACKET.PointRankInfoT my_rank = 2;
+  optional int64 team_points = 3;
+}
+
+message SC_THEBE_CAPTURE_INFO_NOTI_PACKET {
+  message CapturePointT {
+    required uint32 team_id = 1;
+    required uint32 capture_point = 2;
+    optional uint32 homeserverno = 3;
+  }
+  repeated .LIN.SC_THEBE_CAPTURE_INFO_NOTI_PACKET.CapturePointT points = 1;
+  optional uint32 remain_time_for_next_capture_event = 2;
+}
+
+message SC_BOX_ATTR_CHANGE_NOTI_PACKET {
+  message Box {
+    required int32 sx = 1;
+    required int32 sy = 2;
+    required int32 ex = 3;
+    required int32 ey = 4;
+  }
+  required int32 worldNumber = 1;
+  required .LIN.SC_BOX_ATTR_CHANGE_NOTI_PACKET.Box box = 2;
+  required int32 attribute = 3;
+}
+
+message CS_CHAT_REQ_PACKET {
+  required uint32 transaction_id = 1;
+  required .LIN.ChatType type = 2;
+  required bytes message = 3;
+  optional bytes target_user_name = 5;
+  optional uint32 target_user_server_no = 6;
+}
+
+message SC_CHAT_ACK_PACKET {
+  required uint32 transaction_id = 1;
+  required .LIN.ChatType type = 2;
+  required bytes message = 3;
+  optional bytes target_user_name = 4;
+  optional uint32 target_user_server_no = 5;
+  required .LIN.CHAT_RESULT result = 6;
+  optional int32 chat_ban_duration = 7;
+}
+
+message SC_CHAT_MESSAGE_NOTI_PACKET {
+  required int64 time_t64 = 1;
+  required .LIN.ChatType type = 2;
+  required bytes message = 3;
+  optional uint32 message_color = 4;
+  required bytes name = 5;
+  optional uint32 server_no = 6;
+  optional uint32 object_id = 7;
+  optional uint32 loc_x = 8;
+  optional uint32 loc_y = 9;
+  optional int32 ranker_rating = 10;
+  optional string target_user_name = 11;
+  optional bool is_server_keeper = 12;
+}
+
+message CS_EXCLUDE_REQ_PACKET {
+  enum eExcludeMode {
+    eEXCLUDE_MODE_LIST = 0;
+    eEXCLUDE_MODE_ADD = 1;
+    eEXCLUDE_MODE_DEL = 2;
+  }
+  enum eExcludeType {
+    eEXCLUDE_TYPE_CHAT = 0;
+    eEXCLUDE_TYPE_MAIL = 1;
+    eEXCLUDE_TYPE_MAX = 2;
+  }
+  required .LIN.CS_EXCLUDE_REQ_PACKET.eExcludeMode mode = 1;
+  required .LIN.CS_EXCLUDE_REQ_PACKET.eExcludeType type = 2;
+  repeated bytes charNames = 3;
+}
+
+message SC_CHANGE_TEAM_NOTI_PACKET {
+  required uint32 object_id = 1;
+  required int32 object_team_id = 2;
+}
+
+message SC_DISCONNECT_SOCKET_NOTI_PACKET {
+  optional bool is_empty = 1;
+}
+
+message SC_EVENT_COUNTDOWN_NOTI_PACKET {
+  required uint32 remain_time = 1;
+  optional bytes event_desc = 2;
+}
+
+message CS_ACTION_SCRIPT_REQ {
+  required uint32 action_script_id = 1;
+  optional string action_script_name = 2;
+}
+
+message SC_APP_SERVER_PLAY_TIME {
+  enum ResultCode {
+    RC_SUCCESS = 0;
+    RC_ERROR_PLAYTIME_IS_ZERO = 1;
+    RC_ERROR_NO_PAYMENT_INFO = 2;
+  }
+  required .LIN.SC_APP_SERVER_PLAY_TIME.ResultCode resultCode = 1;
+  optional int32 playTime = 2;
+}
+
+message SC_EQUIP_ON_OFF_NOTI {
+  required int32 effect_list_Id = 1;
+  required bool on_off = 2;
+}
+
+message SC_2FA_PC_REGISTRATION_CHANGE_AGREEMENT_REQ {
+  required uint32 transaction_id = 1;
+}
+
+message CS_2FA_PC_REGISTRATION_CHANGE_AGREEMENT_ACK {
+  required uint32 transaction_id = 1;
+  required bool is_agree = 2;
+}
+
+message LogDFormat {
+  required int32 log_detail_code = 1;
+  optional int64 data1_num = 2;
+  optional int64 data2_num = 3;
+  optional int64 data3_num = 4;
+  optional int64 data4_num = 5;
+  optional int64 data5_num = 6;
+  optional int64 data6_num = 7;
+  optional int64 data7_num = 8;
+  optional int64 data8_num = 9;
+  optional string data1_str = 10;
+  optional string data2_str = 11;
+  optional string data3_str = 12;
+}
+
+message CS_CLIENT_INFO_LOG_REQ {
+  required uint32 transaction_id = 1;
+  required .LIN.LogDFormat log_data = 2;
+}
+
+message CS_NP_TOKEN_LOGIN_REQ {
+  required uint32 transaction_id = 1;
+  required string client_ip_address = 2;
+  required string client_app_id = 3;
+  required string auth_provider_code = 4;
+  required string auth_token = 5;
+  optional string mobile_2nd_pw = 6;
+}
+
+message Ranker {
+  optional int32 rating = 1;
+  required int32 rank = 2;
+  optional int32 previous_rank = 3;
+  required int32 class = 4;
+  required string name = 5;
+  optional int32 uid = 6;
+  optional int32 score = 7;
+  optional int32 class_rating = 8;
+}
+
+message CS_TOP_RANKER_REQ {
+  required int32 class_id = 1;
+  required int64 version = 2;
+}
+
+message SC_TOP_RANKER_ACK {
+  enum ResultCode {
+    RC_SUCCESS = 0;
+    RC_NO_CHANGE = 1;
+    RC_NOW_NOT_SERVICE = 2;
+    RC_UNKNOWN_ERROR = 100;
+  }
+  required int32 result_code = 1;
+  optional int64 version = 2;
+  optional int32 class_id = 3;
+  optional int32 total_page = 4;
+  optional int32 current_page = 5;
+  repeated .LIN.Ranker rankers = 6;
+}
+
+message SC_TOP_RANKER_NOTI {
+  optional .LIN.Ranker total_ranker = 1;
+  optional .LIN.Ranker class_ranker = 2;
+  optional bool almost_upper_total = 3;
+  optional bool almost_lower_total = 4;
+  optional bool almost_upper_class = 5;
+  optional bool almost_lower_class = 6;
+}
+
+message CS_MY_RANKING_REQ {
+  required int64 version = 1;
+}
+
+message SC_MY_RANKING_ACK {
+  enum ResultCode {
+    RC_SUCCESS = 0;
+    RC_NO_CHANGE = 1;
+    RC_NOW_NOT_SERVICE = 2;
+    RC_NO_RANK = 3;
+    RC_UNKNOWN_ERROR = 100;
+  }
+  required int32 result_code = 1;
+  optional int64 version = 2;
+  optional int32 class_rank = 3;
+  optional int32 previous_class_rank = 4;
+  optional int32 all_rank = 5;
+  optional int32 previous_all_rank = 6;
+}
+
+message SC_TEAM_EMBLEM_SWITCH_NOTI {
+  optional bool is_turn_on = 1;
+}
+
+message MinigamePuzzleInfo {
+  required int32 board_width = 1;
+  required int32 board_height = 2;
+  required uint64 start_time = 3;
+  required uint64 end_time = 4;
+  repeated uint32 card_index = 5;
+  required bytes result_card_key = 6;
+}
+
+message MinigamePuzzleResult {
+  repeated uint32 card_index = 1;
+}
+
+message MinigameCatchGremlinInfo {
+  message GremlinInfo {
+    required int32 small_count = 1;
+    required int32 medium_count = 2;
+    required int32 large_count = 3;
+    required int32 bomb_count = 4;
+    required int32 target_point = 5;
+  }
+  required int32 board_width = 1;
+  required int32 board_height = 2;
+  required uint64 start_time = 3;
+  required uint64 end_time = 4;
+  required .LIN.MinigameCatchGremlinInfo.GremlinInfo gremlin_info = 5;
+}
+
+message MinigameCatchGremlinResult {
+  message ResultInfo {
+    required int32 index = 1;
+    required int32 resultIndex = 2;
+  }
+  repeated .LIN.MinigameCatchGremlinResult.ResultInfo result_info_list = 1;
+}
+
+message MinigameAdenUserInfo {
+  required int32 position = 1;
+  required int32 hp = 2;
+  required int32 mp = 3;
+  required int32 remain_turn_count = 4;
+}
+
+message MinigameAdenDiceInfo {
+  repeated int32 dice_list = 1;
+}
+
+message MinigameAdenInfo {
+  message MagicCardInfo {
+    enum CardType {
+      HEAL = 1;
+      GREATER_HEAL = 2;
+      BLOOD_TO_SOUL = 3;
+      ION_SKIN = 4;
+      ENCHANT_WEAPON = 5;
+      TRIPPLE_ARROW = 6;
+      HOLY_WALK = 7;
+      TELEPORT = 8;
+      IMMUNE_TO_HARM = 9;
+      FULL_HEAL = 10;
+    }
+    required int32 id = 1;
+    required int32 type = 2;
+    required int32 flag = 3;
+  }
+  message BoxInfo {
+    enum BoxType {
+      BLANK = 1;
+      MOVE = 2;
+      MONSTER = 3;
+      LUCKY_BAG = 4;
+      PORTAL = 5;
+      TRAP = 6;
+      HEAL = 7;
+      JAIL = 8;
+    }
+    message MoveBox {
+      required int32 distance = 1;
+    }
+    message MonsterBox {
+      required int32 id = 1;
+      required int32 level = 2;
+      required int32 power = 3;
+      required int32 dice_power = 4;
+    }
+    message LuckyBagBox {
+      required int32 id = 1;
+    }
+    message PortalBox {
+      required int32 target_box_index = 1;
+    }
+    message TrapBox {
+      optional int32 damage = 1;
+    }
+    message HealBox {
+      optional int32 hp = 1;
+    }
+    message JailBox {
+      required int32 turn_count = 1;
+      required int32 escape_dice_power = 2;
+    }
+    required int32 box_index = 1;
+    required int32 type = 2;
+    optional .LIN.MinigameAdenInfo.BoxInfo.MoveBox move_box = 3;
+    optional .LIN.MinigameAdenInfo.BoxInfo.MonsterBox monster_box = 4;
+    optional .LIN.MinigameAdenInfo.BoxInfo.LuckyBagBox luckky_bag_box = 5;
+    optional .LIN.MinigameAdenInfo.BoxInfo.PortalBox potal_box = 6;
+    optional .LIN.MinigameAdenInfo.BoxInfo.TrapBox trap_box = 7;
+    optional .LIN.MinigameAdenInfo.BoxInfo.HealBox heal_box = 8;
+    optional .LIN.MinigameAdenInfo.BoxInfo.JailBox jail_box = 9;
+  }
+  required int32 board_width = 1;
+  required int32 board_height = 2;
+  required uint64 start_time = 3;
+  required uint64 end_time = 4;
+  required int32 turn_count = 5;
+  required .LIN.MinigameAdenUserInfo user_info = 6;
+  repeated .LIN.MinigameAdenInfo.MagicCardInfo magic_card_info_list = 7;
+  repeated .LIN.MinigameAdenInfo.BoxInfo box_info_list = 8;
+}
+
+message MinigameAdenResult {
+}
+
+message CS_MINIGAME_LIST_REQ {
+}
+
+message SC_MINIGAME_LIST_ACK {
+  message MinigameInfo {
+    required .LIN.MinigameCode minigame_code = 1;
+    required uint64 next_game_time = 2;
+  }
+  repeated .LIN.SC_MINIGAME_LIST_ACK.MinigameInfo minigame_info_list = 1;
+  required uint64 server_time = 2;
+}
+
+message CS_MINIGAME_START_REQ {
+  required .LIN.MinigameCode minigame_code = 1;
+}
+
+message SC_MINIGAME_START_ACK {
+  enum ResultCode {
+    SUCCESS = 0;
+    FAIL = 1;
+    ALREADY_PLAYING = 2;
+    FAIL_COOLTIME = 3;
+  }
+  required .LIN.SC_MINIGAME_START_ACK.ResultCode result_code = 1;
+  optional .LIN.MinigameCode minigame_code = 2;
+  optional uint32 session_id = 3;
+  optional .LIN.MinigamePuzzleInfo puzzle_info = 4;
+  optional .LIN.MinigameCatchGremlinInfo catch_gremlin_info = 5;
+  optional .LIN.MinigameAdenInfo aden_info = 6;
+}
+
+message CS_MINIGAME_END_REQ {
+  required uint32 session_id = 1;
+  optional .LIN.MinigamePuzzleResult puzzle_result = 2;
+  optional .LIN.MinigameCatchGremlinResult catch_gremlin_result = 3;
+  optional .LIN.MinigameAdenResult aden_result = 4;
+}
+
+message SC_MINIGAME_END_ACK {
+  enum ResultCode {
+    SUCCESS = 0;
+    FAIL = 1;
+    FAIL_TIMEOVER = 2;
+    FAIL_RESULT = 3;
+  }
+  required .LIN.SC_MINIGAME_END_ACK.ResultCode result_code = 1;
+  optional .LIN.MinigameCode minigame_code = 2;
+}
+
+message CS_MINIGAME_ADEN_PLAY_REQ {
+  required uint32 session_id = 1;
+}
+
+message SC_MINIGAME_ADEN_PLAY_ACK {
+  enum ResultCode {
+    SUCCESS = 0;
+    FAIL = 1;
+  }
+  required .LIN.SC_MINIGAME_ADEN_PLAY_ACK.ResultCode result_code = 1;
+  optional .LIN.MinigameAdenDiceInfo dice_info = 2;
+  optional .LIN.MinigameAdenUserInfo user_info = 3;
+}
+
+message CS_MINIGAME_ADEN_USE_CARD_REQ {
+  required uint32 session_id = 1;
+  required int32 id = 2;
+}
+
+message SC_MINIGAME_ADEN_USE_CARD_ACK {
+  enum ResultCode {
+    SUCCESS = 0;
+    FAIL = 1;
+  }
+  required .LIN.SC_MINIGAME_ADEN_USE_CARD_ACK.ResultCode result_code = 1;
+  optional .LIN.MinigameAdenUserInfo user_info = 2;
+}
+
+message NotificationInfomation {
+  message TeleportData {
+    required bytes stringk = 1;
+    required int32 adenacount = 2;
+  }
+  message EventNpcInfo {
+    required uint32 npc_id = 1;
+    required bytes displaydesc = 2;
+  }
+  message EventNpcData {
+    repeated .LIN.NotificationInfomation.EventNpcInfo eventinfo = 1;
+  }
+  optional int32 notification_id = 1;
+  optional uint32 objectid = 2;
+  optional bytes hyperlink = 3;
+  required bytes displaydesc = 4;
+  required uint64 startdate = 5;
+  required uint64 enddate = 6;
+  optional .LIN.NotificationInfomation.TeleportData teleport = 7;
+  optional .LIN.NotificationInfomation.EventNpcData eventnpc = 8;
+}
+
+message SC_NOTIFICATION_INFO_NOTI {
+  required int32 maxpagecount = 1;
+  required int32 currentpagecount = 2;
+  repeated .LIN.NotificationInfomation notificationinfo = 3;
+}
+
+message SC_NOTIFICATION_CHANGE_NOTI {
+  repeated int32 delete_notification_id = 1;
+  repeated int32 delete_objectid = 2;
+  repeated .LIN.NotificationInfomation change = 3;
+}
+
+message CS_NOTIFICATION_TELEPORT_REQ {
+  required int32 notification_id = 1;
+}
+
+message CompletedAchievement {
+  required uint32 achievement_id = 1;
+  required uint64 completed_time = 2;
+  required bool get_reward = 3;
+}
+
+message CriteriaProgress {
+  required uint32 criteria_id = 1;
+  required uint64 quantity = 2;
+}
+
+message SC_ADD_COMPLETED_ACHIEVEMENT_BATCH {
+  required uint32 total_pages = 1;
+  required uint32 current_page = 2;
+  repeated .LIN.CompletedAchievement completed_achievmenet = 3;
+}
+
+message SC_ADD_CRITERIA_PROGRESS_BATCH {
+  required uint32 total_pages = 1;
+  required uint32 current_page = 2;
+  repeated .LIN.CriteriaProgress criteria_progress = 3;
+}
+
+message CS_COMPLETED_ACHIEVEMENT_REWARD_REQ {
+  required uint32 achievement_id = 1;
+  repeated uint32 optional_reward_indexes = 2;
+}
+
+message SC_COMPLETED_ACHIEVEMENT_REWARD_ACK {
+  enum eResultCode {
+    REQUEST_REWARD_SUCCESS = 0;
+    REQUEST_REWARD_FAIL = 1;
+    REQUEST_REWARD_FAIL_ALREADY_GET_REWARD = 2;
+    REQUEST_REWARD_FAIL_NOT_COMPLETED = 3;
+  }
+  required .LIN.SC_COMPLETED_ACHIEVEMENT_REWARD_ACK.eResultCode result = 1;
+  required uint32 achievement_id = 2;
+}
+
+message CS_ACHIEVEMENT_TELEPORT_REQ {
+  required uint32 achievement_id = 1;
+}
+
+message SC_ACHIEVEMENT_TELEPORT_ACk {
+  enum eResultCode {
+    TELEPORT_SUCCESS = 0;
+    TELEPORT_FAIL = 1;
+    TELEPORT_FAIL_NOT_ENOUGH_ADENA = 2;
+    TELEPORT_FAIL_WRONG_LOCATION = 3;
+  }
+  required .LIN.SC_ACHIEVEMENT_TELEPORT_ACk.eResultCode result = 1;
+  required uint32 achievement_id = 2;
+}
+
+message SC_CRITERIA_UPDATE_NOTI {
+  required uint32 criteria_id = 1;
+  required uint64 quantity = 2;
+}
+
+message SC_ACHIEVEMENT_COMPLETE_NOTI {
+  required uint32 achievement_id = 1;
+  required uint64 completed_time = 2;
+}
+
+message QuestProgress {
+  message ObjectiveProgress {
+    required uint32 id = 1;
+    optional uint32 quantity = 2;
+    optional uint32 required_quantity = 3;
+  }
+  required uint32 id = 1;
+  required int64 start_time = 2;
+  optional int64 finish_time = 3;
+  repeated .LIN.QuestProgress.ObjectiveProgress objectives = 4;
+  optional bool is_shown_in_quest_window = 5;
+}
+
+message CS_QUEST_PROGRESS_REQ {
+}
+
+message SC_QUEST_PROGRESS_ACK {
+  repeated .LIN.QuestProgress quest_list = 1;
+}
+
+message SC_QUEST_PROGRESS_UPDATE_NOTI {
+  required .LIN.QuestProgress quest = 1;
+}
+
+message CS_QUEST_REVEAL_REQ {
+  required uint32 id = 1;
+}
+
+message SC_QUEST_REVEAL_ACK {
+  enum eResultCode {
+    SUCCESS = 0;
+    FAIL = 1;
+    FAIL_ALREADY_REVEALED = 2;
+    FAIL_ALREADY_STARTED = 3;
+    FAIL_ALREADY_FINISHED = 4;
+    FAIL_OBSOLETE = 5;
+  }
+  required .LIN.SC_QUEST_REVEAL_ACK.eResultCode result = 1;
+  required uint32 id = 2;
+}
+
+message CS_QUEST_START_REQ {
+  required uint32 id = 1;
+}
+
+message SC_QUEST_START_ACK {
+  enum eResultCode {
+    SUCCESS = 0;
+    FAIL = 1;
+    FAIL_ALREADY_STARTED = 2;
+    FAIL_ALREADY_FINISHED = 3;
+    FAIL_OBSOLETE = 4;
+  }
+  required .LIN.SC_QUEST_START_ACK.eResultCode result = 1;
+  required uint32 id = 2;
+}
+
+message CS_QUEST_FINISH_REQ {
+  required uint32 id = 1;
+  repeated uint32 optional_reward_indexes = 2;
+}
+
+message SC_QUEST_FINISH_ACK {
+  enum eResultCode {
+    SUCCESS = 0;
+    FAIL = 1;
+    FAIL_ALREADY_FINISHED = 2;
+    FAIL_NOT_COMPLETED = 3;
+    FAIL_NOT_VALID_REWARD_INDEXES = 4;
+    FAIL_OBSOLETE = 5;
+  }
+  required .LIN.SC_QUEST_FINISH_ACK.eResultCode result = 1;
+  required uint32 id = 2;
+}
+
+message SC_QUEST_FINISH_NOTI {
+  required uint32 id = 1;
+}
+
+message CS_QUEST_TELEPORT_REQ {
+  required uint32 id = 1;
+}
+
+message SC_QUEST_TELEPORT_ACK {
+  enum eResultCode {
+    SUCCESS = 0;
+    FAIL = 1;
+    FAIL_NOT_ENOUGH_ADENA = 2;
+    FAIL_WRONG_LOCATION = 3;
+    FAIL_CANT_TELEPORT_NOW = 4;
+  }
+  required .LIN.SC_QUEST_TELEPORT_ACK.eResultCode result = 1;
+  required uint32 id = 2;
+}
+
+message CS_QUEST_SHOW_IN_WINDOW_REQ {
+  required uint32 id = 1;
+  required bool is_show = 2;
+}
+
+message SC_QUEST_SHOW_IN_WINDOW_ACK {
+  enum eResultCode {
+    SUCCESS = 0;
+    FAIL = 1;
+  }
+  required .LIN.SC_QUEST_SHOW_IN_WINDOW_ACK.eResultCode result = 1;
+  required uint32 id = 2;
+  optional bool is_show = 3;
+}
+
+message CS_SEAL_ITEM_REQ {
+  required uint32 object_id = 1;
+}
+
+message BUILDER_DATA_DELIVERY {
+  required string builder_user = 1;
+  required string target_user = 2;
+  required string command = 3;
+}
+
+message SC_BATTLE_ARENA_AUTO_MATCH_REQ {
+  required int32 arena_id = 1;
+}
+
+message CS_BATTLE_ARENA_AUTO_MATCH_ACK {
+  required int32 arena_id = 1;
+  required bool is_apply = 2;
+}
+
+message SC_BATTLE_ARENA_AUTO_MATCH_RESULT_NOTI {
+  enum eResultCode {
+    eAUTO_MATCH_RESULT_MATCH_SUCCEED = 0;
+    eAUTO_MATCH_RESULT_OTHER_REJECT = 1;
+    eAUTO_MATCH_RESULT_ERROR = 2;
+  }
+  required int32 arena_id = 1;
+  required .LIN.SC_BATTLE_ARENA_AUTO_MATCH_RESULT_NOTI.eResultCode result = 2;
+}
+
+message SC_EXP_INCREASE_NOTI {
+  required uint32 original_exp = 1;
+  required uint32 boosted_final_exp = 2;
+}
+
+message SC_TURN_ON_TELEPORT_FLAG_NOTI {
+  optional int32 empty = 1;
+}
+
+message SC_MAP_TELEPORT_INFO_NOTI {
+  message ConditionItems {
+    required uint32 nameid = 1;
+    required int32 count = 2;
+    required int32 deltype = 3;
+  }
+  message MapData {
+    required string action_string = 1;
+    repeated .LIN.SC_MAP_TELEPORT_INFO_NOTI.ConditionItems condition_items = 2;
+  }
+  required int32 npc_id = 1;
+  repeated .LIN.SC_MAP_TELEPORT_INFO_NOTI.MapData map_datas = 2;
+}
+
+message SC_DIALOGUE_MESSAGE_NOTI {
+  message Dialogue {
+    optional uint32 talker_id = 1 [default = 0];
+    required uint32 dialogue_id = 2;
+    optional string sound_file = 3;
+    optional uint32 duration = 4 [default = 5000];
+  }
+  repeated .LIN.SC_DIALOGUE_MESSAGE_NOTI.Dialogue dialogues = 1;
+}
+
+message SC_PLAY_MOIVE_NOTI {
+  required string movie_file = 1;
+  required uint32 play_time_sec = 2;
+}
+
+message SC_NPC_SPEED_VALUE_FLAG_NOTI {
+  required uint32 object_id = 1;
+  required int32 speed_value_flag = 2;
+  optional int32 second_speed_type = 3;
+}
+
+message SC_PK_MESSAGE_AT_BATTLE_SERVER {
+  required int32 interkind = 1;
+  required string killer_name = 2;
+  required int32 killer_cache_no = 3;
+  required string die_name = 4;
+  required int32 die_cache_no = 5;
+}
+
+message SC_OPEN_PERSONAL_SHOP_ACK {
+  enum eOpenResult {
+    eRESULT_OK = 1;
+    eRESULT_ERROR_CANT_OPEN_PERSONAL_SHOP = 2;
+    eRESULT_ERROR_WAIT_MORE_FOR_OPEN_PERSONAL_SHOP = 3;
+    eRESULT_ERROR_INVALID_SELL_ITEM_COUNT_PERSONAL_SHOP = 4;
+    eRESULT_ERROR_INVALID_BUY_ITEM_COUNT_PERSONAL_SHOP = 5;
+    eRESULT_ERROR_INVALID_BUY_SELL_ITEM_COUNT_PERSONAL_SHOP = 6;
+    eRESULT_ERROR_NOT_ENOUGH_ADENA_FOR_PERSONAL_SHOP = 7;
+    eRESULT_ERROR_EXCEED_MAX_TRADE_PRICE_LIMIT = 8;
+    eRESULT_ERROR_TOO_HEAVY_TO_BUY_SHOP = 9;
+    eRESULT_ERROR_NOT_ENOUGH_MONEY = 10;
+    eRESULT_ERROR_DAILY_PERSONAL_SHOP_OPEN_LIMIT_PER_ACCOUNT_EXCEEDED = 11;
+    eRESULT_ERROR_NOTHING_TO_PUT_ON_SALE = 12;
+  }
+  required uint32 object_id = 1;
+  required .LIN.SC_OPEN_PERSONAL_SHOP_ACK.eOpenResult result = 2;
+}
+
+message SC_PARTY_SPELL_AVATAR_NOTI {
+  required uint32 spell_id = 1;
+  required bool active_flag = 2;
+  required int32 icon_id = 3;
+  required int32 desc_index = 4;
+}
+
+message SC_AVAILABLE_SPELL_CHANGE_NOTI {
+  enum Type {
+    EQUIP_ADD = 1;
+    UNEQUIP_REMOVE = 2;
+  }
+  required .LIN.SC_AVAILABLE_SPELL_CHANGE_NOTI.Type type = 1;
+  optional bytes spells = 2;
+}
+
+message CS_CLIENT_FUNC_LOG_NOTI {
+  enum FuncID {
+    LOGIN_PROCESS = 1;
+    OK_CHARACTER_PW = 2;
+    TO_WINDOW_MODE = 3;
+    OK_INGAME_PW = 4;
+    GET_MAP_NUM = 5;
+  }
+  required .LIN.CS_CLIENT_FUNC_LOG_NOTI.FuncID fid = 1;
+}
+
+message SC_EQUIPSET_NOTI {
+  message Sets {
+    required int32 equip_set = 1;
+    repeated uint32 object_id = 2;
+  }
+  required int32 current_set = 1;
+  repeated .LIN.SC_EQUIPSET_NOTI.Sets equip_sets = 2;
+  optional int32 request_limit_sec = 3;
+  optional int32 limit_level = 4;
+}
+
+message CS_EQUIPSET_UPDATE {
+  optional int32 equip_set = 1;
+  optional int32 equip_current_set = 2;
+}
+
+message BuffInfo {
+  optional uint32 duration = 1;
+}
+
+message SC_BUFF_NOTI {
+  enum eBuffType {
+    BUFF_00_HASTE = 0;
+    BUFF_01_SLOW = 1;
+    BUFF_02_EMOTION_BRAVERY = 2;
+    BUFF_03_EMOTION_PRUDENCE = 3;
+    BUFF_04_SHIELD = 4;
+    BUFF_05_SHADOW_ARMOR = 5;
+    BUFF_06_EARTH_SKIN = 6;
+    BUFF_07_BLESS_OF_EARTH = 7;
+    BUFF_08_IRON_SKIN = 8;
+    BUFF_09_MAGE_STR = 9;
+    BUFF_10_MAGE_DEX = 10;
+  }
+  required .LIN.SC_BUFF_NOTI.eBuffType buff_type = 1;
+  optional .LIN.BuffInfo buff_info = 2;
+}
+
+message CS_USER_PLAY_INFO_REQ {
+}
+
+message SC_USER_PLAY_INFO_NOTI {
+  message MAP_TIME_LIMIT_INFO {
+    required uint32 time_limit_serial = 1;
+    required bytes description = 2;
+    required uint32 time_remained = 3;
+    required uint32 time_limit_stay = 4;
+  }
+  repeated .LIN.SC_USER_PLAY_INFO_NOTI.MAP_TIME_LIMIT_INFO map_time_limit_info = 1;
+}
+
+message CS_MAP_TELEPORT_REQ {
+  required string action = 1;
+  optional bool can_ignore_combat = 2;
+}
+
+message MonsterBookV2Info {
+  message SystemT {
+    message RewardT {
+      message ItemRewardT {
+        required int32 item_name_id = 1;
+        required uint32 amount = 2;
+      }
+      required .LIN.eMonsterBookV2RewardGrade grade = 1;
+      required int32 reward_exp = 2;
+      optional int32 item_name_id = 3;
+      repeated .LIN.MonsterBookV2Info.SystemT.RewardT.ItemRewardT item_rewards = 4;
+      optional uint32 high_level = 5;
+      optional uint32 high_reward_exp = 6;
+    }
+    message BonusRewardT {
+      required .LIN.eMonsterBookV2BonusRewardGrade grade = 1;
+      required int32 reward_exp = 2;
+      required int32 item_name_id = 3;
+    }
+    message GradeRewardT {
+      message ItemT {
+        required int32 NameID = 1;
+        required int32 Count = 2;
+      }
+      message LevelT {
+        optional int32 MinLevel = 1;
+        optional int32 MaxLevel = 2;
+      }
+      message ExpT {
+        required int32 AbsolValue = 1;
+      }
+      message ConditionsT {
+        repeated .LIN.MonsterBookV2Info.SystemT.GradeRewardT.ItemT Item = 1;
+        repeated .LIN.MonsterBookV2Info.SystemT.GradeRewardT.LevelT Level = 2;
+      }
+      message RewardsT {
+        repeated .LIN.MonsterBookV2Info.SystemT.GradeRewardT.ItemT Item = 1;
+        repeated .LIN.MonsterBookV2Info.SystemT.GradeRewardT.ExpT Exp = 2;
+      }
+      message ConditionRewardSetT {
+        optional .LIN.MonsterBookV2Info.SystemT.GradeRewardT.ConditionsT Conditions = 1;
+        required .LIN.MonsterBookV2Info.SystemT.GradeRewardT.RewardsT Rewards = 2;
+      }
+      message ConditionalRewardT {
+        required int32 ID = 1;
+        required .LIN.eMonsterBookV2RewardType Type = 2;
+        optional .LIN.eMonsterBookV2RewardConnective Connective = 3;
+        repeated .LIN.MonsterBookV2Info.SystemT.GradeRewardT.ConditionRewardSetT Set = 4;
+      }
+      message ConditionalRewardsT {
+        repeated .LIN.MonsterBookV2Info.SystemT.GradeRewardT.ConditionalRewardT ConditionalReward = 1;
+        optional int32 UsedItemID = 2;
+      }
+      required .LIN.eMonsterBookV2RewardGrade grade = 1;
+      required .LIN.MonsterBookV2Info.SystemT.GradeRewardT.ConditionalRewardsT rewards = 2;
+    }
+    repeated .LIN.MonsterBookV2Info.SystemT.RewardT rewards = 2;
+    repeated .LIN.MonsterBookV2Info.SystemT.BonusRewardT bonus_rewards = 3;
+    required uint32 min_level = 4;
+    repeated .LIN.MonsterBookV2Info.SystemT.GradeRewardT grade_reward = 5;
+  }
+  message DeckT {
+    message CardT {
+      required uint32 index = 1;
+      required uint32 required_amount = 2;
+      required uint32 achievement_id = 3;
+      required uint32 criteria_id = 4;
+      required uint32 amount = 5;
+    }
+    required uint32 index = 1;
+    required .LIN.eMonsterBookV2DeckState state = 3;
+    repeated .LIN.MonsterBookV2Info.DeckT.CardT cards = 4;
+  }
+  required .LIN.MonsterBookV2Info.SystemT system = 1;
+  repeated .LIN.MonsterBookV2Info.DeckT decks = 2;
+}
+
+message SC_MONSTER_BOOK_V2_INFO_NOTI {
+  required .LIN.MonsterBookV2Info info = 1;
+}
+
+message CS_MONSTER_BOOK_V2_REWARD_REQ {
+  required uint32 deck_index = 1;
+  required .LIN.eMonsterBookV2RewardGrade grade = 2;
+}
+
+message SC_MONSTER_BOOK_V2_REWARD_ACK {
+  enum eResultCode {
+    REWARD_SUCCESS = 1;
+    REWARD_FAIL = 112;
+    REWARD_FAIL_INVALID_INDEX = 113;
+    REWARD_FAIL_NOT_ENOUGH_AMOUNT = 114;
+    REWARD_FAIL_NOT_ENOUGH_ITEM = 115;
+  }
+  required uint32 deck_index = 1;
+  required .LIN.eMonsterBookV2RewardGrade grade = 2;
+  required .LIN.SC_MONSTER_BOOK_V2_REWARD_ACK.eResultCode result = 3;
+  optional uint32 reward_exp_amount = 4;
+}
+
+message SC_MONSTER_BOOK_V2_UPDATE_AMOUNT_NOTI {
+  required uint32 deck_index = 1;
+  required uint32 card_index = 2;
+  required uint32 amount = 3;
+}
+
+message SC_MONSTER_BOOK_V2_UPDATE_STATE_NOTI {
+  required uint32 deck_index = 1;
+  required .LIN.eMonsterBookV2DeckState state = 2;
+}
+
+message CS_MONSTER_BOOK_V2_TELEPORT_REQ {
+  required uint32 deck_index = 1;
+  required uint32 card_index = 2;
+}
+
+message SC_MONSTER_BOOK_V2_TELEPORT_ACK {
+  enum eResultCode {
+    TELEPORT_SUCCESS = 1;
+    TELEPORT_FAIL = 112;
+    TELEPORT_FAIL_NOT_ENOUGH_ADENA = 113;
+    TELEPORT_FAIL_WRONG_LOCATION = 114;
+  }
+  required uint32 deck_index = 1;
+  required uint32 card_index = 2;
+  required .LIN.SC_MONSTER_BOOK_V2_TELEPORT_ACK.eResultCode result = 3;
+}
+
+message CS_PERSONAL_SHOP_OPEN_REQ {
+  message ItemDesc {
+    required int32 id = 1;
+    required int32 price = 2;
+    required int32 count = 3;
+  }
+  required int32 toggle = 1;
+  repeated .LIN.CS_PERSONAL_SHOP_OPEN_REQ.ItemDesc sell_item = 2;
+  repeated .LIN.CS_PERSONAL_SHOP_OPEN_REQ.ItemDesc buy_item = 3;
+  optional string title = 4;
+  optional string polymorph = 5;
+}
+
+message SC_OBJECT_EXPLOSION_NOTI {
+  required uint32 obj_id = 1;
+  required uint32 remain_tims_ms = 2;
+}
+
+message SC_MESSAGE_BOX {
+  required uint32 msg_code = 1;
+  required bool modal = 2 [default = false];
+}
+
+message CS_CLIENT_VERSION_INFO {
+  required uint32 protocol_version = 1;
+  required int32 active_code_page = 2;
+  required uint32 check_seed = 3;
+  required int32 client_version = 4;
+  optional uint32 client_instance_count = 5;
+  optional bytes check_resource_seed = 6;
+  optional bool is_remaster = 7;
+  optional int32 client_specific_value = 8;
+}
+
+message SC_SERVER_VERSION_INFO {
+  required uint32 version_check = 1;
+  optional uint32 server_id = 2;
+  optional int32 build_number = 3;
+  optional int32 cache_version = 4;
+  optional int32 auth_version = 5;
+  optional int32 npc_server_version = 6;
+  optional int32 status_start_time = 7;
+  optional int32 english_only_config = 8;
+  optional int32 country_code = 9;
+  optional int32 client_setting_switch = 10;
+  optional int32 game_real_time = 11;
+  optional int32 global_cache_version = 12;
+  optional int32 tam_server_version = 13;
+  optional int32 arca_server_version = 14;
+  optional int32 hibreed_inter_server_version = 15;
+  optional int32 arenaco_server_version = 16;
+  optional int32 server_type = 17;
+}
+
+message SC_TEAM_ID_SERVER_NO_MAPPING_INFO {
+  message MAPPING {
+    required int32 server_no = 1;
+    required int32 team_id = 2;
+  }
+  repeated .LIN.SC_TEAM_ID_SERVER_NO_MAPPING_INFO.MAPPING mapping_info = 1;
+}
+
+message PartyUISpellInfo {
+  required uint32 bufficon_id = 1;
+  optional bool is_good = 2;
+  optional uint32 spell_id = 3;
+  optional uint32 duration = 4;
+  optional uint32 tooltip_id = 5;
+}
+
+message PartyMember {
+  required string name = 1;
+  optional uint32 accountid = 2;
+  optional uint32 object_id = 3;
+  required int32 game_class = 4;
+  optional int32 gender = 5;
+  required int32 hp_ratio = 6;
+  required int32 mp_ratio = 7;
+  optional int32 world = 8;
+  optional int32 location = 9;
+  optional int64 party_mark = 10;
+  optional uint64 alive_time_stamp = 11;
+  optional uint32 server_no = 12;
+  repeated .LIN.PartyUISpellInfo activated_spell = 13;
+}
+
+message SC_PARTY_MEMBER_LIST {
+  required string leader_name = 1;
+  repeated .LIN.PartyMember member = 2;
+}
+
+message SC_PARTY_MEMBER_LIST_CHANGE {
+  optional string leader_name = 1;
+  optional string out_user = 2;
+  optional string goto_inter_server_user = 3;
+  optional .LIN.PartyMember new_user = 4;
+}
+
+message SC_PARTY_MEMBER_STATUS {
+  required string name = 1;
+  optional uint32 object_id = 2;
+  optional int32 hp_ratio = 3;
+  optional int32 mp_ratio = 4;
+  optional int32 status = 5;
+  optional int32 world = 6;
+  optional int32 location = 7;
+  optional int32 mark = 8;
+  repeated .LIN.PartyUISpellInfo activated_spell = 9;
+}
+
+message SC_PARTY_SYNC_PERIODIC_INFO {
+  repeated .LIN.SC_PARTY_MEMBER_STATUS status = 1;
+}
+
+message SC_HYPERTEXT {
+  required string url = 1;
+  optional uint32 npcid = 2;
+  optional int32 parameter = 3;
+  repeated string text = 4;
+  optional string cookie = 5;
+}
+
+message CS_PARTY_CONTROL_REQ {
+  enum ePartyControlType {
+    Command_InvatePartyNormalById = 0;
+    Command_InvatePratyRandomById = 1;
+    Command_InvateChatParty = 2;
+    Command_TransforLeader = 3;
+    Command_InvatePartyNormal = 4;
+    Command_InvatePartyRandom = 5;
+    Command_TransforMark = 6;
+    Command_KickUser = 7;
+  }
+  required .LIN.CS_PARTY_CONTROL_REQ.ePartyControlType controlType = 1;
+  optional uint32 target_object_id = 2;
+  optional string target_user_name = 3;
+  optional int32 target_mark = 4;
+}
+
+message ATTENDANCE_INFO {
+  required int32 attendance_id = 1;
+  required int32 group_id = 2;
+  required int32 status = 3;
+  required int32 playtimeminute = 4;
+}
+
+message ATTENDANCE_GROUP_INFO {
+  required int32 group_id = 1;
+  required int32 max_check_minute = 2;
+  required int32 cur_complete_today = 3;
+  required int32 max_complete_today = 4;
+}
+
+message SC_ATTENDANCE_INFO_NOTI {
+  repeated .LIN.ATTENDANCE_GROUP_INFO group_info = 1;
+  repeated .LIN.ATTENDANCE_INFO attendance_info = 2;
+}
+
+message SC_ATTENDANCE_COMPLETE_NOTI {
+  required int32 attendance_id = 1;
+  required int32 group_id = 2;
+  required int32 status = 3;
+}
+
+message CS_ATTENDANCE_REWARD_REQ {
+  required int32 attendance_id = 1;
+  required int32 group_id = 2;
+}
+
+message SC_ATTENDANCE_REWARD_ACK {
+  required int32 attendance_id = 1;
+  required int32 group_id = 2;
+  required int32 status = 3;
+  optional int32 item_name_id = 4;
+  optional int32 item_count = 5;
+  optional bool broadcast_item = 6;
+}
+
+message SC_ATTENDANCE_STATUS_INFO_NOTI {
+  required .LIN.ATTENDANCE_INFO attendance_info = 1;
+  optional int32 extend_info = 2;
+}
+
+message SC_ATTENDANCE_REWARD_ITEM_NOTI {
+  message ATTENDANCE_REWARD_ITEM {
+    required int32 attendance_id = 1;
+    required int32 group_id = 2;
+    required int32 item_name_id = 3;
+    required int32 item_count = 4;
+  }
+  repeated .LIN.SC_ATTENDANCE_REWARD_ITEM_NOTI.ATTENDANCE_REWARD_ITEM reward_item_info = 1;
+}
+
+message SC_BONUS_DESCRIPTION_NOTI {
+  enum eType {
+    Item = 1;
+    Spell = 2;
+  }
+  message Bonus {
+    required uint32 enum_desc = 1;
+    required int32 value = 2;
+  }
+  required .LIN.SC_BONUS_DESCRIPTION_NOTI.eType type = 1;
+  required uint32 id = 2;
+  repeated .LIN.SC_BONUS_DESCRIPTION_NOTI.Bonus bonus_list = 3;
+}
+
+message SC_BONUS_OCCUR_NOTI {
+  enum eType {
+    Item = 1;
+    Spell = 2;
+  }
+  message Bonus {
+    required uint32 enum_desc = 1;
+    required int32 value = 2;
+  }
+  required bool enable = 1;
+  required .LIN.SC_BONUS_OCCUR_NOTI.eType type = 2;
+  required uint32 Id = 3;
+  repeated .LIN.SC_BONUS_OCCUR_NOTI.Bonus addtional_bonus_list = 4;
+}
+
+message SC_SPECIAL_RESISTANCE_NOTI {
+  enum eKind {
+    NONE = 0;
+    ABILITY = 1;
+    SPIRIT = 2;
+    DRAGON_SPELL = 3;
+    FEAR = 4;
+    ALL = 5;
+  }
+  message Value {
+    required .LIN.SC_SPECIAL_RESISTANCE_NOTI.eKind kind = 1;
+    required int32 value = 2;
+  }
+  repeated .LIN.SC_SPECIAL_RESISTANCE_NOTI.Value resistance = 1;
+  repeated .LIN.SC_SPECIAL_RESISTANCE_NOTI.Value pierce = 2;
+}
+
+message SC_CROWD_CONTROL_NOTI {
+  required uint32 target_id = 1;
+  optional bool teleport_impossible = 2;
+}
+
+message SC_SPEED_BONUS_NOTI {
+  enum eKind {
+    MOVE_SPEED = 0;
+    ATTACK_SPEED = 1;
+    SPELL_SPEED = 2;
+  }
+  message Value {
+    required .LIN.SC_SPEED_BONUS_NOTI.eKind kind = 1;
+    required int32 value = 2;
+  }
+  repeated .LIN.SC_SPEED_BONUS_NOTI.Value speedBonus = 1;
+}
+
+message SC_POLYMORPH_NOTI {
+  required int32 objId = 1;
+  required int32 sprite = 2;
+  required int32 action = 3;
+  optional bytes desc = 4;
+  optional int32 class_id = 5;
+}
+
+message SC_MESSAGE_NOTI {
+  enum eType {
+    NORMAL = 0;
+    CRAFT_SUCCESS_BROADCAST = 1;
+    ALCHEMY_SUCCESS_BROADCAST = 2;
+    CENTER_BROADCAST_WITH_ITEM = 3;
+  }
+  required .LIN.SC_MESSAGE_NOTI.eType type = 1;
+  optional int32 msg_code = 2;
+  optional string msg_str = 3;
+  repeated string args = 4;
+  optional int32 option_a = 5;
+}
+
+message SC_FISH_CAUGHT {
+  required bool flag = 1 [default = false];
+  required int32 name_id = 2;
+  optional int32 msg_number = 3;
+}
+
+message SC_SUMMON_PET_NOTI {
+  required int32 bonus_duration = 1;
+  required int32 monclass = 2;
+  required int32 petball_nameId = 3;
+  optional bytes bonus_desc = 4;
+}
+
+message CS_CHAR_ON_SERVER_TRAFFIC_INFO_REQ {
+}
+
+message SC_CHAR_ON_SERVER_TRAFFIC_INFO_ACK {
+  repeated .LIN.CharOnServerInfo char_info = 1;
+  repeated .LIN.ServerTrafficInfo traffic_info = 2;
+}
+
+message SC_SPELL_DELAY_NOTI {
+  required int32 next_spell_delay = 1;
+}
+
+message SC_ENTRANCE_INFO_NOTI {
+  optional uint32 waiting_user_count = 1;
+}
+
+message CS_ENTRANCE_QUEUE_CANCEL_REQ {
+}
+
+message CS_CHAR_LIST_ENTER_REQ {
+}

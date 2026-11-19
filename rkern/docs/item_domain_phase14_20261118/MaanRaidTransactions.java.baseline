@@ -1,0 +1,300 @@
+package l1j.server.server.model.item.function;
+
+import java.sql.Timestamp;
+
+import java.util.concurrent.ThreadLocalRandom;
+
+import l1j.server.Config;
+import l1j.server.server.IdFactory;
+import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.L1ItemDelay;
+import l1j.server.server.datatables.NpcTable;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.Instance.L1DoorInstance;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.utils.L1SpawnUtil;
+
+import static l1j.server.server.model.item.function.SpecialConsumableRouter.nowTimestamp;
+import l1j.server.server.model.item.function.SpecialConsumableRouter.Result;
+
+final class MaanRaidTransactions {
+    private MaanRaidTransactions() {}
+    private static final int RAID_PORTAL_LIFETIME_MS = 600_000;
+
+    static Result useLifeMaanOnce(L1PcInstance pc, L1ItemInstance item) {
+        try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, item.getId())) {
+            if (!tx.debit(item, 1)) return Result.RETURN;
+            tx.onFailure(() -> SC_SystemMessage.send(pc, "아이템 사용이 확정되지 않았습니다."));
+            tx.commitAfterInventoryRelease(() -> {
+                castSelf(pc, L1SkillId.LIFE_MAAN);
+                L1ItemDelay.onItemUse(pc, item);
+            });
+        } catch (IllegalStateException failure) {
+            SC_SystemMessage.send(pc, "아이템 처리가 진행 중입니다. 다시 시도해 주세요.");
+        }
+        return Result.RETURN;
+    }
+
+    static void castAndTouch(
+            L1PcInstance pc,
+            L1ItemInstance item,
+            int skillId) {
+
+        castSelf(pc, skillId);
+        item.setLastUsed(nowTimestamp());
+    }
+
+    static void castSelf(
+            L1PcInstance pc,
+            int skillId) {
+
+        L1SkillUse.cast(
+                pc,
+                skillId,
+                pc.getId(),
+                pc.getX(),
+                pc.getY(),
+                null,
+                0,
+                L1SkillUse.TYPE_GMBUFF);
+    }
+
+    static Result useRaidItem(
+            L1PcInstance pc,
+            L1ItemInstance item,
+            int requiredMapId,
+            int teleportX,
+            int teleportY,
+            short teleportMapId,
+            int portalNpcId,
+            int bossX,
+            int bossY,
+            short bossMapId) {
+
+        final int rnd = ThreadLocalRandom.current().nextInt(1000);
+        if (!(rnd > 900 && pc.getMapId() == requiredMapId)) {
+            pc.sendPackets("\\aH이곳이 아닌것 같다. 다른곳을 찾아보자");
+            item.setLastUsed(nowTimestamp());
+            return Result.RETURN;
+        }
+
+        final int[] bossIds = configuredBossIds(Config.clanraidmobboss);
+        if (bossIds.length == 0) {
+            SC_SystemMessage.send(pc, "혈맹 레이드 보스 설정이 비어 있습니다.");
+            return Result.RETURN;
+        }
+
+        // Preserve the original boss selection and the entrance position.
+        // The latter must not be read after a possibly deferred teleport.
+        final int bossId = bossIds[ThreadLocalRandom.current().nextInt(100) % bossIds.length];
+        if (NpcTable.getInstance().getTemplate(portalNpcId) == null
+                || NpcTable.getInstance().getTemplate(bossId) == null) {
+            SC_SystemMessage.send(pc, "혈맹 레이드 NPC 설정을 확인해 주세요.");
+            return Result.RETURN;
+        }
+        final int portalX = pc.getX();
+        final int portalY = pc.getY();
+        final short portalMapId = (short) pc.getMapId();
+
+        try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, item.getId())) {
+            if (!tx.debit(item, 1)) return Result.RETURN;
+            // A stack retains its original item identity. Update its delay
+            // within the same durable receipt, never on a failed use.
+            if (item.getCount() > 1) {
+                final Timestamp used = nowTimestamp();
+                tx.change(item, image -> image.setLastUsed(used));
+            }
+            tx.onFailure(() -> SC_SystemMessage.send(pc, "레이드 아이템 사용이 확정되지 않았습니다."));
+            tx.commitAfterInventoryRelease(() -> {
+                pc.start_teleport(teleportX, teleportY, teleportMapId,
+                        pc.getHeading(), 169, true, false);
+                L1SpawnUtil.spawn2(portalX, portalY, portalMapId,
+                        portalNpcId, 0, RAID_PORTAL_LIFETIME_MS, 0);
+                spawn(bossX, bossY, bossMapId, 0, bossId, 0, 1);
+                L1ItemDelay.onItemUse(pc, item);
+                SC_SystemMessage.send(pc, "개방한 균열은 10분간 유지됩니다.");
+            });
+        } catch (IllegalStateException failure) {
+            SC_SystemMessage.send(pc, "아이템 처리가 진행 중입니다. 다시 시도해 주세요.");
+        }
+        return Result.RETURN;
+    }
+
+    // Publish the whole immutable parse result at once. Reparse only after
+    // the administrator changes the configuration text; no per-use split or
+    // temporary arrays on the steady-state raid path.
+    private static volatile BossList cachedBossList;
+
+    private static final class BossList {
+        final String config;
+        final int[] ids;
+        BossList(String config, int[] ids) {
+            this.config = config;
+            this.ids = ids;
+        }
+    }
+
+    static int[] configuredBossIds(String csv) {
+        final BossList known = cachedBossList;
+        if (known != null && (known.config == csv
+                || (known.config != null && known.config.equals(csv)))) {
+            return known.ids;
+        }
+        final int[] parsed = parseBossIds(csv);
+        cachedBossList = new BossList(csv, parsed);
+        return parsed;
+    }
+
+    static int[] parseBossIds(String csv) {
+        if (csv == null) {
+            return new int[0];
+        }
+
+        final String text = csv.trim();
+
+        if (text.length() == 0) {
+            return new int[0];
+        }
+
+        final String[] tokens = text.split(",");
+        final int[] temp = new int[tokens.length];
+
+        int count = 0;
+
+        for (int i = 0; i < tokens.length; i++) {
+            final String token = tokens[i].trim();
+
+            if (token.length() == 0) {
+                continue;
+            }
+
+            try {
+                // Parse before advancing count: a failed parse must never
+                // leave an implicit NPC id 0 in the boss selection array.
+                final int npcId = Integer.parseInt(token);
+                if (npcId > 0) temp[count++] = npcId;
+            } catch (NumberFormatException ignore) {
+            }
+        }
+
+        if (count == temp.length) {
+            return temp;
+        }
+
+        if (count == 0) {
+            return new int[0];
+        }
+
+        final int[] result = new int[count];
+        System.arraycopy(temp, 0, result, 0, count);
+
+        return result;
+    }
+
+    static void spawn(
+            int x,
+            int y,
+            short mapId,
+            int heading,
+            int npcId,
+            int randomRange,
+            int roomnumber) {
+
+        try {
+            final L1NpcInstance npc =
+                    NpcTable.getInstance().newNpcInstance(npcId);
+
+            npc.setId(IdFactory.getInstance().nextId());
+            npc.setMap(mapId);
+
+            if (randomRange == 0) {
+                npc.getLocation().set(x, y, mapId);
+                npc.getLocation().forward(heading);
+
+            } else {
+                int tryCount = 0;
+
+                do {
+                    tryCount++;
+
+                    npc.setX(
+                            x
+                            + ThreadLocalRandom.current().nextInt(randomRange)
+                            - ThreadLocalRandom.current().nextInt(randomRange));
+
+                    npc.setY(
+                            y
+                            + ThreadLocalRandom.current().nextInt(randomRange)
+                            - ThreadLocalRandom.current().nextInt(randomRange));
+
+                    if (npc.getMap().isInMap(npc.getLocation())
+                            && npc.getMap().isPassable(npc.getLocation())) {
+                        break;
+                    }
+
+                } while (tryCount < 50);
+
+                if (tryCount >= 50) {
+                    npc.getLocation().forward(heading);
+                }
+            }
+
+            if (npc instanceof L1DoorInstance) {
+                final L1DoorInstance door =
+                        (L1DoorInstance) npc;
+
+                switch (npc.getNpcId()) {
+                case 5147:
+                    door.setLeftEdgeLocation(32816);
+                    door.setRightEdgeLocation(32821);
+                    door.setDirection(1);
+                    break;
+
+                case 5148:
+                    door.setLeftEdgeLocation(32804);
+                    door.setRightEdgeLocation(32809);
+                    door.setDirection(1);
+                    break;
+
+                case 5149:
+                    door.setLeftEdgeLocation(32853);
+                    door.setRightEdgeLocation(32858);
+                    door.setDirection(1);
+                    break;
+
+                case 5150:
+                    door.setLeftEdgeLocation(32760);
+                    door.setRightEdgeLocation(32764);
+                    door.setDirection(0);
+                    break;
+
+                case 5151:
+                    door.setLeftEdgeLocation(32918);
+                    door.setRightEdgeLocation(32923);
+                    door.setDirection(1);
+                    break;
+
+                default:
+                    break;
+                }
+            }
+
+            npc.setHomeX(npc.getX());
+            npc.setHomeY(npc.getY());
+            npc.setHeading(heading);
+
+            L1World.getInstance().storeAndEnterWorld(npc);
+
+            npc.getLight().turnOnOffLight();
+            npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}

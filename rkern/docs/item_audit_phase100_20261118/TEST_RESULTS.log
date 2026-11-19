@@ -1,0 +1,145 @@
+PASS: 1922 Java files, no unresolved explicit project imports, 81 stock mappings exactly match debit getters; missing warrior template fail-closed
+PASS: stock count and duplicate selection guards, cases=151
+BASELINE
+AB_COUNT=42000 SHA256=d345637ef28a0548b830ac47b6d8b6f749adf39eb36b1a038b3afa2d63cfc28e
+ALLOC_getMythCard=24.000
+ALLOC_getLegendCard=16.000
+ALLOC_getLegendResult=12.864
+ALLOC_getHeroResult=0.000
+UI_ALLOC_0=2648.000
+UI_ALLOC_1=2816.000
+UI_ALLOC_2=1288.000
+OPTIMIZED
+AB_COUNT=42000 SHA256=d345637ef28a0548b830ac47b6d8b6f749adf39eb36b1a038b3afa2d63cfc28e
+ALLOC_getMythCard=15.596
+ALLOC_getLegendCard=16.000
+ALLOC_getLegendResult=0.000
+ALLOC_getHeroResult=0.000
+UI_ALLOC_0=2648.000
+UI_ALLOC_1=2816.000
+UI_ALLOC_2=1288.000
+PASS: 42,000 normal synthesis flows, matched RNG and event hashes
+debit_failures=3714 invalid_selections=18 PASS
+BASE reward_cases=432 checksum=889c1f3aa1e6edd0ac4463d093ea5cb96cc316bb985b982ac0755bb4e9a2a806 NEW reward_cases=432 checksum=889c1f3aa1e6edd0ac4463d093ea5cb96cc316bb985b982ac0755bb4e9a2a806
+PASS: invalid IDs, debit rejection, and all reward mapping boundaries
+PASS: 20 normal typed comparisons and invalid levels/missing templates fail-closed
+Account getter count: 70
+baseline typed compile passed 10 files
+baseline cases=11520
+baseline allocation trial 0 allocated bytes/call=2406.11328,sink=-8864928779460596204
+baseline allocation trial 1 allocated bytes/call=2411.60064,sink=-8864928779460596204
+modified typed compile passed 10 files
+modified cases=11520
+modified allocation trial 0 allocated bytes/call=1305.6,sink=-8864928779460596204
+modified allocation trial 1 allocated bytes/call=1331.2426666666668,sink=-8864928779460596204
+PASS 11532 card-view scenarios exact original output
+PASS: 30000 deterministic auto-select cases including getters, selection, error, UI order
+PASS exact original eight reward sequences, count=239
+PASS Java21 production typed replay 521 cases incl all 8 grant lists, all intermediate failures, delayed COMMIT, rollback, stale input
+PASS Java21 production typed original-vs-atomic: 1381 cases
+javac 0 
+java 0 Phase33 typed production + legacy execution comparison passed: 2306 checks
+ 
+Java source files=1922, parsed=1922, syntaxErrors=0
+PASS Java21 production typed original-vs-atomic: 1381 cases
+PASS exact original eight reward sequences, count=239
+PASS Java21 production typed replay 521 cases incl all 8 grant lists, all intermediate failures, delayed COMMIT, rollback, stale input
+PASS phase22-26 extracted production routes: 2112 scenarios exact match, sha256=965b2f90411742f6bacc66ac64e82828f5e07accf13c2aa80b61577e8a99e73b
+PASS registry results DIFF count=259200 digest=b3ef450036cae4857198dd6e34defa747f245282206bc824b0e7f6b6db3dbd76
+BASE ALLOCATION bytesPerDefinition=928.0 sink=264000
+AFTER ALLOCATION bytesPerDefinition=456.0 sink=264000
+PASS ice merged production class typed and 960 original-vs-new item use cases
+PASS movement potion Java21 production vs original: 17280 scenarios, exact effects/packets/skill mutation
+PASS rune rewards (class masks, inventory status, injected exceptions) cases=41472 sha256=82a91fde4b389be9f6d45beb656be2d05f43ee143bea1849cdfa9e2f97c98093
+PASS tower/oman travel paths cases=10112 sha256=63bc81fc5ceee230e7b0c9c69aa05254c8691878c23e15b3138e4610df3bb17f
+PASS nearby cases=2310 sha256=47a365fbe9bb753e3f4a538ca39d040048ff4ceac8ad5626075b5fc2a62363f4 distance_calls 158456 -> 91140
+Note: Some input files use preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.
+Nov 18, 2026 3:45:40 AM l1j.server.server.model.network.core.broadcast.CSharedBroadcast logOptionalNoticeFailure
+WARNING: Optional shared broadcast failed (count=1)
+java.lang.IllegalStateException: injected per-socket send failure
+	at l1j.server.server.model.network.core.connection.CUserSocket.enqueueConstBufferConfirmed(CUserSocket.java:29)
+	at l1j.server.server.model.network.core.broadcast.VisualDeliveryFailure114$PooledSocket.enqueueConstBufferConfirmed(VisualDeliveryFailure114.java:35)
+	at l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer.send(CAsyncSendConstBuffer.java:108)
+	at l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendMove(CSharedBroadcast.java:210)
+	at l1j.server.server.model.network.core.broadcast.VisualDeliveryFailure114.main(VisualDeliveryFailure114.java:64)
+
+114 production broadcast: 10 failure scenarios + 5000-recipient stress, FIFO/refs/known-object accounting, invalid encoder isolation PASS
+PASS registry results DIFF count=259200 digest=b3ef450036cae4857198dd6e34defa747f245282206bc824b0e7f6b6db3dbd76
+BASE ALLOCATION bytesPerDefinition=928.0 sink=264000
+AFTER ALLOCATION bytesPerDefinition=456.0 sink=264000
+PASS Java21 extracted-method parity brave=5120 exp=1212 deterministic rolls=300000
+PASS item-only static lookup tables, unchanged RNG invocation and 5 no-per-use-array checks
+PASS Java21 original 4 classes vs consolidated movement potion: 3648 scenarios, exact effects/consumption/exceptions
+PASS movement helper method bodies byte-identical after consolidation
+Note: /tmp/rkern_p67_ohf12q95/source/l1j/server/server/model/item/Card/BenchPhase67.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Phase67 original vs optimized type-compiled execution comparisons: 120000 PASS
+Phase67 all eligibility boundary cases: 12 PASS
+Boss CSV baseline/candidate comparisons=150015 PASS
+Boss parse bytes/call: baseline=840 candidate=64 sample=1,2,3,4,5,6,7,8,9,10,11,12
+Boss parse bytes/call: baseline=1640 candidate=1032 sample= 1, 2,broken,-1, 42, , 8
+Registry baseline/candidate comparisons=216000 PASS
+Tooltip bytes/call baseline=96 candidate=80 checksum=1200000
+Consignment production classes type-compiled and outcomes=1200 PASS
+Phase68 typed/behavior comparisons: PASS
+Account getter count: 70
+baseline typed compile passed 10 files
+baseline cases=11520
+baseline allocation trial 0 allocated bytes/call=2769.0032,sink=-8864928779460596204
+baseline allocation trial 1 allocated bytes/call=2756.3134933333336,sink=-8864928779460596204
+modified typed compile passed 10 files
+modified cases=11520
+modified allocation trial 0 allocated bytes/call=1305.9179733333333,sink=-8864928779460596204
+modified allocation trial 1 allocated bytes/call=1306.0552533333334,sink=-8864928779460596204
+PASS 11532 card-view scenarios exact original output
+BASELINE
+AB_COUNT=42000 SHA256=d345637ef28a0548b830ac47b6d8b6f749adf39eb36b1a038b3afa2d63cfc28e
+ALLOC_getMythCard=640.000
+ALLOC_getLegendCard=1240.000
+ALLOC_getLegendResult=1912.000
+ALLOC_getHeroResult=1912.000
+OPTIMIZED
+AB_COUNT=42000 SHA256=d345637ef28a0548b830ac47b6d8b6f749adf39eb36b1a038b3afa2d63cfc28e
+ALLOC_getMythCard=24.000
+ALLOC_getLegendCard=16.000
+ALLOC_getLegendResult=0.000
+ALLOC_getHeroResult=0.000
+ALLOC_getMythCard allocation reduction 96.25 percent
+ALLOC_getLegendCard allocation reduction 98.71 percent
+ALLOC_getLegendResult allocation reduction 100.0 percent
+ALLOC_getHeroResult allocation reduction 100.0 percent
+PASS 42,000 Java21 end-to-end stub scenarios and allocation reduction for four production selectors
+BASELINE
+AB_COUNT=42000 SHA256=d345637ef28a0548b830ac47b6d8b6f749adf39eb36b1a038b3afa2d63cfc28e
+ALLOC_getMythCard=24.000
+ALLOC_getLegendCard=16.000
+ALLOC_getLegendResult=16.000
+ALLOC_getHeroResult=16.000
+UI_ALLOC_0=3456.000
+UI_ALLOC_1=4024.000
+UI_ALLOC_2=1608.000
+OPTIMIZED
+AB_COUNT=42000 SHA256=d345637ef28a0548b830ac47b6d8b6f749adf39eb36b1a038b3afa2d63cfc28e
+ALLOC_getMythCard=24.000
+ALLOC_getLegendCard=16.000
+ALLOC_getLegendResult=16.000
+ALLOC_getHeroResult=16.000
+UI_ALLOC_0=2648.000
+UI_ALLOC_1=2816.000
+UI_ALLOC_2=1288.000
+UI_ALLOC_0 allocation reduction 23.38 percent
+UI_ALLOC_1 allocation reduction 30.02 percent
+UI_ALLOC_2 allocation reduction 19.9 percent
+PASS: 42,000 full synthesis flows with identical event hashes; three UI paths allocate less in typed stubs
+Extracted 3 real production helper methods + 6 dispatcher checks.
+Phase38 extracted-production Java21 typed regression PASS assertions=138904 cases=21002
+Phase39 actual handler typed regression PASS checks=42501 scenarios=9001
+Phase40 extracted Java21 typed PASS cases=4201 assertions=21001
+Phase41-42 extracted-production Java21 typed PASS scenarios=13501 assertions=85501
+Phase43 actual Java21 typed buyback PASS scenarios=21761 assertions=99201
+Phase44-45 extracted-production Java21 typed PASS scenarios=13200 assertions=55200
+Phase46-48 production extracted Java21 typed PASS scenarios=18000 assertions=57000
+PHASE49-53 extracted-production Java21 typed PASS scenarios=26720 assertions=129360
+Java21 parse: files=1922 syntaxErrors=0
+PASS: phase 1-100 current-source audit selected independent regression suites

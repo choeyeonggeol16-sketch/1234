@@ -1,0 +1,45 @@
+package l1j.server.server.model.item.function;
+
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+
+public final class RecruitStarterKit {
+
+	public static void clickItem(L1PcInstance pc, int itemId, L1ItemInstance l1iteminstance) {
+
+		switch (itemId) {
+		case 3000366:// 신규 영입
+			if (pc.getInventory().checkItem(3000366, 1)) { // 체크 되는 아이템과 수량
+				pc.getInventory().consumeItem(3000366, 1); // 삭제되는 아이템과 수량qrltrue);
+				if (pc.isWarrior()) {
+                    RecruitStarterWarriorKit.grant(pc);
+                }
+				if (pc.isKnight()) {
+                    RecruitStarterKnightKit.grant(pc);
+                }
+				if (pc.isDragonknight()) {
+                    RecruitStarterDragonknightKit.grant(pc);
+                }
+				if (pc.isCrown()) {
+                    RecruitStarterCrownKit.grant(pc);
+                }
+				if (pc.isWizard()) {
+                    RecruitStarterWizardKit.grant(pc);
+                }
+				if (pc.isBlackwizard()) {
+                    RecruitStarterBlackwizardKit.grant(pc);
+                }
+				if (pc.isElf()) {
+                    RecruitStarterElfKit.grant(pc);
+                }
+				if (pc.isDarkelf()) {
+                    RecruitStarterDarkelfKit.grant(pc);
+                }
+			}
+			break;
+		}
+	}
+
+
+
+}

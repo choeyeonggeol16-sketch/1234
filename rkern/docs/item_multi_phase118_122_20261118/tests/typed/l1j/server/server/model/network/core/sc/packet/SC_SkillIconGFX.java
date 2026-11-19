@@ -1,0 +1,1 @@
+package l1j.server.server.model.network.core.sc.packet;import l1j.server.server.model.Instance.L1PcInstance; public class SC_SkillIconGFX{public static void send(L1PcInstance p,int icon,int time,boolean flag){Faults.maybe(128);}}

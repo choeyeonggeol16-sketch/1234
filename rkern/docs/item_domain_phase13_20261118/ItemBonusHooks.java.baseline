@@ -1,0 +1,492 @@
+package l1j.server.server.model.item.function;
+
+import l1j.server.server.model.Instance.L1DollInstance;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.item.Exp.ExpBonusState;
+
+
+public final class ItemBonusHooks {
+
+    private ItemBonusHooks() {}
+
+    // dollType -> regenAmount
+    private static final IntIntMap MP_BY_TYPE = new IntIntMap(128);
+    private static final IntIntMap HP_BY_TYPE = new IntIntMap(64);
+
+    // dollLevel -> regenAmount
+    private static final IntIntMap MP_BY_LV = new IntIntMap(32);
+    private static final IntIntMap HP_BY_LV = new IntIntMap(32);
+    
+    // ---- 아르카(+%) : itemId -> fixed delta ----
+ 	private static final IntDoubleMap ARKA_FIXED = new IntDoubleMap(32);
+
+ 	// ---- 인형(+%) : dollType -> add ----
+ 	private static final IntDoubleMap DOLL_ADD = new IntDoubleMap(64);
+
+
+ 	// ---- 문장(곱) : ids/perEnchant/slot ----
+ 	// slot: 1~5
+ 	private static final int[] INS_IDS = { 900020, 900093, 900094, 900095, 900099 };
+ 	private static final double[] INS_PER = { 0.01,   0.04,   0.04,   0.04,   0.04   };
+ 	private static final int[] INS_SLOT = { 1,        2,      3,      4,      5      };
+
+    static {
+    	
+    	   // ========== ARKA_FIXED ==========
+	    // 900033 or 9961 : +0.2
+	    ARKA_FIXED.put(900033, 0.2);
+	    ARKA_FIXED.put(9961,   0.2);
+
+	    // 555001~3, 666001~3 : +0.1
+	    ARKA_FIXED.put(555001, 0.1);
+	    ARKA_FIXED.put(555002, 0.1);
+	    ARKA_FIXED.put(555003, 0.1);
+	    ARKA_FIXED.put(666001, 0.1);
+	    ARKA_FIXED.put(666002, 0.1);
+	    ARKA_FIXED.put(666003, 0.1);
+
+	    // ========== DOLL_ADD ==========
+	    // +0.10 group
+	    putAll(DOLL_ADD, 0.10,
+	            L1DollInstance.DOLLTYPE_SNOWMAN_A,
+	            L1DollInstance.DOLLTYPE_SNOWMAN_B,
+	            L1DollInstance.DOLLTYPE_SNOWMAN_C,
+	            L1DollInstance.DOLLTYPE_자이언트,
+	            L1DollInstance.DOLL_mummy,
+	            L1DollInstance.DOLLTYPE_축자이언트,
+	            L1DollInstance.DOLLTYPE_축머미);
+
+	    DOLL_ADD.put(L1DollInstance.jindeathknight, 0.07);
+	    putAll(DOLL_ADD, 0.20,
+	            L1DollInstance.DOLLTYPE_DEATHNIGHT,
+	            L1DollInstance.DOLLTYPE_축데스);
+
+	    putAll(DOLL_ADD, 0.03,
+	            L1DollInstance.DOLLTYPE_인어,
+	            L1DollInstance.DOLLTYPE_COBO);
+
+	    DOLL_ADD.put(L1DollInstance.ruler1, 0.30);
+	    DOLL_ADD.put(L1DollInstance.ruler5, 0.15);
+	    putAll(DOLL_ADD, 0.10, L1DollInstance.ruler2, L1DollInstance.ruler6);
+	    putAll(DOLL_ADD, 0.05, L1DollInstance.ruler3, L1DollInstance.ruler7);
+	    putAll(DOLL_ADD, 0.02, L1DollInstance.ruler4, L1DollInstance.ruler8);
+
+	    DOLL_ADD.put(L1DollInstance.Antaras, 0.25);
+
+        // 15
+        putAll(MP_BY_TYPE, 15,
+                L1DollInstance.DOLLTYPE_SUCCUBUS,
+                L1DollInstance.DOLLTYPE_ELDER,
+                L1DollInstance.DOLLTYPE_PSY_CHAMPION,
+                L1DollInstance.DOLLTYPE_PSY_BIRD,
+                L1DollInstance.DOLLTYPE_PSY_GANGNAM_STYLE,
+                L1DollInstance.DOLLTYPE_SUCCUBUSQUEEN,        
+                L1DollInstance.jindeathknight,
+                L1DollInstance.pnix,
+                L1DollInstance.brich,
+                L1DollInstance.behe,
+                L1DollInstance.au,
+                L1DollInstance.hal,
+                L1DollInstance.DOLLTYPE_흑장로,
+                L1DollInstance.DOLL_mummy,
+                L1DollInstance.DOLLTYPE_축머미,
+                L1DollInstance.Antaras,
+                L1DollInstance.DOLLTYPE_COBO,
+                L1DollInstance.DOLLTYPE_축서큐퀸,
+                L1DollInstance.DOLLTYPE_축흑장로
+                
+        );
+
+        // 10
+        putAll(MP_BY_TYPE, 10,
+                L1DollInstance.DOLLTYPE_GREMLIN,
+                L1DollInstance.DOLLTYPE_기르타스,
+                L1DollInstance.DOLLTYPE_킹버그베어
+        );
+
+        // 5
+        putAll(MP_BY_TYPE, 5,
+                L1DollInstance.DOLLTYPE_HATCHLING,
+                L1DollInstance.Papou,
+                L1DollInstance.Lynd,
+                L1DollInstance.Valakas
+        );
+
+        // =========================
+        // MP REGEN (레벨 기반)
+        // =========================
+        MP_BY_LV.put(69, 12);
+        MP_BY_LV.put(34, 10);
+        MP_BY_LV.put(106, 30);
+
+        // =========================
+        // HP REGEN (타입 기반)
+        // =========================
+        putAll(HP_BY_TYPE, 5,
+                L1DollInstance.DOLLTYPE_SEADANCER,
+                L1DollInstance.DOLLTYPE_SNOWMAN_C
+        );
+
+        // =========================
+        // HP REGEN (레벨 기반)
+        // =========================
+        HP_BY_LV.put(33, 30);
+        HP_BY_LV.put(68, 50);
+        HP_BY_LV.put(105, 150);
+    }
+
+    private static void putAll(IntIntMap map, int v, int... keys) {
+        for (int k : keys) map.put(k, v);
+    }
+
+    /** 인형 하나가 주는 MP 틱 회복량 */
+    public static int calcMpTick(L1DollInstance doll) {
+        if (doll == null) return 0;
+
+        int v = 0;
+
+        // type 기반
+        v = MP_BY_TYPE.getOrZero(doll.getDollType());
+
+        final int lv = doll.getDollLevel();
+        final int byLv = MP_BY_LV.getOrZero(lv);
+        if (byLv > v) v = byLv;
+
+        return v;
+    }
+
+    /** 인형 하나가 주는 HP 틱 회복량 */
+    public static int calcHpTick(L1DollInstance doll) {
+        if (doll == null) return 0;
+
+        int v = 0;
+
+        v = HP_BY_TYPE.getOrZero(doll.getDollType());
+
+        final int lv = doll.getDollLevel();
+        final int byLv = HP_BY_LV.getOrZero(lv);
+        if (byLv > v) v = byLv;
+
+        return v;
+    }
+
+    /** 소환 시 누적 */
+    public static void onDollSpawned(L1PcInstance pc, L1DollInstance doll) {
+        if (pc == null || doll == null) return;
+		ExpBonusState st = pc.expBonusState();
+        // 중복 적용 방지
+        if (doll._dollHpTickDelta != 0 || doll._dollMpTickDelta != 0 || doll._expBonusDeltaExp != 0) return;
+
+		double add = calcDollAdd(doll);
+		if (add != 0.0) {
+			st.addDollDelta(add);
+			doll._expBonusDeltaExp = add;
+		}
+        final int hp = calcHpTick(doll);
+        final int mp = calcMpTick(doll);
+
+        if (hp > 0) {
+            pc.addDollHpRegenTick(hp);
+            doll._dollHpTickDelta = hp;
+        }
+        if (mp > 0) {
+            pc.addDollMpRegenTick(mp);
+            doll._dollMpTickDelta = mp;
+        }
+    }
+    
+    /** 해제 시 차감 */
+    public static void onDollRemoved(L1PcInstance pc, L1DollInstance doll) {
+        if (pc == null || doll == null) return;
+        
+    	ExpBonusState st = pc.expBonusState();
+    	
+        final int hpPrev = doll._dollHpTickDelta;
+        final int mpPrev = doll._dollMpTickDelta;
+        double prev = doll._expBonusDeltaExp;
+		if (prev != 0.0) {
+			st.addDollDelta(-prev);
+			doll._expBonusDeltaExp = 0.0;
+		}
+		
+        if (hpPrev != 0) {
+            pc.addDollHpRegenTick(-hpPrev);
+            doll._dollHpTickDelta = 0;
+        }
+        if (mpPrev != 0) {
+            pc.addDollMpRegenTick(-mpPrev);
+            doll._dollMpTickDelta = 0;
+        }
+    }
+    
+    private static void putAll(IntDoubleMap map, double v, int... keys) {
+		for (int k : keys) map.put(k, v);
+	}
+
+  
+ // =========================================================
+ 	// 장비 착용/해제/인챈 변화 훅
+ 	// =========================================================
+
+ 	public static void onEquipChanged(L1PcInstance pc, L1ItemInstance item, boolean equipped) {
+ 		if (pc == null || item == null) return;
+ 		ExpBonusState st = pc.expBonusState();
+
+ 		// 이전 delta 제거
+ 		double prev = item._expBonusDeltaExp;
+ 		if (prev != 0.0) {
+ 			st.addArkaDelta(-prev);
+ 			item._expBonusDeltaExp = 0.0;
+ 		}
+
+ 		// 해제면 문장 복구만 하고 종료
+ 		if (!equipped) {
+ 			resetInsigniaIfMatch(st, item);
+ 			return;
+ 		}
+
+ 		// 착용이면 arka delta 반영
+ 		double now = calcArkaDeltaIfAny(item);
+ 		if (now != 0.0) {
+ 			st.addArkaDelta(now);
+ 			item._expBonusDeltaExp = now;
+ 		}
+
+ 		// 문장류면 multiplier 갱신
+ 		applyInsigniaIfMatch(st, item);
+ 	}
+
+ 	public static void onEnchantChanged(L1PcInstance pc, L1ItemInstance item) {
+ 		if (pc == null || item == null) return;
+ 		if (!item.isEquipped()) return;
+
+ 		// 착용중이면 equipChanged 재호출로 통일
+ 		onEquipChanged(pc, item, true);
+ 	}
+
+ 
+
+ 	// =========================================================
+ 	// 내부 계산 로직 (분기 최소화)
+ 	// =========================================================
+
+ 	// ---- 아르카/장비(+%) ----
+ 	private static double calcArkaDeltaIfAny(L1ItemInstance item) {
+ 		final int id = item.getItemId();
+
+ 		double fixed = ARKA_FIXED.getOrZero(id);
+ 		if (fixed != 0.0) return fixed;
+
+ 		final int ench = item.getEnchantLevel();
+
+ 		// 900025 : ench>=8 -> ((ench-7)*2)*0.01
+ 		if (id == 900025) {
+ 			if (ench >= 8) return ((ench - 7) * 2) * 0.01;
+ 			return 0.0;
+ 		}
+
+ 		// 900184 : ench>=7 -> ((ench-6)*2)*0.01
+ 		if (id == 900184) {
+ 			if (ench >= 7) return ((ench - 6) * 2) * 0.01;
+ 			return 0.0;
+ 		}
+
+ 		// 900116 : ench 5=0.05, 6=0.06, 7=0.08, 8=0.10
+ 		if (id == 900116) {
+ 			// tiny table (index=ench)
+ 			if (ench < 5 || ench > 8) return 0.0;
+ 			// 0..8
+ 			final double[] t = {0,0,0,0,0, 0.05, 0.06, 0.08, 0.10};
+ 			return t[ench];
+ 		}
+
+ 		// 900130 : ench<=2 -> 0.02 else ench*0.01
+ 		if (id == 900130) {
+ 			if (ench <= 2) return 0.02;
+ 			return ench * 0.01;
+ 		}
+
+ 		return 0.0;
+ 	}
+
+ 	// ---- 문장(곱) ----
+ 	private static void applyInsigniaIfMatch(ExpBonusState st, L1ItemInstance item) {
+ 		final int id = item.getItemId();
+ 		final int ench = item.getEnchantLevel();
+
+ 		// 테이블 선형 스캔
+ 		for (int i = 0; i < INS_IDS.length; i++) {
+ 			if (INS_IDS[i] != id) continue;
+
+ 			double mul = 1.0 + (INS_PER[i] * ench);
+ 			switch (INS_SLOT[i]) {
+ 			case 1: st.setIns1(mul); break;
+ 			case 2: st.setIns2(mul); break;
+ 			case 3: st.setIns3(mul); break;
+ 			case 4: st.setIns4(mul); break;
+ 			case 5: st.setIns5(mul); break;
+ 			}
+ 			return;
+ 		}
+ 	}
+
+ 	private static void resetInsigniaIfMatch(ExpBonusState st, L1ItemInstance item) {
+ 		final int id = item.getItemId();
+
+ 		for (int i = 0; i < INS_IDS.length; i++) {
+ 			if (INS_IDS[i] != id) continue;
+
+ 			switch (INS_SLOT[i]) {
+ 			case 1: st.setIns1(1.0); break;
+ 			case 2: st.setIns2(1.0); break;
+ 			case 3: st.setIns3(1.0); break;
+ 			case 4: st.setIns4(1.0); break;
+ 			case 5: st.setIns5(1.0); break;
+ 			}
+ 			return;
+ 		}
+ 	}
+
+ 	// ---- 인형(+%) ----
+ 	private static double calcDollAdd(L1DollInstance doll) {
+ 		return DOLL_ADD.getOrZero(doll.getDollType());
+ 	}
+
+    // =========================================================
+    // primitive int->int map (open addressing)
+    // =========================================================
+    private static final class IntIntMap {
+        private int[] keys;
+        private int[] vals;
+        private boolean[] used;
+        private int mask;
+        private int size;
+
+        IntIntMap(int expected) {
+            int cap = 1;
+            while (cap < (expected * 2)) cap <<= 1;
+            keys = new int[cap];
+            vals = new int[cap];
+            used = new boolean[cap];
+            mask = cap - 1;
+        }
+
+        void put(int k, int v) {
+            if (size * 2 >= keys.length) rehash();
+            int idx = mix(k) & mask;
+            while (used[idx]) {
+                if (keys[idx] == k) { vals[idx] = v; return; }
+                idx = (idx + 1) & mask;
+            }
+            used[idx] = true;
+            keys[idx] = k;
+            vals[idx] = v;
+            size++;
+        }
+
+        int getOrZero(int k) {
+            int idx = mix(k) & mask;
+            while (used[idx]) {
+                if (keys[idx] == k) return vals[idx];
+                idx = (idx + 1) & mask;
+            }
+            return 0;
+        }
+
+        private void rehash() {
+            int[] oldK = keys;
+            int[] oldV = vals;
+            boolean[] oldU = used;
+
+            int cap = oldK.length << 1;
+            keys = new int[cap];
+            vals = new int[cap];
+            used = new boolean[cap];
+            mask = cap - 1;
+            size = 0;
+
+            for (int i = 0; i < oldK.length; i++) {
+                if (!oldU[i]) continue;
+                put(oldK[i], oldV[i]);
+            }
+        }
+
+        private static int mix(int x) {
+            x ^= (x >>> 16);
+            x *= 0x7feb352d;
+            x ^= (x >>> 15);
+            x *= 0x846ca68b;
+            x ^= (x >>> 16);
+            return x;
+        }
+    }
+    
+
+	private static final class IntDoubleMap {
+		private int[] keys;
+		private double[] vals;
+		private boolean[] used;
+		private int mask;
+		private int size;
+
+		IntDoubleMap(int expected) {
+			int cap = 1;
+			while (cap < (expected * 2)) cap <<= 1;
+			keys = new int[cap];
+			vals = new double[cap];
+			used = new boolean[cap];
+			mask = cap - 1;
+		}
+
+		void put(int k, double v) {
+			if (size * 2 >= keys.length) rehash();
+			int idx = mix(k) & mask;
+			while (used[idx]) {
+				if (keys[idx] == k) { vals[idx] = v; return; }
+				idx = (idx + 1) & mask;
+			}
+			used[idx] = true;
+			keys[idx] = k;
+			vals[idx] = v;
+			size++;
+		}
+
+		double getOrZero(int k) {
+			int idx = mix(k) & mask;
+			while (used[idx]) {
+				if (keys[idx] == k) return vals[idx];
+				idx = (idx + 1) & mask;
+			}
+			return 0.0;
+		}
+
+		private void rehash() {
+			int[] oldK = keys;
+			double[] oldV = vals;
+			boolean[] oldU = used;
+
+			int cap = oldK.length << 1;
+			keys = new int[cap];
+			vals = new double[cap];
+			used = new boolean[cap];
+			mask = cap - 1;
+			size = 0;
+
+			for (int i = 0; i < oldK.length; i++) {
+				if (!oldU[i]) continue;
+				put(oldK[i], oldV[i]);
+			}
+		}
+
+		private static int mix(int x) {
+			x ^= (x >>> 16);
+			x *= 0x7feb352d;
+			x ^= (x >>> 15);
+			x *= 0x846ca68b;
+			x ^= (x >>> 16);
+			return x;
+		}
+	}
+
+}

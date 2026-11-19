@@ -1,0 +1,8 @@
+PASS exact original eight reward sequences, count=239
+PASS Java21 production typed replay 521 cases incl all 8 grant lists, all intermediate failures, delayed COMMIT, rollback, stale input
+PASS phase22-26 extracted production routes: 2112 scenarios exact match, sha256=965b2f90411742f6bacc66ac64e82828f5e07accf13c2aa80b61577e8a99e73b
+Traceback (most recent call last):
+  File "/mnt/data/item_phase71_work/docs/item_domain_phase30_20261118/test_phase30_scope.py", line 42, in <module>
+    assert src == (FUNC/filename).read_text('utf8'),filename
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ItemActionDispatcher.java

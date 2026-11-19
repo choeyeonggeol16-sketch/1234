@@ -1,0 +1,5 @@
+PASS: original receipt flow and both enchant method bodies preserved (except 10 scoped string optimizations)
+PASS enchant_message_cases=460
+PASS item receipt typed differential package_cases=31488 sha256=5c4e80ff5d10d6b3323d3c0689d99194aaf867341af0b9918a0bfaeede25751d
+PASS raid CSV original vs merged raid_cases=14 sha256=dc0986a4dcbb79492fcd28d899b96b7c73638a8b811b0f4ea6219a9319f485d9
+PASS format_cases=40

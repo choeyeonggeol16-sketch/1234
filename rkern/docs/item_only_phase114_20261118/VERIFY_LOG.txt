@@ -1,0 +1,22 @@
+BASE: RKern_ItemOnly_Mana_Dessert_PostCommitSafety_Phase113_FULL_SRC_20261118.zip
+PHASE114 JAVA 21 PASS: 232459 assertions; all 36 food IDs; 8-bit packet-failure matrix, commit/rollback, holy waters, karma, hard-state errors
+Actual 3 production Java classes type compiled with typed stubs. Folder: /tmp/rkern114_nxa2pntf
+PARSE:
+Java21 parsed=1923 source_files=1923 syntax_errors=0
+REGRESSION 113:
+PHASE113 JAVA 21 PASS: 54150 assertions; mana 10 IDs; dessert 3 IDs; commit/rollback; independent packet faults; hard-state exceptions
+TYPED SOURCES: ManaConsumables.java, DessertBuffConsumables.java; Java 21 actual compilation PASS
+REGRESSION 112:
+PASS 112 typed-production java21 independent fault injection checks=6925
+expected injected logger warnings: 768
+REGRESSION 111:
+PASS 111 card+guardian compiled-production checks=118
+Warning logs from injected faults: 16 (expected)
+PASS 111 unique compiled-production checks=24
+Warning logs from injected faults: 2 (expected)
+REGRESSION 110:
+PASS: actual production Java 21 type compilation and 25335 checks
+PASS Phase110: typed production + fault injection on committed presentation; economy guard intact
+REGRESSION 108:
+PASS: actual production Java 21 type compilation and 25371 checks
+PASS 108: 12 one-slot races, 3 four-slot races, 3 account-count mismatch guards; original receipt tests

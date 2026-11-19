@@ -1,0 +1,12 @@
+src/l1j/server/server/model/item/function/ClassRewardPackages.java
+src/l1j/server/server/model/item/function/DurableBuffScrollItems.java
+src/l1j/server/server/model/item/function/EquipmentStarterPackages.java
+src/l1j/server/server/model/item/function/LevelAndEquipmentPackages.java
+src/l1j/server/server/model/item/function/LevelMilestonePackages.java
+src/l1j/server/server/model/item/function/PackageRewardStaging.java
+src/l1j/server/server/model/item/function/QuestDialogueItems.java
+src/l1j/server/server/model/item/function/RecruitStarterKit.java
+src/l1j/server/server/model/item/function/RuneRewardPackages.java
+src/l1j/server/server/model/item/function/SpecialEnchantmentItems.java
+src/l1j/server/server/model/item/function/StarterSupportPackages.java
+src/l1j/server/server/utils/SupplementalItemIds.java

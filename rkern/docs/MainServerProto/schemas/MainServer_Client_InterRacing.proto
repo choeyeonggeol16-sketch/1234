@@ -1,0 +1,68 @@
+// Recovered from mjlin_loaded_code_00400000_0180D000.bin, SHA-256 256f7886e98d7d2c573ab76917f78e30dc4f34cb723a002d604602cdb2f6cbdb
+// Source: embedded FileDescriptorProto, NOT NC-authored source file.
+// package/message/field/enum/number/cardinality derived directly from binary descriptor.
+// syntax="proto2" reconstructed from descriptor required/optional semantics.
+syntax = "proto2";
+package LIN;
+
+import "Lineage_CommonDataTypes.proto";
+
+message CS_MAPUI_TELEPORT_REQ {
+  required int32 worldNumber = 1;
+  required int32 x = 2;
+  required int32 y = 3;
+}
+
+message SC_INTER_RACING_READY_NOTI {
+  required .LIN.RaceInfoT race = 1;
+  repeated .LIN.RacerInfoT racer = 2;
+  required bool canBuy = 3;
+  repeated .LIN.RacerTicketT racerTicket = 4;
+}
+
+message SC_INTER_RACING_START_NOTI {
+  required .LIN.RaceInfoT race = 1;
+  repeated .LIN.RacerInfoT racer = 2;
+}
+
+message SC_INTER_RACING_STOP_NOTI {
+  required .LIN.RaceInfoT race = 1;
+  required int32 winRacerId = 2;
+  required int32 prize = 3;
+}
+
+message SC_INTER_RACING_MOVING_NOTI {
+  required .LIN.RacerInfoT racer = 1;
+}
+
+message CS_INTER_RACING_STATUS_INFO_REQ {
+  required int32 worldNumber = 1;
+}
+
+message SC_INTER_RACING_STATUS_INFO_ACK {
+  required .LIN.RaceInfoT race = 1;
+  required bool canBuy = 2;
+  repeated .LIN.RacerTicketT racerTicket = 3;
+  repeated .LIN.RacerMapViewDataT racerMapView = 4;
+}
+
+message SC_INTER_RACING_TICKET_SELL_LIST_NOTI {
+  message SellItemT {
+    required int32 itemId = 1;
+    required int32 price = 2;
+  }
+  required int32 npcId = 1;
+  required int32 currency = 2;
+  repeated .LIN.SC_INTER_RACING_TICKET_SELL_LIST_NOTI.SellItemT items = 3;
+}
+
+message CS_INTER_RACING_RANK_INFO_REQ {
+  required int32 raceKind = 1;
+  required int32 raceTrack = 2;
+}
+
+message SC_INTER_RACING_RANK_INFO_ACK {
+  required int32 raceKind = 1;
+  required int32 raceTrack = 2;
+  repeated .LIN.RaceRankInfoT rankInfo = 3;
+}

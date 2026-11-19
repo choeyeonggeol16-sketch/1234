@@ -1,0 +1,155 @@
+{
+  "baseline_zip": "RKern_ItemFunction_DomainSeparation_Phase10_FULL_SRC_20261118.zip",
+  "baseline_sha256": "93407e97e1121c210e2cc4b38f6820f4a2f269b007086d2be4753e1fc29b0749",
+  "original_weapon_sha256": "c810a98cb8b7ccd96b04d43491be8e85729aaec80bf3aa9b7b2f3cc85c7d4b02",
+  "fragments": [
+    {
+      "class": "WeaponEnchantTargetRules",
+      "sha256": "c437b67a8cec5546702143781c7412b092f5f56a9209a0b82e6b4b20378bdde2",
+      "size": 8290
+    },
+    {
+      "class": "WeaponEnchantLevelLimits",
+      "sha256": "4196145157094d568893da92edf67893a2bd6213f433caa03f5bb847c1624d07",
+      "size": 1326
+    },
+    {
+      "class": "WeaponEnchantScrollResolution",
+      "sha256": "473a4d5cb00f1317263adba3a0cc574ab0e382337f08343679e90a7a6e515982",
+      "size": 17340
+    },
+    {
+      "class": "WeaponEnchantChanceCalculation",
+      "sha256": "f2e6d51b3fce61c14b39d393c2b8f13b6bb05cffa753f2eab3491dfb26e2e820",
+      "size": 7405
+    }
+  ],
+  "gateway_sha256": "c9cec3e94fabe42b583bc6fb0e9e5e757ce85feef566bc2faeef7607966bf930",
+  "resolution_sha256": "1598f1eb5ad3bd6c4433bb453334ccd5519b81c6ad7e06f646e7d453ddadf9be",
+  "original_potion_sha256": "98089692b62a2384db8ada3351d93dc96e3db6c4f38b75954bf44056ec555a86",
+  "potion_facade_sha256": "a4b1447481463c4ca86d8763895e7e9dc519ff0675e1c541be315d319551ea4e",
+  "potion_helpers_sha256": "3b43a3858cf8ede829ee799fafdef92a052906e634c2e08b74211f0191a314ad",
+  "potion_sections": [
+    {
+      "class": "HealingPotionConsumables",
+      "sha256": "726a308d91590b7f07f3d0045ca4003ddd818c863fee8c8fe318281eccf1457e",
+      "size": 1497,
+      "item_ids": [
+        7007,
+        40010,
+        40011,
+        40012,
+        4100021,
+        40019,
+        40020,
+        40021,
+        40022,
+        40023,
+        40024,
+        40026,
+        40027,
+        40028,
+        40043,
+        40058,
+        40071,
+        40506,
+        40930,
+        41141,
+        41337,
+        60029,
+        60030,
+        140010,
+        140011,
+        140012,
+        140506,
+        240010,
+        41403,
+        410000,
+        410003,
+        30062,
+        30056,
+        42658,
+        40029,
+        4100152,
+        4100153,
+        4100154
+      ]
+    },
+    {
+      "class": "ExperiencePotionConsumables",
+      "sha256": "32772e5e83f6df1b49942d6509e4f985ca3d934f899fb3be36b3c957d839897b",
+      "size": 339,
+      "item_ids": [
+        40858,
+        708,
+        3000456,
+        30105,
+        210094
+      ]
+    },
+    {
+      "class": "MovementPotionConsumables",
+      "sha256": "a841c6f53353e15adf1d282aa842bb290e3598558a189e89b36c86d84b113748",
+      "size": 4792,
+      "item_ids": [
+        40030,
+        40013,
+        7006,
+        40018,
+        40039,
+        40040,
+        41338,
+        41261,
+        41262,
+        41268,
+        41269,
+        41271,
+        41272,
+        41273,
+        41342,
+        30067,
+        140013,
+        140018,
+        30158,
+        875640293,
+        40014,
+        140014,
+        41415,
+        30073,
+        40068,
+        140068,
+        210110,
+        30076,
+        712,
+        40031,
+        30075,
+        713,
+        210036,
+        30077,
+        40733
+      ]
+    },
+    {
+      "class": "ManaProtectionPotionConsumables",
+      "sha256": "ce3a366efbf35c8d1acc8ea93010e918998e6647c9bef61f09cedcc4dbc1fbf6",
+      "size": 2089,
+      "item_ids": [
+        210115,
+        40032,
+        40041,
+        41344,
+        30083,
+        40015,
+        140015,
+        40736,
+        41142,
+        210114,
+        30089,
+        40016,
+        140016,
+        210113,
+        40025
+      ]
+    }
+  ]
+}

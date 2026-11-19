@@ -1,0 +1,9 @@
+102 audit — 2026-11-18
+Source baseline: RKern_ItemOnly_CardAlchemy_Atomic_Phase101_FULL_SRC_20261118.zip
+Production changes: CardAlchemyReceipt.java, L1CardAlchemy1.java, L1CardAlchemy2.java, L1CardAlchemy3.java
+JDK 21 actual production classes + typed test model: 25,281 checks PASS
+AB comparison 36,000 normal synthesis (101 vs 102): SUCCESS=26181, SHA256=234725333364da3c3c8f292535b8a63ab7d3aa2657714745de5ccd2f062c43ac BOTH PASS
+JDK 21 parser: 1,923 production Java source files, errors=0
+Microbenchmark: no stable gain measured in total allocation; do not claim specific JVM GC reduction.
+Full dependency compile: not completed (external dependencies missing).
+Real MySQL/CacheD crash/reconnect/ACK-loss tests: not completed.

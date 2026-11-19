@@ -1,0 +1,3 @@
+PASS registry results DIFF count=259200 digest=b3ef450036cae4857198dd6e34defa747f245282206bc824b0e7f6b6db3dbd76
+BASE ALLOCATION bytesPerDefinition=928.0 sink=264000
+AFTER ALLOCATION bytesPerDefinition=456.0 sink=264000

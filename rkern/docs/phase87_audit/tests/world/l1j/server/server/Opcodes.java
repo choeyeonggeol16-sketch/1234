@@ -1,0 +1,1 @@
+package l1j.server.server; public final class Opcodes { public static final int S_ACTION=1,S_MOVE_OBJECT=2;}

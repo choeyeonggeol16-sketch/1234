@@ -1,0 +1,11 @@
+Baseline: Phase106 full source
+Production changed: CardAlchemyReceipt.java, NeigeCard3.java
+Historical test fixture updated: docs/item_only_phase102_20261118/test_102.py
+107 actual Java 21 typed production synthesis: PASS 25332 checks
+107 selection 12 tampering paths and stale C/D: PASS
+103: PASS 2498 assertions (2464 + unique34)
+104: PASS 65 assertions and embedded 103 suite
+105 independent guard: PASS 410 conditions and 2 central actions
+106 independent selectors: PASS 16019 checks
+Java21 syntax parse: PASS 1923 / 1923
+MySQL/in-game/IOCP/full-application type compilation: NOT RUN

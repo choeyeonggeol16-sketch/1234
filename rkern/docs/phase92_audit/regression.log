@@ -1,0 +1,17 @@
+Note: Some input files use preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.
+Broadcast: 5000 synthetic recipients, 2 frames/person, 2 assemblies, refs clean, 14.86 ms (mock, not IOCP)
+Broadcast: 8 boundary/concurrency + 5000 mock fanout PASS
+Broadcast 87: 5 randomized trials x 9 sizes x 300 targets, payload/filter/FIFO/reference release PASS
+Note: Some input files use preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.
+87 real CSharedBroadcast: AOI filter/self/duplicate/group FIFO/Raw/ground item/exception release PASS
+Parsed 1710 Java, errors=0
+Phase88 production SC SkillSound/EffectLocation/Pledge wire parity PASS: 40000
+89 wire: 40,000 ProtoWriter statuses + 50,000 S_EVENT packet bytes PASS
+89 production SC_ServerMessage/SC_SystemMessage native wire parity PASS: 40000
+Note: Some input files use preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.
+90 group broadcast: red->blue, duplicate, disconnect, 1 assembly, ref release PASS
+91 actual extracted production methods: 7 dungeon + 2 clan failure scenarios PASS
+91 actual combat methods: 5 normal/source/send/release/countdown scenarios PASS

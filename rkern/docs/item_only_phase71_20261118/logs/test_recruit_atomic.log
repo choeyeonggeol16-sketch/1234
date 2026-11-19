@@ -1,0 +1,2 @@
+PASS exact original eight reward sequences, count=239
+PASS Java21 production typed replay 521 cases incl all 8 grant lists, all intermediate failures, delayed COMMIT, rollback, stale input

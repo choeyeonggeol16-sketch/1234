@@ -1,0 +1,5 @@
+Typed Java assertions passed: 71972
+Unchanged relocated/deduplicated methods: 12
+Typed pet assertions passed: 76858
+ACTUAL_METHOD_ASSERTIONS=1093
+ROUTES=55 original, 54 reachable branches; existing calls preserved; legacy references=0

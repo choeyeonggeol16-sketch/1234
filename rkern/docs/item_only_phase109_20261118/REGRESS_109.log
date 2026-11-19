@@ -1,0 +1,16 @@
+104: baseline 103: 0 javac 0 
+java 0 PASS 103: 2464 assertions / 462 modeled operations / 70 card IDs / 14 tree IDs
+ 
+unique java 0 PASS 103 unique: 34 assertions
+ 
+mapping python checks PASSED
+packet answer arm compile: 0 
+packet reply regression: 0 PASS 104: 65 assertions / 4 packet answer codes / SQL failure, cancel, spoof, duplicate 
+Legacy direct-debit/account-save arms removed, all 103 tests preserved
+
+105 independent guards: PASS independent exact production fixture
+
+106 independent selectors: PASS independent exact production fixture
+
+108 receipt: PASS: actual production Java 21 type compilation and 25371 checks
+PASS 108: 12 one-slot races, 3 four-slot races, 3 account-count mismatch guards; original receipt tests

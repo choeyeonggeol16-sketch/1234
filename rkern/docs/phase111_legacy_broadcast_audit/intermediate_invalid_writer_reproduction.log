@@ -1,0 +1,15 @@
+Note: Some input files use preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.
+Nov 17, 2026 6:47:05 AM l1j.server.server.model.network.core.broadcast.CSharedBroadcast logOptionalNoticeFailure
+WARNING: Optional shared broadcast failed (count=1)
+java.lang.IllegalStateException: injected per-socket send failure
+	at l1j.server.server.model.network.core.connection.CUserSocket.enqueueConstBufferConfirmed(CUserSocket.java:29)
+	at l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer.send(CAsyncSendConstBuffer.java:108)
+	at l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenOptionalTo(CSharedBroadcast.java:311)
+	at l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(CSharedBroadcast.java:333)
+	at l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(CSharedBroadcast.java:727)
+	at l1j.server.server.model.network.core.broadcast.GlobalFailure111.main(GlobalFailure111.java:36)
+
+Exception in thread "main" java.lang.AssertionError: invalid global packet repeatedly re-encoded: 2
+	at l1j.server.server.model.network.core.broadcast.GlobalFailure111.ck(GlobalFailure111.java:15)
+	at l1j.server.server.model.network.core.broadcast.GlobalFailure111.main(GlobalFailure111.java:81)

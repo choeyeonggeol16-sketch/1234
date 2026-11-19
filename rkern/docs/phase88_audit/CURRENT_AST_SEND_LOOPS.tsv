@@ -1,0 +1,567 @@
+l1j/server/DogFight/Game/MJDogFightGame.java	173	tInfo : MJDogFightHistory.getInstance().get_current_tickets_info()	send_caster_message
+l1j/server/DogFight/Game/MJDogFightGame.java	189	i >= 1	send_caster_message,send_messenger_message
+l1j/server/DogFight/History/MJDogFightHistory.java	281	i < size	pc.sendPackets
+l1j/server/DogFight/History/MJDogFightHistory.java	371	i < size	pc.sendPackets
+l1j/server/DogFight/History/MJDogFightHistoryInfo.java	246	pair : pairs	pc.sendPackets
+l1j/server/IndunSystem/BossRaid/BossRaidSystem.java	43	partymember : pc.getParty().getMembers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/IndunSystem/BossRaid2/Queen1.java	195	obj : L1World.getInstance().getVisibleObjects(_map).values()	SC_PacketBox.send
+l1j/server/IndunSystem/BossRaid2/Queen1.java	244	obj : L1World.getInstance().getVisibleObjects(_map).values()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray
+l1j/server/IndunSystem/BossRaid2/Queen1.java	247	clan : L1World.getInstance().getAllClans()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray
+l1j/server/IndunSystem/BossRaid2/QueenSystem2.java	47	partymember : pc.getParty().getMembers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/IndunSystem/BossRaid2/QueenSystem2.java	64	partymember : pc.getParty().getMembers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/IndunSystem/ClanDungeon/Azmodan.java	194	obj : L1World.getInstance().getVisibleObjects(_map).values()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray
+l1j/server/IndunSystem/ClanDungeon/Azmodan.java	197	clan : L1World.getInstance().getAllClans()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArray
+l1j/server/IndunSystem/FanstasyIsland/FantasyIsland.java	57	(Running)	SC_NpcChatPacket.broadcastNpc,SC_PacketBox.send,SC_SystemMessage.send,SC_SkillSound.broadcast,unicorn.sendShape,SC_ServerMessage.send
+l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java	354	m : r.members	GludioDungeonPackets.sendRoomResult
+l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java	504	m : r.members	GludioDungeonPackets.sendArenaPlayStatus
+l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java	547	m : r.members	GludioDungeonPackets.sendArenaPlayStatus
+l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java	595	m : r.members	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java	605	m : r.members	GludioDungeonPackets.sendArenaPlayStatus
+l1j/server/IndunSystem/Hadin/Hadin.java	90	(Running)	SC_NpcChatPacket.broadcastNpc,BonginSendPacekt,SC_Door.broadcast,SC_SkillSound.broadcast
+l1j/server/IndunSystem/Hadin/Hadin.java	725	c : getParty().getMembers()	SC_SkillSound.send
+l1j/server/IndunSystem/Hadin/HadinTrap.java	169	ob : cklist	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/IndunSystem/MiniGame/L1Gambling.java	75	listner : L1World.getInstance().getRecognizePlayer(pc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/IndunSystem/MiniGame/L1Gambling3.java	75	listner : L1World.getInstance().getRecognizePlayer(pc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/IndunSystem/Orim/OrimController.java	442	pc : getPlayMemberArray()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/IndunSystem/Orim/OrimController.java	544	member : L1World.getInstance().getVisiblePlayer(pc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/IndunSystem/Orim/OrimController.java	816	c : getPlayMemberArray()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/IndunSystem/Orim/OrimController.java	827	shellCount < 5 - attackCount / 2	SC_EffectLocation.send
+l1j/server/IndunSystem/Orim/OrimController.java	829	pc : getPlayMemberArray()	SC_EffectLocation.send
+l1j/server/IndunSystem/ValakasRoom/ValakasReady.java	41	(Running)	SC_NpcChatPacket.broadcastCharacter,SC_NpcChatPacket.sendCharacter,SC_SystemMessage.send
+l1j/server/IndunSystem/ValakasRoom/ValakasStart.java	56	(Running)	SC_NpcChatPacket.broadcastCharacter,SC_NpcChatPacket.sendCharacter,SC_SystemMessage.send
+l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java	180	i >= 0	SC_EffectLocation.broadcast
+l1j/server/MJCombatSystem/Games/MJBattleTournamentArea.java	255	i >= 1	broadcast
+l1j/server/MJCombatSystem/Games/MJBattleTournamentObserver.java	233	team_id >= 0	l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients
+l1j/server/MJCombatSystem/Games/MJBattleTournamentObserver.java	234	round_id >= 0	l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients
+l1j/server/MJCombatSystem/MJCombatObserver.java	173	pc : col	MJPacketFactory.sendTime
+l1j/server/MJCombatSystem/MJCombatObserver.java	305	data : _box_attr	l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw
+l1j/server/MJCombatSystem/MJCombatObserver.java	310	data : _team_box_attr[enter_team_id][0]	l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw
+l1j/server/MJCombatSystem/MJCombatObserver.java	329	pc : col	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJCombatSystem/MJCombatObserver.java	350	pc : col	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw,MJPacketFactory.sendTime
+l1j/server/MJCombatSystem/MJCombatObserver.java	364	i < frames.length	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw
+l1j/server/MJCombatSystem/MJCombatObserver.java	367	frame : frames	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJCombatSystem/MJCombatObserver.java	416	i < frames.length	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw
+l1j/server/MJCombatSystem/MJCombatObserver.java	418	pc : L1World.getInstance().getVisiblePlayers(_copyMapId)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJCombatSystem/MJCombatObserver.java	423	frame : frames	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJCombatSystem/MJCombatObserver.java	648	pc : col	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJCompanion/Instance/MJCompanionRegenerator.java	104	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJCompanion/MJCompanionCommandExecutor.java	199	companion : L1World.getInstance().getAllCompanions()	SC_COMPANION_STATUS_NOTI.send
+l1j/server/MJCompanion/MJCompanionCommandExecutor.java	226	companion : L1World.getInstance().getAllCompanions()	SC_COMPANION_STATUS_NOTI.send
+l1j/server/MJCompanion/MJCompanionCommandExecutor.java	248	companion : L1World.getInstance().getAllCompanions()	SC_COMPANION_STATUS_NOTI.send
+l1j/server/MJDungeonTimer/Updator/DungeonTimeUpdator.java	170	i < 2	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SkillSound.send
+l1j/server/MJDungeonTimer/Updator/DungeonTimeUpdator.java	171	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SkillSound.send
+l1j/server/MJEffectSystem/Realize/OnEffectThread.java	187	i < size	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/MJINNSystem/MJINNHelper.java	62	i >= 0	pc.sendPackets
+l1j/server/MJInstanceSystem/MJLFC/Creator/MJLFCCreator.java	179	pc : red	LFCMessages.CREATE_ERR_TARGET_CANNOT.sendSystemMsg
+l1j/server/MJInstanceSystem/MJLFC/Creator/MJLFCCreator.java	185	pc : blue	LFCMessages.CREATE_ERR_PARTYMEMBER.sendSystemMsg
+l1j/server/MJInstanceSystem/MJLFC/Creator/MJLFCCreator.java	289	pc : _blue	LFCMessages.CREATE_CANCEL.sendSystemMsg
+l1j/server/MJInstanceSystem/MJLFC/Creator/MJLFCCreator.java	295	pc : _red	LFCMessages.CREATE_CANCEL.sendSystemMsg
+l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCObject.java	225	i > 0	LFCMessages.INGAME_NOTIFY_READY.sendGreenMsgToList
+l1j/server/MJInstanceSystem/MJLFC/Template/MJLFCWarSquareTrap.java	73	(!_thorn_Q.isEmpty())	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenGroups
+l1j/server/MJKDASystem/Chart/MJKDAChartUpdator.java	113	pc : cols	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJKDASystem/MJKDA.java	356	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJKDASystem/MJKDA.java	364	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/MJRaidMessage.java	79	i < size	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/MJRaidMessage.java	89	i < size	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/MJRaidObject.java	365	i < size	SC_OnlyEffect.send,SC_OnlyEffect.broadcast,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/MJRaidObject.java	513	(allTime > 10)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/MJRaidObject.java	522	i < size	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java	92	i <= s_startMessages.length	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/Objects/MJRaidAntaras.java	99	j < size	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java	95	i <= s_startMessages.length	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java	102	j < size	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/Objects/MJRaidFafurion.java	144	((_state & RS_START) > 0)	SC_NpcChatPacket.broadcastNpc
+l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java	92	i <= s_startMessages.length	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/Objects/MJRaidRindvior.java	99	j < size	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/Objects/MJRaidValakas.java	160	i < size	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/Objects/MJRaidValakas.java	186	i < s_startMessages.length	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/Objects/MJRaidValakas.java	191	j < size	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/Objects/MJRaidValakas.java	212	i < s_startMessagesValakas.length	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/Objects/MJRaidValakas.java	217	j < size	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJRaidSystem/Objects/MJRaidValakas.java	288	((_state & RS_START) > 0)	SC_NpcChatPacket.broadcastNpc
+l1j/server/MJRaidSystem/Objects/MJRaidValakas.java	343	i < size	SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/MJRaidSystem/Objects/MJRaidValakas.java	364	i < size	SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/MJRaidSystem/Objects/MJRaidValakas.java	407	i < size	SC_SkillSound.send
+l1j/server/MJRaidSystem/Objects/MJRaidValakas.java	440	i < size	SC_DoActionGFX.broadcast
+l1j/server/MJRaidSystem/Objects/MJRaidValakas.java	460	i < size	SC_DoActionGFX.broadcast
+l1j/server/MJRaidSystem/Objects/MJRaidValakas.java	604	i < size	SC_DoActionGFX.broadcast
+l1j/server/MJRaidSystem/Util/L1MJRaidPoisonInstance.java	43	pc : L1World.getInstance().getRecognizePlayer(this)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJServerMacroSystem/MJServerMacroLoader.java	142	i < size	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients
+l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java	164	i < 2	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SkillSound.send
+l1j/server/MJTemplate/DateSchedulerModel/Acceptor/AcceptorToNpcListenerAdapter.java	165	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SkillSound.send
+l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java	99	pc : L1World.getInstance().getVisiblePlayer(this)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java	76	i < _attrCoordinates.length	SC_ChangeAttr.send
+l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java	180	pc : viewers	sendSharedAttrs,actionFrame.send,removeFrame.send
+l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java	207	pc : viewers	actionFrame.send,sendSharedAttrs
+l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java	355	frame : attrs	frame.send
+l1j/server/MJTemplate/MJParty.java	14	member : getMembers()	sendLeftMessage
+l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java	162	pc : L1World.getInstance().getVisiblePlayer(this)	shared.send
+l1j/server/MJWarSystem/MJCastleWar.java	187	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJWarSystem/MJCastleWar.java	243	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJWarSystem/MJCastleWar.java	478	(isReady())	SC_IconMessage.broadcast
+l1j/server/MJWarSystem/MJCastleWar.java	538	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/MJWarSystem/MJCastleWar.java	617	clan : _offenses.values()	broadcastEndWar
+l1j/server/MJWarSystem/MJCastleWarBusiness.java	283	war : _castleWars.values()	SC_SystemMessage.send,pc.sendPackets
+l1j/server/MJWarSystem/MJCastleWarBusiness.java	296	text : _viewMessages	SC_SystemMessage.send
+l1j/server/MJWarSystem/MJWar.java	85	clan : _offenses.values()	broadcastEndWar
+l1j/server/SpecialEventHandler.java	55	pc : L1World.getInstance().getAllPlayers()	SC_GMHtml.send,broadcast.send
+l1j/server/SpecialEventHandler.java	76	pc : L1World.getInstance().getAllPlayers()	SC_GMHtml.send,broadcast.send
+l1j/server/SpecialEventHandler.java	97	pc : L1World.getInstance().getAllPlayers()	SC_GMHtml.send,broadcast.send
+l1j/server/Stadium/StadiumManager.java	61	i < size	gm.sendPackets
+l1j/server/Stadium/StadiumObject.java	33	i >= 0	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/Stadium/StadiumObject.java	49	pc : col	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/Stadium/StadiumObject.java	90	pc : col	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java	84	(Running && !Thread.currentThread().isInterrupted())	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv1.java	217	pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java	84	(Running && !Thread.currentThread().isInterrupted())	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv10.java	220	pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java	88	(Running && !Thread.currentThread().isInterrupted())	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java	197	object : L1World.getInstance().getVisibleObjects(_mapid).values()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java	336	pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv11.java	359	pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java	84	(Running && !Thread.currentThread().isInterrupted())	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv2.java	219	pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java	84	(Running && !Thread.currentThread().isInterrupted())	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv3.java	219	pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java	84	(Running && !Thread.currentThread().isInterrupted())	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv4.java	219	pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java	84	(Running && !Thread.currentThread().isInterrupted())	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv5.java	219	pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java	84	(Running && !Thread.currentThread().isInterrupted())	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv6.java	219	pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java	84	(Running && !Thread.currentThread().isInterrupted())	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv7.java	219	pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java	84	(Running && !Thread.currentThread().isInterrupted())	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv8.java	218	pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java	84	(Running && !Thread.currentThread().isInterrupted())	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients
+l1j/server/TowerOfDominance/BossController/DominanceFloorLv9.java	218	pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/Announcements.java	49	msg : _announcements	SC_SystemMessage.send
+l1j/server/server/Controller/AuraController.java	270	clan : L1World.getInstance().getAllClans()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/Controller/AuraController.java	287	member : clan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/Controller/BossController.java	391	pc : L1World.getInstance().getAllPlayers()	SC_ActionUI.sendEvents
+l1j/server/server/Controller/BossController.java	466	pc : L1World.getInstance().getVisiblePlayerFast(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/Controller/BossController.java	495	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/Controller/BugRaceController.java	552	i < _npc.length	SC_NpcChatPacket.broadcastNpcFast
+l1j/server/server/Controller/BugRaceController.java	567	i < _npc.length	SC_NpcChatPacket.broadcastNpcFast
+l1j/server/server/Controller/BugRaceController.java	1075	player : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/Controller/HomeTownTimeController.java	111	townId <= 10	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/Controller/HomeTownTimeController.java	116	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/Controller/ShipTimeController.java	137	pc : L1World.getInstance().getAllPlayers()	SC_SkillSound.send,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/Controller/ShipTimeController.java	182	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SkillSound.send
+l1j/server/server/Controller/ShipTimeController.java	198	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SkillSound.send
+l1j/server/server/Controller/ShipTimeController.java	214	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SkillSound.send
+l1j/server/server/Controller/ShipTimeController.java	229	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SkillSound.send
+l1j/server/server/Controller/ShipTimeController.java	242	pc : L1World.getInstance().getAllPlayers()	SC_SkillSound.send,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/Controller/������Controller.java	86	(true)	L1World.getInstance().broadcastServerMessage
+l1j/server/server/DungeonTimeCommand.java	35	dtInfo : DungeonTimeInformationLoader.getInstance().get_enumerator()	SC_SystemMessage.send
+l1j/server/server/GMCommands.java	1520	clanMembers : clan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/GMCommands.java	1699	i < 5	pc.sendPackets
+l1j/server/server/GMCommands.java	1960	(rs.next())	gm.sendPackets
+l1j/server/server/GMCommands.java	1969	(rs.next())	gm.sendPackets
+l1j/server/server/GMCommands.java	1978	(rs.next())	gm.sendPackets
+l1j/server/server/GMCommands.java	2032	player : L1World.getInstance().getVisiblePlayer(pc, range)	pc.sendPackets
+l1j/server/server/GMCommands.java	2582	target : L1World.getInstance().getAllPlayers3()	gm.sendPackets
+l1j/server/server/GMCommands.java	2957	pc : L1World.getInstance().getVisiblePlayer(gm, 22)	SC_SystemMessage.send,SC_SkillSound.send,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_PacketBox.broadcastGreen
+l1j/server/server/GMCommands.java	3153	pc : L1World.getInstance().getVisiblePlayer(gm, 22)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/GMCommands.java	3227	Targetpc : L1World.getInstance().getVisiblePlayer(gm, range)	gm.sendPackets
+l1j/server/server/GMCommands.java	3248	Targetpc : L1World.getInstance().getVisiblePlayer(gm)	gm.sendPackets
+l1j/server/server/GMCommands.java	3270	Targetpc : L1World.getInstance().getAllPlayers()	gm.sendPackets
+l1j/server/server/GMCommands.java	3315	Targetpc : L1World.getInstance().getAllPlayers()	gm.sendPackets
+l1j/server/server/GMCommands.java	3433	i$.hasNext()	SC_ChatPacket.sendDirect
+l1j/server/server/GMCommands.java	3623	(rs.next())	gm.sendPackets
+l1j/server/server/GMCommands.java	3649	item : target.getInventory().getItems()	gm.sendPackets
+l1j/server/server/GMCommands.java	3746	i < cycle	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SkillSound.send
+l1j/server/server/GMCommands.java	3752	target : player	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SkillSound.send
+l1j/server/server/GMCommands.java	3806	target : player	SC_UserCommands17.send
+l1j/server/server/GMCommands.java	4411	item : target.getInventory().getItems()	gm.sendPackets
+l1j/server/server/GMCommands.java	4624	target : player	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SkillSound.send
+l1j/server/server/GMCommands.java	4867	(rs0.next())	gm.sendPackets
+l1j/server/server/GMCommands.java	4885	(rs.next())	gm.sendPackets
+l1j/server/server/GMCommands.java	4938	(rs.next())	paramL1PcInstance.sendPackets
+l1j/server/server/GMCommands.java	5094	(rs.next())	gm.sendPackets
+l1j/server/server/GMCommands.java	5125	(rs.next())	pc.sendPackets
+l1j/server/server/GMCommands.java	5159	(rs.next())	gm.sendPackets
+l1j/server/server/GMCommands.java	5190	(rs.next())	pc.sendPackets
+l1j/server/server/GMCommands.java	5407	item : m_use_type_items	SC_DeleteInventoryItem.send
+l1j/server/server/GMCommands.java	7090	(rs.next())	gm.sendPackets
+l1j/server/server/GMCommands.java	7107	(rs.next())	gm.sendPackets
+l1j/server/server/GMCommands.java	7128	b : list	gm.sendPackets
+l1j/server/server/GameServer.java	476	(0 < secondsCount)	world.broadcastServerMessage
+l1j/server/server/UserCommands.java	438	clan : L1World.getInstance().getAllClans()	SC_War.send
+l1j/server/server/UserCommands.java	480	clan : L1World.getInstance().getAllClans()	SC_War.send
+l1j/server/server/UserCommands.java	656	target : L1World.getInstance().getAllPlayers3()	pc.sendPackets
+l1j/server/server/UserCommands.java	784	i < \uc6d0\uaca9\ub9f5.length	SC_SystemMessage.send
+l1j/server/server/UserCommands.java	792	i < \uc6d0\uaca9\ub9f51.length	SC_SystemMessage.send
+l1j/server/server/UserCommands.java	1172	member : clan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/UserCommands.java	1239	member : clan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/UserCommands.java	1455	target : L1World.getInstance().getAllPlayers3()	pc.sendPackets
+l1j/server/server/UserCommands.java	2199	(r.next())	SC_SystemMessage.send
+l1j/server/server/UserCommands.java	2208	(r1.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1BanIp.java	33	tg : L1World.getInstance().getAllPlayers()	SC_SystemMessage.send
+l1j/server/server/command/executor/L1BuffIcon.java	26	i < count	SC_PacketBox.send,SC_SystemMessage.send
+l1j/server/server/command/executor/L1Burf.java	32	i < _count	SC_SystemMessage.send,SC_SkillSound.send,SC_SkillSound.broadcast
+l1j/server/server/command/executor/L1CheckCharacter.java	48	(r.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1CheckCharacter.java	57	(r1.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1CheckCharacter.java	72	(r.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1CheckCharacter.java	79	(r1.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1CheckCharacter.java	95	(r.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1CheckCharacter.java	104	(r1.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1CheckCharacter.java	122	(r.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1CheckCharacter.java	129	(r1.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1DescId.java	30	i < count	SC_SystemMessage.send
+l1j/server/server/command/executor/L1DescIdArmor.java	30	i < count	SC_SystemMessage.send
+l1j/server/server/command/executor/L1DescIdWeapon.java	36	i < count	SC_SystemMessage.send
+l1j/server/server/command/executor/L1GlobalBan.java	40	otherPc : pcs	SC_Disconnect.send,SC_SystemMessage.send
+l1j/server/server/command/executor/L1HpBar.java	51	obj : pc.getKnownObjects()	SC_HPMeter.send
+l1j/server/server/command/executor/L1HpBar.java	72	obj : pc.getKnownObjects()	SC_HPMeter.send
+l1j/server/server/command/executor/L1InvGfxId.java	47	i < page	Proto.send
+l1j/server/server/command/executor/L1ItemDelete.java	47	players : L1World.getInstance().getAllPlayers()	SC_SystemMessage.send
+l1j/server/server/command/executor/L1PartyRecall.java	53	pc2 : players	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/command/executor/L1Recall.java	46	target : targets	SC_SystemMessage.send,SC_Ability.send,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/command/executor/L1RemoveNpc.java	36	obj : L1World.getInstance().getVisibleObjects(pc)	SC_SystemMessage.send
+l1j/server/server/command/executor/L1Ress.java	48	tg : L1World.getInstance().getVisiblePlayer(pc)	SC_SkillSound.broadcast,SC_SkillSound.send,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/command/executor/L1Search.java	104	(rs.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1Search.java	158	(rs.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1Search.java	186	(rs.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1Search.java	214	(rs.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1Search.java	242	(rs.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1Search.java	261	(rs.next())	SC_SystemMessage.send
+l1j/server/server/command/executor/L1Search1.java	123	i < size	SC_SystemMessage.send
+l1j/server/server/command/executor/L1ServerMessage.java	23	i <= count	SC_ServerMessage.send,SC_SystemMessage.send
+l1j/server/server/command/executor/L1ServerName.java	25	i < count	SC_SystemMessage.send
+l1j/server/server/command/executor/L1ShowTrap.java	47	obj : pc.getKnownObjects()	SC_RemoveObject.send
+l1j/server/server/command/executor/L1SkillEffect.java	49	i <= _count	SC_SystemMessage.send,SC_SkillSound.send
+l1j/server/server/command/executor/L1SkillIcon.java	26	i < count	SC_PacketBox.send,SC_SystemMessage.send
+l1j/server/server/command/executor/L1Thread.java	22	i < th.length	SC_SystemMessage.send
+l1j/server/server/command/executor/L1���������������.java	26	i < count	SC_PacketBox.send,SC_SystemMessage.send
+l1j/server/server/datatables/CharacterTable.java	340	(loginRs.next())	SC_SystemMessage.send
+l1j/server/server/datatables/CharacterTable.java	347	(characterRs.next())	SC_SystemMessage.send
+l1j/server/server/datatables/CharacterTable.java	373	(loginRs.next())	SC_SystemMessage.send
+l1j/server/server/datatables/CharacterTable.java	380	(characterRs.next())	SC_SystemMessage.send
+l1j/server/server/model/Attendance/AttendanceLoadManager.java	193	dGroup : userData.get_groups()	SC_ATTENDANCE_BONUS_INFO_EXTEND.send,SC_ATTENDANCE_BONUS_GROUP_INFO.send,SC_ATTENDANCE_USER_DATA_EXTEND.send
+l1j/server/server/model/Beginner.java	57	(rs.next())	SC_ServerMessage.send
+l1j/server/server/model/Beginner.java	80	i < count	SC_ServerMessage.send
+l1j/server/server/model/BookQuest/Loader/BQSLoadManager.java	201	progress : bqs.get_progresses().values()	SC_CRITERIA_UPDATE_NOTI.sendOf
+l1j/server/server/model/BookQuest/Loader/BQSLoadManager.java	231	pc : L1World.getInstance().getAllPlayers()	SC_CRITERIA_UPDATE_NOTI.sendOf,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/BookQuest/Loader/BQSLoadManager.java	241	progress : bqs.get_progresses().values()	SC_CRITERIA_UPDATE_NOTI.sendOf
+l1j/server/server/model/BookQuest/Loader/BQSWQDecksLoader.java	73	pc : L1World.getInstance().getAllPlayers()	bqs.set_decks_version(0L).realloc_decks(pc).send_decks_noti,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1ClanJoinInstance.java	140	player : world.getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1CompanionInstance.java	718	visible : L1World.getInstance().getRecognizePlayer(this)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1CompanionInstance.java	992	item : items	SC_ServerMessage.send
+l1j/server/server/model/Instance/L1CrownInstance.java	84	pc : L1World.getInstance().getRecognizePlayer(this)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1DoorInstance.java	91	pc : L1World.getInstance().getRecognizePlayer(this)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1DoorInstance.java	236	x <= rightEdgeLocation	sendPacket
+l1j/server/server/model/Instance/L1DoorInstance.java	245	y <= rightEdgeLocation	sendPacket
+l1j/server/server/model/Instance/L1EffectInstance.java	56	obj : L1World.getInstance().getClusterGrid().queryNearby(this, 0)	SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/server/model/Instance/L1EffectInstance.java	122	pc : L1World.getInstance().getVisiblePlayerFast(this)	shared.send
+l1j/server/server/model/Instance/L1FieldObjectInstance.java	102	pc : L1World.getInstance().getRecognizePlayer(this)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1FurnitureInstance.java	48	pc : L1World.getInstance().getRecognizePlayer(this)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1MonsterInstance.java	581	i < bossIds.length	SC_SkillSound.send,SC_SkillSound.broadcast,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1MonsterInstance.java	586	pc : L1World.getInstance().getAllPlayers()	SC_SkillSound.send,SC_SkillSound.broadcast,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1MonsterInstance.java	617	i < bossIds.length	SC_SkillSound.send,SC_SkillSound.broadcast,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1MonsterInstance.java	622	pc : L1World.getInstance().getAllPlayers()	SC_SkillSound.send,SC_SkillSound.broadcast,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1NpcInstance.java	1265	pc : players	shared.send
+l1j/server/server/model/Instance/L1NpcInstance.java	1535	pc : L1World.getInstance().getVisiblePlayerFast(this)	effectShared.send,shared.send
+l1j/server/server/model/Instance/L1NpcInstance.java	2248	pc : players	shared.send
+l1j/server/server/model/Instance/L1PcInstance.java	2117	known : getKnownObjects()	SC_RemoveObject.send
+l1j/server/server/model/Instance/L1PcInstance.java	2291	player : playersArray	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1PcInstance.java	2851	pck : sp	getNetConnection().sendPacket
+l1j/server/server/model/Instance/L1PcInstance.java	2895	i < packets.length	sendPackets
+l1j/server/server/model/Instance/L1PcInstance.java	3151	item : getInventory().getItems()	SC_PacketBox.send,sendPackets,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SkillSound.send
+l1j/server/server/model/Instance/L1PcInstance.java	3173	partymember : this.getParty().getMembers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1PcInstance.java	3486	item : getInventory().getItems()	SC_PacketBox.send,sendPackets,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SkillSound.send
+l1j/server/server/model/Instance/L1PcInstance.java	3508	partymember : this.getParty().getMembers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1PcInstance.java	3892	i < count	SC_ServerMessage.send,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_SystemMessage.send,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllGms
+l1j/server/server/model/Instance/L1PcInstance.java	3901	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1PcInstance.java	4854	lv : due	SC_ChatPacket.sendDirect
+l1j/server/server/model/Instance/L1PcInstance.java	4944	i < clanMember.length	SC_ServerMessage.send
+l1j/server/server/model/Instance/L1PcInstance.java	6327	item : getInventory().getItems()	SC_ServerMessage.send
+l1j/server/server/model/Instance/L1PcInstance.java	6343	item : getInventory().getItems()	SC_ServerMessage.send
+l1j/server/server/model/Instance/L1PcInstance.java	6363	item : getInventory().getItems()	SC_ServerMessage.send
+l1j/server/server/model/Instance/L1PcInstance.java	6383	item : getInventory().getItems()	SC_SystemMessage.send
+l1j/server/server/model/Instance/L1PcInstance.java	6405	item : getInventory().getItems()	SC_ServerMessage.send
+l1j/server/server/model/Instance/L1PcInstance.java	6421	item : getInventory().getItems()	SC_ServerMessage.send
+l1j/server/server/model/Instance/L1PcInstance.java	8486	viewer : L1World.getInstance().getVisiblePlayerFast(this)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1PcInstance.java	8727	visible : L1World.getInstance().getClusterGrid().queryNearbyReusable(this, Config.PC_RECOGNIZE_RANGE)	SC_HPMeter.send
+l1j/server/server/model/Instance/L1PetInstance.java	45	i < aobj.length	SC_ReturnedStat.sendPetParty
+l1j/server/server/model/Instance/L1PetInstance.java	343	i < size	SC_ServerMessage.send
+l1j/server/server/model/Instance/L1PetInstance.java	509	petObject : petList	SC_NpcChatPacket.broadcastNpc
+l1j/server/server/model/Instance/L1SummonInstance.java	303	item : items	SC_ServerMessage.send
+l1j/server/server/model/Instance/L1SummonInstance.java	327	item : items	SC_ServerMessage.send
+l1j/server/server/model/Instance/L1SummonInstance.java	356	i < aobj.length	SC_ReturnedStat.sendPetParty
+l1j/server/server/model/Instance/L1SummonInstance.java	580	visiblePc : L1World.getInstance().getVisiblePlayer(this)	SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance
+l1j/server/server/model/Instance/L1TowerInstance.java	365	pc : L1World.getInstance().getRecognizePlayer(this)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/Instance/L1TrapInstance.java	102	pc : _knownPlayers	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Character.java	1353	skillId : _elf_skill_braves	SC_SkillBrave.send,SC_SkillBrave.broadcastFast
+l1j/server/server/model/L1ChatParty.java	83	member : getMembers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1ChatParty.java	106	member : getMembers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1ClanJoin.java	157	other : clan.getOnlineClanMember()	SC_ReturnedStat.sendEmblem,SC_ReturnedStat.broadcastEmblem
+l1j/server/server/model/L1ClanJoin.java	207	member : roster	SC_SystemMessage.send
+l1j/server/server/model/L1ClanJoin.java	325	member : roster	SC_PacketBox.send,SC_ServerMessage.send,SC_ClanName.send,SC_ReturnedStat.sendEmblem,SC_ActionUI.send
+l1j/server/server/model/L1DeathMatch.java	154	pc : getMembersArray()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1DeathMatch.java	172	pc : getMembersArray()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1DeathMatch.java	183	pc : getMembersArray()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1DeathMatch.java	199	pc : getMembersArray()	SC_ServerMessage.send,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1DeathMatch.java	235	pc : getMembersArray()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1DeathMatch.java	288	player : getMembersArray()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1GroundInventory.java	35	item : getItems()	SC_DropItem.send
+l1j/server/server/model/L1GroundInventory.java	100	pc : L1World.getInstance().getVisiblePlayerFast(item)	shared.send
+l1j/server/server/model/L1HauntedHouse.java	147	player : getMembersArray()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1HauntedHouse.java	185	pc : getMembersArray()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1HauntedHouse.java	228	pc : getMembersArray()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1HauntedHouse.java	256	pc : getMembersArray()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1MobSkillUse.java	378	pc : L1World.getInstance().getVisiblePlayer(attacker)	SC_SkillSound.send,SC_SkillSound.broadcast
+l1j/server/server/model/L1NewUltimateBattle.java	272	pc : getMembersArray()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1NewUltimateBattle.java	393	round <= ubcount	sendRoundMessage
+l1j/server/server/model/L1NpcChatTimer.java	109	pc : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Party.java	90	t : targets	canSendFullListNow,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Party.java	249	member : getMembers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Party.java	311	m : members	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Party.java	336	member : getMembers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Party.java	351	member : getMembers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Party.java	387	pc : _membersList	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1PcInventory.java	486	item : loadedItems	SC_Ability.send
+l1j/server/server/model/L1PcInventory.java	1078	itemObject : _items	SC_ItemName.send,SC_ServerMessage.send
+l1j/server/server/model/L1Racing.java	265	i < 18	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Racing.java	266	pc : toArray(i)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Racing.java	297	pc : toArray(\uc77c\ubc18)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_GameList.send
+l1j/server/server/model/L1Racing.java	349	i < 18	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Racing.java	350	pc : toArray(i)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Racing.java	360	obj : L1World.getInstance().getObject2()	SC_NpcChatPacket.broadcastNpc
+l1j/server/server/model/L1Racing.java	387	i < 18	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Racing.java	388	pc : toArray(i)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Racing.java	427	c : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Racing.java	503	player : toArray(\uc77c\ubc18)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1Trade.java	118	offer : pc.getTradeWindowInventory().getItems()	SC_ItemStatus.send
+l1j/server/server/model/L1UltimateBattle.java	291	pc : getMembersArray()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/L1UltimateBattle.java	415	round <= ubcount	sendRoundMessage
+l1j/server/server/model/L1WeaponSkill.java	153	object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)	SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/server/model/L1WeaponSkill.java	208	object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)	SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/server/model/L1WeaponSkill.java	502	object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)	SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/server/model/L1WeaponSkill.java	567	object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)	SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/server/model/L1WeaponSkill.java	648	object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)	SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/server/model/L1WeaponSkill.java	736	object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)	SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/server/model/L1WeaponSkill.java	800	object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)	SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/server/model/L1WeaponSkill.java	882	object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)	SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/server/model/L1WeaponSkill.java	953	object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)	SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/server/model/LocalWorldMap.java	413	i < size	l1j.server.server.model.network.core.broadcast.CTLMFilter.nearby
+l1j/server/server/model/LocalWorldMap.java	434	i < playerCount	l1j.server.server.model.network.core.broadcast.CTLMFilter.nearby
+l1j/server/server/model/LocalWorldMap.java	454	i < playerCount	l1j.server.server.model.network.core.broadcast.CTLMFilter.nearby
+l1j/server/server/model/LocalWorldMap.java	618	cx <= maxX	l1j.server.server.model.network.core.broadcast.CTLMFilter.insideRectangle
+l1j/server/server/model/LocalWorldMap.java	619	cy <= maxY	l1j.server.server.model.network.core.broadcast.CTLMFilter.insideRectangle
+l1j/server/server/model/character/Item/Drop/DropShareEngine.java	148	p : visible	SC_SystemMessage.send
+l1j/server/server/model/character/Item/Drop/DropShareEngine.java	182	member : elig	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/character/action/CAttackAction.java	463	bossId : bossIds	SC_SystemMessage.send
+l1j/server/server/model/character/action/CGetItemAction.java	307	m : members	SC_SystemMessage.send
+l1j/server/server/model/character/action/CGetItemAction.java	420	member : party.getMembers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/character/scheduler/CharTamScheduler.java	348	i < size	SC_SystemMessage.send,SC_NewCreateItem.sendTamPoint
+l1j/server/server/model/character/scheduler/PcInventoryExpiryScheduler.java	424	doll : pc.getDollList().values()	SC_SkillIconGFX.send
+l1j/server/server/model/character/scheduler/PcInventoryExpiryScheduler.java	434	support : pc.getSupportList().values()	SC_SkillSound.broadcast,SC_OwnCharStatus.send
+l1j/server/server/model/character/skill/L1BuffUtil.java	108	target : pcList	sendRobotBuffSounds,SC_PacketBox.send
+l1j/server/server/model/character/skill/L1BuffUtil.java	120	i < buffList.length	SC_PacketBox.send
+l1j/server/server/model/character/skill/L1BuffUtil.java	319	i < buffList.length	SC_SkillSound.broadcast
+l1j/server/server/model/character/skill/SkillHandlers.java	690	pc : L1World.getInstance().getRecognizePlayer((L1Object)target)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/character/skill/SkillHandlers.java	845	skillNum <= skillsEnd	SC_SkillSound.sendPacked,SC_SkillSound.broadcastFastPacked
+l1j/server/server/model/character/skill/SkillHandlers.java	1039	visiblePc : L1World.getInstance().getVisiblePlayer(pc, 0)	SC_ServerMessage.send
+l1j/server/server/model/character/skill/SkillHandlers.java	1087	visiblePc : L1World.getInstance().getVisiblePlayer(npc, 0)	SC_ServerMessage.send
+l1j/server/server/model/character/skill/SkillHandlers.java	2092	m : L1World.getInstance().getVisiblePlayer(caster, CUBE_RANGE)	m.send_effect,sendRestatBuffNoti
+l1j/server/server/model/character/skill/SkillHandlers.java	3127	member : L1World.getInstance().getVisiblePlayer(pc, 18)	sendRestatBuffNotiDualIcon,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/character/skill/SkillHandlers.java	4154	v : L1World.getInstance().getVisiblePlayer(pc, 0)	SC_ServerMessage.send
+l1j/server/server/model/character/skill/SkillHandlers.java	4178	v : L1World.getInstance().getVisiblePlayer(npc, 0)	SC_ServerMessage.send
+l1j/server/server/model/item/Card/L1CardAlchemy2.java	75	cardId : cards	SC_SystemMessage.send
+l1j/server/server/model/item/Card/L1CardAlchemy3.java	52	cardId : selectedCards	SC_SystemMessage.send
+l1j/server/server/model/item/L1TreasureBox.java	310	notice : outputs	live.getItem().isEndedTimeMessage,SC_ServerMessage.send
+l1j/server/server/model/item/function/BravePotion.java	127	skillId : skillsToCheck	SC_SkillBrave.send,SC_SkillBrave.broadcast
+l1j/server/server/model/item/function/CItemUseClan.java	111	member : clan.getOnlineClanMember()	SC_SkillSound.send,SC_SkillSound.broadcast,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/item/function/CItemUseDoll.java	26	value : pc.getDollList().values()	SC_SystemMessage.send
+l1j/server/server/model/item/function/CItemUseRewards.java	199	reward : CLASS_GIFT_COMMON	SC_SystemMessage.send
+l1j/server/server/model/item/function/ItemUseActiveSkills.java	162	player : L1World.getInstance().getVisiblePlayer(pc, 20)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,SC_HpUpdate.send,SC_OwnCharAttrDef.send,SC_OwnCharStatus.send,SC_SPMR.send,SC_SkillSound.send,SC_SkillSound.broadcast
+l1j/server/server/model/item/function/ItemUseActiveSkills.java	340	player : L1World.getInstance().getVisiblePlayer(pc, 9)	SC_SkillSound.send,SC_SkillSound.broadcast,SC_SPELL_BUFF_NOTI.sendFields,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient,pc.sendPackets
+l1j/server/server/model/item/function/ItemUseAdminPackage.java	35	i < REWARD_ID.length	SC_ServerMessage.send
+l1j/server/server/model/item/function/ItemUseAdminPackage.java	46	i < rewardNames.length	SC_ServerMessage.send
+l1j/server/server/model/item/function/ItemUseAreaDamage.java	63	object : L1World.getInstance().getVisiblePoint(target.getLocation(), 4)	SC_DoActionGFX.broadcast
+l1j/server/server/model/item/function/ItemUseCommandCombat.java	256	partymember : pc.getParty().getMembers()	SC_SystemMessage.send,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/item/function/ItemUseConsignment.java	62	dollObject : dollList1	SC_SystemMessage.send
+l1j/server/server/model/item/function/ItemUseConsignment.java	151	pc1 : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/item/function/ItemUseConsumableRewards.java	147	member : pointsClan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/item/function/ItemUseDurableGoods.java	242	i < SLOT_UNLOCK_QUESTS.length	pc.getQuest().isEnd
+l1j/server/server/model/item/function/ItemUseEquipmentRewards.java	150	i < rewards.size()	SC_ServerMessage.send
+l1j/server/server/model/item/function/ItemUseMiscActions.java	315	obj : L1World.getInstance().getClusterGrid().queryNearby(pc, 10)	SC_Paralysis.send,SC_SkillSound.send,SC_SkillSound.broadcast
+l1j/server/server/model/item/function/ItemUseMiscActions.java	501	skillId <= 4089	SC_SystemMessage.send
+l1j/server/server/model/item/function/ItemUseSkillBookLearning.java	39	id <= kind.last	SC_ServerMessage.send
+l1j/server/server/model/item/function/ItemUseTravelAndRecovery.java	193	object : L1World.getInstance().getVisibleObjects(pc, 3)	SC_ServerMessage.send
+l1j/server/server/model/item/function/ItemUseTravelCases.java	55	visiblePc : L1World.getInstance().getVisiblePlayer(target, 0)	SC_ServerMessage.send
+l1j/server/server/model/item/function/ItemUseTravelCases.java	87	visiblePc : L1World.getInstance().getVisiblePlayer(npc, 0)	SC_ServerMessage.send
+l1j/server/server/model/item/function/ItemUseTravelCases.java	98	visiblePc : L1World.getInstance().getVisiblePlayer(npc, 0)	SC_ServerMessage.send
+l1j/server/server/model/item/function/ItemUseUtilityCases.java	255	clan : L1World.getInstance().getAllClans()	SC_War.send
+l1j/server/server/model/item/function/ItemUseWorldHelpers.java	172	element : pc1	SC_PacketBox.send,SC_SystemMessage.send
+l1j/server/server/model/item/function/additem.java	875	i < messages.size()	SC_ServerMessage.send
+l1j/server/server/model/item/function/additem2.java	387	i < messages.size()	SC_ServerMessage.send
+l1j/server/server/model/item/tam/TamFruitUseService.java	284	s <= MAX_STAGE	SC_NewCreateItem.sendBuffOrder
+l1j/server/server/model/item/teleport/L1Teleport.java	259	visible : L1World.getInstance().getVisiblePlayerFast(pc)	SC_PinkName.send
+l1j/server/server/model/item/teleport/L1Teleport.java	308	petNpc : pc.getPetList().values()	SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawRecipients
+l1j/server/server/model/item/teleport/L1Teleport.java	342	doll : pc.getDollList().values()	SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance
+l1j/server/server/model/item/teleport/L1Teleport.java	354	support : pc.getSupportList().values()	l1j.server.server.model.network.core.sc.packet.SC_SupportPack.send
+l1j/server/server/model/item/teleport/L1Teleport.java	411	visiblePc : L1World.getInstance().getVisiblePlayerFast(summon)	SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance
+l1j/server/server/model/item/teleport/L1Teleport.java	585	v : world.getVisiblePlayerFast(pc)	shared.send
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	73	pc : recipients	CAsyncSendConstBufferExceptSelf.forExtended,shared.send
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	117	pc : recipients	CAsyncSendConstBufferExceptSelf.forFormatted,shared.send
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	149	pc : recipients	CAsyncSendConstBufferExceptSelf.forAction,shared.send
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	178	pc : recipients	CAsyncSendConstBufferExceptSelf.forMove,shared.send
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	239	pc : recipients	CAsyncSendConstBufferExceptSelf.forWritten,shared.send
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	268	pc : recipients	shared.send
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	304	(it.hasNext())	shared.send
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	332	object : objects	CAsyncSendConstBufferExceptSelf.forExtended,shared.send
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	377	viewer : L1World.getInstance().getVisiblePlayer(anchor)	sendWrittenTo
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	394	pc : visible	shared.send
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	424	obj : objects	sendWrittenTo
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	433	pc : members	sendWrittenTo
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	445	pc : first	sendWrittenTo
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	447	pc : second	sendWrittenTo
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	455	pc : L1World.getInstance().getAllPlayers()	sendWrittenTo
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	466	pc : L1World.getInstance().getAllPlayers()	sendWrittenTo
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	478	anchor : world.getVisiblePlayer(origin)	sendWrittenTo
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	480	recipient : world.getVisiblePlayer(anchor)	sendWrittenTo
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	503	viewer : L1World.getInstance().getVisiblePlayer(anchor)	sendFrozenLargeTo
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	540	pc : visible	socket.sendFrozenWire
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	579	pc : recipients	sendRecipient
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	588	pc : recipients	sendRecipient
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	598	pc : L1World.getInstance().getVisiblePlayer(self)	sendRecipient
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	612	pc : L1World.getInstance().getVisiblePlayers(mapId)	sendWrittenTo
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	628	pc : L1World.getInstance().getVisiblePlayers(mapId)	source.send
+l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java	634	source : shared	source.send
+l1j/server/server/model/network/core/connection/CUserSocket.java	519	i < n	socket.commitSingleFlushSendLocked
+l1j/server/server/model/network/core/connection/CUserSocket.java	1333	for	rejectDirectSend
+l1j/server/server/model/network/core/connection/CUserSocket.java	2073	for	rejectSend
+l1j/server/server/model/network/core/connection/CUserSocket.java	2094	attempt < 2	rejectSend
+l1j/server/server/model/network/core/connection/CUserSocket.java	2291	for	rejectSend,physicalSendFullLocked,_pool.acquireSend,SEND_BURST.get,finishStagedSend
+l1j/server/server/model/network/core/connection/CUserSocket.java	2743	(missed != 0)	releaseFusedReadSendOwner
+l1j/server/server/model/network/core/connection/CUserSocket.java	3338	for	acceptStagedSend
+l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java	361	runeId : RUNE_ARMOR_IDS	SC_ChatPacket.sendDirect
+l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java	405	target : L1World.getInstance().getAllPlayers3()	pc.sendPackets,SC_DoActionGFX.send,SC_DoActionGFX.broadcast,SC_WorldPutObject.broadcastPc
+l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java	453	i < count	SC_Disconnect.send,SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java	536	petObject : pc.getPetList().values()	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java	554	dollObject : pc.getDollList().values()	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java	584	i < count	SC_Disconnect.send,SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java	667	petObject : pc.getPetList().values()	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java	685	dollObject : pc.getDollList().values()	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_ActionUi.java	1025	map : restrictedMaps	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Attr.java	552	member : pcClan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Attr.java	562	member : targetClan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Channel.java	360	gm : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Channel.java	599	member : clan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Chat.java	83	listener : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_CommonClick.java	150	i < size	sendCharPack
+l1j/server/server/model/network/core/cs/packet/CS_CommonClick.java	265	i < rows.size()	sendCharPack
+l1j/server/server/model/network/core/cs/packet/CS_Craft.java	233	member : clan.getOnlineClanMember()	SC_ActionUI2.send,SC_Pledge.sendBless
+l1j/server/server/model/network/core/cs/packet/CS_Craft.java	399	cn : CharacterTable.getInstance().getCharNameList()	SC_PacketBox.send
+l1j/server/server/model/network/core/cs/packet/CS_Craft.java	546	listener : L1World.getInstance().getVisiblePlayerFast(pc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Craft.java	596	listener : clan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Craft.java	616	listener : pc.getParty().getMembers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Craft.java	641	listener : clan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Craft.java	661	listener : pc.getChatParty().getMembers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Craft.java	680	listener : clan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Craft.java	838	listener : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_DestroyItem.java	62	petObject : pc.getPetList().values()	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_DestroyItem.java	72	dollObject : pc.getDollList().values()	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Emblem.java	77	pc : clan.getOnlineClanMember()	SC_ReturnedStat.sendEmblem,SC_ReturnedStat.broadcastEmblem
+l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java	538	item : pc.getInventory().getItems()	SC_PacketBox.send
+l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java	640	member : clan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java	1068	summon : L1World.getInstance().getAllSummons()	SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance
+l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java	1072	visiblePc : L1World.getInstance().getVisiblePlayer(summon)	SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance
+l1j/server/server/model/network/core/cs/packet/CS_EnterWorld.java	1356	i < total	SC_ADD_INVENTORY_NOTI.sendEncodedItem
+l1j/server/server/model/network/core/cs/packet/CS_ExchangeSpell.java	94	i < count	SC_Disconnect.send
+l1j/server/server/model/network/core/cs/packet/CS_ExchangeSpell.java	412	bit < 8	SC_HorunOK.send
+l1j/server/server/model/network/core/cs/packet/CS_ExtraCommand.java	91	i < members.length	SC_SkillSound.sendPacked,SC_SkillSound.broadcastPacked
+l1j/server/server/model/network/core/cs/packet/CS_ExtraCommand.java	131	i < members.length	SC_SkillSound.send,SC_SkillSound.sendPacked,SC_SkillSound.broadcastPacked
+l1j/server/server/model/network/core/cs/packet/CS_GiveItem.java	159	petObject : pc.getPetList().values()	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_GiveItem.java	170	dollObject : pc.getDollList().values()	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_JoinPledge.java	148	clanIdStr : clanIdList	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_LeavePledge.java	166	member : clan.getClanMemberList()	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_LeavePledge.java	264	member : clan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Mail.java	105	member : clan.getClanMemberList()	sender.getName
+l1j/server/server/model/network/core/cs/packet/CS_Mail.java	204	i < ids.length	SC_LetterList.sendState
+l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java	1122	i < allBuffSkill.length	SC_SkillSound.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java	1161	player : pc.getParty().getMembers()	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAcion2.java	2888	object : L1World.getInstance().getVisibleObjects(effect, 3)	SC_DoActionGFX.send,SC_DoActionGFX.broadcast
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	858	Ppc : pc.getParty().getMembers()	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	1049	petObject : petList	l1j.server.server.model.network.core.sc.packet.SC_PetCtrlMenu.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	2606	i < item_ids.length	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	2617	i < item_ids.length	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	2656	i < item_ids.length	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	2696	i < item_ids.length	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	2884	i < item_ids.length	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	2968	i < item_ids.length	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	2980	i < item_ids.length	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	4135	i < item_ids.length	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	4178	i < item_ids.length	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	4705	i < item_ids.length	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	4749	i < item_ids.length	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	5672	j < materials.length	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	5708	k < createitem.length	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	5759	i < item_ids.length	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	5774	i < item_ids.length	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	5788	i < item_ids.length	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	5814	i < item_ids.length	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	5838	i < item_ids.length	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_NpcAction.java	5865	i < item_ids.length	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_PersonalShop.java	133	i < sellCount	SC_ServerMessage.send,sendNotTradable
+l1j/server/server/model/network/core/cs/packet/CS_PersonalShop.java	203	i < buyCount	sendNotTradable
+l1j/server/server/model/network/core/cs/packet/CS_PledgeWatch.java	107	gazeName : clan.getGazeList()	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_PledgeWatch.java	241	member : clan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_PledgeWatch.java	253	member : targetClan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_RankControl.java	178	member : clan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Restart.java	173	skillId : RE_LOAD_N_BUFF_SKILLS	SC_IvenBuffIcon.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	226	i < size	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	233	j < i	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	249	i < size	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	256	j < i	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	345	i < size	SC_SystemMessage.send,l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	373	player : L1World.getInstance().getAllPlayers()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	422	i < size	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	628	n <= 20	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	669	i < size	SC_SystemMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	746	i < size	pc.sendPackets,SC_PacketBox.send,SC_SystemMessage.send,SC_Disconnect.send,SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	800	petObject : pc.getPetList().values()	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	810	dollObject : pc.getDollList().values()	SC_PacketBox.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	864	i < size	SC_Disconnect.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	887	i < size	pc.sendPackets,SC_PacketBox.send,SC_SystemMessage.send,SC_Disconnect.send,SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	949	i < size	pc.sendPackets,SC_PacketBox.send,SC_SystemMessage.send,SC_Disconnect.send,SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	1004	petObject : pc.getPetList().values()	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	1015	dollObject : pc.getDollList().values()	SC_PacketBox.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	1076	i < size	SC_Disconnect.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	1113	i < size	pc.sendPackets,SC_PacketBox.send,SC_Disconnect.send,SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	1164	i < size	pc.sendPackets,SC_PacketBox.send,SC_SystemMessage.send,SC_Disconnect.send,SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	1214	petObject : petlist	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	1259	i < size	SC_Disconnect.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	1280	i < size	pc.sendPackets,SC_PacketBox.send,SC_SystemMessage.send,SC_Disconnect.send,SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	1331	i < size	SC_Disconnect.send,SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	1383	i < size	SC_SystemMessage.send,pc.sendPackets
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	1498	line : lines.values()	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Result.java	1545	i < size	SC_Disconnect.send,SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_Title.java	147	clanPc : clan.getOnlineClanMember()	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/model/network/core/cs/packet/CS_TradeAddItem.java	174	value : pc.getPetList().values()	SC_ServerMessage.send
+l1j/server/server/model/network/core/cs/packet/CS_TradeAddItem.java	198	value : pc.getDollList().values()	SC_ServerMessage.send
+l1j/server/server/model/network/core/sc/packet/SC_ClanAttention.java	44	name : names	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949
+l1j/server/server/model/network/core/sc/packet/SC_Pledge.java	165	i < 4	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949S2
+l1j/server/server/model/network/core/sc/packet/SC_WarStartMessage.java	48	name : snapshot	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949
+l1j/server/server/model/network/thread/CThreadLocalTimer.java	279	(slot != null)	CUserSocket.beginSendBurst,CUserSocket.endSendBurst
+l1j/server/server/model/network/thread/CThreadLocalTimer.java	281	i < count	CUserSocket.beginSendBurst,CUserSocket.endSendBurst
+l1j/server/server/model/npc/action/ActionControlHandler.java	227	obj : L1World.getInstance().getObject()	SC_Board.send
+l1j/server/server/model/npc/action/L1NpcMakeItemAction.java	94	material : _materials	SC_ServerMessage.send
+l1j/server/server/model/npc/action/L1NpcMakeItemAction.java	145	makingItem : _items	SC_ServerMessage.send
+l1j/server/server/model/rank/business/RankBusiness.java	364	i < streams.length	l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw
+l1j/server/server/model/shop/L1Shop.java	2093	order : orderList.getList()	pc.sendPackets
+l1j/server/server/model/trap/L1PetRaceTrap.java	76	i < L1Racing.getInstance().size(0)	SC_GameList.send
+l1j/server/server/packets/Protocol/MainServer/Companion/Proto/CS_COMPANION_NAME_CHANGE_REQ.java	94	i >= 0	SC_SystemMessage.send,SC_COMPANION_NAME_CHANGE_ACK.send
+l1j/server/server/packets/Protocol/MainServer/Inventory/Proto/SC_WAREHOUSE_ITEM_LIST_NOTI.java	188	(idx < n)	sendEncodedChunk
+l1j/server/server/packets/Protocol/MainServer/Proto/CS_CRAFT_MAKE_REQ.java	76	i < n	eCraftMakeReqResultType.RP_ERROR_INVALID_INPUT.sendCachedMessage
+l1j/server/server/packets/Protocol/MainServer/Proto/CS_CRAFT_MAKE_REQ.java	170	attempt < count	eCraftMakeReqResultType.RP_ERROR_NO_REQUIRED_ITEM.sendCachedMessage
+l1j/server/server/packets/Protocol/MainServer/Proto/CS_CRAFT_MAKE_REQ.java	208	attempt : attempts	SC_SystemMessage.broadcast,SC_PacketBox.broadcastGreen,SC_CRAFT_MAKE_ACK.send,SC_SkillSound.send
+l1j/server/server/packets/Protocol/MainServer/Proto/MonsterBook/MonsterBookV2Info.java	550	card : _cards	SC_MONSTER_BOOK_V2_UPDATE_AMOUNT_NOTI.send
+l1j/server/server/templates/L1BookMark.java	363	book : prepared	SC_Bookmarks.send
+l1j/server/server/utils/FaceToFace.java	24	target : players	SC_ServerMessage.send
+l1j/server/server/utils/L1SpawnUtil.java	242	_pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/utils/L1SpawnUtil.java	350	_pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/server/utils/L1SpawnUtil.java	359	_pc : L1World.getInstance().getVisiblePlayer(npc)	l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient
+l1j/server/swing/Give.java	132	pc : L1World.getInstance().getAllPlayers()	SC_SystemMessage.send

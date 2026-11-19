@@ -1,0 +1,60 @@
+package l1j.server.server.model.item.function;
+import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
+
+import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+
+
+/**
+ * 빙수 / 통합버프 아이템 처리.
+ * 별도 Controller 없음.
+ * 별도 1초 카운트 없음.
+ * 기존 L1SkillTimer -> L1SkillStop 종료처리 사용.
+ */
+
+import static l1j.server.server.model.item.function.IceBuffEffects.*;
+/** Single-stat ice food item uses. */
+final class IceBuffSingleUse {
+    private IceBuffSingleUse() {}
+    private static final int ICE_TIME_MS = 600 * 1000;
+
+	static void useStrIce(
+			L1PcInstance pc,
+			L1ItemInstance item) {
+
+		ItemReceiptOperations.UseDurableConsume(pc, item, () -> {
+			clearIceBuff(pc);
+			applyStrIce(pc, ICE_TIME_MS);
+		});
+	}
+
+
+
+	static void useDexIce(
+			L1PcInstance pc,
+			L1ItemInstance item) {
+
+		ItemReceiptOperations.UseDurableConsume(pc, item, () -> {
+			clearIceBuff(pc);
+			applyDexIce(pc, ICE_TIME_MS);
+		});
+	}
+
+
+
+	static void useIntIce(
+			L1PcInstance pc,
+			L1ItemInstance item) {
+
+		ItemReceiptOperations.UseDurableConsume(pc, item, () -> {
+			clearIceBuff(pc);
+			applyIntIce(pc, ICE_TIME_MS);
+		});
+	}
+}

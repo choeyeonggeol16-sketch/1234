@@ -1,0 +1,6 @@
+javac 0 
+java 0 PASS 103: 2464 assertions / 462 modeled operations / 70 card IDs / 14 tree IDs
+ 
+unique java 0 PASS 103 unique: 34 assertions
+ 
+mapping python checks PASSED

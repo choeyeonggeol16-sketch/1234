@@ -1,0 +1,6 @@
+TAM_FRUIT_PASS 1152 SQL decision/failure cases
+TAM_REFUND_PASS 32 stale/head/owner/delete-failure cases
+TAM_TIMER_PASS 5 bounds
+DROP_PASS 98009 deterministic threshold/packing outcomes
+ATOMIC_CATCH_PASS 10240 staged debit/grant, capacity, stale/rollback cases
+NOTICE_PASS 110 message/effect/experience outcomes

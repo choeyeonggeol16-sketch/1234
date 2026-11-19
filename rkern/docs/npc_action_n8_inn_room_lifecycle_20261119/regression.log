@@ -1,0 +1,2 @@
+PASS scenarios=4692 checks=27958
+PASS room lifecycle checks=2215 concurrent rounds=100

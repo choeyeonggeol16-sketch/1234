@@ -1,0 +1,286 @@
+package l1j.server.server.model.item.function;
+import l1j.server.server.model.network.core.cs.packet.CDB;
+import l1j.server.server.model.network.core.cs.packet.User;
+import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CURSE_BARLOG;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CURSE_YAHEE;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import l1j.server.Config;
+import l1j.server.MJINNSystem.MJINNHelper;
+import l1j.server.MJINNSystem.MJINNRoom;
+import l1j.server.Stadium.StadiumManager;
+import l1j.server.server.model.Getback;
+import l1j.server.server.model.L1CastleLocation;
+import l1j.server.server.model.L1Clan;
+import l1j.server.server.model.L1EffectSpawn;
+import l1j.server.server.model.L1HouseLocation;
+import l1j.server.server.model.L1Location;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1TownLocation;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.Instance.L1EffectInstance;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
+import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.templates.L1ItemBookMark;
+import l1j.server.server.utils.CommonUtil;
+
+import static l1j.server.server.model.item.function.TravelUseTables.*;
+final class ReturnAndTeleportItems {
+    private ReturnAndTeleportItems() {}
+    static void use(CIOClient client, L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId) {
+        int[] loc = null;
+        switch (itemId) {
+		case 3000147:// 테베대항전
+            final int tebeX = 32769 + CommonUtil.random(-5, 5);
+            final int tebeY = 32832 + CommonUtil.random(-5, 5);
+			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
+				pc.start_teleport(tebeX, tebeY, 782, pc.getHeading(), 169, true, pc.getAutoHunt());
+				SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "\\aA[알림]: \\aG[주의] 강력한 힘을 가지고 있는 몬스터가 있습니다.");
+				CreatureItemActions.cancelAbsoluteBarrier(pc); // 아브소르트바리아의 해제
+			});
+			break;
+
+		case 202099: {// 클라우디아 마을
+			// if (pc.get_DuelLine() != 0) {
+			// pc.sendPackets(new SC_SystemMessage("배틀존지역에서 사용할 수 없습니다."));
+			// return;
+			// }
+			// if (pc.getMap().isEscapable() || pc.isGm()) {
+			// int[]
+			loc = L1TownLocation.getGetBackLoc(L1TownLocation.TOWNID_claudia);
+			// L1Teleport.teleport(pc, loc[0], loc[1], (short) loc[2],
+			// pc.getHeading(), true);
+			pc.start_teleport(loc[0], loc[1], loc[2], pc.getHeading(), 169, true, pc.getAutoHunt());
+			// }
+		}
+		break;
+
+		case 3000229: {// 잊혀진 귀환 주문서
+			if (pc.hasSkillEffect(L1SkillId.쉐도우제약)) {
+				SC_Paralysis.send(pc, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
+				return;
+			}
+
+			if (pc.hasSkillEffect(L1SkillId.이터디스)) {
+				SC_Paralysis.send(pc, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
+				return;
+			}
+			if (pc.hasSkillEffect(L1SkillId.DESPERADO)) {
+				return;
+			}
+			if (!(pc.getMapId() >= 1708 && pc.getMapId() <= 1709)) {
+				SC_SystemMessage.send(pc, "잊혀진 섬/대기실 에서만 사용 가능합니다.");
+				return;
+			}
+			int[] x = LOST_ISLAND_X;
+			int[] y = LOST_ISLAND_Y;
+			int type = java.util.concurrent.ThreadLocalRandom.current().nextInt(x.length);
+			L1Location base = new L1Location(x[type], y[type], 1710);
+			L1Location random = L1Location.randomLocation(base, 0, 3, true);
+			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () ->
+				pc.start_teleport(random.getX(), random.getY(), random.getMapId(),
+					pc.getHeading(), 169, true, pc.getAutoHunt()));
+		}
+		break;
+
+		case 875640424:
+			if (pc.hasSkillEffect(L1SkillId.쉐도우제약)) {
+				SC_Paralysis.send(pc, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
+				return;
+			}
+
+			if (pc.hasSkillEffect(L1SkillId.이터디스)) {
+				SC_Paralysis.send(pc, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
+				return;
+			}
+			if (pc.hasSkillEffect(L1SkillId.DESPERADO)) {
+				return;
+			}
+			if (!(pc.getMapId() >= 440 && pc.getMapId() <= 441)) {
+				SC_SystemMessage.send(pc, "해적섬에서만 사용할 수 있습니다.");
+				return;
+			}
+			int[] xa = PIRATE_INNER_XY;
+			int[] ya = PIRATE_INNER_XY;
+			int typea = java.util.concurrent.ThreadLocalRandom.current().nextInt(xa.length);
+			L1Location basea = new L1Location(xa[typea], ya[typea], 441);
+			L1Location randoma = L1Location.randomLocation(basea, 0, 3, true);
+			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () ->
+				pc.start_teleport(randoma.getX(), randoma.getY(), randoma.getMapId(),
+					pc.getHeading(), 169, true, pc.getAutoHunt()));
+			break;
+
+		case 875640415: {// 해적섬 귀환
+			if (pc.hasSkillEffect(L1SkillId.쉐도우제약)) {
+				SC_Paralysis.send(pc, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
+				return;
+			}
+
+			if (pc.hasSkillEffect(L1SkillId.이터디스)) {
+				SC_Paralysis.send(pc, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
+				return;
+			}
+			if (pc.hasSkillEffect(L1SkillId.DESPERADO)) {
+				return;
+			}
+			if (!(pc.getMapId() >= 440 && pc.getMapId() <= 441)) {
+				SC_SystemMessage.send(pc, "해적섬에서만 사용할 수 있습니다.");
+				return;
+			}
+			int[] x = PIRATE_RETURN_X;
+			int[] y = PIRATE_RETURN_Y;
+			int type = java.util.concurrent.ThreadLocalRandom.current().nextInt(x.length);
+			L1Location base = new L1Location(x[type], y[type], 440);
+			L1Location random = L1Location.randomLocation(base, 0, 3, true);
+			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () ->
+				pc.start_teleport(random.getX(), random.getY(), random.getMapId(),
+					pc.getHeading(), 169, true, pc.getAutoHunt()));
+		}
+		break;
+
+		case 3000413: {// 강제 귀환 주문서 (잊섬->기란)
+			if (pc.hasSkillEffect(L1SkillId.쉐도우제약)) {
+				SC_Paralysis.send(pc, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
+				return;
+			}
+			if (pc.hasSkillEffect(L1SkillId.버닝샷)) {
+				SC_SystemMessage.send(pc, "\\fY버닝샷중에는 이동 및 귀환이 불가합니다.");
+				return;
+			}
+			if (pc.hasSkillEffect(L1SkillId.이터디스)) {
+				SC_Paralysis.send(pc, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
+				return;
+			}
+			if (pc.hasSkillEffect(L1SkillId.DESPERADO)) {
+				return;
+			}
+			if (pc.getMapId() >= 1708 && pc.getMapId() <= 1709) {
+
+			} else {
+				SC_SystemMessage.send(pc, "잊혀진 섬 필드 에서만 사용이 가능 합니다.");
+				return;
+			}
+			int[] x = LOST_RETURN_X;
+			int[] y = LOST_RETURN_Y;
+			int type = java.util.concurrent.ThreadLocalRandom.current().nextInt(x.length);
+			L1Location base = new L1Location(x[type], y[type], 4);
+			L1Location random = L1Location.randomLocation(base, 0, 3, true);
+			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () ->
+				pc.start_teleport(random.getX(), random.getY(), random.getMapId(),
+					pc.getHeading(), 169, true, pc.getAutoHunt()));
+		}
+		break;
+
+		case 240100:// 저주해진 텔레포트 스크롤(오리지날 아이템)
+			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
+				pc.start_teleport(pc.getX(), pc.getY(), pc.getMapId(), pc.getHeading(), 169, true, pc.getAutoHunt());
+				pc.cancelAbsoluteBarrier(); // 아브소르트바리아의 해제
+			});
+			break;
+
+		case 748: // 잡화상점 이동부적
+			pc.start_teleport(33453, 32820, 4, pc.getHeading(), 169, true, pc.getAutoHunt());
+			break;
+
+		case 749: // 장비상점 이동부적
+			pc.start_teleport(33435, 32754, 4, pc.getHeading(), 169, true, pc.getAutoHunt());
+			break;
+
+		case 40124:
+		case 30086:// 혈맹 귀환 스크롤
+			int castle_id = 0;
+			int house_id = 0;
+			if (pc.getMapId() == 13005) {
+				SC_SystemMessage.send(pc, "얌마 막았어 쓸생각하지마~ 메롱.");
+				return;
+			}	
+			if (pc.getMapId() >= 1708 && pc.getMapId() <= 1712) {
+				SC_ServerMessage.send(pc, 647);
+				return;
+			}
+			if (pc.getMapId() == 2236) {
+				SC_SystemMessage.send(pc, "이곳에서 사용할수 없습니다.");
+				return;
+			}
+			if (pc.hasSkillEffect(L1SkillId.버닝샷)) {
+				SC_SystemMessage.send(pc, "\\fY버닝샷중에는 이동 및 귀환이 불가합니다.");
+				return;
+			}
+			if (pc.hasSkillEffect(L1SkillId.쉐도우제약)) {
+				SC_Paralysis.send(pc, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
+				return;
+			}
+
+			if (pc.hasSkillEffect(L1SkillId.이터디스)) {
+				SC_Paralysis.send(pc, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
+				return;
+			}
+
+			if (pc.getClanid() != 0) { // 크란 소속
+				L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+				if (clan != null) {
+					castle_id = clan.getCastleId();
+					house_id = clan.getHouseId();
+				}
+			}
+			final boolean clanOwnedReturn = castle_id != 0 || house_id != 0;
+			if (castle_id != 0) { // 성주 크란원
+				loc = L1CastleLocation.getCastleLoc(castle_id);
+			} else if (house_id != 0) { // 아지트 소유 크란원
+				loc = L1HouseLocation.getHouseLoc(house_id);
+			} else if (pc.getHomeTownId() > 0) {
+				loc = L1TownLocation.getGetBackLoc(pc.getHomeTownId());
+			} else {
+				loc = Getback.GetBack_Location(pc, true);
+			}
+			if (loc == null || loc.length < 3) return;
+			final int returnX = loc[0], returnY = loc[1], returnMap = loc[2];
+			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
+				pc.start_teleport(returnX, returnY, returnMap,
+					clanOwnedReturn ? pc.getHeading() : 5, 169, true, pc.getAutoHunt());
+				if (!clanOwnedReturn) {
+					SC_Paralysis.send(pc, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
+				}
+				CreatureItemActions.cancelAbsoluteBarrier(pc); // 아브소르트바리아의 해제
+			});
+			break;
+
+		case MJINNHelper.INN_KEYID:
+			if (pc.isParalyzed() || pc.isSleeped() || pc.isDead()) {
+				return;
+			}
+			if ((pc.hasSkillEffect(L1SkillId.SHOCK_STUN)) || pc.hasSkillEffect(L1SkillId.EMPIRE)
+					|| (pc.hasSkillEffect(L1SkillId.ICE_LANCE)) || (pc.hasSkillEffect(L1SkillId.BONE_BREAK))
+					|| (pc.hasSkillEffect(L1SkillId.EARTH_BIND) || pc.hasSkillEffect(L1SkillId.DESPERADO))
+					|| (pc.hasSkillEffect(L1SkillId.FOG_OF_SLEEPING))) {
+				return;
+			}
+			if (pc.getMapId() == 13005) {
+				pc.setCurrentHp(pc.getMaxHp() / 5);
+				pc.setCurrentMp(pc.getMaxMp() / 5);
+				pc.start_teleport(33431, 32798, 4, 5, 169, true, pc.getAutoHunt()); 
+
+			}	
+			MJINNRoom.input(l1iteminstance, pc);
+			break;
+
+		case 700023:
+			L1ItemBookMark.useBookmarkItem(pc, l1iteminstance);
+			break;
+        }
+    }
+}

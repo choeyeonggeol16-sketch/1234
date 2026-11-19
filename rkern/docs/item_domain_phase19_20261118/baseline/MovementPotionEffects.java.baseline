@@ -1,0 +1,11 @@
+package l1j.server.server.model.item.function;
+
+import l1j.server.server.model.Instance.L1PcInstance;
+
+/** Original potion API; effect bodies reside in item-specific classes. */
+final class MovementPotionEffects {
+    private MovementPotionEffects() {}
+    public static void useGreenPotion(L1PcInstance pc, int itemId) { HastePotionEffects.useGreenPotion(pc, itemId); }
+    public static void useBravePotion(L1PcInstance pc, int itemId) { BraveryPotionEffects.useBravePotion(pc, itemId); }
+    public static void useFruit(L1PcInstance pc, int itemId) { FruitPotionEffects.useFruit(pc, itemId); }
+}

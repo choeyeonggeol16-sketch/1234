@@ -1,0 +1,76 @@
+package l1j.server.server.datatables;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import gnu.trove.map.TIntIntMap;
+import gnu.trove.map.hash.TIntIntHashMap;
+import l1j.server.DatabaseFactory;
+
+public class MJNpcMarkTable {
+	private static final Logger _log = Logger.getLogger(MJNpcMarkTable.class.getName());
+	
+	private static volatile MJNpcMarkTable _instance;
+	
+	private final TIntIntMap _marks = new TIntIntHashMap();
+
+	public static MJNpcMarkTable getInstance() {
+		if (_instance == null) {
+			synchronized (MJNpcMarkTable.class) {
+				if (_instance == null) {
+					_instance = new MJNpcMarkTable();
+				}
+			}
+		}
+		return _instance;
+	}
+	
+	public static void reload() {
+		MJNpcMarkTable oldInstance = _instance;
+		_instance = new MJNpcMarkTable();
+		if (oldInstance != null) {
+			oldInstance.clear();
+		}
+	}
+	
+	private MJNpcMarkTable() {
+		load();
+	}
+	
+	private void load() {
+		String sql = "SELECT npcid, markid FROM tb_npc_mark";
+		try (Connection con = DatabaseFactory.getInstance().getConnection();
+			 PreparedStatement pstm = con.prepareStatement(sql);
+			 ResultSet rs = pstm.executeQuery()) {
+			
+			synchronized (_marks) {
+				_marks.clear();
+				while (rs.next()) {
+					_marks.put(rs.getInt("npcid"), rs.getInt("markid"));
+				}
+			}
+			_log.config("NPC 마크 설정 데이터 " + _marks.size() + "건 로드 완료");
+		} catch (SQLException e) {
+			_log.log(Level.SEVERE, "load error for tb_npc_mark", e);
+		}
+	}
+	
+	public int get(int npcId) {
+		synchronized (_marks) {
+			if (!_marks.containsKey(npcId)) {
+				return 0;
+			}
+			return _marks.get(npcId);
+		}
+	}
+	
+	public void clear() {
+		synchronized (_marks) {
+			_marks.clear();
+		}
+	}
+}

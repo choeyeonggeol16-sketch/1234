@@ -1,0 +1,16 @@
+NeigeCard.java actions 83 synthesis_controls 43
+NeigeCard2.java actions 66 synthesis_controls 39
+NeigeCard3.java actions 56 synthesis_controls 18
+PASS 105 Java actual production guard / 410 conditions
+PASS 105 central NPC entrypoints guarded: 2
+104 regression: baseline 103: 0 javac 0 
+java 0 PASS 103: 2464 assertions / 462 modeled operations / 70 card IDs / 14 tree IDs
+ 
+unique java 0 PASS 103 unique: 34 assertions
+ 
+mapping python checks PASSED
+packet answer arm compile: 0 
+packet reply regression: 0 PASS 104: 65 assertions / 4 packet answer codes / SQL failure, cancel, spoof, duplicate 
+Legacy direct-debit/account-save arms removed, all 103 tests preserved
+
+PASS 105 control checks: 412

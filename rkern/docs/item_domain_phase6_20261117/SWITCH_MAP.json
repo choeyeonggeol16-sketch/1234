@@ -1,0 +1,1371 @@
+{
+  "world": {
+    "classes": {
+      "WorldTravelScrollItems": 13,
+      "WorldRewardAndCraftItems": 14,
+      "WorldRevivalItems": 32,
+      "WorldQuestAndEventItems": 5,
+      "WorldBuffAndCureItems": 4,
+      "WorldPetVoucherItems": 11,
+      "WorldDollPotentialItems": 6
+    },
+    "groups": [
+      {
+        "class": "WorldTravelScrollItems",
+        "ids": [
+          3000106
+        ],
+        "sha256": "d164229d5314cdeb0e1669535729c8db429d93c680dfe99b54aa6d710540e3c9"
+      },
+      {
+        "class": "WorldTravelScrollItems",
+        "ids": [
+          3000354
+        ],
+        "sha256": "387b6afae3471817badf426bed7c50e01242c0cef5eb22171ff17ebca037c2a8"
+      },
+      {
+        "class": "WorldTravelScrollItems",
+        "ids": [
+          3000394
+        ],
+        "sha256": "d208d4f3929728100ef0b1e97b8b55853c23e519b68d9385107991ebcfcee472"
+      },
+      {
+        "class": "WorldTravelScrollItems",
+        "ids": [
+          3000396
+        ],
+        "sha256": "5a9c0245443dc86a246a39bfba3460cf9b1bca0c5151a5a14103b773d393cac4"
+      },
+      {
+        "class": "WorldTravelScrollItems",
+        "ids": [
+          3000395
+        ],
+        "sha256": "fd9e51b50f1e1a5987f01b7b35d225df58641428554d5cc094710feaff4a3008"
+      },
+      {
+        "class": "WorldTravelScrollItems",
+        "ids": [
+          40824
+        ],
+        "sha256": "1e814189da98ff3fb3ef85598c7be55a16695f02687260e91d86753d9ac90b5e"
+      },
+      {
+        "class": "WorldTravelScrollItems",
+        "ids": [
+          40825
+        ],
+        "sha256": "1af06a0cead1137282759f3f0342985e8eadaef67c7355fd2d9a936eb5ec62fd"
+      },
+      {
+        "class": "WorldTravelScrollItems",
+        "ids": [
+          43201
+        ],
+        "sha256": "497347382b666d9138f2c4d947338d9c59d2edce93182fcac727826ae4fc4cb7"
+      },
+      {
+        "class": "WorldTravelScrollItems",
+        "ids": [
+          40826
+        ],
+        "sha256": "b91b46c35a85564a8dcf16dc1fe61a31a8c8b7b09ebf646ef3e5e38d094383e3"
+      },
+      {
+        "class": "WorldTravelScrollItems",
+        "ids": [
+          40616,
+          40782,
+          40783
+        ],
+        "sha256": "7f7f7bab36e722dc19a24f57e8e1a9f0e1f7a21cfdd2390f3d033b98c639bd87"
+      },
+      {
+        "class": "WorldTravelScrollItems",
+        "ids": [
+          40692
+        ],
+        "sha256": "27d43f0059f1d4b52e661b3395b7c3a637681c99ae5d38b166f3fcfdd0b7229b"
+      },
+      {
+        "class": "WorldTravelScrollItems",
+        "ids": [
+          41208
+        ],
+        "sha256": "f6fcc86e7a8b94e1823ec5574962a97ea3e70c6f8a6ccea4647bbb3c14c3b7e3"
+      },
+      {
+        "class": "WorldTravelScrollItems",
+        "ids": [
+          3000193
+        ],
+        "sha256": "25d1c1f4919e31f0ceff8891e5102156df3c1f86b0f2942cf3fb23a83cb00502"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          777000
+        ],
+        "sha256": "c1459905be23aa1ce8da00e4c70d5a7359b67a0cec48316c62fbdde8e7f76022"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          777001
+        ],
+        "sha256": "880a0ca4174fe68a50a7354f35c4effb4201bf2a1e03bf224fbc07afb4fd3775"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          777002
+        ],
+        "sha256": "f23a6d10a47d2f1f5e0b45ccc46efa16fe095c050c3f8b8b2f15cdb74beb420f"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          777003
+        ],
+        "sha256": "c5a80b498c2a27c97b98cdba438a87b29370b91c6571cb3a951a98522e028418"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          5100135
+        ],
+        "sha256": "13c87e4d67694abbc437347650bc94b3064235717744b6a1b4f9c78f6e2d0e55"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          875640382
+        ],
+        "sha256": "4c4d0d296052dc94375372e72c8945f5765a31b4494e5a46eac56cb105835e18"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          875640407
+        ],
+        "sha256": "c35a064f7bd5659c4adfe223b6f68841f3b680109417d74b4c305964f40e4716"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          414100
+        ],
+        "sha256": "00e67b222201439574b6abf4c687fbd96b1a5a641b54643792ed3441912c93ee"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          414101
+        ],
+        "sha256": "5a3d3a53a1dce0168fae1f3a33351a3c010b8373e0a4bfa4dd656888e4971619"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          414102
+        ],
+        "sha256": "ce49fb8f24365dbeda9770cd68576c1681ccae0a56b435b575bbd2e937d98363"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          40964,
+          41036
+        ],
+        "sha256": "a678705879ecc72d5f7f7421c71fb2a33b5c4b8beef69e32fd5ab390b5866fef"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          3000194,
+          41299,
+          41300,
+          41303,
+          41304
+        ],
+        "sha256": "615ecf08e392c72f3c4b5676b93b9b76341deec73d312d353f44dcf502fb4421"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          887799
+        ],
+        "sha256": "10ac059f4676e8dbfe566f4cc8255a0998d78c05a9ccd444597f115434eaa459"
+      },
+      {
+        "class": "WorldRewardAndCraftItems",
+        "ids": [
+          887700
+        ],
+        "sha256": "877875eb54acbd4c22100eb89f696b21a0b6662708a1fd80939e4c6cafe32a5a"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          70703
+        ],
+        "sha256": "2f9337bf814d70d9b34bbf9be4c4a1eb2c08ea65aaaed6ba72c1b490ee5405a4"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          4100653
+        ],
+        "sha256": "e43be9c41fd37916d46ec589d1eb1490d571303de19fb438807cea6edae43843"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          4100654
+        ],
+        "sha256": "42a8f0270837fed27663957c044a1940b01f220f8b6807b06e605d0641209a46"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          43321
+        ],
+        "sha256": "96bd6852fa633513732bd55881f07f49351fca3f253842c4da557c9fca491724"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32090
+        ],
+        "sha256": "a5427249d7cc853ee6c30f04cfd7f8953ec038823c4474053acdce23a2399483"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32005
+        ],
+        "sha256": "30befecaf7cd465e056eb314a70c3948ed2943dc1b42f8c850d5ba6e4d2da817"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32067
+        ],
+        "sha256": "4184daeecd79e50c085fa71e873e503814e19b7141037e6035858c327769be9f"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32063
+        ],
+        "sha256": "e58e17fa74977988b993fa7b882c2afaf50a8550a4cdc5eae94a013efe3d9ee0"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32062
+        ],
+        "sha256": "3ea0b54fa6a4ec08df97178c9c1aa7ff06b3409eb060c9fa8d2011426fc5bbb0"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32087
+        ],
+        "sha256": "0d2a492bdc4a1b1021d260691c15e0cca1991252c5fdde650e124bac1a145a05"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32001
+        ],
+        "sha256": "3e0ea94bd397fea9634d8b1cbc81aadb453a6f34d294afb10c8851042634867c"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32002
+        ],
+        "sha256": "4ad1ff97d20efa9da68ece954de29d87959502b03d6d4155072c4e05bc4c9d96"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32075
+        ],
+        "sha256": "54f9c9df24c737f862276cd9e780eb007b8b92e69eddd96cdefa2e3b76075c1d"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32058
+        ],
+        "sha256": "183d363c42dec3f0f28a341f3b4e519284d2fdd1264a48a69ab3fc9ab0a1f8f0"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32039
+        ],
+        "sha256": "b0c69a6f6d21e7ab30852ee29d662d474ee78d6afa7d09140b1ff596e638f184"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32038
+        ],
+        "sha256": "1c9293afa739f87c75b9a17c4aa9e6297501b8affc7b67383ea0eafc7af0d460"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32089
+        ],
+        "sha256": "4dd0b8a3ff0f571a971128737469b77a32b88a9d7e7d01af1a83ce001dc7fb76"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32064
+        ],
+        "sha256": "eccc87e7a9a8678ceacb04d191bfc75c11591b5f4e1476675995848361082227"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32065
+        ],
+        "sha256": "cda3f857e1156f80de45b6941bac8be0144deadc280c4976bfd445d7b9217ca3"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32029
+        ],
+        "sha256": "383bfa11107daa529cd925f6e17827e93b0da477242dd354a9bbfaa0d25ebf42"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32047
+        ],
+        "sha256": "37c89bebe01a890fa9be6e7db75991ce4621cf51a66de288c6af81102808a14d"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32060
+        ],
+        "sha256": "66b1132159f2830d60557327dd50f5931f49619f266cfaefa2d5f9f7c26bae3b"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32011
+        ],
+        "sha256": "1751831f3ab534da8015e833f3dc29bd134f4485c49ff12cdde21b0516432bab"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32061
+        ],
+        "sha256": "0666e7177ab0169811cab24910edacad152f57dcf28c4c4a8420e0b49899b104"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32048
+        ],
+        "sha256": "9640961a37b1beadd0e1aa9a7c45b98a66d776334fb9f316b9385bdcf0b7be1a"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32066
+        ],
+        "sha256": "ebcf86b2c9fe54de914d45d34604bdbe0a25749368b21c6a8b7daea76f818e7f"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32104
+        ],
+        "sha256": "f9e3f08d7719aa4ea181ad6480242be9926f986abab347fb11b41ca16f50d1b9"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          875640396
+        ],
+        "sha256": "da8d2e91f0be6a75492a4bb7a4ef8942212cc2e1212bb11aabbddb3258b22f28"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          875640398
+        ],
+        "sha256": "440b813fb4a33f97d2fdce0b401ea4b6b744f2daf36f108691ad79470a5c00fe"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32105
+        ],
+        "sha256": "29dc3a7cb87b1894e86ebed7191cf86a69ddbb84feb02c5cc2c5efc87825bfb2"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32106
+        ],
+        "sha256": "8e63b4b8a560fea1e4bf6bbf9402d094d047c2e75a7f5e93a3c68b56b66f4d61"
+      },
+      {
+        "class": "WorldRevivalItems",
+        "ids": [
+          32107
+        ],
+        "sha256": "0495effd4c43d8e13816da4532b49b0e1d378250258e8797593856a080a8fb80"
+      },
+      {
+        "class": "WorldQuestAndEventItems",
+        "ids": [
+          40003
+        ],
+        "sha256": "45d92e9f01145e5c708fe3b6944725221121c063262cc1a52a5e92564da33aa6"
+      },
+      {
+        "class": "WorldQuestAndEventItems",
+        "ids": [
+          40566
+        ],
+        "sha256": "d97f448a1ad8f2999979e0af3b844ab7cdd0b66ed3f757cd5f8281825dd2e36b"
+      },
+      {
+        "class": "WorldQuestAndEventItems",
+        "ids": [
+          40700
+        ],
+        "sha256": "676ead0a0b93730689dffe7f9d7eee5a6d3552d98f7648d9c9028a6cef0384ce"
+      },
+      {
+        "class": "WorldQuestAndEventItems",
+        "ids": [
+          41121
+        ],
+        "sha256": "32acf3bb5da50cad753a27cdc628a0b24f5aefa6d08779d85a393b6bc3f1c3e1"
+      },
+      {
+        "class": "WorldQuestAndEventItems",
+        "ids": [
+          41130
+        ],
+        "sha256": "e157fcc796d58a187384dd10b1eaf71b53f3e9bc4af65c588412061f25d3719d"
+      },
+      {
+        "class": "WorldBuffAndCureItems",
+        "ids": [
+          40017,
+          40507
+        ],
+        "sha256": "1d104499d80a70b417e3ec627c924f0e52d86ad0228f365570a44da902cfde9b"
+      },
+      {
+        "class": "WorldBuffAndCureItems",
+        "ids": [
+          510012,
+          510013,
+          510014
+        ],
+        "sha256": "c120d2f1a0dbee27a9c30fb1f46e6a69bf63c269754cc663b0c2956ad02cccbf"
+      },
+      {
+        "class": "WorldBuffAndCureItems",
+        "ids": [
+          30084
+        ],
+        "sha256": "b61345617d4fb70e9596ab0eebe682a884548cd4a1ef4eb1b2af52d7b30661fd"
+      },
+      {
+        "class": "WorldBuffAndCureItems",
+        "ids": [
+          3000209,
+          3000213,
+          3000214
+        ],
+        "sha256": "0fcdacecd367803e35739c5b58628531204c941d5862108af100c1d666096006"
+      },
+      {
+        "class": "WorldPetVoucherItems",
+        "ids": [
+          3000432
+        ],
+        "sha256": "deaeeeb2a485ccbde4add411bf58f07b4ff466d721c79940477eb37f3e2d6cd5"
+      },
+      {
+        "class": "WorldPetVoucherItems",
+        "ids": [
+          3000433
+        ],
+        "sha256": "a5c77958e431bdf727ea486543a11d397d44c5ee889275389860b292a631963f"
+      },
+      {
+        "class": "WorldPetVoucherItems",
+        "ids": [
+          3000434
+        ],
+        "sha256": "ca41149e802ad70c5c6a69aeb3e3fcb49f0dc5b7e913188a08038b906f861914"
+      },
+      {
+        "class": "WorldPetVoucherItems",
+        "ids": [
+          3000435
+        ],
+        "sha256": "39439575d0254a17a98703f792f19b8fb9ce666255ce92a2d8c16f90a35b84bb"
+      },
+      {
+        "class": "WorldPetVoucherItems",
+        "ids": [
+          3000436
+        ],
+        "sha256": "1e2aecf3c1af5e8b24517bb193d1faa4f4a67945e3e4baa97786dcaaa4e83de8"
+      },
+      {
+        "class": "WorldPetVoucherItems",
+        "ids": [
+          3000437
+        ],
+        "sha256": "08d8ddb15ab27c60abd4d7e848513fccbd6fec6876e7a2c4b2c5014135759f28"
+      },
+      {
+        "class": "WorldPetVoucherItems",
+        "ids": [
+          3000438
+        ],
+        "sha256": "ed593c5d890510cfe01c9f9de2f47170002243aa6d3b5ad586574cc6b40789c9"
+      },
+      {
+        "class": "WorldPetVoucherItems",
+        "ids": [
+          3000439
+        ],
+        "sha256": "c6797da890c8965aaa77c4e1b9b1232d41255f8e0574f463b0581c5d2cbdd3d9"
+      },
+      {
+        "class": "WorldPetVoucherItems",
+        "ids": [
+          3000440
+        ],
+        "sha256": "c9d8825f8c800e06d91692c00e9f25ce32648cd3e4acc39d651b7f049f38d7f2"
+      },
+      {
+        "class": "WorldPetVoucherItems",
+        "ids": [
+          3000441
+        ],
+        "sha256": "1c2dc3864506ba82a727a6a66b56487d7d1c218941bcd7747e58e064208d10f9"
+      },
+      {
+        "class": "WorldPetVoucherItems",
+        "ids": [
+          3000442
+        ],
+        "sha256": "da12423e81580c451a78dea2e11f55d8d4ac4f00ee12de23521888e6cbef1e9c"
+      },
+      {
+        "class": "WorldDollPotentialItems",
+        "ids": [
+          300001
+        ],
+        "sha256": "038cdc1d6468114e7fdbdd75edadf39658732e22798f4b5367a4626dbf5bac19"
+      },
+      {
+        "class": "WorldDollPotentialItems",
+        "ids": [
+          700001
+        ],
+        "sha256": "30d334fc254b8451ab11a3bcce8bf74b178887948a73809c95e89389acb250bc"
+      },
+      {
+        "class": "WorldDollPotentialItems",
+        "ids": [
+          900001
+        ],
+        "sha256": "6088e67df11e30c67503852e72eae17a7566e262a5098f1b764d660f02a81fab"
+      },
+      {
+        "class": "WorldDollPotentialItems",
+        "ids": [
+          400001
+        ],
+        "sha256": "2a6aee985dcb5e9d3def18afe9c51b16bbb3a4ca460059ca1eed5b10b94eab2e"
+      },
+      {
+        "class": "WorldDollPotentialItems",
+        "ids": [
+          500001
+        ],
+        "sha256": "997bccbb2a7bd3bbdcc682580c6be0fb822ec65a87ead7ce79c5b6c61a19c8b3"
+      },
+      {
+        "class": "WorldDollPotentialItems",
+        "ids": [
+          600001
+        ],
+        "sha256": "3da3c1bccf4c25319a1fcb0f37ced01dcadea53e904e247b30a46d176631acd7"
+      }
+    ],
+    "original_switch_sha256": "3bed30af038f8e363fd0d7675e5d69a6e42566f93ee59f899d3fbe521e49d6e1"
+  },
+  "travel": {
+    "classes": {
+      "ReturnAndTeleportItems": 12,
+      "DeployableEffectItems": 1,
+      "TravelBuffUseItems": 6,
+      "TravelUtilityExchangeItems": 2,
+      "ExperienceAndElixirUseItems": 4,
+      "CharacterPackageUseItems": 6,
+      "BossInvocationScrollItems": 1,
+      "AccountPositionRecoveryItems": 1
+    },
+    "groups": [
+      {
+        "class": "ReturnAndTeleportItems",
+        "ids": [
+          "3000147"
+        ],
+        "sha256": "b9e70e167e77f1f580e12324628b107e82ab69c276db132439f25a8c4921f4f7"
+      },
+      {
+        "class": "ReturnAndTeleportItems",
+        "ids": [
+          "202099"
+        ],
+        "sha256": "a2f09fdb65259dd5712e20cdad80a4ddafc80407d8e560e67702330fa309d67b"
+      },
+      {
+        "class": "ReturnAndTeleportItems",
+        "ids": [
+          "3000229"
+        ],
+        "sha256": "8348b7cdd736c07d173600c13d488cd43a9e3dfb3200f7d8890e8de975e865e5"
+      },
+      {
+        "class": "ReturnAndTeleportItems",
+        "ids": [
+          "875640424"
+        ],
+        "sha256": "9552059ef7b0392ec09479970d1aa37326d331c5a3fb6ea9a7a1c6b8ebe1f219"
+      },
+      {
+        "class": "ReturnAndTeleportItems",
+        "ids": [
+          "875640415"
+        ],
+        "sha256": "92932ef14adab51bb5f008022047ede261c99abc218a5df74d4b722be4ba69df"
+      },
+      {
+        "class": "ReturnAndTeleportItems",
+        "ids": [
+          "3000413"
+        ],
+        "sha256": "b8ea7d63d320c44ef3bbb29de62cab2422f03c6aa42fda194f30df02f13f49f3"
+      },
+      {
+        "class": "ReturnAndTeleportItems",
+        "ids": [
+          "240100"
+        ],
+        "sha256": "0f8b9b66e8c0d23679db73eceeec0172a9fef1bd34db7c71df926e6e5261e47a"
+      },
+      {
+        "class": "ReturnAndTeleportItems",
+        "ids": [
+          "748"
+        ],
+        "sha256": "819fa973b9d1218fb89a5cc6905ab3ce2756198161b08e015e2fe528e9abc802"
+      },
+      {
+        "class": "ReturnAndTeleportItems",
+        "ids": [
+          "749"
+        ],
+        "sha256": "7b91449649add428c2c07440d72749833e8c65e8d624315d9b24237839bb365f"
+      },
+      {
+        "class": "ReturnAndTeleportItems",
+        "ids": [
+          "40124",
+          "30086"
+        ],
+        "sha256": "085d55da390cefb523bcb49477dfee256f517234b9e7134aa4804fe0c596afbb"
+      },
+      {
+        "class": "ReturnAndTeleportItems",
+        "ids": [
+          "MJINNHelper.INN_KEYID"
+        ],
+        "sha256": "b62178f97aa01c73f28d41a67f08f9ebcfe4dc7894aebdbb8fcc1131386a689c"
+      },
+      {
+        "class": "ReturnAndTeleportItems",
+        "ids": [
+          "700023"
+        ],
+        "sha256": "fcd78ba4717c9f42ce392db2fa1ad3ad914d58be782cd99af5082d242e6aac50"
+      },
+      {
+        "class": "DeployableEffectItems",
+        "ids": [
+          "41260"
+        ],
+        "sha256": "3cfa86000a9d9949911a9f68b3a40b9904bfc92a19de4acaffae47b26b14aba0"
+      },
+      {
+        "class": "TravelBuffUseItems",
+        "ids": [
+          "731"
+        ],
+        "sha256": "f01a7e0ea7ec6ad397d7d9d181fe862c07686587d11329cc0299210bb31dc358"
+      },
+      {
+        "class": "TravelBuffUseItems",
+        "ids": [
+          "3000397"
+        ],
+        "sha256": "b39280c8986c96487a4759867268cca5ed86e08575c2d7d0f64541ad58aa101e"
+      },
+      {
+        "class": "TravelBuffUseItems",
+        "ids": [
+          "3000398"
+        ],
+        "sha256": "3bd372e9249b37efcc681ca4dd636bb88e441a38255fd7cfcbadb438bd70cc57"
+      },
+      {
+        "class": "TravelBuffUseItems",
+        "ids": [
+          "650009"
+        ],
+        "sha256": "8d1b5619431e817516c0d76fdceaa4978dc6ebcb53764dd32b3277ff328ece14"
+      },
+      {
+        "class": "TravelBuffUseItems",
+        "ids": [
+          "3000128"
+        ],
+        "sha256": "b6c2f91b86fd22c286519185882ebad35217fab5eb76a3404bb43b3cf1d68b64"
+      },
+      {
+        "class": "TravelBuffUseItems",
+        "ids": [
+          "4100040",
+          "60208",
+          "60209",
+          "60210"
+        ],
+        "sha256": "574760cff595a2137c8ec842d6abc4318fee095fa23f12478fcc3d3d522a97fd"
+      },
+      {
+        "class": "TravelUtilityExchangeItems",
+        "ids": [
+          "700021"
+        ],
+        "sha256": "1534525e6152503dc668affa7f53d89b79e8670e2fda1f1a5937803f07a9723a"
+      },
+      {
+        "class": "TravelUtilityExchangeItems",
+        "ids": [
+          "60256"
+        ],
+        "sha256": "572e497faa7fb007be93df53de433a1784e5ed405b5ca395942a0810115276a0"
+      },
+      {
+        "class": "ExperienceAndElixirUseItems",
+        "ids": [
+          "700000"
+        ],
+        "sha256": "a5e47f92ca3d5be122f9869c4fc05747a77ff190a2ae438ebd917f486472fa3b"
+      },
+      {
+        "class": "ExperienceAndElixirUseItems",
+        "ids": [
+          "4100074"
+        ],
+        "sha256": "212e5e36e3f15da572b5b9e5165cb668204487e087676ecf63ef8602ce311e9a"
+      },
+      {
+        "class": "ExperienceAndElixirUseItems",
+        "ids": [
+          "4100075"
+        ],
+        "sha256": "9d6f24d753194006ef731d5eff53bbac4a665fa27de5ac7271c7e166437ebc79"
+      },
+      {
+        "class": "ExperienceAndElixirUseItems",
+        "ids": [
+          "40033",
+          "40034",
+          "40035",
+          "40036",
+          "40037",
+          "40038"
+        ],
+        "sha256": "1c97435e59e0e142217c4d4b8459679b215da90eda44ecb831b40ca74b66b7aa"
+      },
+      {
+        "class": "CharacterPackageUseItems",
+        "ids": [
+          "3000126",
+          "3000127"
+        ],
+        "sha256": "248473ad725905a51f99102a9e43a08d857028e757f82293923c4e36f65ebfb0"
+      },
+      {
+        "class": "CharacterPackageUseItems",
+        "ids": [
+          "89136"
+        ],
+        "sha256": "a261000bbaf14edc6640750c77e357332f8e2468e19c2f1b678fcd332b6ca33e"
+      },
+      {
+        "class": "CharacterPackageUseItems",
+        "ids": [
+          "875640417"
+        ],
+        "sha256": "4a99e0a62e3d771de642412c2975d342fafb704ae4ed830daa51e80e5ca75f39"
+      },
+      {
+        "class": "CharacterPackageUseItems",
+        "ids": [
+          "875640450"
+        ],
+        "sha256": "7158e08c020ae16521d0b7183834a60cf151e74ad3db9e8742d3332d42357b82"
+      },
+      {
+        "class": "CharacterPackageUseItems",
+        "ids": [
+          "123124"
+        ],
+        "sha256": "825af9281cd4b48449b30c560195b3879a32522995ba0509d971d3462c6f9564"
+      },
+      {
+        "class": "CharacterPackageUseItems",
+        "ids": [
+          "12302"
+        ],
+        "sha256": "5a84e6719135bc5f6cc266f2427420420a724a48eb8ef83b6ea078d60235cc44"
+      },
+      {
+        "class": "BossInvocationScrollItems",
+        "ids": [
+          "3000123"
+        ],
+        "sha256": "2fe2212095a02ef4c4359214fc38a6369f8fc22fb197449a0e3993d95c60c699"
+      },
+      {
+        "class": "AccountPositionRecoveryItems",
+        "ids": [
+          "210104"
+        ],
+        "sha256": "701ce0bbbe8cb72689f1ed478637534c1ebcf6572241e439943d2d4482164d5c"
+      }
+    ],
+    "original_switch_sha256": "4507e799283319974db5b890539c2ff6e46a12a64cf8a0da61ddc128997efe7b"
+  },
+  "craft": {
+    "router": "SupplementalCraftRouter",
+    "classes": {
+      "CardFusionChanceItems": 3,
+      "RankingRewardItems": 1,
+      "CraftingSupportAndTravelItems": 5,
+      "HeroBundleItems": 1,
+      "UncurseScrollActions": 1,
+      "DessertBuffConsumables": 3,
+      "CharacterSlotVoucherItems": 1,
+      "ConsignmentVoucherItems": 1,
+      "TargetedCraftingAndPurificationItems": 2
+    },
+    "groups": [
+      {
+        "class": "CardFusionChanceItems",
+        "ids": [
+          "5200101"
+        ],
+        "sha256": "ab08e2697fa13aa7de16d458b5f2850fef769eda94590b3a24d94dc15235bcd8"
+      },
+      {
+        "class": "CardFusionChanceItems",
+        "ids": [
+          "5200102"
+        ],
+        "sha256": "89415ac0c1d19d642cda8ebfa57a0590fab3cc7b7209709221800e2d8b96deb7"
+      },
+      {
+        "class": "CardFusionChanceItems",
+        "ids": [
+          "5200103"
+        ],
+        "sha256": "3d2d9d87a0e630ea1053c963425366c832691f7e0cfd7b5e448ef4012f1f431e"
+      },
+      {
+        "class": "RankingRewardItems",
+        "ids": [
+          "5990"
+        ],
+        "sha256": "68366d819dcbd0d7609eced4e7963905d17c151cf656127dc84f4faf168d3370"
+      },
+      {
+        "class": "CraftingSupportAndTravelItems",
+        "ids": [
+          "820018"
+        ],
+        "sha256": "a10a2e7cb7902781799f2bb62e43065f8bae5ef60ca7f547a0190958656d1ef8"
+      },
+      {
+        "class": "CraftingSupportAndTravelItems",
+        "ids": [
+          "30106"
+        ],
+        "sha256": "b1b8a25c632afeefdb7f3bd391d4c15e74f7cf1e9996150327c87d4cf90090c1"
+      },
+      {
+        "class": "CraftingSupportAndTravelItems",
+        "ids": [
+          "3000356",
+          "3000363",
+          "3000364",
+          "3000365"
+        ],
+        "sha256": "3a01ba9c86c7f61d91dae33c953b733d1b26a2c0b341fc0636c434b0137dd788"
+      },
+      {
+        "class": "CraftingSupportAndTravelItems",
+        "ids": [
+          "410094"
+        ],
+        "sha256": "6e3cb6bb56473e8989f99020a3309dce09a27cb8ae4e28f6f9a91b8a2a4f55c1"
+      },
+      {
+        "class": "CraftingSupportAndTravelItems",
+        "ids": [
+          "210082"
+        ],
+        "sha256": "e379dff33aa72089996a2d8f97f1f3d7f6e45cc3497d5df8bef04036f646f467"
+      },
+      {
+        "class": "HeroBundleItems",
+        "ids": [
+          "753"
+        ],
+        "sha256": "83f11844fdfe247272b6a0e3e610860576bd56f6f0ccb3b8360e3d84d8cc011a"
+      },
+      {
+        "class": "UncurseScrollActions",
+        "ids": [
+          "40097",
+          "40119",
+          "140119",
+          "140329"
+        ],
+        "sha256": "d2c8a6bee52167b7aeab0b0508e5b9f0b598504e336479aaff84bbb236cc9562"
+      },
+      {
+        "class": "DessertBuffConsumables",
+        "ids": [
+          "31118"
+        ],
+        "sha256": "d2de7a353bc2e2e9142d2f3f1523cd97912af81046a34a734d311d2f1f457e55"
+      },
+      {
+        "class": "DessertBuffConsumables",
+        "ids": [
+          "31119"
+        ],
+        "sha256": "bd81eba4a583cbabfffeefc62bbdede2e09fa16e8b97192ff4bfbb082d30f61d"
+      },
+      {
+        "class": "DessertBuffConsumables",
+        "ids": [
+          "31120"
+        ],
+        "sha256": "33ca54af8714102a684ce1bc98d49a7b1d2a0f4244aba90cb873bc82cf824ef9"
+      },
+      {
+        "class": "CharacterSlotVoucherItems",
+        "ids": [
+          "210083"
+        ],
+        "sha256": "823d4d86b116e0042ca3990ca6c7b536c06673304bccb74b715230e901923cce"
+      },
+      {
+        "class": "ConsignmentVoucherItems",
+        "ids": [
+          "474747"
+        ],
+        "sha256": "76e09a78924686d3b987679dd4f982e0276072aae51f6a91ddac729a495eedf2"
+      },
+      {
+        "class": "TargetedCraftingAndPurificationItems",
+        "ids": [
+          "60035"
+        ],
+        "sha256": "c1c9519db1a8b8d2c93cc7fce07dc52e9c545722d7f2665fcbc13557629f62ed"
+      },
+      {
+        "class": "TargetedCraftingAndPurificationItems",
+        "ids": [
+          "40925",
+          "40926",
+          "40927",
+          "40928",
+          "40929"
+        ],
+        "sha256": "5b74d96d0fdf9762df7e218c28a515d93a3830c2c623610b7b1a176619b41a9c"
+      }
+    ],
+    "original_switch_sha256": "e23f706c213102ea8c4a8ee5ed894458fa163e331ee4e16799d5047cdd5c7294"
+  },
+  "rewards": {
+    "router": "SupplementalRewardRouter",
+    "classes": {
+      "TradingBoardAccessItems": 4,
+      "EventUtilityConsumables": 7,
+      "ClanRewardScrollItems": 10,
+      "EquipmentSlotVoucherItems": 1,
+      "ManaConsumables": 8,
+      "ExperienceAndAlignmentItems": 2,
+      "TemporaryEffectConsumables": 6,
+      "RewardReceiptConsumables": 6
+    },
+    "groups": [
+      {
+        "class": "TradingBoardAccessItems",
+        "ids": [
+          "3000195"
+        ],
+        "sha256": "28f31968c8a94de4efc14a3b03c038356a6a4d26026d7b6307753a9f4b9df94e"
+      },
+      {
+        "class": "TradingBoardAccessItems",
+        "ids": [
+          "474750"
+        ],
+        "sha256": "f1340792c7244c0ca408717c9f3df28ab711d3bbd172b7cc036f23653ff2b6a8"
+      },
+      {
+        "class": "TradingBoardAccessItems",
+        "ids": [
+          "474751"
+        ],
+        "sha256": "37b4b170034f8e511a3f058ffcc95f03d9b041dcc4212df0dc4f8b5e164fc154"
+      },
+      {
+        "class": "TradingBoardAccessItems",
+        "ids": [
+          "474752"
+        ],
+        "sha256": "4a95a5d8c599530f298806dcf192f6cce1681f30fb611e51383aa49b9af6b5b0"
+      },
+      {
+        "class": "EventUtilityConsumables",
+        "ids": [
+          "474748"
+        ],
+        "sha256": "e501d5054a23fa0d784b70fa2ba9556783205149bb00c3bca16084564be81e45"
+      },
+      {
+        "class": "EventUtilityConsumables",
+        "ids": [
+          "810011"
+        ],
+        "sha256": "aa4cd1d7a83b34c00709834a6e0b3ac64c0ce92b7cc8e653b7f69b0adee358aa"
+      },
+      {
+        "class": "EventUtilityConsumables",
+        "ids": [
+          "3000048"
+        ],
+        "sha256": "88771afd4bda31a85a191630fd351994f297e7399dee868f52e59a568ecc6306"
+      },
+      {
+        "class": "EventUtilityConsumables",
+        "ids": [
+          "40328"
+        ],
+        "sha256": "a3da4ebaca45fe7bdff994b864edf9e18094b3867e265409136bc72f6fa6e078"
+      },
+      {
+        "class": "EventUtilityConsumables",
+        "ids": [
+          "45450",
+          "45451",
+          "45452",
+          "45453"
+        ],
+        "sha256": "b04528d0c021ce2efa75ac1bb13cedaa01c9a3010c35c29dd71880f13a4fc634"
+      },
+      {
+        "class": "EventUtilityConsumables",
+        "ids": [
+          "12301"
+        ],
+        "sha256": "5453688f744686ed92f7aa22b40a02bf8db74164a6e63a5122625b962706be71"
+      },
+      {
+        "class": "EventUtilityConsumables",
+        "ids": [
+          "41354"
+        ],
+        "sha256": "aac26bbc67322d4ac447f785c764e361d77215fee4c75256225006ad1df0e735"
+      },
+      {
+        "class": "ClanRewardScrollItems",
+        "ids": [
+          "145001"
+        ],
+        "sha256": "4d9816dd6a6575f4118f08a03a1200c47e1ef2e750b0c38fe02948c479fb4b19"
+      },
+      {
+        "class": "ClanRewardScrollItems",
+        "ids": [
+          "145002"
+        ],
+        "sha256": "31c2373999be4e66dee98912f0a48f51e7415698ec7c1f282a20e3beede14988"
+      },
+      {
+        "class": "ClanRewardScrollItems",
+        "ids": [
+          "145003"
+        ],
+        "sha256": "2bad615ac8c1918a7bfee37831e1b45b1097b658aba0d099f227f99d3bca24d2"
+      },
+      {
+        "class": "ClanRewardScrollItems",
+        "ids": [
+          "145004"
+        ],
+        "sha256": "a6d2594bf886781fd60b4167d8589b5103a347caea49d971f2df3e2526e8d6c8"
+      },
+      {
+        "class": "ClanRewardScrollItems",
+        "ids": [
+          "145005"
+        ],
+        "sha256": "5d200202d098ef74dc4af26b18ab8ef6d7531afa6352d36f0dce1fe501bcbefe"
+      },
+      {
+        "class": "ClanRewardScrollItems",
+        "ids": [
+          "145006"
+        ],
+        "sha256": "b30bf9906fab561b887ee16eabf88089f852bce2051b75b17ca8bbab654fb538"
+      },
+      {
+        "class": "ClanRewardScrollItems",
+        "ids": [
+          "145007"
+        ],
+        "sha256": "178a57754bf93e3f8a349d22959751f297fba8b15decbbf30d431932b4cf4e0c"
+      },
+      {
+        "class": "ClanRewardScrollItems",
+        "ids": [
+          "145008"
+        ],
+        "sha256": "b9b7fce82148a28fca2fb314b7eae975fcf4b5729f9c7141dfbaf8a76963563b"
+      },
+      {
+        "class": "ClanRewardScrollItems",
+        "ids": [
+          "145009"
+        ],
+        "sha256": "611cc569fab22a44f7a0d9b72dfd3f16afe345d4f9e5423ed35ce327327e9e8a"
+      },
+      {
+        "class": "ClanRewardScrollItems",
+        "ids": [
+          "145010"
+        ],
+        "sha256": "72a69050a7ebee8387233b83e748f3af8885d30c3604d2d05e76dcbe014a294d"
+      },
+      {
+        "class": "EquipmentSlotVoucherItems",
+        "ids": [
+          "4100203",
+          "4100140",
+          "4100141",
+          "4100142",
+          "4100143",
+          "4100144"
+        ],
+        "sha256": "7ef10b71d548805d70e0cbbf611b4c8f0eb774fe0952b7800410ddfcc6485394"
+      },
+      {
+        "class": "ManaConsumables",
+        "ids": [
+          "40067",
+          "41414"
+        ],
+        "sha256": "8f6f71d9607ab11f9d520e6f3ff6a384c33ae651248abce5fe2b5ea1a15d2ab7"
+      },
+      {
+        "class": "ManaConsumables",
+        "ids": [
+          "40066",
+          "41413"
+        ],
+        "sha256": "d542f115b80eadb028b1c6a5d5cd58a743f66743175657182b34690d16fe8e70"
+      },
+      {
+        "class": "ManaConsumables",
+        "ids": [
+          "500220"
+        ],
+        "sha256": "6a9afb11ab3309af4ad98196ae95545a4dd42ca1d33c6542582f2a6f3dfcb477"
+      },
+      {
+        "class": "ManaConsumables",
+        "ids": [
+          "410002"
+        ],
+        "sha256": "0138222f49660625f8f6a443107f2a8913fd01ffd71e25380e0e0078ba505eef"
+      },
+      {
+        "class": "ManaConsumables",
+        "ids": [
+          "40735"
+        ],
+        "sha256": "965a0572c15da2b93d60cda0a183501c40d10dd69f018e423ddacc01e04cbdbf"
+      },
+      {
+        "class": "ManaConsumables",
+        "ids": [
+          "40042"
+        ],
+        "sha256": "3ca655148bab965eba41680c6401e54fe8a0d53de201857412798331f0df3ae0"
+      },
+      {
+        "class": "ManaConsumables",
+        "ids": [
+          "41404"
+        ],
+        "sha256": "8b87356c7741bd2a1038b71f044951c75ce58d29e3f4e9534eab15f943fe9aa2"
+      },
+      {
+        "class": "ManaConsumables",
+        "ids": [
+          "41412"
+        ],
+        "sha256": "674e206b6afc36a86688335138b2a44d62f3003e088bb70a6c2417463c1189df"
+      },
+      {
+        "class": "ExperienceAndAlignmentItems",
+        "ids": [
+          "111556"
+        ],
+        "sha256": "1817f6d8a48dd3a2cbcac3cb3ddc9ac9f3fbef2cbe56e6516037ef932076edf4"
+      },
+      {
+        "class": "ExperienceAndAlignmentItems",
+        "ids": [
+          "490028",
+          "490029"
+        ],
+        "sha256": "cfcd6c4bcebeda782e4fc58b936c5e0b6721ca532bdb91f580b2439ca02a6a27"
+      },
+      {
+        "class": "TemporaryEffectConsumables",
+        "ids": [
+          "1000010"
+        ],
+        "sha256": "05316b05dbde1b7f1741f088a4d6c3156bf5852e6851f01b8d7f7679c874e830"
+      },
+      {
+        "class": "TemporaryEffectConsumables",
+        "ids": [
+          "1000110"
+        ],
+        "sha256": "bb45619d77936d674030f02fc23c71400dc2396d8ce08c251d39b2d6030dd695"
+      },
+      {
+        "class": "TemporaryEffectConsumables",
+        "ids": [
+          "1000120"
+        ],
+        "sha256": "743b07302eb87c574de901792ce041cd2441177b24df12d1ec19de2fd7321689"
+      },
+      {
+        "class": "TemporaryEffectConsumables",
+        "ids": [
+          "40493"
+        ],
+        "sha256": "8b9958f42bd7ffd9b8c9021021974971fecc9d936cf4437892c4492148499220"
+      },
+      {
+        "class": "TemporaryEffectConsumables",
+        "ids": [
+          "41019"
+        ],
+        "sha256": "240b6ba810ec1b8208fa50c7e0fb7a9bfd6a153c0b9bb7331a6a3360a451256d"
+      },
+      {
+        "class": "TemporaryEffectConsumables",
+        "ids": [
+          "41027"
+        ],
+        "sha256": "8f6a71a6248cf96eccfb2640d2678d9e4d37f16f8b678b19fbe1ebec9fea516a"
+      },
+      {
+        "class": "RewardReceiptConsumables",
+        "ids": [
+          "3000150"
+        ],
+        "sha256": "1fe209c011755be7ddec2135b274c5edcf9733150624047afd32f63148d7c31e"
+      },
+      {
+        "class": "RewardReceiptConsumables",
+        "ids": [
+          "5922794"
+        ],
+        "sha256": "3299f368c7ac7f0fc8122f62a7912ce8404ee22920e531b0e549166a104613d5"
+      },
+      {
+        "class": "RewardReceiptConsumables",
+        "ids": [
+          "3000175"
+        ],
+        "sha256": "e845e7f6e191784178230d22ec15afb4c5e778a2a649b563920b8f42dd879f86"
+      },
+      {
+        "class": "RewardReceiptConsumables",
+        "ids": [
+          "4100120",
+          "4100119"
+        ],
+        "sha256": "122a1eecac2daa0c4db89defbf2a50825c8aedf7c764f38aaf548c9809f07fad"
+      },
+      {
+        "class": "RewardReceiptConsumables",
+        "ids": [
+          "3000039",
+          "3000169",
+          "718"
+        ],
+        "sha256": "00311c2a94fc70676f6ef9632c1564ed91e3b80f3344d33adac8fcaedb834aaf"
+      },
+      {
+        "class": "RewardReceiptConsumables",
+        "ids": [
+          "698",
+          "776"
+        ],
+        "sha256": "e71a650ca92e15d6d5c6f5882b1af182fc82c8c5e8ee53fe117ed06b5eef8d27"
+      }
+    ],
+    "original_switch_sha256": "4475fc2e3882557e0c02fd9c65ad3c7d8b68239f61787bb6bc8dcb9581c65b8c"
+  }
+}

@@ -1,0 +1,9 @@
+ItemActionDispatcher resolved 860 duplicate [] unresolved []
+SupplementalItemActions resolved 279 duplicate [] unresolved []
+WorldItemActions resolved 97 duplicate [] unresolved []
+SupplementalCraftRouter resolved 28 duplicate [] unresolved []
+SupplementalRewardRouter resolved 59 duplicate [] unresolved []
+AdvancedAbilityItems resolved 52 duplicate [] unresolved []
+TravelAndRecoveryItems resolved 43 duplicate [] unresolved []
+ItemTargetDecoder resolved 240 duplicate [] unresolved []
+CASE_LABELS_TOTAL 1658

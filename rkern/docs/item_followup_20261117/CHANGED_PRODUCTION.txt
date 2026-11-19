@@ -1,0 +1,4 @@
+src/l1j/server/server/model/item/function/ItemActionService.java
+src/l1j/server/server/model/item/function/ItemActionPreparation.java
+src/l1j/server/server/model/item/function/ItemActionCompletion.java
+src/l1j/server/server/model/item/function/MiscItemActions.java

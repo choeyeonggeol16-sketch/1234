@@ -1,0 +1,8 @@
+ASCII number equivalence=78
+Mapped summon equivalence=5115
+Invalid/cross target checks=14
+Travel equivalence and failed debit=336
+Exchange receipt mock=160
+Expanded amount bounds=64
+Local failed consume cases=2
+Local command executed differential cases=2112 PASS

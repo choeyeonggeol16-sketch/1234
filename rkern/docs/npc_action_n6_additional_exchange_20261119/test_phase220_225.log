@@ -1,0 +1,87 @@
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+java.lang.IllegalStateException: off packet
+	at SC_CharVisualUpdate.sendPacked(Test.java:39)
+	at L1PcInstance.offFishing(Test.java:18)
+	at Test.main(Test.java:212)
+FISHING_PASS 449 matrix outcomes
+COMPLETION_PASS 136 matrix outcomes
+RESURRECTION_PASS 64 occupancy conditions
+Nov 19, 2026 8:29:13 AM L1TreasureBox load
+SEVERE: fake의 로드에 실패.
+java.lang.IllegalStateException: init
+	at L1TreasureBox.init(Test.java:5)
+	at L1TreasureBox.load(Test.java:21)
+	at Test.main(Test.java:33)
+
+BOX_RELOAD_PASS 7 checks
+JAVA_COMPILE_OK files= 19
+PHASE115_PASS typed production classes; checks=154
+
+PHASE115_TEST_OK (typed doubles, no live DB)

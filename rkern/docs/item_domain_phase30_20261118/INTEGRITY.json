@@ -1,0 +1,34 @@
+{
+  "base_zip": "RKern_Item_Consolidation_Memory_Phase21_FULL_SRC_20261118.zip",
+  "base_sha256": "5a2ac2f300e227ebd66818547b868f66e10f0f0ed8b1c962e8e9b9f454b285ae",
+  "changed": [
+    "src/l1j/server/server/model/item/ItemEffectRegistry.java",
+    "src/l1j/server/server/model/item/function/EnchantmentOutcomeEffects.java",
+    "src/l1j/server/server/model/item/function/ExtendedItemActions.java",
+    "src/l1j/server/server/model/item/function/ItemActionDispatcher.java",
+    "src/l1j/server/server/model/item/function/SupplementalCraftRouter.java",
+    "src/l1j/server/server/model/item/function/SupplementalRewardRouter.java",
+    "src/l1j/server/server/model/item/function/TopRankerBlessingItems.java"
+  ],
+  "removed": [
+    "src/l1j/server/server/model/item/function/AdministratorGiftPackageUse.java",
+    "src/l1j/server/server/model/item/function/CharacterSlotVoucherItems.java",
+    "src/l1j/server/server/model/item/function/ClassGiftPackageUse.java",
+    "src/l1j/server/server/model/item/function/EquipmentSlotVoucherItems.java",
+    "src/l1j/server/server/model/item/function/ItemCurrencyExchanges.java",
+    "src/l1j/server/server/model/item/function/RankingRewardItems.java",
+    "src/l1j/server/server/model/item/function/TransformationPotionItems.java"
+  ],
+  "new_java": 0,
+  "baseline_java": 1933,
+  "final_java": 1926,
+  "verifications": [
+    "JDK21 syntax 1926",
+    "registry Java21 differential 259200",
+    "enchanted output Java21 differential 9600",
+    "baseline package 31488",
+    "phase20 and 19 cases",
+    "broadcast phase114"
+  ],
+  "limits": "No whole-project dependency compile, live world, MySQL/CacheD, or 5000 real connection soak."
+}

@@ -1,0 +1,139 @@
+{
+  "phase8_archive_sha256": "933dcde36a147a5bb62305602ee997d1a57594cc76e0753315375e4eb43e1e3c",
+  "methods": [
+    {
+      "old": "DurableGoodsItems",
+      "new": "TamPointBoxReceipt",
+      "method": "useTamBoxAtomic",
+      "sha256": "9156a1c82c2f90c53fa88fbe49da958a38273e112cde51072e31dbae56bbca46"
+    },
+    {
+      "old": "DurableGoodsItems",
+      "new": "UncurseScrollReceipt",
+      "method": "useUncurseScrollAtomic",
+      "sha256": "13184231099b2b0d631c19a9f5608b941350778e8095021b974c648f944802bd"
+    },
+    {
+      "old": "DurableGoodsItems",
+      "new": "LanternOilReceipt",
+      "method": "useDurableLanternOil",
+      "sha256": "f4da9600a2660a379ca5a41afbd97def569a24a7f414ef26b91b44ed9d81a617"
+    },
+    {
+      "old": "DurableGoodsItems",
+      "new": "HeroPackageReceipt",
+      "method": "useHeroPackageAtomic",
+      "sha256": "aaad032100c77b05094f61222d52142eed41ae42ac3cf062bfd21623ad6178e1"
+    },
+    {
+      "old": "DurableGoodsItems",
+      "new": "CharacterSlotReceipt",
+      "method": "useCharacterSlotExpansionAtomic",
+      "sha256": "54a709b617517bc541e6909c6001abaf96a817ee46ed804b634d7990c4b5f139"
+    },
+    {
+      "old": "DurableGoodsItems",
+      "new": "EquipmentSlotUnlockReceipt",
+      "method": "useSlotUnlockAtomic",
+      "sha256": "157d58afc4c1fcbc5559321bd17f0f0562fc7fe63bad5dfb93ae09fa941c2e11"
+    },
+    {
+      "old": "StunCombatItems",
+      "new": "BlazeStunItemEffect",
+      "method": "블레이즈스턴",
+      "sha256": "25aafbb8b48d1d75979b705e0b6b811e3e568dadd3b56c65d16c81f096a9084a"
+    },
+    {
+      "old": "StunCombatItems",
+      "new": "ElvenStrikeItemEffect",
+      "method": "엘븐스트라이크",
+      "sha256": "04ff50c2bce0ffaf0e05256a15b892220f204958834102b736bd095077f997e6"
+    },
+    {
+      "old": "ShadowCombatItems",
+      "new": "ShadowBindingItemEffect",
+      "method": "쉐도우",
+      "sha256": "5c6d1f699e3c5697920e10c532411073473c8cfa3d5226958f9ba96680f92cff"
+    },
+    {
+      "old": "ShadowCombatItems",
+      "new": "DemolitionItemEffect",
+      "method": "데몰리션",
+      "sha256": "133867bddf72f90b30970c4b60be993865bc15d5e50be9dfcb93e676884c8ddc"
+    },
+    {
+      "old": "CommandCombatItems",
+      "new": "AvengerItemEffect",
+      "method": "어벤저",
+      "sha256": "63835375105878c2a43c8cf35c21c74664446bf0828054c6db905a344ba4fd07"
+    },
+    {
+      "old": "CommandCombatItems",
+      "new": "CallAdvanceItemEffect",
+      "method": "콜어드밴스",
+      "sha256": "da0ace736e45c0bb5f16f131dc2497cdf134fcc866d06edfbe4290971ef54e80"
+    },
+    {
+      "old": "CommandCombatItems",
+      "new": "BattleCommandWandEffect",
+      "method": "전투지휘봉",
+      "sha256": "d9c4ddc87f9eba07775f640f031f0990dfcf5991cd0aa633765a12de463cd330"
+    },
+    {
+      "old": "MagicCombatItems",
+      "new": "EternityItemEffect",
+      "method": "이터니티",
+      "sha256": "9d238b4a6397005a739fde28762f56e5a197367c8663afb576802d840935621b"
+    },
+    {
+      "old": "MagicCombatItems",
+      "new": "EternityItemEffect",
+      "method": "calcMrDefense",
+      "sha256": "6911e5097cd515286417ba1903fc844579162ce950ff28d0c088b16ef6f5c886"
+    },
+    {
+      "old": "CombatSkillItemEffects",
+      "new": "MagicShieldItemEffect",
+      "method": "매직실드",
+      "sha256": "a1d9f5cd2509d5f6bd71bd6647f0de9ed9807b21e43a5d0df27f352fb92e434c"
+    },
+    {
+      "old": "CombatSkillItemEffects",
+      "new": "CrownAreaStunItemEffect",
+      "method": "군주광역스턴",
+      "sha256": "4db08af49126b17c3aa9d9c38c23a9dce0f404e8d267866f311b99c007b24e8b"
+    },
+    {
+      "old": "CombatSkillItemEffects",
+      "new": "VisionTeleportItemEffect",
+      "method": "비전텔레포트",
+      "sha256": "1b906503d19113b1c450919768f3c03177bf4b7500869341f27abe89078b8d31"
+    }
+  ],
+  "callers": {
+    "RewardReceiptConsumables": "useTamBoxAtomic",
+    "UncurseScrollActions": "useUncurseScrollAtomic",
+    "WorldQuestAndEventItems": "useDurableLanternOil",
+    "HeroBundleItems": "useHeroPackageAtomic",
+    "CharacterSlotVoucherItems": "useCharacterSlotExpansionAtomic",
+    "EquipmentSlotVoucherItems": "useSlotUnlockAtomic"
+  },
+  "old_groups_removed": [
+    "DurableGoodsItems",
+    "StunCombatItems",
+    "ShadowCombatItems",
+    "CommandCombatItems",
+    "MagicCombatItems"
+  ],
+  "baseline_source_sha256": {
+    "RewardReceiptConsumables": "7b3db4fabe2ac1a7ad99548d249b3c14af9784fb88a3494c7a23529d5abb2853",
+    "UncurseScrollActions": "2724286de7ff315b84eef626a53fc9ec5f0d7f87cfdafa78fdec47a86bf7ef9c",
+    "WorldQuestAndEventItems": "3b9aa0d285f4bf7d41e7644c49a790a30cfedf5411ab7b6f3da8b54e36b49dca",
+    "HeroBundleItems": "2874506f07fff6f942cb4394a55e57b67de0c63da4a2fde9eb7732af12d3e039",
+    "CharacterSlotVoucherItems": "9aac1d6484fa69f50cf7ee9745c696e91e4c5691003a1da7fee990e0950f1048",
+    "EquipmentSlotVoucherItems": "3b57c6eaf8bc7d5de18a092641193b45c7a4ddedc6fa29a26019c269ab517e9a",
+    "CombatAbilityItems": "66b7bc2831859e70f7ce2c12eb80a8888be3b6af39a074c879db35376028e626",
+    "CombatSkillItemEffects": "2c8066bf832731fa13dd9fef4037c3930f9e539f90ca2874dab81672cfa34a77"
+  },
+  "unchanged_dispatch_sha256": "ed078974b026c8bd5245d1d38e8300f0518b4e5ef4a444df3b15fc1c14b098b2"
+}

@@ -1,0 +1,1 @@
+package l1j.server.server.model.network.core.sc.packet;import l1j.server.server.model.Instance.L1PcInstance; public class SC_SkillBrave{public static void send(L1PcInstance p,int id,int mode,int time){Faults.maybe(32);} public static void broadcast(L1PcInstance p,int id,int mode,int time){Faults.maybe(64);}}

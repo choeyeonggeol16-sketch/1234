@@ -1,0 +1,16 @@
+Note: Some input files use preview features of Java SE 21.
+Note: Recompile with -Xlint:preview for details.
+Exception in thread "main" java.lang.IllegalStateException: injected per-socket send failure
+	at l1j.server.server.model.network.core.connection.CUserSocket.enqueueConstBufferConfirmed(CUserSocket.java:29)
+	at l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer.send(CAsyncSendConstBuffer.java:108)
+	at l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipients(CSharedBroadcast.java:429)
+	at l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(PacketFanout112.java:63)
+	at l1j.server.server.model.network.core.sc.packet.PacketFanout112.main(PacketFanout112.java:26)
+Traceback (most recent call last):
+  File "/mnt/data/broadcast112/docs/phase112_broadcast_only/test_packet_entrypoints.py", line 105, in <module>
+    subprocess.run(['java','--enable-preview','-cp',str(classes),'l1j.server.server.model.network.core.sc.packet.PacketFanout112'],check=True)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['java', '--enable-preview', '-cp', '/tmp/tmp0rjfqyf9/classes', 'l1j.server.server.model.network.core.sc.packet.PacketFanout112']' returned non-zero exit status 1.

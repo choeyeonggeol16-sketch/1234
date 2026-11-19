@@ -1,0 +1,32 @@
+{
+  "base_zip": "RKern_ItemFunction_DomainSeparation_Phase17_FULL_SRC_20261118.zip",
+  "base_sha256": "0afd12a27ceabd66a01e8e87c13e3394052eaa84633f1774c4c1be8b5f8c02e8",
+  "removed_classes": [
+    "Level30PolymorphForm",
+    "Level40PolymorphForm",
+    "Level52PolymorphForm",
+    "Level55PolymorphForm",
+    "Level60PolymorphForm",
+    "Level65PolymorphForm",
+    "Level70PolymorphForm",
+    "Level75PolymorphForm",
+    "Level80PolymorphForm",
+    "Level82AchievementReward",
+    "Level84AchievementReward",
+    "Level86AchievementReward",
+    "Level88AchievementReward",
+    "Level89AchievementReward",
+    "Level90AchievementReward"
+  ],
+  "modified_classes": [
+    "LevelPolymorphScrollEffects",
+    "LevelMilestonePackages",
+    "Telbookitem",
+    "IdentificationAndScrollItems"
+  ],
+  "production_java_count": 1954,
+  "tested_java21_poly_reward_cases": 8704,
+  "tested_java21_teleport_cases": 76,
+  "tested_java21_identify_cases": 288,
+  "tested_mass_teleport_rolls": 9000
+}

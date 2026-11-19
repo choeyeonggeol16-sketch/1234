@@ -1,0 +1,8 @@
+Phase105 source: RKern_ItemOnly_CardConfirm_Receipt_Phase104_FULL_SRC_20261118.zip
+Production edits: NeigeCard.java, NeigeCard2.java, NeigeCard3.java, ActionControlHandler.java (only item-card synthesis guards)
+Production guard Java21 compile/execution: PASS 410 busy+idle cases / 205 original NPC actions
+Central NPC reset guard: PASS 2 entrypoints; complete reset of slots a/b/c/d verified
+Prior Phase103 real class typed stub tests: PASS 2498 assertions
+Prior Phase104 extracted network answer arm tests: PASS 65 assertions
+Java21 full parse-only: PASS 1923/1923 Java, syntax errors 0
+Not performed: full production dependency type compilation, MySQL InnoDB/ACK loss/in-game concurrency

@@ -1,0 +1,1 @@
+package l1j.server.server.model.network.core.sc.packet; public class Faults {public static int failMask;public static int calls;public static void maybe(int n){calls++;if((failMask & n)!=0) throw new IllegalStateException("network fail " + n);}}

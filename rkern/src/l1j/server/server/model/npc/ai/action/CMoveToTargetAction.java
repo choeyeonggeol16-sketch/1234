@@ -1,0 +1,1032 @@
+package l1j.server.server.model.npc.ai.action;
+
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.Instance.L1CastleGuardInstance;
+import l1j.server.server.model.Instance.L1GuardInstance;
+import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.Instance.L1SummonInstance;
+import l1j.server.server.model.Instance.L1CompanionInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.ai.core.WorldCollisionHash;
+import l1j.server.server.model.npc.ai.CDesirePQ;
+
+/**
+ * Native-first target chase.
+ *
+ * DesirePQ decides WHICH target/action wins.
+ * SetMoving owns HOW movement is performed.
+ *
+ * L1 movement-failure safety policy:
+ * - SetMoving.PATH_FAILED increments an L1 navigation-failure counter.
+ * - non-failed movement resets this counter; body collision does not count.
+ * - after 30 failures the failed target is retired and desires reselected.
+ *
+ * NC CNPC::dPAttack has separate 30/100 CheckTerritory-failure counters;
+ * these are NOT the same as SetMoving.PATH_FAILED. Keep the L1 safety policy
+ * separate from NC territory recovery and the existing wander rules.
+ */
+public final class CMoveToTargetAction {
+
+    private static final int PATH_FAIL_LIMIT = 30;
+    private static final int TARGET_CLEAR_DISTANCE = 40;
+    private static final byte RESULT_PATH_FAILED = 5;
+    private static final long PATH_FAIL_DISPATCH_DELAY_MS = 1_000L;
+    private static final long DYNAMIC_BLOCK_RETRY_MS = 300L;
+    private static final int RESERVED_SLOT_BLOCK_RETRY_LIMIT = 3;
+    // Covers one slow animation/tick without leaving a permanent reservation.
+    private static final long RESERVED_SLOT_CLAIM_MS = 6_000L;
+
+    private static final int[] DX =
+            { 0, 1, 1, 1, 0, -1, -1, -1 };
+    private static final int[] DY =
+            { -1, -1, 0, 1, 1, 1, 0, -1 };
+
+    private static final WorldCollisionHash COLLISION =
+            WorldCollisionHash.getInstance();
+
+    private CMoveToTargetAction() {
+    }
+
+    public static void set(
+            final L1NpcInstance creature,
+            final byte pendingAction) {
+
+        if (creature == null) {
+            return;
+        }
+
+        // A repeated desire decision for the same target is not a new chase.
+        // SetMoving keeps the path segment and collision response for that
+        // target under _moveTargetId. Re-entering onStart() here invalidates
+        // the path and can restart an expensive A* search every wake.
+        final L1Character currentTarget = creature.getTarget();
+        if (ActionAccess.currentAction(creature)
+                    == CCreatureController.ACTION_MOVE_TO_TARGET
+                && currentTarget != null
+                && currentTarget.getId() != 0
+                && creature._moveTargetId == currentTarget.getId()) {
+            // The next Action may change without resetting this target's path.
+            ActionAccess.pendingAction(creature, pendingAction);
+            return;
+        }
+
+        CCreatureController.set(
+                creature,
+                CCreatureController.ACTION_MOVE_TO_TARGET,
+                pendingAction);
+
+        onStart(creature);
+    }
+
+    public static void onStart(
+            final L1NpcInstance creature) {
+
+        if (creature == null) {
+            return;
+        }
+
+        /*
+         * Preserve the existing L1 consecutive navigation-failure count
+         * across action re-entry. SetMoving.clear() also resets this field;
+         * the CheckTerritory counters in NC dPAttack are separate state.
+         */
+        final int pathFindFailCount =
+                creature._pathFindFailCount;
+
+        // Retargeting can re-enter this same action without transitionFrom().
+        // Retire an obsolete melee hand-off before the next movement tick.
+        if (creature instanceof L1MonsterInstance) {
+            discardObsoleteAttackSlot((L1MonsterInstance) creature,
+                    creature.getTarget());
+        }
+
+        SetMoving.clear(creature);
+        CMoveToTargetWaitAction.clear(creature);
+        ActionAccess.resetMoveBlockedState(creature);
+
+        creature._pathFindFailCount =
+                pathFindFailCount;
+    }
+
+    public static byte onTick(
+            final L1NpcInstance creature,
+            final L1Character target,
+            final boolean tryCombatAbility) {
+        return onTick(creature, target, tryCombatAbility,
+                CCreatureController.ACTION_MOVE_TO_TARGET);
+    }
+
+    static byte onTick(
+            final L1NpcInstance creature,
+            final L1Character target,
+            final boolean tryCombatAbility,
+            final byte expectedAction) {
+
+        final int actionGeneration = creature.npcActionGeneration();
+
+        // A target change or movement can happen while the previous chase
+        // was sleeping or before its reserved-slot branch runs. Retire that
+        // exact hand-off before ATTACK / ability / immobilized early exits.
+        // A stale tick for the previous target must not clear its successor.
+        if (creature instanceof L1MonsterInstance
+                && creature.getTarget() == target) {
+            discardObsoleteAttackSlot((L1MonsterInstance) creature, target);
+        }
+
+        if (target == null || creature.isDead()
+                || creature.getTarget() != target) {
+            // The old action tick cannot move or attack a retired target.
+            // Its onEnd() owns only the old target's cleanup.
+            return CCreatureController.RESULT_INVALID;
+        }
+
+        if (creature instanceof L1MonsterInstance) {
+            if (target.getMapId() != creature.getMapId()) {
+                // Do not clear the live target here. The captured target
+                // may have been superseded while this chase tick ran.
+                // onEnd() checks action and target ownership before cleanup.
+                return CCreatureController.RESULT_INVALID;
+            }
+
+            final int targetDistance =
+                    creature.getLocation()
+                            .getTileLineDistance(
+                                    target.getLocation());
+
+            if (targetDistance >= TARGET_CLEAR_DISTANCE) {
+                // Retire only the action's captured target, not a successor.
+                // onEnd() performs the guarded target removal.
+                return CCreatureController.RESULT_INVALID;
+            }
+        }
+
+        if (!validTarget(creature, target)) {
+            return CCreatureController.RESULT_INVALID;
+        }
+
+        if (tryCombatAbility
+                && CAttackAction.tryCombatAbility(
+                        creature,
+                        target)) {
+
+            return CCreatureController.RESULT_RUNNING;
+        }
+
+        if (creature.isAttackPosition(
+                target,
+                creature.getNpcTemplate().get_ranged())) {
+
+            creature._pathFindFailCount = 0;
+            return CCreatureController.RESULT_DONE;
+        }
+
+        if (!creature.isMovable()) {
+            return CCreatureController.RESULT_INVALID;
+        }
+
+        if (creature.발묶임상태()) {
+            creature._pathFindFailCount = 0;
+            return CCreatureController.RESULT_RUNNING;
+        }
+
+        if (ActionAccess.tryMoveToTargetTeleport(
+                creature,
+                target)) {
+
+            SetMoving.clear(creature);
+            creature._pathFindFailCount = 0;
+            return CCreatureController.RESULT_RUNNING;
+        }
+
+        // Distance/reach selection belongs to the native ActionBase role.
+        // Preserve existing L1 ranged/LOS and 8-direction grid behavior.
+        final int desiredDistance =
+                CMoveToTargetActionBase.computeDistance(creature, target);
+
+        if (creature instanceof L1MonsterInstance) {
+            final L1MonsterInstance monster =
+                    (L1MonsterInstance) creature;
+
+            /*
+             * A reserved melee-slot approach is still part of the blocked-A
+             * chase. Before spending another movement tick on A's slot, give
+             * surrounding alternate targets priority over slot-search.
+             *
+             * ATTACKED/SEE can update the PQ while this action owns _target,
+             * so explicitly yield here when B becomes available.
+             */
+            final int resumePacked =
+                    monster._desireResumeAttackPos;
+
+            if (resumePacked != 0
+                    && monster._desireResumeAttackTargetId
+                            == target.getId()) {
+
+                // ATTACKED / SEE_CREATURE already registered other desires.
+                // A temporary blocked lane may yield to those desires, but
+                // never turn an unrelated nearby player into a new enemy.
+                if (CDesirePQ.hasOtherAttack(
+                        monster,
+                        target.getId())) {
+
+                    final int slotX =
+                            (resumePacked >>> 16)
+                                    & 0xffff;
+
+                    final int slotY =
+                            resumePacked
+                                    & 0xffff;
+
+                    /*
+                     * Cancel the reservation BEFORE blockAttackForMoveAround()
+                     * clears the resume fields.
+                     */
+                    clearReservedAttackSlot(
+                            monster);
+
+                    CDesirePQ.blockAttackForMoveAround(
+                            monster,
+                            target,
+                            slotX,
+                            slotY);
+
+                    SetMoving.clear(monster);
+                    monster._pathFindFailCount = 0;
+
+                    // The alternative ATTACK is already admitted by DesirePQ.
+                    // Yield the old CIO generation before rescheduling it.
+                    CCreatureController.rethinkNow(monster);
+                    return CCreatureController.RESULT_RUNNING;
+                }
+            }
+
+            final byte resumeResult =
+                    tickReservedAttackSlot(
+                            monster,
+                            target,
+                            actionGeneration);
+
+            if (resumeResult >= 0) {
+                return resumeResult;
+            }
+
+        }
+
+        // The reserved-slot route may have yielded after its path scan.
+        // Never continue the generic chase using an obsolete target snapshot.
+        if (creature.isDead() || creature.getTarget() != target
+                || creature.npcActionGeneration() != actionGeneration
+                || ActionAccess.currentAction(creature) != expectedAction) {
+            return CCreatureController.RESULT_INVALID;
+        }
+
+        // Relative chase obtains its preferred destination from the native
+        // action role. SetMoving remains the only physical movement owner;
+        // reserved attack-slot routing above is deliberately unchanged.
+        final byte move =
+                expectedAction == CCreatureController.ACTION_MOVE_TO_TARGET_RELATIVE
+                        ? SetMoving.tickRelative(creature, target, desiredDistance)
+                        : SetMoving.tick(creature, target, desiredDistance);
+
+        if (move == SetMoving.DYNAMIC_BLOCKED) {
+            creature._pathFindFailCount = 0;
+
+            if (creature instanceof L1MonsterInstance) {
+                final L1MonsterInstance monster =
+                        (L1MonsterInstance) creature;
+
+                int blockedHeading =
+                        creature._moveSide;
+
+                if (blockedHeading < 0
+                        || blockedHeading >= 8) {
+                    blockedHeading =
+                            creature.targetDirection(
+                                    target.getX(),
+                                    target.getY());
+                }
+
+                int blockedX = creature.getX();
+                int blockedY = creature.getY();
+
+                if (blockedHeading >= 0
+                        && blockedHeading < 8) {
+                    blockedX += DX[blockedHeading];
+                    blockedY += DY[blockedHeading];
+                }
+
+                // A nearer allied body does not invalidate this target. Try
+                // the existing body-aware route BEFORE suppressing its desire
+                // in favor of a different player. Ranged chases can also use
+                // this fallback and stop as soon as their real range/LOS opens.
+                final byte passing = tryPassBlockedChase(
+                        monster, target, actionGeneration, expectedAction);
+                if (passing >= 0) return passing;
+
+                /*
+                 * A movement collision is not an ATTACKED/SEE_CREATURE
+                 * event. Do not create hate against a blocking PC/pet or
+                 * promote a bystander just because its body occupies a tile.
+                 * Re-evaluate only ATTACK desires already admitted by NPC AI.
+                 */
+                if (CDesirePQ.hasOtherAttack(
+                        monster,
+                        target.getId())) {
+
+                    CDesirePQ.blockAttackForMoveAround(
+                            monster,
+                            target,
+                            blockedX,
+                            blockedY);
+
+                    // A newly runnable ATTACK must be selected by the AI
+                    // owner now, not after A's 300ms collision retry.
+                    CCreatureController.rethinkNow(creature);
+                    return CCreatureController.RESULT_RUNNING;
+                }
+
+                /*
+                 * All eight otherwise valid melee slots are body-occupied.
+                 * There is no executable next step: a perpetual RUNNING here
+                 * pins the NPC in MOVE_TO_TARGET instead of allowing the
+                 * blocked ATTACK -> MOVE_AROUND transition. The separate ring
+                 * gate only reopens when a real attack slot is available.
+                 */
+                if (desiredDistance == 1
+                        && isMeleeAttackRingFull(monster, target)) {
+                    CDesirePQ.blockAttackForMoveAroundRing(
+                            monster, target);
+                    SetMoving.clear(monster);
+                    ActionAccess.sleep(creature, DYNAMIC_BLOCK_RETRY_MS);
+                    CCreatureController.think(creature);
+                    return CCreatureController.RESULT_RUNNING;
+                }
+
+                /*
+                 * 좁은 통로/choke + 대체 ATTACK 없음:
+                 * 기존 MOVE_AROUND random-walk 동작 그대로 유지.
+                 */
+                CDesirePQ.blockAttackForMoveAround(
+                        monster,
+                        target,
+                        blockedX,
+                        blockedY);
+
+                ActionAccess.sleep(
+                        creature,
+                        DYNAMIC_BLOCK_RETRY_MS);
+
+                CCreatureController.think(creature);
+                return CCreatureController.RESULT_RUNNING;
+            }
+
+            if (isPetFamily(creature)
+                    && tryPetFamilyRetargetWhenBlocked(
+                            creature,
+                            target)) {
+
+                creature._pathFindFailCount = 0;
+                CCreatureController.think(creature);
+                return CCreatureController.RESULT_RUNNING;
+            }
+
+            ActionAccess.sleep(
+                    creature,
+                    DYNAMIC_BLOCK_RETRY_MS);
+            return CCreatureController.RESULT_RUNNING;
+        }
+
+        if (move == SetMoving.PATH_FAILED) {
+            if (isGuard(creature)) {
+                creature._pathFindFailCount = 0;
+                return RESULT_PATH_FAILED;
+            }
+
+            // The macro/static search can miss a local route around bodies.
+            // A bounded live-occupancy route must get a chance before this
+            // target is counted as unreachable and eventually retired.
+            if (creature instanceof L1MonsterInstance) {
+                final L1MonsterInstance monster = (L1MonsterInstance) creature;
+                // Bound repeated occupancy scans on a genuinely missing path.
+                if (creature._pathFindFailCount % 3 == 0) {
+                    final byte passing = tryPassBlockedChase(
+                            monster, target, actionGeneration, expectedAction);
+                    if (passing >= 0) return passing;
+                }
+                final int heading = creature.targetDirection(target.getX(), target.getY());
+                if (heading >= 0 && heading < 8) {
+                    final int x = creature.getX() + DX[heading];
+                    final int y = creature.getY() + DY[heading];
+                    final int block = COLLISION.testStep((short) creature.getMapId(),
+                            x, y, creature.getId());
+                    if (block == WorldCollisionHash.MOVE_NPC
+                            || block == WorldCollisionHash.MOVE_PC
+                            || block == WorldCollisionHash.MOVE_RESERVED) {
+                        // A live body is temporary, not thirty static failures
+                        // after which this still-known player disappears.
+                        creature._pathFindFailCount = 0;
+                        CDesirePQ.blockAttackForMoveAround(monster, target, x, y);
+                        ActionAccess.sleep(creature, DYNAMIC_BLOCK_RETRY_MS);
+                        CCreatureController.think(creature);
+                        return CCreatureController.RESULT_RUNNING;
+                    }
+                }
+            }
+            
+            final int failCount = ++creature._pathFindFailCount;
+
+            if (failCount <= PATH_FAIL_LIMIT) {
+                return CCreatureController.RESULT_RUNNING;
+            }
+
+            if (isPetFamily(creature)
+                    && tryPetFamilyRetargetWhenBlocked(
+                            creature,
+                            target)) {
+
+                creature._pathFindFailCount = 0;
+                CCreatureController.think(creature);
+                return CCreatureController.RESULT_RUNNING;
+            }
+
+            // L1 policy: retire only this failed ATTACK, then select from
+            // admitted AI events without inventing a nearby attacker.
+            creature._pathFindFailCount = 0;
+            return RESULT_PATH_FAILED;
+        }
+
+        /*
+         * The L1 navigation-failure counter clears on non-failed movement.
+         * Body collision is handled separately above and never increments it.
+         */
+        creature._pathFindFailCount = 0;
+
+        if (move == SetMoving.RUNNING) {
+            return CCreatureController.RESULT_RUNNING;
+        }
+
+        if (move == SetMoving.AT_DISTANCE) {
+            CMoveToTargetWaitAction.set(
+                    creature,
+                    target,
+                    desiredDistance,
+                    ActionAccess.pendingAction(
+                            creature));
+
+            return CCreatureController.RESULT_RUNNING;
+        }
+
+        return CCreatureController.RESULT_INVALID;
+    }
+
+    public static void onEnd(
+            final L1NpcInstance creature,
+            final L1Character target,
+            final byte result) {
+        onEnd(creature, target, result,
+                CCreatureController.ACTION_MOVE_TO_TARGET);
+    }
+
+    static void onEnd(
+            final L1NpcInstance creature,
+            final L1Character target,
+            final byte result,
+            final byte expectedAction) {
+
+        if (creature == null
+                || ActionAccess.currentAction(creature) != expectedAction) {
+            return;
+        }
+
+        // A previous chase completion cannot execute its pending ATTACK
+        // or clear state for a different, newly selected target.
+        if (creature.getTarget() != target) {
+            // The successor owns its movement state. Retire only an exact
+            // reservation still tagged with the completed OLD target.
+            if (creature instanceof L1MonsterInstance && target != null) {
+                final L1MonsterInstance monster =
+                        (L1MonsterInstance) creature;
+                if (monster._desireResumeAttackTargetId == target.getId()) {
+                    clearReservedAttackSlot(monster);
+                }
+            }
+            return;
+        }
+
+        switch (result) {
+        case RESULT_PATH_FAILED:
+            SetMoving.clear(creature);
+            CMoveToTargetWaitAction.clear(creature);
+            ActionAccess.resetMoveBlockedState(creature);
+
+            if (creature instanceof L1MonsterInstance && target != null) {
+                if (creature.getTarget() == target) {
+                    // The L1 hate list must retire the same failed enemy as
+                    // CDesirePQ. Otherwise checkTarget() immediately reacquires
+                    // it and repeats the 31 consecutive path failures.
+                    // targetRemove only clears this target; other enemies stay.
+                    creature.targetRemove(target);
+                } else {
+                    // A new target already took over. Retire only the stale
+                    // failed entry; never clear the current target's state.
+                    CDesirePQ.removeAttack(
+                            (L1MonsterInstance) creature, target);
+                    creature._hateList.remove(target);
+                }
+            } else if ((creature instanceof L1GuardInstance
+                    || creature instanceof L1CastleGuardInstance)
+                    && target != null) {
+                creature.tagertClear();
+            }
+
+            ActionAccess.pendingAction(
+                    creature,
+                    CCreatureController.ACTION_NONE);
+
+            ActionAccess.sleep(
+                    creature,
+                    PATH_FAIL_DISPATCH_DELAY_MS);
+
+            CCreatureController.think(creature);
+            return;
+
+        case CCreatureController.RESULT_DONE:
+            clearBlocked(creature);
+            CCreatureController.doPendingAction(
+                    creature);
+
+            if (ActionAccess.currentAction(creature)
+                    == CCreatureController.ACTION_ATTACK
+                    && creature.getTarget() == target
+                    && validTarget(creature, target)
+                    && creature.isAttackPosition(
+                            target,
+                            creature.getNpcTemplate().get_ranged())) {
+
+                CAttackAction.basicAttack(creature, target);
+            }
+            return;
+
+        case CCreatureController.RESULT_INVALID:
+            clearBlocked(creature);
+
+            if (!validTarget(creature, target)) {
+                creature.tagertClear();
+            } else {
+                CCreatureController.think(creature);
+            }
+            return;
+
+        case CCreatureController.RESULT_RUNNING:
+        case CCreatureController.RESULT_BLOCKED:
+        case CCreatureController.RESULT_STOP:
+        default:
+            return;
+        }
+    }
+
+    public static void onInterrupted(
+            final L1NpcInstance creature,
+            final boolean enteringWait) {
+
+        if (creature == null) {
+            return;
+        }
+        if (creature instanceof L1MonsterInstance) {
+            clearReservedAttackSlot((L1MonsterInstance) creature);
+        }
+        if (!enteringWait) {
+            SetMoving.clear(creature);
+            CMoveToTargetWaitAction.clear(creature);
+            ActionAccess.resetMoveBlockedState(creature);
+        }
+    }
+
+    public static boolean handleBlocked(
+            final L1NpcInstance creature,
+            final L1Character target) {
+
+        return !validTarget(creature, target)
+                || target != creature._target;
+    }
+
+    public static void onBlockDecayHate(
+            final L1NpcInstance creature) {
+    }
+
+    public static void clearBlocked(
+            final L1NpcInstance creature) {
+
+        if (creature == null) {
+            return;
+        }
+
+        if (creature instanceof L1MonsterInstance) {
+            final L1MonsterInstance monster =
+                    (L1MonsterInstance) creature;
+
+            clearReservedAttackSlot(monster);
+            CDesirePQ.releaseBlockedAttack(monster);
+        }
+
+        SetMoving.clear(creature);
+        CMoveToTargetWaitAction.clear(creature);
+        ActionAccess.resetMoveBlockedState(creature);
+        creature._pathFindFailCount = 0;
+    }
+
+    /**
+     * Reserved exact melee slot hand-off from MOVE_AROUND.
+     *
+     * Return -1 when there is no valid hand-off and normal chase should run.
+     * Otherwise return a CCreatureController result directly.
+     */
+    private static byte tryPassBlockedChase(
+            final L1MonsterInstance monster,
+            final L1Character target,
+            final int generation,
+            final byte expectedAction) {
+        if (monster.isDead() || monster.getTarget() != target
+                || monster.npcActionGeneration() != generation
+                || ActionAccess.currentAction(monster) != expectedAction) {
+            return CCreatureController.RESULT_INVALID;
+        }
+        if (!CMoveAroundAction.claimReachableMeleeSlot(monster, target)) {
+            return -1;
+        }
+        final byte result = tickReservedAttackSlot(monster, target, generation);
+        if (result >= 0) {
+            if (SetMoving.debugTraceActor(monster)) {
+                System.out.println("[CHASE-ROUTE-V4] actor=" + monster.getId()
+                        + " pos=" + monster.getX() + "," + monster.getY()
+                        + " slot=" + monster._desireResumeAttackPos
+                        + " result=" + result);
+            }
+            return result;
+        }
+        if (monster.isDead() || monster.getTarget() != target
+                || monster.npcActionGeneration() != generation
+                || ActionAccess.currentAction(monster) != expectedAction) {
+            return CCreatureController.RESULT_INVALID;
+        }
+        return -1;
+    }
+
+    private static byte tickReservedAttackSlot(
+            final L1MonsterInstance monster,
+            final L1Character target,
+            final int actionGeneration) {
+
+        final int packed =
+                monster._desireResumeAttackPos;
+
+        if (packed == 0
+                || monster._desireResumeAttackTargetId
+                        != target.getId()) {
+
+            if (packed != 0
+                    || monster._desireResumeAttackTargetId != 0) {
+
+                clearReservedAttackSlot(monster);
+            }
+
+            return -1;
+        }
+
+        final int slotX =
+                (packed >>> 16) & 0xffff;
+        final int slotY =
+                packed & 0xffff;
+
+        /*
+         * Target moved: the old reserved tile is no longer its melee slot.
+         */
+        if (monster._desireResumeAttackMapId != (short) monster.getMapId()
+                || monster._desireResumeAttackTargetPos
+                        != (((target.getX() & 0xffff) << 16)
+                            | (target.getY() & 0xffff))
+                || target.getMapId() != monster.getMapId()
+                || Math.max(
+                        Math.abs(slotX - target.getX()),
+                        Math.abs(slotY - target.getY())) != 1
+                || !isUsableMeleeSlot(target, slotX, slotY)) {
+
+            clearReservedAttackSlot(monster);
+            return -1;
+        }
+
+        /*
+         * Refresh our short claim while we approach. testStep() treats our own
+         * reservation as clear, but a real creature body still wins.
+         */
+        if (!COLLISION.reserveNpcMove(
+                (short) monster.getMapId(),
+                slotX,
+                slotY,
+                monster.getId(),
+                RESERVED_SLOT_CLAIM_MS)) {
+
+            clearReservedAttackSlot(monster);
+            return -1;
+        }
+
+        final int oldX = monster.getX();
+        final int oldY = monster.getY();
+        final byte move =
+                SetMoving.tickToReservedAttackSlot(
+                        monster,
+                        target,
+                        target.getX(),
+                        target.getY(),
+                        slotX,
+                        slotY,
+                        actionGeneration);
+
+        // A physical step may complete just before the target moves or the
+        // reservation changes. Never fall through and issue a second ordinary
+        // chase step on the same CIO tick: the first step has already consumed
+        // the NPC walk interval. Drop only the obsolete claim, then let the
+        // next owner tick choose the new target/route.
+        final boolean stepped = oldX != monster.getX()
+                || oldY != monster.getY();
+        if (monster._desireResumeAttackPos != packed
+                || monster._desireResumeAttackTargetId != target.getId()) {
+            return stepped && monster.getTarget() == target
+                    && !monster.isDead()
+                    ? CCreatureController.RESULT_RUNNING : (byte) -1;
+        }
+        if (monster.isDead() || monster.getCurrentHp() <= 0
+                || !validTarget(monster, target)
+                || monster.getTarget() != target
+                || monster._desireResumeAttackTargetPos
+                        != (((target.getX() & 0xffff) << 16)
+                            | (target.getY() & 0xffff))
+                || target.getMapId() != monster.getMapId()
+                || Math.max(Math.abs(slotX - target.getX()),
+                            Math.abs(slotY - target.getY())) != 1) {
+            clearReservedAttackSlot(monster);
+            return stepped && monster.getTarget() == target
+                    && !monster.isDead()
+                    ? CCreatureController.RESULT_RUNNING : (byte) -1;
+        }
+
+        if (move == SetMoving.RUNNING
+                && (oldX != monster.getX() || oldY != monster.getY())) {
+            monster._desireResumeAttackBlockedRetries = 0;
+            monster._pathFindFailCount = 0;
+            return CCreatureController.RESULT_RUNNING;
+        }
+
+        // A complete occupancy scan found no route to this particular slot.
+        // No step was consumed: let the ordinary chase try another slot NOW,
+        // rather than waiting 300ms repeatedly for an obsolete route to reopen.
+        if (move == SetMoving.DYNAMIC_BLOCKED) {
+            clearReservedAttackSlot(monster);
+            return -1;
+        }
+
+        // A probe/commit race is still a short bounded retry of the same slot.
+        if (move == SetMoving.RUNNING) {
+            if (++monster._desireResumeAttackBlockedRetries
+                    < RESERVED_SLOT_BLOCK_RETRY_LIMIT) {
+                ActionAccess.sleep(monster, DYNAMIC_BLOCK_RETRY_MS);
+                monster._pathFindFailCount = 0;
+                return CCreatureController.RESULT_RUNNING;
+            }
+        }
+
+        if (move == SetMoving.AT_DISTANCE) {
+            clearReservedAttackSlot(monster);
+            monster._pathFindFailCount = 0;
+
+            return monster.isAttackPosition(
+                    target,
+                    monster.getNpcTemplate().get_ranged())
+                    ? CCreatureController.RESULT_DONE
+                    : (byte) -1;
+        }
+
+        /*
+         * Something changed between slot claim and approach. Drop only this
+         * exact-slot hand-off; normal chase/ring detection owns the next step.
+         */
+        clearReservedAttackSlot(monster);
+        return -1;
+    }
+
+    private static void discardObsoleteAttackSlot(
+            final L1MonsterInstance monster,
+            final L1Character target) {
+        final int packed = monster._desireResumeAttackPos;
+        if (packed == 0) {
+            if (monster._desireResumeAttackTargetId != 0) {
+                clearReservedAttackSlot(monster);
+            }
+            return;
+        }
+        final int x = (packed >>> 16) & 0xffff;
+        final int y = packed & 0xffff;
+        if (monster.isDead() || monster.getCurrentHp() <= 0
+                || target == null || !validTarget(monster, target)
+                || monster._desireResumeAttackTargetId != target.getId()
+                || monster._desireResumeAttackTargetPos
+                        != (((target.getX() & 0xffff) << 16)
+                            | (target.getY() & 0xffff))
+                || monster._desireResumeAttackMapId != (short) monster.getMapId()
+                || Math.max(Math.abs(x - target.getX()),
+                            Math.abs(y - target.getY())) != 1
+                || !isUsableMeleeSlot(target, x, y)) {
+            clearReservedAttackSlot(monster);
+        }
+    }
+
+    private static void clearReservedAttackSlot(
+            final L1MonsterInstance monster) {
+
+        final int packed =
+                monster._desireResumeAttackPos;
+
+        if (packed != 0) {
+            COLLISION.cancelNpcMove(
+                    monster._desireResumeAttackMapId,
+                    (packed >>> 16) & 0xffff,
+                    packed & 0xffff,
+                    monster.getId());
+        }
+
+        monster._desireResumeAttackTargetId = 0;
+        monster._desireResumeAttackTargetPos = 0;
+        monster._desireResumeAttackPos = 0;
+        monster._desireResumeAttackMapId = 0;
+        monster._desireResumeAttackBlockedRetries = 0;
+    }
+
+    private static boolean isMeleeAttackRingFull(
+            final L1MonsterInstance monster,
+            final L1Character target) {
+
+        if (monster == null
+                || target == null
+                || target.getMap() == null
+                || target.getMapId() != monster.getMapId()) {
+
+            return false;
+        }
+
+        final short mapId =
+                (short) monster.getMapId();
+
+        final int tx = target.getX();
+        final int ty = target.getY();
+
+        /*
+         * This is ONLY the wide-open 8-way ring case.
+         *
+         * If even one target-adjacent tile is statically unusable, this is
+         * corridor/choke geometry and must remain eligible for the existing
+         * DYNAMIC_BLOCKED -> MOVE_AROUND behavior.
+         */
+        for (int heading = 0;
+             heading < 8;
+             heading++) {
+
+            final int x = tx + DX[heading];
+            final int y = ty + DY[heading];
+
+            if (!isUsableMeleeSlot(
+                    target,
+                    x,
+                    y)) {
+
+                return false;
+            }
+
+            if (COLLISION.canEnter(
+                    mapId,
+                    x,
+                    y,
+                    monster.getId())) {
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean isUsableMeleeSlot(
+            final L1Character target,
+            final int x,
+            final int y) {
+
+        return target != null
+                && target.getMap() != null
+                && target.getMap().isPassable(x, y)
+                && target.glanceCheck(x, y);
+    }
+
+    private static boolean tryPetFamilyRetargetWhenBlocked(
+            final L1NpcInstance creature,
+            final L1Character currentTarget) {
+
+        if (!isPetFamily(creature)
+                || currentTarget == null
+                || currentTarget != creature._target) {
+
+            return false;
+        }
+
+        final L1Character candidate =
+                findNearestHatedTarget(
+                        creature,
+                        currentTarget);
+
+        if (candidate == null) {
+            return false;
+        }
+
+        creature._target = candidate;
+
+        SetMoving.clear(creature);
+        CMoveToTargetWaitAction.clear(creature);
+        ActionAccess.resetMoveBlockedState(creature);
+        creature._pathFindFailCount = 0;
+
+        return true;
+    }
+
+    private static L1Character findNearestHatedTarget(
+            final L1NpcInstance creature,
+            final L1Character currentTarget) {
+
+        final L1Character master = creature.getMaster();
+
+        if (master == null) {
+            return null;
+        }
+
+        L1Character best = null;
+        int bestDistance = Integer.MAX_VALUE;
+
+        for (L1Object obj : creature.getKnownObjects()) {
+            if (!(obj instanceof L1MonsterInstance)) {
+                continue;
+            }
+
+            final L1MonsterInstance candidate =
+                    (L1MonsterInstance) obj;
+
+            if (candidate == currentTarget
+                    || candidate.isDead()
+                    || candidate.getCurrentHp() <= 0
+                    || candidate.getMapId() != creature.getMapId()
+                    || candidate.getHateList().getHate(master) <= 0) {
+                continue;
+            }
+
+            final int distance =
+                    creature.getLocation()
+                            .getTileLineDistance(
+                                    candidate.getLocation());
+
+            if (distance >= bestDistance) {
+                continue;
+            }
+
+            best = candidate;
+            bestDistance = distance;
+        }
+
+        return best;
+    }
+
+    private static boolean isPetFamily(
+            final L1NpcInstance creature) {
+
+        return creature instanceof L1PetInstance
+                || creature instanceof L1SummonInstance
+                || creature instanceof L1CompanionInstance;
+    }
+
+    private static boolean isGuard(
+            final L1NpcInstance creature) {
+
+        return creature instanceof L1GuardInstance
+                || creature instanceof L1CastleGuardInstance;
+    }
+
+    private static boolean validTarget(
+            final L1NpcInstance creature,
+            final L1Character target) {
+
+        return creature != null
+                && target != null
+                && !target.isDead()
+                && target.getCurrentHp() > 0
+                && target.getMapId() == creature.getMapId()
+                && (!target.isInvisble()
+                        || creature.getNpcTemplate().is_agrocoi());
+    }
+}

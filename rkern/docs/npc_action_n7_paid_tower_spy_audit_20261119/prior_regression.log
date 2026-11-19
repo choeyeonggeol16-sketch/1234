@@ -1,0 +1,24 @@
+Sharna mapping assertions=65798
+Purchase receipt assertions=89600
+Marbin receipt assertions=4656
+Ghost assertions=2001
+PASS total assertions=162055
+=== docs/npc_action_n7_market_mercenary_ring_20261119/test_commands.py
+sell equivalence=168009
+warehouse equivalence=10369
+mercenary safety=1816
+equipment buff safety=99
+travel safety=36
+ring receipt safety=2560
+pet existence=8
+TOTAL_CHECKS=182897
+=== docs/npc_action_n7_elemental_raid_safety_20261119/test_commands.py
+elemental original/new assertions: 133760
+morph assertions: 20006
+orc token assertions: 1116
+raid assertions: 1543
+Total assertions: 156425
+Route placement and stat-reset debit guard: PASS
+=== docs/npc_action_n7_template_dispatch_20261119/test_template_dispatch.py
+ACTUAL_METHOD_ASSERTIONS=1093
+ROUTES=55 original, 54 reachable branches; existing calls preserved; legacy references=0

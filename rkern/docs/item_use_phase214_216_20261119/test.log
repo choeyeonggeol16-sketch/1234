@@ -1,0 +1,15 @@
+PASS registry 1000002 probes, target decode 65 types, Elven 512 matrix + 14 invalid targets
+PASS Magic Shield 130 outcomes including retained existing buff on debit failure
+phase198_equipment: PASS 640 outcomes, 64 equipment context allocations avoided
+phase199_enchant: PASS 512 enchant execution orders & outcomes
+phase200_travel: PASS 44 travel IDs preserve handler routing
+phase201_dissolution: PASS 2 dissolution outcomes
+PASS no stale production references
+phase202_supplemental: PASS 30 supplemental item routes
+phase203_dragon_resolvent: PASS 70 dragon resolvent paths
+PASS all seven removed helper references absent
+PASS 1000002 contiguous registry probes plus all registered IDs: only 32011 added
+PASS 32 actual supplemental/World/Revival handler outcomes (stub transaction)
+PASS 64 administrator package authorization/transaction outcomes
+PASS 2 point-teleport authorization outcomes
+JDK21_PARSE_TOTAL=1913 ERRORS=0

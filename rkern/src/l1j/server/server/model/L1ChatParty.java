@@ -1,0 +1,134 @@
+package l1j.server.server.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import l1j.server.Config;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+
+// Referenced classes of package l1j.server.server.model:
+// L1ChatParty
+
+public class L1ChatParty {
+
+	private final List<L1PcInstance> _membersList = new ArrayList<L1PcInstance>();
+
+	private L1PcInstance _leader = null;
+
+	public void addMember(L1PcInstance pc) {
+		if (pc == null) {
+			throw new NullPointerException();
+		}
+		if (_membersList.size() == Config.MAX_CHAT_PT && !_leader.isGm() || _membersList.contains(pc)) {
+			return;
+		}
+
+		if (_membersList.isEmpty()) {
+			setLeader(pc);
+		}
+
+		_membersList.add(pc);
+		pc.setChatParty(this);
+		
+		l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(_membersList,
+                SC_ServerMessage.nativeWriter(424,pc.getName()));
+	}
+
+	private void removeMember(L1PcInstance pc) {
+		if (!_membersList.contains(pc)) {
+			return;
+		}
+
+		_membersList.remove(pc);
+		pc.setChatParty(null);
+	}
+
+	public boolean isVacancy() {
+		return _membersList.size() < Config.MAX_CHAT_PT;
+	}
+
+	public int getVacancy() {
+		return Config.MAX_CHAT_PT - _membersList.size();
+	}
+
+	public boolean isMember(L1PcInstance pc) {
+		return _membersList.contains(pc);
+	}
+
+	private void setLeader(L1PcInstance pc) {
+		_leader = pc;
+	}
+
+	public L1PcInstance getLeader() {
+		return _leader;
+	}
+
+	public boolean isLeader(L1PcInstance pc) {
+		return pc.getId() == _leader.getId();
+	}
+
+	public String getMembersNameList() {
+		String _result = new String("");
+		for (L1PcInstance pc : _membersList) {
+			_result = _result + pc.getName() + " ";
+		}
+		return _result;
+	}
+
+	private void breakup() {
+        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+                SC_ServerMessage.nativeWriter(418),
+                Integer.MIN_VALUE,Integer.MAX_VALUE)){
+            for(L1PcInstance member:getMembers()){
+                removeMember(member);
+                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
+            }
+        }
+    }
+
+	public void leaveMember(L1PcInstance pc){
+        if(isLeader(pc)){
+            breakup();
+        } else {
+            try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+                    SC_ServerMessage.nativeWriter(420,pc.getName()),
+                    Integer.MIN_VALUE,Integer.MAX_VALUE)){
+                if(getNumOfMembers()==2){
+                    removeMember(pc);
+                    L1PcInstance leader=getLeader();
+                    removeMember(leader);
+                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
+                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,leader);
+                } else {
+                    removeMember(pc);
+                    for(L1PcInstance member:getMembers())
+                        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
+                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
+                }
+            }
+        }
+    }
+
+	public void kickMember(L1PcInstance pc) {
+		if (getNumOfMembers() == 2) {
+			removeMember(pc);
+			L1PcInstance leader = getLeader();
+			removeMember(leader);
+		} else {
+			removeMember(pc);
+		}
+		SC_ServerMessage.send(pc, 419);
+	}
+
+	public L1PcInstance[] getMembers() {
+		return _membersList.toArray(new L1PcInstance[_membersList.size()]);
+	}
+
+	public int getNumOfMembers() {
+		return _membersList.size();
+	}
+
+	
+
+}

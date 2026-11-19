@@ -1,0 +1,20 @@
+RKern/L1J 113차 사전 검증, 2026-11-18 (Asia/Seoul)
+BASE: RKern_ItemOnly_CardFusionPotion_PostCommitSafety_Phase112_FULL_SRC_20261118.zip
+Changed production Java:
+  src/l1j/server/server/model/item/function/ManaConsumables.java
+  src/l1j/server/server/model/item/function/DessertBuffConsumables.java
+Changed metadata:
+  README_KO.md
+Added docs:
+  docs/item_only_phase113_20261118/README_KO.md
+  docs/item_only_phase113_20261118/test_113.py
+  docs/item_only_phase113_20261118/VERIFY_LOG.txt
+
+- Actual Java 21 production classes + typed stubs: 54,150 assertions PASS.
+- 112 regression: 6,925 checks PASS.
+- 111 regression: 118+24 PASS.
+- 110 regression: 25,335 PASS.
+- 109 regression: 103 card 2,464 + gate 546 PASS.
+- Full Java21 parse: 1,923 files, 0 syntax errors.
+- Full dependency compile, real MySQL, CIO runtime and in-game test NOT RUN.
+- ZIP CRC and unchanged-file byte preservation verified by packaging script before delivery.

@@ -1,0 +1,451 @@
+package l1j.server.server.model.item.function;
+
+
+import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
+
+import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
+import static l1j.server.server.model.character.skill.L1SkillId.CURSE_BLIND;
+import static l1j.server.server.model.character.skill.L1SkillId.DANCING_BLADES;
+import static l1j.server.server.model.character.skill.L1SkillId.DARKNESS;
+import static l1j.server.server.model.character.skill.L1SkillId.DECAY_POTION;
+import static l1j.server.server.model.character.skill.L1SkillId.EXP_POTION;
+import static l1j.server.server.model.character.skill.L1SkillId.FOCUS_WAVE;
+import static l1j.server.server.model.character.skill.L1SkillId.GREATER_HASTE;
+import static l1j.server.server.model.character.skill.L1SkillId.HASTE;
+import static l1j.server.server.model.character.skill.L1SkillId.HOLY_WALK;
+import static l1j.server.server.model.character.skill.L1SkillId.HURRICANE;
+import static l1j.server.server.model.character.skill.L1SkillId.LINDBIOR_SPIRIT_EFFECT;
+import static l1j.server.server.model.character.skill.L1SkillId.MOVING_ACCELERATION;
+import static l1j.server.server.model.character.skill.L1SkillId.SAND_STORM;
+import static l1j.server.server.model.character.skill.L1SkillId.SLOW;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_BLUE_POTION;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_BLUE_POTION2;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_BRAVE;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CASHSCROLL;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CASHSCROLL2;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CASHSCROLL3;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CASHSCROLL4;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CASHSCROLL5;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CASHSCROLL6;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_ELFBRAVE;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FLOATING_EYE;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FRUIT;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_HASTE;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_UNDERWATER_BREATH;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_WISDOM_POTION;
+
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.item.L1ItemId;
+
+
+import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
+
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+
+import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillIconWisdomPotion;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillIconBlessOfEva;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX;
+import l1j.server.server.model.network.core.sc.packet.SC_CurseBlind;
+
+
+
+import static l1j.server.server.model.item.function.EnchantmentItems.*;
+import static l1j.server.server.model.item.function.TransformationItems.*;
+import static l1j.server.server.model.item.function.SpellBookItems.*;
+import static l1j.server.server.model.item.function.TowerTeleportAmulets.*;
+import static l1j.server.server.model.item.function.PetWithdrawalItems.*;
+import static l1j.server.server.model.item.function.NearbyItemTargetQueries.*;
+import static l1j.server.server.model.item.function.ResolventItemFacade.*;
+import static l1j.server.server.model.item.function.SupportSummonItems.*;
+import static l1j.server.server.model.item.function.FurniturePlacementItems.*;
+import static l1j.server.server.model.item.function.SpecialEnchantScrolls.*;
+import static l1j.server.server.model.item.function.WandInspectionItems.*;
+import static l1j.server.server.model.item.function.CombatSkillItemEffects.*;
+import static l1j.server.server.model.item.function.DogFightEnhancementItems.*;
+import static l1j.server.server.model.item.function.NpcWandAndSpawnItems.*;
+import static l1j.server.server.model.item.function.WarriorSkillBookItems.*;
+import static l1j.server.server.model.item.function.PcRoomPassTransactions.*;
+import static l1j.server.server.model.item.function.CashBuffTransactions.*;
+import static l1j.server.server.model.item.function.EquipmentItemActions.*;
+import static l1j.server.server.model.item.function.ChargedRewardBoxItems.*;
+import static l1j.server.server.model.item.function.DurabilityRepairItems.*;
+import static l1j.server.server.model.item.function.ItemReceiptOperations.*;
+import static l1j.server.server.model.item.function.EnchantedBagTransactions.*;
+import static l1j.server.server.model.item.function.LawfulPotionTransactions.*;
+import static l1j.server.server.model.item.function.InventorySlotExpansionItems.*;
+import static l1j.server.server.model.item.function.ReceiptCraftingItems.*;
+import static l1j.server.server.model.item.function.RevivalScrollCraftingItems.*;
+import static l1j.server.server.model.item.function.TowerCharmCraftingItems.*;
+import static l1j.server.server.model.item.function.ImmuneBladeSkillItems.*;
+import static l1j.server.server.model.item.function.BossSummonWandItems.*;
+import static l1j.server.server.model.item.function.PetVoucherTransactions.*;
+import static l1j.server.server.model.item.function.ElixirStatTransactions.*;
+import static l1j.server.server.model.item.function.SealedEquipmentRewards.*;
+import static l1j.server.server.model.item.function.CombatAbilityItems.*;
+import static l1j.server.server.model.item.function.DollEffectItems.*;
+
+import static l1j.server.server.model.item.function.CreatureItemActions.*;
+
+public final class PotionEffects {
+	private PotionEffects() {}
+	// true means the original item-use command returned before its delay bookkeeping.
+	public static boolean usePotionCase(L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId) {
+		switch (itemId) {
+		case 7007:
+		case 40010:
+		case 40011:
+		case 40012:
+		case 4100021:
+		case 40019:
+		case 40020:
+		case 40021:
+		case 40022:
+		case 40023:
+		case 40024:
+		case 40026:
+		case 40027:
+		case 40028:
+		case 40043:
+		case 40058:
+		case 40071:
+		case 40506:
+		case 40930:
+		case 41141:
+		case 41337:
+		case 60029:
+		case 60030:
+		case 140010:
+		case 140011:
+		case 140012:
+		case 140506:
+		case 240010:
+		case 41403:
+		case 410000:
+		case 410003:
+		case 30062:
+		case 30056:
+		case 42658: // 전사의 체력 회복제
+		case 40029:
+		case 4100152:
+		case 4100153:
+		case 4100154:
+			if (itemId == 30062) {
+				if (!(pc.getMapId() >= 1005 && pc.getMapId() <= 1022
+						|| pc.getMapId() > 6000 && pc.getMapId() < 6999)) {
+					SC_ServerMessage.send(pc, 1891);
+					return true;
+				}
+			}
+			if (itemId == 30056) {
+				if (!(pc.getMapId() >= 2101 && pc.getMapId() <= 2151
+						|| pc.getMapId() >= 12152 && pc.getMapId() <= 12200)) {
+					SC_SystemMessage.send(pc, "특정지역에서만 사용이 가능합니다.");
+					return true;
+				}
+			}
+
+			L1HealingPotion healingPotion = L1HealingPotion.get(itemId);
+			if (healingPotion == null) {
+				SC_ServerMessage.send(pc, 79);
+				return true;
+			}
+			healingPotion.use(pc, l1iteminstance);
+			break;
+			// //////////////////////////////////////////////////////////////////////////////////////////
+			/**************************
+			 * 물약회복략 처리관련
+			 ***********************************************/
+			// /////////////////////////////////////////////////////////////////////////////////////////
+
+		case 40858:// 술
+			UseDurableConsume(pc, l1iteminstance, () -> pc.setDrink(true));
+			break;
+		case 708:
+			UseDurableConsume(pc, l1iteminstance, () -> UseExpPotion1(pc, itemId));
+			break;
+		case 3000456:
+		case 30105:// 전투의 물약
+		case 210094:// 천상의 물약
+			UseDurableConsume(pc, l1iteminstance, () -> UseExpPotion(pc, itemId));
+			break;
+		case 40030:
+			useGreenPotion(pc, itemId);
+			pc.getInventory().removeItem(l1iteminstance, 1);
+			break;
+		case 40013:
+		case 7006:
+		case 40018:
+		case 40039:
+		case 40040:
+		case 41338:
+		case 41261:
+		case 41262:
+		case 41268:
+		case 41269:
+		case 41271:
+		case 41272:
+		case 41273:
+		case 41342:
+		case 30067:
+		case 140013:
+		case 140018:
+		case 30158:
+		case 875640293:
+			/*
+			 * 초록 물약, 강화 초록 물약, 와인, 위스키, 상아탑의 속도향상 물약 축복받은 포도주, 주먹밥,
+			 * 닭꼬치구이, 조각 피자, 옥수수구이 뻥튀기,오뎅, 와플, 메두사의 피, 용사의 속도 향상 물약,
+			 */
+			useGreenPotion(pc, itemId);
+			pc.getInventory().removeItem(l1iteminstance, 1);
+			break;
+		case 40014:
+		case 140014:
+		case 41415:
+			// 용기의 물약, 복지 용기의 물약, 상아탑의 용기의 물약
+			if (pc.isKnight() || pc.isWarrior() || pc.isCrown()) {
+				useBravePotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+				// \f1 아무것도 일어나지 않았습니다.
+			}
+			break;
+		case 30073:
+			/*
+			 * if (!(pc.getMapId() == 7783 || pc.getMapId() == 12152 ||
+			 * pc.getMapId() == 12149 || pc.getMapId() == 3 ||
+			 * pc.getMapId() == 12154 || pc.getMapId() == 12358 ||
+			 * pc.getMapId() == 12153 || pc.getMapId() == 12146 ||
+			 * pc.getMapId() == 12147 || pc.getMapId() == 12148 ||
+			 * pc.getMapId() == 12258 || pc.getMapId() == 12150 ||
+			 * pc.getMapId() == 12257 || pc.getMapId() == 12358)) {
+			 * SC_SystemMessage.send(pc, 
+			 * "클라우디아 맵에서만 사용이 가능합니다."); return; }
+			 */
+			// 용기의 물약, 복지 용기의 물약, 상아탑의 용기의 물약
+			if (pc.isKnight() || pc.isWarrior() || pc.isCrown()) {
+				useBravePotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+				// \f1 아무것도 일어나지 않았습니다.
+			}
+			break;
+		case 40068:
+		case 140068:
+		case 210110:
+			// 엘븐 와퍼, 복지 엘븐 와퍼, 상아탑의 엘븐 와퍼
+			if (pc.isElf()) {
+				useBravePotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+				// \f1 아무것도 일어나지 않았습니다.
+			}
+			break;
+		case 30076:
+			/*
+			 * if (!(pc.getMapId() == 7783 || pc.getMapId() == 12152 ||
+			 * pc.getMapId() == 12149 || pc.getMapId() == 3 ||
+			 * pc.getMapId() == 12154 || pc.getMapId() == 12358 ||
+			 * pc.getMapId() == 12153 || pc.getMapId() == 12146 ||
+			 * pc.getMapId() == 12147 || pc.getMapId() == 12148 ||
+			 * pc.getMapId() == 12258 || pc.getMapId() == 12150 ||
+			 * pc.getMapId() == 12257 || pc.getMapId() == 12358)) {
+			 * SC_SystemMessage.send(pc, 
+			 * "클라우디아 맵에서만 사용이 가능합니다."); return; }
+			 */
+			// 엘븐 와퍼, 복지 엘븐 와퍼, 상아탑의 엘븐 와퍼
+			if (pc.isElf()) {
+				useBravePotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+				// \f1 아무것도 일어나지 않았습니다.
+			}
+			break;
+		case 712:
+		case 40031:
+			// 악마의 피, 상아탑의 악마의 피 , 복지 악마의피
+			if (pc.isCrown()) {
+				useBravePotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+			}
+			break;
+		case 30075:
+			/*
+			 * if (!(pc.getMapId() == 7783 || pc.getMapId() == 12152 ||
+			 * pc.getMapId() == 12149 || pc.getMapId() == 3 ||
+			 * pc.getMapId() == 12154 || pc.getMapId() == 12358 ||
+			 * pc.getMapId() == 12153 || pc.getMapId() == 12146 ||
+			 * pc.getMapId() == 12147 || pc.getMapId() == 12148 ||
+			 * pc.getMapId() == 12258 || pc.getMapId() == 12150 ||
+			 * pc.getMapId() == 12257 || pc.getMapId() == 12358)) {
+			 * SC_SystemMessage.send(pc, 
+			 * "클라우디아 맵에서만 사용이 가능합니다."); return; }
+			 */
+			// 악마의 피, 상아탑의 악마의 피 , 복지 악마의피
+			if (pc.isCrown()) {
+				useBravePotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+				// \f1 아무것도 일어나지 않았습니다.
+			}
+			break;
+		case 713:
+		case 210036:
+			// 유그드라 열매, 상아탑의 유그드라 열매
+			if (pc.isBlackwizard()) {
+				useFruit(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);// \f1 아무것도 일어나지
+				// 않았습니다.
+			}
+			break;
+		case 30077:
+			/*
+			 * if (!(pc.getMapId() == 7783 || pc.getMapId() == 12152 ||
+			 * pc.getMapId() == 12149 || pc.getMapId() == 3 ||
+			 * pc.getMapId() == 12154 || pc.getMapId() == 12358 ||
+			 * pc.getMapId() == 12153 || pc.getMapId() == 12146 ||
+			 * pc.getMapId() == 12147 || pc.getMapId() == 12148 ||
+			 * pc.getMapId() == 12258 || pc.getMapId() == 12150 ||
+			 * pc.getMapId() == 12257 || pc.getMapId() == 12358)) {
+			 * SC_SystemMessage.send(pc, 
+			 * "클라우디아 맵에서만 사용이 가능합니다."); return; }
+			 */
+			// 유그드라 열매, 상아탑의 유그드라 열매
+			if (pc.isBlackwizard()) {
+				useFruit(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);// \f1 아무것도 일어나지
+				// 않았습니다.
+			}
+			break;
+		case 40733:// 명예의 코인
+			useBravePotion(pc, itemId);
+			pc.getInventory().removeItem(l1iteminstance, 1);
+			break;
+		case 210115:// 농축 호흡의 물약
+		case 40032:// 에바의 축복
+		case 40041:// 인어의 비늘
+		case 41344:// 물의 정수
+			useBlessOfEva(pc, itemId);
+			pc.getInventory().removeItem(l1iteminstance, 1);
+			break;
+		case 30083:// 파란 물약
+			/*
+			 * if (!(pc.getMapId() == 7783 || pc.getMapId() == 12152 ||
+			 * pc.getMapId() == 12149 || pc.getMapId() == 3 ||
+			 * pc.getMapId() == 12154 || pc.getMapId() == 12358 ||
+			 * pc.getMapId() == 12153 || pc.getMapId() == 12146 ||
+			 * pc.getMapId() == 12147 || pc.getMapId() == 12148 ||
+			 * pc.getMapId() == 12258 || pc.getMapId() == 12150 ||
+			 * pc.getMapId() == 12257 || pc.getMapId() == 12358)) {
+			 * SC_SystemMessage.send(pc, 
+			 * "클라우디아 맵에서만 사용이 가능합니다."); return; }
+			 */
+			useBluePotion(pc, itemId);
+			pc.getInventory().removeItem(l1iteminstance, 1);
+			break;
+		case 40015:
+		case 140015:
+		case 40736:// 지혜의 코인
+		case 41142:// 픽시의 마나포션
+		case 210114:// 복지 파란 물약
+			useBluePotion(pc, itemId);
+			pc.getInventory().removeItem(l1iteminstance, 1);
+			break;
+		case 30089:// 지혜의물약
+			/*
+			 * if (!(pc.getMapId() == 7783 || pc.getMapId() == 12152 ||
+			 * pc.getMapId() == 12149 || pc.getMapId() == 12154 ||
+			 * pc.getMapId() == 12358 || pc.getMapId() == 12153 ||
+			 * pc.getMapId() == 12146 || pc.getMapId() == 12147 ||
+			 * pc.getMapId() == 12148 || pc.getMapId() == 12258 ||
+			 * pc.getMapId() == 12150 || pc.getMapId() == 12257 ||
+			 * pc.getMapId() == 12358)) { pc.sendPackets(new
+			 * SC_SystemMessage( "클라우디아 맵에서만 사용이 가능합니다.")); return; }
+			 */
+			if (pc.isWizard() || pc.isBlackwizard()) {
+				useWisdomPotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+				// \f1 아무것도 일어나지 않았습니다.
+			}
+			break;
+		case 40016:
+		case 140016:
+		case 210113:
+			if (pc.isWizard() || pc.isBlackwizard()) {
+				useWisdomPotion(pc, itemId);
+				pc.getInventory().removeItem(l1iteminstance, 1);
+			} else {
+				SC_ServerMessage.send(pc, 79);
+				// \f1 아무것도 일어나지 않았습니다.
+			}
+			break;
+		case 40025:// 불투명 물약
+			useBlindPotion(pc);
+			pc.getInventory().removeItem(l1iteminstance, 1);
+			break;
+		default:
+			break;
+		}
+		return false;
+	}
+
+	public static void UseExpPotion1(L1PcInstance pc, int item_id) {
+		ExperiencePotionEffects.UseExpPotion1(pc, item_id);
+	}
+
+	public static void UseExpPotion(L1PcInstance pc, int item_id) {
+		ExperiencePotionEffects.UseExpPotion(pc, item_id);
+	}
+
+	public static void useGreenPotion(L1PcInstance pc, int itemId) {
+		MovementPotionEffects.useGreenPotion(pc, itemId);
+	}
+
+	public static void useBravePotion(L1PcInstance pc, int item_id) {
+		MovementPotionEffects.useBravePotion(pc, item_id);
+	}
+
+
+	public static void useFruit(L1PcInstance pc, int item_id) {
+		MovementPotionEffects.useFruit(pc, item_id);
+	}
+	public static void useBluePotion(L1PcInstance pc, int itemId) {
+		ManaPotionEffects.useBluePotion(pc, itemId);
+	}
+
+	public static void useWisdomPotion(L1PcInstance pc, int item_id) {
+		ManaPotionEffects.useWisdomPotion(pc, item_id);
+	}
+
+	public static void useBlessOfEva(L1PcInstance pc, int item_id) {
+		ProtectivePotionEffects.useBlessOfEva(pc, item_id);
+	}
+
+	public static void useBlindPotion(L1PcInstance pc) {
+		ProtectivePotionEffects.useBlindPotion(pc);
+	}
+
+	public static void useCashScroll(L1PcInstance pc, int item_id) {
+		CashScrollPotionEffects.useCashScroll(pc, item_id);
+	}
+
+}

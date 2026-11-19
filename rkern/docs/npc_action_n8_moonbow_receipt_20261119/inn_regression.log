@@ -1,0 +1,10 @@
+Nov 19, 2026 2:02:50 PM l1j.server.MJINNSystem.MJINNRoom reserve
+WARNING: Inn room reservation failed
+java.util.concurrent.RejectedExecutionException: test
+	at l1j.server.server.ThreadPool.scheduleRequired(ThreadPool.java:1)
+	at l1j.server.MJINNSystem.MJINNRoom.reserve(MJINNRoom.java:37)
+	at l1j.server.MJINNSystem.MJINNHelper.onResult(MJINNHelper.java:110)
+	at l1j.server.server.model.network.core.cs.packet.Check.main(Check.java:25)
+
+PASS scenarios=4692 checks=27987
+PASS room lifecycle checks=2215 concurrent rounds=100

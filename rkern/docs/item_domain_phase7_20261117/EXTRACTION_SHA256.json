@@ -1,0 +1,292 @@
+{
+  "baseline": {
+    "EnchantmentItems": "8e21961d5a9bd426c6d5025209bac04799c36e8693565993c368cbde0f232e63",
+    "PotionEffects": "1b8e93ee5df825595c789dab9091970827be0d4245ef583f8d74456efa04f31c",
+    "TransformationItems": "205a5e6b246f1fcc273cd156509f4d3e539b9892bad93968b9b851502c3a2a8f",
+    "RuneRewardPackages": "18c7d4e9f3e460ae1f264258b86bc1ffc49f1a475fa1c7bf68c49b952e1fd4e4"
+  },
+  "methods": {
+    "AttrEnchant": {
+      "origin": "EnchantmentItems",
+      "class": "AttributeEnchantScrollEffects",
+      "sha256": "5a381821392c7bd6b13fcf1cf7d67b64fdba93ac17ed4efa296a0530d7230bd6",
+      "wrapper": "\tpublic static void AttrEnchant(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance weapon) {\n\t\tAttributeEnchantScrollEffects.AttrEnchant(pc, scroll, weapon);\n\t}"
+    },
+    "enchant_insignia": {
+      "origin": "EnchantmentItems",
+      "class": "InsigniaProtectionScrolls",
+      "sha256": "036d89134cd7088885a681062af9b2dbfa5490f8e8fd07ddb7be7f3c562c79a8",
+      "wrapper": "\tpublic static void enchant_insignia(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance target) {\n\t\tInsigniaProtectionScrolls.enchant_insignia(pc, scroll, target);\n\t}"
+    },
+    "enchant_insignia1": {
+      "origin": "EnchantmentItems",
+      "class": "InsigniaProtectionScrolls",
+      "sha256": "a816c638474de6caa9b6f0df8616b9ae4d91429bdbcbb88dd99c74d120de324d",
+      "wrapper": "\tpublic static void enchant_insignia1(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance target) {\n\t\tInsigniaProtectionScrolls.enchant_insignia1(pc, scroll, target);\n\t}"
+    },
+    "enchant_should": {
+      "origin": "EnchantmentItems",
+      "class": "ShoulderProtectionScrolls",
+      "sha256": "a120fde71fb1c9a182f7f565c78f674c8882b617211812c69ea59336ed398297",
+      "wrapper": "\tpublic static void enchant_should(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance target) {\n\t\tShoulderProtectionScrolls.enchant_should(pc, scroll, target);\n\t}"
+    },
+    "enchant_sentence": {
+      "origin": "EnchantmentItems",
+      "class": "EmblemProtectionScrolls",
+      "sha256": "2e8cb6df99fc3e685e1b2fe927762ca002612ef2f4ad8c70256431c4b147a4f5",
+      "wrapper": "\tpublic static void enchant_sentence(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance target) {\n\t\tEmblemProtectionScrolls.enchant_sentence(pc, scroll, target);\n\t}"
+    },
+    "enchant_sentence1": {
+      "origin": "EnchantmentItems",
+      "class": "EmblemProtectionScrolls",
+      "sha256": "5a346d99b29eae3155e274f5c6a0fa2b139084ddae2c15f26715869c882ede5f",
+      "wrapper": "\tpublic static void enchant_sentence1(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance target) {\n\t\tEmblemProtectionScrolls.enchant_sentence1(pc, scroll, target);\n\t}"
+    },
+    "enchant_roomtis": {
+      "origin": "EnchantmentItems",
+      "class": "RoomtisProtectionScrolls",
+      "sha256": "5b92de5564a4936df84e5d5037f3d47e65fde32bc662c94484938f8ba31a5b56",
+      "wrapper": "\tpublic static void enchant_roomtis(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance target) {\n\t\tRoomtisProtectionScrolls.enchant_roomtis(pc, scroll, target);\n\t}"
+    },
+    "enchant_roomtis1": {
+      "origin": "EnchantmentItems",
+      "class": "RoomtisProtectionScrolls",
+      "sha256": "d8a9a17a54e8a7b9e121c05f1c947ddb0d1aa174e209c25057622d66f3486414",
+      "wrapper": "\tpublic static void enchant_roomtis1(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance target) {\n\t\tRoomtisProtectionScrolls.enchant_roomtis1(pc, scroll, target);\n\t}"
+    },
+    "enchant_snapper": {
+      "origin": "EnchantmentItems",
+      "class": "SnapperProtectionScrolls",
+      "sha256": "12b5682b768efc321413da63a99af8a844e6964dadad8677fd2973bf90ee39f3",
+      "wrapper": "\tpublic static void enchant_snapper(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance target) {\n\t\tSnapperProtectionScrolls.enchant_snapper(pc, scroll, target);\n\t}"
+    },
+    "enchant_snapper1": {
+      "origin": "EnchantmentItems",
+      "class": "SnapperProtectionScrolls",
+      "sha256": "0e8d7de1a933d0f98621cf1968aaab5ded2a07a44f05ef8b71a6991d4dc2b08f",
+      "wrapper": "\tpublic static void enchant_snapper1(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance target) {\n\t\tSnapperProtectionScrolls.enchant_snapper1(pc, scroll, target);\n\t}"
+    },
+    "enchant_bless_orim": {
+      "origin": "EnchantmentItems",
+      "class": "OrimProtectionScrolls",
+      "sha256": "1f479e7d1840a005d63d191da4f5f09919383d58568548fb0b3ad5063772bd1b",
+      "wrapper": "\tpublic static void enchant_bless_orim(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance target) {\n\t\tOrimProtectionScrolls.enchant_bless_orim(pc, scroll, target);\n\t}"
+    },
+    "UseExpPotion1": {
+      "origin": "PotionEffects",
+      "class": "ExperiencePotionEffects",
+      "sha256": "7185bd28173b4e6d9fb26a63ad45a9a60fdcab79af26e28a4c0fbb03874328f6",
+      "wrapper": "\tpublic static void UseExpPotion1(L1PcInstance pc, int item_id) {\n\t\tExperiencePotionEffects.UseExpPotion1(pc, item_id);\n\t}"
+    },
+    "UseExpPotion": {
+      "origin": "PotionEffects",
+      "class": "ExperiencePotionEffects",
+      "sha256": "6ebc9014327151efbce5b02d6393066d88b236558bc6efb0cd64ed451a84b81f",
+      "wrapper": "\tpublic static void UseExpPotion(L1PcInstance pc, int item_id) {\n\t\tExperiencePotionEffects.UseExpPotion(pc, item_id);\n\t}"
+    },
+    "useGreenPotion": {
+      "origin": "PotionEffects",
+      "class": "MovementPotionEffects",
+      "sha256": "15731f89dbfb1ebcd6b2a01a18c6ab43e99016005b86b5b7cee078e4001596df",
+      "wrapper": "\tpublic static void useGreenPotion(L1PcInstance pc, int itemId) {\n\t\tMovementPotionEffects.useGreenPotion(pc, itemId);\n\t}"
+    },
+    "useBravePotion": {
+      "origin": "PotionEffects",
+      "class": "MovementPotionEffects",
+      "sha256": "b9dd7375906f1b9d4c9d44e5b6328bf38e9796582010e0b59fc7f8f570b2c45f",
+      "wrapper": "\tpublic static void useBravePotion(L1PcInstance pc, int item_id) {\n\t\tMovementPotionEffects.useBravePotion(pc, item_id);\n\t}"
+    },
+    "useFruit": {
+      "origin": "PotionEffects",
+      "class": "MovementPotionEffects",
+      "sha256": "bbc6b64be3e37df0e92ba6a9f0e4d3a322bd61fc660023c6188d9af239e6679b",
+      "wrapper": "\tpublic static void useFruit(L1PcInstance pc, int item_id) {\n\t\tMovementPotionEffects.useFruit(pc, item_id);\n\t}"
+    },
+    "useBluePotion": {
+      "origin": "PotionEffects",
+      "class": "ManaPotionEffects",
+      "sha256": "bc529ea896612d80febf473eb5cf24cb67cdadfb64b1ba36bf0b153c5aecbf97",
+      "wrapper": "\tpublic static void useBluePotion(L1PcInstance pc, int itemId) {\n\t\tManaPotionEffects.useBluePotion(pc, itemId);\n\t}"
+    },
+    "useWisdomPotion": {
+      "origin": "PotionEffects",
+      "class": "ManaPotionEffects",
+      "sha256": "a784bec416497479558cfa53d22779f762d47faeb986d36f764c127d4e45071a",
+      "wrapper": "\tpublic static void useWisdomPotion(L1PcInstance pc, int item_id) {\n\t\tManaPotionEffects.useWisdomPotion(pc, item_id);\n\t}"
+    },
+    "useBlessOfEva": {
+      "origin": "PotionEffects",
+      "class": "ProtectivePotionEffects",
+      "sha256": "3b9ae0c93286849661eb078027cd983b23620e58c1c1b607d347f09cd5578947",
+      "wrapper": "\tpublic static void useBlessOfEva(L1PcInstance pc, int item_id) {\n\t\tProtectivePotionEffects.useBlessOfEva(pc, item_id);\n\t}"
+    },
+    "useBlindPotion": {
+      "origin": "PotionEffects",
+      "class": "ProtectivePotionEffects",
+      "sha256": "5b5353c3f4ea6f754d9d456ebc503d7afa6cde38b8826f1588ad381b43ab39ea",
+      "wrapper": "\tpublic static void useBlindPotion(L1PcInstance pc) {\n\t\tProtectivePotionEffects.useBlindPotion(pc);\n\t}"
+    },
+    "useCashScroll": {
+      "origin": "PotionEffects",
+      "class": "CashScrollPotionEffects",
+      "sha256": "c79c03c5ff4856847f534c3b7f378dc23be15cafba8e4c6abebf77a980c20574",
+      "wrapper": "\tpublic static void useCashScroll(L1PcInstance pc, int item_id) {\n\t\tCashScrollPotionEffects.useCashScroll(pc, item_id);\n\t}"
+    },
+    "usePolyScroll": {
+      "origin": "TransformationItems",
+      "class": "PolymorphScrollEffects",
+      "sha256": "a938be4b33189f97ee46df43867fc327506a9c34479ff66b7a9caa7b26425d4e",
+      "wrapper": "\tpublic static boolean usePolyScroll(L1PcInstance pc, int item_id, String s) {\n\t\treturn PolymorphScrollEffects.usePolyScroll(pc, item_id, s);\n\t}"
+    },
+    "usePolyPotion": {
+      "origin": "TransformationItems",
+      "class": "PolymorphPotionEffects",
+      "sha256": "0b1280cf52ab3a203eff96de7142037dd740d467d50c3a5d8144b155a9997739",
+      "wrapper": "\tpublic static void usePolyPotion(L1PcInstance pc, int itemId) {\n\t\tPolymorphPotionEffects.usePolyPotion(pc, itemId);\n\t}"
+    },
+    "useLevelPolyScroll": {
+      "origin": "TransformationItems",
+      "class": "LevelPolymorphScrollEffects",
+      "sha256": "581619be49d901126eeb3aacd17d429054e63b551741292dca7f3d7162cc3d87",
+      "wrapper": "\tpublic static void useLevelPolyScroll(L1PcInstance pc, int itemId) {\n\t\tLevelPolymorphScrollEffects.useLevelPolyScroll(pc, itemId);\n\t}"
+    },
+    "RandomELevel": {
+      "origin": "TransformationItems",
+      "class": "RandomEnchantLevelEffects",
+      "sha256": "90d954c8e12d6360adfb56482f1f1ee5d731fc332553fb9cdd76429e7dbd2c82",
+      "wrapper": "\tpublic static int RandomELevel(L1ItemInstance item, int itemId) {\n\t\treturn RandomEnchantLevelEffects.RandomELevel(item, itemId);\n\t}"
+    },
+    "polyAction": {
+      "origin": "TransformationItems",
+      "class": "TargetPolymorphEffects",
+      "sha256": "f9a6b2b6b3f029556f0c01e5574df9ed3d50bda9248e1baa80f585c4167dbb74",
+      "wrapper": "\tpublic static void polyAction(L1PcInstance attacker, L1Character cha, int itemId, String s) {\n\t\tTargetPolymorphEffects.polyAction(attacker, cha, itemId, s);\n\t}"
+    }
+  },
+  "new_classes": [
+    "AttributeEnchantScrollEffects",
+    "InsigniaProtectionScrolls",
+    "ShoulderProtectionScrolls",
+    "EmblemProtectionScrolls",
+    "RoomtisProtectionScrolls",
+    "SnapperProtectionScrolls",
+    "OrimProtectionScrolls",
+    "ExperiencePotionEffects",
+    "MovementPotionEffects",
+    "ManaPotionEffects",
+    "ProtectivePotionEffects",
+    "CashScrollPotionEffects",
+    "PolymorphScrollEffects",
+    "PolymorphPotionEffects",
+    "LevelPolymorphScrollEffects",
+    "RandomEnchantLevelEffects",
+    "TargetPolymorphEffects",
+    "SealedRuneLevel90Rewards",
+    "SealedRuneLevel85Rewards",
+    "SealedRuneLevel80Rewards",
+    "SealedRuneLevel70Rewards",
+    "SealedRuneLevel55Rewards"
+  ],
+  "rune_cases": {
+    "68088": {
+      "class": "SealedRuneLevel90Rewards",
+      "sha256": "8583de4b855a8d04a493cfc00dce431a73df16cb68ed4dfc588d900b9cb252cd"
+    },
+    "68089": {
+      "class": "SealedRuneLevel90Rewards",
+      "sha256": "a368b04a5fce7d16d9876fbc9d79c44892811f1bd093daf05b6b0121e2577f30"
+    },
+    "68090": {
+      "class": "SealedRuneLevel90Rewards",
+      "sha256": "c9a587a921549a10036d01cc9e86c2e967f16bc54bd24fbf745dcca208ff1c55"
+    },
+    "68091": {
+      "class": "SealedRuneLevel90Rewards",
+      "sha256": "9212b4ebda5cebdb56289edf7eea7a772685ac24516ee1e3eea2290e1b28be79"
+    },
+    "68092": {
+      "class": "SealedRuneLevel90Rewards",
+      "sha256": "d5e821fbf5d38e6dfcce5c50ddfae81c990f895bb3fcc3c636c11479b0d57421"
+    },
+    "68083": {
+      "class": "SealedRuneLevel85Rewards",
+      "sha256": "845fb979d26ec5dc3df4523d9095743eec1c077f0cd6fd912766c45f2a72090d"
+    },
+    "68084": {
+      "class": "SealedRuneLevel85Rewards",
+      "sha256": "2ec2a09fa8aa32b422f5e74a94f3d86516cd94b29a39fc960011acfe840a97be"
+    },
+    "68085": {
+      "class": "SealedRuneLevel85Rewards",
+      "sha256": "b533c13417d7b356b120f8f81e7227222fc5cb5775842e8be402b0a7a94464b5"
+    },
+    "68086": {
+      "class": "SealedRuneLevel85Rewards",
+      "sha256": "b58bda008506d7a67aa4241c1af8d34b11d3490f0c90c09e7160aa37afcb88ba"
+    },
+    "68087": {
+      "class": "SealedRuneLevel85Rewards",
+      "sha256": "bdc177072c09f88541c81604fb71d25c90128f6728f309b8b3eead6c25de7048"
+    },
+    "68078": {
+      "class": "SealedRuneLevel80Rewards",
+      "sha256": "ed057a8875f649e2fb7f1ae36afefa7499a178d59d75cececf291141d33ad0b6"
+    },
+    "68079": {
+      "class": "SealedRuneLevel80Rewards",
+      "sha256": "05d4c0824046d0dd3e81cec1230adc53c7cff9c42160ab015e2cd5efdefe0909"
+    },
+    "68080": {
+      "class": "SealedRuneLevel80Rewards",
+      "sha256": "9a593b573fab6d60ba07bc65e5492b1e0f4664ef349afc1375be18e8e0c03987"
+    },
+    "68081": {
+      "class": "SealedRuneLevel80Rewards",
+      "sha256": "f776e113faac9a7b45b9b69cb06a24f627325516c09d698c24d6566c06e8f118"
+    },
+    "68082": {
+      "class": "SealedRuneLevel80Rewards",
+      "sha256": "55018ac1aaa626a4ca6e04db947d30b280cbf70769e2681bbe27e7212622ebda"
+    },
+    "60041": {
+      "class": "SealedRuneLevel70Rewards",
+      "sha256": "921169d499c6d8b7120f324a0be6dd17df8a49f24b6a8ea456ae50ba5c64e2b6"
+    },
+    "60042": {
+      "class": "SealedRuneLevel70Rewards",
+      "sha256": "8e15c1e0361bb5b301654fbdd025551224b33e6e42b316978077390f5c9eadc0"
+    },
+    "60043": {
+      "class": "SealedRuneLevel70Rewards",
+      "sha256": "dfaef6515ef548ac0f2c7998010d14eace30495b61b2db13e4bfe0e581a46ead"
+    },
+    "60044": {
+      "class": "SealedRuneLevel70Rewards",
+      "sha256": "eeef7da45aada608de3f3eb1ce8ac974048d8c058cf2276fc8a64b7db76b5003"
+    },
+    "60045": {
+      "class": "SealedRuneLevel70Rewards",
+      "sha256": "52ea38ffe7b024b6322d2a5b1d6e3d666a5374810cda41f7d5975b53893487e5"
+    },
+    "60036": {
+      "class": "SealedRuneLevel55Rewards",
+      "sha256": "139b2eff7a1926271e5297e9407682808542d269c9f8e97bf942bad2a89e8a2a"
+    },
+    "60037": {
+      "class": "SealedRuneLevel55Rewards",
+      "sha256": "605550e7c05d9675f2797c4619dabc06e9cce380ddb01cd2b0aafcda95266b2e"
+    },
+    "60038": {
+      "class": "SealedRuneLevel55Rewards",
+      "sha256": "faa99699920ced7c3d219c3b25b4e50443c96e2c2a2ec97552f5ae28906b6aa6"
+    },
+    "60039": {
+      "class": "SealedRuneLevel55Rewards",
+      "sha256": "58ef8d6d4969704989a54e7c6baf88d30f4c7396311684d74ee0949571582985"
+    },
+    "60040": {
+      "class": "SealedRuneLevel55Rewards",
+      "sha256": "0b1d540066eeff4d121a94c4d3a17b4cb6e47587dbf2d6f83a3db028fbfcc1a5"
+    }
+  }
+}

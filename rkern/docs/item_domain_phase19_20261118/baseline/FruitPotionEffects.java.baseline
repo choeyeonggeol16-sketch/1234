@@ -1,0 +1,45 @@
+package l1j.server.server.model.item.function;
+
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import static l1j.server.server.model.character.skill.L1SkillId.DECAY_POTION;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_BRAVE;
+import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FRUIT;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
+import static l1j.server.server.model.item.function.CreatureItemActions.cancelAbsoluteBarrier;
+
+final class FruitPotionEffects {
+    private FruitPotionEffects() {}
+
+	public static void useFruit(L1PcInstance pc, int item_id) {
+		if (pc.hasSkillEffect(DECAY_POTION) == true) {
+			SC_ServerMessage.send(pc, 698);
+			return;
+		}
+		cancelAbsoluteBarrier(pc);
+
+		int time = 0;
+		if (item_id == 210036 || item_id == 30077) {
+			time = 480;
+		}
+		if (item_id == 713) {
+			time = 1800;
+		}
+		if (pc.hasSkillEffect(L1SkillId.STATUS_BRAVE)) {
+			pc.killSkillEffectTimer(L1SkillId.STATUS_BRAVE);
+			SC_SkillBrave.send(pc, pc.getId(), 0, 0);
+			pc.setBraveSpeed(0);
+		}
+
+
+		pc.setSkillEffect(STATUS_FRUIT, time * 1000);
+		//TODO 다크호스 추가
+		SC_SkillBrave.send(pc, pc.getId(), pc.getBraveSpeed(), time);
+		SC_SkillBrave.broadcast(pc, pc.getId(), pc.getBraveSpeed(), 0);
+		SC_SkillSound.send(pc, pc.getId(), 7110);
+		SC_SkillSound.broadcast(pc, pc.getId(), 7110);
+
+	}
+}

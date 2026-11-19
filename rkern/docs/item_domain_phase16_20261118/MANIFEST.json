@@ -1,0 +1,145 @@
+{
+  "base": "RKern_ItemFunction_DomainSeparation_Phase15_FULL_SRC_20261118.zip",
+  "base_sha256": "66487e898a0dc5b669532ac37ee221a06170e64e50dffb09d8809a935e4ee6c4",
+  "new_classes": [
+    "RecruitStarterWarriorKit",
+    "RecruitStarterKnightKit",
+    "RecruitStarterDragonknightKit",
+    "RecruitStarterCrownKit",
+    "RecruitStarterWizardKit",
+    "RecruitStarterBlackwizardKit",
+    "RecruitStarterElfKit",
+    "RecruitStarterDarkelfKit",
+    "RecruitStarterItemGrant",
+    "PassiveSkillLearningRules",
+    "PassiveSkillLearningEffects",
+    "RankingClassPolymorphNames",
+    "MythicClassPolymorphNames",
+    "AlternateRankingPolymorphNames",
+    "AinBlessingGemConsumables"
+  ],
+  "modified_classes": [
+    "RecruitStarterKit",
+    "PassiveSkillBooks",
+    "PolymorphScrollEffects",
+    "AinBlessingItems",
+    "BlessingConsumables"
+  ],
+  "extracted": [
+    {
+      "owner": "RecruitStarterKit",
+      "new_owner": "RecruitStarterWarriorKit",
+      "region": "pc.isWarrior",
+      "sha256": "649428dd7b6e3e11ea811a5352ab060c3f873632ff752f3f516470a45107e3bc",
+      "size": 1656,
+      "grant_calls": 31
+    },
+    {
+      "owner": "RecruitStarterKit",
+      "new_owner": "RecruitStarterKnightKit",
+      "region": "pc.isKnight",
+      "sha256": "55aa846290c6501d1cab20f06b51394d245d1ce10aae93d3ed7d89191fe5f00f",
+      "size": 1601,
+      "grant_calls": 30
+    },
+    {
+      "owner": "RecruitStarterKit",
+      "new_owner": "RecruitStarterDragonknightKit",
+      "region": "pc.isDragonknight",
+      "sha256": "f2d80f306250b81819557ede17e929e3ede5544ffc84802275fcf506a477003e",
+      "size": 1604,
+      "grant_calls": 30
+    },
+    {
+      "owner": "RecruitStarterKit",
+      "new_owner": "RecruitStarterCrownKit",
+      "region": "pc.isCrown",
+      "sha256": "2f1082ba0d88cd6994f0a50ff8a7bfdefb872f9453480a854c56878123adf9d1",
+      "size": 1589,
+      "grant_calls": 30
+    },
+    {
+      "owner": "RecruitStarterKit",
+      "new_owner": "RecruitStarterWizardKit",
+      "region": "pc.isWizard",
+      "sha256": "3dbfed6f60c9e3e19b219315bad4d5f262b3b7cfbb0e7a769c467b82d3f9a188",
+      "size": 1552,
+      "grant_calls": 29
+    },
+    {
+      "owner": "RecruitStarterKit",
+      "new_owner": "RecruitStarterBlackwizardKit",
+      "region": "pc.isBlackwizard",
+      "sha256": "d2ed4d3b44509b23ba7bcf135f408cb19d6bf77ed68b0e8d1726c08264d05439",
+      "size": 1600,
+      "grant_calls": 30
+    },
+    {
+      "owner": "RecruitStarterKit",
+      "new_owner": "RecruitStarterElfKit",
+      "region": "pc.isElf",
+      "sha256": "7eb17883d4989f98787b83de9782e82677202293276cf2216ebefe78dceb03cb",
+      "size": 1637,
+      "grant_calls": 31
+    },
+    {
+      "owner": "RecruitStarterKit",
+      "new_owner": "RecruitStarterDarkelfKit",
+      "region": "pc.isDarkelf",
+      "sha256": "d27aabed53f533be5d3006572128cb0689940caa1db796a7af72250591879098",
+      "size": 1544,
+      "grant_calls": 29
+    },
+    {
+      "owner": "RecruitStarterKit",
+      "new_owner": "RecruitStarterItemGrant",
+      "region": "봉인템",
+      "sha256": "2dfb63df5c410ce57e7695bf2967c32bac7d454a4b40422442dc78abf984127b",
+      "size": 816
+    },
+    {
+      "owner": "PassiveSkillBooks",
+      "new_owner": "PassiveSkillLearningRules",
+      "region": "ruleFor",
+      "sha256": "91013377df307aea58860b53b3ecb317fc4c523e21488b782964b8559989c43d",
+      "size": 956,
+      "rules": 27
+    },
+    {
+      "owner": "PassiveSkillBooks",
+      "new_owner": "PassiveSkillLearningEffects",
+      "region": "effectFor",
+      "sha256": "a44e9885f790362347ec9d09474d232430e13e412eb767beb56bd9aabb5f4f15",
+      "size": 7308,
+      "effects": 27
+    },
+    {
+      "owner": "PolymorphScrollEffects",
+      "new_owner": "RankingClassPolymorphNames",
+      "region": "ranking class polymorph",
+      "sha256": "3ebe949247c67875026be9834d346bfe62ffc30a9297cfcf0fa57e798a784a80",
+      "size": 1110
+    },
+    {
+      "owner": "PolymorphScrollEffects",
+      "new_owner": "MythicClassPolymorphNames",
+      "region": "myth class polymorph",
+      "sha256": "e40d44551dcdbb467e4e1a330a2bc66b39780a1e9a0b721db5bed6f0e9886527",
+      "size": 1124
+    },
+    {
+      "owner": "PolymorphScrollEffects",
+      "new_owner": "AlternateRankingPolymorphNames",
+      "region": "ranking class polymorph1",
+      "sha256": "551d6ab2ae2b72cdecf1e13bf732b03fbbb0f0e8d7c833bb1f15ef963296d506",
+      "size": 1122
+    },
+    {
+      "owner": "AinBlessingItems",
+      "new_owner": "AinBlessingGemConsumables",
+      "region": "useGemCase",
+      "sha256": "ddb2227e8259be1407912cc5f7bdeb136d8dcb4a17490e19c2f730863167d593",
+      "size": 4637
+    }
+  ]
+}

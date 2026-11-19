@@ -1,0 +1,37 @@
+{
+  "base_archive": "RKern_Item_Consolidation_Memory_Phase30_FULL_SRC_20261118.zip",
+  "base_sha256": "eeb17f5353842f5f8dcfe74712788676fbc25b2ecd8636981ea8c9598567cdb2",
+  "modified_existing": {
+    "README_KO.md": "0f070473f0fb20331f50296c6ff8be532e9b7b57aac1683b46d273d6bc8a50a3",
+    "src/l1j/server/server/model/item/function/ExtendedItemActions.java": "143b05dcf782528f06186185d644f85ecaec051d3f617150948a40b5aca6dad9",
+    "src/l1j/server/server/model/item/function/TopRankerBlessingItems.java": "e26acf1b4eab3dec800898da6dd0a5d47d9e4f3380ccb9a5f87214f5bada592f",
+    "docs/item_domain_phase30_20261118/test_phase30_messages.py": "4a229b09ab0e85794b555a48ed9a52f902bfceb698a7989ad549cdb176e3dc67",
+    "docs/item_domain_phase30_20261118/test_phase30_scope.py": "6fb9fe0abade0ba92b3775e69c2ce708a1d740bf75a5eacfe79222fdfea558db"
+  },
+  "new_audit_files": [
+    "docs/item_domain_phase30_audit_20261118/REPORT_KO.md",
+    "docs/item_domain_phase30_audit_20261118/baseline/AdministratorGiftPackageUse.java",
+    "docs/item_domain_phase30_audit_20261118/baseline/CharacterSlotVoucherItems.java",
+    "docs/item_domain_phase30_audit_20261118/baseline/ClassGiftPackageUse.java",
+    "docs/item_domain_phase30_audit_20261118/baseline/EquipmentSlotVoucherItems.java",
+    "docs/item_domain_phase30_audit_20261118/baseline/ItemCurrencyExchanges.java",
+    "docs/item_domain_phase30_audit_20261118/baseline/RankingRewardItems.java",
+    "docs/item_domain_phase30_audit_20261118/baseline/TransformationPotionItems.java",
+    "docs/item_domain_phase30_audit_20261118/run_audit.sh",
+    "docs/item_domain_phase30_audit_20261118/test_route_differential.py"
+  ],
+  "production_modified_vs_phase30": [
+    "src/l1j/server/server/model/item/function/ExtendedItemActions.java",
+    "src/l1j/server/server/model/item/function/TopRankerBlessingItems.java"
+  ],
+  "production_java_files": 1926,
+  "java_syntax": {
+    "files": 1926,
+    "errors": 0
+  },
+  "additional_route_differential_cases": 2112,
+  "locale_enchant_message_cases": 223888,
+  "regression_exit_code": 0,
+  "full_dependency_compile": "blocked_missing_external_JARs",
+  "full_server_and_DB_tested": false
+}

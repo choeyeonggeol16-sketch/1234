@@ -1,0 +1,62 @@
+private static final int[] DROP_ANCIENT_SILVER = {
+            6000, 41297, DROP_MSG_15565,
+            8000, 41296, DROP_MSG_15564,
+            8040, 49092, DROP_MSG_RED,
+            8070, 41298, DROP_MSG_15566,
+            8350, 41296, DROP_MSG_15564,
+            8351, 41298, DROP_MSG_15566,
+            8352, 41300, DROP_MSG_17523
+    };
+private static final int[] DROP_ANCIENT_GOLD = {
+            6000, 41297, DROP_MSG_15565,
+            8000, 41296, DROP_MSG_15564,
+            8020, 49092, DROP_MSG_RED,
+            8050, 41298, DROP_MSG_15566,
+            8350, 41296, DROP_MSG_15564,
+            8351, 49092, DROP_MSG_RED,
+            8352, 41300, DROP_MSG_17523
+    };
+private static final int[] DROP_GROW = {
+            6000, 41296, DROP_MSG_15564,
+            8000, 41297, DROP_MSG_15565,
+            8020, 41298, DROP_MSG_15566,
+            10001, 41296, DROP_MSG_15564
+    };
+private static final int[] DROP_HIGH_GROW = {
+            6000, 41296, DROP_MSG_15564,
+            8000, 41297, DROP_MSG_15565,
+            8020, 41298, DROP_MSG_15566,
+            8350, 49093, DROP_MSG_20462,
+            8370, 41298, DROP_MSG_15566,
+            10001, 41296, DROP_MSG_15564
+    };
+private static final int[] DROP_FROG_OR_REEL_HIGH = {
+            6000, 41296, DROP_MSG_15564,
+            8000, 41297, DROP_MSG_15565,
+            8020, 41298, DROP_MSG_15566,
+            8350, 41301, DROP_MSG_15815,
+            8351, 41299, DROP_MSG_17521,
+            8352, 41300, DROP_MSG_17523
+    };
+private static final int[] DROP_REEL_SILVER = {
+            4000, 41296, DROP_MSG_15564,
+            8000, 41297, DROP_MSG_15565,
+            8040, 41298, DROP_MSG_15566,
+            8350, 41301, DROP_MSG_15815,
+            8352, 41299, DROP_MSG_17521,
+            8353, 41303, DROP_MSG_17522
+    };
+private static final int[] DROP_REEL_GOLD = {
+            3500, 41297, DROP_MSG_15565,
+            8000, 41296, DROP_MSG_15564,
+            8050, 41298, DROP_MSG_15566,
+            8350, 41301, DROP_MSG_15815,
+            8352, 41300, DROP_MSG_17523,
+            8354, 41304, DROP_MSG_17524
+    };
+private static final int[] DROP_NORMAL = {
+            4000, 41296, DROP_MSG_15564,
+            8000, 41297, DROP_MSG_15565,
+            8010, 41298, DROP_MSG_15566,
+            8350, 41301, DROP_MSG_15815
+    };

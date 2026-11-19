@@ -1,0 +1,522 @@
+{
+  "base": "RKern_ItemFunction_DomainSeparation_Phase14_FULL_SRC_20261118.zip",
+  "base_sha256": "4e4b77cb0738bf020fbee5802667317e45308fd2bc061b682a3a0b461891afee",
+  "extracted": [
+    {
+      "owner": "QuestCraftingItems",
+      "new_owner": "QuestRepairScrollUse",
+      "name": "handleCombineMapFragments",
+      "body_sha256": "d32b7b7a62226073b58dcafaa617ff1351475534508708c529a8468be38fd29e",
+      "length": 1003
+    },
+    {
+      "owner": "QuestCraftingItems",
+      "new_owner": "QuestTreasureFragmentCombine",
+      "name": "handleCombineTreasureFragments",
+      "body_sha256": "718a6f118f0446a614011d10a81c775336f015b1d716aa1bce3daab3bd051170",
+      "length": 1092
+    },
+    {
+      "owner": "QuestCraftingItems",
+      "new_owner": "QuestVoucherExchange",
+      "name": "handleVoucher",
+      "body_sha256": "d1068ceffee1a7c4dd7069c5346fb26f970b57d026d889e5bdad0e8090467cb7",
+      "length": 689
+    },
+    {
+      "owner": "QuestCraftingItems",
+      "new_owner": "QuestEarringCollection",
+      "name": "handleBagCollection",
+      "body_sha256": "f48c4855d5a3db708dd3d5b98e5fbd09090a0f3f7c89bc820a0ac7502b36eae2",
+      "length": 1874
+    },
+    {
+      "owner": "QuestCraftingItems",
+      "new_owner": "QuestRingCollection",
+      "name": "handleMixedBagCollection",
+      "body_sha256": "70e6b66b1a44e8b1a9b9f59d655c830f3af3e04fcbe80405f7571ed7d81f9a52",
+      "length": 1516
+    },
+    {
+      "owner": "QuestCraftingItems",
+      "new_owner": "QuestSummoningFragmentCombine",
+      "name": "handleSummonFragments",
+      "body_sha256": "fafcf716d769c8877efa704ce8009b58964045985c4e266c15e716c525b30874",
+      "length": 904
+    },
+    {
+      "owner": "QuestCraftingItems",
+      "new_owner": "QuestAncientBookCombine",
+      "name": "handleCombineAncientBooks",
+      "body_sha256": "e7c86d0cfab8d668be95e5a56595a420ed930ecf79fa6b50c3455b9bcdcd71b6",
+      "length": 1739
+    },
+    {
+      "owner": "ClassSpellbookItems",
+      "new_owner": "WizardSpellbookConsumable",
+      "name": "wizardBooks",
+      "body_sha256": "285db2deeb49a6039ee6eaab7ecef433e306a586e7f3561af4e02c712bbeac7f",
+      "length": 474
+    },
+    {
+      "owner": "ClassSpellbookItems",
+      "new_owner": "RoyalSpellbookConsumable",
+      "name": "royalBooks",
+      "body_sha256": "00628a9c8cc5f3d0e43f11a7593cb3513dfc22f5c539bacdbafea0e9f1a07734",
+      "length": 1398
+    },
+    {
+      "owner": "ClassSpellbookItems",
+      "new_owner": "ElfClassSpellbookRoute",
+      "name": "elfBooks",
+      "body_sha256": "c99b8d73876b9770258b184efbc07a023dcc25b39b395868a3ef8cf537a14959",
+      "length": 476
+    },
+    {
+      "owner": "ClassSpellbookItems",
+      "new_owner": "DarkElfSpellbookConsumable",
+      "name": "darkElfBooks",
+      "body_sha256": "53183a500db17c1ea09a9d16901c015292b759d3aa7030eeca0ad4c2bff055fc",
+      "length": 1466
+    },
+    {
+      "owner": "ClassSpellbookItems",
+      "new_owner": "KnightSpellbookConsumable",
+      "name": "knightBooks",
+      "body_sha256": "ca1c4bb967be746fe00dd418b0ea86f5fb2b8471823461b50254c20c9096e20f",
+      "length": 1382
+    },
+    {
+      "owner": "ClassSpellbookItems",
+      "new_owner": "DragonKnightSpellbookConsumable",
+      "name": "dragonKnightBooks",
+      "body_sha256": "71491f29684675ea8bf1d668882ece28cd99f7c5e1c6c547d3a396d6ccba7181",
+      "length": 1188
+    },
+    {
+      "owner": "ClassSpellbookItems",
+      "new_owner": "IllusionistSpellbookConsumable",
+      "name": "blackWizardBooks",
+      "body_sha256": "2fe879b1e95e39cf49559bc76dcd9d3b078607c04da05fa6a26c7ba238b4b318",
+      "length": 1733
+    },
+    {
+      "owner": "ClassSpellbookItems",
+      "new_owner": "WarriorSpellbookConsumable",
+      "name": "warriorBooks",
+      "body_sha256": "9de5758a7945c31df6070769847ece1c7a7461cfa17b443015fbb87012b55ab3",
+      "length": 1160
+    },
+    {
+      "owner": "EquipmentRewardItems",
+      "new_owner": "StarterEquipmentGiftBox",
+      "name": "openStarterKit",
+      "body_sha256": "17bf07431879e22804ebb5793a92aa186b4c6ae3c356751fe6824f3ce89a9162",
+      "length": 3057
+    },
+    {
+      "owner": "EquipmentRewardItems",
+      "new_owner": "PureShirtSoapExchange",
+      "name": "exchangePureShirt",
+      "body_sha256": "e7f1c5bd9fcc3ce28fcd2fb3d49de7bb63b9f053e65d64facebe2970a846915b",
+      "length": 1664
+    },
+    {
+      "owner": "LevelMilestonePackages",
+      "new_owner": "Level82AchievementReward",
+      "name": "case 714",
+      "body_sha256": "8782ce3f009f8cb83690015854aeea58c43daaddcb98723200e5c8873ab43e9b",
+      "length": 1506
+    },
+    {
+      "owner": "LevelMilestonePackages",
+      "new_owner": "Level84AchievementReward",
+      "name": "case 715",
+      "body_sha256": "7c47fdd269ea92eb877175e43acd8833eaba788a1e4d59b4b19c5da20dd2d8ca",
+      "length": 1570
+    },
+    {
+      "owner": "LevelMilestonePackages",
+      "new_owner": "Level86AchievementReward",
+      "name": "case 716",
+      "body_sha256": "2d0fd326b9352849c47c2cc15353de56dfc64baac87a493f2ce699c087e91a2a",
+      "length": 1570
+    },
+    {
+      "owner": "LevelMilestonePackages",
+      "new_owner": "Level88AchievementReward",
+      "name": "case 717",
+      "body_sha256": "b9b171c430c953893187305a1e5fb4d36ae2941d936746de8ce2eb329fe5ffc5",
+      "length": 2162
+    },
+    {
+      "owner": "LevelMilestonePackages",
+      "new_owner": "Level89AchievementReward",
+      "name": "case 721",
+      "body_sha256": "d4b87eb561c7a0fd14ca5026545d438f72c20d7bfcc370b65d34c0937864213c",
+      "length": 1570
+    },
+    {
+      "owner": "LevelMilestonePackages",
+      "new_owner": "Level90AchievementReward",
+      "name": "case 722",
+      "body_sha256": "3b6e197a1ac9b9a412e47f4cda199171c9d2863316c1016be1a083703c3bc279",
+      "length": 1524
+    },
+    {
+      "owner": "ReturnAndTeleportItems",
+      "new_owner": "IslandReturnScrollUse",
+      "name": "case 875640424",
+      "body_sha256": "da9168e4fb830d1530e4bb7f6068f1bef96f6054460c74c3da29f414db5bb904",
+      "length": 962
+    },
+    {
+      "owner": "ReturnAndTeleportItems",
+      "new_owner": "IslandReturnScrollUse",
+      "name": "case 3000147",
+      "body_sha256": "b5bd473ba899450b3a9df6611a3d50668507fb76d5a4f72cf560a61366424057",
+      "length": 498
+    },
+    {
+      "owner": "ReturnAndTeleportItems",
+      "new_owner": "IslandReturnScrollUse",
+      "name": "case 202099",
+      "body_sha256": "d07559c6732328186e331336ef6ae6c180bd948cfc5af50da4589806b534984d",
+      "length": 493
+    },
+    {
+      "owner": "ReturnAndTeleportItems",
+      "new_owner": "IslandReturnScrollUse",
+      "name": "case 875640415",
+      "body_sha256": "35825e18864a96b0aa0764b7a88735aaa041e1d87f633b17093b6caba9b832f7",
+      "length": 962
+    },
+    {
+      "owner": "ReturnAndTeleportItems",
+      "new_owner": "IslandReturnScrollUse",
+      "name": "case 3000229",
+      "body_sha256": "f40141b7912ec22208e41fba109e56299805afa597c3dbbe477496817f4f0340",
+      "length": 968
+    },
+    {
+      "owner": "ReturnAndTeleportItems",
+      "new_owner": "IslandReturnScrollUse",
+      "name": "case 240100",
+      "body_sha256": "4a39ece56aad6afef2a667d879262dd3f247323d790038919f77c7366e28a7d9",
+      "length": 284
+    },
+    {
+      "owner": "ReturnAndTeleportItems",
+      "new_owner": "IslandReturnScrollUse",
+      "name": "case 3000413",
+      "body_sha256": "c66412aaf03250e479d81269686913404e7c212f8c25be16dd81aee8396be69f",
+      "length": 1104
+    },
+    {
+      "owner": "ReturnAndTeleportItems",
+      "new_owner": "ShopTeleportAmuletUse",
+      "name": "case 748",
+      "body_sha256": "88f68a8a87c43c38e8ce269695def18efb5a7658bd51e9a9268b8a7ee966ba30",
+      "length": 121
+    },
+    {
+      "owner": "ReturnAndTeleportItems",
+      "new_owner": "ShopTeleportAmuletUse",
+      "name": "case 749",
+      "body_sha256": "182aa8874d5d54a8f916744219cccd325e683e35a3c64bc2be0185a6ef2bd052",
+      "length": 121
+    },
+    {
+      "owner": "ReturnAndTeleportItems",
+      "new_owner": "ClanInnReturnScrollUse",
+      "name": "case 40124",
+      "body_sha256": "4ec79b2e67e136df76f7346fa4b8708734416accb6115db8edcbae3b0f8c2031",
+      "length": 14
+    },
+    {
+      "owner": "ReturnAndTeleportItems",
+      "new_owner": "ClanInnReturnScrollUse",
+      "name": "case 30086",
+      "body_sha256": "10179a8fdac7c9a8edbe7a48e3d4887c820a98bd32c8f7cf5d3b35c682e02243",
+      "length": 1889
+    },
+    {
+      "owner": "ReturnAndTeleportItems",
+      "new_owner": "ClanInnReturnScrollUse",
+      "name": "case 700023",
+      "body_sha256": "3e4236a53f147883189990de82311fa7d2409b523f4846036d1c673f28b7e876",
+      "length": 88
+    },
+    {
+      "owner": "ReturnAndTeleportItems",
+      "new_owner": "ClanInnReturnScrollUse",
+      "name": "case MJINNHelper.INN_KEYID",
+      "body_sha256": "c35ae46e3a2cc4402069493e215372d8425a60939cbd2aa69e7bf836cd952414",
+      "length": 700
+    },
+    {
+      "owner": "MovementPotionConsumables",
+      "new_owner": "GreenMovementPotionUse",
+      "name": "cases 40030",
+      "body_sha256": "314711a09669e138deeb97062879742d923cc584529c17e09fba12c34bb1deba",
+      "length": 104
+    },
+    {
+      "owner": "MovementPotionConsumables",
+      "new_owner": "GreenMovementPotionUse",
+      "name": "cases 40013,7006,40018,40039,40040,41338,41261,41262,41268,41269,41271,41272,41273,41342,30067,140013,140018,30158,875640293",
+      "body_sha256": "be9909d89fd2d57126f98ff1860ea8d36fb196d88a1cd61cfdc2a55f1bb8257f",
+      "length": 497
+    },
+    {
+      "owner": "MovementPotionConsumables",
+      "new_owner": "BraveryMovementPotionUse",
+      "name": "cases 40014,140014,41415",
+      "body_sha256": "91ea350840f2c74ebd3af259cefb522b1a6ba77437f7afa8d008bc7bcb745671",
+      "length": 313
+    },
+    {
+      "owner": "MovementPotionConsumables",
+      "new_owner": "BraveryMovementPotionUse",
+      "name": "cases 30073",
+      "body_sha256": "98625e806322542a9adedb4d2c1c808fa56ec0936839be8b5f854d6bb597e85d",
+      "length": 780
+    },
+    {
+      "owner": "MovementPotionConsumables",
+      "new_owner": "BraveryMovementPotionUse",
+      "name": "cases 40068,140068,210110",
+      "body_sha256": "e5137deeec400c92b9444eb8ca1ef1cea0b439768fbf5f6d4968ffccf6ef6c36",
+      "length": 274
+    },
+    {
+      "owner": "MovementPotionConsumables",
+      "new_owner": "BraveryMovementPotionUse",
+      "name": "cases 30076",
+      "body_sha256": "c29552c9d0d9d17acd11b52cac9f9e3da7d8ab4ec00ea0a31d14ccd98b2ae14f",
+      "length": 740
+    },
+    {
+      "owner": "MovementPotionConsumables",
+      "new_owner": "BraveryMovementPotionUse",
+      "name": "cases 712,40031",
+      "body_sha256": "c156098398a2a117ad7dbe89846a100abcab390dde1e5bb2728f113777459124",
+      "length": 230
+    },
+    {
+      "owner": "MovementPotionConsumables",
+      "new_owner": "BraveryMovementPotionUse",
+      "name": "cases 30075",
+      "body_sha256": "9fb0f6304eb668a92b41dc22ff92af0fa48fe9fafd23764d18d0726101856dc7",
+      "length": 742
+    },
+    {
+      "owner": "MovementPotionConsumables",
+      "new_owner": "BraveryMovementPotionUse",
+      "name": "cases 40733",
+      "body_sha256": "b1b15c62b4094bb6805eeb81d27d7a6ab5c7b6b32528572501cc03d2d9238997",
+      "length": 116
+    },
+    {
+      "owner": "MovementPotionConsumables",
+      "new_owner": "FruitMovementPotionUse",
+      "name": "cases 713,210036",
+      "body_sha256": "796241f55032e1aad90489275071fdc6530a848e81243f3819a34bf52547a3ce",
+      "length": 255
+    },
+    {
+      "owner": "MovementPotionConsumables",
+      "new_owner": "FruitMovementPotionUse",
+      "name": "cases 30077",
+      "body_sha256": "2e0161b4d29578d3026a924315ef9081d8320a8916786346d0c4730412baf924",
+      "length": 738
+    },
+    {
+      "owner": "CraftingItemTransactions",
+      "new_owner": "RunePowerRemovalReceipt",
+      "name": "useRunePowerRemover",
+      "body_sha256": "0497b8fd7847b095292e4819739aae84361f7eb1935ff8db1811fd49d84e5621",
+      "length": 1729,
+      "normalized_dependency": false
+    },
+    {
+      "owner": "CraftingItemTransactions",
+      "new_owner": "TargetedPurificationReceipt",
+      "name": "useTargetedPurification",
+      "body_sha256": "ca0a8e050cbd7596abf72d02aebfa8edca3296e110b1ed538a2cb7c3e3443fee",
+      "length": 2881,
+      "normalized_dependency": false
+    },
+    {
+      "owner": "CraftingItemTransactions",
+      "new_owner": "WeaponTransformationReceipt",
+      "name": "useWeaponTransformation",
+      "body_sha256": "d0d13aa2953c33ee6af3518d92c768d5ea8cc4cd031333c3c5ca1846d6287ec1",
+      "length": 2583,
+      "normalized_dependency": false
+    },
+    {
+      "owner": "CraftingItemTransactions",
+      "new_owner": "LifeEyeCraftReceipt",
+      "name": "craftLifeEye",
+      "body_sha256": "1c1ab260b97c0725bd3fbc08b7178cc0743468d20247cc15ecf7b3a1fb9831d4",
+      "length": 968,
+      "normalized_dependency": false
+    },
+    {
+      "owner": "EconomyRewardItems",
+      "new_owner": "ClassPackageRewardReceipt",
+      "name": "useClassPackage",
+      "body_sha256": "a5bc1a83fd7e82b0e35a3c2a111e3729109f35c6acce0a7d8ef8200dc0f8143b",
+      "length": 1790,
+      "normalized_dependency": false
+    },
+    {
+      "owner": "EconomyRewardItems",
+      "new_owner": "LegacyEquipmentExchangeReceipt",
+      "name": "exchangeLegacyItem",
+      "body_sha256": "fa47eae66bed35f1de5626364e1fdb6f016cc171e1e6a23fa4ad2ddd9e059246",
+      "length": 1376,
+      "normalized_dependency": false
+    },
+    {
+      "owner": "EconomyRewardItems",
+      "new_owner": "AdenaCurrencyConversionReceipt",
+      "name": "convertAdena",
+      "body_sha256": "0240c08a051232ad7fdc29f77072c932065800d600920be0453239627197604f",
+      "length": 1874,
+      "normalized_dependency": false
+    },
+    {
+      "owner": "GiftPackageConsumables",
+      "new_owner": "ClassGiftPackageUse",
+      "name": "handleClassPackage",
+      "body_sha256": "f9a7387b486d6cb570558ed9e07e7b3298e4be0dbc01759d207079251c6d0903",
+      "length": 186,
+      "normalized_dependency": true
+    },
+    {
+      "owner": "GiftPackageConsumables",
+      "new_owner": "AdministratorGiftPackageUse",
+      "name": "handleOpenAdminPackage",
+      "body_sha256": "55d377e5d7ba9d7f19d49a224c4770342503597e95d3bb866ad0aba1022ddab5",
+      "length": 167,
+      "normalized_dependency": false
+    },
+    {
+      "owner": "GiftPackageConsumables",
+      "new_owner": "LegacyGiftPackageUse",
+      "name": "handleOpenLegacyGift",
+      "body_sha256": "ef385b36e8f3a9082171eb179f74c32d69a2d3f9113430814356ca5d24af46f4",
+      "length": 2273,
+      "normalized_dependency": false
+    },
+    {
+      "owner": "GiftPackageConsumables",
+      "new_owner": "LegacyGiftGroupTwoUse",
+      "name": "handleOpenLegacyGiftGroup2",
+      "body_sha256": "579b959986346290a2c26a3f4757669c07185bc90888066c4a9f59b9495c4e43",
+      "length": 2788,
+      "normalized_dependency": false
+    },
+    {
+      "owner": "SocialInteractionItems",
+      "new_owner": "AnnouncementItemUse",
+      "name": "handleRequestAnnouncement",
+      "body_sha256": "7d88090c26fd0a9e6bdad65a94e92a0727f89d2bf41668773e75fdc3a0bba57d",
+      "length": 340,
+      "normalized_dependency": false
+    },
+    {
+      "owner": "SocialInteractionItems",
+      "new_owner": "EngagementRingItemUse",
+      "name": "handleEngagementRing",
+      "body_sha256": "1704a71a65b82464463da28266743174e6443d7c739d407898a4ef6fd9404421",
+      "length": 2551,
+      "normalized_dependency": false
+    },
+    {
+      "owner": "SocialInteractionItems",
+      "new_owner": "NameChangeRequestItemUse",
+      "name": "handleRequestNameChange",
+      "body_sha256": "d54c1432a95e592e1091587b64bae4a103903d286f0275d2012705bbd3d824fe",
+      "length": 1035,
+      "normalized_dependency": false
+    },
+    {
+      "owner": "SocialInteractionItems",
+      "new_owner": "ProtectedClanJoinItemUse",
+      "name": "handleJoinProtectedClan",
+      "body_sha256": "859b2117287ba98efa361c0907f43ffe0bfabf74ffa61e709dd81ec737d47e14",
+      "length": 926,
+      "normalized_dependency": false
+    }
+  ],
+  "new_classes": [
+    "QuestRepairScrollUse",
+    "QuestTreasureFragmentCombine",
+    "QuestVoucherExchange",
+    "QuestEarringCollection",
+    "QuestRingCollection",
+    "QuestSummoningFragmentCombine",
+    "QuestAncientBookCombine",
+    "WizardSpellbookConsumable",
+    "RoyalSpellbookConsumable",
+    "ElfClassSpellbookRoute",
+    "DarkElfSpellbookConsumable",
+    "KnightSpellbookConsumable",
+    "DragonKnightSpellbookConsumable",
+    "IllusionistSpellbookConsumable",
+    "WarriorSpellbookConsumable",
+    "StarterEquipmentGiftBox",
+    "PureShirtSoapExchange",
+    "Level82AchievementReward",
+    "Level84AchievementReward",
+    "Level86AchievementReward",
+    "Level88AchievementReward",
+    "Level89AchievementReward",
+    "Level90AchievementReward",
+    "IslandReturnScrollUse",
+    "ShopTeleportAmuletUse",
+    "ClanInnReturnScrollUse",
+    "GreenMovementPotionUse",
+    "BraveryMovementPotionUse",
+    "FruitMovementPotionUse",
+    "RunePowerRemovalReceipt",
+    "TargetedPurificationReceipt",
+    "WeaponTransformationReceipt",
+    "LifeEyeCraftReceipt",
+    "ClassPackageRewardReceipt",
+    "LegacyEquipmentExchangeReceipt",
+    "AdenaCurrencyConversionReceipt",
+    "ClassGiftPackageUse",
+    "AdministratorGiftPackageUse",
+    "LegacyGiftPackageUse",
+    "LegacyGiftGroupTwoUse",
+    "AnnouncementItemUse",
+    "EngagementRingItemUse",
+    "NameChangeRequestItemUse",
+    "ProtectedClanJoinItemUse"
+  ],
+  "removed_classes": [
+    "QuestCraftingItems",
+    "ClassSpellbookItems",
+    "EquipmentRewardItems",
+    "CraftingItemTransactions",
+    "EconomyRewardItems",
+    "GiftPackageConsumables",
+    "SocialInteractionItems"
+  ],
+  "modified_classes": [
+    "UnlistedItemRouter",
+    "ItemActionDispatcher",
+    "LevelMilestonePackages",
+    "ReturnAndTeleportItems",
+    "MovementPotionConsumables",
+    "TargetedCraftingAndPurificationItems",
+    "WorldRewardAndCraftItems",
+    "RewardReceiptConsumables",
+    "GiftPackageConsumables",
+    "ItemCurrencyExchanges"
+  ]
+}

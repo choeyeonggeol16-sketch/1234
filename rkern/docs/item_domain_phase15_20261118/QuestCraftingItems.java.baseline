@@ -1,0 +1,233 @@
+package l1j.server.server.model.item.function;
+
+import l1j.server.Config;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Quest;
+import l1j.server.server.model.network.core.cs.packet.CDB;
+import l1j.server.server.model.network.core.cs.packet.User;
+import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.storage.CacheD;
+import static l1j.server.server.model.item.function.CreatureItemActions.ITEM_USE2_LOG;
+import static l1j.server.server.model.item.function.CreatureItemActions._random;
+import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsume;
+import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsumeTwoInput;
+import static l1j.server.server.model.item.function.DurabilityRepairItems.UseDurableRepair;
+import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableTwoInput;
+import static l1j.server.server.model.item.function.SpecialEnchantScrolls.isOwnedScrollTarget;
+
+/** Quest item domain handler extracted without changing item effects or transaction order. */
+final class QuestCraftingItems {
+    private QuestCraftingItems() {}
+
+    static ItemActionResult handleCombineMapFragments(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        L1ItemInstance item = use.item();
+        L1ItemInstance targetItem = use.targetItem();
+        {
+            if (targetItem == null || targetItem.getItem().getType2() == 0
+                    || targetItem.get_durability() <= 0) {
+                SC_ServerMessage.send(pc, 79);
+                return ItemActionResult.STOP;
+            }
+            final L1ItemInstance repairTarget = targetItem;
+            final boolean equippedArmor = repairTarget.getItem().getType2() == 2
+                    && repairTarget.isEquipped();
+            UseDurableRepair(pc, item, repairTarget, () -> {
+                if (equippedArmor) {
+                    pc.getAC().addAc(-1);
+                    SC_OwnCharAttrDef.send(pc);
+                }
+                SC_ServerMessage.send(pc, repairTarget.get_durability() == 0 ? 464 : 463,
+                        repairTarget.getLogName());
+            });
+            return ItemActionResult.COMPLETE;
+        }
+    }
+
+    static ItemActionResult handleCombineTreasureFragments(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        L1ItemInstance item = use.item();
+        L1ItemInstance targetItem = use.targetItem();
+        int itemId = use.itemId();
+        {
+            final int requiredId;
+            final int rewardId;
+            switch (itemId) {
+            case 210073: requiredId = 210074; rewardId = 210075; break;
+            case 210077: requiredId = 210078; rewardId = 210079; break;
+            case 500205: requiredId = 500204; rewardId = 500208; break;
+            default: requiredId = 500206; rewardId = 500209; break;
+            }
+            if (targetItem == null || targetItem == item
+                    || targetItem.getItemId() != requiredId
+                    || pc.getInventory().getItem(item.getId()) != item
+                    || pc.getInventory().getItem(targetItem.getId()) != targetItem) {
+                SC_ServerMessage.send(pc, 79);
+                return ItemActionResult.COMPLETE;
+            }
+
+            UseDurableTwoInput(pc, item, targetItem, rewardId, null);
+            return ItemActionResult.COMPLETE;
+        }
+    }
+
+    static ItemActionResult handleVoucher(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        L1ItemInstance item = use.item();
+        L1ItemInstance targetItem = use.targetItem();
+        int itemId = use.itemId();
+        {
+            if (!isOwnedScrollTarget(pc, item, targetItem)
+                    || targetItem.getItemId() != itemId + 8034) {
+                SC_ServerMessage.send(pc, 79);
+                return ItemActionResult.COMPLETE;
+            }
+            final int logbookRewardId = itemId <= 41055
+                    ? targetItem.getItemId() + 2 : 41058;
+            UseDurableTwoInput(pc, item, targetItem,
+                    logbookRewardId, null);
+            return ItemActionResult.COMPLETE;
+        }
+    }
+
+    static ItemActionResult handleBagCollection(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        L1ItemInstance item = use.item();
+        L1ItemInstance targetItem = use.targetItem();
+        int itemId = use.itemId();
+        {
+            if (!isOwnedScrollTarget(pc, item, targetItem)
+                    || targetItem.getItemId() != itemId + 230) {
+                SC_ServerMessage.send(pc, 79);
+                return ItemActionResult.COMPLETE;
+            }
+            final int earingId = targetItem.getItemId();
+            int earingReward = -1;
+            switch (earingId) {
+                case 41161: earingReward = 21014; break;
+                case 41162: earingReward = 21006; break;
+                case 41163: earingReward = 21007; break;
+                case 41164: earingReward = 21015; break;
+                case 41165: earingReward = 21009; break;
+                case 41166: earingReward = 21008; break;
+                case 41167: earingReward = 21016; break;
+                case 41168: earingReward = 21012; break;
+                case 41169: earingReward = 21010; break;
+                case 41170: earingReward = 21017; break;
+                case 41171: earingReward = 21013; break;
+                case 41172: earingReward = 21011; break;
+                default: break;
+            }
+            if (earingReward <= 0) {
+                SC_ServerMessage.send(pc, 79);
+                return ItemActionResult.COMPLETE;
+            }
+            if ((_random.nextInt(99) + 1) < Config.CREATE_CHANCE_PROCESSING) {
+                UseDurableTwoInput(pc, item, targetItem, earingReward, null);
+            } else {
+                final String failedName = targetItem.getName();
+                UseDurableConsumeTwoInput(pc, item, targetItem,
+                        () -> SC_ServerMessage.send(pc, 158, failedName));
+            }
+            return ItemActionResult.COMPLETE;
+        }
+    }
+
+    static ItemActionResult handleMixedBagCollection(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        L1ItemInstance item = use.item();
+        L1ItemInstance targetItem = use.targetItem();
+        int itemId = use.itemId();
+        {
+            if (!isOwnedScrollTarget(pc, item, targetItem)
+                    || targetItem.getItemId() != itemId + 242) {
+                SC_ServerMessage.send(pc, 79);
+                return ItemActionResult.COMPLETE;
+            }
+            final int ringId = targetItem.getItemId();
+            if (ringId < 41185 || ringId > 41200) return ItemActionResult.COMPLETE;
+            final int ringReward = 20435 + (ringId - 41185);
+            final int ringGroup = (itemId - 40943) & 3;
+            final int successCode = ringGroup == 0 ? 443 : ringGroup == 1 ? 442
+                    : ringGroup == 2 ? 441 : 444;
+            final int failureCode = ringGroup == 0 ? 447 : ringGroup == 1 ? 446
+                    : ringGroup == 2 ? 445 : 448;
+            if ((_random.nextInt(99) + 1) < Config.CREATE_CHANCE_PROCESSING_DIAMOND) {
+                final String ringName = targetItem.getName();
+                UseDurableTwoInput(pc, item, targetItem, ringReward,
+                        () -> SC_ServerMessage.send(pc, successCode, ringName));
+            } else {
+                final String catalystName = item.getName();
+                UseDurableConsume(pc, item,
+                        () -> SC_ServerMessage.send(pc, failureCode, catalystName));
+            }
+            return ItemActionResult.COMPLETE;
+        }
+    }
+
+    static ItemActionResult handleSummonFragments(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        L1ItemInstance item = use.item();
+        L1ItemInstance targetItem = use.targetItem();
+        {
+            if (!isOwnedScrollTarget(pc, item, targetItem)) return ItemActionResult.COMPLETE;
+            final int coreId = targetItem.getItemId();
+            if (coreId < 41030 || coreId > 41034) {
+                SC_ServerMessage.send(pc, 79);
+                return ItemActionResult.COMPLETE;
+            }
+            if ((_random.nextInt(99) + 1) < Config.CREATE_CHANCE_DANTES) {
+                UseDurableTwoInput(pc, item, targetItem, coreId + 1, null);
+            } else {
+                final String coreName = targetItem.getName();
+                UseDurableConsumeTwoInput(pc, item, targetItem,
+                        () -> SC_ServerMessage.send(pc, 158, coreName));
+            }
+            return ItemActionResult.COMPLETE;
+        }
+    }
+
+    static ItemActionResult handleCombineAncientBooks(ItemActionContext use) {
+        L1PcInstance pc = use.player();
+        {
+            try (l1j.server.server.model.L1InventoryTransaction tx =
+                    User.CheckAndSetPendingUseETCItem(pc,
+                            l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
+                if (!tx.debit(40420, 1)) {
+                    SC_SystemMessage.send(pc, "고대인의 주술서 1권 이 부족합니다.");
+                    return ItemActionResult.STOP;
+                }
+                if (!tx.debit(40421, 1)) {
+                    SC_SystemMessage.send(pc, "고대인의 주술서 2권 이 부족합니다.");
+                    return ItemActionResult.STOP;
+                }
+                if (!tx.debit(40422, 1)) {
+                    SC_SystemMessage.send(pc, "고대인의 주술서 3권 이 부족합니다.");
+                    return ItemActionResult.STOP;
+                }
+                if (!tx.debit(40423, 1)) {
+                    SC_SystemMessage.send(pc, "고대인의 주술서 4권 이 부족합니다.");
+                    return ItemActionResult.STOP;
+                }
+                if (tx.grant(702, 1) == null) {
+                    SC_ServerMessage.send(pc, 82);
+                    return ItemActionResult.STOP;
+                }
+                tx.onFailure(() -> SC_SystemMessage.send(pc, "연금술사의 돌 제작을 저장하지 못했습니다."));
+                CDB.RequestUseItem(pc, tx,
+                        () -> SC_ChatPacket.sendDirect(pc, pc, "연금술사의 돌 이 제작되었습니다."));
+            } catch (RuntimeException failure) {
+                ITEM_USE2_LOG.log(java.util.logging.Level.WARNING,
+                        "Alchemist stone prepare failed: " + pc.getId(), failure);
+                SC_SystemMessage.send(pc, "연금술사의 돌을 제작하지 못했습니다.");
+            }
+            return ItemActionResult.COMPLETE;
+        }
+    }
+}

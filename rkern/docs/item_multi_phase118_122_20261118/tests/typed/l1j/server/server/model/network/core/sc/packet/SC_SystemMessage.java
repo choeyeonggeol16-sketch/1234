@@ -1,0 +1,1 @@
+package l1j.server.server.model.network.core.sc.packet;import l1j.server.server.model.Instance.L1PcInstance; public class SC_SystemMessage{public static void send(L1PcInstance pc,String s){Faults.maybe(1);}}

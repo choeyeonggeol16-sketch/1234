@@ -1,0 +1,10 @@
+Phase112 checks (Java 21, 2026-11-18)
+- Changed production CardFusionChanceItems.java Java 21 compiled: PASS
+- 3-tier potion receipt/packet failure injection: 6,925 assertions PASS
+- Expected warning logs from injected packet faults: 768 (not failures)
+- Phase111 compiled production registration tests: 118 + 24 PASS
+- Phase110 compiled production synthesis tests: 25,335 PASS
+- Phase109 collection/tree gate test: 546 PASS; related Phase103 PASS
+- Phase108 compiled production synthesis tests: 25,371 PASS
+- All 1,923 production Java sources syntax parse: 0 errors
+- Full project dependency type compile, real MySQL/CIO sockets, in-game test: NOT RUN
