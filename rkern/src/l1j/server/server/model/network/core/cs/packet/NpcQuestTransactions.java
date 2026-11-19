@@ -925,65 +925,49 @@ final class NpcQuestTransactions {
 		return htmlid;
 	}
 
-    static void getBloodCrystalByKarma(L1PcInstance pc, L1NpcInstance npc, String s) {
-		L1ItemInstance item = null;
+    static void getBloodCrystalByKarma(L1PcInstance pc, L1NpcInstance npc, String command) {
+        exchangeKarmaCrystal(pc, npc, command, true);
+    }
 
-		if (s.equalsIgnoreCase("1")) {
-			pc.addKarma((int) (500 * Config.RATE_KARMA));
-			SC_Karma.send(pc);
-			item = pc.getInventory().storeItem(40718, 1);
-			if (item != null) {
-				SC_ServerMessage.send(pc, 143, npc.getNpcTemplate().get_name(), item.getLogName());
-			}
-			SC_ServerMessage.send(pc, 1081);
-		} else if (s.equalsIgnoreCase("2")) {
-			pc.addKarma((int) (5000 * Config.RATE_KARMA));
-			SC_Karma.send(pc);
-			item = pc.getInventory().storeItem(40718, 10);
-			if (item != null) {
-				SC_ServerMessage.send(pc, 143, npc.getNpcTemplate().get_name(), item.getLogName());
-			}
-			SC_ServerMessage.send(pc, 1081);
-		} else if (s.equalsIgnoreCase("3")) {
-			pc.addKarma((int) (50000 * Config.RATE_KARMA));
-			SC_Karma.send(pc);
-			item = pc.getInventory().storeItem(40718, 100);
-			if (item != null) {
-				SC_ServerMessage.send(pc, 143, npc.getNpcTemplate().get_name(), item.getLogName());
-			}
-			SC_ServerMessage.send(pc, 1081);
-		}
-	}
+    static void getSoulCrystalByKarma(L1PcInstance pc, L1NpcInstance npc, String command) {
+        exchangeKarmaCrystal(pc, npc, command, false);
+    }
 
-    static void getSoulCrystalByKarma(L1PcInstance pc, L1NpcInstance npc, String s) {
-		L1ItemInstance item = null;
+    private static void exchangeKarmaCrystal(L1PcInstance pc, L1NpcInstance npc, String command, boolean blood) {
+        if (command == null) return;
+        final int count = switch (command) {
+            case "1" -> 1;
+            case "2" -> 10;
+            case "3" -> 100;
+            default -> 0;
+        };
+        if (count == 0) return;
+        final int delta = (int) ((blood ? 500 : -500) * count * Config.RATE_KARMA);
+        try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcId())) {
+            final int karma = pc.getKarma();
+            if (blood ? karma > -10_000_000 : karma < 10_000_000) return;
+            final L1ItemInstance reward = tx.grant(blood ? 40718 : 40678, count);
+            if (reward == null) {
+                sendKarmaExchangeFailure(pc);
+                return;
+            }
+            final String npcName = npc.getNpcTemplate().get_name();
+            final String rewardName = reward.getLogName();
+            tx.onFailure(() -> sendKarmaExchangeFailure(pc));
+            tx.commitAfterInventoryRelease(() -> {
+                pc.addKarma(delta);
+                SC_Karma.send(pc);
+                SC_ServerMessage.send(pc, 143, npcName, rewardName);
+                SC_ServerMessage.send(pc, blood ? 1081 : 1080);
+            });
+        } catch (RuntimeException failure) {
+            sendKarmaExchangeFailure(pc);
+        }
+    }
 
-		if (s.equalsIgnoreCase("1")) {
-			pc.addKarma((int) (-500 * Config.RATE_KARMA));
-			SC_Karma.send(pc);
-			item = pc.getInventory().storeItem(40678, 1);
-			if (item != null) {
-				SC_ServerMessage.send(pc, 143, npc.getNpcTemplate().get_name(), item.getLogName());
-			}
-			SC_ServerMessage.send(pc, 1080);
-		} else if (s.equalsIgnoreCase("2")) {
-			pc.addKarma((int) (-5000 * Config.RATE_KARMA));
-			SC_Karma.send(pc);
-			item = pc.getInventory().storeItem(40678, 10);
-			if (item != null) {
-				SC_ServerMessage.send(pc, 143, npc.getNpcTemplate().get_name(), item.getLogName());
-			}
-			SC_ServerMessage.send(pc, 1080);
-		} else if (s.equalsIgnoreCase("3")) {
-			pc.addKarma((int) (-50000 * Config.RATE_KARMA));
-			SC_Karma.send(pc);
-			item = pc.getInventory().storeItem(40678, 100);
-			if (item != null) {
-				SC_ServerMessage.send(pc, 143, npc.getNpcTemplate().get_name(), item.getLogName());
-			}
-			SC_ServerMessage.send(pc, 1080);
-		}
-	}
+    private static void sendKarmaExchangeFailure(L1PcInstance pc) {
+        SC_SystemMessage.send(pc, "결정 교환을 완료하지 못했습니다.");
+    }
 
     /** Orc village quest tokens, preserving the original NPC-specific pages. */
     static String orcQuestToken(L1PcInstance pc, L1NpcInstance npc, int npcId, String command, String initialPage) {
