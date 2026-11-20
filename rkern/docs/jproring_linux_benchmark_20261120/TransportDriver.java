@@ -161,36 +161,74 @@ public final class TransportDriver {
 
     private record Result(Samples replies, Samples connects) { }
 
+    // 128 subdivisions per power of two. Only touched blocks are allocated.
+    // The upper-bound percentile error is less than 1/128 of its true value;
+    // counts and maximum latency remain exact, regardless of sample count.
     private static final class Samples {
-        private long[] values = new long[0];
-        private int size;
+        private static final int SHIFT = 7;
+        private static final int WIDTH = 1 << SHIFT;
+        private static final int MASK = WIDTH - 1;
+        private static final int BLOCKS = 64 - SHIFT;
+        private long[][] blocks;
+        private long size;
+        private long max;
 
         void add(long time) {
-            reserve(1);
-            values[size++] = time;
+            int bucket = bucket(time);
+            block(bucket >>> SHIFT)[bucket & MASK]++;
+            size++;
+            max = Math.max(max, time);
         }
 
         void addAll(Samples other) {
-            reserve(other.size);
-            System.arraycopy(other.values, 0, values, size, other.size);
+            if (other.size == 0) return;
+            for (int i = 0; i < BLOCKS; i++) {
+                long[] source = other.blocks[i];
+                if (source == null) continue;
+                long[] target = block(i);
+                for (int j = 0; j < WIDTH; j++) target[j] += source[j];
+            }
             size += other.size;
+            max = Math.max(max, other.max);
         }
 
-        private void reserve(int count) {
-            if (size + count > values.length)
-                values = Arrays.copyOf(values, Math.max(size + count, Math.max(64, values.length * 2)));
+        private long[] block(int index) {
+            if (blocks == null) blocks = new long[BLOCKS][];
+            long[] block = blocks[index];
+            if (block == null) blocks[index] = block = new long[WIDTH];
+            return block;
+        }
+
+        private static int bucket(long time) {
+            if (time < 0) throw new IllegalArgumentException("negative latency");
+            int shift = 63 - Long.numberOfLeadingZeros(time) - SHIFT;
+            return shift <= 0 ? (int) time : (shift << SHIFT) + (int) (time >>> shift);
+        }
+
+        private static long upperBound(int bucket) {
+            if (bucket < 2 * WIDTH) return bucket;
+            int shift = (bucket >>> SHIFT) - 1;
+            return ((long) (WIDTH + (bucket & MASK)) << shift) | ((1L << shift) - 1);
         }
 
         String quantiles() {
             if (size == 0) return "NA NA NA NA NA";
-            Arrays.sort(values, 0, size);
             return String.format(Locale.ROOT, "%.3f %.3f %.3f %.3f %.3f", percentile(500), percentile(950),
                     percentile(990), percentile(999), percentile(1000));
         }
 
         private double percentile(int p) {
-            int rank = (int) ((p * (long) size + 999) / 1000);
-            return values[rank - 1] / 1000.0;
+            if (p == 1000) return max / 1000.0;
+            long rank = (size / 1000) * p + ((size % 1000) * p + 999) / 1000;
+            for (int i = 0; i < BLOCKS; i++) {
+                long[] block = blocks[i];
+                if (block == null) continue;
+                for (int j = 0; j < WIDTH; j++) {
+                    rank -= block[j];
+                    if (rank <= 0) return Math.min(max, upperBound((i << SHIFT) + j)) / 1000.0;
+                }
+            }
+            throw new IllegalStateException("Histogram count mismatch");
         }
     }
 }
