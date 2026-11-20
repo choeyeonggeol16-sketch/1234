@@ -96,10 +96,39 @@ jobs:
           print("COUNTS", dict(count))
           print("PSS_IDENTIFIER_ONLY", [str(t) for p,t,src,b in edits if "/PlaySupport/" in str(t)])
           PY
-          git rm .github/workflows/rkern-nc-network-naming-check.yml
           git add rkern/src rkern/docs
-          git diff --cached --check
+          git -c core.whitespace=-blank-at-eol diff --cached --check
           git config user.name "RKern naming verification"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Align RKern network class names with NC conventions; preserve all logic"
           git push origin HEAD:refs/heads/rkern/nc-network-naming-check-20261120
+      - name: Compile all production Java and active integration tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          mkdir -p "$RUNNER_TEMP/rkern-classes" "$RUNNER_TEMP/rkern-deps"
+          for coordinate in \
+            com/zaxxer/HikariCP/5.1.0/HikariCP-5.1.0.jar \
+            org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar \
+            org/jctools/jctools-core/4.0.5/jctools-core-4.0.5.jar \
+            javolution/javolution/5.5.1/javolution-5.5.1.jar \
+            net/sf/trove4j/trove4j/3.0.3/trove4j-3.0.3.jar \
+            org/agrona/agrona/1.23.1/agrona-1.23.1.jar \
+            it/unimi/dsi/fastutil/8.5.15/fastutil-8.5.15.jar \
+            javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar \
+            javax/activation/javax.activation-api/1.2.0/javax.activation-api-1.2.0.jar \
+            com/github/ben-manes/caffeine/caffeine/3.1.8/caffeine-3.1.8.jar; do
+                curl --fail --silent --show-error --retry 2 "https://repo.maven.apache.org/maven2/$coordinate" -o "$RUNNER_TEMP/rkern-deps/${coordinate##*/}"
+          done
+          find rkern/src -name '*.java' -print0 | sort -z | xargs -0 -I{} printf '"%s"\n' '{}' > "$RUNNER_TEMP/rkern-sources.txt"
+          for src in rkern/docs/jproring_p1_selector_20261120/SelectorFrameReaderTest.java rkern/docs/jproring_selector_transport_20261120/SelectorTransportTest.java rkern/docs/jproring_cio_integration_20261120/SelectorCioIntegrationTest.java rkern/docs/jproring_cio_integration_20261120/CIOBufferPoolAffinityTest.java; do
+              printf '"%s"\n' "$src" >> "$RUNNER_TEMP/rkern-sources.txt"
+          done
+          javac -J-Xmx2g --release 21 --enable-preview -encoding UTF-8 -cp "$RUNNER_TEMP/rkern-deps/*" -d "$RUNNER_TEMP/rkern-classes" @"$RUNNER_TEMP/rkern-sources.txt"
+          java -cp "$RUNNER_TEMP/rkern-classes" SelectorFrameReaderTest
+          java -cp "$RUNNER_TEMP/rkern-classes" SelectorTransportTest
+          java --enable-preview -cp "$RUNNER_TEMP/rkern-classes:$RUNNER_TEMP/rkern-deps/*" l1j.server.server.model.network.core.connection.CIOBufferPoolAffinityTest
+          mkdir -p "$RUNNER_TEMP/rkern-runtime"
+          cd "$RUNNER_TEMP/rkern-runtime"
+          java --enable-preview -XX:MaxDirectMemorySize=8m -Drkern.test.listenerRestarts=5 -Drkern.test.resetReconnects=10 -cp "$RUNNER_TEMP/rkern-classes:$RUNNER_TEMP/rkern-deps/*" SelectorCioIntegrationTest
