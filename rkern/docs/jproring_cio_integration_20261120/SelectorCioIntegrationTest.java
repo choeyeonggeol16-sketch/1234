@@ -145,6 +145,7 @@ public final class SelectorCioIntegrationTest {
             };
             try {
                 check(Server.startLoginServer(), "normal RKern login listener started");
+                verifyExpiredShutdownRetry(gamePort);
                 try (Socket first = connect(gamePort); Socket second = connect(gamePort)) {
                     check(Arrays.equals(readBody(first), Opcodes.S_KEYBYTES), "first initial key bytes");
                     check(Arrays.equals(readBody(second), Opcodes.S_KEYBYTES), "second initial key bytes");
@@ -295,6 +296,25 @@ public final class SelectorCioIntegrationTest {
         }
         System.out.println("PASS RKern login entry, cipher FIFO, fragmented maximum frame, timer, MAC/account admission, large broadcast, graceful FIFO drain, "
                 + restarts + " restarts and " + reconnects + " reset/reconnect cycles with zero outstanding leases");
+    }
+
+    private static void verifyExpiredShutdownRetry(int port) throws Exception {
+        Server.stopNewConnections();
+        var deadline = Server.class.getDeclaredField("networkShutdownDeadlineNs");
+        deadline.setAccessible(true);
+        deadline.setLong(null, System.nanoTime() - 1L);
+        try {
+            Server.stopLoginServer();
+            throw new AssertionError("expired first shutdown budget should be reported");
+        } catch (IllegalStateException expected) {
+            check(expected.getMessage().contains("deadline expired"), "expired shutdown budget");
+        }
+        Server.stopLoginServer();
+        check(Server.startLoginServer(), "retry released the listener and allowed rebind");
+        try (Socket peer = connect(port)) {
+            check(Arrays.equals(readBody(peer), Opcodes.S_KEYBYTES), "listener works after timeout and retry");
+        }
+        awaitIdlePool();
     }
 
     private static void awaitIdlePool() throws InterruptedException {

@@ -32,6 +32,7 @@ import l1j.server.server.model.network.packet.CPacketHandler;
 import l1j.server.server.model.network.packet.WritablePacket;
 import l1j.server.server.model.network.safe.NetworkSafeLoadManager;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
 
 /** Lockstep benchmark client and actual DLL-free game listener in separate JVMs. */
@@ -79,7 +80,10 @@ public final class GameSendBenchmark {
             if (sequence == 0) sessions.add(socket);
             body(packet.body, RESPONSE, sequence);
             boolean bytes = packetKind.equals("bytes") || (packetKind.equals("mixed") && (sequence & 1) == 0);
-            if (!socket.tryWritePacket(client, bytes ? new BytesWritablePacket(packet.body) : packet)) {
+            boolean admitted = packetKind.equals("cached") && (sequence & 1) == 0
+                    ? Proto.sendRaw(client, packet.body)
+                    : socket.tryWritePacket(client, bytes ? new BytesWritablePacket(packet.body) : packet);
+            if (!admitted) {
                 rejected.incrementAndGet();
                 return false;
             }
@@ -97,6 +101,7 @@ public final class GameSendBenchmark {
             Method appends = optionalMethod(CUserSocket.class, "javaDirectByteAppends");
             Method poolSnapshot = optionalMethod(Server.class, "networkPoolSnapshot");
             Method writeSnapshot = optionalMethod(Server.class, "networkWriteSnapshot");
+            Method packingSnapshot = optionalMethod(CUserSocket.class, "sendPackingSnapshot");
             for (String command; (command = input.readLine()) != null; ) {
                 if (command.equals("STOP")) break;
                 if (command.equals("DIAG")) {
@@ -119,9 +124,17 @@ public final class GameSendBenchmark {
                 }
                 if (!command.equals("SAMPLE")) throw new IllegalArgumentException(command);
                 long[] writes = writeSnapshot == null ? new long[3] : (long[]) writeSnapshot.invoke(null);
-                protocol.printf(Locale.ROOT, "SAMPLE %d %d %d %d %d %d %d %d%n", cpu.getProcessCpuTime(),
+                long[] packing = new long[4];
+                if (packingSnapshot != null && Boolean.getBoolean("rkern.network.measureWrites")) {
+                    for (CUserSocket socket : sessions) {
+                        long[] values = (long[]) packingSnapshot.invoke(socket);
+                        for (int i = 0; i < packing.length; i++) packing[i] += values[i];
+                    }
+                }
+                protocol.printf(Locale.ROOT, "SAMPLE %d %d %d %d %d %d %d %d %d %d %d %d%n", cpu.getProcessCpuTime(),
                         threads.getTotalThreadAllocatedBytes(), sumCounter(sessions, commits),
-                        sumCounter(sessions, appends), rejected.get(), writes[0], writes[1], writes[2]);
+                        sumCounter(sessions, appends), rejected.get(), writes[0], writes[1], writes[2],
+                        packing[0], packing[1], packing[2], packing[3]);
             }
             if (rejected.get() != 0) throw new AssertionError("SEND rejected: " + rejected.get());
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);

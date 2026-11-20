@@ -26,11 +26,13 @@ MODES = dict(off=(False, False), commit=(True, False), append=(False, True), bot
 WORK = dict(single=(1, 1, 2, 32, 'ordinary'), burst=(16, 16, 2, 256, 'mixed'),
             spread=(128, 1, 2, 64, 'bytes'), large=(16, 8, 2, 4096, 'ordinary'),
             gather=(16, 32, 2, 4096, 'ordinary'),
+            cache64=(16, 16, 2, 64, 'cached'), cache256=(16, 16, 2, 256, 'cached'),
             mix5000=(5000, 1, 2, 64, 'mixed'))
 FIELDS = ('workload', 'trial', 'mode', 'clients', 'active_clients', 'pace_ms', 'window', 'owners', 'payload', 'kind',
           'requests', 'requests_per_s', 'p50_us', 'p99_us', 'p999_us', 'server_cpu_ns_per_op',
           'server_alloc_bytes_per_op', 'commit_hits', 'byte_append_hits', 'send_rejections',
-          'raw_writes', 'raw_gather_writes', 'raw_write_segments')
+          'raw_writes', 'raw_gather_writes', 'raw_write_segments',
+          'direct_packet_tails', 'adjacent_copied_bytes', 'compacted_copied_bytes', 'write_burst_copied_bytes')
 RESOURCES = ('elapsed_ms', 'phase', 'sockets', 'leases', 'direct_bytes', 'direct_cap_bytes',
              'borrows', 'returns', 'heap_used_bytes', 'rss_kib', 'peak_rss_kib', 'file_descriptors')
 

@@ -210,8 +210,13 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
         return javaServer != null ? javaServer.isAcceptStopped() : nativeServer.isAcceptStopped();
     }
 
-    private boolean isTransportTerminated() {
+    public boolean isTransportTerminated() {
         return javaServer != null ? javaServer.isTerminated() : nativeServer.isTerminated();
+    }
+
+    private void checkTransportFailure() {
+        final Throwable failure = javaServer != null ? javaServer.shutdownFailure() : nativeServer.shutdownFailure();
+        if (failure != null) throw new IllegalStateException("CIO transport owner failed", failure);
     }
 
     @Override public void close() {
@@ -226,11 +231,17 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
             throw new IllegalStateException("cannot destroy server on a transport owner");
         final long started = System.nanoTime();
         final long budget = unit.toNanos(timeout);
-        if (isTransportTerminated()) return;
+        if (isTransportTerminated()) {
+            checkTransportFailure();
+            return;
+        }
         if (budget <= 0L) throw new IllegalStateException("CIO shutdown deadline expired; I/O resources retained");
         final ShutdownAttempt attempt;
         synchronized (closed) {
-            if (isTransportTerminated()) return;
+            if (isTransportTerminated()) {
+                checkTransportFailure();
+                return;
+            }
             ShutdownAttempt current = shutdownAttempt;
             if (current == null || current.done) {
                 current = new ShutdownAttempt(started, budget);
@@ -307,6 +318,6 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
                     budget - (System.nanoTime() - started)));
             if (Thread.interrupted()) throw new InterruptedException();
         }
-        return closed.get();
+        return true;
     }
 }

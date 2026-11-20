@@ -745,6 +745,8 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     // P19: retain the serializer-driven partial WRITE progression; no runtime flag.
     // Medium S-packets share the same ordered wire batch when space permits.
     private static final int PACK_MAX_FRAME_BYTES = 2048;
+    private static final boolean MEASURE_SEND_PACKING = Boolean.getBoolean("rkern.network.measureWrites");
+    private long _directPacketTails, _adjacentCopiedBytes, _compactedCopiedBytes, _writeBurstCopiedBytes;
     private CIOBufferEx[] _gatherFrames;
     private ByteBuffer[] _gatherBuffers;
     private int _gatherCount;
@@ -1681,6 +1683,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         final ByteBuffer dest = earlier.buffer();
         dest.limit(dest.capacity());
         dest.put(prior, packet.buffer(), 0, length);
+        if (MEASURE_SEND_PACKING) _adjacentCopiedBytes += length;
         earlier.writer().position(prior + length);
         earlier._packedFrames = true;
         earlier._frameCount = firstMerge ? 2 : earlier._frameCount + 1;
@@ -1750,6 +1753,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                     final ByteBuffer dst = first.buffer();
                     dst.limit(dst.capacity());
                     dst.put(before, next.buffer(), 0, length);
+                    if (MEASURE_SEND_PACKING) _compactedCopiedBytes += length;
                     first.writer().position(before + length);
                     final int priorFrames = first._packedFrames ? first._frameCount : 1;
                     final int mergedFrames = next._packedFrames ? next._frameCount : 1;
@@ -2125,6 +2129,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                 // JDK absolute bulk put avoids per-byte bounds checks and
                 // preserves both buffers' positions and limits.
                 dst.put(offset, src, 0, length);
+                if (MEASURE_SEND_PACKING) _writeBurstCopiedBytes += length;
                 tail._wireLength += length;
                 tail._frameCount += frameCount;
                 tail._packedFrames = true;
@@ -2227,6 +2232,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                     tail._actionOnly = false;
                     if (_stagedPacketPack == tail) _stagedPacketLastTicket = ticket;
                     bytesAdmitted(length);
+                    if (MEASURE_SEND_PACKING) ++_directPacketTails;
                     admitted = true;
                 }
             } catch (Throwable failure) {
@@ -2251,6 +2257,13 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         }
         if (resumeRead && _closed == 0) kickRead();
         return admitted;
+    }
+
+    /** Test-only observations. See rkern.network.measureWrites. */
+    public long[] sendPackingSnapshot() {
+        _stateLock.lock();
+        try { return new long[] {_directPacketTails, _adjacentCopiedBytes, _compactedCopiedBytes, _writeBurstCopiedBytes}; }
+        finally { _stateLock.unlock(); }
     }
 
     private boolean tryWritePacketInternal(CIOClient client,

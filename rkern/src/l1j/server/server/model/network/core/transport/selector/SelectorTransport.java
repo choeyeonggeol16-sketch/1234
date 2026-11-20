@@ -320,7 +320,7 @@ public final class SelectorTransport implements AutoCloseable {
         private boolean armRawWrite(ByteBuffer source, ByteBuffer[] sources, int offset, int count, LongConsumer completion) {
             owner.requireOwner();
             requireRaw();
-            if (closed || drainReason != null) return false;
+            if (closed || drainReason != null || owner.stopping) return false;
             raw.armWrite(source, sources, offset, count, Objects.requireNonNull(completion));
             if (!writeBlocked) owner.schedule(this);
             return true;
@@ -347,23 +347,17 @@ public final class SelectorTransport implements AutoCloseable {
                 runCommand(command);
                 return true;
             }
-            return owner.offer(new OwnerTask() {
-                @Override
-                public void run() {
-                    if (closed) cancel();
-                    else runCommand(command);
-                }
-
-                @Override public void cancel() {
-                    try { command.cancel(); }
-                    catch (RuntimeException error) { owner.reportCallbackFailure("command cancellation", error); }
-                }
-            });
+            return owner.offer(this, command);
         }
 
         private void runCommand(OwnerCommand command) {
             try { command.run(this); }
             catch (IOException | RuntimeException e) { terminate(CloseReason.HANDLER_ERROR); }
+        }
+
+        private void cancelCommand(OwnerCommand command) {
+            try { command.cancel(); }
+            catch (RuntimeException error) { owner.reportCallbackFailure("command cancellation", error); }
         }
 
         public void enableCipher(long seed, boolean firstOutboundPlaintext) {
@@ -583,11 +577,6 @@ public final class SelectorTransport implements AutoCloseable {
         }
     }
 
-    private interface OwnerTask {
-        void run();
-        void cancel();
-    }
-
     /** Owner-only binary heap with one reusable index per connection and timer kind. */
     private final class DeadlineHeap {
         private final ArrayList<Connection> nodes = new ArrayList<>();
@@ -670,7 +659,11 @@ public final class SelectorTransport implements AutoCloseable {
         private volatile Thread thread;
         private final Selector selector;
         private final AtomicInteger admitted = new AtomicInteger();
-        private final ArrayDeque<OwnerTask> mailbox = new ArrayDeque<>(config.mailboxCapacity());
+        // Targets are a Connection with a command or a SocketChannel awaiting registration.
+        // Slots are published in one monitor transaction and cleared before running callbacks.
+        private final Object[] mailbox = new Object[config.mailboxCapacity()];
+        private final OwnerCommand[] mailboxCommands = new OwnerCommand[mailbox.length];
+        private int mailboxHead, mailboxTail, mailboxSize;
         private final ArrayDeque<Connection> closing = new ArrayDeque<>();
         private final DeadlineHeap stalled = new DeadlineHeap(true);
         private final DeadlineHeap deadlines = new DeadlineHeap(false);
@@ -707,16 +700,18 @@ public final class SelectorTransport implements AutoCloseable {
             if (Thread.currentThread() != thread) throw new IllegalStateException("Wrong connection owner");
         }
 
-        private boolean offer(OwnerTask task) {
+        private boolean offer(Object target, OwnerCommand command) {
             boolean wake;
             synchronized (mailbox) {
-                if (stopping || mailbox.size() == config.mailboxCapacity()) {
+                if (stopping || mailboxSize == mailbox.length) {
                     rejectedCommands++;
                     return false;
                 }
-                wake = mailbox.isEmpty();
-                mailbox.addLast(task);
-                commandHighWater = Math.max(commandHighWater, mailbox.size());
+                wake = mailboxSize == 0;
+                mailbox[mailboxTail] = target;
+                mailboxCommands[mailboxTail] = command;
+                if (++mailboxTail == mailbox.length) mailboxTail = 0;
+                commandHighWater = Math.max(commandHighWater, ++mailboxSize);
             }
             if (wake) selector.wakeup();
             return true;
@@ -724,7 +719,7 @@ public final class SelectorTransport implements AutoCloseable {
 
         private OwnerDiagnostics diagnostics() {
             synchronized (mailbox) {
-                return new OwnerDiagnostics(index, admitted.get(), registered, mailbox.size(), commandHighWater,
+                return new OwnerDiagnostics(index, admitted.get(), registered, mailboxSize, commandHighWater,
                         rejectedCommands, deadlineDepth, stalledDepth, zeroWrites, writeTimeouts, callbackFailures,
                         rawWrites, rawGatherWrites, rawWriteSegments);
             }
@@ -758,12 +753,31 @@ public final class SelectorTransport implements AutoCloseable {
             }
         }
 
-        private OwnerTask poll() {
-            synchronized (mailbox) { return mailbox.pollFirst(); }
+        private boolean processCommand(boolean cancel) {
+            final Object target;
+            final OwnerCommand command;
+            synchronized (mailbox) {
+                if (mailboxSize == 0) return false;
+                target = mailbox[mailboxHead];
+                command = mailboxCommands[mailboxHead];
+                mailbox[mailboxHead] = null;
+                mailboxCommands[mailboxHead] = null;
+                if (++mailboxHead == mailbox.length) mailboxHead = 0;
+                --mailboxSize;
+            }
+            if (target instanceof Connection connection) {
+                if (cancel || connection.closed) connection.cancelCommand(command);
+                else connection.runCommand(command);
+            } else {
+                SocketChannel channel = (SocketChannel) target;
+                if (cancel) dropChannel(channel);
+                else register(channel);
+            }
+            return true;
         }
 
         private int pendingCommands() {
-            synchronized (mailbox) { return mailbox.size(); }
+            synchronized (mailbox) { return mailboxSize; }
         }
 
         private void requestStop() {
@@ -873,9 +887,7 @@ public final class SelectorTransport implements AutoCloseable {
             drainCloses();
             long commandDeadline = now + OWNER_PHASE_NANOS;
             for (int i = 0; i < COMMAND_BUDGET && !stopping; i++) {
-                OwnerTask task = poll();
-                if (task == null) break;
-                task.run();
+                if (!processCommand(false)) break;
                 if ((i & 7) == 7 && System.nanoTime() - commandDeadline >= 0) break;
             }
             if (acceptReady) {
@@ -928,7 +940,7 @@ public final class SelectorTransport implements AutoCloseable {
         }
 
         private boolean hasMailboxWork() {
-            synchronized (mailbox) { return !mailbox.isEmpty() || !closing.isEmpty(); }
+            synchronized (mailbox) { return mailboxSize != 0 || !closing.isEmpty(); }
         }
 
         private void drainExpired(long now) {
@@ -1000,9 +1012,8 @@ public final class SelectorTransport implements AutoCloseable {
 
         private void cleanup() {
             synchronized (mailbox) { closing.clear(); }
-            OwnerTask task;
-            while ((task = poll()) != null) {
-                try { task.cancel(); }
+            for (;;) {
+                try { if (!processCommand(true)) break; }
                 catch (Throwable error) { failure.compareAndSet(null, error); }
             }
             for (SelectionKey key : selector.keys()) {
@@ -1035,10 +1046,7 @@ public final class SelectorTransport implements AutoCloseable {
                 channel.close();
             } else if (owner.index == 0) {
                 owner.register(channel);
-            } else if (!owner.offer(new OwnerTask() {
-                @Override public void run() { owner.register(channel); }
-                @Override public void cancel() { owner.dropChannel(channel); }
-            })) {
+            } else if (!owner.offer(channel, null)) {
                 owner.dropChannel(channel);
             }
         }

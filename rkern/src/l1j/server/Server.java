@@ -120,17 +120,21 @@ public class Server {
         }
     }
 
-    private static volatile long networkShutdownDeadlineNs;
+    private static long networkShutdownDeadlineNs; // guarded by Server.class
 
     /** One deadline across accept stop, Selector owner drain, and Java await. */
     public static void stopNewConnections() {
-        final l1j.server.server.model.network.core.server.Server listener = gameListener;
-        if (listener == null) return;
-        final long deadline = System.nanoTime() + 30_000_000_000L;
-        networkShutdownDeadlineNs = deadline;
+        final l1j.server.server.model.network.core.server.Server listener;
+        final long deadline;
+        synchronized (Server.class) {
+            listener = gameListener;
+            if (listener == null) return;
+            if (listener.isAdmissionThread())
+                throw new IllegalStateException("shutdown from admission owner");
+            deadline = System.nanoTime() + 30_000_000_000L;
+            networkShutdownDeadlineNs = deadline;
+        }
         listener.stopAccepting();
-        if (listener.isAdmissionThread())
-            throw new IllegalStateException("shutdown from admission owner");
         try {
             final long remaining = Math.max(0L, deadline - System.nanoTime());
             if (!listener.awaitAcceptStopped(remaining, java.util.concurrent.TimeUnit.NANOSECONDS))
@@ -142,25 +146,34 @@ public class Server {
     }
 
     public static void stopLoginServer() {
-        final l1j.server.server.model.network.core.server.Server listener = gameListener;
-        if (listener == null) return;
-        final long deadline = networkShutdownDeadlineNs != 0L
-                ? networkShutdownDeadlineNs : System.nanoTime() + 30_000_000_000L;
-        final long remaining = Math.max(0L, deadline - System.nanoTime());
-        if (remaining == 0L)
-            throw new IllegalStateException("CIO shutdown deadline expired before transport stop");
-        listener.close(remaining, java.util.concurrent.TimeUnit.NANOSECONDS);
+        final l1j.server.server.model.network.core.server.Server listener;
+        final long recordedDeadline;
+        synchronized (Server.class) {
+            listener = gameListener;
+            if (listener == null) return;
+            recordedDeadline = networkShutdownDeadlineNs;
+        }
+        final long deadline = recordedDeadline != 0L ? recordedDeadline : System.nanoTime() + 30_000_000_000L;
         try {
+            listener.close(Math.max(0L, deadline - System.nanoTime()), java.util.concurrent.TimeUnit.NANOSECONDS);
             if (!listener.awaitTermination(Math.max(0L, deadline - System.nanoTime()),
                     java.util.concurrent.TimeUnit.NANOSECONDS))
                 throw new IllegalStateException("CIO shutdown: transport owners still active");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("CIO shutdown interrupted", e);
-        }
-        synchronized (Server.class) {
-            if (gameListener == listener) gameListener = null;
-            networkShutdownDeadlineNs = 0L;
+        } finally {
+            synchronized (Server.class) {
+                if (gameListener == listener) {
+                    if (listener.isTransportTerminated()) {
+                        gameListener = null;
+                        networkShutdownDeadlineNs = 0L;
+                    } else if (networkShutdownDeadlineNs == recordedDeadline) {
+                        // A retry gets a fresh budget once this attempt has returned.
+                        networkShutdownDeadlineNs = 0L;
+                    }
+                }
+            }
         }
     }
 

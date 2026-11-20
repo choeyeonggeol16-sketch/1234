@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,7 +36,11 @@ public final class SelectorTransportTest {
         checkOwnersAndFraming();
         checkSendAndGracefulClose();
         checkWriteStall();
+        checkMixedSlowPeers(1);
+        checkMixedSlowPeers(10);
         checkMailboxAndShutdown();
+        checkConcurrentMailbox();
+        checkOwnerFailure();
         checkCipher();
         checkCallbackFailureIsolation();
         checkRawGracefulGather();
@@ -342,6 +347,47 @@ public final class SelectorTransportTest {
         };
     }
 
+    private static void checkMixedSlowPeers(int slowCount) throws Exception {
+        var queued = new CountDownLatch(slowCount);
+        var timeouts = new CountDownLatch(slowCount);
+        var config = new SelectorTransport.Config(2, 100, 128, 128, 1, 16,
+                slowCount * BURST_FRAMES, 1_000_000, 32, 4_096, Duration.ofMillis(750));
+        try (var server = SelectorTransport.bind(LOOPBACK, config, new SelectorTransport.Handler() {
+            @Override public void onFrame(Connection connection, ReadBuffer payload) throws IOException {
+                if (payload.readByte() == 1) {
+                    for (int i = 0; i < BURST_FRAMES; i++)
+                        check(connection.trySend(BURST_BODY_BYTES, writer -> {
+                            for (int j = 0; j < BURST_BODY_BYTES; j++) writer.writeByte(j);
+                        }), "slow peer burst admitted");
+                    queued.countDown();
+                } else {
+                    check(connection.trySend(1, writer -> writer.writeByte(2)), "fast peer admitted");
+                }
+            }
+            @Override public void onClosed(Connection connection, CloseReason reason) {
+                if (reason == CloseReason.WRITE_TIMEOUT) timeouts.countDown();
+            }
+        })) {
+            var peers = new ArrayList<Socket>();
+            try {
+                for (int i = 0; i < 100; i++) peers.add(connect(server, i < slowCount ? 4_096 : 0));
+                for (int i = 0; i < slowCount; i++) peers.get(i).getOutputStream().write(frame(new byte[] {1}));
+                await(queued);
+                for (int i = slowCount; i < 100; i++) {
+                    peers.get(i).getOutputStream().write(frame(new byte[] {2}));
+                    expectFrame(peers.get(i), new byte[] {2});
+                }
+                await(timeouts);
+                check(server.ownerDiagnostics().stream().mapToLong(SelectorTransport.OwnerDiagnostics::writeTimeouts).sum()
+                        == slowCount, "only slow peers timed out");
+            } finally {
+                for (Socket peer : peers) peer.close();
+            }
+            server.close();
+            balanced(server.shutdownStats());
+        }
+    }
+
     private static void checkMailboxAndShutdown() throws Exception {
         var opened = new LinkedBlockingQueue<Connection>();
         CountDownLatch started = new CountDownLatch(1);
@@ -379,6 +425,61 @@ public final class SelectorTransportTest {
             server.close();
             check(executed.get() == 0 && canceled.get() == 2, "accepted commands canceled exactly once on shutdown");
             balanced(server.shutdownStats());
+        }
+    }
+
+    private static void checkConcurrentMailbox() throws Exception {
+        var opened = new LinkedBlockingQueue<Connection>();
+        var finished = new CountDownLatch(20 * 100);
+        var executed = new int[20];
+        try (var server = SelectorTransport.bind(LOOPBACK, config(1, 2, 33), new SelectorTransport.RawHandler() {
+            @Override public void onOpen(Connection connection) { opened.add(connection); }
+        }); var peer = connect(server, 0); var producers = Executors.newVirtualThreadPerTaskExecutor()) {
+            Connection connection = await(opened);
+            var submitted = new ArrayList<java.util.concurrent.Future<?>>();
+            for (int i = 0; i < executed.length; i++) {
+                int producer = i;
+                submitted.add(producers.submit(() -> {
+                    for (int sequence = 0; sequence < 100; sequence++) {
+                        int expected = sequence;
+                        SelectorTransport.OwnerCommand command = ignored -> {
+                            check(executed[producer]++ == expected, "producer FIFO and exactly-once execution");
+                            finished.countDown();
+                        };
+                        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+                        while (!connection.tryExecute(command)) {
+                            check(System.nanoTime() < deadline, "owner kept making progress");
+                            Thread.yield();
+                        }
+                    }
+                }));
+            }
+            for (var submit : submitted) submit.get(6, TimeUnit.SECONDS);
+            await(finished);
+            check(Arrays.stream(executed).allMatch(count -> count == 100), "all admitted commands executed");
+            server.close();
+            balanced(server.shutdownStats());
+        }
+    }
+
+    private static void checkOwnerFailure() throws Exception {
+        var failure = new AssertionError("injected owner failure");
+        var transport = SelectorTransport.bind(LOOPBACK, config(2, 2, 8), new SelectorTransport.RawHandler() {
+            @Override public void onOpen(Connection connection) {
+                throw failure;
+            }
+        });
+        try (var peer = connect(transport, 0)) {
+            check(transport.awaitTermination(Duration.ofSeconds(5)), "owner failure stopped and joined both owners");
+            check(transport.shutdownFailure() == failure, "original fatal cause preserved");
+            balanced(transport.shutdownStats());
+        } finally {
+            try {
+                transport.close();
+                throw new AssertionError("closing failed transport should report the cause");
+            } catch (IOException expected) {
+                check(expected.getCause() == failure, "close preserved the fatal cause");
+            }
         }
     }
 

@@ -81,9 +81,7 @@ public final class CSocket implements AutoCloseable {
                     gather = gathering;
                 }
                 if (sources == null) return;
-                boolean accepted = gather ? connection.writeRaw(sources, offset, count, javaWriteCallback)
-                        : connection.writeRaw(sources[0], javaWriteCallback);
-                if (!accepted) completeJavaWrite(-1);
+                armJavaWrite(gather ? null : sources[0], sources, offset, count);
             }
             @Override public void cancel() { completeJavaWrite(-1); }
         };
@@ -380,7 +378,7 @@ public final class CSocket implements AutoCloseable {
         }
         if (rejected) { owner.transportWriteCompleted(-1); return; }
         if (bytes == 0) { owner.transportWriteCompleted(0); return; }
-        sendReserved();
+        sendReserved(src, null, 0, 0);
     }
     public void write(ByteBuffer[] srcs,int offset,int count,CUserSocket owner){write(srcs,offset,count,owner,0);}
     public void SendConstBuffer(ByteBuffer[] srcs,int offset,int count,CUserSocket owner,int flags){write(srcs,offset,count,owner,flags);}
@@ -422,7 +420,7 @@ public final class CSocket implements AutoCloseable {
         }
         if (rejected) { owner.transportGatherCompleted(-1); return; }
         if (bytes == 0) { owner.transportGatherCompleted(0); return; }
-        sendReserved();
+        sendReserved(null, srcs, offset, count);
     }
     private void reserveWrite(ByteBuffer[] buffers, int offset, int count,
                               int expected, CUserSocket owner, boolean gather,int flags) {
@@ -438,9 +436,14 @@ public final class CSocket implements AutoCloseable {
         // until the downcall has consumed its input buffers.
         writeSubmitting = javaPeer == null;
     }
-    private void sendReserved() {
+    private void sendReserved(ByteBuffer single, ByteBuffer[] sources, int offset, int count) {
         if (javaPeer != null) {
-            if (!javaPeer.submit(javaWriteRequest, false)) completeJavaWrite(-1);
+            if (javaPeer.isOwnerThread()) {
+                // A queued close can only run on this owner. The already
+                // published descriptor stays pinned throughout inline registration.
+                try { armJavaWrite(single, sources, offset, count); }
+                catch (RuntimeException failure) { javaPeer.abort(); }
+            } else if (!javaPeer.submit(javaWriteRequest, false)) completeJavaWrite(-1);
             return;
         }
         // Only one WRITE is outstanding. Every native SEND takes ownership of
@@ -448,6 +451,12 @@ public final class CSocket implements AutoCloseable {
         boolean success = false;
         try { success = parent.send(id, writeBuffers, writeOffset, writeCount,writeFrameFlags); }
         finally { finishSubmission(success); }
+    }
+
+    private void armJavaWrite(ByteBuffer single, ByteBuffer[] sources, int offset, int count) {
+        boolean accepted = single != null ? javaPeer.writeRaw(single, javaWriteCallback)
+                : javaPeer.writeRaw(sources, offset, count, javaWriteCallback);
+        if (!accepted) completeJavaWrite(-1);
     }
     private void finishSubmission(boolean success) {
         CUserSocket callback = null;
