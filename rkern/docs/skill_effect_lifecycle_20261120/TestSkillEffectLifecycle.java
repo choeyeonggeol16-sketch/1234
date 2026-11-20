@@ -63,6 +63,7 @@ public final class TestSkillEffectLifecycle {
             verifyInventoryAndDressBuffs();
             verifyEvasionBuffs();
             verifyRestoredBuffs();
+            verifyMeleeBuffs();
             verifyLifetimeRefreshAndSleep();
             verifyOwnerDispatchAndExpiry();
             verifyRegistry();
@@ -219,6 +220,26 @@ public final class TestSkillEffectLifecycle {
         pc.removeSkillEffect(RESIST_MAGIC);
         verify(pc.getEffectedER() == 7 && pc.getResistance().getMr() == baseMr,
                 "restored sources leave baseline intact", RESIST_MAGIC);
+    }
+
+    private static void verifyMeleeBuffs() {
+        Player pc = new Player();
+        pc.addHitup(113);
+        pc.addDmgup(120);
+        BuffRestoreRegistry.find(ENCHANT_ACURUCY).restore(pc, ENCHANT_ACURUCY, 0, 38, new int[39]);
+        pc.setSkillEffect(ENCHANT_ACURUCY, 38_000);
+        for (int id : new int[]{GLOWING_AURA, IllUSION_OGRE, ENCHANT_ACURUCY}) {
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "start or recast melee modifier", id);
+        }
+        verify(pc.getHitup() == 127 && pc.getDmgup() == 127, "combined capped melee stats", GLOWING_AURA);
+        pc.removeSkillEffect(GLOWING_AURA);
+        verify(pc.getHitup() == 122 && pc.getDmgup() == 124, "other hit and damage sources retained", IllUSION_OGRE);
+        pc.addHitup(7);
+        pc.removeSkillEffect(IllUSION_OGRE);
+        verify(pc.getHitup() == 125 && pc.getDmgup() == 120, "existing hit change retained", ENCHANT_ACURUCY);
+        pc.removeSkillEffect(ENCHANT_ACURUCY);
+        verify(pc.getHitup() == 120 && pc.getDmgup() == 120, "melee baseline retained", ENCHANT_ACURUCY);
     }
 
     private static void verifyIndependentModifiers() {

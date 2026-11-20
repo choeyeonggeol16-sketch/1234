@@ -149,7 +149,6 @@ public final class SkillHandlers {
 		register(L1SkillId.EAGGLE_EYE, SkillHandlers::onEaggleEye);
 
 
-		register(L1SkillId.IllUSION_OGRE, SkillHandlers::onIllusionOgre);
 		register(L1SkillId.IllUSION_LICH, SkillHandlers::onIllusionLich);
 		register(L1SkillId.IllUSION_AVATAR, SkillHandlers::onIllusionAvatar);
 
@@ -158,7 +157,6 @@ public final class SkillHandlers {
 
 		register(L1SkillId.LUCIFER, SkillHandlers::onLucifer);
 		register(L1SkillId.BLOW_ATTACK, SkillHandlers::onBlowAttack);
-		register(L1SkillId.ENCHANT_ACURUCY, SkillHandlers::onEnchantAcurucy);
 
 		register(L1SkillId.CUBE_AVATAR, SkillHandlers::onCubeAvatar);
 		register(L1SkillId.CUBE_RICH, SkillHandlers::onCubeRich);
@@ -190,7 +188,6 @@ public final class SkillHandlers {
 		register(L1SkillId.MOVING_ACCELERATION, SkillHandlers::onMovingAcceleration);
 		register(L1SkillId.BLOOD_LUST, SkillHandlers::onBloodLust);
 
-		register(L1SkillId.GLOWING_AURA, SkillHandlers::onGlowingWeapon);
 		register(L1SkillId.BRAVE_AURA, SkillHandlers::onBraveMental);
 
 		register(L1SkillId.THUNDER_GRAB, SkillHandlers::onThunderGrab);
@@ -1595,25 +1592,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onIllusionOgre(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.IllUSION_OGRE;
-
-		resetEffect(pc, skillId);
-
-		// 효과
-		pc.addDmgup(4);
-		pc.addHitup(4);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		// noti: icon=3117, prio=10, tooltip=1340, new=1366, end=2212
-		sendRestatBuffNoti(pc, skillId, durSec, 3117, 10, 1340, 1366, 2212, true);
-		return HandlerResult.HANDLED;
-	}
-
 	private static HandlerResult onIllusionLich(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
 		final L1PcInstance pc = (L1PcInstance) cha;
@@ -1750,37 +1728,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onEnchantAcurucy(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		if (pc.hasSkillEffect(L1SkillId.ENCHANT_ACURUCY)) {
-			pc.removeSkillEffect(L1SkillId.ENCHANT_ACURUCY);
-		}
-
-		final int skillId = L1SkillId.ENCHANT_ACURUCY;
-		// 원본 유지: 근거리 명중 +5
-		pc.addHitup(5);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		SC_SystemMessage.send(pc, "인챈트 어큐러시: 근거리 명중+5");
-
-		sendRestatBuffNoti(
-				pc,
-				L1SkillId.ENCHANT_ACURUCY,
-				durSec,
-				9487, // icon
-				0,    // priority
-				5888, // tooltip
-				0,    // new 
-				0,    // end 없음
-				true
-				);
-		return HandlerResult.HANDLED;
-	}
-	// ===== Cube common =====
+// ===== Cube common =====
 	private static final int CUBE_RANGE = 18;
 
 	@FunctionalInterface
@@ -3450,24 +3398,22 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		applySkillEffectSec(pc, L1SkillId.BLOOD_LUST, durSec);
 		return HandlerResult.HANDLED;
 	}
-	private static HandlerResult onGlowingWeapon(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int skillId = L1SkillId.GLOWING_AURA;
-
-		// 같은 스킬 재시전 누적 방지(종료/원복 로직 태우기)
+	static void startMeleeBuff(L1PcInstance pc, int skillId, int duration) {
 		resetEffect(pc, skillId);
+		CSkillInfo.applyFixedModifierFromOwner(pc, skillId);
+		if (skillId == L1SkillId.GLOWING_AURA) {
+			SC_SkillIconAura.send(pc, 113, duration);
+			applySkillEffectSec(pc, skillId, duration > 0 ? duration : durationSecForBuff(null, skillId));
+			return;
+		}
 
-		// 효과 적용
-		pc.addHitup(5);
-		pc.addDmgup(5);
-
-		SC_SkillIconAura.send(pc, 113, su.hdGetBuffIconDuration());
-
-		// 타이머
-		applySkillEffectSec(pc, skillId, durationSecForBuff(su, skillId));
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
+		if (skillId == L1SkillId.IllUSION_OGRE) {
+			sendRestatBuffNoti(pc, skillId, duration, 3117, 10, 1340, 1366, 2212, true);
+		} else if (skillId == L1SkillId.ENCHANT_ACURUCY) {
+			SC_SystemMessage.send(pc, "인챈트 어큐러시: 근거리 명중+5");
+			sendRestatBuffNoti(pc, skillId, duration, 9487, 0, 5888, 0, 0, true);
+		}
 	}
 
 	static void startShiningShield(L1PcInstance pc, int skillId, int iconDuration) {

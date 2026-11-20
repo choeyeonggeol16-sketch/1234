@@ -51,6 +51,9 @@ public final class CSkillInfo {
         registerManaged(FREEZEENG_ARMOR, SkillHandlers::startEvasionBuff, ER);
         registerManaged(SHINING_ARMOR, SkillHandlers::startEvasionBuff, ER);
         registerManaged(RESIST_MAGIC, SkillHandlers::startResistMagic, MR);
+        registerManaged(GLOWING_AURA, SkillHandlers::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(IllUSION_OGRE, SkillHandlers::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(ENCHANT_ACURUCY, SkillHandlers::startMeleeBuff, MELEE_HIT);
         frozen = true;
     }
 
@@ -127,7 +130,7 @@ public final class CSkillInfo {
             if (!(target instanceof L1PcInstance pc)) return SkillHandlers.HandlerResult.NOT_HANDLED;
             int skillId = su.hdSkillId();
             int duration = skillId == SHINING_AURA || skillId == SHIELD
-                    || skillId == DRESS_DEXTERITY || skillId == DRESS_MIGHTY
+                    || skillId == DRESS_DEXTERITY || skillId == DRESS_MIGHTY || skillId == GLOWING_AURA
                     ? su.hdGetBuffIconDuration() : SkillHandlers.durationSecForBuff(su, skillId);
             return pc.submitSkillPumpStart(skillId, duration)
                     ? SkillHandlers.HandlerResult.HANDLED : SkillHandlers.HandlerResult.CONTINUE;
@@ -161,6 +164,9 @@ public final class CSkillInfo {
             case SOLID_CARRIAGE -> 15;
             case DRESS_EVASION -> 18;
             case RESIST_MAGIC -> 10L << 32;
+            case GLOWING_AURA -> (5L << 32) | 5;
+            case IllUSION_OGRE -> (4L << 32) | 4;
+            case ENCHANT_ACURUCY -> 5;
             default -> throw new IllegalArgumentException("No fixed modifier for " + skillId);
         };
         target.applySkillModifierFromOwner(skillId, captured);

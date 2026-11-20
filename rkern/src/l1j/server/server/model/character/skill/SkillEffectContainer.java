@@ -48,13 +48,13 @@ public final class SkillEffectContainer {
 		// Two words per source, starting with the numeric ID.
 		long[] applied = new long[4];
 		int count;
-		int hp, mp, ac, mr, er, dg;
+		int hp, mp, ac, mr, er, dg, meleeHit, meleeDamage;
 
 		// Each byte is a separate bonus. Current per-byte totals are at most 10.
 		int primaryStats, elementalResistance;
 
 		void initializeSkillMod() {
-			hp = mp = ac = mr = er = dg = 0;
+			hp = mp = ac = mr = er = dg = meleeHit = meleeDamage = 0;
 			primaryStats = elementalResistance = 0;
 		}
 
@@ -95,15 +95,16 @@ public final class SkillEffectContainer {
 	public void validateSkillMod(boolean notify) {
 		SkillModifiers state = skillModifiers;
 		if (state == null) {
-			owner.setPumpedSkillModifiers(0, 0, 0, 0, 0, 0, 0, notify);
+			owner.setPumpedSkillModifiers(0, 0, 0, 0, 0, 0, 0, 0, notify);
 			return;
 		}
 		state.initializeSkillMod();
 		for (int i = 0; i < state.count * 2; i += 2)
 			CSkillInfo.get((int) state.applied[i]).pump(owner, state.applied[i + 1], state);
 		final int evasion = (state.dg << 16) | (state.er & 0xffff);
+		final int melee = (state.meleeDamage << 16) | (state.meleeHit & 0xffff);
 		owner.setPumpedSkillModifiers(state.hp, state.mp, state.ac, state.mr,
-				state.primaryStats, state.elementalResistance, evasion, notify);
+				state.primaryStats, state.elementalResistance, evasion, melee, notify);
 	}
 
 	public boolean contains(int skillId) {

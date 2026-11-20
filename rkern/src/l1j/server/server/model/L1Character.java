@@ -84,6 +84,8 @@ public class L1Character extends L1Object {
 	private int _trueBowDmgup = 0;
 	private int _hitup = 0;
 	private int _trueHitup = 0;
+	// Melee hit in the low half, melee damage in the high half.
+	private volatile int pumpedMelee;
 	private int _bowHitup = 0;
 	private int _trueBowHitup = 0;
 
@@ -720,7 +722,7 @@ public class L1Character extends L1Object {
 	private volatile long pumpedHpMp;
 
 	public void setPumpedSkillModifiers(int hp, int mp, int ac, int mr,
-			int primaryStats, int elementalResistance, int evasion, boolean notify) {
+			int primaryStats, int elementalResistance, int evasion, int melee, boolean notify) {
 		final long previous = pumpedHpMp;
 		final long updated = ((long) mp << 32) | Integer.toUnsignedLong(hp);
 		if (previous != updated) {
@@ -733,6 +735,7 @@ public class L1Character extends L1Object {
 		getAbility().setSkillPrimaryStats(primaryStats, notify);
 		getResistance().setSkillElemental(elementalResistance);
 		if (pumpedEvasion != evasion) pumpedEvasion = evasion;
+		if (pumpedMelee != melee) pumpedMelee = melee;
 	}
 
 	public int getMaxHp() {
@@ -794,7 +797,8 @@ public class L1Character extends L1Object {
 	}
 
 	public int getDmgup() {
-		return _dmgup;
+		final int effect = pumpedMelee >> 16;
+		return effect == 0 ? _dmgup : Math.clamp((long) _trueDmgup + effect, -128, 127);
 	}
 
 	public void addDmgup(int i) {
@@ -824,7 +828,8 @@ public class L1Character extends L1Object {
 	}
 
 	public int getHitup() {
-		return _hitup;
+		final int effect = (short) pumpedMelee;
+		return effect == 0 ? _hitup : Math.clamp((long) _trueHitup + effect, -128, 127);
 	}
 
 	public void addHitup(int i) {

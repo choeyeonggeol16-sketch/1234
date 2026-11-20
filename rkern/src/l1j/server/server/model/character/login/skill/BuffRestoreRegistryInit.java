@@ -583,7 +583,7 @@ public final class BuffRestoreRegistryInit {
 
         // ================= 31. ENCHANT_ACURUCY / CLEAR_MIND / MAJESTY / SHINING_ARMOR =================
         BuffRestoreRegistry.register(L1SkillId.ENCHANT_ACURUCY, (pc, sid, polyId, rt, icon) -> {
-            pc.addHitup(5);
+            CSkillInfo.applyFixedModifierFromOwner(pc, sid);
             sendScBuff(pc, L1SkillId.ENCHANT_ACURUCY, rt, 9487, 5888);
         });
         BuffRestoreRegistry.register(L1SkillId.CLEAR_MIND, (pc, sid, polyId, rt, icon) -> {

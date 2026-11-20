@@ -47,6 +47,12 @@ interface CSkillEffect {
         }},
         DG { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.dg += (int) captured;
+        }},
+        MELEE_HIT { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.meleeHit += (int) captured;
+        }},
+        MELEE_DAMAGE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.meleeDamage += (int) (captured >>> 32);
         }};
 
         @Override public boolean checkPumpCondition(L1Character target) { return target instanceof L1PcInstance; }

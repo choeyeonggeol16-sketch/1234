@@ -1076,8 +1076,7 @@ public final class SkillStopHandlers {
 
 	private static StopResult offGlowingWeapon(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance pc) {
-			pc.addHitup(-5);
-			pc.addDmgup(-5);
+			pc.removeSkillModifierFromOwner(skillId);
 			SC_SkillIconAura.send(pc, 113, 0);
 		}
 		return StopResult.HANDLED;
@@ -2401,8 +2400,7 @@ public final class SkillStopHandlers {
 	private static StopResult offIllusionOgre(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.addDmgup(-4);
-	        pc.addHitup(-4);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        sendEndNoti(pc, L1SkillId.IllUSION_OGRE, 3117, true);
 	    }
 	    return StopResult.HANDLED;
@@ -2452,7 +2450,7 @@ public final class SkillStopHandlers {
 	private static StopResult offEnchantAcurucy(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.addHitup(-5);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        sendEndNoti(pc, L1SkillId.ENCHANT_ACURUCY, 9487, true);
 	    }
 	    return StopResult.HANDLED;
