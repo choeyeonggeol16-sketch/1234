@@ -145,9 +145,7 @@ public final class CSocket implements AutoCloseable {
         if (parent == null) throw new IllegalStateException("Native operation on a Java Selector socket");
         return parent;
     }
-    boolean SetKey(MemorySegment api,int seed){return requireNativeServer().SetKey(id,api,seed);}
     public boolean releaseUserPacket(long sequence){return requireNativeServer().releaseUserPacket(id,sequence);}
-    boolean encryptUserData(ByteBuffer bytes){return requireNativeServer().encryptUserData(id,bytes);}
     public boolean setUserState(int state) {
         if (javaServer == null) return parent.setUserState(id, state);
         if (!javaServer.setState(this, state)) return false;

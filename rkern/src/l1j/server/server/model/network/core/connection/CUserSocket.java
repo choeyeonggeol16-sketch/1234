@@ -4,7 +4,6 @@ import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics;
 import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.model.network.core.transport.CIOPacketCodec;
 import l1j.server.server.model.network.core.transport.CSocket;
 import l1j.server.server.model.network.core.broadcast.SharedPacketFormat;
 
@@ -146,7 +145,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         return state;
     }
     private volatile Cryptor _cryptor;
-    private volatile CIOPacketCodec _nativeCodec;
     // A single native plaintext packet is leased to its execution role at a time.
     // Until the task finishes, C++ cannot call codec.next(), so
     // the codec's direct scratch buffer cannot be overwritten. No per-packet
@@ -164,22 +162,16 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     private long deadlinePriorProgress,deadlineStalledSince;
     private volatile boolean _handshakePlainPending;
     public void SetKey(long seed) {
+        if (!_channel.isJavaTransport()) throw new IllegalStateException("Native packet codec removed");
         final Cryptor cryptor = new Cryptor();
         cryptor.initKey(seed);
-        final CIOPacketCodec nativeCodec = _channel.isJavaTransport() ? null : new CIOPacketCodec(_channel,seed);
-        nativeDirect = nativeCodec != null;
+        nativeDirect = false;
         _cryptor = cryptor;
-
-        _nativeCodec = nativeCodec;
         _handshakePlainPending = true;
     }
     public void clearCipher() {
         _handshakePlainPending = false;
-        final CIOPacketCodec nativeCodec = _nativeCodec;
-        _nativeCodec = null;
-
         _cryptor = null;
-        if (nativeCodec != null) nativeCodec.close();
     }
     private Cryptor readCipher() { return _cryptor; }
     public boolean encrypt(WriteBuffer buffer, int offset, int length) {
@@ -187,15 +179,10 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             _handshakePlainPending = false;
             return true;
         }
-        final CIOPacketCodec nativeCodec = _nativeCodec;
         final Cryptor cipher = _cryptor;
-        if (nativeCodec == null && cipher == null) return true;
+        if (cipher == null) return true;
         try {
-            if (nativeCodec != null) {
-                nativeCodec.encrypt(buffer.getBuffer(), buffer.baseOffset() + offset, length);
-            } else {
-                cipher.encrypt(buffer, offset, length);
-            }
+            cipher.encrypt(buffer, offset, length);
             return true;
         } catch (Exception error) {
             LOG.log(Level.SEVERE, "[CUserSocket] packet encryption failed", error);

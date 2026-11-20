@@ -66,7 +66,7 @@ public final class CIOServer implements AutoCloseable {
     private final ConcurrentHashMap<Long, CSocket> closingConnections = new ConcurrentHashMap<>();
     private final AtomicLong nextTask = new AtomicLong();
     private final MethodHandle scheduleTask, cancelTask, getDiagnostics;
-    private final MethodHandle setCodecApi,initializeUserSocket,releaseUserPacket,encryptUserData,getUserSocketState,threadOwner;
+    private final MethodHandle releaseUserPacket,getUserSocketState,threadOwner;
     private final MethodHandle setUserState,configureDeadlines,requestDeadline,getRegistryDiagnostics;
     private final MethodHandle setAccountIdentity,setCharacterEntered,findEnteringAccount,getAccountRegistryDiagnostics,configurePerf,getPerfDiagnostics;
     private final MethodHandle configureLimits,getLimiterDiagnostics,getListenerDiagnostics,getThreadDiagnostics,findByNumber,setMacIdentity,reportSockets;
@@ -207,11 +207,8 @@ public final class CIOServer implements AutoCloseable {
             MethodHandle setSend = fn("L1Interop_SetOnWrite", FunctionDescriptor.ofVoid(P, P));
             MethodHandle setClose = fn("L1Interop_SetOnClose", FunctionDescriptor.ofVoid(P, P));
             scheduleTask = fn("L1Interop_ScheduleTimer", FunctionDescriptor.of(I, P, L, I));
-            setCodecApi=fn("L1Interop_SetCodecApi",FunctionDescriptor.of(I,P,P,I));
-            initializeUserSocket=fn("CSocket_SetKey",FunctionDescriptor.of(I,P,L,I));
-            releaseUserPacket=fn("L1Interop_ReleasePacket",FunctionDescriptor.of(I,P,L,L));
-            encryptUserData=fn("CSocket_Encrypt",FunctionDescriptor.of(I,P,L,P,I));
-            getUserSocketState=fn("L1Interop_GetSocketState",FunctionDescriptor.of(I,P,L,P,I));
+                    releaseUserPacket=fn("L1Interop_ReleasePacket",FunctionDescriptor.of(I,P,L,L));
+                getUserSocketState=fn("L1Interop_GetSocketState",FunctionDescriptor.of(I,P,L,P,I));
             setUserState=fn("L1Interop_SetSessionState",FunctionDescriptor.of(I,P,L,I));
             configureDeadlines=fn("L1Interop_ConfigureDeadlines",FunctionDescriptor.of(I,P,L,I));
             requestDeadline=fn("L1Interop_RequestDeadline",FunctionDescriptor.of(I,P,L,I));
@@ -607,13 +604,6 @@ public final class CIOServer implements AutoCloseable {
             return new InetSocketAddress(buf.getUtf8String(0), p);
         }
     }
-    @SuppressWarnings("preview")
-    boolean SetKey(long id,MemorySegment functions,int seed) {
-        if(!enterNative())return false;
-        try {return (int)setCodecApi.invokeExact(server,functions,7)!=0&&(int)initializeUserSocket.invokeExact(server,id,seed)!=0;}
-        catch(Throwable failure){throw new IllegalStateException("Native codec setup failed",failure);}
-        finally{nativeCalls.decrementAndGet();}
-    }
     private boolean enterDrain() {
         if(drainClosed)return false;
         nativeCalls.incrementAndGet();
@@ -624,13 +614,6 @@ public final class CIOServer implements AutoCloseable {
         if(!enterDrain())return false;
         try{return (int)releaseUserPacket.invokeExact(server,id,sequence)!=0;}
         catch(Throwable failure){throw new IllegalStateException("Native packet release failed",failure);}
-        finally{nativeCalls.decrementAndGet();}
-    }
-    @SuppressWarnings("preview")
-    boolean encryptUserData(long id,ByteBuffer bytes) {
-        if(!enterNative())return false;
-        try{return (int)encryptUserData.invokeExact(server,id,MemorySegment.ofBuffer(bytes),bytes.remaining())!=0;}
-        catch(Throwable failure){throw new IllegalStateException("Native encryption failed",failure);}
         finally{nativeCalls.decrementAndGet();}
     }
     boolean setUserState(long id,int state) {return userControl(setUserState,id,state);}
