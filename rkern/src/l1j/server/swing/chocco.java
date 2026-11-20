@@ -405,8 +405,13 @@ public class chocco extends JFrame {
         } catch (NumberFormatException failure) { showSimpleReport("최근 패킷", "숫자 id를 입력하세요."); }
     }
     private String networkProfile() {
-        StringBuilder text = new StringBuilder("Native 성능 샘플(availabilityFlags로 가용성 확인):\n")
-                .append(l1j.server.Server.networkPerformance()).append("\nNative worker 상태:\n");
+        StringBuilder text = new StringBuilder();
+        if (l1j.server.Server.isJavaNetworkTransport()) {
+            text.append(l1j.server.Server.networkPoolReport()).append('\n');
+        } else {
+            text.append("Native 성능 샘플 (availabilityFlags로 가용성 확인)\n")
+                    .append(l1j.server.Server.networkPerformance()).append("\nNative worker 상태\n");
+        }
         long[] workers = l1j.server.Server.networkThreadDiagnostics();
         for (int offset = 0; offset + 2 < workers.length; offset += 3) {
             text.append("owner=").append(offset / 3).append(" callbacks=").append(workers[offset])
@@ -420,18 +425,21 @@ public class chocco extends JFrame {
         StringBuilder text = new StringBuilder(l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.connections());
         text.append("\n선택적 송신 생략=").append(l1j.server.server.model.network.core.connection.CUserSocket.softSendRejections()).append('\n');
         long[][] rows = l1j.server.Server.networkSocketDiagnostics();
-        text.append("\nNative sockets=").append(rows.length)
-                .append("\n[handle,number,socket,closing,terminal,packetLease,readPosted,writePosted,outputBytes,addressFamily,ipv4,port]\n")
-                .append("outputBytes는 native 출력 큐만의 잔여량이며 Java 준비량/실행 전 예약량은 별도입니다.\n");
+        boolean javaNetwork = l1j.server.Server.isJavaNetworkTransport();
+        text.append(javaNetwork ? "\nJProRing sockets=" : "\nNative sockets=").append(rows.length)
+                .append("\n[handle,number,socket,closing,terminal,packetLease,readPosted,writePosted,outputBytes,addressFamily,ipv4,port]\n");
+        if (!javaNetwork) text.append("outputBytes는 native 출력 큐의 잔여량입니다.\n");
         for (int i = 0; i < Math.min(rows.length, 512); i++) text.append(java.util.Arrays.toString(rows[i])).append('\n');
         if (rows.length > 512) text.append("최대 512개 표시\n");
         return text.toString();
     }
     private String networkReferences() {
-        return "Native 객체의 정확한 refcount를 노출하는 API는 없습니다. 아래는 실제 등록/대여/I/O 상태입니다.\n"
-                + "[보유 번호 소켓,로그인 소켓,진입 계정,중복 진입 거절]\n"
+        String sendFields = l1j.server.Server.isJavaNetworkTransport()
+                ? "[선택적 송신 생략,소형 송신 풀 고갈,대형 송신 풀 고갈]"
+                : "[송신 접수,실행,암호화 frame,평문 frame,정상종료,강제종료,거절,pending,owner오류]";
+        return "[보유 번호 소켓,로그인 소켓,진입 계정,중복 진입 거절]\n"
                 + java.util.Arrays.toString(l1j.server.Server.networkAccountRegistryDiagnostics())
-                + "\n[송신 접수,실행,암호화 frame,평문 frame,정상종료,강제종료,거절,pending,owner오류]\n"
+                + "\n" + sendFields + "\n"
                 + java.util.Arrays.toString(l1j.server.Server.networkSendDiagnostics()) + "\n" + networkSockets();
     }
 

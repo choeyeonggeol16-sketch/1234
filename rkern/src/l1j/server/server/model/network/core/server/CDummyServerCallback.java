@@ -4,6 +4,7 @@ import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.network.core.transport.CSocket;
+import l1j.server.server.model.network.core.transport.selector.SelectorTransport;
 
 import java.net.InetAddress;
 import java.lang.ref.WeakReference;
@@ -17,7 +18,7 @@ import l1j.server.server.model.network.client.manager.NetworkClientCounter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.ConnectionConfig;
 
-/** Native IOCP admission factory with an L1 session/timer owner. */
+/** L1 game admission with the existing session and timer owners. */
 public final class CDummyServerCallback implements IServerCallback {
     private final CIOThreadCallback scheduler;
     private final ConnectionConfig config;
@@ -38,6 +39,10 @@ public final class CDummyServerCallback implements IServerCallback {
             throw new IllegalStateException("invalid game shard or online limit");
         LoginController.getInstance().setMaxAllowedOnlinePlayers(maxOnline);
     }
+
+    public int selectorOwnerCount() { return shardCount; }
+
+    public void attachSelectors(java.util.List<SelectorTransport.OwnerDriver> owners) { scheduler.attachSelectors(owners); }
 
     @Override
     public CUserSocket CreateSocket(CSocket socket,
@@ -100,7 +105,7 @@ public final class CDummyServerCallback implements IServerCallback {
             final CIOClient client = user;
             if (!client.onConnected() || !client.isConnected())
                 throw new IllegalStateException("handshake not admitted");
-            transport.configureNativeDeadlines(config.usePreLoginTimeout);
+            transport.configureTransportDeadlines(config.usePreLoginTimeout);
             return transport;
         } catch (Exception | Error failure) {
             if (transport != null) transport.close();

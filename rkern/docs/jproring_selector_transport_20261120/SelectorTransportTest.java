@@ -228,7 +228,7 @@ public final class SelectorTransportTest {
     }
 
     /** Byte-at-a-time reference for the separate client-to-server and server-to-client streams. */
-    private static final class ScalarClient {
+    static final class ScalarClient {
         private final int[] outboundTable = new int[256];
         private int clientWrite0;
         private int clientWrite1;
