@@ -137,10 +137,11 @@ public final class JavaCioServer {
         return socket == null || !socket.isOpen() ? 0 : socket.id();
     }
 
-    public synchronized long[][] reportSockets() {
-        long[][] socketsSnapshot = new long[sockets.size()][];
-        int index = 0;
-        for (CSocket socket : sockets.values()) socketsSnapshot[index++] = socket.selectorReport();
+    public long[][] reportSockets() {
+        CSocket[] snapshot;
+        synchronized (this) { snapshot = sockets.values().toArray(CSocket[]::new); }
+        long[][] socketsSnapshot = new long[snapshot.length][];
+        for (int i = 0; i < snapshot.length; i++) socketsSnapshot[i] = snapshot[i].selectorReport();
         return socketsSnapshot;
     }
 

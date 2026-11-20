@@ -3,6 +3,7 @@ package l1j.server.server.model.network.core.transport.selector;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
 
@@ -14,6 +15,7 @@ final class SelectorRawIo {
     private ByteBuffer[] gather;
     private int offset;
     private int count;
+    private long drainBytes;
     private LongConsumer writeCompletion;
 
     void armRead(ByteBuffer target, IntConsumer completion) {
@@ -41,16 +43,38 @@ final class SelectorRawIo {
         return bytes;
     }
 
-    long write(SocketChannel channel) throws IOException {
+    long write(SocketChannel channel, boolean draining) throws IOException {
         if (!writing()) return 0;
         long bytes = singleWrite != null ? channel.write(singleWrite) : channel.write(gather, offset, count);
-        if (bytes != 0) completeWrite(bytes);
+        if (draining) {
+            // After the drain starts, the provider owns the remainder of the last request.
+            // Its completion callback cannot register another WRITE to send a partial tail.
+            drainBytes += bytes;
+            if (!hasWriteRemaining()) completeWrite(drainBytes);
+        } else if (bytes != 0) completeWrite(bytes);
         return bytes;
     }
 
-    void cancel() {
-        try { if (reading()) completeRead(-1); }
-        finally { if (writing()) completeWrite(-1); }
+    private boolean hasWriteRemaining() {
+        if (singleWrite != null) return singleWrite.hasRemaining();
+        for (int i = offset; i < offset + count; i++) {
+            if (gather[i].hasRemaining()) return true;
+        }
+        return false;
+    }
+
+    void cancel(Consumer<RuntimeException> report) {
+        try {
+            if (reading()) completeRead(-1);
+        } catch (RuntimeException error) {
+            report.accept(error);
+        } finally {
+            try {
+                if (writing()) completeWrite(-1);
+            } catch (RuntimeException error) {
+                report.accept(error);
+            }
+        }
     }
 
     private void completeRead(int bytes) {
@@ -65,6 +89,7 @@ final class SelectorRawIo {
         singleWrite = null;
         gather = null;
         offset = count = 0;
+        drainBytes = 0L;
         writeCompletion = null;
         completion.accept(bytes);
     }

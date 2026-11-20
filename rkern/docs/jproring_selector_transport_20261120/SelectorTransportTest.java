@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -15,6 +16,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.ReadBuffer;
@@ -34,12 +36,116 @@ public final class SelectorTransportTest {
         checkWriteStall();
         checkMailboxAndShutdown();
         checkCipher();
-        System.out.println("PASS multi-owner TCP, read/write, bounds, mailbox shutdown and Java cipher vectors");
+        checkCallbackFailureIsolation();
+        checkRawGracefulGather();
+        checkHostedAttachFailure();
+        System.out.println("PASS multi-owner TCP, Java cipher, callback isolation, raw graceful gather and hosted rollback");
     }
 
     private static SelectorTransport.Config config(int owners, int connectionsPerOwner, int mailboxCapacity) {
         return new SelectorTransport.Config(owners, connectionsPerOwner, 32, mailboxCapacity,
                 2, 8, BURST_FRAMES, 1_000_000, 32, 4_096, Duration.ofSeconds(3));
+    }
+
+    private static void checkCallbackFailureIsolation() throws Exception {
+        var failed = new AtomicReference<Connection>();
+        var calls = new AtomicInteger();
+        var handler = new SelectorTransport.RawHandler() {
+            @Override public void onOpen(Connection socket) {
+                var scratch = ByteBuffer.allocate(8);
+                if (failed.compareAndSet(null, socket)) {
+                    check(socket.readRaw(scratch, bytes -> injectedCancellation(calls, bytes)), "raw READ accepted");
+                    check(socket.writeRaw(ByteBuffer.wrap(new byte[] {42}), bytes -> injectedCancellation(calls, bytes)),
+                            "raw WRITE accepted");
+                    check(socket.submit(new SelectorTransport.OwnerCommand() {
+                        @Override public void run(Connection ignored) { throw new AssertionError("closed command ran"); }
+                        @Override public void cancel() { injectedCancellation(calls, -1); }
+                    }, true), "deferred command accepted");
+                    socket.abort();
+                } else socket.readRaw(scratch, bytes -> {
+                    if (bytes > 0) {
+                        scratch.flip();
+                        socket.writeRaw(scratch, ignored -> {});
+                    }
+                });
+            }
+
+            @Override public void onClosed(Connection socket, CloseReason reason) {
+                if (socket == failed.get()) injectedCancellation(calls, -1);
+            }
+        };
+        try (var server = SelectorTransport.bind(LOOPBACK, config(1, 1, 4), handler);
+                var broken = connect(server, 0)) {
+            check(broken.getInputStream().read() == -1, "only the failed connection closed");
+            try (var healthy = connect(server, 0)) {
+                healthy.getOutputStream().write(73);
+                check(healthy.getInputStream().read() == 73, "same owner still serves peers and reused its admission");
+            }
+            server.close();
+            check(calls.get() == 4 && server.shutdownStats().getFirst().callbackFailures() == 4,
+                    "READ, WRITE, terminal, and queued command callbacks each ran once");
+            balanced(server.shutdownStats());
+        }
+    }
+
+    private static void injectedCancellation(AtomicInteger calls, long bytes) {
+        check(bytes == -1, "an aborted operation reports explicit failure");
+        calls.incrementAndGet();
+        throw new IllegalStateException("injected callback failure");
+    }
+
+    private static void checkRawGracefulGather() throws Exception {
+        var completed = new LinkedBlockingQueue<Long>();
+        var payload = new byte[512 * 1024];
+        for (int i = 0; i < payload.length; i++) payload[i] = sample(1, i);
+        var handler = new SelectorTransport.RawHandler() {
+            @Override public void onOpen(Connection socket) {
+                int half = payload.length / 2;
+                ByteBuffer[] buffers = {ByteBuffer.wrap(payload, 0, half), ByteBuffer.wrap(payload, half, half)};
+                check(socket.writeRaw(buffers, 0, 2, completed::add), "raw gather accepted");
+                socket.closeAfterFlush();
+                check(!socket.writeRaw(ByteBuffer.wrap(new byte[] {1}), ignored -> {}), "drain rejects new writes");
+            }
+        };
+        try (var server = SelectorTransport.bind(LOOPBACK, config(1, 1, 4), handler);
+                var socket = connect(server, 16_384)) {
+            Thread.sleep(150); // let the small socket send window fill before reading
+            check(Arrays.equals(payload, socket.getInputStream().readNBytes(payload.length)), "raw gather residual precedes FIN");
+            check(socket.getInputStream().read() == -1, "raw drain sends FIN");
+            check(await(completed) == payload.length && completed.isEmpty(), "one completion for the entire pending gather");
+            server.close();
+            check(server.shutdownStats().getFirst().zeroWrites() > 0, "raw gather exercised backpressure");
+            balanced(server.shutdownStats());
+        }
+    }
+
+    private static void checkHostedAttachFailure() throws Exception {
+        InetSocketAddress address;
+        try (var probe = new ServerSocket(0, 1, LOOPBACK.getAddress())) {
+            address = (InetSocketAddress) probe.getLocalSocketAddress();
+        }
+        var published = new AtomicReference<SelectorTransport.OwnerDriver>();
+        SelectorTransport.Handler noPackets = (socket, payload) -> {};
+        try {
+            SelectorTransport.bindHosted(address, config(2, 2, 4), noPackets, drivers -> {
+                published.set(drivers.getFirst());
+                drivers.getFirst().advance();
+                throw new IllegalStateException("injected partial attachment");
+            });
+            throw new AssertionError("partial attachment must fail");
+        } catch (IllegalStateException expected) {
+            check(expected.getMessage().equals("injected partial attachment"), "startup preserves the original exception");
+        }
+        check(!published.get().active(), "published driver retired after failed attachment");
+        try {
+            SelectorTransport.bindHosted(address, config(2, 2, 4), noPackets, drivers -> drivers.getFirst().closeOnOwner());
+            throw new AssertionError("concurrent stop during attachment must fail startup");
+        } catch (IllegalStateException expected) {
+            check(expected.getMessage().equals("Hosted Selector stopped during attachment"), "stop cancels startup");
+        }
+        try (var rebound = SelectorTransport.bind(address, config(1, 1, 4), noPackets)) {
+            check(rebound.localAddress().equals(address), "listener can rebind after both failures");
+        }
     }
 
     private static void checkOwnersAndFraming() throws Exception {
@@ -214,6 +320,11 @@ public final class SelectorTransportTest {
             }
             socket.getOutputStream().write(frame(new byte[] {1, 2, 3}));
             check(socket.getInputStream().read() == -1, "too-short encrypted packet is rejected");
+            try (Socket empty = connect(server, 0)) {
+                expectFrame(empty, Opcodes.S_KEYBYTES);
+                empty.getOutputStream().write(frame(new byte[0]));
+                check(empty.getInputStream().read() == -1, "empty encrypted packet is rejected");
+            }
             server.close();
             balanced(server.shutdownStats());
             check(server.shutdownStats().getFirst().send().borrows() == 30,

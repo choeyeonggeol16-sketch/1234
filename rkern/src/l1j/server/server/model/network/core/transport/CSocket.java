@@ -123,13 +123,15 @@ public final class CSocket implements AutoCloseable {
         rememberNativeClose(operation, error);
         nativeClosing();
     }
-    // Only the real native terminal callback sets this flag. Local aborting
+    // Only the provider's terminal callback sets this flag. Local aborting
     // of Java READ/WRITE requests must not start game-session destruction.
     void nativeTerminated() {
         nativeIoDrained = true;
-        nativeClosed();
-        CUserSocket owner = userSocketOwner;
-        if (owner != null) owner.onTransportTerminated();
+        try { nativeClosed(); }
+        finally {
+            CUserSocket owner = userSocketOwner;
+            if (owner != null) owner.onTransportTerminated();
+        }
     }
     void nativeClosing() {
         closing = true;
@@ -141,16 +143,20 @@ public final class CSocket implements AutoCloseable {
     public boolean setAccountIdentity(int account){return javaServer != null ? javaServer.setAccount(this, account) : parent.setAccountIdentity(id,account);}
     public boolean setCharacterEntered(boolean entered){return javaServer != null ? javaServer.setEntered(this, entered) : parent.setCharacterEntered(id,entered);}
     public boolean setMacIdentity(long value){return javaServer != null ? javaServer.setMac(this, value) : parent.setMacIdentity(id,value);}
-    boolean SetKey(MemorySegment api,int seed){return parent.SetKey(id,api,seed);}
-    public boolean releaseUserPacket(long sequence){return parent.releaseUserPacket(id,sequence);}
-    boolean encryptUserData(ByteBuffer bytes){return parent.encryptUserData(id,bytes);}
+    private CIOServer requireNativeServer() {
+        if (parent == null) throw new IllegalStateException("Native operation on a Java Selector socket");
+        return parent;
+    }
+    boolean SetKey(MemorySegment api,int seed){return requireNativeServer().SetKey(id,api,seed);}
+    public boolean releaseUserPacket(long sequence){return requireNativeServer().releaseUserPacket(id,sequence);}
+    boolean encryptUserData(ByteBuffer bytes){return requireNativeServer().encryptUserData(id,bytes);}
     public boolean setUserState(int state) {
         if (javaServer == null) return parent.setUserState(id, state);
         if (!javaServer.setState(this, state)) return false;
         if (state != 0) javaLoginDeadline = 0;
         return true;
     }
-    public boolean pauseNativeUser(boolean pause){return parent.pause(id,pause);}
+    public boolean pauseNativeUser(boolean pause){return requireNativeServer().pause(id,pause);}
     public boolean configureDeadlines(int loginMs) {
         if (javaPeer == null) return parent.configureDeadlines(id, loginMs);
         if (loginMs < 0) return false;
@@ -370,6 +376,7 @@ public final class CSocket implements AutoCloseable {
     public void SendConstBuffer(ByteBuffer[] srcs,int offset,int count,CUserSocket owner,int flags){write(srcs,offset,count,owner,flags);}
     @SuppressWarnings("preview")
     public void SendConstBuffer(ByteBuffer bytes, MemorySegment source, CUserSocket owner, int flags) {
+        CIOServer nativeServer = requireNativeServer();
         boolean rejected;
         synchronized (this) {
             if (writeOwner != null || writeSubmitting) throw new IllegalStateException("WRITE already pending");
@@ -383,7 +390,7 @@ public final class CSocket implements AutoCloseable {
         // The source reference transferred from the Java FIFO is pinned until this
         // downcall exits, including a simultaneous close/inline completion.
         boolean success = false;
-        try { success = parent.sendConstBuffer(id, source, flags); }
+        try { success = nativeServer.sendConstBuffer(id, source, flags); }
         finally { finishSubmission(success); }
     }
     private void write(ByteBuffer[] srcs, int offset, int count, CUserSocket owner,int flags) {
@@ -512,7 +519,7 @@ public final class CSocket implements AutoCloseable {
                 clearWrite();
             }
         }
-        if (reader != null) reader.transportReadCompleted(-1);
-        if (writer != null) deliver(writer, gather, -1);
+        try { if (reader != null) reader.transportReadCompleted(-1); }
+        finally { if (writer != null) deliver(writer, gather, -1); }
     }
 }

@@ -167,6 +167,15 @@ public final class SelectorCioIntegrationTest {
                     first.getOutputStream().write(frame(firstCodec.toServer(body(ALIVE, 901))));
                     expectEncrypted(first, firstCodec, 901);
                     check(Server.networkPoolReport().startsWith("JProRing"), "Java pool diagnostics available");
+                    try (var draining = new CAsyncSendConstBuffer(out -> out.put(large), -1, Integer.MAX_VALUE)) {
+                        for (int i = 0; i < 12; i++) check(draining.send(firstSession, 1), "SEND admitted before graceful close");
+                        firstSession.requestClientClose(null);
+                        check(!draining.send(firstSession, 1), "new SEND rejected during graceful close");
+                    }
+                    for (int i = 0; i < 12; i++) {
+                        check(Arrays.equals(readBody(first), firstCodec.fromServer(large)), "game FIFO drains before FIN");
+                    }
+                    check(first.getInputStream().read() == -1, "game graceful close sends FIN after admitted frames");
                 }
                 awaitIdlePool();
                 Server.stopLoginServer();
@@ -214,7 +223,7 @@ public final class SelectorCioIntegrationTest {
             check(owners.awaitTermination(5, TimeUnit.SECONDS), "existing game owners joined");
             l1j.server.server.ThreadPool.getInstance().shutdown();
         }
-        System.out.println("PASS RKern login entry, 2 CIO owners, timer, MAC/account admission, large broadcast, restart, reset with queued WRITEs, and 24 reset/reconnect cycles with zero outstanding leases");
+        System.out.println("PASS RKern login entry, 2 CIO owners, timer, MAC/account admission, large broadcast, graceful FIFO drain, restart, reset with queued WRITEs, and 24 reset/reconnect cycles with zero outstanding leases");
     }
 
     private static void awaitIdlePool() throws InterruptedException {

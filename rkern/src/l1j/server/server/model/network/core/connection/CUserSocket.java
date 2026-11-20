@@ -1323,6 +1323,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                                 || System.nanoTime() - _closeNotBeforeNs >= 0L);
             }
             finally { _stateLock.unlock(); }
+            // The provider drains its own I/O only. The game FIFO must be idle before handing off closure.
             if (closeNow) closeGracefully();
         }
     }

@@ -65,6 +65,11 @@ def rss(pid):
     return values['VmRSS'], values['VmHWM']
 
 
+def server_message(server, timeout):
+    readable, _, _ = select.select([server.stdout], [], [], timeout)
+    return server.stdout.readline().strip() if readable else ''
+
+
 def server_round(classpath, backend, trial, args, work):
     java = ['java', '-Xms64m', '-Xmx256m', '-XX:ActiveProcessorCount=2', '-cp', classpath]
     stderr_path = work / f'{backend}-{trial}.log'
@@ -72,8 +77,7 @@ def server_round(classpath, backend, trial, args, work):
         with subprocess.Popen([*java, 'TransportServer', backend], stdin=subprocess.PIPE,
                               stdout=subprocess.PIPE, stderr=stderr, text=True) as server:
             try:
-                readable, _, _ = select.select([server.stdout], [], [], 15)
-                first = server.stdout.readline().strip() if readable else ''
+                first = server_message(server, 15)
                 if first.startswith('UNAVAILABLE '):
                     if server.wait(timeout=5):
                         raise RuntimeError(first)
@@ -89,12 +93,16 @@ def server_round(classpath, backend, trial, args, work):
                     tag, samples, *metrics = data.stdout.strip().split()
                     if tag != 'RESULT' or int(samples) == 0:
                         raise RuntimeError(data.stdout)
-                    rows.append([backend, trial, workload, clients, samples, *metrics, *rss(server.pid)])
-                tail, _ = server.communicate('\n', timeout=10)
-                if server.returncode or not tail.startswith('MEMORY '):
-                    raise RuntimeError(f'{backend}: server shutdown failed ({tail!r})')
-                direct, pool = tail.split()[1:]
-                return provider, [row + [direct, pool] for row in rows]
+                    server.stdin.write('MEMORY\n')
+                    server.stdin.flush()
+                    sample = server_message(server, 5).split()
+                    if len(sample) != 3 or sample[0] != 'MEMORY':
+                        raise RuntimeError(f'{backend}: missing workload memory sample')
+                    rows.append([backend, trial, workload, clients, samples, *metrics, *rss(server.pid), *sample[1:]])
+                server.communicate('STOP\n', timeout=10)
+                if server.returncode:
+                    raise RuntimeError(f'{backend}: server shutdown failed ({server.returncode})')
+                return provider, rows
             except Exception as failure:
                 stderr.seek(0)
                 print(f'{backend} server stderr:\n{stderr.read()}')
@@ -159,7 +167,8 @@ def main():
                jdk=subprocess.run(['java', '-version'], text=True, capture_output=True, check=True).stderr.splitlines()[0],
                netty=NETTY, revision=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=HERE, text=True).strip(),
                trials=args.trials, warmup_ms=args.warmup_ms, measure_ms=args.measure_ms,
-               workloads=args.workloads, providers=providers, unavailable=unavailable, failed_rounds=failed_rounds)
+               workloads=args.workloads, memory_sample='after each workload, before server shutdown',
+               providers=providers, unavailable=unavailable, failed_rounds=failed_rounds)
     result = io.StringIO(newline='')
     writer = csv.writer(result, lineterminator='\n')
     writer.writerow(FIELDS)

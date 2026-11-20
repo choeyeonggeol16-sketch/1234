@@ -540,6 +540,7 @@ public final class CIOThreadCallback {
 
     /** The validated network subset lives on the same threads as game timers and session replay. */
     public synchronized void attachSelectors(java.util.List<SelectorTransport.OwnerDriver> drivers) {
+        drivers = java.util.List.copyOf(drivers);
         if (drivers.size() != networkShardCount || drivers.isEmpty())
             throw new IllegalArgumentException("Selector count must match the network shard count");
         for (int i = 0; i < drivers.size(); i++) {
@@ -3106,7 +3107,7 @@ public final class CIOThreadCallback {
         return !selfJoin;
     }
 
-	public void shutdown() {
+	public synchronized void shutdown() {
 		watchdogRunning = false;
 		LockSupport.unpark(watchdogThread);
 

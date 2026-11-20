@@ -1,3 +1,5 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.lang.management.BufferPoolMXBean;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
@@ -10,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
+import java.util.function.LongSupplier;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -48,19 +51,19 @@ public final class TransportServer {
         var config = new SelectorTransport.Config(1, 128, BACKLOG, 128, 1, 1, 1,
                 3, 1, 0, Duration.ofSeconds(5));
         try (Selector selector = Selector.open(); var server = SelectorTransport.bind(ADDRESS, config, handler)) {
-            ready(server.localAddress().getPort(), selector.getClass().getName());
+            serveControl(server.localAddress().getPort(), selector.getClass().getName(),
+                    () -> handler.allocated * (long) BUFFER_SIZE);
             server.close();
             if (!handler.sessions.isEmpty() || handler.free.size() != handler.allocated || server.shutdownFailure() != null) {
                 throw new IllegalStateException("Outstanding raw connections or transport error", server.shutdownFailure());
             }
-            memory(handler.allocated * (long) BUFFER_SIZE);
         }
     }
 
     private static final class RawEcho implements SelectorTransport.RawHandler {
         private final Map<SelectorTransport.Connection, Session> sessions = new IdentityHashMap<>();
         private final ArrayDeque<ByteBuffer> free = new ArrayDeque<>();
-        private int allocated;
+        private volatile int allocated;
 
         @Override public void onOpen(SelectorTransport.Connection connection) {
             ByteBuffer buffer = free.pollFirst();
@@ -143,8 +146,8 @@ public final class TransportServer {
                     .childOption(ChannelOption.RCVBUF_ALLOCATOR, new FixedRecvByteBufAllocator(BUFFER_SIZE))
                     .childHandler(new NettyEcho()).bind(ADDRESS).sync().channel();
             try {
-                ready(((InetSocketAddress) listener.localAddress()).getPort(), channel.getSimpleName());
-                memory(PooledByteBufAllocator.DEFAULT.metric().usedDirectMemory());
+                serveControl(((InetSocketAddress) listener.localAddress()).getPort(), channel.getSimpleName(),
+                        () -> PooledByteBufAllocator.DEFAULT.metric().usedDirectMemory());
             } finally {
                 listener.close().sync();
             }
@@ -160,9 +163,15 @@ public final class TransportServer {
         }
     }
 
-    private static void ready(int port, String provider) throws Exception {
+    private static void serveControl(int port, String provider, LongSupplier poolBytes) throws Exception {
         System.out.println("READY " + port + " " + provider);
-        if (System.in.read() != '\n') throw new IllegalStateException("Expected benchmark shutdown signal");
+        var control = new BufferedReader(new InputStreamReader(System.in));
+        for (String command; (command = control.readLine()) != null; ) {
+            if (command.equals("STOP")) return;
+            if (!command.equals("MEMORY")) throw new IllegalStateException("Unknown benchmark control command");
+            memory(poolBytes.getAsLong());
+        }
+        throw new IllegalStateException("Expected benchmark shutdown signal");
     }
 
     private static void memory(long poolBytes) {

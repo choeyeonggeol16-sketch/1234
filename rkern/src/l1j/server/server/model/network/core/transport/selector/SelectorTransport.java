@@ -20,6 +20,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
@@ -87,7 +88,7 @@ public final class SelectorTransport implements AutoCloseable {
     }
 
     public record OwnerStats(SelectorBufferPool.Stats receive, SelectorBufferPool.Stats send,
-            int remainingConnections, int remainingCommands, long zeroWrites) { }
+            int remainingConnections, int remainingCommands, long zeroWrites, long callbackFailures) { }
 
     private static final int ACCEPT_BUDGET = 32;
     private static final int COMMAND_BUDGET = 64;
@@ -96,6 +97,8 @@ public final class SelectorTransport implements AutoCloseable {
     private static final int GATHER_LIMIT = 16;
     private static final long OWNER_PHASE_NANOS = 500_000;
     private static final Duration CLOSE_TIMEOUT = Duration.ofSeconds(5);
+    private static final System.Logger LOG = System.getLogger(SelectorTransport.class.getName());
+    private static final SelectorBufferPool.Stats EMPTY_POOL_STATS = new SelectorBufferPool.Stats(0, 0, 0, 0, 0);
 
     private final Config config;
     private final Handler handler;
@@ -105,6 +108,8 @@ public final class SelectorTransport implements AutoCloseable {
     private final CountDownLatch terminated;
     private final long writeStallNanos;
     private final AtomicReference<Throwable> failure = new AtomicReference<>();
+    private final Object startupLock = new Object();
+    private volatile boolean started;
     private int acceptOwner;
     private volatile boolean accepting = true;
 
@@ -124,7 +129,7 @@ public final class SelectorTransport implements AutoCloseable {
         owners = new Owner[config.owners()];
         terminated = new CountDownLatch(owners.length);
         listener = ServerSocketChannel.open();
-        int started = 0;
+        int startedOwners = 0;
         try {
             listener.configureBlocking(false);
             listener.bind(address, config.acceptBacklog());
@@ -132,16 +137,30 @@ public final class SelectorTransport implements AutoCloseable {
             for (int i = 0; i < owners.length; i++) owners[i] = new Owner(i, host != null);
             listener.register(owners[0].selector, SelectionKey.OP_ACCEPT);
             if (host == null) {
+                started = true;
                 for (Owner owner : owners) {
                     owner.thread.start();
-                    started++;
+                    startedOwners++;
                 }
-            } else host.attach(List.of(owners));
+            } else {
+                host.attach(List.of(owners));
+                synchronized (startupLock) {
+                    for (Owner owner : owners) {
+                        if (owner.stopping) throw new IllegalStateException("Hosted Selector stopped during attachment");
+                    }
+                    started = true;
+                }
+            }
         } catch (IOException | RuntimeException | Error startupFailure) {
             for (int i = 0; i < owners.length; i++) {
                 if (owners[i] == null) continue;
-                if (i < started) owners[i].requestStop();
-                else closeSuppressing(owners[i].selector, startupFailure);
+                Owner owner = owners[i];
+                if (i < startedOwners) owner.requestStop();
+                else {
+                    closeSuppressing(owner.selector, startupFailure);
+                    owner.finished = true;
+                    terminated.countDown();
+                }
             }
             closeSuppressing(listener, startupFailure);
             throw startupFailure;
@@ -320,11 +339,14 @@ public final class SelectorTransport implements AutoCloseable {
             return owner.offer(new OwnerTask() {
                 @Override
                 public void run() {
-                    if (closed) command.cancel();
+                    if (closed) cancel();
                     else runCommand(command);
                 }
 
-                @Override public void cancel() { command.cancel(); }
+                @Override public void cancel() {
+                    try { command.cancel(); }
+                    catch (RuntimeException error) { owner.reportCallbackFailure("command cancellation", error); }
+                }
             });
         }
 
@@ -375,6 +397,7 @@ public final class SelectorTransport implements AutoCloseable {
             }
         }
 
+        /** Drain the accepted framed queue or complete the single pending raw WRITE, then send FIN. */
         public void closeAfterFlush() {
             owner.requireOwner();
             if (send != null && send.isEncoding()) throw new IllegalStateException("Cannot drain inside an encoder");
@@ -388,7 +411,7 @@ public final class SelectorTransport implements AutoCloseable {
         }
 
         private boolean dispatch(ReadBuffer payload) throws IOException {
-            if (cipher != null && payload.remaining() != 0) {
+            if (cipher != null) {
                 int length = payload.remaining();
                 if (length < 8) throw new IOException("Encrypted inbound frame is too short");
                 cipher.decrypt(payload, 0, length);
@@ -442,7 +465,7 @@ public final class SelectorTransport implements AutoCloseable {
         private boolean hasWrites() { return raw == null ? !send.isEmpty() : raw.writing(); }
 
         private void rawFlush() throws IOException {
-            long written = raw.write(channel);
+            long written = raw.write(channel, drainReason != null);
             if (!closed) recordWrite(written);
         }
 
@@ -521,14 +544,20 @@ public final class SelectorTransport implements AutoCloseable {
                 send = null;
                 cipher = null;
                 try {
-                    if (raw != null) raw.cancel();
-                    else inbound.close();
-                } finally {
-                    try { if (outbound != null) outbound.close(); }
-                    finally {
-                        owner.admitted.decrementAndGet();
-                        handler.onClosed(this, reason);
+                    try {
+                        if (raw != null) raw.cancel(owner.reportRawCancellation);
+                        else inbound.close();
+                    } finally {
+                        try { if (outbound != null) outbound.close(); }
+                        finally {
+                            owner.admitted.decrementAndGet();
+                            try { handler.onClosed(this, reason); }
+                            catch (RuntimeException error) { owner.reportCallbackFailure("terminal notification", error); }
+                        }
                     }
+                } catch (RuntimeException | Error invariantFailure) {
+                    owner.fail(invariantFailure);
+                    throw invariantFailure;
                 }
             }
         }
@@ -550,6 +579,8 @@ public final class SelectorTransport implements AutoCloseable {
         private final PriorityQueue<Connection> deadlines = new PriorityQueue<>(Comparator.comparingLong(c -> c.scheduledDeadline));
         private final ByteBuffer[] gather = new ByteBuffer[GATHER_LIMIT];
         private final Consumer<SelectionKey> collector = this::collect;
+        private final Consumer<RuntimeException> reportRawCancellation =
+                error -> reportCallbackFailure("raw I/O cancellation", error);
         private SelectorBufferPool receivePool;
         private SelectorBufferPool sendPool;
         private volatile boolean stopping;
@@ -558,6 +589,8 @@ public final class SelectorTransport implements AutoCloseable {
         private Connection first;
         private Connection last;
         private long zeroWrites;
+        private long callbackFailures;
+        private long lastCallbackLog;
         private OwnerStats stats;
 
         private Owner(int index, boolean hosted) throws IOException {
@@ -639,7 +672,7 @@ public final class SelectorTransport implements AutoCloseable {
 
         @Override
         public void advance() {
-            if (finished) return;
+            if (!started || finished) return;
             try {
                 initialize();
                 if (!stopping) {
@@ -653,6 +686,11 @@ public final class SelectorTransport implements AutoCloseable {
         @Override
         public void awaitWork(long maxWaitMillis) {
             if (stopping || finished) return;
+            // A host may publish drivers on running threads before its attach call returns.
+            if (!started) {
+                LockSupport.parkNanos(Math.max(0L, Math.min(1L, maxWaitMillis)) * 1_000_000L);
+                return;
+            }
             requireOwner();
             try { select(Math.max(0, maxWaitMillis)); }
             catch (Throwable unexpected) { fail(unexpected); }
@@ -664,7 +702,13 @@ public final class SelectorTransport implements AutoCloseable {
 
         @Override
         public void closeOnOwner() {
-            if (finished) return;
+            synchronized (startupLock) {
+                if (finished) return;
+                if (!started) {
+                    SelectorTransport.this.requestStop();
+                    return;
+                }
+            }
             if (thread == null) thread = Thread.currentThread();
             requireOwner();
             SelectorTransport.this.requestStop();
@@ -674,7 +718,7 @@ public final class SelectorTransport implements AutoCloseable {
         private void initialize() {
             if (thread == null) thread = Thread.currentThread();
             requireOwner();
-            if (receivePool != null) return;
+            if (handler instanceof RawHandler || receivePool != null) return;
             receivePool = SelectorBufferPool.receive(config.connectionsPerOwner(), config.largeReceivesPerOwner());
             sendPool = SelectorBufferPool.send(config.smallSendsPerOwner(), config.largeSendsPerOwner());
         }
@@ -682,6 +726,14 @@ public final class SelectorTransport implements AutoCloseable {
         private void fail(Throwable unexpected) {
             failure.compareAndSet(null, unexpected);
             SelectorTransport.this.requestStop();
+        }
+
+        private void reportCallbackFailure(String stage, RuntimeException error) {
+            long now = System.nanoTime();
+            if (++callbackFailures == 1 || now - lastCallbackLog >= TimeUnit.SECONDS.toNanos(1)) {
+                lastCallbackLog = now;
+                LOG.log(System.Logger.Level.WARNING, "Selector owner " + index + " failed during " + stage, error);
+            }
         }
 
         private void finish() {
@@ -837,10 +889,10 @@ public final class SelectorTransport implements AutoCloseable {
             try (Selector closingSelector = selector) {
                 if (index == 0) listener.close();
             } catch (IOException e) { failure.compareAndSet(null, e); }
-            if (receivePool != null && sendPool != null) {
-                stats = new OwnerStats(receivePool.stats(), sendPool.stats(), admitted.get(), pendingCommands(), zeroWrites);
-                receivePool = sendPool = null;
-            }
+            stats = new OwnerStats(receivePool == null ? EMPTY_POOL_STATS : receivePool.stats(),
+                    sendPool == null ? EMPTY_POOL_STATS : sendPool.stats(), admitted.get(), pendingCommands(),
+                    zeroWrites, callbackFailures);
+            receivePool = sendPool = null;
         }
     }
 
