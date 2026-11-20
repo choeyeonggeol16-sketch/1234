@@ -1,0 +1,66 @@
+name: RKern skill effect lifecycle checks
+
+on:
+  push:
+    branches:
+      - rkern/unified-jproring-game-20261120
+    paths:
+      - .github/workflows/rkern-skill-effect-lifecycle.yml
+      - rkern/src/l1j/server/server/model/character/skill/**
+      - rkern/src/l1j/server/server/model/character/login/skill/**
+      - rkern/src/l1j/server/server/model/Ability.java
+      - rkern/src/l1j/server/server/model/Resistance.java
+      - rkern/src/l1j/server/server/model/L1Character.java
+      - rkern/src/l1j/server/server/model/HelpBySupport.java
+      - rkern/docs/skill_effect_lifecycle_20261120/TestSkillEffectLifecycle.java
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile-and-regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            rkern/src
+            rkern/docs/jproring_cio_integration_20261120
+            rkern/docs/skill_effect_lifecycle_20261120
+      - name: Compile all production Java and run skill lifecycle regression
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          java -version
+          python3 - <<'PY'
+          import importlib.util
+          import os
+          from pathlib import Path
+          import subprocess
+
+          root = Path("rkern").resolve()
+          work = Path(os.environ["RUNNER_TEMP"]) / "skill-lifecycle"
+          classes = work / "classes"
+          classes.mkdir(parents=True, exist_ok=True)
+          helper_path = root / "docs/jproring_cio_integration_20261120/run_game_ab.py"
+          spec = importlib.util.spec_from_file_location("rkern_build_helper", helper_path)
+          helper = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(helper)
+          cp = helper.classpath(classes, work / "deps")
+          sources = sorted((root / "src").rglob("*.java"))
+          print(f"Production Java files: {len(sources)}", flush=True)
+          sources.append(root / "docs/skill_effect_lifecycle_20261120/TestSkillEffectLifecycle.java")
+          args = work / "sources.txt"
+          args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
+          subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8", "-source", "21",
+                          "-target", "21", "--enable-preview", "-cp", cp, "-d",
+                          str(classes), "@" + str(args)], check=True, timeout=300)
+          print("PASS full production Java and regression compilation", flush=True)
+          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
+                          "-XX:ActiveProcessorCount=2", "-cp", cp,
+                          "l1j.server.server.model.character.skill.TestSkillEffectLifecycle"],
+                         cwd=work, check=True, timeout=120)
+          print("PASS skill lifecycle test process", flush=True)
+          PY

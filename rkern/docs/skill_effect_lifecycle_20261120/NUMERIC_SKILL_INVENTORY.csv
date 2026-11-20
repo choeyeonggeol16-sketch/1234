@@ -15,7 +15,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 20,CURSE_BLIND,onCurseBlindLike,existing_cast,offCurseBlindFamily
 21,BLESSED_ARMOR,onBlessedArmor,existing_cast,offBlessedArmor
 23,WEAK_ELEMENTAL,onWeakElemental,existing_cast,
-26,PHYSICAL_ENCHANT_DEX,onPhysicalEnchantDex,existing_cast,offPhysicalEnchantDex
+26,PHYSICAL_ENCHANT_DEX,startPhysicalEnchant,managed_pump,offPhysicalEnchantDex
 27,WEAPON_BREAK,onWeaponBreak,existing_cast,
 28,VAMPIRIC_TOUCH,onVampiricTouchLike,instant,
 29,SLOW,onSlowLike,existing_cast,offMoveSpeedReset
@@ -27,7 +27,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 39,MANA_DRAIN,onManaDrain,existing_cast,
 40,DARKNESS,onCurseBlindLike,existing_cast,offCurseBlindFamily
 41,CREATE_ZOMBIE,onCreateZombie,existing_cast,
-42,PHYSICAL_ENCHANT_STR,onPhysicalEnchantStr,existing_cast,offPhysicalEnchantStr
+42,PHYSICAL_ENCHANT_STR,startPhysicalEnchant,managed_pump,offPhysicalEnchantStr
 43,HASTE,onHaste,existing_cast,offHasteFamily
 44,CANCELLATION,onCancellation,instant,
 47,WEAKNESS,onWeaknessLike,existing_cast,offWeaknessFamily
@@ -65,7 +65,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 101,MOVING_ACCELERATION,onMovingAcceleration,existing_cast,offBraveSpeedReset
 103,DARK_BLIND,onDarkBlind,existing_cast,offDarkBlind
 105,DOUBLE_BRAKE,,stop_only,offDoubleBrake
-106,UNCANNY_DODGE,onUncannyDodge,existing_cast,offUncannyDodge
+106,UNCANNY_DODGE,startCommonStatBuff,managed_pump,offUncannyDodge
 107,SHADOW_FANG,onShadowFang,existing_cast,offShadowFang
 109,DRESS_MIGHTY,startDressStatBuff,managed_pump,offDressMighty
 110,DRESS_DEXTERITY,startDressStatBuff,managed_pump,offDressDexterity
@@ -87,11 +87,11 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 134,COUNTER_MIRROR,onCounterMirror,existing_cast,offCounterMirror
 135,SOUL_BARRIER,onSoulBarrier,existing_cast,offSoulBarrier
 136,INFERNO,,stop_only,offInferno
-137,CLEAR_MIND,onClearMind,existing_cast,offClearMind
-138,RESIST_ELEMENTAL,onResistElemental,existing_cast,offResistElemental
+137,CLEAR_MIND,startClearMind,managed_pump,offClearMind
+138,RESIST_ELEMENTAL,startCommonStatBuff,managed_pump,offResistElemental
 145,RETURN_TO_NATURE,onReturnToNature,existing_cast,
 146,BLOODY_SOUL,onBloodySoul,existing_cast,
-147,ELEMENTAL_PROTECTION,onElementalProtection,existing_cast,offElementalProtection
+147,ELEMENTAL_PROTECTION,startCommonStatBuff,managed_pump,offElementalProtection
 148,EARTH_WEAPON,onEarthWeapon,existing_cast,offEarthWeapon
 149,AQUA_SHOT,onAquaShot,existing_cast,offAquaShot
 150,EAGGLE_EYE,onEaggleEye,existing_cast,offEaggleEye
@@ -126,7 +126,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 194,EYE_OF_DRAGON,onDetectionLike,existing_cast,
 195,SCALES_FIRE_DRAGON,onScalesFireDragon,existing_cast,offScalesFireDragon
 197,SCALES_RINDVIOR_DRAGON,startScalesEvasion,managed_pump,offScalesRindviorDragon
-201,MIRROR_IMAGE,onMirrorImage,existing_cast,offUncannyDodge
+201,MIRROR_IMAGE,startCommonStatBuff,managed_pump,offUncannyDodge
 204,IllUSION_OGRE,startMeleeBuff,managed_pump,offIllusionOgre
 205,CUBE_OGRE,onCubeOgre,existing_cast,offCubeOgre
 206,CONCENTRATION,onConcentration,existing_cast,
@@ -139,7 +139,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 213,IZE_BREAK,onDetectionLike,existing_cast,
 214,IllUSION_DIAMONDGOLEM,startIllusionDiamondGolem,managed_pump,offIllusionDiamondGolem
 215,CUBE_RICH,onCubeRich,existing_cast,offCubeRich
-216,INSIGHT,onInsight,existing_cast,offInsight
+216,INSIGHT,startCommonStatBuff,managed_pump,offInsight
 217,PANIC,onPanic,existing_cast,offPanic
 218,REDUCE_WEIGHT,onReduceWeightLike,existing_cast,offReduceOrDecreaseWeight
 219,IllUSION_AVATAR,onIllusionAvatar,existing_cast,offIllusionAvatar

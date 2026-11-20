@@ -1372,6 +1372,7 @@ public final class SkillStopHandlers {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			pc.removeSkillModifierFromOwner(skillId);
+			SC_OwnCharAttrDef.send(pc);
 		}
 		return StopResult.HANDLED;
 	}

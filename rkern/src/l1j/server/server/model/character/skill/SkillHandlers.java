@@ -2974,7 +2974,8 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		CSkillInfo.applyFixedModifierFromOwner(pc, skillId);
 		applySkillEffectSec(pc, skillId, duration);
 		switch (skillId) {
-		case L1SkillId.RESIST_ELEMENTAL, L1SkillId.ELEMENTAL_PROTECTION -> SC_OwnCharAttrDef.send(pc);
+		case L1SkillId.RESIST_ELEMENTAL, L1SkillId.ELEMENTAL_PROTECTION,
+			 L1SkillId.MIRROR_IMAGE, L1SkillId.UNCANNY_DODGE -> SC_OwnCharAttrDef.send(pc);
 		case L1SkillId.INSIGHT -> pc.resetBaseMr();
 		default -> { }
 		}

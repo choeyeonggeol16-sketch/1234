@@ -490,6 +490,43 @@ public final class TestSkillEffectLifecycle {
         pc.skillEffectClearFromOwner();
         verify(pc.getEffectedER() == er, "clear removes evasion modifier", SCALES_WATER_DRAGON);
 
+        // Exercise the real character-owned timer container, not only the mock map.
+        final int baseStr = pc.getAbility().getAddedStr();
+        final int baseDex = pc.getAbility().getAddedDex();
+        final int baseCon = pc.getAbility().getAddedCon();
+        final int baseInt = pc.getAbility().getAddedInt();
+        final int baseWis = pc.getAbility().getAddedWis();
+        final int baseEarth = pc.getResistance().getEarth();
+        final int basePierce = pc.getResistance().getSpecialPierce(eKind.SPIRIT);
+        final int baseDg = pc.getDg();
+        pc.setElfAttr(1);
+        final int[] owned = {CLEAR_MIND, PHYSICAL_ENCHANT_STR, PHYSICAL_ENCHANT_DEX,
+                RESIST_ELEMENTAL, ELEMENTAL_PROTECTION, INSIGHT, MIRROR_IMAGE, UNCANNY_DODGE};
+        for (int id : owned) {
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "owner accepts stat effect", id);
+            verify(pc.hasSkillEffect(id), "owner installs timer", id);
+        }
+        verify(pc.getAbility().getAddedStr() == baseStr + 7
+                && pc.getAbility().getAddedDex() == baseDex + 7
+                && pc.getAbility().getAddedCon() == baseCon + 1
+                && pc.getAbility().getAddedInt() == baseInt + 2
+                && pc.getAbility().getAddedWis() == baseWis + 1
+                && pc.getResistance().getEarth() == baseEarth + 60
+                && pc.getDg() == baseDg + 60, "owner applies eight independent effects", INSIGHT);
+        pc.skillEffectRemoveFromOwner(INSIGHT, false);
+        verify(!pc.hasSkillEffect(INSIGHT) && pc.getAbility().getAddedCon() == baseCon
+                && pc.getAbility().getAddedStr() == baseStr + 6,
+                "timer-only insight removal", INSIGHT);
+        pc.setElfAttr(2);
+        pc.skillEffectClearFromOwner();
+        for (int id : owned) verify(!pc.hasSkillEffect(id), "owner clears timer", id);
+        verify(pc.getAbility().getAddedStr() == baseStr && pc.getAbility().getAddedDex() == baseDex
+                && pc.getAbility().getAddedCon() == baseCon && pc.getAbility().getAddedInt() == baseInt
+                && pc.getAbility().getAddedWis() == baseWis && pc.getResistance().getEarth() == baseEarth
+                && pc.getResistance().getSpecialPierce(eKind.SPIRIT) == basePierce
+                && pc.getDg() == baseDg, "owner clear preserves other sources", ELEMENTAL_PROTECTION);
+
         L1PcInstance expiring = new L1PcInstance();
         expiring.addBaseMaxHp((short) 600);
         int pride = L1SkillId.PRIDE;
