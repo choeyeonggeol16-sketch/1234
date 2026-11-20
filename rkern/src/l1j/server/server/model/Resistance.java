@@ -124,11 +124,16 @@ public class Resistance {
     public int getcalcPcDefense()  	{ return calcPcDefense;	}
     public int getPVPweaponTotalDamage()  	{ return PVPweaponTotalDamage;	}
     
-    public int getFire() 	{ return increase_elemental_resist(fire); 	}
-    public int getWater()	{ return increase_elemental_resist(water); }
-    public int getWind() 	{ return increase_elemental_resist(wind); 	}
-    public int getEarth()	{ return increase_elemental_resist(earth); }
-    
+    // From least to most significant byte: water, wind, earth, fire.
+    private volatile int skillElemental;
+
+    void setSkillElemental(int value) { if (skillElemental != value) skillElemental = value; }
+
+    public int getFire()  { return increase_elemental_resist(checkRange(fire + (byte) (skillElemental >>> 24))); }
+    public int getWater() { return increase_elemental_resist(checkRange(water + (byte) skillElemental)); }
+    public int getWind()  { return increase_elemental_resist(checkRange(wind + (byte) (skillElemental >>> 8))); }
+    public int getEarth() { return increase_elemental_resist(checkRange(earth + (byte) (skillElemental >>> 16))); }
+
     private int increase_elemental_resist(int source_resist) {
         return character == null || !character.isPassive(MJPassiveID.RESIST_ELEMENT.toInt()) ?
                 source_resist : source_resist + 5;

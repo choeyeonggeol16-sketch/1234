@@ -200,8 +200,6 @@ public final class SkillHandlers {
 
 		register(L1SkillId.GLOWING_AURA, SkillHandlers::onGlowingWeapon);
 		register(L1SkillId.BRAVE_AURA, SkillHandlers::onBraveMental);
-		register(L1SkillId.DRESS_DEXTERITY, SkillHandlers::onDressDexterity);
-		register(L1SkillId.DRESS_MIGHTY, SkillHandlers::onDressMighty);
 
 		register(L1SkillId.THUNDER_GRAB, SkillHandlers::onThunderGrab);
 
@@ -413,17 +411,6 @@ public final class SkillHandlers {
 		register(L1SkillId.N_BUFF_WIND_DMG, SkillHandlers::onNBuffWindDmg);
 		register(L1SkillId.N_BUFF_EARTH_DMG, SkillHandlers::onNBuffEarthDmg);
 		register(L1SkillId.N_BUFF_FIRE_DMG, SkillHandlers::onNBuffFireDmg);
-
-		register(L1SkillId.N_BUFF_STR, SkillHandlers::onNBuffStr);
-		register(L1SkillId.N_BUFF_DEX, SkillHandlers::onNBuffDex);
-		register(L1SkillId.N_BUFF_INT, SkillHandlers::onNBuffInt);
-		register(L1SkillId.N_BUFF_WIS, SkillHandlers::onNBuffWis);
-
-		register(L1SkillId.N_BUFF_WATER, SkillHandlers::onNBuffWater);
-		register(L1SkillId.N_BUFF_WIND, SkillHandlers::onNBuffWind);
-		register(L1SkillId.N_BUFF_EARTH, SkillHandlers::onNBuffEarth);
-		register(L1SkillId.N_BUFF_FIRE, SkillHandlers::onNBuffFire);
-		register(L1SkillId.N_BUFF_ALL_RESIST, SkillHandlers::onNBuffAllResist);
 
 		// 기르타스
 		register(L1SkillId.TROGIR_MILPITAS1, SkillHandlers::onCursePoisonLike);
@@ -1536,156 +1523,25 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onNBuffStr(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_STR;
-
+	static void startInventoryStatBuff(L1PcInstance pc, int skillId, int duration) {
+		final int bonus = switch (skillId) {
+			case L1SkillId.N_BUFF_STR -> 1;
+			case L1SkillId.N_BUFF_DEX -> 1 << 8;
+			case L1SkillId.N_BUFF_INT -> 1 << 16;
+			case L1SkillId.N_BUFF_WIS -> 1 << 24;
+			case L1SkillId.N_BUFF_WATER -> 5;
+			case L1SkillId.N_BUFF_WIND -> 5 << 8;
+			case L1SkillId.N_BUFF_EARTH -> 5 << 16;
+			case L1SkillId.N_BUFF_FIRE -> 5 << 24;
+			case L1SkillId.N_BUFF_ALL_RESIST -> 0x05050505;
+			default -> throw new IllegalArgumentException("Unknown inventory buff " + skillId);
+		};
 		resetEffect(pc, skillId);
-
-		pc.getAbility().addAddedStr((byte) 1);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onNBuffDex(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_DEX;
-
-		resetEffect(pc, skillId);
-
-		pc.getAbility().addAddedDex((byte) 1);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onNBuffInt(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_INT;
-
-		resetEffect(pc, skillId);
-
-		pc.getAbility().addAddedInt((byte) 1);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onNBuffWis(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_WIS;
-
-		resetEffect(pc, skillId);
-
-		pc.getAbility().addAddedWis((byte) 1);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onNBuffWater(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_WATER;
-
-		resetEffect(pc, skillId);
-
-		pc.getResistance().addWater(5);
-		SC_OwnCharAttrDef.send(pc);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onNBuffWind(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_WIND;
-
-		resetEffect(pc, skillId);
-
-		pc.getResistance().addWind(5);
-		SC_OwnCharAttrDef.send(pc);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onNBuffEarth(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_EARTH;
-
-		resetEffect(pc, skillId);
-
-		pc.getResistance().addEarth(5);
-		SC_OwnCharAttrDef.send(pc);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onNBuffFire(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_FIRE;
-
-		resetEffect(pc, skillId);
-
-		pc.getResistance().addFire(5);
-		SC_OwnCharAttrDef.send(pc);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onNBuffAllResist(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_ALL_RESIST;
-
-		resetEffect(pc, skillId);
-
-		pc.getResistance().addFire(5);
-		pc.getResistance().addEarth(5);
-		pc.getResistance().addWater(5);
-		pc.getResistance().addWind(5);
-		SC_OwnCharAttrDef.send(pc);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
+		pc.applySkillModifierFromOwner(skillId, bonus);
+		if (skillId >= L1SkillId.N_BUFF_WATER && skillId <= L1SkillId.N_BUFF_ALL_RESIST)
+			SC_OwnCharAttrDef.send(pc);
+		applySkillEffectSec(pc, skillId, duration);
+		sendIvenBuffIcon(pc, skillId, duration);
 	}
 
 	private static HandlerResult onScalesWaterDragon(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -3686,34 +3542,14 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		applySkillEffectSec(pc, skillId, duration);
 	}
 
-	private static HandlerResult onDressDexterity(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int skillId = L1SkillId.DRESS_DEXTERITY;
-
+	static void startDressStatBuff(L1PcInstance pc, int skillId, int iconDuration) {
+		final boolean dexterity = skillId == L1SkillId.DRESS_DEXTERITY;
 		resetEffect(pc, skillId);
-
-		pc.getAbility().addAddedDex((byte) 3);
-		SC_Dexup.send(pc, pc, 2, su.hdGetBuffIconDuration());
-
-		applySkillEffectSec(pc, skillId, durationSecForBuff(su, skillId));
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onDressMighty(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int skillId = L1SkillId.DRESS_MIGHTY;
-
-		resetEffect(pc, skillId);
-
-		pc.getAbility().addAddedStr((byte) 3);
-		SC_Strup.send(pc, pc, 2, su.hdGetBuffIconDuration());
-
-		applySkillEffectSec(pc, skillId, durationSecForBuff(su, skillId));
-		return HandlerResult.HANDLED;
+		pc.applySkillModifierFromOwner(skillId, dexterity ? 3 << 8 : 3);
+		if (dexterity) SC_Dexup.send(pc, pc, 2, iconDuration);
+		else SC_Strup.send(pc, pc, 2, iconDuration);
+		final int duration = iconDuration > 0 ? iconDuration : durationSecForBuff(null, skillId);
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
 

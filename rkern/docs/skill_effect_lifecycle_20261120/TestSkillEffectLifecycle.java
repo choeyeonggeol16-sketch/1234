@@ -5,6 +5,8 @@ import java.util.Map;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1PcInstance;
 
+import static l1j.server.server.model.character.skill.L1SkillId.*;
+
 /** Standalone Java 21 regression check. Run against the compiled server classes. */
 public final class TestSkillEffectLifecycle {
     private record Buff(int id, int hp, int mp, int ac, int mr) {}
@@ -56,6 +58,7 @@ public final class TestSkillEffectLifecycle {
         try {
             verifyLifecycle();
             verifyIndependentModifiers();
+            verifyInventoryAndDressBuffs();
             verifyLifetimeRefreshAndSleep();
             verifyOwnerDispatchAndExpiry();
             verifyRegistry();
@@ -118,6 +121,45 @@ public final class TestSkillEffectLifecycle {
                     && pc.getResistance().getEffectedMrBySkill() == mr, "restored stats", id);
             printState(pc, id, "stop");
         }
+    }
+
+    private static void verifyInventoryAndDressBuffs() {
+        Player pc = new Player();
+        pc.getAbility().addAddedStr(6);
+        pc.getResistance().addFire(124);
+        int[] ids = {N_BUFF_STR, N_BUFF_DEX, N_BUFF_INT, N_BUFF_WIS, DRESS_MIGHTY, DRESS_DEXTERITY,
+                N_BUFF_WATER, N_BUFF_WIND, N_BUFF_EARTH, N_BUFF_FIRE, N_BUFF_ALL_RESIST};
+        for (int id : ids) {
+            verify(CSkillInfo.isManaged(id), "managed registration", id);
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "start", id);
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "recast", id);
+            verify(pc.effects.get(id) == 38_000, "timer after recast", id);
+        }
+
+        pc.validateSkillModifiersFromOwner();
+        verify(pc.getAbility().getAddedStr() == 10 && pc.getAbility().getAddedDex() == 4
+                && pc.getAbility().getAddedInt() == 1 && pc.getAbility().getAddedWis() == 1,
+                "independent primary stats", N_BUFF_STR);
+        verify(pc.getResistance().getFire() == 127 && pc.getResistance().getWater() == 10
+                && pc.getResistance().getWind() == 10 && pc.getResistance().getEarth() == 10,
+                "stacked elemental resistance", N_BUFF_ALL_RESIST);
+        pc.getAbility().addAddedStr(2);
+        pc.removeSkillEffect(N_BUFF_STR);
+        verify(pc.getAbility().getAddedStr() == 11, "preserves other STR sources", N_BUFF_STR);
+        pc.removeSkillEffect(N_BUFF_ALL_RESIST);
+        verify(pc.getResistance().getFire() == 127 && pc.getResistance().getWater() == 5
+                && pc.getResistance().getWind() == 5 && pc.getResistance().getEarth() == 5,
+                "preserves single-element sources", N_BUFF_ALL_RESIST);
+
+        for (int id : ids) pc.removeSkillEffect(id);
+        verify(pc.getAbility().getAddedStr() == 8 && pc.getAbility().getAddedDex() == 0
+                && pc.getAbility().getAddedInt() == 0 && pc.getAbility().getAddedWis() == 0,
+                "cleared primary stats", DRESS_MIGHTY);
+        verify(pc.getResistance().getFire() == 124 && pc.getResistance().getWater() == 0
+                && pc.getResistance().getWind() == 0 && pc.getResistance().getEarth() == 0,
+                "cleared elemental stats", N_BUFF_FIRE);
     }
 
     private static void verifyIndependentModifiers() {
@@ -194,6 +236,20 @@ public final class TestSkillEffectLifecycle {
         pc.killSkillEffectTimer(shield);
         verify(!pc.hasSkillEffect(shield) && pc.getAC().getAc() == ac, "controller retired cast", shield);
 
+        int wis = pc.getAbility().getAddedWis();
+        int water = pc.getResistance().getWater();
+        SkillHandlers.dispatch(new Cast(N_BUFF_WIS), pc, null, 0, null);
+        SkillHandlers.dispatch(new Cast(N_BUFF_WATER), pc, null, 0, null);
+        verify(pc.hasSkillEffect(N_BUFF_WIS) && pc.getAbility().getAddedWis() == wis + 1
+                && pc.hasSkillEffect(N_BUFF_WATER) && pc.getResistance().getWater() == water + 5,
+                "controller applies both stat groups", N_BUFF_WIS);
+        pc.skillEffectRemoveFromOwner(N_BUFF_WIS, false);
+        verify(!pc.hasSkillEffect(N_BUFF_WIS) && pc.getAbility().getAddedWis() == wis
+                && pc.getResistance().getWater() == water + 5, "timer-only removal", N_BUFF_WIS);
+        pc.skillEffectClearFromOwner();
+        verify(!pc.hasSkillEffect(N_BUFF_WATER) && pc.getResistance().getWater() == water,
+                "clear removes elemental modifier", N_BUFF_WATER);
+
         L1PcInstance expiring = new L1PcInstance();
         expiring.addBaseMaxHp((short) 600);
         int pride = L1SkillId.PRIDE;
@@ -227,7 +283,7 @@ public final class TestSkillEffectLifecycle {
             if (info.hasCast() && info.stopHandler() != null) both++;
         }
         verify(casts == 310 && stops == 297 && both == 196, "numeric registry coverage", 0);
-        System.out.println("PASS independent HP/AC/MR, refresh, clear, sleep overlap and 411 numeric IDs");
+        System.out.println("PASS independent stats and resistances, refresh, clear, sleep overlap and 411 numeric IDs");
     }
 
 }

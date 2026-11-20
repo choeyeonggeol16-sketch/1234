@@ -50,7 +50,13 @@ public final class SkillEffectContainer {
 		int count;
 		int hp, mp, ac, mr;
 
-		void initializeSkillMod() { hp = mp = ac = mr = 0; }
+		// Each byte is a separate bonus. Current per-byte totals are at most 10.
+		int primaryStats, elementalResistance;
+
+		void initializeSkillMod() {
+			hp = mp = ac = mr = 0;
+			primaryStats = elementalResistance = 0;
+		}
 
 		int find(int id) {
 			for (int i = 0; i < count * 2; i += 2) if (applied[i] == id) return i;
@@ -89,13 +95,14 @@ public final class SkillEffectContainer {
 	public void validateSkillMod(boolean notify) {
 		SkillModifiers state = skillModifiers;
 		if (state == null) {
-			owner.setPumpedSkillModifiers(0, 0, 0, 0, notify);
+			owner.setPumpedSkillModifiers(0, 0, 0, 0, 0, 0, notify);
 			return;
 		}
 		state.initializeSkillMod();
 		for (int i = 0; i < state.count * 2; i += 2)
 			CSkillInfo.get((int) state.applied[i]).pump(owner, state.applied[i + 1], state);
-		owner.setPumpedSkillModifiers(state.hp, state.mp, state.ac, state.mr, notify);
+		owner.setPumpedSkillModifiers(state.hp, state.mp, state.ac, state.mr,
+				state.primaryStats, state.elementalResistance, notify);
 	}
 
 	public boolean contains(int skillId) {

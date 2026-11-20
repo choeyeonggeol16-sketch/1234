@@ -699,7 +699,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getAbility().addAddedStr((byte) -1);
+		cha.removeSkillModifierFromOwner(skillId);
 		SC_IvenBuffIcon.send(pc, skillId, false, 4338, 0);
 		return StopResult.HANDLED;
 	}
@@ -708,7 +708,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getAbility().addAddedDex((byte) -1);
+		cha.removeSkillModifierFromOwner(skillId);
 		SC_IvenBuffIcon.send(pc, skillId, false, 4339, 0);
 		return StopResult.HANDLED;
 	}
@@ -717,7 +717,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getAbility().addAddedInt((byte) -1);
+		cha.removeSkillModifierFromOwner(skillId);
 		SC_IvenBuffIcon.send(pc, skillId, false, 4340, 0);
 		return StopResult.HANDLED;
 	}
@@ -726,7 +726,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getAbility().addAddedWis((byte) -1);
+		cha.removeSkillModifierFromOwner(skillId);
 		SC_IvenBuffIcon.send(pc, skillId, false, 4341, 0);
 		return StopResult.HANDLED;
 	}
@@ -737,7 +737,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getResistance().addWater(-5);
+		cha.removeSkillModifierFromOwner(skillId);
 		SC_IvenBuffIcon.send(pc, skillId, false, 4333, 0);
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;
@@ -747,7 +747,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getResistance().addWind(-5);
+		cha.removeSkillModifierFromOwner(skillId);
 		SC_IvenBuffIcon.send(pc, skillId, false, 4334, 0);
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;
@@ -757,7 +757,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getResistance().addEarth(-5);
+		cha.removeSkillModifierFromOwner(skillId);
 		SC_IvenBuffIcon.send(pc, skillId, false, 4335, 0);
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;
@@ -767,7 +767,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getResistance().addFire(-5);
+		cha.removeSkillModifierFromOwner(skillId);
 		SC_IvenBuffIcon.send(pc, skillId, false, 4336, 0);
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;
@@ -777,10 +777,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getResistance().addFire(-5);
-		pc.getResistance().addEarth(-5);
-		pc.getResistance().addWater(-5);
-		pc.getResistance().addWind(-5);
+		cha.removeSkillModifierFromOwner(skillId);
 		SC_IvenBuffIcon.send(pc, skillId, false, 4337, 0);
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;
@@ -1166,7 +1163,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offDressDexterity(L1Character cha, int skillId) {
-		cha.getAbility().addAddedDex((byte) -3);
+		cha.removeSkillModifierFromOwner(skillId);
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_Dexup.send(pc, pc, 3, 0);
@@ -1175,7 +1172,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offDressMighty(L1Character cha, int skillId) {
-		cha.getAbility().addAddedStr((byte) -3);
+		cha.removeSkillModifierFromOwner(skillId);
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_Strup.send(pc, pc, 3, 0);

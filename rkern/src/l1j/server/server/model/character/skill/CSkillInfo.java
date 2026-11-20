@@ -32,6 +32,17 @@ public final class CSkillInfo {
         registerManaged(SHADOW_ARMOR, SkillHandlers::startShadowArmor, MR);
         registerManaged(IllUSION_DIAMONDGOLEM, SkillHandlers::startIllusionDiamondGolem, AC);
         registerManaged(SCALES_EARTH_DRAGON, SkillHandlers::startScalesEarthDragon, AC, MR);
+        registerManaged(N_BUFF_STR, SkillHandlers::startInventoryStatBuff, PRIMARY_STATS);
+        registerManaged(N_BUFF_DEX, SkillHandlers::startInventoryStatBuff, PRIMARY_STATS);
+        registerManaged(N_BUFF_INT, SkillHandlers::startInventoryStatBuff, PRIMARY_STATS);
+        registerManaged(N_BUFF_WIS, SkillHandlers::startInventoryStatBuff, PRIMARY_STATS);
+        registerManaged(N_BUFF_WATER, SkillHandlers::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
+        registerManaged(N_BUFF_WIND, SkillHandlers::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
+        registerManaged(N_BUFF_EARTH, SkillHandlers::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
+        registerManaged(N_BUFF_FIRE, SkillHandlers::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
+        registerManaged(N_BUFF_ALL_RESIST, SkillHandlers::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
+        registerManaged(DRESS_MIGHTY, SkillHandlers::startDressStatBuff, PRIMARY_STATS);
+        registerManaged(DRESS_DEXTERITY, SkillHandlers::startDressStatBuff, PRIMARY_STATS);
         frozen = true;
     }
 
@@ -108,6 +119,7 @@ public final class CSkillInfo {
             if (!(target instanceof L1PcInstance pc)) return SkillHandlers.HandlerResult.NOT_HANDLED;
             int skillId = su.hdSkillId();
             int duration = skillId == SHINING_AURA || skillId == SHIELD
+                    || skillId == DRESS_DEXTERITY || skillId == DRESS_MIGHTY
                     ? su.hdGetBuffIconDuration() : SkillHandlers.durationSecForBuff(su, skillId);
             return pc.submitSkillPumpStart(skillId, duration)
                     ? SkillHandlers.HandlerResult.HANDLED : SkillHandlers.HandlerResult.CONTINUE;

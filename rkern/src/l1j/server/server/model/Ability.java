@@ -41,6 +41,20 @@ public class Ability {
 	private byte baseWis = 0;
 	private byte addedWis = 0;
 
+	// From least to most significant byte: STR, DEX, INT, WIS.
+	private volatile int skillPrimaryStats;
+
+	void setSkillPrimaryStats(int value, boolean notify) {
+		final int changed = skillPrimaryStats ^ value;
+		if (changed == 0) return;
+		skillPrimaryStats = value;
+		if (!notify) return;
+		if ((changed & 0x000000ff) != 0) notifyAddedStr();
+		if ((changed & 0x0000ff00) != 0) notifyAddedDex();
+		if ((changed & 0x00ff0000) != 0) notifyAddedInt();
+		if ((changed & 0xff000000) != 0) notifyAddedWis();
+	}
+
 	private L1Character character;
 	
 	public void dispose(){
@@ -148,18 +162,18 @@ public class Ability {
 	}
 
 	public byte getAddedStr() {
-		return addedStr;
+		return checkRange(addedStr + (byte) skillPrimaryStats, LIMIT_MINUS_MIN);
 	}
 
 	public void addAddedStr(int i) {
 		addedStr = checkRange(addedStr + i, LIMIT_MINUS_MIN);
-		 if (character instanceof L1PcInstance) {
-	            L1PcInstance pc = (L1PcInstance) character;
-	            if (pc.getNetConnection() != null) {	              
-	                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Str);
-	                SC_Weight.send(pc);
-	            }
-	        }
+		notifyAddedStr();
+	}
+
+	private void notifyAddedStr() {
+		if (!(character instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
+		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Str);
+		SC_Weight.send(pc);
 	}
 
 	public byte getTotalStr() {
@@ -257,19 +271,19 @@ public class Ability {
 	}
 
 	public byte getAddedDex() {
-		return addedDex;
+		return checkRange(addedDex + (byte) (skillPrimaryStats >>> 8), LIMIT_MINUS_MIN);
 	}
 
 	public void addAddedDex(int i) {
 		addedDex = checkRange(addedDex + i, LIMIT_MINUS_MIN);
-		 if (character instanceof L1PcInstance) {
-	            L1PcInstance pc = (L1PcInstance) character;
-	            if (pc.getNetConnection() != null) {	                          
-	                SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
-	                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Dex);
-	                SC_OwnCharAttrDef.send(pc);
-	            }
-	        }
+		notifyAddedDex();
+	}
+
+	private void notifyAddedDex() {
+		if (!(character instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
+		SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Dex);
+		SC_OwnCharAttrDef.send(pc);
 	}
 
 	public byte getTotalDex() {
@@ -350,18 +364,18 @@ public class Ability {
 	}
 
 	public byte getAddedInt() {
-		return addedInt;
+		return checkRange(addedInt + (byte) (skillPrimaryStats >>> 16), LIMIT_MINUS_MIN);
 	}
 
 	public void addAddedInt(int i) {
 		addedInt = checkRange(addedInt + i, LIMIT_MINUS_MIN);
-		 if (character instanceof L1PcInstance) {
-	            L1PcInstance pc = (L1PcInstance) character;
-	            if (pc.getNetConnection() != null) {
-	                SC_SPMR.send(pc);
-	                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Int);
-	            }
-	        }
+		notifyAddedInt();
+	}
+
+	private void notifyAddedInt() {
+		if (!(character instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
+		SC_SPMR.send(pc);
+		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Int);
 	}
 
 	public byte getTotalInt() {
@@ -404,19 +418,19 @@ public class Ability {
 	}
 
 	public byte getAddedWis() {
-		return addedWis;
+		return checkRange(addedWis + (byte) (skillPrimaryStats >>> 24), LIMIT_MINUS_MIN);
 	}
 
 	public void addAddedWis(int i) {
 		addedWis = checkRange(addedWis + i, LIMIT_MINUS_MIN);
-		if (character instanceof L1PcInstance) {
-            L1PcInstance pc = (L1PcInstance) character;
-            if (pc.getNetConnection() != null) {
-                pc.resetBaseMr();
-                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Wis);
-                SC_SPMR.send(pc);
-            }
-        }
+		notifyAddedWis();
+	}
+
+	private void notifyAddedWis() {
+		if (!(character instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
+		pc.resetBaseMr();
+		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Wis);
+		SC_SPMR.send(pc);
 	}
 
 	public byte getTotalWis() {

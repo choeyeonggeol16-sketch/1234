@@ -717,7 +717,8 @@ public class L1Character extends L1Object {
 
 	private volatile long pumpedHpMp;
 
-	public void setPumpedSkillModifiers(int hp, int mp, int ac, int mr, boolean notify) {
+	public void setPumpedSkillModifiers(int hp, int mp, int ac, int mr,
+			int primaryStats, int elementalResistance, boolean notify) {
 		final long previous = pumpedHpMp;
 		final long updated = ((long) mp << 32) | Integer.toUnsignedLong(hp);
 		if (previous != updated) {
@@ -727,6 +728,8 @@ public class L1Character extends L1Object {
 		}
 		getAC().setSkillAc(ac, notify);
 		getResistance().setSkillMr(mr);
+		getAbility().setSkillPrimaryStats(primaryStats, notify);
+		getResistance().setSkillElemental(elementalResistance);
 	}
 
 	public int getMaxHp() {
