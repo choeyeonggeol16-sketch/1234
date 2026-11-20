@@ -19,8 +19,6 @@
 package l1j.server.server.model.npc.action;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.w3c.dom.Element;
@@ -30,59 +28,47 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.npc.L1NpcHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.utils.IntRange;
 
 public abstract class L1NpcXmlAction implements L1NpcAction {
-	private String _name;
-	private final int _npcIds[];
-	private final IntRange _level;
+	private static final int[] ANY_NPC = new int[0];
+	private static final String CLASSES = "PKEWDTB";
+	private final String _name;
+	private final int[] _npcIds;
+	private final int _minLevel;
+	private final int _maxLevel;
 	private final int _questId;
 	private final int _questStep;
-	private final int _classes[];
+	private final int _classMask;
 
 	public L1NpcXmlAction(Element element) {
-		_name = element.getAttribute("Name");
-		_name = _name.equals("") ? null : _name;
+		String name = element.getAttribute("Name");
+		_name = name.isEmpty() ? null : name;
 		_npcIds = parseNpcIds(element.getAttribute("NpcId"));
-		_level = parseLevel(element);
+		int level = L1NpcXmlParser.getIntAttribute(element, "Level", 0);
+		_minLevel = level == 0 ? L1NpcXmlParser.getIntAttribute(element, "LevelMin", 1) : level;
+		_maxLevel = level == 0 ? L1NpcXmlParser.getIntAttribute(element, "LevelMax", 99) : level;
 		_questId = L1NpcXmlParser.parseQuestId(element.getAttribute("QuestId"));
 		_questStep = L1NpcXmlParser.parseQuestStep(element.getAttribute("QuestStep"));
 
-		_classes = parseClasses(element);
+		_classMask = parseClasses(element.getAttribute("Class"));
 	}
 
-	private int[] parseClasses(Element element) {
-		String classes = element.getAttribute("Class").toUpperCase();
-		int result[] = new int[classes.length()];
-		int idx = 0;
-		for (Character cha : classes.toCharArray()) {
-			result[idx++] = _charTypes.get(cha);
+	private static int parseClasses(String classes) {
+		int mask = 0;
+		for (int i = 0; i < classes.length(); i++) {
+			int type = CLASSES.indexOf(Character.toUpperCase(classes.charAt(i)));
+			if (type < 0) throw new IllegalArgumentException("Unknown NPC action class: " + classes.charAt(i));
+			mask |= 1 << type;
 		}
-		Arrays.sort(result);
-		return result;
+		return mask;
 	}
 
-	private IntRange parseLevel(Element element) {
-		int level = L1NpcXmlParser.getIntAttribute(element, "Level", 0);
-		int min = L1NpcXmlParser.getIntAttribute(element, "LevelMin", 1);
-		int max = L1NpcXmlParser.getIntAttribute(element, "LevelMax", 99);
-		return level == 0 ? new IntRange(min, max) : new IntRange(level, level);
-	}
-
-	private final static Map<Character, Integer> _charTypes = new HashMap<Character, Integer>();
-	static {
-		_charTypes.put('P', 0);
-		_charTypes.put('K', 1);
-		_charTypes.put('E', 2);
-		_charTypes.put('W', 3);
-		_charTypes.put('D', 4);
-		_charTypes.put('T', 5);
-		_charTypes.put('B', 6);
-	}
-
-	private int[] parseNpcIds(String npcIds) {
+	private static int[] parseNpcIds(String npcIds) {
+		if (npcIds.isEmpty()) return ANY_NPC;
 		StringTokenizer tok = new StringTokenizer(npcIds.replace(" ", ""), ",");
-		int result[] = new int[tok.countTokens()];
+		int count = tok.countTokens();
+		if (count == 0) return ANY_NPC;
+		int[] result = new int[count];
 		for (int i = 0; i < result.length; i++) {
 			result[i] = Integer.parseInt(tok.nextToken());
 		}
@@ -104,24 +90,15 @@ public abstract class L1NpcXmlAction implements L1NpcAction {
 		return true;
 	}
 
-	private boolean acceptsLevel(int level) {
-		return _level.includes(level);
-	}
-
 	private boolean acceptsCharType(int type) {
-		if (0 < _classes.length) {
-			if (Arrays.binarySearch(_classes, type) < 0) {
-				return false;
-			}
-		}
-		return true;
+		return _classMask == 0 || (type >= 0 && type < CLASSES.length() && (_classMask & (1 << type)) != 0);
 	}
 
 	private boolean acceptsActionName(String name) {
 		if (_name == null) {
 			return true;
 		}
-		return name.equals(_name);
+		return _name.equals(name);
 	}
 
 	private boolean acceptsQuest(L1PcInstance pc) {
@@ -135,23 +112,19 @@ public abstract class L1NpcXmlAction implements L1NpcAction {
 	}
 
 	public boolean acceptsRequest(String actionName, L1PcInstance pc, L1Object obj) {
-		if (!acceptsNpcId(obj)) {
+		if (!acceptsActionName(actionName) || !acceptsNpcId(obj)) {
 			return false;
 		}
-		if (!acceptsLevel(pc.getLevel())) {
-			SC_SystemMessage.send(pc, "레벨 " + _level.getLow() + "부터 입장 가능합니다!");
+		int level = pc.getLevel();
+		if (level < _minLevel) {
+			SC_SystemMessage.send(pc, "레벨 " + _minLevel + "부터 입장 가능합니다!");
 			return false;
 		}
-		if (!acceptsQuest(pc)) {
+		if (level > _maxLevel) {
+			SC_SystemMessage.send(pc, "레벨 " + _maxLevel + "까지 이용 가능합니다!");
 			return false;
 		}
-		if (!acceptsCharType(pc.getType())) {
-			return false;
-		}
-		if (!acceptsActionName(actionName)) {
-			return false;
-		}
-		return true;
+		return acceptsQuest(pc) && acceptsCharType(pc.getType());
 	}
 
 	public abstract L1NpcHtml execute(String actionName, L1PcInstance pc, L1Object obj, byte args[]);

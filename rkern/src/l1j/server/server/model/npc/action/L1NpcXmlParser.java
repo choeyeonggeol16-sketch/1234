@@ -21,6 +21,7 @@ package l1j.server.server.model.npc.action;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.w3c.dom.Element;
@@ -52,12 +53,13 @@ public class L1NpcXmlParser {
 	}
 
 	public static int getIntAttribute(Element element, String name, int defaultValue) {
-		int result = defaultValue;
+		String value = element.getAttribute(name);
+		if (value.isEmpty()) return defaultValue;
 		try {
-			result = Integer.valueOf(element.getAttribute(name));
+			return Integer.parseInt(value);
 		} catch (NumberFormatException e) {
+			return defaultValue;
 		}
-		return result;
 	}
 
 	public static boolean getBoolAttribute(Element element, String name, boolean defaultValue) {
@@ -97,7 +99,7 @@ public class L1NpcXmlParser {
 		if (questId.equals("")) {
 			return -1;
 		}
-		Integer result = _questIds.get(questId.toLowerCase());
+		Integer result = _questIds.get(questId.toLowerCase(Locale.ROOT));
 		if (result == null) {
 			throw new IllegalArgumentException();
 		}

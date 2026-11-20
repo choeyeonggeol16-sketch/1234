@@ -21,7 +21,9 @@ package l1j.server.server.model.npc.action;
 import l1j.server.server.model.network.core.sc.packet.SC_HowManyMake;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,7 +49,8 @@ import l1j.server.server.utils.IterableElementList;
 public class L1NpcMakeItemAction extends L1NpcXmlAction {
 	private static final Logger LOG = Logger.getLogger(L1NpcMakeItemAction.class.getName());
 	private static final byte[] EMPTY_ARGS = new byte[0];
-	private final List<L1ObjectAmount<Integer>> _materials = new ArrayList<L1ObjectAmount<Integer>>();
+	private record Material(int itemId, int enchant, long amount) {}
+	private final Material[] _materials;
 	private final List<L1ObjectAmount<Integer>> _items = new ArrayList<L1ObjectAmount<Integer>>();
 	private final boolean _isAmountInputable;
 	private final L1NpcAction _actionOnSucceed;
@@ -57,33 +60,33 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
 		super(element);
 
 		_isAmountInputable = L1NpcXmlParser.getBoolAttribute(element, "AmountInputable", true);
+		Map<Long, Material> materials = new LinkedHashMap<>();
 		NodeList list = element.getChildNodes();
 		for (Element elem : new IterableElementList(list)) {
 			if (elem.getNodeName().equalsIgnoreCase("Material")) {
-				int id = Integer.valueOf(elem.getAttribute("ItemId"));
-				int amount = Integer.valueOf(elem.getAttribute("Amount"));
-				int enchant = 0;
-				try {
-					enchant = Integer.valueOf(elem.getAttribute("Enchant"));
-				} catch (Exception e) { }
-				_materials.add(new L1ObjectAmount<Integer>(id, amount, enchant));
+				int id = Integer.parseInt(elem.getAttribute("ItemId"));
+				int amount = Integer.parseInt(elem.getAttribute("Amount"));
+				int enchant = L1NpcXmlParser.getIntAttribute(elem, "Enchant", 0);
+				long key = ((long) id << 32) | Integer.toUnsignedLong(enchant);
+				Material previous = materials.get(key);
+				long prior = previous == null ? 0L : previous.amount();
+				long total = amount <= 0 || prior < 0 ? -1L : prior + amount;
+				materials.put(key, new Material(id, enchant, total));
 				continue;
 			}
 			if (elem.getNodeName().equalsIgnoreCase("Item")) {
-				int id = Integer.valueOf(elem.getAttribute("ItemId"));
-				int amount = Integer.valueOf(elem.getAttribute("Amount"));
-				int enchant = 0;
-				try {
-					enchant = Integer.valueOf(elem.getAttribute("Enchant"));
-				} catch (Exception e) { }
+				int id = Integer.parseInt(elem.getAttribute("ItemId"));
+				int amount = Integer.parseInt(elem.getAttribute("Amount"));
+				int enchant = L1NpcXmlParser.getIntAttribute(elem, "Enchant", 0);
 				_items.add(new L1ObjectAmount<Integer>(id, amount, enchant));
 				continue;
 			}
 		}
 
-		if (_items.isEmpty() || _materials.isEmpty()) {
+		if (_items.isEmpty() || materials.isEmpty()) {
 			throw new IllegalArgumentException();
 		}
+		_materials = materials.values().toArray(Material[]::new);
 
 		Element elem = L1NpcXmlParser.getFirstChildElementByTagName(element, "Succeed");
 		_actionOnSucceed = elem == null ? null : new L1NpcListedAction(elem);
@@ -99,28 +102,12 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
         final String npcName = npc.getNpcTemplate().get_name();
         final ItemTable templates = ItemTable.getInstance();
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcTemplate().get_npcId())) {
-            for (int i = 0; i < _materials.size(); i++) {
-                L1ObjectAmount<Integer> material = _materials.get(i);
-                final int id = material.getObject(), enchant = material.getEnchant();
-                if (!validExpandedAmount(material.getAmount(), amount)) return false;
+            for (Material material : _materials) {
+                final int id = material.itemId(), enchant = material.enchant();
+                if (material.amount() <= 0 || material.amount() > L1Inventory.MAX_AMOUNT / amount) return false;
+                final long required = material.amount() * amount;
                 L1Item definition = templates.getTemplate(id);
                 if (definition == null) return false;
-                boolean first = true;
-                for (int j = 0; j < i; j++) {
-                    L1ObjectAmount<Integer> earlier = _materials.get(j);
-                    if (earlier.getObject().intValue() == id && earlier.getEnchant() == enchant) {
-                        first = false; break;
-                    }
-                }
-                if (!first) continue;
-                long required = 0;
-                for (int j = i; j < _materials.size(); j++) {
-                    L1ObjectAmount<Integer> row = _materials.get(j);
-                    if (row.getObject().intValue() != id || row.getEnchant() != enchant) continue;
-                    if (!validExpandedAmount(row.getAmount(), amount)) return false;
-                    required += (long) row.getAmount() * amount;
-                    if (required > L1Inventory.MAX_AMOUNT) return false;
-                }
                 long available = 0;
                 for (L1ItemInstance item : inv.getItems()) {
                     if (!item.isEquipped() && item.getItemId() == id && item.getEnchantLevel() == enchant)
@@ -202,20 +189,12 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
      * enchant/unequipped requirements, including repeated material entries. */
     private int countNumOfMaterials(L1PcInventory inv) {
         int count = 999;
-        for (int i = 0; i < _materials.size(); i++) {
-            L1ObjectAmount<Integer> material = _materials.get(i);
-            int id = material.getObject();
-            int enchant = material.getEnchant();
-            if (material.getAmount() <= 0 || ItemTable.getInstance().getTemplate(id) == null) return 0;
-            long required = 0;
-            for (int j = 0; j < _materials.size(); j++) {
-                L1ObjectAmount<Integer> other = _materials.get(j);
-                if (other.getObject().intValue() == id && other.getEnchant() == enchant) {
-                    if (other.getAmount() <= 0) return 0;
-                    required += other.getAmount();
-                }
-            }
-            if (required > L1Inventory.MAX_AMOUNT) return 0;
+        for (Material material : _materials) {
+            int id = material.itemId();
+            int enchant = material.enchant();
+            long required = material.amount();
+            if (required <= 0 || required > L1Inventory.MAX_AMOUNT
+                    || ItemTable.getInstance().getTemplate(id) == null) return 0;
             long available = 0;
             for (L1ItemInstance item : inv.getItems()) {
                 if (!item.isEquipped() && item.getItemId() == id && item.getEnchantLevel() == enchant)

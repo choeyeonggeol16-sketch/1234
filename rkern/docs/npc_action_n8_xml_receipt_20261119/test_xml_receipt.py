@@ -8,7 +8,7 @@ with tempfile.TemporaryDirectory() as tmp:
  d=Path(tmp); java=d/'src'; out=d/'out';out.mkdir()
  def write(path,body):
   f=java/(base+path); f.parent.mkdir(parents=True,exist_ok=True); f.write_text(body)
- files=['model/npc/action/'+x+'.java' for x in ['L1NpcAction','L1NpcListedAction','L1NpcMakeItemAction','L1NpcXmlAction','L1NpcXmlParser','L1NpcActionFactory','L1NpcShowHtmlAction','L1NpcSetQuestAction']]+['model/npc/L1NpcHtml.java','model/L1ObjectAmount.java','utils/IterableElementList.java','utils/IterableNodeList.java','utils/IntRange.java']
+ files=['model/npc/action/'+x+'.java' for x in ['L1NpcAction','L1NpcListedAction','L1NpcMakeItemAction','L1NpcXmlAction','L1NpcXmlParser','L1NpcActionFactory','L1NpcShowHtmlAction','L1NpcSetQuestAction']]+['model/npc/L1NpcHtml.java','model/L1ObjectAmount.java','utils/IterableElementList.java','utils/IterableNodeList.java','utils/IntRange.java','utils/FileUtil.java','datatables/NpcActionTable.java']
  for path in files: write(path,(src/(base+path)).read_text())
  write('model/L1Object.java','package l1j.server.server.model; public class L1Object { public int getId(){return 91;} }')
  write('model/L1Inventory.java','package l1j.server.server.model; public class L1Inventory { public static final int MAX_AMOUNT=2000000000; }')
@@ -29,7 +29,42 @@ with tempfile.TemporaryDirectory() as tmp:
  write('model/npc/action/L1NpcTeleportAction.java','''package l1j.server.server.model.npc.action;import org.w3c.dom.Element;import l1j.server.server.model.*;import l1j.server.server.model.Instance.*;import l1j.server.server.model.npc.*;public class L1NpcTeleportAction extends L1NpcXmlAction {public L1NpcTeleportAction(Element e){super(e);}public L1NpcHtml execute(String s,L1PcInstance p,L1Object o,byte[] a){p.trace.add("teleport");return null;}}''')
  (java/'Check.java').write_text('''import java.util.*;import javax.xml.parsers.*;import org.xml.sax.InputSource;import java.io.StringReader;import l1j.server.server.model.*;import l1j.server.server.model.Instance.*;import l1j.server.server.model.npc.action.*;import l1j.server.server.templates.*;import l1j.server.server.datatables.*;
  public class Check {static int checks,cases; static final L1NpcInstance npc=new L1NpcInstance();static void ck(boolean b){checks++;if(!b)throw new AssertionError("case "+cases+" check "+checks);}static L1NpcAction parse(String s)throws Exception{return L1NpcActionFactory.newAction(DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(s))).getDocumentElement());}static L1ItemInstance add(L1PcInstance p,int id,int count,int en,boolean eq){var i=new L1ItemInstance(new L1Item(id),count);i.enchant=en;i.equipped=eq;p.inv.items.add(i);return i;}static int qty(L1PcInstance p,int id,int en,boolean eq){return p.inv.items.stream().filter(i->i.getItemId()==id&&i.enchant==en&&i.equipped==eq).mapToInt(i->i.count).sum();}static long htmls(L1PcInstance p){return p.trace.stream().filter(s->s.startsWith("html:")).count();}static void run(L1NpcAction a,L1PcInstance p,int amount){a.dispatch("go",p,npc,new byte[0],amount);}static String make(String attrs,String body,String branches){return "<MakeItem "+attrs+">"+body+branches+"</MakeItem>";}static String m(int id,int n,int e){return "<Material ItemId='"+id+"' Amount='"+n+"' Enchant='"+e+"'/>";}static String i(int id,int n,int e){return "<Item ItemId='"+id+"' Amount='"+n+"' Enchant='"+e+"'/>";}static String h(String s){return "<ShowHtml HtmlId='"+s+"'/>";}static String q(int step){return "<SetQuest Id='level15' Step='"+step+"'/>";}static String branch(String b,String content){return "<"+b+">"+content+"</"+b+">";}
+ static void lookupChecks() throws Exception {
+   cases++;
+   var player = new L1PcInstance();
+   var blocked = parse("<ShowHtml Name='other' NpcId='123' LevelMin='90' HtmlId='x'/>");
+   ck(!blocked.acceptsRequest("selected", player, npc) && player.trace.isEmpty());
+   ck(!blocked.acceptsRequest("other", player, npc) && player.trace.getLast().contains("90"));
+   player.trace.clear();
+   var overMax = parse("<ShowHtml Name='selected' LevelMax='70' HtmlId='x'/>");
+   ck(!overMax.acceptsRequest("selected", player, npc) && player.trace.getLast().contains("70"));
+   player.trace.clear();
+   ck(parse("<ShowHtml NpcId='456, 123' Class='pK'/>").acceptsRequest("selected", player, npc));
+   ck(!parse("<ShowHtml Class='W'/>").acceptsRequest("selected", player, npc) && player.trace.isEmpty());
+   Locale original = Locale.getDefault();
+   try {
+     Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+     ck(L1NpcXmlParser.parseQuestId("FIRSTQUEST") == L1Quest.QUEST_FIRSTQUEST);
+   } finally {
+     Locale.setDefault(original);
+   }
+
+   var root = java.nio.file.Path.of("data", "xml", "NpcActions");
+   java.nio.file.Files.createDirectories(root.resolve("users"));
+   java.nio.file.Files.writeString(root.resolve("users/override.xml"),
+       "<NpcActionList><ShowHtml Name='selected' HtmlId='override'/></NpcActionList>");
+   java.nio.file.Files.writeString(root.resolve("default.XML"),
+       "<NpcActionList><ShowHtml Name='selected' HtmlId='default'/></NpcActionList>");
+   java.nio.file.Files.writeString(root.resolve("talk.xml"),
+       "<NpcTalkActionList><ShowHtml NpcId='123' HtmlId='talk'/></NpcTalkActionList>");
+   NpcActionTable.load();
+   var actions = NpcActionTable.getInstance();
+   ck(actions.get("selected", player, npc).execute("selected", player, npc, null).getName().equals("override"));
+   ck(actions.get(player, npc).execute("", player, npc, null).getName().equals("talk"));
+   ck(actions.get("missing", player, npc) == null);
+ }
  public static void main(String[] args)throws Exception{
+ lookupChecks();
  String body=m(1,2,0)+m(1,1,0)+m(2,1,7)+i(4,2,2)+i(4,1,0)+i(3,2,6);String br=branch("Succeed",q(1)+h("success"))+branch("Fail",q(2)+h("fail"));var a=parse("<Action>"+h("before")+make("AmountInputable='false'",body,br)+"<ShowHtml QuestId='level15' QuestStep='1' HtmlId='after'/>"+"</Action>");
  for(int n=0;n<=6;n++)for(int en:new int[]{0,7})for(int fail=0;fail<=10;fail++)for(int resolution=0;resolution<3;resolution++){
  cases++;var p=new L1PcInstance();p.failCall=fail;var z=add(p,1,n,0,false);add(p,1,20,9,false);add(p,1,20,0,true);add(p,2,1,en,false);add(p,4,10,0,false);run(a,p,0);
@@ -42,8 +77,16 @@ with tempfile.TemporaryDirectory() as tmp:
  // Prompt, direct amount, cap, exact duplicates across stacks, and immutable notice on template reload.
  for(int amount:new int[]{0,1,2,999,1000,2000000000})for(boolean allow:new boolean[]{false,true}){cases++;var p=new L1PcInstance();add(p,1,1000,0,false);add(p,1,2000,0,false);var b=parse(make("AmountInputable='"+allow+"'",m(1,2,0)+m(1,1,0)+i(4,1,0),branch("Succeed",h("success"))+branch("Fail",h("fail"))));run(b,p,amount);if(amount==0&&allow){ck(p.trace.equals(List.of("prompt:999")));ck(!p.pending);}else if(amount>999||(!allow&&amount>1)){ck(p.trace.getLast().equals("html:fail"));ck(!p.pending);}else{ck(p.pending);ItemTable.current.missing=true;p.resolve(true);ItemTable.current.missing=false;ck(qty(p,1,0,false)==3000-3*Math.max(1,amount));ck(qty(p,4,0,false)==Math.max(1,amount));ck(p.trace.getLast().equals("html:success"));}}
  for(int mode=0;mode<2;mode++){cases++;var p=new L1PcInstance();add(p,1,1,0,false);if(mode==0)p.inv.slots=180;else p.maxWeight=0;p.inv.weight=1;var b=parse(make("AmountInputable='false'",m(1,1,0)+i(3,1,0),br));run(b,p,0);ck(!p.pending&&qty(p,1,0,false)==1&&p.getQuest().get_step(1)==2);}
+ for (int invalid : new int[]{0, -1, 2000000000}) {
+   cases++;
+   var p = new L1PcInstance();
+   add(p, 1, 50, 0, false);
+   var craft = parse(make("", m(1, 2, 0) + m(1, invalid, 0) + i(4, 1, 0), branch("Fail", h("fail"))));
+   run(craft, p, 0);
+   ck(!p.pending && qty(p, 1, 0, false) == 50 && p.trace.getLast().equals("html:fail"));
+ }
  System.out.println("PASS scenarios="+cases+" assertions="+checks);}
  }
  ''')
  subprocess.run(['javac','--release','21','-encoding','UTF-8','-d',str(out),*map(str,java.rglob('*.java'))],check=True)
- subprocess.run(['java','-cp',str(out),'Check'],check=True)
+ subprocess.run(['java','-cp',str(out),'Check'],cwd=d,check=True)

@@ -27,9 +27,8 @@ import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
-import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import l1j.server.server.model.L1Object;
@@ -39,57 +38,45 @@ import l1j.server.server.model.npc.action.L1NpcXmlParser;
 import l1j.server.server.utils.FileUtil;
 
 public class NpcActionTable {
-	private static Logger _log = Logger.getLogger(NpcActionTable.class
-			.getName());
-	private static NpcActionTable _instance;
-	private final List<L1NpcAction> _actions = new ArrayList<L1NpcAction>(2048);
-	private final List<L1NpcAction> _talkActions = new ArrayList<L1NpcAction>(2);
+	private static final Logger LOG = Logger.getLogger(NpcActionTable.class.getName());
+	private static volatile NpcActionTable _instance;
+	private final List<L1NpcAction> _actions;
+	private final List<L1NpcAction> _talkActions;
 
-	private List<L1NpcAction> loadAction(File file, String nodeName) throws ParserConfigurationException, SAXException, IOException {
-		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		Document doc = builder.parse(file);
-
-		if (!doc.getDocumentElement().getNodeName().equalsIgnoreCase(nodeName)) {
-			return new ArrayList<L1NpcAction>();
-		}
-		return L1NpcXmlParser.listActions(doc.getDocumentElement());
-	}
-
-	private void loadAction(File file) throws Exception {
-		_actions.addAll(loadAction(file, "NpcActionList"));
-	}
-
-	private void loadTalkAction(File file) throws Exception {
-		_talkActions.addAll(loadAction(file, "NpcTalkActionList"));
-	}
-
-	private void loadDirectoryActions(File dir) throws Exception {
-		File f = null;
-		for (String file : dir.list()) {
-			f = new File(dir, file);
-			if (FileUtil.getExtension(f).equalsIgnoreCase("xml")) {
-				loadAction(f);
-				loadTalkAction(f);
+	private static void loadDirectoryActions(DocumentBuilder builder, File dir,
+			List<L1NpcAction> actions, List<L1NpcAction> talkActions) throws SAXException, IOException {
+		File[] files = dir.listFiles(file -> file.isFile() && FileUtil.getExtension(file).equalsIgnoreCase("xml"));
+		if (files == null) throw new IOException("Cannot list NPC actions in " + dir);
+		for (File file : files) {
+			Element root = builder.parse(file).getDocumentElement();
+			String nodeName = root.getNodeName();
+			if ("NpcActionList".equalsIgnoreCase(nodeName)) {
+				actions.addAll(L1NpcXmlParser.listActions(root));
+			} else if ("NpcTalkActionList".equalsIgnoreCase(nodeName)) {
+				talkActions.addAll(L1NpcXmlParser.listActions(root));
 			}
 		}
 	}
 
 	private NpcActionTable() throws Exception {
-		File usersDir = new File("./data/xml/NpcActions/users/");
+		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		List<L1NpcAction> actions = new ArrayList<>();
+		List<L1NpcAction> talkActions = new ArrayList<>();
+		File root = new File("./data/xml/NpcActions/");
+		File usersDir = new File(root, "users");
 		if (usersDir.exists()) {
-			loadDirectoryActions(usersDir);
+			loadDirectoryActions(builder, usersDir, actions, talkActions);
 		}
-		loadDirectoryActions(new File("./data/xml/NpcActions/"));
+		loadDirectoryActions(builder, root, actions, talkActions);
+		_actions = List.copyOf(actions);
+		_talkActions = List.copyOf(talkActions);
 	}
 
 	public static void load() {
 		try {
-//			PerformanceTimer timer = new PerformanceTimer();
-//			System.out.print("■ 엔피씨액션 데이터 .......................... ");
 			_instance = new NpcActionTable();
-//			System.out.println("■ 로딩 정상 완료 " + timer.get() + "ms");
 		} catch (Exception e) {
-			_log.log(Level.SEVERE, "NpcAction를 읽어들일 수 없었습니다", e);
+			LOG.log(Level.SEVERE, "NpcAction를 읽어들일 수 없었습니다", e);
 			System.exit(0);
 		}
 	}
