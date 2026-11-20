@@ -2921,7 +2921,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             _stateLock.lock(); try {
                 if ((_closed != 0) || !READ_ACTIVE.compareAndSet(this, 0, 1)) return;
                 try {
-                    _reading = _pool.acquireRecv();
+                    _reading = _pool.acquireRecv(_affinityShard);
                 } catch (RuntimeException | Error failure) {
                     READ_ACTIVE.setVolatile(this, 0);
                     close();
@@ -3349,7 +3349,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             if (recv.position() < CIOBufferPool.HEADER_BYTES) return false;
             final int wireLength = Short.toUnsignedInt(recv.getShort(0));
             if (wireLength <= recv.capacity()) return false;
-            final CIOBufferEx large = _pool.acquireLargeRecv();
+            final CIOBufferEx large = _pool.acquireLargeRecv(_affinityShard);
             if (large == null) return false;
             recv.flip();
             large.buffer().put(recv);
@@ -3358,7 +3358,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             _pool.release(old);
         } else if (_reading.buffer().capacity() > CIOBufferPool.RECV_BYTES
                 && recv.position() == 0) {
-            final CIOBufferEx compact = _pool.acquireRecv();
+            final CIOBufferEx compact = _pool.acquireRecv(_affinityShard);
             if (compact != null) {
                 final CIOBufferEx old = _reading;
                 _reading = compact;

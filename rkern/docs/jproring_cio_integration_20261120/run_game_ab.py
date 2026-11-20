@@ -10,6 +10,7 @@ import select
 import shutil
 import subprocess
 import tempfile
+import time
 import urllib.request
 
 HERE = Path(__file__).resolve().parent
@@ -23,10 +24,15 @@ DEPS = (
 )
 MODES = dict(off=(False, False), commit=(True, False), append=(False, True), both=(True, True))
 WORK = dict(single=(1, 1, 2, 32, 'ordinary'), burst=(16, 16, 2, 256, 'mixed'),
-            spread=(128, 1, 2, 64, 'bytes'), large=(16, 8, 2, 4096, 'ordinary'))
-FIELDS = ('workload', 'trial', 'mode', 'clients', 'window', 'owners', 'payload', 'kind',
+            spread=(128, 1, 2, 64, 'bytes'), large=(16, 8, 2, 4096, 'ordinary'),
+            gather=(16, 32, 2, 4096, 'ordinary'),
+            mix5000=(5000, 1, 2, 64, 'mixed'))
+FIELDS = ('workload', 'trial', 'mode', 'clients', 'active_clients', 'pace_ms', 'window', 'owners', 'payload', 'kind',
           'requests', 'requests_per_s', 'p50_us', 'p99_us', 'p999_us', 'server_cpu_ns_per_op',
-          'server_alloc_bytes_per_op', 'commit_hits', 'byte_append_hits', 'send_rejections')
+          'server_alloc_bytes_per_op', 'commit_hits', 'byte_append_hits', 'send_rejections',
+          'raw_writes', 'raw_gather_writes', 'raw_write_segments')
+RESOURCES = ('elapsed_ms', 'phase', 'sockets', 'leases', 'direct_bytes', 'direct_cap_bytes',
+             'borrows', 'returns', 'heap_used_bytes', 'rss_kib', 'peak_rss_kib', 'file_descriptors')
 
 
 def classpath(classes, deps):
@@ -70,8 +76,38 @@ def send(process, command):
     process.stdin.flush()
 
 
+def sample_resources(server, writer, started, phase):
+    send(server, 'POOL')
+    pool = list(map(int, line(server, 'POOL ').split()[1:]))
+    with open(f'/proc/{server.pid}/status', encoding='ascii') as status:
+        rss = {field.split(':', 1)[0]: int(field.split()[1]) for field in status
+               if field.startswith(('VmRSS:', 'VmHWM:'))}
+    descriptors = len(os.listdir(f'/proc/{server.pid}/fd'))
+    writer.writerow([round((time.monotonic() - started) * 1000), phase, *pool,
+                     rss['VmRSS'], rss['VmHWM'], descriptors])
+    return pool
+
+
+def wait_for_end(client, server, writer, started, measure_ms, clients):
+    if writer is None:
+        return line(client, 'END', measure_ms / 1000 + 10)
+    deadline = time.monotonic() + measure_ms / 1000 + 10
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise RuntimeError('measurement did not end')
+        ready, _, _ = select.select([client.stdout], [], [], min(2, remaining))
+        if ready:
+            return line(client, 'END')
+        sockets, *_ = sample_resources(server, writer, started, 'steady')
+        if sockets != clients:
+            raise RuntimeError(f'expected {clients} live sockets, sampled {sockets}')
+
+
 def measure(cp, location, args, trial, load, mode, logs):
     clients, window, owners, payload, kind = WORK[load]
+    active = clients // 5 if load == 'mix5000' else clients
+    pace_ms = 40 if load == 'mix5000' else 0
     commit, append = MODES[mode]
     base = ['java', '--enable-preview', '-Xms128m', '-Xmx512m', '-XX:ActiveProcessorCount=2', '-cp', cp]
     server_name = f'{load}-{trial}-{mode}'
@@ -80,31 +116,44 @@ def measure(cp, location, args, trial, load, mode, logs):
     if args.jfr:
         server_flags.append('-Xlog:jfr+startup=off')
         server_flags.append(f'-XX:StartFlightRecording=filename={logs / (server_name + ".jfr")},settings=profile,dumponexit=true')
+    if args.profile_writes:
+        server_flags.append('-Drkern.network.measureWrites=true')
     server_command = [*base, f'-Xlog:gc,safepoint:file={logs / (server_name + "-gc.log")}',
                       *server_flags, 'GameSendBenchmark', 'server', str(clients), str(owners), str(payload), kind]
     with tempfile.TemporaryDirectory(dir=location) as runtime, \
             (logs / (server_name + '-server.log')).open('w') as server_log, \
             (logs / (server_name + '-client.log')).open('w') as client_log, \
+            (logs / (server_name + '-resources.csv')).open('w', newline='') as resources_file, \
             subprocess.Popen(server_command, cwd=runtime, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                              stderr=server_log, bufsize=0) as server:
         try:
+            started = time.monotonic()
+            resources = csv.writer(resources_file, lineterminator='\n') if args.sample_resources else None
+            if resources is not None:
+                resources.writerow(RESOURCES)
             port = line(server, 'READY ').split()[1]
+            if resources is not None:
+                sample_resources(server, resources, started, 'idle')
             client_command = [*base, 'GameSendBenchmark', 'client', port, str(clients), str(window),
-                              str(payload), str(args.warmup_ms), str(args.measure_ms)]
+                              str(payload), str(args.warmup_ms), str(args.measure_ms), str(active), str(pace_ms)]
             with subprocess.Popen(client_command, cwd=runtime, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                   stderr=client_log, bufsize=0) as client:
                 try:
                     try:
-                        line(client, 'READY', 3 if clients <= 16 else 15)
+                        line(client, 'READY', 3 if clients <= 16 else 40)
                     except RuntimeError:
                         send(server, 'DIAG')
                         print(server_name, line(server, 'DIAG ', 2), flush=True)
                         raise
+                    if resources is not None:
+                        sockets, *_ = sample_resources(server, resources, started, 'connected')
+                        if sockets != clients:
+                            raise RuntimeError(f'expected {clients} live sockets, sampled {sockets}')
                     send(client, '')
                     line(client, 'MEASURE', args.warmup_ms / 1000 + 10)
                     send(server, 'SAMPLE')
                     before = list(map(int, line(server, 'SAMPLE ').split()[1:]))
-                    line(client, 'END', args.measure_ms / 1000 + 10)
+                    wait_for_end(client, server, resources, started, args.measure_ms, clients)
                     send(server, 'SAMPLE')
                     after = list(map(int, line(server, 'SAMPLE ').split()[1:]))
                     metrics = line(client, 'RESULT ').split()[1:]
@@ -113,15 +162,24 @@ def measure(cp, location, args, trial, load, mode, logs):
                 finally:
                     if client.poll() is None:
                         client.kill()
+            if resources is not None:
+                deadline = time.monotonic() + 5
+                while True:
+                    pool = sample_resources(server, resources, started, 'drained')
+                    if pool[0] == pool[1] == 0 and pool[4] == pool[5]:
+                        break
+                    if time.monotonic() >= deadline:
+                        raise RuntimeError('pool or connections retained after clients closed')
+                    time.sleep(.05)
             send(server, 'STOP')
             line(server, 'DRAINED ')
             if server.wait(timeout=8) != 0:
                 raise RuntimeError('server shutdown failed')
-            cpu, allocation, committed, appended, rejects = (second - first for first, second in zip(before, after))
+            cpu, allocation, committed, appended, rejects, *writes = (second - first for first, second in zip(before, after))
             samples = int(metrics[0])
-            return [load, trial, mode, clients, window, owners, payload, kind, *metrics,
+            return [load, trial, mode, clients, active, pace_ms, window, owners, payload, kind, *metrics,
                     round(cpu / samples, 2), round(allocation / samples, 2) if before[1] >= 0 else 'NA',
-                    committed, appended, rejects]
+                    committed, appended, rejects, *writes]
         except (OSError, RuntimeError, subprocess.SubprocessError):
             if server.poll() is None:
                 try:
@@ -146,6 +204,8 @@ def main():
     parser.add_argument('--warmup-ms', type=int, default=30000)
     parser.add_argument('--measure-ms', type=int, default=30000)
     parser.add_argument('--jfr', action='store_true')
+    parser.add_argument('--profile-writes', action='store_true')
+    parser.add_argument('--sample-resources', action='store_true')
     args = parser.parse_args()
     if min(args.trials, args.warmup_ms, args.measure_ms) < 1:
         parser.error('counts and intervals must be positive')
@@ -159,7 +219,8 @@ def main():
                        kernel=platform.release(), affinity=sorted(os.sched_getaffinity(0)),
                        jdk=subprocess.run(['java', '-version'], text=True, capture_output=True).stderr.splitlines()[0],
                        workloads=workloads, trials=args.trials, warmup_ms=args.warmup_ms,
-                       measure_ms=args.measure_ms, jfr=args.jfr,
+                       measure_ms=args.measure_ms, jfr=args.jfr, write_profile=args.profile_writes,
+                       resource_samples=args.sample_resources,
                        cpu_quota=quota.read_text().strip() if quota.exists() else None)
     failures = []
     with tempfile.TemporaryDirectory(prefix='rkern-game-ab-') as temporary:
@@ -169,6 +230,11 @@ def main():
         cp = classpath(classes, args.deps.resolve())
         compile_java(cp, classes, args.classes)
         socket_class = classes / 'l1j/server/server/model/network/core/connection/CUserSocket.class'
+        server_class = (classes / 'l1j/server/Server.class').read_bytes()
+        if args.profile_writes and b'networkWriteSnapshot' not in server_class:
+            parser.error('--profile-writes requires network write diagnostics in the server classes')
+        if args.sample_resources and b'networkPoolSnapshot' not in server_class:
+            parser.error('--sample-resources requires network pool diagnostics in the server classes')
         candidates_available = b'rkern.network.javaDirectPacketCommit' in socket_class.read_bytes()
         modes = args.mode or (list(MODES) if candidates_available else ['off'])
         if not candidates_available and any(mode != 'off' for mode in modes):

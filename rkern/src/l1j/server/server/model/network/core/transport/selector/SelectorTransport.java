@@ -90,7 +90,8 @@ public final class SelectorTransport implements AutoCloseable {
 
     public record OwnerDiagnostics(int index, int admitted, long registered, int queuedCommands,
             int commandHighWater, long rejectedCommands, int deadlines, int stalledWrites,
-            long zeroWrites, long writeTimeouts, long callbackFailures) { }
+            long zeroWrites, long writeTimeouts, long callbackFailures,
+            long rawWrites, long rawGatherWrites, long rawWriteSegments) { }
 
     private static final int ACCEPT_BUDGET = 32;
     private static final int COMMAND_BUDGET = 64;
@@ -98,6 +99,7 @@ public final class SelectorTransport implements AutoCloseable {
     private static final int FRAME_BUDGET = 16;
     private static final int GATHER_LIMIT = 16;
     private static final long OWNER_PHASE_NANOS = 500_000;
+    private static final boolean MEASURE_WRITES = Boolean.getBoolean("rkern.network.measureWrites");
     private static final Duration CLOSE_TIMEOUT = Duration.ofSeconds(5);
     private static final System.Logger LOG = System.getLogger(SelectorTransport.class.getName());
     private static final SelectorBufferPool.Stats EMPTY_POOL_STATS = new SelectorBufferPool.Stats(0, 0, 0, 0, 0);
@@ -474,6 +476,12 @@ public final class SelectorTransport implements AutoCloseable {
         private boolean hasWrites() { return raw == null ? !send.isEmpty() : raw.writing(); }
 
         private void rawFlush() throws IOException {
+            if (MEASURE_WRITES) {
+                int segments = raw.writeSegments();
+                owner.rawWrites++;
+                if (segments > 1) owner.rawGatherWrites++;
+                owner.rawWriteSegments += segments;
+            }
             long written = raw.write(channel, drainReason != null);
             if (!closed) recordWrite(written);
         }
@@ -678,6 +686,7 @@ public final class SelectorTransport implements AutoCloseable {
         private Connection first;
         private Connection last;
         private volatile long zeroWrites;
+        private volatile long rawWrites, rawGatherWrites, rawWriteSegments;
         private volatile long callbackFailures;
         private volatile long registered;
         private volatile long writeTimeouts;
@@ -716,7 +725,8 @@ public final class SelectorTransport implements AutoCloseable {
         private OwnerDiagnostics diagnostics() {
             synchronized (mailbox) {
                 return new OwnerDiagnostics(index, admitted.get(), registered, mailbox.size(), commandHighWater,
-                        rejectedCommands, deadlineDepth, stalledDepth, zeroWrites, writeTimeouts, callbackFailures);
+                        rejectedCommands, deadlineDepth, stalledDepth, zeroWrites, writeTimeouts, callbackFailures,
+                        rawWrites, rawGatherWrites, rawWriteSegments);
             }
         }
 

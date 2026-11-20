@@ -35,6 +35,7 @@ final class SelectorRawIo {
 
     boolean reading() { return read != null; }
     boolean writing() { return writeCompletion != null; }
+    int writeSegments() { return singleWrite != null ? 1 : count; }
 
     int read(SocketChannel channel) throws IOException {
         if (read == null) return 0;

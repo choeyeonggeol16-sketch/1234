@@ -31,11 +31,13 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.buffer.WriteBuffer;
 import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.network.packet.CPacketHandler;
+import l1j.server.server.model.network.packet.BytesWritablePacket;
 import l1j.server.server.model.network.packet.WritablePacket;
 import l1j.server.server.model.network.safe.NetworkSafeLoadManager;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.ConnectionState;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
+import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 
 /** Real gameplay listener, scheduler, socket pumps and Java crypto; no database or live world. */
 public final class SelectorCioIntegrationTest {
@@ -70,6 +72,7 @@ public final class SelectorCioIntegrationTest {
             CountDownLatch releaseOwner = new CountDownLatch(1);
             CountDownLatch competingOwnerSend = new CountDownLatch(1);
             CountDownLatch competingByteSend = new CountDownLatch(1);
+            CountDownLatch productionTailSends = new CountDownLatch(2);
             CountDownLatch overflowStaged = new CountDownLatch(1);
             CountDownLatch overflowRetired = new CountDownLatch(1);
             AtomicInteger overflowCalls = new AtomicInteger();
@@ -93,6 +96,14 @@ public final class SelectorCioIntegrationTest {
                             check(socket.tryWritePacket(client, new Reply(906, () -> {})), "reentrant SEND admitted"))),
                             "bounded ordinary encoder staged");
                     competingByteSend.countDown();
+                    return true;
+                }
+                if (value == 911 || value == 912) {
+                    byte[] payloadBytes = body(0x45, value);
+                    WritablePacket<CIOClient> packet = value == 911 ? new BytesWritablePacket(payloadBytes)
+                            : new ProtoPacketWriter.Raw(payloadBytes);
+                    check(socket.tryWritePacket(client, packet), "existing game packet admitted as a bounded SEND");
+                    productionTailSends.countDown();
                     return true;
                 }
                 if (value == 907) {
@@ -159,7 +170,7 @@ public final class SelectorCioIntegrationTest {
                     check(timer.await(5, TimeUnit.SECONDS), "game timer ran alongside I/O");
                     CUserSocket firstSession = clients.get(0);
                     CUserSocket secondSession = clients.get(900);
-                    verifyConcurrentSendFifo(first, firstCodec, firstSession, competingOwnerSend, competingByteSend);
+                    verifyConcurrentSendFifo(first, firstCodec, firstSession, competingOwnerSend, competingByteSend, productionTailSends);
                     var shareEncodes = new AtomicInteger();
                     try (var shared = new CAsyncSendConstBuffer(out -> {
                         shareEncodes.incrementAndGet();
@@ -355,7 +366,7 @@ public final class SelectorCioIntegrationTest {
     }
 
     private static void verifyConcurrentSendFifo(Socket peer, SelectorTransportTest.ScalarClient codec,
-            CUserSocket session, CountDownLatch ownerSent, CountDownLatch byteSent) throws Exception {
+            CUserSocket session, CountDownLatch ownerSent, CountDownLatch byteSent, CountDownLatch productionSent) throws Exception {
         var release = new CountDownLatch(1);
         try (var producers = Executors.newVirtualThreadPerTaskExecutor()) {
             var sends = new ArrayList<Future<Boolean>>();
@@ -377,6 +388,11 @@ public final class SelectorCioIntegrationTest {
                 check(byteSent.await(5, TimeUnit.SECONDS), "bounded packet scheduled after the staged owner packet");
                 check(Server.networkPoolSnapshot()[2][3] == smallBorrows + 1,
                         "only the reentrant packet borrowed a temporary SEND lease");
+                peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 911))));
+                peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 912))));
+                check(productionSent.await(5, TimeUnit.SECONDS), "both production encoders accepted");
+                check(Server.networkPoolSnapshot()[2][3] == smallBorrows + 1,
+                        "existing byte and raw protobuf packet encoders used the same SEND tail");
             } finally { release.countDown(); }
             for (var send : sends) check(send.get(5, TimeUnit.SECONDS), "foreign packet admitted");
         }
@@ -384,6 +400,8 @@ public final class SelectorCioIntegrationTest {
         expectEncrypted(peer, codec, 903);
         expectEncrypted(peer, codec, 905);
         expectEncrypted(peer, codec, 906);
+        expectEncrypted(peer, codec, 911);
+        expectEncrypted(peer, codec, 912);
         peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 904))));
         expectEncrypted(peer, codec, 904);
     }

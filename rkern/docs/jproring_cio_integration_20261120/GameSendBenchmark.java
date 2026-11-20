@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -42,7 +43,8 @@ public final class GameSendBenchmark {
         if (args[0].equals("server")) serve(Integer.parseInt(args[1]), Integer.parseInt(args[2]),
                 Integer.parseInt(args[3]), args[4]);
         else drive(Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]),
-                Integer.parseInt(args[4]), Integer.parseInt(args[5]), Integer.parseInt(args[6]));
+                Integer.parseInt(args[4]), Integer.parseInt(args[5]), Integer.parseInt(args[6]),
+                Integer.parseInt(args[7]), Integer.parseInt(args[8]));
     }
 
     private static int port() throws Exception {
@@ -91,25 +93,41 @@ public final class GameSendBenchmark {
             if (threads.isThreadAllocatedMemorySupported() && !threads.isThreadAllocatedMemoryEnabled())
                 threads.setThreadAllocatedMemoryEnabled(true);
             var input = new BufferedReader(new InputStreamReader(System.in));
-            Method commits = optionalCounter("javaDirectPacketCommits");
-            Method appends = optionalCounter("javaDirectByteAppends");
+            Method commits = optionalMethod(CUserSocket.class, "javaDirectPacketCommits");
+            Method appends = optionalMethod(CUserSocket.class, "javaDirectByteAppends");
+            Method poolSnapshot = optionalMethod(Server.class, "networkPoolSnapshot");
+            Method writeSnapshot = optionalMethod(Server.class, "networkWriteSnapshot");
             for (String command; (command = input.readLine()) != null; ) {
                 if (command.equals("STOP")) break;
                 if (command.equals("DIAG")) {
-                    protocol.println("DIAG " + Server.networkPoolReport() + " sockets="
-                            + Arrays.deepToString(Server.networkSocketDiagnostics()));
+                    protocol.println("DIAG " + Server.networkPoolReport());
+                    continue;
+                }
+                if (command.equals("POOL")) {
+                    long used = 0, allocated = 0, capacity = 0, borrows = 0, returns = 0;
+                    for (long[] bucket : (long[][]) poolSnapshot.invoke(null)) {
+                        used += bucket[2];
+                        borrows += bucket[3];
+                        returns += bucket[4];
+                        allocated += bucket[5];
+                        capacity += bucket[0] * bucket[1];
+                    }
+                    protocol.printf("POOL %d %d %d %d %d %d %d%n", Server.networkAccountRegistryDiagnostics()[0],
+                            used, allocated, capacity, borrows, returns,
+                            ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed());
                     continue;
                 }
                 if (!command.equals("SAMPLE")) throw new IllegalArgumentException(command);
-                protocol.printf(Locale.ROOT, "SAMPLE %d %d %d %d %d%n", cpu.getProcessCpuTime(),
+                long[] writes = writeSnapshot == null ? new long[3] : (long[]) writeSnapshot.invoke(null);
+                protocol.printf(Locale.ROOT, "SAMPLE %d %d %d %d %d %d %d %d%n", cpu.getProcessCpuTime(),
                         threads.getTotalThreadAllocatedBytes(), sumCounter(sessions, commits),
-                        sumCounter(sessions, appends), rejected.get());
+                        sumCounter(sessions, appends), rejected.get(), writes[0], writes[1], writes[2]);
             }
             if (rejected.get() != 0) throw new AssertionError("SEND rejected: " + rejected.get());
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
-            while (Server.networkAccountRegistryDiagnostics()[0] != 0 && System.nanoTime() < deadline) Thread.sleep(5);
+            while (System.nanoTime() < deadline && !poolDrained(poolSnapshot)) Thread.sleep(5);
             String pool = Server.networkPoolReport();
-            if (!pool.contains("receive slots=0 send slots=0")) throw new AssertionError(pool);
+            if (!poolDrained(poolSnapshot)) throw new AssertionError(pool);
             protocol.println("DRAINED " + pool);
             sessions.clear();
         } finally {
@@ -125,8 +143,14 @@ public final class GameSendBenchmark {
         }
     }
 
-    private static Method optionalCounter(String name) {
-        try { return CUserSocket.class.getMethod(name); }
+    private static boolean poolDrained(Method snapshot) throws ReflectiveOperationException {
+        if (Server.networkAccountRegistryDiagnostics()[0] != 0) return false;
+        if (snapshot == null) return Server.networkPoolReport().contains("receive slots=0 send slots=0");
+        return Arrays.stream((long[][]) snapshot.invoke(null)).allMatch(bucket -> bucket[2] == 0 && bucket[3] == bucket[4]);
+    }
+
+    private static Method optionalMethod(Class<?> owner, String name) {
+        try { return owner.getMethod(name); }
         catch (NoSuchMethodException unavailable) { return null; }
     }
 
@@ -137,57 +161,72 @@ public final class GameSendBenchmark {
         return result;
     }
 
-    private static void drive(int port, int clients, int window, int payload, int warmupMillis, int measureMillis)
+    private static void drive(int port, int clients, int window, int payload, int warmupMillis, int measureMillis,
+            int activeClients, int paceMillis)
             throws Exception {
         var ready = new CountDownLatch(clients);
         var go = new CountDownLatch(1);
+        var finished = new CountDownLatch(1);
+        var opening = new Semaphore(Math.min(64, clients));
         var begin = new AtomicLong();
         long measure = TimeUnit.MILLISECONDS.toNanos(measureMillis);
         try (var executor = clients <= 256 ? Executors.newFixedThreadPool(clients)
                                           : Executors.newVirtualThreadPerTaskExecutor()) {
             var samples = new ArrayList<Future<long[]>>();
-            for (int connection = 0; connection < clients; connection++) samples.add(executor.submit(() -> {
-                try (var socket = new Socket()) {
-                    socket.setTcpNoDelay(true);
-                    socket.setSoTimeout(5000);
-                    socket.connect(new InetSocketAddress("127.0.0.1", port), 5000);
-                    var in = new DataInputStream(socket.getInputStream());
-                    var out = socket.getOutputStream();
-                    if (!Arrays.equals(read(in), Opcodes.S_KEYBYTES)) throw new AssertionError("initial key");
-                    var codec = new SelectorTransportTest.ScalarClient(Opcodes.getSeed());
-                    var request = new byte[5];
-                    var expected = new byte[payload];
-                    var batch = new byte[window * 11]; // 2 byte framing + 4 byte cipher prefix + 5 byte request
-                    ready.countDown();
-                    go.await();
-                    long from = begin.get(), to = from + measure;
-                    long[] measured = new long[512];
-                    int count = 0, sequence = 0;
-                    while (System.nanoTime() < to) {
-                        for (int i = 0; i < window; i++) {
-                            body(request, REQUEST, sequence + i);
-                            byte[] encoded = codec.toServer(request);
-                            int offset = i * 11;
-                            batch[offset] = 11;
-                            System.arraycopy(encoded, 0, batch, offset + 2, encoded.length);
+            for (int connection = 0; connection < clients; connection++) {
+                boolean active = connection < activeClients;
+                samples.add(executor.submit(() -> {
+                    try (var socket = new Socket()) {
+                        DataInputStream in;
+                        opening.acquire();
+                        try {
+                            socket.setTcpNoDelay(true);
+                            socket.setSoTimeout(clients > 256 ? 15000 : 5000);
+                            socket.connect(new InetSocketAddress("127.0.0.1", port), 5000);
+                            in = new DataInputStream(socket.getInputStream());
+                            if (!Arrays.equals(read(in), Opcodes.S_KEYBYTES)) throw new AssertionError("initial key");
+                        } finally { opening.release(); }
+                        ready.countDown();
+                        if (!active) {
+                            finished.await();
+                            return new long[0];
                         }
-                        long sent = System.nanoTime();
-                        out.write(batch);
-                        for (int i = 0; i < window; i++) {
-                            body(expected, RESPONSE, sequence++);
-                            if (!Arrays.equals(read(in), codec.fromServer(expected))) throw new AssertionError("wire mismatch");
-                            long received = System.nanoTime();
-                            if (sent >= from && received <= to) {
-                                if (count == measured.length) measured = Arrays.copyOf(measured, count * 2);
-                                measured[count++] = received - sent;
+                        var out = socket.getOutputStream();
+                        var codec = new SelectorTransportTest.ScalarClient(Opcodes.getSeed());
+                        var request = new byte[5];
+                        var expected = new byte[payload];
+                        var batch = new byte[window * 11]; // 2 byte framing + 4 byte cipher prefix + 5 byte request
+                        go.await();
+                        long from = begin.get(), to = from + measure;
+                        long[] measured = new long[512];
+                        int count = 0, sequence = 0;
+                        while (System.nanoTime() < to) {
+                            for (int i = 0; i < window; i++) {
+                                body(request, REQUEST, sequence + i);
+                                byte[] encoded = codec.toServer(request);
+                                int offset = i * 11;
+                                batch[offset] = 11;
+                                System.arraycopy(encoded, 0, batch, offset + 2, encoded.length);
                             }
+                            long sent = System.nanoTime();
+                            out.write(batch);
+                            for (int i = 0; i < window; i++) {
+                                body(expected, RESPONSE, sequence++);
+                                if (!Arrays.equals(read(in), codec.fromServer(expected))) throw new AssertionError("wire mismatch");
+                                long received = System.nanoTime();
+                                if (sent >= from && received <= to) {
+                                    if (count == measured.length) measured = Arrays.copyOf(measured, count * 2);
+                                    measured[count++] = received - sent;
+                                }
+                            }
+                            if (paceMillis != 0) Thread.sleep(paceMillis);
                         }
+                        return Arrays.copyOf(measured, count);
                     }
-                    return Arrays.copyOf(measured, count);
-                }
-            }));
+                }));
+            }
             try {
-                if (!ready.await(6, TimeUnit.SECONDS)) {
+                if (!ready.await(clients > 256 ? 35 : 6, TimeUnit.SECONDS)) {
                     for (var sample : samples) if (sample.isDone()) sample.get();
                     throw new AssertionError("client connect timeout, missing initial keys=" + ready.getCount());
                 }
@@ -199,6 +238,7 @@ public final class GameSendBenchmark {
                 System.out.println("MEASURE");
                 waitUntil(begin.get() + measure);
                 System.out.println("END");
+                finished.countDown();
                 var all = new ArrayList<long[]>();
                 int count = 0;
                 for (var sample : samples) {
@@ -218,6 +258,7 @@ public final class GameSendBenchmark {
                         percentile(sorted, 500), percentile(sorted, 990), percentile(sorted, 999));
             } finally {
                 go.countDown();
+                finished.countDown();
                 executor.shutdownNow();
             }
         }

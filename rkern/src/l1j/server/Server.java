@@ -69,6 +69,10 @@ public class Server {
         final var listener = gameListener;
         return listener == null ? new long[0][] : listener.poolSnapshot();
     }
+    public static long[] networkWriteSnapshot() {
+        final var listener = gameListener;
+        return listener == null ? new long[3] : listener.writeSnapshot();
+    }
     public static long findEnteringAccount(int accountId){
         final var listener=gameListener;return listener==null?0:listener.findEnteringAccount(accountId);
     }
@@ -102,10 +106,10 @@ public class Server {
             // owner is also servicing established sockets and game timers.
             final int backlog = Math.max(64, Math.min(connectionCapacity, MAX_ACCEPT_BACKLOG));
             final ConnectionConfig config = new ConnectionConfig(address);
-            final CIOBufferPool pool = new CIOBufferPool(connectionCapacity,
-                    sendSlots, largeRecvSlots, largeSlots);
             final CDummyServerCallback factory = new CDummyServerCallback(
                     CIOThreadCallback.getInstance(), config);
+            final CIOBufferPool pool = new CIOBufferPool(connectionCapacity,
+                    sendSlots, largeRecvSlots, largeSlots, factory.selectorOwnerCount());
             gameListener = new l1j.server.server.model.network.core.server.Server(address, connectionCapacity,
                     backlog, pool, factory);
             System.out.println("네트워크 서버 연결이 완료되었습니다.");

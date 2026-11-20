@@ -100,6 +100,15 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
     }
     private final CPoolDiagnostics poolDiagnostics = new CPoolDiagnostics();
     public long[][] poolSnapshot() { return pool.snapshot(); }
+    public long[] writeSnapshot() {
+        long[] totals = new long[3];
+        if (javaServer != null) for (var owner : javaServer.ownerDiagnostics()) {
+            totals[0] += owner.rawWrites();
+            totals[1] += owner.rawGatherWrites();
+            totals[2] += owner.rawWriteSegments();
+        }
+        return totals;
+    }
     public String poolReport(){
         if (javaServer != null) {
             return "JProRing direct bytes=" + pool.allocatedDirectBytes() + "/" + pool.maxDirectBytes()

@@ -22,13 +22,20 @@ public final class CIOBufferPool {
     private final Bucket _largeRecv;
     private final Bucket _send;
     private final Bucket _largeSend;
+    private final int _receiveShards;
 
     public CIOBufferPool(int maxConnections, int sendSlots, int largeRecvSlots,
                            int largeSendSlots) {
-        if (maxConnections <= 0 || sendSlots <= 0
-                || largeRecvSlots <= 0 || largeSendSlots <= 0) {
+        this(maxConnections, sendSlots, largeRecvSlots, largeSendSlots, 0);
+    }
+
+    public CIOBufferPool(int maxConnections, int sendSlots, int largeRecvSlots,
+                           int largeSendSlots, int receiveShards) {
+        if (maxConnections <= 0 || sendSlots <= 0 || largeRecvSlots <= 0 || largeSendSlots <= 0) {
             throw new IllegalArgumentException("all pool capacities must be positive");
         }
+        if (receiveShards < 0) throw new IllegalArgumentException("receiveShards < 0");
+        _receiveShards = receiveShards;
         _recv = new Bucket(RECV_BYTES, maxConnections);
         _largeRecv = new Bucket(LARGE_BYTES, largeRecvSlots);
         _send = new Bucket(SMALL_SEND_BYTES, sendSlots);
@@ -41,10 +48,18 @@ public final class CIOBufferPool {
         return lease;
     }
 
+    CIOBufferEx acquireRecv(int shard) {
+        return _recv.acquireReceive(shard, _receiveShards);
+    }
+
     public CIOBufferEx acquireLargeRecv() {
         final CIOBufferEx lease = _largeRecv.acquire(false, 0);
 
         return lease;
+    }
+
+    CIOBufferEx acquireLargeRecv(int shard) {
+        return _largeRecv.acquireReceive(shard, _receiveShards);
     }
 
     /** Returns null when bounded backing capacity is exhausted (never allocates unbounded memory). */
@@ -126,7 +141,14 @@ public final class CIOBufferPool {
         }
 
         private CIOBufferEx acquire(boolean send, int requested) {
-            final int slot = _slots.acquire();
+            return acquireSlot(_slots.acquire(), send, requested);
+        }
+
+        private CIOBufferEx acquireReceive(int shard, int shards) {
+            return acquireSlot(_slots.acquireNearShard(shard, shards), false, 0);
+        }
+
+        private CIOBufferEx acquireSlot(int slot, boolean send, int requested) {
             if (slot < 0) {
                 _exhaustions.incrementAndGet();
                 return null;

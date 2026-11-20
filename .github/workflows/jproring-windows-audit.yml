@@ -77,6 +77,7 @@ jobs:
             'docs/jproring_p1_selector_20261120/SelectorFrameReaderTest.java'
             'docs/jproring_selector_transport_20261120/SelectorTransportTest.java'
             'docs/jproring_cio_integration_20261120/SelectorCioIntegrationTest.java'
+            'docs/jproring_cio_integration_20261120/CIOBufferPoolAffinityTest.java'
           ))
           $argumentFile = Join-Path $env:RUNNER_TEMP 'jproring-sources.txt'
           $sourceFiles | ForEach-Object { '"' + $_.FullName.Replace('\', '/') + '"' } |
@@ -84,6 +85,7 @@ jobs:
           & $javac -J-Xmx2g --release 21 --enable-preview -encoding UTF-8 -cp $dependencyClasspath -d $classes "@$argumentFile"
           $receive = & $java -cp $classes SelectorFrameReaderTest
           $transport = & $java -cp $classes SelectorTransportTest
+          $pool = & $java --enable-preview -cp $classes l1j.server.server.model.network.core.connection.CIOBufferPoolAffinityTest
           $runtime = Join-Path $env:RUNNER_TEMP 'jproring-game-runtime'
           $null = New-Item -ItemType Directory -Path $runtime
           Push-Location $runtime
@@ -93,5 +95,6 @@ jobs:
           } finally { Pop-Location }
           $receive
           $transport
+          $pool
           $integration
-          @($platform, $receive, $transport) + @($integration) | Add-Content $env:GITHUB_STEP_SUMMARY
+          @($platform, $receive, $transport, $pool) + @($integration) | Add-Content $env:GITHUB_STEP_SUMMARY
