@@ -5,15 +5,9 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.transport.CSocket;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 
-import java.net.InetAddress;
-import java.lang.ref.WeakReference;
-import java.net.Inet4Address;
 import java.net.InetSocketAddress;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicIntegerArray;
 import l1j.server.Config;
 import l1j.server.server.Controller.LoginController;
-import l1j.server.server.model.network.client.manager.CIPConnectionCounter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 
@@ -22,8 +16,6 @@ public final class CDummyServerCallback implements IServerCallback {
     private final CIOThreadCallback scheduler;
     private final CConnectionConfig config;
     private final int shardCount;
-    private final AtomicInteger nextShard = new AtomicInteger();
-    private final AtomicIntegerArray liveByShard;
     private final int maxOnline;
 
     public CDummyServerCallback(CIOThreadCallback scheduler, CConnectionConfig config) {
@@ -32,7 +24,6 @@ public final class CDummyServerCallback implements IServerCallback {
         this.scheduler = scheduler;
         this.config = config;
         this.shardCount = scheduler.bindNetworkIngress(config);
-        this.liveByShard = new AtomicIntegerArray(shardCount);
         this.maxOnline = Config.MAX_ONLINE_USERS;
         if (shardCount < 1 || maxOnline < 1)
             throw new IllegalStateException("invalid game shard or online limit");
@@ -47,55 +38,21 @@ public final class CDummyServerCallback implements IServerCallback {
     public CUserSocket CreateSocket(CSocket socket,
                                   CIOBufferPool pool,
                                   CUserSocket.Closed serverClosed) throws Exception {
-        final InetSocketAddress peer = (InetSocketAddress) socket.remoteAddress();
-        final InetAddress address = peer.getAddress();
-        final String ip = address.getHostAddress();
-        boolean counted = false;
+        final InetSocketAddress peer = socket.remoteAddress();
+        final String ip = peer.getAddress().getHostAddress();
         CUserSocket transport = null;
-        int assignedShard = -1;
         try {
-            // Preserve the existing IPv4 game-client admission contract.
-            if (!(address instanceof Inet4Address))
-                throw new IllegalStateException("IPv6 game client not configured");
             if (peer.getPort() <= 1024 || maxOnline <=
                     LoginController.getInstance().getOnlinePlayerCount())
                 throw new IllegalStateException("game connection denied");
 
-            if (!Config.shutdownCheck) {
-                if (CIPConnectionCounter.getInstance().isPermission(address) < 0)
-                    throw new IllegalStateException("IP connection limit reached");
-                counted = true;
-            }
-            
-            int shard = CIOThreadCallback.currentShardIndex();
-            if (shard < 0 || shard >= shardCount) {
-                final int start = (nextShard.getAndIncrement() & Integer.MAX_VALUE) % shardCount;
-                shard = start;
-                long best = Long.MAX_VALUE;
-                for (int k = 0; k < shardCount; k++) {
-                    final int candidate = (start + k) % shardCount;
-                    final long score = ((long) liveByShard.get(candidate) << 5)
-                            + scheduler.networkIngressPressure(candidate);
-                    if (score < best) { best = score; shard = candidate; }
-                }
-            }
-            liveByShard.incrementAndGet(shard);
-            assignedShard = shard;
-            final int ownerShard = shard;
-            transport = new CUserSocket(socket, pool, scheduler, ip, shard,
-                    256,
-                    new CUserSocket.Closed() {
-                        @Override public void onClosing(CUserSocket nio) { serverClosed.onClosing(nio); }
-                        @Override public void onCleanupComplete(CUserSocket nio) { serverClosed.onCleanupComplete(nio); }
-                        @Override public void onClosed(CUserSocket nio) {
-                            try {
-                                nio.onTransportClosed();
-                            } finally {
-                                liveByShard.decrementAndGet(ownerShard);
-                                serverClosed.onClosed(nio);
-                            }
-                        }
-                    }, counted);
+            if (!Config.shutdownCheck && !socket.reserveCleanupIp(CConnectionConfig.NETWORK_CLIENT_PERMISSION))
+                throw new IllegalStateException("IP connection limit reached");
+
+            final int shard = CIOThreadCallback.currentShardIndex();
+            if (shard < 0 || shard >= shardCount || socket.currentOwner() != shard)
+                throw new IllegalStateException("game admission must execute on its CIO owner");
+            transport = new CUserSocket(socket, pool, scheduler, ip, shard, 256, serverClosed, true);
             if (!transport.onConnected() || !transport.isConnected())
                 throw new IllegalStateException("handshake not admitted");
             transport.configureTransportDeadlines(config.usePreLoginTimeout);
@@ -105,8 +62,7 @@ public final class CDummyServerCallback implements IServerCallback {
                 transport.close();
                 transport.disconnect();
             } else {
-                if (assignedShard >= 0) liveByShard.decrementAndGet(assignedShard);
-                if (counted) CIPConnectionCounter.getInstance().decrease(address);
+                socket.releaseCleanupIp();
             }
             throw failure;
         }

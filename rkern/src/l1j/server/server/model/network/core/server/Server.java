@@ -26,7 +26,7 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
     private final CIOBufferPool pool;
     private final IServerCallback factory;
     private final CIOServer javaServer;
-    private final CUserSocketMap<CUserSocket> connections = new CUserSocketMap<>();
+    private final CUserSocketMap connections = new CUserSocketMap();
     private final AtomicBoolean acceptingStopped = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicInteger admitted = new AtomicInteger();
@@ -107,8 +107,6 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
                 return;
             }
             connections.register(connection);
-            if (connection.isCloseStarted()) connections.retire(connection);
-            if (connection.isClientCleanupComplete()) connections.cleanupComplete(connection);
             if (connection.isCloseComplete()) {
                 onClosed(connection);
                 return;
@@ -133,7 +131,6 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
     @Override public void onClosed(CUserSocket socket) {
         if (connections.transportDrained(socket)) admitted.decrementAndGet();
     }
-    @Override public void onClosing(CUserSocket socket) { connections.retire(socket); }
     @Override public void onCleanupComplete(CUserSocket socket) { connections.cleanupComplete(socket); }
     public int pendingSessionCleanup() { return connections.pendingCleanup(); }
     public int liveConnections() { return admitted.get(); }

@@ -25,6 +25,7 @@ import l1j.server.Config;
 import l1j.server.Server;
 import l1j.server.server.Account;
 import l1j.server.server.Opcodes;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -252,6 +253,7 @@ public final class SelectorCioIntegrationTest {
                     check(descriptorsAfter <= descriptorsBefore + 2, "listener and Selector descriptors were reclaimed");
                     System.out.printf("FD listeners before=%d after=%d%n", descriptorsBefore, descriptorsAfter);
                 }
+                verifyIpReservationDuringListenerRestart(gamePort, clients);
                 verifyTailOverflow(gamePort, clients, overflowStaged, overflowRetired, overflowCalls);
                 awaitIdlePool();
                 try (Socket stalled = connect(gamePort)) {
@@ -312,6 +314,57 @@ public final class SelectorCioIntegrationTest {
         check(Server.startLoginServer(), "retry released the listener and allowed rebind");
         try (Socket peer = connect(port)) {
             check(Arrays.equals(readBody(peer), Opcodes.S_KEYBYTES), "listener works after timeout and retry");
+        }
+        awaitIdlePool();
+    }
+
+    private static void verifyIpReservationDuringListenerRestart(int port, java.util.Map<Integer, CUserSocket> clients)
+            throws Exception {
+        var logoutStarted = new CountDownLatch(1);
+        var releaseLogout = new CountDownLatch(1);
+        var logoutCalls = new AtomicInteger();
+        CUserSocket old;
+        try (Socket peer = connect(port)) {
+            check(Arrays.equals(readBody(peer), Opcodes.S_KEYBYTES), "cleanup fixture handshake");
+            var codec = new SelectorTransportTest.ScalarClient(Opcodes.getSeed());
+            peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 909))));
+            expectEncrypted(peer, codec, 909);
+            old = clients.get(909);
+            var player = new L1PcInstance() {
+                @Override public void logout() {
+                    logoutCalls.incrementAndGet();
+                    logoutStarted.countDown();
+                    try {
+                        check(releaseLogout.await(15, TimeUnit.SECONDS), "logout fixture released");
+                    } catch (InterruptedException failure) {
+                        Thread.currentThread().interrupt();
+                        throw new AssertionError(failure);
+                    }
+                }
+            };
+            player.setNetConnection(old);
+            var activeChar = CUserSocket.class.getDeclaredField("_activeChar");
+            activeChar.setAccessible(true);
+            activeChar.set(old, player);
+        }
+        try {
+            check(logoutStarted.await(5, TimeUnit.SECONDS) && !old.isLogoutComplete(), "old session retained");
+            Server.stopLoginServer();
+            check(Server.startLoginServer(), "listener restarted while old logout is pending");
+            try (Socket first = connect(port); Socket denied = connect(port)) {
+                check(Arrays.equals(readBody(first), Opcodes.S_KEYBYTES), "one same-IP slot available");
+                try { check(denied.getInputStream().read() == -1, "old logout still occupies the second IP slot"); }
+                catch (SocketException expected) { check(!denied.isInputShutdown(), "denied peer was reset"); }
+                releaseLogout.countDown();
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+                while (!old.isLogoutComplete() && System.nanoTime() < deadline) Thread.sleep(5);
+                check(old.isLogoutComplete() && logoutCalls.get() == 1, "old session released exactly once");
+                try (Socket second = connect(port)) {
+                    check(Arrays.equals(readBody(second), Opcodes.S_KEYBYTES), "next peer can use released IP slot");
+                }
+            }
+        } finally {
+            releaseLogout.countDown();
         }
         awaitIdlePool();
     }

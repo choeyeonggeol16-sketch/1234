@@ -304,21 +304,12 @@ public class chocco extends JFrame {
         report.add(creature);
         addDisabledItem(report, "아이템 분포");
         addDisabledItem(report, "공격형 몬스터 주변");
-        addItem(report, "시간 분석", () -> showNetworkReport("시간 분석", l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics::timings));
-        addItem(report, "시간 분석 초기화", () -> { l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.resetTiming(); showSimpleReport("시간 분석", "완료 시간 통계를 초기화했습니다."); });
-        addItem(report, "패킷 카운트", () -> showNetworkReport("패킷 카운트", l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics::packetCounts));
-        addItem(report, "패킷 카운트 초기화", () -> { l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.resetCounts(); showSimpleReport("패킷 카운트", "패킷 카운트를 초기화했습니다. 최근 기록은 유지됩니다."); });
-        addDisabledItem(report, "프로파일 초기화");
-        addItem(report, "프로파일", () -> showNetworkReport("프로파일", this::networkProfile));
         addDisabledItem(report, "테스트");
         addDisabledItem(report, "NPC 핑");
         addItem(report, "소켓", () -> showNetworkReport("소켓", this::networkSockets));
-        addItem(report, "종료 사유·최근 패킷 128개", this::showRecentPackets);
         addItem(report, "유저", this::showUserManager);
         addItem(report, "참조·수명 상태", () -> showNetworkReport("참조·수명 상태", this::networkReferences));
         addItem(report, "풀·회수 진단", this::showPoolReport);
-        addItem(report, "전송량 초기화", () -> { l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.resetTraffic(); showSimpleReport("전송률", "수신/송신 접수량 통계를 초기화했습니다."); });
-        addItem(report, "전송률", () -> showNetworkReport("전송률", l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics::traffic));
         addItem(report, "서버 시간", () -> showSimpleReport("서버 시간", LocalTime.now().toString()));
         addDisabledItem(report, "공유 팩토리 보고");
 
@@ -396,51 +387,18 @@ public class chocco extends JFrame {
             }
         }.execute();
     }
-    private void showRecentPackets() {
-        String text = JOptionPane.showInputDialog(this, "소켓 보고서의 진단 id를 입력하세요. 확장 요청은 종류·명령 번호도 표시합니다.");
-        if (text == null) return;
-        try {
-            long id = Long.parseLong(text.trim());
-            showNetworkReport("종료 사유·최근 패킷 128개(확장 명령 포함)", () -> l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.recent(id));
-        } catch (NumberFormatException failure) { showSimpleReport("최근 패킷", "숫자 id를 입력하세요."); }
-    }
-    private String networkProfile() {
-        StringBuilder text = new StringBuilder();
-        if (l1j.server.Server.isJavaNetworkTransport()) {
-            text.append(l1j.server.Server.networkPoolReport()).append('\n');
-        } else {
-            text.append("Native 성능 샘플 (availabilityFlags로 가용성 확인)\n")
-                    .append(l1j.server.Server.networkPerformance()).append("\nNative worker 상태\n");
-        }
-        long[] workers = l1j.server.Server.networkThreadDiagnostics();
-        for (int offset = 0; offset + 2 < workers.length; offset += 3) {
-            text.append("owner=").append(offset / 3).append(" callbacks=").append(workers[offset])
-                    .append(" totalMs=").append(workers[offset + 1])
-                    .append(" activeSinceMs=").append(workers[offset + 2]).append('\n');
-        }
-        return text.append("\n확장 요청은 종류·명령 번호를 함께 표시합니다.\n")
-                .append(l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.workers()).toString();
-    }
     private String networkSockets() {
-        StringBuilder text = new StringBuilder(l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.connections());
-        text.append("\n선택적 송신 생략=").append(l1j.server.server.model.network.core.connection.CUserSocket.softSendRejections()).append('\n');
         long[][] rows = l1j.server.Server.networkSocketDiagnostics();
-        boolean javaNetwork = l1j.server.Server.isJavaNetworkTransport();
-        text.append(javaNetwork ? "\nJProRing sockets=" : "\nNative sockets=").append(rows.length)
-                .append("\n[handle,number,socket,closing,terminal,packetLease,readPosted,writePosted,outputBytes,addressFamily,ipv4,port]\n");
-        if (!javaNetwork) text.append("outputBytes는 native 출력 큐의 잔여량입니다.\n");
+        StringBuilder text = new StringBuilder("JProRing sockets=").append(rows.length)
+                .append("\n[id,number,socket,closing,terminal,packetLease,readPosted,writePosted,outputBytes,addressFamily,ipv4,port]\n");
         for (int i = 0; i < Math.min(rows.length, 512); i++) text.append(java.util.Arrays.toString(rows[i])).append('\n');
         if (rows.length > 512) text.append("최대 512개 표시\n");
         return text.toString();
     }
     private String networkReferences() {
-        String sendFields = l1j.server.Server.isJavaNetworkTransport()
-                ? "[선택적 송신 생략,소형 송신 풀 고갈,대형 송신 풀 고갈]"
-                : "[송신 접수,실행,암호화 frame,평문 frame,정상종료,강제종료,거절,pending,owner오류]";
         return "[보유 번호 소켓,로그인 소켓,진입 계정,중복 진입 거절]\n"
                 + java.util.Arrays.toString(l1j.server.Server.networkAccountRegistryDiagnostics())
-                + "\n" + sendFields + "\n"
-                + java.util.Arrays.toString(l1j.server.Server.networkSendDiagnostics()) + "\n" + networkSockets();
+                + "\n" + networkSockets();
     }
 
     private void showPoolReport() {

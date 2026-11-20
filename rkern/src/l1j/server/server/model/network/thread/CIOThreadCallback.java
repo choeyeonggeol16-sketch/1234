@@ -323,8 +323,8 @@ public final class CIOThreadCallback {
      * owner processes it. A bounded FIFO avoids unbounded ingress memory.
      * A rejection is terminal to that connection (the READ pump closes it).
      */
-    /** A packet is either executed on its owner or cancelled during shutdown. */
-    public interface PacketTask extends l1j.server.server.model.network.core.execution.CIOObject {
+    public interface PacketTask extends Runnable {
+        void cancel();
     }
 
     public boolean enqueuePacketImmediate(int shardIndex, PacketTask packetTask) {
@@ -371,12 +371,11 @@ public final class CIOThreadCallback {
     public boolean completeSession(CUserSocket client, Runnable action,
             java.util.function.Consumer<Throwable> completion) {
         java.util.Objects.requireNonNull(completion, "completion");
-        if (client == null || action == null || !client.isConnected() || client.getConnection() == null) {
+        if (client == null || action == null || !client.isConnected()) {
             completion.accept(new IllegalStateException("Session completion unavailable"));
             return false;
         }
-        final var socket = client.getConnection();
-        final int shardIndex = socket.affinityShard();
+        final int shardIndex = client.affinityShard();
         final var account = client.getAccount();
         final var actor = client.getActiveChar();
         final int stamp = actor == null ? 0 : actor.getSessionStamp();
@@ -384,8 +383,7 @@ public final class CIOThreadCallback {
         final L1World world = L1World.getInstance();
         return completeOnShard(shardIndex, () -> {
             synchronized (client) {
-                if (world != L1World.getInstance() || !client.isConnected() || client.getConnection() != socket
-                        || socket.affinityShard() != shardIndex || client.getAccount() != account
+                if (world != L1World.getInstance() || !client.isConnected() || client.getAccount() != account
                         || client.getActiveChar() != actor || client.getConnectionState() != state
                         || (actor != null && (actor.getSessionStamp() != stamp || actor.getNetConnection() != client)))
                     throw new IllegalStateException("Stale session owner completion");
@@ -397,15 +395,6 @@ public final class CIOThreadCallback {
 	/** Current CIOThread owner index, or -1 outside a CIOThread owner thread. */
 	public static int currentShardIndex() {
 		return CIOShardContext.currentShardIndex();
-	}
-
-	/** One-shot pre-login deadline on the existing CThreadLocalTimer (no new timer thread). */
-	public boolean scheduleLoginTimeout(int shardIndex, WheelTask task) {
-		if (task == null || shardIndex < 0 || shardIndex >= networkShardCount
-				|| shardIndex >= shardCount) return false;
-		return shards[shardIndex].admitTimer(
-				TimerOp.RAW_TIMER, 0, 61_000L,
-				0, 0, 0, task, null, null);
 	}
 
     /** Existing owner wheel drives connection deadlines; no extra worker or queue. */
@@ -583,12 +572,6 @@ public final class CIOThreadCallback {
 
 		return highest << 1;
 	}
-
-    /** Admission load is only placement metadata for timer-wheel affinity. */
-    public int networkIngressPressure(int shardIndex) {
-        if (shardIndex < 0 || shardIndex >= networkShardCount) return 0;
-        return shards[shardIndex].lastBacklogMask != 0 ? 16 : 0;
-    }
 
 	/*
 	 * PC shard의 단일 기준.
@@ -1185,7 +1168,6 @@ public final class CIOThreadCallback {
         // There is no CIO deferred command queue or game owner mailbox.
         volatile long lastProgressNs = System.nanoTime();
         volatile long lastProgressCounter;
-        volatile int lastBacklogMask;
         volatile int restartCount;
 		final PcStateTable states = new PcStateTable(2048);
 		final CThreadLocalTimer threadLocalTimer = new CThreadLocalTimer(WHEEL_TICK_MS, WHEEL_SIZE, this);
@@ -1954,9 +1936,6 @@ public final class CIOThreadCallback {
                         }
                         sleepMs = lastWheelAtMs + WHEEL_TICK_MS - nowMs();
                         backlog = !packetIngress.isEmpty();
-                        // Snapshot on the owner only; accepting sockets never
-                        // lock/inspect packetIngress merely to choose a shard.
-                        lastBacklogMask = backlog ? 1 : 0;
                     } catch (Throwable t) {
                         LOGGER.log(Level.SEVERE,
                                 "[CIOThread] owner loop failure; shard survives idx=" + idx, t);
@@ -2008,7 +1987,6 @@ public final class CIOThreadCallback {
                             threadLocalTimer.discardOnShutdown();
                             states.discardOnShutdown();
                         }
-                        lastBacklogMask = 0;
                     }
                 } finally {
                     CIOShardContext.exitShard();

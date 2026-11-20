@@ -129,6 +129,9 @@ public final class CPacketHandler {
     private static final boolean[] DIRECT_OPCODE = new boolean[256];
 
     private static final Charset MS949 = Charset.forName("MS949");
+    private static final Charset EUC_KR = Charset.forName("EUC-KR");
+    // Decoders finish copying into a String before invoking any packet handler.
+    private static final ThreadLocal<byte[]> FIXED_STRING_SCRATCH = ThreadLocal.withInitial(() -> new byte[4096]);
 
     private static final ThreadLocal<byte[]> STRING_SCRATCH = ThreadLocal.withInitial(
             () -> new byte[CConnectionConfig.READ_BUFFER_SIZE]);
@@ -2137,9 +2140,6 @@ public final class CPacketHandler {
         return true;
     }
 
-    private static final Charset MAIL_EUC_KR = Charset.forName("EUC-KR");
-    private static final Charset MAIL_MS949 = Charset.forName("MS949");
-    private static final ThreadLocal<byte[]> MAIL_STRING_BUFFER = ThreadLocal.withInitial(() -> new byte[4096]);
 
     private static int findMailCStringEnd(CPacketReadBuffer buffer, int start, int limit) {
         for (int pos = start; pos < limit; pos++) {
@@ -2151,13 +2151,13 @@ public final class CPacketHandler {
     }
 
     private static String readMailCStringEucKr(CPacketReadBuffer buffer, int start, int end) {
-        final byte[] temp = MAIL_STRING_BUFFER.get();
+        final byte[] temp = FIXED_STRING_SCRATCH.get();
         final int length = Math.min(end - start, temp.length);
 
         for (int i = 0; i < length; i++) {
             temp[i] = buffer.readByte(start + i);
         }
-        return new String(temp, 0, length, MAIL_EUC_KR);
+        return new String(temp, 0, length, EUC_KR);
     }
 
     private static int findMailSsNext(CPacketReadBuffer buffer, int start, int limit) {
@@ -2180,7 +2180,7 @@ public final class CPacketHandler {
     }
 
     private static String readMailSs(CPacketReadBuffer buffer, int start, int next) {
-        final byte[] temp = MAIL_STRING_BUFFER.get();
+        final byte[] temp = FIXED_STRING_SCRATCH.get();
         int end = next;
 
         if (end - start >= 2 && (buffer.readByte(end - 2) & 0xFF) == 0 && (buffer.readByte(end - 1) & 0xFF) == 0) {
@@ -2206,11 +2206,9 @@ public final class CPacketHandler {
                 }
             }
         }
-        return new String(temp, 0, index, MAIL_MS949);
+        return new String(temp, 0, index, MS949);
     }
 
-    private static final Charset CS_EUC_KR = Charset.forName("EUC-KR");
-    private static final ThreadLocal<byte[]> EUC_STRING_BUFFER = ThreadLocal.withInitial(() -> new byte[4096]);
 
     private static String readCStringEucKr(CPacketReadBuffer buffer, int start, int end) {
         final int rawLength = end - start;
@@ -2218,13 +2216,13 @@ public final class CPacketHandler {
             return "";
         }
 
-        final byte[] temp = EUC_STRING_BUFFER.get();
+        final byte[] temp = FIXED_STRING_SCRATCH.get();
         final int length = Math.min(rawLength, temp.length);
 
         for (int i = 0; i < length; i++) {
             temp[i] = buffer.readByte(start + i);
         }
-        return new String(temp, 0, length, CS_EUC_KR);
+        return new String(temp, 0, length, EUC_KR);
     }
 
     static boolean decodePledgeContent(CPacketReadBuffer buffer, CUserSocket client) {
@@ -2576,7 +2574,6 @@ public final class CPacketHandler {
     private static final int CRAFT_PACKET_CLAN_BUFF_CHANGE = 0xF9;
     private static final int CRAFT_PACKET_CLAN_BUFF_CHOICE = 0xF8;
 
-    private static final Charset CRAFT_MS949 = Charset.forName("MS949");
     private static final ThreadLocal<byte[]> CRAFT_STRING_BUFFER = ThreadLocal.withInitial(() -> new byte[256]);
     
     private static boolean dispatchExtendedProto(CPacketReadBuffer buffer, CUserSocket client, int payloadSize) {
@@ -2793,7 +2790,7 @@ public final class CPacketHandler {
                                 }
                             }
 
-                            s0 = new String(scratch, 0, stringLength, CRAFT_MS949);
+                            s0 = new String(scratch, 0, stringLength, MS949);
                         }
                     }
                 }
@@ -2860,7 +2857,7 @@ public final class CPacketHandler {
                     scratch[i] = buffer.readByte(pos + i);
                 }
                 pos += actual;
-                s0 = new String(scratch, 0, messageLength, CRAFT_MS949);
+                s0 = new String(scratch, 0, messageLength, MS949);
             }
 
             if (p1 == 1) {
@@ -2881,7 +2878,7 @@ public final class CPacketHandler {
                     for (int i = 0; i < actual; i++) {
                         scratch[i] = buffer.readByte(pos + i);
                     }
-                    s1 = new String(scratch, 0, targetLength, CRAFT_MS949);
+                    s1 = new String(scratch, 0, targetLength, MS949);
                 }
             }
             break;
@@ -2960,9 +2957,7 @@ public final class CPacketHandler {
     private static final int ACTION_CLAN_JOIN = 322;
     private static final int ACTION_ENVIRONMENT_SETTING = 1002;
 
-    private static final Charset ACTION_EUC_KR = Charset.forName("EUC-KR");
     private static final byte[] EMPTY_BYTES = new byte[0];
-    private static final ThreadLocal<byte[]> ACTION_STRING_BUFFER = ThreadLocal.withInitial(() -> new byte[4096]);
     private static final char[] HEX = "0123456789ABCDEF".toCharArray();
     
     private static boolean decodeActionUi(CPacketReadBuffer buffer, CUserSocket client, int type, int payloadSize) {
@@ -3298,13 +3293,13 @@ public final class CPacketHandler {
         }
 
         final int length = Math.min(requestedLength, limit - pos);
-        final byte[] scratch = ACTION_STRING_BUFFER.get();
+        final byte[] scratch = FIXED_STRING_SCRATCH.get();
 
         for (int i = 0; i < length; i++) {
             scratch[i] = buffer.readByte(pos + i);
         }
 
-        return new String(scratch, 0, length, ACTION_EUC_KR);
+        return new String(scratch, 0, length, EUC_KR);
     }
 
     private static final Logger HANDLER_LOG =

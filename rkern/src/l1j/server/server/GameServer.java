@@ -116,7 +116,6 @@ import l1j.server.server.model.item.L1TreasureBox;
 import l1j.server.server.model.item.effects.ItemEffectBootstrap;
 import l1j.server.server.model.item.function.L1HealingPotion;
 import l1j.server.server.model.map.L1WorldMap;
-import l1j.server.server.model.network.client.manager.CIPConnectionCounter;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.NpcServer;
@@ -150,7 +149,6 @@ public class GameServer {
 	public void initialize() throws Exception {
 		ThreadPool.getInstance();
 		
-		CIPConnectionCounter.getInstance();
 		CPacketFilter.getInstance().load();
 		// 나누기
 		MJAlchemyProbabilityBox.getInstance().shuffleList();
@@ -575,7 +573,6 @@ public class GameServer {
 
 	        RankUserLoader.getInstance().release();
 
-	        CIPConnectionCounter.getInstance().release();
 	        LoggerInstance.getInstance().flushImmediately();
 	        TileOccupancyNpc.getInstance().destroy();
 	        TileOccupancy.getInstance().destroy();

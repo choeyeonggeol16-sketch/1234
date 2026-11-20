@@ -14,7 +14,12 @@ import l1j.server.server.model.network.core.transport.selector.CSelectorTranspor
 /** The ordinary RKern socket factory over Java TCP readiness and existing CIO owners. */
 public final class CIOServer {
     private final Map<CSelectorTransport.Connection, CSocket> sockets = new HashMap<>();
-    private final Map<InetAddress, Integer> byAddress = new HashMap<>();
+    // A listener restart must account for sessions still logging out from its predecessor.
+    private static final Map<InetAddress, IpAdmissions> IP_ADMISSIONS = new HashMap<>();
+    private static final class IpAdmissions {
+        int live;
+        int retained;
+    }
     private final Map<Long, Integer> byMac = new HashMap<>();
     private final Map<Integer, CSocket> entering = new HashMap<>();
     private final int maxConnections;
@@ -50,21 +55,60 @@ public final class CIOServer {
     private synchronized CSocket register(CSelectorTransport.Connection peer) {
         InetAddress ip = peer.remoteAddress().getAddress();
         if (!(ip instanceof Inet4Address) || sockets.size() >= maxConnections) return null;
-        int current = byAddress.getOrDefault(ip, 0);
-        if (ipLimit > 0 && current >= ipLimit) return null;
-        CSocket socket = new CSocket(this, ++nextId, peer);
-        sockets.put(peer, socket);
-        byAddress.put(ip, current + 1);
-        return socket;
+        synchronized (IP_ADMISSIONS) {
+            IpAdmissions counts = IP_ADMISSIONS.get(ip);
+            if (counts != null && ipLimit > 0 && counts.live >= ipLimit) return null;
+            CSocket socket = new CSocket(this, ++nextId, peer);
+            sockets.put(peer, socket);
+            if (counts == null) {
+                counts = new IpAdmissions();
+                IP_ADMISSIONS.put(ip, counts);
+            }
+            counts.live++;
+            return socket;
+        }
     }
 
     private synchronized CSocket forget(CSelectorTransport.Connection peer) {
         CSocket socket = sockets.remove(peer);
         if (socket == null) return null;
-        decrement(byAddress, peer.remoteAddress().getAddress());
+        InetAddress address = peer.remoteAddress().getAddress();
+        synchronized (IP_ADMISSIONS) {
+            IpAdmissions counts = IP_ADMISSIONS.get(address);
+            counts.live--;
+            removeEmptyAddress(address, counts);
+        }
         if (socket.javaMac != 0) decrement(byMac, socket.javaMac);
         clearAccount(socket);
         return socket;
+    }
+
+    // Both lifetimes share one address entry, but only login cleanup retires its reservation.
+    boolean reserveCleanupIp(CSocket socket, int limit) {
+        if (limit <= 0 || !socket.isOpen()) return false;
+        synchronized (IP_ADMISSIONS) {
+            if (socket.cleanupIpReserved) return false;
+            IpAdmissions counts = IP_ADMISSIONS.get(socket.remoteAddress().getAddress());
+            if (counts == null || counts.retained >= limit) return false;
+            socket.cleanupIpReserved = true;
+            counts.retained++;
+            return true;
+        }
+    }
+
+    void releaseCleanupIp(CSocket socket) {
+        synchronized (IP_ADMISSIONS) {
+            if (!socket.cleanupIpReserved) return;
+            socket.cleanupIpReserved = false;
+            InetAddress address = socket.remoteAddress().getAddress();
+            IpAdmissions counts = IP_ADMISSIONS.get(address);
+            counts.retained--;
+            removeEmptyAddress(address, counts);
+        }
+    }
+
+    private static void removeEmptyAddress(InetAddress address, IpAdmissions counts) {
+        if (counts.live == 0 && counts.retained == 0) IP_ADMISSIONS.remove(address);
     }
 
     synchronized boolean setAccount(CSocket socket, int account) {

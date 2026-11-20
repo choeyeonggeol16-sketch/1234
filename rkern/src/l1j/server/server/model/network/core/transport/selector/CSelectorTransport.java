@@ -233,10 +233,19 @@ public final class CSelectorTransport implements AutoCloseable {
         private final SocketChannel channel;
         private final SelectionKey key;
         private final InetSocketAddress remoteAddress;
-        private final CSelectorRawIo raw;
+        private final boolean raw;
+        // Only the Selector owner can touch an armed operation. Callers retain their leases.
+        private ByteBuffer readTarget;
+        private IntConsumer readCompletion;
+        private ByteBuffer singleWrite;
+        private ByteBuffer[] gather;
+        private int writeOffset;
+        private int writeCount;
+        private long drainBytes;
+        private LongConsumer writeCompletion;
         private CSelectorFrameReader reader;
         private CSelectorSendQueue send;
-        private final CSelectorFrameReader.Handler dispatch = this::dispatch;
+        private final CSelectorFrameReader.Handler dispatch;
         private CPacketCryptor cipher;
         private boolean plaintextNext;
         private boolean inputPaused;
@@ -259,12 +268,13 @@ public final class CSelectorTransport implements AutoCloseable {
             this.owner = owner;
             this.channel = channel;
             remoteAddress = (InetSocketAddress) channel.getRemoteAddress();
-            raw = handler instanceof RawHandler ? new CSelectorRawIo() : null;
-            if (raw == null) {
+            raw = handler instanceof RawHandler;
+            dispatch = raw ? null : this::dispatch;
+            if (!raw) {
                 reader = new CSelectorFrameReader(owner.receivePool);
                 send = new CSelectorSendQueue(owner.sendPool, config.sendBytesPerConnection(), config.sendFramesPerConnection());
             }
-            key = channel.register(owner.selector, raw == null ? SelectionKey.OP_READ : 0, this);
+            key = channel.register(owner.selector, raw ? 0 : SelectionKey.OP_READ, this);
         }
 
         public InetSocketAddress remoteAddress() { return remoteAddress; }
@@ -298,7 +308,9 @@ public final class CSelectorTransport implements AutoCloseable {
             requireRaw();
             if (closed || drainReason != null || owner.stopping) return false;
             if (!target.hasRemaining() || target.isReadOnly()) throw new IllegalArgumentException("READ buffer");
-            raw.armRead(target, Objects.requireNonNull(completion));
+            if (readTarget != null) throw new IllegalStateException("READ already pending");
+            readCompletion = Objects.requireNonNull(completion);
+            readTarget = target;
             updateInterest();
             return true;
         }
@@ -318,17 +330,80 @@ public final class CSelectorTransport implements AutoCloseable {
             owner.requireOwner();
             requireRaw();
             if (closed || drainReason != null || owner.stopping) return false;
-            raw.armWrite(source, sources, offset, count, Objects.requireNonNull(completion));
+            if (writeCompletion != null) throw new IllegalStateException("WRITE already pending");
+            writeCompletion = Objects.requireNonNull(completion);
+            singleWrite = count == 1 ? sources[offset] : source;
+            gather = count == 1 ? null : sources;
+            writeOffset = offset;
+            writeCount = count;
             if (!writeBlocked) owner.schedule(this);
             return true;
         }
 
+        private int readRawReady() throws IOException {
+            if (readTarget == null) return 0;
+            int bytes = channel.read(readTarget);
+            if (bytes != 0) completeRead(bytes);
+            return bytes;
+        }
+
+        private long writeRawReady() throws IOException {
+            if (writeCompletion == null) return 0;
+            long bytes = singleWrite != null ? channel.write(singleWrite) : channel.write(gather, writeOffset, writeCount);
+            if (drainReason != null) {
+                // After the drain starts, the provider owns the remainder of the last request.
+                // Its completion callback cannot register another WRITE to send a partial tail.
+                drainBytes += bytes;
+                if (!hasWriteRemaining()) completeWrite(drainBytes);
+            } else if (bytes != 0) completeWrite(bytes);
+            return bytes;
+        }
+
+        private boolean hasWriteRemaining() {
+            if (singleWrite != null) return singleWrite.hasRemaining();
+            for (int i = writeOffset; i < writeOffset + writeCount; i++) {
+                if (gather[i].hasRemaining()) return true;
+            }
+            return false;
+        }
+
+        private void cancelRawIo() {
+            try {
+                if (readTarget != null) completeRead(-1);
+            } catch (RuntimeException error) {
+                owner.reportCallbackFailure("raw I/O cancellation", error);
+            } finally {
+                try {
+                    if (writeCompletion != null) completeWrite(-1);
+                } catch (RuntimeException error) {
+                    owner.reportCallbackFailure("raw I/O cancellation", error);
+                }
+            }
+        }
+
+        private void completeRead(int bytes) {
+            IntConsumer completion = readCompletion;
+            readTarget = null;
+            readCompletion = null;
+            completion.accept(bytes);
+        }
+
+        private void completeWrite(long bytes) {
+            LongConsumer completion = writeCompletion;
+            singleWrite = null;
+            gather = null;
+            writeOffset = writeCount = 0;
+            drainBytes = 0L;
+            writeCompletion = null;
+            completion.accept(bytes);
+        }
+
         private void requireRaw() {
-            if (raw == null) throw new IllegalStateException("Connection uses the framed transport");
+            if (!raw) throw new IllegalStateException("Connection uses the framed transport");
         }
 
         private void requireFramed() {
-            if (raw != null) throw new IllegalStateException("Connection uses caller-managed buffers");
+            if (raw) throw new IllegalStateException("Connection uses caller-managed buffers");
         }
 
         /** A successful publish will run or cancel on this owner. A false return leaves ownership with the caller. */
@@ -388,14 +463,14 @@ public final class CSelectorTransport implements AutoCloseable {
             return true;
         }
 
-        public int pendingSendBytes() { owner.requireOwner(); return closed || raw != null ? 0 : send.pendingBytes(); }
+        public int pendingSendBytes() { owner.requireOwner(); return closed || raw ? 0 : send.pendingBytes(); }
 
         public void pauseReads(boolean paused) {
             owner.requireOwner();
             inputPaused = paused;
             if (!closed) {
                 updateInterest();
-                if (raw == null && canRead() && reader.hasBufferedFrame()) owner.schedule(this);
+                if (!raw && canRead() && reader.hasBufferedFrame()) owner.schedule(this);
             }
         }
 
@@ -433,10 +508,10 @@ public final class CSelectorTransport implements AutoCloseable {
             if (closed) return;
             try {
                 if ((operations & SelectionKey.OP_WRITE) != 0) writeBlocked = false;
-                if (raw != null) {
-                    if (canRead() && (operations & SelectionKey.OP_READ) != 0 && raw.read(channel) < 0)
+                if (raw) {
+                    if (canRead() && (operations & SelectionKey.OP_READ) != 0 && readRawReady() < 0)
                         beginDrain(CloseReason.REMOTE_EOF);
-                    if (!closed && !writeBlocked && raw.writing()) rawFlush();
+                    if (!closed && !writeBlocked && writeCompletion != null) rawFlush();
                     finishTurn();
                     return;
                 }
@@ -460,14 +535,14 @@ public final class CSelectorTransport implements AutoCloseable {
                 return;
             }
             updateInterest();
-            if ((!writeBlocked && hasWrites()) || (raw == null && canRead() && reader.hasBufferedFrame()))
+            if ((!writeBlocked && hasWrites()) || (!raw && canRead() && reader.hasBufferedFrame()))
                 owner.schedule(this);
         }
 
-        private boolean hasWrites() { return raw == null ? !send.isEmpty() : raw.writing(); }
+        private boolean hasWrites() { return raw ? writeCompletion != null : !send.isEmpty(); }
 
         private void rawFlush() throws IOException {
-            long written = raw.write(channel, drainReason != null);
+            long written = writeRawReady();
             if (!closed) recordWrite(written);
         }
 
@@ -503,7 +578,7 @@ public final class CSelectorTransport implements AutoCloseable {
         private boolean canRead() { return !closed && drainReason == null && !inputPaused && !sendPressure; }
 
         private void updateInterest() {
-            int interests = canRead() && (raw == null || raw.reading()) ? SelectionKey.OP_READ : 0;
+            int interests = canRead() && (!raw || readTarget != null) ? SelectionKey.OP_READ : 0;
             if (writeBlocked) interests |= SelectionKey.OP_WRITE;
             if (key.interestOps() != interests) key.interestOps(interests);
         }
@@ -549,7 +624,7 @@ public final class CSelectorTransport implements AutoCloseable {
                 cipher = null;
                 try {
                     try {
-                        if (raw != null) raw.cancel(owner.reportRawCancellation);
+                        if (raw) cancelRawIo();
                         else inbound.close();
                     } finally {
                         try { if (outbound != null) outbound.close(); }
@@ -659,8 +734,6 @@ public final class CSelectorTransport implements AutoCloseable {
         private final DeadlineHeap deadlines = new DeadlineHeap(false);
         private final ByteBuffer[] gather = new ByteBuffer[GATHER_LIMIT];
         private final Consumer<SelectionKey> collector = this::collect;
-        private final Consumer<RuntimeException> reportRawCancellation =
-                error -> reportCallbackFailure("raw I/O cancellation", error);
         private CSelectorBufferPool receivePool;
         private CSelectorBufferPool sendPool;
         private volatile boolean stopping;

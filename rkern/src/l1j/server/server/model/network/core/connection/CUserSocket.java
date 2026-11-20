@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PssConfig;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PlaySupport2019;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.ClientAutomationSession;
-import java.net.InetAddress;
 import java.util.Collection;
 import l1j.server.server.Account;
 import l1j.server.server.ThreadPool;
@@ -37,7 +36,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.shop.PlayerShopView;
-import l1j.server.server.model.network.client.manager.CIPConnectionCounter;
 import l1j.server.server.model.network.packet.CBytesPacket;
 import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRAFT_LIST_ALL_ACK;
@@ -194,13 +192,10 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     // Zero for ordinary graceful close; a denial retains its original grace.
     // The WRITE completion and native deadline inspect this under _stateLock.
     private long _closeNotBeforeNs;
-    interface NetworkDeadline {
-        boolean scheduleEarlier(long delayMs);
-    }
-    private volatile NetworkDeadline _networkDeadline;
+    private volatile boolean deadlinesConfigured;
 
     public void configureTransportDeadlines(boolean loginTimeout) {
-        _networkDeadline=_channel::requestDeadline;
+        deadlinesConfigured = true;
         if(!_channel.configureDeadlines(loginTimeout?CIOConfig.LOGIN_TIMEOUT_MS:0))throw new IllegalStateException("Network deadline admission failed");
     }
     public void onAccountChanged(l1j.server.server.Account account){
@@ -310,14 +305,14 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     private static final int SOCKET_SLOTS = 512;
     private static final int SOCKET_MASK = SOCKET_SLOTS - 1;
     private static final int SOCKET_REJECT_AT = SOCKET_SLOTS - 8;
-    private static final long SOCKET_SEND_START = 1L;
-    private static final long SOCKET_WRITE_COMPLETE = 2L;
-    private static final long SOCKET_SEND_ENQUEUE = 3L;
-    private static final long SOCKET_CANCELLED = 4L;
+    private static final byte SOCKET_SEND_START = 1;
+    private static final byte SOCKET_WRITE_COMPLETE = 2;
+    private static final byte SOCKET_SEND_ENQUEUE = 3;
+    private static final byte SOCKET_CANCELLED = 4;
     // The existing serializer ring can carry an 8-byte action in one long.
     // No SEND lease is rented while an earlier foreign producer ticket is unsealed.
-    private static final long SOCKET_PACKED_ACTION = 5L;
-    private final long[] _socketCallbacks = new long[SOCKET_SLOTS];
+    private static final byte SOCKET_PACKED_ACTION = 5;
+    private final byte[] _socketCallbacks = new byte[SOCKET_SLOTS];
     private final long[] _socketArguments = new long[SOCKET_SLOTS];
     private final CIOBufferEx[] _socketSendArguments = new CIOBufferEx[SOCKET_SLOTS];
 
@@ -370,17 +365,18 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     // 0=empty, 1=failure, >=2=successful completion (transferred bytes + 2).
     // This keeps _readPending and zero-completion handling off foreign I/O threads.
     private volatile int _readEvent;
-    private static final VarHandle CLOSED, CLOSE_NOTIFIED, READ_KICK, READ_ACTIVE,
+    private static final VarHandle CLOSED, CLOSE_NOTIFIED, LIFECYCLE, READ_KICK, READ_ACTIVE,
             WRITE_EVENT, READ_EVENT, SOCKET_TICKET, SOCKET_PENDING, SOCKET_DRAINING,
             SOCKET_START_PENDING,
             DISCONNECTING, CLOSING, ON_DRAINED, PARTIAL_READ_STARTED;
-    private static final VarHandle SOCKET_CALLBACK_SLOT = MethodHandles.arrayElementVarHandle(long[].class);
+    private static final VarHandle SOCKET_CALLBACK_SLOT = MethodHandles.arrayElementVarHandle(byte[].class);
     private static final VarHandle SOCKET_ARGUMENT_SLOT = MethodHandles.arrayElementVarHandle(long[].class);
     static {
         try {
             final MethodHandles.Lookup lookup = MethodHandles.lookup();
             CLOSED = lookup.findVarHandle(CUserSocket.class, "_closed", int.class);
             CLOSE_NOTIFIED = lookup.findVarHandle(CUserSocket.class, "_closeNotified", int.class);
+            LIFECYCLE = lookup.findVarHandle(CUserSocket.class, "socketLifecycle", int.class);
             SOCKET_TICKET = lookup.findVarHandle(CUserSocket.class, "_socketTicket", long.class);
             SOCKET_PENDING = lookup.findVarHandle(CUserSocket.class, "_socketPending", int.class);
             SOCKET_DRAINING = lookup.findVarHandle(CUserSocket.class, "_socketDraining", int.class);
@@ -724,6 +720,13 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
     // Native completion publishes into the existing READ pump, without a
     // JDK asynchronous channel or provider adapter.
+    public boolean isTransportReadPending() { return _readPending; }
+
+    public boolean isTransportWritePending() {
+        CIOBufferEx writing = _writing;
+        return writing != null && writing._ioPending;
+    }
+
     public void transportReadCompleted(int bytes) { publishReadCompletion(bytes); }
 
     private void publishReadCompletion(int bytes) {
@@ -825,7 +828,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if (_writing == null || !_writing._ioPending || _closed != 0
                 || (int) SOCKET_PENDING.getVolatile(this) <= active) return false;
         final int slot = (int) _socketHead & SOCKET_MASK;
-        return (long) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, slot) == 0L;
+        return (byte) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, slot) == 0L;
     }
 
     /**
@@ -969,20 +972,12 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     public CUserSocket(CSocket channel, CIOBufferPool pool,
                          CIOThreadCallback scheduler, String remoteAddress,
                          int affinityShard, int maxQueuedFrames, Closed closedCallback) {
-        this(channel, pool, scheduler, remoteAddress, affinityShard, maxQueuedFrames, closedCallback, false, false);
+        this(channel, pool, scheduler, remoteAddress, affinityShard, maxQueuedFrames, closedCallback, false);
     }
 
     public CUserSocket(CSocket channel, CIOBufferPool pool,
                          CIOThreadCallback scheduler, String remoteAddress,
-                         int affinityShard, int maxQueuedFrames, Closed closedCallback,
-                         boolean ipReservationCounted) {
-        this(channel, pool, scheduler, remoteAddress, affinityShard, maxQueuedFrames, closedCallback, true, ipReservationCounted);
-    }
-
-    private CUserSocket(CSocket channel, CIOBufferPool pool,
-                         CIOThreadCallback scheduler, String remoteAddress,
-                         int affinityShard, int maxQueuedFrames, Closed closedCallback,
-                         boolean gameSession, boolean ipReservationCounted) {
+                         int affinityShard, int maxQueuedFrames, Closed closedCallback, boolean gameSession) {
         if (channel == null || pool == null || scheduler == null
                 || affinityShard < 0 || affinityShard >= scheduler.shardCount()
                 || maxQueuedFrames < 1)
@@ -994,7 +989,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         _closedCallback = closedCallback;
         _maxQueuedFrames = maxQueuedFrames;
         _gameSession = gameSession;
-        _ipReservationCounted = ipReservationCounted;
         _channel.bindUserSocketOwner(this);
     }
 
@@ -1002,10 +996,17 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
 
 
-    private final java.util.concurrent.atomic.AtomicBoolean closeStarted = new java.util.concurrent.atomic.AtomicBoolean();
-    private volatile boolean clientCleanupComplete;
+    private static final int CLOSE_STARTED = 1, CLEANUP_COMPLETE = 2, SERVER_DRAIN_REPORTED = 4, LOGOUT_STARTED = 8;
+    private volatile int socketLifecycle;
+
+    private boolean markLifecycle(int event) {
+        return ((int) LIFECYCLE.getAndBitwiseOr(this, event) & event) == 0;
+    }
+
+    boolean markServerDrainReported() { return markLifecycle(SERVER_DRAIN_REPORTED); }
+    boolean isServerDrainReported() { return (socketLifecycle & SERVER_DRAIN_REPORTED) != 0; }
     public void onTransportClosing() {
-        if (!closeStarted.compareAndSet(false, true)) return;
+        if (!markLifecycle(CLOSE_STARTED)) return;
         if (_gameSession) {
             _gameSessionReady = false;
             playerShopView = null;
@@ -1015,14 +1016,13 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             catch (Throwable failure) { LOG.log(Level.WARNING, "User-socket closing observer failed", failure); }
         }
     }
-    public boolean isCloseStarted() { return closeStarted.get(); }
     public void onTransportTerminated() {
         close(false);
         notifyClosedWhenReleased();
     }
-    public boolean isClientCleanupComplete() { return clientCleanupComplete; }
+    public boolean isClientCleanupComplete() { return (socketLifecycle & CLEANUP_COMPLETE) != 0; }
     public void onClientCleanupComplete() {
-        clientCleanupComplete = true;
+        if (!markLifecycle(CLEANUP_COMPLETE)) return;
         if (_closedCallback != null) {
             try { _closedCallback.onCleanupComplete(this); }
             catch (Throwable failure) { LOG.log(Level.WARNING, "User-socket cleanup observer failed", failure); }
@@ -1088,7 +1088,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         close();
         return false;
     }
-    public boolean isJavaTransport() { return true; }
     public boolean isTransportOwnerThread() { return _channel.currentOwner() >= 0; }
 
     public CAsyncSendConstBuffer.Source createConstBuffer(byte[] wire) {
@@ -1171,7 +1170,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     public void requestClientCloseAfter(long delayMs) {
         if (delayMs < 0L || delayMs > 30_000L)
             throw new IllegalArgumentException("close grace must be between 0 and 30000 ms");
-        final NetworkDeadline deadline;
+        final boolean deadlineConfigured;
         final boolean publish;
         _stateLock.lock();
         try {
@@ -1181,18 +1180,16 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             _gracefulCloseStartedNs = now;
             _closeNotBeforeNs = now + TimeUnit.MILLISECONDS.toNanos(delayMs);
             publish = publishProducerLeaseLocked();
-            deadline = _networkDeadline;
+            deadlineConfigured = deadlinesConfigured;
             CLOSING.setRelease(this, 2);
         } finally { _stateLock.unlock(); }
         if (publish) drainSocketCallbacks();
         flushSendBurst();
         kickWrite();
         onSendProgress();
-        // Reuse the already installed weak-reference task. Bring its normal
-        // 5-second check forward only when this grace period requires it.
+        // Bring the existing Selector deadline forward for this grace period.
         // Failed deadline admission must not leave an orphaned denied peer.
-        if (_closed == 0 && (deadline == null
-                || !deadline.scheduleEarlier(Math.max(1L, delayMs)))) close();
+        if (_closed == 0 && (!deadlineConfigured || !_channel.requestDeadline(Math.max(1L, delayMs)))) close();
     }
 
     public boolean beginClientDisconnect() {
@@ -1204,10 +1201,8 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     }
 
     public void finishClientDisconnect() { close(); }
-    public int drainOnOwner() { return 0; }
     public void onSendDrainedOwner() { onSendProgress(); }
     public boolean hasDrainWorkOnOwner() { return getEstimateQueueSize() != 0; }
-    public void requestDrain() { /* WRITE completion pump owns the drain. */ }
 
     public boolean whenWriteDrained(Runnable callback) {
         if (callback == null || _closed != 0) return false;
@@ -1487,7 +1482,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                             _stagedPacketLastTicket = _stagedPacketFirstTicket;
                             if (_stagedSends >= Math.max(8, _maxQueuedFrames >>> 2)) {
                                 compactReadyStagedPacketsLocked();
-                                packed = (long) SOCKET_CALLBACK_SLOT.getAcquire(
+                                packed = (byte) SOCKET_CALLBACK_SLOT.getAcquire(
                                         _socketCallbacks, slot) == SOCKET_CANCELLED;
                             }
                         }
@@ -1676,7 +1671,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         for (long ticket = start; ticket < end; ++ticket) {
             if (ticket < _socketHead) { first = null; continue; }
             final int slot = (int) ticket & SOCKET_MASK;
-            final long kind = (long) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, slot);
+            final long kind = (byte) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, slot);
             if (kind == SOCKET_CANCELLED) continue;
             if (kind != SOCKET_SEND_ENQUEUE) { first = null; continue; }
             final CIOBufferEx next = _socketSendArguments[slot];
@@ -1974,7 +1969,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                 || !lease.reserved() || !lease._actionOnly
                 || lease._packedFrames || lease._frameCount != 1
                 || lease.writer().position() != 8
-                || (long) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, slot)
+                || (byte) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, slot)
                         != SOCKET_SEND_ENQUEUE)
             return false;
         if (!SOCKET_DRAINING.compareAndSet(this, 0, 1)) return false;
@@ -2001,7 +1996,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         final int slot = (int) _socketHead & SOCKET_MASK;
         final CIOBufferEx lease = _socketSendArguments[slot];
         if (lease == null || lease != _stagedBurstAction
-                || (long) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, slot)
+                || (byte) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, slot)
                         != SOCKET_SEND_ENQUEUE)
             return null;
         --_stagedSends;
@@ -2014,7 +2009,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         _stagedBurstAction = null;
         _socketSendArguments[slot] = null;
         SOCKET_ARGUMENT_SLOT.setRelease(_socketArguments, slot, 0L);
-        SOCKET_CALLBACK_SLOT.setRelease(_socketCallbacks, slot, 0L);
+        SOCKET_CALLBACK_SLOT.setRelease(_socketCallbacks, slot, (byte) 0);
         ++_socketHead;
         lease._ioPending = true;
         return lease;
@@ -2304,7 +2299,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                         _stagedPacketLastTicket = ticket;
                         if (_stagedSends >= Math.max(8, _maxQueuedFrames >>> 2)) {
                             compactReadyStagedPacketsLocked();
-                            packed = (long) SOCKET_CALLBACK_SLOT.getAcquire(
+                            packed = (byte) SOCKET_CALLBACK_SLOT.getAcquire(
                                     _socketCallbacks, slot) == SOCKET_CANCELLED;
                         }
                     }
@@ -3003,12 +2998,10 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         _readPending = true;
 
         try {
-            _channel.read(recv, this);
+            _channel.read(recv);
         } catch (Throwable t) {
             _readPending = false;
             close();
-        } finally {
-
         }
     }
 
@@ -3071,7 +3064,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             if (_closed != 0 || javaReadScheduled) return;
             javaReadScheduled = true;
         } finally { _stateLock.unlock(); }
-        if (!_channel.postCompletion(this)) cancel();
+        if (!_channel.scheduleReadPump()) cancel();
     }
 
     private void clearJavaReadSchedule() {
@@ -3357,7 +3350,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         }
     }
 
-    private boolean serializeSocketCallback(long kind, long argument) {
+    private boolean serializeSocketCallback(byte kind, long argument) {
         if (canExecuteOwnerControlDirect()) {
             if (kind == SOCKET_SEND_START) driveWriteOnce();
             else if (kind == SOCKET_WRITE_COMPLETE
@@ -3431,7 +3424,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                 final int pending = (int) SOCKET_PENDING.getVolatile(this);
                 final int slot = (int) _socketHead & SOCKET_MASK;
                 final long kind = pending == 0 ? 0L
-                        : (long) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, slot);
+                        : (byte) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, slot);
                 // Consume a completed on-wire WRITE only at an empty or
                 // unpublished FIFO head. Published earlier tickets still run
                 // in order. No WRITE_COMPLETE ticket exists for this event,
@@ -3453,7 +3446,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                         ? _socketSendArguments[slot] : null;
                 _socketSendArguments[slot] = null;
                 SOCKET_ARGUMENT_SLOT.setRelease(_socketArguments, slot, 0L);
-                SOCKET_CALLBACK_SLOT.setRelease(_socketCallbacks, slot, 0L);
+                SOCKET_CALLBACK_SLOT.setRelease(_socketCallbacks, slot, (byte) 0);
                 ++_socketHead;
                 // An on-send-progress callback can reenter this owner drain.
                 // Preserve the surrounding ticket's posting/inline state.
@@ -3538,7 +3531,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                     && (int) SOCKET_START_PENDING.getAcquire(this) != 0
                     && (pending == 0 || hasCommittedWriteReady());
             final boolean callbackReady = pending != 0
-                    && (long) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, nextSlot) != 0L;
+                    && (byte) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, nextSlot) != 0L;
             // A foreign completion may publish the prefix after this owner
             // checked the blocked head but before it released its token.
             // Reacquire rather than losing the sole completion notification.
@@ -3666,7 +3659,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
             _socketPosting = true;
             try {
-                _channel.write(_gatherBuffers, _gatherOffset, _gatherCount - _gatherOffset, this);
+                _channel.write(_gatherBuffers, _gatherOffset, _gatherCount - _gatherOffset);
             } finally {
                 _socketPosting = false;
 
@@ -3772,7 +3765,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
             _socketPosting = true;
             try {
-                _channel.write(bytes, this);
+                _channel.write(bytes);
             } finally {
                 _socketPosting = false;
 
@@ -3885,11 +3878,15 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         } finally { _stateLock.unlock(); }
         if (!CLOSE_NOTIFIED.compareAndSet(this, 0, 1)) return;
         clearCipher();
-        if (_closedCallback != null) {
-            try {
-                _closedCallback.onClosed(this);
-            } catch (Throwable ignored) {
-                // Never retain a closed socket when a lifecycle observer fails.
+        try {
+            if (_gameSession) onTransportClosed();
+        } finally {
+            if (_closedCallback != null) {
+                try {
+                    _closedCallback.onClosed(this);
+                } catch (Throwable ignored) {
+                    // Never retain a closed socket when a lifecycle observer fails.
+                }
             }
         }
     }
@@ -3905,7 +3902,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             try { LOG.log(Level.WARNING, "[CIO CLOSE] session cleanup failed", failure); }
             catch (Throwable ignored) { /* continue closing */ }
         }
-        _networkDeadline = null;
+        deadlinesConfigured = false;
         // Failure-only report, outside state-lock/serializer ownership. A
         // rejected frame can be the cause of this disconnect, but is not
         // treated as proof: the peer may have closed for a different reason.
@@ -3928,7 +3925,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             } finally { _stateLock.unlock(); }
             final long head = _socketHead;
             final Thread owner = _socketOwner;
-            final long headKind = (long) SOCKET_CALLBACK_SLOT.getAcquire(
+            final long headKind = (byte) SOCKET_CALLBACK_SLOT.getAcquire(
                     _socketCallbacks, (int) head & SOCKET_MASK);
             LOG.warning("[CIO SEND] closing socket after rejection reason=" + reject
                     + " remote=" + _remoteAddress
@@ -4050,7 +4047,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
 
 
-	private final boolean _ipReservationCounted;
 
 	private volatile int _packetShard = -1;
 
@@ -4075,14 +4071,8 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     private volatile boolean _gameSessionReady;
 	private int chatCount;
 
-	private volatile int _sessionLogoutStarted;
-    private static final AtomicIntegerFieldUpdater<CUserSocket> SESSION_LOGOUT_STARTED =
-            AtomicIntegerFieldUpdater.newUpdater(CUserSocket.class, "_sessionLogoutStarted");
-    // Shutdown must not dispose a PC until its network packet has finished and
-    // the asynchronous logout cleanup has also completed.
-    private volatile boolean logoutComplete;
-
-    public boolean isLogoutComplete() { return logoutComplete; }
+    // Shutdown may dispose the PC only after network drain and asynchronous cleanup.
+    public boolean isLogoutComplete() { return isClientCleanupComplete(); }
 	
 
 	private int _packetCount = 0;
@@ -4130,18 +4120,19 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
 
     /** Terminal packet/I/O drain starts one deferred L1 logout operation. */
-    public void onTransportClosed() {
+    private void onTransportClosed() {
         if (!isCloseComplete())
             throw new IllegalStateException("logout before transport/packet drain");
         _gameSessionReady = false;
-		if (!SESSION_LOGOUT_STARTED.compareAndSet(this, 0, 1)) {
+		if (!markLifecycle(LOGOUT_STARTED)) {
 			// 종료 과정에서는 여러 경로에서 close()가 재진입할 수 있으므로 로그 도배 방지
 			LOG.fine(String.format(
 					"[GameClient Close Dup] 이미 close 처리 중인 클라이언트 - IP: %s", getIp()));
 			return;
 		}
 
-        PlaySupport2019.onClientDetached(this);
+        try { PlaySupport2019.onClientDetached(this); }
+        catch (RuntimeException failure) { LOG.log(Level.WARNING, "Session detach failed during close", failure); }
         automationSession = null;
 		final L1PcInstance pc = _activeChar;
 
@@ -4173,17 +4164,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
 
 	private void cleanupAfterLogout(L1PcInstance pc) {
-		try {
-			if (_ipReservationCounted && _remoteAddress != null
-					&& !_remoteAddress.isEmpty()
-					&& !_remoteAddress.equals("0.0.0.0")) {
-
-				CIPConnectionCounter.getInstance()
-						.decrease(InetAddress.getByName(_remoteAddress));
-			}
-		} catch (Exception e) {
-			LOG.log(Level.WARNING, "CIPConnectionCounter decrease 예외 발생", e);
-		}
+		_channel.releaseCleanupIp();
 
 		try {
 			LoginController.getInstance().logout(this);
@@ -4213,10 +4194,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 		} finally {
             // Hybrid handoff is allowed only after full logout/session removal.
             try { DominationHybrid.onClientClosed(this); }
-            finally {
-                logoutComplete = true;
-                onClientCleanupComplete();
-            }
+            finally { onClientCleanupComplete(); }
 		}
 	}
 
@@ -4380,7 +4358,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 	}
 
 	public boolean isConnected() {
-		return _gameSession && isClientConnected() && _sessionLogoutStarted == 0;
+		return _gameSession && isClientConnected() && (socketLifecycle & LOGOUT_STARTED) == 0;
 	}
 
 	public boolean isClosed() {
@@ -4549,12 +4527,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 	// 현재 클라이언트의 연결 상태 (기본값: 최초 접속인 CONNECTED)
 	private volatile CConnectionState _connectionState = CConnectionState.CONNECTED;
 
-	// 소켓이 생성된 절대 시간 기록
-	private final long _connectionTime = System.currentTimeMillis();
-
-	// 로그인 전 대기 허용 시간 (1분)
-	private static final long PRE_LOGIN_TIMEOUT = 60_000L;
-
 	public CConnectionState getConnectionState() {
 		return _connectionState;
 	}
@@ -4568,24 +4540,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 		_connectionState = connectionState;
         onSessionStateChanged(connectionState);
 	}
-
-	public boolean checkPreLoginTimeout() {
-		if (_connectionState == CConnectionState.IN_GAME || _connectionState == CConnectionState.AUTHENTICATED
-				|| _connectionState == CConnectionState.OUT_GAME || _connectionState == CConnectionState.DISCONNECTED) {
-			return false;
-		}
-		return System.currentTimeMillis() - _connectionTime > PRE_LOGIN_TIMEOUT;
-	}
-
-    // Existing CIO wheel accepts this session directly as the one-shot login task.
-    // No dedicated LoginTimeout wrapper is allocated on every ACCEPT.
-    public boolean isLoginTimeoutCancelled() {
-        return !isConnected() || isLoggedIn();
-    }
-
-    public void runLoginTimeout() {
-        if (!isLoginTimeoutCancelled() && checkPreLoginTimeout()) disconnect();
-    }
 
 	public boolean isLoggedIn() {
 		return _connectionState == CConnectionState.IN_GAME || _connectionState == CConnectionState.AUTHENTICATED
