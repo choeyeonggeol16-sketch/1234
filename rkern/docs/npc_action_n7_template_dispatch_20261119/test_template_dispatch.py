@@ -18,7 +18,7 @@ oldcalls=re.findall(r'return (Npc\w+\.\w+\([^;]+\));',orig)
 for c in oldcalls:
     assert c in new or any(c in (p/n).read_text() for n in ['NpcGameEventActions.java','NpcExchangeCommands.java']), c
 assert not any('CS_NpcAcion2' in f.read_text() for f in (root/'src').rglob('*.java'))
-assert 'NpcTemplateCommands.dispatch(pc, obj, s, htmlid)' in (p/'HtmlCmdHandler.java').read_text()
+assert 'NpcTemplateCommands.dispatch(pc, obj, s, htmlid)' in (p/'NpcEventHtmlCommands.java').read_text()
 # Actual source methods extracted without substitutions; compile with typed stubs.
 def extract(file,name):
     s=(p/file).read_text(); start=s.index('    static String '+name+'('); a=s.index('{',start); depth=1; i=a+1

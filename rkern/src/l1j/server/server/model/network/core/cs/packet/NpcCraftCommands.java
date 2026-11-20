@@ -18,6 +18,14 @@ final class NpcCraftCommands {
     private static final Logger LOG = Logger.getLogger(NpcCraftCommands.class.getName());
     private NpcCraftCommands() {}
 
+    /** Read-only vectors shared by the HTML recipes that use unit quantities. */
+    static final class UnitCounts {
+        static final int[] ONE = {1};
+        static final int[] TWO_ITEMS = {1, 1};
+
+        private UnitCounts() {}
+    }
+
     static void execute(L1PcInstance pc, L1Object target, int objid,
             int[] materials, int[] counts, int[] rewards, int[] rewardCounts,
             String success, String failure, String tail, String[] data) {

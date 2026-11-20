@@ -27,5 +27,8 @@ public class Check {
 }'''
 with tempfile.TemporaryDirectory() as d:
  f=Path(d)/'Check.java';f.write_text(java);subprocess.run(['javac','--release','21','-encoding','UTF-8',str(f)],check=True);subprocess.run(['java','-cp',d,'Check'],check=True)
-h=(p/'HtmlCmdHandler.java').read_text();assert h.index('if (dispatchRegisteredAction(pc, obj, s, actionData)) return;')<h.index('if (!(obj instanceof L1NpcInstance)) return;',h.index('if (dispatchRegisteredAction(pc, obj, s, actionData)) return;'))<h.index('NpcCastleActions.sendTaxScreens(pc, obj, s);');assert re.search(r'getClan\(pc.getClanid\(\)\);\s*if \(clan == null\) return;\s*int houseId',h);assert 'clan != null && clan.getCastleId() != 0' in h
+h=(p/'HtmlCmdHandler.java').read_text();assert h.index('if (dispatchRegisteredAction(pc, obj, s, actionData)) return;')<h.index('if (!(obj instanceof L1NpcInstance)) return;',h.index('if (dispatchRegisteredAction(pc, obj, s, actionData)) return;'))<h.index('NpcCastleActions.sendTaxScreens(pc, obj, s);')
+commands='\n'.join(f.read_text() for f in p.glob('Npc*HtmlCommands.java'))
+assert re.search(r'getClan\(pc.getClanid\(\)\);\s*if \(clan == null\) return;\s*int houseId',commands)
+assert 'clan != null && clan.getCastleId() != 0' in commands
 print('PASS action target, clan and tax guard order (static)')
