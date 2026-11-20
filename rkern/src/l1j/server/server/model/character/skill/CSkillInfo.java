@@ -43,6 +43,11 @@ public final class CSkillInfo {
         registerManaged(N_BUFF_ALL_RESIST, SkillHandlers::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
         registerManaged(DRESS_MIGHTY, SkillHandlers::startDressStatBuff, PRIMARY_STATS);
         registerManaged(DRESS_DEXTERITY, SkillHandlers::startDressStatBuff, PRIMARY_STATS);
+        registerManaged(DRESS_EVASION, SkillHandlers::startEvasionBuff, ER);
+        registerManaged(AQUA_PROTECTER, SkillHandlers::startEvasionBuff, ER);
+        registerManaged(SOLID_CARRIAGE, SkillHandlers::startEvasionBuff, ER);
+        registerManaged(SCALES_WATER_DRAGON, SkillHandlers::startScalesEvasion, ER);
+        registerManaged(SCALES_RINDVIOR_DRAGON, SkillHandlers::startScalesEvasion, DG);
         frozen = true;
     }
 

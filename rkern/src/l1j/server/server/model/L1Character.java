@@ -167,6 +167,8 @@ public class L1Character extends L1Object {
 	private int _characterDG = 0;
 	private int _effectedER = 0;
 	private int _characterER = 0;
+	// ER in the low half, DG in the high half.
+	private volatile int pumpedEvasion;
 
 	public void addDg(int i) {
 		_effectedDG += i;
@@ -179,7 +181,7 @@ public class L1Character extends L1Object {
 	}
 
 	public int getDg() {
-		return _effectedDG + _characterDG;
+		return _effectedDG + _characterDG + (pumpedEvasion >> 16);
 	}
 
 	public boolean setCharacterER(int i) {
@@ -202,7 +204,7 @@ public class L1Character extends L1Object {
 	}
 
 	public int getEffectedER() {
-		return _effectedER;
+		return _effectedER + (short) pumpedEvasion;
 	}
 
 	public void addEffectedER(int i) {
@@ -718,7 +720,7 @@ public class L1Character extends L1Object {
 	private volatile long pumpedHpMp;
 
 	public void setPumpedSkillModifiers(int hp, int mp, int ac, int mr,
-			int primaryStats, int elementalResistance, boolean notify) {
+			int primaryStats, int elementalResistance, int evasion, boolean notify) {
 		final long previous = pumpedHpMp;
 		final long updated = ((long) mp << 32) | Integer.toUnsignedLong(hp);
 		if (previous != updated) {
@@ -730,6 +732,7 @@ public class L1Character extends L1Object {
 		getResistance().setSkillMr(mr);
 		getAbility().setSkillPrimaryStats(primaryStats, notify);
 		getResistance().setSkillElemental(elementalResistance);
+		if (pumpedEvasion != evasion) pumpedEvasion = evasion;
 	}
 
 	public int getMaxHp() {

@@ -2145,7 +2145,7 @@ public final class SkillStopHandlers {
 	private static StopResult offDressEvasion(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.addEffectedER(-18);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
 	        SC_OwnCharStatus.send(pc);
 	        sendEndNotiMsgOnly(pc, L1SkillId.DRESS_EVASION, 2203, true);
@@ -2156,7 +2156,7 @@ public final class SkillStopHandlers {
 	private static StopResult offAquaProtecter(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.addEffectedER(-5);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
 	        sendEndNotiMsgOnly(pc, L1SkillId.AQUA_PROTECTER, 2201, true);
 	    }
@@ -2169,7 +2169,7 @@ public final class SkillStopHandlers {
 
 	        sendEndNotiMsgOnly(pc, L1SkillId.SOLID_CARRIAGE, 2203, true);
 
-	        pc.addEffectedER(-15);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
 	        SC_OwnCharStatus.send(pc);
 	    }
@@ -2365,7 +2365,7 @@ public final class SkillStopHandlers {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
 
-	        pc.addEffectedER(-10);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
 
 	        sendScalesEndNoti(pc, L1SkillId.SCALES_WATER_DRAGON, 3184, 2424, true);
@@ -2377,7 +2377,7 @@ public final class SkillStopHandlers {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
 
-	        pc.addDg(-10);
+	        pc.removeSkillModifierFromOwner(skillId);
 
 	        sendScalesEndNoti(pc, L1SkillId.SCALES_RINDVIOR_DRAGON, 8887, 5271, true);
 	    }

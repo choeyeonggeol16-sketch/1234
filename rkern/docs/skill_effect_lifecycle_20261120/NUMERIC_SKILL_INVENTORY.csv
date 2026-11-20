@@ -54,7 +54,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 87,SHOCK_STUN,onShockStun,existing_cast,offStunFamily
 88,REDUCTION_ARMOR,onReductionArmor,existing_cast,offReductionArmor
 89,BOUNCE_ATTACK,onBounceAttack,existing_cast,offBounceAttack
-90,SOLID_CARRIAGE,onSolidCarriage,existing_cast,offSolidCarriage
+90,SOLID_CARRIAGE,startEvasionBuff,managed_pump,offSolidCarriage
 91,COUNTER_BARRIER,,stop_only,offCounterBarrierLegacy
 92,ABSOLUTE_BLADE,onAbsoluteBlade,existing_cast,offAbsoluteBlade
 93,PRIDE,startScaledHp,managed_pump,offScaledHp
@@ -69,7 +69,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 107,SHADOW_FANG,onShadowFang,existing_cast,offShadowFang
 109,DRESS_MIGHTY,startDressStatBuff,managed_pump,offDressMighty
 110,DRESS_DEXTERITY,startDressStatBuff,managed_pump,offDressDexterity
-111,DRESS_EVASION,onDressEvasion,existing_cast,offDressEvasion
+111,DRESS_EVASION,startEvasionBuff,managed_pump,offDressEvasion
 112,ARMOR_BRAKE,,stop_only,offArmorBrake
 113,TRUE_TARGET,onTrueTarget,existing_cast,offTrueTarget
 114,GLOWING_AURA,onGlowingWeapon,existing_cast,offGlowingWeapon
@@ -102,7 +102,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 157,EARTH_BIND,onEarthBind,existing_cast,offEarthBindBasillCoca
 158,NATURES_TOUCH,onHealFamily,instant,
 159,EARTH_GUARDIAN,onEarthGuardian,existing_cast,offEarthGuardian
-160,AQUA_PROTECTER,onAquaProtecter,existing_cast,offAquaProtecter
+160,AQUA_PROTECTER,startEvasionBuff,managed_pump,offAquaProtecter
 161,AREA_OF_SILENCE,onAreaOfSilenceSound,existing_cast,
 162,GREATER_ELEMENTAL,onElementalSummon,existing_cast,
 163,BURNING_WEAPON,onBurningWeapon,existing_cast,offBurningWeapon
@@ -120,12 +120,12 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 186,BLOOD_LUST,onBloodLust,existing_cast,offBraveSpeedReset
 187,FOU_SLAYER,onFouSlayer,existing_cast,
 188,FEAR,onFear,existing_cast,offFear
-190,SCALES_WATER_DRAGON,onScalesWaterDragon,existing_cast,offScalesWaterDragon
+190,SCALES_WATER_DRAGON,startScalesEvasion,managed_pump,offScalesWaterDragon
 192,THUNDER_GRAB,onThunderGrab,existing_cast,offThunderGrab
 193,HORROR_OF_DEATH,onHorrorOfDeath,existing_cast,offHorrorOfDeath
 194,EYE_OF_DRAGON,onDetectionLike,existing_cast,
 195,SCALES_FIRE_DRAGON,onScalesFireDragon,existing_cast,offScalesFireDragon
-197,SCALES_RINDVIOR_DRAGON,onScalesRindviorDragon,existing_cast,offScalesRindviorDragon
+197,SCALES_RINDVIOR_DRAGON,startScalesEvasion,managed_pump,offScalesRindviorDragon
 201,MIRROR_IMAGE,onMirrorImage,existing_cast,offUncannyDodge
 204,IllUSION_OGRE,onIllusionOgre,existing_cast,offIllusionOgre
 205,CUBE_OGRE,onCubeOgre,existing_cast,offCubeOgre

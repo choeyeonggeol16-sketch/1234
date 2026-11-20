@@ -139,15 +139,10 @@ public final class SkillHandlers {
 		register(L1SkillId.REDUCTION_ARMOR, SkillHandlers::onReductionArmor);
 
 		register(L1SkillId.MOEBIUS, SkillHandlers::onMoebius);
-		register(L1SkillId.DRESS_EVASION, SkillHandlers::onDressEvasion);
-		register(L1SkillId.AQUA_PROTECTER, SkillHandlers::onAquaProtecter);
-		register(L1SkillId.SOLID_CARRIAGE, SkillHandlers::onSolidCarriage);
 
 		register(L1SkillId.GUARD_BREAK, SkillHandlers::onGuardBreak);
 		register(L1SkillId.STRIKER_GALE, SkillHandlers::onStrikerGale);
 
-		register(L1SkillId.SCALES_WATER_DRAGON, SkillHandlers::onScalesWaterDragon);
-		register(L1SkillId.SCALES_RINDVIOR_DRAGON, SkillHandlers::onScalesRindviorDragon);
 		register(L1SkillId.SCALES_FIRE_DRAGON, SkillHandlers::onScalesFireDragon);
 
 		register(L1SkillId.PATIENCE, SkillHandlers::onPatience);
@@ -1544,22 +1539,17 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		sendIvenBuffIcon(pc, skillId, duration);
 	}
 
-	private static HandlerResult onScalesWaterDragon(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.SCALES_WATER_DRAGON;
-
+	static void startScalesEvasion(L1PcInstance pc, int skillId, int duration) {
 		resetScalesEffectIfPresent(pc, skillId);
-
-		// ER +10
-		addERAndNotify(pc, 10);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		// tooltip=2271, end=2424, icon=3184, prio=10
-		sendRestatBuffNoti(pc, skillId, durSec, 3184, 10, 2271, 0, 2424, true);
-		return HandlerResult.HANDLED;
+		pc.applySkillModifierFromOwner(skillId, 10);
+		final boolean water = skillId == L1SkillId.SCALES_WATER_DRAGON;
+		if (water) SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+		applySkillEffectSec(pc, skillId, duration);
+		if (water) {
+			sendRestatBuffNoti(pc, skillId, duration, 3184, 10, 2271, 0, 2424, true);
+		} else {
+			sendRestatBuffNoti(pc, skillId, duration, 8887, 10, 5270, 5270, 5271, true);
+		}
 	}
 
 	static void startScalesEarthDragon(L1PcInstance pc, int skillId, int duration) {
@@ -1569,23 +1559,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		SC_SPMR.send(pc);
 		applySkillEffectSec(pc, skillId, duration);
 		sendRestatBuffNoti(pc, skillId, duration, 3182, 10, 2267, 0, 2420, true);
-	}
-
-	private static HandlerResult onScalesRindviorDragon(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.SCALES_RINDVIOR_DRAGON;
-
-		resetScalesEffectIfPresent(pc, skillId);
-		// DG +10
-		pc.addDg(10);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		// tooltip=5270, new=5270, end=5271, icon=8887, prio=10
-		sendRestatBuffNoti(pc, skillId, durSec, 8887, 10, 5270, 5270, 5271, true);
-		return HandlerResult.HANDLED;
 	}
 
 	private static HandlerResult onScalesFireDragon(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -4359,19 +4332,29 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return handlePcOnlyNoti(su, cha, L1SkillId.MOEBIUS, 9443, 0, 5550, 5552, 0, true);
 	}
 
-	private static HandlerResult onDressEvasion(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		// ER+18, icon=1608, tooltip/new=970, end=2176
-		return handlePcOnlyErBuff(su, cha, L1SkillId.DRESS_EVASION, 18, 1608, 0, 970, 970, 2176, true);
+	static void startEvasionBuff(L1PcInstance pc, int skillId, int duration) {
+		resetEffect(pc, skillId);
+		switch (skillId) {
+		case L1SkillId.DRESS_EVASION:
+			applyEvasionBuff(pc, skillId, duration, 18, 1608, 970, 2176);
+			break;
+		case L1SkillId.AQUA_PROTECTER:
+			applyEvasionBuff(pc, skillId, duration, 5, 2342, 1085, 2201);
+			break;
+		case L1SkillId.SOLID_CARRIAGE:
+			applyEvasionBuff(pc, skillId, duration, 15, 2351, 1087, 2203);
+			break;
+		default:
+			throw new IllegalArgumentException("Unknown evasion buff " + skillId);
+		}
 	}
 
-	private static HandlerResult onAquaProtecter(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		// ER+5, icon=2342, tooltip/new=1085, end=2201
-		return handlePcOnlyErBuff(su, cha, L1SkillId.AQUA_PROTECTER, 5, 2342, 0, 1085, 1085, 2201, true);
-	}
-
-	private static HandlerResult onSolidCarriage(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		// ER+15, icon=2351, tooltip/new=1087, end=2203
-		return handlePcOnlyErBuff(su, cha, L1SkillId.SOLID_CARRIAGE, 15, 2351, 0, 1087, 1087, 2203, true);
+	private static void applyEvasionBuff(L1PcInstance pc, int skillId, int duration,
+			int bonus, int icon, int statusMessage, int endMessage) {
+		pc.applySkillModifierFromOwner(skillId, bonus);
+		SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+		applySkillEffectSec(pc, skillId, duration);
+		sendRestatBuffNoti(pc, skillId, duration, icon, icon, 0, statusMessage, statusMessage, endMessage, true);
 	}
 
 	private static HandlerResult onNBuffWaterDmg(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -6498,7 +6481,8 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 
 		switch (skillId) {
 		case L1SkillId.SCALES_WATER_DRAGON:
-			addERAndNotify(pc, -10);
+			pc.removeSkillModifierFromOwner(skillId);
+			SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
 			break;
 		case L1SkillId.SCALES_EARTH_DRAGON:
 			pc.removeSkillModifierFromOwner(skillId);
@@ -6506,7 +6490,7 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 			SC_SPMR.send(pc);
 			break;
 		case L1SkillId.SCALES_RINDVIOR_DRAGON:
-			pc.addDg(-10);
+			pc.removeSkillModifierFromOwner(skillId);
 			break;
 		case L1SkillId.SCALES_FIRE_DRAGON:
 			pc.getResistance().addSpecialResistance(eKind.ABILITY, -5);

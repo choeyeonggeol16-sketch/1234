@@ -59,6 +59,7 @@ public final class TestSkillEffectLifecycle {
             verifyLifecycle();
             verifyIndependentModifiers();
             verifyInventoryAndDressBuffs();
+            verifyEvasionBuffs();
             verifyLifetimeRefreshAndSleep();
             verifyOwnerDispatchAndExpiry();
             verifyRegistry();
@@ -162,6 +163,32 @@ public final class TestSkillEffectLifecycle {
                 "cleared elemental stats", N_BUFF_FIRE);
     }
 
+    private static void verifyEvasionBuffs() {
+        Player pc = new Player();
+        pc.addEffectedER(7);
+        pc.addDg(4);
+        pc.setCharacterER(5);
+        pc.setCharacterDG(8);
+        int baselineEr = pc.getTotalER(), baselineDg = pc.getDg();
+        int[] ids = {DRESS_EVASION, AQUA_PROTECTER, SOLID_CARRIAGE, SCALES_WATER_DRAGON, SCALES_RINDVIOR_DRAGON};
+        for (int id : ids) {
+            verify(CSkillInfo.isManaged(id), "managed registration", id);
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "start", id);
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "recast", id);
+            verify(pc.hasSkillEffect(id), "timer after recast", id);
+        }
+        verify(pc.getTotalER() == baselineEr + 48 && pc.getDg() == baselineDg + 10,
+                "independent evasion modifiers", SCALES_WATER_DRAGON);
+        pc.removeSkillEffect(SCALES_WATER_DRAGON);
+        verify(pc.getTotalER() == baselineEr + 38 && pc.getDg() == baselineDg + 10,
+                "removes only water evasion", SCALES_WATER_DRAGON);
+        for (int id : ids) pc.removeSkillEffect(id);
+        verify(pc.getTotalER() == baselineEr && pc.getDg() == baselineDg
+                && pc.getEffectedER() == 7, "removal preserves equipment and other evasion", SCALES_RINDVIOR_DRAGON);
+    }
+
     private static void verifyIndependentModifiers() {
         Player pc = new Player();
         pc.setLevel(81);
@@ -249,6 +276,14 @@ public final class TestSkillEffectLifecycle {
         pc.skillEffectClearFromOwner();
         verify(!pc.hasSkillEffect(N_BUFF_WATER) && pc.getResistance().getWater() == water,
                 "clear removes elemental modifier", N_BUFF_WATER);
+
+        int er = pc.getEffectedER();
+        SkillHandlers.dispatch(new Cast(SCALES_WATER_DRAGON), pc, null, 0, null);
+        SkillHandlers.dispatch(new Cast(SCALES_WATER_DRAGON), pc, null, 0, null);
+        verify(pc.hasSkillEffect(SCALES_WATER_DRAGON) && pc.getEffectedER() == er + 10,
+                "controller refreshes water scales without stacking", SCALES_WATER_DRAGON);
+        pc.skillEffectClearFromOwner();
+        verify(pc.getEffectedER() == er, "clear removes evasion modifier", SCALES_WATER_DRAGON);
 
         L1PcInstance expiring = new L1PcInstance();
         expiring.addBaseMaxHp((short) 600);

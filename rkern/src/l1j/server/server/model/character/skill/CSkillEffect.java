@@ -41,6 +41,12 @@ interface CSkillEffect {
         }},
         ELEMENTAL_RESISTANCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.elementalResistance += (int) captured;
+        }},
+        ER { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.er += (int) captured;
+        }},
+        DG { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.dg += (int) captured;
         }};
 
         @Override public boolean checkPumpCondition(L1Character target) { return target instanceof L1PcInstance; }
