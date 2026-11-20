@@ -373,10 +373,27 @@ public class MySqlCharacterStorage implements CharacterStorage {
 		}
 	}
 
+    /** Lock the character row and store karma inside the caller's item receipt. */
+    public static void writeKarmaReceipt(Connection con, int characterId, int karma) throws SQLException {
+        try (PreparedStatement lock = con.prepareStatement("SELECT Karma FROM characters WHERE objid=? FOR UPDATE")) {
+            lock.setInt(1, characterId);
+            try (ResultSet row = lock.executeQuery()) {
+                if (!row.next()) throw new SQLException("Karma receipt owner missing: " + characterId);
+                if (row.getInt(1) == karma) return;
+            }
+        }
+        try (PreparedStatement update = con.prepareStatement("UPDATE characters SET Karma=? WHERE objid=?")) {
+            update.setInt(1, karma);
+            update.setInt(2, characterId);
+            if (update.executeUpdate() != 1) throw new SQLException("Karma receipt update failed: " + characterId);
+        }
+    }
+
     public static final class CharacterSnapshot {
         public final String name;
         public final int objectId;
         public final long sessionEpoch;
+        public final int karmaReceiptRevision;
         private final int onlineStatus;
         private final int[] values = new int[65];
         private final String[] strings = new String[5];
@@ -441,7 +458,9 @@ public class MySqlCharacterStorage implements CharacterStorage {
             values[ni++] = pc.getHomeTownId();
             values[ni++] = pc.getContribution();
             values[ni++] = (pc.isBanned()) ? 1 : 0;
-            values[ni++] = pc.getKarma();
+            long karma = pc.captureKarmaForSave();
+            karmaReceiptRevision = (int) (karma >>> 32);
+            values[ni++] = (int) karma;
             times[ti++] = copyStamp(pc.getLastPk());
             times[ti++] = copyStamp(pc.getDeleteTime());
             values[ni++] = pc.getReturnStat();
@@ -477,6 +496,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
             return other != null
                     && objectId == other.objectId
                     && sessionEpoch == other.sessionEpoch
+                    && karmaReceiptRevision == other.karmaReceiptRevision
                     && onlineStatus == other.onlineStatus
                     && java.util.Arrays.equals(values, other.values)
                     && java.util.Arrays.equals(strings, other.strings)

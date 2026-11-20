@@ -18,6 +18,10 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1Item;
 
 import l1j.server.Config;
+import l1j.server.server.model.L1Karma;
+import l1j.server.server.model.L1World;
+import l1j.server.server.storage.CacheD;
+import l1j.server.server.storage.mysql.MySqlCharacterStorage;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.network.core.sc.packet.SC_Karma;
 import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
@@ -953,9 +957,9 @@ final class NpcQuestTransactions {
             }
             final String npcName = npc.getNpcTemplate().get_name();
             final String rewardName = reward.getLogName();
+            stageKarmaExchange(tx, pc, delta);
             tx.onFailure(() -> sendKarmaExchangeFailure(pc));
             tx.commitAfterInventoryRelease(() -> {
-                pc.addKarma(delta);
                 SC_Karma.send(pc);
                 SC_ServerMessage.send(pc, 143, npcName, rewardName);
                 SC_ServerMessage.send(pc, blood ? 1081 : 1080);
@@ -967,6 +971,63 @@ final class NpcQuestTransactions {
 
     private static void sendKarmaExchangeFailure(L1PcInstance pc) {
         SC_SystemMessage.send(pc, "결정 교환을 완료하지 못했습니다.");
+    }
+
+    /** The crystal debit and karma change share one durable receipt. */
+    static boolean exchangeCrystalForKarma(L1PcInstance pc, L1NpcInstance npc, String command, boolean blood) {
+        final int count;
+        final String success;
+        if ("a".equalsIgnoreCase(command)) {
+            count = 1;
+            success = blood ? "meet107" : "meet007";
+        } else if ("b".equalsIgnoreCase(command)) {
+            count = 10;
+            success = blood ? "meet108" : "meet008";
+        } else if ("c".equalsIgnoreCase(command)) {
+            count = 100;
+            success = blood ? "meet109" : "meet009";
+        } else {
+            return false;
+        }
+
+        final int npcObjectId = npc.getId();
+        final var client = pc.getNetConnection();
+        final int dialogueVersion = client == null ? 0 : client.npcDialogueVersion();
+        final long dialogueTarget = L1World.getInstance().smartIdOf(npc);
+        final String failurePage = blood ? "meet104" : "meet004";
+        final int delta = (int) ((blood ? -100 : 100) * count * Config.RATE_KARMA);
+        try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcId())) {
+            if (tx.debit(blood ? 40718 : 40678, count)) {
+                stageKarmaExchange(tx, pc, delta);
+                tx.onFailure(() -> {
+                    if (HtmlCmdHandler.canReplyToDialogue(pc, dialogueTarget, dialogueVersion))
+                        SC_NPCTalkReturn.send(pc, npcObjectId, failurePage);
+                });
+                tx.commitAfterInventoryRelease(() -> {
+                    SC_ServerMessage.send(pc, blood ? 1079 : 1078);
+                    SC_Karma.send(pc);
+                    if (HtmlCmdHandler.canReplyToDialogue(pc, dialogueTarget, dialogueVersion))
+                        SC_NPCTalkReturn.send(pc, npcObjectId, success);
+                });
+                return true;
+            }
+        } catch (RuntimeException failure) {
+            // A confirmed receipt failure or an unavailable inventory uses the legacy page.
+        }
+        SC_NPCTalkReturn.send(pc, npcObjectId, failurePage);
+        return true;
+    }
+
+    private static void stageKarmaExchange(L1InventoryTransaction tx, L1PcInstance pc, int delta) {
+        final int characterId = pc.getId();
+        final long epoch = pc.getCacheDSessionEpoch();
+        tx.requireTables("characters");
+        tx.sql(con -> MySqlCharacterStorage.writeKarmaReceipt(
+                con, characterId, L1Karma.clamp(pc.getKarma() + delta)));
+        // Publish while CacheD still blocks saves from this owner. A new save
+        // that already captured the old value is rejected by its revision.
+        tx.onDurableCommit(() -> CacheD.getInstance().publishKarmaReceipt(
+                characterId, epoch, pc.applyKarmaReceipt(delta)));
     }
 
     /** Orc village quest tokens, preserving the original NPC-specific pages. */

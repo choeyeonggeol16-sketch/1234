@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.session.CIOClient;
 
-/** The 1..6 owners of a durable receipt, captured once at admission.
+/** The owners of a durable receipt, captured once at admission.
  * Fixed fields keep the ordinary one/two-owner path allocation-light.
  * Gate release is idempotent, including a callback which starts a new receipt.
  * No per-player buffer, thread, queue or JDBC connection is retained here.
@@ -53,14 +53,14 @@ final class InventoryTransactionOwners {
         additional = null;
         additionalSessions = null;
         additionalStamps = null;
-        reserved = second == null ? 1 : 3;
+        reserved = 1;
     }
 
-    /** Sorted admission gates for an atomic 3..6 player dungeon debit. */
+    /** Sorted admission gates for an atomic multi-player dungeon debit. */
     InventoryTransactionOwners(L1PcInstance primary, L1PcInstance[] players) {
         this.primary = java.util.Objects.requireNonNull(primary);
-        if (players == null || players.length < 3 || players.length > 6)
-            throw new IllegalArgumentException("Party owner count must be 3..6");
+        if (players == null || players.length < 3)
+            throw new IllegalArgumentException("Party transaction needs at least three owners");
         L1PcInstance[] sorted = players.clone();
         for (L1PcInstance pc : sorted) if (pc == null)
             throw new IllegalArgumentException("Null party owner");
@@ -84,11 +84,11 @@ final class InventoryTransactionOwners {
             for (int i = 0; i < sorted.length; i++) {
                 sessions[i] = admit(sorted[i], false);
                 stamps[i] = sorted[i].getSessionStamp();
-                taken |= 1 << i;
+                taken++;
             }
         } catch (RuntimeException | Error failure) {
-            for (int i = 0; i < sorted.length; i++)
-                if ((taken & (1 << i)) != 0 && sorted[i].getSessionStamp() == stamps[i])
+            for (int i = 0; i < taken; i++)
+                if (sorted[i].getSessionStamp() == stamps[i])
                     sorted[i].endItemTransfer();
             throw failure;
         }
@@ -100,7 +100,7 @@ final class InventoryTransactionOwners {
             additionalSessions[i] = sessions[i + 2];
             additionalStamps[i] = stamps[i + 2];
         }
-        reserved = taken;
+        reserved = 1;
     }
 
     private CIOClient admit(L1PcInstance pc, boolean trade) {
@@ -160,12 +160,11 @@ final class InventoryTransactionOwners {
     }
 
     void release() {
-        int acquired = RESERVED.getAndSet(this, 0);
-        if ((acquired & 1) != 0 && first.getSessionStamp() == firstStamp) first.endItemTransfer();
-        if ((acquired & 2) != 0 && second.getSessionStamp() == secondStamp) second.endItemTransfer();
+        if (RESERVED.getAndSet(this, 0) == 0) return;
+        if (first.getSessionStamp() == firstStamp) first.endItemTransfer();
+        if (second != null && second.getSessionStamp() == secondStamp) second.endItemTransfer();
         if (additional != null) for (int i = 0; i < additional.length; i++)
-            if ((acquired & (1 << (i + 2))) != 0
-                    && additional[i].getSessionStamp() == additionalStamps[i])
+            if (additional[i].getSessionStamp() == additionalStamps[i])
                 additional[i].endItemTransfer();
     }
 

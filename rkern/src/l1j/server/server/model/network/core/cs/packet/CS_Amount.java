@@ -23,6 +23,7 @@ public final class CS_Amount {
         if (!HtmlCmdHandler.canInteractWithNpc(client, pc)) return;
         final L1Object object = L1World.getInstance().findObject(objectId);
         if (!(object instanceof L1NpcInstance npc) || !HtmlCmdHandler.isNpcTargetInRange(pc, npc)) return;
+        HtmlCmdHandler.trackDialogue(client, npc, false);
 
         if (MJINNHelperLoader.getInstance().onResult(npc, pc, actionName, amount)) return;
 

@@ -539,32 +539,32 @@ final class NpcTravelCommands {
 			pc.start_teleport(locX, locY, mapId, pc.getHeading(), 169, true, false);
 			htmlid = "";
 		} else if (s.equalsIgnoreCase("b")) {
-			L1ItemInstance item = pc.getInventory().storeItem(protectionId, 1);
-			if (item != null) {
-				SC_ServerMessage.send(pc, 143, npc.getNpcTemplate().get_name(), item.getLogName());
-			}
-			htmlid = "";
-		} else if (s.equalsIgnoreCase("c")) {
-			htmlid = "wpass07";
-		} else if (s.equalsIgnoreCase("d")) {
-			if (pc.getInventory().checkItem(sealId)) {
-				L1ItemInstance item = pc.getInventory().findItemId(sealId);
-				pc.getInventory().consumeItem(sealId, item.getCount());
-			}
-		} else if (s.equalsIgnoreCase("e")) {
-			htmlid = "";
-		} else if (s.equalsIgnoreCase("f")) {
-			if (pc.getInventory().checkItem(protectionId)) {
-				pc.getInventory().consumeItem(protectionId, 1);
-			}
-			if (pc.getInventory().checkItem(sealId)) {
-				L1ItemInstance item = pc.getInventory().findItemId(sealId);
-				pc.getInventory().consumeItem(sealId, item.getCount());
-			}
-			htmlid = "";
-		}
-		return htmlid;
-	}
+            try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcId())) {
+                L1ItemInstance item = tx.grant(protectionId, 1);
+                if (item != null) {
+                    String npcName = npc.getNpcTemplate().get_name();
+                    String itemName = item.getLogName();
+                    tx.commitAfterInventoryRelease(() -> SC_ServerMessage.send(pc, 143, npcName, itemName));
+                }
+            } catch (RuntimeException failure) {
+                SC_SystemMessage.send(pc, "차원의 문 보상을 지급하지 못했습니다.");
+            }
+        } else if (s.equalsIgnoreCase("c")) {
+            htmlid = "wpass07";
+        } else if (s.equalsIgnoreCase("d") || s.equalsIgnoreCase("f")) {
+            final boolean removeProtection = s.equalsIgnoreCase("f");
+            try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcId())) {
+                L1ItemInstance seal = pc.getInventory().findItemId(sealId);
+                if (removeProtection && pc.getInventory().checkItem(protectionId)
+                        && !tx.debit(protectionId, 1)) return htmlid;
+                if (seal != null && !tx.debit(sealId, seal.getCount())) return htmlid;
+                if (tx.hasChanges()) tx.commit(null);
+            } catch (RuntimeException failure) {
+                SC_SystemMessage.send(pc, "차원의 문 물품을 회수하지 못했습니다.");
+            }
+        }
+        return htmlid;
+    }
 
     static String hyosue(L1PcInstance pc, String s, String htmlid) {
         if (!s.equalsIgnoreCase("1")) return htmlid;

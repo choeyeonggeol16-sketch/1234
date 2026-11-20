@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.server.model.L1Location;
@@ -20,11 +22,13 @@ import l1j.server.server.utils.CommonUtil;
 import l1j.server.server.utils.L1SpawnUtil;
 
 public class OrimController extends Thread {
+	private static final Logger LOG = Logger.getLogger(OrimController.class.getName());
 	private static OrimController _instance;
+	private boolean admissionReserved;
 	private boolean Close;
-	private boolean _InDunStart = false;
+	private volatile boolean _InDunStart = false;
 
-	private boolean _InDunOpen = false;
+	private volatile boolean _InDunOpen = false;
 
 	private final ArrayList<L1PcInstance> playmember = new ArrayList<L1PcInstance>();
 
@@ -61,11 +65,42 @@ public class OrimController extends Thread {
 		Close = false;
 	}
 
-	public static OrimController getInstance() {
+	public static synchronized OrimController getInstance() {
 		if (_instance == null) {
 			_instance = new OrimController();
 		}
 		return _instance;
+	}
+
+	public static synchronized OrimController reserveAdmission() {
+		OrimController controller = getInstance();
+		if (controller.admissionReserved || controller._InDunOpen) return null;
+		controller.admissionReserved = true;
+		return controller;
+	}
+
+	public void cancelAdmission() {
+		synchronized (OrimController.class) {
+			if (_instance == this && admissionReserved && !_InDunOpen) admissionReserved = false;
+		}
+	}
+
+	public void startAdmission(L1PcInstance[] players) {
+		synchronized (OrimController.class) {
+			if (_instance != this || !admissionReserved || _InDunOpen)
+				throw new IllegalStateException("Orim admission is no longer reserved");
+			for (L1PcInstance pc : players) addPlayMember(pc);
+			_InDunOpen = true;
+			try {
+				start();
+			} catch (RuntimeException | Error failure) {
+				_InDunOpen = false;
+				clearPlayMember();
+				throw failure;
+			} finally {
+				admissionReserved = false;
+			}
+		}
 	}
 
 	public boolean getInDunStart() {
@@ -84,27 +119,27 @@ public class OrimController extends Thread {
 		_InDunOpen = indun;
 	}
 
-	public void addPlayMember(L1PcInstance pc) {
+	private synchronized void addPlayMember(L1PcInstance pc) {
 		playmember.add(pc);
 	}
 
-	public int getPlayMembersCount() {
+	public synchronized int getPlayMembersCount() {
 		return playmember.size();
 	}
 
-	public void removePlayMember(L1PcInstance pc) {
+	private synchronized void removePlayMember(L1PcInstance pc) {
 		playmember.remove(pc);
 	}
 
-	public void clearPlayMember() {
+	private synchronized void clearPlayMember() {
 		playmember.clear();
 	}
 
-	public boolean isPlayMember(L1PcInstance pc) {
+	public synchronized boolean isPlayMember(L1PcInstance pc) {
 		return playmember.contains(pc);
 	}
 
-	public L1PcInstance[] getPlayMemberArray() {
+	public synchronized L1PcInstance[] getPlayMemberArray() {
 		return (L1PcInstance[]) playmember.toArray(new L1PcInstance[getPlayMembersCount()]);
 	}
 
@@ -350,12 +385,17 @@ public class OrimController extends Thread {
 					
 				}
 			}
-			End();
-			_instance = null;
-			_InDunStart = false;
-			_InDunOpen = false;
-		} catch (Exception e) {
-			
+		} catch (RuntimeException failure) {
+			LOG.log(Level.SEVERE, "Orim dungeon failed", failure);
+		} finally {
+			try {
+				End();
+			} finally {
+				synchronized (OrimController.class) {
+					_InDunOpen = false;
+					if (_instance == this) _instance = null;
+				}
+			}
 		}
 	}
 
@@ -921,11 +961,13 @@ public class OrimController extends Thread {
 	}
 
 	private void End() {
-		setInDunOpen(false);
 		setInDunStart(false);
-		EndTelePort();
-		InDunclear();
-		clearPlayMember();
+		try {
+			EndTelePort();
+		} finally {
+			try { InDunclear(); }
+			finally { clearPlayMember(); }
+		}
 		L1World.getInstance().broadcastServerMessage("해상던전이 초기화 되였습니다.");
 	}
 }

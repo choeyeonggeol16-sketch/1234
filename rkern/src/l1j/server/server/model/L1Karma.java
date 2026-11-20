@@ -24,16 +24,20 @@ public class L1Karma {
 	private static final int[] KARMA_POINT = { 10000, 20000, 100000, 500000,
 		1500000, 3000000, 5000000, 10000000, 15500000 };
 
-	private static IntRange KARMA_RANGE = new IntRange(-15500000, 15500000);
+	private static final IntRange KARMA_RANGE = new IntRange(-15500000, 15500000);
 
-	private int _karma = 0;
+	private volatile int _karma = 0;
 
 	public int get() {
 		return _karma;
 	}
 
 	public void set(int i) {
-		_karma = KARMA_RANGE.ensure(i);
+		_karma = clamp(i);
+	}
+
+	public static int clamp(int value) {
+		return KARMA_RANGE.ensure(value);
 	}
 
 	public void add(int i) {

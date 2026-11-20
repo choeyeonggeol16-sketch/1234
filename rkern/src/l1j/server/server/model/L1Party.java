@@ -27,14 +27,14 @@ public class L1Party {
     @SuppressWarnings("unused")
     private static final Logger _log = Logger.getLogger(L1Party.class.getName());
 
-    protected final List<L1PcInstance> _membersList = new ArrayList<L1PcInstance>();
+    protected final List<L1PcInstance> _membersList = new java.util.concurrent.CopyOnWriteArrayList<>();
     protected final HashMap<Integer, Integer> _membersMark = new HashMap<Integer, Integer>();
 
     /** 전체 LIST 재전송 쿨다운 — 멘트/도배 방지 */
     private static final long FULL_LIST_COOLDOWN_MS = 1500L;
     private final ConcurrentHashMap<Integer, Long> _lastFullListSentAt = new ConcurrentHashMap<>();
 
-    private L1PcInstance _leader = null;
+    private volatile L1PcInstance _leader;
 
     // ─────────────────────────────────────────────
     // helpers
@@ -356,7 +356,7 @@ for (L1PcInstance member : getMembers()) {
     }
 
     public L1PcInstance[] getMembers() {
-        return _membersList.toArray(new L1PcInstance[_membersList.size()]);
+        return _membersList.toArray(L1PcInstance[]::new);
     }
 
     public int getNumOfMembers() {

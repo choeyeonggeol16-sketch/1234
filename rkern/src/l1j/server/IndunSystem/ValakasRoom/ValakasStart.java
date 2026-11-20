@@ -2,7 +2,6 @@ package l1j.server.IndunSystem.ValakasRoom;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
@@ -17,7 +16,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 public class ValakasStart implements Runnable {
-	private short _map;
+	private final short _map;
 	private int stage = 1;
 	private static final int FIRST_STEP = 1;
 	private static final int WAIT_RAID = 2;
@@ -38,10 +37,12 @@ public class ValakasStart implements Runnable {
 
 	private L1PcInstance pc;
 
+	private boolean ended;
+
 	private boolean Running = true;
 
 	public ArrayList<L1NpcInstance> BasicNpcList;
-	private ArrayList<L1NpcInstance> NpcList;
+	ArrayList<L1NpcInstance> NpcList;
 	public ArrayList<L1NpcInstance> BossList;
 
 	public ValakasStart(int id, L1PcInstance pc){
@@ -49,18 +50,24 @@ public class ValakasStart implements Runnable {
 		this.pc = pc;
 	}
 
+	public int mapId() { return _map; }
+
 	@Override
 	public void run() {
+		try {
+			runRaid();
+		} finally {
+			endRaid();
+		}
+	}
+
+	private void runRaid() {
 		setting();
-		NpcList = ValakasRoomSpawn.getInstance().fillSpawnTable(_map, 1, true);
 		while(Running){
 			try {
 
 				if(NpcList != null){
-					for(L1NpcInstance npc : NpcList){
-						if(npc == null || npc.isDead())
-							NpcList.remove(npc);
-					}
+					NpcList.removeIf(npc -> npc == null || npc.isDead());
 				}
 
 				if(leo1 != null && leo1.isDead() 
@@ -184,24 +191,11 @@ public class ValakasStart implements Runnable {
 				}catch(Exception e){}
 			}
 		}
-		endRaid();
 	}
 
-	public void Start(){
-		Calendar cal = Calendar.getInstance();
-		int 시간 = Calendar.HOUR;
-		int 분 = Calendar.MINUTE;
-		/** 0 오전 , 1 오후 * */
-		String 오전오후 = "오후";
-		if (cal.get(Calendar.AM_PM) == 0) {
-			오전오후 = "오전";
-		}
-		ThreadPool.getInstance().scheduleRequired(this,2000);
-//	        System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■■■■■■ 화룡안식처 시작 " +  _map+" ■■■■■■");
-	        System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■화룡안식처 시작■캐릭터:"+pc.getName()+"■맵:"+_map+"■");
+	public void Start() {
+		ThreadPool.getInstance().scheduleRequired(this, 2000);
 	}
-
-
 
 	private void setting(){
 		for(L1NpcInstance npc : BasicNpcList){
@@ -264,15 +258,10 @@ public class ValakasStart implements Runnable {
 	}
 	
 
-	private void endRaid(){
-		Calendar cal = Calendar.getInstance();
-		int 시간 = Calendar.HOUR;
-		int 분 = Calendar.MINUTE;
-		/** 0 오전 , 1 오후 * */
-		String 오전오후 = "오후";
-		if (cal.get(Calendar.AM_PM) == 0) {
-			오전오후 = "오전";
-		}
+	synchronized void endRaid(){
+		if (ended) return;
+		ended = true;
+		try {
 		for (L1Object ob : L1World.getInstance().getVisibleObjects(_map).values()) {
 			if(ob == null)
 				continue;
@@ -299,9 +288,9 @@ public class ValakasStart implements Runnable {
 		if (NpcList != null) NpcList.clear();
 		if (BasicNpcList != null) BasicNpcList.clear();
 		if (BossList != null) BossList.clear();
-		ValakasRoomSystem.getInstance().removeStart(_map);
-//		        System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■■■■■■ 화룡안식처 종료 " +  _map+" ■■■■■■");
-		        System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■화룡안식처 종료■캐릭터:"+pc.getName()+"■맵:"+_map+"■");
+		} finally {
+			ValakasRoomSystem.getInstance().remove(this);
+		}
 
 	}
 }

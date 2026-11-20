@@ -1,55 +1,58 @@
 package l1j.server.IndunSystem.Training;
 
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
 
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1FieldObjectInstance;
-import l1j.server.server.model.Instance.L1MerchantInstance;
-import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 public class BossTraining extends TimerTask {
-	int mapId = 0;
+	final int mapId;
+	volatile boolean cancelled;
+	L1NpcInstance keeper;
+	ScheduledFuture<?> expiry;
+	private volatile int[] activeKeys;
 
 	public BossTraining(int mapId) {
 		this.mapId = mapId;
 	}
 
+	public int mapId() {
+		return mapId;
+	}
+
+	public void activate(int[] keyIds) {
+		activeKeys = keyIds;
+	}
+
+	public boolean isActive() {
+		return activeKeys != null;
+	}
+
+	boolean acceptsKey(int id) {
+		int[] keys = activeKeys;
+		if (keys == null || cancelled) return false;
+		for (int key : keys) if (key == id) return true;
+		return false;
+	}
+
+	void closeEntry() {
+		activeKeys = null;
+	}
+
+	@Override
 	public void run() {
-		L1MonsterInstance mon = null;
-		L1FieldObjectInstance fobj = null;
-		L1NpcInstance npc = null;
-		L1PcInstance pc = null;
-		for (L1Object obj : L1World.getInstance().getVisibleObjects(this.mapId).values()) {
-			if ((obj instanceof L1MonsterInstance)) {
-				mon = (L1MonsterInstance)obj;
-				mon.deleteMe();
-				mon = null;
-			}
-			if ((obj instanceof L1MerchantInstance)) {
-				npc = (L1MerchantInstance)obj;
+		for (L1Object obj : L1World.getInstance().getVisibleObjects(mapId).values()) {
+			if (obj instanceof L1NpcInstance npc) {
 				npc.deleteMe();
-				npc = null;
-			}
-			if ((obj instanceof L1FieldObjectInstance)) {
-				fobj = (L1FieldObjectInstance)obj;
-				fobj.deleteMe();
-				fobj = null;
-			}
-			if ((obj instanceof L1NpcInstance)) {
-				npc = (L1NpcInstance)obj;
-				npc.deleteMe();
-				npc = null;
-			}
-			if ((obj instanceof L1PcInstance)) {
-				pc = (L1PcInstance)obj;
-//				L1Teleport.teleport(pc, 34065, 32313, (short)4, 0, true);
-				pc.start_teleport(34065, 32313, 4, 0, 169, true, false);
+			} else if (obj instanceof L1PcInstance pc) {
+				l1j.server.server.model.network.thread.CIOThreadCallback.getInstance()
+						.completeSession(pc.getNetConnection(), () -> {
+							if (pc.getMapId() == mapId) pc.start_teleport(34065, 32313, 4, 0, 169, true, false);
+						});
 			}
 		}
-		if (this.mapId >= 1400)
-			BossTrainingSystem.getInstance().removeRoom(this.mapId);
 	}
 }

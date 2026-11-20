@@ -1012,6 +1012,7 @@ public class L1PcInstance extends L1Character {
 	private L1ItemInstance defaultItem;
 	private int _currentWeapon; // 로봇 관련
 	private final L1Karma _karma = new L1Karma();
+	private int karmaReceiptRevision;
 	private final L1PcInventory _inventory;
 	private final L1DwarfForPackageInventory _dwarfForPackage;
 	private final L1Inventory _tradewindow;
@@ -1019,7 +1020,7 @@ public class L1PcInstance extends L1Character {
 	private L1ItemInstance _weapon;
 	private L1ItemInstance _secondweapon;
 	private L1ItemInstance _armor;
-	private L1Party _party;
+	private volatile L1Party _party;
 	private L1ChatParty _chatParty;
 
 	private int _cookingId = 0;
@@ -5302,12 +5303,28 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	@Override
 	public void setKarma(int i) {
-		_karma.set(i);
+		synchronized (_karma) {
+			_karma.set(i);
+		}
 	}
 
 	public void addKarma(int i) {
 		synchronized (_karma) {
 			_karma.add(i);
+		}
+	}
+
+	/** Both values must come from the same instant for a CacheD save. */
+	public long captureKarmaForSave() {
+		synchronized (_karma) {
+			return ((long) karmaReceiptRevision << 32) | (_karma.get() & 0xFFFFFFFFL);
+		}
+	}
+
+	public int applyKarmaReceipt(int delta) {
+		synchronized (_karma) {
+			_karma.add(delta);
+			return ++karmaReceiptRevision;
 		}
 	}
 

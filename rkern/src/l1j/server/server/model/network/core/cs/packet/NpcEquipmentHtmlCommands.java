@@ -11,13 +11,13 @@ final class NpcEquipmentHtmlCommands {
     private NpcEquipmentHtmlCommands() {}
 
     static void handle(CIOClient client, L1PcInstance pc, L1Object obj, int objid,
-            String s, String s2, String htmlid) throws Exception {
+            String s, String s2, String htmlid, int templateId) throws Exception {
         int[] materials = null;
         int[] counts = null;
         int[] createitem = null;
         int[] createcount = null;
 
-        if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71126) {
+        if (templateId == 71126) {
             /*int TeleportType = 0, TeleportX = 0, TeleportY = 0, TeleportMap = 0;
             if (s.equals("0")) { // 중앙광장 외각 부근 이동
                 TeleportType = 1;
@@ -151,7 +151,7 @@ final class NpcEquipmentHtmlCommands {
             }*/
 
             // 넘어진 항해사
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 80076) {
+        } else if (templateId == 80076) {
             if (s.equalsIgnoreCase("A")) {
                 final int variant = _random.nextInt(2);
                 NpcQuestTransactions.grantLegacyNpcItem(pc, (L1NpcInstance) obj,
@@ -159,7 +159,7 @@ final class NpcEquipmentHtmlCommands {
                 return;
             }
             // 연금 술사 페리타
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71128) {
+        } else if (templateId == 71128) {
             if (s.equals("A")) {
                 if (pc.getInventory().checkItem(41010, 1)) { // 이리스의 추천서
                     htmlid = "perita2";
@@ -416,7 +416,7 @@ final class NpcEquipmentHtmlCommands {
             }
 
             // 보석 세공인 룸스
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71129) {
+        } else if (templateId == 71129) {
             if (s.equals("Z")) {
                 htmlid = "rumtis2";
             } else if (s.equals("Y")) {
@@ -538,7 +538,7 @@ final class NpcEquipmentHtmlCommands {
                 }
             }
         } else {
-            NpcEventHtmlCommands.handle(client, pc, obj, objid, s, s2, htmlid);
+            NpcEventHtmlCommands.handle(client, pc, obj, objid, s, s2, htmlid, templateId);
             return;
         }
         HtmlCmdHandler.finish(pc, obj, objid, htmlid, materials, counts, createitem, createcount,

@@ -17,13 +17,10 @@ import l1j.server.server.utils.SQLUtil;
 
 
 public class ValakasRoomSpawn {
-	private static ValakasRoomSpawn _instance;
+	private static final ValakasRoomSpawn INSTANCE = new ValakasRoomSpawn();
 
 	public static ValakasRoomSpawn getInstance() {
-		if (_instance == null) {
-			_instance = new ValakasRoomSpawn();
-		}
-		return _instance;
+		return INSTANCE;
 	}
 
 	private ValakasRoomSpawn() {}
@@ -33,6 +30,14 @@ public class ValakasRoomSpawn {
 	}
 
 	public ArrayList<L1NpcInstance> fillSpawnTable(int mapid, int type, boolean RT) {
+		return fillSpawnTable(mapid, type, RT, false);
+	}
+
+	ArrayList<L1NpcInstance> fillRequiredSpawnTable(int mapid, int type) {
+		return fillSpawnTable(mapid, type, true, true);
+	}
+
+	private ArrayList<L1NpcInstance> fillSpawnTable(int mapid, int type, boolean RT, boolean required) {
 		Connection con = null;
 		PreparedStatement pstm = null;
 		ResultSet rs = null;
@@ -44,10 +49,10 @@ public class ValakasRoomSpawn {
 
 		try {
 			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("SELECT * FROM spawnlist_valakas_room");
+			pstm = con.prepareStatement("SELECT npc_id,locx,locy,heading FROM spawnlist_valakas_room WHERE type=?");
+			pstm.setInt(1, type);
 			rs = pstm.executeQuery();
 			while(rs.next()){
-				if (type != rs.getInt("type")) continue;
 
 				l1npc = NpcTable.getInstance().getTemplate(rs.getInt("npc_id"));
 				if (l1npc != null) {
@@ -84,16 +89,22 @@ public class ValakasRoomSpawn {
 						if(RT)
 							list.add(field);
 					} catch (Exception e) {
+						if (required) throw new IllegalStateException("Valakas spawn failed for type " + type, e);
 						e.printStackTrace();
 					}
+				} else if (required) {
+					throw new IllegalStateException("Missing Valakas NPC template " + rs.getInt("npc_id"));
 				}
 				l1npc = null;
 			}
 		} catch (SQLException e) {
+			if (required) throw new IllegalStateException("Valakas spawn table unavailable", e);
 			e.printStackTrace();
 		} catch (SecurityException e) {
+			if (required) throw new IllegalStateException("Valakas spawn table unavailable", e);
 			e.printStackTrace();
 		} catch (IllegalArgumentException e) {
+			if (required) throw new IllegalStateException("Valakas spawn table unavailable", e);
 			e.printStackTrace();
 		} finally {
 			SQLUtil.close(rs);
@@ -101,6 +112,7 @@ public class ValakasRoomSpawn {
 			SQLUtil.close(con);
 		}
 
+		if (required && list.isEmpty()) throw new IllegalStateException("Missing Valakas spawn type " + type);
 		return list;
 	}
 }

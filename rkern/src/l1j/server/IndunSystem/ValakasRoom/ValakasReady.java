@@ -15,7 +15,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 public class ValakasReady implements Runnable {
-	private short _map;
+	private final short _map;
 	private int stage = 1;
 	private static final int READY_START = 1;
 	private static final int WAIT_RAID = 2;
@@ -24,6 +24,8 @@ public class ValakasReady implements Runnable {
 	private L1NpcInstance death;
 
 	private L1PcInstance pc;
+
+	private boolean ended;
 
 	private boolean Running = false;
 
@@ -34,8 +36,18 @@ public class ValakasReady implements Runnable {
 		this.pc = pc;
 	}
 
+	public int mapId() { return _map; }
+
 	@Override
 	public void run() {
+		try {
+			runRaid();
+		} finally {
+			endRaid();
+		}
+	}
+
+	private void runRaid() {
 		setting();
 		Running = true;
 		while(Running){
@@ -131,7 +143,6 @@ public class ValakasReady implements Runnable {
 				}catch(Exception e){}
 			}
 		}
-		endRaid();
 	}
 
 	public void Start(){
@@ -164,7 +175,10 @@ public class ValakasReady implements Runnable {
 		}
 	}
 
-	private void endRaid(){
+	synchronized void endRaid(){
+		if (ended) return;
+		ended = true;
+		try {
 		for (L1Object ob : L1World.getInstance().getVisibleObjects(_map).values()) {
 			if(ob == null) continue;
 			if(ob instanceof L1ItemInstance){
@@ -180,6 +194,8 @@ public class ValakasReady implements Runnable {
 		death = null;
 		if (BasicNpcList != null) BasicNpcList.clear();
 		Running = false;
-		ValakasReadyStart.getInstance().removeReady(_map);
+		} finally {
+			ValakasReadyStart.getInstance().remove(this);
+		}
 	}
 }

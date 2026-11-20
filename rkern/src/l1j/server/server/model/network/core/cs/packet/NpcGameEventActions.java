@@ -5,8 +5,12 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.datatables.KeyTable;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.IndunSystem.ValakasRoom.ValakasRoomSystem;
+import l1j.server.IndunSystem.ValakasRoom.ValakasReady;
+import l1j.server.IndunSystem.ValakasRoom.ValakasStart;
 import l1j.server.IndunSystem.ValakasRoom.ValakasReadyStart;
+import l1j.server.IndunSystem.Training.BossTraining;
 import l1j.server.IndunSystem.Training.BossTrainingSystem;
 import l1j.server.IndunSystem.Orim.OrimController;
 import l1j.server.IndunSystem.FanstasyIsland.FantasyIslandSystem;
@@ -411,191 +415,244 @@ final class NpcGameEventActions {
 	}
 
 
-    static String bossTraining(L1PcInstance pc, String s, String htmlid) {
-		if (s.equalsIgnoreCase("1")) { // 대여
-			int countActiveMaps = BossTrainingSystem.getInstance().countRaidPotal();
-			if (pc.getInventory().checkItem(80500)) {
-				htmlid = "bosskey6";
-				// 이미 훈련소 열쇠를 가지고 계신 것 같군요.
-				// 많은 분들께서 이용하실 수 있도록 훈련소는 한 사람 당 하나 씩만 대여해 드리고 있습니다.
-			} else if (countActiveMaps >= 99) {
-				htmlid = "bosskey3";
-				// 죄송합니다.
-				// 지금은 모든 훈련소에서 훈련이 진행 중 입니다.
-			} else {
-				htmlid = "bosskey4";
-			}
-		} else if (s.length() == 1 && s.charAt(0) >= '2' && s.charAt(0) <= '4') {
-			if (!pc.getInventory().checkItem(80500)) { // 액션 조작 방지
-                if (BossTrainingSystem.getInstance().countRaidPotal() >= 99) return "bosskey3";
-				L1ItemInstance item = null;
-				int count = 0;
-				if (s.equalsIgnoreCase("2")) { // 4개
-					count = 4;
-				} else if (s.equalsIgnoreCase("3")) { // 8개
-					count = 8;
-				} else if (s.equalsIgnoreCase("4")) { // 16개
-					count = 16;
-				}
-				if (pc.getInventory().consumeItem(40308, count * 300)) {
-					int id = BossTrainingSystem.getInstance().blankMapId();
-					BossTrainingSystem.getInstance().startRaid(pc, id);
-					for (int i = 0; i < count; i++) {
-						item = pc.getInventory().storeItem(80500, 1);
-                                    if (item == null) {
-                                        SC_SystemMessage.send(pc, "훈련소 열쇠를 모두 지급하지 못했습니다.");
-                                        return htmlid;
-                                    }
-						item.setKeyId(id);
-						if (KeyTable.checkey(item)) {
-							KeyTable.DeleteKey(item);
-							KeyTable.StoreKey(item);
-						} else {
-							KeyTable.StoreKey(item);
-						}
-					}
-					htmlid = "bosskey7";
-					// 같이 훈련을 받으실 분들에게 열쇠를 나누어 주신 다음 저에게 보여주시면 훈련소로 안내해
-					// 드리겠습니다.
-					// 훈련소의 대여시간은 최대 4시간이며, 훈련 중이라 해도 대여 시간이 종료되면 다음 사람을
-					// 위해 훈련소 사용이 중지됩니다.
-					// 훈련용 몬스터를 소환하실 때에는 항상 훈련소의 남은 사용 시간을 확인하시기 바랍니다.
-				} else {
-					htmlid = "bosskey5";
-					// 죄송하지만, 사용료를 지불하지 않으시면 훈련소를 빌려드릴 수 없습니다.
-					// 아덴 왕국의 지원금만으로 이 많은 훈련소를 관리하는 것이 쉬운 일은 아니라서요.
-				}
-			} else {
-				htmlid = "bosskey6";
-				// 이미 훈련소 열쇠를 가지고 계신 것 같군요.
-				// 많은 분들께서 이용하실 수 있도록 훈련소는 한 사람 당 하나 씩만 대여해 드리고 있습니다.
-			}
-		} else if (s.equalsIgnoreCase("6")) { // 입장
-			int countActiveMaps = BossTrainingSystem.getInstance().countRaidPotal();
-			if (countActiveMaps < 100) {
-				L1ItemInstance item = pc.getInventory().findItemId(80500);
-				if (item != null) {
-					int id = item.getKeyId();
-					// L1Teleport.teleport(pc, 32901, 32814, (short) id,
-					// 0, true);
-					pc.start_teleport(32901, 32814, id, pc.getHeading(), 169, true, false);
-				} else {
-					htmlid = "bosskey2";
-					// 훈련소 열쇠를 가지고 있지 않으신 것 같네요.
-					// 먼저 훈련소를 대여하신 후에 사용하실 수 있습니다.
-				}
-			} else {
-				htmlid = "bosskey3";
-				// 죄송합니다.
-				// 지금은 모든 훈련소에서 훈련이 진행 중 입니다.
-			}
-		}
+    static String bossTraining(L1PcInstance pc, L1NpcInstance npc, String s, String htmlid) {
+        final BossTrainingSystem training = BossTrainingSystem.getInstance();
+        if (s.equalsIgnoreCase("1")) {
+            if (pc.getInventory().checkItem(80500)) return "bosskey6";
+            return training.countRaidPotal() >= 99 ? "bosskey3" : "bosskey4";
+        }
+        if (s.length() == 1 && s.charAt(0) >= '2' && s.charAt(0) <= '4') {
+            if (pc.getInventory().checkItem(80500)) return "bosskey6";
+            if (training.countRaidPotal() >= 99) return "bosskey3";
+            return rentTrainingRoom(pc, npc, training, 4 << (s.charAt(0) - '2'), htmlid);
+        }
+        if (s.equalsIgnoreCase("6")) {
+            L1ItemInstance key = pc.getInventory().findItemId(80500);
+            if (key == null || !training.isActive(key)) return "bosskey2";
+            pc.start_teleport(32901, 32814, key.getKeyId(), pc.getHeading(), 169, true, false);
+        }
         return htmlid;
     }
 
-    static String valakasReady(L1PcInstance pc, String s, String htmlid) {
-		if (s.equalsIgnoreCase("a")) {
-			if (pc.getLevel() >= 60) {
-				if (ValakasReadyStart.getInstance().countReadyRaid() >= 49) {
-                        SC_SystemMessage.send(pc, "인스턴스 던전을 더 이상 생성할수 없습니다.");
-                        return htmlid;
-                    }
-                    if (pc.getInventory().consumeItem(820001, 1)) {// 냉한의기운
-					ValakasReadyStart.getInstance().startReady(pc);
-				} else {
-					htmlid = "eldnas1";
-				}
-			} else {
-				htmlid = "eldnas3";
-			}
-		}
-		// 진데스나이트
+    private static String rentTrainingRoom(L1PcInstance pc, L1NpcInstance npc,
+            BossTrainingSystem training, int count, String htmlid) {
+        final int npcId = npc.getId();
+        final var client = pc.getNetConnection();
+        final int dialogueVersion = client == null ? 0 : client.npcDialogueVersion();
+        final long dialogueTarget = L1World.getInstance().smartIdOf(npc);
+        BossTraining reserved = null;
+        boolean submitted = false;
+        try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcId())) {
+            if (pc.getInventory().checkItem(80500)) return "bosskey6";
+            if (!tx.debit(40308, count * 300)) return "bosskey5";
+            final BossTraining room = training.reserveRaid();
+            if (room == null) return "bosskey3";
+            reserved = room;
+            final int[] keyIds = new int[count];
+            for (int i = 0; i < count; i++) {
+                L1ItemInstance key = tx.grant(80500, 1);
+                if (key == null || key.getItem().isStackable()) {
+                    sendTrainingKeyFailure(pc);
+                    return htmlid;
+                }
+                key.setKeyId(room.mapId());
+                keyIds[i] = key.getId();
+            }
+            tx.requireTables("item_key_boss");
+            tx.sql(con -> KeyTable.storeTrainingKeys(con, room.mapId(), keyIds));
+            tx.onDurableCommit(() -> room.activate(keyIds));
+            tx.onTerminalFailure(() -> {
+                if (!room.isActive()) training.cancel(room);
+            });
+            tx.onFailure(() -> sendTrainingKeyFailure(pc));
+            tx.commitAfterInventoryRelease(() -> {
+                if (HtmlCmdHandler.canReplyToDialogue(pc, dialogueTarget, dialogueVersion))
+                    SC_NPCTalkReturn.send(pc, npcId, "bosskey7");
+            });
+            submitted = true;
+            return null;
+        } catch (RuntimeException failure) {
+            sendTrainingKeyFailure(pc);
+            return htmlid;
+        } finally {
+            if (!submitted && reserved != null) training.cancel(reserved);
+        }
+    }
+
+    private static void sendTrainingKeyFailure(L1PcInstance pc) {
+        SC_SystemMessage.send(pc, "훈련소 열쇠를 모두 지급하지 못했습니다.");
+    }
+
+    static String valakasReady(L1PcInstance pc, int templateId, String command, String htmlid) {
+        if (!command.equalsIgnoreCase("a")) return htmlid;
+        if (pc.getLevel() < 60) return "eldnas3";
+        final ValakasReadyStart rooms = ValakasReadyStart.getInstance();
+        if (rooms.countReadyRaid() >= 49) {
+            sendValakasLimit(pc);
+            return htmlid;
+        }
+        ValakasReady reserved = null;
+        boolean submitted = false;
+        try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, templateId)) {
+            if (!tx.debit(820001, 1)) return "eldnas1";
+            final ValakasReady room = rooms.reserve(pc);
+            if (room == null) {
+                sendValakasLimit(pc);
+                return htmlid;
+            }
+            reserved = room;
+            tx.onTerminalFailure(() -> rooms.cancel(room));
+            tx.onFailure(() -> sendValakasFailure(pc));
+            tx.commitAfterInventoryRelease(() -> rooms.enter(room, pc));
+            submitted = true;
+        } catch (RuntimeException failure) {
+            sendValakasFailure(pc);
+        } finally {
+            if (!submitted && reserved != null) rooms.cancel(reserved);
+        }
         return htmlid;
     }
 
-    static String valakasRaid(L1PcInstance pc, String s, String htmlid) {
-		if (s.equalsIgnoreCase("enter")) {
-			if (pc.getLevel() >= 60) {
-				if (!pc.getInventory().checkItem(203003, 1)) {// 데스나이트의
-                    if (ValakasRoomSystem.getInstance().countStartRaid() >= 49) {
-                        SC_SystemMessage.send(pc, "인스턴스 던전을 더 이상 생성할수 없습니다.");
-                        return htmlid;
-                    }
-					// 불검:진
-					if (pc.getInventory().storeItem(203003, 1) == null) return htmlid;// 데스나이트의
-					// 불검:진
-					ValakasRoomSystem.getInstance().startRaid(pc);
-				}
-			} else {
-				htmlid = "fd_death2";
-			}
-		}
-		/** 깃털마을 피아르 **/
+    static String valakasRaid(L1PcInstance pc, int templateId, String command, String htmlid) {
+        if (!command.equalsIgnoreCase("enter")) return htmlid;
+        if (pc.getLevel() < 60) return "fd_death2";
+        if (pc.getInventory().checkItem(203003, 1)) return htmlid;
+        final ValakasRoomSystem rooms = ValakasRoomSystem.getInstance();
+        if (rooms.countStartRaid() >= 49) {
+            sendValakasLimit(pc);
+            return htmlid;
+        }
+        ValakasStart reserved = null;
+        boolean submitted = false;
+        try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, templateId)) {
+            if (pc.getInventory().checkItem(203003, 1) || tx.grant(203003, 1) == null) return htmlid;
+            final ValakasStart room = rooms.reserve(pc);
+            if (room == null) {
+                sendValakasLimit(pc);
+                return htmlid;
+            }
+            reserved = room;
+            tx.onTerminalFailure(() -> rooms.cancel(room));
+            tx.onFailure(() -> sendValakasFailure(pc));
+            tx.commitAfterInventoryRelease(() -> rooms.enter(room, pc));
+            submitted = true;
+        } catch (RuntimeException failure) {
+            sendValakasFailure(pc);
+        } finally {
+            if (!submitted && reserved != null) rooms.cancel(reserved);
+        }
         return htmlid;
+    }
+
+    private static void sendValakasLimit(L1PcInstance pc) {
+        SC_SystemMessage.send(pc, "인스턴스 던전을 더 이상 생성할수 없습니다.");
+    }
+
+    private static void sendValakasFailure(L1PcInstance pc) {
+        SC_SystemMessage.send(pc, "발라카스 인스턴스 입장을 완료하지 못했습니다.");
     }
 
     static String orim(L1PcInstance pc, L1Object obj, String s, String htmlid) {
-		L1ItemInstance item = null;
-		L1NpcInstance npc = (L1NpcInstance) obj;
-		if (s.equalsIgnoreCase("b")) { // 오림님의 이야기를 듣고 싶어요
-			if (!OrimController.getInstance().getInDunOpen()) {
-				if ((pc.isInParty()) && (pc.getParty().isLeader(pc))) {
-					boolean isInMap = true; // 우선 맵에 있는걸로 선언 후
-					for (L1PcInstance player : pc.getParty().getMembers()) {
-						if (player.getMapId() != 0) {
-							isInMap = false;
-							break;
-						} else if (!player.getInventory().checkItem(410096, 1)) {
-							SC_SystemMessage.send(pc, "파티원의 누군가가 시공의 구슬이 없습니다.");
-							SC_SystemMessage.send(player, "파티원의 누군가가 시공의 구슬이 없습니다.");
-							return htmlid;
-						}
-					}
-					if (pc.getParty().getNumOfMembers() > 1 && isInMap) {
-						pc.getParty().getLeader().getName();
-						OrimController Indun = OrimController.getInstance();
-						Indun.start();
-						L1Party party = pc.getParty();
-						L1PcInstance[] players = party.getMembers();
-						SC_PacketBox.broadcastGreen(pc.getParty().getLeader().getName() + " 님이 동료들과 함께 해상던전으로 떠났습니다.");
-						L1World.getInstance().broadcastServerMessage(
-								"\\aD" + pc.getParty().getLeader().getName() + " 님이 동료들과 함께 해상던전으로 떠났습니다.");
-						for (L1PcInstance pc1 : players) {
-							Indun.addPlayMember(pc1);
-							pc1.getInventory().consumeItem(410096, 1);
-							// L1Teleport.teleport(pc1, 32796, 32801,
-							// (short)9101, pc1.getHeading(), true);
-							pc1.start_teleport(32796, 32801, 9101, pc1.getHeading(), 169, true, false);
-						}
-					} else {
-						// htmlid = "id0_1";
-						// htmlid = "id0_3";
-						SC_NpcChatPacket.sendNpc(pc, npc, "3명~5명의 파티원으로 구성되어야합니다.", 0);
-					}
-				} else
-					htmlid = "id0_2";
-			} else {
-				SC_NpcChatPacket.sendNpc(pc, npc, "이미 해상던전으로 선발대가 출발했다네. 잠시후 다시오게.", 0);
-				htmlid = "";
-			}
-		}
-		if (s.equalsIgnoreCase("c")) { // 항아리 지급
-			if (!pc.getInventory().checkItem(410095, 1)) {
-				item = pc.getInventory().storeItem(410095, 1);
-				if (item != null) SC_ServerMessage.send(pc, 143, "$7918", item.getName());
-			} else {
-				htmlid = "j_html03";
-			}
-		} else if (s.equalsIgnoreCase("a")) { // 비밀 연구실 텔
-			return NpcTravelCommands.orimLaboratory(pc, obj.getId(), htmlid);
-                } else if (s.equalsIgnoreCase("d")) { // 일기장 복원
-                    return NpcExchangeCommands.diary(pc, obj.getId(), false);
-                } else if (s.equalsIgnoreCase("e")) {
-                    return NpcExchangeCommands.diary(pc, obj.getId(), true);
-                }
+        if (s.equalsIgnoreCase("b")) return enterOrim(pc, (L1NpcInstance) obj, htmlid);
+        if (s.equalsIgnoreCase("c")) {
+            if (pc.getInventory().checkItem(410095, 1)) return "j_html03";
+            try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, ((L1NpcInstance) obj).getNpcId())) {
+                if (pc.getInventory().checkItem(410095, 1)) return "j_html03";
+                L1ItemInstance jar = tx.grant(410095, 1);
+                if (jar == null) return htmlid;
+                String jarName = jar.getName();
+                tx.commitAfterInventoryRelease(() -> SC_ServerMessage.send(pc, 143, "$7918", jarName));
+            } catch (RuntimeException failure) {
+                SC_SystemMessage.send(pc, "항아리를 지급하지 못했습니다.");
+            }
+        } else if (s.equalsIgnoreCase("a")) {
+            return NpcTravelCommands.orimLaboratory(pc, obj.getId(), htmlid);
+        } else if (s.equalsIgnoreCase("d")) {
+            return NpcExchangeCommands.diary(pc, obj.getId(), false);
+        } else if (s.equalsIgnoreCase("e")) {
+            return NpcExchangeCommands.diary(pc, obj.getId(), true);
+        }
         return htmlid;
     }
 
+    private static String enterOrim(L1PcInstance leader, L1NpcInstance npc, String htmlid) {
+        if (OrimController.getInstance().getInDunOpen()) return orimBusy(leader, npc);
+        final L1Party party = leader.getParty();
+        if (party == null || !party.isLeader(leader)) return "id0_2";
+        final L1PcInstance[] members = party.getMembers();
+        for (L1PcInstance member : members) {
+            if (member == null || member.getMapId() != 0) break;
+            if (!member.getInventory().checkItem(410096, 1)) {
+                orimMissingOrb(leader, member);
+                return htmlid;
+            }
+        }
+        if (!orimPartyCurrent(leader, party, members)) {
+            SC_NpcChatPacket.sendNpc(leader, npc, "3명~5명의 파티원으로 구성되어야합니다.", 0);
+            return htmlid;
+        }
+
+        final OrimController room = OrimController.reserveAdmission();
+        if (room == null) return orimBusy(leader, npc);
+        boolean submitted = false;
+        try (L1InventoryTransaction tx = members.length == 2
+                ? L1InventoryTransaction.begin(leader, members[0] == leader ? members[1] : members[0])
+                : L1InventoryTransaction.beginParty(leader, members)) {
+            for (L1PcInstance member : members) {
+                if (!tx.debit(member, 410096, 1)) {
+                    orimMissingOrb(leader, member);
+                    return htmlid;
+                }
+            }
+            tx.sql(con -> {
+                if (!orimPartyCurrent(leader, party, members))
+                    throw new java.sql.SQLException("Orim party changed before the admission debit");
+            });
+            tx.onTerminalFailure(room::cancelAdmission);
+            tx.onFailure(() -> SC_SystemMessage.send(leader, "해상던전 입장에 실패했습니다."));
+            tx.commit(() -> {
+                room.startAdmission(members);
+                String departure = leader.getName() + " 님이 동료들과 함께 해상던전으로 떠났습니다.";
+                SC_PacketBox.broadcastGreen(departure);
+                L1World.getInstance().broadcastServerMessage("\\aD" + departure);
+                for (L1PcInstance member : members) {
+                    CIOThreadCallback.getInstance().completeSession(member.getNetConnection(), () -> {
+                        if (member.getParty() == party && member.getMapId() == 0)
+                            member.start_teleport(32796, 32801, 9101, member.getHeading(), 169, true, false);
+                    });
+                }
+            });
+            submitted = true;
+        } catch (RuntimeException failure) {
+            SC_SystemMessage.send(leader, "해상던전 입장에 실패했습니다.");
+        } finally {
+            if (!submitted) room.cancelAdmission();
+        }
+        return htmlid;
+    }
+
+    private static boolean orimPartyCurrent(L1PcInstance leader, L1Party party, L1PcInstance[] members) {
+        if (members.length < 2 || leader.getParty() != party || !party.isLeader(leader)
+                || party.getNumOfMembers() != members.length) return false;
+        for (L1PcInstance member : members) {
+            if (member == null || member.getParty() != party || member.getMapId() != 0
+                    || !party.isMember(member)) return false;
+            var client = member.getNetConnection();
+            if (client == null || !client.isConnected() || client.getActiveChar() != member) return false;
+        }
+        return true;
+    }
+
+    private static String orimBusy(L1PcInstance pc, L1NpcInstance npc) {
+        SC_NpcChatPacket.sendNpc(pc, npc, "이미 해상던전으로 선발대가 출발했다네. 잠시후 다시오게.", 0);
+        return "";
+    }
+
+    private static void orimMissingOrb(L1PcInstance leader, L1PcInstance member) {
+        String message = "파티원의 누군가가 시공의 구슬이 없습니다.";
+        SC_SystemMessage.send(leader, message);
+        SC_SystemMessage.send(member, message);
+    }
 
     /** Existing single-request raid admission. Global reservation is owned by the raid system. */
     static boolean enterClanRaid(L1PcInstance pc, String s) {

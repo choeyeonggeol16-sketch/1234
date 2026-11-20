@@ -211,6 +211,7 @@ final class NpcTalkHandler {
                 (L1NpcInstance) obj;
 
         if (!HtmlCmdHandler.isNpcTargetInRange(pc, npc)) return;
+        HtmlCmdHandler.trackDialogue(client, npc, true);
 
         final int npcId =
                 npc.getNpcTemplate()

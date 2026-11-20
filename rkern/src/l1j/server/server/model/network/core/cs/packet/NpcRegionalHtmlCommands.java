@@ -15,22 +15,22 @@ final class NpcRegionalHtmlCommands {
     private NpcRegionalHtmlCommands() {}
 
     static void handle(CIOClient client, L1PcInstance pc, L1Object obj, int objid,
-            String s, String s2, String htmlid) throws Exception {
+            String s, String s2, String htmlid, int templateId) throws Exception {
         int[] materials = null;
         int[] counts = null;
         int[] createitem = null;
         int[] createcount = null;
 
-        if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70534
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70556
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70572
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70631
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70663
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70761
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70788
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70806
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70830
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70876) {
+        if (templateId == 70534
+                || templateId == 70556
+                || templateId == 70572
+                || templateId == 70631
+                || templateId == 70663
+                || templateId == 70761
+                || templateId == 70788
+                || templateId == 70806
+                || templateId == 70830
+                || templateId == 70876) {
             if (s.equalsIgnoreCase("r")) {
                 if (obj instanceof L1NpcInstance) {
                 }
@@ -40,7 +40,7 @@ final class NpcRegionalHtmlCommands {
 
             }
 
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71005) {
+        } else if (templateId == 71005) {
             if (s.equalsIgnoreCase("0")) {
                 if (pc.getInventory().checkItem(41209)) htmlid = "";
                 else {
@@ -51,7 +51,7 @@ final class NpcRegionalHtmlCommands {
                 NpcQuestTransactions.jpePotionExchange(pc, (L1NpcInstance) obj);
                 return;
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71006) {
+        } else if (templateId == 71006) {
             if (s.equalsIgnoreCase("0")) {
                 if (pc.getLevel() > 25) {
                     htmlid = "jpe0057";
@@ -71,7 +71,7 @@ final class NpcRegionalHtmlCommands {
                     htmlid = "jpe0057";
                 }
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70512) {
+        } else if (templateId == 70512) {
             if (s.equalsIgnoreCase("0") || s.equalsIgnoreCase("fullheal")) {
                 int hp = _random.nextInt(21) + 70;
                 pc.setCurrentHp(pc.getCurrentHp() + hp);
@@ -79,19 +79,19 @@ final class NpcRegionalHtmlCommands {
                 SC_SkillSound.send(pc, pc.getId(), 830);
                 htmlid = "";
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71025) {
+        } else if (templateId == 71025) {
             if (s.equalsIgnoreCase("0")) {
                 NpcQuestTransactions.grantLegacyNpcItem(pc, (L1NpcInstance) obj, 41225, 1, false, "jpe0083");
                 return;
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 454512) {
+        } else if (templateId == 454512) {
 
             if (s.equalsIgnoreCase("a")) {
                 pc.start_teleport(32734, 32859, 13005, 5, 169, true, false);
                 htmlid = "";
             }
 
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 454513) {
+        } else if (templateId == 454513) {
             if (s.equalsIgnoreCase("a")) {
                 pc.setCurrentHp(pc.getMaxHp() / 5);
                 pc.setCurrentMp(pc.getMaxMp() / 5);
@@ -99,7 +99,7 @@ final class NpcRegionalHtmlCommands {
                 htmlid = "";
             }
 
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 454514) {
+        } else if (templateId == 454514) {
 
             if (s.equalsIgnoreCase("a")) {
 
@@ -113,7 +113,7 @@ final class NpcRegionalHtmlCommands {
 
             }
 
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71055) {
+        } else if (templateId == 71055) {
             if (s.equalsIgnoreCase("0")) {
                 NpcQuestTransactions.questGrantOnce(pc, (L1NpcInstance) obj, L1Quest.QUEST_LUKEIN1,
                         0, 1, 40701, 1, "lukein8");
@@ -133,22 +133,22 @@ final class NpcRegionalHtmlCommands {
                 htmlid = "lukein12";
                 pc.getQuest().set_step(L1Quest.QUEST_RESTA, 3);
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71063) {
+        } else if (templateId == 71063) {
             if (s.equalsIgnoreCase("0")) {
                 NpcQuestTransactions.lukeinChestReceipt(pc, (L1NpcInstance) obj,
                         1, 2, 3, L1Quest.QUEST_TBOX1, 40702, "maptbox1");
                 return;
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() >= 71064
-                && ((L1NpcInstance) obj).getNpcTemplate().get_npcId() <= 71066) {
+        } else if (templateId >= 71064
+                && templateId <= 71066) {
             if (s.equalsIgnoreCase("0")) {
                 final int npcId = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();
                 NpcQuestTransactions.lukeinChestReceipt(pc, (L1NpcInstance) obj,
                         npcId - 71062, 5, 6, L1Quest.QUEST_TBOX2, 40702, "maptbox1");
                 return;
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() >= 71067
-                && ((L1NpcInstance) obj).getNpcTemplate().get_npcId() <= 71072) {
+        } else if (templateId >= 71067
+                && templateId <= 71072) {
             if (s.equalsIgnoreCase("0")) {
                 final int npcId = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();
                 NpcQuestTransactions.lukeinChestReceipt(pc, (L1NpcInstance) obj,
@@ -157,7 +157,7 @@ final class NpcRegionalHtmlCommands {
             }
 
             // 시미즈(해적섬)
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71056) {
+        } else if (templateId == 71056) {
             // 아들을 찾는다
             if (s.equalsIgnoreCase("a")) {
                 pc.getQuest().set_step(L1Quest.QUEST_SIMIZZ, 1);
@@ -175,7 +175,7 @@ final class NpcRegionalHtmlCommands {
             }
 
             // 도일(해적섬)
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71057) {
+        } else if (templateId == 71057) {
             // 러쉬에 대해 듣는다
             if (s.equalsIgnoreCase("3")) {
                 htmlid = "doil4";
@@ -192,9 +192,9 @@ final class NpcRegionalHtmlCommands {
             }
 
             // 루디 안(해적섬)
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 83014) {
+        } else if (templateId == 83014) {
             if (NpcQuestTransactions.handleBlessingBuyback(pc, (L1NpcInstance) obj, s)) return;
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71059) {
+        } else if (templateId == 71059) {
             // 루디 안의 부탁을 받아들인다
             if (s.equalsIgnoreCase("A")) {
                 NpcQuestTransactions.questGrantOnce(pc, (L1NpcInstance) obj, L1Quest.QUEST_RUDIAN,
@@ -211,7 +211,7 @@ final class NpcRegionalHtmlCommands {
             }
 
             // 레스타(해적섬)
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71060) {
+        } else if (templateId == 71060) {
             // 동료들에 대해
             if (s.equalsIgnoreCase("A")) {
                 if (pc.getQuest().get_step(L1Quest.QUEST_RUDIAN) == L1Quest.QUEST_END) {
@@ -225,7 +225,7 @@ final class NpcRegionalHtmlCommands {
             }
 
             // 카좀스(해적섬)
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71061) {
+        } else if (templateId == 71061) {
             if (s.equalsIgnoreCase("A")) {
                 final int step = pc.getQuest().get_step(L1Quest.QUEST_CADMUS);
                 if (step >= 2) {
@@ -239,7 +239,7 @@ final class NpcRegionalHtmlCommands {
                 }
                 return;
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71036) {
+        } else if (templateId == 71036) {
             if (s.equalsIgnoreCase("a")) {
                 htmlid = "kamyla7";
                 pc.getQuest().set_step(L1Quest.QUEST_KAMYLA, 1);
@@ -272,23 +272,23 @@ final class NpcRegionalHtmlCommands {
                     pc.start_teleport(32746, 32807, 484, 5, 169, true, false);
                 }
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71089) {
+        } else if (templateId == 71089) {
             if (s.equalsIgnoreCase("a")) {
                 NpcQuestTransactions.questGrantOnce(pc, (L1NpcInstance) obj, L1Quest.QUEST_KAMYLA,
                         1, 2, 40644, 1, "francu10");
                 return;
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71090) {
+        } else if (templateId == 71090) {
             if (NpcQuestTransactions.handleCrystalKeeper(pc, (L1NpcInstance) obj, s)) return;
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71091) {
+        } else if (templateId == 71091) {
             if (NpcQuestTransactions.handleCrystalExit(pc, (L1NpcInstance) obj, s)) return;
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71074) {
+        } else if (templateId == 71074) {
             if (NpcQuestTransactions.handleLizardQuest(pc, (L1NpcInstance) obj, s)) return;
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71198) {
+        } else if (templateId == 71198) {
             if (NpcQuestTransactions.handleTionQuest(pc, (L1NpcInstance) obj, s)) return;
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71199) {
+        } else if (templateId == 71199) {
             if (NpcQuestTransactions.handleJeronQuest(pc, (L1NpcInstance) obj, s)) return;
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 80079) {
+        } else if (templateId == 80079) {
             if (s.equalsIgnoreCase("0")) {
                 if (!pc.getInventory().checkItem(41312)) {
                     // The first clue is a one-time quest award; after it was
@@ -349,7 +349,7 @@ final class NpcRegionalHtmlCommands {
                 return;
             }
 
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71181) { // 에마이
+        } else if (templateId == 71181) { // 에마이
             final int materialId;
             final int rewardId;
             final String page;
@@ -362,7 +362,7 @@ final class NpcRegionalHtmlCommands {
                 NpcQuestTransactions.npcItemExchange(pc, (L1NpcInstance) obj, materialId, rewardId, page, "my4");
                 return;
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 80084) {
+        } else if (templateId == 80084) {
             if (s.equalsIgnoreCase("q")) {
                 if (pc.getInventory().checkItem(41356, 1)) htmlid = "rparum4";
                 else {
@@ -370,29 +370,29 @@ final class NpcRegionalHtmlCommands {
                     return;
                 }
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 80105) {
+        } else if (templateId == 80105) {
             if (s.equalsIgnoreCase("c")) {
                 NpcExchangeCommands.rechargeCrownRelic(pc, objid);
                 return;
             }
 
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 4202000) { // 용기사
+        } else if (templateId == 4202000) { // 용기사
             // 피에나
             if (s.equalsIgnoreCase("teleportURL") && pc.isDragonknight()) {
                 htmlid = "feaena3";
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 4201000) { // 환술사
+        } else if (templateId == 4201000) { // 환술사
             // 아샤
             if (s.equalsIgnoreCase("teleportURL") && pc.isBlackwizard()) {
                 htmlid = "asha3";
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 200015) {
+        } else if (templateId == 200015) {
             if (s.equalsIgnoreCase("0")) {
                 NpcQuestTransactions.grantMissingNpcItem(pc, (L1NpcInstance) obj, 200000,
                         "candleg2", "candleg3", false);
                 return;
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 200016) {
+        } else if (templateId == 200016) {
             if (s.equalsIgnoreCase("B")) {
                 if (pc.getInventory().consumeItem(210081, 1)) {
                     // L1Teleport.teleport(pc, 32618, 32736, (short) 4, 4,
@@ -409,12 +409,12 @@ final class NpcRegionalHtmlCommands {
                 NpcQuestTransactions.level15ItemReceipt(pc, (L1NpcInstance) obj, false, s.equalsIgnoreCase("a"));
                 return;
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 3100004) {
+        } else if (templateId == 3100004) {
             if (s.equalsIgnoreCase("a") || s.equalsIgnoreCase("b")) {
                 NpcQuestTransactions.level15ItemReceipt(pc, (L1NpcInstance) obj, true, s.equalsIgnoreCase("a"));
                 return;
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 3200014) {
+        } else if (templateId == 3200014) {
             if (s.equalsIgnoreCase("buy 5")) {
                 NpcPetCommands.petbuy(client, 46044, 41159, 1000);
                 htmlid = "subsusp3";
@@ -423,10 +423,10 @@ final class NpcRegionalHtmlCommands {
                 htmlid = "subsusp4";
             }
 
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 200075) { // 샤르나
+        } else if (templateId == 200075) { // 샤르나
             htmlid = NpcExchangeCommands.sharna(pc, objid, s, ((L1NpcInstance) obj).getNpcTemplate().get_name());
         } else {
-            NpcEquipmentHtmlCommands.handle(client, pc, obj, objid, s, s2, htmlid);
+            NpcEquipmentHtmlCommands.handle(client, pc, obj, objid, s, s2, htmlid, templateId);
             return;
         }
         HtmlCmdHandler.finish(pc, obj, objid, htmlid, materials, counts, createitem, createcount,

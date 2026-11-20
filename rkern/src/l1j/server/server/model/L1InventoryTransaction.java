@@ -107,6 +107,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     private boolean closed;
     private Runnable failureAction;
     private Runnable durableCommitAction;
+    private Runnable terminalFailureAction;
     private int sqlCount;
 
     public static L1InventoryTransaction begin(L1PcInstance pc, int resourceKey) {
@@ -118,19 +119,23 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     }
     /** All members' item rows commit in one InnoDB receipt or none commit. */
     public static L1InventoryTransaction beginParty(L1PcInstance[] participants) {
-        if (participants == null || participants.length < 3 || participants.length > 6)
-            throw new IllegalArgumentException("Dungeon party requires 3..6 owners");
-        return new L1InventoryTransaction(participants);
+        if (participants == null || participants.length < 3)
+            throw new IllegalArgumentException("Dungeon party requires at least three owners");
+        return beginParty(participants[0], participants);
     }
-    private L1InventoryTransaction(L1PcInstance[] participants) {
-        primary = Objects.requireNonNull(participants[0]);
+    public static L1InventoryTransaction beginParty(L1PcInstance coordinator, L1PcInstance[] participants) {
+        return new L1InventoryTransaction(coordinator, participants);
+    }
+    private L1InventoryTransaction(L1PcInstance coordinator, L1PcInstance[] participants) {
+        primary = Objects.requireNonNull(coordinator);
         owners = new InventoryTransactionOwners(primary, participants);
         int second = 0;
         int[] more = new int[participants.length - 2];
-        for (int i = 1; i < participants.length; i++) {
-            final int id = participants[i].getId();
-            if (i == 1) second = id;
-            else more[i - 2] = id;
+        int index = 0;
+        for (L1PcInstance participant : participants) {
+            if (participant == primary) continue;
+            if (second == 0) second = participant.getId();
+            else more[index++] = participant.getId();
         }
         try {
             move = CacheD.beginEconomyMove(primary.getId(), second, more);
@@ -607,6 +612,14 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         durableCommitAction = Objects.requireNonNull(callback);
     }
 
+    /** Release a world reservation even if no original session can receive a reply.
+     * The callback must be thread-safe and nonblocking.
+     */
+    public void onTerminalFailure(Runnable callback) {
+        open();
+        terminalFailureAction = Objects.requireNonNull(callback);
+    }
+
     public void commit(Runnable afterCommitted) {
         commitInternal(afterCommitted, false);
     }
@@ -711,8 +724,10 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                 }
             },failure->{
                 move.finishOwnerApply(failure);
-                if(failure!=null) quarantine(failure);
-                else if(releaseBeforeEffects && afterCommitted!=null) {
+                if (failure != null) {
+                    try { notifyTerminalFailure(); }
+                    finally { quarantine(failure); }
+                } else if(releaseBeforeEffects && afterCommitted!=null) {
                     // On success this completion executes on the same CIO owner,
                     // AFTER CacheD has released its pending owner-apply barrier.
                     // Otherwise onChangeExp()'s character save would be dropped.
@@ -721,7 +736,8 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                             throw new IllegalStateException("Stale inventory effect session");
                         synchronized(owners.monitor(primary)) { afterCommitted.run(); }
                     } catch(Throwable effectFailure) {
-                        quarantine(effectFailure); // Never retry a committed debit as if it rolled back.
+                        try { notifyTerminalFailure(); }
+                        finally { quarantine(effectFailure); } // A committed debit is never retried.
                     }
                 }
             });
@@ -820,8 +836,24 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
 
     @Override public void accept(Throwable failure) { sqlFailed(failure); }
 
+    private void notifyTerminalFailure() {
+        final Runnable callback = terminalFailureAction;
+        terminalFailureAction = null;
+        if (callback != null) callback.run();
+    }
+
     private void sqlFailed(Throwable failure) {
-        if(unknown(failure)) {post(()->quarantine(failure),ignored->{});return;}
+        try { notifyTerminalFailure(); }
+        catch (RuntimeException callbackFailure) { failure.addSuppressed(callbackFailure); }
+        if (unknown(failure)) {
+            // Quarantine the still-connected participants even if the original
+            // coordinator has already disappeared and CIO cannot admit replay.
+            if (!owners.current(primary)) quarantine(failure);
+            else post(() -> quarantine(failure), rejected -> {
+                if (rejected != null) quarantine(failure);
+            });
+            return;
+        }
         // Rollback was confirmed. No live item changed, so there is nothing to
         // compensate. Release only on the original owner boundary.
         // completeWarehouseMove reports completion AFTER running the action.

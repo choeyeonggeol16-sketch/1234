@@ -29,6 +29,21 @@ public class KeyTable {
 		}
 	}
 
+    public static void storeTrainingKeys(Connection con, int mapId, int[] keyIds) throws SQLException {
+        try (PreparedStatement insert = con.prepareStatement(
+                "INSERT INTO item_key_boss (item_obj_id,key_id) VALUES (?,?)")) {
+            insert.setInt(2, mapId);
+            for (int keyId : keyIds) {
+                insert.setInt(1, keyId);
+                insert.addBatch();
+            }
+            for (int rows : insert.executeBatch()) {
+                if (rows != 1 && rows != java.sql.Statement.SUCCESS_NO_INFO)
+                    throw new SQLException("Training room key insert failed: " + mapId);
+            }
+        }
+    }
+
 	public static void DeleteKey(L1ItemInstance item) {
 		String sql = "DELETE FROM item_key_boss WHERE item_obj_id=?";
 		try (Connection con = DatabaseFactory.getInstance().getConnection();

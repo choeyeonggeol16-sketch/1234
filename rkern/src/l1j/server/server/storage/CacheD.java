@@ -74,7 +74,7 @@ public final class CacheD {
 
     private static final int[] NO_EXTRA_OWNERS = new int[0];
     private static final class DbJob extends CPendingState {
-        final Runnable task;
+        Runnable task;
         final int ownerId;
         final int secondaryOwnerId;
         final int[] extraOwnerIds;
@@ -321,7 +321,7 @@ public final class CacheD {
             this.economy = economy;
             this.characterId = characterId;
             this.warehouseKey = warehouseKey;
-            if (additional == null || additional.length > 4 || (!economy && additional.length != 0))
+            if (additional == null || (!economy && additional.length != 0))
                 throw new IllegalArgumentException("Invalid economy party owners");
             extraOwnerIds = additional.length == 0 ? NO_EXTRA_OWNERS : additional.clone();
             for (int i = 0; i < extraOwnerIds.length; i++) {
@@ -1200,6 +1200,9 @@ public final class CacheD {
     private void quarantineDbJob(DbJob state, SQLException failure) {
         lastFailure = failure;
         state.outcomeUnknown = true;
+        // Quarantine keeps owner lanes, not the cancelled receipt payload or
+        // its captured character, inventory and world objects.
+        state.task = null;
         state.failureCount++;
         state.queued = true;
         state.urgent = false;
@@ -1368,6 +1371,7 @@ public final class CacheD {
             activeUsers.put(characterId, user);
             if (++nextSessionEpoch == 0L) ++nextSessionEpoch;
             user.sessionEpoch = nextSessionEpoch;
+            user.karmaReceiptRevision = 0;
             // Only a published session supersedes the previous owner release.
             warehouse.releasingOwnerIds.remove(characterId);
             return user.sessionEpoch;
@@ -1382,6 +1386,13 @@ public final class CacheD {
         if (account != null) {
             account.deleteCharacter(characterId, user);
             if (!account.hasCharacters()) activeAccounts.remove(account.login, account);
+        }
+    }
+
+    public void publishKarmaReceipt(int characterId, long sessionEpoch, int revision) {
+        synchronized (lock) {
+            CUser user = activeUsers.get(characterId);
+            if (user != null && user.sessionEpoch == sessionEpoch) user.karmaReceiptRevision = revision;
         }
     }
 
@@ -1402,7 +1413,8 @@ public final class CacheD {
             if ((active != null && active.sessionEpoch != snapshot.sessionEpoch)
                     || (active == null && snapshot.sessionEpoch != 0L))
                 throw new RejectedExecutionException("Stale character session save: " + snapshot.name);
-            if (ownerApplyJobsByOwner.get(snapshot.objectId) != 0) return;
+            if (ownerApplyJobsByOwner.get(snapshot.objectId) != 0
+                    || (active != null && active.karmaReceiptRevision != snapshot.karmaReceiptRevision)) return;
             CUser state = characters.get(snapshot.name);
             if (state == null) {
                 state = activeUsers.get(snapshot.objectId);

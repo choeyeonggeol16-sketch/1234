@@ -184,6 +184,17 @@ public class L1PetInstance extends L1NpcInstance {
 	}
 
 	public L1PetInstance(L1NpcInstance target, L1PcInstance master, int itemid) {
+		this(target, master, itemid, IdFactory.getInstance().nextId());
+		target.deleteMe();
+		enterPetWorld(master);
+		PetTable.getInstance().storeNewPet(target, getId(), itemid);
+	}
+
+	public static L1PetInstance prepareNpcPurchase(L1NpcInstance target, L1PcInstance master, int itemid) {
+		return new L1PetInstance(target, master, itemid, IdFactory.getInstance().nextId());
+	}
+
+	private L1PetInstance(L1NpcInstance target, L1PcInstance master, int itemid, int objectId) {
 		super(null);
 
 		_petMaster = master;
@@ -192,7 +203,7 @@ public class L1PetInstance extends L1NpcInstance {
 		_type = PetTypeTable.getInstance().get(
 				target.getNpcTemplate().get_npcId());
 
-		setId(IdFactory.getInstance().nextId());
+		setId(objectId);
 		setting_template(target.getNpcTemplate());
 		setCurrentHp(target.getCurrentHp());
 		setCurrentMp(target.getCurrentMp());
@@ -212,17 +223,34 @@ public class L1PetInstance extends L1NpcInstance {
 		target.setInventory(null);
 
 		_currentPetStatus = 3;
+	}
 
-		target.deleteMe();
+	public void enterPurchasedPetWorld() {
+        // Use the original shop spawn position (one tile in front of the
+        // owner), refreshed on the owner thread once the receipt is committed.
+        getLocation().set(_petMaster.getLocation());
+        getLocation().forward(_petMaster.getHeading());
+        setHeading(_petMaster.getHeading());
+        try {
+            enterPetWorld(_petMaster);
+        } catch (RuntimeException failure) {
+            try {
+                deleteMe();
+            } finally {
+                if (_petMaster.getPetList().get(getId()) == this) _petMaster.removePet(this);
+            }
+            throw failure;
+        }
+	}
+
+	private void enterPetWorld(L1PcInstance master) {
 		L1World.getInstance().storeAndEnterWorld(this);
 		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
 			onPerceive(pc);
 		}
 
 		master.addPet(this);
-		Object aobj[] = master.getPetList().values().toArray();
-		SC_ReturnedStat.sendPetParty(master, (aobj.length + 1) * 3, getId(), true);	
-		PetTable.getInstance().storeNewPet(target, getId(), itemid);
+		SC_ReturnedStat.sendPetParty(master, (master.getPetList().size() + 1) * 3, getId(), true);
 	}
 
 	@Override

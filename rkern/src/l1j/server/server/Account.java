@@ -668,7 +668,20 @@ public class Account {
 	public void updateTree2() { executeUpdate("UPDATE accounts SET tree_select4=?, tree_atun1=?, tree_atun2=?, tree_atun3=? WHERE login = ?", tree_select4, tree_atun1, tree_atun2, tree_atun3); }
 	public void updateCollection() { executeUpdate("UPDATE accounts SET info_col_y=?, info_col_m=?, info_col_l=?, info_col_h=?, info_colme_y=?, info_colme_m=?, info_colme_l=?, info_colme_h=? WHERE login = ?", info_col_y, info_col_m, info_col_l, info_col_h, info_colme_y, info_colme_m, info_colme_l, info_colme_h); }
 	public void updateHero2() { executeUpdate("UPDATE accounts SET hero01=?, hero02=?, hero03=?, hero04=?, hero05=?, hero06=?, hero07=?, hero08=?, hero09=?, hero10=?, hero11=?, hero12=?, hero13=?, hero14=?, hero15=?, hero16=?, hero17=?, hero18=?, hero19=?, hero20=? WHERE login = ?", hero01, hero02, hero03, hero04, hero05, hero06, hero07, hero08, hero09, hero10, hero11, hero12, hero13, hero14, hero15, hero16, hero17, hero18, hero19, hero20); }
-	public void updateHero21() { executeUpdate("UPDATE accounts SET hero21=? WHERE login = ?", hero21); }
+    public void updateHero21(int characterId, int value) {
+        final String login = _name;
+        CacheD.getInstance().submitDbJobRetryOrdered(characterId, CacheD.accountOrderKey(login), () -> {
+            try (Connection con = DatabaseFactory.getInstance().getConnection();
+                 PreparedStatement update = con.prepareStatement("UPDATE accounts SET hero21=? WHERE login=?")) {
+                update.setInt(1, value);
+                update.setString(2, login);
+                update.executeUpdate();
+            } catch (SQLException failure) {
+                throw new IllegalStateException("Dungeon reset marker save failed: " + login, failure);
+            }
+        });
+        hero21 = value;
+    }
 	public void updatelegend2() { executeUpdate("UPDATE accounts SET legend01=?, legend02=?, legend03=?, legend04=?, legend05=?, legend06=?, legend07=?, legend08=?, legend09=?, legend10=?, legend11=?, legend12=?, legend13=?, legend14=?, legend15=?, legend16=?, legend17=?, legend18=?, legend19=?, legend20=?, legend21=?, legend22=?, legend23=?, legend24=?, legend25=?, myth01=?, myth02=? WHERE login = ?", legend01, legend02, legend03, legend04, legend05, legend06, legend07, legend08, legend09, legend10, legend11, legend12, legend13, legend14, legend15, legend16, legend17, legend18, legend19, legend20, legend21, legend22, legend23, legend24, legend25, myth01, myth02); }
 	public void updateHero() { executeUpdate("UPDATE accounts SET info_heaven_poly=?, info_val_poly=?, info_larry_poly=?, info_gunter_poly=?, info_depor_poly=?, info_deathred_poly=?, info_ecil_poly=?, info_assm_poly=?, info_kerep_poly=?, info_jowo_poly=?, info_unik_poly=?, info_unim_poly=?, info_unir_poly=?, info_yozil_poly=?, info_owen_poly=?, info_helv_poly=? WHERE login = ?", info_heaven_poly, info_val_poly, info_larry_poly, info_gunter_poly, info_depor_poly, info_deathred_poly, info_ecil_poly, info_assm_poly, info_kerep_poly, info_jowo_poly, info_unik_poly, info_unim_poly, info_unir_poly, info_yozil_poly, info_owen_poly, info_helv_poly); }
 	public void updateLegend() { executeUpdate("UPDATE accounts SET info_ds_poly=?, info_dru_poly=?, info_ga_poly=?, info_ger_poly=?, info_dev_poly=?, info_pen_poly=?, info_atun_poly=?, info_moon_poly=?, info_mar_poly=? WHERE login = ?", info_ds_poly, info_dru_poly, info_ga_poly, info_ger_poly, info_dev_poly, info_pen_poly, info_atun_poly, info_moon_poly, info_mar_poly); }

@@ -5,6 +5,9 @@ import java.util.logging.Logger;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -66,7 +69,9 @@ final class NpcCraftCommands {
         }
         final String npcName = target instanceof L1NpcInstance npc ? npc.getNpcTemplate().get_name() : "";
         final int resourceKey = target instanceof L1NpcInstance npc ? npc.getNpcId() : objid;
-        // No NPC/world object is captured by the delayed owner callback.
+        final CIOClient client = pc.getNetConnection();
+        final int dialogueVersion = client == null ? 0 : client.npcDialogueVersion();
+        final long dialogueTarget = L1World.getInstance().smartIdOf(target);
         boolean prepared = false;
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, resourceKey)) {
             for (int i = 0; i < materials.length; i++) {
@@ -75,15 +80,65 @@ final class NpcCraftCommands {
             for (int i = 0; i < rewards.length; i++) {
                 if (tx.grant(rewards[i], rewardCounts[i]) == null) return;
             }
-            tx.onFailure(() -> fail(pc, objid, failure, data));
+            tx.onFailure(() -> {
+                if (failure == null || HtmlCmdHandler.canReplyToDialogue(pc, dialogueTarget, dialogueVersion))
+                    fail(pc, objid, failure, data);
+            });
             tx.commitAfterInventoryRelease(() -> complete(pc, objid, npcName, rewards,
-                    rewardCounts, success, tail, data));
+                    rewardCounts, success, tail, data, dialogueTarget, dialogueVersion));
             prepared = true;
         } catch (RuntimeException error) {
             LOG.log(Level.WARNING, "NPC recipe preparation failed", error);
         } finally {
             if (!prepared) fail(pc, objid, failure, data);
         }
+    }
+
+    private static final int[] TOTEM_PRICE = {50, 100, 50, 30, 200};
+
+    private static final class TotemRecipes {
+        static final int[][] MATERIALS = new int[1 << TOTEM_PRICE.length][];
+        static final int[][] REWARDS = new int[TOTEM_PRICE.length + 1][];
+
+        static {
+            for (int mask = 1; mask < MATERIALS.length; mask++) {
+                int[] ids = new int[Integer.bitCount(mask)];
+                int index = 0;
+                for (int slot = 0; slot < TOTEM_PRICE.length; slot++)
+                    if ((mask & (1 << slot)) != 0) ids[index++] = 40131 + slot;
+                MATERIALS[mask] = ids;
+            }
+            for (int count = 1; count < REWARDS.length; count++) {
+                int[] ids = new int[count];
+                java.util.Arrays.fill(ids, l1j.server.server.model.item.L1ItemId.ADENA);
+                REWARDS[count] = ids;
+            }
+        }
+    }
+
+    static void exchangeTotems(L1PcInstance pc, L1Object npc, int objid, String page) {
+        final var inventory = pc.getInventory();
+        int mask = 0;
+        for (int slot = 0; slot < TOTEM_PRICE.length; slot++)
+            if (inventory.checkItem(40131 + slot)) mask |= 1 << slot;
+        if (mask == 0) {
+            SC_NPCTalkReturn.send(pc, objid, page);
+            return;
+        }
+        final int[] materials = TotemRecipes.MATERIALS[mask];
+        final int[] counts = new int[materials.length];
+        final int[] rewardCounts = new int[materials.length];
+        for (int index = 0; index < materials.length; index++) {
+            L1ItemInstance item = inventory.findItemId(materials[index]);
+            if (item == null) {
+                fail(pc, objid, null, null);
+                return;
+            }
+            counts[index] = item.getCount();
+            rewardCounts[index] = Math.multiplyExact(counts[index], TOTEM_PRICE[materials[index] - 40131]);
+        }
+        execute(pc, npc, objid, materials, counts, TotemRecipes.REWARDS[materials.length],
+                rewardCounts, null, null, page, null);
     }
 
     private static boolean validRecipe(int[] ids, int[] counts) {
@@ -95,7 +150,7 @@ final class NpcCraftCommands {
     }
 
     private static void complete(L1PcInstance pc, int objid, String npcName, int[] rewards,
-            int[] counts, String success, String tail, String[] data) {
+            int[] counts, String success, String tail, String[] data, long dialogueTarget, int dialogueVersion) {
         for (int i = 0; i < rewards.length; i++) {
             L1Item def = ItemTable.getInstance().getTemplate(rewards[i]);
             if (def == null) continue;
@@ -103,6 +158,8 @@ final class NpcCraftCommands {
             if (counts[i] > 1) name += " (" + counts[i] + ")";
             SC_ServerMessage.send(pc, 143, npcName, name);
         }
+        if ((success != null || tail != null)
+                && !HtmlCmdHandler.canReplyToDialogue(pc, dialogueTarget, dialogueVersion)) return;
         if (success != null) SC_NPCTalkReturn.send(pc, objid, success, data);
         if (tail != null) SC_NPCTalkReturn.send(pc, objid, tail, data);
     }

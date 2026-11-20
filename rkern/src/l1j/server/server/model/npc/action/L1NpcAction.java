@@ -21,6 +21,7 @@ package l1j.server.server.model.npc.action;
 import java.util.function.Consumer;
 
 import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.npc.L1NpcHtml;
@@ -51,11 +52,16 @@ public interface L1NpcAction {
     /** Shared entry for talk, HTML command and amount packets. */
     default void dispatch(String name, L1PcInstance pc, L1Object obj, byte[] args, int amount) {
         final int objectId = obj.getId();
-        Consumer<L1NpcHtml> send = html -> {
-            if (html != null && html != DEFERRED) SC_NPCTalkReturn.send(pc, objectId, html);
+        final var client = pc.getNetConnection();
+        final int dialogueVersion = client == null ? 0 : client.npcDialogueVersion();
+        final long dialogueTarget = client == null ? 0 : L1World.getInstance().smartIdOf(obj);
+        Consumer<L1NpcHtml> sendDeferred = html -> {
+            if (html != null && html != DEFERRED
+                    && client != null && client.canReplyToNpcDialogue(pc, dialogueTarget, dialogueVersion))
+                SC_NPCTalkReturn.send(pc, objectId, html);
         };
-        L1NpcHtml result = amount == 0 ? executeDeferred(name, pc, obj, args, send)
-                : executeAmountDeferred(name, pc, obj, amount, send);
-        if (result != DEFERRED) send.accept(result);
+        L1NpcHtml result = amount == 0 ? executeDeferred(name, pc, obj, args, sendDeferred)
+                : executeAmountDeferred(name, pc, obj, amount, sendDeferred);
+        if (result != null && result != DEFERRED) SC_NPCTalkReturn.send(pc, objectId, result);
     }
 }

@@ -29,21 +29,66 @@ public final class KarmaReceiptCheck {
         final List<String> events = new ArrayList<>();
         int karma;
         int granted;
+        int debited;
+        int durableKarma;
+        int revision;
+        boolean currentDialogue = true;
         int attempts;
         boolean busy;
         Outcome outcome;
         Runnable finish;
 
         int getKarma() { return karma; }
-        void addKarma(int delta) { karma += delta; }
-        L1PcInstance getInventory() { return this; }
-        L1ItemInstance storeItem(int id, int count) { return null; }
+        int applyKarmaReceipt(int delta) { karma = L1Karma.clamp(karma + delta); return ++revision; }
+        int getId() { return 1; }
+        long getCacheDSessionEpoch() { return 7; }
+        Client getNetConnection() { return new Client(); }
+    }
+
+    static final class Client {
+        int npcDialogueVersion() { return 3; }
+    }
+
+    static final class HtmlCmdHandler {
+        static boolean canReplyToDialogue(L1PcInstance pc, long id, int version) {
+            return pc.currentDialogue && version == 3;
+        }
+    }
+
+    static final class L1World {
+        static L1World getInstance() { return new L1World(); }
+        long smartIdOf(L1NpcInstance npc) { return npc.getId(); }
+    }
+
+    static final class L1Karma {
+        static int clamp(int value) { return Math.max(-15_500_000, Math.min(value, 15_500_000)); }
+    }
+
+    static final class MySqlCharacterStorage {
+        static void writeKarmaReceipt(L1PcInstance pc, int id, int karma) {
+            check(id == pc.getId(), "karma written for receipt owner");
+            pc.durableKarma = karma;
+        }
+    }
+
+    static final class CacheD {
+        static CacheD getInstance() { return new CacheD(); }
+        void publishKarmaReceipt(int id, long epoch, int revision) {
+            check(id == 1 && epoch == 7 && revision == 1, "publish with session epoch/revision");
+        }
+    }
+
+    static final class SC_NPCTalkReturn {
+        static void send(L1PcInstance pc, int objId, String page) {
+            pc.events.add("page:" + objId + ":" + page);
+        }
     }
 
     static final class L1NpcInstance {
         final int id;
         L1NpcInstance(int id) { this.id = id; }
         int getNpcId() { return id; }
+        int getId() { return id + 1000; }
         L1NpcInstance getNpcTemplate() { return this; }
         String get_name() { return "npc-" + id; }
     }
@@ -70,14 +115,18 @@ public final class KarmaReceiptCheck {
     static final class L1InventoryTransaction implements AutoCloseable {
         private final L1PcInstance pc;
         private L1ItemInstance reward;
+        private int debit;
         private Runnable failure;
+        private Runnable durable;
+        private java.util.function.Consumer<L1PcInstance> sql;
         private boolean submitted;
 
         private L1InventoryTransaction(L1PcInstance pc) { this.pc = pc; }
 
         static L1InventoryTransaction begin(L1PcInstance pc, int resource) {
             if (pc.busy) throw new IllegalStateException("busy");
-            check(resource == 80056 || resource == 80074, "NPC receipt key");
+            check(resource == 80050 || resource == 80056 || resource == 80064 || resource == 80074,
+                    "NPC receipt key");
             pc.busy = true;
             return new L1InventoryTransaction(pc);
         }
@@ -88,6 +137,16 @@ public final class KarmaReceiptCheck {
             return reward = new L1ItemInstance(id, count);
         }
 
+        boolean debit(int id, int count) {
+            check(id == 40718 || id == 40678, "crystal template");
+            if (pc.outcome == Outcome.MISSING_ITEM) return false;
+            debit = count;
+            return true;
+        }
+
+        void requireTables(String table) { check(table.equals("characters"), "require transactional character rows"); }
+        void sql(java.util.function.Consumer<L1PcInstance> action) { sql = action; }
+        void onDurableCommit(Runnable action) { durable = action; }
         void onFailure(Runnable failure) { this.failure = failure; }
 
         void commitAfterInventoryRelease(Runnable success) {
@@ -98,7 +157,10 @@ public final class KarmaReceiptCheck {
                 pc.busy = false;
                 if (pc.outcome == Outcome.ROLLBACK) failure.run();
                 else {
-                    pc.granted += reward.count();
+                    sql.accept(pc);
+                    if (reward != null) pc.granted += reward.count();
+                    pc.debited += debit;
+                    durable.run();
                     success.run();
                 }
             };
@@ -141,7 +203,8 @@ public final class KarmaReceiptCheck {
         pc.finish.run();
         if (outcome == Outcome.COMMIT) {
             int after = before + (int) ((blood ? 500 : -500) * count * rate);
-            check(pc.karma == after && pc.granted == count && !pc.busy, "commit applied once");
+            check(pc.karma == after && pc.durableKarma == after && pc.granted == count && !pc.busy,
+                    "both rows and memory committed");
             check(pc.events.equals(List.of("karma:" + after,
                     "grant:143:npc-" + npc.id + ":" + (blood ? 40718 : 40678) + " x" + count,
                     "code:" + (blood ? 1081 : 1080))), "legacy success order and IDs");
@@ -163,6 +226,41 @@ public final class KarmaReceiptCheck {
         check(pc.finish == null && !pc.busy && pc.events.isEmpty(), "invalid input does not submit");
     }
 
+    static void reverse(boolean blood, String command, int count, Outcome outcome, boolean dialogue) {
+        cases++;
+        Config.RATE_KARMA = 2.5;
+        var pc = new L1PcInstance();
+        pc.outcome = outcome;
+        pc.karma = blood ? -15_500_000 : 15_500_000;
+        pc.durableKarma = pc.karma;
+        pc.busy = outcome == Outcome.BUSY;
+        var npc = new L1NpcInstance(blood ? 80050 : 80064);
+        int before = pc.karma;
+        check(exchangeCrystalForKarma(pc, npc, command, blood), "recognized reverse command");
+        check(pc.karma == before && pc.debited == 0, "no reverse effects before COMMIT");
+        if (pc.finish != null) {
+            pc.currentDialogue = dialogue;
+            // Ordinary karma can change between admission and the SQL worker.
+            if (outcome == Outcome.COMMIT) pc.karma = blood ? -120 : 120;
+            pc.finish.run();
+        }
+        if (outcome == Outcome.COMMIT) {
+            int expected = (blood ? -120 : 120) + (int) ((blood ? -100 : 100) * count * Config.RATE_KARMA);
+            check(pc.debited == count && pc.karma == expected && pc.durableKarma == expected,
+                    "debit and latest ordinary karma committed together");
+            int page = count == 1 ? 7 : count == 10 ? 8 : 9;
+            String success = "page:" + npc.getId() + ":meet" + (blood ? "10" : "00") + page;
+            List<String> notices = new ArrayList<>(List.of("code:" + (blood ? 1079 : 1078), "karma:" + expected));
+            if (dialogue) notices.add(success);
+            check(pc.events.equals(notices), "legacy packet order and stale HTML suppression");
+        } else {
+            check(pc.karma == before && pc.durableKarma == before && pc.debited == 0, "no partial charge");
+            String failure = "page:" + npc.getId() + ":" + (blood ? "meet104" : "meet004");
+            boolean rejected = outcome == Outcome.UNKNOWN || (outcome == Outcome.ROLLBACK && !dialogue);
+            check(pc.events.equals(rejected ? List.of() : List.of(failure)), "existing failure page");
+        }
+    }
+
     public static void main(String[] args) {
         int[] counts = {1, 10, 100};
         for (boolean blood : new boolean[] {true, false}) {
@@ -172,6 +270,13 @@ public final class KarmaReceiptCheck {
                     for (Outcome outcome : Outcome.values()) {
                         runCase(blood, counts[i], Integer.toString(i + 1), minimum, rate, outcome);
                     }
+                }
+            }
+            for (int i = 0; i < counts.length; i++) {
+                String command = String.valueOf("aBc".charAt(i));
+                for (Outcome outcome : Outcome.values()) {
+                    reverse(blood, command, counts[i], outcome, true);
+                    reverse(blood, command, counts[i], outcome, false);
                 }
             }
             rejectedInput(blood, minimum + (blood ? 1 : -1), "1");

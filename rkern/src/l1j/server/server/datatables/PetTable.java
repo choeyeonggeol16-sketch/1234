@@ -17,22 +17,22 @@ import l1j.server.server.templates.L1Pet;
 public class PetTable {
 
 	private static final Logger _log = Logger.getLogger(PetTable.class.getName());
-	private static PetTable _instance;
+	private static volatile PetTable _instance;
 
 	private final TIntObjectMap<L1Pet> _pets = new TIntObjectHashMap<L1Pet>(128);
 
-	public static PetTable getInstance() {
+	public static synchronized PetTable getInstance() {
 		if (_instance == null) {
 			_instance = new PetTable();
 		}
 		return _instance;
 	}
 
-	public static void reload() {
+	public static synchronized void reload() {
 		PetTable oldInstance = _instance;
 		_instance = new PetTable();
-		if (oldInstance != null && oldInstance._pets != null) {
-			oldInstance._pets.clear();
+		if (oldInstance != null) {
+            synchronized (oldInstance._pets) { oldInstance._pets.clear(); }
 		}
 	}
 
@@ -69,38 +69,45 @@ public class PetTable {
 		}
 	}
 
-	public void storeNewPet(L1NpcInstance petInstance, int objid, int itemobjid) {
-		L1Pet l1pet = new L1Pet();
-		l1pet.set_itemobjid(itemobjid);
-		l1pet.set_objid(objid);
-		l1pet.set_npcid(petInstance.getNpcTemplate().get_npcId());
-		l1pet.set_name(petInstance.getNpcTemplate().get_nameid());
-		l1pet.set_level(petInstance.getNpcTemplate().get_level());
-		l1pet.set_hp(petInstance.getMaxHp());
-		l1pet.set_mp(petInstance.getMaxMp());
-		l1pet.set_exp(750);
-		l1pet.set_lawful(0);
-		_pets.put(itemobjid, l1pet);
+    public static L1Pet newPetRecord(L1NpcInstance pet, int objid, int itemobjid) {
+        L1Pet record = new L1Pet();
+        record.set_itemobjid(itemobjid);
+        record.set_objid(objid);
+        record.set_npcid(pet.getNpcTemplate().get_npcId());
+        record.set_name(pet.getNpcTemplate().get_nameid());
+        record.set_level(pet.getNpcTemplate().get_level());
+        record.set_hp(pet.getMaxHp());
+        record.set_mp(pet.getMaxMp());
+        record.set_exp(750);
+        record.set_lawful(0);
+        return record;
+    }
 
-		String sql = "INSERT INTO pets SET item_obj_id=?, objid=?, npcid=?, name=?, lvl=?, hp=?, mp=?, exp=?, lawful=?";
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-			 PreparedStatement pstm = con.prepareStatement(sql)) {
-			
-			pstm.setInt(1, l1pet.get_itemobjid());
-			pstm.setInt(2, l1pet.get_objid());
-			pstm.setInt(3, l1pet.get_npcid());
-			pstm.setString(4, l1pet.get_name());
-			pstm.setInt(5, l1pet.get_level());
-			pstm.setInt(6, l1pet.get_hp());
-			pstm.setInt(7, l1pet.get_mp());
-			pstm.setInt(8, l1pet.get_exp());
-			pstm.setInt(9, l1pet.get_lawful());
-			pstm.execute();
-			
-		} catch (SQLException e) {
-			_log.log(Level.SEVERE, "PetTable storeNewPet error", e);
-		}
-	}
+    public static void insertPet(Connection con, L1Pet record) throws SQLException {
+        try (PreparedStatement insert = con.prepareStatement(
+                "INSERT INTO pets(item_obj_id,objid,npcid,name,lvl,hp,mp,exp,lawful) VALUES(?,?,?,?,?,?,?,?,?)")) {
+            insert.setInt(1, record.get_itemobjid());
+            insert.setInt(2, record.get_objid());
+            insert.setInt(3, record.get_npcid());
+            insert.setString(4, record.get_name());
+            insert.setInt(5, record.get_level());
+            insert.setInt(6, record.get_hp());
+            insert.setInt(7, record.get_mp());
+            insert.setInt(8, record.get_exp());
+            insert.setInt(9, record.get_lawful());
+            if (insert.executeUpdate() != 1) throw new SQLException("Pet insert failed: " + record.get_itemobjid());
+        }
+    }
+
+    public void storeNewPet(L1NpcInstance petInstance, int objid, int itemobjid) {
+        L1Pet record = newPetRecord(petInstance, objid, itemobjid);
+        registerCommittedPet(record);
+        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+            insertPet(con, record);
+        } catch (SQLException e) {
+            _log.log(Level.SEVERE, "PetTable storeNewPet error", e);
+        }
+    }
 
 	public void storePet(L1Pet pet) {
 		String sql = "UPDATE pets SET objid=?, npcid=?, name=?, lvl=?, hp=?, mp=?, exp=?, lawful=? WHERE item_obj_id=?";
@@ -134,7 +141,7 @@ public class PetTable {
 		} catch (SQLException e) {
 			_log.log(Level.SEVERE, "PetTable deletePet error", e);
 		}
-		_pets.remove(itemobjid);
+		synchronized (_pets) { _pets.remove(itemobjid); }
 	}
 
 	/**
@@ -163,6 +170,10 @@ public class PetTable {
 		return true;
 	}
 
+    public static synchronized void publishPurchasedPet(L1Pet pet) {
+        getInstance().registerCommittedPet(pet);
+    }
+
     /** Publish only a pet record already durable with its amulet receipt. */
     public void registerCommittedPet(L1Pet pet) {
         if (pet == null) throw new IllegalArgumentException("pet");
@@ -176,6 +187,6 @@ public class PetTable {
     }
 
 	public L1Pet[] getPetTableList() {
-		return _pets.values(new L1Pet[_pets.size()]);
+		synchronized (_pets) { return _pets.values(new L1Pet[_pets.size()]); }
 	}
 }

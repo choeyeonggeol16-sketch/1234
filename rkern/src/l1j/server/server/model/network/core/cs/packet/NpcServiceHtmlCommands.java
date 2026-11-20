@@ -48,7 +48,7 @@ final class NpcServiceHtmlCommands {
     private NpcServiceHtmlCommands() {}
 
     static void handle(CIOClient client, L1PcInstance pc, L1Object obj, int objid,
-            String s, String s2, String htmlid) throws Exception {
+            String s, String s2, String htmlid, int templateId) throws Exception {
         int[] materials = null;
         int[] counts = null;
         int[] createitem = null;
@@ -64,22 +64,22 @@ final class NpcServiceHtmlCommands {
         } else if (NpcMarketCommands.isWarehouseCommand(s)) {
             NpcMarketCommands.warehouse(pc, objid, s);
             return;
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 200007) {//오류
+        } else if (templateId == 200007) {//오류
             if (s.equalsIgnoreCase("1")) {
                 htmlid = "camus5";
             } else if (s.equalsIgnoreCase("2")) {
                 htmlid = NpcExchangeCommands.prism(pc, objid, _random);
             }
             // 결혼반지 충전
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70702) {
+        } else if (templateId == 70702) {
             if (s.equalsIgnoreCase("chg")) NpcExchangeCommands.rechargeWeddingRing(pc);
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 900106) {// 달나라
+        } else if (templateId == 900106) {// 달나라
             if (s.equalsIgnoreCase("0")) {
                 htmlid = NpcExchangeCommands.moonItem(pc, objid);
             }
 
             // 호슈
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 1000004) {
+        } else if (templateId == 1000004) {
             htmlid = NpcTravelCommands.hyosue(pc, s, htmlid);
         } else if (obj instanceof L1HousekeeperInstance && s.equalsIgnoreCase("g")) {
             if (s.equalsIgnoreCase("g")) {
@@ -168,15 +168,15 @@ final class NpcServiceHtmlCommands {
             }
         } else if (s.equalsIgnoreCase("fix")) {
 
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70012
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70019
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70031
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70054
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70065
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70070
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70075
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70084
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70096) {
+        } else if (templateId == 70012
+                || templateId == 70019
+                || templateId == 70031
+                || templateId == 70054
+                || templateId == 70065
+                || templateId == 70070
+                || templateId == 70075
+                || templateId == 70084
+                || templateId == 70096) {
             SC_SkillSound.send(pc, pc.getId(), 612);
             if (s.equalsIgnoreCase("room")) {
                 if (pc.getInventory().checkItem(40312))
@@ -275,7 +275,7 @@ final class NpcServiceHtmlCommands {
 
         } else if (s.equalsIgnoreCase("return")) {
 
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 900136) {// 말섬 인던 유키
+        } else if (templateId == 900136) {// 말섬 인던 유키
             if (s.equalsIgnoreCase("enter")) {
                 if (pc.isInParty()) {
                     if (pc.getParty().isLeader(pc)) {
@@ -672,75 +672,8 @@ final class NpcServiceHtmlCommands {
                 pc.getQuest().set_step(L1Quest.QUEST_LYRA, 0);
                 htmlid = "lyraev4";
             }
-            int totem = 0;
-            if (pc.getInventory().checkItem(40131)) {
-                totem++;
-            }
-            if (pc.getInventory().checkItem(40132)) {
-                totem++;
-            }
-            if (pc.getInventory().checkItem(40133)) {
-                totem++;
-            }
-            if (pc.getInventory().checkItem(40134)) {
-                totem++;
-            }
-            if (pc.getInventory().checkItem(40135)) {
-                totem++;
-            }
-            if (totem != 0) {
-                materials = new int[totem];
-                counts = new int[totem];
-                createitem = new int[totem];
-                createcount = new int[totem];
-
-                totem = 0;
-                if (pc.getInventory().checkItem(40131)) {
-                    L1ItemInstance l1iteminstance = pc.getInventory().findItemId(40131);
-                    int i1 = l1iteminstance.getCount();
-                    materials[totem] = 40131;
-                    counts[totem] = i1;
-                    createitem[totem] = L1ItemId.ADENA;
-                    createcount[totem] = Math.multiplyExact(i1, 50);
-                    totem++;
-                }
-                if (pc.getInventory().checkItem(40132)) {
-                    L1ItemInstance l1iteminstance = pc.getInventory().findItemId(40132);
-                    int i1 = l1iteminstance.getCount();
-                    materials[totem] = 40132;
-                    counts[totem] = i1;
-                    createitem[totem] = L1ItemId.ADENA;
-                    createcount[totem] = Math.multiplyExact(i1, 100);
-                    totem++;
-                }
-                if (pc.getInventory().checkItem(40133)) {
-                    L1ItemInstance l1iteminstance = pc.getInventory().findItemId(40133);
-                    int i1 = l1iteminstance.getCount();
-                    materials[totem] = 40133;
-                    counts[totem] = i1;
-                    createitem[totem] = L1ItemId.ADENA;
-                    createcount[totem] = Math.multiplyExact(i1, 50);
-                    totem++;
-                }
-                if (pc.getInventory().checkItem(40134)) {
-                    L1ItemInstance l1iteminstance = pc.getInventory().findItemId(40134);
-                    int i1 = l1iteminstance.getCount();
-                    materials[totem] = 40134;
-                    counts[totem] = i1;
-                    createitem[totem] = L1ItemId.ADENA;
-                    createcount[totem] = Math.multiplyExact(i1, 30);
-                    totem++;
-                }
-                if (pc.getInventory().checkItem(40135)) {
-                    L1ItemInstance l1iteminstance = pc.getInventory().findItemId(40135);
-                    int i1 = l1iteminstance.getCount();
-                    materials[totem] = 40135;
-                    counts[totem] = i1;
-                    createitem[totem] = L1ItemId.ADENA;
-                    createcount[totem] = Math.multiplyExact(i1, 200);
-                    totem++;
-                }
-            }
+            NpcCraftCommands.exchangeTotems(pc, obj, objid, htmlid);
+            return;
         } else if (s.equalsIgnoreCase("pandora6") || s.equalsIgnoreCase("cold6") || s.equalsIgnoreCase("balsim3")
                 || s.equalsIgnoreCase("mellin3") || s.equalsIgnoreCase("glen3")) {
             htmlid = s;
@@ -821,7 +754,7 @@ final class NpcServiceHtmlCommands {
                 }
             }
         } else {
-            NpcQuestHtmlCommands.handle(client, pc, obj, objid, s, s2, htmlid);
+            NpcQuestHtmlCommands.handle(client, pc, obj, objid, s, s2, htmlid, templateId);
             return;
         }
         HtmlCmdHandler.finish(pc, obj, objid, htmlid, materials, counts, createitem, createcount,

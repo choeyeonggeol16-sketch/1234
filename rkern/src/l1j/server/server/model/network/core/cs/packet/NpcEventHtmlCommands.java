@@ -34,23 +34,34 @@ import l1j.server.server.utils.CommonUtil;
 final class NpcEventHtmlCommands {
     private NpcEventHtmlCommands() {}
 
+    private static final String[] CLASS_LISTENER_COMMANDS = {"a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7"};
+
+    private static String classListenerCommand(int classId) {
+        var locale = java.util.Locale.getDefault(java.util.Locale.Category.FORMAT);
+        String language = locale.getLanguage();
+        if (locale.getUnicodeLocaleType("nu") == null
+                && (language.isEmpty() || "ko".equals(language) || "en".equals(language)))
+            return CLASS_LISTENER_COMMANDS[classId];
+        return String.format(locale, "a%d", classId);
+    }
+
     static void handle(CIOClient client, L1PcInstance pc, L1Object obj, int objid,
-            String s, String s2, String htmlid) throws Exception {
+            String s, String s2, String htmlid, int templateId) throws Exception {
         int[] materials = null;
         int[] counts = null;
         int[] createitem = null;
         int[] createcount = null;
 
-        if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70644 || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70538
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70560 || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70667
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70725 || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70790
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70884) {
+        if (templateId == 70644 || templateId == 70538
+                || templateId == 70560 || templateId == 70667
+                || templateId == 70725 || templateId == 70790
+                || templateId == 70884) {
                 if (s.equalsIgnoreCase("request blood of evil")) {
                     SC_SystemMessage.send(pc, "아직 시기가 아닌 것 같습니다.");
                     htmlid = "";
 //						return;
                 }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71119) {
+        } else if (templateId == 71119) {
             if (s.equalsIgnoreCase("request las history book")) {
                 materials = Recipes.RECIPE_VALUES_88;
                 counts = Recipes.RECIPE_VALUES_89;
@@ -58,7 +69,7 @@ final class NpcEventHtmlCommands {
                 createcount = NpcCraftCommands.UnitCounts.ONE;
                 htmlid = "";
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71170) {
+        } else if (templateId == 71170) {
             if (s.equalsIgnoreCase("request las weapon manual")) {
                 materials = Recipes.RECIPE_VALUES_90;
                 counts = NpcCraftCommands.UnitCounts.ONE;
@@ -66,10 +77,10 @@ final class NpcEventHtmlCommands {
                 createcount = NpcCraftCommands.UnitCounts.ONE;
                 htmlid = "";
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 6000015) {
+        } else if (templateId == 6000015) {
             if (NpcTravelCommands.towerGate(pc, objid, s)) return;
             // 첩보원(욕망의 동굴측)
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 80067) {
+        } else if (templateId == 80067) {
             if (s.equalsIgnoreCase("n")) {
                 NpcQuestTransactions.spyStart(pc, client, (L1NpcInstance) obj, false);
                 return;
@@ -102,7 +113,7 @@ final class NpcEventHtmlCommands {
                 return;
             }
             /** 드루가 리뉴얼 **/
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 900005) { // 드루가
+        } else if (templateId == 900005) { // 드루가
             if (s.equalsIgnoreCase("a") || s.equalsIgnoreCase("b")
                     || s.equalsIgnoreCase("c") || s.equalsIgnoreCase("d")) {
                 if (pc.getInventory().checkItem(L1ItemId.DRUGA_POKET)) {
@@ -117,14 +128,14 @@ final class NpcEventHtmlCommands {
                 return;
             }
 
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 900017) {// 반쿠
+        } else if (templateId == 900017) {// 반쿠
             if (s.equalsIgnoreCase("buy 7")) {
                 NpcPetCommands.petbuy(client, 900043, 410045, 1);// 녹색 해츨링 7
             } else if (s.equalsIgnoreCase("buy 8")) {
                 NpcPetCommands.petbuy(client, 900044, 410046, 1);// 황색 해츨링 8
             }
             htmlid = "";
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 900048) { // 수상한 요리사
+        } else if (templateId == 900048) { // 수상한 요리사
             if (s.equalsIgnoreCase("0")) {
                 NpcQuestTransactions.npcSingleMaterialExchange(pc, (L1NpcInstance) obj,
                         41921, 45, 410055, null, "suschef5", "$8538");
@@ -133,7 +144,7 @@ final class NpcEventHtmlCommands {
                 htmlid = NpcBuffCommands.featherBuff(pc);
             }
 
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 900000) { // 슈에르메
+        } else if (templateId == 900000) { // 슈에르메
             L1ItemInstance item = null;
             // 60차: 표식 32개 + 100,000 아데나 교환 4종.
             if (s.equalsIgnoreCase("H")) {
@@ -173,7 +184,7 @@ final class NpcEventHtmlCommands {
                 NpcQuestTransactions.dragonEyeUpgrade(pc, (L1NpcInstance) obj, 410037, 410035, 410038, 20);
                 return;
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 900105) { // 마에노브
+        } else if (templateId == 900105) { // 마에노브
             // Nine floor tickets, same item IDs/coordinates as the original branches.
             final int floor = s.length() == 1 ? Character.toUpperCase(s.charAt(0)) - 'A' : -1;
             if (floor >= 0 && floor <= 8) {
@@ -185,8 +196,8 @@ final class NpcEventHtmlCommands {
                         x, y, 116 + floor * 10);
                 return;
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() >= 900090
-                && ((L1NpcInstance) obj).getNpcTemplate().get_npcId() <= 900098) { // 오만의탑
+        } else if (templateId >= 900090
+                && templateId <= 900098) { // 오만의탑
                                                                                     // 리뉴얼
                                                                                     // 마에노브의불꽃
                                                                                     // 16
@@ -197,26 +208,26 @@ final class NpcEventHtmlCommands {
                 return;
             }
 
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 900143) { // 말섬 인던 보조원
+        } else if (templateId == 900143) { // 말섬 인던 보조원
             if (s.equalsIgnoreCase("a")) {
                 // L1Teleport.teleport(pc, 32583, 32924, (short) 0, 5, true);
                 pc.start_teleport(32583, 32924, 0, 5, 169, true, false);
                 htmlid = "";
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70009) { // 게렝
+        } else if (templateId == 70009) { // 게렝
             htmlid = NpcExperienceCommands.게렝(pc, s);
             // 클라우디아 수정요청 //엔피시 번호확인하세요
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 900146) { // 휴그린트
+        } else if (templateId == 900146) { // 휴그린트
             if (s.equalsIgnoreCase("0")) htmlid = NpcExchangeCommands.hugrint(pc, objid);
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70842) { // 마르바
+        } else if (templateId == 70842) { // 마르바
             htmlid = NpcQuestTransactions.마르바(pc, obj, s);
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70840) { //로빈후드
+        } else if (templateId == 70840) { //로빈후드
             NpcQuestTransactions.moonbow(pc, (L1NpcInstance) obj, s, false);
             return;
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 600005) {// 지브릴
+        } else if (templateId == 600005) {// 지브릴
             NpcQuestTransactions.moonbow(pc, (L1NpcInstance) obj, s, true);
             return;
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 71179) { // 디에츠(빛고목제작)
+        } else if (templateId == 71179) { // 디에츠(빛고목제작)
             if (s.equalsIgnoreCase("A")) {// 복원된 고대의 목걸이
                 ThreadLocalRandom random = ThreadLocalRandom.current();
                 if (pc.getInventory().checkItem(49028, 1) && pc.getInventory().checkItem(49029, 1)
@@ -261,7 +272,7 @@ final class NpcEventHtmlCommands {
                 }
             }
             // 첩보원(그림자의 신전측)
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 81202) {
+        } else if (templateId == 81202) {
             // 「화가 나지만 승낙한다」
             if (s.equalsIgnoreCase("n")) {
                 NpcQuestTransactions.spyStart(pc, client, (L1NpcInstance) obj, true);
@@ -295,7 +306,7 @@ final class NpcEventHtmlCommands {
                 return;
             }
             // 초보자 도우미
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 9274) {
+        } else if (templateId == 9274) {
             if (s.equals("A")) {
                 NpcQuestTransactions.tutorialArmor(pc, (L1NpcInstance) obj);
                 return;
@@ -305,27 +316,27 @@ final class NpcEventHtmlCommands {
                 MJDogFightHistory.getInstance().on_show_ticket_ration_view(pc, (L1NpcInstance) obj);
             }
             // 버경 승률처리 start
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70035
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70041
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70042) {
+        } else if (templateId == 70035
+                || templateId == 70041
+                || templateId == 70042) {
             if (s.equals("status")) {
                 SC_RaceBoard.send(pc, 1, pc.isGm());
             }
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 777849) { // 킬톤
+        } else if (templateId == 777849) { // 킬톤
             if (s.equalsIgnoreCase("0")) htmlid = NpcExchangeCommands.contract(pc, objid, true);
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 777848) { // 메린
+        } else if (templateId == 777848) { // 메린
             if (s.equalsIgnoreCase("0")) htmlid = NpcExchangeCommands.contract(pc, objid, false);
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70000) { // 마빈
+        } else if (templateId == 70000) { // 마빈
             htmlid = NpcExperienceCommands.marbin(pc, objid, s, htmlid);
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70908) {
+        } else if (templateId == 70908) {
             htmlid = NpcExchangeCommands.piers(pc, (L1NpcInstance) obj, objid, s, htmlid);
             // 시장 경비병/시장 중심지 이동
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 50025
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 50032
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 50048
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 50058
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5067
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5070) {
+        } else if (templateId == 50025
+                || templateId == 50032
+                || templateId == 50048
+                || templateId == 50058
+                || templateId == 5067
+                || templateId == 5070) {
             if (s.equals("market-giran") || s.equals("teleport Mobjtele2")) {
                 int[] loc = L1TownLocation.getGetBackLoc(L1TownLocation.TOWNID_GIRAN);
                 pc.start_teleport(loc[0], loc[1], loc[2], pc.getHeading(), 169, true, false);
@@ -345,23 +356,23 @@ final class NpcEventHtmlCommands {
                 pc.start_teleport(32800, 32927, 800, pc.getHeading(), 169, true, false);
             }
             // 적대적인 얼음 여왕 근위병
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5079) {
+        } else if (templateId == 5079) {
             if (s.equalsIgnoreCase("enter")) {
                 QueenSystem.getInstance().startQueen(pc);
             }
             // 우호적인 얼음 여왕 근위병
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5078) {
+        } else if (templateId == 5078) {
             if (s.equalsIgnoreCase("enter")) {
                 DemonSystem.getInstance().startDemon(pc);
             }
             // 상아탑 첩보원
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5086) {
+        } else if (templateId == 5086) {
             if (s.equalsIgnoreCase("a") || s.equalsIgnoreCase("b")) {
                 NpcQuestTransactions.iceCaveSupplies(pc, (L1NpcInstance) obj, s.equalsIgnoreCase("a"));
                 return;
             }
             // 스빈
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5087) {
+        } else if (templateId == 5087) {
             if (s.equalsIgnoreCase("a")) {
                 // NpcExchangeCommands.createNewItem(pc, npcName, 49031, 1, 0); // 얼음 결정체
                 // NpcExchangeCommands.createNewItem(pc, npcName, 21081, 1, 0); // 얼음 귀걸이
@@ -372,10 +383,10 @@ final class NpcEventHtmlCommands {
                 htmlid = "";
             }
             // 베테르랑
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5111) {
+        } else if (templateId == 5111) {
             htmlid = NpcExchangeCommands.veteran(pc, (L1NpcInstance) obj, s, htmlid);
             // 캐릭터 지원단
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5112) {
+        } else if (templateId == 5112) {
             L1NpcInstance npc = (L1NpcInstance) obj;
             String npcName = npc.getNpcTemplate().get_name();
             if (s.equals("a")) { // 1.레벨 상승(최대 75레벨)
@@ -404,22 +415,22 @@ final class NpcEventHtmlCommands {
                 htmlid = "lind_sm8";
             }
             // 반지개방
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5162) {
+        } else if (templateId == 5162) {
             if (NpcQuestTransactions.unlockEquipmentSlot(pc, s)) return;
             // 안톤
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70614) {
+        } else if (templateId == 70614) {
             htmlid = NpcExchangeCommands.anton(pc, (L1NpcInstance) obj, s, htmlid);
 
             // 카너스
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5125) {
+        } else if (templateId == 5125) {
             htmlid = NpcTravelCommands.카너스(pc, s);
             // 다크엘프 생존자
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5131) {
+        } else if (templateId == 5131) {
             if (s.equals("exitghost")) {
                 pc.endGhost();
             }
             // 수호병사 OUT
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5128) {
+        } else if (templateId == 5128) {
             if (s.equals("a")) {
                 // L1Teleport.teleport(pc, 32614, 33195, (short) 4,
                 // pc.getHeading(), true);
@@ -428,29 +439,29 @@ final class NpcEventHtmlCommands {
             }
 
             // 수호병사 IN
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5130) {
+        } else if (templateId == 5130) {
             if (s.equals("a")) {
                 pc.start_teleport(32617, 33215, 4, pc.getHeading(), 169, true, false);
                 htmlid = "";
             }
             // 감시자의 눈
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5133) {
+        } else if (templateId == 5133) {
             if (s.equals("exitghost")) {
                 pc.endGhost();
             }
             // 비자야
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 470000350) {
+        } else if (templateId == 470000350) {
             if (!NpcGameEventActions.enterClanRaid(pc, s)) return;
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 460000350) {
+        } else if (templateId == 460000350) {
             if (!NpcGameEventActions.enterBossRaid(pc)) return;
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 5161) {
+        } else if (templateId == 5161) {
             htmlid = NpcExchangeCommands.비자야(pc, obj, s);
             /** 마을 강화 버프사 통합 **/
-        } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 900088
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 7310100
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 7132
-                || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() >= 5000
-                && ((L1NpcInstance) obj).getNpcTemplate().get_npcId() <= 5012) {
+        } else if (templateId == 900088
+                || templateId == 7310100
+                || templateId == 7132
+                || templateId >= 5000
+                && templateId <= 5012) {
             NpcSpellScrollCommands.handle(pc, objid, s);
             return;
         } else {
@@ -464,7 +475,8 @@ final class NpcEventHtmlCommands {
             }
 
             if(npcid == 70751 && s.equalsIgnoreCase("a")){
-                listener = ActionListenerLoader.getInstance().findListener(npcid, String.format("a%d", EClassesType.fromGfx(pc.getClassId()).toInt()));
+                int classId = EClassesType.fromGfx(pc.getClassId()).toInt();
+                listener = ActionListenerLoader.getInstance().findListener(npcid, classListenerCommand(classId));
             }else{
                 listener = ActionListenerLoader.getInstance().findListener(npcid, s);
             }

@@ -64,16 +64,16 @@ final class HtmlCmdHandler {
         //	System.out.println("Action : " + s);
             L1Object obj = L1World.getInstance().findObject(objid);
             if (!dispatchTarget(pc, obj, objid, s)) return;
-
+            if (obj instanceof L1NpcInstance npc) trackDialogue(client, npc, false);
             if (dispatchRegisteredAction(pc, obj, s, actionData)) return;
-            if (!(obj instanceof L1NpcInstance)) return;
+            if (!(obj instanceof L1NpcInstance npc)) return;
 
             NpcCastleActions.sendTaxScreens(pc, obj, s);
 
             if (s.equalsIgnoreCase("mayer3")) {
                 htmlid = "mayer3";
             }
-            NpcServiceHtmlCommands.handle(client, pc, obj, objid, s, s2, htmlid);
+            NpcServiceHtmlCommands.handle(client, pc, obj, objid, s, s2, htmlid, npc.getNpcId());
         } catch (Exception e) {
             LOG.log(java.util.logging.Level.WARNING, "NPC command execution failed", e);
         }
@@ -110,6 +110,15 @@ final class HtmlCmdHandler {
                 && Math.abs((long) pc.getY() - npc.getY()) <= 6;
     }
 
+    static void trackDialogue(CIOClient client, L1NpcInstance npc, boolean newTalk) {
+        client.trackNpcDialogue(L1World.getInstance().smartIdOf(npc), newTalk);
+    }
+
+    static boolean canReplyToDialogue(L1PcInstance pc, long target, int version) {
+        final CIOClient client = pc.getNetConnection();
+        return client != null && client.canReplyToNpcDialogue(pc, target, version);
+    }
+
     /** Existing target policy and pre-dispatch side effects; false stops the packet. */
     private static boolean dispatchTarget(L1PcInstance pc, L1Object obj, int objid, String s) {
         if (obj != null) {
@@ -121,7 +130,8 @@ final class HtmlCmdHandler {
                 if (!isNpcTargetInRange(pc, npc)) return false;
 
     //
-                if(npc.getNpcId() == 7000020 || npc.getNpcId() == 460000378 || npc.getNpcId() == 460000379){ //기감 시간 초기화 에러 방지 neige
+                final int templateId = npc.getNpcId();
+                if (templateId == 7000020 || templateId == 460000378 || templateId == 460000379) { //기감 시간 초기화 에러 방지 neige
                     if(pc.getAccount().gethero21() != nd ){
                         if(Config.네쥬던전체킹 == 1){
                             DungeonTimeProgressLoader.delete(pc);
@@ -136,8 +146,7 @@ final class HtmlCmdHandler {
                                 System.out.println("던전체킹 2 , 네쥬 기감 초기화 : "+pc.getName());
                             }
                         }
-                        pc.getAccount().sethero21(nd);
-                        pc.getAccount().updateHero21();
+                        pc.getAccount().updateHero21(pc.getId(), nd);
                     }
                 }
                 npc.onFinalAction(pc, s);

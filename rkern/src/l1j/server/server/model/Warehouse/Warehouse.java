@@ -383,6 +383,7 @@ public abstract class Warehouse extends L1Object {
         result.set_bless_level2(source.get_bless_level2());
         result.set_item_level(source.get_item_level());
         result.setHotel_Town(source.getHotel_Town());
+        result.setKeyId(source.getKeyId());
         result.setEndTime(copyTime(source.getEndTime()));
         return result;
     }

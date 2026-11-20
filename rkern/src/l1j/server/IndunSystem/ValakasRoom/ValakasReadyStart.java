@@ -1,64 +1,63 @@
 package l1j.server.IndunSystem.ValakasRoom;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.map.L1WorldMap;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 public class ValakasReadyStart {
+    private static final ValakasReadyStart INSTANCE = new ValakasReadyStart();
+    private static final int FIRST_MAP = 2699;
+    private static final int CAPACITY = 49;
+    private final ConcurrentHashMap<Integer, ValakasReady> rooms = new ConcurrentHashMap<>();
 
-	private static ValakasReadyStart _instance;
+    public static ValakasReadyStart getInstance() {
+        return INSTANCE;
+    }
 
-	private final Map<Integer, ValakasReady> _readylist = new ConcurrentHashMap<Integer, ValakasReady>();
+    public ValakasReady reserve(L1PcInstance pc) {
+        final ValakasReady room;
+        final int id;
+        synchronized (rooms) {
+            if (rooms.size() >= CAPACITY) return null;
+            int candidate = FIRST_MAP;
+            while (rooms.containsKey(candidate)) candidate++;
+            id = candidate;
+            room = new ValakasReady(id, pc);
+            rooms.put(id, room);
+        }
+        try {
+            if (id != FIRST_MAP) L1WorldMap.getInstance().cloneMap(FIRST_MAP, id);
+            ValakasRoomSpawn spawn = ValakasRoomSpawn.getInstance();
+            room.BasicNpcList = spawn.fillRequiredSpawnTable(id, 0);
+            return room;
+        } catch (RuntimeException failure) {
+            discard(room);
+            throw failure;
+        }
+    }
 
-	public static ValakasReadyStart getInstance() {
-		if (_instance == null) {
-			_instance = new ValakasReadyStart();
-		}
-		return _instance;
-	}
+    public void enter(ValakasReady room, L1PcInstance pc) {
+        room.Start();
+        pc.isInValakas = true;
+        pc.start_teleport(32624, 33059, room.mapId(), 5, 169, true, false);
+    }
 
-	public void startReady(L1PcInstance pc) {
-		if (countReadyRaid() >= 49) {
-			SC_SystemMessage.send(pc, "인스턴스 던전을 더 이상 생성할수 없습니다.");
-			return;
-		}
-		int id = blankMapId();
-		if (id != 2699)
-			L1WorldMap.getInstance().cloneMap(2699, id);
-		ValakasReady ar = new ValakasReady(id, pc);
-		pc.isInValakas = true;
-//		L1Teleport.teleport(pc, 32624, 33059, (short) id, 5, false);
-		pc.start_teleport(32624, 33059, id, 5, 169, true, false);
-		ar.BasicNpcList = ValakasRoomSpawn.getInstance().fillSpawnTable(id, 0, true);
-		_readylist.put(id, ar);
-		ar.Start();
-	}
+    public void cancel(ValakasReady room) {
+        if (ThreadPool.getInstance().schedule(() -> discard(room), 1L) == null)
+            discard(room);
+    }
 
-	/**
-	 * 빈 맵 아이디를 가져온다
-	 * 
-	 * @return
-	 */
-	public int blankMapId() {
-		if (_readylist.size() == 0)
-			return 2699;
-		for (int i = 2699; i <= 2798; i++) {
-			ValakasReady h = _readylist.get(i);
-			if (h == null)
-				return i;
-		}
-		return 2798;
-	}
+    private void discard(ValakasReady room) {
+        room.endRaid();
+    }
 
-	public void removeReady(int id) {
-		_readylist.remove(id);
-	}
+    void remove(ValakasReady room) {
+        rooms.remove(room.mapId(), room);
+    }
 
-	public int countReadyRaid() {
-		return _readylist.size();
-	}
-
+    public int countReadyRaid() {
+        return rooms.size();
+    }
 }

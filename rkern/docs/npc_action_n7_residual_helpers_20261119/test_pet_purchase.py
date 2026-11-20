@@ -1,39 +1,200 @@
+"""Run the production pet purchase handler against controlled receipts."""
 from pathlib import Path
-import tempfile, subprocess, re
-root=Path(__file__).resolve().parents[2]
-s=(root/'src/l1j/server/server/model/network/core/cs/packet/NpcPetCommands.java').read_text()
-m=re.search(r'static void petbuy\([^\n]*\) \{',s);p=s.index('{',m.start());d=1;i=p+1
-while d:
-    if s[i]=='{':d+=1
-    elif s[i]=='}':d-=1
-    i+=1
-method=s[m.start():i]
-java='''import java.util.*;
-class PetTest {
-static int checks;static void ck(boolean b){checks++;if(!b)throw new AssertionError("case "+checks);}
-static class L1ItemInstance {int getId(){return 123;}}
-static class L1PcInventory {boolean has,consume,grant;int size,debits,grants,lastId,lastCount;boolean checkItem(int id,int n){return has;}boolean consumeItem(int id,int n){debits++;lastId=id;lastCount=n;return consume;}int getSize(){return size;}L1ItemInstance storeItem(int id,int n){grants++;ck(id==40314&&n==1);return grant?new L1ItemInstance():null;}}
-static class L1NpcInstance {int cost;int getPetcost(){return cost;}L1NpcInstance getNpcTemplate(){return this;}int get_npcId(){return 46044;}}
-static class L1MonsterInstance extends L1NpcInstance {boolean dead;boolean isDead(){return dead;}}
-static class L1PetInstance extends L1NpcInstance {L1PetInstance(){}L1PetInstance(L1MonsterInstance m,L1PcInstance pc,int id){pc.pets++;ck(id==123);}}
-static class Ability{int cha;int getTotalCha(){return cha;}}
-static class L1PcInstance {int clazz,spawned,pets,messages,names;boolean hasType=true;L1NpcInstance spawnResult;L1PcInventory inv=new L1PcInventory();Ability a=new Ability();Map<Integer,L1NpcInstance> pl=new HashMap<>();L1PcInventory getInventory(){return inv;}Ability getAbility(){return a;}Map<Integer,L1NpcInstance> getPetList(){return pl;}boolean isCrown(){return clazz==1;}boolean isElf(){return clazz==2;}boolean isWizard(){return clazz==3;}boolean isDarkelf(){return clazz==4;}boolean isDragonknight(){return clazz==5;}boolean isBlackwizard(){return clazz==6;}}
-static class CIOClient{L1PcInstance p;CIOClient(L1PcInstance p){this.p=p;}L1PcInstance getActiveChar(){return p;}}
-static class SC_ServerMessage{static void send(L1PcInstance p,int n){p.messages++;ck(n==489);}}
-static class SC_ItemName{static void send(L1PcInstance p,L1ItemInstance i){p.names++;}}
-static class L1SpawnUtil{static L1NpcInstance spawn(L1PcInstance p,int id,int a,int b,int c){p.spawned++;return p.spawnResult;}}
-static class L1PetType{}
-static boolean typeExists;static class PetTypeTable{static PetTypeTable getInstance(){return new PetTypeTable();}L1PetType get(int n){return typeExists?new L1PetType():null;}}
-'''+method+'''
-public static void main(String[] args){
- petbuy(new CIOClient(null),46044,41159,1000);
- for(int clazz=0;clazz<=6;clazz++)for(int cha:new int[]{0,5,6,12,20})for(int cost:new int[]{0,6,18})for(boolean has:new boolean[]{false,true})for(boolean debit:new boolean[]{false,true})for(int spawn=0;spawn<4;spawn++)for(boolean type:new boolean[]{false,true})for(int size:new int[]{179,180})for(boolean grant:new boolean[]{false,true}){
- L1PcInstance p=new L1PcInstance();p.clazz=clazz;p.a.cha=cha;p.inv.has=has;p.inv.consume=debit;p.inv.size=size;p.inv.grant=grant;typeExists=type;L1PetInstance pet=new L1PetInstance();pet.cost=cost;p.pl.put(1,pet);if(spawn==1)p.spawnResult=new L1NpcInstance();if(spawn>=2){L1MonsterInstance m=new L1MonsterInstance();m.dead=spawn==3;p.spawnResult=m;}
- int available=cha+(clazz==0?0:clazz==2?12:6)-cost;boolean admitted=available/6>0;boolean paid=admitted&&has&&debit;boolean stored=paid&&spawn==2&&type&&available>=6&&size<180;
- petbuy(new CIOClient(p),46044,41159,1000);ck(p.inv.debits==(admitted&&has?1:0));ck(p.spawned==(paid?1:0));ck(p.inv.grants==(stored?1:0));ck(p.pets==(stored&&grant?1:0)&&p.names==p.pets);ck(p.messages==(admitted?0:1));if(admitted&&has)ck(p.inv.lastId==41159&&p.inv.lastCount==1000);
- }
- System.out.println("Typed pet assertions passed: "+checks);
-}}
+import subprocess
+import tempfile
+
+root = Path(__file__).resolve().parents[2]
+source = (root / 'src/l1j/server/server/model/network/core/cs/packet/NpcPetCommands.java').read_text(encoding='utf-8')
+method = source[source.index('    static void petbuy('):source.index('    static void withdrawPets(')]
+
+java = r'''
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
+public class PetTest {
+    static final Logger LOG = Logger.getLogger("PetTest");
+    static int checks;
+    static L1PcInstance pc;
+    static void check(boolean value) {
+        checks++;
+        if (!value) throw new AssertionError("check " + checks);
+    }
+
+    static class L1NpcInstance {
+        int cost = 6;
+        int getPetcost() { return cost; }
+        boolean isDead() { return false; }
+    }
+
+    static final class L1MonsterInstance extends L1NpcInstance {
+        @Override boolean isDead() { return pc.deadTemplate; }
+    }
+
+    static final class L1PetInstance extends L1NpcInstance {
+        int getId() { return 31; }
+        static L1PetInstance prepareNpcPurchase(L1NpcInstance target, L1PcInstance owner, int id) {
+            check(owner == pc && id == 42);
+            if (owner.failConstruct) throw new IllegalStateException();
+            return new L1PetInstance();
+        }
+        void enterPurchasedPetWorld() {
+            if (pc.failWorld) throw new IllegalStateException();
+            pc.worldPets++;
+        }
+    }
+
+    static final class L1PcInstance {
+        final Map<Integer, L1NpcInstance> pets = new HashMap<>();
+        int classId, charisma, size, worldPets, paid, amulets, rows, published, messages, names;
+        boolean available = true, petType = true, template = true, grant = true;
+        boolean deadTemplate, failConstruct, failWorld;
+        Runnable finish;
+        L1PcInstance getAbility() { return this; }
+        int getTotalCha() { return charisma; }
+        boolean isCrown() { return classId == 1; }
+        boolean isElf() { return classId == 2; }
+        boolean isWizard() { return classId == 3; }
+        boolean isDarkelf() { return classId == 4; }
+        boolean isDragonknight() { return classId == 5; }
+        boolean isBlackwizard() { return classId == 6; }
+        Map<Integer, L1NpcInstance> getPetList() { return pets; }
+        L1PcInstance getInventory() { return this; }
+        int getSize() { return size; }
+        L1ItemInstance getItem(int id) { return amulets > 0 && id == 42 ? new L1ItemInstance() : null; }
+    }
+
+    record CIOClient(L1PcInstance getActiveChar) {}
+    record L1Pet(int npc, int id) {}
+    static final class L1ItemInstance {
+        boolean isStackable() { return false; }
+        int getId() { return 42; }
+    }
+    static final class PetTypeTable {
+        static PetTypeTable getInstance() { return new PetTypeTable(); }
+        Object get(int id) { return pc.petType ? this : null; }
+    }
+    static final class NpcTable {
+        static NpcTable getInstance() { return new NpcTable(); }
+        L1NpcInstance newNpcInstance(int id) { return pc.template ? new L1MonsterInstance() : null; }
+    }
+    static final class PetTable {
+        static PetTable getInstance() { return new PetTable(); }
+        static L1Pet newPetRecord(L1NpcInstance target, int id, int item) { return new L1Pet(id, item); }
+        static void insertPet(Object connection, L1Pet pet) {
+            check(pet.npc() == 31 && pet.id() == 42);
+            pc.rows++;
+        }
+        static void publishPurchasedPet(L1Pet pet) { pc.published++; }
+    }
+    static final class SC_SystemMessage {
+        static void send(L1PcInstance pc, String message) { pc.messages++; }
+    }
+    static final class SC_ServerMessage {
+        static void send(L1PcInstance pc, int id) { check(id == 489 || id == 82); pc.messages++; }
+    }
+    static final class SC_ItemName {
+        static void send(L1PcInstance pc, L1ItemInstance item) { pc.names++; }
+    }
+
+    static final class L1InventoryTransaction implements AutoCloseable {
+        Runnable durable, failure;
+        java.util.function.Consumer<Object> sql;
+        int price;
+        static L1InventoryTransaction begin(L1PcInstance owner, int npc) {
+            check(pc == owner && npc == 46044);
+            return new L1InventoryTransaction();
+        }
+        boolean debit(int item, int price) {
+            check(item == 41159 && price == 1000);
+            this.price = price;
+            return pc.available;
+        }
+        L1ItemInstance grant(int item, int quantity) {
+            check(item == 40314 && quantity == 1);
+            return pc.grant ? new L1ItemInstance() : null;
+        }
+        void requireTables(String table) { check(table.equals("pets")); }
+        void sql(java.util.function.Consumer<Object> sql) { this.sql = sql; }
+        void onDurableCommit(Runnable callback) { durable = callback; }
+        void onFailure(Runnable callback) { failure = callback; }
+        void commitAfterInventoryRelease(Runnable effect) {
+            pc.finish = () -> {
+                sql.accept(this);
+                pc.paid += price;
+                pc.amulets++;
+                durable.run();
+                effect.run();
+            };
+            rollback = failure;
+        }
+        @Override public void close() {}
+    }
+
+    static Runnable rollback;
+''' + method + r'''
+
+    static void buy() {
+        rollback = null;
+        petbuy(new CIOClient(pc), 46044, 41159, 1000);
+        check(pc.paid == 0 && pc.amulets == 0 && pc.rows == 0 && pc.worldPets == 0);
+    }
+
+    public static void main(String[] args) {
+        LOG.setLevel(Level.OFF);
+        for (int classId = 0; classId <= 6; classId++) {
+            for (int charisma : new int[]{0, 5, 6, 12, 20}) {
+                for (int petCost : new int[]{0, 6, 18}) {
+                    pc = new L1PcInstance();
+                    pc.classId = classId;
+                    pc.charisma = charisma;
+                    var pet = new L1PetInstance();
+                    pet.cost = petCost;
+                    pc.pets.put(1, pet);
+                    buy();
+                    int total = charisma + (classId == 0 ? 0 : classId == 2 ? 12 : 6) - petCost;
+                    check((pc.finish != null) == (total >= 6));
+                }
+            }
+        }
+        for (int failure = 0; failure < 7; failure++) {
+            pc = new L1PcInstance();
+            pc.charisma = 12;
+            switch (failure) {
+                case 0 -> pc.size = 180;
+                case 1 -> pc.petType = false;
+                case 2 -> pc.template = false;
+                case 3 -> pc.deadTemplate = true;
+                case 4 -> pc.available = false;
+                case 5 -> pc.grant = false;
+                case 6 -> pc.failConstruct = true;
+                default -> throw new AssertionError();
+            }
+            buy();
+            check(pc.finish == null && rollback == null);
+        }
+        pc = new L1PcInstance();
+        pc.charisma = 12;
+        buy();
+        rollback.run();
+        check(pc.messages == 1 && pc.paid == 0 && pc.amulets == 0 && pc.rows == 0 && pc.worldPets == 0);
+        for (boolean failWorld : new boolean[]{true, false}) {
+            pc = new L1PcInstance();
+            pc.charisma = 12;
+            pc.failWorld = failWorld;
+            buy();
+            pc.finish.run();
+            check(pc.paid == 1000 && pc.amulets == 1 && pc.rows == 1 && pc.published == 1);
+            check(pc.worldPets == (failWorld ? 0 : 1) && pc.names == 1);
+        }
+        System.out.println("PASS pet purchase checks=" + checks);
+    }
+}
 '''
-with tempfile.TemporaryDirectory() as t:
- p=Path(t)/'PetTest.java';p.write_text(java);subprocess.run(['javac','-encoding','UTF-8','--release','21',str(p)],check=True);subprocess.run(['java','-cp',t,'PetTest'],check=True)
+
+with tempfile.TemporaryDirectory() as tmp:
+    file = Path(tmp, 'PetTest.java')
+    file.write_text(java, encoding='utf-8')
+    subprocess.run(['javac', '-encoding', 'UTF-8', '-d', tmp, str(file)], check=True)
+    subprocess.run(['java', '-cp', tmp, 'PetTest'], check=True)

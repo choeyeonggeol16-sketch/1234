@@ -23,6 +23,8 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.Controller.LoginController;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.buffer.ReadBuffer;
 import l1j.server.server.model.network.buffer.WriteBuffer;
 import l1j.server.server.model.network.client.manager.NetworkClientCounter;
@@ -231,6 +233,30 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 		}
 	}
 
+    // Owned by this session's CIO. Only deferred NPC replies use this state.
+    private long npcDialogueTarget;
+    private int npcDialogueVersion;
+
+    public void trackNpcDialogue(long smartId, boolean newTalk) {
+        if (newTalk || smartId != npcDialogueTarget) {
+            npcDialogueTarget = smartId;
+            npcDialogueVersion++;
+        }
+    }
+
+    public int npcDialogueVersion() { return npcDialogueVersion; }
+
+    public boolean canReplyToNpcDialogue(L1PcInstance pc, long smartId, int version) {
+        if (smartId == 0 || npcDialogueTarget != smartId || npcDialogueVersion != version
+                || !isConnected() || _activeChar != pc || pc.getNetConnection() != this
+                || getConnectionState() != ConnectionState.IN_GAME || pc.isDead()
+                || pc.isGhost() || pc.isPrivateShop() || pc.is무인상점() || pc.isAutoClanjoin()) return false;
+        return L1World.getInstance().findObjectBySmartId(smartId) instanceof L1NpcInstance npc
+                && !npc.isDead() && pc.getMapId() == npc.getMapId()
+                && Math.abs((long) pc.getX() - npc.getX()) <= 6
+                && Math.abs((long) pc.getY() - npc.getY()) <= 6;
+    }
+
 	public void setActiveChar(L1PcInstance pc) {
         _connection.onCharacterChanged(pc);
         if (_activeChar != pc || pc == null) {
@@ -238,6 +264,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
             PlaySupport2019.onClientDetached(this);
             automationSession = null;
             clearPssWindowSession();
+            trackNpcDialogue(0L, true);
         }
 		_activeChar = pc;
 	}
