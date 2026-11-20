@@ -28,10 +28,8 @@ public class Server {
     private static final String LOG_PROP =
             "./config/log.properties";
 
-    // Native Windows IOCP transport settings.
-    private static final int IOCP_COMPLETION_WORKERS = 8;
-    private static final int IOCP_ACCEPT_BACKLOG = 5;
-    private static final int IOCP_SEND_LEASES_PER_CONNECTION = 4;
+    private static final int ACCEPT_BACKLOG = 5;
+    private static final int SEND_LEASES_PER_CONNECTION = 4;
 
     private static volatile Server uniqueInstance;
 
@@ -49,6 +47,11 @@ public class Server {
     }
 
     private static volatile l1j.server.server.model.network.core.server.Server gameListener;
+
+    public static boolean isJavaNetworkTransport() {
+        final var listener = gameListener;
+        return listener != null && listener.isJavaTransport();
+    }
 
     /** Sampled native thread15 process and transport health; null before startup. */
     public static l1j.server.server.model.network.core.diagnostics.CPerfMon.Snapshot networkPerformance(){
@@ -83,23 +86,22 @@ public class Server {
             }
             final int connectionCapacity = Math.min(65535,
                     maxOnline + Math.max(256, maxOnline >>> 3));
-            final int ioThreads = IOCP_COMPLETION_WORKERS;
-            // A native socket can own an in-flight SEND and queued
+            // A socket can own an in-flight SEND and queued
             // SEND leases at the same time. One global lease per possible
             // connection rejects valid burst traffic. Bitmap slots are bounded;
             // direct buffers themselves still allocate only on first use.
             final int sendSlots = (int) Math.min(65535L,
-                    (long) connectionCapacity * IOCP_SEND_LEASES_PER_CONNECTION);
+                    (long) connectionCapacity * SEND_LEASES_PER_CONNECTION);
             final int largeSlots = Math.min(connectionCapacity, 256);
             final int largeRecvSlots = Math.min(connectionCapacity, 512);
-            final int backlog = IOCP_ACCEPT_BACKLOG;
+            final int backlog = ACCEPT_BACKLOG;
             final ConnectionConfig config = new ConnectionConfig(address);
             final CIOBufferPool pool = new CIOBufferPool(connectionCapacity,
                     sendSlots, largeRecvSlots, largeSlots);
             final CDummyServerCallback factory = new CDummyServerCallback(
                     CIOThreadCallback.getInstance(), config);
             gameListener = new l1j.server.server.model.network.core.server.Server(address, connectionCapacity,
-                    ioThreads, backlog, pool, factory);
+                    backlog, pool, factory);
             System.out.println("네트워크 서버 연결이 완료되었습니다.");
             return true;
         } catch (Exception e) {
@@ -110,7 +112,7 @@ public class Server {
 
     private static volatile long networkShutdownDeadlineNs;
 
-    /** One deadline across accept stop, native worker join, and Java await. */
+    /** One deadline across accept stop, Selector owner drain, and Java await. */
     public static void stopNewConnections() {
         final l1j.server.server.model.network.core.server.Server listener = gameListener;
         if (listener == null) return;
@@ -136,12 +138,12 @@ public class Server {
                 ? networkShutdownDeadlineNs : System.nanoTime() + 30_000_000_000L;
         final long remaining = Math.max(0L, deadline - System.nanoTime());
         if (remaining == 0L)
-            throw new IllegalStateException("CIO shutdown deadline expired before native Stop");
+            throw new IllegalStateException("CIO shutdown deadline expired before transport stop");
         listener.close(remaining, java.util.concurrent.TimeUnit.NANOSECONDS);
         try {
             if (!listener.awaitTermination(Math.max(0L, deadline - System.nanoTime()),
                     java.util.concurrent.TimeUnit.NANOSECONDS))
-                throw new IllegalStateException("CIO shutdown: native workers still active");
+                throw new IllegalStateException("CIO shutdown: transport owners still active");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("CIO shutdown interrupted", e);

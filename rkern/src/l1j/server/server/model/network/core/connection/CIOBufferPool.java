@@ -131,12 +131,12 @@ public final class CIOBufferPool {
                 _exhaustions.incrementAndGet();
                 return null;
             }
-            CIOBufferEx lease = _leases[slot];
-            if (lease == null) {
-                lease = new CIOBufferEx(this, slot);
-                _leases[slot] = lease;
-            }
             try {
+                CIOBufferEx lease = _leases[slot];
+                if (lease == null) {
+                    lease = new CIOBufferEx(this, slot);
+                    _leases[slot] = lease;
+                }
                 lease.start(send, requested);
                 _borrows.increment();
                 return lease;
