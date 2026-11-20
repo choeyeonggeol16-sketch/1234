@@ -1,0 +1,38 @@
+name: JProRing high-load transport comparison
+
+on:
+  push:
+    branches: [rkern/jproring-high-load-20261120]
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /rkern/src/l1j/server/server/Opcodes.java
+            /rkern/src/l1j/server/server/model/network/buffer/
+            /rkern/src/l1j/server/server/model/network/codec/
+            /rkern/src/l1j/server/server/model/network/core/transport/selector/
+            /rkern/docs/jproring_linux_benchmark_20261120/
+      - name: Run four backends at 1024 and 5000 persistent clients
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          ulimit -n 32768
+          python3 -u rkern/docs/jproring_linux_benchmark_20261120/run.py \
+            --framed --owners 2 --workload persistent --clients 1024 --clients 5000 \
+            --window 8 --payload-bytes 256 --trials 3 --warmup-ms 1500 --measure-ms 2600 \
+            --output "$RUNNER_TEMP/high-load"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: high-load-results
+          path: ${{ runner.temp }}/high-load
+          if-no-files-found: ignore
