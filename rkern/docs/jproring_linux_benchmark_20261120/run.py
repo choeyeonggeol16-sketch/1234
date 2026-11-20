@@ -111,13 +111,14 @@ def main():
     parser.add_argument('--trials', type=int, default=3)
     parser.add_argument('--warmup-ms', type=int, default=750)
     parser.add_argument('--measure-ms', type=int, default=1500)
+    parser.add_argument('--workload', choices=('persistent', 'churn'))
     parser.add_argument('--backend', choices=BACKENDS, action='append')
     parser.add_argument('--cache', type=Path, default=Path(tempfile.gettempdir()) / f'rkern-netty-{NETTY}')
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
     if min(args.trials, args.warmup_ms, args.measure_ms) <= 0:
         parser.error('trials and durations must be positive')
-    args.workloads = WORKLOADS
+    args.workloads = [work for work in WORKLOADS if not args.workload or work[0] == args.workload]
     backends = tuple(args.backend or BACKENDS)
     with tempfile.TemporaryDirectory(prefix='rkern-echo-') as temporary:
         work = Path(temporary)
@@ -128,13 +129,19 @@ def main():
         classpath = os.pathsep.join((str(classes), netty))
         providers = {}
         unavailable = {}
+        failed_rounds = {}
         rows = []
         for i in range(args.trials):
             offset = i % len(backends)
             for backend in backends[offset:] + backends[:offset]:
                 if backend in unavailable:
                     continue
-                provider, batch = server_round(classpath, backend, i + 1, args, work)
+                try:
+                    provider, batch = server_round(classpath, backend, i + 1, args, work)
+                except (OSError, RuntimeError, subprocess.SubprocessError) as failure:
+                    failed_rounds[f'{backend}/{i + 1}'] = str(failure)
+                    print(f'FAILED {backend} trial={i + 1} {failure}', flush=True)
+                    continue
                 if not batch:
                     unavailable[backend] = provider
                 else:
@@ -152,7 +159,7 @@ def main():
                jdk=subprocess.run(['java', '-version'], text=True, capture_output=True, check=True).stderr.splitlines()[0],
                netty=NETTY, revision=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=HERE, text=True).strip(),
                trials=args.trials, warmup_ms=args.warmup_ms, measure_ms=args.measure_ms,
-               providers=providers, unavailable=unavailable)
+               workloads=args.workloads, providers=providers, unavailable=unavailable, failed_rounds=failed_rounds)
     result = io.StringIO(newline='')
     writer = csv.writer(result, lineterminator='\n')
     writer.writerow(FIELDS)
@@ -163,6 +170,8 @@ def main():
         args.output.mkdir(parents=True, exist_ok=True)
         (args.output / 'results.csv').write_text(result.getvalue())
         (args.output / 'environment.json').write_text(json.dumps(env, indent=2, ensure_ascii=False) + '\n')
+    if failed_rounds:
+        raise SystemExit(1)
 
 
 if __name__ == '__main__':
