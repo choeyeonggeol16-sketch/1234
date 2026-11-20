@@ -297,7 +297,7 @@ public final class SelectorTransport implements AutoCloseable {
         public boolean readRaw(ByteBuffer target, IntConsumer completion) {
             owner.requireOwner();
             requireRaw();
-            if (closed || drainReason != null) return false;
+            if (closed || drainReason != null || owner.stopping) return false;
             if (!target.hasRemaining() || target.isReadOnly()) throw new IllegalArgumentException("READ buffer");
             raw.armRead(target, Objects.requireNonNull(completion));
             updateInterest();

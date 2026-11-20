@@ -78,6 +78,7 @@ def measure(cp, location, args, trial, load, mode, logs):
     server_flags = [f'-Drkern.network.javaDirectPacketCommit={str(commit).lower()}',
                     f'-Drkern.network.javaDirectByteAppend={str(append).lower()}']
     if args.jfr:
+        server_flags.append('-Xlog:jfr+startup=off')
         server_flags.append(f'-XX:StartFlightRecording=filename={logs / (server_name + ".jfr")},settings=profile,dumponexit=true')
     server_command = [*base, f'-Xlog:gc,safepoint:file={logs / (server_name + "-gc.log")}',
                       *server_flags, 'GameSendBenchmark', 'server', str(clients), str(owners), str(payload), kind]
@@ -152,15 +153,14 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     logs = output / 'logs'
     logs.mkdir(exist_ok=True)
-    modes = args.mode or list(MODES)
     workloads = args.workload or ['single', 'burst']
+    quota = Path('/sys/fs/cgroup/cpu.max')
     environment = dict(revision=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True, cwd=HERE).strip(),
                        kernel=platform.release(), affinity=sorted(os.sched_getaffinity(0)),
                        jdk=subprocess.run(['java', '-version'], text=True, capture_output=True).stderr.splitlines()[0],
-                       modes=modes, workloads=workloads, trials=args.trials, warmup_ms=args.warmup_ms,
+                       workloads=workloads, trials=args.trials, warmup_ms=args.warmup_ms,
                        measure_ms=args.measure_ms, jfr=args.jfr,
-                       cpu_quota=Path('/sys/fs/cgroup/cpu.max').read_text().strip())
-    (output / 'environment.json').write_text(json.dumps(environment, indent=2) + '\n')
+                       cpu_quota=quota.read_text().strip() if quota.exists() else None)
     failures = []
     with tempfile.TemporaryDirectory(prefix='rkern-game-ab-') as temporary:
         work = Path(temporary)
@@ -168,8 +168,15 @@ def main():
         classes.mkdir(exist_ok=True)
         cp = classpath(classes, args.deps.resolve())
         compile_java(cp, classes, args.classes)
+        socket_class = classes / 'l1j/server/server/model/network/core/connection/CUserSocket.class'
+        candidates_available = b'rkern.network.javaDirectPacketCommit' in socket_class.read_bytes()
+        modes = args.mode or (list(MODES) if candidates_available else ['off'])
+        if not candidates_available and any(mode != 'off' for mode in modes):
+            parser.error('candidate modes are available at benchmark baseline 02b0d4e')
+        environment.update(modes=modes, candidates_available=candidates_available)
+        (output / 'environment.json').write_text(json.dumps(environment, indent=2) + '\n')
         with (output / 'results.csv').open('w', newline='') as file:
-            writer = csv.writer(file)
+            writer = csv.writer(file, lineterminator="\n")
             writer.writerow(FIELDS)
             for load in workloads:
                 for i in range(args.trials):

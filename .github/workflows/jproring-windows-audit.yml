@@ -84,15 +84,14 @@ jobs:
           & $javac -J-Xmx2g --release 21 --enable-preview -encoding UTF-8 -cp $dependencyClasspath -d $classes "@$argumentFile"
           $receive = & $java -cp $classes SelectorFrameReaderTest
           $transport = & $java -cp $classes SelectorTransportTest
-          $results = foreach ($mode in @("false", "true")) {
-              $runtime = Join-Path $env:RUNNER_TEMP "jproring-runtime-$mode"
-              $null = New-Item -ItemType Directory -Path $runtime
-              Push-Location $runtime
-              try { $integration = & $java --enable-preview "-Drkern.network.javaDirectPacketCommit=$mode" "-Drkern.network.javaDirectByteAppend=$mode" -cp "$classes;$dependencyClasspath" SelectorCioIntegrationTest }
-              finally { Pop-Location }
-              "Direct SEND commit ${mode} $($integration -join ' ')"
-          }
+          $runtime = Join-Path $env:RUNNER_TEMP 'jproring-game-runtime'
+          $null = New-Item -ItemType Directory -Path $runtime
+          Push-Location $runtime
+          try {
+              $integration = & $java --enable-preview -XX:MaxDirectMemorySize=8m '-Drkern.test.listenerRestarts=100' `
+                  '-Drkern.test.resetReconnects=1000' -cp "$classes;$dependencyClasspath" SelectorCioIntegrationTest
+          } finally { Pop-Location }
           $receive
           $transport
-          $results
-          (@($platform, $receive, $transport) + @($results)) | Add-Content $env:GITHUB_STEP_SUMMARY
+          $integration
+          @($platform, $receive, $transport) + @($integration) | Add-Content $env:GITHUB_STEP_SUMMARY

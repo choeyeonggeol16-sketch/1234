@@ -10,6 +10,9 @@ on:
       - rkern/docs/jproring_linux_benchmark_20261120/*.java
       - rkern/docs/jproring_linux_benchmark_20261120/run.py
       - rkern/src/l1j/server/server/model/network/**
+      - rkern/src/l1j/server/Server.java
+      - rkern/docs/jproring_cio_integration_20261120/GameSendBenchmark.java
+      - rkern/docs/jproring_cio_integration_20261120/run_game_ab.py
   workflow_dispatch:
 
 permissions:
@@ -24,9 +27,9 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: |
-            rkern/src/l1j/server/server/model/network/buffer
-            rkern/src/l1j/server/server/model/network/codec
-            rkern/src/l1j/server/server/model/network/core/transport/selector
+            rkern/src
+            rkern/docs/jproring_cio_integration_20261120
+            rkern/docs/jproring_selector_transport_20261120
             rkern/docs/jproring_linux_benchmark_20261120
       - name: Run Linux transport benchmark or audit smoke test
         run: |
@@ -39,6 +42,12 @@ jobs:
           else
             python3 -u "$benchmark" --workload churn --output "$RUNNER_TEMP/benchmark"
           fi
+      - name: Verify real game listener burst and capture server metrics
+        if: github.ref_name == 'rkern/jproring-audit-fixes-20261120'
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 -u rkern/docs/jproring_cio_integration_20261120/run_game_ab.py --mode off --workload burst \
+            --trials 1 --warmup-ms 300 --measure-ms 550 --output "$RUNNER_TEMP/benchmark/game"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

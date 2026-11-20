@@ -3,6 +3,7 @@ import java.io.DataInputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -90,6 +91,8 @@ public final class GameSendBenchmark {
             if (threads.isThreadAllocatedMemorySupported() && !threads.isThreadAllocatedMemoryEnabled())
                 threads.setThreadAllocatedMemoryEnabled(true);
             var input = new BufferedReader(new InputStreamReader(System.in));
+            Method commits = optionalCounter("javaDirectPacketCommits");
+            Method appends = optionalCounter("javaDirectByteAppends");
             for (String command; (command = input.readLine()) != null; ) {
                 if (command.equals("STOP")) break;
                 if (command.equals("DIAG")) {
@@ -99,8 +102,8 @@ public final class GameSendBenchmark {
                 }
                 if (!command.equals("SAMPLE")) throw new IllegalArgumentException(command);
                 protocol.printf(Locale.ROOT, "SAMPLE %d %d %d %d %d%n", cpu.getProcessCpuTime(),
-                        threads.getTotalThreadAllocatedBytes(), sessions.stream().mapToLong(CUserSocket::javaDirectPacketCommits).sum(),
-                        sessions.stream().mapToLong(CUserSocket::javaDirectByteAppends).sum(), rejected.get());
+                        threads.getTotalThreadAllocatedBytes(), sumCounter(sessions, commits),
+                        sumCounter(sessions, appends), rejected.get());
             }
             if (rejected.get() != 0) throw new AssertionError("SEND rejected: " + rejected.get());
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
@@ -108,6 +111,7 @@ public final class GameSendBenchmark {
             String pool = Server.networkPoolReport();
             if (!pool.contains("receive slots=0 send slots=0")) throw new AssertionError(pool);
             protocol.println("DRAINED " + pool);
+            sessions.clear();
         } finally {
             try { Server.stopLoginServer(); }
             finally {
@@ -119,6 +123,18 @@ public final class GameSendBenchmark {
                 l1j.server.server.ThreadPool.getInstance().shutdown();
             }
         }
+    }
+
+    private static Method optionalCounter(String name) {
+        try { return CUserSocket.class.getMethod(name); }
+        catch (NoSuchMethodException unavailable) { return null; }
+    }
+
+    private static long sumCounter(Iterable<CUserSocket> sessions, Method counter) throws Exception {
+        if (counter == null) return 0;
+        long result = 0;
+        for (CUserSocket socket : sessions) result += (Long) counter.invoke(socket);
+        return result;
     }
 
     private static void drive(int port, int clients, int window, int payload, int warmupMillis, int measureMillis)

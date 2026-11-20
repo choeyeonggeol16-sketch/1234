@@ -1,0 +1,68 @@
+[
+  {
+    "workload": "burst",
+    "trial": 1,
+    "mode": "off",
+    "error": "expected 'READY', received '', status None"
+  },
+  {
+    "workload": "burst",
+    "trial": 1,
+    "mode": "commit",
+    "error": "expected 'READY', received '', status None"
+  },
+  {
+    "workload": "burst",
+    "trial": 1,
+    "mode": "append",
+    "error": "expected 'READY', received '', status None"
+  },
+  {
+    "workload": "burst",
+    "trial": 1,
+    "mode": "both",
+    "error": "expected 'READY', received '', status None"
+  },
+  {
+    "workload": "burst",
+    "trial": 2,
+    "mode": "append",
+    "error": "expected 'READY', received '', status None"
+  },
+  {
+    "workload": "burst",
+    "trial": 2,
+    "mode": "both",
+    "error": "expected 'READY', received '', status None"
+  },
+  {
+    "workload": "burst",
+    "trial": 2,
+    "mode": "off",
+    "error": "expected 'READY', received '', status None"
+  },
+  {
+    "workload": "burst",
+    "trial": 3,
+    "mode": "append",
+    "error": "expected 'READY', received '', status None"
+  },
+  {
+    "workload": "burst",
+    "trial": 3,
+    "mode": "both",
+    "error": "expected 'READY', received '', status None"
+  },
+  {
+    "workload": "burst",
+    "trial": 3,
+    "mode": "off",
+    "error": "expected 'READY', received '', status None"
+  },
+  {
+    "workload": "burst",
+    "trial": 3,
+    "mode": "commit",
+    "error": "expected 'READY', received '', status None"
+  }
+]

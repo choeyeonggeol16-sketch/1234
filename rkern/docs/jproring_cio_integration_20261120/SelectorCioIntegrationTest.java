@@ -42,15 +42,18 @@ import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupp
 public final class SelectorCioIntegrationTest {
     private static final int ALIVE = Opcodes.C_ALIVE & 255;
     private static final int MOVE = Opcodes.C_MOVE & 255;
-    private static final int BURST = 41;
+    private static final int BURST = 201;
     private static final Pattern POOL_REPORT = Pattern.compile(
             "JProRing direct bytes=(\\d+)/(\\d+) receive slots=(\\d+) send slots=(\\d+).*");
 
     public static void main(String[] arguments) throws Exception {
+        int restarts = Integer.getInteger("rkern.test.listenerRestarts", 1);
+        int reconnects = Integer.getInteger("rkern.test.resetReconnects", 24);
+        check(restarts > 0 && reconnects > 0, "stress iteration counts must be positive");
         check(!Files.exists(Path.of("CTransport.dll")) && !Files.exists(Path.of("CIOPacketCodec.dll")), "DLL-free working directory");
         try {
             Files.createDirectory(Path.of("config"));
-            Files.writeString(Path.of("config/Network.ini"), "DisruptorShardCount=2\nNetworkClientPermission=2\nMaxPacketsPerCompletion=8\n");
+            Files.writeString(Path.of("config/Network.ini"), "DisruptorShardCount=2\nNetworkClientPermission=2\nMaxPacketsPerCompletion=8\nPacketLimitPerSec=10000\n");
             Config.MAX_ONLINE_USERS = 16;
             int gamePort = reservePort();
             Config.GAME_SERVER_PORT = gamePort;
@@ -136,11 +139,22 @@ public final class SelectorCioIntegrationTest {
                     for (int i = 0; i < BURST; i++) expectEncrypted(first, firstCodec, i);
                     expectEncrypted(second, secondCodec, 900);
                     check(responses.get() == BURST + 1 && rejectedOpcodePackets.get() == 0, "packet and session gates reconcile");
+                    verifyFragmentedMaxFrame(first, firstCodec);
                     check(owners.equals(Set.of(0, 1)), "both existing CIO shards performed packet work");
                     check(timer.await(5, TimeUnit.SECONDS), "game timer ran alongside I/O");
                     CUserSocket firstSession = clients.get(0);
                     CUserSocket secondSession = clients.get(900);
                     verifyConcurrentSendFifo(first, firstCodec, firstSession, competingOwnerSend, competingByteSend);
+                    var shareEncodes = new AtomicInteger();
+                    try (var shared = new CAsyncSendConstBuffer(out -> {
+                        shareEncodes.incrementAndGet();
+                        out.put(body(0x45, 1301));
+                    }, -1, Integer.MAX_VALUE)) {
+                        check(shared.send(firstSession, 1) && shared.send(secondSession, 2), "one plaintext fans out across owners");
+                    }
+                    check(shareEncodes.get() == 1, "shared plaintext encoded once");
+                    expectEncrypted(first, firstCodec, 1301);
+                    expectEncrypted(second, secondCodec, 1301);
                     check(firstSession.bindVerifiedMacIdentity(1L), "first verified MAC accepted");
                     check(!secondSession.bindVerifiedMacIdentity(1L), "per-MAC limit enforced");
                     check(secondSession.bindVerifiedMacIdentity(2L), "second verified MAC accepted");
@@ -198,12 +212,20 @@ public final class SelectorCioIntegrationTest {
                     check(first.getInputStream().read() == -1, "game graceful close sends FIN after admitted frames");
                 }
                 awaitIdlePool();
-                Server.stopLoginServer();
-                check(Server.startLoginServer(), "same CIO scheduler can attach a fresh listener after shutdown");
-                try (Socket restarted = connect(gamePort)) {
-                    check(Arrays.equals(readBody(restarted), Opcodes.S_KEYBYTES), "restart handshake");
+                long descriptorsBefore = fileDescriptors();
+                for (int i = 0; i < restarts; i++) {
+                    Server.stopLoginServer();
+                    check(Server.startLoginServer(), "same CIO scheduler can attach a fresh listener after shutdown");
+                    try (Socket restarted = connect(gamePort)) {
+                        check(Arrays.equals(readBody(restarted), Opcodes.S_KEYBYTES), "restart handshake");
+                    }
+                    awaitIdlePool();
                 }
-                awaitIdlePool();
+                long descriptorsAfter = fileDescriptors();
+                if (descriptorsBefore >= 0) {
+                    check(descriptorsAfter <= descriptorsBefore + 2, "listener and Selector descriptors were reclaimed");
+                    System.out.printf("FD listeners before=%d after=%d%n", descriptorsBefore, descriptorsAfter);
+                }
                 try (Socket stalled = connect(gamePort)) {
                     check(Arrays.equals(readBody(stalled), Opcodes.S_KEYBYTES), "pending WRITE fixture handshake");
                     stalled.setSoLinger(true, 0);
@@ -221,7 +243,7 @@ public final class SelectorCioIntegrationTest {
                     releaseOwner.countDown();
                 }
                 awaitIdlePool();
-                for (int i = 0; i < 24; i++) {
+                for (int i = 0; i < reconnects; i++) {
                     try (Socket reset = connect(gamePort)) {
                         check(Arrays.equals(readBody(reset), Opcodes.S_KEYBYTES), "reconnect after prior lease cleanup");
                         reset.setSoLinger(true, 0);
@@ -243,7 +265,8 @@ public final class SelectorCioIntegrationTest {
             check(owners.awaitTermination(5, TimeUnit.SECONDS), "existing game owners joined");
             l1j.server.server.ThreadPool.getInstance().shutdown();
         }
-        System.out.println("PASS RKern login entry, 2 CIO owners, timer, MAC/account admission, large broadcast, graceful FIFO drain, restart, reset with queued WRITEs, and 24 reset/reconnect cycles with zero outstanding leases");
+        System.out.println("PASS RKern login entry, cipher FIFO, fragmented maximum frame, timer, MAC/account admission, large broadcast, graceful FIFO drain, "
+                + restarts + " restarts and " + reconnects + " reset/reconnect cycles with zero outstanding leases");
     }
 
     private static void awaitIdlePool() throws InterruptedException {
@@ -256,10 +279,17 @@ public final class SelectorCioIntegrationTest {
             check(Long.parseLong(matcher.group(1)) <= Long.parseLong(matcher.group(2)), "direct memory cap: " + report);
             long[] accounts = Server.networkAccountRegistryDiagnostics();
             if (matcher.group(3).equals("0") && matcher.group(4).equals("0")
-                    && accounts[0] == 0 && accounts[1] == 0 && accounts[2] == 0) return;
+                    && accounts[0] == 0 && accounts[1] == 0 && accounts[2] == 0
+                    && Arrays.stream(Server.networkPoolSnapshot()).allMatch(bucket -> bucket[2] == 0 && bucket[3] == bucket[4])) return;
             Thread.sleep(5);
         } while (System.nanoTime() < deadline);
         throw new AssertionError("leases or socket identities retained after disconnect: " + report);
+    }
+
+    private static long fileDescriptors() throws IOException {
+        Path descriptors = Path.of("/proc/self/fd");
+        if (!Files.isDirectory(descriptors)) return -1;
+        try (var files = Files.list(descriptors)) { return files.count(); }
     }
 
     private static int reservePort() throws IOException {
@@ -296,10 +326,19 @@ public final class SelectorCioIntegrationTest {
         check(Arrays.equals(readBody(socket), codec.fromServer(body(0x45, value))), "ordered encrypted game response " + value);
     }
 
+    private static void verifyFragmentedMaxFrame(Socket socket, SelectorTransportTest.ScalarClient codec) throws IOException {
+        byte[] largeBody = Arrays.copyOf(body(ALIVE, 1201), 65529);
+        byte[] largeWire = frame(codec.toServer(largeBody));
+        socket.getOutputStream().write(largeWire[0]);
+        socket.getOutputStream().write(largeWire, 1, 4095);
+        socket.getOutputStream().write(largeWire, 4096, largeWire.length - 4096);
+        socket.getOutputStream().write(frame(codec.toServer(body(ALIVE, 1202))));
+        expectEncrypted(socket, codec, 1201);
+        expectEncrypted(socket, codec, 1202);
+    }
+
     private static void verifyConcurrentSendFifo(Socket peer, SelectorTransportTest.ScalarClient codec,
             CUserSocket session, CountDownLatch ownerSent, CountDownLatch byteSent) throws Exception {
-        long previousCommits = session.javaDirectPacketCommits();
-        long previousAppends = session.javaDirectByteAppends();
         var release = new CountDownLatch(1);
         try (var producers = Executors.newVirtualThreadPerTaskExecutor()) {
             var sends = new ArrayList<Future<Boolean>>();
@@ -318,9 +357,6 @@ public final class SelectorCioIntegrationTest {
                 check(ownerSent.await(5, TimeUnit.SECONDS), "owning shard published its send behind reserved tickets");
                 peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 905))));
                 check(byteSent.await(5, TimeUnit.SECONDS), "byte packet scheduled after the staged owner packet");
-                check(session.javaDirectPacketCommits() == previousCommits, "no earlier unpublished ticket was bypassed");
-                long expectedAppends = Boolean.getBoolean("rkern.network.javaDirectByteAppend") ? 1 : 0;
-                check(session.javaDirectByteAppends() - previousAppends == expectedAppends, "byte append candidate exercised");
             } finally { release.countDown(); }
             for (var send : sends) check(send.get(5, TimeUnit.SECONDS), "foreign packet admitted");
         }
@@ -329,9 +365,6 @@ public final class SelectorCioIntegrationTest {
         expectEncrypted(peer, codec, 905);
         peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 904))));
         expectEncrypted(peer, codec, 904);
-        long expected = Boolean.getBoolean("rkern.network.javaDirectPacketCommit") ? 1 : 0;
-        check(session.javaDirectPacketCommits() - previousCommits == expected,
-                "exactly the unblocked owner ticket can commit directly");
     }
 
     private static final class Reply extends WritablePacket<CIOClient> {

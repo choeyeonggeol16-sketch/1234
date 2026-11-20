@@ -39,6 +39,7 @@ public final class SelectorTransportTest {
         checkCipher();
         checkCallbackFailureIsolation();
         checkRawGracefulGather();
+        checkRawGatherTail();
         checkHostedAttachFailure();
         checkIndexedDeadlines();
         System.out.println("PASS multi-owner TCP, Java cipher, callback isolation, raw graceful gather and hosted rollback");
@@ -118,6 +119,22 @@ public final class SelectorTransportTest {
             server.close();
             check(server.shutdownStats().getFirst().zeroWrites() > 0, "raw gather exercised backpressure");
             balanced(server.shutdownStats());
+        }
+    }
+
+    private static void checkRawGatherTail() throws Exception {
+        var completed = new LinkedBlockingQueue<Long>();
+        var handler = new SelectorTransport.RawHandler() {
+            @Override public void onOpen(Connection socket) {
+                ByteBuffer[] buffers = {ByteBuffer.wrap(new byte[] {9}), ByteBuffer.wrap(new byte[] {4, 5, 6})};
+                check(socket.writeRaw(buffers, 1, 1, completed::add), "remaining gather segment accepted");
+                socket.closeAfterFlush();
+            }
+        };
+        try (var server = SelectorTransport.bind(LOOPBACK, config(1, 1, 4), handler);
+                var socket = connect(server, 0)) {
+            check(Arrays.equals(socket.getInputStream().readAllBytes(), new byte[] {4, 5, 6}), "only the selected suffix reaches the peer");
+            check(await(completed) == 3L && completed.isEmpty(), "gather suffix has one completion");
         }
     }
 

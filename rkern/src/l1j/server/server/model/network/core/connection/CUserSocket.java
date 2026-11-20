@@ -32,7 +32,6 @@ import l1j.server.server.model.network.utill.ConnectionConfig;
 import l1j.server.server.model.network.buffer.WriteBuffer;
 import l1j.server.server.model.network.packet.CPacketHandler;
 import l1j.server.server.model.network.packet.WritablePacket;
-import l1j.server.server.model.network.packet.BytesWritablePacket;
 
 /**
  * Game packet framing and the per-socket 512-slot callback serializer.
@@ -407,13 +406,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     // P8: a completed READ may directly claim the idle READ pump token.
     // The already-owned/inline callback path still publishes its mailbox event.
     private static final boolean READ_WRITE_OWNER_FUSION = true;
-    private static final boolean JAVA_DIRECT_PACKET_COMMIT = Boolean.getBoolean("rkern.network.javaDirectPacketCommit");
-    private static final boolean JAVA_DIRECT_BYTE_APPEND = Boolean.getBoolean("rkern.network.javaDirectByteAppend");
-    private volatile long _javaDirectPacketCommits;
-    private volatile long _javaDirectByteAppends;
-
-    public long javaDirectPacketCommits() { return _javaDirectPacketCommits; }
-    public long javaDirectByteAppends() { return _javaDirectByteAppends; }
     private static final int FUSED_READ_MAX_BYTES = 256;
     // READ completion is consumed only by the existing per-socket READ pump.
     // 0=empty, 1=failure, >=2=successful completion (transferred bytes + 2).
@@ -756,6 +748,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     private CIOBufferEx[] _gatherFrames;
     private ByteBuffer[] _gatherBuffers;
     private int _gatherCount;
+    private int _gatherOffset;
     private int _zeroWriteCompletions;
     private int _zeroReadCompletions;
 
@@ -766,6 +759,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     private volatile boolean _readPending;
     // Only the READ pump touches this; preserves buffered frames if an ACK races pause.
     private boolean _readYielded;
+    private int _readOffset; // READ pump only, unconsumed prefix in the write-mode receive buffer
     private boolean javaReadScheduled; // guarded by _stateLock
     // READ pump only. Do not add a ThreadLocal.get() to single-frame dispatch.
     private boolean _readPassBurstActive;
@@ -984,14 +978,10 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         }
         if (kind == GATHER_DONE) {
             if (_closed != 0) { completeGather(false); return; }
-            boolean remaining = false;
-            for (int i = 0; i < _gatherCount; i++) {
-                if (_gatherBuffers[i].hasRemaining()) {
-                    remaining = true;
-                    break;
-                }
-            }
-            if (remaining) {
+            int firstRemaining = _gatherOffset;
+            while (firstRemaining < _gatherCount && !_gatherBuffers[firstRemaining].hasRemaining()) ++firstRemaining;
+            if (firstRemaining < _gatherCount) {
+                if (_channel.isJavaTransport()) _gatherOffset = firstRemaining;
                 final long written = event >>> 3;
 
                 if (written == 0L && ++_zeroWriteCompletions >= 8) {
@@ -1666,22 +1656,16 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
     private boolean packAdjacentStagedPacketLocked(CIOBufferEx packet,
             long ticket, int slot, boolean directFrame) {
-        if (packet.shared()) return false;
-        return appendAdjacentStagedPacketLocked(0, ticket, slot, packet, null, directFrame);
-    }
-
-    private boolean appendAdjacentStagedPacketLocked(int preencodedLength, long ticket, int slot,
-            CIOBufferEx packet, BytesWritablePacket bytes, boolean directFrame) {
         final CIOBufferEx earlier = _stagedPacketPack;
-        if (earlier == null || earlier.shared() || ticket != _stagedPacketLastTicket + 1L
+        if (packet.shared() || earlier == null || earlier.shared() || ticket != _stagedPacketLastTicket + 1L
                 || _socketHead > _stagedPacketFirstTicket || _closed != 0
                 || !earlier.reserved() || earlier._writePrepared || earlier._ioPending
                 || earlier.buffer().capacity() != CIOBufferPool.SMALL_SEND_BYTES)
             return false;
-        final int length = packet == null ? preencodedLength : packet.writer().position();
+        final int length = packet.writer().position();
         final int prior = earlier.writer().position();
         if (length <= CIOBufferPool.HEADER_BYTES
-                || (packet != null && length > packet._reservedWireBytes)
+                || length > packet._reservedWireBytes
                 || length > PACK_MAX_FRAME_BYTES || !canAdmitBytes(length)
                 || prior > CIOBufferPool.SMALL_SEND_BYTES - length
                 || prior > earlier._reservedWireBytes - length)
@@ -1693,22 +1677,17 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         final boolean firstMerge = !earlier._packedFrames;
         if (firstMerge)
             earlier.writer().writeShort(0, (short) prior);
+        packet.writer().writeShort(0, (short) length);
         final ByteBuffer dest = earlier.buffer();
         dest.limit(dest.capacity());
-        if (packet != null) {
-            packet.writer().writeShort(0, (short) length);
-            dest.put(prior, packet.buffer(), 0, length);
-        } else {
-            earlier.writer().writeShort(prior, (short) length);
-            bytes.copyPayloadTo(dest, prior + CIOBufferPool.HEADER_BYTES);
-        }
+        dest.put(prior, packet.buffer(), 0, length);
         earlier.writer().position(prior + length);
         earlier._packedFrames = true;
         earlier._frameCount = firstMerge ? 2 : earlier._frameCount + 1;
         earlier._actionOnly = false;
         bytesAdmitted(length);
         _stagedPacketLastTicket = ticket;
-        if (packet != null && !directFrame) _pool.release(packet);
+        if (!directFrame) _pool.release(packet);
         // The earlier ticket carries these bytes. Retire this ticket in place
         // rather than changing the FIFO or the serializer's pending count.
         SOCKET_ARGUMENT_SLOT.setRelease(_socketArguments, slot, 0L);
@@ -2188,10 +2167,10 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if ((int) SOCKET_PENDING.getAcquire(this) >= SOCKET_REJECT_AT - 32)
             drainPublishedSocketCallbacks();
         final int learned = WriteBuffer.learnedPacketSize(packet.getClass());
+        final boolean direct;
         final int slot;
         final long ticket;
         boolean publishProducer = false;
-        boolean appended = false;
         _stateLock.lock();
         try {
             if (_closed != 0 || (!finalPacket && _closing != 0)) return false;
@@ -2211,6 +2190,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             }
             // Packet bytes are encoded OUTSIDE the lock. Reserve a FIFO slot
             // before encoding, including when called by the serializer owner.
+            direct = false;
             for (;;) {
                 final int pending = (int) SOCKET_PENDING.getVolatile(this);
                 if (pending >= SOCKET_REJECT_AT) return rejectSend(REJECT_SERIALIZER);
@@ -2222,25 +2202,11 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                 ++_payloadOrderEpoch;
                 publishProducer = publishProducerLeaseLocked();
             }
-            if (JAVA_DIRECT_BYTE_APPEND && _channel.isJavaTransport() && _channel.currentNativeOwner() >= 0
-                    && packet.getClass() == BytesWritablePacket.class) {
-                var bytes = (BytesWritablePacket) packet;
-                int payloadLength = bytes.payloadLength();
-                if (payloadLength > 0 && payloadLength <= PACK_MAX_FRAME_BYTES - CIOBufferPool.HEADER_BYTES) {
-                    appended = appendAdjacentStagedPacketLocked(payloadLength + CIOBufferPool.HEADER_BYTES,
-                            ticket, slot, null, bytes, false);
-                    if (appended) ++_javaDirectByteAppends;
-                }
-            }
-            if (!appended) ++_reservedDirect;
+            ++_reservedDirect;
         } finally {
             _stateLock.unlock();
         }
         if (publishProducer) drainSocketCallbacks();
-        if (appended) {
-            drainPublishedSocketCallbacks();
-            return true;
-        }
 
         CIOBufferEx encoded = null;
         boolean encodeFailed = false;
@@ -2274,30 +2240,14 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
         boolean accepted = false;
         boolean packed = false;
-        boolean acquiredOwner = false;
-        boolean direct = false;
         _stateLock.lock();
         try {
             --_reservedDirect;
             try {
                 if (encoded != null) {
                     packed = packAdjacentStagedPacketLocked(encoded, ticket, slot);
-                    if (!packed && JAVA_DIRECT_PACKET_COMMIT && _channel.isJavaTransport()
-                            && _channel.currentNativeOwner() >= 0 && _socketHead == ticket
-                            && (int) SOCKET_DRAINING.getAcquire(this) == 0
-                            && SOCKET_DRAINING.compareAndSet(this, 0, 1)) {
-                        acquiredOwner = true;
-                        _socketOwner = Thread.currentThread();
-                        // Take only our already-reserved head. Foreign and reentrant
-                        // encoders still reserve FIFO positions before writing any bytes.
-                        direct = _socketHead == ticket && _inlineWriteCompletion == 0L
-                                && _prefixWriteCompletion == 0L;
-                    }
                     accepted = packed || stageOutboundFrameLocked(encoded, direct, slot);
-                    if (accepted && direct) {
-                        ++_socketHead;
-                        ++_javaDirectPacketCommits;
-                    } else if (accepted && !packed) {
+                    if (accepted && !packed) {
                         _stagedPacketPack = encoded;
                         _stagedPacketFirstTicket = ticket;
                         _stagedPacketLastTicket = ticket;
@@ -2331,23 +2281,9 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         } finally {
             _stateLock.unlock();
         }
-        if (acquiredOwner) {
-            try {
-                if (accepted && direct) {
-                    _socketExecutingTicket = true;
-                    try { finishStagedSend(encoded, true); }
-                    finally {
-                        _socketExecutingTicket = false;
-                        SOCKET_PENDING.getAndAdd(this, -1);
-                    }
-                }
-            } finally { drainSocketCallbacksAcquired(); }
-        }
         if (accepted) {
-            if (!acquiredOwner) {
-                if (packed) drainPublishedSocketCallbacks();
-                else finishStagedSend(encoded, false);
-            }
+            if (packed) drainPublishedSocketCallbacks();
+            else finishStagedSend(encoded, direct);
         } else {
             if (encodeFailed) rejectSend(REJECT_ENCODING);
             if (slot >= 0) drainSocketCallbacks();
@@ -2997,7 +2933,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
      */
     private boolean tryOwnReadWritePass() {
         if (!READ_WRITE_OWNER_FUSION || _closed != 0 || _closing != 0
-                || _sendReadPaused || _readYielded || _reading == null) return false;
+                || _sendReadPaused || _readYielded || _reading == null || _readOffset != 0) return false;
         final ByteBuffer recv = _reading.buffer();
         final int filled = recv.position();
         if (filled < CIOBufferPool.HEADER_BYTES + 1
@@ -3083,13 +3019,13 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
     /** READ pump only; preserve the clock while extending the SAME partial frame. */
     private void refreshPartialReadDeadline(ByteBuffer inbound) {
-        final int buffered = inbound.position();
+        final int buffered = inbound.position() - _readOffset;
         if (buffered == 0) {
             _partialReadStartedNs = 0L;
             return;
         }
         if (buffered >= CIOBufferPool.HEADER_BYTES) {
-            final int frameBytes = Short.toUnsignedInt(inbound.getShort(0));
+            final int frameBytes = Short.toUnsignedInt(inbound.getShort(_readOffset));
             if (frameBytes >= CIOBufferPool.HEADER_BYTES && frameBytes <= buffered) {
                 // SEND pressure may yield with a complete frame still buffered.
                 // It must not inherit the old partial-frame clock on resume.
@@ -3228,17 +3164,17 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     private boolean onRead() {
         _readYielded = false;
         ByteBuffer recv = _reading.buffer();
-        if (recv.position() == 0) return true;
+        final int filled = recv.position() - _readOffset;
+        if (filled == 0) return true;
         // Avoid an extra ThreadLocal scope for a single completed request.
         // Every pass, including fairness yield or an exception, flushes in
         // finally before the READ pump can post another asynchronous read.
         boolean passBurst = false;
-        if (recv.position() >= READ_PASS_MIN_BUFFERED_BYTES) {
-            final int first = Short.toUnsignedInt(recv.getShort(0));
-            final int filled = recv.position();
+        if (filled >= READ_PASS_MIN_BUFFERED_BYTES) {
+            final int first = Short.toUnsignedInt(recv.getShort(_readOffset));
             if (first >= CIOBufferPool.HEADER_BYTES
                     && first <= filled - CIOBufferPool.HEADER_BYTES) {
-                final int second = Short.toUnsignedInt(recv.getShort(first));
+                final int second = Short.toUnsignedInt(recv.getShort(_readOffset + first));
                 passBurst = second >= CIOBufferPool.HEADER_BYTES
                         && second <= filled - first;
             }
@@ -3248,8 +3184,9 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             _readPassBurstActive = true;
         }
         try {
-        recv.flip();
-        final int frameBudget = _channel.isJavaTransport()
+        recv.flip().position(_readOffset);
+        final boolean javaTransport = _channel.isJavaTransport();
+        final int frameBudget = javaTransport
                 ? Math.max(1, ConnectionConfig.MAX_PACKETS_PER_COMPLETION) : Integer.MAX_VALUE;
         int completed = 0;
         // The READ pump owns framing and posts the next read only after the
@@ -3296,12 +3233,15 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         // incomplete frame already begins at offset zero.
         if (!recv.hasRemaining()) {
             recv.clear();
-        } else if (recv.position() == 0) {
+            _readOffset = 0;
+        } else if (recv.position() == 0 || javaTransport && (recv.limit() < recv.capacity() || _readYielded)) {
+            _readOffset = recv.position();
             final int buffered = recv.limit();
             recv.clear();
             recv.position(buffered);
         } else {
             recv.compact();
+            _readOffset = 0;
         }
         if (!recv.hasRemaining()) {
             // A complete compact-buffer-sized frame can fill this lease exactly.
@@ -3772,7 +3712,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         }
         try {
             boolean preparedAny = false;
-            for (int i = 0; i < _gatherCount; i++) {
+            for (int i = _gatherOffset; i < _gatherCount; i++) {
                 final CIOBufferEx lease = _gatherFrames[i];
                 final ByteBuffer bytes = lease.buffer();
                 if(nativeDirect)prepareNativeFrames(lease);
@@ -3797,7 +3737,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             _socketPosting = true;
             try {
                 if(nativeDirect)_channel.SendConstBuffer(_gatherBuffers,0,_gatherCount,this,_gatherFrames[0]._nativeSendFlags);
-                else _channel.write(_gatherBuffers, 0, _gatherCount, this);
+                else _channel.write(_gatherBuffers, _gatherOffset, _gatherCount - _gatherOffset, this);
             } finally {
                 _socketPosting = false;
 
@@ -3841,6 +3781,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             // READ resumes once, after all gather frames have been retired.
             resumeInbound = bytesReleased(releasedBytes, releasedFrames);
             _gatherCount = 0;
+            _gatherOffset = 0;
             _writing = null;
             if (success && _closed == 0 && _queued != 0) {
                 // The next lease is already committed in FIFO order. Do not

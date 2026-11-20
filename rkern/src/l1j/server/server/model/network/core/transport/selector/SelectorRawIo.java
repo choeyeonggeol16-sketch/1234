@@ -26,8 +26,8 @@ final class SelectorRawIo {
 
     void armWrite(ByteBuffer single, ByteBuffer[] buffers, int start, int length, LongConsumer completion) {
         if (writeCompletion != null) throw new IllegalStateException("WRITE already pending");
-        singleWrite = single;
-        gather = buffers;
+        singleWrite = length == 1 ? buffers[start] : single;
+        gather = length == 1 ? null : buffers;
         offset = start;
         count = length;
         writeCompletion = completion;

@@ -99,6 +99,7 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
         return nativeServer == null ? new long[] {isOpen() ? 1 : 0, liveConnections()} : nativeServer.listenerDiagnostics();
     }
     private final CPoolDiagnostics poolDiagnostics = new CPoolDiagnostics();
+    public long[][] poolSnapshot() { return pool.snapshot(); }
     public String poolReport(){
         if (javaServer != null) {
             return "JProRing direct bytes=" + pool.allocatedDirectBytes() + "/" + pool.maxDirectBytes()

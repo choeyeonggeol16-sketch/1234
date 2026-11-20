@@ -242,7 +242,17 @@ public final class CSocket implements AutoCloseable {
                 }
             }
             if (!admitted) owner.transportReadCompleted(-1);
-            else if (!javaPeer.submit(javaReadRequest, false)) completeJavaRead(-1);
+            else if (javaPeer.isOwnerThread()) {
+                // The READ pump already owns the destination. No deferred command
+                // needs to reacquire this monitor merely to recover the same buffer.
+                try {
+                    if (!javaPeer.readRaw(dst, javaReadCallback)) completeJavaRead(-1);
+                } catch (RuntimeException failure) {
+                    try { javaPeer.abort(); }
+                    finally { completeJavaRead(-1); }
+                    throw failure;
+                }
+            } else if (!javaPeer.submit(javaReadRequest, false)) completeJavaRead(-1);
             return;
         }
         int bytes = 0;
