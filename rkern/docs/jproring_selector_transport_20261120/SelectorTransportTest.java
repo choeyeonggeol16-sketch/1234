@@ -41,6 +41,7 @@ public final class SelectorTransportTest {
         checkRawGracefulGather();
         checkRawGatherTail();
         checkHostedAttachFailure();
+        checkHostedWaitBeforeAdvance();
         checkIndexedDeadlines();
         System.out.println("PASS multi-owner TCP, Java cipher, callback isolation, raw graceful gather and hosted rollback");
     }
@@ -202,6 +203,27 @@ public final class SelectorTransportTest {
             balanced(server.shutdownStats());
         } finally {
             for (Socket peer : peers) peer.close();
+        }
+    }
+
+    private static void checkHostedWaitBeforeAdvance() throws Exception {
+        var owner = new AtomicReference<SelectorTransport.OwnerDriver>();
+        var failure = new AtomicReference<Throwable>();
+        try (var server = SelectorTransport.bindHosted(LOOPBACK, config(1, 1, 4), (socket, payload) -> {}, drivers -> {
+            owner.set(drivers.getFirst());
+            drivers.getFirst().advance(); // Before the transport commits attachment, this must return without initializing.
+        })) {
+            Thread thread = Thread.ofPlatform().start(() -> {
+                var driver = owner.get();
+                try { driver.awaitWork(0); }
+                catch (Throwable unexpected) { failure.set(unexpected); }
+                finally { driver.closeOnOwner(); }
+            });
+            thread.join(5000);
+            check(!thread.isAlive(), "hosted owner joined after wait-first startup");
+            if (failure.get() != null) throw new AssertionError("hosted wait raced attachment", failure.get());
+            server.close();
+            balanced(server.shutdownStats());
         }
     }
 

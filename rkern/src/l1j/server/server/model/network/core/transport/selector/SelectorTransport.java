@@ -797,8 +797,13 @@ public final class SelectorTransport implements AutoCloseable {
                 LockSupport.parkNanos(Math.max(0L, Math.min(1L, maxWaitMillis)) * 1_000_000L);
                 return;
             }
-            requireOwner();
-            try { select(Math.max(0, maxWaitMillis)); }
+            try {
+                // Attachment can commit between the host's advance and awaitWork calls.
+                // In that case this is the first active call on the owning thread.
+                if (thread == null) initialize();
+                else requireOwner();
+                select(Math.max(0, maxWaitMillis));
+            }
             catch (Throwable unexpected) { fail(unexpected); }
             if (stopping) finish();
         }
