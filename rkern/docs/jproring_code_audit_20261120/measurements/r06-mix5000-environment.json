@@ -1,0 +1,24 @@
+{
+  "revision": "274bb8d14b24f538f1786129a4544da4dfd8d2ff",
+  "kernel": "6.18.57",
+  "affinity": [
+    0,
+    1,
+    2
+  ],
+  "jdk": "openjdk version \"21.0.13\" 2026-10-20",
+  "workloads": [
+    "mix5000"
+  ],
+  "trials": 1,
+  "warmup_ms": 5000,
+  "measure_ms": 60000,
+  "jfr": false,
+  "write_profile": true,
+  "resource_samples": true,
+  "cpu_quota": "200000 100000",
+  "modes": [
+    "off"
+  ],
+  "candidates_available": false
+}

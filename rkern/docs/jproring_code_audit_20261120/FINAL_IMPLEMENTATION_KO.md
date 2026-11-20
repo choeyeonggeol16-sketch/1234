@@ -1,5 +1,7 @@
 # RKern JProRing 후속 구현과 검증 결과
 
+[최신 후속 결과 — 종료 재시도, WRITE, mailbox 및 성능 후보](REMAINING_RESULTS_KO.md)
+
 [후속 작업 지시서](NEXT_IMPLEMENTATION_KO.md)의 기준 소스는 [`9a9c25a`](https://github.com/choeyeonggeol16-sketch/1234/commit/9a9c25a)다. 게임 SEND 후보의 비교 기준은 동시 접속 대기열 수정까지 적용한 [`02b0d4e`](https://github.com/choeyeonggeol16-sketch/1234/commit/02b0d4e), READ·gather 측정 코드는 [`94c0d79`](https://github.com/choeyeonggeol16-sketch/1234/commit/94c0d79)다. 종료 회귀 기준은 [`8fd305f`](https://github.com/choeyeonggeol16-sketch/1234/commit/8fd305f)다. W02 후속 생산 코드는 [`e6e44cf`](https://github.com/choeyeonggeol16-sketch/1234/commit/e6e44cf)다.
 
 ## 실제 게임 리스너 A/B와 수정 판정
@@ -39,7 +41,7 @@ READ·gather 변경판 `94c0d79`의 기본 모드를 동일한 짧은 설정으�
 | --- | --- | --- |
 | A01 | 완료 | `SelectorTransport` 취소/종료 예외를 격리했다. 같은 owner의 다른 소켓, 종료 호출 수와 lease 회수가 회귀를 통과했다. |
 | A02 | 부분 | `SelectorRawIo` 정상 drain이 부분 gather를 끝낸 뒤 FIN을 보낸다. 실제 게임 graceful FIFO 및 미게시 송신·RST를 확인했다. close queue 포화와 타이머 교차 조합은 남았다. |
-| A03 | 부분 | `SelectorTransport.bindHosted` 롤백과 wait-first owner 등록을 고쳤고, 기존 CIO에 listener 100회 재설치를 검증했다. owner 강제 실패와 shutdown timeout 후 재시도 조합은 남았다. |
+| A03 | 부분 | hosted rollback, 100회 재시작, owner 강제 실패 시 원인·종료 회수, 종료 deadline 만료 후 같은 포트 재시작을 검증했다. 운영 월드 종료 조합은 남았다. [최신 검증](REMAINING_RESULTS_KO.md) |
 | A04 | 부분 | `CSocket` 소유 READ 등록 및 게임 핸들러/타이머 shard, 20 외부 생산자 FIFO를 검증했다. 월드 move/attack/skill과 DB·NPC 호출자 전체는 환경이 필요하다. |
 | A05 | 부분 | `CUserSocket` 초기 키, rolling cipher, 필터된 opcode, 최대 wire 65,535B와 split header/body를 검증했다. 실클라와 원본 DLL wire capture는 외부 자료가 필요하다. |
 | A06 | 부분 | `JavaCioServer` IP·MAC·계정 한도와 중복 진입 및 정확한 ledger 복귀를 확인했다. 실제 MySQL 세션과 재로그인 경합은 환경이 필요하다. |
@@ -48,21 +50,21 @@ READ·gather 변경판 `94c0d79`의 기본 모드를 동일한 짧은 설정으�
 | A09 | 기각 | `CUserSocket.tryWritePacketInternal`의 실험 head 직결 경로를 CPU/처리량 열세로 제거했다. |
 | A10 | 반영 | 상한을 가진 writer의 tail 직접 인코딩을 구현했고, 기존 `BytesWritablePacket`과 protobuf 캐시 `Raw`를 적용했다. 게임 A/B와 FIFO·추가 슬롯 대여 제거를 확인했다. [후속 검증](FOUR_ITEMS_KO.md) |
 | A11 | 반영 | READ와 대형 READ에 shard 우선 할당을 적용했다. 공유 풀 전역 상한과 한 shard의 전체 슬롯 사용, 타 스레드 반환을 검증했다. [후속 검증](FOUR_ITEMS_KO.md) |
-| A12 | 부분 | `CSocket.read`는 같은 owner의 raw 등록에서 monitor 재진입 한 번을 없앴다. 외부 READ와 WRITE descriptor 동기화 경계는 기존 계약을 사용한다. WRITE path A/B는 남았다. |
+| A12 | 반영 | 동일 owner의 Java WRITE 재등록에서 descriptor monitor 한 번을 제거했다. 외부 producer와 동기화, 부분 gather 및 종료 회귀를 검증했다. [최신 검증](REMAINING_RESULTS_KO.md) |
 | A13 | 반영 | `CUserSocket.onRead`에서 consumed prefix offset을 두고 실제 수신 공간이 부족할 때 정리한다. 201개 연속 프레임, 65,535B 분할 프레임 및 암호 순서를 검증했다. |
 | A14 | 측정 후 유지 | 소진 prefix 제거와 단일 segment 송신을 검증했다. 게임 gather 4/8/16 비교에서 기본 8의 p99와 p99.9가 가장 낮았다. [후속 검증](FOUR_ITEMS_KO.md) |
 | A15 | 부분 | 실제 20/100/500 소켓에서 원본 1회 생성, 연결별 암호화와 lease·registry 회수를 재검증했다. 운영 월드 팬아웃 비용은 남았다. [후속 검증](FOUR_ITEMS_KO.md) |
-| A16 | 부분 | mailbox depth/정점/거절 수 및 포화 중 정확히 한 번 취소를 검증했다. MPSC 후보 채택 전 producer별 비용 측정이 필요하다. |
+| A16 | 반영 | 제한된 monitor 큐에 재사용 슬롯을 적용하고 접속 등록·외부 호출 wrapper 할당을 제거했다. 20 producer FIFO와 종료 시 한 번만 취소됨을 검증했다. [최신 검증](REMAINING_RESULTS_KO.md) |
 | A17 | 완료 | 위치를 저장하는 타이머 힙의 취소·앞당김·재예약·종료 회귀를 유지했다. [5,000 연결 재예약 측정](IMPLEMENTATION_KO.md#a17-타이머-재예약-실측) |
 | A18 | 부분 | coalesced 게임 READ와 같은 CIO shard의 타이머 수행을 검증했다. 느린 실제 핸들러·방송 겹침의 deadline drift와 quiet p99는 남았다. |
 | A19 | 부분 | 리스너 대기열 수정 후 실제 게임 리스너에서 5,000개 소켓의 초기 키 전송을 검증했다. accept owner별 CPU 비용은 남았다. [후속 검증](FOUR_ITEMS_KO.md) |
 | A20 | 부분 | 8 MiB direct limit 아래 실제 rebind/reset을 수행했다. 슬롯 반환·FD 기록과 raw 5,000 연결을 확인했고, 게임 장기 retained heap 검증은 남았다. |
-| A21 | 부분 | 하나의 느린 연결이 대형 풀을 사용 중일 때 같은 owner의 정상 응답, 풀 거절, stall timeout 및 종료 후 반환을 확인했다. 실제 1%/10% 혼합 부하는 남았다. |
-| A22 | 부분 | owner와 pool 진단에 선택적 write 호출·gather 호출·segment 집계를 추가했다. copy/CAS 및 세밀한 lock wait 비용은 남았다. [후속 검증](FOUR_ITEMS_KO.md) |
+| A21 | 부분 | 느린 연결 단독 및 framed 100개 중 1%/10%에서 write timeout, 정상 연결 응답과 회수를 검증했다. 게임 월드의 느린 수신자 혼합은 남았다. [최신 검증](REMAINING_RESULTS_KO.md) |
+| A22 | 부분 | raw write/gather 외에 직접 tail hit와 병합 copy를 시험에서 분리 집계한다. 세밀한 lock wait, CAS 및 실제 syscall은 남았다. [최신 검증](REMAINING_RESULTS_KO.md) |
 | A23 | 부분 | Linux raw·framed·game 경로 각각에서 바이트를 검증했다. game Netty 어댑터는 A08과 같다. |
-| A24 | 부분 | raw 1,024/5,000, 게임 리스너 5,000 혼합(유휴 80%, 요청 20%) 60초를 검증했다. slow peer 혼합과 전용 장비 matrix는 남았다. [후속 검증](FOUR_ITEMS_KO.md) |
+| A24 | 부분 | 게임 리스너 5,000개 60초 혼합 부하를 다시 검증했다. 전원 활성 및 실제 월드 부하는 남았다. [최신 검증](REMAINING_RESULTS_KO.md) |
 | A25 | 부분 | 실제 게임 A/B에서 CPU, 할당, 처리량, p50/p99/p99.9를 남겼다. 장시간 반복, open-loop 및 GC 관측 확대가 남았다. |
-| A26 | 부분 | 게임 리스너 5,000 연결에서 RSS peak, direct backing, FD 및 모든 lease 회수를 기록했다. 운영 환경의 장기 retained heap은 남았다. [후속 검증](FOUR_ITEMS_KO.md) |
+| A26 | 부분 | 같은 부하에서 종료 시 lease·registry 0과 FD 회복, direct backing과 RSS를 기록했다. 장기 heap 분석은 남았다. [최신 검증](REMAINING_RESULTS_KO.md) |
 | A27 | 부분 | pin된 Linux Netty NIO·epoll·io_uring과 RKern의 framed 응답, Windows WEPoll 기능을 실행했다. 동일 호스트 조건의 Windows 성능 비교는 남았다. |
 | A28 | 완료 | Linux CI는 framed와 game fixture의 CSV/환경/로그를 보존하고 Windows CI는 listener 스트레스와 회귀를 수행한다. |
 | A29 | 부분 | 독립 테스트가 raw/framed 공통 close·buffer 계약을 확인하고 실제 게임 회귀에서는 계정·opcode·cipher를 추가로 확인한다. 모듈 통합은 남았다. |

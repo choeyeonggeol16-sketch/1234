@@ -1,0 +1,2 @@
+workload,trial,mode,clients,active_clients,pace_ms,window,owners,payload,kind,requests,requests_per_s,p50_us,p99_us,p999_us,server_cpu_ns_per_op,server_alloc_bytes_per_op,commit_hits,byte_append_hits,send_rejections,raw_writes,raw_gather_writes,raw_write_segments,direct_packet_tails,adjacent_copied_bytes,compacted_copied_bytes,write_burst_copied_bytes
+mix5000,1,off,5000,1000,40,1,2,64,mixed,1446901,24115.02,313.896,9303.910,47306.741,14693.47,39.03,0,0,0,1446890,0,1446890,0,0,0,0

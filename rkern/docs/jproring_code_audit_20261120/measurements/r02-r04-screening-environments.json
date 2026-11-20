@@ -1,0 +1,51 @@
+{
+  "r02_r03": {
+    "revision": "d7436c1f869e4f7dee0b8fac4640c3b774476355",
+    "kernel": "6.18.57",
+    "affinity": [
+      0,
+      1,
+      2
+    ],
+    "jdk": "openjdk version \"21.0.13\" 2026-10-20",
+    "workloads": [
+      "cache256"
+    ],
+    "trials": 2,
+    "warmup_ms": 1800,
+    "measure_ms": 2200,
+    "jfr": false,
+    "write_profile": true,
+    "resource_samples": false,
+    "cpu_quota": "200000 100000",
+    "modes": [
+      "off"
+    ],
+    "candidates_available": false
+  },
+  "r04": {
+    "revision": "274bb8d14b24f538f1786129a4544da4dfd8d2ff",
+    "kernel": "6.18.57",
+    "affinity": [
+      0,
+      1,
+      2
+    ],
+    "jdk": "openjdk version \"21.0.13\" 2026-10-20",
+    "workloads": [
+      "cache64",
+      "cache256"
+    ],
+    "trials": 2,
+    "warmup_ms": 900,
+    "measure_ms": 1500,
+    "jfr": false,
+    "write_profile": true,
+    "resource_samples": false,
+    "cpu_quota": "200000 100000",
+    "modes": [
+      "off"
+    ],
+    "candidates_available": false
+  }
+}
