@@ -2,6 +2,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import l1j.server.server.model.network.buffer.WriteBuffer;
 import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.WritablePacket;
 import l1j.server.server.model.network.core.session.CIOClient;
 
 /**
@@ -25,12 +26,17 @@ public final class ProtoPacketWriter extends ServerPacket {
 	}
 
 	/** 이미 완성된 cache byte[] 전송용 */
-	public static final class Raw extends ServerPacket {
+	public static final class Raw extends ServerPacket implements WritablePacket.DirectTail {
 		private final byte[] _data;
 
 		public Raw(byte[] data) {
 			if (data == null) throw new NullPointerException("data");
 			_data = data;
+		}
+
+		@Override
+		public int maximumWireBytes() {
+			return _data.length > 0 && _data.length <= 65533 ? _data.length + 2 : 0;
 		}
 
 		@Override

@@ -1,6 +1,8 @@
 package l1j.server.server.model.network.core.broadcast;
 
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.connection.CIOBufferPool;
+import l1j.server.server.model.network.core.connection.CIOBufferEx;
 import l1j.server.server.model.network.core.transport.CIOServer;
 
 import java.lang.foreign.MemorySegment;
@@ -15,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CAsyncSendConstBuffer implements AutoCloseable {
     private final CSharedBroadcast.NativeWireWriter writer;
     private final int senderId, pendingLimit;
+    private final int largeFrameLength;
     private Source source;
     // 16KiB native pool slabs are fixed. A rare protocol-valid larger
     // immutable frame uses the already-existing per-socket direct CIO FIFO.
@@ -28,11 +31,21 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
      */
     public CAsyncSendConstBuffer(CSharedBroadcast.NativeWireWriter writer,
                                  int senderId,int pendingLimit) {
+        this(writer, senderId, pendingLimit, 0);
+    }
+
+    CAsyncSendConstBuffer(CSharedBroadcast.NativeWireWriter writer,
+                          int senderId, int pendingLimit, int largeFrameLength) {
         if(writer==null||pendingLimit<=0)
             throw new IllegalArgumentException("Native constant writer/limit");
+        if (largeFrameLength != 0 && (largeFrameLength <= CIOBufferPool.SMALL_SEND_BYTES
+                || largeFrameLength > CIOBufferPool.MAX_WIRE_BYTES)) {
+            throw new IllegalArgumentException("large SC wire length " + largeFrameLength);
+        }
         this.writer=writer;
         this.senderId=senderId;
         this.pendingLimit=pendingLimit;
+        this.largeFrameLength = largeFrameLength;
     }
 
     /**
@@ -51,6 +64,7 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         source = pooled;
         this.senderId = senderId;
         this.pendingLimit = pendingLimit;
+        largeFrameLength = 0;
     }
 
     protected boolean exclude(int recipientId) { return false; }
@@ -71,32 +85,20 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         if(target==null || exclude(recipientId) || !target.isClientConnected())return false;
         // Always materialize the one Native slab before any per-socket FIFO
         // decision (including a full queue / owner-mismatch direct route).
-        if(source==null&&writer!=null&&largeWire==null) {
-            try {
-                source=openWrittenSource(target,writer);
-                if(source==null)throw new IllegalStateException("Native source unavailable");
-            } catch(java.nio.BufferOverflowException overflow) {
-                // The 16KiB source was too small. Build ONE immutable
-                // off-heap frame, then copy its bytes into each existing
-                // socket FIFO lease. No per-recipient re-encoding or Java array.
-                final var arena=java.lang.foreign.Arena.ofShared();
+        if (source == null && largeWire == null) {
+            if (largeFrameLength != 0) {
+                freezeLargeSource(target, largeFrameLength);
+            } else {
                 try {
-                    final ByteBuffer frozen=arena.allocate(0xFFFF).asByteBuffer()
-                            .order(ByteOrder.LITTLE_ENDIAN);
-                    frozen.position(2);
-                    writer.write(frozen);
-                    final int size=frozen.position();
-                    if(size<=16384||size>0xFFFF)
-                        throw new IllegalArgumentException("oversized Native writer length " + size);
-                    frozen.putShort(0,(short)size);
-                    frozen.flip();
-                    largeWire=frozen.asReadOnlyBuffer();
-                    largeArena=arena;
-                } catch(RuntimeException|Error failed) {
-                    arena.close();
-                    throw failed;
+                    source = openWrittenSource(target, writer);
+                    if (source == null && !target.isJavaTransport()) {
+                        throw new IllegalStateException("Native source unavailable");
+                    }
+                } catch (java.nio.BufferOverflowException overflow) {
+                    freezeLargeSource(target, CIOBufferPool.MAX_WIRE_BYTES);
                 }
             }
+            if (source == null && largeWire == null) return false;
         }
         final int limit=recipientId==senderId?Integer.MAX_VALUE:pendingLimit;
         if(largeWire!=null)
@@ -112,17 +114,53 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         return target.sendFrozenWire(source.wire);
     }
 
+    private void freezeLargeSource(CUserSocket target, int capacity) {
+        if (target.isJavaTransport()) {
+            source = openWrittenSource(target, this::writeLarge, capacity);
+            return;
+        }
+        final var arena = java.lang.foreign.Arena.ofShared();
+        try {
+            final ByteBuffer frozen = arena.allocate(capacity).asByteBuffer().order(ByteOrder.LITTLE_ENDIAN);
+            frozen.position(CIOBufferPool.HEADER_BYTES);
+            writeLarge(frozen);
+            frozen.putShort(0, (short) frozen.position());
+            frozen.flip();
+            largeWire = frozen.asReadOnlyBuffer();
+            largeArena = arena;
+        } catch (RuntimeException | Error failure) {
+            arena.close();
+            throw failure;
+        }
+    }
+
+    private void writeLarge(ByteBuffer out) {
+        writer.write(out);
+        int length = out.position();
+        if (largeFrameLength != 0 && length != largeFrameLength) {
+            throw new IllegalStateException("large SC frame length mismatch");
+        }
+        if (length <= CIOBufferPool.SMALL_SEND_BYTES || length > CIOBufferPool.MAX_WIRE_BYTES) {
+            throw new IllegalArgumentException("oversized writer length " + length);
+        }
+    }
+
     /**
      * Build final L1 bytes IN the borrowed native slab, no byte[] and no
      * second native copy. The first reference is still owned by producer.
      */
     static Source openWrittenSource(CUserSocket target,CSharedBroadcast.NativeWireWriter writer) {
+        return openWrittenSource(target, writer, 16384);
+    }
+
+    private static Source openWrittenSource(CUserSocket target, CSharedBroadcast.NativeWireWriter writer, int capacity) {
         if(target==null||writer==null)return null;
-        final Source source=target.createPooledWritableConstBuffer();
+        final Source source=target.createPooledWritableConstBuffer(capacity);
         if(source==null)return null;
         try {
             final ByteBuffer out=source.mutableWire;
             if(out==null)throw new IllegalStateException("Native writable source lost");
+            out.limit(capacity);
             out.position(2);
             writer.write(out);
             final int length=out.position();
@@ -177,9 +215,30 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         /** Never published before sealing; null after seal. */
         public ByteBuffer mutableWire;
         private final AtomicInteger references = new AtomicInteger(1);
+        private final CIOBufferPool javaPool;
+        private final CIOBufferEx javaLease;
+
+        public Source(CIOBufferPool pool, CIOBufferEx lease) {
+            owner = null;
+            handle = null;
+            javaPool = pool;
+            javaLease = lease;
+            mutableWire = lease.buffer();
+            wire = mutableWire.asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
+        }
+
+        public void sealJava(int length) {
+            if (javaPool == null || mutableWire == null || length < 3 || length > 0xffff
+                    || length > mutableWire.limit()) throw new IllegalArgumentException("Invalid shared frame length");
+            mutableWire.putShort(0, (short) length);
+            wire.position(0).limit(length);
+            mutableWire = null;
+        }
         public Source(CIOServer owner, MemorySegment handle, byte[] bytes) {
             this.owner = owner;
             this.handle = handle;
+            javaPool = null;
+            javaLease = null;
             wire = ByteBuffer.wrap(bytes).asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
         }
         /** Native pooled memory, not a Java copy. Held until last lease release. */
@@ -190,6 +249,8 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
                       boolean writableSource) {
             this.owner = owner;
             this.handle = handle;
+            javaPool = null;
+            javaLease = null;
             wire = nativeBytes.asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
             mutableWire = writableSource ? nativeBytes : null;
         }
@@ -208,7 +269,10 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
                 final int n = references.get();
                 if (n <= 0) throw new IllegalStateException("constant source double release");
                 if (references.compareAndSet(n, n - 1)) {
-                    if (n == 1) owner.releaseConstBuffer(handle);
+                    if (n == 1) {
+                        if (javaPool != null) javaPool.release(javaLease);
+                        else owner.releaseConstBuffer(handle);
+                    }
                     return;
                 }
             }

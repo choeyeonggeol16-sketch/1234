@@ -1,0 +1,9 @@
+variant,workload,trial,mode,clients,active_clients,pace_ms,window,owners,payload,kind,requests,requests_per_s,p50_us,p99_us,p999_us,server_cpu_ns_per_op,server_alloc_bytes_per_op,commit_hits,byte_append_hits,send_rejections,raw_writes,raw_gather_writes,raw_write_segments,direct_packet_tails,adjacent_copied_bytes,compacted_copied_bytes,write_burst_copied_bytes
+default,cache64,1,off,16,16,0,16,2,64,cached,221898,147932.00,552.876,35177.253,40040.569,5903.61,0.16,0,0,0,13699,0,13699,0,0,0,13264020
+default,cache64,2,off,16,16,0,16,2,64,cached,276169,184112.67,434.884,34007.624,39036.720,5214.2,0.04,0,0,0,17101,0,17101,0,0,0,16912962
+default,cache256,1,off,16,16,0,16,2,256,cached,180911,120607.33,657.619,36473.110,56243.938,8180.82,0.23,0,0,0,11316,0,11316,0,0,0,43792920
+default,cache256,2,off,16,16,0,16,2,256,cached,248062,165374.67,631.712,34570.645,38506.853,6651.56,1.18,0,0,0,15455,0,15455,0,0,0,59768280
+no-burst-copy,cache64,1,off,16,16,0,16,2,64,cached,225720,150480.00,478.240,34467.587,41907.076,6290.98,0.2,0,0,0,28204,28204,225632,0,0,0,0
+no-burst-copy,cache64,2,off,16,16,0,16,2,64,cached,238440,158960.00,607.284,34565.930,38942.085,7381.31,1.32,0,0,0,29745,29745,237960,0,0,0,0
+no-burst-copy,cache256,1,off,16,16,0,16,2,256,cached,176854,117902.67,846.872,35805.931,44179.335,9499.36,0.19,0,0,0,22112,22112,176896,0,0,0,0
+no-burst-copy,cache256,2,off,16,16,0,16,2,256,cached,181008,120672.00,925.676,35356.835,41756.806,9944.31,1.7,0,0,0,22619,22619,180952,0,0,0,0

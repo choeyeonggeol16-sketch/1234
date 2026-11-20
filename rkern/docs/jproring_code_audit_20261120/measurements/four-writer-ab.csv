@@ -1,0 +1,5 @@
+bytes_tail_encoder,workload,trial,mode,clients,active_clients,pace_ms,window,owners,payload,kind,requests,requests_per_s,p50_us,p99_us,p999_us,server_cpu_ns_per_op,server_alloc_bytes_per_op,commit_hits,byte_append_hits,send_rejections,raw_writes,raw_gather_writes,raw_write_segments
+prior,burst,1,off,16,16,0,16,2,256,mixed,313040,184141.18,594.556,32612.425,40260.321,5366.73,8.01,0,0,0,19467,0,19467
+prior,burst,2,off,16,16,0,16,2,256,mixed,277369,163158.24,703.911,34694.546,39232.575,6525.6,8.34,0,0,0,17328,0,17328
+current,burst,1,off,16,16,0,16,2,256,mixed,357391,210230.00,453.029,33368.604,38814.628,4281.03,8.05,0,0,0,22315,0,22315
+current,burst,2,off,16,16,0,16,2,256,mixed,313482,184401.18,513.779,34608.953,39493.384,4848.76,8.54,0,0,0,19491,0,19491

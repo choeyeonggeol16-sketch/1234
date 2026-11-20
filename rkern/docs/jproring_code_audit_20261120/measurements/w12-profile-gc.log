@@ -1,0 +1,16 @@
+[0.007s][info][gc] Using G1
+[0.180s][info][safepoint] Safepoint "SetNotifyJvmtiEventsMode", Time since last: 155424107 ns, Reaching safepoint: 3166 ns, Cleanup: 37143 ns, At safepoint: 3238 ns, Leaving safepoint: 968 ns, Total: 44515 ns
+[0.297s][info][gc       ] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 9M->4M(130M) 2.783ms
+[0.297s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 114134823 ns, Reaching safepoint: 2893 ns, Cleanup: 13447 ns, At safepoint: 2836714 ns, Leaving safepoint: 11384 ns, Total: 2864438 ns
+[0.480s][info][gc       ] GC(1) Pause Young (Normal) (G1 Evacuation Pause) 9M->5M(130M) 3.790ms
+[0.480s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 179281406 ns, Reaching safepoint: 98184 ns, Cleanup: 58014 ns, At safepoint: 3836324 ns, Leaving safepoint: 13676 ns, Total: 4006198 ns
+[0.630s][info][safepoint] Safepoint "RedefineClasses", Time since last: 134559140 ns, Reaching safepoint: 3641 ns, Cleanup: 107800 ns, At safepoint: 14352493 ns, Leaving safepoint: 187005 ns, Total: 14650939 ns
+[0.704s][info][safepoint] Safepoint "JFRSafepointClear", Time since last: 74001583 ns, Reaching safepoint: 1778 ns, Cleanup: 30781 ns, At safepoint: 2358 ns, Leaving safepoint: 737 ns, Total: 35654 ns
+[0.710s][info][safepoint] Safepoint "JFROldObject", Time since last: 5787658 ns, Reaching safepoint: 2545 ns, Cleanup: 34520 ns, At safepoint: 32829 ns, Leaving safepoint: 821 ns, Total: 70715 ns
+[0.717s][info][safepoint] Safepoint "ClassLoaderStatsOperation", Time since last: 6747110 ns, Reaching safepoint: 2472 ns, Cleanup: 3199 ns, At safepoint: 232273 ns, Leaving safepoint: 1631 ns, Total: 239575 ns
+[0.878s][info][gc       ] GC(2) Pause Young (Normal) (G1 Evacuation Pause) 19M->6M(130M) 3.101ms
+[0.883s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 158490447 ns, Reaching safepoint: 3710 ns, Cleanup: 20018 ns, At safepoint: 3246806 ns, Leaving safepoint: 4543365 ns, Total: 7813899 ns
+[1.922s][info][safepoint] Safepoint "Cleanup", Time since last: 1038602072 ns, Reaching safepoint: 4246 ns, Cleanup: 150043 ns, At safepoint: 3957 ns, Leaving safepoint: 196647 ns, Total: 354893 ns
+[2.875s][info][safepoint] Safepoint "ClassLoaderStatsOperation", Time since last: 953209444 ns, Reaching safepoint: 3971 ns, Cleanup: 68764 ns, At safepoint: 344308 ns, Leaving safepoint: 1871 ns, Total: 418914 ns
+[2.877s][info][safepoint] Safepoint "JFRSafepointWrite", Time since last: 1284547 ns, Reaching safepoint: 1777 ns, Cleanup: 2764 ns, At safepoint: 10411 ns, Leaving safepoint: 701 ns, Total: 15653 ns
+[2.879s][info][safepoint] Safepoint "JFROldObject", Time since last: 2472040 ns, Reaching safepoint: 2154 ns, Cleanup: 4939 ns, At safepoint: 16906 ns, Leaving safepoint: 6799 ns, Total: 30798 ns

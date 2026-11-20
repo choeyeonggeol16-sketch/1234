@@ -1,0 +1,45 @@
+{
+  "kernel": "7.0.0-1014-aws",
+  "architecture": "x86_64",
+  "cpu": "Intel(R) Xeon(R) 6975P-C",
+  "available_cpus": 4,
+  "cpu_quota": null,
+  "ephemeral_ports": [
+    "32768",
+    "60999"
+  ],
+  "tcp_tw_reuse": "2",
+  "jdk": "openjdk version \"21.0.13\" 2026-10-20 LTS",
+  "netty": "4.2.21.Final",
+  "revision": "565769f8ee1bb9759d69d37fa2104116a0aac7e4",
+  "trials": 3,
+  "warmup_ms": 1500,
+  "measure_ms": 2600,
+  "transport": "framed",
+  "owners": 2,
+  "payload_bytes": 256,
+  "persistent_window": 8,
+  "churn_window": 1,
+  "cpu_sample": "server user+system ticks during measurement",
+  "workloads": [
+    [
+      "persistent",
+      1024
+    ],
+    [
+      "persistent",
+      5000
+    ]
+  ],
+  "memory_sample": "after each workload, before server shutdown",
+  "providers": {
+    "rkern": "sun.nio.ch.EPollSelectorImpl",
+    "netty-nio": "NioServerSocketChannel",
+    "netty-io_uring": "IoUringServerSocketChannel",
+    "netty-epoll": "EpollServerSocketChannel"
+  },
+  "unavailable": {},
+  "failed_rounds": {
+    "netty-epoll/1": "Command '['java', '-Xms64m', '-Xmx256m', '-XX:ActiveProcessorCount=2', '-cp', '/tmp/rkern-echo-m3avjtg2/classes:/tmp/rkern-netty-4.2.21.Final/netty-common-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-buffer-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-transport-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-resolver-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-codec-base-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-transport-native-unix-common-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-transport-classes-epoll-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-transport-classes-io_uring-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-transport-native-epoll-4.2.21.Final-linux-x86_64.jar:/tmp/rkern-netty-4.2.21.Final/netty-transport-native-io_uring-4.2.21.Final-linux-x86_64.jar', 'TransportDriver', '43535', '1024', 'persistent', '1500', '2600', '256', '8', 'true', '2437', '100']' returned non-zero exit status 1."
+  }
+}

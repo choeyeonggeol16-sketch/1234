@@ -1,0 +1,7 @@
+gather_max_frames,workload,trial,mode,clients,active_clients,pace_ms,window,owners,payload,kind,requests,requests_per_s,p50_us,p99_us,p999_us,server_cpu_ns_per_op,server_alloc_bytes_per_op,commit_hits,byte_append_hits,send_rejections,raw_writes,raw_gather_writes,raw_write_segments
+4,gather,1,off,16,16,0,32,2,4096,ordinary,60650,33694.44,6131.550,47731.656,141917.054,30997.53,1.65,0,0,0,15276,15276,61104
+4,gather,2,off,16,16,0,32,2,4096,ordinary,70616,39231.11,3876.361,55929.851,79856.496,22374.53,0.21,0,0,0,17667,17667,70668
+8,gather,1,off,16,16,0,32,2,4096,ordinary,69250,38472.22,6098.425,46000.030,54525.813,23971.12,1.17,0,0,0,8709,8709,69672
+8,gather,2,off,16,16,0,32,2,4096,ordinary,75903,42168.33,5443.607,46965.225,52203.070,21606.52,0.15,0,0,0,9517,9517,76136
+16,gather,1,off,16,16,0,32,2,4096,ordinary,76935,42741.67,4737.993,47662.275,58091.627,19886.92,0.12,0,0,0,7199,7199,76797
+16,gather,2,off,16,16,0,32,2,4096,ordinary,72801,40445.00,5980.104,48617.088,55796.135,23213.97,0.6,0,0,0,6855,6855,73128

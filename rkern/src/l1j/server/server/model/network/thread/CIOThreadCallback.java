@@ -1,6 +1,7 @@
 package l1j.server.server.model.network.thread;
 
 
+import l1j.server.server.model.network.core.transport.selector.SelectorTransport;
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
@@ -496,6 +497,24 @@ public final class CIOThreadCallback {
 
 		return count;
 	}
+
+    /** The validated network subset lives on the same threads as game timers and session replay. */
+    public synchronized void attachSelectors(java.util.List<SelectorTransport.OwnerDriver> drivers) {
+        drivers = java.util.List.copyOf(drivers);
+        if (drivers.size() != networkShardCount || drivers.isEmpty())
+            throw new IllegalArgumentException("Selector count must match the network shard count");
+        for (int i = 0; i < drivers.size(); i++) {
+            CIOThread shard = shards[i];
+            SelectorTransport.OwnerDriver existing = shard.selectorDriver;
+            if (!shard.running || existing != null && existing.active())
+                throw new IllegalStateException("Selector owner unavailable on shard " + i);
+        }
+        for (int i = 0; i < drivers.size(); i++) {
+            CIOThread shard = shards[i];
+            shard.selectorDriver = drivers.get(i);
+            shard.signalWork(false);
+        }
+    }
 
 	private static int resolveNetworkShardCount(
 			int cores,
@@ -1109,6 +1128,7 @@ public final class CIOThreadCallback {
             }
         }
         private volatile int wakeGate;
+        private volatile SelectorTransport.OwnerDriver selectorDriver;
 
         void signalWork(boolean inbound) {
             final Thread target = thread;
@@ -1123,6 +1143,8 @@ public final class CIOThreadCallback {
             if (wakeGate == 1) return;
             final int previous = (int) WAKE_GATE.getAndSet(this, 1);
             if (previous == 2) {
+                SelectorTransport.OwnerDriver driver = selectorDriver;
+                if (driver != null && driver.active()) driver.wakeup();
                 LockSupport.unpark(target);
             }
         }
@@ -1949,10 +1971,14 @@ public final class CIOThreadCallback {
                         LockSupport.parkNanos(1_000_000L);
                         continue;
                     }
+                    final SelectorTransport.OwnerDriver driver = selectorDriver;
+                    if (driver != null && driver.active()) driver.advance();
                     if (backlog) continue;
                     if (!preparePark()) continue;
                     try {
-                        if (sleepMs <= 0L) {
+                        if (driver != null && driver.active()) {
+                            driver.awaitWork(Math.min(MAX_SLEEP_MS, Math.max(1L, sleepMs)));
+                        } else if (sleepMs <= 0L) {
                             LockSupport.parkNanos(IDLE_PARK_NS);
                         } else {
                             LockSupport.parkNanos(
@@ -1964,6 +1990,8 @@ public final class CIOThreadCallback {
                 }
             } finally {
                 try {
+                    SelectorTransport.OwnerDriver driver = selectorDriver;
+                    if (driver != null && driver.active()) driver.closeOnOwner();
                     if (!running) {
                         // The stop monitor prevents any further successful
                         // admissions. Cancel every accepted, unexecuted frame;
@@ -3039,7 +3067,7 @@ public final class CIOThreadCallback {
         return !selfJoin;
     }
 
-	public void shutdown() {
+	public synchronized void shutdown() {
 		watchdogRunning = false;
 		LockSupport.unpark(watchdogThread);
 
@@ -3051,6 +3079,8 @@ public final class CIOThreadCallback {
                 synchronized (owner) {
                     owner.running = false;
                 }
+                SelectorTransport.OwnerDriver driver = owner.selectorDriver;
+                if (driver != null && driver.active()) driver.wakeup();
                 final Thread t = owner.thread;
                 if (t != null) LockSupport.unpark(t);
             }

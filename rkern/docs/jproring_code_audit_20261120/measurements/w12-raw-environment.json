@@ -1,0 +1,40 @@
+{
+  "kernel": "6.18.57",
+  "architecture": "x86_64",
+  "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+  "available_cpus": 3,
+  "cpu_quota": "200000 100000",
+  "ephemeral_ports": [
+    "32768",
+    "60999"
+  ],
+  "tcp_tw_reuse": "2",
+  "jdk": "openjdk version \"21.0.13\" 2026-10-20",
+  "netty": "4.2.21.Final",
+  "revision": "94c0d7955fad3d322d9efbfe059be6543476112f",
+  "trials": 1,
+  "warmup_ms": 300,
+  "measure_ms": 700,
+  "transport": "raw",
+  "owners": 2,
+  "payload_bytes": 64,
+  "persistent_window": 1,
+  "churn_window": 1,
+  "cpu_sample": "server user+system ticks during measurement",
+  "workloads": [
+    [
+      "persistent",
+      1024
+    ],
+    [
+      "persistent",
+      5000
+    ]
+  ],
+  "memory_sample": "after each workload, before server shutdown",
+  "providers": {
+    "rkern": "sun.nio.ch.EPollSelectorImpl"
+  },
+  "unavailable": {},
+  "failed_rounds": {}
+}

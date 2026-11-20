@@ -1,0 +1,100 @@
+name: JProRing Windows audit regression
+
+on:
+  push:
+    branches:
+      - rkern/jproring-audit-fixes-20261120
+    paths:
+      - .github/workflows/jproring-windows-audit.yml
+      - rkern/src/**
+      - rkern/docs/jproring_*_20261120/*.java
+
+permissions:
+  contents: read
+
+jobs:
+  transport:
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            rkern/src
+            rkern/docs/jproring_p1_selector_20261120
+            rkern/docs/jproring_selector_transport_20261120
+            rkern/docs/jproring_cio_integration_20261120
+      - name: Compile and test with Windows JDK 21
+        shell: pwsh
+        working-directory: rkern
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $java = Join-Path $env:JAVA_HOME_21_X64 'bin/java.exe'
+          $javac = Join-Path $env:JAVA_HOME_21_X64 'bin/javac.exe'
+          & $java -version
+          $probe = Join-Path $env:RUNNER_TEMP 'SelectorPlatform.java'
+          @'
+          import java.nio.channels.Selector;
+          class SelectorPlatform {
+              public static void main(String[] args) throws Exception {
+                  try (Selector selector = Selector.open()) {
+                      String platform = System.getProperty("os.name");
+                      String selectorType = selector.getClass().getName();
+                      System.out.println("Platform=" + platform + " Selector=" + selectorType);
+                      if (!platform.startsWith("Windows") || !selectorType.contains("WEPoll")) {
+                          throw new AssertionError("Expected Windows WEPoll Selector");
+                      }
+                  }
+              }
+          }
+          '@ | Set-Content -Path $probe -Encoding utf8NoBOM
+          $platform = & $java $probe
+          $platform
+          $classes = Join-Path $env:RUNNER_TEMP 'jproring-class-files'
+          $null = New-Item -ItemType Directory -Path $classes
+          $deps = Join-Path $env:RUNNER_TEMP 'jproring-dependencies'
+          $null = New-Item -ItemType Directory -Path $deps
+          $coordinates = @(
+            'com/zaxxer/HikariCP/5.1.0/HikariCP-5.1.0.jar'
+            'org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar'
+            'org/jctools/jctools-core/4.0.5/jctools-core-4.0.5.jar'
+            'javolution/javolution/5.5.1/javolution-5.5.1.jar'
+            'net/sf/trove4j/trove4j/3.0.3/trove4j-3.0.3.jar'
+            'org/agrona/agrona/1.23.1/agrona-1.23.1.jar'
+            'it/unimi/dsi/fastutil/8.5.15/fastutil-8.5.15.jar'
+            'javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar'
+            'javax/activation/javax.activation-api/1.2.0/javax.activation-api-1.2.0.jar'
+            'com/github/ben-manes/caffeine/caffeine/3.1.8/caffeine-3.1.8.jar'
+          )
+          foreach ($coordinate in $coordinates) {
+              $jar = Join-Path $deps ($coordinate.Split('/')[-1])
+              Invoke-WebRequest -Uri "https://repo.maven.apache.org/maven2/$coordinate" -OutFile $jar
+          }
+          $dependencyClasspath = (Get-ChildItem $deps -Filter '*.jar' | ForEach-Object { $_.FullName }) -join ';'
+          $sourceFiles = @(Get-ChildItem 'src' -Recurse -Filter '*.java') + @(Get-Item @(
+            'docs/jproring_p1_selector_20261120/SelectorFrameReaderTest.java'
+            'docs/jproring_selector_transport_20261120/SelectorTransportTest.java'
+            'docs/jproring_cio_integration_20261120/SelectorCioIntegrationTest.java'
+            'docs/jproring_cio_integration_20261120/CIOBufferPoolAffinityTest.java'
+          ))
+          $argumentFile = Join-Path $env:RUNNER_TEMP 'jproring-sources.txt'
+          $sourceFiles | ForEach-Object { '"' + $_.FullName.Replace('\', '/') + '"' } |
+              Set-Content -Path $argumentFile -Encoding utf8NoBOM
+          & $javac -J-Xmx2g --release 21 --enable-preview -encoding UTF-8 -cp $dependencyClasspath -d $classes "@$argumentFile"
+          $receive = & $java -cp $classes SelectorFrameReaderTest
+          $transport = & $java -cp $classes SelectorTransportTest
+          $pool = & $java --enable-preview -cp $classes l1j.server.server.model.network.core.connection.CIOBufferPoolAffinityTest
+          $runtime = Join-Path $env:RUNNER_TEMP 'jproring-game-runtime'
+          $null = New-Item -ItemType Directory -Path $runtime
+          Push-Location $runtime
+          try {
+              $integration = & $java --enable-preview -XX:MaxDirectMemorySize=8m '-Drkern.test.listenerRestarts=100' `
+                  '-Drkern.test.resetReconnects=1000' -cp "$classes;$dependencyClasspath" SelectorCioIntegrationTest
+          } finally { Pop-Location }
+          $receive
+          $transport
+          $pool
+          $integration
+          @($platform, $receive, $transport, $pool) + @($integration) | Add-Content $env:GITHUB_STEP_SUMMARY

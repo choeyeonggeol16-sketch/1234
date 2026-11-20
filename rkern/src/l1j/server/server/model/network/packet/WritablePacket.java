@@ -6,6 +6,15 @@ import l1j.server.server.model.network.utill.ConnectionConfig;
 
 public abstract class WritablePacket<T extends CIOClient> {
 
+    /**
+     * Opt in only when the encoder honors WriteBuffer's frame-relative region and
+     * can finish in one call within a strict wire-size bound, including the header.
+     * The bound must be side-effect free. An overflow is an encoding error.
+     */
+    public interface DirectTail {
+        int maximumWireBytes();
+    }
+
     protected WritablePacket() {
     }
 

@@ -75,18 +75,26 @@ public final class CIOSlotPool {
      * @return local slot id, or -1 when the pool is exhausted.
      */
     public int acquire() {
-        final int words =
-                _freeBits.length() / BITMAP_WORD_STRIDE;
+        final int words = _freeBits.length() / BITMAP_WORD_STRIDE;
 
         /*
          * Spread producer threads across bitmap words. Starting every acquire
          * at word zero would turn the first cache line into a hot CAS point now
          * that this allocator backs the normal SEND path.
          */
-        final int startWord =
-                (int) (Thread.currentThread().threadId()
-                        % words);
+        final int startWord = (int) (Thread.currentThread().threadId() % words);
+        return acquireFrom(startWord, words);
+    }
 
+    int acquireNearShard(int shard, int shards) {
+        if (shard < 0 || shard >= shards) return acquire();
+        final int words = _freeBits.length() / BITMAP_WORD_STRIDE;
+        // Start in the shard's own bitmap region. A saturated region may
+        // borrow from any other word. No idle shard withholds available slots.
+        return acquireFrom((int) ((long) words * shard / shards), words);
+    }
+
+    private int acquireFrom(int startWord, int words) {
         for (int n = 0;
                 n < words;
                 n++) {

@@ -1,0 +1,7 @@
+variant,workload,trial,mode,clients,active_clients,pace_ms,window,owners,payload,kind,requests,requests_per_s,p50_us,p99_us,p999_us,server_cpu_ns_per_op,server_alloc_bytes_per_op,commit_hits,byte_append_hits,send_rejections,raw_writes,raw_gather_writes,raw_write_segments,direct_packet_tails,cached_packet_tails,adjacent_copied_bytes,compacted_copied_bytes
+current,cache256,1,off,16,16,0,16,2,256,cached,402551,182977.73,521.880,34074.762,43262.380,4968.31,0.05,0,0,0,25149,0,25149,0,0,0,0
+current,cache256,2,off,16,16,0,16,2,256,cached,631039,286835.91,462.008,5389.807,35115.417,2678.12,0.5,0,0,0,39406,0,39406,0,0,0,0
+previous-cached,cache256,1,off,16,16,0,16,2,256,cached,608190,276450.00,472.043,6576.155,36374.806,3041.81,0.04,0,0,0,37988,0,37988,0,0,0,0
+previous-cached,cache256,2,off,16,16,0,16,2,256,cached,541308,246049.09,486.932,31750.951,37100.947,3306.8,0.63,0,0,0,33765,0,33765,0,0,0,0
+previous-write,cache256,1,off,16,16,0,16,2,256,cached,529456,240661.82,503.042,12281.393,37151.322,3928.56,0.03,0,0,0,33079,0,33079,0,0,0,0
+previous-write,cache256,2,off,16,16,0,16,2,256,cached,500869,227667.73,565.873,26968.443,36702.917,4092.89,0.04,0,0,0,31278,0,31278,0,0,0,0

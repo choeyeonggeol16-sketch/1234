@@ -1,0 +1,40 @@
+{
+  "revision": "94c0d7955fad3d322d9efbfe059be6543476112f",
+  "workload": "burst",
+  "warmup_ms": 600,
+  "measure_ms": 900,
+  "warning": "JFR covers the complete short server JVM lifetime including startup and teardown.",
+  "counts": {
+    "jdk.ObjectAllocationSample": 57,
+    "jdk.ExecutionSample": 67,
+    "jdk.GarbageCollection": 1
+  },
+  "execution_top_frames": {
+    "l1j.server.server.model.network.codec.Cryptor.encrypt": 14,
+    "l1j.server.server.model.network.core.connection.CUserSocket.tryWritePacketInternal": 3,
+    "l1j.server.server.model.network.core.connection.CUserSocket.packAdjacentStagedPacketLocked": 3,
+    "java.util.concurrent.atomic.LongAdder.add": 3,
+    "java.util.concurrent.locks.ReentrantLock$Sync.tryRelease": 2,
+    "java.util.concurrent.atomic.AtomicIntegerFieldUpdater$AtomicIntegerFieldUpdaterImpl.accessCheck": 2,
+    "l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.begin": 2,
+    "l1j.server.server.model.network.core.connection.CIOBufferPool.acquireSend": 2,
+    "java.util.HashMap.newNode": 1,
+    "java.lang.invoke.InnerClassLambdaMetafactory.generateConstructor": 1,
+    "java.lang.invoke.MethodHandleNatives.findMethodHandleType": 1,
+    "java.lang.String.toString": 1
+  },
+  "object_sample_classes": {
+    "[B": 27,
+    "java.lang.String": 4,
+    "jdk.internal.org.objectweb.asm.SymbolTable$Entry": 4,
+    "[Ljava.lang.Class;": 2,
+    "[Ljava.lang.Object;": 2,
+    "l1j.server.server.model.network.packet.BytesWritablePacket": 2,
+    "jdk.internal.org.objectweb.asm.MethodWriter": 2,
+    "[Ljava.util.concurrent.ConcurrentHashMap$Node;": 1,
+    "java.nio.HeapByteBuffer": 1,
+    "[Ljdk.internal.org.objectweb.asm.SymbolTable$Entry;": 1,
+    "java.lang.invoke.InnerClassLambdaMetafactory": 1,
+    "jdk.internal.org.objectweb.asm.Label": 1
+  }
+}

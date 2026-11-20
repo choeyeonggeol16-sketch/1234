@@ -1,0 +1,38 @@
+[0.005s][info][gc] Using G1
+[0.228s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 9M->4M(130M) 4.753ms
+[0.228s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 200877036 ns, Reaching safepoint: 4216 ns, Cleanup: 42495 ns, At safepoint: 4810838 ns, Leaving safepoint: 21646 ns, Total: 4879195 ns
+[0.534s][info][gc       ] GC(1) Pause Young (Normal) (G1 Evacuation Pause) 9M->8M(130M) 12.671ms
+[0.534s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 293372788 ns, Reaching safepoint: 2720 ns, Cleanup: 29706 ns, At safepoint: 12709550 ns, Leaving safepoint: 14192 ns, Total: 12756168 ns
+[0.838s][info][gc       ] GC(2) Pause Young (Normal) (G1 Evacuation Pause) 16M->16M(130M) 11.316ms
+[0.840s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 292080762 ns, Reaching safepoint: 481436 ns, Cleanup: 34944 ns, At safepoint: 11362275 ns, Leaving safepoint: 2561836 ns, Total: 14440491 ns
+[0.990s][info][gc       ] GC(3) Pause Young (Normal) (G1 Evacuation Pause) 21M->22M(130M) 19.547ms
+[0.991s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 130001909 ns, Reaching safepoint: 309844 ns, Cleanup: 19151 ns, At safepoint: 19584947 ns, Leaving safepoint: 731973 ns, Total: 20645915 ns
+[1.202s][info][gc       ] GC(4) Pause Young (Normal) (G1 Evacuation Pause) 32M->32M(130M) 27.084ms
+[1.202s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 179388367 ns, Reaching safepoint: 4275124 ns, Cleanup: 17593 ns, At safepoint: 27129707 ns, Leaving safepoint: 25689 ns, Total: 31448113 ns
+[1.408s][info][gc       ] GC(5) Pause Young (Normal) (G1 Evacuation Pause) 44M->44M(130M) 34.578ms
+[1.410s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 171569527 ns, Reaching safepoint: 3312 ns, Cleanup: 30551 ns, At safepoint: 34618689 ns, Leaving safepoint: 1607062 ns, Total: 36259614 ns
+[1.637s][info][gc       ] GC(6) Pause Young (Normal) (G1 Evacuation Pause) 59M->59M(207M) 46.642ms
+[1.641s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 181268443 ns, Reaching safepoint: 3719 ns, Cleanup: 10473 ns, At safepoint: 46680550 ns, Leaving safepoint: 3787955 ns, Total: 50482697 ns
+[1.950s][info][gc       ] GC(7) Pause Young (Normal) (G1 Evacuation Pause) 77M->77M(207M) 39.321ms
+[1.955s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 269128822 ns, Reaching safepoint: 3453 ns, Cleanup: 21107 ns, At safepoint: 39362634 ns, Leaving safepoint: 5142307 ns, Total: 44529501 ns
+[3.082s][info][safepoint] Safepoint "Cleanup", Time since last: 1120163309 ns, Reaching safepoint: 6441738 ns, Cleanup: 168804 ns, At safepoint: 2382 ns, Leaving safepoint: 15814 ns, Total: 6628738 ns
+[4.092s][info][safepoint] Safepoint "Cleanup", Time since last: 1005406238 ns, Reaching safepoint: 4880066 ns, Cleanup: 27176 ns, At safepoint: 1835 ns, Leaving safepoint: 11693 ns, Total: 4920770 ns
+[6.092s][info][safepoint] Safepoint "Cleanup", Time since last: 2000383995 ns, Reaching safepoint: 5389 ns, Cleanup: 21603 ns, At safepoint: 1967 ns, Leaving safepoint: 854 ns, Total: 29813 ns
+[7.093s][info][safepoint] Safepoint "Cleanup", Time since last: 1000359072 ns, Reaching safepoint: 41075 ns, Cleanup: 19454 ns, At safepoint: 1573 ns, Leaving safepoint: 1155 ns, Total: 63257 ns
+[7.175s][info][gc       ] GC(8) Pause Young (Normal) (G1 Evacuation Pause) 94M->88M(207M) 42.444ms
+[7.175s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 39691000 ns, Reaching safepoint: 4202 ns, Cleanup: 3514 ns, At safepoint: 42614900 ns, Leaving safepoint: 11381 ns, Total: 42633997 ns
+[15.177s][info][safepoint] Safepoint "Cleanup", Time since last: 8001723053 ns, Reaching safepoint: 5549 ns, Cleanup: 23248 ns, At safepoint: 1371 ns, Leaving safepoint: 724 ns, Total: 30892 ns
+[17.177s][info][safepoint] Safepoint "Cleanup", Time since last: 2000240306 ns, Reaching safepoint: 4616 ns, Cleanup: 11034 ns, At safepoint: 1348 ns, Leaving safepoint: 1142 ns, Total: 18140 ns
+[21.178s][info][safepoint] Safepoint "Cleanup", Time since last: 4000393691 ns, Reaching safepoint: 4407 ns, Cleanup: 11854 ns, At safepoint: 1452 ns, Leaving safepoint: 1196 ns, Total: 18909 ns
+[27.530s][info][gc       ] GC(9) Pause Young (Normal) (G1 Evacuation Pause) 109M->88M(207M) 10.675ms
+[27.531s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 6340137656 ns, Reaching safepoint: 1632106 ns, Cleanup: 18490 ns, At safepoint: 10872605 ns, Leaving safepoint: 647985 ns, Total: 13171186 ns
+[29.532s][info][safepoint] Safepoint "Cleanup", Time since last: 2000560448 ns, Reaching safepoint: 11478 ns, Cleanup: 46315 ns, At safepoint: 1979 ns, Leaving safepoint: 12222 ns, Total: 71994 ns
+[33.532s][info][safepoint] Safepoint "Cleanup", Time since last: 4000417640 ns, Reaching safepoint: 5683 ns, Cleanup: 20844 ns, At safepoint: 1631 ns, Leaving safepoint: 1323 ns, Total: 29481 ns
+[39.533s][info][safepoint] Safepoint "Cleanup", Time since last: 6000938456 ns, Reaching safepoint: 19008 ns, Cleanup: 19084 ns, At safepoint: 1722 ns, Leaving safepoint: 9535 ns, Total: 49349 ns
+[45.535s][info][safepoint] Safepoint "Cleanup", Time since last: 6001499541 ns, Reaching safepoint: 6837 ns, Cleanup: 21622 ns, At safepoint: 1627 ns, Leaving safepoint: 1390 ns, Total: 31476 ns
+[49.536s][info][safepoint] Safepoint "Cleanup", Time since last: 4001015929 ns, Reaching safepoint: 6361 ns, Cleanup: 20322 ns, At safepoint: 1797 ns, Leaving safepoint: 7388 ns, Total: 35868 ns
+[62.197s][info][safepoint] Safepoint "Cleanup", Time since last: 12661317454 ns, Reaching safepoint: 6435 ns, Cleanup: 32131 ns, At safepoint: 1920 ns, Leaving safepoint: 19287 ns, Total: 59773 ns
+[67.201s][info][safepoint] Safepoint "Cleanup", Time since last: 5003364557 ns, Reaching safepoint: 818759 ns, Cleanup: 57933 ns, At safepoint: 2179 ns, Leaving safepoint: 3638 ns, Total: 882509 ns
+[68.202s][info][safepoint] Safepoint "Cleanup", Time since last: 1000133830 ns, Reaching safepoint: 94199 ns, Cleanup: 85165 ns, At safepoint: 1736 ns, Leaving safepoint: 21183 ns, Total: 202283 ns
+[68.534s][info][gc       ] GC(10) Pause Young (Normal) (G1 Evacuation Pause) 171M->88M(207M) 8.443ms
+[68.534s][info][safepoint] Safepoint "G1CollectForAllocation", Time since last: 323563791 ns, Reaching safepoint: 4079 ns, Cleanup: 58560 ns, At safepoint: 8479507 ns, Leaving safepoint: 21387 ns, Total: 8563533 ns

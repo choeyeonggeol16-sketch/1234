@@ -2,15 +2,30 @@ package l1j.server.server.model.network.core.transport;
 
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.execution.CIOObject;
+import l1j.server.server.model.network.core.transport.selector.SelectorTransport;
+
+import java.util.function.IntConsumer;
+import java.util.function.LongConsumer;
 
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.lang.foreign.MemorySegment;
 
-/** Native IOCP socket handle; owned by CIOServer. */
+/** Completion adapter consumed by the game socket pumps. */
 public final class CSocket implements AutoCloseable {
     private static final int MAX_STASH = 65536;
     private final CIOServer parent;
+    private final JavaCioServer javaServer;
+    private final SelectorTransport.Connection javaPeer;
+    private final SelectorTransport.OwnerCommand javaReadRequest;
+    private final SelectorTransport.OwnerCommand javaWriteRequest;
+    private final IntConsumer javaReadCallback;
+    private final LongConsumer javaWriteCallback;
+    private final Runnable javaDeadlineCallback;
+    private volatile long javaLoginDeadline;
+    int javaAccount;
+    long javaMac;
+    boolean javaEntered;
     private final long id;
     private final InetSocketAddress remote;
     private volatile boolean open = true, closing;
@@ -29,11 +44,53 @@ public final class CSocket implements AutoCloseable {
         this.parent = parent;
         this.id = id;
         this.remote = remote;
+        javaServer = null;
+        javaPeer = null;
+        javaReadRequest = null;
+        javaWriteRequest = null;
+        javaReadCallback = null;
+        javaWriteCallback = null;
+        javaDeadlineCallback = null;
     }
+    CSocket(JavaCioServer server, long id, SelectorTransport.Connection peer) {
+        this.parent = null;
+        this.id = id;
+        remote = peer.remoteAddress();
+        javaServer = server;
+        javaPeer = peer;
+        javaReadCallback = this::completeJavaRead;
+        javaWriteCallback = this::completeJavaWrite;
+        javaDeadlineCallback = this::runJavaDeadline;
+        javaReadRequest = new SelectorTransport.OwnerCommand() {
+            @Override public void run(SelectorTransport.Connection connection) {
+                ByteBuffer target;
+                synchronized (CSocket.this) { target = readBuffer; }
+                if (target != null && !connection.readRaw(target, javaReadCallback)) completeJavaRead(-1);
+            }
+            @Override public void cancel() { completeJavaRead(-1); }
+        };
+        javaWriteRequest = new SelectorTransport.OwnerCommand() {
+            @Override public void run(SelectorTransport.Connection connection) {
+                ByteBuffer[] sources;
+                int offset, count;
+                boolean gather;
+                synchronized (CSocket.this) {
+                    sources = writeBuffers;
+                    offset = writeOffset;
+                    count = writeCount;
+                    gather = gathering;
+                }
+                if (sources == null) return;
+                armJavaWrite(gather ? null : sources[0], sources, offset, count);
+            }
+            @Override public void cancel() { completeJavaWrite(-1); }
+        };
+    }
+    public boolean isJavaTransport() { return javaPeer != null; }
     public long id() { return id; }
     public CIOServer server() { return parent; }
     public InetSocketAddress remoteAddress() { return remote; }
-    public boolean isOpen() { return open && !closing; }
+    public boolean isOpen() { return open && !closing && (javaPeer == null || javaPeer.isOpen()); }
     private volatile CUserSocket userSocketOwner;
     private volatile boolean nativeIoDrained;
     private volatile boolean nativeCloseStatusKnown;
@@ -64,13 +121,15 @@ public final class CSocket implements AutoCloseable {
         rememberNativeClose(operation, error);
         nativeClosing();
     }
-    // Only the real native terminal callback sets this flag. Local aborting
+    // Only the provider's terminal callback sets this flag. Local aborting
     // of Java READ/WRITE requests must not start game-session destruction.
     void nativeTerminated() {
         nativeIoDrained = true;
-        nativeClosed();
-        CUserSocket owner = userSocketOwner;
-        if (owner != null) owner.onTransportTerminated();
+        try { nativeClosed(); }
+        finally {
+            CUserSocket owner = userSocketOwner;
+            if (owner != null) owner.onTransportTerminated();
+        }
     }
     void nativeClosing() {
         closing = true;
@@ -79,16 +138,46 @@ public final class CSocket implements AutoCloseable {
     }
     @SuppressWarnings("preview")
     long socketNumber(){long[] state=userSocketState();return state==null?0:state[10];}
-    public boolean setAccountIdentity(int account){return parent.setAccountIdentity(id,account);}
-    public boolean setCharacterEntered(boolean entered){return parent.setCharacterEntered(id,entered);}
-    public boolean setMacIdentity(long value){return parent.setMacIdentity(id,value);}
-    boolean SetKey(MemorySegment api,int seed){return parent.SetKey(id,api,seed);}
-    public boolean releaseUserPacket(long sequence){return parent.releaseUserPacket(id,sequence);}
-    boolean encryptUserData(ByteBuffer bytes){return parent.encryptUserData(id,bytes);}
-    public boolean setUserState(int state){return parent.setUserState(id,state);}
-    public boolean pauseNativeUser(boolean pause){return parent.pause(id,pause);}
-    public boolean configureDeadlines(int loginMs){return parent.configureDeadlines(id,loginMs);}
-    public boolean requestDeadline(long delayMs){return delayMs>=0&&delayMs<=Integer.MAX_VALUE&&parent.requestDeadline(id,(int)delayMs);}
+    public boolean setAccountIdentity(int account){return javaServer != null ? javaServer.setAccount(this, account) : parent.setAccountIdentity(id,account);}
+    public boolean setCharacterEntered(boolean entered){return javaServer != null ? javaServer.setEntered(this, entered) : parent.setCharacterEntered(id,entered);}
+    public boolean setMacIdentity(long value){return javaServer != null ? javaServer.setMac(this, value) : parent.setMacIdentity(id,value);}
+    private CIOServer requireNativeServer() {
+        if (parent == null) throw new IllegalStateException("Native operation on a Java Selector socket");
+        return parent;
+    }
+    boolean SetKey(MemorySegment api,int seed){return requireNativeServer().SetKey(id,api,seed);}
+    public boolean releaseUserPacket(long sequence){return requireNativeServer().releaseUserPacket(id,sequence);}
+    boolean encryptUserData(ByteBuffer bytes){return requireNativeServer().encryptUserData(id,bytes);}
+    public boolean setUserState(int state) {
+        if (javaServer == null) return parent.setUserState(id, state);
+        if (!javaServer.setState(this, state)) return false;
+        if (state != 0) javaLoginDeadline = 0;
+        return true;
+    }
+    public boolean pauseNativeUser(boolean pause){return requireNativeServer().pause(id,pause);}
+    public boolean configureDeadlines(int loginMs) {
+        if (javaPeer == null) return parent.configureDeadlines(id, loginMs);
+        if (loginMs < 0) return false;
+        if (loginMs != 0) javaLoginDeadline = System.nanoTime() + loginMs * 1_000_000L;
+        return requestDeadline(loginMs == 0 ? 5000 : Math.min(loginMs, 5000));
+    }
+    public boolean requestDeadline(long delayMs) {
+        if (delayMs < 0 || delayMs > Integer.MAX_VALUE) return false;
+        if (javaPeer == null) return parent.requestDeadline(id, (int) delayMs);
+        if (!isOpen()) return false;
+        if (javaPeer.isOwnerThread()) return javaPeer.scheduleDeadline(delayMs, javaDeadlineCallback);
+        return javaPeer.submit(connection -> connection.scheduleDeadline(delayMs, javaDeadlineCallback), false);
+    }
+
+    private void runJavaDeadline() {
+        if (!isOpen()) return;
+        long login = javaLoginDeadline;
+        long remaining = login == 0 ? Long.MAX_VALUE : login - System.nanoTime();
+        CUserSocket owner = userSocketOwner;
+        int delay = owner == null ? 0 : owner.transportNetworkDeadline();
+        if (delay < 0 || remaining <= 0) close();
+        else if (delay > 0) javaPeer.scheduleDeadline(Math.min(delay, 1 + (remaining - 1) / 1_000_000), javaDeadlineCallback);
+    }
     boolean nativePacket(long sequence,ByteBuffer bytes,int length){
         CUserSocket owner=userSocketOwner;
         if(owner==null)return false;
@@ -96,15 +185,43 @@ public final class CSocket implements AutoCloseable {
         catch(Throwable failure){owner.close();throw failure;}
     }
     int nativeNetworkDeadline(){CUserSocket owner=userSocketOwner;return owner==null?0:owner.transportNetworkDeadline();}
-    public boolean postCompletion(CIOObject task) { return parent.postCompletion(task); }
-    public int currentNativeOwner() { return parent.currentNativeOwner(); }
-    public long[] userSocketState() { return parent.userSocketState(id); }
+    public boolean postCompletion(CIOObject task) {
+        if (javaPeer == null) return parent.postCompletion(task);
+        return javaPeer.submit(new SelectorTransport.OwnerCommand() {
+            @Override public void run(SelectorTransport.Connection ignored) { task.OnIOCallback(); }
+            @Override public void cancel() { task.cancel(); }
+        }, true);
+    }
+    public int currentNativeOwner() { return javaPeer == null ? parent.currentNativeOwner() : javaPeer.isOwnerThread() ? javaPeer.ownerIndex() : -1; }
+    public long[] userSocketState() { return javaPeer == null ? parent.userSocketState(id) : null; }
+    synchronized long[] selectorReport() {
+        byte[] a = remote.getAddress().getAddress();
+        long address = a.length == 4 ? (a[0] & 255L) << 24 | (a[1] & 255L) << 16 | (a[2] & 255L) << 8 | a[3] & 255L : 0;
+        return new long[] {id, id, 0, closing ? 1 : 0, nativeIoDrained ? 1 : 0, 0,
+                readOwner == null ? 0 : 1, writeOwner == null ? 0 : 1, 0, a.length == 4 ? 2 : 0, address, remote.getPort()};
+    }
+
+    void javaTerminated(SelectorTransport.CloseReason reason) {
+        closing = true;
+        javaLoginDeadline = 0;
+        try { nativeClosing(); }
+        finally { nativeTerminated(); }
+    }
     public void closeGracefully(){
         if(!open)return;closing=true;
+        if (javaPeer != null) {
+            javaPeer.requestClose(true);
+            return;
+        }
         if(!parent.closeGracefully(id,30000)){nativeClosed();parent.disconnect(id);}
     }
     @Override public void close() {
         if (!open) return;
+        if (javaPeer != null) {
+            closing = true;
+            javaPeer.requestClose(false);
+            return;
+        }
         nativeClosed();
         parent.disconnect(id);
     }
@@ -112,6 +229,30 @@ public final class CSocket implements AutoCloseable {
     public void read(ByteBuffer dst, CUserSocket owner) {
         if (dst == null || owner == null) throw new NullPointerException();
         if (dst.isReadOnly()) throw new IllegalArgumentException("READ buffer is read-only");
+        if (javaPeer != null) {
+            boolean admitted;
+            synchronized (this) {
+                if (readOwner != null) throw new IllegalStateException("READ already pending");
+                admitted = isOpen() && dst.hasRemaining();
+                if (admitted) {
+                    readOwner = owner;
+                    readBuffer = dst;
+                }
+            }
+            if (!admitted) owner.transportReadCompleted(-1);
+            else if (javaPeer.isOwnerThread()) {
+                // The READ pump already owns the destination. No deferred command
+                // needs to reacquire this monitor merely to recover the same buffer.
+                try {
+                    if (!javaPeer.readRaw(dst, javaReadCallback)) completeJavaRead(-1);
+                } catch (RuntimeException failure) {
+                    try { javaPeer.abort(); }
+                    finally { completeJavaRead(-1); }
+                    throw failure;
+                }
+            } else if (!javaPeer.submit(javaReadRequest, false)) completeJavaRead(-1);
+            return;
+        }
         int bytes = 0;
         boolean rejected;
         boolean armed = false;
@@ -135,6 +276,27 @@ public final class CSocket implements AutoCloseable {
         }
         if (rejected) owner.transportReadCompleted(-1);
         else if (!armed) owner.transportReadCompleted(bytes);
+    }
+
+    private void completeJavaRead(int bytes) {
+        CUserSocket callback;
+        synchronized (this) {
+            callback = readOwner;
+            readOwner = null;
+            readBuffer = null;
+        }
+        if (callback != null) callback.transportReadCompleted(bytes);
+    }
+
+    private void completeJavaWrite(long bytes) {
+        CUserSocket callback;
+        boolean gather;
+        synchronized (this) {
+            callback = writeOwner;
+            gather = gathering;
+            clearWrite();
+        }
+        if (callback != null) deliver(callback, gather, Math.toIntExact(bytes));
     }
 
     /** Never retain the native buffer; it is valid only during the upcall. */
@@ -216,12 +378,13 @@ public final class CSocket implements AutoCloseable {
         }
         if (rejected) { owner.transportWriteCompleted(-1); return; }
         if (bytes == 0) { owner.transportWriteCompleted(0); return; }
-        sendReserved();
+        sendReserved(src, null, 0, 0);
     }
     public void write(ByteBuffer[] srcs,int offset,int count,CUserSocket owner){write(srcs,offset,count,owner,0);}
     public void SendConstBuffer(ByteBuffer[] srcs,int offset,int count,CUserSocket owner,int flags){write(srcs,offset,count,owner,flags);}
     @SuppressWarnings("preview")
     public void SendConstBuffer(ByteBuffer bytes, MemorySegment source, CUserSocket owner, int flags) {
+        CIOServer nativeServer = requireNativeServer();
         boolean rejected;
         synchronized (this) {
             if (writeOwner != null || writeSubmitting) throw new IllegalStateException("WRITE already pending");
@@ -235,7 +398,7 @@ public final class CSocket implements AutoCloseable {
         // The source reference transferred from the Java FIFO is pinned until this
         // downcall exits, including a simultaneous close/inline completion.
         boolean success = false;
-        try { success = parent.sendConstBuffer(id, source, flags); }
+        try { success = nativeServer.sendConstBuffer(id, source, flags); }
         finally { finishSubmission(success); }
     }
     private void write(ByteBuffer[] srcs, int offset, int count, CUserSocket owner,int flags) {
@@ -257,7 +420,7 @@ public final class CSocket implements AutoCloseable {
         }
         if (rejected) { owner.transportGatherCompleted(-1); return; }
         if (bytes == 0) { owner.transportGatherCompleted(0); return; }
-        sendReserved();
+        sendReserved(null, srcs, offset, count);
     }
     private void reserveWrite(ByteBuffer[] buffers, int offset, int count,
                               int expected, CUserSocket owner, boolean gather,int flags) {
@@ -271,14 +434,29 @@ public final class CSocket implements AutoCloseable {
         gathering = gather;
         // Prevent inline native SEND completion from exposing descriptor reuse
         // until the downcall has consumed its input buffers.
-        writeSubmitting = true;
+        writeSubmitting = javaPeer == null;
     }
-    private void sendReserved() {
+    private void sendReserved(ByteBuffer single, ByteBuffer[] sources, int offset, int count) {
+        if (javaPeer != null) {
+            if (javaPeer.isOwnerThread()) {
+                // A queued close can only run on this owner. The already
+                // published descriptor stays pinned throughout inline registration.
+                try { armJavaWrite(single, sources, offset, count); }
+                catch (RuntimeException failure) { javaPeer.abort(); }
+            } else if (!javaPeer.submit(javaWriteRequest, false)) completeJavaWrite(-1);
+            return;
+        }
         // Only one WRITE is outstanding. Every native SEND takes ownership of
         // a copy of its bytes; Java source leases stay pinned by the CIO pump.
         boolean success = false;
         try { success = parent.send(id, writeBuffers, writeOffset, writeCount,writeFrameFlags); }
         finally { finishSubmission(success); }
+    }
+
+    private void armJavaWrite(ByteBuffer single, ByteBuffer[] sources, int offset, int count) {
+        boolean accepted = single != null ? javaPeer.writeRaw(single, javaWriteCallback)
+                : javaPeer.writeRaw(sources, offset, count, javaWriteCallback);
+        if (!accepted) completeJavaWrite(-1);
     }
     private void finishSubmission(boolean success) {
         CUserSocket callback = null;
@@ -360,7 +538,7 @@ public final class CSocket implements AutoCloseable {
                 clearWrite();
             }
         }
-        if (reader != null) reader.transportReadCompleted(-1);
-        if (writer != null) deliver(writer, gather, -1);
+        try { if (reader != null) reader.transportReadCompleted(-1); }
+        finally { if (writer != null) deliver(writer, gather, -1); }
     }
 }
