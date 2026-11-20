@@ -68,8 +68,11 @@ final class MerchantTransactions {
             return;
         }
         final L1ShopBuyOrderList orders = shop.newBuyOrderList();
-        // One primitive snapshot for the callback, independent of packet and order objects.
-        final long[] audit = size > 1 ? new long[size] : null;
+        // Pin the exact products accepted by the order builder. A reload or
+        // stock removal can change list indices before the receipt callback.
+        final L1ShopItem[] auditItems = size > 1 ? new L1ShopItem[size] : null;
+        final int[] auditCounts = size > 1 ? new int[size] : null;
+        L1ShopItem singleItem = null;
         boolean fishing = false;
         for (int i = 0; i < size; i++) {
             final int row = CS_Result.param1(first, rest, i);
@@ -93,13 +96,21 @@ final class MerchantTransactions {
                 if (!dynamic) notifyOrderLimit(pc, count);
                 return;
             }
-            if (audit != null) audit[i] = (long) count << 32 | row;
-            if (!dynamic && items.get(row).getItemId() == 41295) fishing = true;
+            final L1ShopItem accepted = orders.getList().getLast().getItem();
+            if (auditItems == null) {
+                singleItem = accepted;
+            } else {
+                auditItems[i] = accepted;
+                auditCounts[i] = count;
+            }
+            if (!dynamic && accepted.getItemId() == 41295) fishing = true;
         }
         final boolean updateFishing = fishing;
+        final L1ShopItem settledItem = singleItem;
         shop.sellItems(pc, orders, () -> {
-            if (audit == null) logBuy(pc, items.get((int) first), npcName, (int) (first >>> 32), dynamic);
-            else for (long entry : audit) logBuy(pc, items.get((int) entry), npcName, (int) (entry >>> 32), dynamic);
+            if (auditItems == null) logBuy(pc, settledItem, npcName, (int) (first >>> 32), dynamic);
+            else for (int i = 0; i < auditItems.length; i++)
+                logBuy(pc, auditItems[i], npcName, auditCounts[i], dynamic);
             if (updateFishing) pc.setFishingShopBuyTime_1(System.currentTimeMillis());
         });
     }

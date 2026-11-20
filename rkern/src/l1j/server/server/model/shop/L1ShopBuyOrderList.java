@@ -12,7 +12,7 @@ import l1j.server.server.templates.L1ShopItem;
 public class L1ShopBuyOrderList {
 
     private final L1Shop _shop;
-    private final List<L1ShopBuyOrder> _list;
+    private List<L1ShopBuyOrder> _list = List.of();
     private final L1TaxCalculator _taxCalc;
 
     private long _totalWeight = 0L;
@@ -31,7 +31,6 @@ public class L1ShopBuyOrderList {
     L1ShopBuyOrderList(L1Shop shop) {
         _shop = shop;
         _taxCalc = new L1TaxCalculator(shop.getNpcId());
-        _list = new ArrayList<L1ShopBuyOrder>(8); 
     }
 
     public void add(int orderNumber, int count, L1PcInstance pc) {
@@ -108,15 +107,13 @@ public class L1ShopBuyOrderList {
 
         // 주문 추가
         if (shopItem.getItem().isStackable()) {
-            ensureCapacity(1);
-            _list.add(new L1ShopBuyOrder(shopItem, (int) clampToInt(giveCountL), orderNumber));
+            append(new L1ShopBuyOrder(shopItem, (int) clampToInt(giveCountL), orderNumber));
             return;
         }
 
         if (!COMPAT_SPLIT_NONSTACKABLE) {
             // 성능 모드: 1개 주문에 수량을 넣음(하류 코드가 count=1 가정이면 켜면 안 됨)
-            ensureCapacity(1);
-            _list.add(new L1ShopBuyOrder(shopItem, (int) clampToInt(giveCountL), orderNumber));
+            append(new L1ShopBuyOrder(shopItem, (int) clampToInt(giveCountL), orderNumber));
             return;
         }
         
@@ -126,10 +123,13 @@ public class L1ShopBuyOrderList {
             return;
         }
         nonStackableCount += (int) giveCountL;
-        ensureCapacity((int) giveCountL);
-        for (int i = 0; i < (int) giveCountL; i++) {
-            _list.add(new L1ShopBuyOrder(shopItem, 1, orderNumber));
+        if (giveCountL == 1) {
+            append(new L1ShopBuyOrder(shopItem, 1, orderNumber));
+            return;
         }
+        final ArrayList<L1ShopBuyOrder> expanded = expand((int) giveCountL);
+        for (int i = 0; i < (int) giveCountL; i++)
+            expanded.add(new L1ShopBuyOrder(shopItem, 1, orderNumber));
     }
 
     private long safeUnitPrice(L1ShopItem shopItem) {
@@ -149,11 +149,20 @@ public class L1ShopBuyOrderList {
         }
     }
 
-    private void ensureCapacity(int add) {
-        // ArrayList는 ensureCapacity가 public이라 직접 호출 가능
-        if (_list instanceof ArrayList) {
-            ((ArrayList<L1ShopBuyOrder>) _list).ensureCapacity(_list.size() + add);
+    private void append(L1ShopBuyOrder order) {
+        if (_list.isEmpty()) _list = List.of(order);
+        else expand(1).add(order);
+    }
+
+    private ArrayList<L1ShopBuyOrder> expand(int count) {
+        if (_list instanceof ArrayList<L1ShopBuyOrder> list) {
+            list.ensureCapacity(list.size() + count);
+            return list;
         }
+        final ArrayList<L1ShopBuyOrder> expanded = new ArrayList<>(Math.max(8, _list.size() + count));
+        expanded.addAll(_list);
+        _list = expanded;
+        return expanded;
     }
 
     private static int clampToInt(long v) {

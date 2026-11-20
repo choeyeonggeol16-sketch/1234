@@ -1,16 +1,9 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import l1j.server.Config;
-import l1j.server.DatabaseFactory;
 import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
-import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.NoShopAndWare;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -25,11 +18,9 @@ import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.storage.CacheD;
 
 final class WarehouseTransactions {
     private static final int MAX_SELECTION = 100;
-    private static final Logger LOG = Logger.getLogger(WarehouseTransactions.class.getName());
 
     private WarehouseTransactions() {}
 
@@ -95,19 +86,18 @@ final class WarehouseTransactions {
         }
 
         final long now = System.currentTimeMillis();
-        if (size == 1 && !clan) {
+        if (size == 1) {
             final int id = CS_Result.param1(first, rest, 0);
             final L1ItemInstance item = deposit ? inventory.getItem(id) : warehouse.getItem(id);
             final int count = selectedCount(pc, item, (int) CS_Result.param2D(first, rest, 0));
             if (count == 0) return;
             moveSingle(pc, kind, warehouse, deposit, feeItem, feeEach, item, count,
-                    kind == 20 ? supplementaryDeadline(item, now) : null, null, now);
+                    kind == 20 ? supplementaryDeadline(item, now) : null, now);
             return;
         }
 
         final int[] ids = new int[size];
         final int[] counts = new int[size];
-        final L1ItemInstance[] audited = clan ? new L1ItemInstance[size] : null;
         Timestamp[] deadlines = null;
         for (int i = 0; i < size; i++) {
             final int id = CS_Result.param1(first, rest, i);
@@ -123,7 +113,6 @@ final class WarehouseTransactions {
             if (count == 0) return;
             if (deposit && !canDeposit(pc, kind, warehouse, item, count, now)) return;
             counts[i] = count;
-            if (audited != null) audited[i] = item;
             if (kind == 20) {
                 final Timestamp deadline = supplementaryDeadline(item, now);
                 if (deadline != null) {
@@ -133,14 +122,9 @@ final class WarehouseTransactions {
             }
         }
 
-        final Runnable audit = clan ? clanAudit(pc, audited, counts, deposit) : null;
-        if (size == 1) {
-            moveSingle(pc, kind, warehouse, deposit, feeItem, feeEach, audited[0], counts[0], null, audit, now);
-            return;
-        }
         final boolean admitted = deposit
-                ? inventory.tradeWarehouseDepositBatch(ids, counts, warehouse, audit)
-                : inventory.tradeWarehouseWithdrawalBatch(ids, counts, warehouse, feeItem, feeEach, deadlines, audit);
+                ? inventory.tradeWarehouseDepositBatch(ids, counts, warehouse, null)
+                : inventory.tradeWarehouseWithdrawalBatch(ids, counts, warehouse, feeItem, feeEach, deadlines, null);
         if (!admitted) SC_SystemMessage.send(pc, deposit
                 ? "창고 아이템을 한 번에 맡길 수 없습니다. 아이템과 창고 공간을 확인해 주세요."
                 : "창고 아이템을 한 번에 찾을 수 없습니다. 무게와 소지 칸을 확인해 주세요.");
@@ -181,19 +165,19 @@ final class WarehouseTransactions {
     }
 
     private static void moveSingle(L1PcInstance pc, int kind, Warehouse warehouse, boolean deposit,
-            int feeItem, int feeEach, L1ItemInstance item, int count, Timestamp deadline, Runnable audit, long now) {
+            int feeItem, int feeEach, L1ItemInstance item, int count, Timestamp deadline, long now) {
         final var inventory = pc.getInventory();
         if (deposit) {
             if (canDeposit(pc, kind, warehouse, item, count, now))
-                inventory.tradeItem(item.getId(), count, warehouse, audit);
+                inventory.tradeItem(item.getId(), count, warehouse, null);
             return;
         }
         if (inventory.checkAddItem(item, count) != L1Inventory.OK) {
             SC_ServerMessage.send(pc, 270);
             return;
         }
-        L1ItemInstance admitted = deadline == null ? warehouse.tradeItem(item, count, inventory, feeItem, feeEach, audit)
-                : warehouse.tradeSupplementaryItem(item, count, inventory, deadline, audit);
+        L1ItemInstance admitted = deadline == null ? warehouse.tradeItem(item, count, inventory, feeItem, feeEach, null)
+                : warehouse.tradeSupplementaryItem(item, count, inventory, deadline, null);
         if (admitted == null) {
             if (kind == 9) SC_ServerMessage.send(pc, 337, "$767");
             else SC_ServerMessage.send(pc, 189);
@@ -211,57 +195,4 @@ final class WarehouseTransactions {
         return minutes == 0 ? null : new Timestamp(now + 60_000L * minutes);
     }
 
-    private static Runnable clanAudit(L1PcInstance pc, L1ItemInstance[] items, int[] counts, boolean deposit) {
-        final int characterId = pc.getId();
-        final int clanId = pc.getClanid();
-        final String characterName = pc.getName();
-        final int timestamp = (int) (System.currentTimeMillis() / 1000L);
-        final int[] logIds = new int[items.length];
-        final String[] itemNames = new String[items.length];
-        for (int i = 0; i < items.length; i++) {
-            final L1ItemInstance item = items[i];
-            final int enchant = item.getEnchantLevel();
-            logIds[i] = IdFactory.getInstance().nextId();
-            itemNames[i] = item.getItem().getType2() != 0
-                    ? (enchant >= 0 ? "+" : "") + enchant + " " + item.getName() : item.getName();
-        }
-        return () -> {
-            try {
-                CacheD.getInstance().submitDbJobOrdered(characterId, () -> {
-                    try (Connection con = DatabaseFactory.getInstance().getConnection();
-                         PreparedStatement sql = con.prepareStatement(
-                                 "INSERT INTO clan_warehousehistory SET id=?,clan_id=?,char_name=?,"
-                               + "item_name=?,item_count=?,elapsed_time=?,item_getorput=?")) {
-                        con.setAutoCommit(false);
-                        try {
-                            for (int i = 0; i < counts.length; i++) {
-                                sql.setInt(1, logIds[i]);
-                                sql.setInt(2, clanId);
-                                sql.setString(3, characterName);
-                                sql.setString(4, itemNames[i]);
-                                sql.setInt(5, counts[i]);
-                                sql.setInt(6, timestamp);
-                                sql.setString(7, deposit ? "맡겼습니다." : "찾았습니다.");
-                                sql.addBatch();
-                            }
-                            final int[] result = sql.executeBatch();
-                            if (result.length != counts.length) throw new SQLException("Incomplete clan warehouse audit");
-                            for (int row : result)
-                                if (row != 1 && row != java.sql.Statement.SUCCESS_NO_INFO)
-                                    throw new SQLException("Clan warehouse audit write failed");
-                            con.commit();
-                        } catch (SQLException failure) {
-                            try { con.rollback(); }
-                            catch (SQLException rollback) { failure.addSuppressed(rollback); }
-                            throw failure;
-                        }
-                    } catch (SQLException failure) {
-                        throw new IllegalStateException("Clan warehouse audit failed: " + characterId, failure);
-                    }
-                });
-            } catch (RuntimeException failure) {
-                LOG.log(Level.WARNING, "Committed clan warehouse audit could not be queued", failure);
-            }
-        };
-    }
 }

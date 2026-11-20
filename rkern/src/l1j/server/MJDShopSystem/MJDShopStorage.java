@@ -25,35 +25,71 @@ public class MJDShopStorage implements Runnable{
         return copy;
     }
 
-    /** Called only by an existing CacheD transaction worker. */
-    public static void consumeListing(Connection con, int ownerId,
-            MJDShopItem expected, int amount) throws SQLException {
-        if (expected == null || amount <= 0 || amount > expected.count)
-            throw new SQLException("Invalid private shop listing debit");
-        try (PreparedStatement ps=con.prepareStatement(
-                "SELECT item_id,count,price,type,enchant,iden,attr FROM character_shop "
-                + "WHERE objid=? AND item_objid=? FOR UPDATE")) {
-            ps.setInt(1,ownerId); ps.setInt(2,expected.objId);
-            try (ResultSet rs=ps.executeQuery()) {
-                if (!rs.next() || rs.getInt(1)!=expected.itemId || rs.getInt(2)!=expected.count
-                        || rs.getInt(3)!=expected.price || rs.getBoolean(4)!=expected.isPurchase
-                        || rs.getInt(5)!=expected.enchant
-                        || rs.getInt(6)!=getPackIden2AppIden(expected.iden)
-                        || rs.getInt(7)!=expected.attr || rs.next())
-                    throw new SQLException("Private shop listing preimage changed");
-            }
-        }
-        String sql=amount==expected.count
-                ? "DELETE FROM character_shop WHERE objid=? AND item_objid=? AND count=?"
-                : "UPDATE character_shop SET count=count-? WHERE objid=? AND item_objid=? AND count=?";
-        try (PreparedStatement ps=con.prepareStatement(sql)) {
-            int i=0;
-            if (amount!=expected.count) ps.setInt(++i,amount);
-            ps.setInt(++i,ownerId); ps.setInt(++i,expected.objId); ps.setInt(++i,expected.count);
-            if (ps.executeUpdate()!=1) throw new SQLException("Private shop listing debit failed");
+    private static final String VERIFY_LISTING = "SELECT item_id,count,price,type,enchant,iden,attr "
+            + "FROM character_shop WHERE objid=? AND item_objid=? FOR UPDATE";
+    private static final String DELETE_LISTING =
+            "DELETE FROM character_shop WHERE objid=? AND item_objid=? AND count=?";
+    private static final String UPDATE_LISTING =
+            "UPDATE character_shop SET count=count-? WHERE objid=? AND item_objid=? AND count=?";
+
+    /** Retain the locked read, including duplicate detection, for legacy schemas. */
+    public static void consumeListing(Connection con, int ownerId, MJDShopItem expected, int amount) throws SQLException {
+        verifyDebit(expected, amount);
+        final boolean entire = amount == expected.count;
+        try (PreparedStatement verify = con.prepareStatement(VERIFY_LISTING);
+             PreparedStatement write = con.prepareStatement(entire ? DELETE_LISTING : UPDATE_LISTING)) {
+            verifyListing(verify, ownerId, expected);
+            writeDebit(write, entire, ownerId, expected, amount);
         }
     }
-	
+
+    /** Reuse statements inside the same transaction and require exactly one row per write. */
+    public static void consumeListings(Connection con, int ownerId, MJDShopItem[] expected, int[] amounts)
+            throws SQLException {
+        boolean deletes = false, updates = false;
+        for (int i = 0; i < expected.length; i++) {
+            verifyDebit(expected[i], amounts[i]);
+            if (amounts[i] == expected[i].count) deletes = true;
+            else updates = true;
+        }
+        try (PreparedStatement verify = con.prepareStatement(VERIFY_LISTING);
+             PreparedStatement delete = deletes ? con.prepareStatement(DELETE_LISTING) : null;
+             PreparedStatement update = updates ? con.prepareStatement(UPDATE_LISTING) : null) {
+            for (MJDShopItem listing : expected) verifyListing(verify, ownerId, listing);
+            for (int i = 0; i < expected.length; i++) {
+                boolean entire = amounts[i] == expected[i].count;
+                writeDebit(entire ? delete : update, entire, ownerId, expected[i], amounts[i]);
+            }
+        }
+    }
+
+    private static void verifyDebit(MJDShopItem expected, int amount) throws SQLException {
+        if (expected == null || amount <= 0 || amount > expected.count)
+            throw new SQLException("Invalid private shop listing debit");
+    }
+
+    private static void verifyListing(PreparedStatement ps, int ownerId, MJDShopItem expected) throws SQLException {
+        ps.setInt(1, ownerId);
+        ps.setInt(2, expected.objId);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (!rs.next() || rs.getInt(1) != expected.itemId || rs.getInt(2) != expected.count
+                    || rs.getInt(3) != expected.price || rs.getBoolean(4) != expected.isPurchase
+                    || rs.getInt(5) != expected.enchant || rs.getInt(6) != getPackIden2AppIden(expected.iden)
+                    || rs.getInt(7) != expected.attr || rs.next())
+                throw new SQLException("Private shop listing preimage changed");
+        }
+    }
+
+    private static void writeDebit(PreparedStatement ps, boolean entire, int ownerId,
+            MJDShopItem expected, int amount) throws SQLException {
+        int index = 0;
+        if (!entire) ps.setInt(++index, amount);
+        ps.setInt(++index, ownerId);
+        ps.setInt(++index, expected.objId);
+        ps.setInt(++index, expected.count);
+        if (ps.executeUpdate() != 1) throw new SQLException("Private shop listing debit failed");
+    }
+
 	public MJDShopStorage(L1Character c, boolean isDelete) {
         // Capture/admit on the caller before legacy ThreadPool dispatch. The
         // legacy Runnable no longer reads live listings or changes game state.

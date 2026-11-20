@@ -151,7 +151,7 @@ final class NpcMarketCommands {
         String htmlid = null;
         if (s.equalsIgnoreCase("history")) {
 				if (pc.getClanid() > 0)
-					SC_ClanWareHouseHistory.sendAsync(pc);
+					SC_ClanWareHouseHistory.send(pc);
 				else
 					SC_SystemMessage.send(pc, "혈맹 가입후 이용해 주세요.");
 			} else if (s.equalsIgnoreCase("retrieve")) {

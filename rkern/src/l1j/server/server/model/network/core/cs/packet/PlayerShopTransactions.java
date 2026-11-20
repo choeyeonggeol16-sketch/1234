@@ -1,6 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,8 +57,12 @@ final class PlayerShopTransactions {
             synchronized (listings) {
                 if (!view.matches(shop, purchase)
                         || listings != (purchase ? shop.getPurchasings() : shop.getSellings())) return;
+                if (size == 1) {
+                    executeSingle(tx, customer, shop, seller, buyer, purchase, listings, view, first);
+                    return;
+                }
                 final int rowCount = view.size();
-                final int[] requestedByRow = size > 1 ? new int[rowCount] : null;
+                final int[] requestedByRow = new int[rowCount];
                 final int capacity = Math.max(1, Math.min(size, rowCount));
                 final var items = new Int2ObjectLinkedOpenHashMap<Transfer>(capacity);
                 final var debits = new Int2ObjectLinkedOpenHashMap<ListingDebit>(capacity);
@@ -68,10 +73,8 @@ final class PlayerShopTransactions {
                     final int count = purchase ? CS_Result.param2CH(first, rest, i)
                             : (int) CS_Result.param2D(first, rest, i);
                     if (row < 0 || row >= rowCount || count <= 0 || count > view.count(row)) return;
-                    if (requestedByRow != null) {
-                        if ((long) requestedByRow[row] + count > view.count(row)) return;
-                        requestedByRow[row] += count;
-                    }
+                    if ((long) requestedByRow[row] + count > view.count(row)) return;
+                    requestedByRow[row] += count;
                     final int listingId = view.listingId(row);
                     ListingDebit debit = debits.get(listingId);
                     if (debit == null) {
@@ -108,34 +111,94 @@ final class PlayerShopTransactions {
                 if (tx.transfer(buyer, adena, (int) total, seller) == null) return;
                 tx.requireTables("character_shop");
                 final int shopId = shop.getId();
-                tx.sql(con -> {
-                    for (ListingDebit debit : debits.values())
-                        MJDShopStorage.consumeListing(con, shopId, debit.expected, debit.count);
-                });
+                final int[] listingIds = debits.keySet().toIntArray();
+                Arrays.sort(listingIds);
+                final MJDShopItem[] expected = new MJDShopItem[listingIds.length];
+                final int[] amounts = new int[listingIds.length];
+                for (int i = 0; i < listingIds.length; i++) {
+                    final ListingDebit debit = debits.get(listingIds[i]);
+                    expected[i] = debit.expected;
+                    amounts[i] = debit.count;
+                }
+                tx.sql(con -> MJDShopStorage.consumeListings(con, shopId, expected, amounts));
                 tx.onFailure(() -> sendFailure(customer));
                 tx.commit(() -> {
                     synchronized (listings) {
-                        if (listings != (purchase ? shop.getPurchasings() : shop.getSellings()))
-                            throw new IllegalStateException("Player shop changed after commit");
+                        requireList(shop, purchase, listings);
+                        for (ListingDebit debit : debits.values())
+                            requireListing(listings, debit.listing, debit.expected);
                         for (ListingDebit debit : debits.values())
                             shop.applyCommittedShopQuantity(purchase, debit.listing, debit.expected.count, debit.count);
                     }
                     if (!purchase) {
-                        for (Transfer transfer : items.values()) {
-                            try {
-                                SC_ServerMessage.send(shop, 877, customer.getName(),
-                                        transfer.item.getItem().getName() + " (" + transfer.count + ")");
-                                LoggerInstance.getInstance().개인상점구매(
-                                        true, customer, shop, transfer.item, transfer.count);
-                            } catch (RuntimeException notificationFailure) {
-                                LOG.log(Level.WARNING, "Committed shop purchase notification failed", notificationFailure);
-                            }
-                        }
+                        for (Transfer transfer : items.values())
+                            notifySale(customer, shop, transfer.item, transfer.count);
                     }
                 });
             }
         } catch (IllegalStateException | java.util.concurrent.RejectedExecutionException rejected) {
             sendFailure(customer);
+        }
+    }
+
+    private static void executeSingle(L1InventoryTransaction tx, L1PcInstance customer,
+            L1PcInstance shop, L1PcInstance seller, L1PcInstance buyer, boolean purchase,
+            ArrayList<MJDShopItem> listings, PlayerShopView view, long first) {
+        final int row = purchase ? CS_Result.param3(first, null, 0) : CS_Result.param1(first, null, 0);
+        final int count = purchase ? CS_Result.param2CH(first, null, 0) : (int) CS_Result.param2D(first, null, 0);
+        if (row < 0 || row >= view.size() || count <= 0 || count > view.count(row)) return;
+        final int listingId = view.listingId(row);
+        final MJDShopItem listing = findListing(listings, listingId);
+        if (listing == null || listing.isPurchase != purchase || listing.price != view.price(row)
+                || listing.price <= 0 || count > listing.count) return;
+        final int itemId = purchase ? CS_Result.param1(first, null, 0) : listingId;
+        if (purchase && itemId != view.customerItemId(row)) return;
+        final L1ItemInstance item = seller.getInventory().getItem(itemId);
+        if (!canTransfer(seller, item, listing, count, System.currentTimeMillis())
+                || count > item.getCount()) return;
+        final long total = (long) listing.price * count;
+        if (total > L1Inventory.MAX_AMOUNT) return;
+        final L1ItemInstance adena = buyer.getInventory().findItemId(L1ItemId.ADENA);
+        if (adena == null || adena.getCount() < total) {
+            SC_ServerMessage.send(buyer, 189);
+            return;
+        }
+        if (tx.transfer(seller, item, count, buyer) == null
+                || tx.transfer(buyer, adena, (int) total, seller) == null) return;
+        final MJDShopItem expected = MJDShopStorage.copyListing(listing);
+        final int shopId = shop.getId();
+        tx.requireTables("character_shop");
+        tx.sql(con -> MJDShopStorage.consumeListing(con, shopId, expected, count));
+        tx.onFailure(() -> sendFailure(customer));
+        tx.commit(() -> {
+            synchronized (listings) {
+                requireList(shop, purchase, listings);
+                requireListing(listings, listing, expected);
+                shop.applyCommittedShopQuantity(purchase, listing, expected.count, count);
+            }
+            if (!purchase) notifySale(customer, shop, item, count);
+        });
+    }
+
+    private static void requireList(L1PcInstance shop, boolean purchase, ArrayList<MJDShopItem> listings) {
+        if (listings != (purchase ? shop.getPurchasings() : shop.getSellings()))
+            throw new IllegalStateException("Player shop changed after commit");
+    }
+
+    private static void requireListing(ArrayList<MJDShopItem> listings, MJDShopItem listing, MJDShopItem expected) {
+        if (!listings.contains(listing) || listing.objId != expected.objId || listing.itemId != expected.itemId
+                || listing.count != expected.count || listing.price != expected.price
+                || listing.isPurchase != expected.isPurchase || listing.enchant != expected.enchant
+                || listing.attr != expected.attr || listing.iden != expected.iden)
+            throw new IllegalStateException("Player shop listing changed after commit");
+    }
+
+    private static void notifySale(L1PcInstance customer, L1PcInstance shop, L1ItemInstance item, int count) {
+        try {
+            SC_ServerMessage.send(shop, 877, customer.getName(), item.getItem().getName() + " (" + count + ")");
+            LoggerInstance.getInstance().개인상점구매(true, customer, shop, item, count);
+        } catch (RuntimeException notificationFailure) {
+            LOG.log(Level.WARNING, "Committed shop purchase notification failed", notificationFailure);
         }
     }
 

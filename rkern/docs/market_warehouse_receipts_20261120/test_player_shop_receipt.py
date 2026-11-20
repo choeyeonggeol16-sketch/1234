@@ -100,7 +100,8 @@ public final class MarketCheck {
         final int id;
         final long identity;
         final Inventory inventory = new Inventory();
-        final ArrayList<MJDShopItem> sales = new ArrayList<>(), purchases = new ArrayList<>();
+        ArrayList<MJDShopItem> sales = new ArrayList<>();
+        final ArrayList<MJDShopItem> purchases = new ArrayList<>();
         final CIOClient client = new CIOClient();
         String account;
         int version = 1, map = 800, notices;
@@ -136,7 +137,7 @@ public final class MarketCheck {
     }
 
     static final class MJDShopItem {
-        int objId, price, count, itemId, enchant, attr;
+        int objId, price, count, itemId, enchant, attr, iden;
         boolean isPurchase;
         MJDShopItem(int id, int price, int count, int type, boolean purchase) {
             objId = id; this.price = price; this.count = count; itemId = type; isPurchase = purchase;
@@ -146,6 +147,9 @@ public final class MarketCheck {
     static final class MJDShopStorage {
         static MJDShopItem copyListing(MJDShopItem source) {
             return new MJDShopItem(source.objId, source.price, source.count, source.itemId, source.isPurchase);
+        }
+        static void consumeListings(Object connection, int id, MJDShopItem[] expected, int[] counts) {
+            for (int i = 0; i < expected.length; i++) consumeListing(connection, id, expected[i], counts[i]);
         }
         static void consumeListing(Object connection, int id, MJDShopItem expected, int count) {
             check(connection != null && id > 0 && expected != null && count > 0);
@@ -246,6 +250,22 @@ public final class MarketCheck {
         customer.account = shop.account;
         execute(customer, shop, true, sell(customerOre, 0, 1), null);
         check(pending == null);
+        customer.account = "customer";
+        shop.open = true;
+        var newView = new PlayerShopView(shop, false, 1);
+        newView.add(200, 0, 20, 1);
+        customer.client.view = newView;
+        execute(customer, shop, false, buy(0, 1), null);
+        check(pending != null);
+        var staleList = shop.sales;
+        shop.sales = new ArrayList<>();
+        try {
+            pending.confirm();
+            throw new AssertionError("expected stale owner replay to fail");
+        } catch (IllegalStateException expected) {
+            check(staleList.contains(entry) && entry.count == 1);
+            check(shop.sales.isEmpty() && wallet.count == 4870 && sqlRows == 3);
+        }
         System.out.println("PASS player shop receipt checks=" + checks);
     }
 ''' + tx[tx.index("final class PlayerShopTransactions"):].replace("final class PlayerShopTransactions", "static final class PlayerShopTransactions", 1) + view[view.index("public final class PlayerShopView"):].replace("public final class PlayerShopView", "static final class PlayerShopView", 1) + "}"

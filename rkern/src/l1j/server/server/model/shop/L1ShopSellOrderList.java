@@ -28,7 +28,7 @@ public class L1ShopSellOrderList {
 
     private final L1Shop _shop;
     private final L1PcInstance _pc;
-    private final ArrayList<L1ShopSellOrder> _list = new ArrayList<L1ShopSellOrder>(8);
+    private List<L1ShopSellOrder> _list = List.of();
 
     private int bugok = 0; // 상점 판매 비셔스 방어
 
@@ -112,13 +112,17 @@ public class L1ShopSellOrderList {
             return;
         }
 
-        // 리스트 추가 (리사이즈 최소화)
-        ensureCapacity(1);
-        _list.add(new L1ShopSellOrder(assessedItem, count));
-    }
-
-    private void ensureCapacity(int add) {
-        _list.ensureCapacity(_list.size() + add);
+        final L1ShopSellOrder order = new L1ShopSellOrder(assessedItem, count);
+        if (_list.isEmpty()) {
+            _list = List.of(order);
+        } else {
+            if (!(_list instanceof ArrayList)) {
+                final ArrayList<L1ShopSellOrder> expanded = new ArrayList<>(8);
+                expanded.add(_list.getFirst());
+                _list = expanded;
+            }
+            _list.add(order);
+        }
     }
 
     // 상점 판매 비셔스 방어

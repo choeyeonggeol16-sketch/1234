@@ -937,10 +937,15 @@ public class L1Shop {
     public void sellItems(L1PcInstance pc,L1ShopBuyOrderList orderList,Runnable afterCommitted) {
         if(pc==null || orderList==null || orderList.getList().isEmpty() || orderList.BugOk()!=0)return;
         try {
-            java.util.Map<Integer,Integer> quantities=new java.util.TreeMap<>();
-            for(L1ShopBuyOrder order:orderList.getList()) {
-                if(order.getCount()<=0)throw new IllegalArgumentException("Invalid NPC purchase quantity");
-                quantities.merge(order.getItem().getItemId(),order.getCount(),Math::addExact);
+            final List<L1ShopBuyOrder> orders = orderList.getList();
+            if (orders.size() == 1) {
+                if (orders.getFirst().getCount() <= 0) throw new IllegalArgumentException("Invalid NPC purchase quantity");
+            } else {
+                java.util.Map<Integer,Integer> quantities = new java.util.TreeMap<>();
+                for (L1ShopBuyOrder order : orders) {
+                    if (order.getCount() <= 0) throw new IllegalArgumentException("Invalid NPC purchase quantity");
+                    quantities.merge(order.getItem().getItemId(), order.getCount(), Math::addExact);
+                }
             }
 
             int key=CacheD.accountOrderKey("$castle-treasury-global");

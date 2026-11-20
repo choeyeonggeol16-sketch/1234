@@ -2382,7 +2382,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD6541(L1PcInstance pc, String param) {
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_auto_set", new Object[0]);
 				Thread.sleep(300);
-				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM clan_warehousehistory", new Object[0]);
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM dogfight_history", new Object[0]);
 				Thread.sleep(300);
@@ -2520,7 +2519,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_auto_set", new Object[0]);
 				Thread.sleep(300);
-				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM clan_warehousehistory", new Object[0]);
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM dogfight_history", new Object[0]);
 				Thread.sleep(300);
