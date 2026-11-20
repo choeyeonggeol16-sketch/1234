@@ -1,6 +1,6 @@
 # JProRing 감사 30개 항목 반영 현황
 
-기준은 [감사 보고서](REPORT_KO.md)다. 안정화 수정 [`c9cb876`](https://github.com/choeyeonggeol16-sketch/1234/commit/c9cb876)과 후속 구현 [`eff7fcf`](https://github.com/choeyeonggeol16-sketch/1234/commit/eff7fcf)을 검증했다. `부분`은 구현이나 테스트의 일부가 완료됐다는 뜻이다.
+기준은 [감사 보고서](REPORT_KO.md)다. 안정화 수정 [`c9cb876`](https://github.com/choeyeonggeol16-sketch/1234/commit/c9cb876)과 후속 구현 [`eff7fcf`](https://github.com/choeyeonggeol16-sketch/1234/commit/eff7fcf), [`5c9a34f`](https://github.com/choeyeonggeol16-sketch/1234/commit/5c9a34f)을 검증했다. `부분`은 구현이나 테스트의 일부가 완료됐다는 뜻이다.
 
 | 항목 | 상태 | 반영 내용 및 남은 검증 |
 | --- | --- | --- |
@@ -13,14 +13,14 @@
 | A07 | 부분 | Java 소켓에서 native 전용 호출이 잘못 들어오면 lease 예약 전 명확한 오류를 내도록 했다. DLL 없는 게임 리스너 테스트를 추가했다. 운영 클라이언트의 전체 명령 경로는 별도다. |
 | A08 | 부분 | raw·length-framed 전송 비교와 실제 게임 리스너 기능 테스트를 분리했다. 운영 채택에는 동등한 게임 경로의 성능과 월드 접속 검증이 남았다. |
 | A09 | 후보 | `-Drkern.network.javaDirectPacketCommit=true`로 자기 FIFO head의 SEND만 직결 커밋한다. 외부 SEND 20개가 먼저 예약된 경우 정확한 암호문 순서를 확인했다. 기본 경로 채택 기준은 실제 게임 부하 A/B다. |
-| A10 | 대기 | 일반 게임 SEND는 현재 병합 복사를 한다. tail 직접 인코딩을 검증하려면 작성 실패·재시도, 외부 티켓, close에서 바이트와 키 순서가 동일해야 한다. |
+| A10 | 후보 | `-Drkern.network.javaDirectByteAppend=true`로 샤드가 이미 직렬화된 `BytesWritablePacket`을 인접한 미전송 버퍼에 바로 복사한다. 이 경로는 임시 SEND lease 하나와 후속 병합 복사를 생략한다. 외부 예약 20건과 함께 암호화 FIFO를 검증했다. 범용 `WritablePacket` 직접 인코딩과 운영 A/B가 남았다. |
 | A11 | 부분 | 기존 공유 풀의 슬롯·고갈 진단을 사용한다. bitmap 경합과 원격 반환을 실측한 뒤 owner-local 캐시를 평가할 수 있다. |
 | A12 | 대기 | CSocket 동기화 비용을 분리 실측하고 외부 완료·inline reject의 descriptor 수명을 검증해야 한다. |
 | A13 | 부분 | 기존 수신 경로는 전량 소비 시 `clear`를 쓰고 부분 프레임이 이미 선두면 복사를 생략한다. 추가 offset 경로의 복사량과 승격 비용을 비교할 수 있다. |
 | A14 | 부분 | 송신 window를 설정해 자연 배치를 시험할 수 있다. 게임 gather 크기 변경은 동일 프레임·부하에서 syscall/packet과 지연을 비교한 뒤 판단한다. |
 | A15 | 대기 | Java 공유 방송의 수신자별 암호화는 통합 테스트 대상이다. 방송 자체의 복사·락 변경은 팬아웃 기능 및 비용 검증이 필요하다. |
 | A16 | 부분 | mailbox 현재 깊이·최고점·거절 횟수를 노출하고 포화 상태를 테스트했다. 큐 교체 후보에는 producer 경합·할당 실측이 필요하다. |
-| A17 | 부분 | 샤드별 deadline과 지연 WRITE 수를 노출했다. 임의 삭제 비용과 갱신 빈도를 실측한 뒤 자료구조 변경을 판단한다. |
+| A17 | 반영 | 연결에 위치를 보관하는 이진 힙으로 일반 deadline과 쓰기 타임아웃의 앞당김·중간 삭제를 O(log N)으로 줄였다. 128개 타이머로 취소·만료 순서·재예약·종료 후 정리를 검증했다. |
 | A18 | 부분 | 단일 READ의 프레임 예산과 CIO 타이머 수행을 통합 테스트로 검증했다. 느린 핸들러와 방송이 겹치는 상황의 샤드별 지연은 별도다. |
 | A19 | 부분 | 샤드별 연결 등록·admission 수를 볼 수 있다. 실환경의 로그인 폭주, accept owner CPU 및 할당 분포 측정이 남았다. |
 | A20 | 부분 | raw owner의 미사용 framed 풀 생성을 제거했다. 단기 연결 퇴역 후 lease 반환을 검증했다. 게임 세션의 retained heap·장기 RSS 추적은 남았다. |
@@ -37,9 +37,9 @@
 
 ## 재현과 검증 범위
 
-- Linux Java 21에서 독립 전송 테스트와 게임 리스너 통합 테스트를 실행했다. 게임 리스너는 SEND 후보를 끈 경우와 켠 경우 각각 암호화 FIFO 및 종료 후 lease 반환을 검증했다.
+- Linux Java 21에서 독립 전송 테스트와 게임 리스너 통합 테스트를 실행했다. 게임 리스너는 두 SEND 후보를 모두 끈 경우와 켠 경우 각각 암호화 FIFO 및 종료 후 lease 반환을 검증했다.
 - 5,000 연결 결과는 raw loopback에서 2 owner·64바이트·window 1, 준비 300 ms·측정 700 ms인 동작 확인이다. 모든 연결의 TCP 수립을 기다린 뒤 10,712개의 에코 응답을 확인했고 종료 시 버퍼 대여가 모두 해제됐다. 실제 게임 5,000명 처리량과 장기 안정성은 운영 검증 항목이다.
-- Linux framed 스모크는 RKern, Netty NIO·epoll·io_uring 모두 응답 검증을 통과했다. Windows WEPoll도 SEND 후보 끔·켬 모두 통과했다. [Linux framed 스모크](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/44649244089) · [Windows WEPoll 회귀](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/44649244245) · [기존 비교 결과](../jproring_linux_benchmark_20261120/README.md)
+- Linux framed 스모크는 RKern, Netty NIO·epoll·io_uring 모두 응답 검증을 통과했다. Windows WEPoll도 SEND 후보 끔·켬 모두 통과했다. [Linux framed 스모크](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/44670430257) · [Windows WEPoll 회귀](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/44670430682) · [기존 비교 결과](../jproring_linux_benchmark_20261120/README.md)
 
 ```bash
 bench=rkern/docs/jproring_linux_benchmark_20261120/run.py
@@ -51,3 +51,21 @@ python3 "$bench" --backend rkern --owners 2 --workload persistent --clients 5000
 ```
 
 `server_cpu_ns_per_op`는 `/proc`의 서버 user+system CPU tick을 측정 구간 양 끝에서 샘플링한 값이다. 짧은 구간에는 tick 해상도와 스케줄링 오차가 있다. `echo_or_netty_pool_bytes=-1`은 RKern 독립 framed 풀의 live 값이 해당 지표에서 제공되지 않는다는 뜻이다.
+
+## A17 타이머 재예약 실측
+
+같은 Linux 작업 환경에서 TCP 연결 5,000개와 Selector owner 1개를 띄웠다. 동일 owner에서 먼 미래의 deadline만 앞당겼다. 준비 2회 뒤 40,000건씩 5회 측정한 중앙값은 기존 `PriorityQueue`가 **2.023 µs/건**, 위치를 보관하는 힙이 **0.105 µs/건**이었다. 각 회차 범위는 각각 1.413–2.153 µs와 0.102–0.127 µs였다. 연결 수립 시간과 게임 핸들러 비용은 측정 구간 밖이다. [측정 코드](tools/DeadlineSweep.java)
+
+```bash
+net=rkern/src/l1j/server/server/model/network
+selector=$net/core/transport/selector
+classes=$(mktemp -d)
+baseline=$(mktemp -d)
+javac -d "$classes" "$selector"/*.java "$net"/buffer/{ReadBuffer,WriteBuffer}.java \
+  "$net/codec/Cryptor.java" rkern/src/l1j/server/server/Opcodes.java \
+  rkern/docs/jproring_code_audit_20261120/tools/DeadlineSweep.java
+git show "baf542c:$selector/SelectorTransport.java" > "$baseline/SelectorTransport.java"
+javac -cp "$classes" -d "$baseline" "$baseline/SelectorTransport.java"
+java -Xms64m -Xmx256m -XX:ActiveProcessorCount=2 -cp "$baseline:$classes" DeadlineSweep
+java -Xms64m -Xmx256m -XX:ActiveProcessorCount=2 -cp "$classes" DeadlineSweep
+```
