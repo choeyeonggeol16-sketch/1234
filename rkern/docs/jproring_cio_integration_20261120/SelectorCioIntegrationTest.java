@@ -31,7 +31,6 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.buffer.WriteBuffer;
 import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.network.packet.CPacketHandler;
-import l1j.server.server.model.network.packet.BytesWritablePacket;
 import l1j.server.server.model.network.packet.WritablePacket;
 import l1j.server.server.model.network.safe.NetworkSafeLoadManager;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -71,6 +70,9 @@ public final class SelectorCioIntegrationTest {
             CountDownLatch releaseOwner = new CountDownLatch(1);
             CountDownLatch competingOwnerSend = new CountDownLatch(1);
             CountDownLatch competingByteSend = new CountDownLatch(1);
+            CountDownLatch overflowStaged = new CountDownLatch(1);
+            CountDownLatch overflowRetired = new CountDownLatch(1);
+            AtomicInteger overflowCalls = new AtomicInteger();
             CPacketHandler.PacketHandler alive = CPacketHandler.HANDLERS[ALIVE];
             CPacketHandler.PacketHandler move = CPacketHandler.HANDLERS[MOVE];
             CPacketHandler.HANDLERS[MOVE] = (payload, client) -> { rejectedOpcodePackets.incrementAndGet(); return true; };
@@ -80,16 +82,29 @@ public final class SelectorCioIntegrationTest {
                 check(shard >= 0 && socket.affinityShard() == shard, "packet executed on its existing CIO shard");
                 owners.add(shard);
                 int value = payload.readInt();
-                if (value == 0 || value == 900) clients.put(value, socket);
+                if (value == 0 || value == 900 || value == 909) clients.put(value, socket);
                 if (value == 903 || value == 904) {
                     check(socket.tryWritePacket(client, new Reply(value, () -> {})), "owner packet admitted");
                     if (value == 903) competingOwnerSend.countDown();
                     return true;
                 }
                 if (value == 905) {
-                    check(socket.tryWritePacket(client, new BytesWritablePacket(body(0x45, value))), "byte packet admitted");
+                    check(socket.tryWritePacket(client, new BoundedReply(value, 7, () ->
+                            check(socket.tryWritePacket(client, new Reply(906, () -> {})), "reentrant SEND admitted"))),
+                            "bounded ordinary encoder staged");
                     competingByteSend.countDown();
                     return true;
+                }
+                if (value == 907) {
+                    check(socket.tryWritePacket(client, new Reply(value, () -> {})), "tail reserved for overflow test");
+                    overflowStaged.countDown();
+                    return true;
+                }
+                if (value == 908) {
+                    check(!socket.tryWritePacket(client, new BoundedReply(value, 3, overflowCalls::incrementAndGet)),
+                            "overflowing tail encoder must fail");
+                    overflowRetired.countDown();
+                    return false;
                 }
                 if (value == 902) {
                     clients.put(value, socket);
@@ -226,6 +241,8 @@ public final class SelectorCioIntegrationTest {
                     check(descriptorsAfter <= descriptorsBefore + 2, "listener and Selector descriptors were reclaimed");
                     System.out.printf("FD listeners before=%d after=%d%n", descriptorsBefore, descriptorsAfter);
                 }
+                verifyTailOverflow(gamePort, clients, overflowStaged, overflowRetired, overflowCalls);
+                awaitIdlePool();
                 try (Socket stalled = connect(gamePort)) {
                     check(Arrays.equals(readBody(stalled), Opcodes.S_KEYBYTES), "pending WRITE fixture handshake");
                     stalled.setSoLinger(true, 0);
@@ -355,19 +372,54 @@ public final class SelectorCioIntegrationTest {
                 }
                 peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 903))));
                 check(ownerSent.await(5, TimeUnit.SECONDS), "owning shard published its send behind reserved tickets");
+                long smallBorrows = Server.networkPoolSnapshot()[2][3];
                 peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 905))));
-                check(byteSent.await(5, TimeUnit.SECONDS), "byte packet scheduled after the staged owner packet");
+                check(byteSent.await(5, TimeUnit.SECONDS), "bounded packet scheduled after the staged owner packet");
+                check(Server.networkPoolSnapshot()[2][3] == smallBorrows + 1,
+                        "only the reentrant packet borrowed a temporary SEND lease");
             } finally { release.countDown(); }
             for (var send : sends) check(send.get(5, TimeUnit.SECONDS), "foreign packet admitted");
         }
         for (int i = 0; i < 20; i++) expectEncrypted(peer, codec, 1000 + i);
         expectEncrypted(peer, codec, 903);
         expectEncrypted(peer, codec, 905);
+        expectEncrypted(peer, codec, 906);
         peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 904))));
         expectEncrypted(peer, codec, 904);
     }
 
-    private static final class Reply extends WritablePacket<CIOClient> {
+    private static void verifyTailOverflow(int port, ConcurrentHashMap<Integer, CUserSocket> clients,
+            CountDownLatch staged, CountDownLatch retired, AtomicInteger calls) throws Exception {
+        try (var peer = connect(port); var encoders = Executors.newVirtualThreadPerTaskExecutor()) {
+            check(Arrays.equals(readBody(peer), Opcodes.S_KEYBYTES), "overflow fixture handshake");
+            var codec = new SelectorTransportTest.ScalarClient(Opcodes.getSeed());
+            peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 909))));
+            expectEncrypted(peer, codec, 909);
+            CUserSocket socket = clients.get(909);
+            var reserved = new CountDownLatch(1);
+            var release = new CountDownLatch(1);
+            var foreign = encoders.submit(() -> socket.tryWritePacket(socket.client(), new Reply(910, () -> {
+                reserved.countDown();
+                try { check(release.await(10, TimeUnit.SECONDS), "release overflow fixture reservation"); }
+                catch (InterruptedException interrupted) { throw new AssertionError(interrupted); }
+            })));
+            try {
+                check(reserved.await(5, TimeUnit.SECONDS), "foreign encoder held ahead of overflow fixture");
+                peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 907))));
+                check(staged.await(5, TimeUnit.SECONDS), "ordinary packet staged behind foreign encoder");
+                long borrows = Server.networkPoolSnapshot()[2][3];
+                peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 908))));
+                check(retired.await(5, TimeUnit.SECONDS), "overflow retired before earlier encoder released");
+                check(calls.get() == 1 && Server.networkPoolSnapshot()[2][3] == borrows,
+                        "overflow ran exactly once without a replacement lease");
+                try { check(peer.getInputStream().read() == -1, "overflow closes before publishing invalid bytes"); }
+                catch (SocketException reset) { check(!peer.isInputShutdown(), "peer reset after overflow"); }
+            } finally { release.countDown(); }
+            check(!foreign.get(5, TimeUnit.SECONDS), "earlier pending ticket canceled after overflow close");
+        }
+    }
+
+    private static class Reply extends WritablePacket<CIOClient> {
         private final int sequence;
         private final Runnable beforeEncoding;
 
@@ -382,6 +434,17 @@ public final class SelectorCioIntegrationTest {
             writer.writeInt(sequence);
             return true;
         }
+    }
+
+    private static final class BoundedReply extends Reply implements WritablePacket.DirectTail {
+        private final int maximum;
+
+        private BoundedReply(int sequence, int maximum, Runnable beforeEncoding) {
+            super(sequence, beforeEncoding);
+            this.maximum = maximum;
+        }
+
+        @Override public int maximumWireBytes() { return maximum; }
     }
 
     private static void check(boolean condition, String message) {

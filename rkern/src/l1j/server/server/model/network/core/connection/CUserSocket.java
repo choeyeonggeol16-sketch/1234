@@ -1717,7 +1717,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
      * Caller holds _stateLock. No new work queue or buffers are allocated.
      */
     private void compactReadyStagedPacketsLocked() {
-        if (_stagedSends < 2) return;
+        if (_stagedSends < 2 || _tailEncoding != null) return;
         final long end = (long) SOCKET_TICKET.getVolatile(this);
         final long start = Math.max(_socketHead, end - SOCKET_SLOTS);
         CIOBufferEx first = null;
@@ -2160,6 +2160,99 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         return tryWritePacketInternal(client, packet, false);
     }
 
+    // The existing serializer token pins the staged lease while an encoder runs
+    // outside _stateLock. The compaction pass must not return that lease either.
+    private CIOBufferEx _tailEncoding; // guarded by _stateLock
+    private WriteBuffer _tailWriter;   // used only by the pinned encoder
+
+    private CIOBufferEx reservePacketTailLocked(long ticket, int maxWireBytes) {
+        final CIOBufferEx tail = _stagedPacketPack;
+        if (maxWireBytes < 3 || maxWireBytes > PACK_MAX_FRAME_BYTES || tail == null
+                || _tailEncoding != null || !tail.reserved() || tail.shared() || tail._writePrepared || tail._ioPending
+                || _stagedPacketLastTicket + 1 != ticket || _socketHead > _stagedPacketFirstTicket
+                || tail.buffer().capacity() != CIOBufferPool.SMALL_SEND_BYTES || !canAdmitBytes(maxWireBytes)
+                || tail.writer().position() > tail._reservedWireBytes - maxWireBytes)
+            return null;
+        if (!SOCKET_DRAINING.compareAndSet(this, 0, 1)) return null;
+        // A drainer that claimed this staged SEND still needs _stateLock to
+        // commit or retire it. Holding the lock and winning the token pins it.
+        _socketOwner = Thread.currentThread();
+        _socketExecutingTicket = true;
+        _tailEncoding = tail;
+        _reservedWireBytes += maxWireBytes;
+        updateSendReadPauseLocked();
+        return tail;
+    }
+
+    private boolean encodePacketTail(CIOClient client, WritablePacket<CIOClient> packet,
+            CIOBufferEx tail, int slot, long ticket, int maxWireBytes) {
+        final ByteBuffer bytes = tail.buffer();
+        final int start = tail.writer().position();
+        final int oldPosition = bytes.position();
+        final int oldLimit = bytes.limit();
+        boolean admitted = false;
+        boolean encodeFailed = false;
+        boolean resumeRead = false;
+        int length = 0;
+        try {
+            try {
+                if (_tailWriter == null) _tailWriter = new WriteBuffer();
+                _tailWriter.armExternal(bytes, start, maxWireBytes);
+                _tailWriter.preparePacket(packet.getClass());
+                packet.writeData(client, _tailWriter);
+                length = _tailWriter.position();
+                if (length < 3 || length > maxWireBytes || !_tailWriter.isExternalBacking(bytes)
+                        || _tailWriter.baseOffset() != start)
+                    throw new IllegalStateException("Invalid bounded tail encoder result");
+                _tailWriter.notePacketSize();
+            } catch (Throwable failure) {
+                encodeFailed = true;
+            } finally {
+                if (_tailWriter != null) _tailWriter.releaseResources();
+                bytes.clear().limit(oldLimit).position(oldPosition);
+            }
+
+            _stateLock.lock();
+            final boolean pausedBeforeCommit = _sendReadPaused;
+            try {
+                --_reservedDirect;
+                _reservedWireBytes -= maxWireBytes;
+                if (!encodeFailed && _closed == 0) {
+                    final boolean packed = tail._packedFrames;
+                    if (!packed) tail.writer().writeShort(0, (short) start);
+                    tail.writer().writeShort(start, (short) length);
+                    tail.writer().position(start + length);
+                    tail._packedFrames = true;
+                    tail._frameCount = packed ? tail._frameCount + 1 : 2;
+                    tail._actionOnly = false;
+                    if (_stagedPacketPack == tail) _stagedPacketLastTicket = ticket;
+                    bytesAdmitted(length);
+                    admitted = true;
+                }
+            } catch (Throwable failure) {
+                encodeFailed = true;
+            } finally {
+                _tailEncoding = null;
+                SOCKET_ARGUMENT_SLOT.setRelease(_socketArguments, slot, 0L);
+                SOCKET_CALLBACK_SLOT.setRelease(_socketCallbacks, slot, SOCKET_CANCELLED);
+                try {
+                    updateSendReadPauseLocked();
+                    resumeRead = pausedBeforeCommit && !_sendReadPaused;
+                }
+                finally { _stateLock.unlock(); }
+            }
+            if (encodeFailed) {
+                rejectSend(REJECT_ENCODING);
+                close(CloseReason.ENCODING_ERROR);
+            }
+        } finally {
+            _socketExecutingTicket = false;
+            drainSocketCallbacksAcquired();
+        }
+        if (resumeRead && _closed == 0) kickRead();
+        return admitted;
+    }
+
     private boolean tryWritePacketInternal(CIOClient client,
             WritablePacket<CIOClient> packet, boolean finalPacket) {
         if (client == null || packet == null || !isOpen()
@@ -2167,10 +2260,13 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if ((int) SOCKET_PENDING.getAcquire(this) >= SOCKET_REJECT_AT - 32)
             drainPublishedSocketCallbacks();
         final int learned = WriteBuffer.learnedPacketSize(packet.getClass());
+        final int maxTailWireBytes = packet instanceof WritablePacket.DirectTail bounded
+                && _channel.isJavaTransport() && _channel.currentNativeOwner() >= 0 ? bounded.maximumWireBytes() : 0;
         final boolean direct;
         final int slot;
         final long ticket;
         boolean publishProducer = false;
+        CIOBufferEx packetTail = null;
         _stateLock.lock();
         try {
             if (_closed != 0 || (!finalPacket && _closing != 0)) return false;
@@ -2203,10 +2299,13 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                 publishProducer = publishProducerLeaseLocked();
             }
             ++_reservedDirect;
+            if (maxTailWireBytes > 0 && !publishProducer)
+                packetTail = reservePacketTailLocked(ticket, maxTailWireBytes);
         } finally {
             _stateLock.unlock();
         }
         if (publishProducer) drainSocketCallbacks();
+        if (packetTail != null) return encodePacketTail(client, packet, packetTail, slot, ticket, maxTailWireBytes);
 
         CIOBufferEx encoded = null;
         boolean encodeFailed = false;
