@@ -1,0 +1,53 @@
+{
+  "kernel": "6.18.57",
+  "architecture": "x86_64",
+  "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+  "available_cpus": 3,
+  "cpu_quota": "200000 100000",
+  "ephemeral_ports": [
+    "32768",
+    "60999"
+  ],
+  "tcp_tw_reuse": "2",
+  "jdk": "openjdk version \"21.0.13\" 2026-10-20",
+  "netty": "4.2.21.Final",
+  "revision": "87195c1970c6ead5c1125a5e17aaddb176af1426",
+  "trials": 3,
+  "warmup_ms": 1500,
+  "measure_ms": 2600,
+  "transport": "framed",
+  "owners": 2,
+  "payload_bytes": 256,
+  "persistent_window": 8,
+  "churn_window": 1,
+  "cpu_sample": "server user+system ticks during measurement",
+  "workloads": [
+    [
+      "persistent",
+      1024
+    ],
+    [
+      "persistent",
+      5000
+    ]
+  ],
+  "memory_sample": "after each workload, before server shutdown",
+  "providers": {
+    "rkern-baseline": "sun.nio.ch.EPollSelectorImpl",
+    "rkern": "sun.nio.ch.EPollSelectorImpl",
+    "netty-nio": "NioServerSocketChannel",
+    "netty-epoll": "EpollServerSocketChannel"
+  },
+  "unavailable": {
+    "netty-io_uring": "java.lang.RuntimeException: failed to create io_uring ring fd: Operation not permitted"
+  },
+  "failed_rounds": {
+    "netty-epoll/1": "Command '['java', '-Xms64m', '-Xmx256m', '-XX:ActiveProcessorCount=2', '-cp', '/tmp/rkern-echo-kha1g1f2/classes:/tmp/rkern-netty-4.2.21.Final/netty-common-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-buffer-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-transport-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-resolver-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-codec-base-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-transport-native-unix-common-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-transport-classes-epoll-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-transport-classes-io_uring-4.2.21.Final.jar:/tmp/rkern-netty-4.2.21.Final/netty-transport-native-epoll-4.2.21.Final-linux-x86_64.jar:/tmp/rkern-netty-4.2.21.Final/netty-transport-native-io_uring-4.2.21.Final-linux-x86_64.jar', 'TransportDriver', '40229', '1024', 'persistent', '1500', '2600', '256', '8', 'true', '48289', '100']' returned non-zero exit status 1."
+  },
+  "baseline_revision": "5b54e3401f99ca08067c3c8deae7ec868fcc4c7d",
+  "selector_source_commit": "c88edaf5b64268e1264a456eda168f240c8d2cc7",
+  "selector_revision_note": "Current Selector sources were compiled from the working tree before the commit. The committed Selector code is identical.",
+  "failed_round_causes": {
+    "netty-epoll/1": "1024-connection read timed out in the TCP echo client"
+  }
+}

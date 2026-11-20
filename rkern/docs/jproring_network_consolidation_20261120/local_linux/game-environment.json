@@ -1,0 +1,26 @@
+{
+  "revision": "c88edaf5b64268e1264a456eda168f240c8d2cc7",
+  "kernel": "6.18.57",
+  "affinity": [
+    0,
+    1,
+    2
+  ],
+  "jdk": "openjdk version \"21.0.13\" 2026-10-20",
+  "workloads": [
+    "load1024",
+    "mix5000"
+  ],
+  "trials": 2,
+  "warmup_ms": 2000,
+  "measure_ms": 4000,
+  "jfr": false,
+  "write_profile": false,
+  "resource_samples": true,
+  "cpu_quota": "200000 100000",
+  "baseline_revision": "5b54e3401f99ca08067c3c8deae7ec868fcc4c7d",
+  "modes": [
+    "off"
+  ],
+  "candidates_available": false
+}
