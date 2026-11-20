@@ -31,6 +31,7 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.buffer.WriteBuffer;
 import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.network.packet.CPacketHandler;
+import l1j.server.server.model.network.packet.BytesWritablePacket;
 import l1j.server.server.model.network.packet.WritablePacket;
 import l1j.server.server.model.network.safe.NetworkSafeLoadManager;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -66,6 +67,7 @@ public final class SelectorCioIntegrationTest {
             CountDownLatch ownerHeld = new CountDownLatch(1);
             CountDownLatch releaseOwner = new CountDownLatch(1);
             CountDownLatch competingOwnerSend = new CountDownLatch(1);
+            CountDownLatch competingByteSend = new CountDownLatch(1);
             CPacketHandler.PacketHandler alive = CPacketHandler.HANDLERS[ALIVE];
             CPacketHandler.PacketHandler move = CPacketHandler.HANDLERS[MOVE];
             CPacketHandler.HANDLERS[MOVE] = (payload, client) -> { rejectedOpcodePackets.incrementAndGet(); return true; };
@@ -79,6 +81,11 @@ public final class SelectorCioIntegrationTest {
                 if (value == 903 || value == 904) {
                     check(socket.tryWritePacket(client, new Reply(value, () -> {})), "owner packet admitted");
                     if (value == 903) competingOwnerSend.countDown();
+                    return true;
+                }
+                if (value == 905) {
+                    check(socket.tryWritePacket(client, new BytesWritablePacket(body(0x45, value))), "byte packet admitted");
+                    competingByteSend.countDown();
                     return true;
                 }
                 if (value == 902) {
@@ -133,7 +140,7 @@ public final class SelectorCioIntegrationTest {
                     check(timer.await(5, TimeUnit.SECONDS), "game timer ran alongside I/O");
                     CUserSocket firstSession = clients.get(0);
                     CUserSocket secondSession = clients.get(900);
-                    verifyConcurrentSendFifo(first, firstCodec, firstSession, competingOwnerSend);
+                    verifyConcurrentSendFifo(first, firstCodec, firstSession, competingOwnerSend, competingByteSend);
                     check(firstSession.bindVerifiedMacIdentity(1L), "first verified MAC accepted");
                     check(!secondSession.bindVerifiedMacIdentity(1L), "per-MAC limit enforced");
                     check(secondSession.bindVerifiedMacIdentity(2L), "second verified MAC accepted");
@@ -290,8 +297,9 @@ public final class SelectorCioIntegrationTest {
     }
 
     private static void verifyConcurrentSendFifo(Socket peer, SelectorTransportTest.ScalarClient codec,
-            CUserSocket session, CountDownLatch ownerSent) throws Exception {
+            CUserSocket session, CountDownLatch ownerSent, CountDownLatch byteSent) throws Exception {
         long previousCommits = session.javaDirectPacketCommits();
+        long previousAppends = session.javaDirectByteAppends();
         var release = new CountDownLatch(1);
         try (var producers = Executors.newVirtualThreadPerTaskExecutor()) {
             var sends = new ArrayList<Future<Boolean>>();
@@ -308,12 +316,17 @@ public final class SelectorCioIntegrationTest {
                 }
                 peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 903))));
                 check(ownerSent.await(5, TimeUnit.SECONDS), "owning shard published its send behind reserved tickets");
+                peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 905))));
+                check(byteSent.await(5, TimeUnit.SECONDS), "byte packet scheduled after the staged owner packet");
                 check(session.javaDirectPacketCommits() == previousCommits, "no earlier unpublished ticket was bypassed");
+                long expectedAppends = Boolean.getBoolean("rkern.network.javaDirectByteAppend") ? 1 : 0;
+                check(session.javaDirectByteAppends() - previousAppends == expectedAppends, "byte append candidate exercised");
             } finally { release.countDown(); }
             for (var send : sends) check(send.get(5, TimeUnit.SECONDS), "foreign packet admitted");
         }
         for (int i = 0; i < 20; i++) expectEncrypted(peer, codec, 1000 + i);
         expectEncrypted(peer, codec, 903);
+        expectEncrypted(peer, codec, 905);
         peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 904))));
         expectEncrypted(peer, codec, 904);
         long expected = Boolean.getBoolean("rkern.network.javaDirectPacketCommit") ? 1 : 0;

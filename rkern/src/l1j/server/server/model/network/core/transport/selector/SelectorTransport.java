@@ -12,10 +12,8 @@ import java.nio.channels.SocketChannel;
 import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.PriorityQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -250,6 +248,8 @@ public final class SelectorTransport implements AutoCloseable {
         private int readyOps;
         private long stallDeadline;
         private long scheduledDeadline;
+        private int stallIndex = -1;
+        private int deadlineIndex = -1;
         private Runnable deadlineAction;
         private int closeRequest; // guarded by the owner mailbox monitor
         private CloseReason drainReason;
@@ -286,13 +286,10 @@ public final class SelectorTransport implements AutoCloseable {
             if (closed || owner.stopping) return false;
             if (delayMillis < 0 || delayMillis > Integer.MAX_VALUE) throw new IllegalArgumentException("Deadline delay");
             long due = System.nanoTime() + Math.max(1L, delayMillis) * 1_000_000;
-            if (deadlineAction != null) {
-                if (scheduledDeadline - due <= 0) return true;
-                owner.deadlines.remove(this);
-            }
+            if (deadlineAction != null && scheduledDeadline - due <= 0) return true;
             deadlineAction = Objects.requireNonNull(callback);
             scheduledDeadline = due;
-            owner.deadlines.add(this);
+            owner.deadlines.addOrAdvance(this);
             owner.deadlineDepth = owner.deadlines.size();
             return true;
         }
@@ -493,7 +490,7 @@ public final class SelectorTransport implements AutoCloseable {
                 owner.zeroWrites++;
                 if (stallDeadline == 0) {
                     stallDeadline = System.nanoTime() + writeStallNanos;
-                    owner.stalled.add(this);
+                    owner.stalled.addOrAdvance(this);
                     owner.stalledDepth = owner.stalled.size();
                 }
             }
@@ -583,6 +580,83 @@ public final class SelectorTransport implements AutoCloseable {
         void cancel();
     }
 
+    /** Owner-only binary heap with one reusable index per connection and timer kind. */
+    private final class DeadlineHeap {
+        private final ArrayList<Connection> nodes = new ArrayList<>();
+        private final boolean writeStall;
+
+        private DeadlineHeap(boolean writeStall) { this.writeStall = writeStall; }
+
+        private int size() { return nodes.size(); }
+        private boolean isEmpty() { return nodes.isEmpty(); }
+        private Connection peek() { return nodes.getFirst(); }
+
+        private long time(Connection connection) {
+            return writeStall ? connection.stallDeadline : connection.scheduledDeadline;
+        }
+
+        private int index(Connection connection) {
+            return writeStall ? connection.stallIndex : connection.deadlineIndex;
+        }
+
+        private void setIndex(Connection connection, int index) {
+            if (writeStall) connection.stallIndex = index;
+            else connection.deadlineIndex = index;
+        }
+
+        private void place(int index, Connection connection) {
+            nodes.set(index, connection);
+            setIndex(connection, index);
+        }
+
+        private void addOrAdvance(Connection connection) {
+            int index = index(connection);
+            if (index < 0) {
+                index = nodes.size();
+                nodes.add(connection);
+            }
+            siftUp(index, connection);
+        }
+
+        private void remove(Connection connection) {
+            int index = index(connection);
+            if (index < 0 || nodes.get(index) != connection) throw new IllegalStateException("Deadline heap index");
+            Connection last = nodes.removeLast();
+            setIndex(connection, -1);
+            if (last == connection) return;
+            if (index > 0 && time(last) - time(nodes.get((index - 1) >>> 1)) < 0) siftUp(index, last);
+            else siftDown(index, last);
+        }
+
+        private void siftUp(int index, Connection connection) {
+            long due = time(connection);
+            while (index > 0) {
+                int parent = (index - 1) >>> 1;
+                Connection earlier = nodes.get(parent);
+                if (due - time(earlier) >= 0) break;
+                place(index, earlier);
+                index = parent;
+            }
+            place(index, connection);
+        }
+
+        private void siftDown(int index, Connection connection) {
+            int half = nodes.size() >>> 1;
+            long due = time(connection);
+            while (index < half) {
+                int child = (index << 1) + 1;
+                Connection earlier = nodes.get(child);
+                if (child + 1 < nodes.size() && time(nodes.get(child + 1)) - time(earlier) < 0) {
+                    earlier = nodes.get(++child);
+                }
+                if (due - time(earlier) <= 0) break;
+                place(index, earlier);
+                index = child;
+            }
+            place(index, connection);
+        }
+    }
+
     private final class Owner implements Runnable, OwnerDriver {
         private final int index;
         private volatile Thread thread;
@@ -590,8 +664,8 @@ public final class SelectorTransport implements AutoCloseable {
         private final AtomicInteger admitted = new AtomicInteger();
         private final ArrayDeque<OwnerTask> mailbox = new ArrayDeque<>(config.mailboxCapacity());
         private final ArrayDeque<Connection> closing = new ArrayDeque<>();
-        private final PriorityQueue<Connection> stalled = new PriorityQueue<>(Comparator.comparingLong(c -> c.stallDeadline));
-        private final PriorityQueue<Connection> deadlines = new PriorityQueue<>(Comparator.comparingLong(c -> c.scheduledDeadline));
+        private final DeadlineHeap stalled = new DeadlineHeap(true);
+        private final DeadlineHeap deadlines = new DeadlineHeap(false);
         private final ByteBuffer[] gather = new ByteBuffer[GATHER_LIMIT];
         private final Consumer<SelectionKey> collector = this::collect;
         private final Consumer<RuntimeException> reportRawCancellation =
@@ -846,7 +920,7 @@ public final class SelectorTransport implements AutoCloseable {
             for (int i = 0; i < COMMAND_BUDGET && !deadlines.isEmpty(); i++) {
                 Connection connection = deadlines.peek();
                 if (now - connection.scheduledDeadline < 0) break;
-                deadlines.remove();
+                deadlines.remove(connection);
                 deadlineDepth = deadlines.size();
                 Runnable callback = connection.deadlineAction;
                 connection.deadlineAction = null;
@@ -856,7 +930,7 @@ public final class SelectorTransport implements AutoCloseable {
             for (int i = 0; i < COMMAND_BUDGET && !stalled.isEmpty(); i++) {
                 Connection connection = stalled.peek();
                 if (now - connection.stallDeadline < 0) break;
-                stalled.remove();
+                stalled.remove(connection);
                 stalledDepth = stalled.size();
                 connection.stallDeadline = 0;
                 writeTimeouts++;

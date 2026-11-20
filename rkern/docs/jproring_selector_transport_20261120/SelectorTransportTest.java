@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +40,7 @@ public final class SelectorTransportTest {
         checkCallbackFailureIsolation();
         checkRawGracefulGather();
         checkHostedAttachFailure();
+        checkIndexedDeadlines();
         System.out.println("PASS multi-owner TCP, Java cipher, callback isolation, raw graceful gather and hosted rollback");
     }
 
@@ -145,6 +147,44 @@ public final class SelectorTransportTest {
         }
         try (var rebound = SelectorTransport.bind(address, config(1, 1, 4), noPackets)) {
             check(rebound.localAddress().equals(address), "listener can rebind after both failures");
+        }
+    }
+
+    private static void checkIndexedDeadlines() throws Exception {
+        final int count = 128;
+        var opened = new LinkedBlockingQueue<Connection>();
+        var deadlines = new LinkedBlockingQueue<Integer>();
+        var handler = new SelectorTransport.RawHandler() {
+            @Override public void onOpen(Connection socket) {
+                socket.scheduleDeadline(30_000, () -> { throw new AssertionError("stale deadline fired"); });
+                opened.add(socket);
+            }
+        };
+        var peers = new ArrayList<Socket>();
+        try (var server = SelectorTransport.bind(LOOPBACK, config(1, count, 8), handler)) {
+            var sockets = new ArrayList<Connection>();
+            for (int i = 0; i < count; i++) peers.add(connect(server, 0));
+            for (int i = 0; i < count; i++) sockets.add(await(opened));
+            check(server.ownerDiagnostics().getFirst().deadlines() == count, "one deadline per connection");
+            Connection first = sockets.get(0);
+            check(first.tryExecute(owner -> {
+                // Remove interior entries. Advance deadlines in reverse order.
+                for (int i = 4; i < count; i += 2) sockets.get(i).abort();
+                sockets.get(3).scheduleDeadline(750, () -> deadlines.add(3));
+                sockets.get(1).scheduleDeadline(70, () -> {
+                    deadlines.add(1);
+                    sockets.get(1).scheduleDeadline(70, () -> deadlines.add(2));
+                });
+                sockets.get(1).scheduleDeadline(20_000, () -> { throw new AssertionError("later deadline replaced earlier"); });
+                sockets.get(2).scheduleDeadline(1, () -> { throw new AssertionError("closed socket timer fired"); });
+                sockets.get(2).abort();
+            }), "deadline mutations admitted");
+            for (int i = 1; i <= 3; i++) check(await(deadlines) == i, "advance, callback rearm, and deadline order");
+            server.close();
+            check(server.ownerDiagnostics().getFirst().deadlines() == 0, "all remaining timers detached at shutdown");
+            balanced(server.shutdownStats());
+        } finally {
+            for (Socket peer : peers) peer.close();
         }
     }
 

@@ -32,6 +32,7 @@ import l1j.server.server.model.network.utill.ConnectionConfig;
 import l1j.server.server.model.network.buffer.WriteBuffer;
 import l1j.server.server.model.network.packet.CPacketHandler;
 import l1j.server.server.model.network.packet.WritablePacket;
+import l1j.server.server.model.network.packet.BytesWritablePacket;
 
 /**
  * Game packet framing and the per-socket 512-slot callback serializer.
@@ -407,9 +408,12 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     // The already-owned/inline callback path still publishes its mailbox event.
     private static final boolean READ_WRITE_OWNER_FUSION = true;
     private static final boolean JAVA_DIRECT_PACKET_COMMIT = Boolean.getBoolean("rkern.network.javaDirectPacketCommit");
+    private static final boolean JAVA_DIRECT_BYTE_APPEND = Boolean.getBoolean("rkern.network.javaDirectByteAppend");
     private volatile long _javaDirectPacketCommits;
+    private volatile long _javaDirectByteAppends;
 
     public long javaDirectPacketCommits() { return _javaDirectPacketCommits; }
+    public long javaDirectByteAppends() { return _javaDirectByteAppends; }
     private static final int FUSED_READ_MAX_BYTES = 256;
     // READ completion is consumed only by the existing per-socket READ pump.
     // 0=empty, 1=failure, >=2=successful completion (transferred bytes + 2).
@@ -1662,16 +1666,22 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
     private boolean packAdjacentStagedPacketLocked(CIOBufferEx packet,
             long ticket, int slot, boolean directFrame) {
+        if (packet.shared()) return false;
+        return appendAdjacentStagedPacketLocked(0, ticket, slot, packet, null, directFrame);
+    }
+
+    private boolean appendAdjacentStagedPacketLocked(int preencodedLength, long ticket, int slot,
+            CIOBufferEx packet, BytesWritablePacket bytes, boolean directFrame) {
         final CIOBufferEx earlier = _stagedPacketPack;
-        if (packet.shared() || earlier == null || earlier.shared() || ticket != _stagedPacketLastTicket + 1L
+        if (earlier == null || earlier.shared() || ticket != _stagedPacketLastTicket + 1L
                 || _socketHead > _stagedPacketFirstTicket || _closed != 0
                 || !earlier.reserved() || earlier._writePrepared || earlier._ioPending
                 || earlier.buffer().capacity() != CIOBufferPool.SMALL_SEND_BYTES)
             return false;
-        final int length = packet.writer().position();
+        final int length = packet == null ? preencodedLength : packet.writer().position();
         final int prior = earlier.writer().position();
         if (length <= CIOBufferPool.HEADER_BYTES
-                || length > packet._reservedWireBytes
+                || (packet != null && length > packet._reservedWireBytes)
                 || length > PACK_MAX_FRAME_BYTES || !canAdmitBytes(length)
                 || prior > CIOBufferPool.SMALL_SEND_BYTES - length
                 || prior > earlier._reservedWireBytes - length)
@@ -1683,17 +1693,22 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         final boolean firstMerge = !earlier._packedFrames;
         if (firstMerge)
             earlier.writer().writeShort(0, (short) prior);
-        packet.writer().writeShort(0, (short) length);
         final ByteBuffer dest = earlier.buffer();
         dest.limit(dest.capacity());
-        dest.put(prior, packet.buffer(), 0, length);
+        if (packet != null) {
+            packet.writer().writeShort(0, (short) length);
+            dest.put(prior, packet.buffer(), 0, length);
+        } else {
+            earlier.writer().writeShort(prior, (short) length);
+            bytes.copyPayloadTo(dest, prior + CIOBufferPool.HEADER_BYTES);
+        }
         earlier.writer().position(prior + length);
         earlier._packedFrames = true;
         earlier._frameCount = firstMerge ? 2 : earlier._frameCount + 1;
         earlier._actionOnly = false;
         bytesAdmitted(length);
         _stagedPacketLastTicket = ticket;
-        if (!directFrame) _pool.release(packet);
+        if (packet != null && !directFrame) _pool.release(packet);
         // The earlier ticket carries these bytes. Retire this ticket in place
         // rather than changing the FIFO or the serializer's pending count.
         SOCKET_ARGUMENT_SLOT.setRelease(_socketArguments, slot, 0L);
@@ -2176,6 +2191,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         final int slot;
         final long ticket;
         boolean publishProducer = false;
+        boolean appended = false;
         _stateLock.lock();
         try {
             if (_closed != 0 || (!finalPacket && _closing != 0)) return false;
@@ -2206,11 +2222,25 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                 ++_payloadOrderEpoch;
                 publishProducer = publishProducerLeaseLocked();
             }
-            ++_reservedDirect;
+            if (JAVA_DIRECT_BYTE_APPEND && _channel.isJavaTransport() && _channel.currentNativeOwner() >= 0
+                    && packet.getClass() == BytesWritablePacket.class) {
+                var bytes = (BytesWritablePacket) packet;
+                int payloadLength = bytes.payloadLength();
+                if (payloadLength > 0 && payloadLength <= PACK_MAX_FRAME_BYTES - CIOBufferPool.HEADER_BYTES) {
+                    appended = appendAdjacentStagedPacketLocked(payloadLength + CIOBufferPool.HEADER_BYTES,
+                            ticket, slot, null, bytes, false);
+                    if (appended) ++_javaDirectByteAppends;
+                }
+            }
+            if (!appended) ++_reservedDirect;
         } finally {
             _stateLock.unlock();
         }
         if (publishProducer) drainSocketCallbacks();
+        if (appended) {
+            drainPublishedSocketCallbacks();
+            return true;
+        }
 
         CIOBufferEx encoded = null;
         boolean encodeFailed = false;
