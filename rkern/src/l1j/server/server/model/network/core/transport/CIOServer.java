@@ -66,11 +66,11 @@ public final class CIOServer implements AutoCloseable {
     private final ConcurrentHashMap<Long, CSocket> closingConnections = new ConcurrentHashMap<>();
     private final AtomicLong nextTask = new AtomicLong();
     private final MethodHandle scheduleTask, cancelTask, getDiagnostics;
-    private final MethodHandle releaseUserPacket,getUserSocketState,threadOwner;
+    private final MethodHandle getUserSocketState,threadOwner;
     private final MethodHandle setUserState,configureDeadlines,requestDeadline,getRegistryDiagnostics;
     private final MethodHandle setAccountIdentity,setCharacterEntered,findEnteringAccount,getAccountRegistryDiagnostics,configurePerf,getPerfDiagnostics;
     private final MethodHandle configureLimits,getLimiterDiagnostics,getListenerDiagnostics,getThreadDiagnostics,findByNumber,setMacIdentity,reportSockets;
-    private final MemorySegment userPacketStub,networkDeadlineStub;
+    private final MemorySegment networkDeadlineStub;
     private volatile boolean drainClosed;
     private final MemorySegment taskStub, closingStub;
     @SuppressWarnings("unused")
@@ -207,7 +207,6 @@ public final class CIOServer implements AutoCloseable {
             MethodHandle setSend = fn("L1Interop_SetOnWrite", FunctionDescriptor.ofVoid(P, P));
             MethodHandle setClose = fn("L1Interop_SetOnClose", FunctionDescriptor.ofVoid(P, P));
             scheduleTask = fn("L1Interop_ScheduleTimer", FunctionDescriptor.of(I, P, L, I));
-                    releaseUserPacket=fn("L1Interop_ReleasePacket",FunctionDescriptor.of(I,P,L,L));
                 getUserSocketState=fn("L1Interop_GetSocketState",FunctionDescriptor.of(I,P,L,P,I));
             setUserState=fn("L1Interop_SetSessionState",FunctionDescriptor.of(I,P,L,I));
             configureDeadlines=fn("L1Interop_ConfigureDeadlines",FunctionDescriptor.of(I,P,L,I));
@@ -232,8 +231,6 @@ public final class CIOServer implements AutoCloseable {
             MethodHandle setClosing = fn("L1Interop_SetOnClosing", FunctionDescriptor.ofVoid(P, P));
             getDiagnostics = fn("L1Interop_GetDiagnostics", FunctionDescriptor.of(I, P, P, I));
             MethodHandles.Lookup lookup = MethodHandles.lookup();
-            userPacketStub=LINKER.upcallStub(lookup.findVirtual(CIOServer.class,"onUserPacket",
-                    MethodType.methodType(int.class,MemorySegment.class,long.class,long.class,MemorySegment.class,int.class)).bindTo(this),FunctionDescriptor.of(I,P,L,L,P,I),arena);
             networkDeadlineStub=LINKER.upcallStub(lookup.findVirtual(CIOServer.class,"onNetworkDeadline",
                     MethodType.methodType(int.class,MemorySegment.class,long.class)).bindTo(this),FunctionDescriptor.of(I,P,L),arena);
             taskStub = LINKER.upcallStub(lookup.findVirtual(CIOServer.class, "onTask",
@@ -261,7 +258,6 @@ public final class CIOServer implements AutoCloseable {
             setReceive.invokeExact(listener, receiveStub);
             setSend.invokeExact(listener, sendStub);
             setClose.invokeExact(listener, closeStub);
-            fn("L1Interop_SetOnPacket",FunctionDescriptor.ofVoid(P,P)).invokeExact(listener,userPacketStub);
             fn("L1Interop_SetOnTimerExpired",FunctionDescriptor.ofVoid(P,P)).invokeExact(listener,networkDeadlineStub);
             setClosing.invokeExact(listener, closingStub);
             setTask.invokeExact(listener, taskStub);
@@ -441,13 +437,6 @@ public final class CIOServer implements AutoCloseable {
         } finally { leaveCallback(); }
     }
     @SuppressWarnings({"preview","unused"})
-    private int onUserPacket(MemorySegment sender,long id,long sequence,MemorySegment bytes,int length) {
-        enterCallback();
-        try {CSocket channel=find(id);return channel!=null&&channel.nativePacket(sequence,length==0?null:bytes.reinterpret(length).asByteBuffer().order(java.nio.ByteOrder.LITTLE_ENDIAN),length)?0:2;}
-        catch(Throwable failure){LOG.log(Level.WARNING,"Native L1 packet callback failed conn="+id,failure);return 2;}
-        finally{leaveCallback();}
-    }
-    @SuppressWarnings({"preview","unused"})
     private int onNetworkDeadline(MemorySegment sender,long id) {
         enterCallback();
         try{CSocket channel=find(id);return channel==null?0:channel.nativeNetworkDeadline();}
@@ -609,12 +598,6 @@ public final class CIOServer implements AutoCloseable {
         nativeCalls.incrementAndGet();
         if(!drainClosed)return true;
         nativeCalls.decrementAndGet();return false;
-    }
-    boolean releaseUserPacket(long id,long sequence) {
-        if(!enterDrain())return false;
-        try{return (int)releaseUserPacket.invokeExact(server,id,sequence)!=0;}
-        catch(Throwable failure){throw new IllegalStateException("Native packet release failed",failure);}
-        finally{nativeCalls.decrementAndGet();}
     }
     boolean setUserState(long id,int state) {return userControl(setUserState,id,state);}
     boolean configureDeadlines(long id,int loginMs){return userControl(configureDeadlines,id,loginMs);}

@@ -145,14 +145,12 @@ public final class CSocket implements AutoCloseable {
         if (parent == null) throw new IllegalStateException("Native operation on a Java Selector socket");
         return parent;
     }
-    public boolean releaseUserPacket(long sequence){return requireNativeServer().releaseUserPacket(id,sequence);}
     public boolean setUserState(int state) {
         if (javaServer == null) return parent.setUserState(id, state);
         if (!javaServer.setState(this, state)) return false;
         if (state != 0) javaLoginDeadline = 0;
         return true;
     }
-    public boolean pauseNativeUser(boolean pause){return requireNativeServer().pause(id,pause);}
     public boolean configureDeadlines(int loginMs) {
         if (javaPeer == null) return parent.configureDeadlines(id, loginMs);
         if (loginMs < 0) return false;
@@ -175,12 +173,6 @@ public final class CSocket implements AutoCloseable {
         int delay = owner == null ? 0 : owner.transportNetworkDeadline();
         if (delay < 0 || remaining <= 0) close();
         else if (delay > 0) javaPeer.scheduleDeadline(Math.min(delay, 1 + (remaining - 1) / 1_000_000), javaDeadlineCallback);
-    }
-    boolean nativePacket(long sequence,ByteBuffer bytes,int length){
-        CUserSocket owner=userSocketOwner;
-        if(owner==null)return false;
-        try{return owner.transportNativePacket(sequence,bytes,length);}
-        catch(Throwable failure){owner.close();throw failure;}
     }
     int nativeNetworkDeadline(){CUserSocket owner=userSocketOwner;return owner==null?0:owner.transportNetworkDeadline();}
     public boolean postCompletion(CIOObject task) {
