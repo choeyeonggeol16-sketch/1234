@@ -587,9 +587,7 @@ public final class BuffRestoreRegistryInit {
             sendScBuff(pc, L1SkillId.ENCHANT_ACURUCY, rt, 9487, 5888);
         });
         BuffRestoreRegistry.register(L1SkillId.CLEAR_MIND, (pc, sid, polyId, rt, icon) -> {
-            pc.getAbility().addAddedStr((byte) 1);
-            pc.getAbility().addAddedDex((byte) 1);
-            pc.getAbility().addAddedInt((byte) 1);
+            CSkillInfo.applyFixedModifierFromOwner(pc, sid);
             sendScBuff(pc, L1SkillId.CLEAR_MIND, rt, 745, 861, 5279);
         });
         BuffRestoreRegistry.register(L1SkillId.MAJESTY,

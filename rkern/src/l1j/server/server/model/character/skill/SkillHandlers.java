@@ -181,7 +181,6 @@ public final class SkillHandlers {
 		register(L1SkillId.IMPACT, SkillHandlers::onImpact);
 		register(L1SkillId.GRACE_AVATAR, SkillHandlers::onGraceAvatar);
 
-		register(L1SkillId.CLEAR_MIND, SkillHandlers::onClearMind);
 		register(L1SkillId.GREATER_HASTE, SkillHandlers::onGreaterHaste);
 		register(L1SkillId.HOLY_WALK, SkillHandlers::onHolyWalk);
 		register(L1SkillId.MOVING_ACCELERATION, SkillHandlers::onMovingAcceleration);
@@ -290,8 +289,6 @@ public final class SkillHandlers {
 		register(L1SkillId.God_buff, SkillHandlers::onGodBuff);
 		register(L1SkillId.IRON_SKIN, SkillHandlers::onIronSkin);
 		register(L1SkillId.FIRE_SHIELD, SkillHandlers::onFireShield);
-		register(L1SkillId.PHYSICAL_ENCHANT_STR, SkillHandlers::onPhysicalEnchantStr);
-		register(L1SkillId.PHYSICAL_ENCHANT_DEX, SkillHandlers::onPhysicalEnchantDex);
 		register(L1SkillId.EARTH_WEAPON, SkillHandlers::onEarthWeapon);
 
 		register(L1SkillId.REDUCE_WEIGHT, SkillHandlers::onReduceWeightLike);
@@ -2789,25 +2786,19 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onPhysicalEnchantStr(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {	  
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.getAbility().addAddedStr((byte) 5);
-		SC_Strup.send(pc, pc, 5, su.hdGetBuffIconDuration());
-
-		return HandlerResult.HANDLED;
+	static void startPhysicalEnchant(L1PcInstance pc, int skillId, int iconDuration) {
+		final boolean dexterity = skillId == L1SkillId.PHYSICAL_ENCHANT_DEX;
+		// Support grants and ordinary casts share the owner-side exclusion rule.
+		SkillUseHelper.deleteRepeatedSkills(pc, skillId);
+		resetEffect(pc, skillId);
+		CSkillInfo.applyFixedModifierFromOwner(pc, skillId);
+		if (dexterity) SC_Dexup.send(pc, pc, 5, iconDuration);
+		else SC_Strup.send(pc, pc, 5, iconDuration);
+		final int duration = iconDuration > 0 ? iconDuration : durationSecForBuff(null, skillId);
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
-	private static HandlerResult onPhysicalEnchantDex(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getAbility().addAddedDex((byte) 5);
-		SC_Dexup.send(pc, pc, 5, su.hdGetBuffIconDuration());
-
-		return HandlerResult.HANDLED;
-	}
 
 	private static HandlerResult onEarthWeapon(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
@@ -3184,20 +3175,11 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onClearMind(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		if (pc.hasSkillEffect(L1SkillId.CLEAR_MIND)) {
-			pc.removeSkillEffect(L1SkillId.CLEAR_MIND);
-		}
-
-		pc.getAbility().addAddedStr((byte) 1);
-		pc.getAbility().addAddedDex((byte) 1);
-		pc.getAbility().addAddedInt((byte) 1);
-
-		final int durSec = durationSecForBuff(su, L1SkillId.CLEAR_MIND);
-		applySkillEffectSec(pc, L1SkillId.CLEAR_MIND, durSec);
+	static void startClearMind(L1PcInstance pc, int skillId, int durSec) {
+		if (durSec <= 0) return;
+		resetEffect(pc, skillId);
+		CSkillInfo.applyFixedModifierFromOwner(pc, skillId);
+		applySkillEffectSec(pc, skillId, durSec);
 
 		// on_icon=745, off_icon=5279 (서로 다름)
 		sendRestatBuffNotiDualIcon(
@@ -3212,7 +3194,6 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 				0,      // end 없음
 				true
 				);
-		return HandlerResult.HANDLED;
 	}
 
 	private static HandlerResult onGreaterHaste(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {

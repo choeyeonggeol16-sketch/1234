@@ -64,6 +64,7 @@ public final class TestSkillEffectLifecycle {
             verifyInventoryAndDressBuffs();
             verifyEvasionBuffs();
             verifyRestoredBuffs();
+            verifyPhysicalAndClearMind();
             verifyMeleeBuffs();
             verifyDamageAndSpellPower();
             verifyInventoryHealthAndArmor();
@@ -224,6 +225,35 @@ public final class TestSkillEffectLifecycle {
         pc.removeSkillEffect(RESIST_MAGIC);
         verify(pc.getEffectedER() == 7 && pc.getResistance().getMr() == baseMr,
                 "restored sources leave baseline intact", RESIST_MAGIC);
+    }
+
+    private static void verifyPhysicalAndClearMind() {
+        Player pc = new Player();
+        pc.getAbility().addAddedStr(7);
+        pc.getAbility().addAddedDex(8);
+        pc.getAbility().addAddedInt(9);
+        final int[] ids = {CLEAR_MIND, PHYSICAL_ENCHANT_STR, PHYSICAL_ENCHANT_DEX};
+        for (int id : ids) verify(CSkillInfo.isManaged(id), "managed primary registration", id);
+        BuffRestoreRegistry.find(CLEAR_MIND).restore(pc, CLEAR_MIND, 0, 38, new int[39]);
+        pc.setSkillEffect(CLEAR_MIND, 38_000);
+        CSkillInfo.pumpStartFromOwner(pc, DRESS_MIGHTY, 38);
+        CSkillInfo.pumpStartFromOwner(pc, DRESS_DEXTERITY, 38);
+        for (int id : ids) {
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "cast", id);
+            CSkillInfo.pumpStartFromOwner(pc, id, 38);
+        }
+        verify(!pc.hasSkillEffect(DRESS_MIGHTY) && !pc.hasSkillEffect(DRESS_DEXTERITY),
+                "physical enchant replaces dress", PHYSICAL_ENCHANT_STR);
+        verify(pc.getAbility().getAddedStr() == 13 && pc.getAbility().getAddedDex() == 14
+                && pc.getAbility().getAddedInt() == 10, "recast does not stack", CLEAR_MIND);
+        pc.removeSkillEffect(CLEAR_MIND);
+        verify(pc.getAbility().getAddedStr() == 12 && pc.getAbility().getAddedDex() == 13
+                && pc.getAbility().getAddedInt() == 9, "clear mind expires independently", CLEAR_MIND);
+        pc.removeSkillEffect(PHYSICAL_ENCHANT_STR);
+        pc.removeSkillEffect(PHYSICAL_ENCHANT_DEX);
+        verify(pc.getAbility().getAddedStr() == 7 && pc.getAbility().getAddedDex() == 8
+                && pc.getAbility().getAddedInt() == 9, "equipment sources retained", PHYSICAL_ENCHANT_DEX);
     }
 
     private static void verifyMeleeBuffs() {

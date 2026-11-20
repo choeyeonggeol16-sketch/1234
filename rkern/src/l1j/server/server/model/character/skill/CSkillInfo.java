@@ -63,6 +63,9 @@ public final class CSkillInfo {
         registerManaged(N_BUFF_PVP_DMG, SkillHandlers::startInventoryResistanceBuff, PVP_DAMAGE, PVP_REDUCTION);
         registerManaged(N_BUFF_STUN, SkillHandlers::startInventoryResistanceBuff, SPECIAL_RESISTANCE);
         registerManaged(N_BUFF_HOLD, SkillHandlers::startInventoryResistanceBuff, SPECIAL_RESISTANCE);
+        registerManaged(CLEAR_MIND, SkillHandlers::startClearMind, PRIMARY_STATS);
+        registerManaged(PHYSICAL_ENCHANT_STR, SkillHandlers::startPhysicalEnchant, PRIMARY_STATS);
+        registerManaged(PHYSICAL_ENCHANT_DEX, SkillHandlers::startPhysicalEnchant, PRIMARY_STATS);
         frozen = true;
     }
 
@@ -140,6 +143,7 @@ public final class CSkillInfo {
             int skillId = su.hdSkillId();
             int duration = skillId == SHINING_AURA || skillId == SHIELD
                     || skillId == DRESS_DEXTERITY || skillId == DRESS_MIGHTY || skillId == GLOWING_AURA
+                    || skillId == PHYSICAL_ENCHANT_STR || skillId == PHYSICAL_ENCHANT_DEX
                     ? su.hdGetBuffIconDuration() : SkillHandlers.durationSecForBuff(su, skillId);
             return pc.submitSkillPumpStart(skillId, duration)
                     ? SkillHandlers.HandlerResult.HANDLED : SkillHandlers.HandlerResult.CONTINUE;
@@ -176,6 +180,9 @@ public final class CSkillInfo {
             case GLOWING_AURA -> (5L << 32) | 5;
             case IllUSION_OGRE -> (4L << 32) | 4;
             case ENCHANT_ACURUCY -> 5;
+            case CLEAR_MIND -> 0x00010101;
+            case PHYSICAL_ENCHANT_STR -> 5;
+            case PHYSICAL_ENCHANT_DEX -> 5 << 8;
             default -> throw new IllegalArgumentException("No fixed modifier for " + skillId);
         };
         target.applySkillModifierFromOwner(skillId, captured);

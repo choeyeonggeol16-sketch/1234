@@ -19,8 +19,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 
 import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
-import l1j.server.server.model.network.core.sc.packet.SC_Dexup;
-import l1j.server.server.model.network.core.sc.packet.SC_Strup;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX;
 public class HelpBySupport extends RepeatTask {
 	private static Logger _log = Logger.getLogger(HelpBySupport.class
@@ -137,15 +135,7 @@ public class HelpBySupport extends RepeatTask {
 	
 	public void Strup() {
 		if(_support.getCurrentMp() > 50){
-			if(_pc.hasSkillEffect(L1SkillId.DRESS_MIGHTY)){
-				_pc.removeSkillEffect(L1SkillId.DRESS_MIGHTY);
-			}
-			if(_pc.hasSkillEffect(L1SkillId.PHYSICAL_ENCHANT_STR)){
-				_pc.removeSkillEffect(L1SkillId.PHYSICAL_ENCHANT_STR);
-			}
-		_pc.getAbility().addAddedStr((byte) 5);
-		SC_Strup.send(_pc, _pc, 5, 1200);
-		_pc.setSkillEffect(L1SkillId.PHYSICAL_ENCHANT_STR, 1200 * 1000);
+		if (!_pc.submitSkillPumpStart(L1SkillId.PHYSICAL_ENCHANT_STR, 1200)) return;
 		SC_DoActionGFX.broadcast(_support, 19);
 		SC_SkillSound.send(_pc, _pc.getId(), 751); 
 		SC_SkillSound.broadcast(_pc, _pc.getId(), 751);
@@ -157,15 +147,7 @@ public class HelpBySupport extends RepeatTask {
 	
 	public void Dexup() {
 		if(_support.getCurrentMp() > 50){
-			if(_pc.hasSkillEffect(L1SkillId.DRESS_DEXTERITY)){
-				_pc.removeSkillEffect(L1SkillId.DRESS_DEXTERITY);
-			}
-			if(_pc.hasSkillEffect(L1SkillId.PHYSICAL_ENCHANT_DEX)){
-				_pc.removeSkillEffect(L1SkillId.PHYSICAL_ENCHANT_DEX);
-			}
-		_pc.getAbility().addAddedDex((byte) 5);
-		SC_Dexup.send(_pc, _pc, 5, 1200);
-		_pc.setSkillEffect(L1SkillId.PHYSICAL_ENCHANT_DEX, 1200 * 1000);
+		if (!_pc.submitSkillPumpStart(L1SkillId.PHYSICAL_ENCHANT_DEX, 1200)) return;
 		SC_DoActionGFX.broadcast(_support, 19);
 		SC_SkillSound.send(_pc, _pc.getId(), 750); 
 		SC_SkillSound.broadcast(_pc, _pc.getId(), 750);

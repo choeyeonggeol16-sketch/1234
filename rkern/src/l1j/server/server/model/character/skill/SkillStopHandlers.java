@@ -1290,7 +1290,7 @@ public final class SkillStopHandlers {
 	private static StopResult offPhysicalEnchantStr(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getAbility().addAddedStr((byte) -5);
+			pc.removeSkillModifierFromOwner(skillId);
 			SC_Strup.send(pc, pc, 1, 0);		
 		}
 		return StopResult.HANDLED;
@@ -1299,7 +1299,7 @@ public final class SkillStopHandlers {
 	private static StopResult offPhysicalEnchantDex(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getAbility().addAddedDex((byte) -5);
+			pc.removeSkillModifierFromOwner(skillId);
 			SC_Dexup.send(pc, pc, 1, 0);			
 		}
 		return StopResult.HANDLED;
@@ -2198,9 +2198,7 @@ public final class SkillStopHandlers {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
 
-	        pc.getAbility().addAddedStr((byte) -1);
-	        pc.getAbility().addAddedDex((byte) -1);
-	        pc.getAbility().addAddedInt((byte) -1);
+	        pc.removeSkillModifierFromOwner(skillId);
 
 	        sendEndNoti(pc, L1SkillId.CLEAR_MIND, 5279, true);
 	    }
