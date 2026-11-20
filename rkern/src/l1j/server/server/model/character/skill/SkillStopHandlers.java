@@ -1202,7 +1202,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offResistElemental(L1Character cha, int skillId) {
-		cha.getResistance().addAllNaturalResistance(-10);
+		cha.removeSkillModifierFromOwner(skillId);
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_OwnCharAttrDef.send(pc);
@@ -1214,18 +1214,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		int attr = pc.getElfAttr();
-		if (attr == 1) {
-			cha.getResistance().addEarth(-50);
-		} else if (attr == 2) {
-			cha.getResistance().addFire(-50);
-		} else if (attr == 4) {
-			cha.getResistance().addWater(-50);
-		} else if (attr == 8) {
-			cha.getResistance().addWind(-50);
-		}
-
-		pc.getResistance().addSpecialPierce(eKind.SPIRIT, -3);
+		pc.removeSkillModifierFromOwner(skillId);
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;
 	}
@@ -1382,7 +1371,7 @@ public final class SkillStopHandlers {
 	private static StopResult offUncannyDodge(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.addDg(-30);
+			pc.removeSkillModifierFromOwner(skillId);
 		}
 		return StopResult.HANDLED;
 	}
@@ -1408,11 +1397,7 @@ public final class SkillStopHandlers {
 	private static StopResult offInsight(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getAbility().addAddedStr((byte) -1);
-			pc.getAbility().addAddedDex((byte) -1);
-			pc.getAbility().addAddedCon((byte) -1);
-			pc.getAbility().addAddedInt((byte) -1);
-			pc.getAbility().addAddedWis((byte) -1);
+			pc.removeSkillModifierFromOwner(skillId);
 			pc.resetBaseMr();
 		}
 		return StopResult.HANDLED;

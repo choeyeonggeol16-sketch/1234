@@ -65,6 +65,7 @@ public final class TestSkillEffectLifecycle {
             verifyEvasionBuffs();
             verifyRestoredBuffs();
             verifyPhysicalAndClearMind();
+            verifyCommonStatBuffs();
             verifyMeleeBuffs();
             verifyDamageAndSpellPower();
             verifyInventoryHealthAndArmor();
@@ -254,6 +255,50 @@ public final class TestSkillEffectLifecycle {
         pc.removeSkillEffect(PHYSICAL_ENCHANT_DEX);
         verify(pc.getAbility().getAddedStr() == 7 && pc.getAbility().getAddedDex() == 8
                 && pc.getAbility().getAddedInt() == 9, "equipment sources retained", PHYSICAL_ENCHANT_DEX);
+    }
+
+    private static void verifyCommonStatBuffs() {
+        Player pc = new Player();
+        pc.getAbility().addAddedCon(6);
+        pc.getAbility().addAddedWis(4);
+        pc.getResistance().addEarth(19);
+        pc.getResistance().addFire(23);
+        pc.getResistance().addSpecialPierce(eKind.SPIRIT, 126);
+        pc.setElfAttr(1);
+        pc.addDg(7);
+        for (int id : new int[]{INSIGHT, RESIST_ELEMENTAL, ELEMENTAL_PROTECTION}) {
+            verify(CSkillInfo.isManaged(id), "common stat registration", id);
+            BuffRestoreRegistry.find(id).restore(pc, id, 0, 38, new int[39]);
+            pc.setSkillEffect(id, 38_000);
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "cast after restore", id);
+        }
+        verify(pc.getAbility().getAddedCon() == 7 && pc.getAbility().getAddedWis() == 5,
+                "insight does not stack", INSIGHT);
+        verify(pc.getResistance().getEarth() == 79 && pc.getResistance().getFire() == 33
+                && pc.getResistance().getSpecialPierce(eKind.SPIRIT) == 127,
+                "element and pierce capture", ELEMENTAL_PROTECTION);
+        pc.setElfAttr(2);
+        pc.removeSkillEffect(ELEMENTAL_PROTECTION);
+        verify(pc.getResistance().getEarth() == 29 && pc.getResistance().getFire() == 33
+                && pc.getResistance().getSpecialPierce(eKind.SPIRIT) == 126,
+                "end removes original element even after attribute changes", ELEMENTAL_PROTECTION);
+        pc.removeSkillEffect(RESIST_ELEMENTAL);
+        pc.removeSkillEffect(INSIGHT);
+        verify(pc.getAbility().getAddedCon() == 6 && pc.getAbility().getAddedWis() == 4
+                && pc.getResistance().getEarth() == 19 && pc.getResistance().getFire() == 23,
+                "common stats preserve legacy sources", INSIGHT);
+        int baselineDg = pc.getDg();
+        for (int id : new int[]{MIRROR_IMAGE, UNCANNY_DODGE}) {
+            verify(CSkillInfo.isManaged(id), "managed dodge registration", id);
+            CSkillInfo.pumpStartFromOwner(pc, id, 38);
+            CSkillInfo.pumpStartFromOwner(pc, id, 38);
+        }
+        verify(pc.getDg() == baselineDg + 60, "independent dodge sources", MIRROR_IMAGE);
+        pc.removeSkillEffect(MIRROR_IMAGE);
+        verify(pc.getDg() == baselineDg + 30, "other dodge source stays", UNCANNY_DODGE);
+        pc.removeSkillEffect(UNCANNY_DODGE);
+        verify(pc.getDg() == baselineDg, "base dodge restored", UNCANNY_DODGE);
     }
 
     private static void verifyMeleeBuffs() {

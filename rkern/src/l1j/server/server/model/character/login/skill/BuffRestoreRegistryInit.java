@@ -353,11 +353,7 @@ public final class BuffRestoreRegistryInit {
         // ================= 18. INSIGHT / PANIC / HORROR_OF_DEATH =================
         BuffRestoreRegistry.register(L1SkillId.INSIGHT, (pc, sid, polyId, rt, icon) -> {
             icon[21] = rt / 16;
-            pc.getAbility().addAddedStr((byte) 1);
-            pc.getAbility().addAddedDex((byte) 1);
-            pc.getAbility().addAddedCon((byte) 1);
-            pc.getAbility().addAddedInt((byte) 1);
-            pc.getAbility().addAddedWis((byte) 1);
+            CSkillInfo.applyFixedModifierFromOwner(pc, sid);
             pc.resetBaseMr();
         });
         BuffRestoreRegistry.register(L1SkillId.PANIC, (pc, sid, polyId, rt, icon) -> {
@@ -396,16 +392,11 @@ public final class BuffRestoreRegistryInit {
             SC_ElfIcon.send(pc, rt / 16, 0, 0, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.RESIST_ELEMENTAL, (pc, sid, polyId, rt, icon) -> {
-            pc.getResistance().addAllNaturalResistance(10);
+            CSkillInfo.applyFixedModifierFromOwner(pc, sid);
             SC_ElfIcon.send(pc, 0, 0, rt / 16, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.ELEMENTAL_PROTECTION, (pc, sid, polyId, rt, icon) -> {
-            int attr = pc.getElfAttr();
-            if (attr == 1)      pc.getResistance().addEarth(50);
-            else if (attr == 2) pc.getResistance().addFire(50);
-            else if (attr == 4) pc.getResistance().addWater(50);
-            else if (attr == 8) pc.getResistance().addWind(50);
-            pc.getResistance().addSpecialPierce(eKind.SPIRIT, 3);
+            CSkillInfo.applyFixedModifierFromOwner(pc, sid);
             SC_ElfIcon.send(pc, 0, 0, 0, rt / 16);
         });
 

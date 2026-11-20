@@ -204,7 +204,6 @@ public final class SkillHandlers {
 		register(L1SkillId.HASTE, SkillHandlers::onHaste);
 		register(L1SkillId.TITANL_RISING, SkillHandlers::onTitanRising);
 
-		register(L1SkillId.UNCANNY_DODGE, SkillHandlers::onUncannyDodge);
 		register(L1SkillId.FEAR, SkillHandlers::onFear);
 
 		// 은신몹 싱크 해제 계열
@@ -301,13 +300,11 @@ public final class SkillHandlers {
 		register(L1SkillId.DANCING_BLADES, SkillHandlers::onDancingBlades);
 		register(L1SkillId.BURNING_WEAPON, SkillHandlers::onBurningWeapon);
 
-		register(L1SkillId.MIRROR_IMAGE, SkillHandlers::onMirrorImage);
 		register(L1SkillId.AQUA_SHOT, SkillHandlers::onAquaShot);
 		register(L1SkillId.STORM_EYE, SkillHandlers::onStormEye);
 		register(L1SkillId.STORM_SHOT, SkillHandlers::onStormShot);
 
 		register(L1SkillId.BERSERKERS, SkillHandlers::onBerserkers);
-		register(L1SkillId.INSIGHT, SkillHandlers::onInsight);
 
 		register(L1SkillId.BOUNCE_ATTACK, SkillHandlers::onBounceAttack);
 
@@ -329,10 +326,8 @@ public final class SkillHandlers {
 		register(10057, SkillHandlers::onTeleportFront5);
 
 		register(L1SkillId.EARTH_GUARDIAN, SkillHandlers::onEarthGuardian);
-		register(L1SkillId.RESIST_ELEMENTAL, SkillHandlers::onResistElemental);
 		register(L1SkillId.BODY_TO_MIND, SkillHandlers::onBodyToMind);
 		register(L1SkillId.BLOODY_SOUL, SkillHandlers::onBloodySoul);
-		register(L1SkillId.ELEMENTAL_PROTECTION, SkillHandlers::onElementalProtection);
 		register(L1SkillId.INVISIBILITY, SkillHandlers::onInvisibilityWithCastleTowerBlock);
 		register(L1SkillId.BLIND_HIDING, SkillHandlers::onInvisibilityWithCastleTowerBlock);
 		register(L1SkillId.정상의가호, SkillHandlers::onNormalBlessingDR);
@@ -1860,12 +1855,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onUncannyDodge(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha instanceof L1PcInstance) {
-			((L1PcInstance) cha).addDg(30);
-		}
-		return HandlerResult.HANDLED;
-	}
+
 
 	private static HandlerResult onFear(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		if (cha instanceof L1PcInstance) {
@@ -2978,13 +2968,16 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onResistElemental(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.getResistance().addAllNaturalResistance(10);
-		SC_OwnCharAttrDef.send(pc);
-		return HandlerResult.HANDLED;
+	static void startCommonStatBuff(L1PcInstance pc, int skillId, int duration) {
+		if (duration <= 0) return;
+		// Replacing the recorded source is idempotent; the common timer keeps its refresh policy.
+		CSkillInfo.applyFixedModifierFromOwner(pc, skillId);
+		applySkillEffectSec(pc, skillId, duration);
+		switch (skillId) {
+		case L1SkillId.RESIST_ELEMENTAL, L1SkillId.ELEMENTAL_PROTECTION -> SC_OwnCharAttrDef.send(pc);
+		case L1SkillId.INSIGHT -> pc.resetBaseMr();
+		default -> { }
+		}
 	}
 
 	private static HandlerResult onBodyToMind(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -3003,20 +2996,7 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onElementalProtection(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
 
-		int attr = pc.getElfAttr();
-		if (attr == 1) pc.getResistance().addEarth(50);
-		else if (attr == 2) pc.getResistance().addFire(50);
-		else if (attr == 4) pc.getResistance().addWater(50);
-		else if (attr == 8) pc.getResistance().addWind(50);
-
-		pc.getResistance().addSpecialPierce(eKind.SPIRIT, 3);
-		SC_OwnCharAttrDef.send(pc);
-		return HandlerResult.HANDLED;
-	}
 
 	private static HandlerResult onInvisibilityWithCastleTowerBlock(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
@@ -3116,11 +3096,7 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onMirrorImage(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		((L1PcInstance) cha).addDg(30);
-		return HandlerResult.HANDLED;
-	}
+
 
 	private static HandlerResult onAquaShot(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
@@ -3161,19 +3137,7 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onInsight(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getAbility().addAddedStr((byte) 1);
-		pc.getAbility().addAddedDex((byte) 1);
-		pc.getAbility().addAddedCon((byte) 1);
-		pc.getAbility().addAddedInt((byte) 1);
-		pc.getAbility().addAddedWis((byte) 1);
-		pc.resetBaseMr();
-
-		return HandlerResult.HANDLED;
-	}
 
 	static void startClearMind(L1PcInstance pc, int skillId, int durSec) {
 		if (durSec <= 0) return;

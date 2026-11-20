@@ -2,7 +2,6 @@ package l1j.server.server.model.character.skill;
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 
 /**
@@ -54,12 +53,15 @@ public final class SkillEffectContainer {
 		int pvpDamage, pvpReduction;
 		long specialResistance;
 
-		// Each byte is a separate bonus. Current per-byte totals are at most 10.
-		int primaryStats, elementalResistance;
+		// Independent unsigned bytes: STR, DEX, INT, WIS, CON.
+		long primaryStats;
+		// Water, wind, earth, fire; current migrated totals are <= 65 per element.
+		int elementalResistance;
 
 		void initializeSkillMod() {
 			hp = mp = ac = mr = er = dg = meleeHit = meleeDamage = rangedDamage = sp = 0;
-			primaryStats = elementalResistance = 0;
+			primaryStats = 0L;
+			elementalResistance = 0;
 			carryLimit = armorReduction = 0;
 			pvpDamage = pvpReduction = 0;
 			specialResistance = 0;

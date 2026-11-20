@@ -96,7 +96,9 @@ public class Resistance {
 
     public int getSpecialPierce(eKind kind) {
         if (kind == null) return 0; 
-        return _specialPierce[kind.value()];
+        return kind == eKind.SPIRIT
+                ? checkRange(_specialPierce[kind.value()] + (int) ((skillSpecialResistance >>> 40) & 0xff))
+                : _specialPierce[kind.value()];
     }
 
     public int getEffectedMrBySkill() {
@@ -125,7 +127,7 @@ public class Resistance {
 
     // Signed 16-bit values, PvP damage in the low half and reduction in the high half.
     private volatile int skillPvp;
-    // One nonnegative byte per eKind, starting with ABILITY.
+    // Five resistance bytes, starting with ABILITY; byte 5 holds managed spirit pierce.
     private volatile long skillSpecialResistance;
 
     public void setSkillCombatModifiers(int pvp, long specialResistance, boolean notify) {

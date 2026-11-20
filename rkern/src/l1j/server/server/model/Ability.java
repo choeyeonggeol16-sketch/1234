@@ -41,18 +41,19 @@ public class Ability {
 	private byte baseWis = 0;
 	private byte addedWis = 0;
 
-	// From least to most significant byte: STR, DEX, INT, WIS.
-	private volatile int skillPrimaryStats;
+	// From least to most significant byte: STR, DEX, INT, WIS, CON.
+	private volatile long skillPrimaryStats;
 
-	void setSkillPrimaryStats(int value, boolean notify) {
-		final int changed = skillPrimaryStats ^ value;
+	void setSkillPrimaryStats(long value, boolean notify) {
+		final long changed = skillPrimaryStats ^ value;
 		if (changed == 0) return;
 		skillPrimaryStats = value;
 		if (!notify) return;
 		if ((changed & 0x000000ff) != 0) notifyAddedStr();
 		if ((changed & 0x0000ff00) != 0) notifyAddedDex();
+		if ((changed & 0xff00000000L) != 0) notifyAddedCon();
 		if ((changed & 0x00ff0000) != 0) notifyAddedInt();
-		if ((changed & 0xff000000) != 0) notifyAddedWis();
+		if ((changed & 0xff000000L) != 0) notifyAddedWis();
 	}
 
 	private L1Character character;
@@ -220,18 +221,18 @@ public class Ability {
 	}
 
 	public byte getAddedCon() {
-		return addedCon;
+		return checkRange(addedCon + (byte) (skillPrimaryStats >>> 32), LIMIT_MINUS_MIN);
 	}
 
 	public void addAddedCon(int i) {
 		addedCon = checkRange(addedCon + i, LIMIT_MINUS_MIN);
-		 if (character instanceof L1PcInstance) {
-	            L1PcInstance pc = (L1PcInstance) character;
-	            if (pc.getNetConnection() != null) {
-	                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Con);
-	                SC_Weight.send(pc);
-	            }
-	        }	
+		notifyAddedCon();
+	}
+
+	private void notifyAddedCon() {
+		if (!(character instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
+		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Con);
+		SC_Weight.send(pc);
 	}
 
 	public byte getTotalCon() {

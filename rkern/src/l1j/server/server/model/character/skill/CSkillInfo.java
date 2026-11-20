@@ -66,6 +66,11 @@ public final class CSkillInfo {
         registerManaged(CLEAR_MIND, SkillHandlers::startClearMind, PRIMARY_STATS);
         registerManaged(PHYSICAL_ENCHANT_STR, SkillHandlers::startPhysicalEnchant, PRIMARY_STATS);
         registerManaged(PHYSICAL_ENCHANT_DEX, SkillHandlers::startPhysicalEnchant, PRIMARY_STATS);
+        registerManaged(RESIST_ELEMENTAL, SkillHandlers::startCommonStatBuff, ELEMENTAL_RESISTANCE);
+        registerManaged(ELEMENTAL_PROTECTION, SkillHandlers::startCommonStatBuff, ELEMENTAL_RESISTANCE, SPIRIT_PIERCE);
+        registerManaged(INSIGHT, SkillHandlers::startCommonStatBuff, PRIMARY_STATS);
+        registerManaged(MIRROR_IMAGE, SkillHandlers::startCommonStatBuff, DG);
+        registerManaged(UNCANNY_DODGE, SkillHandlers::startCommonStatBuff, DG);
         frozen = true;
     }
 
@@ -183,6 +188,16 @@ public final class CSkillInfo {
             case CLEAR_MIND -> 0x00010101;
             case PHYSICAL_ENCHANT_STR -> 5;
             case PHYSICAL_ENCHANT_DEX -> 5 << 8;
+            case RESIST_ELEMENTAL -> 0x0a0a0a0a;
+            case ELEMENTAL_PROTECTION -> (3L << 32) | switch (target.getElfAttr()) {
+                case 1 -> 50L << 16;
+                case 2 -> 50L << 24;
+                case 4 -> 50L;
+                case 8 -> 50L << 8;
+                default -> 0L;
+            };
+            case INSIGHT -> 0x0101010101L;
+            case MIRROR_IMAGE, UNCANNY_DODGE -> 30;
             default -> throw new IllegalArgumentException("No fixed modifier for " + skillId);
         };
         target.applySkillModifierFromOwner(skillId, captured);

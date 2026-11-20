@@ -37,7 +37,7 @@ interface CSkillEffect {
             out.mr += (int) (captured >>> 32);
         }},
         PRIMARY_STATS { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            out.primaryStats += (int) captured;
+            out.primaryStats += captured;
         }},
         ELEMENTAL_RESISTANCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.elementalResistance += (int) captured;
@@ -71,6 +71,10 @@ interface CSkillEffect {
         }},
         SPECIAL_RESISTANCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.specialResistance += captured;
+        }},
+        SPIRIT_PIERCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            // The five resistance bytes occupy bits 0..39; spirit pierce uses byte 5.
+            out.specialResistance += (captured >>> 32) << 40;
         }};
 
         @Override public boolean checkPumpCondition(L1Character target) { return target instanceof L1PcInstance; }
