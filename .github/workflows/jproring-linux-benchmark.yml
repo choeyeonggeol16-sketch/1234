@@ -1,0 +1,32 @@
+name: JProRing Linux loopback benchmark
+
+on:
+  push:
+    branches:
+      - rkern/jproring-linux-benchmark-20261120
+    paths:
+      - .github/workflows/jproring-linux-benchmark.yml
+      - rkern/docs/jproring_linux_benchmark_20261120/*.java
+      - rkern/docs/jproring_linux_benchmark_20261120/run.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            rkern/src/l1j/server/server/model/network/buffer
+            rkern/src/l1j/server/server/model/network/codec
+            rkern/src/l1j/server/server/model/network/core/transport/selector
+            rkern/docs/jproring_linux_benchmark_20261120
+      - name: Measure all TCP backends
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 rkern/docs/jproring_linux_benchmark_20261120/run.py
