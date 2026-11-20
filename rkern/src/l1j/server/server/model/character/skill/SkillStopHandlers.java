@@ -1198,7 +1198,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offResistMagic(L1Character cha, int skillId) {
-		cha.getResistance().addMr(-10);
+		cha.removeSkillModifierFromOwner(skillId);
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_SPMR.send(pc);
@@ -2234,7 +2234,7 @@ public final class SkillStopHandlers {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
 
-	        pc.addEffectedER(-10);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
 
 	        sendEndNoti(pc, L1SkillId.SHINING_ARMOR, 9483, true);
@@ -2432,7 +2432,7 @@ public final class SkillStopHandlers {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
 
-	        pc.addEffectedER(-5);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
 
 	        sendEndNoti(pc, L1SkillId.FREEZEENG_ARMOR, 9490, true);

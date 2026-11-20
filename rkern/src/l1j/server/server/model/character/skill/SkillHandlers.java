@@ -133,7 +133,6 @@ public final class SkillHandlers {
 
 		// buffs (이관)
 
-		register(L1SkillId.SHINING_ARMOR, SkillHandlers::onShiningArmor);
 		register(L1SkillId.MAJESTY, SkillHandlers::onMajesty);
 		register(L1SkillId.ABSOLUTE_BARRIER, SkillHandlers::onAbsoluteBarrier);
 		register(L1SkillId.REDUCTION_ARMOR, SkillHandlers::onReductionArmor);
@@ -156,7 +155,6 @@ public final class SkillHandlers {
 
 		register(L1SkillId.CYCLONE, SkillHandlers::onCyclone);
 		register(L1SkillId.FOCUS_SPRITS, SkillHandlers::onFocusSpirits);
-		register(L1SkillId.FREEZEENG_ARMOR, SkillHandlers::onFreezeengArmor);
 
 		register(L1SkillId.LUCIFER, SkillHandlers::onLucifer);
 		register(L1SkillId.BLOW_ATTACK, SkillHandlers::onBlowAttack);
@@ -186,7 +184,6 @@ public final class SkillHandlers {
 		register(L1SkillId.IMPACT, SkillHandlers::onImpact);
 		register(L1SkillId.GRACE_AVATAR, SkillHandlers::onGraceAvatar);
 
-		register(L1SkillId.RESIST_MAGIC, SkillHandlers::onResistMagic);
 		register(L1SkillId.CLEAR_MIND, SkillHandlers::onClearMind);
 		register(L1SkillId.GREATER_HASTE, SkillHandlers::onGreaterHaste);
 		register(L1SkillId.HOLY_WALK, SkillHandlers::onHolyWalk);
@@ -2905,21 +2902,11 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onResistMagic(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		// 재시전 누적 방지(종료 원복이 확실하지 않은 서버들에서 특히 중요)
-		if (pc.hasSkillEffect(L1SkillId.RESIST_MAGIC)) {
-			pc.removeSkillEffect(L1SkillId.RESIST_MAGIC);
-		}
-
-		pc.getResistance().addMr(10);
+	static void startResistMagic(L1PcInstance pc, int skillId, int duration) {
+		resetEffect(pc, skillId);
+		CSkillInfo.applyFixedModifierFromOwner(pc, skillId);
 		SC_SPMR.send(pc);
-
-		final int durSec = durationSecForBuff(su, L1SkillId.RESIST_MAGIC);
-		applySkillEffectSec(pc, L1SkillId.RESIST_MAGIC, durSec);
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
 	private static HandlerResult onGodBuff(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -4292,16 +4279,6 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onFreezeengArmor(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		// ER+5, icon=9490, tooltip/new=5889, end 없음
-		return handlePcOnlyErBuff(su, cha, L1SkillId.FREEZEENG_ARMOR, 5, 9490, 5889, 5889, 0);
-	}
-
-	private static HandlerResult onShiningArmor(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		// ER+10, icon=9483, tooltip/new=5892
-		return handlePcOnlyErBuff(su, cha, L1SkillId.SHINING_ARMOR, 10, 9483, 0, 5892, 5892, 0, true);
-	}
-
 	private static HandlerResult onMajesty(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		// icon=9518, tooltip/new=5893
 		return handlePcOnlyNoti(su, cha, L1SkillId.MAJESTY, 9518, 0, 5893, 5893, 0, true);
@@ -4334,26 +4311,21 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 
 	static void startEvasionBuff(L1PcInstance pc, int skillId, int duration) {
 		resetEffect(pc, skillId);
+		CSkillInfo.applyFixedModifierFromOwner(pc, skillId);
+		SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+		applySkillEffectSec(pc, skillId, duration);
+
 		switch (skillId) {
-		case L1SkillId.DRESS_EVASION:
-			applyEvasionBuff(pc, skillId, duration, 18, 1608, 970, 2176);
-			break;
-		case L1SkillId.AQUA_PROTECTER:
-			applyEvasionBuff(pc, skillId, duration, 5, 2342, 1085, 2201);
-			break;
-		case L1SkillId.SOLID_CARRIAGE:
-			applyEvasionBuff(pc, skillId, duration, 15, 2351, 1087, 2203);
-			break;
-		default:
-			throw new IllegalArgumentException("Unknown evasion buff " + skillId);
+		case L1SkillId.DRESS_EVASION -> sendEvasionIcon(pc, skillId, duration, 1608, 970, 2176);
+		case L1SkillId.AQUA_PROTECTER -> sendEvasionIcon(pc, skillId, duration, 2342, 1085, 2201);
+		case L1SkillId.SOLID_CARRIAGE -> sendEvasionIcon(pc, skillId, duration, 2351, 1087, 2203);
+		case L1SkillId.FREEZEENG_ARMOR -> sendEvasionIcon(pc, skillId, duration, 9490, 5889, 0);
+		case L1SkillId.SHINING_ARMOR -> sendEvasionIcon(pc, skillId, duration, 9483, 5892, 0);
 		}
 	}
 
-	private static void applyEvasionBuff(L1PcInstance pc, int skillId, int duration,
-			int bonus, int icon, int statusMessage, int endMessage) {
-		pc.applySkillModifierFromOwner(skillId, bonus);
-		SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
-		applySkillEffectSec(pc, skillId, duration);
+	private static void sendEvasionIcon(L1PcInstance pc, int skillId, int duration,
+			int icon, int statusMessage, int endMessage) {
 		sendRestatBuffNoti(pc, skillId, duration, icon, icon, 0, statusMessage, statusMessage, endMessage, true);
 	}
 
@@ -4422,14 +4394,6 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 	private static void refreshPartyStatusIfNeeded(L1PcInstance pc) {
 		if (pc != null && pc.isInParty() && pc.getParty() != null) {
 			pc.getParty().refreshPartyMemberStatus(pc);
-		}
-	}
-
-	private static void addERAndNotify(final L1PcInstance pc, final int erDelta) {
-		if (pc == null) return;
-		if (erDelta != 0) {
-			pc.addEffectedER(erDelta);
-			SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
 		}
 	}
 
@@ -4504,32 +4468,6 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult handlePcOnlyErBuff(
-			final L1SkillUse su,
-			final L1Character cha,
-			final int skillId,
-			final int erDelta,
-			final int iconId,
-			final int iconPriority,
-			final int tooltipStrId,
-			final int newStrId,
-			final int endStrId,
-			final boolean isGood
-			) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		resetEffect(pc, skillId);
-
-		addERAndNotify(pc, erDelta);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		sendRestatBuffNoti(pc, skillId, durSec, iconId, iconId, iconPriority, tooltipStrId, newStrId, endStrId, isGood);
-		return HandlerResult.HANDLED;
-	}
-
 	private static void sendRestatBuffNoti(
 			final L1PcInstance pc,
 			final int spellId,
@@ -4595,18 +4533,7 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		sendRestatBuffNoti(pc, spellId, durSec, onIconId, offIconId, iconPriority, tooltipStrId, newStrId, endStrId, isGood);
 	}
 
-	private static HandlerResult handlePcOnlyErBuff(
-			final L1SkillUse su,
-			final L1Character cha,
-			final int skillId,
-			final int erDelta,
-			final int iconId,
-			final int tooltipStrId,
-			final int newStrId,
-			final int endStrId) {
-		return handlePcOnlyErBuff(su, cha, skillId, erDelta, iconId, 0, tooltipStrId, newStrId, endStrId, true);
-	}
-	private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, final int durSec) {
+private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, final int durSec) {
 		if (pc == null) return;
 
 		SC_IvenBuffIcon.send(pc, skillId, true, 0, durSec);

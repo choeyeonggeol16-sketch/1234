@@ -33,7 +33,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 47,WEAKNESS,onWeaknessLike,existing_cast,offWeaknessFamily
 48,BLESS_WEAPON,onBlessWeapon,existing_cast,offBlessWeapon
 49,HEAL_ALL,onHealFamily,instant,
-50,FREEZEENG_ARMOR,onFreezeengArmor,existing_cast,offFreezeengArmor
+50,FREEZEENG_ARMOR,startEvasionBuff,managed_pump,offFreezeengArmor
 51,SUMMON_MONSTER,onSummonMonster,existing_cast,
 52,HOLY_WALK,onHolyWalk,existing_cast,offBraveSpeedReset
 54,GREATER_HASTE,onGreaterHaste,existing_cast,offHasteFamily
@@ -74,12 +74,12 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 113,TRUE_TARGET,onTrueTarget,existing_cast,offTrueTarget
 114,GLOWING_AURA,onGlowingWeapon,existing_cast,offGlowingWeapon
 115,SHINING_AURA,startShiningShield,managed_pump,offShiningShield
-116,SHINING_ARMOR,onShiningArmor,existing_cast,offShiningArmor
+116,SHINING_ARMOR,startEvasionBuff,managed_pump,offShiningArmor
 117,BRAVE_AURA,onBraveMental,existing_cast,offBraveMental
 118,MAJESTY,onMajesty,existing_cast,offMajesty
 122,GRACE_AVATAR,onGraceAvatar,existing_cast,offGraceAvatar
 123,EMPIRE,onEmpire,existing_cast,offStunControl
-129,RESIST_MAGIC,onResistMagic,existing_cast,offResistMagic
+129,RESIST_MAGIC,startResistMagic,managed_pump,offResistMagic
 130,BODY_TO_MIND,onBodyToMind,existing_cast,
 131,TELEPORT_TO_MATHER,onTeleportToMather,existing_cast,
 132,TRIPLE_ARROW,onTripleArrow,existing_cast,

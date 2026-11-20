@@ -48,6 +48,9 @@ public final class CSkillInfo {
         registerManaged(SOLID_CARRIAGE, SkillHandlers::startEvasionBuff, ER);
         registerManaged(SCALES_WATER_DRAGON, SkillHandlers::startScalesEvasion, ER);
         registerManaged(SCALES_RINDVIOR_DRAGON, SkillHandlers::startScalesEvasion, DG);
+        registerManaged(FREEZEENG_ARMOR, SkillHandlers::startEvasionBuff, ER);
+        registerManaged(SHINING_ARMOR, SkillHandlers::startEvasionBuff, ER);
+        registerManaged(RESIST_MAGIC, SkillHandlers::startResistMagic, MR);
         frozen = true;
     }
 
@@ -148,6 +151,19 @@ public final class CSkillInfo {
     public static boolean isManaged(int skillId) {
         CSkillInfo info = get(skillId);
         return info != null && info.start != null;
+    }
+
+    /** Shared stat application for casts and login restores with distinct timer and packet rules. */
+    public static void applyFixedModifierFromOwner(L1PcInstance target, int skillId) {
+        final long captured = switch (skillId) {
+            case AQUA_PROTECTER, FREEZEENG_ARMOR -> 5;
+            case SHINING_ARMOR -> 10;
+            case SOLID_CARRIAGE -> 15;
+            case DRESS_EVASION -> 18;
+            case RESIST_MAGIC -> 10L << 32;
+            default -> throw new IllegalArgumentException("No fixed modifier for " + skillId);
+        };
+        target.applySkillModifierFromOwner(skillId, captured);
     }
 
     void pump(L1Character target, long captured, SkillEffectContainer.SkillModifiers modifiers) {

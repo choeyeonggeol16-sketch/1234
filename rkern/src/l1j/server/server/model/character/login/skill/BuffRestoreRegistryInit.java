@@ -7,6 +7,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
 import l1j.server.MJPassiveSkill.MJPassiveID;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_ElfIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
@@ -391,7 +392,7 @@ public final class BuffRestoreRegistryInit {
 
         // ================= 20. RESIST 계열 =================
         BuffRestoreRegistry.register(L1SkillId.RESIST_MAGIC, (pc, sid, polyId, rt, icon) -> {
-            pc.getResistance().addMr(10);
+            CSkillInfo.applyFixedModifierFromOwner(pc, sid);
             SC_ElfIcon.send(pc, rt / 16, 0, 0, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.RESIST_ELEMENTAL, (pc, sid, polyId, rt, icon) -> {
@@ -552,7 +553,7 @@ public final class BuffRestoreRegistryInit {
 
         // ================= 29. FREEZEENG_ARMOR =================
         BuffRestoreRegistry.register(L1SkillId.FREEZEENG_ARMOR, (pc, sid, polyId, rt, icon) -> {
-            pc.addEffectedER(5);
+            CSkillInfo.applyFixedModifierFromOwner(pc, sid);
             SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
             sendScBuff(pc, L1SkillId.FREEZEENG_ARMOR, rt, 9490, 5889);
         });
@@ -594,7 +595,7 @@ public final class BuffRestoreRegistryInit {
         BuffRestoreRegistry.register(L1SkillId.MAJESTY,
                 (pc, sid, polyId, rt, icon) -> sendScBuff(pc, L1SkillId.MAJESTY, rt, 9518, 5893));
         BuffRestoreRegistry.register(L1SkillId.SHINING_ARMOR, (pc, sid, polyId, rt, icon) -> {
-            pc.addEffectedER(10);
+            CSkillInfo.applyFixedModifierFromOwner(pc, sid);
             SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
             sendScBuff(pc, L1SkillId.SHINING_ARMOR, rt, 9483, 5892);
         });

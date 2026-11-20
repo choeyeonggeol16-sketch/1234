@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.login.skill.BuffRestoreRegistry;
+import l1j.server.server.model.character.login.skill.BuffRestoreRegistryInit;
 
 import static l1j.server.server.model.character.skill.L1SkillId.*;
 
@@ -60,6 +62,7 @@ public final class TestSkillEffectLifecycle {
             verifyIndependentModifiers();
             verifyInventoryAndDressBuffs();
             verifyEvasionBuffs();
+            verifyRestoredBuffs();
             verifyLifetimeRefreshAndSleep();
             verifyOwnerDispatchAndExpiry();
             verifyRegistry();
@@ -187,6 +190,35 @@ public final class TestSkillEffectLifecycle {
         for (int id : ids) pc.removeSkillEffect(id);
         verify(pc.getTotalER() == baselineEr && pc.getDg() == baselineDg
                 && pc.getEffectedER() == 7, "removal preserves equipment and other evasion", SCALES_RINDVIOR_DRAGON);
+    }
+
+    private static void verifyRestoredBuffs() {
+        BuffRestoreRegistryInit.init();
+        Player pc = new Player();
+        pc.addEffectedER(7);
+        pc.getResistance().addMr(30);
+        int baseMr = pc.getResistance().getMr();
+        int[] ids = {FREEZEENG_ARMOR, SHINING_ARMOR, RESIST_MAGIC};
+        int[] icons = new int[39];
+        for (int id : ids) {
+            verify(CSkillInfo.isManaged(id), "restored managed registration", id);
+            BuffRestoreRegistry.find(id).restore(pc, id, 0, 38, icons);
+            pc.setSkillEffect(id, 38_000);
+        }
+        verify(pc.getEffectedER() == 22 && pc.getResistance().getMr() == baseMr + 10
+                && pc.getResistance().getAddedMr() == 30, "restore installs distinct sources", RESIST_MAGIC);
+        for (int id : ids) {
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "recast after restore", id);
+        }
+        verify(pc.getEffectedER() == 22 && pc.getResistance().getMr() == baseMr + 10,
+                "recast replaces restored sources", RESIST_MAGIC);
+        pc.removeSkillEffect(FREEZEENG_ARMOR);
+        verify(pc.getEffectedER() == 17, "one restored evasion source remains", SHINING_ARMOR);
+        pc.removeSkillEffect(SHINING_ARMOR);
+        pc.removeSkillEffect(RESIST_MAGIC);
+        verify(pc.getEffectedER() == 7 && pc.getResistance().getMr() == baseMr,
+                "restored sources leave baseline intact", RESIST_MAGIC);
     }
 
     private static void verifyIndependentModifiers() {
