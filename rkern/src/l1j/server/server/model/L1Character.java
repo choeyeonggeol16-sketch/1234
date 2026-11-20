@@ -84,8 +84,8 @@ public class L1Character extends L1Object {
 	private int _trueBowDmgup = 0;
 	private int _hitup = 0;
 	private int _trueHitup = 0;
-	// Melee hit in the low half, melee damage in the high half.
-	private volatile int pumpedMelee;
+	// Signed 16-bit values from low to high: melee hit, melee damage, ranged damage.
+	private volatile long pumpedWeapon;
 	private int _bowHitup = 0;
 	private int _trueBowHitup = 0;
 
@@ -722,7 +722,7 @@ public class L1Character extends L1Object {
 	private volatile long pumpedHpMp;
 
 	public void setPumpedSkillModifiers(int hp, int mp, int ac, int mr,
-			int primaryStats, int elementalResistance, int evasion, int melee, boolean notify) {
+			int primaryStats, int elementalResistance, int evasion, long weapon, int sp, boolean notify) {
 		final long previous = pumpedHpMp;
 		final long updated = ((long) mp << 32) | Integer.toUnsignedLong(hp);
 		if (previous != updated) {
@@ -735,7 +735,8 @@ public class L1Character extends L1Object {
 		getAbility().setSkillPrimaryStats(primaryStats, notify);
 		getResistance().setSkillElemental(elementalResistance);
 		if (pumpedEvasion != evasion) pumpedEvasion = evasion;
-		if (pumpedMelee != melee) pumpedMelee = melee;
+		if (pumpedWeapon != weapon) pumpedWeapon = weapon;
+		getAbility().setSkillSp(sp);
 	}
 
 	public int getMaxHp() {
@@ -797,7 +798,7 @@ public class L1Character extends L1Object {
 	}
 
 	public int getDmgup() {
-		final int effect = pumpedMelee >> 16;
+		final int effect = (short) (pumpedWeapon >>> 16);
 		return effect == 0 ? _dmgup : Math.clamp((long) _trueDmgup + effect, -128, 127);
 	}
 
@@ -813,7 +814,8 @@ public class L1Character extends L1Object {
 	}
 
 	public int getBowDmgup() {
-		return _bowDmgup;
+		final int effect = (short) (pumpedWeapon >>> 32);
+		return effect == 0 ? _bowDmgup : Math.clamp((long) _trueBowDmgup + effect, -128, 127);
 	}
 
 	public void addBowDmgup(int i) {
@@ -828,7 +830,7 @@ public class L1Character extends L1Object {
 	}
 
 	public int getHitup() {
-		final int effect = (short) pumpedMelee;
+		final int effect = (short) pumpedWeapon;
 		return effect == 0 ? _hitup : Math.clamp((long) _trueHitup + effect, -128, 127);
 	}
 

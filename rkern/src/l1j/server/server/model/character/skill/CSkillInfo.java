@@ -54,6 +54,9 @@ public final class CSkillInfo {
         registerManaged(GLOWING_AURA, SkillHandlers::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);
         registerManaged(IllUSION_OGRE, SkillHandlers::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);
         registerManaged(ENCHANT_ACURUCY, SkillHandlers::startMeleeBuff, MELEE_HIT);
+        registerManaged(N_BUFF_DMG, SkillHandlers::startInventoryDamageBuff, MELEE_DAMAGE, RANGED_DAMAGE);
+        registerManaged(N_BUFF_SP, SkillHandlers::startSpellPowerBuff, SP);
+        registerManaged(IllUSION_LICH, SkillHandlers::startSpellPowerBuff, SP);
         frozen = true;
     }
 

@@ -64,6 +64,7 @@ public final class TestSkillEffectLifecycle {
             verifyEvasionBuffs();
             verifyRestoredBuffs();
             verifyMeleeBuffs();
+            verifyDamageAndSpellPower();
             verifyLifetimeRefreshAndSleep();
             verifyOwnerDispatchAndExpiry();
             verifyRegistry();
@@ -240,6 +241,28 @@ public final class TestSkillEffectLifecycle {
         verify(pc.getHitup() == 125 && pc.getDmgup() == 120, "existing hit change retained", ENCHANT_ACURUCY);
         pc.removeSkillEffect(ENCHANT_ACURUCY);
         verify(pc.getHitup() == 120 && pc.getDmgup() == 120, "melee baseline retained", ENCHANT_ACURUCY);
+    }
+
+    private static void verifyDamageAndSpellPower() {
+        Player pc = new Player();
+        pc.addDmgup(4);
+        pc.addBowDmgup(6);
+        pc.getAbility().addSp(3);
+        int sp = pc.getAbility().getSp();
+        for (int id : new int[]{N_BUFF_DMG, N_BUFF_SP, IllUSION_LICH}) {
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "start", id);
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "recast", id);
+        }
+        verify(pc.getDmgup() == 5 && pc.getBowDmgup() == 7 && pc.getAbility().getSp() == sp + 5,
+                "weapon damage and spell power", N_BUFF_DMG);
+        pc.removeSkillEffect(N_BUFF_SP);
+        verify(pc.getAbility().getSp() == sp + 4, "keeps illusion SP", IllUSION_LICH);
+        pc.removeSkillEffect(IllUSION_LICH);
+        pc.removeSkillEffect(N_BUFF_DMG);
+        verify(pc.getDmgup() == 4 && pc.getBowDmgup() == 6 && pc.getAbility().getSp() == sp,
+                "preserves baseline weapon damage and SP", N_BUFF_DMG);
     }
 
     private static void verifyIndependentModifiers() {

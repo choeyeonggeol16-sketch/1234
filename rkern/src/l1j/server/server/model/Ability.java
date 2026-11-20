@@ -93,13 +93,18 @@ public class Ability {
 	}
 
 	private int sp; // sp
+	private volatile int skillSp;
+
+	void setSkillSp(int value) {
+		if (skillSp != value) skillSp = value;
+	}
 
 	public void addSp(int i) {
 		sp += i;
 	}
 
 	public int getSp() {
-		return getTrueSp() + sp;
+		return getTrueSp() + sp + skillSp;
 	}
 	
 	public int getTrueSp() {

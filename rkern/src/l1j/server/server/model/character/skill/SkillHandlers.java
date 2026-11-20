@@ -149,7 +149,6 @@ public final class SkillHandlers {
 		register(L1SkillId.EAGGLE_EYE, SkillHandlers::onEaggleEye);
 
 
-		register(L1SkillId.IllUSION_LICH, SkillHandlers::onIllusionLich);
 		register(L1SkillId.IllUSION_AVATAR, SkillHandlers::onIllusionAvatar);
 
 		register(L1SkillId.CYCLONE, SkillHandlers::onCyclone);
@@ -390,9 +389,7 @@ public final class SkillHandlers {
 		// ===== N_BUFF =====
 		register(L1SkillId.N_BUFF_PVP_DMG, SkillHandlers::onNBuffPvpDmg);
 		register(L1SkillId.N_BUFF_HPMP, SkillHandlers::onNBuffHpMp);
-		register(L1SkillId.N_BUFF_DMG, SkillHandlers::onNBuffDmg);
 		register(L1SkillId.N_BUFF_REDUCT, SkillHandlers::onNBuffReduct);
-		register(L1SkillId.N_BUFF_SP, SkillHandlers::onNBuffSp);
 		register(L1SkillId.N_BUFF_STUN, SkillHandlers::onNBuffStun);
 		register(L1SkillId.N_BUFF_HOLD, SkillHandlers::onNBuffHold);
 
@@ -1280,21 +1277,11 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onNBuffDmg(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_DMG;
-
+	static void startInventoryDamageBuff(L1PcInstance pc, int skillId, int duration) {
 		resetEffect(pc, skillId);
-
-		pc.addDmgup(1);
-		pc.addBowDmgup(1);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
+		pc.applySkillModifierFromOwner(skillId, (1L << 32) | 1);
+		applySkillEffectSec(pc, skillId, duration);
+		sendIvenBuffIcon(pc, skillId, duration);
 	}
 
 	private static HandlerResult onNBuffReduct(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -1463,21 +1450,14 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onNBuffSp(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_SP;
-
+	static void startSpellPowerBuff(L1PcInstance pc, int skillId, int duration) {
 		resetEffect(pc, skillId);
-
-		pc.getAbility().addSp(1);
+		final boolean inventory = skillId == L1SkillId.N_BUFF_SP;
+		pc.applySkillModifierFromOwner(skillId, inventory ? 1 : 4);
 		SC_SPMR.send(pc);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
+		if (inventory) sendIvenBuffIcon(pc, skillId, duration);
+		else sendRestatBuffNoti(pc, skillId, duration, 3115, 10, 1343, 1369, 1369, true);
 	}
 
 	private static HandlerResult onNBuffStun(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -1589,25 +1569,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 
 		// icon=8490, prio=10, tooltip=5157, end=5158, new_str=0(미설정)
 		sendRestatBuffNoti(pc, skillId, durSec, 8490, 10, 5157, 0, 5158, true);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onIllusionLich(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.IllUSION_LICH;
-
-		resetEffect(pc, skillId);
-
-		// 효과
-		pc.getAbility().addSp(4);
-		SC_SPMR.send(pc);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		// noti: icon=3115, prio=10, tooltip=1343, new=1369, end=1369(원본 그대로)
-		sendRestatBuffNoti(pc, skillId, durSec, 3115, 10, 1343, 1369, 1369, true);
 		return HandlerResult.HANDLED;
 	}
 
