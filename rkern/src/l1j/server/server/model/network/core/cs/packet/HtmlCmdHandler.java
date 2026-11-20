@@ -16,8 +16,8 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.model.network.utill.ConnectionState;
+import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.npc.action.L1NpcAction;
 
 final class HtmlCmdHandler {
@@ -35,7 +35,7 @@ final class HtmlCmdHandler {
     }
 
     public static void handle(
-            CIOClient client,
+            CUserSession client,
             int objid,
             String s,
             String s2,
@@ -44,7 +44,7 @@ final class HtmlCmdHandler {
         if (client == null) return;
 
         // 게임중이 아니면
-        if (client.getConnectionState() != ConnectionState.IN_GAME) {
+        if (client.getConnectionState() != CConnectionState.IN_GAME) {
             return;
         }
 
@@ -96,8 +96,8 @@ final class HtmlCmdHandler {
         }
     }
 
-    static boolean canInteractWithNpc(CIOClient client, L1PcInstance pc) {
-        return client != null && client.getConnectionState() == ConnectionState.IN_GAME
+    static boolean canInteractWithNpc(CUserSession client, L1PcInstance pc) {
+        return client != null && client.getConnectionState() == CConnectionState.IN_GAME
                 && pc != null && !pc.isGhost() && !pc.isPrivateShop()
                 && !pc.is무인상점() && !pc.isAutoClanjoin();
     }
@@ -110,12 +110,12 @@ final class HtmlCmdHandler {
                 && Math.abs((long) pc.getY() - npc.getY()) <= 6;
     }
 
-    static void trackDialogue(CIOClient client, L1NpcInstance npc, boolean newTalk) {
+    static void trackDialogue(CUserSession client, L1NpcInstance npc, boolean newTalk) {
         client.trackNpcDialogue(L1World.getInstance().smartIdOf(npc), newTalk);
     }
 
     static boolean canReplyToDialogue(L1PcInstance pc, long target, int version) {
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         return client != null && client.canReplyToNpcDialogue(pc, target, version);
     }
 

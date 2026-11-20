@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -115,7 +115,7 @@ public final class SC_MONSTER_BOOK_V2_REWARD_ACK extends ProtoPacket {
     }
 
     public static boolean sendFields(
-            CIOClient recipient, int _deckIndex, eMonsterBookV2RewardGrade _grade, eResultCode _result,
+            CUserSession recipient, int _deckIndex, eMonsterBookV2RewardGrade _grade, eResultCode _result,
             int _rewardExpAmount, boolean _hasRewardExp) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_MONSTER_BOOK_V2_REWARD_ACK, Proto.capacityBound(1024L));
         if (writer == null) return false;
@@ -133,7 +133,7 @@ public final class SC_MONSTER_BOOK_V2_REWARD_ACK extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_MONSTER_BOOK_V2_REWARD_ACK);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient) {
+    private static boolean sendCtor(CUserSession protoRecipient) {
         int proto36_deckIndex = 0;
         eMonsterBookV2RewardGrade proto36_grade = null;
         eResultCode proto36_result = null;
@@ -144,7 +144,7 @@ public final class SC_MONSTER_BOOK_V2_REWARD_ACK extends ProtoPacket {
         return sendFields(protoRecipient, proto36_deckIndex, proto36_grade, proto36_result, proto36_rewardExpAmount, proto36_hasRewardExp);
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient) {
+    public static boolean sendNewInstance(CUserSession protoRecipient) {
         return sendCtor(protoRecipient);
     }
 
@@ -152,7 +152,7 @@ public final class SC_MONSTER_BOOK_V2_REWARD_ACK extends ProtoPacket {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient, int deckIndex, eMonsterBookV2RewardGrade grade, eResultCode result) {
+    public static boolean sendNewInstance(CUserSession protoRecipient, int deckIndex, eMonsterBookV2RewardGrade grade, eResultCode result) {
         int pWire_deckIndex = 0;
                 eMonsterBookV2RewardGrade pWire_grade = null;
                 eResultCode pWire_result = null;
@@ -171,7 +171,7 @@ public final class SC_MONSTER_BOOK_V2_REWARD_ACK extends ProtoPacket {
     public static boolean sendNewInstance(L1PcInstance protoRecipient, int deckIndex, eMonsterBookV2RewardGrade grade, eResultCode result) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection(), deckIndex, grade, result);
     }
-    public static boolean sendConstructed(CIOClient protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

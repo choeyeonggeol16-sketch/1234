@@ -28,7 +28,7 @@ import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
@@ -64,7 +64,7 @@ public final class ItemReceiptOperations {
      * after receipt replay. No additional thread, queue or database connection.
      */
     public static void UseAtomicEnchantSuccess(L1PcInstance pc, L1ItemInstance scroll,
-            L1ItemInstance target, CIOClient client, Runnable afterCommitted) {
+            L1ItemInstance target, CUserSession client, Runnable afterCommitted) {
         if (!SpecialEnchantScrolls.isOwnedScrollTarget(pc, scroll, target)) return;
         try {
             // Flush older dirty values in FIFO order before preimage SQL checks.

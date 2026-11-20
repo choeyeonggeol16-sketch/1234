@@ -6,27 +6,27 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
 
-import l1j.server.server.model.network.buffer.ReadBuffer;
+import l1j.server.server.model.network.buffer.CPacketReadBuffer;
 
 /** Receive state for one connection, owned by its Selector thread. */
-public final class SelectorFrameReader implements AutoCloseable {
+public final class CSelectorFrameReader implements AutoCloseable {
     @FunctionalInterface
     public interface Handler {
         /** Consume the borrowed payload before returning. Return false to pause after this frame. */
-        boolean onFrame(ReadBuffer frame) throws IOException;
+        boolean onFrame(CPacketReadBuffer frame) throws IOException;
     }
 
     private static final int HEADER_BYTES = Short.BYTES;
 
-    private final SelectorBufferPool pool;
+    private final CSelectorBufferPool pool;
     private final Thread owner = Thread.currentThread();
-    private final ReadBuffer frame = new ReadBuffer();
-    private SelectorBufferPool.Lease lease;
+    private final CPacketReadBuffer frame = new CPacketReadBuffer();
+    private CSelectorBufferPool.Lease lease;
     private int readOffset;
     private boolean dispatching;
     private boolean closed;
 
-    public SelectorFrameReader(SelectorBufferPool pool) {
+    public CSelectorFrameReader(CSelectorBufferPool pool) {
         this.pool = Objects.requireNonNull(pool);
     }
 
@@ -48,9 +48,9 @@ public final class SelectorFrameReader implements AutoCloseable {
             if (!input.hasRemaining()) {
                 // With no complete frame at the head, a full compact buffer
                 // belongs to one frame larger than the compact lease.
-                SelectorBufferPool.Lease large = pool.acquireLarge();
+                CSelectorBufferPool.Lease large = pool.acquireLarge();
                 if (large == null) throw new IOException("Large receive pool exhausted");
-                SelectorBufferPool.Lease compact = lease;
+                CSelectorBufferPool.Lease compact = lease;
                 lease = large;
                 try {
                     large.buffer.put(input.flip());
@@ -116,7 +116,7 @@ public final class SelectorFrameReader implements AutoCloseable {
                 releaseLease();
             } else if (readOffset == filled) {
                 readOffset = 0;
-                if (input.capacity() > SelectorBufferPool.RECEIVE_BYTES) releaseLease();
+                if (input.capacity() > CSelectorBufferPool.RECEIVE_BYTES) releaseLease();
                 else input.clear();
             }
         }
@@ -130,7 +130,7 @@ public final class SelectorFrameReader implements AutoCloseable {
     }
 
     private void releaseLease() {
-        SelectorBufferPool.Lease released = lease;
+        CSelectorBufferPool.Lease released = lease;
         lease = null;
         readOffset = 0;
         pool.release(released);

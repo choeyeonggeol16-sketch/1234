@@ -28,7 +28,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1TowerInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.gametime.RealTimeClock;
-import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SIEGE_INJURY_TIME_NOIT;
 import l1j.server.server.model.network.core.sc.packet.SC_IconMessage;

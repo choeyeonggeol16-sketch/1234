@@ -35,7 +35,7 @@ JAVA = '''
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HexFormat;
-import l1j.server.server.model.network.core.broadcast.SharedPacketFormat;
+import l1j.server.server.model.network.core.broadcast.CSharedPacketFormat;
 class SharedFormatVectors {
     static int parameter(int sample, int position) {
         if (sample < 3) return sample;
@@ -49,8 +49,8 @@ class SharedFormatVectors {
             for (int kind = 1; kind <= 42; kind++) {
                 out.clear();
                 out.position(2);
-                if (kind <= 30) SharedPacketFormat.writeFormatted(out, kind, p[0], p[1], p[2], p[3], p[4]);
-                else SharedPacketFormat.writeExtended(out, kind, p[0], p[1], p[2], p[3], p[4], p[5],
+                if (kind <= 30) CSharedPacketFormat.writeFormatted(out, kind, p[0], p[1], p[2], p[3], p[4]);
+                else CSharedPacketFormat.writeExtended(out, kind, p[0], p[1], p[2], p[3], p[4], p[5],
                         p[6], p[7], p[8], p[9], p[10], p[11]);
                 out.putShort(0, (short) out.position());
                 System.out.println(HexFormat.of().formatHex(out.array(), 0, out.position()));
@@ -63,7 +63,7 @@ class SharedFormatVectors {
 with tempfile.TemporaryDirectory() as tmp:
     source = Path(tmp, "SharedFormatVectors.java")
     source.write_text(JAVA, encoding="utf-8")
-    packet_format = ROOT / "src/l1j/server/server/model/network/core/broadcast/SharedPacketFormat.java"
+    packet_format = ROOT / "src/l1j/server/server/model/network/core/broadcast/CSharedPacketFormat.java"
     subprocess.run([os.environ.get("JAVAC", "javac"), "-d", tmp, str(source), str(packet_format)], check=True)
     actual = subprocess.check_output([os.environ.get("JAVA", "java"), "-cp", tmp, "SharedFormatVectors"], text=True).splitlines()
 

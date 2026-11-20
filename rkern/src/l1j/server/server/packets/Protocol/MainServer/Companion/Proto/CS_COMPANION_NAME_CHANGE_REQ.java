@@ -6,7 +6,7 @@ import l1j.server.MJCompanion.Instance.MJCompanionNameHandler;
 import l1j.server.server.BadNamesList;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.SC_COMPANION_NAME_CHANGE_ACK.eResult;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -36,7 +36,7 @@ public final class CS_COMPANION_NAME_CHANGE_REQ {
         INVALID_KO_CHARACTERS.put('좃', Byte.MIN_VALUE);
     }
 
-    public static void handleRequest(CIOClient client, ProtoReader r) {
+    public static void handleRequest(CUserSession client, ProtoReader r) {
         // ── 파싱 ──
         byte[] desiredName = null;
         boolean hasName = false;

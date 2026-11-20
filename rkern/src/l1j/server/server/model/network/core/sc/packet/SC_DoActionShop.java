@@ -4,17 +4,17 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_DoActionShop {
     private SC_DoActionShop() {}
     public static boolean send(L1PcInstance pc, int objectId, int action, byte[] message) {
         return pc != null && send(pc.getNetConnection(), objectId, action, message);
     }
-    public static boolean send(CIOClient client, int objectId, int action, byte[] message) {
+    public static boolean send(CUserSession client, int objectId, int action, byte[] message) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket conn = client.getConnection();
         if (conn == null || !conn.isClientConnected()) return false;
@@ -22,7 +22,7 @@ public final class SC_DoActionShop {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_ACTION);
             buffer.writeD(objectId);
             buffer.writeC(action);
@@ -36,7 +36,7 @@ public final class SC_DoActionShop {
     public static boolean send(L1PcInstance pc, int objectId, int action, String message) {
         return pc != null && send(pc.getNetConnection(), objectId, action, message);
     }
-    public static boolean send(CIOClient client, int objectId, int action, String message) {
+    public static boolean send(CUserSession client, int objectId, int action, String message) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket conn = client.getConnection();
         if (conn == null || !conn.isClientConnected()) return false;
@@ -44,7 +44,7 @@ public final class SC_DoActionShop {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_ACTION);
             buffer.writeD(objectId);
             buffer.writeC(action);

@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import java.util.ArrayList;
 import java.util.List;
 import l1j.server.server.model.L1HauntedHouse;
@@ -18,7 +18,7 @@ public final class SC_EtcPacket {
     }
 
 
-    public static boolean send(CIOClient client, int type) {
+    public static boolean send(CUserSession client, int type) {
         if (client == null || !client.isConnected()) return false;
         int membersCount = 0;
         List<String> names = null;
@@ -45,7 +45,7 @@ public final class SC_EtcPacket {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             switch (type) {
                 case 0: buffer.writeC(71); buffer.writeC(500); break;

@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.*;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_NewCharPacket {
     private SC_NewCharPacket() {}
@@ -14,7 +14,7 @@ public final class SC_NewCharPacket {
         return receiver != null && send(receiver.getNetConnection(), pc);
     }
 
-    public static boolean send(CIOClient client, L1PcInstance pc) {
+    public static boolean send(CUserSession client, L1PcInstance pc) {
         if (client == null || !client.isConnected() || pc == null ) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -35,7 +35,7 @@ public final class SC_NewCharPacket {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
 
                     buffer.writeC(Opcodes.S_NEW_CHAR_INFO);
                     buffer.writeS(name);

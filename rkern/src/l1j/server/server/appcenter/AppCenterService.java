@@ -4,7 +4,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.MJDShopSystem.MJDShopItem;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -636,7 +636,7 @@ public final class AppCenterService {
     // a native /시세 item-name search; never authorizes a game action over HTTP.
     public static void registerMarketSearch(L1PcInstance pc,String raw) {
         if (pc==null || raw==null || listener==null) return;
-        CIOClient client=pc.getNetConnection();
+        CUserSession client=pc.getNetConnection();
         if (client==null || !client.isConnected()) return;
         String term=validText(raw.strip(),MAX_QUERY);
         if (term.length()<2 || term.length()>MAX_QUERY || !term.equals(raw.strip())) return;
@@ -671,7 +671,7 @@ public final class AppCenterService {
         java.util.HashSet<String> ambiguous=new java.util.HashSet<>();
         for(L1PcInstance pc:L1World.getInstance().getAllPlayers()){
             if(pc==null)continue;
-            CIOClient client=pc.getNetConnection();
+            CUserSession client=pc.getNetConnection();
             if(client==null||!client.isConnected())continue;
             String ip=client.getIp();
             if(ip==null||ip.isEmpty()||ambiguous.contains(ip))continue;

@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
-public class WriteBuffer {
+public class CPacketWriteBuffer {
 
     /*
      * Class-scoped allocation hint, not a permanent maximum.
@@ -172,7 +172,7 @@ public class WriteBuffer {
 
     /*
      * 패킷마다 변경되는 값.
-     * WriteBuffer wrapper 재사용을 위해 final이 아니다.
+     * CPacketWriteBuffer wrapper 재사용을 위해 final이 아니다.
      */
     private Class<?> _packetClass;
     private PacketSizeState _packetSizeState;
@@ -211,7 +211,7 @@ public class WriteBuffer {
 
     /*
      * One-shot registered backing prepared by CUserSocket before
-     * WritablePacket.writeData() consumes this arm through beginPrepared().
+     * IPacketWriter.writeData() consumes this arm through beginPrepared().
      */
     private ByteBuffer _armedBuf;
     private int _armedBase;
@@ -225,7 +225,7 @@ public class WriteBuffer {
     // -------------------------------------------------------------------------
 
     /** Client당 재사용되는 wrapper. 실제 backing은 RConnection이 arm한다. */
-    public WriteBuffer() {
+    public CPacketWriteBuffer() {
         _packetClass = null;
         _packetSizeState = null;
         _sizeCacheClass0 = null;
@@ -316,7 +316,7 @@ public class WriteBuffer {
     public void beginPrepared() {
         if (_buf != null) {
             throw new IllegalStateException(
-                    "WriteBuffer still owns a backing buffer. detach() or releaseResources() was not called.");
+                    "CPacketWriteBuffer still owns a backing buffer. detach() or releaseResources() was not called.");
         }
 
         final Class<?> packetClass = _preparedPacketClass;
@@ -325,7 +325,7 @@ public class WriteBuffer {
         if (packetClass == null || state == null) {
             clearPreparedPacketClass();
             throw new IllegalStateException(
-                    "WriteBuffer beginPrepared without preparePacketClass().");
+                    "CPacketWriteBuffer beginPrepared without preparePacketClass().");
         }
 
         _packetClass = packetClass;
@@ -338,7 +338,7 @@ public class WriteBuffer {
             clearArm();
             clearPreparedPacketClass();
             throw new IllegalStateException(
-                    "WriteBuffer beginPrepared without registered SEND backing.");
+                    "CPacketWriteBuffer beginPrepared without registered SEND backing.");
         }
 
         _buf = armed;
@@ -371,7 +371,7 @@ public class WriteBuffer {
 
         if (_buf != null) {
             throw new IllegalStateException(
-                    "WriteBuffer still owns a backing buffer. detach() or releaseResources() was not called.");
+                    "CPacketWriteBuffer still owns a backing buffer. detach() or releaseResources() was not called.");
         }
 
         _packetClass = packetClass;
@@ -405,7 +405,7 @@ public class WriteBuffer {
             clearArm();
 
             throw new IllegalStateException(
-                    "WriteBuffer reset without registered SEND backing.");
+                    "CPacketWriteBuffer reset without registered SEND backing.");
         }
 
         _buf = armed;
@@ -443,7 +443,7 @@ public class WriteBuffer {
 
         if (_buf != null) {
             throw new IllegalStateException(
-                    "WriteBuffer already owns an active backing buffer.");
+                    "CPacketWriteBuffer already owns an active backing buffer.");
         }
 
         if (base < 0
@@ -552,7 +552,7 @@ public class WriteBuffer {
     private void ensureSizeSlow(int required) {
         if (_buf == null) {
             throw new IllegalStateException(
-                    "WriteBuffer is not initialized. reset() required.");
+                    "CPacketWriteBuffer is not initialized. reset() required.");
         }
         recordOverflowSize(required);
 
@@ -1077,7 +1077,7 @@ public class WriteBuffer {
     public void beginDirect() {
         if (_buf != null) {
             throw new IllegalStateException(
-                    "WriteBuffer still owns a backing buffer.");
+                    "CPacketWriteBuffer still owns a backing buffer.");
         }
 
         final ByteBuffer armed = _armedBuf;
@@ -1087,7 +1087,7 @@ public class WriteBuffer {
             clearArm();
             clearPreparedPacketClass();
             throw new IllegalStateException(
-                    "WriteBuffer beginDirect without backing.");
+                    "CPacketWriteBuffer beginDirect without backing.");
         }
 
         _packetClass = null;

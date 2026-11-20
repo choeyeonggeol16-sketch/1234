@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -58,7 +58,7 @@ public final class SC_NOTIFICATION_MESSAGE_NOT extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _suffileNumber, _message, _rgb, _duration);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _suffileNumber, String _message, byte[] _rgb, int _duration) {
+    public static boolean sendFields(CUserSession recipient, int _suffileNumber, String _message, byte[] _rgb, int _duration) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_NOTIFICATION_MESSAGE_NOT, Proto.capacityBound(1024L + (_message == null ? 0L : 2L * _message.length()) + (_rgb == null ? 0L : _rgb.length)));
         if (writer == null) return false;
         try {
@@ -75,7 +75,7 @@ public final class SC_NOTIFICATION_MESSAGE_NOT extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_NOTIFICATION_MESSAGE_NOT);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, int suffileNumber, String message, byte[] rgb, int duration) {
+    private static boolean sendCtor(CUserSession protoRecipient, int suffileNumber, String message, byte[] rgb, int duration) {
         int proto48_suffileNumber = 0;
         String proto48_message = null;
         byte[] proto48_rgb = null;
@@ -89,7 +89,7 @@ public final class SC_NOTIFICATION_MESSAGE_NOT extends ProtoPacket {
         return sendFields(protoRecipient, proto48_suffileNumber, proto48_message, proto48_rgb, proto48_duration);
     }
 
-    public static boolean sendOf(CIOClient protoRecipient, int suffileNumber, String message, int duration, byte[] rgb) {
+    public static boolean sendOf(CUserSession protoRecipient, int suffileNumber, String message, int duration, byte[] rgb) {
         return sendCtor(protoRecipient, suffileNumber, message, rgb, duration);
     }
 
@@ -97,7 +97,7 @@ public final class SC_NOTIFICATION_MESSAGE_NOT extends ProtoPacket {
         return sendOf(protoRecipient == null ? null : protoRecipient.getNetConnection(), suffileNumber, message, duration, rgb);
     }
     public static boolean sendConstructed(
-            CIOClient protoRecipient, int suffileNumber, String message, byte[] rgb, int duration) { return sendCtor(protoRecipient, suffileNumber, message, rgb, duration); }
+            CUserSession protoRecipient, int suffileNumber, String message, byte[] rgb, int duration) { return sendCtor(protoRecipient, suffileNumber, message, rgb, duration); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int suffileNumber, String message, byte[] rgb, int duration) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), suffileNumber, message, rgb, duration); }

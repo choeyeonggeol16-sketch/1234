@@ -22,16 +22,16 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SignboardInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 
 /**
  * Objectless direct serializer for S_WorldPutObject.
  *
- * No ServerPacket / Snapshot object is created. The producer shard captures the
+ * No CServerPacket / Snapshot object is created. The producer shard captures the
  * required state into local primitives/references and serializes the complete
  * plaintext wire frame directly into its shard-local ROutboundPipe.
  *
@@ -45,13 +45,13 @@ public final class SC_WorldPutObject {
 
     /*
      * Full PC/NPC/Builder messages are protobuf-like and variable sized.
-     * Every writeS2 field is capped at 255 encoded bytes by WriteBuffer.
+     * Every writeS2 field is capped at 255 encoded bytes by CPacketWriteBuffer.
      * 4096 bytes covers all fixed fields + all S2 strings with ample headroom.
      * PC adds the current shop-chat byte length because that field is raw bytes.
      */
     /*
      * Variable WorldPut frames cannot use one guessed fixed reserve.
-     * WriteBuffer.writeS2() reserves up to 2 bytes per UTF-16 code unit before
+     * CPacketWriteBuffer.writeS2() reserves up to 2 bytes per UTF-16 code unit before
      * MS949 encoding, so calculate a safe upper bound from the actual strings.
      * FIXED_COMPLEX_RESERVE covers headers, protobuf keys/varints/bools/trailer.
      */
@@ -67,7 +67,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.put(pc)); */
     public static boolean put(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc) {
 
         return sendPcFull(
@@ -79,7 +79,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(npc)); */
     public static boolean get(
-            CIOClient client,
+            CUserSession client,
             L1NpcInstance npc) {
 
         return sendNpc(client, npc);
@@ -87,7 +87,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(builder)); */
     public static boolean get(
-            CIOClient client,
+            CUserSession client,
             WorldPutBuilder builder) {
 
         return sendBuilder(client, builder);
@@ -95,7 +95,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.gets(target)); */
     public static boolean gets(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc) {
 
         return sendPcGets(client, pc);
@@ -103,7 +103,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(target)); */
     public static boolean get(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc) {
 
         return sendPcFull(
@@ -115,7 +115,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(target, a)); */
     public static boolean get(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc,
             int a) {
 
@@ -124,7 +124,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.getinvis(target, invis)); */
     public static boolean getinvis(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc,
             boolean invis) {
 
@@ -137,7 +137,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.getDetectedInvis(target)); */
     public static boolean getDetectedInvis(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc) {
 
         return sendPcFull(
@@ -149,7 +149,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(target, isClan)); */
     public static boolean get(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc,
             boolean isClan) {
 
@@ -162,7 +162,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(target, name, isClan)); */
     public static boolean get(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc,
             String name,
             boolean isClan) {
@@ -176,7 +176,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(target, name, isClan, a)); */
     public static boolean get(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc,
             String name,
             boolean isClan,
@@ -187,7 +187,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(body)); */
     public static boolean get(
-            CIOClient client,
+            CUserSession client,
             byte[] body) {
 
         return sendRaw(client, body);
@@ -198,7 +198,7 @@ public final class SC_WorldPutObject {
     // =====================================================================
 
     public static boolean sendPcFull(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc) {
 
         return sendPcFull(
@@ -209,7 +209,7 @@ public final class SC_WorldPutObject {
     }
 
     public static boolean sendPcFull(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc,
             String requestedName,
             boolean revealInvisibleName) {
@@ -304,7 +304,7 @@ public final class SC_WorldPutObject {
             return false;
         }
 
-        final WriteBuffer b = frame.buffer();
+        final CPacketWriteBuffer b = frame.buffer();
 
         boolean committed = false;
 
@@ -380,7 +380,7 @@ public final class SC_WorldPutObject {
     // =====================================================================
 
     public static boolean sendNpc(
-            CIOClient client,
+            CUserSession client,
             L1NpcInstance npc) {
 
         if (npc == null
@@ -462,7 +462,7 @@ public final class SC_WorldPutObject {
             return false;
         }
 
-        final WriteBuffer b = frame.buffer();
+        final CPacketWriteBuffer b = frame.buffer();
 
         boolean committed = false;
 
@@ -548,7 +548,7 @@ public final class SC_WorldPutObject {
     // =====================================================================
 
     public static boolean sendPcGets(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc) {
 
         if (pc == null
@@ -578,7 +578,7 @@ public final class SC_WorldPutObject {
     }
 
     public static boolean sendPcMinimal(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc) {
 
         if (pc == null
@@ -603,7 +603,7 @@ public final class SC_WorldPutObject {
     }
 
     private static boolean sendPcPartial(
-            CIOClient client,
+            CUserSession client,
             int x,
             int y,
             int objectId,
@@ -628,7 +628,7 @@ public final class SC_WorldPutObject {
             return false;
         }
 
-        final WriteBuffer b = frame.buffer();
+        final CPacketWriteBuffer b = frame.buffer();
 
         boolean committed = false;
 
@@ -666,7 +666,7 @@ public final class SC_WorldPutObject {
     // =====================================================================
 
     public static boolean sendBuilder(
-            CIOClient client,
+            CUserSession client,
             WorldPutBuilder s) {
 
         if (s == null
@@ -735,7 +735,7 @@ public final class SC_WorldPutObject {
             return false;
         }
 
-        final WriteBuffer b = frame.buffer();
+        final CPacketWriteBuffer b = frame.buffer();
 
         boolean committed = false;
 
@@ -805,7 +805,7 @@ public final class SC_WorldPutObject {
     // =====================================================================
 
     public static boolean sendRaw(
-            CIOClient client,
+            CUserSession client,
             byte[] body) {
 
         if (body == null
@@ -816,12 +816,12 @@ public final class SC_WorldPutObject {
         }
 
         final long reserveLong =
-                (long) ConnectionConfig.HEADER_SIZE
+                (long) CConnectionConfig.HEADER_SIZE
                         + 1L
                         + Short.BYTES
                         + body.length;
 
-        if (reserveLong > ConnectionConfig.MAX_WIRE_PACKET_SIZE) {
+        if (reserveLong > CConnectionConfig.MAX_WIRE_PACKET_SIZE) {
             return false;
         }
 
@@ -842,7 +842,7 @@ public final class SC_WorldPutObject {
             return false;
         }
 
-        final WriteBuffer b = frame.buffer();
+        final CPacketWriteBuffer b = frame.buffer();
 
         boolean committed = false;
 
@@ -925,7 +925,7 @@ public final class SC_WorldPutObject {
         reserve += maxMs949Bytes(c);
         reserve += maxMs949Bytes(d);
 
-        if (reserve > ConnectionConfig.MAX_WIRE_PACKET_SIZE) {
+        if (reserve > CConnectionConfig.MAX_WIRE_PACKET_SIZE) {
             return -1;
         }
 
@@ -943,14 +943,14 @@ public final class SC_WorldPutObject {
     // =====================================================================
 
     private static void writeHeader(
-            WriteBuffer b) {
+            CPacketWriteBuffer b) {
 
         b.writeC(Opcodes.S_EXTENDED_PROTOBUF);
         b.writeH(SC_WORLD_PUT_OBJECT_NOTI);
     }
 
     private static void writeBase(
-            WriteBuffer b,
+            CPacketWriteBuffer b,
             int x,
             int y,
             int objectId,
@@ -980,7 +980,7 @@ public final class SC_WorldPutObject {
     }
 
     private static void writePoint(
-            WriteBuffer b,
+            CPacketWriteBuffer b,
             int field,
             int x,
             int y) {
@@ -990,7 +990,7 @@ public final class SC_WorldPutObject {
     }
 
     private static void writeVarint(
-            WriteBuffer b,
+            CPacketWriteBuffer b,
             int field,
             long value) {
 
@@ -999,7 +999,7 @@ public final class SC_WorldPutObject {
     }
 
     private static void writeBool(
-            WriteBuffer b,
+            CPacketWriteBuffer b,
             int field,
             boolean value) {
 
@@ -1008,7 +1008,7 @@ public final class SC_WorldPutObject {
     }
 
     private static void writeString(
-            WriteBuffer b,
+            CPacketWriteBuffer b,
             int field,
             String value) {
 
@@ -1017,7 +1017,7 @@ public final class SC_WorldPutObject {
     }
 
     private static void writeByteArray(
-            WriteBuffer b,
+            CPacketWriteBuffer b,
             int field,
             byte[] value) {
 
@@ -1033,7 +1033,7 @@ public final class SC_WorldPutObject {
     }
 
     private static void writeTrailer(
-            WriteBuffer b) {
+            CPacketWriteBuffer b) {
 
         b.writeH(0);
     }
@@ -1539,7 +1539,7 @@ public final class SC_WorldPutObject {
         }
 
         /** Direct replacement for old build()+sendPackets(). */
-        public boolean send(CIOClient client) {
+        public boolean send(CUserSession client) {
             return SC_WorldPutObject.sendBuilder(
                     client,
                     this);
@@ -1619,10 +1619,10 @@ public final class SC_WorldPutObject {
         
             final int capacity=output.capacity();
             final java.nio.ByteBuffer bytes=output.order(java.nio.ByteOrder.LITTLE_ENDIAN);
-            final WriteBuffer b=new WriteBuffer();
+            final CPacketWriteBuffer b=new CPacketWriteBuffer();
             b.armExternal(bytes,0,capacity);
             b.beginDirect();
-            b.position(ConnectionConfig.HEADER_SIZE);
+            b.position(CConnectionConfig.HEADER_SIZE);
             try {
                 writeHeader(b);
 
@@ -1769,10 +1769,10 @@ public final class SC_WorldPutObject {
         
             final int capacity=output.capacity();
             final java.nio.ByteBuffer bytes=output.order(java.nio.ByteOrder.LITTLE_ENDIAN);
-            final WriteBuffer b=new WriteBuffer();
+            final CPacketWriteBuffer b=new CPacketWriteBuffer();
             b.armExternal(bytes,0,capacity);
             b.beginDirect();
-            b.position(ConnectionConfig.HEADER_SIZE);
+            b.position(CConnectionConfig.HEADER_SIZE);
             try {
                 writeHeader(b);
 
@@ -1885,10 +1885,10 @@ public final class SC_WorldPutObject {
         
             final int capacity=output.capacity();
             final java.nio.ByteBuffer bytes=output.order(java.nio.ByteOrder.LITTLE_ENDIAN);
-            final WriteBuffer b=new WriteBuffer();
+            final CPacketWriteBuffer b=new CPacketWriteBuffer();
             b.armExternal(bytes,0,capacity);
             b.beginDirect();
-            b.position(ConnectionConfig.HEADER_SIZE);
+            b.position(CConnectionConfig.HEADER_SIZE);
             try {
                 writeHeader(b);
 

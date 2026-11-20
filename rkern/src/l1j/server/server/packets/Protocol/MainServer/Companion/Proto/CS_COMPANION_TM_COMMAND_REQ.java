@@ -6,7 +6,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.CompanionT.eCommand;
 
@@ -18,7 +18,7 @@ public final class CS_COMPANION_TM_COMMAND_REQ {
 
     private CS_COMPANION_TM_COMMAND_REQ() {}
 
-    public static void handleRequest(CIOClient client, ProtoReader r) {
+    public static void handleRequest(CUserSession client, ProtoReader r) {
         // ── 파싱 ──
         eCommand command = null;
         int targetId = 0;

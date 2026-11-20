@@ -1,7 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Inventory.Proto;
 import l1j.server.server.model.network.core.sc.packet.SC_ItemName;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,7 +45,7 @@ public final class SC_UPDATE_INVENTORY_NOTI extends ProtoPacket {
         if (pc != null) sendCompanion(pc.getNetConnection(), itemObjectId, cache);
     }
 
-    public static boolean sendCompanion(CIOClient client, int itemObjectId, MJCompanionInstanceCache cache) {
+    public static boolean sendCompanion(CUserSession client, int itemObjectId, MJCompanionInstanceCache cache) {
         boolean summoned = cache.get_is_summoned();
         boolean dead = cache.get_is_dead();
         boolean oblivion = cache.get_is_oblivion();
@@ -79,7 +79,7 @@ public final class SC_UPDATE_INVENTORY_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _items);
     }
 
-    public static boolean sendFields(CIOClient recipient, List<ItemInfo> _items) {
+    public static boolean sendFields(CUserSession recipient, List<ItemInfo> _items) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_UPDATE_INVENTORY_NOTI, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -96,12 +96,12 @@ public final class SC_UPDATE_INVENTORY_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_UPDATE_INVENTORY_NOTI);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient) {
+    private static boolean sendCtor(CUserSession protoRecipient) {
         List<ItemInfo> proto100_items = new LinkedList<>();
 
         return sendFields(protoRecipient, proto100_items);
     }
-    public static boolean sendConstructed(CIOClient protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

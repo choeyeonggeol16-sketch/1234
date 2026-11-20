@@ -1,11 +1,11 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_NewCreateItem {
 
@@ -236,7 +236,7 @@ public final class SC_NewCreateItem {
 
 	private SC_NewCreateItem() {}
 
-	private static void writeTypeCk(WriteBuffer buffer, int _type, boolean _ck) {
+	private static void writeTypeCk(CPacketWriteBuffer buffer, int _type, boolean _ck) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeC(_type);
 		switch (_type) {
@@ -485,7 +485,7 @@ public final class SC_NewCreateItem {
 		}
 	}
 
-	private static void writeCastleWarTime(WriteBuffer buffer, int _warType, int _second, String _castle) {
+	private static void writeCastleWarTime(CPacketWriteBuffer buffer, int _warType, int _second, String _castle) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeH(CASTLE_WAR_TIME);
 		buffer.writeC(0x08);
@@ -502,7 +502,7 @@ public final class SC_NewCreateItem {
 		}
 	}
 
-	private static void writeTypeSubtype(WriteBuffer buffer, int _type, int _subType) {
+	private static void writeTypeSubtype(CPacketWriteBuffer buffer, int _type, int _subType) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeC(_type);
 		switch (_type) {
@@ -516,7 +516,7 @@ public final class SC_NewCreateItem {
 		}
 	}
 
-	private static void writeTypeOrderSuborderCount(WriteBuffer buffer, int _type, int _order, int _subOrder, int _count) {
+	private static void writeTypeOrderSuborderCount(CPacketWriteBuffer buffer, int _type, int _order, int _subOrder, int _count) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeH(_type);
 		switch (_type) {
@@ -550,7 +550,7 @@ public final class SC_NewCreateItem {
 		}
 	}
 
-	private static void writeTamPoint(WriteBuffer buffer, int _type, int _tamPoint) {
+	private static void writeTamPoint(CPacketWriteBuffer buffer, int _type, int _tamPoint) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeH(_type);
 		switch (_type) {
@@ -566,7 +566,7 @@ public final class SC_NewCreateItem {
 		}
 	}
 
-	private static void writeTypeSubtypeObjid(WriteBuffer buffer, int _type, int _subType, int _objId) {
+	private static void writeTypeSubtypeObjid(CPacketWriteBuffer buffer, int _type, int _subType, int _objId) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeC(_type);
 		switch (_type) {
@@ -614,7 +614,7 @@ public final class SC_NewCreateItem {
 		}
 	}
 
-	private static void byteWrite(WriteBuffer buffer, long value) {
+	private static void byteWrite(CPacketWriteBuffer buffer, long value) {
 		long temp = value / 128;
 		if (temp > 0) {
 			buffer.writeC(hextable[(int) (value % 128)]);
@@ -639,7 +639,7 @@ public final class SC_NewCreateItem {
 
     public static boolean sendTypeCk(L1PcInstance pc, int type, boolean ck) {
         if (pc == null) return false;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -656,14 +656,14 @@ public final class SC_NewCreateItem {
     }
 
 
-    private static CIOFrame beginFrame(CIOClient socket, int capacity) {
+    private static CIOFrame beginFrame(CUserSession socket, int capacity) {
         if (socket == null || !socket.isConnected()) return null;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return null;
         return connection.beginDirectFrame(capacity);
     }
 
-    private static boolean finishFrame(CIOClient socket, CIOFrame frame) {
+    private static boolean finishFrame(CUserSession socket, CIOFrame frame) {
         final CUserSocket connection = socket.getConnection();
         boolean committed = false;
         try {
@@ -676,7 +676,7 @@ public final class SC_NewCreateItem {
 
     public static boolean sendSubtype(L1PcInstance pc, int type, int subType) {
         if (pc == null) return false;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         final CIOFrame frame = beginFrame(socket, 64);
         if (frame == null) return false;
         try {
@@ -690,7 +690,7 @@ public final class SC_NewCreateItem {
 
     public static boolean sendBuffOrder(L1PcInstance pc, int type, int order, int subOrder, int count) {
         if (pc == null) return false;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         final CIOFrame frame = beginFrame(socket, 128);
         if (frame == null) return false;
         try {
@@ -702,12 +702,12 @@ public final class SC_NewCreateItem {
         return finishFrame(socket, frame);
     }
 
-    public static boolean sendTamPoint(L1PcInstance pc, CIOClient client) {
+    public static boolean sendTamPoint(L1PcInstance pc, CUserSession client) {
         if (pc == null) return false;
         return sendTamPoint(client != null ? client : pc.getNetConnection());
     }
 
-    public static boolean sendTamPoint(CIOClient socket) {
+    public static boolean sendTamPoint(CUserSession socket) {
         if (socket == null) return false;
         final int value = socket.getAccount() != null ? socket.getAccount().tam_point : 0;
         final CIOFrame frame = beginFrame(socket, 64);
@@ -723,7 +723,7 @@ public final class SC_NewCreateItem {
 
     public static boolean sendSubtypeObjid(L1PcInstance pc, int type, int subType, int objId) {
         if (pc == null) return false;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         final CIOFrame frame = beginFrame(socket, 96);
         if (frame == null) return false;
         try {
@@ -738,7 +738,7 @@ public final class SC_NewCreateItem {
     public static boolean sendCastleTime(L1PcInstance pc, int warType, int second, String castle) {
         if (pc == null) return false;
         final String name = castle == null ? "" : castle;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         final long capacity = 32L + 4L * name.length();
         if (capacity > Integer.MAX_VALUE) return false;
         final CIOFrame frame = beginFrame(socket, (int)capacity);

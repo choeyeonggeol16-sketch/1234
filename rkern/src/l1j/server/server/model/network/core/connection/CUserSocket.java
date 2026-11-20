@@ -3,9 +3,9 @@ package l1j.server.server.model.network.core.connection;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.transport.CSocket;
-import l1j.server.server.model.network.core.broadcast.SharedPacketFormat;
+import l1j.server.server.model.network.core.broadcast.CSharedPacketFormat;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -20,17 +20,17 @@ import java.util.concurrent.atomic.AtomicLong;
 import l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.CloseReason;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.utill.ConnectionState;
+import l1j.server.server.model.network.utill.CConnectionState;
 import java.util.concurrent.locks.ReentrantLock;
-import l1j.server.server.model.network.buffer.ReadBuffer;
-import l1j.server.server.model.network.codec.Cryptor;
-import l1j.server.server.model.network.safe.NetworkSafeLoadManager;
+import l1j.server.server.model.network.buffer.CPacketReadBuffer;
+import l1j.server.server.model.network.codec.CPacketCryptor;
+import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.packet.CPacketHandler;
-import l1j.server.server.model.network.packet.WritablePacket;
+import l1j.server.server.model.network.packet.IPacketWriter;
 
 /**
  * Game packet framing and the per-socket 512-slot callback serializer.
@@ -55,28 +55,28 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     static boolean sessionOwner(int opcode, boolean ready) {
         return !ready || isSessionOpcode(opcode);
     }
-    static boolean allowed(int opcode, ConnectionState state, boolean hasAccount,
+    static boolean allowed(int opcode, CConnectionState state, boolean hasAccount,
                            boolean hasCharacter, boolean ready) {
-        if (opcode < 0 || opcode > 255 || state == null || state == ConnectionState.DISCONNECTED) return false;
+        if (opcode < 0 || opcode > 255 || state == null || state == CConnectionState.DISCONNECTED) return false;
         if (opcode == (Opcodes.C_ALIVE & 255) || opcode == (Opcodes.C_QUIT & 255)
                 || opcode == (Opcodes.C_EXTENDED & 255)
                 || opcode == (Opcodes.C_EXTENDED_PROTOBUF & 255)
                 || opcode == (Opcodes.C_CHANNEL & 255)
                 || opcode == (Opcodes.C_HYPERTEXT_INPUT_RESULT & 255)) return true;
         if (opcode == (Opcodes.C_LOGIN & 255))
-            return state == ConnectionState.CONNECTED && !hasAccount && !hasCharacter;
+            return state == CConnectionState.CONNECTED && !hasAccount && !hasCharacter;
         if (opcode == (Opcodes.C_READ_NEWS & 255))
             return !hasCharacter;
         if (opcode == (Opcodes.C_CREATE_CUSTOM_CHARACTER & 255)
                 || opcode == (Opcodes.C_DELETE_CHARACTER & 255)
                 || opcode == (Opcodes.C_ENTER_WORLD & 255))
-            return hasAccount && !hasCharacter && (state == ConnectionState.AUTHENTICATED
-                    || state == ConnectionState.OUT_GAME);
+            return hasAccount && !hasCharacter && (state == CConnectionState.AUTHENTICATED
+                    || state == CConnectionState.OUT_GAME);
         if (opcode == (Opcodes.C_RESTART & 255) || opcode == (Opcodes.C_LOGOUT & 255))
             return hasAccount;
         // L1 game handlers require a fully published active player. Character
         // loading packets use the multiplexed exceptions above.
-        return state == ConnectionState.IN_GAME && hasAccount && hasCharacter && ready;
+        return state == CConnectionState.IN_GAME && hasAccount && hasCharacter && ready;
     }
 
     @FunctionalInterface
@@ -130,7 +130,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     // Claim an idle serializer owner directly when no earlier reservation exists.
     // The normal FIFO drain/release handshake still owns completion and closing.
     private static final class DecodeState {
-        final ReadBuffer buffer = new ReadBuffer();
+        final CPacketReadBuffer buffer = new CPacketReadBuffer();
         boolean active;
         DecodeState nested;
     }
@@ -144,11 +144,11 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         state.active = true;
         return state;
     }
-    private volatile Cryptor _cryptor;
+    private volatile CPacketCryptor _cryptor;
     private long deadlinePriorProgress,deadlineStalledSince;
     private volatile boolean _handshakePlainPending;
     public void SetKey(long seed) {
-        final Cryptor cryptor = new Cryptor();
+        final CPacketCryptor cryptor = new CPacketCryptor();
         cryptor.initKey(seed);
         _cryptor = cryptor;
         _handshakePlainPending = true;
@@ -157,13 +157,13 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         _handshakePlainPending = false;
         _cryptor = null;
     }
-    private Cryptor readCipher() { return _cryptor; }
-    public boolean encrypt(WriteBuffer buffer, int offset, int length) {
+    private CPacketCryptor readCipher() { return _cryptor; }
+    public boolean encrypt(CPacketWriteBuffer buffer, int offset, int length) {
         if (_handshakePlainPending) {
             _handshakePlainPending = false;
             return true;
         }
-        final Cryptor cipher = _cryptor;
+        final CPacketCryptor cipher = _cryptor;
         if (cipher == null) return true;
         try {
             cipher.encrypt(buffer, offset, length);
@@ -173,8 +173,8 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             return false;
         }
     }
-    public boolean decrypt(ReadBuffer buffer, int offset, int length) {
-        final Cryptor cipher = _cryptor;
+    public boolean decrypt(CPacketReadBuffer buffer, int offset, int length) {
+        final CPacketCryptor cipher = _cryptor;
         if (cipher == null) return true;
         try {
             cipher.decrypt(buffer, offset, length);
@@ -184,7 +184,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             return false;
         }
     }
-    private volatile CIOClient _client;
+    private volatile CUserSession _client;
     private final String _remoteAddress;
     private final int _affinityShard;
     private volatile int _closing;
@@ -226,7 +226,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     public boolean bindVerifiedMacIdentity(long identity){
         return identity!=0&&_closed==0&&_channel.isOpen()&&_channel.setMacIdentity(identity);
     }
-    public void onSessionStateChanged(l1j.server.server.model.network.utill.ConnectionState state) {
+    public void onSessionStateChanged(l1j.server.server.model.network.utill.CConnectionState state) {
         if(_closed==0&&_channel.isOpen()&&!_channel.setUserState(state.ordinal())){
             close();throw new IllegalStateException("Session registry transition rejected");
         }
@@ -307,7 +307,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     private volatile Runnable _onDrained;
     // The final packet is retained only until preceding accepted SENDs drain.
     // No extra worker, queue, or physical SEND lease is reserved for it.
-    private WritablePacket<CIOClient> _deferredClosePacket;
+    private IPacketWriter<CUserSession> _deferredClosePacket;
 
     private final Closed _closedCallback;
     private CIOBufferEx[] _pending;
@@ -1001,7 +1001,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     /** Bind the L1 session before the first native READ is posted. */
 
 
-    public void bindClient(CIOClient client) {
+    public void bindClient(CUserSession client) {
         if (client == null || client.getConnection() != this || _client != null || _closed != 0)
             throw new IllegalStateException("socket client already bound or closed");
         _client = client;
@@ -1012,7 +1012,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     public void onTransportClosing() {
         if (!closeStarted.compareAndSet(false, true)) return;
         CNetworkDiagnostics.close(networkTrace);
-        CIOClient client = _client;
+        CUserSession client = _client;
         if (client != null) client.onTransportClosing();
         if (_closedCallback != null) {
             try { _closedCallback.onClosing(this); }
@@ -1033,7 +1033,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         }
     }
 
-    public CIOClient client() { return _client; }
+    public CUserSession client() { return _client; }
 
     public String getRemoteAddress() { return _remoteAddress; }
     public int affinityShard() { return _affinityShard; }
@@ -1046,9 +1046,9 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     public void read() { startRead(); }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void enqueuePacket(WritablePacket packet) {
+    public void enqueuePacket(IPacketWriter packet) {
         if (packet == null || !isClientConnected()) return;
-        final CIOClient client = _client;
+        final CUserSession client = _client;
         if (client == null) close();
         else if (!tryWritePacket(client, packet)) close(CloseReason.SEND_REJECTED);
     }
@@ -1060,7 +1060,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
      * close(), which remains the immediate error/cancellation path.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void requestClientClose(WritablePacket packet) {
+    public void requestClientClose(IPacketWriter packet) {
         if (_disconnecting != 0 || !isOpen()
                 || !CLOSING.compareAndSet(this, 0, 1)) return;
         CNetworkDiagnostics.javaClose(networkTrace, CloseReason.GRACEFUL_CLOSE);
@@ -1125,7 +1125,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if (source == null) return null;
         try {
             source.mutableWire.position(2);
-            SharedPacketFormat.writeFormatted(source.mutableWire, kind, opcode, p0, p1, p2, p3);
+            CSharedPacketFormat.writeFormatted(source.mutableWire, kind, opcode, p0, p1, p2, p3);
             source.sealJava(source.mutableWire.position());
             return source;
         } catch (RuntimeException | Error failure) {
@@ -1140,7 +1140,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if (source == null) return null;
         try {
             source.mutableWire.position(2);
-            SharedPacketFormat.writeExtended(source.mutableWire, kind, opcode, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+            CSharedPacketFormat.writeExtended(source.mutableWire, kind, opcode, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
             source.sealJava(source.mutableWire.position());
             return source;
         } catch (RuntimeException | Error failure) {
@@ -1235,7 +1235,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         // Admission is blocked during close. An accepted encoder reservation
         // remains visible until it has attached its FIFO ticket.
         if (_closing == 0 && ON_DRAINED.getVolatile(this) == null) return;
-        WritablePacket<CIOClient> finalPacket = null;
+        IPacketWriter<CUserSession> finalPacket = null;
         Runnable callback = null;
         _stateLock.lock();
         try {
@@ -2033,7 +2033,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     private boolean commitStagedOutboundFrameLocked(CIOBufferEx lease) {
         if (lease == null) return false;
         if (!_pool.owns(lease)) throw new IllegalArgumentException("foreign SEND lease");
-        final WriteBuffer writer = lease.writer();
+        final CPacketWriteBuffer writer = lease.writer();
         final int length = writer.position();
         if (length <= CIOBufferPool.HEADER_BYTES
                 || length > lease._reservedWireBytes
@@ -2117,14 +2117,14 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
     /** Reserve FIFO position before serializing; encode does not hold the socket lock.
      * A true result means admitted to SEND, not delivered to the peer. */
-    public boolean tryWritePacket(CIOClient client, WritablePacket<CIOClient> packet) {
+    public boolean tryWritePacket(CUserSession client, IPacketWriter<CUserSession> packet) {
         return tryWritePacketInternal(client, packet, false);
     }
 
     // The existing serializer token pins the staged lease while an encoder runs
     // outside _stateLock. The compaction pass must not return that lease either.
     private CIOBufferEx _tailEncoding; // guarded by _stateLock
-    private WriteBuffer _tailWriter;   // used only by the pinned encoder
+    private CPacketWriteBuffer _tailWriter;   // used only by the pinned encoder
 
     private CIOBufferEx reservePacketTailLocked(long ticket, int maxWireBytes) {
         final CIOBufferEx tail = _stagedPacketPack;
@@ -2145,7 +2145,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         return tail;
     }
 
-    private boolean encodePacketTail(CIOClient client, WritablePacket<CIOClient> packet,
+    private boolean encodePacketTail(CUserSession client, IPacketWriter<CUserSession> packet,
             CIOBufferEx tail, int slot, long ticket, int maxWireBytes) {
         final ByteBuffer bytes = tail.buffer();
         final int start = tail.writer().position();
@@ -2157,7 +2157,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         int length = 0;
         try {
             try {
-                if (_tailWriter == null) _tailWriter = new WriteBuffer();
+                if (_tailWriter == null) _tailWriter = new CPacketWriteBuffer();
                 _tailWriter.armExternal(bytes, start, maxWireBytes);
                 _tailWriter.preparePacket(packet.getClass());
                 packet.writeData(client, _tailWriter);
@@ -2222,14 +2222,14 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         finally { _stateLock.unlock(); }
     }
 
-    private boolean tryWritePacketInternal(CIOClient client,
-            WritablePacket<CIOClient> packet, boolean finalPacket) {
+    private boolean tryWritePacketInternal(CUserSession client,
+            IPacketWriter<CUserSession> packet, boolean finalPacket) {
         if (client == null || packet == null || !isOpen()
                 || (!finalPacket && _closing != 0)) return false;
         if ((int) SOCKET_PENDING.getAcquire(this) >= SOCKET_REJECT_AT - 32)
             drainPublishedSocketCallbacks();
-        final int learned = WriteBuffer.learnedPacketSize(packet.getClass());
-        final int maxTailWireBytes = packet instanceof WritablePacket.DirectTail bounded
+        final int learned = CPacketWriteBuffer.learnedPacketSize(packet.getClass());
+        final int maxTailWireBytes = packet instanceof IPacketWriter.DirectTail bounded
                 && _channel.currentOwner() >= 0 ? bounded.maximumWireBytes() : 0;
         final boolean direct;
         final int slot;
@@ -2289,11 +2289,11 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                     rejectSend(REJECT_POOL);
                     break;
                 }
-                final WriteBuffer writer = lease.beginPacket(packet.getClass());
+                final CPacketWriteBuffer writer = lease.beginPacket(packet.getClass());
                 packet.writeData(client, writer);
                 writer.notePacketSize();
                 encoded = lease;
-            } catch (WriteBuffer.RegisteredCapacityExceededException oversized) {
+            } catch (CPacketWriteBuffer.RegisteredCapacityExceededException oversized) {
                 retryLarge = capacity < CIOBufferPool.MAX_WIRE_BYTES;
                 if (!retryLarge) encodeFailed = true;
             } catch (Throwable failure) {
@@ -2528,7 +2528,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                             rejectSend(REJECT_POOL);
                         } else {
                             try {
-                                final WriteBuffer writer = lease.writer();
+                                final CPacketWriteBuffer writer = lease.writer();
                                 putAction(lease.buffer(), 0, objectId, actionId);
                                 writer.position(8);
                                 lease._frameCount = 1;
@@ -2841,7 +2841,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
      * Each packed frame is encrypted individually in wire order.
      */
     private boolean preparePackedEncryption(CIOBufferEx lease) {
-        final WriteBuffer writer = lease.writer();
+        final CPacketWriteBuffer writer = lease.writer();
         final ByteBuffer bytes = lease.buffer();
         final int length = lease.wireLength();
         if (lease._actionOnly) {
@@ -3105,14 +3105,14 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         clearJavaReadSchedule();
         close();
     }
-    private boolean dispatchPlaintext(ReadBuffer decoded) {
+    private boolean dispatchPlaintext(CPacketReadBuffer decoded) {
         final int opcode = decoded.readUnsignedByte();
         if (_client.checkPacketRateLimit(System.currentTimeMillis())) return false;
         if (!allowed(opcode, _client.getConnectionState(), _client.getAccount() != null,
                 _client.getActiveChar() != null, _client.isGameSessionReady())) return inboundHandlerConnected();
         if (!CPacketHandler.isFastOpcode(opcode)) {
-            NetworkSafeLoadManager.isFilter(_client, opcode);
-        } else if (NetworkSafeLoadManager.isFilter(_client, opcode) != NetworkSafeLoadManager.RESULT_FILTER) {
+            CPacketFilter.isFilter(_client, opcode);
+        } else if (CPacketFilter.isFilter(_client, opcode) != CPacketFilter.RESULT_FILTER) {
             if (CPacketHandler.isDirectOpcode(opcode) || (_client.isGameSessionReady() && !isSessionOpcode(opcode))) {
                 dispatchDecodedFrame(opcode, decoded);
             } else {
@@ -3150,7 +3150,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         recv.flip().position(_readOffset);
         final boolean javaTransport = true;
         final int frameBudget = javaTransport
-                ? Math.max(1, ConnectionConfig.MAX_PACKETS_PER_COMPLETION) : Integer.MAX_VALUE;
+                ? Math.max(1, CConnectionConfig.MAX_PACKETS_PER_COMPLETION) : Integer.MAX_VALUE;
         int completed = 0;
         // The READ pump owns framing and posts the next read only after the
         // current handler returns; fairness yields at complete frame boundaries.
@@ -3279,7 +3279,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
         // Preserve the empty-packet flood handling (wire length == 2).
         if (bodyLength == 0) {
-            if (_client.incrementEmptyPacketCount() <= ConnectionConfig.PACKET_LIMIT_PER_SEC) {
+            if (_client.incrementEmptyPacketCount() <= CConnectionConfig.PACKET_LIMIT_PER_SEC) {
                 return true;
             }
             _client.disconnect();
@@ -3297,7 +3297,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         // state, including filtered and unknown opcodes. Do not preview first.
         final DecodeState state = acquireDecodeState();
         try {
-            final ReadBuffer decoded = state.buffer;
+            final CPacketReadBuffer decoded = state.buffer;
             decoded.resetTrusted(wire, bodyStart, bodyLength);
             if (decrypt(decoded, 0, bodyLength)) {
                 int bytes = bodyLength - 4;
@@ -3322,7 +3322,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                 && (_closing != 0 || _client.isConnected());
     }
 
-    private void executeMeasured(CPacketHandler.PacketHandler handler, int opcode, ReadBuffer decoded) {
+    private void executeMeasured(CPacketHandler.PacketHandler handler, int opcode, CPacketReadBuffer decoded) {
         final long started = System.nanoTime();
         try {
             handler.execute(decoded, _client);
@@ -3352,7 +3352,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         drainSocketCallbacksAcquired();
     }
 
-    private void dispatchDecodedFrame(int opcode, ReadBuffer decoded) {
+    private void dispatchDecodedFrame(int opcode, CPacketReadBuffer decoded) {
         // Even if this handler blocks on game logic or client synchronization,
         // unrelated SEND ticket owners must be able to drain immediately.
         releaseFusedReadSendOwner();
@@ -3785,7 +3785,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             final ByteBuffer bytes = lease.buffer();
             final boolean preparing = !lease._writePrepared;
             if (preparing) {
-                final WriteBuffer writer = lease.writer();
+                final CPacketWriteBuffer writer = lease.writer();
                 if (lease._packedFrames ? !preparePackedEncryption(lease)
                         : !encrypt(writer,
                                 CIOBufferPool.HEADER_BYTES,
@@ -4064,7 +4064,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if(frame==null)return false;
         boolean committed=false;
         try {
-            final l1j.server.server.model.network.buffer.WriteBuffer writer=frame.buffer();
+            final l1j.server.server.model.network.buffer.CPacketWriteBuffer writer=frame.buffer();
             final java.nio.ByteBuffer memory=writer.getBuffer();
             memory.position(writer.baseOffset()+writer.position());
             memory.put(frameBytes,CIOBufferPool.HEADER_BYTES,

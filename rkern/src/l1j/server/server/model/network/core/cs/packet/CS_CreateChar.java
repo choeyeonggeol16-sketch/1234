@@ -16,7 +16,7 @@ import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Beginner;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.templates.L1Skills;
 
 
@@ -28,7 +28,7 @@ public final class CS_CreateChar {
 	}
 
 	public static void handle(
-			CIOClient client,
+			CUserSession client,
 			String name,
 			int type,
 			int sex,
@@ -117,7 +117,7 @@ public final class CS_CreateChar {
         }
     }
 
-    private static void persistNewCharacter(CIOClient client, L1PcInstance pc) {
+    private static void persistNewCharacter(CUserSession client, L1PcInstance pc) {
         final l1j.server.server.Account account = client.getAccount();
         final var socket = client.getConnection();
         final var state = client.getConnectionState();
@@ -187,7 +187,7 @@ public final class CS_CreateChar {
         }
     }
 
-    private static void creationFailed(CIOClient client, l1j.server.server.Account account, Throwable failure) {
+    private static void creationFailed(CUserSession client, l1j.server.server.Account account, Throwable failure) {
         boolean unsafe = false;
         String sqlState = null;
         for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
@@ -224,7 +224,7 @@ public final class CS_CreateChar {
 	public static final int[][] START_LOC_Y = new int[][] { { 32799, 32800, 32801, 32798, 32807 } };
 	public static final short[] MAPID_LIST = new short[] { 4, 4, 4, 4, 4, 4, 4, 4 };
 
-	private static void initNewChar(CIOClient client, L1PcInstance pc) throws IOException, Exception {
+	private static void initNewChar(CUserSession client, L1PcInstance pc) throws IOException, Exception {
 		short init_hp = 0, init_mp = 0;
 		final int NewHi = 0; // 숨계
 		int startPosType = NewHi; 

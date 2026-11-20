@@ -75,7 +75,7 @@ public class L1LetterCommand implements L1CommandExecutor {
 	}
 	/** 개인편지 자동으로 보내기 **/
 	private void WritePrivateMail(L1PcInstance sender, String receiverName, int letterId) {
-        final l1j.server.server.model.network.core.session.CIOClient session=sender.getNetConnection();
+        final l1j.server.server.model.network.core.session.CUserSession session=sender.getNetConnection();
         final int stamp=sender.getSessionStamp();
         final String senderName=sender.getName();
         l1j.server.server.storage.CacheD.getInstance().submitDbJobOrdered(sender.getId(),()->{

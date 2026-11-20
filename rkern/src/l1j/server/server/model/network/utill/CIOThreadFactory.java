@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class PacketThreadFactory implements ThreadFactory {
+public class CIOThreadFactory implements ThreadFactory {
 
 	private static final String DEFAULT_BASE_NAME = "Thread";
 	private static final int INITIAL_SEQUENCE_VALUE = 1;
@@ -18,7 +18,7 @@ public class PacketThreadFactory implements ThreadFactory {
 	private final String _threadPrefix;
 	private final int _threadPriority;
 	
-	public PacketThreadFactory(String baseName, int priority) {
+	public CIOThreadFactory(String baseName, int priority) {
 		final String safeBaseName = ((baseName == null) || baseName.isEmpty()) ? DEFAULT_BASE_NAME : baseName;
 		_threadPrefix = safeBaseName + "-network-pool-" + POOL_SEQUENCE.getAndIncrement() + "-thread-";
 		
@@ -47,7 +47,7 @@ public class PacketThreadFactory implements ThreadFactory {
 		    if (e instanceof ShutdownChannelGroupException) {
 		        return;
 		    }
-		    Logger.getLogger(PacketThreadFactory.class.getName())
+		    Logger.getLogger(CIOThreadFactory.class.getName())
 		            .log(Level.SEVERE, "스레드 미처리 예외: " + t.getName(), e);
 		});
 

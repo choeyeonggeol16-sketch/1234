@@ -5,7 +5,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class CS_SlaveControl {
 
@@ -13,7 +13,7 @@ public final class CS_SlaveControl {
     }
 
     public static void handle(
-            CIOClient client,
+            CUserSession client,
             int petId,
             int targetId) {
 

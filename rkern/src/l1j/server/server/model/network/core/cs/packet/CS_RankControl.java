@@ -11,7 +11,7 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI2;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -26,7 +26,7 @@ public final class CS_RankControl {
 
     private CS_RankControl() {}
 
-    public static void handle(CIOClient client, int type, int rank, String name) {
+    public static void handle(CUserSession client, int type, int rank, String name) {
 
         if (client == null) {
             return;
@@ -96,7 +96,7 @@ public final class CS_RankControl {
         }
     }
 
-    private static void handleRankAssignment(CIOClient client, L1PcInstance pc, L1Clan clan, int rank, String name) throws Exception {
+    private static void handleRankAssignment(CUserSession client, L1PcInstance pc, L1Clan clan, int rank, String name) throws Exception {
 
    
         if (clan == null) {

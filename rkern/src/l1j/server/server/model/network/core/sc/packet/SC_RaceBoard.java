@@ -1,10 +1,10 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import java.nio.charset.Charset;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -17,7 +17,7 @@ public final class SC_RaceBoard {
         return pc != null && send(pc.getNetConnection(), number, isViewedGm);
     }
 
-    public static boolean send(CIOClient client, int number, boolean isViewedGm) {
+    public static boolean send(CUserSession client, int number, boolean isViewedGm) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -64,7 +64,7 @@ public final class SC_RaceBoard {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_HYPERTEXT);
             buffer.writeD(number);
             buffer.writeS("maeno4");

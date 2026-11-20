@@ -23,12 +23,12 @@ import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
 
-import l1j.server.server.model.network.buffer.ReadBuffer;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.codec.Cryptor;
+import l1j.server.server.model.network.buffer.CPacketReadBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.codec.CPacketCryptor;
 
 /** Bounded, standard-Java TCP transport. Each connection has one Selector owner for its entire lifetime. */
-public final class SelectorTransport implements AutoCloseable {
+public final class CSelectorTransport implements AutoCloseable {
     public record Config(int owners, int connectionsPerOwner, int acceptBacklog, int mailboxCapacity,
             int largeReceivesPerOwner, int smallSendsPerOwner, int largeSendsPerOwner,
             int sendBytesPerConnection, int sendFramesPerConnection, int socketSendBytes,
@@ -47,14 +47,14 @@ public final class SelectorTransport implements AutoCloseable {
 
     public interface Handler {
         default void onOpen(Connection connection) throws IOException { }
-        void onFrame(Connection connection, ReadBuffer payload) throws IOException;
+        void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException;
         default void onClosed(Connection connection, CloseReason reason) { }
     }
 
     /** The server's existing wire codec and FIFO can supply buffers directly. */
     public interface RawHandler extends Handler {
         @Override
-        default void onFrame(Connection connection, ReadBuffer payload) {
+        default void onFrame(Connection connection, CPacketReadBuffer payload) {
             throw new IllegalStateException("Raw handler received a framed payload");
         }
     }
@@ -76,7 +76,7 @@ public final class SelectorTransport implements AutoCloseable {
     @FunctionalInterface
     public interface FrameEncoder {
         /** Write the body into the borrowed writer without retaining it. */
-        void encode(WriteBuffer writer) throws IOException;
+        void encode(CPacketWriteBuffer writer) throws IOException;
     }
 
     @FunctionalInterface
@@ -85,7 +85,7 @@ public final class SelectorTransport implements AutoCloseable {
         default void cancel() { }
     }
 
-    public record OwnerStats(SelectorBufferPool.Stats receive, SelectorBufferPool.Stats send,
+    public record OwnerStats(CSelectorBufferPool.Stats receive, CSelectorBufferPool.Stats send,
             int remainingConnections, int remainingCommands, long zeroWrites, long callbackFailures) { }
 
     public record OwnerDiagnostics(int index, int admitted, long registered, int queuedCommands,
@@ -101,8 +101,8 @@ public final class SelectorTransport implements AutoCloseable {
     private static final long OWNER_PHASE_NANOS = 500_000;
     private static final boolean MEASURE_WRITES = Boolean.getBoolean("rkern.network.measureWrites");
     private static final Duration CLOSE_TIMEOUT = Duration.ofSeconds(5);
-    private static final System.Logger LOG = System.getLogger(SelectorTransport.class.getName());
-    private static final SelectorBufferPool.Stats EMPTY_POOL_STATS = new SelectorBufferPool.Stats(0, 0, 0, 0, 0);
+    private static final System.Logger LOG = System.getLogger(CSelectorTransport.class.getName());
+    private static final CSelectorBufferPool.Stats EMPTY_POOL_STATS = new CSelectorBufferPool.Stats(0, 0, 0, 0, 0);
 
     private final Config config;
     private final Handler handler;
@@ -117,16 +117,16 @@ public final class SelectorTransport implements AutoCloseable {
     private int acceptOwner;
     private volatile boolean accepting = true;
 
-    public static SelectorTransport bind(InetSocketAddress address, Config config, Handler handler) throws IOException {
-        return new SelectorTransport(address, config, handler, null);
+    public static CSelectorTransport bind(InetSocketAddress address, Config config, Handler handler) throws IOException {
+        return new CSelectorTransport(address, config, handler, null);
     }
 
-    public static SelectorTransport bindHosted(InetSocketAddress address, Config config, Handler handler,
+    public static CSelectorTransport bindHosted(InetSocketAddress address, Config config, Handler handler,
             OwnerHost host) throws IOException {
-        return new SelectorTransport(address, config, handler, Objects.requireNonNull(host));
+        return new CSelectorTransport(address, config, handler, Objects.requireNonNull(host));
     }
 
-    private SelectorTransport(InetSocketAddress address, Config config, Handler handler, OwnerHost host) throws IOException {
+    private CSelectorTransport(InetSocketAddress address, Config config, Handler handler, OwnerHost host) throws IOException {
         this.config = Objects.requireNonNull(config);
         this.handler = Objects.requireNonNull(handler);
         writeStallNanos = config.writeStallTimeout().toNanos();
@@ -236,11 +236,11 @@ public final class SelectorTransport implements AutoCloseable {
         private final SocketChannel channel;
         private final SelectionKey key;
         private final InetSocketAddress remoteAddress;
-        private final SelectorRawIo raw;
-        private SelectorFrameReader reader;
-        private SelectorSendQueue send;
-        private final SelectorFrameReader.Handler dispatch = this::dispatch;
-        private Cryptor cipher;
+        private final CSelectorRawIo raw;
+        private CSelectorFrameReader reader;
+        private CSelectorSendQueue send;
+        private final CSelectorFrameReader.Handler dispatch = this::dispatch;
+        private CPacketCryptor cipher;
         private boolean plaintextNext;
         private boolean inputPaused;
         private boolean sendPressure;
@@ -262,10 +262,10 @@ public final class SelectorTransport implements AutoCloseable {
             this.owner = owner;
             this.channel = channel;
             remoteAddress = (InetSocketAddress) channel.getRemoteAddress();
-            raw = handler instanceof RawHandler ? new SelectorRawIo() : null;
+            raw = handler instanceof RawHandler ? new CSelectorRawIo() : null;
             if (raw == null) {
-                reader = new SelectorFrameReader(owner.receivePool);
-                send = new SelectorSendQueue(owner.sendPool, config.sendBytesPerConnection(), config.sendFramesPerConnection());
+                reader = new CSelectorFrameReader(owner.receivePool);
+                send = new CSelectorSendQueue(owner.sendPool, config.sendBytesPerConnection(), config.sendFramesPerConnection());
             }
             key = channel.register(owner.selector, raw == null ? SelectionKey.OP_READ : 0, this);
         }
@@ -365,7 +365,7 @@ public final class SelectorTransport implements AutoCloseable {
             requireFramed();
             if (closed || drainReason != null || cipher != null || !send.isEmpty() || send.isEncoding())
                 throw new IllegalStateException("Cipher must start before any pending send");
-            cipher = new Cryptor();
+            cipher = new CPacketCryptor();
             cipher.initKey(seed);
             plaintextNext = firstOutboundPlaintext;
         }
@@ -375,7 +375,7 @@ public final class SelectorTransport implements AutoCloseable {
             requireFramed();
             Objects.requireNonNull(encoder);
             if (closed || drainReason != null) return false;
-            SelectorSendQueue queue = send;
+            CSelectorSendQueue queue = send;
             boolean accepted;
             try {
                 accepted = queue.send(maxPayloadBytes, encoder, cipher, plaintextNext);
@@ -415,7 +415,7 @@ public final class SelectorTransport implements AutoCloseable {
             terminate(CloseReason.APPLICATION);
         }
 
-        private boolean dispatch(ReadBuffer payload) throws IOException {
+        private boolean dispatch(CPacketReadBuffer payload) throws IOException {
             if (cipher != null) {
                 int length = payload.remaining();
                 if (length < 8) throw new IOException("Encrypted inbound frame is too short");
@@ -551,8 +551,8 @@ public final class SelectorTransport implements AutoCloseable {
             try { channel.close(); }
             catch (IOException closeError) { failure.compareAndSet(null, closeError); }
             finally {
-                SelectorFrameReader inbound = reader;
-                SelectorSendQueue outbound = send;
+                CSelectorFrameReader inbound = reader;
+                CSelectorSendQueue outbound = send;
                 // Application code may retain a closed handle. It must not pin either owner pool.
                 reader = null;
                 send = null;
@@ -671,8 +671,8 @@ public final class SelectorTransport implements AutoCloseable {
         private final Consumer<SelectionKey> collector = this::collect;
         private final Consumer<RuntimeException> reportRawCancellation =
                 error -> reportCallbackFailure("raw I/O cancellation", error);
-        private SelectorBufferPool receivePool;
-        private SelectorBufferPool sendPool;
+        private CSelectorBufferPool receivePool;
+        private CSelectorBufferPool sendPool;
         private volatile boolean stopping;
         private volatile boolean finished;
         private boolean acceptReady;
@@ -840,13 +840,13 @@ public final class SelectorTransport implements AutoCloseable {
             synchronized (startupLock) {
                 if (finished) return;
                 if (!started) {
-                    SelectorTransport.this.requestStop();
+                    CSelectorTransport.this.requestStop();
                     return;
                 }
             }
             if (thread == null) thread = Thread.currentThread();
             requireOwner();
-            SelectorTransport.this.requestStop();
+            CSelectorTransport.this.requestStop();
             finish();
         }
 
@@ -854,13 +854,13 @@ public final class SelectorTransport implements AutoCloseable {
             if (thread == null) thread = Thread.currentThread();
             requireOwner();
             if (handler instanceof RawHandler || receivePool != null) return;
-            receivePool = SelectorBufferPool.receive(config.connectionsPerOwner(), config.largeReceivesPerOwner());
-            sendPool = SelectorBufferPool.send(config.smallSendsPerOwner(), config.largeSendsPerOwner());
+            receivePool = CSelectorBufferPool.receive(config.connectionsPerOwner(), config.largeReceivesPerOwner());
+            sendPool = CSelectorBufferPool.send(config.smallSendsPerOwner(), config.largeSendsPerOwner());
         }
 
         private void fail(Throwable unexpected) {
             failure.compareAndSet(null, unexpected);
-            SelectorTransport.this.requestStop();
+            CSelectorTransport.this.requestStop();
         }
 
         private void reportCallbackFailure(String stage, RuntimeException error) {

@@ -11,8 +11,8 @@ import l1j.server.MJCTSystem.MJCTSpell;
 import l1j.server.server.Opcodes;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
@@ -163,7 +163,7 @@ private Data(int mode, String charName, String charInfoStr,
 		_invList = invList != null ? invList : Collections.<InvItemNode>emptyList();
 	}
 
-public boolean send(CIOClient client) {
+public boolean send(CUserSession client) {
 		if (client == null || !client.isConnected()) return false;
 		final CUserSocket conn = client.getConnection();
 		if (conn == null || !conn.isClientConnected()) return false;
@@ -200,7 +200,7 @@ public boolean send(CIOClient client) {
 		}
 	}
 
-private void writeImpl(CIOClient client, WriteBuffer buffer) {
+private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 		switch (_mode) {
 		case MODE_CHAR_INFO:
 			buffer.writeC(Opcodes.S_BOARD_READ);

@@ -72,7 +72,7 @@ import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1PeopleInstance;
 import l1j.server.server.model.character.skill.helper.WeakExposeHelper;
 import l1j.server.server.model.gametime.L1GameTimeClock;
-import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.core.cs.packet.CS_ItemUse;
 import l1j.server.server.model.poison.L1DamagePoison;
 import l1j.server.server.model.poison.L1ParalysisPoison;

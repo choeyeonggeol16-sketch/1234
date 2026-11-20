@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Pledge.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.datatables.IncreaseEinhasadMap;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -146,7 +146,7 @@ public final class SC_REST_EXP_INFO_NOTI extends ProtoPacket {
     }
 
     public static boolean sendFields(
-            CIOClient recipient, int _restGauge, int _defaultRation, int _extraExpRatio, int _reduceEfficiency,
+            CUserSession recipient, int _restGauge, int _defaultRation, int _extraExpRatio, int _reduceEfficiency,
             boolean _blessOfBloodPledge) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_REST_EXP_INFO_NOTI, Proto.capacityBound(1024L));
         if (writer == null) return false;
@@ -165,7 +165,7 @@ public final class SC_REST_EXP_INFO_NOTI extends ProtoPacket {
     }
 
     private static boolean sendCtor(
-            CIOClient protoRecipient, int restGauge, int defaultRation, int extraExpRatio, int reduceEfficiency,
+            CUserSession protoRecipient, int restGauge, int defaultRation, int extraExpRatio, int reduceEfficiency,
             boolean blessOfBloodPledge) {
         int proto56_restGauge = 0;
         int proto56_defaultRation = 0;
@@ -184,7 +184,7 @@ public final class SC_REST_EXP_INFO_NOTI extends ProtoPacket {
                 proto56_blessOfBloodPledge);
     }
     public static boolean sendConstructed(
-            CIOClient protoRecipient, int restGauge, int defaultRation, int extraExpRatio, int reduceEfficiency,
+            CUserSession protoRecipient, int restGauge, int defaultRation, int extraExpRatio, int reduceEfficiency,
             boolean blessOfBloodPledge) { return sendCtor(protoRecipient, restGauge, defaultRation, extraExpRatio, reduceEfficiency, blessOfBloodPledge); }
 
     public static boolean sendConstructed(

@@ -9,8 +9,8 @@ import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
@@ -30,12 +30,12 @@ public final class SC_CommonNews {
         }
     }
 
-    private static void writePayload(WriteBuffer buffer, String value) {
+    private static void writePayload(CPacketWriteBuffer buffer, String value) {
         buffer.writeC(Opcodes.S_NEWS);
         buffer.writeS(value);
     }
 
-    public static boolean send(CIOClient client, String message) {
+    public static boolean send(CUserSession client, String message) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket conn = client.getConnection();
         if (conn == null || !conn.isClientConnected()) return false;
@@ -46,7 +46,7 @@ public final class SC_CommonNews {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             writePayload(buffer, text);
             committed = conn.commitDirectFrame(frame);
             return committed;

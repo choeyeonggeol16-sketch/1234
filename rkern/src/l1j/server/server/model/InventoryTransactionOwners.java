@@ -5,7 +5,7 @@ import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 /** The owners of a durable receipt, captured once at admission.
  * Fixed fields keep the ordinary one/two-owner path allocation-light.
@@ -18,11 +18,11 @@ final class InventoryTransactionOwners {
 
     private final L1PcInstance primary;
     private final L1PcInstance first, second;
-    private final CIOClient firstSession, secondSession;
+    private final CUserSession firstSession, secondSession;
     private final int firstStamp, secondStamp;
     // Only party transactions allocate these arrays. One/two-owner hot paths remain flat.
     private final L1PcInstance[] additional;
-    private final CIOClient[] additionalSessions;
+    private final CUserSession[] additionalSessions;
     private final int[] additionalStamps;
     private volatile int reserved;
 
@@ -32,9 +32,9 @@ final class InventoryTransactionOwners {
         first = ordered ? primary : other;
         second = ordered ? other : primary;
 
-        CIOClient firstConnection = admit(first, trade);
+        CUserSession firstConnection = admit(first, trade);
         int firstIdentity = first.getSessionStamp();
-        CIOClient secondConnection = null;
+        CUserSession secondConnection = null;
         int secondIdentity = 0;
         try {
             if (second != null) {
@@ -75,9 +75,9 @@ final class InventoryTransactionOwners {
         first = sorted[0];
         second = sorted[1];
         additional = Arrays.copyOfRange(sorted, 2, sorted.length);
-        additionalSessions = new CIOClient[additional.length];
+        additionalSessions = new CUserSession[additional.length];
         additionalStamps = new int[additional.length];
-        CIOClient[] sessions = new CIOClient[sorted.length];
+        CUserSession[] sessions = new CUserSession[sorted.length];
         int[] stamps = new int[sorted.length];
         int taken = 0;
         try {
@@ -103,8 +103,8 @@ final class InventoryTransactionOwners {
         reserved = 1;
     }
 
-    private CIOClient admit(L1PcInstance pc, boolean trade) {
-        CIOClient session = pc.getNetConnection();
+    private CUserSession admit(L1PcInstance pc, boolean trade) {
+        CUserSession session = pc.getNetConnection();
         boolean connected = session != null && session.isConnected() && session.getActiveChar() == pc;
         boolean market = !trade && pc != primary && pc.isPrivateShop()
                 && L1World.getInstance().findObject(pc.getId()) == pc;
@@ -138,7 +138,7 @@ final class InventoryTransactionOwners {
         throw new IllegalArgumentException("Unreserved inventory owner");
     }
 
-    private CIOClient session(L1PcInstance pc) {
+    private CUserSession session(L1PcInstance pc) {
         if (pc == first) return firstSession;
         if (pc != null && pc == second) return secondSession;
         if (additional != null) for (int i = 0; i < additional.length; i++)
@@ -147,13 +147,13 @@ final class InventoryTransactionOwners {
     }
 
     Object monitor(L1PcInstance pc) {
-        CIOClient session = session(pc);
+        CUserSession session = session(pc);
         return session == null ? pc.getInventory() : session;
     }
 
     boolean current(L1PcInstance pc) {
         if (pc.getSessionStamp() != stamp(pc)) return false;
-        CIOClient session = session(pc);
+        CUserSession session = session(pc);
         if (session == null) return pc != primary && pc.isPrivateShop()
                 && L1World.getInstance().findObject(pc.getId()) == pc;
         return session.isConnected() && session.getActiveChar() == pc && pc.getNetConnection() == session;
@@ -171,7 +171,7 @@ final class InventoryTransactionOwners {
     void quarantine() {
         if (firstSession != null && firstSession.isConnected()) firstSession.kick();
         if (secondSession != null && secondSession.isConnected()) secondSession.kick();
-        if (additionalSessions != null) for (CIOClient session : additionalSessions)
+        if (additionalSessions != null) for (CUserSession session : additionalSessions)
             if (session != null && session.isConnected()) session.kick();
     }
 }

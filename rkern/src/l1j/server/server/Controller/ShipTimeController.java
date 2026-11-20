@@ -32,7 +32,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.gametime.L1GameTimeClock;
-import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;

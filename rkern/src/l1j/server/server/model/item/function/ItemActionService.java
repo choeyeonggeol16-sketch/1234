@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.L1ItemDelay;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.cs.packet.CS_ItemUse;
 import l1j.server.server.utils.SupplementalItemIds;
 
@@ -14,7 +14,7 @@ final class ItemActionService {
     private static final Logger LOG=Logger.getLogger(CS_ItemUse.class.getName());
     private ItemActionService() {}
 
-    static void use(CIOClient client, L1PcInstance pc, L1ItemInstance item,
+    static void use(CUserSession client, L1PcInstance pc, L1ItemInstance item,
             int itemObjectId, int targetId, int x, int y, String name, int skillId) {
         final int itemId=item.getItem().getItemId();
         if(SupplementalItemIds.contains(itemId)) {

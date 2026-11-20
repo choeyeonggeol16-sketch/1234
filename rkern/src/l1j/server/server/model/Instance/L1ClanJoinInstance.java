@@ -10,7 +10,7 @@ import l1j.server.server.model.L1ClanJoin;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
@@ -121,7 +121,7 @@ public class L1ClanJoinInstance extends L1Object{
 	private int _lawful;
 	private int _gfx;
 	private int _heading;
-	private ServerPacket _world_put;
+	private CServerPacket _world_put;
 	private L1ClanJoinInstance(){
 		
 	}
@@ -231,12 +231,12 @@ public class L1ClanJoinInstance extends L1Object{
 		return _heading;
 	}
 	
-	public L1ClanJoinInstance set_world_put(ServerPacket pck){
+	public L1ClanJoinInstance set_world_put(CServerPacket pck){
 		_world_put = pck;
 		return this;
 	}
 	
-	public ServerPacket get_world_put(){
+	public CServerPacket get_world_put(){
 		return _world_put;
 	}
 	

@@ -3,8 +3,8 @@ package l1j.server.server.model.network.core.broadcast;
 import java.nio.ByteBuffer;
 
 /** L1 payload layouts used by the shared action, movement and combat packets. */
-public final class SharedPacketFormat {
-    private SharedPacketFormat() { }
+public final class CSharedPacketFormat {
+    private CSharedPacketFormat() { }
 
     public static void writeFormatted(ByteBuffer out, int kind, int opcode,
             int objectId, int a, int b, int c) {

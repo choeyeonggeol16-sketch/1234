@@ -34,7 +34,7 @@ import l1j.server.server.model.Instance.L1RaidPortalInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.map.L1Map;
-import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
 import l1j.server.server.model.network.core.sc.packet.SC_OnlyEffect;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;

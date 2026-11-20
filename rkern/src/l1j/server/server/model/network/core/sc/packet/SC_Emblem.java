@@ -2,17 +2,17 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import java.io.File;
 import java.nio.file.Files;
 
 public final class SC_Emblem {
     private static final int SEND_MARGIN_BYTES = 512 * 1024;
     private SC_Emblem() {}
-    public static boolean send(CIOClient client, int emblemId) {
+    public static boolean send(CUserSession client, int emblemId) {
         if (client == null || !client.isConnected()) return false;
         byte[] data = new byte[0];
         try {
@@ -28,7 +28,7 @@ public final class SC_Emblem {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EMBLEM);
             buffer.writeD(emblemId);
             buffer.writeH(data.length);

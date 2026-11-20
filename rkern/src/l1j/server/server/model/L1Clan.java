@@ -702,7 +702,7 @@ import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Warehouse.ClanWarehouse;
 import l1j.server.server.model.Warehouse.WarehouseManager;
-import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoOutputStream;
 import l1j.server.server.utils.IntRange;
 

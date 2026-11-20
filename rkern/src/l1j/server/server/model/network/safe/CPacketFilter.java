@@ -8,20 +8,20 @@ import java.util.concurrent.atomic.AtomicReference;
 import l1j.server.Config;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.CommonUtil;
 import l1j.server.server.utils.MJCommons;
 
-public class NetworkSafeLoadManager {
+public class CPacketFilter {
 
-	private NetworkSafeLoadManager() {}
+	private CPacketFilter() {}
 
 	private static final class Holder {
-		private static final NetworkSafeLoadManager INSTANCE = new NetworkSafeLoadManager();
+		private static final CPacketFilter INSTANCE = new CPacketFilter();
 	}
 
-	public static NetworkSafeLoadManager getInstance() {
+	public static CPacketFilter getInstance() {
 		return Holder.INSTANCE;
 	}
 
@@ -105,7 +105,7 @@ public class NetworkSafeLoadManager {
 	private static final int DEF_CLIENT_SETTING_SW    = 889191819;
 
 
-	public static int isFilter(CIOClient clnt, int op){
+	public static int isFilter(CUserSession clnt, int op){
 	    final byte[] filters = STATE.get().filters;
 
 	    // 1. 등록되지 않은 옵코드인가?

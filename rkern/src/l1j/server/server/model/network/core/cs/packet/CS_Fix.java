@@ -10,7 +10,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.templates.L1Pet;
@@ -21,7 +21,7 @@ public final class CS_Fix {
     }
 
     public static void handle(
-            CIOClient client,
+            CUserSession client,
             int itemObjectId,
             int npcObjectId) {
 

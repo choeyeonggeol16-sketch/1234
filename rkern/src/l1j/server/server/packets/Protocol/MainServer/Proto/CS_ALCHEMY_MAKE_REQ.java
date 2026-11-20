@@ -11,9 +11,9 @@ import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.packet.ServerPacket;
-import l1j.server.server.model.network.packet.WritablePacket;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.packet.IPacketWriter;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
@@ -71,7 +71,7 @@ public final class CS_ALCHEMY_MAKE_REQ {
         }
     }
 
-    public static void handleRequest(CIOClient client, ProtoReader r) {
+    public static void handleRequest(CUserSession client, ProtoReader r) {
         // ── 파싱 (readBytes + 서브 리더 — 정석 서브메시지 파싱) ──
         int alchemyId = 0;
         boolean hasAlchemyId = false;

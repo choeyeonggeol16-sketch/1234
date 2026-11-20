@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.connection;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 /** L1 Java view of a pooled CIOBufferEx; JVM object layout is not the original C++ ABI. */
 public final class CIOBufferEx {
     private static final AtomicIntegerFieldUpdater<CIOBufferEx> ACTIVE =
@@ -19,7 +19,7 @@ public final class CIOBufferEx {
     boolean _actionOnly;
     volatile boolean _ioPending;
     private ByteBuffer _bytes;
-    private WriteBuffer _writer;
+    private CPacketWriteBuffer _writer;
     private CIOFrame _directFrame;
     int _wireLength;
     int _frameCount;
@@ -35,7 +35,7 @@ public final class CIOBufferEx {
         return _bytes;
     }
 
-    public WriteBuffer writer() {
+    public CPacketWriteBuffer writer() {
         if (_active == 0 || _writer == null)
             throw new IllegalStateException("not an active SEND lease");
         return _writer;
@@ -52,8 +52,8 @@ public final class CIOBufferEx {
         return _directFrame;
     }
 
-    /** Re-arm the same pooled buffer for an existing WritablePacket.writeData(). */
-    WriteBuffer beginPacket(Class<?> packetClass) {
+    /** Re-arm the same pooled buffer for an existing IPacketWriter.writeData(). */
+    CPacketWriteBuffer beginPacket(Class<?> packetClass) {
         if (_active != 1 || _writer == null || _writePrepared)
             throw new IllegalStateException("not a reserved SEND packet slot");
         _writer.releaseResources();
@@ -83,7 +83,7 @@ public final class CIOBufferEx {
             _actionOnly = false;
             _ioPending = false;
             if (send) {
-                if (_writer == null) _writer = new WriteBuffer();
+                if (_writer == null) _writer = new CPacketWriteBuffer();
                 _writer.armExternal(_bytes, 0, capacity);
                 _writer.beginDirect();
                 _writer.position(CIOBufferPool.HEADER_BYTES);

@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.transport;
 
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.execution.CIOObject;
-import l1j.server.server.model.network.core.transport.selector.SelectorTransport;
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 
 import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
@@ -12,10 +12,10 @@ import java.nio.ByteBuffer;
 
 /** Completion adapter consumed by the game socket pumps. */
 public final class CSocket implements AutoCloseable {
-    private final JavaCioServer javaServer;
-    private final SelectorTransport.Connection javaPeer;
-    private final SelectorTransport.OwnerCommand javaReadRequest;
-    private final SelectorTransport.OwnerCommand javaWriteRequest;
+    private final CIOServer javaServer;
+    private final CSelectorTransport.Connection javaPeer;
+    private final CSelectorTransport.OwnerCommand javaReadRequest;
+    private final CSelectorTransport.OwnerCommand javaWriteRequest;
     private final IntConsumer javaReadCallback;
     private final LongConsumer javaWriteCallback;
     private final Runnable javaDeadlineCallback;
@@ -34,7 +34,7 @@ public final class CSocket implements AutoCloseable {
     private CUserSocket writeOwner;
     private boolean gathering;
 
-    CSocket(JavaCioServer server, long id, SelectorTransport.Connection peer) {
+    CSocket(CIOServer server, long id, CSelectorTransport.Connection peer) {
         this.id = id;
         remote = peer.remoteAddress();
         javaServer = server;
@@ -42,16 +42,16 @@ public final class CSocket implements AutoCloseable {
         javaReadCallback = this::completeJavaRead;
         javaWriteCallback = this::completeJavaWrite;
         javaDeadlineCallback = this::runJavaDeadline;
-        javaReadRequest = new SelectorTransport.OwnerCommand() {
-            @Override public void run(SelectorTransport.Connection connection) {
+        javaReadRequest = new CSelectorTransport.OwnerCommand() {
+            @Override public void run(CSelectorTransport.Connection connection) {
                 ByteBuffer target;
                 synchronized (CSocket.this) { target = readBuffer; }
                 if (target != null && !connection.readRaw(target, javaReadCallback)) completeJavaRead(-1);
             }
             @Override public void cancel() { completeJavaRead(-1); }
         };
-        javaWriteRequest = new SelectorTransport.OwnerCommand() {
-            @Override public void run(SelectorTransport.Connection connection) {
+        javaWriteRequest = new CSelectorTransport.OwnerCommand() {
+            @Override public void run(CSelectorTransport.Connection connection) {
                 ByteBuffer[] sources;
                 int offset, count;
                 boolean gather;
@@ -126,8 +126,8 @@ public final class CSocket implements AutoCloseable {
         else if (delay > 0) javaPeer.scheduleDeadline(Math.min(delay, 1 + (remaining - 1) / 1_000_000), javaDeadlineCallback);
     }
     public boolean postCompletion(CIOObject task) {
-        return javaPeer.submit(new SelectorTransport.OwnerCommand() {
-            @Override public void run(SelectorTransport.Connection ignored) { task.OnIOCallback(); }
+        return javaPeer.submit(new CSelectorTransport.OwnerCommand() {
+            @Override public void run(CSelectorTransport.Connection ignored) { task.OnIOCallback(); }
             @Override public void cancel() { task.cancel(); }
         }, true);
     }
@@ -140,7 +140,7 @@ public final class CSocket implements AutoCloseable {
                 readOwner == null ? 0 : 1, writeOwner == null ? 0 : 1, 0, a.length == 4 ? 2 : 0, address, remote.getPort()};
     }
 
-    void javaTerminated(SelectorTransport.CloseReason reason) {
+    void javaTerminated(CSelectorTransport.CloseReason reason) {
         closing = true;
         javaLoginDeadline = 0;
         try { transportClosing(); }

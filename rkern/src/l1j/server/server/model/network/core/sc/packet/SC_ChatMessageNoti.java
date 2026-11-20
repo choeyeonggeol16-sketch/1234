@@ -3,11 +3,11 @@ package l1j.server.server.model.network.core.sc.packet;
 import l1j.server.MJTemplate.MJSimpleRgb;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_ChatMessageNoti {
     private static final int SC_CHAT_MESSAGE_NOTI_PACKET = 0x0204;
@@ -73,7 +73,7 @@ public static final int CHAT_NORMAL 			= 0x00;
                                         String sender, int flag30, boolean hasObj,
                                         int objId, int x, int y, int rank) {
         if (receiver == null) return false;
-        final CIOClient socket = receiver.getNetConnection();
+        final CUserSession socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -95,7 +95,7 @@ public static final int CHAT_NORMAL 			= 0x00;
         }
     }
 
-	private static void writePayload(WriteBuffer buffer, int type, String msg, byte[] rgbBytes, String sender, int flag30, boolean hasObj, int objId, int x, int y, int rank) {
+	private static void writePayload(CPacketWriteBuffer buffer, int type, String msg, byte[] rgbBytes, String sender, int flag30, boolean hasObj, int objId, int x, int y, int rank) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeH(SC_CHAT_MESSAGE_NOTI_PACKET);
 

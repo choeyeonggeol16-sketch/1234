@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * 패킷 수신용 ByteBuffer wrapper.
  */
-public final class ReadBuffer {
+public final class CPacketReadBuffer {
 
     private ByteBuffer _buf;
 
@@ -25,7 +25,7 @@ public final class ReadBuffer {
     /** payload 기준 mark. */
     private int _mark = -1;
 
-    public ReadBuffer() {
+    public CPacketReadBuffer() {
     }
 
     /**
@@ -33,7 +33,7 @@ public final class ReadBuffer {
      * ByteOrder까지 여기서 확정한다.
      */
     public void reset(ByteBuffer buffer, int base, int length) {
-        Objects.requireNonNull(buffer, "ReadBuffer buffer must not be null");
+        Objects.requireNonNull(buffer, "CPacketReadBuffer buffer must not be null");
 
         if (base < 0 || length < 0 || base > buffer.capacity() - length) {
             throw new IndexOutOfBoundsException(
@@ -201,7 +201,7 @@ public final class ReadBuffer {
         return _buf.getLong(_base + index);
     }
 
-    /** Cryptor용 absolute bulk read. */
+    /** CPacketCryptor용 absolute bulk read. */
     public void readBytes(int index, byte[] dst, int offset, int length) {
         Objects.requireNonNull(dst, "dst");
         checkIndex(index, length);
@@ -209,7 +209,7 @@ public final class ReadBuffer {
     }
 
     // -------------------------------------------------------------------------
-    // Absolute writes - Cryptor용
+    // Absolute writes - CPacketCryptor용
     // -------------------------------------------------------------------------
 
     public void writeByte(int index, byte value) {
@@ -232,7 +232,7 @@ public final class ReadBuffer {
         _buf.putLong(_base + index, value);
     }
 
-    /** Cryptor용 absolute bulk write. */
+    /** CPacketCryptor용 absolute bulk write. */
     public void writeBytes(int index, byte[] src, int offset, int length) {
         Objects.requireNonNull(src, "src");
         checkIndex(index, length);

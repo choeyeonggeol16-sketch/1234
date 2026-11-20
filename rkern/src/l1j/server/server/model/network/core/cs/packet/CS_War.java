@@ -8,7 +8,7 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -19,7 +19,7 @@ public final class CS_War {
 
     private CS_War() {}
 
-    public static void handle(CIOClient client, int type, String targetClanName) {
+    public static void handle(CUserSession client, int type, String targetClanName) {
 
         if (client == null) {
             return;

@@ -15,7 +15,7 @@ import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.BookQuest.Loader.BQSCharacterDataLoader;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.sc.packet.SC_CommonNews;
 import l1j.server.server.storage.CacheD;
@@ -32,7 +32,7 @@ public final class CS_DeleteChar {
     private CS_DeleteChar() {
     }
 
-    public static void handle(CIOClient client, String name) {
+    public static void handle(CUserSession client, String name) {
         if (client == null || name == null || name.isEmpty() ||
                 !client.isConnected() || client.getAccount() == null) return;
         final String account = client.getAccountName();

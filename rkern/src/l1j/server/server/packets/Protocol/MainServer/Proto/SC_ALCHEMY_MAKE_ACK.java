@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -114,7 +114,7 @@ public final class SC_ALCHEMY_MAKE_ACK extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _resultCode, _outputItems);
     }
 
-    public static boolean sendFields(CIOClient recipient, ResultCode _resultCode, java.util.LinkedList<OutputItem> _outputItems) {
+    public static boolean sendFields(CUserSession recipient, ResultCode _resultCode, java.util.LinkedList<OutputItem> _outputItems) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ALCHEMY_MAKE_ACK, Proto.capacityBound(128L + (_outputItems == null ? 0L : 64L * _outputItems.size())));
         if (writer == null) return false;
         try {
@@ -131,7 +131,7 @@ public final class SC_ALCHEMY_MAKE_ACK extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_ALCHEMY_MAKE_ACK);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, ResultCode resultCode, java.util.LinkedList<OutputItem> outputItems) {
+    private static boolean sendCtor(CUserSession protoRecipient, ResultCode resultCode, java.util.LinkedList<OutputItem> outputItems) {
         ResultCode proto10_resultCode = null;
         java.util.LinkedList<OutputItem> proto10_outputItems = null;
 
@@ -141,11 +141,11 @@ public final class SC_ALCHEMY_MAKE_ACK extends ProtoPacket {
         return sendFields(protoRecipient, proto10_resultCode, proto10_outputItems);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, ResultCode resultCode) {
+    private static boolean sendCtor(CUserSession protoRecipient, ResultCode resultCode) {
         return sendCtor(protoRecipient, resultCode, null);
     }
 
-    public static boolean sendSuccess(CIOClient protoRecipient, ResultCode resultCode, L1ItemInstance item) {
+    public static boolean sendSuccess(CUserSession protoRecipient, ResultCode resultCode, L1ItemInstance item) {
         java.util.LinkedList<OutputItem> items = new java.util.LinkedList<>();
                 items.add(new OutputItem(item.getId(), item.get_gfxid(), item.getBless()));
                 return sendCtor(protoRecipient, resultCode, items);
@@ -154,11 +154,11 @@ public final class SC_ALCHEMY_MAKE_ACK extends ProtoPacket {
     public static boolean sendSuccess(L1PcInstance protoRecipient, ResultCode resultCode, L1ItemInstance item) {
         return sendSuccess(protoRecipient == null ? null : protoRecipient.getNetConnection(), resultCode, item);
     }
-    public static boolean sendConstructed(CIOClient protoRecipient, ResultCode resultCode, java.util.LinkedList<OutputItem> outputItems) { return sendCtor(protoRecipient, resultCode, outputItems); }
+    public static boolean sendConstructed(CUserSession protoRecipient, ResultCode resultCode, java.util.LinkedList<OutputItem> outputItems) { return sendCtor(protoRecipient, resultCode, outputItems); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient, ResultCode resultCode, java.util.LinkedList<OutputItem> outputItems) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), resultCode, outputItems); }
 
-    public static boolean sendConstructed(CIOClient protoRecipient, ResultCode resultCode) { return sendCtor(protoRecipient, resultCode); }
+    public static boolean sendConstructed(CUserSession protoRecipient, ResultCode resultCode) { return sendCtor(protoRecipient, resultCode); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, ResultCode resultCode) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), resultCode); }

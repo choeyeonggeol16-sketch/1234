@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -52,7 +52,7 @@ public final class SC_CRAFT_BATCH_ACK extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _eResult, _batchTransactionId);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _eResult, int _batchTransactionId) {
+    public static boolean sendFields(CUserSession recipient, int _eResult, int _batchTransactionId) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_CRAFT_BATCH_ACK, Proto.capacityBound(1024L));
         if (writer == null) return false;
         try {
@@ -69,7 +69,7 @@ public final class SC_CRAFT_BATCH_ACK extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_CRAFT_BATCH_ACK);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, int eResult, int batchTransactionId) {
+    private static boolean sendCtor(CUserSession protoRecipient, int eResult, int batchTransactionId) {
         int proto27_eResult = 0;
         int proto27_batchTransactionId = 0;
 
@@ -79,7 +79,7 @@ public final class SC_CRAFT_BATCH_ACK extends ProtoPacket {
         return sendFields(protoRecipient, proto27_eResult, proto27_batchTransactionId);
     }
     public static boolean sendConstructed(
-            CIOClient protoRecipient, int eResult, int batchTransactionId) { return sendCtor(protoRecipient, eResult, batchTransactionId); }
+            CUserSession protoRecipient, int eResult, int batchTransactionId) { return sendCtor(protoRecipient, eResult, batchTransactionId); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int eResult, int batchTransactionId) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), eResult, batchTransactionId); }

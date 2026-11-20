@@ -1,10 +1,10 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 import java.util.ArrayList;
@@ -86,7 +86,7 @@ public final class SC_ChartRank {
     }
 
 
-    /** WriteBuffer.writeBit uses 32-bit unsigned semantics for negatives. */
+    /** CPacketWriteBuffer.writeBit uses 32-bit unsigned semantics for negatives. */
     private static void putBit(java.nio.ByteBuffer out,long value){
         if(value<0L)value &= 0xffffffffL;
         while((value & ~0x7fL)!=0L){
@@ -98,7 +98,7 @@ public final class SC_ChartRank {
 
     public static boolean send(L1PcInstance pc, Snapshot snapshot) {
         if (pc == null || snapshot == null) return false;
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -106,7 +106,7 @@ public final class SC_ChartRank {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer out = frame.buffer();
+            final CPacketWriteBuffer out = frame.buffer();
             out.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             out.writeH(SC_BASECAMP_CHART_NOTI_PACKET);
             if (snapshot.zero) {

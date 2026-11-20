@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.core.session;
 
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CUserSocketCloseTask;
+import l1j.server.server.model.network.core.connection.CUserSocketReleaseTask;
 
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -25,22 +25,22 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.shop.PlayerShopView;
-import l1j.server.server.model.network.buffer.ReadBuffer;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.client.manager.NetworkClientCounter;
+import l1j.server.server.model.network.buffer.CPacketReadBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.client.manager.CIPConnectionCounter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.network.packet.BytesWritablePacket;
-import l1j.server.server.model.network.packet.ServerPacket;
-import l1j.server.server.model.network.packet.WritablePacket;
-import l1j.server.server.model.network.utill.ConnectionConfig;
-import l1j.server.server.model.network.utill.ConnectionState;
+import l1j.server.server.model.network.packet.CBytesPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.packet.IPacketWriter;
+import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRAFT_LIST_ALL_ACK;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoOutputStream;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 
-public class CIOClient implements CIOThreadCallback.WheelTask {
+public class CUserSession implements CIOThreadCallback.WheelTask {
 
-	private static final Logger _log = Logger.getLogger(CIOClient.class.getName());
+	private static final Logger _log = Logger.getLogger(CUserSession.class.getName());
 
 	private final CUserSocket _connection;
 	private final boolean _ipReservationCounted;
@@ -53,7 +53,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 	static {
 		try {
 			SHARD_LOGGED = MethodHandles.lookup().findVarHandle(
-					CIOClient.class, "_shardLogged", int.class);
+					CUserSession.class, "_shardLogged", int.class);
 		} catch (ReflectiveOperationException e) {
 			throw new ExceptionInInitializerError(e);
 		}
@@ -80,7 +80,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 	private int _packetCount = 0;
 	private long _lastCheckTime = System.currentTimeMillis();
 
-	public CIOClient(CUserSocket connection, boolean ipReservationCounted) {
+	public CUserSession(CUserSocket connection, boolean ipReservationCounted) {
 		if (connection == null || !connection.isOpen()) {
 			throw new IllegalArgumentException("The connection is null or closed.");
 		}
@@ -97,7 +97,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
             socket.SetKey(Opcodes.getSeed());
             // sendPacket(byte[]) swallows staging failures. ACCEPT must not treat
             // a failed initial SEND reservation as a successful login handshake.
-            if (!socket.tryWritePacket(this, new BytesWritablePacket(Opcodes.S_KEYBYTES))) {
+            if (!socket.tryWritePacket(this, new CBytesPacket(Opcodes.S_KEYBYTES))) {
                 socket.clearCipher();
                 return false;
             }
@@ -114,12 +114,12 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 		close();
 	}
 
-    public boolean encrypt(WriteBuffer data, int offset, int size) {
+    public boolean encrypt(CPacketWriteBuffer data, int offset, int size) {
         final CUserSocket socket = _connection;
         return socket != null && socket.encrypt(data, offset, size);
     }
 
-    public boolean decrypt(ReadBuffer data, int offset, int size) {
+    public boolean decrypt(CPacketReadBuffer data, int offset, int size) {
         final CUserSocket socket = _connection;
         return socket != null && socket.decrypt(data, offset, size);
     }
@@ -165,7 +165,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
         // work finishes. L1 uses its own private-shop/auto-clan rules and DB pool;
         // L2's state numbers and fixed 5/15 second delays are not copied.
         final int stamp = pc == null ? 0 : pc.getSessionStamp();
-        final CUserSocketCloseTask task = new CUserSocketCloseTask(
+        final CUserSocketReleaseTask task = new CUserSocketReleaseTask(
                 () -> pc != null && pc.getNetConnection() == this && pc.getSessionStamp() == stamp
                         && !pc.isPrivateShop() && !pc.isAutoClanjoin(),
                 () -> {
@@ -194,11 +194,11 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 					&& !_inetAddress.isEmpty()
 					&& !_inetAddress.equals("0.0.0.0")) {
 
-				NetworkClientCounter.getInstance()
+				CIPConnectionCounter.getInstance()
 						.decrease(InetAddress.getByName(_inetAddress));
 			}
 		} catch (Exception e) {
-			_log.log(Level.WARNING, "NetworkClientCounter decrease 예외 발생", e);
+			_log.log(Level.WARNING, "CIPConnectionCounter decrease 예외 발생", e);
 		}
 
 		try {
@@ -223,7 +223,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 
 			disconnect();
 
-			setConnectionState(ConnectionState.DISCONNECTED);
+			setConnectionState(CConnectionState.DISCONNECTED);
 		} catch (Throwable e) {
 			_log.log(Level.WARNING, "disconnect 처리 중 예외 발생", e);
 		} finally {
@@ -257,7 +257,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
     public boolean canReplyToNpcDialogue(L1PcInstance pc, long smartId, int version) {
         if (smartId == 0 || npcDialogueTarget != smartId || npcDialogueVersion != version
                 || !isConnected() || _activeChar != pc || pc.getNetConnection() != this
-                || getConnectionState() != ConnectionState.IN_GAME || pc.isDead()
+                || getConnectionState() != CConnectionState.IN_GAME || pc.isDead()
                 || pc.isGhost() || pc.isPrivateShop() || pc.is무인상점() || pc.isAutoClanjoin()) return false;
         return L1World.getInstance().findObjectBySmartId(smartId) instanceof L1NpcInstance npc
                 && !npc.isDead() && pc.getMapId() == npc.getMapId()
@@ -280,10 +280,10 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 
     private volatile ClientAutomationSession automationSession;
     private volatile int pssClaimPending, pssQueryPending;
-    private static final AtomicIntegerFieldUpdater<CIOClient> PSS_CLAIM =
-            AtomicIntegerFieldUpdater.newUpdater(CIOClient.class, "pssClaimPending");
-    private static final AtomicIntegerFieldUpdater<CIOClient> PSS_QUERY =
-            AtomicIntegerFieldUpdater.newUpdater(CIOClient.class, "pssQueryPending");
+    private static final AtomicIntegerFieldUpdater<CUserSession> PSS_CLAIM =
+            AtomicIntegerFieldUpdater.newUpdater(CUserSession.class, "pssClaimPending");
+    private static final AtomicIntegerFieldUpdater<CUserSession> PSS_QUERY =
+            AtomicIntegerFieldUpdater.newUpdater(CUserSession.class, "pssQueryPending");
     private volatile PssConfig.Settings pssCacheSettings;
     private volatile long pssCacheDay;
     private volatile int pssCacheSeconds = -1;
@@ -321,8 +321,8 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
         if (current != null) current.close();
     }
     private volatile boolean clientPssMapRules;
-    private static final AtomicReferenceFieldUpdater<CIOClient, ClientAutomationSession> AUTOMATION =
-            AtomicReferenceFieldUpdater.newUpdater(CIOClient.class, ClientAutomationSession.class, "automationSession");
+    private static final AtomicReferenceFieldUpdater<CUserSession, ClientAutomationSession> AUTOMATION =
+            AtomicReferenceFieldUpdater.newUpdater(CUserSession.class, ClientAutomationSession.class, "automationSession");
 
     public ClientAutomationSession getAutomationSession() { return automationSession; }
     public boolean requiresPlayerTeleportRules() { return clientPssMapRules; }
@@ -356,7 +356,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 
     public void publishGameSessionReady(L1PcInstance pc) {
         if (pc != null && _activeChar == pc &&
-                _connectionState == ConnectionState.IN_GAME && isConnected()) {
+                _connectionState == CConnectionState.IN_GAME && isConnected()) {
             _gameSessionReady = true;
         }
     }
@@ -404,7 +404,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 		return !isConnected();
 	}
 
-	private void enqueue(ServerPacket data) {
+	private void enqueue(CServerPacket data) {
 		if (data == null || !isConnected()) return;
 
 		try {
@@ -418,7 +418,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 		enqueue(data);
 	}
 
-	public void sendPacket(ServerPacket bp) {
+	public void sendPacket(CServerPacket bp) {
 		enqueue(bp);
 	}
 
@@ -426,7 +426,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 		if (data == null || data.length == 0 || !isConnected()) return;
 
 		try {
-            _connection.enqueuePacket(new BytesWritablePacket(data));
+            _connection.enqueuePacket(new CBytesPacket(data));
 		} catch (Exception e) {
 			_log.log(Level.SEVERE, "Failed to enqueue packet write", e);
 		}
@@ -474,7 +474,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 	// ------------------------------------------------------------------
 
 	protected void writePacket(
-			WritablePacket<CIOClient> packet) {
+			IPacketWriter<CUserSession> packet) {
 
 		if (packet == null || !isConnected()) {
 			return;
@@ -508,7 +508,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 	}
 
 	public void close(
-			WritablePacket<CIOClient> packet) {
+			IPacketWriter<CUserSession> packet) {
 
 		if (!isConnected()) {
 			_log.warning(
@@ -588,7 +588,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 	}
 
 	// 현재 클라이언트의 연결 상태 (기본값: 최초 접속인 CONNECTED)
-	private volatile ConnectionState _connectionState = ConnectionState.CONNECTED;
+	private volatile CConnectionState _connectionState = CConnectionState.CONNECTED;
 
 	// 소켓이 생성된 절대 시간 기록
 	private final long _connectionTime = System.currentTimeMillis();
@@ -596,12 +596,12 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 	// 로그인 전 대기 허용 시간 (1분)
 	private static final long PRE_LOGIN_TIMEOUT = 60_000L;
 
-	public ConnectionState getConnectionState() {
+	public CConnectionState getConnectionState() {
 		return _connectionState;
 	}
 
-	public void setConnectionState(ConnectionState connectionState) {
-        if (connectionState != ConnectionState.IN_GAME) {
+	public void setConnectionState(CConnectionState connectionState) {
+        if (connectionState != CConnectionState.IN_GAME) {
             _gameSessionReady = false;
             PlaySupport2019.onClientDetached(this);
             clearPssWindowSession();
@@ -611,8 +611,8 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 	}
 
 	public boolean checkPreLoginTimeout() {
-		if (_connectionState == ConnectionState.IN_GAME || _connectionState == ConnectionState.AUTHENTICATED
-				|| _connectionState == ConnectionState.OUT_GAME || _connectionState == ConnectionState.DISCONNECTED) {
+		if (_connectionState == CConnectionState.IN_GAME || _connectionState == CConnectionState.AUTHENTICATED
+				|| _connectionState == CConnectionState.OUT_GAME || _connectionState == CConnectionState.DISCONNECTED) {
 			return false;
 		}
 		return System.currentTimeMillis() - _connectionTime > PRE_LOGIN_TIMEOUT;
@@ -631,8 +631,8 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
     }
 
 	public boolean isLoggedIn() {
-		return _connectionState == ConnectionState.IN_GAME || _connectionState == ConnectionState.AUTHENTICATED
-				|| _connectionState == ConnectionState.OUT_GAME || _connectionState == ConnectionState.DISCONNECTED;
+		return _connectionState == CConnectionState.IN_GAME || _connectionState == CConnectionState.AUTHENTICATED
+				|| _connectionState == CConnectionState.OUT_GAME || _connectionState == CConnectionState.DISCONNECTED;
 	}
 
 	// 패킷 도배 방지
@@ -657,7 +657,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 		}
 
 		_packetCount++;
-		return _packetCount > ConnectionConfig.PACKET_LIMIT_PER_SEC;
+		return _packetCount > CConnectionConfig.PACKET_LIMIT_PER_SEC;
 	}
 
 	// 2차 비번 인증 캐릭터 이름

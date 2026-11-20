@@ -14,10 +14,10 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.shop.L1Shop;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1ShopItem;
@@ -29,7 +29,7 @@ public final class SC_ShopSellList {
     @SuppressWarnings("deprecation")
     public static boolean send(int objId, L1PcInstance pc) {
         if (pc == null) return false;
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -110,7 +110,7 @@ public final class SC_ShopSellList {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_BUY_LIST);
             buffer.writeD(objId);
             buffer.writeH(count);

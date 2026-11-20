@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.thread;
 
 
-import l1j.server.server.model.network.core.transport.selector.SelectorTransport;
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
@@ -28,8 +28,8 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.TomahawkBleedService;
 import l1j.server.server.model.npc.ai.NpcServer;
 import l1j.server.server.model.network.core.execution.CIOShardContext;
-import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -208,7 +208,7 @@ public final class CIOThreadCallback {
     /** Packet-only replies may publish already prepared outbound data from
      * CacheD. State-mutating work must use completeSession/world mutation.
      */
-    public boolean completeSessionReply(CIOClient client, Runnable reply) {
+    public boolean completeSessionReply(CUserSession client, Runnable reply) {
         if (client == null || reply == null || !client.isConnected()) return false;
         try {
             reply.run();
@@ -358,7 +358,7 @@ public final class CIOThreadCallback {
         }, completion);
     }
 
-    public boolean completeSession(CIOClient client, Runnable action) {
+    public boolean completeSession(CUserSession client, Runnable action) {
         return completeSession(client, action, failure -> {
             if (failure != null) LOGGER.log(Level.WARNING, "CIO session completion failed", failure);
         });
@@ -368,7 +368,7 @@ public final class CIOThreadCallback {
      * original socket's affinity rather than a world/creature timer binding.
      * The old inline session monitor did not change the executing thread.
      */
-    public boolean completeSession(CIOClient client, Runnable action,
+    public boolean completeSession(CUserSession client, Runnable action,
             java.util.function.Consumer<Throwable> completion) {
         java.util.Objects.requireNonNull(completion, "completion");
         if (client == null || action == null || !client.isConnected() || client.getConnection() == null) {
@@ -425,7 +425,7 @@ public final class CIOThreadCallback {
 	}
 
 	public synchronized int bindNetworkIngress(
-			ConnectionConfig config) {
+			CConnectionConfig config) {
 
 		if (config == null) {
 			throw new NullPointerException("config");
@@ -499,13 +499,13 @@ public final class CIOThreadCallback {
 	}
 
     /** The validated network subset lives on the same threads as game timers and session replay. */
-    public synchronized void attachSelectors(java.util.List<SelectorTransport.OwnerDriver> drivers) {
+    public synchronized void attachSelectors(java.util.List<CSelectorTransport.OwnerDriver> drivers) {
         drivers = java.util.List.copyOf(drivers);
         if (drivers.size() != networkShardCount || drivers.isEmpty())
             throw new IllegalArgumentException("Selector count must match the network shard count");
         for (int i = 0; i < drivers.size(); i++) {
             CIOThread shard = shards[i];
-            SelectorTransport.OwnerDriver existing = shard.selectorDriver;
+            CSelectorTransport.OwnerDriver existing = shard.selectorDriver;
             if (!shard.running || existing != null && existing.active())
                 throw new IllegalStateException("Selector owner unavailable on shard " + i);
         }
@@ -567,7 +567,7 @@ public final class CIOThreadCallback {
 		int capacity =
 				Math.max(
 						requested,
-						ConnectionConfig.MAX_PACKETS_PER_COMPLETION);
+						CConnectionConfig.MAX_PACKETS_PER_COMPLETION);
 
 		if (Integer.bitCount(capacity) == 1) {
 			return capacity;
@@ -598,7 +598,7 @@ public final class CIOThreadCallback {
 	 */
 	private int affinityShardIndex(L1PcInstance pc) {
 		if (pc == null) return -1;
-		final CIOClient client = pc.getNetConnection();
+		final CUserSession client = pc.getNetConnection();
 		if (client == null) return -1;
 		final int shard = client.affinityShard();
 
@@ -1128,7 +1128,7 @@ public final class CIOThreadCallback {
             }
         }
         private volatile int wakeGate;
-        private volatile SelectorTransport.OwnerDriver selectorDriver;
+        private volatile CSelectorTransport.OwnerDriver selectorDriver;
 
         void signalWork(boolean inbound) {
             final Thread target = thread;
@@ -1143,7 +1143,7 @@ public final class CIOThreadCallback {
             if (wakeGate == 1) return;
             final int previous = (int) WAKE_GATE.getAndSet(this, 1);
             if (previous == 2) {
-                SelectorTransport.OwnerDriver driver = selectorDriver;
+                CSelectorTransport.OwnerDriver driver = selectorDriver;
                 if (driver != null && driver.active()) driver.wakeup();
                 LockSupport.unpark(target);
             }
@@ -1971,7 +1971,7 @@ public final class CIOThreadCallback {
                         LockSupport.parkNanos(1_000_000L);
                         continue;
                     }
-                    final SelectorTransport.OwnerDriver driver = selectorDriver;
+                    final CSelectorTransport.OwnerDriver driver = selectorDriver;
                     if (driver != null && driver.active()) driver.advance();
                     if (backlog) continue;
                     if (!preparePark()) continue;
@@ -1990,7 +1990,7 @@ public final class CIOThreadCallback {
                 }
             } finally {
                 try {
-                    SelectorTransport.OwnerDriver driver = selectorDriver;
+                    CSelectorTransport.OwnerDriver driver = selectorDriver;
                     if (driver != null && driver.active()) driver.closeOnOwner();
                     if (!running) {
                         // The stop monitor prevents any further successful
@@ -3079,7 +3079,7 @@ public final class CIOThreadCallback {
                 synchronized (owner) {
                     owner.running = false;
                 }
-                SelectorTransport.OwnerDriver driver = owner.selectorDriver;
+                CSelectorTransport.OwnerDriver driver = owner.selectorDriver;
                 if (driver != null && driver.active()) driver.wakeup();
                 final Thread t = owner.thread;
                 if (t != null) LockSupport.unpark(t);

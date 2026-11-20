@@ -15,11 +15,11 @@ import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.network.utill.ConnectionState;
+import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MAP_ID;
 import l1j.server.server.model.network.core.sc.packet.SC_IvenBuffIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
@@ -48,7 +48,7 @@ public final class CS_Restart {
     private CS_Restart() {
     }
 
-    public static void handle(CIOClient client) {
+    public static void handle(CUserSession client) {
         if (client == null) {
             return;
         }

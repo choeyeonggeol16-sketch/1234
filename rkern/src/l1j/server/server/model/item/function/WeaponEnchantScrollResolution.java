@@ -4,7 +4,7 @@ import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.CommonUtil;
@@ -37,7 +37,7 @@ final class WeaponEnchantScrollResolution {
 
     static ItemActionResult apply(ItemActionContext use) {
         L1PcInstance pc = use.player();
-        CIOClient client = use.client();
+        CUserSession client = use.client();
         L1ItemInstance item = use.item();
         L1ItemInstance targetItem = use.targetItem();
         int itemId = use.itemId();

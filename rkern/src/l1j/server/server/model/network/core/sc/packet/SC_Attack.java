@@ -4,10 +4,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_Attack {
     private static final AtomicInteger SEQ = new AtomicInteger();
@@ -31,7 +31,7 @@ public final class SC_Attack {
                                   seq, effect, x, y, endX, endY);
     }
 
-    public static boolean send(CIOClient client, int attackerId, int targetId,
+    public static boolean send(CUserSession client, int attackerId, int targetId,
                                int damage, int heading, int seq, int effect,
                                int x, int y, int endX, int endY) {
         if (client == null || !client.isConnected()) return false;
@@ -41,7 +41,7 @@ public final class SC_Attack {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_ATTACK);
             buffer.writeC(1);
             buffer.writeD(attackerId);

@@ -15,10 +15,10 @@ import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_LetterList {
 
@@ -84,7 +84,7 @@ public final class SC_LetterList {
 
     public static void sendListAsync(L1PcInstance pc, int type, int count) {
         if (pc == null || pc.getNetConnection() == null || !pc.getNetConnection().isConnected()) return;
-        final CIOClient owner = pc.getNetConnection();
+        final CUserSession owner = pc.getNetConnection();
         CacheD.getInstance().submitDbJob(() -> {
             final Data packet = new Data(pc, type, count);
             if (!CIOThreadCallback.getInstance().completeSessionReply(owner, () -> {
@@ -263,7 +263,7 @@ public Data(L1PcInstance pc, int type, int id, boolean value) {
 		_letters = null;
 	}
 
-private void writeImpl(WriteBuffer buffer) {
+private void writeImpl(CPacketWriteBuffer buffer) {
 		buffer.writeC(Opcodes.S_MAIL_INFO);
 
 		if (_mode == 1) { // 편지 목록 출력
@@ -328,7 +328,7 @@ private long frameCapacity() {
         return size;
     }
 
-public boolean send(CIOClient client) {
+public boolean send(CUserSession client) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

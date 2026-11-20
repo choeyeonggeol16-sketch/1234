@@ -9,7 +9,7 @@ import l1j.server.server.utils.ConfigReader;
  *
  * Transport는 NIO.2로 고정되어 있으며 PacketExecutor / Client 공용 설정만 유지한다.
  */
-public class ConnectionConfig {
+public class CConnectionConfig {
 
     public static final int HEADER_SIZE = 2;
     
@@ -60,7 +60,7 @@ public class ConnectionConfig {
     public long packetExecutorDropLogInterval;
 
 
-    public ConnectionConfig(SocketAddress socketAddress) {
+    public CConnectionConfig(SocketAddress socketAddress) {
         address = socketAddress;
 
         final ConfigReader networkConfig =

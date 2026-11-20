@@ -26,7 +26,7 @@ import l1j.server.server.model.character.skill.SkillEffectContainer;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.map.L1Map;
-import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.poison.L1Poison;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeShape;
@@ -1177,7 +1177,7 @@ public class L1Character extends L1Object {
 	}
 
 
-	public void sendPackets(ServerPacket pck, boolean clear) {
+	public void sendPackets(CServerPacket pck, boolean clear) {
 	}
 
 	public void receiveDamage(L1Character attacker, int damage) {
@@ -1192,7 +1192,7 @@ public class L1Character extends L1Object {
 		return _instanceType == -1 ? _instanceType = super.getL1Type() | MJL1Type.L1TYPE_CHARACTER : _instanceType;
 	}
 
-	public void sendPackets(ServerPacket sbp) {
+	public void sendPackets(CServerPacket sbp) {
 
 	}
 

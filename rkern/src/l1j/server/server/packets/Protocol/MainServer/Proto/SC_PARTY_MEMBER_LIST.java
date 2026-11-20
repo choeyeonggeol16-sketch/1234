@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.util.ArrayList;
 import java.util.List;
@@ -134,7 +134,7 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _leaderName, _members);
     }
 
-    public static boolean sendFields(CIOClient recipient, String _leaderName, List<Member> _members) {
+    public static boolean sendFields(CUserSession recipient, String _leaderName, List<Member> _members) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_PARTY_MEMBER_LIST, capacityFor(_leaderName, _members));
         if (writer == null) return false;
         try {
@@ -151,7 +151,7 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_PARTY_MEMBER_LIST);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, String leaderName, List<Member> members) {
+    private static boolean sendCtor(CUserSession protoRecipient, String leaderName, List<Member> members) {
         String proto49_leaderName = null;
         List<Member> proto49_members = null;
 
@@ -161,14 +161,14 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
         return sendFields(protoRecipient, proto49_leaderName, proto49_members);
     }
 
-    public static boolean sendEmpty(CIOClient protoRecipient) {
+    public static boolean sendEmpty(CUserSession protoRecipient) {
         return sendCtor(protoRecipient, "", new ArrayList<>());
     }
 
     public static boolean sendEmpty(L1PcInstance protoRecipient) {
         return sendEmpty(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
-    public static boolean sendConstructed(CIOClient protoRecipient, String leaderName, List<Member> members) { return sendCtor(protoRecipient, leaderName, members); }
+    public static boolean sendConstructed(CUserSession protoRecipient, String leaderName, List<Member> members) { return sendCtor(protoRecipient, leaderName, members); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient, String leaderName, List<Member> members) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), leaderName, members); }
 

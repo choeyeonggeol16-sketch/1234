@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Arrays;
@@ -75,7 +75,7 @@ public final class SC_RetrieveList {
         }
         if (count == 0) return true;
         if (wireSize > Integer.MAX_VALUE) return false;
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -83,7 +83,7 @@ public final class SC_RetrieveList {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer b = frame.buffer();
+            final CPacketWriteBuffer b = frame.buffer();
             b.writeC(Opcodes.S_RETRIEVE_LIST);
             b.writeD(objId);
             b.writeH(count);

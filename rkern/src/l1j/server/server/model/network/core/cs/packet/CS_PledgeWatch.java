@@ -5,7 +5,7 @@ import java.io.File;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ClanAttention;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -17,7 +17,7 @@ public final class CS_PledgeWatch {
     }
 
     public static void handle(
-            CIOClient client,
+            CUserSession client,
             int data,
             String targetClanName) {
 

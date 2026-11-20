@@ -28,7 +28,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
@@ -41,7 +41,7 @@ import l1j.server.server.utils.CommonUtil;
 final class TravelAndRecoveryItems {
 private TravelAndRecoveryItems() {}
 
-    static void use(CIOClient client, L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId) {
+    static void use(CUserSession client, L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId) {
             
         switch (itemId) {
         case 3000147:

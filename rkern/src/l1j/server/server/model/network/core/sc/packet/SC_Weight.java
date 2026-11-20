@@ -2,15 +2,15 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_Weight {
     private SC_Weight() {}
 
-    public static boolean send(CIOClient client, int weight100, int weight, int maxWeight) {
+    public static boolean send(CUserSession client, int weight100, int weight, int maxWeight) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -18,7 +18,7 @@ public final class SC_Weight {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeC(0xe5);
             buffer.writeC(0x01);
@@ -44,7 +44,7 @@ public final class SC_Weight {
         return send(pc, pc.getInventory().getWeight100(), pc.getInventory().getWeight(), pc.getMaxWeight());
     }
 
-    private static void write7B(WriteBuffer buffer, int value) {
+    private static void write7B(CPacketWriteBuffer buffer, int value) {
         while ((value & ~0x7F) != 0) {
             buffer.writeC((value & 0x7F) | 0x80);
             value >>>= 7;

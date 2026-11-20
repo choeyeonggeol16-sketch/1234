@@ -9,7 +9,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
@@ -19,7 +19,7 @@ public final class CS_Withdraw {
     }
 
     public static void handle(
-            CIOClient client,
+            CUserSession client,
             int drawAmount) {
 
         if (client == null) {

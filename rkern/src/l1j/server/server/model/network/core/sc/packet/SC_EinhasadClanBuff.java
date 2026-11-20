@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.*;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 
@@ -16,7 +16,7 @@ public final class SC_EinhasadClanBuff {
         return receiver != null && send(receiver.getNetConnection(), pc);
     }
 
-    public static boolean send(CIOClient client, L1PcInstance pc) {
+    public static boolean send(CUserSession client, L1PcInstance pc) {
         if (client == null || !client.isConnected() || pc == null ) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -30,7 +30,7 @@ public final class SC_EinhasadClanBuff {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
 
                     buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
                     buffer.writeC(0xfb);

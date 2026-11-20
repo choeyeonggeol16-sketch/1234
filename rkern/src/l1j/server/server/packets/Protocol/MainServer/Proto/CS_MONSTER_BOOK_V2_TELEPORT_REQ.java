@@ -5,7 +5,7 @@ import l1j.server.server.model.BookQuest.Loader.BQSInformationLoader;
 import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
 import l1j.server.server.model.BookQuest.Loader.BQSWQDecksLoader;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook.MonsterBookV2Info;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MONSTER_BOOK_V2_TELEPORT_ACK.eResultCode;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
@@ -17,7 +17,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 public final class CS_MONSTER_BOOK_V2_TELEPORT_REQ {
     private CS_MONSTER_BOOK_V2_TELEPORT_REQ() {}
 
-    public static void handleRequest(CIOClient client, ProtoReader r) {
+    public static void handleRequest(CUserSession client, ProtoReader r) {
         int deckIndex = 0;
         int cardIndex = 0;
         boolean hasDeck = false, hasCard = false;

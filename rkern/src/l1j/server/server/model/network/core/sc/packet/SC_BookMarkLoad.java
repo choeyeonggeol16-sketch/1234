@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +68,7 @@ public final class SC_BookMarkLoad {
             wireSize += 11 + mark.name.length;
         }
 
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -76,7 +76,7 @@ public final class SC_BookMarkLoad {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer b = frame.buffer();
+            final CPacketWriteBuffer b = frame.buffer();
             b.writeC(Opcodes.S_VOICE_CHAT);
             b.writeC(42);
             b.writeC(booksize);

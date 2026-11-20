@@ -23,7 +23,7 @@ import l1j.server.server.model.Instance.L1FurnitureInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Warehouse.Warehouse;
 import l1j.server.server.storage.CacheD;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.packets.Protocol.MainServer.Proto.CS_ALCHEMY_MAKE_REQ;
@@ -1323,7 +1323,7 @@ public class L1Inventory extends L1Object {
                 || rejectPendingItemTransfer()) return false;
         final l1j.server.server.model.Instance.L1PcInstance pc =
                 ((L1PcInventory) this).getOwner();
-        final CIOClient session = pc.getNetConnection();
+        final CUserSession session = pc.getNetConnection();
         if (session == null || !session.isConnected() || !pc.tryBeginItemTransfer()) return false;
         boolean submitted = false;
         try {
@@ -1469,7 +1469,7 @@ public class L1Inventory extends L1Object {
                 || rejectPendingItemTransfer()) return false;
         final l1j.server.server.model.Instance.L1PcInstance pc =
                 ((L1PcInventory) this).getOwner();
-        final CIOClient session = pc.getNetConnection();
+        final CUserSession session = pc.getNetConnection();
         if (session == null || !session.isConnected() || !pc.tryBeginItemTransfer()) return false;
         boolean submitted = false;
         try {
@@ -1674,7 +1674,7 @@ public class L1Inventory extends L1Object {
         if (!(this instanceof L1PcInventory)) return null;
         final L1PcInventory pcInventory = (L1PcInventory) this;
         final l1j.server.server.model.Instance.L1PcInstance pc = pcInventory.getOwner();
-        final CIOClient session = pc.getNetConnection();
+        final CUserSession session = pc.getNetConnection();
         if (session == null || !session.isConnected()) return null;
         final int sessionStamp = pc.getSessionStamp();
         if (!pc.tryBeginItemTransfer()) return null;
@@ -1800,7 +1800,7 @@ public class L1Inventory extends L1Object {
         try (CacheD.WarehouseMove move = reservation) {
         // If the SQL transaction fails, do not let the game client continue
         // mutating memory that is no longer known to match the authoritative DB.
-        final CIOClient session = ((L1PcInventory) this).getOwner().getNetConnection();
+        final CUserSession session = ((L1PcInventory) this).getOwner().getNetConnection();
         if (session != null) move.onFailure(() ->
                 CIOThreadCallback.getInstance().completeSession(session, session::kick));
         move.expectOriginal(item);

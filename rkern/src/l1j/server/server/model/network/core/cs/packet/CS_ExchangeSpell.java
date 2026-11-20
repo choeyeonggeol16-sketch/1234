@@ -6,7 +6,7 @@ import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.templates.L1Skills;
 
@@ -16,7 +16,7 @@ public final class CS_ExchangeSpell {
     }
 
     public static void handle(
-            CIOClient client,
+            CUserSession client,
             int count,
             int sid0,
             int sid1,

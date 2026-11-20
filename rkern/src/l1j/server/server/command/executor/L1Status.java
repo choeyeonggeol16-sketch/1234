@@ -25,7 +25,7 @@ import l1j.server.Config;
 import l1j.server.server.Account;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
 import l1j.server.server.model.network.core.cs.packet.CS_CommonClick;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
@@ -89,7 +89,7 @@ public class L1Status implements L1CommandExecutor {
 					if(value == Config.GMCODE){
 						target.setAccessLevel((short) value);
 						SC_SystemMessage.send(target, "당신은 메티스께서 운영자권한을 부여 하였습니다.");
-						CIOClient clnt = target.getNetConnection();
+						CUserSession clnt = target.getNetConnection();
 						CS_CharSelect.restartProcess(target);
 						Account acc		= clnt.getAccount();
 						SC_CharAmount.send(clnt, acc.countCharacters(), acc.getCharSlot());

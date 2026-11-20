@@ -10,8 +10,8 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
@@ -77,7 +77,7 @@ public final class SC_ActionUI2 {
 
     public static boolean send(L1PcInstance pc, int type, int stat) {
         if (pc == null) return false;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -85,7 +85,7 @@ public final class SC_ActionUI2 {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
 buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 			buffer.writeC(type);
 			buffer.writeC(0x01);
@@ -187,7 +187,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 
     public static boolean send(L1PcInstance pc, int i, int t, int o, int gf, int ms) {
         if (pc == null) return false;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -195,7 +195,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeC(ICON_BUFF);
             buffer.writeC(0);
@@ -231,7 +231,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 
     public static boolean send(L1PcInstance recipient, L1PcInstance source, int code) {
         if (recipient == null) return false;
-        final CIOClient socket = recipient.getNetConnection();
+        final CUserSession socket = recipient.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -252,7 +252,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeC(code);
             if (code == CLAN_RANK) {
@@ -436,7 +436,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		_waitPlayers = Collections.emptyList();
 	}
 
-	private void byteWrite(WriteBuffer buffer, long value) {
+	private void byteWrite(CPacketWriteBuffer buffer, long value) {
 		long temp = value / 128;
 		if (temp > 0) {
 			buffer.writeC(hextable[(int) value % 128]);
@@ -456,7 +456,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		}
 	}
 
-	private void writeImpl(WriteBuffer buffer) {
+	private void writeImpl(CPacketWriteBuffer buffer) {
 		switch (_mode) {
 		case 1:
 			buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
@@ -811,7 +811,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 
     public boolean send(L1PcInstance pc) {
         if (pc == null) return false;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

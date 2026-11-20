@@ -19,11 +19,11 @@ import l1j.server.server.GameServerFullException;
 import l1j.server.server.Controller.LoginAttemptGuard;
 import l1j.server.server.Controller.LoginController;
 import l1j.server.server.datatables.IpConnectDelay;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
-import l1j.server.server.model.network.utill.ConnectionConfig;
-import l1j.server.server.model.network.utill.ConnectionState;
+import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.network.core.sc.packet.SC_CommonNews;
 
 import l1j.server.server.utils.MJCommons;
@@ -40,7 +40,7 @@ public final class CS_AuthLogin {
     private CS_AuthLogin() {
     }
 
-    public static void handle(CIOClient client, String rawAccountName, String password) {
+    public static void handle(CUserSession client, String rawAccountName, String password) {
         if (client == null) {
             return;
         }
@@ -60,8 +60,8 @@ public final class CS_AuthLogin {
         final int count = lc.getIpCount(ip);
         if (!isWhitelistedIp(ip)) {
             if ((!Config.ALLOW_2PC && count > 0)
-                    || (Config.ALLOW_2PC && count > ConnectionConfig.NETWORK_CLIENT_PERMISSION
-                        && !ip.equals(ConnectionConfig.NETWORK_ADDRESS2ACCOUNT))) {
+                    || (Config.ALLOW_2PC && count > CConnectionConfig.NETWORK_CLIENT_PERMISSION
+                        && !ip.equals(CConnectionConfig.NETWORK_ADDRESS2ACCOUNT))) {
                 try { processDuplication(client, accountName, ip); }
                 catch (Exception e) { client.close(); }
                 return;
@@ -123,7 +123,7 @@ public final class CS_AuthLogin {
         if (account == null) {
             result.missing = true;
             if (Config.AUTO_CREATE_ACCOUNTS) {
-                if (getAccountIpCount(ip) >= ConnectionConfig.NETWORK_ADDRESS2ACCOUNT)
+                if (getAccountIpCount(ip) >= CConnectionConfig.NETWORK_ADDRESS2ACCOUNT)
                     result.errorCode = 1;
                 else if (!MJCommons.isLetterOrDigitString(accountName, 5, 12))
                     result.errorCode = 2;
@@ -141,7 +141,7 @@ public final class CS_AuthLogin {
     }
 
     private static boolean isAuthority(
-            CIOClient client,
+            CUserSession client,
             String accountName,
             AuthLoad loaded) throws Exception {
 
@@ -155,8 +155,8 @@ public final class CS_AuthLogin {
                     processDuplication(client, accountName, ip);
                     return false;
                 }
-            } else if (count > ConnectionConfig.NETWORK_CLIENT_PERMISSION &&
-                    !ip.equals(ConnectionConfig.NETWORK_ADDRESS2ACCOUNT)) {
+            } else if (count > CConnectionConfig.NETWORK_CLIENT_PERMISSION &&
+                    !ip.equals(CConnectionConfig.NETWORK_ADDRESS2ACCOUNT)) {
 
                 processDuplication(client, accountName, ip);
                 return false;
@@ -223,7 +223,7 @@ public final class CS_AuthLogin {
             Account.updateLastActive(account, ip);
 
             client.setConnectionState(
-                    ConnectionState.AUTHENTICATED);
+                    CConnectionState.AUTHENTICATED);
 
             client.setAccount(account);
 
@@ -295,7 +295,7 @@ public final class CS_AuthLogin {
         }
     }
 
-    public static void sendNotice(CIOClient client, String account) {
+    public static void sendNotice(CUserSession client, String account) {
         if (client == null || !client.isConnected()) return;
         if (account == null || account.isEmpty()) {
             new CS_CommonClick(client);
@@ -362,7 +362,7 @@ public final class CS_AuthLogin {
     }
 
     private static void processDuplication(
-            CIOClient client,
+            CUserSession client,
             String accountName,
             String ip) throws Exception {
 
@@ -377,17 +377,17 @@ public final class CS_AuthLogin {
     }
 
     private static void processAccountOver(
-            CIOClient client,
+            CUserSession client,
             String accountName) {
 
         _log.info(String.format(
                 "계정생성 초과. 계정=%s 최대=%d",
                 accountName,
-                ConnectionConfig.NETWORK_ADDRESS2ACCOUNT));
+                CConnectionConfig.NETWORK_ADDRESS2ACCOUNT));
 
         SC_CommonNews.send(client, 
                         String.format(
                                 "더이상 계정을 생성 할 수 없습니다.(최대 %d개)",
-                                ConnectionConfig.NETWORK_ADDRESS2ACCOUNT));
+                                CConnectionConfig.NETWORK_ADDRESS2ACCOUNT));
     }
 }

@@ -3,7 +3,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 
@@ -53,7 +53,7 @@ public final class CS_PARTY_CONTROL_REQ {
         }
     }
 
-    public static void handleRequest(CIOClient client,  ProtoReader r) {
+    public static void handleRequest(CUserSession client,  ProtoReader r) {
         // ── 파싱 ──
         int controlTypeVal = -1;
         int targetObjectId = 0;

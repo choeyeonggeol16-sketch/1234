@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.MJInstanceSystem.MJInstanceSpace;
@@ -86,7 +86,7 @@ public final class SC_MAP_ID extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _mapId, _underwater);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _mapId, boolean _underwater) {
+    public static boolean sendFields(CUserSession recipient, int _mapId, boolean _underwater) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_MAP_ID, Proto.capacityBound(1024L));
         if (writer == null) return false;
         try {
@@ -103,7 +103,7 @@ public final class SC_MAP_ID extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_MAP_ID);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, int mapId, boolean underwater) {
+    private static boolean sendCtor(CUserSession protoRecipient, int mapId, boolean underwater) {
         int proto34_mapId = 0;
         boolean proto34_underwater = false;
 
@@ -113,14 +113,14 @@ public final class SC_MAP_ID extends ProtoPacket {
         return sendFields(protoRecipient, proto34_mapId, proto34_underwater);
     }
 
-    public static boolean sendCreate(CIOClient protoRecipient, int mapId, boolean underwater) {
+    public static boolean sendCreate(CUserSession protoRecipient, int mapId, boolean underwater) {
         return sendCtor(protoRecipient, mapId, underwater);
     }
 
     public static boolean sendCreate(L1PcInstance protoRecipient, int mapId, boolean underwater) {
         return sendCreate(protoRecipient == null ? null : protoRecipient.getNetConnection(), mapId, underwater);
     }
-    public static boolean sendConstructed(CIOClient protoRecipient, int mapId, boolean underwater) { return sendCtor(protoRecipient, mapId, underwater); }
+    public static boolean sendConstructed(CUserSession protoRecipient, int mapId, boolean underwater) { return sendCtor(protoRecipient, mapId, underwater); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int mapId, boolean underwater) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), mapId, underwater); }

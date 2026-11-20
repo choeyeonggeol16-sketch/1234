@@ -370,7 +370,7 @@ public class MJL1LiftGateInstance extends L1Object{
 
     private static void sendSharedAttrs(
             l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer[] attrs,
-            l1j.server.server.model.network.core.session.CIOClient client,int playerId) {
+            l1j.server.server.model.network.core.session.CUserSession client,int playerId) {
         if(client==null || !client.isConnected())return;
         final var socket=client.getConnection();
         if(socket==null)return;

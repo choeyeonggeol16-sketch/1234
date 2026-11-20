@@ -21,11 +21,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.ReadBuffer;
-import l1j.server.server.model.network.core.transport.selector.SelectorBufferPool;
-import l1j.server.server.model.network.core.transport.selector.SelectorTransport;
-import l1j.server.server.model.network.core.transport.selector.SelectorTransport.CloseReason;
-import l1j.server.server.model.network.core.transport.selector.SelectorTransport.Connection;
+import l1j.server.server.model.network.buffer.CPacketReadBuffer;
+import l1j.server.server.model.network.core.transport.selector.CSelectorBufferPool;
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport.CloseReason;
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport.Connection;
 
 public final class SelectorTransportTest {
     private static final InetSocketAddress LOOPBACK = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
@@ -51,22 +51,22 @@ public final class SelectorTransportTest {
         System.out.println("PASS multi-owner TCP, Java cipher, callback isolation, raw graceful gather and hosted rollback");
     }
 
-    private static SelectorTransport.Config config(int owners, int connectionsPerOwner, int mailboxCapacity) {
-        return new SelectorTransport.Config(owners, connectionsPerOwner, 32, mailboxCapacity,
+    private static CSelectorTransport.Config config(int owners, int connectionsPerOwner, int mailboxCapacity) {
+        return new CSelectorTransport.Config(owners, connectionsPerOwner, 32, mailboxCapacity,
                 2, 8, BURST_FRAMES, 1_000_000, 32, 4_096, Duration.ofSeconds(3));
     }
 
     private static void checkCallbackFailureIsolation() throws Exception {
         var failed = new AtomicReference<Connection>();
         var calls = new AtomicInteger();
-        var handler = new SelectorTransport.RawHandler() {
+        var handler = new CSelectorTransport.RawHandler() {
             @Override public void onOpen(Connection socket) {
                 var scratch = ByteBuffer.allocate(8);
                 if (failed.compareAndSet(null, socket)) {
                     check(socket.readRaw(scratch, bytes -> injectedCancellation(calls, bytes)), "raw READ accepted");
                     check(socket.writeRaw(ByteBuffer.wrap(new byte[] {42}), bytes -> injectedCancellation(calls, bytes)),
                             "raw WRITE accepted");
-                    check(socket.submit(new SelectorTransport.OwnerCommand() {
+                    check(socket.submit(new CSelectorTransport.OwnerCommand() {
                         @Override public void run(Connection ignored) { throw new AssertionError("closed command ran"); }
                         @Override public void cancel() { injectedCancellation(calls, -1); }
                     }, true), "deferred command accepted");
@@ -83,7 +83,7 @@ public final class SelectorTransportTest {
                 if (socket == failed.get()) injectedCancellation(calls, -1);
             }
         };
-        try (var server = SelectorTransport.bind(LOOPBACK, config(1, 1, 4), handler);
+        try (var server = CSelectorTransport.bind(LOOPBACK, config(1, 1, 4), handler);
                 var broken = connect(server, 0)) {
             check(broken.getInputStream().read() == -1, "only the failed connection closed");
             try (var healthy = connect(server, 0)) {
@@ -107,7 +107,7 @@ public final class SelectorTransportTest {
         var completed = new LinkedBlockingQueue<Long>();
         var payload = new byte[512 * 1024];
         for (int i = 0; i < payload.length; i++) payload[i] = sample(1, i);
-        var handler = new SelectorTransport.RawHandler() {
+        var handler = new CSelectorTransport.RawHandler() {
             @Override public void onOpen(Connection socket) {
                 int half = payload.length / 2;
                 ByteBuffer[] buffers = {ByteBuffer.wrap(payload, 0, half), ByteBuffer.wrap(payload, half, half)};
@@ -116,7 +116,7 @@ public final class SelectorTransportTest {
                 check(!socket.writeRaw(ByteBuffer.wrap(new byte[] {1}), ignored -> {}), "drain rejects new writes");
             }
         };
-        try (var server = SelectorTransport.bind(LOOPBACK, config(1, 1, 4), handler);
+        try (var server = CSelectorTransport.bind(LOOPBACK, config(1, 1, 4), handler);
                 var socket = connect(server, 16_384)) {
             Thread.sleep(150); // let the small socket send window fill before reading
             check(Arrays.equals(payload, socket.getInputStream().readNBytes(payload.length)), "raw gather residual precedes FIN");
@@ -130,14 +130,14 @@ public final class SelectorTransportTest {
 
     private static void checkRawGatherTail() throws Exception {
         var completed = new LinkedBlockingQueue<Long>();
-        var handler = new SelectorTransport.RawHandler() {
+        var handler = new CSelectorTransport.RawHandler() {
             @Override public void onOpen(Connection socket) {
                 ByteBuffer[] buffers = {ByteBuffer.wrap(new byte[] {9}), ByteBuffer.wrap(new byte[] {4, 5, 6})};
                 check(socket.writeRaw(buffers, 1, 1, completed::add), "remaining gather segment accepted");
                 socket.closeAfterFlush();
             }
         };
-        try (var server = SelectorTransport.bind(LOOPBACK, config(1, 1, 4), handler);
+        try (var server = CSelectorTransport.bind(LOOPBACK, config(1, 1, 4), handler);
                 var socket = connect(server, 0)) {
             check(Arrays.equals(socket.getInputStream().readAllBytes(), new byte[] {4, 5, 6}), "only the selected suffix reaches the peer");
             check(await(completed) == 3L && completed.isEmpty(), "gather suffix has one completion");
@@ -149,10 +149,10 @@ public final class SelectorTransportTest {
         try (var probe = new ServerSocket(0, 1, LOOPBACK.getAddress())) {
             address = (InetSocketAddress) probe.getLocalSocketAddress();
         }
-        var published = new AtomicReference<SelectorTransport.OwnerDriver>();
-        SelectorTransport.Handler noPackets = (socket, payload) -> {};
+        var published = new AtomicReference<CSelectorTransport.OwnerDriver>();
+        CSelectorTransport.Handler noPackets = (socket, payload) -> {};
         try {
-            SelectorTransport.bindHosted(address, config(2, 2, 4), noPackets, drivers -> {
+            CSelectorTransport.bindHosted(address, config(2, 2, 4), noPackets, drivers -> {
                 published.set(drivers.getFirst());
                 drivers.getFirst().advance();
                 throw new IllegalStateException("injected partial attachment");
@@ -163,12 +163,12 @@ public final class SelectorTransportTest {
         }
         check(!published.get().active(), "published driver retired after failed attachment");
         try {
-            SelectorTransport.bindHosted(address, config(2, 2, 4), noPackets, drivers -> drivers.getFirst().closeOnOwner());
+            CSelectorTransport.bindHosted(address, config(2, 2, 4), noPackets, drivers -> drivers.getFirst().closeOnOwner());
             throw new AssertionError("concurrent stop during attachment must fail startup");
         } catch (IllegalStateException expected) {
             check(expected.getMessage().equals("Hosted Selector stopped during attachment"), "stop cancels startup");
         }
-        try (var rebound = SelectorTransport.bind(address, config(1, 1, 4), noPackets)) {
+        try (var rebound = CSelectorTransport.bind(address, config(1, 1, 4), noPackets)) {
             check(rebound.localAddress().equals(address), "listener can rebind after both failures");
         }
     }
@@ -177,14 +177,14 @@ public final class SelectorTransportTest {
         final int count = 128;
         var opened = new LinkedBlockingQueue<Connection>();
         var deadlines = new LinkedBlockingQueue<Integer>();
-        var handler = new SelectorTransport.RawHandler() {
+        var handler = new CSelectorTransport.RawHandler() {
             @Override public void onOpen(Connection socket) {
                 socket.scheduleDeadline(30_000, () -> { throw new AssertionError("stale deadline fired"); });
                 opened.add(socket);
             }
         };
         var peers = new ArrayList<Socket>();
-        try (var server = SelectorTransport.bind(LOOPBACK, config(1, count, 8), handler)) {
+        try (var server = CSelectorTransport.bind(LOOPBACK, config(1, count, 8), handler)) {
             var sockets = new ArrayList<Connection>();
             for (int i = 0; i < count; i++) peers.add(connect(server, 0));
             for (int i = 0; i < count; i++) sockets.add(await(opened));
@@ -212,9 +212,9 @@ public final class SelectorTransportTest {
     }
 
     private static void checkHostedWaitBeforeAdvance() throws Exception {
-        var owner = new AtomicReference<SelectorTransport.OwnerDriver>();
+        var owner = new AtomicReference<CSelectorTransport.OwnerDriver>();
         var failure = new AtomicReference<Throwable>();
-        try (var server = SelectorTransport.bindHosted(LOOPBACK, config(1, 1, 4), (socket, payload) -> {}, drivers -> {
+        try (var server = CSelectorTransport.bindHosted(LOOPBACK, config(1, 1, 4), (socket, payload) -> {}, drivers -> {
             owner.set(drivers.getFirst());
             drivers.getFirst().advance(); // Before the transport commits attachment, this must return without initializing.
         })) {
@@ -234,16 +234,16 @@ public final class SelectorTransportTest {
 
     private static void checkOwnersAndFraming() throws Exception {
         var opened = new LinkedBlockingQueue<Connection>();
-        SelectorTransport.Handler handler = new SelectorTransport.Handler() {
+        CSelectorTransport.Handler handler = new CSelectorTransport.Handler() {
             @Override public void onOpen(Connection connection) { opened.add(connection); }
-            @Override public void onFrame(Connection connection, ReadBuffer payload) throws IOException {
+            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
                 int size = payload.remaining();
                 check(connection.trySend(size, writer -> {
                     while (payload.remaining() != 0) writer.writeByte(payload.readByte());
                 }), "echo send");
             }
         };
-        try (SelectorTransport server = SelectorTransport.bind(LOOPBACK, config(3, 2, 8), handler)) {
+        try (CSelectorTransport server = CSelectorTransport.bind(LOOPBACK, config(3, 2, 8), handler)) {
             Socket[] clients = new Socket[6];
             Set<Integer> ownerIds = new HashSet<>();
             try {
@@ -279,7 +279,7 @@ public final class SelectorTransportTest {
     private static void checkSendAndGracefulClose() throws Exception {
         var closed = new LinkedBlockingQueue<CloseReason>();
         CountDownLatch queued = new CountDownLatch(1);
-        try (SelectorTransport server = SelectorTransport.bind(LOOPBACK, config(1, 2, 8), burst(queued, closed, true));
+        try (CSelectorTransport server = CSelectorTransport.bind(LOOPBACK, config(1, 2, 8), burst(queued, closed, true));
                 Socket socket = connect(server, 16_384)) {
             socket.getOutputStream().write(frame(new byte[] {1}));
             await(queued);
@@ -300,18 +300,18 @@ public final class SelectorTransportTest {
     private static void checkWriteStall() throws Exception {
         var closed = new LinkedBlockingQueue<CloseReason>();
         CountDownLatch queued = new CountDownLatch(1);
-        var config = new SelectorTransport.Config(1, 2, 32, 8, 1, 1, BURST_FRAMES,
+        var config = new CSelectorTransport.Config(1, 2, 32, 8, 1, 1, BURST_FRAMES,
                 1_000_000, 32, 4_096, Duration.ofMillis(300));
         var slow = burst(queued, closed, false);
-        var handler = new SelectorTransport.Handler() {
-            @Override public void onFrame(Connection connection, ReadBuffer payload) throws IOException {
+        var handler = new CSelectorTransport.Handler() {
+            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
                 if (payload.readByte() == 1) slow.onFrame(connection, payload);
                 else check(connection.trySend(1, writer -> writer.writeByte(2)), "healthy SEND during large-pool exhaustion");
             }
 
             @Override public void onClosed(Connection connection, CloseReason reason) { closed.add(reason); }
         };
-        try (SelectorTransport server = SelectorTransport.bind(LOOPBACK, config, handler);
+        try (CSelectorTransport server = CSelectorTransport.bind(LOOPBACK, config, handler);
                 Socket socket = connect(server, 8_192)) {
             socket.getOutputStream().write(frame(new byte[] {1}));
             await(queued);
@@ -327,10 +327,10 @@ public final class SelectorTransportTest {
         }
     }
 
-    private static SelectorTransport.Handler burst(CountDownLatch queued, LinkedBlockingQueue<CloseReason> closed,
+    private static CSelectorTransport.Handler burst(CountDownLatch queued, LinkedBlockingQueue<CloseReason> closed,
             boolean graceful) {
-        return new SelectorTransport.Handler() {
-            @Override public void onFrame(Connection connection, ReadBuffer payload) throws IOException {
+        return new CSelectorTransport.Handler() {
+            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
                 for (int f = 0; f < BURST_FRAMES; f++) {
                     int sequence = f;
                     check(connection.trySend(BURST_BODY_BYTES, writer -> {
@@ -350,10 +350,10 @@ public final class SelectorTransportTest {
     private static void checkMixedSlowPeers(int slowCount) throws Exception {
         var queued = new CountDownLatch(slowCount);
         var timeouts = new CountDownLatch(slowCount);
-        var config = new SelectorTransport.Config(2, 100, 128, 128, 1, 16,
+        var config = new CSelectorTransport.Config(2, 100, 128, 128, 1, 16,
                 slowCount * BURST_FRAMES, 1_000_000, 32, 4_096, Duration.ofMillis(750));
-        try (var server = SelectorTransport.bind(LOOPBACK, config, new SelectorTransport.Handler() {
-            @Override public void onFrame(Connection connection, ReadBuffer payload) throws IOException {
+        try (var server = CSelectorTransport.bind(LOOPBACK, config, new CSelectorTransport.Handler() {
+            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
                 if (payload.readByte() == 1) {
                     for (int i = 0; i < BURST_FRAMES; i++)
                         check(connection.trySend(BURST_BODY_BYTES, writer -> {
@@ -378,7 +378,7 @@ public final class SelectorTransportTest {
                     expectFrame(peers.get(i), new byte[] {2});
                 }
                 await(timeouts);
-                check(server.ownerDiagnostics().stream().mapToLong(SelectorTransport.OwnerDiagnostics::writeTimeouts).sum()
+                check(server.ownerDiagnostics().stream().mapToLong(CSelectorTransport.OwnerDiagnostics::writeTimeouts).sum()
                         == slowCount, "only slow peers timed out");
             } finally {
                 for (Socket peer : peers) peer.close();
@@ -394,9 +394,9 @@ public final class SelectorTransportTest {
         CountDownLatch release = new CountDownLatch(1);
         AtomicInteger executed = new AtomicInteger();
         AtomicInteger canceled = new AtomicInteger();
-        try (SelectorTransport server = SelectorTransport.bind(LOOPBACK, config(1, 2, 2), new SelectorTransport.Handler() {
+        try (CSelectorTransport server = CSelectorTransport.bind(LOOPBACK, config(1, 2, 2), new CSelectorTransport.Handler() {
             @Override public void onOpen(Connection connection) { opened.add(connection); }
-            @Override public void onFrame(Connection connection, ReadBuffer payload) { }
+            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) { }
         }); Socket peer = connect(server, 0)) {
             Connection connection = await(opened);
             try {
@@ -406,7 +406,7 @@ public final class SelectorTransportTest {
                     catch (InterruptedException e) { throw new IOException(e); }
                 }), "owner command admitted");
                 await(started);
-                SelectorTransport.OwnerCommand pending = new SelectorTransport.OwnerCommand() {
+                CSelectorTransport.OwnerCommand pending = new CSelectorTransport.OwnerCommand() {
                     @Override public void run(Connection ignored) { executed.incrementAndGet(); }
                     @Override public void cancel() { canceled.incrementAndGet(); }
                 };
@@ -432,7 +432,7 @@ public final class SelectorTransportTest {
         var opened = new LinkedBlockingQueue<Connection>();
         var finished = new CountDownLatch(20 * 100);
         var executed = new int[20];
-        try (var server = SelectorTransport.bind(LOOPBACK, config(1, 2, 33), new SelectorTransport.RawHandler() {
+        try (var server = CSelectorTransport.bind(LOOPBACK, config(1, 2, 33), new CSelectorTransport.RawHandler() {
             @Override public void onOpen(Connection connection) { opened.add(connection); }
         }); var peer = connect(server, 0); var producers = Executors.newVirtualThreadPerTaskExecutor()) {
             Connection connection = await(opened);
@@ -442,7 +442,7 @@ public final class SelectorTransportTest {
                 submitted.add(producers.submit(() -> {
                     for (int sequence = 0; sequence < 100; sequence++) {
                         int expected = sequence;
-                        SelectorTransport.OwnerCommand command = ignored -> {
+                        CSelectorTransport.OwnerCommand command = ignored -> {
                             check(executed[producer]++ == expected, "producer FIFO and exactly-once execution");
                             finished.countDown();
                         };
@@ -464,7 +464,7 @@ public final class SelectorTransportTest {
 
     private static void checkOwnerFailure() throws Exception {
         var failure = new AssertionError("injected owner failure");
-        var transport = SelectorTransport.bind(LOOPBACK, config(2, 2, 8), new SelectorTransport.RawHandler() {
+        var transport = CSelectorTransport.bind(LOOPBACK, config(2, 2, 8), new CSelectorTransport.RawHandler() {
             @Override public void onOpen(Connection connection) {
                 throw failure;
             }
@@ -485,7 +485,7 @@ public final class SelectorTransportTest {
 
     private static void checkCipher() throws Exception {
         long seed = Opcodes.getSeed();
-        try (SelectorTransport server = SelectorTransport.bind(LOOPBACK, config(2, 2, 8), new SelectorTransport.Handler() {
+        try (CSelectorTransport server = CSelectorTransport.bind(LOOPBACK, config(2, 2, 8), new CSelectorTransport.Handler() {
             @Override public void onOpen(Connection connection) throws IOException {
                 connection.enableCipher(seed, true);
                 try {
@@ -495,7 +495,7 @@ public final class SelectorTransportTest {
                 check(connection.trySend(Opcodes.S_KEYBYTES.length, writer -> writer.writeBytes(Opcodes.S_KEYBYTES)),
                         "plaintext RKern handshake");
             }
-            @Override public void onFrame(Connection connection, ReadBuffer payload) throws IOException {
+            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
                 int size = payload.remaining();
                 echoEncrypted(connection, payload, size);
                 try {
@@ -531,7 +531,7 @@ public final class SelectorTransportTest {
         }
     }
 
-    private static void echoEncrypted(Connection connection, ReadBuffer payload, int size) throws IOException {
+    private static void echoEncrypted(Connection connection, CPacketReadBuffer payload, int size) throws IOException {
         check(connection.trySend(size, writer -> {
             while (payload.remaining() != 0) writer.writeByte(payload.readByte());
         }), "encrypted echo");
@@ -591,7 +591,7 @@ public final class SelectorTransportTest {
         }
     }
 
-    private static Socket connect(SelectorTransport server, int receiveBytes) throws IOException {
+    private static Socket connect(CSelectorTransport server, int receiveBytes) throws IOException {
         Socket socket = new Socket();
         try {
             if (receiveBytes > 0) socket.setReceiveBufferSize(receiveBytes);
@@ -628,15 +628,15 @@ public final class SelectorTransportTest {
         check(Arrays.equals(actual, expected), "expected " + Arrays.toString(expected) + ", received " + Arrays.toString(actual));
     }
 
-    private static void balanced(List<SelectorTransport.OwnerStats> stats) {
-        for (SelectorTransport.OwnerStats owner : stats) {
+    private static void balanced(List<CSelectorTransport.OwnerStats> stats) {
+        for (CSelectorTransport.OwnerStats owner : stats) {
             check(owner.remainingConnections() == 0 && owner.remainingCommands() == 0, "no live connections or commands");
             balanced(owner.receive());
             balanced(owner.send());
         }
     }
 
-    private static void balanced(SelectorBufferPool.Stats pool) {
+    private static void balanced(CSelectorBufferPool.Stats pool) {
         check(pool.inUse() == 0 && pool.borrows() == pool.returns(), "lease ownership reconciles");
         check(pool.allocatedDirectBytes() <= pool.maxDirectBytes(), "direct allocation respects cap");
     }

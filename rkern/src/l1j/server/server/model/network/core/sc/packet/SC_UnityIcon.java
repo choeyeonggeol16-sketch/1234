@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_UnityIcon {
     private static final int WIRE_SIZE = 243;
@@ -15,7 +15,7 @@ public final class SC_UnityIcon {
     public static boolean send(L1PcInstance pc, int[] icon) {
         if (pc == null || icon == null || icon.length < 39) return false;
         final int timestamp = (int) System.currentTimeMillis();
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -23,7 +23,7 @@ public final class SC_UnityIcon {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             buffer.writeC(0x14);
             buffer.writeC(0x7e);

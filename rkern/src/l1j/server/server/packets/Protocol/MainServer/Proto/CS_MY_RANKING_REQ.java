@@ -1,7 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.rank.business.RankBusiness;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 
@@ -12,7 +12,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 public final class CS_MY_RANKING_REQ {
     private CS_MY_RANKING_REQ() {}
 
-    public static void handleRequest(CIOClient client, ProtoReader r) {
+    public static void handleRequest(CUserSession client, ProtoReader r) {
         long version = 0;
         boolean hasVersion = false;
 

@@ -4,7 +4,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
@@ -21,8 +21,8 @@ public final class ProtoWriter {
 	private int[] _patch;
 	private int _patchN;
 
-	/* direct WriteBuffer mode */
-	private WriteBuffer _out;
+	/* direct CPacketWriteBuffer mode */
+	private CPacketWriteBuffer _out;
 	private int _base;
     private ProtoWriter _nestedDirect;
     CIOFrame directFrame;
@@ -45,7 +45,7 @@ public final class ProtoWriter {
 		return new ProtoWriter();
 	}
 
-	static ProtoWriter direct(WriteBuffer out) {
+	static ProtoWriter direct(CPacketWriteBuffer out) {
 		if (out == null) throw new NullPointerException("out");
 
         ProtoWriter w = DIRECT_TL.get();
@@ -71,7 +71,7 @@ public final class ProtoWriter {
 		return this;
 	}
 
-	private ProtoWriter bind(WriteBuffer out) {
+	private ProtoWriter bind(CPacketWriteBuffer out) {
 		_out = out;
 		_base = out.position();
 		_p = 0;
@@ -307,7 +307,7 @@ public final class ProtoWriter {
 
 		/*
 		 * 최대 5byte length 공간 예약.
-		 * direct mode에서도 최종 WriteBuffer 안에 바로 예약한다.
+		 * direct mode에서도 최종 CPacketWriteBuffer 안에 바로 예약한다.
 		 */
 		for (int i = 0; i < 5; i++) putByte(0);
 		return this;

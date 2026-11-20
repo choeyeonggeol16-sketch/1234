@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.cs.packet;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1HouseLocation;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.templates.L1BookMark;
 
@@ -13,7 +13,7 @@ public final class CS_Bookmark {
     }
 
     public static void handle(
-            CIOClient client,
+            CUserSession client,
             String bookmarkName) {
 
         if (client == null

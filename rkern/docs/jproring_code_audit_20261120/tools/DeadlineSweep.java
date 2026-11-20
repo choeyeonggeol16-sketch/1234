@@ -2,24 +2,24 @@ import java.net.*;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
-import l1j.server.server.model.network.core.transport.selector.SelectorTransport;
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 
 public class DeadlineSweep {
     private static final int SIZE = 5000, ROUNDS = 8, TRIALS = 5;
     private static final Runnable NOT_DUE = () -> { throw new AssertionError("timer should stay scheduled"); };
     public static void main(String[] args) throws Exception {
-        var opened = new LinkedBlockingQueue<SelectorTransport.Connection>();
-        var handler = new SelectorTransport.RawHandler() {
-            @Override public void onOpen(SelectorTransport.Connection socket) {
+        var opened = new LinkedBlockingQueue<CSelectorTransport.Connection>();
+        var handler = new CSelectorTransport.RawHandler() {
+            @Override public void onOpen(CSelectorTransport.Connection socket) {
                 socket.scheduleDeadline(900_000, NOT_DUE);
                 opened.add(socket);
             }
         };
-        var config = new SelectorTransport.Config(1, SIZE, 128, 64, 1, 1, 1, 3, 1, 0, Duration.ofSeconds(5));
+        var config = new CSelectorTransport.Config(1, SIZE, 128, 64, 1, 1, 1, 3, 1, 0, Duration.ofSeconds(5));
         var sockets = new ArrayList<Socket>(SIZE);
-        var connections = new ArrayList<SelectorTransport.Connection>(SIZE);
+        var connections = new ArrayList<CSelectorTransport.Connection>(SIZE);
         var address = new InetSocketAddress("127.0.0.1", 0);
-        try (var server = SelectorTransport.bind(address, config, handler)) {
+        try (var server = CSelectorTransport.bind(address, config, handler)) {
             for (int i = 0; i < SIZE; i++) {
                 var socket = new Socket();
                 sockets.add(socket);

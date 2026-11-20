@@ -5,7 +5,7 @@ import l1j.server.MJCompanion.Basic.Skills.MJCompanionSkillTierOpenInfo;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 
 /**
@@ -16,7 +16,7 @@ public final class CS_COMPANION_SKILL_NEXT_TIER_OPEN_REQ {
 
     private CS_COMPANION_SKILL_NEXT_TIER_OPEN_REQ() {}
 
-    public static void handleRequest(CIOClient client, ProtoReader r) {
+    public static void handleRequest(CUserSession client, ProtoReader r) {
         // ── 파싱: 필드 없음 (프레임 무결성만 ProtoReader로 확인) ──
         try {
             while (!r.isAtEnd()) {

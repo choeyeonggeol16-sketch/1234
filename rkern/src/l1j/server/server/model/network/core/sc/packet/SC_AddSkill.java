@@ -1,10 +1,10 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 public final class SC_AddSkill {
@@ -14,7 +14,7 @@ public final class SC_AddSkill {
         final int headerType = level >= 8 && level <= 9 && id > 0 ? 100
                 : level >= 4 && level <= 7 && id > 0 ? 50 : 22;
         if (pc == null) return false;
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -22,7 +22,7 @@ public final class SC_AddSkill {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer out = frame.buffer();
+            final CPacketWriteBuffer out = frame.buffer();
             out.writeC(Opcodes.S_ADD_SPELL);
             out.writeC(headerType);
             for (int i = 0; i < 24; i++) out.writeC(i == level ? id : 0);
@@ -37,7 +37,7 @@ public final class SC_AddSkill {
 
     public static boolean send(L1PcInstance pc, int[] levels) {
         if (pc == null) return false;
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -49,7 +49,7 @@ public final class SC_AddSkill {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer out = frame.buffer();
+            final CPacketWriteBuffer out = frame.buffer();
             out.writeC(Opcodes.S_ADD_SPELL);
             out.writeC(0x20);
             for (int i = 0; i < count; i++) out.writeC(levels[i]);
@@ -96,7 +96,7 @@ public final class SC_AddSkill {
             int p29,
             int p30) {
         if (pc == null) return false;
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -105,7 +105,7 @@ public final class SC_AddSkill {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer out = frame.buffer();
+            final CPacketWriteBuffer out = frame.buffer();
             out.writeC(Opcodes.S_ADD_SPELL);
             out.writeC(0x20);
             out.writeC(p0);

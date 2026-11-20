@@ -5,7 +5,7 @@ import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Warehouse.SupplementaryService;
 import l1j.server.server.model.Warehouse.WarehouseManager;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.shop.L1AdenShop;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_WAREHOUSE_ITEM_LIST_NOTI;
 
@@ -20,7 +20,7 @@ public final class CS_AdenShop {
     }
 
     public static void handle(
-            CIOClient client,
+            CUserSession client,
             int type,
             int size,
             int firstId,
@@ -101,7 +101,7 @@ public final class CS_AdenShop {
     }
 
     private static void openShop(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc) {
 
         if (Config.Arden) {
@@ -134,7 +134,7 @@ public final class CS_AdenShop {
     }
 
     private static void handlePurchase(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc,
             int size,
             int firstId,

@@ -7,7 +7,7 @@ import l1j.server.IndunSystem.Gludio.GludioInstanceDungeon;
 import l1j.server.IndunSystem.Gludio.GludioInstanceDungeon.Room;
 import l1j.server.IndunSystem.Gludio.GludioInstanceDungeon.Member;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
@@ -41,7 +41,7 @@ public final class GludioDungeonPackets {
         String password="";
     }
 
-    public static void handleRequest(CIOClient client,ProtoReader in,int message) {
+    public static void handleRequest(CUserSession client,ProtoReader in,int message) {
         L1PcInstance pc=client==null?null:client.getActiveChar();
         if(pc==null) return;
         int id=0, kind=201, page=1, kickId=0;

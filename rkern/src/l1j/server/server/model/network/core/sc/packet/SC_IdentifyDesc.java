@@ -4,10 +4,10 @@ import java.nio.charset.Charset;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_IdentifyDesc {
     private static final Charset MS949 = Charset.forName("MS949");
@@ -17,7 +17,7 @@ public final class SC_IdentifyDesc {
         return pc != null && send(pc.getNetConnection(), item);
     }
 
-    public static boolean send(CIOClient client, L1ItemInstance item) {
+    public static boolean send(CUserSession client, L1ItemInstance item) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -81,7 +81,7 @@ public final class SC_IdentifyDesc {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_IDENTIFY_CODE);
             buffer.writeH(desc);
             if (type2 >= 0 && type2 <= 2) {

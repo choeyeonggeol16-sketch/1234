@@ -40,7 +40,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.monitor.Logger.ChatType;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CHAR_STAT;
@@ -72,7 +72,7 @@ public final class CS_Craft {
 	private CS_Craft() {
 	}
 
-	public static void handle(CIOClient client, int type, int p1, int p2, int p3, long l0, long l1, String s0, String s1) {
+	public static void handle(CUserSession client, int type, int p1, int p2, int p3, long l0, long l1, String s0, String s1) {
 		if (client == null) {
 			return;
 		}
@@ -357,7 +357,7 @@ public final class CS_Craft {
 		SC_RankingClan.send(pc, allDatas);
 	}
 
-	private static void handleNewStat(L1PcInstance pc, CIOClient client, StatContext ctx) {
+	private static void handleNewStat(L1PcInstance pc, CUserSession client, StatContext ctx) {
 		/*
 		 * 원본 그대로.
 		 */
@@ -406,7 +406,7 @@ public final class CS_Craft {
 		}
 	}
 
-	private static void handleChat(L1PcInstance pc, CIOClient client, int chatType, String message, String targetName) {
+	private static void handleChat(L1PcInstance pc, CUserSession client, int chatType, String message, String targetName) {
 		try {
 			if (pc == null) {
 				return;

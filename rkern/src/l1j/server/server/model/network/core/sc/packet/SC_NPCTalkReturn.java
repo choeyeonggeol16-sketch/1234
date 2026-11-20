@@ -4,8 +4,8 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1NpcTalkData;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.npc.L1NpcHtml;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
@@ -50,7 +50,7 @@ public final class SC_NPCTalkReturn {
     private static boolean sendRaw(L1PcInstance pc, int objId, String htmlId, String[] array,
                                    java.util.List<String> list, int opcode, boolean mode2) {
         if (pc == null) return false;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -66,7 +66,7 @@ public final class SC_NPCTalkReturn {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(opcode);
             buffer.writeD(objId);
             buffer.writeS(name);

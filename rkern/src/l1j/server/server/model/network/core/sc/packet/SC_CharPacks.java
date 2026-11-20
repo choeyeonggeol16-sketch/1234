@@ -2,14 +2,14 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_CharPacks {
     private SC_CharPacks() {}
-    public static boolean send(CIOClient client, String name, String clanName, int type, int sex,
+    public static boolean send(CUserSession client, String name, String clanName, int type, int sex,
             int lawful, int hp, int mp, int ac, int level, int str, int dex,
             int con, int wis, int cha, int intel, int accessLevel, int birth) {
         if (client == null || !client.isConnected()) return false;
@@ -21,7 +21,7 @@ public final class SC_CharPacks {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_CHARACTER_INFO);
             buffer.writeS(name == null ? "" : name);
             buffer.writeS(clanName == null ? "" : clanName);

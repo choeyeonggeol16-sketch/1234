@@ -6,7 +6,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.Account;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -17,8 +17,8 @@ import java.util.List;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.templates.L1BoardPost;
 
 public final class SC_Board {
@@ -164,7 +164,7 @@ public final class SC_Board {
 		_bugRaceNodes = bugRaceNodes;
 	}
 
-	private void writeImpl(CIOClient client, WriteBuffer buffer) {
+	private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 		switch (_mode) {
 		case 1: { // 일반 게시판 패킷 구조
 			buffer.writeC(Opcodes.S_BOARD_LIST);
@@ -271,13 +271,13 @@ public final class SC_Board {
 		return value == null ? 1 : value.getBytes(MS949).length + 1;
 	}
 
-	public boolean send(CIOClient client) {
+	public boolean send(CUserSession client) {
 		if (client == null || !client.isConnected()) return false;
 		final CUserSocket conn = client.getConnection();
 		if (conn == null || !conn.isClientConnected()) return false;
 		final long capacity = frameLength();
-		if (capacity <= ConnectionConfig.HEADER_SIZE
-				|| capacity > ConnectionConfig.MAX_WIRE_PACKET_SIZE) return false;
+		if (capacity <= CConnectionConfig.HEADER_SIZE
+				|| capacity > CConnectionConfig.MAX_WIRE_PACKET_SIZE) return false;
 		final CIOFrame frame = conn.beginDirectFrame((int) capacity);
 		if (frame == null) return false;
 		boolean committed = false;
@@ -285,7 +285,7 @@ public final class SC_Board {
 			writeImpl(client, frame.buffer());
 			committed = conn.commitDirectFrame(frame);
 			return committed;
-		} catch (WriteBuffer.RegisteredCapacityExceededException e) {
+		} catch (CPacketWriteBuffer.RegisteredCapacityExceededException e) {
 			LOG.warning("SC_Board capacity calculation overflow mode=" + _mode
 					+ " requested=" + capacity);
 			return false;
@@ -301,12 +301,12 @@ public final class SC_Board {
 			length = 1 + 1 + 4 + 4 + 1 + (_number == 0 ? 3 : 0);
 			for (BoardPostNode p : _posts)
 				length += 4 + bytesOf(p.name) + bytesOf(p.date) + bytesOf(p.title);
-			return ConnectionConfig.HEADER_SIZE + length;
+			return CConnectionConfig.HEADER_SIZE + length;
 		case 2:
 			length = 1 + 4 + bytesOf("maeno4") + 1 + 2;
 			for (BugRaceNode n : _bugRaceNodes)
 				length += bytesOf(n.name) + bytesOf(n.condition) + bytesOf(n.winRate);
-			return ConnectionConfig.HEADER_SIZE + length;
+			return CConnectionConfig.HEADER_SIZE + length;
 		case 3: {
 			String[] titles = {
 				"--------- 전      사", "--------- 군      주", "--------- 기      사",
@@ -315,18 +315,18 @@ public final class SC_Board {
 			};
 			length = 1 + 1 + 4 + 4 + 2 + 2;
 			for (String title : titles) length += 4 + bytesOf("") + bytesOf("") + bytesOf(title);
-			return ConnectionConfig.HEADER_SIZE + length;
+			return CConnectionConfig.HEADER_SIZE + length;
 		}
 		case 4:
 			length = 1 + 1 + 4 + 4 + 2 + 2;
 			length += 4 + bytesOf("정보 조회") + bytesOf("") + bytesOf("무기 인챈트 랭킹");
 			length += 4 + bytesOf("정보 조회") + bytesOf("") + bytesOf("방어구 인챈트 랭킹");
-			return ConnectionConfig.HEADER_SIZE + length + 6L * (4 + 3);
+			return CConnectionConfig.HEADER_SIZE + length + 6L * (4 + 3);
 		case 5:
 			length = 1 + 1 + 4 + 4 + 2 + 2;
 			length += 4 + bytesOf("수표감시") + bytesOf("") + bytesOf("1. 인벤 수표 조회");
 			length += 4 + bytesOf("수표감시") + bytesOf("") + bytesOf("2. 창고 수표 조회");
-			return ConnectionConfig.HEADER_SIZE + length + 6L * (4 + 3);
+			return CConnectionConfig.HEADER_SIZE + length + 6L * (4 + 3);
 		default:
 			return 0;
 		}
@@ -338,7 +338,7 @@ public final class SC_Board {
 
 	public static boolean send(L1PcInstance pc, L1NpcInstance board, int number) {
 		if (pc == null || board == null) return false;
-		final CIOClient client = pc.getNetConnection();
+		final CUserSession client = pc.getNetConnection();
 		if (client == null || !client.isConnected()) return false;
 		final CUserSocket conn = client.getConnection();
 		if (conn == null || !conn.isClientConnected() || client.getActiveChar() != pc) return false;

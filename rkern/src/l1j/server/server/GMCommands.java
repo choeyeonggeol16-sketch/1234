@@ -129,12 +129,12 @@ import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.item.teleport.L1Teleport;
-import l1j.server.server.model.network.packet.ServerPacket;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
 import l1j.server.server.model.network.core.cs.packet.CS_CommonClick;
-import l1j.server.server.model.network.safe.NetworkSafeLoadManager;
+import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.rank.loader.RankLoadManager;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
@@ -961,7 +961,7 @@ public class GMCommands {
 			일반채팅(gm, param);
 			break;
 		case "넷세이프":
-			NetworkSafeLoadManager.commands(gm, param);
+			CPacketFilter.commands(gm, param);
 			break;
 		case "핑":
 			ping(gm, param);
@@ -1662,7 +1662,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 //				}
 				gm.setAutoClanjoin(true);			
 				L1PolyMorph.undoPolyAutoClanjoin(gm);	
-				CIOClient client = gm.getNetConnection();
+				CUserSession client = gm.getNetConnection();
 				gm.setNetConnection(null);
 				try { 
 					gm.save();
@@ -2584,7 +2584,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				}
 			}
 			
-			CIOClient client = gm.getNetConnection();
+			CUserSession client = gm.getNetConnection();
 			gm.setNetConnection(null);
 			gm.setAutoFish(true);
 			try {
@@ -2744,7 +2744,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				return;
 			}
 			
-			CIOClient clnt = target.getNetConnection();
+			CUserSession clnt = target.getNetConnection();
 			clnt.kick();
 			CS_CharSelect.restartProcess(target);
 			Account acc		= clnt.getAccount();
@@ -2851,7 +2851,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				return;
 			}
 
-			CIOClient client = pc.getNetConnection();
+			CUserSession client = pc.getNetConnection();
 			pc.setNetConnection(null);
 			pc.set무인상점(true);
 			try {
@@ -3922,8 +3922,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			if (유저 != null) {
 				if (유저.getClanid() != 0) {
 				if (id <= 0) { gm.sendPackets("지급 포인트는 양수여야 합니다."); return; }
-				final CIOClient gmSession = gm.getNetConnection();
-				final CIOClient memberSession = 유저.getNetConnection();
+				final CUserSession gmSession = gm.getNetConnection();
+				final CUserSession memberSession = 유저.getNetConnection();
 				final String memberName = 유저.getName();
 				ClanTable.changeWarPoint(유저.getClan(), id, committed -> {
 					CIOThreadCallback.getInstance().completeSession(gmSession, () ->
@@ -3953,8 +3953,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			if (유저 != null) {
 				if (유저.getClanid() != 0) {
 				if (id <= 0) { gm.sendPackets("차감 포인트는 양수여야 합니다."); return; }
-				final CIOClient gmSession = gm.getNetConnection();
-				final CIOClient memberSession = 유저.getNetConnection();
+				final CUserSession gmSession = gm.getNetConnection();
+				final CUserSession memberSession = 유저.getNetConnection();
 				final String memberName = 유저.getName();
 				ClanTable.changeWarPoint(유저.getClan(), -id, committed -> {
 					CIOThreadCallback.getInstance().completeSession(gmSession, () ->
@@ -5736,7 +5736,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			String Trade_name = st.nextToken();
 			L1PcInstance target = null;
 			target = L1World.getInstance().getPlayer(Trade_name);
-			CIOClient clientthread = target.getNetConnection();
+			CUserSession clientthread = target.getNetConnection();
 			clientthread.getActiveChar();
 			if (target != null) {
 				

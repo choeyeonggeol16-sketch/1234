@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -106,7 +106,7 @@ public final class SC_MY_RANKING_ACK extends ProtoPacket {
     }
 
     public static boolean sendFields(
-            CIOClient recipient, int _resultCode, long _version, int _classRank, int _prevClassRank, int _allRank,
+            CUserSession recipient, int _resultCode, long _version, int _classRank, int _prevClassRank, int _allRank,
             int _prevAllRank, boolean _hasRankFields) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_MY_RANKING_ACK, Proto.capacityBound(1024L));
         if (writer == null) return false;
@@ -127,7 +127,7 @@ public final class SC_MY_RANKING_ACK extends ProtoPacket {
     }
 
     private static boolean sendCtor(
-            CIOClient protoRecipient, int resultCode, long version, int classRank, int prevClassRank, int allRank,
+            CUserSession protoRecipient, int resultCode, long version, int classRank, int prevClassRank, int allRank,
             int prevAllRank, boolean hasRankFields) {
         int proto46_resultCode = 0;
         long proto46_version = 0;
@@ -150,7 +150,7 @@ public final class SC_MY_RANKING_ACK extends ProtoPacket {
                 proto46_allRank, proto46_prevAllRank, proto46_hasRankFields);
     }
 
-    public static boolean sendNotService(CIOClient protoRecipient) {
+    public static boolean sendNotService(CUserSession protoRecipient) {
         return sendCtor(protoRecipient, ResultCode.NOW_NOT_SERVICE.toInt(), 0, 0, 0, 0, 0, false);
     }
 
@@ -158,7 +158,7 @@ public final class SC_MY_RANKING_ACK extends ProtoPacket {
         return sendNotService(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
 
-    public static boolean sendNoChange(CIOClient protoRecipient) {
+    public static boolean sendNoChange(CUserSession protoRecipient) {
         return sendCtor(protoRecipient, ResultCode.NO_CHANGE.toInt(), 0, 0, 0, 0, 0, false);
     }
 
@@ -166,7 +166,7 @@ public final class SC_MY_RANKING_ACK extends ProtoPacket {
         return sendNoChange(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
 
-    public static boolean sendSuccess(CIOClient protoRecipient, int classRank, int prevClassRank, int allRank, int prevAllRank, long version) {
+    public static boolean sendSuccess(CUserSession protoRecipient, int classRank, int prevClassRank, int allRank, int prevAllRank, long version) {
         return sendCtor(protoRecipient, ResultCode.SUCCESS.toInt(), version, classRank, prevClassRank, allRank, prevAllRank, true);
     }
 
@@ -174,7 +174,7 @@ public final class SC_MY_RANKING_ACK extends ProtoPacket {
         return sendSuccess(protoRecipient == null ? null : protoRecipient.getNetConnection(), classRank, prevClassRank, allRank, prevAllRank, version);
     }
     public static boolean sendConstructed(
-            CIOClient protoRecipient, int resultCode, long version, int classRank, int prevClassRank, int allRank,
+            CUserSession protoRecipient, int resultCode, long version, int classRank, int prevClassRank, int allRank,
             int prevAllRank, boolean hasRankFields) { return sendCtor(protoRecipient, resultCode, version, classRank, prevClassRank, allRank, prevAllRank, hasRankFields); }
 
     public static boolean sendConstructed(

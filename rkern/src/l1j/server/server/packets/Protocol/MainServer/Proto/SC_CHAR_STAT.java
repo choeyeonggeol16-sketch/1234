@@ -2,7 +2,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
 import l1j.server.server.utils.CalcStat;
@@ -34,7 +34,7 @@ public final class SC_CHAR_STAT extends ProtoPacket {
 	private final int _v1, _v2, _v3, _v4, _v5, _v6;
 
 
-	public static SC_CHAR_STAT create(CIOClient client, StatContext stx) {
+	public static SC_CHAR_STAT create(CUserSession client, StatContext stx) {
 		if (client == null || stx == null)
 			return null;
 
@@ -473,7 +473,7 @@ public final class SC_CHAR_STAT extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _mode, _type, _value, _v1, _v2, _v3, _v4, _v5, _v6);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _mode, int _type, int _value, int _v1, int _v2, int _v3, int _v4, int _v5, int _v6) {
+    public static boolean sendFields(CUserSession recipient, int _mode, int _type, int _value, int _v1, int _v2, int _v3, int _v4, int _v5, int _v6) {
         final ProtoWriter writer = Proto.begin(recipient, messageIdFields(_mode, _type, _value, _v1, _v2, _v3, _v4, _v5, _v6), Proto.capacityBound(1024L));
         if (writer == null) return false;
         try {
@@ -604,7 +604,7 @@ public final class SC_CHAR_STAT extends ProtoPacket {
             w.end();
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, int mode, int type, int value, int v1, int v2, int v3, int v4, int v5, int v6) {
+    private static boolean sendCtor(CUserSession protoRecipient, int mode, int type, int value, int v1, int v2, int v3, int v4, int v5, int v6) {
         int proto19_mode = 0;
         int proto19_type = 0;
         int proto19_value = 0;
@@ -628,7 +628,7 @@ public final class SC_CHAR_STAT extends ProtoPacket {
         return sendFields(protoRecipient, proto19_mode, proto19_type, proto19_value, proto19_v1, proto19_v2, proto19_v3, proto19_v4, proto19_v5, proto19_v6);
     }
 
-    public static boolean sendCreate(CIOClient protoRecipient, CIOClient client, StatContext stx) {
+    public static boolean sendCreate(CUserSession protoRecipient, CUserSession client, StatContext stx) {
         if (client == null || stx == null)
                     return false;
 
@@ -698,11 +698,11 @@ public final class SC_CHAR_STAT extends ProtoPacket {
                 return sendCtor(protoRecipient, MODE_CLIENT_ALLOC, targetType, stx.getStatValue() * 2, v1, v2, v3, v4, v5, v6);
     }
 
-    public static boolean sendCreate(L1PcInstance protoRecipient, CIOClient client, StatContext stx) {
+    public static boolean sendCreate(L1PcInstance protoRecipient, CUserSession client, StatContext stx) {
         return sendCreate(protoRecipient == null ? null : protoRecipient.getNetConnection(), client, stx);
     }
 
-    public static boolean sendCreate(CIOClient protoRecipient, L1PcInstance pc, int settingType, int statType) {
+    public static boolean sendCreate(CUserSession protoRecipient, L1PcInstance pc, int settingType, int statType) {
         int v1 = 0, v2 = 0, v3 = 0;
                 int v4 = 0, v5 = 0, v6 = 0;
 
@@ -767,7 +767,7 @@ public final class SC_CHAR_STAT extends ProtoPacket {
         return sendCreate(protoRecipient == null ? null : protoRecipient.getNetConnection(), pc, settingType, statType);
     }
 
-    public static boolean sendCreate(CIOClient protoRecipient, L1PcInstance pc, int code) {
+    public static boolean sendCreate(CUserSession protoRecipient, L1PcInstance pc, int code) {
         if (pc == null) {
                     return sendCtor(protoRecipient, MODE_STAT_REFRESH, code, 0, 0, 0, 0, 0, 0, 0);
                 }
@@ -782,7 +782,7 @@ public final class SC_CHAR_STAT extends ProtoPacket {
         return sendCreate(protoRecipient == null ? null : protoRecipient.getNetConnection(), pc, code);
     }
 
-    public static boolean sendCreate(CIOClient protoRecipient, int code, int levelThreshold) {
+    public static boolean sendCreate(CUserSession protoRecipient, int code, int levelThreshold) {
         return sendCtor(protoRecipient, MODE_STAT_VIEW, code, levelThreshold, 0, 0, 0, 0, 0, 0);
     }
 
@@ -790,7 +790,7 @@ public final class SC_CHAR_STAT extends ProtoPacket {
         return sendCreate(protoRecipient == null ? null : protoRecipient.getNetConnection(), code, levelThreshold);
     }
     public static boolean sendConstructed(
-            CIOClient protoRecipient, int mode, int type, int value, int v1, int v2, int v3, int v4, int v5, int v6) { return sendCtor(protoRecipient, mode, type, value, v1, v2, v3, v4, v5, v6); }
+            CUserSession protoRecipient, int mode, int type, int value, int v1, int v2, int v3, int v4, int v5, int v6) { return sendCtor(protoRecipient, mode, type, value, v1, v2, v3, v4, v5, v6); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int mode, int type, int value, int v1, int v2, int v3, int v4, int v5, int v6) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), mode, type, value, v1, v2, v3, v4, v5, v6); }

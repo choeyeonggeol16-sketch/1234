@@ -18,9 +18,9 @@ import l1j.server.Server;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.packet.BytesWritablePacket;
+import l1j.server.server.model.network.packet.CBytesPacket;
 import l1j.server.server.model.network.packet.CPacketHandler;
-import l1j.server.server.model.network.safe.NetworkSafeLoadManager;
+import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
 
@@ -39,7 +39,7 @@ public final class GameFanoutVerification {
         int companion = reservePort();
         while (companion == Config.GAME_SERVER_PORT) companion = reservePort();
         System.setProperty("pss.uiBridge.port", Integer.toString(companion));
-        NetworkSafeLoadManager.getInstance().load();
+        CPacketFilter.getInstance().load();
         Set<CUserSocket> recipients = ConcurrentHashMap.newKeySet();
         var encodes = new AtomicInteger();
         var denials = new AtomicInteger();
@@ -48,7 +48,7 @@ public final class GameFanoutVerification {
             int sequence = request.readInt();
             if (sequence != BROADCAST) {
                 recipients.add(client.getConnection());
-                return client.getConnection().tryWritePacket(client, new BytesWritablePacket(body(0x45, sequence)));
+                return client.getConnection().tryWritePacket(client, new CBytesPacket(body(0x45, sequence)));
             }
             try (var shared = new CAsyncSendConstBuffer(out -> {
                 encodes.incrementAndGet();

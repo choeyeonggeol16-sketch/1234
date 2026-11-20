@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
 public final class CS_BanishParty {
@@ -11,7 +11,7 @@ public final class CS_BanishParty {
     }
 
     public static void handle(
-            CIOClient client,
+            CUserSession client,
             String memberName) {
 
         if (client == null) {

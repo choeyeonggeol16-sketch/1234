@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftOutputItem;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.eCraftMakeReqResultType;
@@ -84,7 +84,7 @@ public final class SC_CRAFT_MAKE_ACK extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _eResult, _item);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _eResult, CraftOutputItem _item) {
+    public static boolean sendFields(CUserSession recipient, int _eResult, CraftOutputItem _item) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_CRAFT_MAKE_ACK, Proto.capacityBound(1024L + (_item == null || _item.get_desc() == null ? 0L : 2L * _item.get_desc().length()) + (_item == null || _item.get_url() == null ? 0L : 2L * _item.get_url().length())));
         if (writer == null) return false;
         try {
@@ -101,7 +101,7 @@ public final class SC_CRAFT_MAKE_ACK extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_CRAFT_MAKE_ACK);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, int eResult, CraftOutputItem item) {
+    private static boolean sendCtor(CUserSession protoRecipient, int eResult, CraftOutputItem item) {
         int proto28_eResult = 0;
         CraftOutputItem proto28_item = null;
 
@@ -110,7 +110,7 @@ public final class SC_CRAFT_MAKE_ACK extends ProtoPacket {
 
         return sendFields(protoRecipient, proto28_eResult, proto28_item);
     }
-    public static boolean sendConstructed(CIOClient protoRecipient, int eResult, CraftOutputItem item) { return sendCtor(protoRecipient, eResult, item); }
+    public static boolean sendConstructed(CUserSession protoRecipient, int eResult, CraftOutputItem item) { return sendCtor(protoRecipient, eResult, item); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int eResult, CraftOutputItem item) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), eResult, item); }

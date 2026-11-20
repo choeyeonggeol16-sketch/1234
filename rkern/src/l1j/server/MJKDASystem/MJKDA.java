@@ -23,7 +23,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;

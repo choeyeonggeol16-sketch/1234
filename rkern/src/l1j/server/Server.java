@@ -15,7 +15,7 @@ import l1j.server.server.GameServer;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.server.CDummyServerCallback;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.utils.PerformanceTimer;
 
@@ -105,7 +105,7 @@ public class Server {
             // Java accepts on one owner. Leave room for a login burst while that
             // owner is also servicing established sockets and game timers.
             final int backlog = Math.max(64, Math.min(connectionCapacity, MAX_ACCEPT_BACKLOG));
-            final ConnectionConfig config = new ConnectionConfig(address);
+            final CConnectionConfig config = new CConnectionConfig(address);
             final CDummyServerCallback factory = new CDummyServerCallback(
                     CIOThreadCallback.getInstance(), config);
             final CIOBufferPool pool = new CIOBufferPool(connectionCapacity,

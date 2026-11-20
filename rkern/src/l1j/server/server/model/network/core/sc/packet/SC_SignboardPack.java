@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.*;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_SignboardPack {
     private SC_SignboardPack() {}
@@ -14,7 +14,7 @@ public final class SC_SignboardPack {
         return receiver != null && send(receiver.getNetConnection(), signboard);
     }
 
-    public static boolean send(CIOClient client, L1SignboardInstance signboard) {
+    public static boolean send(CUserSession client, L1SignboardInstance signboard) {
         if (client == null || !client.isConnected() || signboard == null ) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -35,7 +35,7 @@ public final class SC_SignboardPack {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
 
                     buffer.writeC(Opcodes.S_PUT_OBJECT);
                     buffer.writeH(x);

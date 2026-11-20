@@ -28,14 +28,14 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.packet.CPacketHandler;
-import l1j.server.server.model.network.packet.BytesWritablePacket;
-import l1j.server.server.model.network.packet.WritablePacket;
-import l1j.server.server.model.network.safe.NetworkSafeLoadManager;
+import l1j.server.server.model.network.packet.CBytesPacket;
+import l1j.server.server.model.network.packet.IPacketWriter;
+import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.network.utill.ConnectionState;
+import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 
@@ -62,7 +62,7 @@ public final class SelectorCioIntegrationTest {
             int companionPort = reservePort();
             while (companionPort == gamePort) companionPort = reservePort();
             System.setProperty("pss.uiBridge.port", Integer.toString(companionPort));
-            NetworkSafeLoadManager.getInstance().load();
+            CPacketFilter.getInstance().load();
             AtomicInteger rejectedOpcodePackets = new AtomicInteger();
             Set<Integer> owners = ConcurrentHashMap.newKeySet();
             AtomicInteger responses = new AtomicInteger();
@@ -100,7 +100,7 @@ public final class SelectorCioIntegrationTest {
                 }
                 if (value == 911 || value == 912) {
                     byte[] payloadBytes = body(0x45, value);
-                    WritablePacket<CIOClient> packet = value == 911 ? new BytesWritablePacket(payloadBytes)
+                    IPacketWriter<CUserSession> packet = value == 911 ? new CBytesPacket(payloadBytes)
                             : new ProtoPacketWriter.Raw(payloadBytes);
                     check(socket.tryWritePacket(client, packet), "existing game packet admitted as a bounded SEND");
                     productionTailSends.countDown();
@@ -189,10 +189,10 @@ public final class SelectorCioIntegrationTest {
                     account.setAccountId(41);
                     firstSession.onAccountChanged(account);
                     secondSession.onAccountChanged(account);
-                    firstSession.onSessionStateChanged(ConnectionState.IN_GAME);
+                    firstSession.onSessionStateChanged(CConnectionState.IN_GAME);
                     check(Server.findEnteringAccount(41) != 0, "first account entry registered");
                     try {
-                        secondSession.onSessionStateChanged(ConnectionState.IN_GAME);
+                        secondSession.onSessionStateChanged(CConnectionState.IN_GAME);
                         throw new AssertionError("duplicate character entry was accepted");
                     } catch (IllegalStateException expected) {
                         check(Server.networkAccountRegistryDiagnostics()[3] == 1, "duplicate denial counted");
@@ -457,7 +457,7 @@ public final class SelectorCioIntegrationTest {
         }
     }
 
-    private static class Reply extends WritablePacket<CIOClient> {
+    private static class Reply extends IPacketWriter<CUserSession> {
         private final int sequence;
         private final Runnable beforeEncoding;
 
@@ -466,7 +466,7 @@ public final class SelectorCioIntegrationTest {
             this.beforeEncoding = beforeEncoding;
         }
 
-        @Override protected boolean write(CIOClient client, WriteBuffer writer) {
+        @Override protected boolean write(CUserSession client, CPacketWriteBuffer writer) {
             beforeEncoding.run();
             writer.writeByte(0x45);
             writer.writeInt(sequence);
@@ -474,7 +474,7 @@ public final class SelectorCioIntegrationTest {
         }
     }
 
-    private static final class BoundedReply extends Reply implements WritablePacket.DirectTail {
+    private static final class BoundedReply extends Reply implements IPacketWriter.DirectTail {
         private final int maximum;
 
         private BoundedReply(int sequence, int maximum, Runnable beforeEncoding) {

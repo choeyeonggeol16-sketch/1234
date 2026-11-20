@@ -15,7 +15,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.cs.packet.CS_EnterWorld;
-import l1j.server.server.model.network.utill.ConnectionState;
+import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
@@ -56,7 +56,7 @@ public final class DominationHybrid {
     }
 
     private static final class Pending {
-        final CIOClient oldClient;
+        final CUserSession oldClient;
         final Account account;
         final String character;
         final String ip;
@@ -64,10 +64,10 @@ public final class DominationHybrid {
         final int interKind, reservedNumber;
         final String token;
         final long createdNs;
-        CIOClient newClient;
+        CUserSession newClient;
         boolean oldClosed;
         boolean finishing;
-        Pending(L1PcInstance pc, CIOClient client, int destX, int destY,
+        Pending(L1PcInstance pc, CUserSession client, int destX, int destY,
                 int destMap, int interKind, int reservedNumber) {
             oldClient = client;
             account = client.getAccount();
@@ -172,7 +172,7 @@ public final class DominationHybrid {
         // normal relocation on the existing authenticated socket instead.
         // This is NOT an inter-server handoff; keep every other kind unchanged.
         if (interKind == 7 || interKind == WORLD_MOVE_GM_KIND) {
-            final CIOClient client = gm.getNetConnection();
+            final CUserSession client = gm.getNetConnection();
             if (client == null || !client.isConnected() || !client.isGameSessionReady()
                     || client.getActiveChar() != gm || gm.get_teleport()) {
                 gm.sendPackets("[INTER-TOWER] 현재 이동 불가: 접속 또는 텔레포트 상태 확인");
@@ -251,9 +251,9 @@ public final class DominationHybrid {
     }
 
     /** C->S protobuf message 115: fields 1=reserved, 2=one-time token. */
-    public static void onHybridAuth(CIOClient arriving, long reserved, String token) {
+    public static void onHybridAuth(CUserSession arriving, long reserved, String token) {
         if (arriving == null) return;
-        CIOClient retire = null;
+        CUserSession retire = null;
         synchronized (DominationHybrid.class) {
             final Pending p = pending;
             // No diagnostics or extra work on ordinary non-GM arrivals.
@@ -289,7 +289,7 @@ public final class DominationHybrid {
     }
 
     /** Called only AFTER old logout + LoginController removal + socket cleanup. */
-    public static void onClientClosed(CIOClient closed) {
+    public static void onClientClosed(CUserSession closed) {
         synchronized (DominationHybrid.class) {
             final Pending p = pending;
             if (p == null) return;
@@ -337,7 +337,7 @@ public final class DominationHybrid {
     }
 
     private static void attach(Pending p) {
-        final CIOClient next = p.newClient;
+        final CUserSession next = p.newClient;
         try {
             if (isExpired(p) || !next.isConnected() || next.getAccount() != null
                     || LoginController.getInstance().getClientByAccount(p.account.getName()) != null
@@ -346,7 +346,7 @@ public final class DominationHybrid {
             }
             LoginController.getInstance().login(next, p.account);
             next.setAccount(p.account);
-            next.setConnectionState(ConnectionState.AUTHENTICATED);
+            next.setConnectionState(CConnectionState.AUTHENTICATED);
             final ProtoWriter writer = Proto.begin(next,
                     ProtoMsg.SC_HIBREED_AUTH_ACK_PACKET, 32);
             if (writer == null) { fail(p); return; }
@@ -362,7 +362,7 @@ public final class DominationHybrid {
             // No artificial 2-second hold: EnterWorld performs its own async
             // CacheD load, then resumes on the same session owner.
             if (!next.isConnected() || next.getAccount() != p.account
-                    || next.getConnectionState() != ConnectionState.AUTHENTICATED
+                    || next.getConnectionState() != CConnectionState.AUTHENTICATED
                     || next.getActiveChar() != null || next.getConnection() == null) {
                 fail(p);
                 return;
@@ -377,7 +377,7 @@ public final class DominationHybrid {
     }
 
     /** Override normal logout get-back only for this authenticated, one-shot arrival. */
-    public static void applyLoginDestination(CIOClient client, L1PcInstance pc) {
+    public static void applyLoginDestination(CUserSession client, L1PcInstance pc) {
         synchronized (DominationHybrid.class) {
             final Pending p = pending;
             if (p == null || !p.finishing || p.newClient != client || isExpired(p)
@@ -391,7 +391,7 @@ public final class DominationHybrid {
         }
     }
 
-    public static void onEnterComplete(CIOClient client, L1PcInstance pc) {
+    public static void onEnterComplete(CUserSession client, L1PcInstance pc) {
         synchronized (DominationHybrid.class) {
             Pending p = pending;
             if (p != null && p.finishing && p.newClient == client
@@ -404,7 +404,7 @@ public final class DominationHybrid {
     }
 
     private static void fail(Pending p) {
-        final CIOClient next;
+        final CUserSession next;
         synchronized (DominationHybrid.class) {
             if (pending != p) return;
             pending = null;

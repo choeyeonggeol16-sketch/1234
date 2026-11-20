@@ -4,26 +4,26 @@ import java.net.InetAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import l1j.server.Config;
-import l1j.server.server.model.network.utill.ConnectionConfig;
-import l1j.server.server.model.network.utill.DataParser;
+import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.utill.CPacketDataParser;
 
-public class NetworkClientCounter {
+public class CIPConnectionCounter {
 
-    private static volatile NetworkClientCounter _instance;
+    private static volatile CIPConnectionCounter _instance;
 
-    public static NetworkClientCounter getInstance() {
-        NetworkClientCounter instance = _instance;
+    public static CIPConnectionCounter getInstance() {
+        CIPConnectionCounter instance = _instance;
         if (instance == null) {
-            synchronized (NetworkClientCounter.class) {
+            synchronized (CIPConnectionCounter.class) {
                 instance = _instance;
-                if (instance == null) _instance = instance = new NetworkClientCounter();
+                if (instance == null) _instance = instance = new CIPConnectionCounter();
             }
         }
         return instance;
     }
 
     public void release() {
-        synchronized (NetworkClientCounter.class) {
+        synchronized (CIPConnectionCounter.class) {
             if (_instance == this) {
                 clear();
                 _instance = null;
@@ -33,7 +33,7 @@ public class NetworkClientCounter {
 
     private final ConcurrentHashMap<Integer, AtomicInteger> _counters;
 
-    private NetworkClientCounter() {
+    private CIPConnectionCounter() {
         _counters = new ConcurrentHashMap<>(Config.MAX_ONLINE_USERS);
     }
 
@@ -44,9 +44,9 @@ public class NetworkClientCounter {
      */
     public int isPermission(InetAddress addr) {
         if (addr == null) return -1;
-        final int limit = ConnectionConfig.NETWORK_CLIENT_PERMISSION;
+        final int limit = CConnectionConfig.NETWORK_CLIENT_PERMISSION;
         if (limit <= 0) return -1;
-        final int key = DataParser.parseInt(addr);
+        final int key = CPacketDataParser.parseInt(addr);
         for (;;) {
             AtomicInteger counter = _counters.get(key);
             if (counter == null) {
@@ -68,7 +68,7 @@ public class NetworkClientCounter {
     /** Release exactly one previously accepted IP reservation. */
     public void decrese(InetAddress addr) {
         if (addr == null) return;
-        final int key = DataParser.parseInt(addr);
+        final int key = CPacketDataParser.parseInt(addr);
         final AtomicInteger counter = _counters.get(key);
         if (counter == null) return;
         for (;;) {

@@ -1,8 +1,8 @@
 package l1j.server.server.packets.Protocol.MainServer.PlaySupport.Proto;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
@@ -20,7 +20,7 @@ public final class SC_PssNativeWindow {
 
     private SC_PssNativeWindow() { }
 
-    public static boolean send(CIOClient client) {
+    public static boolean send(CUserSession client) {
         if (client == null || !client.isConnected() || !client.isGameSessionReady()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -28,7 +28,7 @@ public final class SC_PssNativeWindow {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeH(TYPE);
             buffer.writeC(0x08);  // field 1: native-ignored result, never VALID

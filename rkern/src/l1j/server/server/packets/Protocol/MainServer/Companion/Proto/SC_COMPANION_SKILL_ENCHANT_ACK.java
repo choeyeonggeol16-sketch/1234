@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Companion.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -81,7 +81,7 @@ public final class SC_COMPANION_SKILL_ENCHANT_ACK extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _skillId, _result);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _skillId, eResult _result) {
+    public static boolean sendFields(CUserSession recipient, int _skillId, eResult _result) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_COMPANION_SKILL_ENCHANT_ACK, Proto.capacityBound(1024L));
         if (writer == null) return false;
         try {
@@ -98,7 +98,7 @@ public final class SC_COMPANION_SKILL_ENCHANT_ACK extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_COMPANION_SKILL_ENCHANT_ACK);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient) {
+    private static boolean sendCtor(CUserSession protoRecipient) {
         int proto23_skillId = 0;
         eResult proto23_result = null;
 
@@ -106,14 +106,14 @@ public final class SC_COMPANION_SKILL_ENCHANT_ACK extends ProtoPacket {
         return sendFields(protoRecipient, proto23_skillId, proto23_result);
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient) {
+    public static boolean sendNewInstance(CUserSession protoRecipient) {
         return sendCtor(protoRecipient);
     }
 
     public static boolean sendNewInstance(L1PcInstance protoRecipient) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
-    public static boolean sendConstructed(CIOClient protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

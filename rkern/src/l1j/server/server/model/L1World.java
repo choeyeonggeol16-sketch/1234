@@ -31,10 +31,10 @@ import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.map.L1Map;
-import l1j.server.server.model.network.packet.ServerPacket;
-import l1j.server.server.model.network.packet.WritablePacket;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.packet.IPacketWriter;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.types.Point;
 

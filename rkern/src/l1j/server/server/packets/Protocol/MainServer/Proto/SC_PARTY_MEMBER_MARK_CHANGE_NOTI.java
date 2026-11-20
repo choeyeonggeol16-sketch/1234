@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -40,7 +40,7 @@ public final class SC_PARTY_MEMBER_MARK_CHANGE_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _memberId, _mark);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _memberId, int _mark) {
+    public static boolean sendFields(CUserSession recipient, int _memberId, int _mark) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_PARTY_MEMBER_MARK_CHANGE_NOTI, Proto.capacityBound(1024L));
         if (writer == null) return false;
         try {
@@ -57,7 +57,7 @@ public final class SC_PARTY_MEMBER_MARK_CHANGE_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_PARTY_MEMBER_MARK_CHANGE_NOTI);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, int memberId, int mark) {
+    private static boolean sendCtor(CUserSession protoRecipient, int memberId, int mark) {
         int proto51_memberId = 0;
         int proto51_mark = 0;
 
@@ -66,7 +66,7 @@ public final class SC_PARTY_MEMBER_MARK_CHANGE_NOTI extends ProtoPacket {
 
         return sendFields(protoRecipient, proto51_memberId, proto51_mark);
     }
-    public static boolean sendConstructed(CIOClient protoRecipient, int memberId, int mark) { return sendCtor(protoRecipient, memberId, mark); }
+    public static boolean sendConstructed(CUserSession protoRecipient, int memberId, int mark) { return sendCtor(protoRecipient, memberId, mark); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int memberId, int mark) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), memberId, mark); }

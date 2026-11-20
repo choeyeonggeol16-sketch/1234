@@ -1,12 +1,12 @@
 package l1j.server.server.model.network.core.connection;
 
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 
 /** Reusable direct SEND lease handle; owned by CIOBufferPool. */
 public final class CIOFrame {
     private CUserSocket owner;
     private CIOBufferEx lease;
-    private WriteBuffer buffer;
+    private CPacketWriteBuffer buffer;
     private boolean active;
     private boolean optional;
     private int reservedBytes;
@@ -14,7 +14,7 @@ public final class CIOFrame {
     private long reservedTicketId = -1L;
 
     CIOFrame() {}
-    public WriteBuffer buffer() { return buffer; }
+    public CPacketWriteBuffer buffer() { return buffer; }
     void beginIO(CUserSocket owner, CIOBufferEx lease) {
         if (active) throw new IllegalStateException("outbound frame still reserved");
         this.owner = owner;

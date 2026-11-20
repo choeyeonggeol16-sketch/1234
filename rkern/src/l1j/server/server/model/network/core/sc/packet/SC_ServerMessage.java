@@ -5,8 +5,8 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_ServerMessage {
 
@@ -41,7 +41,7 @@ public final class SC_ServerMessage {
 
     public static boolean send(L1PcInstance pc, int type, String msg1, String msg2, String msg3, String msg4, String msg5) {
         if (pc == null) return false;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -64,7 +64,7 @@ public final class SC_ServerMessage {
         }
     }
 
-    private static void writeContent(WriteBuffer buffer, int type, String msg1, String msg2, String msg3, String msg4, String msg5) {
+    private static void writeContent(CPacketWriteBuffer buffer, int type, String msg1, String msg2, String msg3, String msg4, String msg5) {
         buffer.writeC(Opcodes.S_MESSAGE_CODE);
         buffer.writeH(type);
         final int count = (msg1 != null ? 1 : 0) + (msg2 != null ? 1 : 0) + (msg3 != null ? 1 : 0) + (msg4 != null ? 1 : 0) + (msg5 != null ? 1 : 0);
@@ -86,7 +86,7 @@ public final class SC_ServerMessage {
 
     /**
      * Wire-compatible single-parameter message-code packet for shared fanout.
-     * The same MS949 bytes and terminating NUL as WriteBuffer.writeS.
+     * The same MS949 bytes and terminating NUL as CPacketWriteBuffer.writeS.
      */
 
     public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(int type) {

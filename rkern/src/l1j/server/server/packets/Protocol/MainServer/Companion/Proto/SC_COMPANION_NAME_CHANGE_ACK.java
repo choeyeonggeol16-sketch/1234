@@ -1,7 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Companion.Proto;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
@@ -43,7 +43,7 @@ public final class SC_COMPANION_NAME_CHANGE_ACK extends ProtoPacket {
     }
 
     /** 구 시그니처 동일 — (String → MS949 bytes 변환 후 bytes 경로) */
-    public static void send(CIOClient clnt, eResult result, String newName) {
+    public static void send(CUserSession clnt, eResult result, String newName) {
         byte[] buff = null;
         if (!MJCommons.isNullOrEmpty(newName)) {
             try {
@@ -56,7 +56,7 @@ public final class SC_COMPANION_NAME_CHANGE_ACK extends ProtoPacket {
     }
 
     /** 구 시그니처 동일 — 핸들러가 원본 바이트 패스스루할 때 사용 */
-    public static void send_bytes(CIOClient clnt, eResult result, byte[] newName) {
+    public static void send_bytes(CUserSession clnt, eResult result, byte[] newName) {
         if (clnt == null || result == null) return;
         eResult ackWire_result = null;
         byte[] ackWire_newName = null;
@@ -104,7 +104,7 @@ public final class SC_COMPANION_NAME_CHANGE_ACK extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _result, _newName);
     }
 
-    public static boolean sendFields(CIOClient recipient, eResult _result, byte[] _newName) {
+    public static boolean sendFields(CUserSession recipient, eResult _result, byte[] _newName) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_COMPANION_NAME_CHANGE_ACK, Proto.capacityBound(1024L + (_newName == null ? 0L : _newName.length)));
         if (writer == null) return false;
         try {
@@ -121,7 +121,7 @@ public final class SC_COMPANION_NAME_CHANGE_ACK extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_COMPANION_NAME_CHANGE_ACK);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient) {
+    private static boolean sendCtor(CUserSession protoRecipient) {
         eResult proto22_result = null;
         byte[] proto22_newName = null;
 
@@ -129,14 +129,14 @@ public final class SC_COMPANION_NAME_CHANGE_ACK extends ProtoPacket {
         return sendFields(protoRecipient, proto22_result, proto22_newName);
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient) {
+    public static boolean sendNewInstance(CUserSession protoRecipient) {
         return sendCtor(protoRecipient);
     }
 
     public static boolean sendNewInstance(L1PcInstance protoRecipient) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
-    public static boolean sendConstructed(CIOClient protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

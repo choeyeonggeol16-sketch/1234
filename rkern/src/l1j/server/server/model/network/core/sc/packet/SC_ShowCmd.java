@@ -3,10 +3,10 @@ package l1j.server.server.model.network.core.sc.packet;
 import java.nio.charset.Charset;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_ShowCmd {
     private static final Charset MS949 = Charset.forName("MS949");
@@ -62,7 +62,7 @@ public final class SC_ShowCmd {
 
     private static boolean send(L1PcInstance pc, int mode, byte[] a, byte[] b, int sec, int opcode) {
         if (pc == null || a.length > 255 || b.length > 255) return false;
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -78,7 +78,7 @@ public final class SC_ShowCmd {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer out = frame.buffer();
+            final CPacketWriteBuffer out = frame.buffer();
             out.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             out.writeH(mode == PK ? 0x247 : mode == MOVIE ? 0x245 : mode == TEXT ? 0x47 : opcode);
             switch (mode) {
@@ -108,7 +108,7 @@ public final class SC_ShowCmd {
         }
     }
 
-    private static void writeS2(WriteBuffer out, byte[] bytes) {
+    private static void writeS2(CPacketWriteBuffer out, byte[] bytes) {
         out.writeC(bytes.length);
         out.writeByte(bytes);
     }

@@ -9,7 +9,7 @@ import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -26,7 +26,7 @@ public final class CS_BanMember {
     }
 
     public static void handle(
-            CIOClient client,
+            CUserSession client,
             String targetName) {
 
         if (client == null) {
@@ -168,7 +168,7 @@ public final class CS_BanMember {
     }
 
     private static void handleOffline(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc,
             L1Clan clan,
             String targetName) {

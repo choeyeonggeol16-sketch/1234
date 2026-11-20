@@ -4,10 +4,10 @@ import l1j.server.MJTemplate.MJSimpleRgb;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_IconMessage {
     private static final int TEXT_MESSAGE = 0x40;
@@ -98,7 +98,7 @@ public final class SC_IconMessage {
     private static boolean sendInternal(L1PcInstance pc, String message, int index, MJSimpleRgb color,
                                         int surface, int duration, boolean indexMode) {
         if (pc == null) return false;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -119,7 +119,7 @@ public final class SC_IconMessage {
         }
     }
 
-    private static void writePayload(WriteBuffer buffer, String msg, int index, byte[] rgb,
+    private static void writePayload(CPacketWriteBuffer buffer, String msg, int index, byte[] rgb,
                                      int surface, int duration, boolean indexMode) {
         buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
         buffer.writeH(indexMode ? INDEX_MESSAGE : TEXT_MESSAGE);

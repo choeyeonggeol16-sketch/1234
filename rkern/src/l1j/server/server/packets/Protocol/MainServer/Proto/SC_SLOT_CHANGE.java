@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.util.List;
 
@@ -119,7 +119,7 @@ public final class SC_SLOT_CHANGE extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _slotNumber, _slot0Items, _slot1Items, _pcMode, _valid);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _slotNumber, int[] _slot0Items, int[] _slot1Items, boolean _pcMode, boolean _valid) {
+    public static boolean sendFields(CUserSession recipient, int _slotNumber, int[] _slot0Items, int[] _slot1Items, boolean _pcMode, boolean _valid) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_SLOT_CHANGE, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -136,7 +136,7 @@ public final class SC_SLOT_CHANGE extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_SLOT_CHANGE);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, int type, L1PcInstance pc) {
+    private static boolean sendCtor(CUserSession protoRecipient, int type, L1PcInstance pc) {
         int proto60_slotNumber = 0;
         int[] proto60_slot0Items = null;
         int[] proto60_slot1Items = null;
@@ -159,7 +159,7 @@ public final class SC_SLOT_CHANGE extends ProtoPacket {
         return sendFields(protoRecipient, proto60_slotNumber, proto60_slot0Items, proto60_slot1Items, proto60_pcMode, proto60_valid);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, int type, int slot) {
+    private static boolean sendCtor(CUserSession protoRecipient, int type, int slot) {
         int proto61_slotNumber = 0;
         int[] proto61_slot0Items = null;
         int[] proto61_slot1Items = null;
@@ -175,7 +175,7 @@ public final class SC_SLOT_CHANGE extends ProtoPacket {
         return sendFields(protoRecipient, proto61_slotNumber, proto61_slot0Items, proto61_slot1Items, proto61_pcMode, proto61_valid);
     }
 
-    public static boolean sendCreate(CIOClient protoRecipient, int type, L1PcInstance pc) {
+    public static boolean sendCreate(CUserSession protoRecipient, int type, L1PcInstance pc) {
         return sendCtor(protoRecipient, type, pc);
     }
 
@@ -183,19 +183,19 @@ public final class SC_SLOT_CHANGE extends ProtoPacket {
         return sendCreate(protoRecipient == null ? null : protoRecipient.getNetConnection(), type, pc);
     }
 
-    public static boolean sendCreate(CIOClient protoRecipient, int type, int slot) {
+    public static boolean sendCreate(CUserSession protoRecipient, int type, int slot) {
         return sendCtor(protoRecipient, type, slot);
     }
 
     public static boolean sendCreate(L1PcInstance protoRecipient, int type, int slot) {
         return sendCreate(protoRecipient == null ? null : protoRecipient.getNetConnection(), type, slot);
     }
-    public static boolean sendConstructed(CIOClient protoRecipient, int type, L1PcInstance pc) { return sendCtor(protoRecipient, type, pc); }
+    public static boolean sendConstructed(CUserSession protoRecipient, int type, L1PcInstance pc) { return sendCtor(protoRecipient, type, pc); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int type, L1PcInstance pc) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), type, pc); }
 
-    public static boolean sendConstructed(CIOClient protoRecipient, int type, int slot) { return sendCtor(protoRecipient, type, slot); }
+    public static boolean sendConstructed(CUserSession protoRecipient, int type, int slot) { return sendCtor(protoRecipient, type, slot); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int type, int slot) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), type, slot); }

@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -49,7 +49,7 @@ public final class SC_CRITERIA_UPDATE_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _criteriaId, _quantity);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _criteriaId, long _quantity) {
+    public static boolean sendFields(CUserSession recipient, int _criteriaId, long _quantity) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_CRITERIA_UPDATE_NOTI, Proto.capacityBound(1024L));
         if (writer == null) return false;
         try {
@@ -66,7 +66,7 @@ public final class SC_CRITERIA_UPDATE_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_CRITERIA_UPDATE_NOTI);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, int criteriaId, long quantity) {
+    private static boolean sendCtor(CUserSession protoRecipient, int criteriaId, long quantity) {
         int proto29_criteriaId = 0;
         long proto29_quantity = 0;
 
@@ -76,14 +76,14 @@ public final class SC_CRITERIA_UPDATE_NOTI extends ProtoPacket {
         return sendFields(protoRecipient, proto29_criteriaId, proto29_quantity);
     }
 
-    public static boolean sendOf(CIOClient protoRecipient, CriteriaProgress p) {
+    public static boolean sendOf(CUserSession protoRecipient, CriteriaProgress p) {
         return sendCtor(protoRecipient, p.get_criteria_id(), p.get_quantity());
     }
 
     public static boolean sendOf(L1PcInstance protoRecipient, CriteriaProgress p) {
         return sendOf(protoRecipient == null ? null : protoRecipient.getNetConnection(), p);
     }
-    public static boolean sendConstructed(CIOClient protoRecipient, int criteriaId, long quantity) { return sendCtor(protoRecipient, criteriaId, quantity); }
+    public static boolean sendConstructed(CUserSession protoRecipient, int criteriaId, long quantity) { return sendCtor(protoRecipient, criteriaId, quantity); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int criteriaId, long quantity) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), criteriaId, quantity); }

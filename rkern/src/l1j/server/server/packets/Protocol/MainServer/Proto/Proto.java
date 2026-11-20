@@ -2,10 +2,10 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 
 public final class Proto {
 
@@ -21,14 +21,14 @@ public final class Proto {
         return pc == null ? null : begin(pc.getNetConnection(), messageId, maxWireBytes);
     }
 
-    public static ProtoWriter begin(CIOClient client, int messageId, int maxWireBytes) {
+    public static ProtoWriter begin(CUserSession client, int messageId, int maxWireBytes) {
         if (client == null || !client.isConnected()) return null;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return null;
         final CIOFrame frame = connection.beginDirectFrame(maxWireBytes);
         if (frame == null) return null;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeH(messageId);
             final ProtoWriter writer = ProtoWriter.direct(buffer);
@@ -75,7 +75,7 @@ public final class Proto {
     }
 
     /** Cached bytes already include opcode/message ID/trailer; no Raw wrapper. */
-    public static boolean sendRaw(CIOClient client, byte[] encoded) {
+    public static boolean sendRaw(CUserSession client, byte[] encoded) {
         if (encoded == null || encoded.length == 0 || encoded.length > 65533
                 || client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
