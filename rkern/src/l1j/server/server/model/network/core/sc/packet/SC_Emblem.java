@@ -21,7 +21,7 @@ public final class SC_Emblem {
             e.printStackTrace();
         }
         if (data.length > 65535 - 9) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginSafeDirectFrame(9 + data.length, SEND_MARGIN_BYTES);
         if (frame == null) return false;

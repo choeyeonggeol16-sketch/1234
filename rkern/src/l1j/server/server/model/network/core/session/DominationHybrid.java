@@ -364,7 +364,7 @@ public final class DominationHybrid {
             // CacheD load, then resumes on the same session owner.
             if (!next.isConnected() || next.getAccount() != p.account
                     || next.getConnectionState() != CConnectionState.AUTHENTICATED
-                    || next.getActiveChar() != null || next.getConnection() == null) {
+                    || next.getActiveChar() != null || next == null) {
                 fail(p);
                 return;
             }

@@ -15,7 +15,7 @@ public final class SC_BuilderPacket {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         if (bytes == null || bytes.length == 0 || bytes.length > Integer.MAX_VALUE - 2) return false;
         final CIOFrame frame = connection.beginDirectFrame(bytes.length + 2);

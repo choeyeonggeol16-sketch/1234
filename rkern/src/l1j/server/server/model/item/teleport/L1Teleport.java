@@ -592,7 +592,7 @@ public class L1Teleport {
                     v.removeKnownObject(pc);
                     final var client=v.getNetConnection();
                     if(client!=null && client.isConnected()) {
-                        final var socket=client.getConnection();
+                        final var socket=client;
                         if(socket!=null && socket.isClientConnected())
                             shared.send(socket,v.getId());
                     }

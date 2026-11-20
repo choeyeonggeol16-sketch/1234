@@ -10,7 +10,7 @@ public final class SC_Restart {
     private SC_Restart() {}
     public static boolean send(CUserSocket client, int objectId, int type) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(8);
         if (frame == null) return false;

@@ -16,7 +16,7 @@ public final class SC_ShowCharInfo {
 
     public static boolean send(CUserSocket client, MJCTObject obj) {
         if (client == null || !client.isConnected() || obj == null ) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int number = 1;
         final String name = obj.name == null ? "" : obj.name;

@@ -16,7 +16,7 @@ public final class SC_TradeAddItem {
 
     public static boolean send(CUserSocket client, L1ItemInstance item, String name, int count, int type) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final String actualName = name == null ? "" : name;
         final int gfxId = item == null || item.getItem() == null ? 0 : item.getItem().getGfxId();

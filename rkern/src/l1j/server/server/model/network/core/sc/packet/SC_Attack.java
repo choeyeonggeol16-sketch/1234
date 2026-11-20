@@ -34,7 +34,7 @@ public final class SC_Attack {
                                int damage, int heading, int seq, int effect,
                                int x, int y, int endX, int endY) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(39);
         if (frame == null) return false;

@@ -11,7 +11,7 @@ public final class SC_WhoAmount {
 
     public static boolean send(CUserSocket client, String amount) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(13 + (amount == null ? 0 : (amount.length() << 1)));
         if (frame == null) return false;

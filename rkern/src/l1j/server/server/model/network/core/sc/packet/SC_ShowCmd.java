@@ -63,7 +63,7 @@ public final class SC_ShowCmd {
         if (pc == null || a.length > 255 || b.length > 255) return false;
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int size;
         switch (mode) {

@@ -99,7 +99,7 @@ public class CS_CommonClick {
         if (client == null || client.getAccount() == null || !client.isConnected()) return;
         final Account account = client.getAccount();
         final String accountName = account.getName();
-        final int ownerShard = client.getConnection().affinityShard();
+        final int ownerShard = client.affinityShard();
         try {
             CacheD.getInstance().submitDbJobOrdered(accountName,
                     () -> loadCommonClick(client, account, accountName, ownerShard));

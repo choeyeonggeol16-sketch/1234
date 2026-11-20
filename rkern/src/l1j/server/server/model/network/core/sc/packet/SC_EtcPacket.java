@@ -38,7 +38,7 @@ public final class SC_EtcPacket {
                 }
             } catch (Exception ignored) {}
         }
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(size);
         if (frame == null) return false;

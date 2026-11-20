@@ -17,7 +17,7 @@ public final class SC_Dexup {
         if (actor == null) return false;
         final int totalDex = actor.getAbility() == null ? 0 : actor.getAbility().getTotalDex();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(WIRE_SIZE);
         if (frame == null) return false;

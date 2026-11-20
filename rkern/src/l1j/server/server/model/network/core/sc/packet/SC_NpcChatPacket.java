@@ -38,7 +38,7 @@ public final class SC_NpcChatPacket {
         if (pc == null || text == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         final long capacity = 32L + 4L * text.length();
         if (capacity > Integer.MAX_VALUE) return false;

@@ -12,7 +12,7 @@ public final class SC_Bookmarks {
 
     public static boolean send(CUserSocket client, String name, int map, int x, int y, int bookId) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(16 + (name == null ? 0 : (name.length() << 1)));
         if (frame == null) return false;

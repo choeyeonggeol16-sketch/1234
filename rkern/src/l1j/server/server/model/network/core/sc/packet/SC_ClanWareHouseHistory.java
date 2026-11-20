@@ -11,7 +11,7 @@ public final class SC_ClanWareHouseHistory {
         if (pc == null || pc.getClanid() <= 0) return;
         final var client = pc.getNetConnection();
         if (client == null || !client.isConnected() || client.getActiveChar() != pc) return;
-        final var connection = client.getConnection();
+        final var connection = client;
         if (connection == null || !connection.isClientConnected()) return;
         final var frame = connection.beginDirectFrame(8);
         if (frame == null) return;

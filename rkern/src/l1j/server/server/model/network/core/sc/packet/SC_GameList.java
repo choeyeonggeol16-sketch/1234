@@ -13,7 +13,7 @@ public final class SC_GameList {
 
     public static boolean send(CUserSocket client, int rank) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final L1Racing racing = L1Racing.getInstance();
         int size = 0;

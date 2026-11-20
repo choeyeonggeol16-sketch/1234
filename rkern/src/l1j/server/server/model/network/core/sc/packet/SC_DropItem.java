@@ -170,7 +170,7 @@ public final class SC_DropItem {
 			return false;
 		}
 
-		final CUserSocket connection = client.getConnection();
+		final CUserSocket connection = client;
 		if (connection == null || !connection.isClientConnected()) {
 			return false;
 		}

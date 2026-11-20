@@ -751,7 +751,7 @@ public final class SC_UseAttackSkill {
 		}
 
 		final CUserSocket connection =
-				client.getConnection();
+				client;
 
 		if (connection == null
 				|| !connection.isClientConnected()) {

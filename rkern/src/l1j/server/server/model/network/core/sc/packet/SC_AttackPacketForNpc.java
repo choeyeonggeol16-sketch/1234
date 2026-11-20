@@ -76,7 +76,7 @@ public final class SC_AttackPacketForNpc {
 		}
 
 		final CUserSocket connection =
-				client.getConnection();
+				client;
 
 		if (connection == null
 				|| !connection.isClientConnected()) {

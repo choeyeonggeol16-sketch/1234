@@ -20,7 +20,7 @@ public final class SC_Pledge {
         if (pc == null) return false;
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final L1Clan clan = ClanTable.getInstance().getTemplate(clanId);
         final String clanName = clan == null || clan.getClanName() == null ? "" : clan.getClanName();
@@ -59,7 +59,7 @@ public final class SC_Pledge {
         if (pc == null) return false;
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int limit = list == null ? 0 : list.size();
         final String[] names = new String[limit];
@@ -120,7 +120,7 @@ public final class SC_Pledge {
         if (pc == null) return false;
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final String targetName = name == null ? "" : name;
         final byte[] noteBytes = encodeNotes(notes);
@@ -206,7 +206,7 @@ public final class SC_Pledge {
         if (pc == null) return false;
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final long blessCount = clan == null ? 0L : clan.getBlessCount();
         final int[] times = clan == null || clan.getBuffTime() == null ? new int[4] : clan.getBuffTime().clone();

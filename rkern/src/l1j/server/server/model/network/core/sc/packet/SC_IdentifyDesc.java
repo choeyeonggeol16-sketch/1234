@@ -18,7 +18,7 @@ public final class SC_IdentifyDesc {
 
     public static boolean send(CUserSocket client, L1ItemInstance item) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
 
         final boolean valid = item != null && item.getItem() != null;

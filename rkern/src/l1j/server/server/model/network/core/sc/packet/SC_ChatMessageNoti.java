@@ -74,7 +74,7 @@ public static final int CHAT_NORMAL 			= 0x00;
         if (receiver == null) return false;
         final CUserSocket socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         final String text = msg == null ? "" : msg;
         final long size = 64L + ((long) text.length() << 1)

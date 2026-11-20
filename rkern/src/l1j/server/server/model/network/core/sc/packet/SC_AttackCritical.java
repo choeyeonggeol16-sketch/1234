@@ -332,7 +332,7 @@ private static boolean sendMode1(
 		}
 
 		final CUserSocket connection =
-				client.getConnection();
+				client;
 
 		if (connection == null
 				|| !connection.isClientConnected()) {
@@ -398,7 +398,7 @@ private static boolean sendMode2(
 		}
 
 		final CUserSocket connection =
-				client.getConnection();
+				client;
 
 		if (connection == null
 				|| !connection.isClientConnected()) {

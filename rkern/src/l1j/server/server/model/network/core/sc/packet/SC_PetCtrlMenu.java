@@ -19,7 +19,7 @@ public final class SC_PetCtrlMenu {
 
 	public static boolean send(CUserSocket client, L1PcInstance pc, L1NpcInstance npc, boolean open) {
 		if (client == null || !client.isConnected() || npc == null || pc == null ) return false;
-		final CUserSocket connection = client.getConnection();
+		final CUserSocket connection = client;
 		if (connection == null || !connection.isClientConnected()) return false;
 		final int petListSize = pc.getPetList() == null ? 0 : pc.getPetList().size();
 		final int npcObjId = npc.getId();

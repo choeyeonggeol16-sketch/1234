@@ -29,7 +29,7 @@ public final class SC_PetMenuPacket {
     public static boolean send(CUserSocket client, L1NpcInstance npc, int expPercent) {
         if (client == null || !client.isConnected() || npc == null) return false;
         if (npc.getNpcTemplate() != null && npc.getNpcTemplate().get_npcId() == 7420207) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
 
         final boolean isPet = npc instanceof L1PetInstance;

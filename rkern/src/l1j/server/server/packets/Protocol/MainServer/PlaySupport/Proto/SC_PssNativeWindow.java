@@ -21,7 +21,7 @@ public final class SC_PssNativeWindow {
 
     public static boolean send(CUserSocket client) {
         if (client == null || !client.isConnected() || !client.isGameSessionReady()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(32);
         if (frame == null) return false;

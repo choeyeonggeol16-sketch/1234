@@ -177,7 +177,7 @@ private void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
 
 private boolean writeTo(CUserSocket client) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int required = frameLength();
         if (required < 3) return false;

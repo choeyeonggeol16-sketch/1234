@@ -14,7 +14,7 @@ public final class SC_Resurrection {
 
 public static boolean send(CUserSocket client, int targetId, int type, int userId, int targetClassId) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(16);
         if (frame == null) return false;

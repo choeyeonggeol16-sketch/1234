@@ -28,6 +28,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
+import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.packet.CPacketHandler;
@@ -36,6 +37,7 @@ import l1j.server.server.model.network.packet.IPacketWriter;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.CConnectionState;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 
@@ -63,6 +65,7 @@ public final class SelectorCioIntegrationTest {
             while (companionPort == gamePort) companionPort = reservePort();
             System.setProperty("pss.uiBridge.port", Integer.toString(companionPort));
             CPacketFilter.getInstance().load();
+            verifyHandshakeAdmissionRollback();
             AtomicInteger rejectedOpcodePackets = new AtomicInteger();
             Set<Integer> owners = ConcurrentHashMap.newKeySet();
             AtomicInteger responses = new AtomicInteger();
@@ -80,7 +83,7 @@ public final class SelectorCioIntegrationTest {
             CPacketHandler.PacketHandler move = CPacketHandler.HANDLERS[MOVE];
             CPacketHandler.HANDLERS[MOVE] = (payload, client) -> { rejectedOpcodePackets.incrementAndGet(); return true; };
             CPacketHandler.HANDLERS[ALIVE] = (payload, client) -> {
-                CUserSocket socket = client.getConnection();
+                CUserSocket socket = client;
                 int shard = CIOThreadCallback.currentShardIndex();
                 check(shard >= 0 && socket.affinityShard() == shard, "packet executed on its existing CIO shard");
                 owners.add(shard);
@@ -316,6 +319,37 @@ public final class SelectorCioIntegrationTest {
             check(Arrays.equals(readBody(peer), Opcodes.S_KEYBYTES), "listener works after timeout and retry");
         }
         awaitIdlePool();
+    }
+
+    private static void verifyHandshakeAdmissionRollback() throws Exception {
+        var address = new java.net.InetSocketAddress("127.0.0.1", 0);
+        var config = new CConnectionConfig(address);
+        var scheduler = CIOThreadCallback.getInstance();
+        int owners = scheduler.bindNetworkIngress(config);
+        var pool = new CIOBufferPool(4, 1, 1, 1, owners);
+        try (var listener = new l1j.server.server.model.network.core.server.Server(
+                address, 4, owners, 16, pool, scheduler, config)) {
+            int port = listener.localAddress().getPort();
+            var held = pool.acquireSend(32);
+            check(held != null, "initial SEND pool reservation");
+            try {
+                for (int i = 0; i < 3; i++) {
+                    try (Socket peer = connect(port)) {
+                        try { check(peer.getInputStream().read() == -1, "handshake closes when the SEND pool is full"); }
+                        catch (SocketException expected) { check(!peer.isInputShutdown(), "peer reset"); }
+                    }
+                    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+                    while (listener.liveConnections() != 0 && System.nanoTime() < deadline) Thread.sleep(5);
+                    check(listener.liveConnections() == 0 && listener.pendingSessionCleanup() == 0,
+                            "failed handshake retires admission and cleanup");
+                }
+            } finally {
+                pool.release(held);
+            }
+            try (Socket peer = connect(port)) {
+                check(Arrays.equals(readBody(peer), Opcodes.S_KEYBYTES), "handshake succeeds after the SEND slot returns");
+            }
+        }
     }
 
     private static void verifyIpReservationDuringListenerRestart(int port, java.util.Map<Integer, CUserSocket> clients)

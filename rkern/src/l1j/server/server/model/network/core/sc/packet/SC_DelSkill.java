@@ -11,7 +11,7 @@ public final class SC_DelSkill {
 
     public static boolean send(L1PcInstance pc, int i, int j, int k, int l, int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2, int i3, int j3, int k3, int l3, int i4, int j4, int k4, int l4, int i5, int j5, int k5, int l5, int dk3, int bw1, int bw2, int bw3) {
         if (pc == null || pc.getNetConnection() == null || !pc.getNetConnection().isConnected()) return false;
-        final CUserSocket connection = pc.getNetConnection().getConnection();
+        final CUserSocket connection = pc.getNetConnection();
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(36);
         if (frame == null) return false;

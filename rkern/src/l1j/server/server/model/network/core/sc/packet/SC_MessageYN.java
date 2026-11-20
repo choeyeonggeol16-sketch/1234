@@ -29,7 +29,7 @@ public final class SC_MessageYN {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket conn = socket.getConnection();
+        final CUserSocket conn = socket;
         if (conn == null || !conn.isClientConnected()) return false;
         final long capacity = 16L + maxBytes(msg1) + (two ? maxBytes(msg2) : 0);
         if (capacity > Integer.MAX_VALUE) return false;

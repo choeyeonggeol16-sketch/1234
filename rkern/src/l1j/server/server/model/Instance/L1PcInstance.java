@@ -2878,7 +2878,7 @@ public class L1PcInstance extends L1Character {
         if (packet == null) return;
         final CUserSocket socket = getNetConnection();
         if (socket == null || !socket.isConnected()) return;
-        socket.getConnection().enqueuePacket(packet);
+        socket.enqueuePacket(packet);
     }
 
     public void sendPackets(String s) {

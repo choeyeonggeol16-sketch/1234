@@ -47,12 +47,12 @@ def netty_classpath(cache):
         return os.pathsep.join(str(path) for path in workers.map(fetch, [*artifacts, *native]))
 
 
-def compile_sources(classes, netty):
+def compile_sources(classes, netty, network=NETWORK):
     compiler = [shutil.which('javac')] if shutil.which('javac') else [
         'java', '--module', 'jdk.compiler/com.sun.tools.javac.Main']
-    sources = [NETWORK / 'buffer/CPacketReadBuffer.java', NETWORK / 'buffer/CPacketWriteBuffer.java',
-               NETWORK / 'codec/CPacketCryptor.java', NETWORK.parents[1] / 'Opcodes.java',
-               *sorted((NETWORK / 'core/transport/selector').glob('*.java')),
+    sources = [network / 'buffer/CPacketReadBuffer.java', network / 'buffer/CPacketWriteBuffer.java',
+               network / 'codec/CPacketCryptor.java', network.parents[1] / 'Opcodes.java',
+               *sorted((network / 'core/transport/selector').glob('*.java')),
                HERE / 'TransportServer.java', HERE / 'TransportDriver.java']
     subprocess.run([*compiler, '-encoding', 'UTF-8', '-cp', netty, '-d', str(classes), *sources], check=True)
 
@@ -75,7 +75,8 @@ def server_round(classpath, backend, trial, args, work):
     java = ['java', '-Xms64m', '-Xmx256m', '-XX:ActiveProcessorCount=2', '-cp', classpath]
     wire_bytes = args.payload_bytes + (2 if args.framed else 0)
     max_clients = max(clients for _, clients in args.workloads)
-    server_args = [backend, str(args.owners), str(max_clients), str(wire_bytes), str(args.framed).lower()]
+    provider_arg = 'rkern' if backend == 'rkern-baseline' else backend
+    server_args = [provider_arg, str(args.owners), str(max_clients), str(wire_bytes), str(args.framed).lower()]
     stderr_path = work / f'{backend}-{trial}.log'
     with stderr_path.open('w+') as stderr:
         with subprocess.Popen([*java, 'TransportServer', *server_args], stdin=subprocess.PIPE,
@@ -133,7 +134,8 @@ def main():
     parser.add_argument('--payload-bytes', type=int, default=64)
     parser.add_argument('--window', type=int, default=1)
     parser.add_argument('--framed', action='store_true')
-    parser.add_argument('--backend', choices=BACKENDS, action='append')
+    parser.add_argument('--backend', choices=(*BACKENDS, 'rkern-baseline'), action='append')
+    parser.add_argument('--baseline-root', type=Path, help='compile baseline RKern from a second checkout')
     parser.add_argument('--cache', type=Path, default=Path(tempfile.gettempdir()) / f'rkern-netty-{NETTY}')
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
@@ -148,7 +150,10 @@ def main():
         parser.error('use 1–16 owners, 1–65533 payload bytes and a window of 1–256')
     if (args.payload_bytes + (2 if args.framed else 0)) * args.window > 65536:
         parser.error('wire bytes × window must fit in 64 KiB for the blocking client')
-    backends = tuple(args.backend or BACKENDS)
+    baseline_root = args.baseline_root.resolve() if args.baseline_root else None
+    backends = tuple(args.backend or (('rkern-baseline', *BACKENDS) if baseline_root else BACKENDS))
+    if 'rkern-baseline' in backends and not baseline_root:
+        parser.error('rkern-baseline requires --baseline-root')
     with tempfile.TemporaryDirectory(prefix='rkern-echo-') as temporary:
         work = Path(temporary)
         classes = work / 'classes'
@@ -156,6 +161,12 @@ def main():
         netty = netty_classpath(args.cache)
         compile_sources(classes, netty)
         classpath = os.pathsep.join((str(classes), netty))
+        baseline_classpath = None
+        if 'rkern-baseline' in backends:
+            baseline_classes = work / 'baseline'
+            baseline_classes.mkdir()
+            compile_sources(baseline_classes, netty, baseline_root / NETWORK.relative_to(RKERN.parent))
+            baseline_classpath = os.pathsep.join((str(baseline_classes), netty))
         providers = {}
         unavailable = {}
         failed_rounds = {}
@@ -166,7 +177,8 @@ def main():
                 if backend in unavailable:
                     continue
                 try:
-                    provider, batch = server_round(classpath, backend, i + 1, args, work)
+                    cp = baseline_classpath if backend == 'rkern-baseline' else classpath
+                    provider, batch = server_round(cp, backend, i + 1, args, work)
                 except (OSError, RuntimeError, subprocess.SubprocessError) as failure:
                     failed_rounds[f'{backend}/{i + 1}'] = str(failure)
                     print(f'FAILED {backend} trial={i + 1} {failure}', flush=True)
@@ -192,6 +204,9 @@ def main():
                persistent_window=args.window, churn_window=1, cpu_sample='server user+system ticks during measurement',
                workloads=args.workloads, memory_sample='after each workload, before server shutdown',
                providers=providers, unavailable=unavailable, failed_rounds=failed_rounds)
+    if baseline_root:
+        env['baseline_revision'] = subprocess.check_output(
+            ['git', 'rev-parse', 'HEAD'], cwd=baseline_root, text=True).strip()
     result = io.StringIO(newline='')
     writer = csv.writer(result, lineterminator='\n')
     writer.writerow(FIELDS)

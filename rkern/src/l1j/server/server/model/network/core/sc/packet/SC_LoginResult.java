@@ -41,7 +41,7 @@ public static final int BANNED_REASON_HACK = 95;
     public static boolean send(CUserSocket client, int reason) {
 
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket conn = client.getConnection();
+        final CUserSocket conn = client;
         if (conn == null || !conn.isClientConnected()) return false;
         final CIOFrame frame = conn.beginDirectFrame(16);
         if (frame == null) return false;

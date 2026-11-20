@@ -18,7 +18,7 @@ public final class SC_DogFightBoard {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
 
         // Serialize a stable field snapshot; preserve the old 15-variable hypertext layout.

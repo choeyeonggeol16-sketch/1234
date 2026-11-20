@@ -182,7 +182,7 @@ private static boolean send0(
 			return false;
 		}
 
-		final CUserSocket connection = client.getConnection();
+		final CUserSocket connection = client;
 		if (connection == null || !connection.isClientConnected()) {
 			return false;
 		}

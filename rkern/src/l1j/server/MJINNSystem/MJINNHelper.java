@@ -208,7 +208,7 @@ public class MJINNHelper {
         if (pc == null || html == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket conn = socket.getConnection();
+        final CUserSocket conn = socket;
         if (conn == null || !conn.isClientConnected()) return false;
         final long size = 16L + 4L * html.length();
         if (size > Integer.MAX_VALUE) return false;
@@ -232,7 +232,7 @@ public class MJINNHelper {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket conn = socket.getConnection();
+        final CUserSocket conn = socket;
         if (conn == null || !conn.isClientConnected()) return false;
         final String price = Integer.toString(cost);
         final long size = 48L + 4L * (html.length() * 2 + name.length() + price.length());
@@ -258,7 +258,7 @@ public class MJINNHelper {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket conn = socket.getConnection();
+        final CUserSocket conn = socket;
         if (conn == null || !conn.isClientConnected()) return false;
         final String cost = Integer.toString(value);
         final long size = 32L + 4L * (name.length() + cost.length());

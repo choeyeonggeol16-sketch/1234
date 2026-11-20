@@ -36,7 +36,7 @@ public final class SC_DoActionGFX {
             return false;
         }
 
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         return connection != null && connection.sendAction(objectId, actionId);
     }
 

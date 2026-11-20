@@ -195,7 +195,7 @@ public final class SC_UseArrowSkill {
 			return false;
 		}
 
-		final CUserSocket connection = client.getConnection();
+		final CUserSocket connection = client;
 		if (connection == null || !connection.isClientConnected()) {
 			return false;
 		}

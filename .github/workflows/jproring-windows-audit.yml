@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - rkern/jproring-audit-fixes-20261120
+      - rkern/unified-jproring-game-20261120
     paths:
       - .github/workflows/jproring-windows-audit.yml
       - rkern/src/**

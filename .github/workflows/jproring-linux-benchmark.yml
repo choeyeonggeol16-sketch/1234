@@ -5,6 +5,7 @@ on:
     branches:
       - rkern/jproring-linux-benchmark-20261120
       - rkern/jproring-audit-fixes-20261120
+      - rkern/unified-jproring-game-20261120
     paths:
       - .github/workflows/jproring-linux-benchmark.yml
       - rkern/docs/jproring_linux_benchmark_20261120/*.java
@@ -20,6 +21,7 @@ permissions:
 
 jobs:
   compare:
+    if: github.ref_name != 'rkern/unified-jproring-game-20261120'
     runs-on: ubuntu-24.04
     timeout-minutes: 7
     steps:
@@ -54,3 +56,70 @@ jobs:
           name: tcp-transport-results
           path: ${{ runner.temp }}/benchmark
           if-no-files-found: ignore
+
+  consolidation:
+    if: github.ref_name == 'rkern/unified-jproring-game-20261120'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        clients: [1024, 5000]
+        workload: [raw, game]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            rkern/src
+            rkern/docs/jproring_cio_integration_20261120
+            rkern/docs/jproring_selector_transport_20261120
+            rkern/docs/jproring_linux_benchmark_20261120
+      - uses: actions/checkout@v4
+        with:
+          ref: 5b54e3401f99ca08067c3c8deae7ec868fcc4c7d
+          path: benchmark-baseline
+          persist-credentials: false
+          sparse-checkout: rkern/src
+      - name: Reproduce the short Netty 4.2.21 comparison
+        if: matrix.workload == 'raw'
+        continue-on-error: true
+        env:
+          CLIENTS: ${{ matrix.clients }}
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          benchmark=rkern/docs/jproring_linux_benchmark_20261120/run.py
+          common=(--baseline-root benchmark-baseline --framed --owners 2 --workload persistent --window 8 --payload-bytes 256)
+          python3 -u "$benchmark" "${common[@]}" --clients "$CLIENTS" --trials 3 \
+            --warmup-ms 1500 --measure-ms 2600 --output "$RUNNER_TEMP/benchmark/reproduction"
+          if [[ "$CLIENTS" == 1024 ]]; then
+            python3 -u "$benchmark" "${common[@]}" --clients 1 --clients 16 --trials 1 \
+              --warmup-ms 1500 --measure-ms 2600 --output "$RUNNER_TEMP/benchmark/low-load"
+          fi
+      - name: Repeat the steady Netty 4.2.21 comparison five times on this runner
+        if: matrix.workload == 'raw'
+        env:
+          CLIENTS: ${{ matrix.clients }}
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 -u rkern/docs/jproring_linux_benchmark_20261120/run.py \
+            --baseline-root benchmark-baseline --framed --owners 2 --workload persistent \
+            --window 8 --payload-bytes 256 --clients "$CLIENTS" --trials 5 \
+            --warmup-ms 10000 --measure-ms 30000 --output "$RUNNER_TEMP/benchmark/steady"
+      - name: Replay the encrypted production listener using both builds
+        if: matrix.workload == 'game'
+        env:
+          CLIENTS: ${{ matrix.clients }}
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          load=load1024
+          if [[ "$CLIENTS" == 5000 ]]; then load=mix5000; fi
+          python3 -u rkern/docs/jproring_cio_integration_20261120/run_game_ab.py \
+            --baseline-root benchmark-baseline --mode off --workload "$load" --trials 5 \
+            --warmup-ms 10000 --measure-ms 30000 --sample-resources --output "$RUNNER_TEMP/benchmark"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: net-consolidation-${{ matrix.workload }}-${{ matrix.clients }}
+          path: ${{ runner.temp }}/benchmark
+          if-no-files-found: warn

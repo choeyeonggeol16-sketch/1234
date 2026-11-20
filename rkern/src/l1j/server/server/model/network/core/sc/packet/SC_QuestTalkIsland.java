@@ -68,7 +68,7 @@ public final class SC_QuestTalkIsland {
 
     public static boolean sendUpdate(CUserSocket client, int questId, L1QuestInfo info) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final byte[] status = info == null ? null : buildQuestStatusBytes(new QuestInfoSnapshot(questId, info));
         final int size = 7 + (status == null ? 0 : 2 + status.length);

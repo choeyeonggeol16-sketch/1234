@@ -1267,7 +1267,7 @@ public class L1NpcInstance extends L1Character {
                         pc.removeKnownObject(this);
                         final var client=pc.getNetConnection();
                     if(client!=null && client.isConnected()) {
-                        final var socket=client.getConnection();
+                        final var socket=client;
                         if(socket!=null && socket.isClientConnected())
                             shared.send(socket,pc.getId());
                     }
@@ -1537,7 +1537,7 @@ public class L1NpcInstance extends L1Character {
                 
                 final var client=pc.getNetConnection();
                     if(client!=null && client.isConnected()) {
-                        final var socket=client.getConnection();
+                        final var socket=client;
                         if(socket!=null && socket.isClientConnected())
                             effectShared.send(socket,pc.getId());
                             shared.send(socket,pc.getId());
@@ -2250,7 +2250,7 @@ public class L1NpcInstance extends L1Character {
                         pc.removeKnownObject(this);
                         final var client=pc.getNetConnection();
                     if(client!=null && client.isConnected()) {
-                        final var socket=client.getConnection();
+                        final var socket=client;
                         if(socket!=null && socket.isClientConnected())
                             shared.send(socket,pc.getId());
                     }

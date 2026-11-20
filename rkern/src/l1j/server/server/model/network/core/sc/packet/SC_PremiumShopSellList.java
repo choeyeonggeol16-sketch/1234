@@ -36,7 +36,7 @@ public final class SC_PremiumShopSellList {
 
     public static boolean send(CUserSocket client, int npcId, int objId) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final L1Shop shop = ShopTable.getInstance().get(npcId);
         List<L1ShopItem> list = null;

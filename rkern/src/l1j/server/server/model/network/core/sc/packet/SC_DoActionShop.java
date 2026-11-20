@@ -15,7 +15,7 @@ public final class SC_DoActionShop {
     }
     public static boolean send(CUserSocket client, int objectId, int action, byte[] message) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket conn = client.getConnection();
+        final CUserSocket conn = client;
         if (conn == null || !conn.isClientConnected()) return false;
         final CIOFrame frame = conn.beginDirectFrame(8 + (message == null ? 0 : message.length));
         if (frame == null) return false;
@@ -37,7 +37,7 @@ public final class SC_DoActionShop {
     }
     public static boolean send(CUserSocket client, int objectId, int action, String message) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket conn = client.getConnection();
+        final CUserSocket conn = client;
         if (conn == null || !conn.isClientConnected()) return false;
         final CIOFrame frame = conn.beginDirectFrame(9 + (message == null ? 0 : message.length() * 2));
         if (frame == null) return false;

@@ -60,7 +60,7 @@ public class MJPacketFactory {
         if (pc == null) return false;
         final l1j.server.server.model.network.core.connection.CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final l1j.server.server.model.network.core.connection.CUserSocket connection = socket.getConnection();
+        final l1j.server.server.model.network.core.connection.CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         final l1j.server.server.model.network.core.connection.CIOFrame frame = connection.beginDirectFrame(8);
         if (frame == null) return false;
@@ -80,7 +80,7 @@ public class MJPacketFactory {
         if (pc == null) return false;
         final l1j.server.server.model.network.core.connection.CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final l1j.server.server.model.network.core.connection.CUserSocket connection = socket.getConnection();
+        final l1j.server.server.model.network.core.connection.CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         final l1j.server.server.model.network.core.connection.CIOFrame frame = connection.beginDirectFrame(8);
         if (frame == null) return false;

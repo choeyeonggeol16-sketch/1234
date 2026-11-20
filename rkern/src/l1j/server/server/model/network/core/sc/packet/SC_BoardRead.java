@@ -128,7 +128,7 @@ public final class SC_BoardRead {
         if (receiver == null) return false;
         final CUserSocket client = receiver.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket conn = client.getConnection();
+        final CUserSocket conn = client;
         final Account account = client.getAccount();
         if (conn == null || !conn.isClientConnected() || account == null
                 || client.getActiveChar() != receiver) return false;
@@ -146,7 +146,7 @@ public final class SC_BoardRead {
                     return;
                 }
                 CIOThreadCallback.getInstance().completeSessionReply(client, () -> {
-                    if (client.isConnected() && client.getConnection() == conn
+                    if (client.isConnected() && client == conn
                             && conn.isClientConnected() && client.getAccount() == account
                             && client.getActiveChar() == receiver
                             && receiver.getNetConnection() == client) {

@@ -111,7 +111,7 @@ public final class SC_ChatPacket {
         if (recipient == null || mode == 0) return false;
         final CUserSocket socket = recipient.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket c = socket.getConnection();
+        final CUserSocket c = socket;
         if (c == null || !c.isClientConnected()) return false;
         final long capacity = 32L + 4L * ((long) text1.length() + text2.length());
         if (capacity > Integer.MAX_VALUE) return false;

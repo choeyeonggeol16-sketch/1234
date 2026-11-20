@@ -11,7 +11,7 @@ public final class SC_CharCreateStatus {
 
     public static boolean send(CUserSocket client, int reason) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(12);
         if (frame == null) return false;

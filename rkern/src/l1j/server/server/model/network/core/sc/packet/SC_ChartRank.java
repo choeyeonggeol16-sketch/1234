@@ -99,7 +99,7 @@ public final class SC_ChartRank {
         if (pc == null || snapshot == null) return false;
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(snapshot.wireSize);
         if (frame == null) return false;

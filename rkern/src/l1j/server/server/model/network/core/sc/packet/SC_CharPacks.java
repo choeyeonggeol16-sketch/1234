@@ -12,7 +12,7 @@ public final class SC_CharPacks {
             int lawful, int hp, int mp, int ac, int level, int str, int dex,
             int con, int wis, int cha, int intel, int accessLevel, int birth) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int nameSize = name == null ? 0 : name.length() << 1;
         final int clanSize = clanName == null ? 0 : clanName.length() << 1;

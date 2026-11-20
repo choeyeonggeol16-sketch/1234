@@ -100,7 +100,7 @@ public class L1GroundInventory extends L1Inventory {
             for(L1PcInstance pc:L1World.getInstance().getVisiblePlayerFast(item)) {
                 final var client=pc.getNetConnection();
                 if(client!=null && client.isConnected()) {
-                    final var socket=client.getConnection();
+                    final var socket=client;
                     if(socket!=null && socket.isClientConnected())
                         shared.send(socket,pc.getId());
                 }

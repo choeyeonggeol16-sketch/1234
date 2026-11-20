@@ -15,7 +15,7 @@ public final class SC_DogFightSellList {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         final int count = pairs == null ? 0 : pairs.size();
         if (count > 0xFFFF) return false;

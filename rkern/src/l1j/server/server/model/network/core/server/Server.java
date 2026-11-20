@@ -3,11 +3,14 @@ package l1j.server.server.model.network.core.server;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CUserSocketMap;
-import l1j.server.server.model.network.core.transport.CSocket;
-import l1j.server.server.model.network.core.transport.CIOServer;
+import l1j.server.server.model.network.core.connection.CIOServer;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 import l1j.server.server.model.network.utill.CConnectionConfig;
+
+import l1j.server.Config;
+import l1j.server.server.Controller.LoginController;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -20,11 +23,12 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Gameplay listener lifecycle, sharing the same game factory across transports. */
+/** Gameplay listener admission and shutdown on existing CIO owners. */
 public final class Server implements AutoCloseable, CUserSocket.Closed {
     private static final Logger LOG = Logger.getLogger(Server.class.getName());
     private final CIOBufferPool pool;
-    private final IServerCallback factory;
+    private final int maxOnline;
+    private final boolean preLoginTimeout;
     private final CIOServer javaServer;
     private final CUserSocketMap connections = new CUserSocketMap();
     private final AtomicBoolean acceptingStopped = new AtomicBoolean();
@@ -48,26 +52,18 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
 
 
     public Server(InetSocketAddress address, int maxConnections, int ioThreads, int backlog,
-            CIOBufferPool pool, IServerCallback factory) throws IOException {
-        this(address, maxConnections, ioThreads, backlog, pool, factory,
-                factory instanceof CDummyServerCallback hosted ? hosted::attachSelectors : null);
-    }
-
-    public Server(InetSocketAddress address, int maxConnections, int backlog,
-            CIOBufferPool pool, CDummyServerCallback factory) throws IOException {
-        this(address, maxConnections, factory.selectorOwnerCount(), backlog, pool, factory, factory::attachSelectors);
-    }
-
-    private Server(InetSocketAddress address, int maxConnections, int ioThreads, int backlog,
-            CIOBufferPool pool, IServerCallback factory, CSelectorTransport.OwnerHost owners) throws IOException {
-        if (address == null || pool == null || factory == null || maxConnections < 1
+            CIOBufferPool pool, CIOThreadCallback scheduler, CConnectionConfig config) throws IOException {
+        if (address == null || pool == null || scheduler == null || config == null || maxConnections < 1
                 || ioThreads < 1 || backlog < 1) throw new IllegalArgumentException("invalid server configuration");
         this.pool = pool;
-        this.factory = factory;
+        this.maxOnline = Config.MAX_ONLINE_USERS;
         this.maxConnections = maxConnections;
-        if (owners == null) throw new IllegalArgumentException("CIO Selector owner host required");
+        this.preLoginTimeout = config.usePreLoginTimeout;
+        if (maxOnline < 1) throw new IllegalStateException("invalid online limit");
+        LoginController.getInstance().setMaxAllowedOnlinePlayers(maxOnline);
         javaServer = new CIOServer(address, maxConnections, ioThreads, backlog,
-                CConnectionConfig.NETWORK_CLIENT_PERMISSION, CIOConfig.MAC_LIMIT, owners, this::activateAccepted);
+                CConnectionConfig.NETWORK_CLIENT_PERMISSION, CIOConfig.MAC_LIMIT, scheduler::attachSelectors,
+                this::activateAccepted);
     }
 
     public boolean isJavaTransport() { return true; }
@@ -88,44 +84,45 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
                 + " accounts=" + Arrays.toString(javaServer.accountRegistryDiagnostics())
                 + " owners=" + javaServer.ownerDiagnostics();
     }
-    private void activateAccepted(CSocket socket) {
-        if (acceptingStopped.get() || closed.get() || !socket.isOpen()) {
-            socket.close();
+    private void activateAccepted(CIOServer registry, CSelectorTransport.Connection peer) {
+        if (acceptingStopped.get() || closed.get() || !peer.isOpen()
+                || peer.remoteAddress().getPort() <= 1024
+                || maxOnline <= LoginController.getInstance().getOnlinePlayerCount()) {
+            peer.abort();
             return;
         }
         if (admitted.incrementAndGet() > maxConnections) {
             admitted.decrementAndGet();
-            socket.close();
+            peer.abort();
             return;
         }
-        CUserSocket connection = null;
+        CUserSocket socket = null;
         try {
-            connection = factory.CreateSocket(socket, pool, this);
-            if (connection == null) {
+            if (CIOThreadCallback.currentShardIndex() != peer.ownerIndex())
+                throw new IllegalStateException("game admission must execute on its CIO owner");
+            socket = registry.register(peer, pool, this, !Config.shutdownCheck,
+                    CConnectionConfig.NETWORK_CLIENT_PERMISSION);
+            if (socket == null) {
                 admitted.decrementAndGet();
+                peer.abort();
+                return;
+            }
+            // Handshake may synchronously close the transport. Publish the retained socket first.
+            connections.register(socket);
+            if (!socket.onConnected() || !socket.isConnected())
+                throw new IllegalStateException("handshake not admitted");
+            socket.configureTransportDeadlines(preLoginTimeout);
+            if (acceptingStopped.get() || closed.get() || !socket.isOpen()) {
                 socket.close();
                 return;
             }
-            connections.register(connection);
-            if (connection.isCloseComplete()) {
-                onClosed(connection);
-                return;
-            }
-            if (acceptingStopped.get() || closed.get() || !connection.isOpen()) {
-                connection.close();
-                if (connection.isCloseComplete()) onClosed(connection);
-                return;
-            }
-            connection.startRead();
+            socket.startRead();
         } catch (Throwable failure) {
             LOG.log(Level.WARNING, "CIO connection admission failed", failure);
-            if (connection == null) {
+            if (socket == null) {
                 admitted.decrementAndGet();
-                socket.close();
-            } else {
-                connection.close();
-                if (connection.isCloseComplete()) onClosed(connection);
-            }
+                peer.abort();
+            } else socket.close();
         }
     }
     @Override public void onClosed(CUserSocket socket) {

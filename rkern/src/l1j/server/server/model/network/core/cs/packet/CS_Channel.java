@@ -222,7 +222,7 @@ public final class CS_Channel {
     private static void persistCharPassword(CUserSocket client, Account account,
                                             String expected, String replacement, boolean create) {
         final String login = account.getName();
-        final var connection = client.getConnection();
+        final var connection = client;
         try {
             CacheD.getInstance().submitDbJobOrdered(login, () -> {
                 boolean committed = false;
@@ -266,7 +266,7 @@ public final class CS_Channel {
                     // callback was lost must not keep authenticating against
                     // an obsolete in-memory password until reconnect.
                     if (success && client.isConnected() && client.getAccount() == account
-                            && client.getConnection() == connection) client.close();
+                            && client == connection) client.close();
                 });
             });
         } catch (java.util.concurrent.RejectedExecutionException rejected) {
@@ -454,7 +454,7 @@ for (L1PcInstance gm : L1World.getInstance().getAllPlayers()) {
         }
         if (count == 0) return;
         final int size = count;
-        final var connection = client.getConnection();
+        final var connection = client;
         try {
             CacheD.getInstance().submitDbJobOrdered(ownerId, () -> {
                 try (Connection con = DatabaseFactory.getInstance().getConnection()) {
@@ -500,7 +500,7 @@ for (L1PcInstance gm : L1World.getInstance().getAllPlayers()) {
                     }
                 }, failure -> {
                     if (failure != null && client.isConnected()
-                            && client.getConnection() == connection
+                            && client == connection
                             && client.getActiveChar() == pc) client.close();
                 });
             });

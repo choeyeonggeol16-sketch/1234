@@ -119,7 +119,7 @@ public final class CS_CreateChar {
 
     private static void persistNewCharacter(CUserSocket client, L1PcInstance pc) {
         final l1j.server.server.Account account = client.getAccount();
-        final var socket = client.getConnection();
+        final var socket = client;
         final var state = client.getConnectionState();
         final String accountName = pc.getAccountName();
         final int accountKey = l1j.server.server.storage.CacheD.accountOrderKey(accountName);
@@ -169,7 +169,7 @@ public final class CS_CreateChar {
                     .completeWorldMutation(world, () -> {
                 CharacterTable.getInstance().registerCreatedCharacter(pc);
                 synchronized (client) {
-                    if (client.isConnected() && client.getConnection() == socket && client.getAccount() == account
+                    if (client.isConnected() && client == socket && client.getAccount() == account
                             && client.getActiveChar() == null && client.getConnectionState() == state) {
                         SC_CharCreateStatus.send(client, SC_CharCreateStatus.REASON_OK);
                         l1j.server.server.model.network.core.sc.packet.SC_NewCharPacket.send(client, pc);

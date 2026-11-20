@@ -42,7 +42,7 @@ public final class SC_ServerMessage {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         long needed = 16L;
         if (msg1 != null) needed += ((long) msg1.length() << 1) + 2L;

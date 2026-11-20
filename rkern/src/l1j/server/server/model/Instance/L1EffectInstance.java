@@ -124,7 +124,7 @@ public class L1EffectInstance extends L1NpcInstance {
                 pc.removeKnownObject(this);
                 final var client=pc.getNetConnection();
                 if(client!=null && client.isConnected()) {
-                    final var socket=client.getConnection();
+                    final var socket=client;
                     if(socket!=null && socket.isClientConnected())
                         shared.send(socket,pc.getId());
                 }

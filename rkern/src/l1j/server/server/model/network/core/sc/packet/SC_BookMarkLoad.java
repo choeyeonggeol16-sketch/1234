@@ -69,7 +69,7 @@ public final class SC_BookMarkLoad {
 
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(wireSize);
         if (frame == null) return false;

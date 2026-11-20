@@ -13,7 +13,6 @@ import java.sql.SQLException;
 import java.util.logging.LogManager;
 import l1j.server.server.GameServer;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
-import l1j.server.server.model.network.core.server.CDummyServerCallback;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.monitor.LoggerInstance;
@@ -96,12 +95,12 @@ public class Server {
             // owner is also servicing established sockets and game timers.
             final int backlog = Math.max(64, Math.min(connectionCapacity, MAX_ACCEPT_BACKLOG));
             final CConnectionConfig config = new CConnectionConfig(address);
-            final CDummyServerCallback factory = new CDummyServerCallback(
-                    CIOThreadCallback.getInstance(), config);
+            final CIOThreadCallback scheduler = CIOThreadCallback.getInstance();
+            final int owners = scheduler.bindNetworkIngress(config);
             final CIOBufferPool pool = new CIOBufferPool(connectionCapacity,
-                    sendSlots, largeRecvSlots, largeSlots, factory.selectorOwnerCount());
+                    sendSlots, largeRecvSlots, largeSlots, owners);
             gameListener = new l1j.server.server.model.network.core.server.Server(address, connectionCapacity,
-                    backlog, pool, factory);
+                    owners, backlog, pool, scheduler, config);
             System.out.println("네트워크 서버 연결이 완료되었습니다.");
             return true;
         } catch (Exception e) {

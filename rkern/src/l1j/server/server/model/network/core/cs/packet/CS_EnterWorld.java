@@ -204,7 +204,7 @@ public final class CS_EnterWorld {
     public static void doEnterWorld(String charName, CUserSocket client) {
         if (client == null || charName == null || charName.isEmpty()
                 || !client.isConnected() || client.getAccount() == null
-                || client.getConnection() == null) return;
+                || client == null) return;
         final Account sessionAccount = client.getAccount();
         final L1World expectedWorld = L1World.getInstance();
         final l1j.server.server.templates.L1CharName known = CharacterTable.getInstance().getCharName(charName);

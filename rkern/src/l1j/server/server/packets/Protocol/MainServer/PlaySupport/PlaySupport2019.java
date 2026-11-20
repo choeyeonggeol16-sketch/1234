@@ -422,7 +422,7 @@ public final class PlaySupport2019 {
 
     private static boolean scheduleLeaseDeadline(CUserSocket client,
             ClientAutomationSession session, long delayMs) {
-        final var socket = client.getConnection();
+        final var socket = client;
         final int shard = socket == null ? -1 : socket.affinityShard();
         final WeakReference<CUserSocket> weakClient = new WeakReference<>(client);
         return CIOThreadCallback.getInstance().scheduleNetworkTimeout(shard,

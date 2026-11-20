@@ -18,7 +18,7 @@ public final class SC_Strup {
         final int totalStr = actor.getAbility().getTotalStr();
         final int weight100 = actor.getInventory().getWeight100();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(WIRE_SIZE);
         if (frame == null) return false;

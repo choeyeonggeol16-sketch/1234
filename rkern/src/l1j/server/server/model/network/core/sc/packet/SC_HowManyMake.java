@@ -12,7 +12,7 @@ public final class SC_HowManyMake {
 
     public static boolean send(CUserSocket client, int objectId, int max, String htmlId) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(36 + (htmlId == null ? 0 : (htmlId.length() << 1)));
         if (frame == null) return false;

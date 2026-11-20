@@ -14,7 +14,7 @@ public final class SC_MarkSee {
     private SC_MarkSee() {}
     public static boolean send(L1PcInstance pc, int type, boolean on) {
         if (pc == null || pc.getNetConnection() == null || !pc.getNetConnection().isConnected()) return false;
-        final CUserSocket conn = pc.getNetConnection().getConnection();
+        final CUserSocket conn = pc.getNetConnection();
         if (conn == null || !conn.isClientConnected()) return false;
         List<String> names = null;
         int length = 7;

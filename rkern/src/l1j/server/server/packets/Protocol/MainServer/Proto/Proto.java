@@ -22,7 +22,7 @@ public final class Proto {
 
     public static ProtoWriter begin(CUserSocket client, int messageId, int maxWireBytes) {
         if (client == null || !client.isConnected()) return null;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return null;
         final CIOFrame frame = connection.beginDirectFrame(maxWireBytes);
         if (frame == null) return null;
@@ -77,7 +77,7 @@ public final class Proto {
     public static boolean sendRaw(CUserSocket client, byte[] encoded) {
         if (encoded == null || encoded.length == 0 || encoded.length > 65533
                 || client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(encoded.length + 2);
         if (frame == null) return false;

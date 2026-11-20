@@ -17,7 +17,7 @@ public final class SC_TrueTargetNew {
 
 public static boolean send(CUserSocket client, int targetId, boolean active) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(18);
         if (frame == null) return false;

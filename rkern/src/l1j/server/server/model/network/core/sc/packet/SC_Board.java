@@ -272,7 +272,7 @@ public final class SC_Board {
 
 	public boolean send(CUserSocket client) {
 		if (client == null || !client.isConnected()) return false;
-		final CUserSocket conn = client.getConnection();
+		final CUserSocket conn = client;
 		if (conn == null || !conn.isClientConnected()) return false;
 		final long capacity = frameLength();
 		if (capacity <= CConnectionConfig.HEADER_SIZE
@@ -339,7 +339,7 @@ public final class SC_Board {
 		if (pc == null || board == null) return false;
 		final CUserSocket client = pc.getNetConnection();
 		if (client == null || !client.isConnected()) return false;
-		final CUserSocket conn = client.getConnection();
+		final CUserSocket conn = client;
 		if (conn == null || !conn.isClientConnected() || client.getActiveChar() != pc) return false;
 
 		final int npcId = board.getNpcId();
@@ -362,7 +362,7 @@ public final class SC_Board {
 					return;
 				}
 				if (!CIOThreadCallback.getInstance().completeSessionReply(client, () -> {
-					if (client.isConnected() && client.getConnection() == conn
+					if (client.isConnected() && client == conn
 							&& conn.isClientConnected() && client.getAccount() == account
 							&& client.getActiveChar() == pc && pc.getNetConnection() == client) {
 						if (!snapshot.send(client)) {

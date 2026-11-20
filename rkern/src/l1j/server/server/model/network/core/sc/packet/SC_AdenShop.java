@@ -27,7 +27,7 @@ public final class SC_AdenShop {
 
     public static boolean send(CUserSocket client, L1PcInstance pc) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final L1Shop shop = ShopTable.getInstance().get(DEFAULT_NPC_ID);
         final List<L1ShopItem> list = shop == null ? null : shop.getSellingItems();

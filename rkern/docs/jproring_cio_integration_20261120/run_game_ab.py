@@ -27,12 +27,12 @@ WORK = dict(single=(1, 1, 2, 32, 'ordinary'), burst=(16, 16, 2, 256, 'mixed'),
             spread=(128, 1, 2, 64, 'bytes'), large=(16, 8, 2, 4096, 'ordinary'),
             gather=(16, 32, 2, 4096, 'ordinary'),
             cache64=(16, 16, 2, 64, 'cached'), cache256=(16, 16, 2, 256, 'cached'),
-            mix5000=(5000, 1, 2, 64, 'mixed'))
+            load1024=(1024, 8, 2, 256, 'mixed'), mix5000=(5000, 1, 2, 64, 'mixed'))
 FIELDS = ('workload', 'trial', 'mode', 'clients', 'active_clients', 'pace_ms', 'window', 'owners', 'payload', 'kind',
-          'requests', 'requests_per_s', 'p50_us', 'p99_us', 'p999_us', 'server_cpu_ns_per_op',
+          'requests', 'requests_per_s', 'p50_us', 'p95_us', 'p99_us', 'p999_us', 'server_cpu_ns_per_op',
           'server_alloc_bytes_per_op', 'commit_hits', 'byte_append_hits', 'send_rejections',
           'raw_writes', 'raw_gather_writes', 'raw_write_segments',
-          'direct_packet_tails', 'adjacent_copied_bytes', 'compacted_copied_bytes', 'write_burst_copied_bytes')
+          'direct_packet_tails', 'adjacent_copied_bytes', 'compacted_copied_bytes', 'write_burst_copied_bytes', 'variant')
 RESOURCES = ('elapsed_ms', 'phase', 'sockets', 'leases', 'direct_bytes', 'direct_cap_bytes',
              'borrows', 'returns', 'heap_used_bytes', 'rss_kib', 'peak_rss_kib', 'file_descriptors')
 
@@ -52,12 +52,12 @@ def classpath(classes, deps):
     return os.pathsep.join((str(classes), *jars))
 
 
-def compile_java(cp, classes, reuse):
+def compile_java(cp, classes, reuse, source_root=ROOT):
     compiler = [shutil.which('javac')] if shutil.which('javac') else [
         'java', '--module', 'jdk.compiler/com.sun.tools.javac.Main']
     fixtures = [(HERE.parent / 'jproring_selector_transport_20261120/SelectorTransportTest.java'),
                 HERE / 'GameSendBenchmark.java']
-    sources = fixtures if reuse else [*sorted((ROOT / 'src').rglob('*.java')), *fixtures]
+    sources = fixtures if reuse else [*sorted((source_root / 'src').rglob('*.java')), *fixtures]
     with tempfile.NamedTemporaryFile('w', encoding='utf-8') as arguments:
         arguments.writelines('"' + str(path) + '"\n' for path in sources)
         arguments.flush()
@@ -197,6 +197,7 @@ def measure(cp, location, args, trial, load, mode, logs):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--baseline-root', type=Path, help='compile a second checkout for paired comparisons')
     parser.add_argument('--classes', type=Path, help='reuse a previously compiled full source tree')
     parser.add_argument('--deps', type=Path, default=Path(tempfile.gettempdir()) / 'rkern-game-ab-deps')
     parser.add_argument('--output', type=Path, required=True)
@@ -238,6 +239,16 @@ def main():
         if args.sample_resources and b'networkPoolSnapshot' not in server_class:
             parser.error('--sample-resources requires network pool diagnostics in the server classes')
         candidates_available = b'rkern.network.javaDirectPacketCommit' in socket_class.read_bytes()
+        targets = {'current': cp}
+        if args.baseline_root:
+            baseline_root = args.baseline_root.resolve()
+            baseline_classes = work / 'baseline'
+            baseline_classes.mkdir()
+            baseline_cp = classpath(baseline_classes, args.deps.resolve())
+            compile_java(baseline_cp, baseline_classes, False, baseline_root / 'rkern')
+            targets['baseline'] = baseline_cp
+            environment['baseline_revision'] = subprocess.check_output(
+                ['git', 'rev-parse', 'HEAD'], text=True, cwd=baseline_root).strip()
         modes = args.mode or (list(MODES) if candidates_available else ['off'])
         if not candidates_available and any(mode != 'off' for mode in modes):
             parser.error('candidate modes are available at benchmark baseline 02b0d4e')
@@ -247,18 +258,21 @@ def main():
             writer = csv.writer(file, lineterminator="\n")
             writer.writerow(FIELDS)
             for load in workloads:
+                cases = [(variant, mode) for variant in targets for mode in modes]
                 for i in range(args.trials):
-                    offset = i % len(modes)
-                    for mode in modes[offset:] + modes[:offset]:
+                    offset = i % len(cases)
+                    for variant, mode in cases[offset:] + cases[:offset]:
+                        trial_logs = logs / variant
+                        trial_logs.mkdir(exist_ok=True)
                         try:
-                            row = measure(cp, work, args, i + 1, load, mode, logs)
+                            row = measure(targets[variant], work, args, i + 1, load, mode, trial_logs)
                         except (OSError, RuntimeError, subprocess.SubprocessError) as error:
-                            failures.append(dict(workload=load, trial=i + 1, mode=mode, error=str(error)))
-                            print('FAILED', load, i + 1, mode, error, flush=True)
+                            failures.append(dict(workload=load, trial=i + 1, mode=mode, variant=variant, error=str(error)))
+                            print('FAILED', variant, load, i + 1, mode, error, flush=True)
                         else:
-                            writer.writerow(row)
+                            writer.writerow([*row, variant])
                             file.flush()
-                            print('PASS', *row, flush=True)
+                            print('PASS', variant, *row, flush=True)
     (output / 'failures.json').write_text(json.dumps(failures, indent=2) + '\n')
     return bool(failures)
 

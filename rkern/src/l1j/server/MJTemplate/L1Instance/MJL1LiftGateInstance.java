@@ -186,7 +186,7 @@ public class MJL1LiftGateInstance extends L1Object{
                     // action and finally object removal for each specific player.
                     sendSharedAttrs(attrFrames,client,pc.getId());
                     if(client!=null && client.isConnected()) {
-                        final var socket=client.getConnection();
+                        final var socket=client;
                         if(socket!=null) {
                             actionFrame.send(socket,pc.getId());
                             removeFrame.send(socket,pc.getId());
@@ -214,7 +214,7 @@ public class MJL1LiftGateInstance extends L1Object{
                     final var client=pc.getNetConnection();
                     // Preserve original order: action first, then tile attributes.
                     if(client!=null && client.isConnected()) {
-                        final var socket=client.getConnection();
+                        final var socket=client;
                         if(socket!=null)actionFrame.send(socket,pc.getId());
                     }
                     sendSharedAttrs(attrFrames,client,pc.getId());
@@ -372,7 +372,7 @@ public class MJL1LiftGateInstance extends L1Object{
             l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer[] attrs,
             l1j.server.server.model.network.core.connection.CUserSocket client,int playerId) {
         if(client==null || !client.isConnected())return;
-        final var socket=client.getConnection();
+        final var socket=client;
         if(socket==null)return;
         for(var frame:attrs)frame.send(socket,playerId);
     }

@@ -12,7 +12,7 @@ public final class SC_War {
     private SC_War() {}
     public static boolean send(CUserSocket client, int type, String clan1, String clan2) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket conn = client.getConnection();
+        final CUserSocket conn = client;
         if (conn == null || !conn.isClientConnected()) return false;
         final CIOFrame frame = conn.beginDirectFrame(6 + ((clan1 == null ? 0 : clan1.length()) + (clan2 == null ? 0 : clan2.length())) * 2);
         if (frame == null) return false;

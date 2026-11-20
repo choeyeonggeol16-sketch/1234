@@ -12,7 +12,7 @@ public final class SC_UserCommands17 {
 
     public static boolean send(CUserSocket client, int number) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(64 + (((Config.공지제목 == null ? 0 : Config.공지제목.length()) + (Config.공지1번줄 == null ? 0 : Config.공지1번줄.length()) + (Config.공지2번줄 == null ? 0 : Config.공지2번줄.length()) + (Config.공지3번줄 == null ? 0 : Config.공지3번줄.length()) + (Config.공지4번줄 == null ? 0 : Config.공지4번줄.length()) + (Config.공지5번줄 == null ? 0 : Config.공지5번줄.length()) + (Config.공지6번줄 == null ? 0 : Config.공지6번줄.length()) + (Config.공지7번줄 == null ? 0 : Config.공지7번줄.length()) + (Config.공지8번줄 == null ? 0 : Config.공지8번줄.length()) + (Config.공지9번줄 == null ? 0 : Config.공지9번줄.length()) + (Config.GAME_SERVER_NAME == null ? 0 : Config.GAME_SERVER_NAME.length())) << 1));
         if (frame == null) return false;

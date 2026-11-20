@@ -15,7 +15,7 @@ public final class SC_SupportPack {
 
     public static boolean send(CUserSocket client, L1SupportInstance pet) {
         if (client == null || !client.isConnected() || pet == null ) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int x = pet.getX(), y = pet.getY(), id = pet.getId();
         final int spriteId = pet.getCurrentSpriteId(), status = pet.getStatus();

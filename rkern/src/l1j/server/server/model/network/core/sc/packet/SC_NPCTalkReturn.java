@@ -51,7 +51,7 @@ public final class SC_NPCTalkReturn {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         final String name = htmlId == null ? "" : htmlId;
         final int count = array != null ? array.length : list != null ? list.size() : 0;

@@ -72,7 +72,7 @@ public final class GameSendBenchmark {
         var locals = ThreadLocal.withInitial(() -> new Reply(payload));
         var old = CPacketHandler.HANDLERS[REQUEST];
         CPacketHandler.HANDLERS[REQUEST] = (request, client) -> {
-            CUserSocket socket = client.getConnection();
+            CUserSocket socket = client;
             if (socket.affinityShard() != CIOThreadCallback.currentShardIndex()) throw new AssertionError("shard");
             Reply packet = locals.get();
             int sequence = request.readInt();
@@ -272,8 +272,8 @@ public final class GameSendBenchmark {
                     offset += result.length;
                 }
                 Arrays.sort(sorted);
-                System.out.printf(Locale.ROOT, "RESULT %d %.2f %.3f %.3f %.3f%n", count, count * 1e9 / measure,
-                        percentile(sorted, 500), percentile(sorted, 990), percentile(sorted, 999));
+                System.out.printf(Locale.ROOT, "RESULT %d %.2f %.3f %.3f %.3f %.3f%n", count, count * 1e9 / measure,
+                        percentile(sorted, 500), percentile(sorted, 950), percentile(sorted, 990), percentile(sorted, 999));
             } finally {
                 go.countDown();
                 finished.countDown();

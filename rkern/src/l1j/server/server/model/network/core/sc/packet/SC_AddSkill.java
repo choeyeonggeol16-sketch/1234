@@ -15,7 +15,7 @@ public final class SC_AddSkill {
         if (pc == null) return false;
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(36);
         if (frame == null) return false;
@@ -38,7 +38,7 @@ public final class SC_AddSkill {
         if (pc == null) return false;
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int count = levels == null ? 0 : levels.length;
         if (count > Integer.MAX_VALUE - 7) return false;
@@ -97,7 +97,7 @@ public final class SC_AddSkill {
         if (pc == null) return false;
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int elf = p30 == 1 ? 4 : p30 == 2 ? 1 : p30 == 4 ? 2 : p30 == 8 ? 3 : 0;
         final CIOFrame frame = connection.beginDirectFrame(37);

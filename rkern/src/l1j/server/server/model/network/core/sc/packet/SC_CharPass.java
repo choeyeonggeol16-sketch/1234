@@ -41,7 +41,7 @@ public static final int _케릭선택창진입 = 0x40;
         }
 
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket conn = client.getConnection();
+        final CUserSocket conn = client;
         if (conn == null || !conn.isClientConnected()) return false;
         final CIOFrame frame = conn.beginDirectFrame(4 + extra);
         if (frame == null) return false;

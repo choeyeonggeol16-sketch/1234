@@ -59,6 +59,13 @@ public final class CSelectorTransport implements AutoCloseable {
         }
     }
 
+    /** The raw endpoint owns buffers until the corresponding completion. */
+    public interface RawEndpoint {
+        void onRawRead(int bytes);
+        void onRawWrite(long bytes, boolean gather);
+        void onRawDeadline();
+    }
+
     /** Installed on existing owner threads by the game scheduler. */
     public interface OwnerDriver {
         void advance();
@@ -83,6 +90,7 @@ public final class CSelectorTransport implements AutoCloseable {
     public interface OwnerCommand {
         void run(Connection connection) throws IOException;
         default void cancel() { }
+        default void cancel(Connection connection) { cancel(); }
     }
 
     public record OwnerStats(CSelectorBufferPool.Stats receive, CSelectorBufferPool.Stats send,
@@ -234,6 +242,7 @@ public final class CSelectorTransport implements AutoCloseable {
         private final SelectionKey key;
         private final InetSocketAddress remoteAddress;
         private final boolean raw;
+        private RawEndpoint rawEndpoint;
         // Only the Selector owner can touch an armed operation. Callers retain their leases.
         private ByteBuffer readTarget;
         private IntConsumer readCompletion;
@@ -290,13 +299,34 @@ public final class CSelectorTransport implements AutoCloseable {
             } else owner.queueClose(this, drain ? 1 : 2);
         }
 
+        public void attachRawEndpoint(RawEndpoint endpoint) {
+            owner.requireOwner();
+            requireRaw();
+            if (closed || rawEndpoint != null) throw new IllegalStateException("Raw endpoint already attached or closed");
+            rawEndpoint = Objects.requireNonNull(endpoint);
+        }
+
+        public RawEndpoint rawEndpoint() {
+            owner.requireOwner();
+            return rawEndpoint;
+        }
+
         public boolean scheduleDeadline(long delayMillis, Runnable callback) {
+            return scheduleDeadlineInternal(delayMillis, Objects.requireNonNull(callback));
+        }
+
+        public boolean scheduleRawDeadline(long delayMillis) {
+            requireRawEndpoint();
+            return scheduleDeadlineInternal(delayMillis, null);
+        }
+
+        private boolean scheduleDeadlineInternal(long delayMillis, Runnable callback) {
             owner.requireOwner();
             if (closed || owner.stopping) return false;
             if (delayMillis < 0 || delayMillis > Integer.MAX_VALUE) throw new IllegalArgumentException("Deadline delay");
             long due = System.nanoTime() + Math.max(1L, delayMillis) * 1_000_000;
-            if (deadlineAction != null && scheduledDeadline - due <= 0) return true;
-            deadlineAction = Objects.requireNonNull(callback);
+            if (deadlineIndex >= 0 && scheduledDeadline - due <= 0) return true;
+            deadlineAction = callback;
             scheduledDeadline = due;
             owner.deadlines.addOrAdvance(this);
             owner.deadlineDepth = owner.deadlines.size();
@@ -304,23 +334,50 @@ public final class CSelectorTransport implements AutoCloseable {
         }
 
         public boolean readRaw(ByteBuffer target, IntConsumer completion) {
+            return armRawRead(target, Objects.requireNonNull(completion));
+        }
+
+        public boolean readRaw(ByteBuffer target) {
+            requireRawEndpoint();
+            return armRawRead(target, null);
+        }
+
+        private boolean armRawRead(ByteBuffer target, IntConsumer completion) {
             owner.requireOwner();
             requireRaw();
             if (closed || drainReason != null || owner.stopping) return false;
             if (!target.hasRemaining() || target.isReadOnly()) throw new IllegalArgumentException("READ buffer");
             if (readTarget != null) throw new IllegalStateException("READ already pending");
-            readCompletion = Objects.requireNonNull(completion);
+            readCompletion = completion;
             readTarget = target;
             updateInterest();
             return true;
         }
 
         public boolean writeRaw(ByteBuffer source, LongConsumer completion) {
+            return writeRawSingle(source, Objects.requireNonNull(completion));
+        }
+
+        public boolean writeRaw(ByteBuffer source) {
+            requireRawEndpoint();
+            return writeRawSingle(source, null);
+        }
+
+        private boolean writeRawSingle(ByteBuffer source, LongConsumer completion) {
             if (!source.hasRemaining()) throw new IllegalArgumentException("Empty WRITE buffer");
             return armRawWrite(source, null, 0, 0, completion);
         }
 
         public boolean writeRaw(ByteBuffer[] sources, int offset, int count, LongConsumer completion) {
+            return writeRawGather(sources, offset, count, Objects.requireNonNull(completion));
+        }
+
+        public boolean writeRaw(ByteBuffer[] sources, int offset, int count) {
+            requireRawEndpoint();
+            return writeRawGather(sources, offset, count, null);
+        }
+
+        private boolean writeRawGather(ByteBuffer[] sources, int offset, int count, LongConsumer completion) {
             Objects.checkFromIndexSize(offset, count, sources.length);
             if (count == 0) throw new IllegalArgumentException("Empty gather WRITE");
             return armRawWrite(null, sources, offset, count, completion);
@@ -330,15 +387,22 @@ public final class CSelectorTransport implements AutoCloseable {
             owner.requireOwner();
             requireRaw();
             if (closed || drainReason != null || owner.stopping) return false;
-            if (writeCompletion != null) throw new IllegalStateException("WRITE already pending");
-            writeCompletion = Objects.requireNonNull(completion);
-            singleWrite = count == 1 ? sources[offset] : source;
+            if (hasRawWrite()) throw new IllegalStateException("WRITE already pending");
+            singleWrite = count == 1 ? Objects.requireNonNull(sources[offset]) : source;
             gather = count == 1 ? null : sources;
             writeOffset = offset;
             writeCount = count;
+            writeCompletion = completion;
             if (!writeBlocked) owner.schedule(this);
             return true;
         }
+
+        private void requireRawEndpoint() {
+            owner.requireOwner();
+            if (rawEndpoint == null) throw new IllegalStateException("Raw endpoint is not attached");
+        }
+
+        private boolean hasRawWrite() { return singleWrite != null || gather != null; }
 
         private int readRawReady() throws IOException {
             if (readTarget == null) return 0;
@@ -348,7 +412,7 @@ public final class CSelectorTransport implements AutoCloseable {
         }
 
         private long writeRawReady() throws IOException {
-            if (writeCompletion == null) return 0;
+            if (!hasRawWrite()) return 0;
             long bytes = singleWrite != null ? channel.write(singleWrite) : channel.write(gather, writeOffset, writeCount);
             if (drainReason != null) {
                 // After the drain starts, the provider owns the remainder of the last request.
@@ -374,7 +438,7 @@ public final class CSelectorTransport implements AutoCloseable {
                 owner.reportCallbackFailure("raw I/O cancellation", error);
             } finally {
                 try {
-                    if (writeCompletion != null) completeWrite(-1);
+                    if (hasRawWrite()) completeWrite(-1);
                 } catch (RuntimeException error) {
                     owner.reportCallbackFailure("raw I/O cancellation", error);
                 }
@@ -385,17 +449,20 @@ public final class CSelectorTransport implements AutoCloseable {
             IntConsumer completion = readCompletion;
             readTarget = null;
             readCompletion = null;
-            completion.accept(bytes);
+            if (completion != null) completion.accept(bytes);
+            else rawEndpoint.onRawRead(bytes);
         }
 
         private void completeWrite(long bytes) {
             LongConsumer completion = writeCompletion;
+            boolean gathered = writeCount != 0;
             singleWrite = null;
             gather = null;
             writeOffset = writeCount = 0;
             drainBytes = 0L;
             writeCompletion = null;
-            completion.accept(bytes);
+            if (completion != null) completion.accept(bytes);
+            else rawEndpoint.onRawWrite(bytes, gathered);
         }
 
         private void requireRaw() {
@@ -428,7 +495,7 @@ public final class CSelectorTransport implements AutoCloseable {
         }
 
         private void cancelCommand(OwnerCommand command) {
-            try { command.cancel(); }
+            try { command.cancel(this); }
             catch (RuntimeException error) { owner.reportCallbackFailure("command cancellation", error); }
         }
 
@@ -511,7 +578,7 @@ public final class CSelectorTransport implements AutoCloseable {
                 if (raw) {
                     if (canRead() && (operations & SelectionKey.OP_READ) != 0 && readRawReady() < 0)
                         beginDrain(CloseReason.REMOTE_EOF);
-                    if (!closed && !writeBlocked && writeCompletion != null) rawFlush();
+                    if (!closed && !writeBlocked && hasRawWrite()) rawFlush();
                     finishTurn();
                     return;
                 }
@@ -539,7 +606,7 @@ public final class CSelectorTransport implements AutoCloseable {
                 owner.schedule(this);
         }
 
-        private boolean hasWrites() { return raw ? writeCompletion != null : !send.isEmpty(); }
+        private boolean hasWrites() { return raw ? hasRawWrite() : !send.isEmpty(); }
 
         private void rawFlush() throws IOException {
             long written = writeRawReady();
@@ -607,7 +674,7 @@ public final class CSelectorTransport implements AutoCloseable {
             closed = true;
             owner.unlink(this);
             clearStall();
-            if (deadlineAction != null) {
+            if (deadlineIndex >= 0) {
                 owner.deadlines.remove(this);
                 owner.deadlineDepth = owner.deadlines.size();
                 deadlineAction = null;
@@ -1004,8 +1071,10 @@ public final class CSelectorTransport implements AutoCloseable {
                 deadlineDepth = deadlines.size();
                 Runnable callback = connection.deadlineAction;
                 connection.deadlineAction = null;
-                try { callback.run(); }
-                catch (RuntimeException error) { connection.terminate(CloseReason.HANDLER_ERROR); }
+                try {
+                    if (callback != null) callback.run();
+                    else connection.rawEndpoint.onRawDeadline();
+                } catch (RuntimeException error) { connection.terminate(CloseReason.HANDLER_ERROR); }
             }
             for (int i = 0; i < COMMAND_BUDGET && !stalled.isEmpty(); i++) {
                 Connection connection = stalled.peek();

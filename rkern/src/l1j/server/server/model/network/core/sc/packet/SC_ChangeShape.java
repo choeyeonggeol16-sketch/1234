@@ -12,7 +12,7 @@ public final class SC_ChangeShape {
     private SC_ChangeShape() {}
     public static boolean send(CUserSocket client, int objectId, int polyId, int weaponState) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket conn = client.getConnection();
+        final CUserSocket conn = client;
         if (conn == null || !conn.isClientConnected()) return false;
         final CIOFrame frame = conn.beginDirectFrame(18);
         if (frame == null) return false;

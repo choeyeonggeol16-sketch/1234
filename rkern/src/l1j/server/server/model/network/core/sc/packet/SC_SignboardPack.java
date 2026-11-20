@@ -15,7 +15,7 @@ public final class SC_SignboardPack {
 
     public static boolean send(CUserSocket client, L1SignboardInstance signboard) {
         if (client == null || !client.isConnected() || signboard == null ) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int x = signboard.getX(), y = signboard.getY(), id = signboard.getId();
         final int spriteId = signboard.getCurrentSpriteId();

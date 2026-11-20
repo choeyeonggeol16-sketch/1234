@@ -28,7 +28,7 @@ public final class SC_CharVisualUpdate {
 
     public static boolean sendPacked(CUserSocket client, long packed) {
         if (packed == 0L || client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(12);
         if (frame == null) return false;

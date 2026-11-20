@@ -640,7 +640,7 @@ public final class SC_NewCreateItem {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(384);
         if (frame == null) return false;
@@ -657,13 +657,13 @@ public final class SC_NewCreateItem {
 
     private static CIOFrame beginFrame(CUserSocket socket, int capacity) {
         if (socket == null || !socket.isConnected()) return null;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return null;
         return connection.beginDirectFrame(capacity);
     }
 
     private static boolean finishFrame(CUserSocket socket, CIOFrame frame) {
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         boolean committed = false;
         try {
             committed = connection.commitDirectFrame(frame);
@@ -681,7 +681,7 @@ public final class SC_NewCreateItem {
         try {
             writeTypeSubtype(frame.buffer(), type, subType);
         } catch (RuntimeException ex) {
-            socket.getConnection().abortDirectFrame(frame);
+            socket.abortDirectFrame(frame);
             throw ex;
         }
         return finishFrame(socket, frame);
@@ -695,7 +695,7 @@ public final class SC_NewCreateItem {
         try {
             writeTypeOrderSuborderCount(frame.buffer(), type, order, subOrder, count);
         } catch (RuntimeException ex) {
-            socket.getConnection().abortDirectFrame(frame);
+            socket.abortDirectFrame(frame);
             throw ex;
         }
         return finishFrame(socket, frame);
@@ -714,7 +714,7 @@ public final class SC_NewCreateItem {
         try {
             writeTamPoint(frame.buffer(), TAM_POINT, value);
         } catch (RuntimeException ex) {
-            socket.getConnection().abortDirectFrame(frame);
+            socket.abortDirectFrame(frame);
             throw ex;
         }
         return finishFrame(socket, frame);
@@ -728,7 +728,7 @@ public final class SC_NewCreateItem {
         try {
             writeTypeSubtypeObjid(frame.buffer(), type, subType, objId);
         } catch (RuntimeException ex) {
-            socket.getConnection().abortDirectFrame(frame);
+            socket.abortDirectFrame(frame);
             throw ex;
         }
         return finishFrame(socket, frame);
@@ -745,7 +745,7 @@ public final class SC_NewCreateItem {
         try {
             writeCastleWarTime(frame.buffer(), warType, second, name);
         } catch (RuntimeException ex) {
-            socket.getConnection().abortDirectFrame(frame);
+            socket.abortDirectFrame(frame);
             throw ex;
         }
         return finishFrame(socket, frame);

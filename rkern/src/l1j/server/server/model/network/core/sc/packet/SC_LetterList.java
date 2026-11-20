@@ -329,7 +329,7 @@ private long frameCapacity() {
 
 public boolean send(CUserSocket client) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame((int) frameCapacity());
         if (frame == null) return false;

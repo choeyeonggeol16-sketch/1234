@@ -292,7 +292,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
         if(pc==null)return null;
         final CUserSocket client=pc.getNetConnection();
         if(client==null||!client.isConnected())return null;
-        final var socket=client.getConnection();
+        final var socket=client;
         return socket!=null&&socket.isClientConnected()?socket:null;
     }
 
@@ -346,7 +346,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
         try {
             final CUserSocket client=pc.getNetConnection();
             if(client==null||!client.isConnected())return shared;
-            final var socket=client.getConnection();
+            final var socket=client;
             if(socket==null||!socket.isClientConnected())return shared;
             if(shared==null) {
                 first=new CAsyncSendConstBuffer(
@@ -576,7 +576,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
                 if(pc==null)continue;
                 final CUserSocket client=pc.getNetConnection();
                 if(client==null||!client.isConnected())continue;
-                final var socket=client.getConnection();
+                final var socket=client;
                 if(socket==null||!socket.isClientConnected())continue;
                 if(shared==null) {
                     shared=new CAsyncSendConstBuffer(
@@ -636,7 +636,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
                 if(pc==null)continue;
                 final CUserSocket client=pc.getNetConnection();
                 if(client==null||!client.isConnected())continue;
-                final var socket=client.getConnection();
+                final var socket=client;
                 if(socket==null||!socket.isClientConnected())continue;
                 if(shared==null) {
                     shared=new CAsyncSendConstBuffer(
@@ -689,7 +689,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
         if(pc==null)return shared;
         final CUserSocket client=pc.getNetConnection();
         if(client==null||!client.isConnected())return shared;
-        final var socket=client.getConnection();
+        final var socket=client;
         if(socket==null||!socket.isClientConnected())return shared;
         if(shared==null) {
             // If the first recipient raises after Native allocation, the
@@ -914,7 +914,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
                 try {
                     final CUserSocket client=pc.getNetConnection();
                     if(client==null||!client.isConnected())continue;
-                    final var socket=client.getConnection();
+                    final var socket=client;
                     if(socket==null||!socket.isClientConnected())continue;
                     if(shared==null)
                         shared=new CAsyncSendConstBuffer(
@@ -1060,7 +1060,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
         if(shared==null || pc==null)return;
         final CUserSocket client=pc.getNetConnection();
         if(client==null || !client.isConnected())return;
-        final var socket=client.getConnection();
+        final var socket=client;
         if(socket!=null && socket.isClientConnected())
             shared.send(socket,pc.getId());
     }

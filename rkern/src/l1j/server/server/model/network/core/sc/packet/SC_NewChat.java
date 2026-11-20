@@ -118,7 +118,7 @@ public final class SC_NewChat {
         if (receiver == null) return false;
         final CUserSocket socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         final long needed = 64L + textBytes.length + targetNameBytes.length + senderNameBytes.length;
         if (needed > Integer.MAX_VALUE) return false;

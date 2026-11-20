@@ -220,7 +220,7 @@ public final class SC_WorldPutObject {
         }
 
         final CUserSocket connection =
-                client.getConnection();
+                client;
 
         if (connection == null
                 || !connection.isClientConnected()) {
@@ -389,7 +389,7 @@ public final class SC_WorldPutObject {
         }
 
         final CUserSocket connection =
-                client.getConnection();
+                client;
 
         if (connection == null
                 || !connection.isClientConnected()) {
@@ -611,7 +611,7 @@ public final class SC_WorldPutObject {
             boolean includeVisual) {
 
         final CUserSocket connection =
-                client.getConnection();
+                client;
 
         if (connection == null
                 || !connection.isClientConnected()) {
@@ -675,7 +675,7 @@ public final class SC_WorldPutObject {
         }
 
         final CUserSocket connection =
-                client.getConnection();
+                client;
 
         if (connection == null
                 || !connection.isClientConnected()) {
@@ -825,7 +825,7 @@ public final class SC_WorldPutObject {
         }
 
         final CUserSocket connection =
-                client.getConnection();
+                client;
 
         if (connection == null
                 || !connection.isClientConnected()) {

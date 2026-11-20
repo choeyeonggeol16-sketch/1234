@@ -20,7 +20,7 @@ public final class SC_PetInventory {
 
     public static boolean send(CUserSocket client, L1PetInstance pet) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int petId = pet == null ? 0 : pet.getId();
         final int ac = pet == null || pet.getAC() == null ? 0 : pet.getAC().getAc();

@@ -76,7 +76,7 @@ public final class SC_RetrieveList {
         if (wireSize > Integer.MAX_VALUE) return false;
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame((int) wireSize);
         if (frame == null) return false;

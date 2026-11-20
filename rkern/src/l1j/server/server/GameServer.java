@@ -405,8 +405,8 @@ public class GameServer {
             if (pc == null || pc.noPlayerck2) continue;
             final l1j.server.server.model.network.core.connection.CUserSocket client = pc.getNetConnection();
             clients[i] = client;
-            if (client != null && client.getConnection() != null)
-                client.getConnection().close();
+            if (client != null && client != null)
+                client.close();
         }
         for (int i = 0; i < pcs.length; i++) {
             final L1PcInstance pc = pcs[i];

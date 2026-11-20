@@ -365,7 +365,7 @@ public static void broadcastGreen(String message) {
         if (receiver == null) return false;
         final CUserSocket socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         final int capacity = estimateFrameCapacity(_constructorType, _subCode, _val1, _val2, _val3, _val4, _bool1, _strVal1, _strVal2, _item, _pc, _objs, _strs, _bookmarks);
         if (capacity <= 0) return false;

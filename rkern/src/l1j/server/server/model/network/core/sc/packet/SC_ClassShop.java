@@ -29,7 +29,7 @@ public final class SC_ClassShop {
         if (pc == null) return false;
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final L1Object npcObj = L1World.getInstance().findObject(objId);
         if (!(npcObj instanceof L1NpcInstance)) return false;

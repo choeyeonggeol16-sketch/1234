@@ -16,7 +16,7 @@ public final class SC_ItemStatus {
 
     public static boolean send(CUserSocket client, l1j.server.server.model.Instance.L1ItemInstance item) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int objectId = item == null ? 0 : item.getId();
         final String rawName = item == null ? null : item.getViewName();

@@ -99,7 +99,7 @@ public final class SC_IconMessage {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         final String msg = message == null ? "" : message;
         final byte[] rgb = color == null ? null : color.get_bytes();

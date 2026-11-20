@@ -114,7 +114,7 @@ public final class SC_ActionUI {
         if (pc == null) return null;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return null;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         return connection != null && connection.isClientConnected() ? connection : null;
     }
 

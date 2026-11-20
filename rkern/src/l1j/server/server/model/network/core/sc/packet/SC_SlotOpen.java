@@ -14,7 +14,7 @@ public final class SC_SlotOpen {
 
     public static boolean send(CUserSocket client, int subType, int value) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(35);
         if (frame == null) return false;

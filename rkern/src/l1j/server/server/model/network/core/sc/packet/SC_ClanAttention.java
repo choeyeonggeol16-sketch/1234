@@ -48,7 +48,7 @@ public final class SC_ClanAttention {
     
     public static boolean sendMent(L1PcInstance pc, boolean on, String name) {
         if (pc == null || pc.getNetConnection() == null || !pc.getNetConnection().isConnected()) return false;
-        final CUserSocket connection = pc.getNetConnection().getConnection();
+        final CUserSocket connection = pc.getNetConnection();
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(8 + (name == null ? 0 : name.length() * 2));
         if (frame == null) return false;
@@ -68,7 +68,7 @@ public final class SC_ClanAttention {
 
     public static boolean sendList(L1PcInstance pc, int count, List<String> source) {
         if (pc == null || pc.getNetConnection() == null || !pc.getNetConnection().isConnected()) return false;
-        final CUserSocket connection = pc.getNetConnection().getConnection();
+        final CUserSocket connection = pc.getNetConnection();
         if (connection == null || !connection.isClientConnected()) return false;
         final ArrayList<String> snapshot = new ArrayList<>();
         int size = 2 + 1 + 2 + 4;

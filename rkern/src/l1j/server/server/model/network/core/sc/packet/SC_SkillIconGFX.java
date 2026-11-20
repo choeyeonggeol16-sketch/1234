@@ -13,7 +13,7 @@ public final class SC_SkillIconGFX {
 
     public static boolean send(CUserSocket client, int type, int value) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(8);
         if (frame == null) return false;
@@ -37,7 +37,7 @@ public final class SC_SkillIconGFX {
 
     public static boolean send(CUserSocket client, int type, int value, boolean on) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(7);
         if (frame == null) return false;

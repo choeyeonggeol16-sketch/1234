@@ -25,7 +25,7 @@ public final class SC_OwnCharAttrDef {
     private static boolean sendRaw(CUserSocket client, int ac, int fire, int water, int wind, int earth, int dg, int er) {
 
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket conn = client.getConnection();
+        final CUserSocket conn = client;
         if (conn == null || !conn.isClientConnected()) return false;
         final CIOFrame frame = conn.beginDirectFrame(17);
         if (frame == null) return false;

@@ -26,7 +26,7 @@ public final class SC_ShopSellList2 {
         if (gm == null) return false;
         final CUserSocket client = gm.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
 
         final L1Shop shop = ShopTable.getInstance().get(DEFAULT_NPC_ID);

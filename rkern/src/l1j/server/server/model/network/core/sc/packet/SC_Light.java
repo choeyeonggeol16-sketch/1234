@@ -30,7 +30,7 @@ public final class SC_Light {
         }
 
         final CUserSocket connection =
-                client.getConnection();
+                client;
 
         if (connection == null
                 || !connection.isClientConnected()) {

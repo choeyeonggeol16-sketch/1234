@@ -11,7 +11,7 @@ public final class SC_Weight {
 
     public static boolean send(CUserSocket client, int weight100, int weight, int maxWeight) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(32);
         if (frame == null) return false;

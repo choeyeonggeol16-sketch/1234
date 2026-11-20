@@ -164,7 +164,7 @@ private Data(int mode, String charName, String charInfoStr,
 
 public boolean send(CUserSocket client) {
 		if (client == null || !client.isConnected()) return false;
-		final CUserSocket conn = client.getConnection();
+		final CUserSocket conn = client;
 		if (conn == null || !conn.isClientConnected()) return false;
 		long capacity;
 		switch (_mode) {

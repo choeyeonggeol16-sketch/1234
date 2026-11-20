@@ -15,7 +15,7 @@ public final class SC_FollowerPack {
 
     public static boolean send(CUserSocket client, L1FollowerInstance follower) {
         if (client == null || !client.isConnected() || follower == null ) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         int x = 0, y = 0, id = 0, spriteId = 0, status = 0, heading = 0;
         int chaLightSize = 0, moveSpeed = 0, poisonStatus = 0, level = 0;

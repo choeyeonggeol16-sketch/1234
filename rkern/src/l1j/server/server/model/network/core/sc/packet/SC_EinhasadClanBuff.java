@@ -17,7 +17,7 @@ public final class SC_EinhasadClanBuff {
 
     public static boolean send(CUserSocket client, L1PcInstance pc) {
         if (client == null || !client.isConnected() || pc == null ) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
         final boolean hasClan = clan != null;

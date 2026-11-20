@@ -11,7 +11,7 @@ public final class SC_GMHtml {
 
     public static boolean send(CUserSocket client, String s1, String s2) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(24 + ((s1 == null ? 0 : s1.length()) << 1) + ((s2 == null ? 0 : s2.length()) << 1));
         if (frame == null) return false;
@@ -41,7 +41,7 @@ public final class SC_GMHtml {
     }
     public static boolean send(CUserSocket client, int objectId, String html) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(16 + (html == null ? 0 : (html.length() << 1)));
         if (frame == null) return false;

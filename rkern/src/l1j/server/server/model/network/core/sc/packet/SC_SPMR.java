@@ -21,7 +21,7 @@ public final class SC_SPMR {
     private static boolean sendRaw(CUserSocket client, int sp, int mr) {
 
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket conn = client.getConnection();
+        final CUserSocket conn = client;
         if (conn == null || !conn.isClientConnected()) return false;
         final CIOFrame frame = conn.beginDirectFrame(7);
         if (frame == null) return false;

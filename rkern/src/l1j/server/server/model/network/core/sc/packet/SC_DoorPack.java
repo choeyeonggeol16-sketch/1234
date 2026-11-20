@@ -16,7 +16,7 @@ public final class SC_DoorPack {
 
     public static boolean send(CUserSocket client, L1DoorInstance door) {
         if (client == null || !client.isConnected() || door == null ) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         int x = 0, y = 0, id = 0, spriteId = 0, statusCode = 0, poisonEffectId = 0;
         try {

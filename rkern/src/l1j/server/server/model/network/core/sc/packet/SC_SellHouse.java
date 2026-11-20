@@ -11,7 +11,7 @@ public final class SC_SellHouse {
 
     public static boolean send(CUserSocket client, int objectId, String houseNumber) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(55 + (houseNumber == null ? 0 : (houseNumber.length() << 1)));
         if (frame == null) return false;

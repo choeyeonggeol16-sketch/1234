@@ -164,7 +164,7 @@ public class MJL1TreasureChest extends L1Object {
                 pc.removeKnownObject(this);
                 final var client=pc.getNetConnection();
                 if(client!=null && client.isConnected()) {
-                    final var socket=client.getConnection();
+                    final var socket=client;
                     if(socket!=null && socket.isClientConnected())
                         shared.send(socket,pc.getId());
                 }

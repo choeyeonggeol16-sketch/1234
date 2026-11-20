@@ -23,7 +23,7 @@ public final class SC_Party {
         if (receiver == null) return false;
         final CUserSocket socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         final String html = htmlId == null ? "" : htmlId;
         final String name = partyName == null ? "" : partyName;
@@ -61,7 +61,7 @@ public final class SC_Party {
         if (receiver == null || color < 0 || color > 2) return false;
         final CUserSocket socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(16);
         if (frame == null) return false;

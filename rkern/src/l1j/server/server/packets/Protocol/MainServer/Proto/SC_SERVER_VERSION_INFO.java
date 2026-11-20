@@ -21,7 +21,7 @@ public final class SC_SERVER_VERSION_INFO {
         if (sendVersion(client, false)) {
             // Stop further requests, retain the grace period, and drain the
             // accepted response through the existing socket deadline service.
-            client.getConnection().requestClientCloseAfter(DENIAL_GRACE_MILLIS);
+            client.requestClientCloseAfter(DENIAL_GRACE_MILLIS);
         }
     }
 

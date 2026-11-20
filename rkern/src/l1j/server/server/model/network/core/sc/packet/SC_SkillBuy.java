@@ -15,7 +15,7 @@ public final class SC_SkillBuy {
 
     public static boolean send(CUserSocket client, L1PcInstance pc) {
         if (client == null || !client.isConnected() || pc == null ) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int count;
         switch (pc.getType()) {

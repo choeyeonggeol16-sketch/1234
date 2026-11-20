@@ -16,7 +16,7 @@ public final class SC_UnityIcon {
         final int timestamp = (int) System.currentTimeMillis();
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(WIRE_SIZE);
         if (frame == null) return false;

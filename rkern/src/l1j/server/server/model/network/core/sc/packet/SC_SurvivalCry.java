@@ -32,7 +32,7 @@ public final class SC_SurvivalCry {
 
     public static boolean send(CUserSocket client, L1PcInstance pc, int value) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int ncoin = pc != null ? pc.getNcoin() : 0;
         final Collection<L1AdenShopItem> collection = value == LIST

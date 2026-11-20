@@ -39,7 +39,7 @@ public final class SC_ChangeCharName {
 
 	private static boolean send(CUserSocket client, int mode, boolean success) {
 		if (client == null || !client.isConnected()) return false;
-		final CUserSocket conn = client.getConnection();
+		final CUserSocket conn = client;
 		if (conn == null || !conn.isClientConnected()) return false;
 		final CIOFrame frame = conn.beginDirectFrame(8);
 		if (frame == null) return false;

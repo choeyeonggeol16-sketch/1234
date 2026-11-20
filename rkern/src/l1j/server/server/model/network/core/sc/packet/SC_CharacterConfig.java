@@ -51,7 +51,7 @@ public final class SC_CharacterConfig {
 
     public static boolean send(CUserSocket client, Snapshot snapshot) {
         if (client == null || !client.isConnected() || snapshot == null) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final boolean hasData = snapshot.length != 0 && snapshot.data.length > 0;
         final CIOFrame frame = connection.beginDirectFrame(

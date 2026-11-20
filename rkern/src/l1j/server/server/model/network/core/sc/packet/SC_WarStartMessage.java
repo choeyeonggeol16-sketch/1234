@@ -51,7 +51,7 @@ public final class SC_WarStartMessage {
 
     public static boolean send(L1PcInstance pc, String[] clanNames) {
         if (pc == null || pc.getNetConnection() == null || !pc.getNetConnection().isConnected()) return false;
-        final CUserSocket conn = pc.getNetConnection().getConnection();
+        final CUserSocket conn = pc.getNetConnection();
         if (conn == null || !conn.isClientConnected()) return false;
         int length = 5;
         for (String name : clanNames) length += 1 + (name == null ? 0 : name.length() * 2);

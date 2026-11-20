@@ -22,7 +22,7 @@ public final class SC_IvenBuffIcon {
 
     public static boolean send(CUserSocket client, int skillId, boolean on, int msgNum, int time) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final boolean nBuff = skillId >= 4075 && skillId <= 4094;
         final int iconId = nBuff ? 6679 : skillId;

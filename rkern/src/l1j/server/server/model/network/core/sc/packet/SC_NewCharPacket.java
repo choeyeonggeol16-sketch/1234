@@ -15,7 +15,7 @@ public final class SC_NewCharPacket {
 
     public static boolean send(CUserSocket client, L1PcInstance pc) {
         if (client == null || !client.isConnected() || pc == null ) return false;
-        final CUserSocket connection = client.getConnection();
+        final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final String name = pc.getName() == null ? "" : pc.getName();
         final int type = pc.getType(), sex = pc.get_sex(), lawful = pc.getLawful();

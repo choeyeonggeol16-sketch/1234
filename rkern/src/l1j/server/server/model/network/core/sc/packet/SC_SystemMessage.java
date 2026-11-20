@@ -16,7 +16,7 @@ public final class SC_SystemMessage {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket.getConnection();
+        final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
         final String value = text == null ? "" : text;
         final long needed = 16L + ((long) value.length() << 1);

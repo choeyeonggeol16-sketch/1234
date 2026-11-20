@@ -36,7 +36,7 @@ public final class SC_CommonNews {
 
     public static boolean send(CUserSocket client, String message) {
         if (client == null || !client.isConnected()) return false;
-        final CUserSocket conn = client.getConnection();
+        final CUserSocket conn = client;
         if (conn == null || !conn.isClientConnected()) return false;
         final String text = message == null ? "" : message;
         final long capacity = 4L + ((long) text.length() << 1);
