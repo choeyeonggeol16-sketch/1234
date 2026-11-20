@@ -1,5 +1,7 @@
 # RKern Linux TCP 벤치마크
 
+1,024개와 5,000개 지속 연결의 처리량, p99·p99.9, CPU, 메모리 결과와 회차별 데이터를 추가했다. [고부하 비교 보고서](high_load_20261120/REPORT_KO.md)
+
 2026-11-20 GitHub Actions Linux 러너에서 RKern의 Java NIO Selector와 Netty 4.2.21.Final의 NIO, epoll, io_uring을 64바이트 TCP 에코로 비교했다. 4개 전송 경로에서 유효한 표본을 얻었다. [지속 연결 실행](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/44644857557) · [새 연결 실행](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/44645944949) · [회차별 수치](results.csv) · [환경 정보](environment.json)
 
 16개 지속 연결에서 RKern의 처리량 중앙값은 **227,471 요청/초**, RTT p99 중앙값은 **138.1 µs**였다. 같은 조건에서 Netty epoll은 **214,238 요청/초**, RTT p99는 **147.5 µs**였다.
