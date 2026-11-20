@@ -22,6 +22,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.character.skill.SkillEffectContainer;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -504,6 +505,20 @@ public class L1Character extends L1Object {
 		return effects == null ? -1 : effects.getRemainingTimeSec(skillId);
 	}
 
+	public void applySkillModifierFromOwner(int skillId, long captured) {
+		skillEffects(true).applySkillModifier(skillId, captured);
+	}
+
+	public boolean removeSkillModifierFromOwner(int skillId) {
+		SkillEffectContainer effects = skillEffects(false);
+		return effects != null && effects.removeSkillModifier(skillId, true);
+	}
+
+	public void validateSkillModifiersFromOwner() {
+		SkillEffectContainer effects = skillEffects(false);
+		if (effects != null) effects.validateSkillMod(true);
+	}
+
 	/**
 	 * CIO owner-only mutation entry points.
 	 */
@@ -519,7 +534,7 @@ public class L1Character extends L1Object {
 
 				if (skillId == L1SkillId.DESPERADO) {
 					effects.remove(skillId, true);
-				} else {
+				} else if (!CSkillInfo.isManaged(skillId)) {
 					effects.remove(skillId, false);
 				}
 
@@ -700,11 +715,24 @@ public class L1Character extends L1Object {
 		_level = (int) level;
 	}
 
-	public int getMaxHp() {
-		if (getAbility() == null)
-			return _maxHp;
+	private volatile long pumpedHpMp;
 
-		int maxhp = _maxHp;
+	public void setPumpedSkillModifiers(int hp, int mp, int ac, int mr, boolean notify) {
+		final long previous = pumpedHpMp;
+		final long updated = ((long) mp << 32) | Integer.toUnsignedLong(hp);
+		if (previous != updated) {
+			pumpedHpMp = updated;
+			if ((int) previous != hp) clampCurrentHp();
+			if ((int) (previous >>> 32) != mp) _currentMp = Math.min(_currentMp, getMaxMp());
+		}
+		getAC().setSkillAc(ac, notify);
+		getResistance().setSkillMr(mr);
+	}
+
+	public int getMaxHp() {
+		final int delta = (int) pumpedHpMp;
+		int maxhp = delta == 0 ? _maxHp : Math.clamp((long) _trueMaxHp + delta, 1, 10_000_000);
+		if (getAbility() == null) return maxhp;
         if (this instanceof L1PcInstance)
             maxhp += CalcStat.pureHpMpBonus(getAbility().getCon());
 		return maxhp;
@@ -717,6 +745,10 @@ public class L1Character extends L1Object {
 	public void setMaxHp(int hp) {
 		_trueMaxHp = hp;
 		_maxHp = (int) IntRange.ensure(_trueMaxHp, 1, 10000000);
+		clampCurrentHp();
+	}
+
+	private void clampCurrentHp() {
         for (;;) {
             final int oldHp = CURRENT_HP.get(this);
             final int next = Math.min(oldHp, getMaxHp());
@@ -725,10 +757,9 @@ public class L1Character extends L1Object {
 	}
 
 	public int getMaxMp() {
-		if (getAbility() == null)
-			return _maxMp;
-
-		int maxmp = _maxMp;
+		final int delta = (int) (pumpedHpMp >>> 32);
+		int maxmp = delta == 0 ? _maxMp : Math.clamp((long) _trueMaxMp + delta, 0, 10_000_000);
+		if (getAbility() == null) return maxmp;
         int wis = this instanceof L1PcInstance ? getAbility().getWis() : getAbility().getTotalWis();
         maxmp += CalcStat.pureHpMpBonus(wis);
 		return maxmp;

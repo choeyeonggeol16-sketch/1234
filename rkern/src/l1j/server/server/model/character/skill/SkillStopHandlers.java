@@ -50,6 +50,9 @@ public final class SkillStopHandlers {
 	private SkillStopHandlers() {}
 
 	// ===== 결과 =====
+	private static final java.util.logging.Logger LOG =
+			java.util.logging.Logger.getLogger(SkillStopHandlers.class.getName());
+
 	public enum StopResult {
 		NOT_HANDLED, 
 		HANDLED   
@@ -57,8 +60,12 @@ public final class SkillStopHandlers {
 	}
 
 	@FunctionalInterface
-	public interface StopHandler {
+	public interface StopHandler extends CSkillEffect {
 		StopResult handle(L1Character cha, int skillId);
+
+		@Override default StopResult pumpEnd(L1Character target, int skillId) {
+			return handle(target, skillId);
+		}
 	}
 
 	static void registerEffects() {
@@ -461,18 +468,21 @@ public final class SkillStopHandlers {
 	
 	/** Compatibility entry point. Effect definitions are frozen after boot registration. */
 	public static void register(int skillId, StopHandler handler) {
-		CSkillEffect.registerPumpEnd(skillId, handler);
+		CSkillInfo.registerPumpEnd(skillId, handler);
 	}
 
 	/** stop 처리 디스패치: 핸들러 있으면 처리, 없으면 NOT_HANDLED */
 	public static StopResult dispatch(L1Character cha, int skillId) {
-		final StopHandler h = getHandlerOrNull(skillId);
+		final CSkillInfo info = CSkillInfo.get(skillId);
+		final StopHandler h = info == null ? null : info.stopHandler();
 		if (h == null) return StopResult.NOT_HANDLED;
 
 		try {
-			final StopResult r = h.handle(cha, skillId);
+			final StopResult r = h.pumpEnd(cha, skillId);
 			return (r != null) ? r : StopResult.NOT_HANDLED;
-		} catch (Throwable t) {
+		} catch (Throwable failure) {
+			if (CSkillInfo.isManaged(skillId))
+				LOG.log(java.util.logging.Level.WARNING, "Managed skill stop failed: " + skillId, failure);
 			return StopResult.NOT_HANDLED;
 		}
 	}
@@ -484,8 +494,8 @@ public final class SkillStopHandlers {
 
 	/** 디버그용: 핸들러 직접 조회 */
 	public static StopHandler getHandlerOrNull(int skillId) {
-		final CSkillEffect effect = CSkillEffect.get(skillId);
-		return effect == null ? null : effect.pumpEnd();
+		final CSkillInfo effect = CSkillInfo.get(skillId);
+		return effect == null ? null : effect.stopHandler();
 	}
 
 	private static StopResult offClanBuffAc(L1Character cha, int skillId) {
@@ -1113,7 +1123,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offShiningShield(L1Character cha, int skillId) {
-		CSkillEffect.PhysicalDefence.SHINING_AURA.pumpEnd(cha);
+		cha.removeSkillModifierFromOwner(skillId);
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_SkillIconAura.send(pc, 114, 0);
@@ -1130,7 +1140,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offShield(L1Character cha, int skillId) {
-		cha.getAC().addAc(2);
+		cha.removeSkillModifierFromOwner(skillId);
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_SkillIconShield.send(pc, 1, 0);
@@ -1146,7 +1156,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offShadowArmor(L1Character cha, int skillId) {
-		cha.getResistance().addMr(-5);
+		cha.removeSkillModifierFromOwner(skillId);
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_SPMR.send(pc);
@@ -1429,6 +1439,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offDarkBlind(L1Character cha, int skillId) {
+		if (hasOtherSleepEffect(cha, skillId)) return StopResult.HANDLED;
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_Paralysis.send(pc, SC_Paralysis.TYPE_SLEEP, false);
@@ -1566,7 +1577,14 @@ public final class SkillStopHandlers {
 	}
 
 
+	private static boolean hasOtherSleepEffect(L1Character target, int endId) {
+		return (endId != L1SkillId.DARK_BLIND && target.hasSkillEffect(L1SkillId.DARK_BLIND))
+				|| (endId != L1SkillId.PHANTASM && target.hasSkillEffect(L1SkillId.PHANTASM))
+				|| (endId != L1SkillId.FOG_OF_SLEEPING && target.hasSkillEffect(L1SkillId.FOG_OF_SLEEPING));
+	}
+
 	private static StopResult offSleepFamily(L1Character cha, int skillId) {
+		if (hasOtherSleepEffect(cha, skillId)) return StopResult.HANDLED;
 		cha.setSleeped(false);
 		if (cha instanceof L1PcInstance) {
 			SC_Paralysis.send(((L1PcInstance) cha), SC_Paralysis.TYPE_SLEEP, false);
@@ -2337,7 +2355,7 @@ public final class SkillStopHandlers {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
 
-	        CSkillEffect.PhysicalDefence.EARTH_DRAGON.pumpEnd(pc);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        SC_OwnCharAttrDef.send(pc);
 	        SC_SPMR.send(pc);
 
@@ -2406,7 +2424,7 @@ public final class SkillStopHandlers {
 	private static StopResult offIllusionDiamondGolem(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        CSkillEffect.PhysicalDefence.DIAMOND_GOLEM.pumpEnd(pc);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        SC_OwnCharAttrDef.send(pc);
 	        sendEndNoti(pc, L1SkillId.IllUSION_DIAMONDGOLEM, 3113, true);
 	    }
@@ -2446,7 +2464,7 @@ public final class SkillStopHandlers {
 	private static StopResult offScaledHp(L1Character cha, int skillId, CSkillEffect.MaxHp effect) {
 		if (cha instanceof L1PcInstance pc) {
 			sendEndNotiMsgOnly(pc, skillId, effect.stopMessage, true);
-			effect.pumpEnd(pc);
+			pc.removeSkillModifierFromOwner(skillId);
 			if (pc.isInParty()) pc.getParty().refreshPartyMemberStatus(pc);
 			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
 		}
@@ -3093,7 +3111,7 @@ public final class SkillStopHandlers {
 	    if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 	    L1PcInstance pc = (L1PcInstance) cha;
 
-	    CSkillEffect.pumpEndAdvanceSpirit(pc);
+	    pc.removeSkillModifierFromOwner(skillId);
 
 	    SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
 	    if (pc.isInParty()) {

@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import l1j.server.server.RepeatTask;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
+import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
@@ -227,20 +228,7 @@ public class HelpBySupport extends RepeatTask {
 	
 	public void Advanceup() {
 		if(_support.getCurrentMp() > 20){
-			if(_pc.hasSkillEffect(L1SkillId.ADVANCE_SPIRIT)){
-				_pc.removeSkillEffect(L1SkillId.ADVANCE_SPIRIT);
-			}
-		_pc.setSkillEffect(L1SkillId.ADVANCE_SPIRIT, 1200 * 1000);
-		_pc.setAdvenHp(_pc.getBaseMaxHp() / 5);
-		_pc.setAdvenMp(_pc.getBaseMaxMp() / 5);
-		_pc.addMaxHp(_pc.getAdvenHp());
-		_pc.addMaxMp(_pc.getAdvenMp());
-		SC_HpUpdate.send(_pc, _pc.getCurrentHp(), _pc.getMaxHp());
-		if (_pc.isInParty()) { 
-			//TODO 파티 프로토
-			_pc.getParty().refreshPartyMemberStatus(_pc);
-		}
-		SC_MpUpdate.send(_pc, _pc.getCurrentMp(), _pc.getMaxMp());
+		if (!CSkillInfo.grantSupportAdvance(_pc, 1200)) return;
 		_support.setCurrentMp(_support.getCurrentMp() - 20);
 		SC_DoActionGFX.broadcast(_support, 19);
 		SC_SkillSound.send(_pc, _pc.getId(), 3935); 

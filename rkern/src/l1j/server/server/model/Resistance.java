@@ -107,10 +107,14 @@ public class Resistance {
     }
 
     public int getAddedMr() 	 { return addedMr; 										}
+    private volatile int skillMr;
+
+    void setSkillMr(int value) { if (skillMr != value) skillMr = value; }
+
     public int getMr() {
         if(character == null || !character.isPassive(MJPassiveID.RESIST_ELEMENT.toInt()))
-            return checkMrRange(baseMr + addedMr, LIMIT_MIN_MR);
-        return checkMrRange(baseMr + addedMr + 5, LIMIT_MIN_MR);
+            return checkMrRange(baseMr + addedMr + skillMr, LIMIT_MIN_MR);
+        return checkMrRange(baseMr + addedMr + skillMr + 5, LIMIT_MIN_MR);
     }
     public int getBaseMr() 		 { return baseMr; 										}
     public void addMr(int i) 	 { setAddedMr(addedMr + i);								}	

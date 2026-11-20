@@ -16,6 +16,8 @@ import java.util.logging.Logger;
 
 
 import l1j.server.server.Controller.FishingTimeController;
+import l1j.server.server.model.character.skill.CSkillInfo;
+import l1j.server.server.model.character.skill.SkillHandlers;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Spawn;
 import l1j.server.server.model.L1World;
@@ -881,6 +883,8 @@ public final class CIOThreadCallback {
 	private static final byte SKILL_OP_REMOVE_STOP = 2;
 	private static final byte SKILL_OP_REMOVE_KILL = 3;
 	private static final byte SKILL_OP_CLEAR = 4;
+    private static final byte SKILL_OP_PUMP_START = 7;
+    private static final byte SKILL_OP_SUPPORT_ADVANCE = 8;
     private static final byte SKILL_OP_REPLACE = 6;
 	private static final byte SKILL_OP_ARM = 5;
 
@@ -2287,6 +2291,20 @@ public final class CIOThreadCallback {
 	 * disappears, SkillEffectContainer invalidates the generation and the
 	 * stale wheel node dies in O(1).
 	 */
+	public boolean submitSkillPumpStart(L1PcInstance pc, int skillId, int duration) {
+		return submitPcSkillEffect(pc, SKILL_OP_PUMP_START, skillId, duration);
+	}
+
+	public boolean submitSupportAdvance(L1PcInstance pc, int duration) {
+		return submitPcSkillEffect(pc, SKILL_OP_SUPPORT_ADVANCE, 0, duration);
+	}
+
+	private boolean submitPcSkillEffect(L1PcInstance pc, byte op, int skillId, int duration) {
+		final CCreatureController controller = pc.getCreatureController();
+		return controller != null && controller.actor() == pc
+				&& controller.AddExecutableSkillEffect(op, skillId, duration);
+	}
+
 	public void submitCharacterSkillSet(
 			L1Character cha,
 			int skillId,
@@ -2445,6 +2463,13 @@ public final class CIOThreadCallback {
             cha.skillEffectRemoveFromOwner(skillId, false);
             cha.skillEffectSetFromOwner(skillId, timeMillis);
             break;
+		case SKILL_OP_PUMP_START:
+			CSkillInfo.pumpStartFromOwner((L1PcInstance) cha, skillId, timeMillis);
+			break;
+		case SKILL_OP_SUPPORT_ADVANCE:
+			SkillHandlers.startSupportAdvanceFromOwner((L1PcInstance) cha, timeMillis);
+			break;
+
 		case SKILL_OP_ARM:
             armCharacterSkillHeartbeatDirect(cha);
 			break;

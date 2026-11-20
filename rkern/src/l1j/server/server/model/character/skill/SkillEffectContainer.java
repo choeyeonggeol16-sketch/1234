@@ -24,7 +24,8 @@ public final class SkillEffectContainer {
 	private int[] skillIds = new int[INITIAL_CAPACITY];
 	private int[] remainingSeconds = new int[INITIAL_CAPACITY];
 	private long[] nextTickAtMillis = new long[INITIAL_CAPACITY];
-	private int[] expiredScratch = new int[INITIAL_CAPACITY];
+	private int[] expiredScratch;
+	private SkillModifiers skillModifiers;
 
 	private int size;
 	private int timedCount;
@@ -40,6 +41,61 @@ public final class SkillEffectContainer {
 
 	public SkillEffectContainer(L1Character owner) {
 		this.owner = owner;
+	}
+
+	/** Only allocated for characters with an applied, migrated effect. */
+	static final class SkillModifiers {
+		// Two words per source, starting with the numeric ID.
+		long[] applied = new long[4];
+		int count;
+		int hp, mp, ac, mr;
+
+		void initializeSkillMod() { hp = mp = ac = mr = 0; }
+
+		int find(int id) {
+			for (int i = 0; i < count * 2; i += 2) if (applied[i] == id) return i;
+			return -1;
+		}
+	}
+
+	public void applySkillModifier(int skillId, long captured) {
+		if (!CSkillInfo.isManaged(skillId)) throw new IllegalArgumentException("Unmanaged skill " + skillId);
+		SkillModifiers state = skillModifiers;
+		if (state == null) skillModifiers = state = new SkillModifiers();
+		int index = state.find(skillId);
+		if (index < 0) {
+			index = state.count * 2;
+			if (index == state.applied.length)
+				state.applied = java.util.Arrays.copyOf(state.applied, index << 1);
+			state.applied[index] = skillId;
+			state.count++;
+		}
+		state.applied[index + 1] = captured;
+		validateSkillMod(true);
+	}
+
+	public boolean removeSkillModifier(int skillId, boolean notify) {
+		SkillModifiers state = skillModifiers;
+		if (state == null) return false;
+		int index = state.find(skillId);
+		if (index < 0) return false;
+		int last = --state.count * 2;
+		state.applied[index] = state.applied[last];
+		state.applied[index + 1] = state.applied[last + 1];
+		validateSkillMod(notify);
+		return true;
+	}
+
+	public void validateSkillMod(boolean notify) {
+		SkillModifiers state = skillModifiers;
+		if (state == null) {
+			owner.setPumpedSkillModifiers(0, 0, 0, 0, notify);
+			return;
+		}
+		state.initializeSkillMod();
+		for (int i = 0; i < state.count * 2; i += 2)
+			CSkillInfo.get((int) state.applied[i]).pump(owner, state.applied[i + 1], state);
+		owner.setPumpedSkillModifiers(state.hp, state.mp, state.ac, state.mr, notify);
 	}
 
 	public boolean contains(int skillId) {
@@ -176,8 +232,13 @@ public final class SkillEffectContainer {
 			endWrite();
 		}
 
-		if (removed && stop) {
-			L1SkillStop.stopSkill(owner, skillId);
+		if (removed) {
+			if (stop) {
+				try { L1SkillStop.stopSkill(owner, skillId); }
+				finally { retireModifierIfInactive(skillId); }
+			} else {
+				removeSkillModifier(skillId, false);
+			}
 		}
 
 		return removed;
@@ -196,6 +257,10 @@ public final class SkillEffectContainer {
 			invalidateHeartbeat();
 		} finally {
 			endWrite();
+		}
+		if (skillModifiers != null) {
+			skillModifiers = null;
+			validateSkillMod(false);
 		}
 	}
 
@@ -253,7 +318,6 @@ public final class SkillEffectContainer {
 
 		beginWrite();
 		try {
-			ensureScratchCapacity(size);
 
 			final long now = System.currentTimeMillis();
 
@@ -290,7 +354,8 @@ public final class SkillEffectContainer {
 					}
 
 					if (elapsedTicks >= remaining) {
-						expiredScratch[expiredCount++] = skillIds[i];
+						ensureScratchCapacity(expiredCount + 1);
+					expiredScratch[expiredCount++] = skillIds[i];
 						removeAt(i);
 						continue;
 					}
@@ -331,6 +396,8 @@ public final class SkillEffectContainer {
 			try {
 				L1SkillStop.stopSkill(owner, expiredId);
 			} catch (Throwable ignored) {
+			} finally {
+				retireModifierIfInactive(expiredId);
 			}
 		}
 		if (invisibilityExpired && owner instanceof L1PcInstance pc
@@ -352,6 +419,11 @@ public final class SkillEffectContainer {
 			return 1L;
 		}
 		return delay > 1000L ? 1000L : delay;
+	}
+
+	private void retireModifierIfInactive(int id) {
+		if (skillModifiers != null && skillModifiers.find(id) >= 0 && !contains(id))
+			removeSkillModifier(id, false);
 	}
 
 	private void beginWrite() {
@@ -427,15 +499,8 @@ public final class SkillEffectContainer {
 	}
 
 	private void ensureScratchCapacity(int required) {
-		if (required <= expiredScratch.length) {
-			return;
-		}
-
-		int newCapacity = expiredScratch.length << 1;
-		while (newCapacity < required) {
-			newCapacity <<= 1;
-		}
-
-		expiredScratch = new int[newCapacity];
+		if (expiredScratch == null) expiredScratch = new int[INITIAL_CAPACITY];
+		else if (required > expiredScratch.length)
+			expiredScratch = java.util.Arrays.copyOf(expiredScratch, expiredScratch.length << 1);
 	}
 }

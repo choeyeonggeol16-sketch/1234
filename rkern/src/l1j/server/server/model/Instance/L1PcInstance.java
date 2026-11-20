@@ -4284,6 +4284,10 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		return _baseMagicDecreaseMp;
 	}
 
+	public boolean submitSkillPumpStart(int skillId, int duration) {
+		return CIOThreadCallback.getInstance().submitSkillPumpStart(this, skillId, duration);
+	}
+
 	public int getAdvenHp() {
 		return _advenHp;
 	}
