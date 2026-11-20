@@ -51,6 +51,8 @@ public final class SkillEffectContainer {
 		int count;
 		int hp, mp, ac, mr, er, dg, meleeHit, meleeDamage, rangedDamage, sp;
 		int carryLimit, armorReduction;
+		int pvpDamage, pvpReduction;
+		long specialResistance;
 
 		// Each byte is a separate bonus. Current per-byte totals are at most 10.
 		int primaryStats, elementalResistance;
@@ -59,6 +61,8 @@ public final class SkillEffectContainer {
 			hp = mp = ac = mr = er = dg = meleeHit = meleeDamage = rangedDamage = sp = 0;
 			primaryStats = elementalResistance = 0;
 			carryLimit = armorReduction = 0;
+			pvpDamage = pvpReduction = 0;
+			specialResistance = 0;
 		}
 
 		int find(int id) {
@@ -99,6 +103,7 @@ public final class SkillEffectContainer {
 		SkillModifiers state = skillModifiers;
 		if (state == null) {
 			owner.setPumpedSkillModifiers(0, 0, 0, 0, 0, 0, 0, 0L, 0, notify);
+			owner.getResistance().setSkillCombatModifiers(0, 0L, notify);
 			if (owner instanceof L1PcInstance pc) pc.setPumpedCarryAndArmor(0, notify);
 			return;
 		}
@@ -110,6 +115,8 @@ public final class SkillEffectContainer {
 				| ((long) (state.meleeDamage & 0xffff) << 16) | (state.meleeHit & 0xffff);
 		owner.setPumpedSkillModifiers(state.hp, state.mp, state.ac, state.mr,
 				state.primaryStats, state.elementalResistance, evasion, weapon, state.sp, notify);
+		final int pvp = (state.pvpReduction << 16) | (state.pvpDamage & 0xffff);
+		owner.getResistance().setSkillCombatModifiers(pvp, state.specialResistance, notify);
 		if (owner instanceof L1PcInstance pc) {
 			final int carryAndArmor = (state.armorReduction << 16) | (state.carryLimit & 0xffff);
 			pc.setPumpedCarryAndArmor(carryAndArmor, notify);

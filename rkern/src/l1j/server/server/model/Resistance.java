@@ -81,7 +81,9 @@ public class Resistance {
 
     public int getSpecialResistance(eKind kind) {
         if (kind == null) return 0;
-        return _specialResist[kind.value()];
+        final int shift = (kind.value() - 1) << 3;
+        final int bonus = (int) (skillSpecialResistance >>> shift) & 0xff;
+        return checkRange(_specialResist[kind.value()] + bonus);
     }
 
     public void addSpecialPierce(eKind kind, int value) {
@@ -121,8 +123,20 @@ public class Resistance {
     public void setBaseMr(int i) { baseMr = checkMrRange(i, LIMIT_MIN_MR); 				}
     private void setAddedMr(int i) 	 { addedMr = checkMrRange(i, -baseMr); 				}
 
-    public int getcalcPcDefense()  	{ return calcPcDefense;	}
-    public int getPVPweaponTotalDamage()  	{ return PVPweaponTotalDamage;	}
+    // Signed 16-bit values, PvP damage in the low half and reduction in the high half.
+    private volatile int skillPvp;
+    // One nonnegative byte per eKind, starting with ABILITY.
+    private volatile long skillSpecialResistance;
+
+    public void setSkillCombatModifiers(int pvp, long specialResistance, boolean notify) {
+        if (skillPvp != pvp) skillPvp = pvp;
+        if (skillSpecialResistance == specialResistance) return;
+        skillSpecialResistance = specialResistance;
+        if (notify && character instanceof L1PcInstance pc) SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
+    }
+
+    public int getcalcPcDefense() { return checkRange(calcPcDefense + (skillPvp >> 16)); }
+    public int getPVPweaponTotalDamage() { return checkRange(PVPweaponTotalDamage + (short) skillPvp); }
     
     // From least to most significant byte: water, wind, earth, fire.
     private volatile int skillElemental;

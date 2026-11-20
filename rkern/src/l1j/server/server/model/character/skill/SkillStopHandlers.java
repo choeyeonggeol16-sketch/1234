@@ -593,8 +593,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getResistance().addPVPweaponTotalDamage(-1);
-		pc.getResistance().addcalcPcDefense(-1);
+		pc.removeSkillModifierFromOwner(skillId);
 		SC_IvenBuffIcon.send(pc, skillId, false, 4346, 0);
 		return StopResult.HANDLED;
 	}
@@ -642,7 +641,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getResistance().addSpecialResistance(eKind.ABILITY, -2);
+		pc.removeSkillModifierFromOwner(skillId);
 		SC_IvenBuffIcon.send(pc, skillId, false, 4351, 0);
 		return StopResult.HANDLED;
 	}
@@ -651,7 +650,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getResistance().addSpecialResistance(eKind.SPIRIT, -2);
+		pc.removeSkillModifierFromOwner(skillId);
 		SC_IvenBuffIcon.send(pc, skillId, false, 4352, 0);
 		return StopResult.HANDLED;
 	}

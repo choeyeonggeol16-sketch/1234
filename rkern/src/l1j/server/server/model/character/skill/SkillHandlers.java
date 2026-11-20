@@ -387,9 +387,6 @@ public final class SkillHandlers {
 
 
 		// ===== N_BUFF =====
-		register(L1SkillId.N_BUFF_PVP_DMG, SkillHandlers::onNBuffPvpDmg);
-		register(L1SkillId.N_BUFF_STUN, SkillHandlers::onNBuffStun);
-		register(L1SkillId.N_BUFF_HOLD, SkillHandlers::onNBuffHold);
 
 		register(L1SkillId.N_BUFF_WATER_DMG, SkillHandlers::onNBuffWaterDmg);
 		register(L1SkillId.N_BUFF_WIND_DMG, SkillHandlers::onNBuffWindDmg);
@@ -1237,21 +1234,17 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 	// N_BUFF handlers
 	// =========================
 
-	private static HandlerResult onNBuffPvpDmg(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_PVP_DMG;
-
+	static void startInventoryResistanceBuff(L1PcInstance pc, int skillId, int duration) {
+		final long bonus = switch (skillId) {
+			case L1SkillId.N_BUFF_PVP_DMG -> (1L << 32) | 1;
+			case L1SkillId.N_BUFF_STUN -> 2L << ((eKind.ABILITY.value() - 1) << 3);
+			case L1SkillId.N_BUFF_HOLD -> 2L << ((eKind.SPIRIT.value() - 1) << 3);
+			default -> throw new IllegalArgumentException("Unknown inventory resistance buff " + skillId);
+		};
 		resetEffect(pc, skillId);
-
-		pc.getResistance().addPVPweaponTotalDamage(1);
-		pc.getResistance().addcalcPcDefense(1);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
+		pc.applySkillModifierFromOwner(skillId, bonus);
+		applySkillEffectSec(pc, skillId, duration);
+		sendIvenBuffIcon(pc, skillId, duration);
 	}
 
 	static void startInventoryHealthBuff(L1PcInstance pc, int skillId, int duration) {
@@ -1435,38 +1428,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		applySkillEffectSec(pc, skillId, duration);
 		if (inventory) sendIvenBuffIcon(pc, skillId, duration);
 		else sendRestatBuffNoti(pc, skillId, duration, 3115, 10, 1343, 1369, 1369, true);
-	}
-
-	private static HandlerResult onNBuffStun(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_STUN;
-
-		resetEffect(pc, skillId);
-
-		pc.getResistance().addSpecialResistance(eKind.ABILITY, 2);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onNBuffHold(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_HOLD;
-
-		resetEffect(pc, skillId);
-
-		pc.getResistance().addSpecialResistance(eKind.SPIRIT, 2);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
 	}
 
 	static void startInventoryStatBuff(L1PcInstance pc, int skillId, int duration) {

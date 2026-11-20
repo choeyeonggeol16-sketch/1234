@@ -6,6 +6,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.login.skill.BuffRestoreRegistry;
 import l1j.server.server.model.character.login.skill.BuffRestoreRegistryInit;
+import l1j.server.server.utils.eKind;
 
 import static l1j.server.server.model.character.skill.L1SkillId.*;
 
@@ -66,6 +67,7 @@ public final class TestSkillEffectLifecycle {
             verifyMeleeBuffs();
             verifyDamageAndSpellPower();
             verifyInventoryHealthAndArmor();
+            verifyInventoryResistances();
             verifyLifetimeRefreshAndSleep();
             verifyOwnerDispatchAndExpiry();
             verifyRegistry();
@@ -290,6 +292,31 @@ public final class TestSkillEffectLifecycle {
                 "health removal preserves weight baseline and unrelated reduction", N_BUFF_HPMP);
         pc.removeSkillEffect(N_BUFF_REDUCT);
         verify(pc.getDamageReductionByArmor() == 4, "preserves baseline reduction", N_BUFF_REDUCT);
+    }
+
+    private static void verifyInventoryResistances() {
+        Player pc = new Player();
+        var resistance = pc.getResistance();
+        resistance.addcalcPcDefense(14);
+        resistance.addPVPweaponTotalDamage(127);
+        resistance.addSpecialResistance(eKind.ABILITY, 126);
+        resistance.addSpecialResistance(eKind.SPIRIT, 9);
+        for (int id : new int[]{N_BUFF_PVP_DMG, N_BUFF_STUN, N_BUFF_HOLD}) {
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "start", id);
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "recast", id);
+        }
+        verify(resistance.getcalcPcDefense() == 15 && resistance.getPVPweaponTotalDamage() == 127
+                && resistance.getSpecialResistance(eKind.ABILITY) == 127
+                && resistance.getSpecialResistance(eKind.SPIRIT) == 11, "separate resistance types", N_BUFF_STUN);
+        pc.removeSkillEffect(N_BUFF_STUN);
+        verify(resistance.getSpecialResistance(eKind.ABILITY) == 126
+                && resistance.getSpecialResistance(eKind.SPIRIT) == 11, "one removal preserves another", N_BUFF_HOLD);
+        pc.removeSkillEffect(N_BUFF_HOLD);
+        pc.removeSkillEffect(N_BUFF_PVP_DMG);
+        verify(resistance.getSpecialResistance(eKind.SPIRIT) == 9 && resistance.getcalcPcDefense() == 14
+                && resistance.getPVPweaponTotalDamage() == 127, "preserves baseline after removal", N_BUFF_PVP_DMG);
     }
 
     private static void verifyIndependentModifiers() {

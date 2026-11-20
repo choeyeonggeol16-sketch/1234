@@ -62,6 +62,15 @@ interface CSkillEffect {
         }},
         ARMOR_REDUCTION { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.armorReduction += (int) captured;
+        }},
+        PVP_DAMAGE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.pvpDamage += (int) captured;
+        }},
+        PVP_REDUCTION { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.pvpReduction += (int) (captured >>> 32);
+        }},
+        SPECIAL_RESISTANCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.specialResistance += captured;
         }};
 
         @Override public boolean checkPumpCondition(L1Character target) { return target instanceof L1PcInstance; }

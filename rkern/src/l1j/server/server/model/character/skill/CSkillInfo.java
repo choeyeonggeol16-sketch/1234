@@ -60,6 +60,9 @@ public final class CSkillInfo {
         registerManaged(N_BUFF_HPMP, SkillHandlers::startInventoryHealthBuff,
                 MAX_HP, MAX_MP, new CSkillEffect.CarryLimit(3));
         registerManaged(N_BUFF_REDUCT, SkillHandlers::startInventoryArmorBuff, ARMOR_REDUCTION);
+        registerManaged(N_BUFF_PVP_DMG, SkillHandlers::startInventoryResistanceBuff, PVP_DAMAGE, PVP_REDUCTION);
+        registerManaged(N_BUFF_STUN, SkillHandlers::startInventoryResistanceBuff, SPECIAL_RESISTANCE);
+        registerManaged(N_BUFF_HOLD, SkillHandlers::startInventoryResistanceBuff, SPECIAL_RESISTANCE);
         frozen = true;
     }
 
