@@ -1,0 +1,50 @@
+{
+  "gather": {
+    "revision": "49252dcf2d557986ebf256e85cddfa487eac5427",
+    "kernel": "6.18.57",
+    "affinity": [
+      0,
+      1,
+      2
+    ],
+    "jdk": "openjdk version \"21.0.13\" 2026-10-20",
+    "workloads": [
+      "gather"
+    ],
+    "trials": 2,
+    "warmup_ms": 1100,
+    "measure_ms": 1800,
+    "jfr": false,
+    "write_profile": true,
+    "resource_samples": false,
+    "cpu_quota": "200000 100000",
+    "modes": [
+      "off"
+    ],
+    "candidates_available": false
+  },
+  "writer": {
+    "revision": "49252dcf2d557986ebf256e85cddfa487eac5427",
+    "kernel": "6.18.57",
+    "affinity": [
+      0,
+      1,
+      2
+    ],
+    "jdk": "openjdk version \"21.0.13\" 2026-10-20",
+    "workloads": [
+      "burst"
+    ],
+    "trials": 2,
+    "warmup_ms": 1000,
+    "measure_ms": 1700,
+    "jfr": false,
+    "write_profile": true,
+    "resource_samples": false,
+    "cpu_quota": "200000 100000",
+    "modes": [
+      "off"
+    ],
+    "candidates_available": false
+  }
+}

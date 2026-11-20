@@ -46,23 +46,23 @@ READ·gather 변경판 `94c0d79`의 기본 모드를 동일한 짧은 설정으�
 | A07 | 부분 | `CSocket.requireNativeServer`가 FFM 전용 경계를 검사한다. DLL 없는 리스너를 검증했다. 운영 환경 패킷과 관리 명령 전수 테스트는 남았다. |
 | A08 | 부분 | raw, length-framed, 실제 RKern 게임 리스너 benchmark/기능 fixture를 구분한다. 같은 세션 정책을 가진 Netty 게임 adapter의 A/B는 준비되지 않았다. |
 | A09 | 기각 | `CUserSocket.tryWritePacketInternal`의 실험 head 직결 경로를 CPU/처리량 열세로 제거했다. |
-| A10 | 부분 | 측정 hit 0인 기존 바이트 append 후보를 제거했다. W02 후속에서 크기 상한이 명시된 일반 writer의 예약과 tail 직접 인코딩을 구현했다. 실제 패킷 전체의 일괄 적용과 운영 CPU/p99 A/B가 남았다. |
-| A11 | 부분 | `CIOBufferPool.snapshot`의 borrow/return과 상한을 실제 listener에서 검증했다. owner-local 캐시의 실제 효율과 공유 풀 starvation 검증은 남았다. |
+| A10 | 반영 | 상한을 가진 writer의 tail 직접 인코딩을 구현했고, 기존 `BytesWritablePacket`과 protobuf 캐시 `Raw`를 적용했다. 게임 A/B와 FIFO·추가 슬롯 대여 제거를 확인했다. [후속 검증](FOUR_ITEMS_KO.md) |
+| A11 | 반영 | READ와 대형 READ에 shard 우선 할당을 적용했다. 공유 풀 전역 상한과 한 shard의 전체 슬롯 사용, 타 스레드 반환을 검증했다. [후속 검증](FOUR_ITEMS_KO.md) |
 | A12 | 부분 | `CSocket.read`는 같은 owner의 raw 등록에서 monitor 재진입 한 번을 없앴다. 외부 READ와 WRITE descriptor 동기화 경계는 기존 계약을 사용한다. WRITE path A/B는 남았다. |
 | A13 | 반영 | `CUserSocket.onRead`에서 consumed prefix offset을 두고 실제 수신 공간이 부족할 때 정리한다. 201개 연속 프레임, 65,535B 분할 프레임 및 암호 순서를 검증했다. |
-| A14 | 부분 | `CUserSocket.postGather`·`SelectorRawIo.armWrite`의 소진 prefix 제거, 단일 남은 segment의 송신과 완료를 검증했다. 게임 gather cap 4/8/16 시스템콜 A/B는 남았다. |
-| A15 | 부분 | 실제 20/100/500 수신자의 서로 다른 cipher 상태에서 원본 1회 생성, 암호화 바이트와 lease·registry 회수를 검증했다. 수신자별 비용과 대형 fan-out 프로파일은 남았다. [팬아웃 검증](tools/GameFanoutVerification.java) |
+| A14 | 측정 후 유지 | 소진 prefix 제거와 단일 segment 송신을 검증했다. 게임 gather 4/8/16 비교에서 기본 8의 p99와 p99.9가 가장 낮았다. [후속 검증](FOUR_ITEMS_KO.md) |
+| A15 | 부분 | 실제 20/100/500 소켓에서 원본 1회 생성, 연결별 암호화와 lease·registry 회수를 재검증했다. 운영 월드 팬아웃 비용은 남았다. [후속 검증](FOUR_ITEMS_KO.md) |
 | A16 | 부분 | mailbox depth/정점/거절 수 및 포화 중 정확히 한 번 취소를 검증했다. MPSC 후보 채택 전 producer별 비용 측정이 필요하다. |
 | A17 | 완료 | 위치를 저장하는 타이머 힙의 취소·앞당김·재예약·종료 회귀를 유지했다. [5,000 연결 재예약 측정](IMPLEMENTATION_KO.md#a17-타이머-재예약-실측) |
 | A18 | 부분 | coalesced 게임 READ와 같은 CIO shard의 타이머 수행을 검증했다. 느린 실제 핸들러·방송 겹침의 deadline drift와 quiet p99는 남았다. |
-| A19 | 부분 | `Server.startLoginServer`의 대기열을 수정해 동시 접속 benchmark 초기 키 타임아웃을 재검증했다. 5,000 game session accept owner CPU/분포는 남았다. |
+| A19 | 부분 | 리스너 대기열 수정 후 실제 게임 리스너에서 5,000개 소켓의 초기 키 전송을 검증했다. accept owner별 CPU 비용은 남았다. [후속 검증](FOUR_ITEMS_KO.md) |
 | A20 | 부분 | 8 MiB direct limit 아래 실제 rebind/reset을 수행했다. 슬롯 반환·FD 기록과 raw 5,000 연결을 확인했고, 게임 장기 retained heap 검증은 남았다. |
 | A21 | 부분 | 하나의 느린 연결이 대형 풀을 사용 중일 때 같은 owner의 정상 응답, 풀 거절, stall timeout 및 종료 후 반환을 확인했다. 실제 1%/10% 혼합 부하는 남았다. |
-| A22 | 부분 | owner 진단과 `Server.networkPoolSnapshot`으로 오류, 큐·풀 사용량, borrow/return을 확인할 수 있다. 정확한 copy/syscall/CAS/lock wait 비용은 남았다. |
+| A22 | 부분 | owner와 pool 진단에 선택적 write 호출·gather 호출·segment 집계를 추가했다. copy/CAS 및 세밀한 lock wait 비용은 남았다. [후속 검증](FOUR_ITEMS_KO.md) |
 | A23 | 부분 | Linux raw·framed·game 경로 각각에서 바이트를 검증했다. game Netty 어댑터는 A08과 같다. |
-| A24 | 부분 | raw에서 1,024/5,000 연결, game에서 단일/16 burst/128 spread를 검증했다. 혼합 window·slow peer 전용 장비 matrix는 남았다. |
+| A24 | 부분 | raw 1,024/5,000, 게임 리스너 5,000 혼합(유휴 80%, 요청 20%) 60초를 검증했다. slow peer 혼합과 전용 장비 matrix는 남았다. [후속 검증](FOUR_ITEMS_KO.md) |
 | A25 | 부분 | 실제 게임 A/B에서 CPU, 할당, 처리량, p50/p99/p99.9를 남겼다. 장시간 반복, open-loop 및 GC 관측 확대가 남았다. |
-| A26 | 부분 | 동일 부하 종료 시점에 RSS/direct/pool을 비교하고 game pool의 0 반환과 FD를 확인했다. 안정 부하 중 peak 및 종료 후 backing 추적은 남았다. |
+| A26 | 부분 | 게임 리스너 5,000 연결에서 RSS peak, direct backing, FD 및 모든 lease 회수를 기록했다. 운영 환경의 장기 retained heap은 남았다. [후속 검증](FOUR_ITEMS_KO.md) |
 | A27 | 부분 | pin된 Linux Netty NIO·epoll·io_uring과 RKern의 framed 응답, Windows WEPoll 기능을 실행했다. 동일 호스트 조건의 Windows 성능 비교는 남았다. |
 | A28 | 완료 | Linux CI는 framed와 game fixture의 CSV/환경/로그를 보존하고 Windows CI는 listener 스트레스와 회귀를 수행한다. |
 | A29 | 부분 | 독립 테스트가 raw/framed 공통 close·buffer 계약을 확인하고 실제 게임 회귀에서는 계정·opcode·cipher를 추가로 확인한다. 모듈 통합은 남았다. |
