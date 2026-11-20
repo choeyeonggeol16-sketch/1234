@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.session.CIOClient;
 
 /** One immutable encoded frame, shared across every eligible recipient.
@@ -288,8 +289,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
     }
 
     /** Recipient socket lookup for the NC-style visual fanouts. */
-    private static l1j.server.server.model.network.core.connection.CUserSocket
-            eligibleBroadcastSocket(L1PcInstance pc) {
+    private static CUserSocket eligibleBroadcastSocket(L1PcInstance pc) {
         if(pc==null)return null;
         final CIOClient client=pc.getNetConnection();
         if(client==null||!client.isConnected())return null;
@@ -855,40 +855,29 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
         if(anchor==null||writer==null)return;
         if(length<=16384||length>0xFFFF)
             throw new IllegalArgumentException("large SC area frame length "+length);
-        try(var arena=java.lang.foreign.Arena.ofConfined()) {
-            final java.nio.ByteBuffer source=freezeLargeFrame(arena,length,writer);
-            if(anchor instanceof L1PcInstance pc) {
-                try { sendFrozenLargeTo(pc,source); }
-                catch(RuntimeException failure) { logOptionalNoticeFailure(failure); }
-            }
-            for(L1PcInstance viewer:L1World.getInstance().getVisiblePlayer(anchor)) {
-                try { sendFrozenLargeTo(viewer,source); }
-                catch(RuntimeException failure) { logOptionalNoticeFailure(failure); }
-            }
+        try (var shared = new CAsyncSendConstBuffer(writer, anchor.getId(), Integer.MAX_VALUE, length)) {
+            if (anchor instanceof L1PcInstance pc) sendLargeTo(pc, shared);
+            for (L1PcInstance viewer : L1World.getInstance().getVisiblePlayer(anchor)) sendLargeTo(viewer, shared);
         }
     }
 
-    /** Single plaintext for a large SC packet; owner closes after fanout. */
-    private static java.nio.ByteBuffer freezeLargeFrame(
-            java.lang.foreign.Arena arena,int length,NativeWireWriter writer) {
-        final java.nio.ByteBuffer source=arena.allocate(length).asByteBuffer()
-                .order(java.nio.ByteOrder.LITTLE_ENDIAN);
-        source.position(2);
-        writer.write(source);
-        if(source.position()!=length)
-            throw new IllegalStateException("large SC frame length mismatch");
-        source.putShort(0,(short)length);
-        source.flip();
-        return source.asReadOnlyBuffer();
+    private static void sendLargeTo(L1PcInstance pc, CAsyncSendConstBuffer shared) {
+        final CUserSocket socket;
+        try { socket = eligibleBroadcastSocket(pc); }
+        catch (RuntimeException failure) {
+            logOptionalNoticeFailure(failure);
+            return;
+        }
+        if (socket != null) sendLargeTo(socket, pc.getId(), shared);
     }
 
-    private static boolean sendFrozenLargeTo(L1PcInstance pc,
-                                              java.nio.ByteBuffer source) {
-        if(pc==null)return false;
-        final CIOClient client=pc.getNetConnection();
-        if(client==null||!client.isConnected())return false;
-        final var socket=client.getConnection();
-        return socket!=null&&socket.sendFrozenWire(source);
+    private static void sendLargeTo(CUserSocket socket, int recipient, CAsyncSendConstBuffer shared) {
+        try { shared.send(socket, recipient); }
+        catch (RuntimeException failure) {
+            // Only a frozen frame can safely be reused for the remaining recipients.
+            if (!shared.hasFrozenSource()) throw failure;
+            logOptionalNoticeFailure(failure);
+        }
     }
 
     public static void sendWrittenLarge(
@@ -898,36 +887,18 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
             throw new IllegalArgumentException("large SC wire length "+length);
         final L1World world=L1World.getInstance();
         final List<L1PcInstance> visible=world.borrowVisiblePlayerFast(anchor);
-        java.lang.foreign.Arena arena=null;
-        try {
-            java.nio.ByteBuffer source=null;
+        try (var shared = new CAsyncSendConstBuffer(writer, anchor.getId(), Integer.MAX_VALUE, length)) {
             for(L1PcInstance pc:visible) {
-                final l1j.server.server.model.network.core.connection.CUserSocket socket;
                 try {
                     if(!CTLMFilter.sameWorldOther(anchor,pc))continue;
-                    final CIOClient client=pc.getNetConnection();
-                    if(client==null||!client.isConnected())continue;
-                    socket=client.getConnection();
-                    if(socket==null||!socket.isClientConnected())continue;
                 } catch(RuntimeException failure) {
-                    // An invalid/disconnected viewer must not block the
-                    // remaining AOI, even before the source is constructed.
                     logOptionalNoticeFailure(failure);
                     continue;
                 }
-                if(source==null) {
-                    arena=java.lang.foreign.Arena.ofConfined();
-                    source=freezeLargeFrame(arena,length,writer);
-                }
-                // The payload has already been frozen. One socket's WRITE
-                // failure must not suppress a valid large-area broadcast to
-                // other players; encoder failures above remain strict.
-                try { socket.sendFrozenWire(source); }
-                catch(RuntimeException failure) { logOptionalNoticeFailure(failure); }
+                sendLargeTo(pc, shared);
             }
         } finally {
-            try { if(arena!=null)arena.close(); }
-            finally { world.releaseVisiblePlayerFast(visible); }
+            world.releaseVisiblePlayerFast(visible);
         }
     }
 

@@ -23,6 +23,7 @@ import l1j.server.Server;
 import l1j.server.server.Account;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.packet.CPacketHandler;
 import l1j.server.server.model.network.safe.NetworkSafeLoadManager;
@@ -56,6 +57,8 @@ public final class SelectorCioIntegrationTest {
             AtomicInteger responses = new AtomicInteger();
             var clients = new ConcurrentHashMap<Integer, CUserSocket>();
             CountDownLatch timer = new CountDownLatch(1);
+            CountDownLatch ownerHeld = new CountDownLatch(1);
+            CountDownLatch releaseOwner = new CountDownLatch(1);
             CPacketHandler.PacketHandler alive = CPacketHandler.HANDLERS[ALIVE];
             CPacketHandler.PacketHandler move = CPacketHandler.HANDLERS[MOVE];
             CPacketHandler.HANDLERS[MOVE] = (payload, client) -> { rejectedOpcodePackets.incrementAndGet(); return true; };
@@ -66,6 +69,16 @@ public final class SelectorCioIntegrationTest {
                 owners.add(shard);
                 int value = payload.readInt();
                 if (value == 0 || value == 900) clients.put(value, socket);
+                if (value == 902) {
+                    clients.put(value, socket);
+                    ownerHeld.countDown();
+                    try { check(releaseOwner.await(5, TimeUnit.SECONDS), "stalled test owner released"); }
+                    catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        throw new AssertionError(interrupted);
+                    }
+                    return true;
+                }
                 int responseIndex = responses.incrementAndGet();
                 if (responseIndex == 1) {
                     check(CIOThreadCallback.getInstance().scheduleNetworkTimeout(shard, new CIOThreadCallback.WheelTask() {
@@ -129,6 +142,27 @@ public final class SelectorCioIntegrationTest {
                         check(broadcast.send(firstSession, 1), "large shared source from a foreign producer admitted");
                     }
                     check(Arrays.equals(readBody(first), firstCodec.fromServer(large)), "large encrypted broadcast");
+                    var areaSource = CAsyncSendConstBuffer.class.getDeclaredConstructor(
+                            CSharedBroadcast.NativeWireWriter.class, int.class, int.class, int.class);
+                    areaSource.setAccessible(true);
+                    AtomicInteger areaEncodes = new AtomicInteger();
+                    CSharedBroadcast.NativeWireWriter areaWriter = out -> {
+                        areaEncodes.incrementAndGet();
+                        out.put(large);
+                    };
+                    try (var area = areaSource.newInstance(areaWriter, -1, Integer.MAX_VALUE, large.length + 2)) {
+                        check(area.send(firstSession, 1), "large area attack source admitted");
+                    }
+                    check(areaEncodes.get() == 1 && Arrays.equals(readBody(first), firstCodec.fromServer(large)),
+                            "large area attack uses a single pooled plaintext");
+                    try (var malformed = areaSource.newInstance(areaWriter, -1, Integer.MAX_VALUE, large.length + 3)) {
+                        try {
+                            malformed.send(firstSession, 1);
+                            throw new AssertionError("invalid exact-size broadcast was accepted");
+                        } catch (IllegalStateException expected) {
+                            check(!malformed.hasFrozenSource(), "invalid frame was never published");
+                        }
+                    }
                     Server.stopNewConnections();
                     first.getOutputStream().write(frame(firstCodec.toServer(body(ALIVE, 901))));
                     expectEncrypted(first, firstCodec, 901);
@@ -139,6 +173,23 @@ public final class SelectorCioIntegrationTest {
                 check(Server.startLoginServer(), "same CIO scheduler can attach a fresh listener after shutdown");
                 try (Socket restarted = connect(gamePort)) {
                     check(Arrays.equals(readBody(restarted), Opcodes.S_KEYBYTES), "restart handshake");
+                }
+                awaitIdlePool();
+                try (Socket stalled = connect(gamePort)) {
+                    check(Arrays.equals(readBody(stalled), Opcodes.S_KEYBYTES), "pending WRITE fixture handshake");
+                    stalled.setSoLinger(true, 0);
+                    var codec = new SelectorTransportTest.ScalarClient(Opcodes.getSeed());
+                    stalled.getOutputStream().write(frame(codec.toServer(body(ALIVE, 902))));
+                    check(ownerHeld.await(5, TimeUnit.SECONDS), "owner held before transport WRITE");
+                    CUserSocket blocked = clients.get(902);
+                    byte[] queueBody = new byte[21_000];
+                    try (var queued = new CAsyncSendConstBuffer(out -> out.put(queueBody), -1, Integer.MAX_VALUE)) {
+                        for (int i = 0; i < 12; i++) check(queued.send(blocked, 1), "WRITE pending before peer reset");
+                        var pool = POOL_REPORT.matcher(Server.networkPoolReport());
+                        check(pool.matches() && Integer.parseInt(pool.group(4)) > 0, "pending WRITE retains pooled buffers");
+                    }
+                } finally {
+                    releaseOwner.countDown();
                 }
                 awaitIdlePool();
                 for (int i = 0; i < 24; i++) {
@@ -163,7 +214,7 @@ public final class SelectorCioIntegrationTest {
             check(owners.awaitTermination(5, TimeUnit.SECONDS), "existing game owners joined");
             l1j.server.server.ThreadPool.getInstance().shutdown();
         }
-        System.out.println("PASS RKern login entry, 2 CIO owners, timer, packet limits, MAC/account admission, large broadcast, restart, and 24 reset/reconnect cycles with zero outstanding leases");
+        System.out.println("PASS RKern login entry, 2 CIO owners, timer, MAC/account admission, large broadcast, restart, reset with queued WRITEs, and 24 reset/reconnect cycles with zero outstanding leases");
     }
 
     private static void awaitIdlePool() throws InterruptedException {
