@@ -1,6 +1,5 @@
 package l1j.server.server.model.network.core.connection;
 
-import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -15,15 +14,11 @@ public final class CIOBufferEx {
     private volatile int _active;
     private int _generation;
     boolean _writePrepared;
-    int _nativeSendFlags;
     boolean _packedFrames;
     // Only the internal fixed 8-byte action encoder sets this metadata.
     boolean _actionOnly;
     volatile boolean _ioPending;
     private ByteBuffer _bytes;
-    CAsyncSendConstBuffer.Source _sharedSource;
-    private ByteBuffer _sharedView;
-    boolean shared() { return _sharedView != null; }
     private WriteBuffer _writer;
     private CIOFrame _directFrame;
     int _wireLength;
@@ -37,11 +32,11 @@ public final class CIOBufferEx {
 
     public ByteBuffer buffer() {
         if (_active == 0) throw new IllegalStateException("lease already released");
-        return shared() ? _sharedView : _bytes;
+        return _bytes;
     }
 
     public WriteBuffer writer() {
-        if (_active == 0 || _writer == null || shared())
+        if (_active == 0 || _writer == null)
             throw new IllegalStateException("not an active SEND lease");
         return _writer;
     }
@@ -84,7 +79,6 @@ public final class CIOBufferEx {
             _frameCount = 0;
             _reservedWireBytes = send ? capacity : 0;
             _writePrepared = false;
-            _nativeSendFlags = 0;
             _packedFrames = false;
             _actionOnly = false;
             _ioPending = false;
@@ -104,24 +98,6 @@ public final class CIOBufferEx {
             throw failure;
         }
     }
-    void startShared(CAsyncSendConstBuffer.Source source) {
-        if (_active != 0) throw new IllegalStateException("lease acquired twice");
-        _active = 1;
-        try {
-            _generation = _bucket._slots.generation(_slot);
-            _sharedView = source.wire.asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
-            _sharedSource = source.retain();
-            _wireLength = _reservedWireBytes = _sharedView.remaining();
-            _frameCount = 1;
-            _writePrepared = _packedFrames = _actionOnly = _ioPending = false;
-            _nativeSendFlags = 0;
-        } catch (RuntimeException | Error failure) {
-            _sharedView = null;
-            ACTIVE.set(this, 0);
-            throw failure;
-        }
-    }
-
     void publish() {
         if (!ACTIVE.compareAndSet(this, 1, 2))
             throw new IllegalStateException("frame already published or released");
@@ -150,14 +126,6 @@ public final class CIOBufferEx {
             _reservedWireBytes = 0;
             if (_bytes != null) _bytes.clear();
         } catch (RuntimeException | Error failed) { failure = failed; }
-        final CAsyncSendConstBuffer.Source shared = _sharedSource;
-        _sharedSource = null;
-        _sharedView = null;
-        try { if (shared != null) shared.release(); }
-        catch (RuntimeException | Error failed) {
-            if (failure == null) failure = failed;
-            else if (failure != failed) failure.addSuppressed(failed);
-        }
         try {
             _bucket._slots.releaseOwnedLease(_slot, _generation);
             _bucket._returns.increment();

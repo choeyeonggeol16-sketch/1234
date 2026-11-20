@@ -54,7 +54,7 @@ public final class CNetworkDiagnostics {
     public static final class Trace {
         public final long id = NEXT.incrementAndGet();
         final String remote;
-        final long nativeHandle;
+        final long socketId;
         private final int[] opcode = new int[128];
         private final PacketKind[] kinds = new PacketKind[128];
         private final int[] commands = new int[128];
@@ -62,35 +62,14 @@ public final class CNetworkDiagnostics {
         private long sequence;
         volatile boolean closed;
         private CloseReason javaReason;
-        private boolean nativeStatusKnown;
-        private int nativeOperation, nativeError;
-        Trace(String remote, long nativeHandle) { this.remote = remote; this.nativeHandle = nativeHandle; }
+        Trace(String remote, long socketId) { this.remote = remote; this.socketId = socketId; }
         public synchronized void javaClose(CloseReason reason) {
-            // A cleanup close following native shutdown is not its initiator.
-            if (javaReason == null && !(reason == CloseReason.SERVER_CLOSE && nativeStatusKnown)) javaReason = reason;
-        }
-        public synchronized void nativeClose(int operation, int error) {
-            if (nativeStatusKnown) return;
-            nativeOperation = operation; nativeError = error; nativeStatusKnown = true;
-        }
-        private String nativeCause() {
-            if (!nativeStatusKnown) return "UNKNOWN";
-            if (nativeError == 10060) return "TIMEOUT";
-            if (nativeError == 13 && nativeOperation == 2) return "PROTOCOL_ERROR";
-            if (nativeError == 995) return "IO_CANCELLED";
-            return switch (nativeOperation) {
-                case 1 -> "ACCEPT_REJECTED";
-                case 2 -> nativeError == 0 ? "PEER_EOF" : "READ_ERROR";
-                case 3 -> "WRITE_ERROR";
-                case 5 -> nativeError == 0 ? "TRANSPORT_CLOSE" : "SHUTDOWN_ERROR";
-                default -> "NATIVE_CLOSE";
-            };
+            if (javaReason == null) javaReason = reason;
         }
         synchronized String summary() {
-            return "id=" + id + " native=" + nativeHandle + " peer=" + remote + " closed=" + closed
+            return "id=" + id + " socket=" + socketId + " peer=" + remote + " closed=" + closed
                     + " javaReason=" + (javaReason == null ? "NONE" : javaReason)
-                    + " nativeCause=" + nativeCause()
-                    + (nativeStatusKnown ? " operation=" + nativeOperation + " error=" + Integer.toUnsignedString(nativeError) : "") + "\n";
+                    + "\n";
         }
         synchronized long record(int op) {
             long ticket = sequence++;
@@ -118,11 +97,11 @@ public final class CNetworkDiagnostics {
         }
     }
     public static Trace open(String remote) { return open(remote, 0); }
-    public static Trace open(String remote, long nativeHandle) {
+    public static Trace open(String remote, long socketId) {
         if (!CIOConfig.DIAGNOSTICS_ENABLED) return null;
         synchronized (CNetworkDiagnostics.class) {
             if (LIVE.size() >= CIOConfig.DIAGNOSTICS_MAX_CONNECTIONS) return null;
-            Trace trace = new Trace(remote, nativeHandle); LIVE.put(trace.id, trace); return trace;
+            Trace trace = new Trace(remote, socketId); LIVE.put(trace.id, trace); return trace;
         }
     }
     public static void close(Trace trace) {
@@ -134,7 +113,6 @@ public final class CNetworkDiagnostics {
         }
     }
     public static void javaClose(Trace trace, CloseReason reason) { if (trace != null && reason != null) trace.javaClose(reason); }
-    public static void nativeClose(Trace trace, int operation, int error) { if (trace != null) trace.nativeClose(operation, error); }
     public static final class Work {
         final WeakReference<Thread> thread;
         final String name;

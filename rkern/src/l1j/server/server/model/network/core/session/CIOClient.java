@@ -2,7 +2,6 @@ package l1j.server.server.model.network.core.session;
 
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CUserSocketCloseTask;
-import l1j.server.server.model.network.core.transport.CIOServer;
 
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -178,7 +177,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
             ThreadPool.getInstance().execute(task);
         } catch (Exception failure) {
             _log.log(Level.SEVERE, "[GameClient Close] deferred logout admission failed", failure);
-            if (CIOServer.isCompletionThread()) {
+            if (_connection.isTransportOwnerThread()) {
                 try { Thread.ofVirtual().name("CIO-logout-recovery").start(task); return; }
                 catch (Throwable startFailure) {
                     _log.log(Level.SEVERE, "[GameClient Close] emergency logout thread unavailable", startFailure);

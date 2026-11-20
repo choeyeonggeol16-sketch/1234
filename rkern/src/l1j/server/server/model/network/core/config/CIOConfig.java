@@ -1,10 +1,7 @@
 package l1j.server.server.model.network.core.config;
 import java.nio.file.Path;
-/** Mandatory native transport. There is no alternate backend or selector. */
+/** Java Selector network settings. */
 public final class CIOConfig {
-    public static final Path DLL = Path.of("CTransport.dll");
-    public static final int ABI = 0x000a0009;
-    public static final String DLL_SHA256 = "984c30433687d343e6d882b80c048e85f4a1961c4184dc488916a8174d7c524f";
     private static final java.util.Properties SETTINGS = loadSettings();
     public static final boolean DIAGNOSTICS_ENABLED = flag("ctransport.diagnostics.enabled", true);
     public static final int DIAGNOSTICS_MAX_CONNECTIONS = bounded("ctransport.diagnostics.maxConnections",10000,1,100000);

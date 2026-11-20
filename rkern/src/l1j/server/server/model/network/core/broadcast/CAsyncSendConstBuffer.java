@@ -3,9 +3,7 @@ package l1j.server.server.model.network.core.broadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CIOBufferEx;
-import l1j.server.server.model.network.core.transport.CIOServer;
 
-import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,14 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class CAsyncSendConstBuffer implements AutoCloseable {
     private final CSharedBroadcast.NativeWireWriter writer;
-    private final int senderId, pendingLimit;
+    private final int senderId;
     private final int largeFrameLength;
     private Source source;
-    // 16KiB native pool slabs are fixed. A rare protocol-valid larger
-    // immutable frame uses the already-existing per-socket direct CIO FIFO.
-    // No new thread/queue or Java wire[] buffer on either path.
-    private java.lang.foreign.Arena largeArena;
-    private ByteBuffer largeWire;
     private boolean closed;
 
     /** Lazy Native packet assembly, at the first eligible connected socket.
@@ -44,7 +37,6 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         }
         this.writer=writer;
         this.senderId=senderId;
-        this.pendingLimit=pendingLimit;
         this.largeFrameLength = largeFrameLength;
     }
 
@@ -63,7 +55,6 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         writer = null;
         source = pooled;
         this.senderId = senderId;
-        this.pendingLimit = pendingLimit;
         largeFrameLength = 0;
     }
 
@@ -85,53 +76,23 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         if(target==null || exclude(recipientId) || !target.isClientConnected())return false;
         // Always materialize the one Native slab before any per-socket FIFO
         // decision (including a full queue / owner-mismatch direct route).
-        if (source == null && largeWire == null) {
+        if (source == null) {
             if (largeFrameLength != 0) {
                 freezeLargeSource(target, largeFrameLength);
             } else {
                 try {
                     source = openWrittenSource(target, writer);
-                    if (source == null && !target.isJavaTransport()) {
-                        throw new IllegalStateException("Native source unavailable");
-                    }
                 } catch (java.nio.BufferOverflowException overflow) {
                     freezeLargeSource(target, CIOBufferPool.MAX_WIRE_BYTES);
                 }
             }
-            if (source == null && largeWire == null) return false;
+            if (source == null) return false;
         }
-        final int limit=recipientId==senderId?Integer.MAX_VALUE:pendingLimit;
-        if(largeWire!=null)
-            return target.sendFrozenWire(largeWire);
-        final int length = source.wire.remaining();
-        if(length<=16384 && target.supportsConstBuffer()
-                && target.pendingSendBytes()<limit
-                && target.ownsConstBuffer(source)
-                && target.enqueueConstBufferConfirmed(source,limit))
-            return true;
-        // Foreign owner/full queue: copy the immutable pooled wire into the
-        // exact same connection-owned CIO FIFO, never to Java byte[].
         return target.sendFrozenWire(source.wire);
     }
 
     private void freezeLargeSource(CUserSocket target, int capacity) {
-        if (target.isJavaTransport()) {
-            source = openWrittenSource(target, this::writeLarge, capacity);
-            return;
-        }
-        final var arena = java.lang.foreign.Arena.ofShared();
-        try {
-            final ByteBuffer frozen = arena.allocate(capacity).asByteBuffer().order(ByteOrder.LITTLE_ENDIAN);
-            frozen.position(CIOBufferPool.HEADER_BYTES);
-            writeLarge(frozen);
-            frozen.putShort(0, (short) frozen.position());
-            frozen.flip();
-            largeWire = frozen.asReadOnlyBuffer();
-            largeArena = arena;
-        } catch (RuntimeException | Error failure) {
-            arena.close();
-            throw failure;
-        }
+        source = openWrittenSource(target, this::writeLarge, capacity);
     }
 
     private void writeLarge(ByteBuffer out) {
@@ -185,15 +146,7 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
     @Override public final synchronized void close() {
         if (closed) return;
         closed = true;
-        try {
-            if (source != null) { source.release(); source = null; }
-        } finally {
-            if(largeArena!=null) {
-                largeArena.close();
-                largeArena=null;
-                largeWire=null;
-            }
-        }
+        if (source != null) { source.release(); source = null; }
     }
 
     /** Used only after a failed SEND: distinguish a bad shared encoder from
@@ -201,7 +154,7 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
      * The ordinary hot path does not acquire this additional monitor.
      */
     public final synchronized boolean hasFrozenSource() {
-        return source != null || largeWire != null;
+        return source != null;
     }
 
     /** Java queue references keep the FFM handle/DLL live through its last use.
@@ -209,8 +162,6 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
      */
     @SuppressWarnings("preview")
     public static final class Source {
-        public final CIOServer owner;
-        public final MemorySegment handle;
         public final ByteBuffer wire;
         /** Never published before sealing; null after seal. */
         public ByteBuffer mutableWire;
@@ -219,8 +170,6 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         private final CIOBufferEx javaLease;
 
         public Source(CIOBufferPool pool, CIOBufferEx lease) {
-            owner = null;
-            handle = null;
             javaPool = pool;
             javaLease = lease;
             mutableWire = lease.buffer();
@@ -228,31 +177,11 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         }
 
         public void sealJava(int length) {
-            if (javaPool == null || mutableWire == null || length < 3 || length > 0xffff
+            if (mutableWire == null || length < 3 || length > 0xffff
                     || length > mutableWire.limit()) throw new IllegalArgumentException("Invalid shared frame length");
             mutableWire.putShort(0, (short) length);
             wire.position(0).limit(length);
             mutableWire = null;
-        }
-        public Source(CIOServer owner, MemorySegment handle, byte[] bytes) {
-            this.owner = owner;
-            this.handle = handle;
-            javaPool = null;
-            javaLease = null;
-            wire = ByteBuffer.wrap(bytes).asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
-        }
-        /** Native pooled memory, not a Java copy. Held until last lease release. */
-        public Source(CIOServer owner, MemorySegment handle, ByteBuffer nativeBytes) {
-            this(owner,handle,nativeBytes,false);
-        }
-        public Source(CIOServer owner, MemorySegment handle, ByteBuffer nativeBytes,
-                      boolean writableSource) {
-            this.owner = owner;
-            this.handle = handle;
-            javaPool = null;
-            javaLease = null;
-            wire = nativeBytes.asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
-            mutableWire = writableSource ? nativeBytes : null;
         }
         public Source retain() {
             for (;;) {
@@ -270,8 +199,7 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
                 if (n <= 0) throw new IllegalStateException("constant source double release");
                 if (references.compareAndSet(n, n - 1)) {
                     if (n == 1) {
-                        if (javaPool != null) javaPool.release(javaLease);
-                        else owner.releaseConstBuffer(handle);
+                        javaPool.release(javaLease);
                     }
                     return;
                 }

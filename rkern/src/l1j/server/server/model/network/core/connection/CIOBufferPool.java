@@ -1,6 +1,5 @@
 package l1j.server.server.model.network.core.connection;
 
-import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -77,9 +76,6 @@ public final class CIOBufferPool {
     public boolean owns(CIOBufferEx lease) {
         return lease != null && (lease._bucket == _recv || lease._bucket == _largeRecv
                 || lease._bucket == _send || lease._bucket == _largeSend);
-    }
-    CIOBufferEx acquireShared(CAsyncSendConstBuffer.Source source) {
-        return _send.acquireShared(source);
     }
 
     public long allocatedDirectBytes() {
@@ -170,16 +166,6 @@ public final class CIOBufferPool {
 
         private int used() {
             return _slots.usedCount();
-        }
-        private CIOBufferEx acquireShared(CAsyncSendConstBuffer.Source source) {
-            int slot = _slots.acquire();
-            if (slot < 0) { _exhaustions.incrementAndGet(); return null; }
-            try {
-                CIOBufferEx lease = _leases[slot];
-                if (lease == null) { lease = new CIOBufferEx(this, slot); _leases[slot] = lease; }
-                lease.startShared(source); _borrows.increment(); return lease;
-            }
-            catch (Throwable failure) { _slots.release(slot); throw failure; }
         }
     }
 
