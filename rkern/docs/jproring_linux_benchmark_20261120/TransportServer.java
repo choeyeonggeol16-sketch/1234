@@ -4,6 +4,7 @@ import java.lang.management.BufferPoolMXBean;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.Selector;
 import java.time.Duration;
 import java.util.ArrayDeque;
@@ -33,51 +34,93 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.uring.IoUring;
 import io.netty.channel.uring.IoUringIoHandler;
 import io.netty.channel.uring.IoUringServerSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import l1j.server.server.model.network.core.transport.selector.SelectorTransport;
 
 public final class TransportServer {
-    private static final int BUFFER_SIZE = 64;
     private static final int BACKLOG = 256;
     private static final InetSocketAddress ADDRESS = new InetSocketAddress("127.0.0.1", 0);
 
     public static void main(String[] args) throws Exception {
         String backend = args[0];
-        if (backend.equals("rkern")) runRKern();
-        else runNetty(backend);
+        int owners = Integer.parseInt(args[1]);
+        int clients = Integer.parseInt(args[2]);
+        int wireBytes = Integer.parseInt(args[3]);
+        boolean framed = Boolean.parseBoolean(args[4]);
+        if (backend.equals("rkern")) runRKern(owners, clients, wireBytes, framed);
+        else runNetty(backend, owners, wireBytes, framed);
     }
 
-    private static void runRKern() throws Exception {
-        var handler = new RawEcho();
-        var config = new SelectorTransport.Config(1, 128, BACKLOG, 128, 1, 1, 1,
-                3, 1, 0, Duration.ofSeconds(5));
-        try (Selector selector = Selector.open(); var server = SelectorTransport.bind(ADDRESS, config, handler)) {
-            serveControl(server.localAddress().getPort(), selector.getClass().getName(),
-                    () -> handler.allocated * (long) BUFFER_SIZE);
+    private static void runRKern(int owners, int clients, int wireBytes, boolean framed) throws Exception {
+        int capacity = Math.max(128, (clients + owners - 1) / owners + 32);
+        var raw = framed ? null : new RawEcho(owners, Math.min(wireBytes, 16_384));
+        SelectorTransport.Handler handler = framed ? (connection, payload) -> {
+            if (payload.remaining() != wireBytes - 2
+                    || !connection.trySend(payload.remaining(), out -> {
+                        while (payload.remaining() != 0) out.writeByte(payload.readByte());
+                    })) throw new java.io.IOException("Framed echo rejected");
+        } : raw;
+        var config = new SelectorTransport.Config(owners, capacity, BACKLOG, capacity,
+                framed ? capacity : 1, framed ? capacity * 8 : 1, framed ? capacity * 4 : 1,
+                256 * 1024, 256, 0, Duration.ofSeconds(5));
+        String provider;
+        try (Selector selector = Selector.open()) { provider = selector.getClass().getName(); }
+        try (var server = SelectorTransport.bind(ADDRESS, config, handler)) {
+            serveControl(server.localAddress().getPort(), provider, () -> raw == null ? -1L : raw.allocatedBytes());
             server.close();
-            if (!handler.sessions.isEmpty() || handler.free.size() != handler.allocated || server.shutdownFailure() != null) {
-                throw new IllegalStateException("Outstanding raw connections or transport error", server.shutdownFailure());
+            if (raw != null) raw.verifyReleased();
+            for (var owner : server.shutdownStats()) {
+                if (owner.remainingConnections() != 0 || owner.receive().inUse() != 0 || owner.send().inUse() != 0) {
+                    throw new IllegalStateException("Outstanding connections or buffer leases");
+                }
             }
         }
     }
 
-    private static final class RawEcho implements SelectorTransport.RawHandler {
+    private static final class RawOwner {
         private final Map<SelectorTransport.Connection, Session> sessions = new IdentityHashMap<>();
         private final ArrayDeque<ByteBuffer> free = new ArrayDeque<>();
         private volatile int allocated;
+    }
+
+    private static final class RawEcho implements SelectorTransport.RawHandler {
+        private final RawOwner[] owners;
+        private final int chunkBytes;
+
+        private RawEcho(int count, int chunkBytes) {
+            this.chunkBytes = chunkBytes;
+            owners = new RawOwner[count];
+            for (int i = 0; i < count; i++) owners[i] = new RawOwner();
+        }
 
         @Override public void onOpen(SelectorTransport.Connection connection) {
-            ByteBuffer buffer = free.pollFirst();
+            RawOwner owner = owners[connection.ownerIndex()];
+            ByteBuffer buffer = owner.free.pollFirst();
             if (buffer == null) {
-                buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
-                allocated++;
+                buffer = ByteBuffer.allocateDirect(chunkBytes);
+                owner.allocated++;
             }
             Session session = new Session(connection, buffer);
-            sessions.put(connection, session);
+            owner.sessions.put(connection, session);
             session.read();
         }
 
         @Override public void onClosed(SelectorTransport.Connection connection, SelectorTransport.CloseReason reason) {
-            free.addLast(sessions.remove(connection).buffer);
+            RawOwner owner = owners[connection.ownerIndex()];
+            owner.free.addLast(owner.sessions.remove(connection).buffer);
+        }
+
+        private long allocatedBytes() {
+            long bytes = 0;
+            for (RawOwner owner : owners) bytes += owner.allocated * (long) chunkBytes;
+            return bytes;
+        }
+
+        private void verifyReleased() {
+            for (RawOwner owner : owners) {
+                if (!owner.sessions.isEmpty() || owner.free.size() != owner.allocated)
+                    throw new IllegalStateException("Outstanding raw connection buffers");
+            }
         }
     }
 
@@ -111,7 +154,7 @@ public final class TransportServer {
         }
     }
 
-    private static void runNetty(String backend) throws Exception {
+    private static void runNetty(String backend, int owners, int wireBytes, boolean framed) throws Exception {
         Class<? extends ServerChannel> channel;
         IoHandlerFactory factory;
         switch (backend) {
@@ -137,14 +180,21 @@ public final class TransportServer {
             }
             default -> throw new IllegalArgumentException(backend);
         }
-        var group = new MultiThreadIoEventLoopGroup(1, factory);
+        var group = new MultiThreadIoEventLoopGroup(owners, factory);
+        var echo = new NettyEcho();
         try {
             Channel listener = new ServerBootstrap().group(group).channel(channel)
                     .option(ChannelOption.SO_BACKLOG, BACKLOG)
                     .childOption(ChannelOption.TCP_NODELAY, true)
                     .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                    .childOption(ChannelOption.RCVBUF_ALLOCATOR, new FixedRecvByteBufAllocator(BUFFER_SIZE))
-                    .childHandler(new NettyEcho()).bind(ADDRESS).sync().channel();
+                    .childOption(ChannelOption.RCVBUF_ALLOCATOR, new FixedRecvByteBufAllocator(Math.min(wireBytes, 16_384)))
+                    .childHandler(new io.netty.channel.ChannelInitializer<Channel>() {
+                        @Override protected void initChannel(Channel child) {
+                            if (framed) child.pipeline().addLast(new LengthFieldBasedFrameDecoder(
+                                    ByteOrder.LITTLE_ENDIAN, 65535, 0, 2, -2, 0, true));
+                            child.pipeline().addLast(echo);
+                        }
+                    }).bind(ADDRESS).sync().channel();
             try {
                 serveControl(((InetSocketAddress) listener.localAddress()).getPort(), channel.getSimpleName(),
                         () -> PooledByteBufAllocator.DEFAULT.metric().usedDirectMemory());

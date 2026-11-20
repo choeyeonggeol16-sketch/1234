@@ -146,6 +146,7 @@ public final class JavaCioServer {
     }
 
     public InetSocketAddress localAddress() { return transport.localAddress(); }
+    public java.util.List<SelectorTransport.OwnerDiagnostics> ownerDiagnostics() { return transport.ownerDiagnostics(); }
     public boolean isOwnerThread() { return transport.isOwnerThread(); }
     public void stopAccepting() throws IOException { transport.stopAccepting(); }
     public boolean isAcceptStopped() { return transport.isAcceptStopped(); }

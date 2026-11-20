@@ -11,9 +11,12 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -25,7 +28,10 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.core.session.CIOClient;
 import l1j.server.server.model.network.packet.CPacketHandler;
+import l1j.server.server.model.network.packet.WritablePacket;
 import l1j.server.server.model.network.safe.NetworkSafeLoadManager;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.ConnectionState;
@@ -59,6 +65,7 @@ public final class SelectorCioIntegrationTest {
             CountDownLatch timer = new CountDownLatch(1);
             CountDownLatch ownerHeld = new CountDownLatch(1);
             CountDownLatch releaseOwner = new CountDownLatch(1);
+            CountDownLatch competingOwnerSend = new CountDownLatch(1);
             CPacketHandler.PacketHandler alive = CPacketHandler.HANDLERS[ALIVE];
             CPacketHandler.PacketHandler move = CPacketHandler.HANDLERS[MOVE];
             CPacketHandler.HANDLERS[MOVE] = (payload, client) -> { rejectedOpcodePackets.incrementAndGet(); return true; };
@@ -69,6 +76,11 @@ public final class SelectorCioIntegrationTest {
                 owners.add(shard);
                 int value = payload.readInt();
                 if (value == 0 || value == 900) clients.put(value, socket);
+                if (value == 903 || value == 904) {
+                    check(socket.tryWritePacket(client, new Reply(value, () -> {})), "owner packet admitted");
+                    if (value == 903) competingOwnerSend.countDown();
+                    return true;
+                }
                 if (value == 902) {
                     clients.put(value, socket);
                     ownerHeld.countDown();
@@ -121,6 +133,7 @@ public final class SelectorCioIntegrationTest {
                     check(timer.await(5, TimeUnit.SECONDS), "game timer ran alongside I/O");
                     CUserSocket firstSession = clients.get(0);
                     CUserSocket secondSession = clients.get(900);
+                    verifyConcurrentSendFifo(first, firstCodec, firstSession, competingOwnerSend);
                     check(firstSession.bindVerifiedMacIdentity(1L), "first verified MAC accepted");
                     check(!secondSession.bindVerifiedMacIdentity(1L), "per-MAC limit enforced");
                     check(secondSession.bindVerifiedMacIdentity(2L), "second verified MAC accepted");
@@ -274,6 +287,55 @@ public final class SelectorCioIntegrationTest {
 
     private static void expectEncrypted(Socket socket, SelectorTransportTest.ScalarClient codec, int value) throws IOException {
         check(Arrays.equals(readBody(socket), codec.fromServer(body(0x45, value))), "ordered encrypted game response " + value);
+    }
+
+    private static void verifyConcurrentSendFifo(Socket peer, SelectorTransportTest.ScalarClient codec,
+            CUserSocket session, CountDownLatch ownerSent) throws Exception {
+        long previousCommits = session.javaDirectPacketCommits();
+        var release = new CountDownLatch(1);
+        try (var producers = Executors.newVirtualThreadPerTaskExecutor()) {
+            var sends = new ArrayList<Future<Boolean>>();
+            try {
+                for (int i = 0; i < 20; i++) {
+                    int sequence = 1000 + i;
+                    var reserved = new CountDownLatch(1);
+                    sends.add(producers.submit(() -> session.tryWritePacket(session.client(), new Reply(sequence, () -> {
+                        reserved.countDown();
+                        try { check(release.await(10, TimeUnit.SECONDS), "release concurrent encoder"); }
+                        catch (InterruptedException interrupted) { throw new AssertionError(interrupted); }
+                    }))));
+                    check(reserved.await(5, TimeUnit.SECONDS), "each foreign FIFO ticket reserved before encoding");
+                }
+                peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 903))));
+                check(ownerSent.await(5, TimeUnit.SECONDS), "owning shard published its send behind reserved tickets");
+                check(session.javaDirectPacketCommits() == previousCommits, "no earlier unpublished ticket was bypassed");
+            } finally { release.countDown(); }
+            for (var send : sends) check(send.get(5, TimeUnit.SECONDS), "foreign packet admitted");
+        }
+        for (int i = 0; i < 20; i++) expectEncrypted(peer, codec, 1000 + i);
+        expectEncrypted(peer, codec, 903);
+        peer.getOutputStream().write(frame(codec.toServer(body(ALIVE, 904))));
+        expectEncrypted(peer, codec, 904);
+        long expected = Boolean.getBoolean("rkern.network.javaDirectPacketCommit") ? 1 : 0;
+        check(session.javaDirectPacketCommits() - previousCommits == expected,
+                "exactly the unblocked owner ticket can commit directly");
+    }
+
+    private static final class Reply extends WritablePacket<CIOClient> {
+        private final int sequence;
+        private final Runnable beforeEncoding;
+
+        private Reply(int sequence, Runnable beforeEncoding) {
+            this.sequence = sequence;
+            this.beforeEncoding = beforeEncoding;
+        }
+
+        @Override protected boolean write(CIOClient client, WriteBuffer writer) {
+            beforeEncoding.run();
+            writer.writeByte(0x45);
+            writer.writeInt(sequence);
+            return true;
+        }
     }
 
     private static void check(boolean condition, String message) {

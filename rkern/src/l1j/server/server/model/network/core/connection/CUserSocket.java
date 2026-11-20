@@ -406,6 +406,10 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     // P8: a completed READ may directly claim the idle READ pump token.
     // The already-owned/inline callback path still publishes its mailbox event.
     private static final boolean READ_WRITE_OWNER_FUSION = true;
+    private static final boolean JAVA_DIRECT_PACKET_COMMIT = Boolean.getBoolean("rkern.network.javaDirectPacketCommit");
+    private volatile long _javaDirectPacketCommits;
+
+    public long javaDirectPacketCommits() { return _javaDirectPacketCommits; }
     private static final int FUSED_READ_MAX_BYTES = 256;
     // READ completion is consumed only by the existing per-socket READ pump.
     // 0=empty, 1=failure, >=2=successful completion (transferred bytes + 2).
@@ -2169,7 +2173,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if ((int) SOCKET_PENDING.getAcquire(this) >= SOCKET_REJECT_AT - 32)
             drainPublishedSocketCallbacks();
         final int learned = WriteBuffer.learnedPacketSize(packet.getClass());
-        final boolean direct;
         final int slot;
         final long ticket;
         boolean publishProducer = false;
@@ -2192,7 +2195,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             }
             // Packet bytes are encoded OUTSIDE the lock. Reserve a FIFO slot
             // before encoding, including when called by the serializer owner.
-            direct = false;
             for (;;) {
                 final int pending = (int) SOCKET_PENDING.getVolatile(this);
                 if (pending >= SOCKET_REJECT_AT) return rejectSend(REJECT_SERIALIZER);
@@ -2242,14 +2244,30 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
         boolean accepted = false;
         boolean packed = false;
+        boolean acquiredOwner = false;
+        boolean direct = false;
         _stateLock.lock();
         try {
             --_reservedDirect;
             try {
                 if (encoded != null) {
                     packed = packAdjacentStagedPacketLocked(encoded, ticket, slot);
+                    if (!packed && JAVA_DIRECT_PACKET_COMMIT && _channel.isJavaTransport()
+                            && _channel.currentNativeOwner() >= 0 && _socketHead == ticket
+                            && (int) SOCKET_DRAINING.getAcquire(this) == 0
+                            && SOCKET_DRAINING.compareAndSet(this, 0, 1)) {
+                        acquiredOwner = true;
+                        _socketOwner = Thread.currentThread();
+                        // Take only our already-reserved head. Foreign and reentrant
+                        // encoders still reserve FIFO positions before writing any bytes.
+                        direct = _socketHead == ticket && _inlineWriteCompletion == 0L
+                                && _prefixWriteCompletion == 0L;
+                    }
                     accepted = packed || stageOutboundFrameLocked(encoded, direct, slot);
-                    if (accepted && !packed) {
+                    if (accepted && direct) {
+                        ++_socketHead;
+                        ++_javaDirectPacketCommits;
+                    } else if (accepted && !packed) {
                         _stagedPacketPack = encoded;
                         _stagedPacketFirstTicket = ticket;
                         _stagedPacketLastTicket = ticket;
@@ -2283,9 +2301,23 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         } finally {
             _stateLock.unlock();
         }
+        if (acquiredOwner) {
+            try {
+                if (accepted && direct) {
+                    _socketExecutingTicket = true;
+                    try { finishStagedSend(encoded, true); }
+                    finally {
+                        _socketExecutingTicket = false;
+                        SOCKET_PENDING.getAndAdd(this, -1);
+                    }
+                }
+            } finally { drainSocketCallbacksAcquired(); }
+        }
         if (accepted) {
-            if (packed) drainPublishedSocketCallbacks();
-            else finishStagedSend(encoded, direct);
+            if (!acquiredOwner) {
+                if (packed) drainPublishedSocketCallbacks();
+                else finishStagedSend(encoded, false);
+            }
         } else {
             if (encodeFailed) rejectSend(REJECT_ENCODING);
             if (slot >= 0) drainSocketCallbacks();

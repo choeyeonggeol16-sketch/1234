@@ -103,7 +103,8 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
         if (javaServer != null) {
             return "JProRing direct bytes=" + pool.allocatedDirectBytes() + "/" + pool.maxDirectBytes()
                     + " receive slots=" + pool.usedRecvSlots() + " send slots=" + pool.usedSendSlots()
-                    + " accounts=" + Arrays.toString(javaServer.accountRegistryDiagnostics());
+                    + " accounts=" + Arrays.toString(javaServer.accountRegistryDiagnostics())
+                    + " owners=" + javaServer.ownerDiagnostics();
         }
         long[] registry=nativeServer.registryDiagnostics(),send=nativeServer.sendDiagnostics(),references=nativeServer.referenceDiagnostics();
         return poolDiagnostics.sample(System.nanoTime(),pool.snapshot(),nativeServer.poolDiagnostics(),new long[]{

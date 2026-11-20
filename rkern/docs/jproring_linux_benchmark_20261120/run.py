@@ -20,13 +20,14 @@ NETTY = '4.2.21.Final'
 BACKENDS = ('rkern', 'netty-nio', 'netty-epoll', 'netty-io_uring')
 WORKLOADS = (('persistent', 1), ('persistent', 16), ('churn', 8))
 FIELDS = ('backend', 'trial', 'workload', 'clients', 'samples', 'ops_per_s', 'ops_per_s_per_client',
-          'rtt_p50_us', 'rtt_p95_us', 'rtt_p99_us', 'connect_p50_us', 'connect_p95_us', 'connect_p99_us',
+          'rtt_p50_us', 'rtt_p95_us', 'rtt_p99_us', 'rtt_p999_us', 'rtt_max_us',
+          'connect_p50_us', 'connect_p95_us', 'connect_p99_us', 'connect_p999_us', 'connect_max_us', 'server_cpu_ns_per_op',
           'server_rss_kib', 'server_peak_rss_kib', 'jdk_direct_bytes', 'echo_or_netty_pool_bytes')
 
 
 def netty_classpath(cache):
     arch = {'x86_64': 'x86_64', 'aarch64': 'aarch_64'}[platform.machine()]
-    artifacts = ['common', 'buffer', 'transport', 'resolver', 'transport-native-unix-common',
+    artifacts = ['common', 'buffer', 'transport', 'resolver', 'codec-base', 'transport-native-unix-common',
                  'transport-classes-epoll', 'transport-classes-io_uring']
     native = ('transport-native-epoll', 'transport-native-io_uring')
     cache.mkdir(parents=True, exist_ok=True)
@@ -72,9 +73,12 @@ def server_message(server, timeout):
 
 def server_round(classpath, backend, trial, args, work):
     java = ['java', '-Xms64m', '-Xmx256m', '-XX:ActiveProcessorCount=2', '-cp', classpath]
+    wire_bytes = args.payload_bytes + (2 if args.framed else 0)
+    max_clients = max(clients for _, clients in args.workloads)
+    server_args = [backend, str(args.owners), str(max_clients), str(wire_bytes), str(args.framed).lower()]
     stderr_path = work / f'{backend}-{trial}.log'
     with stderr_path.open('w+') as stderr:
-        with subprocess.Popen([*java, 'TransportServer', backend], stdin=subprocess.PIPE,
+        with subprocess.Popen([*java, 'TransportServer', *server_args], stdin=subprocess.PIPE,
                               stdout=subprocess.PIPE, stderr=stderr, text=True) as server:
             try:
                 first = server_message(server, 15)
@@ -87,9 +91,13 @@ def server_round(classpath, backend, trial, args, work):
                 _, port, provider = first.split()
                 rows = []
                 for workload, clients in args.workloads:
-                    data = subprocess.run([*java, 'TransportDriver', port, str(clients), workload,
-                                           str(args.warmup_ms), str(args.measure_ms)],
-                                          check=True, timeout=20, text=True, capture_output=True)
+                    window = 1 if workload == 'churn' else args.window
+                    driver_args = [port, str(clients), workload, str(args.warmup_ms), str(args.measure_ms),
+                                   str(args.payload_bytes), str(window), str(args.framed).lower(),
+                                   str(server.pid), str(os.sysconf('SC_CLK_TCK'))]
+                    data = subprocess.run([*java, 'TransportDriver', *driver_args], check=True,
+                                          timeout=(args.warmup_ms + args.measure_ms) / 1000 + 20,
+                                          text=True, capture_output=True)
                     tag, samples, *metrics = data.stdout.strip().split()
                     if tag != 'RESULT' or int(samples) == 0:
                         raise RuntimeError(data.stdout)
@@ -120,6 +128,11 @@ def main():
     parser.add_argument('--warmup-ms', type=int, default=750)
     parser.add_argument('--measure-ms', type=int, default=1500)
     parser.add_argument('--workload', choices=('persistent', 'churn'))
+    parser.add_argument('--clients', type=int, action='append')
+    parser.add_argument('--owners', type=int, default=1)
+    parser.add_argument('--payload-bytes', type=int, default=64)
+    parser.add_argument('--window', type=int, default=1)
+    parser.add_argument('--framed', action='store_true')
     parser.add_argument('--backend', choices=BACKENDS, action='append')
     parser.add_argument('--cache', type=Path, default=Path(tempfile.gettempdir()) / f'rkern-netty-{NETTY}')
     parser.add_argument('--output', type=Path)
@@ -127,6 +140,14 @@ def main():
     if min(args.trials, args.warmup_ms, args.measure_ms) <= 0:
         parser.error('trials and durations must be positive')
     args.workloads = [work for work in WORKLOADS if not args.workload or work[0] == args.workload]
+    if args.clients:
+        if not args.workload or any(not 1 <= count <= 5000 for count in args.clients):
+            parser.error('--clients requires --workload and accepts 1–5000 connections')
+        args.workloads = [(args.workload, count) for count in dict.fromkeys(args.clients)]
+    if not 1 <= args.owners <= 16 or not 1 <= args.payload_bytes <= 65533 or not 1 <= args.window <= 256:
+        parser.error('use 1–16 owners, 1–65533 payload bytes and a window of 1–256')
+    if (args.payload_bytes + (2 if args.framed else 0)) * args.window > 65536:
+        parser.error('wire bytes × window must fit in 64 KiB for the blocking client')
     backends = tuple(args.backend or BACKENDS)
     with tempfile.TemporaryDirectory(prefix='rkern-echo-') as temporary:
         work = Path(temporary)
@@ -167,6 +188,8 @@ def main():
                jdk=subprocess.run(['java', '-version'], text=True, capture_output=True, check=True).stderr.splitlines()[0],
                netty=NETTY, revision=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=HERE, text=True).strip(),
                trials=args.trials, warmup_ms=args.warmup_ms, measure_ms=args.measure_ms,
+               transport='framed' if args.framed else 'raw', owners=args.owners, payload_bytes=args.payload_bytes,
+               persistent_window=args.window, churn_window=1, cpu_sample='server user+system ticks during measurement',
                workloads=args.workloads, memory_sample='after each workload, before server shutdown',
                providers=providers, unavailable=unavailable, failed_rounds=failed_rounds)
     result = io.StringIO(newline='')

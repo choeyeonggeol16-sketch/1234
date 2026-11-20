@@ -216,13 +216,28 @@ public final class SelectorTransportTest {
     private static void checkWriteStall() throws Exception {
         var closed = new LinkedBlockingQueue<CloseReason>();
         CountDownLatch queued = new CountDownLatch(1);
-        var config = new SelectorTransport.Config(1, 1, 32, 8, 1, 1, BURST_FRAMES,
+        var config = new SelectorTransport.Config(1, 2, 32, 8, 1, 1, BURST_FRAMES,
                 1_000_000, 32, 4_096, Duration.ofMillis(300));
-        try (SelectorTransport server = SelectorTransport.bind(LOOPBACK, config, burst(queued, closed, false));
+        var slow = burst(queued, closed, false);
+        var handler = new SelectorTransport.Handler() {
+            @Override public void onFrame(Connection connection, ReadBuffer payload) throws IOException {
+                if (payload.readByte() == 1) slow.onFrame(connection, payload);
+                else check(connection.trySend(1, writer -> writer.writeByte(2)), "healthy SEND during large-pool exhaustion");
+            }
+
+            @Override public void onClosed(Connection connection, CloseReason reason) { closed.add(reason); }
+        };
+        try (SelectorTransport server = SelectorTransport.bind(LOOPBACK, config, handler);
                 Socket socket = connect(server, 8_192)) {
             socket.getOutputStream().write(frame(new byte[] {1}));
             await(queued);
-            check(await(closed) == CloseReason.WRITE_TIMEOUT, "slow peer timed out without reading");
+            try (Socket healthy = connect(server, 0)) {
+                healthy.getOutputStream().write(frame(new byte[] {2}));
+                expectFrame(healthy, new byte[] {2});
+                check(await(closed) == CloseReason.WRITE_TIMEOUT, "slow peer timed out without reading");
+                var owner = server.ownerDiagnostics().getFirst();
+                check(owner.writeTimeouts() == 1 && owner.stalledWrites() == 0, "live write timeout diagnostics");
+            }
             server.close();
             balanced(server.shutdownStats());
         }
@@ -272,6 +287,10 @@ public final class SelectorTransportTest {
                 };
                 check(connection.tryExecute(pending) && connection.tryExecute(pending), "mailbox holds exactly two");
                 check(!connection.tryExecute(pending), "full mailbox refuses a third command");
+                var owner = server.ownerDiagnostics().getFirst();
+                check(owner.admitted() == 1 && owner.registered() == 1 && owner.queuedCommands() == 2
+                        && owner.commandHighWater() == 2 && owner.rejectedCommands() == 1,
+                        "saturated mailbox is visible in live owner diagnostics");
                 server.requestStop();
                 check(!connection.tryExecute(pending), "stop seals mailbox admission");
                 check(!server.awaitTermination(Duration.ofMillis(20)), "termination reflects in-flight owner work");

@@ -90,6 +90,10 @@ public final class SelectorTransport implements AutoCloseable {
     public record OwnerStats(SelectorBufferPool.Stats receive, SelectorBufferPool.Stats send,
             int remainingConnections, int remainingCommands, long zeroWrites, long callbackFailures) { }
 
+    public record OwnerDiagnostics(int index, int admitted, long registered, int queuedCommands,
+            int commandHighWater, long rejectedCommands, int deadlines, int stalledWrites,
+            long zeroWrites, long writeTimeouts, long callbackFailures) { }
+
     private static final int ACCEPT_BUDGET = 32;
     private static final int COMMAND_BUDGET = 64;
     private static final int READY_BUDGET = 256;
@@ -178,6 +182,13 @@ public final class SelectorTransport implements AutoCloseable {
     public boolean isAcceptStopped() { return !listener.isOpen(); }
     public boolean isTerminated() { return terminated.getCount() == 0; }
     public Throwable shutdownFailure() { return failure.get(); }
+
+    /** Live observations. Each queue depth, limit counter, and socket count is a snapshot. */
+    public List<OwnerDiagnostics> ownerDiagnostics() {
+        List<OwnerDiagnostics> report = new ArrayList<>(owners.length);
+        for (Owner owner : owners) report.add(owner.diagnostics());
+        return List.copyOf(report);
+    }
 
     public void stopAccepting() throws IOException {
         accepting = false;
@@ -282,6 +293,7 @@ public final class SelectorTransport implements AutoCloseable {
             deadlineAction = Objects.requireNonNull(callback);
             scheduledDeadline = due;
             owner.deadlines.add(this);
+            owner.deadlineDepth = owner.deadlines.size();
             return true;
         }
 
@@ -482,6 +494,7 @@ public final class SelectorTransport implements AutoCloseable {
                 if (stallDeadline == 0) {
                     stallDeadline = System.nanoTime() + writeStallNanos;
                     owner.stalled.add(this);
+                    owner.stalledDepth = owner.stalled.size();
                 }
             }
         }
@@ -520,6 +533,7 @@ public final class SelectorTransport implements AutoCloseable {
         private void clearStall() {
             if (stallDeadline != 0) {
                 owner.stalled.remove(this);
+                owner.stalledDepth = owner.stalled.size();
                 stallDeadline = 0;
             }
         }
@@ -531,6 +545,7 @@ public final class SelectorTransport implements AutoCloseable {
             clearStall();
             if (deadlineAction != null) {
                 owner.deadlines.remove(this);
+                owner.deadlineDepth = owner.deadlines.size();
                 deadlineAction = null;
             }
             key.cancel();
@@ -588,8 +603,14 @@ public final class SelectorTransport implements AutoCloseable {
         private boolean acceptReady;
         private Connection first;
         private Connection last;
-        private long zeroWrites;
-        private long callbackFailures;
+        private volatile long zeroWrites;
+        private volatile long callbackFailures;
+        private volatile long registered;
+        private volatile long writeTimeouts;
+        private volatile int deadlineDepth;
+        private volatile int stalledDepth;
+        private int commandHighWater; // guarded by mailbox
+        private long rejectedCommands; // guarded by mailbox
         private long lastCallbackLog;
         private OwnerStats stats;
 
@@ -606,12 +627,23 @@ public final class SelectorTransport implements AutoCloseable {
         private boolean offer(OwnerTask task) {
             boolean wake;
             synchronized (mailbox) {
-                if (stopping || mailbox.size() == config.mailboxCapacity()) return false;
+                if (stopping || mailbox.size() == config.mailboxCapacity()) {
+                    rejectedCommands++;
+                    return false;
+                }
                 wake = mailbox.isEmpty();
                 mailbox.addLast(task);
+                commandHighWater = Math.max(commandHighWater, mailbox.size());
             }
             if (wake) selector.wakeup();
             return true;
+        }
+
+        private OwnerDiagnostics diagnostics() {
+            synchronized (mailbox) {
+                return new OwnerDiagnostics(index, admitted.get(), registered, mailbox.size(), commandHighWater,
+                        rejectedCommands, deadlineDepth, stalledDepth, zeroWrites, writeTimeouts, callbackFailures);
+            }
         }
 
         private void queueClose(Connection connection, int request) {
@@ -815,6 +847,7 @@ public final class SelectorTransport implements AutoCloseable {
                 Connection connection = deadlines.peek();
                 if (now - connection.scheduledDeadline < 0) break;
                 deadlines.remove();
+                deadlineDepth = deadlines.size();
                 Runnable callback = connection.deadlineAction;
                 connection.deadlineAction = null;
                 try { callback.run(); }
@@ -824,7 +857,9 @@ public final class SelectorTransport implements AutoCloseable {
                 Connection connection = stalled.peek();
                 if (now - connection.stallDeadline < 0) break;
                 stalled.remove();
+                stalledDepth = stalled.size();
                 connection.stallDeadline = 0;
+                writeTimeouts++;
                 connection.terminate(CloseReason.WRITE_TIMEOUT);
             }
         }
@@ -857,6 +892,7 @@ public final class SelectorTransport implements AutoCloseable {
                 channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
                 if (config.socketSendBytes() > 0) channel.setOption(StandardSocketOptions.SO_SNDBUF, config.socketSendBytes());
                 connection = new Connection(this, channel);
+                registered++;
                 handler.onOpen(connection);
             } catch (IOException | RuntimeException e) {
                 if (connection != null) connection.terminate(CloseReason.HANDLER_ERROR);
