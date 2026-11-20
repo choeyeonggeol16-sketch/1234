@@ -128,7 +128,6 @@ public final class CIOBufferEx {
         } catch (RuntimeException | Error failed) { failure = failed; }
         try {
             _bucket._slots.releaseOwnedLease(_slot, _generation);
-            _bucket._returns.increment();
         } catch (RuntimeException | Error failed) {
             if (failure == null) failure = failed;
             else if (failure != failed) failure.addSuppressed(failed);

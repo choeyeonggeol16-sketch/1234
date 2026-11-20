@@ -168,7 +168,7 @@ def measure(cp, location, args, trial, load, mode, logs):
                 deadline = time.monotonic() + 5
                 while True:
                     pool = sample_resources(server, resources, started, 'drained')
-                    if pool[0] == pool[1] == 0 and pool[4] == pool[5]:
+                    if pool[0] == pool[1] == 0 and (pool[4] == pool[5] == -1 or pool[4] >= 0 and pool[4] == pool[5]):
                         break
                     if time.monotonic() >= deadline:
                         raise RuntimeError('pool or connections retained after clients closed')

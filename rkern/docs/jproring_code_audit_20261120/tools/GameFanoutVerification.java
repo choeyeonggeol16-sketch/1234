@@ -84,7 +84,7 @@ public final class GameFanoutVerification {
                 long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
                 while (Server.networkAccountRegistryDiagnostics()[0] > 0 && System.nanoTime() < deadline) Thread.sleep(5);
                 if (Server.networkAccountRegistryDiagnostics()[0] != 0
-                        || !Arrays.stream(Server.networkPoolSnapshot()).allMatch(row -> row[2] == 0 && row[3] == row[4]))
+                        || !Arrays.stream(Server.networkPoolSnapshot()).allMatch(row -> row[2] == 0))
                     throw new AssertionError("fan-out resources retained: " + Server.networkPoolReport());
                 System.out.println("PASS game fan-out drained all sessions and leases");
             } finally {

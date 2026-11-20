@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.LongAdder;
 
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 
@@ -90,9 +89,6 @@ public final class CIOBufferPool {
                 + (long) _largeSend._bytes * _largeSend._slots.capacity();
     }
 
-    /** Snapshot counters: increments only when a bounded SEND bucket is exhausted. */
-    public long smallSendExhaustions() { return _send._exhaustions.get(); }
-    public long largeSendExhaustions() { return _largeSend._exhaustions.get(); }
     public int smallSendSlots() { return _send._slots.capacity(); }
     public int largeSendSlots() { return _largeSend._slots.capacity(); }
     public int usedSmallSendSlots() { return _send.used(); }
@@ -106,13 +102,11 @@ public final class CIOBufferPool {
         return _recv.used() + _largeRecv.used();
     }
 
-    /** Rows: slotBytes,capacity,used,successfulBorrows,finalReturns,allocatedDirectBytes,exhaustions.
-     * Concurrent snapshots can briefly straddle an acquire/return publication.
-     */
+    /** On-demand pool state: slotBytes, capacity, used, allocatedDirectBytes. */
     public long[][] snapshot() {
         Bucket[] buckets={_recv,_largeRecv,_send,_largeSend};long[][] rows=new long[4][];
         for(int i=0;i<4;i++){Bucket b=buckets[i];rows[i]=new long[]{b._bytes,b._slots.capacity(),b.used(),
-                b._borrows.sum(),b._returns.sum(),b._allocated.get(),b._exhaustions.get()};}
+                b._allocated.get()};}
         return rows;
     }
 
@@ -122,9 +116,6 @@ public final class CIOBufferPool {
         final CIOSlotPool _slots;
         private final CIOBufferEx[] _leases;
         final AtomicLong _allocated = new AtomicLong();
-        // Failure-only counter: no additional atomic operations on the SEND hot path.
-        private final AtomicLong _exhaustions = new AtomicLong();
-        final LongAdder _borrows = new LongAdder(), _returns = new LongAdder();
 
         private Bucket(int bytes, int capacity) {
             _bytes = bytes;
@@ -146,7 +137,6 @@ public final class CIOBufferPool {
 
         private CIOBufferEx acquireSlot(int slot, boolean send, int requested) {
             if (slot < 0) {
-                _exhaustions.incrementAndGet();
                 return null;
             }
             try {
@@ -156,7 +146,6 @@ public final class CIOBufferPool {
                     _leases[slot] = lease;
                 }
                 lease.start(send, requested);
-                _borrows.increment();
                 return lease;
             } catch (Throwable failure) {
                 _slots.release(slot);

@@ -30,7 +30,7 @@ public final class CIOBufferPoolAffinityTest {
             check(pool.acquireRecv(0) == null && pool.acquireRecv(1) == null, "hard capacity is global");
             check(pool.allocatedDirectBytes() == 130L * CIOBufferPool.RECV_BYTES, "one backing buffer per slot");
             foreign.submit(() -> leases.forEach(pool::release)).get(5, TimeUnit.SECONDS);
-            check(Arrays.stream(pool.snapshot()).allMatch(row -> row[2] == 0 && row[3] == row[4]),
+            check(Arrays.stream(pool.snapshot()).allMatch(row -> row[2] == 0),
                     "cross-thread return balances every bucket");
         }
         System.out.println("PASS shard-local receive preference, global overflow capacity and cross-thread return");

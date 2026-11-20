@@ -86,12 +86,10 @@ public final class CSelectorTransport implements AutoCloseable {
     }
 
     public record OwnerStats(CSelectorBufferPool.Stats receive, CSelectorBufferPool.Stats send,
-            int remainingConnections, int remainingCommands, long zeroWrites, long callbackFailures) { }
+            int remainingConnections, int remainingCommands) { }
 
-    public record OwnerDiagnostics(int index, int admitted, long registered, int queuedCommands,
-            int commandHighWater, long rejectedCommands, int deadlines, int stalledWrites,
-            long zeroWrites, long writeTimeouts, long callbackFailures,
-            long rawWrites, long rawGatherWrites, long rawWriteSegments) { }
+    public record OwnerDiagnostics(int index, int admitted, int queuedCommands,
+            int deadlines, int stalledWrites) { }
 
     private static final int ACCEPT_BUDGET = 32;
     private static final int COMMAND_BUDGET = 64;
@@ -99,10 +97,9 @@ public final class CSelectorTransport implements AutoCloseable {
     private static final int FRAME_BUDGET = 16;
     private static final int GATHER_LIMIT = 16;
     private static final long OWNER_PHASE_NANOS = 500_000;
-    private static final boolean MEASURE_WRITES = Boolean.getBoolean("rkern.network.measureWrites");
     private static final Duration CLOSE_TIMEOUT = Duration.ofSeconds(5);
     private static final System.Logger LOG = System.getLogger(CSelectorTransport.class.getName());
-    private static final CSelectorBufferPool.Stats EMPTY_POOL_STATS = new CSelectorBufferPool.Stats(0, 0, 0, 0, 0);
+    private static final CSelectorBufferPool.Stats EMPTY_POOL_STATS = new CSelectorBufferPool.Stats(0, 0, 0);
 
     private final Config config;
     private final Handler handler;
@@ -470,12 +467,6 @@ public final class CSelectorTransport implements AutoCloseable {
         private boolean hasWrites() { return raw == null ? !send.isEmpty() : raw.writing(); }
 
         private void rawFlush() throws IOException {
-            if (MEASURE_WRITES) {
-                int segments = raw.writeSegments();
-                owner.rawWrites++;
-                if (segments > 1) owner.rawGatherWrites++;
-                owner.rawWriteSegments += segments;
-            }
             long written = raw.write(channel, drainReason != null);
             if (!closed) recordWrite(written);
         }
@@ -489,7 +480,6 @@ public final class CSelectorTransport implements AutoCloseable {
             if (written > 0 || !hasWrites()) clearStall();
             if (written == 0 && hasWrites()) {
                 writeBlocked = true;
-                owner.zeroWrites++;
                 if (stallDeadline == 0) {
                     stallDeadline = System.nanoTime() + writeStallNanos;
                     owner.stalled.addOrAdvance(this);
@@ -678,15 +668,8 @@ public final class CSelectorTransport implements AutoCloseable {
         private boolean acceptReady;
         private Connection first;
         private Connection last;
-        private volatile long zeroWrites;
-        private volatile long rawWrites, rawGatherWrites, rawWriteSegments;
-        private volatile long callbackFailures;
-        private volatile long registered;
-        private volatile long writeTimeouts;
         private volatile int deadlineDepth;
         private volatile int stalledDepth;
-        private int commandHighWater; // guarded by mailbox
-        private long rejectedCommands; // guarded by mailbox
         private long lastCallbackLog;
         private OwnerStats stats;
 
@@ -704,14 +687,13 @@ public final class CSelectorTransport implements AutoCloseable {
             boolean wake;
             synchronized (mailbox) {
                 if (stopping || mailboxSize == mailbox.length) {
-                    rejectedCommands++;
                     return false;
                 }
                 wake = mailboxSize == 0;
                 mailbox[mailboxTail] = target;
                 mailboxCommands[mailboxTail] = command;
                 if (++mailboxTail == mailbox.length) mailboxTail = 0;
-                commandHighWater = Math.max(commandHighWater, ++mailboxSize);
+                ++mailboxSize;
             }
             if (wake) selector.wakeup();
             return true;
@@ -719,9 +701,7 @@ public final class CSelectorTransport implements AutoCloseable {
 
         private OwnerDiagnostics diagnostics() {
             synchronized (mailbox) {
-                return new OwnerDiagnostics(index, admitted.get(), registered, mailboxSize, commandHighWater,
-                        rejectedCommands, deadlineDepth, stalledDepth, zeroWrites, writeTimeouts, callbackFailures,
-                        rawWrites, rawGatherWrites, rawWriteSegments);
+                return new OwnerDiagnostics(index, admitted.get(), mailboxSize, deadlineDepth, stalledDepth);
             }
         }
 
@@ -865,7 +845,7 @@ public final class CSelectorTransport implements AutoCloseable {
 
         private void reportCallbackFailure(String stage, RuntimeException error) {
             long now = System.nanoTime();
-            if (++callbackFailures == 1 || now - lastCallbackLog >= TimeUnit.SECONDS.toNanos(1)) {
+            if (lastCallbackLog == 0 || now - lastCallbackLog >= TimeUnit.SECONDS.toNanos(1)) {
                 lastCallbackLog = now;
                 LOG.log(System.Logger.Level.WARNING, "Selector owner " + index + " failed during " + stage, error);
             }
@@ -960,7 +940,6 @@ public final class CSelectorTransport implements AutoCloseable {
                 stalled.remove(connection);
                 stalledDepth = stalled.size();
                 connection.stallDeadline = 0;
-                writeTimeouts++;
                 connection.terminate(CloseReason.WRITE_TIMEOUT);
             }
         }
@@ -993,7 +972,6 @@ public final class CSelectorTransport implements AutoCloseable {
                 channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
                 if (config.socketSendBytes() > 0) channel.setOption(StandardSocketOptions.SO_SNDBUF, config.socketSendBytes());
                 connection = new Connection(this, channel);
-                registered++;
                 handler.onOpen(connection);
             } catch (IOException | RuntimeException e) {
                 if (connection != null) connection.terminate(CloseReason.HANDLER_ERROR);
@@ -1026,8 +1004,7 @@ public final class CSelectorTransport implements AutoCloseable {
                 if (index == 0) listener.close();
             } catch (IOException e) { failure.compareAndSet(null, e); }
             stats = new OwnerStats(receivePool == null ? EMPTY_POOL_STATS : receivePool.stats(),
-                    sendPool == null ? EMPTY_POOL_STATS : sendPool.stats(), admitted.get(), pendingCommands(),
-                    zeroWrites, callbackFailures);
+                    sendPool == null ? EMPTY_POOL_STATS : sendPool.stats(), admitted.get(), pendingCommands());
             receivePool = sendPool = null;
         }
     }

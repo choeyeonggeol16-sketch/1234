@@ -9,7 +9,7 @@ public final class CSelectorBufferPool {
     static final int SEND_BYTES = 16 * 1024;
     static final int LARGE_BYTES = 64 * 1024;
 
-    public record Stats(int inUse, long borrows, long returns, long allocatedDirectBytes, long maxDirectBytes) { }
+    public record Stats(int inUse, long allocatedDirectBytes, long maxDirectBytes) { }
 
     private final Thread owner = Thread.currentThread();
     private final Bucket compact;
@@ -52,8 +52,7 @@ public final class CSelectorBufferPool {
 
     public Stats stats() {
         requireOwner();
-        return new Stats(compact.used() + large.used(), compact.borrows + large.borrows,
-                compact.returns + large.returns, compact.allocated + large.allocated,
+        return new Stats(compact.used() + large.used(), compact.allocated + large.allocated,
                 (long) compact.bytes * compact.free.length + (long) LARGE_BYTES * large.free.length);
     }
 
@@ -79,8 +78,6 @@ public final class CSelectorBufferPool {
         private final Lease[] free;
         private int available;
         private long allocated;
-        private long borrows;
-        private long returns;
 
         Bucket(int bytes, int capacity) {
             this.bytes = bytes;
@@ -99,7 +96,6 @@ public final class CSelectorBufferPool {
             available = index;
             free[index] = null;
             lease.active = true;
-            borrows++;
             return lease;
         }
 
@@ -110,7 +106,6 @@ public final class CSelectorBufferPool {
             lease.frames = 0;
             lease.buffer.clear();
             free[available++] = lease;
-            returns++;
         }
 
         int used() { return free.length - available; }

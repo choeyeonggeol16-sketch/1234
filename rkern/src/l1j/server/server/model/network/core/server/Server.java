@@ -3,7 +3,6 @@ package l1j.server.server.model.network.core.server;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CUserSocketMap;
-import l1j.server.server.model.network.core.diagnostics.CPerfMon;
 import l1j.server.server.model.network.core.transport.CSocket;
 import l1j.server.server.model.network.core.transport.CIOServer;
 import l1j.server.server.model.network.core.config.CIOConfig;
@@ -71,11 +70,7 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
                 CConnectionConfig.NETWORK_CLIENT_PERMISSION, CIOConfig.MAC_LIMIT, owners, this::activateAccepted);
     }
 
-    public CPerfMon.Snapshot performance() { return null; }
     public boolean isJavaTransport() { return true; }
-    public long[] sendDiagnostics() {
-        return new long[] {CUserSocket.softSendRejections(), pool.smallSendExhaustions(), pool.largeSendExhaustions()};
-    }
     public long[] accountRegistryDiagnostics() {
         return javaServer.accountRegistryDiagnostics();
     }
@@ -83,20 +78,10 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
         return javaServer.findEnteringAccount(accountId);
     }
     public long[][] ReportSocket() { return javaServer.reportSockets(); }
-    public long[] threadDiagnostics() { return new long[0]; }
     public long[] listenerDiagnostics() {
         return new long[] {isOpen() ? 1 : 0, liveConnections()};
     }
     public long[][] poolSnapshot() { return pool.snapshot(); }
-    public long[] writeSnapshot() {
-        long[] totals = new long[3];
-        for (var owner : javaServer.ownerDiagnostics()) {
-            totals[0] += owner.rawWrites();
-            totals[1] += owner.rawGatherWrites();
-            totals[2] += owner.rawWriteSegments();
-        }
-        return totals;
-    }
     public String poolReport(){
         return "JProRing direct bytes=" + pool.allocatedDirectBytes() + "/" + pool.maxDirectBytes()
                 + " receive slots=" + pool.usedRecvSlots() + " send slots=" + pool.usedSendSlots()

@@ -111,9 +111,15 @@ public final class GameSendBenchmark {
                     long used = 0, allocated = 0, capacity = 0, borrows = 0, returns = 0;
                     for (long[] bucket : (long[][]) poolSnapshot.invoke(null)) {
                         used += bucket[2];
-                        borrows += bucket[3];
-                        returns += bucket[4];
-                        allocated += bucket[5];
+                        if (bucket.length >= 7) {
+                            borrows += bucket[3];
+                            returns += bucket[4];
+                            allocated += bucket[5];
+                        } else {
+                            // -1 means cumulative observations are unavailable, not zero.
+                            borrows = returns = -1;
+                            allocated += bucket[3];
+                        }
                         capacity += bucket[0] * bucket[1];
                     }
                     protocol.printf("POOL %d %d %d %d %d %d %d%n", Server.networkAccountRegistryDiagnostics()[0],
@@ -158,7 +164,7 @@ public final class GameSendBenchmark {
     private static boolean poolDrained(Method snapshot) throws ReflectiveOperationException {
         if (Server.networkAccountRegistryDiagnostics()[0] != 0) return false;
         if (snapshot == null) return Server.networkPoolReport().contains("receive slots=0 send slots=0");
-        return Arrays.stream((long[][]) snapshot.invoke(null)).allMatch(bucket -> bucket[2] == 0 && bucket[3] == bucket[4]);
+        return Arrays.stream((long[][]) snapshot.invoke(null)).allMatch(bucket -> bucket[2] == 0 && (bucket.length < 7 || bucket[3] == bucket[4]));
     }
 
     private static Method optionalMethod(Class<?> owner, String name) {
