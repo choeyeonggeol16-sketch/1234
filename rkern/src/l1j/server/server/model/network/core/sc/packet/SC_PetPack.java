@@ -4,7 +4,6 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 import java.nio.charset.Charset;
@@ -16,7 +15,7 @@ public final class SC_PetPack {
 
     public static boolean send(L1PcInstance observer, L1PetInstance pet) {
         if (observer == null) return false;
-        final CUserSession client = observer.getNetConnection();
+        final CUserSocket client = observer.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

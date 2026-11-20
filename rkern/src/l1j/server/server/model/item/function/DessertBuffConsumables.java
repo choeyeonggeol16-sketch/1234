@@ -8,7 +8,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 
 final class DessertBuffConsumables {
@@ -62,7 +62,7 @@ final class DessertBuffConsumables {
             LOG.log(java.util.logging.Level.WARNING, "Dessert sound broadcast failed", failure);
         }
     }
-    static void use(CUserSession client, L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId, L1ItemInstance l1iteminstance1) {
+    static void use(CUserSocket client, L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId, L1ItemInstance l1iteminstance1) {
         switch (itemId) {
 		case 31118: {
 			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {

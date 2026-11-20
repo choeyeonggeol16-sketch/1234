@@ -4,7 +4,6 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import java.nio.charset.Charset;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -17,7 +16,7 @@ public final class SC_RaceBoard {
         return pc != null && send(pc.getNetConnection(), number, isViewedGm);
     }
 
-    public static boolean send(CUserSession client, int number, boolean isViewedGm) {
+    public static boolean send(CUserSocket client, int number, boolean isViewedGm) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

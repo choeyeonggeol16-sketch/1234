@@ -5,7 +5,6 @@ import l1j.server.server.model.Instance.*;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.MJCTSystem.MJCTObject;
 
 public final class SC_ShowCharInfo {
@@ -15,7 +14,7 @@ public final class SC_ShowCharInfo {
         return receiver != null && send(receiver.getNetConnection(), obj);
     }
 
-    public static boolean send(CUserSession client, MJCTObject obj) {
+    public static boolean send(CUserSocket client, MJCTObject obj) {
         if (client == null || !client.isConnected() || obj == null ) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

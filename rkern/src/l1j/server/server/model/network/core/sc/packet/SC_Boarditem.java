@@ -19,7 +19,6 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
@@ -79,7 +78,7 @@ public final class SC_Boarditem {
 	public static void sendListAsync(L1PcInstance pc,
 			L1NpcInstance board, int number) {
 		if (pc == null || board == null) return;
-		final CUserSession owner = pc.getNetConnection();
+		final CUserSocket owner = pc.getNetConnection();
 		if (owner == null || !owner.isConnected() || owner.getActiveChar() != pc) return;
 		final int objId = board.getId();
 		try {
@@ -98,7 +97,7 @@ public final class SC_Boarditem {
 
 	public static void sendReadAsync(L1PcInstance pc, int number) {
 		if (pc == null) return;
-		final CUserSession owner = pc.getNetConnection();
+		final CUserSocket owner = pc.getNetConnection();
 		if (owner == null || !owner.isConnected() || owner.getActiveChar() != pc) return;
 		try {
 			CacheD.getInstance().submitDbJobOrdered(pc.getId(), () -> {
@@ -198,7 +197,7 @@ public final class SC_Boarditem {
 		_readNode = readNode;
 	}
 
-	private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
+	private void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
 		if (_mode == 1) {
 			buffer.writeC(Opcodes.S_BOARD_LIST);
 			buffer.writeC(0);
@@ -316,7 +315,7 @@ public final class SC_Boarditem {
 		return value == null ? 1 : value.getBytes(MS949).length + 1;
 	}
 
-	public boolean send(CUserSession client) {
+	public boolean send(CUserSocket client) {
 		if (client == null || !client.isConnected()) return false;
 		final CUserSocket conn = client.getConnection();
 		if (conn == null || !conn.isClientConnected()) return false;

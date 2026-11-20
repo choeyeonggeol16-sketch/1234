@@ -26,7 +26,6 @@ import l1j.server.Server;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.packet.CBytesPacket;
 import l1j.server.server.model.network.packet.CPacketHandler;
 import l1j.server.server.model.network.packet.IPacketWriter;
@@ -300,10 +299,10 @@ public final class GameSendBenchmark {
         Arrays.fill(data, 5, data.length, (byte) sequence);
     }
 
-    private static final class Reply extends IPacketWriter<CUserSession> {
+    private static final class Reply extends IPacketWriter<CUserSocket> {
         final byte[] body;
         Reply(int payload) { body = new byte[payload]; }
-        @Override protected boolean write(CUserSession client, CPacketWriteBuffer writer) {
+        @Override protected boolean write(CUserSocket client, CPacketWriteBuffer writer) {
             writer.writeBytes(body);
             return true;
         }

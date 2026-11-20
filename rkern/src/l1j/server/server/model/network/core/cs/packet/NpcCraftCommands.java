@@ -7,7 +7,7 @@ import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -69,7 +69,7 @@ final class NpcCraftCommands {
         }
         final String npcName = target instanceof L1NpcInstance npc ? npc.getNpcTemplate().get_name() : "";
         final int resourceKey = target instanceof L1NpcInstance npc ? npc.getNpcId() : objid;
-        final CUserSession client = pc.getNetConnection();
+        final CUserSocket client = pc.getNetConnection();
         final int dialogueVersion = client == null ? 0 : client.npcDialogueVersion();
         final long dialogueTarget = L1World.getInstance().smartIdOf(target);
         boolean prepared = false;

@@ -25,7 +25,6 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 
 /**
@@ -67,7 +66,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.put(pc)); */
     public static boolean put(
-            CUserSession client,
+            CUserSocket client,
             L1PcInstance pc) {
 
         return sendPcFull(
@@ -79,7 +78,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(npc)); */
     public static boolean get(
-            CUserSession client,
+            CUserSocket client,
             L1NpcInstance npc) {
 
         return sendNpc(client, npc);
@@ -87,7 +86,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(builder)); */
     public static boolean get(
-            CUserSession client,
+            CUserSocket client,
             WorldPutBuilder builder) {
 
         return sendBuilder(client, builder);
@@ -95,7 +94,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.gets(target)); */
     public static boolean gets(
-            CUserSession client,
+            CUserSocket client,
             L1PcInstance pc) {
 
         return sendPcGets(client, pc);
@@ -103,7 +102,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(target)); */
     public static boolean get(
-            CUserSession client,
+            CUserSocket client,
             L1PcInstance pc) {
 
         return sendPcFull(
@@ -115,7 +114,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(target, a)); */
     public static boolean get(
-            CUserSession client,
+            CUserSocket client,
             L1PcInstance pc,
             int a) {
 
@@ -124,7 +123,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.getinvis(target, invis)); */
     public static boolean getinvis(
-            CUserSession client,
+            CUserSocket client,
             L1PcInstance pc,
             boolean invis) {
 
@@ -137,7 +136,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.getDetectedInvis(target)); */
     public static boolean getDetectedInvis(
-            CUserSession client,
+            CUserSocket client,
             L1PcInstance pc) {
 
         return sendPcFull(
@@ -149,7 +148,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(target, isClan)); */
     public static boolean get(
-            CUserSession client,
+            CUserSocket client,
             L1PcInstance pc,
             boolean isClan) {
 
@@ -162,7 +161,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(target, name, isClan)); */
     public static boolean get(
-            CUserSession client,
+            CUserSocket client,
             L1PcInstance pc,
             String name,
             boolean isClan) {
@@ -176,7 +175,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(target, name, isClan, a)); */
     public static boolean get(
-            CUserSession client,
+            CUserSocket client,
             L1PcInstance pc,
             String name,
             boolean isClan,
@@ -187,7 +186,7 @@ public final class SC_WorldPutObject {
 
     /** Old: pc.sendPackets(S_WorldPutObject.get(body)); */
     public static boolean get(
-            CUserSession client,
+            CUserSocket client,
             byte[] body) {
 
         return sendRaw(client, body);
@@ -198,7 +197,7 @@ public final class SC_WorldPutObject {
     // =====================================================================
 
     public static boolean sendPcFull(
-            CUserSession client,
+            CUserSocket client,
             L1PcInstance pc) {
 
         return sendPcFull(
@@ -209,7 +208,7 @@ public final class SC_WorldPutObject {
     }
 
     public static boolean sendPcFull(
-            CUserSession client,
+            CUserSocket client,
             L1PcInstance pc,
             String requestedName,
             boolean revealInvisibleName) {
@@ -380,7 +379,7 @@ public final class SC_WorldPutObject {
     // =====================================================================
 
     public static boolean sendNpc(
-            CUserSession client,
+            CUserSocket client,
             L1NpcInstance npc) {
 
         if (npc == null
@@ -548,7 +547,7 @@ public final class SC_WorldPutObject {
     // =====================================================================
 
     public static boolean sendPcGets(
-            CUserSession client,
+            CUserSocket client,
             L1PcInstance pc) {
 
         if (pc == null
@@ -578,7 +577,7 @@ public final class SC_WorldPutObject {
     }
 
     public static boolean sendPcMinimal(
-            CUserSession client,
+            CUserSocket client,
             L1PcInstance pc) {
 
         if (pc == null
@@ -603,7 +602,7 @@ public final class SC_WorldPutObject {
     }
 
     private static boolean sendPcPartial(
-            CUserSession client,
+            CUserSocket client,
             int x,
             int y,
             int objectId,
@@ -666,7 +665,7 @@ public final class SC_WorldPutObject {
     // =====================================================================
 
     public static boolean sendBuilder(
-            CUserSession client,
+            CUserSocket client,
             WorldPutBuilder s) {
 
         if (s == null
@@ -805,7 +804,7 @@ public final class SC_WorldPutObject {
     // =====================================================================
 
     public static boolean sendRaw(
-            CUserSession client,
+            CUserSocket client,
             byte[] body) {
 
         if (body == null
@@ -1539,7 +1538,7 @@ public final class SC_WorldPutObject {
         }
 
         /** Direct replacement for old build()+sendPackets(). */
-        public boolean send(CUserSession client) {
+        public boolean send(CUserSocket client) {
             return SC_WorldPutObject.sendBuilder(
                     client,
                     this);

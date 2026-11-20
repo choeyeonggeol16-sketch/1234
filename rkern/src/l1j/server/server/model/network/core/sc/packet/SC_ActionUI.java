@@ -10,7 +10,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
@@ -113,7 +112,7 @@ public final class SC_ActionUI {
 
     private static CUserSocket connectionOf(L1PcInstance pc) {
         if (pc == null) return null;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return null;
         final CUserSocket connection = socket.getConnection();
         return connection != null && connection.isClientConnected() ? connection : null;

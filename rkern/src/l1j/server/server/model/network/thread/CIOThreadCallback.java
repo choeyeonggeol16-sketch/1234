@@ -28,7 +28,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.TomahawkBleedService;
 import l1j.server.server.model.npc.ai.NpcServer;
 import l1j.server.server.model.network.core.execution.CIOShardContext;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
@@ -208,7 +208,7 @@ public final class CIOThreadCallback {
     /** Packet-only replies may publish already prepared outbound data from
      * CacheD. State-mutating work must use completeSession/world mutation.
      */
-    public boolean completeSessionReply(CUserSession client, Runnable reply) {
+    public boolean completeSessionReply(CUserSocket client, Runnable reply) {
         if (client == null || reply == null || !client.isConnected()) return false;
         try {
             reply.run();
@@ -358,7 +358,7 @@ public final class CIOThreadCallback {
         }, completion);
     }
 
-    public boolean completeSession(CUserSession client, Runnable action) {
+    public boolean completeSession(CUserSocket client, Runnable action) {
         return completeSession(client, action, failure -> {
             if (failure != null) LOGGER.log(Level.WARNING, "CIO session completion failed", failure);
         });
@@ -368,7 +368,7 @@ public final class CIOThreadCallback {
      * original socket's affinity rather than a world/creature timer binding.
      * The old inline session monitor did not change the executing thread.
      */
-    public boolean completeSession(CUserSession client, Runnable action,
+    public boolean completeSession(CUserSocket client, Runnable action,
             java.util.function.Consumer<Throwable> completion) {
         java.util.Objects.requireNonNull(completion, "completion");
         if (client == null || action == null || !client.isConnected() || client.getConnection() == null) {
@@ -598,7 +598,7 @@ public final class CIOThreadCallback {
 	 */
 	private int affinityShardIndex(L1PcInstance pc) {
 		if (pc == null) return -1;
-		final CUserSession client = pc.getNetConnection();
+		final CUserSocket client = pc.getNetConnection();
 		if (client == null) return -1;
 		final int shard = client.affinityShard();
 

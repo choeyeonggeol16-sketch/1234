@@ -11,7 +11,6 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 
 public final class SC_UseAttackSkill {
@@ -26,7 +25,7 @@ public final class SC_UseAttackSkill {
 	}
 
 	public static boolean send(
-			CUserSession client,
+			CUserSocket client,
 			L1Character cha,
 			int targetObj,
 			int spellGfx,
@@ -47,7 +46,7 @@ public final class SC_UseAttackSkill {
 	}
 
 	public static boolean send(
-			CUserSession client,
+			CUserSocket client,
 			L1Character cha,
 			int targetObj,
 			int spellGfx,
@@ -69,7 +68,7 @@ public final class SC_UseAttackSkill {
 	}
 
 	public static boolean send(
-			CUserSession client,
+			CUserSocket client,
 			L1Character cha,
 			int targetObj,
 			int spellGfx,
@@ -91,7 +90,7 @@ public final class SC_UseAttackSkill {
 	}
 
 	public static boolean send(
-			CUserSession client,
+			CUserSocket client,
 			L1Character cha,
 			int targetObj,
 			int spellGfx,
@@ -520,7 +519,7 @@ public final class SC_UseAttackSkill {
 	 * around an arbitrary anchor. One sequence value is shared by all recipients.
 	 */
 	public static boolean sendAndBroadcast(
-			CUserSession selfClient,
+			CUserSocket selfClient,
 			L1Character source,
 			L1Character anchor,
 			int targetObj,
@@ -544,7 +543,7 @@ public final class SC_UseAttackSkill {
 	}
 
 	public static boolean sendAndBroadcast(
-			CUserSession selfClient,
+			CUserSocket selfClient,
 			L1Character source,
 			L1Character anchor,
 			int targetObj,
@@ -734,7 +733,7 @@ public final class SC_UseAttackSkill {
     }
 
 	private static boolean send0(
-			CUserSession client,
+			CUserSocket client,
 			int actionId,
 			int chaId,
 			int targetObjId,

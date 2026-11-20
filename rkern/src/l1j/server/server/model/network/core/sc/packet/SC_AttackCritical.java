@@ -9,7 +9,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 
 public final class SC_AttackCritical {
@@ -32,7 +31,7 @@ public final class SC_AttackCritical {
 	// ----------------------------------------------------------------
 
 	public static boolean send(
-			CUserSession client,
+			CUserSocket client,
 			L1PcInstance pc,
 			int targetId,
 			int type,
@@ -135,7 +134,7 @@ public final class SC_AttackCritical {
 	// ----------------------------------------------------------------
 
 	public static boolean send(
-			CUserSession client,
+			CUserSocket client,
 			L1Character cha,
 			int targetId,
 			int x,
@@ -322,7 +321,7 @@ public final class SC_AttackCritical {
     }
 
 private static boolean sendMode1(
-			CUserSession client,
+			CUserSocket client,
 			int attackerId,
 			int targetId,
 			int heading,
@@ -381,7 +380,7 @@ private static boolean sendMode1(
 	}
 
 private static boolean sendMode2(
-			CUserSession client,
+			CUserSocket client,
 			int attackerId,
 			int targetId,
 			int heading,

@@ -13,7 +13,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
 import l1j.server.server.model.network.core.cs.packet.CS_CommonClick;
 import l1j.server.server.model.rank.loader.RankUserLoader;
@@ -138,7 +138,7 @@ public class ClassChange {
         ThreadPool.getInstance().scheduleRequired(new Runnable() {
             @Override
             public void run() {
-                CUserSession clnt = pc.getNetConnection();
+                CUserSocket clnt = pc.getNetConnection();
                 if (clnt == null) return;
                 
                 CS_CharSelect.restartProcess(pc);

@@ -21,7 +21,7 @@ package l1j.server.server.model;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
 public class L1EquipmentTimer implements Runnable {
@@ -47,7 +47,7 @@ public class L1EquipmentTimer implements Runnable {
 	}
 
     private void tickOnOwner() {
-        final CUserSession session = _pc.getNetConnection();
+        final CUserSocket session = _pc.getNetConnection();
         if (session == null) { cancel(); return; }
         synchronized (session) {
             if (!_active || !session.isConnected() || _pc.getSessionStamp() != _sessionStamp

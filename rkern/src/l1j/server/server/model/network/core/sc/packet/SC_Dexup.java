@@ -7,14 +7,13 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_Dexup {
     private static final int WIRE_SIZE = 11;
 
     private SC_Dexup() {}
 
-    public static boolean send(CUserSession client, L1PcInstance actor, int type, int time) {
+    public static boolean send(CUserSocket client, L1PcInstance actor, int type, int time) {
         if (actor == null) return false;
         final int totalDex = actor.getAbility() == null ? 0 : actor.getAbility().getTotalDex();
         if (client == null || !client.isConnected()) return false;

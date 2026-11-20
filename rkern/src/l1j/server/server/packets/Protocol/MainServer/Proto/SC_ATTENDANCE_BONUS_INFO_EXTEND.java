@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.model.Attendance.AttendanceLoadManager;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -79,7 +79,7 @@ public final class SC_ATTENDANCE_BONUS_INFO_EXTEND extends ProtoPacket {
     }
 
     public static boolean sendFields(
-            CUserSession recipient, int _checkInterval, int _resetPeriod, int _dailyMaxCount, int _weekendMaxCount,
+            CUserSocket recipient, int _checkInterval, int _resetPeriod, int _dailyMaxCount, int _weekendMaxCount,
             int _totalBonusGroupCount) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ATTENDANCE_BONUS_INFO_EXTEND, Proto.capacityBound(1024L));
         if (writer == null) return false;
@@ -98,7 +98,7 @@ public final class SC_ATTENDANCE_BONUS_INFO_EXTEND extends ProtoPacket {
     }
 
     private static boolean sendCtor(
-            CUserSession protoRecipient, int checkInterval, int resetPeriod, int dailyMaxCount, int weekendMaxCount,
+            CUserSocket protoRecipient, int checkInterval, int resetPeriod, int dailyMaxCount, int weekendMaxCount,
             int totalBonusGroupCount) {
         int proto14_checkInterval = 0;
         int proto14_resetPeriod = 0;
@@ -117,7 +117,7 @@ public final class SC_ATTENDANCE_BONUS_INFO_EXTEND extends ProtoPacket {
                 proto14_totalBonusGroupCount);
     }
     public static boolean sendConstructed(
-            CUserSession protoRecipient, int checkInterval, int resetPeriod, int dailyMaxCount, int weekendMaxCount,
+            CUserSocket protoRecipient, int checkInterval, int resetPeriod, int dailyMaxCount, int weekendMaxCount,
             int totalBonusGroupCount) { return sendCtor(protoRecipient, checkInterval, resetPeriod, dailyMaxCount, weekendMaxCount, totalBonusGroupCount); }
 
     public static boolean sendConstructed(

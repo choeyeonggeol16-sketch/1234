@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -47,7 +47,7 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         }
         // A packet sender runs on a game/CIO owner. Never synchronously
         // register()/query JDBC here when the login snapshot is absent.
-        final l1j.server.server.model.network.core.session.CUserSession socket = pc.getNetConnection();
+        final l1j.server.server.model.network.core.connection.CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return;
         final String account = pc.getAccountName();
         if (account == null || account.isEmpty()) return;
@@ -476,7 +476,7 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _groups, _userFlag, _active_group);
     }
 
-    public static boolean sendFields(CUserSession recipient, ArrayList<UserAttendanceDataGroup> _groups, AttendanceUserFlag _userFlag, ArrayList<AttendanceGroupType> _active_group) {
+    public static boolean sendFields(CUserSocket recipient, ArrayList<UserAttendanceDataGroup> _groups, AttendanceUserFlag _userFlag, ArrayList<AttendanceGroupType> _active_group) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ATTENDANCE_USER_DATA_EXTEND, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -493,7 +493,7 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_ATTENDANCE_USER_DATA_EXTEND);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient) {
+    private static boolean sendCtor(CUserSocket protoRecipient) {
         ArrayList<UserAttendanceDataGroup> proto17_groups = null;
         AttendanceUserFlag proto17_userFlag = null;
         ArrayList<AttendanceGroupType> proto17_active_group = null;
@@ -502,14 +502,14 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         return sendFields(protoRecipient, proto17_groups, proto17_userFlag, proto17_active_group);
     }
 
-    public static boolean sendNewInstance(CUserSession protoRecipient) {
+    public static boolean sendNewInstance(CUserSocket protoRecipient) {
         return sendCtor(protoRecipient);
     }
 
     public static boolean sendNewInstance(L1PcInstance protoRecipient) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
-    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSocket protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

@@ -13,9 +13,8 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.session.CUserSession;
-import java.nio.charset.Charset;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import java.nio.charset.Charset;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
 import l1j.server.server.storage.CacheD;
@@ -70,7 +69,7 @@ public final class SC_AuctionSystemBoard {
 	public static void sendListAsync(l1j.server.server.model.Instance.L1PcInstance pc,
 			L1NpcInstance board, int number) {
 		if (pc == null || board == null) return;
-		final CUserSession owner = pc.getNetConnection();
+		final CUserSocket owner = pc.getNetConnection();
 		if (owner == null || !owner.isConnected() || owner.getActiveChar() != pc) return;
 		final int objId = board.getId();
 		try {
@@ -89,7 +88,7 @@ public final class SC_AuctionSystemBoard {
 
 	public static void sendReadAsync(l1j.server.server.model.Instance.L1PcInstance pc, int number) {
 		if (pc == null) return;
-		final CUserSession owner = pc.getNetConnection();
+		final CUserSocket owner = pc.getNetConnection();
 		if (owner == null || !owner.isConnected() || owner.getActiveChar() != pc) return;
 		try {
 			CacheD.getInstance().submitDbJobOrdered(pc.getId(), () -> {
@@ -204,7 +203,7 @@ private Data(ReadNode readNode) {
 		_readNode = readNode;
 	}
 
-private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
+private void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
 		if (_mode == 1) {
 			buffer.writeC(Opcodes.S_BOARD_LIST);
 			buffer.writeC(0);
@@ -238,7 +237,7 @@ private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 		}
 	}
 
-private boolean writeTo(CUserSession client) {
+private boolean writeTo(CUserSocket client) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

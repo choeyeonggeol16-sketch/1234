@@ -8,13 +8,13 @@ import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /** Regional NPCs, class quests and training services. */
 final class NpcRegionalHtmlCommands {
     private NpcRegionalHtmlCommands() {}
 
-    static void handle(CUserSession client, L1PcInstance pc, L1Object obj, int objid,
+    static void handle(CUserSocket client, L1PcInstance pc, L1Object obj, int objid,
             String s, String s2, String htmlid, int templateId) throws Exception {
         int[] materials = null;
         int[] counts = null;

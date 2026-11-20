@@ -4,7 +4,6 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 import l1j.server.server.ThreadPool;
@@ -25,7 +24,7 @@ public final class SC_Ping {
         return pc != null && send(pc.getNetConnection(), value);
     }
 
-    public static boolean send(CUserSession client, int value) {
+    public static boolean send(CUserSocket client, int value) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

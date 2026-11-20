@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -65,7 +65,7 @@ public final class SC_PARTY_MEMBER_STATUS extends ProtoPacket {
     }
 
     public static boolean sendFields(
-            CUserSession recipient, String _name, int _objectId, int _hpRatio, int _mpRatio, int _status, int _world,
+            CUserSocket recipient, String _name, int _objectId, int _hpRatio, int _mpRatio, int _status, int _world,
             int _location, int _mark) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_PARTY_MEMBER_STATUS, Proto.capacityBound(1024L + (_name == null ? 0L : 2L * _name.length())));
         if (writer == null) return false;
@@ -84,7 +84,7 @@ public final class SC_PARTY_MEMBER_STATUS extends ProtoPacket {
     }
 
     private static boolean sendCtor(
-            CUserSession protoRecipient, String name, int objectId, int hpRatio, int mpRatio, int status, int world,
+            CUserSocket protoRecipient, String name, int objectId, int hpRatio, int mpRatio, int status, int world,
             int location, int mark) {
         String proto52_name = null;
         int proto52_objectId = 0;
@@ -109,7 +109,7 @@ public final class SC_PARTY_MEMBER_STATUS extends ProtoPacket {
                 proto52_world, proto52_location, proto52_mark);
     }
 
-    public static boolean sendFrom(CUserSession protoRecipient, L1PcInstance pc, int mark, boolean reverse) {
+    public static boolean sendFrom(CUserSocket protoRecipient, L1PcInstance pc, int mark, boolean reverse) {
         return sendCtor(
                 protoRecipient, pc.getName(), pc.getId(), (int) pc.getCurrentHpPercent(), (int) pc.getCurrentMpPercent(),
                 pc.isDead() ? 0 : 1, pc.getMapId(), reverse ? pc.getLongLocationReverse() : pc.getLongLocation(), mark);
@@ -119,7 +119,7 @@ public final class SC_PARTY_MEMBER_STATUS extends ProtoPacket {
         return sendFrom(protoRecipient == null ? null : protoRecipient.getNetConnection(), pc, mark, reverse);
     }
     public static boolean sendConstructed(
-            CUserSession protoRecipient, String name, int objectId, int hpRatio, int mpRatio, int status, int world,
+            CUserSocket protoRecipient, String name, int objectId, int hpRatio, int mpRatio, int status, int world,
             int location, int mark) { return sendCtor(protoRecipient, name, objectId, hpRatio, mpRatio, status, world, location, mark); }
 
     public static boolean sendConstructed(

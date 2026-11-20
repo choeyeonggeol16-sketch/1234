@@ -57,7 +57,7 @@ import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Warehouse.Warehouse;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_Attr;
 import l1j.server.server.model.network.core.cs.packet.CS_CommonClick;
 import l1j.server.server.model.network.utill.CConnectionState;
@@ -660,7 +660,7 @@ public class UserCommands{
 				}
 			}
 			
-			CUserSession client = pc.getNetConnection();
+			CUserSocket client = pc.getNetConnection();
 			pc.setNetConnection(null);
 			pc.setAutoFish(true);
 			try {
@@ -725,7 +725,7 @@ public class UserCommands{
 			SQLUtil.close(con);
 		}
 	}
-	public void 원격교환(L1PcInstance pc, String cmd, CUserSession clientthread) {
+	public void 원격교환(L1PcInstance pc, String cmd, CUserSocket clientthread) {
 		try {
 			StringTokenizer st = new StringTokenizer(cmd);
 			String Trade_name = st.nextToken();
@@ -1461,7 +1461,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 					return;
 				}
 			}
-			CUserSession client = pc.getNetConnection();
+			CUserSocket client = pc.getNetConnection();
 			pc.setNetConnection(null);
 			client.setConnectionState(CConnectionState.OUT_GAME);
 			pc.set무인상점(true);

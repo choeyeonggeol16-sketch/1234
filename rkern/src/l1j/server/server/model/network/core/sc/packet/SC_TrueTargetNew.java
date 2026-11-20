@@ -5,7 +5,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_TrueTargetNew {
     private SC_TrueTargetNew() {}
@@ -16,7 +15,7 @@ public final class SC_TrueTargetNew {
             .putInt(active?1:0).putShort((short)0);
     }
 
-public static boolean send(CUserSession client, int targetId, boolean active) {
+public static boolean send(CUserSocket client, int targetId, boolean active) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

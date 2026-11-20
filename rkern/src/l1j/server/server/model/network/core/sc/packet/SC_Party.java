@@ -5,7 +5,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_Party {
     private SC_Party() {}
@@ -22,7 +21,7 @@ public final class SC_Party {
     private static boolean sendHypertext0(L1PcInstance receiver, String htmlId, int objId,
                                           String partyName, String partyMembers, int type) {
         if (receiver == null) return false;
-        final CUserSession socket = receiver.getNetConnection();
+        final CUserSocket socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -60,7 +59,7 @@ public final class SC_Party {
 
     public static boolean sendNameColor(L1PcInstance receiver, L1PcInstance subject, int color) {
         if (receiver == null || color < 0 || color > 2) return false;
-        final CUserSession socket = receiver.getNetConnection();
+        final CUserSocket socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

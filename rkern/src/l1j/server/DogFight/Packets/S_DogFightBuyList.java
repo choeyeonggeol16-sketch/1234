@@ -8,7 +8,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public class S_DogFightBuyList extends CServerPacket {
 
@@ -34,7 +34,7 @@ public class S_DogFightBuyList extends CServerPacket {
 	}
 
 	@Override
-	public void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
+	public void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
 
 		buffer.writeC(Opcodes.S_BUY_LIST);
 		buffer.writeD(_objectId);

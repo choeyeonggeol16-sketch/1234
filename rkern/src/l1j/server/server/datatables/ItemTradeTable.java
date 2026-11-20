@@ -15,7 +15,7 @@ import l1j.server.server.UserCommands;
 import l1j.server.server.GMCommands;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1Item;
@@ -141,7 +141,7 @@ public class ItemTradeTable {
             return;
         }
         final int stamp = actor.getSessionStamp();
-        final CUserSession session = actor.getNetConnection();
+        final CUserSocket session = actor.getNetConnection();
         if (session == null || !session.isConnected() || session.getActiveChar() != actor) return;
         try {
             CacheD.getInstance().submitDbJobOrdered(actor.getId(), () -> {

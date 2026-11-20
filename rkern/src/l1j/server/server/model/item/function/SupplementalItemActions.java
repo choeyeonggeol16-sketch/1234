@@ -3,14 +3,14 @@ package l1j.server.server.model.item.function;
 import l1j.server.MJINNSystem.MJINNHelper;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 final class SupplementalItemActions {
     private SupplementalItemActions() {}
 
-    static void use(CUserSession client, L1PcInstance pc, L1ItemInstance l1iteminstance, int I) {
+    static void use(CUserSocket client, L1PcInstance pc, L1ItemInstance l1iteminstance, int I) {
         // A request must only use the instance validated by the packet entrypoint.
         // Do not accept a separately supplied itemId or look up a different item.
         if (pc == null || client == null || client.getActiveChar() != pc

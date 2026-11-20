@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ShopSellList2;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -53,7 +53,7 @@ public final class L1Search1 implements L1CommandExecutor {
             return;
         }
 
-        final CUserSession owner = pc.getNetConnection();
+        final CUserSocket owner = pc.getNetConnection();
         if (owner == null || !owner.isConnected() || owner.getActiveChar() != pc) return;
         try {
             CacheD.getInstance().submitDbJobOrdered(SHOP_ORDER_KEY, pc.getId(), () -> {

@@ -14,7 +14,7 @@ import l1j.server.server.model.L1ClanMatching;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.utils.ServerMessage;
@@ -29,7 +29,7 @@ public final class CS_LeavePledge {
     }
 
     public static void handle(
-            CUserSession client) {
+            CUserSocket client) {
 
         if (client == null) {
             return;

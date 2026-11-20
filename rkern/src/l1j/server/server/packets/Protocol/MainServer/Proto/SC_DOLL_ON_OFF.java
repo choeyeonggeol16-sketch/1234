@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.model.Instance.L1DollInstance;
@@ -58,7 +58,7 @@ public final class SC_DOLL_ON_OFF extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _dollTime, _dollType, _itemId, _statusBytes);
     }
 
-    public static boolean sendFields(CUserSession recipient, int _dollTime, int _dollType, int _itemId, byte[] _statusBytes) {
+    public static boolean sendFields(CUserSocket recipient, int _dollTime, int _dollType, int _itemId, byte[] _statusBytes) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_DOLL_ON_OFF, Proto.capacityBound(1024L + (_statusBytes == null ? 0L : _statusBytes.length)));
         if (writer == null) return false;
         try {
@@ -75,7 +75,7 @@ public final class SC_DOLL_ON_OFF extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_DOLL_ON_OFF);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, int dollTime, int dollType, int itemId, byte[] statusBytes) {
+    private static boolean sendCtor(CUserSocket protoRecipient, int dollTime, int dollType, int itemId, byte[] statusBytes) {
         int proto30_dollTime = 0;
         int proto30_dollType = 0;
         int proto30_itemId = 0;
@@ -89,7 +89,7 @@ public final class SC_DOLL_ON_OFF extends ProtoPacket {
         return sendFields(protoRecipient, proto30_dollTime, proto30_dollType, proto30_itemId, proto30_statusBytes);
     }
 
-    public static boolean sendCreate(CUserSession protoRecipient, L1DollInstance doll, L1ItemInstance item, int dollTime, boolean onoff) {
+    public static boolean sendCreate(CUserSocket protoRecipient, L1DollInstance doll, L1ItemInstance item, int dollTime, boolean onoff) {
         final int time   = onoff ? dollTime : 0;
                 final int type   = onoff && doll != null ? doll.getDollType() : 0;
                 final int itemId = onoff && item != null ? item.getId() : 0;
@@ -102,7 +102,7 @@ public final class SC_DOLL_ON_OFF extends ProtoPacket {
         return sendCreate(protoRecipient == null ? null : protoRecipient.getNetConnection(), doll, item, dollTime, onoff);
     }
     public static boolean sendConstructed(
-            CUserSession protoRecipient, int dollTime, int dollType, int itemId, byte[] statusBytes) { return sendCtor(protoRecipient, dollTime, dollType, itemId, statusBytes); }
+            CUserSocket protoRecipient, int dollTime, int dollType, int itemId, byte[] statusBytes) { return sendCtor(protoRecipient, dollTime, dollType, itemId, statusBytes); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int dollTime, int dollType, int itemId, byte[] statusBytes) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), dollTime, dollType, itemId, statusBytes); }

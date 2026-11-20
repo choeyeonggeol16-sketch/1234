@@ -10,14 +10,14 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1AuctionBoardInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.npc.action.L1NpcAction;
 import l1j.server.server.templates.L1House;
 
 public final class CS_Amount {
     private CS_Amount() {}
 
-    public static void handle(CUserSession client, int objectId, int amount, String actionName) {
+    public static void handle(CUserSocket client, int objectId, int amount, String actionName) {
         if (client == null || actionName == null || amount <= 0 || amount > L1Inventory.MAX_AMOUNT) return;
         final L1PcInstance pc = client.getActiveChar();
         if (!HtmlCmdHandler.canInteractWithNpc(client, pc)) return;

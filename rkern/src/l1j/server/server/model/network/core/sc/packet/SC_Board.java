@@ -18,7 +18,6 @@ import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.templates.L1BoardPost;
 
 public final class SC_Board {
@@ -164,7 +163,7 @@ public final class SC_Board {
 		_bugRaceNodes = bugRaceNodes;
 	}
 
-	private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
+	private void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
 		switch (_mode) {
 		case 1: { // 일반 게시판 패킷 구조
 			buffer.writeC(Opcodes.S_BOARD_LIST);
@@ -271,7 +270,7 @@ public final class SC_Board {
 		return value == null ? 1 : value.getBytes(MS949).length + 1;
 	}
 
-	public boolean send(CUserSession client) {
+	public boolean send(CUserSocket client) {
 		if (client == null || !client.isConnected()) return false;
 		final CUserSocket conn = client.getConnection();
 		if (conn == null || !conn.isClientConnected()) return false;
@@ -338,7 +337,7 @@ public final class SC_Board {
 
 	public static boolean send(L1PcInstance pc, L1NpcInstance board, int number) {
 		if (pc == null || board == null) return false;
-		final CUserSession client = pc.getNetConnection();
+		final CUserSocket client = pc.getNetConnection();
 		if (client == null || !client.isConnected()) return false;
 		final CUserSocket conn = client.getConnection();
 		if (conn == null || !conn.isClientConnected() || client.getActiveChar() != pc) return false;

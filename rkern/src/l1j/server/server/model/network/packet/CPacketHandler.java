@@ -12,7 +12,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.buffer.CPacketReadBuffer;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_ActionUi;
 import l1j.server.server.model.network.core.cs.packet.CS_Attr;
 import l1j.server.server.model.network.core.cs.packet.CS_Channel;
@@ -122,7 +122,7 @@ public final class CPacketHandler {
 
     @FunctionalInterface
     public interface PacketHandler {
-        boolean execute(CPacketReadBuffer buffer, CUserSession client);
+        boolean execute(CPacketReadBuffer buffer, CUserSocket client);
     }
 
     // Static, per-process function pointers. No per-packet allocations.
@@ -411,7 +411,7 @@ public final class CPacketHandler {
     // 문 / 상자 열기 (OPEN)
     // ------------------------------------------------------------------
 
-    static boolean decodeOpen(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeOpen(CPacketReadBuffer buffer, CUserSocket client) {
 
         if (buffer.remaining() < 8) {
             return true;
@@ -435,7 +435,7 @@ public final class CPacketHandler {
     // 이동 (MOVE)
     // ------------------------------------------------------------------
 
-    static boolean MoveToLocationPacket(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean MoveToLocationPacket(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 5) {
             return true;
         }
@@ -451,7 +451,7 @@ public final class CPacketHandler {
     // 공격 / 원거리 공격 (ATTACK / FAR ATTACK)
     // ------------------------------------------------------------------
 
-    static boolean AttackPacket(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean AttackPacket(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 8) {
             return true;
         }
@@ -467,7 +467,7 @@ public final class CPacketHandler {
     // 자동 공격 (AUTO ATTACK)
     // ------------------------------------------------------------------
 
-    static boolean decodeAutoAttack(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeAutoAttack(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 4) {
             return true;
         }
@@ -481,7 +481,7 @@ public final class CPacketHandler {
     // 스킬 사용 (USE SKILL)
     // ------------------------------------------------------------------
 
-    static boolean MagicSkillUsePacket(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean MagicSkillUsePacket(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 2) {
             return true;
         }
@@ -560,7 +560,7 @@ public final class CPacketHandler {
     // 아이템 줍기 (PICKUP)
     // ------------------------------------------------------------------
 
-    static boolean GetItemPacket(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean GetItemPacket(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 12) {
             return true;
         }
@@ -577,7 +577,7 @@ public final class CPacketHandler {
     // 방향 전환 (CHANGE HEADING)
     // ------------------------------------------------------------------
 
-    static boolean decodeChangeHeading(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeChangeHeading(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 1) {
             return true;
         }
@@ -591,7 +591,7 @@ public final class CPacketHandler {
     // 채팅 (CHAT)
     // ------------------------------------------------------------------
 
-    static boolean SayPacket2(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean SayPacket2(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 1) {
             return true;
         }
@@ -601,7 +601,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean LoginPacket(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean LoginPacket(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 2) {
             return true;
@@ -630,7 +630,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean EnterWorldPacket(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean EnterWorldPacket(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -678,7 +678,7 @@ public final class CPacketHandler {
         return new String(scratch, 0, length, MS949);
     }
 
-    static boolean decodeEnterPortal(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeEnterPortal(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 4) {
             return true;
         }
@@ -689,7 +689,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeAnswer(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeAnswer(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 2) {
             return true;
@@ -793,7 +793,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean CharacterCreatePacket(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean CharacterCreatePacket(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -826,7 +826,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeChannel(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeChannel(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 1) {
             return true;
@@ -1029,7 +1029,7 @@ public final class CPacketHandler {
         return new PasswordRead(true, end, new String(chars));
     }
 
-    static boolean CharacterDeletePacket(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean CharacterDeletePacket(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -1047,7 +1047,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean DestroyItem(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean DestroyItem(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 4) {
             return true;
@@ -1090,7 +1090,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeGiveItem(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeGiveItem(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 16) {
             return true;
         }
@@ -1104,7 +1104,7 @@ public final class CPacketHandler {
 
     private static final int EMBLEM_SIZE = 384;
 
-    static boolean decodeUploadEmblem(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeUploadEmblem(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < EMBLEM_SIZE) {
             return true;
         }
@@ -1117,7 +1117,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeBookmark(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeBookmark(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -1138,7 +1138,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeNpcTalk(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeNpcTalk(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 4) {
             return true;
         }
@@ -1148,7 +1148,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeCreatePledge(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeCreatePledge(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -1182,7 +1182,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeReturnStatus(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeReturnStatus(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 1) {
             return true;
@@ -1228,7 +1228,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeWar(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeWar(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 2) {
             return true;
@@ -1247,7 +1247,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeDeleteBookmark(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeDeleteBookmark(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -1268,7 +1268,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodePersonalShop(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodePersonalShop(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 1) {
             return true;
@@ -1294,7 +1294,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeWho(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeWho(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String targetName = null;
 
@@ -1316,7 +1316,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeBuySpell(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeBuySpell(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 2) {
             return true;
@@ -1359,7 +1359,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeExtraCommand(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeExtraCommand(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 1) {
             return true;
         }
@@ -1369,7 +1369,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean DropItemPacket(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean DropItemPacket(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 4) {
             return true;
@@ -1406,7 +1406,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeSaveIo(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeSaveIo(CPacketReadBuffer buffer, CUserSocket client) {
         if (!Config.CHARACTER_CONFIG_IN_SERVER_SIDE) {
             return true;
         }
@@ -1434,7 +1434,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean HtmlCMDPacket(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean HtmlCMDPacket(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 5) {
             return true;
@@ -1500,7 +1500,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeChatPartyControl(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeChatPartyControl(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 1) {
             return true;
@@ -1531,7 +1531,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean UseItemPacket(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean UseItemPacket(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 4) {
             return true;
@@ -1585,12 +1585,12 @@ public final class CPacketHandler {
         return dispatchUseItem(client,  itemObjId, targetId, x, y, name, skillId);
     }
 
-    private static boolean dispatchUseItem(CUserSession client, int itemObjId, int targetId, int x, int y, String name, int skillId) {
+    private static boolean dispatchUseItem(CUserSocket client, int itemObjId, int targetId, int x, int y, String name, int skillId) {
         handleUseItem(client, itemObjId, targetId, x, y, skillId, name);
         return true;
     }
 
-    static boolean decodeMarriage(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeMarriage(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 1) {
             return true;
         }
@@ -1603,7 +1603,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeSlaveControl(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeSlaveControl(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 9) {
             return true;
         }
@@ -1614,7 +1614,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeRankControl(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeRankControl(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 2) {
             return true;
@@ -1641,7 +1641,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeHypertextInputResult(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeHypertextInputResult(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 10) {
             return true;
@@ -1675,7 +1675,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeBuySell(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeBuySell(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 7) {
             return true;
@@ -1703,7 +1703,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeNpcItemControl(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeNpcItemControl(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 6) {
             return true;
         }
@@ -1716,7 +1716,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeInvitePartyTarget(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeInvitePartyTarget(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 1) {
             return true;
@@ -1754,7 +1754,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeCheckInventory(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeCheckInventory(CPacketReadBuffer buffer, CUserSocket client) {
         if (buffer.remaining() < 4) {
             return true;
         }
@@ -1765,7 +1765,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeOnOff(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeOnOff(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int type = 0, button = 0;
 
@@ -1780,7 +1780,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeQueryCastleSecurity(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeQueryCastleSecurity(CPacketReadBuffer buffer, CUserSocket client) {
         int objId = 0;
         if (buffer.remaining() >= 4) {
             objId = buffer.readInt(1);
@@ -1790,7 +1790,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeWarehouseControl(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeWarehouseControl(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 1) {
             return true;
@@ -1828,7 +1828,7 @@ public final class CPacketHandler {
         return (buffer.readByte(offset) & 0xFF) | ((buffer.readByte(offset + 1) & 0xFF) << 8) | ((buffer.readByte(offset + 2) & 0xFF) << 16);
     }
 
-    static boolean decodeEmblem(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeEmblem(CPacketReadBuffer buffer, CUserSocket client) {
         int emblemId = 0;
         if (buffer.remaining() >= 4) {
             emblemId = buffer.readInt(1);
@@ -1838,7 +1838,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeMatchMaking(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeMatchMaking(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int type = 0, objid = 0, htype = 0;
         String text = null;
@@ -1882,7 +1882,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeQueryPersonalShop(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeQueryPersonalShop(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int type = 0, objectId = 0;
 
@@ -1897,7 +1897,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean TradeAddItemsPacket(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean TradeAddItemsPacket(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int itemObjectId = 0, itemCount = 0;
 
@@ -1912,7 +1912,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeChangeCastleSecurity(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeChangeCastleSecurity(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int objId = 0, type = 0;
 
@@ -1927,7 +1927,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean FriendRemove(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean FriendRemove(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String charName = null;
 
@@ -1944,7 +1944,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeBanishParty(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeBanishParty(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String memberName = null;
 
@@ -1961,7 +1961,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeBoardDelete(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeBoardDelete(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int objId = 0, topicId = 0;
 
@@ -1976,7 +1976,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeBoardWrite(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeBoardWrite(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int id = 0;
         String title = null, content = null;
@@ -2005,7 +2005,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeTax(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeTax(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int taxRate = 0;
 
@@ -2017,7 +2017,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeDeposit(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeDeposit(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int targetId = 0, amount = 0;
 
@@ -2032,7 +2032,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeBoardList(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeBoardList(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int objId = 0, topicNumber = 0;
 
@@ -2047,7 +2047,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeMail(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeMail(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int type = 0;
 
@@ -2228,7 +2228,7 @@ public final class CPacketHandler {
         return new String(temp, 0, length, CS_EUC_KR);
     }
 
-    static boolean decodePledgeContent(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodePledgeContent(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int data = 0;
         String content = null;
@@ -2252,7 +2252,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeCallPlayer(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeCallPlayer(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String name = null;
 
@@ -2271,7 +2271,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeBanMember(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeBanMember(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String targetName = null;
 
@@ -2290,7 +2290,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeExchangeableSpell(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeExchangeableSpell(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int value = 0;
 
@@ -2302,7 +2302,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeWithdraw(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeWithdraw(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int drawAmount = 0;
 
@@ -2314,7 +2314,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeAddBuddy(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeAddBuddy(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String charName = null;
 
@@ -2333,7 +2333,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeBuyableSpell(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeBuyableSpell(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int id = 0;
 
@@ -2345,7 +2345,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodePlate(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodePlate(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int objectId = 0;
 
@@ -2357,7 +2357,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeFix(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeFix(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int itemObjectId = 0, npcObjectId = 0;
 
@@ -2372,7 +2372,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeExtended(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeExtended(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int type = 0;
 
@@ -2436,7 +2436,7 @@ public final class CPacketHandler {
     }
 
     
-    static boolean decodePledgeWatch(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodePledgeWatch(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int data = 0;
         String targetClanName = null;
@@ -2460,7 +2460,7 @@ public final class CPacketHandler {
         return true;
     }
     
-    static boolean decodeBoardRead(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeBoardRead(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int objId = 0;
         int topicNumber = 0;
@@ -2477,7 +2477,7 @@ public final class CPacketHandler {
     }
 
     
-    static boolean GiveNicknamePacket(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean GiveNicknamePacket(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String charName = null;
         String title = null;
@@ -2512,7 +2512,7 @@ public final class CPacketHandler {
     
     
     
-    static boolean decodeExchangeSpell(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeExchangeSpell(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int count = 0;
 
@@ -2582,7 +2582,7 @@ public final class CPacketHandler {
     private static final Charset CRAFT_MS949 = Charset.forName("MS949");
     private static final ThreadLocal<byte[]> CRAFT_STRING_BUFFER = ThreadLocal.withInitial(() -> new byte[256]);
     
-    private static boolean dispatchExtendedProto(CPacketReadBuffer buffer, CUserSession client, int payloadSize) {
+    private static boolean dispatchExtendedProto(CPacketReadBuffer buffer, CUserSocket client, int payloadSize) {
         final byte[] frames = new byte[payloadSize + 1];
         frames[0] = (byte) (Opcodes.C_EXTENDED_PROTOBUF & 0xFF);
 
@@ -2611,7 +2611,7 @@ public final class CPacketHandler {
         }
     }
     
-    private static boolean decodeCraft(CPacketReadBuffer buffer, CUserSession client, int type, int payloadSize) {
+    private static boolean decodeCraft(CPacketReadBuffer buffer, CUserSocket client, int type, int payloadSize) {
         final int limit = 1 + payloadSize;
 
         /*
@@ -2925,7 +2925,7 @@ public final class CPacketHandler {
         return ((long) current << 32) | (value & 0xFFFFFFFFL);
     }
     
-    static boolean decodeExtendedMultiplexed(CPacketReadBuffer buffer, CUserSession client) {
+    static boolean decodeExtendedMultiplexed(CPacketReadBuffer buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
 
         if (payloadSize < 2) {
@@ -2974,7 +2974,7 @@ public final class CPacketHandler {
     private static final ThreadLocal<byte[]> ACTION_STRING_BUFFER = ThreadLocal.withInitial(() -> new byte[4096]);
     private static final char[] HEX = "0123456789ABCDEF".toCharArray();
     
-    private static boolean decodeActionUi(CPacketReadBuffer buffer, CUserSession client, int type, int payloadSize) {
+    private static boolean decodeActionUi(CPacketReadBuffer buffer, CUserSocket client, int type, int payloadSize) {
         final int limit = 1 + payloadSize;
 
  
@@ -3331,7 +3331,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleOpen( CUserSession client, int p0, int p1, int p2 ) {
+    static void handleOpen( CUserSocket client, int p0, int p1, int p2 ) {
         if (!client.isConnected()) return;
         try {
             CS_Door.handle(
@@ -3345,7 +3345,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleMove( CUserSession client, int p0, int p1, int p2 ) {
+    static void handleMove( CUserSocket client, int p0, int p1, int p2 ) {
         if (!client.isConnected()) return;
         try {
             move(client, p0, p1, p2);
@@ -3354,7 +3354,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleAttack( CUserSession client, int p0, int p1, int p2 ) {
+    static void handleAttack( CUserSocket client, int p0, int p1, int p2 ) {
         if (!client.isConnected()) return;
         try {
             attack(client, p0, p1, p2);
@@ -3363,7 +3363,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleAutoAttack( CUserSession client, int p0 ) {
+    static void handleAutoAttack( CUserSocket client, int p0 ) {
         if (!client.isConnected()) return;
         try {
             autoAttack(client, p0);
@@ -3372,7 +3372,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleUseSkill( CUserSession client, int p0, int p1, int p2, int p3, String s0 ) {
+    static void handleUseSkill( CUserSocket client, int p0, int p1, int p2, int p3, String s0 ) {
         if (!client.isConnected()) return;
         try {
             useSkill(client, p0, p1, p2, p3, s0);
@@ -3381,7 +3381,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handlePickup( CUserSession client, int p0, int p1, int p2, long l0 ) {
+    static void handlePickup( CUserSocket client, int p0, int p1, int p2, long l0 ) {
         if (!client.isConnected()) return;
         try {
             pickup(client, p0, p1, p2, l0);
@@ -3390,7 +3390,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleChangeHeading( CUserSession client, int p0 ) {
+    static void handleChangeHeading( CUserSocket client, int p0 ) {
         if (!client.isConnected()) return;
         try {
             changeHeading(client, p0);
@@ -3399,7 +3399,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleChat( CUserSession client, String s0 ) {
+    static void handleChat( CUserSocket client, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_Chat.handle(client, s0);
@@ -3408,7 +3408,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleAuthLogin( CUserSession client, String s0, String s1 ) {
+    static void handleAuthLogin( CUserSocket client, String s0, String s1 ) {
         if (!client.isConnected()) return;
         try {
             CS_AuthLogin.handle(client, s0, s1);
@@ -3417,7 +3417,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleEnterWorld( CUserSession client, String s0 ) {
+    static void handleEnterWorld( CUserSocket client, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_EnterWorld.handle(client, s0);
@@ -3426,7 +3426,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleEnterPortal( CUserSession client, int p0, int p1 ) {
+    static void handleEnterPortal( CUserSocket client, int p0, int p1 ) {
         if (!client.isConnected()) return;
         try {
             enterPortal(client, p0, p1);
@@ -3435,7 +3435,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleAnswer( CUserSession client, int p0, int p1, int p2, String s0 ) {
+    static void handleAnswer( CUserSocket client, int p0, int p1, int p2, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_Attr.handle(client, p0, p1, p2, s0);
@@ -3444,7 +3444,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleCreateCustomCharacter( CUserSession client, int p0, int p1, int p2, int p3, long l0, String s0 ) {
+    static void handleCreateCustomCharacter( CUserSocket client, int p0, int p1, int p2, int p3, long l0, String s0 ) {
         if (!client.isConnected()) return;
         try {
             createCustomCharacter(client, s0, p0, p1, p2, p3, l0);
@@ -3453,7 +3453,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleChannel( CUserSession client, int p0, int p1, int p2, int p3, long l0, long l1, String s0, String s1, Object o0 ) {
+    static void handleChannel( CUserSocket client, int p0, int p1, int p2, int p3, long l0, long l1, String s0, String s1, Object o0 ) {
         if (!client.isConnected()) return;
         try {
             CS_Channel.handle(client, p0, p1, p2, p3, (int) l0, (int) l1, s0, s1, o0);
@@ -3462,7 +3462,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleDeleteCharacter( CUserSession client, String s0 ) {
+    static void handleDeleteCharacter( CUserSocket client, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_DeleteChar.handle(client, s0);
@@ -3471,7 +3471,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleDestroyItem( CUserSession client, int p0, int p1, int p2, Object o0 ) {
+    static void handleDestroyItem( CUserSocket client, int p0, int p1, int p2, Object o0 ) {
         if (!client.isConnected()) return;
         try {
             CS_DestroyItem.handle(client, p0, p1, p2, (int[]) o0);
@@ -3480,7 +3480,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleDeadRestart( CUserSession client ) {
+    static void handleDeadRestart( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_Restart.handle(client);
@@ -3489,7 +3489,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleGiveItem( CUserSession client, int p0, int p1, int p2 ) {
+    static void handleGiveItem( CUserSocket client, int p0, int p1, int p2 ) {
         if (!client.isConnected()) return;
         try {
             CS_GiveItem.handle(client, p0, p1, p2);
@@ -3498,7 +3498,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleUploadEmblem( CUserSession client, int p0, Object o0 ) {
+    static void handleUploadEmblem( CUserSocket client, int p0, Object o0 ) {
         if (!client.isConnected()) return;
         try {
             CS_Emblem.handle(client, (byte[]) o0,  p0);
@@ -3507,7 +3507,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleAlive( CUserSession client ) {
+    static void handleAlive( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             alive(client);
@@ -3516,7 +3516,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleBookmark( CUserSession client, String s0 ) {
+    static void handleBookmark( CUserSocket client, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_Bookmark.handle(client, s0);
@@ -3525,7 +3525,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleCharSelect( CUserSession client ) {
+    static void handleCharSelect( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_CharSelect.handle(client);
@@ -3534,7 +3534,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleNpcTalk( CUserSession client, int p0 ) {
+    static void handleNpcTalk( CUserSocket client, int p0 ) {
         if (!client.isConnected()) return;
         try {
             CS_NpcTalk.handle(client, p0);
@@ -3543,7 +3543,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleCreatePledge( CUserSession client, int p0, String s0 ) {
+    static void handleCreatePledge( CUserSocket client, int p0, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_CreatePledge.handle(client, s0, p0);
@@ -3552,7 +3552,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleReturnStatus( CUserSession client, int p0, int p1, int p2, long l0 ) {
+    static void handleReturnStatus( CUserSocket client, int p0, int p1, int p2, long l0 ) {
         if (!client.isConnected()) return;
         try {
             CS_ReturnStatus.handle(client, p0, p1, p2, l0);
@@ -3561,7 +3561,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleWar( CUserSession client, int p0, String s0 ) {
+    static void handleWar( CUserSocket client, int p0, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_War.handle(client, p0, s0);
@@ -3570,7 +3570,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleDeleteBookmark( CUserSession client, String s0 ) {
+    static void handleDeleteBookmark( CUserSocket client, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_DeleteBookmark.handle(client, s0);
@@ -3579,7 +3579,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handlePersonalShop( CUserSession client, int p0, Object o0 ) {
+    static void handlePersonalShop( CUserSocket client, int p0, Object o0 ) {
         if (!client.isConnected()) return;
         try {
             CS_PersonalShop.handle(client, p0, (byte[]) o0);
@@ -3588,7 +3588,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleWho( CUserSession client, String s0 ) {
+    static void handleWho( CUserSocket client, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_Who.handle(client, s0);
@@ -3597,7 +3597,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleReturnSummon( CUserSession client ) {
+    static void handleReturnSummon( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_ReturnSummon.handle(client);
@@ -3606,7 +3606,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleBuySpell( CUserSession client, int p0, int p1, int p2, int p3, long l0 ) {
+    static void handleBuySpell( CUserSocket client, int p0, int p1, int p2, int p3, long l0 ) {
         if (!client.isConnected()) return;
         try {
             CS_BuySpell.handle(client, p0, p1, p2, p3, l0);
@@ -3615,7 +3615,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleExtraCommand( CUserSession client, int p0 ) {
+    static void handleExtraCommand( CUserSocket client, int p0 ) {
         if (!client.isConnected()) return;
         try {
             CS_ExtraCommand.handle(client, p0);
@@ -3624,7 +3624,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleUseItem( CUserSession client, int p0, int p1, int p2, int p3, long l0, String s0 ) {
+    static void handleUseItem( CUserSocket client, int p0, int p1, int p2, int p3, long l0, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_ItemUse.handle(
@@ -3640,7 +3640,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleDrop( CUserSession client, int p0, int p1, int p2, int p3, long l0, Object o0 ) {
+    static void handleDrop( CUserSocket client, int p0, int p1, int p2, int p3, long l0, Object o0 ) {
         if (!client.isConnected()) return;
         try {
             CS_DropItem.handle(
@@ -3656,7 +3656,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleSaveio( CUserSession client, int p0, Object o0 ) {
+    static void handleSaveio( CUserSocket client, int p0, Object o0 ) {
         if (!client.isConnected()) return;
         try {
             CS_SaveIo.handle(
@@ -3668,7 +3668,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleNpcAction( CUserSession client, int p0, String s0, String s1, Object o0 ) {
+    static void handleNpcAction( CUserSocket client, int p0, String s0, String s1, Object o0 ) {
         if (!client.isConnected()) return;
         try {
             CS_NpcAction.handle(
@@ -3682,7 +3682,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleChatPartyControl( CUserSession client, int p0, String s0 ) {
+    static void handleChatPartyControl( CUserSocket client, int p0, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_ChatParty.handle(
@@ -3694,7 +3694,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleMarriage( CUserSession client, int p0 ) {
+    static void handleMarriage( CUserSocket client, int p0 ) {
         if (!client.isConnected()) return;
         try {
             CS_Marriage.handle(
@@ -3705,7 +3705,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleSlaveControl( CUserSession client, int p0, int p1 ) {
+    static void handleSlaveControl( CUserSocket client, int p0, int p1 ) {
         if (!client.isConnected()) return;
         try {
             CS_SlaveControl.handle(
@@ -3717,7 +3717,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleWhoPledge( CUserSession client ) {
+    static void handleWhoPledge( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_WhoPledge.handle(client);
@@ -3726,7 +3726,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleRankControl( CUserSession client, int p0, int p1, String s0 ) {
+    static void handleRankControl( CUserSocket client, int p0, int p1, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_RankControl.handle(
@@ -3740,7 +3740,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleHypertextInputResult( CUserSession client, int p0, int p1, String s0 ) {
+    static void handleHypertextInputResult( CUserSocket client, int p0, int p1, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_Amount.handle(
@@ -3754,7 +3754,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleBuySell( CUserSession client, int p0, int p1, int p2, int p3, long l0, Object o0 ) {
+    static void handleBuySell( CUserSocket client, int p0, int p1, int p2, int p3, long l0, Object o0 ) {
         if (!client.isConnected()) return;
         try {
             CS_Result.handle(
@@ -3771,7 +3771,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleNpcItemControl( CUserSession client, int p0, int p1, int p2 ) {
+    static void handleNpcItemControl( CUserSocket client, int p0, int p1, int p2 ) {
         if (!client.isConnected()) return;
         try {
             CS_NpcItemControl.handle(
@@ -3785,7 +3785,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleLogout( CUserSession client ) {
+    static void handleLogout( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_Logout.handle(client);
@@ -3794,7 +3794,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleInvitePartyTarget( CUserSession client, int p0, int p1, String s0 ) {
+    static void handleInvitePartyTarget( CUserSocket client, int p0, int p1, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_InvitePartyTarget.handle(
@@ -3808,7 +3808,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleCheckInventory( CUserSession client, int p0 ) {
+    static void handleCheckInventory( CUserSocket client, int p0 ) {
         if (!client.isConnected()) return;
         try {
             CS_CheckInventory.handle(
@@ -3819,7 +3819,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleOnoff( CUserSession client, int p0, int p1 ) {
+    static void handleOnoff( CUserSocket client, int p0, int p1 ) {
         if (!client.isConnected()) return;
         try {
             CS_OnOff.handle(
@@ -3831,7 +3831,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleQueryCastleSecurity( CUserSession client, int p0 ) {
+    static void handleQueryCastleSecurity( CUserSocket client, int p0 ) {
         if (!client.isConnected()) return;
         try {
             CS_QueryCastleSecurity.handle(
@@ -3842,7 +3842,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleWarehouseControl( CUserSession client, int p0, int p1, int p2 ) {
+    static void handleWarehouseControl( CUserSocket client, int p0, int p1, int p2 ) {
         if (!client.isConnected()) return;
         try {
             CS_WarehouseControl.handle(
@@ -3856,7 +3856,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleEmblem( CUserSession client, int p0 ) {
+    static void handleEmblem( CUserSocket client, int p0 ) {
         if (!client.isConnected()) return;
         try {
             CS_EmblemRequest.handle(
@@ -3867,7 +3867,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleMatchMaking( CUserSession client, int p0, int p1, int p2, String s0 ) {
+    static void handleMatchMaking( CUserSocket client, int p0, int p1, int p2, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_ClanMatching.handle(
@@ -3882,7 +3882,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleQueryPersonalShop( CUserSession client, int p0, int p1 ) {
+    static void handleQueryPersonalShop( CUserSocket client, int p0, int p1 ) {
         if (!client.isConnected()) return;
         try {
             CS_QueryPersonalShop.handle(
@@ -3895,7 +3895,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleAddXchg( CUserSession client, int p0, int p1 ) {
+    static void handleAddXchg( CUserSocket client, int p0, int p1 ) {
         if (!client.isConnected()) return;
         try {
             CS_TradeAddItem.handle(
@@ -3908,7 +3908,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleChangeCastleSecurity( CUserSession client, int p0, int p1 ) {
+    static void handleChangeCastleSecurity( CUserSocket client, int p0, int p1 ) {
         if (!client.isConnected()) return;
         try {
             CS_ChangeCastleSecurity.handle(
@@ -3921,7 +3921,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleQueryBuddy( CUserSession client ) {
+    static void handleQueryBuddy( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_QueryBuddy.handle(client);
@@ -3930,7 +3930,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleRemoveBuddy( CUserSession client, String s0 ) {
+    static void handleRemoveBuddy( CUserSocket client, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_RemoveBuddy.handle(
@@ -3941,7 +3941,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleBanishParty( CUserSession client, String s0 ) {
+    static void handleBanishParty( CUserSocket client, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_BanishParty.handle(
@@ -3952,7 +3952,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleBoardDelete( CUserSession client, int p0, int p1 ) {
+    static void handleBoardDelete( CUserSocket client, int p0, int p1 ) {
         if (!client.isConnected()) return;
         try {
             CS_BoardDelete.handle(
@@ -3965,7 +3965,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleExitGhost( CUserSession client ) {
+    static void handleExitGhost( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_ExitGhost.handle(client);
@@ -3974,7 +3974,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleThrow( CUserSession client ) {
+    static void handleThrow( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_Throw.handle(client);
@@ -3983,7 +3983,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleBoardWrite( CUserSession client, int p0, String s0, String s1 ) {
+    static void handleBoardWrite( CUserSocket client, int p0, String s0, String s1 ) {
         if (!client.isConnected()) return;
         try {
             CS_BoardWrite.handle(
@@ -3997,7 +3997,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleJoinPledge( CUserSession client ) {
+    static void handleJoinPledge( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_JoinPledge.handle(client);
@@ -4006,7 +4006,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleTax( CUserSession client, int p0 ) {
+    static void handleTax( CUserSocket client, int p0 ) {
         if (!client.isConnected()) return;
         try {
             CS_Tax.handle(
@@ -4017,7 +4017,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleDeposit( CUserSession client, int p0, int p1 ) {
+    static void handleDeposit( CUserSocket client, int p0, int p1 ) {
         if (!client.isConnected()) return;
         try {
             CS_Deposit.handle(
@@ -4030,7 +4030,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleBoardList( CUserSession client, int p0, int p1 ) {
+    static void handleBoardList( CUserSocket client, int p0, int p1 ) {
         if (!client.isConnected()) return;
         try {
             CS_BoardList.handle(
@@ -4043,7 +4043,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleMail( CUserSession client, int p0, int p1, int p2, String s0, String s1, Object o0 ) {
+    static void handleMail( CUserSocket client, int p0, int p1, int p2, String s0, String s1, Object o0 ) {
         if (!client.isConnected()) return;
         try {
             CS_Mail.handle(
@@ -4060,7 +4060,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handlePledgeContent( CUserSession client, int p0, String s0 ) {
+    static void handlePledgeContent( CUserSocket client, int p0, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_PledgeContent.handle(
@@ -4073,7 +4073,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleWhoParty( CUserSession client ) {
+    static void handleWhoParty( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_WhoParty.handle(client);
@@ -4082,7 +4082,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleCancelXchg( CUserSession client ) {
+    static void handleCancelXchg( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_TradeCancel.handle(client);
@@ -4091,7 +4091,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleCallPlayer( CUserSession client, String s0 ) {
+    static void handleCallPlayer( CUserSocket client, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_CallPlayer.handle(
@@ -4102,7 +4102,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleBanMember( CUserSession client, String s0 ) {
+    static void handleBanMember( CUserSocket client, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_BanMember.handle(
@@ -4113,7 +4113,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleExchangeableSpell( CUserSession client, int p0 ) {
+    static void handleExchangeableSpell( CUserSocket client, int p0 ) {
         if (!client.isConnected()) return;
         try {
             CS_ExchangeableSpell.handle(
@@ -4124,7 +4124,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleLeavePledge( CUserSession client ) {
+    static void handleLeavePledge( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_LeavePledge.handle(client);
@@ -4133,7 +4133,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleAcceptXchg( CUserSession client ) {
+    static void handleAcceptXchg( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_TradeAccept.handle(client);
@@ -4142,7 +4142,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleWithdraw( CUserSession client, int p0 ) {
+    static void handleWithdraw( CUserSocket client, int p0 ) {
         if (!client.isConnected()) return;
         try {
             CS_Withdraw.handle(
@@ -4153,7 +4153,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleAddBuddy( CUserSession client, String s0 ) {
+    static void handleAddBuddy( CUserSocket client, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_AddBuddy.handle(
@@ -4164,7 +4164,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleBuyableSpell( CUserSession client, int p0 ) {
+    static void handleBuyableSpell( CUserSocket client, int p0 ) {
         if (!client.isConnected()) return;
         try {
             CS_BuyableSpell.handle(
@@ -4175,7 +4175,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handlePlate( CUserSession client, int p0 ) {
+    static void handlePlate( CUserSocket client, int p0 ) {
         if (!client.isConnected()) return;
         try {
             CS_Plate.handle(
@@ -4186,7 +4186,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleLeaveParty( CUserSession client ) {
+    static void handleLeaveParty( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_LeaveParty.handle(client);
@@ -4195,7 +4195,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleFix( CUserSession client, int p0, int p1 ) {
+    static void handleFix( CUserSocket client, int p0, int p1 ) {
         if (!client.isConnected()) return;
         try {
             CS_Fix.handle(
@@ -4208,7 +4208,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleExtended( CUserSession client, int p0, int p1, int p2, int p3, Object o0 ) {
+    static void handleExtended( CUserSocket client, int p0, int p1, int p2, int p3, Object o0 ) {
         if (!client.isConnected()) return;
         try {
             CS_AdenShop.handle(
@@ -4224,7 +4224,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleDuel( CUserSession client ) {
+    static void handleDuel( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_Duel.handle(client);
@@ -4233,7 +4233,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handlePledgeWatch( CUserSession client, int p0, String s0 ) {
+    static void handlePledgeWatch( CUserSocket client, int p0, String s0 ) {
         if (!client.isConnected()) return;
         try {
             CS_PledgeWatch.handle(
@@ -4245,7 +4245,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleBoardRead( CUserSession client, int p0, int p1 ) {
+    static void handleBoardRead( CUserSocket client, int p0, int p1 ) {
         if (!client.isConnected()) return;
         try {
             CS_BoardRead.handle(
@@ -4257,7 +4257,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleQuit( CUserSession client ) {
+    static void handleQuit( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_Quit.handle(client);
@@ -4266,7 +4266,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleTitle( CUserSession client, String s0, String s1 ) {
+    static void handleTitle( CUserSocket client, String s0, String s1 ) {
         if (!client.isConnected()) return;
         try {
             CS_Title.handle(
@@ -4278,7 +4278,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleCheckPk( CUserSession client ) {
+    static void handleCheckPk( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_CheckPk.handle(client);
@@ -4287,7 +4287,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleFixableItem( CUserSession client ) {
+    static void handleFixableItem( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_FixableItem.handle(client);
@@ -4296,7 +4296,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleAskXchg( CUserSession client ) {
+    static void handleAskXchg( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_AskExchange.handle(client);
@@ -4305,7 +4305,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleExchangeSpell( CUserSession client, int p0, int p1, int p2, int p3, long l0, long l1, Object o0 ) {
+    static void handleExchangeSpell( CUserSocket client, int p0, int p1, int p2, int p3, long l0, long l1, Object o0 ) {
         if (!client.isConnected()) return;
         try {
             CS_ExchangeSpell.handle(
@@ -4322,7 +4322,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleReadNews( CUserSession client ) {
+    static void handleReadNews( CUserSocket client ) {
         if (!client.isConnected()) return;
         try {
             CS_ReadNews.handle(client);
@@ -4331,7 +4331,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleExtendedProto( CUserSession client, Object o0 ) {
+    static void handleExtendedProto( CUserSocket client, Object o0 ) {
         if (!client.isConnected()) return;
         try {
             CS_ExtendedProto.handle(
@@ -4342,7 +4342,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleCraft( CUserSession client, int p0, int p1, int p2, int p3, long l0, long l1, String s0, String s1 ) {
+    static void handleCraft( CUserSocket client, int p0, int p1, int p2, int p3, long l0, long l1, String s0, String s1 ) {
         if (!client.isConnected()) return;
         try {
             CS_Craft.handle(
@@ -4360,7 +4360,7 @@ public final class CPacketHandler {
         }
     }
 
-    static void handleActionUi( CUserSession client, int p0, int p1, int p2, int p3, long l0, long l1, String s0, String s1, Object o0 ) {
+    static void handleActionUi( CUserSocket client, int p0, int p1, int p2, int p3, long l0, long l1, String s0, String s1, Object o0 ) {
         if (!client.isConnected()) return;
         try {
             CS_ActionUi.handle(
@@ -4379,10 +4379,10 @@ public final class CPacketHandler {
         }
     }
 
-    // A disconnected/old CUserSession may still retain its previous activeChar
+    // A disconnected/old CUserSocket may still retain its previous activeChar
     // while the new login owns that PC. Never enqueue old-session input into
     // the existing 32-slot controller or mutate world state with that actor.
-    private static boolean ownsCurrentSession(CUserSession client, L1PcInstance pc) {
+    private static boolean ownsCurrentSession(CUserSocket client, L1PcInstance pc) {
         return client != null && client.isConnected()
                 && pc != null && pc.getNetConnection() == client;
     }
@@ -4391,7 +4391,7 @@ public final class CPacketHandler {
 	// 이동 (MOVE)
 	// ------------------------------------------------------------------
 
-	private static void move(CUserSession client, int x, int y, int h) {
+	private static void move(CUserSocket client, int x, int y, int h) {
 		final L1PcInstance pc = client.getActiveChar();
 
 		if (!ownsCurrentSession(client, pc) || pc.isDead()) {
@@ -4404,7 +4404,7 @@ public final class CPacketHandler {
 	// 공격 / 원거리 공격 (ATTACK / FAR ATTACK)
 	// ------------------------------------------------------------------
 
-	private static void attack(CUserSession client, int targetId, int x, int y) {
+	private static void attack(CUserSocket client, int targetId, int x, int y) {
 
 		final L1PcInstance pc = client.getActiveChar();
 
@@ -4423,7 +4423,7 @@ public final class CPacketHandler {
 	// 자동 공격 (AUTO ATTACK)
 	// ------------------------------------------------------------------
 
-	private static void autoAttack(CUserSession client, int targetId) {
+	private static void autoAttack(CUserSocket client, int targetId) {
 
 		final L1PcInstance pc = client.getActiveChar();
 
@@ -4441,7 +4441,7 @@ public final class CPacketHandler {
 	// 스킬 사용 (USE SKILL)
 	// ------------------------------------------------------------------
 
-	private static void useSkill(CUserSession client, int skillId, int targetId, int targetX, int targetY, String message) {
+	private static void useSkill(CUserSocket client, int skillId, int targetId, int targetX, int targetY, String message) {
 
 		final L1PcInstance pc = client.getActiveChar();
 
@@ -4463,7 +4463,7 @@ public final class CPacketHandler {
 	// 아이템 줍기 (PICKUP)
 	// ------------------------------------------------------------------
 
-	private static void pickup(CUserSession client, int x, int y, int objId, long amount) {
+	private static void pickup(CUserSocket client, int x, int y, int objId, long amount) {
 		if (client == null) {
 			return;
 		}
@@ -4483,7 +4483,7 @@ public final class CPacketHandler {
 	}
 
 
-	private static void changeHeading(CUserSession client, int heading) {
+	private static void changeHeading(CUserSocket client, int heading) {
 
 		final L1PcInstance pc = client.getActiveChar();
 		if (!ownsCurrentSession(client, pc)) {
@@ -4497,7 +4497,7 @@ public final class CPacketHandler {
         }
 	}
 
-	private static void enterPortal(CUserSession client, int locx, int locy) {
+	private static void enterPortal(CUserSocket client, int locx, int locy) {
 		final L1PcInstance pc = client.getActiveChar();
 		if (!ownsCurrentSession(client, pc)) {
 			return;
@@ -4505,7 +4505,7 @@ public final class CPacketHandler {
 		Dungeon.getInstance().dg(locx, locy, pc.getMap().getId(), pc);
 	}
 	
-	private static void createCustomCharacter(CUserSession client, String name, int type, int sex, int baseStr, int baseDex, long packedStats) {
+	private static void createCustomCharacter(CUserSocket client, String name, int type, int sex, int baseStr, int baseDex, long packedStats) {
 
 	    final int baseCon = (int) (packedStats       & 0xFFL);
 	    final int baseWis = (int) ((packedStats >>> 8)  & 0xFFL);
@@ -4514,7 +4514,7 @@ public final class CPacketHandler {
 	    CS_CreateChar.handle(client, name, type, sex, baseStr, baseDex, baseCon, baseWis, baseCha, baseInt);
 	}
 
-	private static void alive(CUserSession client) {
+	private static void alive(CUserSocket client) {
 	    final L1PcInstance pc = client.getActiveChar();
 
 	    if (pc == null) {

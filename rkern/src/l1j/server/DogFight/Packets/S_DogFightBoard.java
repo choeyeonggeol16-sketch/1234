@@ -9,7 +9,7 @@ import l1j.server.DogFight.Instance.MJDogFightInstance;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public class S_DogFightBoard extends CServerPacket {
 
@@ -26,7 +26,7 @@ public class S_DogFightBoard extends CServerPacket {
 	}
 
 	@Override
-	public void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
+	public void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
 		buffer.writeC(Opcodes.S_HYPERTEXT);
 		buffer.writeD(1);
 		buffer.writeS("maeno4");

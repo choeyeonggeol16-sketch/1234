@@ -4,7 +4,7 @@ import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_Pledge;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -18,7 +18,7 @@ public final class CS_PledgeContent {
     }
 
     public static void handle(
-            CUserSession client,
+            CUserSocket client,
             int data,
             String content) {
 

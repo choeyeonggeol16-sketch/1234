@@ -6,7 +6,6 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.templates.L1BoardPost;
 
 import l1j.server.server.Account;
@@ -127,7 +126,7 @@ public final class SC_BoardRead {
 
     public static boolean send(L1PcInstance receiver, l1j.server.server.model.Instance.L1NpcInstance board, int number) {
         if (receiver == null) return false;
-        final CUserSession client = receiver.getNetConnection();
+        final CUserSocket client = receiver.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket conn = client.getConnection();
         final Account account = client.getAccount();
@@ -167,7 +166,7 @@ public final class SC_BoardRead {
         return (s == null ? 0 : s.getBytes(java.nio.charset.Charset.forName("MS949")).length) + 1;
     }
 
-    private static boolean sendPrepared(CUserSession client, CUserSocket conn, Data obj) {
+    private static boolean sendPrepared(CUserSocket client, CUserSocket conn, Data obj) {
         if (!(obj._hasData)) return false;
         final CIOFrame frame = conn.beginDirectFrame(2 + 1 + 4 + bytesOf(obj._name) + bytesOf(obj._title) + bytesOf(obj._date) + obj._contentBytes.length + bytesOf(".") + 1);
         if (frame == null) return false;

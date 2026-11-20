@@ -2,7 +2,6 @@ package l1j.server.server.model.network.core.server;
 
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.transport.CSocket;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 
@@ -52,7 +51,6 @@ public final class CDummyServerCallback implements IServerCallback {
         final InetAddress address = peer.getAddress();
         final String ip = address.getHostAddress();
         boolean counted = false;
-        CUserSession user = null;
         CUserSocket transport = null;
         int assignedShard = -1;
         try {
@@ -91,30 +89,24 @@ public final class CDummyServerCallback implements IServerCallback {
                         @Override public void onCleanupComplete(CUserSocket nio) { serverClosed.onCleanupComplete(nio); }
                         @Override public void onClosed(CUserSocket nio) {
                             try {
-                                final CUserSession client = nio.client();
-                                if (client != null) client.onTransportClosed();
-                                else nio.onClientCleanupComplete();
+                                nio.onTransportClosed();
                             } finally {
                                 liveByShard.decrementAndGet(ownerShard);
                                 serverClosed.onClosed(nio);
                             }
                         }
-                    });
-            user = new CUserSession(transport, counted);
-            transport.bindClient(user);
-            final CUserSession client = user;
-            if (!client.onConnected() || !client.isConnected())
+                    }, counted);
+            if (!transport.onConnected() || !transport.isConnected())
                 throw new IllegalStateException("handshake not admitted");
             transport.configureTransportDeadlines(config.usePreLoginTimeout);
             return transport;
         } catch (Exception | Error failure) {
-            if (transport != null) transport.close();
-            else if (assignedShard >= 0) liveByShard.decrementAndGet(assignedShard);
-            if (user != null) {
-                // The normal game session cleanup owns the address counter from here.
-                user.disconnect();
-            } else if (counted) {
-                CIPConnectionCounter.getInstance().decrease(address);
+            if (transport != null) {
+                transport.close();
+                transport.disconnect();
+            } else {
+                if (assignedShard >= 0) liveByShard.decrementAndGet(assignedShard);
+                if (counted) CIPConnectionCounter.getInstance().decrease(address);
             }
             throw failure;
         }

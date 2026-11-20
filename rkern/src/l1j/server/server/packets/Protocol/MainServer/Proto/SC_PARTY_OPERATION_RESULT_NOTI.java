@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -47,7 +47,7 @@ public final class SC_PARTY_OPERATION_RESULT_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _type, _actorName);
     }
 
-    public static boolean sendFields(CUserSession recipient, Type _type, String _actorName) {
+    public static boolean sendFields(CUserSocket recipient, Type _type, String _actorName) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_PARTY_OPERATION_RESULT_NOTI, Proto.capacityBound(1024L + (_actorName == null ? 0L : 2L * _actorName.length())));
         if (writer == null) return false;
         try {
@@ -64,7 +64,7 @@ public final class SC_PARTY_OPERATION_RESULT_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_PARTY_OPERATION_RESULT_NOTI);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, Type type, String actorName) {
+    private static boolean sendCtor(CUserSocket protoRecipient, Type type, String actorName) {
         Type proto53_type = null;
         String proto53_actorName = null;
 
@@ -73,7 +73,7 @@ public final class SC_PARTY_OPERATION_RESULT_NOTI extends ProtoPacket {
 
         return sendFields(protoRecipient, proto53_type, proto53_actorName);
     }
-    public static boolean sendConstructed(CUserSession protoRecipient, Type type, String actorName) { return sendCtor(protoRecipient, type, actorName); }
+    public static boolean sendConstructed(CUserSocket protoRecipient, Type type, String actorName) { return sendCtor(protoRecipient, type, actorName); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, Type type, String actorName) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), type, actorName); }

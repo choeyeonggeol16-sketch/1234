@@ -3,7 +3,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto.Dispatch;
 import java.util.logging.Logger;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.CSProto;
 
 public final class CS_ExtendedProto {
@@ -15,7 +15,7 @@ public final class CS_ExtendedProto {
 	private CS_ExtendedProto() {
 	}
 
-	public static void handle(CUserSession client, Object object) {
+	public static void handle(CUserSocket client, Object object) {
 
 		if (client == null || !(object instanceof byte[])) {
 			return;

@@ -1,14 +1,14 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 
 /** CS_CRAFT_LIST_ALL_REQ (0x0036) — 클라 hash 접수 → 목록/SAME_HASH 응답 */
 public final class CS_CRAFT_LIST_ALL_REQ {
     private CS_CRAFT_LIST_ALL_REQ() {}
 
-    public static void handleRequest(CUserSession client, ProtoReader r) {
+    public static void handleRequest(CUserSocket client, ProtoReader r) {
         try {
           
             byte[] hash = null;

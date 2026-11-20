@@ -32,7 +32,7 @@ import l1j.server.server.model.item.tam.TamFruitUseService;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SOCIAL_ACTION_NOTI;
@@ -119,7 +119,7 @@ public final class CS_ActionUi {
     }
 
     public static void handle(
-            CUserSession client,
+            CUserSocket client,
             int type,
             int p1,
             int p2,

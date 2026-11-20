@@ -11,7 +11,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 
 public final class SC_UseArrowSkill {
@@ -26,7 +25,7 @@ public final class SC_UseArrowSkill {
 	}
 
 	public static boolean send(
-			CUserSession client,
+			CUserSocket client,
 			int attackerId,
 			int ox,
 			int oy,
@@ -56,7 +55,7 @@ public final class SC_UseArrowSkill {
 	}
 
 	public static boolean send(
-			CUserSession client,
+			CUserSocket client,
 			L1Character cha,
 			int targetObj,
 			int spellGfx,
@@ -179,7 +178,7 @@ public final class SC_UseArrowSkill {
 }
 
 	private static boolean send0(
-			CUserSession client,
+			CUserSocket client,
 			int attackerId,
 			int ox,
 			int oy,

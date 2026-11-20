@@ -3,7 +3,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.packet.IPacketWriter;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /**
  * 기존 코드 호환용 bridge.
@@ -21,7 +21,7 @@ public final class ProtoPacketWriter extends CServerPacket {
 	}
 
 	@Override
-	protected void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
+	protected void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
 		_packet.writeTo(buffer, true);
 	}
 
@@ -40,7 +40,7 @@ public final class ProtoPacketWriter extends CServerPacket {
 		}
 
 		@Override
-		protected void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
+		protected void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
 			buffer.writeBytes(_data);
 		}
 	}

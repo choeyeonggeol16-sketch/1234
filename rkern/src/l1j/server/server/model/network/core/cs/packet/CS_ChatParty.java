@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.cs.packet;
 import l1j.server.server.model.L1ChatParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Party;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
@@ -11,7 +11,7 @@ public final class CS_ChatParty {
 
     private CS_ChatParty() {}
 
-    public static void handle(CUserSession client, int type, String name) {
+    public static void handle(CUserSocket client, int type, String name) {
 
         if (client == null) {
             return;

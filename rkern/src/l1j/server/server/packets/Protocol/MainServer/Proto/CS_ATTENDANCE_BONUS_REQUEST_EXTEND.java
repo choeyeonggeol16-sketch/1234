@@ -1,7 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.AttendanceGroupType;
@@ -19,7 +19,7 @@ public final class CS_ATTENDANCE_BONUS_REQUEST_EXTEND {
 
 	private CS_ATTENDANCE_BONUS_REQUEST_EXTEND() {}
 
-	public static void handleRequest(CUserSession client, ProtoReader r) {
+	public static void handleRequest(CUserSocket client, ProtoReader r) {
 		// ── 파싱 ──
 		int index = 0;
 		AttendanceGroupType group = null;

@@ -94,7 +94,7 @@ import l1j.server.server.model.item.Card.L1CardCollection;
 import l1j.server.server.model.item.cooking.CookingRegistry;
 import l1j.server.server.model.item.tam.TamFruitUseService;
 import l1j.server.server.model.map.L1Map;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.utill.CConnectionState;
@@ -136,7 +136,7 @@ public final class CS_EnterWorld {
 	}
 
 	
-	public static void handle(CUserSession client, String charName) {
+	public static void handle(CUserSocket client, String charName) {
 		if (client == null || charName == null || charName.isEmpty()) {
 			return;
 		}
@@ -157,7 +157,7 @@ public final class CS_EnterWorld {
 		doEnterWorld(charName, client);
 	}
 
-	private static void print_message(CUserSession clnt, String message, boolean is_kick) throws Exception {
+	private static void print_message(CUserSocket clnt, String message, boolean is_kick) throws Exception {
 		System.out.println("─────────────────────────────────");
 		System.out.println(message);
 		System.out.println("─────────────────────────────────");
@@ -201,7 +201,7 @@ public final class CS_EnterWorld {
         }
     }
 
-    public static void doEnterWorld(String charName, CUserSession client) {
+    public static void doEnterWorld(String charName, CUserSocket client) {
         if (client == null || charName == null || charName.isEmpty()
                 || !client.isConnected() || client.getAccount() == null
                 || client.getConnection() == null) return;
@@ -295,7 +295,7 @@ public final class CS_EnterWorld {
             if (row != null) try { row.close(); } catch (SQLException ignored) {}
     }
 
-    private static void completeEnterWorld(String charName, CUserSession client, Account account,
+    private static void completeEnterWorld(String charName, CUserSocket client, Account account,
                                            EnterData data, Throwable failure) {
         try {
             if (!client.isConnected() || client.getAccount() != account
@@ -326,7 +326,7 @@ public final class CS_EnterWorld {
         }
     }
 
-    private static L1PcInstance validateEnterWorld(String charName, CUserSession client, L1PcInstance pc, boolean blocked) throws Exception {
+    private static L1PcInstance validateEnterWorld(String charName, CUserSocket client, L1PcInstance pc, boolean blocked) throws Exception {
         if (blocked) {
             _log.info(String.format("압류 캐릭 접속 시도: %s", charName));
             SC_LoginResult.send(client, 52);
@@ -354,7 +354,7 @@ public final class CS_EnterWorld {
         }
 
         // 로그인 컨트롤러 정합
-        CUserSession sessionClient = LoginController.getInstance().getClientByAccount(client.getAccountName());
+        CUserSocket sessionClient = LoginController.getInstance().getClientByAccount(client.getAccountName());
         if (sessionClient != client) {
             _log.warning(String.format("세션 불일치 차단: %s", client.getIp()));
             client.close();
@@ -382,7 +382,7 @@ public final class CS_EnterWorld {
         }
         return pc;
     }
-    private static boolean cheatChecks(L1PcInstance pc, CUserSession client) {
+    private static boolean cheatChecks(L1PcInstance pc, CUserSocket client) {
         // 렙다운
         if (!pc.isGm() && Config.LEVEL_DOWN_RANGE != 0
                 && pc.getHighLevel() - pc.getLevel() >= Config.LEVEL_DOWN_RANGE) {
@@ -454,7 +454,7 @@ public final class CS_EnterWorld {
         }
     }
     
-    private static void registerToWorld(L1PcInstance pc, CUserSession client) {
+    private static void registerToWorld(L1PcInstance pc, CUserSocket client) {
         pc.set_instance_status(MJEPcStatus.WORLD);
         pc.setOnlineStatus(1);
         pc.create_captcha();
@@ -466,7 +466,7 @@ public final class CS_EnterWorld {
         SC_Unknown1.send(pc);
     }
     
-    private static void sendEnterData(L1PcInstance pc, CUserSession client, EnterData data) {
+    private static void sendEnterData(L1PcInstance pc, CUserSocket client, EnterData data) {
         if (data.characterConfig != null) SC_CharacterConfig.send(pc, data.characterConfig);
         CharacterSlotItemTable.getInstance().applyCharSlots(pc, data.slotItems);
         MJKDALoader.getInstance().install(pc, false);
@@ -608,7 +608,7 @@ public final class CS_EnterWorld {
         if (pc.getCurrentMp() > maxMp) pc.setCurrentMp(maxMp);
     }
     
-    private static void postEnterProcess(L1PcInstance pc, CUserSession client, EnterData data) {
+    private static void postEnterProcess(L1PcInstance pc, CUserSocket client, EnterData data) {
     	
         final int mailCount = data.mailCount;
         applyExcludeList(SpamTable.getInstance().getExcludeTable(pc.getId()), data.excludes);
@@ -767,7 +767,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
         L1CardCollection.Join(pc);
     }
 
-    private static void finalizeEnter(L1PcInstance pc, CUserSession client) {
+    private static void finalizeEnter(L1PcInstance pc, CUserSocket client) {
         if (!CheckInitStat.CheckPcStat(pc)) {
             SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.START);
         }

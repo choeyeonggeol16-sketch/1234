@@ -7,7 +7,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.Config;
 import l1j.server.IndunSystem.Orim.OrimController;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 
 public final class CS_ExtraCommand {
@@ -20,7 +20,7 @@ public final class CS_ExtraCommand {
 
     private CS_ExtraCommand() {}
 
-    public static void handle(CUserSession client, int actionId) {
+    public static void handle(CUserSocket client, int actionId) {
 
         if (client == null) {
             return;

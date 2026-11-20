@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -75,7 +75,7 @@ public final class SC_MAP_TELEPORT_INFO_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _objId, _mapCount, _action, _price);
     }
 
-    public static boolean sendFields(CUserSession recipient, int _objId, int _mapCount, String[] _action, int[] _price) {
+    public static boolean sendFields(CUserSocket recipient, int _objId, int _mapCount, String[] _action, int[] _price) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_MAP_TELEPORT_INFO_NOTI, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -92,7 +92,7 @@ public final class SC_MAP_TELEPORT_INFO_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_MAP_TELEPORT_INFO_NOTI);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, int objId, String[] action, int[] price, int mapCount) {
+    private static boolean sendCtor(CUserSocket protoRecipient, int objId, String[] action, int[] price, int mapCount) {
         int proto67_objId = 0;
         int proto67_mapCount = 0;
         String[] proto67_action = null;
@@ -106,7 +106,7 @@ public final class SC_MAP_TELEPORT_INFO_NOTI extends ProtoPacket {
         return sendFields(protoRecipient, proto67_objId, proto67_mapCount, proto67_action, proto67_price);
     }
 
-    public static boolean sendCreate(CUserSession protoRecipient, int objId, String[] action, int[] price, int mapCount) {
+    public static boolean sendCreate(CUserSocket protoRecipient, int objId, String[] action, int[] price, int mapCount) {
         return sendCtor(protoRecipient, objId, action, price, mapCount);
     }
 
@@ -114,7 +114,7 @@ public final class SC_MAP_TELEPORT_INFO_NOTI extends ProtoPacket {
         return sendCreate(protoRecipient == null ? null : protoRecipient.getNetConnection(), objId, action, price, mapCount);
     }
     public static boolean sendConstructed(
-            CUserSession protoRecipient, int objId, String[] action, int[] price, int mapCount) { return sendCtor(protoRecipient, objId, action, price, mapCount); }
+            CUserSocket protoRecipient, int objId, String[] action, int[] price, int mapCount) { return sendCtor(protoRecipient, objId, action, price, mapCount); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int objId, String[] action, int[] price, int mapCount) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), objId, action, price, mapCount); }

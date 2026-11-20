@@ -18,7 +18,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_LetterList {
 
@@ -84,7 +83,7 @@ public final class SC_LetterList {
 
     public static void sendListAsync(L1PcInstance pc, int type, int count) {
         if (pc == null || pc.getNetConnection() == null || !pc.getNetConnection().isConnected()) return;
-        final CUserSession owner = pc.getNetConnection();
+        final CUserSocket owner = pc.getNetConnection();
         CacheD.getInstance().submitDbJob(() -> {
             final Data packet = new Data(pc, type, count);
             if (!CIOThreadCallback.getInstance().completeSessionReply(owner, () -> {
@@ -328,7 +327,7 @@ private long frameCapacity() {
         return size;
     }
 
-public boolean send(CUserSession client) {
+public boolean send(CUserSocket client) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

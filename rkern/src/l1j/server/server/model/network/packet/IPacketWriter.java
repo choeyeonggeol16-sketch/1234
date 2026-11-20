@@ -1,10 +1,10 @@
 package l1j.server.server.model.network.packet;
 
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 
-public abstract class IPacketWriter<T extends CUserSession> {
+public abstract class IPacketWriter<T extends CUserSocket> {
 
     /**
      * Opt in only when the encoder honors CPacketWriteBuffer's frame-relative region and

@@ -27,7 +27,7 @@ import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_LetterList;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -39,7 +39,7 @@ public final class CS_Mail {
     private static final Logger LOG=Logger.getLogger(CS_Mail.class.getName());
     private CS_Mail() {}
 
-    public static void handle(CUserSession client,int type,int value0,int value1,
+    public static void handle(CUserSocket client,int type,int value0,int value1,
             String receiverName,String subject,Object object) {
         if (client==null) return;
         L1PcInstance pc=client.getActiveChar();
@@ -138,7 +138,7 @@ public final class CS_Mail {
     private static void notifyWritten(Letter letter) {
         final L1PcInstance target=L1World.getInstance().getPlayer(letter.receiver);
         if (target==null) return;
-        final CUserSession session=target.getNetConnection();
+        final CUserSocket session=target.getNetConnection();
         final int stamp=target.getSessionStamp();
         CIOThreadCallback.getInstance().completeWarehouseMove(target,stamp,()->{
             if (target.getNetConnection()!=session || session==null || !session.isConnected()
@@ -153,7 +153,7 @@ public final class CS_Mail {
         },failure->{if(failure!=null)LOG.log(Level.FINE,"Mail recipient notification expired",failure);});
     }
 
-    private static boolean current(L1PcInstance pc,CUserSession client,int stamp) {
+    private static boolean current(L1PcInstance pc,CUserSocket client,int stamp) {
         return client!=null && client.isConnected() && pc.getNetConnection()==client
                 && client.getActiveChar()==pc && pc.getSessionStamp()==stamp;
     }
@@ -163,7 +163,7 @@ public final class CS_Mail {
      */
     private static void submitMailSql(L1PcInstance pc,CTransaction.Mutation action,
             Runnable afterCommit) {
-        final CUserSession session=pc.getNetConnection();
+        final CUserSocket session=pc.getNetConnection();
         final int stamp=pc.getSessionStamp();
         final int owner=pc.getId();
         final String receipt=UUID.randomUUID().toString();

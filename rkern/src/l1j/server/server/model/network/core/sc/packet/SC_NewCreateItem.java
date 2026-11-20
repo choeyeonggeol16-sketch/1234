@@ -5,7 +5,6 @@ import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_NewCreateItem {
 
@@ -639,7 +638,7 @@ public final class SC_NewCreateItem {
 
     public static boolean sendTypeCk(L1PcInstance pc, int type, boolean ck) {
         if (pc == null) return false;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -656,14 +655,14 @@ public final class SC_NewCreateItem {
     }
 
 
-    private static CIOFrame beginFrame(CUserSession socket, int capacity) {
+    private static CIOFrame beginFrame(CUserSocket socket, int capacity) {
         if (socket == null || !socket.isConnected()) return null;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return null;
         return connection.beginDirectFrame(capacity);
     }
 
-    private static boolean finishFrame(CUserSession socket, CIOFrame frame) {
+    private static boolean finishFrame(CUserSocket socket, CIOFrame frame) {
         final CUserSocket connection = socket.getConnection();
         boolean committed = false;
         try {
@@ -676,7 +675,7 @@ public final class SC_NewCreateItem {
 
     public static boolean sendSubtype(L1PcInstance pc, int type, int subType) {
         if (pc == null) return false;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         final CIOFrame frame = beginFrame(socket, 64);
         if (frame == null) return false;
         try {
@@ -690,7 +689,7 @@ public final class SC_NewCreateItem {
 
     public static boolean sendBuffOrder(L1PcInstance pc, int type, int order, int subOrder, int count) {
         if (pc == null) return false;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         final CIOFrame frame = beginFrame(socket, 128);
         if (frame == null) return false;
         try {
@@ -702,12 +701,12 @@ public final class SC_NewCreateItem {
         return finishFrame(socket, frame);
     }
 
-    public static boolean sendTamPoint(L1PcInstance pc, CUserSession client) {
+    public static boolean sendTamPoint(L1PcInstance pc, CUserSocket client) {
         if (pc == null) return false;
         return sendTamPoint(client != null ? client : pc.getNetConnection());
     }
 
-    public static boolean sendTamPoint(CUserSession socket) {
+    public static boolean sendTamPoint(CUserSocket socket) {
         if (socket == null) return false;
         final int value = socket.getAccount() != null ? socket.getAccount().tam_point : 0;
         final CIOFrame frame = beginFrame(socket, 64);
@@ -723,7 +722,7 @@ public final class SC_NewCreateItem {
 
     public static boolean sendSubtypeObjid(L1PcInstance pc, int type, int subType, int objId) {
         if (pc == null) return false;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         final CIOFrame frame = beginFrame(socket, 96);
         if (frame == null) return false;
         try {
@@ -738,7 +737,7 @@ public final class SC_NewCreateItem {
     public static boolean sendCastleTime(L1PcInstance pc, int warType, int second, String castle) {
         if (pc == null) return false;
         final String name = castle == null ? "" : castle;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         final long capacity = 32L + 4L * name.length();
         if (capacity > Integer.MAX_VALUE) return false;
         final CIOFrame frame = beginFrame(socket, (int)capacity);

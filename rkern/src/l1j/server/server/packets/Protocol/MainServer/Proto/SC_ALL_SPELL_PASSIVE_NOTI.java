@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.util.ArrayList;
@@ -90,7 +90,7 @@ public final class SC_ALL_SPELL_PASSIVE_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _passives);
     }
 
-    public static boolean sendFields(CUserSession recipient, List<SpellPassiveData> _passives) {
+    public static boolean sendFields(CUserSocket recipient, List<SpellPassiveData> _passives) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ALL_SPELL_PASSIVE_NOTI, Proto.capacityBound(128L + (_passives == null ? 0L : 64L * _passives.size())));
         if (writer == null) return false;
         try {
@@ -107,13 +107,13 @@ public final class SC_ALL_SPELL_PASSIVE_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_ALL_SPELL_PASSIVE_NOTI);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient) {
+    private static boolean sendCtor(CUserSocket protoRecipient) {
         List<SpellPassiveData> proto12_passives = new ArrayList<>();
 
 
         return sendFields(protoRecipient, proto12_passives);
     }
-    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSocket protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 
@@ -123,7 +123,7 @@ public final class SC_ALL_SPELL_PASSIVE_NOTI extends ProtoPacket {
         return sendPassives(recipient == null ? null : recipient.getNetConnection(), passives);
     }
 
-    public static boolean sendPassives(CUserSession recipient,
+    public static boolean sendPassives(CUserSocket recipient,
             List<l1j.server.MJPassiveSkill.MJPassiveInfo> passives) {
         final int count = passives.size();
         ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ALL_SPELL_PASSIVE_NOTI,

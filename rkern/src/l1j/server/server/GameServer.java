@@ -399,13 +399,13 @@ public class GameServer {
         // with an in-progress packet or a previously submitted logout job.
         final L1PcInstance[] pcs = L1World.getInstance().getAllPlayers()
                 .toArray(new L1PcInstance[0]);
-        final l1j.server.server.model.network.core.session.CUserSession[] clients =
-                new l1j.server.server.model.network.core.session.CUserSession[pcs.length];
+        final l1j.server.server.model.network.core.connection.CUserSocket[] clients =
+                new l1j.server.server.model.network.core.connection.CUserSocket[pcs.length];
         final long started = System.nanoTime();
         for (int i = 0; i < pcs.length; i++) {
             final L1PcInstance pc = pcs[i];
             if (pc == null || pc.noPlayerck2) continue;
-            final l1j.server.server.model.network.core.session.CUserSession client = pc.getNetConnection();
+            final l1j.server.server.model.network.core.connection.CUserSocket client = pc.getNetConnection();
             clients[i] = client;
             if (client != null && client.getConnection() != null)
                 client.getConnection().close();
@@ -413,7 +413,7 @@ public class GameServer {
         for (int i = 0; i < pcs.length; i++) {
             final L1PcInstance pc = pcs[i];
             if (pc == null || pc.noPlayerck2) continue;
-            final l1j.server.server.model.network.core.session.CUserSession client = clients[i];
+            final l1j.server.server.model.network.core.connection.CUserSocket client = clients[i];
             if (client != null) {
                 while (!client.isLogoutComplete()) {
                     if (System.nanoTime() - started >= 30_000_000_000L)

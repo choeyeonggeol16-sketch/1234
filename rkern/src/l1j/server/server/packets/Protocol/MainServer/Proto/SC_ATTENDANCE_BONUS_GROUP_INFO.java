@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -109,7 +109,7 @@ public final class SC_ATTENDANCE_BONUS_GROUP_INFO extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _groupType, _bonusGroup);
     }
 
-    public static boolean sendFields(CUserSession recipient, AttendanceGroupType _groupType, ArrayList<AttendanceBonusGroup> _bonusGroup) {
+    public static boolean sendFields(CUserSocket recipient, AttendanceGroupType _groupType, ArrayList<AttendanceBonusGroup> _bonusGroup) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ATTENDANCE_BONUS_GROUP_INFO, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -126,7 +126,7 @@ public final class SC_ATTENDANCE_BONUS_GROUP_INFO extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_ATTENDANCE_BONUS_GROUP_INFO);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, AttendanceGroupType groupType, ArrayList<AttendanceBonusGroup> bonusGroup) {
+    private static boolean sendCtor(CUserSocket protoRecipient, AttendanceGroupType groupType, ArrayList<AttendanceBonusGroup> bonusGroup) {
         AttendanceGroupType proto13_groupType = null;
         ArrayList<AttendanceBonusGroup> proto13_bonusGroup = null;
 
@@ -135,7 +135,7 @@ public final class SC_ATTENDANCE_BONUS_GROUP_INFO extends ProtoPacket {
 
         return sendFields(protoRecipient, proto13_groupType, proto13_bonusGroup);
     }
-    public static boolean sendConstructed(CUserSession protoRecipient, AttendanceGroupType groupType, ArrayList<AttendanceBonusGroup> bonusGroup) { return sendCtor(protoRecipient, groupType, bonusGroup); }
+    public static boolean sendConstructed(CUserSocket protoRecipient, AttendanceGroupType groupType, ArrayList<AttendanceBonusGroup> bonusGroup) { return sendCtor(protoRecipient, groupType, bonusGroup); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient, AttendanceGroupType groupType, ArrayList<AttendanceBonusGroup> bonusGroup) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), groupType, bonusGroup); }
 

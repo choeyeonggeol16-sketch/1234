@@ -7,7 +7,7 @@ import l1j.server.server.datatables.ArmorEnchantInformationTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -34,7 +34,7 @@ final class ArmorEnchantLevelLimits {
 
     static ItemActionResult validate(ItemActionContext use) {
         L1PcInstance pc = use.player();
-        CUserSession client = use.client();
+        CUserSocket client = use.client();
         L1ItemInstance item = use.item();
         L1ItemInstance targetItem = use.targetItem();
         int itemId = use.itemId();

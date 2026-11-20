@@ -11,7 +11,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.model.shop.L1Shop;
 import l1j.server.server.templates.L1Item;
@@ -31,11 +30,11 @@ public final class SC_PremiumShopSellList {
         return pc != null && send(pc.getNetConnection(), npcId, objId);
     }
 
-    public static boolean send(CUserSession client, int npcId) {
+    public static boolean send(CUserSocket client, int npcId) {
         return send(client, npcId, 0);
     }
 
-    public static boolean send(CUserSession client, int npcId, int objId) {
+    public static boolean send(CUserSocket client, int npcId, int objId) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

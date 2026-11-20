@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
@@ -35,7 +34,7 @@ public final class SC_CommonNews {
         buffer.writeS(value);
     }
 
-    public static boolean send(CUserSession client, String message) {
+    public static boolean send(CUserSocket client, String message) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket conn = client.getConnection();
         if (conn == null || !conn.isClientConnected()) return false;

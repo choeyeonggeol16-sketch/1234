@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 
@@ -11,7 +11,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 public final class CS_CLIENT_VERSION_INFO {
 	private CS_CLIENT_VERSION_INFO() {}
 
-	public static void handleRequest(CUserSession clnt, ProtoReader r) {
+	public static void handleRequest(CUserSocket clnt, ProtoReader r) {
 		int clientVersion = 0;
 		int instanceCount = 0;
 
@@ -31,7 +31,7 @@ public final class CS_CLIENT_VERSION_INFO {
 		respond(clnt, clientVersion, instanceCount);
 	}
 
-	private static void respond(CUserSession clnt, int clientVersion, int instanceCount) {
+	private static void respond(CUserSocket clnt, int clientVersion, int instanceCount) {
 		if (clientVersion == CPacketFilter.NS_CLIENT_VERSION
 				&& instanceCount >= 1 && instanceCount <= 2) {
 			SC_SERVER_VERSION_INFO.send(clnt);

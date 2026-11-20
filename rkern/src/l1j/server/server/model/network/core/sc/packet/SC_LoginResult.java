@@ -7,7 +7,6 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 public final class SC_LoginResult {
@@ -39,7 +38,7 @@ public static final int BANNED_REASON_HACK = 95;
 	public static final int REASON_SUCCESS = 104;
 
 	
-    public static boolean send(CUserSession client, int reason) {
+    public static boolean send(CUserSocket client, int reason) {
 
         if (client == null || !client.isConnected()) return false;
         final CUserSocket conn = client.getConnection();

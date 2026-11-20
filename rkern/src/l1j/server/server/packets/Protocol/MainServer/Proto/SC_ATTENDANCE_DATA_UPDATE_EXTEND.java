@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -49,7 +49,7 @@ public final class SC_ATTENDANCE_DATA_UPDATE_EXTEND extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _index, _state, _group);
     }
 
-    public static boolean sendFields(CUserSession recipient, int _index, UserAttendanceState _state, AttendanceGroupType _group) {
+    public static boolean sendFields(CUserSocket recipient, int _index, UserAttendanceState _state, AttendanceGroupType _group) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ATTENDANCE_DATA_UPDATE_EXTEND, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -66,7 +66,7 @@ public final class SC_ATTENDANCE_DATA_UPDATE_EXTEND extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_ATTENDANCE_DATA_UPDATE_EXTEND);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, int index, AttendanceGroupType group, UserAttendanceState state) {
+    private static boolean sendCtor(CUserSocket protoRecipient, int index, AttendanceGroupType group, UserAttendanceState state) {
         int proto15_index = 0;
         UserAttendanceState proto15_state = null;
         AttendanceGroupType proto15_group = null;
@@ -78,7 +78,7 @@ public final class SC_ATTENDANCE_DATA_UPDATE_EXTEND extends ProtoPacket {
         return sendFields(protoRecipient, proto15_index, proto15_state, proto15_group);
     }
     public static boolean sendConstructed(
-            CUserSession protoRecipient, int index, AttendanceGroupType group, UserAttendanceState state) { return sendCtor(protoRecipient, index, group, state); }
+            CUserSocket protoRecipient, int index, AttendanceGroupType group, UserAttendanceState state) { return sendCtor(protoRecipient, index, group, state); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int index, AttendanceGroupType group, UserAttendanceState state) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), index, group, state); }

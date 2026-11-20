@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -54,7 +54,7 @@ public final class SC_SIEGE_INJURY_TIME_NOIT extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _kind, _remainSecond, _pledgeName);
     }
 
-    public static boolean sendFields(CUserSession recipient, SiegeKind _kind, int _remainSecond, String _pledgeName) {
+    public static boolean sendFields(CUserSocket recipient, SiegeKind _kind, int _remainSecond, String _pledgeName) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_SIEGE_INJURY_TIME_NOIT, Proto.capacityBound(1024L + (_pledgeName == null ? 0L : 2L * _pledgeName.length())));
         if (writer == null) return false;
         try {
@@ -71,7 +71,7 @@ public final class SC_SIEGE_INJURY_TIME_NOIT extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_SIEGE_INJURY_TIME_NOIT);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, SiegeKind kind, int remainSecond, String pledgeName) {
+    private static boolean sendCtor(CUserSocket protoRecipient, SiegeKind kind, int remainSecond, String pledgeName) {
         SiegeKind proto58_kind = null;
         int proto58_remainSecond = 0;
         String proto58_pledgeName = null;
@@ -83,7 +83,7 @@ public final class SC_SIEGE_INJURY_TIME_NOIT extends ProtoPacket {
         return sendFields(protoRecipient, proto58_kind, proto58_remainSecond, proto58_pledgeName);
     }
     public static boolean sendConstructed(
-            CUserSession protoRecipient, SiegeKind kind, int remainSecond, String pledgeName) { return sendCtor(protoRecipient, kind, remainSecond, pledgeName); }
+            CUserSocket protoRecipient, SiegeKind kind, int remainSecond, String pledgeName) { return sendCtor(protoRecipient, kind, remainSecond, pledgeName); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, SiegeKind kind, int remainSecond, String pledgeName) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), kind, remainSecond, pledgeName); }

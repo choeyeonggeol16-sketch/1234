@@ -8,7 +8,7 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class CS_Who {
 
@@ -25,7 +25,7 @@ public final class CS_Who {
 
     private CS_Who() {}
 
-    public static void handle(CUserSession client, String targetName) {
+    public static void handle(CUserSocket client, String targetName) {
 
         if (client == null) {
             return;

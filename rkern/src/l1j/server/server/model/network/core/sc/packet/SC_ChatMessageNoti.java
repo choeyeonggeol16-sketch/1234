@@ -7,7 +7,6 @@ import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_ChatMessageNoti {
     private static final int SC_CHAT_MESSAGE_NOTI_PACKET = 0x0204;
@@ -73,7 +72,7 @@ public static final int CHAT_NORMAL 			= 0x00;
                                         String sender, int flag30, boolean hasObj,
                                         int objId, int x, int y, int rank) {
         if (receiver == null) return false;
-        final CUserSession socket = receiver.getNetConnection();
+        final CUserSocket socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

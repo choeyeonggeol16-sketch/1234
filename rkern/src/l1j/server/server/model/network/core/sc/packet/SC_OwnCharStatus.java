@@ -6,7 +6,6 @@ import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_OwnCharStatus {
     private static final int FRAME_SIZE = 52;
@@ -42,7 +41,7 @@ public final class SC_OwnCharStatus {
         final int earth = pc.getResistance() != null ? pc.getResistance().getEarth() : 0;
         final int monsterKill = pc.getMonsterkill();
 
-        final CUserSession client = pc.getNetConnection();
+        final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

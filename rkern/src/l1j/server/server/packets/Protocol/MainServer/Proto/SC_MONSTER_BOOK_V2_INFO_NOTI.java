@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -60,7 +60,7 @@ public final class SC_MONSTER_BOOK_V2_INFO_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _info);
     }
 
-    public static boolean sendFields(CUserSession recipient, MonsterBookV2Info _info) {
+    public static boolean sendFields(CUserSocket recipient, MonsterBookV2Info _info) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_MONSTER_BOOK_V2_INFO_NOTI, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -77,21 +77,21 @@ public final class SC_MONSTER_BOOK_V2_INFO_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_MONSTER_BOOK_V2_INFO_NOTI);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient) {
+    private static boolean sendCtor(CUserSocket protoRecipient) {
         MonsterBookV2Info proto35_info = null;
 
 
         return sendFields(protoRecipient, proto35_info);
     }
 
-    public static boolean sendNewInstance(CUserSession protoRecipient) {
+    public static boolean sendNewInstance(CUserSocket protoRecipient) {
         return sendCtor(protoRecipient);
     }
 
     public static boolean sendNewInstance(L1PcInstance protoRecipient) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
-    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSocket protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

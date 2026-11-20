@@ -5,7 +5,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
@@ -24,7 +24,7 @@ public final class CS_CRAFT_ID_LIST_REQ {
 
     private CS_CRAFT_ID_LIST_REQ() {}
 
-    public static void handleRequest(CUserSession client, ProtoReader r) {
+    public static void handleRequest(CUserSocket client, ProtoReader r) {
         // ── 파싱 ──
         int npcId = 0;
         while (!r.isAtEnd()) {

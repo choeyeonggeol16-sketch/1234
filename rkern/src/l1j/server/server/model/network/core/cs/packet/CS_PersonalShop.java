@@ -16,7 +16,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeShape;
@@ -45,7 +45,7 @@ public final class CS_PersonalShop {
 
     private CS_PersonalShop() {}
 
-    public static void handle(CUserSession client, int type, byte[] data) {
+    public static void handle(CUserSocket client, int type, byte[] data) {
 
         if (client == null) {
             return;
@@ -251,7 +251,7 @@ public final class CS_PersonalShop {
         }
 
         if (!replaceListings(pc, sells, buys)) return;
-        final CUserSession client = pc.getNetConnection();
+        final CUserSocket client = pc.getNetConnection();
 
         if (client != null && client.getAccount() != null) {
             SC_PacketBox.send(pc, SC_PacketBox.상점개설횟수, client.getAccount().Shop_open_count);

@@ -11,7 +11,6 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
@@ -77,7 +76,7 @@ public final class SC_ActionUI2 {
 
     public static boolean send(L1PcInstance pc, int type, int stat) {
         if (pc == null) return false;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -187,7 +186,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 
     public static boolean send(L1PcInstance pc, int i, int t, int o, int gf, int ms) {
         if (pc == null) return false;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -231,7 +230,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 
     public static boolean send(L1PcInstance recipient, L1PcInstance source, int code) {
         if (recipient == null) return false;
-        final CUserSession socket = recipient.getNetConnection();
+        final CUserSocket socket = recipient.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -811,7 +810,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 
     public boolean send(L1PcInstance pc) {
         if (pc == null) return false;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

@@ -3,10 +3,8 @@ package l1j.server.server.model.network.core.connection;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.transport.CSocket;
 import l1j.server.server.model.network.core.broadcast.CSharedPacketFormat;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -18,7 +16,6 @@ import java.lang.invoke.VarHandle;
 import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.concurrent.atomic.AtomicLong;
 import l1j.server.server.model.network.core.diagnostics.CNetworkDiagnostics.CloseReason;
-
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.utill.CConnectionState;
 import java.util.concurrent.locks.ReentrantLock;
@@ -27,10 +24,30 @@ import l1j.server.server.model.network.codec.CPacketCryptor;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.CConnectionConfig;
-
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.packet.CPacketHandler;
 import l1j.server.server.model.network.packet.IPacketWriter;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PssConfig;
+import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PlaySupport2019;
+import l1j.server.server.packets.Protocol.MainServer.PlaySupport.ClientAutomationSession;
+import java.net.InetAddress;
+import java.util.Collection;
+import l1j.server.server.Account;
+import l1j.server.server.ThreadPool;
+import l1j.server.server.Controller.LoginController;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.shop.PlayerShopView;
+import l1j.server.server.model.network.client.manager.CIPConnectionCounter;
+import l1j.server.server.model.network.packet.CBytesPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRAFT_LIST_ALL_ACK;
+import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoOutputStream;
+import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
+import l1j.server.server.model.network.core.session.DominationHybrid;
 
 /**
  * Game packet framing and the per-socket 512-slot callback serializer.
@@ -184,7 +201,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             return false;
         }
     }
-    private volatile CUserSession _client;
+    private final boolean _gameSession;
     private final String _remoteAddress;
     private final int _affinityShard;
     private volatile int _closing;
@@ -307,7 +324,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     private volatile Runnable _onDrained;
     // The final packet is retained only until preceding accepted SENDs drain.
     // No extra worker, queue, or physical SEND lease is reserved for it.
-    private IPacketWriter<CUserSession> _deferredClosePacket;
+    private IPacketWriter<CUserSocket> _deferredClosePacket;
 
     private final Closed _closedCallback;
     private CIOBufferEx[] _pending;
@@ -984,6 +1001,20 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     public CUserSocket(CSocket channel, CIOBufferPool pool,
                          CIOThreadCallback scheduler, String remoteAddress,
                          int affinityShard, int maxQueuedFrames, Closed closedCallback) {
+        this(channel, pool, scheduler, remoteAddress, affinityShard, maxQueuedFrames, closedCallback, false, false);
+    }
+
+    public CUserSocket(CSocket channel, CIOBufferPool pool,
+                         CIOThreadCallback scheduler, String remoteAddress,
+                         int affinityShard, int maxQueuedFrames, Closed closedCallback,
+                         boolean ipReservationCounted) {
+        this(channel, pool, scheduler, remoteAddress, affinityShard, maxQueuedFrames, closedCallback, true, ipReservationCounted);
+    }
+
+    private CUserSocket(CSocket channel, CIOBufferPool pool,
+                         CIOThreadCallback scheduler, String remoteAddress,
+                         int affinityShard, int maxQueuedFrames, Closed closedCallback,
+                         boolean gameSession, boolean ipReservationCounted) {
         if (channel == null || pool == null || scheduler == null
                 || affinityShard < 0 || affinityShard >= scheduler.shardCount()
                 || maxQueuedFrames < 1)
@@ -995,25 +1026,24 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         _affinityShard = affinityShard;
         _closedCallback = closedCallback;
         _maxQueuedFrames = maxQueuedFrames;
+        _gameSession = gameSession;
+        _ipReservationCounted = ipReservationCounted;
         _channel.bindUserSocketOwner(this);
     }
 
     /** Bind the L1 session before the first native READ is posted. */
 
 
-    public void bindClient(CUserSession client) {
-        if (client == null || client.getConnection() != this || _client != null || _closed != 0)
-            throw new IllegalStateException("socket client already bound or closed");
-        _client = client;
-    }
 
     private final java.util.concurrent.atomic.AtomicBoolean closeStarted = new java.util.concurrent.atomic.AtomicBoolean();
     private volatile boolean clientCleanupComplete;
     public void onTransportClosing() {
         if (!closeStarted.compareAndSet(false, true)) return;
         CNetworkDiagnostics.close(networkTrace);
-        CUserSession client = _client;
-        if (client != null) client.onTransportClosing();
+        if (_gameSession) {
+            _gameSessionReady = false;
+            playerShopView = null;
+        }
         if (_closedCallback != null) {
             try { _closedCallback.onClosing(this); }
             catch (Throwable failure) { LOG.log(Level.WARNING, "User-socket closing observer failed", failure); }
@@ -1033,7 +1063,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         }
     }
 
-    public CUserSession client() { return _client; }
+    public CUserSocket client() { return _gameSession ? this : null; }
 
     public String getRemoteAddress() { return _remoteAddress; }
     public int affinityShard() { return _affinityShard; }
@@ -1048,9 +1078,8 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void enqueuePacket(IPacketWriter packet) {
         if (packet == null || !isClientConnected()) return;
-        final CUserSession client = _client;
-        if (client == null) close();
-        else if (!tryWritePacket(client, packet)) close(CloseReason.SEND_REJECTED);
+        if (!_gameSession) close();
+        else if (!tryWritePacket(this, packet)) close(CloseReason.SEND_REJECTED);
     }
 
     /**
@@ -1065,7 +1094,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                 || !CLOSING.compareAndSet(this, 0, 1)) return;
         CNetworkDiagnostics.javaClose(networkTrace, CloseReason.GRACEFUL_CLOSE);
         _gracefulCloseStartedNs = System.nanoTime();
-        if (_client == null) {
+        if (!_gameSession) {
             close();
             return;
         }
@@ -1235,7 +1264,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         // Admission is blocked during close. An accepted encoder reservation
         // remains visible until it has attached its FIFO ticket.
         if (_closing == 0 && ON_DRAINED.getVolatile(this) == null) return;
-        IPacketWriter<CUserSession> finalPacket = null;
+        IPacketWriter<CUserSocket> finalPacket = null;
         Runnable callback = null;
         _stateLock.lock();
         try {
@@ -1252,7 +1281,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if (finalPacket != null) {
             final boolean accepted;
             try {
-                accepted = tryWritePacketInternal(_client, finalPacket, true);
+                accepted = tryWritePacketInternal(this, finalPacket, true);
             } catch (Throwable failed) {
                 close();
                 return;
@@ -2117,7 +2146,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
     /** Reserve FIFO position before serializing; encode does not hold the socket lock.
      * A true result means admitted to SEND, not delivered to the peer. */
-    public boolean tryWritePacket(CUserSession client, IPacketWriter<CUserSession> packet) {
+    public boolean tryWritePacket(CUserSocket client, IPacketWriter<CUserSocket> packet) {
         return tryWritePacketInternal(client, packet, false);
     }
 
@@ -2145,7 +2174,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         return tail;
     }
 
-    private boolean encodePacketTail(CUserSession client, IPacketWriter<CUserSession> packet,
+    private boolean encodePacketTail(CUserSocket client, IPacketWriter<CUserSocket> packet,
             CIOBufferEx tail, int slot, long ticket, int maxWireBytes) {
         final ByteBuffer bytes = tail.buffer();
         final int start = tail.writer().position();
@@ -2222,8 +2251,8 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         finally { _stateLock.unlock(); }
     }
 
-    private boolean tryWritePacketInternal(CUserSession client,
-            IPacketWriter<CUserSession> packet, boolean finalPacket) {
+    private boolean tryWritePacketInternal(CUserSocket client,
+            IPacketWriter<CUserSocket> packet, boolean finalPacket) {
         if (client == null || packet == null || !isOpen()
                 || (!finalPacket && _closing != 0)) return false;
         if ((int) SOCKET_PENDING.getAcquire(this) >= SOCKET_REJECT_AT - 32)
@@ -3107,17 +3136,17 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     }
     private boolean dispatchPlaintext(CPacketReadBuffer decoded) {
         final int opcode = decoded.readUnsignedByte();
-        if (_client.checkPacketRateLimit(System.currentTimeMillis())) return false;
-        if (!allowed(opcode, _client.getConnectionState(), _client.getAccount() != null,
-                _client.getActiveChar() != null, _client.isGameSessionReady())) return inboundHandlerConnected();
+        if (this.checkPacketRateLimit(System.currentTimeMillis())) return false;
+        if (!allowed(opcode, this.getConnectionState(), this.getAccount() != null,
+                this.getActiveChar() != null, this.isGameSessionReady())) return inboundHandlerConnected();
         if (!CPacketHandler.isFastOpcode(opcode)) {
-            CPacketFilter.isFilter(_client, opcode);
-        } else if (CPacketFilter.isFilter(_client, opcode) != CPacketFilter.RESULT_FILTER) {
-            if (CPacketHandler.isDirectOpcode(opcode) || (_client.isGameSessionReady() && !isSessionOpcode(opcode))) {
+            CPacketFilter.isFilter(this, opcode);
+        } else if (CPacketFilter.isFilter(this, opcode) != CPacketFilter.RESULT_FILTER) {
+            if (CPacketHandler.isDirectOpcode(opcode) || (this.isGameSessionReady() && !isSessionOpcode(opcode))) {
                 dispatchDecodedFrame(opcode, decoded);
             } else {
-                synchronized (_client) {
-                    if (_client.isConnected()) dispatchDecodedFrame(opcode, decoded);
+                synchronized (this) {
+                    if (this.isConnected()) dispatchDecodedFrame(opcode, decoded);
                 }
             }
         }
@@ -3275,21 +3304,21 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
     private boolean onReadFrame(ByteBuffer wire, int bodyStart, int bodyLength) {
         if (_closing != 0) return _closed == 0 && _disconnecting == 0;
-        if (!_client.isConnected()) return false;
+        if (!this.isConnected()) return false;
 
         // Preserve the empty-packet flood handling (wire length == 2).
         if (bodyLength == 0) {
-            if (_client.incrementEmptyPacketCount() <= CConnectionConfig.PACKET_LIMIT_PER_SEC) {
+            if (this.incrementEmptyPacketCount() <= CConnectionConfig.PACKET_LIMIT_PER_SEC) {
                 return true;
             }
-            _client.disconnect();
+            this.disconnect();
             return false;
         }
-        _client.resetEmptyPacketCount();
+        this.resetEmptyPacketCount();
 
         // Lineage decrypt consumes its 4-byte cipher prefix and requires 8 bytes.
         if (bodyLength < 8) {
-            _client.disconnect();
+            this.disconnect();
             return false;
         }
 
@@ -3319,13 +3348,13 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     /** Graceful disconnect is an accepted handler outcome, not a decode error. */
     private boolean inboundHandlerConnected() {
         return _closed == 0 && _disconnecting == 0
-                && (_closing != 0 || _client.isConnected());
+                && (_closing != 0 || this.isConnected());
     }
 
     private void executeMeasured(CPacketHandler.PacketHandler handler, int opcode, CPacketReadBuffer decoded) {
         final long started = System.nanoTime();
         try {
-            handler.execute(decoded, _client);
+            handler.execute(decoded, this);
         } finally {
             final long elapsed = System.nanoTime() - started;
             if (elapsed >= SLOW_HANDLER_NS) {
@@ -3926,7 +3955,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     }
 
     private void closeGracefully(){close(true, CloseReason.GRACEFUL_CLOSE);}
-    @Override public void close(){close(false, CloseReason.SERVER_CLOSE);}
+    @Override public void close(){_gameSessionReady = false; close(false, CloseReason.SERVER_CLOSE);}
     private void close(CloseReason reason) { close(false, reason); }
     private void close(boolean graceful, CloseReason reason) {
         if (!CLOSED.compareAndSet(this, 0, 1)) return;
@@ -4078,4 +4107,604 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
             if(!committed)abortDirectFrame(frame);
         }
     }
+
+    // L1 game-session state and operations (same socket lifetime).
+
+
+
+	private final boolean _ipReservationCounted;
+
+	private volatile int _packetShard = -1;
+
+	// Authentication-only connections need no separate AtomicBoolean object.
+	private volatile int _shardLogged;
+	private static final VarHandle SHARD_LOGGED;
+	static {
+		try {
+			SHARD_LOGGED = MethodHandles.lookup().findVarHandle(
+					CUserSocket.class, "_shardLogged", int.class);
+		} catch (ReflectiveOperationException e) {
+			throw new ExceptionInInitializerError(e);
+		}
+	}
+
+	private int _emptyPacketCount;
+
+	private volatile Account account;
+	private volatile L1PcInstance _activeChar;
+    // Published only after the full asynchronous character-enter completion.
+    // Prevents a half-initialized IN_GAME state from bypassing session guard.
+    private volatile boolean _gameSessionReady;
+	private int chatCount;
+
+	private volatile int _sessionLogoutStarted;
+    private static final AtomicIntegerFieldUpdater<CUserSocket> SESSION_LOGOUT_STARTED =
+            AtomicIntegerFieldUpdater.newUpdater(CUserSocket.class, "_sessionLogoutStarted");
+    // Shutdown must not dispose a PC until its network packet has finished and
+    // the asynchronous logout cleanup has also completed.
+    private volatile boolean logoutComplete;
+
+    public boolean isLogoutComplete() { return logoutComplete; }
+	
+
+	private int _packetCount = 0;
+	private long _lastCheckTime = System.currentTimeMillis();
+
+
+    /** An admitted session must have its initial key packet staged for SEND. */
+    public boolean onConnected() {
+        final CUserSocket socket = this;
+        try {
+            if (socket == null || !socket.isOpen()) return false;
+            socket.SetKey(Opcodes.getSeed());
+            // sendPacket(byte[]) swallows staging failures. ACCEPT must not treat
+            // a failed initial SEND reservation as a successful login handshake.
+            if (!socket.tryWritePacket(this, new CBytesPacket(Opcodes.S_KEYBYTES))) {
+                socket.clearCipher();
+                return false;
+            }
+            return socket.isOpen();
+        } catch (Exception e) {
+            if (socket != null) socket.clearCipher();
+            LOG.log(Level.SEVERE,
+                    String.format("[GameClient Handshake Err] 초기 핸드셰이크 키 전송 실패 - IP: %s", getIp()), e);
+            return false;
+        }
+    }
+
+	protected void onDisconnection() {
+		close();
+	}
+
+
+
+	public void kick() {
+		LOG.info(String.format(
+				"[GameClient Kick] 강제 강퇴 처리 (DISCONNECT 전송) - IP: %s, Account: %s",
+				getIp(), getAccountName()));
+
+		SC_Disconnect.send(this);
+		close();
+	}
+
+    /** Public close/kick/disconnect only request transport shutdown. The socket
+     * callback starts logout after every accepted packet releases its lease. */
+
+
+    /** Terminal packet/I/O drain starts one deferred L1 logout operation. */
+    public void onTransportClosed() {
+        if (!isCloseComplete())
+            throw new IllegalStateException("logout before transport/packet drain");
+        _gameSessionReady = false;
+		if (!SESSION_LOGOUT_STARTED.compareAndSet(this, 0, 1)) {
+			// 종료 과정에서는 여러 경로에서 close()가 재진입할 수 있으므로 로그 도배 방지
+			LOG.fine(String.format(
+					"[GameClient Close Dup] 이미 close 처리 중인 클라이언트 - IP: %s", getIp()));
+			return;
+		}
+
+        PlaySupport2019.onClientDetached(this);
+        automationSession = null;
+		final L1PcInstance pc = _activeChar;
+
+        // The original deferred close owns the socket until its state-dependent
+        // work finishes. L1 uses its own private-shop/auto-clan rules and DB pool;
+        // L2's state numbers and fixed 5/15 second delays are not copied.
+        final int stamp = pc == null ? 0 : pc.getSessionStamp();
+        final CUserSocketReleaseTask task = new CUserSocketReleaseTask(
+                () -> pc != null && pc.getNetConnection() == this && pc.getSessionStamp() == stamp
+                        && !pc.isPrivateShop() && !pc.isAutoClanjoin(),
+                () -> {
+                    try { pc.logout(); }
+                    catch (Throwable failure) { LOG.log(Level.SEVERE, "[GameClient Close] deferred player logout failed", failure); }
+                }, () -> cleanupAfterLogout(pc));
+        if (pc == null) { task.run(); return; }
+        try {
+            ThreadPool.getInstance().execute(task);
+        } catch (Exception failure) {
+            LOG.log(Level.SEVERE, "[GameClient Close] deferred logout admission failed", failure);
+            if (isTransportOwnerThread()) {
+                try { Thread.ofVirtual().name("CIO-logout-recovery").start(task); return; }
+                catch (Throwable startFailure) {
+                    LOG.log(Level.SEVERE, "[GameClient Close] emergency logout thread unavailable", startFailure);
+                }
+            }
+            task.run();
+        }
+    }
+
+
+	private void cleanupAfterLogout(L1PcInstance pc) {
+		try {
+			if (_ipReservationCounted && _remoteAddress != null
+					&& !_remoteAddress.isEmpty()
+					&& !_remoteAddress.equals("0.0.0.0")) {
+
+				CIPConnectionCounter.getInstance()
+						.decrease(InetAddress.getByName(_remoteAddress));
+			}
+		} catch (Exception e) {
+			LOG.log(Level.WARNING, "CIPConnectionCounter decrease 예외 발생", e);
+		}
+
+		try {
+			LoginController.getInstance().logout(this);
+		} catch (Throwable e) {
+			LOG.log(Level.WARNING, "LoginController logout 예외 발생", e);
+		}
+
+		try {
+			if (_activeChar == pc) {
+				setActiveChar(null);
+			}
+		} catch (Throwable ignored) {
+		}
+
+		try {
+			// 메모리 제거
+			SC_CRAFT_LIST_ALL_ACK.onDisconnect(this);
+            final CUserSocket socket = this;
+            if (socket != null) socket.clearCipher();
+			setAccount(null);
+
+			disconnect();
+
+			setConnectionState(CConnectionState.DISCONNECTED);
+		} catch (Throwable e) {
+			LOG.log(Level.WARNING, "disconnect 처리 중 예외 발생", e);
+		} finally {
+            // Hybrid handoff is allowed only after full logout/session removal.
+            try { DominationHybrid.onClientClosed(this); }
+            finally {
+                logoutComplete = true;
+                onClientCleanupComplete();
+            }
+		}
+	}
+
+    private volatile PlayerShopView playerShopView;
+
+    public PlayerShopView getPlayerShopView() { return playerShopView; }
+    public void setPlayerShopView(PlayerShopView view) { playerShopView = view; }
+
+    // Owned by this session's CIO. Only deferred NPC replies use this state.
+    private long npcDialogueTarget;
+    private int npcDialogueVersion;
+
+    public void trackNpcDialogue(long smartId, boolean newTalk) {
+        if (newTalk || smartId != npcDialogueTarget) {
+            npcDialogueTarget = smartId;
+            npcDialogueVersion++;
+        }
+    }
+
+    public int npcDialogueVersion() { return npcDialogueVersion; }
+
+    public boolean canReplyToNpcDialogue(L1PcInstance pc, long smartId, int version) {
+        if (smartId == 0 || npcDialogueTarget != smartId || npcDialogueVersion != version
+                || !isConnected() || _activeChar != pc || pc.getNetConnection() != this
+                || getConnectionState() != CConnectionState.IN_GAME || pc.isDead()
+                || pc.isGhost() || pc.isPrivateShop() || pc.is무인상점() || pc.isAutoClanjoin()) return false;
+        return L1World.getInstance().findObjectBySmartId(smartId) instanceof L1NpcInstance npc
+                && !npc.isDead() && pc.getMapId() == npc.getMapId()
+                && Math.abs((long) pc.getX() - npc.getX()) <= 6
+                && Math.abs((long) pc.getY() - npc.getY()) <= 6;
+    }
+
+	public void setActiveChar(L1PcInstance pc) {
+        onCharacterChanged(pc);
+        if (_activeChar != pc || pc == null) {
+            _gameSessionReady = false;
+            PlaySupport2019.onClientDetached(this);
+            automationSession = null;
+            clearPssWindowSession();
+            trackNpcDialogue(0L, true);
+            playerShopView = null;
+        }
+		_activeChar = pc;
+	}
+
+    private volatile ClientAutomationSession automationSession;
+    private volatile int pssClaimPending, pssQueryPending;
+    private static final AtomicIntegerFieldUpdater<CUserSocket> PSS_CLAIM =
+            AtomicIntegerFieldUpdater.newUpdater(CUserSocket.class, "pssClaimPending");
+    private static final AtomicIntegerFieldUpdater<CUserSocket> PSS_QUERY =
+            AtomicIntegerFieldUpdater.newUpdater(CUserSocket.class, "pssQueryPending");
+    private volatile PssConfig.Settings pssCacheSettings;
+    private volatile long pssCacheDay;
+    private volatile int pssCacheSeconds = -1;
+
+    public boolean tryBeginPssClaim() { return PSS_CLAIM.compareAndSet(this, 0, 1); }
+    public void endPssClaim() { pssClaimPending = 0; }
+    public boolean isPssClaimPending() { return pssClaimPending != 0; }
+    public boolean tryBeginPssQuery() { return PSS_QUERY.compareAndSet(this, 0, 1); }
+    public void endPssQuery() { pssQueryPending = 0; }
+    public int cachedPssSeconds(PssConfig.Settings settings, long day) {
+        return pssCacheSettings == settings && pssCacheDay == day ? pssCacheSeconds : -1;
+    }
+    public void cachePssSeconds(PssConfig.Settings settings, long day, int seconds) {
+        pssCacheSeconds = seconds;
+        pssCacheDay = day;
+        pssCacheSettings = settings;
+    }
+    public void invalidatePssCache() { pssCacheSettings = null; }
+
+    private volatile l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.Session pssWindowSession;
+
+    public l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.Session peekPssWindowSession() {
+        return pssWindowSession;
+    }
+
+    public synchronized l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.Session pssWindowSession() {
+        if (pssWindowSession == null)
+            pssWindowSession = new l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.Session(this);
+        return pssWindowSession;
+    }
+
+    private void clearPssWindowSession() {
+        final var current = pssWindowSession;
+        pssWindowSession = null;
+        if (current != null) current.close();
+    }
+    private volatile boolean clientPssMapRules;
+    private static final AtomicReferenceFieldUpdater<CUserSocket, ClientAutomationSession> AUTOMATION =
+            AtomicReferenceFieldUpdater.newUpdater(CUserSocket.class, ClientAutomationSession.class, "automationSession");
+
+    public ClientAutomationSession getAutomationSession() { return automationSession; }
+    public boolean requiresPlayerTeleportRules() { return clientPssMapRules; }
+
+    public boolean tryClaimAutomation(ClientAutomationSession requested) {
+        if (requested == null) throw new NullPointerException("requested");
+        if (requested.clientDriven() && (!isConnected() || !_gameSessionReady)) return false;
+        if (!AUTOMATION.compareAndSet(this, null, requested)) return false;
+        if (requested.clientDriven()) clientPssMapRules = true;
+        if (requested.clientDriven() && (!isConnected() || !_gameSessionReady)) {
+            AUTOMATION.compareAndSet(this, requested, null);
+            return false;
+        }
+        return true;
+    }
+
+    public boolean releaseAutomation(ClientAutomationSession expected) {
+        return expected != null && AUTOMATION.compareAndSet(this, expected, null);
+    }
+
+    /** CAS replacement keeps PSS running while the persisted daily lease rotates. */
+    public boolean replaceAutomation(ClientAutomationSession expected, ClientAutomationSession next) {
+        return expected != null && next != null && expected.clientDriven()
+                && next.clientDriven() && AUTOMATION.compareAndSet(this, expected, next);
+    }
+
+
+    public boolean isGameSessionReady() {
+        return _gameSessionReady;
+    }
+
+    public void publishGameSessionReady(L1PcInstance pc) {
+        if (pc != null && _activeChar == pc &&
+                _connectionState == CConnectionState.IN_GAME && isConnected()) {
+            _gameSessionReady = true;
+        }
+    }
+
+    public void clearGameSessionReady() {
+        _gameSessionReady = false;
+        PlaySupport2019.onClientDetached(this);
+        automationSession = null;
+        clearPssWindowSession();
+    }
+
+	public L1PcInstance getActiveChar() {
+		return _activeChar;
+	}
+
+	public void setAccount(Account account) {
+        onAccountChanged(account);
+		this.account = account;
+	}
+
+    /** Called by a verified server-side identity provider before authentication. */
+
+	public Account getAccount() {
+		return account;
+	}
+
+	public String getAccountName() {
+		return account != null ? account.getName() : null;
+	}
+
+	public String getIp() {
+		return _remoteAddress;
+	}
+
+	public String getHostname() {
+		return getIp();
+	}
+
+	public boolean isConnected() {
+		return _gameSession && isClientConnected() && _sessionLogoutStarted == 0;
+	}
+
+	public boolean isClosed() {
+		return !isConnected();
+	}
+
+	private void enqueue(CServerPacket data) {
+		if (data == null || !isConnected()) return;
+
+		try {
+			enqueuePacket(data);
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, "Failed to enqueue packet write", e);
+		}
+	}
+
+	public void sendPacket(byte[] data) {
+		enqueue(data);
+	}
+
+	public void sendPacket(CServerPacket bp) {
+		enqueue(bp);
+	}
+
+	private void enqueue(byte[] data) {
+		if (data == null || data.length == 0 || !isConnected()) return;
+
+		try {
+            enqueuePacket(new CBytesPacket(data));
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, "Failed to enqueue packet write", e);
+		}
+	}
+
+	    
+
+    
+
+    
+
+    public void sendPacket(ProtoOutputStream stream, boolean isClear) {
+		if (stream == null) return;
+
+		try {
+			if (!stream.isCreated()) {
+				stream.createProtoBytes();
+			}
+			enqueue(stream.getProtoBytes());
+
+		} finally {
+			if (isClear) {
+				stream.dispose();
+			}
+		}
+	}
+
+	public void directSendPacketBytes(Collection<byte[]> col) {
+		if (col == null || col.isEmpty()) return;
+
+		for (byte[] data : col) {
+			if (data == null) continue;
+
+			try {
+				enqueue(data);
+			} catch (Exception e) {
+				LOG.log(Level.WARNING, "directSendPacketBytes 실패", e);
+			}
+		}
+	}
+
+
+	// ------------------------------------------------------------------
+	// Game-session operations
+	// ------------------------------------------------------------------
+
+	protected void writePacket(
+			IPacketWriter<CUserSocket> packet) {
+
+		if (packet == null || !isConnected()) {
+			return;
+		}
+
+		enqueuePacket(packet);
+	}
+
+
+
+
+
+
+
+	public void close(
+			IPacketWriter<CUserSocket> packet) {
+
+		if (!isConnected()) {
+			LOG.warning(
+					String.format(
+							"[GameClient Close Skip] 이미 종료 중 - IP: %s",
+							getHostAddress()));
+			return;
+		}
+
+		requestClientClose(packet);
+	}
+
+	public void disconnect() {
+		if (!beginClientDisconnect()) {
+			return;
+		}
+
+		try {
+			onDisconnection();
+
+		} catch (Throwable t) {
+			/*
+			 * RWorker owner close path에서도 들어올 수 있다.
+			 * 상위 게임 life-cycle 예외가 owner pump까지 빠져나가지 않게 한다.
+			 */
+			LOG.log(
+					Level.SEVERE,
+					String.format(
+							"[GameClient Disconnect Err] onDisconnection() 중 예외 발생 - IP: %s",
+							getHostAddress()),
+					t);
+
+		} finally {
+			finishClientDisconnect();
+		}
+	}
+
+	public CUserSocket getConnection() {
+		return this;
+	}
+
+	/** Socket shard chosen when the connection was admitted. */
+
+	public String getHostAddress() {
+		return getRemoteAddress();
+	}
+
+
+	public int incrementEmptyPacketCount() {
+		return ++_emptyPacketCount;
+	}
+
+	public void resetEmptyPacketCount() {
+		_emptyPacketCount = 0;
+	}
+
+	public boolean markShardLogged() {
+		return SHARD_LOGGED.compareAndSet(this, 0, 1);
+	}
+
+	public void initPacketShard(int shardMask) {
+		if (_packetShard >= 0) {
+			return;
+		}
+
+		_packetShard = affinityShard();
+	}
+
+	public int getPacketShard() {
+		return _packetShard;
+	}
+
+	// 현재 클라이언트의 연결 상태 (기본값: 최초 접속인 CONNECTED)
+	private volatile CConnectionState _connectionState = CConnectionState.CONNECTED;
+
+	// 소켓이 생성된 절대 시간 기록
+	private final long _connectionTime = System.currentTimeMillis();
+
+	// 로그인 전 대기 허용 시간 (1분)
+	private static final long PRE_LOGIN_TIMEOUT = 60_000L;
+
+	public CConnectionState getConnectionState() {
+		return _connectionState;
+	}
+
+	public void setConnectionState(CConnectionState connectionState) {
+        if (connectionState != CConnectionState.IN_GAME) {
+            _gameSessionReady = false;
+            PlaySupport2019.onClientDetached(this);
+            clearPssWindowSession();
+        }
+		_connectionState = connectionState;
+        onSessionStateChanged(connectionState);
+	}
+
+	public boolean checkPreLoginTimeout() {
+		if (_connectionState == CConnectionState.IN_GAME || _connectionState == CConnectionState.AUTHENTICATED
+				|| _connectionState == CConnectionState.OUT_GAME || _connectionState == CConnectionState.DISCONNECTED) {
+			return false;
+		}
+		return System.currentTimeMillis() - _connectionTime > PRE_LOGIN_TIMEOUT;
+	}
+
+    // Existing CIO wheel accepts this session directly as the one-shot login task.
+    // No dedicated LoginTimeout wrapper is allocated on every ACCEPT.
+    public boolean isLoginTimeoutCancelled() {
+        return !isConnected() || isLoggedIn();
+    }
+
+    public void runLoginTimeout() {
+        if (!isLoginTimeoutCancelled() && checkPreLoginTimeout()) disconnect();
+    }
+
+	public boolean isLoggedIn() {
+		return _connectionState == CConnectionState.IN_GAME || _connectionState == CConnectionState.AUTHENTICATED
+				|| _connectionState == CConnectionState.OUT_GAME || _connectionState == CConnectionState.DISCONNECTED;
+	}
+
+	// 패킷 도배 방지
+	//
+	// 일반 호출 호환용. network completion hot path는 completion당 한 번 읽은 now를
+	// checkPacketRateLimit(long)으로 넘겨 System.currentTimeMillis()를
+	// 패킷마다 호출하지 않는다.
+	public boolean checkPacketRateLimit() {
+		return checkPacketRateLimit(System.currentTimeMillis());
+	}
+
+	public boolean checkPacketRateLimit(long now) {
+		if (now < _lastCheckTime) {
+			_lastCheckTime = now;
+			_packetCount = 0;
+			return false;
+		}
+
+		if (now - _lastCheckTime > 1000L) {
+			_packetCount = 0;
+			_lastCheckTime = now;
+		}
+
+		_packetCount++;
+		return _packetCount > CConnectionConfig.PACKET_LIMIT_PER_SEC;
+	}
+
+	// 2차 비번 인증 캐릭터 이름
+	private String _lastSelectedCharName;
+	public String getLastSelectedCharName() {
+		return _lastSelectedCharName;
+	}
+	public void setLastSelectedCharName(String name) {
+		_lastSelectedCharName = name;
+	}
+
+	public int getChatCount() {
+		return chatCount;
+	}
+
+	public void setChatCount(int i) {
+		chatCount = i;
+	}
+
+	private int secondpasswordfailurecount = 0;
+	public int getSecondPasswordFailureCount() {
+		return secondpasswordfailurecount;
+	}
+	public int incSecondPasswordFailureCount() {
+		return ++secondpasswordfailurecount;
+	}
+	public void resetSecondPasswordFailureCount() {
+		secondpasswordfailurecount = 0;
+	}
+
 }

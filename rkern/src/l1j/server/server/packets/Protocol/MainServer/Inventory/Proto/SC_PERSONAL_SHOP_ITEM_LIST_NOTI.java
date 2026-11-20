@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Inventory.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,7 +95,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
     /** Preserve the existing compact wire indices and remember which rows they represent. */
     public static void do_send(L1PcInstance pc, int objectId, ePersonalShopType type) {
         if (pc == null || type == null || pc.getNetConnection() == null) return;
-        final CUserSession client = pc.getNetConnection();
+        final CUserSocket client = pc.getNetConnection();
         client.setPlayerShopView(null);
         if (!(L1World.getInstance().findObject(objectId) instanceof L1PcInstance shop)
                 || !shop.isPrivateShop()) return;
@@ -507,7 +507,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), presentMask, type, sellerId, size, items);
     }
 
-    public static boolean sendFields(CUserSession recipient, long presentMask, ePersonalShopType type, int sellerId, int size, List<TradeItemInfo> items) {
+    public static boolean sendFields(CUserSocket recipient, long presentMask, ePersonalShopType type, int sellerId, int size, List<TradeItemInfo> items) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_PERSONAL_SHOP_ITEM_LIST_NOTI, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -524,7 +524,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_PERSONAL_SHOP_ITEM_LIST_NOTI);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient) {
+    private static boolean sendCtor(CUserSocket protoRecipient) {
         long proto55_present = 0L;
         ePersonalShopType proto55_type = null;
         int proto55_sellerId = 0;
@@ -535,14 +535,14 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
         return sendFields(protoRecipient, proto55_present, proto55_type, proto55_sellerId, proto55_size, proto55_items);
     }
 
-    public static boolean sendNewInstance(CUserSession protoRecipient) {
+    public static boolean sendNewInstance(CUserSocket protoRecipient) {
         return sendCtor(protoRecipient);
     }
 
     public static boolean sendNewInstance(L1PcInstance protoRecipient) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
-    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSocket protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

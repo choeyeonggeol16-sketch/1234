@@ -14,9 +14,8 @@ import l1j.server.server.model.L1ClanMatching.ClanMatchingList;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.session.CUserSession;
-import java.nio.charset.Charset;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import java.nio.charset.Charset;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
 
@@ -302,7 +301,7 @@ private Data(int type, int objId, int hType, boolean noRequest, List<ClanNode> c
 		_applicantList = applicantList != null ? applicantList : Collections.<ApplicantNode>emptyList();
 	}
 
-private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
+private void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
 		buffer.writeC(Opcodes.S_MATCH_MAKING);
 		buffer.writeC(_type);
 
@@ -376,7 +375,7 @@ private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 		}
 	}
 
-private boolean writeTo(CUserSession client) {
+private boolean writeTo(CUserSocket client) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

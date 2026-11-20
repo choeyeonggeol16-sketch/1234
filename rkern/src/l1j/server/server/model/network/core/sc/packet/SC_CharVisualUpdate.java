@@ -8,7 +8,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_CharVisualUpdate {
     private SC_CharVisualUpdate() {}
@@ -27,7 +26,7 @@ public final class SC_CharVisualUpdate {
         return pc != null && sendPacked(pc.getNetConnection(), packed);
     }
 
-    public static boolean sendPacked(CUserSession client, long packed) {
+    public static boolean sendPacked(CUserSocket client, long packed) {
         if (packed == 0L || client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

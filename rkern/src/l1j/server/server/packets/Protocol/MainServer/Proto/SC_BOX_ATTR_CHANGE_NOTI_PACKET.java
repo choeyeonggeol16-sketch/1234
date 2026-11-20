@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -91,7 +91,7 @@ public final class SC_BOX_ATTR_CHANGE_NOTI_PACKET extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _worldNumber, _box, _attribute);
     }
 
-    public static boolean sendFields(CUserSession recipient, int _worldNumber, Box _box, int _attribute) {
+    public static boolean sendFields(CUserSocket recipient, int _worldNumber, Box _box, int _attribute) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_BOX_ATTR_CHANGE_NOTI_PACKET, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -108,7 +108,7 @@ public final class SC_BOX_ATTR_CHANGE_NOTI_PACKET extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_BOX_ATTR_CHANGE_NOTI_PACKET);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, int worldNumber, Box box, int attribute) {
+    private static boolean sendCtor(CUserSocket protoRecipient, int worldNumber, Box box, int attribute) {
         int proto18_worldNumber = 0;
         Box proto18_box = null;
         int proto18_attribute = 0;
@@ -120,7 +120,7 @@ public final class SC_BOX_ATTR_CHANGE_NOTI_PACKET extends ProtoPacket {
         return sendFields(protoRecipient, proto18_worldNumber, proto18_box, proto18_attribute);
     }
     public static boolean sendConstructed(
-            CUserSession protoRecipient, int worldNumber, Box box, int attribute) { return sendCtor(protoRecipient, worldNumber, box, attribute); }
+            CUserSocket protoRecipient, int worldNumber, Box box, int attribute) { return sendCtor(protoRecipient, worldNumber, box, attribute); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int worldNumber, Box box, int attribute) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), worldNumber, box, attribute); }

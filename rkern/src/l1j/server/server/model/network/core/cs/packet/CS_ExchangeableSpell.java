@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.cs.packet;
 import l1j.server.server.model.network.core.sc.packet.SC_Horun;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class CS_ExchangeableSpell {
 
@@ -10,7 +10,7 @@ public final class CS_ExchangeableSpell {
     }
 
     public static void handle(
-            CUserSession client,
+            CUserSocket client,
             int value) {
 
         if (client == null) {

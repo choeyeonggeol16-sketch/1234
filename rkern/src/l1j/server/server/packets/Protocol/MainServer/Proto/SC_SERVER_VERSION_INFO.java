@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -13,11 +13,11 @@ public final class SC_SERVER_VERSION_INFO {
 
     private SC_SERVER_VERSION_INFO() {}
 
-    public static void send(CUserSession client) {
+    public static void send(CUserSocket client) {
         sendVersion(client, true);
     }
 
-    public static void denial(CUserSession client) {
+    public static void denial(CUserSocket client) {
         if (sendVersion(client, false)) {
             // Stop further requests, retain the grace period, and drain the
             // accepted response through the existing socket deadline service.
@@ -25,7 +25,7 @@ public final class SC_SERVER_VERSION_INFO {
         }
     }
 
-    private static boolean sendVersion(CUserSession client, boolean accept) {
+    private static boolean sendVersion(CUserSocket client, boolean accept) {
         final ProtoWriter writer = Proto.begin(client, ProtoMsg.SC_SERVER_VERSION_INFO, 256);
         if (writer == null) return false;
         try {

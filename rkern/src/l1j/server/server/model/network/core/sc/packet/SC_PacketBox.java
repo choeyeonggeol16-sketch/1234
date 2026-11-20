@@ -20,7 +20,6 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.templates.L1BookMark;
 import l1j.server.server.utils.SQLUtil;
@@ -364,7 +363,7 @@ public static void broadcastGreen(String message) {
 
     private static boolean sendEncoded(L1PcInstance receiver, int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<L1BookMark> _bookmarks) {
         if (receiver == null) return false;
-        final CUserSession socket = receiver.getNetConnection();
+        final CUserSocket socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

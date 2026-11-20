@@ -2,7 +2,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 
 /**
@@ -11,7 +11,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 public final class CS_CRAFT_BATCH_REQ {
     private CS_CRAFT_BATCH_REQ() {}
 
-    public static void handleRequest(CUserSession client, ProtoReader r) {
+    public static void handleRequest(CUserSocket client, ProtoReader r) {
         try {
             int npcId = 0, craftId = 0, count = 0;
             boolean hasNpc = false, hasCraft = false, hasCount = false;

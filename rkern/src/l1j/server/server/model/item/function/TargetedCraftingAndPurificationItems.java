@@ -8,7 +8,7 @@ import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.rank.business.RankBusiness;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -17,7 +17,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 final class TargetedCraftingAndPurificationItems {
     private TargetedCraftingAndPurificationItems() {}
-    static void use(CUserSession client, L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId, L1ItemInstance l1iteminstance1) {
+    static void use(CUserSocket client, L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId, L1ItemInstance l1iteminstance1) {
         int[] loc = null;
         switch (itemId) {
 		case 60035:

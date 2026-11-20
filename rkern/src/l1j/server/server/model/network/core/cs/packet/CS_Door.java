@@ -13,7 +13,7 @@ import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1House;
@@ -36,7 +36,7 @@ public final class CS_Door {
     }
 
     public static void handle(
-            CUserSession client,
+            CUserSocket client,
             int locX,
             int locY,
             int objectId) {

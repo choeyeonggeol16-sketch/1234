@@ -34,7 +34,7 @@ import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.packet.IPacketWriter;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.types.Point;
 

@@ -6,7 +6,6 @@ import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_ChatPacket {
 
@@ -110,7 +109,7 @@ public final class SC_ChatPacket {
     private static boolean sendDirectRaw(L1PcInstance recipient, int mode, int opcode,
             int type, int objectId, String text1, String text2, int x, int y) {
         if (recipient == null || mode == 0) return false;
-        final CUserSession socket = recipient.getNetConnection();
+        final CUserSocket socket = recipient.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket c = socket.getConnection();
         if (c == null || !c.isClientConnected()) return false;

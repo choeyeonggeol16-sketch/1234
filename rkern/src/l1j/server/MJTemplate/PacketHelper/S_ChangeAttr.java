@@ -4,7 +4,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public class S_ChangeAttr extends CServerPacket {
 
@@ -29,7 +29,7 @@ public class S_ChangeAttr extends CServerPacket {
 	}
 
 	@Override
-	public void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
+	public void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
 		buffer.writeC(Opcodes.S_CHANGE_ATTR);
 		buffer.writeH(_x);
 		buffer.writeH(_y);

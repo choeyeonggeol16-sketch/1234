@@ -15,7 +15,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1Npc;
@@ -31,7 +31,7 @@ public final class CS_GiveItem {
     }
 
     public static void handle(
-            CUserSession client,
+            CUserSocket client,
             int targetId,
             int itemObjectId,
             int requestedCount) {

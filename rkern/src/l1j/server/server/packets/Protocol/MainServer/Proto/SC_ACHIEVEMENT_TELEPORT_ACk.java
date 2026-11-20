@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -67,7 +67,7 @@ public final class SC_ACHIEVEMENT_TELEPORT_ACk extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _result, _achievementId);
     }
 
-    public static boolean sendFields(CUserSession recipient, int _result, int _achievementId) {
+    public static boolean sendFields(CUserSocket recipient, int _result, int _achievementId) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ACHIEVEMENT_TELEPORT_ACk, Proto.capacityBound(1024L));
         if (writer == null) return false;
         try {
@@ -84,7 +84,7 @@ public final class SC_ACHIEVEMENT_TELEPORT_ACk extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_ACHIEVEMENT_TELEPORT_ACk);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, eResultCode result, int achievementId) {
+    private static boolean sendCtor(CUserSocket protoRecipient, eResultCode result, int achievementId) {
         int proto2_result = 0;
         int proto2_achievementId = 0;
 
@@ -94,7 +94,7 @@ public final class SC_ACHIEVEMENT_TELEPORT_ACk extends ProtoPacket {
         return sendFields(protoRecipient, proto2_result, proto2_achievementId);
     }
     public static boolean sendConstructed(
-            CUserSession protoRecipient, eResultCode result, int achievementId) { return sendCtor(protoRecipient, result, achievementId); }
+            CUserSocket protoRecipient, eResultCode result, int achievementId) { return sendCtor(protoRecipient, result, achievementId); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, eResultCode result, int achievementId) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), result, achievementId); }

@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.Controller.LoginController;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.utill.CConnectionState;
 
 public final class CS_Logout {
@@ -10,7 +10,7 @@ public final class CS_Logout {
     }
 
     public static void handle(
-            CUserSession client) {
+            CUserSocket client) {
 
         if (client == null) {
             return;

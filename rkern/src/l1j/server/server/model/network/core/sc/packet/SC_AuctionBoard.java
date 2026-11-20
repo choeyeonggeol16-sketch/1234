@@ -13,9 +13,8 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.session.CUserSession;
-import java.nio.charset.Charset;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import java.nio.charset.Charset;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
 import l1j.server.server.storage.CacheD;
@@ -50,7 +49,7 @@ public final class SC_AuctionBoard {
 	 */
 	public static void sendAsync(l1j.server.server.model.Instance.L1PcInstance pc, L1NpcInstance board) {
 		if (pc == null || board == null) return;
-		final CUserSession owner = pc.getNetConnection();
+		final CUserSocket owner = pc.getNetConnection();
 		if (owner == null || !owner.isConnected() || owner.getActiveChar() != pc) return;
 		final int objId = board.getId(), x = board.getX(), y = board.getY();
 		try {
@@ -161,7 +160,7 @@ public Data(int boardObjId, List<AuctionNode> nodes) {
 		_nodes = nodes != null ? nodes : new ArrayList<AuctionNode>();
 	}
 
-private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
+private void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
 		buffer.writeC(Opcodes.S_AGIT_LIST);
 		buffer.writeD(_boardObjId);
 		buffer.writeH(_nodes.size());
@@ -176,7 +175,7 @@ private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 		}
 	}
 
-private boolean writeTo(CUserSession client) {
+private boolean writeTo(CUserSocket client) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

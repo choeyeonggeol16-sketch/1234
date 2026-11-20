@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -71,7 +71,7 @@ public final class SC_PARTY_MEMBER_LIST_CHANGE extends ProtoPacket {
     }
 
     public static boolean sendFields(
-            CUserSession recipient, String _leaderName, String _outUser, String _gotoInterServerUser,
+            CUserSocket recipient, String _leaderName, String _outUser, String _gotoInterServerUser,
             SC_PARTY_MEMBER_LIST.Member _newUser) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_PARTY_MEMBER_LIST_CHANGE, Proto.capacityBound(512L + (_leaderName == null ? 0L : 2L * _leaderName.length()) + (_outUser == null ? 0L : 2L * _outUser.length()) + (_gotoInterServerUser == null ? 0L : 2L * _gotoInterServerUser.length()) + (_newUser == null || _newUser.name == null ? 0L : 2L * _newUser.name.length())));
         if (writer == null) return false;
@@ -90,7 +90,7 @@ public final class SC_PARTY_MEMBER_LIST_CHANGE extends ProtoPacket {
     }
 
     private static boolean sendCtor(
-            CUserSession protoRecipient, String leaderName, String outUser, String gotoInterServerUser,
+            CUserSocket protoRecipient, String leaderName, String outUser, String gotoInterServerUser,
             SC_PARTY_MEMBER_LIST.Member newUser) {
         String proto50_leaderName = null;
         String proto50_outUser = null;
@@ -105,7 +105,7 @@ public final class SC_PARTY_MEMBER_LIST_CHANGE extends ProtoPacket {
         return sendFields(protoRecipient, proto50_leaderName, proto50_outUser, proto50_gotoInterServerUser, proto50_newUser);
     }
 
-    public static boolean sendOfNewMember(CUserSession protoRecipient, SC_PARTY_MEMBER_LIST.Member m) {
+    public static boolean sendOfNewMember(CUserSocket protoRecipient, SC_PARTY_MEMBER_LIST.Member m) {
         return sendCtor(protoRecipient, null, null, null, m);
     }
 
@@ -113,7 +113,7 @@ public final class SC_PARTY_MEMBER_LIST_CHANGE extends ProtoPacket {
         return sendOfNewMember(protoRecipient == null ? null : protoRecipient.getNetConnection(), m);
     }
 
-    public static boolean sendOfOutUser(CUserSession protoRecipient, String name) {
+    public static boolean sendOfOutUser(CUserSocket protoRecipient, String name) {
         return sendCtor(protoRecipient, null, name, null, null);
     }
 
@@ -121,7 +121,7 @@ public final class SC_PARTY_MEMBER_LIST_CHANGE extends ProtoPacket {
         return sendOfOutUser(protoRecipient == null ? null : protoRecipient.getNetConnection(), name);
     }
 
-    public static boolean sendOfLeaderChange(CUserSession protoRecipient, String newLeaderName) {
+    public static boolean sendOfLeaderChange(CUserSocket protoRecipient, String newLeaderName) {
         return sendCtor(protoRecipient, newLeaderName, null, null, null);
     }
 
@@ -129,7 +129,7 @@ public final class SC_PARTY_MEMBER_LIST_CHANGE extends ProtoPacket {
         return sendOfLeaderChange(protoRecipient == null ? null : protoRecipient.getNetConnection(), newLeaderName);
     }
     public static boolean sendConstructed(
-            CUserSession protoRecipient, String leaderName, String outUser, String gotoInterServerUser,
+            CUserSocket protoRecipient, String leaderName, String outUser, String gotoInterServerUser,
             SC_PARTY_MEMBER_LIST.Member newUser) { return sendCtor(protoRecipient, leaderName, outUser, gotoInterServerUser, newUser); }
 
     public static boolean sendConstructed(

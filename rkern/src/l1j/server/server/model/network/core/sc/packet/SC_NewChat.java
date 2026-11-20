@@ -9,7 +9,6 @@ import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_NewChat {
 
@@ -117,7 +116,7 @@ public final class SC_NewChat {
                                      byte[] senderNameBytes, int pcObjId, int pcX,
                                      int pcY, int rankLevel) {
         if (receiver == null) return false;
-        final CUserSession socket = receiver.getNetConnection();
+        final CUserSocket socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

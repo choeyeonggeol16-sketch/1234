@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Inventory.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.util.LinkedList;
@@ -73,7 +73,7 @@ public final class SC_ADD_INVENTORY_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), presentMask, _items, _rawItems, _onStart, _ownerOid);
     }
 
-    public static boolean sendFields(CUserSession recipient, long presentMask, List<ItemInfo> _items, List<byte[]> _rawItems, boolean _onStart, int _ownerOid) {
+    public static boolean sendFields(CUserSocket recipient, long presentMask, List<ItemInfo> _items, List<byte[]> _rawItems, boolean _onStart, int _ownerOid) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ADD_INVENTORY_NOTI, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -90,7 +90,7 @@ public final class SC_ADD_INVENTORY_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_ADD_INVENTORY_NOTI);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient) {
+    private static boolean sendCtor(CUserSocket protoRecipient) {
         long proto6_present = 0L;
         List<ItemInfo> proto6_items = new LinkedList<>();
         List<byte[]> proto6_rawItems = new LinkedList<>();
@@ -99,7 +99,7 @@ public final class SC_ADD_INVENTORY_NOTI extends ProtoPacket {
 
         return sendFields(protoRecipient, proto6_present, proto6_items, proto6_rawItems, proto6_onStart, proto6_ownerOid);
     }
-    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSocket protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 
@@ -113,7 +113,7 @@ public final class SC_ADD_INVENTORY_NOTI extends ProtoPacket {
         return sendEncodedItem(recipient == null ? null : recipient.getNetConnection(), body, onStart, ownerOid);
     }
 
-    public static boolean sendEncodedItem(CUserSession recipient, byte[] body, boolean onStart, int ownerOid) {
+    public static boolean sendEncodedItem(CUserSocket recipient, byte[] body, boolean onStart, int ownerOid) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ADD_INVENTORY_NOTI,
                 Proto.capacityBound(32L + body.length));
         if (writer == null) return false;
@@ -131,7 +131,7 @@ public final class SC_ADD_INVENTORY_NOTI extends ProtoPacket {
         return sendEncoded(recipient == null ? null : recipient.getNetConnection(), bodies, from, to, onStart, ownerOid);
     }
 
-    public static boolean sendEncoded(CUserSession recipient, byte[][] bodies,
+    public static boolean sendEncoded(CUserSocket recipient, byte[][] bodies,
             int from, int to, boolean onStart, int ownerOid) {
         java.util.Objects.checkFromToIndex(from, to, bodies.length);
         long capacity = 32L;

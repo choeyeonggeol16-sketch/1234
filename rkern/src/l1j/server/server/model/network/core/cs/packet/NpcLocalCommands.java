@@ -20,7 +20,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
@@ -127,7 +127,7 @@ final class NpcLocalCommands {
 		return false;
 	}
 
-    static void poly(CUserSession clientthread, int polyId) {
+    static void poly(CUserSocket clientthread, int polyId) {
 		L1PcInstance pc = clientthread.getActiveChar();
 
 		if (pc == null) return;
@@ -140,7 +140,7 @@ final class NpcLocalCommands {
 		}
 	}
 
-    static void polyByKeplisha(CUserSession clientthread, int polyId) {
+    static void polyByKeplisha(CUserSocket clientthread, int polyId) {
 		L1PcInstance pc = clientthread.getActiveChar();
 
 		if (pc == null) return;

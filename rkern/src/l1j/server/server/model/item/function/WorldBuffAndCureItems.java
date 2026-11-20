@@ -10,7 +10,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -19,7 +19,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_Sound;
 
 final class WorldBuffAndCureItems {
     private WorldBuffAndCureItems() {}
-    static void use(CUserSession client, L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId, L1ItemInstance l1iteminstance1) {
+    static void use(CUserSocket client, L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId, L1ItemInstance l1iteminstance1) {
         switch (itemId) {
 case 40017:// 비취 물약
 		case 40507:// 엔트의 줄기

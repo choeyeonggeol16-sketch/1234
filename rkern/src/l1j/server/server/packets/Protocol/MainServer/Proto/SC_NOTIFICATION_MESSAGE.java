@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.MJTemplate.MJSimpleRgb;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
@@ -73,7 +73,7 @@ public final class SC_NOTIFICATION_MESSAGE extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _pos, _desc, _messageRGB, _duration, _serverno, _hasServerno);
     }
 
-    public static boolean sendFields(CUserSession recipient, int _pos, String _desc, byte[] _messageRGB, int _duration, int _serverno, boolean _hasServerno) {
+    public static boolean sendFields(CUserSocket recipient, int _pos, String _desc, byte[] _messageRGB, int _duration, int _serverno, boolean _hasServerno) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_NOTIFICATION_MESSAGE, Proto.capacityBound(1024L + (_desc == null ? 0L : 2L * _desc.length()) + (_messageRGB == null ? 0L : _messageRGB.length)));
         if (writer == null) return false;
         try {
@@ -90,7 +90,7 @@ public final class SC_NOTIFICATION_MESSAGE extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_NOTIFICATION_MESSAGE);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, int pos, String desc, byte[] messageRGB, int duration, int serverno, boolean hasServerno) {
+    private static boolean sendCtor(CUserSocket protoRecipient, int pos, String desc, byte[] messageRGB, int duration, int serverno, boolean hasServerno) {
         int proto47_pos = 0;
         String proto47_desc = null;
         byte[] proto47_messageRGB = null;
@@ -108,7 +108,7 @@ public final class SC_NOTIFICATION_MESSAGE extends ProtoPacket {
         return sendFields(protoRecipient, proto47_pos, proto47_desc, proto47_messageRGB, proto47_duration, proto47_serverno, proto47_hasServerno);
     }
 
-    public static boolean sendOf(CUserSession protoRecipient, String message, MJSimpleRgb rgb, int duration) {
+    public static boolean sendOf(CUserSocket protoRecipient, String message, MJSimpleRgb rgb, int duration) {
         return sendCtor(protoRecipient, DisplayPosition.SCREEN_TOP.toInt(), message, rgb.get_bytes(), duration, 0, false);
     }
 
@@ -116,7 +116,7 @@ public final class SC_NOTIFICATION_MESSAGE extends ProtoPacket {
         return sendOf(protoRecipient == null ? null : protoRecipient.getNetConnection(), message, rgb, duration);
     }
     public static boolean sendConstructed(
-            CUserSession protoRecipient, int pos, String desc, byte[] messageRGB, int duration, int serverno,
+            CUserSocket protoRecipient, int pos, String desc, byte[] messageRGB, int duration, int serverno,
             boolean hasServerno) { return sendCtor(protoRecipient, pos, desc, messageRGB, duration, serverno, hasServerno); }
 
     public static boolean sendConstructed(

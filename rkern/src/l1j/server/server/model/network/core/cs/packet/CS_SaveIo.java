@@ -4,7 +4,7 @@ import l1j.server.Config;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.CharacterConfigTable;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class CS_SaveIo {
 
@@ -12,7 +12,7 @@ public final class CS_SaveIo {
     }
 
     public static void handle(
-            CUserSession client,
+            CUserSocket client,
             int length,
             byte[] data) {
 

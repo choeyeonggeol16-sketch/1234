@@ -4,7 +4,7 @@ import l1j.server.server.model.BookQuest.BQSInformation;
 import l1j.server.server.model.BookQuest.Loader.BQSInformationLoader;
 import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ACHIEVEMENT_TELEPORT_ACk.eResultCode;
 
@@ -16,7 +16,7 @@ public final class CS_ACHIEVEMENT_TELEPORT_REQ {
 
     private CS_ACHIEVEMENT_TELEPORT_REQ() {}
 
-    public static void handleRequest(CUserSession client, ProtoReader r) {
+    public static void handleRequest(CUserSocket client, ProtoReader r) {
         // ── 파싱 ──
         int achievementId = 0;
         boolean hasAchievementId = false;

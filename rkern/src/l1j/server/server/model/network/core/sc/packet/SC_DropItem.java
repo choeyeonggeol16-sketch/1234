@@ -12,7 +12,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 
 public final class SC_DropItem {
@@ -42,7 +41,7 @@ public final class SC_DropItem {
 	}
 
 	public static boolean send(
-			CUserSession client,
+			CUserSocket client,
 			L1ItemInstance item) {
 
 		if (item == null) {
@@ -146,7 +145,7 @@ public final class SC_DropItem {
     }
 
 	private static boolean send(
-			CUserSession client,
+			CUserSocket client,
 			int x,
 			int y,
 			int objectId,

@@ -4,7 +4,6 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 public final class SC_MpUpdate {
@@ -13,7 +12,7 @@ public final class SC_MpUpdate {
     private SC_MpUpdate() {
     }
 
-    public static boolean send(CUserSession client, int currentMp, int maxMp) {
+    public static boolean send(CUserSocket client, int currentMp, int maxMp) {
         if (client == null || !client.isConnected()) {
             return false;
         }

@@ -18,7 +18,7 @@ import l1j.server.MJTemplate.MJSqlHelper.Handler.SelectorHandler;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.tam.L1Tam;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
@@ -573,7 +573,7 @@ public class Account {
 		executeUpdate("UPDATE accounts SET CharPassword=? WHERE login=?", pwd);
 	}
 
-	public void setCharSlot(CUserSession client, int i) {
+	public void setCharSlot(CUserSocket client, int i) {
 		String sql = "UPDATE accounts SET charslot=? WHERE login = ?";
 		try (Connection con = DatabaseFactory.getInstance().getConnection();
 			 PreparedStatement pstm = con.prepareStatement(sql)) {
@@ -642,7 +642,7 @@ public class Account {
 		executeUpdate("UPDATE accounts SET BUFF_PCROOM_Time=? WHERE login = ?", _Buff_PC방);
 	}
 
-	public static void setGamePassword(CUserSession client, int pass) {
+	public static void setGamePassword(CUserSocket client, int pass) {
 		String sql = "UPDATE accounts SET gamepassword=? WHERE login =?";
 		try (Connection con = DatabaseFactory.getInstance().getConnection();
 			 PreparedStatement pstm = con.prepareStatement(sql)) {

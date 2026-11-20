@@ -5,7 +5,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,7 @@ public final class SC_RankingClan {
         return pc != null && send(pc.getNetConnection(), datas);
     }
 
-    public static boolean send(CUserSession client, RankData[] datas) {
+    public static boolean send(CUserSocket client, RankData[] datas) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

@@ -6,7 +6,6 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 /** One immutable encoded frame, shared across every eligible recipient.
  * Packet-specific old serializers are never invoked during broadcast.
@@ -291,7 +290,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
     /** Recipient socket lookup for the NC-style visual fanouts. */
     private static CUserSocket eligibleBroadcastSocket(L1PcInstance pc) {
         if(pc==null)return null;
-        final CUserSession client=pc.getNetConnection();
+        final CUserSocket client=pc.getNetConnection();
         if(client==null||!client.isConnected())return null;
         final var socket=client.getConnection();
         return socket!=null&&socket.isClientConnected()?socket:null;
@@ -345,7 +344,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
         // source would otherwise be lost without a matching producer release.
         CAsyncSendConstBuffer first=null;
         try {
-            final CUserSession client=pc.getNetConnection();
+            final CUserSocket client=pc.getNetConnection();
             if(client==null||!client.isConnected())return shared;
             final var socket=client.getConnection();
             if(socket==null||!socket.isClientConnected())return shared;
@@ -575,7 +574,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
         try {
             for(L1PcInstance pc:recipients) {
                 if(pc==null)continue;
-                final CUserSession client=pc.getNetConnection();
+                final CUserSocket client=pc.getNetConnection();
                 if(client==null||!client.isConnected())continue;
                 final var socket=client.getConnection();
                 if(socket==null||!socket.isClientConnected())continue;
@@ -635,7 +634,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
                 final var member=it.next();
                 final L1PcInstance pc=member.player;
                 if(pc==null)continue;
-                final CUserSession client=pc.getNetConnection();
+                final CUserSocket client=pc.getNetConnection();
                 if(client==null||!client.isConnected())continue;
                 final var socket=client.getConnection();
                 if(socket==null||!socket.isClientConnected())continue;
@@ -688,7 +687,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
     private static CAsyncSendConstBuffer sendWrittenTo(
             CAsyncSendConstBuffer shared,L1PcInstance pc,NativeWireWriter writer) {
         if(pc==null)return shared;
-        final CUserSession client=pc.getNetConnection();
+        final CUserSocket client=pc.getNetConnection();
         if(client==null||!client.isConnected())return shared;
         final var socket=client.getConnection();
         if(socket==null||!socket.isClientConnected())return shared;
@@ -913,7 +912,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
             for(L1PcInstance pc:L1World.getInstance().getAllPlayers()) {
                 if(pc==null)continue;
                 try {
-                    final CUserSession client=pc.getNetConnection();
+                    final CUserSocket client=pc.getNetConnection();
                     if(client==null||!client.isConnected())continue;
                     final var socket=client.getConnection();
                     if(socket==null||!socket.isClientConnected())continue;
@@ -1059,7 +1058,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
      */
     public static void sendRecipient(CAsyncSendConstBuffer shared,L1PcInstance pc) {
         if(shared==null || pc==null)return;
-        final CUserSession client=pc.getNetConnection();
+        final CUserSocket client=pc.getNetConnection();
         if(client==null || !client.isConnected())return;
         final var socket=client.getConnection();
         if(socket!=null && socket.isClientConnected())

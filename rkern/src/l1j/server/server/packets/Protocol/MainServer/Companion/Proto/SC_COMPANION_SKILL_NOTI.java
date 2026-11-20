@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Companion.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -135,7 +135,7 @@ public final class SC_COMPANION_SKILL_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _skills);
     }
 
-    public static boolean sendFields(CUserSession recipient, List<Skill> _skills) {
+    public static boolean sendFields(CUserSocket recipient, List<Skill> _skills) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_COMPANION_SKILL_NOTI, Proto.capacityBound(128L + (_skills == null ? 0L : 64L * _skills.size())));
         if (writer == null) return false;
         try {
@@ -152,21 +152,21 @@ public final class SC_COMPANION_SKILL_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_COMPANION_SKILL_NOTI);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient) {
+    private static boolean sendCtor(CUserSocket protoRecipient) {
         List<Skill> proto24_skills = null;
 
 
         return sendFields(protoRecipient, proto24_skills);
     }
 
-    public static boolean sendNewInstance(CUserSession protoRecipient) {
+    public static boolean sendNewInstance(CUserSocket protoRecipient) {
         return sendCtor(protoRecipient);
     }
 
     public static boolean sendNewInstance(L1PcInstance protoRecipient) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
-    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSocket protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

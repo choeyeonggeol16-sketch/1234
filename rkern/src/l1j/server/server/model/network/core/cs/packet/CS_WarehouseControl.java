@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.Account;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_RetrieveList;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
@@ -12,7 +12,7 @@ public final class CS_WarehouseControl {
     }
 
     public static void handle(
-            CUserSession client,
+            CUserSocket client,
             int type,
             int value1,
             int value2) {

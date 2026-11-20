@@ -5,7 +5,6 @@ import l1j.server.server.model.Instance.*;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_SkillBuy {
     private SC_SkillBuy() {}
@@ -14,7 +13,7 @@ public final class SC_SkillBuy {
         return receiver != null && send(receiver.getNetConnection(), pc);
     }
 
-    public static boolean send(CUserSession client, L1PcInstance pc) {
+    public static boolean send(CUserSocket client, L1PcInstance pc) {
         if (client == null || !client.isConnected() || pc == null ) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

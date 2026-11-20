@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Companion.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -195,7 +195,7 @@ public final class SC_COMPANION_COMBAT_DATA_NOTI extends ProtoPacket {
     }
 
     public static boolean sendFields(
-            CUserSession recipient, int _objId, int _meleeHit, double _meleeCriHit, double _meleeCriServerHit,
+            CUserSocket recipient, int _objId, int _meleeHit, double _meleeCriHit, double _meleeCriServerHit,
             int _meleeDiceDmg, int _meleeStatDmg, int _meleeWildDmg, int _meleeBuffDmg, int _meleeElementalDmg,
             int _meleeLastDmg, int _spellId, int _spellHit, int _spellServerHit, double _spellCriHit,
             double _spellCriServerHit, int _spellDiceDmg, int _spellStatDmg, int _spellWildDmg, int _spellBuffDmg,
@@ -228,7 +228,7 @@ public final class SC_COMPANION_COMBAT_DATA_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_COMPANION_COMBAT_DATA_NOTI);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient) {
+    private static boolean sendCtor(CUserSocket protoRecipient) {
         int proto21_objId = 0;
         int proto21_meleeHit = 0;
         double proto21_meleeCriHit = 0;
@@ -263,14 +263,14 @@ public final class SC_COMPANION_COMBAT_DATA_NOTI extends ProtoPacket {
                 proto21_bit);
     }
 
-    public static boolean sendNewInstance(CUserSession protoRecipient) {
+    public static boolean sendNewInstance(CUserSocket protoRecipient) {
         return sendCtor(protoRecipient);
     }
 
     public static boolean sendNewInstance(L1PcInstance protoRecipient) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
-    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSocket protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

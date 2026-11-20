@@ -29,7 +29,6 @@ import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.packet.CPacketHandler;
 import l1j.server.server.model.network.packet.CBytesPacket;
 import l1j.server.server.model.network.packet.IPacketWriter;
@@ -100,7 +99,7 @@ public final class SelectorCioIntegrationTest {
                 }
                 if (value == 911 || value == 912) {
                     byte[] payloadBytes = body(0x45, value);
-                    IPacketWriter<CUserSession> packet = value == 911 ? new CBytesPacket(payloadBytes)
+                    IPacketWriter<CUserSocket> packet = value == 911 ? new CBytesPacket(payloadBytes)
                             : new ProtoPacketWriter.Raw(payloadBytes);
                     check(socket.tryWritePacket(client, packet), "existing game packet admitted as a bounded SEND");
                     productionTailSends.countDown();
@@ -457,7 +456,7 @@ public final class SelectorCioIntegrationTest {
         }
     }
 
-    private static class Reply extends IPacketWriter<CUserSession> {
+    private static class Reply extends IPacketWriter<CUserSocket> {
         private final int sequence;
         private final Runnable beforeEncoding;
 
@@ -466,7 +465,7 @@ public final class SelectorCioIntegrationTest {
             this.beforeEncoding = beforeEncoding;
         }
 
-        @Override protected boolean write(CUserSession client, CPacketWriteBuffer writer) {
+        @Override protected boolean write(CUserSocket client, CPacketWriteBuffer writer) {
             beforeEncoding.run();
             writer.writeByte(0x45);
             writer.writeInt(sequence);

@@ -6,7 +6,6 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_MessageYN {
     private SC_MessageYN() {}
@@ -28,7 +27,7 @@ public final class SC_MessageYN {
     }
     private static boolean send(L1PcInstance pc, int idx, int type, String msg1, String msg2, boolean two) {
         if (pc == null) return false;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket conn = socket.getConnection();
         if (conn == null || !conn.isClientConnected()) return false;

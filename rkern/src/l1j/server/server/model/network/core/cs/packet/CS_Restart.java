@@ -15,7 +15,7 @@ import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -48,7 +48,7 @@ public final class CS_Restart {
     private CS_Restart() {
     }
 
-    public static void handle(CUserSession client) {
+    public static void handle(CUserSocket client) {
         if (client == null) {
             return;
         }

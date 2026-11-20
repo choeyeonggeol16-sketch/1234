@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
 
@@ -26,7 +26,7 @@ public final class SC_TAM_WINDOW extends ProtoPacket {
 
     public static void sendAsync(final L1PcInstance pc) {
         if (pc == null || pc.getNetConnection() == null) return;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         final String account = pc.getAccountName();
         if (account == null || account.isEmpty()) return;
         try {
@@ -321,7 +321,7 @@ public final class SC_TAM_WINDOW extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _mode, _timeSec, _buffType, _characters);
     }
 
-    public static boolean sendFields(CUserSession recipient, int _mode, int _timeSec, int _buffType, TamCharacterSnapshot[] _characters) {
+    public static boolean sendFields(CUserSocket recipient, int _mode, int _timeSec, int _buffType, TamCharacterSnapshot[] _characters) {
         final ProtoWriter writer = Proto.begin(recipient, _mode == MODE_BUFF ? SC_SPELL_BUFF_NOTI : SC_ACCOUNT_TAM, capacityFor(_characters));
         if (writer == null) return false;
         try {
@@ -396,7 +396,7 @@ public final class SC_TAM_WINDOW extends ProtoPacket {
             w.int32(4, 0);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, TamCharacterSnapshot[] characters) {
+    private static boolean sendCtor(CUserSocket protoRecipient, TamCharacterSnapshot[] characters) {
         int proto65_mode = 0;
         int proto65_timeSec = 0;
         int proto65_buffType = 0;
@@ -410,7 +410,7 @@ public final class SC_TAM_WINDOW extends ProtoPacket {
         return sendFields(protoRecipient, proto65_mode, proto65_timeSec, proto65_buffType, proto65_characters);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, int timeSec, int buffType) {
+    private static boolean sendCtor(CUserSocket protoRecipient, int timeSec, int buffType) {
         int proto66_mode = 0;
         int proto66_timeSec = 0;
         int proto66_buffType = 0;
@@ -424,7 +424,7 @@ public final class SC_TAM_WINDOW extends ProtoPacket {
         return sendFields(protoRecipient, proto66_mode, proto66_timeSec, proto66_buffType, proto66_characters);
     }
 
-    public static boolean sendCreate(CUserSession protoRecipient, String account) {
+    public static boolean sendCreate(CUserSocket protoRecipient, String account) {
         return sendCtor(protoRecipient, loadTamData(account));
     }
 
@@ -432,7 +432,7 @@ public final class SC_TAM_WINDOW extends ProtoPacket {
         return sendCreate(protoRecipient == null ? null : protoRecipient.getNetConnection(), account);
     }
 
-    public static boolean sendCreateBuff(CUserSession protoRecipient, long timeMillis, int buffType) {
+    public static boolean sendCreateBuff(CUserSocket protoRecipient, long timeMillis, int buffType) {
         long sec = timeMillis > 0L ? timeMillis / 1000L : 0L;
                 int timeSec = sec > Integer.MAX_VALUE
                         ? Integer.MAX_VALUE
@@ -444,12 +444,12 @@ public final class SC_TAM_WINDOW extends ProtoPacket {
     public static boolean sendCreateBuff(L1PcInstance protoRecipient, long timeMillis, int buffType) {
         return sendCreateBuff(protoRecipient == null ? null : protoRecipient.getNetConnection(), timeMillis, buffType);
     }
-    public static boolean sendConstructed(CUserSession protoRecipient, TamCharacterSnapshot[] characters) { return sendCtor(protoRecipient, characters); }
+    public static boolean sendConstructed(CUserSocket protoRecipient, TamCharacterSnapshot[] characters) { return sendCtor(protoRecipient, characters); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, TamCharacterSnapshot[] characters) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), characters); }
 
-    public static boolean sendConstructed(CUserSession protoRecipient, int timeSec, int buffType) { return sendCtor(protoRecipient, timeSec, buffType); }
+    public static boolean sendConstructed(CUserSocket protoRecipient, int timeSec, int buffType) { return sendCtor(protoRecipient, timeSec, buffType); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int timeSec, int buffType) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), timeSec, buffType); }

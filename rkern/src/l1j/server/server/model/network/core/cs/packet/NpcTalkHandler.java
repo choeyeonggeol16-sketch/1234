@@ -9,7 +9,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1AuctionBoardInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.npc.action.L1NpcAction;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MAP_TELEPORT_INFO_NOTI;
@@ -189,7 +189,7 @@ final class NpcTalkHandler {
     }
 
     public static void handle(
-            CUserSession client,
+            CUserSocket client,
             int objId) {
 
         if (client == null) {

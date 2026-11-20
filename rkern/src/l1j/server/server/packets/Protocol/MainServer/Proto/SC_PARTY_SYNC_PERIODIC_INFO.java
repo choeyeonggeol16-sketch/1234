@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.util.List;
@@ -70,7 +70,7 @@ public final class SC_PARTY_SYNC_PERIODIC_INFO extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _members);
     }
 
-    public static boolean sendFields(CUserSession recipient, List<MemberStatus> _members) {
+    public static boolean sendFields(CUserSocket recipient, List<MemberStatus> _members) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_PARTY_SYNC_PERIODIC_INFO, capacityFor(_members));
         if (writer == null) return false;
         try {
@@ -87,14 +87,14 @@ public final class SC_PARTY_SYNC_PERIODIC_INFO extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_PARTY_SYNC_PERIODIC_INFO);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, List<MemberStatus> members) {
+    private static boolean sendCtor(CUserSocket protoRecipient, List<MemberStatus> members) {
         List<MemberStatus> proto54_members = null;
 
             proto54_members = members;
 
         return sendFields(protoRecipient, proto54_members);
     }
-    public static boolean sendConstructed(CUserSession protoRecipient, List<MemberStatus> members) { return sendCtor(protoRecipient, members); }
+    public static boolean sendConstructed(CUserSocket protoRecipient, List<MemberStatus> members) { return sendCtor(protoRecipient, members); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient, List<MemberStatus> members) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), members); }
 

@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -49,7 +49,7 @@ public final class SC_ACHIEVEMENT_COMPLETE_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _achievementId, _completedTime);
     }
 
-    public static boolean sendFields(CUserSession recipient, int _achievementId, long _completedTime) {
+    public static boolean sendFields(CUserSocket recipient, int _achievementId, long _completedTime) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ACHIEVEMENT_COMPLETE_NOTI, Proto.capacityBound(1024L));
         if (writer == null) return false;
         try {
@@ -66,7 +66,7 @@ public final class SC_ACHIEVEMENT_COMPLETE_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_ACHIEVEMENT_COMPLETE_NOTI);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, int achievementId, long completedTime) {
+    private static boolean sendCtor(CUserSocket protoRecipient, int achievementId, long completedTime) {
         int proto1_achievementId = 0;
         long proto1_completedTime = 0;
 
@@ -76,7 +76,7 @@ public final class SC_ACHIEVEMENT_COMPLETE_NOTI extends ProtoPacket {
         return sendFields(protoRecipient, proto1_achievementId, proto1_completedTime);
     }
 
-    public static boolean sendOf(CUserSession protoRecipient, CompletedAchievement a) {
+    public static boolean sendOf(CUserSocket protoRecipient, CompletedAchievement a) {
         return sendCtor(protoRecipient, a.get_achievement_id(), a.get_completed_time());
     }
 
@@ -84,7 +84,7 @@ public final class SC_ACHIEVEMENT_COMPLETE_NOTI extends ProtoPacket {
         return sendOf(protoRecipient == null ? null : protoRecipient.getNetConnection(), a);
     }
     public static boolean sendConstructed(
-            CUserSession protoRecipient, int achievementId, long completedTime) { return sendCtor(protoRecipient, achievementId, completedTime); }
+            CUserSocket protoRecipient, int achievementId, long completedTime) { return sendCtor(protoRecipient, achievementId, completedTime); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int achievementId, long completedTime) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), achievementId, completedTime); }

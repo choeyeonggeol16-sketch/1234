@@ -16,7 +16,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.npc.action.L1NpcAction;
 
@@ -35,7 +35,7 @@ final class HtmlCmdHandler {
     }
 
     public static void handle(
-            CUserSession client,
+            CUserSocket client,
             int objid,
             String s,
             String s2,
@@ -96,7 +96,7 @@ final class HtmlCmdHandler {
         }
     }
 
-    static boolean canInteractWithNpc(CUserSession client, L1PcInstance pc) {
+    static boolean canInteractWithNpc(CUserSocket client, L1PcInstance pc) {
         return client != null && client.getConnectionState() == CConnectionState.IN_GAME
                 && pc != null && !pc.isGhost() && !pc.isPrivateShop()
                 && !pc.is무인상점() && !pc.isAutoClanjoin();
@@ -110,12 +110,12 @@ final class HtmlCmdHandler {
                 && Math.abs((long) pc.getY() - npc.getY()) <= 6;
     }
 
-    static void trackDialogue(CUserSession client, L1NpcInstance npc, boolean newTalk) {
+    static void trackDialogue(CUserSocket client, L1NpcInstance npc, boolean newTalk) {
         client.trackNpcDialogue(L1World.getInstance().smartIdOf(npc), newTalk);
     }
 
     static boolean canReplyToDialogue(L1PcInstance pc, long target, int version) {
-        final CUserSession client = pc.getNetConnection();
+        final CUserSocket client = pc.getNetConnection();
         return client != null && client.canReplyToNpcDialogue(pc, target, version);
     }
 

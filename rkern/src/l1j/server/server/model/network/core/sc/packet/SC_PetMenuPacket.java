@@ -9,7 +9,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_PetMenuPacket {
 
@@ -21,13 +20,13 @@ public final class SC_PetMenuPacket {
 
     public static boolean sendTwice(L1PcInstance pc, L1NpcInstance npc, int expPercent) {
         if (pc == null) return false;
-        final CUserSession client = pc.getNetConnection();
+        final CUserSocket client = pc.getNetConnection();
         final boolean first = send(client, npc, expPercent);
         final boolean second = send(client, npc, expPercent);
         return first && second;
     }
 
-    public static boolean send(CUserSession client, L1NpcInstance npc, int expPercent) {
+    public static boolean send(CUserSocket client, L1NpcInstance npc, int expPercent) {
         if (client == null || !client.isConnected() || npc == null) return false;
         if (npc.getNpcTemplate() != null && npc.getNpcTemplate().get_npcId() == 7420207) return false;
         final CUserSocket connection = client.getConnection();

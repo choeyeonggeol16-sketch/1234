@@ -130,7 +130,7 @@ import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.item.teleport.L1Teleport;
 import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
 import l1j.server.server.model.network.core.cs.packet.CS_CommonClick;
@@ -1662,7 +1662,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 //				}
 				gm.setAutoClanjoin(true);			
 				L1PolyMorph.undoPolyAutoClanjoin(gm);	
-				CUserSession client = gm.getNetConnection();
+				CUserSocket client = gm.getNetConnection();
 				gm.setNetConnection(null);
 				try { 
 					gm.save();
@@ -2584,7 +2584,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				}
 			}
 			
-			CUserSession client = gm.getNetConnection();
+			CUserSocket client = gm.getNetConnection();
 			gm.setNetConnection(null);
 			gm.setAutoFish(true);
 			try {
@@ -2744,7 +2744,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				return;
 			}
 			
-			CUserSession clnt = target.getNetConnection();
+			CUserSocket clnt = target.getNetConnection();
 			clnt.kick();
 			CS_CharSelect.restartProcess(target);
 			Account acc		= clnt.getAccount();
@@ -2851,7 +2851,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				return;
 			}
 
-			CUserSession client = pc.getNetConnection();
+			CUserSocket client = pc.getNetConnection();
 			pc.setNetConnection(null);
 			pc.set무인상점(true);
 			try {
@@ -3922,8 +3922,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			if (유저 != null) {
 				if (유저.getClanid() != 0) {
 				if (id <= 0) { gm.sendPackets("지급 포인트는 양수여야 합니다."); return; }
-				final CUserSession gmSession = gm.getNetConnection();
-				final CUserSession memberSession = 유저.getNetConnection();
+				final CUserSocket gmSession = gm.getNetConnection();
+				final CUserSocket memberSession = 유저.getNetConnection();
 				final String memberName = 유저.getName();
 				ClanTable.changeWarPoint(유저.getClan(), id, committed -> {
 					CIOThreadCallback.getInstance().completeSession(gmSession, () ->
@@ -3953,8 +3953,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			if (유저 != null) {
 				if (유저.getClanid() != 0) {
 				if (id <= 0) { gm.sendPackets("차감 포인트는 양수여야 합니다."); return; }
-				final CUserSession gmSession = gm.getNetConnection();
-				final CUserSession memberSession = 유저.getNetConnection();
+				final CUserSocket gmSession = gm.getNetConnection();
+				final CUserSocket memberSession = 유저.getNetConnection();
 				final String memberName = 유저.getName();
 				ClanTable.changeWarPoint(유저.getClan(), -id, committed -> {
 					CIOThreadCallback.getInstance().completeSession(gmSession, () ->
@@ -5736,7 +5736,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			String Trade_name = st.nextToken();
 			L1PcInstance target = null;
 			target = L1World.getInstance().getPlayer(Trade_name);
-			CUserSession clientthread = target.getNetConnection();
+			CUserSocket clientthread = target.getNetConnection();
 			clientthread.getActiveChar();
 			if (target != null) {
 				

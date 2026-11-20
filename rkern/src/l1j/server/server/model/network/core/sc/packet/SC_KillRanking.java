@@ -15,7 +15,6 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 import java.nio.charset.Charset;
@@ -51,7 +50,7 @@ public final class SC_KillRanking {
 	 */
 	public static void sendReadAsync(L1PcInstance pc, int number) {
 		if (pc == null) return;
-		final CUserSession owner = pc.getNetConnection();
+		final CUserSocket owner = pc.getNetConnection();
 		if (owner == null || !owner.isConnected() || owner.getActiveChar() != pc) return;
 		try {
 			CacheD.getInstance().submitDbJobOrdered(pc.getId(), () -> {
@@ -197,7 +196,7 @@ public Data(L1PcInstance pc, int number) {
 		_content = sb.toString();
 	}
 
-private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
+private void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
 		if (_mode == 1) { // 게시판 목록 출력
 			buffer.writeC(Opcodes.S_BOARD_LIST);
 			buffer.writeC(0x00);
@@ -224,7 +223,7 @@ private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 		}
 	}
 
-private boolean writeTo(CUserSession client) {
+private boolean writeTo(CUserSocket client) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

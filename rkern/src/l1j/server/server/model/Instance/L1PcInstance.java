@@ -135,7 +135,7 @@ import l1j.server.server.model.item.Card.L1CardCollection;
 import l1j.server.server.model.item.Exp.ExpBonusState;
 import l1j.server.server.model.item.teleport.L1Teleport;
 import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
@@ -1171,7 +1171,7 @@ public class L1PcInstance extends L1Character {
 	public final ArrayList<L1BookMark> _bookmarks;
 	private byte[] _shopChat;
 	private AtomicInteger _pinkNameTime;
-	private CUserSession _netConnection;
+	private CUserSocket _netConnection;
 	private static Logger _log = Logger.getLogger(L1PcInstance.class.getName());
 
 	public L1PcInstance() {
@@ -2617,11 +2617,11 @@ public class L1PcInstance extends L1Character {
 		//try { disposeActionExecutor();} catch (Throwable ignore) {}
         
 	}
-	public CUserSession getNetConnection() {
+	public CUserSocket getNetConnection() {
 		return _netConnection;
 	}
 
-	public void setNetConnection(CUserSession clientthread) {
+	public void setNetConnection(CUserSocket clientthread) {
 		_netConnection = clientthread;
 	}
 
@@ -2867,16 +2867,16 @@ public class L1PcInstance extends L1Character {
 
     
 
-    public void sendPackets(l1j.server.server.model.network.packet.IPacketWriter<CUserSession>[] packets, boolean clear) {
+    public void sendPackets(l1j.server.server.model.network.packet.IPacketWriter<CUserSocket>[] packets, boolean clear) {
         if (packets == null) return;
         for (int i = 0; i < packets.length; i++) {
             sendPackets(packets[i], clear);
         }
     }
 
-    public void sendPackets(l1j.server.server.model.network.packet.IPacketWriter<CUserSession> packet, boolean clear) {
+    public void sendPackets(l1j.server.server.model.network.packet.IPacketWriter<CUserSocket> packet, boolean clear) {
         if (packet == null) return;
-        final CUserSession socket = getNetConnection();
+        final CUserSocket socket = getNetConnection();
         if (socket == null || !socket.isConnected()) return;
         socket.getConnection().enqueuePacket(packet);
     }
@@ -4725,7 +4725,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
      * guessed to be unpaid: they stay marked claimed to prevent duplicate items.
      */
     public void settleOutstandingLevelGifts() {
-        final CUserSession session = getNetConnection();
+        final CUserSocket session = getNetConnection();
         if (!_levelGiftSnapshotLoaded || session == null || !session.isConnected()
                 || session.getActiveChar() != this || isItemTransferBusy()
                 || getTradeID() != 0 || isTradeResolving()) return;
@@ -8606,7 +8606,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	        return;
 	    }
 
-	    final CUserSession client = viewer.getNetConnection();
+	    final CUserSocket client = viewer.getNetConnection();
 
 	    if (showName) {
 	        SC_WorldPutObject.getDetectedInvis(

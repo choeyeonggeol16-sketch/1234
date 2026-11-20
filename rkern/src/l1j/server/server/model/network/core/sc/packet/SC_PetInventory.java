@@ -4,7 +4,6 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import java.nio.charset.Charset;
 import java.util.List;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -19,7 +18,7 @@ public final class SC_PetInventory {
         return pc != null && send(pc.getNetConnection(), pet);
     }
 
-    public static boolean send(CUserSession client, L1PetInstance pet) {
+    public static boolean send(CUserSocket client, L1PetInstance pet) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

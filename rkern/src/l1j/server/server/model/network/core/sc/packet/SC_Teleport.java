@@ -5,7 +5,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 
 public final class SC_Teleport {
@@ -16,7 +15,7 @@ public final class SC_Teleport {
 	private SC_Teleport() {
 	}
 
-	public static boolean send(CUserSession client) {
+	public static boolean send(CUserSocket client) {
 		if (client == null || !client.isConnected()) {
 			return false;
 		}

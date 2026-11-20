@@ -2,7 +2,7 @@ package l1j.server.MJTemplate.PacketHelper;
 
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public class S_BuilderPacket extends CServerPacket {
 	
@@ -13,7 +13,7 @@ public class S_BuilderPacket extends CServerPacket {
 	}
 
 	@Override
-	public void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
+	public void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
 		if (_b != null && _b.length > 0) {
 			buffer.writeBytes(_b); 
 		}

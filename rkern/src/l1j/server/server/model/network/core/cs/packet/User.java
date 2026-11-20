@@ -4,7 +4,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.function.ExtendedItemActions;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -14,16 +14,16 @@ public final class User {
     private User() {}
 
     // Synchronous on the already admitted execution context; never enqueue again.
-    static void OnNpcActionPacket(CUserSession client, int objId, String command,
+    static void OnNpcActionPacket(CUserSocket client, int objId, String command,
             String argument, byte[] actionData) {
         HtmlCmdHandler.handle(client, objId, command, argument, actionData);
     }
 
-    static void OnNpcTalkPacket(CUserSession client, int objId) {
+    static void OnNpcTalkPacket(CUserSocket client, int objId) {
         NpcTalkHandler.handle(client, objId);
     }
 
-    static void OnUseItemPacket(CUserSession client, int itemObjid, int targetId,
+    static void OnUseItemPacket(CUserSocket client, int itemObjid, int targetId,
             int x, int y, String name, int skillId) {
         OnUseItemPacket0(client, itemObjid, targetId, x, y, name, skillId);
     }
@@ -45,7 +45,7 @@ public final class User {
     }
 
 	private static void OnUseItemPacket0(
-			CUserSession client,
+			CUserSocket client,
 			int itemObjid,
 			int targetId,
 			int x,
@@ -71,7 +71,7 @@ public final class User {
 		UseItem(client, pc, l1iteminstance, itemObjid, targetId, x, y, name, skillId);
 	}
 
-	private static boolean CanUseItem(CUserSession client, L1PcInstance pc, L1ItemInstance item) {
+	private static boolean CanUseItem(CUserSocket client, L1PcInstance pc, L1ItemInstance item) {
 		if (!CItem.CheckItemUseCondition(pc, item)) return false;
 
 		if (pc.get_teleport() || pc.isDead()) {
@@ -100,7 +100,7 @@ public final class User {
 		return true;
 	}
 
-    private static void UseItem(CUserSession client, L1PcInstance pc, L1ItemInstance item,
+    private static void UseItem(CUserSocket client, L1PcInstance pc, L1ItemInstance item,
             int itemObjectId, int targetId, int x, int y, String name, int skillId) {
         ExtendedItemActions.use(client, pc, item, itemObjectId, targetId, x, y, name, skillId);
     }

@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1Inventory;
@@ -207,7 +206,7 @@ public class MJINNHelper {
 	
     private static boolean sendNormal(L1PcInstance pc, int objId, String html) {
         if (pc == null || html == null) return false;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket conn = socket.getConnection();
         if (conn == null || !conn.isClientConnected()) return false;
@@ -231,7 +230,7 @@ public class MJINNHelper {
 
     private static boolean sendInput(L1PcInstance pc, int objId, int cost, String html, String name) {
         if (pc == null) return false;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket conn = socket.getConnection();
         if (conn == null || !conn.isClientConnected()) return false;
@@ -257,7 +256,7 @@ public class MJINNHelper {
 
     private static boolean sendReturn(L1PcInstance pc, int objId, String name, int value) {
         if (pc == null) return false;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket conn = socket.getConnection();
         if (conn == null || !conn.isClientConnected()) return false;

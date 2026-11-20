@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.util.LinkedList;
 import java.util.Map;
@@ -53,7 +53,7 @@ public final class SC_ALCHEMY_EXTRA_INFO_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _petballIds);
     }
 
-    public static boolean sendFields(CUserSession recipient, LinkedList<Integer> _petballIds) {
+    public static boolean sendFields(CUserSocket recipient, LinkedList<Integer> _petballIds) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ALCHEMY_EXTRA_INFO_NOTI, Proto.capacityBound(128L + (_petballIds == null ? 0L : 64L * _petballIds.size())));
         if (writer == null) return false;
         try {
@@ -70,14 +70,14 @@ public final class SC_ALCHEMY_EXTRA_INFO_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_ALCHEMY_EXTRA_INFO_NOTI);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, LinkedList<Integer> petballIds) {
+    private static boolean sendCtor(CUserSocket protoRecipient, LinkedList<Integer> petballIds) {
         LinkedList<Integer> proto9_petballIds = null;
 
             proto9_petballIds = petballIds;
 
         return sendFields(protoRecipient, proto9_petballIds);
     }
-    public static boolean sendConstructed(CUserSession protoRecipient, LinkedList<Integer> petballIds) { return sendCtor(protoRecipient, petballIds); }
+    public static boolean sendConstructed(CUserSocket protoRecipient, LinkedList<Integer> petballIds) { return sendCtor(protoRecipient, petballIds); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient, LinkedList<Integer> petballIds) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), petballIds); }
 

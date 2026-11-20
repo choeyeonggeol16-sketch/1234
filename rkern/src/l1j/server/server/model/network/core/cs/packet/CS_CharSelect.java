@@ -16,7 +16,7 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.utill.CConnectionState;
 
 import l1j.server.server.model.network.core.sc.packet.SC_CharAmount;
@@ -26,7 +26,7 @@ public final class CS_CharSelect {
 
     private CS_CharSelect() {}
 
-    public static void handle(CUserSession client) {
+    public static void handle(CUserSocket client) {
 
         if (client == null) {
             return;
@@ -93,7 +93,7 @@ public final class CS_CharSelect {
             LOGGER.fine("Disconnect from: " + pc.getName());
         }
 
-        final CUserSession client = pc.getNetConnection();
+        final CUserSocket client = pc.getNetConnection();
 
         if (client == null) {
             return;

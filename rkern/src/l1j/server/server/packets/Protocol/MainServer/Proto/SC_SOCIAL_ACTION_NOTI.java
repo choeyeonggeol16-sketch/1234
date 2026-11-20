@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -45,7 +45,7 @@ public final class SC_SOCIAL_ACTION_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _id, _type, _code);
     }
 
-    public static boolean sendFields(CUserSession recipient, int _id, int _type, int _code) {
+    public static boolean sendFields(CUserSocket recipient, int _id, int _type, int _code) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_SOCIAL_ACTION_NOTI, Proto.capacityBound(1024L));
         if (writer == null) return false;
         try {
@@ -62,7 +62,7 @@ public final class SC_SOCIAL_ACTION_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_SOCIAL_ACTION_NOTI);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient, int id, int type, int code) {
+    private static boolean sendCtor(CUserSocket protoRecipient, int id, int type, int code) {
         int proto62_id = 0;
         int proto62_type = 0;
         int proto62_code = 0;
@@ -74,14 +74,14 @@ public final class SC_SOCIAL_ACTION_NOTI extends ProtoPacket {
         return sendFields(protoRecipient, proto62_id, proto62_type, proto62_code);
     }
 
-    public static boolean sendGet(CUserSession protoRecipient, int id, int type, int code) {
+    public static boolean sendGet(CUserSocket protoRecipient, int id, int type, int code) {
         return sendCtor(protoRecipient, id, type, code);
     }
 
     public static boolean sendGet(L1PcInstance protoRecipient, int id, int type, int code) {
         return sendGet(protoRecipient == null ? null : protoRecipient.getNetConnection(), id, type, code);
     }
-    public static boolean sendConstructed(CUserSession protoRecipient, int id, int type, int code) { return sendCtor(protoRecipient, id, type, code); }
+    public static boolean sendConstructed(CUserSocket protoRecipient, int id, int type, int code) { return sendCtor(protoRecipient, id, type, code); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int id, int type, int code) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), id, type, code); }

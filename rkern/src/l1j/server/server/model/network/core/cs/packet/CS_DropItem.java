@@ -12,7 +12,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.monitor.Logger.ItemActionType;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -35,7 +35,7 @@ public final class CS_DropItem {
     }
 
     public static void handle(
-            CUserSession client,
+            CUserSocket client,
             int length,
             int x,
             int y,

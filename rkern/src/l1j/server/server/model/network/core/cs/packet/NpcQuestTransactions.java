@@ -1,6 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import java.sql.PreparedStatement;
@@ -1060,7 +1060,7 @@ final class NpcQuestTransactions {
 
     /** Initial spy supplies and quest step are one receipt. Step 1 may re-morph,
      * but never grants the supplies again. Explicit reset permits a fresh start. */
-    static void spyStart(L1PcInstance pc, CUserSession client, L1NpcInstance npc, boolean shadow) {
+    static void spyStart(L1PcInstance pc, CUserSocket client, L1NpcInstance npc, boolean shadow) {
         final int quest=shadow ? L1Quest.QUEST_SHADOWS : L1Quest.QUEST_DESIRE;
         final int step=pc.getQuest().get_step(quest);
         final int morph=shadow ? 6035 : 6034;

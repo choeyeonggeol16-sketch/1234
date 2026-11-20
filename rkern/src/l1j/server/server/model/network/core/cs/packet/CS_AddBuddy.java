@@ -4,7 +4,7 @@ import l1j.server.server.datatables.BuddyTable;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.model.L1Buddy;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.templates.L1CharName;
 
@@ -14,7 +14,7 @@ public final class CS_AddBuddy {
     }
 
     public static void handle(
-            CUserSession client,
+            CUserSocket client,
             String charName) {
 
         if (client == null) {

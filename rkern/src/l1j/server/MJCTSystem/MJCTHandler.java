@@ -12,7 +12,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
@@ -245,7 +245,7 @@ public final class MJCTHandler {
     }
 
     private static void updateCharacterStatus(L1PcInstance pc) {
-        CUserSession client = pc.getNetConnection();
+        CUserSocket client = pc.getNetConnection();
         CS_CharSelect.restartProcess(pc);
         if (client != null) CS_CommonClick.sendCharAmountAndPacks(client);
     }

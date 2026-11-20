@@ -5,13 +5,12 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.Config;
 
 public final class SC_UserCommands17 {
     private SC_UserCommands17() {}
 
-    public static boolean send(CUserSession client, int number) {
+    public static boolean send(CUserSocket client, int number) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

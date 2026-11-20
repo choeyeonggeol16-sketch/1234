@@ -7,14 +7,13 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_Strup {
     private static final int WIRE_SIZE = 12;
 
     private SC_Strup() {}
 
-    public static boolean send(CUserSession client, L1PcInstance actor, int type, int time) {
+    public static boolean send(CUserSocket client, L1PcInstance actor, int type, int time) {
         if (actor == null || actor.getAbility() == null || actor.getInventory() == null) return false;
         final int totalStr = actor.getAbility().getTotalStr();
         final int weight100 = actor.getInventory().getWeight100();

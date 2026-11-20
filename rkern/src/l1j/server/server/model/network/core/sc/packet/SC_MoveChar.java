@@ -7,7 +7,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_MoveChar {
 
@@ -25,7 +24,7 @@ public final class SC_MoveChar {
 	}
 
 	public static boolean send(
-			CUserSession client,
+			CUserSocket client,
 			int objectId,
 			int x,
 			int y,
@@ -72,7 +71,7 @@ public final class SC_MoveChar {
 	 * 현재 cha 좌표에서 heading 방향으로 한 칸 이동한
 	 * 목적지 좌표를 계산해서 전송한다.
 	 */
-	public static boolean send(CUserSession client, L1Character cha) {
+	public static boolean send(CUserSocket client, L1Character cha) {
 		if (cha == null) {
 			return false;
 		}

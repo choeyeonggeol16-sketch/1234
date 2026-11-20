@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import l1j.server.Config;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.CommonUtil;
 import l1j.server.server.utils.MJCommons;
@@ -105,7 +105,7 @@ public class CPacketFilter {
 	private static final int DEF_CLIENT_SETTING_SW    = 889191819;
 
 
-	public static int isFilter(CUserSession clnt, int op){
+	public static int isFilter(CUserSocket clnt, int op){
 	    final byte[] filters = STATE.get().filters;
 
 	    // 1. 등록되지 않은 옵코드인가?

@@ -11,7 +11,6 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 import l1j.server.server.Account;
 
@@ -43,7 +42,7 @@ public final class SC_ApplyAuction {
 
     public static boolean send(L1PcInstance receiver, int objectId, String houseNumber) {
         if (receiver == null) return false;
-        final CUserSession client = receiver.getNetConnection();
+        final CUserSocket client = receiver.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket conn = client.getConnection();
         final Account account = client.getAccount();
@@ -82,7 +81,7 @@ public final class SC_ApplyAuction {
         return (s == null ? 0 : s.getBytes(java.nio.charset.Charset.forName("MS949")).length) + 1;
     }
 
-    private static boolean sendPrepared(CUserSession client, CUserSocket conn,
+    private static boolean sendPrepared(CUserSocket client, CUserSocket conn,
             int objectId, String houseNumber, long auctionValues) {
         final int price = (int) auctionValues;
         final int bidder = (int) (auctionValues >> 32);

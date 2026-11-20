@@ -14,7 +14,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.utils.SQLUtil;
 
 import l1j.server.server.Account;
@@ -142,7 +141,7 @@ public final class SC_EnchantRanking1 {
 
     public static boolean send(L1PcInstance receiver, L1PcInstance pc, int number) {
         if (receiver == null) return false;
-        final CUserSession client = receiver.getNetConnection();
+        final CUserSocket client = receiver.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket conn = client.getConnection();
         final Account account = client.getAccount();
@@ -181,7 +180,7 @@ public final class SC_EnchantRanking1 {
         return (s == null ? 0 : s.getBytes(java.nio.charset.Charset.forName("MS949")).length) + 1;
     }
 
-    private static boolean sendPrepared(CUserSession client, CUserSocket conn, Data obj) {
+    private static boolean sendPrepared(CUserSocket client, CUserSocket conn, Data obj) {
         if (!(true)) return false;
         final CIOFrame frame = conn.beginDirectFrame(2 + 1 + 4 + bytesOf("GM") + bytesOf(obj._title) + bytesOf(obj._date) + bytesOf(obj.content()));
         if (frame == null) return false;

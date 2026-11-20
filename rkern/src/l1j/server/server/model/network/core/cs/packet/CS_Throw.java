@@ -4,7 +4,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
 
 public final class CS_Throw {
@@ -13,7 +13,7 @@ public final class CS_Throw {
     }
 
     public static void handle(
-            CUserSession client) {
+            CUserSocket client) {
 
         if (client == null) {
             return;

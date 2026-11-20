@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.utill.CConnectionState;
 
@@ -25,7 +25,7 @@ public final class PlaySupportWindow {
 
     private PlaySupportWindow() { }
 
-    private static L1PcInstance player(CUserSession client) {
+    private static L1PcInstance player(CUserSocket client) {
         if (client == null || !client.isConnected() || !client.isGameSessionReady()
                 || client.getConnectionState() != CConnectionState.IN_GAME) return null;
         L1PcInstance pc = client.getActiveChar();
@@ -38,17 +38,17 @@ public final class PlaySupportWindow {
         return true;
     }
 
-    public static void registerStart(CUserSession client, byte[] data, int offset, int length) {
+    public static void registerStart(CUserSocket client, byte[] data, int offset, int length) {
         L1PcInstance pc = player(client);
         if (pc != null && empty(data, offset, length)) client.pssWindowSession().begin(pc);
     }
 
-    public static void registerByte(CUserSession client, int value, byte[] data, int offset, int length) {
+    public static void registerByte(CUserSocket client, int value, byte[] data, int offset, int length) {
         Session session = client == null ? null : client.peekPssWindowSession();
         if (session != null && empty(data, offset, length)) session.append(value);
     }
 
-    public static void registerCommit(CUserSession client, byte[] data, int offset, int length) {
+    public static void registerCommit(CUserSocket client, byte[] data, int offset, int length) {
         Session session = client == null ? null : client.peekPssWindowSession();
         if (session != null && empty(data, offset, length)) session.commit();
     }
@@ -58,7 +58,7 @@ public final class PlaySupportWindow {
         String prefix = ".psslink";
         if (message == null || !message.regionMatches(true, 0, prefix, 0, prefix.length())
                 || message.length() > prefix.length() && !Character.isWhitespace(message.charAt(prefix.length()))) return false;
-        CUserSession client = pc == null ? null : pc.getNetConnection();
+        CUserSocket client = pc == null ? null : pc.getNetConnection();
         if (pc == null || player(client) != pc) return true;
         String hex = message.substring(prefix.length()).trim();
         byte[] token = new byte[16];
@@ -77,7 +77,7 @@ public final class PlaySupportWindow {
     }
 
     public static boolean open(L1PcInstance pc) {
-        CUserSession client = pc == null ? null : pc.getNetConnection();
+        CUserSocket client = pc == null ? null : pc.getNetConnection();
         if (player(client) != pc || pc == null) return false;
         Session session = client.peekPssWindowSession();
         PssWindowTransport.Peer peer = session == null ? null : session.peer;
@@ -88,7 +88,7 @@ public final class PlaySupportWindow {
     }
 
     /** Read-only settings UI: use the same admission as the working GM window command. */
-    public static boolean tryOpenItem(CUserSession client, L1PcInstance pc, L1ItemInstance item) {
+    public static boolean tryOpenItem(CUserSocket client, L1PcInstance pc, L1ItemInstance item) {
         if (item == null || item.getItem() == null || item.getItem().getItemId() != ITEM_ID) return false;
         if (client == null || pc == null || client.getActiveChar() != pc || pc.getNetConnection() != client
                 || pc.getInventory().getItem(item.getId()) != item || item.getCount() <= 0) return true;
@@ -144,7 +144,7 @@ public final class PlaySupportWindow {
 
     /** Allocated only for clients advertising the native helper capability. */
     public static final class Session implements PssWindowTransport.Owner, AutoCloseable {
-        private final CUserSession client;
+        private final CUserSocket client;
         private final byte[] bytes = new byte[16];
         private int count = -1;
         private long deadline, lastBegin;
@@ -153,7 +153,7 @@ public final class PlaySupportWindow {
         private PssWindowTransport.Token pending;
         private volatile PssWindowTransport.Peer peer;
 
-        public Session(CUserSession client) { this.client = client; }
+        public Session(CUserSocket client) { this.client = client; }
 
         private synchronized void begin(L1PcInstance pc) {
             long now = System.nanoTime();

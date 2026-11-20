@@ -1,13 +1,13 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /** Client NPC command entry. Execution belongs to the existing User path. */
 public final class CS_NpcAction {
     private CS_NpcAction() {}
 
-    public static void handle(CUserSession client, int objid, String s, String s2, byte[] actionData) {
+    public static void handle(CUserSocket client, int objid, String s, String s2, byte[] actionData) {
         User.OnNpcActionPacket(client, objid, s, s2, actionData);
     }
 

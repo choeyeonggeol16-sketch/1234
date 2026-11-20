@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 import java.util.Objects;
 import java.util.Collections;
 import l1j.server.server.storage.CacheD;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import java.util.ArrayList;
 import java.util.List;
@@ -527,7 +527,7 @@ public abstract class Warehouse extends L1Object {
         final l1j.server.server.model.L1PcInventory pcInventory =
                 (l1j.server.server.model.L1PcInventory) inventory;
         final l1j.server.server.model.Instance.L1PcInstance pc = pcInventory.getOwner();
-        final CUserSession session = pc.getNetConnection();
+        final CUserSocket session = pc.getNetConnection();
         if (session == null || !session.isConnected()) return null;
         final int stamp = pc.getSessionStamp();
         if (!pc.tryBeginItemTransfer()) return null;
@@ -676,7 +676,7 @@ public abstract class Warehouse extends L1Object {
         try { reservation = CacheD.beginWarehouseMove(characterId, transferOrderKey()); }
         catch (java.util.concurrent.RejectedExecutionException busy) { return null; }
         try (CacheD.WarehouseMove move = reservation) {
-        final CUserSession session = ((l1j.server.server.model.L1PcInventory) inventory)
+        final CUserSocket session = ((l1j.server.server.model.L1PcInventory) inventory)
                 .getOwner().getNetConnection();
         if (session != null) move.onFailure(() ->
                 CIOThreadCallback.getInstance().completeSession(session, session::kick));

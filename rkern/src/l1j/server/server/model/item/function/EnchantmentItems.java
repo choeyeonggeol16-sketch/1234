@@ -12,7 +12,7 @@ import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.monitor.LoggerInstance;
 
 
@@ -115,11 +115,11 @@ public final class EnchantmentItems {
 		OrimProtectionScrolls.enchant_bless_orim(pc, scroll, target);
 	}
 
-	public static void SuccessEnchant(L1PcInstance pc, L1ItemInstance item, CUserSession client, int i) {
+	public static void SuccessEnchant(L1PcInstance pc, L1ItemInstance item, CUserSocket client, int i) {
         EnchantmentOutcomeEffects.SuccessEnchant(pc, item, client, i);
     }
 
-	public static void FailureEnchant(L1PcInstance pc, L1ItemInstance item, CUserSession client) {
+	public static void FailureEnchant(L1PcInstance pc, L1ItemInstance item, CUserSocket client) {
         EnchantmentOutcomeEffects.FailureEnchant(pc, item, client);
     }
 

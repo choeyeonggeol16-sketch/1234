@@ -6,7 +6,6 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
@@ -37,7 +36,7 @@ public final class SC_NpcChatPacket {
     
     private static boolean sendFormatted(L1PcInstance pc, int npcId, int color, String text) {
         if (pc == null || text == null) return false;
-        final CUserSession socket = pc.getNetConnection();
+        final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

@@ -19,7 +19,7 @@ import l1j.server.server.GameServerFullException;
 import l1j.server.server.Controller.LoginAttemptGuard;
 import l1j.server.server.Controller.LoginController;
 import l1j.server.server.datatables.IpConnectDelay;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.network.utill.CConnectionConfig;
@@ -40,7 +40,7 @@ public final class CS_AuthLogin {
     private CS_AuthLogin() {
     }
 
-    public static void handle(CUserSession client, String rawAccountName, String password) {
+    public static void handle(CUserSocket client, String rawAccountName, String password) {
         if (client == null) {
             return;
         }
@@ -141,7 +141,7 @@ public final class CS_AuthLogin {
     }
 
     private static boolean isAuthority(
-            CUserSession client,
+            CUserSocket client,
             String accountName,
             AuthLoad loaded) throws Exception {
 
@@ -295,7 +295,7 @@ public final class CS_AuthLogin {
         }
     }
 
-    public static void sendNotice(CUserSession client, String account) {
+    public static void sendNotice(CUserSocket client, String account) {
         if (client == null || !client.isConnected()) return;
         if (account == null || account.isEmpty()) {
             new CS_CommonClick(client);
@@ -362,7 +362,7 @@ public final class CS_AuthLogin {
     }
 
     private static void processDuplication(
-            CUserSession client,
+            CUserSocket client,
             String accountName,
             String ip) throws Exception {
 
@@ -377,7 +377,7 @@ public final class CS_AuthLogin {
     }
 
     private static void processAccountOver(
-            CUserSession client,
+            CUserSocket client,
             String accountName) {
 
         _log.info(String.format(

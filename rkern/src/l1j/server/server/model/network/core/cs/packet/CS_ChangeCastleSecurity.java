@@ -6,7 +6,7 @@ import l1j.server.MJWarSystem.MJCastleWarBusiness;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class CS_ChangeCastleSecurity {
 
@@ -14,7 +14,7 @@ public final class CS_ChangeCastleSecurity {
     }
 
     public static void handle(
-            CUserSession client,
+            CUserSocket client,
             int objId,
             int type) {
 

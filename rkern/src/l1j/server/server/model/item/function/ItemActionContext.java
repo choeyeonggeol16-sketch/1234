@@ -2,7 +2,7 @@ package l1j.server.server.model.item.function;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.templates.L1EtcItem;
 
 /** Immutable packet and selected-item snapshot for one synchronous use.
@@ -10,14 +10,14 @@ import l1j.server.server.templates.L1EtcItem;
  * This object is never retained by a CacheD completion callback.
  */
 final class ItemActionContext {
-    private final CUserSession client;
+    private final CUserSocket client;
     private final L1PcInstance player;
     private final L1ItemInstance item, targetItem;
     private final int itemId, itemObjectId, targetId, x, y, skillId, mode;
     private final String name;
     private final boolean delayEffect;
 
-    ItemActionContext(CUserSession client, L1PcInstance player, L1ItemInstance item,
+    ItemActionContext(CUserSocket client, L1PcInstance player, L1ItemInstance item,
             int itemObjectId, int targetId, int x, int y, String name, int skillId) {
         this.client=client; this.player=player; this.item=item;
         this.itemId=item.getItem().getItemId(); this.itemObjectId=itemObjectId;
@@ -29,7 +29,7 @@ final class ItemActionContext {
         final int selectedObjectId = targetItemObjectId();
         targetItem = selectedObjectId == 0 ? null : player.getInventory().getItem(selectedObjectId);
     }
-    CUserSession client(){return client;}
+    CUserSocket client(){return client;}
     L1PcInstance player(){return player;}
     L1ItemInstance item(){return item;}
     L1ItemInstance targetItem(){return targetItem;}

@@ -1,6 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class CS_Quit {
 
@@ -8,7 +8,7 @@ public final class CS_Quit {
     }
 
     public static void handle(
-            CUserSession client) {
+            CUserSocket client) {
 
         if (client == null) {
             return;

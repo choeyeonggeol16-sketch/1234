@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -101,7 +101,7 @@ public final class SC_MONSTER_BOOK_V2_TELEPORT_ACK extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _deckIndex, _cardIndex, _result);
     }
 
-    public static boolean sendFields(CUserSession recipient, int _deckIndex, int _cardIndex, eResultCode _result) {
+    public static boolean sendFields(CUserSocket recipient, int _deckIndex, int _cardIndex, eResultCode _result) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_MONSTER_BOOK_V2_TELEPORT_ACK, Proto.capacityBound(1024L));
         if (writer == null) return false;
         try {
@@ -118,7 +118,7 @@ public final class SC_MONSTER_BOOK_V2_TELEPORT_ACK extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_MONSTER_BOOK_V2_TELEPORT_ACK);
     }
 
-    private static boolean sendCtor(CUserSession protoRecipient) {
+    private static boolean sendCtor(CUserSocket protoRecipient) {
         int proto40_deckIndex = 0;
         int proto40_cardIndex = 0;
         eResultCode proto40_result = null;
@@ -127,7 +127,7 @@ public final class SC_MONSTER_BOOK_V2_TELEPORT_ACK extends ProtoPacket {
         return sendFields(protoRecipient, proto40_deckIndex, proto40_cardIndex, proto40_result);
     }
 
-    public static boolean sendNewInstance(CUserSession protoRecipient) {
+    public static boolean sendNewInstance(CUserSocket protoRecipient) {
         return sendCtor(protoRecipient);
     }
 
@@ -135,7 +135,7 @@ public final class SC_MONSTER_BOOK_V2_TELEPORT_ACK extends ProtoPacket {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
 
-    public static boolean sendNewInstance(CUserSession protoRecipient, int deckIndex, int cardIndex, eResultCode result) {
+    public static boolean sendNewInstance(CUserSocket protoRecipient, int deckIndex, int cardIndex, eResultCode result) {
         int pWire_deckIndex = 0;
                 int pWire_cardIndex = 0;
                 eResultCode pWire_result = null;
@@ -150,7 +150,7 @@ public final class SC_MONSTER_BOOK_V2_TELEPORT_ACK extends ProtoPacket {
     public static boolean sendNewInstance(L1PcInstance protoRecipient, int deckIndex, int cardIndex, eResultCode result) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection(), deckIndex, cardIndex, result);
     }
-    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSocket protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

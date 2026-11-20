@@ -3,7 +3,7 @@ package l1j.server.server.model.item.function;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
@@ -13,7 +13,7 @@ final class WeaponEnchantTargetRules {
 
     static ItemActionResult validate(ItemActionContext use) {
         L1PcInstance pc = use.player();
-        CUserSession client = use.client();
+        CUserSocket client = use.client();
         L1ItemInstance item = use.item();
         L1ItemInstance targetItem = use.targetItem();
         int itemId = use.itemId();

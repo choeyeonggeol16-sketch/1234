@@ -5,14 +5,13 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import java.io.File;
 import java.nio.file.Files;
 
 public final class SC_Emblem {
     private static final int SEND_MARGIN_BYTES = 512 * 1024;
     private SC_Emblem() {}
-    public static boolean send(CUserSession client, int emblemId) {
+    public static boolean send(CUserSocket client, int emblemId) {
         if (client == null || !client.isConnected()) return false;
         byte[] data = new byte[0];
         try {

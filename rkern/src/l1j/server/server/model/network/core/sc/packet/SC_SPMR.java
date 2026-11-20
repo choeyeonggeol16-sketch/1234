@@ -4,7 +4,6 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 public final class SC_SPMR {
@@ -19,7 +18,7 @@ public final class SC_SPMR {
         final int mr = pc.getResistance().getMr() - pc.getResistance().getBaseMr();
         return sendRaw(pc.getNetConnection(), sp, mr);
     }
-    private static boolean sendRaw(CUserSession client, int sp, int mr) {
+    private static boolean sendRaw(CUserSocket client, int sp, int mr) {
 
         if (client == null || !client.isConnected()) return false;
         final CUserSocket conn = client.getConnection();

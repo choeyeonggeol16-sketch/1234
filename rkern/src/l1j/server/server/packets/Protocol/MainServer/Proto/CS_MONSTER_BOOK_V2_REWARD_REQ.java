@@ -5,7 +5,7 @@ import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
 import l1j.server.server.model.BookQuest.Loader.BQSWQRewardsLoader;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MONSTER_BOOK_V2_REWARD_ACK.eResultCode;
 import l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook.MonsterBookV2Info;
@@ -19,7 +19,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook.eMonsterB
 public final class CS_MONSTER_BOOK_V2_REWARD_REQ {
     private CS_MONSTER_BOOK_V2_REWARD_REQ() {}
 
-    public static void handleRequest(CUserSession client, ProtoReader r) {
+    public static void handleRequest(CUserSocket client, ProtoReader r) {
         int deckIndex = 0;
         eMonsterBookV2RewardGrade grade = null;
         boolean hasDeck = false, hasGrade = false;

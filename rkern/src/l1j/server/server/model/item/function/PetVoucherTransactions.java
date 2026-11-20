@@ -28,7 +28,7 @@ import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
@@ -50,7 +50,7 @@ public final class PetVoucherTransactions {
     private static final Logger ITEM_USE2_LOG = CreatureItemActions.ITEM_USE2_LOG;
     private PetVoucherTransactions() {}
 
-    public static void UsePetAmulet(CUserSession client, L1ItemInstance input, int npcId) {
+    public static void UsePetAmulet(CUserSocket client, L1ItemInstance input, int npcId) {
         final L1PcInstance pc = client == null ? null : client.getActiveChar();
         if (pc == null || input == null
                 || pc.getInventory().getItem(input.getId()) != input) return;

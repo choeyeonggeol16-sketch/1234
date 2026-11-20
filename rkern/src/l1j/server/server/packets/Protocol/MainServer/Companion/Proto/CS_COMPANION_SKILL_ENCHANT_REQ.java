@@ -6,7 +6,7 @@ import l1j.server.MJCompanion.Instance.MJCompanionUpdateFlag;
 import l1j.server.MJTemplate.MJRnd;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.SC_COMPANION_SKILL_ENCHANT_ACK.eResult;
 
@@ -18,7 +18,7 @@ public final class CS_COMPANION_SKILL_ENCHANT_REQ {
 
     private CS_COMPANION_SKILL_ENCHANT_REQ() {}
 
-    public static void handleRequest(CUserSession client, ProtoReader r) {
+    public static void handleRequest(CUserSocket client, ProtoReader r) {
         // ── 파싱 ──
         int skillId = 0;
         boolean hasSkillId = false;

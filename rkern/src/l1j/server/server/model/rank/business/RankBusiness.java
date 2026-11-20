@@ -22,7 +22,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.gametime.BaseTime;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.gametime.TimeListener;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.rank.loader.RankLoadManager;
 import l1j.server.server.model.rank.loader.RankUserLoader;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
@@ -325,7 +325,7 @@ public class RankBusiness implements TimeListener{
         }
     }
     
-    public void noti(CUserSession clnt, int objid){
+    public void noti(CUserSocket clnt, int objid){
         SC_TOP_RANKER_NOTI noti = RankUserLoader.getInstance().get(objid);
         if(noti != null) {
             clnt.sendPacket(noti);

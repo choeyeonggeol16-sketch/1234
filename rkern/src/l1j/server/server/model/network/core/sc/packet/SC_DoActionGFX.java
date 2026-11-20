@@ -4,7 +4,6 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.session.CUserSession;
 
 /**
  * NC-style direct serializer for S_DoActionGFX.
@@ -29,7 +28,7 @@ public final class SC_DoActionGFX {
      * false = direct path unavailable
      */
     public static boolean send(
-            CUserSession client,
+            CUserSocket client,
             int objectId,
             int actionId) {
 

@@ -16,7 +16,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.Craft;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftInputItemSlotInfo;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftInputList;
@@ -35,7 +35,7 @@ public final class CS_CRAFT_MAKE_REQ {
 
     private static final int MAX_COUNT = 1000;
 
-    public static void handleRequest(CUserSession client, ProtoReader r) {
+    public static void handleRequest(CUserSocket client, ProtoReader r) {
         L1PcInstance pc = null;
         try {
             int npcId = 0, craftId = 0, count = 0;

@@ -38,7 +38,7 @@ import l1j.server.server.Account;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.rank.business.RankBusiness;
 import l1j.server.server.storage.CacheD;
@@ -89,13 +89,13 @@ public class CS_CommonClick {
         }
     }
 
-    private static boolean canSendCharacterList(CUserSession client, Account account) {
+    private static boolean canSendCharacterList(CUserSocket client, Account account) {
         return client.isConnected() && client.getAccount() == account
                 && client.getActiveChar() == null
                 && client.getConnectionState() == CConnectionState.AUTHENTICATED;
     }
 
-    public CS_CommonClick(CUserSession client) {
+    public CS_CommonClick(CUserSocket client) {
         if (client == null || client.getAccount() == null || !client.isConnected()) return;
         final Account account = client.getAccount();
         final String accountName = account.getName();
@@ -109,7 +109,7 @@ public class CS_CommonClick {
         }
     }
 
-    private static void loadCommonClick(CUserSession client, Account account,
+    private static void loadCommonClick(CUserSocket client, Account account,
                                         String accountName, int ownerShard) {
         if (!canSendCharacterList(client, account)) return;
         final ArrayList<DeletedCharacter> deleted = deleteExpired(accountName);
@@ -138,7 +138,7 @@ public class CS_CommonClick {
         }
     }
 
-    private static void completeCommonClick(CUserSession client, Account account, List<DeletedCharacter> deleted, List<CharRow> rows) {
+    private static void completeCommonClick(CUserSocket client, Account account, List<DeletedCharacter> deleted, List<CharRow> rows) {
         removeDeletedClanMembers(deleted);
         if (!canSendCharacterList(client, account)) return;
         SC_NewCreateItem.sendTamPoint(client);
@@ -232,25 +232,25 @@ public class CS_CommonClick {
         return rows;
     }
 
-    private static void sendCharPack(CUserSession client, CharRow row) {
+    private static void sendCharPack(CUserSocket client, CharRow row) {
         SC_CharPacks.send(client, 
                 row.name, row.clanName, row.type, row.sex, row.lawful,
                 row.hp, row.mp, row.ac, row.level, row.str, row.dex,
                 row.con, row.wis, row.cha, row.intel, row.accessLevel, row.birth);
     }
 
-    public static void sendCharPacks(CUserSession client) {
+    public static void sendCharPacks(CUserSocket client) {
         submitCharList(client, false);
     }
 
     /** Account-ordered DB read replaces a synchronous countCharacters() on the
      * CIO owner. Count and packets use the SAME snapshot on the SAME session.
      */
-    public static void sendCharAmountAndPacks(CUserSession client) {
+    public static void sendCharAmountAndPacks(CUserSocket client) {
         submitCharList(client, true);
     }
 
-    private static void submitCharList(CUserSession client, boolean includeAmount) {
+    private static void submitCharList(CUserSocket client, boolean includeAmount) {
         if (client == null || client.getAccount() == null || !client.isConnected()) return;
         final Account account = client.getAccount();
         if (!canSendCharacterList(client, account)) return;
