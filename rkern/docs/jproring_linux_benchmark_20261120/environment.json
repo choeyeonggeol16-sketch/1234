@@ -1,0 +1,65 @@
+{
+  "persistent": {
+    "kernel": "7.0.0-1014-aws",
+    "architecture": "x86_64",
+    "cpu": "Intel(R) Xeon(R) 6975P-C",
+    "available_cpus": 4,
+    "cpu_quota": null,
+    "jdk": "openjdk version \"21.0.13\" 2026-10-20 LTS",
+    "netty": "4.2.21.Final",
+    "revision": "af61a5ba08f7c8569224e158965aae19558078c9",
+    "trials": 3,
+    "warmup_ms": 750,
+    "measure_ms": 1500,
+    "providers": {
+      "rkern": "sun.nio.ch.EPollSelectorImpl",
+      "netty-nio": "NioServerSocketChannel",
+      "netty-epoll": "EpollServerSocketChannel",
+      "netty-io_uring": "IoUringServerSocketChannel"
+    },
+    "unavailable": {}
+  },
+  "churn": {
+    "kernel": "7.0.0-1017-azure",
+    "architecture": "x86_64",
+    "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "available_cpus": 4,
+    "cpu_quota": null,
+    "ephemeral_ports": [
+      "32768",
+      "60999"
+    ],
+    "tcp_tw_reuse": "2",
+    "jdk": "openjdk version \"21.0.13\" 2026-10-20 LTS",
+    "netty": "4.2.21.Final",
+    "revision": "0da0640878b45630986d005b1528fd303d802755",
+    "trials": 3,
+    "warmup_ms": 750,
+    "measure_ms": 1500,
+    "workloads": [
+      [
+        "churn",
+        8
+      ]
+    ],
+    "providers": {
+      "rkern": "sun.nio.ch.EPollSelectorImpl",
+      "netty-nio": "NioServerSocketChannel",
+      "netty-epoll": "EpollServerSocketChannel",
+      "netty-io_uring": "IoUringServerSocketChannel"
+    },
+    "unavailable": {},
+    "failed_rounds": [
+      "netty-epoll/2",
+      "netty-io_uring/2",
+      "rkern/2",
+      "netty-epoll/3",
+      "netty-io_uring/3",
+      "rkern/3",
+      "netty-nio/3"
+    ],
+    "reported_trials": [
+      1
+    ]
+  }
+}
