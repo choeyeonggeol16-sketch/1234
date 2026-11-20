@@ -388,8 +388,6 @@ public final class SkillHandlers {
 
 		// ===== N_BUFF =====
 		register(L1SkillId.N_BUFF_PVP_DMG, SkillHandlers::onNBuffPvpDmg);
-		register(L1SkillId.N_BUFF_HPMP, SkillHandlers::onNBuffHpMp);
-		register(L1SkillId.N_BUFF_REDUCT, SkillHandlers::onNBuffReduct);
 		register(L1SkillId.N_BUFF_STUN, SkillHandlers::onNBuffStun);
 		register(L1SkillId.N_BUFF_HOLD, SkillHandlers::onNBuffHold);
 
@@ -1256,25 +1254,13 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onNBuffHpMp(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_HPMP;
-
+	static void startInventoryHealthBuff(L1PcInstance pc, int skillId, int duration) {
 		resetEffect(pc, skillId);
-
-		pc.addMaxHp(50);
-		pc.addMaxMp(50);
-		pc.addWeightReduction(3);
-
+		pc.applySkillModifierFromOwner(skillId, (50L << 32) | 50);
 		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
 		SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
+		sendIvenBuffIcon(pc, skillId, duration);
 	}
 
 	static void startInventoryDamageBuff(L1PcInstance pc, int skillId, int duration) {
@@ -1284,20 +1270,11 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		sendIvenBuffIcon(pc, skillId, duration);
 	}
 
-	private static HandlerResult onNBuffReduct(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.N_BUFF_REDUCT;
-
+	static void startInventoryArmorBuff(L1PcInstance pc, int skillId, int duration) {
 		resetEffect(pc, skillId);
-
-		pc.addDamageReductionByArmor(1);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-
-		return HandlerResult.HANDLED;
+		pc.applySkillModifierFromOwner(skillId, 1);
+		applySkillEffectSec(pc, skillId, duration);
+		sendIvenBuffIcon(pc, skillId, duration);
 	}
 
 	private static HandlerResult onBlessWeapon(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {

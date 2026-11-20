@@ -59,9 +59,18 @@ interface CSkillEffect {
         }},
         SP { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.sp += (int) captured;
+        }},
+        ARMOR_REDUCTION { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.armorReduction += (int) captured;
         }};
 
         @Override public boolean checkPumpCondition(L1Character target) { return target instanceof L1PcInstance; }
+    }
+
+    record CarryLimit(int amount) implements CSkillEffect {
+        @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.carryLimit += amount;
+        }
     }
 
     enum MaxHp {

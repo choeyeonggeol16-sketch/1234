@@ -57,6 +57,9 @@ public final class CSkillInfo {
         registerManaged(N_BUFF_DMG, SkillHandlers::startInventoryDamageBuff, MELEE_DAMAGE, RANGED_DAMAGE);
         registerManaged(N_BUFF_SP, SkillHandlers::startSpellPowerBuff, SP);
         registerManaged(IllUSION_LICH, SkillHandlers::startSpellPowerBuff, SP);
+        registerManaged(N_BUFF_HPMP, SkillHandlers::startInventoryHealthBuff,
+                MAX_HP, MAX_MP, new CSkillEffect.CarryLimit(3));
+        registerManaged(N_BUFF_REDUCT, SkillHandlers::startInventoryArmorBuff, ARMOR_REDUCTION);
         frozen = true;
     }
 

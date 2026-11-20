@@ -181,9 +181,9 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 2794,리버레이션,,stop_only,offLiberation
 3281,DRAGON_SET,onDragonSet,existing_cast,offDragonSet
 4075,N_BUFF_PVP_DMG,onNBuffPvpDmg,existing_cast,offNBuffPvpDmg
-4076,N_BUFF_HPMP,onNBuffHpMp,existing_cast,offNBuffHpMp
+4076,N_BUFF_HPMP,startInventoryHealthBuff,managed_pump,offNBuffHpMp
 4077,N_BUFF_DMG,startInventoryDamageBuff,managed_pump,offNBuffDmg
-4078,N_BUFF_REDUCT,onNBuffReduct,existing_cast,offNBuffReduct
+4078,N_BUFF_REDUCT,startInventoryArmorBuff,managed_pump,offNBuffReduct
 4079,N_BUFF_SP,startSpellPowerBuff,managed_pump,offNBuffSp
 4080,N_BUFF_STUN,onNBuffStun,existing_cast,offNBuffStun
 4081,N_BUFF_HOLD,onNBuffHold,existing_cast,offNBuffHold

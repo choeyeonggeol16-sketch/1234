@@ -65,6 +65,7 @@ public final class TestSkillEffectLifecycle {
             verifyRestoredBuffs();
             verifyMeleeBuffs();
             verifyDamageAndSpellPower();
+            verifyInventoryHealthAndArmor();
             verifyLifetimeRefreshAndSleep();
             verifyOwnerDispatchAndExpiry();
             verifyRegistry();
@@ -263,6 +264,32 @@ public final class TestSkillEffectLifecycle {
         pc.removeSkillEffect(N_BUFF_DMG);
         verify(pc.getDmgup() == 4 && pc.getBowDmgup() == 6 && pc.getAbility().getSp() == sp,
                 "preserves baseline weapon damage and SP", N_BUFF_DMG);
+    }
+
+    private static void verifyInventoryHealthAndArmor() {
+        Player pc = new Player();
+        pc.addBaseMaxHp((short) 991);
+        pc.addBaseMaxMp(301);
+        pc.addWeightReduction(7);
+        pc.addDamageReductionByArmor(4);
+        int hp = pc.getMaxHp(), mp = pc.getMaxMp();
+        for (int id : new int[]{N_BUFF_HPMP, N_BUFF_REDUCT}) {
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "start", id);
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "recast", id);
+        }
+        verify(pc.getMaxHp() == hp + 50 && pc.getMaxMp() == mp + 50 && pc.getWeightReduction() == 10
+                && pc.getDamageReductionByArmor() == 5, "inventory health and reduction sources", N_BUFF_HPMP);
+        pc.addWeightReduction(2);
+        pc.setCurrentHp(pc.getMaxHp());
+        pc.setCurrentMp(pc.getMaxMp());
+        pc.removeSkillEffect(N_BUFF_HPMP);
+        verify(pc.getMaxHp() == hp && pc.getMaxMp() == mp && pc.getCurrentHp() == hp && pc.getCurrentMp() == mp
+                && pc.getWeightReduction() == 9 && pc.getDamageReductionByArmor() == 5,
+                "health removal preserves weight baseline and unrelated reduction", N_BUFF_HPMP);
+        pc.removeSkillEffect(N_BUFF_REDUCT);
+        verify(pc.getDamageReductionByArmor() == 4, "preserves baseline reduction", N_BUFF_REDUCT);
     }
 
     private static void verifyIndependentModifiers() {

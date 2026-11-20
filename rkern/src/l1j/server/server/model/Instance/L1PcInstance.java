@@ -5356,8 +5356,18 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		return getBaseAbility().get매직레벨();
 	}
 
+	// Carry limit in the low half, armor damage reduction in the high half.
+	private volatile int pumpedCarryAndArmor;
+
+	public void setPumpedCarryAndArmor(int value, boolean notify) {
+		final int previous = pumpedCarryAndArmor;
+		if (previous == value) return;
+		pumpedCarryAndArmor = value;
+		if (notify && (short) previous != (short) value) SC_Weight.send(this);
+	}
+
 	public int getWeightReduction() {
-		return _weightReduction;
+		return _weightReduction + (short) pumpedCarryAndArmor;
 	}
 
 	public void addWeightReduction(int i) {
@@ -5823,7 +5833,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public int getDamageReductionByArmor() {
-		return _damageReductionByArmor;
+		return _damageReductionByArmor + (pumpedCarryAndArmor >> 16);
 	}
 
 	public void addDamageReductionByArmor(int i) {

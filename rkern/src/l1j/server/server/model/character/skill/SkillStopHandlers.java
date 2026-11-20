@@ -603,9 +603,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.addMaxHp(-50);
-		pc.addMaxMp(-50);
-		pc.addWeightReduction(-3);
+		pc.removeSkillModifierFromOwner(skillId);
 		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
 		SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
 		SC_IvenBuffIcon.send(pc, skillId, false, 4347, 0);
@@ -625,7 +623,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.addDamageReductionByArmor(-1);
+		pc.removeSkillModifierFromOwner(skillId);
 		SC_IvenBuffIcon.send(pc, skillId, false, 4349, 0);
 		return StopResult.HANDLED;
 	}
