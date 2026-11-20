@@ -93,7 +93,12 @@ def measure(cp, location, args, trial, load, mode, logs):
             with subprocess.Popen(client_command, cwd=runtime, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                   stderr=client_log, bufsize=0) as client:
                 try:
-                    line(client, 'READY')
+                    try:
+                        line(client, 'READY', 3 if clients <= 16 else 15)
+                    except RuntimeError:
+                        send(server, 'DIAG')
+                        print(server_name, line(server, 'DIAG ', 2), flush=True)
+                        raise
                     send(client, '')
                     line(client, 'MEASURE', args.warmup_ms / 1000 + 10)
                     send(server, 'SAMPLE')
@@ -116,6 +121,14 @@ def measure(cp, location, args, trial, load, mode, logs):
             return [load, trial, mode, clients, window, owners, payload, kind, *metrics,
                     round(cpu / samples, 2), round(allocation / samples, 2) if before[1] >= 0 else 'NA',
                     committed, appended, rejects]
+        except (OSError, RuntimeError, subprocess.SubprocessError):
+            if server.poll() is None:
+                try:
+                    send(server, 'DIAG')
+                    print(server_name, line(server, 'DIAG ', 2), flush=True)
+                except (OSError, RuntimeError):
+                    pass
+            raise
         finally:
             if server.poll() is None:
                 server.kill()

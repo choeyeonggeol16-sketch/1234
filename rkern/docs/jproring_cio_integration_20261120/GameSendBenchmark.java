@@ -92,6 +92,11 @@ public final class GameSendBenchmark {
             var input = new BufferedReader(new InputStreamReader(System.in));
             for (String command; (command = input.readLine()) != null; ) {
                 if (command.equals("STOP")) break;
+                if (command.equals("DIAG")) {
+                    protocol.println("DIAG " + Server.networkPoolReport() + " sockets="
+                            + Arrays.deepToString(Server.networkSocketDiagnostics()));
+                    continue;
+                }
                 if (!command.equals("SAMPLE")) throw new IllegalArgumentException(command);
                 protocol.printf(Locale.ROOT, "SAMPLE %d %d %d %d %d%n", cpu.getProcessCpuTime(),
                         threads.getTotalThreadAllocatedBytes(), sessions.stream().mapToLong(CUserSocket::javaDirectPacketCommits).sum(),
@@ -122,7 +127,8 @@ public final class GameSendBenchmark {
         var go = new CountDownLatch(1);
         var begin = new AtomicLong();
         long measure = TimeUnit.MILLISECONDS.toNanos(measureMillis);
-        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+        try (var executor = clients <= 256 ? Executors.newFixedThreadPool(clients)
+                                          : Executors.newVirtualThreadPerTaskExecutor()) {
             var samples = new ArrayList<Future<long[]>>();
             for (int connection = 0; connection < clients; connection++) samples.add(executor.submit(() -> {
                 try (var socket = new Socket()) {
@@ -165,7 +171,10 @@ public final class GameSendBenchmark {
                 }
             }));
             try {
-                if (!ready.await(6, TimeUnit.SECONDS)) throw new AssertionError("client connect timeout");
+                if (!ready.await(6, TimeUnit.SECONDS)) {
+                    for (var sample : samples) if (sample.isDone()) sample.get();
+                    throw new AssertionError("client connect timeout, missing initial keys=" + ready.getCount());
+                }
                 System.out.println("READY");
                 if (System.in.read() != '\n') throw new AssertionError("expected start");
                 begin.set(System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(warmupMillis));

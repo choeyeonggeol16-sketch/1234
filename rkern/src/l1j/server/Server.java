@@ -28,7 +28,7 @@ public class Server {
     private static final String LOG_PROP =
             "./config/log.properties";
 
-    private static final int ACCEPT_BACKLOG = 5;
+    private static final int MAX_ACCEPT_BACKLOG = 512;
     private static final int SEND_LEASES_PER_CONNECTION = 4;
 
     private static volatile Server uniqueInstance;
@@ -94,7 +94,9 @@ public class Server {
                     (long) connectionCapacity * SEND_LEASES_PER_CONNECTION);
             final int largeSlots = Math.min(connectionCapacity, 256);
             final int largeRecvSlots = Math.min(connectionCapacity, 512);
-            final int backlog = ACCEPT_BACKLOG;
+            // Java accepts on one owner. Leave room for a login burst while that
+            // owner is also servicing established sockets and game timers.
+            final int backlog = Math.max(64, Math.min(connectionCapacity, MAX_ACCEPT_BACKLOG));
             final ConnectionConfig config = new ConnectionConfig(address);
             final CIOBufferPool pool = new CIOBufferPool(connectionCapacity,
                     sendSlots, largeRecvSlots, largeSlots);
