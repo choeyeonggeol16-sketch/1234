@@ -150,17 +150,17 @@ public final class CPacketHandler {
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_ACCEPT_XCHG & 0xFF] = false;
-        HANDLERS[Opcodes.C_HACTION & 0xFF] = CPacketHandler::decodeNpcAction;
+        HANDLERS[Opcodes.C_HACTION & 0xFF] = CPacketHandler::HtmlCMDPacket;
         DIRECT_OPCODE[Opcodes.C_HACTION & 0xFF] = false;
         HANDLERS[Opcodes.C_EXCHANGEABLE_SPELL & 0xFF] = CPacketHandler::decodeExchangeableSpell;
         DIRECT_OPCODE[Opcodes.C_EXCHANGEABLE_SPELL & 0xFF] = false;
-        HANDLERS[Opcodes.C_USE_SPELL & 0xFF] = CPacketHandler::decodeUseSkill;
+        HANDLERS[Opcodes.C_USE_SPELL & 0xFF] = CPacketHandler::MagicSkillUsePacket;
         DIRECT_OPCODE[Opcodes.C_USE_SPELL & 0xFF] = true;
-        HANDLERS[Opcodes.C_ATTACK & 0xFF] = CPacketHandler::decodeAttack;
+        HANDLERS[Opcodes.C_ATTACK & 0xFF] = CPacketHandler::AttackPacket;
         DIRECT_OPCODE[Opcodes.C_ATTACK & 0xFF] = true;
         HANDLERS[Opcodes.C_UPLOAD_EMBLEM & 0xFF] = CPacketHandler::decodeUploadEmblem;
         DIRECT_OPCODE[Opcodes.C_UPLOAD_EMBLEM & 0xFF] = false;
-        HANDLERS[Opcodes.C_USE_ITEM & 0xFF] = CPacketHandler::decodeUseItem;
+        HANDLERS[Opcodes.C_USE_ITEM & 0xFF] = CPacketHandler::UseItemPacket;
         DIRECT_OPCODE[Opcodes.C_USE_ITEM & 0xFF] = false;
         HANDLERS[Opcodes.C_LEAVE_PLEDGE & 0xFF] = (buffer, client) -> {
             handleLeavePledge(client);
@@ -171,7 +171,7 @@ public final class CPacketHandler {
         DIRECT_OPCODE[Opcodes.C_RANK_CONTROL & 0xFF] = false;
         HANDLERS[Opcodes.C_BOOKMARK & 0xFF] = CPacketHandler::decodeBookmark;
         DIRECT_OPCODE[Opcodes.C_BOOKMARK & 0xFF] = false;
-        HANDLERS[Opcodes.C_MOVE & 0xFF] = CPacketHandler::decodeMove;
+        HANDLERS[Opcodes.C_MOVE & 0xFF] = CPacketHandler::MoveToLocationPacket;
         DIRECT_OPCODE[Opcodes.C_MOVE & 0xFF] = true;
         HANDLERS[Opcodes.C_WHO_PLEDGE & 0xFF] = (buffer, client) -> {
             handleWhoPledge(client);
@@ -182,7 +182,7 @@ public final class CPacketHandler {
         DIRECT_OPCODE[Opcodes.C_SLAVE_CONTROL & 0xFF] = false;
         HANDLERS[Opcodes.C_SAVEIO & 0xFF] = CPacketHandler::decodeSaveIo;
         DIRECT_OPCODE[Opcodes.C_SAVEIO & 0xFF] = false;
-        HANDLERS[Opcodes.C_DROP & 0xFF] = CPacketHandler::decodeDropItem;
+        HANDLERS[Opcodes.C_DROP & 0xFF] = CPacketHandler::DropItemPacket;
         DIRECT_OPCODE[Opcodes.C_DROP & 0xFF] = false;
         HANDLERS[Opcodes.C_ALIVE & 0xFF] = (buffer, client) -> {
             handleAlive(client);
@@ -191,7 +191,7 @@ public final class CPacketHandler {
         DIRECT_OPCODE[Opcodes.C_ALIVE & 0xFF] = false;
         HANDLERS[Opcodes.C_PERSONAL_SHOP & 0xFF] = CPacketHandler::decodePersonalShop;
         DIRECT_OPCODE[Opcodes.C_PERSONAL_SHOP & 0xFF] = false;
-        HANDLERS[Opcodes.C_DELETE_CHARACTER & 0xFF] = CPacketHandler::decodeDeleteCharacter;
+        HANDLERS[Opcodes.C_DELETE_CHARACTER & 0xFF] = CPacketHandler::CharacterDeletePacket;
         DIRECT_OPCODE[Opcodes.C_DELETE_CHARACTER & 0xFF] = false;
         HANDLERS[Opcodes.C_SHUTDOWN & 0xFF] = CPacketHandler::decodePledgeContent;
         DIRECT_OPCODE[Opcodes.C_SHUTDOWN & 0xFF] = false;
@@ -223,7 +223,7 @@ public final class CPacketHandler {
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_LEAVE_PARTY & 0xFF] = false;
-        HANDLERS[Opcodes.C_ADD_XCHG & 0xFF] = CPacketHandler::decodeAddExchange;
+        HANDLERS[Opcodes.C_ADD_XCHG & 0xFF] = CPacketHandler::TradeAddItemsPacket;
         DIRECT_OPCODE[Opcodes.C_ADD_XCHG & 0xFF] = false;
         HANDLERS[Opcodes.C_WAREHOUSE_CONTROL & 0xFF] = CPacketHandler::decodeWarehouseControl;
         DIRECT_OPCODE[Opcodes.C_WAREHOUSE_CONTROL & 0xFF] = false;
@@ -231,9 +231,9 @@ public final class CPacketHandler {
         DIRECT_OPCODE[Opcodes.C_MARRIAGE & 0xFF] = false;
         HANDLERS[Opcodes.C_CHANNEL & 0xFF] = CPacketHandler::decodeChannel;
         DIRECT_OPCODE[Opcodes.C_CHANNEL & 0xFF] = false;
-        HANDLERS[Opcodes.C_GET & 0xFF] = CPacketHandler::decodePickup;
+        HANDLERS[Opcodes.C_GET & 0xFF] = CPacketHandler::GetItemPacket;
         DIRECT_OPCODE[Opcodes.C_GET & 0xFF] = true;
-        HANDLERS[Opcodes.C_CREATE_CUSTOM_CHARACTER & 0xFF] = CPacketHandler::decodeCreateCustomCharacter;
+        HANDLERS[Opcodes.C_CREATE_CUSTOM_CHARACTER & 0xFF] = CPacketHandler::CharacterCreatePacket;
         DIRECT_OPCODE[Opcodes.C_CREATE_CUSTOM_CHARACTER & 0xFF] = false;
         HANDLERS[Opcodes.C_DEAD_RESTART & 0xFF] = (buffer, client) -> {
             handleDeadRestart(client);
@@ -244,7 +244,7 @@ public final class CPacketHandler {
         DIRECT_OPCODE[Opcodes.C_QUERY_CASTLE_SECURITY & 0xFF] = false;
         HANDLERS[Opcodes.C_GIVE & 0xFF] = CPacketHandler::decodeGiveItem;
         DIRECT_OPCODE[Opcodes.C_GIVE & 0xFF] = false;
-        HANDLERS[Opcodes.C_CHAT & 0xFF] = CPacketHandler::decodeChat;
+        HANDLERS[Opcodes.C_CHAT & 0xFF] = CPacketHandler::SayPacket2;
         DIRECT_OPCODE[Opcodes.C_CHAT & 0xFF] = false;
         HANDLERS[Opcodes.C_FIX & 0xFF] = CPacketHandler::decodeFix;
         DIRECT_OPCODE[Opcodes.C_FIX & 0xFF] = false;
@@ -253,7 +253,7 @@ public final class CPacketHandler {
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_QUERY_BUDDY & 0xFF] = false;
-        HANDLERS[Opcodes.C_FAR_ATTACK & 0xFF] = CPacketHandler::decodeAttack;
+        HANDLERS[Opcodes.C_FAR_ATTACK & 0xFF] = CPacketHandler::AttackPacket;
         DIRECT_OPCODE[Opcodes.C_FAR_ATTACK & 0xFF] = true;
         HANDLERS[Opcodes.C_CHANGE_DIRECTION & 0xFF] = CPacketHandler::decodeChangeHeading;
         DIRECT_OPCODE[Opcodes.C_CHANGE_DIRECTION & 0xFF] = true;
@@ -286,7 +286,7 @@ public final class CPacketHandler {
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_CHECK_PK & 0xFF] = false;
-        HANDLERS[Opcodes.C_TITLE & 0xFF] = CPacketHandler::decodeTitle;
+        HANDLERS[Opcodes.C_TITLE & 0xFF] = CPacketHandler::GiveNicknamePacket;
         DIRECT_OPCODE[Opcodes.C_TITLE & 0xFF] = false;
         HANDLERS[Opcodes.C_DELETE_BOOKMARK & 0xFF] = CPacketHandler::decodeDeleteBookmark;
         DIRECT_OPCODE[Opcodes.C_DELETE_BOOKMARK & 0xFF] = false;
@@ -299,7 +299,7 @@ public final class CPacketHandler {
         DIRECT_OPCODE[Opcodes.C_BOARD_READ & 0xFF] = false;
         HANDLERS[Opcodes.C_EMBLEM & 0xFF] = CPacketHandler::decodeEmblem;
         DIRECT_OPCODE[Opcodes.C_EMBLEM & 0xFF] = false;
-        HANDLERS[Opcodes.C_REMOVE_BUDDY & 0xFF] = CPacketHandler::decodeRemoveBuddy;
+        HANDLERS[Opcodes.C_REMOVE_BUDDY & 0xFF] = CPacketHandler::FriendRemove;
         DIRECT_OPCODE[Opcodes.C_REMOVE_BUDDY & 0xFF] = false;
         HANDLERS[Opcodes.C_EXCHANGE_SPELL & 0xFF] = CPacketHandler::decodeExchangeSpell;
         DIRECT_OPCODE[Opcodes.C_EXCHANGE_SPELL & 0xFF] = false;
@@ -366,9 +366,9 @@ public final class CPacketHandler {
         DIRECT_OPCODE[Opcodes.C_SUMMON & 0xFF] = false;
         HANDLERS[Opcodes.C_CHAT_PARTY_CONTROL & 0xFF] = CPacketHandler::decodeChatPartyControl;
         DIRECT_OPCODE[Opcodes.C_CHAT_PARTY_CONTROL & 0xFF] = false;
-        HANDLERS[Opcodes.C_LOGIN & 0xFF] = CPacketHandler::decodeAuthLogin;
+        HANDLERS[Opcodes.C_LOGIN & 0xFF] = CPacketHandler::LoginPacket;
         DIRECT_OPCODE[Opcodes.C_LOGIN & 0xFF] = false;
-        HANDLERS[Opcodes.C_ENTER_WORLD & 0xFF] = CPacketHandler::decodeEnterWorld;
+        HANDLERS[Opcodes.C_ENTER_WORLD & 0xFF] = CPacketHandler::EnterWorldPacket;
         DIRECT_OPCODE[Opcodes.C_ENTER_WORLD & 0xFF] = false;
         HANDLERS[Opcodes.C_ATTACK_CONTINUE & 0xFF] = CPacketHandler::decodeAutoAttack;
         DIRECT_OPCODE[Opcodes.C_ATTACK_CONTINUE & 0xFF] = true;
@@ -382,7 +382,7 @@ public final class CPacketHandler {
         DIRECT_OPCODE[Opcodes.C_CHANGE_CASTLE_SECURITY & 0xFF] = false;
         HANDLERS[Opcodes.C_ANSWER & 0xFF] = CPacketHandler::decodeAnswer;
         DIRECT_OPCODE[Opcodes.C_ANSWER & 0xFF] = false;
-        HANDLERS[Opcodes.C_DESTROY_ITEM & 0xFF] = CPacketHandler::decodeDestroyItem;
+        HANDLERS[Opcodes.C_DESTROY_ITEM & 0xFF] = CPacketHandler::DestroyItem;
         DIRECT_OPCODE[Opcodes.C_DESTROY_ITEM & 0xFF] = false;
         HANDLERS[Opcodes.C_DIALOG & 0xFF] = CPacketHandler::decodeNpcTalk;
         DIRECT_OPCODE[Opcodes.C_DIALOG & 0xFF] = false;
@@ -435,7 +435,7 @@ public final class CPacketHandler {
     // 이동 (MOVE)
     // ------------------------------------------------------------------
 
-    static boolean decodeMove(ReadBuffer buffer, CIOClient client) {
+    static boolean MoveToLocationPacket(ReadBuffer buffer, CIOClient client) {
         if (buffer.remaining() < 5) {
             return true;
         }
@@ -451,7 +451,7 @@ public final class CPacketHandler {
     // 공격 / 원거리 공격 (ATTACK / FAR ATTACK)
     // ------------------------------------------------------------------
 
-    static boolean decodeAttack(ReadBuffer buffer, CIOClient client) {
+    static boolean AttackPacket(ReadBuffer buffer, CIOClient client) {
         if (buffer.remaining() < 8) {
             return true;
         }
@@ -481,7 +481,7 @@ public final class CPacketHandler {
     // 스킬 사용 (USE SKILL)
     // ------------------------------------------------------------------
 
-    static boolean decodeUseSkill(ReadBuffer buffer, CIOClient client) {
+    static boolean MagicSkillUsePacket(ReadBuffer buffer, CIOClient client) {
         if (buffer.remaining() < 2) {
             return true;
         }
@@ -560,7 +560,7 @@ public final class CPacketHandler {
     // 아이템 줍기 (PICKUP)
     // ------------------------------------------------------------------
 
-    static boolean decodePickup(ReadBuffer buffer, CIOClient client) {
+    static boolean GetItemPacket(ReadBuffer buffer, CIOClient client) {
         if (buffer.remaining() < 12) {
             return true;
         }
@@ -591,7 +591,7 @@ public final class CPacketHandler {
     // 채팅 (CHAT)
     // ------------------------------------------------------------------
 
-    static boolean decodeChat(ReadBuffer buffer, CIOClient client) {
+    static boolean SayPacket2(ReadBuffer buffer, CIOClient client) {
         if (buffer.remaining() < 1) {
             return true;
         }
@@ -601,7 +601,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeAuthLogin(ReadBuffer buffer, CIOClient client) {
+    static boolean LoginPacket(ReadBuffer buffer, CIOClient client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 2) {
             return true;
@@ -630,7 +630,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeEnterWorld(ReadBuffer buffer, CIOClient client) {
+    static boolean EnterWorldPacket(ReadBuffer buffer, CIOClient client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -793,7 +793,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeCreateCustomCharacter(ReadBuffer buffer, CIOClient client) {
+    static boolean CharacterCreatePacket(ReadBuffer buffer, CIOClient client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -1029,7 +1029,7 @@ public final class CPacketHandler {
         return new PasswordRead(true, end, new String(chars));
     }
 
-    static boolean decodeDeleteCharacter(ReadBuffer buffer, CIOClient client) {
+    static boolean CharacterDeletePacket(ReadBuffer buffer, CIOClient client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -1047,7 +1047,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeDestroyItem(ReadBuffer buffer, CIOClient client) {
+    static boolean DestroyItem(ReadBuffer buffer, CIOClient client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 4) {
             return true;
@@ -1369,7 +1369,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeDropItem(ReadBuffer buffer, CIOClient client) {
+    static boolean DropItemPacket(ReadBuffer buffer, CIOClient client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 4) {
             return true;
@@ -1434,7 +1434,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeNpcAction(ReadBuffer buffer, CIOClient client) {
+    static boolean HtmlCMDPacket(ReadBuffer buffer, CIOClient client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 5) {
             return true;
@@ -1531,7 +1531,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeUseItem(ReadBuffer buffer, CIOClient client) {
+    static boolean UseItemPacket(ReadBuffer buffer, CIOClient client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 4) {
             return true;
@@ -1897,7 +1897,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeAddExchange(ReadBuffer buffer, CIOClient client) {
+    static boolean TradeAddItemsPacket(ReadBuffer buffer, CIOClient client) {
         final int payloadSize = buffer.remaining();
         int itemObjectId = 0, itemCount = 0;
 
@@ -1927,7 +1927,7 @@ public final class CPacketHandler {
         return true;
     }
 
-    static boolean decodeRemoveBuddy(ReadBuffer buffer, CIOClient client) {
+    static boolean FriendRemove(ReadBuffer buffer, CIOClient client) {
         final int payloadSize = buffer.remaining();
         String charName = null;
 
@@ -2477,7 +2477,7 @@ public final class CPacketHandler {
     }
 
     
-    static boolean decodeTitle(ReadBuffer buffer, CIOClient client) {
+    static boolean GiveNicknamePacket(ReadBuffer buffer, CIOClient client) {
         final int payloadSize = buffer.remaining();
         String charName = null;
         String title = null;

@@ -2948,7 +2948,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                     final boolean fused = tryOwnReadWritePass();
                     boolean accepted;
                     try {
-                        accepted = fused ? onReadSingleCompleteFrame() : onRead();
+                        accepted = fused ? onReadSingleCompleteFrame() : OnRead();
                     } finally {
                         // Dispatch releases the borrowed SEND token before any
                         // game handler executes. If decode/filtering exited before
@@ -3047,7 +3047,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         _readYielded = false;
         // CLOSE or a foreign SEND producer may change pressure after the
         // READ owner claim. Let the established loop handle those races.
-        if (_closed != 0 || _closing != 0 || _sendReadPaused) return onRead();
+        if (_closed != 0 || _closing != 0 || _sendReadPaused) return OnRead();
         final ByteBuffer recv = _reading.buffer();
         final int wireLength = recv.position();
         recv.flip();
@@ -3124,7 +3124,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         return inboundHandlerConnected();
     }
 
-    private boolean onRead() {
+    private boolean OnRead() {
         _readYielded = false;
         ByteBuffer recv = _reading.buffer();
         final int filled = recv.position() - _readOffset;
