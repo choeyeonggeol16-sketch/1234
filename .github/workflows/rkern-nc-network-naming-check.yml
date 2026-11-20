@@ -1,0 +1,105 @@
+name: RKern network naming refactor verification
+on:
+  push:
+    branches: [rkern/nc-network-naming-check-20261120]
+    paths: [.github/workflows/rkern-nc-network-naming-check.yml]
+permissions:
+  contents: write
+jobs:
+  rename:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Rename only identifiers and references on the verification branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "rkern/nc-network-naming-check-20261120"
+          python3 - <<'PY'
+          import pathlib, re, collections, subprocess
+          root = pathlib.Path("rkern/src")
+          mapping = {
+              "CIOClient": "CUserSession",
+              "JavaCioServer": "CIOServer",
+              "CUserSocketRegistry": "CUserSocketMap",
+              "CUserSocketCloseTask": "CUserSocketReleaseTask",
+              "NetworkClientCounter": "CIPConnectionCounter",
+              "Cryptor": "CPacketCryptor",
+              "NetworkSafeLoadManager": "CPacketFilter",
+              "PacketThreadFactory": "CIOThreadFactory",
+              "ConnectionConfig": "CConnectionConfig",
+              "ConnectionState": "CConnectionState",
+              "SharedPacketFormat": "CSharedPacketFormat",
+              "ReadBuffer": "CPacketReadBuffer",
+              "WriteBuffer": "CPacketWriteBuffer",
+              "BytesWritablePacket": "CBytesPacket",
+              "ServerPacket": "CServerPacket",
+              "WritablePacket": "IPacketWriter",
+              "DataParser": "CPacketDataParser",
+              "SelectorTransport": "CSelectorTransport",
+              "SelectorRawIo": "CSelectorRawIo",
+              "SelectorBufferPool": "CSelectorBufferPool",
+              "SelectorFrameReader": "CSelectorFrameReader",
+              "SelectorSendQueue": "CSelectorSendQueue",
+          }
+          files = sorted(root.rglob("*.java"))
+          assert len(files) >= 1900
+          sources = {p:p.read_bytes() for p in files}
+          def wordset(names):
+              return re.compile(rb"\b(?:" + b"|".join(n.encode() for n in names) + rb")\b")
+          def declaration(name):
+              return re.compile(rb"\b(?:class|interface|enum|record)\s+"+name.encode()+rb"\b")
+          for old,new in mapping.items():
+              matching = [p for p in files if p.name == old+".java"]
+              assert len(matching) == 1, (old, matching)
+              assert declaration(old).search(sources[matching[0]]), old
+              assert not any(declaration(new).search(s) for s in sources.values()), new
+          pattern = wordset(mapping)
+          count = collections.Counter()
+          edits = []
+          active = []
+          for d in pathlib.Path("rkern/docs").glob("jproring_*"):
+              active.extend(p for p in d.rglob("*") if p.is_file() and p.suffix in (".java", ".py"))
+          all_sources = dict(sources)
+          all_sources.update((p,p.read_bytes()) for p in sorted(set(active)))
+          def replacement(m):
+              old = m.group().decode("ascii")
+              count[old] += 1
+              return mapping[old].encode()
+          for p,src in all_sources.items():
+              new = pattern.sub(replacement, src)
+              if new == src:
+                  continue
+              target = p.with_name(mapping[p.stem]+".java") if p.suffix == ".java" and p.stem in mapping else p
+              if target != p:
+                  assert not target.exists(), target
+              edits.append((p,target,src,new))
+          assert set(count) == set(mapping), count
+          for p,target,src,new in edits:
+              if target != p:
+                  p.rename(target)
+              target.write_bytes(new)
+              assert target.read_bytes() == pattern.sub(lambda m:mapping[m.group().decode()].encode(),src)
+          assert len(list(root.rglob("*.java"))) == len(files)
+          assert all(not pattern.search(p.read_bytes()) for p in root.rglob("*.java"))
+          expected = {str(t):b for p,t,src,b in edits}
+          assert len(expected) == len(edits)
+          for p,b in sources.items():
+              if p.name[:-5] in mapping:
+                  assert not p.exists()
+              elif str(p) not in expected:
+                  assert p.read_bytes() == b
+          print("PRODUCTION_FILES", len(files), "EDITED", len(edits), "RENAMED_CLASSES", len(mapping))
+          print("COUNTS", dict(count))
+          print("PSS_IDENTIFIER_ONLY", [str(t) for p,t,src,b in edits if "/PlaySupport/" in str(t)])
+          PY
+          git rm .github/workflows/rkern-nc-network-naming-check.yml
+          git add rkern/src rkern/docs
+          git diff --cached --check
+          git config user.name "RKern naming verification"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Align RKern network class names with NC conventions; preserve all logic"
+          git push origin HEAD:refs/heads/rkern/nc-network-naming-check-20261120
