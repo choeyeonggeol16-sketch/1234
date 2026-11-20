@@ -9,7 +9,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_TrueTargetNew;
 import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import l1j.server.Config;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Magic;
@@ -62,17 +61,7 @@ public final class SkillStopHandlers {
 		StopResult handle(L1Character cha, int skillId);
 	}
 
-	// ===== 작은 ID는 배열로 =====
-	private static final int TABLE_SIZE = 32768; // 0..32767 fast
-	private static final StopHandler[] TABLE = new StopHandler[TABLE_SIZE];
-
-	// ===== 큰 ID는 맵으로 =====
-	private static final Int2ObjectOpenHashMap<StopHandler> BIG = new Int2ObjectOpenHashMap<>(512);
-
-	// 부팅 이후 런타임에서 실수로 register 못하게 잠금
-	private static volatile boolean FROZEN = false;
-
-	static {    
+	static void registerEffects() {
 		register(L1SkillId.혈맹버프AC,   SkillStopHandlers::offClanBuffAc);
 		register(L1SkillId.혈맹버프마방, SkillStopHandlers::offClanBuffMr);
 		register(L1SkillId.혈맹버프PVP추가, SkillStopHandlers::offClanBuffPvpAdd);
@@ -81,7 +70,7 @@ public final class SkillStopHandlers {
 		register(L1SkillId.혈맹버프올내성, SkillStopHandlers::offClanBuffAllResist);
 		register(L1SkillId.혈맹버프올적중, SkillStopHandlers::offClanBuffAllPierce);
 		register(L1SkillId.혈맹버프올스텟, SkillStopHandlers::offClanBuffAllStat);
-		register(L1SkillId.혈맹버프회복,     SkillStopHandlers::offClanBuffHeal); 
+		register(L1SkillId.혈맹버프회복,     SkillStopHandlers::offNoop);
 
 		register(L1SkillId.천하장사버프,     SkillStopHandlers::offCheonHaJangSaBuff);
 
@@ -112,17 +101,17 @@ public final class SkillStopHandlers {
 		register(L1SkillId.FEAR,             SkillStopHandlers::offFear);
 
 		register(L1SkillId.EXP_POTION,       SkillStopHandlers::offExpPotion);
-		register(L1SkillId.TELEPORT_RULER,   SkillStopHandlers::offTeleportRuler);
+		register(L1SkillId.TELEPORT_RULER,   SkillStopHandlers::offNoop);
 		register(L1SkillId.miso1, SkillStopHandlers::offMiso1);
 		register(L1SkillId.miso2, SkillStopHandlers::offMiso2);
 		register(L1SkillId.miso3, SkillStopHandlers::offMiso3);
 
 		register(L1SkillId.DRAGON_SET, SkillStopHandlers::offDragonSet);
 
-		register(L1SkillId.HUNTER_BLESS,  SkillStopHandlers::offHunterBless);
+		register(L1SkillId.HUNTER_BLESS,  SkillStopHandlers::offMiso1);
 		register(L1SkillId.HUNTER_BLESS1, SkillStopHandlers::offHunterBless1);
 
-		register(L1SkillId.MEDITATION, SkillStopHandlers::offMeditation);
+		register(L1SkillId.MEDITATION, SkillStopHandlers::offMiso1);
 
 		register(L1SkillId.POLY_RING_MASTER, SkillStopHandlers::offPolyRingMaster);
 
@@ -135,8 +124,8 @@ public final class SkillStopHandlers {
 		register(L1SkillId.EXP_BUFF,         SkillStopHandlers::offExpBuff);
 		register(L1SkillId.TITANL_RISING,    SkillStopHandlers::offTitanlRising);
 		register(L1SkillId.ABSOLUTE_BLADE,   SkillStopHandlers::offAbsoluteBlade);
-		register(L1SkillId.DEATH_HEAL_Mob,   SkillStopHandlers::offDeathHealMob);
-		register(L1SkillId.DEATH_HEAL,       SkillStopHandlers::offDeathHeal);
+		register(L1SkillId.DEATH_HEAL_Mob,   SkillStopHandlers::offMiso1);
+		register(L1SkillId.DEATH_HEAL,       SkillStopHandlers::offMiso1);
 
 		register(L1SkillId.CLAN_BUFF1,       SkillStopHandlers::offClanBuff1);
 		register(L1SkillId.CLAN_BUFF2,       SkillStopHandlers::offClanBuff2);
@@ -151,7 +140,7 @@ public final class SkillStopHandlers {
 
 		register(L1SkillId.포커스3단,        SkillStopHandlers::offFocus3);
 
-		register(L1SkillId.TOMAHAWK,   SkillStopHandlers::offTomahawk);
+		register(L1SkillId.TOMAHAWK,   SkillStopHandlers::offMiso1);
 		register(L1SkillId.완력빙수,   SkillStopHandlers::offStrIce);
 		register(L1SkillId.민첩빙수,   SkillStopHandlers::offDexIce);
 		register(L1SkillId.지식빙수,   SkillStopHandlers::offIntIce);
@@ -193,12 +182,12 @@ public final class SkillStopHandlers {
 		register(L1SkillId.DANCING_BLADES, SkillStopHandlers::offBraveSpeedReset);
 
 		register(L1SkillId.BUFF_CRAY,      SkillStopHandlers::offBuffCray);
-		register(L1SkillId.BUFF_Vala,      SkillStopHandlers::offBuffVala);
+		register(L1SkillId.BUFF_Vala,      SkillStopHandlers::offBuffCray);
 		register(L1SkillId.BUFF_GUNTER,    SkillStopHandlers::offBuffGunter);
 
 		register(L1SkillId.UNCANNY_DODGE,  SkillStopHandlers::offUncannyDodge);
 		register(L1SkillId.BURNING_WEAPON, SkillStopHandlers::offBurningWeapon);
-		register(L1SkillId.MIRROR_IMAGE,   SkillStopHandlers::offMirrorImage);
+		register(L1SkillId.MIRROR_IMAGE,   SkillStopHandlers::offUncannyDodge);
 		register(L1SkillId.AQUA_SHOT,      SkillStopHandlers::offAquaShot);
 
 		register(L1SkillId.INSIGHT,     SkillStopHandlers::offInsight);
@@ -211,10 +200,10 @@ public final class SkillStopHandlers {
 
 		register(L1SkillId.SHAPE_CHANGE, SkillStopHandlers::offShapeChange);
 
-		register(L1SkillId.HOLY_WALK,            SkillStopHandlers::offBraveSpeedWalk);
-		register(L1SkillId.MOVING_ACCELERATION, SkillStopHandlers::offBraveSpeedWalk);
+		register(L1SkillId.HOLY_WALK,            SkillStopHandlers::offBraveSpeedReset);
+		register(L1SkillId.MOVING_ACCELERATION, SkillStopHandlers::offBraveSpeedReset);
 
-		register(L1SkillId.BLOOD_LUST,           SkillStopHandlers::offBloodLust);
+		register(L1SkillId.BLOOD_LUST,           SkillStopHandlers::offBraveSpeedReset);
 
 		register(L1SkillId.DARK_BLIND,           SkillStopHandlers::offDarkBlind);
 
@@ -256,13 +245,13 @@ public final class SkillStopHandlers {
 		register(L1SkillId.OMAN_STUN,            SkillStopHandlers::offStunFamily);
 		register(L1SkillId.Maeno_STUN,           SkillStopHandlers::offStunFamily);
 
-		register(L1SkillId.EMPIRE,               SkillStopHandlers::offEmpire);
-		register(L1SkillId.BONE_BREAK,           SkillStopHandlers::offBoneBreak);
+		register(L1SkillId.EMPIRE,               SkillStopHandlers::offStunControl);
+		register(L1SkillId.BONE_BREAK,           SkillStopHandlers::offStunControl);
 
 		register(L1SkillId.PHANTASM,             SkillStopHandlers::offSleepFamily);
 		register(L1SkillId.FOG_OF_SLEEPING,      SkillStopHandlers::offSleepFamily);
 
-		register(L1SkillId.SLOW,                  SkillStopHandlers::offSlow);
+		register(L1SkillId.SLOW,                  SkillStopHandlers::offMoveSpeedReset);
 		register(L1SkillId.STATUS_FREEZE,         SkillStopHandlers::offStatusFreeze);
 
 		register(L1SkillId.STATUS_IGNITION,       SkillStopHandlers::offStatusIgnition);
@@ -271,9 +260,9 @@ public final class SkillStopHandlers {
 
 		register(L1SkillId.STATUS_BRAVE,          SkillStopHandlers::offStatusBraveFamily);
 		register(L1SkillId.STATUS_FRUIT,          SkillStopHandlers::offStatusBraveFamily);
-		register(L1SkillId.STATUS_ELFBRAVE,       SkillStopHandlers::offStatusElfBrave);
+		register(L1SkillId.STATUS_ELFBRAVE,       SkillStopHandlers::offStatusBraveFamily);
 
-		register(L1SkillId.STATUS_HASTE,          SkillStopHandlers::offStatusHaste);
+		register(L1SkillId.STATUS_HASTE,          SkillStopHandlers::offMoveSpeedReset);
 
 		register(L1SkillId.STATUS_UNDERWATER_BREATH, SkillStopHandlers::offUnderwaterBreath);
 		register(L1SkillId.STATUS_WISDOM_POTION,  SkillStopHandlers::offWisdomPotion);
@@ -383,12 +372,14 @@ public final class SkillStopHandlers {
 
 		register(L1SkillId.ENCHANT_ACURUCY, SkillStopHandlers::offEnchantAcurucy);
 
-		register(L1SkillId.PRIDE, SkillStopHandlers::offPride);
-		register(L1SkillId.GIGANTIC, SkillStopHandlers::offGigantic);
+		register(L1SkillId.PRIDE,
+				(target, id) -> offScaledHp(target, id, CSkillEffect.MaxHp.PRIDE));
+		register(L1SkillId.GIGANTIC,
+				(target, id) -> offScaledHp(target, id, CSkillEffect.MaxHp.GIGANTIC));
 
 		register(L1SkillId.EAGGLE_EYE, SkillStopHandlers::offEaggleEye);
 
-		register(L1SkillId.ABSOLUTE_BARRIER, SkillStopHandlers::offAbsoluteBarrier);
+		register(L1SkillId.ABSOLUTE_BARRIER, SkillStopHandlers::offNoop);
 		
 		register(L1SkillId.POWERRIP,        SkillStopHandlers::offPowerRip);
 		register(L1SkillId.DESPERADO,       SkillStopHandlers::offDesperado);
@@ -397,10 +388,10 @@ public final class SkillStopHandlers {
 		register(L1SkillId.GREATER_HASTE,   SkillStopHandlers::offHasteFamily);
 		
 		register(L1SkillId.매직실드1, SkillStopHandlers::offNoop);
-		register(L1SkillId.버닝샷, SkillStopHandlers::offLegacyBurningShot);
+		register(L1SkillId.버닝샷, SkillStopHandlers::offClanBuffAllResist);
 		register(L1SkillId.매직실드2, SkillStopHandlers::offMagicShield2);
-		register(L1SkillId.기간틱, SkillStopHandlers::offLegacyGigantic);
-		register(L1SkillId.엠파이어오버로드DG, SkillStopHandlers::offEmpireOverloadDg);
+		register(L1SkillId.기간틱, SkillStopHandlers::offLegacyScaledHp);
+		register(L1SkillId.엠파이어오버로드DG, SkillStopHandlers::offStunControlOverloadDg);
 		register(L1SkillId.이뮨투함블레이드, SkillStopHandlers::offImmuneBladeCustom);
 		register(L1SkillId.비전텔레포트, SkillStopHandlers::offCooldownNotice);
 		register(L1SkillId.이터니티대기, SkillStopHandlers::offCooldownNotice);
@@ -444,7 +435,7 @@ public final class SkillStopHandlers {
 	//	register(800019, SkillStopHandlers::offTikalRespawn);
 		register(L1SkillId.전투지휘, SkillStopHandlers::offCombatCommand);
 		register(L1SkillId.DELAY, SkillStopHandlers::offDelay);
-		register(L1SkillId.프라이드, SkillStopHandlers::offLegacyPride);
+		register(L1SkillId.프라이드, SkillStopHandlers::offLegacyScaledHp);
 		register(L1SkillId.포텐셜, SkillStopHandlers::offPotential);
 		register(L1SkillId.어드밴스, SkillStopHandlers::offLegacyAdvance);
 		register(L1SkillId.이터디스, SkillStopHandlers::offEtherDis);
@@ -462,36 +453,20 @@ public final class SkillStopHandlers {
 		register(L1SkillId.BUFF_특별한성장축복, SkillStopHandlers::offSpecialBuff);
 		register(L1SkillId.BUFF_특별한방어축복, SkillStopHandlers::offSpecialBuff);
 		register(L1SkillId.BUFF_특별한공격축복, SkillStopHandlers::offSpecialBuff);
-		
-		
-		// 등록 끝나면 잠궈라 (실수/레이스 방지)
-		freeze();
 	}
-	/** 부팅 후 더 이상 register 못하게 잠금 */
+
+	/** Compatibility entry point. Definitions are frozen automatically during initialization. */
 	public static void freeze() {
-		FROZEN = true;
 	}
 	
-	/** stop 핸들러 등록 (부팅 시점에서만 호출 권장) */
-	public static void register(int skillId, StopHandler h) {
-		if (h == null || skillId < 0) return;
-
-		if (FROZEN) {
-			return;
-		}
-
-		if (skillId < TABLE_SIZE) {
-			TABLE[skillId] = h;
-		} else {
-			BIG.put(skillId, h);
-		}
+	/** Compatibility entry point. Effect definitions are frozen after boot registration. */
+	public static void register(int skillId, StopHandler handler) {
+		CSkillEffect.registerPumpEnd(skillId, handler);
 	}
 
 	/** stop 처리 디스패치: 핸들러 있으면 처리, 없으면 NOT_HANDLED */
 	public static StopResult dispatch(L1Character cha, int skillId) {
-		if (skillId < 0) return StopResult.NOT_HANDLED;
-
-		final StopHandler h = (skillId < TABLE_SIZE) ? TABLE[skillId] : BIG.get(skillId);
+		final StopHandler h = getHandlerOrNull(skillId);
 		if (h == null) return StopResult.NOT_HANDLED;
 
 		try {
@@ -504,14 +479,13 @@ public final class SkillStopHandlers {
 
 	/** 디버그/점검용: 해당 스킬 stop 핸들러 존재 여부 */
 	public static boolean hasHandler(int skillId) {
-		if (skillId < 0) return false;
-		return (skillId < TABLE_SIZE) ? (TABLE[skillId] != null) : (BIG.get(skillId) != null);
+		return getHandlerOrNull(skillId) != null;
 	}
 
 	/** 디버그용: 핸들러 직접 조회 */
 	public static StopHandler getHandlerOrNull(int skillId) {
-		if (skillId < 0) return null;
-		return (skillId < TABLE_SIZE) ? TABLE[skillId] : BIG.get(skillId);
+		final CSkillEffect effect = CSkillEffect.get(skillId);
+		return effect == null ? null : effect.pumpEnd();
 	}
 
 	private static StopResult offClanBuffAc(L1Character cha, int skillId) {
@@ -592,9 +566,6 @@ public final class SkillStopHandlers {
 		pc.getAbility().addAddedCha((byte) -3);
 		SC_OwnCharStatus2.send(pc);
 
-		return StopResult.HANDLED;
-	}
-	private static SkillStopHandlers.StopResult offClanBuffHeal(L1Character cha, int skillId) {
 		return StopResult.HANDLED;
 	}
 
@@ -824,10 +795,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offTeleportRuler(L1Character cha, int skillId) {
-		// 원본 switch에서 "break;"만 있어서 동일하게 NO-OP
-		return StopResult.HANDLED;
-	}
+
 	private static StopResult offMiso1(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		// 원본: 내용 없음 (NO-OP)
@@ -875,11 +843,6 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offHunterBless(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-
-		return StopResult.HANDLED;
-	}
 
 	private static StopResult offHunterBless1(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
@@ -890,11 +853,6 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offMeditation(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		// 원본: 내용 없음 (NO-OP)
-		return StopResult.HANDLED;
-	}
 
 	private static StopResult offPolyRingMaster(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
@@ -963,18 +921,6 @@ public final class SkillStopHandlers {
 
 		// removed: pc.removeSkillEffect(TITANL_RISING);
 		pc.setRisingUp(0);
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offDeathHealMob(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		// removed: pc.removeSkillEffect(DEATH_HEAL_Mob);
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offDeathHeal(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		// removed: pc.removeSkillEffect(DEATH_HEAL);
 		return StopResult.HANDLED;
 	}
 
@@ -1068,10 +1014,6 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offTomahawk(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		return StopResult.HANDLED;
-	}
 
 	private static StopResult offStrIce(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance pc) {
@@ -1171,7 +1113,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offShiningShield(L1Character cha, int skillId) {
-		cha.getAC().addAc(8);
+		CSkillEffect.PhysicalDefence.SHINING_AURA.pumpEnd(cha);
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_SkillIconAura.send(pc, 114, 0);
@@ -1414,24 +1356,6 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offBuffVala(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addHitup(-5);
-		pc.addDmgup(-1);
-		pc.addBowHitup(-5);
-		pc.addBowDmgup(-1);
-		pc.addMaxHp(-100);
-		pc.addMaxMp(-50);
-		pc.addHpr(-3);
-		pc.addMpr(-3);
-
-		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-		SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-		SC_SPMR.send(pc);
-		return StopResult.HANDLED;
-	}
 
 	private static StopResult offBuffGunter(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
@@ -1471,13 +1395,6 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offMirrorImage(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			pc.addDg(-30);
-		}
-		return StopResult.HANDLED;
-	}
 
 	private static StopResult offAquaShot(L1Character cha, int skillId) {
 		cha.addBowHitup(-4);
@@ -1508,26 +1425,6 @@ public final class SkillStopHandlers {
 
 	private static StopResult offShapeChange(L1Character cha, int skillId) {
 		L1PolyMorph.undoPoly(cha);
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offBraveSpeedWalk(L1Character cha, int skillId) {
-		cha.setBraveSpeed(0);
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			SC_SkillBrave.send(pc, pc.getId(), 0, 0);
-			SC_SkillBrave.broadcastFast(pc, pc.getId(), 0, 0);
-		}
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offBloodLust(L1Character cha, int skillId) {
-		cha.setBraveSpeed(0);
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			SC_SkillBrave.send(pc, pc.getId(), 0, 0);
-			SC_SkillBrave.broadcastFast(pc, pc.getId(), 0, 0);
-		}
 		return StopResult.HANDLED;
 	}
 
@@ -1656,7 +1553,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offEmpire(L1Character cha, int skillId) {
+	private static StopResult offStunControl(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			SC_Paralysis.send(((L1PcInstance) cha), SC_Paralysis.TYPE_STUN, false);
 		} else if (cha instanceof L1MonsterInstance
@@ -1668,17 +1565,6 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offBoneBreak(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			SC_Paralysis.send(((L1PcInstance) cha), SC_Paralysis.TYPE_STUN, false);
-		} else if (cha instanceof L1MonsterInstance
-				|| cha instanceof L1SummonInstance
-				|| cha instanceof L1PetInstance
-				|| cha instanceof L1CompanionInstance) {
-			((L1NpcInstance) cha).setParalyzed(false);
-		}
-		return StopResult.HANDLED;
-	}
 
 	private static StopResult offSleepFamily(L1Character cha, int skillId) {
 		cha.setSleeped(false);
@@ -1688,7 +1574,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offSlow(L1Character cha, int skillId) {
+	private static StopResult offMoveSpeedReset(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_SkillHaste.send(pc, pc.getId(), 0, 0);
@@ -1745,26 +1631,6 @@ public final class SkillStopHandlers {
 			SC_SkillBrave.broadcastFast(pc, pc.getId(), 0, 0);
 		}
 		cha.setBraveSpeed(0);
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offStatusElfBrave(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			SC_SkillBrave.send(pc, pc.getId(), 0, 0);
-			SC_SkillBrave.broadcastFast(pc, pc.getId(), 0, 0);
-		}
-		cha.setBraveSpeed(0);
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offStatusHaste(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			SC_SkillHaste.send(pc, pc.getId(), 0, 0);
-			SC_SkillHaste.broadcastFast(pc, pc.getId(), 0, 0);
-		}
-		cha.setMoveSpeed(0);
 		return StopResult.HANDLED;
 	}
 
@@ -2471,8 +2337,7 @@ public final class SkillStopHandlers {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
 
-	        pc.getAC().addAc(3);
-	        pc.getResistance().addMr(-5);
+	        CSkillEffect.PhysicalDefence.EARTH_DRAGON.pumpEnd(pc);
 	        SC_OwnCharAttrDef.send(pc);
 	        SC_SPMR.send(pc);
 
@@ -2541,14 +2406,12 @@ public final class SkillStopHandlers {
 	private static StopResult offIllusionDiamondGolem(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.getAC().addAc(10);
+	        CSkillEffect.PhysicalDefence.DIAMOND_GOLEM.pumpEnd(pc);
 	        SC_OwnCharAttrDef.send(pc);
 	        sendEndNoti(pc, L1SkillId.IllUSION_DIAMONDGOLEM, 3113, true);
 	    }
 	    return StopResult.HANDLED;
 	}
-
-
 
 	private static StopResult offFreezeengArmor(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
@@ -2580,36 +2443,14 @@ public final class SkillStopHandlers {
 	    return StopResult.HANDLED;
 	}
 
-	private static StopResult offPride(L1Character cha, int skillId) {
-	    if (cha instanceof L1PcInstance) {
-	        L1PcInstance pc = (L1PcInstance) cha;
-
-	        sendEndNotiMsgOnly(pc, L1SkillId.PRIDE, 5265, true);
-
-	        pc.addMaxHp(-pc.getMagicBuffHp());
-	        pc.setMagicBuffHp(0);
-	        if (pc.isInParty()) {
-	            pc.getParty().refreshPartyMemberStatus(pc);
-	        }
-	        SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-	    }
-	    return StopResult.HANDLED;
-	}
-
-	private static StopResult offGigantic(L1Character cha, int skillId) {
-	    if (cha instanceof L1PcInstance) {
-	        L1PcInstance pc = (L1PcInstance) cha;
-
-	        sendEndNotiMsgOnly(pc, L1SkillId.GIGANTIC, 3919, true);
-
-	        pc.addMaxHp(-pc.getMagicBuffHp());
-	        pc.setMagicBuffHp(0);
-	        if (pc.isInParty()) {
-	            pc.getParty().refreshPartyMemberStatus(pc);
-	        }
-	        SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-	    }
-	    return StopResult.HANDLED;
+	private static StopResult offScaledHp(L1Character cha, int skillId, CSkillEffect.MaxHp effect) {
+		if (cha instanceof L1PcInstance pc) {
+			sendEndNotiMsgOnly(pc, skillId, effect.stopMessage, true);
+			effect.pumpEnd(pc);
+			if (pc.isInParty()) pc.getParty().refreshPartyMemberStatus(pc);
+			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
+		}
+		return StopResult.HANDLED;
 	}
 
 	private static StopResult offEaggleEye(L1Character cha, int skillId) {
@@ -2622,25 +2463,13 @@ public final class SkillStopHandlers {
 	    return StopResult.HANDLED;
 	}
 
-	private static StopResult offAbsoluteBarrier(L1Character cha, int skillId) {
-//	    if (cha instanceof L1PcInstance) {
-//	        L1PcInstance pc = (L1PcInstance) cha;
-//	        sendRestatNotiAbsoluteBarrier(pc);
-//	    }
-	    return StopResult.HANDLED;
-	}
+
 	
 
 	private static StopResult offNoop(L1Character cha, int skillId) {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offLegacyBurningShot(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-		pc.getResistance().addSpecialResistance(eKind.ALL, -3);
-		return StopResult.HANDLED;
-	}
 
 	private static StopResult offMagicShield2(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
@@ -2652,7 +2481,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offLegacyGigantic(L1Character cha, int skillId) {
+	private static StopResult offLegacyScaledHp(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -2668,7 +2497,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offEmpireOverloadDg(L1Character cha, int skillId) {
+	private static StopResult offStunControlOverloadDg(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		((L1PcInstance) cha).addDg(10);
 		return StopResult.HANDLED;
@@ -2941,20 +2770,6 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offLegacyPride(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		SC_InventoryIcon.icoEnd(pc, L1SkillId.프라이드);
-		pc.addMaxHp(-pc.getMagicBuffHp());
-		pc.setMagicBuffHp(0);
-
-		if (pc.isInParty()) {
-			pc.getParty().refreshPartyMemberStatus(pc);
-		}
-		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-		return StopResult.HANDLED;
-	}
 
 	private static StopResult offPotential(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
@@ -3278,10 +3093,7 @@ public final class SkillStopHandlers {
 	    if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 	    L1PcInstance pc = (L1PcInstance) cha;
 
-	    pc.addMaxHp(-pc.getAdvenHp());
-	    pc.addMaxMp(-pc.getAdvenMp());
-	    pc.setAdvenHp(0);
-	    pc.setAdvenMp(0);
+	    CSkillEffect.pumpEndAdvanceSpirit(pc);
 
 	    SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
 	    if (pc.isInParty()) {
