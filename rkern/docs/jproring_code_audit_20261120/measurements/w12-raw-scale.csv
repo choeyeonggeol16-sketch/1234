@@ -1,0 +1,3 @@
+backend,trial,workload,clients,samples,ops_per_s,ops_per_s_per_client,rtt_p50_us,rtt_p95_us,rtt_p99_us,rtt_p999_us,rtt_max_us,connect_p50_us,connect_p95_us,connect_p99_us,connect_p999_us,connect_max_us,server_cpu_ns_per_op,server_rss_kib,server_peak_rss_kib,jdk_direct_bytes,echo_or_netty_pool_bytes
+rkern,1,persistent,1024,22857,32652.857,31.888,24866.972,66542.529,77031.113,80513.490,81168.159,NA,NA,NA,NA,NA,15750.098,49740,49740,65536,65536
+rkern,1,persistent,5000,20551,29358.571,5.872,7.368,408525.190,464519.947,466928.703,467024.568,NA,NA,NA,NA,NA,22383.339,71924,71924,320000,320000

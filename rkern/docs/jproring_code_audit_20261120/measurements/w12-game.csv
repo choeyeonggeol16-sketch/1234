@@ -1,0 +1,7 @@
+workload,trial,mode,clients,window,owners,payload,kind,requests,requests_per_s,p50_us,p99_us,p999_us,server_cpu_ns_per_op,server_alloc_bytes_per_op,commit_hits,byte_append_hits,send_rejections
+single,1,off,1,1,2,32,ordinary,30239,21599.29,34.799,213.650,685.424,35715.47,0.56,0,0,0
+single,2,off,1,1,2,32,ordinary,34004,24288.57,34.755,224.619,661.506,39113.05,0.13,0,0,0
+burst,1,off,16,16,2,256,mixed,221904,158502.86,587.142,35650.680,39714.545,5227.49,8.04,0,0,0
+burst,2,off,16,16,2,256,mixed,256272,183051.43,506.618,33804.627,37606.708,4994.69,8.09,0,0,0
+spread,1,off,128,1,2,64,bytes,48836,34882.86,2246.579,37069.508,39517.896,31943.65,33.94,0,0,0
+spread,2,off,128,1,2,64,bytes,52555,37539.29,2213.152,36473.348,42753.397,32917.9,33.78,0,0,0
