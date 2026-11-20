@@ -97,7 +97,7 @@ NC 근거: p_block_move Start 0x8EA558(+0xF50 증가), End 0x8EA610(양수일 �
 7. 실제 게임/서버 검증할 수 없는 항목은 명확히 미검증 표시. 컴파일 실패, 회귀 실패, 미이관 ID 또는 no-op ValidateSkillMod가 있으면 전체 완료 주장 금지.
 
 ## 10. 작업 실행 지시
-R01→R07을 하나의 연속된 전체 이관 과제로 진행한다. 1개 단계 또는 6개 버프 처리 후 전체 완료로 종료하지 않는다. 각 그룹의 적용/종료/회귀를 함께 진행하며 매 단계는 직전 최신본을 기준으로 한다. 이미 끝낸 b69a58b 작업을 재수정하는 것이 아닌 최종 효과 엔진에 편입하는 목적만 허용. 수정 파일/제거 코드/전수 ledger/실행한 검증과 미검증 항목을 마지막에 제출한다.
+R01→R09를 하나의 연속된 전체 이관 과제로 진행한다. R08/R09는 전 단계에 병행 적용한다. 1개 단계 또는 6개 버프 처리 후 전체 완료로 종료하지 않는다. 각 그룹의 적용/종료/회귀를 함께 진행하며 매 단계는 직전 최신본을 기준으로 한다. 이미 끝낸 b69a58b 작업을 재수정하는 것이 아닌 최종 효과 엔진에 편입하는 목적만 허용. 수정 파일/제거 코드/전수 ledger/실행한 검증과 미검증 항목을 마지막에 제출한다.
 범위: 기존 L1 게임 공식, 스킬 발동/타겟/등록 제거 실행 경계, CIO timing wheel, CCreatureController, NpcServer, 네트워크, DB, PSS, 장비/세트 리팩토링은 유지. 능력치 연결부는 R03/R04에 필수한 최소 변경만 허용. 새 전역 실행 엔진/스레드/큐/DB 스키마 금지. NC 바이너리의 미확인 기계적 세부사항을 추정 복제하지 않는다.
 
 **최종 완료 정의:** 스킬 ID 조회 → 순서 있는 효과 정의 → Instant / CheckPumpCondition / Pump / PumpStart / PumpEnd의 실제 호출 → 기존 활성 효과 기반 InitializeSkillMod / ValidateSkillMod → 중첩 수명 및 전수 기존 기능 보존. 이 실행 구조가 완성되어야 한다. 클래스 이름 정리, paged table 및 기존 handler 연결만으로는 완료가 아니다.
@@ -113,3 +113,29 @@ R01→R07을 하나의 연속된 전체 이관 과제로 진행한다. 1개 단�
 - [core/MagicEffectApplier.java](https://github.com/choeyeonggeol16-sketch/1234/blob/146ef598efdcc7e2721042bddbbf5dc650e3e7f5/rkern/src/l1j/server/server/model/character/skill/core/MagicEffectApplier.java)
 - [core/RecastPolicy.java](https://github.com/choeyeonggeol16-sketch/1234/blob/146ef598efdcc7e2721042bddbbf5dc650e3e7f5/rkern/src/l1j/server/server/model/character/skill/core/RecastPolicy.java)
 - [core/SkillExecutor.java](https://github.com/choeyeonggeol16-sketch/1234/blob/146ef598efdcc7e2721042bddbbf5dc650e3e7f5/rkern/src/l1j/server/server/model/character/skill/core/SkillExecutor.java)
+
+
+## 12. 추가 필수 작업 R08 — 메모리 및 실행 비용 개선
+
+R01~R07의 구현과 동시에 적용한다. 기능 이관에 성공했더라도 불필요한 할당 및 retained heap을 그대로 유지한 채 완료 처리하지 않는다. 다만 기존 동작과 동시성 안전성을 희생하거나 실측 없이 최적화 수치를 주장하지 않는다.
+
+- 효과 정의/파라미터는 부팅 후 불변 공유. 캐릭터마다 CSkillInfo/CSkillEffect 정의 전체를 복제하거나 시전마다 생성하지 않는다. 기존 paged/sparse registry 재사용, 실제 중복 정의 및 불필요한 래퍼/참조 제거. 동일 효과 종류를 적절히 통합하고 클래스 남발 금지.
+- 활성 효과 상태는 기존 SkillEffectContainer의 primitive/flat array와 실제 활성 수를 활용한다. 필요한 적용 당시 값·상태 제한 카운터만 compact하게 추가하고, 모든 캐릭터에 최대 스킬 ID 크기의 배열·HashMap·대규모 scratch를 선할당하지 않는다. 버프가 없는 NPC의 메모리 비용도 검토. lazy allocation 및 실제 상한 관리.
+- Instant/Pump/CheckPumpCondition/PumpStart/PumpEnd hot path에서 boxing, stream, Iterator/임시 컬렉션, capturing lambda, varargs 및 불필요한 new를 제거할 수 있는 곳은 제거. 기존 호출 계약을 깨거나 공유 scratch의 재진입 경합을 만들지 않는다. 기존 재사용 구조와 owner confinement 우선.
+- ValidateSkillMod는 활성 효과만 순회하며 유효 변경 시에만 실행. 중복 조회·조건 검사·능력치 갱신·패킷 작성 제거. 배열 용량 증가·정리 및 참조 유지 비용 검토. 타이머 등록·갱신 시 불필요한 작업 객체나 중복 예약 추가 금지.
+- 다른 스레드에서 읽는 스탯 및 활성 효과의 안전한 publication 유지. 실제 경쟁에 필요한 lock/CAS/seqlock 제거 금지. 신규 worker/queue/global pool을 임의 도입하지 않는다. 풀링의 retained heap 비용이 할당 개선보다 크면 채택하지 않는다.
+- 종료, 재접속, 사망, NPC despawn/재사용, 타이머 clear 이후 이전 효과/캐릭터 참조가 남지 않는지 확인.
+- 동일 게임 효과·부하 조건의 before/after JFR allocation bytes/op, 객체 수/op, heap retained, GC, CPU/op 및 지연 분포를 비교. 반복 시전·만료·재시전과 5,000캐릭터 활성 버프 시나리오에서 실제 측정 가능한 범위를 검증한다. 기계적으로 동접 5,000 실운영 보장을 주장하지 않는다. 측정하지 못한 지표는 명시.
+
+## 13. 추가 필수 작업 R09 — 버그·오류 전수 감사 및 수정
+
+단순 보고로 끝내지 말고 스킬 효과 및 필수 연결부 범위 내 발견한 재현 가능한 결함은 실제 코드 수정과 회귀 테스트까지 수행한다. 기존 구현에 이미 존재하던 문제와 이번 구조 변경으로 생긴 회귀를 구분한다. 의도적인 기존 L1 규칙/공식을 버그로 간주하여 변경하지 않는다.
+
+- 전수 등록: int ID alias 충돌, 잘못된 효과 mapping/인자, duplicate/missing registration, 종료 전용 효과, 복합 효과 실행 순서, 초기화 순서, invalid ID 및 null/잘못된 대상 처리. 기존 305/297 상수 이름 기준 목록과 각 numeric ID의 실제 dispatch를 대조.
+- 수명: 재시전 refresh에 따른 중복 적용, 이중 해제, 미적용 효과 원복, 중첩된 독립 버프의 조기 해제, 상태 제한 카운터 underflow/overflow, duration overflow/만료 경계, timer generation/stale callback, 사망·로그아웃·복원·NPC 재사용 중 이전 효과 오염.
+- 능력치: HP/MP·AC/MR·내성 등 보정값 누적/원복 불일치, PRIDE/GIGANTIC 및 별도 legacy 효과의 공유 저장값 충돌, rounding/정수 범위, clamp 순서, 장비/패시브/아이템 등 다른 원천 보정 손실. 실제 재현 및 기존 정책 근거를 확보한 항목만 수정.
+- 실행: owner 위반 및 cross-thread 경쟁, callback 재진입, 효과 적용 도중 예외 및 부분 적용, 타이머 등록 실패, 효과 제거 후 UI/서버 상태 불일치, 중복·누락 패킷, NPC/PC/companion 분기. 예외를 삼키거나 임의 fallback으로 숨기지 않는다. 실패 시 기존 게임 규칙 및 트랜잭션 불변식을 유지.
+- 전체 Java 21 의존성 컴파일(Type/import/signature/visibility 포함), 기존/신규 자동 회귀 및 가능한 실제 게임 검증을 수행. 오류가 발견되면 원인 수정 후 해당 테스트와 영향받은 전체 회귀 재실행. 실패한 테스트를 삭제·완화해 통과시킨 것으로 처리하지 않는다.
+- 각 결함의 발생 조건, 원인, 변경 파일·메서드, 수정 전후 동작, 회귀 테스트 결과를 기록. 스킬과 무관한 네트워크/DB/NPC AI/PSS 등의 문제는 별도 발견 사항으로 보고하고 무단 수정 금지. 실제 게임·DB·Windows 등 미검증 환경은 명시.
+
+**최종 완료 기준 강화:** R01~R09의 실질 구현·메모리 개선·범위 내 확인된 버그 수정·회귀 검증을 모두 수행. 이미 수행한 b69a58b 작업은 재작업하지 않되 새 엔진과의 연결 및 안전성은 검증한다. 개선 수치의 근거와 남아 있는 테스트 한계를 제출한다. 신규 클래스 이름, 등록 수 일치, syntax 검사만으로 완료 처리 금지.
