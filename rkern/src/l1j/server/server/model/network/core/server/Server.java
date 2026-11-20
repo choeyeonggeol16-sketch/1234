@@ -4,8 +4,6 @@ import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CUserSocketRegistry;
 import l1j.server.server.model.network.core.diagnostics.CPerfMon;
-import l1j.server.server.model.network.core.diagnostics.CPoolDiagnostics;
-import l1j.server.server.model.network.core.transport.CIOServer;
 import l1j.server.server.model.network.core.transport.CSocket;
 import l1j.server.server.model.network.core.transport.JavaCioServer;
 import l1j.server.server.model.network.core.config.CIOConfig;
@@ -28,7 +26,6 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
     private static final Logger LOG = Logger.getLogger(Server.class.getName());
     private final CIOBufferPool pool;
     private final IServerCallback factory;
-    private final CIOServer nativeServer;
     private final JavaCioServer javaServer;
     private final CUserSocketRegistry<CUserSocket> connections = new CUserSocketRegistry<>();
     private final AtomicBoolean acceptingStopped = new AtomicBoolean();
@@ -53,7 +50,8 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
 
     public Server(InetSocketAddress address, int maxConnections, int ioThreads, int backlog,
             CIOBufferPool pool, IServerCallback factory) throws IOException {
-        this(address, maxConnections, ioThreads, backlog, pool, factory, null);
+        this(address, maxConnections, ioThreads, backlog, pool, factory,
+                factory instanceof CDummyServerCallback hosted ? hosted::attachSelectors : null);
     }
 
     public Server(InetSocketAddress address, int maxConnections, int backlog,
@@ -68,41 +66,31 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
         this.pool = pool;
         this.factory = factory;
         this.maxConnections = maxConnections;
-        if (owners == null) {
-            if (!System.getProperty("os.name", "").startsWith("Windows"))
-                throw new IOException("Native CIO transport requires Windows");
-            javaServer = null;
-            nativeServer = new CIOServer(address, maxConnections, ioThreads, backlog,
-                    this::activateAccepted, ConnectionConfig.NETWORK_CLIENT_PERMISSION);
-        } else {
-            nativeServer = null;
-            javaServer = new JavaCioServer(address, maxConnections, ioThreads, backlog,
-                    ConnectionConfig.NETWORK_CLIENT_PERMISSION, CIOConfig.MAC_LIMIT, owners, this::activateAccepted);
-        }
+        if (owners == null) throw new IllegalArgumentException("CIO Selector owner host required");
+        javaServer = new JavaCioServer(address, maxConnections, ioThreads, backlog,
+                ConnectionConfig.NETWORK_CLIENT_PERMISSION, CIOConfig.MAC_LIMIT, owners, this::activateAccepted);
     }
 
-    public CPerfMon.Snapshot performance() { return nativeServer == null ? null : CPerfMon.Read(nativeServer); }
-    public boolean isJavaTransport() { return javaServer != null; }
+    public CPerfMon.Snapshot performance() { return null; }
+    public boolean isJavaTransport() { return true; }
     public long[] sendDiagnostics() {
-        if (nativeServer != null) return nativeServer.sendDiagnostics();
         return new long[] {CUserSocket.softSendRejections(), pool.smallSendExhaustions(), pool.largeSendExhaustions()};
     }
     public long[] accountRegistryDiagnostics() {
-        return javaServer != null ? javaServer.accountRegistryDiagnostics() : nativeServer.accountRegistryDiagnostics();
+        return javaServer.accountRegistryDiagnostics();
     }
     public long findEnteringAccount(int accountId) {
-        return javaServer != null ? javaServer.findEnteringAccount(accountId) : nativeServer.findEnteringAccount(accountId);
+        return javaServer.findEnteringAccount(accountId);
     }
-    public long[][] ReportSocket() { return javaServer != null ? javaServer.reportSockets() : nativeServer.ReportSocket(); }
-    public long[] threadDiagnostics() { return nativeServer == null ? new long[0] : nativeServer.threadDiagnostics(); }
+    public long[][] ReportSocket() { return javaServer.reportSockets(); }
+    public long[] threadDiagnostics() { return new long[0]; }
     public long[] listenerDiagnostics() {
-        return nativeServer == null ? new long[] {isOpen() ? 1 : 0, liveConnections()} : nativeServer.listenerDiagnostics();
+        return new long[] {isOpen() ? 1 : 0, liveConnections()};
     }
-    private final CPoolDiagnostics poolDiagnostics = new CPoolDiagnostics();
     public long[][] poolSnapshot() { return pool.snapshot(); }
     public long[] writeSnapshot() {
         long[] totals = new long[3];
-        if (javaServer != null) for (var owner : javaServer.ownerDiagnostics()) {
+        for (var owner : javaServer.ownerDiagnostics()) {
             totals[0] += owner.rawWrites();
             totals[1] += owner.rawGatherWrites();
             totals[2] += owner.rawWriteSegments();
@@ -110,15 +98,10 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
         return totals;
     }
     public String poolReport(){
-        if (javaServer != null) {
-            return "JProRing direct bytes=" + pool.allocatedDirectBytes() + "/" + pool.maxDirectBytes()
-                    + " receive slots=" + pool.usedRecvSlots() + " send slots=" + pool.usedSendSlots()
-                    + " accounts=" + Arrays.toString(javaServer.accountRegistryDiagnostics())
-                    + " owners=" + javaServer.ownerDiagnostics();
-        }
-        long[] registry=nativeServer.registryDiagnostics(),send=nativeServer.sendDiagnostics(),references=nativeServer.referenceDiagnostics();
-        return poolDiagnostics.sample(System.nanoTime(),pool.snapshot(),nativeServer.poolDiagnostics(),new long[]{
-                connections.retained().size(),connections.pendingCleanup(),registry[0],registry[1],nativeServer.liveConstBuffers(),send[7],CPoolDiagnostics.referenceActive(references)})+CPoolDiagnostics.referenceReport(references)+CPoolDiagnostics.objectAllocatorReport(nativeServer.objectAllocatorDiagnostics());
+        return "JProRing direct bytes=" + pool.allocatedDirectBytes() + "/" + pool.maxDirectBytes()
+                + " receive slots=" + pool.usedRecvSlots() + " send slots=" + pool.usedSendSlots()
+                + " accounts=" + Arrays.toString(javaServer.accountRegistryDiagnostics())
+                + " owners=" + javaServer.ownerDiagnostics();
     }
     private void activateAccepted(CSocket socket) {
         if (acceptingStopped.get() || closed.get() || !socket.isOpen()) {
@@ -169,18 +152,17 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
     @Override public void onCleanupComplete(CUserSocket socket) { connections.cleanupComplete(socket); }
     public int pendingSessionCleanup() { return connections.pendingCleanup(); }
     public int liveConnections() { return admitted.get(); }
-    public InetSocketAddress localAddress() throws IOException { return javaServer != null ? javaServer.localAddress() : nativeServer.localAddress(); }
+    public InetSocketAddress localAddress() throws IOException { return javaServer.localAddress(); }
     public boolean isOpen() { return !acceptingStopped.get() && !closed.get(); }
     public boolean isAdmissionThread() { return isCompletionThread(); }
-    public boolean isCompletionThread() { return javaServer != null ? javaServer.isOwnerThread() : CIOServer.isCompletionThread(); }
+    public boolean isCompletionThread() { return javaServer.isOwnerThread(); }
 
     public void stopAccepting() {
         if (isCompletionThread())
             throw new IllegalStateException("cannot stop listener on its owner");
         if (!acceptingStopped.compareAndSet(false, true)) return;
         try {
-            if (javaServer != null) javaServer.stopAccepting();
-            else nativeServer.stopAccepting();
+            javaServer.stopAccepting();
         }
         catch (IOException failure) {
             acceptingStopped.set(false);
@@ -195,7 +177,7 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
         if (timeout == 0) return false;
         long deadline = System.nanoTime() + unit.toNanos(timeout);
         while (!isAcceptStopped()) {
-            final Throwable failure = javaServer != null ? javaServer.shutdownFailure() : nativeServer.shutdownFailure();
+            final Throwable failure = javaServer.shutdownFailure();
             if (failure != null)
                 throw new IllegalStateException("CIO accept stop failed", failure);
             long remaining = deadline - System.nanoTime();
@@ -207,15 +189,15 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
     }
 
     private boolean isAcceptStopped() {
-        return javaServer != null ? javaServer.isAcceptStopped() : nativeServer.isAcceptStopped();
+        return javaServer.isAcceptStopped();
     }
 
     public boolean isTransportTerminated() {
-        return javaServer != null ? javaServer.isTerminated() : nativeServer.isTerminated();
+        return javaServer.isTerminated();
     }
 
     private void checkTransportFailure() {
-        final Throwable failure = javaServer != null ? javaServer.shutdownFailure() : nativeServer.shutdownFailure();
+        final Throwable failure = javaServer.shutdownFailure();
         if (failure != null) throw new IllegalStateException("CIO transport owner failed", failure);
     }
 
@@ -285,14 +267,11 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
                 // coordinator waits; the close caller still observes its budget.
                 connection.close();
             }
-            if (javaServer == null) nativeServer.closeWithBudget(requireShutdownTime(attempt));
-            else {
-                javaServer.requestStop();
-                if (!javaServer.awaitTermination(Duration.ofNanos(requireShutdownTime(attempt))))
-                    throw new IOException("JProRing owner shutdown timed out");
-                Throwable transportFailure = javaServer.shutdownFailure();
-                if (transportFailure != null) throw new IOException("JProRing owner failure", transportFailure);
-            }
+            javaServer.requestStop();
+            if (!javaServer.awaitTermination(Duration.ofNanos(requireShutdownTime(attempt))))
+                throw new IOException("JProRing owner shutdown timed out");
+            Throwable transportFailure = javaServer.shutdownFailure();
+            if (transportFailure != null) throw new IOException("JProRing owner failure", transportFailure);
         } catch (Throwable failure) {
             attempt.failure = failure;
         } finally {

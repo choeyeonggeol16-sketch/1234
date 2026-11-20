@@ -1102,7 +1102,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     public boolean supportsConstBuffer() { return false; }
 
     public CAsyncSendConstBuffer.Source createConstBuffer(byte[] wire) {
-        if (!isJavaTransport()) return _channel.server().createConstBuffer(wire);
         if (wire == null || wire.length < 3 || wire.length > 0xffff
                 || ((wire[0] & 255) | ((wire[1] & 255) << 8)) != wire.length) return null;
         CAsyncSendConstBuffer.Source source = createPooledWritableConstBuffer(wire.length);
@@ -1118,17 +1117,14 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     }
 
     public CAsyncSendConstBuffer.Source createPooledActionConstBuffer(int opcode, int objectId, int actionId) {
-        return isJavaTransport() ? createPooledFormattedConstBuffer(1, opcode, objectId, actionId, 0, 0)
-                : _channel.server().createPooledActionConstBuffer(opcode, objectId, actionId);
+        return createPooledFormattedConstBuffer(1, opcode, objectId, actionId, 0, 0);
     }
 
     public CAsyncSendConstBuffer.Source createPooledMoveConstBuffer(int opcode, int objectId, int x, int y, int heading) {
-        return isJavaTransport() ? createPooledFormattedConstBuffer(2, opcode, objectId, x, y, heading)
-                : _channel.server().createPooledMoveConstBuffer(opcode, objectId, x, y, heading);
+        return createPooledFormattedConstBuffer(2, opcode, objectId, x, y, heading);
     }
 
     public CAsyncSendConstBuffer.Source createPooledFormattedConstBuffer(int kind, int opcode, int p0, int p1, int p2, int p3) {
-        if (!isJavaTransport()) return _channel.server().createPooledFormattedConstBuffer(kind, opcode, p0, p1, p2, p3);
         CAsyncSendConstBuffer.Source source = createPooledWritableConstBuffer();
         if (source == null) return null;
         try {
@@ -1144,8 +1140,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
 
     public CAsyncSendConstBuffer.Source createPooledExtendedConstBuffer(
             int kind, int opcode, int p0, int p1, int p2, int p3, int p4, int p5, int p6, int p7, int p8, int p9, int p10) {
-        if (!isJavaTransport()) return _channel.server().createPooledExtendedConstBuffer(
-                kind, opcode, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
         CAsyncSendConstBuffer.Source source = createPooledWritableConstBuffer();
         if (source == null) return null;
         try {
@@ -1164,7 +1158,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     }
 
     public CAsyncSendConstBuffer.Source createPooledWritableConstBuffer(int capacity) {
-        if (!isJavaTransport()) return _channel.server().createPooledWritableConstBuffer();
         CIOBufferEx lease = _pool.acquireSend(capacity);
         if (lease == null) return null;
         try { return new CAsyncSendConstBuffer.Source(_pool, lease); }
@@ -1175,12 +1168,11 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
     }
 
     public void sealPooledWritableConstBuffer(CAsyncSendConstBuffer.Source source, int length) {
-        if (isJavaTransport()) source.sealJava(length);
-        else _channel.server().sealPooledWritableConstBuffer(source, length);
+        source.sealJava(length);
     }
 
     public boolean ownsConstBuffer(CAsyncSendConstBuffer.Source source) {
-        return !isJavaTransport() && source.owner == _channel.server();
+        return false;
     }
 
     /** Frozen bytes need no encoder reservation; their SEND_ENQUEUE still
