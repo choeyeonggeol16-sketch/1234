@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.CS_ACHIEVEMENT_TELEPORT_REQ;
 import l1j.server.server.packets.Protocol.MainServer.Proto.CS_ALCHEMY_DESIGN_REQ;
 import l1j.server.server.packets.Protocol.MainServer.Proto.CS_ALCHEMY_MAKE_REQ;
@@ -46,12 +46,12 @@ public final class CSProto {
 
     @FunctionalInterface
     public interface FrameHandler {
-        void handle(CIOClient client, ProtoReader in) throws Exception;
+        void handle(CUserSession client, ProtoReader in) throws Exception;
     }
 
     @FunctionalInterface
     public interface RawFrameHandler {
-        void handle(CIOClient client, byte[] buf, int bodyPos, int bodyLen) throws Exception;
+        void handle(CUserSession client, byte[] buf, int bodyPos, int bodyLen) throws Exception;
     }
 
     // ------------------------------------------------------------------
@@ -79,7 +79,7 @@ public final class CSProto {
 
         boolean isRaw() { return raw != null; }
 
-        void handle(CIOClient client, byte[] bytes, int bodyPos, int bodyLen) throws Exception {
+        void handle(CUserSession client, byte[] bytes, int bodyPos, int bodyLen) throws Exception {
             if (raw != null) {
                 raw.handle(client, bytes, bodyPos, bodyLen); // ProtoReader allocation 없음
                 return;
@@ -212,7 +212,7 @@ public final class CSProto {
     // Dispatch
     // ------------------------------------------------------------------
 
-    public static void processFrame(CIOClient client, byte[] bytes, int pos, int msgId, int len) {
+    public static void processFrame(CUserSession client, byte[] bytes, int pos, int msgId, int len) {
         if (client == null || bytes == null) return;
 
         // 비정상 패킷 조용히 무시
@@ -238,7 +238,7 @@ public final class CSProto {
         return TABLE.get(msgId) != null;
     }
 
-    private static String owner(CIOClient client) {
+    private static String owner(CUserSession client) {
         if (client == null) return "null";
         try {
             return client.getActiveChar() != null ? client.getActiveChar().getName() : client.getIp();

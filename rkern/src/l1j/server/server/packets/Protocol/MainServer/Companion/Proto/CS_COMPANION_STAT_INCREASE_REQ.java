@@ -5,7 +5,7 @@ import l1j.server.MJCompanion.CompanionSettings;
 import l1j.server.server.model.Ability;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 
 /**
@@ -16,7 +16,7 @@ public final class CS_COMPANION_STAT_INCREASE_REQ {
 
     private CS_COMPANION_STAT_INCREASE_REQ() {}
 
-    public static void handleRequest(CIOClient client, ProtoReader r) {
+    public static void handleRequest(CUserSession client, ProtoReader r) {
         int str = 0, in = 0, con = 0;
         try {
             while (!r.isAtEnd()) {

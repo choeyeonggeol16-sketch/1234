@@ -18,7 +18,7 @@ import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.gametime.RealTimeClock;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
@@ -33,7 +33,7 @@ public final class CreatureItemActions {
     static final Logger ITEM_USE2_LOG=Logger.getLogger(SpecialConsumableRouter.class.getName());
     static final Random _random=new Random(System.nanoTime());
 
-    public static void UseItem(CIOClient client, L1PcInstance pc, L1ItemInstance item,
+    public static void UseItem(CUserSession client, L1PcInstance pc, L1ItemInstance item,
             int itemObjid, int targetId, int x, int y, String name, int skillId) {
         ItemActionService.use(client,pc,item,itemObjid,targetId,x,y,name,skillId);
     }

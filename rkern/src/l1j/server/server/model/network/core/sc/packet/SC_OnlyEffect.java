@@ -1,10 +1,10 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 import l1j.server.server.model.L1Character;
@@ -22,7 +22,7 @@ public final class SC_OnlyEffect {
         return pc != null && send(pc.getNetConnection(), objectId, effectId);
     }
 
-    public static boolean send(CIOClient client, int objectId, int effectId) {
+    public static boolean send(CUserSession client, int objectId, int effectId) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -30,7 +30,7 @@ public final class SC_OnlyEffect {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EFFECT);
             buffer.writeD(objectId);
             buffer.writeH(effectId);

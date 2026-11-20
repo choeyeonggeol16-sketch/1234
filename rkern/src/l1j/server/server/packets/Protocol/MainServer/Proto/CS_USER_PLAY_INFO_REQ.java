@@ -2,7 +2,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
 /**
@@ -12,7 +12,7 @@ public final class CS_USER_PLAY_INFO_REQ {
 	
     private CS_USER_PLAY_INFO_REQ() {}
 
-    public static void handleRequest(CIOClient client) {
+    public static void handleRequest(CUserSession client) {
         L1PcInstance pc = client.getActiveChar();
         if (pc == null)
             return;

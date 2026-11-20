@@ -1,10 +1,10 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 public final class SC_CharPass {
@@ -21,12 +21,12 @@ public static final int _케릭선택창진입 = 0x40;
 	public static final int _비번인증완료 = 0x3f;
 
 	
-    public static boolean send(CIOClient client, int value) { return send0(client, value, false, false, false, 0, 0); }
-    public static boolean send(CIOClient client, int value, boolean check) { return send0(client, value, true, check, false, 0, 0); }
-    public static boolean sendFailedPassword(CIOClient client, int failures, int maximum) {
+    public static boolean send(CUserSession client, int value) { return send0(client, value, false, false, false, 0, 0); }
+    public static boolean send(CUserSession client, int value, boolean check) { return send0(client, value, true, check, false, 0, 0); }
+    public static boolean sendFailedPassword(CUserSession client, int failures, int maximum) {
         return send0(client, _비번입력비번틀림, false, false, true, failures, maximum);
     }
-    private static boolean send0(CIOClient client, int val, boolean hasCheck, boolean check,
+    private static boolean send0(CUserSession client, int val, boolean hasCheck, boolean check,
                                  boolean customFail, int failures, int maximum) {
         int extra = 0;
         if (customFail) extra = 12;
@@ -48,7 +48,7 @@ public static final int _케릭선택창진입 = 0x40;
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_VOICE_CHAT);
             buffer.writeC(val);
             if (customFail) {

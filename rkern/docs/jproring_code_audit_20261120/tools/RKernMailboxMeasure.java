@@ -4,7 +4,7 @@ import java.net.*;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
-import l1j.server.server.model.network.core.transport.selector.SelectorTransport;
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 
 public class RKernMailboxMeasure {
     public static void main(String[] args) throws Exception {
@@ -21,17 +21,17 @@ public class RKernMailboxMeasure {
         var ready = new CountDownLatch(producers);
         var go = new CountDownLatch(1);
         var end = new CountDownLatch(count * producers);
-        var open = new LinkedBlockingQueue<SelectorTransport.Connection>();
-        var settings = new SelectorTransport.Config(1, 2, 16, 512, 1, 1, 1, 256, 8, 0, Duration.ofSeconds(5));
-        try (var transport = SelectorTransport.bind(new InetSocketAddress("127.0.0.1", 0), settings,
-                new SelectorTransport.RawHandler() {
-                    @Override public void onOpen(SelectorTransport.Connection peer) { open.add(peer); }
+        var open = new LinkedBlockingQueue<CSelectorTransport.Connection>();
+        var settings = new CSelectorTransport.Config(1, 2, 16, 512, 1, 1, 1, 256, 8, 0, Duration.ofSeconds(5));
+        try (var transport = CSelectorTransport.bind(new InetSocketAddress("127.0.0.1", 0), settings,
+                new CSelectorTransport.RawHandler() {
+                    @Override public void onOpen(CSelectorTransport.Connection peer) { open.add(peer); }
                 });
                 var socket = new Socket("127.0.0.1", transport.localAddress().getPort());
                 var executor = Executors.newFixedThreadPool(producers)) {
             var connection = open.poll(5, TimeUnit.SECONDS);
             var jobs = new ArrayList<Future<Long>>();
-            SelectorTransport.OwnerCommand command = ignored -> end.countDown();
+            CSelectorTransport.OwnerCommand command = ignored -> end.countDown();
             for (int i = 0; i < producers; ++i) jobs.add(executor.submit(() -> {
                 ready.countDown();
                 go.await();

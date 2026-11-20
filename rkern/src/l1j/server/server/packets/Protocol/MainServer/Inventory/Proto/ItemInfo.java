@@ -278,13 +278,13 @@ public final class ItemInfo {
         return sendAddedItem(recipient == null ? null : recipient.getNetConnection(), item, onStart, ownerOid);
     }
 
-    public static boolean sendAddedItem(l1j.server.server.model.network.core.session.CIOClient recipient,
+    public static boolean sendAddedItem(l1j.server.server.model.network.core.session.CUserSession recipient,
             L1ItemInstance item, boolean onStart, int ownerOid) {
         return writeOrSendItem(null, recipient, item, onStart, ownerOid, true);
     }
 
     private static boolean writeOrSendItem(ProtoWriter supplied,
-            l1j.server.server.model.network.core.session.CIOClient recipient, L1ItemInstance item,
+            l1j.server.server.model.network.core.session.CUserSession recipient, L1ItemInstance item,
             boolean onStart, int ownerOid, boolean includeExtra) {
         // Take the same projection as newInstance(), before acquiring a SEND lease.
         int useType = item.getItem().getUseType();

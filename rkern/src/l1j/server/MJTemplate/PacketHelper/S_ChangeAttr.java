@@ -2,11 +2,11 @@ package l1j.server.MJTemplate.PacketHelper;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.packet.ServerPacket;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.core.session.CUserSession;
 
-public class S_ChangeAttr extends ServerPacket {
+public class S_ChangeAttr extends CServerPacket {
 
 	private final int _x;
 	private final int _y;
@@ -29,7 +29,7 @@ public class S_ChangeAttr extends ServerPacket {
 	}
 
 	@Override
-	public void writeImpl(CIOClient client, WriteBuffer buffer) {
+	public void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 		buffer.writeC(Opcodes.S_CHANGE_ATTR);
 		buffer.writeH(_x);
 		buffer.writeH(_y);

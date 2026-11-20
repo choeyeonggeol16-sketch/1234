@@ -5,10 +5,10 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_RangeSkill {
     public static final int TYPE_NODIR = 0;
@@ -82,7 +82,7 @@ public final class SC_RangeSkill {
     private static boolean send(L1PcInstance pc, int id, int x, int y, int heading,
                                 int seq, int gfx, int action, int type, int[] ids, int count) {
         if (pc == null) return false;
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -92,7 +92,7 @@ public final class SC_RangeSkill {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer b = frame.buffer();
+            final CPacketWriteBuffer b = frame.buffer();
             b.writeC(Opcodes.S_ATTACK_MANY);
             b.writeC(action);
             b.writeD(id);

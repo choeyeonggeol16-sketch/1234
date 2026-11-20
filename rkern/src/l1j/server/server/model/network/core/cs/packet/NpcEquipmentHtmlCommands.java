@@ -4,13 +4,13 @@ import static l1j.server.server.model.network.core.cs.packet.HtmlCmdHandler._ran
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 /** Equipment exchanges, crafting and their NPC dialogue. */
 final class NpcEquipmentHtmlCommands {
     private NpcEquipmentHtmlCommands() {}
 
-    static void handle(CIOClient client, L1PcInstance pc, L1Object obj, int objid,
+    static void handle(CUserSession client, L1PcInstance pc, L1Object obj, int objid,
             String s, String s2, String htmlid, int templateId) throws Exception {
         int[] materials = null;
         int[] counts = null;

@@ -7,7 +7,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
@@ -16,7 +16,7 @@ public final class CS_NpcItemControl {
 	private CS_NpcItemControl() {
 	}
 
-	public static void handle(CIOClient client, int data, int petId, int listNo) {
+	public static void handle(CUserSession client, int data, int petId, int listNo) {
 
 		if (client == null) {
 			return;

@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.model.network.utill.PacketThreadFactory;
+import l1j.server.server.model.network.utill.CIOThreadFactory;
 import l1j.server.server.utils.ThreadConfig;
 
 public class ThreadPool {
@@ -46,7 +46,7 @@ public class ThreadPool {
     private static final ThreadLocal<Boolean> WORKER = new ThreadLocal<>();
 
     private static java.util.concurrent.ThreadFactory workerFactory(String name, int priority) {
-        final PacketThreadFactory factory = new PacketThreadFactory(name, priority);
+        final CIOThreadFactory factory = new CIOThreadFactory(name, priority);
         return work -> factory.newThread(() -> {
             WORKER.set(Boolean.TRUE);
             try { work.run(); } finally { WORKER.remove(); }
@@ -185,7 +185,7 @@ public class ThreadPool {
 	public void execute(Runnable r) {
 		if (r == null) return;
 		// No per-submission wrapper allocation. On task failure the existing
-		// PacketThreadFactory uncaught handler logs it; the JDK pool replaces
+		// CIOThreadFactory uncaught handler logs it; the JDK pool replaces
 		// a failed worker. Saturation/shutdown still throws to the submitter.
         requireOpen();
 		_instantPool.execute(r);

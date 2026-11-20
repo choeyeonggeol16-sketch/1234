@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.util.ArrayList;
@@ -135,7 +135,7 @@ public final class SC_TOP_RANKER_ACK extends ProtoPacket {
                 _currentPage, _hasVersion, _hasPageFields, _rankers);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _resultCode, long _version, int _classId, int _totalPage, int _currentPage, boolean _hasVersion, boolean _hasPageFields, List<Ranker> _rankers) {
+    public static boolean sendFields(CUserSession recipient, int _resultCode, long _version, int _classId, int _totalPage, int _currentPage, boolean _hasVersion, boolean _hasPageFields, List<Ranker> _rankers) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_TOP_RANKER_ACK, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -152,7 +152,7 @@ public final class SC_TOP_RANKER_ACK extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_TOP_RANKER_ACK);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient) {
+    private static boolean sendCtor(CUserSession protoRecipient) {
         int proto68_resultCode = -1;
         long proto68_version = 0;
         int proto68_classId = 0;
@@ -167,14 +167,14 @@ public final class SC_TOP_RANKER_ACK extends ProtoPacket {
                 proto68_currentPage, proto68_hasVersion, proto68_hasPageFields, proto68_rankers);
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient) {
+    public static boolean sendNewInstance(CUserSession protoRecipient) {
         return sendCtor(protoRecipient);
     }
 
     public static boolean sendNewInstance(L1PcInstance protoRecipient) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
-    public static boolean sendConstructed(CIOClient protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 
@@ -183,7 +183,7 @@ public final class SC_TOP_RANKER_ACK extends ProtoPacket {
         return sendNoChange(recipient == null ? null : recipient.getNetConnection(), version);
     }
 
-    public static boolean sendNoChange(CIOClient recipient, long version) {
+    public static boolean sendNoChange(CUserSession recipient, long version) {
         ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_TOP_RANKER_ACK, 32);
         if (writer == null) return false;
         try {

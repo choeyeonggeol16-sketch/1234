@@ -8,7 +8,7 @@ import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -37,7 +37,7 @@ public class L1AccountBanKick implements L1CommandExecutor {
 			}
 
 			if (target != null) { // 어카운트를 BAN 한다
-				final CIOClient clnt = target.getNetConnection();
+				final CUserSession clnt = target.getNetConnection();
 				Account.ban(target.getAccountName(), reason);
 				SC_SystemMessage.send(pc, target.getName() + " 를 계정압류 하였습니다.");
 				SC_Disconnect.send(target);

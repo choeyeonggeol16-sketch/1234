@@ -6,7 +6,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
 
 import l1j.server.server.templates.L1Skills;
 import l1j.server.server.utils.MJCommons;

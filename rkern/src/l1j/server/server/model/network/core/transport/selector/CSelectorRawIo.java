@@ -8,7 +8,7 @@ import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
 
 /** One pending operation in each direction. The caller owns each borrowed buffer until completion. */
-final class SelectorRawIo {
+final class CSelectorRawIo {
     private ByteBuffer read;
     private IntConsumer readCompletion;
     private ByteBuffer singleWrite;

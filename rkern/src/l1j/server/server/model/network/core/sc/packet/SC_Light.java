@@ -4,16 +4,16 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 
 public final class SC_Light {
 
     private static final int WIRE_SIZE =
-            ConnectionConfig.HEADER_SIZE
+            CConnectionConfig.HEADER_SIZE
                     + 1
                     + Integer.BYTES
                     + 1;
@@ -22,7 +22,7 @@ public final class SC_Light {
     }
 
     public static boolean send(
-            CIOClient client,
+            CUserSession client,
             int objectId,
             int type) {
 
@@ -47,7 +47,7 @@ public final class SC_Light {
             return false;
         }
 
-        final WriteBuffer buffer =
+        final CPacketWriteBuffer buffer =
                 frame.buffer();
 
         boolean committed = false;

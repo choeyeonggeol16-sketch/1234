@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -45,7 +45,7 @@ public final class SC_ADD_ACTIVE_SPELL_EX_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _spellId, _spellType);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _spellId, int _spellType) {
+    public static boolean sendFields(CUserSession recipient, int _spellId, int _spellType) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ADD_ACTIVE_SPELL_EX_NOTI, Proto.capacityBound(1024L));
         if (writer == null) return false;
         try {
@@ -62,7 +62,7 @@ public final class SC_ADD_ACTIVE_SPELL_EX_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_ADD_ACTIVE_SPELL_EX_NOTI);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, int spellId, int spellType) {
+    private static boolean sendCtor(CUserSession protoRecipient, int spellId, int spellType) {
         int proto3_spellId = 0;
         int proto3_spellType = 0;
 
@@ -71,7 +71,7 @@ public final class SC_ADD_ACTIVE_SPELL_EX_NOTI extends ProtoPacket {
 
         return sendFields(protoRecipient, proto3_spellId, proto3_spellType);
     }
-    public static boolean sendConstructed(CIOClient protoRecipient, int spellId, int spellType) { return sendCtor(protoRecipient, spellId, spellType); }
+    public static boolean sendConstructed(CUserSession protoRecipient, int spellId, int spellType) { return sendCtor(protoRecipient, spellId, spellType); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int spellId, int spellType) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), spellId, spellType); }

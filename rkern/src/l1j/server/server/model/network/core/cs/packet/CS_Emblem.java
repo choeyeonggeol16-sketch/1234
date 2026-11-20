@@ -9,7 +9,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
 
 public final class CS_Emblem {
@@ -22,7 +22,7 @@ public final class CS_Emblem {
 
     private CS_Emblem() {}
 
-    public static void handle(CIOClient client, byte[] emblem, int emblemSize) {
+    public static void handle(CUserSession client, byte[] emblem, int emblemSize) {
 
         if (client == null || emblem == null || emblemSize != EMBLEM_SIZE || emblem.length < EMBLEM_SIZE) {
             return;

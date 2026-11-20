@@ -1,10 +1,10 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -15,7 +15,7 @@ public final class SC_SkillSound {
     private SC_SkillSound() {
     }
 
-    public static boolean send(CIOClient client, int objectId, int gfxId) {
+    public static boolean send(CUserSession client, int objectId, int gfxId) {
         if (client == null || !client.isConnected()) {
             return false;
         }
@@ -29,7 +29,7 @@ public final class SC_SkillSound {
         }
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EFFECT);
             buffer.writeD(objectId);
             buffer.writeH(gfxId);

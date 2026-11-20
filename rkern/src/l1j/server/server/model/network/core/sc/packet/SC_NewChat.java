@@ -5,11 +5,11 @@ import java.nio.charset.Charset;
 import l1j.server.Config;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_NewChat {
 
@@ -117,7 +117,7 @@ public final class SC_NewChat {
                                      byte[] senderNameBytes, int pcObjId, int pcX,
                                      int pcY, int rankLevel) {
         if (receiver == null) return false;
-        final CIOClient socket = receiver.getNetConnection();
+        final CUserSession socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -142,7 +142,7 @@ public final class SC_NewChat {
         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> writeNativeChat(b,data));
     }
 
-	private static void writePayload(WriteBuffer buffer, int type, int chatType, byte[] textBytes, byte[] targetNameBytes, byte[] senderNameBytes, int pcObjId, int pcX, int pcY, int rankLevel) {
+	private static void writePayload(CPacketWriteBuffer buffer, int type, int chatType, byte[] textBytes, byte[] targetNameBytes, byte[] senderNameBytes, int pcObjId, int pcX, int pcY, int rankLevel) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 
 		switch (type) {

@@ -14,7 +14,7 @@ import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
 import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
@@ -28,7 +28,7 @@ final class CharacterSlotReceipt {
 
     private CharacterSlotReceipt() {}
 
-    static void useCharacterSlotExpansionAtomic(CIOClient client,
+    static void useCharacterSlotExpansionAtomic(CUserSession client,
             L1PcInstance pc, L1ItemInstance input) {
         if (client == null || client.getAccount() == null || pc == null || input == null
                 || input.getItemId() != 210083

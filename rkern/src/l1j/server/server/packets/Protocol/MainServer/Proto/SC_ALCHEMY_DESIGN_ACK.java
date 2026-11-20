@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -104,7 +104,7 @@ public class SC_ALCHEMY_DESIGN_ACK extends ProtoPacket {
 				pc.sendPackets("접속기에서 오류패치를 하신 후 다시 접속하면 모든 목록을 받아볼 수 있습니다.");
 				l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, _alchemySameCache);
 			}else{
-                final l1j.server.server.model.network.core.session.CIOClient socket = pc.getNetConnection();
+                final l1j.server.server.model.network.core.session.CUserSession socket = pc.getNetConnection();
                 if (socket == null || !socket.isConnected()) return;
                 if (ThreadPool.getInstance().schedule(() -> {
                     if (socket.isConnected() && socket.getActiveChar() == pc)
@@ -698,7 +698,7 @@ public class SC_ALCHEMY_DESIGN_ACK extends ProtoPacket {
                 _alchemies, _hasResultCode, _hasInputLists, _hasOutputLists, _hasAlchemies);
     }
 
-    public static boolean sendFields(CIOClient recipient, ResultCode _result_code, LinkedList<InputList> _inputLists, LinkedList<OutputList> _outputLists, LinkedList<Alchemy> _alchemies, boolean _hasResultCode, boolean _hasInputLists, boolean _hasOutputLists, boolean _hasAlchemies) {
+    public static boolean sendFields(CUserSession recipient, ResultCode _result_code, LinkedList<InputList> _inputLists, LinkedList<OutputList> _outputLists, LinkedList<Alchemy> _alchemies, boolean _hasResultCode, boolean _hasInputLists, boolean _hasOutputLists, boolean _hasAlchemies) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ALCHEMY_DESIGN_ACK, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -715,7 +715,7 @@ public class SC_ALCHEMY_DESIGN_ACK extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_ALCHEMY_DESIGN_ACK);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient) {
+    private static boolean sendCtor(CUserSession protoRecipient) {
         ResultCode proto7_result_code = null;
         LinkedList<InputList> proto7_inputLists = null;
         LinkedList<OutputList> proto7_outputLists = null;
@@ -731,7 +731,7 @@ public class SC_ALCHEMY_DESIGN_ACK extends ProtoPacket {
                 proto7_hasResultCode, proto7_hasInputLists, proto7_hasOutputLists, proto7_hasAlchemies);
     }
 
-    public static boolean sendClosed(CIOClient protoRecipient) {
+    public static boolean sendClosed(CUserSession protoRecipient) {
         ResultCode ackWire_result_code = null;
                 LinkedList<InputList> ackWire_inputLists = null;
                 LinkedList<OutputList> ackWire_outputLists = null;
@@ -751,7 +751,7 @@ public class SC_ALCHEMY_DESIGN_ACK extends ProtoPacket {
     public static boolean sendClosed(L1PcInstance protoRecipient) {
         return sendClosed(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
-    public static boolean sendConstructed(CIOClient protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

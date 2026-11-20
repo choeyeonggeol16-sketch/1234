@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
@@ -124,7 +124,7 @@ public class LetterTable {
 
     private static void enqueue(Letter letter, L1PcInstance owner, Runnable afterCommit) {
         final String receipt=UUID.randomUUID().toString();
-        final CIOClient session=owner==null ? null : owner.getNetConnection();
+        final CUserSession session=owner==null ? null : owner.getNetConnection();
         final int stamp=owner==null ? 0 : owner.getSessionStamp();
         CacheD.getInstance().submitDbJobOrdered(MAIL_ORDER_KEY, () -> {
             try {

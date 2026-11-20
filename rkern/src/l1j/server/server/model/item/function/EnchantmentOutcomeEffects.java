@@ -4,7 +4,7 @@ import l1j.server.Config;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -32,18 +32,18 @@ final class EnchantmentOutcomeEffects {
         }
     }
 
-    static void SuccessEnchant(L1PcInstance pc, L1ItemInstance item, CIOClient client, int i) {
+    static void SuccessEnchant(L1PcInstance pc, L1ItemInstance item, CUserSession client, int i) {
         successEnchant(pc, item, client, i, false);
     }
 
     /** The receipt already stored and replayed the new enchant level.
      * Apply only its in-world equipment bonuses and non-durable notices.
      */
-    static void SuccessEnchantCommitted(L1PcInstance pc, L1ItemInstance item, CIOClient client, int i) {
+    static void SuccessEnchantCommitted(L1PcInstance pc, L1ItemInstance item, CUserSession client, int i) {
         successEnchant(pc, item, client, i, true);
     }
 
-    private static void successEnchant(L1PcInstance pc, L1ItemInstance item, CIOClient client,
+    private static void successEnchant(L1PcInstance pc, L1ItemInstance item, CUserSession client,
                                        int i, boolean alreadyCommitted) {
         final int oldEnchantLvl = item.getEnchantLevel() - (alreadyCommitted ? i : 0);
 		String s = "";
@@ -289,7 +289,7 @@ final class EnchantmentOutcomeEffects {
 	}
 
     // Failure and success share the same enchant result responsibility.
-	static void FailureEnchant(L1PcInstance pc, L1ItemInstance item, CIOClient client) {
+	static void FailureEnchant(L1PcInstance pc, L1ItemInstance item, CUserSession client) {
 		String s = "";
 		String sa = "";
 		int itemType = item.getItem().getType2();

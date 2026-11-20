@@ -7,10 +7,10 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_AreaAttackEffect {
     private static final AtomicInteger SEQUENCE = new AtomicInteger();
@@ -43,7 +43,7 @@ public final class SC_AreaAttackEffect {
                 b -> writeNativeArea(b,id,x,y,heading,seq,gfx,action,ids));
     }
 
-    /** Original SC_AreaAttackEffect::send WriteBuffer byte layout. One buffer
+    /** Original SC_AreaAttackEffect::send CPacketWriteBuffer byte layout. One buffer
      * per attack; per-socket encryption and SEND FIFO remain native-owned.
      */
     private static void writeNativeArea(java.nio.ByteBuffer b,

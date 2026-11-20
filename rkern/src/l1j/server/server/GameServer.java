@@ -116,8 +116,8 @@ import l1j.server.server.model.item.L1TreasureBox;
 import l1j.server.server.model.item.effects.ItemEffectBootstrap;
 import l1j.server.server.model.item.function.L1HealingPotion;
 import l1j.server.server.model.map.L1WorldMap;
-import l1j.server.server.model.network.client.manager.NetworkClientCounter;
-import l1j.server.server.model.network.safe.NetworkSafeLoadManager;
+import l1j.server.server.model.network.client.manager.CIPConnectionCounter;
+import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.NpcServer;
 import l1j.server.server.model.npc.shop.NpcShopManager;
@@ -150,8 +150,8 @@ public class GameServer {
 	public void initialize() throws Exception {
 		ThreadPool.getInstance();
 		
-		NetworkClientCounter.getInstance();
-		NetworkSafeLoadManager.getInstance().load();
+		CIPConnectionCounter.getInstance();
+		CPacketFilter.getInstance().load();
 		// 나누기
 		MJAlchemyProbabilityBox.getInstance().shuffleList();
 
@@ -399,13 +399,13 @@ public class GameServer {
         // with an in-progress packet or a previously submitted logout job.
         final L1PcInstance[] pcs = L1World.getInstance().getAllPlayers()
                 .toArray(new L1PcInstance[0]);
-        final l1j.server.server.model.network.core.session.CIOClient[] clients =
-                new l1j.server.server.model.network.core.session.CIOClient[pcs.length];
+        final l1j.server.server.model.network.core.session.CUserSession[] clients =
+                new l1j.server.server.model.network.core.session.CUserSession[pcs.length];
         final long started = System.nanoTime();
         for (int i = 0; i < pcs.length; i++) {
             final L1PcInstance pc = pcs[i];
             if (pc == null || pc.noPlayerck2) continue;
-            final l1j.server.server.model.network.core.session.CIOClient client = pc.getNetConnection();
+            final l1j.server.server.model.network.core.session.CUserSession client = pc.getNetConnection();
             clients[i] = client;
             if (client != null && client.getConnection() != null)
                 client.getConnection().close();
@@ -413,7 +413,7 @@ public class GameServer {
         for (int i = 0; i < pcs.length; i++) {
             final L1PcInstance pc = pcs[i];
             if (pc == null || pc.noPlayerck2) continue;
-            final l1j.server.server.model.network.core.session.CIOClient client = clients[i];
+            final l1j.server.server.model.network.core.session.CUserSession client = clients[i];
             if (client != null) {
                 while (!client.isLogoutComplete()) {
                     if (System.nanoTime() - started >= 30_000_000_000L)
@@ -560,7 +560,7 @@ public class GameServer {
 
 	        MJKDALoadManager.getInstance().release();
 
-	        NetworkSafeLoadManager.getInstance().release();
+	        CPacketFilter.getInstance().release();
 
 	        CharTamScheduler.getInstance().stop();
 
@@ -571,11 +571,11 @@ public class GameServer {
 	        PremiumTimeController.getInstance().stop();
 	        BugRaceController.getInstance().stop();
 
-	        NetworkSafeLoadManager.getInstance().release();
+	        CPacketFilter.getInstance().release();
 
 	        RankUserLoader.getInstance().release();
 
-	        NetworkClientCounter.getInstance().release();
+	        CIPConnectionCounter.getInstance().release();
 	        LoggerInstance.getInstance().flushImmediately();
 	        TileOccupancyNpc.getInstance().destroy();
 	        TileOccupancy.getInstance().destroy();

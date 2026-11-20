@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Inventory.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -241,7 +241,7 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
                 totalSize, type, bodies, count, last);
     }
 
-    public static boolean sendEncodedChunk(CIOClient client, int checker, int price, int totalSize,
+    public static boolean sendEncodedChunk(CUserSession client, int checker, int price, int totalSize,
             eWarehouseType type, byte[][] bodies, int count, boolean last) {
         if (count < 0 || (count > 0 && (bodies == null || count > bodies.length)))
             throw new IllegalArgumentException("Invalid warehouse chunk range");
@@ -439,7 +439,7 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
                 warehouseSize, items, rawItems, serialLast);
     }
 
-    public static boolean sendFields(CIOClient recipient, long presentMask, int checker, int count, eWarehouseType warehouseType, int price, int warehouseSize, List<WarehouseItemInfo> items, List<byte[]> rawItems, boolean serialLast) {
+    public static boolean sendFields(CUserSession recipient, long presentMask, int checker, int count, eWarehouseType warehouseType, int price, int warehouseSize, List<WarehouseItemInfo> items, List<byte[]> rawItems, boolean serialLast) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_WAREHOUSE_ITEM_LIST_NOTI, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -456,7 +456,7 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_WAREHOUSE_ITEM_LIST_NOTI);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient) {
+    private static boolean sendCtor(CUserSession protoRecipient) {
         long proto102_present = 0L;
         int proto102_checker = 0;
         int proto102_count = 0;
@@ -473,14 +473,14 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
                 proto102_warehouseSize, proto102_items, proto102_rawItems, proto102_serialLast);
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient) {
+    public static boolean sendNewInstance(CUserSession protoRecipient) {
         return sendCtor(protoRecipient);
     }
 
     public static boolean sendNewInstance(L1PcInstance protoRecipient) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
-    public static boolean sendConstructed(CIOClient protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

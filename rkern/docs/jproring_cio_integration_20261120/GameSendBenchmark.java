@@ -24,13 +24,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import l1j.server.Config;
 import l1j.server.Server;
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.model.network.packet.BytesWritablePacket;
+import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.packet.CBytesPacket;
 import l1j.server.server.model.network.packet.CPacketHandler;
-import l1j.server.server.model.network.packet.WritablePacket;
-import l1j.server.server.model.network.safe.NetworkSafeLoadManager;
+import l1j.server.server.model.network.packet.IPacketWriter;
+import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
@@ -67,7 +67,7 @@ public final class GameSendBenchmark {
         int pssPort = port();
         while (pssPort == Config.GAME_SERVER_PORT) pssPort = port();
         System.setProperty("pss.uiBridge.port", Integer.toString(pssPort));
-        NetworkSafeLoadManager.getInstance().load();
+        CPacketFilter.getInstance().load();
         var sessions = ConcurrentHashMap.<CUserSocket>newKeySet();
         var rejected = new AtomicInteger();
         var locals = ThreadLocal.withInitial(() -> new Reply(payload));
@@ -82,7 +82,7 @@ public final class GameSendBenchmark {
             boolean bytes = packetKind.equals("bytes") || (packetKind.equals("mixed") && (sequence & 1) == 0);
             boolean admitted = packetKind.equals("cached") && (sequence & 1) == 0
                     ? Proto.sendRaw(client, packet.body)
-                    : socket.tryWritePacket(client, bytes ? new BytesWritablePacket(packet.body) : packet);
+                    : socket.tryWritePacket(client, bytes ? new CBytesPacket(packet.body) : packet);
             if (!admitted) {
                 rejected.incrementAndGet();
                 return false;
@@ -300,10 +300,10 @@ public final class GameSendBenchmark {
         Arrays.fill(data, 5, data.length, (byte) sequence);
     }
 
-    private static final class Reply extends WritablePacket<CIOClient> {
+    private static final class Reply extends IPacketWriter<CUserSession> {
         final byte[] body;
         Reply(int payload) { body = new byte[payload]; }
-        @Override protected boolean write(CIOClient client, WriteBuffer writer) {
+        @Override protected boolean write(CUserSession client, CPacketWriteBuffer writer) {
             writer.writeBytes(body);
             return true;
         }

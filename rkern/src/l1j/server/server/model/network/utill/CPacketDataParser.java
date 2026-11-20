@@ -3,11 +3,11 @@ package l1j.server.server.model.network.utill;
 import java.net.InetAddress;
 
 
-public final class DataParser {
+public final class CPacketDataParser {
 
     private static final long U32_MASK = 0xFFFF_FFFFL;
 
-    private DataParser() {
+    private CPacketDataParser() {
     }
 
     public static long parseLong64(char[] buff, int start) {

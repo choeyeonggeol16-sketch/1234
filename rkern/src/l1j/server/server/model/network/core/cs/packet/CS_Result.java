@@ -12,7 +12,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.shop.L1Shop;
 import l1j.server.server.model.shop.L1ShopBuyOrder;
 import l1j.server.server.model.shop.L1ShopBuyOrderList;
@@ -25,7 +25,7 @@ public final class CS_Result {
 	private CS_Result() {
 	}
 
-	public static void handle(CIOClient client, int npcObjectId, int resultType, int size, int hasFirst, long packed0, byte[] params) {
+	public static void handle(CUserSession client, int npcObjectId, int resultType, int size, int hasFirst, long packed0, byte[] params) {
 
 		if (client == null) {
 			return;

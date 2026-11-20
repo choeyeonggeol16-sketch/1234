@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /** Bounded direct storage owned by one Selector thread. */
-public final class SelectorBufferPool {
+public final class CSelectorBufferPool {
     static final int RECEIVE_BYTES = 4 * 1024;
     static final int SEND_BYTES = 16 * 1024;
     static final int LARGE_BYTES = 64 * 1024;
@@ -15,15 +15,15 @@ public final class SelectorBufferPool {
     private final Bucket compact;
     private final Bucket large;
 
-    public static SelectorBufferPool receive(int compactSlots, int largeSlots) {
-        return new SelectorBufferPool(RECEIVE_BYTES, compactSlots, largeSlots);
+    public static CSelectorBufferPool receive(int compactSlots, int largeSlots) {
+        return new CSelectorBufferPool(RECEIVE_BYTES, compactSlots, largeSlots);
     }
 
-    static SelectorBufferPool send(int compactSlots, int largeSlots) {
-        return new SelectorBufferPool(SEND_BYTES, compactSlots, largeSlots);
+    static CSelectorBufferPool send(int compactSlots, int largeSlots) {
+        return new CSelectorBufferPool(SEND_BYTES, compactSlots, largeSlots);
     }
 
-    private SelectorBufferPool(int compactBytes, int compactSlots, int largeSlots) {
+    private CSelectorBufferPool(int compactBytes, int compactSlots, int largeSlots) {
         if (compactSlots < 1 || largeSlots < 1) throw new IllegalArgumentException("Invalid pool size");
         compact = new Bucket(compactBytes, compactSlots);
         large = new Bucket(LARGE_BYTES, largeSlots);

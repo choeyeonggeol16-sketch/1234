@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_TrueTargetNew {
     private SC_TrueTargetNew() {}
@@ -16,7 +16,7 @@ public final class SC_TrueTargetNew {
             .putInt(active?1:0).putShort((short)0);
     }
 
-public static boolean send(CIOClient client, int targetId, boolean active) {
+public static boolean send(CUserSession client, int targetId, boolean active) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -24,7 +24,7 @@ public static boolean send(CIOClient client, int targetId, boolean active) {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             buffer.writeC(0xc2);
             buffer.writeD(targetId);

@@ -38,7 +38,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_TaxRate;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.templates.L1House;
 import l1j.server.server.templates.L1Town;
 import l1j.server.server.utils.CommonUtil;
@@ -47,7 +47,7 @@ import l1j.server.server.utils.CommonUtil;
 final class NpcServiceHtmlCommands {
     private NpcServiceHtmlCommands() {}
 
-    static void handle(CIOClient client, L1PcInstance pc, L1Object obj, int objid,
+    static void handle(CUserSession client, L1PcInstance pc, L1Object obj, int objid,
             String s, String s2, String htmlid, int templateId) throws Exception {
         int[] materials = null;
         int[] counts = null;

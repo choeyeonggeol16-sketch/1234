@@ -4,11 +4,11 @@ import java.util.ArrayList;
 
 import l1j.server.MJTemplate.MJKeyValuePair;
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.packet.ServerPacket;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.core.session.CUserSession;
 
-public class S_DogFightSellList extends ServerPacket {
+public class S_DogFightSellList extends CServerPacket {
 
 	private final int _npcObjectId;
 	private final ArrayList<MJKeyValuePair<Integer, Integer>> _pairs;
@@ -27,7 +27,7 @@ public class S_DogFightSellList extends ServerPacket {
 	}
 
 	@Override
-	public void writeImpl(CIOClient client, WriteBuffer buffer) {
+	public void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 		buffer.writeC(Opcodes.S_SELL_LIST);
 		buffer.writeD(_npcObjectId);
 

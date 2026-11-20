@@ -9,7 +9,7 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_QuestTalkIsland;
@@ -26,7 +26,7 @@ public final class CS_CreatePledge {
 
     private CS_CreatePledge() {}
 
-    public static void handle(CIOClient client, String clanName, int nameBytes) {
+    public static void handle(CUserSession client, String clanName, int nameBytes) {
 
         if (client == null || clanName == null || clanName.isEmpty()) {
             return;

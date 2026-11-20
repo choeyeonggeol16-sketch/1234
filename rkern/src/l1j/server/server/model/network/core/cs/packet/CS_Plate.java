@@ -8,7 +8,7 @@ import l1j.server.server.model.Instance.L1AuctionBoardInstance;
 import l1j.server.server.model.Instance.L1BoardInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 
 public final class CS_Plate {
@@ -20,7 +20,7 @@ public final class CS_Plate {
     }
 
     public static void handle(
-            CIOClient client,
+            CUserSession client,
             int objectId) {
 
         if (client == null) {

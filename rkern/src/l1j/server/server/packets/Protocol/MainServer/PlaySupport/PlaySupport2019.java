@@ -11,9 +11,9 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
 import java.util.logging.Logger;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.network.utill.ConnectionState;
+import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
@@ -38,7 +38,7 @@ public final class PlaySupport2019 {
     /** Explicit GM experiment: send the C->S settings ID in the opposite direction. */
     public static void gmProbe2111(L1PcInstance gm, String param) {
         if (gm == null || !gm.isGm()) return;
-        CIOClient client = gm.getNetConnection();
+        CUserSession client = gm.getNetConnection();
         if (player(client) != gm) return;
         int mode = 0;
         String argument = param == null ? "" : param.trim();
@@ -68,7 +68,7 @@ public final class PlaySupport2019 {
     }
 
     /** Receive the one-way client setting request; observe it without starting either AI. */
-    public static void handleChangePlaySupportSettingRequest(CIOClient client, byte[] data, int offset, int length) {
+    public static void handleChangePlaySupportSettingRequest(CUserSession client, byte[] data, int offset, int length) {
         L1PcInstance pc = player(client);
         if (pc == null || !pc.isGm()) return;
         final String fields;
@@ -105,11 +105,11 @@ public final class PlaySupport2019 {
         return fields.length() == 0 ? "no known fields" : fields.toString();
     }
 
-    public static void handleStartPlaySupportRequest(CIOClient client, byte[] data, int offset, int length) {
+    public static void handleStartPlaySupportRequest(CUserSession client, byte[] data, int offset, int length) {
         handleStartPlaySupportRequest(client, data, offset, length, System.nanoTime());
     }
 
-    static void handleStartPlaySupportRequest(CIOClient client, byte[] data, int offset, int length, long now) {
+    static void handleStartPlaySupportRequest(CUserSession client, byte[] data, int offset, int length, long now) {
         L1PcInstance pc = player(client);
         if (pc == null) return;
         final int mode;
@@ -223,7 +223,7 @@ public final class PlaySupport2019 {
         }
     }
 
-    private static void failClaim(CIOClient client, L1PcInstance expected, String message) {
+    private static void failClaim(CUserSession client, L1PcInstance expected, String message) {
         client.endPssClaim();
         CIOThreadCallback.getInstance().completeSessionReply(client, () -> {
             if (player(client) == expected) {
@@ -238,11 +238,11 @@ public final class PlaySupport2019 {
         enqueueLeaseClose(charId, grant.dayStartMs(), grant.token(), null, false);
     }
 
-    public static void handleFinishPlaySupportRequest(CIOClient client, byte[] data, int offset, int length) {
+    public static void handleFinishPlaySupportRequest(CUserSession client, byte[] data, int offset, int length) {
         handleFinishPlaySupportRequest(client, data, offset, length, System.nanoTime());
     }
 
-    static void handleFinishPlaySupportRequest(CIOClient client, byte[] data, int offset, int length, long now) {
+    static void handleFinishPlaySupportRequest(CUserSession client, byte[] data, int offset, int length, long now) {
         L1PcInstance pc = player(client);
         if (pc == null) return;
         try {
@@ -265,11 +265,11 @@ public final class PlaySupport2019 {
         }
     }
 
-    public static void handlePssTimeCheckRequest(CIOClient client, byte[] data, int offset, int length) {
+    public static void handlePssTimeCheckRequest(CUserSession client, byte[] data, int offset, int length) {
         handlePssTimeCheckRequest(client, data, offset, length, System.nanoTime());
     }
 
-    static void handlePssTimeCheckRequest(CIOClient client, byte[] data, int offset, int length, long now) {
+    static void handlePssTimeCheckRequest(CUserSession client, byte[] data, int offset, int length, long now) {
         L1PcInstance pc = player(client);
         if (pc == null) return;
         try {
@@ -288,7 +288,7 @@ public final class PlaySupport2019 {
         }
     }
 
-    private static void queryTime(CIOClient client, L1PcInstance pc, int response) {
+    private static void queryTime(CUserSession client, L1PcInstance pc, int response) {
         final int charId = pc.getId();
         final PssConfig.Settings settings = PssConfig.get();
         final long day = PssDailyQuota.dayStart(System.currentTimeMillis(), settings.resetMinuteOfDay());
@@ -335,7 +335,7 @@ public final class PlaySupport2019 {
     }
 
     private static void enqueueLeaseClose(int charId, long day, long token,
-            CIOClient responseClient, boolean reply) {
+            CUserSession responseClient, boolean reply) {
         if (charId <= 0 || token == 0L) return;
         try {
             CacheD.getInstance().submitDbJobRetryOrdered(charId, () -> {
@@ -360,7 +360,7 @@ public final class PlaySupport2019 {
     }
 
     /** Drop an active lease before the client changes PC, logs out or disconnects. */
-    public static void onClientDetached(CIOClient client) {
+    public static void onClientDetached(CUserSession client) {
         if (client == null) return;
         ClientAutomationSession session = client.getAutomationSession();
         if (session != null && session.clientDriven() && client.releaseAutomation(session)) {
@@ -373,7 +373,7 @@ public final class PlaySupport2019 {
     /** Reload recalculates active leases without stopping the client's PSS automation. */
     public static void refreshForReload() {
         for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
-            final CIOClient client = pc.getNetConnection();
+            final CUserSession client = pc.getNetConnection();
             if (client == null) continue;
             final ClientAutomationSession session = client.getAutomationSession();
             if (session == null || !session.clientDriven()) continue;
@@ -388,7 +388,7 @@ public final class PlaySupport2019 {
         }
     }
 
-    private static boolean checkSession(CIOClient client, L1PcInstance pc,
+    private static boolean checkSession(CUserSession client, L1PcInstance pc,
             ClientAutomationSession session, long now) {
         int reason = !PssConfig.get().permits(pc) || session.playerStamp() != pc.getSessionStamp()
                 || session.mapId() != pc.getMapId() ? INVALID_MAP
@@ -420,19 +420,19 @@ public final class PlaySupport2019 {
         return false;
     }
 
-    private static boolean scheduleLeaseDeadline(CIOClient client,
+    private static boolean scheduleLeaseDeadline(CUserSession client,
             ClientAutomationSession session, long delayMs) {
         final var socket = client.getConnection();
         final int shard = socket == null ? -1 : socket.affinityShard();
-        final WeakReference<CIOClient> weakClient = new WeakReference<>(client);
+        final WeakReference<CUserSession> weakClient = new WeakReference<>(client);
         return CIOThreadCallback.getInstance().scheduleNetworkTimeout(shard,
                 new CIOThreadCallback.WheelTask() {
                     public boolean isCancelled() {
-                        CIOClient c = weakClient.get();
+                        CUserSession c = weakClient.get();
                         return c == null || c.getAutomationSession() != session;
                     }
                     public void run() {
-                        CIOClient c = weakClient.get();
+                        CUserSession c = weakClient.get();
                         if (c == null || c.getAutomationSession() != session) return;
                         L1PcInstance pc = player(c);
                         if (pc != null) checkSession(c, pc, session, session.deadlineNanos());
@@ -442,7 +442,7 @@ public final class PlaySupport2019 {
     }
 
     /** Existing CacheD ordered lane performs a durable rollover without losing client PSS ownership. */
-    private static void refreshLease(CIOClient client, L1PcInstance pc,
+    private static void refreshLease(CUserSession client, L1PcInstance pc,
             ClientAutomationSession old) {
         if (client.getAutomationSession() != old || !client.tryBeginPssClaim()) return;
         final PssConfig.Settings settings = PssConfig.get();
@@ -508,7 +508,7 @@ public final class PlaySupport2019 {
         }
     }
 
-    private static void failRenewal(CIOClient client, ClientAutomationSession old) {
+    private static void failRenewal(CUserSession client, ClientAutomationSession old) {
         CIOThreadCallback.getInstance().completeSession(client, () -> {
             client.endPssClaim();
             if (client.releaseAutomation(old)) {
@@ -518,9 +518,9 @@ public final class PlaySupport2019 {
         }, failure -> { if (failure != null) client.endPssClaim(); });
     }
 
-    private static L1PcInstance player(CIOClient client) {
+    private static L1PcInstance player(CUserSession client) {
         if (client == null || !client.isConnected() || !client.isGameSessionReady()
-                || client.getConnectionState() != ConnectionState.IN_GAME) return null;
+                || client.getConnectionState() != CConnectionState.IN_GAME) return null;
         L1PcInstance pc = client.getActiveChar();
         return pc == null || pc.getNetConnection() != client || pc.isLogoutStarted() ? null : pc;
     }
@@ -577,18 +577,18 @@ public final class PlaySupport2019 {
                 + " detail=" + invalid.getMessage() + " body64=" + hex);
     }
 
-    private static boolean sendStartPlaySupportAck(CIOClient client, int result) {
+    private static boolean sendStartPlaySupportAck(CUserSession client, int result) {
         return oneField(client, ProtoMsg.SC_START_PLAY_SUPPORT_ACK, result);
     }
 
-    private static boolean oneField(CIOClient client, int message, int value) {
+    private static boolean oneField(CUserSession client, int message, int value) {
         ProtoWriter out = Proto.begin(client, message, 32);
         if (out == null) return false;
         try { out.uint32(1, value); return Proto.commit(out); }
         finally { Proto.abort(out); }
     }
 
-    private static void sendForceFinishPlaySupportNoti(CIOClient client, int reason) {
+    private static void sendForceFinishPlaySupportNoti(CUserSession client, int reason) {
         final L1PcInstance pc = player(client);
         if (pc != null) pc.getCreatureController().StopPlaySupportAutoActions();
         ProtoWriter out = Proto.begin(client, ProtoMsg.SC_FORCE_FINISH_PLAY_SUPPORT_NOTI, 32);

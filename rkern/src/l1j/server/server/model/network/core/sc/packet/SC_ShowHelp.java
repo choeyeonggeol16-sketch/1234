@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_ShowHelp {
     private static final String HELP_CONTENT = "\n\n" +
@@ -21,7 +21,7 @@ public final class SC_ShowHelp {
 
     private SC_ShowHelp() {}
 
-    public static boolean send(CIOClient client, int number) {
+    public static boolean send(CUserSession client, int number) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -29,7 +29,7 @@ public final class SC_ShowHelp {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_BOARD_READ);
             buffer.writeD(number);
             buffer.writeS(" GM ");

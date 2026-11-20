@@ -13,8 +13,8 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.UserCommands;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
@@ -34,11 +34,11 @@ public final class SC_ChangeCharName {
 		return pc != null && send(pc.getNetConnection(), 2, false);
 	}
 
-	public static boolean sendResult(CIOClient client, boolean success) {
+	public static boolean sendResult(CUserSession client, boolean success) {
 		return send(client, 1, success);
 	}
 
-	private static boolean send(CIOClient client, int mode, boolean success) {
+	private static boolean send(CUserSession client, int mode, boolean success) {
 		if (client == null || !client.isConnected()) return false;
 		final CUserSocket conn = client.getConnection();
 		if (conn == null || !conn.isClientConnected()) return false;
@@ -46,7 +46,7 @@ public final class SC_ChangeCharName {
 		if (frame == null) return false;
 		boolean committed = false;
 		try {
-			final WriteBuffer buffer = frame.buffer();
+			final CPacketWriteBuffer buffer = frame.buffer();
 			buffer.writeC(Opcodes.S_VOICE_CHAT);
 			if (mode == 1) {
 				buffer.writeC(0x1E);

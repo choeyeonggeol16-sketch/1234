@@ -9,8 +9,8 @@ import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
@@ -19,7 +19,7 @@ public final class SC_Pledge {
 
     public static boolean sendAnnounce(L1PcInstance pc, int clanId) {
         if (pc == null) return false;
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -37,7 +37,7 @@ public final class SC_Pledge {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             buffer.writeC(167);
             buffer.writeS(clanName);
@@ -58,7 +58,7 @@ public final class SC_Pledge {
 
     public static boolean sendMembers(L1PcInstance pc, int page, int currentPage, ArrayList<String> list) {
         if (pc == null) return false;
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -93,7 +93,7 @@ public final class SC_Pledge {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             buffer.writeC(170);
             buffer.writeC(page);
@@ -119,7 +119,7 @@ public final class SC_Pledge {
 
     public static boolean sendWriteNotes(L1PcInstance pc, String name, String notes) {
         if (pc == null) return false;
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -129,7 +129,7 @@ public final class SC_Pledge {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             buffer.writeC(169);
             buffer.writeS(targetName);
@@ -205,7 +205,7 @@ public final class SC_Pledge {
 
     public static boolean sendBless(L1PcInstance pc, L1Clan clan, int bless) {
         if (pc == null) return false;
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -215,7 +215,7 @@ public final class SC_Pledge {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeH(0x8a);
             buffer.writeC(0x08);

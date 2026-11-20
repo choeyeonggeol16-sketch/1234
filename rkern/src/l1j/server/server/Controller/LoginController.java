@@ -14,7 +14,7 @@ import l1j.server.server.Account;
 import l1j.server.server.AccountAlreadyLoginException;
 import l1j.server.server.GameServerFullException;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
 /**
@@ -102,10 +102,10 @@ public final class LoginController {
 
     /** 세션 레코드: client + 로그인 당시 IP만 유지 */
     private static final class SessionRec {
-        final CIOClient client;
+        final CUserSession client;
         final String ip;
 
-        SessionRec(CIOClient client, String ip) {
+        SessionRec(CUserSession client, String ip) {
             this.client = client;
             this.ip = ip;
         }
@@ -131,7 +131,7 @@ public final class LoginController {
         return _online.get();
     }
 
-    public CIOClient getClientByAccount(String accountName) {
+    public CUserSession getClientByAccount(String accountName) {
         if (accountName == null) {
             return null;
         }
@@ -157,7 +157,7 @@ public final class LoginController {
 
     // ---------------- 로그인 ----------------
 
-    public void login(CIOClient client, Account account)
+    public void login(CUserSession client, Account account)
             throws GameServerFullException, AccountAlreadyLoginException {
 
         Objects.requireNonNull(client, "client");
@@ -225,7 +225,7 @@ public final class LoginController {
 
     // ---------------- 로그아웃 ----------------
 
-    public boolean logout(CIOClient client) {
+    public boolean logout(CUserSession client) {
         if (client == null) {
             return false;
         }
@@ -277,7 +277,7 @@ public final class LoginController {
      * 같은 계정에 이미 유효한 kick 예약이 있으면 Runnable을 추가로 만들지 않는다.
      * 예약 시각이 이미 지났는데 작업이 아직 실행되지 않았다면 CAS로 새 예약을 건다.
      */
-    private void scheduleKickIfNeeded(final CIOClient old, final String id) {
+    private void scheduleKickIfNeeded(final CUserSession old, final String id) {
         final long now = System.currentTimeMillis();
         final long dueAt = now + _reloginGraceMs;
         final Long dueBox = Long.valueOf(dueAt);
@@ -303,7 +303,7 @@ public final class LoginController {
     }
 
     private void scheduleKick(
-            final CIOClient old,
+            final CUserSession old,
             final String id,
             final long dueAt,
             final Long dueBox) {
@@ -352,7 +352,7 @@ public final class LoginController {
      * GameClient에 종료 플래그 getter(disconnected 류)가 있다면
      * 추후 그 getter로 교체하는 편이 더 정확하다.
      */
-    private static boolean isDeadSession(CIOClient c) {
+    private static boolean isDeadSession(CUserSession c) {
         if (c == null) {
             return true;
         }
@@ -405,8 +405,8 @@ public final class LoginController {
 
     // ---------------- 목록 순회 (콘솔/종료 용도) ----------------
 
-    public Iterable<CIOClient> sessions() {
-        final List<CIOClient> snapshot =
+    public Iterable<CUserSession> sessions() {
+        final List<CUserSession> snapshot =
                 new ArrayList<>(_sessions.size());
 
         for (SessionRec r : _sessions.values()) {
@@ -421,7 +421,7 @@ public final class LoginController {
     // ---------------- 관리 ----------------
 
     public int kickAll() {
-        final List<CIOClient> all =
+        final List<CUserSession> all =
                 new ArrayList<>(_sessions.size());
 
         for (SessionRec r : _sessions.values()) {
@@ -436,7 +436,7 @@ public final class LoginController {
         _pendingKickUntil.clear();
         _online.set(0);
 
-        for (CIOClient c : all) {
+        for (CUserSession c : all) {
             try {
                 c.kick();
             } catch (Throwable ignore) {

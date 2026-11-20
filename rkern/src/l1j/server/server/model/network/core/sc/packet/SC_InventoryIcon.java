@@ -8,8 +8,8 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
@@ -216,7 +216,7 @@ public final class SC_InventoryIcon {
                                    int skillId, int showType, long time, boolean good,
                                    int gfx, int tooltip, int startId, int endId) {
         if (pc == null) return false;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -233,7 +233,7 @@ public final class SC_InventoryIcon {
         }
     }
 
-    private static void writePayload(WriteBuffer buffer, int packetType, int priority, int type,
+    private static void writePayload(CPacketWriteBuffer buffer, int packetType, int priority, int type,
                                      int skillId, int showType, long time, boolean good,
                                      int gfx, int tooltip, int startId, int endId) {
         buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);

@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.DogFight.Instance.MJDogFightInstance;
 import l1j.server.MJ3SEx.EActionCodes;
@@ -664,7 +664,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
     }
 
     public static boolean sendFields(
-            CIOClient recipient, long _bit, int _point, int _objectnumber, int _objectsprite, int _action, int _direction,
+            CUserSession recipient, long _bit, int _point, int _objectnumber, int _objectsprite, int _action, int _direction,
             int _lightRadius, int _objectcount, int _alignment, String _desc, String _title, int _speeddata, int _emotion,
             int _drunken, boolean _isghost, boolean _isparalyzed, boolean _isuser, boolean _isinvisible,
             boolean _ispoisoned, int _emblemid, String _pledgename, String _mastername, int _altitude, int _hitratio,
@@ -708,7 +708,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_WORLD_PUT_OBJECT_NOTI);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient) {
+    private static boolean sendCtor(CUserSession protoRecipient) {
         long proto112_bit = 0;
         int proto112_point = 0;
         int proto112_objectnumber = 0;
@@ -765,7 +765,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
                 proto112_companion);
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient, MJEffectTriggerInstance trigger) {
+    public static boolean sendNewInstance(CUserSession protoRecipient, MJEffectTriggerInstance trigger) {
         long notiWire_bit = 0;
                 int notiWire_point = 0;
                 int notiWire_objectnumber = 0;
@@ -855,7 +855,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection(), trigger);
     }
 
-    public static boolean sendNew_namechat_isntance(CIOClient protoRecipient, L1NpcInstance npc, String name, boolean is_ghost) {
+    public static boolean sendNew_namechat_isntance(CUserSession protoRecipient, L1NpcInstance npc, String name, boolean is_ghost) {
         long notiWire_bit = 0;
                 int notiWire_point = 0;
                 int notiWire_objectnumber = 0;
@@ -943,7 +943,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
         return sendNew_namechat_isntance(protoRecipient == null ? null : protoRecipient.getNetConnection(), npc, name, is_ghost);
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient, MJDogFightInstance dogfight) {
+    public static boolean sendNewInstance(CUserSession protoRecipient, MJDogFightInstance dogfight) {
         long notiWire_bit = 0;
                 int notiWire_point = 0;
                 int notiWire_objectnumber = 0;
@@ -1033,7 +1033,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection(), dogfight);
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient, L1NpcInstance npc) {
+    public static boolean sendNewInstance(CUserSession protoRecipient, L1NpcInstance npc) {
         long notiWire_bit = 0;
                 int notiWire_point = 0;
                 int notiWire_objectnumber = 0;
@@ -1149,7 +1149,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection(), npc);
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient, L1DollInstance doll) {
+    public static boolean sendNewInstance(CUserSession protoRecipient, L1DollInstance doll) {
         long notiWire_bit = 0;
                 int notiWire_point = 0;
                 int notiWire_objectnumber = 0;
@@ -1266,7 +1266,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection(), doll);
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient, L1SummonInstance summon, L1PcInstance viewer) {
+    public static boolean sendNewInstance(CUserSession protoRecipient, L1SummonInstance summon, L1PcInstance viewer) {
         long notiWire_bit = 0;
                int notiWire_point = 0;
                int notiWire_objectnumber = 0;
@@ -1408,14 +1408,14 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection(), summon, viewer);
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient) {
+    public static boolean sendNewInstance(CUserSession protoRecipient) {
         return sendCtor(protoRecipient);
     }
 
     public static boolean sendNewInstance(L1PcInstance protoRecipient) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
-    public static boolean sendConstructed(CIOClient protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

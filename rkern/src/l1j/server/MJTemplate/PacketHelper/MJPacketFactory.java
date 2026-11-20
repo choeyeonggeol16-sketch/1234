@@ -58,7 +58,7 @@ public class MJPacketFactory {
 
     public static boolean sendOffTime(l1j.server.server.model.Instance.L1PcInstance pc) {
         if (pc == null) return false;
-        final l1j.server.server.model.network.core.session.CIOClient socket = pc.getNetConnection();
+        final l1j.server.server.model.network.core.session.CUserSession socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final l1j.server.server.model.network.core.connection.CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -66,7 +66,7 @@ public class MJPacketFactory {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final l1j.server.server.model.network.buffer.WriteBuffer buffer = frame.buffer();
+            final l1j.server.server.model.network.buffer.CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             buffer.writeC(0x48);
             committed = connection.commitDirectFrame(frame);
@@ -78,7 +78,7 @@ public class MJPacketFactory {
 
     public static boolean sendTime(l1j.server.server.model.Instance.L1PcInstance pc, long seconds) {
         if (pc == null) return false;
-        final l1j.server.server.model.network.core.session.CIOClient socket = pc.getNetConnection();
+        final l1j.server.server.model.network.core.session.CUserSession socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final l1j.server.server.model.network.core.connection.CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -86,7 +86,7 @@ public class MJPacketFactory {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final l1j.server.server.model.network.buffer.WriteBuffer buffer = frame.buffer();
+            final l1j.server.server.model.network.buffer.CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             buffer.writeC(0x47);
             buffer.writeH((int) seconds);

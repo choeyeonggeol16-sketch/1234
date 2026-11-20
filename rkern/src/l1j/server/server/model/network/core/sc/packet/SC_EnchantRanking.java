@@ -11,8 +11,8 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 import java.nio.charset.Charset;
@@ -36,7 +36,7 @@ public final class SC_EnchantRanking {
 	 */
 	public static void sendReadAsync(L1PcInstance pc, int number) {
 		if (pc == null) return;
-		final CIOClient owner = pc.getNetConnection();
+		final CUserSession owner = pc.getNetConnection();
 		if (owner == null || !owner.isConnected() || owner.getActiveChar() != pc) return;
 		try {
 			CacheD.getInstance().submitDbJobOrdered(pc.getId(), () -> {
@@ -204,7 +204,7 @@ private void loadRankData(int number) {
 		}
 	}
 
-private void writeImpl(CIOClient client, WriteBuffer buffer) {
+private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 		buffer.writeC(Opcodes.S_BOARD_READ);
 		buffer.writeD(_number);
 		buffer.writeS("메티스");
@@ -237,7 +237,7 @@ private String buildContent() {
 		return sb.toString();
 	}
 
-private boolean writeTo(CIOClient client) {
+private boolean writeTo(CUserSession client) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;

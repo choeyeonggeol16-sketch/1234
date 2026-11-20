@@ -94,10 +94,10 @@ import l1j.server.server.model.item.Card.L1CardCollection;
 import l1j.server.server.model.item.cooking.CookingRegistry;
 import l1j.server.server.model.item.tam.TamFruitUseService;
 import l1j.server.server.model.map.L1Map;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
-import l1j.server.server.model.network.utill.ConnectionState;
+import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.rank.loader.RankUserLoader;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_ADD_INVENTORY_NOTI;
@@ -136,7 +136,7 @@ public final class CS_EnterWorld {
 	}
 
 	
-	public static void handle(CIOClient client, String charName) {
+	public static void handle(CUserSession client, String charName) {
 		if (client == null || charName == null || charName.isEmpty()) {
 			return;
 		}
@@ -144,7 +144,7 @@ public final class CS_EnterWorld {
 		try {
 			if (Config.CHAR_PASSWORD
 					&& client.getAccount().getCPW() != null
-					&& client.getConnectionState() == ConnectionState.AUTHENTICATED) {
+					&& client.getConnectionState() == CConnectionState.AUTHENTICATED) {
 
 				client.setLastSelectedCharName(charName);
 				SC_CharPass.send(client, SC_CharPass._비번입력창);
@@ -157,7 +157,7 @@ public final class CS_EnterWorld {
 		doEnterWorld(charName, client);
 	}
 
-	private static void print_message(CIOClient clnt, String message, boolean is_kick) throws Exception {
+	private static void print_message(CUserSession clnt, String message, boolean is_kick) throws Exception {
 		System.out.println("─────────────────────────────────");
 		System.out.println(message);
 		System.out.println("─────────────────────────────────");
@@ -201,7 +201,7 @@ public final class CS_EnterWorld {
         }
     }
 
-    public static void doEnterWorld(String charName, CIOClient client) {
+    public static void doEnterWorld(String charName, CUserSession client) {
         if (client == null || charName == null || charName.isEmpty()
                 || !client.isConnected() || client.getAccount() == null
                 || client.getConnection() == null) return;
@@ -295,12 +295,12 @@ public final class CS_EnterWorld {
             if (row != null) try { row.close(); } catch (SQLException ignored) {}
     }
 
-    private static void completeEnterWorld(String charName, CIOClient client, Account account,
+    private static void completeEnterWorld(String charName, CUserSession client, Account account,
                                            EnterData data, Throwable failure) {
         try {
             if (!client.isConnected() || client.getAccount() != account
                     || client.getActiveChar() != null
-                    || client.getConnectionState() != ConnectionState.AUTHENTICATED) return;
+                    || client.getConnectionState() != CConnectionState.AUTHENTICATED) return;
             if (failure != null) throw new IllegalStateException("Enter DB load failed", failure);
             if (data == null) return;
             L1PcInstance pc = validateEnterWorld(charName, client, data.pc, data.blocked);
@@ -326,7 +326,7 @@ public final class CS_EnterWorld {
         }
     }
 
-    private static L1PcInstance validateEnterWorld(String charName, CIOClient client, L1PcInstance pc, boolean blocked) throws Exception {
+    private static L1PcInstance validateEnterWorld(String charName, CUserSession client, L1PcInstance pc, boolean blocked) throws Exception {
         if (blocked) {
             _log.info(String.format("압류 캐릭 접속 시도: %s", charName));
             SC_LoginResult.send(client, 52);
@@ -354,7 +354,7 @@ public final class CS_EnterWorld {
         }
 
         // 로그인 컨트롤러 정합
-        CIOClient sessionClient = LoginController.getInstance().getClientByAccount(client.getAccountName());
+        CUserSession sessionClient = LoginController.getInstance().getClientByAccount(client.getAccountName());
         if (sessionClient != client) {
             _log.warning(String.format("세션 불일치 차단: %s", client.getIp()));
             client.close();
@@ -382,7 +382,7 @@ public final class CS_EnterWorld {
         }
         return pc;
     }
-    private static boolean cheatChecks(L1PcInstance pc, CIOClient client) {
+    private static boolean cheatChecks(L1PcInstance pc, CUserSession client) {
         // 렙다운
         if (!pc.isGm() && Config.LEVEL_DOWN_RANGE != 0
                 && pc.getHighLevel() - pc.getLevel() >= Config.LEVEL_DOWN_RANGE) {
@@ -454,7 +454,7 @@ public final class CS_EnterWorld {
         }
     }
     
-    private static void registerToWorld(L1PcInstance pc, CIOClient client) {
+    private static void registerToWorld(L1PcInstance pc, CUserSession client) {
         pc.set_instance_status(MJEPcStatus.WORLD);
         pc.setOnlineStatus(1);
         pc.create_captcha();
@@ -462,11 +462,11 @@ public final class CS_EnterWorld {
         L1World.getInstance().storeObject(pc);
         pc.setNetConnection(client);
         client.setActiveChar(pc);
-        client.setConnectionState(ConnectionState.IN_GAME);
+        client.setConnectionState(CConnectionState.IN_GAME);
         SC_Unknown1.send(pc);
     }
     
-    private static void sendEnterData(L1PcInstance pc, CIOClient client, EnterData data) {
+    private static void sendEnterData(L1PcInstance pc, CUserSession client, EnterData data) {
         if (data.characterConfig != null) SC_CharacterConfig.send(pc, data.characterConfig);
         CharacterSlotItemTable.getInstance().applyCharSlots(pc, data.slotItems);
         MJKDALoader.getInstance().install(pc, false);
@@ -608,7 +608,7 @@ public final class CS_EnterWorld {
         if (pc.getCurrentMp() > maxMp) pc.setCurrentMp(maxMp);
     }
     
-    private static void postEnterProcess(L1PcInstance pc, CIOClient client, EnterData data) {
+    private static void postEnterProcess(L1PcInstance pc, CUserSession client, EnterData data) {
     	
         final int mailCount = data.mailCount;
         applyExcludeList(SpamTable.getInstance().getExcludeTable(pc.getId()), data.excludes);
@@ -767,7 +767,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
         L1CardCollection.Join(pc);
     }
 
-    private static void finalizeEnter(L1PcInstance pc, CIOClient client) {
+    private static void finalizeEnter(L1PcInstance pc, CUserSession client) {
         if (!CheckInitStat.CheckPcStat(pc)) {
             SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.START);
         }

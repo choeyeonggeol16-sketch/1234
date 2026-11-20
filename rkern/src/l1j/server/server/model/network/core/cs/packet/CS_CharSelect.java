@@ -16,8 +16,8 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.model.network.utill.ConnectionState;
+import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.utill.CConnectionState;
 
 import l1j.server.server.model.network.core.sc.packet.SC_CharAmount;
 public final class CS_CharSelect {
@@ -26,7 +26,7 @@ public final class CS_CharSelect {
 
     private CS_CharSelect() {}
 
-    public static void handle(CIOClient client) {
+    public static void handle(CUserSession client) {
 
         if (client == null) {
             return;
@@ -93,7 +93,7 @@ public final class CS_CharSelect {
             LOGGER.fine("Disconnect from: " + pc.getName());
         }
 
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
 
         if (client == null) {
             return;
@@ -109,7 +109,7 @@ public final class CS_CharSelect {
             pc.logout();
 
             client.setActiveChar(null);
-            client.setConnectionState(ConnectionState.AUTHENTICATED);
+            client.setConnectionState(CConnectionState.AUTHENTICATED);
             SC_Unknown2.send(client, 1);
 
             if (client.getAccount() != null && client.getAccount().is_changed_slot()) {

@@ -3,10 +3,10 @@ package l1j.server.server.model.network.core.sc.packet;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_Paralysis {
     public static final int TYPE_PARALYSIS = 1;
@@ -29,7 +29,7 @@ public final class SC_Paralysis {
         return target instanceof L1PcInstance && send((L1PcInstance) target, type, flag);
     }
 
-    public static boolean send(CIOClient client, int type, boolean flag) {
+    public static boolean send(CUserSession client, int type, boolean flag) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -37,7 +37,7 @@ public final class SC_Paralysis {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_PARALYSE);
             buffer.writeC(resolveSubType(type, flag));
             committed = connection.commitDirectFrame(frame);

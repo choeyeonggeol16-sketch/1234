@@ -26,8 +26,8 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.packet.ServerPacket;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeCharName;
 
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -76,7 +76,7 @@ public final class CS_Channel {
     }
 
     public static void handle(
-            CIOClient client,
+            CUserSession client,
             int type,
             int readD1,
             int readD2,
@@ -187,7 +187,7 @@ public final class CS_Channel {
         }
     }
 
-    private static void handleCharPasswordCreate(CIOClient client, String password) {
+    private static void handleCharPasswordCreate(CUserSession client, String password) {
         if (!Config.CHAR_PASSWORD || client == null) return;
         final Account account = client.getAccount();
         if (account == null || password == null
@@ -198,7 +198,7 @@ public final class CS_Channel {
         persistCharPassword(client, account, null, password, true);
     }
 
-    private static void handleCharPasswordChange(CIOClient client, String password,
+    private static void handleCharPasswordChange(CUserSession client, String password,
                                                  String modPassword) {
         if (!Config.CHAR_PASSWORD || client == null) return;
         final Account account = client.getAccount();
@@ -219,7 +219,7 @@ public final class CS_Channel {
      * Compare the previous database value so overlapping requests cannot
      * silently overwrite a password already committed by another session.
      */
-    private static void persistCharPassword(CIOClient client, Account account,
+    private static void persistCharPassword(CUserSession client, Account account,
                                             String expected, String replacement, boolean create) {
         final String login = account.getName();
         final var connection = client.getConnection();
@@ -275,7 +275,7 @@ public final class CS_Channel {
         }
     }
 
-    private static void handleCharPasswordAuth(CIOClient client, String password) {
+    private static void handleCharPasswordAuth(CUserSession client, String password) {
         if (!Config.CHAR_PASSWORD || client == null) {
             return;
         }
@@ -326,7 +326,7 @@ public final class CS_Channel {
         }
         final String targetName = target.getName();
         final String reporterName = pc.getName();
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         final int ownerId = pc.getId();
         try {
             CacheD.getInstance().submitDbJobOrdered(ownerId, () -> {
@@ -433,7 +433,7 @@ for (L1PcInstance gm : L1World.getInstance().getAllPlayers()) {
 
     private static void handleBookmarkColor(L1PcInstance pc, BookmarkColorPayload payload) {
         if (pc == null || payload == null || payload.size() == 0) return;
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null) return;
         final int ownerId = pc.getId();
         final int[] ids = new int[payload.size()];
@@ -708,7 +708,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
     }
 
     private static void handleCharNameChanged(
-            CIOClient client,
+            CUserSession client,
             L1PcInstance pc,
             String sourceName,
             String destinationName) {

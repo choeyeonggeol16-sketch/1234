@@ -28,7 +28,7 @@ import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;

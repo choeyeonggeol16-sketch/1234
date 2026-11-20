@@ -3,13 +3,13 @@ package l1j.server.server.model.network.codec;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import l1j.server.server.model.network.buffer.ReadBuffer;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketReadBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 
 /**********************************
- * Network Server Cryptor
+ * Network Server CPacketCryptor
  **********************************/
-public class Cryptor {
+public class CPacketCryptor {
 
     private static final long U32_MASK = 0xFFFF_FFFFL;
     private static final int DK1_DELTA = 679411651;
@@ -21,7 +21,7 @@ public class Cryptor {
 
     private final int[] _clntHash;
 
-    public Cryptor() {
+    public CPacketCryptor() {
         _clntHash = new int[256];
     }
 
@@ -70,7 +70,7 @@ public class Cryptor {
      * the wire buffer. A full decrypt must still advance the cipher exactly once.
      * The NIO.2 READ pump serializes these accesses for each connection.
      */
-    public int peekOpcode(ReadBuffer buffer, int offset, int size) {
+    public int peekOpcode(CPacketReadBuffer buffer, int offset, int size) {
         if (size < 8) return -1;
         final int c3 = (buffer.readByte(offset + 3) & 0xff)
                 ^ (int) ((_dk0 >>> 16) & 0xffL);
@@ -78,7 +78,7 @@ public class Cryptor {
                 ^ (int) (_dk1 & 0xffL) ^ c3) & 0xff;
     }
 
-    /** Serialized READ view: preview without creating/resetting a ReadBuffer. */
+    /** Serialized READ view: preview without creating/resetting a CPacketReadBuffer. */
     public int peekOpcode(ByteBuffer wire, int start, int size) {
         if (size < 8) return -1;
         final int c3 = (wire.get(start + 3) & 0xff)
@@ -112,7 +112,7 @@ public class Cryptor {
      * encrypted size N -> plaintext logical size N - 4.
      * 마지막 4바이트는 0으로 지우며 ReadHandler가 limit을 N - 4로 줄인다.
      */
-    public void decrypt(ReadBuffer buffer, int offset, int size) {
+    public void decrypt(CPacketReadBuffer buffer, int offset, int size) {
         if (size < 8) {
             throw new IllegalArgumentException("Invalid encrypted packet size: " + size);
         }
@@ -212,7 +212,7 @@ public class Cryptor {
     /**
      * 송신 암호화.
      */
-    public void encrypt(WriteBuffer wb, int offset, int size) {
+    public void encrypt(CPacketWriteBuffer wb, int offset, int size) {
         if (size <= 0) {
             return;
         }

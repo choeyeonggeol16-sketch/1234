@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -60,7 +60,7 @@ public final class SC_EVENT_COUNTDOWN_NOTI_PACKET extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _remainTime, _eventDesc);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _remainTime, byte[] _eventDesc) {
+    public static boolean sendFields(CUserSession recipient, int _remainTime, byte[] _eventDesc) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_EVENT_COUNTDOWN_NOTI_PACKET, Proto.capacityBound(1024L + (_eventDesc == null ? 0L : _eventDesc.length)));
         if (writer == null) return false;
         try {
@@ -77,7 +77,7 @@ public final class SC_EVENT_COUNTDOWN_NOTI_PACKET extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_EVENT_COUNTDOWN_NOTI_PACKET);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, int remainTime, byte[] eventDesc) {
+    private static boolean sendCtor(CUserSession protoRecipient, int remainTime, byte[] eventDesc) {
         int proto31_remainTime = 0;
         byte[] proto31_eventDesc = null;
 
@@ -87,7 +87,7 @@ public final class SC_EVENT_COUNTDOWN_NOTI_PACKET extends ProtoPacket {
         return sendFields(protoRecipient, proto31_remainTime, proto31_eventDesc);
     }
 
-    public static boolean sendCreate(CIOClient protoRecipient, int remainSeconds, String desc) {
+    public static boolean sendCreate(CUserSession protoRecipient, int remainSeconds, String desc) {
         byte[] descBytes = null;
                 if (desc != null) {
                     try {
@@ -103,7 +103,7 @@ public final class SC_EVENT_COUNTDOWN_NOTI_PACKET extends ProtoPacket {
         return sendCreate(protoRecipient == null ? null : protoRecipient.getNetConnection(), remainSeconds, desc);
     }
     public static boolean sendConstructed(
-            CIOClient protoRecipient, int remainTime, byte[] eventDesc) { return sendCtor(protoRecipient, remainTime, eventDesc); }
+            CUserSession protoRecipient, int remainTime, byte[] eventDesc) { return sendCtor(protoRecipient, remainTime, eventDesc); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int remainTime, byte[] eventDesc) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), remainTime, eventDesc); }

@@ -134,8 +134,8 @@ import l1j.server.server.model.gametime.L1GameTimeCarrier;
 import l1j.server.server.model.item.Card.L1CardCollection;
 import l1j.server.server.model.item.Exp.ExpBonusState;
 import l1j.server.server.model.item.teleport.L1Teleport;
-import l1j.server.server.model.network.packet.ServerPacket;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
@@ -1171,7 +1171,7 @@ public class L1PcInstance extends L1Character {
 	public final ArrayList<L1BookMark> _bookmarks;
 	private byte[] _shopChat;
 	private AtomicInteger _pinkNameTime;
-	private CIOClient _netConnection;
+	private CUserSession _netConnection;
 	private static Logger _log = Logger.getLogger(L1PcInstance.class.getName());
 
 	public L1PcInstance() {
@@ -2617,11 +2617,11 @@ public class L1PcInstance extends L1Character {
 		//try { disposeActionExecutor();} catch (Throwable ignore) {}
         
 	}
-	public CIOClient getNetConnection() {
+	public CUserSession getNetConnection() {
 		return _netConnection;
 	}
 
-	public void setNetConnection(CIOClient clientthread) {
+	public void setNetConnection(CUserSession clientthread) {
 		_netConnection = clientthread;
 	}
 
@@ -2822,14 +2822,14 @@ public class L1PcInstance extends L1Character {
 			getNetConnection().sendPacket(stream, isClear);
 	}
 
-	public void sendPackets(ServerPacket[] sp, boolean clear) {
+	public void sendPackets(CServerPacket[] sp, boolean clear) {
 		if (getNetConnection() != null) {
-			for (ServerPacket pck : sp)
+			for (CServerPacket pck : sp)
 				getNetConnection().sendPacket(pck);
 		}
 	}
 
-	public void sendPackets(ServerPacket sp, boolean clear) {
+	public void sendPackets(CServerPacket sp, boolean clear) {
 		try {
 			if (getNetConnection() != null) {
 				getNetConnection().sendPacket(sp);
@@ -2837,7 +2837,7 @@ public class L1PcInstance extends L1Character {
 		} catch (Exception e) {
 		}
 	}
-	public void sendPackets(ServerPacket sp, boolean clear, int clanid) {
+	public void sendPackets(CServerPacket sp, boolean clear, int clanid) {
 		try {
 			if (getNetConnection() != null) {
 				if(this.getClanid() == clanid && this.getClanid() != 0){
@@ -2867,16 +2867,16 @@ public class L1PcInstance extends L1Character {
 
     
 
-    public void sendPackets(l1j.server.server.model.network.packet.WritablePacket<CIOClient>[] packets, boolean clear) {
+    public void sendPackets(l1j.server.server.model.network.packet.IPacketWriter<CUserSession>[] packets, boolean clear) {
         if (packets == null) return;
         for (int i = 0; i < packets.length; i++) {
             sendPackets(packets[i], clear);
         }
     }
 
-    public void sendPackets(l1j.server.server.model.network.packet.WritablePacket<CIOClient> packet, boolean clear) {
+    public void sendPackets(l1j.server.server.model.network.packet.IPacketWriter<CUserSession> packet, boolean clear) {
         if (packet == null) return;
-        final CIOClient socket = getNetConnection();
+        final CUserSession socket = getNetConnection();
         if (socket == null || !socket.isConnected()) return;
         socket.getConnection().enqueuePacket(packet);
     }
@@ -2895,7 +2895,7 @@ public class L1PcInstance extends L1Character {
 
     
 
-    public void sendPackets(ServerPacket sp) {
+    public void sendPackets(CServerPacket sp) {
         if (getNetConnection() == null)
             return;
         try {
@@ -4725,7 +4725,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
      * guessed to be unpaid: they stay marked claimed to prevent duplicate items.
      */
     public void settleOutstandingLevelGifts() {
-        final CIOClient session = getNetConnection();
+        final CUserSession session = getNetConnection();
         if (!_levelGiftSnapshotLoaded || session == null || !session.isConnected()
                 || session.getActiveChar() != this || isItemTransferBusy()
                 || getTradeID() != 0 || isTradeResolving()) return;
@@ -8606,7 +8606,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	        return;
 	    }
 
-	    final CIOClient client = viewer.getNetConnection();
+	    final CUserSession client = viewer.getNetConnection();
 
 	    if (showName) {
 	        SC_WorldPutObject.getDetectedInvis(

@@ -13,7 +13,7 @@ import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.cooking.L1Cooking;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook.CompletedAchievement;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_COMPLETED_ACHIEVEMENT_REWARD_ACK.eResultCode;
@@ -52,7 +52,7 @@ public final class CS_COMPLETED_ACHIEVEMENT_REWARD_REQ {
     private CS_COMPLETED_ACHIEVEMENT_REWARD_REQ() {
     }
 
-    public static void handleRequest(CIOClient client, ProtoReader r) {
+    public static void handleRequest(CUserSession client, ProtoReader r) {
 
         // =========================================================
         // 패킷 파싱

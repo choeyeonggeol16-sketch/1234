@@ -9,7 +9,7 @@ import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -71,7 +71,7 @@ public final class SpellBookItems {
         GeneralSpellbookLearning.SpellBook(pc, item, isLawful);
     }
 
-	public static void SpellBook1(L1PcInstance pc, L1ItemInstance l1iteminstance, CIOClient clientthread) {
+	public static void SpellBook1(L1PcInstance pc, L1ItemInstance l1iteminstance, CUserSession clientthread) {
         SkillBookLearning.learn(pc, l1iteminstance, SkillBookLearning.Kind.DARK_ELF);
     }
 
@@ -79,19 +79,19 @@ public final class SpellBookItems {
         SkillBookLearning.learn(pc, l1iteminstance, SkillBookLearning.Kind.ELF);
     }
 
-	public static void SpellBook3(L1PcInstance pc, L1ItemInstance l1iteminstance, CIOClient clientthread) {
+	public static void SpellBook3(L1PcInstance pc, L1ItemInstance l1iteminstance, CUserSession clientthread) {
         SkillBookLearning.learn(pc, l1iteminstance, SkillBookLearning.Kind.KNIGHT);
     }
 
-	public static void SpellBook4(L1PcInstance pc, L1ItemInstance l1iteminstance, CIOClient clientthread) {
+	public static void SpellBook4(L1PcInstance pc, L1ItemInstance l1iteminstance, CUserSession clientthread) {
         SkillBookLearning.learn(pc, l1iteminstance, SkillBookLearning.Kind.PRINCE);
     }
 
-	public static void SpellBook5(L1PcInstance pc, L1ItemInstance l1iteminstance, CIOClient clientthread) {
+	public static void SpellBook5(L1PcInstance pc, L1ItemInstance l1iteminstance, CUserSession clientthread) {
         SkillBookLearning.learn(pc, l1iteminstance, SkillBookLearning.Kind.DRAGON_KNIGHT);
     }
 
-	public static void SpellBook6(L1PcInstance pc, L1ItemInstance l1iteminstance, CIOClient clientthread) {
+	public static void SpellBook6(L1PcInstance pc, L1ItemInstance l1iteminstance, CUserSession clientthread) {
         SkillBookLearning.learn(pc, l1iteminstance, SkillBookLearning.Kind.ILLUSIONIST);
     }
 

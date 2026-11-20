@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_Pledge;
@@ -21,7 +21,7 @@ public final class CS_WhoPledge {
 
     private CS_WhoPledge() {}
 
-    public static void handle(CIOClient client) {
+    public static void handle(CUserSession client) {
 
         if (client == null) {
             return;

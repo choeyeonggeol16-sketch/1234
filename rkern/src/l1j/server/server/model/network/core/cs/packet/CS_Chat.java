@@ -6,7 +6,7 @@ import l1j.server.server.datatables.SpamTable;
 import l1j.server.server.model.L1ExcludingList;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_NewChat;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -16,7 +16,7 @@ public final class CS_Chat {
     private CS_Chat() {
     }
 
-    public static void handle(CIOClient client, String chatText) {
+    public static void handle(CUserSession client, String chatText) {
         if (client == null || chatText == null || chatText.isEmpty()) {
             return;
         }

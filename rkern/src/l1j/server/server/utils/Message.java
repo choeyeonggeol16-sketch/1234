@@ -1,7 +1,7 @@
 package l1j.server.server.utils;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 public class Message {
@@ -19,7 +19,7 @@ public class Message {
 		sb.append(msg);
 		SC_SystemMessage.send(pc, sb.toString());
 	}
-	public void get_system_message1(L1PcInstance pc, ServerPacket packet) {
+	public void get_system_message1(L1PcInstance pc, CServerPacket packet) {
 		StringBuilder sb = new StringBuilder();
 		SC_SystemMessage.send(pc, sb.toString());
 		if(pc != null)

@@ -7,11 +7,11 @@ import l1j.server.DogFight.History.MJDogFightHistory;
 import l1j.server.DogFight.History.MJDogFightTicketInfo;
 import l1j.server.DogFight.Instance.MJDogFightInstance;
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.packet.ServerPacket;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.core.session.CUserSession;
 
-public class S_DogFightBoard extends ServerPacket {
+public class S_DogFightBoard extends CServerPacket {
 
 	private final boolean _isGm;
 	private final ArrayList<MJDogFightTicketInfo> _ticketsInfo;
@@ -26,7 +26,7 @@ public class S_DogFightBoard extends ServerPacket {
 	}
 
 	@Override
-	public void writeImpl(CIOClient client, WriteBuffer buffer) {
+	public void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 		buffer.writeC(Opcodes.S_HYPERTEXT);
 		buffer.writeD(1);
 		buffer.writeS("maeno4");
@@ -43,7 +43,7 @@ public class S_DogFightBoard extends ServerPacket {
 	}
 
 	private void create_full_size(
-			WriteBuffer buffer,
+			CPacketWriteBuffer buffer,
 			boolean is_gm,
 			ArrayList<MJDogFightTicketInfo> tickets_info) {
 
@@ -64,7 +64,7 @@ public class S_DogFightBoard extends ServerPacket {
 	}
 
 	private void create_normal_size(
-			WriteBuffer buffer,
+			CPacketWriteBuffer buffer,
 			boolean is_gm,
 			ArrayList<MJDogFightTicketInfo> tickets_info) {
 
@@ -86,7 +86,7 @@ public class S_DogFightBoard extends ServerPacket {
 	}
 
 	private void write_tickets_info(
-			WriteBuffer buffer,
+			CPacketWriteBuffer buffer,
 			MJDogFightTicketInfo tInfo,
 			boolean is_gm) {
 

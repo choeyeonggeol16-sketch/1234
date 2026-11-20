@@ -5,7 +5,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_PERSONAL_SHOP_ITEM_LIST_NOTI;
 
 public final class CS_QueryPersonalShop {
@@ -14,7 +14,7 @@ public final class CS_QueryPersonalShop {
     }
 
     public static void handle(
-            CIOClient client,
+            CUserSession client,
             int type,
             int objectId) {
 

@@ -1,21 +1,21 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.packet.ServerPacket;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.core.session.CUserSession;
 
-public abstract class ProtoPacket extends ServerPacket {
+public abstract class ProtoPacket extends CServerPacket {
 
 	public abstract int msgId();
 	protected abstract void body(ProtoWriter w);
 
 	@Override
-	protected final void writeImpl(CIOClient client, WriteBuffer buffer) {
+	protected final void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 		writeTo(buffer, true);
 	}
 
-	final void writeTo(WriteBuffer buffer, boolean trailer) {
+	final void writeTo(CPacketWriteBuffer buffer, boolean trailer) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeH(msgId());
 

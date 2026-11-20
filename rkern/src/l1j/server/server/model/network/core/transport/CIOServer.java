@@ -9,45 +9,45 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import l1j.server.server.model.network.core.transport.selector.SelectorTransport;
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 
 /** The ordinary RKern socket factory over Java TCP readiness and existing CIO owners. */
-public final class JavaCioServer {
-    private final Map<SelectorTransport.Connection, CSocket> sockets = new HashMap<>();
+public final class CIOServer {
+    private final Map<CSelectorTransport.Connection, CSocket> sockets = new HashMap<>();
     private final Map<InetAddress, Integer> byAddress = new HashMap<>();
     private final Map<Long, Integer> byMac = new HashMap<>();
     private final Map<Integer, CSocket> entering = new HashMap<>();
     private final int maxConnections;
     private final int ipLimit;
     private final int macLimit;
-    private final SelectorTransport transport;
+    private final CSelectorTransport transport;
     private long nextId;
     private long rejectedDuplicateEnter;
     private int authenticated;
 
-    public JavaCioServer(InetSocketAddress address, int maxConnections, int owners, int backlog,
-            int ipLimit, int macLimit, SelectorTransport.OwnerHost host, Consumer<CSocket> admit) throws IOException {
+    public CIOServer(InetSocketAddress address, int maxConnections, int owners, int backlog,
+            int ipLimit, int macLimit, CSelectorTransport.OwnerHost host, Consumer<CSocket> admit) throws IOException {
         this.maxConnections = maxConnections;
         this.ipLimit = ipLimit;
         this.macLimit = macLimit;
         int capacityPerOwner = (int) ((maxConnections + (long) owners - 1) / owners);
-        transport = SelectorTransport.bindHosted(address,
-                new SelectorTransport.Config(owners, capacityPerOwner, backlog, Math.max(64, capacityPerOwner),
+        transport = CSelectorTransport.bindHosted(address,
+                new CSelectorTransport.Config(owners, capacityPerOwner, backlog, Math.max(64, capacityPerOwner),
                         1, 1, 1, 3, 1, 0, Duration.ofSeconds(30)),
-                new SelectorTransport.RawHandler() {
-                    @Override public void onOpen(SelectorTransport.Connection peer) {
+                new CSelectorTransport.RawHandler() {
+                    @Override public void onOpen(CSelectorTransport.Connection peer) {
                         CSocket socket = register(peer);
                         if (socket == null) peer.abort();
                         else admit.accept(socket);
                     }
-                    @Override public void onClosed(SelectorTransport.Connection peer, SelectorTransport.CloseReason reason) {
+                    @Override public void onClosed(CSelectorTransport.Connection peer, CSelectorTransport.CloseReason reason) {
                         CSocket socket = forget(peer);
                         if (socket != null) socket.javaTerminated(reason);
                     }
                 }, host);
     }
 
-    private synchronized CSocket register(SelectorTransport.Connection peer) {
+    private synchronized CSocket register(CSelectorTransport.Connection peer) {
         InetAddress ip = peer.remoteAddress().getAddress();
         if (!(ip instanceof Inet4Address) || sockets.size() >= maxConnections) return null;
         int current = byAddress.getOrDefault(ip, 0);
@@ -58,7 +58,7 @@ public final class JavaCioServer {
         return socket;
     }
 
-    private synchronized CSocket forget(SelectorTransport.Connection peer) {
+    private synchronized CSocket forget(CSelectorTransport.Connection peer) {
         CSocket socket = sockets.remove(peer);
         if (socket == null) return null;
         decrement(byAddress, peer.remoteAddress().getAddress());
@@ -146,7 +146,7 @@ public final class JavaCioServer {
     }
 
     public InetSocketAddress localAddress() { return transport.localAddress(); }
-    public java.util.List<SelectorTransport.OwnerDiagnostics> ownerDiagnostics() { return transport.ownerDiagnostics(); }
+    public java.util.List<CSelectorTransport.OwnerDiagnostics> ownerDiagnostics() { return transport.ownerDiagnostics(); }
     public boolean isOwnerThread() { return transport.isOwnerThread(); }
     public void stopAccepting() throws IOException { transport.stopAccepting(); }
     public boolean isAcceptStopped() { return transport.isAcceptStopped(); }

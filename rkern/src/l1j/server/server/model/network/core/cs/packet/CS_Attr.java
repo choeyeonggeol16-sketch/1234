@@ -61,7 +61,7 @@ import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.item.Card.L1CardAdd;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
@@ -233,7 +233,7 @@ public final class CS_Attr {
     }
 
 	public static void handle(
-			CIOClient client,
+			CUserSession client,
 			int attrcode,
 			int msgIdx,
 			int c,
@@ -274,7 +274,7 @@ public final class CS_Attr {
 					ThreadPool.getInstance().scheduleRequired(new Runnable(){
 						@Override
 						public void run(){
-							CIOClient clnt = pc.getNetConnection();
+							CUserSession clnt = pc.getNetConnection();
 							CS_CharSelect.restartProcess(pc);
                             CS_CommonClick.sendCharAmountAndPacks(clnt);							
 						}

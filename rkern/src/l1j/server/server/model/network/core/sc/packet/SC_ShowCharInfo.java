@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.*;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.MJCTSystem.MJCTObject;
 
 public final class SC_ShowCharInfo {
@@ -15,7 +15,7 @@ public final class SC_ShowCharInfo {
         return receiver != null && send(receiver.getNetConnection(), obj);
     }
 
-    public static boolean send(CIOClient client, MJCTObject obj) {
+    public static boolean send(CUserSession client, MJCTObject obj) {
         if (client == null || !client.isConnected() || obj == null ) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -40,7 +40,7 @@ public final class SC_ShowCharInfo {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
 
                     buffer.writeC(Opcodes.S_BOARD_READ);
                     buffer.writeD(number);

@@ -2,9 +2,9 @@ package l1j.server.server.model.network.core.server;
 
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.transport.CSocket;
-import l1j.server.server.model.network.core.transport.selector.SelectorTransport;
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 
 import java.net.InetAddress;
 import java.lang.ref.WeakReference;
@@ -14,20 +14,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import l1j.server.Config;
 import l1j.server.server.Controller.LoginController;
-import l1j.server.server.model.network.client.manager.NetworkClientCounter;
+import l1j.server.server.model.network.client.manager.CIPConnectionCounter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 
 /** L1 game admission with the existing session and timer owners. */
 public final class CDummyServerCallback implements IServerCallback {
     private final CIOThreadCallback scheduler;
-    private final ConnectionConfig config;
+    private final CConnectionConfig config;
     private final int shardCount;
     private final AtomicInteger nextShard = new AtomicInteger();
     private final AtomicIntegerArray liveByShard;
     private final int maxOnline;
 
-    public CDummyServerCallback(CIOThreadCallback scheduler, ConnectionConfig config) {
+    public CDummyServerCallback(CIOThreadCallback scheduler, CConnectionConfig config) {
         if (scheduler == null || config == null)
             throw new IllegalArgumentException("scheduler/config required");
         this.scheduler = scheduler;
@@ -42,7 +42,7 @@ public final class CDummyServerCallback implements IServerCallback {
 
     public int selectorOwnerCount() { return shardCount; }
 
-    public void attachSelectors(java.util.List<SelectorTransport.OwnerDriver> owners) { scheduler.attachSelectors(owners); }
+    public void attachSelectors(java.util.List<CSelectorTransport.OwnerDriver> owners) { scheduler.attachSelectors(owners); }
 
     @Override
     public CUserSocket CreateSocket(CSocket socket,
@@ -52,7 +52,7 @@ public final class CDummyServerCallback implements IServerCallback {
         final InetAddress address = peer.getAddress();
         final String ip = address.getHostAddress();
         boolean counted = false;
-        CIOClient user = null;
+        CUserSession user = null;
         CUserSocket transport = null;
         int assignedShard = -1;
         try {
@@ -64,7 +64,7 @@ public final class CDummyServerCallback implements IServerCallback {
                 throw new IllegalStateException("game connection denied");
 
             if (!Config.shutdownCheck) {
-                if (NetworkClientCounter.getInstance().isPermission(address) < 0)
+                if (CIPConnectionCounter.getInstance().isPermission(address) < 0)
                     throw new IllegalStateException("IP connection limit reached");
                 counted = true;
             }
@@ -91,7 +91,7 @@ public final class CDummyServerCallback implements IServerCallback {
                         @Override public void onCleanupComplete(CUserSocket nio) { serverClosed.onCleanupComplete(nio); }
                         @Override public void onClosed(CUserSocket nio) {
                             try {
-                                final CIOClient client = nio.client();
+                                final CUserSession client = nio.client();
                                 if (client != null) client.onTransportClosed();
                                 else nio.onClientCleanupComplete();
                             } finally {
@@ -100,9 +100,9 @@ public final class CDummyServerCallback implements IServerCallback {
                             }
                         }
                     });
-            user = new CIOClient(transport, counted);
+            user = new CUserSession(transport, counted);
             transport.bindClient(user);
-            final CIOClient client = user;
+            final CUserSession client = user;
             if (!client.onConnected() || !client.isConnected())
                 throw new IllegalStateException("handshake not admitted");
             transport.configureTransportDeadlines(config.usePreLoginTimeout);
@@ -114,7 +114,7 @@ public final class CDummyServerCallback implements IServerCallback {
                 // The normal game session cleanup owns the address counter from here.
                 user.disconnect();
             } else if (counted) {
-                NetworkClientCounter.getInstance().decrease(address);
+                CIPConnectionCounter.getInstance().decrease(address);
             }
             throw failure;
         }

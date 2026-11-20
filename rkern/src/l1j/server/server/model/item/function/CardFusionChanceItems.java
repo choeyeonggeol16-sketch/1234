@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
@@ -31,7 +31,7 @@ final class CardFusionChanceItems {
         }
     }
 
-    static void use(CIOClient client, L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId, L1ItemInstance l1iteminstance1) {
+    static void use(CUserSession client, L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId, L1ItemInstance l1iteminstance1) {
         switch (itemId) {
 		case 5200101:{ //영웅카드 합성확률 증가
 			if(pc.영웅합성확률증가) {

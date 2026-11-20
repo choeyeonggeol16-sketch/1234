@@ -13,7 +13,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeHeading;
 
 /**
@@ -552,7 +552,7 @@ public final class CCreatureController {
         case EXEC_TELEPORT: {
             final L1PcInstance pc = actor;
             if (pc != null && pc.teleportTimerEpoch() == a0) {
-                final CIOClient client = pc.getNetConnection();
+                final CUserSession client = pc.getNetConnection();
                 if (client == null || !client.isConnected()) pc.tpEndFinish();
                 else pc.tpCommitTeleport();
             }

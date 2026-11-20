@@ -35,7 +35,7 @@ import io.netty.channel.uring.IoUring;
 import io.netty.channel.uring.IoUringIoHandler;
 import io.netty.channel.uring.IoUringServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import l1j.server.server.model.network.core.transport.selector.SelectorTransport;
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 
 public final class TransportServer {
     private static final int BACKLOG = 256;
@@ -54,18 +54,18 @@ public final class TransportServer {
     private static void runRKern(int owners, int clients, int wireBytes, boolean framed) throws Exception {
         int capacity = Math.max(128, (clients + owners - 1) / owners + 32);
         var raw = framed ? null : new RawEcho(owners, Math.min(wireBytes, 16_384));
-        SelectorTransport.Handler handler = framed ? (connection, payload) -> {
+        CSelectorTransport.Handler handler = framed ? (connection, payload) -> {
             if (payload.remaining() != wireBytes - 2
                     || !connection.trySend(payload.remaining(), out -> {
                         while (payload.remaining() != 0) out.writeByte(payload.readByte());
                     })) throw new java.io.IOException("Framed echo rejected");
         } : raw;
-        var config = new SelectorTransport.Config(owners, capacity, BACKLOG, capacity,
+        var config = new CSelectorTransport.Config(owners, capacity, BACKLOG, capacity,
                 framed ? capacity : 1, framed ? capacity * 8 : 1, framed ? capacity * 4 : 1,
                 256 * 1024, 256, 0, Duration.ofSeconds(5));
         String provider;
         try (Selector selector = Selector.open()) { provider = selector.getClass().getName(); }
-        try (var server = SelectorTransport.bind(ADDRESS, config, handler)) {
+        try (var server = CSelectorTransport.bind(ADDRESS, config, handler)) {
             serveControl(server.localAddress().getPort(), provider, () -> raw == null ? -1L : raw.allocatedBytes());
             server.close();
             if (raw != null) raw.verifyReleased();
@@ -78,12 +78,12 @@ public final class TransportServer {
     }
 
     private static final class RawOwner {
-        private final Map<SelectorTransport.Connection, Session> sessions = new IdentityHashMap<>();
+        private final Map<CSelectorTransport.Connection, Session> sessions = new IdentityHashMap<>();
         private final ArrayDeque<ByteBuffer> free = new ArrayDeque<>();
         private volatile int allocated;
     }
 
-    private static final class RawEcho implements SelectorTransport.RawHandler {
+    private static final class RawEcho implements CSelectorTransport.RawHandler {
         private final RawOwner[] owners;
         private final int chunkBytes;
 
@@ -93,7 +93,7 @@ public final class TransportServer {
             for (int i = 0; i < count; i++) owners[i] = new RawOwner();
         }
 
-        @Override public void onOpen(SelectorTransport.Connection connection) {
+        @Override public void onOpen(CSelectorTransport.Connection connection) {
             RawOwner owner = owners[connection.ownerIndex()];
             ByteBuffer buffer = owner.free.pollFirst();
             if (buffer == null) {
@@ -105,7 +105,7 @@ public final class TransportServer {
             session.read();
         }
 
-        @Override public void onClosed(SelectorTransport.Connection connection, SelectorTransport.CloseReason reason) {
+        @Override public void onClosed(CSelectorTransport.Connection connection, CSelectorTransport.CloseReason reason) {
             RawOwner owner = owners[connection.ownerIndex()];
             owner.free.addLast(owner.sessions.remove(connection).buffer);
         }
@@ -125,12 +125,12 @@ public final class TransportServer {
     }
 
     private static final class Session {
-        private final SelectorTransport.Connection connection;
+        private final CSelectorTransport.Connection connection;
         private final ByteBuffer buffer;
         private final IntConsumer readCompletion = this::onRead;
         private final LongConsumer writeCompletion = this::onWrite;
 
-        Session(SelectorTransport.Connection connection, ByteBuffer buffer) {
+        Session(CSelectorTransport.Connection connection, ByteBuffer buffer) {
             this.connection = connection;
             this.buffer = buffer;
         }

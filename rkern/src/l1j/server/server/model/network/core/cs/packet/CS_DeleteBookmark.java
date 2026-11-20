@@ -4,7 +4,7 @@ import l1j.server.server.ThreadPool;
 import java.util.concurrent.RejectedExecutionException;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.templates.L1BookMark;
 
 public final class CS_DeleteBookmark {
@@ -13,7 +13,7 @@ public final class CS_DeleteBookmark {
 	}
 
 	public static void handle(
-			CIOClient client,
+			CUserSession client,
 			String bookmarkName) {
 
 		if (client == null

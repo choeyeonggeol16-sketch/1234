@@ -16,7 +16,7 @@ import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.templates.L1Pet;
 
@@ -25,7 +25,7 @@ final class NpcPetCommands {
 
     private static final Logger LOG = Logger.getLogger(NpcPetCommands.class.getName());
 
-    static void petbuy(CIOClient client, int npcId, int currencyId, int price) {
+    static void petbuy(CUserSession client, int npcId, int currencyId, int price) {
         final L1PcInstance pc = client.getActiveChar();
         if (pc == null || PetTypeTable.getInstance().get(npcId) == null) return;
 

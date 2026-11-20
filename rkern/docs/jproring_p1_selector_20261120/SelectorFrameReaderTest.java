@@ -9,16 +9,16 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-import l1j.server.server.model.network.buffer.ReadBuffer;
-import l1j.server.server.model.network.core.transport.selector.SelectorBufferPool;
-import l1j.server.server.model.network.core.transport.selector.SelectorFrameReader;
+import l1j.server.server.model.network.buffer.CPacketReadBuffer;
+import l1j.server.server.model.network.core.transport.selector.CSelectorBufferPool;
+import l1j.server.server.model.network.core.transport.selector.CSelectorFrameReader;
 
 public final class SelectorFrameReaderTest {
     @FunctionalInterface
     private interface CheckedAction { void run() throws IOException; }
 
     public static void main(String[] args) throws IOException {
-        SelectorBufferPool pool = SelectorBufferPool.receive(2, 1);
+        CSelectorBufferPool pool = CSelectorBufferPool.receive(2, 1);
         try (ServerSocketChannel server = ServerSocketChannel.open()) {
             server.bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
             checkFraming(server, pool);
@@ -37,14 +37,14 @@ public final class SelectorFrameReaderTest {
                 check(pool.stats().allocatedDirectBytes() == warmBytes, "direct memory grew after warmup");
             }
         }
-        SelectorBufferPool.Stats stats = pool.stats();
+        CSelectorBufferPool.Stats stats = pool.stats();
         check(stats.inUse() == 0 && stats.borrows() == stats.returns(), "outstanding or duplicate lease");
         check(pool.stats().allocatedDirectBytes() <= pool.stats().maxDirectBytes(), "pool direct cap exceeded");
         System.out.printf("PASS Selector receive tests, 256 reconnects, direct allocated=%d, pool cap=%d%n",
                 pool.stats().allocatedDirectBytes(), pool.stats().maxDirectBytes());
     }
 
-    private static void checkFraming(ServerSocketChannel server, SelectorBufferPool pool) throws IOException {
+    private static void checkFraming(ServerSocketChannel server, CSelectorBufferPool pool) throws IOException {
         try (Connection conn = new Connection(server, pool)) {
             ByteBuffer first = wireFrame(3, 7);
             conn.send(first.slice(0, 1));
@@ -58,7 +58,7 @@ public final class SelectorFrameReaderTest {
             remainder.put(first.slice(3, 2)).put(wireFrame(2, 17)).put(wireFrame(2, 27)).flip();
             conn.send(remainder);
             conn.receive(10);
-            ReadBuffer[] borrowed = new ReadBuffer[1];
+            CPacketReadBuffer[] borrowed = new CPacketReadBuffer[1];
             check(conn.reader.drain(8, frame -> {
                 borrowed[0] = frame;
                 return !checkPayload(frame, 3, 7);
@@ -86,7 +86,7 @@ public final class SelectorFrameReaderTest {
         check(pool.stats().inUse() == 0, "framing test drained");
     }
 
-    private static void checkCloseDuringDispatch(ServerSocketChannel server, SelectorBufferPool pool) throws IOException {
+    private static void checkCloseDuringDispatch(ServerSocketChannel server, CSelectorBufferPool pool) throws IOException {
         try (Connection conn = new Connection(server, pool)) {
             conn.send(wireFrame(1, 7));
             conn.receive(3);
@@ -105,7 +105,7 @@ public final class SelectorFrameReaderTest {
         }
     }
 
-    private static void checkReadFailures(ServerSocketChannel server, SelectorBufferPool pool) throws IOException {
+    private static void checkReadFailures(ServerSocketChannel server, CSelectorBufferPool pool) throws IOException {
         try (Connection conn = new Connection(server, pool)) {
             conn.send(ByteBuffer.wrap(new byte[] {1, 0}));
             conn.receive(2);
@@ -128,7 +128,7 @@ public final class SelectorFrameReaderTest {
         }
     }
 
-    private static void checkExhaustion(ServerSocketChannel server, SelectorBufferPool pool) throws IOException {
+    private static void checkExhaustion(ServerSocketChannel server, CSelectorBufferPool pool) throws IOException {
         try (Connection holder = new Connection(server, pool); Connection conn = new Connection(server, pool)) {
             holder.send(wireFrame(4_998, 1));
             holder.receive(5_000);
@@ -140,7 +140,7 @@ public final class SelectorFrameReaderTest {
         }
     }
 
-    private static boolean checkPayload(ReadBuffer frame, int length, int seed) {
+    private static boolean checkPayload(CPacketReadBuffer frame, int length, int seed) {
         check(frame.remaining() == length, "payload length");
         for (int i = 0; i < length; i++) {
             check(frame.readByte() == payloadByte(seed, i), "payload byte");
@@ -176,15 +176,15 @@ public final class SelectorFrameReaderTest {
         final SocketChannel output;
         final SocketChannel input;
         final Selector selector;
-        final SelectorFrameReader reader;
+        final CSelectorFrameReader reader;
 
-        Connection(ServerSocketChannel server, SelectorBufferPool pool) throws IOException {
+        Connection(ServerSocketChannel server, CSelectorBufferPool pool) throws IOException {
             output = SocketChannel.open(server.getLocalAddress());
             input = server.accept();
             input.configureBlocking(false);
             selector = Selector.open();
             input.register(selector, SelectionKey.OP_READ);
-            reader = new SelectorFrameReader(pool);
+            reader = new CSelectorFrameReader(pool);
         }
 
         void send(ByteBuffer bytes) throws IOException {

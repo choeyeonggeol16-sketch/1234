@@ -14,7 +14,7 @@ import l1j.server.MJTemplate.Lineage2D.MJRectangle;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
 import l1j.server.server.model.network.core.sc.packet.SC_LFCTrapEffect;
 

@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -386,7 +386,7 @@ public class SC_TOP_RANKER_NOTI extends ProtoPacket implements Comparable<SC_TOP
     }
 
     public static boolean sendFields(
-            CIOClient recipient, int _objectId, L1PcInstance _characterInstance, int _exp, int _class, Ranker _total_ranker,
+            CUserSession recipient, int _objectId, L1PcInstance _characterInstance, int _exp, int _class, Ranker _total_ranker,
             Ranker _class_ranker, boolean _almost_upper_total, boolean _almost_lower_total, boolean _almost_upper_class,
             boolean _almost_lower_class, boolean _hasTotalRanker, boolean _hasClassRanker, boolean _hasUpperTotal,
             boolean _hasLowerTotal, boolean _hasUpperClass, boolean _hasLowerClass) {
@@ -416,7 +416,7 @@ public class SC_TOP_RANKER_NOTI extends ProtoPacket implements Comparable<SC_TOP
         return writer.finishWithTrailer(ProtoMsg.SC_TOP_RANKER_NOTI);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient) {
+    private static boolean sendCtor(CUserSession protoRecipient) {
         int proto69_objectId = 0;
         L1PcInstance proto69_characterInstance = null;
         int proto69_exp = 0;
@@ -441,7 +441,7 @@ public class SC_TOP_RANKER_NOTI extends ProtoPacket implements Comparable<SC_TOP
                 proto69_hasUpperTotal, proto69_hasLowerTotal, proto69_hasUpperClass, proto69_hasLowerClass);
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient, L1PcInstance pc) {
+    public static boolean sendNewInstance(CUserSession protoRecipient, L1PcInstance pc) {
         int notiWire_objectId = 0;
                 L1PcInstance notiWire_characterInstance = null;
                 int notiWire_exp = 0;
@@ -488,7 +488,7 @@ public class SC_TOP_RANKER_NOTI extends ProtoPacket implements Comparable<SC_TOP
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection(), pc);
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient, ResultSet rs) throws SQLException {
+    public static boolean sendNewInstance(CUserSession protoRecipient, ResultSet rs) throws SQLException {
         int notiWire_objectId = 0;
                 L1PcInstance notiWire_characterInstance = null;
                 int notiWire_exp = 0;
@@ -536,7 +536,7 @@ public class SC_TOP_RANKER_NOTI extends ProtoPacket implements Comparable<SC_TOP
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection(), rs);
     }
 
-    public static boolean sendNewDummyInstance(CIOClient protoRecipient) {
+    public static boolean sendNewDummyInstance(CUserSession protoRecipient) {
         int notiWire_objectId = 0;
                 L1PcInstance notiWire_characterInstance = null;
                 int notiWire_exp = 0;
@@ -584,14 +584,14 @@ public class SC_TOP_RANKER_NOTI extends ProtoPacket implements Comparable<SC_TOP
         return sendNewDummyInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
 
-    public static boolean sendNewInstance(CIOClient protoRecipient) {
+    public static boolean sendNewInstance(CUserSession protoRecipient) {
         return sendCtor(protoRecipient);
     }
 
     public static boolean sendNewInstance(L1PcInstance protoRecipient) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection());
     }
-    public static boolean sendConstructed(CIOClient protoRecipient) { return sendCtor(protoRecipient); }
+    public static boolean sendConstructed(CUserSession protoRecipient) { return sendCtor(protoRecipient); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection()); }
 

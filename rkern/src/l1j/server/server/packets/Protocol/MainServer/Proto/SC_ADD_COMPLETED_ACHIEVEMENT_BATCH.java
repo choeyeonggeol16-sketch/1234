@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.util.ArrayList;
@@ -95,7 +95,7 @@ public final class SC_ADD_COMPLETED_ACHIEVEMENT_BATCH extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _totalPages, _currentPage, _achievements);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _totalPages, int _currentPage, List<Achievement> _achievements) {
+    public static boolean sendFields(CUserSession recipient, int _totalPages, int _currentPage, List<Achievement> _achievements) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ADD_COMPLETED_ACHIEVEMENT_BATCH, Proto.capacityBound(128L + (_achievements == null ? 0L : 64L * _achievements.size())));
         if (writer == null) return false;
         try {
@@ -112,7 +112,7 @@ public final class SC_ADD_COMPLETED_ACHIEVEMENT_BATCH extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_ADD_COMPLETED_ACHIEVEMENT_BATCH);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, int totalPages, int currentPage) {
+    private static boolean sendCtor(CUserSession protoRecipient, int totalPages, int currentPage) {
         int proto4_totalPages = 0;
         int proto4_currentPage = 0;
         List<Achievement> proto4_achievements = new ArrayList<>();
@@ -123,7 +123,7 @@ public final class SC_ADD_COMPLETED_ACHIEVEMENT_BATCH extends ProtoPacket {
         return sendFields(protoRecipient, proto4_totalPages, proto4_currentPage, proto4_achievements);
     }
     public static boolean sendConstructed(
-            CIOClient protoRecipient, int totalPages, int currentPage) { return sendCtor(protoRecipient, totalPages, currentPage); }
+            CUserSession protoRecipient, int totalPages, int currentPage) { return sendCtor(protoRecipient, totalPages, currentPage); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int totalPages, int currentPage) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), totalPages, currentPage); }

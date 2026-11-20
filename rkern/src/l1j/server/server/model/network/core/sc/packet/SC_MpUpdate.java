@@ -1,10 +1,10 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 public final class SC_MpUpdate {
@@ -13,7 +13,7 @@ public final class SC_MpUpdate {
     private SC_MpUpdate() {
     }
 
-    public static boolean send(CIOClient client, int currentMp, int maxMp) {
+    public static boolean send(CUserSession client, int currentMp, int maxMp) {
         if (client == null || !client.isConnected()) {
             return false;
         }
@@ -27,7 +27,7 @@ public final class SC_MpUpdate {
         }
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_MANA_POINT);
             buffer.writeH(clamp(currentMp));
             buffer.writeH(clamp(maxMp));

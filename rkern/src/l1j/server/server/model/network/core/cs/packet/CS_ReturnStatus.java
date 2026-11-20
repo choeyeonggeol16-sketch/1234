@@ -14,7 +14,7 @@ import l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.L1ReturnStatTemp;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
@@ -38,7 +38,7 @@ public final class CS_ReturnStatus {
 
 	private CS_ReturnStatus() {}
 
-	public static void handle(CIOClient client, int type, int levelup, int statusup, long packedStats) {
+	public static void handle(CUserSession client, int type, int levelup, int statusup, long packedStats) {
 
 		if (client == null) {
 			return;
@@ -83,7 +83,7 @@ public final class CS_ReturnStatus {
 	// TYPE 1: 스탯 초기화 시작
 	// =========================================================
 
-	private static void handleType1Start(CIOClient client, L1PcInstance pc, long packedStats) {
+	private static void handleType1Start(CUserSession client, L1PcInstance pc, long packedStats) {
 
 		final int str = statStr(packedStats);
 		final int intel = statInt(packedStats);
@@ -147,7 +147,7 @@ public final class CS_ReturnStatus {
 	// TYPE 2: 레벨업 시 스탯 분배
 	// =========================================================
 
-	private static void handleType2LevelUp(CIOClient client, L1PcInstance pc, int levelup, int statusup) {
+	private static void handleType2LevelUp(CUserSession client, L1PcInstance pc, int levelup, int statusup) {
 
 		if (pc.rst == null) {
 			return;
@@ -222,7 +222,7 @@ public final class CS_ReturnStatus {
 		}
 	}
 
-	private static void handleBonusAndMaybeFinish(CIOClient client, L1PcInstance pc, int statusup) {
+	private static void handleBonusAndMaybeFinish(CUserSession client, L1PcInstance pc, int statusup) {
 
 		if (pc.rst == null) {
 			return;
@@ -264,7 +264,7 @@ public final class CS_ReturnStatus {
 	// TYPE 3: 엘릭서 사용
 	// =========================================================
 
-	private static void handleType3Elixir(CIOClient client, L1PcInstance pc, long packedStats) {
+	private static void handleType3Elixir(CUserSession client, L1PcInstance pc, long packedStats) {
 
 		if (pc.rst == null) {
 			return;
@@ -347,7 +347,7 @@ public final class CS_ReturnStatus {
 	// FINAL: 최종 스탯 반영 및 마무리
 	// =========================================================
 
-	private static void applyFinalAndFinish(CIOClient client, L1PcInstance pc) {
+	private static void applyFinalAndFinish(CUserSession client, L1PcInstance pc) {
 
 		try {
 			if (pc.rst.level >= BONUS_LEVEL_START) {
@@ -431,7 +431,7 @@ public final class CS_ReturnStatus {
         return true;
     }
 
-	private static boolean incStatOrKick(CIOClient client, L1PcInstance pc, int type) {
+	private static boolean incStatOrKick(CUserSession client, L1PcInstance pc, int type) {
 
 		final int value;
 
@@ -531,12 +531,12 @@ public final class CS_ReturnStatus {
 	// 유틸리티 (MISC)
 	// =========================================================
 
-	private static void kickStatBug(CIOClient client, L1PcInstance pc) {
+	private static void kickStatBug(CUserSession client, L1PcInstance pc) {
 		kick(client);
 		System.out.println("▶ 스텟버그 추방 : " + safeName(pc));
 	}
 
-	private static void kick(CIOClient client) {
+	private static void kick(CUserSession client) {
 		try {
 			client.kick();
 		} catch (Throwable ignored) {

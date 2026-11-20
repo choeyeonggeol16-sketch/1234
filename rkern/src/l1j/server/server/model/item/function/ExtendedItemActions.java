@@ -2,7 +2,7 @@ package l1j.server.server.model.item.function;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.MJActionListener.ActionListenerLinkageLoader;
 import l1j.server.MJCTSystem.Loader.MJCTLoadManager;
 import l1j.server.MJCTSystem.MJCTHandler;
@@ -21,7 +21,7 @@ import l1j.server.server.utils.IntRange;
 public final class ExtendedItemActions {
     private ExtendedItemActions() {}
 
-    public static void use(CIOClient client, L1PcInstance pc, L1ItemInstance item,
+    public static void use(CUserSession client, L1PcInstance pc, L1ItemInstance item,
             int itemObjectId, int targetId, int x, int y, String name, int skillId) {
         int itemId = item.getItem().getItemId();
         if (itemId == l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.ITEM_ID) {

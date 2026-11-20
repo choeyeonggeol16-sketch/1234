@@ -14,10 +14,10 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.Opcodes;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.NpcTable;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1Npc;
 
@@ -66,7 +66,7 @@ public final class SC_Serchdrop2 {
 
     public static boolean send(L1PcInstance receiver, int npcid) {
         if (receiver == null) return false;
-        final CIOClient client = receiver.getNetConnection();
+        final CUserSession client = receiver.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket conn = client.getConnection();
         final Account account = client.getAccount();
@@ -105,7 +105,7 @@ public final class SC_Serchdrop2 {
         return (s == null ? 0 : s.getBytes(java.nio.charset.Charset.forName("MS949")).length) + 1;
     }
 
-    private static boolean sendPrepared(CIOClient client, CUserSocket conn, String description) {
+    private static boolean sendPrepared(CUserSession client, CUserSocket conn, String description) {
         final long size = 2L + 1L + 4L + bytesOf("메티스")
                 + bytesOf("드랍리스트") + bytesOf("") + bytesOf(description);
         if (size > Integer.MAX_VALUE) return false;
@@ -113,7 +113,7 @@ public final class SC_Serchdrop2 {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_BOARD_READ);
             buffer.writeD(0);
             buffer.writeS("메티스");

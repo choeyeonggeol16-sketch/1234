@@ -6,11 +6,11 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 
 public final class SC_AttackCritical {
 
@@ -18,10 +18,10 @@ public final class SC_AttackCritical {
 			new AtomicInteger(0);
 
 	private static final int WIRE_SIZE_MODE_1 =
-			ConnectionConfig.HEADER_SIZE + 24;
+			CConnectionConfig.HEADER_SIZE + 24;
 
 	private static final int WIRE_SIZE_MODE_2 =
-			ConnectionConfig.HEADER_SIZE + 32;
+			CConnectionConfig.HEADER_SIZE + 32;
 
 	private SC_AttackCritical() {
 	}
@@ -32,7 +32,7 @@ public final class SC_AttackCritical {
 	// ----------------------------------------------------------------
 
 	public static boolean send(
-			CIOClient client,
+			CUserSession client,
 			L1PcInstance pc,
 			int targetId,
 			int type,
@@ -135,7 +135,7 @@ public final class SC_AttackCritical {
 	// ----------------------------------------------------------------
 
 	public static boolean send(
-			CIOClient client,
+			CUserSession client,
 			L1Character cha,
 			int targetId,
 			int x,
@@ -322,7 +322,7 @@ public final class SC_AttackCritical {
     }
 
 private static boolean sendMode1(
-			CIOClient client,
+			CUserSession client,
 			int attackerId,
 			int targetId,
 			int heading,
@@ -349,7 +349,7 @@ private static boolean sendMode1(
 			return false;
 		}
 
-		final WriteBuffer buffer =
+		final CPacketWriteBuffer buffer =
 				frame.buffer();
 
 		boolean committed = false;
@@ -381,7 +381,7 @@ private static boolean sendMode1(
 	}
 
 private static boolean sendMode2(
-			CIOClient client,
+			CUserSession client,
 			int attackerId,
 			int targetId,
 			int heading,
@@ -415,7 +415,7 @@ private static boolean sendMode2(
 			return false;
 		}
 
-		final WriteBuffer buffer =
+		final CPacketWriteBuffer buffer =
 				frame.buffer();
 
 		boolean committed = false;

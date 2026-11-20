@@ -4,25 +4,25 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 
 public final class SC_AttackMissPacket {
 
 	private static final int WIRE_SIZE_WITH_EXTRA =
-			ConnectionConfig.HEADER_SIZE + 18;
+			CConnectionConfig.HEADER_SIZE + 18;
 
 	private static final int WIRE_SIZE_NO_EXTRA =
-			ConnectionConfig.HEADER_SIZE + 17;
+			CConnectionConfig.HEADER_SIZE + 17;
 
 	private SC_AttackMissPacket() {
 	}
 
 	public static boolean send(
-			CIOClient client,
+			CUserSession client,
 			L1Character attacker,
 			int targetId) {
 
@@ -34,7 +34,7 @@ public final class SC_AttackMissPacket {
 	}
 
 	public static boolean send(
-			CIOClient client,
+			CUserSession client,
 			L1Character attacker,
 			int targetId,
 			int actId) {
@@ -55,7 +55,7 @@ public final class SC_AttackMissPacket {
 	}
 
 	public static boolean send(
-			CIOClient client,
+			CUserSession client,
 			int attackerId,
 			int targetId) {
 
@@ -67,7 +67,7 @@ public final class SC_AttackMissPacket {
 	}
 
 	public static boolean send(
-			CIOClient client,
+			CUserSession client,
 			int attackerId,
 			int targetId,
 			int actId) {
@@ -99,7 +99,7 @@ public final class SC_AttackMissPacket {
     }
 
 private static boolean send0(
-			CIOClient client,
+			CUserSession client,
 			int attackerId,
 			int targetId,
 			int actId,
@@ -128,7 +128,7 @@ private static boolean send0(
 			return false;
 		}
 
-		final WriteBuffer buffer = frame.buffer();
+		final CPacketWriteBuffer buffer = frame.buffer();
 		boolean committed = false;
 
 		try {

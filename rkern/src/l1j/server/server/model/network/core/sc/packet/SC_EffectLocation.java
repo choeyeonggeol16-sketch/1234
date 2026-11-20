@@ -1,10 +1,10 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -23,7 +23,7 @@ public final class SC_EffectLocation {
     }
 
 
-    public static boolean send(CIOClient client, int x, int y, int gfxId) {
+    public static boolean send(CUserSession client, int x, int y, int gfxId) {
         if (client == null || !client.isConnected()) {
             return false;
         }
@@ -37,7 +37,7 @@ public final class SC_EffectLocation {
         }
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EFFECT_LOC);
             buffer.writeH(x);
             buffer.writeH(y);

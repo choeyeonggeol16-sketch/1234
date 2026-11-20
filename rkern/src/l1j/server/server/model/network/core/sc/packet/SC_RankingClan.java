@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ public final class SC_RankingClan {
         return pc != null && send(pc.getNetConnection(), datas);
     }
 
-    public static boolean send(CIOClient client, RankData[] datas) {
+    public static boolean send(CUserSession client, RankData[] datas) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -61,7 +61,7 @@ public final class SC_RankingClan {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeH(147);
             for (int i = 0, n = entries.size(); i < n; i++) {

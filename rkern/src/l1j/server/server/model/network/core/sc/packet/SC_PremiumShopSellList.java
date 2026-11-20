@@ -8,11 +8,11 @@ import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.model.shop.L1Shop;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1ShopItem;
@@ -31,11 +31,11 @@ public final class SC_PremiumShopSellList {
         return pc != null && send(pc.getNetConnection(), npcId, objId);
     }
 
-    public static boolean send(CIOClient client, int npcId) {
+    public static boolean send(CUserSession client, int npcId) {
         return send(client, npcId, 0);
     }
 
-    public static boolean send(CIOClient client, int npcId, int objId) {
+    public static boolean send(CUserSession client, int npcId, int objId) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -50,7 +50,7 @@ public final class SC_PremiumShopSellList {
         final byte[][] statuses = new byte[limit][];
         int count = 0;
         final int tailSize = premiumShopTailSize(npcId);
-        long capacity = ConnectionConfig.HEADER_SIZE + 7L;
+        long capacity = CConnectionConfig.HEADER_SIZE + 7L;
         for (int i = 0; i < limit; ++i) {
             final L1ShopItem shopItem = list.get(i);
             if (shopItem == null || shopItem.getItem() == null) continue;
@@ -77,7 +77,7 @@ public final class SC_PremiumShopSellList {
             if (status.length > 255 || count >= 65535) return false;
             final byte[] encodedName = name == null ? EMPTY : name.getBytes(MS949);
             capacity += 16L + encodedName.length + status.length;
-            if (capacity + tailSize > ConnectionConfig.MAX_WIRE_PACKET_SIZE) return false;
+            if (capacity + tailSize > CConnectionConfig.MAX_WIRE_PACKET_SIZE) return false;
             final int j = count << 2;
             values[j] = i;
             values[j + 1] = item.getGfxId();
@@ -91,7 +91,7 @@ public final class SC_PremiumShopSellList {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_BUY_LIST);
             buffer.writeD(objId);
             buffer.writeH(count);
@@ -115,7 +115,7 @@ public final class SC_PremiumShopSellList {
             }
             committed = connection.commitDirectFrame(frame);
             return committed;
-        } catch (WriteBuffer.RegisteredCapacityExceededException e) {
+        } catch (CPacketWriteBuffer.RegisteredCapacityExceededException e) {
             System.err.println("[RPremiumShopSellList] SEND capacity exceeded npcId="
                     + npcId + " reserved=" + capacity
                     + " written=" + frame.buffer().position());
@@ -129,7 +129,7 @@ public final class SC_PremiumShopSellList {
         return npcId == 900107 ? 4 : 2;
     }
 
-    private static void writePremiumShopTail(WriteBuffer buffer, int npcId) {
+    private static void writePremiumShopTail(CPacketWriteBuffer buffer, int npcId) {
         if (npcId == 7200002) {
             buffer.writeC(253);
             buffer.writeC(255);

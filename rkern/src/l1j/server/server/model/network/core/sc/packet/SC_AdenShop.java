@@ -8,10 +8,10 @@ import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.shop.L1Shop;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1ShopItem;
@@ -26,7 +26,7 @@ public final class SC_AdenShop {
         return receiver != null && send(receiver.getNetConnection(), pc);
     }
 
-    public static boolean send(CIOClient client, L1PcInstance pc) {
+    public static boolean send(CUserSession client, L1PcInstance pc) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -66,7 +66,7 @@ public final class SC_AdenShop {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_BUY_LIST);
             buffer.writeD(7626);
             buffer.writeH(count);

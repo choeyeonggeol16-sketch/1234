@@ -6,11 +6,11 @@ import l1j.server.DogFight.History.MJDogFightTicketInfo;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.packet.ServerPacket;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.core.session.CUserSession;
 
-public class S_DogFightBuyList extends ServerPacket {
+public class S_DogFightBuyList extends CServerPacket {
 
 	private final int _objectId;
 	private final ArrayList<MJDogFightTicketInfo> _ticketsInfo;
@@ -34,7 +34,7 @@ public class S_DogFightBuyList extends ServerPacket {
 	}
 
 	@Override
-	public void writeImpl(CIOClient client, WriteBuffer buffer) {
+	public void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 
 		buffer.writeC(Opcodes.S_BUY_LIST);
 		buffer.writeD(_objectId);

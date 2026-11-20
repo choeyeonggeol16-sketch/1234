@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +90,7 @@ public final class SC_USER_PLAY_INFO_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _infos);
     }
 
-    public static boolean sendFields(CIOClient recipient, List<MapTimeLimitInfo> _infos) {
+    public static boolean sendFields(CUserSession recipient, List<MapTimeLimitInfo> _infos) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_USER_PLAY_INFO_NOTI, Proto.capacityBound(65535L));
         if (writer == null) return false;
         try {
@@ -107,14 +107,14 @@ public final class SC_USER_PLAY_INFO_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_USER_PLAY_INFO_NOTI);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, List<MapTimeLimitInfo> infos) {
+    private static boolean sendCtor(CUserSession protoRecipient, List<MapTimeLimitInfo> infos) {
         List<MapTimeLimitInfo> proto101_infos = null;
 
             proto101_infos = infos;
 
         return sendFields(protoRecipient, proto101_infos);
     }
-    public static boolean sendConstructed(CIOClient protoRecipient, List<MapTimeLimitInfo> infos) { return sendCtor(protoRecipient, infos); }
+    public static boolean sendConstructed(CUserSession protoRecipient, List<MapTimeLimitInfo> infos) { return sendCtor(protoRecipient, infos); }
 
     public static boolean sendConstructed(L1PcInstance protoRecipient, List<MapTimeLimitInfo> infos) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), infos); }
 

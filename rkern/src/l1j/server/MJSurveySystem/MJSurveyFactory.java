@@ -9,7 +9,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_IconMessage;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Adapter.SC_NOTIFICATION_MESSAGE;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;

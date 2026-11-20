@@ -3,10 +3,10 @@ package l1j.server.server.model.network.core.sc.packet;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.gametime.L1GameTimeClock;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_OwnCharStatus {
     private static final int FRAME_SIZE = 52;
@@ -42,7 +42,7 @@ public final class SC_OwnCharStatus {
         final int earth = pc.getResistance() != null ? pc.getResistance().getEarth() : 0;
         final int monsterKill = pc.getMonsterkill();
 
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -50,7 +50,7 @@ public final class SC_OwnCharStatus {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_STATUS);
             buffer.writeD(objId);
             buffer.writeC(level);

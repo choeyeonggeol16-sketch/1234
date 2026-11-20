@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import java.util.ArrayList;
 import java.util.List;
 import l1j.server.server.model.L1Buddy;
@@ -22,7 +22,7 @@ public final class SC_Buddy {
         }
     }
 
-    public static boolean send(CIOClient client, L1Buddy buddy) {
+    public static boolean send(CUserSession client, L1Buddy buddy) {
         if (client == null || !client.isConnected()) return false;
         final List<BuddyNode> rows = new ArrayList<>();
         int size = 9;
@@ -44,7 +44,7 @@ public final class SC_Buddy {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeD(0x01080151);
             for (int i = 0, n = rows.size(); i < n; ++i) {

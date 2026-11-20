@@ -22,7 +22,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.item.Exp.CalcExp;
-import l1j.server.server.model.network.packet.ServerPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_FISHING_NOT;
 import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;

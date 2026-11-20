@@ -8,11 +8,11 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 
 public final class SC_UseArrowSkill {
 
@@ -20,13 +20,13 @@ public final class SC_UseArrowSkill {
 			new AtomicInteger(0);
 
 	private static final int WIRE_SIZE =
-			ConnectionConfig.HEADER_SIZE + 33;
+			CConnectionConfig.HEADER_SIZE + 33;
 
 	private SC_UseArrowSkill() {
 	}
 
 	public static boolean send(
-			CIOClient client,
+			CUserSession client,
 			int attackerId,
 			int ox,
 			int oy,
@@ -56,7 +56,7 @@ public final class SC_UseArrowSkill {
 	}
 
 	public static boolean send(
-			CIOClient client,
+			CUserSession client,
 			L1Character cha,
 			int targetObj,
 			int spellGfx,
@@ -179,7 +179,7 @@ public final class SC_UseArrowSkill {
 }
 
 	private static boolean send0(
-			CIOClient client,
+			CUserSession client,
 			int attackerId,
 			int ox,
 			int oy,
@@ -209,7 +209,7 @@ public final class SC_UseArrowSkill {
 			return false;
 		}
 
-		final WriteBuffer buffer = frame.buffer();
+		final CPacketWriteBuffer buffer = frame.buffer();
 		boolean committed = false;
 
 		try {

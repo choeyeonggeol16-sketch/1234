@@ -50,8 +50,8 @@ def netty_classpath(cache):
 def compile_sources(classes, netty):
     compiler = [shutil.which('javac')] if shutil.which('javac') else [
         'java', '--module', 'jdk.compiler/com.sun.tools.javac.Main']
-    sources = [NETWORK / 'buffer/ReadBuffer.java', NETWORK / 'buffer/WriteBuffer.java',
-               NETWORK / 'codec/Cryptor.java', NETWORK.parents[1] / 'Opcodes.java',
+    sources = [NETWORK / 'buffer/CPacketReadBuffer.java', NETWORK / 'buffer/CPacketWriteBuffer.java',
+               NETWORK / 'codec/CPacketCryptor.java', NETWORK.parents[1] / 'Opcodes.java',
                *sorted((NETWORK / 'core/transport/selector').glob('*.java')),
                HERE / 'TransportServer.java', HERE / 'TransportDriver.java']
     subprocess.run([*compiler, '-encoding', 'UTF-8', '-cp', netty, '-d', str(classes), *sources], check=True)

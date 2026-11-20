@@ -1,8 +1,8 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.Controller.LoginController;
-import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.model.network.utill.ConnectionState;
+import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.utill.CConnectionState;
 
 public final class CS_Logout {
 
@@ -10,7 +10,7 @@ public final class CS_Logout {
     }
 
     public static void handle(
-            CIOClient client) {
+            CUserSession client) {
 
         if (client == null) {
             return;
@@ -34,7 +34,7 @@ public final class CS_Logout {
 
                 return;
             }
-            client.setConnectionState(ConnectionState.CONNECTED);
+            client.setConnectionState(CConnectionState.CONNECTED);
             LoginController.getInstance().logout(client);
 
         } catch (Exception ignored) {

@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1ItemInstance;
 
 public final class SC_TradeAddItem {
@@ -15,7 +15,7 @@ public final class SC_TradeAddItem {
 
     private SC_TradeAddItem() {}
 
-    public static boolean send(CIOClient client, L1ItemInstance item, String name, int count, int type) {
+    public static boolean send(CUserSession client, L1ItemInstance item, String name, int count, int type) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -29,7 +29,7 @@ public final class SC_TradeAddItem {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_ADD_XCHG);
             buffer.writeC(type);
             buffer.writeH(gfxId);
@@ -53,7 +53,7 @@ public final class SC_TradeAddItem {
         return pc != null && send(pc.getNetConnection(), item, name, count, type);
     }
 
-    public static boolean send(CIOClient client, L1ItemInstance item, int count, int type) {
+    public static boolean send(CUserSession client, L1ItemInstance item, int count, int type) {
         return send(client, item, item == null ? "" : item.getNumberedViewName(count), count, type);
     }
 }

@@ -14,7 +14,7 @@ import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.npc.shop.NpcShopManager;
 import l1j.server.server.model.shop.L1Shop;
 import l1j.server.server.model.shop.L1ShopBuyOrderList;
@@ -25,7 +25,7 @@ import l1j.server.server.templates.L1ShopItem;
 final class MerchantTransactions {
     private MerchantTransactions() {}
 
-    static void execute(CIOClient client, L1PcInstance pc, boolean buying, boolean dynamic,
+    static void execute(CUserSession client, L1PcInstance pc, boolean buying, boolean dynamic,
             int objectId, int npcId, String npcName, int size, long first, byte[] rest) {
         if (pc.isGhost() || pc.isDead()) return;
         if (Config.STANDBY_SERVER && (dynamic ? buying : !buying)) {
@@ -47,7 +47,7 @@ final class MerchantTransactions {
         else sell(pc, shop, dynamic, npcId, size, first, rest);
     }
 
-    private static void buy(CIOClient client, L1PcInstance pc, L1Shop shop, boolean dynamic,
+    private static void buy(CUserSession client, L1PcInstance pc, L1Shop shop, boolean dynamic,
             int npcId, String npcName, int size, long first, byte[] rest) {
         final boolean race = !dynamic && (npcId == 70035 || npcId == 70041 || npcId == 70042);
         if (dynamic && size != 1) {

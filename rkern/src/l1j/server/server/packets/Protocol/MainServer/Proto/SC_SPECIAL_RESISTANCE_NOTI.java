@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -59,7 +59,7 @@ public final class SC_SPECIAL_RESISTANCE_NOTI extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _pc);
     }
 
-    public static boolean sendFields(CIOClient recipient, L1PcInstance _pc) {
+    public static boolean sendFields(CUserSession recipient, L1PcInstance _pc) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_SPECIAL_RESISTANCE_NOTI, 1024);
         if (writer == null) return false;
         try {
@@ -76,14 +76,14 @@ public final class SC_SPECIAL_RESISTANCE_NOTI extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_SPECIAL_RESISTANCE_NOTI);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, L1PcInstance pc) {
+    private static boolean sendCtor(CUserSession protoRecipient, L1PcInstance pc) {
         L1PcInstance proto63_pc = null;
 
             proto63_pc = pc;
 
         return sendFields(protoRecipient, proto63_pc);
     }
-    public static boolean sendConstructed(CIOClient protoRecipient, L1PcInstance pc) { return sendCtor(protoRecipient, pc); }
+    public static boolean sendConstructed(CUserSession protoRecipient, L1PcInstance pc) { return sendCtor(protoRecipient, pc); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, L1PcInstance pc) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), pc); }

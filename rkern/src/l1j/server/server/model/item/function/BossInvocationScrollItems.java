@@ -28,7 +28,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
@@ -41,7 +41,7 @@ import l1j.server.server.utils.CommonUtil;
 import static l1j.server.server.model.item.function.TravelUseTables.*;
 final class BossInvocationScrollItems {
     private BossInvocationScrollItems() {}
-    static void use(CIOClient client, L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId) {
+    static void use(CUserSession client, L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId) {
         int[] loc = null;
         switch (itemId) {
 		case 3000123: { // 보스소환 주문서

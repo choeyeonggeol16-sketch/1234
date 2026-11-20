@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.SQLUtil;
 
@@ -37,7 +37,7 @@ public class L1QueryCharacter implements L1CommandExecutor  {
 
 			if (target != null) {
 				long totalAdena = 0;
-				CIOClient client = target.getNetConnection();
+				CUserSession client = target.getNetConnection();
 				
 				if (client == null)
 				{

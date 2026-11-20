@@ -9,8 +9,8 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 
@@ -113,7 +113,7 @@ public final class SC_ActionUI {
 
     private static CUserSocket connectionOf(L1PcInstance pc) {
         if (pc == null) return null;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return null;
         final CUserSocket connection = socket.getConnection();
         return connection != null && connection.isClientConnected() ? connection : null;
@@ -126,7 +126,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeC(code);
             switch (code) {
@@ -162,7 +162,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeH(type);
             switch (type) {
@@ -198,7 +198,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(180);
             buffer.writeH(TAM);
             buffer.writeC(8);
@@ -219,7 +219,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeC(0x19);
             buffer.writeC(2);
@@ -260,7 +260,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeH(339);
             if (flag != null) buffer.writeByte(flag);
@@ -289,7 +289,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeH(MONSTER_BOOK_WEEK_QUEST);
             buffer.writeByte(QUEST_BYTES);
@@ -347,7 +347,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer out = frame.buffer();
+            final CPacketWriteBuffer out = frame.buffer();
             out.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             out.writeH(ProtoMsg.SC_NOTIFICATION_INFO_NOTI);
             out.writeC(8);   // max page count
@@ -427,7 +427,7 @@ public final class SC_ActionUI {
         return size;
     }
 
-    private static void writeShop(WriteBuffer out, ShopEntry e, int pcId,
+    private static void writeShop(CPacketWriteBuffer out, ShopEntry e, int pcId,
                                   long start, long end, int npcId) {
         out.writeC(0x1A); // notificationinfo, field 3
         out.writeBit(shopEntrySize(e, pcId, start, end, npcId));
@@ -455,7 +455,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer out = frame.buffer();
+            final CPacketWriteBuffer out = frame.buffer();
             out.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             out.writeH(ProtoMsg.SC_NOTIFICATION_CHANGE_NOTI);
             out.writeC(0x08); out.writeBit(EVENT_ADEN_SHOP);

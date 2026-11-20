@@ -9,8 +9,8 @@ import java.util.Calendar;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 import java.nio.charset.Charset;
@@ -39,7 +39,7 @@ public final class SC_AuctionBoardRead {
 	public static void sendAsync(l1j.server.server.model.Instance.L1PcInstance pc,
 			int objectId, String houseNumber) {
 		if (pc == null) return;
-		final CIOClient owner = pc.getNetConnection();
+		final CUserSession owner = pc.getNetConnection();
 		if (owner == null || !owner.isConnected() || owner.getActiveChar() != pc) return;
 		try {
 			CacheD.getInstance().submitDbJobOrdered(pc.getId(), () -> {
@@ -168,7 +168,7 @@ private Data(int objectId, String houseNumber, String houseName, String location
 		_hasData = hasData;
 	}
 
-private void writeImpl(CIOClient client, WriteBuffer buffer) {
+private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 		if (!_hasData) {
 			return;
 		}
@@ -189,7 +189,7 @@ private void writeImpl(CIOClient client, WriteBuffer buffer) {
 		buffer.writeS(_hour);
 	}
 
-private boolean writeTo(CIOClient client) {
+private boolean writeTo(CUserSession client) {
         if (!_hasData) return false;
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();

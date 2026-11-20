@@ -5,10 +5,10 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_CharVisualUpdate {
     private SC_CharVisualUpdate() {}
@@ -27,7 +27,7 @@ public final class SC_CharVisualUpdate {
         return pc != null && sendPacked(pc.getNetConnection(), packed);
     }
 
-    public static boolean sendPacked(CIOClient client, long packed) {
+    public static boolean sendPacked(CUserSession client, long packed) {
         if (packed == 0L || client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -35,7 +35,7 @@ public final class SC_CharVisualUpdate {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_WIELD);
             buffer.writeD((int) (packed >>> 32));
             buffer.writeC((int) packed);

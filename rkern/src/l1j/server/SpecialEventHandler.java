@@ -57,7 +57,7 @@ public class SpecialEventHandler {
 				pc.getInventory().storeItem(30104, 1);
 				L1ItemInstance item = ItemTable.getInstance().createItem(30104);
 				SC_GMHtml.send(pc, "보낸이:" + pc.getName() + "", "아이템:"+item.getLogName()+" 이 도착 했습니다.");
-				final l1j.server.server.model.network.core.session.CIOClient connection=pc.getNetConnection();
+				final l1j.server.server.model.network.core.session.CUserSession connection=pc.getNetConnection();
                 if(connection!=null && connection.isConnected()) {
                     broadcast.send(connection.getConnection(),pc.getId());
                 }
@@ -78,7 +78,7 @@ public class SpecialEventHandler {
 				pc.getInventory().storeItem(7241, 1);
 				L1ItemInstance item = ItemTable.getInstance().createItem(7241);
 				SC_GMHtml.send(pc, "보낸이:" + pc.getName() + "", "아이템:"+item.getLogName()+" 이 도착 했습니다.");
-				final l1j.server.server.model.network.core.session.CIOClient connection=pc.getNetConnection();
+				final l1j.server.server.model.network.core.session.CUserSession connection=pc.getNetConnection();
                 if(connection!=null && connection.isConnected()) {
                     broadcast.send(connection.getConnection(),pc.getId());
                 }
@@ -99,7 +99,7 @@ public class SpecialEventHandler {
 				pc.getInventory().storeItem(3000123, 1);
 				L1ItemInstance item = ItemTable.getInstance().createItem(3000123);
 				SC_GMHtml.send(pc, "보낸이:"+pc.getName()+"♥", "♥"+item.getLogName()+" 1장이 도착♥　　 　(필드에서만 사용이 가능합니다)　(혈원분들과 함께 레이드 하세요)");
-				final l1j.server.server.model.network.core.session.CIOClient connection=pc.getNetConnection();
+				final l1j.server.server.model.network.core.session.CUserSession connection=pc.getNetConnection();
                 if(connection!=null && connection.isConnected()) {
                     broadcast.send(connection.getConnection(),pc.getId());
                 }

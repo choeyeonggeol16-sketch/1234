@@ -4,8 +4,8 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_SystemMessage {
 
@@ -15,7 +15,7 @@ public final class SC_SystemMessage {
 
     public static boolean send(L1PcInstance pc, String text, boolean nameId) {
         if (pc == null) return false;
-        final CIOClient socket = pc.getNetConnection();
+        final CUserSession socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -55,7 +55,7 @@ public final class SC_SystemMessage {
         });
     }
 
-    private static void writeContent(WriteBuffer buffer, String msg, boolean nameId) {
+    private static void writeContent(CPacketWriteBuffer buffer, String msg, boolean nameId) {
         if (!nameId) {
             buffer.writeC(Opcodes.S_MESSAGE);
             buffer.writeC(0x09);

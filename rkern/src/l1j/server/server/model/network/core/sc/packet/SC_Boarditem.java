@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.nio.charset.Charset;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,8 +18,8 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
@@ -79,7 +79,7 @@ public final class SC_Boarditem {
 	public static void sendListAsync(L1PcInstance pc,
 			L1NpcInstance board, int number) {
 		if (pc == null || board == null) return;
-		final CIOClient owner = pc.getNetConnection();
+		final CUserSession owner = pc.getNetConnection();
 		if (owner == null || !owner.isConnected() || owner.getActiveChar() != pc) return;
 		final int objId = board.getId();
 		try {
@@ -98,7 +98,7 @@ public final class SC_Boarditem {
 
 	public static void sendReadAsync(L1PcInstance pc, int number) {
 		if (pc == null) return;
-		final CIOClient owner = pc.getNetConnection();
+		final CUserSession owner = pc.getNetConnection();
 		if (owner == null || !owner.isConnected() || owner.getActiveChar() != pc) return;
 		try {
 			CacheD.getInstance().submitDbJobOrdered(pc.getId(), () -> {
@@ -198,7 +198,7 @@ public final class SC_Boarditem {
 		_readNode = readNode;
 	}
 
-	private void writeImpl(CIOClient client, WriteBuffer buffer) {
+	private void writeImpl(CUserSession client, CPacketWriteBuffer buffer) {
 		if (_mode == 1) {
 			buffer.writeC(Opcodes.S_BOARD_LIST);
 			buffer.writeC(0);
@@ -316,13 +316,13 @@ public final class SC_Boarditem {
 		return value == null ? 1 : value.getBytes(MS949).length + 1;
 	}
 
-	public boolean send(CIOClient client) {
+	public boolean send(CUserSession client) {
 		if (client == null || !client.isConnected()) return false;
 		final CUserSocket conn = client.getConnection();
 		if (conn == null || !conn.isClientConnected()) return false;
 		final long capacity = frameLength();
-		if (capacity <= ConnectionConfig.HEADER_SIZE
-				|| capacity > ConnectionConfig.MAX_WIRE_PACKET_SIZE) return false;
+		if (capacity <= CConnectionConfig.HEADER_SIZE
+				|| capacity > CConnectionConfig.MAX_WIRE_PACKET_SIZE) return false;
 		final CIOFrame frame = conn.beginDirectFrame((int) capacity);
 		if (frame == null) return false;
 		boolean committed = false;
@@ -330,7 +330,7 @@ public final class SC_Boarditem {
 			writeImpl(client, frame.buffer());
 			committed = conn.commitDirectFrame(frame);
 			return committed;
-		} catch (WriteBuffer.RegisteredCapacityExceededException e) {
+		} catch (CPacketWriteBuffer.RegisteredCapacityExceededException e) {
 			_log.warning("SC_Boarditem capacity calculation overflow mode=" + _mode
 					+ " requested=" + capacity);
 			return false;
@@ -346,10 +346,10 @@ public final class SC_Boarditem {
 				length += 4 + bytesOf(i.title) + bytesOf(i.writer)
 						+ bytesOf("+ " + i.enchant + " " + i.name);
 			}
-			return ConnectionConfig.HEADER_SIZE + length;
+			return CConnectionConfig.HEADER_SIZE + length;
 		}
 		if (_mode == 2 && _readNode != null) {
-			return ConnectionConfig.HEADER_SIZE + 1 + 4 + bytesOf(_readNode.title)
+			return CConnectionConfig.HEADER_SIZE + 1 + 4 + bytesOf(_readNode.title)
 					+ bytesOf(formatEnchant(_readNode.enchant) + " " + _readNode.name)
 					+ bytesOf(_readNode.writer)
 					+ bytesOf(readContent());

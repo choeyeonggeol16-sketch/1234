@@ -1,14 +1,14 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class CS_ReturnSummon {
 
     private CS_ReturnSummon() {
     }
 
-    public static void handle(CIOClient client) {
+    public static void handle(CUserSession client) {
 
         if (client == null) {
             return;

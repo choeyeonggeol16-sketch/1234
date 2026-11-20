@@ -19,9 +19,9 @@ import l1j.server.server.model.network.core.connection.CIOFrame;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
-import l1j.server.server.model.network.core.session.CIOClient;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.core.session.CUserSession;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.templates.L1BookMark;
 import l1j.server.server.utils.SQLUtil;
 
@@ -364,7 +364,7 @@ public static void broadcastGreen(String message) {
 
     private static boolean sendEncoded(L1PcInstance receiver, int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<L1BookMark> _bookmarks) {
         if (receiver == null) return false;
-        final CIOClient socket = receiver.getNetConnection();
+        final CUserSession socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -377,7 +377,7 @@ public static void broadcastGreen(String message) {
             writePayload(frame.buffer(), _constructorType, _subCode, _val1, _val2, _val3, _val4, _bool1, _strVal1, _strVal2, _item, _pc, _objs, _strs, _bookmarks);
             committed = connection.commitDirectFrame(frame);
             return committed;
-        } catch (WriteBuffer.RegisteredCapacityExceededException exceeded) {
+        } catch (CPacketWriteBuffer.RegisteredCapacityExceededException exceeded) {
             return false;
         } finally {
             if (!committed) connection.abortDirectFrame(frame);
@@ -387,7 +387,7 @@ public static void broadcastGreen(String message) {
     private static int estimateFrameCapacity(int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<L1BookMark> _bookmarks) {
         if ((_constructorType == 22 && _subCode == CLAN_WAREHOUSE_LIST)
                 || (_constructorType == 1 && _subCode == CALL_SOMETHING)) {
-            return ConnectionConfig.MAX_WIRE_PACKET_SIZE;
+            return CConnectionConfig.MAX_WIRE_PACKET_SIZE;
         }
         long size = (_constructorType == 7 ? 128L : 256L);
         if (_strVal1 != null) size += ((long) _strVal1.length() << 1) + 2;
@@ -415,7 +415,7 @@ public static void broadcastGreen(String message) {
         return size > Integer.MAX_VALUE ? -1 : (int) size;
     }
 
-	private static void writePayload(WriteBuffer buffer, int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<L1BookMark> _bookmarks) {
+	private static void writePayload(CPacketWriteBuffer buffer, int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<L1BookMark> _bookmarks) {
 		buffer.writeC(Opcodes.S_EVENT);
 		buffer.writeC(_subCode);
 
@@ -1087,7 +1087,7 @@ public static void broadcastGreen(String message) {
 	}
 
 
-	private static void callSomething(WriteBuffer buffer) {
+	private static void callSomething(CPacketWriteBuffer buffer) {
 		Iterator<L1PcInstance> itr = L1World.getInstance().getAllPlayers().iterator();
 
 		buffer.writeC(L1World.getInstance().getAllPlayers().size());

@@ -4,17 +4,17 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_Dexup {
     private static final int WIRE_SIZE = 11;
 
     private SC_Dexup() {}
 
-    public static boolean send(CIOClient client, L1PcInstance actor, int type, int time) {
+    public static boolean send(CUserSession client, L1PcInstance actor, int type, int time) {
         if (actor == null) return false;
         final int totalDex = actor.getAbility() == null ? 0 : actor.getAbility().getTotalDex();
         if (client == null || !client.isConnected()) return false;
@@ -24,7 +24,7 @@ public final class SC_Dexup {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_MAGE_DEXTERITY);
             buffer.writeH(time);
             buffer.writeC(totalDex);

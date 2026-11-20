@@ -8,7 +8,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.datatables.IpTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.SQLUtil;
@@ -25,7 +25,7 @@ public class L1GlobalBan implements L1CommandExecutor {
 			L1PcInstance target = L1World.getInstance().getPlayer(arg);
 
 			if (target != null) {
-				CIOClient client = target.getNetConnection();
+				CUserSession client = target.getNetConnection();
 
 				if (client == null) {
 					SC_SystemMessage.send(pc, "접속중이지 않은 캐릭터에 대해 조회할 수 없습니다.");

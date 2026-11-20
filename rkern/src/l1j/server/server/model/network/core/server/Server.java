@@ -2,13 +2,13 @@ package l1j.server.server.model.network.core.server;
 
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CUserSocketRegistry;
+import l1j.server.server.model.network.core.connection.CUserSocketMap;
 import l1j.server.server.model.network.core.diagnostics.CPerfMon;
 import l1j.server.server.model.network.core.transport.CSocket;
-import l1j.server.server.model.network.core.transport.JavaCioServer;
+import l1j.server.server.model.network.core.transport.CIOServer;
 import l1j.server.server.model.network.core.config.CIOConfig;
-import l1j.server.server.model.network.core.transport.selector.SelectorTransport;
-import l1j.server.server.model.network.utill.ConnectionConfig;
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
+import l1j.server.server.model.network.utill.CConnectionConfig;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -26,8 +26,8 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
     private static final Logger LOG = Logger.getLogger(Server.class.getName());
     private final CIOBufferPool pool;
     private final IServerCallback factory;
-    private final JavaCioServer javaServer;
-    private final CUserSocketRegistry<CUserSocket> connections = new CUserSocketRegistry<>();
+    private final CIOServer javaServer;
+    private final CUserSocketMap<CUserSocket> connections = new CUserSocketMap<>();
     private final AtomicBoolean acceptingStopped = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicInteger admitted = new AtomicInteger();
@@ -60,15 +60,15 @@ public final class Server implements AutoCloseable, CUserSocket.Closed {
     }
 
     private Server(InetSocketAddress address, int maxConnections, int ioThreads, int backlog,
-            CIOBufferPool pool, IServerCallback factory, SelectorTransport.OwnerHost owners) throws IOException {
+            CIOBufferPool pool, IServerCallback factory, CSelectorTransport.OwnerHost owners) throws IOException {
         if (address == null || pool == null || factory == null || maxConnections < 1
                 || ioThreads < 1 || backlog < 1) throw new IllegalArgumentException("invalid server configuration");
         this.pool = pool;
         this.factory = factory;
         this.maxConnections = maxConnections;
         if (owners == null) throw new IllegalArgumentException("CIO Selector owner host required");
-        javaServer = new JavaCioServer(address, maxConnections, ioThreads, backlog,
-                ConnectionConfig.NETWORK_CLIENT_PERMISSION, CIOConfig.MAC_LIMIT, owners, this::activateAccepted);
+        javaServer = new CIOServer(address, maxConnections, ioThreads, backlog,
+                CConnectionConfig.NETWORK_CLIENT_PERMISSION, CIOConfig.MAC_LIMIT, owners, this::activateAccepted);
     }
 
     public CPerfMon.Snapshot performance() { return null; }

@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
@@ -41,7 +41,7 @@ public final class SC_FISHING_NOT extends ProtoPacket {
         return sendFields(recipient == null ? null : recipient.getNetConnection(), _time);
     }
 
-    public static boolean sendFields(CIOClient recipient, int _time) {
+    public static boolean sendFields(CUserSession recipient, int _time) {
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_FISHING_NOT, Proto.capacityBound(1024L));
         if (writer == null) return false;
         try {
@@ -58,7 +58,7 @@ public final class SC_FISHING_NOT extends ProtoPacket {
         return writer.finishWithTrailer(ProtoMsg.SC_FISHING_NOT);
     }
 
-    private static boolean sendCtor(CIOClient protoRecipient, int time) {
+    private static boolean sendCtor(CUserSession protoRecipient, int time) {
         int proto33_time = 0;
 
             proto33_time = time;
@@ -66,14 +66,14 @@ public final class SC_FISHING_NOT extends ProtoPacket {
         return sendFields(protoRecipient, proto33_time);
     }
 
-    public static boolean sendCreate(CIOClient protoRecipient, int time) {
+    public static boolean sendCreate(CUserSession protoRecipient, int time) {
         return sendCtor(protoRecipient, time);
     }
 
     public static boolean sendCreate(L1PcInstance protoRecipient, int time) {
         return sendCreate(protoRecipient == null ? null : protoRecipient.getNetConnection(), time);
     }
-    public static boolean sendConstructed(CIOClient protoRecipient, int time) { return sendCtor(protoRecipient, time); }
+    public static boolean sendConstructed(CUserSession protoRecipient, int time) { return sendCtor(protoRecipient, time); }
 
     public static boolean sendConstructed(
             L1PcInstance protoRecipient, int time) { return sendCtor(protoRecipient == null ? null : protoRecipient.getNetConnection(), time); }

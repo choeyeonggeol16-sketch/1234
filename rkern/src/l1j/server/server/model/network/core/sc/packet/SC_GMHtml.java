@@ -2,15 +2,15 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.WriteBuffer;
+import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 
 public final class SC_GMHtml {
     private SC_GMHtml() {}
 
-    public static boolean send(CIOClient client, String s1, String s2) {
+    public static boolean send(CUserSession client, String s1, String s2) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -18,7 +18,7 @@ public final class SC_GMHtml {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_HYPERTEXT);
             buffer.writeD(0);
             buffer.writeS("withdraw");
@@ -40,7 +40,7 @@ public final class SC_GMHtml {
     public static boolean send(L1PcInstance pc, int objectId, String html) {
         return pc != null && send(pc.getNetConnection(), objectId, html);
     }
-    public static boolean send(CIOClient client, int objectId, String html) {
+    public static boolean send(CUserSession client, int objectId, String html) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client.getConnection();
         if (connection == null || !connection.isClientConnected()) return false;
@@ -48,7 +48,7 @@ public final class SC_GMHtml {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final WriteBuffer buffer = frame.buffer();
+            final CPacketWriteBuffer buffer = frame.buffer();
             buffer.writeC(Opcodes.S_HYPERTEXT);
             buffer.writeD(objectId);
             buffer.writeS("hsiw");

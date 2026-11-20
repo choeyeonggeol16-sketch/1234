@@ -18,7 +18,7 @@ import l1j.server.MJTemplate.MJArrangeHelper.MJArrangeParser;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.session.CIOClient;
+import l1j.server.server.model.network.core.session.CUserSession;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
@@ -29,7 +29,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
 
     private static final Logger _log = Logger.getLogger(SC_CRAFT_LIST_ALL_ACK.class.getName());
 
-    private static final ConcurrentHashMap<CIOClient, Boolean> CRAFT_SENDING = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<CUserSession, Boolean> CRAFT_SENDING = new ConcurrentHashMap<>();
 
     /*
      * 단일 제작 목록 protobuf chunk 제한.
@@ -131,7 +131,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
             return;
         }
 
-        final CIOClient client = pc.getNetConnection();
+        final CUserSession client = pc.getNetConnection();
 
         if (client == null || !client.isConnected()) {
             return;
@@ -203,7 +203,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
 
     private static void sendNextChunk(
             final L1PcInstance pc, 
-            final CIOClient client, 
+            final CUserSession client, 
             final ArrayList<byte[]> caches, 
             final long sendId, 
             final int index, 
@@ -275,7 +275,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
 
     private static void scheduleNextChunk(
             final L1PcInstance pc, 
-            final CIOClient client, 
+            final CUserSession client, 
             final ArrayList<byte[]> caches, 
             final long sendId, 
             final int index, 
@@ -357,7 +357,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
         return _npc2craftId == null ? null : _npc2craftId.get(npcId);
     }
     
-    public static void onDisconnect(CIOClient client) {
+    public static void onDisconnect(CUserSession client) {
         if (client != null) {
             CRAFT_SENDING.remove(client);
         }
