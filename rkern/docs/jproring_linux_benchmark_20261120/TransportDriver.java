@@ -65,13 +65,21 @@ public final class TransportDriver {
         long end = begin + measure;
         DataInputStream in = persistent == null ? null : new DataInputStream(persistent.getInputStream());
         OutputStream out = persistent == null ? null : persistent.getOutputStream();
+        // Each server port and churn worker gets its own loopback source IP.
+        // The generator then has a separate ephemeral port range per worker.
+        var source = persistent == null ? new InetSocketAddress(
+                "127." + (address.getPort() >>> 8) + "." + (address.getPort() & 255) + "." + (client + 2), 0) : null;
         long started;
         while ((started = System.nanoTime()) < end) {
             sent[0]++;
-            long connected = 0, completed;
+            long connectTime = 0, completed;
             if (persistent == null) {
-                try (Socket socket = connect(address)) {
-                    connected = System.nanoTime();
+                try (Socket socket = new Socket()) {
+                    configure(socket);
+                    socket.bind(source);
+                    long dialing = System.nanoTime();
+                    socket.connect(address, 3000);
+                    connectTime = System.nanoTime() - dialing;
                     echo(new DataInputStream(socket.getInputStream()), socket.getOutputStream(), sent, received);
                     completed = System.nanoTime();
                 }
@@ -81,7 +89,7 @@ public final class TransportDriver {
             }
             if (started >= begin && completed <= end) {
                 replies.add(completed - started);
-                if (persistent == null) connects.add(connected - started);
+                if (persistent == null) connects.add(connectTime);
             }
         }
         return new Result(replies, connects);
@@ -90,14 +98,18 @@ public final class TransportDriver {
     private static Socket connect(InetSocketAddress address) throws IOException {
         Socket socket = new Socket();
         try {
-            socket.setTcpNoDelay(true);
-            socket.setSoTimeout(3000);
+            configure(socket);
             socket.connect(address, 3000);
             return socket;
         } catch (IOException failure) {
             socket.close();
             throw failure;
         }
+    }
+
+    private static void configure(Socket socket) throws IOException {
+        socket.setTcpNoDelay(true);
+        socket.setSoTimeout(3000);
     }
 
     private static void echo(DataInputStream in, OutputStream out, byte[] sent, byte[] received) throws IOException {

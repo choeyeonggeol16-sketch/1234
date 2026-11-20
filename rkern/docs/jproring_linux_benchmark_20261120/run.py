@@ -144,8 +144,11 @@ def main():
     models = [line.partition(':')[2].strip() for line in Path('/proc/cpuinfo').read_text().splitlines()
               if line.startswith('model name')]
     quota = Path('/sys/fs/cgroup/cpu.max')
+    linux_tcp = Path('/proc/sys/net/ipv4')
     env = dict(kernel=platform.release(), architecture=platform.machine(), cpu=models[0] if models else None,
                available_cpus=len(os.sched_getaffinity(0)), cpu_quota=quota.read_text().strip() if quota.exists() else None,
+               ephemeral_ports=(linux_tcp / 'ip_local_port_range').read_text().split(),
+               tcp_tw_reuse=(linux_tcp / 'tcp_tw_reuse').read_text().strip(),
                jdk=subprocess.run(['java', '-version'], text=True, capture_output=True, check=True).stderr.splitlines()[0],
                netty=NETTY, revision=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=HERE, text=True).strip(),
                trials=args.trials, warmup_ms=args.warmup_ms, measure_ms=args.measure_ms,
