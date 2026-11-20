@@ -190,3 +190,75 @@ S07 Java 21 전체 타입 컴파일, 기존/신규 스킬 ID별 원본 대조 �
 
 원본 파일 SHA, 366개 효과 VTable, 즉시 효과 타이밍별 순회, 지속 등록·시작·종료 Message 호출 경로, 재계산 및 선택적 PumpEnd, 이동 제한 카운터를 실제 명령어로 확인했다. 이 수준은 두 핸들러 역할 분리의 직접 설계 근거다.
 모든 366개 클래스의 메서드 내부, 모든 스킬 정의 파서 분기, enum 값 전체, 모든 삭제 원인별 가상 경로, 시전 종료와 지속 종료 후속 효과 전수, 전체 스레드 동작까지 완전히 복원한 것은 아니다. 추가 분석 없이 미확인 NC 기능을 추정 구현하지 않는다.
+
+## 11. NC가 효과 중심으로 설계한 이유와 기술적 평가
+
+아래는 1~7절의 실제 바이너리 증거에 근거한 설계 해석이다. NC 개발자의 직접 발언이나 성능 계측 결과로 혼동하지 않는다.
+
+### 11.1 스킬 ID와 효과 구현의 분리
+- CSkillInfo의 순서 있는 효과 목록과 가상 함수 호출을 이용하면 하나의 효과 구현을 서로 다른 스킬 정의에서 재사용할 수 있다.
+- 예: HP 증가 효과와 방어 보정 효과는 스킬마다 on/off 함수로 복제할 필요가 없다. 복합 버프는 기존 효과를 조합할 수 있다.
+- CSkillEffect_p_physical_defence와 CSkillEffect_p_magic_speed가 CheckPumpCondition(0x8DB710)과 Pump(0x8DB788)를 공유하는 것이 실제 공통 구현 재사용의 직접 근거다.
+- CSkillEffectAddBonusByArmorType::Pump는 데이터 필드를 읽어 보정량을 전달한다. 따라서 효과 이름마다 독립 실행 로직을 복제할 이유가 없다.
+
+### 11.2 상태 기반 재계산으로 보정량 누적 오류 위험 감소
+- CCreature::ValidateSkillMod는 InitializeSkillMod로 스킬 보정량을 초기화한 뒤 현재 수집된 유효 효과의 CheckPumpCondition과 Pump를 호출한다.
+- 이전 적용/제거 횟수에 의존해 숫자를 더하고 빼는 방식보다 능력치의 기준 상태를 복원하기 쉽다.
+- p_max_hp, p_max_mp의 PumpEnd가 기본 함수로 충분한 이유도 이 분리 구조에서 이해할 수 있다.
+- 단, 모든 종료 원인의 재계산 호출은 전수 확인되지 않았다. RKern의 기존 능력치 시스템 자체를 변경하라는 지시가 아니다. 두 핸들러에서 공통 계산 및 실제 적용값 원복을 우선 재사용한다.
+
+### 11.3 시작·재계산·종료의 책임 분리
+| 실제 함수명 | 실행 책임 | 재계산 중 호출 |
+|---|---|---|
+| Instant | 즉시 효과, 공격·회복 등 | 아니오 |
+| CheckPumpCondition | 현재 지속 효과 조건 검사 | 예 |
+| Pump | 능력치/상태 보정 | 예 |
+| PumpStart | 지속 효과 시작 단계의 부수 처리 | 아니오 |
+| PumpEnd | 실제 종료 시 필요한 정리 | 아니오 |
+
+- 재계산 때문에 회복이나 마법 피해가 다시 발생하거나 지속 효과 시작 카운터가 증가하지 않도록 실행 단계를 구분한 구조다.
+- 기본 함수 0x53A8FC(mov al,1; ret)를 공유하므로 모든 효과에 강제로 시작/종료 구현을 만들지 않는다.
+- CSkillInfo::PumpStart의 두 번째 벡터와 종료 시 timing별 추가 즉시 효과 등 비대칭 경로도 존재하므로 모든 효과를 기계적으로 대칭화하지 않는다.
+
+### 11.4 중첩 상태의 올바른 수명
+CSkillEffect_p_block_move::PumpStart/PumpEnd는 +0xF50의 제한 카운터를 증가/감소한다. 독립된 두 제한 효과가 남아 있는 경우 하나의 종료만으로 카운터가 0이 되지 않는다. 상태 중첩의 안전성을 높이는 설계다. CSkillEffect_p_block_controll도 별도 카운터를 사용한다. 단, p_block_spell은 Pump 방식이므로 모든 제한을 동일한 카운터로 구현하지 않는다.
+
+### 11.5 성능과 유지보수 관점
+효과 정의 재사용, 공통 가상 함수, 필요한 단계만 구현하는 방식은 스킬 수가 늘어도 실행 로직의 중복이 낮고 확장성이 좋다. 재계산에는 유효 효과 수에 따른 순회 비용과 간접 호출 비용이 존재한다. NC보다 빠르다거나 GC/메모리 사용량이 일정 비율 감소한다고 단정할 수 없다. RKern Java 21은 기존 공유 정의와 컨테이너를 활용하고 시전마다 신규 효과 객체/컬렉션을 생성하지 않는 방향으로 이관하며 실제 JFR 측정으로 확인한다.
+종합 평가: 확장성, 효과 재사용, 스킬 수명 관리 및 유지보수 관점에서 매우 우수한 MMORPG 설계. 정적 설계에 대한 평가이며 실제 운영 성능·버그 부재 보증은 아니다.
+
+## 12. 실제 NC 명칭 보존 지침 및 구현 참조표
+
+아래 이름은 앞 절에서 확인한 NC 원본 RTTI/진단 문자열 및 역참조 결과에 기반한다. 동일 역할은 가능한 한 실제 이름을 우선 사용한다. Java에 실제 존재하지 않는 NC 클래스를 모두 신설하라는 뜻은 아니다. 기존 클래스와 역할이 겹치면 유지하고, 필요한 효과 계층과 함수에만 NC 명칭을 사용한다.
+
+| 실제 NC 클래스 | 실제 함수 또는 사용 메서드 | 역할 |
+|---|---|---|
+| CSkillDB | Load, Add, PostLoad, GetSkillInfo, GetSkillInfoByName | 정의 관리; 기존 SkillsTable 활용 |
+| CSkillInfo | CanUsedBy, CanActivateSkill, CheckOperateCond, ActivateSkill, ActivateSkillEffects, ActivateDuraionSkill, PumpStart, PumpEnd | 스킬 정의 및 효과별 실행; 기존 스킬 실행부 유지 |
+| CSkillEffect | Instant, CheckPumpCondition, Pump, PumpStart, PumpEnd | 공통 효과 수명 인터페이스 |
+| CSkillEffectAddBonusByArmorType | Pump | 조건별 보정 공통 구현 |
+| CSkillEffect_i_heal | Instant | 즉시 회복 |
+| CSkillEffect_i_m_attack | Instant | 마법 공격 |
+| CSkillEffect_i_resurrection | Instant | 부활 |
+| CSkillEffect_i_dispel_all | Instant | 강제 해제 |
+| CSkillEffect_p_max_hp | CheckPumpCondition, Pump, PumpStart | 최대 HP 보정 |
+| CSkillEffect_p_max_mp | CheckPumpCondition, Pump, PumpStart | 최대 MP 보정 |
+| CSkillEffect_p_max_mp_add | CheckPumpCondition, Pump | 최대 MP 가산 |
+| CSkillEffect_p_physical_defence | CheckPumpCondition, Pump | 물리 방어 보정 |
+| CSkillEffect_p_magic_speed | CheckPumpCondition, Pump | 마법 속도 보정 |
+| CSkillEffect_p_block_move | PumpStart, PumpEnd | 이동 제한 |
+| CSkillEffect_p_block_controll | PumpStart, PumpEnd | 조작 제한 |
+| CSkillEffect_p_block_act | Pump, PumpStart | 행동 제한 |
+| CSkillEffect_p_block_spell | Pump | 스킬 제한 |
+| CSkillEffect_p_block_getdamage | Pump | 피격 제한 |
+| CSkillEffect_p_block_chat | PumpStart, PumpEnd | 채팅 제한 |
+| CCreature | InitializeSkillMod, ValidateSkillMod, InfectedSkillBy, _InfectedSkillBy, _AddAbnormalStatus, _DeleteAbnormalStatus, _OnAbnormalStatusChanged, _OnAbnormalStatusDeleted, OnInfectedSkillBy | 상태 수명 및 재계산; 기존 RKern 실행 구조 유지 |
+| CSerializedOnInfectedSkillByMessage | OnHandle | 시작 메시지; 신규 메시지 큐 도입 금지 |
+| CSerializedPumpEndMessage | OnHandle | 종료 메시지; 기존 owner 경로 유지 |
+| CSerializedActivateSkillEffectsMessage | OnHandle | 즉시 효과 메시지; 기존 실행부 유지 |
+
+ActivateDuraionSkill 및 p_block_controll은 NC 원문 철자 그대로 기록한다. 표의 메서드명은 원본 C++의 전체 함수 선언/인자 타입 또는 가시성이 복원되었다는 의미가 아니다. 주소 및 VTable 오프셋은 1~7절 참조.
+
+### 이관 완료 기준
+SkillHandlers / SkillStopHandlers의 기존 스킬별 중복 실행 책임을 NC 효과 수명 구분에 따라 합치고, 실제 동작과 결과를 유지한다. Java 클래스 수를 NC의 366개 RTTI 항목 수에 맞추거나 클래스마다 인스턴스를 만드는 작업은 하지 않는다. 기존 시전/타겟/공식/타이머/CIO/NpcServer/네트워크/CacheD는 변경하지 않는다. 실행 경계에 필요한 최소 연동 외 기존 구현을 보존한다.
+
