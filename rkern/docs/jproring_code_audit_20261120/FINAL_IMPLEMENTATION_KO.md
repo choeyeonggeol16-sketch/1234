@@ -1,6 +1,6 @@
 # RKern JProRing 후속 구현과 검증 결과
 
-[후속 작업 지시서](NEXT_IMPLEMENTATION_KO.md)의 기준 소스는 [`9a9c25a`](https://github.com/choeyeonggeol16-sketch/1234/commit/9a9c25a)다. 게임 SEND 후보의 비교 기준은 동시 접속 대기열 수정까지 적용한 [`02b0d4e`](https://github.com/choeyeonggeol16-sketch/1234/commit/02b0d4e), READ·gather 측정 코드는 [`94c0d79`](https://github.com/choeyeonggeol16-sketch/1234/commit/94c0d79)다. 최종 생산 코드는 [`8fd305f`](https://github.com/choeyeonggeol16-sketch/1234/commit/8fd305f)다.
+[후속 작업 지시서](NEXT_IMPLEMENTATION_KO.md)의 기준 소스는 [`9a9c25a`](https://github.com/choeyeonggeol16-sketch/1234/commit/9a9c25a)다. 게임 SEND 후보의 비교 기준은 동시 접속 대기열 수정까지 적용한 [`02b0d4e`](https://github.com/choeyeonggeol16-sketch/1234/commit/02b0d4e), READ·gather 측정 코드는 [`94c0d79`](https://github.com/choeyeonggeol16-sketch/1234/commit/94c0d79)다. 종료 회귀 기준은 [`8fd305f`](https://github.com/choeyeonggeol16-sketch/1234/commit/8fd305f)다. W02 후속 생산 코드는 [`e6e44cf`](https://github.com/choeyeonggeol16-sketch/1234/commit/e6e44cf)다.
 
 ## 실제 게임 리스너 A/B와 수정 판정
 
@@ -46,7 +46,7 @@ READ·gather 변경판 `94c0d79`의 기본 모드를 동일한 짧은 설정으�
 | A07 | 부분 | `CSocket.requireNativeServer`가 FFM 전용 경계를 검사한다. DLL 없는 리스너를 검증했다. 운영 환경 패킷과 관리 명령 전수 테스트는 남았다. |
 | A08 | 부분 | raw, length-framed, 실제 RKern 게임 리스너 benchmark/기능 fixture를 구분한다. 같은 세션 정책을 가진 Netty 게임 adapter의 A/B는 준비되지 않았다. |
 | A09 | 기각 | `CUserSocket.tryWritePacketInternal`의 실험 head 직결 경로를 CPU/처리량 열세로 제거했다. |
-| A10 | 부분 | 바이트 append 후보는 측정 hit 0으로 제거했다. 범용 writer tail 예약은 추가하지 않았다. |
+| A10 | 부분 | 측정 hit 0인 기존 바이트 append 후보를 제거했다. W02 후속에서 크기 상한이 명시된 일반 writer의 예약과 tail 직접 인코딩을 구현했다. 실제 패킷 전체의 일괄 적용과 운영 CPU/p99 A/B가 남았다. |
 | A11 | 부분 | `CIOBufferPool.snapshot`의 borrow/return과 상한을 실제 listener에서 검증했다. owner-local 캐시의 실제 효율과 공유 풀 starvation 검증은 남았다. |
 | A12 | 부분 | `CSocket.read`는 같은 owner의 raw 등록에서 monitor 재진입 한 번을 없앴다. 외부 READ와 WRITE descriptor 동기화 경계는 기존 계약을 사용한다. WRITE path A/B는 남았다. |
 | A13 | 반영 | `CUserSocket.onRead`에서 consumed prefix offset을 두고 실제 수신 공간이 부족할 때 정리한다. 201개 연속 프레임, 65,535B 분할 프레임 및 암호 순서를 검증했다. |
@@ -78,3 +78,11 @@ python3 rkern/docs/jproring_cio_integration_20261120/run_game_ab.py \
 ```
 
 `--jfr`를 사용하면 별도 프로파일링 실행의 recording과 GC/safepoint 로그를 출력 디렉터리 아래에 남긴다. 실제 게임 클라이언트 및 MySQL을 포함한 월드 접속, DLL wire 비교, 전용 5,000 game session 혼합부하와 30–60분 soak는 실행할 자료와 환경이 필요하다.
+
+## W02 후속 검증
+
+`WritablePacket.DirectTail`에 헤더를 포함한 크기 상한을 선언한 Java owner 패킷은 인접한 미전송 lease의 끝에 직접 인코딩할 수 있다. 기존 FIFO 티켓을 예약하고 serializer가 lease를 고정한다. 인코더는 상태 락 밖에서 실행하며, 다른 생산자는 다음 티켓에 게시한다. 상한 초과 시 한 번만 호출한 인코더를 실패 처리하고 해당 티켓을 취소한다. [구현](https://github.com/choeyeonggeol16-sketch/1234/commit/e6e44cf)
+
+실제 암호화 게임 소켓에서 외부 인코더 20개가 예약을 보유한 상태로 정상 송신, 직접 인코딩 및 내부 재진입 송신을 섞었다. 직접 인코딩 packet이 임시 lease를 사용하면 실패하는 테스트는 기준 `043e52f`에서 실패하고 후속 코드에서 통과했다. 크기 초과 사례에서 한 번만 실행하고 추가 lease나 잘못된 송신을 남기지 않았다. Linux·Windows 재시작 100회 및 reset/reconnect 1,000회도 통과했다. [회귀 소스](../jproring_cio_integration_20261120/SelectorCioIntegrationTest.java) · [Windows](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/44676276829) · [Linux CI](https://github.com/choeyeonggeol16-sketch/1234/actions/runs/44676276740)
+
+직접 인코딩의 대여·복사 변화는 위 회귀에서 검증했다. 운영 패킷 적용 범위를 넓히는 데 필요한 CPU/p99 실측과 owner-local 풀 검증은 남았다.
