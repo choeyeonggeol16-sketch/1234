@@ -452,7 +452,7 @@ public class L1ItemInstance extends L1Object {
 		if (getItem().getWeight() == 0) {
 			return 0;
 		} else {
-			return Math.max(getCount() * getItem().getWeight() / 1000, 1);
+			return (int) Math.clamp((long) getCount() * getItem().getWeight() / 1000L, 1L, Integer.MAX_VALUE);
 		}
 	}
 

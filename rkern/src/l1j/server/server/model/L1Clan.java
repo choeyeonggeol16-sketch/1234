@@ -1384,8 +1384,7 @@ public class L1Clan {
 
 	public void deleteClanRetrieveUser(int targetObjectId){
 		ClanWarehouse clanWarehouse = WarehouseManager.getInstance().getClanWarehouse(getClanName());
-		if(clanWarehouse != null && clanWarehouse.getWarehouseUsingChar() == targetObjectId)
-			clanWarehouse.setWarehouseUsingChar(0, 0);	
+		if (clanWarehouse != null) clanWarehouse.releaseWarehouseUser(targetObjectId);
 	}
 	
 }

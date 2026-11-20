@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import l1j.server.DatabaseFactory;
+import l1j.server.server.Account;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -52,9 +53,6 @@ public class MJDShopStorage implements Runnable{
             if (ps.executeUpdate()!=1) throw new SQLException("Private shop listing debit failed");
         }
     }
-	
-	private L1Character 	_owner;
-	private boolean		_isDelete;
 	
 	public MJDShopStorage(L1Character c, boolean isDelete) {
         // Capture/admit on the caller before legacy ThreadPool dispatch. The
@@ -173,26 +171,58 @@ public class MJDShopStorage implements Runnable{
         if (list != null) synchronized (list) { for (MJDShopItem i:list) snapshot.add(copyListing(i)); }
         list = c.getPurchasings();
         if (list != null) synchronized (list) { for (MJDShopItem i:list) snapshot.add(copyListing(i)); }
-        submitListingSnapshot(c.getId(), c.getName(), c instanceof L1PcInstance, snapshot);
+        submitListingSnapshot(c.getId(), c.getName(), c instanceof L1PcInstance, snapshot, false, null, 0);
     }
 	
 	public static void updateProcess(L1Character c, MJDShopItem ditem) {
         final ArrayList<MJDShopItem> snapshot = new ArrayList<>(1);
         snapshot.add(copyListing(ditem));
-        submitListingSnapshot(c.getId(), c.getName(), c instanceof L1PcInstance, snapshot);
+        submitListingSnapshot(c.getId(), c.getName(), c instanceof L1PcInstance, snapshot, false, null, 0);
+    }
+
+    /** Replace a player's entire shop in FIFO order before accepting any trade. */
+    public static void replacePlayerListings(L1PcInstance owner, ArrayList<MJDShopItem> sells,
+            ArrayList<MJDShopItem> buys) {
+        final ArrayList<MJDShopItem> snapshot = new ArrayList<>(
+                (sells == null ? 0 : sells.size()) + (buys == null ? 0 : buys.size()));
+        if (sells != null) for (MJDShopItem item : sells) snapshot.add(copyListing(item));
+        if (buys != null) for (MJDShopItem item : buys) snapshot.add(copyListing(item));
+        final var client = owner.getNetConnection();
+        final Account account = client == null ? null : client.getAccount();
+        final String login = account == null ? null : account.getName();
+        final int opens = account == null ? 0 : account.Shop_open_count + 1;
+        submitListingSnapshot(owner.getId(), owner.getName(), true, snapshot, true, login, opens);
+        if (account != null) account.Shop_open_count = opens;
     }
 
     private static void submitListingSnapshot(int ownerId, String ownerName,
-            boolean isUser, ArrayList<MJDShopItem> snapshot) {
-        CacheD.getInstance().submitDbJobRetryOrdered(ownerId, () -> {
+            boolean isUser, ArrayList<MJDShopItem> snapshot, boolean replace, String login, int opens) {
+        final int accountLane = login == null ? 0 : CacheD.accountOrderKey(login);
+        CacheD.getInstance().submitDbJobRetryOrdered(ownerId, accountLane, () -> {
             try (Connection con = DatabaseFactory.getInstance().getConnection()) {
                 con.setAutoCommit(false);
                 try (PreparedStatement ps=createUpdatePstm(con)) {
+                    if (replace) {
+                        l1j.server.server.storage.cached.CTransaction.requireTransactionalTables(con, "character_shop");
+                        try (PreparedStatement delete = con.prepareStatement("DELETE FROM character_shop WHERE objid=?")) {
+                            delete.setInt(1, ownerId);
+                            delete.executeUpdate();
+                        }
+                    }
                     for (MJDShopItem listing:snapshot) {
                         setUpdatePstm(ps, ownerId, ownerName, isUser, listing);
                         ps.addBatch();
                     }
                     ps.executeBatch();
+                    if (login != null) {
+                        l1j.server.server.storage.cached.CTransaction.requireTransactionalTables(con, "accounts");
+                        try (PreparedStatement count = con.prepareStatement(
+                                "UPDATE accounts SET Shop_open_count=? WHERE login=?")) {
+                            count.setInt(1, opens);
+                            count.setString(2, login);
+                            count.executeUpdate();
+                        }
+                    }
                     con.commit();
                 } catch (Exception failure) {
                     try { con.rollback(); } catch (SQLException rollback) { failure.addSuppressed(rollback); }

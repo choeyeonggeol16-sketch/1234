@@ -51,7 +51,7 @@ public class L1PcInventory extends L1Inventory {
 
 	private static final long serialVersionUID = 1L;
 
-	static final int MAX_SIZE = 180;
+	public static final int MAX_SIZE = 180;
 
 	private final L1PcInstance _owner;
 
@@ -449,22 +449,16 @@ public class L1PcInventory extends L1Inventory {
 			return SIZE_OVER;
 		}
 
-		int weight = getWeight() + item.getItem().getWeight() * count / 1000 + 1;
-		if (weight < 0 || (item.getItem().getWeight() * count / 1000) < 0) {
-			if (message) {
-				sendOverMessage(82); // 아이템이 너무 무거워, 더 이상 가질 수 없습니다.
-			}
-			return WEIGHT_OVER;
-		}
-		if (calcWeight100(weight) >= 240) {
-			if (message) {
-				sendOverMessage(82); // 아이템이 너무 무거워, 더 이상 가질 수 없습니다.
-			}
+		final long addedWeight = (long) item.getItem().getWeight() * count / 1000L;
+		final long weight = getWeight() + addedWeight + 1L;
+		final int maxWeight = _owner.getMaxWeight();
+		if (weight < 0 || addedWeight < 0 || maxWeight <= 0 || weight * 100L >= 240L * maxWeight) {
+			if (message) sendOverMessage(82);
 			return WEIGHT_OVER;
 		}
 
 		L1ItemInstance itemExist = findItemId(item.getItemId());
-		if (itemExist != null && ((itemExist.getCount() + count) < 0 || (itemExist.getCount() + count) > 1800000000)) {
+		if (itemExist != null && (itemExist.getCount() < 0 || (long) itemExist.getCount() + count > 1_800_000_000L)) {
 			SC_ServerMessage.send(getOwner(), 166, "소지하고 있는 아데나", "2,000,000,000을 초과하고 있습니다.");
 			return AMOUNT_OVER;
 		}

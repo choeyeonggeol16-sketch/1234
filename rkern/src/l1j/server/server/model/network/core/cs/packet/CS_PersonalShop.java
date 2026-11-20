@@ -5,7 +5,7 @@ import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
 import l1j.server.MJDShopSystem.MJDShopItem;
 import l1j.server.MJDShopSystem.MJDShopStorage;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import java.util.ArrayList;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -129,6 +129,7 @@ public final class CS_PersonalShop {
         }
 
         boolean tradable = true;
+        final ArrayList<MJDShopItem> sells = sellCount == 0 ? null : new ArrayList<>(sellCount);
 
         for (int i = 0; i < sellCount; i++) {
             final int objectId = readD(data, cursor);
@@ -139,19 +140,15 @@ public final class CS_PersonalShop {
 
             final L1ItemInstance item = pc.getInventory().getItem(objectId);
 
-            if (item == null || objectId != item.getId() || (!item.isStackable() && count != 1) 
-                    || item.getCount() < count || count <= 0) {
-                disconnectInvalidShop(pc);
+            if (price <= 0 || item == null || objectId != item.getId() || item.isEquipped()
+                    || (!item.isStackable() && count != 1) || item.getCount() < count || count <= 0
+                    || containsListing(sells, objectId)) {
+                SC_Disconnect.send(pc);
                 return;
-            }
-
-            if (count > item.getCount()) {
-                count = item.getCount();
             }
 
             if (item.getBless() >= 128) {
                 SC_ServerMessage.send(pc, 210, item.getItem().getName());
-                pc.disposeShopInfo();
                 return;
             }
 
@@ -161,7 +158,6 @@ public final class CS_PersonalShop {
             }
 
             if (!MJCompanionInstanceCache.is_companion_oblivion(item.getId())) {
-                pc.disposeShopInfo();
                 sendNotTradable(pc, item);
                 return;
             }
@@ -176,12 +172,11 @@ public final class CS_PersonalShop {
                 sendNotTradable(pc, item);
             }
 
-            pc.addSellings(MJDShopItem.create(item, count, price, false));
+            sells.add(MJDShopItem.create(item, count, price, false));
         }
 
         
         if (!has(data, cursor, 2)) {
-            pc.disposeShopInfo();
             return;
         }
 
@@ -196,10 +191,10 @@ public final class CS_PersonalShop {
         final int buyBytes = buyCount * 12;
 
         if (!has(data, cursor, buyBytes)) {
-            pc.disposeShopInfo();
             return;
         }
 
+        final ArrayList<MJDShopItem> buys = buyCount == 0 ? null : new ArrayList<>(buyCount);
         for (int i = 0; i < buyCount; i++) {
             final int objectId = readD(data, cursor);
             final int price = readD(data, cursor + 4);
@@ -209,9 +204,10 @@ public final class CS_PersonalShop {
 
             final L1ItemInstance item = pc.getInventory().getItem(objectId);
 
-            if (item == null || objectId != item.getId() || (!item.isStackable() && count != 1) 
-                    || count <= 0 || item.getCount() <= 0) {
-                disconnectInvalidShop(pc);
+            if (price <= 0 || item == null || objectId != item.getId()
+                    || (!item.isStackable() && count != 1) || count <= 0 || item.getCount() <= 0
+                    || containsListing(sells, objectId) || containsListing(buys, objectId)) {
+                SC_Disconnect.send(pc);
                 return;
             }
 
@@ -225,7 +221,6 @@ public final class CS_PersonalShop {
             }
 
             if (!MJCompanionInstanceCache.is_companion_oblivion(item.getId())) {
-                pc.disposeShopInfo();
                 sendNotTradable(pc, item);
                 return;
             }
@@ -240,15 +235,10 @@ public final class CS_PersonalShop {
                 sendNotTradable(pc, item);
             }
 
-            pc.addPurchasings(MJDShopItem.create(item, count, price, true));
+            buys.add(MJDShopItem.create(item, count, price, true));
         }
 
-        if (!tradable) {
-            pc.disposeShopInfo();
-            pc.setPrivateShop(false);
-            sendIdle(pc);
-            return;
-        }
+        if (!tradable) return;
 
         final int chatLength = data.length - cursor;
         final byte[] chat;
@@ -260,15 +250,14 @@ public final class CS_PersonalShop {
             System.arraycopy(data, cursor, chat, 0, chatLength);
         }
 
+        if (!replaceListings(pc, sells, buys)) return;
         final CIOClient client = pc.getNetConnection();
 
         if (client != null && client.getAccount() != null) {
-            client.getAccount().updateShopOpenCount();
             SC_PacketBox.send(pc, SC_PacketBox.상점개설횟수, client.getAccount().Shop_open_count);
         }
 
         pc.setShopChat(chat);
-        pc.setPrivateShop(true);
 
         SC_DoActionShop.send(pc, pc.getId(), ActionCodes.ACTION_Shop, chat);
         SC_DoActionShop.broadcast(pc, pc.getId(), ActionCodes.ACTION_Shop, chat);
@@ -287,8 +276,6 @@ public final class CS_PersonalShop {
 
         SC_WorldPutObject.broadcastPc(pc);
         pc.curePoison();
-
-        persistShopState(pc, false);
     }
 
     // =========================================================
@@ -296,26 +283,48 @@ public final class CS_PersonalShop {
     // =========================================================
 
     private static void closeShop(L1PcInstance pc) {
-        pc.setPrivateShop(false);
+        if (!removeListings(pc)) return;
         pc.상점변신 = 0;
-
         sendIdle(pc);
         L1PolyMorph.undoPolyPrivateShop(pc);
-        persistShopState(pc, true);
     }
 
-    // A shop already changed its in-memory state before persistence is posted.
-    // Rejection must not leave the shop state without its matching DB write.
-    // In this *mandatory* cleanup/persistence boundary only, retain the old
-    // synchronous fallback on overload; the general instant pool never does it.
-    private static void persistShopState(L1PcInstance pc, boolean closing) {
-        final MJDShopStorage job = new MJDShopStorage(pc, closing);
+    static boolean replaceListings(L1PcInstance pc, ArrayList<MJDShopItem> sells, ArrayList<MJDShopItem> buys) {
+        if (!pc.tryBeginItemTransfer()) return false;
         try {
-            ThreadPool.getInstance().execute(job);
-        } catch (RejectedExecutionException admission) {
-            _log.log(Level.SEVERE, "Private shop persistence admission rejected", admission);
-            job.run();
+            MJDShopStorage.replacePlayerListings(pc, sells, buys);
+            pc.setSellings(sells);
+            pc.setPurchasings(buys);
+            pc.setPrivateShop(true);
+            return true;
+        } catch (RejectedExecutionException rejected) {
+            _log.log(Level.WARNING, "Private shop listing admission rejected", rejected);
+            SC_SystemMessage.send(pc, "잠시 후 개인상점을 다시 열어 주세요.");
+            return false;
+        } finally {
+            pc.endItemTransfer();
         }
+    }
+
+    static boolean removeListings(L1PcInstance pc) {
+        if (!pc.tryBeginItemTransfer()) return false;
+        try {
+            MJDShopStorage.deleteProcess(pc);
+            pc.setPrivateShop(false);
+            return true;
+        } catch (RejectedExecutionException rejected) {
+            SC_SystemMessage.send(pc, "잠시 후 개인상점을 다시 닫아 주세요.");
+            return false;
+        } finally {
+            pc.endItemTransfer();
+        }
+    }
+
+    static boolean containsListing(ArrayList<MJDShopItem> list, int objectId) {
+        if (list == null) return false;
+        for (int i = 0; i < list.size(); i++)
+            if (list.get(i).objId == objectId) return true;
+        return false;
     }
 
     // =========================================================
@@ -333,7 +342,7 @@ public final class CS_PersonalShop {
         return false;
     }
 
-    private static boolean isPetItem(L1PcInstance pc, int itemObjectId) {
+    static boolean isPetItem(L1PcInstance pc, int itemObjectId) {
 
         for (Object value : pc.getPetList().values()) {
             if (value instanceof L1PetInstance) {
@@ -348,7 +357,7 @@ public final class CS_PersonalShop {
         return false;
     }
 
-    private static boolean isDollItem(L1PcInstance pc, int itemObjectId) {
+    static boolean isDollItem(L1PcInstance pc, int itemObjectId) {
 
         for (Object value : pc.getDollList().values()) {
             if (value instanceof L1DollInstance) {
@@ -465,11 +474,6 @@ public final class CS_PersonalShop {
 
         } catch (Exception ignored) {
         }
-    }
-
-    private static void disconnectInvalidShop(L1PcInstance pc) {
-        pc.disposeShopInfo();
-        SC_Disconnect.send(pc);
     }
 
     private static void sendNotTradable(L1PcInstance pc, L1ItemInstance item) {

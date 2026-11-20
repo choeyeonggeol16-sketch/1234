@@ -487,10 +487,6 @@ public class Account {
 		}
 	}
 
-	public void updateShopOpenCount() {
-		Shop_open_count++;
-		executeUpdate("UPDATE accounts SET Shop_open_count=? WHERE login = ?", Shop_open_count);
-	}
 
 	public static void ban(final String account, int reason) {
 		String sql = "UPDATE accounts SET banned=? WHERE login=?";

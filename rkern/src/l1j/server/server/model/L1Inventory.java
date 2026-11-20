@@ -184,13 +184,9 @@ public class L1Inventory extends L1Object {
 	}
 
 	public int getWeight() {
-		int weight = 0;
-
-		for (L1ItemInstance item : _items) {
-			weight += item.getWeight();
-		}
-		weight /= Config.RATE_WEIGHT_LIMIT;
-		return weight;
+		long weight = 0;
+		for (L1ItemInstance item : _items) weight += item.getWeight();
+		return (int) (weight / Config.RATE_WEIGHT_LIMIT);
 	}
 
 	public int checkAddAdena(int count){
@@ -1460,19 +1456,17 @@ public class L1Inventory extends L1Object {
         }
     }
 
-    /** One durable receipt for a selected private/clan/elf warehouse withdrawal.
-     * The warehouse and player inventory remain unchanged until the SQL commit.
-     * Special non-stackable charge-merging items retain their existing single-item path.
-     */
+    /** One durable receipt for a selected warehouse withdrawal. */
     public synchronized boolean tradeWarehouseWithdrawalBatch(int[] ids, int[] counts,
-            Warehouse source, int feeItemId, int feeEach, Runnable onCommitted) {
+            Warehouse source, int feeItemId, int feeEach, java.sql.Timestamp[] deadlines,
+            Runnable onCommitted) {
         if (!(this instanceof L1PcInventory) || ids == null || counts == null
                 || ids.length <= 1 || ids.length > 100 || ids.length != counts.length
-                || source == null || !(source instanceof l1j.server.server.model.Warehouse.PrivateWarehouse
-                    || source instanceof l1j.server.server.model.Warehouse.ClanWarehouse
-                    || source instanceof l1j.server.server.model.Warehouse.ElfWarehouse)
-                || (feeItemId != L1ItemId.ADENA && feeItemId != 40494)
-                || feeEach <= 0 || rejectPendingItemTransfer()) return false;
+                || source == null || (deadlines != null && (deadlines.length != ids.length
+                        || !(source instanceof l1j.server.server.model.Warehouse.SupplementaryService)))
+                || (feeItemId != 0 && feeItemId != L1ItemId.ADENA && feeItemId != 40494)
+                || (feeItemId == 0) != (feeEach == 0) || feeEach < 0
+                || rejectPendingItemTransfer()) return false;
         final l1j.server.server.model.Instance.L1PcInstance pc =
                 ((L1PcInventory) this).getOwner();
         final CIOClient session = pc.getNetConnection();
@@ -1487,12 +1481,15 @@ public class L1Inventory extends L1Object {
             final long[] groupTotals = new long[size];
             final L1ItemInstance[] destinations = new L1ItemInstance[size];
             final int[] destCounts = new int[size];
+            long[] chargeTotals = null;
+            int[] destCharges = null;
             final L1ItemInstance[] carries = new L1ItemInstance[size];
             synchronized (source) {
-                final L1ItemInstance fee = findItemId(feeItemId);
-                if (fee == null || !fee.isStackable() || fee.getCount() < totalFee) return false;
-                final int feeCount = fee.getCount();
-                int newSlots = 0;
+                final L1ItemInstance fee = feeEach == 0 ? null : findItemId(feeItemId);
+                if (feeEach != 0 && (fee == null || !fee.isStackable() || fee.getCount() < totalFee))
+                    return false;
+                final int feeCount = fee == null ? 0 : fee.getCount();
+                int slots = getSize();
                 long additionalWeight = 0L;
                 int feeGroup = -1;
                 for (int i = 0; i < size; i++) {
@@ -1501,42 +1498,50 @@ public class L1Inventory extends L1Object {
                     if (item == null || item.getId() != ids[i] || item.getCount() <= 0
                             || count <= 0 || count > item.getCount() || item.isEquipped()
                             || (!item.isStackable() && count != 1)) return false;
-                    // These items merge charge_count rather than stack count; their
-                    // existing specialized path must not be flattened into a batch.
-                    if (!item.isStackable()) {
-                        switch (item.getItemId()) {
-                        case 40006: case 40007: case 40008: case 140006:
-                        case 140008: case 41401: case 810006: case 810007:
-                            return false;
-                        default: break;
-                        }
-                    }
                     for (int j = 0; j < i; j++) if (ids[j] == ids[i]) return false;
                     sources[i] = item;
                     sourceCounts[i] = item.getCount();
-                    additionalWeight += (long) item.getItem().getWeight() * count / 1000L + 1L;
+                    long weightProduct = (long) item.getItem().getWeight() * count;
+                    if (weightProduct < 0) return false;
+                    additionalWeight += weightProduct / 1000L + 1L;
                     if (additionalWeight > Integer.MAX_VALUE) return false;
+
+                    final boolean stackable = item.isStackable();
+                    final boolean mergeCharge = !stackable && Warehouse.chargeMergeItem(item.getItemId());
                     int g = i;
-                    if (item.isStackable()) {
+                    if (stackable || mergeCharge) {
                         for (int j = 0; j < i; j++) {
-                            if (sources[j].isStackable() && sources[j].getItemId() == item.getItemId()) {
+                            if (sources[j].getItemId() == item.getItemId()) {
                                 g = group[j];
                                 break;
                             }
                         }
                     }
                     group[i] = g;
+                    if (!stackable && slots >= L1PcInventory.MAX_SIZE) return false;
                     if (g == i) {
-                        destinations[i] = item.isStackable() ? findItemId(item.getItemId()) : null;
+                        destinations[i] = stackable || mergeCharge ? findItemId(item.getItemId()) : null;
                         destCounts[i] = destinations[i] == null ? 0 : destinations[i].getCount();
-                        if (destinations[i] == null) newSlots++;
-                        if (destinations[i] == fee) feeGroup = i;
+                        if (destinations[i] == null && ++slots > L1PcInventory.MAX_SIZE) return false;
+                        if (fee != null && destinations[i] == fee) feeGroup = i;
                     }
-                    groupTotals[g] += count;
-                    // PC inventory currently caps an existing stack at 1.8 billion.
-                    if (groupTotals[g] + destCounts[g] > 1_800_000_000L) return false;
+                    if (deadlines != null && deadlines[i] != null
+                            && (g != i || destinations[i] != null)) return false;
+                    if (mergeCharge) {
+                        if (chargeTotals == null) {
+                            chargeTotals = new long[size];
+                            destCharges = new int[size];
+                        }
+                        if (g == i && destinations[i] != null) destCharges[i] = destinations[i].getChargeCount();
+                        final int charge = item.getChargeCount();
+                        if (charge < 0 || destCharges[g] < 0
+                                || (chargeTotals[g] += charge) + destCharges[g] > Integer.MAX_VALUE) return false;
+                        if (g == i && destinations[i] == null) groupTotals[g] = 1;
+                    } else {
+                        groupTotals[g] += count;
+                        if (groupTotals[g] + destCounts[g] > 1_800_000_000L) return false;
+                    }
                 }
-                if (getSize() + newSlots > 180) return false;
                 // The inventory's weight is rate-scaled. Conservatively
                 // account for the configured rate and per-stack rounding so
                 // committed replay cannot hit a later weight rejection.
@@ -1557,6 +1562,8 @@ public class L1Inventory extends L1Object {
                 try { reserved = CacheD.beginWarehouseMove(pc.getId(), source.transferOrderKey()); }
                 catch (java.util.concurrent.RejectedExecutionException busy) { return false; }
                 try (CacheD.WarehouseMove move = reserved) {
+                    source.requireWithdrawalTable(move);
+                    final int[] expectedCharges = destCharges;
                     move.onFailure(() -> CIOThreadCallback.getInstance().completeSession(session, session::kick));
                     for (int i = 0; i < size; i++) {
                         final L1ItemInstance item = sources[i];
@@ -1577,19 +1584,24 @@ public class L1Inventory extends L1Object {
                         if (group[i] != i) continue;
                         final L1ItemInstance dest = destinations[i];
                         int finalCount = (int) (groupTotals[i] + destCounts[i]);
-                        if (dest == fee) finalCount -= (int) totalFee;
+                        if (dest != null && dest == fee) finalCount -= (int) totalFee;
+                        final boolean mergeCharge = !sources[i].isStackable()
+                                && Warehouse.chargeMergeItem(sources[i].getItemId());
+                        final int finalCharge = mergeCharge ? (int) (chargeTotals[i] + destCharges[i])
+                                : dest == null ? carries[i].getChargeCount() : dest.getChargeCount();
                         if (dest != null) {
                             move.expectOriginal(dest);
                             if (finalCount == 0) move.prepareCharacterDelete(dest);
-                            else move.prepareCharacterWrite(l1j.server.server.model.Warehouse.Warehouse
-                                    .transferCopy(dest, dest.getId(), finalCount, dest.getChargeCount()), false);
+                            else move.prepareCharacterWrite(Warehouse.transferCopy(
+                                    dest, dest.getId(), finalCount, finalCharge), false);
                         } else {
-                            move.prepareCharacterWrite(l1j.server.server.model.Warehouse.Warehouse
-                                    .characterTransferCopy(carries[i], carries[i].getId(),
-                                            finalCount, carries[i].getChargeCount()), true);
+                            L1ItemInstance row = Warehouse.characterTransferCopy(
+                                    carries[i], carries[i].getId(), finalCount, finalCharge);
+                            if (deadlines != null && deadlines[i] != null) row.setEndTime(deadlines[i]);
+                            move.prepareCharacterWrite(row, true);
                         }
                     }
-                    if (feeGroup < 0) {
+                    if (fee != null && feeGroup < 0) {
                         move.expectOriginal(fee);
                         if (feeCount == totalFee) move.prepareCharacterDelete(fee);
                         else move.prepareCharacterWrite(l1j.server.server.model.Warehouse.Warehouse
@@ -1604,7 +1616,7 @@ public class L1Inventory extends L1Object {
                                     if (!session.isConnected() || pc.getSessionStamp() != stamp
                                             || pc.getNetConnection() != session)
                                         throw new IllegalStateException("Stale warehouse withdrawal batch session");
-                                    if (getItem(fee.getId()) != fee || fee.getCount() != feeCount)
+                                    if (fee != null && (getItem(fee.getId()) != fee || fee.getCount() != feeCount))
                                         throw new IllegalStateException("Withdrawal batch fee preimage changed");
                                     for (int i = 0; i < size; i++) {
                                         if (source.getItem(ids[i]) != sources[i]
@@ -1612,13 +1624,20 @@ public class L1Inventory extends L1Object {
                                             throw new IllegalStateException("Withdrawal source changed after COMMIT");
                                         if (group[i] == i && destinations[i] != null
                                                 && (getItem(destinations[i].getId()) != destinations[i]
-                                                        || destinations[i].getCount() != destCounts[i]))
+                                                        || destinations[i].getCount() != destCounts[i]
+                                                        || (expectedCharges != null
+                                                            && !sources[i].isStackable()
+                                                            && Warehouse.chargeMergeItem(sources[i].getItemId())
+                                                            && destinations[i].getChargeCount() != expectedCharges[i])))
                                             throw new IllegalStateException("Withdrawal destination changed after COMMIT");
                                     }
                                     CacheD.applyCommittedWarehouseMove(move, () -> {
                                         for (int i = 0; i < size; i++) {
-                                            L1ItemInstance result = source.tradeItem(sources[i], counts[i],
-                                                    L1Inventory.this, feeItemId, feeEach);
+                                            final L1ItemInstance result = deadlines != null && deadlines[i] != null
+                                                    ? source.tradeSupplementaryItem(sources[i], counts[i],
+                                                            L1Inventory.this, deadlines[i], null)
+                                                    : source.tradeItem(sources[i], counts[i],
+                                                            L1Inventory.this, feeItemId, feeEach);
                                             if (result == null)
                                                 throw new IllegalStateException("Withdrawal replay failed id=" + ids[i]);
                                             if (move.replayCarry(ids[i]) == result)
@@ -1713,8 +1732,6 @@ public class L1Inventory extends L1Object {
                         java.util.logging.Logger.getLogger(L1Inventory.class.getName())
                                 .log(java.util.logging.Level.WARNING, "Warehouse light refresh failed", lightFailure);
                     }
-                    // Never execute the next transfer inline: this move still
-                    // holds both CacheD FIFO owner lanes until its CIO callback exits.
                     if (onCommitted != null) onCommitted.run();
                 }
             }, move::finishOwnerApply));
@@ -1835,6 +1852,7 @@ public class L1Inventory extends L1Object {
         }
         if (stored != null) {
             move.commit();
+            if (carryItem == item && stored != item) L1World.getInstance().removeObject(item);
             return stored;
         }
 

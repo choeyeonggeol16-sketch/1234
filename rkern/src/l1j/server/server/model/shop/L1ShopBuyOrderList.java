@@ -5,6 +5,7 @@ import java.util.List;
 
 import l1j.server.Config;
 import l1j.server.server.model.L1TaxCalculator;
+import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1ShopItem;
 
@@ -19,6 +20,7 @@ public class L1ShopBuyOrderList {
     private long _totalPriceTaxIncluded = 0L;
 
     private int bugok = 0;
+    private int nonStackableCount;
 
     private static final boolean COMPAT_SPLIT_NONSTACKABLE = true;
 
@@ -119,10 +121,11 @@ public class L1ShopBuyOrderList {
         }
         
         // 호환 모드: 기존처럼 1개씩 쪼개서 넣기
-        if (giveCountL > 100_000L) { // 비정상 보호
+        if (giveCountL + nonStackableCount > L1PcInventory.MAX_SIZE) {
             bugok = 1;
             return;
         }
+        nonStackableCount += (int) giveCountL;
         ensureCapacity((int) giveCountL);
         for (int i = 0; i < (int) giveCountL; i++) {
             _list.add(new L1ShopBuyOrder(shopItem, 1, orderNumber));

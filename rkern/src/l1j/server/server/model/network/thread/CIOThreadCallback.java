@@ -265,46 +265,6 @@ public final class CIOThreadCallback {
         }
     }
 
-    /** Continue a selected warehouse list after the previous receipt has been
-     * applied and its CacheD owner lanes have been released. This is the
-     * existing PC wheel, not a new thread, worker or global item queue.
-     */
-    public boolean scheduleWarehouseBatchNext(CIOClient session, L1PcInstance pc,
-            int stamp, Runnable next, Runnable abandoned) {
-        if (session == null || pc == null || next == null || abandoned == null) return false;
-        final CIOThread owner = shardOf(pc);
-        if (owner == null || !owner.running || pc.getSessionStamp() != stamp
-                || pc.getNetConnection() != session || !session.isConnected()) {
-            abandoned.run();
-            return false;
-        }
-        final AtomicBoolean resolved = new AtomicBoolean();
-        final TaskHandle handle = new TaskHandle(() -> {
-            if (resolved.compareAndSet(false, true)) abandoned.run();
-        });
-        final WheelTask task = new WheelTask() {
-            @Override public void run() {
-                if (handle.isCancelled() || !resolved.compareAndSet(false, true)) return;
-                try {
-                    synchronized (session) {
-                        if (pc.getSessionStamp() != stamp || pc.getNetConnection() != session
-                                || session.getActiveChar() != pc || !session.isConnected()
-                                || shardOf(pc) != owner)
-                            throw new IllegalStateException("Warehouse batch session replaced");
-                        next.run();
-                    }
-                } catch (Throwable failure) {
-                    LOGGER.log(Level.WARNING, "Warehouse batch continuation failed", failure);
-                    abandoned.run();
-                } finally {
-                    handle.cancel();
-                }
-            }
-            @Override public boolean isCancelled() { return handle.isCancelled(); }
-        };
-        return enqueuePcWheelSchedule(owner, pc, 1L, task, handle, SlotKind.GENERIC);
-    }
-
     /** Schedule on an existing CIO shard; the return value means admission,
      * never completion. Cancellation/rejection/stopped owners also resolve once.
      * The terminal callback must only release/freeze persistence metadata.

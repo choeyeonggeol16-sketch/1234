@@ -1684,30 +1684,19 @@ public final class CPacketHandler {
         final int npcObjectId = buffer.readInt(1);
         final int resultType = buffer.readByte(5) & 0xFF;
         final int size = buffer.readByte(6) & 0xFF;
-        final int bodyBytes = payloadSize - 7;
-        final int hasFirst = (size > 0 || resultType == 3) ? 1 : 0;
-        long packed0 = 0L;
-
-        if (hasFirst != 0 && bodyBytes > 0) {
-            final int firstBytes = Math.min(bodyBytes, 8);
-            for (int i = 0; i < firstBytes; i++) {
-                packed0 |= ((long) buffer.readByte(8 + i) & 0xFFL) << (i << 3);
-            }
-        }
-
+        // The entry block starts at byte 8. Byte 7 is the legacy separator.
+        // A short list must be rejected before copying any entries or dispatching.
+        final int entryOffset = 8;
+        if (size > 0 && payloadSize < entryOffset + size * Long.BYTES) return true;
+        final boolean gmSelection = size == 0 && resultType == 3
+                && payloadSize >= entryOffset + Integer.BYTES;
+        final int hasFirst = size > 0 || gmSelection ? 1 : 0;
+        final long packed0 = size > 0 ? buffer.readLong(entryOffset)
+                : gmSelection ? buffer.readInt(entryOffset) & 0xFFFF_FFFFL : 0L;
         byte[] rest = null;
         if (size > 1) {
-            final int restLength = (size - 1) << 3;
-            rest = new byte[restLength];
-            int available = bodyBytes - 8;
-            if (available > 0) {
-                if (available > restLength) {
-                    available = restLength;
-                }
-                for (int i = 0; i < available; i++) {
-                    rest[i] = buffer.readByte(16 + i);
-                }
-            }
+            rest = new byte[(size - 1) * Long.BYTES];
+            buffer.readBytes(entryOffset + Long.BYTES, rest, 0, rest.length);
         }
 
         handleBuySell(client, npcObjectId, resultType, size, hasFirst, packed0, rest);

@@ -25,6 +25,7 @@ import l1j.server.server.Controller.LoginController;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.shop.PlayerShopView;
 import l1j.server.server.model.network.buffer.ReadBuffer;
 import l1j.server.server.model.network.buffer.WriteBuffer;
 import l1j.server.server.model.network.client.manager.NetworkClientCounter;
@@ -140,7 +141,10 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
         _connection.close();
     }
 
-    public void onTransportClosing() { _gameSessionReady = false; }
+    public void onTransportClosing() {
+        _gameSessionReady = false;
+        playerShopView = null;
+    }
 
     /** Terminal packet/I/O drain starts one deferred L1 logout operation. */
     public void onTransportClosed() {
@@ -233,6 +237,11 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
 		}
 	}
 
+    private volatile PlayerShopView playerShopView;
+
+    public PlayerShopView getPlayerShopView() { return playerShopView; }
+    public void setPlayerShopView(PlayerShopView view) { playerShopView = view; }
+
     // Owned by this session's CIO. Only deferred NPC replies use this state.
     private long npcDialogueTarget;
     private int npcDialogueVersion;
@@ -265,6 +274,7 @@ public class CIOClient implements CIOThreadCallback.WheelTask {
             automationSession = null;
             clearPssWindowSession();
             trackNpcDialogue(0L, true);
+            playerShopView = null;
         }
 		_activeChar = pc;
 	}

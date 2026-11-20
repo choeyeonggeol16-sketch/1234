@@ -22,6 +22,7 @@ public final class CS_QueryPersonalShop {
             return;
         }
 
+        client.setPlayerShopView(null);
         final L1PcInstance pc =
                 client.getActiveChar();
 
@@ -44,6 +45,7 @@ public final class CS_QueryPersonalShop {
             final L1PcInstance shopPc =
                     (L1PcInstance) shopObject;
 
+            if (!PlayerShopTransactions.canReach(pc, shopPc)) return;
             if (pc.getAccountName()
                     .equalsIgnoreCase(
                             shopPc.getAccountName())) {

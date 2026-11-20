@@ -860,30 +860,6 @@ public class L1PcInstance extends L1Character {
         return itemTransferBusy != 0;
     }
 
-    // One selected warehouse list at a time. CacheD still owns each durable
-    // item transfer; this gate only prevents a second list from interleaving
-    // between the asynchronous COMMIT callbacks of the first list.
-    private volatile Object warehouseBatchOwner;
-    private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater<L1PcInstance, Object>
-            WAREHOUSE_BATCH_OWNER = java.util.concurrent.atomic.AtomicReferenceFieldUpdater
-                    .newUpdater(L1PcInstance.class, Object.class, "warehouseBatchOwner");
-
-    public boolean tryBeginWarehouseBatch(Object owner) {
-        return owner != null && WAREHOUSE_BATCH_OWNER.compareAndSet(this, null, owner);
-    }
-
-    public boolean isWarehouseBatchActive() {
-        return warehouseBatchOwner != null;
-    }
-
-    public boolean isWarehouseBatchOwner(Object owner) {
-        return owner != null && warehouseBatchOwner == owner;
-    }
-
-    public void endWarehouseBatch(Object owner) {
-        if (owner != null) WAREHOUSE_BATCH_OWNER.compareAndSet(this, owner, null);
-    }
-
 	private volatile int tradeResolutionBusy;
 	private static final AtomicIntegerFieldUpdater<L1PcInstance> TRADE_RESOLUTION =
 			AtomicIntegerFieldUpdater.newUpdater(L1PcInstance.class, "tradeResolutionBusy");
@@ -1032,9 +1008,9 @@ public class L1PcInstance extends L1Character {
 	private L1Quest _quest;
 
 
-	private boolean _isPrivateShop = false;
+	private volatile boolean _isPrivateShop;
+	private volatile int privateShopVersion;
 	private boolean _isPrivateReady = false;
-	private int _partnersPrivateShopItemCount = 0;
 
 	private long _lastPasswordChangeTime;
 	private long _lastLocalTellTime;
@@ -2771,7 +2747,12 @@ public class L1PcInstance extends L1Character {
 	}
 
 	public void setPrivateShop(boolean flag) {
+		if (flag || _isPrivateShop) privateShopVersion++;
 		_isPrivateShop = flag;
+	}
+
+	public int getPrivateShopVersion() {
+		return privateShopVersion;
 	}
 
 	public boolean isPrivateReady() {
@@ -2790,14 +2771,6 @@ public class L1PcInstance extends L1Character {
 
 	public void set_SpecialSize(int special_size) {
 		_special_size = special_size;
-	}
-
-	public int getPartnersPrivateShopItemCount() {
-		return _partnersPrivateShopItemCount;
-	}
-
-	public void setPartnersPrivateShopItemCount(int i) {
-		_partnersPrivateShopItemCount = i;
 	}
 
 	private int birthday;// 생일

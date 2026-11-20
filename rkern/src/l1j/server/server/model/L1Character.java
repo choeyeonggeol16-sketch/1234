@@ -1066,8 +1066,8 @@ public class L1Character extends L1Object {
 		}
 	}
 
-	private ArrayList<MJDShopItem> _sellings;
-	private ArrayList<MJDShopItem> _purchasings;
+	private volatile ArrayList<MJDShopItem> _sellings;
+	private volatile ArrayList<MJDShopItem> _purchasings;
 
 	public void disposeShopInfo() {
 		disposeSellings();
@@ -1121,10 +1121,7 @@ public class L1Character extends L1Object {
 	}
 
 	public void disposeSellings() {
-		if (_sellings != null) {
-			_sellings.clear();
-			_sellings = null;
-		}
+		_sellings = null;
 	}
 
 	public MJDShopItem findPurchasings(int objid) {
@@ -1176,10 +1173,7 @@ public class L1Character extends L1Object {
 	}
 
 	public void disposePurchasings() {
-		if (_purchasings != null) {
-			_purchasings.clear();
-			_purchasings = null;
-		}
+		_purchasings = null;
 	}
 
 

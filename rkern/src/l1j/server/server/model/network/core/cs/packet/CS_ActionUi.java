@@ -3,19 +3,18 @@ package l1j.server.server.model.network.core.cs.packet;
 import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.Config;
 import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
 import l1j.server.MJDShopSystem.MJDShopItem;
-import l1j.server.MJDShopSystem.MJDShopStorage;
 import l1j.server.MJTemplate.MJRnd;
 import l1j.server.MJTemplate.Lineage2D.MJPoint;
 import l1j.server.MJWarSystem.MJCastleWarBusiness;
 import l1j.server.server.Account;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
 import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.datatables.BossMonsterSpawnList;
 import l1j.server.server.datatables.ClanTable;
@@ -26,10 +25,8 @@ import l1j.server.server.model.L1ClanJoin;
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.tam.TamFruitUseService;
 import l1j.server.server.model.map.L1Map;
@@ -312,6 +309,7 @@ public final class CS_ActionUi {
             int newShopType,
             ShopPayload payload) {
 
+        if (pc.isItemTransferBusy() || pc.isTradeResolving()) return;
         try {
 
             if (!pc.getInventory()
@@ -414,7 +412,7 @@ public final class CS_ActionUi {
                         pc.sendPackets(
                                 "\\f3이미 당신의 보조 캐릭터가 무인상점 상태입니다.");
 
-                        pc.setPrivateShop(false);
+                        if (pc.isPrivateShop() && !CS_PersonalShop.removeListings(pc)) return;
 
                         pc.상점변신 = 0;
 
@@ -433,297 +431,41 @@ public final class CS_ActionUi {
                     }
                 }
 
-                boolean tradable = true;
-
-                final int[] entries =
-                        payload != null
-                                ? payload.entries
-                                : EMPTY_SHOP_ENTRIES;
-
-                final int count =
-                        payload != null
-                                ? payload.count
-                                : 0;
-
-                /*
-                 * 원본과 동일하게 SELL 먼저.
-                 */
-                for (int i = 0;
-                        i < count;
-                        i++) {
-
-                    final int base =
-                            i << 2;
-
-                    if (entries[base] != 0x12) {
-                        continue;
-                    }
-
-                    final int objectId =
-                            entries[base + 1];
-
-                    final int price =
-                            entries[base + 2];
-
-                    final int itemCount =
-                            entries[base + 3];
-
-                    final L1ItemInstance checkItem =
-                            pc.getInventory()
-                                    .getItem(objectId);
-
-                    if (checkItem == null
-                            || objectId
-                                != checkItem.getId()) {
-
+                final int[] entries = payload == null ? EMPTY_SHOP_ENTRIES : payload.entries;
+                final int count = payload == null ? 0 : payload.count;
+                ArrayList<MJDShopItem> sells = null;
+                ArrayList<MJDShopItem> buys = null;
+                for (int i = 0; i < count; i++) {
+                    final int base = i << 2;
+                    final int type = entries[base];
+                    if (type != 0x12 && type != 0x1A) continue;
+                    final int objectId = entries[base + 1], price = entries[base + 2], amount = entries[base + 3];
+                    final boolean purchase = type == 0x1A;
+                    final L1ItemInstance item = pc.getInventory().getItem(objectId);
+                    if (item == null || item.getCount() <= 0 || amount <= 0 || price <= 0
+                            || (!item.isStackable() && amount != 1)
+                            || (!purchase && (item.isEquipped() || amount > item.getCount()))
+                            || CS_PersonalShop.containsListing(sells, objectId)
+                            || CS_PersonalShop.containsListing(buys, objectId)) {
                         SC_Disconnect.send(pc);
-
                         return;
                     }
-
-                    if (!checkItem.isStackable()
-                            && itemCount != 1) {
-
-                        SC_Disconnect.send(pc);
-
+                    if (item.getBless() >= 128 || !item.getItem().isTradable()
+                            || !MJCompanionInstanceCache.is_companion_oblivion(objectId)
+                            || CS_PersonalShop.isPetItem(pc, objectId) || CS_PersonalShop.isDollItem(pc, objectId)) {
+                        SC_ServerMessage.send(pc, 166, item.getItem().getName(), "거래 불가능합니다.");
                         return;
                     }
-
-                    if (checkItem.getCount() <= 0
-                            || itemCount <= 0) {
-
-                        pc.disposeShopInfo();
-
-                        return;
+                    MJDShopItem listing = MJDShopItem.create(item, amount, price, purchase);
+                    if (purchase) {
+                        if (buys == null) buys = new ArrayList<>();
+                        buys.add(listing);
+                    } else {
+                        if (sells == null) sells = new ArrayList<>();
+                        sells.add(listing);
                     }
-
-                    if (checkItem.getBless() >= 128) {
-
-                        SC_ServerMessage.send(pc, 210, checkItem
-                                            .getItem()
-                                            .getName());
-
-                        pc.disposeShopInfo();
-
-                        return;
-                    }
-
-                    if (!checkItem
-                            .getItem()
-                            .isTradable()) {
-
-                        tradable = false;
-
-                        SC_ServerMessage.send(pc, 166, checkItem
-                                            .getItem()
-                                            .getName(), "거래 불가능합니다.");
-
-                        break;
-                    }
-
-                    if (!MJCompanionInstanceCache
-                            .is_companion_oblivion(
-                                    checkItem.getId())) {
-
-                        tradable = false;
-
-                        SC_ServerMessage.send(pc, 166, checkItem
-                                            .getItem()
-                                            .getName(), "거래 불가능합니다.");
-                    }
-
-                    for (Object petObject :
-                            pc.getPetList().values()) {
-
-                        if (petObject instanceof L1PetInstance
-                                && checkItem.getId()
-                                    == ((L1PetInstance) petObject)
-                                        .getItemObjId()) {
-
-                            tradable = false;
-
-                            SC_ServerMessage.send(pc, 166, checkItem
-                                                .getItem()
-                                                .getName(), "거래 불가능합니다.");
-
-                            break;
-                        }
-                    }
-
-                    for (Object dollObject :
-                            pc.getDollList().values()) {
-
-                        if (dollObject instanceof L1DollInstance
-                                && checkItem.getId()
-                                    == ((L1DollInstance) dollObject)
-                                        .getItemObjId()) {
-
-                            tradable = false;
-
-                            SC_ServerMessage.send(pc, 166, checkItem
-                                                .getItem()
-                                                .getName(), "거래 불가능합니다.");
-
-                            break;
-                        }
-                    }
-
-                    pc.addSellings(
-                            MJDShopItem.create(
-                                    checkItem,
-                                    itemCount,
-                                    price,
-                                    false));
                 }
-
-                /*
-                 * 원본과 동일하게 BUY second.
-                 */
-                for (int i = 0;
-                        i < count;
-                        i++) {
-
-                    final int base =
-                            i << 2;
-
-                    if (entries[base] != 0x1A) {
-                        continue;
-                    }
-
-                    final int objectId =
-                            entries[base + 1];
-
-                    final int price =
-                            entries[base + 2];
-
-                    final int itemCount =
-                            entries[base + 3];
-
-                    final L1ItemInstance checkItem =
-                            pc.getInventory()
-                                    .getItem(objectId);
-
-                    if (checkItem == null
-                            || objectId
-                                != checkItem.getId()) {
-
-                        SC_Disconnect.send(pc);
-
-                        return;
-                    }
-
-                    if (!checkItem.isStackable()
-                            && itemCount != 1) {
-
-                        SC_Disconnect.send(pc);
-
-                        return;
-                    }
-
-                    if (checkItem.getCount() <= 0
-                            || itemCount <= 0) {
-
-                        pc.disposeShopInfo();
-
-                        return;
-                    }
-
-                    if (checkItem.getBless() >= 128) {
-
-                        SC_ServerMessage.send(pc, 210, checkItem
-                                            .getItem()
-                                            .getName());
-
-                        pc.disposeShopInfo();
-
-                        return;
-                    }
-
-                    if (!checkItem
-                            .getItem()
-                            .isTradable()) {
-
-                        tradable = false;
-
-                        SC_ServerMessage.send(pc, 166, checkItem
-                                            .getItem()
-                                            .getName(), "거래 불가능합니다.");
-
-                        break;
-                    }
-
-                    if (!MJCompanionInstanceCache
-                            .is_companion_oblivion(
-                                    checkItem.getId())) {
-
-                        tradable = false;
-
-                        SC_ServerMessage.send(pc, 166, checkItem
-                                            .getItem()
-                                            .getName(), "거래 불가능합니다.");
-                    }
-
-                    for (Object petObject :
-                            pc.getPetList().values()) {
-
-                        if (petObject instanceof L1PetInstance
-                                && checkItem.getId()
-                                    == ((L1PetInstance) petObject)
-                                        .getItemObjId()) {
-
-                            tradable = false;
-
-                            SC_ServerMessage.send(pc, 166, checkItem
-                                                .getItem()
-                                                .getName(), "거래 불가능합니다.");
-
-                            break;
-                        }
-                    }
-
-                    for (Object dollObject :
-                            pc.getDollList().values()) {
-
-                        if (dollObject instanceof L1DollInstance
-                                && checkItem.getId()
-                                    == ((L1DollInstance) dollObject)
-                                        .getItemObjId()) {
-
-                            tradable = false;
-
-                            SC_ServerMessage.send(pc, 166, checkItem
-                                                .getItem()
-                                                .getName(), "거래 불가능합니다.");
-
-                            break;
-                        }
-                    }
-
-                    pc.addPurchasings(
-                            MJDShopItem.create(
-                                    checkItem,
-                                    itemCount,
-                                    price,
-                                    true));
-                }
-
-                if (!tradable) {
-
-                    pc.setPrivateShop(false);
-
-                    SC_DoActionGFX.send(
-                            pc.getNetConnection(),
-                            pc.getId(),
-                            ActionCodes.ACTION_Idle);
-
-                    SC_DoActionGFX.broadcast(
-                            pc,
-                            ActionCodes.ACTION_Idle);
-
-                    pc.disposeShopInfo();
-
-                    return;
-                }
+                if (!CS_PersonalShop.replaceListings(pc, sells, buys)) return;
 
                 final byte[] chat =
                         payload != null
@@ -739,10 +481,6 @@ public final class CS_ActionUi {
                         && pc.getNetConnection()
                             .getAccount() != null) {
 
-                    pc.getNetConnection()
-                            .getAccount()
-                            .updateShopOpenCount();
-
                     SC_PacketBox.send(pc, 
                                     SC_PacketBox.상점개설횟수,
                                     pc.getNetConnection()
@@ -751,8 +489,6 @@ public final class CS_ActionUi {
                 }
 
                 pc.setShopChat(chat);
-
-                pc.setPrivateShop(true);
 
                 SC_DoActionShop.send(pc, pc.getId(), ActionCodes.ACTION_Shop, chat);
 
@@ -797,12 +533,6 @@ public final class CS_ActionUi {
 
                 pc.curePoison();
 
-                ThreadPool
-                        .getInstance()
-                        .execute(
-                                new MJDShopStorage(
-                                        pc,
-                                        false));
 
             } else if (newShopType == 1) {
 
@@ -812,7 +542,7 @@ public final class CS_ActionUi {
                     return;
                 }
 
-                pc.setPrivateShop(false);
+                if (!CS_PersonalShop.removeListings(pc)) return;
 
                 pc.상점변신 = 0;
 
@@ -828,12 +558,6 @@ public final class CS_ActionUi {
                 L1PolyMorph
                         .undoPolyPrivateShop(pc);
 
-                ThreadPool
-                        .getInstance()
-                        .execute(
-                                new MJDShopStorage(
-                                        pc,
-                                        true));
             }
 
         } catch (Exception e) {

@@ -33,7 +33,7 @@ import l1j.server.server.utils.SQLUtil;
 
 public class ClanWarehouse extends Warehouse {
 	private static final long serialVersionUID = 1L;
-	private int _warehouse = 0;
+	private volatile int _warehouse;
 	public ClanWarehouse(String clan) {
 		super(clan);
 	}
@@ -125,6 +125,12 @@ public class ClanWarehouse extends Warehouse {
 
 	public int getWarehouseUsingChar() {
 		return _warehouse;
+	}
+
+	public synchronized boolean releaseWarehouseUser(int ownerId) {
+		if (ownerId <= 0 || _warehouse != ownerId) return false;
+		_warehouse = 0;
+		return true;
 	}
 
 	public boolean setWarehouseUsingChar(int objid, int prevOwner) {

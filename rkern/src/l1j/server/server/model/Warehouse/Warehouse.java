@@ -19,7 +19,9 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.monitor.Logger.WarehouseType;
 import l1j.server.server.datatables.ItemTable;
+import l1j.server.server.model.L1DwarfForPackageInventory;
 import l1j.server.server.model.L1Inventory;
+import l1j.server.server.storage.cached.CTransaction;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -62,20 +64,22 @@ public abstract class Warehouse extends L1Object {
     protected static final int ELF_ROWS = 2;
     protected static final int SPECIAL_ROWS = 3;
     protected static final int SUPPLEMENT_ROWS = 4;
+    protected static final int PACKAGE_ROWS = 5;
 
     private static final String[] ROW_TABLE = {
         "", "clan_warehouse", "character_elf_warehouse",
-        "character_special_warehouse", "character_supplementary_service"
+        "character_special_warehouse", "character_supplementary_service", "character_package_warehouse"
     };
     private static final String[] OWNER_COLUMN = {
-        "", "clan_name", "account_name", "char_name", "account_name"
+        "", "clan_name", "account_name", "char_name", "account_name", "account_name"
     };
     private static final String[] INSERT_SQL = {
         "",
         "INSERT INTO clan_warehouse SET id=?,clan_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,special_enchant=?,package=?,bless_level=?,item_level=?,Hotel_Town=?,end_time=?",
         "INSERT INTO character_elf_warehouse SET id=?,account_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,bless=?,special_enchant=?,bless_level=?,item_level=?,Hotel_Town=?,end_time=?",
         "INSERT INTO character_special_warehouse SET id=?,char_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,bless=?,special_enchant=?,package=?,bless_level=?,item_level=?,Hotel_Town=?,end_time=?",
-        "INSERT INTO character_supplementary_service SET id=?,account_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,bless=?,special_enchant=?,package=?"
+        "INSERT INTO character_supplementary_service SET id=?,account_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,bless=?,special_enchant=?,package=?",
+        "INSERT INTO character_package_warehouse SET id=?,account_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,special_enchant=?,bless_level=?,item_level=?,Hotel_Town=?,end_time=?"
     };
 
     private static final class WarehouseRow {
@@ -127,6 +131,7 @@ public abstract class Warehouse extends L1Object {
         if (this instanceof ElfWarehouse) return persistenceKey(ELF_ROWS);
         if (this instanceof SpecialWarehouse) return persistenceKey(SPECIAL_ROWS);
         if (this instanceof SupplementaryService) return persistenceKey(SUPPLEMENT_ROWS);
+        if (this instanceof L1DwarfForPackageInventory) return persistenceKey(PACKAGE_ROWS);
         throw new IllegalStateException("Unsupported warehouse type: " + getClass().getName());
     }
 
@@ -247,9 +252,9 @@ public abstract class Warehouse extends L1Object {
             ps.setInt(++p, row.remaining);
             ps.setTimestamp(++p, row.lastUsed);
             ps.setInt(++p, row.attr);
-            if (type != CLAN_ROWS) ps.setInt(++p, row.bless);
+            if (type != CLAN_ROWS && type != PACKAGE_ROWS) ps.setInt(++p, row.bless);
             ps.setInt(++p, row.special);
-            if (type != ELF_ROWS) ps.setInt(++p, row.pack);
+            if (type != ELF_ROWS && type != PACKAGE_ROWS) ps.setInt(++p, row.pack);
             if (type != SUPPLEMENT_ROWS) ps.setInt(++p, row.blessLevel);
             if (type != SUPPLEMENT_ROWS) {
                 ps.setInt(++p, row.itemLevel);
@@ -320,9 +325,9 @@ public abstract class Warehouse extends L1Object {
             ps.setInt(++p, row.remaining);
             ps.setTimestamp(++p, row.lastUsed);
             ps.setInt(++p, row.attr);
-            if (type != CLAN_ROWS) ps.setInt(++p, row.bless);
+            if (type != CLAN_ROWS && type != PACKAGE_ROWS) ps.setInt(++p, row.bless);
             ps.setInt(++p, row.special);
-            if (type != ELF_ROWS) ps.setInt(++p, row.pack);
+            if (type != ELF_ROWS && type != PACKAGE_ROWS) ps.setInt(++p, row.pack);
             if (type != SUPPLEMENT_ROWS) ps.setInt(++p, row.blessLevel);
             if (type != SUPPLEMENT_ROWS) {
                 ps.setInt(++p, row.itemLevel);
@@ -348,9 +353,9 @@ public abstract class Warehouse extends L1Object {
                             && row.remaining == rs.getInt("remaining_time")
                             && Objects.equals(row.lastUsed, rs.getTimestamp("last_used"))
                             && row.attr == rs.getInt("attr_enchantlvl")
-                            && (type == CLAN_ROWS || row.bless == rs.getInt("bless"))
+                            && (type == CLAN_ROWS || type == PACKAGE_ROWS || row.bless == rs.getInt("bless"))
                             && row.special == rs.getInt("special_enchant")
-                            && (type == ELF_ROWS || row.pack == rs.getInt("package"))
+                            && (type == ELF_ROWS || type == PACKAGE_ROWS || row.pack == rs.getInt("package"))
                             && (type == SUPPLEMENT_ROWS || row.blessLevel == rs.getInt("bless_level"))
                             && (type == SUPPLEMENT_ROWS || (row.itemLevel == rs.getInt("item_level")
                                 && Objects.equals(row.hotel, rs.getString("Hotel_Town"))
@@ -431,7 +436,14 @@ public abstract class Warehouse extends L1Object {
             submitWarehouseDelete(SPECIAL_ROWS, source);
         } else if (this instanceof SupplementaryService) {
             submitWarehouseDelete(SUPPLEMENT_ROWS, source);
+        } else if (this instanceof L1DwarfForPackageInventory) {
+            submitWarehouseDelete(PACKAGE_ROWS, source);
         } else throw new IllegalStateException("Unsupported warehouse");
+    }
+
+    public final void requireWithdrawalTable(CacheD.WarehouseMove move) {
+        if (this instanceof L1DwarfForPackageInventory)
+            move.stageWarehouseSql(con -> CTransaction.requireTransactionalTables(con, ROW_TABLE[PACKAGE_ROWS]));
     }
 
     /** Publish a validated snapshot once; reconnect must not append duplicate IDs. */
@@ -501,7 +513,7 @@ public abstract class Warehouse extends L1Object {
 		return item;
 	}
 
-    private static boolean chargeMergeItem(int itemId) {
+    public static boolean chargeMergeItem(int itemId) {
         switch (itemId) {
         case 40006: case 40007: case 40008: case 140006: case 140008:
         case 41401: case 810006: case 810007: return true;
@@ -539,6 +551,7 @@ public abstract class Warehouse extends L1Object {
         try { reserved = CacheD.beginWarehouseMove(pc.getId(), transferOrderKey()); }
         catch (java.util.concurrent.RejectedExecutionException busy) { return null; }
         try (CacheD.WarehouseMove move = reserved) {
+            requireWithdrawalTable(move);
             move.onFailure(() -> CIOThreadCallback.getInstance().completeSession(session, session::kick));
             move.expectOriginal(item);
             if (destStack != null && (countMerge || chargeMerge)) move.expectOriginal(destStack);
@@ -733,6 +746,7 @@ public abstract class Warehouse extends L1Object {
                     throw new IllegalStateException("Warehouse fee unavailable during move");
             }
             move.commit();
+            if (carryItem == item && stored != item) L1World.getInstance().removeObject(item);
             return stored;
         }
 

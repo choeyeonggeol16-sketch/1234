@@ -23,6 +23,8 @@ import l1j.server.server.templates.L1ShopItem;
 /**
  * 개인상점/상점 아이템 목록 통지 (0x0407)
  */
+import l1j.server.server.model.shop.PlayerShopView;
+
 public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
 
     private ePersonalShopType type;       // 1 enum
@@ -90,233 +92,63 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
         }
     }
 
-    // ============================================================
-    // 개인상점 - 구매
-    // ============================================================
+    /** Preserve the existing compact wire indices and remember which rows they represent. */
+    public static void do_send(L1PcInstance pc, int objectId, ePersonalShopType type) {
+        if (pc == null || type == null || pc.getNetConnection() == null) return;
+        final CIOClient client = pc.getNetConnection();
+        client.setPlayerShopView(null);
+        if (!(L1World.getInstance().findObject(objectId) instanceof L1PcInstance shop)
+                || !shop.isPrivateShop()) return;
+        final boolean purchase = type == ePersonalShopType.TRADE_SELL;
+        final ArrayList<MJDShopItem> listings = purchase ? shop.getPurchasings() : shop.getSellings();
+        if (listings == null) return;
 
-    private static void do_send_buy(
-            L1PcInstance pc,
-            L1PcInstance shopPc) {
-
-        if (pc == null || shopPc == null) {
-            return;
-        }
-
-        final ArrayList<MJDShopItem> source = shopPc.getSellings();
-        if (source == null || source.isEmpty()) {
-            pc.setPartnersPrivateShopItemCount(0);
-            return;
-        }
-
-        final List<MJDShopItem> list = new ArrayList<MJDShopItem>(source);
-
-        long notiWire_present = 0L;
-        ePersonalShopType notiWire_type = null;
-        int notiWire_sellerId = 0;
-        int notiWire_size = 0;
-        List<TradeItemInfo> notiWire_items = new ArrayList<TradeItemInfo>(128);
-
-
-        { notiWire_type = ePersonalShopType.TRADE_BUY; }
-        { { notiWire_sellerId = (shopPc.getId()); notiWire_present |= (1L << 0); } }
-
-        int realSize = 0;
-
-        for (int i = 0; i < list.size(); i++) {
-            final MJDShopItem ditem = list.get(i);
-            if (ditem == null) {
-                continue;
-            }
-
-            try {
-                final L1ItemInstance item = shopPc.getInventory().getItem(ditem.objId);
-                if (item == null || item.getCount() <= 0) {
-                    continue;
-                }
-
-                if (ditem.price < 0 || ditem.count <= 0) {
-                    continue;
-                }
-
-                final TradeItemInfo tInfo = TradeItemInfo.newInstance();
-                tInfo.set_index(realSize);
-                tInfo.set_price(ditem.price);
-                tInfo.set_count(ditem.count);
-                tInfo.set_trade_info(0);
-
-                final ItemInfo iInfo = ItemInfo.newInstance(item);
-                if (iInfo == null) {
-                    continue;
-                }
-
-                tInfo.set_item_info(iInfo);
-                {
-                TradeItemInfo proto913_arg0 = tInfo;
-
-                    if (proto913_arg0 != null) {
-                        notiWire_items.add(proto913_arg0);
+        synchronized (listings) {
+            int capacity = Math.min(255, listings.size());
+            if (capacity == 0) return;
+            PlayerShopView view = new PlayerShopView(shop, purchase, capacity);
+            List<TradeItemInfo> items = new ArrayList<>(capacity);
+            if (purchase) {
+                // The inventory is read on its own CIO. Existing order count limits
+                // also fit the one-byte row index in the sell request.
+                for (L1ItemInstance item : pc.getInventory().getItems()) {
+                    if (item == null || item.isEquipped() || item.getCount() <= 0) continue;
+                    for (MJDShopItem listing : listings) {
+                        if (listing == null || item.getItemId() != listing.itemId
+                                || item.getEnchantLevel() != listing.enchant
+                                || item.getAttrEnchantLevel() != listing.attr) continue;
+                        addPlayerShopRow(items, view, listing, item, true);
+                        if (view.size() == capacity) break;
                     }
+                    if (view.size() == capacity) break;
                 }
-                realSize++;
-
-            } catch (Exception e) {
-                System.err.println(
-                        "[PERSONAL SHOP BUY BUILD ERROR]"
-                        + " seller=" + shopPc.getName()
-                        + " sellerId=" + shopPc.getId()
-                        + " index=" + i);
-                e.printStackTrace();
+            } else {
+                for (MJDShopItem listing : listings) {
+                    if (listing == null) continue;
+                    L1ItemInstance item = shop.getInventory().getItem(listing.objId);
+                    if (item == null || item.isEquipped() || item.getCount() <= 0
+                            || item.getItemId() != listing.itemId) continue;
+                    addPlayerShopRow(items, view, listing, item, false);
+                    if (view.size() == capacity) break;
+                }
             }
+            if (!view.matches(shop, purchase)
+                    || listings != (purchase ? shop.getPurchasings() : shop.getSellings())) return;
+            if (sendFields(pc, 3L, type, objectId, view.size(), items)) client.setPlayerShopView(view);
         }
-
-        pc.setPartnersPrivateShopItemCount(realSize);
-        { { notiWire_size = realSize; notiWire_present |= (1L << 1); } }
-        SC_PERSONAL_SHOP_ITEM_LIST_NOTI.sendFields(pc, notiWire_present, notiWire_type, notiWire_sellerId, notiWire_size, notiWire_items);
     }
 
-    // ============================================================
-    // 개인상점 - 판매
-    // ============================================================
-
-    private static void do_send_sell(
-            L1PcInstance pc,
-            L1PcInstance shopPc) {
-
-        if (pc == null || shopPc == null) {
-            return;
-        }
-
-        final ArrayList<MJDShopItem> source = shopPc.getPurchasings();
-        if (source == null || source.isEmpty()) {
-            return;
-        }
-
-        final List<MJDShopItem> purchasingsItems = new ArrayList<MJDShopItem>(source);
-
-        final List<L1ItemInstance> inventorySource = pc.getInventory().getItems();
-        if (inventorySource == null || inventorySource.isEmpty()) {
-            return;
-        }
-
-        final List<L1ItemInstance> inventoryItems = new ArrayList<L1ItemInstance>(inventorySource);
-
-        long notiWire_present = 0L;
-        ePersonalShopType notiWire_type = null;
-        int notiWire_sellerId = 0;
-        int notiWire_size = 0;
-        List<TradeItemInfo> notiWire_items = new ArrayList<TradeItemInfo>(128);
-
-
-        { notiWire_type = ePersonalShopType.TRADE_SELL; }
-        { { notiWire_sellerId = (shopPc.getId()); notiWire_present |= (1L << 0); } }
-
-        final int purchasingsSize = purchasingsItems.size();
-        int realSize = 0;
-
-        for (int i = 0; i < inventoryItems.size(); i++) {
-            final L1ItemInstance item = inventoryItems.get(i);
-
-            if (item == null || item.isEquipped() || item.getCount() <= 0) {
-                continue;
-            }
-
-            if (realSize >= purchasingsSize) {
-                break;
-            }
-
-            for (int j = 0; j < purchasingsSize; j++) {
-                final MJDShopItem ditem = purchasingsItems.get(j);
-                if (ditem == null) {
-                    continue;
-                }
-
-                if (item.getItemId() != ditem.itemId) {
-                    continue;
-                }
-
-                if (item.getEnchantLevel() != ditem.enchant
-                        || item.getAttrEnchantLevel() != ditem.attr) {
-                    continue;
-                }
-
-                if (ditem.price < 0 || ditem.count <= 0) {
-                    continue;
-                }
-
-                final int count = Math.min(ditem.count, item.getCount());
-                if (count <= 0) {
-                    continue;
-                }
-
-                try {
-                    final TradeItemInfo tInfo = TradeItemInfo.newInstance();
-                    tInfo.set_index(realSize);
-                    tInfo.set_price(ditem.price);
-                    tInfo.set_count(count);
-                    tInfo.set_buy_count(count);
-                    tInfo.set_trade_info(0);
-
-                    final ItemInfo iInfo = ItemInfo.newInstance(item);
-                    if (iInfo == null) {
-                        continue;
-                    }
-
-                    tInfo.set_item_info(iInfo);
-                    {
-                    TradeItemInfo proto917_arg0 = tInfo;
-
-                        if (proto917_arg0 != null) {
-                            notiWire_items.add(proto917_arg0);
-                        }
-                    }
-                    realSize++;
-
-                    if (realSize >= purchasingsSize) {
-                        break;
-                    }
-
-                } catch (Exception e) {
-                    System.err.println(
-                            "[PERSONAL SHOP SELL BUILD ERROR]"
-                            + " buyer=" + shopPc.getName()
-                            + " buyerId=" + shopPc.getId()
-                            + " inventoryIndex=" + i
-                            + " purchaseIndex=" + j
-                            + " itemId=" + item.getItemId());
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        { { notiWire_size = realSize; notiWire_present |= (1L << 1); } }
-        SC_PERSONAL_SHOP_ITEM_LIST_NOTI.sendFields(pc, notiWire_present, notiWire_type, notiWire_sellerId, notiWire_size, notiWire_items);
-    }
-
-    // ============================================================
-    // 개인상점 공통 진입점
-    // ============================================================
-
-    public static void do_send(
-            L1PcInstance pc,
-            int objectId,
-            ePersonalShopType type) {
-
-        if (pc == null || type == null) {
-            return;
-        }
-
-        final L1Object obj = L1World.getInstance().findObject(objectId);
-        if (!(obj instanceof L1PcInstance)) {
-            return;
-        }
-
-        final L1PcInstance shopPc = (L1PcInstance) obj;
-
-        if (type == ePersonalShopType.TRADE_BUY) {
-            do_send_buy(pc, shopPc);
-        } else if (type == ePersonalShopType.TRADE_SELL) {
-            do_send_sell(pc, shopPc);
-        }
+    private static void addPlayerShopRow(List<TradeItemInfo> items, PlayerShopView view,
+            MJDShopItem listing, L1ItemInstance item, boolean purchase) {
+        if (listing.isPurchase != purchase || listing.price <= 0 || listing.count <= 0) return;
+        final int count = Math.min(item.getCount(), listing.count);
+        final ItemInfo info = ItemInfo.newInstance(item);
+        if (info == null) return;
+        TradeItemInfo row = TradeItemInfo.newInstance().set_index(view.size()).set_price(listing.price)
+                .set_count(count).set_trade_info(0).set_item_info(info);
+        if (purchase) row.set_buy_count(count);
+        items.add(row);
+        view.add(listing.objId, purchase ? item.getId() : 0, listing.price, count);
     }
 
     // ============================================================
