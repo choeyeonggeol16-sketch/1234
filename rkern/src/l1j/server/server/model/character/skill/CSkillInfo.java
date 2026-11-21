@@ -246,6 +246,11 @@ public final class CSkillInfo {
         registerContextual(INVISIBILITY, SkillHandlers::castInvisibility, SkillHandlers::startInvisibility);
         registerContextual(BLIND_HIDING, SkillHandlers::castInvisibility, SkillHandlers::startInvisibility);
         registerContextual(RINDVIOR_SILENCE, SkillHandlers::castRindviorSilence, SkillHandlers::startRindviorSilence);
+        // Dedicated control casts: target PC state/visuals must execute on that
+        // target's existing 32-slot controller FIFO. NPC admission remains on NpcServer.
+        registerContextual(POWERRIP, SkillHandlers::onPowerRip, SkillHandlers::startPowerRipFromOwner);
+        registerContextual(DESPERADO, SkillHandlers::onDesperado, SkillHandlers::startDesperadoFromOwner);
+        registerContextual(THUNDER_GRAB, SkillHandlers::onThunderGrab, SkillHandlers::startThunderGrabFromOwner);
         registerContextual(프라임, null, SkillHandlers::startPrimeFromOwner,
                 fixed(BOW_HIT_RATE, 3), fixed(BOW_DAMAGE_RATE, 3),
                 fixed(WEAPON_HIT_RATE, 3), fixed(WEAPON_DAMAGE_RATE, 3),

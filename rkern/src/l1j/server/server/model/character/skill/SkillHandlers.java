@@ -175,7 +175,7 @@ public final class SkillHandlers {
 		CSkillInfo.registerInstant(L1SkillId.CANCELLATION, SkillHandlers::onCancellation);
 		CSkillInfo.registerInstant(L1SkillId.RESURRECTION, SkillHandlers::onResurrection);
 		CSkillInfo.registerInstant(L1SkillId.GREATER_RESURRECTION, SkillHandlers::onResurrection);
-		register(L1SkillId.DESPERADO, SkillHandlers::onDesperado);
+
 
 		// multi-hit
 		CSkillInfo.registerInstant(L1SkillId.TRIPLE_ARROW, SkillHandlers::onTripleArrow);
@@ -198,7 +198,7 @@ public final class SkillHandlers {
 		CSkillInfo.registerInstant(L1SkillId.CREATE_ZOMBIE, SkillHandlers::onCreateZombie);
 		CSkillInfo.registerInstant(L1SkillId.WEAK_ELEMENTAL, SkillHandlers::onWeakElemental);
 		CSkillInfo.registerInstant(L1SkillId.RETURN_TO_NATURE, SkillHandlers::onReturnToNature);
-		register(L1SkillId.POWERRIP, SkillHandlers::onPowerRip);
+
 
 		CSkillInfo.registerInstant(L1SkillId.LESSER_ELEMENTAL, SkillHandlers::onElementalSummon);
 		CSkillInfo.registerInstant(L1SkillId.GREATER_ELEMENTAL, SkillHandlers::onElementalSummon);
@@ -214,7 +214,7 @@ public final class SkillHandlers {
 		CSkillInfo.registerCast(L1SkillId.GREATER_HASTE, SkillHandlers::castMovementSpeed, false);
 
 
-		register(L1SkillId.THUNDER_GRAB, SkillHandlers::onThunderGrab);
+
 
 		CSkillInfo.registerInstant(L1SkillId.REMOVE_CURSE, SkillHandlers::onRemoveCurse);
 		CSkillInfo.registerInstant(L1SkillId.CALL_OF_NATURE, SkillHandlers::onCallOfNature);
@@ -1781,20 +1781,45 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
+	/** Dedicated control effects run only on the recipient's existing controller FIFO. */
+	static void startPowerRipFromOwner(L1PcInstance pc, int id, int durationMs,
+			int option, int gfx, boolean partyMember) {
+		if (durationMs <= 0 || pc.isDead()) return;
+		pc.skillEffectSetFromOwner(L1SkillId.POWERRIP, durationMs);
+		spawnEffectAtTarget(pc, 9415, durationMs);
+		SC_Paralysis.send(pc, SC_Paralysis.TYPE_RIP, true);
+	}
+
+	static void startDesperadoFromOwner(L1PcInstance pc, int id, int durationMs,
+			int attackerLevel, int gfx, boolean partyMember) {
+		if (durationMs <= 0 || pc.isDead()) return;
+		if (pc.hasSkillEffect(L1SkillId.DESPERADO))
+			pc.skillEffectRemoveFromOwner(L1SkillId.DESPERADO, true);
+		pc.Desperadolevel = attackerLevel;
+		pc.skillEffectSetFromOwner(L1SkillId.DESPERADO, durationMs);
+		spawnEffectAtTarget(pc, gfx, durationMs);
+		SC_Paralysis.send(pc, SC_Paralysis.TYPE_PERADO, true);
+	}
+
+	static void startThunderGrabFromOwner(L1PcInstance pc, int id, int durationMs,
+			int option, int gfx, boolean partyMember) {
+		if (durationMs <= 0 || pc.isDead()) return;
+		pc.skillEffectSetFromOwner(L1SkillId.STATUS_FREEZE, durationMs);
+		spawnEffectAtTarget(pc, 81182, durationMs);
+		sendSkillSoundOnce(pc, 4184);
+		SC_Paralysis.send(pc, SC_Paralysis.TYPE_BIND, true);
+	}
+
 	// ===== POWERRIP =====
-	private static HandlerResult onPowerRip(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
+	static HandlerResult onPowerRip(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		final L1Character target = (cha != null ? cha : su.hdTarget());
 		if (target == null) return HandlerResult.NOT_HANDLED;
 
 		final int dur = SkillUseHelper.pickMillis(SkillUseHelper.GRIP_OFFICIAL);
 
-		if (target instanceof L1PcInstance) {
-			spawnEffectAtTarget(target, 9415, dur);
-			final L1PcInstance pc = (L1PcInstance) target;
-
-			pc.setSkillEffect(L1SkillId.POWERRIP, dur);
-			SC_Paralysis.send(pc, SC_Paralysis.TYPE_RIP, true);
-			return HandlerResult.HANDLED;
+		if (target instanceof L1PcInstance pc) {
+			return submitContextBuff(pc, L1SkillId.POWERRIP, dur, 0, 0, null)
+					? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
 
 		} else if (target instanceof L1MonsterInstance
 				|| target instanceof L1SummonInstance
@@ -2290,7 +2315,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 	}
 
 
-	private static HandlerResult onDesperado(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
+	static HandlerResult onDesperado(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		final L1Character user = su.hdUser();
 		final L1PcInstance player = su.hdPlayer();
 		final L1Character target = (cha != null ? cha : su.hdTarget());
@@ -2308,19 +2333,10 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 
 		su.hdSetShockStunDuration(shockDur);
 
-		spawnEffectAtTarget(target, effectNpcId, shockDur);
-
-		if (target instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) target;
-
-			if (pc.hasSkillEffect(L1SkillId.DESPERADO)) {
-				pc.removeSkillEffect(L1SkillId.DESPERADO);
-			}
-
-			pc.Desperadolevel = user.getLevel();
-			SC_Paralysis.send(pc, SC_Paralysis.TYPE_PERADO, true);
-			pc.setSkillEffect(L1SkillId.DESPERADO, shockDur);
-
+		if (target instanceof L1PcInstance pc) {
+			return submitContextBuff(pc, L1SkillId.DESPERADO, shockDur,
+					user.getLevel(), effectNpcId, null)
+					? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
 		} else if (target instanceof L1MonsterInstance
 				|| target instanceof L1SummonInstance
 				|| target instanceof L1PetInstance
@@ -2330,12 +2346,15 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 			if (!npc.trySetSkillEffect(L1SkillId.DESPERADO, shockDur)) {
 				throw new java.util.concurrent.RejectedExecutionException("NPC DESPERADO admission exhausted");
 			}
+			spawnEffectAtTarget(target, effectNpcId, shockDur);
+		} else {
+			spawnEffectAtTarget(target, effectNpcId, shockDur);
 		}
 
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onThunderGrab(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
+	static HandlerResult onThunderGrab(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		if (cha == null) return HandlerResult.NOT_HANDLED;
 
 		final L1PcInstance player = su.hdPlayer();
@@ -2354,13 +2373,9 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 			shockDur += bonusTime;
 		}
 		// PC
-		if (cha instanceof L1PcInstance) {
-			final L1PcInstance pc = (L1PcInstance) cha;
-			spawnEffectAtTarget(cha, 81182, shockDur);
-			pc.setSkillEffect(L1SkillId.STATUS_FREEZE, shockDur);
-			sendSkillSoundOnce(pc, 4184);
-			SC_Paralysis.send(pc, SC_Paralysis.TYPE_BIND, true);
-			return HandlerResult.HANDLED;
+		if (cha instanceof L1PcInstance pc) {
+			return submitContextBuff(pc, L1SkillId.THUNDER_GRAB, shockDur, 0, 0, null)
+					? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
 		}
 
 		// NPC/소환/펫/동료

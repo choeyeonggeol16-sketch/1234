@@ -45,3 +45,11 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 - L1PcInstance에 64-bit primitive 활 명중률/피해율 두 종류 보정 publication을 추가했다. 5000 PC 기준 신규 primitive 필드의 nominal payload는 40KB(객체 정렬 영향 제외)다.
 - 숫자 inventory의 프라임 두 ID를 managed_external로 전환하여 stop-only 잔여 78→76으로 조정하고, 일반/공성 프라임 부여·독립 기본값·해제 회귀를 추가했다.
 - 네트워크 핵심, 브로드캐스트 공통 구현, CIO 구조, NPC, DB/CacheD 거래 경계는 그대로 두었다. 실제 로그인/DB/클라이언트 패킷 및 5000명 soak는 별도 검증 대상이다.
+
+
+## 2026-11-21 전용 시전 대상 PC 소유 실행 수정
+
+- 파워립(228), 데스페라도(230), 썬더 그랩(192)은 기존 직접 대상 PC 타이머·마비·시각 효과를 대상 CCreatureController 32-slot FIFO의 EXEC_CAST_BUFF로 제출한다. 지연된 제출의 세션/actor 변경 시 기존 실행 경로가 적용을 거부한다.
+- 원본 시전 확률·지속 시간·패시브 추가 시간 판정은 시전에서 유지한다. 데스페라도 공격자 레벨과 시각 효과는 primitive 매개변수에 담아 전달하고 해당 수신자 실행에서 해제/재시전한다. 큐 등록 실패에는 먼저 효과를 표시하거나 상태를 바꾸지 않는다.
+- NPC 스턴/속박은 기존 NpcServer postNpcSkill 흐름을 그대로 유지하고, 새 스레드/큐/클래스나 네트워크 계층을 추가하지 않는다.
+- SHAPE_CHANGE와 TOMAHAWK는 기존 다형성/출혈 전용 서비스 경로를 유지한다. 실 클라이언트·DB 없는 헤드리스에선 실제 VFX 타이밍 및 5천 명 운영 검증은 별도다.
