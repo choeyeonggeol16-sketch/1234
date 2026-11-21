@@ -124,6 +124,10 @@ final class ManaPotionEffects {
 		default:
 			break;
 		}
+		// The two blue-potion variants are mutually exclusive, as in BluePotion.
+		// Remove the previous timer before publishing the replacement icon.
+		if (pc.hasSkillEffect(STATUS_BLUE_POTION)) pc.removeSkillEffect(STATUS_BLUE_POTION);
+		if (pc.hasSkillEffect(STATUS_BLUE_POTION2)) pc.removeSkillEffect(STATUS_BLUE_POTION2);
 		sendBlueIcon(pc, 34, time, true);
 		sendSound(pc, pc.getId(), 190);
 		broadcastSound(pc, pc.getId(), 190);

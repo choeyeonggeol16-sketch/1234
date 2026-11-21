@@ -706,8 +706,9 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		if (pc.getSafetyZone()) SC_InventoryIcon.icoEnd(pc, L1SkillId.EXP_POTION + 1);
-		else SC_InventoryIcon.icoEnd(pc, L1SkillId.EXP_POTION);
+		// The activation zone can differ from the expiry zone: close either icon ID.
+		SC_InventoryIcon.icoEnd(pc, L1SkillId.EXP_POTION);
+		SC_InventoryIcon.icoEnd(pc, L1SkillId.EXP_POTION + 1);
 		return StopResult.HANDLED;
 	}
 
@@ -806,12 +807,9 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		long hasad = pc.getAccount().getBlessOfAin();
-		if (hasad <= 10000) {
-			SC_InventoryIcon.icoEnd(pc, L1SkillId.EXP_BUFF + 1);
-		} else {
-			SC_InventoryIcon.icoEnd(pc, L1SkillId.EXP_BUFF);
-		}
+		// Blessing can cross the threshold while active; never infer the old icon at expiry.
+		SC_InventoryIcon.icoEnd(pc, L1SkillId.EXP_BUFF);
+		SC_InventoryIcon.icoEnd(pc, L1SkillId.EXP_BUFF + 1);
 		return StopResult.HANDLED;
 	}
 
