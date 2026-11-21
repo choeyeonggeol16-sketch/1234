@@ -2015,26 +2015,12 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offJudgment(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		if (skillId == L1SkillId.잠재력저지먼트1) {
-			pc.getResistance().addSpecialResistance(eKind.ABILITY, 15);
-			SC_OwnCharAttrDef.send(pc);
-		} else if (skillId == L1SkillId.잠재력저지먼트2) {
-			pc.getResistance().addSpecialResistance(eKind.SPIRIT, 15);
-			SC_OwnCharAttrDef.send(pc);
-		} else if (skillId == L1SkillId.잠재력저지먼트3) {
-			pc.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, 15);
-			SC_OwnCharAttrDef.send(pc);
-		} else if (skillId == L1SkillId.잠재력저지먼트4) {
-			pc.getResistance().addSpecialResistance(eKind.FEAR, 15);
-			SC_OwnCharAttrDef.send(pc);
-		} else if (skillId == L1SkillId.잠재력저지먼트5) {
-			pc.getResistance().addMr(15);
-			SC_SPMR.send(pc);
-		}
-
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
+		// The active modifier was already captured by the target owner at
+		// first grant. Removing this skill leaves every other source intact.
+		pc.removeSkillModifierFromOwner(skillId);
+		if (skillId == L1SkillId.잠재력저지먼트5) SC_SPMR.send(pc);
+		else SC_OwnCharAttrDef.send(pc);
 		SC_InventoryIcon.icoEnd(pc, L1SkillId.저지먼트);
 		SC_SystemMessage.send(pc, "저지먼트의 효과가 사라집니다.");
 		return StopResult.HANDLED;

@@ -139,6 +139,17 @@ interface CSkillEffect {
         @Override public boolean checkPumpCondition(L1Character target) { return target instanceof L1PcInstance; }
     }
 
+    /** Signed, independent resistance penalty. Captures the kind and delta at boot. */
+    record SpecialPenalty(int kindIndex, int amount) implements CSkillEffect {
+        @Override public boolean checkPumpCondition(L1Character target) {
+            return target instanceof L1PcInstance;
+        }
+
+        @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.addSpecialPenalty(kindIndex, amount);
+        }
+    }
+
     record CarryLimit(int amount) implements CSkillEffect {
         @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.carryLimit += amount;

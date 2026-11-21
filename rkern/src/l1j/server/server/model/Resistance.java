@@ -83,7 +83,11 @@ public class Resistance {
         if (kind == null) return 0;
         final int shift = (kind.value() - 1) << 3;
         final int bonus = (int) (skillSpecialResistance >>> shift) & 0xff;
-        return checkRange(_specialResist[kind.value()] + bonus);
+        // Independent signed penalties must not wrap into an unsigned 255
+        // or corrupt a neighboring byte of the positive resistance bitmap.
+        final int penalty = kind.value() <= 4
+                ? (byte) (skillSpecialPenalty >>> shift) : 0;
+        return checkRange(_specialResist[kind.value()] + bonus + penalty);
     }
 
     public void addSpecialPierce(eKind kind, int value) {
@@ -133,11 +137,18 @@ public class Resistance {
     private volatile int skillPvp;
     // Five resistance bytes, followed by spirit pierce and all-type pierce.
     private volatile long skillSpecialResistance;
+    // Four signed 8-bit penalties (ability/spirit/dragon/fear) from effects.
+    private volatile int skillSpecialPenalty;
 
     public void setSkillCombatModifiers(int pvp, long specialResistance, boolean notify) {
+        setSkillCombatModifiers(pvp, specialResistance, 0, notify);
+    }
+
+    public void setSkillCombatModifiers(int pvp, long specialResistance, int penalty, boolean notify) {
         if (skillPvp != pvp) skillPvp = pvp;
-        if (skillSpecialResistance == specialResistance) return;
+        if (skillSpecialResistance == specialResistance && skillSpecialPenalty == penalty) return;
         skillSpecialResistance = specialResistance;
+        skillSpecialPenalty = penalty;
         if (notify && character instanceof L1PcInstance pc) SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
     }
 

@@ -1875,35 +1875,35 @@ public class L1PcInstance extends L1Character {
 	
 	public void 저지먼트1() {
 		if (hasSkillEffect(L1SkillId.잠재력저지먼트1)){
-			getResistance().addSpecialResistance(eKind.ABILITY, -15);
+			applySkillModifierFromOwner(L1SkillId.잠재력저지먼트1, 0);
 			SC_InventoryIcon.icoNew(this, L1SkillId.저지먼트, 3881, 8, true);
 			SC_OwnCharAttrDef.send(this);
 		}
 	}
 	public void 저지먼트2() {
 		if (hasSkillEffect(L1SkillId.잠재력저지먼트2)){
-			getResistance().addSpecialResistance(eKind.SPIRIT, -15);
+			applySkillModifierFromOwner(L1SkillId.잠재력저지먼트2, 0);
 			SC_InventoryIcon.icoNew(this, L1SkillId.저지먼트, 3882, 8, true);
 			SC_OwnCharAttrDef.send(this);
 		}
 	}
 	public void 저지먼트3() {
 		if (hasSkillEffect(L1SkillId.잠재력저지먼트3)){
-			getResistance().addSpecialResistance(eKind.DRAGON_SPELL, -15);
+			applySkillModifierFromOwner(L1SkillId.잠재력저지먼트3, 0);
 			SC_InventoryIcon.icoNew(this, L1SkillId.저지먼트, 3883, 8, true);
 			SC_OwnCharAttrDef.send(this);
 		}
 	}
 	public void 저지먼트4() {
 		if (hasSkillEffect(L1SkillId.잠재력저지먼트4)){
-			getResistance().addSpecialResistance(eKind.FEAR, -15);
+			applySkillModifierFromOwner(L1SkillId.잠재력저지먼트4, 0);
 			SC_InventoryIcon.icoNew(this, L1SkillId.저지먼트, 3887, 8, true);
 			SC_OwnCharAttrDef.send(this);
 		}
 	}
 	public void 저지먼트5() {
 		if (hasSkillEffect(L1SkillId.잠재력저지먼트5)){
-			getResistance().addMr(-15);
+			applySkillModifierFromOwner(L1SkillId.잠재력저지먼트5, 0);
 			SC_InventoryIcon.icoNew(this, L1SkillId.저지먼트, 3884, 8, true);
 			SC_SPMR.send(this);
 			

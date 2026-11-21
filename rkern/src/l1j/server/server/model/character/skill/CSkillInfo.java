@@ -262,6 +262,13 @@ public final class CSkillInfo {
                 fixed(WEAPON_HIT_RATE, 9), fixed(WEAPON_DAMAGE_RATE, 9),
                 fixed(SP, 6), fixed(MAGIC_HIT, 6), fixed(MAX_HP, 500));
         // Legacy item/skill grant paths formerly changed base stats directly.
+        // Five externally imposed Judgment debuffs must be removed by source,
+        // not by inverse arithmetic against already-capped resistance totals.
+        registerManaged(잠재력저지먼트1, null, new CSkillEffect.SpecialPenalty(eKind.ABILITY.value(), -15));
+        registerManaged(잠재력저지먼트2, null, new CSkillEffect.SpecialPenalty(eKind.SPIRIT.value(), -15));
+        registerManaged(잠재력저지먼트3, null, new CSkillEffect.SpecialPenalty(eKind.DRAGON_SPELL.value(), -15));
+        registerManaged(잠재력저지먼트4, null, new CSkillEffect.SpecialPenalty(eKind.FEAR.value(), -15));
+        registerManaged(잠재력저지먼트5, null, fixed(MR, -15L << 32));
         registerManaged(어드밴스, null, MAX_HP, MAX_MP);
         registerManaged(일루션리치, null, fixed(SP, 4));
         registerManaged(일루션골렘, null, fixed(AC, -10));

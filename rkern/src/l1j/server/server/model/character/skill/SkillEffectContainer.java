@@ -63,6 +63,7 @@ public final class SkillEffectContainer {
 		int hpRegen, mpRegen, impactProbability;
 		int pvpDamage, pvpReduction;
 		long specialResistance;
+		int specialPenalty;
 		// Potential captures six independent values once, with two extra packed pairs.
 		long potentialMagic, potentialEvasion;
 
@@ -92,6 +93,7 @@ public final class SkillEffectContainer {
 			hpRegen = mpRegen = impactProbability = 0;
 			pvpDamage = pvpReduction = 0;
 			specialResistance = 0;
+			specialPenalty = 0;
 		}
 
 		// Five distinct resistance kinds followed by spirit/all pierce.
@@ -107,6 +109,15 @@ public final class SkillEffectContainer {
 			}
 			return result;
 		}
+
+        /** Each signed byte is independent; never borrow into the next kind. */
+        void addSpecialPenalty(int kindIndex, int delta) {
+            if (kindIndex < 1 || kindIndex > 4) return;
+            final int shift = (kindIndex - 1) << 3;
+            final int current = (byte) (specialPenalty >>> shift);
+            final int updated = Math.clamp(current + delta, -128, 127);
+            specialPenalty = (specialPenalty & ~(0xff << shift)) | ((updated & 0xff) << shift);
+        }
 
 		int find(int id) {
 			for (int i = 0; i < count * 2; i += 2) if (applied[i] == id) return i;
@@ -180,7 +191,7 @@ public final class SkillEffectContainer {
 		SkillModifiers state = skillModifiers;
 		if (state == null) {
 			owner.setPumpedSkillModifiers(0, 0, 0, 0, 0, 0, 0, 0L, 0L, 0, notify);
-			owner.getResistance().setSkillCombatModifiers(0, 0L, notify);
+			owner.getResistance().setSkillCombatModifiers(0, 0L, 0, notify);
 			if (owner instanceof L1PcInstance pc) {
 				pc.setPumpedCarryArmorAndAccuracy(0, notify);
 				pc.setPumpedRegenAndWeaponRates(0);
@@ -201,7 +212,7 @@ public final class SkillEffectContainer {
 		owner.setPumpedSkillModifiers(state.hp, state.mp, state.ac, state.mr,
 				state.effectivePrimaryStats(), elements, evasion, weapon, combatRates, state.sp, notify);
 		final int pvp = (state.pvpReduction << 16) | (state.pvpDamage & 0xffff);
-		owner.getResistance().setSkillCombatModifiers(pvp, state.specialResistance, notify);
+		owner.getResistance().setSkillCombatModifiers(pvp, state.specialResistance, state.specialPenalty, notify);
 		if (owner instanceof L1PcInstance pc) {
 			final long carryArmorAndAccuracy = ((long) state.baseMagicHit << 32)
                     | ((state.armorReduction & 0xffffL) << 16) | (state.carryLimit & 0xffffL);

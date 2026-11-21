@@ -99,6 +99,7 @@ public final class TestSkillEffectLifecycle {
             verifyWisdomPotionSources();
             verifyLegacyPassiveIndependentSources();
             verifyLegacyAdvancePassive();
+            verifyJudgmentDebuffIndependentSources();
             verifyDedicatedCastRegistrations();
             verifyStopOnlyInventory();
             verifyRegistry();
@@ -1134,19 +1135,73 @@ public final class TestSkillEffectLifecycle {
                 "Advance expiry restores recorded source only", 어드밴스);
     }
 
-    /** All remaining 70 numeric stop-only definitions retain an end handler. */
+    /** All five Judgment penalties must be reversible independently of other buffs. */
+    private static void verifyJudgmentDebuffIndependentSources() {
+        final Player pc = new Player();
+        final int[] effects = { 잠재력저지먼트1, 잠재력저지먼트2,
+                잠재력저지먼트3, 잠재력저지먼트4, 잠재력저지먼트5 };
+        final eKind[] kinds = { eKind.ABILITY, eKind.SPIRIT,
+                eKind.DRAGON_SPELL, eKind.FEAR };
+        for (int n = 0; n < kinds.length; n++) {
+            final eKind kind = kinds[n];
+            final int id = effects[n];
+            pc.getResistance().addSpecialResistance(kind, 120);
+            pc.setSkillEffect(id, 8_000);
+            switch (n) {
+                case 0 -> pc.저지먼트1();
+                case 1 -> pc.저지먼트2();
+                case 2 -> pc.저지먼트3();
+                case 3 -> pc.저지먼트4();
+                default -> throw new AssertionError(n);
+            }
+            verify(CSkillInfo.isManaged(id) && pc.getResistance().getSpecialResistance(kind) == 105,
+                    "Judgment applies signed independent -15 resistance", id);
+            switch (n) {
+                case 0 -> pc.저지먼트1();
+                case 1 -> pc.저지먼트2();
+                case 2 -> pc.저지먼트3();
+                case 3 -> pc.저지먼트4();
+                default -> throw new AssertionError(n);
+            }
+            verify(pc.getResistance().getSpecialResistance(kind) == 105,
+                    "reapplying Judgment cannot double its penalty", id);
+            pc.removeSkillEffect(id);
+            verify(pc.getResistance().getSpecialResistance(kind) == 120,
+                    "Judgment stop restores only that resistance penalty", id);
+        }
+        pc.getResistance().addMr(80);
+        final int mr = pc.getResistance().getMr();
+        pc.setSkillEffect(잠재력저지먼트5, 8_000);
+        pc.저지먼트5();
+        pc.저지먼트5();
+        verify(pc.getResistance().getMr() == mr - 15,
+                "MR Judgment cannot double the same -15", 잠재력저지먼트5);
+        pc.removeSkillEffect(잠재력저지먼트5);
+        verify(pc.getResistance().getMr() == mr,
+                "MR Judgment returns to baseline", 잠재력저지먼트5);
+        // Positive resistance from a separate source is never overwritten.
+        pc.applySkillModifierFromOwner(God_buff, 0);
+        pc.setSkillEffect(God_buff, 30_000);
+        verify(pc.getResistance().getSpecialResistance(eKind.SPIRIT) == 127,
+                "independent God buff sits atop the preserved baseline", God_buff);
+        pc.removeSkillEffect(God_buff);
+        verify(pc.getResistance().getSpecialResistance(eKind.SPIRIT) == 120,
+                "positive buff expiry preserves original resistance", God_buff);
+    }
+
+    /** Remaining numeric stop-only effects retain their own end handler. */
     private static void verifyStopOnlyInventory() {
         final int[] stopOnlyIds = {
             2, 32, 91, 105, 112, 136, 780, 985, 1000,
             1001, 1002, 1003, 1005, 1006, 1016, 1565, 1566, 2794,
             5256, 5984, 7239, 7241, 7791, 7792, 7793, 7794, 7795,
-            8382, 8463, 9999, 12120, 12132, 12133, 12134, 12135, 12136,
-            13001, 13002, 13003, 15644, 20075, 20076, 20077, 20079, 20082,
-            22017, 23442, 23445, 24444, 24445, 25133, 25155, 30010, 40007,
-            50009, 55441, 55662, 55664, 60001, 61614, 61615, 61616, 72388,
-            80007, 80008, 80009, 80012, 131313, 778844, 979744
+            8382, 8463, 9999, 12120, 13001, 13002, 13003, 15644, 20075,
+            20076, 20077, 20079, 20082, 22017, 23442, 23445, 24444, 24445,
+            25133, 25155, 30010, 40007, 50009, 55441, 55662, 55664, 60001,
+            61614, 61615, 61616, 72388, 80007, 80008, 80009, 80012, 131313,
+            778844, 979744
         };
-        verify(stopOnlyIds.length == 70, "stop-only numeric inventory size", 0);
+        verify(stopOnlyIds.length == 65, "stop-only numeric inventory size", 0);
         for (int id : stopOnlyIds) {
             final CSkillInfo info = CSkillInfo.get(id);
             verify(info != null && !info.hasCast() && info.stopHandler() != null,
