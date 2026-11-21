@@ -691,6 +691,7 @@ public class L1ItemInstance extends L1Object {
 	public String getNumberedName(int count) {
 		StringBuilder name = new StringBuilder(48);
 		appendNumberedName(name, count);
+		return name.toString();
 	}
 
 	private void appendNumberedName(StringBuilder name, int count) {
@@ -783,7 +784,7 @@ public class L1ItemInstance extends L1Object {
 				name.append(" (").append(getChargeCount()).append(')');
 			}
 			if (getItem().getItemId() == 20383) {
-				name.append(" (" + getChargeCount() + ")");
+				name.append(" (").append(getChargeCount()).append(')');
 			}
 			if (getItem().getMaxUseTime() > 0 && getItem().getType2() != 0) {
 				name.append(" [").append(getRemainingTime()).append(']');
@@ -792,7 +793,7 @@ public class L1ItemInstance extends L1Object {
 		if (count > 1) {
 			name.append(" (").append(count).append(')');
 		}
-		return name.toString();
+
 	}
 
 	public static int presentationCode = 0;
