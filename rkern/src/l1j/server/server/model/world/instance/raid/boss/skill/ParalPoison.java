@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
-import l1j.server.server.model.poison.L1ParalysisPoison;
+import l1j.server.server.model.character.effect.poison.ParalysisPoison;
 
 /** paralysis poison **/
 public class ParalPoison extends RaidBossSkill{
@@ -96,6 +96,6 @@ public class ParalPoison extends RaidBossSkill{
             Broadcaster.broadcastPacket(pc, oe);
         }*/
 
-        L1ParalysisPoison.doInfection(pc, 9998);
+        ParalysisPoison.doInfection(pc, 9998);
     }
 }

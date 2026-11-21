@@ -8,7 +8,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
-import l1j.server.server.model.poison.L1DamagePoison;
+import l1j.server.server.model.character.effect.poison.DamagePoison;
 import l1j.server.server.templates.L1Npc;
 
 @SuppressWarnings("serial")
@@ -67,7 +67,7 @@ public class L1RaidPoisonInstance extends L1NpcInstance{
 						continue;
 					
 					int dmg = ThreadLocalRandom.current().nextInt(150) + 50;
-					L1DamagePoison.doInfection(getOwner() == null ? _poison : getOwner(), pc, 3000, dmg, false,30000);
+					DamagePoison.doInfection(getOwner() == null ? _poison : getOwner(), pc, 3000, dmg, false,30000);
 				}
 				ThreadPool.getInstance().scheduleRequired(this, INTERVAL);
 			}catch(Exception e){

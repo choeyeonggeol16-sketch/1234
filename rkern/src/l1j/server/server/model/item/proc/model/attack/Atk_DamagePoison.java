@@ -4,7 +4,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.item.proc.model.ItemSkillModel;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.model.poison.L1DamagePoison;
+import l1j.server.server.model.character.effect.poison.DamagePoison;
 import l1j.server.server.utils.GameUtils;
 
 public class Atk_DamagePoison extends ItemSkillModel{
@@ -31,7 +31,7 @@ public class Atk_DamagePoison extends ItemSkillModel{
 		time		= calcAttr(defender, time);
 		time		= calcStat(attacker, time);
 		int t		= (int)time;
-		L1DamagePoison.doInfection(attacker, defender, t, 30, false, 30000);		
+		DamagePoison.doInfection(attacker, defender, t, 30, false, 30000);		
 		if(eff_id > 0)
 			SC_SkillSound.sendAndBroadcast(defender, defender.getId(), eff_id);
 		return 0D;

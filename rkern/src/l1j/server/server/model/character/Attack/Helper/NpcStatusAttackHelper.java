@@ -4,9 +4,9 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.poison.L1DamagePoison;
-import l1j.server.server.model.poison.L1ParalysisPoison;
-import l1j.server.server.model.poison.L1SilencePoison;
+import l1j.server.server.model.character.effect.poison.DamagePoison;
+import l1j.server.server.model.character.effect.poison.ParalysisPoison;
+import l1j.server.server.model.character.effect.poison.SilencePoison;
 
 /**
  * NPC 독/상태이상 공격 헬퍼
@@ -55,14 +55,14 @@ public final class NpcStatusAttackHelper {
     private static boolean applyPoisonAtk(int poisonAtk, L1Character attacker, L1Character target) {
         switch (poisonAtk) {
             case POISON_NORMAL:
-                L1DamagePoison.doInfection(attacker, target, NORMAL_TICK_MS, NORMAL_DMG, false, NORMAL_DUR_MS);
+                DamagePoison.doInfection(attacker, target, NORMAL_TICK_MS, NORMAL_DMG, false, NORMAL_DUR_MS);
                 return true;
 
             case POISON_SILENCE:
-                L1SilencePoison.doInfection(target);
+                SilencePoison.doInfection(target);
                 return true;
             case POISON_PARALYZE:
-                L1ParalysisPoison.doInfection(target, 9999);
+                ParalysisPoison.doInfection(target, 9999);
                 return true;
 
             default:

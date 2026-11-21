@@ -68,8 +68,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_TrueTargetNew;
 import l1j.server.server.model.network.core.sc.packet.SC_UseAttackSkill;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.model.poison.L1DamagePoison;
-import l1j.server.server.model.poison.L1ParalysisPoison;
+import l1j.server.server.model.character.effect.poison.DamagePoison;
+import l1j.server.server.model.character.effect.poison.ParalysisPoison;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eDurationShowType;
@@ -2974,7 +2974,7 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 	private static HandlerResult antarasParalysisRoll(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
 		// Keep the original RNG consumption even when the roll cannot inflict paralysis.
 		final int roll = su.hdRandom().nextInt(5) + 1;
-		if (target instanceof L1PcInstance pc && roll > 10) L1ParalysisPoison.doInfection(pc, su.hdSkillId());
+		if (target instanceof L1PcInstance pc && roll > 10) ParalysisPoison.doInfection(pc, su.hdSkillId());
 		return HandlerResult.HANDLED;
 	}
 
@@ -2983,7 +2983,7 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 		final int seconds = su.hdRandom().nextInt(15) + 1;
 		if (target instanceof L1PcInstance pc && seconds > 2) {
 			final L1Character primary = su.hdTarget() != null ? su.hdTarget() : target;
-			L1DamagePoison.doInfection(pc, primary, seconds * 1000, damage, true, 7000);
+			DamagePoison.doInfection(pc, primary, seconds * 1000, damage, true, 7000);
 		}
 		return HandlerResult.HANDLED;
 	}
@@ -3147,7 +3147,7 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 		if (target == null) return HandlerResult.HANDLED;
 		final int seconds = su.hdRandom().nextInt(5) + 1;
 		if (target instanceof L1PcInstance && seconds > 2) {
-			L1DamagePoison.doInfection(su.hdUser(), target, seconds * 1000, 500, true, 7000);
+			DamagePoison.doInfection(su.hdUser(), target, seconds * 1000, 500, true, 7000);
 		}
 		return HandlerResult.HANDLED;
 	}

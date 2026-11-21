@@ -63,7 +63,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_UseArrowSkill;
 import l1j.server.server.model.network.core.sc.packet.SC_UseAttackSkill;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.poison.L1DamagePoison;
+import l1j.server.server.model.character.effect.poison.DamagePoison;
 import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType;
@@ -1920,7 +1920,7 @@ public final class CAttackAction extends CNewAction {
 				|| (_weaponId != 0 && _pc.hasSkillEffect(L1SkillId.ENCHANT_VENOM))) // 인챈트
 																			// 베놈
 				&& chance <= 10) {
-			L1DamagePoison.doInfection(attacker, target, 3000, 30, false, 30000);
+			DamagePoison.doInfection(attacker, target, 3000, 30, false, 30000);
 		}
 	}
     public int calcDamage(boolean inferno) {
