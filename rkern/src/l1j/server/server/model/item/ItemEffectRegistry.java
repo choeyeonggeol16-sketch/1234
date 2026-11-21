@@ -159,13 +159,18 @@ public final class ItemEffectRegistry {
         public boolean isAlwaysAcLine() { return alwaysAcLine; }
         public List<Bonus> allBonuses() { return bonuses; }
 
-        /** AC 라인 표시값(절대값) — 해당 인챈트 정의 없으면 0 */
+        /**
+         * Actual equipped AC contribution, not the first matching definition.
+         * Multiple AC bonuses and class-specific modifiers must be summed
+         * identically by the equip and display paths.
+         */
+        public int acLineValue(int classType, int enchantLevel) {
+            return Math.abs(statValue(ItemStat.AC, classType, enchantLevel));
+        }
+
+        /** Compatibility for callers without an owner: common bonuses only. */
         public int acLineValue(int enchantLevel) {
-            for (int i = 0; i < bonuses.size(); i++) {
-                final Bonus b = bonuses.get(i);
-                if (b.enchantLevel == enchantLevel && b.stat == ItemStat.AC) return Math.abs(b.value);
-            }
-            return 0;
+            return acLineValue(-1, enchantLevel);
         }
         
 

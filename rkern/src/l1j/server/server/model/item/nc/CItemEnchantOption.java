@@ -55,7 +55,7 @@ public final class CItemEnchantOption {
 					 final int ctype = (item._cha != null) ? item._cha.getType() : -1;  
 				    if (regDef.isAlwaysAcLine()) {
 				        os.writeC(2);
-				        os.writeC(regDef.acLineValue(item.getEnchantLevel()) + op_addAc);
+				        os.writeC(regDef.acLineValue(ctype, item.getEnchantLevel()) + op_addAc);
 				    }
 		
 				    final int enchantLevel = item.getEnchantLevel();
