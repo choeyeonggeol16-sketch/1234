@@ -198,7 +198,7 @@ public class L1ItemInstance extends L1Object {
 	/** 인형 착용 여부 **/
 	private boolean _isDollOn = false;
 
-	private final LastStatus _lastStatus = new LastStatus();
+	private volatile LastStatus _lastStatus; // Only persistent/observed items need a snapshot
 
 	public L1PcInstance _cha;
 
@@ -586,34 +586,44 @@ public class L1ItemInstance extends L1Object {
 	}
 
 	public LastStatus getLastStatus() {
-		return _lastStatus;
+		LastStatus snapshot = _lastStatus;
+		if (snapshot != null) return snapshot;
+		synchronized (this) {
+			snapshot = _lastStatus;
+			if (snapshot == null) {
+				snapshot = new LastStatus();
+				_lastStatus = snapshot;
+			}
+		}
+		return snapshot;
 	}
 
 	public int getRecordingColumns() {
 		// LastStatus is the persisted item image, not the client display.
 		// Every field compared by CTransaction.verifyItemPreimage must be
 		// accounted for before a receipt-guarded item use.
+		final LastStatus snapshot = getLastStatus();
 		int column = 0;
-		if (getCount() != _lastStatus.count) column |= L1PcInventory.COL_COUNT;
-		if (getItemId() != _lastStatus.itemId) column |= L1PcInventory.COL_ITEMID;
-		if (isEquipped() != _lastStatus.isEquipped) column |= L1PcInventory.COL_EQUIPPED;
-		if (getEnchantLevel() != _lastStatus.enchantLevel) column |= L1PcInventory.COL_ENCHANTLVL;
-		if (get_durability() != _lastStatus.durability) column |= L1PcInventory.COL_DURABILITY;
-		if (getChargeCount() != _lastStatus.chargeCount) column |= L1PcInventory.COL_CHARGE_COUNT;
-		if (!java.util.Objects.equals(getLastUsed(), _lastStatus.lastUsed))
+		if (getCount() != snapshot.count) column |= L1PcInventory.COL_COUNT;
+		if (getItemId() != snapshot.itemId) column |= L1PcInventory.COL_ITEMID;
+		if (isEquipped() != snapshot.isEquipped) column |= L1PcInventory.COL_EQUIPPED;
+		if (getEnchantLevel() != snapshot.enchantLevel) column |= L1PcInventory.COL_ENCHANTLVL;
+		if (get_durability() != snapshot.durability) column |= L1PcInventory.COL_DURABILITY;
+		if (getChargeCount() != snapshot.chargeCount) column |= L1PcInventory.COL_CHARGE_COUNT;
+		if (!java.util.Objects.equals(getLastUsed(), snapshot.lastUsed))
 			column |= L1PcInventory.COL_DELAY_EFFECT;
-		if (isIdentified() != _lastStatus.isIdentified) column |= L1PcInventory.COL_IS_ID;
-		if (getRemainingTime() != _lastStatus.remainingTime) column |= L1PcInventory.COL_REMAINING_TIME;
-		if (getBless() != _lastStatus.bless) column |= L1PcInventory.COL_BLESS;
-		if (getAttrEnchantLevel() != _lastStatus.attrenchantLevel) column |= L1PcInventory.COL_ATTRENCHANTLVL;
-		if (getSpecialEnchant() != _lastStatus.specialEnchant) column |= L1PcInventory.COL_SPECIAL_ENCHANT;
-		if (get_bless_level() != _lastStatus.bless_level) column |= L1PcInventory.COL_BLESS_LEVEL;
-		if (get_bless_level2() != _lastStatus.bless_level2) column |= L1PcInventory.COL_BLESS_LEVEL2;
-		if (!java.util.Objects.equals(getEndTime(), _lastStatus.endTime))
+		if (isIdentified() != snapshot.isIdentified) column |= L1PcInventory.COL_IS_ID;
+		if (getRemainingTime() != snapshot.remainingTime) column |= L1PcInventory.COL_REMAINING_TIME;
+		if (getBless() != snapshot.bless) column |= L1PcInventory.COL_BLESS;
+		if (getAttrEnchantLevel() != snapshot.attrenchantLevel) column |= L1PcInventory.COL_ATTRENCHANTLVL;
+		if (getSpecialEnchant() != snapshot.specialEnchant) column |= L1PcInventory.COL_SPECIAL_ENCHANT;
+		if (get_bless_level() != snapshot.bless_level) column |= L1PcInventory.COL_BLESS_LEVEL;
+		if (get_bless_level2() != snapshot.bless_level2) column |= L1PcInventory.COL_BLESS_LEVEL2;
+		if (!java.util.Objects.equals(getEndTime(), snapshot.endTime))
 			column |= L1PcInventory.COL_END_TIME;
-		if (isPackage() != _lastStatus._isPackage) column |= L1PcInventory.COL_PACKAGE;
-		if (get_item_level() != _lastStatus.item_level) column |= L1PcInventory.COL_ITEM_LEVEL;
-		if (!java.util.Objects.equals(getHotel_Town(), _lastStatus.town_name))
+		if (isPackage() != snapshot._isPackage) column |= L1PcInventory.COL_PACKAGE;
+		if (get_item_level() != snapshot.item_level) column |= L1PcInventory.COL_ITEM_LEVEL;
+		if (!java.util.Objects.equals(getHotel_Town(), snapshot.town_name))
 			column |= L1PcInventory.COL_HOTEL_TOWN;
 		return column;
 	}
