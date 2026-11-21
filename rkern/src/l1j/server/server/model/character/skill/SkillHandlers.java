@@ -457,7 +457,7 @@ public final class SkillHandlers {
 			final L1Object source = L1World.getInstance().findObject(casterId);
 			if (!(source instanceof L1PcInstance other)) return;
 			caster = other;
-			if (pc.getSkillEffectTimeSec(L1SkillId.POLY_RING_MASTER) > 0) {
+			if (pc.hasSkillEffect(L1SkillId.POLY_RING_MASTER)) {
 				sendSkillSoundBroadcast(pc, 15846);
 				SC_ServerMessage.send(caster, 280);
 				return;
@@ -486,7 +486,7 @@ public final class SkillHandlers {
 				isSameClan = true;
 			}
 			// 폴리링 마스터 보호 (타인 시전 차단)
-			if (pc.getId() != caster.getId() && pc.getSkillEffectTimeSec(L1SkillId.POLY_RING_MASTER) > 0) {
+			if (pc.getId() != caster.getId() && pc.hasSkillEffect(L1SkillId.POLY_RING_MASTER)) {
 				sendSkillSoundBroadcast(pc, 15846);
 				SC_ServerMessage.send(caster, 280);
 				if (iter != null) iter.remove(); // 대상만 제거
@@ -735,7 +735,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 						if (pc.getRankLevel() >= 9 && PolyTable.getInstance().isRankingPoly(pc.getCurrentSpriteId())) {
 							continue;
 						}
-						if (pc.getSkillEffectTimeSec(L1SkillId.POLY_RING_MASTER) > 0) {
+						if (pc.hasSkillEffect(L1SkillId.POLY_RING_MASTER)) {
 							SC_SkillSound.sendPacked(pc, ss);
 							SC_SkillSound.broadcastFastPacked(pc, ss);
 							continue;
@@ -3657,8 +3657,7 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 					continue;
 				}
 
-				if (pc.getSkillEffectTimeSec(
-						L1SkillId.POLY_RING_MASTER) > 0) {
+				if (pc.hasSkillEffect(L1SkillId.POLY_RING_MASTER)) {
 					continue;
 				}
 			}

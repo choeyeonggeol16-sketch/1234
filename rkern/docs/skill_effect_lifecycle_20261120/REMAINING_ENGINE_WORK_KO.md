@@ -88,3 +88,9 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 - 일반 변신 전환 및 undoPoly는 기존 링 소스를 먼저 회수한 뒤 링 타이머를 해제한다. 만료/강제 해제의 offPolyRingMaster는 정확히 해당 보정 소스만 회수하고 원래 모습으로 되돌린다. 개별 Ability.addAdded*(±1), addMaxHp(±200) 직접 변경을 제거해 겹치는 다른 출처에 영향을 주지 않는다.
 - 900075 아이템 삭제/CacheD 영수증 처리에서 removeSkillEffect 후 undoPoly를 한 번 더 부르던 중복 정리를 제거했다. 변신 해제 및 파티 상태 갱신은 기존 스킬 종료 핸들러가 수행한다.
 - 숫자 ID ledger를 managed_external로 갱신해 종료 전용 잔여를 65→64개로 조정했다. 전체 생산 컴파일과 실제 게임/클라이언트/DB 회귀는 아직 별도로 필요하다.
+
+
+## 2026-11-21 폴리링 영구 효과 보호 검사
+
+- POLY_RING_MASTER는 L1PolyMorph에서 시간 -1로 부여되는 비만료 상태가 가능하다. SkillHandlers의 기존 4곳에서 `getSkillEffectTimeSec(POLY_RING_MASTER) > 0`이면 차단하던 검사는 남은 시간 -1에서 항상 실패하므로 `hasSkillEffect(POLY_RING_MASTER)`로 통일했다. 타인 변신 시전 2곳, 버프 취소·해제 루프 2곳을 포함한다.
+- 다른 스킬의 시전 판정, 공격/타깃 조건, 속도/타이머 엔진은 변경하지 않았다. 클라이언트 실제 시험과 전체 컴파일은 통합 회귀 시 진행한다.
