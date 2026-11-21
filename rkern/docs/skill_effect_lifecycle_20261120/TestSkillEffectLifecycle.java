@@ -96,6 +96,7 @@ public final class TestSkillEffectLifecycle {
             verifyOwnerDispatchAndExpiry();
             verifyExternallyGrantedResistanceSources();
             verifyPrimeManagedSources();
+            verifyWisdomPotionSources();
             verifyDedicatedCastRegistrations();
             verifyStopOnlyInventory();
             verifyRegistry();
@@ -1058,20 +1059,40 @@ public final class TestSkillEffectLifecycle {
         }
     }
 
-    /** Exhaustively verify remaining 76 stop-only numeric registrations. */
+    /** Refresh and expiry must not repeatedly add/subtract SP or MP regen. */
+    private static void verifyWisdomPotionSources() {
+        final Player pc = new Player();
+        final int sp = pc.getAbility().getSp();
+        final int mpr = pc.getMpr();
+        verify(CSkillInfo.isManaged(STATUS_WISDOM_POTION),
+                "Wisdom potion uses managed skill sources", STATUS_WISDOM_POTION);
+        pc.applySkillModifierFromOwner(STATUS_WISDOM_POTION, 0);
+        pc.setSkillEffect(STATUS_WISDOM_POTION, 300_000);
+        verify(pc.getAbility().getSp() == sp + 2 && pc.getMpr() == mpr + 2,
+                "Wisdom potion modifies SP and MPR once", STATUS_WISDOM_POTION);
+        pc.applySkillModifierFromOwner(STATUS_WISDOM_POTION, 0);
+        pc.setSkillEffect(STATUS_WISDOM_POTION, 360_000);
+        verify(pc.getAbility().getSp() == sp + 2 && pc.getMpr() == mpr + 2,
+                "Wisdom potion refresh does not stack", STATUS_WISDOM_POTION);
+        pc.removeSkillEffect(STATUS_WISDOM_POTION);
+        verify(pc.getAbility().getSp() == sp && pc.getMpr() == mpr,
+                "Wisdom potion expiry restores only its own source", STATUS_WISDOM_POTION);
+    }
+
+    /** All remaining 75 numeric stop-only definitions retain an end handler. */
     private static void verifyStopOnlyInventory() {
         final int[] stopOnlyIds = {
             2, 32, 91, 105, 112, 136, 780, 985, 1000,
-            1001, 1002, 1003, 1004, 1005, 1006, 1016, 1565, 1566,
-            1607, 2794, 5256, 5263, 5285, 5300, 5307, 5984, 7239,
-            7241, 7791, 7792, 7793, 7794, 7795, 8382, 8463, 9999,
-            12120, 12132, 12133, 12134, 12135, 12136, 13001, 13002, 13003,
-            15644, 20075, 20076, 20077, 20079, 20082, 22017, 23442, 23445,
-            24444, 24445, 25133, 25155, 30010, 40007, 50009, 55441, 55662,
-            55664, 60001, 61614, 61615, 61616, 72388, 80007, 80008, 80009,
-            80012, 131313, 778844, 979744
+            1001, 1002, 1003, 1005, 1006, 1016, 1565, 1566, 1607,
+            2794, 5256, 5263, 5285, 5300, 5307, 5984, 7239, 7241,
+            7791, 7792, 7793, 7794, 7795, 8382, 8463, 9999, 12120,
+            12132, 12133, 12134, 12135, 12136, 13001, 13002, 13003, 15644,
+            20075, 20076, 20077, 20079, 20082, 22017, 23442, 23445, 24444,
+            24445, 25133, 25155, 30010, 40007, 50009, 55441, 55662, 55664,
+            60001, 61614, 61615, 61616, 72388, 80007, 80008, 80009, 80012,
+            131313, 778844, 979744
         };
-        verify(stopOnlyIds.length == 76, "stop-only numeric inventory size", 0);
+        verify(stopOnlyIds.length == 75, "stop-only numeric inventory size", 0);
         for (int id : stopOnlyIds) {
             final CSkillInfo info = CSkillInfo.get(id);
             verify(info != null && !info.hasCast() && info.stopHandler() != null,

@@ -1322,8 +1322,7 @@ public final class SkillStopHandlers {
 	private static StopResult offWisdomPotion(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getAbility().addSp(-2);
-			pc.addMpr(-2);
+			pc.removeSkillModifierFromOwner(skillId);
 			SC_SkillIconWisdomPotion.send(pc, 0);
 		}
 		return StopResult.HANDLED;
