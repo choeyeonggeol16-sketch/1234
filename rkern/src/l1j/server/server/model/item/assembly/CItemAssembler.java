@@ -1,4 +1,4 @@
-package l1j.server.server.model.item.nc;
+package l1j.server.server.model.item.assembly;
 
 import l1j.server.MJTemplate.ItemPresentator.ItemPresentatorFactory;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -9,23 +9,22 @@ public final class CItemAssembler {
     private CItemAssembler() {}
 
     public static byte[] AssembleImpl(L1ItemInstance item) {
-        try {
-            final byte[] custom = ItemPresentatorFactory.do_presentation(item);
-            if (custom != null) return custom;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return CItem.AssembleItem(item);
+        final byte[] custom = assembleCustom(item);
+        return custom != null ? custom : CItem.AssembleItem(item);
     }
 
     public static byte[] AssembleBriefImpl(L1ItemInstance item) {
+        final byte[] custom = assembleCustom(item);
+        return custom != null ? custom : CItem.AssembleBriefItem(item);
+    }
+
+    private static byte[] assembleCustom(L1ItemInstance item) {
         try {
-            final byte[] custom = ItemPresentatorFactory.do_presentation(item);
-            if (custom != null) return custom;
+            return ItemPresentatorFactory.do_presentation(item);
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return CItem.AssembleBriefItem(item);
     }
 
     public static byte[] AssembleItemForPc(L1ItemInstance item, L1PcInstance pc) {

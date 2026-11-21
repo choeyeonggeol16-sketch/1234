@@ -1,4 +1,4 @@
-package l1j.server.server.model.item.nc;
+package l1j.server.server.model.item.assembly;
 
 import java.io.IOException;
 import java.sql.Timestamp;
