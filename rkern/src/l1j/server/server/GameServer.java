@@ -97,7 +97,6 @@ import l1j.server.server.datatables.WeaponEnchantList;
 import l1j.server.server.model.Dungeon;
 import l1j.server.server.model.Getback;
 import l1j.server.server.model.L1CastleLocation;
-import l1j.server.server.model.L1ClanMatching;
 import l1j.server.server.model.L1ClanRanking;
 import l1j.server.server.model.L1HouseLocation;
 import l1j.server.server.model.L1World;
@@ -268,7 +267,6 @@ public class GameServer {
 		LightSpawnTable.getInstance();
 		Announcements.getInstance();
 		WeaponAddDamage.getInstance();
-		L1ClanMatching.getInstance().loadClanMatching();
 		ArmorSetTable.getInstance();
 		MapUserTeleportTable.getInstance();
 

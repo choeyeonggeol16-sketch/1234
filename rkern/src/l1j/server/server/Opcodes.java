@@ -104,7 +104,6 @@ public class Opcodes {
 	public static final int C_INVITE_PARTY_TARGET = 0xB9;
 	public static final int C_BOARD_DELETE = 0xBE;
 	public static final int C_EXIT_GHOST = 0xC0;
-	public static final int C_MATCH_MAKING = 0xC5;
 	public static final int C_CHECK_INVENTORY = 0xC6;
 	public static final int C_ENTER_PORTAL = 0xC7;
 	public static final int C_THROW = 0xC8;
@@ -247,7 +246,6 @@ public class Opcodes {
 	public static final int S_ENTER_WORLD_CHECK = 0xC8;
 	public static final int S_XCHG_START = 0xC9;
 	public static final int S_TIME = 0xCA;
-	public static final int S_MATCH_MAKING = 0xCC;
 	public static final int S_MERCENARYSELECT = 0xCE;
 	public static final int S_LOGIN_CHECK = 0xCF;
 	public static final int S_PLEDGE = 0xD0;

@@ -45,7 +45,6 @@ import l1j.server.server.model.network.core.cs.packet.CS_Chat;
 import l1j.server.server.model.network.core.cs.packet.CS_ChatParty;
 import l1j.server.server.model.network.core.cs.packet.CS_CheckInventory;
 import l1j.server.server.model.network.core.cs.packet.CS_CheckPk;
-import l1j.server.server.model.network.core.cs.packet.CS_ClanMatching;
 import l1j.server.server.model.network.core.cs.packet.CS_Craft;
 import l1j.server.server.model.network.core.cs.packet.CS_CreateChar;
 import l1j.server.server.model.network.core.cs.packet.CS_CreatePledge;
@@ -319,8 +318,6 @@ public final class CPacketHandler {
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_EXIT_GHOST & 0xFF] = false;
-        HANDLERS[Opcodes.C_MATCH_MAKING & 0xFF] = CPacketHandler::decodeMatchMaking;
-        DIRECT_OPCODE[Opcodes.C_MATCH_MAKING & 0xFF] = false;
         HANDLERS[Opcodes.C_CHECK_INVENTORY & 0xFF] = CPacketHandler::decodeCheckInventory;
         DIRECT_OPCODE[Opcodes.C_CHECK_INVENTORY & 0xFF] = false;
         HANDLERS[Opcodes.C_ENTER_PORTAL & 0xFF] = CPacketHandler::decodeEnterPortal;
@@ -1846,50 +1843,6 @@ public final class CPacketHandler {
         }
 
         handleEmblem(client, emblemId);
-        return true;
-    }
-
-    static boolean decodeMatchMaking(ReadBuffer buffer, CIOClient client) {
-        final int payloadSize = buffer.remaining();
-        int type = 0, objid = 0, htype = 0;
-        String text = null;
-
-        if (payloadSize >= 1) {
-            type = buffer.readByte(1) & 0xFF;
-        }
-
-        switch (type) {
-        case 0:
-            if (payloadSize >= 2) {
-                htype = buffer.readByte(2) & 0xFF;
-            }
-            if (payloadSize > 2) {
-                final int textStart = 3;
-                final int limit = 1 + payloadSize;
-                final int textEnd = findCStringEnd(buffer, textStart, limit);
-                if (textEnd >= 0) {
-                    text = textEnd == textStart ? "" : readCStringMs949(buffer, textStart, textEnd - textStart);
-                }
-            }
-            break;
-        case 5:
-            if (payloadSize >= 5) {
-                objid = buffer.readInt(2);
-            }
-            break;
-        case 6:
-            if (payloadSize >= 5) {
-                objid = buffer.readInt(2);
-            }
-            if (payloadSize >= 6) {
-                htype = buffer.readByte(6) & 0xFF;
-            }
-            break;
-        default:
-            break;
-        }
-
-        handleMatchMaking(client, type, objid, htype, text);
         return true;
     }
 
@@ -3873,21 +3826,6 @@ public final class CPacketHandler {
             CS_EmblemRequest.handle(
                     client,
                     p0);
-        } catch (Throwable failure) {
-            reportHandlerError(failure);
-        }
-    }
-
-    static void handleMatchMaking( CIOClient client, int p0, int p1, int p2, String s0 ) {
-        if (!client.isConnected()) return;
-        try {
-            CS_ClanMatching.handle(
-                    client,
-                    p0, // type
-                    p1, // objid
-                    s0, // text
-                    p2  // htype
-            );
         } catch (Throwable failure) {
             reportHandlerError(failure);
         }

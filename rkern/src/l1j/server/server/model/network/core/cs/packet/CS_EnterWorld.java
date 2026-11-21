@@ -74,7 +74,6 @@ import l1j.server.server.model.Getback;
 import l1j.server.server.model.DungeonRandom;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1ClanMatching;
 import l1j.server.server.model.L1ExcludingList;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Quest;

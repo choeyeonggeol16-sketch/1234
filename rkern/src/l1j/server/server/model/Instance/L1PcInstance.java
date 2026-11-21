@@ -6295,29 +6295,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		SC_OwnCharStatus.send(this);
 	}
 
-	private ArrayList<String> _cmalist = new ArrayList<String>();
-
-	/**
-	 * 클랜 매칭 신청,요청 목록 유저가 사용할땐 배열에 혈맹의 이름을 넣고 군주가 사용할땐 배열에 신청자의 이름을 넣는다.
-	 */
-	public void addCMAList(String name) {
-		if (_cmalist.contains(name)) {
-			return;
-		}
-		_cmalist.add(name);
-	}
-
-	public void removeCMAList(String name) {
-		if (!_cmalist.contains(name)) {
-			return;
-		}
-		_cmalist.remove(name);
-	}
-
-	public ArrayList<String> getCMAList() {
-		return _cmalist;
-	}
-
 	private ArrayList<Integer> skillList = new ArrayList<Integer>();
 
 	private int _clanMemberId;

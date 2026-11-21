@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1ClanMatching;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -190,18 +189,9 @@ public final class CS_LeavePledge {
                 }
             } catch (RuntimeException noticeFailure) {
                 // A post-COMMIT Native notice/release failure must not skip
-                // matchmaking and emblem cleanup after the member loop.
+                // emblem cleanup after the member loop.
                 LOG.log(Level.SEVERE, "Clan disband shared notice failed after SQL COMMIT: " + clanName, noticeFailure);
             }
-        }
-
-        // Matchmaking is only removed after the durable commit and the
-        // online-character reconciliation. It must not abort that recovery.
-        try {
-            final L1ClanMatching clanMatching = L1ClanMatching.getInstance();
-            if (clanMatching != null) clanMatching.deleteClanMatching(player);
-        } catch (RuntimeException matchingFailure) {
-            LOG.log(Level.WARNING, "Clan disband matchmaking cleanup failed: " + clanName, matchingFailure);
         }
 
         /*
