@@ -1833,6 +1833,11 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		}
 	}
 
+	public static int get_random(int min, int max) {
+		if (min > max)
+			return min;
+		return _rnd.nextInt(max - min + 1) + min;
+	}
 	// TODO GM 커멘드 추가
 	private void showHelp(L1PcInstance gm) {
 		SC_ChatPacket.sendDirect(gm, gm, "\\aA---------------- [\\aGGM\\aA] \\aG[\\aGCOMMANDS\\aA] ---------------");
