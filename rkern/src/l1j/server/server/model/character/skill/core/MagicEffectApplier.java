@@ -20,7 +20,8 @@ public enum MagicEffectApplier {
 			// For NPCs these handlers admit their own restriction with the selected duration.
 			if (cha instanceof L1NpcInstance
 					&& (skillId == L1SkillId.POWERRIP || skillId == L1SkillId.DESPERADO
-							|| ControlSkillEffects.isStun(skillId))) return;
+							|| ControlSkillEffects.isStun(skillId) || ControlSkillEffects.isSkillFreeze(skillId)
+							|| ControlSkillEffects.isSleep(skillId))) return;
 		}
 
 		final int durationMs = DurationResolver.INSTANCE.resolveDurationMs(su);

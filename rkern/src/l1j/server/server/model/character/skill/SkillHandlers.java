@@ -97,11 +97,13 @@ public final class SkillHandlers {
 	public static final int HD_HANDLED     = 1;
 	public static final int HD_CONTINUE    = 2;
 	public static final int HD_RETURN      = 3;
+	public static final int HD_HANDLED_WITHOUT_TIMER = 4;
 
 	// ===== 중요: fallback/handled 분리 =====
 	enum HandlerResult {
 		NOT_HANDLED, // 이 핸들러는 조건 불만족 -> 기존 switch로 처리
 		HANDLED,     // 이 핸들러가 처리 완료 -> 기존 switch 스킵
+		HANDLED_WITHOUT_TIMER,
 		CONTINUE,    // 멀티타겟이면 다음 타겟으로
 		RETURN       // runSkill 자체 종료
 	}
@@ -220,9 +222,9 @@ public final class SkillHandlers {
 		register(L1SkillId.CURSE_BLIND, SkillHandlers::onCurseBlindLike);
 		register(L1SkillId.DARKNESS, SkillHandlers::onCurseBlindLike);
 
-		register(L1SkillId.DARK_BLIND, SkillHandlers::onDarkBlind);
+		register(L1SkillId.DARK_BLIND, SkillHandlers::onSleep);
 
-		register(L1SkillId.PHANTASM, SkillHandlers::onPhantasm);
+		register(L1SkillId.PHANTASM, SkillHandlers::onSleep);
 
 		register(L1SkillId.WIND_SHACKLE, SkillHandlers::onWindShackleLike);
 		register(L1SkillId.MOB_WINDSHACKLE_1, SkillHandlers::onWindShackleLike);
@@ -233,7 +235,7 @@ public final class SkillHandlers {
 
 		register(L1SkillId.WEAPON_BREAK, SkillHandlers::onWeaponBreak);
 
-		register(L1SkillId.FOG_OF_SLEEPING, SkillHandlers::onFogOfSleeping);
+		register(L1SkillId.FOG_OF_SLEEPING, SkillHandlers::onSleep);
 
 		register(L1SkillId.STATUS_FREEZE, SkillHandlers::onStatusFreeze);
 
@@ -493,6 +495,8 @@ public final class SkillHandlers {
 			return HD_CONTINUE;
 		case HANDLED:
 			return HD_HANDLED;
+		case HANDLED_WITHOUT_TIMER:
+			return HD_HANDLED_WITHOUT_TIMER;
 		case NOT_HANDLED:
 		default:
 			return HD_NOT_HANDLED;
@@ -639,14 +643,14 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		L1EffectSpawn.getInstance().spawnEffect(effectId, durationMs, target.getX(), target.getY(), target.getMapId());
 	}
 
-	private static boolean admitNpcStun(L1SkillUse cast, L1NpcInstance npc, int durationMs) {
+	private static boolean admitNpcControl(L1SkillUse cast, L1NpcInstance npc, int durationMs) {
 		final int resolved = DurationResolver.INSTANCE.resolveDurationMs(cast);
 		final int duration = resolved > 0 ? resolved : durationMs;
 		return duration > 0 && npc.trySetSkillEffect(cast.hdSkillId(), duration);
 	}
 
 	private static HandlerResult applyStunLikeEffect(L1SkillUse cast, L1Character target, int durationMs, int effectId) {
-		if (target instanceof L1NpcInstance npc && !admitNpcStun(cast, npc, durationMs))
+		if (target instanceof L1NpcInstance npc && !admitNpcControl(cast, npc, durationMs))
 			return HandlerResult.CONTINUE;
 		spawnEffectAtTarget(target, effectId, durationMs);
 		if (target instanceof L1PcInstance pc) SC_Paralysis.send(pc, SC_Paralysis.TYPE_STUN, true);
@@ -2493,14 +2497,24 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onPhantasm(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.HANDLED;
+	private static HandlerResult onSleep(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> iter) {
+		if (target == null) return HandlerResult.HANDLED_WITHOUT_TIMER;
+		final int duration = DurationResolver.INSTANCE.resolveDurationMs(su);
+		if (duration <= 0 || (target instanceof L1NpcInstance npc && !npc.trySetSkillEffect(su.hdSkillId(), duration)))
+			return HandlerResult.HANDLED_WITHOUT_TIMER;
 
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
+		final boolean fog = su.hdSkillId() == L1SkillId.FOG_OF_SLEEPING;
+		if (target instanceof L1PcInstance pc) {
+			if (fog) {
+				SC_SkillSound.send(pc, pc.getId(), 9218);
+				SC_SkillSound.send(pc, pc.getId(), 760);
+			}
 			SC_Paralysis.send(pc, SC_Paralysis.TYPE_SLEEP, true);
 		}
-		cha.setSleeped(true);
+		if (fog) {
+			SC_SkillSound.broadcastFast(target, target.getId(), 9218);
+			SC_SkillSound.broadcastFast(target, target.getId(), 760);
+		}
 		return HandlerResult.HANDLED;
 	}
 
@@ -2581,21 +2595,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 				((L1NpcInstance) cha).setWeaponBreaked(true);
 			}
 		}
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onFogOfSleeping(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.HANDLED;
-
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			SC_SkillSound.send(pc, pc.getId(), 9218);
-			SC_SkillSound.send(pc, pc.getId(), 760);
-			SC_Paralysis.send(pc, SC_Paralysis.TYPE_SLEEP, true);
-		}
-		SC_SkillSound.broadcastFast(cha, cha.getId(), 9218);
-		SC_SkillSound.broadcastFast(cha, cha.getId(), 760);
-		cha.setSleeped(true);
 		return HandlerResult.HANDLED;
 	}
 
@@ -2810,17 +2809,6 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		if (is_floating_eye && !pc.isBlind()) {
 			pc.showFloatingEyeToInvis();
 		}
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onDarkBlind(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.HANDLED;
-
-		if (cha instanceof L1PcInstance) {
-			final L1PcInstance target = (L1PcInstance) cha;
-			SC_Paralysis.send(target, SC_Paralysis.TYPE_SLEEP, true);
-		}
-		cha.setSleeped(true);
 		return HandlerResult.HANDLED;
 	}
 
@@ -3308,49 +3296,48 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 	}
 
 	private static HandlerResult onIceLance(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.HANDLED;
+		if (cha == null || magic == null) return HandlerResult.HANDLED_WITHOUT_TIMER;
+		if (!magic.calcProbabilityMagic(su.hdSkillId())) return HandlerResult.HANDLED_WITHOUT_TIMER;
 
-		final int skillId = su.hdSkillId();
-
-		final boolean freeze = magic.calcProbabilityMagic(skillId);
-		if (!freeze) return HandlerResult.HANDLED;
-
-		final int timeMs = su.hdGetBuffIconDuration() * 1000;
-
-		spawnEffectAtTarget(cha, 81168, timeMs);
-
-		if (cha instanceof L1PcInstance) {
-			final L1PcInstance pc = (L1PcInstance) cha;
-			SC_Poison.send(pc, pc.getId(), 2);
-			SC_Poison.broadcastFast(pc, pc.getId(), 2);
-			SC_Paralysis.send(pc, SC_Paralysis.TYPE_FREEZE, true);
-		} else if (cha instanceof L1MonsterInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance || cha instanceof L1CompanionInstance) {
-			final L1NpcInstance npc = (L1NpcInstance) cha;
-			SC_Poison.broadcastFast(npc, npc.getId(), 2);
-			npc.setParalyzed(true);
+		final int resolved = DurationResolver.INSTANCE.resolveDurationMs(su);
+		final int visual = (int) Math.clamp(su.hdGetBuffIconDuration() * 1000L, 0, Integer.MAX_VALUE);
+		if (cha instanceof L1PcInstance && resolved <= 0) return HandlerResult.HANDLED_WITHOUT_TIMER;
+		if (cha instanceof L1NpcInstance npc) {
+			final int duration = resolved > 0 ? resolved : visual;
+			if (!canFreezeNpc(npc) || duration <= 0 || !npc.trySetSkillEffect(su.hdSkillId(), duration))
+				return HandlerResult.HANDLED_WITHOUT_TIMER;
 		}
-
+		spawnEffectAtTarget(cha, 81168, visual > 0 ? visual : resolved);
+		sendFreeze(cha);
 		return HandlerResult.HANDLED;
 	}
 
 	private static HandlerResult onEarthBind(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.HANDLED;
+		if (cha == null) return HandlerResult.HANDLED_WITHOUT_TIMER;
+		if (cha instanceof L1NpcInstance npc) {
+			final int duration = SkillUseHelper.pickMillis(SkillUseHelper.EARTH_BIND_DUR);
+			if (!canFreezeNpc(npc) || !admitNpcControl(su, npc, duration))
+				return HandlerResult.HANDLED_WITHOUT_TIMER;
+		} else if (cha instanceof L1PcInstance && DurationResolver.INSTANCE.resolveDurationMs(su) <= 0) {
+			return HandlerResult.HANDLED_WITHOUT_TIMER;
+		}
+		sendFreeze(cha);
+		return HandlerResult.HANDLED;
+	}
 
-		final int earthBindMs = SkillUseHelper.pickMillis(SkillUseHelper.EARTH_BIND_DUR);
+	private static boolean canFreezeNpc(L1NpcInstance target) {
+		return target instanceof L1MonsterInstance || target instanceof L1SummonInstance
+				|| target instanceof L1PetInstance || target instanceof L1CompanionInstance;
+	}
 
-		if (cha instanceof L1PcInstance) {
-			final L1PcInstance pc = (L1PcInstance) cha;
+	private static void sendFreeze(L1Character target) {
+		if (target instanceof L1PcInstance pc) {
 			SC_Poison.send(pc, pc.getId(), 2);
 			SC_Poison.broadcastFast(pc, pc.getId(), 2);
 			SC_Paralysis.send(pc, SC_Paralysis.TYPE_FREEZE, true);
-		} else if (cha instanceof L1MonsterInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance || cha instanceof L1CompanionInstance) {
-			final L1NpcInstance npc = (L1NpcInstance) cha;
-			SC_Poison.broadcastFast(npc, npc.getId(), 2);
-			npc.setParalyzed(true);
-			npc.setParalysisTime(earthBindMs);
+		} else if (target instanceof L1NpcInstance) {
+			SC_Poison.broadcastFast(target, target.getId(), 2);
 		}
-
-		return HandlerResult.HANDLED;
 	}
 
 	private static HandlerResult onDgUiAndKill(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -4231,7 +4218,7 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 
 			if ((cha instanceof L1MonsterInstance || cha instanceof L1SummonInstance
 					|| cha instanceof L1PetInstance || cha instanceof L1CompanionInstance)
-					&& !admitNpcStun(su, (L1NpcInstance) cha, duration)) {
+					&& !admitNpcControl(su, (L1NpcInstance) cha, duration)) {
 				return HandlerResult.CONTINUE;
 			}
 
@@ -4836,30 +4823,17 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 		}
 
 		case L1SkillId.DESERT_SKILL7: {
-			if (cha instanceof L1PcInstance) {
-				final L1PcInstance pc =
-						(L1PcInstance) cha;
-
-				if (pc.isDead()
-						|| pc.hasSkillEffect(
-								L1SkillId.FOG_OF_SLEEPING)) {
-					return HandlerResult.CONTINUE;
-				}
-
-				pc.setSkillEffect(
-						L1SkillId.FOG_OF_SLEEPING,
-						32 * 1000);
-
-				SC_Paralysis.send(pc, SC_Paralysis.TYPE_SLEEP, true);
-
-				sendSkillSoundBroadcast(
-						pc,
-						760);
+			if (cha.isDead() || cha.hasSkillEffect(L1SkillId.FOG_OF_SLEEPING)) return HandlerResult.CONTINUE;
+			if (cha instanceof L1NpcInstance npc) {
+				if (!npc.trySetSkillEffect(L1SkillId.FOG_OF_SLEEPING, 32_000)) return HandlerResult.CONTINUE;
+			} else {
+				cha.setSkillEffect(L1SkillId.FOG_OF_SLEEPING, 32_000);
 			}
-
-			cha.setSleeped(true);
-
-			return HandlerResult.HANDLED;
+			if (cha instanceof L1PcInstance pc) {
+				SC_Paralysis.send(pc, SC_Paralysis.TYPE_SLEEP, true);
+				sendSkillSoundBroadcast(pc, 760);
+			}
+			return HandlerResult.HANDLED_WITHOUT_TIMER;
 		}
 
 		case L1SkillId.DESERT_SKILL8:

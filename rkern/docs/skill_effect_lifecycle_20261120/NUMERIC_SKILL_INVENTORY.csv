@@ -42,7 +42,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 57,FULL_HEAL,onHealFamily,instant,
 60,INVISIBILITY,onInvisibilityWithCastleTowerBlock,existing_cast,
 61,RESURRECTION,onResurrection,instant,
-66,FOG_OF_SLEEPING,onFogOfSleeping,existing_cast,offSleepFamily
+66,FOG_OF_SLEEPING,onSleep,existing_cast,offSleepFamily
 67,SHAPE_CHANGE,onShapeChange,existing_cast,offShapeChange
 68,IMMUNE_TO_HARM,onImmuneToHarm,existing_cast,offImmuneToHarm
 69,MASS_TELEPORT,onTeleport,existing_cast,
@@ -63,7 +63,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 99,SHADOW_ARMOR,startShadowArmor,managed_pump,offShadowArmor
 100,BRING_STONE,onBringStone,existing_cast,
 101,MOVING_ACCELERATION,onMovingAcceleration,existing_cast,offBraveSpeedReset
-103,DARK_BLIND,onDarkBlind,existing_cast,offDarkBlind
+103,DARK_BLIND,onSleep,existing_cast,offSleepFamily
 105,DOUBLE_BRAKE,,stop_only,offDoubleBrake
 106,UNCANNY_DODGE,startCommonStatBuff,managed_pump,offUncannyDodge
 107,SHADOW_FANG,onShadowFang,existing_cast,offShadowFang
@@ -99,7 +99,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 154,LESSER_ELEMENTAL,onElementalSummon,existing_cast,
 155,DANCING_BLADES,onDancingBlades,existing_cast,offBraveSpeedReset
 156,STORM_EYE,onStormEye,existing_cast,offStormEye
-157,EARTH_BIND,onEarthBind,existing_cast,offEarthBindBasillCoca
+157,EARTH_BIND,onEarthBind,existing_cast,offFreezeFamily
 158,NATURES_TOUCH,onHealFamily,instant,
 159,EARTH_GUARDIAN,onEarthGuardian,existing_cast,offEarthGuardian
 160,AQUA_PROTECTER,startEvasionBuff,managed_pump,offAquaProtecter
@@ -135,7 +135,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 209,IllUSION_LICH,startSpellPowerBuff,managed_pump,offIllusionLich
 210,CUBE_GOLEM,onCubeGolem,existing_cast,offCubeGolem
 211,PATIENCE,startCommonStatBuff,managed_pump,offPatience
-212,PHANTASM,onPhantasm,existing_cast,offSleepFamily
+212,PHANTASM,onSleep,existing_cast,offSleepFamily
 213,IZE_BREAK,onDetectionLike,existing_cast,
 214,IllUSION_DIAMONDGOLEM,startIllusionDiamondGolem,managed_pump,offIllusionDiamondGolem
 215,CUBE_RICH,onCubeRich,existing_cast,offCubeRich
@@ -357,8 +357,8 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 30000,MOB_SLOW_18,onSlowLike,existing_cast,offSlowFamily
 30001,MOB_SLOW_1,onSlowLike,existing_cast,offSlowFamily
 30002,MOB_CURSEPARALYZ_19,onCurseParalyzeLike,existing_cast,
-30003,MOB_COCA,onMobBasillOrCoca,existing_cast,offEarthBindBasillCoca
-30004,MOB_BASILL,onMobBasillOrCoca,existing_cast,offEarthBindBasillCoca
+30003,MOB_COCA,onMobBasillOrCoca,existing_cast,offFreezeFamily
+30004,MOB_BASILL,onMobBasillOrCoca,existing_cast,offFreezeFamily
 30005,MOB_RANGESTUN_19,onMobRangeStunLike,existing_cast,offStunFamily
 30006,MOB_RANGESTUN_18,onMobRangeStunLike,existing_cast,offStunFamily
 30007,MOB_CURSEPARALYZ_18,onCurseParalyzeLike,existing_cast,
@@ -382,7 +382,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 61615,쉐도우대기,,stop_only,offCooldownNotice
 61616,이터니티대기,,stop_only,offCooldownNotice
 70704,DISEASE,startDisease,managed_pump,offDiseaseFamily
-70705,ICE_LANCE,onIceLance,existing_cast,offIceLance
+70705,ICE_LANCE,onIceLance,existing_cast,offFreezeFamily
 72388,버서크대기,,stop_only,offNoop
 76001,BUFF_특별한성장축복,onSpecialBuff,existing_cast,offSpecialBuff
 76002,BUFF_특별한방어축복,onSpecialBuff,existing_cast,offSpecialBuff

@@ -199,7 +199,7 @@ public enum TargetSkillProcessor {
         // =====================================================
         // Magic effect
         // =====================================================
-        su.exAddMagicList(target, false);
+        if (hd != SkillHandlers.HD_HANDLED_WITHOUT_TIMER) su.exAddMagicList(target, false);
 
         // =====================================================
         // Light refresh

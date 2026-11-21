@@ -14,6 +14,8 @@ on:
       - rkern/src/l1j/server/server/model/L1Character.java
       - rkern/src/l1j/server/server/model/L1EquipmentSlot.java
       - rkern/src/l1j/server/server/model/L1WeaponSkill.java
+      - rkern/src/l1j/server/server/model/L1CurseParalysis.java
+      - rkern/src/l1j/server/server/model/poison/L1ParalysisPoison.java
       - rkern/src/l1j/server/server/model/HelpBySupport.java
       - rkern/src/l1j/server/server/model/Instance/L1PcInstance.java
       - rkern/src/l1j/server/server/model/Instance/L1NpcInstance.java

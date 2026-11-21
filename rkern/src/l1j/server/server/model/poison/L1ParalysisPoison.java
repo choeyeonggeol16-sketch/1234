@@ -19,6 +19,7 @@
 package l1j.server.server.model.poison;
 
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
+import l1j.server.server.model.character.skill.ControlSkillEffects;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.SingleTask;
 import l1j.server.server.datatables.MonsterParalyzeDelay;
@@ -82,7 +83,7 @@ public class L1ParalysisPoison extends L1Poison {
 
 					_timer = new ParalysisTimer();
 					_target.setSkillEffect(L1SkillId.STATUS_POISON_PARALYZED, 0);
-					_target.setParalyzed(true);
+					_target.setPoisonParalyzed(true);
 					
                     // A rejected cure deadline must not leave a PC paralyzed forever.
                     if (ThreadPool.getInstance().schedule(_timer, _time) == null) {
@@ -191,6 +192,7 @@ public class L1ParalysisPoison extends L1Poison {
         // A delayed callback for an older poison must not clear the new
         // owner's paralysis, status icons, or poison visuals.
         if (_target.getPoison() != this) return;
+        _target.setPoisonParalyzed(false);
         _target.killSkillEffectTimer(L1SkillId.STATUS_POISON_PARALYZING);
         _target.killSkillEffectTimer(L1SkillId.STATUS_POISON_PARALYZED);
 
@@ -210,12 +212,11 @@ public class L1ParalysisPoison extends L1Poison {
             SC_SPELL_BUFF_NOTI.sendFields(
                     pc, notiWire_notiType, notiWire_spellId, 0, notiWire_durationShowType, 0, 0, 0, 0, 0, 0,
                     notiWire_isGood, 0, 0, 0, notiWire_bit);
-            if (!pc.isDead()) {
+            if (!pc.isDead() && !pc.isParalyzed() && !ControlSkillEffects.hasSkillFreeze(pc, -1)) {
                 SC_Paralysis.send(pc, SC_Paralysis.TYPE_FREEZE, false);
             }
         }
-        _target.setParalyzed(false);
-        _target.setPoisonEffect(0);
+        if (!_target.isParalyzed() && !ControlSkillEffects.hasSkillFreeze(_target, -1)) _target.setPoisonEffect(0);
         // Do not erase a replacement poison installed by another callback.
         if (_target.getPoison() == this) _target.setPoison(null);
 	}

@@ -19,6 +19,7 @@
 package l1j.server.server.model;
 
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
+import l1j.server.server.model.character.skill.ControlSkillEffects;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.SingleTask;
 import l1j.server.server.datatables.MonsterParalyzeDelay;
@@ -82,7 +83,7 @@ public class L1CurseParalysis extends L1Paralysis {
 						SC_Paralysis.send(player, SC_Paralysis.TYPE_FREEZE, true);
 					}
 					_timer = new ParalysisTimer();
-					_target.setParalyzed(true);
+					_target.setCurseParalyzed(true);
                     if (ThreadPool.getInstance().schedule(_timer, _time) == null) {
                         // A missing release deadline must never strand paralysis.
                         cure();
@@ -191,7 +192,8 @@ public class L1CurseParalysis extends L1Paralysis {
         // Only the current owner may unfreeze or remove the status effects.
         if (_target.getParalysis() != this) return;
 
-        _target.setPoisonEffect(0);
+        _target.setCurseParalyzed(false);
+        if (!_target.isParalyzed() && !ControlSkillEffects.hasSkillFreeze(_target, -1)) _target.setPoisonEffect(0);
         if (_target.getParalysis() == this) _target.setParalaysis(null);
 
         if (_target instanceof L1PcInstance) {
@@ -210,9 +212,9 @@ public class L1CurseParalysis extends L1Paralysis {
             SC_SPELL_BUFF_NOTI.sendFields(
                     pc, notiWire_notiType, notiWire_spellId, 0, notiWire_durationShowType, 0, 0, 0, 0, 0, 0,
                     notiWire_isGood, 0, 0, 0, notiWire_bit);
-            if (!pc.isDead()) SC_Paralysis.send(pc, SC_Paralysis.TYPE_FREEZE, false);
+            if (!pc.isDead() && !pc.isParalyzed() && !ControlSkillEffects.hasSkillFreeze(pc, -1))
+                SC_Paralysis.send(pc, SC_Paralysis.TYPE_FREEZE, false);
         }
-        _target.setParalyzed(false);
         _target.removeSkillEffect(L1SkillId.STATUS_CURSE_PARALYZING);
         _target.removeSkillEffect(L1SkillId.STATUS_CURSE_PARALYZED);
 	}

@@ -212,7 +212,7 @@ public final class SkillStopHandlers {
 
 		register(L1SkillId.BLOOD_LUST,           SkillStopHandlers::offBraveSpeedReset);
 
-		register(L1SkillId.DARK_BLIND,           SkillStopHandlers::offDarkBlind);
+		register(L1SkillId.DARK_BLIND,           SkillStopHandlers::offSleepFamily);
 
 		register(L1SkillId.CURSE_BLIND,          SkillStopHandlers::offCurseBlindFamily);
 		register(L1SkillId.DARKNESS,             SkillStopHandlers::offCurseBlindFamily);
@@ -231,13 +231,13 @@ public final class SkillStopHandlers {
 		register(L1SkillId.HORROR_OF_DEATH,      SkillStopHandlers::offHorrorOfDeath);
 		register(L1SkillId.PANIC,                SkillStopHandlers::offPanic);
 
-		register(L1SkillId.ICE_LANCE,            SkillStopHandlers::offIceLance);
+		register(L1SkillId.ICE_LANCE,            SkillStopHandlers::offFreezeFamily);
 
 		register(L1SkillId.MOB_BERSERKERS,       SkillStopHandlers::offMobBerserkers);
 
-		register(L1SkillId.EARTH_BIND,           SkillStopHandlers::offEarthBindBasillCoca);
-		register(L1SkillId.MOB_BASILL,           SkillStopHandlers::offEarthBindBasillCoca);
-		register(L1SkillId.MOB_COCA,             SkillStopHandlers::offEarthBindBasillCoca);
+		register(L1SkillId.EARTH_BIND,           SkillStopHandlers::offFreezeFamily);
+		register(L1SkillId.MOB_BASILL,           SkillStopHandlers::offFreezeFamily);
+		register(L1SkillId.MOB_COCA,             SkillStopHandlers::offFreezeFamily);
 
 		register(L1SkillId.SHOCK_STUN,           SkillStopHandlers::offStunFamily);
 		register(L1SkillId.MOB_SHOCKSTUN_30,     SkillStopHandlers::offStunFamily);
@@ -1406,16 +1406,6 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offDarkBlind(L1Character cha, int skillId) {
-		if (hasOtherSleepEffect(cha, skillId)) return StopResult.HANDLED;
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			SC_Paralysis.send(pc, SC_Paralysis.TYPE_SLEEP, false);
-		}
-		cha.setSleeped(false);
-		return StopResult.HANDLED;
-	}
-
 	private static StopResult offCurseBlindFamily(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance pc) {
 			SC_CurseBlind.send(pc, 0);
@@ -1466,23 +1456,6 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offIceLance(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			SC_Poison.send(pc, pc.getId(), 0);
-			SC_Poison.broadcastFast(pc, pc.getId(), 0);
-			SC_Paralysis.send(pc, SC_Paralysis.TYPE_FREEZE, false);
-		} else if (cha instanceof L1MonsterInstance
-				|| cha instanceof L1SummonInstance
-				|| cha instanceof L1PetInstance
-				|| cha instanceof L1CompanionInstance) {
-			L1NpcInstance npc = (L1NpcInstance) cha;
-			SC_Poison.broadcastFast(npc, npc.getId(), 0);
-			npc.setParalyzed(false);
-		}
-		return StopResult.HANDLED;
-	}
-
 	private static StopResult offMobBerserkers(L1Character cha, int skillId) {
 		if (cha instanceof L1NpcInstance) {
 			MovementSpeedEffects.endHaste(cha, skillId);
@@ -1491,21 +1464,18 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offEarthBindBasillCoca(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
+	private static StopResult offFreezeFamily(L1Character target, int skillId) {
+		if (ControlSkillEffects.hasSkillFreeze(target, skillId) || target.getId() == 0)
+			return StopResult.HANDLED;
+		if (target instanceof L1PcInstance pc) {
+			if (pc.isParalyzed()) return StopResult.HANDLED;
 			SC_Poison.send(pc, pc.getId(), 0);
 			SC_Poison.broadcastFast(pc, pc.getId(), 0);
-			if (skillId == L1SkillId.EARTH_BIND) {
+			if (ControlSkillEffects.isSkillFreeze(skillId))
 				SC_Paralysis.send(pc, SC_Paralysis.TYPE_FREEZE, false);
-			}
-		} else if (cha instanceof L1MonsterInstance
-				|| cha instanceof L1SummonInstance
-				|| cha instanceof L1PetInstance
-				|| cha instanceof L1CompanionInstance) {
-			L1NpcInstance npc = (L1NpcInstance) cha;
-			SC_Poison.broadcastFast(npc, npc.getId(), 0);
-			// npc.setParalyzed(false);
+		} else if (target instanceof L1MonsterInstance || target instanceof L1SummonInstance
+				|| target instanceof L1PetInstance || target instanceof L1CompanionInstance) {
+			SC_Poison.broadcastFast(target, target.getId(), 0);
 		}
 		return StopResult.HANDLED;
 	}
@@ -1525,7 +1495,6 @@ public final class SkillStopHandlers {
 
 	private static StopResult offSleepFamily(L1Character cha, int skillId) {
 		if (hasOtherSleepEffect(cha, skillId)) return StopResult.HANDLED;
-		cha.setSleeped(false);
 		if (cha instanceof L1PcInstance) {
 			SC_Paralysis.send(((L1PcInstance) cha), SC_Paralysis.TYPE_SLEEP, false);
 		}

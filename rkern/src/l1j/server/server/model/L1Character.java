@@ -63,8 +63,9 @@ public class L1Character extends L1Object {
 	private int _moveSpeed; // ● 스피드 0. 통상 1. 헤이 파업 2. 슬로우
 	private int _braveSpeed; // ● 치우침 이브 상태 0. 통상 1. 치우침 이브
 	private L1Poison _poison = null;
-	private boolean _paralyzed;
-	private boolean _sleeped;
+	private volatile boolean _paralyzed;
+	private volatile boolean curseParalyzed;
+	private volatile boolean poisonParalyzed;
 	private L1Paralysis _paralysis;
 	private volatile boolean _isDead;
 
@@ -96,6 +97,7 @@ public class L1Character extends L1Object {
 	private int _summonre = 0;
 
 	private volatile SkillEffectContainer _skillEffects;
+	private int retiredSkillHeartbeatGeneration;
 	
 	private Set<L1Object> _knownObjects;
 	private Set<L1PcInstance> _knownPlayer;
@@ -309,19 +311,23 @@ public class L1Character extends L1Object {
 	}
 
 	public boolean isSleeped() {
-		return _sleeped;
-	}
-
-	public void setSleeped(boolean sleeped) {
-		_sleeped = sleeped;
+		return hasAnySkillEffect(L1SkillId.DARK_BLIND, L1SkillId.PHANTASM, L1SkillId.FOG_OF_SLEEPING);
 	}
 
 	public boolean isParalyzed() {
-		return _paralyzed;
+		return _paralyzed || curseParalyzed || poisonParalyzed;
 	}
 
 	public void setParalyzed(boolean paralyzed) {
 		_paralyzed = paralyzed;
+	}
+
+	public void setCurseParalyzed(boolean paralyzed) {
+		curseParalyzed = paralyzed;
+	}
+
+	public void setPoisonParalyzed(boolean paralyzed) {
+		poisonParalyzed = paralyzed;
 	}
 
 	private boolean _thunderGrab;
@@ -471,7 +477,7 @@ public class L1Character extends L1Object {
 			 * create=true is reached only from the character CIO owner path
 			 * (or the no-owner bootstrap/teardown fallback).
 			 */
-			effects = new SkillEffectContainer(this);
+			effects = new SkillEffectContainer(this, retiredSkillHeartbeatGeneration);
 			_skillEffects = effects;
 		}
 
@@ -586,7 +592,8 @@ public class L1Character extends L1Object {
 	public void skillEffectClearFromOwner() {
 		final SkillEffectContainer effects = skillEffects(false);
 		if (effects != null) {
-			effects.clear();
+			retiredSkillHeartbeatGeneration = effects.clear();
+			_skillEffects = null;
 		}
 	}
 

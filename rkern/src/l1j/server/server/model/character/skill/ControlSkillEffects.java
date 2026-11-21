@@ -8,9 +8,10 @@ import static l1j.server.server.model.character.skill.L1SkillId.*;
 /** Shared classification of action restrictions owned by skill timers. */
 public final class ControlSkillEffects {
     private static final IntPredicate STUN = ControlSkillEffects::isStun;
+    private static final IntPredicate FREEZE = ControlSkillEffects::isSkillFreeze;
+    private static final IntPredicate NPC_CONTROL = id -> isStun(id) || isSkillFreeze(id);
     private static final IntPredicate CAST_LOCK = id -> isStun(id) || switch (id) {
-        case EARTH_BIND, ICE_LANCE, STATUS_FREEZE,
-                PHANTASM, FOG_OF_SLEEPING, DARK_BLIND -> true;
+        case EARTH_BIND, ICE_LANCE, STATUS_FREEZE -> true;
         default -> false;
     };
 
@@ -28,6 +29,22 @@ public final class ControlSkillEffects {
 
     public static boolean hasStun(L1Character target, int endingSkill) {
         return target.hasSkillEffectMatching(STUN, endingSkill);
+    }
+
+    public static boolean isSkillFreeze(int skillId) {
+        return skillId == ICE_LANCE || skillId == EARTH_BIND;
+    }
+
+    public static boolean hasSkillFreeze(L1Character target, int endingSkill) {
+        return target.hasSkillEffectMatching(FREEZE, endingSkill);
+    }
+
+    public static boolean hasNpcControl(L1Character target) {
+        return target.hasSkillEffectMatching(NPC_CONTROL, -1);
+    }
+
+    public static boolean isSleep(int skillId) {
+        return skillId == DARK_BLIND || skillId == PHANTASM || skillId == FOG_OF_SLEEPING;
     }
 
     public static boolean blocksCast(L1Character target) {

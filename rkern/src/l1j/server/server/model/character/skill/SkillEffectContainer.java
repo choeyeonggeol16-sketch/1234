@@ -40,7 +40,12 @@ public final class SkillEffectContainer {
 	private volatile int revision;
 
 	public SkillEffectContainer(L1Character owner) {
+		this(owner, 0);
+	}
+
+	public SkillEffectContainer(L1Character owner, int previousHeartbeatGeneration) {
 		this.owner = owner;
+		this.heartbeatGeneration = previousHeartbeatGeneration;
 	}
 
 	/** Only allocated for characters with an applied, migrated effect. */
@@ -87,10 +92,15 @@ public final class SkillEffectContainer {
 	}
 
 	public void applySkillModifier(int skillId, long captured) {
+		applySkillModifier(skillId, captured, false);
+	}
+
+	private void applySkillModifier(int skillId, long captured, boolean changedOtherValues) {
 		if (!CSkillInfo.isManaged(skillId)) throw new IllegalArgumentException("Unmanaged skill " + skillId);
 		SkillModifiers state = skillModifiers;
 		if (state == null) skillModifiers = state = new SkillModifiers();
 		int index = state.find(skillId);
+		if (index >= 0 && state.applied[index + 1] == captured && !changedOtherValues) return;
 		if (index < 0) {
 			index = state.count * 2;
 			if (index == state.applied.length)
@@ -105,9 +115,12 @@ public final class SkillEffectContainer {
 	public void applyPotentialModifier(int hp, int mp, int mr, int sp, int er, int dg) {
 		SkillModifiers state = skillModifiers;
 		if (state == null) skillModifiers = state = new SkillModifiers();
-		state.potentialMagic = ((long) sp << 32) | Integer.toUnsignedLong(mr);
-		state.potentialEvasion = ((long) dg << 32) | Integer.toUnsignedLong(er);
-		applySkillModifier(L1SkillId.포텐셜, ((long) mp << 32) | Integer.toUnsignedLong(hp));
+		final long magic = ((long) sp << 32) | Integer.toUnsignedLong(mr);
+		final long evasion = ((long) dg << 32) | Integer.toUnsignedLong(er);
+		final boolean changed = state.potentialMagic != magic || state.potentialEvasion != evasion;
+		state.potentialMagic = magic;
+		state.potentialEvasion = evasion;
+		applySkillModifier(L1SkillId.포텐셜, ((long) mp << 32) | Integer.toUnsignedLong(hp), changed);
 	}
 
 	public boolean removeSkillModifier(int skillId, boolean notify) {
@@ -323,7 +336,7 @@ public final class SkillEffectContainer {
 	 * Legacy clearSkillEffectTimer semantics: drop lifetime state without
 	 * invoking every stop handler.
 	 */
-	public void clear() {
+	public int clear() {
 		beginWrite();
 		try {
 			size = 0;
@@ -336,6 +349,7 @@ public final class SkillEffectContainer {
 			skillModifiers = null;
 			validateSkillMod(false);
 		}
+		return heartbeatGeneration;
 	}
 
 	/**

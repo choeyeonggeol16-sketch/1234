@@ -330,7 +330,7 @@ public class L1NpcInstance extends L1Character {
 
     @Override
     public boolean isParalyzed() {
-        return super.isParalyzed() || ControlSkillEffects.hasStun(this, -1);
+        return super.isParalyzed() || ControlSkillEffects.hasNpcControl(this);
     }
 
     public boolean 발묶임상태() {

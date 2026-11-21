@@ -85,6 +85,7 @@ public final class TestSkillEffectLifecycle {
             verifyMovementSpeedSources();
             verifyNpcBindLifetime();
             verifyStunLifetimeAndCastLock();
+            verifyFreezeLifetime();
             verifyBraveLifetime();
             verifyOwnerDispatchAndExpiry();
             verifyRegistry();
@@ -606,11 +607,19 @@ public final class TestSkillEffectLifecycle {
         pc.applySkillModifierFromOwner(pride, 100);
         pc.skillEffectClearFromOwner();
         verify(pc.getMaxHp() == initial, "clear removes only applied modifiers", pride);
+        pc.skillEffectSetFromOwner(포텐셜, 0);
+        int sp = pc.getAbility().getSp();
+        pc.applyPotentialModifierFromOwner(100, 0, 0, 2, 0, 0);
+        pc.applyPotentialModifierFromOwner(100, 0, 0, 5, 0, 0);
+        verify(pc.hasSkillEffect(포텐셜) && pc.getMaxHp() == initial + 100 && pc.getAbility().getSp() == sp + 5,
+                "fresh container accepts changed auxiliary captures", 포텐셜);
+        pc.skillEffectClearFromOwner();
+        verify(!pc.hasSkillEffect(포텐셜) && pc.getMaxHp() == initial && pc.getAbility().getSp() == sp,
+                "second clear retires fresh state too", 포텐셜);
 
         L1Character target = new L1Character();
         target.setSkillEffect(L1SkillId.PHANTASM, 0);
         target.setSkillEffect(L1SkillId.FOG_OF_SLEEPING, 0);
-        target.setSleeped(true);
         target.killSkillEffectTimer(L1SkillId.PHANTASM);
         SkillStopHandlers.dispatch(target, L1SkillId.PHANTASM);
         verify(target.isSleeped(), "overlapping sleep survives first end", L1SkillId.PHANTASM);
@@ -722,6 +731,30 @@ public final class TestSkillEffectLifecycle {
         verify(SkillUsabilityPolicy.INSTANCE.canCastSpellScroll(cast), "clear releases cast lock", STATUS_FREEZE);
     }
 
+    private static void verifyFreezeLifetime() {
+        L1NpcInstance npc = new L1NpcInstance(null);
+        npc.skillEffectSetFromOwner(ICE_LANCE, 0);
+        npc.skillEffectSetFromOwner(EARTH_BIND, 0);
+        npc.skillEffectSetFromOwner(EMPIRE, 0);
+        npc.skillEffectRemoveFromOwner(ICE_LANCE, true);
+        verify(npc.isParalyzed() && ControlSkillEffects.hasSkillFreeze(npc, ICE_LANCE),
+                "Earth Bind keeps freeze when Ice Lance ends", EARTH_BIND);
+        npc.skillEffectRemoveFromOwner(EARTH_BIND, true);
+        verify(npc.isParalyzed() && !ControlSkillEffects.hasSkillFreeze(npc, EARTH_BIND),
+                "stun still holds after final freeze", EMPIRE);
+        npc.skillEffectRemoveFromOwner(EMPIRE, true);
+        verify(!npc.isParalyzed(), "all timed restrictions gone", EMPIRE);
+        verify(SkillHandlers.dispatch(new Cast(ICE_LANCE), npc, null, 0, null)
+                == SkillHandlers.HD_HANDLED_WITHOUT_TIMER, "rejected freeze skips only timer stage", ICE_LANCE);
+        L1PcInstance pc = new L1PcInstance();
+        pc.setCurseParalyzed(true);
+        pc.setPoisonParalyzed(true);
+        pc.setCurseParalyzed(false);
+        verify(pc.isParalyzed(), "ending curse preserves poison paralysis", STATUS_POISON_PARALYZED);
+        pc.setPoisonParalyzed(false);
+        verify(!pc.isParalyzed(), "final independent paralysis releases player", STATUS_POISON_PARALYZED);
+    }
+
     private static void verifyBraveLifetime() {
         Player pc = new Player();
         pc.setStatusBraveMode(3);
@@ -820,6 +853,12 @@ public final class TestSkillEffectLifecycle {
         verify(effects.onHeartbeat(generation) == 0L && !effects.contains(pride)
                 && expiring.getMaxHp() == baseline, "heartbeat retires applied source", pride);
         verify(effects.onHeartbeat(generation) == 0L, "stale generation ignored", pride);
+        int retiredGeneration = effects.clear();
+        SkillEffectContainer replacement = new SkillEffectContainer(expiring, retiredGeneration);
+        replacement.put(pride, 2_000);
+        int replacementGeneration = replacement.tryArmHeartbeat();
+        verify(replacementGeneration != generation && replacement.onHeartbeat(generation) == 0L
+                && replacement.contains(pride), "retired heartbeat cannot tick a new container", pride);
     }
 
     private static void verifyRegistry() throws ReflectiveOperationException {
