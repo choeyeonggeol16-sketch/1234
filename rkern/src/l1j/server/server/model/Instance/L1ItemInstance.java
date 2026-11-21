@@ -68,10 +68,8 @@ public class L1ItemInstance extends L1Object {
 	}
 
 	public static String get_enchant_description(int enchant) {
-		if (enchant > 0)
-			return String.format("+%d ", enchant);
-		else if (enchant < 0)
-			return String.format("-%d ", enchant);
+		if (enchant > 0) return "+" + enchant + " ";
+		if (enchant < 0) return enchant + " ";
 		return "";
 	}
 
@@ -628,7 +626,7 @@ public class L1ItemInstance extends L1Object {
 		if (PrideLoadManager.USE_PRIDE_SYSTEM && _itemId == PrideLoadManager.PRIDE_ITEM_ID) {
 			PrideInfo pInfo = PrideLoadManager.getInstance().get_pride(getId());
 			if (pInfo != null)
-				return String.format("%s의 자존심", pInfo.get_target_name());
+				return pInfo.get_target_name() + "의 자존심";
 		}
 
 		StringBuilder name = new StringBuilder(64);
