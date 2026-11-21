@@ -96,6 +96,7 @@ public final class TestSkillEffectLifecycle {
             verifyOwnerDispatchAndExpiry();
             verifyExternallyGrantedResistanceSources();
             verifyPrimeManagedSources();
+            verifyDedicatedCastRegistrations();
             verifyStopOnlyInventory();
             verifyRegistry();
         } catch (Throwable failure) {
@@ -1045,6 +1046,16 @@ public final class TestSkillEffectLifecycle {
                     && pc.getHitRate() == hit && pc.getDmgRate() == damage
                     && pc.getMagicHit() == magicHit && pc.getAbility().getSp() == spellPower
                     && pc.getMaxHp() == baseHp, "castle Prime removal leaves only baseline", 프라임1);
+    }
+
+    /** All five dedicated casts retain a real cast implementation after owner routing. */
+    private static void verifyDedicatedCastRegistrations() {
+        final int[] dedicated = { SHAPE_CHANGE, POWERRIP, THUNDER_GRAB, TOMAHAWK, DESPERADO };
+        for (int id : dedicated) {
+            final CSkillInfo info = CSkillInfo.get(id);
+            verify(info != null && info.hasCast() && info.stopHandler() != null,
+                    "dedicated cast/end must remain registered", id);
+        }
     }
 
     /** Exhaustively verify remaining 76 stop-only numeric registrations. */

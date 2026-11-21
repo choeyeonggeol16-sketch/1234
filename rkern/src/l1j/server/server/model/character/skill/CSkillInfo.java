@@ -248,6 +248,8 @@ public final class CSkillInfo {
         registerContextual(RINDVIOR_SILENCE, SkillHandlers::castRindviorSilence, SkillHandlers::startRindviorSilence);
         // Dedicated control casts: target PC state/visuals must execute on that
         // target's existing 32-slot controller FIFO. NPC admission remains on NpcServer.
+        registerContextual(SHAPE_CHANGE, SkillHandlers::onShapeChange, SkillHandlers::startShapeChangeFromOwner);
+        registerContextual(TOMAHAWK, SkillHandlers::onTomahawk, SkillHandlers::startTomahawkFromOwner);
         registerContextual(POWERRIP, SkillHandlers::onPowerRip, SkillHandlers::startPowerRipFromOwner);
         registerContextual(DESPERADO, SkillHandlers::onDesperado, SkillHandlers::startDesperadoFromOwner);
         registerContextual(THUNDER_GRAB, SkillHandlers::onThunderGrab, SkillHandlers::startThunderGrabFromOwner);

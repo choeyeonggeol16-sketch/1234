@@ -167,7 +167,7 @@ public final class SkillHandlers {
 		CSkillInfo.registerCast(L1SkillId.ICE_LANCE, SkillHandlers::castFreeze, false);
 		CSkillInfo.registerCast(L1SkillId.EARTH_BIND, SkillHandlers::castFreeze, false);
 		CSkillInfo.registerCast(L1SkillId.MOB_BERSERKERS, SkillHandlers::castMonsterBerserkers, false);
-		register(L1SkillId.SHAPE_CHANGE, SkillHandlers::onShapeChange);
+
 		CSkillInfo.registerInstant(L1SkillId.TRUE_TARGET, SkillHandlers::onTrueTarget);
 		registerStun(L1SkillId.SHOCK_STUN, 81162, SkillHandlers::officialStun, true);
 		registerStun(L1SkillId.EMPIRE, 50000066, SkillHandlers::officialStun, true);
@@ -223,7 +223,7 @@ public final class SkillHandlers {
 		CSkillInfo.registerCast(L1SkillId.MOB_SLOW_1, SkillHandlers::castMovementSpeed, false);
 		CSkillInfo.registerCast(L1SkillId.MOB_SLOW_18, SkillHandlers::castMovementSpeed, false);
 
-		register(L1SkillId.TOMAHAWK, SkillHandlers::onTomahawk);
+
 
 		CSkillInfo.registerCast(L1SkillId.HASTE, SkillHandlers::castMovementSpeed, false);
 
@@ -448,10 +448,33 @@ public final class SkillHandlers {
 		}
 	}
 
+	/** Polymorph's player mutation is owned by the target, not a remote caster. */
+	static void startShapeChangeFromOwner(L1PcInstance pc, int skillId, int duration,
+			int polyId, int casterId, boolean partyMember) {
+		if (pc.isDead()) return;
+		L1PcInstance caster = null;
+		if (casterId != 0 && casterId != pc.getId()) {
+			final L1Object source = L1World.getInstance().findObject(casterId);
+			if (!(source instanceof L1PcInstance other)) return;
+			caster = other;
+			if (pc.getSkillEffectTimeSec(L1SkillId.POLY_RING_MASTER) > 0) {
+				sendSkillSoundBroadcast(pc, 15846);
+				SC_ServerMessage.send(caster, 280);
+				return;
+			}
+		}
+		if (pc.getInventory().checkEquipped(20281)) {
+			SC_MessageYN.send(pc, 180);
+			return;
+		}
+		L1PolyMorph.doPoly(pc, polyId, duration, L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
+		if (caster != null) SC_ServerMessage.send(pc, 241, caster.getName());
+	}
+
 	// =========================
 	//  handler implementations
 	// =========================
-	private static HandlerResult onShapeChange(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
+	static HandlerResult onShapeChange(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		if (cha == null) return HandlerResult.NOT_HANDLED;
 
 		boolean isSameClan = false;
@@ -490,17 +513,11 @@ public final class SkillHandlers {
 
 		final int polyId = SkillUseHelper.pickRandomPolyId();
 
-		if (cha instanceof L1PcInstance) {
-			final L1PcInstance pc = (L1PcInstance) cha;
-			if (pc.getInventory().checkEquipped(20281)) {
-				SC_MessageYN.send(pc, 180);
-			} else {
-				final L1Skills skillTemp = SkillsTable.getInstance().getTemplate(L1SkillId.SHAPE_CHANGE);
-				L1PolyMorph.doPoly(pc, polyId, skillTemp.getBuffDuration(), L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
-				if (caster != null && caster.getId() != pc.getId()) {
-					SC_ServerMessage.send(pc, 241, caster.getName());
-				}
-			}
+		if (cha instanceof L1PcInstance pc) {
+			final L1Skills skillTemp = SkillsTable.getInstance().getTemplate(L1SkillId.SHAPE_CHANGE);
+			return submitContextBuff(pc, L1SkillId.SHAPE_CHANGE, skillTemp.getBuffDuration(),
+					polyId, caster != null ? caster.getId() : 0, null)
+					? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
 		} else if (cha instanceof L1MonsterInstance) {
 			final L1MonsterInstance mon = (L1MonsterInstance) cha;
 			final L1Skills skillTemp = SkillsTable.getInstance().getTemplate(L1SkillId.SHAPE_CHANGE);
@@ -2666,18 +2683,31 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		try { SC_PacketBox.send(pc, SC_PacketBox.DRAGONBLOOD, iconId, minutes); } catch (Throwable ignore) {}
 	}
 
+	/** Keep the original 2-6 tick distribution; begin generation on the victim owner. */
+	static void startTomahawkFromOwner(L1PcInstance pc, int id, int ticks,
+			int casterLevel, int casterId, boolean partyMember) {
+		if (pc.isDead() || ticks < 2 || ticks > 6 || casterLevel <= 0) return;
+		TomahawkBleedService.getInstance().startResolvedFromOwner(
+				pc, casterId, casterLevel, ticks);
+	}
+
 	/**
 	 * 토마호크:
 	 */
-	private static HandlerResult onTomahawk(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
+	static HandlerResult onTomahawk(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		final L1PcInstance caster = su.hdPlayer();
 		if (caster == null) return HandlerResult.NOT_HANDLED;
 
 		final L1Character target = (cha != null ? cha : su.hdTarget());
 		if (target == null) return HandlerResult.NOT_HANDLED;
 
+		if (target instanceof L1PcInstance pc) {
+			final int ticks = 2 + su.hdRandom().nextInt(5);
+			return submitContextBuff(pc, L1SkillId.TOMAHAWK, ticks,
+					caster.getLevel(), caster.getId(), null)
+					? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
+		}
 		TomahawkBleedService.getInstance().start(su, caster, target);
-
 		return HandlerResult.HANDLED;
 	}
 
