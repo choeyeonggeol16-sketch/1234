@@ -109,7 +109,13 @@ public static void useBravePotion(L1PcInstance pc, int item_id) {
 			// 없습니다.
 			return;
 		}
-		// 아브소르트바리아의 해제
+		// A caller with an unknown item must not cancel existing skills or
+		// install a zero-duration (permanent) brave status.
+		if (item_id != L1ItemId.POTION_OF_EMOTION_BRAVERY && item_id != 30073
+				&& item_id != L1ItemId.B_POTION_OF_EMOTION_BRAVERY && item_id != 41415
+				&& item_id != 712 && item_id != 40068 && item_id != 30076
+				&& item_id != 140068 && item_id != 210110 && item_id != 40031
+				&& item_id != 30075 && item_id != 40733) return;
 		cancelAbsoluteBarrier(pc);
 
 		int time = 0;
