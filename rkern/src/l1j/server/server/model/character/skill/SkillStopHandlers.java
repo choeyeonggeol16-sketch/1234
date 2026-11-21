@@ -1206,9 +1206,11 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offCurseBlindFamily(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance pc) {
+		// The removed timer is already absent. Do not clear client blindness
+		// or floating-eye visibility while another independent source remains.
+		if (cha instanceof L1PcInstance pc && !pc.isBlind()) {
 			SC_CurseBlind.send(pc, 0);
-	        pc.hideBlindToInvis();
+			pc.hideBlindToInvis();
 		}
 		return StopResult.HANDLED;
 	}

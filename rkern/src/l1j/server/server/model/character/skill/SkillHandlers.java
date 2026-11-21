@@ -2438,24 +2438,13 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 	        cha.cureParalaysis();
 	    }
 
-	    // 블라인드 / 다크니스 해제
-	    if (cha.hasSkillEffect(L1SkillId.CURSE_BLIND)
-	            || cha.hasSkillEffect(L1SkillId.DARKNESS)) {
-	        if (cha.hasSkillEffect(L1SkillId.CURSE_BLIND)) {
-	            cha.removeSkillEffect( L1SkillId.CURSE_BLIND);
-
-	        } else if (cha.hasSkillEffect(L1SkillId.DARKNESS)) {
-	            cha.removeSkillEffect(L1SkillId.DARKNESS);
-	        }
-
-	        if (cha instanceof L1PcInstance) {
-
-	            final L1PcInstance pc =
-	                    (L1PcInstance) cha;
-
-	            SC_CurseBlind.send(pc, 0);
-	            pc.hideBlindToInvis();
-	        }
+	    // Both removable blind sources may coexist. Let each source's owner
+	    // expiry handler restore sight only when the last blind source is gone.
+	    if (cha.hasSkillEffect(L1SkillId.CURSE_BLIND)) {
+	        cha.removeSkillEffect(L1SkillId.CURSE_BLIND);
+	    }
+	    if (cha.hasSkillEffect(L1SkillId.DARKNESS)) {
+	        cha.removeSkillEffect(L1SkillId.DARKNESS);
 	    }
 
 	    return HandlerResult.HANDLED;

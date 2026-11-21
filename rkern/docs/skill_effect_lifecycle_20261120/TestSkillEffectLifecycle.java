@@ -92,6 +92,7 @@ public final class TestSkillEffectLifecycle {
             verifyNpcBindLifetime();
             verifyStunLifetimeAndCastLock();
             verifyFreezeLifetime();
+            verifyBlindOverlapAndRemoveCurse();
             verifyBraveLifetime();
             verifyOwnerDispatchAndExpiry();
             verifyExternallyGrantedResistanceSources();
@@ -1187,6 +1188,26 @@ public final class TestSkillEffectLifecycle {
         pc.removeSkillEffect(God_buff);
         verify(pc.getResistance().getSpecialResistance(eKind.SPIRIT) == 120,
                 "positive buff expiry preserves original resistance", God_buff);
+    }
+
+    /** A cure retires both dispellable blindness IDs but not Lindbior's source. */
+    private static void verifyBlindOverlapAndRemoveCurse() {
+        final Player pc = new Player();
+        pc.setSkillEffect(CURSE_BLIND, 30_000);
+        pc.setSkillEffect(DARKNESS, 30_000);
+        pc.setSkillEffect(LINDBIOR_SPIRIT_EFFECT, 30_000);
+        verify(pc.isBlind(), "three independent blind sources are active", CURSE_BLIND);
+
+        final CSkillInfo curse = CSkillInfo.get(REMOVE_CURSE);
+        verify(curse != null && curse.hasCast(), "Remove Curse cast is registered", REMOVE_CURSE);
+        curse.activateSkillEffects(new Cast(REMOVE_CURSE), pc, null, 0, null);
+        verify(!pc.hasSkillEffect(CURSE_BLIND), "Remove Curse retires CURSE_BLIND", CURSE_BLIND);
+        verify(!pc.hasSkillEffect(DARKNESS), "Remove Curse retires DARKNESS", DARKNESS);
+        verify(pc.hasSkillEffect(LINDBIOR_SPIRIT_EFFECT) && pc.isBlind(),
+                "unrelated Lindbior blindness survives the cure", LINDBIOR_SPIRIT_EFFECT);
+
+        pc.removeSkillEffect(LINDBIOR_SPIRIT_EFFECT);
+        verify(!pc.isBlind(), "last blindness source expires normally", LINDBIOR_SPIRIT_EFFECT);
     }
 
     /** Remaining numeric stop-only effects retain their own end handler. */
