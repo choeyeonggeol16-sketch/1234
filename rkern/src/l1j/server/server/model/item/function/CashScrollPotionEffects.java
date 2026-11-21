@@ -104,12 +104,6 @@ final class CashScrollPotionEffects {
 	};
 
 	public static void useCashScroll(L1PcInstance pc, int itemId) {
-		for (int previous : CASH_SCROLLS) {
-			if (!pc.hasSkillEffect(previous)) continue;
-			pc.killSkillEffectTimer(previous);
-			SkillHandlers.notifyCashScrollStats(pc, previous);
-		}
-
 		final int id = switch (itemId) {
 		case 410010 -> STATUS_CASHSCROLL;
 		case 410011 -> STATUS_CASHSCROLL2;
@@ -120,6 +114,12 @@ final class CashScrollPotionEffects {
 		default -> 0;
 		};
 		if (id == 0) return;
+		for (int previous : CASH_SCROLLS) {
+			if (!pc.hasSkillEffect(previous)) continue;
+			pc.killSkillEffectTimer(previous);
+			SkillHandlers.notifyCashScrollStats(pc, previous);
+		}
+
 		pc.applySkillModifierFromOwner(id, 0);
 		SkillHandlers.notifyCashScrollStats(pc, id);
 		SC_SkillSound.send(pc, pc.getId(), id);

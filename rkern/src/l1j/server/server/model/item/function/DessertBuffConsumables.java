@@ -66,13 +66,8 @@ final class DessertBuffConsumables {
         switch (itemId) {
 		case 31118: {
 			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
-				if (pc.hasSkillEffect(L1SkillId.완력빙수)) {
-					pc.removeSkillEffect(L1SkillId.완력빙수);
-				} else if (pc.hasSkillEffect(L1SkillId.민첩빙수)) {
-					pc.removeSkillEffect(L1SkillId.민첩빙수);
-				} else if (pc.hasSkillEffect(L1SkillId.지식빙수)) {
-					pc.removeSkillEffect(L1SkillId.지식빙수);
-				}
+				// Remove all mutually exclusive ice effects, even if stale sources overlap.
+				IceBuffItem.clearIceBuff(pc);
 				pc.setSkillEffect(L1SkillId.완력빙수, 900000);
 				pc.applySkillModifierFromOwner(L1SkillId.완력빙수, 0);
 				notifyDessert(pc, 31118);
@@ -82,13 +77,8 @@ final class DessertBuffConsumables {
 
 		case 31119: {
 			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
-				if (pc.hasSkillEffect(L1SkillId.완력빙수)) {
-					pc.removeSkillEffect(L1SkillId.완력빙수);
-				} else if (pc.hasSkillEffect(L1SkillId.민첩빙수)) {
-					pc.removeSkillEffect(L1SkillId.민첩빙수);
-				} else if (pc.hasSkillEffect(L1SkillId.지식빙수)) {
-					pc.removeSkillEffect(L1SkillId.지식빙수);
-				}
+				// Remove all mutually exclusive ice effects, even if stale sources overlap.
+				IceBuffItem.clearIceBuff(pc);
 				pc.setSkillEffect(L1SkillId.민첩빙수, 900000);
 				pc.applySkillModifierFromOwner(L1SkillId.민첩빙수, 0);
 				notifyDessert(pc, 31119);
@@ -99,13 +89,8 @@ final class DessertBuffConsumables {
 
 		case 31120: {
 			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
-				if (pc.hasSkillEffect(L1SkillId.완력빙수)) {
-					pc.removeSkillEffect(L1SkillId.완력빙수);
-				} else if (pc.hasSkillEffect(L1SkillId.민첩빙수)) {
-					pc.removeSkillEffect(L1SkillId.민첩빙수);
-				} else if (pc.hasSkillEffect(L1SkillId.지식빙수)) {
-					pc.removeSkillEffect(L1SkillId.지식빙수);
-				}
+				// Remove all mutually exclusive ice effects, even if stale sources overlap.
+				IceBuffItem.clearIceBuff(pc);
 				pc.setSkillEffect(L1SkillId.지식빙수, 900000);
 				pc.applySkillModifierFromOwner(L1SkillId.지식빙수, (3L << 32) | 1);
 				notifyDessert(pc, 31120);

@@ -3,6 +3,8 @@ package l1j.server.server.model.character.skill;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Character-owned skill effect lifetime state.
@@ -16,6 +18,8 @@ import l1j.server.server.model.npc.ai.NpcEventFactory;
  * swap-remove or array growth without adding a monitor to the hot path.
  */
 public final class SkillEffectContainer {
+
+	private static final Logger LOG = Logger.getLogger(SkillEffectContainer.class.getName());
 
 	private static final int INITIAL_CAPACITY = 8;
 
@@ -134,8 +138,13 @@ public final class SkillEffectContainer {
 		if (index < 0) return false;
 		if (skillId == L1SkillId.포텐셜) state.potentialMagic = state.potentialEvasion = 0;
 		int last = --state.count * 2;
-		state.applied[index] = state.applied[last];
-		state.applied[index + 1] = state.applied[last + 1];
+		if (state.count == 0) {
+			// Release the retained captured-value array after the last source ends.
+			skillModifiers = null;
+		} else {
+			state.applied[index] = state.applied[last];
+			state.applied[index + 1] = state.applied[last + 1];
+		}
 		validateSkillMod(notify);
 		return true;
 	}
@@ -499,7 +508,9 @@ public final class SkillEffectContainer {
 			}
 			try {
 				L1SkillStop.stopSkill(owner, expiredId);
-			} catch (Throwable ignored) {
+			} catch (Throwable failure) {
+				// A failed stop is isolated from other expirations, but never hidden.
+				LOG.log(Level.SEVERE, "Skill expiration cleanup failed for id=" + expiredId, failure);
 			} finally {
 				retireModifierIfInactive(expiredId);
 			}
@@ -509,6 +520,16 @@ public final class SkillEffectContainer {
 			NpcEventFactory.onPlayerVisibilityRestored(pc);
 		}
 
+		// Stop handlers run on the owner and may replace/add/remove other timers.
+		// Re-read only on expiration, keeping ordinary heartbeat ticks O(active).
+		if (expiredCount != 0) {
+			if (!isHeartbeatValid(generation)) return 0L;
+			nextDue = Long.MAX_VALUE;
+			for (int j = 0; j < size; j++) {
+				if (remainingSeconds[j] >= 0 && nextTickAtMillis[j] < nextDue)
+					nextDue = nextTickAtMillis[j];
+			}
+		}
 		if (nextDue == Long.MAX_VALUE) {
 			return 0L;
 		}
