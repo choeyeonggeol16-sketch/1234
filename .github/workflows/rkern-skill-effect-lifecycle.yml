@@ -5,6 +5,7 @@ on:
     branches:
       - rkern/unified-jproring-game-20261120
       - rkern/skill-effect-wip-20261121
+      - rkern/poison-effect-lifecycle-20261121
     paths:
       - .github/workflows/rkern-skill-effect-lifecycle.yml
       - rkern/src/l1j/server/server/model/character/skill/**
@@ -16,7 +17,8 @@ on:
       - rkern/src/l1j/server/server/model/L1EquipmentSlot.java
       - rkern/src/l1j/server/server/model/L1WeaponSkill.java
       - rkern/src/l1j/server/server/model/L1CurseParalysis.java
-      - rkern/src/l1j/server/server/model/poison/L1ParalysisPoison.java
+      - rkern/src/l1j/server/server/model/character/effect/poison/**
+      - rkern/src/l1j/server/server/model/poison/**
       - rkern/src/l1j/server/server/model/HelpBySupport.java
       - rkern/src/l1j/server/server/model/Instance/L1PcInstance.java
       - rkern/src/l1j/server/server/model/Instance/L1NpcInstance.java
