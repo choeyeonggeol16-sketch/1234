@@ -25,7 +25,6 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1ChatParty;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ClanJoin;
-import l1j.server.server.model.L1DeathMatch;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
@@ -775,20 +774,6 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
 						pc.start_teleport(32722, 32830, 5140, 2, 169, true, false);
 					}
 				}
-				break;
-			}
-			break;
-		case 1268:
-			switch (c) {
-			case 0:
-				L1DeathMatch.getInstance().removeMember(pc);
-				break;
-			case 1:
-				if (pc.isInParty()) {
-					pc.getParty().leaveMember(pc);
-				}
-				L1DeathMatch.getInstance().addPlayer();
-				pc.start_teleport(32658, 32899, 5153, 2, 169, true, false);
 				break;
 			}
 			break;

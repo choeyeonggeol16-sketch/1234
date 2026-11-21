@@ -494,10 +494,6 @@ public final class CS_Craft {
 			return;
 		}
 
-		if (pc.isDeathMatch() && !pc.isGm() && !pc.isGhost()) {
-			SC_SystemMessage.send(pc, "데스매치 경기 중에는 채팅이 금지됩니다.");
-			return;
-		}
 
 		if (!pc.isGm() && pc.getMapId() == 5153 && chatType != 0) {
 			SC_SystemMessage.send(pc, "프리미엄 배틀존 진행 중에는 일반채팅만 가능합니다.");

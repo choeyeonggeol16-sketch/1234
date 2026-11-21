@@ -19,10 +19,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.datatables.UBTable;
-import l1j.server.server.model.L1DeathMatch;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1Location;
-import l1j.server.server.model.L1PetMatch;
 import l1j.server.server.model.L1Racing;
 import l1j.server.server.model.L1UltimateBattle;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -102,9 +100,6 @@ final class NpcGameEventActions {
 			L1HauntedHouse.getInstance().addMember(pc);
 		}
 
-		if (L1DeathMatch.getInstance().isMember(pc)) {
-			L1DeathMatch.getInstance().removeMember(pc);
-		}
 
 		if (L1Racing.getInstance().contains(0, pc)) {
 			L1Racing.getInstance().remove(0, pc);
@@ -112,45 +107,6 @@ final class NpcGameEventActions {
 
 		return "";
 	}
-
-	static String enterDeathMatch(L1PcInstance pc) {
-		if (L1DeathMatch.getInstance().getDeathMatchStatus() == L1DeathMatch.STATUS_PLAYING) {
-			SC_ServerMessage.send(pc, 1182);
-			return "";
-		}
-		if (L1DeathMatch.getInstance().getMembersCount() >= 20) {
-			SC_SystemMessage.send(pc, "이미 데스매치가 포화 상태라네.");
-			return "";
-		}
-		if (pc.getLevel() < 52) {
-			SC_ServerMessage.send(pc, 1273, "52", "99");
-			return "";
-		}
-
-		L1DeathMatch.getInstance().addMember(pc);
-		if (L1HauntedHouse.getInstance().isMember(pc)) {
-			L1HauntedHouse.getInstance().removeMember(pc);
-		}
-		return "";
-	}
-
-    static String enterPetMatch(L1PcInstance pc, String objectId) {
-        final int amuletId;
-        try {
-            amuletId = Integer.parseInt(objectId);
-        } catch (NumberFormatException invalid) {
-            SC_ServerMessage.send(pc, 1182);
-            return "";
-        }
-        if (!pc.getPetList().isEmpty()) {
-            SC_ServerMessage.send(pc, 1187);
-            return "";
-        }
-        if (amuletId <= 0 || !L1PetMatch.getInstance().enterPetMatch(pc, amuletId)) {
-            SC_ServerMessage.send(pc, 1182);
-        }
-        return "";
-    }
 
 	static String[] makeUbInfoStrings(int npcId) {
 		L1UltimateBattle ub = UBTable.getInstance().getUbForNpcId(npcId);
@@ -188,9 +144,6 @@ final class NpcGameEventActions {
 			L1Racing.getInstance().add(0, pc);
 		}
 
-		if (L1DeathMatch.getInstance().isMember(pc)) {
-			L1DeathMatch.getInstance().removeMember(pc);
-		}
 
 		if (L1HauntedHouse.getInstance().isMember(pc)) {
 			L1Racing.getInstance().remove(0, pc);
@@ -222,8 +175,8 @@ final class NpcGameEventActions {
     }
 
     static void giveComaBuff(L1PcInstance pc, int objid) {
-        final int death = pc.getDeathMatchPiece(), ghost = pc.getGhostHousePiece();
-        final int race = pc.getPetRacePiece(), pet = pc.getPetMatchPiece();
+        final int death = pc.getComaFirstPiece(), ghost = pc.getGhostHousePiece();
+        final int race = pc.getPetRacePiece(), pet = pc.getComaFourthPiece();
         final int battle = pc.getUltimateBattlePiece();
         final long sum = (long) death + ghost + race + pet + battle;
         // Reset the submitted selection synchronously; a delayed receipt must
@@ -283,17 +236,17 @@ final class NpcGameEventActions {
     }
 
 	static void resetPiece(L1PcInstance pc) {
-		pc.setDeathMatchPiece(0);
+		pc.setComaFirstPiece(0);
 		pc.setGhostHousePiece(0);
 		pc.setPetRacePiece(0);
-		pc.setPetMatchPiece(0);
+		pc.setComaFourthPiece(0);
 		pc.setUltimateBattlePiece(0);
 	}
 
 	static void selectComa(L1PcInstance pc, int objid) {
-		String[] htmldata = new String[] { String.valueOf(pc.getDeathMatchPiece()),
+		String[] htmldata = new String[] { String.valueOf(pc.getComaFirstPiece()),
 				String.valueOf(pc.getGhostHousePiece()), String.valueOf(pc.getPetRacePiece()),
-				String.valueOf(pc.getPetMatchPiece()), String.valueOf(pc.getUltimateBattlePiece()) };
+				String.valueOf(pc.getComaFourthPiece()), String.valueOf(pc.getUltimateBattlePiece()) };
 		SC_NPCTalkReturn.send(pc, objid, "coma5", htmldata);
 	}
 

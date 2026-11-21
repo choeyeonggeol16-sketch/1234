@@ -5733,7 +5733,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			clientthread.getActiveChar();
 			if (target != null) {
 				
-				if (target.isPrivateShop() || target.isFishing() || target.isDeathMatch() 
+				if (target.isPrivateShop() || target.isFishing() 
 						 || target.isParalyzed() ) {
 					SC_SystemMessage.send(gm, "\\f:상대방이 원격교환을 받을수 없는 상태입니다.");
 					return;

@@ -21,6 +21,11 @@ on:
       - rkern/src/l1j/server/server/model/character/effect/poison/**
       - rkern/src/l1j/server/server/model/poison/**
       - rkern/src/l1j/server/server/model/HelpBySupport.java
+      - rkern/src/l1j/server/server/model/L1PetMatch.java
+      - rkern/src/l1j/server/server/model/L1DeathMatch.java
+      - rkern/src/l1j/server/server/GMCommands.java
+      - rkern/src/l1j/server/server/UserCommands.java
+      - rkern/src/l1j/server/server/model/network/core/cs/packet/**
       - rkern/src/l1j/server/server/model/Instance/L1PcInstance.java
       - rkern/src/l1j/server/server/model/Instance/L1NpcInstance.java
       - rkern/src/l1j/server/server/model/item/function/GreenPotion.java
@@ -50,11 +55,12 @@ jobs:
             rkern/docs/jproring_cio_integration_20261120
             rkern/docs/skill_effect_lifecycle_20261120
             rkern/docs/poison_effect_20261121
-      - name: Audit legacy pet and death match references
+      - name: Ensure retired match references are absent
         run: |
-          echo '==== MATCH REFERENCES ===='
-          grep -RnE 'L1PetMatch|L1DeathMatch|DeathMatch|PetMatch|DEATH_MATCH|PET_MATCH|deathmatch|petmatch' rkern/src --include='*.java' | head -250 || true
-          echo '==== END MATCH REFERENCES ===='
+          if grep -RnE 'L1PetMatch|L1DeathMatch|DeathMatch|PetMatch|DEATH_MATCH|PET_MATCH|deathmatch|petmatch' rkern/src --include='*.java'; then
+            echo 'Unexpected retired pet/death match reference remains'
+            exit 1
+          fi
       - name: Cache skill regression dependencies
         uses: actions/cache@v4
         with:

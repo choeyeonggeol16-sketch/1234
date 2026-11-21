@@ -608,12 +608,11 @@ final class NpcServiceHtmlCommands {
             int npcId = ((L1NpcInstance) obj).getNpcId();
             if (npcId == 80085) {
                 htmlid = NpcGameEventActions.enterHauntedHouse(pc);
-            } else if (npcId == 80086 || npcId == 80087) {
-                htmlid = NpcGameEventActions.enterDeathMatch(pc);
             } else if (npcId == 50037) {
                 htmlid = NpcGameEventActions.enterUb(pc, npcId);
-            } else if (npcId == 80088) {
-                htmlid = NpcGameEventActions.enterPetMatch(pc, s2);
+            } else if (npcId == 80086 || npcId == 80087 || npcId == 80088) {
+                SC_ServerMessage.send(pc, 1182);
+                htmlid = "";
             } else if (npcId == 300000) { // 펫 레이싱
                 htmlid = NpcGameEventActions.enterPe(pc, npcId);
             } else if (npcId == 200014) {
@@ -644,7 +643,7 @@ final class NpcServiceHtmlCommands {
             //pc.sendPackets("이용이 불가능 합니다.");
         } else if (s.equalsIgnoreCase("info")) {
             int npcId = ((L1NpcInstance) obj).getNpcId();
-            if (npcId == 80085 || npcId == 80086 || npcId == 80087) {
+            if (npcId == 80085) {
             } else {
                 htmlid = "colos2";
             }

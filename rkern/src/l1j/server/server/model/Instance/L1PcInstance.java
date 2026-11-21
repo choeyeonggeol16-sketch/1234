@@ -50,7 +50,6 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1ChatParty;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1DeathMatch;
 import l1j.server.server.model.L1DwarfForPackageInventory;
 import l1j.server.server.model.L1EquipmentSlot;
 import l1j.server.server.model.L1HateList;
@@ -806,7 +805,6 @@ public class L1PcInstance extends L1Character {
 	private boolean _isCanWhisper = true;
 	private boolean _isFishing = false;
 	private boolean _isFishingReady = false;
-	private boolean isDeathMatch = false; // 데스매치
 	private boolean _isSupporting = false;
 	private boolean _isShowWorldChat = true;
 	private boolean _gm;
@@ -2365,9 +2363,6 @@ public class L1PcInstance extends L1Character {
 			e.printStackTrace();
 		}
 		try {
-			if (L1DeathMatch.getInstance().isMember(this)) {
-				L1DeathMatch.getInstance().removeMember(this);
-			}
 			if (L1HauntedHouse.getInstance().isMember(this)) {
 				L1HauntedHouse.getInstance().removeMember(this);
 			}
@@ -3182,20 +3177,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 							this.setCurrentHp(getMaxHp());
 						} else {
 							//카운터배리어, 타이탄데미지처리
-							if (isDeathMatch()) {
-								if (getMapId() == 5153) {
-									try {
-										save();
-										beginGhost(getX(), getY(), (short) getMapId(), true);
-										SC_ServerMessage.send(this, 1271);
-									} catch (Exception e) {
-										e.printStackTrace();
-									}
-									return;
-								}
-							} else {
-								death(attacker, false);
-							}
+							death(attacker, false);
 						}
 					}
 					} finally {
@@ -3519,27 +3501,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 					if (isGm()) {
 						setCurrentHp(getMaxHp());
 					} else {
-						if (attacker instanceof L1PcInstance) {
-
-							death(attacker, true);
-						}
-
-						if (isDeathMatch()) {
-							if (getMapId() == 5153) {
-								try {
-									save();
-									beginGhost(getX(), getY(), (short) getMapId(), true);
-									SC_ServerMessage.send(this, 1271);
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-								return;
-							}
-
-						} else {
-							
-							death(attacker, true);
-						}
+						death(attacker, true);
 					}
 				}
 				} finally {
@@ -5113,10 +5075,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 
-	public void DeathMatchEndGhost() {
-		setReserveGhost(true);
-		this.start_teleport(32614, 32735, 4, getHeading(), 169, true, false);
-	}
 
 	public void endGhost() {
 	    CIOThreadCallback.Handle h = _ghostHandle;
@@ -6013,13 +5971,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_fightId = i;
 	}
 
-	public void setDeathMatch(boolean i) {
-		this.isDeathMatch = i;
-	}
-
-	public boolean isDeathMatch() {
-		return isDeathMatch;
-	}
 
 	public boolean isSupporting() {
 		return _isSupporting;
@@ -6080,14 +6031,14 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 
 	/** 코마버프 시작 **/
-	private int _deathmatch;
+	private int _comaFirstPiece;
 
-	public int getDeathMatchPiece() {
-		return _deathmatch;
+	public int getComaFirstPiece() {
+		return _comaFirstPiece;
 	}
 
-	public void setDeathMatchPiece(int i) {
-		_deathmatch = i;
+	public void setComaFirstPiece(int i) {
+		_comaFirstPiece = i;
 	}
 
 	private int _petrace;
@@ -6110,14 +6061,14 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_ultimatebattle = i;
 	}
 
-	private int _petmatch;
+	private int _comaFourthPiece;
 
-	public int getPetMatchPiece() {
-		return _petmatch;
+	public int getComaFourthPiece() {
+		return _comaFourthPiece;
 	}
 
-	public void setPetMatchPiece(int i) {
-		_petmatch = i;
+	public void setComaFourthPiece(int i) {
+		_comaFourthPiece = i;
 	}
 
 	private int _ghosthouse;

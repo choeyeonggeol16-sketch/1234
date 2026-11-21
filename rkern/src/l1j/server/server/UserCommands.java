@@ -755,7 +755,7 @@ public class UserCommands{
 					SC_SystemMessage.send(pc, "\\f:운영자에게는 원격거래를 신청할 수 없습니다.");
 					return;
 				}
-				if (target.isPrivateShop() || target.isFishing() || target.isDeathMatch() 
+				if (target.isPrivateShop() || target.isFishing() 
 						 || target.isParalyzed() ) {
 					SC_SystemMessage.send(pc, "\\f:상대방이 원격교환을 받을수 없는 상태입니다.");
 					return;

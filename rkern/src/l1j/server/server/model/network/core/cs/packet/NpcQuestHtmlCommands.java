@@ -379,19 +379,19 @@ final class NpcQuestHtmlCommands {
             } else if (s.equalsIgnoreCase("2")) {
                 NpcGameEventActions.comaCheck(pc, 5, objid);
             } else if (s.equalsIgnoreCase("a")) {
-                pc.setDeathMatchPiece(pc.getDeathMatchPiece() + 1);
+                pc.setComaFirstPiece(pc.getComaFirstPiece() + 1);
                 NpcGameEventActions.selectComa(pc, objid);
             } else if (s.equalsIgnoreCase("b")) {
-                pc.setDeathMatchPiece(pc.getDeathMatchPiece() + 2);
+                pc.setComaFirstPiece(pc.getComaFirstPiece() + 2);
                 NpcGameEventActions.selectComa(pc, objid);
             } else if (s.equalsIgnoreCase("c")) {
-                pc.setDeathMatchPiece(pc.getDeathMatchPiece() + 3);
+                pc.setComaFirstPiece(pc.getComaFirstPiece() + 3);
                 NpcGameEventActions.selectComa(pc, objid);
             } else if (s.equalsIgnoreCase("d")) {
-                pc.setDeathMatchPiece(pc.getDeathMatchPiece() + 4);
+                pc.setComaFirstPiece(pc.getComaFirstPiece() + 4);
                 NpcGameEventActions.selectComa(pc, objid);
             } else if (s.equalsIgnoreCase("e")) {
-                pc.setDeathMatchPiece(pc.getDeathMatchPiece() + 5);
+                pc.setComaFirstPiece(pc.getComaFirstPiece() + 5);
                 NpcGameEventActions.selectComa(pc, objid);
             } else if (s.equalsIgnoreCase("f")) {
                 pc.setGhostHousePiece(pc.getGhostHousePiece() + 1);
@@ -424,19 +424,19 @@ final class NpcQuestHtmlCommands {
                 pc.setPetRacePiece(pc.getPetRacePiece() + 5);
                 NpcGameEventActions.selectComa(pc, objid);
             } else if (s.equalsIgnoreCase("p")) {
-                pc.setPetMatchPiece(pc.getPetMatchPiece() + 1);
+                pc.setComaFourthPiece(pc.getComaFourthPiece() + 1);
                 NpcGameEventActions.selectComa(pc, objid);
             } else if (s.equalsIgnoreCase("q")) {
-                pc.setPetMatchPiece(pc.getPetMatchPiece() + 2);
+                pc.setComaFourthPiece(pc.getComaFourthPiece() + 2);
                 NpcGameEventActions.selectComa(pc, objid);
             } else if (s.equalsIgnoreCase("s")) {
-                pc.setPetMatchPiece(pc.getPetMatchPiece() + 3);
+                pc.setComaFourthPiece(pc.getComaFourthPiece() + 3);
                 NpcGameEventActions.selectComa(pc, objid);
             } else if (s.equalsIgnoreCase("t")) {
-                pc.setPetMatchPiece(pc.getPetMatchPiece() + 4);
+                pc.setComaFourthPiece(pc.getComaFourthPiece() + 4);
                 NpcGameEventActions.selectComa(pc, objid);
             } else if (s.equalsIgnoreCase("u")) {
-                pc.setPetMatchPiece(pc.getPetMatchPiece() + 5);
+                pc.setComaFourthPiece(pc.getComaFourthPiece() + 5);
                 NpcGameEventActions.selectComa(pc, objid);
             } else if (s.equalsIgnoreCase("v")) {
                 pc.setUltimateBattlePiece(pc.getUltimateBattlePiece() + 1);
