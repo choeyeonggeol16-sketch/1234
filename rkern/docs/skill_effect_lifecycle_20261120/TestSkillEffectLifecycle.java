@@ -68,6 +68,7 @@ public final class TestSkillEffectLifecycle {
             verifyLifecycle();
             verifyPackedPrimaryStatLanes();
             verifyModifierRetention();
+            verifyUnknownCashScrollPreservesBuff();
             verifyIndependentModifiers();
             verifyLegacyHpAndPotential();
             verifyCompoundBuffs();
@@ -135,6 +136,21 @@ public final class TestSkillEffectLifecycle {
         verify(stateField.get(effects) != null, "other modifier storage preserved", GIGANTIC);
         verify(effects.removeSkillModifier(GIGANTIC, false), "final modifier removal", GIGANTIC);
         verify(stateField.get(effects) == null, "final modifier storage released", GIGANTIC);
+    }
+
+    private static void verifyUnknownCashScrollPreservesBuff() throws ReflectiveOperationException {
+        Player pc = new Player();
+        pc.setSkillEffect(STATUS_CASHSCROLL3, 60_000);
+        Class<?> cash = Class.forName("l1j.server.server.model.item.function.CashScrollPotionEffects");
+        var method = cash.getDeclaredMethod("useCashScroll", L1PcInstance.class, int.class);
+        method.setAccessible(true);
+        try {
+            method.invoke(null, pc, -1);
+        } catch (java.lang.reflect.InvocationTargetException failure) {
+            throw new AssertionError("unknown cash scroll threw", failure.getCause());
+        }
+        verify(pc.hasSkillEffect(STATUS_CASHSCROLL3),
+                "unrecognized cash scroll must preserve old effect", STATUS_CASHSCROLL3);
     }
 
     private static void verifyLifecycle() {

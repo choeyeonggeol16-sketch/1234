@@ -464,6 +464,7 @@ public final class SkillEffectContainer {
 					long elapsedTicks = ((now - due) / 1000L) + 1L;
 
 					if (skillIds[i] == L1SkillId.EXP_POTION
+							&& owner.getMap() != null
 							&& owner.getMap().isSafetyZone(
 									owner.getX(),
 									owner.getY())) {
@@ -513,6 +514,9 @@ public final class SkillEffectContainer {
 		boolean invisibilityExpired = false;
 		for (int i = 0; i < expiredCount; i++) {
 			final int expiredId = expiredScratch[i];
+			// An earlier stop handler may have reapplied this same skill.
+			// Never remove the newly installed lifetime with an old expiry.
+			if (contains(expiredId)) continue;
 			if (expiredId == L1SkillId.INVISIBILITY
 					|| expiredId == L1SkillId.BLIND_HIDING) {
 				invisibilityExpired = true;
@@ -530,6 +534,16 @@ public final class SkillEffectContainer {
 			NpcEventFactory.onPlayerVisibilityRestored(pc);
 		}
 
+		// End handlers may mutate or replace timers on the same character.
+		// Refresh nextDue only after expirations, not on ordinary ticks.
+		if (expiredCount != 0) {
+			if (!isHeartbeatValid(generation)) return 0L;
+			nextDue = Long.MAX_VALUE;
+			for (int j = 0; j < size; j++) {
+				if (remainingSeconds[j] >= 0 && nextTickAtMillis[j] < nextDue)
+					nextDue = nextTickAtMillis[j];
+			}
+		}
 		if (nextDue == Long.MAX_VALUE) {
 			return 0L;
 		}
