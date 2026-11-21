@@ -3,6 +3,8 @@ package l1j.server.server.model.character.skill;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Character-owned skill effect lifetime state.
@@ -16,6 +18,7 @@ import l1j.server.server.model.npc.ai.NpcEventFactory;
  * swap-remove or array growth without adding a monitor to the hot path.
  */
 public final class SkillEffectContainer {
+	private static final Logger LOG = Logger.getLogger(SkillEffectContainer.class.getName());
 
 	private static final int INITIAL_CAPACITY = 8;
 
@@ -516,7 +519,8 @@ public final class SkillEffectContainer {
 			}
 			try {
 				L1SkillStop.stopSkill(owner, expiredId);
-			} catch (Throwable ignored) {
+			} catch (Throwable failure) {
+				LOG.log(Level.WARNING, "Skill expiry cleanup failed: " + expiredId, failure);
 			} finally {
 				retireModifierIfInactive(expiredId);
 			}
