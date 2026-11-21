@@ -973,9 +973,10 @@ public final class CItemEnchantOption {
                 final boolean genericAccessory = itemType2 == 2
                         && ((itemgrade >= 0 && itemgrade <= 2 && accessoryType >= 8 && accessoryType <= 12)
                             || (itemgrade == 5 && (accessoryType == 9 || accessoryType == 11)));
-                final int[] genericBonus = genericAccessory && snapperBonus == null && roomtisBonus == null
+                final int[] genericBonus = genericAccessory && snapperBonus == null
                         && item.getEnchantLevel() > 0
-                        ? EquipmentEnchantOptions.accessoryBonusSnapshot(item.getItem(), item.getEnchantLevel())
+                        ? (roomtisBonus != null ? roomtisBonus
+                                : EquipmentEnchantOptions.accessoryBonusSnapshot(item.getItem(), item.getEnchantLevel()))
                         : null;
 
 				/** 아이템 안전인챈 표시 추가 **/
