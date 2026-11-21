@@ -848,14 +848,23 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offFocus3(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
 
+		// A child cooldown can expire after its parent visual was removed.
+		// Only restore stage-1 FOCUS_WAVE if that parent is still active.
+		if (!pc.hasSkillEffect(L1SkillId.FOCUS_WAVE)) {
+			if (pc.get_focus_wave_level() != 0) {
+				pc.set_focus_wave_level(0);
+				BraveSpeedEffects.onEnd(pc, skillId);
+			}
+			return StopResult.HANDLED;
+		}
 		if (pc.get_focus_wave_level() != 1) {
 			SC_SkillSound.send(pc, pc.getId(), 16540);
 			SC_SkillSound.broadcastFast(pc, pc.getId(), 16540);
 
-			SC_SkillBrave.send(pc, pc.getId(), 10, pc.getSkillEffectTimeSec(L1SkillId.FOCUS_WAVE));
+			SC_SkillBrave.send(pc, pc.getId(), 10,
+					Math.max(0, pc.getSkillEffectTimeSec(L1SkillId.FOCUS_WAVE)));
 			SC_SkillBrave.broadcastFast(pc, pc.getId(), 10, 0);
 
 			pc.set_focus_wave_level(1);

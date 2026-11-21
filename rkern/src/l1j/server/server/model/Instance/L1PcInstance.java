@@ -1830,16 +1830,17 @@ public class L1PcInstance extends L1Character {
 
 	/** 피엠틱 컨트롤러 **/
 
-	public void 포커스3단() {	
-		if (hasSkillEffect(L1SkillId.포커스3단)){
+	public void 포커스3단() {
+		// The third stage has no independent duration or speed source.
+		// Do not publish its visual after the underlying FOCUS_WAVE expired.
+		if (!hasSkillEffect(L1SkillId.포커스3단)
+				|| !hasSkillEffect(L1SkillId.FOCUS_WAVE)) return;
 		inc_focus_wave_level();
 		SC_SkillSound.send(this, getId(), 16533);
 		SC_SkillSound.broadcast(this, getId(), 16533);
-		SC_SkillBrave.send(this, getId(), 12, getSkillEffectTimeSec(L1SkillId.FOCUS_WAVE));
+		SC_SkillBrave.send(this, getId(), 12, Math.max(0, getSkillEffectTimeSec(L1SkillId.FOCUS_WAVE)));
 		SC_SkillBrave.broadcast(this, getId(), 12, 0);
-		
-		}
-}
+	}
 	public void 레벨버프() {
 		if (this.getLevel() == 90) {
 			this.addMaxHp(100);
