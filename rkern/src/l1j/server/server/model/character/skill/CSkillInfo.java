@@ -246,6 +246,8 @@ public final class CSkillInfo {
         registerContextual(INVISIBILITY, SkillHandlers::castInvisibility, SkillHandlers::startInvisibility);
         registerContextual(BLIND_HIDING, SkillHandlers::castInvisibility, SkillHandlers::startInvisibility);
         registerContextual(RINDVIOR_SILENCE, SkillHandlers::castRindviorSilence, SkillHandlers::startRindviorSilence);
+        registerManaged(버서크, null, specialResistance(eKind.ALL, 20));
+        registerManaged(버닝샷, null, specialResistance(eKind.ALL, 3));
         registerManaged(STATUS_CASHSCROLL, null, fixed(MAX_HP, 50));
         registerManaged(STATUS_CASHSCROLL2, null, fixed(MAX_MP, 40L << 32));
         registerManaged(STATUS_CASHSCROLL3, null, fixed(MELEE_DAMAGE, 3L << 32), fixed(MELEE_HIT, 3), fixed(SP, 3));

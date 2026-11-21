@@ -161,7 +161,7 @@ for (L1PcInstance player : L1World.getInstance().getVisiblePlayer(pc, 20)) {
                                     player.addMaxHp(500);
                                     l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(noticeB,player);
                                 }
-                                SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
+                                SC_HpUpdate.send(player, player.getCurrentHp(), player.getMaxHp());
                                 SC_OwnCharAttrDef.send(player);
                                 SC_OwnCharStatus.send(player);
                                 SC_SPMR.send(player);

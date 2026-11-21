@@ -94,6 +94,7 @@ public final class TestSkillEffectLifecycle {
             verifyFreezeLifetime();
             verifyBraveLifetime();
             verifyOwnerDispatchAndExpiry();
+            verifyExternallyGrantedResistanceSources();
             verifyStopOnlyInventory();
             verifyRegistry();
         } catch (Throwable failure) {
@@ -973,20 +974,47 @@ public final class TestSkillEffectLifecycle {
                 && replacement.contains(pride), "retired heartbeat cannot tick a new container", pride);
     }
 
-    /** All 80 externally granted/stop-only numeric IDs must keep their end handler. */
+    /** Item-granted sources must coexist and retire independently at resistance cap. */
+    private static void verifyExternallyGrantedResistanceSources() {
+        Player pc = new Player();
+        final var resistance = pc.getResistance();
+        resistance.addSpecialResistance(eKind.ALL, 126);
+        verify(CSkillInfo.isManaged(버서크) && CSkillInfo.isManaged(버닝샷),
+                "item-granted special resistance registered", 버서크);
+        pc.applySkillModifierFromOwner(버서크, 0);
+        pc.setSkillEffect(버서크, 38_000);
+        pc.applySkillModifierFromOwner(버닝샷, 0);
+        pc.setSkillEffect(버닝샷, 38_000);
+        verify(resistance.getSpecialResistance(eKind.ALL) == 127,
+                "overlapping item buffs respect visible cap", 버닝샷);
+        resistance.addSpecialResistance(eKind.ALL, -126);
+        verify(resistance.getSpecialResistance(eKind.ALL) == 23,
+                "both item sources remain separately counted", 버서크);
+        pc.removeSkillEffect(버서크);
+        verify(resistance.getSpecialResistance(eKind.ALL) == 3,
+                "retiring Berserk preserves Burning Shot", 버서크);
+        pc.removeSkillEffect(버닝샷);
+        verify(resistance.getSpecialResistance(eKind.ALL) == 0,
+                "retiring last item source restores baseline", 버닝샷);
+        pc.removeSkillEffect(버닝샷);
+        verify(resistance.getSpecialResistance(eKind.ALL) == 0,
+                "duplicate item expiry cannot underflow", 버닝샷);
+    }
+
+    /** Numeric-only stop definitions are verified against the updated ledger. */
     private static void verifyStopOnlyInventory() {
         final int[] stopOnlyIds = {
             2, 32, 91, 105, 112, 136, 780, 985, 1000,
-            1001, 1002, 1003, 1004, 1005, 1006, 1016, 1564, 1565,
-            1566, 1607, 2754, 2762, 2794, 5256, 5263, 5285, 5300,
-            5307, 5984, 7239, 7241, 7791, 7792, 7793, 7794, 7795,
-            8382, 8463, 9999, 12120, 12132, 12133, 12134, 12135, 12136,
-            13001, 13002, 13003, 15644, 20075, 20076, 20077, 20079, 20082,
-            22017, 23442, 23445, 24444, 24445, 25133, 25155, 30010, 40007,
-            50009, 55441, 55662, 55664, 60001, 61614, 61615, 61616, 72388,
-            80007, 80008, 80009, 80012, 131313, 191918, 778844, 979744
+            1001, 1002, 1003, 1004, 1005, 1006, 1016, 1565, 1566,
+            1607, 2754, 2794, 5256, 5263, 5285, 5300, 5307, 5984,
+            7239, 7241, 7791, 7792, 7793, 7794, 7795, 8382, 8463,
+            9999, 12120, 12132, 12133, 12134, 12135, 12136, 13001, 13002,
+            13003, 15644, 20075, 20076, 20077, 20079, 20082, 22017, 23442,
+            23445, 24444, 24445, 25133, 25155, 30010, 40007, 50009, 55441,
+            55662, 55664, 60001, 61614, 61615, 61616, 72388, 80007, 80008,
+            80009, 80012, 131313, 191918, 778844, 979744
         };
-        verify(stopOnlyIds.length == 80, "stop-only numeric inventory size", 0);
+        verify(stopOnlyIds.length == 78, "stop-only numeric inventory size", 0);
         for (int id : stopOnlyIds) {
             final CSkillInfo info = CSkillInfo.get(id);
             verify(info != null && !info.hasCast() && info.stopHandler() != null,

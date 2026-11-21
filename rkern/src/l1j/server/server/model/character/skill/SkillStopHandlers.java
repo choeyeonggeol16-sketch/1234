@@ -398,7 +398,7 @@ public final class SkillStopHandlers {
 		register(L1SkillId.GREATER_HASTE,   SkillStopHandlers::offHasteFamily);
 		
 		register(L1SkillId.매직실드1, SkillStopHandlers::offNoop);
-		register(L1SkillId.버닝샷, SkillStopHandlers::offClanBuffAllResist);
+		register(L1SkillId.버닝샷, SkillStopHandlers::offBurningShot);
 		register(L1SkillId.매직실드2, SkillStopHandlers::offMagicShield2);
 		register(L1SkillId.기간틱, SkillStopHandlers::offLegacyScaledHp);
 		register(L1SkillId.엠파이어오버로드DG, SkillStopHandlers::offStunControlOverloadDg);
@@ -514,11 +514,11 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offClanBuffAllResist(L1Character cha, int skillId) {
+	private static StopResult offBurningShot(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getResistance().addSpecialResistance(eKind.ALL, -3);
+		pc.removeSkillModifierFromOwner(skillId);
 
 		return StopResult.HANDLED;
 	}
@@ -1961,7 +1961,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		SC_InventoryIcon.icoNew(pc, L1SkillId.프라임, 3155, 600, true);
+		SC_InventoryIcon.icoEnd(pc, L1SkillId.프라임);
 		pc.addBowHitRate(-9);
 		pc.addBowDmgRate(-9);
 		pc.addDmgRate(-9);
@@ -2224,7 +2224,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getResistance().addSpecialResistance(eKind.ALL, -20);
+		pc.removeSkillModifierFromOwner(skillId);
 		SC_SystemMessage.send(pc, "버서크 효과가 사라집니다.");
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;

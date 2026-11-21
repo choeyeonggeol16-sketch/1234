@@ -170,13 +170,13 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 1006,STATUS_POISON,,stop_only,offPoison
 1016,STATUS_ELFBRAVE,,stop_only,offBraveSpeedReset
 1541,천하장사버프,startStrongmanBuff,managed_pump,offPlayerModifier
-1564,버닝샷,,stop_only,offClanBuffAllResist
+1564,버닝샷,,managed_external,offBurningShot
 1565,매직실드2,,stop_only,offMagicShield2
 1566,이뮨투함블레이드,,stop_only,offImmuneBladeCustom
 1607,어드밴스,,stop_only,offLegacyAdvance
 2329,할파스의신의,ignoreNonPlayerBuff,instant,offHalpasGod
 2754,프라임,,stop_only,offPrime
-2762,버서크,,stop_only,offBerserkCustom
+2762,버서크,,managed_external,offBerserkCustom
 2763,포텐셜,,managed_external,offPotential
 2794,리버레이션,,stop_only,offLiberation
 3281,DRAGON_SET,startDragonSet,managed_pump,offDragonSet
