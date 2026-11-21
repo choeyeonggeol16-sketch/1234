@@ -7,6 +7,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Magic;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.utils.eKind;
 
 import static l1j.server.server.model.character.skill.CSkillEffect.Bonus.*;
 import static l1j.server.server.model.character.skill.L1SkillId.*;
@@ -71,6 +72,34 @@ public final class CSkillInfo {
         registerManaged(INSIGHT, SkillHandlers::startCommonStatBuff, PRIMARY_STATS);
         registerManaged(MIRROR_IMAGE, SkillHandlers::startCommonStatBuff, DG);
         registerManaged(UNCANNY_DODGE, SkillHandlers::startCommonStatBuff, DG);
+        registerManaged(기간틱, null, MAX_HP);
+        registerManaged(프라이드, null, MAX_HP);
+        registerManaged(포텐셜, null, MAX_HP, MAX_MP, CSkillEffect.Potential.MR,
+                CSkillEffect.Potential.SP, CSkillEffect.Potential.ER, CSkillEffect.Potential.DG);
+        registerManaged(God_buff, SkillHandlers::startGodBuff, MELEE_HIT,
+                new CSkillEffect.Fixed(AC, -2), new CSkillEffect.Fixed(MAX_HP, 20),
+                new CSkillEffect.Fixed(MAX_MP, 13L << 32), specialResistance(eKind.SPIRIT, 10));
+        registerManaged(SCALES_FIRE_DRAGON, SkillHandlers::startScalesFireDragon, MELEE_HIT,
+                specialResistance(eKind.ABILITY, 5), specialResistance(eKind.DRAGON_SPELL, 5),
+                specialResistance(eKind.FEAR, 5));
+        registerManaged(BRAVE_AURA, SkillHandlers::startBraveAura);
+        registerManaged(IRON_SKIN, SkillHandlers::startArmorBuff, AC);
+        registerManaged(FIRE_SHIELD, SkillHandlers::startArmorBuff, AC);
+        registerManaged(BLESSED_ARMOR, SkillHandlers::startArmorBuff, AC);
+        registerManaged(BOUNCE_ATTACK, SkillHandlers::startCommonStatBuff, MELEE_HIT);
+        registerManaged(PATIENCE, SkillHandlers::startCommonStatBuff, ARMOR_REDUCTION);
+        registerManaged(BERSERKERS, SkillHandlers::startBerserkers,
+                new CSkillEffect.Fixed(AC, 10), MELEE_HIT, MELEE_DAMAGE);
+        registerManagedWithFallback(GUARD_BREAK, SkillHandlers::startGuardBreak,
+                SkillHandlers::castGuardBreakOnNpc, AC);
+        registerManaged(WEAKNESS, SkillHandlers::startCommonStatBuff, MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(MOB_WEAKNESS_1, SkillHandlers::startCommonStatBuff, MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(DISEASE, SkillHandlers::startDisease, new CSkillEffect.Fixed(AC, 12), MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(MOB_DISEASE_1, SkillHandlers::startDisease, new CSkillEffect.Fixed(AC, 12), MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(MOB_DISEASE_30, SkillHandlers::startDisease, new CSkillEffect.Fixed(AC, 12), MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(FEAR, SkillHandlers::startCommonStatBuff, DG);
+        registerManaged(HORROR_OF_DEATH, SkillHandlers::startCommonStatBuff, PRIMARY_PENALTY);
+        registerManaged(PANIC, SkillHandlers::startCommonStatBuff, PRIMARY_PENALTY);
         frozen = true;
     }
 
@@ -135,20 +164,30 @@ public final class CSkillInfo {
     }
 
     private static void registerManaged(int skillId, PumpStartEffect start, CSkillEffect... effects) {
+        registerManagedWithFallback(skillId, start, null, effects);
+    }
+
+    private static void registerManagedWithFallback(int skillId, PumpStartEffect start,
+            SkillHandlers.SkillHandler fallback, CSkillEffect... effects) {
         CSkillInfo prior = get(skillId);
         if (prior == null || prior.stop == null || prior.cast != null)
             throw new IllegalStateException("Invalid managed skill definition " + skillId);
-        put(skillId, new CSkillInfo(null, prior.stop, start, effects, false));
+        put(skillId, new CSkillInfo(fallback, prior.stop, start, effects, false));
+    }
+
+    private static CSkillEffect specialResistance(eKind kind, int amount) {
+        final int shift = (kind.value() - 1) << 3;
+        return new CSkillEffect.Fixed(SPECIAL_RESISTANCE, (long) amount << shift);
     }
 
     SkillHandlers.HandlerResult activateSkillEffects(L1SkillUse su, L1Character target, L1Magic magic,
             int undeadType, Iterator<?> targets) {
-        if (start != null) {
-            if (!(target instanceof L1PcInstance pc)) return SkillHandlers.HandlerResult.NOT_HANDLED;
+        if (start != null && target instanceof L1PcInstance pc) {
             int skillId = su.hdSkillId();
             int duration = skillId == SHINING_AURA || skillId == SHIELD
                     || skillId == DRESS_DEXTERITY || skillId == DRESS_MIGHTY || skillId == GLOWING_AURA
-                    || skillId == PHYSICAL_ENCHANT_STR || skillId == PHYSICAL_ENCHANT_DEX
+                    || skillId == PHYSICAL_ENCHANT_STR || skillId == PHYSICAL_ENCHANT_DEX || skillId == BRAVE_AURA
+                    || skillId == BLESSED_ARMOR || skillId == IRON_SKIN || skillId == FIRE_SHIELD
                     ? su.hdGetBuffIconDuration() : SkillHandlers.durationSecForBuff(su, skillId);
             return pc.submitSkillPumpStart(skillId, duration)
                     ? SkillHandlers.HandlerResult.HANDLED : SkillHandlers.HandlerResult.CONTINUE;
@@ -171,7 +210,12 @@ public final class CSkillInfo {
 
     public static boolean isManaged(int skillId) {
         CSkillInfo info = get(skillId);
-        return info != null && info.start != null;
+        return info != null && info.effects != null;
+    }
+
+    public static boolean submitSupportBerserkers(L1PcInstance target) {
+        // The negative duration selects the support NPC's distinct attack bonuses.
+        return target.submitSkillPumpStart(BERSERKERS, -320);
     }
 
     /** Shared stat application for casts and login restores with distinct timer and packet rules. */
@@ -185,6 +229,14 @@ public final class CSkillInfo {
             case GLOWING_AURA -> (5L << 32) | 5;
             case IllUSION_OGRE -> (4L << 32) | 4;
             case ENCHANT_ACURUCY -> 5;
+            case BOUNCE_ATTACK -> 6;
+            case PATIENCE -> 2;
+            case BERSERKERS -> (2L << 32) | 8;
+            case WEAKNESS, MOB_WEAKNESS_1 -> (-5L << 32) | Integer.toUnsignedLong(-1);
+            case DISEASE, MOB_DISEASE_1, MOB_DISEASE_30 -> Integer.toUnsignedLong(-6);
+            case FEAR -> -25;
+            case HORROR_OF_DEATH -> 0x030003L;
+            case PANIC -> 0x010101010101L;
             case CLEAR_MIND -> 0x00010101;
             case PHYSICAL_ENCHANT_STR -> 5;
             case PHYSICAL_ENCHANT_DEX -> 5 << 8;

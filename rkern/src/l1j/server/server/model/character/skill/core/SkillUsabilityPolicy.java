@@ -7,6 +7,7 @@ import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.ControlSkillEffects;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.character.skill.helper.SkillUseHelper;
@@ -39,7 +40,7 @@ public enum SkillUsabilityPolicy {
 
 		final L1PcInstance pc = su.hdPlayer();
 
-		if (pc.isParalyzed()) return false;
+		if (ControlSkillEffects.blocksCast(pc)) return false;
 		if ((pc.isInvisble() || pc.isInvisDelay() && !SkillUseHelper.canCastWithInvis(su.hdSkillId()))) {
 			return false;
 		}
@@ -62,7 +63,7 @@ public enum SkillUsabilityPolicy {
 			final int skillId = su.hdSkillId();
 
 			// 행동 불가
-			if (pc.isParalyzed()) return false;
+			if (ControlSkillEffects.blocksCast(pc)) return false;
 
 			// 변신 상태 스킬 사용 가능 여부
 			final L1PolyMorph poly = PolyTable.getInstance().getTemplate(pc.getCurrentSpriteId());

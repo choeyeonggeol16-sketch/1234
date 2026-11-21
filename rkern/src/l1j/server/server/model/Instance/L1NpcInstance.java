@@ -30,6 +30,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancyNpc;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.ControlSkillEffects;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.npc.ai.ActionSpriteMapper;
 import l1j.server.server.model.npc.ai.action.CCreatureController;
@@ -325,6 +326,11 @@ public class L1NpcInstance extends L1Character {
             _mprInterval = 0;
             _mprPoint = 0;
         }
+    }
+
+    @Override
+    public boolean isParalyzed() {
+        return super.isParalyzed() || ControlSkillEffects.hasStun(this, -1);
     }
 
     public boolean 발묶임상태() {

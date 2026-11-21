@@ -8,6 +8,7 @@ on:
       - .github/workflows/rkern-skill-effect-lifecycle.yml
       - rkern/src/l1j/server/server/model/character/skill/**
       - rkern/src/l1j/server/server/model/character/login/skill/**
+      - rkern/src/l1j/server/server/model/character/effect/PcPassiveEffects.java
       - rkern/src/l1j/server/server/model/Ability.java
       - rkern/src/l1j/server/server/model/Resistance.java
       - rkern/src/l1j/server/server/model/L1Character.java
@@ -18,6 +19,12 @@ on:
       - rkern/src/l1j/server/server/model/Instance/L1NpcInstance.java
       - rkern/src/l1j/server/server/model/item/function/GreenPotion.java
       - rkern/src/l1j/server/server/model/item/function/MovementPotionEffects.java
+      - rkern/src/l1j/server/server/model/item/function/BravePotion.java
+      - rkern/src/l1j/server/server/model/item/function/CrownAreaStunItemEffect.java
+      - rkern/src/l1j/server/server/model/item/function/PotentialSkillConsumable.java
+      - rkern/src/l1j/server/server/utils/CommonUtil.java
+      - rkern/src/l1j/server/server/model/network/core/sc/packet/SC_OwnCharStatus.java
+      - rkern/docs/skill_effect_lifecycle_20261120/BenchmarkSkillEffectLifecycle.java
       - rkern/docs/skill_effect_lifecycle_20261120/TestSkillEffectLifecycle.java
   workflow_dispatch:
 
@@ -58,6 +65,7 @@ jobs:
           sources = sorted((root / "src").rglob("*.java"))
           print(f"Production Java files: {len(sources)}", flush=True)
           sources.append(root / "docs/skill_effect_lifecycle_20261120/TestSkillEffectLifecycle.java")
+          sources.append(root / "docs/skill_effect_lifecycle_20261120/BenchmarkSkillEffectLifecycle.java")
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
           subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8", "-source", "21",

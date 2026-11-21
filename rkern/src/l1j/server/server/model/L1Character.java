@@ -37,7 +37,6 @@ import l1j.server.server.types.Point;
 import l1j.server.server.utils.CalcStat;
 import l1j.server.server.utils.IntRange;
 
-import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
 import l1j.server.server.model.network.core.sc.packet.SC_Lawful;
 import l1j.server.server.model.network.core.sc.packet.SC_PinkName;
 import l1j.server.server.model.network.core.sc.packet.SC_Poison;
@@ -509,6 +508,11 @@ public class L1Character extends L1Object {
 		return effects != null && effects.containsAny(first, second, third);
 	}
 
+	public boolean hasSkillEffectMatching(java.util.function.IntPredicate matchesSkillId, int exceptSkillId) {
+		final SkillEffectContainer effects = skillEffects(false);
+		return effects != null && effects.containsMatching(matchesSkillId, exceptSkillId);
+	}
+
 	public int getSkillEffectTimeSec(int skillId) {
 		final SkillEffectContainer effects = skillEffects(false);
 		return effects == null ? -1 : effects.getRemainingTimeSec(skillId);
@@ -516,6 +520,10 @@ public class L1Character extends L1Object {
 
 	public void applySkillModifierFromOwner(int skillId, long captured) {
 		skillEffects(true).applySkillModifier(skillId, captured);
+	}
+
+	public void applyPotentialModifierFromOwner(int hp, int mp, int mr, int sp, int er, int dg) {
+		skillEffects(true).applyPotentialModifier(hp, mp, mr, sp, er, dg);
 	}
 
 	public boolean removeSkillModifierFromOwner(int skillId) {
@@ -1396,9 +1404,7 @@ public class L1Character extends L1Object {
 		for (int skillId : _elf_skill_braves) {
 			if (hasSkillEffect(skillId)) {
 				removeSkillEffect(skillId);
-				SC_SkillBrave.send(this, getId(), 0, 0);
-				SC_SkillBrave.broadcastFast(this, getId(), 0, 0);
-				setBraveSpeed(0);
+
 			}
 		}
 	}

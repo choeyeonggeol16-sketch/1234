@@ -39,6 +39,9 @@ interface CSkillEffect {
         PRIMARY_STATS { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.primaryStats += captured;
         }},
+        PRIMARY_PENALTY { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.primaryPenalty += captured;
+        }},
         ELEMENTAL_RESISTANCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.elementalResistance += (int) captured;
         }},
@@ -84,6 +87,39 @@ interface CSkillEffect {
         @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.carryLimit += amount;
         }
+    }
+
+    record Fixed(Bonus bonus, long amount) implements CSkillEffect {
+        @Override public boolean checkPumpCondition(L1Character target) {
+            return bonus.checkPumpCondition(target);
+        }
+
+        @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            bonus.pump(amount, out);
+        }
+    }
+
+    record RestoreMana(int amount) implements SkillHandlers.SkillHandler {
+        @Override public SkillHandlers.HandlerResult handle(L1SkillUse cast, L1Character target,
+                L1Magic magic, int undeadType, Iterator<?> targets) {
+            if (target instanceof L1PcInstance pc) pc.setCurrentMp(pc.getCurrentMp() + amount);
+            return SkillHandlers.HandlerResult.HANDLED;
+        }
+    }
+
+    enum Potential implements CSkillEffect {
+        MR { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.mr += (int) out.potentialMagic;
+        }},
+        SP { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.sp += (int) (out.potentialMagic >>> 32);
+        }},
+        ER { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.er += (int) out.potentialEvasion;
+        }},
+        DG { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.dg += (int) (out.potentialEvasion >>> 32);
+        }};
     }
 
     enum MaxHp {

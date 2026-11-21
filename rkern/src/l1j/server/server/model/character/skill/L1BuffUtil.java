@@ -70,7 +70,7 @@ public class L1BuffUtil {
 		SC_SkillSound.send(pc, objId, 751);
 		SC_SkillSound.broadcast(pc, objId, 751);
 
-		pc.setBraveSpeed(1);
+		pc.setStatusBraveMode(1);
 	}
 
 	public static void thirdSpeed(L1PcInstance pc, int timeMillis) {

@@ -252,8 +252,8 @@ public final class SkillStopHandlers {
 		register(L1SkillId.OMAN_STUN,            SkillStopHandlers::offStunFamily);
 		register(L1SkillId.Maeno_STUN,           SkillStopHandlers::offStunFamily);
 
-		register(L1SkillId.EMPIRE,               SkillStopHandlers::offStunControl);
-		register(L1SkillId.BONE_BREAK,           SkillStopHandlers::offStunControl);
+		register(L1SkillId.EMPIRE,               SkillStopHandlers::offStunFamily);
+		register(L1SkillId.BONE_BREAK,           SkillStopHandlers::offStunFamily);
 
 		register(L1SkillId.PHANTASM,             SkillStopHandlers::offSleepFamily);
 		register(L1SkillId.FOG_OF_SLEEPING,      SkillStopHandlers::offSleepFamily);
@@ -267,9 +267,9 @@ public final class SkillStopHandlers {
 		register(L1SkillId.STATUS_QUAKE,          SkillStopHandlers::offStatusQuake);
 		register(L1SkillId.STATUS_SHOCK,          SkillStopHandlers::offStatusShock);
 
-		register(L1SkillId.STATUS_BRAVE,          SkillStopHandlers::offStatusBraveFamily);
-		register(L1SkillId.STATUS_FRUIT,          SkillStopHandlers::offStatusBraveFamily);
-		register(L1SkillId.STATUS_ELFBRAVE,       SkillStopHandlers::offStatusBraveFamily);
+		register(L1SkillId.STATUS_BRAVE,          SkillStopHandlers::offBraveSpeedReset);
+		register(L1SkillId.STATUS_FRUIT,          SkillStopHandlers::offBraveSpeedReset);
+		register(L1SkillId.STATUS_ELFBRAVE,       SkillStopHandlers::offBraveSpeedReset);
 
 		register(L1SkillId.STATUS_HASTE,          SkillStopHandlers::offHasteFamily);
 
@@ -787,7 +787,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.addDg(25);
+		pc.removeSkillModifierFromOwner(skillId);
 		return StopResult.HANDLED;
 	}
 
@@ -1081,11 +1081,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getAC().addAc(2);
-		pc.addHitup(-3);
-		pc.addMaxHp(-20);
-		pc.addMaxMp(-13);
-		pc.getResistance().addSpecialResistance(eKind.SPIRIT, -10);
+		pc.removeSkillModifierFromOwner(skillId);
 		return StopResult.HANDLED;
 	}
 
@@ -1178,7 +1174,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 		
-	    pc.addDamageReductionByArmor(-2);
+	    pc.removeSkillModifierFromOwner(skillId);
 		return StopResult.HANDLED;
 	}
 
@@ -1258,7 +1254,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offIronSkin(L1Character cha, int skillId) {
-		cha.getAC().addAc(10);
+		cha.removeSkillModifierFromOwner(skillId);
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_SkillIconShield.send(pc, 10, 0);
@@ -1267,7 +1263,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offFireShield(L1Character cha, int skillId) {
-		cha.getAC().addAc(4);
+		cha.removeSkillModifierFromOwner(skillId);
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_SkillIconShield.send(pc, 4, 0);
@@ -1317,12 +1313,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offBraveSpeedReset(L1Character cha, int skillId) {
-		cha.setBraveSpeed(0);
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			SC_SkillBrave.send(pc, pc.getId(), 0, 0);
-			SC_SkillBrave.broadcastFast(pc, pc.getId(), 0, 0);
-		}
+		BraveSpeedEffects.onEnd(cha, skillId);
 		return StopResult.HANDLED;
 	}
 
@@ -1444,8 +1435,7 @@ public final class SkillStopHandlers {
 	private static StopResult offWeaknessFamily(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.addDmgup(5);
-			pc.addHitup(1);
+			pc.removeSkillModifierFromOwner(skillId);
 		}
 		return StopResult.HANDLED;
 	}
@@ -1453,8 +1443,7 @@ public final class SkillStopHandlers {
 	private static StopResult offDiseaseFamily(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.addHitup(6);
-			pc.getAC().addAc(-12);
+			pc.removeSkillModifierFromOwner(skillId);
 			SC_OwnCharAttrDef.send(pc);
 		}
 		return StopResult.HANDLED;
@@ -1463,8 +1452,7 @@ public final class SkillStopHandlers {
 	private static StopResult offHorrorOfDeath(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getAbility().addAddedStr((byte) 3);
-			pc.getAbility().addAddedInt((byte) 3);
+			pc.removeSkillModifierFromOwner(skillId);
 		}
 		return StopResult.HANDLED;
 	}
@@ -1472,12 +1460,7 @@ public final class SkillStopHandlers {
 	private static StopResult offPanic(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getAbility().addAddedStr((byte) 1);
-			pc.getAbility().addAddedDex((byte) 1);
-			pc.getAbility().addAddedCon((byte) 1);
-			pc.getAbility().addAddedInt((byte) 1);
-			pc.getAbility().addAddedWis((byte) 1);
-			pc.getAbility().addAddedCha((byte) 1);
+			pc.removeSkillModifierFromOwner(skillId);
 			pc.resetBaseMr();
 		}
 		return StopResult.HANDLED;
@@ -1503,7 +1486,7 @@ public final class SkillStopHandlers {
 	private static StopResult offMobBerserkers(L1Character cha, int skillId) {
 		if (cha instanceof L1NpcInstance) {
 			MovementSpeedEffects.endHaste(cha, skillId);
-			cha.setBraveSpeed(0);
+			BraveSpeedEffects.onEnd(cha, skillId);
 		}
 		return StopResult.HANDLED;
 	}
@@ -1528,31 +1511,11 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offStunFamily(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
+		if (cha instanceof L1PcInstance pc && !ControlSkillEffects.hasStun(pc, skillId)) {
 			SC_Paralysis.send(pc, SC_Paralysis.TYPE_STUN, false);
 		}
-		else if (cha instanceof L1MonsterInstance
-				|| cha instanceof L1SummonInstance
-				|| cha instanceof L1PetInstance
-				|| cha instanceof L1CompanionInstance) {
-			((L1NpcInstance) cha).setParalyzed(false);
-		}
 		return StopResult.HANDLED;
 	}
-
-	private static StopResult offStunControl(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			SC_Paralysis.send(((L1PcInstance) cha), SC_Paralysis.TYPE_STUN, false);
-		} else if (cha instanceof L1MonsterInstance
-				|| cha instanceof L1SummonInstance
-				|| cha instanceof L1PetInstance
-				|| cha instanceof L1CompanionInstance) {
-			((L1NpcInstance) cha).setParalyzed(false);
-		}
-		return StopResult.HANDLED;
-	}
-
 
 	private static boolean hasOtherSleepEffect(L1Character target, int endId) {
 		return (endId != L1SkillId.DARK_BLIND && target.hasSkillEffect(L1SkillId.DARK_BLIND))
@@ -1606,16 +1569,6 @@ public final class SkillStopHandlers {
 			pc.getResistance().addWind(-30);
 			SC_OwnCharAttrDef.send(pc);
 		}
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offStatusBraveFamily(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			SC_SkillBrave.send(pc, pc.getId(), 0, 0);
-			SC_SkillBrave.broadcastFast(pc, pc.getId(), 0, 0);
-		}
-		cha.setBraveSpeed(0);
 		return StopResult.HANDLED;
 	}
 
@@ -1949,7 +1902,7 @@ public final class SkillStopHandlers {
 
 	private static StopResult offBounceAttack(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
-	        ((L1PcInstance) cha).addHitup(-6);
+	        cha.removeSkillModifierFromOwner(skillId);
 	    }
 	    return StopResult.HANDLED;
 	}
@@ -1997,9 +1950,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offBerserkers(L1Character cha, int skillId) {
-	    cha.getAC().addAc(-10);
-	    cha.addDmgup(-2);
-	    cha.addHitup(-8);
+	    cha.removeSkillModifierFromOwner(skillId);
 	    return StopResult.HANDLED;
 	}
 	
@@ -2150,7 +2101,7 @@ public final class SkillStopHandlers {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
 
-	        pc.getAC().addAc(-10);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        SC_OwnCharAttrDef.send(pc);
 
 	        sendEndNotiMsgOnly(pc, L1SkillId.GUARD_BREAK, 5110, true);
@@ -2183,7 +2134,7 @@ public final class SkillStopHandlers {
 	private static StopResult offBlessedArmor(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.getAC().addAc(3);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        SC_OwnCharStatus.send(pc);
 	        sendEndNotiMsgOnly(pc, L1SkillId.BLESSED_ARMOR, 2240, true);
 	    }
@@ -2356,10 +2307,7 @@ public final class SkillStopHandlers {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
 
-	        pc.getResistance().addSpecialResistance(eKind.ABILITY, -5);
-	        pc.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, -5);
-	        pc.getResistance().addSpecialResistance(eKind.FEAR, -5);
-	        pc.addHitup(-5);
+	        pc.removeSkillModifierFromOwner(skillId);
 
 	        sendScalesEndNoti(pc, L1SkillId.SCALES_FIRE_DRAGON, 3078, 2427, true);
 	    }
@@ -2467,10 +2415,8 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		// 원본 '기간틱' 케이스는 프라이드 아이콘을 내렸다.
-		SC_InventoryIcon.icoEnd(pc, L1SkillId.프라이드);
-		pc.addMaxHp(-pc.getMagicBuffHp());
-		pc.setMagicBuffHp(0);
+		SC_InventoryIcon.icoEnd(pc, skillId);
+		pc.removeSkillModifierFromOwner(skillId);
 
 		if (pc.isInParty()) {
 			pc.getParty().refreshPartyMemberStatus(pc);
@@ -2757,23 +2703,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.addMaxHp(-pc.getMagicBuffHp());
-		pc.setMagicBuffHp(0);
-
-		pc.addMaxMp(-pc.getMagicBuffMp());
-		pc.setMagicBuffMp(0);
-
-		pc.getResistance().addMr(-pc.getMagicBuffMR());
-		pc.setMagicBuffMR(0);
-
-		pc.getAbility().addSp(-pc.getMagicBuffSP());
-		pc.setMagicBuffSP(0);
-
-		pc.addDg(-pc.getMagicBuffDG());
-		pc.setMagicBuffDG(0);
-
-		pc.addEffectedER(-pc.getMagicBuffER());
-		pc.setMagicBuffER(0);
+		pc.removeSkillModifierFromOwner(skillId);
 
 		SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
 		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());

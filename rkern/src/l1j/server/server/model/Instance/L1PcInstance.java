@@ -806,12 +806,6 @@ public class L1PcInstance extends L1Character {
 
 	private int _advenHp;
 	private int _advenMp;
-	private int _magicBuffHp;
-	private int _magicBuffMp;
-	private int _magicBuffMR;
-	private int _magicBuffSP;
-	private int _magicBuffDG;
-	private int _magicBuffER;
 	private int _highLevel;
 	private int _bonusStats;
 	public boolean isInFantasy = false; // 몽섬리뉴얼
@@ -4304,68 +4298,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_advenMp = i;
 	}
 
-	public int getMagicBuffHp() {
-		return _magicBuffHp;
-	}
-
-	public void setMagicBuffHp(int i) {
-		_magicBuffHp = i;
-	}
-	
-	
-	
-	public int getMagicBuffMp() {
-		return _magicBuffMp;
-	}
-
-	public void setMagicBuffMp(int i) {
-		_magicBuffMp = i;
-	}
-	
-	
-	
-	
-	public int getMagicBuffMR() {
-		return _magicBuffMR;
-	}
-
-	public void setMagicBuffMR(int i) {
-		_magicBuffMR = i;
-	}
-	
-	
-	
-	
-	public int getMagicBuffSP() {
-		return _magicBuffSP;
-	}
-
-	public void setMagicBuffSP(int i) {
-		_magicBuffSP = i;
-	}
-	
-	
-	
-	public int getMagicBuffDG() {
-		return _magicBuffDG;
-	}
-
-	public void setMagicBuffDG(int i) {
-		_magicBuffDG = i;
-	}
-	
-	
-	
-	
-	public int getMagicBuffER() {
-		return _magicBuffER;
-	}
-
-	public void setMagicBuffER(int i) {
-		_magicBuffER = i;
-	}
-	
-	
 	public int getHighLevel() {
 		return _highLevel;
 	}
@@ -4557,6 +4489,17 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		if (hasSkillEffect(L1SkillId.STATUS_FRUIT))
 			return isPassive(MJPassiveID.DARK_HORSE.toInt()) ? 3 : 4;
 		return super.getBraveSpeed();
+	}
+
+	private byte statusBraveMode = 1;
+
+	public int getStatusBraveMode() {
+		return statusBraveMode;
+	}
+
+	public void setStatusBraveMode(int mode) {
+		statusBraveMode = (byte) mode;
+		setBraveSpeed(mode);
 	}
 
 	public boolean isBrave() {
@@ -4969,33 +4912,11 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		}
 		
 		if (hasSkillEffect(L1SkillId.프라이드)) {
-			addMaxHp(-getMagicBuffHp());
-			setMagicBuffHp(0);
-			SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
-			double percent = getLevel() / 4;
-			int addHp = (int) Math.round(getBaseMaxHp() * (percent * 0.01));
-			setMagicBuffHp(addHp);
-			addMaxHp(getMagicBuffHp());
-			if (isInParty()) {
-				//TODO 파티 프로토
-				getParty().refreshPartyMemberStatus(this);
-			}
-			SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
+			PcPassiveEffects.refreshLegacyScaledHp(this, PcPassiveEffects.Kind.프라이드);
 		}
 		
 		if (hasSkillEffect(L1SkillId.기간틱)) {
-			addMaxHp(-getMagicBuffHp());
-			setMagicBuffHp(0);
-			SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
-			double percent = getLevel() / 2;
-			int addHp = (int) Math.round(getBaseMaxHp() * (percent * 0.01));
-			setMagicBuffHp(addHp);
-			addMaxHp(getMagicBuffHp());
-			if (isInParty()) {
-				//TODO 파티 프로토
-				getParty().refreshPartyMemberStatus(this);
-			}
-			SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
+			PcPassiveEffects.refreshLegacyScaledHp(this, PcPassiveEffects.Kind.기간틱);
 		}
 		
 		if (getLevel() > 90 && getTitle().contains(Config.GAME_SERVER_NAME)) {
@@ -5125,32 +5046,10 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			
 			}
 		if (hasSkillEffect(L1SkillId.프라이드)) {
-			addMaxHp(-getMagicBuffHp());
-			setMagicBuffHp(0);
-			SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
-			double percent = getLevel() / 4;
-			int addHp = (int) Math.round(getBaseMaxHp() * (percent * 0.01));
-			setMagicBuffHp(addHp);
-			addMaxHp(getMagicBuffHp());
-			if (isInParty()) {
-				//TODO 파티 프로토
-				getParty().refreshPartyMemberStatus(this);
-			}
-			SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
+			PcPassiveEffects.refreshLegacyScaledHp(this, PcPassiveEffects.Kind.프라이드);
 		}
 		if (hasSkillEffect(L1SkillId.기간틱)) {
-			addMaxHp(-getMagicBuffHp());
-			setMagicBuffHp(0);
-			SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
-			double percent = getLevel() / 2;
-			int addHp = (int) Math.round(getBaseMaxHp() * (percent * 0.01));
-			setMagicBuffHp(addHp);
-			addMaxHp(getMagicBuffHp());
-			if (isInParty()) {
-				//TODO 파티 프로토
-				getParty().refreshPartyMemberStatus(this);
-			}
-			SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
+			PcPassiveEffects.refreshLegacyScaledHp(this, PcPassiveEffects.Kind.기간틱);
 		}
 		
 		try {

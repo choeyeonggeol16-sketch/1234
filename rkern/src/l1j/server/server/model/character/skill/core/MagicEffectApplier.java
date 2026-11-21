@@ -3,6 +3,7 @@ package l1j.server.server.model.character.skill.core;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.ControlSkillEffects;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.character.skill.MovementSpeedEffects;
@@ -16,9 +17,10 @@ public enum MagicEffectApplier {
 		final int skillId = su.hdSkillId();
 		if (!repetition) {
 			if (!MovementSpeedEffects.appliedOnCast(cha, skillId)) return;
-			// For NPCs these handlers admit their own bind with the selected duration.
+			// For NPCs these handlers admit their own restriction with the selected duration.
 			if (cha instanceof L1NpcInstance
-					&& (skillId == L1SkillId.POWERRIP || skillId == L1SkillId.DESPERADO)) return;
+					&& (skillId == L1SkillId.POWERRIP || skillId == L1SkillId.DESPERADO
+							|| ControlSkillEffects.isStun(skillId))) return;
 		}
 
 		final int durationMs = DurationResolver.INSTANCE.resolveDurationMs(su);

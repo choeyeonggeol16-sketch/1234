@@ -1,5 +1,4 @@
 package l1j.server.server.model;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 
 import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
@@ -222,14 +221,7 @@ public class HelpBySupport extends RepeatTask {
 	
 	public void Berserkers() {
 		if(_support.getCurrentMp() > 40){
-			if(_pc.hasSkillEffect(L1SkillId.BERSERKERS)){
-				_pc.removeSkillEffect(L1SkillId.BERSERKERS);
-			}
-		_pc.setSkillEffect(L1SkillId.BERSERKERS, 320 * 1000);
-		_pc.getAC().addAc(10);
-		_pc.addDmgup(5);
-		_pc.addHitup(2);
-		SC_OwnCharAttrDef.send(_pc);
+			if (!CSkillInfo.submitSupportBerserkers(_pc)) return;
 		_support.setCurrentMp(_support.getCurrentMp() - 20);
 		SC_DoActionGFX.broadcast(_support, 19);
 		SC_SkillSound.send(_pc, _pc.getId(), 3943); 

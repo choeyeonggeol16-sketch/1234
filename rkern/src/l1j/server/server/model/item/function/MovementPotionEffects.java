@@ -1,5 +1,6 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.model.character.skill.BraveSpeedEffects;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.MovementSpeedEffects;
@@ -128,80 +129,49 @@ public static void useBravePotion(L1PcInstance pc, int item_id) {
 		} else if (item_id == 40068 || item_id == 30076) { // 에르브왓훌
 			time = 480;
 			if (pc.hasSkillEffect(STATUS_BRAVE)) { // 용기와는 중복 하지 않는다.
-				pc.killSkillEffectTimer(STATUS_BRAVE);
-				sendBrave(pc, pc.getId(), 0, 0);
-				broadcastBrave(pc, pc.getId(), 0, 0);
-				pc.setBraveSpeed(0);
+				BraveSpeedEffects.cancelTimer(pc, STATUS_BRAVE);
 			}
 			pc.remove_elf_second_brave();
 		} else if (item_id == 140068) { // 축복된 에르브왓훌
 			time = 700;
 			if (pc.hasSkillEffect(STATUS_BRAVE)) { // 용기 효과와는 중복 하지 않는다.
-				pc.killSkillEffectTimer(STATUS_BRAVE);
-				sendBrave(pc, pc.getId(), 0, 0);
-				broadcastBrave(pc, pc.getId(), 0, 0);
-				pc.setBraveSpeed(0);
+				BraveSpeedEffects.cancelTimer(pc, STATUS_BRAVE);
 			}
 			pc.remove_elf_second_brave();
 		} else if (item_id == 210110) { // 복지 엘븐와퍼
 			time = 1800;
 			if (pc.hasSkillEffect(STATUS_BRAVE)) { // 용기 효과와는 중복 하지 않는다.
-				pc.killSkillEffectTimer(STATUS_BRAVE);
-				sendBrave(pc, pc.getId(), 0, 0);
-				broadcastBrave(pc, pc.getId(), 0, 0);
-				pc.setBraveSpeed(0);
+				BraveSpeedEffects.cancelTimer(pc, STATUS_BRAVE);
 			}
 
 			if (pc.hasSkillEffect(FOCUS_WAVE)) {
-				pc.killSkillEffectTimer(FOCUS_WAVE);
-				sendBrave(pc, pc.getId(), 0, 0);
-				broadcastBrave(pc, pc.getId(), 0, 0);
-				pc.setBraveSpeed(0);
+				BraveSpeedEffects.cancelTimer(pc, FOCUS_WAVE);
 			}
 			if (pc.hasSkillEffect(HURRICANE)) {
-				pc.killSkillEffectTimer(HURRICANE);
-				sendBrave(pc, pc.getId(), 0, 0);
-				broadcastBrave(pc, pc.getId(), 0, 0);
-				pc.setBraveSpeed(0);
+				BraveSpeedEffects.cancelTimer(pc, HURRICANE);
 			}
 			if (pc.hasSkillEffect(SAND_STORM)) {
-				pc.killSkillEffectTimer(SAND_STORM);
-				sendBrave(pc, pc.getId(), 0, 0);
-				broadcastBrave(pc, pc.getId(), 0, 0);
-				pc.setBraveSpeed(0);
+				BraveSpeedEffects.cancelTimer(pc, SAND_STORM);
 			}
 			if (pc.hasSkillEffect(DANCING_BLADES)) { // 댄싱하고는 중복하지않는다
-				pc.killSkillEffectTimer(DANCING_BLADES);
-				sendBrave(pc, pc.getId(), 0, 0);
-				broadcastBrave(pc, pc.getId(), 0, 0);
-				pc.setBraveSpeed(0);
+				BraveSpeedEffects.cancelTimer(pc, DANCING_BLADES);
 			}
 		} else if (item_id == 40031 || item_id == 30075) { // 이비르브랏드
 			time = 600;
 		} else if (item_id == 40733) { // 명예의 코인
 			time = 600;
 			if (pc.hasSkillEffect(STATUS_ELFBRAVE)) {
-				pc.killSkillEffectTimer(STATUS_ELFBRAVE);
-				sendBrave(pc, pc.getId(), 0, 0);
-				broadcastBrave(pc, pc.getId(), 0, 0);
-				pc.setBraveSpeed(0);
+				BraveSpeedEffects.cancelTimer(pc, STATUS_ELFBRAVE);
 			}
 			if (pc.hasSkillEffect(HOLY_WALK)) { // 호-리 워크와는 중복 하지 않는다
-				pc.killSkillEffectTimer(HOLY_WALK);
-				sendBrave(pc, pc.getId(), 0, 0);
-				broadcastBrave(pc, pc.getId(), 0, 0);
-				pc.setBraveSpeed(0);
+				BraveSpeedEffects.cancelTimer(pc, HOLY_WALK);
 			}
 			if (pc.hasSkillEffect(MOVING_ACCELERATION)) { // 무빙 악 세레이션과는 중복 하지
 				// 않는다
-				pc.killSkillEffectTimer(MOVING_ACCELERATION);
-				sendBrave(pc, pc.getId(), 0, 0);
-				broadcastBrave(pc, pc.getId(), 0, 0);
-				pc.setBraveSpeed(0);
+				BraveSpeedEffects.cancelTimer(pc, MOVING_ACCELERATION);
 			}
 			if (pc.hasSkillEffect(STATUS_FRUIT)) { // 유그드라열매와는 중복안됨
-				pc.killSkillEffectTimer(STATUS_FRUIT);
-				pc.setBraveSpeed(0);
+				BraveSpeedEffects.cancelTimer(pc, STATUS_FRUIT);
 			}
 		}
 
@@ -210,14 +180,15 @@ public static void useBravePotion(L1PcInstance pc, int item_id) {
 			sendBrave(pc, pc.getId(), 3, time);
 			broadcastBrave(pc, pc.getId(), 3, 0);
 			pc.setSkillEffect(STATUS_ELFBRAVE, time * 1000);
+			pc.setBraveSpeed(1);
 		} else {
 			sendBrave(pc, pc.getId(), 1, time);
 			broadcastBrave(pc, pc.getId(), 1, 0);
 			pc.setSkillEffect(STATUS_BRAVE, time * 1000);
+			pc.setStatusBraveMode(1);
 		}
 		sendSound(pc, pc.getId(), 751);
 		broadcastSound(pc, pc.getId(), 751);
-		pc.setBraveSpeed(1);
 	}
 
 
@@ -239,9 +210,7 @@ public static void useFruit(L1PcInstance pc, int item_id) {
 			time = 1800;
 		}
 		if (pc.hasSkillEffect(L1SkillId.STATUS_BRAVE)) {
-			pc.killSkillEffectTimer(L1SkillId.STATUS_BRAVE);
-			sendBrave(pc, pc.getId(), 0, 0);
-			pc.setBraveSpeed(0);
+			BraveSpeedEffects.cancelTimer(pc, L1SkillId.STATUS_BRAVE);
 		}
 
 

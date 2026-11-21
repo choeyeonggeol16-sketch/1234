@@ -41,7 +41,7 @@ public class Ability {
 	private byte baseWis = 0;
 	private byte addedWis = 0;
 
-	// From least to most significant byte: STR, DEX, INT, WIS, CON.
+	// Signed bytes from least to most significant: STR, DEX, INT, WIS, CON, CHA.
 	private volatile long skillPrimaryStats;
 
 	void setSkillPrimaryStats(long value, boolean notify) {
@@ -323,7 +323,7 @@ public class Ability {
 	}
 
 	public byte getAddedCha() {
-		return addedCha;
+		return checkRange(addedCha + (byte) (skillPrimaryStats >>> 40), LIMIT_MINUS_MIN);
 	}
 
 	public void addAddedCha(int i) {

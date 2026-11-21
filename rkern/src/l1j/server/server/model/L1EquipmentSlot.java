@@ -1,5 +1,6 @@
 package l1j.server.server.model;
 
+import l1j.server.server.model.character.skill.BraveSpeedEffects;
 import l1j.server.server.model.network.core.sc.packet.SC_AddSkill;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
@@ -28,7 +29,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.utils.eKind;
 
-import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconBlessOfEva;
 public class L1EquipmentSlot {
@@ -12335,10 +12335,7 @@ if(item.getItemId() == 700117){
 		}
 		if (item.getItemId() == 20383) {
 			if (_owner.hasSkillEffect(L1SkillId.STATUS_BRAVE)) {
-				_owner.killSkillEffectTimer(L1SkillId.STATUS_BRAVE);
-				SC_SkillBrave.send(_owner, _owner.getId(), 0, 0);
-				SC_SkillBrave.broadcast(_owner, _owner.getId(), 0, 0);
-				_owner.setBraveSpeed(0);
+				BraveSpeedEffects.cancelTimer(_owner, L1SkillId.STATUS_BRAVE);
 			}
 		}
 		_owner.getEquipSlot().setMagicHelm(equipment);

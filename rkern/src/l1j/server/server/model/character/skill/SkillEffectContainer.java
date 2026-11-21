@@ -52,15 +52,17 @@ public final class SkillEffectContainer {
 		int carryLimit, armorReduction;
 		int pvpDamage, pvpReduction;
 		long specialResistance;
+		// Potential captures six independent values once, with two extra packed pairs.
+		long potentialMagic, potentialEvasion;
 
-		// Independent unsigned bytes: STR, DEX, INT, WIS, CON.
-		long primaryStats;
+		// Independent unsigned bytes: STR, DEX, INT, WIS, CON, CHA.
+		long primaryStats, primaryPenalty;
 		// Water, wind, earth, fire; current migrated totals are <= 65 per element.
 		int elementalResistance;
 
 		void initializeSkillMod() {
 			hp = mp = ac = mr = er = dg = meleeHit = meleeDamage = rangedDamage = sp = 0;
-			primaryStats = 0L;
+			primaryStats = primaryPenalty = 0L;
 			elementalResistance = 0;
 			carryLimit = armorReduction = 0;
 			pvpDamage = pvpReduction = 0;
@@ -70,6 +72,17 @@ public final class SkillEffectContainer {
 		int find(int id) {
 			for (int i = 0; i < count * 2; i += 2) if (applied[i] == id) return i;
 			return -1;
+		}
+
+		long effectivePrimaryStats() {
+			if (primaryPenalty == 0) return primaryStats;
+			long combined = 0;
+			for (int shift = 0; shift < 48; shift += 8) {
+				final int bonus = (int) (primaryStats >>> shift) & 0xff;
+				final int penalty = (int) (primaryPenalty >>> shift) & 0xff;
+				combined |= ((bonus - penalty) & 0xffL) << shift;
+			}
+			return combined;
 		}
 	}
 
@@ -89,11 +102,20 @@ public final class SkillEffectContainer {
 		validateSkillMod(true);
 	}
 
+	public void applyPotentialModifier(int hp, int mp, int mr, int sp, int er, int dg) {
+		SkillModifiers state = skillModifiers;
+		if (state == null) skillModifiers = state = new SkillModifiers();
+		state.potentialMagic = ((long) sp << 32) | Integer.toUnsignedLong(mr);
+		state.potentialEvasion = ((long) dg << 32) | Integer.toUnsignedLong(er);
+		applySkillModifier(L1SkillId.포텐셜, ((long) mp << 32) | Integer.toUnsignedLong(hp));
+	}
+
 	public boolean removeSkillModifier(int skillId, boolean notify) {
 		SkillModifiers state = skillModifiers;
 		if (state == null) return false;
 		int index = state.find(skillId);
 		if (index < 0) return false;
+		if (skillId == L1SkillId.포텐셜) state.potentialMagic = state.potentialEvasion = 0;
 		int last = --state.count * 2;
 		state.applied[index] = state.applied[last];
 		state.applied[index + 1] = state.applied[last + 1];
@@ -116,7 +138,7 @@ public final class SkillEffectContainer {
 		final long weapon = ((state.rangedDamage & 0xffffL) << 32)
 				| ((long) (state.meleeDamage & 0xffff) << 16) | (state.meleeHit & 0xffff);
 		owner.setPumpedSkillModifiers(state.hp, state.mp, state.ac, state.mr,
-				state.primaryStats, state.elementalResistance, evasion, weapon, state.sp, notify);
+				state.effectivePrimaryStats(), state.elementalResistance, evasion, weapon, state.sp, notify);
 		final int pvp = (state.pvpReduction << 16) | (state.pvpDamage & 0xffff);
 		owner.getResistance().setSkillCombatModifiers(pvp, state.specialResistance, notify);
 		if (owner instanceof L1PcInstance pc) {
@@ -167,6 +189,26 @@ public final class SkillEffectContainer {
 			if (before == revision) {
 				return empty;
 			}
+		}
+	}
+
+	public boolean containsMatching(java.util.function.IntPredicate matchesSkillId, int exceptSkillId) {
+		for (;;) {
+			final int before = revision;
+			if ((before & 1) != 0) {
+				Thread.onSpinWait();
+				continue;
+			}
+			final int count = size;
+			boolean found = false;
+			for (int i = 0; i < count; i++) {
+				final int id = skillIds[i];
+				if (id != exceptSkillId && matchesSkillId.test(id)) {
+					found = true;
+					break;
+				}
+			}
+			if (before == revision) return found;
 		}
 	}
 

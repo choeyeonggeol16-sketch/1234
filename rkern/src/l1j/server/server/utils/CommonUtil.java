@@ -17,6 +17,7 @@ import java.util.Random;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.ControlSkillEffects;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_Attack;
 
@@ -176,54 +177,33 @@ public class CommonUtil {
 	}
 	
 	public static boolean isNonActionSkill(L1Character pc) { 
-		return (pc.hasSkillEffect(L1SkillId.SHOCK_STUN)
-				|| pc.hasSkillEffect(L1SkillId.EMPIRE)
-				|| pc.hasSkillEffect(L1SkillId.BONE_BREAK)
+		return (ControlSkillEffects.hasStun(pc, -1)
 				|| pc.hasSkillEffect(L1SkillId.EARTH_BIND)
 				|| pc.hasSkillEffect(L1SkillId.ICE_LANCE) 
 				|| pc.hasSkillEffect(L1SkillId.DESERT_SKILL2)
-				|| pc.hasSkillEffect(L1SkillId.MOB_RANGESTUN_19)
-				|| pc.hasSkillEffect(L1SkillId.MOB_RANGESTUN_18)
-				|| pc.hasSkillEffect(L1SkillId.MOB_SHOCKSTUN_30)
-				|| pc.hasSkillEffect(L1SkillId.Mob_RANGESTUN_30)
 				|| pc.hasSkillEffect(L1SkillId.MOB_BASILL)
-				|| pc.hasSkillEffect(L1SkillId.MOB_COCA)
-				|| pc.hasSkillEffect(L1SkillId.OMAN_STUN));
+				|| pc.hasSkillEffect(L1SkillId.MOB_COCA));
 	}
 	
 	public static boolean isNonAction(L1Character pc) { 
-		return (pc.hasSkillEffect(L1SkillId.SHOCK_STUN)
-				|| pc.hasSkillEffect(L1SkillId.EMPIRE)
-				|| pc.hasSkillEffect(L1SkillId.BONE_BREAK)
+		return (ControlSkillEffects.hasStun(pc, -1)
 				|| pc.hasSkillEffect(L1SkillId.EARTH_BIND)
 				|| pc.hasSkillEffect(L1SkillId.ICE_LANCE) 
 				|| pc.hasSkillEffect(L1SkillId.DESERT_SKILL2)
-				|| pc.hasSkillEffect(L1SkillId.MOB_RANGESTUN_19)
-				|| pc.hasSkillEffect(L1SkillId.MOB_RANGESTUN_18)
-				|| pc.hasSkillEffect(L1SkillId.MOB_SHOCKSTUN_30)
-				|| pc.hasSkillEffect(L1SkillId.Mob_RANGESTUN_30)
 				|| pc.hasSkillEffect(L1SkillId.MOB_BASILL)
 				|| pc.hasSkillEffect(L1SkillId.MOB_COCA)
-				|| pc.hasSkillEffect(L1SkillId.OMAN_STUN)
 				|| pc.isParalyzed() || pc.isSleeped());
 	}
 	
 	public static boolean isAutoNonActionSkill(L1Character pc) { 
-		return (pc.hasSkillEffect(L1SkillId.SHOCK_STUN)
-				|| pc.hasSkillEffect(L1SkillId.EMPIRE)
-				|| pc.hasSkillEffect(L1SkillId.BONE_BREAK)
+		return (ControlSkillEffects.hasStun(pc, -1)
 				|| pc.hasSkillEffect(L1SkillId.EARTH_BIND)
 				|| pc.hasSkillEffect(L1SkillId.ICE_LANCE) 
 				|| pc.hasSkillEffect(L1SkillId.DESERT_SKILL2)
-				|| pc.hasSkillEffect(L1SkillId.MOB_RANGESTUN_19)
-				|| pc.hasSkillEffect(L1SkillId.MOB_RANGESTUN_18)
-				|| pc.hasSkillEffect(L1SkillId.MOB_SHOCKSTUN_30)
-				|| pc.hasSkillEffect(L1SkillId.Mob_RANGESTUN_30)
 				|| pc.hasSkillEffect(L1SkillId.MOB_BASILL)
 				|| pc.hasSkillEffect(L1SkillId.MOB_COCA)
 				|| pc.hasSkillEffect(L1SkillId.THUNDER_GRAB)
 				|| pc.hasSkillEffect(L1SkillId.PHANTASM)
-				|| pc.hasSkillEffect(L1SkillId.OMAN_STUN)
 				|| pc.hasSkillEffect(L1SkillId.FOG_OF_SLEEPING)
 				|| pc.hasSkillEffect(L1SkillId.POWERRIP)
 				|| pc.hasSkillEffect(L1SkillId.DESPERADO)
@@ -232,19 +212,12 @@ public class CommonUtil {
 	
 	
 	public static boolean isnonMoveSkill(L1Character pc) { 
-		return (pc.hasSkillEffect(L1SkillId.SHOCK_STUN)
-				|| pc.hasSkillEffect(L1SkillId.EMPIRE)
-				|| pc.hasSkillEffect(L1SkillId.BONE_BREAK)
+		return (ControlSkillEffects.hasStun(pc, -1)
 				|| pc.hasSkillEffect(L1SkillId.EARTH_BIND)
 				|| pc.hasSkillEffect(L1SkillId.ICE_LANCE) 
-				|| pc.hasSkillEffect(L1SkillId.MOB_RANGESTUN_19)
-				|| pc.hasSkillEffect(L1SkillId.MOB_RANGESTUN_18)
-				|| pc.hasSkillEffect(L1SkillId.MOB_SHOCKSTUN_30)
-				|| pc.hasSkillEffect(L1SkillId.Mob_RANGESTUN_30)
 				|| pc.hasSkillEffect(L1SkillId.MOB_BASILL)
 				|| pc.hasSkillEffect(L1SkillId.MOB_COCA)
 				|| pc.hasSkillEffect(L1SkillId.THUNDER_GRAB)
-				|| pc.hasSkillEffect(L1SkillId.OMAN_STUN)
 				|| pc.hasSkillEffect(L1SkillId.FOG_OF_SLEEPING)
 				|| pc.hasSkillEffect(L1SkillId.POWERRIP)
 				|| pc.hasSkillEffect(L1SkillId.DESPERADO));

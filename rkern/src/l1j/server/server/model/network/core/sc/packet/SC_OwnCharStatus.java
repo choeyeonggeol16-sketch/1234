@@ -14,6 +14,8 @@ public final class SC_OwnCharStatus {
 
     public static boolean send(L1PcInstance pc) {
         if (pc == null) return false;
+        final CUserSocket connection = pc.getNetConnection();
+        if (connection == null || !connection.isConnected() || !connection.isClientConnected()) return false;
 
         final int objId = pc.getId();
         final int rawLevel = pc.getLevel();
@@ -41,10 +43,6 @@ public final class SC_OwnCharStatus {
         final int earth = pc.getResistance() != null ? pc.getResistance().getEarth() : 0;
         final int monsterKill = pc.getMonsterkill();
 
-        final CUserSocket client = pc.getNetConnection();
-        if (client == null || !client.isConnected()) return false;
-        final CUserSocket connection = client;
-        if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame(FRAME_SIZE);
         if (frame == null) return false;
         boolean committed = false;

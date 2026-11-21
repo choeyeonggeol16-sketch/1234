@@ -154,7 +154,6 @@ final class CrownAreaStunItemEffect {
                         }
                         L1EffectSpawn.getInstance().spawnEffect(81162, _shockStunDuration, targetnpc.getX(),
                                 targetnpc.getY(), targetnpc.getMapId());
-                        targetnpc.setParalyzed(true);
                         SC_SkillSound.broadcast(targetnpc, obj.getId(), 15101);
                     }
                 }

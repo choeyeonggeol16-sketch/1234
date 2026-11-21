@@ -50,11 +50,8 @@ public final class BuffRestoreRegistryInit {
 
         // ================= 2. God_buff =================
         BuffRestoreRegistry.register(L1SkillId.God_buff, (pc, sid, polyId, rt, icon) -> {
-            pc.getAC().addAc(-2);
-            pc.getResistance().addSpecialResistance(eKind.SPIRIT, 10);
-            pc.addMaxHp(20);
+            pc.applySkillModifierFromOwner(sid, 0);
             SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-            pc.addMaxMp(13);
             SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
             SC_PacketBox.send(pc, SC_PacketBox.BUFFICON, 4914, rt);
         });
@@ -68,7 +65,7 @@ public final class BuffRestoreRegistryInit {
         BuffRestoreRegistry.register(L1SkillId.STATUS_BRAVE, (pc, sid, polyId, rt, icon) -> {
             SC_SkillBrave.send(pc, pc.getId(), 1, rt);
             SC_SkillBrave.broadcast(pc, pc.getId(), 1, 0);
-            pc.setBraveSpeed(1);
+            pc.setStatusBraveMode(1);
         });
         BuffRestoreRegistry.register(L1SkillId.STATUS_ELFBRAVE, (pc, sid, polyId, rt, icon) -> {
             SC_SkillBrave.send(pc, pc.getId(), 3, rt);
@@ -112,7 +109,10 @@ public final class BuffRestoreRegistryInit {
         registerIconDiv(L1SkillId.ERASE_MAGIC,     10, 4);
         registerIconDiv(L1SkillId.ADDITIONAL_FIRE, 11, 4);
         registerIconDiv(L1SkillId.MORTAL_BODY,     23, 4);
-        registerIconDiv(L1SkillId.FEAR,            25, 4);
+        BuffRestoreRegistry.register(L1SkillId.FEAR, (pc, sid, polyId, rt, icon) -> {
+            icon[25] = rt / 4;
+            CSkillInfo.applyFixedModifierFromOwner(pc, sid);
+        });
         registerIconDiv(L1SkillId.PATIENCE,        26, 4);
         registerIconDiv(L1SkillId.DRAGON_SKIN,     28, 16);
         registerIconDiv(L1SkillId.CONCENTRATION,   20, 16);
@@ -124,23 +124,19 @@ public final class BuffRestoreRegistryInit {
         // ================= 9. WEAKNESS / DISEASE / BERSERKERS / GUARD_BREAK =================
         BuffRestoreRegistry.register(L1SkillId.WEAKNESS, (pc, sid, polyId, rt, icon) -> {
             icon[4] = rt / 4;
-            pc.addDmgup(-5);
-            pc.addHitup(-1);
+            CSkillInfo.applyFixedModifierFromOwner(pc, sid);
         });
         BuffRestoreRegistry.register(L1SkillId.DISEASE, (pc, sid, polyId, rt, icon) -> {
             icon[5] = rt / 4;
-            pc.addHitup(-6);
-            pc.getAC().addAc(12);
+            CSkillInfo.applyFixedModifierFromOwner(pc, sid);
         });
         BuffRestoreRegistry.register(L1SkillId.BERSERKERS, (pc, sid, polyId, rt, icon) -> {
             icon[7] = rt / 4;
-            pc.getAC().addAc(10);
-            pc.addDmgup(2);
-            pc.addHitup(8);
+            CSkillInfo.applyFixedModifierFromOwner(pc, sid);
         });
         BuffRestoreRegistry.register(L1SkillId.GUARD_BREAK, (pc, sid, polyId, rt, icon) -> {
             icon[27] = rt / 4;
-            pc.getAC().addAc(15);
+            pc.applySkillModifierFromOwner(sid, 15);
         });
 
         // ================= 10. 혈맹버프 8종 + 회복 =================
@@ -358,18 +354,12 @@ public final class BuffRestoreRegistryInit {
         });
         BuffRestoreRegistry.register(L1SkillId.PANIC, (pc, sid, polyId, rt, icon) -> {
             icon[22] = rt / 16;
-            pc.getAbility().addAddedStr((byte) -1);
-            pc.getAbility().addAddedDex((byte) -1);
-            pc.getAbility().addAddedCon((byte) -1);
-            pc.getAbility().addAddedInt((byte) -1);
-            pc.getAbility().addAddedWis((byte) -1);
-            pc.getAbility().addAddedCha((byte) -1);
+            CSkillInfo.applyFixedModifierFromOwner(pc, sid);
             pc.resetBaseMr();
         });
         BuffRestoreRegistry.register(L1SkillId.HORROR_OF_DEATH, (pc, sid, polyId, rt, icon) -> {
             icon[24] = rt / 4;
-            pc.getAbility().addAddedStr((byte) -10);
-            pc.getAbility().addAddedInt((byte) -10);
+            pc.applySkillModifierFromOwner(sid, 0x0a000aL);
         });
 
         // ================= 19. STATUS_FRUIT (다크호스 분기) =================

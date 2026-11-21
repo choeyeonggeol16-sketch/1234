@@ -5,9 +5,11 @@ import java.util.Map;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.effect.PcPassiveEffects;
 import l1j.server.server.model.character.login.skill.BuffRestoreRegistry;
 import l1j.server.server.model.character.login.skill.BuffRestoreRegistryInit;
 import l1j.server.server.model.character.skill.core.MagicEffectApplier;
+import l1j.server.server.model.character.skill.core.SkillUsabilityPolicy;
 import l1j.server.server.templates.L1Skills;
 import l1j.server.server.utils.eKind;
 
@@ -54,16 +56,22 @@ public final class TestSkillEffectLifecycle {
     }
 
     private static void printState(Player pc, int id, String phase) {
-        System.out.printf("%d %s %d %d %d %d %d %d %d %s%n", id, phase,
+        System.out.printf("%d %s %d %d %d %d %d %d %s%n", id, phase,
                 pc.getMaxHp(), pc.getMaxMp(), pc.getAC().getAc(),
-                pc.getResistance().getEffectedMrBySkill(), pc.getMagicBuffHp(),
+                pc.getResistance().getEffectedMrBySkill(),
                 pc.getAdvenHp(), pc.getAdvenMp(), pc.effects.get(id));
     }
 
     public static void main(String[] args) {
         try {
+            BuffRestoreRegistryInit.init();
             verifyLifecycle();
             verifyIndependentModifiers();
+            verifyLegacyHpAndPotential();
+            verifyCompoundBuffs();
+            verifyArmorAndSupportBuffs();
+            verifyInstantManaEffects();
+            verifyDebuffSources();
             verifyInventoryAndDressBuffs();
             verifyEvasionBuffs();
             verifyRestoredBuffs();
@@ -76,6 +84,8 @@ public final class TestSkillEffectLifecycle {
             verifyLifetimeRefreshAndSleep();
             verifyMovementSpeedSources();
             verifyNpcBindLifetime();
+            verifyStunLifetimeAndCastLock();
+            verifyBraveLifetime();
             verifyOwnerDispatchAndExpiry();
             verifyRegistry();
         } catch (Throwable failure) {
@@ -205,7 +215,6 @@ public final class TestSkillEffectLifecycle {
     }
 
     private static void verifyRestoredBuffs() {
-        BuffRestoreRegistryInit.init();
         Player pc = new Player();
         pc.addEffectedER(7);
         pc.getResistance().addMr(30);
@@ -404,7 +413,6 @@ public final class TestSkillEffectLifecycle {
         pc.setLevel(81);
         pc.addBaseMaxHp((short) 991);
         pc.addBaseMaxMp(301);
-        pc.setMagicBuffHp(100);
         pc.addMaxHp(100);
         int baseHp = pc.getMaxHp();
         for (int id : new int[]{L1SkillId.PRIDE, L1SkillId.GIGANTIC, L1SkillId.ADVANCE_SPIRIT})
@@ -415,8 +423,7 @@ public final class TestSkillEffectLifecycle {
         int hp = pc.getCurrentHp();
         pc.validateSkillModifiersFromOwner();
         pc.validateSkillModifiersFromOwner();
-        verify(pc.getMaxHp() == baseHp + 401 + 198 && pc.getCurrentHp() == hp
-                && pc.getMagicBuffHp() == 100, "recompute and legacy HP isolation", L1SkillId.PRIDE);
+        verify(pc.getMaxHp() == baseHp + 401 + 198 && pc.getCurrentHp() == hp, "recompute and legacy HP isolation", L1SkillId.PRIDE);
         pc.removeSkillEffect(L1SkillId.GIGANTIC);
         pc.removeSkillEffect(L1SkillId.ADVANCE_SPIRIT);
         verify(pc.getMaxHp() == baseHp && pc.getCurrentHp() == baseHp, "clamp after removal", L1SkillId.ADVANCE_SPIRIT);
@@ -433,6 +440,155 @@ public final class TestSkillEffectLifecycle {
         SkillHandlers.dispatch(new Cast(scales), pc, null, 0, null);
         pc.removeSkillEffect(scales);
         verify(pc.getResistance().getAddedMr() == 250, "capped MR preserves other sources", scales);
+    }
+
+    private static void verifyDebuffSources() {
+        Player pc = new Player();
+        final int ac = pc.getAC().getAc();
+        pc.addDg(30);
+        pc.addHitup(12);
+        pc.addDmgup(15);
+        pc.submitSkillPumpStart(DISEASE, -64);
+        SkillHandlers.dispatch(new Cast(WEAKNESS), pc, null, 0, null);
+        SkillHandlers.dispatch(new Cast(MOB_DISEASE_1), pc, null, 0, null);
+        verify(pc.getAC().getAc() == ac + 24 && pc.getHitup() == 5 && pc.getDmgup() == 4,
+                "boss Disease affects damage and regular Disease affects accuracy", DISEASE);
+        pc.removeSkillEffect(DISEASE);
+        verify(pc.getAC().getAc() == ac + 12 && pc.getHitup() == 5 && pc.getDmgup() == 10,
+                "boss Disease restores its original damage modifier", DISEASE);
+        pc.removeSkillEffect(MOB_DISEASE_1);
+        pc.removeSkillEffect(WEAKNESS);
+        verify(pc.getAC().getAc() == ac && pc.getHitup() == 12 && pc.getDmgup() == 15,
+                "all combat debuff sources retire", WEAKNESS);
+
+        BuffRestoreRegistry.find(FEAR).restore(pc, FEAR, 0, 38, new int[39]);
+        pc.setSkillEffect(FEAR, 38_000);
+        verify(pc.getDg() == 5, "restored Fear applies dodge reduction", FEAR);
+        pc.removeSkillEffect(FEAR);
+        verify(pc.getDg() == 30, "Fear removal preserves original dodge", FEAR);
+
+        pc.getAbility().addAddedStr(15);
+        pc.getAbility().addAddedInt(12);
+        pc.getAbility().addAddedCha(9);
+        SkillHandlers.dispatch(new Cast(N_BUFF_STR), pc, null, 0, null);
+        SkillHandlers.dispatch(new Cast(PANIC), pc, null, 0, null);
+        BuffRestoreRegistry.find(HORROR_OF_DEATH).restore(pc, HORROR_OF_DEATH, 0, 38, new int[39]);
+        pc.setSkillEffect(HORROR_OF_DEATH, 38_000);
+        verify(pc.getAbility().getAddedStr() == 5 && pc.getAbility().getAddedInt() == 1
+                && pc.getAbility().getAddedCha() == 8, "mixed stat bonuses and penalties", HORROR_OF_DEATH);
+        pc.removeSkillEffect(HORROR_OF_DEATH);
+        verify(pc.getAbility().getAddedStr() == 15 && pc.getAbility().getAddedInt() == 11,
+                "restore removes all ten points only once", HORROR_OF_DEATH);
+        pc.removeSkillEffect(PANIC);
+        verify(pc.getAbility().getAddedStr() == 16 && pc.getAbility().getAddedInt() == 12
+                && pc.getAbility().getAddedCha() == 9, "removing Panic preserves other stat sources", PANIC);
+    }
+
+    private static void verifyInstantManaEffects() {
+        Player pc = new Player();
+        pc.addBaseMaxMp(100);
+        pc.setCurrentMp(10);
+        verify(SkillHandlers.dispatch(new Cast(BODY_TO_MIND), pc, null, 0, null) == SkillHandlers.HD_HANDLED
+                && pc.getCurrentMp() == 12, "Body to Mind restores two MP", BODY_TO_MIND);
+        verify(SkillHandlers.dispatch(new Cast(BLOODY_SOUL), pc, null, 0, null) == SkillHandlers.HD_HANDLED
+                && pc.getCurrentMp() == 27, "Bloody Soul restores fifteen MP", BLOODY_SOUL);
+        pc.setCurrentMp(pc.getMaxMp() - 1);
+        SkillHandlers.dispatch(new Cast(BLOODY_SOUL), pc, null, 0, null);
+        verify(pc.getCurrentMp() == pc.getMaxMp() && !pc.hasSkillEffect(BLOODY_SOUL),
+                "instant recovery clamps without a timer", BLOODY_SOUL);
+    }
+
+    private static void verifyArmorAndSupportBuffs() {
+        Player pc = new Player();
+        int ac = pc.getAC().getAc();
+        pc.addDamageReductionByArmor(9);
+        pc.addHitup(12);
+        pc.addDmgup(17);
+        for (int id : new int[]{IRON_SKIN, FIRE_SHIELD, BLESSED_ARMOR, BOUNCE_ATTACK, PATIENCE}) {
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+                    "managed armor combat buff", id);
+        }
+        verify(pc.getAC().getAc() == ac - 17 && pc.getHitup() == 18 && pc.getDamageReductionByArmor() == 11,
+                "independent armor and combat bonuses", BLESSED_ARMOR);
+        pc.removeSkillEffect(FIRE_SHIELD);
+        verify(pc.getAC().getAc() == ac - 13, "removing shield preserves remaining armor", FIRE_SHIELD);
+        pc.removeSkillEffect(PATIENCE);
+        verify(pc.getDamageReductionByArmor() == 9, "Patience leaves base reduction", PATIENCE);
+        pc.removeSkillEffect(BOUNCE_ATTACK);
+        verify(pc.getHitup() == 12, "Bounce Attack leaves base accuracy", BOUNCE_ATTACK);
+
+        BuffRestoreRegistry.find(GUARD_BREAK).restore(pc, GUARD_BREAK, 0, 38, new int[39]);
+        pc.setSkillEffect(GUARD_BREAK, 38_000);
+        verify(pc.getAC().getAc() == ac + 2, "restore keeps its original guard break strength", GUARD_BREAK);
+        pc.removeSkillEffect(GUARD_BREAK);
+        verify(pc.getAC().getAc() == ac - 13, "restore removes its original strength", GUARD_BREAK);
+
+        verify(CSkillInfo.submitSupportBerserkers(pc), "support berserkers is accepted", BERSERKERS);
+        verify(pc.getHitup() == 14 && pc.getDmgup() == 22 && pc.effects.get(BERSERKERS) == 320_000,
+                "support keeps its own values and duration", BERSERKERS);
+        pc.removeSkillEffect(BERSERKERS);
+        verify(pc.getHitup() == 12 && pc.getDmgup() == 17 && pc.getAC().getAc() == ac - 13,
+                "support removes exactly its original amounts", BERSERKERS);
+    }
+
+    private static void verifyCompoundBuffs() {
+        Player pc = new Player();
+        pc.addBaseMaxHp((short) 900);
+        pc.addBaseMaxMp(200);
+        pc.addHitup(13);
+        pc.getResistance().addSpecialResistance(eKind.ABILITY, 125);
+        final int hp = pc.getMaxHp(), mp = pc.getMaxMp(), ac = pc.getAC().getAc();
+        verify(SkillHandlers.dispatch(new Cast(God_buff), pc, null, 0, null) == SkillHandlers.HD_HANDLED
+                && pc.getHitup() == 16, "cast applies God buff accuracy", God_buff);
+        BuffRestoreRegistry.find(God_buff).restore(pc, God_buff, 0, 38, new int[39]);
+        verify(pc.getHitup() == 13 && pc.getMaxHp() == hp + 20 && pc.getMaxMp() == mp + 13
+                && pc.getAC().getAc() == ac - 2 && pc.getResistance().getSpecialResistance(eKind.SPIRIT) == 10,
+                "login replaces God buff with its own recorded bonuses", God_buff);
+        SkillHandlers.dispatch(new Cast(SCALES_FIRE_DRAGON), pc, null, 0, null);
+        SkillHandlers.dispatch(new Cast(SCALES_FIRE_DRAGON), pc, null, 0, null);
+        verify(pc.getHitup() == 18 && pc.getResistance().getSpecialResistance(eKind.ABILITY) == 127
+                && pc.getResistance().getSpecialResistance(eKind.DRAGON_SPELL) == 5
+                && pc.getResistance().getSpecialResistance(eKind.FEAR) == 5, "fire scales recast preserves caps", SCALES_FIRE_DRAGON);
+        pc.removeSkillEffect(God_buff);
+        verify(pc.getHitup() == 18 && pc.getMaxHp() == hp && pc.getMaxMp() == mp && pc.getAC().getAc() == ac
+                && pc.getResistance().getSpecialResistance(eKind.SPIRIT) == 0, "restored buff cannot subtract ungranted hit", God_buff);
+        pc.removeSkillEffect(SCALES_FIRE_DRAGON);
+        verify(pc.getHitup() == 13 && pc.getResistance().getSpecialResistance(eKind.ABILITY) == 125
+                && pc.getResistance().getSpecialResistance(eKind.FEAR) == 0, "fire scales removes its own sources", SCALES_FIRE_DRAGON);
+        verify(SkillHandlers.dispatch(new Cast(BRAVE_AURA), pc, null, 0, null) == SkillHandlers.HD_HANDLED
+                && pc.effects.get(BRAVE_AURA) == 38_000, "visual aura retains duration", BRAVE_AURA);
+    }
+
+    private static void verifyLegacyHpAndPotential() {
+        Player pc = new Player();
+        pc.setLevel(81);
+        pc.addBaseMaxHp((short) 1000);
+        pc.addBaseMaxMp(200);
+        int hp = pc.getMaxHp(), mp = pc.getMaxMp(), sp = pc.getAbility().getSp();
+        int mr = pc.getResistance().getMr(), er = pc.getEffectedER(), dg = pc.getDg();
+        pc.setSkillEffect(프라이드, 0);
+        pc.setSkillEffect(기간틱, 0);
+        pc.setSkillEffect(포텐셜, 128_000);
+        PcPassiveEffects.apply(pc, PcPassiveEffects.Kind.프라이드);
+        PcPassiveEffects.apply(pc, PcPassiveEffects.Kind.기간틱);
+        pc.applyPotentialModifierFromOwner(150, 40, 9, 8, 7, 6);
+        verify(pc.getMaxHp() == hp + 750 && pc.getMaxMp() == mp + 40, "three independent HP sources", 포텐셜);
+        pc.setCurrentHp(pc.getMaxHp());
+        pc.setLevel(85);
+        PcPassiveEffects.refreshLegacyScaledHp(pc, PcPassiveEffects.Kind.프라이드);
+        PcPassiveEffects.refreshLegacyScaledHp(pc, PcPassiveEffects.Kind.기간틱);
+        verify(pc.getMaxHp() == hp + 780 && pc.getCurrentHp() == hp + 750,
+                "refresh does not clamp HP to an intermediate value", 프라이드);
+        pc.removeSkillEffect(기간틱);
+        verify(pc.getMaxHp() == hp + 360 && pc.getResistance().getMr() == mr + 9
+                && pc.getAbility().getSp() == sp + 8 && pc.getEffectedER() == er + 7 && pc.getDg() == dg + 6,
+                "Potential survives Gigantic removal", 기간틱);
+        pc.removeSkillEffect(포텐셜);
+        verify(pc.getMaxHp() == hp + 210 && pc.getMaxMp() == mp && pc.getResistance().getMr() == mr
+                && pc.getAbility().getSp() == sp && pc.getEffectedER() == er && pc.getDg() == dg,
+                "Potential removes all and only its captured bonuses", 포텐셜);
+        pc.removeSkillEffect(프라이드);
+        verify(pc.getMaxHp() == hp, "legacy HP returns to baseline", 프라이드);
     }
 
     private static void verifyLifetimeRefreshAndSleep() {
@@ -536,6 +692,51 @@ public final class TestSkillEffectLifecycle {
         npc.skillEffectSetFromOwner(STATUS_FREEZE, 0);
         npc.skillEffectClearFromOwner();
         verify(!npc.발묶임상태() && npc.isParalyzed(), "clear does not leave a phantom bind", STATUS_FREEZE);
+    }
+
+    private static void verifyStunLifetimeAndCastLock() {
+        L1NpcInstance npc = new L1NpcInstance(null);
+        npc.skillEffectSetFromOwner(SHOCK_STUN, 0);
+        npc.skillEffectSetFromOwner(EMPIRE, 0);
+        npc.skillEffectRemoveFromOwner(SHOCK_STUN, true);
+        verify(npc.isParalyzed(), "NPC remains stunned by Empire", EMPIRE);
+        npc.skillEffectRemoveFromOwner(EMPIRE, true);
+        verify(!npc.isParalyzed(), "final stun releases NPC", EMPIRE);
+        npc.setParalyzed(true);
+        npc.skillEffectSetFromOwner(Maeno_STUN, 0);
+        npc.skillEffectRemoveFromOwner(Maeno_STUN, true);
+        verify(npc.isParalyzed(), "stun release preserves independent paralysis", Maeno_STUN);
+
+        L1PcInstance pc = new L1PcInstance();
+        L1SkillUse cast = new L1SkillUse() {
+            @Override public L1PcInstance hdPlayer() { return pc; }
+            @Override public L1Character hdUser() { return pc; }
+        };
+        pc.skillEffectSetFromOwner(ANTA_MESSAGE_7, 0);
+        verify(!SkillUsabilityPolicy.INSTANCE.canCastNormal(cast)
+                && !SkillUsabilityPolicy.INSTANCE.canCastSpellScroll(cast), "stun blocks spells and scrolls", ANTA_MESSAGE_7);
+        pc.skillEffectRemoveFromOwner(ANTA_MESSAGE_7, false);
+        pc.skillEffectSetFromOwner(STATUS_FREEZE, 0);
+        verify(!SkillUsabilityPolicy.INSTANCE.canCastSpellScroll(cast), "bind blocks scroll use", STATUS_FREEZE);
+        pc.skillEffectClearFromOwner();
+        verify(SkillUsabilityPolicy.INSTANCE.canCastSpellScroll(cast), "clear releases cast lock", STATUS_FREEZE);
+    }
+
+    private static void verifyBraveLifetime() {
+        Player pc = new Player();
+        pc.setStatusBraveMode(3);
+        pc.setSkillEffect(STATUS_BRAVE, 0);
+        pc.setSkillEffect(HOLY_WALK, 0);
+        pc.setBraveSpeed(4);
+        pc.setSkillEffect(FOCUS_WAVE, 0);
+        pc.set_focus_wave_level(1);
+        BraveSpeedEffects.cancelTimer(pc, FOCUS_WAVE);
+        verify(pc.get_focus_wave_level() == 0 && pc.getBraveSpeed() == 4,
+                "visual-only effect does not erase Holy Walk", FOCUS_WAVE);
+        pc.removeSkillEffect(HOLY_WALK);
+        verify(pc.getBraveSpeed() == 3, "captured Dark Horse potion mode survives", STATUS_BRAVE);
+        pc.removeSkillEffect(STATUS_BRAVE);
+        verify(pc.getBraveSpeed() == 0, "final brave source releases speed", STATUS_BRAVE);
     }
 
     private static void verifyOwnerDispatchAndExpiry() throws InterruptedException {

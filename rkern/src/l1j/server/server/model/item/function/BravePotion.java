@@ -1,5 +1,6 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.model.character.skill.BraveSpeedEffects;
 import l1j.server.MJPassiveSkill.MJPassiveID;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -63,25 +64,12 @@ public class BravePotion extends L1ItemInstance {
 		if (item_id == 713) {
 			time = 1800;
 		}
-		int type = 4;
-		boolean isEffect = false;
-		if (pc.isPassive(MJPassiveID.DARK_HORSE.toInt())) {
-			type = 3;
-		}
-		if (pc.hasSkillEffect(1000)) {
-			isEffect = true;
-			pc.killSkillEffectTimer(1000);
-		}
-		if (pc.hasSkillEffect(20079)) {
-			isEffect = true;
-			pc.killSkillEffectTimer(20079);
-		}
-		if (isEffect) {
-			SC_SkillBrave.send(pc, pc.getId(), 0, 0);
-			SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);
-		}
-		pc.setBraveSpeed(type);
-		pc.setSkillEffect(pc.isPassive(MJPassiveID.DARK_HORSE.toInt()) ? 1000 : 20079, time * 1000);
+		final int type = pc.isPassive(MJPassiveID.DARK_HORSE.toInt()) ? 3 : 4;
+		if (pc.hasSkillEffect(1000)) BraveSpeedEffects.cancelTimer(pc, 1000);
+		if (pc.hasSkillEffect(20079)) BraveSpeedEffects.cancelTimer(pc, 20079);
+		if (type == 3) pc.setStatusBraveMode(type);
+		else pc.setBraveSpeed(type);
+		pc.setSkillEffect(type == 3 ? 1000 : 20079, time * 1000);
 		SC_SkillBrave.send(pc, pc.getId(), type, time);
 		SC_SkillBrave.broadcast(pc, pc.getId(), type, 0);
 		SC_SkillSound.send(pc, pc.getId(), pc.isPassive(MJPassiveID.DARK_HORSE.toInt()) ? 751 : 7110);
@@ -115,23 +103,21 @@ public class BravePotion extends L1ItemInstance {
 			SC_SkillBrave.send(pc, pc.getId(), 3, time);
 			SC_SkillBrave.broadcast(pc, pc.getId(), 3, 0);
 			pc.setSkillEffect(1016, time * 1000);
+			pc.setBraveSpeed(1);
 		} else {
 			SC_SkillBrave.send(pc, pc.getId(), 1, time);
 			SC_SkillBrave.broadcast(pc, pc.getId(), 1, 0);
 			pc.setSkillEffect(1000, time * 1000);
+			pc.setStatusBraveMode(1);
 		}
 		SC_SkillSound.send(pc, pc.getId(), 751);
 		SC_SkillSound.broadcast(pc, pc.getId(), 751);
-		pc.setBraveSpeed(1);
 	}
 	
 	private static void clearConflictingBraveEffects(L1PcInstance pc, int excludeSkillId) {
 	    for (int skillId : CONFLICTING_BRAVE_SKILLS) {
 	        if (skillId != excludeSkillId && pc.hasSkillEffect(skillId)) {
-	            pc.killSkillEffectTimer(skillId);
-	            SC_SkillBrave.send(pc, pc.getId(), 0, 0);
-	            SC_SkillBrave.broadcast(pc, pc.getId(), 0, 0);
-	            pc.setBraveSpeed(0);
+	            BraveSpeedEffects.cancelTimer(pc, skillId);
 	        }
 	    }
 	}

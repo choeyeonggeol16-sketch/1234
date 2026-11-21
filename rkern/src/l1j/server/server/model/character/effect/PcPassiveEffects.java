@@ -50,18 +50,22 @@ public final class PcPassiveEffects {
         }
     }
     
+    public static void refreshLegacyScaledHp(L1PcInstance pc, Kind kind) {
+        final int divisor = switch (kind) {
+            case 기간틱 -> 2;
+            case 프라이드 -> 4;
+            default -> throw new IllegalArgumentException("Not a legacy HP effect: " + kind);
+        };
+        final double percent = pc.getLevel() / divisor;
+        final int bonus = (int) Math.round(pc.getBaseMaxHp() * (percent * 0.01));
+        pc.applySkillModifierFromOwner(kind.skillId, bonus);
+        if (pc.isInParty()) pc.getParty().refreshPartyMemberStatus(pc);
+        SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
+    }
+
     public static void apply(L1PcInstance pc, Kind kind) {
         switch (kind) {
-        case 기간틱 -> {
-            double percent = pc.getLevel() / 2;
-            int addHp = (int)Math.round(pc.getBaseMaxHp() * (percent * 0.01));
-            pc.setMagicBuffHp(addHp);
-            pc.addMaxHp(pc.getMagicBuffHp());
-            if (pc.isInParty()) {
-                pc.getParty().refreshPartyMemberStatus(pc);
-            }
-            SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-        }
+        case 기간틱 -> refreshLegacyScaledHp(pc, kind);
         case 샤이닝아머 -> {
             pc.addEffectedER(10);
             SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
@@ -98,16 +102,7 @@ public final class PcPassiveEffects {
             SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
             SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
         }
-        case 프라이드 -> {
-            double percent = pc.getLevel() / 4;
-            int addHp = (int)Math.round(pc.getBaseMaxHp() * (percent * 0.01));
-            pc.setMagicBuffHp(addHp);
-            pc.addMaxHp(pc.getMagicBuffHp());
-            if (pc.isInParty()) {
-                pc.getParty().refreshPartyMemberStatus(pc);
-            }
-            SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-        }
+        case 프라이드 -> refreshLegacyScaledHp(pc, kind);
         case 세인트 -> {
             pc.sendPackets("\\aH이뮨 투 함:세인트 PVP대미지 감소 효과 적용(술자)");
             if (pc.getLevel() == 80 || pc.getLevel() == 81) {
