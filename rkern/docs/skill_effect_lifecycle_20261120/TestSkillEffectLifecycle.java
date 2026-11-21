@@ -103,6 +103,7 @@ public final class TestSkillEffectLifecycle {
             verifyJudgmentDebuffIndependentSources();
             verifyDedicatedCastRegistrations();
             verifyStopOnlyInventory();
+            verifyExternalOnlyInventory();
             verifyRegistry();
         } catch (Throwable failure) {
             failure.printStackTrace();
@@ -1219,15 +1220,34 @@ public final class TestSkillEffectLifecycle {
             8382, 8463, 9999, 12120, 13001, 13002, 13003, 15644, 20075,
             20076, 20077, 20079, 20082, 22017, 23442, 23445, 24444, 24445,
             25133, 25155, 30010, 40007, 50009, 55441, 55662, 55664, 60001,
-            61614, 61615, 61616, 72388, 80007, 80008, 80009, 80012, 131313,
+            61614, 61615, 61616, 72388, 80007, 80008, 80009, 131313,
             778844, 979744
         };
-        verify(stopOnlyIds.length == 65, "stop-only numeric inventory size", 0);
+        verify(stopOnlyIds.length == 64, "stop-only numeric inventory size", 0);
         for (int id : stopOnlyIds) {
             final CSkillInfo info = CSkillInfo.get(id);
             verify(info != null && !info.hasCast() && info.stopHandler() != null,
                     "stop-only ID retains distinct end-only registration", id);
         }
+    }
+
+    /** Every externally granted stat ID must retain its independent owner source and end hook. */
+    private static void verifyExternalOnlyInventory() {
+        final int[] addedExternalIds = {
+            9483, 77290, 77291, 77292, 77293, 77294, 77296, 77297,
+            77298, 77299, 77300, 77301, 77302, 77303, 77304, 77305,
+            77306, 77307, 77308, 77309, 77310, 77311, 77312, 77313,
+            77314, 77315, 77316, 77317, 77318, 77319, 32423423, 32423424
+        };
+        verify(addedExternalIds.length == 32, "new external modifier inventory size", 0);
+        for (int id : addedExternalIds) {
+            final CSkillInfo info = CSkillInfo.get(id);
+            verify(info != null && !info.hasCast() && info.stopHandler() != null
+                            && CSkillInfo.isManaged(id),
+                    "external effect retains independent modifier and stop", id);
+        }
+        verify(CSkillInfo.isManaged(POLY_RING_MASTER) && !CSkillInfo.get(POLY_RING_MASTER).hasCast(),
+                "permanent poly ring belongs to external effects, not stop-only cast", POLY_RING_MASTER);
     }
 
     private static void verifyRegistry() throws ReflectiveOperationException {
@@ -1250,9 +1270,9 @@ public final class TestSkillEffectLifecycle {
         }
         System.out.printf("Registered skill IDs: cast=%d, stop=%d, both=%d, union=%d%n",
                 casts, stops, both, casts + stops - both);
-        verify(casts == 310 && stops == 299 && both == 198,
+        verify(casts == 310 && stops == 331 && both == 198,
                 "numeric registry coverage (cast=" + casts + ", stop=" + stops + ", both=" + both + ")", 0);
-        System.out.println("PASS stats, resistances, refresh, clear, movement and bind overlap, 411 numeric IDs");
+        System.out.println("PASS stats, resistances, refresh, clear, movement and bind overlap, 443 numeric IDs");
     }
 
 }
