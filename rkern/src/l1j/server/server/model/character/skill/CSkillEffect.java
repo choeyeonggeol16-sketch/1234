@@ -39,10 +39,10 @@ interface CSkillEffect {
             out.mr += (int) (captured >>> 32);
         }},
         PRIMARY_STATS { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            out.primaryStats += captured;
+            out.primaryStats = SkillEffectContainer.SkillModifiers.addPrimaryLanes(out.primaryStats, captured);
         }},
         PRIMARY_PENALTY { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            out.primaryPenalty += captured;
+            out.primaryPenalty = SkillEffectContainer.SkillModifiers.addPrimaryLanes(out.primaryPenalty, captured);
         }},
         ELEMENTAL_RESISTANCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.waterResistance += (int) captured & 0xff;

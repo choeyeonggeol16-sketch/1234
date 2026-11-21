@@ -64,6 +64,17 @@ public final class SkillEffectContainer {
 
 		// Independent unsigned bytes: STR, DEX, INT, WIS, CON, CHA.
 		long primaryStats, primaryPenalty;
+
+		// Six signed 8-bit stat deltas share one word. An ordinary long +
+		// propagates a carry from STR into DEX (and so on) when one byte
+		// overflows. Accumulate alternating byte lanes independently.
+		static long addPrimaryLanes(long current, long delta) {
+			final long even = 0x00ff00ff00ffL;
+			final long odd = 0xff00ff00ff00L;
+			return (((current & even) + (delta & even)) & even)
+					| (((current & odd) + (delta & odd)) & odd);
+		}
+
 		// Independent totals for water, wind, earth, and fire.
 		int waterResistance, windResistance, earthResistance, fireResistance;
 
