@@ -392,7 +392,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 80007,레벨업보너스,,stop_only,offLevelUpBonus
 80008,DRAGON_PUPLE,,stop_only,offDragonPuple
 80009,DRAGON_TOPAZ,,stop_only,offDragonTopaz
-80012,POLY_RING_MASTER,,stop_only,offPolyRingMaster
+80012,POLY_RING_MASTER,,managed_external,offPolyRingMaster
 120384,BUFF_GUNTER,startNpcBloodBuff,managed_pump,offNpcBloodBuff
 124000,할파스의신의PVP,ignoreNonPlayerBuff,instant,offHalpasGodPvp
 131313,포커스3단,,stop_only,offFocus3

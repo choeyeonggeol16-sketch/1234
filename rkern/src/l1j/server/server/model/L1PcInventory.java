@@ -158,9 +158,8 @@ public class L1PcInventory extends L1Inventory {
                     catch (RuntimeException failure) { receiptNoticeFailed("ability-off-7", failure); }
                     _owner.setPolyRingMaster(false);
                     if (_owner.hasSkillEffect(L1SkillId.POLY_RING_MASTER)) {
+                        // End callback owns both modifier retirement and visual reversal.
                         _owner.removeSkillEffect(L1SkillId.POLY_RING_MASTER);
-                        L1PolyMorph.undoPoly(_owner);
-                        if (_owner.isInParty()) _owner.getParty().refreshPartyMemberStatus(_owner);
                     }
                 }
                 try { SC_Weight.send(_owner); }
@@ -786,11 +785,8 @@ public class L1PcInventory extends L1Inventory {
 			SC_Ability.send(_owner, 7, false);
 			_owner.setPolyRingMaster(false);
 			if (_owner.hasSkillEffect(L1SkillId.POLY_RING_MASTER)) {
+				// Skill end callback performs polymorph and stat teardown once.
 				_owner.removeSkillEffect(L1SkillId.POLY_RING_MASTER);
-				L1PolyMorph.undoPoly(_owner);
-				if (_owner.isInParty()) {
-					_owner.getParty().refreshPartyMemberStatus(_owner);;
-				}
 			}
 		}
 	}

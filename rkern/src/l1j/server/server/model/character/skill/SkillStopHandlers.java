@@ -759,24 +759,13 @@ public final class SkillStopHandlers {
 
 
 	private static StopResult offPolyRingMaster(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-
-			pc.getAbility().addAddedStr((byte) -1);
-			pc.getAbility().addAddedDex((byte) -1);
-			pc.getAbility().addAddedCon((byte) -1);
-			pc.getAbility().addAddedInt((byte) -1);
-			pc.getAbility().addAddedWis((byte) -1);
-			pc.getAbility().addAddedCha((byte) -1);
-
-			pc.addMaxHp(-200);
+		if (cha instanceof L1PcInstance pc) {
+			// The skill was removed by its owner. Retire exactly this modifier source.
+			pc.removeSkillModifierFromOwner(skillId);
 			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-
-			if (pc.isInParty()) {
-				pc.getParty().refreshPartyMemberStatus(pc);
-			}
+			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
+			if (pc.isInParty()) pc.getParty().refreshPartyMemberStatus(pc);
 		}
-
 		L1PolyMorph.undoPoly(cha);
 		return StopResult.HANDLED;
 	}

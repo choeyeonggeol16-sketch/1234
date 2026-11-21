@@ -275,6 +275,9 @@ public final class CSkillInfo {
         registerManaged(솔리드캐리지, null, fixed(ER, 15));
         registerManaged(이베이젼, null, fixed(ER, 18));
         registerManaged(STATUS_WISDOM_POTION, null, fixed(SP, 2), fixed(MP_REGEN, 2));
+        // The master polymorph ring grants fixed bonuses independent of other sources.
+        registerManaged(POLY_RING_MASTER, null, fixed(MAX_HP, 200),
+                fixed(PRIMARY_STATS, 0x010101010101L));
         registerManaged(버서크, null, specialResistance(eKind.ALL, 20));
         registerManaged(버닝샷, null, specialResistance(eKind.ALL, 3));
         registerManaged(STATUS_CASHSCROLL, null, fixed(MAX_HP, 50));
