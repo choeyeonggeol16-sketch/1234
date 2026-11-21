@@ -16,13 +16,15 @@
  *
  * http://www.gnu.org/copyleft/gpl.html
  */
-package l1j.server.server.model;
+package l1j.server.server.model.character.effect.paralysis;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.datatables.MonsterParalyzeDelay;
 import l1j.server.server.datatables.MonsterParalyzeDelay.MonsterParalyze;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Paralysis;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -39,8 +41,8 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eN
  * Curse-paralysis lifetime. The existing PC controller/NPC shard executes all
  * phases; the CIO wheel only delivers the two deadlines.
  */
-public final class L1CurseParalysis extends L1Paralysis implements CIOThreadCallback.WheelTask {
-    private static final Logger LOG = Logger.getLogger(L1CurseParalysis.class.getName());
+public final class CurseParalysis extends L1Paralysis implements CIOThreadCallback.WheelTask {
+    private static final Logger LOG = Logger.getLogger(CurseParalysis.class.getName());
     private static final int START_NOTICE_BITS = 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 512 | 1024;
     private static final int END_NOTICE_BITS = 1 | 2 | 8 | 1024;
 
@@ -54,7 +56,7 @@ public final class L1CurseParalysis extends L1Paralysis implements CIOThreadCall
     private boolean started;
     private boolean frozen;
 
-    private L1CurseParalysis(L1Character target, MonsterParalyze rule) {
+    private CurseParalysis(L1Character target, MonsterParalyze rule) {
         this.target = target;
         this.delay = rule.paralyze_delay;
         this.duration = rule.paralyze_millis;
@@ -70,7 +72,7 @@ public final class L1CurseParalysis extends L1Paralysis implements CIOThreadCall
         final MonsterParalyze rule = MonsterParalyzeDelay.getInstance().get_paralyze(skillId);
         if (rule == null) return false;
 
-        final L1CurseParalysis effect = new L1CurseParalysis(target, rule);
+        final CurseParalysis effect = new CurseParalysis(target, rule);
         if (!target.claimParalysis(effect)) return false;
 
         final CIOThreadCallback callback = CIOThreadCallback.getInstance();

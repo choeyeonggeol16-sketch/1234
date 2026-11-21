@@ -19,7 +19,7 @@ import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1TowerInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1CurseParalysis;
+import l1j.server.server.model.character.effect.paralysis.CurseParalysis;
 import l1j.server.server.model.L1EffectSpawn;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Magic;
@@ -3121,7 +3121,7 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 				|| pc.hasSkillEffect(L1SkillId.DESERT_SKILL2)) return HandlerResult.HANDLED;
 		if (pc.isDead()) return HandlerResult.CONTINUE;
 		if (su.hdSkillId() == L1SkillId.DESERT_SKILL1) {
-			L1CurseParalysis.curse(pc, L1SkillId.DESERT_SKILL1);
+			CurseParalysis.curse(pc, L1SkillId.DESERT_SKILL1);
 		} else {
 			pc.setSkillEffect(L1SkillId.EARTH_BIND, 12_000);
 			SC_Poison.send(pc, pc.getId(), 2);
@@ -3156,7 +3156,7 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 		if (!(target instanceof L1PcInstance pc)) return HandlerResult.HANDLED;
 
 		if (pc.isDead() || pc.hasSkillEffect(L1SkillId.CURSE_PARALYZE)) return HandlerResult.CONTINUE;
-		L1CurseParalysis.curse(pc, su.hdSkillId());
+		CurseParalysis.curse(pc, su.hdSkillId());
 		pc.setSkillEffect(L1SkillId.CURSE_PARALYZE, 4_000);
 		sendSkillSoundBroadcast(pc, 10704);
 

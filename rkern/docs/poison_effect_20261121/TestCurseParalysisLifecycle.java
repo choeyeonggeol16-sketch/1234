@@ -7,6 +7,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.server.datatables.MonsterParalyzeDelay.MonsterParalyze;
+import l1j.server.server.model.character.effect.paralysis.CurseParalysis;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
@@ -49,7 +50,7 @@ public final class TestCurseParalysisLifecycle {
     }
 
     public static void main(String[] args) throws Exception {
-        check(CIOThreadCallback.WheelTask.class.isAssignableFrom(L1CurseParalysis.class),
+        check(CIOThreadCallback.WheelTask.class.isAssignableFrom(CurseParalysis.class),
                 "curse delivers through CIO wheel");
 
         Dummy target = new Dummy();
@@ -88,13 +89,13 @@ public final class TestCurseParalysisLifecycle {
         MonsterParalyze rule = new MonsterParalyze();
         rule.paralyze_delay = 5000;
         rule.paralyze_millis = 7000;
-        Constructor<L1CurseParalysis> constructor = L1CurseParalysis.class
+        Constructor<CurseParalysis> constructor = CurseParalysis.class
                 .getDeclaredConstructor(L1Character.class, MonsterParalyze.class);
         constructor.setAccessible(true);
-        L1CurseParalysis curse = constructor.newInstance(target, rule);
-        Method onOwner = L1CurseParalysis.class.getDeclaredMethod("onOwner");
+        CurseParalysis curse = constructor.newInstance(target, rule);
+        Method onOwner = CurseParalysis.class.getDeclaredMethod("onOwner");
         onOwner.setAccessible(true);
-        Field cureRequested = L1CurseParalysis.class.getDeclaredField("cureRequested");
+        Field cureRequested = CurseParalysis.class.getDeclaredField("cureRequested");
         cureRequested.setAccessible(true);
 
         check(target.claimParalysis(curse), "curse claims target");
