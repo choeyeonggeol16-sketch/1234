@@ -49,28 +49,22 @@ public final class TomahawkBleedService {
         // 2 ~ 6틱 랜덤. 6초 고정 아님.
         final int ticks = 2 + su.hdRandom().nextInt(5);
 
-        final int totalBleed = Math.max(1, casterLv * 2);
+        startResolvedFromOwner(target, caster.getId(), casterLv, ticks);
+    }
+
+    /** Already on the recipient controller; no extra worker or per-tick allocation. */
+    void startResolvedFromOwner(final L1Character target, final int attackerId,
+            final int attackerLevel, final int ticks) {
+        if (target == null || attackerLevel <= 0 || ticks < 2 || ticks > 6) return;
+        final int totalBleed = Math.max(1, attackerLevel * 2);
         final int baseDamage = totalBleed / ticks;
         final int remainder = totalBleed % ticks;
-
-        /*
-         * 새 generation 발급.
-         * 같은 대상에 재시전하면 이전 wheel node는 stale 처리된다.
-         */
+        // The generation must be started by the victim's execution owner.
         final long token = target.beginTomahawkState();
-
-        if (target instanceof L1PcInstance) {
-            sendIconOn((L1PcInstance) target);
-        }
-
+        if (target instanceof L1PcInstance pc) sendIconOn(pc);
         CIOThreadCallback.getInstance().markTomahawkActive(
-                target,
-                caster.getId(),
-                target.getMapId(),
-                ticks,
-                baseDamage,
-                remainder,
-                token);
+                target, attackerId, target.getMapId(), ticks,
+                baseDamage, remainder, token);
     }
 
     /**
