@@ -66,6 +66,8 @@ public final class TestSkillEffectLifecycle {
         try {
             BuffRestoreRegistryInit.init();
             verifyLifecycle();
+            verifyPackedPrimaryStatLanes();
+            verifyModifierRetention();
             verifyIndependentModifiers();
             verifyLegacyHpAndPotential();
             verifyCompoundBuffs();
@@ -98,6 +100,43 @@ public final class TestSkillEffectLifecycle {
         }
         // The player constructor starts shared server services.
         System.exit(0);
+    }
+
+    /** Packed six-byte skill deltas must not carry into neighboring stats. */
+    private static void verifyPackedPrimaryStatLanes() {
+        final long full = 0x00ff00ff00ffL;
+        final long increment = 0x000100010001L;
+        final long expected = 0x000000000000L;
+        verify(SkillEffectContainer.SkillModifiers.addPrimaryLanes(full, increment) == expected,
+                "independent even byte lane wrap", 0);
+        final long oddFull = 0xff00ff00ff00L;
+        final long oddIncrement = 0x010001000100L;
+        verify(SkillEffectContainer.SkillModifiers.addPrimaryLanes(oddFull, oddIncrement) == expected,
+                "independent odd byte lane wrap", 0);
+        final long mixed = SkillEffectContainer.SkillModifiers.addPrimaryLanes(0x0000000000ffL, 1L);
+        verify(mixed == 0L, "STR overflow must not change DEX", 0);
+        final SkillEffectContainer.SkillModifiers modifiers = new SkillEffectContainer.SkillModifiers();
+        CSkillEffect.Bonus.PRIMARY_STATS.pump(255, modifiers);
+        CSkillEffect.Bonus.PRIMARY_STATS.pump(1, modifiers);
+        verify(modifiers.primaryStats == 0, "primary stat pump independent lanes", 0);
+        CSkillEffect.Bonus.PRIMARY_PENALTY.pump(255L << 8, modifiers);
+        CSkillEffect.Bonus.PRIMARY_PENALTY.pump(1L << 8, modifiers);
+        verify(modifiers.primaryPenalty == 0, "primary penalty pump independent lanes", 0);
+    }
+
+    /** The final removed modifier must release its retained backing state. */
+    private static void verifyModifierRetention() throws ReflectiveOperationException {
+        L1PcInstance pc = new L1PcInstance();
+        SkillEffectContainer effects = new SkillEffectContainer(pc);
+        var stateField = SkillEffectContainer.class.getDeclaredField("skillModifiers");
+        stateField.setAccessible(true);
+        effects.applySkillModifier(PRIDE, 18);
+        effects.applySkillModifier(GIGANTIC, 24);
+        verify(stateField.get(effects) != null, "active modifier storage retained", PRIDE);
+        verify(effects.removeSkillModifier(PRIDE, false), "first modifier removal", PRIDE);
+        verify(stateField.get(effects) != null, "other modifier storage preserved", GIGANTIC);
+        verify(effects.removeSkillModifier(GIGANTIC, false), "final modifier removal", GIGANTIC);
+        verify(stateField.get(effects) == null, "final modifier storage released", GIGANTIC);
     }
 
     private static void verifyLifecycle() {

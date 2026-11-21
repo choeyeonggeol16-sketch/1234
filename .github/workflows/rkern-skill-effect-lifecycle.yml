@@ -5,6 +5,7 @@ on:
     branches:
       - rkern/unified-jproring-game-20261120
       - rkern/skill-lifecycle-fixes-20261121
+      - rkern/skill-effect-wip-20261121
     paths:
       - .github/workflows/rkern-skill-effect-lifecycle.yml
       - rkern/src/l1j/server/server/model/character/skill/**

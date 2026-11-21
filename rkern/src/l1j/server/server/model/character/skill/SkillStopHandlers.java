@@ -484,8 +484,8 @@ public final class SkillStopHandlers {
 			final StopResult r = h.pumpEnd(cha, skillId);
 			return (r != null) ? r : StopResult.NOT_HANDLED;
 		} catch (Throwable failure) {
-			// Stop-only and dedicated effects need the same failure diagnostics
-			// as managed effects; otherwise missing cleanup is invisible.
+			// A failure in an end handler must not disappear just because the
+			// effect was registered as a legacy/stop-only skill.
 			LOG.log(java.util.logging.Level.WARNING, "Skill stop failed: " + skillId, failure);
 			return StopResult.NOT_HANDLED;
 		}

@@ -18,7 +18,6 @@ import java.util.logging.Logger;
  * swap-remove or array growth without adding a monitor to the hot path.
  */
 public final class SkillEffectContainer {
-
 	private static final Logger LOG = Logger.getLogger(SkillEffectContainer.class.getName());
 
 	private static final int INITIAL_CAPACITY = 8;
@@ -68,6 +67,17 @@ public final class SkillEffectContainer {
 
 		// Independent unsigned bytes: STR, DEX, INT, WIS, CON, CHA.
 		long primaryStats, primaryPenalty;
+
+		// Six signed 8-bit stat deltas share one word. An ordinary long +
+		// propagates a carry from STR into DEX (and so on) when one byte
+		// overflows. Accumulate alternating byte lanes independently.
+		static long addPrimaryLanes(long current, long delta) {
+			final long even = 0x00ff00ff00ffL;
+			final long odd = 0xff00ff00ff00L;
+			return (((current & even) + (delta & even)) & even)
+					| (((current & odd) + (delta & odd)) & odd);
+		}
+
 		// Independent totals for water, wind, earth, and fire.
 		int waterResistance, windResistance, earthResistance, fireResistance;
 
@@ -139,7 +149,8 @@ public final class SkillEffectContainer {
 		if (skillId == L1SkillId.포텐셜) state.potentialMagic = state.potentialEvasion = 0;
 		int last = --state.count * 2;
 		if (state.count == 0) {
-			// Release the retained captured-value array after the last source ends.
+			// A character with no migrated modifiers must not retain the
+			// backing array and per-effect accumulator for the entire session.
 			skillModifiers = null;
 		} else {
 			state.applied[index] = state.applied[last];
@@ -503,8 +514,8 @@ public final class SkillEffectContainer {
 		boolean invisibilityExpired = false;
 		for (int i = 0; i < expiredCount; i++) {
 			final int expiredId = expiredScratch[i];
-			// An earlier stop callback may have cast this skill again. Its new
-			// lifetime must not receive the expired instance's stop side effects.
+			// Earlier stop callbacks may have recast an expired effect.
+			// Never end the newly active lifetime as though it were stale.
 			if (contains(expiredId)) continue;
 			if (expiredId == L1SkillId.INVISIBILITY
 					|| expiredId == L1SkillId.BLIND_HIDING) {
@@ -513,8 +524,7 @@ public final class SkillEffectContainer {
 			try {
 				L1SkillStop.stopSkill(owner, expiredId);
 			} catch (Throwable failure) {
-				// A failed stop is isolated from other expirations, but never hidden.
-				LOG.log(Level.SEVERE, "Skill expiration cleanup failed for id=" + expiredId, failure);
+				LOG.log(Level.WARNING, "Skill expiry cleanup failed: " + expiredId, failure);
 			} finally {
 				retireModifierIfInactive(expiredId);
 			}
@@ -524,8 +534,8 @@ public final class SkillEffectContainer {
 			NpcEventFactory.onPlayerVisibilityRestored(pc);
 		}
 
-		// Stop handlers run on the owner and may replace/add/remove other timers.
-		// Re-read only on expiration, keeping ordinary heartbeat ticks O(active).
+		// Expiration callbacks may mutate another effect's due time.
+		// Rescan only on expiry, not on ordinary heartbeat ticks.
 		if (expiredCount != 0) {
 			if (!isHeartbeatValid(generation)) return 0L;
 			nextDue = Long.MAX_VALUE;

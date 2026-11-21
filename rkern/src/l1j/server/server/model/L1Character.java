@@ -554,8 +554,10 @@ public class L1Character extends L1Object {
 		final SkillEffectContainer effects = skillEffects(true);
 
 		if (effects.contains(skillId)) {
-			final int remainingTimeMillis =
-					effects.getRemainingTimeSec(skillId) * 1000;
+			// Widen before multiplying to keep this duration comparison safe
+			// if the stored remaining-second range grows.
+			final long remainingTimeMillis =
+					(long) effects.getRemainingTimeSec(skillId) * 1000L;
 
 			if (remainingTimeMillis >= 0
 					&& (remainingTimeMillis < timeMillis || timeMillis == 0)) {
