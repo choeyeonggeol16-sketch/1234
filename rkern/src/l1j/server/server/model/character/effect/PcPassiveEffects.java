@@ -67,7 +67,8 @@ public final class PcPassiveEffects {
         switch (kind) {
         case 기간틱 -> refreshLegacyScaledHp(pc, kind);
         case 샤이닝아머 -> {
-            pc.addEffectedER(10);
+            // Repeat grants and login restores share one independent ER source.
+            pc.applySkillModifierFromOwner(kind.skillId, 0);
             SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
         }
         case 일루션리치 -> {

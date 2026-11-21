@@ -52,6 +52,8 @@ public final class CSkillInfo {
         registerManaged(SCALES_RINDVIOR_DRAGON, SkillHandlers::startScalesEvasion, DG);
         registerManaged(FREEZEENG_ARMOR, SkillHandlers::startEvasionBuff, ER);
         registerManaged(SHINING_ARMOR, SkillHandlers::startEvasionBuff, ER);
+        // 9483 is a separate externally granted passive from spell 116.
+        registerManaged(샤이닝아머, null, fixed(ER, 10));
         registerManaged(RESIST_MAGIC, SkillHandlers::startResistMagic, MR);
         registerManaged(GLOWING_AURA, SkillHandlers::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);
         registerManaged(IllUSION_OGRE, SkillHandlers::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);

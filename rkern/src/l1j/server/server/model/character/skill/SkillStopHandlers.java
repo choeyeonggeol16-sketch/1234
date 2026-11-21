@@ -363,6 +363,7 @@ public final class SkillStopHandlers {
 		register(L1SkillId.CYCLONE, SkillStopHandlers::offCyclone);
 
 		register(L1SkillId.SHINING_ARMOR, SkillStopHandlers::offShiningArmor);
+		register(L1SkillId.샤이닝아머, SkillStopHandlers::offPassiveShiningArmor);
 		register(L1SkillId.HOLY_WEAPON, SkillStopHandlers::offWeaponBuff);
 
 		register(L1SkillId.MOEBIUS, SkillStopHandlers::offMoebius);
@@ -1672,6 +1673,14 @@ public final class SkillStopHandlers {
 	    }
 	    return StopResult.HANDLED;
 	}
+	private static StopResult offPassiveShiningArmor(L1Character cha, int skillId) {
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
+		SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+		SC_InventoryIcon.icoEnd(pc, skillId);
+		return StopResult.HANDLED;
+	}
+
 	private static StopResult offWeaponBuff(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance pc)) return StopResult.HANDLED;
 		pc.removeSkillModifierFromOwner(skillId);

@@ -122,3 +122,10 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 - SkillHandlers.startBraveVisual의 FOCUS_WAVE, HURRICANE, SAND_STORM, DANCING_BLADES는 시전 duration이 0일 때 스킬 DB의 기본 buffDuration(최소 1초)을 사용해 타이머를 부여하지만 SC_SkillBrave/SC_SkillIconAura에는 기존 iconDuration(0초)를 보내고 있었다. 동일한 계산값을 표시와 타이머에 사용하도록 통일했다.
 - SkillHandlers.startPhysicalEnchant(STR/DEX)는 기존처럼 스킬 테이블 유효시간을 사용하되, 클라이언트 SC_Strup/SC_Dexup 패킷도 실제 설치한 타이머 초수와 동일하게 맞췄다.
 - 시전 분기, 상태 변경 및 다른 버프의 시각 모드는 유지했다. 전체 컴파일·인게임 화면 검증은 별도로 남아 있다.
+
+
+## 2026-11-21 샤이닝아머 외부 패시브 복원·만료 원자성
+
+- 샤이닝아머(9483)는 마법 스킬 SHINING_ARMOR(116)와 다른, 캐릭터 로그인 복원 목록에 있는 독립 스킬 ID다. 기존 PcPassiveEffects.apply(샤이닝아머)는 복원마다 addEffectedER(+10)을 누적했지만 9483 만료 종료 핸들러는 없었다.
+- 9483만 CSkillInfo의 외부 출처 보정 ER +10과 SkillStopHandlers.offPassiveShiningArmor로 연결했다. 복원·재사용의 소스 적용은 idempotent이며, 타이머 종료 시 해당 ER만 회수하고 ER 화면/9483 인벤토리 아이콘을 종료한다. 116번의 기존 스킬 시전과 종료 동작은 유지한다.
+- 기존 CharBuffTable 및 BuffRestoreRegistryInit의 9483 데이터 흐름을 바꾸지 않았다. 숫자 ID 시전 ledger에는 9483이 없으므로 64개 종료 전용 시전 목록을 임의로 조정하지 않는다. 통합 컴파일과 실게임 검증은 이후 수행한다.
