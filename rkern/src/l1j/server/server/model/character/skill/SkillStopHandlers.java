@@ -2200,7 +2200,9 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		if (pc.getCurrentSpriteId() == 21169) {
+		// The sprite alone is not proof of an active ring effect. Never grant
+		// ring bonuses when only COUNTER_BARRIER is ending.
+		if (pc.getCurrentSpriteId() == 21169 && pc.hasSkillEffect(L1SkillId.POLY_RING_MASTER)) {
 			int keepTime = pc.getSkillEffectTimeSec(L1SkillId.POLY_RING_MASTER);
 			L1PolyMorph.doPoly(
 					pc,

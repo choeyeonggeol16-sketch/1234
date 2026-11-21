@@ -92,5 +92,7 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 
 ## 2026-11-21 폴리링 영구 효과 보호 검사
 
-- POLY_RING_MASTER는 L1PolyMorph에서 시간 -1로 부여되는 비만료 상태가 가능하다. SkillHandlers의 기존 4곳에서 `getSkillEffectTimeSec(POLY_RING_MASTER) > 0`이면 차단하던 검사는 남은 시간 -1에서 항상 실패하므로 `hasSkillEffect(POLY_RING_MASTER)`로 통일했다. 타인 변신 시전 2곳, 버프 취소·해제 루프 2곳을 포함한다.
+- POLY_RING_MASTER는 L1PolyMorph에서 내부 잔여 시간 -1로 부여되는 비만료 상태가 가능하다. `getSkillEffectTimeSec`은 이를 0초로 반환한다. SkillHandlers의 기존 4곳에서 `getSkillEffectTimeSec(POLY_RING_MASTER) > 0`이면 차단하던 검사는 영구 효과에서 항상 실패하므로 `hasSkillEffect(POLY_RING_MASTER)`로 통일했다. 타인 변신 시전 2곳, 버프 취소·해제 루프 2곳을 포함한다.
 - 다른 스킬의 시전 판정, 공격/타깃 조건, 속도/타이머 엔진은 변경하지 않았다. 클라이언트 실제 시험과 전체 컴파일은 통합 회귀 시 진행한다.
+
+- COUNTER_BARRIER 종료 시 현재 sprite 21169라는 조건만으로 새 폴리링 버프(+HP/스탯)를 부여하던 분기에 활성 POLY_RING_MASTER 검사도 추가했다. 폴리링 상태가 남아 있는 경우의 기존 변신 전환만 유지한다.
