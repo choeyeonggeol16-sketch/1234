@@ -51,9 +51,6 @@ jobs:
         with:
           path: ~/.cache/rkern-skill-deps
           key: rkern-skill-jars-v1
-      - name: Audit remaining direct-stat stop-only grant sites
-        run: |
-          grep -RInE --include='*.java' 'HUNTER_BLESS1|엠파이어오버로드DG|가드피어효과|가드피어호러효과|25133|55662|55664|5984|addDg\(-10\)|addDg\(-20\)|addAc\(-2\)' rkern/src | head -160 || true
       - name: Compile all production Java and run skill lifecycle regression
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
