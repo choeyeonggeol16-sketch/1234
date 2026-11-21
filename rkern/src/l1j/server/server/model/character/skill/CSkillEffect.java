@@ -5,7 +5,7 @@ import java.util.Iterator;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Magic;
-import l1j.server.server.model.L1CurseParalysis;
+import l1j.server.server.model.character.effect.paralysis.CurseParalysis;
 
 /** Shared execution contract for the separate cast, lifetime and stat stages. */
 interface CSkillEffect {
@@ -195,7 +195,7 @@ interface CSkillEffect {
                 L1Magic magic, int undeadType, Iterator<?> targets) {
             if (target == null) return SkillHandlers.HandlerResult.HANDLED;
             if (this == CURSE || (!target.hasSkillEffect(L1SkillId.MOB_COCA) && !target.hasSkillEffect(L1SkillId.MOB_BASILL))) {
-                L1CurseParalysis.curse(target, cast.hdSkillId());
+                CurseParalysis.curse(target, cast.hdSkillId());
             }
             return SkillHandlers.HandlerResult.HANDLED;
         }
