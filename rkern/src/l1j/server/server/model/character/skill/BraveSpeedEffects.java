@@ -47,7 +47,9 @@ public final class BraveSpeedEffects {
             }
         }
         final int mode = switch (source) {
-            case FOCUS_WAVE -> 10;
+            // A different speed timer may end while focus stage three remains active.
+            case FOCUS_WAVE -> pc.get_focus_wave_level() > 1
+                    && pc.hasSkillEffect(포커스3단) ? 12 : 10;
             case HURRICANE -> 9;
             case BLOOD_LUST -> 6;
             case STATUS_ELFBRAVE -> 3;
