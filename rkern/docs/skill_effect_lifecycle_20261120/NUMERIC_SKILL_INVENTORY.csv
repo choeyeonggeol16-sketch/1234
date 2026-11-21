@@ -299,11 +299,11 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 10526,지식빙수,,managed_external,offIntIce
 12120,잠재력소울스킬,,stop_only,offPotentialSoulSkill
 12125,잠재력소울,ignoreNonPlayerBuff,instant,offPotentialSoul
-12132,잠재력저지먼트1,,stop_only,offJudgment
-12133,잠재력저지먼트2,,stop_only,offJudgment
-12134,잠재력저지먼트3,,stop_only,offJudgment
-12135,잠재력저지먼트4,,stop_only,offJudgment
-12136,잠재력저지먼트5,,stop_only,offJudgment
+12132,잠재력저지먼트1,,managed_external,offJudgment
+12133,잠재력저지먼트2,,managed_external,offJudgment
+12134,잠재력저지먼트3,,managed_external,offJudgment
+12135,잠재력저지먼트4,,managed_external,offJudgment
+12136,잠재력저지먼트5,,managed_external,offJudgment
 13001,프라임85,,stop_only,offNoop
 13002,프라임90,,stop_only,offNoop
 13003,프라임95,,stop_only,offNoop

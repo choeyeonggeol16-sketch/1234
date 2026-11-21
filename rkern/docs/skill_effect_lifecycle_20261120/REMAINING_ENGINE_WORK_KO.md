@@ -62,3 +62,5 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 - 종료 전용 외부 패시브 4종(일루션리치, 일루션골렘, 솔리드캐리지, 이베이젼)을 부여/종료 양쪽에서 독립 CSkillInfo 보정으로 이관했다. 기존 일루션리치 SP+4 종료에서 AC+10을 더하고, 일루션골렘 AC-10 종료에서 SP-4를 빼던 **서로 바뀐 원복 결함**을 수정했다. ER +15/+18의 서로 다른 출처는 첫 종료 후에도 두 번째 효과가 유지된다. 재적용 idempotence/순차 만료 회귀 추가. stop-only 75→71.
 
 - 1607 어드밴스 외부 패시브: 부여 시 base HP/MP 20%를 직접 addMaxHp/addMaxMp 하던 중복 적용 경로와 종료 시 직접 차감 경로를 소유 스킬 효과의 캡처값(MAX_HP/MAX_MP)으로 교체. 기존 AdvenHp/AdvenMp 기록과 HP·MP 알림, 파티 갱신 유지, 재적용/만료 테스트 추가. stop-only 71→70.
+
+- 저지먼트 5개(잠재력저지먼트1~5) 직접 저항/MR -15 및 종료 역연산을 수정했다. SPECIAL_RESISTANCE가 기존 unsigned packed byte이므로 이를 음수로 재사용하지 않고, 네 개 특수 내성에 32-bit signed-penalty 별도 primitive lane을 추가하고 Resistance getter에만 합산한다. MR은 기존 signed Pump MR에 -15를 기록한다. 다른 스킬과 저항 상한/중첩, 반복 부여 및 각 종료를 헤드리스 회귀로 추가했다. stop-only 70→65.
