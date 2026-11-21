@@ -11,7 +11,6 @@ import l1j.server.server.model.world.instance.dungeon.minigame.L1Gambling3;
 import l1j.server.server.model.character.combat.arena.stadium.StadiumManager;
 import l1j.server.server.DungeonTimeCommand;
 import l1j.server.server.GMCommands;
-import l1j.server.server.SkillMsgMute;
 import l1j.server.server.UserCommands;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.datatables.BuddyTable;
@@ -696,12 +695,6 @@ for (L1PcInstance listener : clan.getOnlineClanMember()) {
 
 		if (tcmd.equals("던전")) {
 			DungeonTimeCommand.showDungeonTime(pc);
-			return true;
-		}
-
-		if (tcmd.equals("마법멘트")) {
-			final boolean muted = SkillMsgMute.toggle(pc.getId());
-			SC_SystemMessage.send(pc, muted ? "마법 사용불가 알림을 껐습니다." : "마법 사용불가 알림을 켰습니다.");
 			return true;
 		}
 

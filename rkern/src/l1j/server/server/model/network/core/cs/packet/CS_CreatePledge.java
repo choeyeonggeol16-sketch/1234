@@ -12,10 +12,8 @@ import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.network.core.sc.packet.SC_QuestTalkIsland;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.templates.L1QuestInfo;
 
 public final class CS_CreatePledge {
 
@@ -83,24 +81,6 @@ public final class CS_CreatePledge {
             SC_PacketBox.send(pc, SC_PacketBox.PLEDGE_EMBLEM_STATUS, clan.getEmblemStatus());
 
             pc.start_teleport(pc.getX(), pc.getY(), pc.getMapId(), pc.getHeading(), 169, false, false);
-
-            /*
-             * 말하는 섬 퀘스트 처리.
-             */
-            if (pc.getClanid() != 0) {
-                final L1QuestInfo info = pc.getQuestList(272);
-
-                if (info != null && info.end_time == 0) {
-                    /*
-                     * 기존 코드는 clanId를 넣고 1보다 크면 바로 1로 축약했습니다.
-                     *
-                     * 결과적으로 clanId != 0이면 항상 1이므로
-                     * 바로 1을 기록해도 의미론적(semantics)으로 동일합니다.
-                     */
-                    info.ck[0] = 1;
-                    SC_QuestTalkIsland.sendUpdate(pc, 272, info);
-                }
-            }
 
             /*
              * 혈맹 버프 초기화.

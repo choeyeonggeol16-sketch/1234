@@ -38,7 +38,6 @@ import l1j.server.server.datatables.ArmorEnchantInformationTable;
 import l1j.server.server.datatables.ArmorEnchantList;
 import l1j.server.server.datatables.ArmorSetTable;
 import l1j.server.server.datatables.AutoLoot;
-import l1j.server.server.datatables.CharacterQuestTable;
 import l1j.server.server.datatables.CharactersGiftItemTable;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.CraftProbability;
@@ -60,8 +59,6 @@ import l1j.server.server.datatables.NpcChatTable;
 import l1j.server.server.datatables.NpcTable;
 
 import l1j.server.server.datatables.PolyTable;
-import l1j.server.server.datatables.QuestInfoTable;
-import l1j.server.server.datatables.QuestMonsterTable;
 import l1j.server.server.datatables.ResolventTable;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.datatables.SkillsTable;
@@ -391,12 +388,6 @@ public class L1Reload implements L1CommandExecutor {
 			} else {
 				gm.sendPackets("리로드 실패: 보스 스폰 DB 오류. 기존 예약을 유지합니다.");
 			}
-		} else if (arg.equalsIgnoreCase("클라퀘스트")) {
-			QuestInfoTable.reload();
-			gm.sendPackets("리로드: QuestInfoTable 테이블이 리로드 되었습니다");
-		} else if (arg.equalsIgnoreCase("클라퀘스트캐릭터")) {
-			CharacterQuestTable.reload();
-			gm.sendPackets("리로드: CharacterQuestTable 테이블이 리로드 되었습니다");
 		} else if (arg.equalsIgnoreCase("답장")) {
 			L1LetterCommand.reload();
 			gm.sendPackets("리로드: letter_command 테이블이 리로드 되었습니다");
@@ -406,10 +397,6 @@ public class L1Reload implements L1CommandExecutor {
 		} else if(arg.equalsIgnoreCase("광역마법")){
 			EffectModelLoader.reload();
 			gm.sendPackets("리로드: EffectModel 테이블이 리로드 되었습니다.");	
-			// 퀘스트 몬스터 시스템
-		} else if (arg.equalsIgnoreCase("퀘스트몬스터")) {
-			QuestMonsterTable.reload();
-			gm.sendPackets("리로드: quest_monster 테이블이 리로드 되었습니다.");
 		} else if(arg.equalsIgnoreCase("신규보호몬스터")){
 			UserProtectMonsterTable.getInstance().reload();
 			gm.sendPackets("신규보호몬스터 테이블이 리로드 되었습니다.");
@@ -423,11 +410,11 @@ public class L1Reload implements L1CommandExecutor {
 			gm.sendPackets("엔캐샵스폰리스트.던전.맵.신규지급템.답장");
 			gm.sendPackets("오토드랍.엔샵 .매크로 .악세인챈정보");
 			gm.sendPackets("세트아이템.로봇.제작엔피씨.자동공지.북시스템");
-			gm.sendPackets("클라퀘스트.클라퀘스트캐릭터.맵아인");
+			gm.sendPackets("맵아인");
 			gm.sendPackets("마법딜 .광역마법 .엔피씨마크 .아인증폭 .노드랍");
 			gm.sendPackets("아이템스킬 .크레프트인포 .인형인포 .제작인형컨픽");
 			gm.sendPackets("액션리스너 .제작확률 .인형확률 .엔피씨다운");
-			gm.sendPackets("텔주문서 .푸쉬시스템 .퀘스트몬스터 .참시스템");
+			gm.sendPackets("텔주문서 .푸쉬시스템 .참시스템");
 			gm.sendPackets("신규보호몬스터 .자존심 .커스시간 .버경 .회복률");
 			gm.sendPackets("아머클래스 .엔피씨속도 .낚시경험치");
 			gm.sendPackets("보너스아이템");

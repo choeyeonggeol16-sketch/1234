@@ -23,11 +23,9 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.network.core.sc.packet.SC_QuestTalkIsland;
 import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.templates.L1QuestInfo;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.Warehouse.ClanWarehouse;
 import l1j.server.server.model.Warehouse.WarehouseManager;
@@ -159,11 +157,6 @@ public class L1ClanJoin {
                     SC_ReturnedStat.broadcastEmblem(other, other.getId(), clan.getEmblemId());
                 }
                 if (!tutorial) {
-                    L1QuestInfo info = joinPc.getQuestList(271);
-                    if (info != null && info.end_time == 0) {
-                        info.ck[0] = 1;
-                        SC_QuestTalkIsland.sendUpdate(joinPc, 271, info);
-                    }
                     giveClanBless(clan, joinPc);
                 }
                 if (result != null) result.accept(true);
