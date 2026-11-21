@@ -175,3 +175,10 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 
 - [호환성 보완] Resistance의 기존 4인수 setSkillCombatModifiers 호출은 신규 4채널 pierce 보정을 실수로 0으로 덮어쓰지 않는다. 전체 스킬 modifier가 비워질 때는 5인수 명시적 초기화 경로에서 보정을 제거한다.
 - [NPC 이펙트] MovementSpeedEffects.endHaste에서 마지막 NPC 가속의 만료도 정상 이동속도 전환을 브로드캐스트하도록 수정했다. 기존 PC 패킷은 동일하다.
+
+
+## 2026-11-21 수배 1·2단 보정 소유권 이관
+
+- PcWantedEffects.doWanted(false)/doWanted1(false)의 직접 역산과 재적용 시 계속 쌓이던 기초 근거리 무기 데미지율/명중·활 피해/명중·SP·방어감소·AC 변경을 ID 32423423/32423424의 managed_external source로 각각 등록했다. 1단+3, 2단+5의 원래 수치를 유지한다.
+- 1·2단 서로 전환할 때 반대 단계의 독립 보정과 기존 타이머를 함께 제거한다. offWanted는 해당 단계만 원복하고 아이콘 및 능력치 패킷을 갱신한다. 반복 로그인 복원/중복 재시전은 idempotent하다.
+- Wanted 상태 부여 시 기존 수배 칭호/안내/아이콘 패킷을 유지하고, 끄는 경로에서는 버프가 끝났는데 새 아이콘과 칭호를 보내던 레거시 동작을 제거했다. 신규 큐·스레드·클래스는 없다.

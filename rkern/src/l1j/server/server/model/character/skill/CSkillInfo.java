@@ -54,6 +54,14 @@ public final class CSkillInfo {
         registerManaged(SHINING_ARMOR, SkillHandlers::startEvasionBuff, ER);
         // 9483 is a separate externally granted passive from spell 116.
         registerManaged(샤이닝아머, null, fixed(ER, 10));
+        registerManaged(USER_WANTED, null,
+                fixed(WEAPON_DAMAGE_RATE, 3), fixed(MELEE_HIT, 3),
+                fixed(RANGED_DAMAGE, 3), fixed(RANGED_HIT, 3),
+                fixed(SP, 3), fixed(ARMOR_REDUCTION, 3), fixed(AC, -3));
+        registerManaged(USER_WANTED1, null,
+                fixed(WEAPON_DAMAGE_RATE, 5), fixed(MELEE_HIT, 5),
+                fixed(RANGED_DAMAGE, 5), fixed(RANGED_HIT, 5),
+                fixed(SP, 5), fixed(ARMOR_REDUCTION, 5), fixed(AC, -5));
         // Persistent external potential bonuses share one source per skill ID.
         registerManaged(hp300, null, fixed(MAX_HP, 300));
         registerManaged(mp300, null, fixed(MAX_MP, 300L << 32));

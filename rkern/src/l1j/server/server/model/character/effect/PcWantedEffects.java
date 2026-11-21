@@ -26,48 +26,41 @@ public final class PcWantedEffects {
     }
     
     public static void apply(L1PcInstance pc, Kind kind, boolean isOn) {
-        switch (kind) {
-        case doWanted1 -> {
-            int mul = isOn ? 1 : -1;
-            pc.addDmgRate(5 * mul);
-            pc.addHitup(5 * mul);
-            pc.addBowDmgup(5 * mul);
-            pc.addBowHitup(5 * mul);
-            pc.getAbility().addSp(5 * mul);
-            pc.addDamageReductionByArmor(5 * mul);
-            pc.getAC().addAc(-5 * mul);
-            SC_InventoryIcon.icoEnd(pc, L1SkillId.수배);
-            SC_InventoryIcon.iconNewUnLimit(pc, L1SkillId.수배1, 3945, true);
-            SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "\\f3당신의 수배범 단계는 2단입니다 (수배버프 효과증가)");
-            SC_SystemMessage.send(pc, "\\f3당신의 수배범 단계는 2단입니다 (수배버프 효과증가)");
-            SC_SPMR.send(pc);
-            SC_OwnCharAttrDef.send(pc);
-            SC_OwnCharStatus2.send(pc);
-            SC_OwnCharStatus.send(pc);
+        final int skillId = kind == Kind.doWanted1
+                ? L1SkillId.USER_WANTED1 : L1SkillId.USER_WANTED;
+        final int otherSkill = kind == Kind.doWanted1
+                ? L1SkillId.USER_WANTED : L1SkillId.USER_WANTED1;
+
+        if (!isOn) {
+            pc.removeSkillModifierFromOwner(skillId);
+            if (pc.hasSkillEffect(skillId)) pc.killSkillEffectTimer(skillId);
+            SC_InventoryIcon.icoEnd(pc, kind == Kind.doWanted1 ? L1SkillId.수배1 : L1SkillId.수배);
+        } else {
+            // Wanted tiers are mutually exclusive, and recasts must not
+            // accumulate against base weapon, armor, or spell attributes.
+            pc.removeSkillModifierFromOwner(otherSkill);
+            if (pc.hasSkillEffect(otherSkill)) pc.killSkillEffectTimer(otherSkill);
+            pc.applySkillModifierFromOwner(skillId, 0L);
+
+            if (kind == Kind.doWanted1) {
+                SC_InventoryIcon.icoEnd(pc, L1SkillId.수배);
+                SC_InventoryIcon.iconNewUnLimit(pc, L1SkillId.수배1, 3945, true);
+                SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "\\f3당신의 수배범 단계는 2단입니다 (수배버프 효과증가)");
+                SC_SystemMessage.send(pc, "\\f3당신의 수배범 단계는 2단입니다 (수배버프 효과증가)");
+            } else {
+                SC_InventoryIcon.icoEnd(pc, L1SkillId.수배1);
+                SC_InventoryIcon.iconNewUnLimit(pc, L1SkillId.수배, 3938, true);
+            }
             if (Config.수배온오프) {
-                SC_CharTitle.send(pc, pc.getId(), L1PcInstance.WANTED_TITLE1);
-                SC_CharTitle.broadcast(pc, pc.getId(), L1PcInstance.WANTED_TITLE1);
+                final String title = kind == Kind.doWanted1
+                        ? L1PcInstance.WANTED_TITLE1 : L1PcInstance.WANTED_TITLE;
+                SC_CharTitle.send(pc, pc.getId(), title);
+                SC_CharTitle.broadcast(pc, pc.getId(), title);
             }
         }
-        case doWanted -> {
-            int mul = isOn ? 1 : -1;
-            pc.addDmgRate(3 * mul);
-            pc.addHitup(3 * mul);
-            pc.addBowDmgup(3 * mul);
-            pc.addBowHitup(3 * mul);
-            pc.getAbility().addSp(3 * mul);
-            pc.addDamageReductionByArmor(3 * mul);
-            pc.getAC().addAc(-3 * mul);
-            SC_InventoryIcon.iconNewUnLimit(pc, L1SkillId.수배, 3938, true);
-            SC_SPMR.send(pc);
-            SC_OwnCharAttrDef.send(pc);
-            SC_OwnCharStatus2.send(pc);
-            SC_OwnCharStatus.send(pc);
-            if (Config.수배온오프) {
-                SC_CharTitle.send(pc, pc.getId(), L1PcInstance.WANTED_TITLE);
-                SC_CharTitle.broadcast(pc, pc.getId(), L1PcInstance.WANTED_TITLE);
-            }
-        }
-        }
+        SC_SPMR.send(pc);
+        SC_OwnCharAttrDef.send(pc);
+        SC_OwnCharStatus2.send(pc);
+        SC_OwnCharStatus.send(pc);
     }
 }

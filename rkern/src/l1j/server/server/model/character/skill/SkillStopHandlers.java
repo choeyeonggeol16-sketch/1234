@@ -364,6 +364,8 @@ public final class SkillStopHandlers {
 
 		register(L1SkillId.SHINING_ARMOR, SkillStopHandlers::offShiningArmor);
 		register(L1SkillId.샤이닝아머, SkillStopHandlers::offPassiveShiningArmor);
+		register(L1SkillId.USER_WANTED, SkillStopHandlers::offWanted);
+		register(L1SkillId.USER_WANTED1, SkillStopHandlers::offWanted);
 		register(L1SkillId.hp300, SkillStopHandlers::offPersistentPotential);
 		register(L1SkillId.mp300, SkillStopHandlers::offPersistentPotential);
 		register(L1SkillId.대미지감소5, SkillStopHandlers::offPersistentPotential);
@@ -1726,6 +1728,17 @@ public final class SkillStopHandlers {
 		default -> { }
 		}
 		sendLegacyEndNoti(pc, skillId, 0, true);
+		return StopResult.HANDLED;
+	}
+
+	private static StopResult offWanted(L1Character cha, int skillId) {
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
+		SC_InventoryIcon.icoEnd(pc,
+				skillId == L1SkillId.USER_WANTED1 ? L1SkillId.수배1 : L1SkillId.수배);
+		SC_SPMR.send(pc);
+		SC_OwnCharAttrDef.send(pc);
+		SC_OwnCharStatus2.send(pc);
 		return StopResult.HANDLED;
 	}
 
