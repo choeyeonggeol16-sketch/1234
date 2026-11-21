@@ -19,6 +19,7 @@
 package l1j.server.server.model;
 
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 
 import l1j.server.server.ThreadPool;
@@ -38,6 +39,8 @@ public final class L1EquipmentTimer implements Runnable {
 
     private volatile boolean active = true;
     private ScheduledFuture<?> pendingTick;
+    private CIOThreadCallback.WheelTask wheelFallback;
+    private boolean wheelPending;
 
     public L1EquipmentTimer(L1PcInstance pc, L1ItemInstance item) {
         this.pc = pc;
@@ -49,15 +52,44 @@ public final class L1EquipmentTimer implements Runnable {
         return active;
     }
 
+    /** Prefer the bounded scheduler. During saturation, use the existing
+     * character-owner CIO wheel so a worn timed item cannot lose its tick.
+     */
     public void scheduleNext() {
         try {
             synchronized (this) {
-                if (!active || pendingTick != null) return;
-                pendingTick = ThreadPool.getInstance().scheduleRequired(this, TICK_MILLIS);
+                if (!active || pendingTick != null || wheelPending) return;
+                try {
+                    pendingTick = ThreadPool.getInstance().scheduleRequired(this, TICK_MILLIS);
+                    return;
+                } catch (RuntimeException refused) {
+                    if (wheelFallback == null) {
+                        wheelFallback = new CIOThreadCallback.WheelTask() {
+                            @Override public void run() {
+                                synchronized (L1EquipmentTimer.this) {
+                                    wheelPending = false;
+                                    if (!active) return;
+                                }
+                                tickOnOwner();
+                            }
+                            @Override public boolean isCancelled() { return !active; }
+                        };
+                    }
+                    try {
+                        if (CIOThreadCallback.getInstance().scheduleEquipmentTick(
+                                pc, sessionStamp, wheelFallback, TICK_MILLIS)) {
+                            wheelPending = true;
+                            return;
+                        }
+                    } catch (RuntimeException fallbackFailure) {
+                        refused.addSuppressed(fallbackFailure);
+                    }
+                    throw new RejectedExecutionException("Timed equipment tick admission failed", refused);
+                }
             }
-        } catch (RuntimeException failure) {
+        } catch (RuntimeException rejected) {
             cancel();
-            throw failure;
+            throw rejected;
         }
     }
 
@@ -100,7 +132,13 @@ public final class L1EquipmentTimer implements Runnable {
                 if (remaining > 1) {
                     item.setRemainingTime(remaining - 1);
                     inventory.updateItem(item, L1PcInventory.COL_REMAINING_TIME);
-                    scheduleNext();
+                    try {
+                        scheduleNext();
+                    } catch (RejectedExecutionException unavailable) {
+                        // Stop timed bonuses if both schedulers are unavailable.
+                        // Preserve the remaining seconds for a later re-equip.
+                        inventory.setEquipped(item, false);
+                    }
                 } else {
                     inventory.removeItem(item, 1);
                     cancel();
