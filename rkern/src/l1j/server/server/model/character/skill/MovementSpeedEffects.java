@@ -39,6 +39,25 @@ public final class MovementSpeedEffects {
 
     public static void endSlow(L1Character target, int skillId) {
         if (target.getMoveSpeed() != SLOWED || activeSlow(target, skillId) != 0) return;
+
+        // Independent haste sources can outlive the final slow timer. Do not
+        // erase them by forcing normal speed as the slow effect disappears.
+        final int haste = activeHaste(target, 0);
+        final boolean equipped = hasEquippedHaste(target);
+        final boolean npcBerserk = target instanceof L1NpcInstance
+                && target.hasSkillEffect(MOB_BERSERKERS);
+        if (haste != 0 || equipped || npcBerserk) {
+            target.setMoveSpeed(HASTED);
+            if (target.getId() != 0) {
+                if (target instanceof L1PcInstance pc) {
+                    final int duration = haste == 0 ? 0
+                            : Math.max(0, pc.getSkillEffectTimeSec(haste));
+                    SC_SkillHaste.send(pc, pc.getId(), HASTED, duration);
+                }
+                SC_SkillHaste.broadcastFast(target, target.getId(), HASTED, 0);
+            }
+            return;
+        }
         reset(target, true);
     }
 

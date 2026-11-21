@@ -149,3 +149,9 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 - CS_EnterWorld.processBuff에서 skillId가 0 이하이거나 DB 남은 시간이 음수인 버프 행은 효과를 적용하지 않는다. CharBuffTable.SaveBuff가 정상 영구 효과를 0초로 저장하므로 0초 행은 그대로 복원한다.
 - DB 남은 시간(초)이 Integer.MAX_VALUE/1000을 넘을 때 밀리초 변환이 음수로 오버플로되어 영구 효과로 변하는 것을 방지하기 위해 소스 값부터 상한으로 클램프한다. 요리/일반 스킬 공통으로 동일 값이 적용된다.
 - 정상적인 스킬 지속시간·로그인 버프 handler 분기, DB 스키마 및 트랜잭션 구조는 건드리지 않는다.
+
+
+## 2026-11-21 슬로우 종료 후 남은 헤이스트 복원
+
+- MovementSpeedEffects.endSlow는 마지막 슬로우 스킬 종료 시 다른 느려짐이 없고 이동속도가 느림(2)이면 기존처럼 초기화한다. 다만 다른 HASTE/GREATER_HASTE/STATUS_HASTE, 착용 헤이스트 장비 또는 NPC MOB_BERSERKERS가 유지 중이면 속도를 정상(0)으로 버리지 않고 가속(1)을 복원한다.
+- PC에는 복원한 헤이스트 타이머의 남은 시간을 함께 보낸다. NPC는 기존 SC_SkillHaste 광역 갱신을 사용한다. 추가 워커·큐·상태 필드 없이 소유 타이머 기반으로 복구한다.
