@@ -71,19 +71,19 @@ public final class PcPassiveEffects {
             SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
         }
         case 일루션리치 -> {
-            pc.getAbility().addSp(4);
+            pc.applySkillModifierFromOwner(kind.skillId, 0);
             SC_SPMR.send(pc);
         }
         case 일루션골렘 -> {
-            pc.getAC().addAc(-10);
+            pc.applySkillModifierFromOwner(kind.skillId, 0);
             SC_OwnCharAttrDef.send(pc);
         }
         case 솔리드캐리지 -> {
-            pc.addEffectedER(15);
+            pc.applySkillModifierFromOwner(kind.skillId, 0);
             SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
         }
         case 이베이젼 -> {
-            pc.addEffectedER(18);
+            pc.applySkillModifierFromOwner(kind.skillId, 0);
             SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
         }
         case 비욘드 -> {

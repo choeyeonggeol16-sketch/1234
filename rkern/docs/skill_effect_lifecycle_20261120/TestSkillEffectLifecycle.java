@@ -97,6 +97,7 @@ public final class TestSkillEffectLifecycle {
             verifyExternallyGrantedResistanceSources();
             verifyPrimeManagedSources();
             verifyWisdomPotionSources();
+            verifyLegacyPassiveIndependentSources();
             verifyDedicatedCastRegistrations();
             verifyStopOnlyInventory();
             verifyRegistry();
@@ -1079,20 +1080,51 @@ public final class TestSkillEffectLifecycle {
                 "Wisdom potion expiry restores only its own source", STATUS_WISDOM_POTION);
     }
 
-    /** All remaining 75 numeric stop-only definitions retain an end handler. */
+    /** Externally owned passives no longer borrow neighboring stat totals. */
+    private static void verifyLegacyPassiveIndependentSources() {
+        final Player pc = new Player();
+        final int originalSp = pc.getAbility().getSp();
+        final int originalAc = pc.getAC().getAc();
+        final int originalEr = pc.getEffectedER();
+        final int[] ids = { 일루션리치, 일루션골렘, 솔리드캐리지, 이베이젼 };
+        for (int id : ids) {
+            verify(CSkillInfo.isManaged(id), "legacy effect has owned modifier", id);
+            pc.applySkillModifierFromOwner(id, 0);
+            pc.setSkillEffect(id, 120_000);
+        }
+        verify(pc.getAbility().getSp() == originalSp + 4 && pc.getAC().getAc() == originalAc - 10
+                        && pc.getEffectedER() == originalEr + 33,
+                "all four legacy sources combine without contamination", 일루션리치);
+        // Reapply the same source; this must never double its stat delta.
+        pc.applySkillModifierFromOwner(일루션리치, 0);
+        verify(pc.getAbility().getSp() == originalSp + 4,
+                "repeated passive application is idempotent", 일루션리치);
+        pc.removeSkillEffect(일루션리치);
+        verify(pc.getAbility().getSp() == originalSp && pc.getAC().getAc() == originalAc - 10,
+                "lich stop restores SP, not the golem armor bonus", 일루션리치);
+        pc.removeSkillEffect(일루션골렘);
+        verify(pc.getAC().getAc() == originalAc && pc.getAbility().getSp() == originalSp,
+                "golem stop restores armor, not the lich spell power", 일루션골렘);
+        pc.removeSkillEffect(솔리드캐리지);
+        verify(pc.getEffectedER() == originalEr + 18,
+                "solid carriage expiry preserves independent evasion", 솔리드캐리지);
+        pc.removeSkillEffect(이베이젼);
+        verify(pc.getEffectedER() == originalEr, "last evasion source disappears", 이베이젼);
+    }
+
+    /** All remaining 71 numeric stop-only definitions retain an end handler. */
     private static void verifyStopOnlyInventory() {
         final int[] stopOnlyIds = {
             2, 32, 91, 105, 112, 136, 780, 985, 1000,
             1001, 1002, 1003, 1005, 1006, 1016, 1565, 1566, 1607,
-            2794, 5256, 5263, 5285, 5300, 5307, 5984, 7239, 7241,
-            7791, 7792, 7793, 7794, 7795, 8382, 8463, 9999, 12120,
-            12132, 12133, 12134, 12135, 12136, 13001, 13002, 13003, 15644,
-            20075, 20076, 20077, 20079, 20082, 22017, 23442, 23445, 24444,
-            24445, 25133, 25155, 30010, 40007, 50009, 55441, 55662, 55664,
-            60001, 61614, 61615, 61616, 72388, 80007, 80008, 80009, 80012,
-            131313, 778844, 979744
+            2794, 5256, 5984, 7239, 7241, 7791, 7792, 7793, 7794,
+            7795, 8382, 8463, 9999, 12120, 12132, 12133, 12134, 12135,
+            12136, 13001, 13002, 13003, 15644, 20075, 20076, 20077, 20079,
+            20082, 22017, 23442, 23445, 24444, 24445, 25133, 25155, 30010,
+            40007, 50009, 55441, 55662, 55664, 60001, 61614, 61615, 61616,
+            72388, 80007, 80008, 80009, 80012, 131313, 778844, 979744
         };
-        verify(stopOnlyIds.length == 75, "stop-only numeric inventory size", 0);
+        verify(stopOnlyIds.length == 71, "stop-only numeric inventory size", 0);
         for (int id : stopOnlyIds) {
             final CSkillInfo info = CSkillInfo.get(id);
             verify(info != null && !info.hasCast() && info.stopHandler() != null,

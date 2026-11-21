@@ -1968,16 +1968,16 @@ public final class SkillStopHandlers {
 	private static StopResult offLegacyIllusionLich(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
-		pc.getAC().addAc(10);
-		SC_OwnCharAttrDef.send(pc);
+		pc.removeSkillModifierFromOwner(skillId);
+		SC_SPMR.send(pc);
 		return StopResult.HANDLED;
 	}
 
 	private static StopResult offLegacyIllusionGolem(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
-		pc.getAbility().addSp(-4);
-		SC_SPMR.send(pc);
+		pc.removeSkillModifierFromOwner(skillId);
+		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;
 	}
 
@@ -1991,7 +1991,7 @@ public final class SkillStopHandlers {
 	private static StopResult offLegacySolidCarriage(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
-		pc.addEffectedER(-15);
+		pc.removeSkillModifierFromOwner(skillId);
 		SC_InventoryIcon.icoEnd(pc, L1SkillId.솔리드캐리지);
 		SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
 		return StopResult.HANDLED;
@@ -2000,7 +2000,7 @@ public final class SkillStopHandlers {
 	private static StopResult offLegacyEvasion(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
-		pc.addEffectedER(-18);
+		pc.removeSkillModifierFromOwner(skillId);
 		SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
 		SC_InventoryIcon.icoEnd(pc, L1SkillId.이베이젼);
 		return StopResult.HANDLED;

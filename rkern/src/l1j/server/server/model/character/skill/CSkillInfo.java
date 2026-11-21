@@ -261,6 +261,11 @@ public final class CSkillInfo {
                 fixed(BOW_HIT_RATE, 9), fixed(BOW_DAMAGE_RATE, 9),
                 fixed(WEAPON_HIT_RATE, 9), fixed(WEAPON_DAMAGE_RATE, 9),
                 fixed(SP, 6), fixed(MAGIC_HIT, 6), fixed(MAX_HP, 500));
+        // Legacy item/skill grant paths formerly changed base stats directly.
+        registerManaged(일루션리치, null, fixed(SP, 4));
+        registerManaged(일루션골렘, null, fixed(AC, -10));
+        registerManaged(솔리드캐리지, null, fixed(ER, 15));
+        registerManaged(이베이젼, null, fixed(ER, 18));
         registerManaged(STATUS_WISDOM_POTION, null, fixed(SP, 2), fixed(MP_REGEN, 2));
         registerManaged(버서크, null, specialResistance(eKind.ALL, 20));
         registerManaged(버닝샷, null, specialResistance(eKind.ALL, 3));
