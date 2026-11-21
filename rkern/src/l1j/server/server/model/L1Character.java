@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -60,6 +61,8 @@ public class L1Character extends L1Object {
 	private int _moveSpeed; // ● 스피드 0. 통상 1. 헤이 파업 2. 슬로우
 	private int _braveSpeed; // ● 치우침 이브 상태 0. 통상 1. 치우침 이브
 	private volatile PoisonEffect _poison;
+	private static final AtomicReferenceFieldUpdater<L1Character, PoisonEffect> POISON =
+			AtomicReferenceFieldUpdater.newUpdater(L1Character.class, PoisonEffect.class, "_poison");
 	private volatile boolean _paralyzed;
 	private volatile boolean curseParalyzed;
 	private volatile boolean poisonParalyzed;
@@ -638,18 +641,23 @@ public class L1Character extends L1Object {
 	    _nextSkillTimeNs = System.nanoTime() + (long) delayMs * 1_000_000L;
 	}
 	
+	/** CAS claim is the only cross-owner poison admission step. */
+	public boolean claimPoison(PoisonEffect poison) {
+		return poison != null && POISON.compareAndSet(this, null, poison);
+	}
+
+	/** A stale expiration must never remove a newer poison. */
+	public boolean clearPoisonIfSame(PoisonEffect poison) {
+		return poison != null && POISON.compareAndSet(this, poison, null);
+	}
+
 	public void setPoison(PoisonEffect poison) {
-		synchronized (this) {
-			_poison = poison;
-		}
+		_poison = poison;
 	}
 
 	public void curePoison() {
-		// Serialize a cure with poison installation, not only with the old callback.
-		synchronized (this) {
-			final PoisonEffect current = _poison;
-			if (current != null) current.cure();
-		}
+		final PoisonEffect poison = _poison;
+		if (poison != null) poison.cure();
 	}
 
 	public PoisonEffect getPoison() {

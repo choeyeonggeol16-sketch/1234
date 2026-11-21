@@ -21,6 +21,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Spawn;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.action.CCreatureController;
+import l1j.server.server.model.character.effect.poison.PoisonEffect;
 import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.SkillHandlers;
@@ -407,6 +408,46 @@ public final class CIOThreadCallback {
         final CIOThread owner = shardOf(pc);
         return owner != null && owner.running && pc.getSessionStamp() == expectedSession
                 && owner.admitTimer(TimerOp.RAW_TIMER, 0, delayMs, task, null, null);
+    }
+
+    /**
+     * Poison effects use the already existing creature execution sequence.
+     * No dedicated poison executor, timer worker, or per-tick Runnable wrapper.
+     */
+    public boolean postPoisonOnOwner(PoisonEffect poison) {
+        if (poison == null || poison.isCancelled()) return false;
+        final L1Character target = poison.target();
+        if (target instanceof L1PcInstance pc) {
+            final CCreatureController controller = pc.getCreatureController();
+            return controller != null && controller.actor() == pc
+                    && controller.AddExecutableWheelTask(poison);
+        }
+        if (target instanceof L1NpcInstance npc) {
+            if (npc.isDestroyed()) return false;
+            final NpcServer server = NpcServer.getInstance();
+            if (server.isOwnerThread(npc)) {
+                poison.runOnNpc(npc);
+                return true;
+            }
+            return server.postNpcWheelTask(npc, poison);
+        }
+        poison.onOwner();
+        return true;
+    }
+
+    /** Publish one deadline on the existing 50ms CIO timer wheel. */
+    public boolean schedulePoisonTick(PoisonEffect poison, long delayMs) {
+        if (poison == null || poison.isCancelled()) return false;
+        final L1Character target = poison.target();
+        final CIOThread owner = characterOwner(target);
+        if (owner == null || !owner.running) return false;
+        final long boundedDelay = Math.max(1L, delayMs);
+        if (Thread.currentThread() == owner.thread) {
+            owner.onRawSchedule(boundedDelay, poison, null);
+            return true;
+        }
+        return owner.admitTimer(TimerOp.RAW_TIMER, 0, boundedDelay,
+                poison, null, null);
     }
 
     /** Existing owner wheel drives connection deadlines; no extra worker or queue. */

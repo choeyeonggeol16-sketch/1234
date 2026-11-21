@@ -2,6 +2,9 @@ package l1j.server.server.model.character.effect.poison;
 
 import l1j.server.server.datatables.MonsterParalyzeDelay.MonsterParalyze;
 import l1j.server.server.model.L1Character;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import l1j.server.server.model.character.skill.L1SkillId;
 
 /** Exercised against production poison classes, with a non-player fake target. */
@@ -88,6 +91,41 @@ public final class TestPoisonEffectLifecycle {
             target.curePoison();
             check(target.getPoison() == null, "repeat release " + i);
         }
+        // One poison claim wins even when multiple foreign producers race.
+        check(CIOThreadCallback.WheelTask.class.isAssignableFrom(PoisonEffect.class),
+                "poison is delivered by the existing CIO wheel");
+        Dummy contested = new Dummy();
+        CountDownLatch gate = new CountDownLatch(1);
+        AtomicInteger admitted = new AtomicInteger();
+        Thread[] producers = new Thread[12];
+        for (int i = 0; i < producers.length; i++) {
+            producers[i] = new Thread(() -> {
+                try {
+                    gate.await();
+                    if (SilencePoison.doInfection(contested, 15)) admitted.incrementAndGet();
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+            producers[i].start();
+        }
+        gate.countDown();
+        for (Thread producer : producers) {
+            try {
+                producer.join(3000);
+                check(!producer.isAlive(), "poison race thread terminates");
+            } catch (InterruptedException ex) {
+                throw new AssertionError(ex);
+            }
+        }
+        check(admitted.get() == 1, "exactly one concurrent claim");
+        PoisonEffect poisoned = contested.getPoison();
+        check(poisoned != null, "winner owns target");
+        contested.curePoison();
+        int messages = contested.visuals;
+        poisoned.run();
+        check(contested.getPoison() == null && contested.visuals == messages,
+                "expired wheel callback is inert after cure");
         System.out.println("PASS poison lifecycle checks=" + checks);
     }
 }
