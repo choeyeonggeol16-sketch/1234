@@ -119,7 +119,8 @@ public class L1ItemInstance extends L1Object {
 	private static final int[] _attrMask = new int[] { 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4 };
 
 	public static int attrEnchantToElementalType(int attrEnchantLevel) {
-		return _attrMask[attrEnchantLevel];
+		return attrEnchantLevel >= 0 && attrEnchantLevel < _attrMask.length
+				? _attrMask[attrEnchantLevel] : 0;
 	}
 
 	public static int attrEnchantToElementalType(L1ItemInstance item) {
@@ -127,8 +128,9 @@ public class L1ItemInstance extends L1Object {
 	}
 
 	public static int pureAttrEnchantLevel(int attrEnchantLevel) {
-		return attrEnchantLevel <= 0 ? attrEnchantLevel
-				: attrEnchantLevel - ((attrEnchantToElementalType(attrEnchantLevel) - 1) * 5);
+		if (attrEnchantLevel <= 0) return attrEnchantLevel;
+		if (attrEnchantLevel >= _attrMask.length) return 0;
+		return attrEnchantLevel - ((_attrMask[attrEnchantLevel] - 1) * 5);
 	}
 
 	public static int pureAttrEnchantLevel(L1ItemInstance item) {
@@ -137,7 +139,8 @@ public class L1ItemInstance extends L1Object {
 
 	public static boolean equalsElement(L1ItemInstance item, int elementalType, int elementalValue) {
 		int attr = item.getAttrEnchantLevel();
-		int type = attrEnchantToElementalType(attr);
+		if (attr <= 0 || attr >= _attrMask.length) return false;
+		int type = _attrMask[attr];
 		if (type != elementalType)
 			return false;
 
@@ -233,7 +236,8 @@ public class L1ItemInstance extends L1Object {
 	}
 
 	public void setSpecialEnchantable() {
-		_specialEnchant = 1;
+		// Low byte is the enable flag; preserve enchant IDs in upper bytes.
+		_specialEnchant = (_specialEnchant & ~0xFF) | 1;
 	}
 
 	public int getSpecialEnchant() {
@@ -249,7 +253,11 @@ public class L1ItemInstance extends L1Object {
 	}
 
 	public void setSpecialEnchant(int index, int enchant) {
-		_specialEnchant |= enchant << (8 * index);
+		if (index < 0 || index > 3) return;
+		final int shift = index << 3;
+		final int mask = 0xFF << shift;
+		// A replacement must clear old bits, not OR two enchant IDs together.
+		_specialEnchant = (_specialEnchant & ~mask) | ((enchant & 0xFF) << shift);
 	}
 
 	public boolean isIdentified() {
