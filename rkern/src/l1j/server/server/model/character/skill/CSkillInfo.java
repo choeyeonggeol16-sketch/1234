@@ -246,6 +246,14 @@ public final class CSkillInfo {
         registerContextual(INVISIBILITY, SkillHandlers::castInvisibility, SkillHandlers::startInvisibility);
         registerContextual(BLIND_HIDING, SkillHandlers::castInvisibility, SkillHandlers::startInvisibility);
         registerContextual(RINDVIOR_SILENCE, SkillHandlers::castRindviorSilence, SkillHandlers::startRindviorSilence);
+        registerContextual(프라임, null, SkillHandlers::startPrimeFromOwner,
+                fixed(BOW_HIT_RATE, 3), fixed(BOW_DAMAGE_RATE, 3),
+                fixed(WEAPON_HIT_RATE, 3), fixed(WEAPON_DAMAGE_RATE, 3),
+                fixed(SP, 2), fixed(MAGIC_HIT, 2));
+        registerContextual(프라임1, null, SkillHandlers::startPrimeFromOwner,
+                fixed(BOW_HIT_RATE, 9), fixed(BOW_DAMAGE_RATE, 9),
+                fixed(WEAPON_HIT_RATE, 9), fixed(WEAPON_DAMAGE_RATE, 9),
+                fixed(SP, 6), fixed(MAGIC_HIT, 6), fixed(MAX_HP, 500));
         registerManaged(버서크, null, specialResistance(eKind.ALL, 20));
         registerManaged(버닝샷, null, specialResistance(eKind.ALL, 3));
         registerManaged(STATUS_CASHSCROLL, null, fixed(MAX_HP, 50));

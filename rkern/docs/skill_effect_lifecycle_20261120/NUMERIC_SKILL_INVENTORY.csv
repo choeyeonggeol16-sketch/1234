@@ -175,7 +175,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 1566,이뮨투함블레이드,,stop_only,offImmuneBladeCustom
 1607,어드밴스,,stop_only,offLegacyAdvance
 2329,할파스의신의,ignoreNonPlayerBuff,instant,offHalpasGod
-2754,프라임,,stop_only,offPrime
+2754,프라임,,managed_external,offPrime
 2762,버서크,,managed_external,offBerserkCustom
 2763,포텐셜,,managed_external,offPotential
 2794,리버레이션,,stop_only,offLiberation
@@ -396,7 +396,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 120384,BUFF_GUNTER,startNpcBloodBuff,managed_pump,offNpcBloodBuff
 124000,할파스의신의PVP,ignoreNonPlayerBuff,instant,offHalpasGodPvp
 131313,포커스3단,,stop_only,offFocus3
-191918,프라임1,,stop_only,offPrime1
+191918,프라임1,,managed_external,offPrime1
 707049,Phoenix_Skill1,registerBossDamage,instant,
 707050,Phoenix_Skill2,registerBossDamage,instant,
 707051,DRAKE_Skill1,registerBossDamage,instant,

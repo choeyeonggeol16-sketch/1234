@@ -59,6 +59,7 @@ public final class SkillEffectContainer {
 		int hp, mp, ac, mr, er, dg, meleeHit, meleeDamage, rangedDamage, sp;
 		int carryLimit, armorReduction, baseMagicHit;
 		int rangedHit, rangedCritical, magicCritical, weaponHitRate, magicHit, weaponDamageRate;
+		int bowHitRate, bowDamageRate;
 		int hpRegen, mpRegen, impactProbability;
 		int pvpDamage, pvpReduction;
 		long specialResistance;
@@ -87,6 +88,7 @@ public final class SkillEffectContainer {
 			waterResistance = windResistance = earthResistance = fireResistance = 0;
 			carryLimit = armorReduction = baseMagicHit = 0;
 			rangedHit = rangedCritical = magicCritical = weaponHitRate = magicHit = weaponDamageRate = 0;
+			bowHitRate = bowDamageRate = 0;
 			hpRegen = mpRegen = impactProbability = 0;
 			pvpDamage = pvpReduction = 0;
 			specialResistance = 0;
@@ -182,6 +184,7 @@ public final class SkillEffectContainer {
 			if (owner instanceof L1PcInstance pc) {
 				pc.setPumpedCarryArmorAndAccuracy(0, notify);
 				pc.setPumpedRegenAndWeaponRates(0);
+				pc.setPumpedBowRates(0L);
 			}
 			return;
 		}
@@ -207,6 +210,8 @@ public final class SkillEffectContainer {
                     | ((state.weaponDamageRate & 0xffffL) << 32)
                     | ((state.mpRegen & 0xffffL) << 16) | (state.hpRegen & 0xffffL);
             pc.setPumpedRegenAndWeaponRates(regenAndWeaponRates);
+            pc.setPumpedBowRates(((long) state.bowHitRate << 32)
+                    | Integer.toUnsignedLong(state.bowDamageRate));
 		}
 	}
 

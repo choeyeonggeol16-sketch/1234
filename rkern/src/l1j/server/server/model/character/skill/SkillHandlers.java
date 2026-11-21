@@ -90,6 +90,50 @@ import l1j.server.server.model.network.core.sc.packet.SC_CurseBlind;
  */
 public final class SkillHandlers {
 
+    /** Uses the existing recipient controller FIFO for all Prime state changes. */
+    static void startPrimeFromOwner(L1PcInstance target, int skillId, int duration,
+            int tierId, int casterId, boolean partyMember) {
+        if ((skillId != L1SkillId.프라임 && skillId != L1SkillId.프라임1)
+                || (tierId != L1SkillId.프라임85 && tierId != L1SkillId.프라임90
+                    && tierId != L1SkillId.프라임95) || duration <= 0) return;
+        final boolean casterSelf = target.getId() == casterId;
+        if (!casterSelf) {
+            final L1Object obj = L1World.getInstance().findObject(casterId);
+            if (!(obj instanceof L1PcInstance caster) || caster.getClanid() == 0
+                    || target.getClanid() != caster.getClanid()
+                    || caster.getMapId() != target.getMapId()
+                    || Math.abs(caster.getX() - target.getX()) > 20
+                    || Math.abs(caster.getY() - target.getY()) > 20) return;
+        }
+        if (target.hasSkillEffect(L1SkillId.프라임))
+            target.skillEffectRemoveFromOwner(L1SkillId.프라임, true);
+        if (target.hasSkillEffect(L1SkillId.프라임1))
+            target.skillEffectRemoveFromOwner(L1SkillId.프라임1, true);
+        if (target.hasSkillEffect(L1SkillId.프라임85))
+            target.skillEffectRemoveFromOwner(L1SkillId.프라임85, false);
+        if (target.hasSkillEffect(L1SkillId.프라임90))
+            target.skillEffectRemoveFromOwner(L1SkillId.프라임90, false);
+        if (target.hasSkillEffect(L1SkillId.프라임95))
+            target.skillEffectRemoveFromOwner(L1SkillId.프라임95, false);
+        // The captured source is independent of equipment, other active skills
+        // and the byte-capped combat stats. One replacement, one owner commit.
+        target.applySkillModifierFromOwner(skillId, 0);
+        target.skillEffectSetFromOwner(tierId, duration * 1000);
+        target.skillEffectSetFromOwner(skillId, duration * 1000);
+        SC_InventoryIcon.icoNew(target, L1SkillId.프라임, 5383, duration, true);
+        // The caster's original action continues its remaining packet sequence
+        // after this inline owner entry. Other recipients send from their owner.
+        if (!casterSelf) {
+            SC_HpUpdate.send(target, target.getCurrentHp(), target.getMaxHp());
+            SC_OwnCharAttrDef.send(target);
+            SC_OwnCharStatus.send(target);
+            SC_SPMR.send(target);
+            SC_SkillSound.send(target, target.getId(), 12301);
+            SC_SkillSound.broadcast(target, target.getId(), 12301);
+        }
+    }
+
+
 	private SkillHandlers() {}
 
 
