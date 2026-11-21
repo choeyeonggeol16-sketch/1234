@@ -136,3 +136,9 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 - 링 재변신에서는 POLY_RING_MASTER 타이머가 이미 있어도 동일 skill modifier 출처를 재확인한다. 기존 SkillEffectContainer가 같은 ID·캡처값 재적용을 no-op 처리하므로 중복 스탯 가산은 발생하지 않는다.
 - 일반 변신으로 넘어갈 때 링 타이머가 이미 사라졌어도 고아 상태의 보정 출처가 있다면 회수하고 능력치 패킷을 갱신한다. 링 타이머가 있으면 기존대로 제거한다.
 - 실행 구조·장비·변신 성공 판정은 변경하지 않는다. 완전 통합 검증은 후속 단계에서 수행한다.
+
+
+## 2026-11-21 지혜 물약 독립 아이템 경로 수정
+
+- WisdomPotion.checkCondition은 유효한 40016·30089·140016·210113 ID와 지속시간을 소모 영수증 확정 전에 검사한다. 등록되지 않은 아이템은 소모하지 않으며 0초 영구 STATUS_WISDOM_POTION을 만들지 않는다.
+- WisdomPotion.useWisdomPotion의 직접 addSp(2)/addMpr(2)를 제거하고, 기존 CSkillInfo의 STATUS_WISDOM_POTION(SP+2, MP_REGEN+2) 독립 보정으로 통일했다. 반복 음용은 idempotent이고, 종료 시 offWisdomPotion이 해당 출처만 회수한다. 기존 마법사/환술사 제한, 효과음·아이콘·앱솔루트/뫼비우스 해제는 유지했다.
