@@ -754,15 +754,6 @@ public class GMCommands {
 			gm.sendPackets("[금빛 마법 인형 주머니 드랍율 이벤트 : "+Config.인형갯수+"배]");
 			gm.sendPackets("[수호성 상자 드랍율 이벤트 : "+Config.수호성갯수+"배]");
 			break;
-		case "뻥튀기"://From.Neige
-			try {
-			Integer peo = Integer.valueOf(param);
-			Config.Neige_Count = peo;
-				gm.sendPackets("[인원 수 뻥튀기 추가 : "+peo+"]");
-			} catch (Exception e) {
-				gm.sendPackets(".뻥튀기 (숫자)");
-			}
-			break;
 		case "접속보상시간"://From.Neige
 			try {
 			Integer se = Integer.valueOf(param);

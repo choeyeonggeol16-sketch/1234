@@ -2,7 +2,6 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.network.core.sc.packet.SC_WhoAmount;
 import l1j.server.Config;
-import l1j.server.server.command.executor.L1UserCalc;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
@@ -47,11 +46,17 @@ public final class CS_Who {
             }
         }
 
-        int addUser = (int) (world.getAllPlayers().size() * Config.Number_Count + Config.Neige_Count);
-        addUser += L1UserCalc.getClacUser();
 
+        // The optional /who count reports actual connected characters.
+        // No configured multipliers or manually injected player counts.
         if (Config.Neige_Count_Pass == 2) {
-            SC_WhoAmount.send(pc, String.valueOf(addUser));
+            int connected = 0;
+            for (L1PcInstance online : world.getAllPlayers()) {
+                if (online == null || online.noPlayerCK || online.noPlayerck2) continue;
+                final CUserSocket socket = online.getNetConnection();
+                if (socket != null && socket.isConnected()) connected++;
+            }
+            SC_WhoAmount.send(pc, Integer.toString(connected));
         }
     }
 

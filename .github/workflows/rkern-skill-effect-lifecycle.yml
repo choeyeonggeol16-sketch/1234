@@ -28,6 +28,11 @@ on:
       - rkern/src/l1j/server/server/model/network/core/cs/packet/**
       - rkern/src/l1j/server/server/model/network/thread/CIOThreadCallback.java
       - rkern/docs/ain_heartbeat_20261121/**
+      - rkern/src/l1j/server/Config.java
+      - rkern/src/l1j/server/server/GMCommands.java
+      - rkern/src/l1j/server/server/command/**
+      - rkern/src/l1j/server/server/RepeatTask.java
+      - rkern/src/l1j/server/server/model/network/core/cs/packet/CS_Who.java
       - rkern/src/l1j/server/server/model/Instance/L1PcInstance.java
       - rkern/src/l1j/server/server/model/Instance/L1NpcInstance.java
       - rkern/src/l1j/server/server/model/item/function/GreenPotion.java
@@ -64,11 +69,12 @@ jobs:
             echo 'Unexpected retired pet/death match reference remains'
             exit 1
           fi
-      - name: Inventory fake connection count and RepeatTask references
+      - name: Assert removed fake-user classes and repeat timer are not referenced
         run: |
-          echo "BEGIN_RETIRED_COUNT_AUDIT"
-          grep -RnE 'RepeatTask|L1Userinc|WHOIS_CONTER|Neige_Count|WhoisConter|뻥튀기|UserCountBuffTimer' rkern/src --include='*.java' || true
-          echo "END_RETIRED_COUNT_AUDIT"
+          if grep -RnE 'RepeatTask|L1Userinc|L1UserCalc|WHOIS_CONTER|Number_Count|Neige_Count([^_A-Za-z]|$)|getClacUser|뻥튀기' rkern/src --include='*.java' --exclude=L1Commands.java; then
+            echo 'Retired fake-user count or repeat timer reference remains'
+            exit 1
+          fi
       - name: Cache skill regression dependencies
         uses: actions/cache@v4
         with:

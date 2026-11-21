@@ -564,8 +564,6 @@ public final class Config {
 	public static int 불멸가호아덴2;
 	public static int 불멸가호아덴22;
 	public static String 마일리지엔피씨;
-	public static int Number_Count;
-	public static int Neige_Count;
 	public static int Neige_Count_Pass;
 	public static int Neige_Reward;
 	public static int Neige_Reward_sec;
@@ -1199,7 +1197,6 @@ public final class Config {
 	public static boolean ALT_BASETOWN;
 	public static int ALT_BASETOWN_MIN_ID;
 	public static int ALT_BASETOWN_MAX_ID;
-	public static int WHOIS_CONTER;
 	public static boolean ALT_BEGINNER_BONUS;
 	public static int NOTIS_TIME; // 공지 사항
 	public static int CLAN_COUNT; // 혈맹버프 인원
@@ -2054,8 +2051,6 @@ public final class Config {
 			USE_POTION_EFFECT_LOGGIN = Boolean.parseBoolean(altSettings.getProperty("UsePotionEffectLogging", "false"));
 			USE_ACTION_TIME_LOGGING = Boolean.parseBoolean(altSettings.getProperty("UseActionTimeLogging", "false"));
 			QestLevel_End = Short.parseShort(altSettings.getProperty("QestLevelEnd", "1"));
-			Number_Count = Short.parseShort(altSettings.getProperty("NumberCount", "3"));
-			Neige_Count = Short.parseShort(altSettings.getProperty("NegieCount", "1"));
 			Neige_Count_Pass = Short.parseShort(altSettings.getProperty("NegieCount", "1"));
 			Neige_Myth_Skill = Short.parseShort(altSettings.getProperty("NegieMyth", "1"));
 			Neige_Reward = Short.parseShort(altSettings.getProperty("NegieReward", "1"));
@@ -2092,7 +2087,6 @@ public final class Config {
 			ALT_BASETOWN = Boolean.parseBoolean(altSettings.getProperty("BaseTown", "false"));
 			ALT_BASETOWN_MIN_ID = Integer.parseInt(altSettings.getProperty("BaseTownMinID", "0xffffffff"));
 			ALT_BASETOWN_MAX_ID = Integer.parseInt(altSettings.getProperty("BaseTownMaxID", "0xffffffff"));
-			WHOIS_CONTER = Integer.parseInt(altSettings.getProperty("WhoisConter", "0")); //
 			ALT_WHO_COMMAND = Boolean.parseBoolean(altSettings.getProperty("WhoCommand", "false"));
 			ALT_REVIVAL_POTION = Boolean.parseBoolean(altSettings.getProperty("RevivalPotion", "false"));
 			ALT_BEGINNER_BONUS = Boolean.parseBoolean(altSettings.getProperty("BeginnerEvent", "false"));

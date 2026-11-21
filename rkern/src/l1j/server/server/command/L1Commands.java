@@ -29,8 +29,14 @@ public final class L1Commands {
                      "SELECT name, access_level, class_name FROM commands");
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
+                final String executor = rs.getString(3);
+                // Ignore obsolete DB command registrations for removed fake users.
+                if (executor != null && (executor.endsWith(".L1Userinc")
+                        || executor.endsWith(".L1UserCalc")
+                        || executor.equals("L1Userinc")
+                        || executor.equals("L1UserCalc"))) continue;
                 final L1Command command = new L1Command(
-                        rs.getString(1), rs.getInt(2), rs.getString(3));
+                        rs.getString(1), rs.getInt(2), executor);
                 loaded.put(command.getName().toLowerCase(Locale.ROOT), command);
             }
         } catch (SQLException e) {

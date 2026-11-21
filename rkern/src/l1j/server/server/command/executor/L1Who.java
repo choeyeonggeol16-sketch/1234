@@ -19,7 +19,6 @@ public class L1Who implements L1CommandExecutor {
 	@Override
 	public void execute(L1PcInstance pc, String cmdName, String arg) {
 		try {
-			int CalcUser = L1UserCalc.getClacUser();
 			Collection<L1PcInstance> players = L1World.getInstance().getAllPlayers();
 			int robotcount = 0; // 무인
 			int playercount = 0; 
@@ -29,7 +28,8 @@ public class L1Who implements L1CommandExecutor {
 					robotcount++;
 				else if (each.isPrivateShop() && each.getNetConnection() == null) {
 					AutoShopUser++;
-				} else {
+				} else if (each.getNetConnection() != null
+                        && each.getNetConnection().isConnected()) {
 					playercount++;
 				}
 			}
@@ -39,7 +39,6 @@ public class L1Who implements L1CommandExecutor {
 			SC_ChatPacket.sendDirect(pc, pc, "\\aL[로봇] : " + robotcount);
 			SC_ChatPacket.sendDirect(pc, pc, "\\aH[유저] 총인원수: " + playercount);
 			SC_ChatPacket.sendDirect(pc, pc, "\\aJ[무인상점] : " + AutoShopUser);
-			SC_ChatPacket.sendDirect(pc, pc, "\\aE[뻥튀기] : " + CalcUser);
 
 			
 			// 온라인의 플레이어 리스트를 표시
