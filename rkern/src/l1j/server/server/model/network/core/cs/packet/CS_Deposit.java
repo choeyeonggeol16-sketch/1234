@@ -1,13 +1,13 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.MJWarSystem.MJCastleWar;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.world.siege.CastleWar;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
 
 public final class CS_Deposit {
 
@@ -68,8 +68,8 @@ public final class CS_Deposit {
             return;
         }
 
-        final MJCastleWarBusiness business =
-                MJCastleWarBusiness
+        final CastleWarBusiness business =
+                CastleWarBusiness
                         .getInstance();
 
         /*
@@ -86,7 +86,7 @@ public final class CS_Deposit {
             return;
         }
 
-        final MJCastleWar war =
+        final CastleWar war =
                 business.get(castleId);
 
         if (war == null) {
@@ -111,7 +111,7 @@ public final class CS_Deposit {
         }
 
         try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(player, MJCastleWarBusiness.TREASURY_ORDER_KEY)) {
+                l1j.server.server.model.L1InventoryTransaction.begin(player, CastleWarBusiness.TREASURY_ORDER_KEY)) {
             if (!tx.debit(L1ItemId.ADENA, amount)) return;
             final Runnable treasury = business.stageTreasury(tx, castleId, amount);
             tx.commit(treasury);

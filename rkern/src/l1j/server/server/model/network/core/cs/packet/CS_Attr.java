@@ -1,43 +1,24 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_Trade;
-
-
-import l1j.server.server.model.network.core.sc.packet.SC_Resurrection;
-import java.util.Collection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import l1j.server.MJKDASystem.MJKDA;
-import l1j.server.MJKDASystem.MJKDALoader;
-import l1j.server.server.model.L1InventoryTransaction;
-import l1j.server.server.storage.CacheD;
-import l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import java.util.Collection;
 import java.util.Random;
 
 import l1j.server.Config;
-import l1j.server.IndunSystem.ClanDungeon.AzmodanSystem;
-import l1j.server.MJInstanceSystem.MJInstanceEnums.InstStatus;
-import l1j.server.MJInstanceSystem.MJLFC.Creator.MJLFCCreator;
-import l1j.server.MJSurveySystem.MJSurveySystemLoader;
-import l1j.server.MJTemplate.MJRnd;
-import l1j.server.MJTemplate.Lineage2D.MJPoint;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
-import l1j.server.MJWarSystem.MJWar;
-import l1j.server.MJWarSystem.MJWarFactory;
 import l1j.server.server.Account;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.BossMonsterSpawnList;
 import l1j.server.server.datatables.BuddyTable;
-import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.datatables.HouseTable;
 import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.datatables.PolyTable;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.L1Buddy;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
@@ -46,37 +27,46 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ClanJoin;
 import l1j.server.server.model.L1DeathMatch;
 import l1j.server.server.model.L1HauntedHouse;
+import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1Racing;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
+import l1j.server.server.model.character.combat.statistics.Kda;
+import l1j.server.server.model.character.combat.statistics.KdaLoader;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.character.survey.SurveySystemLoader;
 import l1j.server.server.model.item.Card.L1CardAdd;
+import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
+import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ClanAttention;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
+import l1j.server.server.model.network.core.sc.packet.SC_Resurrection;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_Trade;
+import l1j.server.server.model.world.instance.InstanceEnums.InstStatus;
+import l1j.server.server.model.world.instance.lobby.creator.LobbyCreator;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.War;
+import l1j.server.server.model.world.siege.WarFactory;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
+import l1j.server.server.shared.GameRandom;
+import l1j.server.server.shared.geometry.GamePoint;
+import l1j.server.server.storage.CacheD;
+import l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot;
 import l1j.server.server.templates.L1Boss;
-import l1j.server.server.templates.L1House;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.templates.L1Pet;
-
-import l1j.server.server.model.network.core.sc.packet.SC_CharAmount;
 public final class CS_Attr {
 
 	public static final int MSGCODE_622_BOSS 				= 1;
@@ -110,9 +100,9 @@ public final class CS_Attr {
     public static void resetKillDeath(L1PcInstance pc, L1ItemInstance item,
             boolean resetKill, boolean resetDeath) {
         if (unavailable(pc) || item == null || (!resetKill && !resetDeath)) return;
-        final MJKDA kda = pc.getKDA();
+        final Kda kda = pc.getKDA();
         if (kda == null || kda.isBot || pc.getInventory().getItem(item.getId()) != item) return;
-        final MJKDALoader loader = MJKDALoader.getInstance();
+        final KdaLoader loader = KdaLoader.getInstance();
         try {
             synchronized (loader) {
                 // Queue the current authoritative counters before reserving the
@@ -124,7 +114,7 @@ public final class CS_Attr {
                 }
                 if (beforeKill < 0 || beforeDeath < 0
                         || ((!resetKill || beforeKill == 0) && (!resetDeath || beforeDeath == 0))) return;
-                try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, MJKDALoader.orderKey())) {
+                try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, KdaLoader.orderKey())) {
                     if (!tx.debit(item, 1)) return;
                     tx.requireTables("tb_kda");
                     tx.sql(con -> resetKillDeathRow(con, pc.getId(), beforeKill, beforeDeath, resetKill, resetDeath));
@@ -302,10 +292,10 @@ public final class CS_Attr {
                 return;
 			case MSGCODE_622_LFC:{
 				if(c == MSGCODE_NO){
-					MJLFCCreator.setInstStatus(pc, InstStatus.INST_USERSTATUS_NONE);
+					LobbyCreator.setInstStatus(pc, InstStatus.INST_USERSTATUS_NONE);
 				}else if(c == MSGCODE_YES){
 					if(pc.getInstStatus() == InstStatus.INST_USERSTATUS_LFCREADY)
-						MJLFCCreator.setInstStatus(pc, InstStatus.INST_USERSTATUS_LFCINREADY);
+						LobbyCreator.setInstStatus(pc, InstStatus.INST_USERSTATUS_LFCINREADY);
 				}
 				return;
 			}
@@ -335,9 +325,9 @@ public final class CS_Attr {
 						int current_try = 0;
 						int limit_try = 100;
 						do{
-							cx = x + (MJRnd.isBoolean() ? MJRnd.next(5) : -MJRnd.next(5));
-							cy = y + (MJRnd.isBoolean() ? MJRnd.next(5) : -MJRnd.next(5));
-						}while(++current_try < limit_try && !MJPoint.isValidPosition(m, cx, cy));
+							cx = x + (GameRandom.isBoolean() ? GameRandom.next(5) : -GameRandom.next(5));
+							cy = y + (GameRandom.isBoolean() ? GameRandom.next(5) : -GameRandom.next(5));
+						}while(++current_try < limit_try && !GamePoint.isValidPosition(m, cx, cy));
 						if(current_try >= limit_try){
 							cx = x;
 							cy = y;
@@ -350,8 +340,8 @@ public final class CS_Attr {
 			}
 			}
 
-			if(MJSurveySystemLoader.getInstance().isSurvey(msgIdx)){
-				MJSurveySystemLoader.getInstance().submitSurvey(pc, msgIdx, c == 1);
+			if(SurveySystemLoader.getInstance().isSurvey(msgIdx)){
+				SurveySystemLoader.getInstance().submitSurvey(pc, msgIdx, c == 1);
 				return;
 			}
 		}
@@ -473,10 +463,10 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
 				if(defense == null || offense == null) return;
 
 				if (attrcode == 217) {
-					MJWar war = MJWarFactory.createNormalWar(defense);
+					War war = WarFactory.createNormalWar(defense);
 					war.register(offense);
 				} else{
-					MJWar war = offense.getCurrentWar();
+					War war = offense.getCurrentWar();
 					if(war == null) return;
 					war.notifySurrender(defense, offense);
 					war.dispose();
@@ -901,7 +891,7 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
 		int castleId = L1CastleLocation.getCastleIdByArea(callClanPc);
 		if (castleId != 0) {
 			isInWarArea = true;
-			if (MJCastleWarBusiness.getInstance().isNowWar(castleId)) {
+			if (CastleWarBusiness.getInstance().isNowWar(castleId)) {
 				isInWarArea = false;
 			}
 		}

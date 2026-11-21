@@ -1,28 +1,18 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.server.model.network.core.sc.packet.SC_TrueTargetNew;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.COUNTER_MAGIC;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
-import l1j.server.Config;
+import static l1j.server.server.model.item.function.CreatureItemActions.*;
+
 import l1j.server.server.ActionCodes;
-import l1j.server.server.model.L1Location;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Party;
-import l1j.server.server.model.L1PcInventory;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1Party;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.item.teleport.L1Teleport;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.utils.MJCommons;
-import static l1j.server.server.model.item.function.CreatureItemActions.*;
+import l1j.server.server.model.network.core.sc.packet.SC_TrueTargetNew;
 
 /** Item-specific effect extracted without changing its original execution body. */
 final class BattleCommandWandEffect {

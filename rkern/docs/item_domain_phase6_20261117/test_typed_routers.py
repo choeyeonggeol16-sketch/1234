@@ -20,7 +20,7 @@ for name,entries in all_manifests:
   if x['class'] not in all_names:all_names.append(x['class'])
 # Every callee is typed with the actual method signature, not varargs/object placeholders.
 lines=['class CIOClient {}','class L1PcInstance {}','class L1ItemInstance {}',
-       'class MJINNHelper { static final int INN_KEYID=87654321; }',
+       'class InnHelper { static final int INN_KEYID=87654321; }',
        'class Trace { static String owner; static int item; static void record(String s,int i){owner=s;item=i;} }']
 for name in all_names:
  args=next(router for router,entries in all_manifests if name in {x['class'] for x in entries})
@@ -35,7 +35,7 @@ for router,records in all_manifests:
  for rec in records:
   for raw in rec['ids']:
    idv=str(raw)
-   x=idv if idv!='MJINNHelper.INN_KEYID' else 'MJINNHelper.INN_KEYID'
+   x=idv if idv!='InnHelper.INN_KEYID' else 'InnHelper.INN_KEYID'
    call={'WorldItemActions':'WorldItemActions.use(c,p,it,ID,it)',
          'TravelAndRecoveryItems':'TravelAndRecoveryItems.use(c,p,it,ID)',
          'SupplementalCraftRouter':'SupplementalCraftRouter.use(c,p,it,ID,it)',

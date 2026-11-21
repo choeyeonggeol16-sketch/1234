@@ -6,50 +6,51 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Calendar;
-import java.util.concurrent.atomic.AtomicBoolean;
-import l1j.server.server.model.gametime.BaseTime;
-import l1j.server.server.model.gametime.RealTimeClock;
-import l1j.server.server.model.gametime.TimeListener;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javolution.util.FastTable;
+
 import l1j.server.DatabaseFactory;
-import l1j.server.MJTemplate.MJPropertyReader;
-import l1j.server.MJTemplate.MJRnd;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.FullSelectorHandler;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
 import l1j.server.server.IdFactory;
+import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.RaceTable;
 import l1j.server.server.datatables.ShopTable;
-import l1j.server.server.model.L1IntRegistry;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.MJMessengerInstance;
-import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.Instance.MessengerInstance;
+import l1j.server.server.model.L1IntRegistry;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.gametime.BaseTime;
+import l1j.server.server.model.gametime.RealTimeClock;
+import l1j.server.server.model.gametime.TimeListener;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.shared.GameRandom;
+import l1j.server.server.shared.PropertyReader;
+import l1j.server.server.storage.CacheD;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.templates.L1RaceTicket;
 import l1j.server.server.templates.L1Racer;
 import l1j.server.server.templates.L1ShopItem;
-import l1j.server.server.storage.CacheD;
 
 public class BugRaceController implements Runnable, TimeListener {
 	private static final Logger LOG = Logger.getLogger(BugRaceController.class.getName());
@@ -121,9 +122,9 @@ public class BugRaceController implements Runnable, TimeListener {
 	public static boolean IS_AUTO_TUMBLE;
 	public static int MAX_TUMBLE_PROBABILITY;
 	public static void load_config(){
-		MJPropertyReader reader = null;
+		PropertyReader reader = null;
 		try{
-			reader = new MJPropertyReader("./config/bug_race.properties");
+			reader = new PropertyReader("./config/bug_race.properties");
 			BUG_BASIC_SPEED = reader.readInt("BugBasicSpeed", "250");
 			IS_RATE_REALTIME_UPDATE = reader.readBoolean("IsRateRealTimeUpdate", "true");
 			BUG_MIN_RATE = reader.readDouble("BugMinRate", "1.2");
@@ -160,7 +161,7 @@ public class BugRaceController implements Runnable, TimeListener {
 	public int _currentBroadcastRacer;
 
 	L1NpcInstance[] _npc = new L1NpcInstance[3];
-	MJMessengerInstance _box_npc;
+	MessengerInstance _box_npc;
 	
 	public int[] _ticketCount = new int[5];
 	private static Random _rnd = new Random(System.nanoTime());
@@ -401,8 +402,8 @@ public class BugRaceController implements Runnable, TimeListener {
 		final L1NpcInstance boxNpc =
 				L1World.getInstance().findNpc(50000063);
 
-		if (boxNpc instanceof MJMessengerInstance) {
-			_box_npc = (MJMessengerInstance) boxNpc;
+		if (boxNpc instanceof MessengerInstance) {
+			_box_npc = (MessengerInstance) boxNpc;
 			_box_npc.set_is_ghost(true);
 		} else {
 			_box_npc = null;
@@ -452,9 +453,9 @@ public class BugRaceController implements Runnable, TimeListener {
 
 	// 승률처리
 	public void initWinRate() {
-		double presentation_rate = MJRnd.next_double(20, 30);
+		double presentation_rate = GameRandom.next_double(20, 30);
 		for (int i = 0; i < 5; i++) {
-			_winRate[i] = Double.parseDouble(_df.format(MJRnd.next_double(20.1, 21)));
+			_winRate[i] = Double.parseDouble(_df.format(GameRandom.next_double(20.1, 21)));
 			 _winViewRate[i] = Double.parseDouble(_df.format(presentation_rate));
 		}
 	}
@@ -718,12 +719,12 @@ public class BugRaceController implements Runnable, TimeListener {
 			rInfo.ration = _ration[row];
 			if(cnt <= 0){
 				while(rInfo.ration <= BUG_MIN_RATE)
-					rInfo.ration = MJRnd.next_double() * 10;
+					rInfo.ration = GameRandom.next_double() * 10;
 			}else{
 				rInfo.ration = total / cnt;
 			}
 			if(rInfo.ration <= BUG_MIN_RATE)
-				rInfo.ration = BUG_MIN_RATE + MJRnd.next_double();
+				rInfo.ration = BUG_MIN_RATE + GameRandom.next_double();
 			temporary_ration.add(rInfo);
 		}
 		Collections.sort(temporary_ration);
@@ -732,7 +733,7 @@ public class BugRaceController implements Runnable, TimeListener {
 			double range = BUG_MAX_RATES[i];
 			RationInfo rInfo = temporary_ration.get(i);
 			if(rInfo.ration >= range){
-				double d = MJRnd.next_double();
+				double d = GameRandom.next_double();
 				rInfo.ration = need_range + d;
 			}
 			_ration[rInfo.idx] = Double.parseDouble(_df.format(rInfo.ration));

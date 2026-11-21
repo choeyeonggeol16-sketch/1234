@@ -1,6 +1,6 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.Stadium.StadiumManager;
+import l1j.server.server.model.character.combat.arena.stadium.StadiumManager;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;

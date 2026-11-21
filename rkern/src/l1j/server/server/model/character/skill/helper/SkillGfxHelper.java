@@ -1,9 +1,6 @@
 package l1j.server.server.model.character.skill.helper;
 
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1MerchantInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -11,19 +8,19 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
-
+import l1j.server.server.model.character.skill.passive.PassiveID;
+import l1j.server.server.model.network.core.sc.packet.SC_ChangeHeading;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_RangeSkill;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.core.sc.packet.SC_Sound;
 import l1j.server.server.model.network.core.sc.packet.SC_UseAttackSkill;
 import l1j.server.server.templates.L1Skills;
-
-import l1j.server.server.model.network.core.sc.packet.SC_ChangeHeading;
-import l1j.server.server.model.network.core.sc.packet.SC_Sound;
 public final class SkillGfxHelper {
 
     private SkillGfxHelper() {}
@@ -251,7 +248,7 @@ public final class SkillGfxHelper {
                     if (target != null) target.setSkillEffect(L1SkillId.ARMOR_BRAKE, 10 * 1000);
 
                     int sndGfx = castgfx;
-                    if (player.isPassive(MJPassiveID.ARMOR_BREAK_DESTINY.toInt())) sndGfx = 17226;
+                    if (player.isPassive(PassiveID.ARMOR_BREAK_DESTINY.toInt())) sndGfx = 17226;
 
                     final long snd = SC_SkillSound.pack(targetId, sndGfx);
                     if (player.isInParty()) {
@@ -264,22 +261,22 @@ public final class SkillGfxHelper {
 
                 } else if (skillId == L1SkillId.THUNDER_GRAB) {
                     int eff = castgfx;
-                    if (player.isPassive(MJPassiveID.THUNDER_GRAP_BRAVE.toInt())) eff = 17229;
+                    if (player.isPassive(PassiveID.THUNDER_GRAP_BRAVE.toInt())) eff = 17229;
                     player.send_effect(eff);
 
                 } else if (skillId == L1SkillId.DOUBLE_BRAKE) {
                     int eff = castgfx;
-                    if (player.isPassive(MJPassiveID.DOUBLE_BREAK_DESTINY.toInt())) eff = 17224;
+                    if (player.isPassive(PassiveID.DOUBLE_BREAK_DESTINY.toInt())) eff = 17224;
                     player.send_effect(eff);
 
                 } else if (skillId == L1SkillId.COUNTER_BARRIER) {
                     int eff = castgfx;
-                    if (player.isPassive(MJPassiveID.COUNTER_BARRIER_VETERAN.toInt())) eff = 17219;
+                    if (player.isPassive(PassiveID.COUNTER_BARRIER_VETERAN.toInt())) eff = 17219;
                     player.send_effect(eff);
 
                 } else if (skillId == L1SkillId.DESPERADO) {
                     int eff = castgfx;
-                    if (player.isPassive(MJPassiveID.DESPERADO_ABSOLUTE.toInt())) eff = 17233;
+                    if (player.isPassive(PassiveID.DESPERADO_ABSOLUTE.toInt())) eff = 17233;
                     if (target != null) target.send_effect(eff);
 
                 } else {

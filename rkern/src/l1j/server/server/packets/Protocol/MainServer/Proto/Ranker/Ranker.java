@@ -3,7 +3,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto.Ranker;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import l1j.server.MJTemplate.MJClassesType.EClassesType;
+import l1j.server.server.model.character.classinfo.EClassesType;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
 
 public class Ranker {

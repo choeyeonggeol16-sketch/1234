@@ -1,25 +1,23 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 
-import l1j.server.server.model.network.core.sc.packet.SC_Unknown2;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.MJCombatSystem.MJCombatObserver;
-import l1j.server.MJCombatSystem.Loader.MJCombatLoadManager;
-import l1j.server.MJInstanceSystem.MJInstanceEnums.InstStatus;
-import l1j.server.MJInstanceSystem.MJInstanceSpace;
-import l1j.server.MJRaidSystem.MJRaidSpace;
-import l1j.server.MJTemplate.ObServer.MJCopyMapObservable;
 import l1j.server.server.UserCommands;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.combat.arena.CombatObserver;
+import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.sc.packet.SC_Unknown2;
 import l1j.server.server.model.network.utill.CConnectionState;
-
-import l1j.server.server.model.network.core.sc.packet.SC_CharAmount;
+import l1j.server.server.model.world.instance.InstanceEnums.InstStatus;
+import l1j.server.server.model.world.instance.InstanceSpace;
+import l1j.server.server.model.world.instance.raid.RaidSpace;
+import l1j.server.server.shared.observer.CopyMapObservable;
 public final class CS_CharSelect {
 
     private static final Logger LOGGER = Logger.getLogger(CS_CharSelect.class.getName());
@@ -52,19 +50,19 @@ public final class CS_CharSelect {
          * 전투장 이탈.
          */
         if (pc.is_combat_field()) {
-            final MJCombatObserver observer = MJCombatLoadManager.getInstance().get_current_observer(pc.get_current_combat_id());
+            final CombatObserver observer = CombatLoadManager.getInstance().get_current_observer(pc.get_current_combat_id());
 
             if (observer != null) {
                 observer.remove(pc);
             }
         }
 
-        MJCopyMapObservable.getInstance().resetPosition(pc);
+        CopyMapObservable.getInstance().resetPosition(pc);
 
 
-        MJRaidSpace.getInstance().getBackPc(pc);
+        RaidSpace.getInstance().getBackPc(pc);
 
-        if (MJInstanceSpace.isInInstance(pc) && pc.getInstStatus() != InstStatus.INST_USERSTATUS_NONE) {
+        if (InstanceSpace.isInInstance(pc) && pc.getInstStatus() != InstStatus.INST_USERSTATUS_NONE) {
             return;
         }
 

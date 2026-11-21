@@ -6,19 +6,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
+
 import l1j.server.Config;
-import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
-import l1j.server.MJDShopSystem.MJDShopItem;
-import l1j.server.MJDShopSystem.MJDShopStorage;
 import l1j.server.server.NpcActionRange;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.shop.PlayerShopView;
+import l1j.server.server.model.shop.dynamic.DynamicShopItem;
+import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
 import l1j.server.server.monitor.LoggerInstance;
 
 final class PlayerShopTransactions {
@@ -48,7 +49,7 @@ final class PlayerShopTransactions {
             SC_SystemMessage.send(customer, "상점 목록을 다시 열어 주세요.");
             return;
         }
-        final ArrayList<MJDShopItem> listings = purchase ? shop.getPurchasings() : shop.getSellings();
+        final ArrayList<DynamicShopItem> listings = purchase ? shop.getPurchasings() : shop.getSellings();
         if (listings == null) return;
         final L1PcInstance seller = purchase ? customer : shop;
         final L1PcInstance buyer = purchase ? shop : customer;
@@ -78,7 +79,7 @@ final class PlayerShopTransactions {
                     final int listingId = view.listingId(row);
                     ListingDebit debit = debits.get(listingId);
                     if (debit == null) {
-                        MJDShopItem listing = findListing(listings, listingId);
+                        DynamicShopItem listing = findListing(listings, listingId);
                         if (listing == null || listing.isPurchase != purchase || listing.price != view.price(row)) return;
                         debit = new ListingDebit(listing);
                         debits.put(listingId, debit);
@@ -113,14 +114,14 @@ final class PlayerShopTransactions {
                 final int shopId = shop.getId();
                 final int[] listingIds = debits.keySet().toIntArray();
                 Arrays.sort(listingIds);
-                final MJDShopItem[] expected = new MJDShopItem[listingIds.length];
+                final DynamicShopItem[] expected = new DynamicShopItem[listingIds.length];
                 final int[] amounts = new int[listingIds.length];
                 for (int i = 0; i < listingIds.length; i++) {
                     final ListingDebit debit = debits.get(listingIds[i]);
                     expected[i] = debit.expected;
                     amounts[i] = debit.count;
                 }
-                tx.sql(con -> MJDShopStorage.consumeListings(con, shopId, expected, amounts));
+                tx.sql(con -> DynamicShopStorage.consumeListings(con, shopId, expected, amounts));
                 tx.onFailure(() -> sendFailure(customer));
                 tx.commit(() -> {
                     synchronized (listings) {
@@ -143,12 +144,12 @@ final class PlayerShopTransactions {
 
     private static void executeSingle(L1InventoryTransaction tx, L1PcInstance customer,
             L1PcInstance shop, L1PcInstance seller, L1PcInstance buyer, boolean purchase,
-            ArrayList<MJDShopItem> listings, PlayerShopView view, long first) {
+            ArrayList<DynamicShopItem> listings, PlayerShopView view, long first) {
         final int row = purchase ? CS_Result.param3(first, null, 0) : CS_Result.param1(first, null, 0);
         final int count = purchase ? CS_Result.param2CH(first, null, 0) : (int) CS_Result.param2D(first, null, 0);
         if (row < 0 || row >= view.size() || count <= 0 || count > view.count(row)) return;
         final int listingId = view.listingId(row);
-        final MJDShopItem listing = findListing(listings, listingId);
+        final DynamicShopItem listing = findListing(listings, listingId);
         if (listing == null || listing.isPurchase != purchase || listing.price != view.price(row)
                 || listing.price <= 0 || count > listing.count) return;
         final int itemId = purchase ? CS_Result.param1(first, null, 0) : listingId;
@@ -165,10 +166,10 @@ final class PlayerShopTransactions {
         }
         if (tx.transfer(seller, item, count, buyer) == null
                 || tx.transfer(buyer, adena, (int) total, seller) == null) return;
-        final MJDShopItem expected = MJDShopStorage.copyListing(listing);
+        final DynamicShopItem expected = DynamicShopStorage.copyListing(listing);
         final int shopId = shop.getId();
         tx.requireTables("character_shop");
-        tx.sql(con -> MJDShopStorage.consumeListing(con, shopId, expected, count));
+        tx.sql(con -> DynamicShopStorage.consumeListing(con, shopId, expected, count));
         tx.onFailure(() -> sendFailure(customer));
         tx.commit(() -> {
             synchronized (listings) {
@@ -180,12 +181,12 @@ final class PlayerShopTransactions {
         });
     }
 
-    private static void requireList(L1PcInstance shop, boolean purchase, ArrayList<MJDShopItem> listings) {
+    private static void requireList(L1PcInstance shop, boolean purchase, ArrayList<DynamicShopItem> listings) {
         if (listings != (purchase ? shop.getPurchasings() : shop.getSellings()))
             throw new IllegalStateException("Player shop changed after commit");
     }
 
-    private static void requireListing(ArrayList<MJDShopItem> listings, MJDShopItem listing, MJDShopItem expected) {
+    private static void requireListing(ArrayList<DynamicShopItem> listings, DynamicShopItem listing, DynamicShopItem expected) {
         if (!listings.contains(listing) || listing.objId != expected.objId || listing.itemId != expected.itemId
                 || listing.count != expected.count || listing.price != expected.price
                 || listing.isPurchase != expected.isPurchase || listing.enchant != expected.enchant
@@ -214,21 +215,21 @@ final class PlayerShopTransactions {
         return true;
     }
 
-    private static MJDShopItem findListing(ArrayList<MJDShopItem> listings, int id) {
+    private static DynamicShopItem findListing(ArrayList<DynamicShopItem> listings, int id) {
         for (int i = 0; i < listings.size(); i++) {
-            MJDShopItem listing = listings.get(i);
+            DynamicShopItem listing = listings.get(i);
             if (listing != null && listing.objId == id) return listing;
         }
         return null;
     }
 
-    private static boolean canTransfer(L1PcInstance seller, L1ItemInstance item, MJDShopItem listing,
+    private static boolean canTransfer(L1PcInstance seller, L1ItemInstance item, DynamicShopItem listing,
             int count, long now) {
         return item != null && !item.isEquipped() && item.getItem().isTradable() && item.getBless() < 128
                 && item.getItemdelay3() < now && item.getItemId() == listing.itemId
                 && item.getEnchantLevel() == listing.enchant && item.getAttrEnchantLevel() == listing.attr
                 && (item.isStackable() || count == 1)
-                && MJCompanionInstanceCache.is_companion_oblivion(item.getId())
+                && CompanionInstanceCache.is_companion_oblivion(item.getId())
                 && !CS_PersonalShop.isPetItem(seller, item.getId()) && !CS_PersonalShop.isDollItem(seller, item.getId());
     }
 
@@ -237,13 +238,13 @@ final class PlayerShopTransactions {
     }
 
     private static final class ListingDebit {
-        final MJDShopItem listing;
-        final MJDShopItem expected;
+        final DynamicShopItem listing;
+        final DynamicShopItem expected;
         int count;
 
-        ListingDebit(MJDShopItem listing) {
+        ListingDebit(DynamicShopItem listing) {
             this.listing = listing;
-            expected = MJDShopStorage.copyListing(listing);
+            expected = DynamicShopStorage.copyListing(listing);
         }
     }
 

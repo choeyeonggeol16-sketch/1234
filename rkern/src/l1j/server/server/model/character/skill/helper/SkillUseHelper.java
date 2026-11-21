@@ -5,16 +5,16 @@ import static l1j.server.server.model.character.skill.L1SkillId.*;
 import java.util.BitSet;
 import java.util.concurrent.ThreadLocalRandom;
 
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1PcInventory;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.trap.L1WorldTraps;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.trap.L1WorldTraps;
 import l1j.server.server.templates.L1Skills;
 
 public final class SkillUseHelper {
@@ -544,7 +544,7 @@ public final class SkillUseHelper {
 	    if (cha == null) return false;
 	    if (!isScaleSkill(applyingSkillId)) return false;
 
-	    final boolean aurakia = cha.isPassive(MJPassiveID.AURAKIA.toInt());
+	    final boolean aurakia = cha.isPassive(PassiveID.AURAKIA.toInt());
 
 	    if (!aurakia) {
 	        // 다른 스케일은 전부 제거

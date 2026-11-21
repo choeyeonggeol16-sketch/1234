@@ -3,10 +3,10 @@ package l1j.server.server.packets.Protocol.MainServer.Proto.Craft;
 import java.io.IOException;
 
 import l1j.server.Config;
-import l1j.server.MJTemplate.MJRnd;
 import l1j.server.server.datatables.CraftProbability;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoInputStream;
+import l1j.server.server.shared.GameRandom;
 
 /**
  * 제작 결과 목록 (성공/실패 + 확률)
@@ -54,7 +54,7 @@ public class CraftOutputList {
         if(db_prob != null && db_prob > 0)
             real_prob = db_prob;
 
-        if(MJRnd.isWinning(CRAFT_ITEM_SUCCESS_MILLIONS, real_prob))
+        if(GameRandom.isWinning(CRAFT_ITEM_SUCCESS_MILLIONS, real_prob))
             return new CraftOutputItemResult(extractOutputItem(get_success(), real_prob), true);
 
         CraftOutputSFList fail = get_failure();
@@ -67,7 +67,7 @@ public class CraftOutputList {
         int probCount = sfList.get_probCount();
         if(probCount > 0){
             java.util.List<CraftOutputItem> outputItems = sfList.get_outputProbItems();
-            return outputItems.get((probCount == 1 || l1j.server.MJTemplate.MJRnd.isWinning(CRAFT_ITEM_SUCCESS_MILLIONS, prob) ? 0 : l1j.server.MJTemplate.MJRnd.next(outputItems.size() - 1) + 1));
+            return outputItems.get((probCount == 1 || l1j.server.server.shared.GameRandom.isWinning(CRAFT_ITEM_SUCCESS_MILLIONS, prob) ? 0 : l1j.server.server.shared.GameRandom.next(outputItems.size() - 1) + 1));
         }
         return sfList.get_outputItems().get(0);
     }

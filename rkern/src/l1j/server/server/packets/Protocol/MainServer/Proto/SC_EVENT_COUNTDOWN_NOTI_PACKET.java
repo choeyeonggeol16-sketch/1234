@@ -1,11 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /**
  * SC_EVENT_COUNTDOWN_NOTI_PACKET (0x021C) — 이벤트 카운트다운
@@ -21,12 +17,12 @@ public final class SC_EVENT_COUNTDOWN_NOTI_PACKET extends ProtoPacket {
         _eventDesc = eventDesc;
     }
 
-    /** MJ send() 이관  */
+    /** server send() 이관  */
     public static void send(L1PcInstance pc, int remainSeconds, String desc){
         SC_EVENT_COUNTDOWN_NOTI_PACKET.sendCreate(pc, remainSeconds, desc);
     }
 
-    /** MJ create() 이관 */
+    /** server create() 이관 */
     public static SC_EVENT_COUNTDOWN_NOTI_PACKET create(int remainSeconds, String desc){
         byte[] descBytes = null;
         if (desc != null) {

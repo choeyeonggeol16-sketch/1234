@@ -6,7 +6,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.utils.GameUtils;
 
 /** Immutable learning policy. Rules retain IDs and text, never a player or item. */
 final class ItemLearningRule {
@@ -100,7 +100,7 @@ final class ItemLearningRule {
         }
         if (!requirement.allows(pc)) return false;
         if (duplicateFirst && !gate.allows(pc)) return unavailable(pc);
-        return !requiresAction || !MJCommons.isNonAction(pc);
+        return !requiresAction || !GameUtils.isNonAction(pc);
     }
 
     private boolean unavailable(L1PcInstance pc) {

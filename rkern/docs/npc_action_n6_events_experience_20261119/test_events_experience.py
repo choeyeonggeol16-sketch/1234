@@ -21,7 +21,7 @@ oldexp=old[start:stop].replace('private void','private static void'); newexp=exp
 assert oldexp.strip()==newexp.strip(), 'EXP formulas were changed'
 # Original catapult branch retained except documented invalid castle guard.
 start=old.index('|| npcid == 7000087) {')+len('|| npcid == 7000087) {'); stop=old.index('\n\t\t\t}\n\t\t} catch (Exception e)',start)
-oldcastle=old[start:stop].replace('boolean isNowWar = false;\n\t\t\t\t\tisNowWar = MJCastleWarBusiness.getInstance().isNowWar(castleid);','boolean isNowWar = castleid != 0 && MJCastleWarBusiness.getInstance().isNowWar(castleid);')
+oldcastle=old[start:stop].replace('boolean isNowWar = false;\n\t\t\t\t\tisNowWar = CastleWarBusiness.getInstance().isNowWar(castleid);','boolean isNowWar = castleid != 0 && CastleWarBusiness.getInstance().isNowWar(castleid);')
 assert oldcastle in castle
 oldhelper=old[old.index('private void getShellDmg('):old.rindex('\n}')].replace('private void getShellDmg','private static void getShellDmg').replace('for (L1Object object : L1World.getInstance().getVisibleObjects(effect, 3)) {','if (effect == null) return;\n\t\tfor (L1Object object : L1World.getInstance().getVisibleObjects(effect, 3)) {')
 assert oldhelper.strip() in castle

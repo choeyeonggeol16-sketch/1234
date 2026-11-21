@@ -18,29 +18,28 @@
  */
 package l1j.server.server.command.executor;
 
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.MJTemplate.MJClassesType.EClassesType;
 import l1j.server.server.Account;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.classinfo.EClassesType;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
 import l1j.server.server.model.network.core.cs.packet.CS_CommonClick;
-import l1j.server.server.model.rank.loader.RankUserLoader;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_TOP_RANKER_NOTI;
+import l1j.server.server.model.network.core.sc.packet.SC_CharAmount;
+import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_DelSkill;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
+import l1j.server.server.model.rank.loader.RankUserLoader;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_TOP_RANKER_NOTI;
 import l1j.server.server.utils.SQLUtil;
-
-import l1j.server.server.model.network.core.sc.packet.SC_CharAmount;
 public class change implements L1CommandExecutor {
 
 	private change() {

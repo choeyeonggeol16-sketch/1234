@@ -5,13 +5,14 @@ import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
+
 import l1j.server.Config;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.CommonUtil;
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.utils.GameUtils;
 
 public class CPacketFilter {
 
@@ -27,7 +28,7 @@ public class CPacketFilter {
 
 	public static void commands(L1PcInstance gm, String param){
 		try{
-			ArrayDeque<Integer> argsQ = MJCommons.parseToIntQ(param);
+			ArrayDeque<Integer> argsQ = GameUtils.parseToIntQ(param);
 			if(argsQ == null || argsQ.isEmpty())
 				throw new Exception("");
 

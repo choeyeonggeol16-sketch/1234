@@ -1,12 +1,12 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_PERSONAL_SHOP_ITEM_LIST_NOTI;
+import l1j.server.server.shared.L1Type;
 
 public final class CS_QueryPersonalShop {
 
@@ -87,7 +87,7 @@ public final class CS_QueryPersonalShop {
          */
         if (shopObject != null
                 && shopObject.instanceOf(
-                        MJL1Type.L1TYPE_CLANJOIN)) {
+                        L1Type.L1TYPE_CLANJOIN)) {
 
             pc.sendPackets(
                     "혈맹 가입을 원하면 칼질해주세요.");

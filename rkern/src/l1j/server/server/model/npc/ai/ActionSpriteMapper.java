@@ -1,7 +1,7 @@
 package l1j.server.server.model.npc.ai;
 
-import l1j.server.MJ3SEx.EActionCodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.character.animation.EActionCodes;
 
 /**
  * 스프라이트/몹 속성 기반 공격 액션 자동 판별 

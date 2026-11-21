@@ -1,13 +1,13 @@
 package l1j.server.server.model.Instance;
 
 
-import l1j.server.MJWarSystem.MJCastleWar;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.world.siege.CastleWar;
 import l1j.server.server.templates.L1Npc;
 
 public class L1CrownInstance extends L1NpcInstance {
@@ -55,7 +55,7 @@ public class L1CrownInstance extends L1NpcInstance {
 				return;
 
 			// 크라운의 좌표로부터 castle_id를 취득
-			MJCastleWar war = (MJCastleWar)clan.getCurrentWar();
+			CastleWar war = (CastleWar)clan.getCurrentWar();
 			int castle_id = L1CastleLocation.getCastleId(getX(), getY(), getMapId());
 			if(war == null || war.getDefenseClan().getCastleId() != castle_id){
 				SC_SystemMessage.send(player, "선포되어 있지 않습니다.");

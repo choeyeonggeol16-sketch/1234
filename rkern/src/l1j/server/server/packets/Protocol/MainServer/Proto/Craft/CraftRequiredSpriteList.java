@@ -10,12 +10,12 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoInputStre
  * 제작 필요 스프라이트 조건
  * 1 and_or(bool) / 2 count / 3 sprites(repeated msg: sprite_id / count)
  *
- * ⚠ CraftRequiredSprite 서브메시지 필드번호는 MJ 원본 CraftRequiredSpriteList의
+ * ⚠ CraftRequiredSprite 서브메시지 필드번호는 server 원본 CraftRequiredSpriteList의
  *    내부 클래스 writeTo 기준으로 아래 SPRITE_FIELD_* 상수 확인 필요 (미확정 표시)
  */
 public class CraftRequiredSpriteList {
 
-    // ⚠ MJ 원본 내부 CraftRequiredSprite의 writeTo에서 번호 확인 (아마 1=sprite_id, 2=count)
+    // ⚠ server 원본 내부 CraftRequiredSprite의 writeTo에서 번호 확인 (아마 1=sprite_id, 2=count)
     private static final int SPRITE_FIELD_ID	= 1;
     private static final int SPRITE_FIELD_COUNT	= 2;
 

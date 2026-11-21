@@ -4,12 +4,12 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.FullSelectorHandler;
 import l1j.server.server.model.BookQuest.Reward.BQSAbstractReward;
 import l1j.server.server.model.BookQuest.Reward.BQSExpReward;
 import l1j.server.server.model.BookQuest.Reward.BQSItemReward;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 
 public class BQSRewardsLoader {
 	private static BQSRewardsLoader _instance;

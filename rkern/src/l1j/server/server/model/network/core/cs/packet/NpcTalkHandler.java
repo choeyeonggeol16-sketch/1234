@@ -1,20 +1,18 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.IndunSystem.MiniGame.L1Gambling;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.MJINNSystem.Loader.MJINNHelperLoader;
+import l1j.server.server.model.world.instance.dungeon.minigame.L1Gambling;
 import l1j.server.server.datatables.NpcActionTable;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1AuctionBoardInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.npc.action.L1NpcAction;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MAP_TELEPORT_INFO_NOTI;
 import l1j.server.server.model.network.core.sc.packet.SC_AuctionBoard;
-import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.npc.action.L1NpcAction;
+import l1j.server.server.model.world.instance.inn.loader.InnHelperLoader;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MAP_TELEPORT_INFO_NOTI;
 
 final class NpcTalkHandler {
 
@@ -221,7 +219,7 @@ final class NpcTalkHandler {
                 pc,
                 npc);
 
-        if (MJINNHelperLoader
+        if (InnHelperLoader
                 .getInstance()
                 .onTalk(npc, pc)) {
 

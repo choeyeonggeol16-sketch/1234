@@ -2,11 +2,11 @@ package l1j.server.server.model;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import l1j.server.MJWarSystem.MJCastleWar;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
 import l1j.server.server.model.gametime.L1GameTime;
 import l1j.server.server.model.gametime.L1GameTimeAdapter;
 import l1j.server.server.model.gametime.L1GameTimeClock;
+import l1j.server.server.model.world.siege.CastleWar;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
 
 
 public class L1CastleLocation {
@@ -326,7 +326,7 @@ public class L1CastleLocation {
 	// GameServer#initialize 에서 호출될 것
 	public static void setCastleTaxRate() {
 		for (int i = 1; i <= 8; i++) {
-			MJCastleWar war = MJCastleWarBusiness.getInstance().get(i);
+			CastleWar war = CastleWarBusiness.getInstance().get(i);
 			CASTLE_TAX_RATE[i] = (war != null) ? war.getTaxRate() : 0;
 		}
 		if (_listener == null) {

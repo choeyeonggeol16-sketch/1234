@@ -1,14 +1,10 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.util.ArrayList;
 import java.util.List;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /**
  * SC_PARTY_MEMBER_LIST (0x0337) — 파티원 목록 UI
@@ -31,7 +27,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
  */
 public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
 
-    /** MJ PartyMember 이관 — LIST/CHANGE 양쪽에서 공유 */
+    /** server PartyMember 이관 — LIST/CHANGE 양쪽에서 공유 */
     public static final class Member {
         public final String name;
         public final int accountId, objectId, gameClass, gender;
@@ -56,7 +52,7 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
             this.serverNo = serverNo;
         }
 
-        /** MJ PartyMember.newInstance(pc, markNo) 이관 */
+        /** server PartyMember.newInstance(pc, markNo) 이관 */
         public static Member from(L1PcInstance pc, int markNo) {
             return new Member(
                     pc.getName(),

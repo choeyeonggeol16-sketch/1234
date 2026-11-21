@@ -16,7 +16,7 @@ while i<len(src):
 method=src[pos:i+1]
 files={
 'CS_ExtraCommand.java':'''package l1j.server.server.model.network.core.cs.packet;
-import l1j.server.IndunSystem.Orim.OrimController;
+import l1j.server.server.model.world.instance.dungeon.orim.OrimController;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.*;
 public final class CS_ExtraCommand {
@@ -32,7 +32,7 @@ public final class CS_ExtraCommand {
  }
 }
 ''',
-'OrimController.java':'''package l1j.server.IndunSystem.Orim;
+'OrimController.java':'''package l1j.server.server.model.world.instance.dungeon.orim;
 import l1j.server.server.model.Instance.L1PcInstance;
 public final class OrimController {
   public int score,count;private final L1PcInstance[] players={new L1PcInstance(1),new L1PcInstance(2)};

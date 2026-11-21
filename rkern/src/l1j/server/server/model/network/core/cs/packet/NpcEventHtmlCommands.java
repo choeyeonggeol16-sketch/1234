@@ -1,14 +1,12 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import java.util.concurrent.ThreadLocalRandom;
+
 import l1j.server.Config;
-import l1j.server.DogFight.History.MJDogFightHistory;
-import l1j.server.DogFight.MJDogFightSettings;
-import l1j.server.IndunSystem.Ice.Demon.DemonSystem;
-import l1j.server.IndunSystem.Ice.Queen.QueenSystem;
-import l1j.server.MJActionListener.ActionListener;
-import l1j.server.MJActionListener.ActionListenerLoader;
-import l1j.server.MJTemplate.MJClassesType.EClassesType;
+import l1j.server.server.model.character.combat.arena.dogfight.DogFightSettings;
+import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightHistory;
+import l1j.server.server.model.world.instance.dungeon.ice.demon.DemonSystem;
+import l1j.server.server.model.world.instance.dungeon.ice.queen.QueenSystem;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -18,8 +16,12 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.action.listener.ActionListener;
+import l1j.server.server.model.character.action.listener.ActionListenerLoader;
+import l1j.server.server.model.character.classinfo.EClassesType;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Karma;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
@@ -27,7 +29,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_RaceBoard;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.utils.CommonUtil;
 
 /** Special NPCs, events and the template fallback. */
@@ -311,9 +312,9 @@ final class NpcEventHtmlCommands {
                 NpcQuestTransactions.tutorialArmor(pc, (L1NpcInstance) obj);
                 return;
             }
-        } else if(((L1NpcInstance) obj).getNpcTemplate().get_npcId() == MJDogFightSettings.CASTER_NPC_ID){
+        } else if(((L1NpcInstance) obj).getNpcTemplate().get_npcId() == DogFightSettings.CASTER_NPC_ID){
             if (s.equals("status")) {
-                MJDogFightHistory.getInstance().on_show_ticket_ration_view(pc, (L1NpcInstance) obj);
+                DogFightHistory.getInstance().on_show_ticket_ration_view(pc, (L1NpcInstance) obj);
             }
             // 버경 승률처리 start
         } else if (templateId == 70035

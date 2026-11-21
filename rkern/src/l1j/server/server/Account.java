@@ -9,20 +9,20 @@ import java.util.Calendar;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.storage.CacheD;
-import l1j.server.MJTemplate.MJObjectWrapper;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.SelectorHandler;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.tam.L1Tam;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
-import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
-import l1j.server.server.utils.IntRange;
+import l1j.server.server.shared.ObjectWrapper;
+import l1j.server.server.storage.CacheD;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.handler.SelectorHandler;
 
 public class Account {
 	/** 계정오브젝트아이디 **/
@@ -1036,7 +1036,7 @@ public class Account {
 	public void setAccountId(int i) { _id = i; }
 	
 	public static Integer[] loadAccountAddress(String accountName) {
-		MJObjectWrapper<Integer[]> wrapper = new MJObjectWrapper<Integer[]>();
+		ObjectWrapper<Integer[]> wrapper = new ObjectWrapper<Integer[]>();
 		Selector.exec("select ip from accounts where login=?", new SelectorHandler(){
 			@Override
 			public void handle(PreparedStatement pstm) throws Exception {

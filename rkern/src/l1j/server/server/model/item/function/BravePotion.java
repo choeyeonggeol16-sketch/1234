@@ -1,17 +1,14 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.server.model.character.skill.BraveSpeedEffects;
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-
+import l1j.server.server.model.character.skill.BraveSpeedEffects;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
+import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1Item;
-
-import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
 public class BravePotion extends L1ItemInstance {
     private static final int[] CONFLICTING_BRAVE_SKILLS = {
             1000, 1016, 52, 101, 177, 178, 179, 155, 20079
@@ -64,7 +61,7 @@ public class BravePotion extends L1ItemInstance {
 		if (item_id == 713) {
 			time = 1800;
 		}
-		final int type = pc.isPassive(MJPassiveID.DARK_HORSE.toInt()) ? 3 : 4;
+		final int type = pc.isPassive(PassiveID.DARK_HORSE.toInt()) ? 3 : 4;
 		if (pc.hasSkillEffect(1000)) BraveSpeedEffects.cancelTimer(pc, 1000);
 		if (pc.hasSkillEffect(20079)) BraveSpeedEffects.cancelTimer(pc, 20079);
 		if (type == 3) pc.setStatusBraveMode(type);
@@ -72,8 +69,8 @@ public class BravePotion extends L1ItemInstance {
 		pc.setSkillEffect(type == 3 ? 1000 : 20079, time * 1000);
 		SC_SkillBrave.send(pc, pc.getId(), type, time);
 		SC_SkillBrave.broadcast(pc, pc.getId(), type, 0);
-		SC_SkillSound.send(pc, pc.getId(), pc.isPassive(MJPassiveID.DARK_HORSE.toInt()) ? 751 : 7110);
-		SC_SkillSound.broadcast(pc, pc.getId(), pc.isPassive(MJPassiveID.DARK_HORSE.toInt()) ? 751 : 7110);
+		SC_SkillSound.send(pc, pc.getId(), pc.isPassive(PassiveID.DARK_HORSE.toInt()) ? 751 : 7110);
+		SC_SkillSound.broadcast(pc, pc.getId(), pc.isPassive(PassiveID.DARK_HORSE.toInt()) ? 751 : 7110);
 	}
 
 	private static void useBravePotion(L1PcInstance pc, int item_id) {

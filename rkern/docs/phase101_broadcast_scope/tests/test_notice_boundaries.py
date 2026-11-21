@@ -13,11 +13,11 @@ assert 'sendRecipient(shared,pc)' not in talk
 assert talk.count('closeOptional(shared)')==1
 assert orim.count('sendWrittenArrayBestEffort(')==5
 assert orim.count('sendWrittenArray(')==0
-macro=source('MJServerMacroSystem/MJServerMacroLoader.java')
+macro=source('MJServerMacroSystem/ServerMacroLoader.java')
 assert macro.count('CSharedBroadcast.sendWrittenRecipientsBestEffort(col,')==5
 assert 'CSharedBroadcast.sendWrittenRecipients(col,' not in macro
 assert macro.index('sendWrittenRecipientsBestEffort(col,') < macro.index('obj.nextMs = cur + obj.delay;')
-assert source('MJInstanceSystem/MJInstanceEnums.java').count('CSharedBroadcast.sendWrittenRecipientsBestEffort(pcs,')==2
+assert source('MJInstanceSystem/InstanceEnums.java').count('CSharedBroadcast.sendWrittenRecipientsBestEffort(pcs,')==2
 boss=source('server/Controller/BossController.java')
 assert 'CSharedBroadcast.sendWrittenAllGmsBestEffort(SC_SystemMessage.nativeWriter(msg))' in boss
 fishing=source('server/Controller/FishingTimeController.java')

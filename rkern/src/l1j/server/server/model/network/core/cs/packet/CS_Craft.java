@@ -1,57 +1,56 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.storage.CacheD;
-import l1j.server.IndunSystem.MiniGame.L1Gambling;
-import l1j.server.IndunSystem.MiniGame.L1Gambling3;
-import l1j.server.MJCaptchaSystem.Loader.MJCaptchaLoadManager;
-import l1j.server.MJSurveySystem.MJSurveyFactory;
-import l1j.server.MJSurveySystem.MJSurveySystemLoader;
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.Stadium.StadiumManager;
+import l1j.server.server.model.world.instance.dungeon.minigame.L1Gambling;
+import l1j.server.server.model.world.instance.dungeon.minigame.L1Gambling3;
+import l1j.server.server.model.character.combat.arena.stadium.StadiumManager;
 import l1j.server.server.DungeonTimeCommand;
 import l1j.server.server.GMCommands;
 import l1j.server.server.SkillMsgMute;
 import l1j.server.server.UserCommands;
+import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.datatables.BuddyTable;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ClanBuffTable;
 import l1j.server.server.datatables.ClanBuffTable.ClanBuff;
-import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.SpamTable;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Buddy;
 import l1j.server.server.model.L1ChatParty;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ClanRanking;
 import l1j.server.server.model.L1ClanRanking.RankData;
 import l1j.server.server.model.L1ExcludingList;
+import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1PcInventory;
-import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.character.survey.SurveyFactory;
+import l1j.server.server.model.character.survey.SurveySystemLoader;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.monitor.Logger.ChatType;
-import l1j.server.server.monitor.LoggerInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CHAR_STAT;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SLOT_CHANGE;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI2;
 import l1j.server.server.model.network.core.sc.packet.SC_NewChat;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_Pledge;
 import l1j.server.server.model.network.core.sc.packet.SC_RankingClan;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.monitor.Logger.ChatType;
+import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CHAR_STAT;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SLOT_CHANGE;
+import l1j.server.server.shared.L1Type;
+import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1CharName;
 import l1j.server.server.utils.StatContext;
 
@@ -483,7 +482,7 @@ public final class CS_Craft {
 			return;
 		}
 
-		MJCaptchaLoadManager.getInstance().do_auth_captcha(pc, chatText);
+		CaptchaLoadManager.getInstance().do_auth_captcha(pc, chatText);
 
 		if (pc.hasSkillEffect(L1SkillId.SILENCE) || pc.hasSkillEffect(L1SkillId.AREA_OF_SILENCE) || pc.hasSkillEffect(L1SkillId.CONFUSION) || pc.hasSkillEffect(L1SkillId.STATUS_POISON_SILENCE) || pc.hasSkillEffect(1005)) {
 			SC_ServerMessage.send(pc, 242);
@@ -728,21 +727,21 @@ for (L1PcInstance listener : clan.getOnlineClanMember()) {
 
 		final L1Object obj = L1World.getInstance().findObject(temporaryItemObjectId);
 
-		if (obj != null && obj.instanceOf(MJL1Type.L1TYPE_ITEMINSTANCE)) {
+		if (obj != null && obj.instanceOf(L1Type.L1TYPE_ITEMINSTANCE)) {
 			final L1ItemInstance item = (L1ItemInstance) obj;
 			final int itemId = item.getItemId();
 
 			if (itemId == 700085 || itemId == 700086) {
-				if (MJSurveyFactory.isMegaphoneSpeaking) {
+				if (SurveyFactory.isMegaphoneSpeaking) {
 					pc.sendPackets("이미 확성기 메시지가 재생되고 있습니다. 잠시 후 다시 이용해주세요.");
 					pc.clearTemporaryItemObjectId();
 					return true;
 				}
 
-				MJSurveySystemLoader.getInstance().registerSurvey(pc,
+				SurveySystemLoader.getInstance().registerSurvey(pc,
 						String.format("입력하신 문자가 : \"%s\"입니다. 이대로 전송하시겠습니까?", chatText),
 						temporaryItemObjectId,
-						MJSurveyFactory.createMegaphoneSurvey(temporaryItemObjectId, chatText, itemId == 700085 ? 20 : 40),
+						SurveyFactory.createMegaphoneSurvey(temporaryItemObjectId, chatText, itemId == 700085 ? 20 : 40),
 						10000L);
 
 				pc.clearTemporaryItemObjectId();

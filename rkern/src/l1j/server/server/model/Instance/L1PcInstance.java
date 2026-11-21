@@ -1,25 +1,5 @@
 package l1j.server.server.model.Instance;
-import l1j.server.server.model.character.effect.PcPassiveEffects;
-import l1j.server.server.model.character.effect.PcPotentialEffects;
-import l1j.server.server.model.character.effect.PcClanBuffEffects;
-import l1j.server.server.model.character.effect.PcWantedEffects;
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
-import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
-import l1j.server.server.model.network.core.sc.packet.SC_ClanName;
-import l1j.server.server.model.network.core.sc.packet.SC_CastleMaster;
-
-import l1j.server.server.model.network.core.sc.packet.SC_Fishing;
-
-
-
-import l1j.server.server.model.network.core.sc.packet.SC_Weight;
-import l1j.server.server.model.network.core.sc.packet.SC_CharTitle;
-import l1j.server.server.model.network.core.sc.packet.SC_CharSpeedUpdate;
 import java.sql.PreparedStatement;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -30,56 +10,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import javolution.util.FastMap;
-import l1j.server.Config;
-import l1j.server.MJ3SEx.EActionCodes;
-import l1j.server.MJ3SEx.Loader.SpriteInformationLoader;
-import l1j.server.MJCaptchaSystem.MJCaptcha;
-import l1j.server.MJCombatSystem.MJCombatObserver;
-import l1j.server.MJCombatSystem.Loader.MJCombatLoadManager;
-import l1j.server.MJDungeonTimer.DungeonTimeInformation;
-import l1j.server.MJDungeonTimer.DungeonTimeUserInformation;
-import l1j.server.MJDungeonTimer.Loader.DungeonTimeProgressLoader;
-import l1j.server.MJDungeonTimer.Progress.AccountTimeProgress;
-import l1j.server.MJDungeonTimer.Progress.CharacterTimeProgress;
-import l1j.server.MJDungeonTimer.Progress.DungeonTimeProgress;
-import l1j.server.MJExpAmpSystem.MJExpAmplifier;
-import l1j.server.MJInstanceSystem.MJInstanceEnums.InstStatus;
-import l1j.server.MJInstanceSystem.MJInstanceSpace;
 
-import l1j.server.MJItemSkillSystem.MJItemSkillModelLoader;
-import l1j.server.MJItemSkillSystem.Model.MJItemSkillModel;
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.MJPassiveSkill.MJPassiveInfo;
-import l1j.server.MJRaidSystem.MJRaidSpace;
-import l1j.server.MJTemplate.MJEPcStatus;
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.MJTemplate.MJRnd;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Updator;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.Handler;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.SelectorHandler;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
-import l1j.server.MJWarSystem.MJWar;
-import l1j.server.MJWarSystem.MJWarFactory.WAR_TYPE;
+import javolution.util.FastMap;
+
+import l1j.server.Config;
 import l1j.server.server.Account;
 import l1j.server.server.ActionCodes;
+import l1j.server.server.Controller.FishingTimeController;
+import l1j.server.server.Controller.PremiumTimeController;
 import l1j.server.server.GMCommands;
-import l1j.server.server.ThreadPool;
 import l1j.server.server.Opcodes;
 import l1j.server.server.RepeatTask;
 import l1j.server.server.SkillCheck;
-import l1j.server.server.Controller.FishingTimeController;
-import l1j.server.server.Controller.PremiumTimeController;
+import l1j.server.server.ThreadPool;
+import l1j.server.server.auth.captcha.Captcha;
 import l1j.server.server.command.executor.L1HpBar;
 import l1j.server.server.datatables.CharBuffTable;
 import l1j.server.server.datatables.CharacterSlotItemTable;
@@ -91,6 +43,8 @@ import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.model.Ability;
+import l1j.server.server.model.BookQuest.Loader.BQSCharacterDataLoader;
+import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
 import l1j.server.server.model.Getback;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
@@ -117,81 +71,112 @@ import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.L1Trade;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.ReportDeley;
-import l1j.server.server.model.BookQuest.Loader.BQSCharacterDataLoader;
-import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
+import l1j.server.server.model.character.CYieldLock;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
-import l1j.server.server.model.character.action.CCreatureController;
 import l1j.server.server.model.character.Utill.PcBaseAbilityCache;
+import l1j.server.server.model.character.action.CCreatureController;
+import l1j.server.server.model.character.animation.EActionCodes;
+import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
+import l1j.server.server.model.character.combat.arena.CombatObserver;
+import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
+import l1j.server.server.model.character.effect.PcClanBuffEffects;
+import l1j.server.server.model.character.effect.PcPassiveEffects;
+import l1j.server.server.model.character.effect.PcPotentialEffects;
+import l1j.server.server.model.character.effect.PcWantedEffects;
+import l1j.server.server.model.character.experience.amplifier.ExpAmplifier;
 import l1j.server.server.model.character.scheduler.AutoSaveChaQuitCheckScheduler;
 import l1j.server.server.model.character.scheduler.CRegenController;
 import l1j.server.server.model.character.scheduler.CharTamScheduler;
 import l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.character.skill.passive.PassiveID;
+import l1j.server.server.model.character.skill.passive.PassiveInfo;
 import l1j.server.server.model.character.slot.SlotChangeManager;
 import l1j.server.server.model.classes.L1ClassFeature;
 import l1j.server.server.model.gametime.L1GameTimeCarrier;
 import l1j.server.server.model.item.Card.L1CardCollection;
 import l1j.server.server.model.item.Exp.ExpBonusState;
+import l1j.server.server.model.item.proc.ItemSkillModelLoader;
+import l1j.server.server.model.item.proc.model.ItemSkillModel;
 import l1j.server.server.model.item.teleport.L1Teleport;
-import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.sc.packet.SC_ActionUI2;
+import l1j.server.server.model.network.core.sc.packet.SC_CastleMaster;
+import l1j.server.server.model.network.core.sc.packet.SC_ChangeShape;
+import l1j.server.server.model.network.core.sc.packet.SC_CharSpeedUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_CharTitle;
+import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.network.core.sc.packet.SC_ClanName;
+import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.model.network.core.sc.packet.SC_DoActionShop;
+import l1j.server.server.model.network.core.sc.packet.SC_Fishing;
 import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
+import l1j.server.server.model.network.core.sc.packet.SC_Invis;
+import l1j.server.server.model.network.core.sc.packet.SC_Lawful;
+import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
+import l1j.server.server.model.network.core.sc.packet.SC_PinkName;
+import l1j.server.server.model.network.core.sc.packet.SC_Poison;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
+import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
+import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_Teleport;
+import l1j.server.server.model.network.core.sc.packet.SC_Weight;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.rank.loader.RankUserLoader;
+import l1j.server.server.model.world.instance.InstanceEnums.InstStatus;
+import l1j.server.server.model.world.instance.InstanceSpace;
+import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeInformation;
+import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeUserInformation;
+import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeProgressLoader;
+import l1j.server.server.model.world.instance.dungeon.time.progress.AccountTimeProgress;
+import l1j.server.server.model.world.instance.dungeon.time.progress.CharacterTimeProgress;
+import l1j.server.server.model.world.instance.dungeon.time.progress.DungeonTimeProgress;
+import l1j.server.server.model.world.instance.raid.RaidSpace;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.War;
+import l1j.server.server.model.world.siege.WarFactory.WAR_TYPE;
 import l1j.server.server.monitor.Logger.ItemActionType;
 import l1j.server.server.monitor.LoggerInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
+import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.CompanionT.eCommand;
+import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
+import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.AttendanceUserFlag;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_USER_DATA_EXTEND;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CHAR_STAT;
-import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eDurationShowType;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoOutputStream;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.AttendanceUserFlag;
-import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.CompanionT.eCommand;
-import l1j.server.server.model.network.core.sc.packet.SC_ActionUI2;
-import l1j.server.server.model.network.core.sc.packet.SC_ChangeShape;
-import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
-import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
-import l1j.server.server.model.network.core.sc.packet.SC_DoActionShop;
-import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
-import l1j.server.server.model.network.core.sc.packet.SC_Invis;
-import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
-import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
-
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
-
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.EPcStatus;
+import l1j.server.server.shared.GameRandom;
+import l1j.server.server.shared.L1Type;
 import l1j.server.server.storage.CacheD;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.executors.Updator;
+import l1j.server.server.storage.sql.handler.Handler;
+import l1j.server.server.storage.sql.handler.SelectorHandler;
 import l1j.server.server.templates.L1BookMark;
 import l1j.server.server.templates.L1QuestInfo;
 import l1j.server.server.utils.CalcStat;
-import l1j.server.server.utils.CommonUtil;
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.ServerMessage;
-import l1j.server.server.utils.eKind;
 import l1j.server.swing.chocco;
-
-
-import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX;
-import l1j.server.server.model.network.core.sc.packet.SC_Lawful;
-import l1j.server.server.model.network.core.sc.packet.SC_PinkName;
-import l1j.server.server.model.network.core.sc.packet.SC_Poison;
-import l1j.server.server.model.character.CYieldLock;
 public class L1PcInstance extends L1Character {
     private volatile long cacheDSessionEpoch;
 
@@ -2142,7 +2127,7 @@ public class L1PcInstance extends L1Character {
 		if (getCurrentHp() == i)
 			return;
 
-		/** 2016.11.26 MJ 앱센터 LFC **/
+		/** 2016.11.26 server 앱센터 LFC **/
 		/* lfc중이고 hp가 깎였으면, */
 		if ((getInstStatus() == InstStatus.INST_USERSTATUS_LFC) && i > getCurrentHp())
 			addDamageFromLfc(i - getCurrentHp());
@@ -2540,16 +2525,16 @@ public class L1PcInstance extends L1Character {
             } catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout attendance save failed: " + getId(), e); }
             try {
                 if (is_combat_field()) {
-                    MJCombatObserver observer = MJCombatLoadManager.getInstance()
+                    CombatObserver observer = CombatLoadManager.getInstance()
                             .get_current_observer(get_current_combat_id());
                     if (observer != null) observer.remove(this);
                 }
             } catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout combat observer failed: " + getId(), e); }
             try { RankUserLoader.getInstance().offUser(this); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout rank index failed: " + getId(), e); }
-            try { MJRaidSpace.getInstance().getBackPc(this); }
+            try { RaidSpace.getInstance().getBackPc(this); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout raid space failed: " + getId(), e); }
-            try { MJInstanceSpace.getInstance().getBackPc(this); }
+            try { InstanceSpace.getInstance().getBackPc(this); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout instance space failed: " + getId(), e); }
             try { CharacterSlotItemTable.getInstance().updateCharSlotItems(this); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout slot item save rejected: " + getId(), e); }
@@ -2966,8 +2951,8 @@ public class L1PcInstance extends L1Character {
 			L1Clan clan = pc.getClan();
 			L1Clan enemyclan = targetpc.getClan();
 			if (clan != null && enemyclan != null) {
-				MJWar war = clan.getCurrentWar();
-				MJWar enemyWar = enemyclan.getCurrentWar();
+				War war = clan.getCurrentWar();
+				War enemyWar = enemyclan.getCurrentWar();
 				if (war != null && enemyWar != null && war.equals(enemyWar))
 					return false;
 			}
@@ -2988,7 +2973,7 @@ public class L1PcInstance extends L1Character {
 		int castleId = L1CastleLocation.getCastleIdByArea(pc);
 		int targetCastleId = L1CastleLocation.getCastleIdByArea(target);
 		if (castleId != 0 && targetCastleId != 0 && castleId == targetCastleId) {
-			if (MJCastleWarBusiness.getInstance().isNowWar(castleId)) {
+			if (CastleWarBusiness.getInstance().isNowWar(castleId)) {
 				return true;
 			}
 		}
@@ -3063,7 +3048,7 @@ public class L1PcInstance extends L1Character {
 		int castleId = L1CastleLocation.getCastleIdByArea(this);
 
 		if (castleId != 0) {
-			isNowWar = MJCastleWarBusiness.getInstance().isNowWar(castleId);
+			isNowWar = CastleWarBusiness.getInstance().isNowWar(castleId);
 		}
 		return isNowWar;
 	}
@@ -3073,7 +3058,7 @@ public class L1PcInstance extends L1Character {
 		_creatureController.OnDamaged(attacker, damage, true);
 	}
 
-	/** NC-style victim damage application; invoked only by CCreatureController.OnDamagedMessage. */
+	/** reference design victim damage application; invoked only by CCreatureController.OnDamagedMessage. */
 	public void GotCounterBarrierDamage(L1Character attacker, int damage) {
 		try {
 			if (getCurrentHp() > 0 && !isDead()) {
@@ -3089,14 +3074,14 @@ public class L1PcInstance extends L1Character {
 					} else if (hasSkillEffect(L1SkillId.PHANTASM)) {
 						removeSkillEffect(L1SkillId.PHANTASM);
 					}
-					if (attacker.instanceOf(MJL1Type.L1TYPE_PC)) {
+					if (attacker.instanceOf(L1Type.L1TYPE_PC)) {
 						if (is_combat_field()) {
-							MJCombatObserver observer = MJCombatLoadManager.getInstance()
+							CombatObserver observer = CombatLoadManager.getInstance()
 									.get_current_observer(get_current_combat_id());
 							if (observer != null) {
 								observer.on_damage((L1PcInstance) attacker, this, damage);
 							} else {
-								set_instance_status(MJEPcStatus.WORLD);
+								set_instance_status(EPcStatus.WORLD);
 							}
 						}
 					}
@@ -3331,7 +3316,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
     private void applyReceivedDamage(L1Character attacker, int damage,
                                      boolean applyMagicStack, boolean unarmedPhysical) {
         if ((applyMagicStack || unarmedPhysical) && (hasSkillEffect(L1SkillId.ABSOLUTE_BARRIER)
-                || MJCommons.isUnbeatable(this))) return;
+                || GameUtils.isUnbeatable(this))) return;
 		if(get_teleport()) {
 			return;
 		}
@@ -3372,12 +3357,12 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 					L1PcInstance attacker_pc = (L1PcInstance) attacker;
 					L1PinkName.onAction(this, attacker);
 					if (is_combat_field()) {
-						MJCombatObserver observer = MJCombatLoadManager.getInstance()
+						CombatObserver observer = CombatLoadManager.getInstance()
 								.get_current_observer(get_current_combat_id());
 						if (observer != null) {
 							observer.on_damage(attacker_pc, this, damage);
 						} else {
-							set_instance_status(MJEPcStatus.WORLD);
+							set_instance_status(EPcStatus.WORLD);
 						}
 					}
 					L1CompanionInstance companion = attacker_pc.get_companion();
@@ -3392,7 +3377,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 				}
 
 				for (L1ItemInstance item : _equipSlot.getArmors()) {
-					MJItemSkillModel model = MJItemSkillModelLoader.getInstance().getDef(item.getItemId());
+					ItemSkillModel model = ItemSkillModelLoader.getInstance().getDef(item.getItemId());
                     if (model != null) {
                         final double reduction = model.get(attacker, this, item, damage);
                         // Keep defense proc side effects; its DR cannot change
@@ -3634,10 +3619,10 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 
 	        // 전투 필드(컴뱃) / 일반 KDA 처리
 	        if (is_combat_field()) {
-	            MJCombatObserver observer = MJCombatLoadManager.getInstance()
+	            CombatObserver observer = CombatLoadManager.getInstance()
 	                    .get_current_observer(get_current_combat_id());
 	            if (observer == null) {
-	                set_instance_status(MJEPcStatus.WORLD);
+	                set_instance_status(EPcStatus.WORLD);
 	                if (getKDA() != null) {
 	                    getKDA().onKill(player, this);
 	                }
@@ -3848,14 +3833,14 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 		}
 		/** 라우풀 수치에 따른 아이템 드랍 개수 산출 로직 깔끔하게 압축 **/
 		private int calculateChaosDropCount(int lawful) {
-			if (lawful < -30000) return MJRnd.next(Config.라우풀1) + 1;
-			if (lawful < -20000) return MJRnd.next(Config.라우풀2) + 1;
-			if (lawful < -10000) return MJRnd.next(Config.라우풀3) + 1;
-			if (lawful < 0) return MJRnd.next(Config.라우풀4) + 1;
-			if (lawful < 10000) return MJRnd.next(Config.라우풀5) + 1;
-			if (lawful < 20000) return MJRnd.next(Config.라우풀6) + 1;
-			if (lawful <= 32766) return MJRnd.next(Config.라우풀7) + 1;
-			return MJRnd.next(Config.라우풀8) + 1;
+			if (lawful < -30000) return GameRandom.next(Config.라우풀1) + 1;
+			if (lawful < -20000) return GameRandom.next(Config.라우풀2) + 1;
+			if (lawful < -10000) return GameRandom.next(Config.라우풀3) + 1;
+			if (lawful < 0) return GameRandom.next(Config.라우풀4) + 1;
+			if (lawful < 10000) return GameRandom.next(Config.라우풀5) + 1;
+			if (lawful < 20000) return GameRandom.next(Config.라우풀6) + 1;
+			if (lawful <= 32766) return GameRandom.next(Config.라우풀7) + 1;
+			return GameRandom.next(Config.라우풀8) + 1;
 		}
 	}
 	
@@ -3914,7 +3899,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	public boolean castleWarResult() {
 		L1Clan clan = getClan();
 		if (clan != null && isCrown() && getId() == clan.getLeaderId()) {
-			MJWar war = clan.getCurrentWar();
+			War war = clan.getCurrentWar();
 			if (war != null) {
 				WAR_TYPE type = war.getWarType();
 				if (type.equals(WAR_TYPE.CASTLE) && war.getOffenseClan(clan.getClanId()) != null) {
@@ -3929,7 +3914,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		boolean isNowWar = false;
 		castleId = L1CastleLocation.getCastleIdByArea(this);
 		if (castleId != 0) {
-			isNowWar = MJCastleWarBusiness.getInstance().isNowWar(castleId);
+			isNowWar = CastleWarBusiness.getInstance().isNowWar(castleId);
 		}
 		return isNowWar;
 	}
@@ -3960,8 +3945,8 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		if (clan == null || enemy == null || clan.getLeaderId() != getId())
 			return false;
 
-		MJWar war = clan.getCurrentWar();
-		MJWar enemyWar = enemy.getCurrentWar();
+		War war = clan.getCurrentWar();
+		War enemyWar = enemy.getCurrentWar();
 		if (war == null || enemyWar == null || !war.equals(enemyWar))
 			return false;
 
@@ -4492,7 +4477,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	public int getBraveSpeed() {
 		// 환술 용기속도
 		if (hasSkillEffect(L1SkillId.STATUS_FRUIT))
-			return isPassive(MJPassiveID.DARK_HORSE.toInt()) ? 3 : 4;
+			return isPassive(PassiveID.DARK_HORSE.toInt()) ? 3 : 4;
 		return super.getBraveSpeed();
 	}
 
@@ -6784,7 +6769,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_isBossNotify = b;
 	}
 
-	/** 2016.11.26 MJ 앱센터 LFC **/
+	/** 2016.11.26 server 앱센터 LFC **/
 	/** instance space 공간중 어떤 상태에 있는지 여부를 나타냄 **/
 	private InstStatus _instStatus = InstStatus.INST_USERSTATUS_NONE;
 
@@ -6811,9 +6796,9 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_dmgLfc = i;
 	}
 
-	/** 2016.11.26 MJ 앱센터 LFC **/
+	/** 2016.11.26 server 앱센터 LFC **/
 
-	/** 2016.12.01 MJ 앱센터 LFC **/
+	/** 2016.12.01 server 앱센터 LFC **/
 	private int _findMerchantId = 0;
 
 	public int getFindMerchantId() {
@@ -6824,7 +6809,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_findMerchantId = i;
 	}
 
-	/** 2016.12.01 MJ 앱센터 LFC **/
+	/** 2016.12.01 server 앱센터 LFC **/
 
 	private boolean _isValakasProduct;
 
@@ -6836,13 +6821,13 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_isValakasProduct = b;
 	}
 
-	private MJExpAmplifier _expAmplifier;
+	private ExpAmplifier _expAmplifier;
 
-	public MJExpAmplifier getExpAmplifier() {
+	public ExpAmplifier getExpAmplifier() {
 		return _expAmplifier;
 	}
 
-	public void setExpAmplifier(MJExpAmplifier amp) {
+	public void setExpAmplifier(ExpAmplifier amp) {
 		if (_expAmplifier != null) {
 			if (_expAmplifier.equals(amp))
 				return;
@@ -7048,7 +7033,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	@Override
 	public int getL1Type() {
-		return _instanceType == -1 ? _instanceType = super.getL1Type() | MJL1Type.L1TYPE_PC : _instanceType;
+		return _instanceType == -1 ? _instanceType = super.getL1Type() | L1Type.L1TYPE_PC : _instanceType;
 	}
 
 	@Override
@@ -7119,28 +7104,28 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_bqsData = bqs;
 	}
 
-	private MJEPcStatus _instance_status = MJEPcStatus.NONE;
+	private EPcStatus _instance_status = EPcStatus.NONE;
 	private int _current_combat_id = 0;
 	private int _current_combat_team_id = -1;
 
-	public void set_instance_status(MJEPcStatus instance_status) {
+	public void set_instance_status(EPcStatus instance_status) {
 		_instance_status = instance_status;
 	}
 
-	public MJEPcStatus get_instance_status() {
+	public EPcStatus get_instance_status() {
 		return _instance_status;
 	}
 
 	public boolean is_none() {
-		return _instance_status.equals(MJEPcStatus.NONE);
+		return _instance_status.equals(EPcStatus.NONE);
 	}
 
 	public boolean is_world() {
-		return _instance_status.equals(MJEPcStatus.WORLD);
+		return _instance_status.equals(EPcStatus.WORLD);
 	}
 
 	public boolean is_combat_field() {
-		return _instance_status.equals(MJEPcStatus.COMBAT_FIELD);
+		return _instance_status.equals(EPcStatus.COMBAT_FIELD);
 	}
 
 	public void set_current_combat_id(int current_combat_id) {
@@ -7179,14 +7164,14 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		return _mark_status;
 	}
 
-	private MJCaptcha _captcha;
+	private Captcha _captcha;
 
-	public MJCaptcha get_captcha() {
+	public Captcha get_captcha() {
 		return _captcha;
 	}
 
-	public MJCaptcha create_captcha() {
-		return (_captcha = MJCaptcha.newInstance(getId()));
+	public Captcha create_captcha() {
+		return (_captcha = Captcha.newInstance(getId()));
 	}
 
 	private int _lateral_damage;
@@ -7349,22 +7334,22 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_PostDelay = i;
 	}
 
-	private HashMap<Integer, MJPassiveInfo> m_passives;
+	private HashMap<Integer, PassiveInfo> m_passives;
 
-	public void addPassive(MJPassiveInfo pInfo) {
+	public void addPassive(PassiveInfo pInfo) {
 		if (m_passives == null)
-			m_passives = new HashMap<Integer, MJPassiveInfo>();
+			m_passives = new HashMap<Integer, PassiveInfo>();
 
 		m_passives.put(pInfo.getPassiveId(), pInfo);
 	}
 
-	public ArrayList<MJPassiveInfo> getPassives() {
+	public ArrayList<PassiveInfo> getPassives() {
 		if (m_passives == null)
 			return null;
-		return new ArrayList<MJPassiveInfo>(m_passives.values());
+		return new ArrayList<PassiveInfo>(m_passives.values());
 	}
 
-	public MJPassiveInfo getPassive(int passiveId) {
+	public PassiveInfo getPassive(int passiveId) {
 		if (m_passives == null)
 			return null;
 		return m_passives.get(passiveId);
@@ -7528,7 +7513,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	    
 		try {
 			// 액션 불가능 상태 체크
-			if (MJCommons.isNonAction(this)) {
+			if (GameUtils.isNonAction(this)) {
 				return;
 			}
 			// 혈맹 아인하사드 축복 버프 업데이트

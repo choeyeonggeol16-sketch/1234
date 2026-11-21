@@ -1,17 +1,15 @@
 package l1j.server.server.packets.Protocol.MainServer.Inventory.Proto;
-import l1j.server.server.model.network.core.sc.packet.SC_ItemName;
-
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import java.util.LinkedList;
 import java.util.List;
 
-import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.sc.packet.SC_ItemName;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo;
 /**
  * 인벤토리 아이템 갱신 통지 (0x024D) — repeated ItemInfo(1)만.
  */
@@ -41,11 +39,11 @@ public final class SC_UPDATE_INVENTORY_NOTI extends ProtoPacket {
         SC_ItemName.send(pc, itemObjectId, description);
     }
 
-    public static void send_companion_control_item(L1PcInstance pc, int itemObjectId, MJCompanionInstanceCache cache) {
+    public static void send_companion_control_item(L1PcInstance pc, int itemObjectId, CompanionInstanceCache cache) {
         if (pc != null) sendCompanion(pc.getNetConnection(), itemObjectId, cache);
     }
 
-    public static boolean sendCompanion(CUserSocket client, int itemObjectId, MJCompanionInstanceCache cache) {
+    public static boolean sendCompanion(CUserSocket client, int itemObjectId, CompanionInstanceCache cache) {
         boolean summoned = cache.get_is_summoned();
         boolean dead = cache.get_is_dead();
         boolean oblivion = cache.get_is_oblivion();

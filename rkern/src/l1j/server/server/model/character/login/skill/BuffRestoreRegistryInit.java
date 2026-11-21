@@ -1,32 +1,26 @@
 package l1j.server.server.model.character.login.skill;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
-import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
-
-import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.core.sc.packet.SC_ElfIcon;
+import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
-
+import l1j.server.server.model.network.core.sc.packet.SC_Liquor;
+import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-
-
-import l1j.server.server.utils.eKind;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
+import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX;
 import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
+import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eDurationShowType;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType;
-
-import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
-import l1j.server.server.model.network.core.sc.packet.SC_Liquor;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX;
 /**
  * 스킬 로그인 복구 핸들러 등록부
  */
@@ -348,7 +342,7 @@ public final class BuffRestoreRegistryInit {
         // ================= 19. STATUS_FRUIT (다크호스 분기) =================
         BuffRestoreRegistry.register(L1SkillId.STATUS_FRUIT, (pc, sid, polyId, rt, icon) -> {
             icon[29] = rt / 4;
-            if (pc.isPassive(MJPassiveID.DARK_HORSE.toInt())) {
+            if (pc.isPassive(PassiveID.DARK_HORSE.toInt())) {
                 SC_SkillBrave.send(pc, pc.getId(), 3, rt);
                 SC_SkillBrave.broadcast(pc, pc.getId(), 3, 0);
                 pc.setBraveSpeed(3);

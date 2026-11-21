@@ -1,40 +1,35 @@
 
 package l1j.server.server.model;
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_ItemName;
-import l1j.server.server.model.network.core.sc.packet.SC_Ability;
-import l1j.server.server.model.network.core.sc.packet.SC_ItemStatus;
-
-
-
-import l1j.server.server.model.network.core.sc.packet.SC_Weight;
-import l1j.server.server.model.network.core.sc.packet.SC_DeleteInventoryItem;
-import l1j.server.server.model.network.core.sc.packet.SC_ItemColor;
 import java.util.Arrays;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
-import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
 import l1j.server.server.datatables.NoDropItem;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
-import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.character.equip.EquipType;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_ADD_INVENTORY_NOTI;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo;
+import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.network.core.sc.packet.SC_Ability;
+import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_DeleteInventoryItem;
 import l1j.server.server.model.network.core.sc.packet.SC_EquipmentWindow;
+import l1j.server.server.model.network.core.sc.packet.SC_ItemColor;
+import l1j.server.server.model.network.core.sc.packet.SC_ItemName;
+import l1j.server.server.model.network.core.sc.packet.SC_ItemStatus;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.core.sc.packet.SC_Weight;
+import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_ADD_INVENTORY_NOTI;
 import l1j.server.server.storage.CharactersItemStorage;
 import l1j.server.server.templates.L1BookMark;
 import l1j.server.server.templates.L1Item;
@@ -1109,7 +1104,7 @@ public class L1PcInventory extends L1Inventory {
 						|| penaltyItem.getItem().getItemId() == 70708|| penaltyItem.getItem().getItemId() == 80500 || !penaltyItem.getItem().isTradable()) {
 			return null;
 		}
-		if(!MJCompanionInstanceCache.is_companion_oblivion(penaltyItem.getId()))			
+		if(!CompanionInstanceCache.is_companion_oblivion(penaltyItem.getId()))			
 			return null;
 		
         for (Object petObject : _owner.getPetList().values()) {

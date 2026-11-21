@@ -18,7 +18,6 @@
  */
 package l1j.server.server.templates;
 
-import l1j.server.MJServerMacroSystem.MJServerMacroObject;
 import l1j.server.server.datatables.ItemTable;
 
 public class L1AdenShopItem implements Comparable<L1AdenShopItem>{

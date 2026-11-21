@@ -1,10 +1,10 @@
 package l1j.server.server.model.character.skill.core;
 
 import l1j.server.Config;
-import l1j.server.MJ3SEx.EActionCodes;
-import l1j.server.MJ3SEx.SpriteInformation;
-import l1j.server.MJ3SEx.Loader.SpriteInformationLoader;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.animation.EActionCodes;
+import l1j.server.server.model.character.animation.SpriteInformation;
+import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.templates.L1Skills;
 

@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
@@ -84,7 +83,7 @@ public class ManagerCommands extends javax.swing.JFrame {
 	private void onCommand(ActionEvent evt){
 		String s = _tfCommand.getText();
 		if(s == null || s.equalsIgnoreCase("")){
-			MJMessageBox.show(this, "명령어가 선택되지 않았습니다.", true);
+			MessageBox.show(this, "명령어가 선택되지 않았습니다.", true);
 			return;
 		}
 		try{

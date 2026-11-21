@@ -87,10 +87,10 @@ retOld=cls(BASE/'ReturnAndTeleportItems.java','ReturnAndTeleportItems','OldRetur
 route=['IslandReturnScrollUse','ShopTeleportAmuletUse','ClanInnReturnScrollUse','DeployableEffectItems',
        'TravelBuffUseItems','TravelUtilityExchangeItems','ExperienceAndElixirUseItems',
        'CharacterPackageUseItems','BossInvocationScrollItems','AccountPositionRecoveryItems']
-code='''class CIOClient {} class L1PcInstance{} class L1ItemInstance{} class MJINNHelper {static final int INN_KEYID=899998;}
+code='''class CIOClient {} class L1PcInstance{} class L1ItemInstance{} class InnHelper {static final int INN_KEYID=899998;}
 class Env {static StringBuilder out=new StringBuilder();static void log(String s){out.append(s);}}
 '''+''.join(f'class {c} {{ static void use(CIOClient c,L1PcInstance p,L1ItemInstance i,int id){{Env.log("{c};");}} }}\n' for c in route)+retOld+'\n'+travelOld+'\n'+travelNew+'''
-public class Test {public static void main(String[]args){int count=0;int[] ids={3000147,202099,3000229,875640424,875640415,3000413,240100,748,749,40124,30086,MJINNHelper.INN_KEYID,700023,41260,731,3000397,3000398,650009,3000128,4100040,60208,60209,60210,700021,60256,700000,4100074,4100075,40033,40034,40035,40036,40037,40038,3000126,3000127,89136,875640417,875640450,123124,12302,3000123,210104,12345};
+public class Test {public static void main(String[]args){int count=0;int[] ids={3000147,202099,3000229,875640424,875640415,3000413,240100,748,749,40124,30086,InnHelper.INN_KEYID,700023,41260,731,3000397,3000398,650009,3000128,4100040,60208,60209,60210,700021,60256,700000,4100074,4100075,40033,40034,40035,40036,40037,40038,3000126,3000127,89136,875640417,875640450,123124,12302,3000123,210104,12345};
  for(int id:ids){Env.out.setLength(0);OldTravelAndRecoveryItems.use(null,null,null,id);String old=Env.out.toString();Env.out.setLength(0);NewTravelAndRecoveryItems.use(null,null,null,id);String now=Env.out.toString();if(!old.equals(now))throw new AssertionError("id="+id+" /"+old+"/"+now);count++;}
  System.out.println("PASS "+count+" travel IDs preserve handler routing");}}
 '''

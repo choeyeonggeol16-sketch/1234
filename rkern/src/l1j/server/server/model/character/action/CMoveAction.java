@@ -1,27 +1,25 @@
 package l1j.server.server.model.character.action;
 
-import l1j.server.MJ3SEx.EActionCodes;
-import l1j.server.MJINNSystem.MJINNRoom;
-import l1j.server.MJINNSystem.Loader.MJINNMapInfoLoader;
-import l1j.server.MJTemplate.ObServer.MJCopyMapObservable;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
 import l1j.server.server.model.Dungeon;
 import l1j.server.server.model.DungeonRandom;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1NeigeShip;
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.character.actionValidator.WalkDelayValidator;
+import l1j.server.server.model.character.animation.EActionCodes;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.map.L1Map;
-import l1j.server.server.model.network.core.sc.packet.SC_MoveChar;
-import l1j.server.server.model.trap.L1WorldTraps;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
-import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.network.core.sc.packet.SC_MoveChar;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.model.trap.L1WorldTraps;
+import l1j.server.server.model.world.instance.inn.InnRoom;
+import l1j.server.server.model.world.instance.inn.loader.InnMapInfoLoader;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.shared.observer.CopyMapObservable;
+import l1j.server.server.utils.GameUtils;
 
 public final class CMoveAction extends CNewAction {
 
@@ -82,8 +80,8 @@ public final class CMoveAction extends CNewAction {
             return false;
         }
 
-        final int nextX = sx + MJCommons.HEADING_TABLE_X[h];
-        final int nextY = sy + MJCommons.HEADING_TABLE_Y[h];
+        final int nextX = sx + GameUtils.HEADING_TABLE_X[h];
+        final int nextY = sy + GameUtils.HEADING_TABLE_Y[h];
 
         if (!pc.hasSkillEffect(L1SkillId.비욘드)) {
             pc.killSkillEffectTimer(L1SkillId.MEDITATION);
@@ -174,12 +172,12 @@ public final class CMoveAction extends CNewAction {
         final int mid = pc.getMapId();
 
         try {
-            final int inn = MJINNMapInfoLoader.isInInnArea(nextX, nextY, mid);
-            if (inn != -1 && MJINNRoom.input(pc, inn)) {
+            final int inn = InnMapInfoLoader.isInInnArea(nextX, nextY, mid);
+            if (inn != -1 && InnRoom.input(pc, inn)) {
                 return false;
             }
 
-            final short mapid = MJCopyMapObservable.getInstance()
+            final short mapid = CopyMapObservable.getInstance()
                     .idenMap((short) mid);
 
             if (Dungeon.getInstance().dg(nextX, nextY, mapid, pc)) {
@@ -255,7 +253,7 @@ public final class CMoveAction extends CNewAction {
                 }
             }
 
-            MJCastleWarBusiness.move(pc);
+            CastleWarBusiness.move(pc);
 
 //            if (L1HauntedHouse.getInstance().getHauntedHouseStatus()
 //                    == L1HauntedHouse.STATUS_PLAYING) {

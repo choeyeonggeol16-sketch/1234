@@ -1,11 +1,9 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.MJINNSystem.MJINNHelper;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.world.instance.inn.InnHelper;
 
 final class SupplementalItemActions {
     private SupplementalItemActions() {}
@@ -304,7 +302,7 @@ final class SupplementalItemActions {
 		case 3000123:
 		case 40124:
 		case 30086:
-		case MJINNHelper.INN_KEYID:
+		case InnHelper.INN_KEYID:
 		case 60256:
 		case 89136:
 		case 875640417:

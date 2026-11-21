@@ -7,23 +7,23 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.MJTemplate.MJPropertyReader;
-import l1j.server.MJTemplate.Command.MJCommand;
-import l1j.server.MJTemplate.Command.MJCommandArgs;
-import l1j.server.MJTemplate.Exceptions.MJCommandArgsIndexException;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.gametime.RealTimeClock;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_BONUS_GROUP_INFO;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_BONUS_INFO_EXTEND;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_USER_DATA_EXTEND;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.AttendanceGroupType;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.UserAttendanceDataGroup;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.UserAttendanceTimeStatus;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_BONUS_GROUP_INFO;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_BONUS_INFO_EXTEND;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_USER_DATA_EXTEND;
+import l1j.server.server.shared.PropertyReader;
+import l1j.server.server.shared.command.Command;
+import l1j.server.server.shared.command.CommandArgs;
+import l1j.server.server.shared.exception.CommandArgsIndexException;
 import l1j.server.server.utils.SQLUtil;
 
-public class AttendanceLoadManager implements MJCommand{
+public class AttendanceLoadManager implements Command{
 	public static AttendanceLoadManager _instance;
 	public static AttendanceLoadManager getInstance(){
 		if(_instance == null)
@@ -102,7 +102,7 @@ public class AttendanceLoadManager implements MJCommand{
 	}
 	
 	public void loadConfig(){
-		MJPropertyReader reader = new MJPropertyReader("./config/mj_attendance.properties");
+		PropertyReader reader = new PropertyReader("./config/mj_attendance.properties");
 		ATTEN_CHECK_INTERVAL = reader.readInt("checkInterval", "1800");
 		ATTEN_RESET_PERIOD_SECOND = reader.readInt("resetPeriodSecond", "86400");
 		ATTEN_DAILY_MAX_COUNT = reader.readInt("dailyMaxCount", "1");
@@ -113,7 +113,7 @@ public class AttendanceLoadManager implements MJCommand{
 	}
 
 	@Override
-	public void execute(MJCommandArgs args) {
+	public void execute(CommandArgs args) {
 		try{
 			switch(args.nextInt()){
 			case 1:
@@ -132,7 +132,7 @@ public class AttendanceLoadManager implements MJCommand{
 		}
 	}
 	
-	private void execReload(MJCommandArgs args){
+	private void execReload(CommandArgs args){
 		try{
 			switch(args.nextInt()){
 			case 1:
@@ -150,7 +150,7 @@ public class AttendanceLoadManager implements MJCommand{
 		}
 	}
 	
-	private L1PcInstance findPc(MJCommandArgs args) throws MJCommandArgsIndexException{
+	private L1PcInstance findPc(CommandArgs args) throws CommandArgsIndexException{
 		String name = args.nextString();
 		L1PcInstance pc = L1World.getInstance().findpc(name);
 		if(pc == null)
@@ -162,7 +162,7 @@ public class AttendanceLoadManager implements MJCommand{
 		return null;
 	}
 	
-	private void execCharacterCommand(MJCommandArgs args){
+	private void execCharacterCommand(CommandArgs args){
 		try{
 			switch(args.nextInt()){
 			case 1:{

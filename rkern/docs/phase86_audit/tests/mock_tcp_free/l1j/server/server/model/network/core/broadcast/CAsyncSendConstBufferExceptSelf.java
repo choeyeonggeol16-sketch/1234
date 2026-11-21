@@ -11,7 +11,7 @@ public final class CAsyncSendConstBufferExceptSelf extends CAsyncSendConstBuffer
         super(pooled, senderId, Integer.MAX_VALUE);
     }
 
-    /** Original NC-style pool acquire -> direct packet assembly -> shared ref. */
+    /** Original reference design pool acquire -> direct packet assembly -> shared ref. */
     static CAsyncSendConstBufferExceptSelf forMove(
             l1j.server.server.model.network.core.connection.CUserSocket socket,
             int senderId, int opcode, int objectId, int x, int y, int heading) {

@@ -1,2 +1,2 @@
-package l1j.server.MJINNSystem;
-public class MJINNHelper {public static final int INN_KEYID=4000033;}
+package l1j.server.server.model.world.instance.inn;
+public class InnHelper {public static final int INN_KEYID=4000033;}

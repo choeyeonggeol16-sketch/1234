@@ -2,14 +2,14 @@ package l1j.server.server.packets.Protocol.MainServer.Companion.Proto;
 
 import java.util.HashMap;
 
-import l1j.server.MJCompanion.Instance.MJCompanionNameHandler;
 import l1j.server.server.BadNamesList;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.companion.instance.CompanionNameHandler;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
-import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.SC_COMPANION_NAME_CHANGE_ACK.eResult;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.SC_COMPANION_NAME_CHANGE_ACK.eResult;
+import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 
 /**
  * CS_COMPANION_NAME_CHANGE_REQ (0x07D1) — 컴패니언(펫) 이름 변경 요청
@@ -99,7 +99,7 @@ public final class CS_COMPANION_NAME_CHANGE_REQ {
                     return;
                 }
             }
-            if (MJCompanionNameHandler.exists_name(replaceName)) {
+            if (CompanionNameHandler.exists_name(replaceName)) {
                 SC_COMPANION_NAME_CHANGE_ACK.send(client, eResult.SameNameExisted, null);
                 return;
             }

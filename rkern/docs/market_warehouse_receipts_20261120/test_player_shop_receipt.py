@@ -26,7 +26,7 @@ public final class MarketCheck {
     static final class NpcActionRange { static int get() { return 6; } }
     static final class L1Inventory { static int MAX_AMOUNT = 2_000_000_000; }
     static final class L1ItemId { static int ADENA = 40308; }
-    static final class MJCompanionInstanceCache {
+    static final class CompanionInstanceCache {
         static boolean is_companion_oblivion(int id) { return id != 701; }
     }
     static final class CS_PersonalShop {
@@ -100,8 +100,8 @@ public final class MarketCheck {
         final int id;
         final long identity;
         final Inventory inventory = new Inventory();
-        ArrayList<MJDShopItem> sales = new ArrayList<>();
-        final ArrayList<MJDShopItem> purchases = new ArrayList<>();
+        ArrayList<DynamicShopItem> sales = new ArrayList<>();
+        final ArrayList<DynamicShopItem> purchases = new ArrayList<>();
         final CIOClient client = new CIOClient();
         String account;
         int version = 1, map = 800, notices;
@@ -126,9 +126,9 @@ public final class MarketCheck {
         void sendPackets(String message) { notices++; }
         Inventory getInventory() { return inventory; }
         CIOClient getNetConnection() { return client; }
-        ArrayList<MJDShopItem> getSellings() { return sales; }
-        ArrayList<MJDShopItem> getPurchasings() { return purchases; }
-        void applyCommittedShopQuantity(boolean purchase, MJDShopItem row, int expected, int count) {
+        ArrayList<DynamicShopItem> getSellings() { return sales; }
+        ArrayList<DynamicShopItem> getPurchasings() { return purchases; }
+        void applyCommittedShopQuantity(boolean purchase, DynamicShopItem row, int expected, int count) {
             var listings = purchase ? purchases : sales;
             check(listings.contains(row) && row.count == expected && count <= expected);
             row.count -= count;
@@ -136,22 +136,22 @@ public final class MarketCheck {
         }
     }
 
-    static final class MJDShopItem {
+    static final class DynamicShopItem {
         int objId, price, count, itemId, enchant, attr, iden;
         boolean isPurchase;
-        MJDShopItem(int id, int price, int count, int type, boolean purchase) {
+        DynamicShopItem(int id, int price, int count, int type, boolean purchase) {
             objId = id; this.price = price; this.count = count; itemId = type; isPurchase = purchase;
         }
     }
 
-    static final class MJDShopStorage {
-        static MJDShopItem copyListing(MJDShopItem source) {
-            return new MJDShopItem(source.objId, source.price, source.count, source.itemId, source.isPurchase);
+    static final class DynamicShopStorage {
+        static DynamicShopItem copyListing(DynamicShopItem source) {
+            return new DynamicShopItem(source.objId, source.price, source.count, source.itemId, source.isPurchase);
         }
-        static void consumeListings(Object connection, int id, MJDShopItem[] expected, int[] counts) {
+        static void consumeListings(Object connection, int id, DynamicShopItem[] expected, int[] counts) {
             for (int i = 0; i < expected.length; i++) consumeListing(connection, id, expected[i], counts[i]);
         }
-        static void consumeListing(Object connection, int id, MJDShopItem expected, int count) {
+        static void consumeListing(Object connection, int id, DynamicShopItem expected, int count) {
             check(connection != null && id > 0 && expected != null && count > 0);
             sqlRows++;
         }
@@ -208,9 +208,9 @@ public final class MarketCheck {
         var ore = new L1ItemInstance(200, 8254, 10);
         customer.inventory.add(wallet);
         shop.inventory.add(ore);
-        var entry = new MJDShopItem(200, 20, 8, 8254, false);
+        var entry = new DynamicShopItem(200, 20, 8, 8254, false);
         // The displayed row zero is not the first underlying listing.
-        shop.sales.add(new MJDShopItem(201, 90, 23, 9876, false));
+        shop.sales.add(new DynamicShopItem(201, 90, 23, 9876, false));
         shop.sales.add(entry);
         var view = new PlayerShopView(shop, false, 2);
         view.add(200, 0, 20, 8);
@@ -228,7 +228,7 @@ public final class MarketCheck {
         execute(customer, shop, false, buy(0, 1), null);
         check(pending == null && customer.client.view == null);
 
-        var purchase = new MJDShopItem(300, 15, 4, 8254, true);
+        var purchase = new DynamicShopItem(300, 15, 4, 8254, true);
         shop.purchases.add(purchase);
         int customerOre = customer.inventory.findItemId(8254).id;
         view = new PlayerShopView(shop, true, 1);

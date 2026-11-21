@@ -1,36 +1,13 @@
 package l1j.server.server.model.character.skill;
-import l1j.server.server.model.character.skill.core.DurationResolver;
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
-import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
-
-
-import l1j.server.server.model.network.core.sc.packet.SC_TrueTargetNew;
-import l1j.server.server.model.network.core.sc.packet.SC_ChangeName;
-import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
 import java.util.Iterator;
 import java.util.Random;
 
 import l1j.server.Config;
-import l1j.server.MJPassiveSkill.MJPassiveID;
+import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.datatables.SkillsTable;
-import l1j.server.server.model.L1CastleLocation;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1CurseParalysis;
-import l1j.server.server.model.L1EffectSpawn;
-import l1j.server.server.model.L1Magic;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Party;
-import l1j.server.server.model.L1PinkName;
-import l1j.server.server.model.L1PolyMorph;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -40,51 +17,67 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1TowerInstance;
+import l1j.server.server.model.L1CastleLocation;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1CurseParalysis;
+import l1j.server.server.model.L1EffectSpawn;
+import l1j.server.server.model.L1Location;
+import l1j.server.server.model.L1Magic;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1Party;
+import l1j.server.server.model.L1PinkName;
+import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.skill.core.DurationResolver;
 import l1j.server.server.model.character.skill.helper.SkillUseHelper;
 import l1j.server.server.model.character.skill.helper.WeakExposeHelper;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.item.function.TeleportUseService;
 import l1j.server.server.model.item.teleport.L1Teleport;
-import l1j.server.server.model.poison.L1DamagePoison;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eDurationShowType;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI2;
+import l1j.server.server.model.network.core.sc.packet.SC_ChangeName;
+import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.network.core.sc.packet.SC_CurseBlind;
+import l1j.server.server.model.network.core.sc.packet.SC_Dexup;
+import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
+import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_Invis;
 import l1j.server.server.model.network.core.sc.packet.SC_IvenBuffIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
+import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
-
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
+import l1j.server.server.model.network.core.sc.packet.SC_Poison;
+import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
-
-
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.templates.L1Npc;
-import l1j.server.server.templates.L1Skills;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.utils.eKind;
-import l1j.server.server.ActionCodes;
-import l1j.server.server.model.L1Location;
-import l1j.server.server.model.poison.L1ParalysisPoison;
-import l1j.server.server.model.network.core.sc.packet.SC_UseAttackSkill;
-import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.utils.L1SpawnUtil;
-
 import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
-import l1j.server.server.model.network.core.sc.packet.SC_Sound;
-import l1j.server.server.model.network.core.sc.packet.SC_Poison;
-import l1j.server.server.model.network.core.sc.packet.SC_Dexup;
-import l1j.server.server.model.network.core.sc.packet.SC_Strup;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillIconShield;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconAura;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillIconShield;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconWindShackle;
-import l1j.server.server.model.network.core.sc.packet.SC_CurseBlind;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.core.sc.packet.SC_Sound;
+import l1j.server.server.model.network.core.sc.packet.SC_Strup;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_TrueTargetNew;
+import l1j.server.server.model.network.core.sc.packet.SC_UseAttackSkill;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.npc.ai.NpcEventFactory;
+import l1j.server.server.model.poison.L1DamagePoison;
+import l1j.server.server.model.poison.L1ParalysisPoison;
+import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eDurationShowType;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType;
+import l1j.server.server.templates.L1Npc;
+import l1j.server.server.templates.L1Skills;
+import l1j.server.server.utils.L1SpawnUtil;
+import l1j.server.server.utils.eKind;
 /**
  *   SkillHandlers
  */
@@ -996,7 +989,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		WeakExposeHelper.consumeAllNowOnFouCast(player);
 
 		int effect = 6509;
-		if (player.isPassive(MJPassiveID.FOU_SLAYER_BRAVE.toInt())) {
+		if (player.isPassive(PassiveID.FOU_SLAYER_BRAVE.toInt())) {
 			effect = 17231;
 		}
 		sendSkillSoundBroadcast(target, effect);
@@ -2343,7 +2336,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		int shockDur = SkillUseHelper.pickMillis(SkillUseHelper.DEPE_OFFICIAL);
 		int effectNpcId = 9416;
 
-		if (player != null && player.isPassive(MJPassiveID.DESPERADO_ABSOLUTE.toInt())) {		
+		if (player != null && player.isPassive(PassiveID.DESPERADO_ABSOLUTE.toInt())) {		
 			int bonusTime = SkillUseHelper.pickMillis(SkillUseHelper.BOUNS);
 			shockDur += bonusTime;
 			effectNpcId = 9418;
@@ -2386,7 +2379,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 
 		int shockDur = SkillUseHelper.pickMillis(SkillUseHelper.DEPE_OFFICIAL);
 
-		if (player != null && player.isPassive(MJPassiveID.THUNDER_GRAP_BRAVE.toInt())) {		
+		if (player != null && player.isPassive(PassiveID.THUNDER_GRAP_BRAVE.toInt())) {		
 			int bonusTime = SkillUseHelper.pickMillis(SkillUseHelper.BOUNS);
 			shockDur += bonusTime;
 		}

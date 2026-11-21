@@ -1,18 +1,18 @@
 package l1j.server.server.command.executor;
 
-import l1j.server.server.model.network.core.sc.packet.SC_AddSkill;
 import java.util.ArrayList;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.StringTokenizer;
 
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.MJPassiveSkill.MJPassiveInfo;
-import l1j.server.MJPassiveSkill.MJPassiveLoader;
-import l1j.server.MJPassiveSkill.MJPassiveUserLoader;
 import l1j.server.server.datatables.SkillsTable;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.passive.PassiveID;
+import l1j.server.server.model.character.skill.passive.PassiveInfo;
+import l1j.server.server.model.character.skill.passive.PassiveLoader;
+import l1j.server.server.model.character.skill.passive.PassiveUserLoader;
+import l1j.server.server.model.network.core.sc.packet.SC_AddSkill;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1Skills;
 
@@ -41,9 +41,9 @@ public class L1AddSkill implements L1CommandExecutor {
 			int object_id = pc.getId(); // 캐릭터의 objectid를 취득
 			SC_SkillSound.send(pc, object_id, '\343'); // 마법 습득의 효과음을 울린다
 			SC_SkillSound.broadcast(pc, object_id, '\343');
-			ArrayList<MJPassiveInfo> passives = null;
+			ArrayList<PassiveInfo> passives = null;
 			if (pc.isCrown()) {
-				passives = MJPassiveLoader.getInstance().fromClassType(0);
+				passives = PassiveLoader.getInstance().fromClassType(0);
 				SC_AddSkill.send(pc, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 				L1Skills l1skills = null;
 
@@ -67,7 +67,7 @@ public class L1AddSkill implements L1CommandExecutor {
 					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
 				}
 			} else if (pc.isKnight()) {
-				passives = MJPassiveLoader.getInstance().fromClassType(1);
+				passives = PassiveLoader.getInstance().fromClassType(1);
 				SC_AddSkill.send(pc, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 192, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 				L1Skills l1skills = null;
 
@@ -101,7 +101,7 @@ public class L1AddSkill implements L1CommandExecutor {
 				
 				}
 			} else if (pc.isElf()) {
-				passives = MJPassiveLoader.getInstance().fromClassType(2);
+				passives = PassiveLoader.getInstance().fromClassType(2);
 				SC_AddSkill.send(pc, 255, 255, 127, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 127, 3, 255, 255, 255, 255, 0, 0, 0, 0, 0,
 						0, 0, 0, pc.getElfAttr());
 				L1Skills l1skills = null;
@@ -126,7 +126,7 @@ public class L1AddSkill implements L1CommandExecutor {
 					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
 				}
 			} else if (pc.isWizard()) {
-				passives = MJPassiveLoader.getInstance().fromClassType(3);
+				passives = PassiveLoader.getInstance().fromClassType(3);
 				SC_AddSkill.send(pc, 255, 255, 127, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 						0, 0, 0);
 				L1Skills l1skills = null;
@@ -140,7 +140,7 @@ public class L1AddSkill implements L1CommandExecutor {
 					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
 				}
 			} else if (pc.isDarkelf()) {
-				passives = MJPassiveLoader.getInstance().fromClassType(4);
+				passives = PassiveLoader.getInstance().fromClassType(4);
 				SC_AddSkill.send(pc, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 127, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 				L1Skills l1skills = null;
 
@@ -183,7 +183,7 @@ public class L1AddSkill implements L1CommandExecutor {
 				}
 				
 			} else if (pc.isDragonknight()) {
-				passives = MJPassiveLoader.getInstance().fromClassType(5);
+				passives = PassiveLoader.getInstance().fromClassType(5);
 				SC_AddSkill.send(pc, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0);
 				L1Skills l1skills = null;
 				for (cnt = 177; cnt <= 200; cnt++) { // 용기사스킬
@@ -196,7 +196,7 @@ public class L1AddSkill implements L1CommandExecutor {
 					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
 				}
 			} else if (pc.isBlackwizard()) {
-				passives = MJPassiveLoader.getInstance().fromClassType(6);
+				passives = PassiveLoader.getInstance().fromClassType(6);
 				SC_AddSkill.send(pc, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 0, 0, 0);
 				L1Skills l1skills = null;
 				for (cnt = 201; cnt <= 224; cnt++) { // 환술사스킬
@@ -221,7 +221,7 @@ public class L1AddSkill implements L1CommandExecutor {
 				}
 				
 			} else if (pc.isWarrior()) {
-				passives = MJPassiveLoader.getInstance().fromClassType(7);
+				passives = PassiveLoader.getInstance().fromClassType(7);
 				SC_AddSkill.send(pc, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 192, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); // 전사꺼
 				L1Skills l1skills = null;
 
@@ -244,17 +244,17 @@ public class L1AddSkill implements L1CommandExecutor {
 				}
 			}
 			if(passives != null){
-				for(MJPassiveInfo pInfo : passives){
+				for(PassiveInfo pInfo : passives){
 					if(pc.isPassive(pInfo.getPassiveId()))
 						continue;
 					
 					int passiveId = pInfo.getPassiveId();
-					if(passiveId == MJPassiveID.DOUBLE_BREAK_DESTINY.toInt()){
+					if(passiveId == PassiveID.DOUBLE_BREAK_DESTINY.toInt()){
 						if(pc.hasSkillEffect(L1SkillId.DOUBLE_BRAKE))
 							pc.removeSkillEffect(L1SkillId.DOUBLE_BRAKE);
 					}
 					pc.addPassive(pInfo);
-					MJPassiveUserLoader.store(pc, pInfo);
+					PassiveUserLoader.store(pc, pInfo);
 				}
 			}
 			

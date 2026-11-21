@@ -3,7 +3,7 @@ package l1j.server.server.utils;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.IndunSystem.Orim.OrimController;
+import l1j.server.server.model.world.instance.dungeon.orim.OrimController;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.NpcTable;

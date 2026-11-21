@@ -1,13 +1,13 @@
 package l1j.server.server.model.rank.loader;
 
-import l1j.server.MJTemplate.MJPropertyReader;
-import l1j.server.MJTemplate.Command.MJCommand;
-import l1j.server.MJTemplate.Command.MJCommandArgs;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.rank.business.RankBusiness;
+import l1j.server.server.shared.PropertyReader;
+import l1j.server.server.shared.command.Command;
+import l1j.server.server.shared.command.CommandArgs;
 
-public class RankLoadManager implements MJCommand{
+public class RankLoadManager implements Command{
 	private static RankLoadManager _instance;
 	public static RankLoadManager getInstance(){
 		if(_instance == null)
@@ -35,9 +35,9 @@ public class RankLoadManager implements MJCommand{
 	}
 	
 	public void loadConfig(){
-		MJPropertyReader reader = null;
+		PropertyReader reader = null;
 		try{
-			reader 					= new MJPropertyReader("./config/mj_rank.properties");		
+			reader 					= new PropertyReader("./config/mj_rank.properties");		
 			MRK_SYS_UPDATE_CLOCK	= reader.readInt("UpdateClock", "60");
 			if(MRK_LOADING_COUNT++ == 0)
 				MRK_SYS_ISON		= reader.readBoolean("isStartupRankSystem", "true");
@@ -56,7 +56,7 @@ public class RankLoadManager implements MJCommand{
 	}
 
 	@Override
-	public void execute(MJCommandArgs args) {
+	public void execute(CommandArgs args) {
 		try{
 			switch(args.nextInt()){
 			case 1:
@@ -80,7 +80,7 @@ public class RankLoadManager implements MJCommand{
 		}
 	}
 	
-	private void toggleCommand(MJCommandArgs args){
+	private void toggleCommand(CommandArgs args){
 		try{
 			switch(args.nextInt()){
 			case 1:
@@ -123,7 +123,7 @@ public class RankLoadManager implements MJCommand{
 		}
 	}
 	
-	private void reloadCommand(MJCommandArgs args){
+	private void reloadCommand(CommandArgs args){
 		try{
 			switch(args.nextInt()){
 			case 1:
@@ -162,7 +162,7 @@ public class RankLoadManager implements MJCommand{
 		}
 	}
 	
-	private void settingCommand(MJCommandArgs args){
+	private void settingCommand(CommandArgs args){
 		try{
 			switch(args.nextInt()){
 			case 1:{

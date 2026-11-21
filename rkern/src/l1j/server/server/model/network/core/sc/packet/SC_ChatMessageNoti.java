@@ -1,12 +1,12 @@
 package l1j.server.server.model.network.core.sc.packet;
 
-import l1j.server.MJTemplate.MJSimpleRgb;
 import l1j.server.server.Opcodes;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.shared.SimpleRgb;
 
 public final class SC_ChatMessageNoti {
     private static final int SC_CHAT_MESSAGE_NOTI_PACKET = 0x0204;
@@ -59,7 +59,7 @@ public static final int CHAT_NORMAL 			= 0x00;
         return sendPrepared(receiver, CHAT_PLEDGE_NOTICE, msg, null, sender, 0, false, 0, 0, 0, 0);
     }
 
-    public static boolean send(L1PcInstance receiver, int type, String msg, MJSimpleRgb rgb,
+    public static boolean send(L1PcInstance receiver, int type, String msg, SimpleRgb rgb,
                                String sender, L1Object obj, int rank) {
         final byte[] rgbBytes = rgb == null ? null : rgb.get_bytes();
         final boolean hasObj = obj != null;

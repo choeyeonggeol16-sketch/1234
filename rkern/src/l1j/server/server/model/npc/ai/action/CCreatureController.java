@@ -1,19 +1,19 @@
 package l1j.server.server.model.npc.ai.action;
 
-import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1CastleGuardInstance;
 import l1j.server.server.model.Instance.L1GuardInstance;
-import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
-import l1j.server.server.model.npc.ai.CDesirePQ;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.npc.ai.NpcServer;
 
 /**
  * NPC creature action controller.
  *
- * NC-style ownership split:
+ * reference design ownership split:
  * - AiRuntime chooses the next primitive action id.
  * - this controller executes only on the NPC's fixed CIO owner.
  * - current/pending state stays on L1NpcInstance; no per-NPC controller object.

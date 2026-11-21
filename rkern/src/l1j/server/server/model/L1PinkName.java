@@ -2,12 +2,12 @@ package l1j.server.server.model;
 
 import java.util.concurrent.ScheduledFuture;
 
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.model.network.core.sc.packet.SC_PinkName;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.shared.L1Type;
 
 /**
  * Pink name controller
@@ -32,7 +32,7 @@ public class L1PinkName {
     // =========================================
     private static boolean isWarAreaNow(L1PcInstance pc) {
         int castleId = L1CastleLocation.getCastleIdByArea(pc);
-        return castleId != 0 && MJCastleWarBusiness.getInstance().isNowWar(castleId);
+        return castleId != 0 && CastleWarBusiness.getInstance().isNowWar(castleId);
     }
 
     private static boolean canApplyPink(L1PcInstance targetAreaPc, L1PcInstance attacker) {
@@ -149,17 +149,17 @@ public class L1PinkName {
     }
 
     public static void onAction(L1PcInstance target, L1Character attacker) {
-        if (attacker.instanceOf(MJL1Type.L1TYPE_PC))
+        if (attacker.instanceOf(L1Type.L1TYPE_PC))
             onAction(target, (L1PcInstance) attacker);
     }
 
     public static void onAction(L1Character target, L1PcInstance attacker) {
-        if (target.instanceOf(MJL1Type.L1TYPE_PC))
+        if (target.instanceOf(L1Type.L1TYPE_PC))
             onAction((L1PcInstance) target, attacker);
     }
 
     public static void onAction(L1Character target, L1Character attacker) {
-        if (target.instanceOf(MJL1Type.L1TYPE_PC) && attacker.instanceOf(MJL1Type.L1TYPE_PC))
+        if (target.instanceOf(L1Type.L1TYPE_PC) && attacker.instanceOf(L1Type.L1TYPE_PC))
             onAction((L1PcInstance) target, (L1PcInstance) attacker);
     }
 

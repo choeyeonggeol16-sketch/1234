@@ -1,14 +1,14 @@
 package l1j.server.server.model.npc.ai.action;
 
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1CastleGuardInstance;
+import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1GuardInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
-import l1j.server.server.model.Instance.L1CompanionInstance;
-import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Object;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.npc.ai.CDesirePQ;
 
@@ -23,9 +23,9 @@ import l1j.server.server.model.npc.ai.CDesirePQ;
  * - non-failed movement resets this counter; body collision does not count.
  * - after 30 failures the failed target is retired and desires reselected.
  *
- * NC CNPC::dPAttack has separate 30/100 CheckTerritory-failure counters;
+ * reference server CNPC::dPAttack has separate 30/100 CheckTerritory-failure counters;
  * these are NOT the same as SetMoving.PATH_FAILED. Keep the L1 safety policy
- * separate from NC territory recovery and the existing wander rules.
+ * separate from reference server territory recovery and the existing wander rules.
  */
 public final class CMoveToTargetAction {
 
@@ -90,7 +90,7 @@ public final class CMoveToTargetAction {
         /*
          * Preserve the existing L1 consecutive navigation-failure count
          * across action re-entry. SetMoving.clear() also resets this field;
-         * the CheckTerritory counters in NC dPAttack are separate state.
+         * the CheckTerritory counters in reference server dPAttack are separate state.
          */
         final int pathFindFailCount =
                 creature._pathFindFailCount;

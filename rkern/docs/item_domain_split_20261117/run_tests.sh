@@ -27,7 +27,7 @@ echo 'PASS package original/new exact event stream for 1755 inputs'
 java -cp "$TMP/classes" l1j.server.server.model.item.function.TestDialogue "$AUDIT/QUEST_DIALOGUE_ORIGINAL.tsv"
 java -cp "$TMP/classes" l1j.server.server.model.item.function.TestScrolls
 python3 "$AUDIT/tests/test_structure.py"
-javac -encoding UTF-8 -d "$TMP/classes" "$AUDIT/tests/stubs/l1j/server/MJINNSystem/MJINNHelper.java"     "$ROOT/src/l1j/server/server/utils/SupplementalItemIds.java"
+javac -encoding UTF-8 -d "$TMP/classes" "$AUDIT/tests/stubs/l1j/server/server/model/world/instance/inn/InnHelper.java"     "$ROOT/src/l1j/server/server/utils/SupplementalItemIds.java"
 javac -encoding UTF-8 -d "$TMP/classes" "$ROOT/docs/item_function_refactor_20261117/tests/ParseAllJava.java"
 java -Xmx3g -cp "$TMP/classes" ParseAllJava "$ROOT/src"
 echo 'PASS item domain split regression'

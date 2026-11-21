@@ -18,18 +18,17 @@
  */
 package l1j.server.server.model.Instance;
 
-import l1j.server.server.model.character.action.CAttackAction;
-
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.datatables.NPCTalkDataTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1NpcTalkData;
+import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
-import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.templates.L1Npc;
 
 public class L1CataInstance extends L1NpcInstance {
@@ -118,7 +117,7 @@ public class L1CataInstance extends L1NpcInstance {
 		}
 
 		boolean isNowWar = false;
-		isNowWar = MJCastleWarBusiness.getInstance().isNowWar(castleid);
+		isNowWar = CastleWarBusiness.getInstance().isNowWar(castleid);
 		if (!isNowWar) {
 			return;
 		}

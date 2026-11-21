@@ -15,9 +15,9 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.SelectorHandler;
 import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.handler.SelectorHandler;
 import l1j.server.server.templates.L1ShopItem;
 
 public class ShopTable {

@@ -3,11 +3,11 @@ package l1j.server.server.templates;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import l1j.server.MJTemplate.MJRnd;
-import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.L1Object;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.shared.GameRandom;
 
 public class L1Npc extends L1Object implements Cloneable {
 
@@ -716,7 +716,7 @@ public class L1Npc extends L1Object implements Cloneable {
 	}
 	
 	public long doProbabilityBornNpc(L1NpcInstance npc){		
-		return (_born != null && MJRnd.isWinning(1000000, _born.probability_byMillion)) ? _born.doBornAndGetInterval(npc) : 0L;		
+		return (_born != null && GameRandom.isWinning(1000000, _born.probability_byMillion)) ? _born.doBornAndGetInterval(npc) : 0L;		
 	}
 	
 	public class BornAction{

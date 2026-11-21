@@ -1,12 +1,12 @@
 package l1j.server.server.model.npc.ai.action;
 
-import l1j.server.MJ3SEx.EActionCodes;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.ai.core.PathFinder;
 import l1j.server.server.model.ai.core.PathNodeWorld;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
+import l1j.server.server.model.character.animation.EActionCodes;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.npc.ai.AstarProvider;
 
@@ -92,7 +92,7 @@ public final class SetMoving {
     }
 
     /**
-     * Relative-action approach point. The original NC action calculates
+     * Relative-action approach point. The original reference server action calculates
      * target + normalized(target -> creature) * action distance. L1 must
      * keep 8-way terrain/occupancy authoritative, so an unreachable or
      * occupied projected tile falls back to the ordinary live-target chase.
@@ -115,7 +115,7 @@ public final class SetMoving {
         final int deltaY = ty - sy;
 
         // Keep the proven static corridor on long-range and blocked chases.
-        // Use NC's projected point only in near-field direct approaches.
+        // Use reference server's projected point only in near-field direct approaches.
         if (Math.max(Math.abs(deltaX), Math.abs(deltaY))
                 > NEAR_DIRECT_TARGET_TILES) {
             return tick(creature, target, desiredDistance);
@@ -481,7 +481,7 @@ public final class SetMoving {
     }
 
     /**
-     * NC target actions observe the current target every execution. In the
+     * reference server target actions observe the current target every execution. In the
      * 2D grid adapter, only invalidate a cached PathNode waypoint when a live
      * target becomes directly approachable nearby, or has significantly
      * changed the long-range route. Do not run PathFind on every movement tick.

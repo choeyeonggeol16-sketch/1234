@@ -1,18 +1,19 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import java.util.ArrayList;
-import l1j.server.DogFight.History.MJDogFightTicketInfo;
+
+import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightTicketInfo;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_DogFightBuyList {
     private SC_DogFightBuyList() {}
 
-    public static boolean send(L1PcInstance pc, int objectId, ArrayList<MJDogFightTicketInfo> tickets, int price) {
+    public static boolean send(L1PcInstance pc, int objectId, ArrayList<DogFightTicketInfo> tickets, int price) {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
@@ -23,7 +24,7 @@ public final class SC_DogFightBuyList {
         final byte[][] status = count == 0 ? null : new byte[count][];
         long capacity = 2L + 1 + 4 + 2 + 2;
         for (int i = 0; i < count; ++i) {
-            final MJDogFightTicketInfo info = tickets.get(i);
+            final DogFightTicketInfo info = tickets.get(i);
             final L1ItemInstance dummy = new L1ItemInstance();
             dummy.setItem(info.get_template());
             final byte[] bytes = dummy.getStatusBytes();
@@ -40,7 +41,7 @@ public final class SC_DogFightBuyList {
             buffer.writeD(objectId);
             buffer.writeH(count);
             for (int i = 0; i < count; ++i) {
-                final MJDogFightTicketInfo info = tickets.get(i);
+                final DogFightTicketInfo info = tickets.get(i);
                 buffer.writeD(i);
                 buffer.writeH(info.get_template().getGfxId());
                 buffer.writeD(price);

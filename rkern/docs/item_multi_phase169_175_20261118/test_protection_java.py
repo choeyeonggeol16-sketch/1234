@@ -61,7 +61,7 @@ class ItemActionCompletion {static int calls;static void finishCommittedConsumab
 class SC_ServerMessage {static int calls;static void send(L1PcInstance pc,int id){calls++;}}
 class SC_SystemMessage {static int calls;static boolean throwNext;
  static void send(L1PcInstance pc,String msg){calls++;if(throwNext){throwNext=false;throw new RuntimeException("test notice failure");}}}
-class MJRnd {static boolean win;static int calls;static boolean isWinning(int total,int chance){calls++;return win;}}
+class GameRandom {static boolean win;static int calls;static boolean isWinning(int total,int chance){calls++;return win;}}
 class Config {
  static int SentenceLevel=10,Insignia_Level=10,RoomtisLevel=10,Should_Level=10,SnapperLevel=10,악세사리=10;
  static int[] Sentence={50,50,50,50},Insignia={50,50,50,50},Roomtis={50,50,50,50},Should={50,50,50,50},Sanpper={50,50,50,50},bless_orim={50,50,50,50};
@@ -80,10 +80,10 @@ class TestHarness {
     if(stale)p.target=new L1ItemInstance(3);
     if(overMax)t.enchant=10;
     if(cursed)t.bless=128;
-    MJRnd.win=requestedWin; ItemReceiptOperations.commit=doCommit;ItemReceiptOperations.pending=null;
+    GameRandom.win=requestedWin; ItemReceiptOperations.commit=doCommit;ItemReceiptOperations.pending=null;
     SC_SystemMessage.throwNext=packetFailure;
     int prior=ItemReceiptOperations.submitted, finish=ItemActionCompletion.calls;
-    int notice=SC_SystemMessage.calls;int roll=MJRnd.calls;
+    int notice=SC_SystemMessage.calls;int roll=GameRandom.calls;
     Method target=Class.forName(type).getDeclaredMethod(method,L1PcInstance.class,L1ItemInstance.class,L1ItemInstance.class);
     target.setAccessible(true);target.invoke(null,p,s,t);
     boolean denied=stale||overMax||cursed;
@@ -100,7 +100,7 @@ class TestHarness {
     } else {
       ok(s.count==1,"denied no scroll debit");
       ok(ItemActionCompletion.calls==finish,"denied no finish");
-      ok(MJRnd.calls==roll,"denied before RNG");
+      ok(GameRandom.calls==roll,"denied before RNG");
     }
  }
  public static void main(String[] args)throws Exception {

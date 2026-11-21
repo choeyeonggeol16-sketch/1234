@@ -1,9 +1,9 @@
 package l1j.server.server.model.character.Attack.Helper;
 
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 
 public final class DamageReductionHelper {
 
@@ -81,7 +81,7 @@ public final class DamageReductionHelper {
         // =========================================================
         // 3) ARMOR_GUARD (AC 기반 DR)
         // =========================================================
-        if (targetPc.getPassive(MJPassiveID.ARMOR_GUARD.toInt()) != null) {
+        if (targetPc.getPassive(PassiveID.ARMOR_GUARD.toInt()) != null) {
             final int ac = targetPc.getAC().getAc();
             final int armorGuardDr = (ac < 0) ? (-ac) / 10 : 0;
             if (armorGuardDr != 0) {

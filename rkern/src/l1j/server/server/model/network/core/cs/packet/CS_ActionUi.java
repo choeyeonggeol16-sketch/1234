@@ -1,53 +1,52 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.ThreadLocalRandom;
+
 import l1j.server.Config;
-import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
-import l1j.server.MJDShopSystem.MJDShopItem;
-import l1j.server.MJTemplate.MJRnd;
-import l1j.server.MJTemplate.Lineage2D.MJPoint;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
-import l1j.server.server.Account;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.FishingTimeController;
+import l1j.server.server.appcenter.AppCenterService;
 import l1j.server.server.datatables.BossMonsterSpawnList;
 import l1j.server.server.datatables.ClanTable;
-import l1j.server.server.appcenter.AppCenterService;
 import l1j.server.server.datatables.MapUserTeleportTable;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ClanJoin;
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.tam.TamFruitUseService;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
-import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
-import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SOCIAL_ACTION_NOTI;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_TAM_WINDOW;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeShape;
+import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
+import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionShop;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_Ping;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.model.shop.dynamic.DynamicShopItem;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SOCIAL_ACTION_NOTI;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_TAM_WINDOW;
+import l1j.server.server.shared.GameRandom;
+import l1j.server.server.shared.geometry.GamePoint;
 import l1j.server.server.templates.L1Boss;
 import l1j.server.server.utils.ServerMessage;
 import l1j.server.server.utils.TYUtil;
@@ -433,8 +432,8 @@ public final class CS_ActionUi {
 
                 final int[] entries = payload == null ? EMPTY_SHOP_ENTRIES : payload.entries;
                 final int count = payload == null ? 0 : payload.count;
-                ArrayList<MJDShopItem> sells = null;
-                ArrayList<MJDShopItem> buys = null;
+                ArrayList<DynamicShopItem> sells = null;
+                ArrayList<DynamicShopItem> buys = null;
                 for (int i = 0; i < count; i++) {
                     final int base = i << 2;
                     final int type = entries[base];
@@ -451,12 +450,12 @@ public final class CS_ActionUi {
                         return;
                     }
                     if (item.getBless() >= 128 || !item.getItem().isTradable()
-                            || !MJCompanionInstanceCache.is_companion_oblivion(objectId)
+                            || !CompanionInstanceCache.is_companion_oblivion(objectId)
                             || CS_PersonalShop.isPetItem(pc, objectId) || CS_PersonalShop.isDollItem(pc, objectId)) {
                         SC_ServerMessage.send(pc, 166, item.getItem().getName(), "거래 불가능합니다.");
                         return;
                     }
-                    MJDShopItem listing = MJDShopItem.create(item, amount, price, purchase);
+                    DynamicShopItem listing = DynamicShopItem.create(item, amount, price, purchase);
                     if (purchase) {
                         if (buys == null) buys = new ArrayList<>();
                         buys.add(listing);
@@ -613,17 +612,17 @@ public final class CS_ActionUi {
         do {
 
             cx =
-                    x + (MJRnd.isBoolean()
-                            ? MJRnd.next(5)
-                            : -MJRnd.next(5));
+                    x + (GameRandom.isBoolean()
+                            ? GameRandom.next(5)
+                            : -GameRandom.next(5));
 
             cy =
-                    y + (MJRnd.isBoolean()
-                            ? MJRnd.next(5)
-                            : -MJRnd.next(5));
+                    y + (GameRandom.isBoolean()
+                            ? GameRandom.next(5)
+                            : -GameRandom.next(5));
 
         } while (++currentTry < limitTry
-                && !MJPoint.isValidPosition(
+                && !GamePoint.isValidPosition(
                         map,
                         cx,
                         cy));
@@ -1015,7 +1014,7 @@ public final class CS_ActionUi {
 
         try {
 
-            MJCastleWarBusiness
+            CastleWarBusiness
                     .getInstance()
                     .proclaim(
                             pc,

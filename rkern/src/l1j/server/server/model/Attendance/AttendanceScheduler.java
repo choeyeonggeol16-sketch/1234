@@ -6,8 +6,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.ThreadPool;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.gametime.BaseTime;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.gametime.TimeListener;
@@ -27,7 +27,7 @@ public class AttendanceScheduler implements TimeListener{
 	}
 	
 	private static final Logger LOG = Logger.getLogger(AttendanceScheduler.class.getName());
-	private final Runnable _updateTask = new MJAttendanceConsumer();
+	private final Runnable _updateTask = new AttendanceConsumer();
 	private int _accumulate_second;
 	// Counts are aggregated across scheduler saturation instead of accumulating
 	// one Runnable per second. Counters and admission gate use this monitor.
@@ -103,7 +103,7 @@ public class AttendanceScheduler implements TimeListener{
 		}
 	}
 
-	class MJAttendanceConsumer implements Runnable {
+	class AttendanceConsumer implements Runnable {
 		@Override
 		public void run() {
 			final int before, after;

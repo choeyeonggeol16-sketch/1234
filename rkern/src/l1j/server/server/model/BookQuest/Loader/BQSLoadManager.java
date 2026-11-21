@@ -5,29 +5,28 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
-import l1j.server.MJTemplate.MJPropertyReader;
-import l1j.server.MJTemplate.Command.MJCommand;
-import l1j.server.MJTemplate.Command.MJCommandArgs;
-import l1j.server.MJTemplate.Command.MJCommandTree;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Updator;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.FullSelectorHandler;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.Handler;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.BookQuest.BQSInformation;
 import l1j.server.server.model.BookQuest.BQSWQUpdator;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterCriteriaProgress;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.gametime.RealTimeClock;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRITERIA_UPDATE_NOTI;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRITERIA_UPDATE_NOTI;
+import l1j.server.server.shared.PropertyReader;
+import l1j.server.server.shared.command.Command;
+import l1j.server.server.shared.command.CommandArgs;
+import l1j.server.server.shared.command.CommandTree;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.executors.Updator;
+import l1j.server.server.storage.sql.handler.FullSelectorHandler;
+import l1j.server.server.storage.sql.handler.Handler;
 import l1j.server.server.utils.L1SpawnUtil;
 
-public class BQSLoadManager implements MJCommand{
+public class BQSLoadManager implements Command{
     private static BQSLoadManager _instance;
     public static BQSLoadManager getInstance(){
         if(_instance == null)
@@ -116,7 +115,7 @@ public class BQSLoadManager implements MJCommand{
     public static int BQS_UPDATE_TYPE;
     public static Calendar BQS_UPDATE_CALENDAR;
     public static boolean BQS_IS_ONUPDATE_BOOKS;
-    private MJCommandTree _commands;
+    private CommandTree _commands;
     private BQSLoadManager(){
         _commands = createCommand();
     }
@@ -133,9 +132,9 @@ public class BQSLoadManager implements MJCommand{
     }
     
     private void loadConfig(){
-        MJPropertyReader reader = null;
+        PropertyReader reader = null;
         try{	
-            reader = new MJPropertyReader("./config/mj_bookquestsystem.properties");
+            reader = new PropertyReader("./config/mj_bookquestsystem.properties");
             BQS_UPDATE_STDHOUR = reader.readInt("UpdateStandardHour", "9");
             BQS_UPDATE_HOURS = reader.readInt("UpdateHours", "24");
             BQS_UPDATE_TYPE = reader.readInt("UpdateType", "11");
@@ -154,8 +153,8 @@ public class BQSLoadManager implements MJCommand{
         }
     }
 
-    private MJCommandTree createCommand(){
-        return new MJCommandTree(".북시스템", "몬스터 도감 / 주간 퀘스트 관련 명령어를 실행합니다.", null)
+    private CommandTree createCommand(){
+        return new CommandTree(".북시스템", "몬스터 도감 / 주간 퀘스트 관련 명령어를 실행합니다.", null)
         .add_command(createCriteriaCommand())
         .add_command(createV2Command())
         .add_command(createSpawnCommand())
@@ -164,27 +163,27 @@ public class BQSLoadManager implements MJCommand{
         .add_command(createInitializedCommand());
     }
     
-    private MJCommandTree createCriteriaCommand(){
-        return new MJCommandTree("도감", "몬스터북 관련 명령을 수행합니다.", null)
-        .add_command(new MJCommandTree("리로드", "몬스터 도감 내 각종 데이터를 리로드합니다.", null)
-            .add_command(new MJCommandTree("보상", "", null){
+    private CommandTree createCriteriaCommand(){
+        return new CommandTree("도감", "몬스터북 관련 명령을 수행합니다.", null)
+        .add_command(new CommandTree("리로드", "몬스터 도감 내 각종 데이터를 리로드합니다.", null)
+            .add_command(new CommandTree("보상", "", null){
                 @Override
-                protected void to_handle_command(MJCommandArgs args) throws Exception{
+                protected void to_handle_command(CommandArgs args) throws Exception{
                     BQSRewardsLoader.reload();
                     args.notify("tb_mbook_reward_info/tb_mbook_reward_items 테이블을 리로드 하였습니다.");
                 }
             })
-            .add_command(new MJCommandTree("도감정보", "", null){
+            .add_command(new CommandTree("도감정보", "", null){
                 @Override
-                protected void to_handle_command(MJCommandArgs args) throws Exception{
+                protected void to_handle_command(CommandArgs args) throws Exception{
                     BQSInformationLoader.reload();
                     args.notify("tb_mbook_information 테이블을 리로드 하였습니다.");
                 }
             })
         )
-        .add_command(new MJCommandTree("케릭터초기화", "보내온 케릭터 이름으로 해당 케릭터의 몬스터 북을 초기화 합니다.", new String[]{"케릭터이름"}){
+        .add_command(new CommandTree("케릭터초기화", "보내온 케릭터 이름으로 해당 케릭터의 몬스터 북을 초기화 합니다.", new String[]{"케릭터이름"}){
             @Override
-            protected void to_handle_command(MJCommandArgs args) throws Exception{
+            protected void to_handle_command(CommandArgs args) throws Exception{
                 String character_name = args.nextString();
                 L1PcInstance pc = L1World.getInstance().getPlayer(character_name);
                 L1PcInstance gm = args.getOwner();
@@ -216,8 +215,8 @@ public class BQSLoadManager implements MJCommand{
                 });
             }
         })
-        .add_command(new MJCommandTree("전체초기화", "현재 접속중인 모든 케릭터의 도감을 초기화합니다.", null){
-            protected void to_handle_command(MJCommandArgs args) throws Exception{
+        .add_command(new CommandTree("전체초기화", "현재 접속중인 모든 케릭터의 도감을 초기화합니다.", null){
+            protected void to_handle_command(CommandArgs args) throws Exception{
                 L1PcInstance gm = args.getOwner();
                 ThreadPool.getInstance().execute(new Runnable(){
                     @Override
@@ -263,27 +262,27 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
         });
     }
     
-    private MJCommandTree createV2Command(){
-        return new MJCommandTree("주퀘", "주간퀘스트 관련 명령을 수행합니다.", null)
-        .add_command(new MJCommandTree("리로드", "주간퀘스트 내 각종 데이터를 리로드합니다.", null)
-            .add_command(new MJCommandTree("보상", "", null){
+    private CommandTree createV2Command(){
+        return new CommandTree("주퀘", "주간퀘스트 관련 명령을 수행합니다.", null)
+        .add_command(new CommandTree("리로드", "주간퀘스트 내 각종 데이터를 리로드합니다.", null)
+            .add_command(new CommandTree("보상", "", null){
                 @Override
-                protected void to_handle_command(MJCommandArgs args) throws Exception{
+                protected void to_handle_command(CommandArgs args) throws Exception{
                     BQSWQRewardsLoader.reload();
                     args.notify("tb_mbook_wq_reward_info/tb_mbook_wq_reward_items 테이블을 리로드 하였습니다.");
                 }
             })
-            .add_command(new MJCommandTree("주간정보", "", null){
+            .add_command(new CommandTree("주간정보", "", null){
                 @Override
-                protected void to_handle_command(MJCommandArgs args) throws Exception{
+                protected void to_handle_command(CommandArgs args) throws Exception{
                     BQSWQInformationLoader.reload();
                     args.notify("tb_mbook_information 테이블을 리로드 하였습니다.");
                 }
             })
         )
-        .add_command(new MJCommandTree("케릭터초기화", "보내온 케릭터 이름으로 해당 케릭터의 주간퀘스트를 초기화 합니다.", new String[]{"케릭터이름"}){
+        .add_command(new CommandTree("케릭터초기화", "보내온 케릭터 이름으로 해당 케릭터의 주간퀘스트를 초기화 합니다.", new String[]{"케릭터이름"}){
             @Override
-            protected void to_handle_command(MJCommandArgs args) throws Exception{
+            protected void to_handle_command(CommandArgs args) throws Exception{
                 String character_name = args.nextString();
                 L1PcInstance pc = L1World.getInstance().getPlayer(character_name);
                 L1PcInstance gm = args.getOwner();
@@ -309,8 +308,8 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
                 });
             }
         })
-        .add_command(new MJCommandTree("전체초기화", "현재 접속중인 모든 케릭터의 주간퀘스트를 초기화합니다.", null){
-            protected void to_handle_command(MJCommandArgs args) throws Exception{
+        .add_command(new CommandTree("전체초기화", "현재 접속중인 모든 케릭터의 주간퀘스트를 초기화합니다.", null){
+            protected void to_handle_command(CommandArgs args) throws Exception{
                 L1PcInstance gm = args.getOwner();
                 ThreadPool.getInstance().execute(new Runnable(){
                     @Override
@@ -322,10 +321,10 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
         });
     }
     
-    private MJCommandTree createSpawnCommand(){
-        return new MJCommandTree("스폰", "북아이디를 기반으로 몬스터를 소환합니다.", new String[]{"북아이디", "마릿수"}){
+    private CommandTree createSpawnCommand(){
+        return new CommandTree("스폰", "북아이디를 기반으로 몬스터를 소환합니다.", new String[]{"북아이디", "마릿수"}){
             @Override
-            protected void to_handle_command(MJCommandArgs args) throws Exception{
+            protected void to_handle_command(CommandArgs args) throws Exception{
                 int criteria_id = args.nextInt();
                 int count = args.nextInt();
                 BQSInformation bqsInfo = BQSInformationLoader.getInstance().getInformation(criteria_id);
@@ -340,10 +339,10 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
         };
     }
     
-    private MJCommandTree createCharacterUpdateCommand(){
-        return new MJCommandTree("케릭터업데이트", "보내온 북아이디에 해당하는 도감정보를 지정된 케릭터의 도감에서 업데이트 시킵니다.", new String[]{"케릭터이름", "북아이디", "변경시킬 수"}){
+    private CommandTree createCharacterUpdateCommand(){
+        return new CommandTree("케릭터업데이트", "보내온 북아이디에 해당하는 도감정보를 지정된 케릭터의 도감에서 업데이트 시킵니다.", new String[]{"케릭터이름", "북아이디", "변경시킬 수"}){
             @Override
-            protected void to_handle_command(MJCommandArgs args) throws Exception{
+            protected void to_handle_command(CommandArgs args) throws Exception{
                 String character_name = args.nextString();
                 int criteria_id = args.nextInt();
                 int count = args.nextInt();
@@ -383,10 +382,10 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
         };
     }
     
-    private MJCommandTree createReloadConfigCommand(){
-        return new MJCommandTree("컨피그리로드", "도감 시스템에서 사용하는 컨픽을 리로드합니다.", null){
+    private CommandTree createReloadConfigCommand(){
+        return new CommandTree("컨피그리로드", "도감 시스템에서 사용하는 컨픽을 리로드합니다.", null){
             @Override
-            protected void to_handle_command(MJCommandArgs args) throws Exception{
+            protected void to_handle_command(CommandArgs args) throws Exception{
                 loadConfig();
                 BQSWQUpdator.getInstance().update_listener();
                 args.notify("mj_bookquestsystem.properties가 리로드 되었습니다.");
@@ -394,10 +393,10 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
         };
     }
     
-    private MJCommandTree createInitializedCommand(){
-        return new MJCommandTree("시스템초기화", "모든 도감 정보가 초기화됩니다.", null){
+    private CommandTree createInitializedCommand(){
+        return new CommandTree("시스템초기화", "모든 도감 정보가 초기화됩니다.", null){
             @Override
-            protected void to_handle_command(MJCommandArgs args) throws Exception{
+            protected void to_handle_command(CommandArgs args) throws Exception{
                 try{
                     SC_PacketBox.broadcastGreen("시스템 갱신으로 인해 도감 시스템이 잠시 중단됩니다.");
                     loadConfig();
@@ -422,7 +421,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
     }
     
     @Override
-    public void execute(MJCommandArgs args) {
+    public void execute(CommandArgs args) {
         _commands.execute(args, new StringBuilder(256).append(_commands.to_operation()));
     }
 }

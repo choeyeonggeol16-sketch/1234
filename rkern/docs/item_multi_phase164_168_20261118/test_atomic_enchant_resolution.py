@@ -45,7 +45,7 @@ for path,typ in ((legacy/'check_weapon.py','weapon'),(legacy/'check_armor_extend
     assert marker in original
     test='''package l1j.server.server.model.item.function;
 import l1j.server.server.model.Instance.*;
-import l1j.server.MJTemplate.MJRnd;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.*;
 public class TestHarness {
  static int checks;
@@ -57,7 +57,7 @@ public class TestHarness {
        L1PcInstance p=new L1PcInstance();L1ItemInstance scroll=new L1ItemInstance(),target=new L1ItemInstance();
        target.lv=1;target.data.id=id==98077?123111:900116;
        ItemReceiptOperations.commit=commit;
-       MJRnd.win=win;
+       GameRandom.win=win;
        l1j.server.Config.accessory[1]=win?100:0;
        SC_SystemMessage.fail=packetFailure;
        ItemReceiptOperations.submitted=ItemReceiptOperations.successes=ItemReceiptOperations.failures=ItemReceiptOperations.destructions=0;

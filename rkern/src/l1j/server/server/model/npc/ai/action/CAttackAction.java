@@ -1,7 +1,7 @@
 package l1j.server.server.model.npc.ai.action;
 
-import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.L1Character;
 
 /**
  * 공격 action.
@@ -58,7 +58,7 @@ public final class CAttackAction {
             return CCreatureController.RESULT_INVALID;
         }
 
-        // NC dPAttack rejects an attacker with no health. The first CIO
+        // reference server dPAttack rejects an attacker with no health. The first CIO
         // action tick skips AI preflight, so preserve its hidden-state gate.
         if (creature.isDead()
                 || creature.getCurrentHp() <= 0

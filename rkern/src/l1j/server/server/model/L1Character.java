@@ -1,45 +1,42 @@
 package l1j.server.server.model;
 
 import java.util.ArrayList;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
 import l1j.server.Config;
-import l1j.server.MJ3SEx.EActionCodes;
-import l1j.server.MJ3SEx.SpriteInformation;
-import l1j.server.MJ3SEx.Loader.SpriteInformationLoader;
-import l1j.server.MJDShopSystem.MJDShopItem;
-import l1j.server.MJDShopSystem.MJDShopStorage;
-import l1j.server.MJKDASystem.MJKDA;
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.MJTemplate.MJL1Type;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
-import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.animation.EActionCodes;
+import l1j.server.server.model.character.animation.SpriteInformation;
+import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
+import l1j.server.server.model.character.combat.statistics.Kda;
 import l1j.server.server.model.character.skill.CSkillInfo;
+import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.SkillEffectContainer;
-import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.map.L1Map;
-import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.model.poison.L1Poison;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeShape;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
-
-import l1j.server.server.types.Point;
-import l1j.server.server.utils.CalcStat;
-import l1j.server.server.utils.IntRange;
-
 import l1j.server.server.model.network.core.sc.packet.SC_Lawful;
 import l1j.server.server.model.network.core.sc.packet.SC_PinkName;
 import l1j.server.server.model.network.core.sc.packet.SC_Poison;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.npc.ai.NpcEventFactory;
+import l1j.server.server.model.poison.L1Poison;
+import l1j.server.server.model.shop.dynamic.DynamicShopItem;
+import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
+import l1j.server.server.shared.L1Type;
+import l1j.server.server.types.Point;
+import l1j.server.server.utils.CalcStat;
+import l1j.server.server.utils.IntRange;
 public class L1Character extends L1Object {
 	private static final long serialVersionUID = 1L;
 	// 캐릭터 기본
@@ -1025,13 +1022,13 @@ public class L1Character extends L1Object {
 		_karma = karma;
 	}
 
-	private MJKDA _kda;
+	private Kda _kda;
 
-	public MJKDA getKDA() {
+	public Kda getKDA() {
 		return _kda;
 	}
 
-	public void setKDA(MJKDA kda) {
+	public void setKDA(Kda kda) {
 		_kda = kda;
 	}
 
@@ -1131,20 +1128,20 @@ public class L1Character extends L1Object {
 		}
 	}
 
-	private volatile ArrayList<MJDShopItem> _sellings;
-	private volatile ArrayList<MJDShopItem> _purchasings;
+	private volatile ArrayList<DynamicShopItem> _sellings;
+	private volatile ArrayList<DynamicShopItem> _purchasings;
 
 	public void disposeShopInfo() {
 		disposeSellings();
 		disposePurchasings();
 	}
 
-	private MJDShopItem findDShopItem(ArrayList<MJDShopItem> list, int objid) {
+	private DynamicShopItem findDShopItem(ArrayList<DynamicShopItem> list, int objid) {
 		if (list == null)
 			return null;
 
 		int size = list.size();
-		MJDShopItem item = null;
+		DynamicShopItem item = null;
 		for (int i = 0; i < size; i++) {
 			item = list.get(i);
 			if (item.objId == objid)
@@ -1153,35 +1150,35 @@ public class L1Character extends L1Object {
 		return null;
 	}
 
-	public MJDShopItem findSellings(int objid) {
+	public DynamicShopItem findSellings(int objid) {
 		return findDShopItem(_sellings, objid);
 	}
 
 	public void updateSellings(int objid, int count) {
-		MJDShopItem item = findSellings(objid);
+		DynamicShopItem item = findSellings(objid);
 		if (item == null)
 			return;
 
 		if (item.count <= count) {
 			_sellings.remove(item);
-			MJDShopStorage.deleteProcess(this, item.objId);
+			DynamicShopStorage.deleteProcess(this, item.objId);
 		} else {
 			item.count -= count;
-			MJDShopStorage.updateProcess(this, item);
+			DynamicShopStorage.updateProcess(this, item);
 		}
 	}
 
-	public ArrayList<MJDShopItem> getSellings() {
+	public ArrayList<DynamicShopItem> getSellings() {
 		return _sellings;
 	}
 
-	public void setSellings(ArrayList<MJDShopItem> list) {
+	public void setSellings(ArrayList<DynamicShopItem> list) {
 		_sellings = list;
 	}
 
-	public void addSellings(MJDShopItem item) {
+	public void addSellings(DynamicShopItem item) {
 		if (_sellings == null)
-			_sellings = new ArrayList<MJDShopItem>(7);
+			_sellings = new ArrayList<DynamicShopItem>(7);
 		_sellings.add(item);
 	}
 
@@ -1189,30 +1186,30 @@ public class L1Character extends L1Object {
 		_sellings = null;
 	}
 
-	public MJDShopItem findPurchasings(int objid) {
+	public DynamicShopItem findPurchasings(int objid) {
 		return findDShopItem(_purchasings, objid);
 	}
 
 	public void updatePurchasings(int objid, int count) {
-		MJDShopItem item = findPurchasings(objid);
+		DynamicShopItem item = findPurchasings(objid);
 		if (item == null)
 			return;
 
 		if (item.count <= count) {
 			_purchasings.remove(item);
-			MJDShopStorage.deleteProcess(this, item.objId);
+			DynamicShopStorage.deleteProcess(this, item.objId);
 		} else {
 			item.count -= count;
-			MJDShopStorage.updateProcess(this, item);
+			DynamicShopStorage.updateProcess(this, item);
 		}
 	}
 
     /** Memory half of a receipt-committed private-shop operation. SQL listing
      * quantities were checked and changed on the same connection as payment.
      */
-    public void applyCommittedShopQuantity(boolean purchase, MJDShopItem expected,
+    public void applyCommittedShopQuantity(boolean purchase, DynamicShopItem expected,
             int expectedCount, int amount) {
-        final ArrayList<MJDShopItem> list = purchase ? _purchasings : _sellings;
+        final ArrayList<DynamicShopItem> list = purchase ? _purchasings : _sellings;
         if (list == null || expected == null || amount <= 0 || amount > expectedCount)
             throw new IllegalStateException("Invalid committed private shop quantity");
         synchronized (list) {
@@ -1223,17 +1220,17 @@ public class L1Character extends L1Object {
         }
     }
 
-	public ArrayList<MJDShopItem> getPurchasings() {
+	public ArrayList<DynamicShopItem> getPurchasings() {
 		return _purchasings;
 	}
 
-	public void setPurchasings(ArrayList<MJDShopItem> list) {
+	public void setPurchasings(ArrayList<DynamicShopItem> list) {
 		_purchasings = list;
 	}
 
-	public void addPurchasings(MJDShopItem item) {
+	public void addPurchasings(DynamicShopItem item) {
 		if (_purchasings == null)
-			_purchasings = new ArrayList<MJDShopItem>(7);
+			_purchasings = new ArrayList<DynamicShopItem>(7);
 		    _purchasings.add(item);
 	}
 
@@ -1254,7 +1251,7 @@ public class L1Character extends L1Object {
 
 	@Override
 	public int getL1Type() {
-		return _instanceType == -1 ? _instanceType = super.getL1Type() | MJL1Type.L1TYPE_CHARACTER : _instanceType;
+		return _instanceType == -1 ? _instanceType = super.getL1Type() | L1Type.L1TYPE_CHARACTER : _instanceType;
 	}
 
 	public void sendPackets(CServerPacket sbp) {
@@ -1314,7 +1311,7 @@ public class L1Character extends L1Object {
 	}
 
 	public int get_final_burn_critical_rate() {
-		if(!isPassive(MJPassiveID.FINAL_BURN.toInt()) || getCurrentHpPercent() > 70)
+		if(!isPassive(PassiveID.FINAL_BURN.toInt()) || getCurrentHpPercent() > 70)
 			return 0;
 		int level = getLevel();
 		int rate = 5;

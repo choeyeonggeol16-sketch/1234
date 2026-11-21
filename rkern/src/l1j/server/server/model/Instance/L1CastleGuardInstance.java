@@ -1,8 +1,5 @@
 package l1j.server.server.model.Instance;
 
-import l1j.server.server.model.character.action.CAttackAction;
-
-import l1j.server.MJWarSystem.MJWar;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.datatables.NPCTalkDataTable;
 import l1j.server.server.model.L1CastleLocation;
@@ -10,10 +7,12 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1NpcTalkData;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
+import l1j.server.server.model.npc.ai.NpcEventFactory;
+import l1j.server.server.model.world.siege.War;
 import l1j.server.server.templates.L1Npc;
 
 public class L1CastleGuardInstance extends L1NpcInstance {
@@ -59,7 +58,7 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 			return false;
 		}
 
-		return MJWar.isOffenseClan(pc.getClan());
+		return War.isOffenseClan(pc.getClan());
 	}
 
 	public void setTarget(L1PcInstance targetPlayer) {

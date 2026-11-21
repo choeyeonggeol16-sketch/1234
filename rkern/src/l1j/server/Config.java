@@ -12,13 +12,13 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.MJINNSystem.MJINNHelper;
-import l1j.server.MJTemplate.MJPropertyReader;
-import l1j.server.MJTemplate.MJArrangeHelper.MJArrangeParseeFactory;
-import l1j.server.MJTemplate.MJArrangeHelper.MJArrangeParser;
+import l1j.server.server.model.world.instance.inn.InnHelper;
+import l1j.server.server.shared.PropertyReader;
+import l1j.server.server.shared.arrangement.ArrangeParseeFactory;
+import l1j.server.server.shared.arrangement.ArrangeParser;
+import l1j.server.server.utils.GameUtils;
+import l1j.server.server.utils.HexHelper;
 import l1j.server.server.utils.IntRange;
-import l1j.server.server.utils.MJCommons;
-import l1j.server.server.utils.MJHexHelper;
 
 public final class Config {
  
@@ -1693,15 +1693,15 @@ public final class Config {
 
 	//
 	public static void loadCraftConfig() {
-		MJPropertyReader reader = new MJPropertyReader("./config/mj_craftinfo.properties");
+		PropertyReader reader = new PropertyReader("./config/mj_craftinfo.properties");
 		CRAFT_INCREASE_PROB_BYMILLION = reader.readDouble("CraftIncreaseProbByMillionPercent", "1.00");
-		CRAFT_VERSION_HASH = MJHexHelper.parseHexStringToInt32Array(
+		CRAFT_VERSION_HASH = HexHelper.parseHexStringToInt32Array(
 				reader.readString("CraftVersionHashVal", "C4 C3 E9 D0 DC 18 04 24 DB A5 CD AD E0 0D 31 27 4C EE 48 28"),
 				" ");
 		CRAFT_TRANSMIT_SAFELINE = reader.readInt("CraftTransmitSafeLine", "500");
 		CRAFT_FLAGMENTATION_SIZE = reader.readInt("CraftFlagmentationSize", "20");
 
-		ALCHEMY_VERSION_HASH = MJHexHelper.parseHexStringToInt32Array(reader.readString("AlchemyVersionHashVal",
+		ALCHEMY_VERSION_HASH = HexHelper.parseHexStringToInt32Array(reader.readString("AlchemyVersionHashVal",
 				"C4 C3 E9 D0 DC 18 04 24 DB A5 CD AD E0 0D 31 27 4C EE 48 28"), " ");
 		ALCHEMY_TRANSMIT_SAFELINE = reader.readInt("AlchemyTransmitSafeLine", "1000");
 
@@ -2048,7 +2048,7 @@ public final class Config {
 			랭킹순위 = Integer.parseInt(altSettings.getProperty("RK", "8"));
 			BossAreaDropBossIds3 = altSettings.getProperty("BoxList", "");
 			BossAreaDropBossIds2 = altSettings.getProperty("BoxItemList", "");
-			MJINNHelper.USAGECOUNT = Integer.parseInt(altSettings.getProperty("InnMaximumCount", "20"));
+			InnHelper.USAGECOUNT = Integer.parseInt(altSettings.getProperty("InnMaximumCount", "20"));
 			
 
 			USE_POTION_EFFECT_LOGGIN = Boolean.parseBoolean(altSettings.getProperty("UsePotionEffectLogging", "false"));
@@ -3044,7 +3044,7 @@ public final class Config {
 			is.close();
 			DROPMENT_ITEM.clear();
 			String ments = ServerCodes.getProperty("Dropmentitem", "").trim();
-			if(!MJCommons.isNullOrEmpty(ments)){
+			if(!GameUtils.isNullOrEmpty(ments)){
 				String[] mentArray = ments.split(",");
 				for(int i=mentArray.length - 1; i>=0; --i){
 					int itemId = Integer.parseInt(mentArray[i]);
@@ -3187,75 +3187,75 @@ public final class Config {
 			수배작동유무 = Boolean.parseBoolean(ServerCodes.getProperty("Huntonoff", "false"));
 			/** 고대의서 **/
 
-			rareweapon = (Integer[]) MJArrangeParser
-					.parsing(ServerCodes.getProperty("rareweapon", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",", MJArrangeParseeFactory.createIntArrange())
+			rareweapon = (Integer[]) ArrangeParser
+					.parsing(ServerCodes.getProperty("rareweapon", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",", ArrangeParseeFactory.createIntArrange())
 					.result();
-			weapon = (Integer[]) MJArrangeParser
+			weapon = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("weapon", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
 			rareweaponLevel = Integer.parseInt(ServerCodes.getProperty("rareweaponLevel", "1"));
 			weaponLevel = Integer.parseInt(ServerCodes.getProperty("weaponLevel", "1"));
-			armor = (Integer[]) MJArrangeParser
+			armor = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("armor", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
 			
-			armor1 = (Integer[]) MJArrangeParser
+			armor1 = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("armor1", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
 			
 			할파스갑옷 = Integer.parseInt(ServerCodes.getProperty("Halpasec", "1"));
-			할파스갑옷인챈 = (Integer[]) MJArrangeParser
+			할파스갑옷인챈 = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("Halpasec1", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
 			가호영자이펙트 = Integer.parseInt(ServerCodes.getProperty("Gaho1", "1"));
 			가호유저힐이펙트 = Integer.parseInt(ServerCodes.getProperty("Gaho2", "1"));
 			몬스터정리이펙트 = Integer.parseInt(ServerCodes.getProperty("Mon1", "1"));
 			
 			armorLevel = Integer.parseInt(ServerCodes.getProperty("armorLevel", "1"));
-			accessory = (Integer[]) MJArrangeParser
+			accessory = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("accessory", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
-			ancient2 = (Integer[]) MJArrangeParser
+			ancient2 = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("Ancient2", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
-			ancient = (Integer[]) MJArrangeParser
+			ancient = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("Ancient", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
-			ancient1 = (Integer[]) MJArrangeParser
+			ancient1 = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("Ancient1", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
-			bless_orim = (Integer[]) MJArrangeParser
+			bless_orim = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("Bless_orim", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
 
-			Roomtis = (Integer[]) MJArrangeParser
+			Roomtis = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("Roomtis", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
-			Sanpper = (Integer[]) MJArrangeParser
+			Sanpper = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("Sanpper", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
-			Sentence = (Integer[]) MJArrangeParser
+			Sentence = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("Sentence", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
-			Insignia = (Integer[]) MJArrangeParser
+			Insignia = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("Insignia", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
-			Should = (Integer[]) MJArrangeParser
+			Should = (Integer[]) ArrangeParser
 					.parsing(ServerCodes.getProperty("Should", "30,20,15,13,10,8,6,4,2,1,1,1,1,1,1"), ",",
-							MJArrangeParseeFactory.createIntArrange())
+							ArrangeParseeFactory.createIntArrange())
 					.result();
 
 			투견최소랜덤데미지 = Integer.parseInt(ServerCodes.getProperty("DogMIN", "100"));

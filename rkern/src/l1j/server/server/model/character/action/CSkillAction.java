@@ -1,16 +1,16 @@
 package l1j.server.server.model.character.action;
 
-import l1j.server.MJTemplate.MJL1Type;
 import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Skills;
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.utils.GameUtils;
 
 public final class CSkillAction extends CNewAction {
 
@@ -106,7 +106,7 @@ public final class CSkillAction extends CNewAction {
         	return false;
         }
  
-        if (MJCommons.isNonAction(owner)) {
+        if (GameUtils.isNonAction(owner)) {
             return false;
         }
 
@@ -129,7 +129,7 @@ public final class CSkillAction extends CNewAction {
 
         final L1Object target = L1World.getInstance().findObject(tId);
         if (target != null) {
-            if (target.instanceOf(MJL1Type.L1TYPE_CHARACTER)) {
+            if (target.instanceOf(L1Type.L1TYPE_CHARACTER)) {
                 if (owner.getMapId() != target.getMapId() || owner.getLocation().getLineDistance(target.getLocation()) > range) {
                     return false;
                 }

@@ -1,9 +1,9 @@
 package l1j.server.server.packets.Protocol.MainServer.Companion.Proto;
 
-import l1j.server.MJCompanion.Basic.Skills.MJCompanionClassSkillInfo;
-import l1j.server.MJCompanion.Basic.Skills.MJCompanionSkillTierOpenInfo;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.companion.basic.skills.CompanionClassSkillInfo;
+import l1j.server.server.model.character.companion.basic.skills.CompanionSkillTierOpenInfo;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
@@ -38,8 +38,8 @@ public final class CS_COMPANION_SKILL_NEXT_TIER_OPEN_REQ {
 
             int sourceTier = companion.get_tier();
             int nextTier = sourceTier + 1;
-            MJCompanionSkillTierOpenInfo oInfo = MJCompanionSkillTierOpenInfo.get_tier_open_info(nextTier);
-            MJCompanionClassSkillInfo nextClassSkillInfo = MJCompanionClassSkillInfo.get_companion_skills(
+            CompanionSkillTierOpenInfo oInfo = CompanionSkillTierOpenInfo.get_tier_open_info(nextTier);
+            CompanionClassSkillInfo nextClassSkillInfo = CompanionClassSkillInfo.get_companion_skills(
                     companion.get_class_info().get_class_name(), nextTier);
             if (oInfo == null || nextClassSkillInfo == null) {
                 pc.sendPackets("다음 단계 정보를 찾을 수 없습니다.");
@@ -48,7 +48,7 @@ public final class CS_COMPANION_SKILL_NEXT_TIER_OPEN_REQ {
                         pc.getName(), companion.getName(), companion.getId(), sourceTier, nextTier));
                 return;
             }
-            MJCompanionClassSkillInfo sourceClassSkillInfo = MJCompanionClassSkillInfo.get_companion_skills(
+            CompanionClassSkillInfo sourceClassSkillInfo = CompanionClassSkillInfo.get_companion_skills(
                     companion.get_class_info().get_class_name(), sourceTier);
             if (sourceClassSkillInfo == null) {
                 pc.sendPackets("현재 단계 정보를 찾을 수 없습니다.");

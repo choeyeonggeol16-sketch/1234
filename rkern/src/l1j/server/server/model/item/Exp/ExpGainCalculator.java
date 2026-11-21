@@ -2,21 +2,22 @@ package l1j.server.server.model.item.Exp;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import l1j.server.Config;
 import l1j.server.server.Account;
-import l1j.server.MJCompanion.Basic.HuntingGround.MJCompanionHuntingGround;
 import l1j.server.server.GameServerSetting;
+import l1j.server.server.auth.captcha.Captcha;
+import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
-import l1j.server.MJCaptchaSystem.MJCaptcha;
-import l1j.server.MJCaptchaSystem.Loader.MJCaptchaLoadManager;
-import l1j.server.MJTemplate.MJRnd;
+import l1j.server.server.model.character.companion.basic.huntingground.CompanionHuntingGround;
+import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
+import l1j.server.server.shared.GameRandom;
 
 /**
  * CalcExp.AddExp()에서 "경험치 배수/아인/에메랄드/콤보/캡차/레벨캡" 계산/사이드이펙트 적용
@@ -304,7 +305,7 @@ public final class ExpGainCalculator {
     // ---------------------------
 
     private static int applyCompanionShare(L1PcInstance pc, int exp) {
-        MJCompanionHuntingGround hground = MJCompanionHuntingGround.get_hunting_ground(pc.getMapId());
+        CompanionHuntingGround hground = CompanionHuntingGround.get_hunting_ground(pc.getMapId());
         if (hground != null) {
             double mag = hground.get_magnification_by_exp();
             if (mag > 0) {
@@ -343,16 +344,16 @@ public final class ExpGainCalculator {
             return true;
         }
         
-        MJCaptcha captcha = pc.get_captcha();
+        Captcha captcha = pc.get_captcha();
         if (captcha == null) captcha = pc.create_captcha();
 
         if (captcha.is_keep_captcha()) {
-            if (captcha.inc_relay_count() >= MJCaptchaLoadManager.CAPTCHA_RELAY_COUNT) {
+            if (captcha.inc_relay_count() >= CaptchaLoadManager.CAPTCHA_RELAY_COUNT) {
                 captcha.do_fail(pc);
             }
         } else {
-            if (MJCaptchaLoadManager.CAPTCHA_IS_RUNNING) {
-                if (!captcha.is_pass_captcha() && MJRnd.isWinning(1000000, MJCaptchaLoadManager.CAPTCHA_SHOW_PROBABILITY_BYMILLIMON)) {
+            if (CaptchaLoadManager.CAPTCHA_IS_RUNNING) {
+                if (!captcha.is_pass_captcha() && GameRandom.isWinning(1000000, CaptchaLoadManager.CAPTCHA_SHOW_PROBABILITY_BYMILLIMON)) {
                     if (pc.getAutoHunt()) {
                         return false; 
                     }

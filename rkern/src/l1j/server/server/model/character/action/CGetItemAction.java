@@ -5,25 +5,25 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
-import l1j.server.MJRaidSystem.MJRaidObject;
-import l1j.server.MJRaidSystem.MJRaidSpace;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.GameServer;
 import l1j.server.server.datatables.MapsTable;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.Item.Drop.PartyLootCursor;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.monitor.Logger.ItemActionType;
-import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.world.instance.raid.RaidObject;
+import l1j.server.server.model.world.instance.raid.RaidSpace;
+import l1j.server.server.monitor.Logger.ItemActionType;
+import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.utils.MessageUtil;
 import l1j.server.server.utils.TYUtil;
 
@@ -446,9 +446,9 @@ for (L1PcInstance member : party.getMembers()) {
             SC_AttackStatus.broadcast(owner, attackId, attackHeading, tId, ActionCodes.ACTION_Pickup);
         }
 
-        if (MJRaidSpace.getInstance().isInInstance(owner)) {
-            final MJRaidObject obj =
-                    MJRaidSpace.getInstance()
+        if (RaidSpace.getInstance().isInInstance(owner)) {
+            final RaidObject obj =
+                    RaidSpace.getInstance()
                             .getOpenObject(owner.getMapId());
 
             if (obj != null) {

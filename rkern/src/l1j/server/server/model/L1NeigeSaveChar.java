@@ -3,11 +3,9 @@ package l1j.server.server.model;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
-
-import l1j.server.MJCTSystem.MJCTObject;
-import l1j.server.MJCTSystem.Loader.MJCTSystemLoader;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
+import l1j.server.server.model.item.collection.CollectionObject;
+import l1j.server.server.model.item.collection.loader.CollectionSystemLoader;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
@@ -39,7 +37,7 @@ public class L1NeigeSaveChar {
 		    if ((pc == null) || (pc.isDead())) {
 			      return;
 			    }
-		    MJCTObject obj = MJCTSystemLoader.getInstance().get(param);
+		    CollectionObject obj = CollectionSystemLoader.getInstance().get(param);
 		    if(obj == null){
 				SC_SystemMessage.send(pc, invalid);
 				pc.setFindchar(null);
@@ -52,7 +50,7 @@ public class L1NeigeSaveChar {
 		}
 	}
 	public static void CharInfo(L1PcInstance pc, String Name){
-		MJCTObject obj = MJCTSystemLoader.getInstance().get(Name);
+		CollectionObject obj = CollectionSystemLoader.getInstance().get(Name);
 		
 		if(obj == null){
 			SC_SystemMessage.send(pc, invalid);
@@ -63,7 +61,7 @@ public class L1NeigeSaveChar {
 			
 	}
 	public static void CharInventory(L1PcInstance pc, String Name){
-		MJCTObject obj = MJCTSystemLoader.getInstance().get(Name);
+		CollectionObject obj = CollectionSystemLoader.getInstance().get(Name);
 		if(obj == null){
 			SC_SystemMessage.send(pc, invalid);
 			pc.setFindchar(null);
@@ -74,7 +72,7 @@ public class L1NeigeSaveChar {
 		pc.setFindcharno(1);
 	}
 	public static void CharSkill(L1PcInstance pc, String Name){
-		MJCTObject obj = MJCTSystemLoader.getInstance().get(Name);
+		CollectionObject obj = CollectionSystemLoader.getInstance().get(Name);
 		if(obj == null){
 			SC_SystemMessage.send(pc, invalid);
 			pc.setFindchar(null);

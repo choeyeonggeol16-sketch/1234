@@ -3,8 +3,8 @@ package l1j.server.server.datatables;
 import java.sql.ResultSet;
 import java.util.HashMap;
 
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.FullSelectorHandler;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 
 public class CraftProbability {
 	private static CraftProbability _instance;

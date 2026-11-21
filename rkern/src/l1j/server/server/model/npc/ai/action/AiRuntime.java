@@ -4,27 +4,27 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.ThreadPool;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1MobGroupInfo;
-import l1j.server.server.model.L1MobSkillUse;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1CastleGuardInstance;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1GuardInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1MobGroupInfo;
+import l1j.server.server.model.L1MobSkillUse;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.npc.ai.NpcServer;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.npc.ai.HateEvent;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.npc.ai.NpcServer;
 
 /**
  * NPC AI decision/event runtime.
  *
- * NC-style split:
+ * reference design split:
  * - this class owns event/hate drain and next-action selection only.
  * - CCreatureController/Action execution is submitted to the NPC's fixed CIO owner.
  * - active action cadence is no longer driven by AiEngine polling.

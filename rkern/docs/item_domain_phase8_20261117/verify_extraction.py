@@ -51,7 +51,7 @@ assert 'case 880800 -> DurableSkillItems.usePotentialScroll(pc, l1iteminstance);
 assert 'case 70740 -> ImmuneBladeSkillItems.UseImmuneBlade(pc);' in router
 prime=(F/'PrimeSkillConsumable.java').read_text('utf8')
 assert prime.count('isInWarAreaAndWarTime(pc)')==2
-assert 'MJCastleWarBusiness.getInstance().isNowWar(castleId)' in prime
+assert 'CastleWarBusiness.getInstance().isNowWar(castleId)' in prime
 # Enchantment methods are still public static in SpecialEnchantScrolls, but effect work is moved.
 enchant=(F/'SpecialEnchantScrolls.java').read_text('utf8')
 for name,info in M['enchantment_methods'].items():

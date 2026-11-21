@@ -1,42 +1,20 @@
 package l1j.server.server.model.Instance;
 
-import l1j.server.server.model.character.action.CAttackAction;
-
 import java.sql.Connection;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.sql.PreparedStatement;
-import l1j.server.DatabaseFactory;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import l1j.server.MJCompanion.CompanionSettings;
-import l1j.server.MJCompanion.Basic.Buff.MJCompanionBuffInfo;
-import l1j.server.MJCompanion.Basic.ClassInfo.MJCompanionClassInfo;
-import l1j.server.MJCompanion.Basic.Exp.MJCompanionExpPenalty;
-import l1j.server.MJCompanion.Basic.FriendShip.MJCompanionFriendShipBonus;
-import l1j.server.MJCompanion.Basic.Skills.MJCompanionClassSkillInfo;
-import l1j.server.MJCompanion.Basic.Skills.MJCompanionSkillEffect;
-import l1j.server.MJCompanion.Basic.Skills.MJCompanionSkillInfo;
-import l1j.server.MJCompanion.Basic.Stat.MJCompanionStatEffect;
-import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
-import l1j.server.MJCompanion.Instance.MJCompanionUpdateFlag;
-import l1j.server.MJKDASystem.MJKDA;
-import l1j.server.MJTemplate.MJObjectWrapper;
-import l1j.server.MJTemplate.MJRnd;
-import l1j.server.MJTemplate.L1Instance.MJEffectTriggerInstance;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Updator;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.BatchHandler;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.Handler;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.SelectorHandler;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import l1j.server.DatabaseFactory;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
 import l1j.server.server.IdFactory;
+import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Ability;
@@ -47,26 +25,45 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1PinkName;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.action.CAttackAction;
+import l1j.server.server.model.character.combat.statistics.Kda;
+import l1j.server.server.model.character.companion.CompanionSettings;
+import l1j.server.server.model.character.companion.basic.buff.CompanionBuffInfo;
+import l1j.server.server.model.character.companion.basic.classinfo.CompanionClassInfo;
+import l1j.server.server.model.character.companion.basic.exp.CompanionExpPenalty;
+import l1j.server.server.model.character.companion.basic.friendship.CompanionFriendShipBonus;
+import l1j.server.server.model.character.companion.basic.skills.CompanionClassSkillInfo;
+import l1j.server.server.model.character.companion.basic.skills.CompanionSkillEffect;
+import l1j.server.server.model.character.companion.basic.skills.CompanionSkillInfo;
+import l1j.server.server.model.character.companion.basic.stat.CompanionStatEffect;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
+import l1j.server.server.model.character.companion.instance.CompanionUpdateFlag;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
+import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
+import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.npc.ai.dFollow;
+import l1j.server.server.model.world.instance.shared.EffectTriggerInstance;
+import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.CompanionT.eCommand;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.SC_COMPANION_BUFF_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.SC_COMPANION_SKILL_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.SC_COMPANION_SKILL_NOTI.Skill;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.SC_COMPANION_STATUS_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_UPDATE_INVENTORY_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
-import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.CompanionT.eCommand;
-import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
-import l1j.server.server.model.npc.ai.dFollow;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
+import l1j.server.server.shared.GameRandom;
+import l1j.server.server.shared.ObjectWrapper;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.CharactersItemStorage;
 import l1j.server.server.storage.mysql.MySqlCharacterStorage;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.executors.Updator;
+import l1j.server.server.storage.sql.handler.BatchHandler;
+import l1j.server.server.storage.sql.handler.Handler;
+import l1j.server.server.storage.sql.handler.SelectorHandler;
 import l1j.server.server.templates.L1Npc;
-
-import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 public class L1CompanionInstance extends L1NpcInstance{
     private static final Logger COMPANION_LOG = Logger.getLogger(L1CompanionInstance.class.getName());
     
@@ -133,7 +130,7 @@ public class L1CompanionInstance extends L1NpcInstance{
     }
     
     private static boolean use_friend_ship_bonuses(L1PcInstance master, L1ItemInstance item){
-        MJCompanionFriendShipBonus bonus = MJCompanionFriendShipBonus.from_item_id(item.getItemId());
+        CompanionFriendShipBonus bonus = CompanionFriendShipBonus.from_item_id(item.getItemId());
         if(bonus == null)
             return false;
         
@@ -148,12 +145,12 @@ public class L1CompanionInstance extends L1NpcInstance{
         }
         int friend_ship_guage = bonus.get_friend_ship_guage();
         int friend_ship_marble = bonus.get_friend_ship_marble();
-        int update_flag = MJCompanionUpdateFlag.UPDATE_FRIEND_SHIP;
+        int update_flag = CompanionUpdateFlag.UPDATE_FRIEND_SHIP;
         if(friend_ship_guage > 0){
             companion.add_friend_ship_guage(friend_ship_guage);
             if(companion.get_friend_ship_guage() >= CompanionSettings.FRIEND_SHIP_MAX_GUAGE)
                 companion.do_combo_run();
-            update_flag |= MJCompanionUpdateFlag.UPDATE_COMBO_TIME | MJCompanionUpdateFlag.UPDATE_DELAY_REDUCE;
+            update_flag |= CompanionUpdateFlag.UPDATE_COMBO_TIME | CompanionUpdateFlag.UPDATE_DELAY_REDUCE;
             master.sendPackets(String.format("%s의 투지게이지가 %d만큼 상승했습니다.", companion.getName(), friend_ship_guage));
         }
         if(friend_ship_marble > 0){
@@ -168,7 +165,7 @@ public class L1CompanionInstance extends L1NpcInstance{
     }
     
     private static boolean use_buff_item(L1PcInstance master, L1ItemInstance item){
-        MJCompanionBuffInfo bInfo = MJCompanionBuffInfo.from_item_id(item.getItemId());
+        CompanionBuffInfo bInfo = CompanionBuffInfo.from_item_id(item.getItemId());
         if(bInfo == null)
             return false;
         
@@ -189,11 +186,11 @@ public class L1CompanionInstance extends L1NpcInstance{
         SC_COMPANION_BUFF_NOTI.send(master, bInfo.get_spell_id(), bInfo.get_duration());
         companion.setSkillEffect(bInfo.get_spell_id(), bInfo.get_duration() * 1000);
         if(bInfo.get_pvp_offense() > 0)
-            SC_COMPANION_STATUS_NOTI.send(master, companion, MJCompanionUpdateFlag.UPDATE_PVP_DAMAGE);
+            SC_COMPANION_STATUS_NOTI.send(master, companion, CompanionUpdateFlag.UPDATE_PVP_DAMAGE);
         if(bInfo.get_effect_id() > 0)
             companion.send_effect(bInfo.get_effect_id());
         if(bInfo.get_trigger_effect_id() > 0){
-            MJEffectTriggerInstance trigger = MJEffectTriggerInstance.newInstance(
+            EffectTriggerInstance trigger = EffectTriggerInstance.newInstance(
                     bInfo.get_spell_id(), bInfo.get_trigger_effect_id(), 0, companion.getX(), companion.getY(), companion.getMapId());
             companion.add_trigger(trigger);
         }
@@ -242,8 +239,8 @@ public class L1CompanionInstance extends L1NpcInstance{
         companion.set_elixir_use_count(companion.get_elixir_use_count() + 1);
         companion.update_stats();
         companion.update_elixir_use_count();
-        MJCompanionInstanceCache.update_cache(companion, true);
-        SC_COMPANION_STATUS_NOTI.send(master, companion, MJCompanionUpdateFlag.UPDATE_ALL);
+        CompanionInstanceCache.update_cache(companion, true);
+        SC_COMPANION_STATUS_NOTI.send(master, companion, CompanionUpdateFlag.UPDATE_ALL);
     }
     
     public static boolean use_item(L1PcInstance master, L1ItemInstance item){
@@ -262,7 +259,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         if(use_name_change_initialized(master, item))
             return true;
         
-        MJCompanionClassInfo cInfo = MJCompanionClassInfo.from_item_id(item.getItemId());
+        CompanionClassInfo cInfo = CompanionClassInfo.from_item_id(item.getItemId());
         if(cInfo == null)
             return false;
         
@@ -301,8 +298,8 @@ public class L1CompanionInstance extends L1NpcInstance{
         companion.set_master(master);
         companion.set_master_id(master.getId());
         companion.set_master_name(master.getName());
-        companion.setX(master.getX() + (MJRnd.next(3) * (MJRnd.isBoolean() ? 1 : -1)));
-        companion.setY(master.getY() + (MJRnd.next(3) * (MJRnd.isBoolean() ? 1 : -1)));
+        companion.setX(master.getX() + (GameRandom.next(3) * (GameRandom.isBoolean() ? 1 : -1)));
+        companion.setY(master.getY() + (GameRandom.next(3) * (GameRandom.isBoolean() ? 1 : -1)));
         companion.setMap(master.getMapId());
         companion.setHeading(master.getHeading());
         companion.setLightSize(companion.getNpcTemplate().getLightSize());
@@ -310,12 +307,12 @@ public class L1CompanionInstance extends L1NpcInstance{
         SC_COMPANION_SKILL_NOTI.send(master, companion);
         SC_COMPANION_BUFF_NOTI.send(master, companion);
         companion.set_command_state(eCommand.TM_Aggressive);
-        MJCompanionInstanceCache.update_cache(companion, true);
+        CompanionInstanceCache.update_cache(companion, true);
         return true;
     }
     
     private static L1CompanionInstance from_database(final L1PcInstance master, final int control_object_id){
-        final MJObjectWrapper<L1CompanionInstance> wrapper = new MJObjectWrapper<L1CompanionInstance>();
+        final ObjectWrapper<L1CompanionInstance> wrapper = new ObjectWrapper<L1CompanionInstance>();
         Selector.exec("select * from companion_instance where control_object_id=?", new SelectorHandler(){
             @Override
             public void handle(PreparedStatement pstm) throws Exception {
@@ -332,7 +329,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         return wrapper.value;
     }
     
-    private static L1CompanionInstance newInstance(L1PcInstance master, MJCompanionClassInfo cInfo, int control_object_id){
+    private static L1CompanionInstance newInstance(L1PcInstance master, CompanionClassInfo cInfo, int control_object_id){
         L1CompanionInstance companion = newInstance();
         companion.setId(IdFactory.getInstance().nextId());
         companion.set_control_object_id(control_object_id);
@@ -350,7 +347,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         companion.set_tier(1);
         companion.set_is_oblivion(false);
         companion.set_name_changed_count(0);
-        MJCompanionClassSkillInfo class_skill_info = MJCompanionClassSkillInfo.get_companion_skills(cInfo.get_class_name(), companion.get_tier());
+        CompanionClassSkillInfo class_skill_info = CompanionClassSkillInfo.get_companion_skills(cInfo.get_class_name(), companion.get_tier());
         companion.do_open_tier(class_skill_info);
         return companion;
     }
@@ -359,7 +356,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         L1CompanionInstance companion = newInstance();
         companion.setId(rs.getInt("object_id"));
         companion.set_control_object_id(rs.getInt("control_object_id"));
-        MJCompanionClassInfo cInfo = MJCompanionClassInfo.from_class_name(rs.getString("class_name"));
+        CompanionClassInfo cInfo = CompanionClassInfo.from_class_name(rs.getString("class_name"));
         if(cInfo == null)
             throw new IllegalArgumentException(String.format("MJCompanionInstance::newInstance()...invalid class info %s", rs.getString("class_name")));
         companion.set_class_info(cInfo);
@@ -391,7 +388,7 @@ public class L1CompanionInstance extends L1NpcInstance{
     
     private static final long serialVersionUID = 1L;
     private int m_control_object_id;
-    private MJCompanionClassInfo m_class_info;
+    private CompanionClassInfo m_class_info;
     private eCommand m_command_state;
     private L1PcInstance m_master;
     private int m_master_id;
@@ -409,12 +406,12 @@ public class L1CompanionInstance extends L1NpcInstance{
     private int m_name_changed_count;
     private ArrayList<Skill> m_exercise_skills;
     private ArrayList<Skill> m_non_exercise_skills;
-    private MJCompanionSkillEffect m_skill_effect;
-    private MJCompanionStatEffect m_stat_effect;
+    private CompanionSkillEffect m_skill_effect;
+    private CompanionStatEffect m_stat_effect;
     private boolean m_is_teleporting;
     private long m_pink_name_millis;
     private Object m_death_lock;
-    private ConcurrentHashMap<Integer, MJEffectTriggerInstance> m_triggers;
+    private ConcurrentHashMap<Integer, EffectTriggerInstance> m_triggers;
     private L1CompanionInstance(){
         super(null);
     
@@ -427,7 +424,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         m_death_lock = new Object();
         m_combo_count = 0;
         m_name_changed_count = 0;
-        m_triggers = new ConcurrentHashMap<Integer, MJEffectTriggerInstance>();
+        m_triggers = new ConcurrentHashMap<Integer, EffectTriggerInstance>();
     }
     
     public void set_control_object_id(int control_object_id){
@@ -436,14 +433,14 @@ public class L1CompanionInstance extends L1NpcInstance{
     public int get_control_object_id(){
         return m_control_object_id;
     }
-    public void set_class_info(MJCompanionClassInfo cInfo){
+    public void set_class_info(CompanionClassInfo cInfo){
         m_class_info = cInfo;
         L1Npc npc = NpcTable.getInstance().getTemplate(cInfo.get_npc_id());
         if(npc == null)
             throw new IllegalArgumentException(String.format("MJCompanionInstance::set_class_info()... found companion npc template...class name %s, npc id : %d ", cInfo.get_class_name(), cInfo.get_npc_id()));
         setting_template(npc);
     }
-    public MJCompanionClassInfo get_class_info(){
+    public CompanionClassInfo get_class_info(){
         return m_class_info;
     }
     public void set_command_state(eCommand command_state){
@@ -545,7 +542,7 @@ public class L1CompanionInstance extends L1NpcInstance{
                 (get_is_combo_time() ? CompanionSettings.COMBO_MOVE_DELAY_REDUCE : 0D);
     }
     public int get_pvp_dmg_ratio(){
-        return m_pvp_dmg_ratio + MJCompanionBuffInfo.get_pvp_melee_offense_bonus(this);
+        return m_pvp_dmg_ratio + CompanionBuffInfo.get_pvp_melee_offense_bonus(this);
     }
     public void set_pvp_dmg_ratio(int pvp_dmg_ratio){
         m_pvp_dmg_ratio = pvp_dmg_ratio;
@@ -571,12 +568,12 @@ public class L1CompanionInstance extends L1NpcInstance{
     public ArrayList<Skill> get_exercise_skills(){
         return m_exercise_skills;
     }
-    public MJCompanionSkillInfo select_exercise_skills(){
+    public CompanionSkillInfo select_exercise_skills(){
         if(m_exercise_skills == null || m_exercise_skills.size() <= 0)
             return null;
         
-        Skill sk = m_exercise_skills.get(MJRnd.next(m_exercise_skills.size()));
-        return sk == null ? null : MJCompanionSkillInfo.get_companion_skills(sk.get_id(), sk.get_enchant());
+        Skill sk = m_exercise_skills.get(GameRandom.next(m_exercise_skills.size()));
+        return sk == null ? null : CompanionSkillInfo.get_companion_skills(sk.get_id(), sk.get_enchant());
     }
     public void set_non_exercise_skills(ArrayList<Skill> non_exercise_skills){
         m_non_exercise_skills = non_exercise_skills;
@@ -604,7 +601,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         return null;
     }
     
-    public MJCompanionSkillEffect get_skill_effect(){
+    public CompanionSkillEffect get_skill_effect(){
         return m_skill_effect;
     }
     public int get_melee_dmg(){
@@ -680,26 +677,26 @@ public class L1CompanionInstance extends L1NpcInstance{
     public long get_pink_name_millis(){
         return m_pink_name_millis;
     }
-    public void add_trigger(MJEffectTriggerInstance trigger){
+    public void add_trigger(EffectTriggerInstance trigger){
         m_triggers.put(trigger.get_identity(), trigger);
     }
     public void remove_trigger(int identity){
-        MJEffectTriggerInstance trigger = m_triggers.remove(identity);
+        EffectTriggerInstance trigger = m_triggers.remove(identity);
         if(trigger != null){
             trigger.dispose();
         }
     }
     public void remove_triggers(){
-         ArrayList<MJEffectTriggerInstance> triggers = get_triggers();
+         ArrayList<EffectTriggerInstance> triggers = get_triggers();
          m_triggers.clear();
          if(triggers != null){
-             for(MJEffectTriggerInstance trigger : triggers){
+             for(EffectTriggerInstance trigger : triggers){
                     trigger.dispose();
                 }
          }
     }
-    public ArrayList<MJEffectTriggerInstance> get_triggers(){
-        return m_triggers.size() <= 0 ? null : new ArrayList<MJEffectTriggerInstance>(m_triggers.values());
+    public ArrayList<EffectTriggerInstance> get_triggers(){
+        return m_triggers.size() <= 0 ? null : new ArrayList<EffectTriggerInstance>(m_triggers.values());
     }
     
     public int get_pink_name_remain_seconds(){
@@ -724,10 +721,10 @@ public class L1CompanionInstance extends L1NpcInstance{
                     java.util.logging.Level.WARNING, "Companion rename visual notice failed", noticeFailure);
         }
         if(m_master != null)
-            SC_COMPANION_STATUS_NOTI.send(m_master, this, MJCompanionUpdateFlag.UPDATE_NAME);
+            SC_COMPANION_STATUS_NOTI.send(m_master, this, CompanionUpdateFlag.UPDATE_NAME);
     }
     
-    public void do_open_tier(MJCompanionClassSkillInfo class_skill_info){
+    public void do_open_tier(CompanionClassSkillInfo class_skill_info){
         set_tier(class_skill_info.get_tier());
         ArrayList<Skill> skills = new ArrayList<Skill>();
         for(int skill_id : class_skill_info.get_skills_id()){
@@ -735,7 +732,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             sk.set_id(skill_id);
             sk.set_enchant(0);
             skills.add(sk);
-            if(MJCompanionSkillInfo.is_exercise_skill(skill_id))
+            if(CompanionSkillInfo.is_exercise_skill(skill_id))
                 add_exercise_skills(sk);
             else
                 add_non_exercise_skills(sk);
@@ -862,7 +859,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         }
         
         set_keep_exp(0);
-        update_exp(getExp() + keep_exp, MJCompanionUpdateFlag.UPDATE_EXP);
+        update_exp(getExp() + keep_exp, CompanionUpdateFlag.UPDATE_EXP);
         update_keep_exp();
     }
     
@@ -880,7 +877,7 @@ public class L1CompanionInstance extends L1NpcInstance{
                 set_is_combo_time(false);
                 if(m_master != null){
                     SC_COMPANION_STATUS_NOTI.send(m_master, L1CompanionInstance.this, 
-                            MJCompanionUpdateFlag.UPDATE_FRIEND_SHIP | MJCompanionUpdateFlag.UPDATE_DELAY_REDUCE | MJCompanionUpdateFlag.UPDATE_COMBO_TIME);	
+                            CompanionUpdateFlag.UPDATE_FRIEND_SHIP | CompanionUpdateFlag.UPDATE_DELAY_REDUCE | CompanionUpdateFlag.UPDATE_COMBO_TIME);	
                 }
             }
         }, CompanionSettings.COMBO_DURATION_MILLIS);
@@ -913,7 +910,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         oblivion_buffs();
         oblivion_skills();
         set_tier(1);		
-        MJCompanionClassSkillInfo class_skill_info = MJCompanionClassSkillInfo.get_companion_skills(get_class_info().get_class_name(), get_tier());
+        CompanionClassSkillInfo class_skill_info = CompanionClassSkillInfo.get_companion_skills(get_class_info().get_class_name(), get_tier());
         do_open_tier(class_skill_info);
         setName(m_class_info.get_class_npc_name());
         set_name_changed_count(0);
@@ -930,7 +927,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         ability.addAddedInt(-ability.getAddedInt());
         update_stats();
         update_instance();
-        SC_COMPANION_STATUS_NOTI.send(m_master, this, MJCompanionUpdateFlag.UPDATE_ALL);		
+        SC_COMPANION_STATUS_NOTI.send(m_master, this, CompanionUpdateFlag.UPDATE_ALL);		
     }
     
     public void do_traning(boolean is_pass_needed){
@@ -963,7 +960,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         set_is_traning(true);
         update_traning();
         double exp = CompanionSettings.TRANING_PERCENT_BY_EXP * ExpTable.getNeedExpNextLevel(CompanionSettings.TRANING_EXP_BY_LEVEL);
-        update_exp((int)(getExp() + exp), MJCompanionUpdateFlag.UPDATE_EXP);
+        update_exp((int)(getExp() + exp), CompanionUpdateFlag.UPDATE_EXP);
         m_master.sendPackets(String.format("펫 %s(을)를 훈련시켰습니다.", getName()));
     }
     
@@ -1053,14 +1050,14 @@ public class L1CompanionInstance extends L1NpcInstance{
     }
     
     public boolean on_buff_stopped(int skill_id){
-        MJCompanionBuffInfo bInfo = MJCompanionBuffInfo.from_spell_id(skill_id);
+        CompanionBuffInfo bInfo = CompanionBuffInfo.from_spell_id(skill_id);
         if(bInfo == null)
             return false;
         
         if(m_master != null){
             SC_COMPANION_BUFF_NOTI.send(m_master, skill_id, 0);
             if(bInfo.get_pvp_offense() > 0)
-                SC_COMPANION_STATUS_NOTI.send(m_master, this, MJCompanionUpdateFlag.UPDATE_PVP_DAMAGE);
+                SC_COMPANION_STATUS_NOTI.send(m_master, this, CompanionUpdateFlag.UPDATE_PVP_DAMAGE);
         }
         if(bInfo.get_trigger_effect_id() > 0){
             remove_trigger(bInfo.get_spell_id());
@@ -1084,7 +1081,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         if (getZoneType() != 1 && getZoneType() != -1){
             if(last_attacker instanceof L1PcInstance && get_pink_name_remain_seconds() <= 0){
                 L1PcInstance pc = (L1PcInstance)last_attacker;
-                int lawful = MJKDA.calculate_lawful(pc);
+                int lawful = Kda.calculate_lawful(pc);
                 pc.setLawful(lawful);
                 pc.send_lawful();
             }
@@ -1096,9 +1093,9 @@ public class L1CompanionInstance extends L1NpcInstance{
         if(get_is_combo_time())
             set_is_combo_time(false);
 
-        MJCompanionInstanceCache.update_cache(this, true);
+        CompanionInstanceCache.update_cache(this, true);
         if(m_master != null)
-            SC_COMPANION_STATUS_NOTI.send(m_master, this, MJCompanionUpdateFlag.UPDATE_ALL);
+            SC_COMPANION_STATUS_NOTI.send(m_master, this, CompanionUpdateFlag.UPDATE_ALL);
 
         ThreadPool.getInstance().scheduleRequired(() -> {
             if(isDead() && getCurrentHp() <= 0 && L1World.getInstance().contains_companion(getId())){
@@ -1107,7 +1104,7 @@ public class L1CompanionInstance extends L1NpcInstance{
                 else
                     deleteMe();
             }else{
-                MJCompanionInstanceCache.update_cache(this, false);
+                CompanionInstanceCache.update_cache(this, false);
             }
         }, 60000);
     }
@@ -1117,7 +1114,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         if(get_is_combo_time()){
             set_is_combo_time(false);
         }
-        MJCompanionInstanceCache.update_cache(this, false);
+        CompanionInstanceCache.update_cache(this, false);
         update_instance();
         update_skills();
         update_buffs();
@@ -1136,7 +1133,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         
         SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(perceivedFrom, this);
         if(perceivedFrom.getId() == get_master_id()){
-            SC_COMPANION_STATUS_NOTI.send(perceivedFrom, this, MJCompanionUpdateFlag.UPDATE_ALL);
+            SC_COMPANION_STATUS_NOTI.send(perceivedFrom, this, CompanionUpdateFlag.UPDATE_ALL);
         }
 //        if(isDead()){
 //            SC_DoActionGFX.send(perceivedFrom.getNetConnection(), getId(), ActionCodes.ACTION_Die);
@@ -1157,12 +1154,12 @@ public class L1CompanionInstance extends L1NpcInstance{
     
     @Override
     protected void on_moved(){
-        for(MJEffectTriggerInstance trigger : m_triggers.values())
+        for(EffectTriggerInstance trigger : m_triggers.values())
             trigger.do_move(getX(), getY(), getHeading());
     }
     
     public void on_attacked(){
-//		for(MJEffectTriggerInstance trigger : m_triggers.values())
+//		for(EffectTriggerInstance trigger : m_triggers.values())
 //			trigger.do_action(0);
     }
     
@@ -1175,7 +1172,7 @@ public class L1CompanionInstance extends L1NpcInstance{
     public void setCurrentHp(int i){
         super.setCurrentHp(i);
         if(m_master != null){
-            SC_COMPANION_STATUS_NOTI.send(m_master, this, MJCompanionUpdateFlag.UPDATE_HP);
+            SC_COMPANION_STATUS_NOTI.send(m_master, this, CompanionUpdateFlag.UPDATE_HP);
             SC_HPMeter.send(m_master, this);
         }
     }
@@ -1183,7 +1180,7 @@ public class L1CompanionInstance extends L1NpcInstance{
     @Override
     protected void onNpcAtomicHpChanged(int hp) {
         if (m_master != null) {
-            SC_COMPANION_STATUS_NOTI.send(m_master, this, MJCompanionUpdateFlag.UPDATE_HP);
+            SC_COMPANION_STATUS_NOTI.send(m_master, this, CompanionUpdateFlag.UPDATE_HP);
             SC_HPMeter.send(m_master, this);
         }
     }
@@ -1242,7 +1239,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         
         int reduction = get_dmg_reduction();
         damage -= reduction;
-        damage -= MJCompanionBuffInfo.get_pvp_melee_defense_bonus(this);
+        damage -= CompanionBuffInfo.get_pvp_melee_defense_bonus(this);
         if(damage <= 0)
             return;
         
@@ -1307,7 +1304,7 @@ public class L1CompanionInstance extends L1NpcInstance{
     
     private void update_friend_ship_by_exp(int exp){
         double guage = exp * CompanionSettings.FRIEND_SHIP_BY_EXP;
-        double guage_bonus = MJCompanionBuffInfo.get_friend_ship_bonus_percent(this);
+        double guage_bonus = CompanionBuffInfo.get_friend_ship_bonus_percent(this);
         if(guage_bonus > 0)
             guage += (exp * guage_bonus);
         add_friend_ship_guage((int)guage);
@@ -1325,19 +1322,19 @@ public class L1CompanionInstance extends L1NpcInstance{
             return;
         
         if(exp > 0){
-            double bonus_percent = MJCompanionBuffInfo.get_exp_bonus_percent(this);
+            double bonus_percent = CompanionBuffInfo.get_exp_bonus_percent(this);
             if(bonus_percent > 0)
                 exp += (exp * bonus_percent);
-            exp *= MJCompanionExpPenalty.get_companion_penalty_rate(getLevel());
+            exp *= CompanionExpPenalty.get_companion_penalty_rate(getLevel());
         }
         
-        int update_flag = MJCompanionUpdateFlag.UPDATE_EXP;
+        int update_flag = CompanionUpdateFlag.UPDATE_EXP;
         int total_exp = calculate_total_exp(exp);
         if(exp > 0){
-            update_flag |= MJCompanionUpdateFlag.UPDATE_FRIEND_SHIP;
+            update_flag |= CompanionUpdateFlag.UPDATE_FRIEND_SHIP;
             update_friend_ship_by_exp(exp);
             if(!get_is_combo_time() && m_friend_ship_guage >= CompanionSettings.FRIEND_SHIP_MAX_GUAGE){
-                update_flag |= MJCompanionUpdateFlag.UPDATE_COMBO_TIME | MJCompanionUpdateFlag.UPDATE_DELAY_REDUCE;
+                update_flag |= CompanionUpdateFlag.UPDATE_COMBO_TIME | CompanionUpdateFlag.UPDATE_DELAY_REDUCE;
                 do_combo_run();
             }
         }
@@ -1353,14 +1350,14 @@ public class L1CompanionInstance extends L1NpcInstance{
             int gap = getLevel() - before_level;
             if(gap > 0){
                 for(int i = gap - 1; i>=0; --i){
-                    addMaxHp(MJRnd.next(m_stat_effect.get_add_min_hp(), m_stat_effect.get_add_max_hp()));
+                    addMaxHp(GameRandom.next(m_stat_effect.get_add_min_hp(), m_stat_effect.get_add_max_hp()));
                     addMaxMp(getAbility().getTotalWis() / 2);
                 }
                 SC_SkillSound.broadcast(this, getId(), 6353);
                 SC_ServerMessage.send(m_master, 320, getName());
                 update_instance();
-                MJCompanionInstanceCache.update_cache(this, true);
-                SC_COMPANION_STATUS_NOTI.send(m_master, this, MJCompanionUpdateFlag.UPDATE_ALL | update_flag);
+                CompanionInstanceCache.update_cache(this, true);
+                SC_COMPANION_STATUS_NOTI.send(m_master, this, CompanionUpdateFlag.UPDATE_ALL | update_flag);
                 SC_UPDATE_INVENTORY_NOTI.send_companion_control_item_name(m_master, get_control_object_id(), get_class_info().get_class_npc_name_id(), getLevel());
             }
         }else{
@@ -1382,7 +1379,7 @@ public class L1CompanionInstance extends L1NpcInstance{
                     Skill sk = Skill.newInstance();
                     sk.set_id(rs.getInt("skill_id"));
                     sk.set_enchant(rs.getInt("enchant"));
-                    if(MJCompanionSkillInfo.is_exercise_skill(sk.get_id())){
+                    if(CompanionSkillInfo.is_exercise_skill(sk.get_id())){
                         exercise.add(sk);
                     }else{
                         non_exercise.add(sk);
@@ -1453,9 +1450,9 @@ public class L1CompanionInstance extends L1NpcInstance{
             getResistance().addMr(-m_skill_effect.get_mr());
         }
         
-        MJCompanionSkillEffect buff_effect = MJCompanionSkillEffect.newInstance();
+        CompanionSkillEffect buff_effect = CompanionSkillEffect.newInstance();
         for(Skill skInfo : get_non_exercise_skills()){
-            MJCompanionSkillInfo cskInfo = MJCompanionSkillInfo.get_companion_skills(skInfo.get_id(), skInfo.get_enchant());
+            CompanionSkillInfo cskInfo = CompanionSkillInfo.get_companion_skills(skInfo.get_id(), skInfo.get_enchant());
             if(cskInfo == null)
                 continue;
             
@@ -1494,7 +1491,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             getResistance().addMr(-m_stat_effect.get_mr());
         }
         Ability ability = getAbility();
-        m_stat_effect = MJCompanionStatEffect.createInstance(ability.getTotalStr(), ability.getTotalCon(), ability.getTotalInt());
+        m_stat_effect = CompanionStatEffect.createInstance(ability.getTotalStr(), ability.getTotalCon(), ability.getTotalInt());
         getAC().addAc(m_stat_effect.get_ac());
         getResistance().addMr(m_stat_effect.get_mr());
     }
@@ -1545,7 +1542,7 @@ public class L1CompanionInstance extends L1NpcInstance{
     }
     
     public void update_elixir_use_count(){
-        MJCompanionInstanceCache.update_cache(this, true);
+        CompanionInstanceCache.update_cache(this, true);
         Updator.exec("update companion_instance set elixir_use_count=?, str=?, con=?, intel=? where control_object_id=?", new Handler(){
             @Override
             public void handle(PreparedStatement pstm) throws Exception {
@@ -1570,7 +1567,7 @@ public class L1CompanionInstance extends L1NpcInstance{
     }
     
     public void update_name(){
-        MJCompanionInstanceCache.update_cache(this, true);
+        CompanionInstanceCache.update_cache(this, true);
         Updator.exec("update companion_instance set companion_name=?, name_changed_count=? where control_object_id=?", new Handler(){
             @Override
             public void handle(PreparedStatement pstm) throws Exception {
@@ -1628,7 +1625,7 @@ public class L1CompanionInstance extends L1NpcInstance{
                 new Handler(){
                     @Override
                     public void handle(PreparedStatement pstm) throws Exception {
-                        MJCompanionClassInfo cInfo = get_class_info();
+                        CompanionClassInfo cInfo = get_class_info();
                         int idx = 0;
                         pstm.setInt(++idx, getId());
                         pstm.setInt(++idx, get_control_object_id());

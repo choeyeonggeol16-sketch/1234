@@ -1,7 +1,7 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.MJCTSystem.Loader.MJCTLoadManager;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 
@@ -51,7 +51,7 @@ final class ItemTargetDecoder {
             default -> {
                 if(useType==30) yield TARGET;
                 if(itemId==600226 || itemId==600227 || itemId==3000235
-                        || itemId==MJCTLoadManager.CTSYSTEM_STORE_ID) yield STORED;
+                        || itemId==CollectionLoadManager.CTSYSTEM_STORE_ID) yield STORED;
                 if(useType==5 || useType==17) yield POINT;
                 if(itemId>=41255 && itemId<=41259) yield COOKING;
                 yield DEFAULT;

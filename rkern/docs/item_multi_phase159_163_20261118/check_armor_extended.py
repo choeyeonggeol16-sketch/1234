@@ -11,7 +11,7 @@ with tempfile.TemporaryDirectory(prefix='rk_armor_') as tmp:
  public static int armorLevel=15, accessoryLevel=15, accessorytest=15, accessorytest1=15, 할파스갑옷=15;
  public static int[] 할파스갑옷인챈=new int[32];
  public static int[] armor=new int[32],armor1=new int[32],accessory=new int[32],ancient=new int[32],ancient1=new int[32],ancient2=new int[32]; }''')
- add('l1j/server/MJTemplate/MJRnd.java','''package l1j.server.MJTemplate; public class MJRnd {public static boolean win=false;public static boolean isWinning(int n,int dice){return win;} }''')
+ add('l1j/server/server/shared/GameRandom.java','''package l1j.server.server.shared; public class GameRandom {public static boolean win=false;public static boolean isWinning(int n,int dice){return win;} }''')
  add('l1j/server/server/datatables/AccessoryEnchantInformationTable.java','''package l1j.server.server.datatables;public class AccessoryEnchantInformationTable {}''')
  add('l1j/server/server/datatables/ArmorEnchantInformationTable.java','''package l1j.server.server.datatables;public class ArmorEnchantInformationTable {}''')
  add('l1j/server/server/templates/L1Armor.java','''package l1j.server.server.templates; public class L1Armor {
@@ -84,12 +84,12 @@ with tempfile.TemporaryDirectory(prefix='rk_armor_') as tmp:
  public class ItemActionCompletion {public static int finished;public static void finishCommittedConsumable(L1PcInstance p,L1ItemInstance i){finished++;}}
  ''')
  add(base+'TestHarness.java','''package l1j.server.server.model.item.function;
- import l1j.server.server.model.Instance.*;import l1j.server.MJTemplate.MJRnd;
+ import l1j.server.server.model.Instance.*;import l1j.server.server.shared.GameRandom;
  import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
  class TestHarness {static int cases;static void check(boolean x){cases++;if(!x)throw new AssertionError("case="+cases);}
  public static void main(String[]args){
  L1PcInstance p=new L1PcInstance();L1ItemInstance scroll=new L1ItemInstance(),rune=new L1ItemInstance();
- MJRnd.win=false;SC_SystemMessage.fail=false;
+ GameRandom.win=false;SC_SystemMessage.fail=false;
  ItemActionResult result=ArmorEnchantScrollResolution.apply(new ItemActionContext(p,scroll,rune,3000517));
  check(result==ItemActionResult.STOP);check(ItemReceiptOperations.submitted==1);check(p.inventory.removals==0);
  check(scroll.count==1);check(rune.count==1);check(ItemActionCompletion.finished==0);
@@ -102,12 +102,12 @@ with tempfile.TemporaryDirectory(prefix='rk_armor_') as tmp:
  ItemActionResult r=ArmorEnchantScrollResolution.apply(new ItemActionContext(q,s2,r2,3000517));
  check(r==ItemActionResult.STOP);check(s2.count==0);check(r2.count==0);check(ItemActionCompletion.finished==2);
  // Success is still the original logic, no new debit path
- MJRnd.win=true;SC_SystemMessage.fail=false;
+ GameRandom.win=true;SC_SystemMessage.fail=false;
  L1PcInstance t=new L1PcInstance();L1ItemInstance s3=new L1ItemInstance(),r3=new L1ItemInstance();
  r=ArmorEnchantScrollResolution.apply(new ItemActionContext(t,s3,r3,3000517));
  check(r==ItemActionResult.COMPLETE);check(t.inventory.removals==1);check(s3.count==0);check(r3.count==1);
  // New armor paths: a failed result packet must not prevent scroll debit.
- MJRnd.win=true;SC_SystemMessage.fail=true;
+ GameRandom.win=true;SC_SystemMessage.fail=true;
  for(int iteration=0;iteration<25;iteration++){
    for(int id : new int[]{98077,68077,3000518,4000518}){
      L1PcInstance a=new L1PcInstance();L1ItemInstance s=new L1ItemInstance(),tNew=new L1ItemInstance();

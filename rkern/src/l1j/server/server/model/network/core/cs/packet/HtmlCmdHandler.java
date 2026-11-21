@@ -1,24 +1,25 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import java.util.Random;
+
 import l1j.server.Config;
-import l1j.server.MJDungeonTimer.DungeonTimeInformation;
-import l1j.server.MJDungeonTimer.Loader.DungeonTimeInformationLoader;
-import l1j.server.MJDungeonTimer.Loader.DungeonTimeProgressLoader;
-import l1j.server.MJDungeonTimer.Progress.DungeonTimeProgress;
-import l1j.server.MJINNSystem.Loader.MJINNHelperLoader;
-import l1j.server.MJTemplate.MJL1Type;
 import l1j.server.server.datatables.NpcActionTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.npc.action.L1NpcAction;
+import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeInformation;
+import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeInformationLoader;
+import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeProgressLoader;
+import l1j.server.server.model.world.instance.dungeon.time.progress.DungeonTimeProgress;
+import l1j.server.server.model.world.instance.inn.loader.InnHelperLoader;
+import l1j.server.server.shared.L1Type;
 
 final class HtmlCmdHandler {
 
@@ -170,8 +171,8 @@ final class HtmlCmdHandler {
 
     /** Existing inn and XML handlers have the same precedence; true consumes the packet. */
     private static boolean dispatchRegisteredAction(L1PcInstance pc, L1Object obj, String s, byte[] actionData) {
-        if(obj.instanceOf(MJL1Type.L1TYPE_NPC)){
-            if(MJINNHelperLoader.getInstance().onAction((L1NpcInstance)obj, pc, s))
+        if(obj.instanceOf(L1Type.L1TYPE_NPC)){
+            if(InnHelperLoader.getInstance().onAction((L1NpcInstance)obj, pc, s))
                 return true;
         }
 

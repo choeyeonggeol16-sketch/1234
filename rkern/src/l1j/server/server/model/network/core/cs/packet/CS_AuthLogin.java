@@ -1,6 +1,4 @@
 package l1j.server.server.model.network.core.cs.packet;
-import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,18 +13,17 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Account;
 import l1j.server.server.AccountAlreadyLoginException;
-import l1j.server.server.GameServerFullException;
 import l1j.server.server.Controller.LoginAttemptGuard;
 import l1j.server.server.Controller.LoginController;
-import l1j.server.server.datatables.IpConnectDelay;
+import l1j.server.server.GameServerFullException;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.sc.packet.SC_CommonNews;
+import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.model.network.utill.CConnectionState;
-import l1j.server.server.model.network.core.sc.packet.SC_CommonNews;
-
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.storage.CacheD;
+import l1j.server.server.utils.GameUtils;
 
 public final class CS_AuthLogin {
 
@@ -125,9 +122,9 @@ public final class CS_AuthLogin {
             if (Config.AUTO_CREATE_ACCOUNTS) {
                 if (getAccountIpCount(ip) >= CConnectionConfig.NETWORK_ADDRESS2ACCOUNT)
                     result.errorCode = 1;
-                else if (!MJCommons.isLetterOrDigitString(accountName, 5, 12))
+                else if (!GameUtils.isLetterOrDigitString(accountName, 5, 12))
                     result.errorCode = 2;
-                else if (!MJCommons.isLetterOrDigitString(password, 6, 16))
+                else if (!GameUtils.isLetterOrDigitString(password, 6, 16))
                     result.errorCode = 3;
                 else {
                     Account.create(accountName, password, ip, hostname);

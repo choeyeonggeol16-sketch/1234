@@ -1,16 +1,15 @@
 package l1j.server.server.model.network.core.sc.packet;
 
-import l1j.server.MJTemplate.MJSimpleRgb;
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.shared.SimpleRgb;
 
 public final class SC_IconMessage {
     private static final int TEXT_MESSAGE = 0x40;
-    private static final MJSimpleRgb GM_COLOR = new MJSimpleRgb(249, 68, 253);
+    private static final SimpleRgb GM_COLOR = new SimpleRgb(249, 68, 253);
     private static final int INDEX_MESSAGE = 0x67;
 
     private SC_IconMessage() {}
@@ -30,7 +29,7 @@ public final class SC_IconMessage {
             l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949S2(b,text);
             putVar(b,0x1a);b.put(rgb);putVar(b,0x20);putVar(b,60);b.putShort((short)0);};
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeIndexWriter(int index,MJSimpleRgb color,int surface,int duration) {
+    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeIndexWriter(int index,SimpleRgb color,int surface,int duration) {
         final byte[] rgb=color==null?null:color.get_bytes();
         return b -> {b.put((byte)Opcodes.S_EXTENDED_PROTOBUF).putShort((short)INDEX_MESSAGE);
             b.put((byte)0x08);putVar(b,surface*2);
@@ -44,17 +43,17 @@ public final class SC_IconMessage {
         return send(pc, message, GM_COLOR, 28, 60);
     }
 
-    public static boolean send(L1PcInstance pc, String message, MJSimpleRgb color, int surface, int duration) {
+    public static boolean send(L1PcInstance pc, String message, SimpleRgb color, int surface, int duration) {
         return sendInternal(pc, message, 0, color, surface, duration, false);
     }
 
 
     
-    public static boolean send(L1PcInstance pc, int index, MJSimpleRgb color, int surface, int duration) {
+    public static boolean send(L1PcInstance pc, int index, SimpleRgb color, int surface, int duration) {
         return sendInternal(pc, "", index, color, surface, duration, true);
     }
 
-    public static void broadcast(String message, MJSimpleRgb color, int surface, int duration) {
+    public static void broadcast(String message, SimpleRgb color, int surface, int duration) {
         final String text=message==null?"":message;
         // The original sharedWire() rejected writeS2 lengths above 255
         // before sending to any recipient. Native direct encoding must not
@@ -72,7 +71,7 @@ public final class SC_IconMessage {
         });
     }
 
-    public static void broadcast(int index, MJSimpleRgb color, int surface, int duration) {
+    public static void broadcast(int index, SimpleRgb color, int surface, int duration) {
         final byte[] rgb=color==null?null:color.get_bytes();
         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {
             b.put((byte)Opcodes.S_EXTENDED_PROTOBUF).putShort((short)INDEX_MESSAGE);
@@ -94,7 +93,7 @@ public final class SC_IconMessage {
                 java.nio.charset.Charset.forName("MS949")).length <= 255;
     }
 
-    private static boolean sendInternal(L1PcInstance pc, String message, int index, MJSimpleRgb color,
+    private static boolean sendInternal(L1PcInstance pc, String message, int index, SimpleRgb color,
                                         int surface, int duration, boolean indexMode) {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();

@@ -1,10 +1,9 @@
 package l1j.server.server.model.npc.ai;
 
 import java.util.ArrayList;
+
 import gnu.trove.map.hash.TIntIntHashMap;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+
 import l1j.server.server.model.Instance.L1CastleGuardInstance;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1GuardInstance;
@@ -15,8 +14,11 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1ScarecrowInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
-import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
+import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.templates.L1Npc;
 
 public final class NpcEventFactory {
@@ -88,7 +90,7 @@ public final class NpcEventFactory {
      *   m_nClanHelpRange default = 500 world units
      *   candidate collection -> exact distance gate -> clan-help relation table
      *
-     * L1 does not expose the original world-unit scale nor NC's per-template
+     * L1 does not expose the original world-unit scale nor reference server's per-template
      * clan-help relation list.  12 tiles is the single cross-engine scale
      * adapter; the event topology itself remains retail-style.
      */
@@ -1041,7 +1043,7 @@ public final class NpcEventFactory {
     }
 
     /**
-     * L1 mobGroup is kept as the closest equivalent of NC's explicit
+     * L1 mobGroup is kept as the closest equivalent of reference server's explicit
      * party/private list, but it is deliberately NOT converted into
      * CLAN_ATTACKED.
      */
@@ -1108,7 +1110,7 @@ public final class NpcEventFactory {
     }
 
     /**
-     * NC has a precomputed per-template clan-help relation matrix.
+     * reference server has a precomputed per-template clan-help relation matrix.
      * L1 only has family/agrofamily, so use the conservative subset that is
      * actually representable: helper opted into agro-family behavior AND
      * helper/source share the same non-zero family.

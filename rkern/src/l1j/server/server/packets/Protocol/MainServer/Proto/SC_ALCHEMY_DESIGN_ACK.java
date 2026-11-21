@@ -1,6 +1,5 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,13 +9,9 @@ import l1j.server.Config;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoInputStream;
-import l1j.server.server.utils.MJHexHelper;
+import l1j.server.server.utils.HexHelper;
 
 /**
  * SC_ALCHEMY_DESIGN_ACK (0x007B) — 인형합성 설계 데이터
@@ -25,7 +20,7 @@ import l1j.server.server.utils.MJHexHelper;
  *  3 outputLists repeated OutputList
  *  4 alchemies   repeated Alchemy
  *
- * alchemyInfo.dat(MJ 바이너리) 로드 → 싱글턴 → byte[] 4단 캐시.
+ * alchemyInfo.dat(server 바이너리) 로드 → 싱글턴 → byte[] 4단 캐시.
  * 게임로직 게터(getAlchemy 등)도 여기서 제공.
  */
 public class SC_ALCHEMY_DESIGN_ACK extends ProtoPacket {
@@ -97,7 +92,7 @@ public class SC_ALCHEMY_DESIGN_ACK extends ProtoPacket {
 
 	public static void send(L1PcInstance pc, byte[] hash_val){
 		try{
-			if(MJHexHelper.compareArrays(Config.ALCHEMY_VERSION_HASH, hash_val, Config.ALCHEMY_VERSION_HASH.length)){
+			if(HexHelper.compareArrays(Config.ALCHEMY_VERSION_HASH, hash_val, Config.ALCHEMY_VERSION_HASH.length)){
 				l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, _alchemySameCache);
 			}else if(Config.CRAFT_TRANSMIT_SAFELINE <= L1World.getInstance().getAllPlayersSize()){
 				pc.sendPackets("현재 클라이언트의 인형 정보가 이전 버전임으로 모든 목록이 나오지 않을 수 있습니다.");
@@ -152,7 +147,7 @@ public class SC_ALCHEMY_DESIGN_ACK extends ProtoPacket {
 		if(outputs == null) return null;
 		HashMap<Integer, Item> output = outputs.get_item();
 		if(output == null) return null;
-		int select = l1j.server.MJTemplate.MJRnd.next(output.size());
+		int select = l1j.server.server.shared.GameRandom.next(output.size());
 		int idx = 0;
 		Item result = null;
 		for(Item item : output.values()){

@@ -1,8 +1,6 @@
 package l1j.server.server.model.network.thread;
 
 
-import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
-import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -14,29 +12,29 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 import l1j.server.server.Controller.FishingTimeController;
-import l1j.server.server.model.character.skill.CSkillInfo;
-import l1j.server.server.model.character.skill.SkillHandlers;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Spawn;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ClanJoinInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Spawn;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.action.CCreatureController;
+import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.SkillHandlers;
 import l1j.server.server.model.character.skill.TomahawkBleedService;
-import l1j.server.server.model.npc.ai.NpcServer;
-import l1j.server.server.model.network.core.execution.CIOShardContext;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.execution.CIOShardContext;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
+import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.npc.ai.NpcServer;
+import l1j.server.server.utils.GameUtils;
 
 /**
  * CIOThreadCallback 
@@ -906,7 +904,7 @@ public final class CIOThreadCallback {
      * Timer admission is direct from any producer, serialized by the shard monitor.
      * The packet RECV path never posts an owner event; encrypted READ data stays
      * in the existing socket buffer until OnRead gets the shard lease.
-     * Independent owner events use the existing completion transport, separate from NC socket/controller serializers.
+     * Independent owner events use the existing completion transport, separate from reference server socket/controller serializers.
 	 */
 
 
@@ -3057,7 +3055,7 @@ public final class CIOThreadCallback {
 		if (cx > r || cy > r)
 			return;
 
-		int h = MJCommons.calcheading(ox, oy, tx, ty);
+		int h = GameUtils.calcheading(ox, oy, tx, ty);
 		if (!pc.getMap().isUserPassable(ox, oy, h))
 			return;
 

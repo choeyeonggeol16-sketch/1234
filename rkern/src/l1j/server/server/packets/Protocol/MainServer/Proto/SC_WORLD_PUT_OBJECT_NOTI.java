@@ -1,32 +1,28 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.DogFight.Instance.MJDogFightInstance;
-import l1j.server.MJ3SEx.EActionCodes;
-import l1j.server.MJTemplate.L1Instance.MJEffectTriggerInstance;
-import l1j.server.server.datatables.MJNpcMarkTable;
+import l1j.server.server.model.character.combat.arena.dogfight.instance.DogFightInstance;
 import l1j.server.server.datatables.NPCTalkDataTable;
-import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1NpcTalkData;
-import l1j.server.server.model.L1World;
+import l1j.server.server.datatables.NpcMarkTable;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1FieldObjectInstance;
 import l1j.server.server.model.Instance.L1MerchantInstance;
-import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SignboardInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.model.L1Clan;
+import l1j.server.server.model.L1NpcTalkData;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.animation.EActionCodes;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.world.instance.shared.EffectTriggerInstance;
+import l1j.server.server.utils.GameUtils;
 
 /**
  * SC_WORLD_PUT_OBJECT_NOTI (0x0077) — 오브젝트 스폰 통보
- * MJ 원본과 필드번호·조건부 방출(has bit) 완전 동일.
+ * server 원본과 필드번호·조건부 방출(has bit) 완전 동일.
  * 스폰 핫패스: encode() 1회 → Raw 공유 권장.
  */
 public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
@@ -102,7 +98,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
     private static String get_presentation_npc_desc(L1NpcInstance npc){
         if(npc.getNpcId() == 6200008){
             String clan_name = ((L1MerchantInstance) npc).getClanname();
-            return MJCommons.isNullOrEmpty(clan_name) ? null : clan_name;
+            return GameUtils.isNullOrEmpty(clan_name) ? null : clan_name;
         }
         else if((npc instanceof L1SignboardInstance))
             return null;
@@ -133,9 +129,9 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
         return npc.getStatus();
     }
 
-    // ────────────── 팩토리 (MJ 시그니처 유지) ──────────────
+    // ────────────── 팩토리 (server 시그니처 유지) ──────────────
 
-    public static SC_WORLD_PUT_OBJECT_NOTI newInstance(MJEffectTriggerInstance trigger){
+    public static SC_WORLD_PUT_OBJECT_NOTI newInstance(EffectTriggerInstance trigger){
         SC_WORLD_PUT_OBJECT_NOTI noti = new SC_WORLD_PUT_OBJECT_NOTI();
         noti.set_point(trigger.get_long_location_reverse());
         noti.set_objectnumber(trigger.getId());
@@ -202,7 +198,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
         return noti;
     }
 
-    public static SC_WORLD_PUT_OBJECT_NOTI newInstance(MJDogFightInstance dogfight){
+    public static SC_WORLD_PUT_OBJECT_NOTI newInstance(DogFightInstance dogfight){
         SC_WORLD_PUT_OBJECT_NOTI noti = new SC_WORLD_PUT_OBJECT_NOTI();
         noti.set_point(dogfight.getLongLocationReverse());
         noti.set_objectnumber(dogfight.getId());
@@ -276,7 +272,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
         noti.set_weakelemental(npc.getNpcTemplate().get_weakAttr());
         noti.set_manaratio((int)npc.getCurrentMpPercent());
         noti.set_botindex(0);
-        noti.set_team_id(MJNpcMarkTable.getInstance().get(npc.getNpcId()));
+        noti.set_team_id(NpcMarkTable.getInstance().get(npc.getNpcId()));
         noti.set_dialog_radius(0);
         noti.set_speed_value_flag(0);
         noti.set_second_speed_type(0);
@@ -765,7 +761,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
                 proto112_companion);
     }
 
-    public static boolean sendNewInstance(CUserSocket protoRecipient, MJEffectTriggerInstance trigger) {
+    public static boolean sendNewInstance(CUserSocket protoRecipient, EffectTriggerInstance trigger) {
         long notiWire_bit = 0;
                 int notiWire_point = 0;
                 int notiWire_objectnumber = 0;
@@ -851,7 +847,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
                         notiWire_npc_class_id, notiWire_companion);
     }
 
-    public static boolean sendNewInstance(L1PcInstance protoRecipient, MJEffectTriggerInstance trigger) {
+    public static boolean sendNewInstance(L1PcInstance protoRecipient, EffectTriggerInstance trigger) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection(), trigger);
     }
 
@@ -943,7 +939,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
         return sendNew_namechat_isntance(protoRecipient == null ? null : protoRecipient.getNetConnection(), npc, name, is_ghost);
     }
 
-    public static boolean sendNewInstance(CUserSocket protoRecipient, MJDogFightInstance dogfight) {
+    public static boolean sendNewInstance(CUserSocket protoRecipient, DogFightInstance dogfight) {
         long notiWire_bit = 0;
                 int notiWire_point = 0;
                 int notiWire_objectnumber = 0;
@@ -1029,7 +1025,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
                         notiWire_npc_class_id, notiWire_companion);
     }
 
-    public static boolean sendNewInstance(L1PcInstance protoRecipient, MJDogFightInstance dogfight) {
+    public static boolean sendNewInstance(L1PcInstance protoRecipient, DogFightInstance dogfight) {
         return sendNewInstance(protoRecipient == null ? null : protoRecipient.getNetConnection(), dogfight);
     }
 
@@ -1115,7 +1111,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
                 { notiWire_bit |= 268435456L; notiWire_weakelemental = (npc.getNpcTemplate().get_weakAttr()); }
                 { notiWire_bit |= 536870912L; notiWire_manaratio = ((int)npc.getCurrentMpPercent()); }
                 { notiWire_bit |= 1073741824L; notiWire_botindex = 0; }
-                { notiWire_bit |= 4294967296L; notiWire_team_id = (MJNpcMarkTable.getInstance().get(npc.getNpcId())); }
+                { notiWire_bit |= 4294967296L; notiWire_team_id = (NpcMarkTable.getInstance().get(npc.getNpcId())); }
                 { notiWire_bit |= 8589934592L; notiWire_dialog_radius = 0; }
                 { notiWire_bit |= 17179869184L; notiWire_speed_value_flag = 0; }
                 { notiWire_bit |= 34359738368L; notiWire_second_speed_type = 0; }

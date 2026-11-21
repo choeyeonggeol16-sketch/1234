@@ -10,12 +10,12 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.MJTemplate.MJObjectWrapper;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.SelectorHandler;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.storage.CharacterStorage;
+import l1j.server.server.shared.ObjectWrapper;
 import l1j.server.server.storage.CacheD;
+import l1j.server.server.storage.CharacterStorage;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.handler.SelectorHandler;
 
 public class MySqlCharacterStorage implements CharacterStorage {
 
@@ -621,7 +621,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
 
 
 	public static boolean isValidUserObjectId(int objectId) {
-		final MJObjectWrapper<Boolean> wrapper = new MJObjectWrapper<>();
+		final ObjectWrapper<Boolean> wrapper = new ObjectWrapper<>();
 		wrapper.value = false;
 		Selector.exec("SELECT objid FROM characters WHERE objid = ?", new SelectorHandler() {
 			@Override

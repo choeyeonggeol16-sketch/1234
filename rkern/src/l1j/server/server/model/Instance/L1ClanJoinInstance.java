@@ -2,7 +2,6 @@ package l1j.server.server.model.Instance;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import l1j.server.MJTemplate.MJL1Type;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
@@ -10,11 +9,12 @@ import l1j.server.server.model.L1ClanJoin;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
-import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
-import l1j.server.server.utils.MJBytesOutputStream;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.shared.L1Type;
+import l1j.server.server.utils.BytesOutputStream;
 
 public class L1ClanJoinInstance extends L1Object{
 	private static final long serialVersionUID = 1L;
@@ -254,7 +254,7 @@ public class L1ClanJoinInstance extends L1Object{
 	}
 	
 	public void receiveDamage(L1Character attacker, int damage){
-		if(attacker == null || !attacker.instanceOf(MJL1Type.L1TYPE_PC))
+		if(attacker == null || !attacker.instanceOf(L1Type.L1TYPE_PC))
 			return;
 		
 		join((L1PcInstance)attacker);		
@@ -298,7 +298,7 @@ public class L1ClanJoinInstance extends L1Object{
 	}
 	
 	public byte[] serialize(){
-		MJBytesOutputStream s = new MJBytesOutputStream(256);
+		BytesOutputStream s = new BytesOutputStream(256);
 		byte[] 				b = null;
 		try{
 			L1Clan clan = get_clan();
@@ -397,6 +397,6 @@ public class L1ClanJoinInstance extends L1Object{
 	private static int _instanceType = -1;
 	@Override
 	public int getL1Type(){
-		return _instanceType == -1 ? _instanceType = super.getL1Type() | MJL1Type.L1TYPE_CLANJOIN : _instanceType;		
+		return _instanceType == -1 ? _instanceType = super.getL1Type() | L1Type.L1TYPE_CLANJOIN : _instanceType;		
 	}
 }

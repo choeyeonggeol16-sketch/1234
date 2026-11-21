@@ -8,8 +8,8 @@
 //
 //import javolution.util.FastTable;
 //import l1j.server.Config;
-//import l1j.server.MJTemplate.MJProto.IO.ProtoOutputStream;
-//import l1j.server.MJWarSystem.MJWar;
+//import l1j.server.server.shared.MJProto.IO.ProtoOutputStream;
+//import l1j.server.server.model.world.siege.War;
 //import l1j.server.server.datatables.ClanTable;
 //import l1j.server.server.model.Instance.L1PcInstance;
 //import l1j.server.server.model.Warehouse.ClanWarehouse;
@@ -536,7 +536,7 @@
 //		_bless = i;
 //	}
 //
-//	/** 2016.11.25 MJ 앱센터 혈맹 **/
+//	/** 2016.11.25 server 앱센터 혈맹 **/
 //	private String _joinPassword;
 //
 //	public String getJoinPassword() {
@@ -547,7 +547,7 @@
 //		_joinPassword = s;
 //	}
 //
-//	/** 2016.11.25 MJ 앱센터 혈맹 **/
+//	/** 2016.11.25 server 앱센터 혈맹 **/
 //
 //	private int _warPoint;
 //
@@ -612,13 +612,13 @@
 //			output.dispose();
 //	}
 //
-//	private MJWar _currentWar;
+//	private War _currentWar;
 //
-//	public void setCurrentWar(MJWar war) {
+//	public void setCurrentWar(War war) {
 //		_currentWar = war;
 //	}
 //
-//	public MJWar getCurrentWar() {
+//	public War getCurrentWar() {
 //		return _currentWar;
 //	}
 //
@@ -696,14 +696,13 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import javolution.util.FastTable;
+
 import l1j.server.Config;
-import l1j.server.MJWarSystem.MJWar;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Warehouse.ClanWarehouse;
 import l1j.server.server.model.Warehouse.WarehouseManager;
-import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoOutputStream;
+import l1j.server.server.model.world.siege.War;
 import l1j.server.server.utils.IntRange;
 
 public class L1Clan {
@@ -1255,7 +1254,7 @@ public class L1Clan {
 		_bless = i;
 	}
 
-	/** 2016.11.25 MJ 앱센터 혈맹 **/
+	/** 2016.11.25 server 앱센터 혈맹 **/
 	private String _joinPassword;
 
 	public String getJoinPassword() {
@@ -1266,7 +1265,7 @@ public class L1Clan {
 		_joinPassword = s;
 	}
 
-	/** 2016.11.25 MJ 앱센터 혈맹 **/
+	/** 2016.11.25 server 앱센터 혈맹 **/
 
 	private volatile long _warPoint;
 	private volatile boolean _warPointUncertain;
@@ -1315,13 +1314,13 @@ public class L1Clan {
 
 	
 
-	private MJWar _currentWar;
+	private War _currentWar;
 
-	public void setCurrentWar(MJWar war) {
+	public void setCurrentWar(War war) {
 		_currentWar = war;
 	}
 
-	public MJWar getCurrentWar() {
+	public War getCurrentWar() {
 		return _currentWar;
 	}
 

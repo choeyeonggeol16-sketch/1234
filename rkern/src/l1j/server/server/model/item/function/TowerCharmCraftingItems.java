@@ -1,50 +1,18 @@
 package l1j.server.server.model.item.function;
 
 
-import l1j.server.server.datatables.PetTypeTable;
-import l1j.server.server.model.network.core.sc.packet.SC_ActionUI2;
-import l1j.server.server.utils.L1SpawnUtil;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
-import l1j.server.server.model.network.core.sc.packet.SC_ItemName;
+import static l1j.server.server.model.item.function.CreatureItemActions.*;
 
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Random;
 import java.util.logging.Logger;
-import l1j.server.Config;
-import l1j.server.server.storage.CacheD;
-import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.datatables.NpcTable;
-import l1j.server.server.datatables.PetTable;
-import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.L1PcInventory;
+
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
-import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.character.skill.L1SkillUse;
-
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.cs.packet.CDB;
+import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
-
-import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
-
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.templates.L1Item;
-import l1j.server.server.templates.L1Npc;
-import l1j.server.server.templates.L1Pet;
-import l1j.server.server.utils.MJCommons;
-
-
-import l1j.server.server.model.network.core.cs.packet.User;
-import l1j.server.server.model.network.core.cs.packet.CDB;
-
-import static l1j.server.server.model.item.function.CreatureItemActions.*;
+import l1j.server.server.storage.CacheD;
 
 public final class TowerCharmCraftingItems {
     private static final Logger ITEM_USE2_LOG = CreatureItemActions.ITEM_USE2_LOG;

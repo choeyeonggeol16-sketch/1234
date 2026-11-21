@@ -2,8 +2,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
-import l1j.server.server.utils.MJHexHelper;
+import l1j.server.server.utils.HexHelper;
 
 /**
  * CS_ALCHEMY_DESIGN_REQ (0x007A) — 인형합성 설계 요청
@@ -40,7 +39,7 @@ public final class CS_ALCHEMY_DESIGN_REQ {
         if (pc == null) return;
 
         if (pc.isGm())
-            System.out.println(MJHexHelper.toSourceString(hashValue, hashValue.length));
+            System.out.println(HexHelper.toSourceString(hashValue, hashValue.length));
 
         SC_ALCHEMY_EXTRA_INFO_NOTI.send(pc);
         SC_ALCHEMY_DESIGN_ACK.send(pc, hashValue);

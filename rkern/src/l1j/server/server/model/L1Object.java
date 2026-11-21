@@ -2,7 +2,7 @@
 //
 //import java.io.Serializable;
 //
-//import l1j.server.MJTemplate.MJL1Type;
+//import l1j.server.server.shared.L1Type;
 //import l1j.server.server.model.Instance.L1PcInstance;
 //import l1j.server.server.model.Instance.L1SupportInstance;
 //import l1j.server.server.model.map.L1Map;
@@ -192,7 +192,7 @@
 //	}
 //	
 //	public int getL1Type(){
-//		return MJL1Type.L1TYPE_OBJECT;
+//		return L1Type.L1TYPE_OBJECT;
 //	}
 //	
 //	public boolean instanceOf(int flg){
@@ -204,11 +204,11 @@ package l1j.server.server.model;
 
 import java.io.Serializable;
 
-import l1j.server.MJTemplate.MJL1Type;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.shared.L1Type;
 
 /**
  * 월드상에 존재하는 모든 오브젝트의 베이스 클래스
@@ -414,7 +414,7 @@ public class L1Object implements Serializable {
 	}
 	
 	public int getL1Type(){
-		return MJL1Type.L1TYPE_OBJECT;
+		return L1Type.L1TYPE_OBJECT;
 	}
 	
 	public boolean instanceOf(int flg){

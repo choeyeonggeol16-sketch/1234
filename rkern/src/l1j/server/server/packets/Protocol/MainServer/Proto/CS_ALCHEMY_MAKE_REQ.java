@@ -3,24 +3,19 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 import java.util.LinkedList;
 
 import l1j.server.Config;
-import l1j.server.MJTemplate.MJRnd;
 import l1j.server.server.datatables.AlchemyProbability;
 import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.L1InventoryTransaction;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.model.network.packet.IPacketWriter;
+import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.templates.L1Item;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
+import l1j.server.server.templates.L1Item;
 
 /**
  * CS_ALCHEMY_MAKE_REQ (0x007C) — 인형합성 실행
@@ -111,7 +106,7 @@ public final class CS_ALCHEMY_MAKE_REQ {
         if (pc == null) return;
         if (pc.isItemTransferBusy() || pc.getTradeID() != 0 || inputs.isEmpty()) return;
 
-        // ── 특수 상태 합성 차단 (MJ IsChangeItem 체크 그대로) ──
+        // ── 특수 상태 합성 차단 (server IsChangeItem 체크 그대로) ──
         if (pc.getIsChangeItem1() || pc.getIsChangeItem2() || pc.getIsChangeItem3() || pc.getIsChangeItem4() || pc.getIsChangeItem5() ||
             pc.getIsChangeItem6() || pc.getIsChangeItem7() || pc.getIsChangeItem8() || pc.getIsChangeItem9() || pc.getIsChangeItem10() ||
             pc.getIsChangeItem11() || pc.getIsChangeItem12() || pc.getIsChangeItem13() || pc.getIsChangeItem14() || pc.getIsChangeItem15() ||
@@ -178,7 +173,7 @@ public final class CS_ALCHEMY_MAKE_REQ {
     private static MakeResult selectResult(SC_ALCHEMY_DESIGN_ACK.Alchemy alchemy, L1PcInstance pc,
             int alchemyId, LinkedList<Input> inputs, LinkedList<Integer> filledSlots) {
         // 실패 기본값: 재료 반환
-        L1Item failTemplate = inputs.get(MJRnd.next(inputs.size())).getTemporaryRemovedItems().getItem();
+        L1Item failTemplate = inputs.get(GameRandom.next(inputs.size())).getTemporaryRemovedItems().getItem();
         MakeResult fail = new MakeResult(failTemplate, SC_ALCHEMY_MAKE_ACK.ResultCode.RC_FAIL, alchemyId);
 
         // DB 확률 체크
@@ -199,14 +194,14 @@ public final class CS_ALCHEMY_MAKE_REQ {
         // 대성공 판정 — 특수합성(5) 교체 제외 
         if (alchemyId < 6 && alchemyId != 5) {
             if (hyperOutputs != null && hyperOutputs.size() > 0
-                    && MJRnd.isWinning(CRAFT_ITEM_SUCCESS_MILLIONS,
+                    && GameRandom.isWinning(CRAFT_ITEM_SUCCESS_MILLIONS,
                             alchemyId >= 3 ? Config.ALCHEMY_HYPERSUCCESS_PROB_BYMILLION / 2
                                     : Config.ALCHEMY_HYPERSUCCESS_PROB_BYMILLION)) {
-                output = hyperOutputs.get(MJRnd.next(hyperOutputs.size()));
+                output = hyperOutputs.get(GameRandom.next(hyperOutputs.size()));
                 resultCode = SC_ALCHEMY_MAKE_ACK.ResultCode.RC_HYPER_SUCCESS;
             }
         } else {
-            if (MJRnd.isWinning(CRAFT_ITEM_SUCCESS_MILLIONS,
+            if (GameRandom.isWinning(CRAFT_ITEM_SUCCESS_MILLIONS,
                     alchemyId >= 3 ? Config.ALCHEMY_HYPERSUCCESS_PROB_BYMILLION / 2
                             : Config.ALCHEMY_HYPERSUCCESS_PROB_BYMILLION)) {
                 resultCode = SC_ALCHEMY_MAKE_ACK.ResultCode.RC_HYPER_SUCCESS;
@@ -247,7 +242,7 @@ public final class CS_ALCHEMY_MAKE_REQ {
         return count;
     }
 
-    // ── 오류 알림 — MJ 그대로 ──
+    // ── 오류 알림 — server 그대로 ──
 
     private static void toInvalidAlchemyId(L1PcInstance pc, int alchemyId) {
         SC_ALCHEMY_MAKE_ACK.ResultCode.RC_ERROR_BLOCKED_ALCHEMY_ID.sendCachedMessage(pc);

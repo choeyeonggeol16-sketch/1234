@@ -2,15 +2,14 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import java.util.HashMap;
 
-import l1j.server.MJCTSystem.MJCTSpell;
-import l1j.server.MJCTSystem.Loader.MJCTSpellLoader;
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.item.collection.CollectionSpell;
+import l1j.server.server.model.item.collection.loader.CollectionSpellLoader;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_InventoryIcon {
 
@@ -32,7 +31,7 @@ public final class SC_InventoryIcon {
 
 	/*
 	 * iconId:
-	 *   0이면 MJCTSpell.xicon 사용
+	 *   0이면 CollectionSpell.xicon 사용
 	 *   0보다 크면 여기 등록된 아이콘 번호를 우선 사용
 	 *
 	 * tooltipId / newId / endId:
@@ -93,7 +92,7 @@ public final class SC_InventoryIcon {
 
 		/*
 		 * 기존 등록 코드 호환용.
-		 * 아이콘은 MJCTSpell.xicon을 사용한다.
+		 * 아이콘은 CollectionSpell.xicon을 사용한다.
 		 */
 		public StrMessageId(int tooltipId, int newId, int endId) {
 			this(0, tooltipId, newId, endId);
@@ -126,8 +125,8 @@ public final class SC_InventoryIcon {
 			return sid.iconId;
 		}
 
-		final MJCTSpell sp =
-				MJCTSpellLoader.getInstance().get(skillId);
+		final CollectionSpell sp =
+				CollectionSpellLoader.getInstance().get(skillId);
 
 		return sp != null ? sp.xicon : 0;
 	}

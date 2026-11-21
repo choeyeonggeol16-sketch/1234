@@ -1,8 +1,9 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto.Adapter;
 
 import java.nio.charset.Charset;
-import l1j.server.MJTemplate.MJSimpleRgb;
+
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.shared.SimpleRgb;
 
 /** Compatibility entry point for survey notifications; shares the proto writer. */
 public final class SC_NOTIFICATION_MESSAGE {
@@ -13,7 +14,7 @@ public final class SC_NOTIFICATION_MESSAGE {
     private SC_NOTIFICATION_MESSAGE() {}
 
     public static boolean send(L1PcInstance pc, int position, String message,
-                               MJSimpleRgb rgb, int durationSecond) {
+                               SimpleRgb rgb, int durationSecond) {
         return send(pc, position, message, rgb == null ? null : rgb.get_bytes(), durationSecond);
     }
 

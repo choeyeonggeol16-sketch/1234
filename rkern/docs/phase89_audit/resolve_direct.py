@@ -5,8 +5,8 @@ import csv,collections
 p=Path(__file__).with_name('CLASSIFIED_567_LOOP_SITES.tsv')
 rows=list(csv.DictReader(p.open(encoding='utf8'),delimiter='\t'))
 reason_by_file={
- 'MJRaidValakas.java':'Own pc object ID in skill sound and individual Valakas product state mutation.',
- 'MJL1LiftGateInstance.java':'Per-coordinate tile update is different packet for the same viewer.',
+ 'RaidValakas.java':'Own pc object ID in skill sound and individual Valakas product state mutation.',
+ 'L1LiftGateInstance.java':'Per-coordinate tile update is different packet for the same viewer.',
  'AttendanceLoadManager.java':'Individual attendance-group rewards and state notifications to owner.',
  'BQSLoadManager.java':'Per-criterion character progress differs each iteration.',
  'L1PcInstance.java':'Per-known-object removal to self, level gift notice, or owner inventory/status stream.',

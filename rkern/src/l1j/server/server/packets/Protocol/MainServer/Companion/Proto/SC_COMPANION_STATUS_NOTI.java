@@ -1,12 +1,12 @@
 package l1j.server.server.packets.Protocol.MainServer.Companion.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.MJCompanion.Instance.MJCompanionUpdateFlag;
-import l1j.server.MJCompanion.Basic.ClassInfo.MJCompanionClassInfo;
 import l1j.server.server.model.Ability;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.companion.basic.classinfo.CompanionClassInfo;
+import l1j.server.server.model.character.companion.instance.CompanionUpdateFlag;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
@@ -112,28 +112,28 @@ public final class SC_COMPANION_STATUS_NOTI extends ProtoPacket {
         long notiWire_bit = 0;
 
 
-        MJCompanionClassInfo cInfo = companionInstance.get_class_info();
+        CompanionClassInfo cInfo = companionInstance.get_class_info();
         { notiWire_bit |= 1L; notiWire_objId = (companionInstance.getId()); }
-        if ((updateFlag & MJCompanionUpdateFlag.UPDATE_NAME) == MJCompanionUpdateFlag.UPDATE_NAME) {
+        if ((updateFlag & CompanionUpdateFlag.UPDATE_NAME) == CompanionUpdateFlag.UPDATE_NAME) {
             try {
                 { notiWire_bit |= 2L; notiWire_name = (companionInstance.getName().getBytes("MS949")); }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        if ((updateFlag & MJCompanionUpdateFlag.UPDATE_CLASS_ID) == MJCompanionUpdateFlag.UPDATE_CLASS_ID)
+        if ((updateFlag & CompanionUpdateFlag.UPDATE_CLASS_ID) == CompanionUpdateFlag.UPDATE_CLASS_ID)
             { notiWire_bit |= 4L; notiWire_classId = (cInfo.get_class_id()); }
-        if ((updateFlag & MJCompanionUpdateFlag.UPDATE_EXP) == MJCompanionUpdateFlag.UPDATE_EXP) {
+        if ((updateFlag & CompanionUpdateFlag.UPDATE_EXP) == CompanionUpdateFlag.UPDATE_EXP) {
             { notiWire_bit |= 8L; notiWire_level = (companionInstance.getLevel()); }
             { notiWire_bit |= 16L; notiWire_exp = (companionInstance.getExp()); }
             { notiWire_bit |= 2097152L; notiWire_minusExpPenalty = false; }
         }
-        if ((updateFlag & MJCompanionUpdateFlag.UPDATE_HP) == MJCompanionUpdateFlag.UPDATE_HP) {
+        if ((updateFlag & CompanionUpdateFlag.UPDATE_HP) == CompanionUpdateFlag.UPDATE_HP) {
             { notiWire_bit |= 32L; notiWire_baseMaxHp = (companionInstance.get_base_max_hp()); }
             { notiWire_bit |= 64L; notiWire_tempMaxHp = (companionInstance.get_temp_max_hp()); }
             { notiWire_bit |= 128L; notiWire_hp = (companionInstance.getCurrentHp()); }
         }
-        if ((updateFlag & MJCompanionUpdateFlag.UPDATE_STATS) == MJCompanionUpdateFlag.UPDATE_STATS) {
+        if ((updateFlag & CompanionUpdateFlag.UPDATE_STATS) == CompanionUpdateFlag.UPDATE_STATS) {
             Ability ability = companionInstance.getAbility();
             { notiWire_bit |= 256L; notiWire_baseStr = (ability.getStr()); }
             { notiWire_bit |= 512L; notiWire_baseCon = (ability.getCon()); }
@@ -147,24 +147,24 @@ public final class SC_COMPANION_STATUS_NOTI extends ProtoPacket {
             { notiWire_bit |= 131072L; notiWire_tempCon = 0; }
             { notiWire_bit |= 262144L; notiWire_tempInt = 0; }
         }
-        if ((updateFlag & MJCompanionUpdateFlag.UPDATE_FRIEND_SHIP) == MJCompanionUpdateFlag.UPDATE_FRIEND_SHIP) {
+        if ((updateFlag & CompanionUpdateFlag.UPDATE_FRIEND_SHIP) == CompanionUpdateFlag.UPDATE_FRIEND_SHIP) {
             { notiWire_bit |= 524288L; notiWire_friendShipGuage = (companionInstance.get_friend_ship_guage()); }
             { notiWire_bit |= 1048576L; notiWire_friendShipMarble = (companionInstance.get_friend_ship_marble()); }
         }
-        if ((updateFlag & MJCompanionUpdateFlag.UPDATE_AC) == MJCompanionUpdateFlag.UPDATE_AC) {
+        if ((updateFlag & CompanionUpdateFlag.UPDATE_AC) == CompanionUpdateFlag.UPDATE_AC) {
             { notiWire_bit |= 536870912L; notiWire_ac = (companionInstance.getAC().getAc()); }
         }
-        if ((updateFlag & MJCompanionUpdateFlag.UPDATE_MR) == MJCompanionUpdateFlag.UPDATE_MR) {
+        if ((updateFlag & CompanionUpdateFlag.UPDATE_MR) == CompanionUpdateFlag.UPDATE_MR) {
             { notiWire_bit |= 1073741824L; notiWire_mr = (companionInstance.getResistance().getEffectedMrBySkill()); }
         }
-        if ((updateFlag & MJCompanionUpdateFlag.UPDATE_DELAY_REDUCE) == MJCompanionUpdateFlag.UPDATE_DELAY_REDUCE) {
+        if ((updateFlag & CompanionUpdateFlag.UPDATE_DELAY_REDUCE) == CompanionUpdateFlag.UPDATE_DELAY_REDUCE) {
             { notiWire_bit |= 4294967296L; notiWire_attackdelayReduce = (companionInstance.get_attackdelay_reduce()); }
             { notiWire_bit |= 2147483648L; notiWire_movedelayReduce = (companionInstance.get_movedelay_reduce()); }
         }
-        if ((updateFlag & MJCompanionUpdateFlag.UPDATE_PVP_DAMAGE) == MJCompanionUpdateFlag.UPDATE_PVP_DAMAGE) {
+        if ((updateFlag & CompanionUpdateFlag.UPDATE_PVP_DAMAGE) == CompanionUpdateFlag.UPDATE_PVP_DAMAGE) {
             { notiWire_bit |= 8589934592L; notiWire_pvpDmgRatio = (companionInstance.get_pvp_dmg_ratio()); }
         }
-        if ((updateFlag & MJCompanionUpdateFlag.UPDATE_COMBO_TIME) == MJCompanionUpdateFlag.UPDATE_COMBO_TIME) {
+        if ((updateFlag & CompanionUpdateFlag.UPDATE_COMBO_TIME) == CompanionUpdateFlag.UPDATE_COMBO_TIME) {
             { notiWire_bit |= 17179869184L; notiWire_isComboTime = (companionInstance.get_is_combo_time()); }
         }
          SC_COMPANION_STATUS_NOTI.sendFields(

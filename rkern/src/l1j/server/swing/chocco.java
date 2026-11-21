@@ -16,7 +16,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -42,11 +41,11 @@ import com.sun.management.OperatingSystemMXBean;
 
 import l1j.server.Config;
 import l1j.server.Server;
-import l1j.server.server.GameServer;
 import l1j.server.server.Controller.LoginController;
+import l1j.server.server.GameServer;
 import l1j.server.server.datatables.IpTable;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.SystemUtil;
@@ -751,10 +750,10 @@ public class chocco extends JFrame {
 				_isManagerCommands = true;
 				new ManagerCommands(x, y);
 			} else {
-				MJMessageBox.show(this, "이미 창이 활성화 되어 있습니다.", false);
+				MessageBox.show(this, "이미 창이 활성화 되어 있습니다.", false);
 			}
 		} else {
-			MJMessageBox.show(this, "서버가 실행중이지 않습니다.", false);
+			MessageBox.show(this, "서버가 실행중이지 않습니다.", false);
 		}
 	}
 

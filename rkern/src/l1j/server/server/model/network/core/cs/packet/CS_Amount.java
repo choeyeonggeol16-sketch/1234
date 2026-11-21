@@ -1,17 +1,17 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.MJINNSystem.Loader.MJINNHelperLoader;
 import l1j.server.server.datatables.HouseTable;
 import l1j.server.server.datatables.NpcActionTable;
-import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.L1AuctionTransaction;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1AuctionBoardInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1AuctionTransaction;
+import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.npc.action.L1NpcAction;
+import l1j.server.server.model.world.instance.inn.loader.InnHelperLoader;
 import l1j.server.server.templates.L1House;
 
 public final class CS_Amount {
@@ -25,7 +25,7 @@ public final class CS_Amount {
         if (!(object instanceof L1NpcInstance npc) || !HtmlCmdHandler.isNpcTargetInRange(pc, npc)) return;
         HtmlCmdHandler.trackDialogue(client, npc, false);
 
-        if (MJINNHelperLoader.getInstance().onResult(npc, pc, actionName, amount)) return;
+        if (InnHelperLoader.getInstance().onResult(npc, pc, actionName, amount)) return;
 
         // Preserve the old StringTokenizer whitespace and case rules without
         // allocating a tokenizer or throwing on ordinary one-word XML actions.

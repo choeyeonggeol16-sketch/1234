@@ -1,35 +1,33 @@
 package l1j.server.server.Controller;
 
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
-import l1j.server.MJExpRevision.MJEFishingType;
-import l1j.server.MJExpRevision.MJFishingExpInfo;
 import l1j.server.server.GameServerSetting;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.model.L1InventoryTransaction;
-import l1j.server.server.model.network.core.cs.packet.CDB;
-import l1j.server.server.model.network.core.cs.packet.User;
-import l1j.server.server.storage.CacheD;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.experience.fishing.EFishingType;
+import l1j.server.server.model.character.experience.fishing.FishingExpInfo;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.item.Exp.CalcExp;
-import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_FISHING_NOT;
-import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
+import l1j.server.server.model.network.core.cs.packet.CDB;
+import l1j.server.server.model.network.core.cs.packet.User;
+import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_FISHING_NOT;
+import l1j.server.server.storage.CacheD;
 
 /**
  * 낚시 컨트롤러
@@ -609,11 +607,11 @@ public final class FishingTimeController {
         }
     }
 
-    private void calculate_exp1(L1PcInstance pc, MJEFishingType f_type) {
+    private void calculate_exp1(L1PcInstance pc, EFishingType f_type) {
         try {
             final int level = Math.max(pc.getLevel(), 2);
-            final MJFishingExpInfo eInfo =
-                    MJFishingExpInfo.find_fishing_exp_info(f_type, level);
+            final FishingExpInfo eInfo =
+                    FishingExpInfo.find_fishing_exp_info(f_type, level);
 
             if (eInfo == null) {
                 return;
@@ -633,11 +631,11 @@ public final class FishingTimeController {
         }
     }
 
-    private void calculate_exp(L1PcInstance pc, MJEFishingType f_type) {
+    private void calculate_exp(L1PcInstance pc, EFishingType f_type) {
         try {
             final int level = Math.max(pc.getLevel(), 2);
-            final MJFishingExpInfo eInfo =
-                    MJFishingExpInfo.find_fishing_exp_info(f_type, level);
+            final FishingExpInfo eInfo =
+                    FishingExpInfo.find_fishing_exp_info(f_type, level);
 
             if (eInfo == null) {
                 return;
@@ -735,19 +733,19 @@ public final class FishingTimeController {
 
         switch (expType) {
         case EXP_GROWN_UP:
-            calculate_exp1(pc, MJEFishingType.GROWN_UP);
+            calculate_exp1(pc, EFishingType.GROWN_UP);
             break;
 
         case EXP_HIGH_GROWN_UP:
-            calculate_exp1(pc, MJEFishingType.HIGH_GROWN_UP);
+            calculate_exp1(pc, EFishingType.HIGH_GROWN_UP);
             break;
 
         case EXP_ANCIENT_SILVER:
-            calculate_exp(pc, MJEFishingType.ACIENT_SILVER);
+            calculate_exp(pc, EFishingType.ACIENT_SILVER);
             break;
 
         case EXP_ANCIENT_GOLD:
-            calculate_exp(pc, MJEFishingType.ACIENT_GOLD);
+            calculate_exp(pc, EFishingType.ACIENT_GOLD);
             break;
 
         default:

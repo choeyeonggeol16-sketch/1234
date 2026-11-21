@@ -1,17 +1,13 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook.eMonsterBookV2RewardGrade;
 
 /**
  * SC_MONSTER_BOOK_V2_REWARD_ACK (0x032C)
  * 와이어: deck_index(f1,varint) grade(f2,enum) result(f3,enum) reward_exp_amount(f4,varint,옵션)
- * eResultCode는 공용이라 MJ enum 재사용 (BQS 이관 시 이동).
+ * eResultCode는 공용이라 server enum 재사용 (BQS 이관 시 이동).
  */
 public final class SC_MONSTER_BOOK_V2_REWARD_ACK extends ProtoPacket {
 

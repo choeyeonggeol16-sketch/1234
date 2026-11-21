@@ -1,11 +1,10 @@
 package l1j.server.server.storage;
 
-import java.sql.Connection;
-import java.util.LinkedHashMap;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -14,20 +13,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
-import l1j.server.server.storage.cached.CPendingState;
-import l1j.server.server.storage.cached.CAccount;
-import l1j.server.server.storage.cached.CUser;
-import l1j.server.server.storage.cached.CItem;
-import l1j.server.server.storage.cached.CWareHouse;
-import l1j.server.server.storage.cached.CTransaction;
-
-import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.storage.cached.CAccount;
+import l1j.server.server.storage.cached.CItem;
+import l1j.server.server.storage.cached.CPendingState;
+import l1j.server.server.storage.cached.CTransaction;
+import l1j.server.server.storage.cached.CUser;
+import l1j.server.server.storage.cached.CWareHouse;
 import l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage.ItemSnapshot;
@@ -701,7 +698,7 @@ public final class CacheD {
     private final Object lock = new Object();
     private final Map<String, CAccount> accounts = new HashMap<>();
     private final Map<String, CUser> characters = new HashMap<>();
-    // Active NC-style account -> character cache links. Entries reference the
+    // Active reference design account -> character cache links. Entries reference the
     // SAME CAccount/CUser states used for pending writes, never game objects.
     // Not part of pending SQL counts or worker shutdown conditions.
     private final Map<String, CAccount> activeAccounts = new HashMap<>();
@@ -1327,7 +1324,7 @@ public final class CacheD {
     }
 
     /**
-     * NC CAccount::SetCharacter / CItem::CacheItem ownership equivalent.
+     * reference server CAccount::SetCharacter / CItem::CacheItem ownership equivalent.
      * Called on successful game session publication, not for offline SQL reads.
      * This is a local index only: no extra player or item copies, no JDBC.
      */

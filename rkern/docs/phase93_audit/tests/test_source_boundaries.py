@@ -14,12 +14,12 @@ def contains(name,*needles):
         assert needle in s, (name,needle)
     return s
 
-raid=contains('l1j/server/MJRaidSystem/Objects/MJRaidValakas.java',
+raid=contains('l1j/server/server/model/world/instance/raid/objects/RaidValakas.java',
               'createStartMeteor()', 'closeOptional(shared)',
               'closeOptional(blackShared)', 'closeOptional(valakasShared)',
               'sendRecipientBestEffort(shared,pc)', '_boss = _bossSpawn.spawnBoss')
 assert 'try(var blackShared=' not in raid
-castle=contains('l1j/server/MJWarSystem/MJCastleWar.java',
+castle=contains('l1j/server/server/model/world/siege/CastleWar.java',
                 'updateDefense(L1Clan nextDefense)', 'closeOptional(ownerShared)',
                 'closeOptional(shared)', 'sendRecipientBestEffort(ownerShared,pc)',
                 'ThreadPool.getInstance().scheduleRequired(new Runnable()')
@@ -38,6 +38,6 @@ contains('l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java',
          'sendWrittenAllPlayableBestEffort(', 'first.close()',
          'sendWrittenGroupsBestEffort(')
 for i in range(1,12):
-    s=read(f'l1j/server/TowerOfDominance/BossController/DominanceFloorLv{i}.java')
+    s=read(f'l1j/server/server/model/world/instance/dungeon/tower/bosscontroller/DominanceFloorLv{i}.java')
     assert 'BestEffort(' in s and 'visualFailure' in s,i
 print('93 static gameplay/source guard: raid, castle, clan, death-penalty, Orim, 11 dominance floors PASS')

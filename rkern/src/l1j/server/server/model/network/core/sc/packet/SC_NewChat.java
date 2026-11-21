@@ -6,9 +6,8 @@ import l1j.server.Config;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.L1World;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_NewChat {
 
@@ -69,7 +68,7 @@ public final class SC_NewChat {
 //		} else if (pc.is_shift_battle()) {
 //			String serverDescription = pc.get_server_description();
 //			MJThebeCharacterInfo cInfo = pc.get_thebe_info();
-//			if (MJCommons.isNullOrEmpty(serverDescription) || cInfo == null) {
+//			if (GameUtils.isNullOrEmpty(serverDescription) || cInfo == null) {
 //				nameStr = "미지인";
 //			} else {
 //				nameStr = cInfo.to_name_pair();

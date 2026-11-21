@@ -2,9 +2,9 @@ package l1j.server.server.model.BookQuest.Loader;
 
 import java.sql.ResultSet;
 
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.FullSelectorHandler;
 import l1j.server.server.model.BookQuest.BQSWQInformation;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 
 public class BQSWQInformationLoader {
 	private static BQSWQInformationLoader _instance;

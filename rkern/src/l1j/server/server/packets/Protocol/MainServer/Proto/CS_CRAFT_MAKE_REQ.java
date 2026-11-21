@@ -1,33 +1,30 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import java.util.LinkedList;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.L1InventoryTransaction;
-import l1j.server.server.storage.CacheD;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.Craft;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftInputItemSlotInfo;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftInputList;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftOutputItem;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftOutputItemResult;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.eCraftMakeReqResultType;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
-import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.L1Type;
+import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1Item;
 
 public final class CS_CRAFT_MAKE_REQ {
@@ -100,7 +97,7 @@ public final class CS_CRAFT_MAKE_REQ {
             }
 
             final L1Object obj = L1World.getInstance().findObject(npcId);
-            if (obj == null || !obj.instanceOf(MJL1Type.L1TYPE_NPC)) {
+            if (obj == null || !obj.instanceOf(L1Type.L1TYPE_NPC)) {
                 eCraftMakeReqResultType.RP_ERROR_INVALID_NPC.sendCachedMessage(pc);
                 return;
             }

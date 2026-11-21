@@ -3,9 +3,9 @@ package l1j.server.server.packets.Protocol.MainServer.Indun.Proto;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
-import l1j.server.IndunSystem.Gludio.GludioInstanceDungeon;
-import l1j.server.IndunSystem.Gludio.GludioInstanceDungeon.Room;
-import l1j.server.IndunSystem.Gludio.GludioInstanceDungeon.Member;
+import l1j.server.server.model.world.instance.dungeon.gludio.GludioInstanceDungeon;
+import l1j.server.server.model.world.instance.dungeon.gludio.GludioInstanceDungeon.Room;
+import l1j.server.server.model.world.instance.dungeon.gludio.GludioInstanceDungeon.Member;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;

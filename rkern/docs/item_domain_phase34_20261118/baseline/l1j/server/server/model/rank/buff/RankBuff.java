@@ -1,16 +1,16 @@
 package l1j.server.server.model.rank.buff;
 
 import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.rank.loader.RankLoadManager;
+import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eDurationShowType;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 
 /**
  * 랭킹 버프 Lv1~11 통합 처리기
@@ -166,7 +166,7 @@ public final class RankBuff {
     }
 
     // ─────────────────────────────────────────────
-    // 스탯 — MJ 원본 그대로
+    // 스탯 — server 원본 그대로
     // ─────────────────────────────────────────────
 
     private static void applyStat(L1PcInstance pc, int level, int classId, int sign){

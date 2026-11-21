@@ -1,11 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /**
  * 그랑카인 시스템 
@@ -32,7 +28,7 @@ public final class SC_FATIGUE_NOTI extends ProtoPacket {
         _combatFatigue = combatFatigue;
     }
 
-    /** MJ offEinhasad 이관 — 아인하사드 해제 2단 전송 (penalty=1 → penalty=0) */
+    /** server offEinhasad 이관 — 아인하사드 해제 2단 전송 (penalty=1 → penalty=0) */
     public static void offEinhasad(L1PcInstance pc){
         SC_FATIGUE_NOTI.sendConstructed(pc, FatigueStatus.OK, 1, 0);   // ein off
         SC_FATIGUE_NOTI.sendConstructed(pc, FatigueStatus.OK, 0, 0);   // fatigue off

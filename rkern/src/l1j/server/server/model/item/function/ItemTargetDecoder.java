@@ -1,7 +1,7 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.MJCTSystem.Loader.MJCTLoadManager;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
 
 /** Legacy target decoding and pre-admission selection UI; explicit-ID rules precede use-type rules. */
 final class ItemTargetDecoder {
@@ -49,7 +49,7 @@ final class ItemTargetDecoder {
             default -> {
                 if(useType==30) yield TARGET;
                 if(itemId==600226 || itemId==600227 || itemId==3000235
-                        || itemId==MJCTLoadManager.CTSYSTEM_STORE_ID) yield STORED;
+                        || itemId==CollectionLoadManager.CTSYSTEM_STORE_ID) yield STORED;
                 if(useType==5 || useType==17) yield POINT;
                 if(itemId>=41255 && itemId<=41259) yield COOKING;
                 yield DEFAULT;

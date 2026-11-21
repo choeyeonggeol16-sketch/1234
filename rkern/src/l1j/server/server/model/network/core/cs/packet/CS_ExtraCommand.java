@@ -5,7 +5,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 
 import l1j.server.Config;
-import l1j.server.IndunSystem.Orim.OrimController;
+import l1j.server.server.model.world.instance.dungeon.orim.OrimController;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;

@@ -2,9 +2,9 @@ package l1j.server.server.model.character.Attack.Helper;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import l1j.server.MJPassiveSkill.MJPassiveID;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.utils.CalcStat;
 
 /**
@@ -137,7 +137,7 @@ public final class L1SkillProcHelper {
         if (lvl >= rates.doubleBreakBonusStartLevel()) {
             chance += 1 + (lvl - rates.doubleBreakBonusStartLevel()) / rates.doubleBreakBonusStepLevel();
         }
-        if (pc.isPassive(MJPassiveID.DOUBLE_BREAK_DESTINY.toInt())
+        if (pc.isPassive(PassiveID.DOUBLE_BREAK_DESTINY.toInt())
                 && lvl >= rates.doubleBreakDestinyStartLevel()) {
             chance += (lvl - rates.doubleBreakDestinyStartLevel()) * rates.doubleBreakDestinyPerLevel();
         }
@@ -301,7 +301,7 @@ public final class L1SkillProcHelper {
 	    if (pc == null) return 0;
 	    if (ranged) return 0;
 
-	    if (pc.getPassive(MJPassiveID.CRASH.toInt()) == null) return 0;
+	    if (pc.getPassive(PassiveID.CRASH.toInt()) == null) return 0;
 
         int flags = 0;
         final AttackSkillChanceConfig.Settings rates = AttackSkillChanceConfig.get();
@@ -309,7 +309,7 @@ public final class L1SkillProcHelper {
         if (rnd100() <= rates.crashChance()) {
 	        flags |= FLAG_CRASH;
             // Fury is conditional on Crash, as in src22.
-            if (pc.getPassive(MJPassiveID.FURY.toInt()) != null) {
+            if (pc.getPassive(PassiveID.FURY.toInt()) != null) {
                 if (rnd100() <= rates.furyChance()) {
 	                flags |= FLAG_FURY;
 	            }

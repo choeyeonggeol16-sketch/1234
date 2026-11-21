@@ -130,7 +130,7 @@ public final class LocalWorldMap {
         private int _playerCount;
 
 
-        // NC CTL_Map2 uses an object-indexed linkage instead of scanning a cell.
+        // reference server CTL_Map2 uses an object-indexed linkage instead of scanning a cell.
         // On L1 maps the usual 8x8 cell is sparse: keep its compact linear array.
         // Only dense cells build an allocation-free int -> array-slot index.
         private static final int DENSE_THRESHOLD = 128;

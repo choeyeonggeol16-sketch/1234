@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Compile exact MJCombatObserver production methods with stub sockets/failure injection."""
+"""Compile exact CombatObserver production methods with stub sockets/failure injection."""
 import pathlib,subprocess,tempfile,textwrap
 ROOT=pathlib.Path(__file__).resolve().parents[3]
-s=(ROOT/'src/l1j/server/MJCombatSystem/MJCombatObserver.java').read_text(encoding='utf8')
+s=(ROOT/'src/l1j/server/server/model/character/combat/arena/CombatObserver.java').read_text(encoding='utf8')
 def method(head):
  i=s.index(head);j=s.index('{',i);n=1;k=j+1
  while n:
@@ -18,9 +18,9 @@ methods='\n\n'.join(map(method,[
  'private static void logCombatResultSendFailure('
 ]))
 # Only substitute the enclosing harness class identifier for logger metadata.
-methods=methods.replace('MJCombatObserver.class.getName()', 'Combat91.class.getName()')
+methods=methods.replace('CombatObserver.class.getName()', 'Combat91.class.getName()')
 code=textwrap.dedent('''\
-package l1j.server.MJCombatSystem;
+package l1j.server.server.model.character.combat.arena;
 import java.util.*;
 import java.nio.ByteBuffer;
 import l1j.server.server.model.network.core.broadcast.*;
@@ -52,7 +52,7 @@ public class Combat91 {
     final byte code;SC_NOTIFICATION_MESSAGE(int code){this.code=(byte)code;}
     byte[] encode(){return new byte[]{code};}
   }
-  static final class MJCombatLoadManager {
+  static final class CombatLoadManager {
     static final int COMBAT_QUIT_DELAY_SECOND=5;
     static SC_NOTIFICATION_MESSAGE[] create_result_notify(TeamKda win,UserKda[] ranks){
       return new SC_NOTIFICATION_MESSAGE[]{new SC_NOTIFICATION_MESSAGE(1),new SC_NOTIFICATION_MESSAGE(2),new SC_NOTIFICATION_MESSAGE(3)};
@@ -98,7 +98,7 @@ public class Combat91 {
 ''').replace('/* METHODS */',methods)
 stub=textwrap.dedent('''\
 package l1j.server.server.model.network.core.broadcast;
-import l1j.server.MJCombatSystem.Combat91;
+import l1j.server.server.model.character.combat.arena.Combat91;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 public class CSharedBroadcast {
@@ -136,11 +136,11 @@ opcode='package l1j.server.server; public class Opcodes {public static final int
 with tempfile.TemporaryDirectory() as td:
  b=pathlib.Path(td)
  for path,content in {
-  'l1j/server/MJCombatSystem/Combat91.java':code,
+  'l1j/server/server/model/character/combat/arena/Combat91.java':code,
   'l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java':stub,
   'l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java':cb,
   'l1j/server/server/Opcodes.java':opcode
  }.items():
   p=b/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(content)
  subprocess.run(['javac','--release','21','-d',td,*map(str,b.rglob('*.java'))],check=True)
- subprocess.run(['java','-cp',td,'l1j.server.MJCombatSystem.Combat91'],check=True)
+ subprocess.run(['java','-cp',td,'l1j.server.server.model.character.combat.arena.Combat91'],check=True)

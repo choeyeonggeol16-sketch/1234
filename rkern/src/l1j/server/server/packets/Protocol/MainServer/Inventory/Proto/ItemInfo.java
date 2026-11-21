@@ -1,8 +1,8 @@
 package l1j.server.server.packets.Protocol.MainServer.Inventory.Proto;
 
-import l1j.server.MJCompanion.Basic.ClassInfo.MJCompanionClassInfo;
-import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.character.companion.basic.classinfo.CompanionClassInfo;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
 import l1j.server.server.templates.L1Item;
 
@@ -47,13 +47,13 @@ public final class ItemInfo {
         catch (java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     }
 
-    // ── 팩토리: MJ 로직 그대로 이식 ──
+    // ── 팩토리: server 로직 그대로 이식 ──
 
     public static ItemInfo newInstance(L1ItemInstance item, int useType, byte[] viewName, int bless) {
         L1Item itemT = item.getItem();
         ItemInfo i = new ItemInfo();
         i.objectId = item.getId();
-        i.dbId = item.getId();   // MJ 원본 퀘크 보존: db_id = object id
+        i.dbId = item.getId();   // server 원본 퀘크 보존: db_id = object id
         i.nameId = itemT.getItemDescId();
         i.iconId = item.get_gfxid();
         i.blessCodeForDisplay = bless;
@@ -115,11 +115,11 @@ public final class ItemInfo {
             }
         }
 
-        MJCompanionClassInfo cInfo = MJCompanionClassInfo.from_item_id(item.getItemId());
+        CompanionClassInfo cInfo = CompanionClassInfo.from_item_id(item.getItemId());
         if (cInfo == null) return i;
 
         CompanionCard card = CompanionCard.newInstance();
-        MJCompanionInstanceCache cache = MJCompanionInstanceCache.get(item.getId());
+        CompanionInstanceCache cache = CompanionInstanceCache.get(item.getId());
         if (cache != null) {
             card.set_class_id(cInfo.get_class_id());
             card.set_is_dead(cache.get_is_dead());
@@ -151,7 +151,7 @@ public final class ItemInfo {
         return newInstance(item, item.getItem().getUseType());
     }
 
-    public static ItemInfo newInstance(int itemObjectId, MJCompanionInstanceCache cache) {
+    public static ItemInfo newInstance(int itemObjectId, CompanionInstanceCache cache) {
         ItemInfo i = new ItemInfo();
         i.objectId = itemObjectId;
         CompanionCard card = CompanionCard.newInstance();
@@ -338,12 +338,12 @@ public final class ItemInfo {
                 extra = item.getStatusBytes();
             }
         }
-        MJCompanionClassInfo companion = MJCompanionClassInfo.from_item_id(item.getItemId());
+        CompanionClassInfo companion = CompanionClassInfo.from_item_id(item.getItemId());
         boolean oblivion = false, dead = false, summoned = false;
         int companionClass = 0, companionLevel = 0, elixirs = 0;
         String companionName = null;
         if (companion != null) {
-            MJCompanionInstanceCache cache = MJCompanionInstanceCache.get(item.getId());
+            CompanionInstanceCache cache = CompanionInstanceCache.get(item.getId());
             companionClass = companion.get_class_id();
             if (cache != null) {
                 dead = cache.get_is_dead();

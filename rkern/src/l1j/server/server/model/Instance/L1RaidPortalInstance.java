@@ -1,20 +1,20 @@
 package l1j.server.server.model.Instance;
 
-import l1j.server.MJRaidSystem.MJRaidObject;
+import l1j.server.server.model.world.instance.raid.RaidObject;
 import l1j.server.server.templates.L1Npc;
 
 public class L1RaidPortalInstance extends L1NpcInstance{
-	private MJRaidObject _raidObj;
+	private RaidObject _raidObj;
 	
 	public L1RaidPortalInstance(L1Npc template) {
 		super(template);
 	}
 
-	public void setRaidObject(MJRaidObject obj){
+	public void setRaidObject(RaidObject obj){
 		_raidObj = obj;
 	}
 	
-	public MJRaidObject getRaidObject(){
+	public RaidObject getRaidObject(){
 		return _raidObj;
 	}
 	

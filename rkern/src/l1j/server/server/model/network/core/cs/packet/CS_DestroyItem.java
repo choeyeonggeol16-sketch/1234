@@ -1,14 +1,14 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.monitor.Logger.ItemActionType;
 import l1j.server.server.monitor.LoggerInstance;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
 public final class CS_DestroyItem {
 
@@ -54,7 +54,7 @@ public final class CS_DestroyItem {
             return false;
         }
 
-        if (!MJCompanionInstanceCache.is_companion_oblivion(item.getId())) {
+        if (!CompanionInstanceCache.is_companion_oblivion(item.getId())) {
             SC_ServerMessage.send(pc, 210, item.getItem().getName());
             return false;
         }

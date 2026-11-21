@@ -1,16 +1,8 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.MJCTSystem.Loader.MJCTLoadManager;
-import l1j.server.MJCTSystem.MJCTHandler;
-import l1j.server.MJItemEnchantSystem.MJItemEnchanterLoader;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.item.classchange.ClassChange;
-import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
-import l1j.server.server.model.network.core.sc.packet.SC_ShowPolyList;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.templates.L1BookMark;
+import static l1j.server.server.model.item.function.BugRaceControlWandItems.use_bug_down_wand;
+import static l1j.server.server.model.item.function.CashBuffTransactions.강화버프;
+import static l1j.server.server.model.item.function.ChargedRewardBoxItems.UseDurableChargedBox;
 import static l1j.server.server.model.item.function.CombatAbilityItems.데몰리션;
 import static l1j.server.server.model.item.function.CombatAbilityItems.쉐도우;
 import static l1j.server.server.model.item.function.CombatAbilityItems.어벤저;
@@ -18,23 +10,32 @@ import static l1j.server.server.model.item.function.CombatAbilityItems.엘븐스
 import static l1j.server.server.model.item.function.CombatAbilityItems.이터니티;
 import static l1j.server.server.model.item.function.CombatAbilityItems.전투지휘봉;
 import static l1j.server.server.model.item.function.CombatAbilityItems.콜어드밴스;
-import static l1j.server.server.model.item.function.NpcRemovalWandItems.useFieldObjectRemovalWand;
-import static l1j.server.server.model.item.function.BugRaceControlWandItems.use_bug_down_wand;
-import static l1j.server.server.model.item.function.TopRankerBlessingItems.정상의가호;
-import static l1j.server.server.model.item.function.TopRankerBlessingItems.정상의가호2;
-import static l1j.server.server.model.item.function.ChargedRewardBoxItems.UseDurableChargedBox;
-import static l1j.server.server.model.item.function.EquipmentItemActions.handleArmorUse;
-import static l1j.server.server.model.item.function.EquipmentItemActions.handleWeaponUse;
-import static l1j.server.server.model.item.function.WandInspectionItems.serchdroplist2;
-import static l1j.server.server.model.item.function.WandInspectionItems.useFieldObjectRemovalWand1;
-import static l1j.server.server.model.item.function.NpcWandAndSpawnItems.useNpcSpownWand;
-import static l1j.server.server.model.item.function.CashBuffTransactions.강화버프;
 import static l1j.server.server.model.item.function.CombatSkillItemEffects.군주광역스턴;
 import static l1j.server.server.model.item.function.CombatSkillItemEffects.매직실드;
 import static l1j.server.server.model.item.function.CombatSkillItemEffects.비전텔레포트;
 import static l1j.server.server.model.item.function.DogFightEnhancementItems.투견조작;
-import static l1j.server.server.model.item.function.TransformationItems.usePolyPotion;
+import static l1j.server.server.model.item.function.EquipmentItemActions.handleArmorUse;
+import static l1j.server.server.model.item.function.EquipmentItemActions.handleWeaponUse;
+import static l1j.server.server.model.item.function.NpcRemovalWandItems.useFieldObjectRemovalWand;
+import static l1j.server.server.model.item.function.NpcWandAndSpawnItems.useNpcSpownWand;
+import static l1j.server.server.model.item.function.TopRankerBlessingItems.정상의가호;
+import static l1j.server.server.model.item.function.TopRankerBlessingItems.정상의가호2;
 import static l1j.server.server.model.item.function.TowerTeleportAmulets.useToiTeleportAmulet;
+import static l1j.server.server.model.item.function.TransformationItems.usePolyPotion;
+import static l1j.server.server.model.item.function.WandInspectionItems.serchdroplist2;
+import static l1j.server.server.model.item.function.WandInspectionItems.useFieldObjectRemovalWand1;
+
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.item.classchange.ClassChange;
+import l1j.server.server.model.item.collection.CollectionHandler;
+import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
+import l1j.server.server.model.item.enchant.ItemEnchanterLoader;
+import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
+import l1j.server.server.model.network.core.sc.packet.SC_ShowPolyList;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.templates.L1BookMark;
 
 /** Explicit-ID dispatch. The default retains its original ordered range/use-type rules. */
 final class ItemActionDispatcher {
@@ -98,7 +99,7 @@ final class ItemActionDispatcher {
             case 3000237 -> PcRoomConsumables.handlePcRoomGift(use);
             case 600225 -> PcRoomConsumables.handleGrowthPcRoomBuff(use);
             case 3000201 -> PcRoomConsumables.handleSupportBuff(use);
-            case MJCTLoadManager.CTSYSTEM_STORE_ID -> { MJCTHandler.store(pc, item, storedItemObjectId); yield ItemActionResult.COMPLETE; }
+            case CollectionLoadManager.CTSYSTEM_STORE_ID -> { CollectionHandler.store(pc, item, storedItemObjectId); yield ItemActionResult.COMPLETE; }
             case 600226, 3000235, 600227 -> CharacterServiceItems.handleStoreClassChange(use);
             case 40096 -> TransformationScrollItems.handlePolyScroll(use);
             case 3000467 -> TransformationScrollItems.handleEventPolyScroll(use);
@@ -249,7 +250,7 @@ final class ItemActionDispatcher {
             case 30055, 3000425, 711 -> { AreaDamageItems.use(pc, item, spellTargetId, itemId); yield ItemActionResult.STOP; }
             case 30071 -> { StarterEquipmentGiftBox.openStarterKit(pc, item); yield ItemActionResult.STOP; }
             case 700024 -> { L1BookMark.Bookmarkitem(pc, item, itemId, false); yield ItemActionResult.COMPLETE; }
-            case 3000065, 3000256, 3110509, 3000509, 4100446 -> { MJItemEnchanterLoader.getInstance().do_enchant(pc, item, targetItem); yield ItemActionResult.COMPLETE; }
+            case 3000065, 3000256, 3110509, 3000509, 4100446 -> { ItemEnchanterLoader.getInstance().do_enchant(pc, item, targetItem); yield ItemActionResult.COMPLETE; }
             case 5558 -> { 정상의가호(pc, item); yield ItemActionResult.COMPLETE; }
             case 55558 -> { 정상의가호2(pc, item); yield ItemActionResult.COMPLETE; }
             case 30116 -> { PureShirtSoapExchange.exchangePureShirt(pc, item, targetItem); yield ItemActionResult.STOP; }

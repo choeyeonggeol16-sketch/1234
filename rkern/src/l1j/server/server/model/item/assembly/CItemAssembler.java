@@ -1,10 +1,10 @@
 package l1j.server.server.model.item.assembly;
 
-import l1j.server.MJTemplate.ItemPresentator.ItemPresentatorFactory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.item.presentation.ItemPresentatorFactory;
 
-/** Packet-independent NC CItemAssembler role; L1 opcodes remain unchanged. */
+/** Packet-independent reference server CItemAssembler role; L1 opcodes remain unchanged. */
 public final class CItemAssembler {
     private CItemAssembler() {}
 

@@ -1,27 +1,26 @@
 package l1j.server.server.model;
 
-import l1j.server.MJ3SEx.MJNpcSpeedData;
-import l1j.server.MJINNSystem.MJINNHelper;
-import l1j.server.MJINNSystem.MJINNRoom;
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
-import l1j.server.server.model.Instance.L1SummonInstance;
-import l1j.server.server.model.Instance.L1SupportInstance;
-import l1j.server.server.model.Instance.L1NpcShopInstance;
-import l1j.server.server.model.Instance.L1CompanionInstance;
-
-import java.util.Collection;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
+import java.util.Collection;
 import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import l1j.server.server.model.Instance.L1CompanionInstance;
+import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.npc.ai.NpcEventFactory;
+import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.Instance.L1SummonInstance;
+import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
+import l1j.server.server.model.character.animation.NpcSpeedData;
+import l1j.server.server.model.npc.ai.NpcEventFactory;
+import l1j.server.server.model.world.instance.inn.InnHelper;
+import l1j.server.server.model.world.instance.inn.InnRoom;
+import l1j.server.server.shared.L1Type;
 
 /**
  * World mutation boundary. The synchronous legacy API retains its completion
@@ -430,7 +429,7 @@ public final class CWorld {
             installSecondary(object);
         }
         if (object instanceof L1NpcInstance) {
-            MJNpcSpeedData.install_npc((L1NpcInstance) object);
+            NpcSpeedData.install_npc((L1NpcInstance) object);
         }
         if (previous != null && previous != object) {
             retireReplacedVisible(previous);
@@ -460,7 +459,7 @@ public final class CWorld {
         }
         // Keep NPC speed initialization outside the registry page monitor.
         if (object instanceof L1NpcInstance) {
-            MJNpcSpeedData.install_npc((L1NpcInstance) object);
+            NpcSpeedData.install_npc((L1NpcInstance) object);
         }
         if (previous != null && previous != object) {
             retireReplacedVisible(previous);
@@ -495,10 +494,10 @@ public final class CWorld {
             removeSecondary(object);
         }
 
-        if (object.instanceOf(MJL1Type.L1TYPE_ITEMINSTANCE)) {
+        if (object.instanceOf(L1Type.L1TYPE_ITEMINSTANCE)) {
             final L1ItemInstance item = (L1ItemInstance) object;
-            if (item.getItemId() == MJINNHelper.INN_KEYID) {
-                MJINNRoom.remove(item);
+            if (item.getItemId() == InnHelper.INN_KEYID) {
+                InnRoom.remove(item);
             }
         }
     }

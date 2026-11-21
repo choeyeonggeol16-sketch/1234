@@ -1,16 +1,5 @@
 package l1j.server.server.appcenter;
 
-import l1j.server.DatabaseFactory;
-import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1NpcShopInstance;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.MJDShopSystem.MJDShopItem;
-
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -18,8 +7,6 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,6 +24,17 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import l1j.server.DatabaseFactory;
+import l1j.server.server.model.Instance.L1NpcShopInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 
 /**
  * Embedded read-only app center: same RKern JVM, isolated fixed HTTP executor.
@@ -619,12 +617,12 @@ public final class AppCenterService {
             .thenComparing(m->m.seller));
         return List.copyOf(result);
     }
-    private static void appendListings(List<Market> out,List<MJDShopItem> listings,
+    private static void appendListings(List<Market> out,List<DynamicShopItem> listings,
                                        String seller,int x,int y,int kind) {
         if (listings == null) return;
         int count=Math.min(listings.size(),7);
         for (int i=0;i<count&&out.size()<MAX_SHOP_ROWS;i++) {
-            MJDShopItem item=listings.get(i);
+            DynamicShopItem item=listings.get(i);
             if (item==null || item.price<=0 || item.count<=0) continue;
             String name=validText(item.name,80);
             if (name.isEmpty()) continue;

@@ -28,7 +28,7 @@ public final class User {
         OnUseItemPacket0(client, itemObjid, targetId, x, y, name, skillId);
     }
 
-    // L1 adaptation of NC pending admission: the existing inventory transaction
+    // L1 adaptation of reference server pending admission: the existing inventory transaction
     // atomically reserves the owner. Its CIO/CacheD completion releases the gate.
     // Do not add a second pending flag or release it on DB submission.
     public static l1j.server.server.model.L1InventoryTransaction CheckAndSetPendingUseETCItem(

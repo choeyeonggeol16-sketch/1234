@@ -2,12 +2,12 @@ package l1j.server.server.model.character.skill.helper;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig;
-import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 
@@ -90,7 +90,7 @@ public final class WeakExposeHelper {
             applyStage(pc, 3);
             break;
         case 3:
-            if (pc.isPassive(MJPassiveID.FOU_SLAYER_BRAVE.toInt())) {
+            if (pc.isPassive(PassiveID.FOU_SLAYER_BRAVE.toInt())) {
                 pc.killSkillEffectTimer(STAGE_SKILL[3]);
                 applyStage(pc, 4);
             } else {

@@ -1,8 +1,5 @@
 package l1j.server.server.model.character.skill.helper;
 
-import l1j.server.MJWarSystem.MJWar;
-import l1j.server.server.model.L1CastleLocation;
-import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -10,8 +7,11 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.Instance.L1TowerInstance;
+import l1j.server.server.model.L1CastleLocation;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.world.siege.War;
 import l1j.server.server.templates.L1Skills;
 
 public enum SkillTargetFilter {
@@ -115,7 +115,7 @@ public enum SkillTargetFilter {
 
             // 전쟁 중 같은 편 처리
             if (player != null) {
-                if (MJWar.isSameWar(player.getClan(), enemy.getClan())) {
+                if (War.isSameWar(player.getClan(), enemy.getClan())) {
                     return L1CastleLocation.checkInAllWarArea(enemy.getX(), enemy.getY(), enemy.getMapId());
                 }
             }

@@ -8,19 +8,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javolution.util.FastTable;
+
 import l1j.server.Base64;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.MJDShopSystem.MJDShopItem;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Getback;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionShop;
+import l1j.server.server.model.shop.dynamic.DynamicShopItem;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
 
 public class CharacterShopTable {
 
@@ -77,7 +78,7 @@ public class CharacterShopTable {
 				pc.setStatus(ActionCodes.ACTION_Die);
 			}
 			
-			MJCastleWarBusiness.getInstance().viewNowCastleWarState(pc);
+			CastleWarBusiness.getInstance().viewNowCastleWarState(pc);
 			if (pc.getClanid() != 0) {
 				L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
 				if (clan != null) {
@@ -115,7 +116,7 @@ public class CharacterShopTable {
 		CharacterTable.getInstance().restoreInventory(pc);
 	}
 
-	/** 2016.11.24 MJ 앱센터 시세 **/
+	/** 2016.11.24 server 앱센터 시세 **/
 	private void load() {
 		FastTable<String> _charlist = new FastTable<String>();
 		String sql = "SELECT * FROM character_shop_store";
@@ -153,7 +154,7 @@ public class CharacterShopTable {
 		}
 	}
 
-	/** 2016.11.24 MJ 앱센터 시세 **/
+	/** 2016.11.24 server 앱센터 시세 **/
 	private void ShopListLoad(L1PcInstance pc) {
 		String sql = "SELECT * FROM character_shop WHERE objid = ?";
 
@@ -164,7 +165,7 @@ public class CharacterShopTable {
 			
 			try (ResultSet rs = pstm.executeQuery()) {
 				while (rs.next()) {
-					MJDShopItem ditem = MJDShopItem.create(rs);
+					DynamicShopItem ditem = DynamicShopItem.create(rs);
 					if (ditem != null) {
 						if (ditem.isPurchase)
 							pc.addPurchasings(ditem);

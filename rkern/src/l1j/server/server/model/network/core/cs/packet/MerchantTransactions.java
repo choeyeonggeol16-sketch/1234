@@ -3,8 +3,8 @@ package l1j.server.server.model.network.core.cs.packet;
 import java.util.List;
 
 import l1j.server.Config;
-import l1j.server.DogFight.History.MJDogFightHistory;
-import l1j.server.DogFight.MJDogFightSettings;
+import l1j.server.server.model.character.combat.arena.dogfight.DogFightSettings;
+import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightHistory;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -12,9 +12,9 @@ import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.npc.shop.NpcShopManager;
 import l1j.server.server.model.shop.L1Shop;
 import l1j.server.server.model.shop.L1ShopBuyOrderList;
@@ -37,7 +37,7 @@ final class MerchantTransactions {
             pc.sendPackets("\\fY최소한 혈가입은 서버에 원활한 게임을 위한 시스템입니다");
             return;
         }
-        if (!dynamic && MJDogFightSettings.CASTER_NPC_ID == npcId) {
+        if (!dynamic && DogFightSettings.CASTER_NPC_ID == npcId) {
             handleDogfight(pc, buying, objectId, size, first, rest);
             return;
         }
@@ -163,7 +163,7 @@ final class MerchantTransactions {
             ids[i] = CS_Result.param1(first, rest, i);
             counts[i] = CS_Result.param2D(first, rest, i);
         }
-        if (buying) MJDogFightHistory.getInstance().on_buy_ticket(pc, ids, counts, size);
-        else MJDogFightHistory.getInstance().on_sell_ticket(pc, ids, counts, size, objectId);
+        if (buying) DogFightHistory.getInstance().on_buy_ticket(pc, ids, counts, size);
+        else DogFightHistory.getInstance().on_sell_ticket(pc, ids, counts, size, objectId);
     }
 }

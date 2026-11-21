@@ -3,7 +3,6 @@ package l1j.server.server.model.network.core.cs.packet;
 import java.sql.Timestamp;
 
 import l1j.server.Config;
-import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
 import l1j.server.server.datatables.NoShopAndWare;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -12,6 +11,7 @@ import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.Warehouse.ClanWarehouse;
 import l1j.server.server.model.Warehouse.Warehouse;
 import l1j.server.server.model.Warehouse.WarehouseManager;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
@@ -148,7 +148,7 @@ final class WarehouseTransactions {
         }
         if (kind != 8 && item.getItemdelay3() >= now) return false;
         if (item.isEquipped() || !item.getItem().isTradable() || (kind != 8 && item.getBless() >= 128)
-                || !MJCompanionInstanceCache.is_companion_oblivion(item.getId())
+                || !CompanionInstanceCache.is_companion_oblivion(item.getId())
                 || CS_PersonalShop.isPetItem(pc, item.getId())) {
             SC_ServerMessage.send(pc, 210, item.getItem().getName());
             return false;

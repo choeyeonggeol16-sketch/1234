@@ -1,17 +1,18 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import java.util.ArrayList;
-import l1j.server.MJTemplate.MJKeyValuePair;
+
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.shared.KeyValuePair;
 
 public final class SC_DogFightSellList {
     private SC_DogFightSellList() {}
 
-    public static boolean send(L1PcInstance pc, int npcObjectId, ArrayList<MJKeyValuePair<Integer, Integer>> pairs) {
+    public static boolean send(L1PcInstance pc, int npcObjectId, ArrayList<KeyValuePair<Integer, Integer>> pairs) {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
@@ -30,7 +31,7 @@ public final class SC_DogFightSellList {
             buffer.writeD(npcObjectId);
             buffer.writeH(count);
             if (pairs != null) {
-                for (MJKeyValuePair<Integer, Integer> pair : pairs) {
+                for (KeyValuePair<Integer, Integer> pair : pairs) {
                     buffer.writeD(pair.key);
                     buffer.writeD(pair.value);
                 }

@@ -86,12 +86,12 @@ class SC_SystemMessage{static void send(L1PcInstance p,String s){p.log.add(s);}}
 class SC_ServerMessage{static void send(L1PcInstance p,int id,String s){p.log.add(id+":"+s);}}
 class SC_SkillSound{static void send(L1PcInstance p,int id,int effect){p.log.add("sound"+effect);}static void broadcast(L1PcInstance p,int id,int effect){p.log.add("broadcast"+effect);}}
 class Config{static boolean 낚시이펙트;}
-enum MJEFishingType{GROWN_UP,HIGH_GROWN_UP,ACIENT_SILVER,ACIENT_GOLD}
+enum EFishingType{GROWN_UP,HIGH_GROWN_UP,ACIENT_SILVER,ACIENT_GOLD}
 public class Test{
 '''+constants+method('private void notifyFishingReward(')+'''
 static L1PcInstance pc;void distribute_message(int owner,int item){pc.log.add("announce"+item);}
-void calculate_exp1(L1PcInstance p,MJEFishingType t){p.log.add("exp1:"+t);}
-void calculate_exp(L1PcInstance p,MJEFishingType t){p.log.add("exp:"+t);}
+void calculate_exp1(L1PcInstance p,EFishingType t){p.log.add("exp1:"+t);}
+void calculate_exp(L1PcInstance p,EFishingType t){p.log.add("exp:"+t);}
 static void ck(boolean b){if(!b)throw new AssertionError();}
 public static void main(String[] a){Test t=new Test();int n=0;for(int msg=0;msg<=10;msg++)for(byte exp=0;exp<=4;exp++)for(int sound=0;sound<2;sound++){pc=new L1PcInstance();Config.낚시이펙트=sound!=0;int item=msg==10?667799:41296;t.notifyFishingReward(pc,(item<<4)|msg,"fish",exp);List<String> expected=new ArrayList<>();expected.add(msg==10?"낚시: fish를 획득하였습니다.":"1185:"+DROP_MESSAGES[msg]);if(sound!=0){expected.add("sound763");expected.add("broadcast763");}expected.add("announce"+item);switch(exp){case 1->expected.add("exp1:GROWN_UP");case 2->expected.add("exp1:HIGH_GROWN_UP");case 3->expected.add("exp:ACIENT_SILVER");case 4->expected.add("exp:ACIENT_GOLD");}ck(pc.log.equals(expected));n++;}System.out.println("NOTICE_PASS "+n+" message/effect/experience outcomes");}
 }''')

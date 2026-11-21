@@ -1,13 +1,8 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.model.Attendance.AttendanceLoadManager;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.AttendanceGroupType;
 
 /**
@@ -47,7 +42,7 @@ public final class SC_ATTENDANCE_BONUS_INFO_EXTEND extends ProtoPacket {
                 ).encode();
     }
 
-    /** MJ send() 이관 — 캐시 공유 전송 */
+    /** server send() 이관 — 캐시 공유 전송 */
     public static void send(L1PcInstance pc){
         l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, _cached);
     }

@@ -1,13 +1,9 @@
 package l1j.server.server.model.Instance;
 
-import l1j.server.server.model.character.action.CAttackAction;
-
-
 import java.util.Arrays;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import l1j.server.MJTemplate.MJL1Type;
+
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.DropTable;
@@ -15,21 +11,21 @@ import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.npc.ai.NpcPotionPolicy;
-import l1j.server.server.model.npc.ai.dFollow;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 import l1j.server.server.model.network.core.sc.packet.SC_PetMenuPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.npc.ai.NpcPotionPolicy;
+import l1j.server.server.model.npc.ai.dFollow;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
+import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.utils.NpcAiUtil;
-
-import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 public class L1SummonInstance extends L1NpcInstance {
 	private static final long serialVersionUID = 1L;
 
@@ -590,6 +586,6 @@ public class L1SummonInstance extends L1NpcInstance {
 	private static int _instanceType = -1;
 	@Override
 	public int getL1Type(){
-		return _instanceType == -1 ? _instanceType = super.getL1Type() | MJL1Type.L1TYPE_SUMMON : _instanceType;		
+		return _instanceType == -1 ? _instanceType = super.getL1Type() | L1Type.L1TYPE_SUMMON : _instanceType;		
 	}
 }

@@ -1,11 +1,10 @@
 package l1j.server.server.model;
 
-import l1j.server.MJPassiveSkill.MJPassiveID;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPECIAL_RESISTANCE_NOTI;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPECIAL_RESISTANCE_NOTI;
 import l1j.server.server.utils.IntRange;
 import l1j.server.server.utils.eKind;
 
@@ -127,7 +126,7 @@ public class Resistance {
     void setSkillMr(int value) { if (skillMr != value) skillMr = value; }
 
     public int getMr() {
-        if(character == null || !character.isPassive(MJPassiveID.RESIST_ELEMENT.toInt()))
+        if(character == null || !character.isPassive(PassiveID.RESIST_ELEMENT.toInt()))
             return checkMrRange(baseMr + addedMr + skillMr, LIMIT_MIN_MR);
         return checkMrRange(baseMr + addedMr + skillMr + 5, LIMIT_MIN_MR);
     }
@@ -179,7 +178,7 @@ public class Resistance {
     public int getEarth() { return increase_elemental_resist(checkRange(earth + (short) (skillElemental >>> 32))); }
 
     private int increase_elemental_resist(int source_resist) {
-        return character == null || !character.isPassive(MJPassiveID.RESIST_ELEMENT.toInt()) ?
+        return character == null || !character.isPassive(PassiveID.RESIST_ELEMENT.toInt()) ?
                 source_resist : source_resist + 5;
     }
     

@@ -1,12 +1,11 @@
 package l1j.server.server.model.network.core.sc.packet;
 
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /**
- * NC-style direct serializer for S_DoActionGFX.
+ * reference design direct serializer for S_DoActionGFX.
  *
  * Wire:
  *   [2-byte length]
@@ -42,7 +41,7 @@ public final class SC_DoActionGFX {
 
     public static void broadcast(L1Character cha, int actionId) {
         if (cha == null) return;
-        // NC-style one owned plaintext frame, fanout with existing L1 AOI/FIFO.
+        // reference design one owned plaintext frame, fanout with existing L1 AOI/FIFO.
         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAction(
                 cha, cha.getId(), actionId);
     }

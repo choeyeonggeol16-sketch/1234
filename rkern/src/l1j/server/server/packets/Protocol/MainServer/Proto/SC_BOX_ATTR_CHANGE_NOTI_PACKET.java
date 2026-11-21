@@ -1,11 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /**
  * SC_BOX_ATTR_CHANGE_NOTI_PACKET (0x0081) — 맵 이벤트 박스 속성 변경
@@ -20,7 +16,7 @@ public final class SC_BOX_ATTR_CHANGE_NOTI_PACKET extends ProtoPacket {
 
         private Box() {}
 
-        /** MJ create_line_boxes 이관 — 사각 테두리 4변 박스 생성 */
+        /** server create_line_boxes 이관 — 사각 테두리 4변 박스 생성 */
         public static Box[] createLineBoxes(int left, int top, int right, int bottom){
             Box[] boxes = new Box[4];
 
@@ -60,7 +56,7 @@ public final class SC_BOX_ATTR_CHANGE_NOTI_PACKET extends ProtoPacket {
         _attribute = attribute;
     }
 
-    /** MJ create_box 이관 — 반환 타입이 ProtoOutputStream → byte[] 로 변경됨 */
+    /** server create_box 이관 — 반환 타입이 ProtoOutputStream → byte[] 로 변경됨 */
     public static byte[] createBox(int mapId, Box box, int attribute){
         return new SC_BOX_ATTR_CHANGE_NOTI_PACKET(mapId, box, attribute).encode();
     }

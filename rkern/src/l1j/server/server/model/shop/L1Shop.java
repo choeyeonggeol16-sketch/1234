@@ -6,29 +6,24 @@ import java.util.List;
 import java.util.Random;
 
 import l1j.server.Config;
-import l1j.server.MJWarSystem.MJCastleWar;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.Controller.BugRaceController.BugTicketInfo;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.ShopTable;
-import l1j.server.server.model.L1CastleLocation;
-import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PcInventory;
-import l1j.server.server.model.L1TaxCalculator;
-import l1j.server.server.model.L1InventoryTransaction;
-import l1j.server.server.storage.CacheD;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcCashShopInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1CastleLocation;
+import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.L1TaxCalculator;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.npc.shop.NpcShopManager;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
@@ -36,8 +31,11 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SurvivalCry;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.npc.shop.NpcShopManager;
+import l1j.server.server.model.world.siege.CastleWar;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1Item;
-import l1j.server.server.templates.L1Npc;
 import l1j.server.server.templates.L1ShopItem;
 import l1j.server.server.utils.IntRange;
 import l1j.server.server.utils.TYUtil;
@@ -275,7 +273,7 @@ public class L1Shop {
         int diadTax=calc.calcDiadTaxPrice(price);
         if(diadTax>0)taxes.merge(L1CastleLocation.DIAD_CASTLE_ID,diadTax,Integer::sum);
         for(java.util.Map.Entry<Integer,Integer> tax:taxes.entrySet()) {
-            final MJCastleWar war=MJCastleWarBusiness.getInstance().get(tax.getKey());
+            final CastleWar war=CastleWarBusiness.getInstance().get(tax.getKey());
             if(war==null)throw new IllegalStateException("Tax castle missing");
             final int before=war.getPublicMoney(),delta=tax.getValue();
             final long after=(long)before+delta;
@@ -1132,9 +1130,9 @@ public class L1Shop {
 			throw new IllegalStateException("구입에 필요한 아데나를 소비 할 수 없습니다.");
 		}
 		
-		/** 2016.11.24 MJ 앱센터 시세 **/
+		/** 2016.11.24 server 앱센터 시세 **/
 		L1NpcInstance npc = L1World.getInstance().findNpc(getNpcId());
-		/** 2016.11.24 MJ 앱센터 시세 **/
+		/** 2016.11.24 server 앱센터 시세 **/
 		
 		for (L1ShopBuyOrder order : orderList.getList()) {
 			int orderid = order.getOrderNumber();
@@ -1174,9 +1172,9 @@ public class L1Shop {
 				}
 			}
 			
-			/** 2016.11.24 MJ 앱센터 시세 **/
+			/** 2016.11.24 server 앱센터 시세 **/
 			npc.updateSellings(item.getId(), item.getCount());
-			/** 2016.11.24 MJ 앱센터 시세 **/			
+			/** 2016.11.24 server 앱센터 시세 **/			
 		}
 	}
 	
@@ -1191,9 +1189,9 @@ public class L1Shop {
 			throw new IllegalStateException("구입에 필요한 아데나를 소비 할 수 없습니다.");
 		}
 		
-		/** 2016.11.24 MJ 앱센터 시세 **/
+		/** 2016.11.24 server 앱센터 시세 **/
 		L1NpcInstance npc = L1World.getInstance().findNpc(getNpcId());
-		/** 2016.11.24 MJ 앱센터 시세 **/
+		/** 2016.11.24 server 앱센터 시세 **/
 		
 		for (L1ShopBuyOrder order : orderList.getList()) {
 			int orderid = order.getOrderNumber();
@@ -1233,9 +1231,9 @@ public class L1Shop {
 				}
 			}
 			
-			/** 2016.11.24 MJ 앱센터 시세 **/
+			/** 2016.11.24 server 앱센터 시세 **/
 			npc.updateSellings(item.getId(), item.getCount());
-			/** 2016.11.24 MJ 앱센터 시세 **/			
+			/** 2016.11.24 server 앱센터 시세 **/			
 		}
 	}
 	

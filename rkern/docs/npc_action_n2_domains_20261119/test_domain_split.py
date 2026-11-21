@@ -60,8 +60,8 @@ def segment(a,b):
  start=old.index(a);return old[start:old.index(b,start)]
 buy=segment('\t\t\t\tint npcid = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();\n\t\t\t\tif (pc.getInventory().getWeight100()', '\n\t\t\t} else if (s.equalsIgnoreCase("pssellps")')
 tax=segment('            // Castle tax NPC screens:', '\n\t\t\tif (s.equalsIgnoreCase("mayer3"))')
-target=segment('\t\t\tif (obj != null) {','\n\t\t\tif(obj.instanceOf(MJL1Type.L1TYPE_NPC))')
-registered=segment('\t\t\tif(obj.instanceOf(MJL1Type.L1TYPE_NPC))','\n            // Castle tax NPC screens:')
+target=segment('\t\t\tif (obj != null) {','\n\t\t\tif(obj.instanceOf(L1Type.L1TYPE_NPC))')
+registered=segment('\t\t\tif(obj.instanceOf(L1Type.L1TYPE_NPC))','\n            // Castle tax NPC screens:')
 for clazz,n,block,call,stop in [
  ('NpcMarketCommands','buy',buy,'if (buy(pc,obj,objid)) return;','true'),
  ('NpcCastleActions','sendTaxScreens',tax,'sendTaxScreens(pc,obj,s);',None),
@@ -84,8 +84,8 @@ public class NpcBuyTest {
  static class L1Object {}
  static class L1NpcInstance extends L1Object {int id; String name; L1NpcInstance(int i,String n){id=i;name=n;} L1NpcInstance getNpcTemplate(){return this;} int get_npcId(){return id;} String get_name(){return name;}}
  static class L1PcInstance {int weight; boolean top; String trace=""; L1PcInstance(int w,boolean t){weight=w;top=t;} L1PcInstance getInventory(){return this;} int getWeight100(){return weight;} boolean is_top_ranker(){return top;}}
- static class MJDogFightSettings {static final int CASTER_NPC_ID=987654;}
- static class MJDogFightHistory {static MJDogFightHistory getInstance(){return new MJDogFightHistory();} void on_show_ticket_view(L1PcInstance pc,L1NpcInstance n){pc.trace+="dog:"+n.id;}}
+ static class DogFightSettings {static final int CASTER_NPC_ID=987654;}
+ static class DogFightHistory {static DogFightHistory getInstance(){return new DogFightHistory();} void on_show_ticket_view(L1PcInstance pc,L1NpcInstance n){pc.trace+="dog:"+n.id;}}
  static class SC_ServerMessage {static void send(L1PcInstance p,int n){p.trace+="msg:"+n;}}
  static class SC_PremiumShopSellList {static void send(L1PcInstance p,int n,int o){p.trace+="premium:"+n+":"+o;}}
  static class SC_PERSONAL_SHOP_ITEM_LIST_NOTI {enum ePersonalShopType {TRADE_BUY} static void do_send_for_npc(L1PcInstance p,int o,ePersonalShopType t){p.trace+="personal:"+o+":"+t;}}

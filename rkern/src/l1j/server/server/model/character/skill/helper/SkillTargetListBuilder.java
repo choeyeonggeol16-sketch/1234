@@ -3,16 +3,16 @@ package l1j.server.server.model.character.skill.helper;
 import java.util.ArrayList;
 import java.util.List;
 
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
+import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1MonsterInstance;
-import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.templates.L1Skills;
 
 public enum SkillTargetListBuilder {
@@ -235,7 +235,7 @@ public enum SkillTargetListBuilder {
         if (castleId == 0) return false;
 
         try {
-            return MJCastleWarBusiness.getInstance().isNowWar(castleId);
+            return CastleWarBusiness.getInstance().isNowWar(castleId);
         } catch (Throwable t) {
             return false;
         }

@@ -1,39 +1,33 @@
 package l1j.server.server.model;
 
-import l1j.server.server.model.character.skill.BraveSpeedEffects;
-import l1j.server.server.model.network.core.sc.packet.SC_AddSkill;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
-import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
-import l1j.server.server.model.network.core.sc.packet.SC_Ability;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.List;
 
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.MJTemplate.ItemPresentator.ItemPresentatorFactory;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.BraveSpeedEffects;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.MovementSpeedEffects;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.item.ItemEffectRegistry;
 import l1j.server.server.model.item.ItemStat;
 import l1j.server.server.model.item.function.ItemBonusHooks;
+import l1j.server.server.model.item.presentation.ItemPresentatorFactory;
+import l1j.server.server.model.network.core.sc.packet.SC_Ability;
+import l1j.server.server.model.network.core.sc.packet.SC_AddSkill;
 import l1j.server.server.model.network.core.sc.packet.SC_DelSkill;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_ItemStatus;
-
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-
-
-
-import l1j.server.server.templates.L1Item;
-import l1j.server.server.utils.eKind;
-
+import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconBlessOfEva;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.templates.L1Item;
+import l1j.server.server.utils.eKind;
 public class L1EquipmentSlot {
 
 	private final L1PcInstance _owner;
@@ -108,7 +102,7 @@ public class L1EquipmentSlot {
 	    if (_owner == null || left == null || right == null) return false;
 
 	    // 슬레이어 패시브
-	    if (!_owner.isPassive(MJPassiveID.SLAYER.toInt())) return false;
+	    if (!_owner.isPassive(PassiveID.SLAYER.toInt())) return false;
 
 	    // type1 == 11, type == 6 (한손도끼)
 	    if (left.getItem() == null || right.getItem() == null) return false;

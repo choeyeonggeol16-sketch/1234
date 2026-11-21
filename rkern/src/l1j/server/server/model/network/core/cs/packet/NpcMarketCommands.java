@@ -1,30 +1,29 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.network.core.sc.packet.SC_ClanWareHouseHistory;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.network.core.sc.packet.SC_RetrieveList;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_WAREHOUSE_ITEM_LIST_NOTI;
-
 import java.util.List;
-import l1j.server.server.datatables.ShopTable;
-import l1j.server.server.model.shop.L1AssessedItem;
-import l1j.server.server.model.shop.L1Shop;
-import l1j.server.server.model.network.core.sc.packet.SC_NoSell;
-import l1j.server.server.model.network.core.sc.packet.SC_ShopBuyList;
-import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 
-import l1j.server.DogFight.MJDogFightSettings;
-import l1j.server.DogFight.History.MJDogFightHistory;
-import l1j.server.server.model.L1Object;
+import l1j.server.server.model.character.combat.arena.dogfight.DogFightSettings;
+import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightHistory;
+import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_PERSONAL_SHOP_ITEM_LIST_NOTI;
+import l1j.server.server.model.L1Clan;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.network.core.sc.packet.SC_ClanWareHouseHistory;
 import l1j.server.server.model.network.core.sc.packet.SC_ClassShop;
+import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
+import l1j.server.server.model.network.core.sc.packet.SC_NoSell;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_PremiumShopSellList;
+import l1j.server.server.model.network.core.sc.packet.SC_RetrieveList;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_ShopBuyList;
 import l1j.server.server.model.network.core.sc.packet.SC_ShopSellList;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.shop.L1AssessedItem;
+import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_PERSONAL_SHOP_ITEM_LIST_NOTI;
+import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_WAREHOUSE_ITEM_LIST_NOTI;
 
 final class NpcMarketCommands {
     private NpcMarketCommands() {}
@@ -45,8 +44,8 @@ final class NpcMarketCommands {
 			SC_ServerMessage.send(pc, 3561);
 			return true;
 		}
-		if(npcid == MJDogFightSettings.CASTER_NPC_ID){
-			MJDogFightHistory.getInstance().on_show_ticket_view(pc, (L1NpcInstance)obj);
+		if(npcid == DogFightSettings.CASTER_NPC_ID){
+			DogFightHistory.getInstance().on_show_ticket_view(pc, (L1NpcInstance)obj);
 			return true;
 		}
 		L1NpcInstance npc = (L1NpcInstance) obj;
@@ -114,8 +113,8 @@ final class NpcMarketCommands {
 						htmlid = sellHouseMessage;
 					}
 				} else {
-					if(npcid == MJDogFightSettings.CASTER_NPC_ID){
-						MJDogFightHistory.getInstance().on_show_sells_view(pc, (L1NpcInstance) obj);
+					if(npcid == DogFightSettings.CASTER_NPC_ID){
+						DogFightHistory.getInstance().on_show_sells_view(pc, (L1NpcInstance) obj);
 						return;
 					}
 					

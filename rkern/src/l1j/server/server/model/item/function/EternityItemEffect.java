@@ -1,30 +1,32 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
-import java.util.Random;
-import l1j.server.Config;
-import l1j.server.server.ActionCodes;
-import l1j.server.server.model.L1EffectSpawn;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1EffectInstance;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.utils.MJCommons;
-import static l1j.server.server.model.item.function.CreatureItemActions.*;
 import static l1j.server.server.model.item.function.CombatSupportItems.Start;
 import static l1j.server.server.model.item.function.CombatSupportItems.Start1;
 import static l1j.server.server.model.item.function.CombatSupportItems.액션;
 import static l1j.server.server.model.item.function.CombatSupportItems.액션1;
+import static l1j.server.server.model.item.function.CreatureItemActions.*;
+
+import java.util.Random;
+
+import l1j.server.Config;
+import l1j.server.server.ActionCodes;
+import l1j.server.server.model.Instance.L1EffectInstance;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1EffectSpawn;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.utils.GameUtils;
 
 /** Item-specific effect extracted without changing its original execution body. */
 final class EternityItemEffect {
@@ -56,7 +58,7 @@ final class EternityItemEffect {
                         SC_SystemMessage.send(pc, "\\fY이터니티 대기시간 : " + n + "초 후에 사용가능합니다.");
                         return;
                     }
-                    if (MJCommons.isNonAction(pc)) {
+                    if (GameUtils.isNonAction(pc)) {
                         return;
                     }
                     if (pc.getSafetyZone() && (!(pc.getMapId() == 9 || pc.getMapId() == 1 || pc.getMapId() == 2))) {
@@ -182,7 +184,7 @@ final class EternityItemEffect {
                         SC_SystemMessage.send(pc, "\\fY이터니티 대기시간 : " + n + "초 후에 사용가능합니다.");
                         return;
                     }
-                    if (MJCommons.isNonAction(pc)) {
+                    if (GameUtils.isNonAction(pc)) {
                         return;
                     }
                     if (pc.getSafetyZone() && (!(pc.getMapId() == 9 || pc.getMapId() == 1 || pc.getMapId() == 2))) {

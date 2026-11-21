@@ -1,20 +1,21 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import java.util.ArrayList;
-import l1j.server.DogFight.Game.MJDogFightGame;
-import l1j.server.DogFight.History.MJDogFightHistory;
-import l1j.server.DogFight.History.MJDogFightTicketInfo;
-import l1j.server.DogFight.Instance.MJDogFightInstance;
+
+import l1j.server.server.model.character.combat.arena.dogfight.game.DogFightGame;
+import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightHistory;
+import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightTicketInfo;
+import l1j.server.server.model.character.combat.arena.dogfight.instance.DogFightInstance;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_DogFightBoard {
     private SC_DogFightBoard() {}
 
-    public static boolean send(L1PcInstance pc, boolean isGm, ArrayList<MJDogFightTicketInfo> tickets) {
+    public static boolean send(L1PcInstance pc, boolean isGm, ArrayList<DogFightTicketInfo> tickets) {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
@@ -65,15 +66,15 @@ public final class SC_DogFightBoard {
         }
     }
 
-    private static int append(String[] fields, int pos, MJDogFightTicketInfo info, boolean isGm) {
+    private static int append(String[] fields, int pos, DogFightTicketInfo info, boolean isGm) {
         if (isGm) {
             fields[pos++] = String.format("[%s]", info.get_corner_name());
             fields[pos++] = String.format("%.2f%%", info.get_dividend());
             fields[pos++] = String.format("%.1f%%", info.get_win_rate());
-            final MJDogFightInstance fight = MJDogFightGame.getDogFight(info.get_corner_id());
+            final DogFightInstance fight = DogFightGame.getDogFight(info.get_corner_id());
             if (fight != null) fields[pos++] = String.format("[%d]", fight.getTotalPrice());
         } else {
-            fields[pos++] = MJDogFightHistory.getInstance().get_leader_name(info.get_corner_id())
+            fields[pos++] = DogFightHistory.getInstance().get_leader_name(info.get_corner_id())
                     .replace("[Ȧ]", "").replace("[¦]", "");
             fields[pos++] = String.format("[%s]", info.get_corner_name());
             fields[pos++] = String.format("%.1f%%", info.get_win_rate());

@@ -7,16 +7,16 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Party;
-import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeHeading;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 
 /**
  * - PC당 controller 1개.
@@ -45,7 +45,7 @@ public final class CCreatureController {
     private static final long MIN_ACTION_TIMER_MS = 80L;
     private static final int MAX_PENDING_RECURSION = 8;
 
-    // CCreatureController-local serialized execution (NC 32-slot policy).
+    // CCreatureController-local serialized execution (reference server 32-slot policy).
     // Controller is the sole executor for PC actions and PC timer mutations.
     // The CIO wheel only schedules expirations. No new queue or worker.
     private static final Logger EXECUTION_LOG = Logger.getLogger(CCreatureController.class.getName());
@@ -104,7 +104,7 @@ public final class CCreatureController {
     private volatile Thread executionWaiter;
 
     /**
-     * NC CSerializedDamageMessage-inspired overflow storage. A full 24-job controller ring must
+     * reference server CSerializedDamageMessage-inspired overflow storage. A full 24-job controller ring must
      * never discard a hit or block another character's controller. The normal
      * path uses the ring's preallocated primitive slots; only overflow allocates
      * an event. afterTicket preserves its place behind all already reserved
@@ -180,7 +180,7 @@ public final class CCreatureController {
     }
 
     /**
-     * NC CCreatureController::OnDamaged entry: serialize victim-side HP
+     * reference server CCreatureController::OnDamaged entry: serialize victim-side HP
      * damage and death/skill side effects (via OnDamagedMessage). No attack-side HP mutation or new worker.
      * A session/actor epoch snapshot prevents queued hits reaching a relogged PC.
      */

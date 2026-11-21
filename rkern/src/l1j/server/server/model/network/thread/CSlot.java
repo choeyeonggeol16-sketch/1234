@@ -1,6 +1,6 @@
 package l1j.server.server.model.network.thread;
 
-// NC CThreadLocalTimer::CSlot stores up to 1000 callbacks.
+// reference server CThreadLocalTimer::CSlot stores up to 1000 callbacks.
 // Allocate backing references lazily, preserving memory at low load.
 public final class CSlot {
     CThreadLocalTimer.Node[] entries = new CThreadLocalTimer.Node[16];

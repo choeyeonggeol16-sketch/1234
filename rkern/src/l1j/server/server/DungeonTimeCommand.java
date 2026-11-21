@@ -1,10 +1,10 @@
 package l1j.server.server;
 
-import l1j.server.MJDungeonTimer.DungeonTimeInformation;
-import l1j.server.MJDungeonTimer.Loader.DungeonTimeInformationLoader;
-import l1j.server.MJDungeonTimer.Progress.DungeonTimeProgress;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeInformation;
+import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeInformationLoader;
+import l1j.server.server.model.world.instance.dungeon.time.progress.DungeonTimeProgress;
 
 /**
  * [19fix-1] .던전 명령 - 던전 이용시간 표시.

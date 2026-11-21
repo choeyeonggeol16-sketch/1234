@@ -1,13 +1,13 @@
 package l1j.server.server.model.npc.ai.action;
 
-import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.L1Character;
 
 /**
- * NC CMoveToTargetActionBase::ComputeDistance role, adapted to L1 tiles.
+ * reference server CMoveToTargetActionBase::ComputeDistance role, adapted to L1 tiles.
  *
- * The NC CCreature virtual +0x4A8 computes a two-int reach interval from
- * creature radii and target/action state. L1 does not use NC world units,
+ * The reference server CCreature virtual +0x4A8 computes a two-int reach interval from
+ * creature radii and target/action state. L1 does not use reference server world units,
  * and movement occupancy/reservation remains with SetMoving.
  *
  * Keep the existing L1 attack-position and ranged/LOS behavior unchanged:

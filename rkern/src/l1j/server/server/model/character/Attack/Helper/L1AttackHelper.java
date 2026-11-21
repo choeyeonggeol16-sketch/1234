@@ -4,14 +4,14 @@ package l1j.server.server.model.character.Attack.Helper;
 import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.Instance.L1CompanionInstance;
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.utils.CalcStat;
 
@@ -185,7 +185,7 @@ public final class L1AttackHelper {
 
 		// 전사 + 슬레이어 패시브
 		if (!pc.isWarrior()) return false;
-		if (!pc.isPassive(MJPassiveID.SLAYER.toInt())) return false;
+		if (!pc.isPassive(PassiveID.SLAYER.toInt())) return false;
 
 		if (left.getItem() == null || right.getItem() == null) return false;
 

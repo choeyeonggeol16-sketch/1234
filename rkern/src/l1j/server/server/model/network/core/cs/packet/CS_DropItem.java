@@ -1,22 +1,22 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.Config;
-import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.NoDropItem;
-import l1j.server.server.model.L1GroundInventory;
-import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.L1GroundInventory;
+import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.monitor.Logger.ItemActionType;
-import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.monitor.Logger.ItemActionType;
+import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.templates.L1Item;
 
 public final class CS_DropItem {
@@ -235,7 +235,7 @@ public final class CS_DropItem {
             return false;
         }
 
-        if (!MJCompanionInstanceCache.is_companion_oblivion(item.getId())) {
+        if (!CompanionInstanceCache.is_companion_oblivion(item.getId())) {
             SC_ServerMessage.send(pc, 210, template.getName());
             return false;
         }

@@ -1,18 +1,5 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.Config;
-import l1j.server.MJTemplate.MJRnd;
-import l1j.server.server.datatables.AccessoryEnchantInformationTable;
-import l1j.server.server.datatables.ArmorEnchantInformationTable;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.templates.L1Armor;
-import l1j.server.server.utils.CommonUtil;
 import static l1j.server.server.model.item.function.CreatureItemActions._random;
 import static l1j.server.server.model.item.function.EnchantmentItems.FailureEnchant;
 import static l1j.server.server.model.item.function.EnchantmentItems.SuccessEnchant;
@@ -27,6 +14,13 @@ import static l1j.server.server.model.item.function.EnchantmentItems.enchant_sho
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_snapper;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_snapper1;
 import static l1j.server.server.model.item.function.TransformationItems.RandomELevel;
+
+import l1j.server.Config;
+import l1j.server.server.datatables.AccessoryEnchantInformationTable;
+import l1j.server.server.datatables.ArmorEnchantInformationTable;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 /** Exact existing accessory/armor rate calculation and GM chance diagnostics. */
 final class ArmorEnchantChanceCalculation {

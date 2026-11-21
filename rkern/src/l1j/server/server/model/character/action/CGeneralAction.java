@@ -1,24 +1,23 @@
 package l1j.server.server.model.character.action;
 
 import l1j.server.Config;
-import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.MJ3SEx.EActionCodes;
-import l1j.server.MJInstanceSystem.MJInstanceEnums.InstStatus;
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.MJTemplate.MJRnd;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PinkName;
-import l1j.server.server.model.L1PcInventory;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.L1PinkName;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.animation.EActionCodes;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_UseAttackSkill;
-
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.model.world.instance.InstanceEnums.InstStatus;
+import l1j.server.server.shared.GameRandom;
+import l1j.server.server.shared.L1Type;
+import l1j.server.server.utils.GameUtils;
 
 /**
  * 현재는 기존 wand action을 GeneralActionType 하나로 수용한다.
@@ -62,7 +61,7 @@ public final class CGeneralAction extends CNewAction {
         if (item == null
                 || owner.is_non_action()
                 || owner.isDead()
-                || MJCommons.isNonAction(owner)
+                || GameUtils.isNonAction(owner)
                 || owner.isGhost()
                 || owner.get_teleport()) {
             consumeWand(owner, item);
@@ -80,7 +79,7 @@ public final class CGeneralAction extends CNewAction {
         final L1Object obj = L1World.getInstance().findObject(tId);
 
         if (obj == null
-                || !obj.instanceOf(MJL1Type.L1TYPE_CHARACTER)
+                || !obj.instanceOf(L1Type.L1TYPE_CHARACTER)
                 || owner.getInstStatus() == InstStatus.INST_USERSTATUS_LFCINREADY
                 || !owner.glanceCheck(tX, tY)) {
 
@@ -92,7 +91,7 @@ public final class CGeneralAction extends CNewAction {
         final L1Character target = (L1Character) obj;
 
         if (target.isDead()
-                || MJCommons.isUnbeatable(target)
+                || GameUtils.isUnbeatable(target)
                 || target.hasSkillEffect(L1SkillId.ABSOLUTE_BARRIER)) {
 
             consumeWand(owner, item);
@@ -100,7 +99,7 @@ public final class CGeneralAction extends CNewAction {
             return;
         }
 
-        if (target.instanceOf(MJL1Type.L1TYPE_PC)
+        if (target.instanceOf(L1Type.L1TYPE_PC)
                 && (owner.getZoneType() == 1 || target.getZoneType() == 1)) {
 
             consumeWand(owner, item);
@@ -108,7 +107,7 @@ public final class CGeneralAction extends CNewAction {
             return;
         }
 
-        if (target.instanceOf(MJL1Type.L1TYPE_MONSTER)
+        if (target.instanceOf(L1Type.L1TYPE_MONSTER)
                 && target.getKarma() > 0) {
 
             consumeWand(owner, item);
@@ -119,13 +118,13 @@ public final class CGeneralAction extends CNewAction {
         consumeWand(owner, item);
         sendWandEffect(owner, target.getId(), spriteId, tX, tY);
 
-        if (target.instanceOf(MJL1Type.L1TYPE_PC)) {
+        if (target.instanceOf(L1Type.L1TYPE_PC)) {
             int dmg = 0;
 
-            if (!MJCommons.isCounterMagic(target)) {
+            if (!GameUtils.isCounterMagic(target)) {
                 dmg = 60 - (target.getResistance().getMrAfterEraseRemove() / 10);
                 dmg = (int) (dmg * damageRevision);
-                dmg += MJRnd.next(5);
+                dmg += GameRandom.next(5);
             }
 
             dmg = Math.max(1, dmg);
@@ -135,10 +134,10 @@ public final class CGeneralAction extends CNewAction {
             return;
         }
 
-        if (target.instanceOf(MJL1Type.L1TYPE_MONSTER)) {
+        if (target.instanceOf(L1Type.L1TYPE_MONSTER)) {
             int dmg = 10 + (owner.getLevel() / 4);
             dmg = (int) (dmg * damageRevision);
-            dmg += MJRnd.next(5);
+            dmg += GameRandom.next(5);
 
             target.receiveDamage(owner, dmg);
         }

@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.IndunSystem.ClanDungeon.AzmodanSystem;
+import l1j.server.server.model.world.instance.dungeon.clandungeon.AzmodanSystem;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;

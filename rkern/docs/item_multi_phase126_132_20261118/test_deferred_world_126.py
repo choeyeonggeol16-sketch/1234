@@ -14,7 +14,7 @@ import l1j.server.server.model.*;
 import l1j.server.server.model.network.core.sc.packet.*;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.ActionCodes;
-import l1j.server.Stadium.StadiumManager;
+import l1j.server.server.model.character.combat.arena.stadium.StadiumManager;
 import static l1j.server.server.model.item.function.CreatureItemActions.cancelAbsoluteBarrier;
 import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsume;
 import static l1j.server.server.model.item.function.TransformationItems.polyAction;

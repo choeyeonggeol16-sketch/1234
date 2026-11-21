@@ -3,20 +3,21 @@ package l1j.server.server.model.network.core.sc.packet;
 import java.sql.PreparedStatement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import l1j.server.MJKDASystem.MJKDALoader;
-import l1j.server.MJRaidSystem.MJRaidSpace;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Updator;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.Handler;
-import l1j.server.MJTemplate.ObServer.MJCopyMapObservable;
+
 import l1j.server.server.BadNamesList;
 import l1j.server.server.Opcodes;
 import l1j.server.server.UserCommands;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.combat.statistics.KdaLoader;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
+import l1j.server.server.model.world.instance.raid.RaidSpace;
+import l1j.server.server.shared.observer.CopyMapObservable;
+import l1j.server.server.storage.sql.executors.Updator;
+import l1j.server.server.storage.sql.handler.Handler;
 import l1j.server.server.utils.CommonUtil;
 
 public final class SC_ChangeCharName {
@@ -102,7 +103,7 @@ public final class SC_ChangeCharName {
 			});
 
 			try {
-				MJKDALoader.getInstance().getChangeName(pc.getId(), destinationName);
+				KdaLoader.getInstance().getChangeName(pc.getId(), destinationName);
 			} catch (Exception e) {
 				_log.log(Level.SEVERE, "KDA 이름 변경 업데이트 실패", e);
 			}
@@ -129,8 +130,8 @@ public final class SC_ChangeCharName {
 			// 7. 후속 연동 데이터 정리 (친구, 편지, 맵 오프셋 등)
 			UserCommands.buddys(pc);
 			UserCommands.편지삭제(pc);
-			MJCopyMapObservable.getInstance().resetPosition(pc);
-			MJRaidSpace.getInstance().getBackPc(pc);
+			CopyMapObservable.getInstance().resetPosition(pc);
+			RaidSpace.getInstance().getBackPc(pc);
 
 			// 8. 캐릭터 선택창 리스타트 처리
 			CS_CharSelect.restartProcess(pc);

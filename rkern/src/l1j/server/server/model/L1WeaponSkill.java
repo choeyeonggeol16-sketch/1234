@@ -1,7 +1,4 @@
 package l1j.server.server.model;
-import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
-
 import static l1j.server.server.model.character.skill.L1SkillId.ABSOLUTE_BARRIER;
 import static l1j.server.server.model.character.skill.L1SkillId.COUNTER_MAGIC;
 import static l1j.server.server.model.character.skill.L1SkillId.EARTH_BIND;
@@ -13,7 +10,6 @@ import static l1j.server.server.model.character.skill.L1SkillId.TURN_UNDEAD;
 import java.util.Random;
 
 import l1j.server.Config;
-import l1j.server.MJPassiveSkill.MJPassiveID;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1CompanionInstance;
@@ -25,14 +21,14 @@ import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-
-
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_UseAttackSkill;
 import l1j.server.server.templates.L1Skills;
 
@@ -344,7 +340,7 @@ public class L1WeaponSkill {
 			pc.setSkillEffect(L1SkillId.CHAINSWORD3, 15000);
 			SC_PacketBox.send(pc, SC_PacketBox.SPOT, 3);	
 		}else if(pc.hasSkillEffect(L1SkillId.CHAINSWORD3)){
-			if(pc.isPassive(MJPassiveID.FOU_SLAYER_BRAVE.toInt())){
+			if(pc.isPassive(PassiveID.FOU_SLAYER_BRAVE.toInt())){
 				pc.setSkillEffect(L1SkillId.CHAINSWORD4, 15000);
 				SC_PacketBox.send(pc, SC_PacketBox.SPOT, 4);
 			}
@@ -448,7 +444,7 @@ public class L1WeaponSkill {
 				pc.setSkillEffect(L1SkillId.CHAINSWORD3, 15000);
 				SC_PacketBox.send(pc, SC_PacketBox.SPOT, 3);	
 			}else if(pc.hasSkillEffect(L1SkillId.CHAINSWORD3)){
-				if(pc.isPassive(MJPassiveID.FOU_SLAYER_BRAVE.toInt())){
+				if(pc.isPassive(PassiveID.FOU_SLAYER_BRAVE.toInt())){
 					pc.setSkillEffect(L1SkillId.CHAINSWORD4, 15000);
 					SC_PacketBox.send(pc, SC_PacketBox.SPOT, 4);
 				}

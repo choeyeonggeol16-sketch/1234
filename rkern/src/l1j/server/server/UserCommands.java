@@ -1,12 +1,5 @@
 package l1j.server.server;
-import l1j.server.server.model.network.core.sc.packet.SC_UserCommands17;
-import l1j.server.server.model.network.core.sc.packet.SC_Ability;
-import l1j.server.server.model.network.core.sc.packet.SC_ShowHelp;
-
-
-import l1j.server.server.model.network.core.sc.packet.SC_Unknown2;
 import static l1j.server.server.model.character.skill.L1SkillId.BONE_BREAK;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.BUYER_COOLTIME;
 import static l1j.server.server.model.character.skill.L1SkillId.CURSE_PARALYZE;
 import static l1j.server.server.model.character.skill.L1SkillId.DESPERADO;
@@ -15,52 +8,38 @@ import static l1j.server.server.model.character.skill.L1SkillId.FOG_OF_SLEEPING;
 import static l1j.server.server.model.character.skill.L1SkillId.ICE_LANCE;
 import static l1j.server.server.model.character.skill.L1SkillId.SHOCK_STUN;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.StringTokenizer;
+
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.MJKDASystem.Chart.MJKDAChartScheduler;
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.MJTemplate.Command.MJCommandArgs;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Updator;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.Handler;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.SelectorHandler;
 import l1j.server.server.datatables.AuctionSystemTable;
-import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.datatables.LetterTable;
 import l1j.server.server.datatables.ItemTradeTable;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1NeigeSaveChar;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PolyMorph;
-import l1j.server.server.model.L1World;
+import l1j.server.server.datatables.LetterTable;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
+import l1j.server.server.model.L1Clan;
+import l1j.server.server.model.L1NeigeSaveChar;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.Warehouse.Warehouse;
+import l1j.server.server.model.character.combat.statistics.chart.KdaChartScheduler;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_Attr;
-import l1j.server.server.model.network.core.cs.packet.CS_CommonClick;
-import l1j.server.server.model.network.utill.CConnectionState;
+import l1j.server.server.model.network.core.sc.packet.SC_Ability;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
@@ -69,11 +48,20 @@ import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
+import l1j.server.server.model.network.core.sc.packet.SC_ShowHelp;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_Unknown2;
+import l1j.server.server.model.network.core.sc.packet.SC_UserCommands17;
 import l1j.server.server.model.network.core.sc.packet.SC_War;
+import l1j.server.server.model.network.utill.CConnectionState;
+import l1j.server.server.shared.command.CommandArgs;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.executors.Updator;
+import l1j.server.server.storage.sql.handler.Handler;
+import l1j.server.server.storage.sql.handler.SelectorHandler;
 import l1j.server.server.templates.L1Item;
-import l1j.server.server.utils.MJFullStater;
+import l1j.server.server.utils.FullStater;
 import l1j.server.server.utils.SQLUtil;
 import l1j.server.server.utils.TYUtil;
 
@@ -117,8 +105,8 @@ public class UserCommands{
 		try {
 			switch (cmd) {
 //			 case "충전": 
-//			 MJPaymentUserHandler.do_execute(new
-//			 MJCommandArgs().setOwner(pc).setParam(param));
+//			 PaymentUserHandler.do_execute(new
+//			 CommandArgs().setOwner(pc).setParam(param));
 //			 break;
 			
 			case "탐":
@@ -250,7 +238,7 @@ public class UserCommands{
 			case "emblem":
 				clanMark3(pc);
 			break;
-//			case "타겟팅":									doTarget(new MJCommandArgs().setOwner(pc).setParam(param));						break;
+//			case "타겟팅":									doTarget(new CommandArgs().setOwner(pc).setParam(param));						break;
 //			case "스텟":									fullstat(pc, param);															break;
 			case "차트":	
 				setChart(pc, param);															
@@ -396,7 +384,7 @@ public class UserCommands{
 
 	public static void setChart(L1PcInstance pc, String param) {
 		boolean isOn;
-		if (!MJKDAChartScheduler.isLoaded()) {
+		if (!KdaChartScheduler.isLoaded()) {
 			SC_SystemMessage.send(pc, "사용중이지 않습니다.");
 			return;
 		}
@@ -404,7 +392,7 @@ public class UserCommands{
 		if (param.equalsIgnoreCase("켬")) {
 			isOn = true;
 			SC_SystemMessage.send(pc, "킬 랭킹 차트를 보입니다. 잠시 후 화면에 나타납니다.");
-			MJKDAChartScheduler.getInstance().onLoginUser(pc);
+			KdaChartScheduler.getInstance().onLoginUser(pc);
 		} else if (param.equalsIgnoreCase("끔")) {
 			isOn = false;
 			SC_SystemMessage.send(pc, "킬 랭킹 차트를 숨깁니다. 리스 후 적용됩니다.");
@@ -628,7 +616,7 @@ public class UserCommands{
 		}
 	}
 
-	public static void doTarget(MJCommandArgs args) {
+	public static void doTarget(CommandArgs args) {
 		try {
 			String cmd = args.nextString();
 			if (cmd.equalsIgnoreCase("켬")) {
@@ -1295,28 +1283,28 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 
 
 	private static void 케릭변경(L1PcInstance pc) {
-		if (pc.isSkillMastery(91) && pc.isPassive(MJPassiveID.COUNTER_BARRIER_VETERAN.toInt())) {
+		if (pc.isSkillMastery(91) && pc.isPassive(PassiveID.COUNTER_BARRIER_VETERAN.toInt())) {
 			pc.getInventory().storeItem(887799, 1);		
 			pc.getInventory().storeItem(887700, 1);	
 		} else if (pc.isSkillMastery(91)) {
 			pc.getInventory().storeItem(887799, 1);
-		} else if (pc.isPassive(MJPassiveID.COUNTER_BARRIER_VETERAN.toInt())) {
+		} else if (pc.isPassive(PassiveID.COUNTER_BARRIER_VETERAN.toInt())) {
 			pc.getInventory().storeItem(887700, 1);
 		} else if (pc.isSkillMastery(77)) {
 			pc.getInventory().storeItem(887799, 1);
-		} else if (pc.isSkillMastery(112) && pc.isPassive(MJPassiveID.ARMOR_BREAK_DESTINY.toInt())) {
+		} else if (pc.isSkillMastery(112) && pc.isPassive(PassiveID.ARMOR_BREAK_DESTINY.toInt())) {
 			pc.getInventory().storeItem(887799, 1);		
 			pc.getInventory().storeItem(887700, 1);	
 		} else if (pc.isSkillMastery(112)) {
 			pc.getInventory().storeItem(887799, 1);
-		} else if (pc.isPassive(MJPassiveID.ARMOR_BREAK_DESTINY.toInt())) {
+		} else if (pc.isPassive(PassiveID.ARMOR_BREAK_DESTINY.toInt())) {
 			pc.getInventory().storeItem(887700, 1);
-		} else if (pc.isSkillMastery(230) && pc.isPassive(MJPassiveID.DESPERADO_ABSOLUTE.toInt())) {
+		} else if (pc.isSkillMastery(230) && pc.isPassive(PassiveID.DESPERADO_ABSOLUTE.toInt())) {
 			pc.getInventory().storeItem(887799, 1);		
 			pc.getInventory().storeItem(887700, 1);	
 		} else if (pc.isSkillMastery(230)) {
 			pc.getInventory().storeItem(887799, 1);
-		} else if (pc.isPassive(MJPassiveID.DESPERADO_ABSOLUTE.toInt())) {
+		} else if (pc.isPassive(PassiveID.DESPERADO_ABSOLUTE.toInt())) {
 			pc.getInventory().storeItem(887700, 1);
 		} 
 	}
@@ -1531,7 +1519,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 				throw new Exception();
 
 			String s = parseStat(arr[0]);
-			MJFullStater.running(pc, s, Integer.parseInt(arr[1]));
+			FullStater.running(pc, s, Integer.parseInt(arr[1]));
 		} catch (Exception e) {
 			pc.sendPackets(
 					String.format(".스텟 [힘/덱스/콘/인트/위즈/카리] [올릴수] 남은스텟 %d", (pc.getLevel() - 50 - pc.getBonusStats())));
@@ -2384,11 +2372,11 @@ SC_SystemMessage.send(pc, "\\aHREAL:(힘: " + target.getAbility().getTotalStr() 
 	 * L1PcInstance target = L1World.getInstance().findpc(name); if(target == null){
 	 * pc.sendPackets(String.format("%s님을 찾을 수 없습니다.", name)); } L1BoardPost bp =
 	 * L1BoardPost.createLfc(name, "-", String.format("3 %s", pc.getName()));
-	 * MJLFCCreator.registLfc(pc, 3);
+	 * LobbyCreator.registLfc(pc, 3);
 	 * pc.sendPackets(String.format("%s님에게 결투를 신청했습니다.", name));
-	 * pc.sendPackets(MJSurveySystemLoader.getInstance().registerSurvey(String.
+	 * pc.sendPackets(SurveySystemLoader.getInstance().registerSurvey(String.
 	 * format("%s님이 결투를 신청했습니다.", pc.getName()), bp.getId() + 1000,
-	 * MJSurveyFactory.createLFCSurvey(), 30 * 1000)); }
+	 * SurveyFactory.createLFCSurvey(), 30 * 1000)); }
 	 */
 
 	public static void monsterHpBar(L1PcInstance pc, String param) {

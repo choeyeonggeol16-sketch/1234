@@ -1,11 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.UserAttendanceState;
 
 /**
@@ -13,7 +9,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.UserAttendance
  *  1 attendance_id int32
  *  2 group_id int32
  *  3 status enum
- *  ⚠ 필드번호는 MJ 원본 SC_ATTENDANCE_REWARD_ACK의 writeTo 대조 (오류잡을 때 같이)
+ *  ⚠ 필드번호는 server 원본 SC_ATTENDANCE_REWARD_ACK의 writeTo 대조 (오류잡을 때 같이)
  */
 public final class SC_ATTENDANCE_REWARD_ACK extends ProtoPacket {
 

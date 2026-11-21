@@ -1,25 +1,11 @@
 package l1j.server.server.model.item.teleport;
 
 
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.MJDungeonTimer.DungeonTimeInformation;
-import l1j.server.MJDungeonTimer.Loader.DungeonTimeInformationLoader;
-import l1j.server.MJExpAmpSystem.MJExpAmplifierLoader;
-import l1j.server.MJInstanceSystem.MJInstanceSpace;
-import l1j.server.MJRaidSystem.MJRaidSpace;
-import l1j.server.MJCompanion.Instance.MJCompanionTeleportHandler;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
 import l1j.server.server.Controller.FishingTimeController;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1HauntedHouse;
-import l1j.server.server.model.L1Location;
-import l1j.server.server.model.L1Party;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -27,23 +13,37 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Clan;
+import l1j.server.server.model.L1HauntedHouse;
+import l1j.server.server.model.L1Location;
+import l1j.server.server.model.L1Party;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
+import l1j.server.server.model.character.companion.instance.CompanionTeleportHandler;
+import l1j.server.server.model.character.experience.amplifier.ExpAmplifierLoader;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
+import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
+import l1j.server.server.model.network.core.sc.packet.SC_Liquor;
+import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_PinkName;
+import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
+import l1j.server.server.model.world.instance.InstanceSpace;
+import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeInformation;
+import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeInformationLoader;
+import l1j.server.server.model.world.instance.raid.RaidSpace;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MAP_ID;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
-import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
-import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
-import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
-import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.utils.CommonUtil;
-import l1j.server.server.model.network.core.sc.packet.SC_PinkName;
-import l1j.server.server.model.network.core.sc.packet.SC_Liquor;
 
 public class L1Teleport {
 
@@ -68,7 +68,7 @@ public class L1Teleport {
 	public void doTeleportation(L1PcInstance pc) {
 		if (pc == null || !pc.get_teleport()) return;
 
-		if (pc.isDead() && !MJRaidSpace.getInstance().isInInstance(pc) && !MJInstanceSpace.isInInstance(pc)) {
+		if (pc.isDead() && !RaidSpace.getInstance().isInInstance(pc) && !InstanceSpace.isInInstance(pc)) {
 			return;
 		}
 		teleportInternal(pc, pc.get_teleport_x(), pc.get_teleport_y(), pc.get_teleport_map());
@@ -142,7 +142,7 @@ public class L1Teleport {
 			// 맵별 컨텐츠 부가 로직 처리 
 			processMapContentLogic(pc, oldMapId, mapid);
 
-			MJCompanionTeleportHandler.on_teleported(pc, x, y, mapid);
+			CompanionTeleportHandler.on_teleported(pc, x, y, mapid);
 
 		} catch (Exception e) {
 			LOG.log(
@@ -189,7 +189,7 @@ public class L1Teleport {
 				x,
 				y,
 				pc.getId());
-		MJExpAmplifierLoader.getInstance().set(pc);
+		ExpAmplifierLoader.getInstance().set(pc);
 	}
 
 	private void updateEssentialState(L1PcInstance pc) {
@@ -444,7 +444,7 @@ public class L1Teleport {
 		updateQuestState(pc, oldMapId, newMapId);
 
 		// 공성 관련 위치 이동 처리
-		MJCastleWarBusiness.move(pc);
+		CastleWarBusiness.move(pc);
 
 		// 개인 상점 찾기 HTML 복구
 		if (pc.getFindMerchantId() != 0) {

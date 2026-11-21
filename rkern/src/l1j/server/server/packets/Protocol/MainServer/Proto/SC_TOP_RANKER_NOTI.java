@@ -1,21 +1,15 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import l1j.server.MJTemplate.MJArrangeHelper.MJArrangeHelper;
-import l1j.server.MJTemplate.MJClassesType.EClassesType;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.classinfo.EClassesType;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.rank.buff.RankBuff;
 import l1j.server.server.model.rank.loader.RankLoadManager;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Ranker.Ranker;
 
 /**

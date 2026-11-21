@@ -1,29 +1,31 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.EARTH_BIND;
 import static l1j.server.server.model.character.skill.L1SkillId.SHOCK_STUN;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
+import static l1j.server.server.model.item.function.CreatureItemActions.*;
+
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.model.L1EffectSpawn;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1EffectSpawn;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.eKind;
-import static l1j.server.server.model.item.function.CreatureItemActions.*;
 
 /** Item-specific effect extracted without changing its original execution body. */
 final class BlazeStunItemEffect {
@@ -63,7 +65,7 @@ final class BlazeStunItemEffect {
                         SC_SystemMessage.send(pc, "\\fY" + n + "초 후에 사용가능합니다.");
                         return;
                     }
-                    if (MJCommons.isNonAction(pc)) {
+                    if (GameUtils.isNonAction(pc)) {
                         return;
                     }
                     if (pc.hasSkillEffect(L1SkillId.SHOCK_STUN) || pc.hasSkillEffect(L1SkillId.EMPIRE) || pc.hasSkillEffect(L1SkillId.EARTH_BIND) || pc.hasSkillEffect(L1SkillId.BONE_BREAK)) {

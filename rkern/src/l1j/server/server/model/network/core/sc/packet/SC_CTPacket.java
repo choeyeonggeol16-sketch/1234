@@ -5,15 +5,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import l1j.server.MJCTSystem.MJCTCharInfo;
-import l1j.server.MJCTSystem.MJCTItem;
-import l1j.server.MJCTSystem.MJCTSpell;
 import l1j.server.server.Opcodes;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.item.collection.CollectionCharInfo;
+import l1j.server.server.model.item.collection.CollectionItem;
+import l1j.server.server.model.item.collection.CollectionSpell;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_CTPacket {
 
@@ -68,7 +68,7 @@ public final class SC_CTPacket {
 	/**
 	 * 캐릭터 정보 패킷 생성 정적 팩토리
 	 */
-	public static Data getCharacterInfo(MJCTCharInfo info) {
+	public static Data getCharacterInfo(CollectionCharInfo info) {
 		String name = (info != null && info.name != null) ? info.name : "";
 		String infoStr = (info != null) ? info.toString() : "";
 		return new Data(MODE_CHAR_INFO, name, infoStr, null, 0, 0, null);
@@ -77,11 +77,11 @@ public final class SC_CTPacket {
 	/**
 	 * 스펠 목록 패킷 생성 정적 팩토리
 	 */
-	public static Data getSpellList(ArrayDeque<MJCTSpell> spQ) {
+	public static Data getSpellList(ArrayDeque<CollectionSpell> spQ) {
 		List<SpellNode> spells = new ArrayList<>();
 		if (spQ != null) {
 			synchronized (spQ) {
-				for (MJCTSpell sp : spQ) {
+				for (CollectionSpell sp : spQ) {
 					if (sp != null) {
 						spells.add(new SpellNode(sp.xicon, sp.name));
 					}
@@ -105,11 +105,11 @@ public final class SC_CTPacket {
 	/**
 	 * 인벤토리 목록 패킷 생성 정적 팩토리
 	 */
-	public static Data getInvList(ArrayDeque<MJCTItem> itemQ) {
+	public static Data getInvList(ArrayDeque<CollectionItem> itemQ) {
 		List<InvItemNode> items = new ArrayList<>();
 		if (itemQ != null) {
 			synchronized (itemQ) {
-				for (MJCTItem item : itemQ) {
+				for (CollectionItem item : itemQ) {
 					if (item == null || item.item == null) {
 						continue;
 					}

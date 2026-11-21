@@ -11,9 +11,6 @@ import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import l1j.server.Config;
-import l1j.server.MJINNSystem.MJINNHelper;
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.MJTemplate.FindInventory.InventoryFindItemFilter;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.FurnitureSpawnTable;
 import l1j.server.server.datatables.ItemTable;
@@ -22,12 +19,15 @@ import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.Instance.L1FurnitureInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Warehouse.Warehouse;
-import l1j.server.server.storage.CacheD;
+import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.item.search.inventory.InventoryFindItemFilter;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.world.instance.inn.InnHelper;
 import l1j.server.server.packets.Protocol.MainServer.Proto.CS_ALCHEMY_MAKE_REQ;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftInputItemSlotInfo;
+import l1j.server.server.shared.L1Type;
+import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1Item;
 
 public class L1Inventory extends L1Object {
@@ -2303,7 +2303,7 @@ public class L1Inventory extends L1Object {
 		L1ItemInstance item = null;
 		for (Object itemObject : _items) {
 			item = (L1ItemInstance) itemObject;
-			if (item == null || item.getItemId() == MJINNHelper.INN_KEYID)
+			if (item == null || item.getItemId() == InnHelper.INN_KEYID)
 				continue;
 			L1World.getInstance().removeObject(item);
 		}
@@ -2350,7 +2350,7 @@ public class L1Inventory extends L1Object {
 	private static int _instanceType = -1;
 	@Override
 	public int getL1Type(){
-		return _instanceType == -1 ? _instanceType = super.getL1Type() | MJL1Type.L1TYPE_INVENTORY : _instanceType;		
+		return _instanceType == -1 ? _instanceType = super.getL1Type() | L1Type.L1TYPE_INVENTORY : _instanceType;		
 	}
 
 	public int checkAddItem(int itemId, int count){

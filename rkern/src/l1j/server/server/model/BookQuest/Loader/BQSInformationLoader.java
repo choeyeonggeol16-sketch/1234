@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.FullSelectorHandler;
 import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.BookQuest.BQSInformation;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.utils.SQLUtil;
 

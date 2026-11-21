@@ -1,116 +1,114 @@
 package l1j.server.server.model.network.core.cs.packet;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-
-import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
-import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
-import l1j.server.server.model.network.core.sc.packet.SC_UnityIcon;
-import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
-import l1j.server.server.model.network.core.sc.packet.SC_ActionUI2;
-import l1j.server.server.model.network.core.sc.packet.SC_AddSkill;
-import l1j.server.server.model.network.core.sc.packet.SC_BookMarkLoad;
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
-import l1j.server.server.model.network.core.sc.packet.SC_CharPass;
-import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
-import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
-
-
-
-import l1j.server.server.model.network.core.sc.packet.SC_ClanAttention;
-import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
-import l1j.server.server.model.network.core.sc.packet.SC_Weight;
-import l1j.server.server.model.network.core.sc.packet.SC_SlotOpen;
-import l1j.server.server.model.network.core.sc.packet.SC_Unknown1;
 import java.sql.Connection;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.sql.Timestamp;
-import javax.sql.rowset.CachedRowSet;
-import javax.sql.rowset.RowSetMetaDataImpl;
-import javax.sql.rowset.RowSetProvider;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetMetaDataImpl;
+import javax.sql.rowset.RowSetProvider;
 import javax.swing.SwingUtilities;
+
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.MJDungeonTimer.Loader.DungeonTimeProgressLoader;
-import l1j.server.MJDungeonTimer.Progress.DungeonTimeProgress;
-import l1j.server.MJExpAmpSystem.MJExpAmplifierLoader;
-import l1j.server.MJInstanceSystem.MJInstanceSpace;
-import l1j.server.MJKDASystem.MJKDALoader;
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.MJPassiveSkill.MJPassiveUserLoader;
-import l1j.server.MJPassiveSkill.MJPassiveLoader;
-import l1j.server.MJRaidSystem.MJRaidSpace;
-import l1j.server.MJTemplate.MJEPcStatus;
-import l1j.server.MJTemplate.ObServer.MJCopyMapObservable;
-import l1j.server.MJWarSystem.MJCastleWar;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
-import l1j.server.MJWarSystem.MJWar;
 import l1j.server.server.Account;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.GMCommands;
-import l1j.server.server.SkillCheck;
 import l1j.server.server.Controller.BossController;
 import l1j.server.server.Controller.LoginController;
+import l1j.server.server.GMCommands;
+import l1j.server.server.SkillCheck;
 import l1j.server.server.datatables.CharacterSlotItemTable;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.GetBackRestartTable;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.datatables.SpamTable;
-import l1j.server.server.model.Getback;
+import l1j.server.server.model.BookQuest.Loader.BQSCharacterDataLoader;
+import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
 import l1j.server.server.model.DungeonRandom;
+import l1j.server.server.model.Getback;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1ClanMatching;
 import l1j.server.server.model.L1ExcludingList;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.BookQuest.Loader.BQSCharacterDataLoader;
-import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Warehouse.SupplementaryService;
 import l1j.server.server.model.Warehouse.WarehouseManager;
+import l1j.server.server.model.character.combat.statistics.KdaLoader;
+import l1j.server.server.model.character.experience.amplifier.ExpAmplifierLoader;
 import l1j.server.server.model.character.login.skill.BuffRestoreRegistry;
 import l1j.server.server.model.character.login.skill.BuffRestoreRegistryInit;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.character.skill.passive.PassiveID;
+import l1j.server.server.model.character.skill.passive.PassiveLoader;
+import l1j.server.server.model.character.skill.passive.PassiveUserLoader;
 import l1j.server.server.model.item.Card.L1CardCollection;
 import l1j.server.server.model.item.cooking.CookingRegistry;
 import l1j.server.server.model.item.tam.TamFruitUseService;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
+import l1j.server.server.model.network.core.sc.packet.SC_ActionUI2;
+import l1j.server.server.model.network.core.sc.packet.SC_AddSkill;
+import l1j.server.server.model.network.core.sc.packet.SC_BookMarkLoad;
+import l1j.server.server.model.network.core.sc.packet.SC_CharPass;
+import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_CharacterConfig;
+import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.network.core.sc.packet.SC_ClanAttention;
+import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
+import l1j.server.server.model.network.core.sc.packet.SC_Karma;
+import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
+import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
+import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
+import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.core.sc.packet.SC_SlotOpen;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_UnityIcon;
+import l1j.server.server.model.network.core.sc.packet.SC_Unknown1;
+import l1j.server.server.model.network.core.sc.packet.SC_Weather;
+import l1j.server.server.model.network.core.sc.packet.SC_Weight;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.rank.loader.RankUserLoader;
+import l1j.server.server.model.world.instance.InstanceSpace;
+import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeProgressLoader;
+import l1j.server.server.model.world.instance.dungeon.time.progress.DungeonTimeProgress;
+import l1j.server.server.model.world.instance.raid.RaidSpace;
+import l1j.server.server.model.world.siege.CastleWar;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.War;
 import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_ADD_INVENTORY_NOTI;
+import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_BONUS_GROUP_INFO;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_BONUS_INFO_EXTEND;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_USER_DATA_EXTEND;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MAP_ID;
-import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SLOT_CHANGE;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo;
-import l1j.server.server.model.network.core.sc.packet.SC_CharacterConfig;
-import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.shared.EPcStatus;
+import l1j.server.server.shared.observer.CopyMapObservable;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.CharactersItemStorage;
 import l1j.server.server.templates.L1BookMark;
@@ -119,9 +117,6 @@ import l1j.server.server.templates.L1ItemBookMark;
 import l1j.server.server.templates.L1Skills;
 import l1j.server.server.utils.CheckInitStat;
 import l1j.server.swing.chocco;
-
-import l1j.server.server.model.network.core.sc.packet.SC_Weather;
-import l1j.server.server.model.network.core.sc.packet.SC_Karma;
 public final class CS_EnterWorld {
 
 	static class BuffInfo {
@@ -269,7 +264,7 @@ public final class CS_EnterWorld {
         data.excludes = readExcludeList(data.pc.getId());
         data.slotItems = CharacterSlotItemTable.getInstance().loadCharSlots(data.pc.getId());
         data.blocked = GMCommands.isCharacterBlock(charName);
-        data.passiveIds = MJPassiveUserLoader.readIds(data.pc.getId());
+        data.passiveIds = PassiveUserLoader.readIds(data.pc.getId());
         data.dungeonProgress = DungeonTimeProgressLoader.readSnapshot(data.pc.getId(), data.pc.getAccountName());
         data.nBuffRows = readNBuffSnapshot(data.pc.getId(), sessionAccount.getAccountId());
         data.tamSnapshot = TamFruitUseService.readLoginSnapshot(data.pc.getAccountName());
@@ -282,8 +277,8 @@ public final class CS_EnterWorld {
         data.bookmarks = L1BookMark.readSnapshot(data.pc.getId());
         if (Config.CHARACTER_CONFIG_IN_SERVER_SIDE)
             data.characterConfig = SC_CharacterConfig.load(data.pc.getId());
-        MJPassiveLoader.getInstance();
-        MJExpAmplifierLoader.getInstance();
+        PassiveLoader.getInstance();
+        ExpAmplifierLoader.getInstance();
         RankUserLoader.getInstance();
         DungeonRandom.getInstance();
         return data;
@@ -455,7 +450,7 @@ public final class CS_EnterWorld {
     }
     
     private static void registerToWorld(L1PcInstance pc, CUserSocket client) {
-        pc.set_instance_status(MJEPcStatus.WORLD);
+        pc.set_instance_status(EPcStatus.WORLD);
         pc.setOnlineStatus(1);
         pc.create_captcha();
         CharacterTable.updateOnlineStatus(pc);
@@ -469,7 +464,7 @@ public final class CS_EnterWorld {
     private static void sendEnterData(L1PcInstance pc, CUserSocket client, EnterData data) {
         if (data.characterConfig != null) SC_CharacterConfig.send(pc, data.characterConfig);
         CharacterSlotItemTable.getInstance().applyCharSlots(pc, data.slotItems);
-        MJKDALoader.getInstance().install(pc, false);
+        KdaLoader.getInstance().install(pc, false);
         int[] skillList = data.skills;
         if (skillList == null) skillList = new int[30];
         pc.lockUserState();
@@ -481,31 +476,31 @@ public final class CS_EnterWorld {
             pc.unlockUserState();
         }
         SkillCheck.getInstance().AddSkill(pc.getId(), data.mastery);
-        MJPassiveUserLoader.applyLoaded(pc, data.passiveIds);
+        PassiveUserLoader.applyLoaded(pc, data.passiveIds);
         DungeonTimeProgressLoader.applySnapshot(pc, data.dungeonProgress);
         BQSCharacterDataLoader.applySnapshot(pc, data.bqs);
         sendSkillPacket(pc, skillList);
-        MJCopyMapObservable.getInstance().resetPosition(pc);
+        CopyMapObservable.getInstance().resetPosition(pc);
         L1BookMark.applySnapshot(pc, data.bookmarks);
         SC_BookMarkLoad.send(pc);
         SC_OwnCharAttrDef.send(pc);
         SC_Weight.send(pc);
         SC_ActionUI2.send(pc, SC_ActionUI2.Elixir, pc.getElixirStats());
-        MJCopyMapObservable.getInstance().resetPosition(pc);
-        MJRaidSpace.getInstance().getBackPc(pc);
-        MJInstanceSpace.getInstance().getBackPc(pc);
+        CopyMapObservable.getInstance().resetPosition(pc);
+        RaidSpace.getInstance().getBackPc(pc);
+        InstanceSpace.getInstance().getBackPc(pc);
        
         // --- 성 전쟁 중 겟백 ---
         applyCastleGetBack(pc);
 
         L1Map l1map = pc.getMap();
         if (l1map == null || !l1map.isInMap(pc.getX(), pc.getY())) {
-            MJCopyMapObservable.getInstance().resetAlwaysPositon(pc);
+            CopyMapObservable.getInstance().resetAlwaysPositon(pc);
         }
 
         SC_OwnCharStatus.send(pc);
         SC_MAP_ID.sendCreate(pc, pc.getMap().getBaseMapId(), pc.getMap().isUnderwater());
-        MJExpAmplifierLoader.getInstance().set(pc);
+        ExpAmplifierLoader.getInstance().set(pc);
         SC_Weather.send(pc, L1World.getInstance().getWeather());
         pc.sendClanMarks();
         SC_SPMR.send(pc);
@@ -553,7 +548,7 @@ public final class CS_EnterWorld {
         SC_SPMR.send(pc);
         SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.LOGIN);
 
-        if (pc.isPassive(MJPassiveID.FOU_SLAYER_BRAVE.toInt())) {
+        if (pc.isPassive(PassiveID.FOU_SLAYER_BRAVE.toInt())) {
             pc.포우브레이브(true);
         }
 
@@ -614,7 +609,7 @@ public final class CS_EnterWorld {
         applyExcludeList(SpamTable.getInstance().getExcludeTable(pc.getId()), data.excludes);
 
         serchSummon(pc);
-        MJCastleWarBusiness.getInstance().viewNowCastleWarState(pc);
+        CastleWarBusiness.getInstance().viewNowCastleWarState(pc);
 
         L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
         if (clan != null) {
@@ -643,11 +638,11 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
                         }
                     }
 }
-                    MJWar war = clan.getCurrentWar();
+                    War war = clan.getCurrentWar();
                     if (war != null) {
                         war.notifyEnenmy(pc);
-                        if (war instanceof MJCastleWar) {
-                            MJCastleWar cw = (MJCastleWar) war;
+                        if (war instanceof CastleWar) {
+                            CastleWar cw = (CastleWar) war;
                             if (cw.isRun()) cw.onLordBuff(pc);
                         }
                     }
@@ -779,7 +774,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
             castle_id = 6;
         }
         if (0 < castle_id) {
-            if (MJCastleWarBusiness.getInstance().isNowWar(castle_id)) {
+            if (CastleWarBusiness.getInstance().isNowWar(castle_id)) {
                 L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
                 if (clan != null && clan.getCastleId() != castle_id) {
                     int[] loc = L1CastleLocation.getGetBackLoc(castle_id);

@@ -3,16 +3,14 @@ package l1j.server.server.model.network.core.sc.packet;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
-import l1j.server.MJINNSystem.MJINNHelper;
-import l1j.server.PrideSystem.PrideLoadManager;
+import l1j.server.server.model.item.pride.PrideLoadManager;
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.world.instance.inn.InnHelper;
 
 public final class SC_DropItem {
 
@@ -257,7 +255,7 @@ public final class SC_DropItem {
 				|| itemId == 140006
 				|| itemId == 140008) && identified) {
 			specialSuffix = true;
-		} else if (itemId == MJINNHelper.INN_KEYID) {
+		} else if (itemId == InnHelper.INN_KEYID) {
 			specialSuffix = item.getEndTime() != null;
 		} else if (itemId == 80500) {
 			specialSuffix = item.getEndTime() != null;
@@ -338,7 +336,7 @@ public final class SC_DropItem {
 			return sb.toString();
 		}
 
-		if (itemId == MJINNHelper.INN_KEYID) {
+		if (itemId == InnHelper.INN_KEYID) {
 			final Timestamp endTime = item.getEndTime();
 			if (endTime != null) {
 				final Calendar cal = DATE_CALENDAR.get();

@@ -3,7 +3,7 @@
 from pathlib import Path
 import subprocess, tempfile, textwrap
 root = Path(__file__).resolve().parents[3]
-source = (root / 'src/l1j/server/MJTemplate/L1Instance/MJL1LiftGateInstance.java').read_text(encoding='utf-8')
+source = (root / 'src/l1j/server/server/model/world/instance/shared/L1LiftGateInstance.java').read_text(encoding='utf-8')
 needle='private static void closeSharedAttrs('
 start=source.index(needle)
 open_brace=source.index('{',start)
@@ -15,7 +15,7 @@ while depth:
     end+=1
 method=source[start:end]
 class_code='''
-package l1j.server.MJTemplate.L1Instance;
+package l1j.server.server.model.world.instance.shared;
 public class LiftGateRelease94 {
     /* METHOD */
     private static void check(boolean ok, String why) {
@@ -53,9 +53,9 @@ public class CAsyncSendConstBuffer {
 with tempfile.TemporaryDirectory() as td:
     base=Path(td)
     for path,contents in {
-      'l1j/server/MJTemplate/L1Instance/LiftGateRelease94.java':class_code,
+      'l1j/server/server/model/world/instance/shared/LiftGateRelease94.java':class_code,
       'l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java':stub
     }.items():
         p=base/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(contents,encoding='utf8')
     subprocess.run(['javac','--release','21','-encoding','UTF-8','-d',td,*map(str,base.rglob('*.java'))],check=True)
-    subprocess.run(['java','-cp',td,'l1j.server.MJTemplate.L1Instance.LiftGateRelease94'],check=True)
+    subprocess.run(['java','-cp',td,'l1j.server.server.model.world.instance.shared.LiftGateRelease94'],check=True)

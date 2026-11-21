@@ -1,10 +1,10 @@
 package l1j.server.server.model.npc.ai.action;
 
-import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.L1Character;
 
 /**
- * NC CMoveToTargetRelativeAction: distinct actor, target and container refs.
+ * reference server CMoveToTargetRelativeAction: distinct actor, target and container refs.
  *
  * Native GetTargetPos selects a target-position provider and projects it
  * through a container's coordinate frame. L1 maps have fixed 2-D tile frames:
@@ -87,7 +87,7 @@ public final class CMoveToTargetRelativeAction {
     /**
      * CMoveToTargetRelativeAction::GetDestination, L1 2-D projection.
      *
-     * NC uses targetPos + normalize(actorPos - targetPos) * actionDistance.
+     * reference server uses targetPos + normalize(actorPos - targetPos) * actionDistance.
      * The L1 adaptation uses integer tile coordinates and returns packed
      * primitive coordinates, avoiding per-tick FVector / Point allocation.
      * This is a preferred approach point, never an occupancy reservation.

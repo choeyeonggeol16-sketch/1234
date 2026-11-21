@@ -1,12 +1,11 @@
 
 package l1j.server.server.model.Instance;
 
-import l1j.server.server.model.character.action.CAttackAction;
-
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
@@ -16,18 +15,17 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1NpcTalkData;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.item.Exp.CalcExp;
+import l1j.server.server.model.network.core.sc.packet.SC_ChangeHeading;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
-
+import l1j.server.server.model.network.core.sc.packet.SC_Karma;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.templates.L1Npc;
-
-import l1j.server.server.model.network.core.sc.packet.SC_ChangeHeading;
-import l1j.server.server.model.network.core.sc.packet.SC_Karma;
 public class L1GuardianInstance extends L1NpcInstance {
 	/**
 	 * 
@@ -126,7 +124,7 @@ public class L1GuardianInstance extends L1NpcInstance {
 		}
 	}
 
-	/** Called only after the NC-style executor confirms a barehanded elf hit. */
+	/** Called only after the reference design executor confirms a barehanded elf hit. */
 	public boolean onGuardianBarehandedHit(L1PcInstance player) {
 		if (getNpcTemplate().get_npcId() == 70848) { // tree
 			int chance = _random.nextInt(100) + 1;

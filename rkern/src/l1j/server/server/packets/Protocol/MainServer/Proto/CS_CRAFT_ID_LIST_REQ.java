@@ -1,15 +1,11 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.shared.L1Type;
 
 /**
  * CS_CRAFT_ID_LIST_REQ (0x0038)
@@ -46,7 +42,7 @@ public final class CS_CRAFT_ID_LIST_REQ {
             if (pc == null) return;
 
             L1Object obj = L1World.getInstance().findObject(npcId);
-            if (obj == null || !obj.instanceOf(MJL1Type.L1TYPE_NPC)) {
+            if (obj == null || !obj.instanceOf(L1Type.L1TYPE_NPC)) {
                 sendError(pc, RP_ERROR_INVALID_NPC_ID);
                 return;
             }

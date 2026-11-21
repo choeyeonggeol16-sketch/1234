@@ -1,17 +1,17 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.Config;
-import l1j.server.MJWarSystem.MJCastleWar;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
-import l1j.server.MJWarSystem.MJWar;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.world.siege.CastleWar;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.War;
 
 public final class CS_War {
 
@@ -50,7 +50,7 @@ public final class CS_War {
 
     private static void handleProclaim(L1PcInstance player, String targetClanName) {
 
-        final MJCastleWarBusiness warBusiness = MJCastleWarBusiness.getInstance();
+        final CastleWarBusiness warBusiness = CastleWarBusiness.getInstance();
 
         /*
          * 붉은 기사단은 현재 위치의 공성전에 선포.
@@ -63,7 +63,7 @@ public final class CS_War {
                 return;
             }
 
-            final MJCastleWar war = warBusiness.get(castleId);
+            final CastleWar war = warBusiness.get(castleId);
 
             if (war == null) {
                 player.sendPackets("공성전이 진행 중이지 않습니다.");
@@ -79,7 +79,7 @@ public final class CS_War {
         }
 
         final L1World world = L1World.getInstance();
-        final MJCastleWar war = warBusiness.findWar(targetClanName);
+        final CastleWar war = warBusiness.findWar(targetClanName);
 
         if (war != null) {
             warBusiness.proclaim(player, war.getCastleId());
@@ -174,7 +174,7 @@ public final class CS_War {
          * type 0은 이미 위에서 완전히 처리됐으므로
          * 원본 코드 아래쪽의 type == 0 분기는 전부 제거 가능합니다.
          */
-        final MJWar war = clan.getCurrentWar();
+        final War war = clan.getCurrentWar();
         final boolean inWar = war != null;
 
         /*
@@ -214,7 +214,7 @@ public final class CS_War {
             }
         }
 
-        final MJWar enemyWar = enemyClan.getCurrentWar();
+        final War enemyWar = enemyClan.getCurrentWar();
 
         /*
          * 일반 혈맹전.

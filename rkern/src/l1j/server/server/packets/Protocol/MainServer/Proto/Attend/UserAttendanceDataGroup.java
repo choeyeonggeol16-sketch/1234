@@ -18,7 +18,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoInputStre
  *  6 attendance_time int32 [required]
  *  7 total_attendance_time int32 [required]
  *
- * DB blob(attendance_data)이 MJ 바이너리 형식 → fromBinary 역직렬화 유지.
+ * DB blob(attendance_data)이 server 바이너리 형식 → fromBinary 역직렬화 유지.
  * 직렬화는 신규 엔진만. 게임로직(onUpdateDay/onUpdateTime) 1:1 유지.
  */
 public class UserAttendanceDataGroup {	
@@ -49,7 +49,7 @@ public class UserAttendanceDataGroup {
     private int _attendanceTime;
     private int _totalAttendanceTime;
     
-    // ────────────── 게임로직 (MJ 1:1) ──────────────
+    // ────────────── 게임로직 (server 1:1) ──────────────
 
     public boolean onUpdateDay(boolean isPcCafe){
         if(_resultCode.equals(UserAttendanceTimeStatus.ATTENDANCE_ALL_CLEAR) || _resultCode.equals(UserAttendanceTimeStatus.ATTENDANCE_ALL_COMPLETE))

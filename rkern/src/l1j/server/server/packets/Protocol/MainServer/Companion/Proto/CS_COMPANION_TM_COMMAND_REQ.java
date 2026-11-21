@@ -1,14 +1,14 @@
 package l1j.server.server.packets.Protocol.MainServer.Companion.Proto;
 
-import l1j.server.MJCompanion.Basic.Joke.MJCompanionJokeInfo;
+import l1j.server.server.model.Instance.L1CompanionInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1CompanionInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.companion.basic.joke.CompanionJokeInfo;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.CompanionT.eCommand;
+import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 
 /**
  * CS_COMPANION_TM_COMMAND_REQ (0x07D4) — 컴패니언 명령 (공격대상지정/소환/장난/기쁨/태세변경)
@@ -66,7 +66,7 @@ public final class CS_COMPANION_TM_COMMAND_REQ {
                 break;
             case Joke: {
                 companion.send_action(67);
-                MJCompanionJokeInfo jInfo = MJCompanionJokeInfo.find_joke_info(
+                CompanionJokeInfo jInfo = CompanionJokeInfo.find_joke_info(
                         companion.get_class_info().get_class_name(), companion.getLevel());
                 if (jInfo != null && jInfo.get_joke_effect() > 0)
                     companion.send_effect(jInfo.get_joke_effect());

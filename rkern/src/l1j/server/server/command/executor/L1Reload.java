@@ -9,25 +9,25 @@ import l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig;
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PlaySupport2019;
-import l1j.server.DogFight.History.MJDogFightTicketIdManager;
-import l1j.server.MJ3SEx.MJNpcSpeedData;
-import l1j.server.MJ3SEx.MJSprBoundary;
-import l1j.server.MJ3SEx.Loader.SpriteInformationLoader;
-import l1j.server.MJActionListener.ActionListenerLinkageLoader;
-import l1j.server.MJActionListener.ActionListenerLoader;
-import l1j.server.MJDTSSystem.MJDTSLoader;
-import l1j.server.MJEffectSystem.Loader.MJEffectModelLoader;
-import l1j.server.MJExpAmpSystem.MJExpAmplifierLoader;
-import l1j.server.MJExpRevision.MJFishingExpInfo;
+import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightTicketIdManager;
+import l1j.server.server.model.character.animation.NpcSpeedData;
+import l1j.server.server.model.character.animation.SprBoundary;
+import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
+import l1j.server.server.model.character.action.listener.ActionListenerLinkageLoader;
+import l1j.server.server.model.character.action.listener.ActionListenerLoader;
+import l1j.server.server.model.item.teleport.designated.DesignatedTeleportLoader;
+import l1j.server.server.model.character.effect.action.loader.EffectModelLoader;
+import l1j.server.server.model.character.experience.amplifier.ExpAmplifierLoader;
+import l1j.server.server.model.character.experience.fishing.FishingExpInfo;
 
 
-import l1j.server.MJItemSkillSystem.MJItemSkillModelLoader;
-import l1j.server.MJPassiveSkill.MJPassiveLoader;
-import l1j.server.MJRaidSystem.Loader.MJRaidCompensatorLoader;
-import l1j.server.MJServerMacroSystem.MJServerMacroLoader;
-import l1j.server.MJTemplate.DateSchedulerModel.MinuteScheduler;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
-import l1j.server.PrideSystem.PrideLoadManager;
+import l1j.server.server.model.item.proc.ItemSkillModelLoader;
+import l1j.server.server.model.character.skill.passive.PassiveLoader;
+import l1j.server.server.model.world.instance.raid.loader.RaidCompensatorLoader;
+import l1j.server.server.task.automation.ServerMacroLoader;
+import l1j.server.server.task.calendar.MinuteScheduler;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.item.pride.PrideLoadManager;
 import l1j.server.server.Announcecycle;
 import l1j.server.server.Controller.BossController;
 import l1j.server.server.Controller.BugRaceController;
@@ -49,7 +49,7 @@ import l1j.server.server.datatables.GetBackRestartTable;
 import l1j.server.server.datatables.IncreaseEinhasadMap;
 import l1j.server.server.datatables.IpTable;
 import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.datatables.MJNpcMarkTable;
+import l1j.server.server.datatables.NpcMarkTable;
 import l1j.server.server.datatables.MobSkillTable;
 import l1j.server.server.datatables.MonsterParalyzeDelay;
 import l1j.server.server.datatables.NPCTalkDataTable;
@@ -156,15 +156,15 @@ public class L1Reload implements L1CommandExecutor {
 				NoDropItem.getInstance().reload();;
 				gm.sendPackets("nodropitem 테이블이 리로드 되었습니다.");	
 		}else if(arg.equalsIgnoreCase("낚시경험치")){
-			MJFishingExpInfo.do_load();
+			FishingExpInfo.do_load();
 			gm.sendPackets("fishing_exp_info 테이블이 리로드 되었습니다.");
 		}else if(arg.equalsIgnoreCase("변신레벨")){
-			MJSprBoundary.do_load();
+			SprBoundary.do_load();
 			gm.sendPackets("spr_boundary 테이블이 리로드 되었습니다.");
 		}else if(arg.equalsIgnoreCase("엔피씨속도")){
-			MJNpcSpeedData.do_load();
+			NpcSpeedData.do_load();
 			for(L1NpcInstance npc : L1World.getInstance().getAllNpc())
-				MJNpcSpeedData.install_npc(npc);
+				NpcSpeedData.install_npc(npc);
 			gm.sendPackets("npc_speed_data  테이블이 리로드 되었습니다.");
 
 		} else if (arg.equalsIgnoreCase("무한대전")) {
@@ -177,7 +177,7 @@ public class L1Reload implements L1CommandExecutor {
 			 GetBackRestartTable.reload();
 				gm.sendPackets("getback_restart 테이블이 리로드 되었습니다.");
 		 } else if (arg.equalsIgnoreCase("용드랍")) {
-			 MJRaidCompensatorLoader.reload();
+			 RaidCompensatorLoader.reload();
 			gm.sendPackets("tb_mjraid_compensators 테이블이 리로드 되었습니다.");	
 		 } else if(arg.equalsIgnoreCase("버경")){
 			BugRaceController.load_config();
@@ -192,10 +192,10 @@ public class L1Reload implements L1CommandExecutor {
 			IncreaseEinhasadMap.reload();
 			gm.sendPackets("tb_increase_einhasad_map 테이블이 리로드 되었습니다.");
 		} else if(arg.equalsIgnoreCase("패시브스킬")){
-			MJPassiveLoader.reload();
+			PassiveLoader.reload();
 			gm.sendPackets("passive_book_mapped 테이블이 리로드 되었습니다.");
 		} else if(arg.equalsIgnoreCase("텔주문서")){
-			MJDTSLoader.reload();
+			DesignatedTeleportLoader.reload();
 			gm.sendPackets("tb_designate_teleport_scroll 테이블이 리로드되었습니다.");
 		} else if(arg.equalsIgnoreCase("액션리스너")){
 			MinuteScheduler.getInstance().clear_action_listener();
@@ -225,19 +225,19 @@ public class L1Reload implements L1CommandExecutor {
 			SC_CRAFT_LIST_ALL_ACK.buildNpcCaches();
 			gm.sendPackets("craftlist 테이블이 리로드 되었습니다.");
 		} else if(arg.equalsIgnoreCase("아이템스킬")){
-			MJItemSkillModelLoader.reload();
+			ItemSkillModelLoader.reload();
 			gm.sendPackets("tb_itemskill_model 테이블이 리로드 되었습니다.");
 		} else if(arg.equalsIgnoreCase("매크로")){
-			MJServerMacroLoader.reload();			
+			ServerMacroLoader.reload();			
 			gm.sendPackets("tb_ServerMacro 테이블이 리로드 되었습니다.");
 		} else if(arg.equalsIgnoreCase("아인증폭")){
-			MJExpAmplifierLoader.reload();
-			gm.sendPackets("MJExpAmplifierLoader 테이블이 리로드 되었습니다.");
+			ExpAmplifierLoader.reload();
+			gm.sendPackets("ExpAmplifierLoader 테이블이 리로드 되었습니다.");
 		} else if(arg.equalsIgnoreCase("확")){
-			MJExpAmplifierLoader.reload();
-			gm.sendPackets("MJExpAmplifierLoader 테이블이 리로드 되었습니다.");
+			ExpAmplifierLoader.reload();
+			gm.sendPackets("ExpAmplifierLoader 테이블이 리로드 되었습니다.");
 		} else if(arg.equalsIgnoreCase("엔피씨마크")){
-			MJNpcMarkTable.reload();
+			NpcMarkTable.reload();
 			gm.sendPackets("NpcMark 테이블이 리로드 되었습니다.");
 		} else if (arg.equalsIgnoreCase("엔피씨액션")) { 
 			NPCTalkDataTable.reload();
@@ -302,7 +302,7 @@ public class L1Reload implements L1CommandExecutor {
 				if(t != null)
 					items.put(t.getItemId(), t);
 			}
-			MJDogFightTicketIdManager.getInstance().update_item_template();
+			DogFightTicketIdManager.getInstance().update_item_template();
 		} else if (arg.equalsIgnoreCase("상점")){
 			ShopTable.reload();
 			gm.sendPackets("shop 테이블이 리로드 되었습니다.");	
@@ -318,10 +318,10 @@ public class L1Reload implements L1CommandExecutor {
             }
 		} else if (arg.equalsIgnoreCase("클랜데이터")){
 			ClanTable.reload();
-			MJCastleWarBusiness.getInstance().reload();
+			CastleWarBusiness.getInstance().reload();
 			gm.sendPackets("리로드: clan_data 테이블이 리로드 되었습니다.");		
 		} else if (arg.equalsIgnoreCase("공성")){
-			MJCastleWarBusiness.getInstance().reload();
+			CastleWarBusiness.getInstance().reload();
 			gm.sendPackets("리로드: castle 테이블이 리로드 되었습니다.");		
 		} else if (arg.equalsIgnoreCase("스폰리스트")){
 			
@@ -404,7 +404,7 @@ public class L1Reload implements L1CommandExecutor {
 			SpriteInformationLoader.getInstance().reloadSpellDelayInformation();
 			gm.sendPackets("리로드: MagicDelay 테이블이 리로드 되었습니다");	
 		} else if(arg.equalsIgnoreCase("광역마법")){
-			MJEffectModelLoader.reload();
+			EffectModelLoader.reload();
 			gm.sendPackets("리로드: EffectModel 테이블이 리로드 되었습니다.");	
 			// 퀘스트 몬스터 시스템
 		} else if (arg.equalsIgnoreCase("퀘스트몬스터")) {

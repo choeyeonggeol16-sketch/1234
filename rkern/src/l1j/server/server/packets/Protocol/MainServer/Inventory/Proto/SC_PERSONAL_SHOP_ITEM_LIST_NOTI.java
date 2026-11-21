@@ -4,7 +4,7 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import java.util.ArrayList;
 import java.util.List;
 
-import l1j.server.MJDShopSystem.MJDShopItem;
+import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -100,7 +100,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
         if (!(L1World.getInstance().findObject(objectId) instanceof L1PcInstance shop)
                 || !shop.isPrivateShop()) return;
         final boolean purchase = type == ePersonalShopType.TRADE_SELL;
-        final ArrayList<MJDShopItem> listings = purchase ? shop.getPurchasings() : shop.getSellings();
+        final ArrayList<DynamicShopItem> listings = purchase ? shop.getPurchasings() : shop.getSellings();
         if (listings == null) return;
 
         synchronized (listings) {
@@ -113,7 +113,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
                 // also fit the one-byte row index in the sell request.
                 for (L1ItemInstance item : pc.getInventory().getItems()) {
                     if (item == null || item.isEquipped() || item.getCount() <= 0) continue;
-                    for (MJDShopItem listing : listings) {
+                    for (DynamicShopItem listing : listings) {
                         if (listing == null || item.getItemId() != listing.itemId
                                 || item.getEnchantLevel() != listing.enchant
                                 || item.getAttrEnchantLevel() != listing.attr) continue;
@@ -123,7 +123,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
                     if (view.size() == capacity) break;
                 }
             } else {
-                for (MJDShopItem listing : listings) {
+                for (DynamicShopItem listing : listings) {
                     if (listing == null) continue;
                     L1ItemInstance item = shop.getInventory().getItem(listing.objId);
                     if (item == null || item.isEquipped() || item.getCount() <= 0
@@ -139,7 +139,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
     }
 
     private static void addPlayerShopRow(List<TradeItemInfo> items, PlayerShopView view,
-            MJDShopItem listing, L1ItemInstance item, boolean purchase) {
+            DynamicShopItem listing, L1ItemInstance item, boolean purchase) {
         if (listing.isPurchase != purchase || listing.price <= 0 || listing.count <= 0) return;
         final int count = Math.min(item.getCount(), listing.count);
         final ItemInfo info = ItemInfo.newInstance(item);

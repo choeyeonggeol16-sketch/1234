@@ -1,30 +1,28 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
-import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
+import static l1j.server.server.model.item.function.CreatureItemActions.*;
+
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
+
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.model.L1EffectSpawn;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1EffectInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1EffectSpawn;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.poison.L1DamagePoison;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
-import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.utils.MJCommons;
-import l1j.server.server.utils.eKind;
-import static l1j.server.server.model.item.function.CreatureItemActions.*;
+import l1j.server.server.utils.GameUtils;
 
 /** Item-specific effect extracted without changing its original execution body. */
 final class ShadowBindingItemEffect {
@@ -56,7 +54,7 @@ final class ShadowBindingItemEffect {
                         SC_SystemMessage.send(pc, "\\fY쉐도우스탭 대기시간 : " + n + "초 후에 사용가능합니다.");
                         return;
                     }
-                    if (MJCommons.isNonAction(pc) || pc.hasSkillEffect(L1SkillId.STATUS_FREEZE)) {
+                    if (GameUtils.isNonAction(pc) || pc.hasSkillEffect(L1SkillId.STATUS_FREEZE)) {
                         return;
                     }
                     if (pc.getSafetyZone() && (!(pc.getMapId() == 9 || pc.getMapId() == 1 || pc.getMapId() == 2))) {
@@ -152,7 +150,7 @@ final class ShadowBindingItemEffect {
                         SC_SystemMessage.send(pc, "\\fY쉐도우스탭 대기시간 : " + n + "초 후에 사용가능합니다.");
                         return;
                     }
-                    if (MJCommons.isNonAction(pc) || pc.hasSkillEffect(L1SkillId.STATUS_FREEZE)) {
+                    if (GameUtils.isNonAction(pc) || pc.hasSkillEffect(L1SkillId.STATUS_FREEZE)) {
                         return;
                     }
                     if (pc.isInvisble()) {

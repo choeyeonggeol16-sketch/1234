@@ -1,31 +1,31 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.Config;
-import l1j.server.MJ3SEx.Loader.SpriteInformationLoader;
-import l1j.server.MJInstanceSystem.MJInstanceObject;
-import l1j.server.MJInstanceSystem.MJInstanceSpace;
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.MJWarSystem.MJWar;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.Opcodes;
-import l1j.server.server.datatables.MJNpcMarkTable;
 import l1j.server.server.datatables.NPCTalkDataTable;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1NpcTalkData;
-import l1j.server.server.model.L1World;
+import l1j.server.server.datatables.NpcMarkTable;
 import l1j.server.server.model.Instance.L1FieldObjectInstance;
 import l1j.server.server.model.Instance.L1MerchantInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SignboardInstance;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Clan;
+import l1j.server.server.model.L1NpcTalkData;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.world.instance.InstanceObject;
+import l1j.server.server.model.world.instance.InstanceSpace;
+import l1j.server.server.model.world.siege.War;
 
 /**
  * Objectless direct serializer for S_WorldPutObject.
@@ -1082,7 +1082,7 @@ public final class SC_WorldPutObject {
             return 0x03;
         }
 
-        if (pc.isPassive(MJPassiveID.DARK_HORSE.toInt())
+        if (pc.isPassive(PassiveID.DARK_HORSE.toInt())
                 && pc.hasSkillEffect(L1SkillId.STATUS_FRUIT)) {
             return 0x03;
         }
@@ -1174,8 +1174,8 @@ public final class SC_WorldPutObject {
             int mark) {
 
         try {
-            final MJInstanceObject instance =
-                    MJInstanceSpace.getInstance()
+            final InstanceObject instance =
+                    InstanceSpace.getInstance()
                             .getOpenObject(pc.getMapId());
 
             if (instance != null) {
@@ -1231,7 +1231,7 @@ public final class SC_WorldPutObject {
 
         try {
             return clan != null
-                    && MJWar.isCastleOffenseClan(clan);
+                    && War.isCastleOffenseClan(clan);
         } catch (RuntimeException e) {
             return false;
         }
@@ -1388,7 +1388,7 @@ public final class SC_WorldPutObject {
             L1NpcInstance npc) {
 
         try {
-            return MJNpcMarkTable.getInstance()
+            return NpcMarkTable.getInstance()
                     .get(npc.getNpcId());
         } catch (RuntimeException e) {
             return 0;

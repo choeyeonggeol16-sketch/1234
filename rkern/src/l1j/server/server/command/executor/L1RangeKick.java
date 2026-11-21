@@ -17,25 +17,22 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 package l1j.server.server.command.executor;
-import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
-import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
-
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
-import l1j.server.MJTemplate.MJObjectWrapper;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.SelectorHandler;
 import l1j.server.server.Account;
 import l1j.server.server.datatables.IpTable;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
+import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.shared.ObjectWrapper;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.handler.SelectorHandler;
+import l1j.server.server.utils.GameUtils;
 
 
 public class L1RangeKick implements L1CommandExecutor {
@@ -82,7 +79,7 @@ public class L1RangeKick implements L1CommandExecutor {
 //					SC_Disconnect.send(target);
 //				}
 			} else {
-				final MJObjectWrapper<String> wrapper = new MJObjectWrapper<String>();
+				final ObjectWrapper<String> wrapper = new ObjectWrapper<String>();
 				wrapper.value = "";
 				Selector.exec("select account_name from characters where char_name=?", new SelectorHandler(){
 					@Override
@@ -98,7 +95,7 @@ public class L1RangeKick implements L1CommandExecutor {
 					}
 					
 				});
-				if(MJCommons.isNullOrEmpty(wrapper.value)){
+				if(GameUtils.isNullOrEmpty(wrapper.value)){
 					SC_SystemMessage.send(pc, String.format("%s은(는) 존재하지 않는 캐릭터명입니다.", sname));					
 				}else{
 					IpTable ip = IpTable.getInstance();

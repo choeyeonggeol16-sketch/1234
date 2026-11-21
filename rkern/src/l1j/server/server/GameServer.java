@@ -1,51 +1,30 @@
 package l1j.server.server;
 
 import java.util.Collection;
+
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
+import l1j.server.server.model.character.combat.arena.dogfight.DogFightLoader;
+import l1j.server.server.payment.PaymentCipher;
+import l1j.server.server.model.item.pride.PrideLoadManager;
 import l1j.server.Server;
-import l1j.server.DogFight.MJDogFightLoader;
-import l1j.server.MJ3SEx.MJNpcSpeedData;
-import l1j.server.MJ3SEx.MJSprBoundary;
-import l1j.server.MJ3SEx.Loader.SpriteInformationLoader;
-import l1j.server.MJActionListener.ActionListenerLinkageLoader;
-import l1j.server.MJActionListener.ActionListenerLoader;
-import l1j.server.MJCTSystem.Loader.MJCTLoadManager;
-import l1j.server.MJCaptchaSystem.Loader.MJCaptchaLoadManager;
-import l1j.server.MJCombatSystem.Loader.MJCombatLoadManager;
-import l1j.server.MJCompanion.MJCompanionLoader;
-import l1j.server.MJDShopSystem.MJDShopStorage;
-import l1j.server.MJDTSSystem.MJDTSLoader;
-import l1j.server.MJDungeonTimer.Loader.DungeonTimeLoadManager;
-import l1j.server.MJEffectSystem.Loader.MJEffectModelLoader;
-import l1j.server.MJExpRevision.MJFishingExpInfo;
-import l1j.server.MJINNSystem.Loader.MJINNHelperLoader;
-import l1j.server.MJInstanceSystem.Loader.MJInstanceLoadManager;
-import l1j.server.MJItemEnchantSystem.MJItemEnchantSystemLoadManager;
-import l1j.server.MJItemSkillSystem.MJItemSkillModelLoader;
-import l1j.server.MJKDASystem.MJKDALoadManager;
-import l1j.server.MJRaidSystem.Loader.MJRaidLoadManager;
-import l1j.server.MJServerMacroSystem.MJServerMacroLoader;
-import l1j.server.MJTemplate.DateSchedulerModel.DateSchedulerLoader;
-import l1j.server.MJTemplate.ObServer.MJCopyMapObservable;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
-import l1j.server.Payment.MJPaymentCipher;
-import l1j.server.PrideSystem.PrideLoadManager;
-import l1j.server.TowerOfDominance.DominanceDataLoader;
-import l1j.server.TowerOfDominance.BossController.DominanceTimeController;
-import l1j.server.server.command.L1Commands;
-import l1j.server.server.appcenter.AppCenterService;
+import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceTimeController;
+import l1j.server.server.model.world.instance.dungeon.tower.DominanceDataLoader;
 import l1j.server.server.Controller.AuctionTimeController;
-import l1j.server.server.Controller.BossController;
 import l1j.server.server.Controller.AuraController;
+import l1j.server.server.Controller.BossController;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.Controller.HouseTaxTimeController;
 import l1j.server.server.Controller.NpcChatTimeController;
 import l1j.server.server.Controller.OneTimeController;
 import l1j.server.server.Controller.PremiumTimeController;
 import l1j.server.server.Controller.ShipTimeController;
+import l1j.server.server.appcenter.AppCenterService;
+import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
+import l1j.server.server.command.L1Commands;
 import l1j.server.server.datatables.AccessoryEnchantInformationTable;
 import l1j.server.server.datatables.AlchemyProbability;
+import l1j.server.server.datatables.AlchemyProbabilityBox;
 import l1j.server.server.datatables.ArmorEnchantInformationTable;
 import l1j.server.server.datatables.ArmorEnchantList;
 import l1j.server.server.datatables.ArmorSetTable;
@@ -66,8 +45,6 @@ import l1j.server.server.datatables.IpTable;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.KeyTable;
 import l1j.server.server.datatables.LightSpawnTable;
-import l1j.server.server.datatables.MJAlchemyProbabilityBox;
-import l1j.server.server.datatables.MJNpcMarkTable;
 import l1j.server.server.datatables.MapUserTeleportTable;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.datatables.MobGroupTable;
@@ -77,6 +54,7 @@ import l1j.server.server.datatables.NPCTalkDataTable;
 import l1j.server.server.datatables.NpcActionTable;
 import l1j.server.server.datatables.NpcCashShopSpawnTable;
 import l1j.server.server.datatables.NpcChatTable;
+import l1j.server.server.datatables.NpcMarkTable;
 import l1j.server.server.datatables.NpcSpawnTable;
 import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PetTable;
@@ -94,27 +72,41 @@ import l1j.server.server.datatables.UserProtectMonsterTable;
 import l1j.server.server.datatables.WeaponAddDamage;
 import l1j.server.server.datatables.WeaponEnchantInformationTable;
 import l1j.server.server.datatables.WeaponEnchantList;
+import l1j.server.server.model.Attendance.AttendanceLoadManager;
+import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
 import l1j.server.server.model.Dungeon;
 import l1j.server.server.model.Getback;
+import l1j.server.server.model.Instance.L1CompanionInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1ClanMatching;
 import l1j.server.server.model.L1ClanRanking;
 import l1j.server.server.model.L1HouseLocation;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Attendance.AttendanceLoadManager;
-import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
-import l1j.server.server.model.Instance.L1CompanionInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancyNpc;
+import l1j.server.server.model.character.action.listener.ActionListenerLinkageLoader;
+import l1j.server.server.model.character.action.listener.ActionListenerLoader;
+import l1j.server.server.model.character.animation.NpcSpeedData;
+import l1j.server.server.model.character.animation.SprBoundary;
+import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
+import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
+import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
+import l1j.server.server.model.character.companion.CompanionLoader;
+import l1j.server.server.model.character.effect.action.loader.EffectModelLoader;
+import l1j.server.server.model.character.experience.fishing.FishingExpInfo;
 import l1j.server.server.model.character.scheduler.AutoSaveChaQuitCheckScheduler;
 import l1j.server.server.model.character.scheduler.CharTamScheduler;
 import l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler;
 import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.item.L1TreasureBox;
+import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
 import l1j.server.server.model.item.effects.ItemEffectBootstrap;
+import l1j.server.server.model.item.enchant.ItemEnchantSystemLoadManager;
 import l1j.server.server.model.item.function.L1HealingPotion;
+import l1j.server.server.model.item.proc.ItemSkillModelLoader;
+import l1j.server.server.model.item.teleport.designated.DesignatedTeleportLoader;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -122,13 +114,22 @@ import l1j.server.server.model.npc.ai.NpcServer;
 import l1j.server.server.model.npc.shop.NpcShopManager;
 import l1j.server.server.model.rank.loader.RankLoadManager;
 import l1j.server.server.model.rank.loader.RankUserLoader;
+import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
 import l1j.server.server.model.trap.L1WorldTraps;
+import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeLoadManager;
+import l1j.server.server.model.world.instance.inn.loader.InnHelperLoader;
+import l1j.server.server.model.world.instance.loader.InstanceLoadManager;
+import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftLoader;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ALCHEMY_DESIGN_ACK;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRAFT_LIST_ALL_ACK;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftLoader;
+import l1j.server.server.shared.observer.CopyMapObservable;
 import l1j.server.server.storage.CacheD;
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.task.automation.ServerMacroLoader;
+import l1j.server.server.task.calendar.DateSchedulerLoader;
+import l1j.server.server.utils.GameUtils;
 
 public class GameServer {
 	private static GameServer _instance;
@@ -151,15 +152,15 @@ public class GameServer {
 		
 		CPacketFilter.getInstance().load();
 		// 나누기
-		MJAlchemyProbabilityBox.getInstance().shuffleList();
+		AlchemyProbabilityBox.getInstance().shuffleList();
 
 		IdFactory.getInstance();
 		L1Commands.reload();
 		L1WorldMap.getInstance();
 		SpriteInformationLoader.getInstance().loadSpriteInformation();
 
-		MJFishingExpInfo.do_load();
-		MJCommons.load();
+		FishingExpInfo.do_load();
+		GameUtils.load();
 		
 		CraftProbability.getInstance();
 		CraftLoader.load();
@@ -167,11 +168,11 @@ public class GameServer {
 		SC_CRAFT_LIST_ALL_ACK.buildNpcCaches();
 		AlchemyProbability.getInstance();
 		SC_ALCHEMY_DESIGN_ACK.load(); 
-		MJAlchemyProbabilityBox.getInstance();	
+		AlchemyProbabilityBox.getInstance();	
 		
 		
 		CharacterTable.getInstance().loadAllCharName();
-		MJSprBoundary.do_load();
+		SprBoundary.do_load();
 		// 온라인 상태 리셋트
 		CharacterTable.clearOnlineStatus();
 		// 게임 시간 시계
@@ -214,18 +215,18 @@ public class GameServer {
 //		ThreadPool.getInstance().execute(race);
 
 		NpcTable.getInstance();
-		MJNpcSpeedData.do_load();
+		NpcSpeedData.do_load();
 
 		if (!NpcTable.getInstance().isInitialized()) {
 			throw new Exception("Could not initialize the npc table");
 		}
         MobSkillTable.getInstance();
-		l1j.server.IndunSystem.Gludio.GludioInstanceDungeon.getInstance().initialize();
+		l1j.server.server.model.world.instance.dungeon.gludio.GludioInstanceDungeon.getInstance().initialize();
 
 		// 패키지상점
 		NpcCashShopSpawnTable.getInstance();
 		NpcCashShopSpawnTable.getInstance().Start();
-		MJItemSkillModelLoader.getInstance();
+		ItemSkillModelLoader.getInstance();
 		SpawnTable.getInstance();
 		MobGroupTable.getInstance();
 		SkillsTable.getInstance();
@@ -286,24 +287,24 @@ public class GameServer {
 		
 		RankLoadManager.getInstance().load();
 
-		MJKDALoadManager.getInstance().load();
+		KdaLoadManager.getInstance().load();
 		// TODO 말하는 섬 퀘스트 저장
 	//	CharacterQuestTable.getInstance();
 	//	QuestInfoTable.getInstance();
 
-		MJNpcMarkTable.getInstance();
+		NpcMarkTable.getInstance();
 
 		/** 레이드 **/
-		MJRaidLoadManager.getInstance().load();
-		MJEffectModelLoader.initialize();
+		RaidLoadManager.getInstance().load();
+		EffectModelLoader.initialize();
 
-		/** 2016.11.26 MJ 앱센터 LFC **/
-		MJInstanceLoadManager.getInstance().load();
+		/** 2016.11.26 server 앱센터 LFC **/
+		InstanceLoadManager.getInstance().load();
 
-		MJServerMacroLoader.getInstance().start();
+		ServerMacroLoader.getInstance().start();
 
-		MJCopyMapObservable.getInstance();
-		MJINNHelperLoader.getInstance();
+		CopyMapObservable.getInstance();
+		InnHelperLoader.getInstance();
 
 		if (Config.USE_ATTENDANCE_SYSTEM) {
 			AttendanceLoadManager.getInstance().load();
@@ -315,11 +316,11 @@ public class GameServer {
 		ActionListenerLoader.getInstance();
 		ActionListenerLinkageLoader.getInstance();
 
-		MJCombatLoadManager.getInstance().load();
-		MJCaptchaLoadManager.getInstance().load();
-		MJItemEnchantSystemLoadManager.getInstance().load();
+		CombatLoadManager.getInstance().load();
+		CaptchaLoadManager.getInstance().load();
+		ItemEnchantSystemLoadManager.getInstance().load();
 
-		MJDTSLoader.getInstance();
+		DesignatedTeleportLoader.getInstance();
 
 		DungeonTimeLoadManager.getInstance().load();
 		//MJItemExChangeLoader.getInstance();
@@ -330,14 +331,14 @@ public class GameServer {
 		
 		MonsterParalyzeDelay.getInstance();
 
-		MJCompanionLoader.getInstance();
-		MJPaymentCipher.getInstance();
-		MJDogFightLoader.getInstance();
+		CompanionLoader.getInstance();
+		PaymentCipher.getInstance();
+		DogFightLoader.getInstance();
 		
-		MJCastleWarBusiness.getInstance().run();
+		CastleWarBusiness.getInstance().run();
 
 		/** MJCTSystem **/
-		MJCTLoadManager.getInstance().load();
+		CollectionLoadManager.getInstance().load();
 		
 		HouseTable.getInstance();       // 캐시 로드
 		L1HouseLocation.rebuildCaches();
@@ -546,17 +547,17 @@ public class GameServer {
             // can be executing on one of those owners.
             Server.stopLoginServer();
             disconnectAllCharacters();
-	        MJRaidLoadManager.getInstance().release();
+	        RaidLoadManager.getInstance().release();
 
-	        MJInstanceLoadManager.getInstance().release();
+	        InstanceLoadManager.getInstance().release();
 
-	        MJDShopStorage.clearProcess();
+	        DynamicShopStorage.clearProcess();
 
-	        MJCTLoadManager.getInstance().release();
+	        CollectionLoadManager.getInstance().release();
 
-	        MJItemSkillModelLoader.release();
+	        ItemSkillModelLoader.release();
 
-	        MJKDALoadManager.getInstance().release();
+	        KdaLoadManager.getInstance().release();
 
 	        CPacketFilter.getInstance().release();
 
@@ -578,7 +579,7 @@ public class GameServer {
 	        TileOccupancy.getInstance().destroy();
 
 	        // Release any delayed MJEffect cast before NPC owner/shard shutdown.
-        MJEffectModelLoader.release();
+        EffectModelLoader.release();
         NpcServer.getInstance().shutdown();
 	        l1j.server.Server.printShutdownStatus("엔피시 서버가 종료되었습니다.");
 

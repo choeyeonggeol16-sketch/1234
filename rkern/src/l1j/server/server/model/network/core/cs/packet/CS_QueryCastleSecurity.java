@@ -1,11 +1,11 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
 
 public final class CS_QueryCastleSecurity {
 
@@ -62,7 +62,7 @@ public final class CS_QueryCastleSecurity {
 
         final String status;
 
-        if (MJCastleWarBusiness
+        if (CastleWarBusiness
                 .getInstance()
                 .getSecurity(castleId) == 0) {
 

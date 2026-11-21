@@ -35,8 +35,8 @@ public class Check {
  static class SC_WAREHOUSE_ITEM_LIST_NOTI {static void send_user_warehouse_items(L1PcInstance p,int id){p.log.add("warehouse:"+id);}static void send_user_pledge_warehouse_items(L1PcInstance p,int id){p.log.add("pledge:"+id);}}
  static class SC_RetrieveList {static boolean sendElf(L1PcInstance p,int id){p.log.add("elf:"+id);return p.ret;}static boolean sendPackage(L1PcInstance p,int id){p.log.add("package:"+id);return p.ret;}}
  static class NpcCastleActions {static String sellHouse(L1PcInstance p,int id,int n){p.log.add("house:"+n);return p.ret?"housepage":null;}}
- static class MJDogFightSettings {static final int CASTER_NPC_ID=123;}
- static class MJDogFightHistory {static final MJDogFightHistory I=new MJDogFightHistory();static MJDogFightHistory getInstance(){return I;}void on_show_sells_view(L1PcInstance p,L1NpcInstance n){p.log.add("dog");}}
+ static class DogFightSettings {static final int CASTER_NPC_ID=123;}
+ static class DogFightHistory {static final DogFightHistory I=new DogFightHistory();static DogFightHistory getInstance(){return I;}void on_show_sells_view(L1PcInstance p,L1NpcInstance n){p.log.add("dog");}}
  static class L1AssessedItem {}
  static class L1Shop {List<L1AssessedItem> assessItems(Inv inv){return empty?List.of():List.of(new L1AssessedItem());}}
  static boolean shopExists,empty,war,templateExists;
@@ -44,7 +44,7 @@ public class Check {
  static class SC_NoSell {static void send(L1PcInstance p,L1NpcInstance n){p.log.add("noSell");}}
  static class SC_ShopBuyList {static void send(int id,L1PcInstance p){p.log.add("sell:"+id);}}
  static class L1CastleLocation {static int getCastleIdByArea(L1NpcInstance n){return n.id;}}
- static class MJCastleWarBusiness {static final MJCastleWarBusiness I=new MJCastleWarBusiness();static MJCastleWarBusiness getInstance(){return I;}boolean isNowWar(int i){return war;}}
+ static class CastleWarBusiness {static final CastleWarBusiness I=new CastleWarBusiness();static CastleWarBusiness getInstance(){return I;}boolean isNowWar(int i){return war;}}
  static class L1Npc {int id;L1Npc(int n){id=n;}}
  static class NpcTable {static final NpcTable I=new NpcTable();static NpcTable getInstance(){return I;}L1Npc getTemplate(int id){return templateExists?new L1Npc(id):null;}}
  static class L1SummonInstance {L1SummonInstance(L1Npc n,L1PcInstance p){p.log.add("summon:"+n.id);}void setPetcost(int n){ck(n==6);}}

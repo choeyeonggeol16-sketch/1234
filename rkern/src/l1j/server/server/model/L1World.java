@@ -10,13 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-
 import l1j.server.Config;
-import l1j.server.MJ3SEx.MJNpcSpeedData;
-import l1j.server.MJINNSystem.MJINNHelper;
-import l1j.server.MJINNSystem.MJINNRoom;
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.MJWarSystem.MJWar;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.model.Instance.L1CastleGuardInstance;
 import l1j.server.server.model.Instance.L1CompanionInstance;
@@ -31,11 +25,8 @@ import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.map.L1Map;
-import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.model.network.packet.IPacketWriter;
-import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.world.siege.War;
 import l1j.server.server.types.Point;
 
 public class L1World {
@@ -52,7 +43,7 @@ public class L1World {
     final L1IntRegistry<L1SummonInstance> _allSummons;
     final L1IntRegistry<L1SupportInstance> _allSupports;
 
-    private final L1IntRegistry<MJWar> _allClanWars;
+    private final L1IntRegistry<War> _allClanWars;
     private final L1IntRegistry<L1ItemInstance> _allitem;
     private final L1IntRegistry<L1Clan> _allClans;
     final L1IntRegistry<L1NpcInstance> _allNpc;
@@ -82,7 +73,7 @@ public class L1World {
         _allSummons = new L1IntRegistry<L1SummonInstance>();  
         _allSupports = new L1IntRegistry<L1SupportInstance>();
         
-        _allClanWars = new L1IntRegistry<MJWar>();          
+        _allClanWars = new L1IntRegistry<War>();          
         _allClans = new L1IntRegistry<L1Clan>();              
         _allNpc = new L1IntRegistry<L1NpcInstance>();   
         _allShopNpc = new L1IntRegistry<L1NpcShopInstance>();
@@ -658,15 +649,15 @@ public class L1World {
         return _worldExecutor.getClusterGrid();
     }
 
-    public void addWar(MJWar war) {
+    public void addWar(War war) {
         _allClanWars.put(war.getId(), war);
     }
 
-    public MJWar removeWar(MJWar war) {
+    public War removeWar(War war) {
         return _allClanWars.remove(war.getId());
     }
     
-    public Stream<MJWar> createWarStream(){
+    public Stream<War> createWarStream(){
         return _allClanWars.size() <= 0 ? null : _allClanWars.values().stream();
     }
 

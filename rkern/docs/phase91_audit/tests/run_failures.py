@@ -15,11 +15,11 @@ def extract(java, declaration):
         i+=1
     return s[start:i]
 
-gludio=extract(SRC/'l1j/server/IndunSystem/Gludio/GludioInstanceDungeon.java', 'private void finish(Room r,String reason) {')
+gludio=extract(SRC/'l1j/server/server/model/world/instance/dungeon/gludio/GludioInstanceDungeon.java', 'private void finish(Room r,String reason) {')
 clan=extract(SRC/'l1j/server/server/model/network/core/cs/packet/CS_LeavePledge.java', 'private static void leaveClanBoss(')
 
 java=textwrap.dedent('''\
-package l1j.server.IndunSystem.Gludio;
+package l1j.server.server.model.world.instance.dungeon.gludio;
 import java.util.*;
 import java.util.logging.*;
 import java.io.File;
@@ -125,7 +125,7 @@ public class FailureRegression91 {
 
 sock=textwrap.dedent('''\
 package l1j.server.server.model.Instance;
-import l1j.server.IndunSystem.Gludio.FailureRegression91;
+import l1j.server.server.model.world.instance.dungeon.gludio.FailureRegression91;
 public class L1PcInstance {
   public final int id;private final int map;
   public String name="",clanName="";public boolean failTeleport;
@@ -143,7 +143,7 @@ public class L1PcInstance {
 shared=textwrap.dedent('''\
 package l1j.server.server.model.network.core.broadcast;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.IndunSystem.Gludio.FailureRegression91;
+import l1j.server.server.model.world.instance.dungeon.gludio.FailureRegression91;
 public class CSharedBroadcast {
   public static int failId=-1;public static boolean failOpen=false;
   public static CAsyncSendConstBuffer openRaw(byte[] bytes){
@@ -167,7 +167,7 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
 }
 ''')
 proto=textwrap.dedent('''\
-package l1j.server.IndunSystem.Gludio;
+package l1j.server.server.model.world.instance.dungeon.gludio;
 public class GludioDungeonPackets {
   static boolean failEncode;
   static byte[] encodeArenaPlayStatus(int seconds,boolean started){
@@ -179,8 +179,8 @@ public class GludioDungeonPackets {
 with tempfile.TemporaryDirectory() as td:
     base=pathlib.Path(td)
     for rel,txt in {
-        'l1j/server/IndunSystem/Gludio/FailureRegression91.java':java,
-        'l1j/server/IndunSystem/Gludio/GludioDungeonPackets.java':proto,
+        'l1j/server/server/model/world/instance/dungeon/gludio/FailureRegression91.java':java,
+        'l1j/server/server/model/world/instance/dungeon/gludio/GludioDungeonPackets.java':proto,
         'l1j/server/server/model/Instance/L1PcInstance.java':sock,
         'l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java':shared,
         'l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java':cb,
@@ -188,4 +188,4 @@ with tempfile.TemporaryDirectory() as td:
         p=base/rel;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(txt,encoding='utf8')
     files=[str(x) for x in base.rglob('*.java')]
     subprocess.run(['javac','--release','21','-encoding','UTF-8','-d',str(base),*files],check=True)
-    subprocess.run(['java','-cp',str(base),'l1j.server.IndunSystem.Gludio.FailureRegression91'],check=True)
+    subprocess.run(['java','-cp',str(base),'l1j.server.server.model.world.instance.dungeon.gludio.FailureRegression91'],check=True)

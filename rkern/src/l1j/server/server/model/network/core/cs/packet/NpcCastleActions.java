@@ -1,45 +1,43 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.datatables.NpcTable;
-import l1j.server.server.templates.L1Npc;
-import l1j.server.server.model.network.core.sc.packet.SC_CloseList;
-import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
-
-
-import l1j.server.server.model.network.core.sc.packet.SC_SellHouse;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
+
 import l1j.server.Config;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
+import l1j.server.server.ActionCodes;
 import l1j.server.server.Opcodes;
 import l1j.server.server.datatables.DoorSpawnTable;
 import l1j.server.server.datatables.HouseTable;
+import l1j.server.server.datatables.NpcTable;
+import l1j.server.server.model.Instance.L1CataInstance;
+import l1j.server.server.model.Instance.L1DoorInstance;
+import l1j.server.server.model.Instance.L1EffectInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1CastleLocation;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
+import l1j.server.server.model.L1EffectSpawn;
 import l1j.server.server.model.L1HouseLocation;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1DoorInstance;
-import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOFrame;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.templates.L1House;
-
-import l1j.server.MJWarSystem.MJWar;
-import l1j.server.server.ActionCodes;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1EffectSpawn;
-import l1j.server.server.model.Instance.L1CataInstance;
-import l1j.server.server.model.Instance.L1EffectInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
-import l1j.server.server.model.Instance.L1SummonInstance;
+import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.network.core.sc.packet.SC_CloseList;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
+import l1j.server.server.model.network.core.sc.packet.SC_SellHouse;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.War;
+import l1j.server.server.templates.L1House;
+import l1j.server.server.templates.L1Npc;
 
 final class NpcCastleActions {
     private NpcCastleActions() {}
@@ -50,7 +48,7 @@ final class NpcCastleActions {
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
-        final String value = Integer.toString(MJCastleWarBusiness.getInstance().getTaxRate(castleId));
+        final String value = Integer.toString(CastleWarBusiness.getInstance().getTaxRate(castleId));
         final long size = 24L + 4L * (page.length() + value.length());
         if (size > Integer.MAX_VALUE) return false;
         final CIOFrame frame = connection.beginDirectFrame((int)size);
@@ -187,21 +185,21 @@ final class NpcCastleActions {
 					return;
 				}
 			}
-			isNowWar = MJCastleWarBusiness.getInstance().isNowWar(L1CastleLocation.KENT_CASTLE_ID);
+			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.KENT_CASTLE_ID);
 		} else if (keeperId == 70600) { // OT
 			if (isExistDefenseClan(L1CastleLocation.OT_CASTLE_ID)) {
 				if (pcCastleId != L1CastleLocation.OT_CASTLE_ID) {
 					return;
 				}
 			}
-			isNowWar = MJCastleWarBusiness.getInstance().isNowWar(L1CastleLocation.OT_CASTLE_ID);
+			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.OT_CASTLE_ID);
 		} else if (keeperId == 70778 || keeperId == 70987 || keeperId == 70687) {
 			if (isExistDefenseClan(L1CastleLocation.WW_CASTLE_ID)) {
 				if (pcCastleId != L1CastleLocation.WW_CASTLE_ID) {
 					return;
 				}
 			}
-			isNowWar = MJCastleWarBusiness.getInstance().isNowWar(L1CastleLocation.WW_CASTLE_ID);
+			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.WW_CASTLE_ID);
 		} else if (keeperId == 70817 || keeperId == 70800 || keeperId == 70988 || keeperId == 70990 || keeperId == 70989
 				|| keeperId == 70991) {
 			if (isExistDefenseClan(L1CastleLocation.GIRAN_CASTLE_ID)) {
@@ -209,7 +207,7 @@ final class NpcCastleActions {
 					return;
 				}
 			}
-			isNowWar = MJCastleWarBusiness.getInstance().isNowWar(L1CastleLocation.GIRAN_CASTLE_ID);
+			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.GIRAN_CASTLE_ID);
 
 		} else if (keeperId == 70863 || keeperId == 70992 || keeperId == 70862) {
 			if (isExistDefenseClan(L1CastleLocation.HEINE_CASTLE_ID)) {
@@ -217,21 +215,21 @@ final class NpcCastleActions {
 					return;
 				}
 			}
-			isNowWar = MJCastleWarBusiness.getInstance().isNowWar(L1CastleLocation.HEINE_CASTLE_ID);
+			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.HEINE_CASTLE_ID);
 		} else if (keeperId == 70995 || keeperId == 70994 || keeperId == 70993) {
 			if (isExistDefenseClan(L1CastleLocation.DOWA_CASTLE_ID)) {
 				if (pcCastleId != L1CastleLocation.DOWA_CASTLE_ID) {
 					return;
 				}
 			}
-			isNowWar = MJCastleWarBusiness.getInstance().isNowWar(L1CastleLocation.DOWA_CASTLE_ID);
+			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.DOWA_CASTLE_ID);
 		} else if (keeperId == 70996) {
 			if (isExistDefenseClan(L1CastleLocation.ADEN_CASTLE_ID)) {
 				if (pcCastleId != L1CastleLocation.ADEN_CASTLE_ID) {
 					return;
 				}
 			}
-			isNowWar = MJCastleWarBusiness.getInstance().isNowWar(L1CastleLocation.ADEN_CASTLE_ID);
+			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.ADEN_CASTLE_ID);
 		}
 		List<L1DoorInstance> doors = DoorSpawnTable.getInstance().getDoorList();
 		
@@ -328,7 +326,7 @@ final class NpcCastleActions {
 		if (clan != null) {
 			int castleId = clan.getCastleId();
 			if (castleId != 0) {
-				if (!MJCastleWarBusiness.getInstance().isNowWar(castleId)) {
+				if (!CastleWarBusiness.getInstance().isNowWar(castleId)) {
 					List<L1DoorInstance> doors = DoorSpawnTable.getInstance().getDoorList();
 					for (L1DoorInstance door : doors) {
 						if (L1CastleLocation.checkInWarArea(castleId, door)) {
@@ -386,7 +384,7 @@ final class NpcCastleActions {
 	}
 
 	static String[] makeWarTimeStrings(int castleId) {		
-		Calendar warTime = MJCastleWarBusiness.getInstance().get(castleId).nextCal();
+		Calendar warTime = CastleWarBusiness.getInstance().get(castleId).nextCal();
 		int year = warTime.get(Calendar.YEAR);
 		int month = warTime.get(Calendar.MONTH) + 1;
 		int day = warTime.get(Calendar.DATE);
@@ -569,14 +567,14 @@ final class NpcCastleActions {
 						return htmlid;
 					}
 
-					boolean isNowWar = castleid != 0 && MJCastleWarBusiness.getInstance().isNowWar(castleid);
+					boolean isNowWar = castleid != 0 && CastleWarBusiness.getInstance().isNowWar(castleid);
 					if (!isNowWar) {
 						SC_ServerMessage.send(pc, 3683);
 						// 투석기 사용: 실패(공성 시간에만 사용 가능)
 						return htmlid;
 					}
 					//
-					boolean inWar = MJWar.isNowWar(pc.getClan());
+					boolean inWar = War.isNowWar(pc.getClan());
 					if (!(pc.isCrown() && inWar && isNowWar)) {
 						SC_ServerMessage.send(pc, 3681);
 						// 투석기 사용: 실패(전쟁을 선포한 군주만 사용 가능)
@@ -656,8 +654,8 @@ final class NpcCastleActions {
 					 * if (pc.getLevel() < 52) { SC_ServerMessage.send(pc, 3854); // 52레벨
 					 * 이상만 붉은 기사단에 가입이 가능합니다. return htmlid; }
 					 * 
-					 * if (pc.getRedKnightClanId() == 0) { MJCastleWarBusiness business =
-					 * MJCastleWarBusiness.getInstance(); int castleId =
+					 * if (pc.getRedKnightClanId() == 0) { CastleWarBusiness business =
+					 * CastleWarBusiness.getInstance(); int castleId =
 					 * business.isNowReady(L1CastleLocation.GIRAN_CASTLE_ID) ?
 					 * L1CastleLocation.GIRAN_CASTLE_ID :
 					 * business.isNowReady(L1CastleLocation.OT_CASTLE_ID) ?
@@ -702,7 +700,7 @@ final class NpcCastleActions {
             return false;
         }
         final int castleId = L1CastleLocation.getCastleIdByArea(npc);
-        if (castleId > 0 && MJCastleWarBusiness.getInstance().isNowWar(castleId)) {
+        if (castleId > 0 && CastleWarBusiness.getInstance().isNowWar(castleId)) {
             SC_SystemMessage.send(pc, "해당성의 공성전이 진행중에는 이용 불가능합니다.");
             return false;
         }

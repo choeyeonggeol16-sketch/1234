@@ -1,11 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /**
  * SC_CRAFT_BATCH_ACK (0x005D) — 배치 제작 결과. 
@@ -37,7 +33,7 @@ public final class SC_CRAFT_BATCH_ACK extends ProtoPacket {
 
     @Override
     protected void body(ProtoWriter w) {
-        w.int32(1, _eResult);              // enum == int32 (varint) — MJ writeEnum과 동일 wire
+        w.int32(1, _eResult);              // enum == int32 (varint) — server writeEnum과 동일 wire
         w.int32(2, _batchTransactionId);
     }
 

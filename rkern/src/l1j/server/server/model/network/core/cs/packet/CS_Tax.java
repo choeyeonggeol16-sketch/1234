@@ -1,10 +1,10 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
 
 public final class CS_Tax {
 
@@ -70,8 +70,8 @@ public final class CS_Tax {
             return;
         }
 
-        final MJCastleWarBusiness business =
-                MJCastleWarBusiness
+        final CastleWarBusiness business =
+                CastleWarBusiness
                         .getInstance();
 
         business.setTaxRate(

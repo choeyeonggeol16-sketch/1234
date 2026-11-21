@@ -4,15 +4,15 @@ No live MySQL, CacheD, or full game runtime is claimed."""
 from pathlib import Path
 import re, tempfile, subprocess
 root=Path(__file__).resolve().parents[2]
-source=root/'src/l1j/server/MJCTSystem/MJCTHandler.java'
+source=root/'src/l1j/server/server/model/item/collection/CollectionHandler.java'
 code=re.sub(r'(?m)^(?:package |import l1j\.).*?;\s*\n','',source.read_text())
-obj=(root/'src/l1j/server/MJCTSystem/MJCTObject.java').read_text()
-obj=re.sub(r'(?m)^(?:package |import l1j\.).*?;\s*\n','',obj).replace('public class MJCTObject','class MJCTObject').replace('SC_CTPacket.Data infoPck','Object infoPck')
-code=code.replace('public final class MJCTHandler','final class MJCTHandler')
+obj=(root/'src/l1j/server/server/model/item/collection/CollectionObject.java').read_text()
+obj=re.sub(r'(?m)^(?:package |import l1j\.).*?;\s*\n','',obj).replace('public class CollectionObject','class CollectionObject').replace('SC_CTPacket.Data infoPck','Object infoPck')
+code=code.replace('public final class CollectionHandler','final class CollectionHandler')
 # Classes retain signatures used by production handler. Transaction double stages
 # SQL then either publishes all state or discards the clone on an injected failure.
 stubs=r'''
-class MJCTLoadManager {static final int CTSYSTEM_STORE_ID=3000468, CTSYSTEM_LOAD_ID=3000469; static final String _invalidCharacter="invalid";}
+class CollectionLoadManager {static final int CTSYSTEM_STORE_ID=3000468, CTSYSTEM_LOAD_ID=3000469; static final String _invalidCharacter="invalid";}
 class L1ItemInstance {int id,kind,count=1;boolean stack;L1ItemInstance(int i,int k){id=i;kind=k;}int getId(){return id;}int getItemId(){return kind;}boolean isStackable(){return stack;}int getCount(){return count;}}
 class Inventory {java.util.Map<Integer,L1ItemInstance> items=new java.util.HashMap<>(); L1ItemInstance getItem(int id){return items.get(id);}}
 class Account {Tam tam=new Tam();Tam getTamHandler(){return tam;}}
@@ -26,7 +26,7 @@ class SC_SystemMessage {static void send(L1PcInstance p,String s){Test.message=s
 class SC_ItemName {static void send(L1PcInstance p,L1ItemInstance i){Test.nameNotice++;}}
 class CS_CharSelect {static void restartProcess(L1PcInstance p){Test.restart++;}}
 class CS_CommonClick {static void sendCharAmountAndPacks(CIOClient c){Test.amount++;}}
-class MJCTSystemLoader {static MJCTSystemLoader getInstance(){return new MJCTSystemLoader();}static void removeCommitted(int id){Test.cacheRemove++;}static void publishCommitted(MJCTObject o){if(o==null)throw new AssertionError();Test.cacheSet++;}}
+class CollectionSystemLoader {static CollectionSystemLoader getInstance(){return new CollectionSystemLoader();}static void removeCommitted(int id){Test.cacheRemove++;}static void publishCommitted(CollectionObject o){if(o==null)throw new AssertionError();Test.cacheSet++;}}
 class User {static L1InventoryTransaction CheckAndSetPendingUseETCItem(L1PcInstance p,int key){return new L1InventoryTransaction(p);}}
 interface Mutation {void run(Connection c) throws SQLException;}
 class L1InventoryTransaction implements AutoCloseable {
@@ -64,8 +64,8 @@ class Test {
    if(s.startsWith("DELETE FROM tb_mjct_mapping")){if(!p.get(1).equals(b.mapping)||!p.get(2).equals(2))return 0;b.mapping=0;return 1;}
   }throw new SQLException("unexpected SQL: "+s);
  });});}
- static L1PcInstance pc(boolean box){L1PcInstance p=new L1PcInstance();p.inv.items.put(90,new L1ItemInstance(90,box?MJCTLoadManager.CTSYSTEM_LOAD_ID:MJCTLoadManager.CTSYSTEM_STORE_ID));return p;}
- static boolean start(L1PcInstance p,boolean box){return box?MJCTHandler.load(p,p.inv.getItem(90)):MJCTHandler.store(p,p.inv.getItem(90),2,()->completion++);}
+ static L1PcInstance pc(boolean box){L1PcInstance p=new L1PcInstance();p.inv.items.put(90,new L1ItemInstance(90,box?CollectionLoadManager.CTSYSTEM_LOAD_ID:CollectionLoadManager.CTSYSTEM_STORE_ID));return p;}
+ static boolean start(L1PcInstance p,boolean box){return box?CollectionHandler.load(p,p.inv.getItem(90)):CollectionHandler.store(p,p.inv.getItem(90),2,()->completion++);}
  static DB finish(DB b,boolean commit){DB copy=b.copy();try{tx.sql.run(connection(copy));if(!commit)throw new SQLException("post-SQL item/commit failure");}catch(SQLException e){tx.failure.run();return b;}tx.durable.run();if(disconnected)return copy;tx.pc.inv.items.remove(tx.debit.id);if(tx.reward!=null)tx.pc.inv.items.put(tx.reward.id,tx.reward);done.run();return copy;}
  static void scenario(boolean box,int failure,boolean commit,int invalid){reset();DB b=new DB();if(box){b.owner="[MJCTSYSTEM]";b.mapping=90;}
   if(invalid==1)b.account=false;if(invalid==2)b.caller=false;if(invalid==3)b.owner="foreign";if(invalid==4)b.online=1;if(invalid==5)pending=true;if(invalid==6){if(box)b.dup=true;else b.mapping=80;}if(invalid==7){if(box)b.slots=2;else b.stats=0;}if(invalid==8){if(box)b.number=9;else b.stats=0;}
@@ -83,7 +83,7 @@ with tempfile.TemporaryDirectory() as d:
  p=Path(d)/'Test.java';p.write_text(code+obj+stubs+test)
  subprocess.run(['javac','--release','21','-encoding','UTF-8',str(p)],check=True)
  subprocess.run(['java','-cp',d,'Test'],check=True)
-loader=(root/'src/l1j/server/MJCTSystem/Loader/MJCTSystemLoader.java').read_text()
+loader=(root/'src/l1j/server/server/model/item/collection/loader/CollectionSystemLoader.java').read_text()
 assert 'delete from tb_mjct_mapping' not in loader.lower()
 assert 'size\t= list.size();' in loader or re.search(r'int\s+size\s*=\s*list.size\(\)',loader)
 assert 'spQ = null;' in loader

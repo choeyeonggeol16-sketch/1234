@@ -18,10 +18,10 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.MJTemplate.FindItemTable.TableFindItemFilter;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.item.search.template.TableFindItemFilter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftOutputItem;
 import l1j.server.server.templates.L1Armor;
 import l1j.server.server.templates.L1EtcItem;

@@ -6,11 +6,10 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import l1j.server.Config;
-import l1j.server.MJTemplate.MJL1Type;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.NpcTable;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -18,6 +17,8 @@ import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancyNpc;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
 
 public class L1Spawn {
@@ -26,7 +27,7 @@ public class L1Spawn {
 
     /*
      * Local timer ids for the CIO-backed NpcMaker bridge.
-     * These numeric ids are our implementation detail, not NC-proven ids.
+     * These numeric ids are our implementation detail, not reference design ids.
      */
     public static final int TIMER_NPC_MAKER_WAKE = 1;
     public static final int TIMER_NPC_MAKER_RESPAWN = 2;
@@ -401,7 +402,7 @@ public class L1Spawn {
             int tryCount = 0;
 
             final L1Object obj = L1World.getInstance().findObject(objectId);
-            if (obj != null && obj.instanceOf(MJL1Type.L1TYPE_MONSTER)) {
+            if (obj != null && obj.instanceOf(L1Type.L1TYPE_MONSTER)) {
                 final L1MonsterInstance old = (L1MonsterInstance) obj;
                 if (!old.isDead()) {
                     old.deleteMe();

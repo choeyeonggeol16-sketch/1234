@@ -1,17 +1,14 @@
 package l1j.server.server.model.Instance;
 
 import java.util.List;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+
 import org.jctools.queues.MpscLinkedQueue;
+
 import l1j.server.Config;
-import l1j.server.MJ3SEx.EActionCodes;
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.MJTemplate.MJRnd;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.MapsTable;
@@ -29,29 +26,31 @@ import l1j.server.server.model.L1Spawn;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancyNpc;
-import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.animation.EActionCodes;
 import l1j.server.server.model.character.skill.ControlSkillEffects;
+import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.model.network.core.sc.packet.SC_ExplosionNoti;
+import l1j.server.server.model.network.core.sc.packet.SC_MoveChar;
+import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.ActionSpriteMapper;
+import l1j.server.server.model.npc.ai.CDesirePQ;
+import l1j.server.server.model.npc.ai.HateEvent;
+import l1j.server.server.model.npc.ai.NpcDigestItems;
+import l1j.server.server.model.npc.ai.NpcEventFactory;
+import l1j.server.server.model.npc.ai.NpcPotionPolicy;
+import l1j.server.server.model.npc.ai.NpcRefineRecipes;
+import l1j.server.server.model.npc.ai.NpcServer;
+import l1j.server.server.model.npc.ai.NpcSpecials;
+import l1j.server.server.model.npc.ai.action.AiRuntime;
 import l1j.server.server.model.npc.ai.action.CCreatureController;
 import l1j.server.server.model.npc.ai.action.CGetItemAction;
 import l1j.server.server.model.npc.ai.action.CMoveAction;
-import l1j.server.server.model.npc.ai.action.AiRuntime;
-import l1j.server.server.model.npc.ai.NpcServer;
-import l1j.server.server.model.npc.ai.HateEvent;
-import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.model.npc.ai.NpcDigestItems;
-import l1j.server.server.model.npc.ai.CDesirePQ;
-import l1j.server.server.model.npc.ai.NpcPotionPolicy;
-import l1j.server.server.model.npc.ai.NpcRefineRecipes;
-import l1j.server.server.model.npc.ai.NpcSpecials;
-import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
-import l1j.server.server.model.network.core.sc.packet.SC_MoveChar;
-import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
-import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.network.core.sc.packet.SC_ExplosionNoti;
-
+import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.templates.L1NpcChat;
 import l1j.server.server.types.Point;
@@ -1227,7 +1226,7 @@ public class L1NpcInstance extends L1Character {
 
     @Override
     public void dispose() {
-        l1j.server.MJEffectSystem.Realize.OnEffectThread.cancelNpc(this);
+        l1j.server.server.model.character.effect.action.realize.OnEffectThread.cancelNpc(this);
         _mobGroupInfo = null;
         _inventory = null;
 
@@ -1240,7 +1239,7 @@ public class L1NpcInstance extends L1Character {
     }
 
     public void deleteMe() {
-        l1j.server.MJEffectSystem.Realize.OnEffectThread.cancelNpc(this);
+        l1j.server.server.model.character.effect.action.realize.OnEffectThread.cancelNpc(this);
         synchronized (this) {
             if (_destroyed) {
                 return;
@@ -2440,7 +2439,7 @@ public class L1NpcInstance extends L1Character {
 
     @Override
     public int getL1Type() {
-        return _instanceType == -1 ? _instanceType = super.getL1Type() | MJL1Type.L1TYPE_NPC : _instanceType;
+        return _instanceType == -1 ? _instanceType = super.getL1Type() | L1Type.L1TYPE_NPC : _instanceType;
     }
 
 }

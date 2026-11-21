@@ -1,92 +1,78 @@
 package l1j.server.server.model.character.action;
 
-import l1j.server.Config;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.IndunSystem.MiniGame.L1Gambling3;
-import l1j.server.MJ3SEx.EActionCodes;
-import l1j.server.MJ3SEx.SpriteInformation;
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.MJTemplate.MJRnd;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
-import l1j.server.server.model.L1PolyMorph;
-import l1j.server.server.model.Instance.L1ClanJoinInstance;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.character.Utill.PcBaseAbilityCache;
-import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType;
-import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.utils.MJCommons;
-import l1j.server.server.utils.TYUtil;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.server.model.network.core.sc.packet.SC_AttackCritical;
-import l1j.server.server.utils.CalcStat;
-import l1j.server.server.model.character.Combat.CCreatureDamageReaction;
-import l1j.server.server.model.character.Combat.MortalBody.MortalBodyProcEngine;
+
+import l1j.server.Config;
+import l1j.server.server.model.character.combat.arena.dogfight.DogFightSettings;
+import l1j.server.server.model.character.combat.arena.dogfight.instance.DogFightAttackHandler;
+import l1j.server.server.model.character.combat.arena.dogfight.instance.DogFightInstance;
+import l1j.server.server.model.world.instance.dungeon.minigame.L1Gambling3;
+import l1j.server.server.ActionCodes;
+import l1j.server.server.datatables.WeaponAddDamage;
+import l1j.server.server.model.*;
+import l1j.server.server.model.Instance.L1ClanJoinInstance;
+import l1j.server.server.model.Instance.L1CompanionInstance;
+import l1j.server.server.model.Instance.L1GuardianInstance;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1ScarecrowInstance;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.Attack.Helper.DamageReductionHelper;
+import l1j.server.server.model.character.Attack.Helper.HitEvasionModel;
 import l1j.server.server.model.character.Attack.Helper.L1AttackHelper;
-import l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatProcs;
+import l1j.server.server.model.character.Attack.Helper.L1AttackPacketHelper;
 import l1j.server.server.model.character.Attack.Helper.L1DamageCalcHelper;
 import l1j.server.server.model.character.Attack.Helper.L1SkillProcHelper;
 import l1j.server.server.model.character.Attack.Helper.L1UndeadBonusHelper;
+import l1j.server.server.model.character.Attack.Helper.L1WeaponAttrEnchantHelper;
 import l1j.server.server.model.character.Attack.Helper.L1WeaponDurabilityHelper;
 import l1j.server.server.model.character.Attack.Helper.NpcStatusAttackHelper;
 import l1j.server.server.model.character.Attack.Helper.TargetSizeHelper;
-import l1j.server.server.model.character.Attack.Helper.L1AttackPacketHelper;
-import l1j.server.server.model.character.Attack.Helper.DamageReductionHelper;
-import l1j.server.server.model.character.Attack.Helper.HitEvasionModel;
-import l1j.server.server.model.character.Attack.Helper.L1WeaponAttrEnchantHelper;
-import l1j.server.server.model.Instance.L1ScarecrowInstance;
-import l1j.server.server.model.Instance.L1GuardianInstance;
-import l1j.server.server.utils.CommonUtil;
-import l1j.server.DogFight.Instance.MJDogFightInstance;
-import l1j.server.DogFight.Instance.MJDogFightAttackHandler;
-import l1j.server.DogFight.MJDogFightSettings;
-import l1j.server.MJCompanion.Instance.MJCompanionAttackHandler;
-import l1j.server.MJInstanceSystem.MJInstanceEnums.InstStatus;
-import l1j.server.MJRaidSystem.Loader.MJRaidLoadManager;
-import l1j.server.server.ActionCodes;
-import l1j.server.server.datatables.WeaponAddDamage;
-import l1j.server.server.datatables.SkillsTable;
-import l1j.server.server.datatables.UserProtectMonsterTable;
-import l1j.server.server.model.Instance.L1CompanionInstance;
-import l1j.server.server.model.Instance.L1MonsterInstance;
-import l1j.server.server.model.Instance.L1PeopleInstance;
+import l1j.server.server.model.character.combat.CCreatureDamageReaction;
+import l1j.server.server.model.character.combat.mortalbody.MortalBodyProcEngine;
+import l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatProcs;
+import l1j.server.server.model.character.animation.EActionCodes;
+import l1j.server.server.model.character.animation.SpriteInformation;
+import l1j.server.server.model.character.companion.instance.CompanionAttackHandler;
+import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.helper.WeakExposeHelper;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.gametime.L1GameTimeClock;
-import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.model.network.core.cs.packet.CS_ItemUse;
-import l1j.server.server.model.poison.L1DamagePoison;
-import l1j.server.server.model.poison.L1ParalysisPoison;
-import l1j.server.server.model.poison.L1SilencePoison;
+import l1j.server.server.model.network.core.sc.packet.SC_AttackCritical;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackMissPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacketForNpc;
+import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
-import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_UseArrowSkill;
 import l1j.server.server.model.network.core.sc.packet.SC_UseAttackSkill;
-import l1j.server.server.templates.L1Skills;
-import l1j.server.server.model.*;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.poison.L1DamagePoison;
+import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType;
+import l1j.server.server.shared.GameRandom;
+import l1j.server.server.shared.L1Type;
+import l1j.server.server.utils.CalcStat;
+import l1j.server.server.utils.CommonUtil;
+import l1j.server.server.utils.GameUtils;
+import l1j.server.server.utils.TYUtil;
 public final class CAttackAction extends CNewAction {
 
     private static final Logger LOG = Logger.getLogger(CAttackAction.class.getName());
@@ -225,7 +211,7 @@ public final class CAttackAction extends CNewAction {
             return true;
         }
 
-        if (isAuto && (owner.is_non_action() || MJCommons.isStunSkill(owner))) {
+        if (isAuto && (owner.is_non_action() || GameUtils.isStunSkill(owner))) {
             AddTimer(5);
             return false;
         }
@@ -317,7 +303,7 @@ public final class CAttackAction extends CNewAction {
 
         final L1Object obj = L1World.getInstance().findObject(tId);
 
-        if (obj == null || !obj.instanceOf(MJL1Type.L1TYPE_CHARACTER)) {
+        if (obj == null || !obj.instanceOf(L1Type.L1TYPE_CHARACTER)) {
             if (!isAuto) {
                 doAttack(owner, null, true, x, y);
             }
@@ -403,7 +389,7 @@ public final class CAttackAction extends CNewAction {
         }
 
         if (owner.hasSkillEffect(L1SkillId.BLIND_HIDING)
-                || MJCommons.isNonAction(owner)) {
+                || GameUtils.isNonAction(owner)) {
             return false;
         }
 
@@ -647,13 +633,13 @@ public final class CAttackAction extends CNewAction {
     }
 
     /*
-     * NC CAttackAction execution / AttackTargetData dispatch phases.
+     * reference server CAttackAction execution / AttackTargetData dispatch phases.
      * Full V4 reward, counter, damage, packet and commit ordering preserved.
      * Instance implementations must call this action owner, not a duplicate
      * combat dispatcher. NPC-specific rule checks remain on their instances.
      */
 /**
-     * NC-style centralized PC -> NPC execution for ordinary target entities.
+     * reference design centralized PC -> NPC execution for ordinary target entities.
      * Target-specific permission checks stay at the entity boundary.
      * Hit/damage formulas use src22's core rules; action and commit order stays intact.
      */
@@ -873,7 +859,7 @@ public final class CAttackAction extends CNewAction {
     }
 
     /**
-     * NC-inspired per-target AttackTargetData execution context.
+     * reference design per-target AttackTargetData execution context.
      * All four PC/NPC hit and final damage paths, special effects, counter
      * handling, animations and HP commits live inside CAttackAction now.
      * Combat fields are reset on borrow/release; nested attacks do not share a live context.
@@ -1145,7 +1131,7 @@ public final class CAttackAction extends CNewAction {
 	/* ■■■■■■■■■■■■■■■■ 명중 판정 ■■■■■■■■■■■■■■■■ */
 
     // src22/L1Attack PC/NPC hit/damage rules, retained under the existing
-    // NC CAttackAction ownership and per-character context. No L1Attack class.
+    // reference server CAttackAction ownership and per-character context. No L1Attack class.
     private boolean _edoryuDouble;
     private boolean _doubleBreak;
     private boolean _burning;
@@ -1216,7 +1202,7 @@ public final class CAttackAction extends CNewAction {
             if (L1AttackHelper.isSafeZoneAttackBlocked(_pc, _target)) return false;
             if (_weaponType2 == 17) {
                 return !L1AttackHelper.applyInvalidHitRule(_target)
-                        && !MJCommons.isCounterMagic(_target);
+                        && !GameUtils.isCounterMagic(_target);
             }
 
             final boolean rangedPc = L1AttackHelper.isRangedByType1(type1);          
@@ -1234,7 +1220,7 @@ public final class CAttackAction extends CNewAction {
         }
         if (_weaponType2 == 17) {
             return !L1AttackHelper.applyInvalidHitRule(_target)
-                    && !MJCommons.isCounterMagic(_target);
+                    && !GameUtils.isCounterMagic(_target);
         }
         // PC_NPC
         return calcPcNpcHit();
@@ -1255,7 +1241,7 @@ public final class CAttackAction extends CNewAction {
 		    return false; 
 		}
         
-        return (_npc instanceof L1CompanionInstance || _npc instanceof MJDogFightInstance)
+        return (_npc instanceof L1CompanionInstance || _npc instanceof DogFightInstance)
                 ? do_calc_hit_companion(_npc)
                 : calcNpcPcHit();
     }
@@ -1266,7 +1252,7 @@ public final class CAttackAction extends CNewAction {
     
         if (!L1AttackHelper.isAttackableNpcTarget(_targetNpc)) return false;
         
-        return (_npc instanceof L1CompanionInstance || _npc instanceof MJDogFightInstance)
+        return (_npc instanceof L1CompanionInstance || _npc instanceof DogFightInstance)
                 ? do_calc_hit_companion(_npc)
                 : calcNpcNpcHit();
     }
@@ -1413,10 +1399,10 @@ public final class CAttackAction extends CNewAction {
 				dmg = calcPcNpcDamage();
 				break;
 			case NPC_PC:
-				dmg = (_npc instanceof L1CompanionInstance || _npc instanceof MJDogFightInstance) ? do_calc_damage_companion(_npc) : calcNpcPcDamage();
+				dmg = (_npc instanceof L1CompanionInstance || _npc instanceof DogFightInstance) ? do_calc_damage_companion(_npc) : calcNpcPcDamage();
 				break;
 			case NPC_NPC:
-				dmg = (_npc instanceof L1CompanionInstance || _npc instanceof MJDogFightInstance) ? do_calc_damage_companion(_npc) : calcNpcNpcDamage();
+				dmg = (_npc instanceof L1CompanionInstance || _npc instanceof DogFightInstance) ? do_calc_damage_companion(_npc) : calcNpcNpcDamage();
 				break;
 			default:
 				dmg = 0;
@@ -1902,26 +1888,26 @@ public final class CAttackAction extends CNewAction {
     
     
 	private boolean do_calc_hit_companion(L1Character attacker) {
-		int hit = MJCompanionAttackHandler.do_calculate_hit(this, attacker, _target);
-		hit += MJDogFightAttackHandler.do_calculate_hit(this, attacker, _target);
-		if (attacker instanceof MJDogFightInstance && _target instanceof MJDogFightInstance) {
-			if (((MJDogFightInstance) attacker).getTotalPrice() > ((MJDogFightInstance) _target).getTotalPrice()) {
-				hit -= MJDogFightSettings.FAKE_HIT;
+		int hit = CompanionAttackHandler.do_calculate_hit(this, attacker, _target);
+		hit += DogFightAttackHandler.do_calculate_hit(this, attacker, _target);
+		if (attacker instanceof DogFightInstance && _target instanceof DogFightInstance) {
+			if (((DogFightInstance) attacker).getTotalPrice() > ((DogFightInstance) _target).getTotalPrice()) {
+				hit -= DogFightSettings.FAKE_HIT;
 			}
 		}
-		boolean isHit = MJRnd.isWinning(100, hit);
+		boolean isHit = GameRandom.isWinning(100, hit);
 		set_hit_rate(hit);
 		set_hit(isHit);
-		MJCompanionAttackHandler.on_hit_notify(this, attacker, _target, isHit);
-		MJDogFightAttackHandler.on_hit_notify(this, attacker, _target, isHit);
+		CompanionAttackHandler.on_hit_notify(this, attacker, _target, isHit);
+		DogFightAttackHandler.on_hit_notify(this, attacker, _target, isHit);
 		return isHit;
 	}
 	private int do_calc_damage_companion(L1Character attacker) {
-		int damage = MJCompanionAttackHandler.do_calculate_damage(this, attacker, _target);
-		damage += MJDogFightAttackHandler.do_calculate_damage(this, attacker, _target);
-		if (attacker instanceof MJDogFightInstance && _target instanceof MJDogFightInstance) {
-			if (((MJDogFightInstance) attacker).getTotalPrice() > ((MJDogFightInstance) _target).getTotalPrice()) {
-				damage -= MJDogFightSettings.FAKE_DAMAGE;
+		int damage = CompanionAttackHandler.do_calculate_damage(this, attacker, _target);
+		damage += DogFightAttackHandler.do_calculate_damage(this, attacker, _target);
+		if (attacker instanceof DogFightInstance && _target instanceof DogFightInstance) {
+			if (((DogFightInstance) attacker).getTotalPrice() > ((DogFightInstance) _target).getTotalPrice()) {
+				damage -= DogFightSettings.FAKE_DAMAGE;
 			}
 		}
 		if (damage <= 0)
@@ -1965,8 +1951,8 @@ public final class CAttackAction extends CNewAction {
         if (gfx == 7684 && !_pc.hasSkillEffect(L1SkillId.PAP_FIVEPEARLBUFF)) return true;
         if (gfx == 7805 && !_pc.hasSkillEffect(L1SkillId.PAP_MAGICALPEARLBUFF)) return true;
         if (gfx == 7720) return true;
-        if ((id == MJRaidLoadManager.MRS_SP_VALAKAS_HPABSORB_ID
-                || id == MJRaidLoadManager.MRS_SP_VALAKAS_MPABSORB_ID) && !_pc.isValakasProduct()) return true;
+        if ((id == RaidLoadManager.MRS_SP_VALAKAS_HPABSORB_ID
+                || id == RaidLoadManager.MRS_SP_VALAKAS_MPABSORB_ID) && !_pc.isValakasProduct()) return true;
         return false;
     }
 
@@ -2240,12 +2226,12 @@ public final class CAttackAction extends CNewAction {
 	// ●●●● 플레이어에 계산 결과를 반영 ●●●●
 	private void commitPc(int dmg) {
 		if (_calcType == PC_PC) {
-			if (MJCommons.isUnbeatable(_targetPc))
+			if (GameUtils.isUnbeatable(_targetPc))
 				_damage = 0;
             if (isUnarmedPcAttack()) _targetPc.receiveUnarmedPhysicalDamage(_pc, _damage + dmg);
             else _targetPc.receiveDamage(_pc, _damage + dmg);
 		} else if (_calcType == NPC_PC) {
-			if (MJCommons.isUnbeatable(_targetPc))
+			if (GameUtils.isUnbeatable(_targetPc))
 				_damage = 0;
 			_targetPc.receiveDamage(_npc, _damage + dmg);
 		}
@@ -2253,12 +2239,12 @@ public final class CAttackAction extends CNewAction {
 
 	private void commitNpc(int dmg) {
 		if (_calcType == PC_NPC) {
-			if (MJCommons.isUnbeatable(_targetNpc))
+			if (GameUtils.isUnbeatable(_targetNpc))
 				_damage = 0;
 			damageNpcWeaponDurability(); // 무기를 손상시킨다.
 			_targetNpc.receiveDamage(_pc, _damage + dmg);
 		} else if (_calcType == NPC_NPC) {
-			if (MJCommons.isUnbeatable(_targetNpc))
+			if (GameUtils.isUnbeatable(_targetNpc))
 				_damage = 0;
 			_targetNpc.receiveDamage(_npc, _damage + dmg);
 		}
@@ -2284,7 +2270,7 @@ public final class CAttackAction extends CNewAction {
 			SC_DoActionGFX.send(_pc.getNetConnection(), _pc.getId(), ActionCodes.ACTION_Damage);
 			SC_DoActionGFX.broadcast(_pc, ActionCodes.ACTION_Damage);
 
-			if (_targetPc.isPassive(MJPassiveID.COUNTER_BARRIER_VETERAN.toInt())) {
+			if (_targetPc.isPassive(PassiveID.COUNTER_BARRIER_VETERAN.toInt())) {
 				_targetPc.send_effect(17220);
 			} else {
 				_targetPc.send_effect(10710);
@@ -2303,7 +2289,7 @@ public final class CAttackAction extends CNewAction {
                 }
                 SC_DoActionGFX.broadcast(_npc, ActionCodes.ACTION_Damage);
             }
-			if (_targetPc.isPassive(MJPassiveID.COUNTER_BARRIER_VETERAN.toInt())) {
+			if (_targetPc.isPassive(PassiveID.COUNTER_BARRIER_VETERAN.toInt())) {
 				_targetPc.send_effect(17220);
 			} else {
 				_targetPc.send_effect(10710);

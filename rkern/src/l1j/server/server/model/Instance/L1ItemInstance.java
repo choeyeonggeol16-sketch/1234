@@ -1,45 +1,33 @@
 package l1j.server.server.model.Instance;
 
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import java.util.concurrent.RejectedExecutionException;
+
 import l1j.server.Config;
-import l1j.server.MJCTSystem.MJCTObject;
-import l1j.server.MJCTSystem.Loader.MJCTLoadManager;
-import l1j.server.MJCTSystem.Loader.MJCTSystemLoader;
-import l1j.server.MJINNSystem.MJINNHelper;
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.MJTemplate.ItemPresentator.ItemPresentatorFactory;
-import l1j.server.PrideSystem.PrideInfo;
-import l1j.server.PrideSystem.PrideLoadManager;
+import l1j.server.server.model.item.pride.PrideInfo;
+import l1j.server.server.model.item.pride.PrideLoadManager;
 import l1j.server.server.ThreadPool; //CrockController
 import l1j.server.server.datatables.PetTable;
-import l1j.server.server.model.L1EquipmentSlot;
-import l1j.server.server.model.L1EquipmentSlot.ClassArmorBonus;
 import l1j.server.server.model.L1EquipmentTimer;
 import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1HouseLocation;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.item.ItemEffectRegistry;
-import l1j.server.server.model.item.ItemStat;
 import l1j.server.server.model.item.assembly.CItemAssembler;
 import l1j.server.server.model.item.assembly.CItemEnchantOption;
-import l1j.server.server.model.item.cooking.CookingRegistry;
-import l1j.server.server.model.item.doll.DollOption;
-import l1j.server.server.model.item.doll.DollRegistry;
+import l1j.server.server.model.item.collection.CollectionObject;
+import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
+import l1j.server.server.model.item.collection.loader.CollectionSystemLoader;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.templates.L1Armor;
+import l1j.server.server.model.world.instance.inn.InnHelper;
+import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1ItemBookMark;
 import l1j.server.server.templates.L1Pet;
+import l1j.server.server.utils.BytesOutputStream;
 import l1j.server.server.utils.ItemPresentOutStream;
-import l1j.server.server.utils.MJBytesOutputStream;
-import l1j.server.server.utils.eKind;
 
 public class L1ItemInstance extends L1Object {
 
@@ -671,7 +659,7 @@ public class L1ItemInstance extends L1Object {
 			}
 		}
 
-		if (itemId == MJINNHelper.INN_KEYID) {
+		if (itemId == InnHelper.INN_KEYID) {
 			name.append(" (").append(getHotel_Town()).append(')');
 		}
 
@@ -745,8 +733,8 @@ public class L1ItemInstance extends L1Object {
 			name.append("$237");
 
 			/** MJCTSystem **/
-		} else if (getItem().getItemId() == MJCTLoadManager.CTSYSTEM_LOAD_ID) {
-			MJCTObject obj = MJCTSystemLoader.getInstance().get(getId());
+		} else if (getItem().getItemId() == CollectionLoadManager.CTSYSTEM_LOAD_ID) {
+			CollectionObject obj = CollectionSystemLoader.getInstance().get(getId());
 			if (obj == null)
 				name.append(_item.getNameId());
 			else
@@ -1040,9 +1028,9 @@ public class L1ItemInstance extends L1Object {
 
 	public byte[] serialize() {
 		byte[] data = null;
-		MJBytesOutputStream os = null;
+		BytesOutputStream os = null;
 		try {
-			os = new MJBytesOutputStream(128);
+			os = new BytesOutputStream(128);
 			os.write(0x08); // object_id
 			os.writeBit(getId());
 			os.write(0x10); // name_id
@@ -1155,7 +1143,7 @@ public class L1ItemInstance extends L1Object {
 
 	@Override
 	public int getL1Type() {
-		return _instanceType == -1 ? _instanceType = super.getL1Type() | MJL1Type.L1TYPE_ITEMINSTANCE : _instanceType;
+		return _instanceType == -1 ? _instanceType = super.getL1Type() | L1Type.L1TYPE_ITEMINSTANCE : _instanceType;
 	}
 
 	private boolean m_is_give = false;

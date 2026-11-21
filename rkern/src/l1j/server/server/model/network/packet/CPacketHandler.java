@@ -3,30 +3,25 @@ package l1j.server.server.model.network.packet;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.server.Opcodes;
+import l1j.server.server.model.Dungeon;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.helper.SkillUseHelper;
 import l1j.server.server.model.network.buffer.CPacketReadBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_ActionUi;
-import l1j.server.server.model.network.core.cs.packet.CS_Attr;
-import l1j.server.server.model.network.core.cs.packet.CS_Channel;
-import l1j.server.server.model.network.utill.CConnectionConfig;
-import l1j.server.server.packets.Protocol.MainServer.Proto.CSProto;
-
-import l1j.server.server.model.network.core.sc.packet.SC_GameTime;
-import java.util.logging.Logger;
-import l1j.server.server.model.Dungeon;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.character.skill.helper.SkillUseHelper;
 import l1j.server.server.model.network.core.cs.packet.CS_AddBuddy;
 import l1j.server.server.model.network.core.cs.packet.CS_AdenShop;
 import l1j.server.server.model.network.core.cs.packet.CS_Amount;
 import l1j.server.server.model.network.core.cs.packet.CS_AskExchange;
+import l1j.server.server.model.network.core.cs.packet.CS_Attr;
 import l1j.server.server.model.network.core.cs.packet.CS_AuthLogin;
 import l1j.server.server.model.network.core.cs.packet.CS_BanMember;
 import l1j.server.server.model.network.core.cs.packet.CS_BanishParty;
@@ -39,6 +34,7 @@ import l1j.server.server.model.network.core.cs.packet.CS_BuySpell;
 import l1j.server.server.model.network.core.cs.packet.CS_BuyableSpell;
 import l1j.server.server.model.network.core.cs.packet.CS_CallPlayer;
 import l1j.server.server.model.network.core.cs.packet.CS_ChangeCastleSecurity;
+import l1j.server.server.model.network.core.cs.packet.CS_Channel;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
 import l1j.server.server.model.network.core.cs.packet.CS_Chat;
 import l1j.server.server.model.network.core.cs.packet.CS_ChatParty;
@@ -61,7 +57,6 @@ import l1j.server.server.model.network.core.cs.packet.CS_EnterWorld;
 import l1j.server.server.model.network.core.cs.packet.CS_ExchangeSpell;
 import l1j.server.server.model.network.core.cs.packet.CS_ExchangeableSpell;
 import l1j.server.server.model.network.core.cs.packet.CS_ExitGhost;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Dispatch.CS_ExtendedProto;
 import l1j.server.server.model.network.core.cs.packet.CS_ExtraCommand;
 import l1j.server.server.model.network.core.cs.packet.CS_Fix;
 import l1j.server.server.model.network.core.cs.packet.CS_FixableItem;
@@ -107,7 +102,11 @@ import l1j.server.server.model.network.core.cs.packet.CS_Who;
 import l1j.server.server.model.network.core.cs.packet.CS_WhoParty;
 import l1j.server.server.model.network.core.cs.packet.CS_WhoPledge;
 import l1j.server.server.model.network.core.cs.packet.CS_Withdraw;
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.model.network.core.sc.packet.SC_GameTime;
+import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.packets.Protocol.MainServer.Proto.CSProto;
+import l1j.server.server.packets.Protocol.MainServer.Proto.Dispatch.CS_ExtendedProto;
+import l1j.server.server.utils.GameUtils;
 
 /**
  * Opcode-indexed packet decoders for CUserSocket READ completion.
@@ -4459,7 +4458,7 @@ public final class CPacketHandler {
                 || pc.isInvisble() || pc.isInvisDelay()) {
 			return;
 		}
-		if (MJCommons.isNonAction(pc)) {
+		if (GameUtils.isNonAction(pc)) {
 			return;
 		}
 		if (pc.getOnlineStatus() != 1) {

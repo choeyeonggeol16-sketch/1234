@@ -1,11 +1,11 @@
 package l1j.server.server.model.npc.ai;
 
-import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.L1Character;
 
 /**
- * NC CDesireFactory::MakeUseSkill, adapted to primitive slots in CDesirePQ.
- * NC MakeUseSkill initializes state 10, target ID, skill ID, move type,
+ * reference server CDesireFactory::MakeUseSkill, adapted to primitive slots in CDesirePQ.
+ * reference server MakeUseSkill initializes state 10, target ID, skill ID, move type,
  * effect point, flag and desire value. L1 retains its 2-D skill executor.
  */
 public final class CDesireFactory {
@@ -28,7 +28,7 @@ public final class CDesireFactory {
     /**
      * CDesireFactory::MakeAttack(int, NpcAttackMoveType, bool,
      * float, float, int) at 0x0041B520.
-     * The two trailing numeric fields are copied as supplied by NC.
+     * The two trailing numeric fields are copied as supplied by reference server.
      * L1's existing attack event adapters do not infer their 3D meanings.
      */
     public static boolean MakeAttack(

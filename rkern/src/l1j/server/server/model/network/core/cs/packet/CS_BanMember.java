@@ -4,17 +4,17 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
 import l1j.server.server.datatables.CharacterTable;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.storage.CacheD;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.storage.CacheD;
 
 public final class CS_BanMember {
 
@@ -91,7 +91,7 @@ public final class CS_BanMember {
          * 공성 중 추방 불가.
          */
         if (castleId != 0
-                && MJCastleWarBusiness
+                && CastleWarBusiness
                         .getInstance()
                         .isNowWar(castleId)) {
 
@@ -204,7 +204,7 @@ public final class CS_BanMember {
                         return;
                     }
                     final int castle = clan.getCastleId();
-                    if (castle != 0 && MJCastleWarBusiness.getInstance().isNowWar(castle)) {
+                    if (castle != 0 && CastleWarBusiness.getInstance().isNowWar(castle)) {
                         SC_ServerMessage.send(pc, 439);
                         return;
                     }

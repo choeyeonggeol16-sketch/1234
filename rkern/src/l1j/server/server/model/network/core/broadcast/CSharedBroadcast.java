@@ -2,9 +2,10 @@ package l1j.server.server.model.network.core.broadcast;
 
 import java.util.List;
 import java.util.function.Predicate;
+
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /** One immutable encoded frame, shared across every eligible recipient.
@@ -13,7 +14,7 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 public final class CSharedBroadcast {
     private CSharedBroadcast() {}
     // L1-specific formatting selectors for the existing Native Assemble bridge.
-    // These are RKern tags, NOT NC opcode/ABI identifiers.
+    // These are RKern tags, NOT reference server opcode/ABI identifiers.
     public static final int FORMAT_HEADING = 3;
     public static final int FORMAT_SOUND = 4;
     public static final int FORMAT_ONLY_EFFECT = 5;
@@ -102,7 +103,7 @@ public final class CSharedBroadcast {
 
 
     /**
-     * One NC-style pooled plaintext, lazily assembled only after first valid
+     * One reference design pooled plaintext, lazily assembled only after first valid
      * recipient. Keep the exact original fast/radius/filter AOI traversal,
      * ExceptSelf, recipient order and socket FIFO; no alternate SEND path.
      */
@@ -220,7 +221,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
     }
 
     /**
-     * Encodes once directly into an NC-style Native pooled CIOBufferEx.
+     * Encodes once directly into an reference design Native pooled CIOBufferEx.
      * The encoder is invoked only after a connected viewer is eligible.
      * A failed source acquire/encode/commit never silently drops a broadcast.
      */
@@ -287,7 +288,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
         }
     }
 
-    /** Recipient socket lookup for the NC-style visual fanouts. */
+    /** Recipient socket lookup for the reference design visual fanouts. */
     private static CUserSocket eligibleBroadcastSocket(L1PcInstance pc) {
         if(pc==null)return null;
         final CUserSocket client=pc.getNetConnection();

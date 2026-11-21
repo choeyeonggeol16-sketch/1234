@@ -1,7 +1,5 @@
 package l1j.server.server.model.npc.shop;
 
-import l1j.server.server.model.network.core.sc.packet.SC_NpcShopAction;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,16 +16,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.MJDShopSystem.MJDShopItem;
-import l1j.server.MJDShopSystem.MJDShopStorage;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.NpcTable;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.network.core.sc.packet.SC_NpcShopAction;
 import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.dynamic.DynamicShopItem;
+import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
 import l1j.server.server.templates.L1NpcShop;
 import l1j.server.server.templates.L1ShopItem;
 
@@ -182,7 +181,7 @@ public class NpcShopManager {
             if (npc == null) continue;
             try {
                 // DB에 상점 정보 정리(character_shop) 후 NPC 소멸
-                ThreadPool.getInstance().execute(new MJDShopStorage(npc, true));
+                ThreadPool.getInstance().execute(new DynamicShopStorage(npc, true));
                 npc.deleteMe();
             } catch (Exception e) {
                 _log.log(Level.WARNING, "[NpcShop] NPC 제거 실패", e);
@@ -281,7 +280,7 @@ public class NpcShopManager {
                     _log.log(Level.WARNING, "[NpcShop] 개별 NPC 리필 실패: " + snapshot.get(i).getId(), e);
                 }
             }
-            MJDShopStorage.updateProcess(snapshot);
+            DynamicShopStorage.updateProcess(snapshot);
         } catch (Exception e) {
             _log.log(Level.WARNING, "[NpcShop] 리필 주기 오류 — 다음 주기에 재시도됨", e);
         }
@@ -293,16 +292,16 @@ public class NpcShopManager {
 
         List<ShopEntry> entries = _priceList.get(npc.getNpcId());
         if (entries == null) {
-            npc.setSellings(new ArrayList<MJDShopItem>(0));
-            npc.setPurchasings(new ArrayList<MJDShopItem>(0));
+            npc.setSellings(new ArrayList<DynamicShopItem>(0));
+            npc.setPurchasings(new ArrayList<DynamicShopItem>(0));
             return;
         }
 
-        ArrayList<MJDShopItem> sells = new ArrayList<>(entries.size());
-        ArrayList<MJDShopItem> buys = new ArrayList<>(entries.size());
+        ArrayList<DynamicShopItem> sells = new ArrayList<>(entries.size());
+        ArrayList<DynamicShopItem> buys = new ArrayList<>(entries.size());
         int idx = 0;
         for (ShopEntry e : entries) {
-            MJDShopItem item = MJDShopItem.create(e, ++idx);
+            DynamicShopItem item = DynamicShopItem.create(e, ++idx);
             if (item == null) {
                 if (_warnedItems.add(e.itemId)) {
                     _log.warning("[NpcShop] 템플릿 없는 아이템 스킵: " + e.itemId);

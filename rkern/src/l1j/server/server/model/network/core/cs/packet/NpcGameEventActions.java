@@ -6,14 +6,14 @@ import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.datatables.KeyTable;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.IndunSystem.ValakasRoom.ValakasRoomSystem;
-import l1j.server.IndunSystem.ValakasRoom.ValakasReady;
-import l1j.server.IndunSystem.ValakasRoom.ValakasStart;
-import l1j.server.IndunSystem.ValakasRoom.ValakasReadyStart;
-import l1j.server.IndunSystem.Training.BossTraining;
-import l1j.server.IndunSystem.Training.BossTrainingSystem;
-import l1j.server.IndunSystem.Orim.OrimController;
-import l1j.server.IndunSystem.FanstasyIsland.FantasyIslandSystem;
+import l1j.server.server.model.world.instance.dungeon.valakasroom.ValakasRoomSystem;
+import l1j.server.server.model.world.instance.dungeon.valakasroom.ValakasReady;
+import l1j.server.server.model.world.instance.dungeon.valakasroom.ValakasStart;
+import l1j.server.server.model.world.instance.dungeon.valakasroom.ValakasReadyStart;
+import l1j.server.server.model.world.instance.dungeon.training.BossTraining;
+import l1j.server.server.model.world.instance.dungeon.training.BossTrainingSystem;
+import l1j.server.server.model.world.instance.dungeon.orim.OrimController;
+import l1j.server.server.model.world.instance.dungeon.fanstasyisland.FantasyIslandSystem;
 
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
@@ -43,13 +43,13 @@ import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.utils.L1SpawnUtil;
 import l1j.server.server.utils.TYUtil;
 
-import l1j.server.IndunSystem.BossRaid.BossRaid;
+import l1j.server.server.model.world.instance.dungeon.bossraid.BossRaid;
 
-import l1j.server.IndunSystem.BossRaid.BossRaidSystem;
+import l1j.server.server.model.world.instance.dungeon.bossraid.BossRaidSystem;
 
-import l1j.server.IndunSystem.BossRaid2.Queen1;
+import l1j.server.server.model.world.instance.dungeon.bossraid2.Queen1;
 
-import l1j.server.IndunSystem.BossRaid2.QueenSystem2;
+import l1j.server.server.model.world.instance.dungeon.bossraid2.QueenSystem2;
 
 final class NpcGameEventActions {
     private NpcGameEventActions() {}

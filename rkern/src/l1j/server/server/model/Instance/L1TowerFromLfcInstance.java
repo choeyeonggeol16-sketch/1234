@@ -5,7 +5,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.templates.L1Npc;
 
-/** 2016.11.26 MJ 앱센터 LFC **/
+/** 2016.11.26 server 앱센터 LFC **/
 public class L1TowerFromLfcInstance extends L1TowerInstance {
 
 	/**

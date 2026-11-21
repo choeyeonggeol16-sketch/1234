@@ -6,7 +6,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.utils.GameUtils;
 
 /**
  * SC_COMPANION_NAME_CHANGE_ACK (0x07D2) — 컴패니언 이름 변경 결과
@@ -45,7 +45,7 @@ public final class SC_COMPANION_NAME_CHANGE_ACK extends ProtoPacket {
     /** 구 시그니처 동일 — (String → MS949 bytes 변환 후 bytes 경로) */
     public static void send(CUserSocket clnt, eResult result, String newName) {
         byte[] buff = null;
-        if (!MJCommons.isNullOrEmpty(newName)) {
+        if (!GameUtils.isNullOrEmpty(newName)) {
             try {
                 buff = newName.getBytes("MS949");
             } catch (Exception e) {

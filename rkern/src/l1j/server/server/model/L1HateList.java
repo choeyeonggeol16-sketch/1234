@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class L1HateList {
-    // NC HateInfoList::AddHateInfo (0x0044B39C): two independent int fields
+    // reference server HateInfoList::AddHateInfo (0x0044B39C): two independent int fields
     // at HateInfo +0x10 and +0x14. Keep one mapping per target.
     private final Map<L1Character, Long> _hateMap;
 
@@ -40,7 +40,7 @@ public class L1HateList {
         addHateInfo(cha, hate, 0, true);
     }
 
-    // NC HateInfoList::AddHateInfo (0x0044B39C): independent signed int
+    // reference server HateInfoList::AddHateInfo (0x0044B39C): independent signed int
     // counters, with add/overwrite selected by the caller.
     public void addHateInfo(L1Character cha, int firstValue, int secondValue,
             boolean accumulate) {
@@ -77,7 +77,7 @@ public class L1HateList {
         return _hateMap.isEmpty();
     }
 
-    // NC CNPC::GetMaxHateInfo -> HateInfoList::GetMaxElement(mode):
+    // reference server CNPC::GetMaxHateInfo -> HateInfoList::GetMaxElement(mode):
     // mode 0 compares +0x10, mode 1 compares +0x14.
     public L1Character getMaxHateCharacter(int mode) {
         if (mode != 0 && mode != 1) return null;
@@ -104,7 +104,7 @@ public class L1HateList {
         return getMaxHateCharacter(0);
     }
 
-    // NC HateInfoList::GetMinElement(int): minimum of one hate metric.
+    // reference server HateInfoList::GetMinElement(int): minimum of one hate metric.
     // This is NOT GetClosest; the native GetClosest receives FVector.
     public L1Character getMinHateCharacter(int mode) {
         if (mode != 0 && mode != 1) return null;
@@ -127,7 +127,7 @@ public class L1HateList {
         return result;
     }
 
-    // NC HateInfoList::GetClosest(const FVector&): position-based selection.
+    // reference server HateInfoList::GetClosest(const FVector&): position-based selection.
     // The L2 Z/height rules are mapped to the L1 same-map 2D grid.
     // No allocation, sorting, or full distance square root in the scan.
     public L1Character getClosestHateCharacter(L1Character origin) {
@@ -156,7 +156,7 @@ public class L1HateList {
         return result;
     }
 
-    // NC HateInfoList::GetNthElement(mode, index, ascending) (0x0044AE58):
+    // reference server HateInfoList::GetNthElement(mode, index, ascending) (0x0044AE58):
     // mode 0 selects +0x10; mode 1 selects +0x14. The native code sorts
     // ascending, then indexes from the front or back according to the flag.
     // The index is clamped to the last available element.

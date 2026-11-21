@@ -1,18 +1,5 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.Config;
-import l1j.server.MJTemplate.MJRnd;
-import l1j.server.server.datatables.AccessoryEnchantInformationTable;
-import l1j.server.server.datatables.ArmorEnchantInformationTable;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.templates.L1Armor;
-import l1j.server.server.utils.CommonUtil;
 import static l1j.server.server.model.item.function.CreatureItemActions._random;
 import static l1j.server.server.model.item.function.EnchantmentItems.FailureEnchant;
 import static l1j.server.server.model.item.function.EnchantmentItems.SuccessEnchant;
@@ -27,6 +14,17 @@ import static l1j.server.server.model.item.function.EnchantmentItems.enchant_sho
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_snapper;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_snapper1;
 import static l1j.server.server.model.item.function.TransformationItems.RandomELevel;
+
+import l1j.server.Config;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
+import l1j.server.server.templates.L1Armor;
+import l1j.server.server.utils.CommonUtil;
 
 /** Armor enchant domain: extracted unchanged from the Phase 9 item handler. */
 final class ArmorEnchantScrollResolution {
@@ -110,7 +108,7 @@ final class ArmorEnchantScrollResolution {
 
                     int enchant = enchant_level < 0 ? 0
                             : enchant_level >= Config.할파스갑옷인챈.length ? Config.할파스갑옷인챈.length - 1 : enchant_level;
-                    if (MJRnd.isWinning(100, Config.할파스갑옷인챈[enchant])) {
+                    if (GameRandom.isWinning(100, Config.할파스갑옷인챈[enchant])) {
                         ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client,
                                 () -> resultNotice(pc, "순간 강렬하게 빛을 내어 인챈트에 성공 하였습니다."));
                         return ItemActionResult.STOP;
@@ -142,7 +140,7 @@ final class ArmorEnchantScrollResolution {
                                             : enchant_level;
                     int dice = targetItem.getItem().get_safeenchant() == 0 ? Config.armor1[enchant]
                             : Config.armor[enchant];
-                    if (MJRnd.isWinning(100, dice)) {
+                    if (GameRandom.isWinning(100, dice)) {
                         ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client,
                                 () -> resultNotice(pc, "순간 강렬하게 빛을내어 인챈트에 성공 하였습니다."));
                         return ItemActionResult.STOP;
@@ -195,7 +193,7 @@ final class ArmorEnchantScrollResolution {
                     int enchant = enchant_level < 0 ? 0
                             : enchant_level >= Config.ancient2.length ? Config.ancient2.length - 1
                                     : enchant_level;
-                    if (MJRnd.isWinning(100, Config.ancient2[enchant])) {
+                    if (GameRandom.isWinning(100, Config.ancient2[enchant])) {
                         ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client,
                                 () -> resultNotice(pc, "순간 강렬하게 빛을내어 인챈트에 성공 하였습니다."));
                         return ItemActionResult.STOP;
@@ -219,7 +217,7 @@ final class ArmorEnchantScrollResolution {
                     int enchant = enchant_level < 0 ? 0
                             : enchant_level >= Config.ancient.length ? Config.ancient.length - 1
                                     : enchant_level;
-                    if (MJRnd.isWinning(100, Config.ancient[enchant])) {
+                    if (GameRandom.isWinning(100, Config.ancient[enchant])) {
                         ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client, () -> {
                             resultNotice(pc, "순간 강렬하게 빛을내어 인챈트에 성공 하였습니다.");
                             if (pc.isGm()) resultNotice(pc, targetItem.getName() + " \\f:확률: " + Config.ancient1[enchant]);
@@ -244,7 +242,7 @@ final class ArmorEnchantScrollResolution {
                     int enchant = enchant_level < 0 ? 0
                             : enchant_level >= Config.ancient1.length ? Config.ancient1.length - 1
                                     : enchant_level;
-                    if (MJRnd.isWinning(100, Config.ancient1[enchant])) {
+                    if (GameRandom.isWinning(100, Config.ancient1[enchant])) {
                         ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client, () -> {
                             resultNotice(pc, "순간 강렬하게 빛을내어 인챈트에 성공 하였습니다.");
                             if (pc.isGm()) resultNotice(pc, targetItem.getName() + " \\f:확률: " + Config.ancient1[enchant]);

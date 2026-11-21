@@ -1,20 +1,20 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.MJActionListener.ActionListenerLinkageLoader;
-import l1j.server.MJCTSystem.Loader.MJCTLoadManager;
-import l1j.server.MJCTSystem.MJCTHandler;
-import l1j.server.MJCompanion.Basic.Potion.MJCompanionPotionInfo;
-import l1j.server.MJDTSSystem.MJDTSLoader;
-import l1j.server.MJDungeonTimer.Loader.DungeonTimePotionLoader;
-import l1j.server.MJPassiveSkill.MJPassiveLoader;
-import l1j.server.MJRaidSystem.Loader.MJRaidCreatorLoader;
-import l1j.server.PrideSystem.PrideLoadManager;
+import l1j.server.server.model.item.pride.PrideLoadManager;
 import l1j.server.server.model.Instance.L1ClanJoinInstance;
 import l1j.server.server.model.Instance.L1CompanionInstance;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.action.listener.ActionListenerLinkageLoader;
+import l1j.server.server.model.character.companion.basic.potion.CompanionPotionInfo;
+import l1j.server.server.model.character.skill.passive.PassiveLoader;
+import l1j.server.server.model.item.collection.CollectionHandler;
+import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
+import l1j.server.server.model.item.teleport.designated.DesignatedTeleportLoader;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimePotionLoader;
+import l1j.server.server.model.world.instance.raid.loader.RaidCreatorLoader;
 import l1j.server.server.utils.IntRange;
 
 /** Ordered extension admission; the first matching subsystem owns the use. */
@@ -35,23 +35,23 @@ public final class ExtendedItemActions {
             return;
         }
 
-        if (MJRaidCreatorLoader.getInstance().createRaid(pc, item))
+        if (RaidCreatorLoader.getInstance().createRaid(pc, item))
             return;
 
-        if (itemId == MJCTLoadManager.CTSYSTEM_LOAD_ID) {
-            MJCTHandler.load(pc, item);
+        if (itemId == CollectionLoadManager.CTSYSTEM_LOAD_ID) {
+            CollectionHandler.load(pc, item);
             return;
         }
 
         if(L1CompanionInstance.use_item(pc, item))
             return;
-        MJCompanionPotionInfo pInfo = MJCompanionPotionInfo.get_potion_info(item.getItemId());
+        CompanionPotionInfo pInfo = CompanionPotionInfo.get_potion_info(item.getItemId());
         if(pInfo != null){
             pInfo.use_item(pc, item);
             return;
         }
 
-        if (MJPassiveLoader.getInstance().useItem(pc, item))
+        if (PassiveLoader.getInstance().useItem(pc, item))
             return;
 
         if (DungeonTimePotionLoader.getInstance().use_potion(pc, item))
@@ -63,7 +63,7 @@ public final class ExtendedItemActions {
         if (L1ClanJoinInstance.use_item(pc, item))
             return;
 
-        if (MJDTSLoader.getInstance().use_item(pc, item))
+        if (DesignatedTeleportLoader.getInstance().use_item(pc, item))
             return;
         if (PrideLoadManager.getInstance().use_item(pc, item))
             return;

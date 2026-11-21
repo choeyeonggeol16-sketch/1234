@@ -1,16 +1,10 @@
 package l1j.server.server.model;
 
-import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import static l1j.server.server.model.character.skill.L1SkillId.*;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 
 import java.util.Random;
+
 import l1j.server.Config;
-import l1j.server.server.model.character.Combat.CCreatureDamageReaction;
-import l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatProcs;
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.MJTemplate.MJRnd;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.datatables.UserProtectMonsterTable;
@@ -20,18 +14,23 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
+import l1j.server.server.model.character.combat.CCreatureDamageReaction;
+import l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatProcs;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.poison.L1DamagePoison;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.core.sc.packet.SC_OnlyEffect;
-
+import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.poison.L1DamagePoison;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Skills;
 import l1j.server.server.utils.CalcStat;
 import l1j.server.server.utils.CommonUtil;
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.eKind;
-
-import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
 public class L1Magic { 
 
     private final boolean ordinarySpell;
@@ -195,7 +194,7 @@ public class L1Magic {
 
 		if ((_calcType == PC_PC || _calcType == NPC_PC) && _targetPc != null) {
 			if (_targetPc.getMagicDodgeProbability() > 0) {
-				if (MJRnd.isWinning(100, _targetPc.getMagicDodgeProbability())) {
+				if (GameRandom.isWinning(100, _targetPc.getMagicDodgeProbability())) {
 					SC_OnlyEffect.send(_targetPc, _targetPc.getId(), 10702);
                     SC_OnlyEffect.broadcast(_targetPc, _targetPc.getId(), 10702);
 					return false;
@@ -986,7 +985,7 @@ public class L1Magic {
 //			probability = l1skills.getProbabilityValue(); // 확률
 //			// System.out.print(String.format("카운터 배리어 확률 : 기본(%d)", probability));
 //			
-//			if (_pc != null && _pc.isPassive(MJPassiveID.COUNTER_BARRIER_VETERAN.toInt())) {
+//			if (_pc != null && _pc.isPassive(PassiveID.COUNTER_BARRIER_VETERAN.toInt())) {
 //				int lvl = _pc.getLevel();
 //				if (lvl >= 85) {
 //					probability += (lvl - 84);
@@ -1362,7 +1361,7 @@ public class L1Magic {
 			probability = (int) Config.아머기본;
 
 			// 아머 브레이크 데스티니 패시브 보너스 계산
-			if (_pc.isPassive(MJPassiveID.ARMOR_BREAK_DESTINY.toInt())) {
+			if (_pc.isPassive(PassiveID.ARMOR_BREAK_DESTINY.toInt())) {
 			    // 60레벨부터 1씩 증가, 최대 10단계 (69레벨에서 MAX 10)
 			    int destinyBonus = Math.max(0, attacker.getLevel() - 59);
 			    probability += Math.min(10, destinyBonus);
@@ -1550,7 +1549,7 @@ public class L1Magic {
 			}
             // src22 Titan/MortalBody reaction order: Titan Magic cancels the
             // incoming magic hit; Mortal Body reflects but does not cancel it.
-            if (damage > 0 && !MJCommons.isUnbeatable(_targetPc)) {
+            if (damage > 0 && !GameUtils.isUnbeatable(_targetPc)) {
                 final L1Character attacker = _pc != null ? _pc : _npc;
                 if (CCreatureDamageReaction.onMagicDamage(attacker, _targetPc)) {
                     return 0;
@@ -2110,7 +2109,7 @@ public class L1Magic {
 			boolean isNowWar = false;
 			int castleId = L1CastleLocation.getCastleIdByArea(_targetPc);
 			if (castleId > 0) {
-				isNowWar = MJCastleWarBusiness.getInstance().isNowWar(castleId);
+				isNowWar = CastleWarBusiness.getInstance().isNowWar(castleId);
 			}
 			if (!isNowWar) {
 				if (_npc instanceof L1PetInstance) {
@@ -2306,7 +2305,7 @@ public class L1Magic {
 			boolean isNowWar = false;
 			int castleId = L1CastleLocation.getCastleIdByArea(_targetNpc);
 			if (castleId > 0) {
-				isNowWar = MJCastleWarBusiness.getInstance().isNowWar(castleId);
+				isNowWar = CastleWarBusiness.getInstance().isNowWar(castleId);
 			}
 			if (!isNowWar) {
 				if (_targetNpc instanceof L1PetInstance) {

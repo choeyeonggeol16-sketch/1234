@@ -2,20 +2,20 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import java.util.Random;
 
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.MJTemplate.TreasureChest.MJL1TreasureChest;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.datatables.HouseTable;
-import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Clan;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.item.treasure.L1TreasureChest;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1House;
 
 /**
@@ -61,8 +61,8 @@ public final class CS_Door {
         }
 
   
-        if (obj.instanceOf(MJL1Type.L1TYPE_TREASURE_CHEST)) {
-            ((MJL1TreasureChest) obj).open(pc);
+        if (obj.instanceOf(L1Type.L1TYPE_TREASURE_CHEST)) {
+            ((L1TreasureChest) obj).open(pc);
             return;
         }
 

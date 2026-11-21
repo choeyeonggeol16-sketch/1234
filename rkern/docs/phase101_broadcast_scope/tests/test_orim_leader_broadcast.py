@@ -3,7 +3,7 @@
 from pathlib import Path
 import tempfile,subprocess,sys,os
 ROOT=Path(__file__).resolve().parents[3]
-s=Path(os.environ.get('RKERN_TEST_ORIM',ROOT/'src/l1j/server/IndunSystem/Orim/OrimController.java')).read_text()
+s=Path(os.environ.get('RKERN_TEST_ORIM',ROOT/'src/l1j/server/server/model/world/instance/dungeon/orim/OrimController.java')).read_text()
 needle='\tprivate void talkPartyleader(String msg) {'
 a=s.index(needle);b=s.index('{',a);n=0
 for i in range(b,len(s)):
@@ -12,7 +12,7 @@ for i in range(b,len(s)):
   n-=1
   if not n:break
 method=s[a:i+1]
-code='''package l1j.server.IndunSystem.Orim;
+code='''package l1j.server.server.model.world.instance.dungeon.orim;
 import java.util.*;
 import l1j.server.server.model.network.core.broadcast.*;
 public class OrimController {
@@ -56,7 +56,7 @@ public class OrimController {
 '''.replace('/* METHOD */',method)
 stub='''package l1j.server.server.model.network.core.broadcast;
 import java.nio.ByteBuffer;
-import l1j.server.IndunSystem.Orim.OrimController;
+import l1j.server.server.model.world.instance.dungeon.orim.OrimController;
 public final class CSharedBroadcast {
  public interface NativeWireWriter {void write(ByteBuffer b);}
  public static void sendRecipient(CAsyncSendConstBuffer shared,OrimController.L1PcInstance member){
@@ -78,10 +78,10 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
 '''
 with tempfile.TemporaryDirectory() as t:
  d=Path(t)
- for name,body in {'l1j/server/IndunSystem/Orim/OrimController.java':code,'l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java':stub,'l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java':cb,'l1j/server/server/Opcodes.java':'package l1j.server.server; public final class Opcodes{public static final int S_SAY=5;}'}.items():
+ for name,body in {'l1j/server/server/model/world/instance/dungeon/orim/OrimController.java':code,'l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java':stub,'l1j/server/server/model/network/core/broadcast/CAsyncSendConstBuffer.java':cb,'l1j/server/server/Opcodes.java':'package l1j.server.server; public final class Opcodes{public static final int S_SAY=5;}'}.items():
   p=d/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(body)
  p=subprocess.run(['javac','--release','21','-encoding','UTF-8','-d',str(d/'classes'),*map(str,d.rglob('*.java'))],capture_output=True,text=True)
  if p.returncode:print(p.stderr);sys.exit(p.returncode)
- p=subprocess.run(['java','-cp',str(d/'classes'),'l1j.server.IndunSystem.Orim.OrimController'],capture_output=True,text=True)
+ p=subprocess.run(['java','-cp',str(d/'classes'),'l1j.server.server.model.world.instance.dungeon.orim.OrimController'],capture_output=True,text=True)
  if p.returncode:print(p.stdout,p.stderr);sys.exit(p.returncode)
  print(p.stdout.strip())

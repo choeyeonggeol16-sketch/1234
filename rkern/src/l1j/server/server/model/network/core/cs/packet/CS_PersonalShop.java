@@ -1,31 +1,32 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
-import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
-import l1j.server.MJDShopSystem.MJDShopItem;
-import l1j.server.MJDShopSystem.MJDShopStorage;
-import l1j.server.server.ActionCodes;
 import java.util.ArrayList;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.FishingTimeController;
-import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
-import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeShape;
+import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
+import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionShop;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.model.shop.dynamic.DynamicShopItem;
+import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
 
 public final class CS_PersonalShop {
 
@@ -129,7 +130,7 @@ public final class CS_PersonalShop {
         }
 
         boolean tradable = true;
-        final ArrayList<MJDShopItem> sells = sellCount == 0 ? null : new ArrayList<>(sellCount);
+        final ArrayList<DynamicShopItem> sells = sellCount == 0 ? null : new ArrayList<>(sellCount);
 
         for (int i = 0; i < sellCount; i++) {
             final int objectId = readD(data, cursor);
@@ -157,7 +158,7 @@ public final class CS_PersonalShop {
                 sendNotTradable(pc, item);
             }
 
-            if (!MJCompanionInstanceCache.is_companion_oblivion(item.getId())) {
+            if (!CompanionInstanceCache.is_companion_oblivion(item.getId())) {
                 sendNotTradable(pc, item);
                 return;
             }
@@ -172,7 +173,7 @@ public final class CS_PersonalShop {
                 sendNotTradable(pc, item);
             }
 
-            sells.add(MJDShopItem.create(item, count, price, false));
+            sells.add(DynamicShopItem.create(item, count, price, false));
         }
 
         
@@ -194,7 +195,7 @@ public final class CS_PersonalShop {
             return;
         }
 
-        final ArrayList<MJDShopItem> buys = buyCount == 0 ? null : new ArrayList<>(buyCount);
+        final ArrayList<DynamicShopItem> buys = buyCount == 0 ? null : new ArrayList<>(buyCount);
         for (int i = 0; i < buyCount; i++) {
             final int objectId = readD(data, cursor);
             final int price = readD(data, cursor + 4);
@@ -220,7 +221,7 @@ public final class CS_PersonalShop {
                 sendNotTradable(pc, item);
             }
 
-            if (!MJCompanionInstanceCache.is_companion_oblivion(item.getId())) {
+            if (!CompanionInstanceCache.is_companion_oblivion(item.getId())) {
                 sendNotTradable(pc, item);
                 return;
             }
@@ -235,7 +236,7 @@ public final class CS_PersonalShop {
                 sendNotTradable(pc, item);
             }
 
-            buys.add(MJDShopItem.create(item, count, price, true));
+            buys.add(DynamicShopItem.create(item, count, price, true));
         }
 
         if (!tradable) return;
@@ -289,10 +290,10 @@ public final class CS_PersonalShop {
         L1PolyMorph.undoPolyPrivateShop(pc);
     }
 
-    static boolean replaceListings(L1PcInstance pc, ArrayList<MJDShopItem> sells, ArrayList<MJDShopItem> buys) {
+    static boolean replaceListings(L1PcInstance pc, ArrayList<DynamicShopItem> sells, ArrayList<DynamicShopItem> buys) {
         if (!pc.tryBeginItemTransfer()) return false;
         try {
-            MJDShopStorage.replacePlayerListings(pc, sells, buys);
+            DynamicShopStorage.replacePlayerListings(pc, sells, buys);
             pc.setSellings(sells);
             pc.setPurchasings(buys);
             pc.setPrivateShop(true);
@@ -309,7 +310,7 @@ public final class CS_PersonalShop {
     static boolean removeListings(L1PcInstance pc) {
         if (!pc.tryBeginItemTransfer()) return false;
         try {
-            MJDShopStorage.deleteProcess(pc);
+            DynamicShopStorage.deleteProcess(pc);
             pc.setPrivateShop(false);
             return true;
         } catch (RejectedExecutionException rejected) {
@@ -320,7 +321,7 @@ public final class CS_PersonalShop {
         }
     }
 
-    static boolean containsListing(ArrayList<MJDShopItem> list, int objectId) {
+    static boolean containsListing(ArrayList<DynamicShopItem> list, int objectId) {
         if (list == null) return false;
         for (int i = 0; i < list.size(); i++)
             if (list.get(i).objId == objectId) return true;

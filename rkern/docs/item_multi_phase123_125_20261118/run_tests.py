@@ -28,7 +28,7 @@ with tempfile.TemporaryDirectory(prefix='rkern123_') as temporary:
     for name in ['ResurrectionConsumables','TargetPolymorphWands']:
         full=(prod/f'{name}.java').read_text('utf-8')
         body=full[full.index('final class '+name):]
-        imports='package l1j.server.server.model.item.function;\nimport l1j.server.server.model.Instance.*;\nimport l1j.server.server.model.*;\nimport l1j.server.server.model.network.core.sc.packet.*;\nimport l1j.server.server.storage.CacheD;\nimport l1j.server.server.ActionCodes;\nimport l1j.server.Stadium.StadiumManager;\nimport static l1j.server.server.model.item.function.CreatureItemActions.cancelAbsoluteBarrier;\nimport static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsume;\nimport static l1j.server.server.model.item.function.TransformationItems.polyAction;\n'
+        imports='package l1j.server.server.model.item.function;\nimport l1j.server.server.model.Instance.*;\nimport l1j.server.server.model.*;\nimport l1j.server.server.model.network.core.sc.packet.*;\nimport l1j.server.server.storage.CacheD;\nimport l1j.server.server.ActionCodes;\nimport l1j.server.server.model.character.combat.arena.stadium.StadiumManager;\nimport static l1j.server.server.model.item.function.CreatureItemActions.cancelAbsoluteBarrier;\nimport static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsume;\nimport static l1j.server.server.model.item.function.TransformationItems.polyAction;\n'
         (w/'l1j/server/server/model/item/function'/f'{name}.java').write_text(imports+body,encoding='utf-8')
     for folder,main in [(s,'TestBooks'),(w,'TestWorldEffects')]:
         java=list(folder.rglob('*.java'))

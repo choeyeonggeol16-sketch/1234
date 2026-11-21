@@ -78,8 +78,8 @@ for item_id, owner, method_name, arguments in [
     old_owner='CombatSkillItemEffects' if item_id==220012 else 'CombatAbilityItems'
     s0=s0.replace(f'import static l1j.server.server.model.item.function.{old_owner}.{method_name};\n','')
 s0=s0.replace('case 55558 -> { 정상의가호2(pc, item); yield ItemActionResult.COMPLETE; }','case 55558 -> { 정상의가호2(pc, item); yield ItemActionResult.STOP; }')
-old_marble = 'case MJCTLoadManager.CTSYSTEM_STORE_ID -> { MJCTHandler.store(pc, item, storedItemObjectId); yield ItemActionResult.COMPLETE; }'
-new_marble = ('case MJCTLoadManager.CTSYSTEM_STORE_ID -> { MJCTHandler.store(pc, item, storedItemObjectId,\n'
+old_marble = 'case CollectionLoadManager.CTSYSTEM_STORE_ID -> { CollectionHandler.store(pc, item, storedItemObjectId); yield ItemActionResult.COMPLETE; }'
+new_marble = ('case CollectionLoadManager.CTSYSTEM_STORE_ID -> { CollectionHandler.store(pc, item, storedItemObjectId,\n'
               '                    () -> ItemActionCompletion.finishCommittedConsumable(pc, item)); yield ItemActionResult.STOP; }')
 assert old_marble in s0 and new_marble in s1
 s0=s0.replace(old_marble,new_marble)
@@ -112,7 +112,7 @@ public class Test {
 ''')
 labels=cases(s1);print('PASS main dispatch labels:',len(labels),'groups,',sum(len(l.split(',')) for l in labels),'ID tokens; unchanged')
 # Supplemental registry alignment (legacy mismatches deliberately not enabled).
-registry=(ROOT/'src/l1j/server/server/utils/SupplementalItemIds.java').read_text().split('ITEM_IDS = {')[1].split('};')[0].replace('MJINNHelper.INN_KEYID','40312')
+registry=(ROOT/'src/l1j/server/server/utils/SupplementalItemIds.java').read_text().split('ITEM_IDS = {')[1].split('};')[0].replace('InnHelper.INN_KEYID','40312')
 registered=set(map(int,re.findall(r'\d+',registry)))
 handled=set(map(int,re.findall(r'\bcase\s+(\d+):',read('SupplementalItemActions'))))|{40312}
 original=set(int(s) for s in (ROOT/'docs/item_domain_split_20261117/ORIGINAL_SUPPLEMENTAL_IDS.txt').read_text().splitlines() if s.isdigit())|{40312}
@@ -129,7 +129,7 @@ class E {static StringBuilder log=new StringBuilder();static int fail,step;stati
 class L1PcInstance {boolean invisible;int getId(){return 582;}boolean isInvisble(){return invisible;}void sendPackets(String s){E.add(s);}}
 class SC_SkillSound {static void send(L1PcInstance p,int id,int effect){E.add("sound:"+id+":"+effect);}}
 class SC_NPCTalkReturn {static void send(L1PcInstance p,int id,String s){E.add("html:"+id+":"+s);}}
-class MJCTLoadManager {static final int CTSYSTEM_STORE_ID=2000000000;}
+class CollectionLoadManager {static final int CTSYSTEM_STORE_ID=2000000000;}
 class TransformationListItems {'''+ui+'}'+old+new+'''
 public class Test {
  static String evaluate(boolean old,int id,boolean invis,int fail){E.log.setLength(0);E.fail=fail;E.step=0;L1PcInstance p=new L1PcInstance();p.invisible=invis;String r;try{r=""+(old?OldDecoder.showSelection(p,id):NewDecoder.showSelection(p,id));}catch(RuntimeException ex){r=ex.getMessage();}return E.log+"|"+r;}
@@ -138,12 +138,12 @@ public class Test {
 assert method(read('ItemTargetDecoder',BASE),'modeOf').replace('140089, 30074 -> TARGET','140089, 30074, 70888 -> TARGET')==method(read('ItemTargetDecoder'),'modeOf')
 # Compare top-level supplemental cases to the immediate child router, including multi-label arrow switches.
 def colon_groups(s):
-    return [(set(int(x) if x.isdigit() else 40312 for x in re.findall(r'case\s+(\d+|MJINNHelper\.INN_KEYID)\s*:',labels)),target) for labels,target in re.findall(r'((?:\s*case\s+(?:\d+|MJINNHelper\.INN_KEYID)\s*:)+)\s*(\w+)\.use\(',s)]
+    return [(set(int(x) if x.isdigit() else 40312 for x in re.findall(r'case\s+(\d+|InnHelper\.INN_KEYID)\s*:',labels)),target) for labels,target in re.findall(r'((?:\s*case\s+(?:\d+|InnHelper\.INN_KEYID)\s*:)+)\s*(\w+)\.use\(',s)]
 for ids,target in colon_groups(read('SupplementalItemActions')):
     raw=read(target)
     dest=set(map(int,re.findall(r'\bcase\s+(\d+)\s*:',raw)))
     if target=='AdvancedAbilityItems':
         dest={int(x) for group in cases(raw) for x in re.findall(r'\d+',group)}
-    if 'case MJINNHelper.INN_KEYID:' in raw:dest.add(40312)
+    if 'case InnHelper.INN_KEYID:' in raw:dest.add(40312)
     assert ids==dest,(target,ids-dest,dest-ids)
     print('PASS immediate supplemental router',target,len(ids),'IDs')

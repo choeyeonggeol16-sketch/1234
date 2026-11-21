@@ -18,10 +18,6 @@
  */
 package l1j.server.server.model.Instance;
 
-import l1j.server.server.model.character.action.CAttackAction;
-
-import l1j.server.MJWarSystem.MJCastleWar;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
@@ -29,9 +25,12 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1WarSpawn;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.model.world.siege.CastleWar;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.templates.L1Npc;
 
 public class L1TowerInstance extends L1NpcInstance {
@@ -156,7 +155,7 @@ public class L1TowerInstance extends L1NpcInstance {
 		}
 
 		if (_castle_id > 0
-				&& MJCastleWarBusiness.getInstance()
+				&& CastleWarBusiness.getInstance()
 						.isNowWar(_castle_id)) {
 
 			if (_castle_id == L1CastleLocation.ADEN_CASTLE_ID
@@ -214,8 +213,8 @@ public class L1TowerInstance extends L1NpcInstance {
 				return;
 			}
 
-			MJCastleWar war =
-					MJCastleWarBusiness.getInstance()
+			CastleWar war =
+					CastleWarBusiness.getInstance()
 							.get(_castle_id);
 
 			L1Clan defense = war.getDefenseClan();

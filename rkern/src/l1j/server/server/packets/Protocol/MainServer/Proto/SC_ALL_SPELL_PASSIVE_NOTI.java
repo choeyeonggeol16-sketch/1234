@@ -1,14 +1,10 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.util.ArrayList;
 import java.util.List;
 
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /**
  * SC_ALL_SPELL_PASSIVE_NOTI (0x0191) — 보유 패시브 전체 동기화
@@ -119,12 +115,12 @@ public final class SC_ALL_SPELL_PASSIVE_NOTI extends ProtoPacket {
 
 
     public static boolean sendPassives(L1PcInstance recipient,
-            List<l1j.server.MJPassiveSkill.MJPassiveInfo> passives) {
+            List<l1j.server.server.model.character.skill.passive.PassiveInfo> passives) {
         return sendPassives(recipient == null ? null : recipient.getNetConnection(), passives);
     }
 
     public static boolean sendPassives(CUserSocket recipient,
-            List<l1j.server.MJPassiveSkill.MJPassiveInfo> passives) {
+            List<l1j.server.server.model.character.skill.passive.PassiveInfo> passives) {
         final int count = passives.size();
         ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ALL_SPELL_PASSIVE_NOTI,
                 Proto.capacityBound(32L + 32L * count));
@@ -133,7 +129,7 @@ public final class SC_ALL_SPELL_PASSIVE_NOTI extends ProtoPacket {
             for (int i = 0; i < count; i++) {
                 int id = passives.get(i).getPassiveId();
                 writer.msg(1).int32(1, id);
-                if (id == l1j.server.MJPassiveSkill.MJPassiveID.ARMOR_GUARD.toInt()) writer.int32(2, 10);
+                if (id == l1j.server.server.model.character.skill.passive.PassiveID.ARMOR_GUARD.toInt()) writer.int32(2, 10);
                 writer.end();
             }
             return Proto.commit(writer);

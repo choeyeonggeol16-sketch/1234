@@ -1,27 +1,23 @@
 package l1j.server.server.model.Instance;
 
-import l1j.server.server.model.character.action.CAttackAction;
-
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-import java.util.concurrent.RejectedExecutionException;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.Random;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+
 import l1j.server.Config;
-import l1j.server.MJTemplate.MJL1Type;
-import l1j.server.MJTemplate.MJRnd;
-import l1j.server.MJTemplate.Interface.MJMonsterDeathHandler;
-import l1j.server.MJTemplate.Interface.MJMonsterTransformHandler;
-import l1j.server.MJTemplate.MJArrangeHelper.MJArrangeParseeFactory;
-import l1j.server.MJTemplate.MJArrangeHelper.MJArrangeParser;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
 import l1j.server.server.Controller.TimeMapController;
+import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.DoorSpawnTable;
 import l1j.server.server.datatables.DropTable;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.NPCTalkDataTable;
+import l1j.server.server.model.BookQuest.BQSInformation;
+import l1j.server.server.model.BookQuest.Loader.BQSInformationLoader;
+import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
+import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1EffectSpawn;
 import l1j.server.server.model.L1Inventory;
@@ -30,33 +26,33 @@ import l1j.server.server.model.L1NpcTalkData;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.BookQuest.BQSInformation;
-import l1j.server.server.model.BookQuest.Loader.BQSInformationLoader;
-import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
-import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
+import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.item.Exp.CalcExp;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
-import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
-import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.model.npc.ai.CDesirePQ;
-import l1j.server.server.model.npc.ai.NpcPotionPolicy;
+import l1j.server.server.model.network.core.sc.packet.SC_Karma;
+import l1j.server.server.model.network.core.sc.packet.SC_Liquor;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
+import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.model.npc.ai.CDesirePQ;
+import l1j.server.server.model.npc.ai.NpcEventFactory;
+import l1j.server.server.model.npc.ai.NpcPotionPolicy;
+import l1j.server.server.shared.GameRandom;
+import l1j.server.server.shared.L1Type;
+import l1j.server.server.shared.listener.MonsterDeathHandler;
+import l1j.server.server.shared.listener.MonsterTransformHandler;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.templates.L1TimeMap;
 import l1j.server.server.types.Point;
 import l1j.server.server.utils.CommonUtil;
-import l1j.server.server.utils.MJCommons;
+import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.TYUtil;
-
-import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
-import l1j.server.server.model.network.core.sc.packet.SC_Liquor;
-import l1j.server.server.model.network.core.sc.packet.SC_Karma;
 public class L1MonsterInstance extends L1NpcInstance {
 
 	private static final long serialVersionUID = 1L;
@@ -102,19 +98,19 @@ public class L1MonsterInstance extends L1NpcInstance {
     /** CMoveAroundAction internal wait kind: 0=none, 1=normal 6s rest, 2=short retry. */
     public byte _desireMoveAroundWaitKind = 0;
 
-	private MJMonsterDeathHandler _deathHandler;
-	private MJMonsterTransformHandler _transformHandler;
+	private MonsterDeathHandler _deathHandler;
+	private MonsterTransformHandler _transformHandler;
 	
-	public L1MonsterInstance setDeathHandler(MJMonsterDeathHandler handler){
+	public L1MonsterInstance setDeathHandler(MonsterDeathHandler handler){
 		_deathHandler = handler;
 		return this;
 	}
 	
-	public MJMonsterDeathHandler getDeathHandler(){
+	public MonsterDeathHandler getDeathHandler(){
 		return _deathHandler;
 	}
 	
-	public L1MonsterInstance setTransformHandler(MJMonsterTransformHandler handler){
+	public L1MonsterInstance setTransformHandler(MonsterTransformHandler handler){
 		_transformHandler = handler;
 		return this;
 	}
@@ -857,8 +853,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
             for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(this, 2)) {
                 if (obj instanceof L1PcInstance) {
                     L1PcInstance pc = (L1PcInstance) obj;
-                    if (!pc.isDead() && !MJCommons.isCounterMagic(pc)) {
-                        pc.receiveDamage(this, MJRnd.next(200) + 200, 1);
+                    if (!pc.isDead() && !GameUtils.isCounterMagic(pc)) {
+                        pc.receiveDamage(this, GameRandom.next(200) + 200, 1);
                     }
                 }
             }
@@ -887,7 +883,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	private void handleTimeRiftItems(L1PcInstance pc) {
 	    int mapId = getMap().getId();
 	    if (mapId == 781 || mapId == 783) {
-	        if (MJRnd.next(100) < 15) { // 15% 확률 (기존 rnd >= 85와 동일)
+	        if (GameRandom.next(100) < 15) { // 15% 확률 (기존 rnd >= 85와 동일)
 	            int itemId = (mapId == 781) ? 100036 : 500210;
 	            if (!pc.getInventory().checkItem(itemId, 1)) {
 	                L1ItemInstance item = pc.getInventory().storeItem(itemId, 1);
@@ -1249,6 +1245,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 
 	@Override
 	public int getL1Type() {
-		return _instanceType == -1 ? _instanceType = super.getL1Type() | MJL1Type.L1TYPE_MONSTER : _instanceType;
+		return _instanceType == -1 ? _instanceType = super.getL1Type() | L1Type.L1TYPE_MONSTER : _instanceType;
 	}
 }

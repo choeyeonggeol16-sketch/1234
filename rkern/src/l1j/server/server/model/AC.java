@@ -1,9 +1,7 @@
 package l1j.server.server.model;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
-
-import l1j.server.MJTemplate.MJL1Type;
 import l1j.server.server.model.Instance.L1PcInstance;
-
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
+import l1j.server.server.shared.L1Type;
 import l1j.server.server.utils.IntRange;
 
 public class AC {
@@ -51,7 +49,7 @@ public class AC {
 				isChangedDG = _cha.setCharacterDG(0);	
 				isChangedER = _cha.setCharacterER(0);
 			}
-			if(notify && (isChangedDG || isChangedER) && _cha.instanceOf(MJL1Type.L1TYPE_PC)){
+			if(notify && (isChangedDG || isChangedER) && _cha.instanceOf(L1Type.L1TYPE_PC)){
 				SC_OwnCharAttrDef.send((L1PcInstance)_cha);	
 			}
 		}

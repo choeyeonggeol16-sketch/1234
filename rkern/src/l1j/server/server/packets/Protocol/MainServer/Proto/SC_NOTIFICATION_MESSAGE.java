@@ -1,12 +1,8 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.MJTemplate.MJSimpleRgb;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.shared.SimpleRgb;
 
 /**
  * SC_NOTIFICATION_MESSAGE (0x013C) — 화면 알림 메시지
@@ -39,13 +35,13 @@ public final class SC_NOTIFICATION_MESSAGE extends ProtoPacket {
         _hasServerno = hasServerno;
     }
 
-    /** MJ newInstance(message, rgb, duration) — screen_top 고정, serverno 미사용 */
-    public static SC_NOTIFICATION_MESSAGE of(String message, MJSimpleRgb rgb, int duration){
+    /** server newInstance(message, rgb, duration) — screen_top 고정, serverno 미사용 */
+    public static SC_NOTIFICATION_MESSAGE of(String message, SimpleRgb rgb, int duration){
         return new SC_NOTIFICATION_MESSAGE(
                 DisplayPosition.SCREEN_TOP.toInt(), message, rgb.get_bytes(), duration, 0, false);
     }
 
-    public static SC_NOTIFICATION_MESSAGE of(String message, MJSimpleRgb rgb){
+    public static SC_NOTIFICATION_MESSAGE of(String message, SimpleRgb rgb){
         return of(message, rgb, 60);
     }
 
@@ -108,11 +104,11 @@ public final class SC_NOTIFICATION_MESSAGE extends ProtoPacket {
         return sendFields(protoRecipient, proto47_pos, proto47_desc, proto47_messageRGB, proto47_duration, proto47_serverno, proto47_hasServerno);
     }
 
-    public static boolean sendOf(CUserSocket protoRecipient, String message, MJSimpleRgb rgb, int duration) {
+    public static boolean sendOf(CUserSocket protoRecipient, String message, SimpleRgb rgb, int duration) {
         return sendCtor(protoRecipient, DisplayPosition.SCREEN_TOP.toInt(), message, rgb.get_bytes(), duration, 0, false);
     }
 
-    public static boolean sendOf(L1PcInstance protoRecipient, String message, MJSimpleRgb rgb, int duration) {
+    public static boolean sendOf(L1PcInstance protoRecipient, String message, SimpleRgb rgb, int duration) {
         return sendOf(protoRecipient == null ? null : protoRecipient.getNetConnection(), message, rgb, duration);
     }
     public static boolean sendConstructed(

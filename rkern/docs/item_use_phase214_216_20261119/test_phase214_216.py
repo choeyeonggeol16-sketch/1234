@@ -8,8 +8,8 @@ old=registry.replace('70740, 70741, 80804','70740, 70741, 70888, 80804').replace
 decoder=cls(D/'ItemTargetDecoder.java','ItemTargetDecoder')
 olddecoder=decoder.replace('30074, 70888 -> TARGET','30074 -> TARGET').replace('ItemTargetDecoder','OldItemTargetDecoder')
 code='''import java.util.*; import java.util.concurrent.ThreadLocalRandom;
-class MJINNHelper {static int INN_KEYID=40312;}
-class MJCTLoadManager {static int CTSYSTEM_STORE_ID=7777777;}
+class InnHelper {static int INN_KEYID=40312;}
+class CollectionLoadManager {static int CTSYSTEM_STORE_ID=7777777;}
 class TransformationListItems {static boolean showNeigeSelection(L1PcInstance p){return true;}}
 class CreatureItemActions {static final Random _random=new Random(2);}
 class Config {static int 엘븐스트라이크기본=100,엘븐스트라이크양=0,엘븐스트라이크음=0,엘븐스트라이크배율=5,엘븐스트라이크대기=10,엘븐스트라이크몬스터=100,매직실드대기=10,매직실드지속=30;static double 리버레이션절감=.5;}
@@ -32,7 +32,7 @@ class SC_AttackPacket {static void send(Object o,L1PcInstance p,int i,int j){}st
 class SC_PacketBox {static final int GREEN_MESSAGE=1;static void send(L1PcInstance p,int i,String s){}}
 class SC_SystemMessage {static void send(L1PcInstance p,String s){}}
 class SC_ServerMessage {static void send(L1PcInstance p,int n){}}
-class MJCommons {static boolean isNonAction(L1PcInstance p){return p.nonAction;}}
+class GameUtils {static boolean isNonAction(L1PcInstance p){return p.nonAction;}}
 class DurationChoiceItems {static int elven(Random r){return 5000;}}
 class SC_Paralysis {static int TYPE_BIND=1;static void send(L1Character c,int i,boolean b){}}
 class L1EffectSpawn {static L1EffectSpawn getInstance(){return new L1EffectSpawn();}void spawnEffect(int a,int b,int c,int d,int e){}}

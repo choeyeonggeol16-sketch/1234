@@ -1,31 +1,29 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
-import l1j.server.MJCombatSystem.MJCombatObserver;
-import l1j.server.MJCombatSystem.Loader.MJCombatLoadManager;
-import l1j.server.MJExpAmpSystem.MJExpAmplifierLoader;
-import l1j.server.MJInstanceSystem.MJInstanceEnums.InstStatus;
-import l1j.server.MJInstanceSystem.MJInstanceSpace;
-import l1j.server.MJRaidSystem.MJRaidSpace;
-import l1j.server.MJTemplate.MJEPcStatus;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Getback;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
+import l1j.server.server.model.character.combat.arena.CombatObserver;
+import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
+import l1j.server.server.model.character.experience.amplifier.ExpAmplifierLoader;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
-import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.network.utill.CConnectionState;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MAP_ID;
+import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_IvenBuffIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
-import l1j.server.server.templates.L1Skills;
-
+import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_Weather;
+import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.world.instance.InstanceEnums.InstStatus;
+import l1j.server.server.model.world.instance.InstanceSpace;
+import l1j.server.server.model.world.instance.raid.RaidSpace;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MAP_ID;
+import l1j.server.server.shared.EPcStatus;
+import l1j.server.server.templates.L1Skills;
 public final class CS_Restart {
 
     private static final int[] REMOVE_IDS = {
@@ -59,8 +57,8 @@ public final class CS_Restart {
         }
 
         if (pc.is_combat_field()) {
-            final MJCombatObserver observer =
-                    MJCombatLoadManager.getInstance()
+            final CombatObserver observer =
+                    CombatLoadManager.getInstance()
                             .get_current_observer(pc.get_current_combat_id());
 
             if (observer != null) {
@@ -68,9 +66,9 @@ public final class CS_Restart {
             }
         }
 
-        MJRaidSpace.getInstance().getBackPc(pc);
+        RaidSpace.getInstance().getBackPc(pc);
 
-        if (MJInstanceSpace.isInInstance(pc)
+        if (InstanceSpace.isInInstance(pc)
                 && pc.getInstStatus() != InstStatus.INST_USERSTATUS_NONE) {
 
             return;
@@ -124,7 +122,7 @@ public final class CS_Restart {
             CIOThreadCallback.getInstance().clearPcState(pc);
 
             pc.set_is_non_action(false);
-            pc.set_instance_status(MJEPcStatus.WORLD);
+            pc.set_instance_status(EPcStatus.WORLD);
             pc.set_mark_status(0);
             pc.set_current_combat_id(0);
             pc.set_current_combat_team_id(-1);
@@ -138,7 +136,7 @@ public final class CS_Restart {
 
             SC_MAP_ID.sendCreate(pc, pc.getMap().getBaseMapId(), pc.getMap().isUnderwater());
 
-            MJExpAmplifierLoader.getInstance().set(pc);
+            ExpAmplifierLoader.getInstance().set(pc);
 
             SC_WorldPutObject.broadcastPc(pc);
 

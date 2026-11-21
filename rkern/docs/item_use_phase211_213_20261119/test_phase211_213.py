@@ -18,7 +18,7 @@ routers=''
 for name,args in [('SupplementalCraftRouter','CIOClient c,L1PcInstance p,L1ItemInstance i,int id,L1ItemInstance t'),('AdvancedAbilityItems','L1PcInstance p,L1ItemInstance i,int id'),('SupplementalRewardRouter','L1PcInstance p,L1ItemInstance i,int id,L1ItemInstance t'),('TravelAndRecoveryItems','CIOClient c,L1PcInstance p,L1ItemInstance i,int id')]+[(n,'CIOClient c,L1PcInstance p,L1ItemInstance i,int id,L1ItemInstance t') for n in ['WorldTravelScrollItems','WorldRewardAndCraftItems','WorldQuestAndEventItems','WorldBuffAndCureItems','WorldPetVoucherItems','WorldDollPotentialItems']]:
     routers+='class '+name+' { static void use('+args+'){E.other++;} }\n'
 code='''import java.util.*; import java.util.logging.*;
-class MJINNHelper {static final int INN_KEYID=40312;}
+class InnHelper {static final int INN_KEYID=40312;}
 class E {static int other,opened,debit,grant,request,post,msg,teleport;static boolean allowDebit=true,allowGrant=true,commit=true; static int input,reward,n; static void reset(){other=opened=debit=grant=request=post=msg=teleport=input=reward=n=0;allowDebit=allowGrant=commit=true;}}
 class Template {int id;Template(int id){this.id=id;}int getItemId(){return id;}}
 class L1ItemInstance {Template t;int obj=7;L1ItemInstance(int id){t=new Template(id);}Template getItem(){return t;}int getItemId(){return t.id;}int getId(){return obj;}String getLogName(){return "item";}}

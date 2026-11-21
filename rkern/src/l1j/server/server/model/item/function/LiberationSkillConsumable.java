@@ -1,34 +1,16 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
-import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
-import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
+
 import l1j.server.Config;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
-import l1j.server.server.model.L1CastleLocation;
-import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1EffectSpawn;
-import l1j.server.server.model.L1Party;
-import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1EffectInstance;
-import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eDurationShowType;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.utils.MJCommons;
-import l1j.server.server.utils.eKind;
+import l1j.server.server.utils.GameUtils;
 
 /** Consumable active skill for item ID 70735. */
 final class LiberationSkillConsumable {
@@ -40,7 +22,7 @@ final class LiberationSkillConsumable {
                 SC_SystemMessage.send(pc, "\\fY리버레이션 대기시간 : " + n + "초 후에 사용가능합니다.");
                 return;
             }
-            if (MJCommons.isNonAction(pc)) {
+            if (GameUtils.isNonAction(pc)) {
                 return;
             }
             if (pc.isInvisble()) {

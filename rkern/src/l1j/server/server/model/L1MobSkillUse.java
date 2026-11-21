@@ -1,11 +1,9 @@
 package l1j.server.server.model;
 
 import java.util.ArrayList;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
-import l1j.server.MJ3SEx.EActionCodes;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.MobSkillTable;
@@ -17,12 +15,13 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
+import l1j.server.server.model.character.animation.EActionCodes;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.templates.L1MobSkill;
 import l1j.server.server.templates.L1MobSkill.SkillEntry;
@@ -133,7 +132,7 @@ public final class L1MobSkillUse {
         return skillUseImpl(attacker, tg, 0);
     }
 
-    /** NC PS_USE_SKILL executes the selected skill, not any available entry. */
+    /** reference server PS_USE_SKILL executes the selected skill, not any available entry. */
     public static boolean skillUseSelected(
             final L1NpcInstance attacker,
             final L1Character tg,

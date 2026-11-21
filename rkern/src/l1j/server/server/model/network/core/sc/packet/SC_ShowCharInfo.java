@@ -2,19 +2,19 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.*;
+import l1j.server.server.model.item.collection.CollectionObject;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.MJCTSystem.MJCTObject;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_ShowCharInfo {
     private SC_ShowCharInfo() {}
 
-    public static boolean send(L1PcInstance receiver, MJCTObject obj) {
+    public static boolean send(L1PcInstance receiver, CollectionObject obj) {
         return receiver != null && send(receiver.getNetConnection(), obj);
     }
 
-    public static boolean send(CUserSocket client, MJCTObject obj) {
+    public static boolean send(CUserSocket client, CollectionObject obj) {
         if (client == null || !client.isConnected() || obj == null ) return false;
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;

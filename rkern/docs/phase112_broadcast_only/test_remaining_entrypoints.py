@@ -37,7 +37,7 @@ public final class RemainingFanout112 {
   CIOServer owner=new CIOServer();L1World world=L1World.getInstance();
   L1PcInstance bad=pc(owner,10), good=pc(owner,11);
   world.visible=new ArrayList<>(List.of(bad,good));
-  MJEffectTriggerInstance effect=new MJEffectTriggerInstance(100,1);
+  EffectTriggerInstance effect=new EffectTriggerInstance(100,1);
   bad.client.socket.failEnqueueOnce=true;
   effect.do_move(10,20,3); // state update must survive optional visual SEND failure
   ck(effect.x==10 && effect.y==20,"effect position changed");
@@ -46,7 +46,7 @@ public final class RemainingFanout112 {
   effect.do_action(2);
   ck(good.client.socket.frames.size()==2,"effect action missing after bad viewer");
   bad.client.socket.failEnqueueOnce=true;
-  MJL1TreasureChest chest=new MJL1TreasureChest(101,1);
+  L1TreasureChest chest=new L1TreasureChest(101,1);
   chest.testShowOpen();
   ck(good.client.socket.frames.size()==3,"chest-open broadcast missing after bad viewer");
   good.client.socket.drain();
@@ -70,19 +70,19 @@ class L1ChatParty {
  void setLeader(L1PcInstance pc){_leader=pc;}
 '''
     java+=extract('l1j/server/server/model/L1ChatParty.java','addMember')+'\n}\n'
-    java+='''class MJEffectTriggerInstance extends L1Character {
+    java+='''class EffectTriggerInstance extends L1Character {
  int x,y;
- MJEffectTriggerInstance(int id,int map){super(id,map);}
+ EffectTriggerInstance(int id,int map){super(id,map);}
  void setX(int xx){x=xx;}void setY(int yy){y=yy;}
 '''
-    java+=extract('l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java','do_move')+'\n'
-    java+=extract('l1j/server/MJTemplate/L1Instance/MJEffectTriggerInstance.java','do_action')+'\n}\n'
-    java+='''class MJL1TreasureChest extends L1Character {
+    java+=extract('l1j/server/server/model/world/instance/shared/EffectTriggerInstance.java','do_move')+'\n'
+    java+=extract('l1j/server/server/model/world/instance/shared/EffectTriggerInstance.java','do_action')+'\n}\n'
+    java+='''class L1TreasureChest extends L1Character {
  final int CHEST_OPEN=10;
- MJL1TreasureChest(int id,int map){super(id,map);}
+ L1TreasureChest(int id,int map){super(id,map);}
  void testShowOpen(){showOpen();}
 '''
-    java+=extract('l1j/server/MJTemplate/TreasureChest/MJL1TreasureChest.java','showOpen')+'\n}\n'
+    java+=extract('l1j/server/server/model/item/treasure/L1TreasureChest.java','showOpen')+'\n}\n'
     location=src/'l1j/server/server/model/RemainingFanout112.java';location.write_text(java)
     if 'BROADCAST_COMPARE_ROOT' not in os.environ:
         assert java.count('.sendWrittenRecipientsBestEffort(')==4

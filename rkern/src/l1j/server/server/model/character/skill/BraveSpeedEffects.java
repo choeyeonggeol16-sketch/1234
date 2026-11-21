@@ -1,11 +1,11 @@
 package l1j.server.server.model.character.skill;
 
-import l1j.server.MJPassiveSkill.MJPassiveID;
+import static l1j.server.server.model.character.skill.L1SkillId.*;
+
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
-
-import static l1j.server.server.model.character.skill.L1SkillId.*;
 
 /** Reconciles the second speed tier when an owning timer is removed. */
 public final class BraveSpeedEffects {
@@ -63,7 +63,7 @@ public final class BraveSpeedEffects {
 
     private static int speedFor(L1Character target, int source) {
         return switch (source) {
-            case STATUS_FRUIT -> target.isPassive(MJPassiveID.DARK_HORSE.toInt()) ? 3 : 4;
+            case STATUS_FRUIT -> target.isPassive(PassiveID.DARK_HORSE.toInt()) ? 3 : 4;
             case HOLY_WALK, MOVING_ACCELERATION -> 4;
             case STATUS_BRAVE -> target instanceof L1PcInstance pc ? pc.getStatusBraveMode() : 1;
             default -> 1;

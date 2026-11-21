@@ -4,12 +4,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-import l1j.server.MJTemplate.MJRnd;
-import l1j.server.MJTemplate.MJArrangeHelper.MJArrangeParseeFactory;
-import l1j.server.MJTemplate.MJArrangeHelper.MJArrangeParser;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.FullSelectorHandler;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ALCHEMY_DESIGN_ACK;
+import l1j.server.server.shared.GameRandom;
+import l1j.server.server.shared.arrangement.ArrangeParseeFactory;
+import l1j.server.server.shared.arrangement.ArrangeParser;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 
 public class AlchemyProbability{
 	private static AlchemyProbability _instance;
@@ -55,7 +54,7 @@ public class AlchemyProbability{
 	}
 
 	public Integer select_id(int alchemy_id){
-		return MJAlchemyProbabilityBox.getInstance().nextCurrentAlchemyId(alchemy_id);	
+		return AlchemyProbabilityBox.getInstance().nextCurrentAlchemyId(alchemy_id);	
 //		return _alchemy_structs.get(alchemy_id).select_id();
 	}
 	
@@ -74,8 +73,8 @@ public class AlchemyProbability{
 		public static AlchemyProbStruct newInstance(ResultSet rs) throws SQLException{
 			return newInstance()
 				.set_alchemy_id(rs.getInt("alchemy_id"))
-				.set_probability_by_millions(rs.getString("success_probability_by_millions") == null ? null : (Integer[])MJArrangeParser.parsing(rs.getString("success_probability_by_millions"), ",", MJArrangeParseeFactory.createIntArrange()).result())
-				.set_sequences((Integer[])MJArrangeParser.parsing(rs.getString("sequence"), ",", MJArrangeParseeFactory.createIntArrange()).result());
+				.set_probability_by_millions(rs.getString("success_probability_by_millions") == null ? null : (Integer[])ArrangeParser.parsing(rs.getString("success_probability_by_millions"), ",", ArrangeParseeFactory.createIntArrange()).result())
+				.set_sequences((Integer[])ArrangeParser.parsing(rs.getString("sequence"), ",", ArrangeParseeFactory.createIntArrange()).result());
 		}
 		
 		public static AlchemyProbStruct newInstance(){
@@ -115,15 +114,15 @@ public class AlchemyProbability{
 		
 		public Integer select_id(){
 			for(Integer id : _sequences){
-				if(MJRnd.isBoolean())
+				if(GameRandom.isBoolean())
 					return id;
 			
 			}
-			return _sequences[MJRnd.next(_sequences.length)];
+			return _sequences[GameRandom.next(_sequences.length)];
 		}
 		
 		public boolean is_winning(int amount){
-			return MJRnd.isWinning(1000000, _probability_by_millions[amount - 1]);
+			return GameRandom.isWinning(1000000, _probability_by_millions[amount - 1]);
 		}
 	}
 }

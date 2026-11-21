@@ -2,8 +2,8 @@ package l1j.server.server.packets.Protocol.MainServer.Proto.Craft;
 
 import java.util.LinkedList;
 
-import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.L1Inventory;
 
 /**
  * 유저가 제작 요청 시 보낸 재료 슬롯 정보 (CS_CRAFT_MAKE_REQ repeated slotInfo 항목).
@@ -43,7 +43,7 @@ public class CraftInputItemSlotInfo {
                 || itemId == 222340 || itemId == 222341;  // 검은빛(일반/축복)
     }
 
-    /** 인벤 아이템이 이 슬롯의 요구사항과 일치하는지 — MJ 원본 그대로 */
+    /** 인벤 아이템이 이 슬롯의 요구사항과 일치하는지 — server 원본 그대로 */
     public boolean isInput(L1ItemInstance item){
         if(_item_name_id != item.getItem().getItemDescId())
             return false;

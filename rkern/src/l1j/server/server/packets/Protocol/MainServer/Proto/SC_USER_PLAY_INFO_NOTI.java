@@ -1,18 +1,14 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import l1j.server.MJDungeonTimer.DungeonTimeInformation;
-import l1j.server.MJDungeonTimer.Loader.DungeonTimeInformationLoader;
-import l1j.server.MJDungeonTimer.Progress.DungeonTimeProgress;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeInformation;
+import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeInformationLoader;
+import l1j.server.server.model.world.instance.dungeon.time.progress.DungeonTimeProgress;
 
 /**
  * 던전 잔여시간 UI 와이어

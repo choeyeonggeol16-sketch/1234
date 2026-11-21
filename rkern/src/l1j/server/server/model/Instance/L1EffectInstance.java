@@ -1,6 +1,5 @@
 package l1j.server.server.model.Instance;
 
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Magic;
@@ -9,6 +8,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.templates.L1Npc;
 
 public class L1EffectInstance extends L1NpcInstance {
@@ -72,7 +72,7 @@ public class L1EffectInstance extends L1NpcInstance {
 
                 if (pc.getZoneType() == 1) {
                     int castleId = L1CastleLocation.getCastleIdByArea(pc);
-                    if (castleId <= 0 || !MJCastleWarBusiness.getInstance().isNowWar(castleId)) {
+                    if (castleId <= 0 || !CastleWarBusiness.getInstance().isNowWar(castleId)) {
                         continue;
                     }
                 }

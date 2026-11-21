@@ -27,8 +27,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Updator;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.BatchHandler;
+import l1j.server.server.storage.sql.executors.Updator;
+import l1j.server.server.storage.sql.handler.BatchHandler;
 import l1j.server.server.utils.SQLUtil;
 import l1j.server.swing.chocco;
 

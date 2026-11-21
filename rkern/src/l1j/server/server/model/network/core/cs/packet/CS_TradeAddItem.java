@@ -1,15 +1,15 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.MJCompanion.Instance.MJCompanionInstanceCache;
 import l1j.server.server.datatables.NoTradable;
-import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Trade;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1Trade;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
@@ -153,7 +153,7 @@ public final class CS_TradeAddItem {
             return;
         }
 
-        if (!MJCompanionInstanceCache
+        if (!CompanionInstanceCache
                 .is_companion_oblivion(
                         item.getId())) {
 

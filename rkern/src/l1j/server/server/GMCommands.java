@@ -1,26 +1,11 @@
 package l1j.server.server;
-import l1j.server.server.model.network.core.sc.packet.SC_Chainfo;
-import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
-import l1j.server.server.model.network.core.sc.packet.SC_UserCommands17;
-import l1j.server.server.model.network.core.sc.packet.SC_GMHtml;
-import l1j.server.server.model.network.core.sc.packet.SC_Ability;
-import l1j.server.server.model.network.core.sc.packet.SC_ShowHelp;
-
-
-
-
-import l1j.server.server.model.network.core.sc.packet.SC_DeleteInventoryItem;
-import l1j.server.server.model.network.core.sc.packet.SC_Unknown2;
-import l1j.server.server.model.network.core.sc.packet.SC_CharTitle;
 import static l1j.server.server.model.character.skill.L1SkillId.BUYER_COOLTIME;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.HUNTER_BLESS;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,56 +22,36 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javolution.util.FastTable;
+
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
+import l1j.server.server.model.character.combat.arena.dogfight.DogFightCommandExecutor;
+import l1j.server.server.payment.PaymentGmHandler;
+import l1j.server.server.payment.PaymentUserHandler;
 import l1j.server.SpecialEventHandler;
-import l1j.server.DogFight.MJDogFightCommandExecutor;
-import l1j.server.MJCTSystem.Loader.MJCTLoadManager;
-import l1j.server.MJCaptchaSystem.Loader.MJCaptchaLoadManager;
-import l1j.server.MJCombatSystem.Loader.MJCombatLoadManager;
-import l1j.server.MJCompanion.MJCompanionCommandExecutor;
-import l1j.server.MJDungeonTimer.Loader.DungeonTimeLoadManager;
-import l1j.server.MJInstanceSystem.Loader.MJInstanceLoadManager;
-import l1j.server.MJInstanceSystem.MJLFC.Creator.MJLFCCreator;
-import l1j.server.MJItemEnchantSystem.MJItemEnchantSystemLoadManager;
-import l1j.server.MJKDASystem.MJKDALoadManager;
-import l1j.server.MJKDASystem.MJKDALoader;
-import l1j.server.MJRaidSystem.Loader.MJRaidLoadManager;
-import l1j.server.MJSurveySystem.MJSurveyFactory;
-import l1j.server.MJSurveySystem.MJSurveySystemLoader;
-import l1j.server.MJTemplate.MJEPcStatus;
-import l1j.server.MJTemplate.MJObjectWrapper;
-import l1j.server.MJTemplate.MJSimpleRgb;
-import l1j.server.MJTemplate.Command.MJCommandArgs;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Updator;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.FullSelectorHandler;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.Handler;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.SelectorHandler;
-import l1j.server.MJWarSystem.MJCastleWar;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
-import l1j.server.MJWarSystem.MJWar;
-import l1j.server.Payment.MJPaymentGmHandler;
-import l1j.server.Payment.MJPaymentUserHandler;
-import l1j.server.Stadium.StadiumManager;
-import l1j.server.TowerOfDominance.DominanceDataLoader;
-import l1j.server.TowerOfDominance.BossController.DominanceFloorLv1;
-import l1j.server.TowerOfDominance.BossController.DominanceFloorLv10;
-import l1j.server.TowerOfDominance.BossController.DominanceFloorLv11;
-import l1j.server.TowerOfDominance.BossController.DominanceFloorLv2;
-import l1j.server.TowerOfDominance.BossController.DominanceFloorLv3;
-import l1j.server.TowerOfDominance.BossController.DominanceFloorLv4;
-import l1j.server.TowerOfDominance.BossController.DominanceFloorLv5;
-import l1j.server.TowerOfDominance.BossController.DominanceFloorLv6;
-import l1j.server.TowerOfDominance.BossController.DominanceFloorLv7;
-import l1j.server.TowerOfDominance.BossController.DominanceFloorLv8;
-import l1j.server.TowerOfDominance.BossController.DominanceFloorLv9;
-import l1j.server.TowerOfDominance.DominanceBoss;
+import l1j.server.server.model.character.combat.arena.stadium.StadiumManager;
+import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv1;
+import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv10;
+import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv11;
+import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv2;
+import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv3;
+import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv4;
+import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv5;
+import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv6;
+import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv7;
+import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv8;
+import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv9;
+import l1j.server.server.model.world.instance.dungeon.tower.DominanceBoss;
+import l1j.server.server.model.world.instance.dungeon.tower.DominanceDataLoader;
+import l1j.server.server.Controller.BossController;
 import l1j.server.server.Controller.BugRaceController;
+import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.command.L1Commands;
 import l1j.server.server.command.executor.L1AllBuff;
 import l1j.server.server.command.executor.L1CommandExecutor;
+import l1j.server.server.datatables.AlchemyProbabilityBox;
 import l1j.server.server.datatables.AuctionSystemTable;
 import l1j.server.server.datatables.AutoLoot;
 import l1j.server.server.datatables.CharacterTable;
@@ -95,13 +60,20 @@ import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.HouseTable;
 import l1j.server.server.datatables.IpTable;
 import l1j.server.server.datatables.ItemTable;
+import l1j.server.server.datatables.ItemTradeTable;
 import l1j.server.server.datatables.LetterTable;
-import l1j.server.server.datatables.MJAlchemyProbabilityBox;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.datatables.SpawnTable;
-import l1j.server.server.datatables.ItemTradeTable;
+import l1j.server.server.model.Attendance.AttendanceLoadManager;
+import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
+import l1j.server.server.model.Instance.L1ClanJoinInstance;
+import l1j.server.server.model.Instance.L1DollInstance;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ClanRanking;
@@ -111,47 +83,41 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Attendance.AttendanceLoadManager;
-import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
-import l1j.server.server.model.Instance.L1ClanJoinInstance;
-import l1j.server.server.model.Instance.L1DollInstance;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1MonsterInstance;
-import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Warehouse.ClanWarehouse;
 import l1j.server.server.model.Warehouse.PrivateWarehouse;
 import l1j.server.server.model.Warehouse.Warehouse;
 import l1j.server.server.model.Warehouse.WarehouseManager;
+import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
+import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
+import l1j.server.server.model.character.combat.statistics.KdaLoader;
+import l1j.server.server.model.character.companion.CompanionCommandExecutor;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.character.survey.SurveyFactory;
+import l1j.server.server.model.character.survey.SurveySystemLoader;
 import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
+import l1j.server.server.model.item.enchant.ItemEnchantSystemLoadManager;
 import l1j.server.server.model.item.teleport.L1Teleport;
-import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
 import l1j.server.server.model.network.core.cs.packet.CS_CommonClick;
-import l1j.server.server.model.network.safe.CPacketFilter;
-import l1j.server.server.model.rank.loader.RankLoadManager;
-import l1j.server.server.monitor.LoggerInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_ADD_INVENTORY_NOTI;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_EVENT_COUNTDOWN_NOTI_PACKET;
-import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo;
+import l1j.server.server.model.network.core.sc.packet.SC_Ability;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
-import l1j.server.server.Controller.BossController;
-
+import l1j.server.server.model.network.core.sc.packet.SC_Chainfo;
+import l1j.server.server.model.network.core.sc.packet.SC_CharAmount;
+import l1j.server.server.model.network.core.sc.packet.SC_CharTitle;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatMessageNoti;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.network.core.sc.packet.SC_DeleteInventoryItem;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
+import l1j.server.server.model.network.core.sc.packet.SC_GMHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_LetterList;
-
+import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
 import l1j.server.server.model.network.core.sc.packet.SC_MarkSee;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
@@ -162,25 +128,52 @@ import l1j.server.server.model.network.core.sc.packet.SC_QuestTalkIsland;
 import l1j.server.server.model.network.core.sc.packet.SC_Restart;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_ShowCmd;
+import l1j.server.server.model.network.core.sc.packet.SC_ShowHelp;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_Unknown2;
+import l1j.server.server.model.network.core.sc.packet.SC_UserCommands17;
+import l1j.server.server.model.network.core.sc.packet.SC_Weather;
+import l1j.server.server.model.network.safe.CPacketFilter;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.rank.loader.RankLoadManager;
+import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeLoadManager;
+import l1j.server.server.model.world.instance.loader.InstanceLoadManager;
+import l1j.server.server.model.world.instance.lobby.creator.LobbyCreator;
+import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
+import l1j.server.server.model.world.siege.CastleWar;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.War;
+import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo;
+import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_ADD_INVENTORY_NOTI;
+import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_EVENT_COUNTDOWN_NOTI_PACKET;
+import l1j.server.server.shared.EPcStatus;
+import l1j.server.server.shared.ObjectWrapper;
+import l1j.server.server.shared.SimpleRgb;
+import l1j.server.server.shared.command.CommandArgs;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.executors.Updator;
+import l1j.server.server.storage.sql.handler.FullSelectorHandler;
+import l1j.server.server.storage.sql.handler.Handler;
+import l1j.server.server.storage.sql.handler.SelectorHandler;
 import l1j.server.server.templates.L1BoardPost;
 import l1j.server.server.templates.L1Command;
 import l1j.server.server.templates.L1House;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.templates.L1QuestInfo;
+import l1j.server.server.utils.FullStater;
+import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.IntRange;
 import l1j.server.server.utils.L1QueryUtil;
 import l1j.server.server.utils.L1SpawnUtil;
-import l1j.server.server.utils.MJCommons;
-import l1j.server.server.utils.MJFullStater;
 import l1j.server.server.utils.Message;
 import l1j.server.server.utils.MessageUtil;
 import l1j.server.server.utils.SQLUtil;
 import l1j.server.server.utils.ServerMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_Weather;
-import l1j.server.server.model.network.core.sc.packet.SC_CharAmount;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX;
 public class GMCommands {
  
 	private static Logger _log = Logger.getLogger(GMCommands.class.getName());
@@ -282,9 +275,9 @@ public class GMCommands {
 			gm.sendPackets(String.format("%s님을 찾을 수 없습니다.", name));
 		}
 		L1BoardPost bp = L1BoardPost.createLfc(name, "-", String.format("3 %s", gm.getName()));
-		MJLFCCreator.registLfc(gm, 3);
+		LobbyCreator.registLfc(gm, 3);
 		gm.sendPackets(String.format("%s님에게 결투를 신청했습니다.", name));
-		MJSurveySystemLoader.getInstance().registerSurvey(pc,String.format("%s님이 결투를 신청했습니다.", gm.getName()), bp.getId() + 1000, MJSurveyFactory.createLFCSurvey(), 30 * 1000);
+		SurveySystemLoader.getInstance().registerSurvey(pc,String.format("%s님이 결투를 신청했습니다.", gm.getName()), bp.getId() + 1000, SurveyFactory.createLFCSurvey(), 30 * 1000);
 	}
 	
 	public void handleCommands(L1PcInstance gm, String cmdLine) {
@@ -360,29 +353,29 @@ public class GMCommands {
             gm.sendPackets("구형 서버 자동사냥 제거됨: 플레이서포터 사용");
             break;
 		case "투견":
-			MJDogFightCommandExecutor.do_execute(new MJCommandArgs().setOwner(gm).setParam(param));
+			DogFightCommandExecutor.do_execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "코드":
-			MJPaymentGmHandler.do_execute(new MJCommandArgs().setOwner(gm).setParam(param));
+			PaymentGmHandler.do_execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "충전":
-			MJPaymentUserHandler.do_execute(new MJCommandArgs().setOwner(gm).setParam(param));
+			PaymentUserHandler.do_execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "펫":
-			MJCompanionCommandExecutor.exec(new MJCommandArgs().setOwner(gm).setParam(param));
+			CompanionCommandExecutor.exec(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		/*case "무인낚시":
 			autofish(gm);
 			break;*/
 		case "캐시경험치":
-			do_cache_exp(new MJCommandArgs().setOwner(gm).setParam(param));
+			do_cache_exp(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 //		case "대항전":
-//			new MJShiftBattleCommandExecutor().execute(new MJCommandArgs().setOwner(gm).setParam(param));
+//			new MJShiftBattleCommandExecutor().execute(new CommandArgs().setOwner(gm).setParam(param));
 //			break;
 //		case "서버이동":
 //			if(Config.USE_SHIFT_SERVER)
-//				new MJShiftObjectCommandExecutor().execute(new MJCommandArgs().setOwner(gm).setParam(param));
+//				new MJShiftObjectCommandExecutor().execute(new CommandArgs().setOwner(gm).setParam(param));
 //			break;
 //		case "무인가입":						autoclanjoin(gm);break;
 		case "물품판매":
@@ -415,7 +408,7 @@ public class GMCommands {
 			test_lfc(gm, param);
 			break;
 		case "인형박스":
-			MJAlchemyProbabilityBox.getInstance().execute(new MJCommandArgs().setOwner(gm).setParam(param));
+			AlchemyProbabilityBox.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "체력바":
 			UserCommands.monsterHpBar(gm, param);
@@ -577,32 +570,32 @@ public class GMCommands {
 			혈맹포인트(gm);
 			break;
 		case "던전타이머":
-			DungeonTimeLoadManager.getInstance().execute(new MJCommandArgs().setOwner(gm).setParam(param));
+			DungeonTimeLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "저주":
-			CurseCharacter(new MJCommandArgs().setOwner(gm).setParam(param));
+			CurseCharacter(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "저주초기화":
 
-			CurseInitializeCharacter(new MJCommandArgs().setOwner(gm).setParam(param));
+			CurseInitializeCharacter(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "인챈트시스템":
-			MJItemEnchantSystemLoadManager.getInstance().execute(new MJCommandArgs().setOwner(gm).setParam(param));
+			ItemEnchantSystemLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "캡챠":
-			MJCaptchaLoadManager.getInstance().execute(new MJCommandArgs().setOwner(gm).setParam(param));
+			CaptchaLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "캐릭터상태":
-			setCharacterInstanceStatus(new MJCommandArgs().setOwner(gm).setParam(param));
+			setCharacterInstanceStatus(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "배틀시스템":
-			MJCombatLoadManager.getInstance().execute(new MJCommandArgs().setOwner(gm).setParam(param));
+			CombatLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "북시스템":
-			BQSLoadManager.getInstance().execute(new MJCommandArgs().setOwner(gm).setParam(param));
+			BQSLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "출석체크":
-			AttendanceLoadManager.getInstance().execute(new MJCommandArgs().setOwner(gm).setParam(param));
+			AttendanceLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "유아이":
 			SC_ActionUI.send(gm, SC_ActionUI.START_PLAY_SUPPORT_ACK, 0);
@@ -967,7 +960,7 @@ public class GMCommands {
 			ping(gm, param);
 			break;
 		case "킬차트":
-			MJKDALoadManager.commands(gm, param);
+			KdaLoadManager.commands(gm, param);
 			break;
 		case "채팅테스트":
 			showChat(gm, param);
@@ -1013,13 +1006,13 @@ public class GMCommands {
 			break;
 	
 		case "인스턴스":
-			MJInstanceLoadManager.commands(gm, param);
+			InstanceLoadManager.commands(gm, param);
 			break;
 		case "레이드":
-			MJRaidLoadManager.commands(gm, param);
+			RaidLoadManager.commands(gm, param);
 			break;
 		case "구슬":
-			MJCTLoadManager.commands(gm, param);
+			CollectionLoadManager.commands(gm, param);
 			break;
 		case "구슬조회":
 			L1NeigeSaveChar.commands(gm, param);
@@ -1028,7 +1021,7 @@ public class GMCommands {
 			nocall(gm, param);
 			break;
 		case "랭킹시스템":
-			RankLoadManager.getInstance().execute(new MJCommandArgs().setOwner(gm).setParam(param));
+			RankLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 
 		case "혈맹랭킹갱신":
@@ -2407,7 +2400,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD6541(L1PcInstance pc, String param) {
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM letter", new Object[0]);
 				Thread.sleep(300);
 				Thread.sleep(300);
-				MJKDALoader.getInstance().clear();
+				KdaLoader.getInstance().clear();
 				Thread.sleep(3000);
 				GameServer.getInstance().shutdown();
 				} if (code.equalsIgnoreCase(" ")) {
@@ -2546,7 +2539,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM letter", new Object[0]);
 				Thread.sleep(300);
-				MJKDALoader.getInstance().clear();
+				KdaLoader.getInstance().clear();
 				Thread.sleep(3000);
 				GameServer.getInstance().shutdown();
 				} if (code.equalsIgnoreCase(" ")) {
@@ -2915,12 +2908,12 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			if (minute != 0)
 				cal.add(Calendar.MINUTE, minute);
 
-			MJCastleWar war = MJCastleWarBusiness.getInstance().findWar(name);
+			CastleWar war = CastleWarBusiness.getInstance().findWar(name);
 			if (war == null)
 				throw new Exception();
 
 			war.nextCalendar(cal);
-			MJCastleWarBusiness.getInstance().updateCastle(war.getCastleId());
+			CastleWarBusiness.getInstance().updateCastle(war.getCastleId());
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 			gm.sendPackets(String.format(".공성시간이 %s 으로 변경 되었습니다.", formatter.format(cal.getTime())));
 			gm.sendPackets(param + "분 뒤 공성이 시작합니다.");
@@ -2934,7 +2927,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 		try {
 			StringTokenizer tok = new StringTokenizer(param);
 			String name = tok.nextToken();
-			MJCastleWar war = MJCastleWarBusiness.getInstance().findWar(name);
+			CastleWar war = CastleWarBusiness.getInstance().findWar(name);
 			if (war == null)
 				throw new Exception();
 
@@ -3470,7 +3463,7 @@ for (L1PcInstance pc :
 				throw new Exception();
 
 			String s = parseStat(arr[0]);
-			MJFullStater.running(pc, s, Integer.parseInt(arr[1]));
+			FullStater.running(pc, s, Integer.parseInt(arr[1]));
 		} catch (Exception e) {
 			SC_SystemMessage.send(pc, String.format(".스텟 [힘/덱스/콘/인트/위즈/카리] [올릴수] 남은스텟 %d", (pc.getLevel() - 50 - pc.getBonusStats())));
 		}
@@ -4521,7 +4514,7 @@ private void 퀘스트멘트(L1PcInstance gm, String param) {
 			String user = tok.nextToken();
 			int count = Integer.parseInt(tok.nextToken());
 
-			if(MJCommons.isNullOrEmpty(user)){
+			if(GameUtils.isNullOrEmpty(user)){
 				gm.sendPackets("만원 이상 입력이 가능 합니다.");
 				return;
 			}
@@ -4728,7 +4721,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 						return;
 					}
 				유저.getKDA().킬삭제(유저, id);
-				MJKDALoader.getInstance().store();
+				KdaLoader.getInstance().store();
 				
 				
 				gm.sendPackets(유저.getName() + "님의 킬포인트 [" + id + "] 감소시켰습니다.");
@@ -4760,7 +4753,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 //						return;
 //					}
 				유저.getKDA().킬증가(유저, id);
-				MJKDALoader.getInstance().store();
+				KdaLoader.getInstance().store();
 				
 				
 				gm.sendPackets(유저.getName() + "님의 킬포인트 [" + id + "] 증가시켰습니다.");
@@ -4793,7 +4786,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 						return;
 					}
 				유저.getKDA().데스삭제(유저, id);
-				MJKDALoader.getInstance().store();
+				KdaLoader.getInstance().store();
 				
 				
 				gm.sendPackets(유저.getName() + "님의 데스포인트 [" + id + "] 감소시켰습니다.");
@@ -4825,7 +4818,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 //						return;
 //					}
 				유저.getKDA().데스증가(유저, id);
-				MJKDALoader.getInstance().store();
+				KdaLoader.getInstance().store();
 				
 				
 				gm.sendPackets(유저.getName() + "님의 데스포인트 [" + id + "] 증가시켰습니다.");
@@ -5465,7 +5458,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 	private void showWarList(L1PcInstance gm) {
 		try {
 			int i = 0;
-			L1World.getInstance().createWarStream().forEach((MJWar war) -> {
+			L1World.getInstance().createWarStream().forEach((War war) -> {
 				gm.sendPackets(war.toString());
 			});
 		} catch (Exception e) {
@@ -5603,8 +5596,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			data.set_x(32767);
 			data.set_y(32767);
 			noti.add_bookmarks(data);
-			l1j.server.MJTemplate.MJProto.IO.ProtoOutputStream stream =
-					l1j.server.MJTemplate.MJProto.IO.ProtoOutputStream.newInstance(noti.getSerializedSize() + WireFormat.WRITE_EXTENDED_SIZE, _currentNum);
+			l1j.server.server.shared.MJProto.IO.ProtoOutputStream stream =
+					l1j.server.server.shared.MJProto.IO.ProtoOutputStream.newInstance(noti.getSerializedSize() + WireFormat.WRITE_EXTENDED_SIZE, _currentNum);
 				try{
 					noti.writeTo(stream);
 				} catch (IOException e) {
@@ -5639,25 +5632,25 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		SC_ChatMessageNoti.sendNotice(gm, param, "하하");
 		// SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_WHISPER,
 		// param, null, "메티스", null, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_ARENA_OBSERVER, "아레나옵저버", MJSimpleRgb.red(),
+		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_ARENA_OBSERVER, "아레나옵저버", SimpleRgb.red(),
 				gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_ARENA_TEAM, "아레나팀", MJSimpleRgb.red(), gm.getName(),
+		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_ARENA_TEAM, "아레나팀", SimpleRgb.red(), gm.getName(),
 				gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_CLASS, "클래스", MJSimpleRgb.red(), gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_PLEDGE_ALLIANCE, "혈맹알리언스", MJSimpleRgb.red(),
+		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_CLASS, "클래스", SimpleRgb.red(), gm.getName(), gm, -1);
+		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_PLEDGE_ALLIANCE, "혈맹알리언스", SimpleRgb.red(),
 				gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_PLEDGE_NOTICE, "혈맹공지", MJSimpleRgb.red(),
+		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_PLEDGE_NOTICE, "혈맹공지", SimpleRgb.red(),
 				gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_PLEDGE_PRINCE, "혈맹왕자", MJSimpleRgb.red(),
+		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_PLEDGE_PRINCE, "혈맹왕자", SimpleRgb.red(),
 				gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_ROOM_ARENA_ALL, "룸아레나올", MJSimpleRgb.red(),
+		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_ROOM_ARENA_ALL, "룸아레나올", SimpleRgb.red(),
 				gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_TEAM, "팀", MJSimpleRgb.red(), gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_TRADE, "트레이드", MJSimpleRgb.red(), gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_CHAT_PARTY, "채팅파티", MJSimpleRgb.red(), gm.getName(),
+		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_TEAM, "팀", SimpleRgb.red(), gm.getName(), gm, -1);
+		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_TRADE, "트레이드", SimpleRgb.red(), gm.getName(), gm, -1);
+		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_CHAT_PARTY, "채팅파티", SimpleRgb.red(), gm.getName(),
 				gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_SHOUT, "샤우트", MJSimpleRgb.red(), gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_HUNT_PARTY, "헌트파티", MJSimpleRgb.red(), gm.getName(),
+		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_SHOUT, "샤우트", SimpleRgb.red(), gm.getName(), gm, -1);
+		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_HUNT_PARTY, "헌트파티", SimpleRgb.red(), gm.getName(),
 				gm, -1);
 	}
 
@@ -5988,7 +5981,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		gm.sendPackets(sb.toString());
 	}
 
-	public static void setCharacterInstanceStatus(MJCommandArgs args) {
+	public static void setCharacterInstanceStatus(CommandArgs args) {
 		try {
 			String name = args.nextString();
 			int status = args.nextInt();
@@ -5997,10 +5990,10 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 				args.notify(String.format("캐릭터이름 : %s를 찾을 수 없습니다.", name));
 				return;
 			}
-			MJEPcStatus e_status = MJEPcStatus.fromInt(status);
-			if (e_status.equals(MJEPcStatus.NONE)) {
+			EPcStatus e_status = EPcStatus.fromInt(status);
+			if (e_status.equals(EPcStatus.NONE)) {
 				StringBuilder sb = new StringBuilder(256);
-				MJEPcStatus[] statuses = MJEPcStatus.values();
+				EPcStatus[] statuses = EPcStatus.values();
 				sb.append("상태 값을 정확히 입력해주세요 ->\r\n");
 				for (int i = 0; i < statuses.length; ++i) {
 					if (i != 0)
@@ -6018,7 +6011,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		}
 	}
 
-	private void CurseCharacter(MJCommandArgs args) {
+	private void CurseCharacter(CommandArgs args) {
 		try {
 			String name = args.nextString();
 			if (name == null || name.equalsIgnoreCase(""))
@@ -6041,7 +6034,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		}
 	}
 
-	private void CurseInitializeCharacter(MJCommandArgs args) {
+	private void CurseInitializeCharacter(CommandArgs args) {
 		try {
 			String command_type = args.nextString();
 			if (command_type.equalsIgnoreCase("전체")) {
@@ -7229,13 +7222,13 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 	}
 	
 	
-	private void do_cache_exp(MJCommandArgs args){
+	private void do_cache_exp(CommandArgs args){
 		try{
 			final String character_name = args.nextString();
-			if(MJCommons.isNullOrEmpty(character_name))
+			if(GameUtils.isNullOrEmpty(character_name))
 				throw new Exception();
 			
-			MJObjectWrapper<LevelExpPair> wrapper = new MJObjectWrapper<LevelExpPair>();
+			ObjectWrapper<LevelExpPair> wrapper = new ObjectWrapper<LevelExpPair>();
 			Selector.exec("select * from character_exp_cache where character_name=?", new SelectorHandler(){
 				@Override
 				public void handle(PreparedStatement pstm) throws Exception {

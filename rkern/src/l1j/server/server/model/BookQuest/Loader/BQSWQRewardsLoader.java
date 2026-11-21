@@ -2,12 +2,12 @@ package l1j.server.server.model.BookQuest.Loader;
 
 import java.sql.ResultSet;
 
-import l1j.server.MJTemplate.MJSqlHelper.Executors.Selector;
-import l1j.server.MJTemplate.MJSqlHelper.Handler.FullSelectorHandler;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MONSTER_BOOK_V2_REWARD_ACK;
 import l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook.MonsterBookV2Info;
 import l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook.eMonsterBookV2RewardGrade;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MONSTER_BOOK_V2_REWARD_ACK;
+import l1j.server.server.storage.sql.executors.Selector;
+import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 
 public class BQSWQRewardsLoader {
 	private static BQSWQRewardsLoader _instance;

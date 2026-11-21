@@ -2,12 +2,12 @@ package l1j.server.server.model.npc.ai;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+import l1j.server.server.model.Instance.L1CompanionInstance;
+import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1MonsterInstance;
-import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 
 /**
@@ -51,8 +51,8 @@ public final class CDesirePQ {
     public static final byte BLOCKED_ATTACK_LANE = 1;
     public static final byte BLOCKED_ATTACK_RING = 2;
 
-    /** NC DesirePqSize is a warning threshold, not a hard eviction limit. */
-    /** NC value saturation at 0x005A5D70 in CDesirePQ::AddValue. */
+    /** reference server DesirePqSize is a warning threshold, not a hard eviction limit. */
+    /** reference server value saturation at 0x005A5D70 in CDesirePQ::AddValue. */
     private static final float MAX_DESIRE_VALUE = 3.3e30f;
     private static final float IMMEDIATE_VALUE = -1.0f;
     private static final int IMMEDIATE_INDEX = -2;
@@ -98,7 +98,7 @@ public final class CDesirePQ {
 
     private int size;
 
-    // NC CDesirePQ keeps its ordinary CDesire[] as a max-heap ordered by
+    // reference server CDesirePQ keeps its ordinary CDesire[] as a max-heap ordered by
     // CDesire::value (+0xA0).  Heap rebuilding is deferred until the next
     // selection so that several changes in the same AI tick cost one pass.
     private boolean heapDirty;
@@ -434,7 +434,7 @@ public final class CDesirePQ {
 
         final CDesirePQ pq = ensure(npc, nowMs);
         final int id = target.getId();
-        // NC AddValue merges keys by identity and copies only its flag
+        // reference server AddValue merges keys by identity and copies only its flag
         // (+0x80) and cumulative value (+0xA0) on duplicate registration.
         pq.decay(nowMs);
         final int previous = pq.findKey(PS_ATTACK, id);
@@ -488,7 +488,7 @@ public final class CDesirePQ {
                 master = ((L1NpcInstance) target).getMaster();
             }
             if (master != null && validActorTarget(npc, master)) {
-                // NC compares the *signed* original input with 0.0f.
+                // reference server compares the *signed* original input with 0.0f.
                 CDesireFactory.MakeAttack(npc, master,
                         desireValue >= 0.0f ? 5.0f : -5.0f, nowMs);
             }
@@ -553,7 +553,7 @@ public final class CDesirePQ {
                 ? pq.attackPayload[(i << 2) + 3] : 0;
     }
 
-    /** NC CDesireFactory::MakeUseSkill -> CDesirePQ::AddValue bridge. */
+    /** reference server CDesireFactory::MakeUseSkill -> CDesirePQ::AddValue bridge. */
     public static boolean addUseSkillDesire(
             final L1MonsterInstance npc,
             final int targetId,
@@ -1012,7 +1012,7 @@ public final class CDesirePQ {
 
         decay(nowMs);
 
-        // NC 0x0041EE63..0x0041EE96: -1.0f replaces the separate
+        // reference server 0x0041EE63..0x0041EE96: -1.0f replaces the separate
         // immediate desire; it neither enters nor modifies the ordinary heap.
         if (value == IMMEDIATE_VALUE) {
             immediateAttackMoveType = immediateAttackFlag =
@@ -1040,7 +1040,7 @@ public final class CDesirePQ {
             return;
         }
 
-        // The NC implementation does not replace the lowest-value desire at
+        // The reference server implementation does not replace the lowest-value desire at
         // DesirePqSize (50). It inserts the new key and may issue a warning
         // when the configured threshold is exceeded. Keep every distinct key.
         ensureCapacity(size + 1);
@@ -1227,7 +1227,7 @@ public final class CDesirePQ {
     private int findTopRunnableIndex(
             final L1MonsterInstance npc) {
 
-        // NC _GetTopDesire: the dedicated immediate desire normally wins.
+        // reference server _GetTopDesire: the dedicated immediate desire normally wins.
         // The L1 body-occupancy adapter must still suppress an ATTACK whose
         // target is temporarily blocked, or immediate A would endlessly
         // override the fallback heap without a runnable action.
@@ -1250,7 +1250,7 @@ public final class CDesirePQ {
         }
 
         // L1-specific body-block adapter: a temporarily unrunnable ATTACK
-        // remains in the NC-style heap. Search the rest only in this case;
+        // remains in the reference design heap. Search the rest only in this case;
         // do not remove, change, or demote its stored desire value.
         int top = -1;
         float topValue = -Float.MAX_VALUE;
@@ -1269,7 +1269,7 @@ public final class CDesirePQ {
     }
 
     /**
-     * CDesirePQ::AddValue in NC calls 0x0041CC0C after adding or modifying
+     * CDesirePQ::AddValue in reference server calls 0x0041CC0C after adding or modifying
      * ordinary desires. That routine constructs a max heap using comparator
      * 0x0041ABC8, which compares the +0xA0 float desire value. Reconstruct
      * the same ordering with parallel primitive arrays (no CDesire objects).
@@ -1662,7 +1662,7 @@ public final class CDesirePQ {
         if (next < wanted) {
             next = wanted;
         }
-        // Array-backed L1 representation of NC's growable desire sequence.
+        // Array-backed L1 representation of reference server's growable desire sequence.
         // Retaining >50 entries is essential: DesirePqSize is not a cap.
 
         final byte[] newStates = new byte[next];

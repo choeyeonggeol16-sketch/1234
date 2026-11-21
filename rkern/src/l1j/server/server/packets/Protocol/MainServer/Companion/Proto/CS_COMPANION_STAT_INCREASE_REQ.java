@@ -1,10 +1,10 @@
 package l1j.server.server.packets.Protocol.MainServer.Companion.Proto;
 
-import l1j.server.MJCompanion.Instance.MJCompanionUpdateFlag;
-import l1j.server.MJCompanion.CompanionSettings;
 import l1j.server.server.model.Ability;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.companion.CompanionSettings;
+import l1j.server.server.model.character.companion.instance.CompanionUpdateFlag;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 
@@ -42,7 +42,7 @@ public final class CS_COMPANION_STAT_INCREASE_REQ {
             if (companion == null) return;
 
             if (companion.isDead()) {
-                SC_COMPANION_STATUS_NOTI.send(pc, companion, MJCompanionUpdateFlag.UPDATE_STATS);
+                SC_COMPANION_STATUS_NOTI.send(pc, companion, CompanionUpdateFlag.UPDATE_STATS);
                 pc.sendPackets("죽어있는 펫에게 스탯을 부여할 수 없습니다.");
                 return;
             }
@@ -55,7 +55,7 @@ public final class CS_COMPANION_STAT_INCREASE_REQ {
             int remainStats = companion.get_remain_stats();
             int addedTotal = str + con + in;
             if (remainStats < addedTotal) {
-                SC_COMPANION_STATUS_NOTI.send(pc, companion, MJCompanionUpdateFlag.UPDATE_STATS);
+                SC_COMPANION_STATUS_NOTI.send(pc, companion, CompanionUpdateFlag.UPDATE_STATS);
                 pc.sendPackets("스탯이 부족합니다.");
                 System.out.println(String.format(
                         "%s님의 펫 %s(%d)에게 잘못된 스탯을 부여하려고 했습니다.\r\n남아있는 스탯 : %d\r\n부여 시도한 스탯 : %d",
@@ -72,7 +72,7 @@ public final class CS_COMPANION_STAT_INCREASE_REQ {
             ability.addAddedCon(con);
             ability.addAddedInt(in);
             companion.update_stats();
-            SC_COMPANION_STATUS_NOTI.send(pc, companion, MJCompanionUpdateFlag.UPDATE_ALL);
+            SC_COMPANION_STATUS_NOTI.send(pc, companion, CompanionUpdateFlag.UPDATE_ALL);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -81,7 +81,7 @@ public final class CS_COMPANION_STAT_INCREASE_REQ {
     private static boolean valid_max_stat(L1PcInstance pc, L1CompanionInstance companion, int totalStat, int baseStat, int addedStat, String section) {
         int sumStat = totalStat + addedStat;
         if (sumStat > CompanionSettings.MAX_STAT) {
-            SC_COMPANION_STATUS_NOTI.send(pc, companion, MJCompanionUpdateFlag.UPDATE_STATS);
+            SC_COMPANION_STATUS_NOTI.send(pc, companion, CompanionUpdateFlag.UPDATE_STATS);
             pc.sendPackets(String.format("한 스탯에 최종 %d개 이상의 스탯을 부여할 수 없습니다.", CompanionSettings.MAX_STAT));
             System.out.println(String.format(
                     "%s님의 펫 %s(%d)에게 %d이상의 %s을(를) 부여하려고 했습니다.\r\n현재 %s : %d\r\n추가 시도한 %s : %d\r\n합계 %s : %d",
@@ -90,7 +90,7 @@ public final class CS_COMPANION_STAT_INCREASE_REQ {
             return false;
         }
         if (sumStat < baseStat) {
-            SC_COMPANION_STATUS_NOTI.send(pc, companion, MJCompanionUpdateFlag.UPDATE_STATS);
+            SC_COMPANION_STATUS_NOTI.send(pc, companion, CompanionUpdateFlag.UPDATE_STATS);
             pc.sendPackets(String.format("%s 스탯은 %d 이하로 부여할 수 없습니다.", section, baseStat));
             System.out.println(String.format(
                     "%s님의 펫 %s(%d)에게 %d미만의 %s을(를) 부여하려고 했습니다.\r\n현재 %s : %d\r\n추가 시도한 %s : %d\r\n합계 %s : %d\r\n베이스 %s : %d",
@@ -103,7 +103,7 @@ public final class CS_COMPANION_STAT_INCREASE_REQ {
 
     private static boolean valid_min_stat(L1PcInstance pc, L1CompanionInstance companion, int addedStat, String section) {
         if (addedStat < 0) {
-            SC_COMPANION_STATUS_NOTI.send(pc, companion, MJCompanionUpdateFlag.UPDATE_STATS);
+            SC_COMPANION_STATUS_NOTI.send(pc, companion, CompanionUpdateFlag.UPDATE_STATS);
             pc.sendPackets("잘못된 스탯입니다.");
             System.out.println(String.format(
                     "%s님의 펫 %s(%d)에게 마이너스 %s 스탯을 부여하려고 했습니다.\r\n추가 시도한 %s : %d",

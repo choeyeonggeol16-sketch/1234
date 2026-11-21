@@ -1,31 +1,30 @@
 package l1j.server.server.packets.Protocol.MainServer.Inventory.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import l1j.server.MJCTSystem.MJCTItem;
-import l1j.server.MJCTSystem.MJCTSpell;
 import l1j.server.server.datatables.ItemTable;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Warehouse.ClanWarehouse;
 import l1j.server.server.model.Warehouse.PrivateWarehouse;
 import l1j.server.server.model.Warehouse.SupplementaryService;
 import l1j.server.server.model.Warehouse.WarehouseManager;
+import l1j.server.server.model.item.collection.CollectionItem;
+import l1j.server.server.model.item.collection.CollectionSpell;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo;
-import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.templates.L1Item;
 
 /**
@@ -264,7 +263,7 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
     // ============================================================
     // CT / 디스플레이 생성
     // ============================================================
-    public static SC_WAREHOUSE_ITEM_LIST_NOTI create_ct_sp_info(ArrayDeque<MJCTSpell> spQ){
+    public static SC_WAREHOUSE_ITEM_LIST_NOTI create_ct_sp_info(ArrayDeque<CollectionSpell> spQ){
         SC_WAREHOUSE_ITEM_LIST_NOTI noti = newInstance();
         noti.set_checker(1);
         int real_size = 0;
@@ -272,7 +271,7 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
         L1ItemInstance item = ItemTable.getInstance().createItem(40005);
         if(spQ != null){
             while(!spQ.isEmpty()){
-                MJCTSpell ct_spell = spQ.poll();
+                CollectionSpell ct_spell = spQ.poll();
                 item.setId(item.getId());
                 item.setBless(item.getItem().getType2());
                 item.setIdentified(true);
@@ -296,14 +295,14 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
         return noti;
     }
 
-    public static SC_WAREHOUSE_ITEM_LIST_NOTI create_ct_item_info(ArrayDeque<MJCTItem> itemQ){
+    public static SC_WAREHOUSE_ITEM_LIST_NOTI create_ct_item_info(ArrayDeque<CollectionItem> itemQ){
         SC_WAREHOUSE_ITEM_LIST_NOTI noti = newInstance();
         noti.set_checker(1);
         int real_size = 0;
 
         if(itemQ != null){
             while(!itemQ.isEmpty()){
-                MJCTItem ct_item = itemQ.poll();
+                CollectionItem ct_item = itemQ.poll();
                 L1Item temp = ct_item.item;
                 L1ItemInstance item = new L1ItemInstance();
                 item.setItem(temp);

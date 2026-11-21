@@ -12,18 +12,15 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.MJTemplate.MJArrangeHelper.MJArrangeParsee;
-import l1j.server.MJTemplate.MJArrangeHelper.MJArrangeParseeFactory;
-import l1j.server.MJTemplate.MJArrangeHelper.MJArrangeParser;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.Craft;
-import l1j.server.server.utils.MJHexHelper;
+import l1j.server.server.shared.arrangement.ArrangeParsee;
+import l1j.server.server.shared.arrangement.ArrangeParseeFactory;
+import l1j.server.server.shared.arrangement.ArrangeParser;
+import l1j.server.server.utils.HexHelper;
 
 public final class SC_CRAFT_LIST_ALL_ACK {
 
@@ -161,7 +158,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
 
         pc.setQuizTime(curSecond);
 
-        if (MJHexHelper.compareArrays(Config.CRAFT_VERSION_HASH, hash_val, Config.CRAFT_VERSION_HASH.length)) {
+        if (HexHelper.compareArrays(Config.CRAFT_VERSION_HASH, hash_val, Config.CRAFT_VERSION_HASH.length)) {
             l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, _craftSameCache);
             return;
         }
@@ -309,7 +306,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
              PreparedStatement pstm = con.prepareStatement("select npc_id, craft_list from craftlist");
              ResultSet rs = pstm.executeQuery()) {
 
-            final MJArrangeParsee<Integer> parsee = MJArrangeParseeFactory.createIntArrange();
+            final ArrangeParsee<Integer> parsee = ArrangeParseeFactory.createIntArrange();
 
             while (rs.next()) {
                 map.put(rs.getInt("npc_id"), buildNpcAckBytes(rs.getString("craft_list"), parsee));
@@ -327,7 +324,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
     // NPC craft ID ACK
     // ------------------------------------------------------------------
 
-    private static byte[] buildNpcAckBytes(String craftListCsv, MJArrangeParsee<Integer> parsee) {
+    private static byte[] buildNpcAckBytes(String craftListCsv, ArrangeParsee<Integer> parsee) {
         final ProtoWriter w = ProtoWriter.newInstance();
 
         w.enumV(1, 0);
@@ -335,7 +332,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
         w.enumV(4, 0);
 
         try {
-            final Integer[] ids = (Integer[]) MJArrangeParser.parsing(craftListCsv, ",", parsee).result();
+            final Integer[] ids = (Integer[]) ArrangeParser.parsing(craftListCsv, ",", parsee).result();
 
             for (Integer id : ids) {
                 if (id == null) continue;

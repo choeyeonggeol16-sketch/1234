@@ -1,26 +1,25 @@
 package l1j.server.server.model.item.Exp;
 
 import java.util.ArrayList;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.Arrays;
 import java.util.logging.Logger;
+
 import l1j.server.Config;
-import l1j.server.MJCompanion.CompanionSettings;
 import l1j.server.server.GameServerSetting;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.PetTable;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.character.companion.CompanionSettings;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
 import l1j.server.server.templates.L1Pet;
 import l1j.server.server.utils.IntRange;
 

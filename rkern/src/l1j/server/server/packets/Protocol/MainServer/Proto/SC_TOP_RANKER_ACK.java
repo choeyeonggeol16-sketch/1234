@@ -1,21 +1,17 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.util.ArrayList;
 import java.util.List;
 
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Ranker.Ranker;
 
 /**
  * SC_TOP_RANKER_ACK (0x0088) — 랭커 목록 응답
  *  1 result_code enum [required]  2 version int64
  *  3 class_id  4 total_page  5 current_page
- *  6 rankers repeated (MJ Ranker 데이터 홀더)
+ *  6 rankers repeated (server Ranker 데이터 홀더)
  */
 public final class SC_TOP_RANKER_ACK extends ProtoPacket {
 

@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoInputStream;
 
-/** 제작 재료 목록 — field1=input(필수), field2=option(선택). MJ 원본 확인 완료 */
+/** 제작 재료 목록 — field1=input(필수), field2=option(선택). server 원본 확인 완료 */
 public class CraftInputList {
 
     private static final int FIELD_ARR_INPUT_ITEM  = 1;

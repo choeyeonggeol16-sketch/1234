@@ -1,11 +1,11 @@
 package l1j.server.server.model.character.skill.core;
 
-import l1j.server.MJPassiveSkill.MJPassiveID;
-import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.templates.L1Skills;
 import l1j.server.server.utils.CalcStat;
@@ -53,7 +53,7 @@ public enum SkillConsumeService {
 			} catch (Throwable ignore) {}
 
 			// 패시브 예외
-			if (su.hdSkillId() == L1SkillId.ARMOR_BRAKE && pc.isPassive(MJPassiveID.ARMOR_BREAK_DESTINY.toInt())) {
+			if (su.hdSkillId() == L1SkillId.ARMOR_BRAKE && pc.isPassive(PassiveID.ARMOR_BREAK_DESTINY.toInt())) {
 				mpConsume = 20;
 				hpConsume = 35;
 			}

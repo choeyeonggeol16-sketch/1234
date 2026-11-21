@@ -1,9 +1,8 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import static l1j.server.server.model.network.core.cs.packet.HtmlCmdHandler._random;
-import l1j.server.IndunSystem.Hadin.HadinSystem;
-import l1j.server.MJWarSystem.MJCastleWar;
-import l1j.server.MJWarSystem.MJCastleWarBusiness;
+
+import l1j.server.server.model.world.instance.dungeon.hadin.HadinSystem;
 import l1j.server.server.datatables.HouseTable;
 import l1j.server.server.datatables.TownTable;
 import l1j.server.server.model.Instance.L1CompanionInstance;
@@ -25,6 +24,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ApplyAuction;
 import l1j.server.server.model.network.core.sc.packet.SC_AuctionBoardRead;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
@@ -38,7 +38,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_TaxRate;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.world.siege.CastleWar;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.templates.L1House;
 import l1j.server.server.templates.L1Town;
 import l1j.server.server.utils.CommonUtil;
@@ -354,7 +355,7 @@ final class NpcServiceHtmlCommands {
             if (clan != null) {
                 int castle_id = clan.getCastleId();
                 if (castle_id != 0) {
-                    MJCastleWar war = MJCastleWarBusiness.getInstance().get(castle_id);
+                    CastleWar war = CastleWarBusiness.getInstance().get(castle_id);
                     SC_ServerMessage.send(pc, 309, war.getCastleName(), String.valueOf(war.getPublicMoney()));
                     htmlid = "";
                 }
@@ -362,13 +363,13 @@ final class NpcServiceHtmlCommands {
         } else if (s.equalsIgnoreCase("tax")) {
             L1Clan clan = pc.getClan();
             if (clan != null && clan.getCastleId() != 0)
-                SC_TaxRate.send(pc, pc.getId(), MJCastleWarBusiness.getInstance().getTaxRate(clan.getCastleId()));
+                SC_TaxRate.send(pc, pc.getId(), CastleWarBusiness.getInstance().getTaxRate(clan.getCastleId()));
         } else if (s.equalsIgnoreCase("withdrawal")) {
             L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
             if (clan != null) {
                 int castle_id = clan.getCastleId();
                 if (castle_id != 0) {
-                    SC_Drawal.send(pc, pc.getId(), MJCastleWarBusiness.getInstance().getPublicMoney(castle_id));
+                    SC_Drawal.send(pc, pc.getId(), CastleWarBusiness.getInstance().getPublicMoney(castle_id));
                 }
             }
         } else if (s.equalsIgnoreCase("cdeposit")) {

@@ -1,12 +1,12 @@
 package l1j.server.server.model.network.core.broadcast;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOBufferPool;
-import l1j.server.server.model.network.core.connection.CIOBufferEx;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import l1j.server.server.model.network.core.connection.CIOBufferEx;
+import l1j.server.server.model.network.core.connection.CIOBufferPool;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /** Original broadcast role: one immutable plaintext, per-socket ordered output.
  * The same frozen plaintext is sent to every accepted recipient.
@@ -41,7 +41,7 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
     }
 
     /**
-     * NC pool ownership path. Source is constructed from a freshly formatted
+     * reference server pool ownership path. Source is constructed from a freshly formatted
      * CIOBufferEx slab, and this object takes exactly the initial producer ref.
      */
     protected CAsyncSendConstBuffer(Source pooled, int senderId, int pendingLimit) {

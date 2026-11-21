@@ -1,18 +1,10 @@
 package l1j.server.server.model.Instance;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
-import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
-
-import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import l1j.server.Config;
-import l1j.server.MJTemplate.MJL1Type;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1Character;
@@ -20,19 +12,23 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.doll.DollRegistry;
 import l1j.server.server.model.item.function.ItemBonusHooks;
-import l1j.server.server.model.npc.ai.NpcPotionPolicy;
-import l1j.server.server.model.npc.ai.dFollow;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_DOLL_ON_OFF;
-import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
-
+import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-
-
+import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_UseAttackSkill;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.npc.ai.NpcPotionPolicy;
+import l1j.server.server.model.npc.ai.dFollow;
+import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_DOLL_ON_OFF;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
+import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.utils.eKind;
 
@@ -972,6 +968,6 @@ public class L1DollInstance extends L1NpcInstance {
 
 	@Override
 	public int getL1Type() {
-		return _instanceType == -1 ? _instanceType = super.getL1Type() | MJL1Type.L1TYPE_DOLL : _instanceType;
+		return _instanceType == -1 ? _instanceType = super.getL1Type() | L1Type.L1TYPE_DOLL : _instanceType;
 	}
 }
