@@ -134,8 +134,14 @@ public final class SkillEffectContainer {
 		if (index < 0) return false;
 		if (skillId == L1SkillId.포텐셜) state.potentialMagic = state.potentialEvasion = 0;
 		int last = --state.count * 2;
-		state.applied[index] = state.applied[last];
-		state.applied[index + 1] = state.applied[last + 1];
+		if (state.count == 0) {
+			// A character with no migrated modifiers must not retain the
+			// backing array and per-effect accumulator for the entire session.
+			skillModifiers = null;
+		} else {
+			state.applied[index] = state.applied[last];
+			state.applied[index + 1] = state.applied[last + 1];
+		}
 		validateSkillMod(notify);
 		return true;
 	}
