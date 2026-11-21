@@ -8,11 +8,25 @@ import l1j.server.server.model.L1EquipmentSlot;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1Quest;
-import l1j.server.server.model.item.function.EquipmentItemActions;
+import l1j.server.server.templates.L1Item;
 
 public final class EquipRules {
 
     private EquipRules() {}
+
+    /** Shared ordinary-use and preset equipment class gate. */
+    public static boolean canUseByClass(L1PcInstance pc, L1Item item) {
+        if (pc == null || item == null) return false;
+        if (pc.isGm()) return true;
+        return (pc.isCrown() && item.isUseRoyal())
+                || (pc.isKnight() && item.isUseKnight())
+                || (pc.isElf() && item.isUseElf())
+                || (pc.isWizard() && item.isUseMage())
+                || (pc.isDarkelf() && item.isUseDarkelf())
+                || (pc.isDragonknight() && item.isUseDragonKnight())
+                || (pc.isBlackwizard() && item.isUseBlackwizard())
+                || (pc.isWarrior() && item.isUse전사());
+    }
 
     // =========================
     // ARMOR RULES
@@ -41,7 +55,7 @@ public final class EquipRules {
             if (item == null || item.getItem() == null) return false;
             // Presets must obey the same class and level restrictions as
             // ordinary item use. Check silently before changing any equipment.
-            if (!EquipmentItemActions.canUseByClass(pc, item.getItem())) return false;
+            if (!canUseByClass(pc, item.getItem())) return false;
             final int level = pc.getLevel();
             final int minLevel = item.getItem().getMinLevel();
             final int maxLevel = item.getItem().getMaxLevel();
