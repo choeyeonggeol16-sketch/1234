@@ -125,7 +125,7 @@ final class CSetItem {
     boolean hasDuplicateEquippedRing(L1EquipmentSlot slot) {
         for (int id : itemIds) {
             final int copies = slot.equippedSetRingCopies(id);
-            if (copies != 0) return copies >= 2;
+            if (copies >= 2) return true;
         }
         return false;
     }
