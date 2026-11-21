@@ -124,7 +124,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_Ping;
-import l1j.server.server.model.network.core.sc.packet.SC_QuestTalkIsland;
 import l1j.server.server.model.network.core.sc.packet.SC_Restart;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_ShowCmd;
@@ -164,7 +163,6 @@ import l1j.server.server.templates.L1Command;
 import l1j.server.server.templates.L1House;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1Npc;
-import l1j.server.server.templates.L1QuestInfo;
 import l1j.server.server.utils.FullStater;
 import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.IntRange;
@@ -1835,21 +1833,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		}
 	}
 
-	public static int get_random(int min, int max) {
-		if (min > max)
-			return min;
-		return _rnd.nextInt(max - min + 1) + min;
-	}
-	private void show2(L1PcInstance gm) {
-		
-		
-		int num = get_random(1, 300);
-			//int ass = num;
-		L1QuestInfo info = gm.getQuestList(num);
-		SC_QuestTalkIsland.sendUpdate(gm, num, info);
-		gm.sendPackets(num+"입니다.");
-		
-	}
 	// TODO GM 커멘드 추가
 	private void showHelp(L1PcInstance gm) {
 		SC_ChatPacket.sendDirect(gm, gm, "\\aA---------------- [\\aGGM\\aA] \\aG[\\aGCOMMANDS\\aA] ---------------");
@@ -2311,11 +2294,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD6541(L1PcInstance pc, String param) {
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_items", new Object[0]);
 				Thread.sleep(300);
-				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_new_quest", new Object[0]);
-				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_package_warehouse", new Object[0]);
-				Thread.sleep(300);
-				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_quest_monster", new Object[0]);
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_quests", new Object[0]);
 				Thread.sleep(300);
@@ -2448,11 +2427,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_items", new Object[0]);
 				Thread.sleep(300);
-				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_new_quest", new Object[0]);
-				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_package_warehouse", new Object[0]);
-				Thread.sleep(300);
-				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_quest_monster", new Object[0]);
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_quests", new Object[0]);
 				Thread.sleep(300);

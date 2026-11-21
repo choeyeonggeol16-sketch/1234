@@ -184,8 +184,7 @@ public class GameServer {
 
 		ArmorEnchantList.getInstance(); // 방어구 인챈 정보 리스트
 		WeaponEnchantList.getInstance(); // 무기 인챈 정보 리스트
-		// 퀘스트 몬스터 시스템
-	//	CharacterQuestMonsterTable.getInstance();
+
 
 		// 정령의 돌 타임 컨트롤러
 //		if (Config.ELEMENTAL_STONE_AMOUNT > 0) {
@@ -288,9 +287,7 @@ public class GameServer {
 		RankLoadManager.getInstance().load();
 
 		KdaLoadManager.getInstance().load();
-		// TODO 말하는 섬 퀘스트 저장
-	//	CharacterQuestTable.getInstance();
-	//	QuestInfoTable.getInstance();
+
 
 		NpcMarkTable.getInstance();
 

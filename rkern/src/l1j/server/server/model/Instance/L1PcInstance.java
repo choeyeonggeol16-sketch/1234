@@ -20,7 +20,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
-import javolution.util.FastMap;
 
 import l1j.server.Config;
 import l1j.server.server.Account;
@@ -171,7 +170,6 @@ import l1j.server.server.storage.sql.executors.Updator;
 import l1j.server.server.storage.sql.handler.Handler;
 import l1j.server.server.storage.sql.handler.SelectorHandler;
 import l1j.server.server.templates.L1BookMark;
-import l1j.server.server.templates.L1QuestInfo;
 import l1j.server.server.utils.CalcStat;
 import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.ServerMessage;
@@ -7250,14 +7248,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	public boolean is_top_ranker() {
 		return hasSkillEffect(L1SkillId.RANK_BUFF_11_STR) || hasSkillEffect(L1SkillId.RANK_BUFF_11_DEX)
 				|| hasSkillEffect(L1SkillId.RANK_BUFF_11_INT);
-	}
-
-	public FastMap<Integer, L1QuestInfo> quest_list = new FastMap<Integer, L1QuestInfo>();
-	public Object syncTalkIsland = new Object();
-
-	public L1QuestInfo getQuestList(int id) {
-		L1QuestInfo info = quest_list.get(id);
-		return info;
 	}
 
 	private long _PostDelay;
