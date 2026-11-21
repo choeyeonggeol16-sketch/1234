@@ -389,6 +389,10 @@ public final class SkillStopHandlers {
 		register(L1SkillId.모든내성3, SkillStopHandlers::offPersistentPotential);
 		register(L1SkillId.정령적중5, SkillStopHandlers::offPersistentPotential);
 		register(L1SkillId.모든적중3, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.pvp감소7, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.기술적중5, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.용언적중5, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.공포적중5, SkillStopHandlers::offPersistentPotential);
 		register(L1SkillId.HOLY_WEAPON, SkillStopHandlers::offWeaponBuff);
 
 		register(L1SkillId.MOEBIUS, SkillStopHandlers::offMoebius);

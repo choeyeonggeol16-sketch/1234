@@ -100,13 +100,15 @@ public class Resistance {
 
     public int getSpecialPierce(eKind kind) {
         if (kind == null) return 0; 
-        final int shift = switch (kind) {
-            case SPIRIT -> 40;
-            case ALL -> 48;
-            default -> -1;
+        final int value = kind.value();
+        final int pumped = value <= 4
+                ? (skillSpecialPierce >>> ((value - 1) << 3)) & 0xff : 0;
+        final int shared = switch (kind) {
+            case SPIRIT -> (int) ((skillSpecialResistance >>> 40) & 0xffL);
+            case ALL -> (int) ((skillSpecialResistance >>> 48) & 0xffL);
+            default -> 0;
         };
-        final int base = _specialPierce[kind.value()];
-        return shift < 0 ? base : checkRange(base + (int) ((skillSpecialResistance >>> shift) & 0xff));
+        return checkRange(_specialPierce[value] + pumped + shared);
     }
 
     public int getEffectedMrBySkill() {
@@ -139,16 +141,25 @@ public class Resistance {
     private volatile long skillSpecialResistance;
     // Four signed 8-bit penalties (ability/spirit/dragon/fear) from effects.
     private volatile int skillSpecialPenalty;
+    // Independent ability, spirit, dragon and fear pierce lanes.
+    private volatile int skillSpecialPierce;
 
     public void setSkillCombatModifiers(int pvp, long specialResistance, boolean notify) {
         setSkillCombatModifiers(pvp, specialResistance, 0, notify);
     }
 
     public void setSkillCombatModifiers(int pvp, long specialResistance, int penalty, boolean notify) {
+        setSkillCombatModifiers(pvp, specialResistance, penalty, 0, notify);
+    }
+
+    public void setSkillCombatModifiers(int pvp, long specialResistance, int penalty,
+            int pierce, boolean notify) {
         if (skillPvp != pvp) skillPvp = pvp;
-        if (skillSpecialResistance == specialResistance && skillSpecialPenalty == penalty) return;
+        if (skillSpecialResistance == specialResistance && skillSpecialPenalty == penalty
+                && skillSpecialPierce == pierce) return;
         skillSpecialResistance = specialResistance;
         skillSpecialPenalty = penalty;
+        skillSpecialPierce = pierce;
         if (notify && character instanceof L1PcInstance pc) SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
     }
 

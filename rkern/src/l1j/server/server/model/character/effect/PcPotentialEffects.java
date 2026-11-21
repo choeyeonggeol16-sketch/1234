@@ -7,7 +7,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eDurationShowType;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType;
-import l1j.server.server.utils.eKind;
 
 /**
  * Potential mutations and their shared wire notification; no per-player state. 
@@ -77,12 +76,7 @@ public final class PcPotentialEffects {
             pc.applySkillModifierFromOwner(kind.skillId, 0L);
             SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
         }
-        // These four legacy effects still need distinct pump lanes. Preserve
-        // their original formulas until the corresponding getter is migrated.
-        case pvp감소7 -> pc.addPVPMagicDamageReduction(7);
-        case 기술적중5 -> pc.getResistance().addSpecialPierce(eKind.ABILITY, 5);
-        case 용언적중5 -> pc.getResistance().addSpecialPierce(eKind.DRAGON_SPELL, 5);
-        case 공포적중5 -> pc.getResistance().addSpecialPierce(eKind.FEAR, 5);
+        // Experience multipliers are state flags; they have no stat pump.
         case 경험치10, 경험치보너스20 -> { }
         default -> pc.applySkillModifierFromOwner(kind.skillId, 0L);
         }

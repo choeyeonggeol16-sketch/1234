@@ -80,6 +80,10 @@ public final class CSkillInfo {
         registerManaged(모든내성3, null, specialResistance(eKind.ALL, 3));
         registerManaged(정령적중5, null, fixed(SPIRIT_PIERCE, 5L << 32));
         registerManaged(모든적중3, null, fixed(ALL_PIERCE, 3));
+        registerManaged(pvp감소7, null, fixed(PVP_MAGIC_REDUCTION, 7));
+        registerManaged(기술적중5, null, fixed(SPECIAL_PIERCE_FOUR, 5));
+        registerManaged(용언적중5, null, fixed(SPECIAL_PIERCE_FOUR, 5L << 16));
+        registerManaged(공포적중5, null, fixed(SPECIAL_PIERCE_FOUR, 5L << 24));
         registerManaged(RESIST_MAGIC, SkillHandlers::startResistMagic, MR);
         registerManaged(GLOWING_AURA, SkillHandlers::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);
         registerManaged(IllUSION_OGRE, SkillHandlers::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);

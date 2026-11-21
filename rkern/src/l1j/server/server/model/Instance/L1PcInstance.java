@@ -5762,9 +5762,14 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	private int _PVPMagicDamageReduction = 0;
+	private volatile int pumpedPvPMagicDamageReduction;
+
+	public void setPumpedPvPMagicDamageReduction(int value) {
+		if (pumpedPvPMagicDamageReduction != value) pumpedPvPMagicDamageReduction = value;
+	}
 
 	public int getPVPMagicDamageReduction() { // PVP마법대미지 감소
-		return _PVPMagicDamageReduction;
+		return _PVPMagicDamageReduction + pumpedPvPMagicDamageReduction;
 	}
 
 	public int addPVPMagicDamageReduction(int i) {

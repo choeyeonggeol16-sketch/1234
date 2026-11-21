@@ -134,6 +134,13 @@ interface CSkillEffect {
         ALL_PIERCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.specialResistance = SkillEffectContainer.SkillModifiers.addSpecialLanes(out.specialResistance,
                     (captured & 0xffL) << 48);
+        }},
+        PVP_MAGIC_REDUCTION { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.pvpMagicReduction += (int) captured;
+        }},
+        SPECIAL_PIERCE_FOUR { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.specialPierce = SkillEffectContainer.SkillModifiers.addSpecialPierceLanes(
+                    out.specialPierce, (int) captured);
         }};
 
         @Override public boolean checkPumpCondition(L1Character target) { return target instanceof L1PcInstance; }

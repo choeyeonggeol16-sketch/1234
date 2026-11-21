@@ -165,3 +165,10 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 - HP+300/MP+300/방어감소5/AC-5/MR+15/모든속성+20, STR·DEX·CON·WIS·INT +3, PvP 공격+7, 근·원거리 공격/명중+5, SP/마법명중+5, 기술·정령·용언·공포·전체 내성, 정령적중+5/전체적중+3을 이관한다.
 - 외부 패시브 종료 전용 offPersistentPotential은 해당 효과 출처만 제거하고, HP·MP·MR·스탯 변화 시 해당 패킷과 기존 SPELL_BUFF_NOTI 종료를 보낸다. WIS/CON 제거 시 생명력 상한을 넘지 않게 보정한다.
 - 기존 Pump에 정밀 lane이 없는 PvP 마법감소+7, 기술·용언·공포 적중+5의 네 종과 수치 변화 없는 EXP 계열 두 종은 유지한다. 전체 Java 컴파일, 인게임 능력치·아이콘·로그인 회귀 및 5천 명 부하는 이후 검증한다.
+
+## 2026-11-21 영구 잠재력 나머지 4종 이관
+
+- 이전 차수에서 제외된 pvp감소7(77298), 기술적중5(77315), 용언적중5(77317), 공포적중5(77318)도 각각 관리형 modifier로 등록했다. PvP 마법감소는 PC에 1개 primitive 누적 보정 필드, 특수 적중 4종은 Resistance에 packed int primitive 1개를 추가했고 기존 baseline/equipment 값과 합산한다.
+- SkillEffectContainer에 독립 8-bit lane 적중 합산과 PvP 마법감소 전달을 추가했다. 재적용과 순차 해제에 따른 중복 가산/다른 출처 차감 문제가 사라진다.
+- 기존 SPIRIT_PIERCE/ALL_PIERCE가 사용하는 specialResistance 상위 바이트와 신규 네 종류(ABILITY/SPIRIT/DRAGON_SPELL/FEAR)의 특수 적중 비트는 서로 독립으로 유지한다. 기존 세 인수/네 인수 setSkillCombatModifiers 호출도 그대로 지원한다.
+- 영구 잠재력 31종 중 별도의 수치 증가가 없는 경험치 2종을 제외한 29종의 능력치 출처를 일원화했다. 전체 컴파일과 실제 속성/아이템 겹침 검증은 추후 통합 단계에서 수행한다.

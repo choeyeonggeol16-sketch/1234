@@ -61,7 +61,8 @@ public final class SkillEffectContainer {
 		int rangedHit, rangedCritical, magicCritical, weaponHitRate, magicHit, weaponDamageRate;
 		int bowHitRate, bowDamageRate;
 		int hpRegen, mpRegen, impactProbability;
-		int pvpDamage, pvpReduction;
+		int pvpDamage, pvpReduction, pvpMagicReduction;
+		int specialPierce;
 		long specialResistance;
 		int specialPenalty;
 		// Potential captures six independent values once, with two extra packed pairs.
@@ -91,7 +92,8 @@ public final class SkillEffectContainer {
 			rangedHit = rangedCritical = magicCritical = weaponHitRate = magicHit = weaponDamageRate = 0;
 			bowHitRate = bowDamageRate = 0;
 			hpRegen = mpRegen = impactProbability = 0;
-			pvpDamage = pvpReduction = 0;
+			pvpDamage = pvpReduction = pvpMagicReduction = 0;
+			specialPierce = 0;
 			specialResistance = 0;
 			specialPenalty = 0;
 		}
@@ -109,6 +111,17 @@ public final class SkillEffectContainer {
 			}
 			return result;
 		}
+
+        // Four independent packed pierce lanes: ability, spirit, dragon, fear.
+        static int addSpecialPierceLanes(int current, int delta) {
+            int result = 0;
+            for (int shift = 0; shift < 32; shift += 8) {
+                final int sum = ((current >>> shift) & 0xff)
+                        + ((delta >>> shift) & 0xff);
+                result |= (sum > 255 ? 255 : sum) << shift;
+            }
+            return result;
+        }
 
         /** Each signed byte is independent; never borrow into the next kind. */
         void addSpecialPenalty(int kindIndex, int delta) {
@@ -191,11 +204,12 @@ public final class SkillEffectContainer {
 		SkillModifiers state = skillModifiers;
 		if (state == null) {
 			owner.setPumpedSkillModifiers(0, 0, 0, 0, 0, 0, 0, 0L, 0L, 0, notify);
-			owner.getResistance().setSkillCombatModifiers(0, 0L, 0, notify);
+			owner.getResistance().setSkillCombatModifiers(0, 0L, 0, 0, notify);
 			if (owner instanceof L1PcInstance pc) {
 				pc.setPumpedCarryArmorAndAccuracy(0, notify);
 				pc.setPumpedRegenAndWeaponRates(0);
 				pc.setPumpedBowRates(0L);
+				pc.setPumpedPvPMagicDamageReduction(0);
 			}
 			return;
 		}
@@ -212,7 +226,8 @@ public final class SkillEffectContainer {
 		owner.setPumpedSkillModifiers(state.hp, state.mp, state.ac, state.mr,
 				state.effectivePrimaryStats(), elements, evasion, weapon, combatRates, state.sp, notify);
 		final int pvp = (state.pvpReduction << 16) | (state.pvpDamage & 0xffff);
-		owner.getResistance().setSkillCombatModifiers(pvp, state.specialResistance, state.specialPenalty, notify);
+		owner.getResistance().setSkillCombatModifiers(pvp, state.specialResistance,
+				state.specialPenalty, state.specialPierce, notify);
 		if (owner instanceof L1PcInstance pc) {
 			final long carryArmorAndAccuracy = ((long) state.baseMagicHit << 32)
                     | ((state.armorReduction & 0xffffL) << 16) | (state.carryLimit & 0xffffL);
@@ -223,6 +238,7 @@ public final class SkillEffectContainer {
             pc.setPumpedRegenAndWeaponRates(regenAndWeaponRates);
             pc.setPumpedBowRates(((long) state.bowHitRate << 32)
                     | Integer.toUnsignedLong(state.bowDamageRate));
+            pc.setPumpedPvPMagicDamageReduction(state.pvpMagicReduction);
 		}
 	}
 
