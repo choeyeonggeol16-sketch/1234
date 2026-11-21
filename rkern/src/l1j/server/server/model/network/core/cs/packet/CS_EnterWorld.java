@@ -1137,6 +1137,13 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 
 	        final int skillid = buffInfo.skillId;
 	        int remaining_time = buffInfo.remainTime;
+	        // Zero is a legitimate persisted permanent buff. Negative values are not:
+	        // a stale -1 or an overflowing millisecond conversion must not resurrect
+	        // an invalid row as a permanent status on this character.
+	        if (skillid <= 0 || remaining_time < 0) continue;
+	        if (remaining_time > Integer.MAX_VALUE / 1000) {
+	            remaining_time = Integer.MAX_VALUE / 1000;
+	        }
 
 	        // =====================================================
 	        // 요리 / 스프 / 특수 요리

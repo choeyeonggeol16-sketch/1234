@@ -142,3 +142,10 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 
 - WisdomPotion.checkCondition은 유효한 40016·30089·140016·210113 ID와 지속시간을 소모 영수증 확정 전에 검사한다. 등록되지 않은 아이템은 소모하지 않으며 0초 영구 STATUS_WISDOM_POTION을 만들지 않는다.
 - WisdomPotion.useWisdomPotion의 직접 addSp(2)/addMpr(2)를 제거하고, 기존 CSkillInfo의 STATUS_WISDOM_POTION(SP+2, MP_REGEN+2) 독립 보정으로 통일했다. 반복 음용은 idempotent이고, 종료 시 offWisdomPotion이 해당 출처만 회수한다. 기존 마법사/환술사 제한, 효과음·아이콘·앱솔루트/뫼비우스 해제는 유지했다.
+
+
+## 2026-11-21 로그인 버프 지속시간 복원 안전성
+
+- CS_EnterWorld.processBuff에서 skillId가 0 이하이거나 DB 남은 시간이 음수인 버프 행은 효과를 적용하지 않는다. CharBuffTable.SaveBuff가 정상 영구 효과를 0초로 저장하므로 0초 행은 그대로 복원한다.
+- DB 남은 시간(초)이 Integer.MAX_VALUE/1000을 넘을 때 밀리초 변환이 음수로 오버플로되어 영구 효과로 변하는 것을 방지하기 위해 소스 값부터 상한으로 클램프한다. 요리/일반 스킬 공통으로 동일 값이 적용된다.
+- 정상적인 스킬 지속시간·로그인 버프 handler 분기, DB 스키마 및 트랜잭션 구조는 건드리지 않는다.
