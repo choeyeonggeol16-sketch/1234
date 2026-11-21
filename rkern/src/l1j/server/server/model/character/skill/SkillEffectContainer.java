@@ -502,6 +502,9 @@ public final class SkillEffectContainer {
 		boolean invisibilityExpired = false;
 		for (int i = 0; i < expiredCount; i++) {
 			final int expiredId = expiredScratch[i];
+			// An earlier stop callback may have cast this skill again. Its new
+			// lifetime must not receive the expired instance's stop side effects.
+			if (contains(expiredId)) continue;
 			if (expiredId == L1SkillId.INVISIBILITY
 					|| expiredId == L1SkillId.BLIND_HIDING) {
 				invisibilityExpired = true;

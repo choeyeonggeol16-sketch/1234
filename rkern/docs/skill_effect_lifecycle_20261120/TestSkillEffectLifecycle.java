@@ -89,6 +89,8 @@ public final class TestSkillEffectLifecycle {
             verifyFreezeLifetime();
             verifyBraveLifetime();
             verifyOwnerDispatchAndExpiry();
+            verifyLastModifierRelease();
+            verifyUnknownCashScrollPreservesBuff();
             verifyRegistry();
         } catch (Throwable failure) {
             failure.printStackTrace();
@@ -872,6 +874,38 @@ public final class TestSkillEffectLifecycle {
         int replacementGeneration = replacement.tryArmHeartbeat();
         verify(replacementGeneration != generation && replacement.onHeartbeat(generation) == 0L
                 && replacement.contains(pride), "retired heartbeat cannot tick a new container", pride);
+    }
+
+    private static void verifyLastModifierRelease() throws ReflectiveOperationException {
+        L1PcInstance pc = new L1PcInstance();
+        SkillEffectContainer container = new SkillEffectContainer(pc);
+        var field = SkillEffectContainer.class.getDeclaredField("skillModifiers");
+        field.setAccessible(true);
+        final int ac = pc.getAC().getAc();
+        final int mr = pc.getResistance().getEffectedMrBySkill();
+
+        container.applySkillModifier(SHIELD, -2);
+        container.applySkillModifier(SHADOW_ARMOR, 10L << 32);
+        verify(field.get(container) != null, "active sources retain captured values", SHIELD);
+        container.removeSkillModifier(SHIELD, false);
+        verify(field.get(container) != null && pc.getAC().getAc() == ac
+                && pc.getResistance().getEffectedMrBySkill() == mr + 10,
+                "removing one source preserves the other", SHADOW_ARMOR);
+        container.removeSkillModifier(SHADOW_ARMOR, false);
+        verify(field.get(container) == null && pc.getAC().getAc() == ac
+                && pc.getResistance().getEffectedMrBySkill() == mr,
+                "last removal releases captured-value storage", SHADOW_ARMOR);
+    }
+
+    private static void verifyUnknownCashScrollPreservesBuff() throws ReflectiveOperationException {
+        Player pc = new Player();
+        pc.setSkillEffect(STATUS_CASHSCROLL3, 60_000);
+        Class<?> cash = Class.forName("l1j.server.server.model.item.function.CashScrollPotionEffects");
+        var method = cash.getDeclaredMethod("useCashScroll", L1PcInstance.class, int.class);
+        method.setAccessible(true);
+        method.invoke(null, pc, -1);
+        verify(pc.hasSkillEffect(STATUS_CASHSCROLL3),
+                "unrecognized cash scroll must not consume an existing effect", STATUS_CASHSCROLL3);
     }
 
     private static void verifyRegistry() throws ReflectiveOperationException {
