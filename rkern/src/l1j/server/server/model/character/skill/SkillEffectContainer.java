@@ -453,6 +453,7 @@ public final class SkillEffectContainer {
 					long elapsedTicks = ((now - due) / 1000L) + 1L;
 
 					if (skillIds[i] == L1SkillId.EXP_POTION
+							&& owner.getMap() != null
 							&& owner.getMap().isSafetyZone(
 									owner.getX(),
 									owner.getY())) {

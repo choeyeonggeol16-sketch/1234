@@ -484,8 +484,9 @@ public final class SkillStopHandlers {
 			final StopResult r = h.pumpEnd(cha, skillId);
 			return (r != null) ? r : StopResult.NOT_HANDLED;
 		} catch (Throwable failure) {
-			if (CSkillInfo.isManaged(skillId))
-				LOG.log(java.util.logging.Level.WARNING, "Managed skill stop failed: " + skillId, failure);
+			// Stop-only and dedicated effects need the same failure diagnostics
+			// as managed effects; otherwise missing cleanup is invisible.
+			LOG.log(java.util.logging.Level.WARNING, "Skill stop failed: " + skillId, failure);
 			return StopResult.NOT_HANDLED;
 		}
 	}
