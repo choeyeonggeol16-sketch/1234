@@ -1961,7 +1961,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		SC_InventoryIcon.icoNew(pc, L1SkillId.프라임, 3155, 600, true);
+		SC_InventoryIcon.icoEnd(pc, L1SkillId.프라임);
 		pc.addBowHitRate(-9);
 		pc.addBowDmgRate(-9);
 		pc.addDmgRate(-9);

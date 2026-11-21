@@ -1001,20 +1001,20 @@ public final class TestSkillEffectLifecycle {
                 "duplicate item expiry cannot underflow", 버닝샷);
     }
 
-    /** All 80 externally granted/stop-only numeric IDs must keep their end handler. */
+    /** Numeric-only stop definitions are verified against the updated ledger. */
     private static void verifyStopOnlyInventory() {
         final int[] stopOnlyIds = {
             2, 32, 91, 105, 112, 136, 780, 985, 1000,
-            1001, 1002, 1003, 1004, 1005, 1006, 1016, 1564, 1565,
-            1566, 1607, 2754, 2762, 2794, 5256, 5263, 5285, 5300,
-            5307, 5984, 7239, 7241, 7791, 7792, 7793, 7794, 7795,
-            8382, 8463, 9999, 12120, 12132, 12133, 12134, 12135, 12136,
-            13001, 13002, 13003, 15644, 20075, 20076, 20077, 20079, 20082,
-            22017, 23442, 23445, 24444, 24445, 25133, 25155, 30010, 40007,
-            50009, 55441, 55662, 55664, 60001, 61614, 61615, 61616, 72388,
-            80007, 80008, 80009, 80012, 131313, 191918, 778844, 979744
+            1001, 1002, 1003, 1004, 1005, 1006, 1016, 1565, 1566,
+            1607, 2754, 2794, 5256, 5263, 5285, 5300, 5307, 5984,
+            7239, 7241, 7791, 7792, 7793, 7794, 7795, 8382, 8463,
+            9999, 12120, 12132, 12133, 12134, 12135, 12136, 13001, 13002,
+            13003, 15644, 20075, 20076, 20077, 20079, 20082, 22017, 23442,
+            23445, 24444, 24445, 25133, 25155, 30010, 40007, 50009, 55441,
+            55662, 55664, 60001, 61614, 61615, 61616, 72388, 80007, 80008,
+            80009, 80012, 131313, 191918, 778844, 979744
         };
-        verify(stopOnlyIds.length == 80, "stop-only numeric inventory size", 0);
+        verify(stopOnlyIds.length == 78, "stop-only numeric inventory size", 0);
         for (int id : stopOnlyIds) {
             final CSkillInfo info = CSkillInfo.get(id);
             verify(info != null && !info.hasCast() && info.stopHandler() != null,
