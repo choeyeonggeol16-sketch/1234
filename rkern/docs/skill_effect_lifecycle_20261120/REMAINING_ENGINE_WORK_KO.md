@@ -129,3 +129,10 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 - 샤이닝아머(9483)는 마법 스킬 SHINING_ARMOR(116)와 다른, 캐릭터 로그인 복원 목록에 있는 독립 스킬 ID다. 기존 PcPassiveEffects.apply(샤이닝아머)는 복원마다 addEffectedER(+10)을 누적했지만 9483 만료 종료 핸들러는 없었다.
 - 9483만 CSkillInfo의 외부 출처 보정 ER +10과 SkillStopHandlers.offPassiveShiningArmor로 연결했다. 복원·재사용의 소스 적용은 idempotent이며, 타이머 종료 시 해당 ER만 회수하고 ER 화면/9483 인벤토리 아이콘을 종료한다. 116번의 기존 스킬 시전과 종료 동작은 유지한다.
 - 기존 CharBuffTable 및 BuffRestoreRegistryInit의 9483 데이터 흐름을 바꾸지 않았다. 숫자 ID 시전 ledger에는 9483이 없으므로 64개 종료 전용 시전 목록을 임의로 조정하지 않는다. 통합 컴파일과 실게임 검증은 이후 수행한다.
+
+
+## 2026-11-21 폴리링 효과 재진입 복구
+
+- 링 재변신에서는 POLY_RING_MASTER 타이머가 이미 있어도 동일 skill modifier 출처를 재확인한다. 기존 SkillEffectContainer가 같은 ID·캡처값 재적용을 no-op 처리하므로 중복 스탯 가산은 발생하지 않는다.
+- 일반 변신으로 넘어갈 때 링 타이머가 이미 사라졌어도 고아 상태의 보정 출처가 있다면 회수하고 능력치 패킷을 갱신한다. 링 타이머가 있으면 기존대로 제거한다.
+- 실행 구조·장비·변신 성공 판정은 변경하지 않는다. 완전 통합 검증은 후속 단계에서 수행한다.

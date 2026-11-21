@@ -275,29 +275,29 @@ public class L1PolyMorph {
 					SC_PacketBox.send(pc, SC_PacketBox.공격가능거리, pc, weapon);
 				}
 				
-				// A ring refresh keeps its existing modifier source. Replacing it with
-				// an ordinary polymorph retires that source exactly once.
+				// The ring source is idempotent; reapply even when its timer exists,
+				// because its modifier may have been retired by an earlier transition.
 				final boolean hadRing = pc.hasSkillEffect(L1SkillId.POLY_RING_MASTER);
-				if (hadRing && !ring) {
-					pc.removeSkillModifierFromOwner(L1SkillId.POLY_RING_MASTER);
-					pc.killSkillEffectTimer(L1SkillId.POLY_RING_MASTER);
+				if (!ring) {
+					final boolean removedModifier = pc.removeSkillModifierFromOwner(L1SkillId.POLY_RING_MASTER);
+					if (hadRing) pc.killSkillEffectTimer(L1SkillId.POLY_RING_MASTER);
+					if (hadRing || removedModifier) {
+						SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
+						SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
+						SC_OwnCharAttrDef.send(pc);
+						SC_OwnCharStatus2.send(pc);
+						SC_SPMR.send(pc);
+					}
+				} else {
+					pc.setSkillEffect(L1SkillId.POLY_RING_MASTER, timeSecs * 1000);
+					pc.applySkillModifierFromOwner(L1SkillId.POLY_RING_MASTER, 0L);
 					SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
 					SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-					SC_OwnCharAttrDef.send(pc);
 					SC_OwnCharStatus2.send(pc);
+					SC_OwnCharAttrDef.send(pc);
 					SC_SPMR.send(pc);
 				}
-							      if (ring) {
-			        pc.setSkillEffect(L1SkillId.POLY_RING_MASTER, timeSecs * 1000);
-			        if (!hadRing) pc.applySkillModifierFromOwner(L1SkillId.POLY_RING_MASTER, 0L);
-			        SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-			        SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-			        SC_OwnCharStatus2.send(pc);
-			        SC_OwnCharAttrDef.send(pc);
-			        SC_SPMR.send(pc);
-			      }
 
-			      
 				if(ring){
 					SC_SkillIconGFX.send(pc, 35, timeSecs, true);
 					
