@@ -2093,9 +2093,9 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		SkillUseHelper.deleteRepeatedSkills(pc, skillId);
 		resetEffect(pc, skillId);
 		CSkillInfo.applyFixedModifierFromOwner(pc, skillId);
-		if (dexterity) SC_Dexup.send(pc, pc, 5, iconDuration);
-		else SC_Strup.send(pc, pc, 5, iconDuration);
 		final int duration = iconDuration > 0 ? iconDuration : durationSecForBuff(null, skillId);
+		if (dexterity) SC_Dexup.send(pc, pc, 5, duration);
+		else SC_Strup.send(pc, pc, 5, duration);
 		applySkillEffectSec(pc, skillId, duration);
 	}
 
@@ -2136,8 +2136,9 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 			resetEffect(pc, skillId);
 			pc.set_focus_wave_level(1);
 		}
-		sendBraveMode(pc, mode, iconDuration);
-		if (skillId == L1SkillId.DANCING_BLADES) SC_SkillIconAura.send(pc, 154, iconDuration);
+		// Client icon and speed-mode duration must match the installed timer.
+		sendBraveMode(pc, mode, duration);
+		if (skillId == L1SkillId.DANCING_BLADES) SC_SkillIconAura.send(pc, 154, duration);
 		applySkillEffectSec(pc, skillId, duration);
 	}
 

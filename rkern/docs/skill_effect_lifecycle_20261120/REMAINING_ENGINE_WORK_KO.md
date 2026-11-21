@@ -115,3 +115,10 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 - 별도 스레드·큐·클래스 없이 기존 종료 핸들러와 캐릭터 코드만 변경한다. 전체 빌드와 인게임 패킷 시퀀스 검증은 통합 단계에서 수행한다.
 
 - BraveSpeedEffects.onEnd의 공통 재계산에서 FOCUS_WAVE가 활성 소스이고 포커스3단 타이머 및 stage level > 1이 유지된 경우 mode=12를 사용한다. 다른 가속 효과가 만료될 때 살아 있는 3단 연출을 1단으로 덮어쓰는 문제를 제거한다.
+
+
+## 2026-11-21 스킬 시작 아이콘과 타이머 지속시간 일치
+
+- SkillHandlers.startBraveVisual의 FOCUS_WAVE, HURRICANE, SAND_STORM, DANCING_BLADES는 시전 duration이 0일 때 스킬 DB의 기본 buffDuration(최소 1초)을 사용해 타이머를 부여하지만 SC_SkillBrave/SC_SkillIconAura에는 기존 iconDuration(0초)를 보내고 있었다. 동일한 계산값을 표시와 타이머에 사용하도록 통일했다.
+- SkillHandlers.startPhysicalEnchant(STR/DEX)는 기존처럼 스킬 테이블 유효시간을 사용하되, 클라이언트 SC_Strup/SC_Dexup 패킷도 실제 설치한 타이머 초수와 동일하게 맞췄다.
+- 시전 분기, 상태 변경 및 다른 버프의 시각 모드는 유지했다. 전체 컴파일·인게임 화면 검증은 별도로 남아 있다.
