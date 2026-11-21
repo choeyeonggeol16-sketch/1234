@@ -30,7 +30,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.model.poison.L1Poison;
+import l1j.server.server.model.character.effect.poison.PoisonEffect;
 import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
 import l1j.server.server.shared.L1Type;
@@ -59,7 +59,7 @@ public class L1Character extends L1Object {
 	private int _heading; // ● 방향 0. 좌상 1. 상 2. 우상 3. 오른쪽 4. 우하 5. 하 6. 좌하 7. 좌
 	private int _moveSpeed; // ● 스피드 0. 통상 1. 헤이 파업 2. 슬로우
 	private int _braveSpeed; // ● 치우침 이브 상태 0. 통상 1. 치우침 이브
-	private L1Poison _poison = null;
+	private volatile PoisonEffect _poison;
 	private volatile boolean _paralyzed;
 	private volatile boolean curseParalyzed;
 	private volatile boolean poisonParalyzed;
@@ -638,7 +638,7 @@ public class L1Character extends L1Object {
 	    _nextSkillTimeNs = System.nanoTime() + (long) delayMs * 1_000_000L;
 	}
 	
-	public void setPoison(L1Poison poison) {
+	public void setPoison(PoisonEffect poison) {
 		_poison = poison;
 	}
 
@@ -649,7 +649,7 @@ public class L1Character extends L1Object {
 		_poison.cure();
 	}
 
-	public L1Poison getPoison() {
+	public PoisonEffect getPoison() {
 		return _poison;
 	}
 
