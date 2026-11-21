@@ -37,6 +37,8 @@ public final class SlotChangeManager {
 
     private L1ItemInstance[] unequipBuffer = EMPTY_ITEMS;
     private L1ItemInstance[] equipBuffer = EMPTY_ITEMS;
+    private L1ItemInstance[] plannedBuffer = EMPTY_ITEMS;
+    private L1ItemInstance[] originalBuffer = EMPTY_ITEMS;
 
     /** applySlot 중첩 실행 방지  */
     private boolean swapping = false;
@@ -101,8 +103,9 @@ public final class SlotChangeManager {
 
     private void applySlot(int slotNum, IntIdList desired, L1PcInventory inventory) {
         final int spriteId = owner.getCurrentSpriteId();
-        int unequipCount = 0;
-        int equipCount = 0;
+        final L1ItemInstance originalPrimary = owner.getWeapon();
+        int unequipCount = 0, equipCount = 0, plannedCount = 0, originalCount = 0;
+        boolean mutated = false, completed = false;
         swapping = true;
         try {
             desired.sortUnique();
@@ -110,6 +113,16 @@ public final class SlotChangeManager {
                 if (item == null || item.getItem() == null) continue;
                 final boolean equipped = item.isEquipped();
                 final boolean wanted = desired.contains(item.getId()) && canEquipWithPoly(item, spriteId);
+                if (equipped) {
+                    if (originalCount == MAX_BUFFER) return;
+                    if (originalCount == originalBuffer.length) originalBuffer = grow(originalBuffer);
+                    originalBuffer[originalCount++] = item;
+                }
+                if (wanted) {
+                    if (plannedCount == MAX_BUFFER) return;
+                    if (plannedCount == plannedBuffer.length) plannedBuffer = grow(plannedBuffer);
+                    plannedBuffer[plannedCount++] = item;
+                }
                 if (equipped == wanted) continue;
                 if (equipped) {
                     if (item.getItem().getType2() == 1 && item.getItem().getBless() == 2) {
@@ -126,29 +139,82 @@ public final class SlotChangeManager {
                 }
             }
 
+            // Validate all target equipment together, including future rings and
+            // second weapons, before touching the currently equipped state.
+            if (!EquipRules.canEquipPreset(owner, inventory, plannedBuffer, plannedCount)) return;
             for (int i = 0; i < equipCount; i++) {
-                final L1ItemInstance item = equipBuffer[i];
-                if (item.getItem().getType2() != 0 && !item.startEquipmentTimer(owner)) return;
+                if (!equipBuffer[i].startEquipmentTimer(owner)) return;
             }
 
-            slotNumber = slotNum;
+            mutated = true;
             for (int i = 0; i < unequipCount; i++) {
                 inventory.setEquipped(unequipBuffer[i], false);
+                if (unequipBuffer[i].isEquipped()) return;
             }
             for (int i = 0; i < equipCount; i++) {
                 final L1ItemInstance item = equipBuffer[i];
-                if (item != null && !item.isEquipped() && inventory.getItem(item.getId()) == item && canEquipNow(inventory, item)) {
-                    inventory.setEquipped(item, true);
-                }
+                if (inventory.getItem(item.getId()) != item || !canEquipNow(inventory, item)) return;
+                inventory.setEquipped(item, true);
+                if (!item.isEquipped()) return;
             }
+            for (int i = 0; i < plannedCount; i++) {
+                if (!plannedBuffer[i].isEquipped()) return;
+            }
+            // Do not publish the new preset number on an incomplete switch.
+            slotNumber = slotNum;
+            completed = true;
         } finally {
+            if (mutated && !completed)
+                restoreEquipment(inventory, originalCount, equipCount, originalPrimary);
             Arrays.fill(unequipBuffer, 0, unequipCount, null);
             for (int i = 0; i < equipCount; i++) {
                 final L1ItemInstance item = equipBuffer[i];
                 if (item != null && !item.isEquipped()) item.stopEquipmentTimer();
                 equipBuffer[i] = null;
             }
+            Arrays.fill(plannedBuffer, 0, plannedCount, null);
+            Arrays.fill(originalBuffer, 0, originalCount, null);
             swapping = false;
+        }
+    }
+
+    private void restoreEquipment(L1PcInventory inventory, int originalCount,
+            int equipCount, L1ItemInstance originalPrimary) {
+        // Runtime rejection after preflight: restore the original worn image
+        // using normal inventory persistence, without a separate DB transaction.
+        for (int i = 0; i < equipCount; i++) {
+            final L1ItemInstance item = equipBuffer[i];
+            if (item == null || !item.isEquipped()) continue;
+            try {
+                inventory.setEquipped(item, false);
+            } catch (RuntimeException failure) {
+                java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
+                        .log(java.util.logging.Level.SEVERE, "Preset rollback remove failed", failure);
+            }
+        }
+        // Preserve the original primary position when restoring dual weapons.
+        if (originalPrimary != null && !originalPrimary.isEquipped()
+                && inventory.getItem(originalPrimary.getId()) == originalPrimary) {
+            try {
+                inventory.setEquipped(originalPrimary, true);
+            } catch (RuntimeException failure) {
+                java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
+                        .log(java.util.logging.Level.SEVERE, "Preset rollback primary failed", failure);
+            }
+        }
+        for (int i = 0; i < originalCount; i++) {
+            final L1ItemInstance item = originalBuffer[i];
+            if (item == null || item.isEquipped() || inventory.getItem(item.getId()) != item) continue;
+            try {
+                inventory.setEquipped(item, true);
+                if (!item.isEquipped()) {
+                    java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
+                            .severe("Preset rollback restore refused: item=" + item.getId());
+                }
+            } catch (RuntimeException failure) {
+                java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
+                        .log(java.util.logging.Level.SEVERE, "Preset rollback restore failed", failure);
+            }
         }
     }
 
@@ -252,5 +318,7 @@ public final class SlotChangeManager {
         
         Arrays.fill(unequipBuffer, null);
         Arrays.fill(equipBuffer, null);
+        Arrays.fill(plannedBuffer, null);
+        Arrays.fill(originalBuffer, null);
     }
 }
