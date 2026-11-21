@@ -54,6 +54,32 @@ public final class CSkillInfo {
         registerManaged(SHINING_ARMOR, SkillHandlers::startEvasionBuff, ER);
         // 9483 is a separate externally granted passive from spell 116.
         registerManaged(샤이닝아머, null, fixed(ER, 10));
+        // Persistent external potential bonuses share one source per skill ID.
+        registerManaged(hp300, null, fixed(MAX_HP, 300));
+        registerManaged(mp300, null, fixed(MAX_MP, 300L << 32));
+        registerManaged(대미지감소5, null, fixed(ARMOR_REDUCTION, 5));
+        registerManaged(ac5, null, fixed(AC, -5));
+        registerManaged(mr15, null, fixed(MR, 15L << 32));
+        registerManaged(모든속성저항20, null, fixed(ELEMENTAL_RESISTANCE, 0x14141414L));
+        registerManaged(힘3, null, fixed(PRIMARY_STATS, 3));
+        registerManaged(덱3, null, fixed(PRIMARY_STATS, 3L << 8));
+        registerManaged(콘3, null, fixed(PRIMARY_STATS, 3L << 32));
+        registerManaged(위즈3, null, fixed(PRIMARY_STATS, 3L << 24));
+        registerManaged(인트3, null, fixed(PRIMARY_STATS, 3L << 16));
+        registerManaged(pvp대미지7, null, fixed(PVP_DAMAGE, 7));
+        registerManaged(근거리대미지5, null, fixed(MELEE_DAMAGE, 5L << 32));
+        registerManaged(원거리대미지5, null, fixed(RANGED_DAMAGE, 5));
+        registerManaged(근거리명중5, null, fixed(MELEE_HIT, 5));
+        registerManaged(원거리명중5, null, fixed(RANGED_HIT, 5));
+        registerManaged(sp5, null, fixed(SP, 5));
+        registerManaged(마법적중5, null, fixed(MAGIC_HIT, 5));
+        registerManaged(기술내성8, null, specialResistance(eKind.ABILITY, 8));
+        registerManaged(정령내성8, null, specialResistance(eKind.SPIRIT, 8));
+        registerManaged(용언내성3, null, specialResistance(eKind.DRAGON_SPELL, 3));
+        registerManaged(공포내성3, null, specialResistance(eKind.FEAR, 3));
+        registerManaged(모든내성3, null, specialResistance(eKind.ALL, 3));
+        registerManaged(정령적중5, null, fixed(SPIRIT_PIERCE, 5L << 32));
+        registerManaged(모든적중3, null, fixed(ALL_PIERCE, 3));
         registerManaged(RESIST_MAGIC, SkillHandlers::startResistMagic, MR);
         registerManaged(GLOWING_AURA, SkillHandlers::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);
         registerManaged(IllUSION_OGRE, SkillHandlers::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);

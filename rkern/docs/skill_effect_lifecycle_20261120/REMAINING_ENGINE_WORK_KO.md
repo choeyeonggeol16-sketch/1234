@@ -157,3 +157,11 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 - PC에는 복원한 헤이스트 타이머의 남은 시간을 함께 보낸다. NPC는 기존 SC_SkillHaste 광역 갱신을 사용한다. 추가 워커·큐·상태 필드 없이 소유 타이머 기반으로 복구한다.
 
 - 역방향도 정리했다. 마지막 헤이스트가 종료될 때 아직 SLOW/MOB_SLOW 계열이 살아 있다면 NORMAL(0)이 아니라 SLOWED(2)로 돌아가며 남은 슬로우 시간을 보낸다. 가속 장비·남은 다른 헤이스트·NPC MOB_BERSERKERS의 기존 우선순위는 변경하지 않았다.
+
+
+## 2026-11-21 영구 잠재력 패시브 25종 능력치 출처 이관
+
+- PcPotentialEffects의 중첩 위험이 있던 영구 패시브 중 기존 CSkillEffect의 정확한 계산 lane이 있는 25종을 CSkillInfo managed_external 출처로 등록했다. 기존 능력치 직접 증감을 버리고 applySkillModifierFromOwner(동일 ID,0)를 사용해 재적용/재접속 시 중복 가산을 방지한다.
+- HP+300/MP+300/방어감소5/AC-5/MR+15/모든속성+20, STR·DEX·CON·WIS·INT +3, PvP 공격+7, 근·원거리 공격/명중+5, SP/마법명중+5, 기술·정령·용언·공포·전체 내성, 정령적중+5/전체적중+3을 이관한다.
+- 외부 패시브 종료 전용 offPersistentPotential은 해당 효과 출처만 제거하고, HP·MP·MR·스탯 변화 시 해당 패킷과 기존 SPELL_BUFF_NOTI 종료를 보낸다. WIS/CON 제거 시 생명력 상한을 넘지 않게 보정한다.
+- 기존 Pump에 정밀 lane이 없는 PvP 마법감소+7, 기술·용언·공포 적중+5의 네 종과 수치 변화 없는 EXP 계열 두 종은 유지한다. 전체 Java 컴파일, 인게임 능력치·아이콘·로그인 회귀 및 5천 명 부하는 이후 검증한다.

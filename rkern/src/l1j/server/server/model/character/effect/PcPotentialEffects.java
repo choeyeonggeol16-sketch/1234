@@ -62,101 +62,29 @@ public final class PcPotentialEffects {
     public static void apply(L1PcInstance pc, Kind kind) {
         switch (kind) {
         case hp300 -> {
-            pc.addMaxHp(300);
+            pc.applySkillModifierFromOwner(kind.skillId, 0L);
             SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
         }
         case mp300 -> {
-            pc.addMaxMp(300);
+            pc.applySkillModifierFromOwner(kind.skillId, 0L);
             SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
         }
-        case 대미지감소5 -> {
-            pc.addDamageReductionByArmor(5);
-        }
-        case ac5 -> {
-            pc.getAC().addAc(-5);
-        }
-        case mr15 -> {
-            pc.getResistance().addMr(15);
-        }
-        case 모든속성저항20 -> {
-            pc.getResistance().addEarth(20);
-            pc.getResistance().addWind(20);
-            pc.getResistance().addWater(20);
-            pc.getResistance().addFire(20);
-        }
-        case 힘3 -> {
-            pc.getAbility().addAddedStr((byte)3);
-        }
-        case 덱3 -> {
-            pc.getAbility().addAddedDex((byte)3);
-        }
         case 콘3 -> {
-            pc.getAbility().addAddedCon((byte)3);
+            pc.applySkillModifierFromOwner(kind.skillId, 0L);
             SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
         }
         case 위즈3 -> {
-            pc.getAbility().addAddedWis((byte)3);
+            pc.applySkillModifierFromOwner(kind.skillId, 0L);
             SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
         }
-        case 인트3 -> {
-            pc.getAbility().addAddedInt((byte)3);
-        }
-        case pvp대미지7 -> {
-            pc.getResistance().addPVPweaponTotalDamage(7);
-        }
-        case pvp감소7 -> {
-            pc.addPVPMagicDamageReduction(7);
-        }
-        case 근거리대미지5 -> {
-            pc.addDmgup(5);
-        }
-        case 원거리대미지5 -> {
-            pc.addBowDmgup(5);
-        }
-        case 근거리명중5 -> {
-            pc.addHitup(5);
-        }
-        case 원거리명중5 -> {
-            pc.addBowHitup(5);
-        }
-        case sp5 -> {
-            pc.getAbility().addSp(5);
-        }
-        case 마법적중5 -> {
-            pc.addMagicHit(5);
-        }
-        case 기술내성8 -> {
-            pc.getResistance().addSpecialResistance(eKind.ABILITY, 8);
-        }
-        case 정령내성8 -> {
-            pc.getResistance().addSpecialResistance(eKind.SPIRIT, 8);
-        }
-        case 용언내성3 -> {
-            pc.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, 3);
-        }
-        case 공포내성3 -> {
-            pc.getResistance().addSpecialResistance(eKind.FEAR, 3);
-        }
-        case 모든내성3 -> {
-            pc.getResistance().addSpecialResistance(eKind.ALL, 3);
-        }
-        case 정령적중5 -> {
-            pc.getResistance().addSpecialPierce(eKind.SPIRIT, 5);
-        }
-        case 용언적중5 -> {
-            pc.getResistance().addSpecialPierce(eKind.DRAGON_SPELL, 5);
-        }
-        case 공포적중5 -> {
-            pc.getResistance().addSpecialPierce(eKind.FEAR, 5);
-        }
-        case 기술적중5 -> {
-            pc.getResistance().addSpecialPierce(eKind.ABILITY, 5);
-        }
-        case 모든적중3 -> {
-            pc.getResistance().addSpecialPierce(eKind.ALL, 3);
-        }
-        default -> {
-        }
+        // These four legacy effects still need distinct pump lanes. Preserve
+        // their original formulas until the corresponding getter is migrated.
+        case pvp감소7 -> pc.addPVPMagicDamageReduction(7);
+        case 기술적중5 -> pc.getResistance().addSpecialPierce(eKind.ABILITY, 5);
+        case 용언적중5 -> pc.getResistance().addSpecialPierce(eKind.DRAGON_SPELL, 5);
+        case 공포적중5 -> pc.getResistance().addSpecialPierce(eKind.FEAR, 5);
+        case 경험치10, 경험치보너스20 -> { }
+        default -> pc.applySkillModifierFromOwner(kind.skillId, 0L);
         }
         SC_SPELL_BUFF_NOTI.sendFields(pc, eNotiType.RESTAT, kind.skillId, 0, eDurationShowType.TYPE_EFF_AUTO_DAY_HOUR_MIN_SEC, 4710, 4710, 0, kind.tooltip, kind.tooltip, kind.tooltip, true, 0, 0, 0, FIELDS);
         pc.setSkillEffect(kind.skillId, -1);

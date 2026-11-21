@@ -364,6 +364,31 @@ public final class SkillStopHandlers {
 
 		register(L1SkillId.SHINING_ARMOR, SkillStopHandlers::offShiningArmor);
 		register(L1SkillId.샤이닝아머, SkillStopHandlers::offPassiveShiningArmor);
+		register(L1SkillId.hp300, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.mp300, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.대미지감소5, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.ac5, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.mr15, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.모든속성저항20, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.힘3, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.덱3, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.콘3, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.위즈3, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.인트3, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.pvp대미지7, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.근거리대미지5, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.원거리대미지5, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.근거리명중5, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.원거리명중5, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.sp5, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.마법적중5, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.기술내성8, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.정령내성8, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.용언내성3, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.공포내성3, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.모든내성3, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.정령적중5, SkillStopHandlers::offPersistentPotential);
+		register(L1SkillId.모든적중3, SkillStopHandlers::offPersistentPotential);
 		register(L1SkillId.HOLY_WEAPON, SkillStopHandlers::offWeaponBuff);
 
 		register(L1SkillId.MOEBIUS, SkillStopHandlers::offMoebius);
@@ -1673,6 +1698,33 @@ public final class SkillStopHandlers {
 	    }
 	    return StopResult.HANDLED;
 	}
+	private static StopResult offPersistentPotential(L1Character cha, int skillId) {
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
+		switch (skillId) {
+		case L1SkillId.hp300 -> {
+			if (pc.isInParty()) pc.getParty().refreshPartyMemberStatus(pc);
+			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
+		}
+		case L1SkillId.콘3 -> {
+			pc.setCurrentHp(Math.min(pc.getCurrentHp(), pc.getMaxHp()));
+			if (pc.isInParty()) pc.getParty().refreshPartyMemberStatus(pc);
+			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
+		}
+		case L1SkillId.mp300 -> SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
+		case L1SkillId.위즈3 -> {
+			pc.setCurrentMp(Math.min(pc.getCurrentMp(), pc.getMaxMp()));
+			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
+			SC_SPMR.send(pc);
+		}
+		case L1SkillId.mr15, L1SkillId.sp5 -> SC_SPMR.send(pc);
+		case L1SkillId.ac5, L1SkillId.모든속성저항20 -> SC_OwnCharAttrDef.send(pc);
+		default -> { }
+		}
+		sendLegacyEndNoti(pc, skillId, 0, true);
+		return StopResult.HANDLED;
+	}
+
 	private static StopResult offPassiveShiningArmor(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
 		pc.removeSkillModifierFromOwner(skillId);
