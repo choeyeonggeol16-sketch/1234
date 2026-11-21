@@ -43,6 +43,10 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 /** NC CItem assembly responsibility adapted to L1 option wire format.
  * The existing item-ID option order is preserved. */
 public final class CItem {
+    // Origin of the L1 legacy time field; evaluated once instead of per item.
+    @SuppressWarnings("deprecation")
+    private static final long LEGACY_TIME_ORIGIN_MS = Date.parse("January 1, 2017 0:00:00");
+
     private CItem() {}
 
     static byte[] AssembleItem(L1ItemInstance item) {
@@ -104,7 +108,7 @@ public final class CItem {
 			 */
 			if (item.getEndTime() != null) {
 				if (item.isIdentified()) {
-					long temp = Date.parse("January 1, 2017 0:00:00");
+					long temp = LEGACY_TIME_ORIGIN_MS;
 					os.writeC(61);
 					os.writeD((item.getEndTime().getTime() - temp) / 1000 * 6);
 				}
@@ -167,7 +171,7 @@ public final class CItem {
 			}
 			if (item.getEndTime() != null) {
 				if (item.isIdentified()) {
-					long temp = Date.parse("January 1, 2017 0:00:00");
+					long temp = LEGACY_TIME_ORIGIN_MS;
 					os.writeC(61);
 					os.writeD((item.getEndTime().getTime() - temp) / 1000 * 6);
 				}

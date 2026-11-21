@@ -962,22 +962,25 @@ public final class CItemEnchantOption {
                                       int itemType2, int itemId, int itemgrade) throws Exception { // weapon | armor
 
 				int op_addAc = 0;
-                // Read the exact accessory enchant values used by the equipment path once.
-                final int[] snapperBonus = itemType2 == 2 && isSnapperRing(itemId)
-                        ? EquipmentEnchantOptions.accessoryBonusSnapshot(item.getItem(), item.getEnchantLevel())
-                        : null;
-                final int[] roomtisBonus = itemType2 == 2 && isRoomtisItem(itemId)
-                        ? EquipmentEnchantOptions.accessoryBonusSnapshot(item.getItem(), item.getEnchantLevel())
-                        : null;
+                // Compute the shared accessory effects only once per item.
+                // Scratch storage is acquired on the current thread and released
+                // even if a malformed item's tooltip throws while assembling.
+                final boolean snapper = itemType2 == 2 && isSnapperRing(itemId);
+                final boolean roomtis = itemType2 == 2 && isRoomtisItem(itemId);
                 final int accessoryType = item.getItem().getType();
                 final boolean genericAccessory = itemType2 == 2
                         && ((itemgrade >= 0 && itemgrade <= 2 && accessoryType >= 8 && accessoryType <= 12)
                             || (itemgrade == 5 && (accessoryType == 9 || accessoryType == 11)));
-                final int[] genericBonus = genericAccessory && snapperBonus == null
-                        && item.getEnchantLevel() > 0
-                        ? (roomtisBonus != null ? roomtisBonus
-                                : EquipmentEnchantOptions.accessoryBonusSnapshot(item.getItem(), item.getEnchantLevel()))
+                final boolean needsBonus = snapper || roomtis
+                        || (genericAccessory && item.getEnchantLevel() > 0);
+                final int[] accessoryBonus = needsBonus
+                        ? EquipmentEnchantOptions.accessoryBonusSnapshot(item.getItem(), item.getEnchantLevel())
                         : null;
+                final int[] snapperBonus = snapper ? accessoryBonus : null;
+                final int[] roomtisBonus = roomtis ? accessoryBonus : null;
+                final int[] genericBonus = genericAccessory && !snapper
+                        && item.getEnchantLevel() > 0 ? accessoryBonus : null;
+                try {
 
 				/** 아이템 안전인챈 표시 추가 **/
 				
@@ -6227,4 +6230,8 @@ public final class CItemEnchantOption {
                 || id == 222340 || id == 222341;
     }
 
-}
+
+        } finally {
+            EquipmentEnchantOptions.releaseAccessoryBonusSnapshot(accessoryBonus);
+        }
+    }

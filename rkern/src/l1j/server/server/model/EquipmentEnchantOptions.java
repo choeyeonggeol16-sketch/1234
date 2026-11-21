@@ -15,13 +15,44 @@ public final class EquipmentEnchantOptions {
 
     private EquipmentEnchantOptions() {}
 
-    /** Exact per-enchant accessory changes, shared by equip and tooltip.
-     *  One primitive array is allocated only when a Snapper tooltip is assembled.
+    // One reusable short-lived scratch record per executing thread, not per item.
+    // Reentrant tooltip assembly uses a separate buffer so outer calculations
+    // cannot be overwritten. releaseAccessoryBonusSnapshot is mandatory.
+    private static final class AccessoryScratch {
+        final int[] values = new int[STATS.length];
+        boolean inUse;
+    }
+
+    private static final ThreadLocal<AccessoryScratch> ACCESSORY_SCRATCH =
+            ThreadLocal.withInitial(AccessoryScratch::new);
+
+    /** Temporary result. The caller must release it in a finally block.
+     *  All values are exactly those calculated by the equip/unequip path.
      */
     public static int[] accessoryBonusSnapshot(L1Item item, int enchant) {
-        final int[] changes = new int[STATS.length];
-        applyAccessoryOptions(null, item, enchant, 1, changes);
-        return changes;
+        final AccessoryScratch scratch = ACCESSORY_SCRATCH.get();
+        final int[] changes;
+        if (scratch.inUse) {
+            // Unusual nested assembly: keep the outer render's values intact.
+            changes = new int[STATS.length];
+        } else {
+            scratch.inUse = true;
+            changes = scratch.values;
+        }
+        try {
+            java.util.Arrays.fill(changes, 0);
+            applyAccessoryOptions(null, item, enchant, 1, changes);
+            return changes;
+        } catch (RuntimeException | Error ex) {
+            if (changes == scratch.values) scratch.inUse = false;
+            throw ex;
+        }
+    }
+
+    public static void releaseAccessoryBonusSnapshot(int[] changes) {
+        if (changes == null) return;
+        final AccessoryScratch scratch = ACCESSORY_SCRATCH.get();
+        if (changes == scratch.values) scratch.inUse = false;
     }
 
     static int[] enchantDelta(L1PcInstance pc, L1Item item, int previousEnchant, int enchant) {
