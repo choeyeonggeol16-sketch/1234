@@ -50,6 +50,11 @@ jobs:
             rkern/docs/jproring_cio_integration_20261120
             rkern/docs/skill_effect_lifecycle_20261120
             rkern/docs/poison_effect_20261121
+      - name: Audit legacy pet and death match references
+        run: |
+          echo '==== MATCH REFERENCES ===='
+          grep -RnE 'L1PetMatch|L1DeathMatch|DeathMatch|PetMatch|DEATH_MATCH|PET_MATCH|deathmatch|petmatch' rkern/src --include='*.java' | head -250 || true
+          echo '==== END MATCH REFERENCES ===='
       - name: Cache skill regression dependencies
         uses: actions/cache@v4
         with:
