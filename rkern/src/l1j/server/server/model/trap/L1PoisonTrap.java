@@ -4,9 +4,9 @@ import l1j.server.server.datatables.MonsterParalyzeDelay;
 import l1j.server.server.datatables.MonsterParalyzeDelay.MonsterParalyze;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.poison.L1DamagePoison;
-import l1j.server.server.model.poison.L1ParalysisPoison;
-import l1j.server.server.model.poison.L1SilencePoison;
+import l1j.server.server.model.character.effect.poison.DamagePoison;
+import l1j.server.server.model.character.effect.poison.ParalysisPoison;
+import l1j.server.server.model.character.effect.poison.SilencePoison;
 import l1j.server.server.storage.TrapStorage;
 
 public class L1PoisonTrap extends L1Trap {
@@ -31,16 +31,16 @@ public class L1PoisonTrap extends L1Trap {
 		if (_type.equals("d")) {
 			if( trodFrom.getZoneType() != 1 )
 			{
-				L1DamagePoison.doInfection(trodFrom, trodFrom, _time, _damage, false, 30000);
+				DamagePoison.doInfection(trodFrom, trodFrom, _time, _damage, false, 30000);
 			}
 		} else if (_type.equals("s")) {
-			L1SilencePoison.doInfection(trodFrom);
+			SilencePoison.doInfection(trodFrom);
 		} else if (_type.equals("p")) {
 			MonsterParalyze paralyze = new MonsterParalyzeDelay.MonsterParalyze();
 			paralyze.paralyze_delay = _delay;
 			paralyze.paralyze_millis = _time;
 			paralyze.skill_id = 0;
-			L1ParalysisPoison.doInfection(trodFrom, paralyze);
+			ParalysisPoison.doInfection(trodFrom, paralyze);
 		}
 	}
 }
