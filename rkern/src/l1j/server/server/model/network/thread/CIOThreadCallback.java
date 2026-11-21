@@ -450,6 +450,39 @@ public final class CIOThreadCallback {
                 poison, null, null);
     }
 
+    /** Reuse creature execution ordering for other timed effects (curse paralysis). */
+    public boolean postCharacterEffectOnOwner(L1Character target, WheelTask task) {
+        if (target == null || task == null || task.isCancelled()) return false;
+        if (target instanceof L1PcInstance pc) {
+            final CCreatureController controller = pc.getCreatureController();
+            return controller != null && controller.actor() == pc
+                    && controller.AddExecutableWheelTask(task);
+        }
+        if (target instanceof L1NpcInstance npc) {
+            if (npc.isDestroyed()) return false;
+            final NpcServer server = NpcServer.getInstance();
+            if (server.isOwnerThread(npc)) {
+                task.runOnNpc(npc);
+                return true;
+            }
+            return server.postNpcWheelTask(npc, task);
+        }
+        return false;
+    }
+
+    /** CIO provides the deadline, the character owner executes the effect. */
+    public boolean scheduleCharacterEffectTick(L1Character target, WheelTask task, long delayMs) {
+        if (target == null || task == null || task.isCancelled()) return false;
+        final CIOThread owner = characterOwner(target);
+        if (owner == null || !owner.running) return false;
+        final long boundedDelay = Math.max(1L, delayMs);
+        if (Thread.currentThread() == owner.thread) {
+            owner.onRawSchedule(boundedDelay, task, null);
+            return true;
+        }
+        return owner.admitTimer(TimerOp.RAW_TIMER, 0, boundedDelay, task, null, null);
+    }
+
     /** Existing owner wheel drives connection deadlines; no extra worker or queue. */
     public boolean scheduleNetworkTimeout(int shardIndex, WheelTask task, long delayMs) {
         if (task == null || delayMs <= 0L || shardIndex < 0

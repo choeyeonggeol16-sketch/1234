@@ -66,7 +66,9 @@ public class L1Character extends L1Object {
 	private volatile boolean _paralyzed;
 	private volatile boolean curseParalyzed;
 	private volatile boolean poisonParalyzed;
-	private L1Paralysis _paralysis;
+	private volatile L1Paralysis _paralysis;
+	private static final AtomicReferenceFieldUpdater<L1Character, L1Paralysis> PARALYSIS =
+			AtomicReferenceFieldUpdater.newUpdater(L1Character.class, L1Paralysis.class, "_paralysis");
 	private volatile boolean _isDead;
 
 	protected Light light = null; // 캐릭터 주위 빛
@@ -349,14 +351,23 @@ public class L1Character extends L1Object {
 		return _paralysis;
 	}
 
+	/** Claim one curse-paralysis lifetime before sending it to the owner. */
+	public boolean claimParalysis(L1Paralysis effect) {
+		return effect != null && PARALYSIS.compareAndSet(this, null, effect);
+	}
+
+	/** A late timer must never clear a newer paralysis lifetime. */
+	public boolean clearParalysisIfSame(L1Paralysis effect) {
+		return effect != null && PARALYSIS.compareAndSet(this, effect, null);
+	}
+
 	public void setParalaysis(L1Paralysis p) {
 		_paralysis = p;
 	}
 
 	public void cureParalaysis() {
-		if (_paralysis != null) {
-			_paralysis.cure();
-		}
+		final L1Paralysis effect = _paralysis;
+		if (effect != null) effect.cure();
 	}
 
 	

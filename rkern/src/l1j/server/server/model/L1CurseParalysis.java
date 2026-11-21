@@ -18,205 +18,219 @@
  */
 package l1j.server.server.model;
 
-import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
-import l1j.server.server.model.character.skill.ControlSkillEffects;
-import l1j.server.server.ThreadPool;
-import l1j.server.server.SingleTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import l1j.server.server.datatables.MonsterParalyzeDelay;
 import l1j.server.server.datatables.MonsterParalyzeDelay.MonsterParalyze;
 import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.ControlSkillEffects;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
+import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eDurationShowType;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
-public class L1CurseParalysis extends L1Paralysis {
-	
-	private class ParalysisDelayTimer extends SingleTask {
-		@Override
-		public void execute() {
-            // A cure racing an already dispatched timer must complete before
-            // the old timer can reapply freeze. No new task or thread needed.
-            synchronized (L1CurseParalysis.this) {
-                if (_cured || !isActive() || _target.getParalysis() != L1CurseParalysis.this) return;
+/**
+ * Curse-paralysis lifetime. The existing PC controller/NPC shard executes all
+ * phases; the CIO wheel only delivers the two deadlines.
+ */
+public final class L1CurseParalysis extends L1Paralysis implements CIOThreadCallback.WheelTask {
+    private static final Logger LOG = Logger.getLogger(L1CurseParalysis.class.getName());
+    private static final int START_NOTICE_BITS = 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 512 | 1024;
+    private static final int END_NOTICE_BITS = 1 | 2 | 8 | 1024;
 
+    private final L1Character target;
+    private final int delay;
+    private final int duration;
+    private final int sessionStamp;
 
-			if( isActive() )
-			{
-//				_target.killSkillEffectTimer(L1SkillId.STATUS_CURSE_PARALYZING);
+    private volatile boolean cureRequested;
+    private volatile boolean stopped;
+    private boolean started;
+    private boolean frozen;
 
-				if (_target instanceof L1PcInstance) {
-					L1PcInstance player = (L1PcInstance) _target;
+    private L1CurseParalysis(L1Character target, MonsterParalyze rule) {
+        this.target = target;
+        this.delay = rule.paralyze_delay;
+        this.duration = rule.paralyze_millis;
+        this.sessionStamp = target instanceof L1PcInstance pc ? pc.getSessionStamp() : 0;
+    }
 
-					if (player.isDead() == false)
-					{
-						l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType notiWire_notiType = null;
-						int notiWire_spellId = 0;
-						int notiWire_duration = 0;
-						l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eDurationShowType notiWire_durationShowType = null;
-						int notiWire_onIconId = 0;
-						int notiWire_offIconId = 0;
-						int notiWire_iconPriority = 0;
-						int notiWire_tooltipStrId = 0;
-						int notiWire_endStrId = 0;
-						boolean notiWire_isGood = false;
-						int notiWire_bit = 0;
+    public static boolean curse(L1Character target, int skillId) {
+        if (!(target instanceof L1PcInstance || target instanceof L1MonsterInstance)
+                || target.getParalysis() != null
+                || target.hasSkillEffect(L1SkillId.STATUS_CURSE_PARALYZING)
+                || target.hasSkillEffect(L1SkillId.STATUS_CURSE_PARALYZED)) return false;
 
+        final MonsterParalyze rule = MonsterParalyzeDelay.getInstance().get_paralyze(skillId);
+        if (rule == null) return false;
 
-						{ notiWire_bit |= 1; notiWire_notiType = eNotiType.RESTAT; }
-						{ notiWire_bit |= 2; notiWire_spellId = L1SkillId.CURSE_PARALYZE; }
-						{ notiWire_bit |= 4; notiWire_duration = (_time / 1000); }
-						{ notiWire_bit |= 8; notiWire_durationShowType = eDurationShowType.TYPE_EFF_AUTO_DAY_HOUR_MIN_SEC; }
-						{ notiWire_bit |= 16; notiWire_onIconId = 5270; }
-						{ notiWire_bit |= 32; notiWire_offIconId = 5270; }
-						{ notiWire_bit |= 64; notiWire_iconPriority = 10; }
-						{ notiWire_bit |= 128; notiWire_tooltipStrId = 213; }
-						{ notiWire_bit |= 512; notiWire_endStrId = 0; }
-						{ notiWire_bit |= 1024; notiWire_isGood = false; }
-						SC_SPELL_BUFF_NOTI.sendFields(
-						        player, notiWire_notiType, notiWire_spellId, notiWire_duration, notiWire_durationShowType,
-						        notiWire_onIconId, notiWire_offIconId, notiWire_iconPriority, notiWire_tooltipStrId, 0,
-						        notiWire_endStrId, notiWire_isGood, 0, 0, 0, notiWire_bit);
-						SC_Paralysis.send(player, SC_Paralysis.TYPE_FREEZE, true);
-					}
-					_timer = new ParalysisTimer();
-					_target.setCurseParalyzed(true);
-                    if (ThreadPool.getInstance().schedule(_timer, _time) == null) {
-                        // A missing release deadline must never strand paralysis.
-                        cure();
+        final L1CurseParalysis effect = new L1CurseParalysis(target, rule);
+        if (!target.claimParalysis(effect)) return false;
+
+        final CIOThreadCallback callback = CIOThreadCallback.getInstance();
+        if (!callback.postCharacterEffectOnOwner(target, effect)
+                && !callback.scheduleCharacterEffectTick(target, effect, 50L)) {
+            effect.stopped = true;
+            target.clearParalysisIfSame(effect);
+            return false;
+        }
+        return target.getParalysis() == effect;
+    }
+
+    private boolean staleTarget() {
+        if (target instanceof L1PcInstance pc) {
+            return pc.getSessionStamp() != sessionStamp
+                    || pc.getCreatureController() == null
+                    || pc.getCreatureController().actor() != pc;
+        }
+        return target instanceof L1NpcInstance npc && npc.isDestroyed();
+    }
+
+    private void abandon() {
+        stopped = true;
+        target.clearParalysisIfSame(this);
+    }
+
+    @Override
+    public void run() {
+        if (isCancelled()) return;
+        if (staleTarget()) {
+            abandon();
+            return;
+        }
+        final CIOThreadCallback callback = CIOThreadCallback.getInstance();
+        if (!callback.postCharacterEffectOnOwner(target, this)
+                && !callback.scheduleCharacterEffectTick(target, this, 50L))
+            abandon();
+    }
+
+    @Override
+    public void runOnController(L1PcInstance pc) {
+        if (target == pc) onOwner();
+    }
+
+    @Override
+    public void runOnNpc(L1NpcInstance npc) {
+        if (target == npc) onOwner();
+    }
+
+    private void onOwner() {
+        if (isCancelled()) return;
+        if (staleTarget()) {
+            abandon();
+            return;
+        }
+        if (cureRequested) {
+            finish();
+            return;
+        }
+        try {
+            if (!started) {
+                // Admission and status mutation run in one creature execution order.
+                if (target.hasSkillEffect(L1SkillId.STATUS_CURSE_PARALYZING)
+                        || target.hasSkillEffect(L1SkillId.STATUS_CURSE_PARALYZED)) {
+                    abandon();
+                    return;
+                }
+                started = true;
+                startEffect();
+                if (target instanceof L1PcInstance && !arm(Math.max(1L, delay))) finish();
+            } else if (!frozen) {
+                if (target instanceof L1PcInstance pc) {
+                    if (pc.isDead()) {
+                        finish();
+                        return;
                     }
-				}
-			}
-		            }
+                    frozen = true;
+                    sendNotice(pc, duration / 1000, 213, false);
+                    SC_Paralysis.send(pc, SC_Paralysis.TYPE_FREEZE, true);
+                    target.setCurseParalyzed(true);
+                    if (!arm(Math.max(1L, duration))) finish();
+                }
+            } else {
+                finish();
+            }
+        } catch (Throwable failure) {
+            try {
+                finish();
+            } catch (Throwable cleanupFailure) {
+                failure.addSuppressed(cleanupFailure);
+            }
+            LOG.log(Level.WARNING, "Curse paralysis owner callback failed", failure);
         }
-	}
+    }
 
-
-	private class ParalysisTimer extends SingleTask {
-		@Override
-		public void execute() {
-			_timer = null;
-			cure(); 
-		}
-	}
-
-
-	private final L1Character _target;
-	private final int _delay;
-	private final int _time;
-	private SingleTask _timer;
-    private boolean _cured;
-	private L1CurseParalysis(L1Character cha, int skill_id) {
-		_target = cha;
-		MonsterParalyze paralyze = MonsterParalyzeDelay.getInstance().get_paralyze(skill_id);
-		_delay = paralyze.paralyze_delay;
-		_time = paralyze.paralyze_millis;
-
-	}
-
-	private void curse() {
-		if (_target instanceof L1PcInstance) {
-			L1PcInstance player = (L1PcInstance) _target;
-			SC_ServerMessage.send(player, 212);
-		}
-
-		_target.setPoisonEffect(2);
-		_timer = new ParalysisDelayTimer();
-		_target.setSkillEffect(L1SkillId.STATUS_CURSE_PARALYZING, _delay);
-		if(_target instanceof L1PcInstance){
-			L1PcInstance pc = (L1PcInstance)_target;
-			l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType notiWire_notiType = null;
-			int notiWire_spellId = 0;
-			int notiWire_duration = 0;
-			l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eDurationShowType notiWire_durationShowType = null;
-			int notiWire_onIconId = 0;
-			int notiWire_offIconId = 0;
-			int notiWire_iconPriority = 0;
-			int notiWire_tooltipStrId = 0;
-			int notiWire_endStrId = 0;
-			boolean notiWire_isGood = false;
-			int notiWire_bit = 0;
-
-
-			{ notiWire_bit |= 1; notiWire_notiType = eNotiType.RESTAT; }
-			{ notiWire_bit |= 2; notiWire_spellId = L1SkillId.CURSE_PARALYZE; }
-			{ notiWire_bit |= 4; notiWire_duration = (_delay / 1000); }
-			{ notiWire_bit |= 8; notiWire_durationShowType = eDurationShowType.TYPE_EFF_AUTO_DAY_HOUR_MIN_SEC; }
-			{ notiWire_bit |= 16; notiWire_onIconId = 5270; }
-			{ notiWire_bit |= 32; notiWire_offIconId = 5270; }
-			{ notiWire_bit |= 64; notiWire_iconPriority = 10; }
-			{ notiWire_bit |= 128; notiWire_tooltipStrId = 212; }
-			{ notiWire_bit |= 512; notiWire_endStrId = 0; }
-			{ notiWire_bit |= 1024; notiWire_isGood = false; }
-			SC_SPELL_BUFF_NOTI.sendFields(
-			        pc, notiWire_notiType, notiWire_spellId, notiWire_duration, notiWire_durationShowType,
-			        notiWire_onIconId, notiWire_offIconId, notiWire_iconPriority, notiWire_tooltipStrId, 0,
-			        notiWire_endStrId, notiWire_isGood, 0, 0, 0, notiWire_bit);
-		}
-        if (ThreadPool.getInstance().schedule(_timer, _delay) == null) {
-            cure();
+    private void startEffect() {
+        if (target instanceof L1PcInstance pc) {
+            SC_ServerMessage.send(pc, 212);
         }
-	}
+        target.setPoisonEffect(2);
+        target.setSkillEffect(L1SkillId.STATUS_CURSE_PARALYZING, delay);
+        if (target instanceof L1PcInstance pc)
+            sendNotice(pc, delay / 1000, 212, false);
+        // Original NPC case only sets the initial status/visual and awaits cure.
+    }
 
-	public static boolean curse(L1Character cha, int skill_id) {
-		if (!(cha instanceof L1PcInstance || cha instanceof L1MonsterInstance)) {
-			return false;
-		}
+    private boolean arm(long milliseconds) {
+        return CIOThreadCallback.getInstance()
+                .scheduleCharacterEffectTick(target, this, milliseconds);
+    }
 
-		if (cha.hasSkillEffect(L1SkillId.STATUS_CURSE_PARALYZING)
-				|| cha.hasSkillEffect(L1SkillId.STATUS_CURSE_PARALYZED)) {
-			return false;
-		}
-        final L1CurseParalysis curse = new L1CurseParalysis(cha, skill_id);
-        cha.setParalaysis(curse);
-        curse.curse();
-        return cha.getParalysis() == curse;
-	}
+    private static void sendNotice(L1PcInstance pc, int seconds, int tooltipId, boolean end) {
+        SC_SPELL_BUFF_NOTI.sendFields(pc,
+                end ? eNotiType.END : eNotiType.RESTAT,
+                L1SkillId.CURSE_PARALYZE, end ? 0 : seconds,
+                eDurationShowType.TYPE_EFF_AUTO_DAY_HOUR_MIN_SEC,
+                end ? 0 : 5270, end ? 0 : 5270, end ? 0 : 10,
+                end ? 0 : tooltipId, 0, 0, false, 0, 0, 0,
+                end ? END_NOTICE_BITS : START_NOTICE_BITS);
+    }
 
-	@Override
-	public int getEffectId() {
-		return 2;
-	}
-
-	@Override
-	public synchronized void cure() {
-        if (_cured) return;
-        _cured = true;
-        final SingleTask timer = _timer;
-        _timer = null;
-        if (timer != null) timer.cancel();
-        // An old release timer may outlive the curse that installed it.
-        // Only the current owner may unfreeze or remove the status effects.
-        if (_target.getParalysis() != this) return;
-
-        _target.setCurseParalyzed(false);
-        if (!_target.isParalyzed() && !ControlSkillEffects.hasSkillFreeze(_target, -1)) _target.setPoisonEffect(0);
-        if (_target.getParalysis() == this) _target.setParalaysis(null);
-
-        if (_target instanceof L1PcInstance) {
-            L1PcInstance pc = (L1PcInstance) _target;
-            l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType notiWire_notiType = null;
-            int notiWire_spellId = 0;
-            l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eDurationShowType notiWire_durationShowType = null;
-            boolean notiWire_isGood = false;
-            int notiWire_bit = 0;
-
-
-            { notiWire_bit |= 1; notiWire_notiType = eNotiType.END; }
-            { notiWire_bit |= 2; notiWire_spellId = L1SkillId.CURSE_PARALYZE; }
-            { notiWire_bit |= 8; notiWire_durationShowType = eDurationShowType.TYPE_EFF_AUTO_DAY_HOUR_MIN_SEC; }
-            { notiWire_bit |= 1024; notiWire_isGood = false; }
-            SC_SPELL_BUFF_NOTI.sendFields(
-                    pc, notiWire_notiType, notiWire_spellId, 0, notiWire_durationShowType, 0, 0, 0, 0, 0, 0,
-                    notiWire_isGood, 0, 0, 0, notiWire_bit);
-            if (!pc.isDead() && !pc.isParalyzed() && !ControlSkillEffects.hasSkillFreeze(pc, -1))
-                SC_Paralysis.send(pc, SC_Paralysis.TYPE_FREEZE, false);
+    private void finish() {
+        if (stopped) return;
+        stopped = true;
+        try {
+            if (started && target.getParalysis() == this) {
+                target.setCurseParalyzed(false);
+                if (!target.isParalyzed() && !ControlSkillEffects.hasSkillFreeze(target, -1))
+                    target.setPoisonEffect(0);
+                if (target instanceof L1PcInstance pc) {
+                    sendNotice(pc, 0, 0, true);
+                    if (!pc.isDead() && !pc.isParalyzed()
+                            && !ControlSkillEffects.hasSkillFreeze(pc, -1))
+                        SC_Paralysis.send(pc, SC_Paralysis.TYPE_FREEZE, false);
+                }
+                target.removeSkillEffect(L1SkillId.STATUS_CURSE_PARALYZING);
+                target.removeSkillEffect(L1SkillId.STATUS_CURSE_PARALYZED);
+            }
+        } finally {
+            target.clearParalysisIfSame(this);
         }
-        _target.removeSkillEffect(L1SkillId.STATUS_CURSE_PARALYZING);
-        _target.removeSkillEffect(L1SkillId.STATUS_CURSE_PARALYZED);
-	}
+    }
 
+    @Override
+    public boolean isCancelled() {
+        return stopped || target.getParalysis() != this;
+    }
+
+    @Override
+    public void cure() {
+        if (isCancelled() || cureRequested) return;
+        cureRequested = true;
+        final CIOThreadCallback callback = CIOThreadCallback.getInstance();
+        if (!callback.postCharacterEffectOnOwner(target, this)
+                && !callback.scheduleCharacterEffectTick(target, this, 50L))
+            abandon();
+    }
+
+    @Override
+    public int getEffectId() {
+        return 2;
+    }
 }
