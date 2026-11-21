@@ -6,7 +6,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Magic;
 import l1j.server.server.model.L1CurseParalysis;
-import l1j.server.server.model.poison.L1DamagePoison;
 
 /** Shared execution contract for the separate cast, lifetime and stat stages. */
 interface CSkillEffect {
@@ -184,7 +183,7 @@ interface CSkillEffect {
     record DamagePoison(int interval, int damage, boolean activeEffect, int duration) implements SkillHandlers.SkillHandler {
         @Override public SkillHandlers.HandlerResult handle(L1SkillUse cast, L1Character target,
                 L1Magic magic, int undeadType, Iterator<?> targets) {
-            if (target != null) L1DamagePoison.doInfection(cast.hdUser(), target, interval, damage, activeEffect, duration);
+            if (target != null) l1j.server.server.model.character.effect.poison.DamagePoison.doInfection(cast.hdUser(), target, interval, damage, activeEffect, duration);
             return SkillHandlers.HandlerResult.HANDLED;
         }
     }

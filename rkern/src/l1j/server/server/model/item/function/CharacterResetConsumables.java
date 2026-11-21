@@ -13,7 +13,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.poison.L1DamagePoison;
+import l1j.server.server.model.character.effect.poison.DamagePoison;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FLOATING_EYE;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_HOLY_MITHRIL_POWDER;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_HOLY_WATER;

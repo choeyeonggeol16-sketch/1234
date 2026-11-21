@@ -21,7 +21,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.poison.L1DamagePoison;
+import l1j.server.server.model.character.effect.poison.DamagePoison;
 import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.eKind;
 
@@ -131,12 +131,12 @@ final class DemolitionItemEffect {
                         SC_SkillSound.broadcast(member, member.getId(), 14449);
                         int 요정 = (int)((double)데몰리션시간 * Config.리버레이션절감);
                         if (member.hasSkillEffect(L1SkillId.리버레이션)) {
-                            L1DamagePoison.doInfection(pc, member, 800, pc.getLevel() * 2 / Config.데몰리션대미지, true, 요정);
+                            DamagePoison.doInfection(pc, member, 800, pc.getLevel() * 2 / Config.데몰리션대미지, true, 요정);
                             L1EffectSpawn.getInstance().spawnEffect(9418, 요정, member.getX(), member.getY(), member.getMapId());
                             L1EffectSpawn.getInstance().spawnEffect(881162, 요정, member.getX(), member.getY(), member.getMapId());
                             member.setSkillEffect(STATUS_FREEZE, 요정);
                         } else {
-                            L1DamagePoison.doInfection(pc, member, 800, pc.getLevel() * 2 / Config.데몰리션대미지, true, 데몰리션시간);
+                            DamagePoison.doInfection(pc, member, 800, pc.getLevel() * 2 / Config.데몰리션대미지, true, 데몰리션시간);
                             L1EffectSpawn.getInstance().spawnEffect(9418, 데몰리션시간, member.getX(), member.getY(), member.getMapId());
                             L1EffectSpawn.getInstance().spawnEffect(881162, 데몰리션시간, member.getX(), member.getY(), member.getMapId());
                             member.setSkillEffect(STATUS_FREEZE, 데몰리션시간);

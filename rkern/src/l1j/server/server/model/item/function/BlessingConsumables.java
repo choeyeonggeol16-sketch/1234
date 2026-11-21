@@ -13,7 +13,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.poison.L1DamagePoison;
+import l1j.server.server.model.character.effect.poison.DamagePoison;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FLOATING_EYE;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_HOLY_MITHRIL_POWDER;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_HOLY_WATER;
@@ -92,7 +92,7 @@ final class BlessingConsumables {
         }
         UseDurableConsume(pc, item, () -> {
             try {
-                L1DamagePoison.doInfection(pc, pc, 3000, 5, false, 30000);
+                DamagePoison.doInfection(pc, pc, 3000, 5, false, 30000);
             } finally {
                 ItemActionCompletion.finishCommittedConsumable(pc, item);
             }

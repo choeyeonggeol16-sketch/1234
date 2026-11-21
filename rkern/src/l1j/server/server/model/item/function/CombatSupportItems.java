@@ -9,7 +9,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.poison.L1DamagePoison;
+import l1j.server.server.model.character.effect.poison.DamagePoison;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import static l1j.server.server.model.item.function.CreatureItemActions.*;
 
@@ -56,11 +56,11 @@ final class CombatSupportItems {
                 if (!cha.hasSkillEffect(L1SkillId.COUNTER_MAGIC)) {
                     if (cha.hasSkillEffect(L1SkillId.리버레이션)) {
                         int 요정 = (int)((double)Config.이터제약 * Config.리버레이션절감);
-                        L1DamagePoison.doInfection(pc, cha, 1000, 요정, true, 1);
+                        DamagePoison.doInfection(pc, cha, 1000, 요정, true, 1);
                         SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);
                     } else {
                         int B = _random.nextInt(Config.이터이차최대 - Config.이터이차최소) + Config.이터이차최소;
-                        L1DamagePoison.doInfection(pc, cha, 1000, B, true, 1);
+                        DamagePoison.doInfection(pc, cha, 1000, B, true, 1);
                         SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Damage);
                     }
                 }
@@ -75,7 +75,7 @@ final class CombatSupportItems {
             public void run() {
                 if (!member1.hasSkillEffect(L1SkillId.COUNTER_MAGIC)) {
                     int B = _random.nextInt(Config.이터이차최대 - Config.이터이차최소) + Config.이터이차최소;
-                    L1DamagePoison.doInfection(pc, member1, 1000, B, true, 1);
+                    DamagePoison.doInfection(pc, member1, 1000, B, true, 1);
                 }
             }
         }, Config.이터제약);
