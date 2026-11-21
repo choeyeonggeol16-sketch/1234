@@ -76,17 +76,7 @@ public final class EquipmentItemActions {
 	}
 	
 	public static boolean canUseByClass(L1PcInstance pc, L1Item item) {
-	    if (pc == null || item == null) return false;
-	    if (pc.isGm()) return true;
-
-	    return (pc.isCrown()        && item.isUseRoyal())
-	        || (pc.isKnight()       && item.isUseKnight())
-	        || (pc.isElf()          && item.isUseElf())
-	        || (pc.isWizard()       && item.isUseMage())
-	        || (pc.isDarkelf()      && item.isUseDarkelf())
-	        || (pc.isDragonknight() && item.isUseDragonKnight())
-	        || (pc.isBlackwizard()  && item.isUseBlackwizard())
-	        || (pc.isWarrior()         && item.isUse전사());
+	    return l1j.server.server.model.character.equip.EquipRules.canUseByClass(pc, item);
 	}
 
 	// 2) 레벨 제한 메시지 처리(공통). true면 "통과", false면 "막힘(메시지 보냄)".

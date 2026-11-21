@@ -8,10 +8,26 @@ import l1j.server.server.model.L1EquipmentSlot;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1Quest;
+import l1j.server.server.templates.L1Item;
 
 public final class EquipRules {
 
     private EquipRules() {}
+
+
+    /** Shared class eligibility gate for item use and preset equipment. */
+    public static boolean canUseByClass(L1PcInstance pc, L1Item item) {
+        if (pc == null || item == null) return false;
+        if (pc.isGm()) return true;
+        return (pc.isCrown() && item.isUseRoyal())
+                || (pc.isKnight() && item.isUseKnight())
+                || (pc.isElf() && item.isUseElf())
+                || (pc.isWizard() && item.isUseMage())
+                || (pc.isDarkelf() && item.isUseDarkelf())
+                || (pc.isDragonknight() && item.isUseDragonKnight())
+                || (pc.isBlackwizard() && item.isUseBlackwizard())
+                || (pc.isWarrior() && item.isUse전사());
+    }
 
     // =========================
     // ARMOR RULES
@@ -38,6 +54,12 @@ public final class EquipRules {
         for (int i = 0; i < count; i++) {
             final L1ItemInstance item = planned[i];
             if (item == null || item.getItem() == null) return false;
+            if (!canUseByClass(pc, item.getItem())) return false;
+            final int level = pc.getLevel();
+            final int minLevel = item.getItem().getMinLevel();
+            final int maxLevel = item.getItem().getMaxLevel();
+            if ((minLevel > 0 && level < minLevel)
+                    || (maxLevel > 0 && level > maxLevel)) return false;
             final int type = item.getItem().getType2();
             if (type == 1) {
                 if (!L1PolyMorph.isEquipableWeapon(sprite, item.getItem().getType())
