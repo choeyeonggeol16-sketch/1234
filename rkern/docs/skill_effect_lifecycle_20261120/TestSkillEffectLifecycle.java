@@ -67,6 +67,8 @@ public final class TestSkillEffectLifecycle {
             BuffRestoreRegistryInit.init();
             verifyLifecycle();
             verifyPackedPrimaryStatLanes();
+            verifyPackedSpecialResistanceLanes();
+            verifyCashAndIceModifierDefinitions();
             verifyModifierRetention();
             verifyUnknownCashScrollPreservesBuff();
             verifyIndependentModifiers();
@@ -121,6 +123,47 @@ public final class TestSkillEffectLifecycle {
         CSkillEffect.Bonus.PRIMARY_PENALTY.pump(255L << 8, modifiers);
         CSkillEffect.Bonus.PRIMARY_PENALTY.pump(1L << 8, modifiers);
         verify(modifiers.primaryPenalty == 0, "primary penalty pump independent lanes", 0);
+    }
+
+    /** Adjacent resistance and pierce bytes must never contaminate one another. */
+    private static void verifyPackedSpecialResistanceLanes() {
+        final SkillEffectContainer.SkillModifiers modifiers = new SkillEffectContainer.SkillModifiers();
+        CSkillEffect.Bonus.SPECIAL_RESISTANCE.pump(255L, modifiers);
+        CSkillEffect.Bonus.SPECIAL_RESISTANCE.pump(1L, modifiers);
+        verify(modifiers.specialResistance == 255L,
+                "resistance overflow cannot turn into spirit resistance", N_BUFF_STUN);
+        CSkillEffect.Bonus.SPECIAL_RESISTANCE.pump(255L << 32, modifiers);
+        CSkillEffect.Bonus.SPECIAL_RESISTANCE.pump(1L << 32, modifiers);
+        verify(modifiers.specialResistance == (255L | (255L << 32)),
+                "all resistance cannot carry into spirit pierce", God_buff);
+        CSkillEffect.Bonus.SPIRIT_PIERCE.pump(3L << 32, modifiers);
+        CSkillEffect.Bonus.ALL_PIERCE.pump(254L, modifiers);
+        CSkillEffect.Bonus.ALL_PIERCE.pump(4L, modifiers);
+        verify(modifiers.specialResistance == (255L | (255L << 32) | (3L << 40) | (255L << 48)),
+                "pierce types accumulate in isolated saturated lanes", ELEMENTAL_PROTECTION);
+    }
+
+    /** The two cash scrolls and two ice-entry captures must stay distinct. */
+    private static void verifyCashAndIceModifierDefinitions() {
+        final Player target = new Player();
+        final SkillEffectContainer.SkillModifiers out = new SkillEffectContainer.SkillModifiers();
+        CSkillInfo.get(STATUS_CASHSCROLL4).pump(target, 0, out);
+        verify(out.sp == 3 && out.baseMagicHit == 5 && out.pvpReduction == 3,
+                "cash scroll 4 retains spell/magic-hit/PvP effects", STATUS_CASHSCROLL4);
+        out.initializeSkillMod();
+        CSkillInfo.get(STATUS_CASHSCROLL6).pump(target, 0, out);
+        verify(out.weaponDamageRate == 3 && out.meleeHit == 5 && out.pvpReduction == 3,
+                "cash scroll 6 retains weapon-rate/melee-hit/PvP effects", STATUS_CASHSCROLL6);
+        out.initializeSkillMod();
+        CSkillInfo.get(지식빙수).pump(target, 2L, out);
+        verify(out.sp == 2 && out.magicHit == 0 && out.mp == 50
+                        && ((out.primaryStats >>> 16) & 0xffL) == 1L,
+                "knowledge ice item capture applies spell power", 지식빙수);
+        out.initializeSkillMod();
+        CSkillInfo.get(지식빙수).pump(target, 2L << 32, out);
+        verify(out.sp == 0 && out.magicHit == 2 && out.mp == 50
+                        && ((out.primaryStats >>> 16) & 0xffL) == 1L,
+                "knowledge ice alternate capture applies magic hit", 지식빙수);
     }
 
     /** The final removed modifier must release its retained backing state. */
