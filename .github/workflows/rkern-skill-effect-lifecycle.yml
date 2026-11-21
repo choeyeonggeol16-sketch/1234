@@ -16,7 +16,8 @@ on:
       - rkern/src/l1j/server/server/model/L1Character.java
       - rkern/src/l1j/server/server/model/L1EquipmentSlot.java
       - rkern/src/l1j/server/server/model/L1WeaponSkill.java
-      - rkern/src/l1j/server/server/model/L1CurseParalysis.java
+      - rkern/src/l1j/server/server/model/character/effect/paralysis/**
+      - rkern/src/l1j/server/server/SingleTask.java
       - rkern/src/l1j/server/server/model/character/effect/poison/**
       - rkern/src/l1j/server/server/model/poison/**
       - rkern/src/l1j/server/server/model/HelpBySupport.java
