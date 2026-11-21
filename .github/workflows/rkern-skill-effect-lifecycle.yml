@@ -48,6 +48,7 @@ jobs:
             rkern/src
             rkern/docs/jproring_cio_integration_20261120
             rkern/docs/skill_effect_lifecycle_20261120
+            rkern/docs/poison_effect_20261121
       - name: Cache skill regression dependencies
         uses: actions/cache@v4
         with:
@@ -90,6 +91,7 @@ jobs:
           print(f"Production Java files: {len(sources)}", flush=True)
           sources.append(root / "docs/skill_effect_lifecycle_20261120/TestSkillEffectLifecycle.java")
           sources.append(root / "docs/skill_effect_lifecycle_20261120/BenchmarkSkillEffectLifecycle.java")
+          sources.append(root / "docs/poison_effect_20261121/TestPoisonEffectLifecycle.java")
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
           subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8", "-source", "21",
@@ -101,4 +103,9 @@ jobs:
                           "l1j.server.server.model.character.skill.TestSkillEffectLifecycle"],
                          cwd=work, check=True, timeout=120)
           print("PASS skill lifecycle test process", flush=True)
+          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
+                          "-XX:ActiveProcessorCount=2", "-cp", cp,
+                          "l1j.server.server.model.character.effect.poison.TestPoisonEffectLifecycle"],
+                         cwd=work, check=True, timeout=60)
+          print("PASS poison lifecycle regression", flush=True)
           PY

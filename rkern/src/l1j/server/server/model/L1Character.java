@@ -639,14 +639,17 @@ public class L1Character extends L1Object {
 	}
 	
 	public void setPoison(PoisonEffect poison) {
-		_poison = poison;
+		synchronized (this) {
+			_poison = poison;
+		}
 	}
 
 	public void curePoison() {
-		if (_poison == null) {
-			return;
+		// Serialize a cure with poison installation, not only with the old callback.
+		synchronized (this) {
+			final PoisonEffect current = _poison;
+			if (current != null) current.cure();
 		}
-		_poison.cure();
 	}
 
 	public PoisonEffect getPoison() {
