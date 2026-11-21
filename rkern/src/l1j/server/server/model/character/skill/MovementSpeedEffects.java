@@ -81,7 +81,8 @@ public final class MovementSpeedEffects {
             }
             return;
         }
-        reset(target, false);
+        // NPC haste expiration must also clear the visible speed animation.
+        reset(target, true);
     }
 
     public static boolean cancelSlowWithPotion(L1PcInstance pc) {

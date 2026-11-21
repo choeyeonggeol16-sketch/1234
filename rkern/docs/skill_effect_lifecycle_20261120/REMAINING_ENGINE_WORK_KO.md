@@ -172,3 +172,6 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 - SkillEffectContainer에 독립 8-bit lane 적중 합산과 PvP 마법감소 전달을 추가했다. 재적용과 순차 해제에 따른 중복 가산/다른 출처 차감 문제가 사라진다.
 - 기존 SPIRIT_PIERCE/ALL_PIERCE가 사용하는 specialResistance 상위 바이트와 신규 네 종류(ABILITY/SPIRIT/DRAGON_SPELL/FEAR)의 특수 적중 비트는 서로 독립으로 유지한다. 기존 세 인수/네 인수 setSkillCombatModifiers 호출도 그대로 지원한다.
 - 영구 잠재력 31종 중 별도의 수치 증가가 없는 경험치 2종을 제외한 29종의 능력치 출처를 일원화했다. 전체 컴파일과 실제 속성/아이템 겹침 검증은 추후 통합 단계에서 수행한다.
+
+- [호환성 보완] Resistance의 기존 4인수 setSkillCombatModifiers 호출은 신규 4채널 pierce 보정을 실수로 0으로 덮어쓰지 않는다. 전체 스킬 modifier가 비워질 때는 5인수 명시적 초기화 경로에서 보정을 제거한다.
+- [NPC 이펙트] MovementSpeedEffects.endHaste에서 마지막 NPC 가속의 만료도 정상 이동속도 전환을 브로드캐스트하도록 수정했다. 기존 PC 패킷은 동일하다.

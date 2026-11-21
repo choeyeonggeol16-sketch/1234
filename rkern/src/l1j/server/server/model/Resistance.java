@@ -149,7 +149,9 @@ public class Resistance {
     }
 
     public void setSkillCombatModifiers(int pvp, long specialResistance, int penalty, boolean notify) {
-        setSkillCombatModifiers(pvp, specialResistance, penalty, 0, notify);
+        // Older callers did not own the extra pierce channels. Preserve their
+        // active sources; only the five-argument owner publication clears them.
+        setSkillCombatModifiers(pvp, specialResistance, penalty, skillSpecialPierce, notify);
     }
 
     public void setSkillCombatModifiers(int pvp, long specialResistance, int penalty,
