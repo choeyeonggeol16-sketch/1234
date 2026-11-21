@@ -64,6 +64,11 @@ jobs:
             echo 'Unexpected retired pet/death match reference remains'
             exit 1
           fi
+      - name: Inventory fake connection count and RepeatTask references
+        run: |
+          echo "BEGIN_RETIRED_COUNT_AUDIT"
+          grep -RnE 'RepeatTask|L1Userinc|WHOIS_CONTER|Neige_Count|WhoisConter|뻥튀기|UserCountBuffTimer' rkern/src --include='*.java' || true
+          echo "END_RETIRED_COUNT_AUDIT"
       - name: Cache skill regression dependencies
         uses: actions/cache@v4
         with:
