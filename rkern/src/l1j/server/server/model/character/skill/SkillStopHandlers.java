@@ -17,6 +17,7 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.effect.PcClanBuffEffects;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.item.tam.TamFruitUseService;
@@ -69,17 +70,17 @@ public final class SkillStopHandlers {
 	}
 
 	static void registerEffects() {
-		register(L1SkillId.혈맹버프AC,   SkillStopHandlers::offClanBuffAc);
-		register(L1SkillId.혈맹버프마방, SkillStopHandlers::offClanBuffMr);
-		register(L1SkillId.혈맹버프PVP추가, SkillStopHandlers::offClanBuffPvpAdd);
-		register(L1SkillId.혈맹버프PVP감소, SkillStopHandlers::offClanBuffPvpReduce);
-		register(L1SkillId.혈맹버프HP증가, SkillStopHandlers::offClanBuffHp);
-		register(L1SkillId.혈맹버프올내성, SkillStopHandlers::offClanBuffAllResist);
-		register(L1SkillId.혈맹버프올적중, SkillStopHandlers::offClanBuffAllPierce);
-		register(L1SkillId.혈맹버프올스텟, SkillStopHandlers::offClanBuffAllStat);
+		register(L1SkillId.혈맹버프AC,   SkillStopHandlers::offClanScroll);
+		register(L1SkillId.혈맹버프마방, SkillStopHandlers::offClanScroll);
+		register(L1SkillId.혈맹버프PVP추가, SkillStopHandlers::offClanScroll);
+		register(L1SkillId.혈맹버프PVP감소, SkillStopHandlers::offClanScroll);
+		register(L1SkillId.혈맹버프HP증가, SkillStopHandlers::offClanScroll);
+		register(L1SkillId.혈맹버프올내성, SkillStopHandlers::offClanScroll);
+		register(L1SkillId.혈맹버프올적중, SkillStopHandlers::offClanScroll);
+		register(L1SkillId.혈맹버프올스텟, SkillStopHandlers::offClanScroll);
 		register(L1SkillId.혈맹버프회복,     SkillStopHandlers::offNoop);
 
-		register(L1SkillId.천하장사버프,     SkillStopHandlers::offCheonHaJangSaBuff);
+		register(L1SkillId.천하장사버프,     SkillStopHandlers::offPlayerModifier);
 
 		register(L1SkillId.N_BUFF_PVP_DMG,   SkillStopHandlers::offNBuffPvpDmg);
 		register(L1SkillId.N_BUFF_HPMP,      SkillStopHandlers::offNBuffHpMp);
@@ -134,12 +135,12 @@ public final class SkillStopHandlers {
 		register(L1SkillId.DEATH_HEAL_Mob,   SkillStopHandlers::offMiso1);
 		register(L1SkillId.DEATH_HEAL,       SkillStopHandlers::offMiso1);
 
-		register(L1SkillId.CLAN_BUFF1,       SkillStopHandlers::offClanBuff1);
-		register(L1SkillId.CLAN_BUFF2,       SkillStopHandlers::offClanBuff2);
-		register(L1SkillId.CLAN_BUFF3,       SkillStopHandlers::offClanBuff3);
-		register(L1SkillId.CLAN_BUFF4,       SkillStopHandlers::offClanBuff4);
+		register(L1SkillId.CLAN_BUFF1,       SkillStopHandlers::offClanStance);
+		register(L1SkillId.CLAN_BUFF2,       SkillStopHandlers::offClanStance);
+		register(L1SkillId.CLAN_BUFF3,       SkillStopHandlers::offClanStance);
+		register(L1SkillId.CLAN_BUFF4,       SkillStopHandlers::offClanStance);
 
-		register(L1SkillId.정상의가호,       SkillStopHandlers::offNormalBlessing);
+		register(L1SkillId.정상의가호,       SkillStopHandlers::offPlayerModifier);
 
 		register(L1SkillId.레벨업보너스,     SkillStopHandlers::offLevelUpBonus);
 		register(L1SkillId.DRAGON_PUPLE,     SkillStopHandlers::offDragonPuple);
@@ -157,7 +158,7 @@ public final class SkillStopHandlers {
 		register(L1SkillId.GLOWING_AURA, SkillStopHandlers::offGlowingWeapon);
 		register(L1SkillId.God_buff,       SkillStopHandlers::offGodBuff);
 
-		register(L1SkillId.BUFF_SAEL,      SkillStopHandlers::offBuffSael);
+		register(L1SkillId.BUFF_SAEL,      SkillStopHandlers::offNpcBloodBuff);
 		register(L1SkillId.SHINING_AURA, SkillStopHandlers::offShiningShield);
 		register(L1SkillId.BRAVE_AURA,   SkillStopHandlers::offBraveMental);
 		register(L1SkillId.SHIELD,         SkillStopHandlers::offShield);
@@ -188,9 +189,9 @@ public final class SkillStopHandlers {
 		register(L1SkillId.SAND_STORM,     SkillStopHandlers::offBraveSpeedReset);
 		register(L1SkillId.DANCING_BLADES, SkillStopHandlers::offBraveSpeedReset);
 
-		register(L1SkillId.BUFF_CRAY,      SkillStopHandlers::offBuffCray);
-		register(L1SkillId.BUFF_Vala,      SkillStopHandlers::offBuffCray);
-		register(L1SkillId.BUFF_GUNTER,    SkillStopHandlers::offBuffGunter);
+		register(L1SkillId.BUFF_CRAY,      SkillStopHandlers::offNpcBloodBuff);
+		register(L1SkillId.BUFF_Vala,      SkillStopHandlers::offNpcBloodBuff);
+		register(L1SkillId.BUFF_GUNTER,    SkillStopHandlers::offNpcBloodBuff);
 
 		register(L1SkillId.UNCANNY_DODGE,  SkillStopHandlers::offUncannyDodge);
 		register(L1SkillId.BURNING_WEAPON, SkillStopHandlers::offBurningWeapon);
@@ -278,37 +279,37 @@ public final class SkillStopHandlers {
 
 		register(L1SkillId.STATUS_CHAT_PROHIBITED, SkillStopHandlers::offChatProhibited);
 
-		register(L1SkillId.STATUS_CASHSCROLL,     SkillStopHandlers::offCashScroll1);
-		register(L1SkillId.STATUS_CASHSCROLL2,    SkillStopHandlers::offCashScroll2);
-		register(L1SkillId.STATUS_CASHSCROLL3,    SkillStopHandlers::offCashScroll3);
-		register(L1SkillId.STATUS_CASHSCROLL4,    SkillStopHandlers::offCashScroll4);
-		register(L1SkillId.STATUS_CASHSCROLL5,    SkillStopHandlers::offCashScroll5);
-		register(L1SkillId.STATUS_CASHSCROLL6,    SkillStopHandlers::offCashScroll6);
+		register(L1SkillId.STATUS_CASHSCROLL,     SkillStopHandlers::offCashScroll);
+		register(L1SkillId.STATUS_CASHSCROLL2,    SkillStopHandlers::offCashScroll);
+		register(L1SkillId.STATUS_CASHSCROLL3,    SkillStopHandlers::offCashScroll);
+		register(L1SkillId.STATUS_CASHSCROLL4,    SkillStopHandlers::offCashScroll);
+		register(L1SkillId.STATUS_CASHSCROLL5,    SkillStopHandlers::offCashScroll);
+		register(L1SkillId.STATUS_CASHSCROLL6,    SkillStopHandlers::offCashScroll);
 
 		register(L1SkillId.STATUS_POISON,         SkillStopHandlers::offPoison);
 
 		register(L1SkillId.성혈버프,               SkillStopHandlers::offSeonghyeolBuff);
 
-		register(L1SkillId.COMA_A,                SkillStopHandlers::offComaA);
-		register(L1SkillId.COMA_B,                SkillStopHandlers::offComaB);
+		register(L1SkillId.COMA_A,                SkillStopHandlers::offComa);
+		register(L1SkillId.COMA_B,                SkillStopHandlers::offComa);
 
-		register(L1SkillId.FEATHER_BUFF_A,        SkillStopHandlers::offFeatherBuffA);
-		register(L1SkillId.FEATHER_BUFF_B,        SkillStopHandlers::offFeatherBuffB);
-		register(L1SkillId.FEATHER_BUFF_C,        SkillStopHandlers::offFeatherBuffC);
-		register(L1SkillId.FEATHER_BUFF_D,        SkillStopHandlers::offFeatherBuffD);
+		register(L1SkillId.FEATHER_BUFF_A,        SkillStopHandlers::offFeatherBuff);
+		register(L1SkillId.FEATHER_BUFF_B,        SkillStopHandlers::offFeatherBuff);
+		register(L1SkillId.FEATHER_BUFF_C,        SkillStopHandlers::offFeatherBuff);
+		register(L1SkillId.FEATHER_BUFF_D,        SkillStopHandlers::offFeatherBuff);
 
 
-		register(L1SkillId.ANTA_MAAN, SkillStopHandlers::offAntaMaan);
-		register(L1SkillId.FAFU_MAAN, SkillStopHandlers::offFafuMaan);
-		register(L1SkillId.LIND_MAAN, SkillStopHandlers::offLindMaan);
-		register(L1SkillId.VALA_MAAN, SkillStopHandlers::offValaMaan);
-		register(L1SkillId.BIRTH_MAAN, SkillStopHandlers::offBirthMaan);
-		register(L1SkillId.SHAPE_MAAN, SkillStopHandlers::offShapeMaan);
-		register(L1SkillId.LIFE_MAAN, SkillStopHandlers::offLifeMaan);
+		register(L1SkillId.ANTA_MAAN, SkillStopHandlers::offDragonMaan);
+		register(L1SkillId.FAFU_MAAN, SkillStopHandlers::offDragonMaan);
+		register(L1SkillId.LIND_MAAN, SkillStopHandlers::offDragonMaan);
+		register(L1SkillId.VALA_MAAN, SkillStopHandlers::offDragonMaan);
+		register(L1SkillId.BIRTH_MAAN, SkillStopHandlers::offDragonMaan);
+		register(L1SkillId.SHAPE_MAAN, SkillStopHandlers::offDragonMaan);
+		register(L1SkillId.LIFE_MAAN, SkillStopHandlers::offDragonMaan);
 
-		register(L1SkillId.ANTA_BUFF, SkillStopHandlers::offAntaBuff);
-		register(L1SkillId.FAFU_BUFF, SkillStopHandlers::offFafuBuff);
-		register(L1SkillId.RIND_BUFF, SkillStopHandlers::offRindBuff);
+		register(L1SkillId.ANTA_BUFF, SkillStopHandlers::offDragonBlood);
+		register(L1SkillId.FAFU_BUFF, SkillStopHandlers::offDragonBlood);
+		register(L1SkillId.RIND_BUFF, SkillStopHandlers::offDragonBlood);
 
 		register(L1SkillId.STATUS_DRAGON_PEARL, SkillStopHandlers::offDragonPearl);
 
@@ -354,15 +355,15 @@ public final class SkillStopHandlers {
 
 		register(L1SkillId.CLEAR_MIND, SkillStopHandlers::offClearMind);
 
-		register(L1SkillId.SHADOW_FANG, SkillStopHandlers::offShadowFang);
-		register(L1SkillId.BLESS_WEAPON, SkillStopHandlers::offBlessWeapon);
-		register(L1SkillId.ENCHANT_WEAPON, SkillStopHandlers::offEnchantWeapon);
+		register(L1SkillId.SHADOW_FANG, SkillStopHandlers::offWeaponBuff);
+		register(L1SkillId.BLESS_WEAPON, SkillStopHandlers::offWeaponBuff);
+		register(L1SkillId.ENCHANT_WEAPON, SkillStopHandlers::offWeaponBuff);
 		register(L1SkillId.BLESSED_ARMOR, SkillStopHandlers::offBlessedArmor);
 
 		register(L1SkillId.CYCLONE, SkillStopHandlers::offCyclone);
 
 		register(L1SkillId.SHINING_ARMOR, SkillStopHandlers::offShiningArmor);
-		register(L1SkillId.HOLY_WEAPON, SkillStopHandlers::offHolyWeapon);
+		register(L1SkillId.HOLY_WEAPON, SkillStopHandlers::offWeaponBuff);
 
 		register(L1SkillId.MOEBIUS, SkillStopHandlers::offMoebius);
 
@@ -453,10 +454,10 @@ public final class SkillStopHandlers {
 		register(L1SkillId.메티스축복주문서, SkillStopHandlers::offMetisBlessScroll);
 		register(L1SkillId.버서크, SkillStopHandlers::offBerserkCustom);
 		register(L1SkillId.버서크대기, SkillStopHandlers::offNoop);
-		register(L1SkillId.SIDE_OF_ME_BLESSING, SkillStopHandlers::offStartBlessing);
-		register(L1SkillId.RE_START_BLESSING, SkillStopHandlers::offStartBlessing);
-		register(L1SkillId.NEW_START_BLESSING, SkillStopHandlers::offStartBlessing);
-		register(L1SkillId.LIFE_BLESSING, SkillStopHandlers::offStartBlessing);
+		register(L1SkillId.SIDE_OF_ME_BLESSING, SkillStopHandlers::offPlayerModifier);
+		register(L1SkillId.RE_START_BLESSING, SkillStopHandlers::offPlayerModifier);
+		register(L1SkillId.NEW_START_BLESSING, SkillStopHandlers::offPlayerModifier);
+		register(L1SkillId.LIFE_BLESSING, SkillStopHandlers::offPlayerModifier);
 		register(L1SkillId.COUNTER_BARRIER, SkillStopHandlers::offCounterBarrierLegacy);
 
 		register(L1SkillId.BUFF_특별한성장축복, SkillStopHandlers::offSpecialBuff);
@@ -500,51 +501,15 @@ public final class SkillStopHandlers {
 		return effect == null ? null : effect.stopHandler();
 	}
 
-	private static StopResult offClanBuffAc(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getAC().addAc(5);
-		SC_OwnCharAttrDef.send(pc);
 
-		return StopResult.HANDLED;
-	}
 
-	private static StopResult offClanBuffMr(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getResistance().addMr(-10);
-		SC_SPMR.send(pc); 
 
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offClanBuffPvpAdd(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.getResistance().addPVPweaponTotalDamage(-3);
-
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offClanBuffPvpReduce(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.getResistance().addcalcPcDefense(-3);
-
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offClanBuffHp(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addMaxHp(-150);
-		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-
+	private static StopResult offClanScroll(L1Character cha, int skillId) {
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
+		PcClanBuffEffects.notifyChange(pc, skillId);
 		return StopResult.HANDLED;
 	}
 
@@ -557,37 +522,8 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offClanBuffAllPierce(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.getResistance().addSpecialPierce(eKind.ALL, -3);
 
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offClanBuffAllStat(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.getAbility().addAddedStr((byte) -3);
-		pc.getAbility().addAddedDex((byte) -3);
-		pc.getAbility().addAddedCon((byte) -3);
-		pc.getAbility().addAddedInt((byte) -3);
-		pc.getAbility().addAddedWis((byte) -3);
-		pc.getAbility().addAddedCha((byte) -3);
-		SC_OwnCharStatus2.send(pc);
-
-		return StopResult.HANDLED;
-	}
-
-	private static SkillStopHandlers.StopResult offCheonHaJangSaBuff(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addDamageReductionByArmor(-5);
-		return StopResult.HANDLED;
-	}
 
 	// ===== N_BUFF =====
 
@@ -785,9 +721,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.addMaxHp(-100);
-		pc.getResistance().addMr(-10);
-		pc.addHpr(-2);
+		cha.removeSkillModifierFromOwner(skillId);
 		SC_SPMR.send(pc);
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;
@@ -797,26 +731,15 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.addDmgup(-3);
-		pc.addBowDmgup(-3);
-		pc.addMaxMp(-50);
-		pc.getAbility().addSp(-3);
-		pc.addMpr(-2);
+		cha.removeSkillModifierFromOwner(skillId);
 		SC_SPMR.send(pc);
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;
 	}
 
 	private static StopResult offDragonSet(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addDmgup(-3);
-		pc.addDmgRate(-3);
-		pc.addBowDmgup(-3);
-		pc.addBowHitup(-3);
-		pc.getAC().addAc(3);
-		pc.getAbility().addSp(-2);
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
 		SC_SPMR.send(pc);
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;
@@ -900,55 +823,17 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offClanBuff1(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		// 일반 공격 태세
-		pc.addDmgup(-2);
-		pc.addBowDmgup(-2);
-		SC_ServerMessage.send(pc, 4619, "$22503");
+	private static StopResult offClanStance(L1Character cha, int skillId) {
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
+		if (skillId == L1SkillId.CLAN_BUFF2) SC_OwnCharAttrDef.send(pc);
+		SC_ServerMessage.send(pc, 4619, SkillHandlers.clanStanceName(skillId));
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offClanBuff2(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
 
-		// 일반 방어 태세
-		pc.getAC().addAc(3);
-		SC_OwnCharAttrDef.send(pc);
-		SC_ServerMessage.send(pc, 4619, "$22504");
-		return StopResult.HANDLED;
-	}
 
-	private static StopResult offClanBuff3(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
 
-		// 전투 공격 태세
-		// pc.addPvPDmgup(-1);
-		SC_ServerMessage.send(pc, 4619, "$22505");
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offClanBuff4(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		// 전투 방어 태세
-		// pc.addDmgReducPvp(-1);
-		SC_ServerMessage.send(pc, 4619, "$22506");
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offNormalBlessing(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addDamageReductionByArmor(-8);
-		return StopResult.HANDLED;
-	}
 
 	private static StopResult offLevelUpBonus(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
@@ -993,9 +878,7 @@ public final class SkillStopHandlers {
 
 	private static StopResult offStrIce(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance pc) {
-			pc.addHitup(-5);
-			pc.addDmgup(-3);
-			pc.getAbility().addAddedStr(-1);
+			pc.removeSkillModifierFromOwner(skillId);
 			SC_OwnCharStatus2.send(pc);
 		}
 		return StopResult.HANDLED;
@@ -1003,19 +886,14 @@ public final class SkillStopHandlers {
 
 	private static StopResult offDexIce(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance  pc) {
-			pc.addBowHitup(-5);
-			pc.addBowDmgup(-3);
-			pc.getAbility().addAddedDex(-1);
+			pc.removeSkillModifierFromOwner(skillId);
 		}
 		return StopResult.HANDLED;
 	}
 
 	private static StopResult offIntIce(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance  pc) {
-			pc.addMaxMp(-50);
-			pc.getAbility().addSp(-1);
-			pc.addMagicHit(-3);
-			pc.getAbility().addAddedInt(-1);
+			pc.removeSkillModifierFromOwner(skillId);
 			SC_OwnCharStatus2.send(pc);
 			SC_SPMR.send(pc);
 		}
@@ -1060,25 +938,12 @@ public final class SkillStopHandlers {
 	}
 
 
-	private static StopResult offBuffSael(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		if (pc.hasSkillEffect(L1SkillId.BUFF_SAEL)) {
-			// removed: pc.removeSkillEffect(L1SkillId.BUFF_SAEL);
-		}
-		pc.getAC().addAc(8);
-		pc.addBowHitup(-6);
-		pc.addBowDmgup(-3);
-		pc.addMaxHp(-80);
-		pc.addMaxMp(-10);
-		pc.addHpr(-8);
-		pc.addMpr(-1);
-		pc.getResistance().addWater(-30);
-
+	private static StopResult offNpcBloodBuff(L1Character cha, int skillId) {
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
 		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
 		SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-		SC_OwnCharAttrDef.send(pc);
+		if (skillId == L1SkillId.BUFF_SAEL || skillId == L1SkillId.BUFF_GUNTER) SC_OwnCharAttrDef.send(pc);
 		SC_SPMR.send(pc);
 		return StopResult.HANDLED;
 	}
@@ -1156,7 +1021,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 		
-	    pc.addDamageReductionByArmor(-2);
+	    cha.removeSkillModifierFromOwner(skillId);
 		SC_SkillIconShield.send(pc, 7, 0);
 		return StopResult.HANDLED;
 	}
@@ -1188,42 +1053,17 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offElementalFallDown(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-
-			int attr = pc.getAddAttrKind();
-			int i = 50;
-			switch (attr) {
-			case 1: pc.getResistance().addEarth(i); break;
-			case 2: pc.getResistance().addFire(i); break;
-			case 4: pc.getResistance().addWater(i); break;
-			case 8: pc.getResistance().addWind(i); break;
-			default: break;
-			}
-
-			SC_InventoryIcon.icoEnd(pc, L1SkillId.ELEMENTAL_FALL_DOWN);
-			pc.setAddAttrKind(0);
+	private static StopResult offElementalFallDown(L1Character target, int skillId) {
+		if (target instanceof L1PcInstance pc) {
+			pc.removeSkillModifierFromOwner(skillId);
+			SC_InventoryIcon.icoEnd(pc, skillId);
 			SC_OwnCharAttrDef.send(pc);
 			return StopResult.HANDLED;
 		}
-
-		if (cha instanceof L1NpcInstance) {
-			L1NpcInstance npc = (L1NpcInstance) cha;
-
-			int attr = npc.getAddAttrKind();
-			int i = 50;
-			switch (attr) {
-			case 1: npc.getResistance().addEarth(i); break;
-			case 2: npc.getResistance().addFire(i); break;
-			case 4: npc.getResistance().addWater(i); break;
-			case 8: npc.getResistance().addWind(i); break;
-			default: break;
-			}
-			npc.setAddAttrKind(0);
+		if (target instanceof L1NpcInstance) {
+			target.removeSkillModifierFromOwner(skillId);
 			return StopResult.HANDLED;
 		}
-
 		return StopResult.NOT_HANDLED;
 	}
 
@@ -1264,12 +1104,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offEarthWeapon(L1Character cha, int skillId) {
-		cha.addHitup(-4);
-		cha.addDmgup(-2);
-		if (cha instanceof L1PcInstance) {
-	//		L1PcInstance pc = (L1PcInstance) cha;
-			// SC_SkillIconAura.send(pc, 147, 0);
-		}
+		cha.removeSkillModifierFromOwner(skillId);
 		return StopResult.HANDLED;
 	}
 
@@ -1292,44 +1127,8 @@ public final class SkillStopHandlers {
 	}
 
 	// 크레이 혈흔
-	private static StopResult offBuffCray(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addHitup(-5);
-		pc.addDmgup(-1);
-		pc.addBowHitup(-5);
-		pc.addBowDmgup(-1);
-		pc.addMaxHp(-100);
-		pc.addMaxMp(-50);
-		pc.addHpr(-3);
-		pc.addMpr(-3);
-
-		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-		SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-		SC_SPMR.send(pc);
-		return StopResult.HANDLED;
-	}
 
 
-	private static StopResult offBuffGunter(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.getAbility().addAddedDex((byte) -5);
-		pc.addBowHitup(-7);
-		pc.addBowDmgup(-5);
-		pc.addMaxHp(-100);
-		pc.addMaxMp(-40);
-		pc.addHpr(-10);
-		pc.addMpr(-3);
-
-		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-		SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-		SC_OwnCharAttrDef.send(pc);
-		SC_SPMR.send(pc);
-		return StopResult.HANDLED;
-	}
 
 	// UI DG표시
 	private static StopResult offUncannyDodge(L1Character cha, int skillId) {
@@ -1342,8 +1141,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offBurningWeapon(L1Character cha, int skillId) {
-		cha.addDmgup(-6);
-		cha.addHitup(-3);
+		cha.removeSkillModifierFromOwner(skillId);
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_SkillIconAura.send(pc, 162, 0);
@@ -1353,9 +1151,7 @@ public final class SkillStopHandlers {
 
 
 	private static StopResult offAquaShot(L1Character cha, int skillId) {
-		cha.addBowHitup(-4);
-		// 원본도 pc패킷은 주석이라 유지
-		// if (cha instanceof L1PcInstance) { ... }
+		cha.removeSkillModifierFromOwner(skillId);
 		return StopResult.HANDLED;
 	}
 
@@ -1539,66 +1335,10 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offCashScroll1(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			pc.addMaxHp(-50);
-			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-			if (pc.isInParty()) {
-				pc.getParty().refreshPartyMemberStatus(pc);
-			}
-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-		}
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offCashScroll2(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			pc.addMaxMp(-40);
-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-		}
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offCashScroll3(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			pc.addDmgup(-3);
-			pc.addHitup(-3);
-			pc.getAbility().addSp(-3);
-			SC_SPMR.send(pc);
-		}
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offCashScroll4(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getAbility().addSp(-3);
-			pc.addMagicHit(-5);
-			pc.getResistance().addcalcPcDefense(-3);
-			SC_SPMR.send(pc);
-		}
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offCashScroll5(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			pc.addBowDmgup(-3);
-			pc.addBowHitup(-5);
-			pc.getResistance().addcalcPcDefense(-3);
-		}
-		return StopResult.HANDLED;
-	}
-
-	private static StopResult offCashScroll6(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			pc.addDmgup(-3);
-			pc.addHitup(-5);
-			pc.getResistance().addcalcPcDefense(-3);
+	private static StopResult offCashScroll(L1Character target, int id) {
+		if (target instanceof L1PcInstance pc) {
+			pc.removeSkillModifierFromOwner(id);
+			SkillHandlers.notifyCashScrollStats(pc, id);
 		}
 		return StopResult.HANDLED;
 	}
@@ -1611,17 +1351,7 @@ public final class SkillStopHandlers {
 	private static StopResult offSeonghyeolBuff(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.addMaxHp(-300);
-			pc.addMaxMp(-150);
-			pc.addDmgup(-3);
-			pc.addBowDmgup(-3);
-			pc.getAbility().addSp(-3);
-			pc.getAC().addAc(10);
-			pc.getResistance().addMr(-15);
-			
-			pc.getResistance().addPVPweaponTotalDamage(-5);
-			pc.getResistance().addcalcPcDefense(-5);
-			
+			pc.removeSkillModifierFromOwner(skillId);
 			SC_InventoryIcon.icoEnd(pc, L1SkillId.성혈버프);
 			
 			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
@@ -1632,205 +1362,53 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offComaA(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getAbility().addAddedCon(-1);
-			pc.getAbility().addAddedDex(-5);
-			pc.getAbility().addAddedStr(-5);
-			pc.addHitRate(-3);
-			pc.getAC().addAc(3);
-		}
+	private static StopResult offComa(L1Character cha, int skillId) {
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
+		if (skillId == L1SkillId.COMA_B) SC_SPMR.send(pc);
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offComaB(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getAbility().addSp(-1);
-			pc.getAbility().addAddedCon(-3);
-			pc.getAbility().addAddedDex(-5);
-			pc.getAbility().addAddedStr(-5);
-			pc.addHitRate(-5);
-			pc.getAC().addAc(8);
-			SC_SPMR.send(pc);
-		}
-		return StopResult.HANDLED;
-	}
 
-	private static StopResult offFeatherBuffA(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			pc.addHpr(-3);
-			pc.addMpr(-3);
-			pc.addDmgup(-2);
-			pc.addHitup(-2);
-			pc.addMaxHp(-50);
-			pc.addMaxMp(-30);
-			pc.getAbility().addSp(-2);
-			pc.addDamageReductionByArmor(-3);
-			SC_SPMR.send(pc);
-			if (pc.isInParty()) {
-				pc.getParty().refreshPartyMemberStatus(pc);
-			}
+	private static StopResult offFeatherBuff(L1Character cha, int skillId) {
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
+		if (skillId == L1SkillId.FEATHER_BUFF_A || skillId == L1SkillId.FEATHER_BUFF_B) SC_SPMR.send(pc);
+		else SC_OwnCharAttrDef.send(pc);
+		if (skillId != L1SkillId.FEATHER_BUFF_D) {
+			if (pc.isInParty()) pc.getParty().refreshPartyMemberStatus(pc);
 			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
 			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
 		}
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offFeatherBuffB(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			pc.addHitup(-2);
-			pc.getAbility().addSp(-1);
-			pc.addMaxHp(-50);
-			pc.addMaxMp(-30);
-			pc.addDamageReductionByArmor(-2);
-			SC_SPMR.send(pc);
-			if (pc.isInParty()) {
-				pc.getParty().refreshPartyMemberStatus(pc);
-			}
-			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-		}
-		return StopResult.HANDLED;
-	}
 
-	private static StopResult offFeatherBuffC(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			pc.addMaxHp(-50);
-			pc.addMaxMp(-30);
-			pc.getAC().addAc(2);
-			SC_OwnCharAttrDef.send(pc);
-			if (pc.isInParty()) {
-				pc.getParty().refreshPartyMemberStatus(pc);
-			}
-			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-		}
-		return StopResult.HANDLED;
-	}
 
-	private static StopResult offFeatherBuffD(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getAC().addAc(1);
-			SC_OwnCharAttrDef.send(pc);
-		}
-		return StopResult.HANDLED;
-	}
 	
-	private static StopResult offAntaMaan(L1Character cha, int skillId) {
-	    if (cha instanceof L1PcInstance) {
-	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, -5);
-	        SC_OwnCharAttrDef.send(pc);
-	    }
-	    return StopResult.HANDLED;
+	private static StopResult offDragonMaan(L1Character cha, int skillId) {
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
+		if (SkillHandlers.hasDragonMaanSpellPower(skillId)) SC_SPMR.send(pc);
+		SC_OwnCharAttrDef.send(pc);
+		return StopResult.HANDLED;
 	}
 
-	private static StopResult offFafuMaan(L1Character cha, int skillId) {
-	    if (cha instanceof L1PcInstance) {
-	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.getResistance().addSpecialResistance(eKind.SPIRIT, -5);
-	        SC_OwnCharAttrDef.send(pc);
-	    }
-	    return StopResult.HANDLED;
+
+
+
+
+
+
+	private static StopResult offDragonBlood(L1Character cha, int skillId) {
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
+		SC_OwnCharStatus.send(pc);
+		SC_PacketBox.send(pc, SC_PacketBox.DRAGONBLOOD, SkillHandlers.dragonBloodIcon(skillId), 0);
+		return StopResult.HANDLED;
 	}
 
-	private static StopResult offLindMaan(L1Character cha, int skillId) {
-	    if (cha instanceof L1PcInstance) {
-	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.getAbility().addSp(-1);
-	        pc.getResistance().addSpecialResistance(eKind.FEAR, -5);
-	        SC_SPMR.send(pc);
-	        SC_OwnCharAttrDef.send(pc);
-	    }
-	    return StopResult.HANDLED;
-	}
 
-	private static StopResult offValaMaan(L1Character cha, int skillId) {
-	    if (cha instanceof L1PcInstance) {
-	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.addDmgup(-2);
-	        pc.getResistance().addSpecialResistance(eKind.ABILITY, -5);
-	        SC_OwnCharAttrDef.send(pc);
-	    }
-	    return StopResult.HANDLED;
-	}
-
-	private static StopResult offBirthMaan(L1Character cha, int skillId) {
-	    if (cha instanceof L1PcInstance) {
-	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.getResistance().addSpecialResistance(eKind.SPIRIT, -5);
-	        pc.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, -5);
-	        SC_OwnCharAttrDef.send(pc);
-	    }
-	    return StopResult.HANDLED;
-	}
-
-	private static StopResult offShapeMaan(L1Character cha, int skillId) {
-	    if (cha instanceof L1PcInstance) {
-	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.getAbility().addSp(-1);
-	        pc.getResistance().addSpecialResistance(eKind.SPIRIT, -5);
-	        pc.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, -5);
-	        pc.getResistance().addSpecialResistance(eKind.FEAR, -5);
-	        SC_SPMR.send(pc);
-	        SC_OwnCharAttrDef.send(pc);
-	    }
-	    return StopResult.HANDLED;
-	}
-
-	private static StopResult offLifeMaan(L1Character cha, int skillId) {
-	    if (cha instanceof L1PcInstance) {
-	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.getResistance().addSpecialResistance(eKind.ALL, -5);
-	        pc.getResistance().addSpecialPierce(eKind.ALL, -3);
-	        pc.addDmgup(-2);
-	        pc.getAbility().addSp(-1);
-	        SC_SPMR.send(pc);
-	        SC_OwnCharAttrDef.send(pc);
-	    }
-	    return StopResult.HANDLED;
-	}
-
-	private static StopResult offAntaBuff(L1Character cha, int skillId) {
-	    if (cha instanceof L1PcInstance) {
-	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.getAC().addAc(2);
-	        pc.getResistance().addWater(-50);
-	        SC_OwnCharStatus.send(pc);
-	        SC_PacketBox.send(pc, SC_PacketBox.DRAGONBLOOD, 82, 0);
-	    }
-	    return StopResult.HANDLED;
-	}
-
-	private static StopResult offFafuBuff(L1Character cha, int skillId) {
-	    if (cha instanceof L1PcInstance) {
-	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.addHpr(-3);
-	        pc.addMpr(-1);
-	        pc.getResistance().addWind(-50);
-	        SC_OwnCharStatus.send(pc);
-	        SC_PacketBox.send(pc, SC_PacketBox.DRAGONBLOOD, 85, 0);
-	    }
-	    return StopResult.HANDLED;
-	}
-
-	private static StopResult offRindBuff(L1Character cha, int skillId) {
-	    if (cha instanceof L1PcInstance) {
-	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.addHitup(-3);
-	        pc.addBowHitup(-3);
-	        pc.getResistance().addFire(-50);
-	        SC_OwnCharStatus.send(pc);
-	        SC_PacketBox.send(pc, SC_PacketBox.DRAGONBLOOD, 88, 0);
-	    }
-	    return StopResult.HANDLED;
-	}
 
 	private static StopResult offDragonPearl(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
@@ -1852,14 +1430,14 @@ public final class SkillStopHandlers {
 
 	private static StopResult offCounterMirror(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance pc) {
-	    	pc.addWeightReduction(-300);
+	    	cha.removeSkillModifierFromOwner(skillId);
 	    }
 	    return StopResult.HANDLED;
 	}
 
 	private static StopResult offReduceOrDecreaseWeight(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance pc) {
-	    	pc.addWeightReduction(-180);
+	    	cha.removeSkillModifierFromOwner(skillId);
 	    }
 	    return StopResult.HANDLED;
 	}
@@ -1873,8 +1451,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offStormEye(L1Character cha, int skillId) {
-	    cha.addBowHitup(-2);
-	    cha.addBowDmgup(-3);
+	    cha.removeSkillModifierFromOwner(skillId);
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
 	        SC_SkillIconAura.send(pc, 155, 0);
@@ -1883,8 +1460,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offStormShot(L1Character cha, int skillId) {
-	    cha.addBowDmgup(-5);
-	    cha.addBowHitup(3);
+	    cha.removeSkillModifierFromOwner(skillId);
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
 	        SC_SkillIconAura.send(pc, 165, 0);
@@ -1917,7 +1493,7 @@ public final class SkillStopHandlers {
 	private static StopResult offFocusSpirits(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.add_magic_critical_rate(-5);
+	        cha.removeSkillModifierFromOwner(skillId);
 	        sendEndNoti(pc, L1SkillId.FOCUS_SPRITS, 4832, true);
 	    }
 	    return StopResult.HANDLED;
@@ -1926,7 +1502,7 @@ public final class SkillStopHandlers {
 	private static StopResult offCubeRich(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.getAbility().addSp(-2);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        SC_SPMR.send(pc);
 	        sendEndNoti(pc, L1SkillId.CUBE_RICH, 5309, true);
 	    }
@@ -1936,7 +1512,7 @@ public final class SkillStopHandlers {
 	private static StopResult offCubeGolem(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.getAC().addAc(8);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        SC_OwnCharAttrDef.send(pc);
 	        sendEndNoti(pc, L1SkillId.CUBE_GOLEM, 5314, true);
 	    }
@@ -1946,8 +1522,7 @@ public final class SkillStopHandlers {
 	private static StopResult offCubeOgre(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.addDmgup(-4);
-	        pc.addHitup(-4);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        sendEndNoti(pc, L1SkillId.CUBE_OGRE, 5312, true);
 	    }
 	    return StopResult.HANDLED;
@@ -1964,8 +1539,7 @@ public final class SkillStopHandlers {
 	private static StopResult offImpact(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.getResistance().addSpecialPierce(eKind.ALL, -pc.getImpactUp());
-	        pc.setImpactUp(0);
+	        pc.removeSkillModifierFromOwner(skillId);
 	        SC_InventoryIcon.icoEnd(pc, L1SkillId.IMPACT);
 	    }
 	    return StopResult.HANDLED;
@@ -1998,8 +1572,7 @@ public final class SkillStopHandlers {
 	private static StopResult offGraceAvatar(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        int resistance = -5 + (pc.getGraceLv() * -1);
-	        pc.getResistance().addSpecialResistance(eKind.ALL, resistance);
+	        pc.removeSkillModifierFromOwner(skillId);
 
 	        sendEndNoti(pc, L1SkillId.GRACE_AVATAR, 7427, 4741, true);
 	    }
@@ -2103,102 +1676,24 @@ public final class SkillStopHandlers {
 	    }
 	    return StopResult.HANDLED;
 	}
-	private static StopResult offShadowFang(
-	        L1Character cha,
-	        int skillId) {
-
-	    if (!(cha instanceof L1PcInstance)) {
-	        return StopResult.HANDLED;
-	    }
-
-	    final L1PcInstance pc =
-	            (L1PcInstance) cha;
-
-	    pc.addDmgup(-5);
-
-	    sendScalesEndNoti(
-	            pc,
-	            L1SkillId.SHADOW_FANG,
-	            1128,   // off icon
-	            2234,   // end str
-	            true);
-
-	    return StopResult.HANDLED;
+	private static StopResult offWeaponBuff(L1Character cha, int skillId) {
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
+		switch (skillId) {
+		case L1SkillId.BLESS_WEAPON -> sendScalesEndNoti(pc, skillId, 728, 2167, true);
+		case L1SkillId.HOLY_WEAPON -> sendScalesEndNoti(pc, skillId, 777, 718, true);
+		case L1SkillId.ENCHANT_WEAPON -> sendScalesEndNoti(pc, skillId, 5265, 2239, true);
+		case L1SkillId.SHADOW_FANG -> sendScalesEndNoti(pc, skillId, 1128, 2234, true);
+		default -> throw new IllegalArgumentException("Unknown weapon buff " + skillId);
+		}
+		return StopResult.HANDLED;
 	}
 
 
-	private static StopResult offBlessWeapon(
-	        L1Character cha,
-	        int skillId) {
-
-	    if (!(cha instanceof L1PcInstance)) {
-	        return StopResult.HANDLED;
-	    }
-
-	    final L1PcInstance pc =
-	            (L1PcInstance) cha;
-
-	    pc.addDmgup(-2);
-	    pc.addHitup(-2);
-
-	    sendScalesEndNoti(
-	            pc,
-	            L1SkillId.BLESS_WEAPON,
-	            728,    // off icon
-	            2167,   // end str
-	            true);
-
-	    return StopResult.HANDLED;
-	}
 
 
-	private static StopResult offEnchantWeapon(
-	        L1Character cha,
-	        int skillId) {
-
-	    if (!(cha instanceof L1PcInstance)) {
-	        return StopResult.HANDLED;
-	    }
-
-	    final L1PcInstance pc =
-	            (L1PcInstance) cha;
-
-	    pc.addDmgup(-2);
-
-	    sendScalesEndNoti(
-	            pc,
-	            L1SkillId.ENCHANT_WEAPON,
-	            5265,   // off icon
-	            2239,   // end str
-	            true);
-
-	    return StopResult.HANDLED;
-	}
 
 
-	private static StopResult offHolyWeapon(
-	        L1Character cha,
-	        int skillId) {
-
-	    if (!(cha instanceof L1PcInstance)) {
-	        return StopResult.HANDLED;
-	    }
-
-	    final L1PcInstance pc =
-	            (L1PcInstance) cha;
-
-	    pc.addDmgup(-1);
-	    pc.addHitup(-1);
-
-	    sendScalesEndNoti(
-	            pc,
-	            L1SkillId.HOLY_WEAPON,
-	            777,    // off icon
-	            718,    // end str
-	            true);
-
-	    return StopResult.HANDLED;
-	}
 
 	private static StopResult offMoebius(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
@@ -2301,7 +1796,7 @@ public final class SkillStopHandlers {
 	private static StopResult offIllusionAvatar(L1Character cha, int skillId) {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
-	        pc.addDmgup(-10);
+	        cha.removeSkillModifierFromOwner(skillId);
 	        sendEndNoti(pc, L1SkillId.IllUSION_AVATAR, 3111, true);
 	    }
 	    return StopResult.HANDLED;
@@ -2327,7 +1822,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offEaggleEye(L1Character cha, int skillId) {
-	    cha.add_missile_critical_rate(-2);
+	    cha.removeSkillModifierFromOwner(skillId);
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
 
@@ -2427,14 +1922,8 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offBattleScroll(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-		pc.getAC().addAc(5);
-		pc.addHitRate(-5);
-		pc.addBowHitup(-5);
-		pc.addMagicHit(-2);
-		pc.getResistance().addcalcPcDefense(-5);
-		pc.getResistance().addPVPweaponTotalDamage(-5);
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
 		SC_SPMR.send(pc);
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;
@@ -2658,42 +2147,16 @@ public final class SkillStopHandlers {
 	}
 	
 	private static StopResult offSpecialBuff(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		
-		switch (skillId) {
-		case L1SkillId.BUFF_특별한성장축복:
-			if (cha instanceof L1PcInstance pc) {
-				SC_InventoryIcon.icoEnd(pc, L1SkillId.BUFF_특별한성장축복);
-			}
-			return StopResult.HANDLED;
-
-		case L1SkillId.BUFF_특별한방어축복:
-              if (cha instanceof L1PcInstance pc) {			
-				pc.addDamageReductionByArmor(-1);
-				pc.getResistance().addMr(-5);
-				pc.addMaxHp(-50);
-				SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-				SC_OwnCharAttrDef.send(pc);
-				SC_SPMR.send(pc);				
-				SC_InventoryIcon.icoEnd(pc, L1SkillId.BUFF_특별한방어축복);
-			}
-			return StopResult.HANDLED;
-		case L1SkillId.BUFF_특별한공격축복: {
-			if (cha instanceof L1PcInstance pc) {
-				pc.addDmgup(-2);
-				pc.addBowDmgup(-2);
-				pc.getAbility().addSp(-2);
-				pc.addMaxMp(-30);
-				SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-				SC_OwnCharAttrDef.send(pc);
-				SC_SPMR.send(pc);
-				SC_InventoryIcon.icoEnd(pc, L1SkillId.BUFF_특별한공격축복);
-			}
-			return StopResult.HANDLED;
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
+		if (skillId != L1SkillId.BUFF_특별한성장축복) {
+			pc.removeSkillModifierFromOwner(skillId);
+			if (skillId == L1SkillId.BUFF_특별한방어축복) SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
+			else SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
+			SC_OwnCharAttrDef.send(pc);
+			SC_SPMR.send(pc);
 		}
-		default:
-			return StopResult.NOT_HANDLED;
-		}
+		SC_InventoryIcon.icoEnd(pc, skillId);
+		return StopResult.HANDLED;
 	}
 
 	private static StopResult offLegacyAdvance(L1Character cha, int skillId) {
@@ -2748,18 +2211,9 @@ public final class SkillStopHandlers {
 	private static StopResult offMetisBlessScroll(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addHitup(-2);
-		pc.addDmgup(-2);
-		pc.addBowHitup(-2);
-		pc.addBowDmgup(-2);
-		pc.getAbility().addSp(-2);
-		pc.addHpr(-3);
-		pc.addMpr(-3);
+	pc.removeSkillModifierFromOwner(skillId);
 		SC_SPMR.send(pc);
 
-		pc.addMaxHp(-50);
-		pc.addMaxMp(-30);
 		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
 		SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
 		return StopResult.HANDLED;
@@ -2775,26 +2229,9 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offStartBlessing(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		int value;
-		if (skillId == L1SkillId.SIDE_OF_ME_BLESSING) {
-			value = -5;
-		} else if (skillId == L1SkillId.RE_START_BLESSING) {
-			value = -3;
-		} else if (skillId == L1SkillId.NEW_START_BLESSING) {
-			value = -2;
-		} else if (skillId == L1SkillId.LIFE_BLESSING) {
-			value = -1;
-		} else {
-			return StopResult.NOT_HANDLED;
-		}
-
-		pc.addDamageReductionByArmor(value);
-		pc.addDmgup(value);
-		pc.addBowDmgup(value);
+	private static StopResult offPlayerModifier(L1Character cha, int skillId) {
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
+		pc.removeSkillModifierFromOwner(skillId);
 		return StopResult.HANDLED;
 	}
 

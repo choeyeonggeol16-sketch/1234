@@ -141,9 +141,7 @@ private static final int[] ALL_BUFF_SKILLS = {
 
 				applyDexIce(pc, ALL_TIME_MS);
 
-				pc.addBowDmgup(3);
-				pc.addBowHitup(5);
-				pc.getResistance().addcalcPcDefense(3);
+				pc.applySkillModifierFromOwner(L1SkillId.STATUS_CASHSCROLL5, 0);
 
 				pc.setSkillEffect(
 						L1SkillId.STATUS_CASHSCROLL5,
@@ -155,9 +153,7 @@ private static final int[] ALL_BUFF_SKILLS = {
 
 				applyIntIce(pc, ALL_TIME_MS);
 
-				pc.getAbility().addSp(3);
-				pc.addBaseMagicHitUp(5);
-				pc.getResistance().addcalcPcDefense(3);
+				pc.applySkillModifierFromOwner(L1SkillId.STATUS_CASHSCROLL4, 0);
 
 				pc.setSkillEffect(
 						L1SkillId.STATUS_CASHSCROLL4,
@@ -171,9 +167,7 @@ private static final int[] ALL_BUFF_SKILLS = {
 
 				applyStrIce(pc, ALL_TIME_MS);
 
-				pc.addDmgRate(3);
-				pc.addHitup(5);
-				pc.getResistance().addcalcPcDefense(3);
+				pc.applySkillModifierFromOwner(L1SkillId.STATUS_CASHSCROLL6, 0);
 
 				pc.setSkillEffect(
 						L1SkillId.STATUS_CASHSCROLL6,
@@ -260,9 +254,7 @@ static void applyStrIce(
 			L1PcInstance pc,
 			int timeMillis) {
 
-		pc.addHitup(5);
-		pc.addDmgup(3);
-		pc.getAbility().addAddedStr(1);
+		pc.applySkillModifierFromOwner(L1SkillId.완력빙수, 0);
 
 		pc.setSkillEffect(
 				L1SkillId.완력빙수,
@@ -284,9 +276,7 @@ static void applyStrIce(
 			L1PcInstance pc,
 			int timeMillis) {
 
-		pc.addBowHitup(5);
-		pc.addBowDmgup(3);
-		pc.getAbility().addAddedDex((byte) 1);
+		pc.applySkillModifierFromOwner(L1SkillId.민첩빙수, 0);
 
 		pc.setSkillEffect(
 				L1SkillId.민첩빙수,
@@ -310,9 +300,7 @@ static void applyStrIce(
 			L1PcInstance pc,
 			int timeMillis) {
 
-		pc.addMaxMp(50);
-		pc.getAbility().addSp(2);
-		pc.getAbility().addAddedInt(1);
+		pc.applySkillModifierFromOwner(L1SkillId.지식빙수, 2);
 
 		pc.setSkillEffect(
 				L1SkillId.지식빙수,

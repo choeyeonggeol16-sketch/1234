@@ -1645,8 +1645,16 @@ public class L1PcInstance extends L1Character {
         }
 	}
 
+	// Signed 16-bit HP regen, MP regen, weapon damage rate, and Impact probability.
+	private volatile long pumpedRegenAndWeaponRates;
+
+	public void setPumpedRegenAndWeaponRates(long value) {
+		if (pumpedRegenAndWeaponRates != value) pumpedRegenAndWeaponRates = value;
+	}
+
 	public short getHpr() {
-		return _hpr;
+		final int bonus = (short) pumpedRegenAndWeaponRates;
+		return bonus == 0 ? _hpr : (short) Math.max(0, _trueHpr + bonus);
 	}
 
 	public void addHpr(int i) {
@@ -1655,7 +1663,8 @@ public class L1PcInstance extends L1Character {
 	}
 
 	public short getMpr() {
-		return _mpr;
+		final int bonus = (short) (pumpedRegenAndWeaponRates >>> 16);
+		return bonus == 0 ? _mpr : (short) Math.max(0, _trueMpr + bonus);
 	}
 
 	public void addMpr(int i) {
@@ -4243,7 +4252,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public int getBaseMagicHitUp() {
-		return _baseMagicHitup;
+		return _baseMagicHitup + (int) (pumpedCarryArmorAndAccuracy >>> 32);
 	}
 
 	public int getTotalMagicHitup() {
@@ -5255,18 +5264,18 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		return getBaseAbility().get매직레벨();
 	}
 
-	// Carry limit in the low half, armor damage reduction in the high half.
-	private volatile int pumpedCarryAndArmor;
+	// Signed 16-bit carry limit and armor damage reduction, followed by base magic hit.
+	private volatile long pumpedCarryArmorAndAccuracy;
 
-	public void setPumpedCarryAndArmor(int value, boolean notify) {
-		final int previous = pumpedCarryAndArmor;
+	public void setPumpedCarryArmorAndAccuracy(long value, boolean notify) {
+		final long previous = pumpedCarryArmorAndAccuracy;
 		if (previous == value) return;
-		pumpedCarryAndArmor = value;
+		pumpedCarryArmorAndAccuracy = value;
 		if (notify && (short) previous != (short) value) SC_Weight.send(this);
 	}
 
 	public int getWeightReduction() {
-		return _weightReduction + (short) pumpedCarryAndArmor;
+		return _weightReduction + (short) pumpedCarryArmorAndAccuracy;
 	}
 
 	public void addWeightReduction(int i) {
@@ -5736,7 +5745,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public int getDamageReductionByArmor() {
-		return _damageReductionByArmor + (pumpedCarryAndArmor >> 16);
+		return _damageReductionByArmor + (short) (pumpedCarryArmorAndAccuracy >>> 16);
 	}
 
 	public void addDamageReductionByArmor(int i) {
@@ -5778,7 +5787,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public int getDmgRate() {
-		return _DmgRate;
+		return _DmgRate + (short) (pumpedRegenAndWeaponRates >>> 32);
 	}
 
 	public void addDmgRate(int i) {
@@ -5794,7 +5803,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public int getHitRate() {
-		return _HitRate;
+		return _HitRate + getPumpedWeaponHitRate();
 	}
 
 	public void addHitRate(int i) {
@@ -6486,29 +6495,8 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		risingUp = i;
 	}
 
-	private int impactUp = 0;
-
-	public void setImpactUp(int i) {
-		impactUp = i;
-	}
-
 	public int getImpactUp() {
-		return impactUp;
-	}
-
-	private int graceLv = 0;
-
-	public int getGraceLv() {
-		return graceLv;
-	}
-
-	public void setGraceLv(int i) {
-		graceLv = i - 80;
-		if (graceLv < 0) {
-			graceLv = 0;
-		} else if (graceLv > 10) {
-			graceLv = 10;
-		}
+		return (short) (pumpedRegenAndWeaponRates >>> 48);
 	}
 	public void 어드밴스(final int x, final int y, final int map, final int heading, final int effect_id,
 			boolean effect_check, boolean skill_check) {

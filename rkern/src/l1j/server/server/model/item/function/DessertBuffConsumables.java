@@ -74,9 +74,7 @@ final class DessertBuffConsumables {
 					pc.removeSkillEffect(L1SkillId.지식빙수);
 				}
 				pc.setSkillEffect(L1SkillId.완력빙수, 900000);
-				pc.addHitup(5);
-				pc.addDmgup(3);
-				pc.getAbility().addAddedStr(1);
+				pc.applySkillModifierFromOwner(L1SkillId.완력빙수, 0);
 				notifyDessert(pc, 31118);
 			});
 			break;
@@ -92,9 +90,7 @@ final class DessertBuffConsumables {
 					pc.removeSkillEffect(L1SkillId.지식빙수);
 				}
 				pc.setSkillEffect(L1SkillId.민첩빙수, 900000);
-				pc.addBowHitup(5);
-				pc.addBowDmgup(3);
-				pc.getAbility().addAddedDex(1);
+				pc.applySkillModifierFromOwner(L1SkillId.민첩빙수, 0);
 				notifyDessert(pc, 31119);
 
 			});
@@ -111,10 +107,7 @@ final class DessertBuffConsumables {
 					pc.removeSkillEffect(L1SkillId.지식빙수);
 				}
 				pc.setSkillEffect(L1SkillId.지식빙수, 900000);
-				pc.addMaxMp(50);
-				pc.getAbility().addSp(1);
-				pc.addMagicHit(3);
-				pc.getAbility().addAddedInt(1);
+				pc.applySkillModifierFromOwner(L1SkillId.지식빙수, (3L << 32) | 1);
 				notifyDessert(pc, 31120);
 			});
 			break;

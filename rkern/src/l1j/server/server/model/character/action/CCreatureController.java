@@ -9,6 +9,8 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1Party;
+import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -67,6 +69,7 @@ public final class CCreatureController {
     private static final int EXEC_COUNTER_DAMAGE = 14;
     private static final int EXEC_MAGIC_DAMAGE = 15;
     private static final int EXEC_UNARMED_DAMAGE = 16;
+    private static final int EXEC_CAST_BUFF = 17;
     private static final int EXEC_CANCELLED = 0;
 
     private static final VarHandle EXEC_TAIL;
@@ -107,23 +110,56 @@ public final class CCreatureController {
      * an event. afterTicket preserves its place behind all already reserved
      * controller commands when the ring is saturated.
      */
-    private static final class DamageOverflow {
-        final L1Character attacker;
-        final int damage, kind, session, epoch;
+    private abstract static class OverflowEvent {
+        final int session, epoch;
         final long afterTicket;
 
-        DamageOverflow(L1Character attacker, int damage, int kind,
-                       int session, int epoch, long afterTicket) {
-            this.attacker = attacker;
-            this.damage = damage;
-            this.kind = kind;
+        OverflowEvent(int session, int epoch, long afterTicket) {
             this.session = session;
             this.epoch = epoch;
             this.afterTicket = afterTicket;
         }
+
+        abstract void apply(CCreatureController owner, L1PcInstance pc);
     }
 
-    private final ConcurrentLinkedQueue<DamageOverflow> damageOverflow =
+    private static final class DamageOverflow extends OverflowEvent {
+        final L1Character attacker;
+        final int damage, kind;
+
+        DamageOverflow(L1Character attacker, int damage, int kind,
+                       int session, int epoch, long afterTicket) {
+            super(session, epoch, afterTicket);
+            this.attacker = attacker;
+            this.damage = damage;
+            this.kind = kind;
+        }
+
+        @Override void apply(CCreatureController owner, L1PcInstance pc) {
+            owner.OnDamagedMessage(pc, kind, attacker, damage);
+        }
+    }
+
+    private static final class BuffOverflow extends OverflowEvent {
+        final int skillId, duration, option, gfx;
+        final L1Party party;
+
+        BuffOverflow(int skillId, int duration, int option, int gfx, L1Party party,
+                     int session, int epoch, long afterTicket) {
+            super(session, epoch, afterTicket);
+            this.skillId = skillId;
+            this.duration = duration;
+            this.option = option;
+            this.gfx = gfx;
+            this.party = party;
+        }
+
+        @Override void apply(CCreatureController owner, L1PcInstance pc) {
+            applyCastBuff(pc, skillId, duration, option, gfx, party);
+        }
+    }
+
+    private final ConcurrentLinkedQueue<OverflowEvent> executionOverflow =
             new ConcurrentLinkedQueue<>();
 
     public boolean AddExecutable(byte type, int a0, int a1, int a2, int a3,
@@ -188,6 +224,18 @@ public final class CCreatureController {
         if (pc == null || (epoch & 1) != 0 || actorEpoch != epoch) return false;
         return executeOrPublish(EXEC_SKILL_EFFECT, 0, op, skillId, timeMillis, 0,
                 0L, 0L, 0, null, null, pc.getSessionStamp(), epoch);
+    }
+
+    public boolean addExecutableCastBuff(L1PcInstance recipient, int skillId, int duration, int option, int gfx, L1Party party) {
+        final int epoch = actorEpoch;
+        if (actor != recipient || (epoch & 1) != 0 || actorEpoch != epoch) return false;
+        return executeOrPublish(EXEC_CAST_BUFF, 0, skillId, duration, option, gfx,
+                0L, 0L, 0, party, null, recipient.getSessionStamp(), epoch);
+    }
+
+    private static void applyCastBuff(L1PcInstance pc, int id, int duration, int option, int gfx, L1Party party) {
+        if (party != null && pc.getParty() != party) return;
+        CSkillInfo.contextStartFromOwner(pc, id, duration, option, gfx, party != null);
     }
 
     /** A wheel expiration may only mutate a PC on its controller FIFO. */
@@ -327,15 +375,16 @@ public final class CCreatureController {
                     return requestSightRefresh(expectedSession, expectedEpoch);
                 }
                 if (kind == EXEC_DAMAGE || kind == EXEC_COUNTER_DAMAGE
-                        || kind == EXEC_MAGIC_DAMAGE || kind == EXEC_UNARMED_DAMAGE) {
-                    // Do not block another PC controller while its victim's
-                    // ring is full: two PCs hitting each other could deadlock.
-                    // Reserve a guaranteed overflow event instead of dropping HP.
+                        || kind == EXEC_MAGIC_DAMAGE || kind == EXEC_UNARMED_DAMAGE || kind == EXEC_CAST_BUFF) {
+                    // Cross-controller producers must not wait for a full ring. Drain
+                    // their work after the tickets already reserved on this controller.
                     final L1PcInstance current = actor;
                     if (actorEpoch != expectedEpoch || current == null
                             || current.getSessionStamp() != expectedSession) return false;
-                    damageOverflow.offer(new DamageOverflow((L1Character) o0,
-                            a0, kind, expectedSession, expectedEpoch, tail));
+                    final OverflowEvent overflow = kind == EXEC_CAST_BUFF
+                            ? new BuffOverflow(a0, a1, a2, a3, (L1Party) o0, expectedSession, expectedEpoch, tail)
+                            : new DamageOverflow((L1Character) o0, a0, kind, expectedSession, expectedEpoch, tail);
+                    executionOverflow.offer(overflow);
                     signalAndDrain();
                     return true;
                 }
@@ -403,22 +452,21 @@ public final class CCreatureController {
         executionThread = runner;
         for (;;) {
             final long ticket = executionHead;
-            final DamageOverflow overflow = damageOverflow.peek();
+            final OverflowEvent overflow = executionOverflow.peek();
             if (overflow != null && overflow.afterTicket <= ticket) {
                 // Events overflow only after older ring tickets are reserved.
-                // Before consuming a newer ticket, honor the damage boundary.
-                final DamageOverflow event = damageOverflow.poll();
+                // Honor the overflow boundary before consuming a newer ticket.
+                final OverflowEvent event = executionOverflow.poll();
                 if (event != null) {
                     try {
                         final L1PcInstance victim = actor;
                         if (victim != null && actorEpoch == event.epoch
                                 && victim.getSessionStamp() == event.session) {
-                            OnDamagedMessage(victim, event.kind,
-                                    event.attacker, event.damage);
+                            event.apply(this, victim);
                         }
                     } catch (Throwable failure) {
                         EXECUTION_LOG.log(Level.SEVERE,
-                                "CCreatureController overflow damage failed", failure);
+                                "CCreatureController overflow execution failed", failure);
                     }
                 }
             } else if (ticket == executionTail) {
@@ -537,6 +585,11 @@ public final class CCreatureController {
                 CIOThreadCallback.getInstance().applyCharacterSkillFromController(
                         pc, (byte) a0, a1, a2);
             }
+            break;
+        }
+        case EXEC_CAST_BUFF: {
+            final L1PcInstance pc = actor;
+            if (pc != null) applyCastBuff(pc, a0, a1, a2, a3, (L1Party) o0);
             break;
         }
         case EXEC_SKILL_HEARTBEAT: {

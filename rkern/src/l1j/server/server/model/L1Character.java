@@ -74,7 +74,6 @@ public class L1Character extends L1Object {
 	protected Resistance resistance = null; // 저항 (마방, 불, 물, 바람, 땅, 스턴, 동빙, 슬립, 석화)
 	protected AC ac = null; // AC 방어
 	
-	private int _addAttrKind;
 	private int _status;
 	private int _Desperadolv = 0;
 	// 대미지
@@ -84,8 +83,10 @@ public class L1Character extends L1Object {
 	private int _trueBowDmgup = 0;
 	private int _hitup = 0;
 	private int _trueHitup = 0;
-	// Signed 16-bit values from low to high: melee hit, melee damage, ranged damage.
+	// Signed 16-bit values from low to high: melee hit, melee damage, ranged damage, ranged hit.
 	private volatile long pumpedWeapon;
+	// Signed 16-bit ranged critical, magic critical, magic hit, and weapon hit rate.
+	private volatile long pumpedCombatRates;
 	private int _bowHitup = 0;
 	private int _trueBowHitup = 0;
 
@@ -107,7 +108,11 @@ public class L1Character extends L1Object {
 	}
 
 	public int getMagicHit() {
-		return this._MagicHit;
+		return _MagicHit + (short) (pumpedCombatRates >>> 32);
+	}
+
+	protected final int getPumpedWeaponHitRate() {
+		return (short) (pumpedCombatRates >>> 48);
 	}
 	
 	public void addMagicHit(int i) {
@@ -742,7 +747,7 @@ public class L1Character extends L1Object {
 	private volatile long pumpedHpMp;
 
 	public void setPumpedSkillModifiers(int hp, int mp, int ac, int mr,
-			long primaryStats, int elementalResistance, int evasion, long weapon, int sp, boolean notify) {
+			long primaryStats, long elementalResistance, int evasion, long weapon, long combatRates, int sp, boolean notify) {
 		final long previous = pumpedHpMp;
 		final long updated = ((long) mp << 32) | Integer.toUnsignedLong(hp);
 		if (previous != updated) {
@@ -756,6 +761,7 @@ public class L1Character extends L1Object {
 		getResistance().setSkillElemental(elementalResistance);
 		if (pumpedEvasion != evasion) pumpedEvasion = evasion;
 		if (pumpedWeapon != weapon) pumpedWeapon = weapon;
+		if (pumpedCombatRates != combatRates) pumpedCombatRates = combatRates;
 		getAbility().setSkillSp(sp);
 	}
 
@@ -807,14 +813,6 @@ public class L1Character extends L1Object {
 
 	public void healHp(int pt) {
 		setCurrentHp(getCurrentHp() + pt);
-	}
-
-	public int getAddAttrKind() {
-		return _addAttrKind;
-	}
-
-	public void setAddAttrKind(int i) {
-		_addAttrKind = i;
 	}
 
 	public int getDmgup() {
@@ -874,7 +872,8 @@ public class L1Character extends L1Object {
 	}
 
 	public int getBowHitup() {
-		return _bowHitup;
+		final int effect = (short) (pumpedWeapon >>> 48);
+		return effect == 0 ? _bowHitup : Math.clamp((long) _trueBowHitup + effect, -128, 127);
 	}
 
 	public void addBowHitup(int i) {
@@ -1301,7 +1300,7 @@ public class L1Character extends L1Object {
 	}
 
 	public int get_missile_critical_rate() {
-		return _missile_critical_rate;
+		return _missile_critical_rate + (short) pumpedCombatRates;
 	}
 
 	public void set_melee_critical_rate(int rate) {
@@ -1337,7 +1336,7 @@ public class L1Character extends L1Object {
 	}
 
 	public int get_magic_critical_rate() {
-		return _magic_critical_rate;
+		return _magic_critical_rate + (short) (pumpedCombatRates >>> 16);
 	}
 
 	public int add_magic_critical_rate(int rate) {

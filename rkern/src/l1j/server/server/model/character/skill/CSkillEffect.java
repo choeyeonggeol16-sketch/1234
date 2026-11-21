@@ -5,6 +5,8 @@ import java.util.Iterator;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Magic;
+import l1j.server.server.model.L1CurseParalysis;
+import l1j.server.server.model.poison.L1DamagePoison;
 
 /** Shared execution contract for the separate cast, lifetime and stat stages. */
 interface CSkillEffect {
@@ -43,8 +45,22 @@ interface CSkillEffect {
             out.primaryPenalty += captured;
         }},
         ELEMENTAL_RESISTANCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            out.elementalResistance += (int) captured;
+            out.waterResistance += (int) captured & 0xff;
+            out.windResistance += (int) (captured >>> 8) & 0xff;
+            out.earthResistance += (int) (captured >>> 16) & 0xff;
+            out.fireResistance += (int) (captured >>> 24) & 0xff;
         }},
+        ELEMENTAL_WEAKNESS { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            switch ((int) captured) {
+                case 1 -> out.earthResistance -= 50;
+                case 2 -> out.fireResistance -= 50;
+                case 4 -> out.waterResistance -= 50;
+                case 8 -> out.windResistance -= 50;
+                default -> { }
+            }
+        }
+            @Override public boolean checkPumpCondition(L1Character target) { return true; }
+        },
         ER { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.er += (int) captured;
         }},
@@ -60,8 +76,35 @@ interface CSkillEffect {
         RANGED_DAMAGE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.rangedDamage += (int) captured;
         }},
+        RANGED_HIT { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.rangedHit += (int) captured;
+        }},
+        RANGED_CRITICAL { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.rangedCritical += (int) captured;
+        }},
+        MAGIC_CRITICAL { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.magicCritical += (int) captured;
+        }},
+        WEAPON_DAMAGE_RATE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.weaponDamageRate += (int) captured;
+        }},
+        WEAPON_HIT_RATE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.weaponHitRate += (int) captured;
+        }},
+        BASE_MAGIC_HIT { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.baseMagicHit += (int) captured;
+        }},
+        MAGIC_HIT { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.magicHit += (int) captured;
+        }},
         SP { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.sp += (int) captured;
+        }},
+        HP_REGEN { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.hpRegen += (int) captured;
+        }},
+        MP_REGEN { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.mpRegen += (int) captured;
         }},
         ARMOR_REDUCTION { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.armorReduction += (int) captured;
@@ -76,8 +119,13 @@ interface CSkillEffect {
             out.specialResistance += captured;
         }},
         SPIRIT_PIERCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            // The five resistance bytes occupy bits 0..39; spirit pierce uses byte 5.
             out.specialResistance += (captured >>> 32) << 40;
+        }},
+        IMPACT_PROBABILITY { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.impactProbability += (int) captured;
+        }},
+        ALL_PIERCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.specialResistance += captured << 48;
         }};
 
         @Override public boolean checkPumpCondition(L1Character target) { return target instanceof L1PcInstance; }
@@ -96,6 +144,35 @@ interface CSkillEffect {
 
         @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             bonus.pump(amount, out);
+        }
+    }
+
+    record UpperWord(Bonus bonus) implements CSkillEffect {
+        @Override public boolean checkPumpCondition(L1Character target) { return bonus.checkPumpCondition(target); }
+
+        @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            bonus.pump(captured >>> 32, out);
+        }
+    }
+
+    record DamagePoison(int interval, int damage, boolean activeEffect, int duration) implements SkillHandlers.SkillHandler {
+        @Override public SkillHandlers.HandlerResult handle(L1SkillUse cast, L1Character target,
+                L1Magic magic, int undeadType, Iterator<?> targets) {
+            if (target != null) L1DamagePoison.doInfection(cast.hdUser(), target, interval, damage, activeEffect, duration);
+            return SkillHandlers.HandlerResult.HANDLED;
+        }
+    }
+
+    enum Paralysis implements SkillHandlers.SkillHandler {
+        CURSE, PETRIFY;
+
+        @Override public SkillHandlers.HandlerResult handle(L1SkillUse cast, L1Character target,
+                L1Magic magic, int undeadType, Iterator<?> targets) {
+            if (target == null) return SkillHandlers.HandlerResult.HANDLED;
+            if (this == CURSE || (!target.hasSkillEffect(L1SkillId.MOB_COCA) && !target.hasSkillEffect(L1SkillId.MOB_BASILL))) {
+                L1CurseParalysis.curse(target, cast.hdSkillId());
+            }
+            return SkillHandlers.HandlerResult.HANDLED;
         }
     }
 

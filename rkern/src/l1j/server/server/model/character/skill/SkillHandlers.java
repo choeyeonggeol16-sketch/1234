@@ -12,7 +12,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -67,6 +66,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.templates.L1Skills;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.utils.eKind;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.L1Location;
@@ -119,139 +119,111 @@ public final class SkillHandlers {
 	}
 
 	static void registerEffects() {
+		final SkillHandler cursePoison = new CSkillEffect.DamagePoison(3000, 5, false, 7000);
+		CSkillInfo.registerCast(L1SkillId.ICE_LANCE, SkillHandlers::castFreeze, false);
+		CSkillInfo.registerCast(L1SkillId.EARTH_BIND, SkillHandlers::castFreeze, false);
+		CSkillInfo.registerCast(L1SkillId.MOB_BERSERKERS, SkillHandlers::castMonsterBerserkers, false);
 		register(L1SkillId.SHAPE_CHANGE, SkillHandlers::onShapeChange);
-		register(L1SkillId.TRUE_TARGET, SkillHandlers::onTrueTarget);
-		register(L1SkillId.SHOCK_STUN, SkillHandlers::onShockStun);
-		register(L1SkillId.EMPIRE, SkillHandlers::onEmpire);
-		register(L1SkillId.BONE_BREAK, SkillHandlers::onBoneBreak);
+		CSkillInfo.registerInstant(L1SkillId.TRUE_TARGET, SkillHandlers::onTrueTarget);
+		registerStun(L1SkillId.SHOCK_STUN, 81162, SkillHandlers::officialStun, true);
+		registerStun(L1SkillId.EMPIRE, 50000066, SkillHandlers::officialStun, true);
+		registerStun(L1SkillId.BONE_BREAK, 200020, (cast, target) -> SkillUseHelper.pickMillis(SkillUseHelper.BONE_BREAK_DUR), true);
 		CSkillInfo.registerInstant(L1SkillId.CANCELLATION, SkillHandlers::onCancellation);
-		register(L1SkillId.ELEMENTAL_FALL_DOWN, SkillHandlers::onElementalFallDown);
 		CSkillInfo.registerInstant(L1SkillId.RESURRECTION, SkillHandlers::onResurrection);
 		CSkillInfo.registerInstant(L1SkillId.GREATER_RESURRECTION, SkillHandlers::onResurrection);
 		register(L1SkillId.DESPERADO, SkillHandlers::onDesperado);
 
 		// multi-hit
-		register(L1SkillId.TRIPLE_ARROW, SkillHandlers::onTripleArrow);
-		register(L1SkillId.FOU_SLAYER, SkillHandlers::onFouSlayer);
+		CSkillInfo.registerInstant(L1SkillId.TRIPLE_ARROW, SkillHandlers::onTripleArrow);
+		CSkillInfo.registerInstant(L1SkillId.FOU_SLAYER, SkillHandlers::onFouSlayer);
 
 		// buffs (이관)
 
 
 
-		register(L1SkillId.STRIKER_GALE, SkillHandlers::onStrikerGale);
 
 
 
-		register(L1SkillId.EAGGLE_EYE, SkillHandlers::onEaggleEye);
 
 
-		register(L1SkillId.IllUSION_AVATAR, SkillHandlers::onIllusionAvatar);
 
-		register(L1SkillId.CYCLONE, SkillHandlers::onCyclone);
-		register(L1SkillId.FOCUS_SPRITS, SkillHandlers::onFocusSpirits);
 
-		register(L1SkillId.LUCIFER, SkillHandlers::onLucifer);
-		register(L1SkillId.BLOW_ATTACK, SkillHandlers::onBlowAttack);
 
-		register(L1SkillId.CUBE_AVATAR, SkillHandlers::onCubeAvatar);
-		register(L1SkillId.CUBE_RICH, SkillHandlers::onCubeRich);
-		register(L1SkillId.CUBE_GOLEM, SkillHandlers::onCubeGolem);
-		register(L1SkillId.CUBE_OGRE, SkillHandlers::onCubeOgre);
 
-		register(L1SkillId.TAMING_MONSTER, SkillHandlers::onTamingMonster);
-		register(L1SkillId.CREATE_ZOMBIE, SkillHandlers::onCreateZombie);
-		register(L1SkillId.WEAK_ELEMENTAL, SkillHandlers::onWeakElemental);
+		CSkillInfo.registerInstant(L1SkillId.TAMING_MONSTER, SkillHandlers::onTamingMonster);
+		CSkillInfo.registerInstant(L1SkillId.CREATE_ZOMBIE, SkillHandlers::onCreateZombie);
+		CSkillInfo.registerInstant(L1SkillId.WEAK_ELEMENTAL, SkillHandlers::onWeakElemental);
 		CSkillInfo.registerInstant(L1SkillId.RETURN_TO_NATURE, SkillHandlers::onReturnToNature);
 		register(L1SkillId.POWERRIP, SkillHandlers::onPowerRip);
 
-		register(L1SkillId.LESSER_ELEMENTAL, SkillHandlers::onElementalSummon);
-		register(L1SkillId.GREATER_ELEMENTAL, SkillHandlers::onElementalSummon);
+		CSkillInfo.registerInstant(L1SkillId.LESSER_ELEMENTAL, SkillHandlers::onElementalSummon);
+		CSkillInfo.registerInstant(L1SkillId.GREATER_ELEMENTAL, SkillHandlers::onElementalSummon);
 
-		register(L1SkillId.TELEPORT, SkillHandlers::onTeleport);
-		register(L1SkillId.MASS_TELEPORT, SkillHandlers::onTeleport);
-		register(L1SkillId.TELEPORT_TO_MATHER, SkillHandlers::onTeleportToMather);
+		CSkillInfo.registerInstant(L1SkillId.TELEPORT, SkillHandlers::onTeleport);
+		CSkillInfo.registerInstant(L1SkillId.MASS_TELEPORT, SkillHandlers::onTeleport);
+		CSkillInfo.registerInstant(L1SkillId.TELEPORT_TO_MATHER, SkillHandlers::onTeleportToMather);
 
-		register(L1SkillId.BRING_STONE, SkillHandlers::onBringStone);
-		register(L1SkillId.SUMMON_MONSTER, SkillHandlers::onSummonMonster);
+		CSkillInfo.registerInstant(L1SkillId.BRING_STONE, SkillHandlers::onBringStone);
+		CSkillInfo.registerInstant(L1SkillId.SUMMON_MONSTER, SkillHandlers::onSummonMonster);
 
-		register(L1SkillId.IMPACT, SkillHandlers::onImpact);
-		register(L1SkillId.GRACE_AVATAR, SkillHandlers::onGraceAvatar);
 
-		register(L1SkillId.GREATER_HASTE, SkillHandlers::onGreaterHaste);
-		register(L1SkillId.HOLY_WALK, SkillHandlers::onHolyWalk);
-		register(L1SkillId.MOVING_ACCELERATION, SkillHandlers::onMovingAcceleration);
-		register(L1SkillId.BLOOD_LUST, SkillHandlers::onBloodLust);
+		CSkillInfo.registerCast(L1SkillId.GREATER_HASTE, SkillHandlers::castMovementSpeed, false);
 
 
 		register(L1SkillId.THUNDER_GRAB, SkillHandlers::onThunderGrab);
 
 		CSkillInfo.registerInstant(L1SkillId.REMOVE_CURSE, SkillHandlers::onRemoveCurse);
-		register(L1SkillId.CALL_OF_NATURE, SkillHandlers::onCallOfNature);
+		CSkillInfo.registerInstant(L1SkillId.CALL_OF_NATURE, SkillHandlers::onCallOfNature);
 
-		register(L1SkillId.SLOW, SkillHandlers::onSlowLike);
-		register(L1SkillId.MOB_SLOW_1, SkillHandlers::onSlowLike);
-		register(L1SkillId.MOB_SLOW_18, SkillHandlers::onSlowLike);
+		CSkillInfo.registerCast(L1SkillId.SLOW, SkillHandlers::castMovementSpeed, false);
+		CSkillInfo.registerCast(L1SkillId.MOB_SLOW_1, SkillHandlers::castMovementSpeed, false);
+		CSkillInfo.registerCast(L1SkillId.MOB_SLOW_18, SkillHandlers::castMovementSpeed, false);
 
-		register(L1SkillId.IMMUNE_TO_HARM, SkillHandlers::onImmuneToHarm);
 		register(L1SkillId.TOMAHAWK, SkillHandlers::onTomahawk);
 
-		register(L1SkillId.SOUL_BARRIER, SkillHandlers::onSoulBarrier);
-		register(L1SkillId.HASTE, SkillHandlers::onHaste);
-		register(L1SkillId.TITANL_RISING, SkillHandlers::onTitanRising);
+		CSkillInfo.registerCast(L1SkillId.HASTE, SkillHandlers::castMovementSpeed, false);
 
 
 		// 은신몹 싱크 해제 계열
-		register(L1SkillId.DETECTION, SkillHandlers::onDetectionLike);
-		register(L1SkillId.IZE_BREAK, SkillHandlers::onDetectionLike);
-		register(L1SkillId.EYE_OF_DRAGON, SkillHandlers::onDetectionLike);
+		CSkillInfo.registerInstant(L1SkillId.DETECTION, SkillHandlers::onDetectionLike);
+		CSkillInfo.registerInstant(L1SkillId.IZE_BREAK, SkillHandlers::onDetectionLike);
+		CSkillInfo.registerInstant(L1SkillId.EYE_OF_DRAGON, SkillHandlers::onDetectionLike);
 
 		// PC면 마법데미지 / NPC면 sink면 드러내기 아니면 0
-		register(L1SkillId.COUNTER_DETECTION, SkillHandlers::onCounterDetection);
+		CSkillInfo.registerInstant(L1SkillId.COUNTER_DETECTION, SkillHandlers::onCounterDetection);
 
-		register(L1SkillId.HOLY_WEAPON, SkillHandlers::onHolyweapon);
-		register(L1SkillId.SHADOW_FANG, SkillHandlers::onShadowFang);
-		register(L1SkillId.ENCHANT_WEAPON, SkillHandlers::onEnchantWeapon);
-		register(L1SkillId.BLESS_WEAPON, SkillHandlers::onBlessWeapon);
 
-		register(L1SkillId.MIND_BREAK, SkillHandlers::onMindBreak);
+		CSkillInfo.registerInstant(L1SkillId.MIND_BREAK, SkillHandlers::onMindBreak);
 
-		register(L1SkillId.CURSE_BLIND, SkillHandlers::onCurseBlindLike);
-		register(L1SkillId.DARKNESS, SkillHandlers::onCurseBlindLike);
 
-		register(L1SkillId.DARK_BLIND, SkillHandlers::onSleep);
 
-		register(L1SkillId.PHANTASM, SkillHandlers::onSleep);
 
-		register(L1SkillId.WIND_SHACKLE, SkillHandlers::onWindShackleLike);
-		register(L1SkillId.MOB_WINDSHACKLE_1, SkillHandlers::onWindShackleLike);
 
-		register(L1SkillId.TURN_UNDEAD, SkillHandlers::onTurnUndead);
+		CSkillInfo.registerInstant(L1SkillId.TURN_UNDEAD, SkillHandlers::onTurnUndead);
 
 		CSkillInfo.registerInstant(L1SkillId.MANA_DRAIN, SkillHandlers::onManaDrain);
 
-		register(L1SkillId.WEAPON_BREAK, SkillHandlers::onWeaponBreak);
+		CSkillInfo.registerInstant(L1SkillId.WEAPON_BREAK, SkillHandlers::onWeaponBreak);
 
-		register(L1SkillId.FOG_OF_SLEEPING, SkillHandlers::onSleep);
 
-		register(L1SkillId.STATUS_FREEZE, SkillHandlers::onStatusFreeze);
 
-		register(L1SkillId.CURSE_POISON, SkillHandlers::onCursePoisonLike);
+		CSkillInfo.registerInstant(L1SkillId.CURSE_POISON, cursePoison);
 
-		register(L1SkillId.CURSE_PARALYZE, SkillHandlers::onCurseParalyzeLike);
-		register(L1SkillId.CURSE_PARALYZE2, SkillHandlers::onCurseParalyzeLike);
-		register(L1SkillId.MOB_CURSEPARALYZ1, SkillHandlers::onCurseParalyzeLike);
-		register(L1SkillId.MOB_CURSEPARALYZ_18, SkillHandlers::onCurseParalyzeLike);
-		register(L1SkillId.MOB_CURSEPARALYZ_19, SkillHandlers::onCurseParalyzeLike);
+		CSkillInfo.registerInstant(L1SkillId.CURSE_PARALYZE, CSkillEffect.Paralysis.CURSE);
+		CSkillInfo.registerInstant(L1SkillId.CURSE_PARALYZE2, CSkillEffect.Paralysis.CURSE);
+		CSkillInfo.registerInstant(L1SkillId.MOB_CURSEPARALYZ1, CSkillEffect.Paralysis.CURSE);
+		CSkillInfo.registerInstant(L1SkillId.MOB_CURSEPARALYZ_18, CSkillEffect.Paralysis.CURSE);
+		CSkillInfo.registerInstant(L1SkillId.MOB_CURSEPARALYZ_19, CSkillEffect.Paralysis.CURSE);
 
 
 
 
-		register(L1SkillId.MOB_BASILL, SkillHandlers::onMobBasillOrCoca);
-		register(L1SkillId.MOB_COCA, SkillHandlers::onMobBasillOrCoca);
+		CSkillInfo.registerInstant(L1SkillId.MOB_BASILL, CSkillEffect.Paralysis.PETRIFY);
+		CSkillInfo.registerInstant(L1SkillId.MOB_COCA, CSkillEffect.Paralysis.PETRIFY);
 
-		register(L1SkillId.MOB_RANGESTUN_18, SkillHandlers::onMobRangeStunLike);
-		register(L1SkillId.MOB_RANGESTUN_19, SkillHandlers::onMobRangeStunLike);
-		register(L1SkillId.MOB_SHOCKSTUN_30, SkillHandlers::onMobRangeStunLike);
+		registerStun(L1SkillId.MOB_RANGESTUN_18, 81162, SkillHandlers::monsterStun, false);
+		registerStun(L1SkillId.MOB_RANGESTUN_19, 81162, SkillHandlers::monsterStun, false);
+		registerStun(L1SkillId.MOB_SHOCKSTUN_30, 81162, SkillHandlers::monsterStun, false);
 
 		// 힐계열: WATER_LIFE 타이머 제거 + 아이콘 삭제
 		CSkillInfo.registerInstant(L1SkillId.HEAL, SkillHandlers::onHealFamily);
@@ -266,207 +238,145 @@ public final class SkillHandlers {
 		CSkillInfo.registerInstant(L1SkillId.CHILL_TOUCH, SkillHandlers::onVampiricTouchLike);
 		CSkillInfo.registerInstant(L1SkillId.VAMPIRIC_TOUCH, SkillHandlers::onVampiricTouchLike);
 
-		register(L1SkillId.DEATH_HEAL, SkillHandlers::onDeathHeal);
-		register(L1SkillId.DEATH_HEAL_Mob, SkillHandlers::onDeathHeal);
 
-		register(L1SkillId.HUNTER_BLESS, SkillHandlers::onHunterBless);
 		CSkillInfo.registerInstant(L1SkillId.CURE_POISON, SkillHandlers::onCurePoison);
 
-		register(L1SkillId.EARTH_WEAPON, SkillHandlers::onEarthWeapon);
-
-		register(L1SkillId.REDUCE_WEIGHT, SkillHandlers::onReduceWeightLike);
-		register(L1SkillId.DECREASE_WEIGHT, SkillHandlers::onReduceWeightLike);
-		register(L1SkillId.COUNTER_MIRROR, SkillHandlers::onCounterMirror);
-
-		register(L1SkillId.HURRICANE, SkillHandlers::onHurricane);
-		register(L1SkillId.FOCUS_WAVE, SkillHandlers::onFocusWave);
-		register(L1SkillId.SAND_STORM, SkillHandlers::onSandStorm);
-		register(L1SkillId.DANCING_BLADES, SkillHandlers::onDancingBlades);
-		register(L1SkillId.BURNING_WEAPON, SkillHandlers::onBurningWeapon);
-
-		register(L1SkillId.AQUA_SHOT, SkillHandlers::onAquaShot);
-		register(L1SkillId.STORM_EYE, SkillHandlers::onStormEye);
-		register(L1SkillId.STORM_SHOT, SkillHandlers::onStormShot);
-
-
-
-		register(L1SkillId.ICE_LANCE, SkillHandlers::onIceLance);
-		register(L1SkillId.EARTH_BIND, SkillHandlers::onEarthBind);
 
 
 
 
-		register(L1SkillId.성혈버프, SkillHandlers::onSeonghyeolBuff);
 
-		register(10026, SkillHandlers::onDgUiAndKill);
-		register(10027, SkillHandlers::onDgUiAndKill);
-		register(10028, SkillHandlers::onDgUiAndKill);
-		register(10029, SkillHandlers::onDgUiAndKill);
 
-		register(10057, SkillHandlers::onTeleportFront5);
 
-		register(L1SkillId.EARTH_GUARDIAN, SkillHandlers::onEarthGuardian);
+
+
+
+
+		CSkillInfo.registerInstant(10026, SkillHandlers::onDgUiAndKill);
+		CSkillInfo.registerInstant(10027, SkillHandlers::onDgUiAndKill);
+		CSkillInfo.registerInstant(10028, SkillHandlers::onDgUiAndKill);
+		CSkillInfo.registerInstant(10029, SkillHandlers::onDgUiAndKill);
+
+		CSkillInfo.registerInstant(10057, SkillHandlers::onTeleportFront5);
+
 		CSkillInfo.registerInstant(L1SkillId.BODY_TO_MIND, new CSkillEffect.RestoreMana(2));
 		CSkillInfo.registerInstant(L1SkillId.BLOODY_SOUL, new CSkillEffect.RestoreMana(15));
-		register(L1SkillId.INVISIBILITY, SkillHandlers::onInvisibilityWithCastleTowerBlock);
-		register(L1SkillId.BLIND_HIDING, SkillHandlers::onInvisibilityWithCastleTowerBlock);
-		register(L1SkillId.정상의가호, SkillHandlers::onNormalBlessingDR);
-		register(L1SkillId.AREA_OF_SILENCE, SkillHandlers::onAreaOfSilenceSound);
-		register(L1SkillId.BOSS_COUNTER_BARRIER, SkillHandlers::onBossCounterBarrierEffect);
+		CSkillInfo.registerInstant(L1SkillId.AREA_OF_SILENCE, SkillHandlers::onAreaOfSilenceSound);
+		CSkillInfo.registerInstant(L1SkillId.BOSS_COUNTER_BARRIER, SkillHandlers::onBossCounterBarrierEffect);
 
-		register(L1SkillId.OMAN_STUN, SkillHandlers::onOmanOrMaenoStun);
-		register(L1SkillId.Maeno_STUN, SkillHandlers::onOmanOrMaenoStun);
+		registerStun(L1SkillId.OMAN_STUN, 81162, SkillHandlers::omanStun, false);
+		registerStun(L1SkillId.Maeno_STUN, 81162, SkillHandlers::omanStun, false);
 
 		// 몹버서커
-		register(L1SkillId.MOB_BERSERKERS, SkillHandlers::onMobBerserkers);
 
 		// =====_BUFF =====
-		register(L1SkillId.FEATHER_BUFF_A, SkillHandlers::onFeatherBuff);
-		register(L1SkillId.FEATHER_BUFF_B, SkillHandlers::onFeatherBuff);
-		register(L1SkillId.FEATHER_BUFF_C, SkillHandlers::onFeatherBuff);
-		register(L1SkillId.FEATHER_BUFF_D, SkillHandlers::onFeatherBuff);
 
-		register(L1SkillId.COMA_A, SkillHandlers::onComa);
-		register(L1SkillId.COMA_B, SkillHandlers::onComa);
 
-		register(L1SkillId.miso1, SkillHandlers::onMiso);
-		register(L1SkillId.miso2, SkillHandlers::onMiso);
-		register(L1SkillId.miso3, SkillHandlers::onMiso);
 
-		register(L1SkillId.CLAN_BUFF1, SkillHandlers::onClanBuff);
-		register(L1SkillId.CLAN_BUFF2, SkillHandlers::onClanBuff);
-		register(L1SkillId.CLAN_BUFF3, SkillHandlers::onClanBuff);
-		register(L1SkillId.CLAN_BUFF4, SkillHandlers::onClanBuff);
 
-		register(L1SkillId.BUFF_SAEL, SkillHandlers::onNpcBloodBuff);
-		register(L1SkillId.BUFF_GUNTER, SkillHandlers::onNpcBloodBuff);
-		register(L1SkillId.BUFF_CRAY, SkillHandlers::onNpcBloodBuff);
-		register(L1SkillId.BUFF_Vala, SkillHandlers::onNpcBloodBuff);
 
 		// 마안
-		register(L1SkillId.ANTA_MAAN, SkillHandlers::onDragonMaan);
-		register(L1SkillId.FAFU_MAAN, SkillHandlers::onDragonMaan);
-		register(L1SkillId.LIND_MAAN, SkillHandlers::onDragonMaan);
-		register(L1SkillId.VALA_MAAN, SkillHandlers::onDragonMaan);
-		register(L1SkillId.BIRTH_MAAN, SkillHandlers::onDragonMaan);
-		register(L1SkillId.SHAPE_MAAN, SkillHandlers::onDragonMaan);
-		register(L1SkillId.LIFE_MAAN, SkillHandlers::onDragonMaan);
 
 		// 드래곤블러드(버프)
-		register(L1SkillId.ANTA_BUFF, SkillHandlers::onDragonBlood);
-		register(L1SkillId.FAFU_BUFF, SkillHandlers::onDragonBlood);
-		register(L1SkillId.RIND_BUFF, SkillHandlers::onDragonBlood);
 
 
 		// ===== N_BUFF =====
 
 
 		// 기르타스
-		register(L1SkillId.TROGIR_MILPITAS1, SkillHandlers::onCursePoisonLike);
-		register(L1SkillId.TROGIR_MILPITAS2, SkillHandlers::onBossDirectMagic);
-		register(L1SkillId.TROGIR_MILPITAS3, SkillHandlers::onBossDirectMagic);
-		register(L1SkillId.TROGIR_MILPITAS4, SkillHandlers::onBossDirectMagic);
-		register(L1SkillId.TROGIR_MILPITAS5, SkillHandlers::onBossDirectMagic);
-		register(L1SkillId.TROGIR_MILPITAS6, SkillHandlers::onBossDirectMagic);
+		CSkillInfo.registerInstant(L1SkillId.TROGIR_MILPITAS1, cursePoison);
+		CSkillInfo.registerInstant(L1SkillId.TROGIR_MILPITAS2, SkillHandlers::castMilpitasSummon);
+		registerBossDamage(L1SkillId.TROGIR_MILPITAS3, 11002, false);
+		registerBossDamage(L1SkillId.TROGIR_MILPITAS4, 11003, false);
+		registerBossDamage(L1SkillId.TROGIR_MILPITAS5, 11004, false);
+		registerBossDamage(L1SkillId.TROGIR_MILPITAS6, 11008, false);
 
 		// 원본 공통 보조 / 이벤트 버프
-		register(L1SkillId.CONCENTRATION, SkillHandlers::onConcentration);
-		register(L1SkillId.DRAGON_HUNTER_BLESS, SkillHandlers::onLegacyEventIconBuff);
-		register(L1SkillId.DRAGON_SET, SkillHandlers::onDragonSet);
-		register(L1SkillId.격전의주문서, SkillHandlers::onBattleScroll);
-		register(L1SkillId.HUNTER_BLESS2, SkillHandlers::onLegacyEventIconBuff);
-		register(L1SkillId.천하장사버프, SkillHandlers::onStrongmanBuff);
-		register(L1SkillId.SIDE_OF_ME_BLESSING, SkillHandlers::onLegacyBlessing);
-		register(L1SkillId.RE_START_BLESSING, SkillHandlers::onLegacyBlessing);
-		register(L1SkillId.NEW_START_BLESSING, SkillHandlers::onLegacyBlessing);
-		register(L1SkillId.LIFE_BLESSING, SkillHandlers::onLegacyBlessing);
+		CSkillInfo.registerInstant(L1SkillId.CONCENTRATION, SkillHandlers::onConcentration);
 
 		// 원본에서 본문이 비어 있던 case도 handled로 보존
-		register(L1SkillId.잠재력소울, SkillHandlers::onOriginalNoOp);
-		register(L1SkillId.할파스의신의PVP, SkillHandlers::onOriginalNoOp);
-		register(L1SkillId.할파스의신의, SkillHandlers::onOriginalNoOp);
+		CSkillInfo.registerInstant(L1SkillId.잠재력소울, SkillHandlers::ignoreNonPlayerBuff);
+		CSkillInfo.registerInstant(L1SkillId.할파스의신의PVP, SkillHandlers::ignoreNonPlayerBuff);
+		CSkillInfo.registerInstant(L1SkillId.할파스의신의, SkillHandlers::ignoreNonPlayerBuff);
 
 		// 피닉스 / 드레이크
-		register(L1SkillId.Phoenix_Skill1, SkillHandlers::onBossDirectMagic);
-		register(L1SkillId.Phoenix_Skill2, SkillHandlers::onBossDirectMagic);
-		register(L1SkillId.DRAKE_Skill1, SkillHandlers::onBossDirectMagic);
-		register(L1SkillId.DRAKE_Skill2, SkillHandlers::onBossDirectMagic);
-		register(L1SkillId.DRAKE_MASSTELEPORT, SkillHandlers::onDrakeMassTeleport);
-		register(L1SkillId.DRAKE_WIND_SHACKLE, SkillHandlers::onDragonWindShackle);
-		register(L1SkillId.EFRETE_SUMMON_MONSTER, SkillHandlers::onEfreetSummon);
-		register(L1SkillId.PHOENIX_SUMMON_MONSTER, SkillHandlers::onPhoenixSummon);
+		registerBossDamage(L1SkillId.Phoenix_Skill1, 16258, true);
+		registerBossDamage(L1SkillId.Phoenix_Skill2, 16299, true);
+		registerBossDamage(L1SkillId.DRAKE_Skill1, 16333, true);
+		registerBossDamage(L1SkillId.DRAKE_Skill2, 16335, true);
+		CSkillInfo.registerInstant(L1SkillId.DRAKE_MASSTELEPORT, SkillHandlers::onDrakeMassTeleport);
+		CSkillInfo.registerInstant(L1SkillId.EFRETE_SUMMON_MONSTER, SkillHandlers::onEfreetSummon);
+		CSkillInfo.registerInstant(L1SkillId.PHOENIX_SUMMON_MONSTER, SkillHandlers::onPhoenixSummon);
 		CSkillInfo.registerInstant(L1SkillId.PHOENIX_CANCELLATION, SkillHandlers::onDragonCancellation);
 
 		// 샌드웜
-		register(L1SkillId.Sand_worms, SkillHandlers::onSandWormAttack);
-		register(L1SkillId.Sand_worms1, SkillHandlers::onSandWormAttack);
-		register(L1SkillId.Sand_worms2, SkillHandlers::onSandWormAttack);
-		register(L1SkillId.Sand_worms3, SkillHandlers::onSandWormAttack);
+		registerSandWormCue(L1SkillId.Sand_worms, 10145);
+		registerSandWormCue(L1SkillId.Sand_worms1, 10195);
+		registerSandWormCue(L1SkillId.Sand_worms2, 10194);
+		registerSandWormCue(L1SkillId.Sand_worms3, 10191);
 
 		// 오만
-		register(L1SkillId.OMAN_CANCELLATION, SkillHandlers::onOmanCancellation);
+		CSkillInfo.registerInstant(L1SkillId.OMAN_CANCELLATION, SkillHandlers::onOmanCancellation);
 
 		// 안타라스
-		register(L1SkillId.ANTA_MESSAGE_1, SkillHandlers::onAntarasBoss);
-		register(L1SkillId.ANTA_MESSAGE_2, SkillHandlers::onAntarasBoss);
-		register(L1SkillId.ANTA_MESSAGE_3, SkillHandlers::onAntarasBoss);
-		register(L1SkillId.ANTA_MESSAGE_4, SkillHandlers::onAntarasBoss);
-		register(L1SkillId.ANTA_MESSAGE_5, SkillHandlers::onAntarasBoss);
-		register(L1SkillId.ANTA_MESSAGE_6, SkillHandlers::onAntarasBoss);
-		register(L1SkillId.ANTA_MESSAGE_7, SkillHandlers::onAntarasBoss);
-		register(L1SkillId.ANTA_MESSAGE_8, SkillHandlers::onAntarasBoss);
-		register(L1SkillId.ANTA_MESSAGE_9, SkillHandlers::onAntarasBoss);
-		register(L1SkillId.ANTA_MESSAGE_10, SkillHandlers::onAntarasBoss);
-		register(L1SkillId.ANTA_CANCELLATION, SkillHandlers::onAntarasBoss);
-		register(L1SkillId.ANTA_WEAPON_BREAK, SkillHandlers::onAntarasBoss);
-		register(L1SkillId.ANTA_SHOCKSTUN, SkillHandlers::onAntarasBoss);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_1, 900011, true, SkillHandlers::cancelBossTargetEffects, SkillHandlers::antarasParalysisRoll);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_2, 900011, true, SkillHandlers::antarasDamagePoison);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_3, 900011, true);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_4, 900011, true);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_5, 900011, true, SkillHandlers::antarasDamagePoison);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_6, 900011, false, SkillHandlers::antarasStun);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_7, 900011, false, SkillHandlers::antarasStun);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_8, 900011, false, SkillHandlers::antarasStun);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_9, 900011, true, SkillHandlers::antarasDamagePoison, SkillHandlers::antarasWeaponBreak);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_10, 900011, true, SkillHandlers::antarasParalysisRoll, SkillHandlers::antarasWeaponBreak);
+		registerNpcBossEffects(L1SkillId.ANTA_CANCELLATION, 900011, true, SkillHandlers::cancelBossTargetEffects);
+		registerNpcBossEffects(L1SkillId.ANTA_WEAPON_BREAK, 900011, true, SkillHandlers::antarasWeaponBreak);
+		registerNpcBossEffects(L1SkillId.ANTA_SHOCKSTUN, 900011, false, SkillHandlers::antarasStun);
 
 		// 파푸리온
-		register(L1SkillId.PAP_PREDICATE1, SkillHandlers::onPapBoss);
-		register(L1SkillId.PAP_PREDICATE3, SkillHandlers::onPapBoss);
-		register(L1SkillId.PAP_PREDICATE5, SkillHandlers::onPapBoss);
-		register(L1SkillId.PAP_PREDICATE6, SkillHandlers::onPapBoss);
-		register(L1SkillId.PAP_PREDICATE7, SkillHandlers::onPapBoss);
-		register(L1SkillId.PAP_PREDICATE8, SkillHandlers::onPapBoss);
-		register(L1SkillId.PAP_PREDICATE9, SkillHandlers::onPapBoss);
-		register(L1SkillId.PAP_PREDICATE11, SkillHandlers::onPapBoss);
-		register(L1SkillId.PAP_PREDICATE12, SkillHandlers::onPapBoss);
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE1, 900038, true, SkillHandlers::summonPapMinions);
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE3, 900038, true, timedBossDebuff(7781, L1SkillId.PAP_DEATH_PORTION));
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE5, 900038, true, timedBossDebuff(7782, L1SkillId.PAP_REDUCE_HELL));
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE6, 900038, true, timedBossDebuff(7780, L1SkillId.PAP_DEATH_HELL));
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE7, 900038, true, SkillHandlers::cancelBossTargetEffects);
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE8, 900038, true, SkillHandlers::papWeaponBreak);
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE9, 900038, true);
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE11, 900038, true, SkillHandlers::cancelBossTargetEffects, timedBossDebuff(7780, L1SkillId.PAP_DEATH_HELL));
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE12, 900038, true, SkillHandlers::cancelBossTargetEffects, timedBossDebuff(7780, L1SkillId.PAP_DEATH_HELL));
 
 		// 린드비오르
-		register(L1SkillId.RINDVIOR_SUMMON_MONSTER_CLOUD, SkillHandlers::onRindviorSummonCloud);
-		register(L1SkillId.RINDVIOR_PREDICATE, SkillHandlers::onRindviorPredicate);
-		register(L1SkillId.RINDVIOR_SUMMON_MONSTER, SkillHandlers::onRindviorSummon);
-		register(L1SkillId.RINDVIOR_SILENCE, SkillHandlers::onRindviorSilence);
-		register(L1SkillId.RINDVIOR_BOW, SkillHandlers::onRindviorBow);
-		register(L1SkillId.RINDVIOR_WIND_SHACKLE, SkillHandlers::onDragonWindShackle);
-		register(L1SkillId.RINDVIOR_WIND_SHACKLE_1, SkillHandlers::onDragonWindShackle);
-		register(L1SkillId.RINDVIOR_PREDICATE_CANCELLATION, SkillHandlers::onRindviorPredicateCancellation);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_SUMMON_MONSTER_CLOUD, SkillHandlers::onRindviorSummonCloud);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_PREDICATE, SkillHandlers::onRindviorPredicate);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_SUMMON_MONSTER, SkillHandlers::onRindviorSummon);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_BOW, SkillHandlers::onRindviorBow);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_PREDICATE_CANCELLATION, SkillHandlers::onRindviorPredicateCancellation);
 		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_CANCELLATION, SkillHandlers::onDragonCancellation);
-		register(L1SkillId.RINDVIOR_WEAPON, SkillHandlers::onRindviorWeapon);
-		register(L1SkillId.RINDVIOR_WEAPON_2, SkillHandlers::onRindviorWeapon);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_WEAPON, SkillHandlers::onRindviorWeapon);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_WEAPON_2, SkillHandlers::onRindviorWeapon);
 
 		// 흑장로
-		register(L1SkillId.BLACKELDER_DEATH_HELL, SkillHandlers::onBlackElderDeathHell);
-		register(L1SkillId.BLACKELDER_DEATH_POTION, SkillHandlers::onBlackElderDeathPotion);
+		CSkillInfo.registerInstant(L1SkillId.BLACKELDER_DEATH_HELL, SkillHandlers::onBlackElderDeathHell);
+		CSkillInfo.registerInstant(L1SkillId.BLACKELDER_DEATH_POTION, timedBossDebuff(7781, L1SkillId.PAP_DEATH_PORTION));
 
 		// 에르자베 / 제니스
-		register(L1SkillId.DESERT_SKILL1, SkillHandlers::onDesertBoss);
-		register(L1SkillId.DESERT_SKILL2, SkillHandlers::onDesertBoss);
-		register(L1SkillId.DESERT_SKILL3, SkillHandlers::onDesertBoss);
-		register(L1SkillId.DESERT_SKILL4, SkillHandlers::onDesertBoss);
-		register(L1SkillId.ZENITH_Poison, SkillHandlers::onDesertBoss);
-		register(L1SkillId.DESERT_SKILL5, SkillHandlers::onDesertBoss);
-		register(L1SkillId.DESERT_SKILL6, SkillHandlers::onDesertBoss);
-		register(L1SkillId.DESERT_SKILL7, SkillHandlers::onDesertBoss);
-		register(L1SkillId.DESERT_SKILL8, SkillHandlers::onDesertBoss);
-		register(L1SkillId.DESERT_SKILL9, SkillHandlers::onDesertBoss);
-		register(L1SkillId.DESERT_SKILL10, SkillHandlers::onDesertBoss);
+		CSkillInfo.registerCast(L1SkillId.DESERT_SKILL1, SkillHandlers::castDesertParalysis, false);
+		CSkillInfo.registerCast(L1SkillId.DESERT_SKILL2, SkillHandlers::castDesertParalysis, false);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL3, SkillHandlers::castDesertManaDrain);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL4, SkillHandlers::castDesertPoison);
+		CSkillInfo.registerInstant(L1SkillId.ZENITH_Poison, SkillHandlers::castDesertPoison);
+		CSkillInfo.registerCast(L1SkillId.DESERT_SKILL5, SkillHandlers::castDesertDebuffs, false);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL6, SkillHandlers::castDesertBlindness);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL7, SkillHandlers::castDesertSleep);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL8, SkillHandlers::castDesertSound);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL9, SkillHandlers::castDesertSummon);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL10, SkillHandlers::castDesertSummon);
 		
-		register(L1SkillId.BUFF_특별한성장축복, SkillHandlers::onSpecialBuff);
-		register(L1SkillId.BUFF_특별한방어축복, SkillHandlers::onSpecialBuff);
-		register(L1SkillId.BUFF_특별한공격축복, SkillHandlers::onSpecialBuff);
 
-		register(L1SkillId.메티스축복주문서, SkillHandlers::onMetisBlessScroll);
+	}
+
+	static HandlerResult ignoreNonPlayerBuff(
+			L1SkillUse cast, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		return HandlerResult.HANDLED;
 	}
 
 	private static void register(int skillId, SkillHandler handler) {
@@ -648,36 +558,33 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onShockStun(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.NOT_HANDLED;
-
-		final int dur = SkillUseHelper.pickMillis(SkillUseHelper.STUN_OFFICIAL);
-		if (dur <= 0) return HandlerResult.NOT_HANDLED;
-
-		su.hdSetShockStunDuration(dur);
-
-		return applyStunLikeEffect(su, cha, dur, 81162);
+	@FunctionalInterface
+	private interface StunDuration {
+		int calculate(L1SkillUse cast, L1Character target);
 	}
 
-	private static HandlerResult onEmpire(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.NOT_HANDLED;
-
-		final int dur = SkillUseHelper.pickMillis(SkillUseHelper.STUN_OFFICIAL);
-		if (dur <= 0) return HandlerResult.NOT_HANDLED;
-
-		su.hdSetShockStunDuration(dur);
-
-		return applyStunLikeEffect(su, cha, dur, 50000066);
+	private static void registerStun(int skillId, int gfx, StunDuration duration, boolean playerSkill) {
+		CSkillInfo.registerCast(skillId, (cast, target, magic, undeadType, targets) -> {
+			if (target == null) return playerSkill ? HandlerResult.NOT_HANDLED : HandlerResult.HANDLED;
+			final int millis = duration.calculate(cast, target);
+			if (millis <= 0 && (skillId == L1SkillId.SHOCK_STUN || skillId == L1SkillId.EMPIRE))
+				return HandlerResult.NOT_HANDLED;
+			cast.hdSetShockStunDuration(millis);
+			return applyStunLikeEffect(cast, target, millis, gfx);
+		}, false);
 	}
 
-	private static HandlerResult onBoneBreak(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.NOT_HANDLED;
+	private static int officialStun(L1SkillUse cast, L1Character target) {
+		return SkillUseHelper.pickMillis(SkillUseHelper.STUN_OFFICIAL);
+	}
 
-		final int dur = SkillUseHelper.pickMillis(SkillUseHelper.BONE_BREAK_DUR);
+	private static int omanStun(L1SkillUse cast, L1Character target) {
+		return 2500 + 500 * cast.hdRandom().nextInt(3);
+	}
 
-		su.hdSetShockStunDuration(dur);
-
-		return applyStunLikeEffect(su, cha, dur, 200020);
+	private static int monsterStun(L1SkillUse cast, L1Character target) {
+		final int delta = cast.hdUser().getLevel() - target.getLevel();
+		return Math.clamp(2250 + delta * 80 + cast.hdRandom().nextInt(1600) - 800, 1000, 5000);
 	}
 
 	private static HandlerResult onCancellation(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -853,88 +760,36 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		}
 	}
 
-	private static HandlerResult onElementalFallDown(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(su.hdUser() instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
+	static HandlerResult castElementalFallDown(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (!(su.hdUser() instanceof L1PcInstance) || su.hdPlayer() == null) return HandlerResult.NOT_HANDLED;
+		final L1PcInstance caster = su.hdPlayer();
+		if (!(target instanceof L1PcInstance || target instanceof L1MonsterInstance)) return HandlerResult.NOT_HANDLED;
+		final int attribute = caster.getElfAttr();
+		final int durationMs = DurationResolver.INSTANCE.resolveDurationMs(su);
 
-		final L1PcInstance player = su.hdPlayer();
-		if (player == null) return HandlerResult.NOT_HANDLED;
+		if (attribute == 0) SC_ServerMessage.send(caster, 79);
+		final boolean accepted = target instanceof L1PcInstance pc
+				? submitContextBuff(pc, L1SkillId.ELEMENTAL_FALL_DOWN, durationMs, attribute, su.hdGetBuffIconDuration(), null)
+				: CIOThreadCallback.getInstance().submitNpcElementalFallDown((L1MonsterInstance) target, durationMs, attribute);
+		return accepted ? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
+	}
 
-		final int playerAttr = player.getElfAttr();
-		final int i = -50;
-		final int iconDuration = su.hdGetBuffIconDuration();
+	static void startElementalFallDown(L1PcInstance pc, int id, int durationMs, int attribute, int iconDuration, boolean partyMember) {
+		applyElementalFallDownFromOwner(pc, id, durationMs, attribute);
+		SC_InventoryIcon.icoNew(pc, id, 1009, iconDuration, true);
+		sendSkillSoundBroadcast(pc, 4399);
+	}
 
-		if (cha instanceof L1PcInstance) {
-			final L1PcInstance pc = (L1PcInstance) cha;
+	public static void startNpcElementalFallDownFromOwner(L1NpcInstance npc, int durationMs, int attribute) {
+		applyElementalFallDownFromOwner(npc, L1SkillId.ELEMENTAL_FALL_DOWN, durationMs, attribute);
+		sendSkillSoundBroadcast(npc, 4399);
+	}
 
-			if (pc.hasSkillEffect(L1SkillId.ELEMENTAL_FALL_DOWN)) {
-				pc.removeSkillEffect(L1SkillId.ELEMENTAL_FALL_DOWN);
-			}
-
-			switch (playerAttr) {
-			case 0:
-				SC_ServerMessage.send(player, 79);
-				break;
-			case 1:
-				pc.getResistance().addEarth(i);
-				pc.setAddAttrKind(1);
-				break;
-			case 2:
-				pc.getResistance().addFire(i);
-				pc.setAddAttrKind(2);
-				break;
-			case 4:
-				pc.getResistance().addWater(i);
-				pc.setAddAttrKind(4);
-				break;
-			case 8:
-				pc.getResistance().addWind(i);
-				pc.setAddAttrKind(8);
-				break;
-			default:
-				break;
-			}
-			SC_InventoryIcon.icoNew(pc, L1SkillId.ELEMENTAL_FALL_DOWN, 1009, iconDuration, true);
-			sendSkillSoundBroadcast(pc, 4399);
-			return HandlerResult.HANDLED;
-		}
-
-		if (cha instanceof L1MonsterInstance) {
-			final L1MonsterInstance mob = (L1MonsterInstance) cha;
-
-            // ELEMENTAL_FALL_DOWN deliberately bypasses generic recast refresh.
-            // Undo its previous channel before applying -50 again, as for PCs.
-            if (mob.hasSkillEffect(L1SkillId.ELEMENTAL_FALL_DOWN))
-                mob.removeSkillEffect(L1SkillId.ELEMENTAL_FALL_DOWN);
-
-			switch (playerAttr) {
-			case 0:
-				SC_ServerMessage.send(player, 79);
-				break;
-			case 1:
-				mob.getResistance().addEarth(i);
-				mob.setAddAttrKind(1);
-				break;
-			case 2:
-				mob.getResistance().addFire(i);
-				mob.setAddAttrKind(2);
-				break;
-			case 4:
-				mob.getResistance().addWater(i);
-				mob.setAddAttrKind(4);
-				break;
-			case 8:
-				mob.getResistance().addWind(i);
-				mob.setAddAttrKind(8);
-				break;
-			default:
-				break;
-			}
-
-			sendSkillSoundBroadcast(mob, 4399);
-			return HandlerResult.HANDLED;
-		}
-
-		return HandlerResult.NOT_HANDLED;
+	private static void applyElementalFallDownFromOwner(L1Character target, int id, int durationMs, int attribute) {
+		target.skillEffectRemoveFromOwner(id, true);
+		if (durationMs <= 0) return;
+		target.skillEffectSetFromOwner(id, durationMs);
+		if (attribute != 0 && target.hasSkillEffect(id)) target.applySkillModifierFromOwner(id, attribute);
 	}
 
 	private static HandlerResult onResurrection(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -1166,20 +1021,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.NOT_HANDLED;
 	}
 
-	private static HandlerResult onStrikerGale(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int skillId = L1SkillId.STRIKER_GALE;
-
-		resetEffect(pc, skillId);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		sendRestatBuffNoti(pc, skillId, durSec, 2357, 10, 1084, 1084, 2200, true);
-		return HandlerResult.HANDLED;
-	}
 
 	// =========================
 	// N_BUFF handlers
@@ -1221,154 +1062,45 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		sendIvenBuffIcon(pc, skillId, duration);
 	}
 
-	private static HandlerResult onBlessWeapon(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
+	static void startWeaponBuff(L1PcInstance pc, int skillId, int iconDuration) {
+		final int duration = Math.max(1, iconDuration);
+		// Holy Weapon clears itself before checking the higher-priority effects.
+		if (skillId == L1SkillId.HOLY_WEAPON) resetEffect(pc, skillId);
+		if (skillId != L1SkillId.SHADOW_FANG && pc.hasSkillEffect(L1SkillId.SHADOW_FANG)) return;
+		if ((skillId == L1SkillId.HOLY_WEAPON || skillId == L1SkillId.ENCHANT_WEAPON)
+				&& pc.hasSkillEffect(L1SkillId.BLESS_WEAPON)) return;
+		if (skillId == L1SkillId.HOLY_WEAPON && pc.hasSkillEffect(L1SkillId.ENCHANT_WEAPON)) return;
 
-		final int durSec = Math.max(1, su.hdGetBuffIconDuration());
-
-		// 쉐팡 있으면 안됨
-		if (pc.hasSkillEffect(L1SkillId.SHADOW_FANG)) {
-			return HandlerResult.HANDLED;
+		switch (skillId) {
+		case L1SkillId.BLESS_WEAPON -> {
+			resetEffect(pc, skillId);
+			resetEffect(pc, L1SkillId.HOLY_WEAPON);
+			resetEffect(pc, L1SkillId.ENCHANT_WEAPON);
 		}
-		
-		// 상호배타 제거 후 적용
-		removeSkillEffects(pc, L1SkillId.BLESS_WEAPON, L1SkillId.HOLY_WEAPON, L1SkillId.ENCHANT_WEAPON);
-
-		pc.setSkillEffect(L1SkillId.BLESS_WEAPON, durSec * 1000);
-		pc.addDmgup(2);
-		pc.addHitup(2);
-
-		sendRestatBuffNoti(
-				pc,
-				L1SkillId.BLESS_WEAPON,
-				durSec,
-				728,
-				728,
-				0,
-				857,
-				857,
-				2167,
-				true
-				);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onEnchantWeapon(
-	        L1SkillUse su,
-	        L1Character cha,
-	        L1Magic magic,
-	        int undeadType,
-	        Iterator<?> iter) {
-
-	    if (!(cha instanceof L1PcInstance)) {
-	        return HandlerResult.HANDLED;
-	    }
-
-	    final L1PcInstance pc =
-	            (L1PcInstance) cha;
-
-	    if (hasAnySkillEffect(
-	            pc,
-	            L1SkillId.SHADOW_FANG,
-	            L1SkillId.BLESS_WEAPON)) {
-
-	        return HandlerResult.HANDLED;
-	    }
-
-	    final int durSec =
-	            Math.max(
-	                    1,
-	                    su.hdGetBuffIconDuration());
-	    removeSkillEffects(
-	            pc,
-	            L1SkillId.ENCHANT_WEAPON,
-	            L1SkillId.HOLY_WEAPON);
-
-	    pc.setSkillEffect(
-	            L1SkillId.ENCHANT_WEAPON,
-	            durSec * 1000);
-
-	    pc.addDmgup(2);
-
-	    sendRestatBuffNoti(
-	            pc,
-	            L1SkillId.ENCHANT_WEAPON,
-	            durSec,
-	            5265,
-	            5265,
-	            0,
-	            3064,
-	            0,
-	            2239,
-	            true);
-
-	    return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onHolyweapon(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int durSec = Math.max(1, su.hdGetBuffIconDuration());
-
-		removeSkillEffects(pc, L1SkillId.HOLY_WEAPON);
-		
-		if (hasAnySkillEffect(pc, L1SkillId.BLESS_WEAPON, L1SkillId.SHADOW_FANG, L1SkillId.ENCHANT_WEAPON)) {
-			return HandlerResult.HANDLED;
+		case L1SkillId.ENCHANT_WEAPON -> {
+			resetEffect(pc, skillId);
+			resetEffect(pc, L1SkillId.HOLY_WEAPON);
+		}
+		case L1SkillId.SHADOW_FANG -> {
+			resetEffect(pc, skillId);
+			resetEffect(pc, L1SkillId.BLESS_WEAPON);
+			resetEffect(pc, L1SkillId.HOLY_WEAPON);
+			resetEffect(pc, L1SkillId.ENCHANT_WEAPON);
+		}
+		default -> { }
 		}
 
-		// 효과
-		pc.addDmgup(1);
-		pc.addHitup(1);
-		sendRestatBuffNoti(
-				pc,
-				L1SkillId.HOLY_WEAPON,
-				durSec,
-				777, // icon
-				777,
-				0,
-				685, // tooltip
-				0,    // new 없음
-				718, // end
-				true
-				);
-		pc.setSkillEffect(L1SkillId.HOLY_WEAPON, durSec * 1000);
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onShadowFang(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int durSec = Math.max(1, su.hdGetBuffIconDuration());
-
-		removeSkillEffects(pc,
-				L1SkillId.SHADOW_FANG,
-				L1SkillId.BLESS_WEAPON,
-				L1SkillId.HOLY_WEAPON,
-				L1SkillId.ENCHANT_WEAPON
-				);
-
-		// 효과
-		pc.addDmgup(5);
-		sendRestatBuffNoti(
-				pc,
-				L1SkillId.SHADOW_FANG,
-				durSec,
-				1128, // icon
-				1128,
-				0,
-				1339, // tooltip
-				0,    // new 없음
-				2234, // end
-				true
-				);
-		// 타이머 걸어야 유지됨
-		pc.setSkillEffect(L1SkillId.SHADOW_FANG, durSec * 1000);
-
-		return HandlerResult.HANDLED;
+		final boolean timerFirst = skillId == L1SkillId.BLESS_WEAPON || skillId == L1SkillId.ENCHANT_WEAPON;
+		if (timerFirst) applySkillEffectSec(pc, skillId, duration);
+		pc.applySkillModifierFromOwner(skillId, 0);
+		switch (skillId) {
+		case L1SkillId.BLESS_WEAPON -> sendRestatBuffNoti(pc, skillId, duration, 728, 0, 857, 857, 2167, true);
+		case L1SkillId.HOLY_WEAPON -> sendRestatBuffNoti(pc, skillId, duration, 777, 0, 685, 0, 718, true);
+		case L1SkillId.ENCHANT_WEAPON -> sendRestatBuffNoti(pc, skillId, duration, 5265, 0, 3064, 0, 2239, true);
+		case L1SkillId.SHADOW_FANG -> sendRestatBuffNoti(pc, skillId, duration, 1128, 0, 1339, 0, 2234, true);
+		default -> throw new IllegalArgumentException("Unknown weapon buff " + skillId);
+		}
+		if (!timerFirst) applySkillEffectSec(pc, skillId, duration);
 	}
 
 	static void startSpellPowerBuff(L1PcInstance pc, int skillId, int duration) {
@@ -1431,23 +1163,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		sendRestatBuffNoti(pc, skillId, duration, 3078, 10, 2274, 0, 2427, true);
 	}
 
-	private static HandlerResult onEaggleEye(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.EAGGLE_EYE;
-
-		resetEffect(pc, skillId);
-
-		pc.add_missile_critical_rate(2);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		// icon=8490, prio=10, tooltip=5157, end=5158, new_str=0(미설정)
-		sendRestatBuffNoti(pc, skillId, durSec, 8490, 10, 5157, 0, 5158, true);
-		return HandlerResult.HANDLED;
-	}
-
 	static void startIllusionDiamondGolem(L1PcInstance pc, int skillId, int duration) {
 		resetEffect(pc, skillId);
 		pc.applySkillModifierFromOwner(skillId, -10);
@@ -1456,232 +1171,98 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		sendRestatBuffNoti(pc, skillId, duration, 3113, 10, 1373, 1373, 2214, true);
 	}
 
-	private static HandlerResult onIllusionAvatar(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.IllUSION_AVATAR;
-
+	static void startCasterTimer(L1PcInstance pc, int skillId, int duration) {
 		resetEffect(pc, skillId);
-
-		// 효과
-		pc.addDmgup(10);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		// noti: icon=3111, prio=10, tooltip=1377, new=1377, end=2215
-		sendRestatBuffNoti(pc, skillId, durSec, 3111, 10, 1377, 1377, 2215, true);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onCyclone(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		// 원본이 "cha"가 아니라 "_user"에 걸리는 형태라서 user 기준으로 처리
-		final L1Character u = su.hdUser();
-		if (!(u instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) u;
-
-		final int skillId = L1SkillId.CYCLONE;
-		resetEffect(pc, skillId);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		// on=9190, off=9192, prio=10, tooltip/new=5446, end=5450
-		sendRestatBuffNoti(pc, skillId, durSec, 9190, 9192, 10, 5446, 5446, 5450, true);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onFocusSpirits(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		final L1Character u = su.hdUser();
-		if (!(u instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) u;
-
-		final int skillId = L1SkillId.FOCUS_SPRITS;
-
-		resetEffect(pc, skillId);
-		pc.add_magic_critical_rate(5);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		// icon=4832, prio=10, tooltip=5272, new=0, end=5273
-		sendRestatBuffNoti(pc, skillId, durSec, 4832, 10, 5272, 0, 5273, true);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onLucifer(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		final L1PcInstance pc = su.hdPlayer();
-		if (pc == null) return HandlerResult.NOT_HANDLED;
-
-		if (pc.hasSkillEffect(L1SkillId.LUCIFER)) {
-			pc.removeSkillEffect(L1SkillId.LUCIFER);
-		}
-		if (pc.hasSkillEffect(L1SkillId.IMMUNE_TO_HARM)) {
-			pc.removeSkillEffect(L1SkillId.IMMUNE_TO_HARM);
-		}
-		final int skillId = L1SkillId.LUCIFER;
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		// noti
-		sendRestatBuffNoti(
-				pc,
-				L1SkillId.LUCIFER,
-				durSec,
-				4503,  // icon
-				10,    // priority
-				5268,  // tooltip
-				5268,  // new
-				5269,  // end
-				true
-				);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onBlowAttack(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		final L1PcInstance pc = su.hdPlayer();
-		if (pc == null) return HandlerResult.NOT_HANDLED;
-
-		if (pc.hasSkillEffect(L1SkillId.BLOW_ATTACK)) {
-			pc.removeSkillEffect(L1SkillId.BLOW_ATTACK);
-		}
-
-		final int skillId = L1SkillId.BLOW_ATTACK;
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		sendRestatBuffNoti(
-				pc,
-				L1SkillId.BLOW_ATTACK,
-				durSec,
-				8843, // icon
-				10,   // priority
-				5266, // tooltip
-				5266, // new
-				5267, // end
-				true
-				);
-		return HandlerResult.HANDLED;
-	}
-
-// ===== Cube common =====
-	private static final int CUBE_RANGE = 18;
-
-	@FunctionalInterface
-	private interface PcApplier {
-		void apply(L1PcInstance pc, boolean isPartyMember);
-	}
-
-	private static int skillBuffDurationSecFromTemplate(final int skillId, final int fallbackSec) {
-		try {
-			final L1Skills s = SkillsTable.getInstance().getTemplate(skillId);
-			final int d = (s != null ? s.getBuffDuration() : 0);
-			return (d > 0 ? d : (fallbackSec > 0 ? fallbackSec : 1));
-		} catch (Throwable t) {
-			return (fallbackSec > 0 ? fallbackSec : 1);
-		}
-	}
-
-	private static HandlerResult handleCubePartyBuff(
-			final L1SkillUse su,
-			final int skillId,
-			final int iconId,
-			final int iconPriority,
-			final int tooltipStrId,
-			final int newStrId,
-			final int endStrId,
-			final PcApplier applier
-			) {
-		final L1PcInstance caster = su.hdPlayer(); // 큐브는 시전자 기반
-		if (caster == null) return HandlerResult.NOT_HANDLED;
-
-		final int castGfx = su.hdSkillCastGfx();
-		final int iconDurSec = durationSecForBuff(su, skillId);
-		final int buffDurSec = skillBuffDurationSecFromTemplate(skillId, iconDurSec); // 실제 버프 시간(기존 _skill.getBuffDuration 대응)
-
-		// 1) 시전자 본인 적용 (파티 없어도 무조건 적용되게)
-		applier.apply(caster, false);
-		caster.send_effect(castGfx);
-		applySkillEffectSec(caster, skillId, buffDurSec);
-		sendRestatBuffNoti(
-				caster,
-				skillId,
-				iconDurSec,
-				iconId,
-				iconPriority,
-				tooltipStrId,
-				newStrId,
-				endStrId,
-				true
-				);
-
-		// 2) 파티원 중 "화면상(가시범위)" 에 있는 멤버만 적용
-		final L1Party party = caster.getParty();
-		if (party == null) return HandlerResult.HANDLED;
-
-		for (L1PcInstance m : L1World.getInstance().getVisiblePlayer(caster, CUBE_RANGE)) {
-			if (m == null) continue;
-			if (!party.isMember(m)) continue;
-
-			applier.apply(m, true);
-			m.send_effect(castGfx);
-			applySkillEffectSec(m, skillId, buffDurSec);
-			sendRestatBuffNoti(
-					m,
-					skillId,
-					iconDurSec,
-					iconId,
-					iconPriority,
-					tooltipStrId,
-					newStrId,
-					endStrId,
-					true
-					);
-		}
-		return HandlerResult.HANDLED;
-	}
-
-
-	private static HandlerResult onDeathHeal(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		final L1Character target = (cha != null ? cha : su.hdTarget());
-		if (!(target instanceof L1PcInstance)) return HandlerResult.HANDLED;
-
-		final L1PcInstance pc = (L1PcInstance) target;
-		final Random rnd = su.hdRandom();
-
-		final int chance = (rnd != null ? rnd.nextInt(10) + 1 : (int)(Math.random() * 10) + 1);
-
-		if (pc.hasSkillEffect(L1SkillId.DEATH_HEAL)) {
-			SC_InventoryIcon.icoReset(pc, L1SkillId.DEATH_HEAL, chance, false);
-			pc.removeSkillEffect(L1SkillId.DEATH_HEAL);
+		if (skillId == L1SkillId.LUCIFER) resetEffect(pc, L1SkillId.IMMUNE_TO_HARM);
+		applySkillEffectSec(pc, skillId, duration);
+		if (skillId == L1SkillId.CYCLONE) {
+			sendRestatBuffNoti(pc, skillId, duration, 9190, 9192, 10, 5446, 5446, 5450, true);
 		} else {
-			SC_InventoryIcon.icoNew(pc, L1SkillId.DEATH_HEAL, chance, false);
+			sendRestatBuffNoti(pc, skillId, duration, 4503, 10, 5268, 5268, 5269, true);
 		}
+	}
 
-		pc.setSkillEffect(L1SkillId.DEATH_HEAL, chance * 1000);
 
+	private static final int PARTY_BUFF_RANGE = 18;
+
+	private static int skillBuffDurationSecFromTemplate(int skillId, int fallbackSec) {
+		final L1Skills template = SkillsTable.getInstance().getTemplate(skillId);
+		return template != null && template.getBuffDuration() > 0 ? template.getBuffDuration() : fallbackSec;
+	}
+
+	private static boolean submitContextBuff(L1PcInstance pc, int id, int duration, int option, int gfx, L1Party party) {
+		final var controller = pc.getCreatureController();
+		return controller != null && controller.addExecutableCastBuff(pc, id, duration, option, gfx, party);
+	}
+
+	private static boolean submitPartyBuff(L1PcInstance caster, int id, int duration, int option, int gfx) {
+		if (!submitContextBuff(caster, id, duration, option, gfx, null)) return false;
+		final L1Party party = caster.getParty();
+		if (party == null) return true;
+		for (L1PcInstance member : party.getMembers()) {
+			if (member != null && member != caster && member.getMapId() == caster.getMapId()
+					&& caster.getLocation().getTileLineDistance(member.getLocation()) <= PARTY_BUFF_RANGE) {
+				submitContextBuff(member, id, duration, option, gfx, party);
+			}
+		}
+		return true;
+	}
+
+	static HandlerResult castCubeBuff(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		final L1PcInstance caster = su.hdPlayer();
+		if (caster == null) return HandlerResult.NOT_HANDLED;
+		final int skillId = su.hdSkillId();
+		final int iconDuration = durationSecForBuff(su, skillId);
+		final int duration = skillBuffDurationSecFromTemplate(skillId, iconDuration);
+		return submitPartyBuff(caster, skillId, duration, iconDuration, su.hdSkillCastGfx())
+				? HandlerResult.HANDLED : HandlerResult.CONTINUE;
+	}
+
+	static void startCubeBuff(L1PcInstance pc, int skillId, int duration, int iconDuration, int gfx,
+			boolean partyMember, int icon, int tooltip) {
+		final boolean blocked = (skillId == L1SkillId.CUBE_RICH && pc.hasSkillEffect(L1SkillId.IllUSION_LICH))
+				|| (skillId == L1SkillId.CUBE_GOLEM && pc.hasSkillEffect(L1SkillId.IllUSION_DIAMONDGOLEM));
+		if (!blocked) {
+			resetEffect(pc, skillId);
+			if (skillId == L1SkillId.CUBE_OGRE) resetEffect(pc, L1SkillId.IllUSION_OGRE);
+			if (skillId == L1SkillId.CUBE_AVATAR) {
+				if (partyMember) resetEffect(pc, L1SkillId.IllUSION_AVATAR);
+			} else {
+				pc.applySkillModifierFromOwner(skillId, 0);
+				if (skillId == L1SkillId.CUBE_RICH) SC_SPMR.send(pc);
+				if (skillId == L1SkillId.CUBE_GOLEM) SC_OwnCharAttrDef.send(pc);
+			}
+			if (partyMember) pc._CubeEffect = true;
+		}
+		pc.send_effect(gfx);
+		applySkillEffectSec(pc, skillId, duration);
+		sendRestatBuffNoti(pc, skillId, iconDuration, icon, 10, tooltip, tooltip, 0, true);
+	}
+
+	static HandlerResult castDeathHeal(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		final L1Character recipient = target != null ? target : su.hdTarget();
+		if (!(recipient instanceof L1PcInstance pc)) return HandlerResult.HANDLED;
+		final Random random = su.hdRandom();
+		final int seconds = random != null ? random.nextInt(10) + 1 : (int) (Math.random() * 10) + 1;
+		final int originalTimerMs = target == pc ? DurationResolver.INSTANCE.resolveDurationMs(su) : 0;
+		return submitContextBuff(pc, su.hdSkillId(), originalTimerMs, seconds, 0, null)
+				? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
+	}
+
+	static void startDeathHeal(L1PcInstance pc, int id, int originalTimerMs, int seconds, int gfx, boolean partyMember) {
+		final int effect = L1SkillId.DEATH_HEAL;
+		if (pc.hasSkillEffect(effect)) {
+			SC_InventoryIcon.icoReset(pc, effect, seconds, false);
+			pc.skillEffectRemoveFromOwner(effect, true);
+		} else {
+			SC_InventoryIcon.icoNew(pc, effect, seconds, false);
+		}
+		pc.skillEffectSetFromOwner(effect, seconds * 1000);
 		SC_SkillSound.send(pc, pc.getId(), 14501);
 		SC_SkillSound.broadcastFast(pc, pc.getId(), 14501);
-
-		return HandlerResult.HANDLED;
+		if (originalTimerMs > 0) pc.skillEffectSetFromOwner(id, originalTimerMs);
 	}
 
-	private static HandlerResult onHunterBless(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		final L1Character target = (cha != null ? cha : su.hdTarget());
-		if (!(target instanceof L1PcInstance)) return HandlerResult.HANDLED;
-
-		final L1PcInstance pc = (L1PcInstance) target;
-
-		// (아이콘만 갱신)
-		if (pc.hasSkillEffect(L1SkillId.HUNTER_BLESS)) {
-			SC_InventoryIcon.icoReset(pc, L1SkillId.HUNTER_BLESS, 4992, 1800L, true);
-		} else {
-			SC_InventoryIcon.icoNew(pc, L1SkillId.HUNTER_BLESS, 4992, 1800L, true);
-		}
-
-		return HandlerResult.HANDLED;
-	}
 
 	private static HandlerResult onCurePoison(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		final L1Character target = (cha != null ? cha : su.hdTarget());
@@ -1691,36 +1272,15 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onSeonghyeolBuff(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		final L1Character target = (cha != null ? cha : su.hdTarget());
-		if (!(target instanceof L1PcInstance)) return HandlerResult.HANDLED;
-
-		final L1PcInstance pc = (L1PcInstance) target;
-
-		if (pc.hasSkillEffect(L1SkillId.성혈버프)) {
-			pc.removeSkillEffect(L1SkillId.성혈버프);
-		}
-
-		pc.addMaxHp(300);
-		pc.addMaxMp(150);
-		pc.addDmgup(3);
-		pc.addBowDmgup(3);
-		pc.getAbility().addSp(3);
-		pc.getAC().addAc(-10);
-		pc.getResistance().addMr(15);
-
-		pc.getResistance().addPVPweaponTotalDamage(5);
-		pc.getResistance().addcalcPcDefense(5);
-
-		SC_InventoryIcon.icoNew(pc, L1SkillId.성혈버프, 3944, 3600, true);
-
+	static void startSeonghyeolBuff(L1PcInstance pc, int skillId, int duration) {
+		if (pc.hasSkillEffect(skillId)) pc.removeSkillEffect(skillId);
+		pc.applySkillModifierFromOwner(skillId, 0);
+		SC_InventoryIcon.icoNew(pc, skillId, 3944, 3600, true);
 		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
 		SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
 		SC_OwnCharAttrDef.send(pc);
 		SC_SPMR.send(pc);
-
-
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
 	private static HandlerResult onDetectionLike(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -1793,102 +1353,25 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onMobBerserkers(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha instanceof L1NpcInstance) {
-			cha.setMoveSpeed(1);
-			cha.setBraveSpeed(1);
-		}
-		return HandlerResult.HANDLED;
+	private static HandlerResult castMonsterBerserkers(L1SkillUse cast, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (!(target instanceof L1NpcInstance npc)) return HandlerResult.HANDLED;
+		final int duration = DurationResolver.INSTANCE.resolveDurationMs(cast);
+		if (duration <= 0) return HandlerResult.HANDLED_WITHOUT_TIMER;
+		return CIOThreadCallback.getInstance().submitNpcBerserkers(npc, duration)
+				? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
+	}
+
+	public static void startNpcBerserkersFromOwner(L1NpcInstance npc, int id, int durationMs) {
+		npc.setMoveSpeed(1);
+		npc.setBraveSpeed(1);
+		npc.skillEffectSetFromOwner(id, durationMs);
 	}
 
 
 
-	// ===== CUBE_AVATAR =====
-	private static HandlerResult onCubeAvatar(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		return handleCubePartyBuff(
-				su,
-				L1SkillId.CUBE_AVATAR,
-				5322, // icon
-				10,   // priority
-				3073, // tooltip
-				3073, // new
-				0,    // end
-				(pc, isPartyMember) -> {
-					resetEffect(pc, L1SkillId.CUBE_AVATAR);
-					if (isPartyMember) {
-						resetEffect(pc, L1SkillId.IllUSION_AVATAR);
-						pc._CubeEffect = true;
-					}
-				}
-				);
-	}
 
-	// ===== CUBE_RICH =====
-	private static HandlerResult onCubeRich(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		return handleCubePartyBuff(su, L1SkillId.CUBE_RICH, 5309, 10, 1348, 1348, 0,
-				(pc, isPartyMember) -> {
-					if (pc.hasSkillEffect(L1SkillId.IllUSION_LICH)) {
-						return;
-					}
 
-					resetEffect(pc, L1SkillId.CUBE_RICH);
-					pc.getAbility().addSp(2);
-					SC_SPMR.send(pc);
 
-					if (isPartyMember) pc._CubeEffect = true;
-				}
-				);
-	}
-
-	// ===== CUBE_GOLEM =====
-	private static HandlerResult onCubeGolem(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		return handleCubePartyBuff(
-				su,
-				L1SkillId.CUBE_GOLEM,
-				5314,
-				10,
-				3075,
-				3075,
-				0,
-				(pc, isPartyMember) -> {
-					// 충돌(다이아골렘/일루션골렘)은 "해당 인원만 스킵" (기존 버프도 건드리지 않음)
-					if (pc.hasSkillEffect(L1SkillId.IllUSION_DIAMONDGOLEM)) {
-						return;
-					}
-
-					resetEffect(pc, L1SkillId.CUBE_GOLEM);
-
-					// AC -8
-					pc.getAC().addAc(-8);
-					SC_OwnCharAttrDef.send(pc);
-
-					if (isPartyMember) pc._CubeEffect = true;
-				}
-				);
-	}
-
-	// ===== CUBE_OGRE =====
-	private static HandlerResult onCubeOgre(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		return handleCubePartyBuff(
-				su,
-				L1SkillId.CUBE_OGRE,
-				5312,
-				10,
-				3074,
-				3074,
-				0,
-				(pc, isPartyMember) -> {
-					resetEffect(pc, L1SkillId.CUBE_OGRE);
-
-					resetEffect(pc, L1SkillId.IllUSION_OGRE);
-
-					pc.addDmgup(4);
-					pc.addHitup(4);
-
-					if (isPartyMember) pc._CubeEffect = true;
-				}
-				);
-	}
 
 	private static HandlerResult onElementalSummon(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
@@ -2039,50 +1522,22 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 	}
 
 
-	private static HandlerResult onImmuneToHarm(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
+	static HandlerResult castImmuneToHarm(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (!(target instanceof L1PcInstance pc)) return HandlerResult.NOT_HANDLED;
+		final L1PcInstance caster = su.hdPlayer();
+		final int level = caster != null ? caster.getLevel() : -1;
+		final int id = L1SkillId.IMMUNE_TO_HARM;
+		return submitContextBuff(pc, id, durationSecForBuff(su, id), level, 0, null)
+				? HandlerResult.HANDLED : HandlerResult.CONTINUE;
+	}
 
-		final L1PcInstance target = (L1PcInstance) cha;
-		final L1PcInstance caster = su.hdPlayer(); // 원본의 _player 대응
-
-		// 1) 루시퍼/이뮨 토글
-		if (target.hasSkillEffect(L1SkillId.LUCIFER)) {
-			target.removeSkillEffect(L1SkillId.LUCIFER);
-		} else if (target.hasSkillEffect(L1SkillId.IMMUNE_TO_HARM)) {
-			target.removeSkillEffect(L1SkillId.IMMUNE_TO_HARM);
-		}
-		sendSkillSoundOnce(target, 15959);
-
-		if (caster != null) {
-			if (caster.getId() == target.getId()) {
-				target.setLastImmuneLevel(caster.getLevel());
-			} else {
-				// 타인 시전
-				target.setLastImmuneLevel(caster.getLevel());
-			}
-		}
-		// 4) 지속시간
-		final int buffDurSec = durationSecForBuff(su, L1SkillId.IMMUNE_TO_HARM);
-		applySkillEffectSec(target, L1SkillId.IMMUNE_TO_HARM, buffDurSec);
-
-		// 5) UI NOTI 
-		int iconDurSec = 0;
-		try { iconDurSec = su.hdGetBuffIconDuration(); } catch (Throwable ignore) {}
-		if (iconDurSec <= 0) iconDurSec = buffDurSec;
-
-		sendRestatBuffNoti(
-				target,
-				L1SkillId.IMMUNE_TO_HARM,
-				iconDurSec,
-				1562, // on/off icon
-				10,   // priority
-				966,  // tooltip
-				314,  // new
-				315,  // end
-				true
-				);
-
-		return HandlerResult.HANDLED;
+	static void startImmuneToHarm(L1PcInstance pc, int skillId, int duration, int level, int gfx, boolean partyMember) {
+		if (pc.hasSkillEffect(L1SkillId.LUCIFER)) pc.removeSkillEffect(L1SkillId.LUCIFER);
+		else resetEffect(pc, skillId);
+		sendSkillSoundOnce(pc, 15959);
+		if (level >= 0) pc.setLastImmuneLevel(level);
+		applySkillEffectSec(pc, skillId, duration);
+		sendRestatBuffNoti(pc, skillId, duration, 1562, 10, 966, 314, 315, true);
 	}
 
 	private static HandlerResult onSummonMonster(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -2213,140 +1668,56 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onComa(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int skillId;
-		try { skillId = su.hdSkillId(); }
-		catch (Throwable ignore) { return HandlerResult.NOT_HANDLED; }
-
-		switch (skillId) {
-		case L1SkillId.COMA_A:
-			pc.getAbility().addAddedCon(1);
-			pc.getAbility().addAddedDex(5);
-			pc.getAbility().addAddedStr(5);
-			pc.addHitRate(3);
-			pc.getAC().addAc(-3);
-			break;
-
-		case L1SkillId.COMA_B:
-			pc.getAbility().addSp(1);
-			pc.getAbility().addAddedCon(3);
-			pc.getAbility().addAddedDex(5);
-			pc.getAbility().addAddedStr(5);
-			pc.addHitRate(5);
-			pc.getAC().addAc(-8);
-			try { SC_SPMR.send(pc); } catch (Throwable ignore) {}
-			break;
-
-		default:
-			return HandlerResult.NOT_HANDLED;
-		}
-
-		return HandlerResult.HANDLED;
+	static void startComa(L1PcInstance pc, int skillId, int duration) {
+		pc.applySkillModifierFromOwner(skillId, 0);
+		if (skillId == L1SkillId.COMA_B) sendSpMr(pc);
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
-	private static HandlerResult onMiso(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int skillId;
-		try { skillId = su.hdSkillId(); }
-		catch (Throwable ignore) { return HandlerResult.NOT_HANDLED; }
-
-		switch (skillId) {
-		case L1SkillId.miso1: {
-			if (pc.hasSkillEffect(L1SkillId.miso1)) {
-				SC_InventoryIcon.icoReset(pc, L1SkillId.miso1, 4995, 1800L, true);
-			} else {
-				SC_InventoryIcon.icoNew(pc, L1SkillId.miso1, 4995, 1800L, true);
+	static void startMiso(L1PcInstance pc, int skillId, int duration) {
+		final int icon = switch (skillId) {
+			case L1SkillId.miso1 -> 4995;
+			case L1SkillId.miso2 -> 4996;
+			case L1SkillId.miso3 -> 4997;
+			default -> throw new IllegalArgumentException("Unknown Miso buff " + skillId);
+		};
+		if (pc.hasSkillEffect(skillId)) {
+			SC_InventoryIcon.icoReset(pc, skillId, icon, 1800L, true);
+		} else {
+			if (skillId != L1SkillId.miso1) {
+				pc.applySkillModifierFromOwner(skillId, 0);
+				SC_SPMR.send(pc);
+				SC_OwnCharAttrDef.send(pc);
 			}
-			break;
+			SC_InventoryIcon.icoNew(pc, skillId, icon, 1800L, true);
 		}
-		case L1SkillId.miso2: {
-			if (pc.hasSkillEffect(L1SkillId.miso2)) {
-				SC_InventoryIcon.icoReset(pc, L1SkillId.miso2, 4996, 1800L, true);
-			} else {
-				pc.addMaxHp(100);
-				pc.getResistance().addMr(10);
-				pc.addHpr(2);
-				try { SC_SPMR.send(pc); } catch (Throwable ignore) {}
-				try { SC_OwnCharAttrDef.send(pc); } catch (Throwable ignore) {}
-				SC_InventoryIcon.icoNew(pc, L1SkillId.miso2, 4996, 1800L, true);
-			}
-			break;
-		}
-		case L1SkillId.miso3: {
-			if (pc.hasSkillEffect(L1SkillId.miso3)) {
-				SC_InventoryIcon.icoReset(pc, L1SkillId.miso3, 4997, 1800L, true);
-			} else {
-				pc.addDmgup(3);
-				pc.addBowDmgup(3);
-				pc.addMaxMp(50);
-				pc.getAbility().addSp(3);
-				pc.addMpr(2);
-				try { SC_SPMR.send(pc); } catch (Throwable ignore) {}
-				try { SC_OwnCharAttrDef.send(pc); } catch (Throwable ignore) {}
-				SC_InventoryIcon.icoNew(pc, L1SkillId.miso3, 4997, 1800L, true);
-			}
-			break;
-		}
-
-		default:
-			return HandlerResult.NOT_HANDLED;
-		}
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
-	private static HandlerResult onClanBuff(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
+	static void startClanStance(L1PcInstance pc, int skillId, int duration) {
+		final var clan = pc.getClan();
+		if (clan == null) return;
 
-		final int skillId;
-		try { skillId = su.hdSkillId(); }
-		catch (Throwable ignore) { return HandlerResult.NOT_HANDLED; }
+		final int blessIdx = Math.max(0, clan.getBless() - 1);
+		final int[] times = clan.getBuffTime();
+		final int buffTime = times != null && blessIdx < times.length ? times[blessIdx] : 0;
+		final int stance = skillId - L1SkillId.CLAN_BUFF1;
+		if (stance <= 1) pc.applySkillModifierFromOwner(skillId, 0);
+		if (skillId == L1SkillId.CLAN_BUFF2) sendAttrDef(pc);
+		SC_ActionUI2.send(pc, 2724 + stance, buffTime, 7, 7233 + 2 * stance, 4650 + stance);
+		SC_ServerMessage.send(pc, 4618, clanStanceName(skillId));
+		SC_SkillSound.send(pc, pc.getId(), 14482);
+		applySkillEffectSec(pc, skillId, duration);
+	}
 
-		if (pc.getClan() == null) return HandlerResult.HANDLED;
-
-		final int blessIdx = Math.max(0, pc.getClan().getBless() - 1);
-		final int[] times = pc.getClan().getBuffTime();
-		final int buffTime = (times != null && blessIdx < times.length ? times[blessIdx] : 0);
-
-		switch (skillId) {
-		case L1SkillId.CLAN_BUFF1: { // 일반 공격 태세
-			pc.addDmgup(2);
-			pc.addBowDmgup(2);
-			SC_ActionUI2.send(pc, 2724, buffTime, 7, 7233, 4650);
-			SC_ServerMessage.send(pc, 4618, "$22503");
-			SC_SkillSound.send(pc, pc.getId(), 14482);
-			break;
-		}
-		case L1SkillId.CLAN_BUFF2: { // 일반 방어 태세
-			pc.getAC().addAc(-3);
-			try { SC_OwnCharAttrDef.send(pc); } catch (Throwable ignore) {}
-			SC_ActionUI2.send(pc, 2725, buffTime, 7, 7235, 4651);
-			SC_ServerMessage.send(pc, 4618, "$22504");
-			SC_SkillSound.send(pc, pc.getId(), 14482);
-			break;
-		}
-		case L1SkillId.CLAN_BUFF3: { // 전투 공격 태세
-			SC_ActionUI2.send(pc, 2726, buffTime, 7, 7237, 4652);
-			SC_ServerMessage.send(pc, 4618, "$22505");
-			SC_SkillSound.send(pc, pc.getId(), 14482);
-			break;
-		}
-		case L1SkillId.CLAN_BUFF4: { // 전투 방어 태세
-			SC_ActionUI2.send(pc, 2727, buffTime, 7, 7239, 4653);
-			SC_ServerMessage.send(pc, 4618, "$22506");
-			SC_SkillSound.send(pc, pc.getId(), 14482);
-			break;
-		}
-		default:
-			return HandlerResult.NOT_HANDLED;
-		}
-
-		return HandlerResult.HANDLED;
+	static String clanStanceName(int skillId) {
+		return switch (skillId) {
+			case L1SkillId.CLAN_BUFF1 -> "$22503";
+			case L1SkillId.CLAN_BUFF2 -> "$22504";
+			case L1SkillId.CLAN_BUFF3 -> "$22505";
+			case L1SkillId.CLAN_BUFF4 -> "$22506";
+			default -> throw new IllegalArgumentException("Unknown clan stance " + skillId);
+		};
 	}
 
 	// ===== RETURN_TO_NATURE =====
@@ -2397,45 +1768,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.NOT_HANDLED;
 	}
 
-	private static ArrayList<L1PcInstance> collectPartyMembersInSight(
-	        final L1PcInstance center,
-	        final int range,
-	        final boolean includeSelf) {
-
-	    final ArrayList<L1PcInstance> list = new ArrayList<>(8);
-
-	    if (center == null) {
-	        return list;
-	    }
-
-	    if (includeSelf) {
-	        list.add(center);
-	    }
-
-	    final L1Party party = center.getParty();
-
-	    if (party == null) {
-	        return list;
-	    }
-
-	    for (L1PcInstance p : L1World.getInstance().getVisiblePlayer(center, range)) {
-	        if (p == null) {
-	            continue;
-	        }
-	        if (p == center) {
-	            continue;
-	        }
-
-	        if (!party.isMember(p)) {
-	            continue;
-	        }
-
-	        list.add(p);
-	    }
-
-	    return list;
-	}
-
 	// ===== 인벤 아이콘 + 버프 리프레시(UI 정책 그대로 유지) =====
 	private static void refreshInventoryBuffIcon(final L1PcInstance pc, final int skillId, final int durSec) {
 		if (pc == null) return;
@@ -2461,67 +1793,84 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 	// =========================
 	// IMPACT (파티 시야 18셀 버프)
 	// =========================
-	private static HandlerResult onImpact(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
+	static HandlerResult castImpact(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
 		final L1PcInstance caster = su.hdPlayer();
 		if (caster == null) return HandlerResult.NOT_HANDLED;
-
-
-		final int durSec = durationSecForBuff(su, L1SkillId.IMPACT);
-		final int impactUp = clampImpactUpByLevel(caster.getLevel());
-
-		// 본인 + (파티면) 시야 18셀 파티원
-		final ArrayList<L1PcInstance> members = collectPartyMembersInSight(caster, 18, true);
-
-		for (L1PcInstance member : members) {
-			if (member == null) continue;
-
-			// 기존 로직: 있으면 remove 후 icoReset, 없으면 icoNew
-			refreshInventoryBuffIcon(member, L1SkillId.IMPACT, durSec);
-
-			// 적용
-			member.setImpactUp(impactUp);
-			member.getResistance().addSpecialPierce(eKind.ALL, impactUp);
-			applySkillEffectSec(member, L1SkillId.IMPACT, durSec);
-
-		}
-
-		return HandlerResult.HANDLED;
+		final int id = L1SkillId.IMPACT;
+		return submitPartyBuff(caster, id, durationSecForBuff(su, id), clampImpactUpByLevel(caster.getLevel()), 0)
+				? HandlerResult.HANDLED : HandlerResult.CONTINUE;
 	}
 
-	private static HandlerResult onSleep(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> iter) {
+	static void startImpact(L1PcInstance pc, int skillId, int duration, int bonus, int gfx, boolean partyMember) {
+		refreshInventoryBuffIcon(pc, skillId, duration);
+		pc.applySkillModifierFromOwner(skillId, bonus);
+		applySkillEffectSec(pc, skillId, duration);
+	}
+
+	static HandlerResult castSleep(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
 		if (target == null) return HandlerResult.HANDLED_WITHOUT_TIMER;
-		final int duration = DurationResolver.INSTANCE.resolveDurationMs(su);
-		if (duration <= 0 || (target instanceof L1NpcInstance npc && !npc.trySetSkillEffect(su.hdSkillId(), duration)))
-			return HandlerResult.HANDLED_WITHOUT_TIMER;
+		final int id = su.hdSkillId();
+		final int durationMs = DurationResolver.INSTANCE.resolveDurationMs(su);
+		if (durationMs <= 0) return HandlerResult.HANDLED_WITHOUT_TIMER;
 
-		final boolean fog = su.hdSkillId() == L1SkillId.FOG_OF_SLEEPING;
 		if (target instanceof L1PcInstance pc) {
-			if (fog) {
-				SC_SkillSound.send(pc, pc.getId(), 9218);
-				SC_SkillSound.send(pc, pc.getId(), 760);
-			}
-			SC_Paralysis.send(pc, SC_Paralysis.TYPE_SLEEP, true);
+			return submitContextBuff(pc, id, durationMs, 0, 0, null)
+					? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
 		}
-		if (fog) {
-			SC_SkillSound.broadcastFast(target, target.getId(), 9218);
-			SC_SkillSound.broadcastFast(target, target.getId(), 760);
-		}
+		if (target instanceof L1NpcInstance npc && !npc.trySetSkillEffect(id, durationMs))
+			return HandlerResult.HANDLED_WITHOUT_TIMER;
+		if (id == L1SkillId.FOG_OF_SLEEPING) broadcastSleepSound(target);
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onWindShackleLike(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
+	static void startSleep(L1PcInstance pc, int id, int durationMs, int option, int gfx, boolean partyMember) {
+		if (option != 0) {
+			if (pc.isDead() || pc.hasSkillEffect(id)) return;
+			pc.skillEffectSetFromOwner(id, durationMs);
+			SC_Paralysis.send(pc, SC_Paralysis.TYPE_SLEEP, true);
+			sendSkillSoundBroadcast(pc, 760);
+			return;
+		}
+		final boolean fog = id == L1SkillId.FOG_OF_SLEEPING;
+		if (fog) {
+			SC_SkillSound.send(pc, pc.getId(), 9218);
+			SC_SkillSound.send(pc, pc.getId(), 760);
+		}
+		SC_Paralysis.send(pc, SC_Paralysis.TYPE_SLEEP, true);
+		if (fog) broadcastSleepSound(pc);
+		pc.skillEffectSetFromOwner(id, durationMs);
+	}
 
+	private static void broadcastSleepSound(L1Character target) {
+		SC_SkillSound.broadcastFast(target, target.getId(), 9218);
+		SC_SkillSound.broadcastFast(target, target.getId(), 760);
+	}
 
-		int skillid = su.hdSkillId();
+	static HandlerResult castWindShackle(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (!(target instanceof L1PcInstance pc)) return HandlerResult.HANDLED;
+		final int id = su.hdSkillId();
+		if (isDragonWindShackle(id) && pc.isDead()) return HandlerResult.CONTINUE;
+		return submitContextBuff(pc, id, DurationResolver.INSTANCE.resolveDurationMs(su), su.hdGetBuffIconDuration(), 0, null)
+				? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
+	}
 
-		L1PcInstance pc = (L1PcInstance) cha;
-		final int dur = su.hdGetBuffIconDuration(); 
-		SC_SkillIconWindShackle.send(pc, pc.getId(), dur);
+	private static boolean isDragonWindShackle(int id) {
+		return id == L1SkillId.RINDVIOR_WIND_SHACKLE || id == L1SkillId.RINDVIOR_WIND_SHACKLE_1
+				|| id == L1SkillId.DRAKE_WIND_SHACKLE;
+	}
 
-		pc.setSkillEffect(skillid, dur * 1000);
-
-		return HandlerResult.HANDLED;
+	static void startWindShackle(L1PcInstance pc, int id, int durationMs, int iconDuration, int gfx, boolean partyMember) {
+		if (isDragonWindShackle(id)) {
+			if (pc.isDead()) return;
+			pc.skillEffectSetFromOwner(L1SkillId.WIND_SHACKLE, 12_000);
+			if (pc.getCurrentWeapon() != 88) SC_SkillIconWindShackle.send(pc, pc.getId(), iconDuration);
+			sendSkillSoundBroadcast(pc, 1799);
+			if (durationMs > 0) pc.skillEffectSetFromOwner(id, durationMs);
+		} else {
+			SC_SkillIconWindShackle.send(pc, pc.getId(), iconDuration);
+			pc.skillEffectSetFromOwner(id, (int) Math.clamp(iconDuration * 1000L, 0, Integer.MAX_VALUE));
+			if (durationMs > 0) pc.skillEffectSetFromOwner(id, durationMs);
+		}
 	}
 
 	private static HandlerResult onTurnUndead(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -2589,84 +1938,33 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onStatusFreeze(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
+	static HandlerResult castStatusFreeze(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (!(target instanceof L1PcInstance pc)) return HandlerResult.HANDLED;
+		return submitContextBuff(pc, su.hdSkillId(), DurationResolver.INSTANCE.resolveDurationMs(su), 0, 0, null)
+				? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
+	}
 
-		L1PcInstance pc = (L1PcInstance) cha;
+	static void startStatusFreeze(L1PcInstance pc, int id, int durationMs, int option, int gfx, boolean partyMember) {
 		SC_Paralysis.send(pc, SC_Paralysis.TYPE_BIND, true);
-		return HandlerResult.HANDLED;
+		if (durationMs > 0) pc.skillEffectSetFromOwner(id, durationMs);
 	}
 
 	// =========================
 	// GRACE_AVATAR (자기 + 파티 시야 18셀)
 	// =========================
-	private static HandlerResult onGraceAvatar(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		// 원본은 cha 기준이었음. (대체로 자기 자신)
-		final L1PcInstance pc = (cha instanceof L1PcInstance) ? (L1PcInstance) cha : su.hdPlayer();
-		if (pc == null) return HandlerResult.NOT_HANDLED;
+	static HandlerResult castGraceAvatar(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		final L1PcInstance caster = target instanceof L1PcInstance pc ? pc : su.hdPlayer();
+		if (caster == null) return HandlerResult.NOT_HANDLED;
+		return submitPartyBuff(caster, L1SkillId.GRACE_AVATAR, 15, 0, 0)
+				? HandlerResult.HANDLED : HandlerResult.CONTINUE;
+	}
 
-		final int durSec = 15;
-
-		// ===== 버프 아이콘 NOTI =====
-		sendRestatBuffNotiDualIcon(
-				pc,
-				L1SkillId.GRACE_AVATAR,
-				durSec,
-				7427,   // on icon
-				7427,   // off icon (같음)
-				10,     // priority
-				4734,   // tooltip
-				4734,   // new
-				4741,   // end
-				true
-				);
-
-		// ===== 본인 적용 =====
-		pc.setGraceLv(1); // 강제로 1
-		final int resistance = 5 + pc.getGraceLv();
-		pc.getResistance().addSpecialResistance(eKind.ALL, resistance);
-
-		applySkillEffectSec(pc, L1SkillId.GRACE_AVATAR, durSec);
-
-		// 사운드
-		sendSkillSoundOnce(pc, 14495);
-
-		// ===== 파티원 적용(파티일 때만, 시야 18셀) =====
-		final L1Party party = pc.getParty();
-		if (party == null) return HandlerResult.HANDLED;
-
-		try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-    SC_ServerMessage.nativeWriter(4734),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
-			if (member == null) continue;
-			if (member.getId() == pc.getId()) continue;
-			if (!party.isMember(member)) continue;
-
-			// 파티원도 동일 NOTI
-			sendRestatBuffNotiDualIcon(
-					member,
-					L1SkillId.GRACE_AVATAR,
-					durSec,
-					7427,
-					7427,
-					10,
-					4734,
-					4734,
-					4741,
-					true
-					);
-			member.setGraceLv(1);
-			final int r2 = 5 + member.getGraceLv();
-			member.getResistance().addSpecialResistance(eKind.ALL, r2);
-
-			applySkillEffectSec(member, L1SkillId.GRACE_AVATAR, durSec);
-
-			// 파티원 알림 메시지
-			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
-		}
-}
-
-		return HandlerResult.HANDLED;
+	static void startGraceAvatar(L1PcInstance pc, int skillId, int duration, int option, int gfx, boolean partyMember) {
+		sendRestatBuffNoti(pc, skillId, duration, 7427, 10, 4734, 4734, 4741, true);
+		pc.applySkillModifierFromOwner(skillId, 0);
+		applySkillEffectSec(pc, skillId, duration);
+		if (partyMember) SC_ServerMessage.send(pc, 4734);
+		else sendSkillSoundOnce(pc, 14495);
 	}
 
 	static void startResistMagic(L1PcInstance pc, int skillId, int duration) {
@@ -2717,105 +2015,66 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 
 
 
-	private static HandlerResult onEarthWeapon(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addHitup(4);
-		pc.addDmgup(2);
-
-		return HandlerResult.HANDLED;
-	}
-
 	/** REDUCE_WEIGHT / DECREASE_WEIGHT 공용 */
-	private static HandlerResult onReduceWeightLike(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addWeightReduction(180);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onCounterMirror(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addWeightReduction(300);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onHurricane(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		SC_SkillBrave.send(pc, pc.getId(), 9, su.hdGetBuffIconDuration());
-		SC_SkillBrave.broadcastFast(pc, pc.getId(), 9, 0);
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onFocusWave(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		if (pc.hasSkillEffect(L1SkillId.FOCUS_WAVE)) {
-			pc.removeSkillEffect(L1SkillId.FOCUS_WAVE);
+	static void startFixedCombatBuff(L1PcInstance pc, int skillId, int duration) {
+		pc.applySkillModifierFromOwner(skillId, 0);
+		switch (skillId) {
+		case L1SkillId.BURNING_WEAPON -> SC_SkillIconAura.send(pc, 162, duration);
+		case L1SkillId.STORM_EYE -> SC_SkillIconAura.send(pc, 155, duration);
+		case L1SkillId.STORM_SHOT -> SC_SkillIconAura.send(pc, 165, duration);
+		case L1SkillId.EARTH_GUARDIAN -> SC_SkillIconShield.send(pc, 7, duration);
+		default -> { }
 		}
-		pc.set_focus_wave_level(1);
-
-		SC_SkillBrave.send(pc, pc.getId(), 10, su.hdGetBuffIconDuration());
-		SC_SkillBrave.broadcastFast(pc, pc.getId(), 10, 0);
-
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration > 0 ? duration : durationSecForBuff(null, skillId));
 	}
 
-	private static HandlerResult onSandStorm(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
 
-		SC_SkillBrave.send(pc, pc.getId(), 1, su.hdGetBuffIconDuration());
-		SC_SkillBrave.broadcastFast(pc, pc.getId(), 1, 0);
 
-		return HandlerResult.HANDLED;
+
+
+	static void startBraveSpeed(L1PcInstance pc, int skillId, int duration) {
+		final boolean bloodLust = skillId == L1SkillId.BLOOD_LUST;
+		pc.setBraveSpeed(bloodLust ? 1 : 4);
+		sendBraveMode(pc, bloodLust ? 6 : 4, duration);
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
-	private static HandlerResult onDancingBlades(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		SC_SkillBrave.send(pc, pc.getId(), 1, su.hdGetBuffIconDuration());
-		SC_SkillBrave.broadcastFast(pc, pc.getId(), 1, 0);
-		SC_SkillIconAura.send(pc, 154, su.hdGetBuffIconDuration());
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onCurseBlindLike(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-
-		final L1PcInstance pc = (L1PcInstance) cha;
-		
-		boolean is_floating_eye = pc.hasSkillEffect(su.hdStatusFloatingEye());
-		pc.sendPackets(is_floating_eye ? 2 : 1);
-		if (is_floating_eye && !pc.isBlind()) {
-			pc.showFloatingEyeToInvis();
+	static void startBraveVisual(L1PcInstance pc, int skillId, int iconDuration) {
+		final int mode = switch (skillId) {
+			case L1SkillId.HURRICANE -> 9;
+			case L1SkillId.FOCUS_WAVE -> 10;
+			default -> 1;
+		};
+		final int duration = iconDuration > 0 ? iconDuration : durationSecForBuff(null, skillId);
+		if (skillId == L1SkillId.FOCUS_WAVE) {
+			resetEffect(pc, skillId);
+			pc.set_focus_wave_level(1);
 		}
-		return HandlerResult.HANDLED;
+		sendBraveMode(pc, mode, iconDuration);
+		if (skillId == L1SkillId.DANCING_BLADES) SC_SkillIconAura.send(pc, 154, iconDuration);
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
-	private static HandlerResult onCursePoisonLike(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.HANDLED;
-
-		final L1Character user = su.hdUser();
-		L1DamagePoison.doInfection(user, cha, 3000, 5, false, 7000);
-		return HandlerResult.HANDLED;
+	private static void sendBraveMode(L1PcInstance pc, int mode, int duration) {
+		SC_SkillBrave.send(pc, pc.getId(), mode, duration);
+		SC_SkillBrave.broadcastFast(pc, pc.getId(), mode, 0);
 	}
 
-	private static HandlerResult onCurseParalyzeLike(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.HANDLED;
-		L1CurseParalysis.curse(cha, su.hdSkillId()); // 원본: _skillId
-		return HandlerResult.HANDLED;
+	static HandlerResult castBlind(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (!(target instanceof L1PcInstance pc)) return HandlerResult.HANDLED;
+		final int durationMs = DurationResolver.INSTANCE.resolveDurationMs(su);
+		return submitContextBuff(pc, su.hdSkillId(), durationMs, su.hdStatusFloatingEye(), 0, null)
+				? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
 	}
+
+	static void startBlind(L1PcInstance pc, int id, int durationMs, int floatingEyeId, int gfx, boolean partyMember) {
+		final boolean floatingEye = pc.hasSkillEffect(floatingEyeId);
+		pc.sendPackets(floatingEye ? 2 : 1);
+		if (floatingEye && !pc.isBlind()) pc.showFloatingEyeToInvis();
+		if (durationMs > 0) pc.skillEffectSetFromOwner(id, durationMs);
+	}
+
+
 
 	static void startDisease(L1PcInstance pc, int skillId, int duration) {
 		if (duration < 0) {
@@ -2827,23 +2086,6 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		}
 	}
 
-	private static HandlerResult onMobBasillOrCoca(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.HANDLED;
-
-		if (!cha.hasSkillEffect(L1SkillId.MOB_COCA) && !cha.hasSkillEffect(L1SkillId.MOB_BASILL)) {
-			L1CurseParalysis.curse(cha, su.hdSkillId());
-		}
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onEarthGuardian(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addDamageReductionByArmor(2);
-		SC_SkillIconShield.send(pc, 7, su.hdGetBuffIconDuration());
-		return HandlerResult.HANDLED;
-	}
 
 	static void startCommonStatBuff(L1PcInstance pc, int skillId, int duration) {
 		if (duration <= 0) return;
@@ -2860,53 +2102,36 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 
 
 
-	private static HandlerResult onInvisibilityWithCastleTowerBlock(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
+	static HandlerResult castInvisibility(L1SkillUse cast, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (!(target instanceof L1PcInstance pc)) return HandlerResult.NOT_HANDLED;
+		if (pc.is_combat_field()) return HandlerResult.RETURN;
+		final int id = cast.hdSkillId();
+		return submitContextBuff(pc, id, durationSecForBuff(cast, id), 0, 0, null)
+				? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
+	}
 
-		final int skillId = su.hdSkillId(); // 또는 전달받는 스킬ID
-		if (skillId != L1SkillId.INVISIBILITY && skillId != L1SkillId.BLIND_HIDING) {
-			return HandlerResult.NOT_HANDLED;
-		}
-
-		if (pc.is_combat_field()) {
-			return HandlerResult.RETURN; // 기존처럼 전장 제한
-		}
-
-		// 블라인드 하이딩 토글
-		if (skillId == L1SkillId.BLIND_HIDING && pc.hasSkillEffect(L1SkillId.BLIND_HIDING)) {
+	static void startInvisibility(L1PcInstance pc, int id, int duration, int option, int gfx, boolean partyMember) {
+		if (pc.is_combat_field()) return;
+		if (id == L1SkillId.BLIND_HIDING && pc.hasSkillEffect(id)) {
 			pc.delBlindHiding();
-			return HandlerResult.HANDLED;
+			return;
 		}
-
-		// 인형 제거 
-		try {
-			if (pc.getDollList() != null) {
-				for (Object o : pc.getDollList().values()) {
-					if (o instanceof L1DollInstance) {
-						((L1DollInstance) o).deleteDoll(false);
-					}
-				}
+		if (pc.getDollList() != null) {
+			for (Object doll : pc.getDollList().values()) {
+				if (doll instanceof L1DollInstance active) active.deleteDoll(false);
 			}
-		} catch (Throwable ignore) {}
-
-		final int durSec = durationSecForBuff(su, skillId);
-		pc.setSkillEffect(skillId, (int) Math.min(Integer.MAX_VALUE, durSec * 1000L));
+		}
+		applySkillEffectSec(pc, id, duration);
 		SC_Invis.send(pc, pc.getId(), 1);
 		SC_Invis.broadcastFast(pc, pc.getId(), 1);
 		NpcEventFactory.onPlayerInvisibility(pc);
-		return HandlerResult.HANDLED;
 	}
 
 
-	private static HandlerResult onNormalBlessingDR(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		// 정상의가호
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addDamageReductionByArmor(8);
+	static void startNormalBlessing(L1PcInstance pc, int skillId, int duration) {
+		pc.applySkillModifierFromOwner(skillId, 0);
 		SC_OwnCharAttrDef.send(pc);
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
 	private static HandlerResult onAreaOfSilenceSound(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
@@ -2926,65 +2151,9 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onMobRangeStunLike(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.HANDLED;
-
-		final L1Character user = su.hdUser();
-
-		int levelDiff = user.getLevel() - cha.getLevel();
-		int duration = 2250 + levelDiff * 80;
-
-		duration += su.hdRandom().nextInt(1600) - 800;
-
-		if (duration < 1000) duration = 1000;
-		else if (duration > 5000) duration = 5000;
-
-		su.hdSetShockStunDuration(duration);
-
-		return applyStunLikeEffect(su, cha, duration, 81162);
-	}
-
-
-	private static HandlerResult onBurningWeapon(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addDmgup(6);
-		pc.addHitup(3);
-		SC_SkillIconAura.send(pc, 162, su.hdGetBuffIconDuration());
-
-		return HandlerResult.HANDLED;
-	}
 
 
 
-	private static HandlerResult onAquaShot(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		((L1PcInstance) cha).addBowHitup(4);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onStormEye(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addBowHitup(2);
-		pc.addBowDmgup(3);
-		SC_SkillIconAura.send(pc, 155, su.hdGetBuffIconDuration());
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onStormShot(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addBowDmgup(5);
-		pc.addBowHitup(-3);
-		SC_SkillIconAura.send(pc, 165, su.hdGetBuffIconDuration());
-
-		return HandlerResult.HANDLED;
-	}
 
 	static void startBerserkers(L1PcInstance pc, int skillId, int duration) {
 		if (duration < 0) {
@@ -3021,80 +2190,9 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 				);
 	}
 
-	private static HandlerResult onGreaterHaste(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
 
-		// 원본: haste 장착이면 continue
-		if (pc.getHasteItemEquipped() > 0) {
-			return HandlerResult.CONTINUE;
-		}
 
-		final int durSec = durationSecForBuff(su, L1SkillId.GREATER_HASTE);
 
-		if (pc.getMoveSpeed() == 2) {
-			final int skillNum = MovementSpeedEffects.activeSlow(pc, 0);
-
-			if (skillNum != 0) {
-				pc.removeSkillEffect(skillNum);
-				pc.removeSkillEffect(L1SkillId.GREATER_HASTE);
-				return HandlerResult.CONTINUE;
-			}
-
-			// slow인데 원인 스킬이 없으면(특수상태) 건드리지 않음
-			return HandlerResult.HANDLED;
-		}
-
-		pc.setDrink(false);
-		pc.setMoveSpeed(1);
-		SC_SkillHaste.send(pc, pc.getId(), 1, durSec);
-		SC_SkillHaste.broadcastFast(pc, pc.getId(), 1, 0);
-
-		applySkillEffectSec(pc, L1SkillId.GREATER_HASTE, durSec);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onHolyWalk(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int durSec = durationSecForBuff(su, L1SkillId.HOLY_WALK);
-
-		pc.setBraveSpeed(4);
-		SC_SkillBrave.send(pc, pc.getId(), 4, durSec);
-		SC_SkillBrave.broadcastFast(pc, pc.getId(), 4, 0);
-
-		applySkillEffectSec(pc, L1SkillId.HOLY_WALK, durSec);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onMovingAcceleration(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int durSec = durationSecForBuff(su, L1SkillId.MOVING_ACCELERATION);
-
-		pc.setBraveSpeed(4);
-		SC_SkillBrave.send(pc, pc.getId(), 4, durSec);
-		SC_SkillBrave.broadcastFast(pc, pc.getId(), 4, 0);
-
-		applySkillEffectSec(pc, L1SkillId.MOVING_ACCELERATION, durSec);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onBloodLust(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int durSec = durationSecForBuff(su, L1SkillId.BLOOD_LUST);
-
-		pc.setBraveSpeed(1);
-		SC_SkillBrave.send(pc, pc.getId(), 6, durSec);
-		SC_SkillBrave.broadcastFast(pc, pc.getId(), 6, 0);
-
-		applySkillEffectSec(pc, L1SkillId.BLOOD_LUST, durSec);
-		return HandlerResult.HANDLED;
-	}
 	static void startMeleeBuff(L1PcInstance pc, int skillId, int duration) {
 		resetEffect(pc, skillId);
 		CSkillInfo.applyFixedModifierFromOwner(pc, skillId);
@@ -3286,33 +2384,22 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 	    return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onIceLance(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null || magic == null) return HandlerResult.HANDLED_WITHOUT_TIMER;
-		if (!magic.calcProbabilityMagic(su.hdSkillId())) return HandlerResult.HANDLED_WITHOUT_TIMER;
-
-		final int resolved = DurationResolver.INSTANCE.resolveDurationMs(su);
-		final int visual = (int) Math.clamp(su.hdGetBuffIconDuration() * 1000L, 0, Integer.MAX_VALUE);
-		if (cha instanceof L1PcInstance && resolved <= 0) return HandlerResult.HANDLED_WITHOUT_TIMER;
-		if (cha instanceof L1NpcInstance npc) {
-			final int duration = resolved > 0 ? resolved : visual;
-			if (!canFreezeNpc(npc) || duration <= 0 || !npc.trySetSkillEffect(su.hdSkillId(), duration))
+	private static HandlerResult castFreeze(L1SkillUse cast, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (target == null) return HandlerResult.HANDLED_WITHOUT_TIMER;
+		final int id = cast.hdSkillId();
+		final boolean ice = id == L1SkillId.ICE_LANCE;
+		if (ice && (magic == null || !magic.calcProbabilityMagic(id))) return HandlerResult.HANDLED_WITHOUT_TIMER;
+		final int duration = DurationResolver.INSTANCE.resolveDurationMs(cast);
+		final int visual = ice ? (int) Math.clamp(cast.hdGetBuffIconDuration() * 1000L, 0, Integer.MAX_VALUE) : 0;
+		if (target instanceof L1PcInstance && duration <= 0) return HandlerResult.HANDLED_WITHOUT_TIMER;
+		if (target instanceof L1NpcInstance npc) {
+			final int fallback = ice ? visual : SkillUseHelper.pickMillis(SkillUseHelper.EARTH_BIND_DUR);
+			final int npcDuration = duration > 0 ? duration : fallback;
+			if (!canFreezeNpc(npc) || npcDuration <= 0 || !npc.trySetSkillEffect(id, npcDuration))
 				return HandlerResult.HANDLED_WITHOUT_TIMER;
 		}
-		spawnEffectAtTarget(cha, 81168, visual > 0 ? visual : resolved);
-		sendFreeze(cha);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onEarthBind(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.HANDLED_WITHOUT_TIMER;
-		if (cha instanceof L1NpcInstance npc) {
-			final int duration = SkillUseHelper.pickMillis(SkillUseHelper.EARTH_BIND_DUR);
-			if (!canFreezeNpc(npc) || !admitNpcControl(su, npc, duration))
-				return HandlerResult.HANDLED_WITHOUT_TIMER;
-		} else if (cha instanceof L1PcInstance && DurationResolver.INSTANCE.resolveDurationMs(su) <= 0) {
-			return HandlerResult.HANDLED_WITHOUT_TIMER;
-		}
-		sendFreeze(cha);
+		if (ice) spawnEffectAtTarget(target, 81168, visual > 0 ? visual : duration);
+		sendFreeze(target);
 		return HandlerResult.HANDLED;
 	}
 
@@ -3358,97 +2445,29 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onOmanOrMaenoStun(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.HANDLED;
 
-		final int[] stunTimeArray = { 2500, 3000, 3500 };
-		final int rnd = su.hdRandom().nextInt(stunTimeArray.length);
-		final int durationMs = stunTimeArray[rnd];
-
-		su.hdSetShockStunDuration(durationMs);
-
-		return applyStunLikeEffect(su, cha, durationMs, 81162);
+	public static void notifyCashScrollStats(L1PcInstance pc, int id) {
+		switch (id) {
+		case L1SkillId.STATUS_CASHSCROLL -> {
+			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
+			if (pc.isInParty()) pc.getParty().refreshPartyMemberStatus(pc);
+			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
+		}
+		case L1SkillId.STATUS_CASHSCROLL2 -> SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
+		case L1SkillId.STATUS_CASHSCROLL3, L1SkillId.STATUS_CASHSCROLL4 -> SC_SPMR.send(pc);
+		default -> { }
+		}
 	}
 
-	private static HandlerResult onNpcBloodBuff(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int skillId;
-		try { skillId = su.hdSkillId(); }
-		catch (Throwable ignore) { return HandlerResult.NOT_HANDLED; }
-
-		switch (skillId) {
-		case L1SkillId.BUFF_SAEL: {
-			if (pc.hasSkillEffect(L1SkillId.BUFF_SAEL)) {
-				pc.removeSkillEffect(L1SkillId.BUFF_SAEL);
-			}
-			pc.getAC().addAc(-8);
-			pc.addBowHitup(6);
-			pc.addBowDmgup(3);
-			pc.addMaxHp(80);
-			pc.addMaxMp(10);
-			pc.addHpr(8);
-			pc.addMpr(1);
-			pc.getResistance().addWater(30);
-			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-			SC_OwnCharAttrDef.send(pc);
-			SC_SPMR.send(pc);
-			break;
-		}
-
-		case L1SkillId.BUFF_GUNTER: {
-			if (pc.hasSkillEffect(L1SkillId.BUFF_GUNTER)) {
-				pc.removeSkillEffect(L1SkillId.BUFF_GUNTER);
-			}
-			pc.getAbility().addAddedDex((byte) 5);
-			pc.addBowHitup(7);
-			pc.addBowDmgup(5);
-			pc.addMaxHp(100);
-			pc.addMaxMp(40);
-			pc.addHpr(10);
-			pc.addMpr(3);
-			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-			SC_OwnCharAttrDef.send(pc);
-			SC_SPMR.send(pc);
-			break;
-		}
-		case L1SkillId.BUFF_CRAY: { // 크레이 혈흔
-			pc.addHitup(5);
-			pc.addDmgup(1);
-			pc.addBowHitup(5);
-			pc.addBowDmgup(1);
-			pc.addMaxHp(100);
-			pc.addMaxMp(50);
-			pc.addHpr(3);
-			pc.addMpr(3);
-			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-			SC_SPMR.send(pc);
-			break;
-		}
-		case L1SkillId.BUFF_Vala: {
-			pc.addHitup(5);
-			pc.addDmgup(1);
-			pc.addBowHitup(5);
-			pc.addBowDmgup(1);
-			pc.addMaxHp(100);
-			pc.addMaxMp(50);
-			pc.addHpr(3);
-			pc.addMpr(3);
-			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-			SC_SPMR.send(pc);
-			break;
-		}
-
-		default:
-			return HandlerResult.NOT_HANDLED;
-		}
-
-		return HandlerResult.HANDLED;
+	static void startNpcBloodBuff(L1PcInstance pc, int skillId, int duration) {
+		final boolean showDefense = skillId == L1SkillId.BUFF_SAEL || skillId == L1SkillId.BUFF_GUNTER;
+		if (showDefense && pc.hasSkillEffect(skillId)) pc.removeSkillEffect(skillId);
+		pc.applySkillModifierFromOwner(skillId, 0);
+		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
+		SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
+		if (showDefense) SC_OwnCharAttrDef.send(pc);
+		SC_SPMR.send(pc);
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
 	// =========================
@@ -3509,159 +2528,75 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return HandlerResult.NOT_HANDLED;
 	}
 
-	// =========================
-	//  SLOW / MOB_SLOW_1 / MOB_SLOW_18
-	// =========================
-	private static HandlerResult onSlowLike(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.NOT_HANDLED;
+	private static HandlerResult castMovementSpeed(L1SkillUse cast, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		final int id = cast.hdSkillId();
+		final boolean greater = id == L1SkillId.GREATER_HASTE;
+		if (target == null || (greater && !(target instanceof L1PcInstance))) return HandlerResult.NOT_HANDLED;
+		final L1PcInstance pc = target instanceof L1PcInstance player ? player : null;
+		if (pc != null && pc.getHasteItemEquipped() > 0)
+			return id == L1SkillId.HASTE ? HandlerResult.HANDLED : HandlerResult.CONTINUE;
 
-		final int id = su.hdSkillId();
-		final int durSec = durationSecForBuff(su, id);
-
-		if (cha instanceof L1PcInstance) {
-			final L1PcInstance pc = (L1PcInstance) cha;
-			if (pc.getHasteItemEquipped() > 0) {
+		final int speed = target.getMoveSpeed();
+		final int duration = durationSecForBuff(cast, id);
+		if (id != L1SkillId.HASTE && !greater) {
+			if (speed == 0) {
+				if (pc != null) SC_SkillHaste.send(pc, pc.getId(), 2, duration);
+				SC_SkillHaste.broadcastFast(target, target.getId(), 2, duration);
+				target.setMoveSpeed(2);
+			} else if (speed == 1 && cancelOpposingSpeed(target, id, MovementSpeedEffects.activeHaste(target, 0))) {
 				return HandlerResult.CONTINUE;
 			}
-		}
-
-		if (cha.getMoveSpeed() == 0) {
-			if (cha instanceof L1PcInstance) {
-				final L1PcInstance pc = (L1PcInstance) cha;
-				SC_SkillHaste.send(pc, pc.getId(), 2, durSec);
-			}
-			SC_SkillHaste.broadcastFast(cha, cha.getId(), 2, durSec);
-			cha.setMoveSpeed(2);
 			return HandlerResult.HANDLED;
 		}
 
-		if (cha.getMoveSpeed() == 1) {
-			final int skillNum = MovementSpeedEffects.activeHaste(cha, 0);
-
-			if (skillNum != 0) {
-				cha.removeSkillEffect(skillNum);
-				cha.removeSkillEffect(id);
-				return HandlerResult.CONTINUE;
-			}
+		if (speed == 2) {
+			final boolean removed = cancelOpposingSpeed(target, id, MovementSpeedEffects.activeSlow(target, 0));
+			return greater && removed ? HandlerResult.CONTINUE : HandlerResult.HANDLED;
 		}
+		if (pc != null) {
+			pc.setDrink(false);
+			if (greater) pc.setMoveSpeed(1);
+			SC_SkillHaste.send(pc, pc.getId(), 1, duration);
+		}
+		SC_SkillHaste.broadcastFast(target, target.getId(), 1, 0);
+		if (greater) applySkillEffectSec(pc, id, duration);
+		else target.setMoveSpeed(1);
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onDragonMaan(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
+	private static boolean cancelOpposingSpeed(L1Character target, int incoming, int opposing) {
+		if (opposing == 0) return false;
+		target.removeSkillEffect(opposing);
+		target.removeSkillEffect(incoming);
+		return true;
+	}
 
-		final int skillId;
-		try {
-			skillId = su.hdSkillId();
-		} catch (Throwable ignore) {
-			return HandlerResult.NOT_HANDLED;
-		}
+	static void startDragonMaan(L1PcInstance pc, int skillId, int duration) {
+		pc.applySkillModifierFromOwner(skillId, 0);
+		if (hasDragonMaanSpellPower(skillId)) sendSpMr(pc);
+		applySkillEffectSec(pc, skillId, duration);
+	}
 
-		boolean needSpMr = false;
-
-		switch (skillId) {
-		case L1SkillId.ANTA_MAAN: // 지룡
-			pc.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, 5);
-			break;
-
-		case L1SkillId.FAFU_MAAN: // 수룡
-			pc.getResistance().addSpecialResistance(eKind.SPIRIT, 5);
-			break;
-
-		case L1SkillId.LIND_MAAN: // 풍룡
-			pc.getAbility().addSp(1);
-			pc.getResistance().addSpecialResistance(eKind.FEAR, 5);
-			needSpMr = true;
-			break;
-
-		case L1SkillId.VALA_MAAN: // 화룡
-			pc.addDmgup(2);
-			pc.getResistance().addSpecialResistance(eKind.ABILITY, 5);
-			break;
-
-		case L1SkillId.BIRTH_MAAN: // 탄생
-			pc.getResistance().addSpecialResistance(eKind.SPIRIT, 5);
-			pc.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, 5);
-			break;
-
-		case L1SkillId.SHAPE_MAAN: // 형상
-			pc.getAbility().addSp(1);
-			pc.getResistance().addSpecialResistance(eKind.SPIRIT, 5);
-			pc.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, 5);
-			pc.getResistance().addSpecialResistance(eKind.FEAR, 5);
-			needSpMr = true;
-			break;
-
-		case L1SkillId.LIFE_MAAN: // 생명
-			pc.getResistance().addSpecialResistance(eKind.ALL, 5);
-			pc.getResistance().addSpecialPierce(eKind.ALL, 3);
-			pc.addDmgup(2);
-			pc.getAbility().addSp(1);
-			needSpMr = true;
-			break;
-
-		default:
-			return HandlerResult.NOT_HANDLED;
-		}
-
-		if (needSpMr) {
-			try { SC_SPMR.send(pc); } catch (Throwable ignore) {}
-		}
-		return HandlerResult.HANDLED;
+	static boolean hasDragonMaanSpellPower(int skillId) {
+		return skillId == L1SkillId.LIND_MAAN || skillId == L1SkillId.SHAPE_MAAN || skillId == L1SkillId.LIFE_MAAN;
 	}
 
 
-	private static HandlerResult onDragonBlood(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
+	static void startDragonBlood(L1PcInstance pc, int skillId, int duration) {
+		if (pc.hasSkillEffect(skillId)) pc.removeSkillEffect(skillId);
+		pc.applySkillModifierFromOwner(skillId, 0);
+		sendOwnStatus(pc);
+		sendDragonBloodIcon(pc, dragonBloodIcon(skillId), Math.max(1, duration / 60));
+		applySkillEffectSec(pc, skillId, duration);
+	}
 
-		final int skillId;
-		try {
-			skillId = su.hdSkillId();
-		} catch (Throwable ignore) {
-			return HandlerResult.NOT_HANDLED;
-		}
-
-		int durSec = 0;
-		try {
-			durSec = durationSecForBuff(su, skillId); 
-		} catch (Throwable ignore) {}
-		if (durSec <= 0) durSec = 600; 
-		final int durMin = Math.max(1, durSec / 60);
-
-		switch (skillId) {
-		case L1SkillId.ANTA_BUFF: {
-			if (pc.hasSkillEffect(L1SkillId.ANTA_BUFF)) pc.removeSkillEffect(L1SkillId.ANTA_BUFF);
-			pc.getAC().addAc(-2);
-			pc.getResistance().addWater(50);
-			sendOwnStatus(pc);
-			sendDragonBloodIcon(pc, 82, durMin);
-			break;
-		}
-		case L1SkillId.FAFU_BUFF: {
-			if (pc.hasSkillEffect(L1SkillId.FAFU_BUFF)) pc.removeSkillEffect(L1SkillId.FAFU_BUFF);
-			pc.addHpr(3);
-			pc.addMpr(1);
-			pc.getResistance().addWind(50);
-			sendOwnStatus(pc);
-			sendDragonBloodIcon(pc, 85, durMin);
-			break;
-		}
-		case L1SkillId.RIND_BUFF: {
-			if (pc.hasSkillEffect(L1SkillId.RIND_BUFF)) pc.removeSkillEffect(L1SkillId.RIND_BUFF);
-			pc.addHitup(3);
-			pc.addBowHitup(3);
-			pc.getResistance().addFire(50);
-			sendOwnStatus(pc);
-			sendDragonBloodIcon(pc, 88, durMin);
-			break;
-		}
-		default:
-			return HandlerResult.NOT_HANDLED;
-		}
-
-		return HandlerResult.HANDLED;
+	static int dragonBloodIcon(int skillId) {
+		return switch (skillId) {
+			case L1SkillId.ANTA_BUFF -> 82;
+			case L1SkillId.FAFU_BUFF -> 85;
+			case L1SkillId.RIND_BUFF -> 88;
+			default -> throw new IllegalArgumentException("Unknown dragon blood effect " + skillId);
+		};
 	}
 
 	private static void sendOwnStatus(L1PcInstance pc) {
@@ -3687,140 +2622,33 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onSoulBarrier(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int durSec = durationSecForBuff(su, L1SkillId.SOUL_BARRIER);
-
-		if (pc.hasSkillEffect(L1SkillId.SOUL_BARRIER)) {
-			pc.removeSkillEffect(L1SkillId.SOUL_BARRIER);
-			SC_InventoryIcon.icoReset(pc, L1SkillId.SOUL_BARRIER, durSec, true);
+	static void startTimedInventoryIcon(L1PcInstance pc, int skillId, int duration) {
+		if (pc.hasSkillEffect(skillId)) {
+			pc.removeSkillEffect(skillId);
+			SC_InventoryIcon.icoReset(pc, skillId, duration, true);
 		} else {
-			SC_InventoryIcon.icoNew(pc, L1SkillId.SOUL_BARRIER, durSec, true);
+			SC_InventoryIcon.icoNew(pc, skillId, duration, true);
 		}
-
-		pc.setSkillEffect(L1SkillId.SOUL_BARRIER, durSec * 1000);
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
+		if (skillId == L1SkillId.TITANL_RISING) pc.setRisingUp(5 + Math.clamp(pc.getLevel() - 60, 1, 5));
 	}
 
-	private static HandlerResult onHaste(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (cha == null) return HandlerResult.NOT_HANDLED;
 
-		final int durSec = durationSecForBuff(su, L1SkillId.HASTE);
 
-		if (cha.getMoveSpeed() != 2) {
-			if (cha instanceof L1PcInstance) {
-				final L1PcInstance pc = (L1PcInstance) cha;
-
-				if (pc.getHasteItemEquipped() > 0) {
-					return HandlerResult.HANDLED;
-				}
-
-				pc.setDrink(false);
-				SC_SkillHaste.send(pc, pc.getId(), 1, durSec);
-			}
-
-			SC_SkillHaste.broadcastFast(cha, cha.getId(), 1, 0);
-			cha.setMoveSpeed(1);
-			return HandlerResult.HANDLED;
-
-		} else {
-			final int skillNum = MovementSpeedEffects.activeSlow(cha, 0);
-
-			if (skillNum != 0) {
-				cha.removeSkillEffect(skillNum);
-				cha.removeSkillEffect(L1SkillId.HASTE);
-				return HandlerResult.HANDLED; // 기존 continue 효과
-			}
-		}
-
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onTitanRising(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int durSec = durationSecForBuff(su, L1SkillId.TITANL_RISING);
-
-		if (pc.hasSkillEffect(L1SkillId.TITANL_RISING)) {
-			pc.removeSkillEffect(L1SkillId.TITANL_RISING);
-			SC_InventoryIcon.icoReset(pc, L1SkillId.TITANL_RISING, durSec, true);
-		} else {
-			SC_InventoryIcon.icoNew(pc, L1SkillId.TITANL_RISING, durSec, true);
-		}
-
-		pc.setSkillEffect(L1SkillId.TITANL_RISING, durSec * 1000);
-
-		int upHP = pc.getLevel() - 60;
-		if (upHP < 1) upHP = 1;
-		if (upHP >= 5) upHP = 5;
-
-		pc.setRisingUp(5 + upHP);
-		return HandlerResult.HANDLED;
-	}
-
-	private static HandlerResult onFeatherBuff(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.HANDLED;
-
-		final L1PcInstance pc = (L1PcInstance) cha;
-
-		final int skillId;
-		try {
-			skillId = su.hdSkillId(); 
-		} catch (Throwable ignore) {
-
-			return HandlerResult.NOT_HANDLED;
-		}
-
-		switch (skillId) {
-		case L1SkillId.FEATHER_BUFF_A: { // 매우 좋은
-			pc.addHpr(3);
-			pc.addMpr(3);
-			pc.addDmgup(2);
-			pc.addHitup(2);
-			pc.addMaxHp(50);
-			pc.addMaxMp(30);
-			pc.getAbility().addSp(2);
-			pc.addDamageReductionByArmor(3);
-			sendSpMr(pc);
+	static void startFeatherBuff(L1PcInstance pc, int skillId, int duration) {
+		final int reduction = switch (skillId) {
+			case L1SkillId.FEATHER_BUFF_A -> 3;
+			case L1SkillId.FEATHER_BUFF_B -> 2;
+			default -> 0;
+		};
+		pc.applySkillModifierFromOwner(skillId, reduction);
+		if (reduction != 0) sendSpMr(pc);
+		else sendAttrDef(pc);
+		if (skillId != L1SkillId.FEATHER_BUFF_D) {
 			refreshParty(pc);
 			sendHpMp(pc);
-			break;
 		}
-		case L1SkillId.FEATHER_BUFF_B: { // 좋은
-			pc.addHitup(2);
-			pc.getAbility().addSp(1);
-			pc.addMaxHp(50);
-			pc.addMaxMp(30);
-			pc.addDamageReductionByArmor(2);
-			sendSpMr(pc);
-			refreshParty(pc);
-			sendHpMp(pc);
-			break;
-		}
-		case L1SkillId.FEATHER_BUFF_C: { // 보통
-			pc.addMaxHp(50);
-			pc.addMaxMp(30);
-			pc.getAC().addAc(-2);
-			sendAttrDef(pc);
-			refreshParty(pc);
-			sendHpMp(pc);
-			break;
-		}
-		case L1SkillId.FEATHER_BUFF_D: { // 나쁜
-			pc.getAC().addAc(-1);
-			sendAttrDef(pc);
-			break;
-		}
-		default:
-			return HandlerResult.NOT_HANDLED;
-		}
-
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
 	// ===== helpers (SkillHandlers 안에 같이 둬도 되고 Helper 클래스로 빼도 됨) =====
@@ -3967,8 +2795,9 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 	}
 
 	static void startNoticeTimer(L1PcInstance pc, int skillId, int duration,
-			int icon, int priority, int tooltip, int startMessage, int endMessage) {
+			int icon, int priority, int tooltip, int startMessage, int endMessage, boolean statModifier) {
 		resetEffect(pc, skillId);
+		if (statModifier) pc.applySkillModifierFromOwner(skillId, 0);
 		applySkillEffectSec(pc, skillId, duration);
 		sendRestatBuffNoti(pc, skillId, duration, icon, icon, priority, tooltip, startMessage, endMessage, true);
 	}
@@ -4051,192 +2880,68 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 	// 기존 handler 본문은 수정하지 않음
 	// =====================================================
 
-	private static HandlerResult onAntarasBoss(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
-
-		if (cha == null) return HandlerResult.HANDLED;
-
-		final L1Character user = su.hdUser();
-		if (!(user instanceof L1NpcInstance)) return HandlerResult.HANDLED;
-
-		final L1NpcInstance npc = (L1NpcInstance) user;
-		final int npcId = npc.getNpcTemplate().get_npcId();
-
-		// 원본 안타라스 3개 템플릿에서만 전용 효과.
-		if (npcId != 900011 && npcId != 900012 && npcId != 900013) {
+	private static void registerNpcBossEffects(int id, int firstTemplate, boolean instant, SkillHandler... actions) {
+		CSkillInfo.registerCast(id, (su, target, magic, undeadType, targets) -> {
+			if (target == null || !(su.hdUser() instanceof L1NpcInstance npc)) return HandlerResult.HANDLED;
+			final L1Npc template = npc.getNpcTemplate();
+			if (template == null || template.get_npcId() < firstTemplate || template.get_npcId() > firstTemplate + 2)
+				return HandlerResult.HANDLED;
+			for (SkillHandler action : actions) {
+				final HandlerResult result = action.handle(su, target, magic, undeadType, targets);
+				if (result != HandlerResult.HANDLED) return result;
+			}
 			return HandlerResult.HANDLED;
-		}
+		}, instant);
+	}
 
-		final int skillId = su.hdSkillId();
-// 용언1 / 전용 캔슬
-		if (skillId == L1SkillId.ANTA_MESSAGE_1
-				|| skillId == L1SkillId.ANTA_CANCELLATION) {
-
-			if (cha instanceof L1PcInstance) {
-				applyBossCancellation(su, (L1PcInstance) cha, 870, true);
-			}
-		}
-
-		/*
-		 * 원본 그대로 보존.
-		 * 1~5를 뽑고 time > 10 검사라 사실상 발동하지 않는다.
-		 */
-		if (skillId == L1SkillId.ANTA_MESSAGE_1
-				|| skillId == L1SkillId.ANTA_MESSAGE_10) {
-
-			final int time = su.hdRandom().nextInt(5) + 1;
-
-			if (cha instanceof L1PcInstance && time > 10) {
-				L1ParalysisPoison.doInfection(
-						(L1PcInstance) cha,
-						skillId);
-			}
-		}
-
-		// 대미지 독
-		if (skillId == L1SkillId.ANTA_MESSAGE_2
-				|| skillId == L1SkillId.ANTA_MESSAGE_5
-				|| skillId == L1SkillId.ANTA_MESSAGE_9) {
-
-			final int poisonDmg = su.hdRandom().nextInt(50) + 1;
-			final int poisonTime = su.hdRandom().nextInt(15) + 1;
-
-			if (cha instanceof L1PcInstance && poisonTime > 2) {
-				final L1PcInstance pc = (L1PcInstance) cha;
-				final L1Character primary =
-						(su.hdTarget() != null)
-								? su.hdTarget()
-								: cha;
-
-				L1DamagePoison.doInfection(
-						pc,
-						primary,
-						poisonTime * 1000,
-						poisonDmg,
-						true,
-						7000);
-			}
-		}
-
-		// 스턴
-		if (skillId == L1SkillId.ANTA_MESSAGE_6
-				|| skillId == L1SkillId.ANTA_MESSAGE_7
-				|| skillId == L1SkillId.ANTA_MESSAGE_8
-				|| skillId == L1SkillId.ANTA_SHOCKSTUN) {
-
-			final int[] stunTimes = {
-					4500, 5000, 5500
-			};
-
-			final int duration =
-					stunTimes[
-							su.hdRandom()
-									.nextInt(stunTimes.length)];
-
-			su.hdSetShockStunDuration(duration);
-
-			final L1Character primary =
-					(su.hdTarget() != null)
-							? su.hdTarget()
-							: cha;
-
-			final int effectDuration =
-					primary.hasSkillEffect(L1SkillId.리버레이션)
-							? (int) (duration * Config.리버레이션절감)
-							: duration;
-
-			if ((cha instanceof L1MonsterInstance || cha instanceof L1SummonInstance
-					|| cha instanceof L1PetInstance || cha instanceof L1CompanionInstance)
-					&& !admitNpcControl(su, (L1NpcInstance) cha, duration)) {
-				return HandlerResult.CONTINUE;
-			}
-
-			L1EffectSpawn.getInstance().spawnEffect(
-					81162,
-					effectDuration,
-					cha.getX(),
-					cha.getY(),
-					cha.getMapId());
-
-			if (cha instanceof L1PcInstance) {
-				SC_Paralysis.send(((L1PcInstance) cha), SC_Paralysis.TYPE_STUN, true);
-
-			}
-		}
-
-		// 웨폰 브레이크
-		if (skillId == L1SkillId.ANTA_MESSAGE_9
-				|| skillId == L1SkillId.ANTA_MESSAGE_10
-				|| skillId == L1SkillId.ANTA_WEAPON_BREAK) {
-
-			applyBossWeaponDamage(
-					su,
-					cha,
-					3,
-					false,
-					false);
-		}
-
+	private static HandlerResult cancelBossTargetEffects(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (target instanceof L1PcInstance pc) applyBossCancellation(su, pc, 870, true);
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onBattleScroll(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
+	private static HandlerResult antarasParalysisRoll(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		// Keep the original RNG consumption even when the roll cannot inflict paralysis.
+		final int roll = su.hdRandom().nextInt(5) + 1;
+		if (target instanceof L1PcInstance pc && roll > 10) L1ParalysisPoison.doInfection(pc, su.hdSkillId());
+		return HandlerResult.HANDLED;
+	}
 
-		if (!(cha instanceof L1PcInstance)) {
-			return HandlerResult.HANDLED;
+	private static HandlerResult antarasDamagePoison(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		final int damage = su.hdRandom().nextInt(50) + 1;
+		final int seconds = su.hdRandom().nextInt(15) + 1;
+		if (target instanceof L1PcInstance pc && seconds > 2) {
+			final L1Character primary = su.hdTarget() != null ? su.hdTarget() : target;
+			L1DamagePoison.doInfection(pc, primary, seconds * 1000, damage, true, 7000);
 		}
+		return HandlerResult.HANDLED;
+	}
 
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.격전의주문서;
+	private static HandlerResult antarasStun(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		final int duration = 4500 + 500 * su.hdRandom().nextInt(3);
+		su.hdSetShockStunDuration(duration);
+		final L1Character primary = su.hdTarget() != null ? su.hdTarget() : target;
+		final int effectDuration = primary.hasSkillEffect(L1SkillId.리버레이션)
+				? (int) (duration * Config.리버레이션절감) : duration;
+		if ((target instanceof L1MonsterInstance || target instanceof L1SummonInstance
+				|| target instanceof L1PetInstance || target instanceof L1CompanionInstance)
+				&& !admitNpcControl(su, (L1NpcInstance) target, duration)) return HandlerResult.CONTINUE;
+		L1EffectSpawn.getInstance().spawnEffect(81162, effectDuration, target.getX(), target.getY(), target.getMapId());
+		if (target instanceof L1PcInstance pc) SC_Paralysis.send(pc, SC_Paralysis.TYPE_STUN, true);
+		return HandlerResult.HANDLED;
+	}
 
-		if (pc.hasSkillEffect(skillId)) {
-			return HandlerResult.HANDLED;
-		}
+	private static HandlerResult antarasWeaponBreak(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		applyBossWeaponDamage(su, target, 3, false, false);
+		return HandlerResult.HANDLED;
+	}
 
-		pc.getAC().addAc(-5);
-		pc.addHitRate(5);
-		pc.addBowHitup(5);
-		pc.addMagicHit(2);
-		pc.getResistance().addcalcPcDefense(5);
-		pc.getResistance().addPVPweaponTotalDamage(5);
-
+	static void startBattleScroll(L1PcInstance pc, int skillId, int iconDuration) {
+		if (pc.hasSkillEffect(skillId)) return;
+		pc.applySkillModifierFromOwner(skillId, 0);
 		SC_SPMR.send(pc);
 		SC_OwnCharAttrDef.send(pc);
-
-		l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType notiWire_notiType = null;
-		int notiWire_spellId = 0;
-		int notiWire_duration = 0;
-		l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eDurationShowType notiWire_durationShowType = null;
-		int notiWire_onIconId = 0;
-		int notiWire_offIconId = 0;
-		int notiWire_tooltipStrId = 0;
-		int notiWire_newStrId = 0;
-		int notiWire_endStrId = 0;
-		boolean notiWire_isGood = false;
-		int notiWire_bit = 0;
-
-
-		{ notiWire_bit |= 1; notiWire_notiType = eNotiType.RESTAT; }
-		{ notiWire_bit |= 2; notiWire_spellId = skillId; }
-		{ notiWire_bit |= 4; notiWire_duration = (su.hdGetBuffIconDuration()); }
-		{ notiWire_bit |= 8; notiWire_durationShowType = eDurationShowType.TYPE_EFF_AUTO_DAY_HOUR_MIN_SEC; }
-		{ notiWire_bit |= 16; notiWire_onIconId = 9151; }
-		{ notiWire_bit |= 32; notiWire_offIconId = 9151; }
-		{ notiWire_bit |= 128; notiWire_tooltipStrId = 5021; }
-		{ notiWire_bit |= 256; notiWire_newStrId = 5022; }
-		{ notiWire_bit |= 512; notiWire_endStrId = 5023; }
-		{ notiWire_bit |= 1024; notiWire_isGood = true; }
-		SC_SPELL_BUFF_NOTI.sendFields(
-		        pc, notiWire_notiType, notiWire_spellId, notiWire_duration, notiWire_durationShowType, notiWire_onIconId,
-		        notiWire_offIconId, 0, notiWire_tooltipStrId, notiWire_newStrId, notiWire_endStrId, notiWire_isGood, 0, 0,
-		        0, notiWire_bit);
-
-		pc.setSkillEffect(skillId, 300 * 1000);
-
-		return HandlerResult.HANDLED;
+		sendRestatBuffNoti(pc, skillId, iconDuration, 9151, 0, 5021, 5022, 5023, true);
+		applySkillEffectSec(pc, skillId, 300);
 	}
 
 	private static HandlerResult onBlackElderDeathHell(
@@ -4272,89 +2977,24 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onBlackElderDeathPotion(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
 
-		applyTimedBossDebuff(
-				cha,
-				7781,
-				L1SkillId.PAP_DEATH_PORTION);
-
-		return HandlerResult.HANDLED;
+	private static void registerBossDamage(int id, int sound, boolean playerOnlySound) {
+		CSkillInfo.registerInstant(id, (su, target, magic, undeadType, targets) -> {
+			if (target == null || magic == null) return HandlerResult.HANDLED;
+			if (!playerOnlySound) SC_Sound.sendAndBroadcastFast(target, sound);
+			else if (target instanceof L1PcInstance) sendSkillSoundBroadcast(target, sound);
+			su.hdSetDamage(magic.calcMagicDamage(id));
+			return HandlerResult.HANDLED;
+		});
 	}
 
-	private static HandlerResult onBossDirectMagic(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
-
-		if (cha == null || magic == null) {
-			return HandlerResult.HANDLED;
-		}
-
-		final int skillId = su.hdSkillId();
-
-		switch (skillId) {
-		case L1SkillId.TROGIR_MILPITAS2:
-			SC_Sound.sendAndBroadcastFast(cha, 11009);
-			SC_Sound.sendAndBroadcastFast(cha, 11006);
-			SC_SkillSound.sendAndBroadcast(cha, 11473);
-
-			if (cha instanceof L1PcInstance) {
-				L1SpawnUtil.spawn(
-						(L1PcInstance) cha,
-						181163,
-						5,
-						6 * 2000,
-						true);
-			}
-			break;
-
-		case L1SkillId.TROGIR_MILPITAS3:
-			SC_Sound.sendAndBroadcastFast(cha, 11002);
-			break;
-
-		case L1SkillId.TROGIR_MILPITAS4:
-			SC_Sound.sendAndBroadcastFast(cha, 11003);
-			break;
-
-		case L1SkillId.TROGIR_MILPITAS5:
-			SC_Sound.sendAndBroadcastFast(cha, 11004);
-			break;
-
-		case L1SkillId.TROGIR_MILPITAS6:
-			SC_Sound.sendAndBroadcastFast(cha, 11008);
-			break;
-
-		case L1SkillId.Phoenix_Skill1:
-			if (cha instanceof L1PcInstance) {
-				sendSkillSoundBroadcast(cha, 16258);
-			}
-			break;
-
-		case L1SkillId.Phoenix_Skill2:
-			if (cha instanceof L1PcInstance) {
-				sendSkillSoundBroadcast(cha, 16299);
-			}
-			break;
-
-		case L1SkillId.DRAKE_Skill1:
-			if (cha instanceof L1PcInstance) {
-				sendSkillSoundBroadcast(cha, 16333);
-			}
-			break;
-
-		case L1SkillId.DRAKE_Skill2:
-			if (cha instanceof L1PcInstance) {
-				sendSkillSoundBroadcast(cha, 16335);
-			}
-			break;
-
-		default:
-			return HandlerResult.NOT_HANDLED;
-		}
-
-		su.hdSetDamage(magic.calcMagicDamage(skillId));
+	private static HandlerResult castMilpitasSummon(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (target == null || magic == null) return HandlerResult.HANDLED;
+		SC_Sound.sendAndBroadcastFast(target, 11009);
+		SC_Sound.sendAndBroadcastFast(target, 11006);
+		SC_SkillSound.sendAndBroadcast(target, 11473);
+		if (target instanceof L1PcInstance pc) L1SpawnUtil.spawn(pc, 181163, 5, 6 * 2000, true);
+		su.hdSetDamage(magic.calcMagicDamage(L1SkillId.TROGIR_MILPITAS2));
 		return HandlerResult.HANDLED;
 	}
 
@@ -4372,494 +3012,152 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 		return HandlerResult.HANDLED;
 	}
 	
-	private static HandlerResult onMetisBlessScroll(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
-
-
-		if (!(cha instanceof L1PcInstance)) {
-			return HandlerResult.HANDLED;
-		}
-
-		final L1PcInstance pc = (L1PcInstance) cha;
-		
-		removeSkillEffects(pc, L1SkillId.메티스축복주문서);
-		
-		pc.addHitup(2);
-		pc.addDmgup(2);
-		pc.addBowHitup(2);
-		pc.addBowDmgup(2);
-		pc.getAbility().addSp(2);
-		pc.addHpr(3);
-		pc.addMpr(3);
+	static void startMetisBlessScroll(L1PcInstance pc, int skillId, int duration) {
+		if (pc.hasSkillEffect(skillId)) pc.removeSkillEffect(skillId);
+		pc.applySkillModifierFromOwner(skillId, 0);
 		SC_SPMR.send(pc);
-
-		pc.addMaxHp(50);
-		pc.addMaxMp(30);
 		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
 		SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
 	}
 	
-	private static HandlerResult onSpecialBuff(
-	        L1SkillUse su,
-	        L1Character cha,
-	        L1Magic magic,
-	        int undeadType,
-	        Iterator<?> iter) {
-
-	    if (cha == null || cha.isDead()) {
-	        return HandlerResult.HANDLED;
-	    }
-
-	    final int skillId = su.hdSkillId();
-
-	    if (!isSpecialBuff(skillId)) {
-	        return HandlerResult.NOT_HANDLED;
-	    }
-
-	    if (!(cha instanceof L1PcInstance)) {
-	        return HandlerResult.HANDLED;
-	    }
-	    final L1PcInstance pc = (L1PcInstance) cha;
-	    
-	    if(pc.hasSkillEffect(skillId)) {
-	    	pc.removeSkillEffect(skillId);
-	    }
-
-	    switch (skillId) {
-	    case L1SkillId.BUFF_특별한성장축복:
-	        sendSpecialBuffIcon(
-	                pc,
-	                skillId,
-	                su.hdGetBuffIconDuration());
-	        break;
-
-	    case L1SkillId.BUFF_특별한방어축복:
-	        applySpecialDefenseBuff(pc);
-
-	        sendSpecialBuffIcon(
-	                pc,
-	                skillId,
-	                su.hdGetBuffIconDuration());
-	        break;
-
-	    case L1SkillId.BUFF_특별한공격축복:
-	        applySpecialAttackBuff(pc);
-
-	        sendSpecialBuffIcon(
-	                pc,
-	                skillId,
-	                su.hdGetBuffIconDuration());
-	        break;
-
-	    default:
-	        return HandlerResult.NOT_HANDLED;
-	    }
-
-	    return HandlerResult.HANDLED;
+	static void startSpecialBuff(L1PcInstance pc, int skillId, int iconDuration) {
+		if (pc.isDead()) return;
+		if (pc.hasSkillEffect(skillId)) pc.removeSkillEffect(skillId);
+		if (skillId != L1SkillId.BUFF_특별한성장축복) {
+			pc.applySkillModifierFromOwner(skillId, 0);
+			if (skillId == L1SkillId.BUFF_특별한방어축복) SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
+			else SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
+			SC_OwnCharAttrDef.send(pc);
+			SC_SPMR.send(pc);
+		}
+		SC_InventoryIcon.icoNew(pc, skillId, iconDuration, true);
+		applySkillEffectSec(pc, skillId, iconDuration > 0 ? iconDuration : durationSecForBuff(null, skillId));
 	}
 
 
-	private static boolean isSpecialBuff(int skillId) {
-	    switch (skillId) {
-	    case L1SkillId.BUFF_특별한성장축복:
-	    case L1SkillId.BUFF_특별한방어축복:
-	    case L1SkillId.BUFF_특별한공격축복:
-	        return true;
 
-	    default:
-	        return false;
-	    }
+
+
+
+
+
+
+	private static HandlerResult castDesertParalysis(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (!(target instanceof L1PcInstance pc) || pc.hasSkillEffect(L1SkillId.EARTH_BIND)
+				|| pc.hasSkillEffect(L1SkillId.ICE_LANCE) || pc.hasSkillEffect(L1SkillId.DESERT_SKILL1)
+				|| pc.hasSkillEffect(L1SkillId.DESERT_SKILL2)) return HandlerResult.HANDLED;
+		if (pc.isDead()) return HandlerResult.CONTINUE;
+		if (su.hdSkillId() == L1SkillId.DESERT_SKILL1) {
+			L1CurseParalysis.curse(pc, L1SkillId.DESERT_SKILL1);
+		} else {
+			pc.setSkillEffect(L1SkillId.EARTH_BIND, 12_000);
+			SC_Poison.send(pc, pc.getId(), 2);
+			SC_Poison.broadcastFast(pc, pc.getId(), 2);
+			SC_Paralysis.send(pc, SC_Paralysis.TYPE_FREEZE, true);
+			sendSkillSoundBroadcast(pc, 2251);
+		}
+		return HandlerResult.HANDLED;
 	}
 
-
-	private static void applySpecialDefenseBuff(
-	        L1PcInstance pc) {
-
-	    pc.addDamageReductionByArmor(1);
-	    pc.getResistance().addMr(5);
-	    pc.addMaxHp(50);
-
-	    SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-
-	    SC_OwnCharAttrDef.send(pc);
-
-	    SC_SPMR.send(pc);
+	private static HandlerResult castDesertManaDrain(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (target == null) return HandlerResult.HANDLED;
+		final int drain = su.hdRandom().nextInt(20);
+		if (target instanceof L1PcInstance pc) {
+			if (pc.getCurrentMp() <= drain || pc.isDead()) return HandlerResult.CONTINUE;
+			pc.setCurrentMp(pc.getCurrentMp() - drain);
+			sendSkillSoundBroadcast(pc, 2172);
+		}
+		return HandlerResult.HANDLED;
 	}
 
-
-	private static void applySpecialAttackBuff(
-	        L1PcInstance pc) {
-
-	    pc.addDmgup(2);
-	    pc.addBowDmgup(2);
-	    pc.getAbility().addSp(2);
-	    pc.addMaxMp(30);
-
-	    SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-
-	    SC_OwnCharAttrDef.send(pc);
-
-	    SC_SPMR.send(pc);
+	private static HandlerResult castDesertPoison(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (target == null) return HandlerResult.HANDLED;
+		final int seconds = su.hdRandom().nextInt(5) + 1;
+		if (target instanceof L1PcInstance && seconds > 2) {
+			L1DamagePoison.doInfection(su.hdUser(), target, seconds * 1000, 500, true, 7000);
+		}
+		return HandlerResult.HANDLED;
 	}
 
+	private static HandlerResult castDesertDebuffs(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (!(target instanceof L1PcInstance pc)) return HandlerResult.HANDLED;
 
-	private static void sendSpecialBuffIcon(
-	        L1PcInstance pc,
-	        int skillId,
-	        int duration) {
+		if (pc.isDead() || pc.hasSkillEffect(L1SkillId.CURSE_PARALYZE)) return HandlerResult.CONTINUE;
+		L1CurseParalysis.curse(pc, su.hdSkillId());
+		pc.setSkillEffect(L1SkillId.CURSE_PARALYZE, 4_000);
+		sendSkillSoundBroadcast(pc, 10704);
 
-	    SC_InventoryIcon.icoNew(pc, skillId,
-	                    duration,
-	                    true);
+		if (pc.isDead() || pc.hasSkillEffect(L1SkillId.DECAY_POTION)) return HandlerResult.CONTINUE;
+		pc.setSkillEffect(L1SkillId.DECAY_POTION, 16_000);
+		sendSkillSoundBroadcast(pc, 2232);
+		if (!applyDesertBlindness(pc)) return HandlerResult.CONTINUE;
+
+		if (!applyDesertStatDebuff(pc, L1SkillId.DISEASE, -64, 2230)) return HandlerResult.CONTINUE;
+		return applyDesertStatDebuff(pc, L1SkillId.WEAKNESS, 64, 2228)
+				? HandlerResult.HANDLED : HandlerResult.CONTINUE;
 	}
 
-	private static HandlerResult onDesertBoss(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
-
-		if (cha == null) {
-			return HandlerResult.HANDLED;
-		}
-
-		final int skillId =
-				su.hdSkillId();
-
-		switch (skillId) {
-		case L1SkillId.DESERT_SKILL1:
-			if (!cha.hasSkillEffect(L1SkillId.EARTH_BIND)
-					&& !cha.hasSkillEffect(L1SkillId.ICE_LANCE)
-					&& !cha.hasSkillEffect(L1SkillId.DESERT_SKILL1)
-					&& !cha.hasSkillEffect(L1SkillId.DESERT_SKILL2)
-					&& cha instanceof L1PcInstance) {
-
-				final L1PcInstance pc =
-						(L1PcInstance) cha;
-
-				if (pc.isDead()) {
-					return HandlerResult.CONTINUE;
-				}
-
-				L1CurseParalysis.curse(
-						pc,
-						skillId);
-			}
-
-			return HandlerResult.HANDLED;
-
-		case L1SkillId.DESERT_SKILL2:
-			if (!cha.hasSkillEffect(L1SkillId.EARTH_BIND)
-					&& !cha.hasSkillEffect(L1SkillId.ICE_LANCE)
-					&& !cha.hasSkillEffect(L1SkillId.DESERT_SKILL1)
-					&& !cha.hasSkillEffect(L1SkillId.DESERT_SKILL2)
-					&& cha instanceof L1PcInstance) {
-
-				final L1PcInstance pc =
-						(L1PcInstance) cha;
-
-				if (pc.isDead()) {
-					return HandlerResult.CONTINUE;
-				}
-
-				pc.setSkillEffect(
-						L1SkillId.EARTH_BIND,
-						12 * 1000);
-
-				SC_Poison.send(pc, pc.getId(), 2);
-
-				SC_Poison.broadcastFast(pc, pc.getId(), 2);
-
-				SC_Paralysis.send(pc, SC_Paralysis.TYPE_FREEZE, true);
-
-				sendSkillSoundBroadcast(
-						pc,
-						2251);
-			}
-
-			return HandlerResult.HANDLED;
-
-		case L1SkillId.DESERT_SKILL3: {
-			final int ranMp =
-					su.hdRandom().nextInt(20);
-
-			if (cha instanceof L1PcInstance) {
-				final L1PcInstance pc =
-						(L1PcInstance) cha;
-
-				if (pc.getCurrentMp() <= ranMp
-						|| pc.isDead()) {
-					return HandlerResult.CONTINUE;
-				}
-
-				pc.setCurrentMp(
-						pc.getCurrentMp()
-								- ranMp);
-
-				sendSkillSoundBroadcast(
-						pc,
-						2172);
-			}
-
-			return HandlerResult.HANDLED;
-		}
-
-		case L1SkillId.DESERT_SKILL4:
-		case L1SkillId.ZENITH_Poison: {
-			final int poisonTime =
-					su.hdRandom().nextInt(5) + 1;
-
-			if (cha instanceof L1PcInstance
-					&& poisonTime > 2) {
-
-				L1DamagePoison.doInfection(
-						su.hdUser(),
-						cha,
-						poisonTime * 1000,
-						500,
-						true,
-						7000);
-			}
-
-			return HandlerResult.HANDLED;
-		}
-
-		case L1SkillId.DESERT_SKILL5: {
-			if (!(cha instanceof L1PcInstance)) {
-				return HandlerResult.HANDLED;
-			}
-
-			final L1PcInstance pc =
-					(L1PcInstance) cha;
-
-			// 커스 패럴라이즈
-			if (pc.isDead()
-					|| pc.hasSkillEffect(
-							L1SkillId.CURSE_PARALYZE)) {
-				return HandlerResult.CONTINUE;
-			}
-
-			L1CurseParalysis.curse(
-					cha,
-					skillId);
-
-			pc.setSkillEffect(
-					L1SkillId.CURSE_PARALYZE,
-					4 * 1000);
-
-			sendSkillSoundBroadcast(
-					pc,
-					10704);
-
-			// 디케이 포션
-			if (pc.isDead()
-					|| pc.hasSkillEffect(
-							L1SkillId.DECAY_POTION)) {
-				return HandlerResult.CONTINUE;
-			}
-
-			pc.setSkillEffect(
-					L1SkillId.DECAY_POTION,
-					16 * 1000);
-
-			sendSkillSoundBroadcast(
-					pc,
-					2232);
-
-			// 다크니스
-			if (pc.isDead()
-					|| pc.hasSkillEffect(
-							L1SkillId.DARKNESS)) {
-				return HandlerResult.CONTINUE;
-			}
-
-			if (pc.hasSkillEffect(
-					L1SkillId.STATUS_FLOATING_EYE)) {
-
-				SC_CurseBlind.send(pc, 2);
-
-			} else {
-				SC_CurseBlind.send(pc, 1);
-			}
-
-			pc.setSkillEffect(
-					L1SkillId.DARKNESS,
-					32 * 1000);
-
-			sendSkillSoundBroadcast(
-					pc,
-					2175);
-
-			// 디지즈
-			if (pc.isDead()
-					|| pc.hasSkillEffect(
-							L1SkillId.DISEASE)) {
-				return HandlerResult.CONTINUE;
-			}
-
-			if (!pc.submitSkillPumpStart(L1SkillId.DISEASE, -64)) return HandlerResult.CONTINUE;
-
-			sendSkillSoundBroadcast(
-					pc,
-					2230);
-
-			// 위크니스
-			if (pc.isDead()
-					|| pc.hasSkillEffect(
-							L1SkillId.WEAKNESS)) {
-				return HandlerResult.CONTINUE;
-			}
-
-			if (!pc.submitSkillPumpStart(L1SkillId.WEAKNESS, 64)) return HandlerResult.CONTINUE;
-
-			sendSkillSoundBroadcast(
-					pc,
-					2228);
-
-			return HandlerResult.HANDLED;
-		}
-
-		case L1SkillId.DESERT_SKILL6: {
-			if (cha instanceof L1PcInstance) {
-				final L1PcInstance pc =
-						(L1PcInstance) cha;
-
-				if (pc.isDead()
-						|| pc.hasSkillEffect(
-								L1SkillId.DARKNESS)) {
-					return HandlerResult.CONTINUE;
-				}
-
-				if (pc.hasSkillEffect(
-						L1SkillId.STATUS_FLOATING_EYE)) {
-
-					SC_CurseBlind.send(pc, 2);
-
-				} else {
-					SC_CurseBlind.send(pc, 1);
-				}
-
-				pc.setSkillEffect(
-						L1SkillId.DARKNESS,
-						32 * 1000);
-
-				sendSkillSoundBroadcast(
-						pc,
-						2175);
-			}
-
-			return HandlerResult.HANDLED;
-		}
-
-		case L1SkillId.DESERT_SKILL7: {
-			if (cha.isDead() || cha.hasSkillEffect(L1SkillId.FOG_OF_SLEEPING)) return HandlerResult.CONTINUE;
-			if (cha instanceof L1NpcInstance npc) {
-				if (!npc.trySetSkillEffect(L1SkillId.FOG_OF_SLEEPING, 32_000)) return HandlerResult.CONTINUE;
-			} else {
-				cha.setSkillEffect(L1SkillId.FOG_OF_SLEEPING, 32_000);
-			}
-			if (cha instanceof L1PcInstance pc) {
-				SC_Paralysis.send(pc, SC_Paralysis.TYPE_SLEEP, true);
-				sendSkillSoundBroadcast(pc, 760);
-			}
-			return HandlerResult.HANDLED_WITHOUT_TIMER;
-		}
-
-		case L1SkillId.DESERT_SKILL8:
-			if (cha instanceof L1PcInstance) {
-				sendSkillSoundBroadcast(
-						(L1PcInstance) cha,
-						10082);
-			}
-
-			return HandlerResult.HANDLED;
-
-		case L1SkillId.DESERT_SKILL9: {
-			final L1Character user =
-					su.hdUser();
-
-			if (user instanceof L1NpcInstance) {
-				final L1NpcInstance npc =
-						(L1NpcInstance) user;
-
-				for (int i = 0; i < 4; i++) {
-					for (int npcId = 5138;
-							npcId <= 5145;
-							npcId++) {
-
-						L1SpawnUtil.spawn(
-								npc,
-								npcId,
-								6,
-								120 * 1000);
-					}
-				}
-			}
-
-			return HandlerResult.HANDLED;
-		}
-
-		case L1SkillId.DESERT_SKILL10: {
-			final L1Character user =
-					su.hdUser();
-
-			if (user instanceof L1NpcInstance) {
-				final L1NpcInstance npc =
-						(L1NpcInstance) user;
-
-				final int count =
-						su.hdRandom()
-								.nextInt(3) + 1;
-
-				for (int i = 0;
-						i < count;
-						i++) {
-
-					L1SpawnUtil.spawn(
-							npc,
-							5095,
-							6,
-							3 * 1000);
-				}
-			}
-
-			return HandlerResult.HANDLED;
-		}
-
-		default:
-			return HandlerResult.NOT_HANDLED;
-		}
+	private static boolean applyDesertStatDebuff(L1PcInstance pc, int id, int duration, int sound) {
+		if (pc.isDead() || pc.hasSkillEffect(id) || !pc.submitSkillPumpStart(id, duration)) return false;
+		sendSkillSoundBroadcast(pc, sound);
+		return true;
 	}
 
-	private static HandlerResult onDragonSet(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
+	private static HandlerResult castDesertBlindness(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		return !(target instanceof L1PcInstance pc) || applyDesertBlindness(pc) ? HandlerResult.HANDLED : HandlerResult.CONTINUE;
+	}
 
-		if (!(cha instanceof L1PcInstance)) {
-			return HandlerResult.HANDLED;
+	private static boolean applyDesertBlindness(L1PcInstance pc) {
+		if (pc.isDead() || pc.hasSkillEffect(L1SkillId.DARKNESS)) return false;
+		SC_CurseBlind.send(pc, pc.hasSkillEffect(L1SkillId.STATUS_FLOATING_EYE) ? 2 : 1);
+		pc.setSkillEffect(L1SkillId.DARKNESS, 32_000);
+		sendSkillSoundBroadcast(pc, 2175);
+		return true;
+	}
+
+	private static HandlerResult castDesertSleep(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (target == null) return HandlerResult.HANDLED;
+		final int id = L1SkillId.FOG_OF_SLEEPING;
+		if (target.isDead() || target.hasSkillEffect(id)) return HandlerResult.CONTINUE;
+		if (target instanceof L1PcInstance pc) {
+			if (!submitContextBuff(pc, id, 32_000, 1, 0, null)) return HandlerResult.CONTINUE;
+		} else if (target instanceof L1NpcInstance npc) {
+			if (!npc.trySetSkillEffect(id, 32_000)) return HandlerResult.CONTINUE;
+		} else {
+			target.setSkillEffect(id, 32_000);
 		}
+		return HandlerResult.HANDLED_WITHOUT_TIMER;
+	}
 
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.DRAGON_SET;
+	private static HandlerResult castDesertSound(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (target instanceof L1PcInstance pc) sendSkillSoundBroadcast(pc, 10082);
+		return HandlerResult.HANDLED;
+	}
 
+	private static HandlerResult castDesertSummon(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (target == null || !(su.hdUser() instanceof L1NpcInstance npc)) return HandlerResult.HANDLED;
+		if (su.hdSkillId() == L1SkillId.DESERT_SKILL9) {
+			for (int wave = 0; wave < 4; wave++) {
+				for (int npcId = 5138; npcId <= 5145; npcId++) L1SpawnUtil.spawn(npc, npcId, 6, 120_000);
+			}
+		} else {
+			final int count = su.hdRandom().nextInt(3) + 1;
+			for (int wave = 0; wave < count; wave++) L1SpawnUtil.spawn(npc, 5095, 6, 3000);
+		}
+		return HandlerResult.HANDLED;
+	}
+
+	static void startDragonSet(L1PcInstance pc, int skillId, int duration) {
 		if (pc.hasSkillEffect(skillId)) {
 			SC_InventoryIcon.icoReset(pc, skillId, 5016, 600L, true);
-			return HandlerResult.HANDLED;
+		} else {
+			pc.applySkillModifierFromOwner(skillId, 0);
+			SC_SPMR.send(pc);
+			SC_OwnCharAttrDef.send(pc);
+			SC_InventoryIcon.icoNew(pc, skillId, 5016, 600L, true);
 		}
-
-		pc.addDmgup(3);
-		pc.addDmgRate(3);
-		pc.addBowDmgup(3);
-		pc.addBowHitup(3);
-		pc.getAC().addAc(-3);
-		pc.getAbility().addSp(2);
-
-		SC_SPMR.send(pc);
-		SC_OwnCharAttrDef.send(pc);
-		SC_InventoryIcon.icoNew(pc, skillId, 5016, 600L, true);
-
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
 	private static HandlerResult onDrakeMassTeleport(
@@ -4895,35 +3193,6 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onDragonWindShackle(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
-
-		if (!(cha instanceof L1PcInstance)) {
-			return HandlerResult.HANDLED;
-		}
-
-		final L1PcInstance pc =
-				(L1PcInstance) cha;
-
-		if (pc.isDead()) {
-			return HandlerResult.CONTINUE;
-		}
-
-		pc.setSkillEffect(
-				L1SkillId.WIND_SHACKLE,
-				12 * 1000);
-
-		if (pc.getCurrentWeapon() != 88) {
-			SC_SkillIconWindShackle.send(pc, pc.getId(), su.hdGetBuffIconDuration());
-		}
-
-		sendSkillSoundBroadcast(
-				pc,
-				1799);
-
-		return HandlerResult.HANDLED;
-	}
 
 	private static HandlerResult onEfreetSummon(
 			L1SkillUse su, L1Character cha, L1Magic magic,
@@ -4936,160 +3205,39 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onLegacyEventIconBuff(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
-
-		if (!(cha instanceof L1PcInstance)) {
-			return HandlerResult.HANDLED;
-		}
-
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = su.hdSkillId();
-
-		switch (skillId) {
-		case L1SkillId.DRAGON_HUNTER_BLESS:
-			if (pc.hasSkillEffect(skillId)) {
-				SC_InventoryIcon.icoReset(pc, skillId, 5016, 1800L, true);
-			} else {
-				SC_InventoryIcon.icoNew(pc, skillId, 5016, 1800L, true);
-			}
-			return HandlerResult.HANDLED;
-
-		case L1SkillId.HUNTER_BLESS:
-			if (pc.hasSkillEffect(skillId)) {
-				SC_InventoryIcon.icoReset(pc, skillId, 4992, 1800L, true);
-			} else {
-				SC_InventoryIcon.icoNew(pc, skillId, 4992, 1800L, true);
-			}
-			return HandlerResult.HANDLED;
-
-		case L1SkillId.HUNTER_BLESS2:
-			if (pc.hasSkillEffect(skillId)) {
-				SC_InventoryIcon.icoReset(pc, skillId, 993, 1800L, true);
-			} else {
-				SC_InventoryIcon.icoNew(pc, skillId, 993, 1800L, true);
-			}
-			return HandlerResult.HANDLED;
-
-		default:
-			return HandlerResult.NOT_HANDLED;
-		}
+	static void startEventIconBuff(L1PcInstance pc, int skillId, int duration) {
+		final int tooltip = switch (skillId) {
+			case L1SkillId.DRAGON_HUNTER_BLESS -> 5016;
+			case L1SkillId.HUNTER_BLESS -> 4992;
+			case L1SkillId.HUNTER_BLESS2 -> 993;
+			default -> throw new IllegalArgumentException("Unknown hunting effect " + skillId);
+		};
+		if (pc.hasSkillEffect(skillId)) SC_InventoryIcon.icoReset(pc, skillId, tooltip, 1800L, true);
+		else SC_InventoryIcon.icoNew(pc, skillId, tooltip, 1800L, true);
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
-	private static HandlerResult onPapBoss(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
-
-		if (cha == null) return HandlerResult.HANDLED;
-
-		final L1Character user = su.hdUser();
-		if (!(user instanceof L1NpcInstance)) return HandlerResult.HANDLED;
-
-		final L1NpcInstance npc = (L1NpcInstance) user;
-		final int npcId = npc.getNpcTemplate().get_npcId();
-
-		if (npcId != 900038
-				&& npcId != 900039
-				&& npcId != 900040) {
-			return HandlerResult.HANDLED;
-		}
-
-		final int skillId = su.hdSkillId();
-// 리콜 소환: 원본 for 2회 그대로.
-		if (skillId == L1SkillId.PAP_PREDICATE1) {
-			for (int i = 0; i < 2; i++) {
-
-				L1SpawnUtil.spawn2(
-						user.getX(),
-						user.getY(),
-						(short) user.getMap().getId(),
-						900049,
-						8,
-						60 * 1000,
-						0);
-
-				L1SpawnUtil.spawn2(
-						user.getX(),
-						user.getY(),
-						(short) user.getMap().getId(),
-						900050,
-						8,
-						60 * 1000,
-						0);
-
-				L1SpawnUtil.spawn2(
-						user.getX(),
-						user.getY(),
-						(short) user.getMap().getId(),
-						900051,
-						8,
-						60 * 1000,
-						0);
-
-				L1SpawnUtil.spawn2(
-						user.getX(),
-						user.getY(),
-						(short) user.getMap().getId(),
-						900052,
-						8,
-						120 * 1000,
-						0);
+	private static HandlerResult summonPapMinions(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		final L1Character source = su.hdUser();
+		for (int wave = 0; wave < 2; wave++) {
+			for (int npcId = 900049; npcId <= 900052; npcId++) {
+				final int duration = npcId == 900052 ? 120_000 : 60_000;
+				L1SpawnUtil.spawn2(source.getX(), source.getY(), (short) source.getMap().getId(), npcId, 8, duration, 0);
 			}
 		}
-
-		// 매스/일반 캔슬
-		if (skillId == L1SkillId.PAP_PREDICATE7
-				|| skillId == L1SkillId.PAP_PREDICATE11
-				|| skillId == L1SkillId.PAP_PREDICATE12) {
-
-			if (cha instanceof L1PcInstance) {
-				applyBossCancellation(
-						su,
-						(L1PcInstance) cha,
-						870,
-						true);
-			}
-		}
-
-		// 웨폰
-		if (skillId == L1SkillId.PAP_PREDICATE8) {
-			applyBossWeaponDamage(
-					su,
-					cha,
-					2,
-					true,
-					false);
-		}
-
-		// 데스 포션
-		if (skillId == L1SkillId.PAP_PREDICATE3) {
-			applyTimedBossDebuff(
-					cha,
-					7781,
-					L1SkillId.PAP_DEATH_PORTION);
-		}
-
-		// 리듀스 힐
-		if (skillId == L1SkillId.PAP_PREDICATE5) {
-			applyTimedBossDebuff(
-					cha,
-					7782,
-					L1SkillId.PAP_REDUCE_HELL);
-		}
-
-		// 데스 힐
-		if (skillId == L1SkillId.PAP_PREDICATE6
-				|| skillId == L1SkillId.PAP_PREDICATE11
-				|| skillId == L1SkillId.PAP_PREDICATE12) {
-
-			applyTimedBossDebuff(
-					cha,
-					7780,
-					L1SkillId.PAP_DEATH_HELL);
-		}
-
 		return HandlerResult.HANDLED;
+	}
+
+	private static HandlerResult papWeaponBreak(L1SkillUse su, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		applyBossWeaponDamage(su, target, 2, true, false);
+		return HandlerResult.HANDLED;
+	}
+
+	private static SkillHandler timedBossDebuff(int sound, int debuffId) {
+		return (su, target, magic, undeadType, targets) -> {
+			applyTimedBossDebuff(target, sound, debuffId);
+			return HandlerResult.HANDLED;
+		};
 	}
 
 	private static HandlerResult onDragonCancellation(
@@ -5309,30 +3457,18 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onRindviorSilence(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
+	static HandlerResult castRindviorSilence(L1SkillUse cast, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
+		if (!(target instanceof L1PcInstance pc)) return HandlerResult.HANDLED;
+		if (pc.isDead()) return HandlerResult.CONTINUE;
+		return submitContextBuff(pc, cast.hdSkillId(), DurationResolver.INSTANCE.resolveDurationMs(cast), 0, 0, null)
+				? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
+	}
 
-		if (!(cha instanceof L1PcInstance)) {
-			return HandlerResult.HANDLED;
-		}
-
-		final L1PcInstance pc =
-				(L1PcInstance) cha;
-
-		if (pc.isDead()) {
-			return HandlerResult.CONTINUE;
-		}
-
-		pc.setSkillEffect(
-				L1SkillId.SILENCE,
-				12 * 1000);
-
-		sendSkillSoundBroadcast(
-				pc,
-				2177);
-
-		return HandlerResult.HANDLED;
+	static void startRindviorSilence(L1PcInstance pc, int id, int durationMs, int option, int gfx, boolean partyMember) {
+		if (pc.isDead()) return;
+		pc.skillEffectSetFromOwner(L1SkillId.SILENCE, 12_000);
+		sendSkillSoundBroadcast(pc, 2177);
+		if (durationMs > 0) pc.skillEffectSetFromOwner(id, durationMs);
 	}
 
 	private static HandlerResult onRindviorSummon(
@@ -5653,115 +3789,32 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 		return HandlerResult.HANDLED;
 	}
 
-	private static HandlerResult onLegacyBlessing(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) {
-			return HandlerResult.HANDLED;
-		}
-
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = su.hdSkillId();
-		final int amount;
-
-		switch (skillId) {
-		case L1SkillId.SIDE_OF_ME_BLESSING:
-			amount = 5;
-			break;
-		case L1SkillId.RE_START_BLESSING:
-			amount = 3;
-			break;
-		case L1SkillId.NEW_START_BLESSING:
-			amount = 2;
-			break;
-		case L1SkillId.LIFE_BLESSING:
-			amount = 1;
-			break;
-		default:
-			return HandlerResult.NOT_HANDLED;
-		}
-
-		pc.addDamageReductionByArmor(amount);
-		pc.addDmgup(amount);
-		pc.addBowDmgup(amount);
-		return HandlerResult.HANDLED;
+	static void startLegacyBlessing(L1PcInstance pc, int skillId, int duration) {
+		pc.applySkillModifierFromOwner(skillId, 0);
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
-	private static HandlerResult onStrongmanBuff(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
-		if (!(cha instanceof L1PcInstance)) {
-			return HandlerResult.HANDLED;
-		}
-
-		final L1PcInstance pc = (L1PcInstance) cha;
-		final int skillId = L1SkillId.천하장사버프;
-
-		if (pc.hasSkillEffect(skillId)) {
-			pc.removeSkillEffect(skillId);
-		}
-
-		pc.addDamageReductionByArmor(5);
+	static void startStrongmanBuff(L1PcInstance pc, int skillId, int duration) {
+		if (pc.hasSkillEffect(skillId)) pc.removeSkillEffect(skillId);
+		pc.applySkillModifierFromOwner(skillId, 0);
 		SC_PacketBox.send(pc, SC_PacketBox.ICON_COOKING, pc, 187, 1800);
 		pc.setDessertId(skillId);
 		SC_ServerMessage.send(pc, 1426);
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
 	}
 
-	private static HandlerResult onSandWormAttack(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
-		final L1PcInstance pc = su.hdPlayer();
-		final L1Character user = su.hdUser();
-
-		if (pc == null || user == null) {
+	private static void registerSandWormCue(int id, int gfx) {
+		CSkillInfo.registerInstant(id, (su, target, magic, undeadType, targets) -> {
+			final L1PcInstance player = su.hdPlayer();
+			final L1Character caster = su.hdUser();
+			if (player == null || caster == null) return HandlerResult.HANDLED;
+			SC_UseAttackSkill.broadcastPair(caster, caster, player, player.getId(), gfx,
+					player.getX(), player.getY(), ActionCodes.ACTION_Attack, false);
+			SC_SkillSound.send(player, player.getId(), gfx);
 			return HandlerResult.HANDLED;
-		}
-
-		final int gfx;
-		switch (su.hdSkillId()) {
-		case L1SkillId.Sand_worms:
-			gfx = 10145;
-			break;
-		case L1SkillId.Sand_worms1:
-			gfx = 10195;
-			break;
-		case L1SkillId.Sand_worms2:
-			gfx = 10194;
-			break;
-		case L1SkillId.Sand_worms3:
-			gfx = 10191;
-			break;
-		default:
-			return HandlerResult.NOT_HANDLED;
-		}
-
-		SC_UseAttackSkill.broadcastPair(
-				user,
-				user,
-				pc,
-				pc.getId(),
-				gfx,
-				pc.getX(),
-				pc.getY(),
-				ActionCodes.ACTION_Attack,
-				false);
-		SC_SkillSound.send(pc, pc.getId(), gfx);
-		return HandlerResult.HANDLED;
+		});
 	}
 
-	private static HandlerResult onOriginalNoOp(
-			L1SkillUse su, L1Character cha, L1Magic magic,
-			int undeadType, Iterator<?> iter) {
-		switch (su.hdSkillId()) {
-		case L1SkillId.잠재력소울:
-		case L1SkillId.할파스의신의PVP:
-		case L1SkillId.할파스의신의:
-			return HandlerResult.HANDLED;
-		default:
-			return HandlerResult.NOT_HANDLED;
-		}
-	}
 
 	// ===== common small utilities (dup 제거) =====
 	private static void resetEffect(final L1Character cha, final int skillId) {
@@ -5859,23 +3912,6 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 			summonId = candidates[rng.nextInt(candidates.length)];
 		}
 		return summonId;
-	}
-
-	private static boolean hasAnySkillEffect(final L1PcInstance pc, final int... skillIds) {
-		if (pc == null || skillIds == null) return false;
-		for (int id : skillIds) {
-			if (id > 0 && pc.hasSkillEffect(id)) return true;
-		}
-		return false;
-	}
-
-	private static void removeSkillEffects(final L1PcInstance pc, final int... skillIds) {
-		if (pc == null || skillIds == null) return;
-		for (int id : skillIds) {
-			if (id > 0 && pc.hasSkillEffect(id)) {
-				pc.removeSkillEffect(id);
-			}
-		}
 	}
 
 	private static void resetScalesEffectIfPresent(final L1PcInstance pc, final int skillId) {

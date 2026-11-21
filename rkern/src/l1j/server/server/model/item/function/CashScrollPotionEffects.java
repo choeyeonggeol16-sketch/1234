@@ -1,6 +1,7 @@
 package l1j.server.server.model.item.function;
 
 
+import l1j.server.server.model.character.skill.SkillHandlers;
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 
 import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
@@ -97,90 +98,32 @@ import static l1j.server.server.model.item.function.CreatureItemActions.*;
 final class CashScrollPotionEffects {
     private CashScrollPotionEffects() {}
 
-	public static void useCashScroll(L1PcInstance pc, int item_id) {
-		int time = 1800;
-		int scroll = 0;
+	private static final int[] CASH_SCROLLS = {
+		STATUS_CASHSCROLL, STATUS_CASHSCROLL2, STATUS_CASHSCROLL3,
+		STATUS_CASHSCROLL4, STATUS_CASHSCROLL5, STATUS_CASHSCROLL6
+	};
 
-		if (pc.hasSkillEffect(STATUS_CASHSCROLL)) {
-			pc.killSkillEffectTimer(STATUS_CASHSCROLL);
-			pc.addMaxHp(-50);
-			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-			if (pc.isInParty()) {
-				// TODO 파티 프로토
-				pc.getParty().refreshPartyMemberStatus(pc);
-			}
-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-		}
-		if (pc.hasSkillEffect(STATUS_CASHSCROLL2)) {
-			pc.killSkillEffectTimer(STATUS_CASHSCROLL2);
-			pc.addMaxMp(-40);
-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-		}
-		if (pc.hasSkillEffect(STATUS_CASHSCROLL3)) {
-			pc.killSkillEffectTimer(STATUS_CASHSCROLL3);
-			pc.addDmgup(-3);
-			pc.addHitup(-3);
-			pc.getAbility().addSp(-3);
-			SC_SPMR.send(pc);
-		}
-		if (pc.hasSkillEffect(STATUS_CASHSCROLL4)) {
-			pc.killSkillEffectTimer(STATUS_CASHSCROLL4);
-			pc.getAbility().addSp(-3);
-			pc.addBaseMagicHitUp(-5);
-			pc.getResistance().addcalcPcDefense(-3);
-			SC_SPMR.send(pc);
-		}
-		if (pc.hasSkillEffect(STATUS_CASHSCROLL5)) {
-			pc.killSkillEffectTimer(STATUS_CASHSCROLL5);
-			pc.addBowDmgup(-3);
-			pc.addBowHitup(-5);
-			pc.getResistance().addcalcPcDefense(-3);
-		}
-		if (pc.hasSkillEffect(STATUS_CASHSCROLL6)) {
-			pc.killSkillEffectTimer(STATUS_CASHSCROLL6);
-			pc.addDmgRate(-3);
-			pc.addHitup(-5);
-			pc.getResistance().addcalcPcDefense(-3);
+	public static void useCashScroll(L1PcInstance pc, int itemId) {
+		for (int previous : CASH_SCROLLS) {
+			if (!pc.hasSkillEffect(previous)) continue;
+			pc.killSkillEffectTimer(previous);
+			SkillHandlers.notifyCashScrollStats(pc, previous);
 		}
 
-		if (item_id == 410010) {
-			scroll = 7893;
-			pc.addMaxHp(50);
-			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-			if (pc.isInParty()) {
-				// TODO 파티 프로토
-				pc.getParty().refreshPartyMemberStatus(pc);
-			}
-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-		} else if (item_id == 410011) {
-			scroll = 7894;
-			pc.addMaxMp(40);
-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-		} else if (item_id == 410012 || item_id == 30063) {
-			scroll = 7895;
-			pc.addDmgup(3);
-			pc.addHitup(3);
-			pc.getAbility().addSp(3);
-			SC_SPMR.send(pc);
-		} else if (item_id == 4100039) {
-			scroll = 16553;
-			pc.getAbility().addSp(3);
-			pc.addBaseMagicHitUp(5);
-			pc.getResistance().addcalcPcDefense(3);
-			SC_SPMR.send(pc);
-		} else if (item_id == 4100041) {
-			scroll = 16552;
-			pc.addBowDmgup(3);
-			pc.addBowHitup(5);
-			pc.getResistance().addcalcPcDefense(3);
-		} else if (item_id == 4100042) {
-			scroll = 16551;
-			pc.addDmgRate(3);
-			pc.addHitup(5);
-			pc.getResistance().addcalcPcDefense(3);
-		}
-		SC_SkillSound.send(pc, pc.getId(), scroll);
-		SC_SkillSound.broadcast(pc, pc.getId(), scroll);
-		pc.setSkillEffect(scroll, time * 1000);
+		final int id = switch (itemId) {
+		case 410010 -> STATUS_CASHSCROLL;
+		case 410011 -> STATUS_CASHSCROLL2;
+		case 410012, 30063 -> STATUS_CASHSCROLL3;
+		case 4100039 -> STATUS_CASHSCROLL4;
+		case 4100041 -> STATUS_CASHSCROLL5;
+		case 4100042 -> STATUS_CASHSCROLL6;
+		default -> 0;
+		};
+		if (id == 0) return;
+		pc.applySkillModifierFromOwner(id, 0);
+		SkillHandlers.notifyCashScrollStats(pc, id);
+		SC_SkillSound.send(pc, pc.getId(), id);
+		SC_SkillSound.broadcast(pc, pc.getId(), id);
+		pc.setSkillEffect(id, 1_800_000);
 	}
 }

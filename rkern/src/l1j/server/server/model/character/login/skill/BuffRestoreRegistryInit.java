@@ -88,16 +88,16 @@ public final class BuffRestoreRegistryInit {
 
         // ================= 6. COUNTER_MIRROR =================
         BuffRestoreRegistry.register(L1SkillId.COUNTER_MIRROR,
-                (pc, sid, polyId, rt, icon) -> pc.addWeightReduction(300));
+                (pc, sid, polyId, rt, icon) -> pc.applySkillModifierFromOwner(sid, 0));
 
         // ================= 7. DECREASE_WEIGHT / REDUCE_WEIGHT (공유 로직) =================
         BuffRestoreRegistry.register(L1SkillId.DECREASE_WEIGHT, (pc, sid, polyId, rt, icon) -> {
             icon[0] = rt / 16;
-            pc.addWeightReduction(180);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.REDUCE_WEIGHT, (pc, sid, polyId, rt, icon) -> {
             icon[0] = rt / 16;
-            pc.addWeightReduction(180);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
 
         // ================= 8. 단순 아이콘 — icon[N] = rt/4 =================
@@ -260,21 +260,12 @@ public final class BuffRestoreRegistryInit {
         BuffRestoreRegistry.register(L1SkillId.COMA_A, (pc, sid, polyId, rt, icon) -> {
             icon[30] = (rt + 16) / 32;
             icon[31] = 40;
-            pc.getAbility().addAddedCon(1);
-            pc.getAbility().addAddedDex(5);
-            pc.getAbility().addAddedStr(5);
-            pc.addHitRate(3);
-            pc.getAC().addAc(-3);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.COMA_B, (pc, sid, polyId, rt, icon) -> {
             icon[30] = (rt + 16) / 32;
             icon[31] = 41;
-            pc.getAbility().addSp(1);
-            pc.getAbility().addAddedCon(3);
-            pc.getAbility().addAddedDex(5);
-            pc.getAbility().addAddedStr(5);
-            pc.addHitRate(5);
-            pc.getAC().addAc(-8);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
 
         // ================= 16. EXP_POTION / EXP_BUFF =================
@@ -299,7 +290,7 @@ public final class BuffRestoreRegistryInit {
             icon[18] = cashTime(rt);
             icon[19] = 61;
             icon[38] = (rt <= 1020) ? 0 : 1;
-            pc.addMaxHp(50);
+            pc.applySkillModifierFromOwner(sid, 0);
             SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
             if (pc.isInParty()) {
                 pc.getParty().refreshPartyMemberStatus(pc);
@@ -310,40 +301,32 @@ public final class BuffRestoreRegistryInit {
             icon[18] = cashTime(rt);
             icon[19] = 62;
             icon[38] = (rt <= 1020) ? 0 : 1;
-            pc.addMaxMp(40);
+            pc.applySkillModifierFromOwner(sid, 0);
             SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
         });
         BuffRestoreRegistry.register(L1SkillId.STATUS_CASHSCROLL3, (pc, sid, polyId, rt, icon) -> {
             icon[18] = cashTime(rt);
             icon[19] = 63;
             icon[38] = (rt <= 1020) ? 0 : 1;
-            pc.addDmgup(3);
-            pc.addHitup(3);
-            pc.getAbility().addSp(3);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.STATUS_CASHSCROLL4, (pc, sid, polyId, rt, icon) -> {
             icon[18] = cashTime(rt);
             icon[19] = 63;
             icon[38] = (rt <= 1020) ? 0 : 1;
-            pc.getAbility().addSp(3);
-            pc.addBaseMagicHitUp(5);
-            pc.getResistance().addcalcPcDefense(3);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.STATUS_CASHSCROLL5, (pc, sid, polyId, rt, icon) -> {
             icon[18] = cashTime(rt);
             icon[19] = 63;
             icon[38] = (rt <= 1020) ? 0 : 1;
-            pc.addBowDmgup(3);
-            pc.addBowHitup(5);
-            pc.getResistance().addcalcPcDefense(3);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.STATUS_CASHSCROLL6, (pc, sid, polyId, rt, icon) -> {
             icon[18] = cashTime(rt);
             icon[19] = 63;
             icon[38] = (rt <= 1020) ? 0 : 1;
-            pc.addDmgRate(3);
-            pc.addHitup(5);
-            pc.getResistance().addcalcPcDefense(3);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
 
         // ================= 18. INSIGHT / PANIC / HORROR_OF_DEATH =================
@@ -394,99 +377,74 @@ public final class BuffRestoreRegistryInit {
         BuffRestoreRegistry.register(L1SkillId.ANTA_MAAN, (pc, sid, polyId, rt, icon) -> {
             icon[34] = rt / 30;
             icon[35] = 46;
-            pc.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, 5);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.FAFU_MAAN, (pc, sid, polyId, rt, icon) -> {
             icon[34] = rt / 30;
             icon[35] = 47;
-            pc.getResistance().addSpecialResistance(eKind.SPIRIT, 5);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.LIND_MAAN, (pc, sid, polyId, rt, icon) -> {
             icon[34] = rt / 30;
             icon[35] = 48;
-            pc.getAbility().addSp(1);
-            pc.getResistance().addSpecialResistance(eKind.FEAR, 5);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.VALA_MAAN, (pc, sid, polyId, rt, icon) -> {
             icon[34] = rt / 30;
             icon[35] = 49;
-            pc.addDmgup(2);
-            pc.getResistance().addSpecialResistance(eKind.ABILITY, 5);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.BIRTH_MAAN, (pc, sid, polyId, rt, icon) -> {
             icon[34] = rt / 30;
             icon[35] = 50;
-            pc.getResistance().addSpecialResistance(eKind.SPIRIT, 5);
-            pc.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, 5);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.SHAPE_MAAN, (pc, sid, polyId, rt, icon) -> {
             icon[34] = rt / 30;
             icon[35] = 51;
-            pc.getAbility().addSp(1);
-            pc.getResistance().addSpecialResistance(eKind.SPIRIT, 5);
-            pc.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, 5);
-            pc.getResistance().addSpecialResistance(eKind.FEAR, 5);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.LIFE_MAAN, (pc, sid, polyId, rt, icon) -> {
             icon[34] = rt / 30;
             icon[35] = 52;
-            pc.addDmgup(2);
-            pc.getAbility().addSp(1);
-            pc.getResistance().addSpecialResistance(eKind.ALL, 5);
-            pc.getResistance().addSpecialPierce(eKind.ALL, 3);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
 
         // ================= 22. FEATHER_BUFF A~D =================
         BuffRestoreRegistry.register(L1SkillId.FEATHER_BUFF_A, (pc, sid, polyId, rt, icon) -> {
             icon[36] = rt / 16;
             icon[37] = 70;
-            pc.addHpr(3);
-            pc.addMpr(3);
-            pc.addDmgup(2);
-            pc.addHitup(2);
-            pc.addMaxHp(50);
-            pc.addMaxMp(30);
-            pc.getAbility().addSp(2);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.FEATHER_BUFF_B, (pc, sid, polyId, rt, icon) -> {
             icon[36] = rt / 16;
             icon[37] = 71;
-            pc.addHitup(2);
-            pc.getAbility().addSp(1);
-            pc.addMaxHp(50);
-            pc.addMaxMp(30);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.FEATHER_BUFF_C, (pc, sid, polyId, rt, icon) -> {
             icon[36] = rt / 16;
             icon[37] = 72;
-            pc.addMaxHp(50);
-            pc.addMaxMp(30);
-            pc.getAC().addAc(-2);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
         BuffRestoreRegistry.register(L1SkillId.FEATHER_BUFF_D, (pc, sid, polyId, rt, icon) -> {
             icon[36] = rt / 16;
             icon[37] = 73;
-            pc.getAC().addAc(-1);
+            pc.applySkillModifierFromOwner(sid, 0);
         });
 
         // ================= 23. DRAGON_BLOOD 3종 =================
         BuffRestoreRegistry.register(L1SkillId.ANTA_BUFF, (pc, sid, polyId, rt, icon) -> {
-            pc.getAC().addAc(-2);
-            pc.getResistance().addWater(50);
+            pc.applySkillModifierFromOwner(sid, 0);
             SC_OwnCharStatus.send(pc);
             SC_PacketBox.send(pc, SC_PacketBox.DRAGONBLOOD, 82, rt / 60);
         });
         BuffRestoreRegistry.register(L1SkillId.FAFU_BUFF, (pc, sid, polyId, rt, icon) -> {
-            pc.addHpr(3);
-            pc.addMpr(1);
-            pc.getResistance().addWind(50);
+            pc.applySkillModifierFromOwner(sid, 0);
             SC_OwnCharStatus.send(pc);
             SC_PacketBox.send(pc, SC_PacketBox.DRAGONBLOOD, 85, rt / 60);
         });
         BuffRestoreRegistry.register(L1SkillId.RIND_BUFF, (pc, sid, polyId, rt, icon) -> {
-            pc.addHitup(3);
-            pc.addBowHitup(3);
-            pc.getResistance().addFire(50);
+            pc.applySkillModifierFromOwner(sid, 0);
             SC_OwnCharStatus.send(pc);
             SC_PacketBox.send(pc, SC_PacketBox.DRAGONBLOOD, 88, rt / 60);
         });
@@ -544,19 +502,13 @@ public final class BuffRestoreRegistryInit {
                 (pc, sid, polyId, rt, icon) ->
             SC_InventoryIcon.icoNew(pc, L1SkillId.miso1, 4995, rt, true));
         BuffRestoreRegistry.register(L1SkillId.miso2, (pc, sid, polyId, rt, icon) -> {
-            pc.addMaxHp(100);
-            pc.getResistance().addMr(10);
-            pc.addHpr(2);
+            pc.applySkillModifierFromOwner(sid, 0);
             SC_SPMR.send(pc);
             SC_OwnCharAttrDef.send(pc);
             SC_InventoryIcon.icoNew(pc, L1SkillId.miso2, 4996, rt, true);
         });
         BuffRestoreRegistry.register(L1SkillId.miso3, (pc, sid, polyId, rt, icon) -> {
-            pc.addDmgup(3);
-            pc.addBowDmgup(3);
-            pc.addMaxMp(50);
-            pc.getAbility().addSp(3);
-            pc.addMpr(2);
+            pc.applySkillModifierFromOwner(sid, 0);
             SC_SPMR.send(pc);
             SC_OwnCharAttrDef.send(pc);
             SC_InventoryIcon.icoNew(pc, L1SkillId.miso3, 4997, rt, true);

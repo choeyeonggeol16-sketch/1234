@@ -96,9 +96,13 @@ public class Resistance {
 
     public int getSpecialPierce(eKind kind) {
         if (kind == null) return 0; 
-        return kind == eKind.SPIRIT
-                ? checkRange(_specialPierce[kind.value()] + (int) ((skillSpecialResistance >>> 40) & 0xff))
-                : _specialPierce[kind.value()];
+        final int shift = switch (kind) {
+            case SPIRIT -> 40;
+            case ALL -> 48;
+            default -> -1;
+        };
+        final int base = _specialPierce[kind.value()];
+        return shift < 0 ? base : checkRange(base + (int) ((skillSpecialResistance >>> shift) & 0xff));
     }
 
     public int getEffectedMrBySkill() {
@@ -127,7 +131,7 @@ public class Resistance {
 
     // Signed 16-bit values, PvP damage in the low half and reduction in the high half.
     private volatile int skillPvp;
-    // Five resistance bytes, starting with ABILITY; byte 5 holds managed spirit pierce.
+    // Five resistance bytes, followed by spirit pierce and all-type pierce.
     private volatile long skillSpecialResistance;
 
     public void setSkillCombatModifiers(int pvp, long specialResistance, boolean notify) {
@@ -140,15 +144,15 @@ public class Resistance {
     public int getcalcPcDefense() { return checkRange(calcPcDefense + (skillPvp >> 16)); }
     public int getPVPweaponTotalDamage() { return checkRange(PVPweaponTotalDamage + (short) skillPvp); }
     
-    // From least to most significant byte: water, wind, earth, fire.
-    private volatile int skillElemental;
+    // Signed 16-bit values, from least to most significant: water, wind, earth, fire.
+    private volatile long skillElemental;
 
-    void setSkillElemental(int value) { if (skillElemental != value) skillElemental = value; }
+    void setSkillElemental(long value) { if (skillElemental != value) skillElemental = value; }
 
-    public int getFire()  { return increase_elemental_resist(checkRange(fire + (byte) (skillElemental >>> 24))); }
-    public int getWater() { return increase_elemental_resist(checkRange(water + (byte) skillElemental)); }
-    public int getWind()  { return increase_elemental_resist(checkRange(wind + (byte) (skillElemental >>> 8))); }
-    public int getEarth() { return increase_elemental_resist(checkRange(earth + (byte) (skillElemental >>> 16))); }
+    public int getFire()  { return increase_elemental_resist(checkRange(fire + (short) (skillElemental >>> 48))); }
+    public int getWater() { return increase_elemental_resist(checkRange(water + (short) skillElemental)); }
+    public int getWind()  { return increase_elemental_resist(checkRange(wind + (short) (skillElemental >>> 16))); }
+    public int getEarth() { return increase_elemental_resist(checkRange(earth + (short) (skillElemental >>> 32))); }
 
     private int increase_elemental_resist(int source_resist) {
         return character == null || !character.isPassive(MJPassiveID.RESIST_ELEMENT.toInt()) ?

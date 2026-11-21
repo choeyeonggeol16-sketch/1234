@@ -885,6 +885,8 @@ public final class CIOThreadCallback {
 	private static final byte SKILL_OP_CLEAR = 4;
     private static final byte SKILL_OP_PUMP_START = 7;
     private static final byte SKILL_OP_SUPPORT_ADVANCE = 8;
+    private static final byte SKILL_OP_ELEMENTAL_FALL_DOWN = 9;
+    private static final byte SKILL_OP_NPC_BERSERKERS = 10;
     private static final byte SKILL_OP_REPLACE = 6;
 	private static final byte SKILL_OP_ARM = 5;
 
@@ -2299,6 +2301,14 @@ public final class CIOThreadCallback {
 		return submitPcSkillEffect(pc, SKILL_OP_SUPPORT_ADVANCE, 0, duration);
 	}
 
+    public boolean submitNpcBerserkers(L1NpcInstance npc, int durationMs) {
+        return NpcServer.getInstance().postNpcSkill(npc, SKILL_OP_NPC_BERSERKERS, L1SkillId.MOB_BERSERKERS, durationMs);
+    }
+
+    public boolean submitNpcElementalFallDown(L1NpcInstance npc, int durationMs, int attribute) {
+        return NpcServer.getInstance().postNpcSkill(npc, SKILL_OP_ELEMENTAL_FALL_DOWN, attribute, durationMs);
+    }
+
 	private boolean submitPcSkillEffect(L1PcInstance pc, byte op, int skillId, int duration) {
 		final CCreatureController controller = pc.getCreatureController();
 		return controller != null && controller.actor() == pc
@@ -2470,6 +2480,12 @@ public final class CIOThreadCallback {
 			SkillHandlers.startSupportAdvanceFromOwner((L1PcInstance) cha, timeMillis);
 			break;
 
+        case SKILL_OP_NPC_BERSERKERS:
+            SkillHandlers.startNpcBerserkersFromOwner((L1NpcInstance) cha, skillId, timeMillis);
+            break;
+        case SKILL_OP_ELEMENTAL_FALL_DOWN:
+            SkillHandlers.startNpcElementalFallDownFromOwner((L1NpcInstance) cha, timeMillis, skillId);
+            break;
 		case SKILL_OP_ARM:
             armCharacterSkillHeartbeatDirect(cha);
 			break;

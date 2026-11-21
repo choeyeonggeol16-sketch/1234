@@ -54,7 +54,9 @@ public final class SkillEffectContainer {
 		long[] applied = new long[4];
 		int count;
 		int hp, mp, ac, mr, er, dg, meleeHit, meleeDamage, rangedDamage, sp;
-		int carryLimit, armorReduction;
+		int carryLimit, armorReduction, baseMagicHit;
+		int rangedHit, rangedCritical, magicCritical, weaponHitRate, magicHit, weaponDamageRate;
+		int hpRegen, mpRegen, impactProbability;
 		int pvpDamage, pvpReduction;
 		long specialResistance;
 		// Potential captures six independent values once, with two extra packed pairs.
@@ -62,14 +64,16 @@ public final class SkillEffectContainer {
 
 		// Independent unsigned bytes: STR, DEX, INT, WIS, CON, CHA.
 		long primaryStats, primaryPenalty;
-		// Water, wind, earth, fire; current migrated totals are <= 65 per element.
-		int elementalResistance;
+		// Independent totals for water, wind, earth, and fire.
+		int waterResistance, windResistance, earthResistance, fireResistance;
 
 		void initializeSkillMod() {
 			hp = mp = ac = mr = er = dg = meleeHit = meleeDamage = rangedDamage = sp = 0;
 			primaryStats = primaryPenalty = 0L;
-			elementalResistance = 0;
-			carryLimit = armorReduction = 0;
+			waterResistance = windResistance = earthResistance = fireResistance = 0;
+			carryLimit = armorReduction = baseMagicHit = 0;
+			rangedHit = rangedCritical = magicCritical = weaponHitRate = magicHit = weaponDamageRate = 0;
+			hpRegen = mpRegen = impactProbability = 0;
 			pvpDamage = pvpReduction = 0;
 			specialResistance = 0;
 		}
@@ -139,24 +143,36 @@ public final class SkillEffectContainer {
 	public void validateSkillMod(boolean notify) {
 		SkillModifiers state = skillModifiers;
 		if (state == null) {
-			owner.setPumpedSkillModifiers(0, 0, 0, 0, 0, 0, 0, 0L, 0, notify);
+			owner.setPumpedSkillModifiers(0, 0, 0, 0, 0, 0, 0, 0L, 0L, 0, notify);
 			owner.getResistance().setSkillCombatModifiers(0, 0L, notify);
-			if (owner instanceof L1PcInstance pc) pc.setPumpedCarryAndArmor(0, notify);
+			if (owner instanceof L1PcInstance pc) {
+				pc.setPumpedCarryArmorAndAccuracy(0, notify);
+				pc.setPumpedRegenAndWeaponRates(0);
+			}
 			return;
 		}
 		state.initializeSkillMod();
 		for (int i = 0; i < state.count * 2; i += 2)
 			CSkillInfo.get((int) state.applied[i]).pump(owner, state.applied[i + 1], state);
 		final int evasion = (state.dg << 16) | (state.er & 0xffff);
-		final long weapon = ((state.rangedDamage & 0xffffL) << 32)
+		final long weapon = ((long) state.rangedHit << 48) | ((state.rangedDamage & 0xffffL) << 32)
 				| ((long) (state.meleeDamage & 0xffff) << 16) | (state.meleeHit & 0xffff);
+		final long combatRates = ((long) state.weaponHitRate << 48) | ((state.magicHit & 0xffffL) << 32)
+                | ((state.magicCritical & 0xffffL) << 16) | (state.rangedCritical & 0xffffL);
+        final long elements = ((long) state.fireResistance << 48) | ((state.earthResistance & 0xffffL) << 32)
+                | ((state.windResistance & 0xffffL) << 16) | (state.waterResistance & 0xffffL);
 		owner.setPumpedSkillModifiers(state.hp, state.mp, state.ac, state.mr,
-				state.effectivePrimaryStats(), state.elementalResistance, evasion, weapon, state.sp, notify);
+				state.effectivePrimaryStats(), elements, evasion, weapon, combatRates, state.sp, notify);
 		final int pvp = (state.pvpReduction << 16) | (state.pvpDamage & 0xffff);
 		owner.getResistance().setSkillCombatModifiers(pvp, state.specialResistance, notify);
 		if (owner instanceof L1PcInstance pc) {
-			final int carryAndArmor = (state.armorReduction << 16) | (state.carryLimit & 0xffff);
-			pc.setPumpedCarryAndArmor(carryAndArmor, notify);
+			final long carryArmorAndAccuracy = ((long) state.baseMagicHit << 32)
+                    | ((state.armorReduction & 0xffffL) << 16) | (state.carryLimit & 0xffffL);
+			pc.setPumpedCarryArmorAndAccuracy(carryArmorAndAccuracy, notify);
+			final long regenAndWeaponRates = ((long) state.impactProbability << 48)
+                    | ((state.weaponDamageRate & 0xffffL) << 32)
+                    | ((state.mpRegen & 0xffffL) << 16) | (state.hpRegen & 0xffffL);
+            pc.setPumpedRegenAndWeaponRates(regenAndWeaponRates);
 		}
 	}
 
