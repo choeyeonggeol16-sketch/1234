@@ -399,6 +399,18 @@ public final class CIOThreadCallback {
 		return CIOShardContext.currentShardIndex();
 	}
 
+    /** Timed equipment fallback when the bounded scheduler refuses admission.
+     * Use this character's existing owner wheel; no extra worker or queue.
+     */
+    public boolean scheduleEquipmentTick(L1PcInstance pc, int expectedSession,
+            WheelTask task, long delayMs) {
+        if (pc == null || task == null || delayMs <= 0L
+                || pc.getSessionStamp() != expectedSession) return false;
+        final CIOThread owner = shardOf(pc);
+        return owner != null && owner.running && pc.getSessionStamp() == expectedSession
+                && owner.admitTimer(TimerOp.RAW_TIMER, 0, delayMs, task, null, null);
+    }
+
     /** Existing owner wheel drives connection deadlines; no extra worker or queue. */
     public boolean scheduleNetworkTimeout(int shardIndex, WheelTask task, long delayMs) {
         if (task == null || delayMs <= 0L || shardIndex < 0
