@@ -173,7 +173,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 1564,버닝샷,,managed_external,offBurningShot
 1565,매직실드2,,stop_only,offMagicShield2
 1566,이뮨투함블레이드,,stop_only,offImmuneBladeCustom
-1607,어드밴스,,stop_only,offLegacyAdvance
+1607,어드밴스,,managed_external,offLegacyAdvance
 2329,할파스의신의,ignoreNonPlayerBuff,instant,offHalpasGod
 2754,프라임,,managed_external,offPrime
 2762,버서크,,managed_external,offBerserkCustom

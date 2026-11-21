@@ -92,10 +92,12 @@ public final class PcPassiveEffects {
             }
         }
         case 어드밴스 -> {
-            pc.setAdvenHp(pc.getBaseMaxHp() / 5);
-            pc.setAdvenMp(pc.getBaseMaxMp() / 5);
-            pc.addMaxHp(pc.getAdvenHp());
-            pc.addMaxMp(pc.getAdvenMp());
+            final int hp = pc.getBaseMaxHp() / 5;
+            final int mp = pc.getBaseMaxMp() / 5;
+            pc.setAdvenHp(hp);
+            pc.setAdvenMp(mp);
+            pc.applySkillModifierFromOwner(kind.skillId,
+                    ((long) mp << 32) | Integer.toUnsignedLong(hp));
             if (pc.isInParty()) {
                 pc.getParty().refreshPartyMemberStatus(pc);
             }

@@ -262,6 +262,7 @@ public final class CSkillInfo {
                 fixed(WEAPON_HIT_RATE, 9), fixed(WEAPON_DAMAGE_RATE, 9),
                 fixed(SP, 6), fixed(MAGIC_HIT, 6), fixed(MAX_HP, 500));
         // Legacy item/skill grant paths formerly changed base stats directly.
+        registerManaged(어드밴스, null, MAX_HP, MAX_MP);
         registerManaged(일루션리치, null, fixed(SP, 4));
         registerManaged(일루션골렘, null, fixed(AC, -10));
         registerManaged(솔리드캐리지, null, fixed(ER, 15));
