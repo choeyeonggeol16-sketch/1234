@@ -6217,6 +6217,9 @@ public final class CItemEnchantOption {
 					os.writeC(0x00); // -- dummy
 				}
 			
+    } finally {
+        EquipmentEnchantOptions.releaseAccessoryBonusSnapshot(accessoryBonus);
+    }
     }
     private static boolean isSnapperRing(int itemId) {
         return (itemId >= 22224 && itemId <= 22228)
@@ -6230,8 +6233,4 @@ public final class CItemEnchantOption {
                 || id == 222340 || id == 222341;
     }
 
-
-        } finally {
-            EquipmentEnchantOptions.releaseAccessoryBonusSnapshot(accessoryBonus);
-        }
-    }
+}
