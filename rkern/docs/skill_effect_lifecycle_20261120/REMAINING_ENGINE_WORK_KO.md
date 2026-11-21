@@ -56,3 +56,5 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 
 - 전용 시전 나머지 2종(SHAPE_CHANGE/TOMAHAWK)도 PC 대상은 기존 EXEC_CAST_BUFF 경로에서 처리. 변신 확률/폴리링 보호는 시전 위치에서 유지하고, 실제 변신·장비 확인·재검사·안내는 수신자 실행에서 처리한다. 토마호크의 2~6틱 확률 및 총 출혈량 계산은 보존하되, PC generation 발급/아이콘/휠 등록을 수신자 실행에서 시작한다. NPC 대상은 기존 TomahawkBleedService 및 L1PolyMorph 호출을 유지한다.
 - 5개 전용 시전의 캐스트/종료 핸들러 등록 검증을 추가했다. 실 게임 클라이언트·외부 DB 환경의 전투/변신 패킷 시퀀스는 별도 검증이 필요하다.
+
+- 지혜의 물약(STATUS_WISDOM_POTION, 1004)은 소비 아이템 직접 SP/MPR +2, 종료 -2를 CSkillInfo.Pump 기반 관리형 독립 출처로 전환했다. 반복 음용 시 같은 ID를 idempotent refresh하고 만료 시 정확히 해당 효과만 회수한다. 종료 전용 ledger 76→75로 갱신하고 별도 중첩/재사용 회귀를 추가했다.

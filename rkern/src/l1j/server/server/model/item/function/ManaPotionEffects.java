@@ -160,10 +160,8 @@ final class ManaPotionEffects {
 			return;
 		}
 
-		if (!pc.hasSkillEffect(STATUS_WISDOM_POTION)) {
-			pc.getAbility().addSp(2);
-			pc.addMpr(2);
-		}
+		// Idempotent refresh; do not mutate the item's base stats directly.
+		pc.applySkillModifierFromOwner(STATUS_WISDOM_POTION, 0);
 		sendWisdomIcon(pc, (int) (time));
 		sendSound(pc, pc.getId(), 750);
 		broadcastSound(pc, pc.getId(), 750);
