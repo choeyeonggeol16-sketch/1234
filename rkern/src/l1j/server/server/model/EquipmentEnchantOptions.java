@@ -10,10 +10,19 @@ import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.templates.L1Item;
 
 /** Lineage 1 equipment options shared by equip, unequip, and enchant changes. */
-final class EquipmentEnchantOptions {
+public final class EquipmentEnchantOptions {
     private static final ItemStat[] STATS = ItemStat.values();
 
     private EquipmentEnchantOptions() {}
+
+    /** Exact per-enchant accessory changes, shared by equip and tooltip.
+     *  One primitive array is allocated only when a Snapper tooltip is assembled.
+     */
+    public static int[] accessoryBonusSnapshot(L1Item item, int enchant) {
+        final int[] changes = new int[STATS.length];
+        applyAccessoryOptions(null, item, enchant, 1, changes);
+        return changes;
+    }
 
     static int[] enchantDelta(L1PcInstance pc, L1Item item, int previousEnchant, int enchant) {
         final int[] changes = new int[STATS.length];
@@ -3679,7 +3688,7 @@ final class EquipmentEnchantOptions {
                     break;
                 }
 
-            } else if (grade == 3 && itemId == 22224 || itemId == 22225) {
+            } else if (grade == 3 && (itemId == 22224 || itemId == 22225)) {
                 switch (enchant) {
                 case 1:
                     applyStat(pc, changes, MAX_HP, sign * 15);
@@ -4316,7 +4325,7 @@ final class EquipmentEnchantOptions {
                     applyStat(pc, changes, ABILITY_RESIS, sign * 9);
                     applyStat(pc, changes, FEAR_RESIS, sign * 4);
                     applyStat(pc, changes, PVP_DMG, sign * 9);
-                    applyStat(pc, changes, MAGIC_HIT, sign * -7);// 마법 적중
+                    applyStat(pc, changes, MAGIC_HIT, sign * 7);// 마법 적중
                     break;
                 default:
                     break;

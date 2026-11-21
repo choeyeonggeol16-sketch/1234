@@ -18,6 +18,7 @@ import l1j.server.PrideSystem.PrideLoadManager;
 import l1j.server.server.ThreadPool; //CrockController
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.L1EquipmentSlot;
+import l1j.server.server.model.EquipmentEnchantOptions;
 import l1j.server.server.model.L1EquipmentSlot.ClassArmorBonus;
 import l1j.server.server.model.L1EquipmentTimer;
 import l1j.server.server.model.L1GroundInventory;
@@ -961,6 +962,10 @@ public final class CItemEnchantOption {
                                       int itemType2, int itemId, int itemgrade) throws Exception { // weapon | armor
 
 				int op_addAc = 0;
+                // Read the exact accessory enchant values used by the equipment path once.
+                final int[] snapperBonus = itemType2 == 2 && isSnapperRing(itemId)
+                        ? EquipmentEnchantOptions.accessoryBonusSnapshot(item.getItem(), item.getEnchantLevel())
+                        : null;
 
 				/** 아이템 안전인챈 표시 추가 **/
 				
@@ -1492,39 +1497,12 @@ public final class CItemEnchantOption {
 				}
 				
 				CItemEnchantOption.AssembleEnchantOption(item, os, itemId, op_addAc);
-				/** 스냅퍼의 반지 추타 표기 **/
-				if (itemType2 == 2 && itemId == 22224 ||itemId == 22225|| itemId == 22227 && item.getEnchantLevel() > 4) {
-					os.writeC(6);
-					os.writeC(item.getItem().getDmgModifier() + item.getEnchantLevel() - 4);
-					/** 축복받은 스냅퍼의 반지 추타 표기 **/
-				} else if(itemType2 == 2 && itemId == 222291 || itemId == 22228 || itemId == 22226 ) {//////////// 걍스냅
-					if (item.getEnchantLevel() > 4 && item.getEnchantLevel() <= 7 ) {
-					os.writeC(6);
-					os.writeC(item.getItem().getDmgModifier() + item.getEnchantLevel() - 4);
-					} else if (item.getEnchantLevel() == 8) {
-						os.writeC(6);
-						os.writeC(item.getItem().getDmgModifier() + item.getEnchantLevel() - 3);
-					}else if (item.getEnchantLevel() >= 9) {
-						os.writeC(6);
-						os.writeC(item.getItem().getDmgModifier() + item.getEnchantLevel() - 2);
-					}
-					
-				} else if (itemType2 == 2 && itemId == 222330 &&  item.getEnchantLevel() > 3) {
-					os.writeC(6);
-					os.writeC(item.getItem().getDmgModifier() + item.getEnchantLevel() - 3);
-				} else if(itemType2 == 2 && itemId == 222336 || itemId == 222334 || itemId == 222332) {////////////// 축스냅
-					if (item.getEnchantLevel() > 3 && item.getEnchantLevel() <= 7 ) {
-					os.writeC(6);
-					os.writeC(item.getItem().getDmgModifier() + item.getEnchantLevel() - 3);
-					} else if (item.getEnchantLevel() == 8) {
-						os.writeC(6);
-						os.writeC(item.getItem().getDmgModifier() + item.getEnchantLevel() - 1);
-					} else if (item.getEnchantLevel() >= 9) {
-						os.writeC(6);
-						os.writeC(item.getItem().getDmgModifier() + item.getEnchantLevel());
-					}
-					
-				} else if (itemType2 == 1 && itemId == 202012) {
+				/** 스냅퍼 추가 대미지: 장착 시 적용하는 옵션을 그대로 표시 */
+                if (snapperBonus != null) {
+                    final int extra = snapperBonus[ItemStat.MELEE_DAMAGE_UP.ordinal()];
+                    final int total = item.getItem().getDmgModifier() + extra;
+                    if (total > 0) os.writeAddDMG(total);
+                } else if (itemType2 == 1 && itemId == 202012) {
 					if (item.getEnchantLevel() > 0) {
 						os.writeWeaponDmg(item.getEnchantLevel() * 2, item.getEnchantLevel() * 2);
 						os.writeShortDMG(item.getItem().getDmgModifier());
@@ -1637,33 +1615,11 @@ public final class CItemEnchantOption {
 						os.writeLongDMG(item.getEnchantLevel() - 4);
 					}
 				}
-				/** 스냅퍼의 반지 PvP추가대미지 표시 **/
-				if (itemType2 == 2 && itemId >= 22224 && itemId <= 22228 && item.getEnchantLevel() == 7
-						|| itemId >= 222290 && itemId <= 222291 && item.getEnchantLevel() == 7
-						|| itemId >= 222330 && itemId <= 222336 && item.getEnchantLevel() == 7) { // 인챈트가
-																								// 7이면
-					os.writeC(59);
-					os.writeC(item.getEnchantLevel() - 6);
-				} else if (itemType2 == 2 && itemId >= 22224 && itemId <= 22228
-						|| itemId >= 222290 && itemId <= 222291 
-						|| itemId == 222330 || itemId == 222331 || itemId == 222333 ) { // 인챈트가8이면
-					if (item.getEnchantLevel() == 8){
-					os.writeC(59);
-					os.writeC(item.getEnchantLevel() - 5);
-					} else if (item.getEnchantLevel() >= 9) {
-							os.writeC(59);
-							os.writeC(item.getEnchantLevel() - 2);
-						}
-				} else if (itemType2 == 2 && itemId == 222336 || itemId == 222333 ||  itemId == 222335  ||  itemId == 222332 ||  itemId == 222334 ) {
-						if (item.getEnchantLevel() == 8) { // 인챈트가8이면
-					os.writeC(59);
-					os.writeC(item.getEnchantLevel() - 3);
-						} else if (item.getEnchantLevel() >= 9) {
-							os.writeC(59);
-							os.writeC(item.getEnchantLevel());
-						}
-					
-				} else if (itemId >= 307 && itemId <= 314) {
+				/** 스냅퍼 PvP 추가 대미지: 실제 적용 수치 사용 */
+                if (snapperBonus != null) {
+                    final int pvp = snapperBonus[ItemStat.PVP_DMG.ordinal()];
+                    if (pvp > 0) os.writePVPAddDMG(pvp);
+                } else if (itemId >= 307 && itemId <= 314) {
 					if (item.getEnchantLevel() == 7) {
 						os.writeC(59);
 						os.writeC(item.getEnchantLevel() - 4);
@@ -1680,23 +1636,10 @@ public final class CItemEnchantOption {
 				}
 
 				/** 스냅퍼의 반지류 HP증가 표시 **/
-				if (itemType2 == 2 && itemId >= 22224 && itemId <= 22228) {
-					if (item.getEnchantLevel() > 0   && item.getEnchantLevel() <= 8) {
-					int 스냅퍼HP증가 = item.getEnchantLevel() * 5 + 10;
-					os.writeC(14);
-					os.writeH(item.getItem().get_addhp() + 스냅퍼HP증가);
-					} else if ( item.getEnchantLevel() >= 9) {
-						if (itemId == 22226) {
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 55);
-					} else {
-						os.writeC(14);
-						os.writeH(60);
-					}
-					}
-				
-					/** 축복받은 스냅퍼의 체력 반지 HP증가 표시 **/
-				} else if (itemType2 == 2 && itemId == 222332 && item.getEnchantLevel() > 0) {
+				if (snapperBonus != null && itemId >= 22224 && itemId <= 22228) {
+                    final int hp = snapperBonus[ItemStat.MAX_HP.ordinal()];
+                    if (hp > 0) os.writeAddMaxHP(item.getItem().get_addhp() + hp);
+                } else if (itemType2 == 2 && itemId == 222332 && item.getEnchantLevel() > 0) {
 					switch (item.getEnchantLevel()) {
 					case 1:
 						os.writeC(14);
@@ -6422,4 +6365,10 @@ public final class CItemEnchantOption {
 				}
 			
     }
+    private static boolean isSnapperRing(int itemId) {
+        return (itemId >= 22224 && itemId <= 22228)
+                || itemId == 222290 || itemId == 222291
+                || (itemId >= 222330 && itemId <= 222336);
+    }
+
 }
