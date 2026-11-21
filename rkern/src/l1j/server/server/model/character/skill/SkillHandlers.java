@@ -136,11 +136,7 @@ public final class SkillHandlers {
 
 		// buffs (이관)
 
-		register(L1SkillId.MAJESTY, SkillHandlers::onMajesty);
-		register(L1SkillId.ABSOLUTE_BARRIER, SkillHandlers::onAbsoluteBarrier);
-		register(L1SkillId.REDUCTION_ARMOR, SkillHandlers::onReductionArmor);
 
-		register(L1SkillId.MOEBIUS, SkillHandlers::onMoebius);
 
 		register(L1SkillId.STRIKER_GALE, SkillHandlers::onStrikerGale);
 
@@ -299,7 +295,6 @@ public final class SkillHandlers {
 
 
 
-		register(L1SkillId.ABSOLUTE_BLADE, SkillHandlers::onAbsoluteBlade);
 
 		register(L1SkillId.성혈버프, SkillHandlers::onSeonghyeolBuff);
 
@@ -365,10 +360,6 @@ public final class SkillHandlers {
 
 		// ===== N_BUFF =====
 
-		register(L1SkillId.N_BUFF_WATER_DMG, SkillHandlers::onNBuffWaterDmg);
-		register(L1SkillId.N_BUFF_WIND_DMG, SkillHandlers::onNBuffWindDmg);
-		register(L1SkillId.N_BUFF_EARTH_DMG, SkillHandlers::onNBuffEarthDmg);
-		register(L1SkillId.N_BUFF_FIRE_DMG, SkillHandlers::onNBuffFireDmg);
 
 		// 기르타스
 		register(L1SkillId.TROGIR_MILPITAS1, SkillHandlers::onCursePoisonLike);
@@ -3861,29 +3852,6 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		} catch (Throwable ignore) {}
 	}
 
-	private static HandlerResult onMajesty(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		// icon=9518, tooltip/new=5893
-		return handlePcOnlyNoti(su, cha, L1SkillId.MAJESTY, 9518, 0, 5893, 5893, 0, true);
-	}
-
-	private static HandlerResult onAbsoluteBarrier(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		return handlePcOnlyNoti(su, cha, L1SkillId.ABSOLUTE_BARRIER, 717, 10, 700, 700, 2179, true);
-	}
-
-	private static HandlerResult onAbsoluteBlade(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		return handlePcOnlyNoti(su, cha, L1SkillId.ABSOLUTE_BLADE, 7432, 0, 4735, 4735, 4742, true);
-	}
-
-	private static HandlerResult onReductionArmor(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		// icon=1889, tooltip/new=1043, end=2197
-		return handlePcOnlyNoti(su, cha, L1SkillId.REDUCTION_ARMOR, 1889, 0, 1043, 1043, 2197, true);
-	}
-
-	private static HandlerResult onMoebius(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		// icon=9443, tooltip=5550, new=5552
-		return handlePcOnlyNoti(su, cha, L1SkillId.MOEBIUS, 9443, 0, 5550, 5552, 0, true);
-	}
-
 	static void startEvasionBuff(L1PcInstance pc, int skillId, int duration) {
 		resetEffect(pc, skillId);
 		CSkillInfo.applyFixedModifierFromOwner(pc, skillId);
@@ -3904,35 +3872,13 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		sendRestatBuffNoti(pc, skillId, duration, icon, icon, 0, statusMessage, statusMessage, endMessage, true);
 	}
 
-	private static HandlerResult onNBuffWaterDmg(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		return handleNBuffIconOnly(su, cha, L1SkillId.N_BUFF_WATER_DMG);
-	}
-
-	private static HandlerResult onNBuffWindDmg(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		return handleNBuffIconOnly(su, cha, L1SkillId.N_BUFF_WIND_DMG);
-	}
-
-	private static HandlerResult onNBuffEarthDmg(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		return handleNBuffIconOnly(su, cha, L1SkillId.N_BUFF_EARTH_DMG);
-	}
-
-	private static HandlerResult onNBuffFireDmg(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
-		return handleNBuffIconOnly(su, cha, L1SkillId.N_BUFF_FIRE_DMG);
-	}
-
 	// =========================
 	// helpers
 	// =========================
-	private static HandlerResult handleNBuffIconOnly(L1SkillUse su, L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
+	static void startInventoryIconTimer(L1PcInstance pc, int skillId, int duration) {
 		resetEffect(pc, skillId);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-		sendIvenBuffIcon(pc, skillId, durSec);
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
+		sendIvenBuffIcon(pc, skillId, duration);
 	}
 
 	private static int weaponType1(final L1PcInstance pc) {
@@ -4020,27 +3966,11 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		        notiWire_isGood, 0, 0, 0, notiWire_bit);
 	}
 
-	private static HandlerResult handlePcOnlyNoti(
-			final L1SkillUse su,
-			final L1Character cha,
-			final int skillId,
-			final int iconId,
-			final int iconPriority,
-			final int tooltipStrId,
-			final int newStrId,
-			final int endStrId,
-			final boolean isGood
-			) {
-		if (!(cha instanceof L1PcInstance)) return HandlerResult.NOT_HANDLED;
-		final L1PcInstance pc = (L1PcInstance) cha;
-
+	static void startNoticeTimer(L1PcInstance pc, int skillId, int duration,
+			int icon, int priority, int tooltip, int startMessage, int endMessage) {
 		resetEffect(pc, skillId);
-
-		final int durSec = durationSecForBuff(su, skillId);
-		applySkillEffectSec(pc, skillId, durSec);
-
-		sendRestatBuffNoti(pc, skillId, durSec, iconId, iconId, iconPriority, tooltipStrId, newStrId, endStrId, isGood);
-		return HandlerResult.HANDLED;
+		applySkillEffectSec(pc, skillId, duration);
+		sendRestatBuffNoti(pc, skillId, duration, icon, icon, priority, tooltip, startMessage, endMessage, true);
 	}
 
 	private static void sendRestatBuffNoti(

@@ -100,6 +100,15 @@ public final class CSkillInfo {
         registerManaged(FEAR, SkillHandlers::startCommonStatBuff, DG);
         registerManaged(HORROR_OF_DEATH, SkillHandlers::startCommonStatBuff, PRIMARY_PENALTY);
         registerManaged(PANIC, SkillHandlers::startCommonStatBuff, PRIMARY_PENALTY);
+        registerNotifiedTimer(MAJESTY, 9518, 0, 5893, 5893, 0);
+        registerNotifiedTimer(ABSOLUTE_BARRIER, 717, 10, 700, 700, 2179);
+        registerNotifiedTimer(ABSOLUTE_BLADE, 7432, 0, 4735, 4735, 4742);
+        registerNotifiedTimer(REDUCTION_ARMOR, 1889, 0, 1043, 1043, 2197);
+        registerNotifiedTimer(MOEBIUS, 9443, 0, 5550, 5552, 0);
+        registerManaged(N_BUFF_WATER_DMG, SkillHandlers::startInventoryIconTimer);
+        registerManaged(N_BUFF_WIND_DMG, SkillHandlers::startInventoryIconTimer);
+        registerManaged(N_BUFF_EARTH_DMG, SkillHandlers::startInventoryIconTimer);
+        registerManaged(N_BUFF_FIRE_DMG, SkillHandlers::startInventoryIconTimer);
         frozen = true;
     }
 
@@ -165,6 +174,11 @@ public final class CSkillInfo {
 
     private static void registerManaged(int skillId, PumpStartEffect start, CSkillEffect... effects) {
         registerManagedWithFallback(skillId, start, null, effects);
+    }
+
+    private static void registerNotifiedTimer(int skillId, int icon, int priority, int tooltip, int start, int end) {
+        registerManaged(skillId, (pc, id, duration) ->
+                SkillHandlers.startNoticeTimer(pc, id, duration, icon, priority, tooltip, start, end));
     }
 
     private static void registerManagedWithFallback(int skillId, PumpStartEffect start,

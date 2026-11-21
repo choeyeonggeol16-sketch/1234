@@ -89,10 +89,10 @@ public final class SkillStopHandlers {
 		register(L1SkillId.N_BUFF_STUN,      SkillStopHandlers::offNBuffStun);
 		register(L1SkillId.N_BUFF_HOLD,      SkillStopHandlers::offNBuffHold);
 
-		register(L1SkillId.N_BUFF_WATER_DMG, SkillStopHandlers::offNBuffWaterDmg);
-		register(L1SkillId.N_BUFF_WIND_DMG,  SkillStopHandlers::offNBuffWindDmg);
-		register(L1SkillId.N_BUFF_EARTH_DMG, SkillStopHandlers::offNBuffEarthDmg);
-		register(L1SkillId.N_BUFF_FIRE_DMG,  SkillStopHandlers::offNBuffFireDmg);
+		register(L1SkillId.N_BUFF_WATER_DMG, SkillStopHandlers::offInventoryElementalTimer);
+		register(L1SkillId.N_BUFF_WIND_DMG,  SkillStopHandlers::offInventoryElementalTimer);
+		register(L1SkillId.N_BUFF_EARTH_DMG, SkillStopHandlers::offInventoryElementalTimer);
+		register(L1SkillId.N_BUFF_FIRE_DMG,  SkillStopHandlers::offInventoryElementalTimer);
 
 		register(L1SkillId.N_BUFF_STR,       SkillStopHandlers::offNBuffStr);
 		register(L1SkillId.N_BUFF_DEX,       SkillStopHandlers::offNBuffDex);
@@ -659,35 +659,9 @@ public final class SkillStopHandlers {
 
 	// dmg-attribute icons only
 
-	private static SkillStopHandlers.StopResult offNBuffWaterDmg(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		SC_IvenBuffIcon.send(pc, skillId, false, 4342, 0);
-		return StopResult.HANDLED;
-	}
-
-	private static SkillStopHandlers.StopResult offNBuffWindDmg(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		SC_IvenBuffIcon.send(pc, skillId, false, 4343, 0);
-		return StopResult.HANDLED;
-	}
-
-	private static SkillStopHandlers.StopResult offNBuffEarthDmg(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		SC_IvenBuffIcon.send(pc, skillId, false, 4344, 0);
-		return StopResult.HANDLED;
-	}
-
-	private static SkillStopHandlers.StopResult offNBuffFireDmg(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		SC_IvenBuffIcon.send(pc, skillId, false, 4345, 0);
+	private static StopResult offInventoryElementalTimer(L1Character target, int skillId) {
+		if (!(target instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
+		SC_IvenBuffIcon.send(pc, skillId, false, 4342 + skillId - L1SkillId.N_BUFF_WATER_DMG, 0);
 		return StopResult.HANDLED;
 	}
 

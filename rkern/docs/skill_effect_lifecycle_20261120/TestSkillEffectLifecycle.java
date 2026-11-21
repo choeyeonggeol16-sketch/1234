@@ -71,6 +71,7 @@ public final class TestSkillEffectLifecycle {
             verifyCompoundBuffs();
             verifyArmorAndSupportBuffs();
             verifyInstantManaEffects();
+            verifySharedBuffTimers();
             verifyDebuffSources();
             verifyInventoryAndDressBuffs();
             verifyEvasionBuffs();
@@ -441,6 +442,18 @@ public final class TestSkillEffectLifecycle {
         SkillHandlers.dispatch(new Cast(scales), pc, null, 0, null);
         pc.removeSkillEffect(scales);
         verify(pc.getResistance().getAddedMr() == 250, "capped MR preserves other sources", scales);
+    }
+
+    private static void verifySharedBuffTimers() {
+        Player pc = new Player();
+        for (int id : new int[] {MAJESTY, ABSOLUTE_BARRIER, ABSOLUTE_BLADE, REDUCTION_ARMOR, MOEBIUS,
+                N_BUFF_WATER_DMG, N_BUFF_WIND_DMG, N_BUFF_EARTH_DMG, N_BUFF_FIRE_DMG}) {
+            verify(CSkillInfo.isManaged(id), "shared timer registration", id);
+            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED
+                    && pc.effects.get(id) == 38_000, "shared timer duration", id);
+            pc.removeSkillEffect(id);
+            verify(!pc.hasSkillEffect(id), "shared timer removal", id);
+        }
     }
 
     private static void verifyDebuffSources() {
