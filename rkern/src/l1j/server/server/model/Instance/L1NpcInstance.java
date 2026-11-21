@@ -327,12 +327,8 @@ public class L1NpcInstance extends L1Character {
         }
     }
 
-    private boolean _발묶임상태 = false;
     public boolean 발묶임상태() {
-        return _발묶임상태;
-    }
-    public void set발묶임상태(boolean flag) {
-        _발묶임상태 = flag;
+        return hasAnySkillEffect(L1SkillId.STATUS_FREEZE, L1SkillId.POWERRIP, L1SkillId.DESPERADO);
     }
 
     private String Spawn_Location;

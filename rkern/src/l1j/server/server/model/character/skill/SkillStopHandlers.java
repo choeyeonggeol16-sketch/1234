@@ -258,7 +258,9 @@ public final class SkillStopHandlers {
 		register(L1SkillId.PHANTASM,             SkillStopHandlers::offSleepFamily);
 		register(L1SkillId.FOG_OF_SLEEPING,      SkillStopHandlers::offSleepFamily);
 
-		register(L1SkillId.SLOW,                  SkillStopHandlers::offMoveSpeedReset);
+		register(L1SkillId.SLOW,                  SkillStopHandlers::offSlowFamily);
+		register(L1SkillId.MOB_SLOW_1,            SkillStopHandlers::offSlowFamily);
+		register(L1SkillId.MOB_SLOW_18,           SkillStopHandlers::offSlowFamily);
 		register(L1SkillId.STATUS_FREEZE,         SkillStopHandlers::offStatusFreeze);
 
 		register(L1SkillId.STATUS_IGNITION,       SkillStopHandlers::offStatusIgnition);
@@ -269,7 +271,7 @@ public final class SkillStopHandlers {
 		register(L1SkillId.STATUS_FRUIT,          SkillStopHandlers::offStatusBraveFamily);
 		register(L1SkillId.STATUS_ELFBRAVE,       SkillStopHandlers::offStatusBraveFamily);
 
-		register(L1SkillId.STATUS_HASTE,          SkillStopHandlers::offMoveSpeedReset);
+		register(L1SkillId.STATUS_HASTE,          SkillStopHandlers::offHasteFamily);
 
 		register(L1SkillId.STATUS_UNDERWATER_BREATH, SkillStopHandlers::offUnderwaterBreath);
 		register(L1SkillId.STATUS_WISDOM_POTION,  SkillStopHandlers::offWisdomPotion);
@@ -881,11 +883,8 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offThunderGrab(L1Character cha, int skillId) {
-		if (!(cha instanceof L1NpcInstance)) return StopResult.NOT_HANDLED;
-		L1NpcInstance npc = (L1NpcInstance) cha;
-
-		npc.set발묶임상태(false);
-		return StopResult.HANDLED;
+		// STATUS_FREEZE owns the actual bind lifetime.
+		return cha instanceof L1NpcInstance ? StopResult.HANDLED : StopResult.NOT_HANDLED;
 	}
 
 	private static StopResult offSoulBarrier(L1Character cha, int skillId) {
@@ -1503,7 +1502,7 @@ public final class SkillStopHandlers {
 
 	private static StopResult offMobBerserkers(L1Character cha, int skillId) {
 		if (cha instanceof L1NpcInstance) {
-			cha.setMoveSpeed(0);
+			MovementSpeedEffects.endHaste(cha, skillId);
 			cha.setBraveSpeed(0);
 		}
 		return StopResult.HANDLED;
@@ -1570,13 +1569,8 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static StopResult offMoveSpeedReset(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			L1PcInstance pc = (L1PcInstance) cha;
-			SC_SkillHaste.send(pc, pc.getId(), 0, 0);
-			SC_SkillHaste.broadcastFast(pc, pc.getId(), 0, 0);
-		}
-		cha.setMoveSpeed(0);
+	private static StopResult offSlowFamily(L1Character cha, int skillId) {
+		MovementSpeedEffects.endSlow(cha, skillId);
 		return StopResult.HANDLED;
 	}
 
@@ -1584,11 +1578,6 @@ public final class SkillStopHandlers {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			SC_Paralysis.send(pc, SC_Paralysis.TYPE_BIND, false);
-		} else if (cha instanceof L1MonsterInstance
-				|| cha instanceof L1SummonInstance
-				|| cha instanceof L1PetInstance
-				|| cha instanceof L1CompanionInstance) {
-			((L1NpcInstance) cha).setParalyzed(false);
 		}
 		return StopResult.HANDLED;
 	}
@@ -3058,8 +3047,6 @@ public final class SkillStopHandlers {
 	            || cha instanceof L1SummonInstance
 	            || cha instanceof L1PetInstance
 	            || cha instanceof L1CompanionInstance) {
-	        L1NpcInstance npc = (L1NpcInstance) cha;
-	        npc.set발묶임상태(false);
 	        return StopResult.HANDLED;
 	    }
 
@@ -3070,12 +3057,6 @@ public final class SkillStopHandlers {
 	    if (cha instanceof L1PcInstance) {
 	        L1PcInstance pc = (L1PcInstance) cha;
 	        SC_Paralysis.send(pc, SC_Paralysis.TYPE_PERADO, false);
-	    } else if (cha instanceof L1MonsterInstance
-	            || cha instanceof L1SummonInstance
-	            || cha instanceof L1PetInstance
-	            || cha instanceof L1CompanionInstance) {
-	        L1NpcInstance npc = (L1NpcInstance) cha;
-	        npc.set발묶임상태(false);
 	    }
 
 	    cha.Desperadolevel = 0;
@@ -3115,16 +3096,8 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offHasteFamily(L1Character cha, int skillId) {
-	    // HASTE / GREATER_HASTE 공통
-	    cha.setMoveSpeed(0);
-
-	    if (cha instanceof L1PcInstance) {
-	        L1PcInstance pc = (L1PcInstance) cha;
-	        SC_SkillHaste.send(pc, pc.getId(), 0, 0);
-	        SC_SkillHaste.broadcastFast(pc, pc.getId(), 0, 0);
-	        return StopResult.HANDLED;
-	    }
-	    return StopResult.HANDLED;
+		MovementSpeedEffects.endHaste(cha, skillId);
+		return StopResult.HANDLED;
 	}
 	
 	private static int notiSpellId(int spellId) {

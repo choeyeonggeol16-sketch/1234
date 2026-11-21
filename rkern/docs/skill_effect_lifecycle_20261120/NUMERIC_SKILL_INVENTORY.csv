@@ -18,7 +18,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 26,PHYSICAL_ENCHANT_DEX,startPhysicalEnchant,managed_pump,offPhysicalEnchantDex
 27,WEAPON_BREAK,onWeaponBreak,existing_cast,
 28,VAMPIRIC_TOUCH,onVampiricTouchLike,instant,
-29,SLOW,onSlowLike,existing_cast,offMoveSpeedReset
+29,SLOW,onSlowLike,existing_cast,offSlowFamily
 32,MEDITATION,,stop_only,offMiso1
 33,CURSE_PARALYZE,onCurseParalyzeLike,existing_cast,offCurseParalyzeFamily
 35,GREATER_HEAL,onHealFamily,instant,
@@ -162,7 +162,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 780,할파스,,stop_only,offHalpas
 985,루돌프의버프,,stop_only,offRudolphBuff
 1000,STATUS_BRAVE,,stop_only,offStatusBraveFamily
-1001,STATUS_HASTE,,stop_only,offMoveSpeedReset
+1001,STATUS_HASTE,,stop_only,offHasteFamily
 1002,STATUS_BLUE_POTION,,stop_only,offNoop
 1003,STATUS_UNDERWATER_BREATH,,stop_only,offUnderwaterBreath
 1004,STATUS_WISDOM_POTION,,stop_only,offWisdomPotion
@@ -354,8 +354,8 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 24445,엘리멘탈대기,,stop_only,offCooldownNotice
 25133,엠파이어오버로드DG,,stop_only,offStunControlOverloadDg
 25155,이터디스,,stop_only,offEtherDis
-30000,MOB_SLOW_18,onSlowLike,existing_cast,
-30001,MOB_SLOW_1,onSlowLike,existing_cast,
+30000,MOB_SLOW_18,onSlowLike,existing_cast,offSlowFamily
+30001,MOB_SLOW_1,onSlowLike,existing_cast,offSlowFamily
 30002,MOB_CURSEPARALYZ_19,onCurseParalyzeLike,existing_cast,
 30003,MOB_COCA,onMobBasillOrCoca,existing_cast,offEarthBindBasillCoca
 30004,MOB_BASILL,onMobBasillOrCoca,existing_cast,offEarthBindBasillCoca

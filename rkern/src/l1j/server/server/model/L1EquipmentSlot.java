@@ -15,6 +15,7 @@ import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.MovementSpeedEffects;
 import l1j.server.server.model.item.ItemEffectRegistry;
 import l1j.server.server.model.item.function.ItemBonusHooks;
 import l1j.server.server.model.network.core.sc.packet.SC_DelSkill;
@@ -12402,7 +12403,8 @@ if(item.getItemId() == 700117){
 		}
 		if (item.isHasteItem()) {
 			_owner.addHasteItemEquipped(-1);
-			if (_owner.getHasteItemEquipped() == 0) {
+			if (_owner.getHasteItemEquipped() == 0 && _owner.getMoveSpeed() == 1
+					&& MovementSpeedEffects.activeHaste(_owner, 0) == 0) {
 				_owner.setMoveSpeed(0);
 				SC_SkillHaste.send(_owner, _owner.getId(), 0, 0);
 				SC_SkillHaste.broadcast(_owner, _owner.getId(), 0, 0);

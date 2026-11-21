@@ -504,6 +504,11 @@ public class L1Character extends L1Object {
 		return effects != null && effects.contains(skillId);
 	}
 
+	protected boolean hasAnySkillEffect(int first, int second, int third) {
+		final SkillEffectContainer effects = skillEffects(false);
+		return effects != null && effects.containsAny(first, second, third);
+	}
+
 	public int getSkillEffectTimeSec(int skillId) {
 		final SkillEffectContainer effects = skillEffects(false);
 		return effects == null ? -1 : effects.getRemainingTimeSec(skillId);

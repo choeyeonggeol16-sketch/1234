@@ -3,6 +3,8 @@ package l1j.server.server.model.item.function;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.MovementSpeedEffects;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.templates.L1Item;
 
@@ -75,29 +77,19 @@ public class GreenPotion
       return;
     }
     pc.setDrink(false);
-    if (pc.hasSkillEffect(43))
+    if (pc.hasSkillEffect(L1SkillId.HASTE))
     {
-      pc.killSkillEffectTimer(43);
-      SC_SkillHaste.send(pc, pc.getId(), 0, 0);
-      SC_SkillHaste.broadcastFast(pc, pc.getId(), 0, 0);
-      pc.setMoveSpeed(0);
+      pc.killSkillEffectTimer(L1SkillId.HASTE);
+      MovementSpeedEffects.endHaste(pc, L1SkillId.HASTE);
     }
-    else if (pc.hasSkillEffect(54))
+    else if (pc.hasSkillEffect(L1SkillId.GREATER_HASTE))
     {
-      pc.killSkillEffectTimer(54);
-      SC_SkillHaste.send(pc, pc.getId(), 0, 0);
-      SC_SkillHaste.broadcastFast(pc, pc.getId(), 0, 0);
-      pc.setMoveSpeed(0);
+      pc.killSkillEffectTimer(L1SkillId.GREATER_HASTE);
+      MovementSpeedEffects.endHaste(pc, L1SkillId.GREATER_HASTE);
     }
-    if (pc.hasSkillEffect(29))
+    if (!MovementSpeedEffects.cancelSlowWithPotion(pc))
     {
-      pc.killSkillEffectTimer(29);
-      SC_SkillHaste.send(pc, pc.getId(), 0, 0);
-      SC_SkillHaste.broadcastFast(pc, pc.getId(), 0, 0);
-    }
-    else
-    {
-      int skilltime = pc.getSkillEffectTimeSec(1001);
+      int skilltime = pc.getSkillEffectTimeSec(L1SkillId.STATUS_HASTE);
       skilltime += time;
       if (skilltime >= 7200) {
         skilltime = 7200;
@@ -105,7 +97,7 @@ public class GreenPotion
       SC_SkillHaste.send(pc, pc.getId(), 1, skilltime);
       SC_SkillHaste.broadcastFast(pc, pc.getId(), 1, 0);
       pc.setMoveSpeed(1);
-      pc.setSkillEffect(1001, skilltime * 1000);
+      pc.setSkillEffect(L1SkillId.STATUS_HASTE, skilltime * 1000);
     }
     //if(pc.getBug_check() == 0){pc.sendPackets(new SC_SystemMessage("가속 효과: 이동 및 공격 속도 향상"));}
   }

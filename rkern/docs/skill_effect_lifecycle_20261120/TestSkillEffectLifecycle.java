@@ -3,9 +3,12 @@ package l1j.server.server.model.character.skill;
 import java.util.HashMap;
 import java.util.Map;
 import l1j.server.server.model.L1Character;
+import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.login.skill.BuffRestoreRegistry;
 import l1j.server.server.model.character.login.skill.BuffRestoreRegistryInit;
+import l1j.server.server.model.character.skill.core.MagicEffectApplier;
+import l1j.server.server.templates.L1Skills;
 import l1j.server.server.utils.eKind;
 
 import static l1j.server.server.model.character.skill.L1SkillId.*;
@@ -71,6 +74,8 @@ public final class TestSkillEffectLifecycle {
             verifyInventoryHealthAndArmor();
             verifyInventoryResistances();
             verifyLifetimeRefreshAndSleep();
+            verifyMovementSpeedSources();
+            verifyNpcBindLifetime();
             verifyOwnerDispatchAndExpiry();
             verifyRegistry();
         } catch (Throwable failure) {
@@ -458,6 +463,81 @@ public final class TestSkillEffectLifecycle {
         verify(!target.isSleeped(), "last sleep releases movement", L1SkillId.FOG_OF_SLEEPING);
     }
 
+    private static void verifyMovementSpeedSources() {
+        L1Character target = new L1Character();
+        target.setMoveSpeed(2);
+        target.setSkillEffect(MOB_SLOW_1, 0);
+        target.setSkillEffect(MOB_SLOW_18, 0);
+        target.removeSkillEffect(MOB_SLOW_1);
+        verify(target.getMoveSpeed() == 2, "one monster slow survives", MOB_SLOW_18);
+        target.removeSkillEffect(MOB_SLOW_18);
+        verify(target.getMoveSpeed() == 0, "last monster slow releases speed", MOB_SLOW_18);
+
+        target.setMoveSpeed(1);
+        target.setSkillEffect(HASTE, 0);
+        target.setSkillEffect(STATUS_HASTE, 0);
+        SkillStopHandlers.dispatch(target, SLOW);
+        verify(target.getMoveSpeed() == 1, "stale slow does not reset haste", SLOW);
+        target.removeSkillEffect(HASTE);
+        verify(target.getMoveSpeed() == 1, "potion haste survives spell expiry", STATUS_HASTE);
+        target.removeSkillEffect(STATUS_HASTE);
+        verify(target.getMoveSpeed() == 0, "last haste releases speed", STATUS_HASTE);
+
+        L1Skills hasteTemplate = new L1Skills();
+        hasteTemplate.setBuffDuration(38);
+        L1SkillUse haste = new L1SkillUse() {
+            @Override public int hdSkillId() { return HASTE; }
+            @Override public int hdGetBuffIconDuration() { return 38; }
+            @Override public L1Skills exSkill() { return hasteTemplate; }
+        };
+        target.setMoveSpeed(2);
+        target.setSkillEffect(MOB_SLOW_18, 0);
+        verify(SkillHandlers.dispatch(haste, target, null, 0, null) == SkillHandlers.HD_HANDLED,
+                "haste dispels the slow", HASTE);
+        MagicEffectApplier.INSTANCE.applySkillEffect(haste, target, false);
+        verify(target.getMoveSpeed() == 0 && !target.hasSkillEffect(HASTE) && !target.hasSkillEffect(MOB_SLOW_18),
+                "dispelling monster slow does not install haste", HASTE);
+
+        Player pc = new Player();
+        pc.addHasteItemEquipped(1);
+        pc.setMoveSpeed(1);
+        pc.setSkillEffect(GREATER_HASTE, 0);
+        pc.removeSkillEffect(GREATER_HASTE);
+        verify(pc.getMoveSpeed() == 1 && !MovementSpeedEffects.appliedOnCast(pc, HASTE),
+                "equipment haste survives and prevents a phantom spell timer", HASTE);
+        pc.addHasteItemEquipped(-1);
+        pc.setMoveSpeed(2);
+        pc.setSkillEffect(SLOW, 0);
+        pc.setSkillEffect(MOB_SLOW_1, 0);
+        verify(!MovementSpeedEffects.appliedOnCast(pc, HASTE), "haste cancellation has no haste timer", HASTE);
+        verify(MovementSpeedEffects.cancelSlowWithPotion(pc) && pc.getMoveSpeed() == 2 && !pc.hasSkillEffect(SLOW),
+                "potion cures one slow source", SLOW);
+        verify(MovementSpeedEffects.cancelSlowWithPotion(pc) && pc.getMoveSpeed() == 0 && !pc.hasSkillEffect(MOB_SLOW_1),
+                "potion cures last monster slow", MOB_SLOW_1);
+        verify(!MovementSpeedEffects.appliedOnCast(pc, SLOW), "slow cancellation has no slow timer", SLOW);
+    }
+
+    private static void verifyNpcBindLifetime() {
+        L1NpcInstance npc = new L1NpcInstance(null);
+        npc.skillEffectSetFromOwner(THUNDER_GRAB, 0);
+        verify(!npc.발묶임상태(), "visual spell timer alone does not bind", THUNDER_GRAB);
+        npc.skillEffectSetFromOwner(STATUS_FREEZE, 0);
+        npc.skillEffectSetFromOwner(POWERRIP, 0);
+        npc.skillEffectSetFromOwner(DESPERADO, 0);
+        npc.skillEffectRemoveFromOwner(THUNDER_GRAB, true);
+        verify(npc.발묶임상태(), "effect timer ends before the actual bind", THUNDER_GRAB);
+        npc.setParalyzed(true);
+        npc.skillEffectRemoveFromOwner(STATUS_FREEZE, true);
+        verify(npc.발묶임상태() && npc.isParalyzed(), "independent bind and paralysis survive", STATUS_FREEZE);
+        npc.skillEffectRemoveFromOwner(POWERRIP, true);
+        verify(npc.발묶임상태(), "Desperado survives Power Rip expiry", DESPERADO);
+        npc.skillEffectRemoveFromOwner(DESPERADO, false);
+        verify(!npc.발묶임상태() && npc.isParalyzed(), "timer-only removal releases bind alone", DESPERADO);
+        npc.skillEffectSetFromOwner(STATUS_FREEZE, 0);
+        npc.skillEffectClearFromOwner();
+        verify(!npc.발묶임상태() && npc.isParalyzed(), "clear does not leave a phantom bind", STATUS_FREEZE);
+    }
+
     private static void verifyOwnerDispatchAndExpiry() throws InterruptedException {
         L1PcInstance pc = new L1PcInstance();
         int shield = L1SkillId.SHIELD;
@@ -559,8 +639,8 @@ public final class TestSkillEffectLifecycle {
             if (info.stopHandler() != null) stops++;
             if (info.hasCast() && info.stopHandler() != null) both++;
         }
-        verify(casts == 310 && stops == 297 && both == 196, "numeric registry coverage", 0);
-        System.out.println("PASS independent stats and resistances, refresh, clear, sleep overlap and 411 numeric IDs");
+        verify(casts == 310 && stops == 299 && both == 198, "numeric registry coverage", 0);
+        System.out.println("PASS stats, resistances, refresh, clear, movement and bind overlap, 411 numeric IDs");
     }
 
 }

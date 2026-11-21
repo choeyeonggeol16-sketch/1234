@@ -5386,6 +5386,10 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	public void removeHasteSkillEffect() {
 		if (hasSkillEffect(L1SkillId.SLOW))
 			removeSkillEffect(L1SkillId.SLOW);
+		if (hasSkillEffect(L1SkillId.MOB_SLOW_1))
+			removeSkillEffect(L1SkillId.MOB_SLOW_1);
+		if (hasSkillEffect(L1SkillId.MOB_SLOW_18))
+			removeSkillEffect(L1SkillId.MOB_SLOW_18);
 		if (hasSkillEffect(L1SkillId.HASTE))
 			removeSkillEffect(L1SkillId.HASTE);
 		if (hasSkillEffect(L1SkillId.GREATER_HASTE))

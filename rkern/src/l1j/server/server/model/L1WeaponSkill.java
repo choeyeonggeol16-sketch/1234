@@ -322,7 +322,6 @@ public class L1WeaponSkill {
                 }
                 L1EffectSpawn.getInstance().spawnEffect(81182, fettersTime, cha.getX(), cha.getY(), cha.getMapId());
 				SC_SkillSound.broadcast(npc, npc.getId(), 4184);
-				npc.setParalyzed(true);
 			}
 		}
 	}

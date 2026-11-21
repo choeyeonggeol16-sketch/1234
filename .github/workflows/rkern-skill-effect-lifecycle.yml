@@ -11,7 +11,13 @@ on:
       - rkern/src/l1j/server/server/model/Ability.java
       - rkern/src/l1j/server/server/model/Resistance.java
       - rkern/src/l1j/server/server/model/L1Character.java
+      - rkern/src/l1j/server/server/model/L1EquipmentSlot.java
+      - rkern/src/l1j/server/server/model/L1WeaponSkill.java
       - rkern/src/l1j/server/server/model/HelpBySupport.java
+      - rkern/src/l1j/server/server/model/Instance/L1PcInstance.java
+      - rkern/src/l1j/server/server/model/Instance/L1NpcInstance.java
+      - rkern/src/l1j/server/server/model/item/function/GreenPotion.java
+      - rkern/src/l1j/server/server/model/item/function/MovementPotionEffects.java
       - rkern/docs/skill_effect_lifecycle_20261120/TestSkillEffectLifecycle.java
   workflow_dispatch:
 

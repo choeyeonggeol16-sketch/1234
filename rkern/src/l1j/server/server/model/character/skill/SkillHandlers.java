@@ -2452,7 +2452,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 				throw new java.util.concurrent.RejectedExecutionException("NPC POWERRIP admission exhausted");
 			}
 			spawnEffectAtTarget(target, 9415, dur);
-			npc.set발묶임상태(true);
 			return HandlerResult.HANDLED;
 		}
 
@@ -3173,19 +3172,11 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		final int durSec = durationSecForBuff(su, L1SkillId.GREATER_HASTE);
 
 		if (pc.getMoveSpeed() == 2) {
-			int skillNum = 0;
-			if (pc.hasSkillEffect(L1SkillId.SLOW)) {
-				skillNum = L1SkillId.SLOW;
-			} else if (pc.hasSkillEffect(L1SkillId.MOB_SLOW_1)) {
-				skillNum = L1SkillId.MOB_SLOW_1;
-			} else if (pc.hasSkillEffect(L1SkillId.MOB_SLOW_18)) {
-				skillNum = L1SkillId.MOB_SLOW_18;
-			}
+			final int skillNum = MovementSpeedEffects.activeSlow(pc, 0);
 
 			if (skillNum != 0) {
 				pc.removeSkillEffect(skillNum);
 				pc.removeSkillEffect(L1SkillId.GREATER_HASTE);
-				pc.setMoveSpeed(0);
 				return HandlerResult.CONTINUE;
 			}
 
@@ -3344,7 +3335,6 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 			if (!npc.trySetSkillEffect(L1SkillId.DESPERADO, shockDur)) {
 				throw new java.util.concurrent.RejectedExecutionException("NPC DESPERADO admission exhausted");
 			}
-			npc.set발묶임상태(true);
 		}
 
 		return HandlerResult.HANDLED;
@@ -3387,7 +3377,6 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 			}
 			spawnEffectAtTarget(cha, 81182, shockDur);
 			sendSkillSoundBroadcast(npc, 4184);
-			npc.set발묶임상태(true);
 			return HandlerResult.HANDLED;
 		}
 
@@ -3698,24 +3687,11 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 		}
 
 		if (cha.getMoveSpeed() == 1) {
-			int skillNum = 0;
-			if (cha.hasSkillEffect(L1SkillId.HASTE)) {
-				skillNum = L1SkillId.HASTE;
-			} else if (cha.hasSkillEffect(L1SkillId.GREATER_HASTE)) {
-				skillNum = L1SkillId.GREATER_HASTE;
-			} else if (cha.hasSkillEffect(L1SkillId.STATUS_HASTE)) {
-				skillNum = L1SkillId.STATUS_HASTE;
-			}
+			final int skillNum = MovementSpeedEffects.activeHaste(cha, 0);
 
 			if (skillNum != 0) {
 				cha.removeSkillEffect(skillNum);
-				cha.killSkillEffectTimer(skillNum);
 				cha.removeSkillEffect(id);
-
-				if (cha instanceof L1PcInstance) {
-					SC_SkillHaste.send(((L1PcInstance) cha), cha.getId(), 1, 0);
-				}
-				cha.setMoveSpeed(0);
 				return HandlerResult.CONTINUE;
 			}
 		}
@@ -3902,20 +3878,11 @@ for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc, 18)) {
 			return HandlerResult.HANDLED;
 
 		} else {
-			int skillNum = 0;
-
-			if (cha.hasSkillEffect(L1SkillId.SLOW)) {
-				skillNum = L1SkillId.SLOW;
-			} else if (cha.hasSkillEffect(L1SkillId.MOB_SLOW_1)) {
-				skillNum = L1SkillId.MOB_SLOW_1;
-			} else if (cha.hasSkillEffect(L1SkillId.MOB_SLOW_18)) {
-				skillNum = L1SkillId.MOB_SLOW_18;
-			}
+			final int skillNum = MovementSpeedEffects.activeSlow(cha, 0);
 
 			if (skillNum != 0) {
 				cha.removeSkillEffect(skillNum);
 				cha.removeSkillEffect(L1SkillId.HASTE);
-				cha.setMoveSpeed(0);
 				return HandlerResult.HANDLED; // 기존 continue 효과
 			}
 		}

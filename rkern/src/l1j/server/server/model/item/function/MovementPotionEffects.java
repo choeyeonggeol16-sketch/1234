@@ -2,6 +2,7 @@ package l1j.server.server.model.item.function;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.character.skill.MovementSpeedEffects;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
@@ -16,7 +17,6 @@ import static l1j.server.server.model.character.skill.L1SkillId.HOLY_WALK;
 import static l1j.server.server.model.character.skill.L1SkillId.HURRICANE;
 import static l1j.server.server.model.character.skill.L1SkillId.MOVING_ACCELERATION;
 import static l1j.server.server.model.character.skill.L1SkillId.SAND_STORM;
-import static l1j.server.server.model.character.skill.L1SkillId.SLOW;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_BRAVE;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_ELFBRAVE;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FRUIT;
@@ -76,14 +76,10 @@ public static void useGreenPotion(L1PcInstance pc, int itemId) {
 		// 헤이 파업, 그레이터 헤이 파업과는 중복 하지 않는다
 		if (pc.hasSkillEffect(HASTE)) {
 			pc.killSkillEffectTimer(HASTE);
-			sendHaste(pc, pc.getId(), 0, 0);
-			broadcastHaste(pc, pc.getId(), 0, 0);
-			pc.setMoveSpeed(0);
+			MovementSpeedEffects.endHaste(pc, HASTE);
 		} else if (pc.hasSkillEffect(GREATER_HASTE)) {
 			pc.killSkillEffectTimer(GREATER_HASTE);
-			sendHaste(pc, pc.getId(), 0, 0);
-			broadcastHaste(pc, pc.getId(), 0, 0);
-			pc.setMoveSpeed(0);
+			MovementSpeedEffects.endHaste(pc, GREATER_HASTE);
 		} else if (pc.hasSkillEffect(STATUS_HASTE)) {
 			int currentTime = 0;
 			currentTime = pc.getSkillEffectTimeSec(STATUS_HASTE);
@@ -95,11 +91,7 @@ public static void useGreenPotion(L1PcInstance pc, int itemId) {
 		}
 
 		// 슬로우, 그레이터 슬로우, 엔탕르중은 슬로우 상태를 해제할 뿐
-		if (pc.hasSkillEffect(SLOW)) { // 슬로우
-			pc.killSkillEffectTimer(SLOW);
-			sendHaste(pc, pc.getId(), 0, 0);
-			broadcastHaste(pc, pc.getId(), 0, 0);
-		} else {
+		if (!MovementSpeedEffects.cancelSlowWithPotion(pc)) {
 			sendHaste(pc, pc.getId(), 1, time >= 7200 ? 7200 : time);
 			broadcastHaste(pc, pc.getId(), 1, 0);
 			pc.setMoveSpeed(1);

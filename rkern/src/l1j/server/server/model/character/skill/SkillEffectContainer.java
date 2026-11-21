@@ -126,6 +126,10 @@ public final class SkillEffectContainer {
 	}
 
 	public boolean contains(int skillId) {
+		return containsAny(skillId, skillId, skillId);
+	}
+
+	public boolean containsAny(int first, int second, int third) {
 		for (;;) {
 			final int before = revision;
 			if ((before & 1) != 0) {
@@ -137,7 +141,8 @@ public final class SkillEffectContainer {
 			boolean found = false;
 
 			for (int i = 0; i < n; i++) {
-				if (skillIds[i] == skillId) {
+				final int id = skillIds[i];
+				if (id == first || id == second || id == third) {
 					found = true;
 					break;
 				}
