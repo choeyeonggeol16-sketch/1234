@@ -59,73 +59,25 @@ public final class CS_Fix {
             int itemObjectId,
             int npcObjectId) {
 
-        final L1World world =
-                L1World.getInstance();
+        final L1Object object = L1World.getInstance().findObject(npcObjectId);
+        if (!(object instanceof L1NpcInstance npc) || npc.getMapId() != pc.getMapId()
+                || Math.abs(pc.getX() - npc.getX()) > 3 || Math.abs(pc.getY() - npc.getY()) > 3) return;
 
-        final L1Object object =
-                world.findObject(
-                        npcObjectId);
-
-        if (object instanceof L1NpcInstance) {
-
-            final L1NpcInstance npc =
-                    (L1NpcInstance) object;
-
-            final int diffLocX =
-                    Math.abs(
-                            pc.getX()
-                                    - npc.getX());
-
-            final int diffLocY =
-                    Math.abs(
-                            pc.getY()
-                                    - npc.getY());
-
-            /*
-             * NPC와 3칸 초과 거리면 무효.
-             */
-            if (diffLocX > 3
-                    || diffLocY > 3) {
-
+        final L1PcInventory inventory = pc.getInventory();
+        if (!inventory.tryBeginEquipmentChange()) return;
+        try {
+            final L1ItemInstance item = inventory.getItem(itemObjectId);
+            if (item == null || item.get_durability() <= 0) return;
+            final int durability = item.get_durability();
+            if (!inventory.consumeItem(L1ItemId.ADENA, durability * 200)) {
+                SC_ServerMessage.send(pc, 189);
                 return;
             }
+            item.set_durability(0);
+            inventory.updateDurability(item, durability);
+        } finally {
+            inventory.endEquipmentChange();
         }
-
-        final L1PcInventory inventory =
-                pc.getInventory();
-
-        final L1ItemInstance item =
-                inventory.getItem(
-                        itemObjectId);
-
-        if (item == null
-                || item.get_durability() <= 0) {
-
-            return;
-        }
-
-        final int cost =
-                item.get_durability()
-                        * 200;
-
-        if (!inventory.checkItem(
-                L1ItemId.ADENA,
-                cost)) {
-
-            SC_ServerMessage.send(pc, 189);
-
-            return;
-        }
-
-        inventory.consumeItem(
-                L1ItemId.ADENA,
-                cost);
-
-        item.set_durability(0);
-
-        inventory.updateItem(
-                item,
-                L1PcInventory.COL_DURABILITY);
     }
 
     private static void withdrawPet(

@@ -781,10 +781,7 @@ public final class SkillStopHandlers {
 
 
 	private static StopResult offHunterBless1(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.getAC().addAc(2);
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;
 	}
@@ -1343,8 +1340,8 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offUnderwaterBreath(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance) {
-			SC_SkillIconBlessOfEva.send(((L1PcInstance) cha), cha.getId(), 0);
+		if (cha instanceof L1PcInstance pc) {
+			SC_SkillIconBlessOfEva.send(pc, pc.getId(), pc.getEquipSlot().evaIconDuration(0));
 		}
 		return StopResult.HANDLED;
 	}
@@ -1940,9 +1937,7 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offStunControlOverloadDg(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		((L1PcInstance) cha).addDg(10);
-		return StopResult.HANDLED;
+		return cha instanceof L1PcInstance ? StopResult.HANDLED : StopResult.NOT_HANDLED;
 	}
 
 	private static StopResult offImmuneBladeCustom(L1Character cha, int skillId) {
@@ -2142,22 +2137,14 @@ public final class SkillStopHandlers {
 	}
 
 	private static StopResult offGuardFearEffect(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addDg(20);
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
 		sendLegacyEndNoti(pc, L1SkillId.가드피어효과, 5106, true);
 		SC_SystemMessage.send(pc, "디스트로이:피어 효과가 사라집니다.");
 		return StopResult.HANDLED;
 	}
 
 	private static StopResult offGuardFearHorrorEffect(L1Character cha, int skillId) {
-		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
-		L1PcInstance pc = (L1PcInstance) cha;
-
-		pc.addDg(20);
-		pc.getAbility().addAddedStr((byte) 2);
-		pc.getAbility().addAddedInt((byte) 2);
+		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
 		pc.resetBaseMr();
 
 		sendLegacyEndNoti(pc, L1SkillId.가드피어호러효과, 5107, true);

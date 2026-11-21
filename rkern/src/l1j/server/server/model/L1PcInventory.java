@@ -12,6 +12,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_DeleteInventoryItem;
 import l1j.server.server.model.network.core.sc.packet.SC_ItemColor;
 import java.util.Arrays;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -105,10 +107,12 @@ public class L1PcInventory extends L1Inventory {
 	private final Map<Integer, Integer> _equippedCountMap = new ConcurrentHashMap<>();
 
 	// PC 전용 장비 슬롯 추적
-	public final int[] slot_ring = new int[4];
-	public final int[] slot_rune = new int[3];
-	public final int[] slot_earring = new int[2];
-	public final int[] slot_weapon = new int[2];
+	private static final int RING_WINDOW_SLOTS = 4;
+	private static final int EARRING_WINDOW_SLOTS = 2;
+	private static final int RUNE_WINDOW_SLOTS = 3;
+	private int[] displayedAccessories;
+	private int displayedPrimaryWeapon;
+	private int displayedSecondaryWeapon;
 
 	private int _arrowId;
 
@@ -143,6 +147,7 @@ public class L1PcInventory extends L1Inventory {
                 throw new IllegalStateException("Economy source object changed");
             removeItemCountCache(original.getItemId(), original.getCount());
             if (image == null) {
+                original.stopEquipmentTimer();
                 _items.remove(original);
                 if (original.getEndTime() != null) {
                     l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
@@ -167,13 +172,18 @@ public class L1PcInventory extends L1Inventory {
                 return;
             }
             // Preserve an existing object's identity for timers/equipment refs.
-            final boolean newTemplate = original.getItemId() != image.getItemId();
+            final int oldTemplate = original.getItemId();
+            final int oldEnchant = original.getEnchantLevel();
+            final int oldDurability = original.get_durability();
+            final boolean newTemplate = oldTemplate != image.getItemId();
             final boolean recalcEquipped = newTemplate && original.isEquipped();
-            if (recalcEquipped) _owner.getEquipSlot().remove(original);
+            final L1EquipmentSlot equipment = _owner.getEquipSlot();
+            final boolean restorePrimary = recalcEquipped && equipment.getSecondWeapon() != null
+                    && equipment.getWeapon() == original;
+            if (recalcEquipped) equipment.unequipItem(original);
             if (newTemplate) {
                 // A curse conversion changes the item template in place. Keep
                 // the equipped-template count index consistent with the item.
-                final int oldTemplate = original.getItemId();
                 final int newTemplateId = image.getItemId();
                 if (original.isEquipped()) {
                     int oldCount = _equippedCountMap.getOrDefault(oldTemplate, 0);
@@ -182,6 +192,7 @@ public class L1PcInventory extends L1Inventory {
                     _equippedCountMap.put(newTemplateId, _equippedCountMap.getOrDefault(newTemplateId, 0) + 1);
                 }
                 original.setItem(image.getItem());
+                original.set_main_set_armor(false);
             }
             original.setCount(image.getCount());
             original.setEnchantLevel(image.getEnchantLevel());
@@ -214,12 +225,25 @@ public class L1PcInventory extends L1Inventory {
                 // The old template's equipment modifiers were removed above.
                 // Reapply the new template without toggling equipped or issuing
                 // an independent inventory SQL update inside receipt replay.
-                _owner.getEquipSlot().set(original);
+                equipment.validateSetItemAfterUnequip(oldTemplate);
+                if (original.isEquipped()) equipment.equipItem(original);
+                if (restorePrimary) equipment.restorePrimaryWeapon(original);
                 _owner.setCurrentHp(_owner.getCurrentHp());
                 _owner.setCurrentMp(_owner.getCurrentMp());
             }
             addItemCountCache(original.getItemId(), original.getCount());
             original.getLastStatus().updateAll();
+            // Publish the worn stats while the receipt still owns the equipment gate.
+            if (!newTemplate) {
+                if (equipment.applyArmorDurabilityChange(original, oldDurability)) {
+                    try { SC_OwnCharAttrDef.send(_owner); }
+                    catch (RuntimeException failure) { receiptNoticeFailed("repair-defense", failure); }
+                }
+                if (equipment.applyEquippedEnchantChange(original, oldEnchant)) {
+                    try { SC_SPMR.send(_owner); }
+                    catch (RuntimeException failure) { receiptNoticeFailed("enchant-sp-mr", failure); }
+                }
+            }
             try { SC_ItemStatus.send(_owner, original); }
             catch (RuntimeException failure) { receiptNoticeFailed("item-status", failure); }
             try { SC_ItemName.send(_owner, original); }
@@ -309,103 +333,80 @@ public class L1PcInventory extends L1Inventory {
 		}
 	}
 
-	public void toSlotPacket(L1PcInstance pc, L1ItemInstance item, boolean worldjoin) {
-
-		final int type2 = item.getItem().getType2();
-		int idx = 0;
-
-		if (type2 == 2) { // 방어구 & 악세사리
-			EquipType equipType = EquipType.get(item.getItem().getType());
-			if (equipType != null) {
-				idx = equipType.executeStrategy(this, pc, item, worldjoin);
-			}
-		} else if (type2 == 1) { 
-			idx = updateWeaponSlot(item);
-		}
-		if (idx != 0) {
-			SC_EquipmentWindow.send(pc, item.getId(), idx, item.isEquipped());
+	public void updateEquipmentWindow(L1ItemInstance item) {
+		final int type = item.getItem().getType2();
+		if (type == 1) {
+			syncWeaponWindow(_owner);
+		} else if (type == 2) {
+			final EquipType equipType = EquipType.get(item.getItem().getType());
+			if (equipType == null) return;
+			final int index = switch (equipType) {
+				case RING1, RING2 -> updateAccessorySlot(item, equipType.windowIndex(), 0, RING_WINDOW_SLOTS);
+				case EARRING -> updateAccessorySlot(item, equipType.windowIndex(), RING_WINDOW_SLOTS, EARRING_WINDOW_SLOTS);
+				case RUNE -> updateAccessorySlot(item, equipType.windowIndex(),
+						RING_WINDOW_SLOTS + EARRING_WINDOW_SLOTS, RUNE_WINDOW_SLOTS);
+				default -> equipType.windowIndex();
+			};
+			if (index != 0) SC_EquipmentWindow.send(_owner, item.getId(), index, item.isEquipped());
 		}
 	}
 
-	/**
-	 * 다중 슬롯 공용 처리 (반지/귀걸이/룬 등)
-	 */
-	public int updateMultiSlot(int[] slotArray, L1ItemInstance item, int baseIndex, int step) {
+	private int updateAccessorySlot(L1ItemInstance item, int baseIndex, int firstSlot, int slotCount) {
 		final int itemId = item.getId();
-		final boolean isEquipped = item.isEquipped();
+		final boolean equipped = item.isEquipped();
+		if (displayedAccessories == null) {
+			if (!equipped) return 0;
+			displayedAccessories = new int[RING_WINDOW_SLOTS + EARRING_WINDOW_SLOTS + RUNE_WINDOW_SLOTS];
+		}
 
-		int currentIdx = -1;
-		int emptyIdx = -1;
-
-		for (int i = 0; i < slotArray.length; i++) {
-			if (slotArray[i] == itemId) {
-				currentIdx = i;
-			} else if (slotArray[i] == 0 && emptyIdx == -1) {
-				emptyIdx = i;
+		int empty = -1;
+		for (int i = firstSlot; i < firstSlot + slotCount; i++) {
+			final int displayedId = displayedAccessories[i];
+			if (displayedId == itemId) {
+				if (!equipped) displayedAccessories[i] = 0;
+				return baseIndex + i - firstSlot;
 			}
+			if (displayedId == 0 && empty < 0) empty = i;
 		}
-		if (isEquipped) {
-			if (currentIdx != -1) {
-				return baseIndex + (currentIdx * step);
-			}
-			if (emptyIdx != -1) {
-				slotArray[emptyIdx] = itemId;
-				return baseIndex + (emptyIdx * step);
-			}
-			return 0;
-		}
-		if (currentIdx != -1) {
-			slotArray[currentIdx] = 0;
-			return baseIndex + (currentIdx * step);
-		}
-		return 0;
-	}
-	/**
-	 * 무기 슬롯 처리.
-	 */
-	public int updateWeaponSlot(L1ItemInstance item) {
-		final int itemId = item.getId();
-		final boolean isEquipped = item.isEquipped();
-
-		int currentIdx = -1;
-		int emptyIdx = -1;
-
-		for (int i = 0; i < slot_weapon.length; i++) {
-			if (slot_weapon[i] == itemId) {
-				currentIdx = i;
-			} else if (slot_weapon[i] == 0 && emptyIdx == -1) {
-				emptyIdx = i;
-			}
-		}
-		if (isEquipped) {
-			if (currentIdx != -1) {
-				return weaponIdx(currentIdx);
-			}
-			if (emptyIdx != -1) {
-				slot_weapon[emptyIdx] = itemId;
-				return weaponIdx(emptyIdx);
-			}
-			return 0; 
-		}
-		if (currentIdx != -1) {
-			slot_weapon[currentIdx] = 0;
-			return weaponIdx(currentIdx);
-		}
-		return 0;
+		if (!equipped || empty < 0) return 0;
+		displayedAccessories[empty] = itemId;
+		return baseIndex + empty - firstSlot;
 	}
 
-    private static int weaponIdx(int arrIdx) {
-        return arrIdx == 0 ? SC_EquipmentWindow.EQUIPMENT_INDEX_WEAPON : SC_EquipmentWindow.EQUIPMENT_INDEX_SHIELD;
-    }
+	private void syncWeaponWindow(L1PcInstance pc) {
+		final L1EquipmentSlot slot = pc.getEquipSlot();
+		final L1ItemInstance primary = slot.getWeapon();
+		final L1ItemInstance secondary = slot.getSecondWeapon();
+		final int primaryId = primary == null ? 0 : primary.getId();
+		final int secondaryId = secondary == null ? 0 : secondary.getId();
+		final int mainIndex = SC_EquipmentWindow.EQUIPMENT_INDEX_WEAPON;
+		final int offIndex = SC_EquipmentWindow.EQUIPMENT_INDEX_SHIELD;
+
+		// Empty both stale slots before putting an axe into its new position.
+		if (displayedPrimaryWeapon != 0 && displayedPrimaryWeapon != primaryId) {
+			if (!SC_EquipmentWindow.send(pc, displayedPrimaryWeapon, mainIndex, false)) return;
+			displayedPrimaryWeapon = 0;
+		}
+		if (displayedSecondaryWeapon != 0 && displayedSecondaryWeapon != secondaryId) {
+			if (!SC_EquipmentWindow.send(pc, displayedSecondaryWeapon, offIndex, false)) return;
+			displayedSecondaryWeapon = 0;
+		}
+		if (displayedPrimaryWeapon != primaryId) {
+			if (!SC_EquipmentWindow.send(pc, primaryId, mainIndex, true)) return;
+			displayedPrimaryWeapon = primaryId;
+		}
+		if (displayedSecondaryWeapon != secondaryId && SC_EquipmentWindow.send(pc, secondaryId, offIndex, true)) {
+			displayedSecondaryWeapon = secondaryId;
+		}
+	}
 
     /**
      * 슬롯 추적 배열 초기화.
      */
     public void resetSlotTracking() {
-        Arrays.fill(slot_weapon, 0);
-        Arrays.fill(slot_ring, 0);
-        Arrays.fill(slot_earring, 0);
-        Arrays.fill(slot_rune, 0);
+        displayedPrimaryWeapon = 0;
+        displayedSecondaryWeapon = 0;
+        if (displayedAccessories != null) Arrays.fill(displayedAccessories, 0);
     }
 
 	public int getWeight100() {
@@ -474,7 +475,6 @@ public class L1PcInventory extends L1Inventory {
 			for (L1ItemInstance item : _items) {
 				if (item.isEquipped()) {
 					item.setEquipped(false);
-					_owner.getEquipSlot().removeSetItems(item.getItemId());
 					setEquipped(item, true, true, false, false);
 				}
 			}
@@ -652,6 +652,13 @@ public class L1PcInventory extends L1Inventory {
 	private static final int MASK_ENCHANT = COL_ENCHANTLVL | COL_ATTRENCHANTLVL;
 
 	@Override
+	public void updateDurability(L1ItemInstance item, int previousDurability) {
+		final boolean defenseChanged = _owner.getEquipSlot().applyArmorDurabilityChange(item, previousDurability);
+		super.updateDurability(item, previousDurability);
+		if (defenseChanged) SC_OwnCharAttrDef.send(_owner);
+	}
+
+	@Override
 	public void updateItem(L1ItemInstance item, int column) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
@@ -821,102 +828,94 @@ public class L1PcInventory extends L1Inventory {
 		return equipeitem;
 	}
 	public void setEquipped(L1ItemInstance item, boolean equipped, boolean loaded, boolean changeWeapon, boolean shieldWeapon) {
-
-        // Refuse BEFORE flags, equipment stats, caches or packets change.
-        // The committed replay already owns the gate and must retain it.
-        final boolean reserve = !l1j.server.server.storage.CacheD.isItemTransferReplaying();
-        if (reserve && !tryBeginEquipmentChange()) return;
-        try {
-		if (item.isEquipped() != equipped) {
-			L1Item temp = item.getItem();
-			int itemId = item.getItemId(); // 실시간 체크를 위한 아이템 ID
-
+		if (item == null) return;
+		// A committed replay already holds the inventory reservation.
+		final boolean reserve = !l1j.server.server.storage.CacheD.isItemTransferReplaying();
+		if (reserve && !tryBeginEquipmentChange()) return;
+		try {
+			if (item.isEquipped() == equipped) return;
+			final L1Item template = item.getItem();
+			if (template == null) return;
+			final L1EquipmentSlot slot = _owner.getEquipSlot();
+			final int itemId = item.getItemId();
+			final int type = template.getType2();
+			final boolean weapon = type == 1;
 			if (equipped) {
-				if (temp.getItemId() == 20077 || temp.getItemId() == 20062 || temp.getItemId() == 120077) {
-					if (System.currentTimeMillis() - timeVisible < timeVisibleDelay) {
-						return;
-					}
+				if (weapon && !slot.hasRoomForWeapon(item)) return;
+				if (type == 2 && slot.getSecondWeapon() != null
+						&& (template.getType() == 7 || template.getType() == 13)) return;
+				if (isInvisibilityGear(itemId) && System.currentTimeMillis() - timeVisible < timeVisibleDelay) return;
+				if (type != 0 && !item.startEquipmentTimer(_owner)) return;
+				try {
+					if (template.getType() != 4) clearArrowSelection();
+					item.setEquipped(true);
+					_equippedCountMap.put(itemId, _equippedCountMap.getOrDefault(itemId, 0) + 1);
+					slot.equipItem(item);
+				} finally {
+					if (!item.isEquipped()) item.stopEquipmentTimer();
 				}
-
-				if (item.getItem().getType() != 4 && _owner.getInventory().getArrowItemId() != 0) {
-					L1ItemInstance arrow = _owner.getInventory().findItemId(_owner.getInventory().getArrowItemId());
-					if (arrow != null) {
-						_owner.getInventory().setArrow(0);
-						SC_ItemName.send(_owner, arrow);
-					}
+				if (!item.isEquipped()) return; // Polymorph can remove the just-equipped item.
+				if (!loaded && weapon && slot.getWeaponCount() == 2) {
+					SC_SkillSound.send(_owner, _owner.getId(), 12534);
 				}
-				
-				item.setEquipped(true);
-				_owner.getEquipSlot().set(item);
-				_equippedCountMap.put(itemId, _equippedCountMap.getOrDefault(itemId, 0) + 1);
-   
-	            if (!loaded && item.getItem().getType2() == 1 && _owner.getEquipSlot().getWeaponCount() == 2) {
-	                SC_SkillSound.send(_owner, _owner.getId(), 12534);
-	            }
-				
-		//		System.out.println(String.format("[장착 완료] %s - %s(%d) | 장착수: %d", 
-		//				_owner.getName(), temp.getName(), itemId, _equippedCountMap.get(itemId)));
-
 			} else {
-				if (!loaded) {
-					if (temp.getItemId() == 20077 || temp.getItemId() == 20062 || temp.getItemId() == 120077) {
-						if (_owner.isInvisble()) {
-							_owner.delInvis();
-							_owner.beginInvisTimer();
-							// return;
-						}
-						timeVisible = System.currentTimeMillis();
-					}
-				}
-				if(item.getItem().getType2() == 1 && item.getItem().getType1() == 4) {
-					if (_owner.hasSkillEffect(L1SkillId.INFERNO)) {
-						_owner.removeSkillEffect(L1SkillId.INFERNO);
-					}
-				}
-				// 양손검을 착용해제 했을때 카운터배리어 효과해제
-				if (item.getItem().isTwohandedWeapon()) {
-					if (_owner.hasSkillEffect(L1SkillId.COUNTER_BARRIER)) {
-						_owner.removeSkillEffect(L1SkillId.COUNTER_BARRIER);
-						SC_PacketBox.send(_owner, SC_PacketBox.UNLIMITED_ICON1, 71, false);
-					}
-				}
-				if (item.getItem().getType2() == 1) {
-					_owner.remove_elf_second_brave();
-					if (item.getItem().getType() == 4 && _owner.getInventory().getArrowItemId() != 0) {
-						L1ItemInstance arrow = _owner.getInventory().findItemId(_owner.getInventory().getArrowItemId());
-						_owner.getInventory().setArrow(0);
-						SC_ItemName.send(_owner, arrow);
-					}
-				}
+				beforeUnequip(template, itemId, loaded, weapon);
 				item.setEquipped(false);
-				_owner.getEquipSlot().remove(item);
-
-				int current = _equippedCountMap.getOrDefault(itemId, 0);
+				item.stopEquipmentTimer();
+				final int current = _equippedCountMap.getOrDefault(itemId, 0);
 				if (current > 1) _equippedCountMap.put(itemId, current - 1);
 				else _equippedCountMap.remove(itemId);
-
-		//		System.out.println(String.format("[해제 완료] %s - %s(%d) | 장착수: %d", 
-			//			_owner.getName(), temp.getName(), itemId, _equippedCountMap.getOrDefault(itemId, 0)));
+				slot.unequipItem(item);
 			}
 
 			if (!loaded) {
 				_owner.setCurrentHp(_owner.getCurrentHp());
 				_owner.setCurrentMp(_owner.getCurrentMp());
 				updateItem(item, COL_EQUIPPED);
-				if (temp.getType2() == 1 && !changeWeapon) {
-					final long sc = SC_CharVisualUpdate.pack(_owner);
-					SC_CharVisualUpdate.sendPacked(_owner, sc);
-					SC_CharVisualUpdate.broadcastFastPacked(_owner, sc);
+				if (weapon && !changeWeapon) {
+					final long visual = SC_CharVisualUpdate.pack(_owner);
+					SC_CharVisualUpdate.sendPacked(_owner, visual);
+					SC_CharVisualUpdate.broadcastFastPacked(_owner, visual);
 				}
 			}
-			if (item.getItem().getType2() == 1) {
-				SC_PacketBox.send(_owner, SC_PacketBox.공격가능거리, _owner, item);
-			}
-			_owner.getInventory().toSlotPacket(_owner, item, false);
+			if (weapon) SC_PacketBox.send(_owner, SC_PacketBox.공격가능거리, _owner, item);
+			updateEquipmentWindow(item);
+		} finally {
+			if (reserve) endEquipmentChange();
 		}
-        } finally {
-            if (reserve) endEquipmentChange();
-        }
+	}
+
+	private static boolean isInvisibilityGear(int itemId) {
+		return itemId == 20077 || itemId == 20062 || itemId == 120077;
+	}
+
+	private void clearArrowSelection() {
+		final int arrowId = getArrowItemId();
+		if (arrowId == 0) return;
+		final L1ItemInstance arrow = findItemId(arrowId);
+		setArrow(0);
+		if (arrow != null) SC_ItemName.send(_owner, arrow);
+	}
+
+	private void beforeUnequip(L1Item template, int itemId, boolean loaded, boolean weapon) {
+		if (!loaded && isInvisibilityGear(itemId)) {
+			if (_owner.isInvisble()) {
+				_owner.delInvis();
+				_owner.beginInvisTimer();
+			}
+			timeVisible = System.currentTimeMillis();
+		}
+		if (weapon && template.getType1() == 4 && _owner.hasSkillEffect(L1SkillId.INFERNO)) {
+			_owner.removeSkillEffect(L1SkillId.INFERNO);
+		}
+		if (template.isTwohandedWeapon() && _owner.hasSkillEffect(L1SkillId.COUNTER_BARRIER)) {
+			_owner.removeSkillEffect(L1SkillId.COUNTER_BARRIER);
+			SC_PacketBox.send(_owner, SC_PacketBox.UNLIMITED_ICON1, 71, false);
+		}
+		if (weapon) {
+			_owner.remove_elf_second_brave();
+			if (template.getType() == 4) clearArrowSelection();
+		}
 	}
 
 	public boolean checkEquipped(int id) {
@@ -1006,50 +1005,25 @@ public class L1PcInventory extends L1Inventory {
 	}
 
 	private void takeoffWeapon(int polyid) {
-		if (_owner.getWeapon() == null) {
-			return;
+		final L1ItemInstance primary = _owner.getWeapon();
+		final L1ItemInstance secondary = _owner.getSecondWeapon();
+		if (primary != null && !L1PolyMorph.isEquipableWeapon(polyid, primary.getItem().getType())) {
+			setEquipped(primary, false, false, false, false);
 		}
-
-		boolean takeoff = false;
-		int weapon_type = _owner.getWeapon().getItem().getType();
-		takeoff = !L1PolyMorph.isEquipableWeapon(polyid, weapon_type);
-
-		if (takeoff) {
-			setEquipped(_owner.getWeapon(), false, false, false, false);
+		if (secondary != null && !L1PolyMorph.isEquipableWeapon(polyid, secondary.getItem().getType())) {
+			setEquipped(secondary, false, false, false, false);
 		}
-
-		if (_owner.getSecondWeapon() != null) {// 변신버그추가
-			boolean second_takeoff = false;
-			int second_weapon_type = _owner.getSecondWeapon().getItem().getType();
-			second_takeoff = !L1PolyMorph.isEquipableWeapon(polyid, second_weapon_type);
-
-			if (second_takeoff) {
-				setEquipped(_owner.getSecondWeapon(), false, false, false, false);
-			}
-		} // 변신버그추가
-
 	}
 
 	private void takeoffArmor(int polyid) {
-		L1ItemInstance armor = null;
-
+		final L1EquipmentSlot equipment = _owner.getEquipSlot();
 		for (int type = 0; type <= 12; type++) {
-			if (getTypeEquipped(2, type) != 0 && !L1PolyMorph.isEquipableArmor(polyid, type)) {
-				if (type == 9) {
-					armor = getItemEquipped(2, type);
-					if (armor != null) {
-						setEquipped(armor, false, false, false, false);
-					}
-					armor = getItemEquipped(2, type);
-					if (armor != null) {
-						setEquipped(armor, false, false, false, false);
-					}
-				} else {
-					armor = getItemEquipped(2, type);
-					if (armor != null) {
-						setEquipped(armor, false, false, false, false);
-					}
-				}
+			L1ItemInstance armor = equipment.getAppliedArmor(type);
+			if (armor == null || L1PolyMorph.isEquipableArmor(polyid, type)) continue;
+			setEquipped(armor, false, false, false, false);
+			if (type == 9) {
+				armor = equipment.getAppliedArmor(type);
+				if (armor != null) setEquipped(armor, false, false, false, false);
 			}
 		}
 	}
@@ -1207,21 +1181,6 @@ public class L1PcInventory extends L1Inventory {
 				continue;
 			}
 			if (item.getItemId() == itemid) {
-				return item;
-			}
-		}
-		return null;
-	}
-
-	public L1ItemInstance get_set_item_eq(int itemid) {
-		Iterator<L1ItemInstance> iter = _items.iterator();
-		L1ItemInstance item = null;
-
-		while (iter.hasNext()) {
-			item = iter.next();
-			if (item == null || item.getItem().getType2() == 0)
-				continue; // -- 잡화는 검색 조건에서 제외
-			if (item.getItemId() == itemid && item.isEquipped()) {
 				return item;
 			}
 		}

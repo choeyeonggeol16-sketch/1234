@@ -14,7 +14,7 @@ public final class SC_ItemStatus {
 
     private SC_ItemStatus() {}
 
-    public static boolean send(CUserSocket client, l1j.server.server.model.Instance.L1ItemInstance item) {
+    public static boolean send(CUserSocket client, L1ItemInstance item) {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
@@ -36,7 +36,7 @@ public final class SC_ItemStatus {
                 buffer.writeC(0);
             } else {
                 buffer.writeC(status.length);
-                for (int i = 0; i < status.length; i++) buffer.writeC(status[i]);
+                buffer.writeBytes(status);
             }
             committed = connection.commitDirectFrame(frame);
             return committed;

@@ -703,7 +703,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
     	for (L1ItemInstance item : pc.getInventory().getItems()) {
     	    if (item != null && item.isEquipped()) {
     	        try {
-    	            pc.getInventory().toSlotPacket(pc, item, true);
+    	            pc.getInventory().updateEquipmentWindow(item);
     	        } catch (Exception e) {
     	            e.printStackTrace();
     	        }

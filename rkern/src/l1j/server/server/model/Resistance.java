@@ -16,6 +16,7 @@ public class Resistance {
     private static final int LIMIT_MAX_MR = 250;
 
     private int baseMr 	= 0; // 기본 마법 방어
+    // Keep source totals intact. Clamp the effective value after combining them.
     private int addedMr = 0; // 아이템이나 마법에 의해 추가된 마법 방어를 포함한 마법 방어
     
     private int fire  = 0; // 불 저항
@@ -73,7 +74,7 @@ public class Resistance {
     
     public void addSpecialResistance(eKind kind, int value) {
         if (kind == null) return;
-        _specialResist[kind.value()] = checkRange(_specialResist[kind.value()] + value);	
+        _specialResist[kind.value()] += value;
         if (character instanceof L1PcInstance pc) {
             SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
         }
@@ -92,7 +93,7 @@ public class Resistance {
 
     public void addSpecialPierce(eKind kind, int value) {
         if (kind == null) return; 
-        _specialPierce[kind.value()] = checkRange(_specialPierce[kind.value()] + value);
+        _specialPierce[kind.value()] += value;
         if (character instanceof L1PcInstance pc) {
             SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
         }
@@ -120,7 +121,7 @@ public class Resistance {
         return effectedMr;
     }
 
-    public int getAddedMr() 	 { return addedMr; 										}
+    public int getAddedMr() { return checkMrRange(addedMr, -baseMr); }
     private volatile int skillMr;
 
     void setSkillMr(int value) { if (skillMr != value) skillMr = value; }
@@ -131,9 +132,8 @@ public class Resistance {
         return checkMrRange(baseMr + addedMr + skillMr + 5, LIMIT_MIN_MR);
     }
     public int getBaseMr() 		 { return baseMr; 										}
-    public void addMr(int i) 	 { setAddedMr(addedMr + i);								}	
+    public void addMr(int i) { addedMr += i; }
     public void setBaseMr(int i) { baseMr = checkMrRange(i, LIMIT_MIN_MR); 				}
-    private void setAddedMr(int i) 	 { addedMr = checkMrRange(i, -baseMr); 				}
 
     // Signed 16-bit values, PvP damage in the low half and reduction in the high half.
     private volatile int skillPvp;
@@ -183,13 +183,13 @@ public class Resistance {
                 source_resist : source_resist + 5;
     }
     
-    public void addFire(int i) 	{ fire  = checkRange(fire + i);  }
-    public void addWater(int i) { water = checkRange(water + i); }
-    public void addWind(int i) 	{ wind  = checkRange(wind + i);  }
-    public void addEarth(int i) { earth = checkRange(earth + i); }
+    public void addFire(int i) { fire += i; }
+    public void addWater(int i) { water += i; }
+    public void addWind(int i) { wind += i; }
+    public void addEarth(int i) { earth += i; }
     
-    public void addcalcPcDefense(int i) { calcPcDefense = checkRange(calcPcDefense + i);}
-    public void addPVPweaponTotalDamage(int i) 	{ PVPweaponTotalDamage = checkRange(PVPweaponTotalDamage + i);}
+    public void addcalcPcDefense(int i) { calcPcDefense += i; }
+    public void addPVPweaponTotalDamage(int i) { PVPweaponTotalDamage += i; }
     
     public void addAllNaturalResistance(int i) {
         addFire(i);

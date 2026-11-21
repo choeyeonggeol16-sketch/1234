@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
+import java.util.List;
+import java.util.concurrent.RejectedExecutionException;
 import l1j.server.Config;
 import l1j.server.MJCTSystem.MJCTObject;
 import l1j.server.MJCTSystem.Loader.MJCTLoadManager;
@@ -16,6 +17,8 @@ import l1j.server.PrideSystem.PrideInfo;
 import l1j.server.PrideSystem.PrideLoadManager;
 import l1j.server.server.ThreadPool; //CrockController
 import l1j.server.server.datatables.PetTable;
+import l1j.server.server.model.L1EquipmentSlot;
+import l1j.server.server.model.L1EquipmentSlot.ClassArmorBonus;
 import l1j.server.server.model.L1EquipmentTimer;
 import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1HouseLocation;
@@ -401,20 +404,24 @@ public class L1ItemInstance extends L1Object {
 	}
 
 	public int getMr() {
+		return getMrAtEnchant(getEnchantLevel());
+	}
+
+	public int getMrAtEnchant(int enchant) {
 		int mr = _item.get_mdef();
 		int itemid = getItemId();
 		if (itemid == 20011 || itemid == 20110 || itemid == 120011 || itemid == 22223 || itemid == 20117 // 바포갑빠
 				//|| getItemId() == 22204 || itemid == 22205 || itemid == 22206 || itemid == 22207 // 린드비오르마갑주
 				|| getItemId() == 22213 || itemid == 120110 || itemid == 93001 || itemid == 490008 || itemid == 22365
 				|| itemid == 222328 || getItemId() >= 222300 && getItemId() <= 222303 || itemid == 222328) {
-			mr += getEnchantLevel();
+			mr += enchant;
 		} else if (itemid == 20056 || itemid == 120056 || itemid == 220056 || itemid == 93002 || itemid == 20074
 				|| itemid == 900090 || itemid == 120074 || itemid == 222324 || itemid == 222325 || itemid == 900043
 				|| itemid == 900044) {
-			mr += getEnchantLevel() * 2;
+			mr += enchant * 2;
 		} else if (itemid == 20079 || itemid == 20078 || itemid == 900047 || itemid == 900055 || itemid == 20049
 				|| itemid == 20050 || itemid == 900057 || itemid == 900056) {
-			mr += getEnchantLevel() * 3;
+			mr += enchant * 3;
 		}
 		if (mr < 0)
 			mr = 0;
@@ -921,6 +928,64 @@ public class L1ItemInstance extends L1Object {
 		return os.getBytes();
 	}
 	
+	private void writeAdvancedElixirRuneOptions(ItemPresentOutStream os, int itemId) {
+		final int accuracy = L1EquipmentSlot.elixirRuneAccuracy(itemId);
+		final L1PcInstance owner = _cha;
+		if (owner == null || accuracy == 0) return;
+
+		if (accuracy == 5) {
+			os.writeC(39);
+			os.writeS("\\f9PVP 마법 대미지 감소: \\aA+2%");
+		}
+		switch (owner.getType()) {
+		case 0 -> {
+			os.writeDMGdown(3);
+			os.writeShortHIT(2);
+			os.writeability_pierce(accuracy);
+		}
+		case 1 -> {
+			os.writeC(31);
+			os.writeH(50);
+			os.writeShortDMG(1);
+			os.writeability_pierce(accuracy);
+		}
+		case 2 -> {
+			os.writeMaxMP(50);
+			os.writeShortDMG(1);
+			os.writeLongDMG(1);
+			os.writeaspirit_pierce(accuracy);
+		}
+		case 3 -> {
+			os.writeC(38);
+			os.writeC(3);
+			os.writeAddSP(1);
+			os.writeMagicHIT(accuracy);
+		}
+		case 4 -> {
+			os.writeMaxMP(30);
+			os.writeaspirit_pierce(accuracy);
+		}
+		case 5 -> {
+			os.writeShortHIT(3);
+			os.writeDMGdown(1);
+			os.writeadragonS_pierce(accuracy);
+		}
+		case 6 -> {
+			os.writeC(68);
+			os.writeC(5);
+			os.writeC(31);
+			os.writeH(50);
+			os.writeadragonS_pierce(accuracy);
+		}
+		case 7 -> {
+			os.writeAddMR(5);
+			os.writeC(31);
+			os.writeH(50);
+			os.writeafear_pierce(accuracy);
+		}
+		}
+	}
+
 	@SuppressWarnings("deprecation")
 	public byte[] getStatusBytes() {
 		int itemType2 = getItem().getType2();
@@ -2982,633 +3047,7 @@ public class L1ItemInstance extends L1Object {
 					}
 				}
 				
-				// TODO 85레벨 엘릭서 룬 옵션 표시
-				if (itemId == 900140 && _cha != null) {
-					os.writeC(39);
-					os.writeS("\\f9PVP 마법 대미지 감소: \\aA+2%");
-					switch (_cha.getType()) {
-					case 0:
-						os.writeC(63);
-						os.writeC(3);
-						os.writeC(48);
-						os.writeC(2);
-						os.writeability_pierce(5);
-						break;
-					case 1:
-						os.writeC(31);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeability_pierce(5);
-						break;
-					case 2:
-						os.writeC(32);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeC(35);
-						os.writeC(1);
-						os.writeaspirit_pierce(5);
-						break;
-					case 3:
-						os.writeC(38);
-						os.writeC(3);
-						os.writeC(17);
-						os.writeC(1);
-						os.writeMagicHIT(5);
-						break;
-					case 4:
-						os.writeC(32);
-						os.writeH(30);
-						os.writeaspirit_pierce(5);
-						break;
-					case 5:
-						os.writeC(48);
-						os.writeC(3);
-						os.writeC(63);
-						os.writeC(1);
-						os.writeadragonS_pierce(5);
-						break;
-					case 6:
-						os.writeC(68);
-						os.writeC(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeadragonS_pierce(5);
-						break;
-					case 7:
-						os.writeC(15);
-						os.writeH(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeafear_pierce(5);
-						break;
-					}
-				}
-				if (itemId == 900141 && _cha != null) {
-					os.writeC(39);
-					os.writeS("\\f9PVP 마법 대미지 감소: \\aA+2%");
-					switch (_cha.getType()) {
-					case 0: // 군주
-						os.writeC(63);
-						os.writeC(3);
-						os.writeC(48);
-						os.writeC(2);
-						os.writeability_pierce(5);
-						break;
-					case 1: // 기사
-						os.writeC(31);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeability_pierce(5);
-						break;
-					case 2:// 요정
-						os.writeC(32);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeC(35);
-						os.writeC(1);
-						os.writeaspirit_pierce(5);
-						break;
-					case 3:// 법사
-						os.writeC(38);
-						os.writeC(3);
-						os.writeC(17);
-						os.writeC(1);
-						os.writeMagicHIT(5);
-						break;
-					case 4:// 다엘
-
-						os.writeC(32);
-						os.writeH(30);
-						os.writeaspirit_pierce(5);
-						break;
-					case 5:// 용기사
-						os.writeC(48);
-						os.writeC(3);
-						os.writeC(63);
-						os.writeC(1);
-						os.writeadragonS_pierce(5);
-						break;
-					case 6:// 환술
-						os.writeC(68);
-						os.writeC(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeadragonS_pierce(5);
-						break;
-					case 7: // 전사
-						os.writeC(15);
-						os.writeH(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeafear_pierce(5);
-						break;
-					}
-				}
-				if (itemId == 900142 && _cha != null) {
-					os.writeC(39);
-					os.writeS("\\f9PVP 마법 대미지 감소: \\aA+2%");
-					switch (_cha.getType()) {
-					case 0:
-						os.writeC(63);
-						os.writeC(3);
-						os.writeC(48);
-						os.writeC(2);
-						os.writeability_pierce(5);
-						break;
-					case 1:
-						os.writeC(31);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeability_pierce(5);
-						break;
-					case 2:
-						os.writeC(32);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeC(35);
-						os.writeC(1);
-						os.writeaspirit_pierce(5);
-						break;
-					case 3:
-						os.writeC(38);
-						os.writeC(3);
-						os.writeC(17);
-						os.writeC(1);
-						os.writeMagicHIT(5);
-						break;
-					case 4:
-
-						os.writeC(32);
-						os.writeH(30);
-						os.writeaspirit_pierce(5);
-						break;
-					case 5:
-						os.writeC(48);
-						os.writeC(3);
-						os.writeC(63);
-						os.writeC(1);
-						os.writeadragonS_pierce(5);
-						break;
-					case 6:
-						os.writeC(68);
-						os.writeC(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeadragonS_pierce(5);
-						break;
-					case 7:
-						os.writeC(15);
-						os.writeH(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeafear_pierce(5);
-						break;
-					}
-				}
-				if (itemId == 900143 && _cha != null) {
-					os.writeC(39);
-					os.writeS("\\f9PVP 마법 대미지 감소: \\aA+2%");
-					switch (_cha.getType()) {
-					case 0:
-						os.writeC(63);
-						os.writeC(3);
-						os.writeC(48);
-						os.writeC(2);
-						os.writeability_pierce(5);
-						break;
-					case 1:
-						os.writeC(31);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeability_pierce(5);
-						break;
-					case 2:
-						os.writeC(32);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeC(35);
-						os.writeC(1);
-						os.writeaspirit_pierce(5);
-						break;
-					case 3:
-						os.writeC(38);
-						os.writeC(3);
-						os.writeC(17);
-						os.writeC(1);
-						os.writeMagicHIT(5);
-						break;
-					case 4:
-
-						os.writeC(32);
-						os.writeH(30);
-						os.writeaspirit_pierce(5);
-						break;
-					case 5:
-						os.writeC(48);
-						os.writeC(3);
-						os.writeC(63);
-						os.writeC(1);
-						os.writeadragonS_pierce(5);
-						break;
-					case 6:
-						os.writeC(68);
-						os.writeC(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeadragonS_pierce(5);
-						break;
-					case 7:
-						os.writeC(15);
-						os.writeH(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeafear_pierce(5);
-						break;
-					}
-				}
-				if (itemId == 900144 && _cha != null) {
-					os.writeC(39);
-					os.writeS("\\f9PVP 마법 대미지 감소: \\aA+2%");
-					switch (_cha.getType()) {
-					case 0:
-						os.writeC(63);
-						os.writeC(3);
-						os.writeC(48);
-						os.writeC(2);
-						os.writeability_pierce(5);
-						break;
-					case 1:
-						os.writeC(31);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeability_pierce(5);
-						break;
-					case 2:
-						os.writeC(32);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeC(35);
-						os.writeC(1);
-						os.writeaspirit_pierce(5);
-						break;
-					case 3:
-						os.writeC(38);
-						os.writeC(3);
-						os.writeC(17);
-						os.writeC(1);
-						os.writeMagicHIT(5);
-						break;
-					case 4:
-
-						os.writeC(32);
-						os.writeH(30);
-						os.writeaspirit_pierce(5);
-						break;
-					case 5:
-						os.writeC(48);
-						os.writeC(3);
-						os.writeC(63);
-						os.writeC(1);
-						os.writeadragonS_pierce(5);
-						break;
-					case 6:
-						os.writeC(68);
-						os.writeC(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeadragonS_pierce(5);
-						break;
-					case 7:
-						os.writeC(15);
-						os.writeH(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeafear_pierce(5);
-						break;
-					}
-				}
-				// TODO 90레벨 엘릭서 룬 옵션 표시
-				if (itemId == 900145 && _cha != null) {
-					os.writeC(39);
-					os.writeS("\\f9PVP 마법 대미지 감소: \\aA+3%");
-					// System.out.println(_cha.getType());
-					switch (_cha.getType()) {
-					case 0:
-						os.writeC(63);
-						os.writeC(3);
-						os.writeC(48);
-						os.writeC(2);
-						os.writeability_pierce(10);
-						break;
-					case 1:// 기사
-						os.writeC(31);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeability_pierce(10);
-						break;
-					case 2:
-						os.writeC(31);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeC(35);
-						os.writeC(1);
-						os.writeaspirit_pierce(10);
-						break;
-					case 3:
-						os.writeC(38);
-						os.writeC(3);
-						os.writeC(17);
-						os.writeC(1);
-						os.writeMagicHIT(10);
-						break;
-					case 4:
-						os.writeC(32);
-						os.writeH(30);
-						os.writeaspirit_pierce(10);
-						break;
-					case 5:
-						os.writeC(5);
-						os.writeC(3);
-						os.writeC(63);
-						os.writeC(1);
-						os.writeadragonS_pierce(10);
-						break;
-					case 6:
-						os.writeC(68);
-						os.writeC(5);
-						os.writeC(32);
-						os.writeH(50);
-						os.writeadragonS_pierce(10);
-						break;
-					case 7:
-						os.writeC(15);
-						os.writeH(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeafear_pierce(10);
-						break;
-					}
-				}
-				if (itemId == 900146 && _cha != null) {
-					os.writeC(39);
-					os.writeS("\\f9PVP 마법 대미지 감소: \\aA+3%");
-					switch (_cha.getType()) {
-					case 0:
-						os.writeC(63);
-						os.writeC(3);
-						os.writeC(48);
-						os.writeC(2);
-						os.writeability_pierce(10);
-						break;
-					case 1:
-						os.writeC(31);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeability_pierce(10);
-						break;
-					case 2:
-						os.writeC(32);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeC(35);
-						os.writeC(1);
-						os.writeaspirit_pierce(10);
-						break;
-					case 3:
-						os.writeC(38);
-						os.writeC(3);
-						os.writeC(17);
-						os.writeC(1);
-						os.writeMagicHIT(10);
-						break;
-					case 4:
-						os.writeC(32);
-						os.writeH(30);
-						os.writeaspirit_pierce(10);
-						break;
-					case 5:
-						os.writeC(48);
-						os.writeC(3);
-						os.writeC(63);
-						os.writeC(1);
-						os.writeadragonS_pierce(10);
-						break;
-					case 6:
-						os.writeC(68);
-						os.writeC(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeadragonS_pierce(10);
-						break;
-					case 7:
-						os.writeC(15);
-						os.writeH(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeafear_pierce(10);
-						break;
-					}
-				}
-				if (itemId == 900147 && _cha != null) {
-					os.writeC(39);
-					os.writeS("\\f9PVP 마법 대미지 감소: \\aA+3%");
-					switch (_cha.getType()) {
-					case 0:
-						os.writeC(63);
-						os.writeC(3);
-						os.writeC(48);
-						os.writeC(2);
-						os.writeability_pierce(10);
-						break;
-					case 1:
-						os.writeC(31);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeability_pierce(10);
-						break;
-					case 2:
-						os.writeC(32);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeC(35);
-						os.writeC(1);
-						os.writeaspirit_pierce(10);
-						break;
-					case 3:
-						os.writeC(38);
-						os.writeC(3);
-						os.writeC(17);
-						os.writeC(1);
-						os.writeMagicHIT(10);
-						break;
-					case 4:
-						os.writeC(32);
-						os.writeH(30);
-						os.writeaspirit_pierce(10);
-						break;
-					case 5:
-						os.writeC(48);
-						os.writeC(3);
-						os.writeC(63);
-						os.writeC(1);
-						os.writeadragonS_pierce(10);
-						break;
-					case 6:
-						os.writeC(68);
-						os.writeC(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeadragonS_pierce(10);
-						break;
-					case 7:
-						os.writeC(15);
-						os.writeH(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeafear_pierce(10);
-						break;
-					}
-				}
-				if (itemId == 900148 && _cha != null) {
-					os.writeC(39);
-					os.writeS("\\f9PVP 마법 대미지 감소: \\aA+3%");
-					switch (_cha.getType()) {
-					case 0:
-						os.writeC(63);
-						os.writeC(3);
-						os.writeC(48);
-						os.writeC(2);
-						os.writeability_pierce(10);
-						break;
-					case 1:
-						os.writeC(31);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeability_pierce(10);
-						break;
-					case 2:
-						os.writeC(32);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeC(35);
-						os.writeC(1);
-						os.writeaspirit_pierce(10);
-						break;
-					case 3:
-						os.writeC(38);
-						os.writeC(3);
-						os.writeC(17);
-						os.writeC(1);
-						os.writeMagicHIT(10);
-						break;
-					case 4:
-						os.writeC(32);
-						os.writeH(30);
-						os.writeaspirit_pierce(10);
-						break;
-					case 5:
-						os.writeC(48);
-						os.writeC(3);
-						os.writeC(63);
-						os.writeC(1);
-						os.writeadragonS_pierce(10);
-						break;
-					case 6:
-						os.writeC(68);
-						os.writeC(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeadragonS_pierce(10);
-						break;
-					case 7:
-						os.writeC(15);
-						os.writeH(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeafear_pierce(10);
-						break;
-					}
-				}
-				if (itemId == 900149 && _cha != null) {
-					os.writeC(39);
-					os.writeS("\\f9PVP 마법 대미지 감소: \\aA+3%");
-					switch (_cha.getType()) {
-					case 0:
-						os.writeC(63);
-						os.writeC(3);
-						os.writeC(48);
-						os.writeC(2);
-						os.writeability_pierce(10);
-						break;
-					case 1:
-						os.writeC(31);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeability_pierce(10);
-						break;
-					case 2:
-						os.writeC(32);
-						os.writeH(50);
-						os.writeC(47);
-						os.writeC(1);
-						os.writeC(35);
-						os.writeC(1);
-						os.writeaspirit_pierce(10);
-						break;
-					case 3:
-						os.writeC(38);
-						os.writeC(3);
-						os.writeC(17);
-						os.writeC(1);
-						os.writeMagicHIT(10);
-						break;
-					case 4:
-						os.writeC(32);
-						os.writeH(30);
-						os.writeaspirit_pierce(10);
-						break;
-					case 5:
-						os.writeC(48);
-						os.writeC(3);
-						os.writeC(63);
-						os.writeC(1);
-						os.writeadragonS_pierce(10);
-						break;
-					case 6:
-						os.writeC(68);
-						os.writeC(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeadragonS_pierce(10);
-						break;
-					case 7:
-						os.writeC(15);
-						os.writeH(5);
-						os.writeC(31);
-						os.writeH(50);
-						os.writeafear_pierce(10);
-						break;
-					}
-				}
+				writeAdvancedElixirRuneOptions(os, itemId);
 				
 				ItemEffectRegistry.Def regDef = ItemEffectRegistry.get(itemId);
 				if (regDef != null) {
@@ -3618,20 +3057,24 @@ public class L1ItemInstance extends L1Object {
 				        os.writeC(regDef.acLineValue(getEnchantLevel()) + op_addAc);
 				    }
 		
-				    for (Map.Entry<ItemStat, Integer> e : regDef.aggregatedStatsFor(ItemEffectRegistry.TooltipSection.EFFECT, ctype, getEnchantLevel()).entrySet()) {
-				        ItemStat st = e.getKey();
-				        int v = e.getValue();
-				        if (st.wt == ItemStat.WType.B) {
-				        	os.writeC(st.opcode); 
-				        	os.writeC(v);
-				        } else { 
-				        	os.writeC(st.opcode); 
-				        	os.writeH(v);
-				        }
+				    final int enchantLevel = getEnchantLevel();
+				    final List<ItemStat> stats = regDef.stats();
+				    for (int i = 0; i < stats.size(); i++) {
+				        final ItemStat stat = stats.get(i);
+				        if (stat.wt != ItemStat.WType.B && stat.wt != ItemStat.WType.H) continue;
+				        final int value = regDef.statValue(stat, ctype, enchantLevel);
+				        if (value == 0) continue;
+				        os.writeC(stat.opcode);
+				        if (stat.wt == ItemStat.WType.B) os.writeC(value);
+				        else os.writeH(value);
 				    }
-				    for (Map.Entry<ItemStat, Integer> e : regDef.aggregatedStatsFor(ItemEffectRegistry.TooltipSection.POTION, ctype, getEnchantLevel()).entrySet()) {
-				        if (e.getKey() == ItemStat.POTION_AMT) os.writePotionrecovery(e.getValue(), e.getValue());
-				        else if (e.getKey() == ItemStat.HEAL_DEF) os.writeHealDefence(e.getValue());
+				    for (int i = 0; i < stats.size(); i++) {
+				        final ItemStat stat = stats.get(i);
+				        if (stat != ItemStat.POTION_AMT && stat != ItemStat.HEAL_DEF) continue;
+				        final int value = regDef.statValue(stat, ctype, enchantLevel);
+				        if (value == 0) continue;
+				        if (stat == ItemStat.POTION_AMT) os.writePotionrecovery(value, value);
+				        else os.writeHealDefence(value);
 				    }
 				    if (regDef.getTooltipText() != null) {
 				        os.writeC(39);
@@ -4944,31 +4387,25 @@ public class L1ItemInstance extends L1Object {
 					}
 				}
 				if (itemId == 800110) {
-					if(_cha.isCrown() || _cha.isKnight() || _cha.isDarkelf() || _cha.isDragonknight() || _cha.isWarrior()) {
-						os.writeAddAc(8);
-						os.writeShortHIT(2);
-						os.writeShortDMG(2);
-						os.writeDMGdown(2);
-						os.writeafear_resis(2);
-					} else if(_cha.isBlackwizard() || _cha.isWizard()) {
-						os.writeAddAc(8);
+					final ClassArmorBonus bonus = _cha == null ? ClassArmorBonus.MELEE
+							: _cha.getEquipSlot().getClassArmorBonus(this);
+					os.writeAddAc(8);
+					switch (bonus) {
+					case MAGIC -> {
 						os.writeAddSP(2);
 						os.writeMagicHIT(2);
-						os.writeDMGdown(2);
-						os.writeafear_resis(2);
-					} else if(_cha.isElf() && _cha.getAbility().getBaseDex() >= 16){
-						os.writeAddAc(8);
+					}
+					case BOW -> {
 						os.writeLongHIT(2);
 						os.writeLongDMG(2);
-						os.writeDMGdown(2);
-						os.writeafear_resis(2);
-					} else {
-						os.writeAddAc(8);
+					}
+					case MELEE -> {
 						os.writeShortHIT(2);
 						os.writeShortDMG(2);
-						os.writeDMGdown(2);
-						os.writeafear_resis(2);
 					}
+					}
+					os.writeDMGdown(2);
+					os.writeafear_resis(2);
 				}
 				// 마나 흡수
 			if (itemId == 126 || itemId == 127) {
@@ -5073,7 +4510,7 @@ public class L1ItemInstance extends L1Object {
 						break;
 					case 8:
 						os.writeC(39);
-						os.writeS("\\fI확률 마법 회피: \\aA+7");
+						os.writeS("\\fI확률 마법 회피: \\aA+5");
 						os.writeability_resis(9);
 						os.writeafear_resis(2);
 						break;
@@ -8512,7 +7949,7 @@ public class L1ItemInstance extends L1Object {
 
 				if (getItemId() == 20100 || getItemId() == 20099 || getItemId() == 20150 || getItemId() == 22258
 						|| getItemId() == 20118 || getItemId() == 20151 || getItemId() == 22301
-						|| getItemId() == 20091) { // 세트아이템
+						|| getItemId() == 20091 || L1EquipmentSlot.isSetMainItem(itemId)) { // 세트아이템
 					os.writeC(69); // -- 셋트아이템에 대한 표기 ( 고정값 )
 					os.writeC(get_main_set_armor() ? 1 : 2); // -- 1: 셋트 아이템 다
 																// 착용시 /
@@ -9335,20 +8772,41 @@ public class L1ItemInstance extends L1Object {
 		
 	}
 	
-	private L1EquipmentTimer _equipmentTimer;
+	private volatile L1EquipmentTimer _equipmentTimer;
 
-	public void startEquipmentTimer(L1PcInstance pc) {
-		if (getRemainingTime() > 0) {
-			_equipmentTimer = new L1EquipmentTimer(pc, this, 1000);
-			ThreadPool.getInstance().scheduleRequired(_equipmentTimer, 1000);
+	public boolean startEquipmentTimer(L1PcInstance pc) {
+		if (getRemainingTime() <= 0) return getItem().getMaxUseTime() <= 0;
+		if (pc.isLogoutStarted()) return false;
+		final L1EquipmentTimer timer;
+		synchronized (this) {
+			if (_equipmentTimer != null && _equipmentTimer.isActive()) return true;
+			timer = new L1EquipmentTimer(pc, this);
+			_equipmentTimer = timer;
+		}
+		try {
+			timer.scheduleNext();
+			return timer.isActive();
+		} catch (RejectedExecutionException unavailable) {
+			return false;
 		}
 	}
 
-	public void stopEquipmentTimer(L1PcInstance pc) {
-		if (getRemainingTime() > 0) {
-			_equipmentTimer.cancel();
+	public void stopEquipmentTimer() {
+		if (_equipmentTimer == null) return;
+		final L1EquipmentTimer timer;
+		synchronized (this) {
+			timer = _equipmentTimer;
 			_equipmentTimer = null;
 		}
+		if (timer != null) timer.cancel();
+	}
+
+	public boolean ownsEquipmentTimer(L1EquipmentTimer timer) {
+		return _equipmentTimer == timer;
+	}
+
+	public synchronized void clearEquipmentTimer(L1EquipmentTimer timer) {
+		if (_equipmentTimer == timer) _equipmentTimer = null;
 	}
 
 	private boolean _isNowLighting = false;

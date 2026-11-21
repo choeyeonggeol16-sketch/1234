@@ -10,33 +10,33 @@ import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.equip.EquipRules;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
 /**
  * SlotChange 관리 전용.
  */
 public final class SlotChangeManager {
 
-  //  private static final Logger _log = Logger.getLogger(SlotChangeManager.class.getName());
-
     private static final int SLOT0 = 0;
     private static final int SLOT1 = 1;
 
-    /** 버퍼 상한. 이 값을 넘는 분류는 로그 남기고 스킵 */
     private static final int MAX_BUFFER = 32;
+    private static final L1ItemInstance[] EMPTY_ITEMS = {};
+    private static final int[] EMPTY_IDS = {};
 
     private final L1PcInstance owner;
 
-    private final IntIdList slot0 = new IntIdList(MAX_BUFFER);
-    private final IntIdList slot1 = new IntIdList(MAX_BUFFER);
+    private final IntIdList slot0 = new IntIdList(0);
+    private final IntIdList slot1 = new IntIdList(0);
 
     private final List<Integer> slot0View = new IntIdListView(slot0);
     private final List<Integer> slot1View = new IntIdListView(slot1);
 
     private int slotNumber = 0;
 
-    /** 재사용 버퍼*/
-    private final L1ItemInstance[] unequipBuffer = new L1ItemInstance[MAX_BUFFER];
-    private final L1ItemInstance[] equipBuffer = new L1ItemInstance[MAX_BUFFER];
+    private L1ItemInstance[] unequipBuffer = EMPTY_ITEMS;
+    private L1ItemInstance[] equipBuffer = EMPTY_ITEMS;
 
     /** applySlot 중첩 실행 방지  */
     private boolean swapping = false;
@@ -87,87 +87,83 @@ public final class SlotChangeManager {
         return getList(slotNum);
     }
 
-    /** 지정 슬롯 장비 일괄 적용: 벗을 것/입을 것을 한 번에 처리 */
     public void applySlot(int slotNum) {
-        final L1PcInventory inv = owner.getInventory();
-        if (!inv.tryBeginEquipmentChange()) return;
-        try {
-    	if (swapping) {
-            return;
-        }
-
         final IntIdList desired = getList(slotNum);
-       
         if (desired == null) return;
+        final L1PcInventory inventory = owner.getInventory();
+        if (!inventory.tryBeginEquipmentChange()) return;
+        try {
+            if (!swapping) applySlot(slotNum, desired, inventory);
+        } finally {
+            inventory.endEquipmentChange();
+        }
+    }
 
-        this.slotNumber = slotNum;
-
-        desired.sortUnique();
-
-        final Collection<L1ItemInstance> items = inv.getItems();
+    private void applySlot(int slotNum, IntIdList desired, L1PcInventory inventory) {
         final int spriteId = owner.getCurrentSpriteId();
-
         int unequipCount = 0;
         int equipCount = 0;
-        boolean unequipOverflowLogged = false;
-        boolean equipOverflowLogged = false;
-
-        // 인벤토리 1회 순회로 벗을 것 / 입을 것 동시 분류
-        for (L1ItemInstance item : items) {
-            if (item == null) continue;
-
-            final boolean isEquipped = item.isEquipped();
-            final boolean isTarget = desired.contains(item.getId());
-
-            // 타겟도 아니고 입고 있지도 않은 아이템은 스킵
-            if (!isEquipped && !isTarget) continue;
-
-            final boolean canEquip = canEquipWithPoly(item, spriteId);
-
-            if (isEquipped) {
-                // 입고 있는데 타겟이 아니거나, 변신 때문에 못 차면 벗기
-                if (!isTarget || !canEquip) {
-                    if (unequipCount < MAX_BUFFER) {
-                        unequipBuffer[unequipCount++] = item;
-                    } else if (!unequipOverflowLogged) {
-                        unequipOverflowLogged = true;
-//                        _log.warning("[SlotChange] unequip 버퍼 초과(" + MAX_BUFFER
-//                                + ") - 초과분 스킵됨: " + owner.getName());
-                    }
-                }
-            } else {
-                if (isTarget && canEquip) {
-                    if (equipCount < MAX_BUFFER) {
-                        equipBuffer[equipCount++] = item;
-                    } else if (!equipOverflowLogged) {
-                        equipOverflowLogged = true;
-//                        _log.warning("[SlotChange] equip 버퍼 초과(" + MAX_BUFFER
-//                                + ") - 초과분 스킵됨: " + owner.getName());
-                    }
-                }
-            }
-        }
-
-        if (unequipCount == 0 && equipCount == 0) return;
-
-        // 일괄 처리 (패킷/DB/스탯 재계산 스팸 방지)
         swapping = true;
         try {
+            desired.sortUnique();
+            for (L1ItemInstance item : inventory.getItems()) {
+                if (item == null || item.getItem() == null) continue;
+                final boolean equipped = item.isEquipped();
+                final boolean wanted = desired.contains(item.getId()) && canEquipWithPoly(item, spriteId);
+                if (equipped == wanted) continue;
+                if (equipped) {
+                    if (item.getItem().getType2() == 1 && item.getItem().getBless() == 2) {
+                        SC_ServerMessage.send(owner, 150);
+                        return;
+                    }
+                    if (unequipCount == MAX_BUFFER) return;
+                    if (unequipCount == unequipBuffer.length) unequipBuffer = grow(unequipBuffer);
+                    unequipBuffer[unequipCount++] = item;
+                } else {
+                    if (equipCount == MAX_BUFFER) return;
+                    if (equipCount == equipBuffer.length) equipBuffer = grow(equipBuffer);
+                    equipBuffer[equipCount++] = item;
+                }
+            }
+
+            for (int i = 0; i < equipCount; i++) {
+                final L1ItemInstance item = equipBuffer[i];
+                if (item.getItem().getType2() != 0 && !item.startEquipmentTimer(owner)) return;
+            }
+
+            slotNumber = slotNum;
             for (int i = 0; i < unequipCount; i++) {
-                inv.setEquipped(unequipBuffer[i], false);
+                inventory.setEquipped(unequipBuffer[i], false);
             }
             for (int i = 0; i < equipCount; i++) {
-                inv.setEquipped(equipBuffer[i], true);
+                final L1ItemInstance item = equipBuffer[i];
+                if (item != null && !item.isEquipped() && inventory.getItem(item.getId()) == item && canEquipNow(inventory, item)) {
+                    inventory.setEquipped(item, true);
+                }
             }
         } finally {
             Arrays.fill(unequipBuffer, 0, unequipCount, null);
-            Arrays.fill(equipBuffer, 0, equipCount, null);
+            for (int i = 0; i < equipCount; i++) {
+                final L1ItemInstance item = equipBuffer[i];
+                if (item != null && !item.isEquipped()) item.stopEquipmentTimer();
+                equipBuffer[i] = null;
+            }
             swapping = false;
         }
-        } finally {
-            inv.endEquipmentChange();
-        }
     }
+
+    private static L1ItemInstance[] grow(L1ItemInstance[] buffer) {
+        return Arrays.copyOf(buffer, Math.min(MAX_BUFFER, Math.max(4, buffer.length * 2)));
+    }
+
+    private boolean canEquipNow(L1PcInventory inventory, L1ItemInstance item) {
+        if (item.getItem().getType2() == 2) return EquipRules.canEquipArmor(owner, inventory, item).ok;
+        if (item.getItem().getType2() != 1) return true;
+        if (!EquipRules.canEquipWeaponBasic(owner, inventory, item).ok) return false;
+        final L1ItemInstance primary = owner.getWeapon();
+        return primary == null || EquipRules.canEquipAsSecondWeaponSlayer(owner, inventory, primary, item).ok;
+    }
+
     /** 변신 상태에서 장착 가능 여부 (무기/방어구 모두 체크) */
     private static boolean canEquipWithPoly(L1ItemInstance item, int spriteId) {
     	if (item.getItem() == null) return true;
@@ -195,7 +191,7 @@ public final class SlotChangeManager {
         private int[] a;
         private int size;
 
-        public IntIdList(int cap) { this.a = new int[Math.max(4, cap)]; }
+        public IntIdList(int cap) { this.a = cap > 0 ? new int[Math.max(4, cap)] : EMPTY_IDS; }
 
         public int size() { return size; }
         public boolean isEmpty() { return size == 0; }

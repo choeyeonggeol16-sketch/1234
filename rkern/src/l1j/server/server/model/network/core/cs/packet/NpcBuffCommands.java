@@ -305,7 +305,7 @@ final class NpcBuffCommands {
 					
 					if (!pc.hasSkillEffect(STATUS_UNDERWATER_BREATH)) {
 						pc.setSkillEffect(STATUS_UNDERWATER_BREATH, 1800 * 1000);
-						SC_SkillIconBlessOfEva.send(pc, pc.getId(), 1800);
+						SC_SkillIconBlessOfEva.send(pc, pc.getId(), pc.getEquipSlot().evaIconDuration(1800));
 					}
 				}
 				// 쿠루 몽섬 집시촌이동

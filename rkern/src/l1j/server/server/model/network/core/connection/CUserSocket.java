@@ -193,6 +193,24 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
             return false;
         }
     }
+    private boolean encryptActionBurst(CPacketWriteBuffer writer, int frameCount) {
+        int frameOffset = 0;
+        if (_handshakePlainPending) {
+            _handshakePlainPending = false;
+            frameOffset = Long.BYTES;
+            frameCount--;
+        }
+        final CPacketCryptor cipher = _cryptor;
+        if (cipher == null) return true;
+        try {
+            cipher.encryptActionBurst(writer, frameOffset, frameCount);
+            return true;
+        } catch (Exception error) {
+            LOG.log(Level.SEVERE, "[CUserSocket] packet encryption failed", error);
+            return false;
+        }
+    }
+
     public boolean decrypt(CPacketReadBuffer buffer, int offset, int length) {
         final CPacketCryptor cipher = _cryptor;
         if (cipher == null) return true;
@@ -2905,16 +2923,17 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
      */
     private boolean preparePackedEncryption(CIOBufferEx lease) {
         final CPacketWriteBuffer writer = lease.writer();
-        final ByteBuffer bytes = lease.buffer();
         final int length = lease.wireLength();
         if (lease._actionOnly) {
-            if (length != lease._frameCount * 8) return false;
-            for (int offset = 0; offset < length; offset += 8) {
-                // Per-frame cipher initialization/advancement is unchanged.
+            final int frameCount = lease._frameCount;
+            if (length != frameCount * Long.BYTES) return false;
+            if (frameCount >= 4) return encryptActionBurst(writer, frameCount);
+            for (int offset = 0; offset < length; offset += Long.BYTES) {
                 if (!encrypt(writer, offset + CIOBufferPool.HEADER_BYTES, 6)) return false;
             }
             return true;
         }
+        final ByteBuffer bytes = lease.buffer();
         int offset = 0;
         while (offset < length) {
             if (length - offset < CIOBufferPool.HEADER_BYTES) return false;

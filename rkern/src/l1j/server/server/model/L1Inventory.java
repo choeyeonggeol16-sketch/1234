@@ -2028,7 +2028,7 @@ public class L1Inventory extends L1Object {
 			}
 		}
 
-		updateItem(item, L1PcInventory.COL_DURABILITY);
+		updateDurability(item, currentDurability);
 		return item;
 	}
 
@@ -2050,8 +2050,12 @@ public class L1Inventory extends L1Object {
 			item.set_durability(durability - 1);
 		}
 
-		updateItem(item, L1PcInventory.COL_DURABILITY);
+		updateDurability(item, durability);
 		return item;
+	}
+
+	protected void updateDurability(L1ItemInstance item, int previousDurability) {
+		updateItem(item, L1PcInventory.COL_DURABILITY);
 	}
 
 	public L1ItemInstance findEquippedItemId(int id) {

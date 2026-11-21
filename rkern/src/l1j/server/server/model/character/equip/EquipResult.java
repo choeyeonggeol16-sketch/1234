@@ -4,6 +4,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 
 public final class EquipResult {
     public static final EquipResult OK = new EquipResult(true, null);
+    private static final EquipResult NO_MATCH = new EquipResult(false, null);
 
     public final boolean ok;
     public final EquipFail fail;
@@ -14,7 +15,7 @@ public final class EquipResult {
     }
 
     public static EquipResult fail(EquipFail fail) {
-        return new EquipResult(false, fail);
+        return fail == null ? NO_MATCH : new EquipResult(false, fail);
     }
 
     public void applyFail(L1PcInstance pc) {

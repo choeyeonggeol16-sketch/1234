@@ -212,6 +212,10 @@ public class L1PolyMorph {
 		
 		
 	public static void doPoly(L1Character cha, int polyId, int timeSecs, int cause, boolean ring) {
+		doPoly(cha, polyId, timeSecs, cause, ring, null);
+	}
+
+	static void doPoly(L1Character cha, int polyId, int timeSecs, int cause, boolean ring, CSetItem equipmentSet) {
 		try {
 			if (cha == null || cha.isDead()) {
 				return;
@@ -253,6 +257,9 @@ public class L1PolyMorph {
 				}
 
 				// Only a validated transform can replace the active shape timer.
+				final L1EquipmentSlot equipment = pc.getEquipSlot();
+				if (equipmentSet != null && pc.getCurrentSpriteId() == polyId) return;
+				equipment.recordPolymorphSource(equipmentSet, polyId);
 				pc.killSkillEffectTimer(L1SkillId.SHAPE_CHANGE);
 				pc.setSkillEffect(L1SkillId.SHAPE_CHANGE, timeSecs * 1000);
 
@@ -274,6 +281,7 @@ public class L1PolyMorph {
 					
 					SC_PacketBox.send(pc, SC_PacketBox.공격가능거리, pc, weapon);
 				}
+				if (equipmentSet != null && !equipment.ownsPolymorph(equipmentSet, polyId)) return;
 				
 				// The ring source is idempotent; reapply even when its timer exists,
 				// because its modifier may have been retired by an earlier transition.
@@ -376,6 +384,7 @@ public class L1PolyMorph {
 	public static void undoPoly(L1Character cha) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
+			pc.getEquipSlot().recordPolymorphSource(null, 0);
 			
 			if (pc.getMapId() == 5143) { // 펫레이싱
 				doPoly(pc, 5065, 1000, MORPH_BY_NPC, false);

@@ -1,7 +1,7 @@
 package l1j.server.server.model.item;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,9 +17,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 public final class ItemEffectRegistry {
 
     private static final Logger _log = Logger.getLogger(ItemEffectRegistry.class.getName());
-
-    /** 툴팁 렌더 섹션 — 패킷의 어느 위치에 쓸지 구분 */
-    public enum TooltipSection { EFFECT, POTION, AC_LINE }
 
     public static final class Bonus {
         public final int classType;      // -1 = 전 직업 공통
@@ -37,7 +34,8 @@ public final class ItemEffectRegistry {
         private final String magicnameText;       // null = 매직네임 없음
         private final boolean alwaysAcLine;       // AC 라인을 인챈트 무관 항상 표기
         private final List<Bonus> bonuses = new ArrayList<>();
-        private List<Bonus>[] byClass;            // 파생 인덱스 — 루프에서 조건 제거용
+        private List<ItemStat> stats;
+        private volatile List<Bonus>[] byClass;            // 파생 인덱스 — 루프에서 조건 제거용
 
         public Def() { 
         	this.tooltipText = null; 
@@ -70,8 +68,10 @@ public final class ItemEffectRegistry {
             // snapshot instead of retaining eight identical ArrayLists per item.
             final List<Bonus>[] next = new List[8];
             final ArrayList<Bonus> universal = new ArrayList<>();
+            final EnumSet<ItemStat> definedStats = EnumSet.noneOf(ItemStat.class);
             int specializedMask = 0;
             for (Bonus b : bonuses) {
+                if (b.stat != null) definedStats.add(b.stat);
                 if (b.classType == -1) {
                     universal.add(b);
                 } else if (b.classType >= 0 && b.classType < 8) {
@@ -95,6 +95,7 @@ public final class ItemEffectRegistry {
                 }
                 next[c] = applicable;
             }
+            stats = List.copyOf(definedStats);
             byClass = next;
         }
 
@@ -111,12 +112,46 @@ public final class ItemEffectRegistry {
             ensureIndex();
             final List<Bonus> source = (classType >= 0 && classType < byClass.length)
                     ? byClass[classType] : bonuses;
-            for (Bonus b : source) {
+            for (int i = 0; i < source.size(); i++) {
+                final Bonus b = source.get(i);
                 if (b.classType != -1 && b.classType != classType) continue;   // 폴백 경로용 재필터
                 if (b.enchantLevel != -1 && b.enchantLevel != enchantLevel) continue;
                 final int v = b.value * sign;
                 if (b.stat != null) b.stat.apply(pc, v);
             }
+        }
+
+        public boolean addEnchantDelta(int classType, int oldEnchant, int enchant, int[] changes) {
+            final List<ItemStat> defined = stats();
+            boolean changed = false;
+            for (int i = 0; i < defined.size(); i++) {
+                final ItemStat stat = defined.get(i);
+                final int delta = statValue(stat, classType, enchant) - statValue(stat, classType, oldEnchant);
+                if (delta == 0) continue;
+                changes[stat.ordinal()] += delta;
+                changed = true;
+            }
+            return changed;
+        }
+
+        public List<ItemStat> stats() {
+            ensureIndex();
+            return stats;
+        }
+
+        public int statValue(ItemStat stat, int classType, int enchantLevel) {
+            ensureIndex();
+            final List<Bonus> source = classType >= 0 && classType < byClass.length
+                    ? byClass[classType] : bonuses;
+            int sum = 0;
+            for (int i = 0; i < source.size(); i++) {
+                final Bonus bonus = source.get(i);
+                if (bonus.stat == stat && (bonus.classType == -1 || bonus.classType == classType)
+                        && (bonus.enchantLevel == -1 || bonus.enchantLevel == enchantLevel)) {
+                    sum += bonus.value;
+                }
+            }
+            return sum;
         }
 
         public String getMagicname() { return magicnameText; }
@@ -126,48 +161,14 @@ public final class ItemEffectRegistry {
 
         /** AC 라인 표시값(절대값) — 해당 인챈트 정의 없으면 0 */
         public int acLineValue(int enchantLevel) {
-            for (Bonus b : bonuses) {
+            for (int i = 0; i < bonuses.size(); i++) {
+                final Bonus b = bonuses.get(i);
                 if (b.enchantLevel == enchantLevel && b.stat == ItemStat.AC) return Math.abs(b.value);
             }
             return 0;
         }
         
-        public Map<ItemStat, Integer> aggregatedStatsFor(TooltipSection section, int classType, int enchantLevel) {
-            ensureIndex();
-            Map<ItemStat, Integer> out = new EnumMap<>(ItemStat.class);
-            boolean zeroSumSeen = false;
-            final List<Bonus> source = (classType >= 0 && classType < byClass.length) ? byClass[classType] : bonuses;
-            for (Bonus b : source) {
-                if (b.classType != -1 && b.classType != classType) continue;
-                if (b.enchantLevel != -1 && b.enchantLevel != enchantLevel) continue;
-                if (b.stat == null) continue;
-                switch (section) {
-                case EFFECT:
-                    if (b.stat.wt == ItemStat.WType.B || b.stat.wt == ItemStat.WType.H)
-                        {
-                            final Integer previous = out.get(b.stat);
-                            final int sum = (previous == null ? 0 : previous.intValue()) + b.value;
-                            out.put(b.stat, sum);
-                            if (sum == 0) zeroSumSeen = true;
-                        }
-                    break;
-                case POTION:
-                    if (b.stat.wt == ItemStat.WType.POTION || b.stat.wt == ItemStat.WType.HEAL)
-                        {
-                            final Integer previous = out.get(b.stat);
-                            final int sum = (previous == null ? 0 : previous.intValue()) + b.value;
-                            out.put(b.stat, sum);
-                            if (sum == 0) zeroSumSeen = true;
-                        }
-                    break;
-                default: break;
-                }
-            }
-            // Zero sums are uncommon in the tooltip hot path. Only allocate
-            // the values iterator when a removal can actually be necessary.
-            if (zeroSumSeen) out.values().removeIf(v -> v == 0);
-            return out;
-        }
+
     }
 
     private static final Map<Integer, Def> DEFS = new ConcurrentHashMap<>();

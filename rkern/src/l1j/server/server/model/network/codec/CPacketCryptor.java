@@ -210,6 +210,42 @@ public class CPacketCryptor {
     // ------------------------------------------------------------------
 
     /**
+     * Encrypt consecutive 8-byte action frames in wire order.
+     * The offset points to the first length header, relative to the writer.
+     */
+    public void encryptActionBurst(CPacketWriteBuffer writer, int frameOffset, int frameCount) {
+        if (frameCount <= 0) return;
+        final ByteBuffer buffer = writer.getBuffer();
+        if (buffer.order() != ByteOrder.LITTLE_ENDIAN) {
+            for (int i = 0; i < frameCount; i++, frameOffset += Long.BYTES) {
+                encrypt(writer, frameOffset + 2, 6);
+            }
+            return;
+        }
+
+        final int[] hash = _clntHash;
+        if (hash.length < 256) throw new IllegalStateException("Invalid cipher state");
+        encryptActionFrames(buffer, writer.baseOffset() + frameOffset, frameCount, hash);
+    }
+
+    private static void encryptActionFrames(ByteBuffer buffer, int frameOffset, int frameCount, int[] hash) {
+        for (int frame = 0; frame < frameCount; frame++, frameOffset += Long.BYTES) {
+            // The indices restart at each packet. Only the permutation carries over.
+            int k = 0;
+            long mask = 0;
+            for (int j = 1; j <= 6; j++) {
+                final int hj = hash[j];
+                k = (k + hj) & 255;
+                final int hk = hash[k];
+                hash[k] = hj;
+                hash[j] = hk;
+                mask |= (long) hash[(hj + hk) & 255] << ((j + 1) * Byte.SIZE);
+            }
+            buffer.putLong(frameOffset, buffer.getLong(frameOffset) ^ mask);
+        }
+    }
+
+    /**
      * 송신 암호화.
      */
     public void encrypt(CPacketWriteBuffer wb, int offset, int size) {
@@ -221,6 +257,12 @@ public class CPacketCryptor {
         final int base = wb.baseOffset();
         final int[] hash = _clntHash;
         if (hash.length < 256) throw new IllegalStateException("Invalid cipher state");
+        // The little-endian 64-bit store preserves the two header bytes.
+        if (size == 6 && offset >= 2 && bb.order() == ByteOrder.LITTLE_ENDIAN) {
+            encryptActionFrames(bb, base + offset - 2, 1, hash);
+            return;
+        }
+
         int k = 0;
         int j = 1;
         int pos = base + offset;
@@ -228,71 +270,6 @@ public class CPacketCryptor {
         final int wordEnd = pos + (size & ~7);
         int hj = hash[j];
 
-        // 8-byte action frame: keep its 2-byte wire length untouched, while
-        // applying the six RC4 keystream bytes with one 64-bit read/write.
-        // The pooled SEND buffer is LITTLE_ENDIAN. Other buffer orders and
-        // offsets retain the original bytewise path.
-        if (size == 6 && offset >= 2 && bb.order() == ByteOrder.LITTLE_ENDIAN) {
-            long mask = 0L;
-            int nextJ, nextHJ, hk;
-            nextJ = (j + 1) & 255;
-            nextHJ = hash[nextJ];
-            k = (k + hj) & 255;
-            hk = hash[k];
-            hash[k] = hj;
-            hash[j] = hk;
-            mask |= ((long) hash[(hj + hk) & 255]) << 0;
-            j = nextJ;
-            hj = (k == j) ? hj : nextHJ;
-            nextJ = (j + 1) & 255;
-            nextHJ = hash[nextJ];
-            k = (k + hj) & 255;
-            hk = hash[k];
-            hash[k] = hj;
-            hash[j] = hk;
-            mask |= ((long) hash[(hj + hk) & 255]) << 8;
-            j = nextJ;
-            hj = (k == j) ? hj : nextHJ;
-            nextJ = (j + 1) & 255;
-            nextHJ = hash[nextJ];
-            k = (k + hj) & 255;
-            hk = hash[k];
-            hash[k] = hj;
-            hash[j] = hk;
-            mask |= ((long) hash[(hj + hk) & 255]) << 16;
-            j = nextJ;
-            hj = (k == j) ? hj : nextHJ;
-            nextJ = (j + 1) & 255;
-            nextHJ = hash[nextJ];
-            k = (k + hj) & 255;
-            hk = hash[k];
-            hash[k] = hj;
-            hash[j] = hk;
-            mask |= ((long) hash[(hj + hk) & 255]) << 24;
-            j = nextJ;
-            hj = (k == j) ? hj : nextHJ;
-            nextJ = (j + 1) & 255;
-            nextHJ = hash[nextJ];
-            k = (k + hj) & 255;
-            hk = hash[k];
-            hash[k] = hj;
-            hash[j] = hk;
-            mask |= ((long) hash[(hj + hk) & 255]) << 32;
-            j = nextJ;
-            hj = (k == j) ? hj : nextHJ;
-            nextJ = (j + 1) & 255;
-            nextHJ = hash[nextJ];
-            k = (k + hj) & 255;
-            hk = hash[k];
-            hash[k] = hj;
-            hash[j] = hk;
-            mask |= ((long) hash[(hj + hk) & 255]) << 40;
-            j = nextJ;
-            hj = (k == j) ? hj : nextHJ;
-            final int frame = pos - 2;
-            bb.putLong(frame, bb.getLong(frame) ^ (mask << 16));
-            return;
-        }
         while (pos < wordEnd) {
             long mask = 0L;
             int nextJ, nextHJ, hk;

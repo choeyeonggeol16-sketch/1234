@@ -1922,13 +1922,8 @@ public class L1PcInstance extends L1Character {
 	}
 
 	public void stopEquipmentTimer() {
-		List<L1ItemInstance> allItems = this.getInventory().getItems();
-		for (L1ItemInstance item : allItems) {
-			if (item == null)
-				continue;
-			if (item.isEquipped() && item.getRemainingTime() > 0) {
-				item.stopEquipmentTimer(this);
-			}
+		for (L1ItemInstance item : getInventory().getItems()) {
+			if (item != null) item.stopEquipmentTimer();
 		}
 	}
 
@@ -6628,14 +6623,8 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_autoPotion = i;
 	}
 
-	private boolean _시간제;
-
 	public boolean is시간제() {
-		return _시간제;
-	}
-
-	public void set시간제(boolean b) {
-		_시간제 = b;
+		return _equipSlot.hasTimedEquipment();
 	}
 	
 	

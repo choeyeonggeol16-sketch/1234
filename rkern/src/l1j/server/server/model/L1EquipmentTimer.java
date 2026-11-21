@@ -18,65 +18,107 @@
  */
 package l1j.server.server.model;
 
+import java.util.concurrent.ScheduledFuture;
+import java.util.function.Consumer;
+
 import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
-public class L1EquipmentTimer implements Runnable {
-	private final long _scheduleTime;
-	private volatile boolean _active;
-	private final int _sessionStamp;
-	
-	public L1EquipmentTimer(L1PcInstance pc, L1ItemInstance item, long scheduleTime ) {
-		_pc = pc;
-		_item = item;
-		_scheduleTime = scheduleTime;
-		_sessionStamp = pc.getSessionStamp();
-		_active = true;
-	}
+public final class L1EquipmentTimer implements Runnable {
+    private static final long TICK_MILLIS = 1_000L;
 
-	@Override
-	public void run() {
-		if (!_active) return;
-        // Keep the existing scheduler, but never mutate a cached item on its
-        // foreign ThreadPool thread or on a later character session.
-        CIOThreadCallback.getInstance().completeWarehouseMove(_pc, _sessionStamp,
-                this::tickOnOwner, failure -> { if (failure != null) cancel(); });
-	}
+    private final L1PcInstance pc;
+    private final L1ItemInstance item;
+    private final int sessionStamp;
+    private final Runnable ownerTick = this::tickOnOwner;
+    private final Consumer<Throwable> ownerCompletion = this::onOwnerCompletion;
+
+    private volatile boolean active = true;
+    private ScheduledFuture<?> pendingTick;
+
+    public L1EquipmentTimer(L1PcInstance pc, L1ItemInstance item) {
+        this.pc = pc;
+        this.item = item;
+        this.sessionStamp = pc.getSessionStamp();
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void scheduleNext() {
+        try {
+            synchronized (this) {
+                if (!active || pendingTick != null) return;
+                pendingTick = ThreadPool.getInstance().scheduleRequired(this, TICK_MILLIS);
+            }
+        } catch (RuntimeException failure) {
+            cancel();
+            throw failure;
+        }
+    }
+
+    @Override
+    public void run() {
+        synchronized (this) {
+            pendingTick = null;
+            if (!active) return;
+        }
+        CIOThreadCallback.getInstance().completeWarehouseMove(pc, sessionStamp, ownerTick, ownerCompletion);
+    }
+
+    private void onOwnerCompletion(Throwable failure) {
+        if (failure != null) cancel();
+    }
 
     private void tickOnOwner() {
-        final CUserSocket session = _pc.getNetConnection();
-        if (session == null) { cancel(); return; }
+        final CUserSocket session = pc.getNetConnection();
+        if (session == null) {
+            cancel();
+            return;
+        }
         synchronized (session) {
-            if (!_active || !session.isConnected() || _pc.getSessionStamp() != _sessionStamp
-                    || _pc.getInventory().getItem(_item.getId()) != _item) {
+            final L1PcInventory inventory = pc.getInventory();
+            if (!active || !session.isConnected() || pc.isLogoutStarted() || pc.getSessionStamp() != sessionStamp) {
                 cancel();
                 return;
             }
-            if (_pc.isItemTransferBusy()) {
-                // Pause this same timer, preserving the remaining time and
-                // registration instead of throwing after changing the item.
-                ThreadPool.getInstance().scheduleRequired(this, _scheduleTime);
+            if (!inventory.tryBeginEquipmentChange()) {
+                scheduleNext();
                 return;
             }
-            if (_item.getRemainingTime() > 1) {
-                _item.setRemainingTime(_item.getRemainingTime() - 1);
-                _pc.getInventory().updateItem(_item, L1PcInventory.COL_REMAINING_TIME);
-                ThreadPool.getInstance().scheduleRequired(this, _scheduleTime);
-            } else {
-                _pc.getInventory().removeItem(_item, 1);
-                cancel();
+            try {
+                if (!active || !item.ownsEquipmentTimer(this) || !item.isEquipped()
+                        || inventory.getItem(item.getId()) != item) {
+                    cancel();
+                    return;
+                }
+                final int remaining = item.getRemainingTime();
+                if (remaining > 1) {
+                    item.setRemainingTime(remaining - 1);
+                    inventory.updateItem(item, L1PcInventory.COL_REMAINING_TIME);
+                    scheduleNext();
+                } else {
+                    inventory.removeItem(item, 1);
+                    cancel();
+                }
+            } finally {
+                inventory.endEquipmentChange();
             }
         }
     }
-	
-	public void cancel()
-	{
-		_active = false;
-	}
 
-	private final L1PcInstance _pc;
-	private final L1ItemInstance _item;
+    public void cancel() {
+        final ScheduledFuture<?> pending;
+        synchronized (this) {
+            active = false;
+            pending = pendingTick;
+            pendingTick = null;
+        }
+        if (pending != null) pending.cancel(false);
+        item.clearEquipmentTimer(this);
+    }
 }

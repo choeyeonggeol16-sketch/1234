@@ -12,7 +12,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 
-/** Phase 12: original EnchantmentItems.java SuccessEnchant body, unchanged. */
 final class EnchantmentOutcomeEffects {
     private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(EnchantmentOutcomeEffects.class.getName());
     private EnchantmentOutcomeEffects() {}
@@ -36,8 +35,8 @@ final class EnchantmentOutcomeEffects {
         successEnchant(pc, item, client, i, false);
     }
 
-    /** The receipt already stored and replayed the new enchant level.
-     * Apply only its in-world equipment bonuses and non-durable notices.
+    /** The receipt replay already applied the enchant level and its worn bonuses.
+     * Send the result messages for the completed operation.
      */
     static void SuccessEnchantCommitted(L1PcInstance pc, L1ItemInstance item, CUserSocket client, int i) {
         successEnchant(pc, item, client, i, true);
@@ -228,39 +227,14 @@ final class EnchantmentOutcomeEffects {
 			}
 		}
 
-		if (item.getItem().getType2() == 2) {
-			if (item.isEquipped()) {
-				if (item.getItem().getType() >= 8 && item.getItem().getType() <= 12) {
-				} else {
-					pc.getAC().addAc(-i);
-				}
-				int i2 = item.getItem().getItemId();
-                boolean magicResistChanged = false;
-				if (i2 == 20011 || i2 == 20110 || i2 == 120011 || i2 == 22204 || i2 == 22223 || i2 == 22205
-						|| i2 == 22206 || i2 == 22207 || i2 == 22213 || i2 == 22365 || i2 == 120110 || i2 == 93001
-						|| i2 >= 222300 && i2 <= 222303 || i2 == 222328) {// 타라스의
-					// 부츠
-					pc.getResistance().addMr(i);
-                    magicResistChanged = true;
-				}
-				if (i2 == 20056 || i2 == 120056 || i2 == 220056 || i2 == 93002 || i2 == 20074 || i2 == 120074) { // 매직
-					// 클로크
-					pc.getResistance().addMr(i * 2);
-                    magicResistChanged = true;
-				}
-				if (i2 == 20079 || i2 == 20078) {
-					pc.getResistance().addMr(i * 3);
-                    magicResistChanged = true;
-				}
-                if (magicResistChanged) {
-                    try {
-                        SC_SPMR.send(pc);
-                    } catch (RuntimeException packetFailure) {
-                        LOG.log(java.util.logging.Level.WARNING, "Enchant MR notification failed after MR update", packetFailure);
-                    }
-                }
-			}
-
+        if (!alreadyCommitted && pc.getEquipSlot().applyEquippedEnchantChange(item, oldEnchantLvl)) {
+            try {
+                SC_SPMR.send(pc);
+            } catch (RuntimeException packetFailure) {
+                LOG.log(java.util.logging.Level.WARNING, "Enchant SP/MR notification failed after equipment update", packetFailure);
+            }
+        }
+        if (item.getItem().getType2() == 2) {
 			try {
                 SC_OwnCharStatus.send(pc);
             } catch (RuntimeException packetFailure) {
