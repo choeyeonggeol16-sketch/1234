@@ -92,6 +92,20 @@ public final class SkillEffectContainer {
 			specialResistance = 0;
 		}
 
+		// Five distinct resistance kinds followed by spirit/all pierce.
+		// Ordinary packed-long addition carries a full byte into the next
+		// independent value. Saturate individual source totals before publish:
+		// Resistance.checkRange already clamps the externally visible result.
+		static long addSpecialLanes(long current, long delta) {
+			long result = 0L;
+			for (int shift = 0; shift <= 48; shift += 8) {
+				final int sum = (int) ((current >>> shift) & 0xffL)
+						+ (int) ((delta >>> shift) & 0xffL);
+				result |= (long) (sum > 255 ? 255 : sum) << shift;
+			}
+			return result;
+		}
+
 		int find(int id) {
 			for (int i = 0; i < count * 2; i += 2) if (applied[i] == id) return i;
 			return -1;

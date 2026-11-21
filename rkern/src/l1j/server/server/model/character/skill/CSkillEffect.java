@@ -116,16 +116,18 @@ interface CSkillEffect {
             out.pvpReduction += (int) (captured >>> 32);
         }},
         SPECIAL_RESISTANCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            out.specialResistance += captured;
+            out.specialResistance = SkillEffectContainer.SkillModifiers.addSpecialLanes(out.specialResistance, captured);
         }},
         SPIRIT_PIERCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            out.specialResistance += (captured >>> 32) << 40;
+            out.specialResistance = SkillEffectContainer.SkillModifiers.addSpecialLanes(out.specialResistance,
+                    ((captured >>> 32) & 0xffL) << 40);
         }},
         IMPACT_PROBABILITY { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.impactProbability += (int) captured;
         }},
         ALL_PIERCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            out.specialResistance += captured << 48;
+            out.specialResistance = SkillEffectContainer.SkillModifiers.addSpecialLanes(out.specialResistance,
+                    (captured & 0xffL) << 48);
         }};
 
         @Override public boolean checkPumpCondition(L1Character target) { return target instanceof L1PcInstance; }
