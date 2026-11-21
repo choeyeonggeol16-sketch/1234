@@ -39,9 +39,6 @@ public static void useGreenPotion(L1PcInstance pc, int itemId) {
 			return;
 		}
 
-		// 아브소르트바리아의 해제
-		cancelAbsoluteBarrier(pc);
-
 		int time = 0;
 		if (itemId == L1ItemId.POTION_OF_HASTE_SELF || itemId == 7006) { // 그린
 			time = 300;
@@ -64,6 +61,8 @@ public static void useGreenPotion(L1PcInstance pc, int itemId) {
 			time = 30;
 		}
 
+		if (time <= 0) return; // Reject unrecognized duration before timer and barrier mutation.
+		cancelAbsoluteBarrier(pc);
 		sendSound(pc, pc.getId(), 191);
 		broadcastSound(pc, pc.getId(), 191);
 		sendMessage(pc, 183);
@@ -175,6 +174,8 @@ public static void useBravePotion(L1PcInstance pc, int item_id) {
 			}
 		}
 
+		if (time <= 0) return; // Never turn unknown item IDs into permanent brave statuses.
+
 		if (item_id == 40068 || item_id == 140068 || item_id == 210110 || item_id == 30076) { // 엘븐
 			// 와퍼
 			sendBrave(pc, pc.getId(), 3, time);
@@ -200,6 +201,7 @@ public static void useFruit(L1PcInstance pc, int item_id) {
 			sendMessage(pc, 698);
 			return;
 		}
+		if (item_id != 210036 && item_id != 30077 && item_id != 713) return;
 		cancelAbsoluteBarrier(pc);
 
 		int time = 0;

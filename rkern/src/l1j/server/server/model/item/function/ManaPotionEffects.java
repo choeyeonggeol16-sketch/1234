@@ -145,9 +145,6 @@ final class ManaPotionEffects {
 			// 없습니다.
 			return;
 		}
-		// 아브소르트바리아의 해제
-		cancelAbsoluteBarrier(pc);
-
 		int time = 0; // 시간은 4의 배수로 하는 것
 		switch (item_id) {
 		case 40016:
@@ -164,6 +161,8 @@ final class ManaPotionEffects {
 			return;
 		}
 
+		// Only a recognized potion may cancel an existing barrier.
+		cancelAbsoluteBarrier(pc);
 		// Idempotent refresh; do not mutate the item's base stats directly.
 		pc.applySkillModifierFromOwner(STATUS_WISDOM_POTION, 0);
 		sendWisdomIcon(pc, (int) (time));

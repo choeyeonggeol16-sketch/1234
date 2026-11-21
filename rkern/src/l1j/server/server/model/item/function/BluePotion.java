@@ -17,6 +17,8 @@ public class BluePotion
   public static void checkCondition(L1PcInstance pc, L1ItemInstance item)
   {
     int itemId = item.getItemId();
+    final int seconds = durationSeconds(itemId);
+    if (seconds == 0) return; // Never consume an unrecognized item or create a permanent timer.
     if ((pc.hasSkillEffect(157)) || 
       (pc.hasSkillEffect(33)) || 
       (pc.hasSkillEffect(10101)) || 
@@ -42,36 +44,26 @@ public class BluePotion
       SC_ServerMessage.send(pc, 698);
       return;
     }
-    ItemReceiptOperations.UseDurableConsume(pc, item, () -> useBluePotion(pc, itemId));
+    ItemReceiptOperations.UseDurableConsume(pc, item, () -> useBluePotion(pc, itemId, seconds));
   }
   
-  private static void useBluePotion(L1PcInstance pc, int item_id)
+  private static int durationSeconds(int itemId) {
+    switch (itemId) {
+      case 30083:
+      case 40015:
+      case 40736: return 600;
+      case 41142: return 300;
+      case 140015: return 700;
+      case 210114: return 1800;
+      default: return 0;
+    }
+  }
+
+  private static void useBluePotion(L1PcInstance pc, int itemId, int time)
   {
     pc.cancelAbsoluteBarrier();
     pc.cancelMoebius();
-    
-    int time = 0;
-    int type = 0;
-    switch (item_id)
-    {
-    case 30083: 
-    case 40015: 
-    case 40736: 
-      type = 1002;
-      time = 600;
-      break;
-    case 41142: 
-      type = 20082;
-      time = 300;
-      break;
-    case 140015: 
-      type = 1002;
-      time = 700;
-      break;
-    case 210114: 
-      type = 1002;
-      time = 1800;
-    }
+    final int type = itemId == 41142 ? 20082 : 1002;
     if (pc.hasSkillEffect(1002)) {
       pc.removeSkillEffect(1002);
     }
