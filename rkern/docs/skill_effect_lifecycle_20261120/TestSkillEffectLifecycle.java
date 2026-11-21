@@ -1248,7 +1248,10 @@ public final class TestSkillEffectLifecycle {
             if (info.stopHandler() != null) stops++;
             if (info.hasCast() && info.stopHandler() != null) both++;
         }
-        verify(casts == 310 && stops == 299 && both == 198, "numeric registry coverage", 0);
+        System.out.printf("Registered skill IDs: cast=%d, stop=%d, both=%d, union=%d%n",
+                casts, stops, both, casts + stops - both);
+        verify(casts == 310 && stops == 299 && both == 198,
+                "numeric registry coverage (cast=" + casts + ", stop=" + stops + ", both=" + both + ")", 0);
         System.out.println("PASS stats, resistances, refresh, clear, movement and bind overlap, 411 numeric IDs");
     }
 

@@ -46,6 +46,11 @@ jobs:
             rkern/src
             rkern/docs/jproring_cio_integration_20261120
             rkern/docs/skill_effect_lifecycle_20261120
+      - name: Cache skill regression dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/rkern-skill-deps
+          key: rkern-skill-jars-v1
       - name: Compile all production Java and run skill lifecycle regression
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
@@ -55,6 +60,8 @@ jobs:
           import os
           from pathlib import Path
           import subprocess
+          import time
+          import urllib.error
 
           root = Path("rkern").resolve()
           work = Path(os.environ["RUNNER_TEMP"]) / "skill-lifecycle"
@@ -64,7 +71,19 @@ jobs:
           spec = importlib.util.spec_from_file_location("rkern_build_helper", helper_path)
           helper = importlib.util.module_from_spec(spec)
           spec.loader.exec_module(helper)
-          cp = helper.classpath(classes, work / "deps")
+          # Shared Maven Central can rate-limit ephemeral GitHub runner IPs.
+          # Reuse cached jars and retry only transient HTTP failures.
+          deps = Path.home() / ".cache/rkern-skill-deps"
+          for attempt in range(6):
+              try:
+                  cp = helper.classpath(classes, deps)
+                  break
+              except urllib.error.HTTPError as failure:
+                  if failure.code not in (429, 500, 502, 503, 504) or attempt == 5:
+                      raise
+                  delay = min(4 * (attempt + 1), 20)
+                  print(f"Maven download HTTP {failure.code}; retry in {delay}s", flush=True)
+                  time.sleep(delay)
           sources = sorted((root / "src").rglob("*.java"))
           print(f"Production Java files: {len(sources)}", flush=True)
           sources.append(root / "docs/skill_effect_lifecycle_20261120/TestSkillEffectLifecycle.java")
