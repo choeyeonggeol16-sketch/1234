@@ -233,8 +233,6 @@ public class L1PolyMorph {
 					return;
 				}
 
-				pc.killSkillEffectTimer(L1SkillId.SHAPE_CHANGE);
-				pc.setSkillEffect(L1SkillId.SHAPE_CHANGE, timeSecs * 1000);
 				// 변신 버그 방지
 				L1PolyMorph poly = PolyTable.getInstance().getTemplate(polyId);
 				if(!pc.isGm() && pc.noPlayerCK && pc.noPlayerck2 && pc.noPlayerRobot && poly == null){
@@ -253,7 +251,11 @@ public class L1PolyMorph {
 					pc.sendPackets("비정상적인 방법으로 변신을 시도 하였습니다.");
 					return;
 				}
-			
+
+				// Only a validated transform can replace the active shape timer.
+				pc.killSkillEffectTimer(L1SkillId.SHAPE_CHANGE);
+				pc.setSkillEffect(L1SkillId.SHAPE_CHANGE, timeSecs * 1000);
+
 				if (pc.getCurrentSpriteId() != polyId) {
 					L1ItemInstance weapon = pc.getWeapon();
 					boolean weaponTakeoff = (weapon != null && !isEquipableWeapon(polyId, weapon.getItem().getType()));
@@ -303,9 +305,6 @@ public class L1PolyMorph {
 			        SC_OwnCharAttrDef.send(pc);
 			        SC_SPMR.send(pc);
 			       
-			      }
-			      else {
-			        pc.setSkillEffect(L1SkillId.SHAPE_CHANGE, timeSecs * 1000);
 			      }
 			      
 				if(ring){
